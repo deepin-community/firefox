@@ -1,0 +1,717 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Wed, 3 Nov 2021 11:06:11 +0900
+Subject: Update cc crate to b2f6b146b75299c444e05bbde50d03705c7c4b6e
+
+aka 1.0.71 + GCC-11 fix for armhf.
+---
+ .cargo/config.in                            |   5 +
+ Cargo.lock                                  |   5 +-
+ Cargo.toml                                  |   4 +
+ third_party/rust/cc/.cargo-checksum.json    |   2 +-
+ third_party/rust/cc/Cargo.lock              | 145 ---------------
+ third_party/rust/cc/Cargo.toml              |  41 ++---
+ third_party/rust/cc/README.md               |   1 +
+ third_party/rust/cc/src/lib.rs              | 190 ++++++++++++++++++--
+ third_party/rust/cc/src/windows_registry.rs |  12 +-
+ 9 files changed, 214 insertions(+), 191 deletions(-)
+ delete mode 100644 third_party/rust/cc/Cargo.lock
+
+diff --git a/.cargo/config.in b/.cargo/config.in
+index dce119e..aefe47f 100644
+--- a/.cargo/config.in
++++ b/.cargo/config.in
+@@ -96,6 +96,11 @@ git = "https://github.com/bytecodealliance/wasmtime"
+ replace-with = "vendored-sources"
+ rev = "824fa69756523f2b6d49029fe25de94130b1f144"
+ 
++[source."https://github.com/alexcrichton/cc-rs/"]
++git = "https://github.com/alexcrichton/cc-rs/"
++replace-with = "vendored-sources"
++rev = "b2f6b146b75299c444e05bbde50d03705c7c4b6e"
++
+ [source.crates-io]
+ replace-with = "vendored-sources"
+ 
+diff --git a/Cargo.lock b/Cargo.lock
+index ca24666..b4eeab6 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -539,9 +539,8 @@ dependencies = [
+ 
+ [[package]]
+ name = "cc"
+-version = "1.0.68"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "4a72c244c1ff497a746a7e1fb3d14bd08420ecda70c8f25c7112f2781652d787"
++version = "1.0.71"
++source = "git+https://github.com/alexcrichton/cc-rs/?rev=b2f6b146b75299c444e05bbde50d03705c7c4b6e#b2f6b146b75299c444e05bbde50d03705c7c4b6e"
+ 
+ [[package]]
+ name = "cert_storage"
+diff --git a/Cargo.toml b/Cargo.toml
+index 12c4962..a605c58 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -110,3 +110,7 @@ path = "third_party/rust/mio"
+ 
+ [patch.crates-io.prost-derive]
+ path = "third_party/rust/prost-derive"
++
++[patch.crates-io.cc]
++git = "https://github.com/alexcrichton/cc-rs/"
++rev = "b2f6b146b75299c444e05bbde50d03705c7c4b6e"
+diff --git a/third_party/rust/cc/.cargo-checksum.json b/third_party/rust/cc/.cargo-checksum.json
+index c502b41..ec48f75 100644
+--- a/third_party/rust/cc/.cargo-checksum.json
++++ b/third_party/rust/cc/.cargo-checksum.json
+@@ -1 +1 @@
+-{"files":{"Cargo.lock":"24720bf62cfad67ca24dfc9192a8f1c11a0f262655c087795605f188cee5c5f0","Cargo.toml":"84ef3b052c7b9ba469573df3ee45d89d426f2cd30d350f43198f115b9c5691fc","LICENSE-APACHE":"a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2","LICENSE-MIT":"378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397","README.md":"9916275542d23bfa0815b1f48d4546e514739fadc79775500de6a81cf17aac09","src/bin/gcc-shim.rs":"b77907875029494b6288841c3aed2e4939ed40708c7f597fca5c9e2570490ca6","src/com.rs":"bcdaf1c28b71e6ef889c6b08d1ce9d7c0761344a677f523bc4c3cd297957f804","src/lib.rs":"20d349f8528f191a4cf04a5a42daaaa8085c4e00885c78456ebada92dc39b7fb","src/registry.rs":"3cc1b5a50879fa751572878ae1d0afbfc960c11665258492754b2c8bccb0ff5d","src/setup_config.rs":"7014103587d3382eac599cb76f016e2609b8140970861b2237982d1db24af265","src/vs_instances.rs":"2d3f8278a803b0e7052f4eeb1979b29f963dd0143f4458e2cb5f33c4e5f0963b","src/winapi.rs":"ea8b7edbb9ff87957254f465c2334e714c5d6b3b19a8d757c48ea7ca0881c50c","src/windows_registry.rs":"090b5de68e19dab9e1884175dc2a6866f697bd043d6b3a0d4b3836c9d6812569","tests/cc_env.rs":"e02b3b0824ad039b47e4462c5ef6dbe6c824c28e7953af94a0f28f7b5158042e","tests/cflags.rs":"57f06eb5ce1557e5b4a032d0c4673e18fbe6f8d26c1deb153126e368b96b41b3","tests/cxxflags.rs":"c2c6c6d8a0d7146616fa1caed26876ee7bc9fcfffd525eb4743593cade5f3371","tests/support/mod.rs":"16274867f23871e9b07614eda4c7344da13d1751fed63d4f633857e40be86394","tests/test.rs":"65c073e0e2cf4aa0433066102788e9f57442719e6f32f5ad5248aa7132bb4597"},"package":"4a72c244c1ff497a746a7e1fb3d14bd08420ecda70c8f25c7112f2781652d787"}
+\ No newline at end of file
++{"files":{"Cargo.toml":"c5c25a7f7994d67c8fc25cb5add9c54d4d75c186cd605353ff021b634032aab7","LICENSE-APACHE":"a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2","LICENSE-MIT":"378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397","README.md":"1fd66e1fe6d618030b9452c667e89d7a31b27331ad831d83b41f9762fd6858d4","src/bin/gcc-shim.rs":"b77907875029494b6288841c3aed2e4939ed40708c7f597fca5c9e2570490ca6","src/com.rs":"bcdaf1c28b71e6ef889c6b08d1ce9d7c0761344a677f523bc4c3cd297957f804","src/lib.rs":"20f6fce88058fe2c338a8a7bb21570c796425a6f0c2f997cd64740835c1b328c","src/registry.rs":"3cc1b5a50879fa751572878ae1d0afbfc960c11665258492754b2c8bccb0ff5d","src/setup_config.rs":"7014103587d3382eac599cb76f016e2609b8140970861b2237982d1db24af265","src/vs_instances.rs":"2d3f8278a803b0e7052f4eeb1979b29f963dd0143f4458e2cb5f33c4e5f0963b","src/winapi.rs":"ea8b7edbb9ff87957254f465c2334e714c5d6b3b19a8d757c48ea7ca0881c50c","src/windows_registry.rs":"d8f3014140d637b50a1fa4a9739b3617299ab43f829e65b2728f515a969a5376","tests/cc_env.rs":"e02b3b0824ad039b47e4462c5ef6dbe6c824c28e7953af94a0f28f7b5158042e","tests/cflags.rs":"57f06eb5ce1557e5b4a032d0c4673e18fbe6f8d26c1deb153126e368b96b41b3","tests/cxxflags.rs":"c2c6c6d8a0d7146616fa1caed26876ee7bc9fcfffd525eb4743593cade5f3371","tests/support/mod.rs":"16274867f23871e9b07614eda4c7344da13d1751fed63d4f633857e40be86394","tests/test.rs":"65c073e0e2cf4aa0433066102788e9f57442719e6f32f5ad5248aa7132bb4597"},"package":null}
+\ No newline at end of file
+diff --git a/third_party/rust/cc/Cargo.lock b/third_party/rust/cc/Cargo.lock
+deleted file mode 100644
+index 9f1103f..0000000
+--- a/third_party/rust/cc/Cargo.lock
++++ /dev/null
+@@ -1,145 +0,0 @@
+-# This file is automatically @generated by Cargo.
+-# It is not intended for manual editing.
+-[[package]]
+-name = "cc"
+-version = "1.0.68"
+-dependencies = [
+- "jobserver",
+- "tempfile",
+-]
+-
+-[[package]]
+-name = "cfg-if"
+-version = "0.1.10"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
+-
+-[[package]]
+-name = "getrandom"
+-version = "0.1.15"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "fc587bc0ec293155d5bfa6b9891ec18a1e330c234f896ea47fbada4cadbe47e6"
+-dependencies = [
+- "cfg-if",
+- "libc",
+- "wasi",
+-]
+-
+-[[package]]
+-name = "jobserver"
+-version = "0.1.21"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5c71313ebb9439f74b00d9d2dcec36440beaf57a6aa0623068441dd7cd81a7f2"
+-dependencies = [
+- "libc",
+-]
+-
+-[[package]]
+-name = "libc"
+-version = "0.2.80"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "4d58d1b70b004888f764dfbf6a26a3b0342a1632d33968e4a179d8011c760614"
+-
+-[[package]]
+-name = "ppv-lite86"
+-version = "0.2.10"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ac74c624d6b2d21f425f752262f42188365d7b8ff1aff74c82e45136510a4857"
+-
+-[[package]]
+-name = "rand"
+-version = "0.7.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "6a6b1679d49b24bbfe0c803429aa1874472f50d9b363131f0e89fc356b544d03"
+-dependencies = [
+- "getrandom",
+- "libc",
+- "rand_chacha",
+- "rand_core",
+- "rand_hc",
+-]
+-
+-[[package]]
+-name = "rand_chacha"
+-version = "0.2.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f4c8ed856279c9737206bf725bf36935d8666ead7aa69b52be55af369d193402"
+-dependencies = [
+- "ppv-lite86",
+- "rand_core",
+-]
+-
+-[[package]]
+-name = "rand_core"
+-version = "0.5.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "90bde5296fc891b0cef12a6d03ddccc162ce7b2aff54160af9338f8d40df6d19"
+-dependencies = [
+- "getrandom",
+-]
+-
+-[[package]]
+-name = "rand_hc"
+-version = "0.2.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ca3129af7b92a17112d59ad498c6f81eaf463253766b90396d39ea7a39d6613c"
+-dependencies = [
+- "rand_core",
+-]
+-
+-[[package]]
+-name = "redox_syscall"
+-version = "0.1.57"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "41cc0f7e4d5d4544e8861606a285bb08d3e70712ccc7d2b84d7c0ccfaf4b05ce"
+-
+-[[package]]
+-name = "remove_dir_all"
+-version = "0.5.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
+-dependencies = [
+- "winapi",
+-]
+-
+-[[package]]
+-name = "tempfile"
+-version = "3.1.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "7a6e24d9338a0a5be79593e2fa15a648add6138caa803e2d5bc782c371732ca9"
+-dependencies = [
+- "cfg-if",
+- "libc",
+- "rand",
+- "redox_syscall",
+- "remove_dir_all",
+- "winapi",
+-]
+-
+-[[package]]
+-name = "wasi"
+-version = "0.9.0+wasi-snapshot-preview1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519"
+-
+-[[package]]
+-name = "winapi"
+-version = "0.3.9"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5c839a674fcd7a98952e593242ea400abe93992746761e38641405d28b00f419"
+-dependencies = [
+- "winapi-i686-pc-windows-gnu",
+- "winapi-x86_64-pc-windows-gnu",
+-]
+-
+-[[package]]
+-name = "winapi-i686-pc-windows-gnu"
+-version = "0.4.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
+-
+-[[package]]
+-name = "winapi-x86_64-pc-windows-gnu"
+-version = "0.4.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+diff --git a/third_party/rust/cc/Cargo.toml b/third_party/rust/cc/Cargo.toml
+index f246779..4a2ea22 100644
+--- a/third_party/rust/cc/Cargo.toml
++++ b/third_party/rust/cc/Cargo.toml
+@@ -1,34 +1,27 @@
+-# THIS FILE IS AUTOMATICALLY GENERATED BY CARGO
+-#
+-# When uploading crates to the registry Cargo will automatically
+-# "normalize" Cargo.toml files for maximal compatibility
+-# with all versions of Cargo and also rewrite `path` dependencies
+-# to registry (e.g., crates.io) dependencies
+-#
+-# If you believe there's an error in this file please file an
+-# issue against the rust-lang/cargo repository. If you're
+-# editing this file be aware that the upstream Cargo.toml
+-# will likely look very different (and much more reasonable)
+-
+ [package]
+-edition = "2018"
+ name = "cc"
+-version = "1.0.68"
++version = "1.0.71"
+ authors = ["Alex Crichton <alex@alexcrichton.com>"]
+-exclude = ["/.github", "/.travis.yml", "/appveyor.yml"]
+-description = "A build-time dependency for Cargo build scripts to assist in invoking the native\nC compiler to compile native C code into a static archive to be linked into Rust\ncode.\n"
++license = "MIT/Apache-2.0"
++repository = "https://github.com/alexcrichton/cc-rs"
+ homepage = "https://github.com/alexcrichton/cc-rs"
+ documentation = "https://docs.rs/cc"
+-readme = "README.md"
++description = """
++A build-time dependency for Cargo build scripts to assist in invoking the native
++C compiler to compile native C code into a static archive to be linked into Rust
++code.
++"""
+ keywords = ["build-dependencies"]
++readme = "README.md"
+ categories = ["development-tools::build-utils"]
+-license = "MIT/Apache-2.0"
+-repository = "https://github.com/alexcrichton/cc-rs"
+-[dependencies.jobserver]
+-version = "0.1.16"
+-optional = true
+-[dev-dependencies.tempfile]
+-version = "3"
++exclude = ["/.github", "/.travis.yml", "/appveyor.yml"]
++edition = "2018"
++
++[dependencies]
++jobserver = { version = "0.1.16", optional = true }
+ 
+ [features]
+ parallel = ["jobserver"]
++
++[dev-dependencies]
++tempfile = "3"
+diff --git a/third_party/rust/cc/README.md b/third_party/rust/cc/README.md
+index f88455e..b52e095 100644
+--- a/third_party/rust/cc/README.md
++++ b/third_party/rust/cc/README.md
+@@ -189,6 +189,7 @@ fn main() {
+     cc::Build::new()
+         // Switch to CUDA C++ library compilation using NVCC.
+         .cuda(true)
++        .cudart("static")
+         // Generate code for Maxwell (GTX 970, 980, 980 Ti, Titan X).
+         .flag("-gencode").flag("arch=compute_52,code=sm_52")
+         // Generate code for Maxwell (Jetson TX1).
+diff --git a/third_party/rust/cc/src/lib.rs b/third_party/rust/cc/src/lib.rs
+index 9d133a0..8cafd2a 100644
+--- a/third_party/rust/cc/src/lib.rs
++++ b/third_party/rust/cc/src/lib.rs
+@@ -103,6 +103,7 @@ pub struct Build {
+     cpp_link_stdlib: Option<Option<String>>,
+     cpp_set_stdlib: Option<String>,
+     cuda: bool,
++    cudart: Option<String>,
+     target: Option<String>,
+     host: Option<String>,
+     out_dir: Option<PathBuf>,
+@@ -298,6 +299,7 @@ impl Build {
+             cpp_link_stdlib: None,
+             cpp_set_stdlib: None,
+             cuda: false,
++            cudart: None,
+             target: None,
+             host: None,
+             out_dir: None,
+@@ -611,6 +613,20 @@ impl Build {
+         self.cuda = cuda;
+         if cuda {
+             self.cpp = true;
++            self.cudart = Some("static".to_string());
++        }
++        self
++    }
++
++    /// Link CUDA run-time.
++    ///
++    /// This option mimics the `--cudart` NVCC command-line option. Just like
++    /// the original it accepts `{none|shared|static}`, with default being
++    /// `static`. The method has to be invoked after `.cuda(true)`, or not
++    /// at all, if the default is right for the project.
++    pub fn cudart(&mut self, cudart: &str) -> &mut Build {
++        if self.cuda {
++            self.cudart = Some(cudart.to_string());
+         }
+         self
+     }
+@@ -732,7 +748,7 @@ impl Build {
+     /// This option sets the `-stdlib` flag, which is only supported by some
+     /// compilers (clang, icc) but not by others (gcc). The library will not
+     /// detect which compiler is used, as such it is the responsibility of the
+-    /// caller to ensure that this option is only used in conjuction with a
++    /// caller to ensure that this option is only used in conjunction with a
+     /// compiler which supports the `-stdlib` flag.
+     ///
+     /// A value of `None` indicates that no specific C++ standard library should
+@@ -996,6 +1012,56 @@ impl Build {
+             }
+         }
+ 
++        let cudart = match &self.cudart {
++            Some(opt) => opt.as_str(), // {none|shared|static}
++            None => "none",
++        };
++        if cudart != "none" {
++            if let Some(nvcc) = which(&self.get_compiler().path) {
++                // Try to figure out the -L search path. If it fails,
++                // it's on user to specify one by passing it through
++                // RUSTFLAGS environment variable.
++                let mut libtst = false;
++                let mut libdir = nvcc;
++                libdir.pop(); // remove 'nvcc'
++                libdir.push("..");
++                let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
++                if cfg!(target_os = "linux") {
++                    libdir.push("targets");
++                    libdir.push(target_arch.to_owned() + "-linux");
++                    libdir.push("lib");
++                    libtst = true;
++                } else if cfg!(target_env = "msvc") {
++                    libdir.push("lib");
++                    match target_arch.as_str() {
++                        "x86_64" => {
++                            libdir.push("x64");
++                            libtst = true;
++                        }
++                        "x86" => {
++                            libdir.push("Win32");
++                            libtst = true;
++                        }
++                        _ => libtst = false,
++                    }
++                }
++                if libtst && libdir.is_dir() {
++                    println!(
++                        "cargo:rustc-link-search=native={}",
++                        libdir.to_str().unwrap()
++                    );
++                }
++
++                // And now the -l flag.
++                let lib = match cudart {
++                    "shared" => "cudart",
++                    "static" => "cudart_static",
++                    bad => panic!("unsupported cudart option: {}", bad),
++                };
++                println!("cargo:rustc-link-lib={}", lib);
++            }
++        }
++
+         Ok(())
+     }
+ 
+@@ -1205,6 +1271,9 @@ impl Build {
+         if !msvc || !is_asm || !is_arm {
+             cmd.arg("-c");
+         }
++        if self.cuda && self.files.len() > 1 {
++            cmd.arg("--device-c");
++        }
+         cmd.arg(&obj.src);
+         if cfg!(target_os = "macos") {
+             self.fix_env_for_apple_os(&mut cmd)?;
+@@ -1421,10 +1490,11 @@ impl Build {
+                     cmd.push_cc_arg("-fdata-sections".into());
+                 }
+                 // Disable generation of PIC on bare-metal for now: rust-lld doesn't support this yet
+-                if self
+-                    .pic
+-                    .unwrap_or(!target.contains("windows") && !target.contains("-none-"))
+-                {
++                if self.pic.unwrap_or(
++                    !target.contains("windows")
++                        && !target.contains("-none-")
++                        && !target.contains("uefi"),
++                ) {
+                     cmd.push_cc_arg("-fPIC".into());
+                     // PLT only applies if code is compiled with PIC support,
+                     // and only for ELF targets.
+@@ -1466,9 +1536,8 @@ impl Build {
+                         if let Some(arch) =
+                             map_darwin_target_from_rust_to_compiler_architecture(target)
+                         {
+-                            let ios = if arch == "arm64" { "ios" } else { "ios13.0" };
+                             cmd.args
+-                                .push(format!("--target={}-apple-{}-macabi", arch, ios).into());
++                                .push(format!("--target={}-apple-ios13.0-macabi", arch).into());
+                         }
+                     } else if target.contains("ios-sim") {
+                         if let Some(arch) =
+@@ -1484,6 +1553,16 @@ impl Build {
+                                 .into(),
+                             );
+                         }
++                    } else if target.starts_with("riscv64gc-") {
++                        cmd.args.push(
++                            format!("--target={}", target.replace("riscv64gc", "riscv64")).into(),
++                        );
++                    } else if target.contains("uefi") {
++                        if target.contains("x86_64") {
++                            cmd.args.push("--target=x86_64-unknown-windows-gnu".into());
++                        } else if target.contains("i686") {
++                            cmd.args.push("--target=i686-unknown-windows-gnu".into())
++                        }
+                     } else {
+                         cmd.args.push(format!("--target={}", target).into());
+                     }
+@@ -1541,6 +1620,10 @@ impl Build {
+                     }
+                 }
+ 
++                if target.contains("-kmc-solid_") {
++                    cmd.args.push("-finput-charset=utf-8".into());
++                }
++
+                 if self.static_flag.is_none() {
+                     let features = self
+                         .getenv("CARGO_CFG_TARGET_FEATURE")
+@@ -1552,9 +1635,14 @@ impl Build {
+ 
+                 // armv7 targets get to use armv7 instructions
+                 if (target.starts_with("armv7") || target.starts_with("thumbv7"))
+-                    && target.contains("-linux-")
++                    && (target.contains("-linux-") || target.contains("-kmc-solid_"))
+                 {
+                     cmd.args.push("-march=armv7-a".into());
++
++                    if target.ends_with("eabihf") {
++                        // lowest common denominator FPU
++                        cmd.args.push("-mfpu=vfpv3-d16".into());
++                    }
+                 }
+ 
+                 // (x86 Android doesn't say "eabi")
+@@ -1807,6 +1895,21 @@ impl Build {
+             self.assemble_progressive(dst, chunk)?;
+         }
+ 
++        if self.cuda {
++            // Link the device-side code and add it to the target library,
++            // so that non-CUDA linker can link the final binary.
++
++            let out_dir = self.get_out_dir()?;
++            let dlink = out_dir.join(lib_name.to_owned() + "_dlink.o");
++            let mut nvcc = self.get_compiler().to_command();
++            nvcc.arg("--device-link")
++                .arg("-o")
++                .arg(dlink.clone())
++                .arg(dst);
++            run(&mut nvcc, "nvcc")?;
++            self.assemble_progressive(dst, &[dlink])?;
++        }
++
+         let target = self.get_target()?;
+         if target.contains("msvc") {
+             // The Rust compiler will look for libfoo.a and foo.lib, but the
+@@ -1849,7 +1952,7 @@ impl Build {
+             for flag in self.ar_flags.iter() {
+                 cmd.arg(flag);
+             }
+-            // If the library file already exists, add the libary name
++            // If the library file already exists, add the library name
+             // as an argument to let lib.exe know we are appending the objs.
+             if dst.exists() {
+                 cmd.arg(dst);
+@@ -1911,6 +2014,11 @@ impl Build {
+             None => false,
+         };
+ 
++        let is_sim = match target.split('-').nth(3) {
++            Some(v) => v == "sim",
++            None => false,
++        };
++
+         let arch = if is_catalyst {
+             match arch {
+                 "arm64e" => ArchSpec::Catalyst("arm64e"),
+@@ -1923,6 +2031,16 @@ impl Build {
+                     ));
+                 }
+             }
++        } else if is_sim {
++            match arch {
++                "arm64" | "aarch64" => ArchSpec::Simulator("-arch arm64"),
++                _ => {
++                    return Err(Error::new(
++                        ErrorKind::ArchitectureInvalid,
++                        "Unknown architecture for iOS simulator target.",
++                    ));
++                }
++            }
+         } else {
+             match arch {
+                 "arm" | "armv7" | "thumbv7" => ArchSpec::Device("armv7"),
+@@ -2078,6 +2196,10 @@ impl Build {
+                     } else {
+                         "wr-cc".to_string()
+                     }
++                } else if target.starts_with("armv7a-kmc-solid_") {
++                    format!("arm-kmc-eabi-{}", gnu)
++                } else if target.starts_with("aarch64-kmc-solid_") {
++                    format!("aarch64-kmc-elf-{}", gnu)
+                 } else if self.get_host()? != target {
+                     let prefix = self.prefix_for_target(&target);
+                     match prefix {
+@@ -2124,7 +2246,7 @@ impl Build {
+         //
+         // As the shell script calls the main clang binary, the command line limit length
+         // on Windows is restricted to around 8k characters instead of around 32k characters.
+-        // To remove this limit, we call the main clang binary directly and contruct the
++        // To remove this limit, we call the main clang binary directly and construct the
+         // `--target=` ourselves.
+         if host.contains("windows") && android_clang_compiler_uses_target_arg_internally(&tool.path)
+         {
+@@ -2206,13 +2328,13 @@ impl Build {
+         // No explicit CC wrapper was detected, but check if RUSTC_WRAPPER
+         // is defined and is a build accelerator that is compatible with
+         // C/C++ compilers (e.g. sccache)
+-        let valid_wrappers = ["sccache"];
++        const VALID_WRAPPERS: &[&'static str] = &["sccache", "cachepot"];
+ 
+         let rustc_wrapper = std::env::var_os("RUSTC_WRAPPER")?;
+         let wrapper_path = Path::new(&rustc_wrapper);
+         let wrapper_stem = wrapper_path.file_stem()?;
+ 
+-        if valid_wrappers.contains(&wrapper_stem.to_str()?) {
++        if VALID_WRAPPERS.contains(&wrapper_stem.to_str()?) {
+             Some(rustc_wrapper.to_str()?.to_owned())
+         } else {
+             None
+@@ -2253,7 +2375,7 @@ impl Build {
+         //
+         // It's true that everything here is a bit of a pain, but apparently if
+         // you're not literally make or bash then you get a lot of bug reports.
+-        let known_wrappers = ["ccache", "distcc", "sccache", "icecc"];
++        let known_wrappers = ["ccache", "distcc", "sccache", "icecc", "cachepot"];
+ 
+         let mut parts = tool.split_whitespace();
+         let maybe_wrapper = match parts.next() {
+@@ -2402,6 +2524,10 @@ impl Build {
+             "i586-unknown-linux-musl" => Some("musl"),
+             "i686-pc-windows-gnu" => Some("i686-w64-mingw32"),
+             "i686-uwp-windows-gnu" => Some("i686-w64-mingw32"),
++            "i686-unknown-linux-gnu" => self.find_working_gnu_prefix(&[
++                "i686-linux-gnu",
++                "x86_64-linux-gnu", // transparently support gcc-multilib
++            ]), // explicit None if not found, so caller knows to fall back
+             "i686-unknown-linux-musl" => Some("musl"),
+             "i686-unknown-netbsd" => Some("i486--netbsdelf"),
+             "mips-unknown-linux-gnu" => Some("mips-linux-gnu"),
+@@ -2469,6 +2595,9 @@ impl Build {
+             "x86_64-pc-windows-gnu" => Some("x86_64-w64-mingw32"),
+             "x86_64-uwp-windows-gnu" => Some("x86_64-w64-mingw32"),
+             "x86_64-rumprun-netbsd" => Some("x86_64-rumprun-netbsd"),
++            "x86_64-unknown-linux-gnu" => self.find_working_gnu_prefix(&[
++                "x86_64-linux-gnu", // rustfmt wrap
++            ]), // explicit None if not found, so caller knows to fall back
+             "x86_64-unknown-linux-musl" => Some("musl"),
+             "x86_64-unknown-netbsd" => Some("x86_64--netbsd"),
+             _ => None,
+@@ -2652,7 +2781,7 @@ impl Tool {
+     }
+ 
+     #[cfg(windows)]
+-    /// Explictly set the `ToolFamily`, skipping name-based detection.
++    /// Explicitly set the `ToolFamily`, skipping name-based detection.
+     fn with_family(path: PathBuf, family: ToolFamily) -> Self {
+         Self {
+             path: path,
+@@ -2953,9 +3082,12 @@ fn spawn(cmd: &mut Command, program: &str) -> Result<(Child, JoinHandle<()>), Er
+                 &format!("Failed to find tool. Is `{}` installed?{}", program, extra),
+             ))
+         }
+-        Err(_) => Err(Error::new(
++        Err(ref e) => Err(Error::new(
+             ErrorKind::ToolExecError,
+-            &format!("Command {:?} with args {:?} failed to start.", cmd, program),
++            &format!(
++                "Command {:?} with args {:?} failed to start: {:?}",
++                cmd, program, e
++            ),
+         )),
+     }
+ }
+@@ -3086,7 +3218,33 @@ fn map_darwin_target_from_rust_to_compiler_architecture(target: &str) -> Option<
+         Some("arm64e")
+     } else if target.contains("aarch64") {
+         Some("arm64")
++    } else if target.contains("i686") {
++        Some("i386")
++    } else if target.contains("powerpc") {
++        Some("ppc")
++    } else if target.contains("powerpc64") {
++        Some("ppc64")
+     } else {
+         None
+     }
+ }
++
++fn which(tool: &Path) -> Option<PathBuf> {
++    fn check_exe(exe: &mut PathBuf) -> bool {
++        let exe_ext = std::env::consts::EXE_EXTENSION;
++        exe.exists() || (!exe_ext.is_empty() && exe.set_extension(exe_ext) && exe.exists())
++    }
++
++    // If |tool| is not just one "word," assume it's an actual path...
++    if tool.components().count() > 1 {
++        let mut exe = PathBuf::from(tool);
++        return if check_exe(&mut exe) { Some(exe) } else { None };
++    }
++
++    // Loop through PATH entries searching for the |tool|.
++    let path_entries = env::var_os("PATH")?;
++    env::split_paths(&path_entries).find_map(|path_entry| {
++        let mut exe = path_entry.join(tool);
++        return if check_exe(&mut exe) { Some(exe) } else { None };
++    })
++}
+diff --git a/third_party/rust/cc/src/windows_registry.rs b/third_party/rust/cc/src/windows_registry.rs
+index 40101a6..d2d212c 100644
+--- a/third_party/rust/cc/src/windows_registry.rs
++++ b/third_party/rust/cc/src/windows_registry.rs
+@@ -129,7 +129,7 @@ pub fn find_vs_version() -> Result<VsVers, String> {
+             )),
+         },
+         _ => {
+-            // Check for the presense of a specific registry key
++            // Check for the presence of a specific registry key
+             // that indicates visual studio is installed.
+             if impl_::has_msbuild_version("16.0") {
+                 Ok(VsVers::Vs16)
+@@ -277,6 +277,9 @@ mod impl_ {
+                 if target.contains("x86_64") {
+                     tool.env.push(("Platform".into(), "X64".into()));
+                 }
++                if target.contains("aarch64") {
++                    tool.env.push(("Platform".into(), "ARM64".into()));
++                }
+                 Some(tool)
+             })
+             .next()
+@@ -407,6 +410,9 @@ mod impl_ {
+             if target.contains("x86_64") {
+                 tool.env.push(("Platform".into(), "X64".into()));
+             }
++            if target.contains("aarch64") {
++                tool.env.push(("Platform".into(), "ARM64".into()));
++            }
+             tool
+         })
+     }
+@@ -676,7 +682,7 @@ mod impl_ {
+ 
+     // Interestingly there are several subdirectories, `win7` `win8` and
+     // `winv6.3`. Vcvars seems to only care about `winv6.3` though, so the same
+-    // applies to us. Note that if we were targetting kernel mode drivers
++    // applies to us. Note that if we were targeting kernel mode drivers
+     // instead of user mode applications, we would care.
+     fn get_sdk81_dir() -> Option<PathBuf> {
+         let key = r"SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.1";
+@@ -810,10 +816,12 @@ mod impl_ {
+             "16.0" => {
+                 find_msbuild_vs16("x86_64-pc-windows-msvc").is_some()
+                     || find_msbuild_vs16("i686-pc-windows-msvc").is_some()
++                    || find_msbuild_vs16("aarch64-pc-windows-msvc").is_some()
+             }
+             "15.0" => {
+                 find_msbuild_vs15("x86_64-pc-windows-msvc").is_some()
+                     || find_msbuild_vs15("i686-pc-windows-msvc").is_some()
++                    || find_msbuild_vs15("aarch64-pc-windows-msvc").is_some()
+             }
+             "12.0" | "14.0" => LOCAL_MACHINE
+                 .open(&OsString::from(format!(
