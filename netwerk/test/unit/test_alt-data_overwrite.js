@@ -14,9 +14,11 @@
 
 "use strict";
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
-XPCOMUtils.defineLazyGetter(this, "URL", function() {
+ChromeUtils.defineLazyGetter(this, "URL", function () {
   return "http://localhost:" + httpServer.identity.primaryPort + "/content";
 });
 
@@ -26,7 +28,11 @@ function make_and_open_channel(url, altContentType, callback) {
   let chan = NetUtil.newChannel({ uri: url, loadUsingSystemPrincipal: true });
   if (altContentType) {
     let cc = chan.QueryInterface(Ci.nsICacheInfoChannel);
-    cc.preferAlternativeDataType(altContentType, "", true);
+    cc.preferAlternativeDataType(
+      altContentType,
+      "",
+      Ci.nsICacheInfoChannel.ASYNC
+    );
   }
   chan.asyncOpen(new ChannelListener(callback, null));
 }

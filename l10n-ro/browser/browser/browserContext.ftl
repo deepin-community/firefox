@@ -96,43 +96,12 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
-main-context-menu-bookmark-add =
-    .aria-label = Marchează pagina
-    .accesskey = m
-    .tooltiptext = Marchează pagina
-
-# This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
-# so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = Marchează pagina
-    .accesskey = m
-
-# This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-add-mac,
-# so should probably have the same access key if possible.
-main-context-menu-bookmark-edit-mac =
-    .label = Editează marcajul
-    .accesskey = m
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Marchează pagina
-    .accesskey = m
-    .tooltiptext = Marchează pagina ({ $shortcut })
-
-main-context-menu-bookmark-change =
-    .aria-label = Editează acest marcaj
-    .accesskey = m
-    .tooltiptext = Editează acest marcaj
-
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Editează acest marcaj
+main-context-menu-edit-bookmark-with-shortcut =
+    .aria-label = Editează marcajul…
     .accesskey = m
-    .tooltiptext = Editează acest marcaj ({ $shortcut })
+    .tooltiptext = Editează marcajul ({ $shortcut })
 
 main-context-menu-open-link =
     .label = Deschide linkul
@@ -154,10 +123,6 @@ main-context-menu-open-link-new-private-window =
     .label = Deschide linkul într-o fereastră privată nouă
     .accesskey = P
 
-main-context-menu-bookmark-link =
-    .label = Marchează linkul
-    .accesskey = B
-
 main-context-menu-save-link =
     .label = Salvează linkul ca…
     .accesskey = k
@@ -166,11 +131,6 @@ main-context-menu-save-link-to-pocket =
     .label = Salvează linkul în { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
-
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
 ## are mutually exclusive.
@@ -178,6 +138,10 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = Copiază adresa de e-mail
     .accesskey = E
+
+main-context-menu-copy-phone =
+    .label = Copiază numărul de telefon
+    .accesskey = o
 
 main-context-menu-copy-link-simple =
     .label = Copiază linkul
@@ -293,6 +257,10 @@ main-context-menu-image-email =
     .label = Trimite imaginea prin e-mail…
     .accesskey = g
 
+main-context-menu-image-set-image-as-background =
+    .label = Setează imaginea ca fundal pentru desktop...
+    .accesskey = S
+
 main-context-menu-image-info =
     .label = Vezi informații privind imaginea
     .accesskey = f
@@ -320,14 +288,6 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Trimite secvența vocală prin e-mail…
     .accesskey = a
-
-main-context-menu-plugin-play =
-    .label = Activează pluginul
-    .accesskey = c
-
-main-context-menu-plugin-hide =
-    .label = Ascunde pluginul
-    .accesskey = H
 
 main-context-menu-save-to-pocket =
     .label = Salvează pagina în { -pocket-brand-name }
@@ -372,10 +332,6 @@ main-context-menu-frame-reload =
     .label = Reîncarcă cadrul
     .accesskey = R
 
-main-context-menu-frame-bookmark =
-    .label = Marchează cadrul
-    .accesskey = M
-
 main-context-menu-frame-save-as =
     .label = Salvează cadrul ca…
     .accesskey = F
@@ -391,10 +347,6 @@ main-context-menu-frame-view-source =
 main-context-menu-frame-view-info =
     .label = Vezi informații despre cadru
     .accesskey = I
-
-main-context-menu-print-selection =
-    .label = Tipărește selecția
-    .accesskey = p
 
 main-context-menu-view-selection-source =
     .label = Vezi sursa selecției

@@ -2,13 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-colors-window =
+colors-dialog2 =
     .title = ਰੰਗ
-    .style =
-        { PLATFORM() ->
-            [macos] width: 41em
-           *[other] width: 38em
-        }
+    .style = min-width: 41em;
 
 colors-close-key =
     .key = w
@@ -36,13 +32,13 @@ colors-use-system =
     .accesskey = ਸ
 
 colors-underline-links =
-    .label = ਤੰਦ ਹੇਠ ਲਕੀਰ
+    .label = ਲਿੰਕਾਂ ਹੇਠ ਲਕੀਰ
     .accesskey = u
 
-colors-links-header = ਤੰਦ ਦੇ ਰੰਗ
+colors-links-header = ਲਿੰਕ ਦੇ ਰੰਗ
 
-colors-unvisited-links = ਨਾ-ਖੋਲ੍ਹੀਆਂ ਤੰਦਾਂ
+colors-unvisited-links = ਨਾ-ਖੋਲ੍ਹੇ ਗਏ ਲਿੰਕ
     .accesskey = L
 
-colors-visited-links = ਖੋਲ੍ਹੀਆਂ ਤੰਦਾਂ
+colors-visited-links = ਖੋਲ੍ਹੇ ਗਏ ਲਿੰਕ
     .accesskey = V

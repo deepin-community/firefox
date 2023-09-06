@@ -7,6 +7,8 @@
 #include "mozilla/glean/bindings/MemoryDistribution.h"
 
 #include "mozilla/Components.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/ResultVariant.h"
 #include "mozilla/glean/bindings/HistogramGIFFTMap.h"
 #include "mozilla/glean/fog_ffi_generated.h"
 #include "nsIClassInfoImpl.h"
@@ -19,24 +21,20 @@ namespace mozilla::glean {
 
 namespace impl {
 
-void MemoryDistributionMetric::Accumulate(uint64_t aSample) const {
+void MemoryDistributionMetric::Accumulate(size_t aSample) const {
   auto hgramId = HistogramIdForMetric(mId);
   if (hgramId) {
     Telemetry::Accumulate(hgramId.extract(), aSample);
   }
-#ifndef MOZ_GLEAN_ANDROID
+  static_assert(sizeof(size_t) <= sizeof(uint64_t),
+                "Memory distribution samples might overflow.");
   fog_memory_distribution_accumulate(mId, aSample);
-#endif
 }
 
 Result<Maybe<DistributionData>, nsCString>
 MemoryDistributionMetric::TestGetValue(const nsACString& aPingName) const {
-#ifdef MOZ_GLEAN_ANDROID
-  Unused << mId;
-  return Maybe<DistributionData>();
-#else
   nsCString err;
-  if (fog_memory_distribution_test_get_error(mId, &aPingName, &err)) {
+  if (fog_memory_distribution_test_get_error(mId, &err)) {
     return Err(err);
   }
   if (!fog_memory_distribution_test_has_value(mId, &aPingName)) {
@@ -48,7 +46,6 @@ MemoryDistributionMetric::TestGetValue(const nsACString& aPingName) const {
   fog_memory_distribution_test_get_value(mId, &aPingName, &sum, &buckets,
                                          &counts);
   return Some(DistributionData(buckets, counts, sum));
-#endif
 }
 
 }  // namespace impl
@@ -65,7 +62,7 @@ GleanMemoryDistribution::Accumulate(uint64_t aSample) {
 NS_IMETHODIMP
 GleanMemoryDistribution::TestGetValue(const nsACString& aPingName,
                                       JSContext* aCx,
-                                      JS::MutableHandleValue aResult) {
+                                      JS::MutableHandle<JS::Value> aResult) {
   auto result = mMemoryDist.TestGetValue(aPingName);
   if (result.isErr()) {
     aResult.set(JS::UndefinedValue());
@@ -77,7 +74,7 @@ GleanMemoryDistribution::TestGetValue(const nsACString& aPingName,
   } else {
     // Build return value of the form:
     // { sum: #, values: {bucket1: count1, ...} }
-    JS::RootedObject root(aCx, JS_NewPlainObject(aCx));
+    JS::Rooted<JSObject*> root(aCx, JS_NewPlainObject(aCx));
     if (!root) {
       return NS_ERROR_FAILURE;
     }
@@ -86,7 +83,7 @@ GleanMemoryDistribution::TestGetValue(const nsACString& aPingName,
                            JSPROP_ENUMERATE)) {
       return NS_ERROR_FAILURE;
     }
-    JS::RootedObject valuesObj(aCx, JS_NewPlainObject(aCx));
+    JS::Rooted<JSObject*> valuesObj(aCx, JS_NewPlainObject(aCx));
     if (!valuesObj ||
         !JS_DefineProperty(aCx, root, "values", valuesObj, JSPROP_ENUMERATE)) {
       return NS_ERROR_FAILURE;

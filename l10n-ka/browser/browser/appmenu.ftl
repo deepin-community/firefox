@@ -5,13 +5,21 @@
 
 ## App Menu
 
-appmenuitem-update-banner3 =
-    .label-update-downloading = ჩამოიტვირთება ახალი { -brand-shorter-name }
-    .label-update-available = განახლება ხელმისაწვდომია — ჩამოტვირთვა ახლავე
-    .label-update-manual = განახლება ხელმისაწვდომია — ჩამოტვირთვა ახლავე
-    .label-update-unsupported = ვერ განახლდება — შეუთავსებელია
-    .label-update-restart = განახლება ხელმისაწვდომია — გადატვირთვა ახლავე
-appmenuitem-protection-dashboard-title = დაცვის მაჩვენებლები
+appmenuitem-banner-update-downloading =
+    .label = ჩამოიტვირთება ახალი { -brand-shorter-name }
+
+appmenuitem-banner-update-available =
+    .label = განახლება ხელმისაწვდომია — ჩამოტვირთვა ახლავე
+
+appmenuitem-banner-update-manual =
+    .label = განახლება ხელმისაწვდომია — ჩამოტვირთვა ახლავე
+
+appmenuitem-banner-update-unsupported =
+    .label = ვერ განახლდება — შეუთავსებელია
+
+appmenuitem-banner-update-restart =
+    .label = განახლება ხელმისაწვდომია — გადატვირთვა ახლავე
+
 appmenuitem-new-tab =
     .label = ახალი ჩანართი
 appmenuitem-new-window =
@@ -30,6 +38,8 @@ appmenuitem-print =
     .label = ამობეჭდვა…
 appmenuitem-find-in-page =
     .label = პოვნა გვერდზე...
+appmenuitem-translate =
+    .label = გვერდის თარგმნა...
 appmenuitem-zoom =
     .value = ზომის ცვლილება
 appmenuitem-more-tools =
@@ -48,6 +58,7 @@ appmenu-menu-button-closed2 =
 appmenu-menu-button-opened2 =
     .tooltiptext = პროგრამის მენიუს დახურვა
     .label = { -brand-short-name }
+
 # Settings is now used to access the browser settings across all platforms,
 # instead of Options or Preferences.
 appmenuitem-settings =
@@ -68,23 +79,30 @@ appmenu-remote-tabs-sign-into-sync =
     .label = სინქრონიზაციაში შესვლა…
 appmenu-remote-tabs-turn-on-sync =
     .label = დასინქრონების ჩართვა…
+
 # This is shown after the tabs list if we can display more tabs by clicking on the button
 appmenu-remote-tabs-showmore =
     .label = მეტი ჩანართის ჩვენება
     .tooltiptext = სხვა ჩანართების ჩვენებაც, ამ მოწყობილობიდან
+
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = გახსნილი ჩანართები არაა
+
 # This is shown when Sync is configured but syncing tabs is disabled.
 appmenu-remote-tabs-tabsnotsyncing = ჩართეთ ჩანართების სინქრონიზაცია თქვენი სხვა მოწყობილობებიდან ჩანართების სიის სანახავად.
+
 appmenu-remote-tabs-opensettings =
     .label = პარამეტრები
+
 # This is shown when Sync is configured but this appears to be the only device attached to
 # the account. We also show links to download Firefox for android/ios.
 appmenu-remote-tabs-noclients = გსურთ სხვა მოწყობილობების ჩანართების აქ ნახვა?
+
 appmenu-remote-tabs-connectdevice =
     .label = სხვა მოწყობილობის დაკავშირება
 appmenu-remote-tabs-welcome = იხილეთ ჩანართების სია თქვენი სხვა მოწყობილობებიდან.
 appmenu-remote-tabs-unverified = თქვენი ანგარიში საჭიროებს დამოწმებას.
+
 appmenuitem-fxa-toolbar-sync-now2 = დასინქრონება ახლავე
 appmenuitem-fxa-sign-in = { -brand-product-name } – შესვლა
 appmenuitem-fxa-manage-account = ანგარიშის მართვა
@@ -98,13 +116,14 @@ appmenu-fxa-sync-and-save-data2 = დასინქრონება და �
 appmenu-fxa-signed-in-label = შესვლა
 appmenu-fxa-setup-sync =
     .label = დასინქრონების ჩართვა…
-appmenu-fxa-show-more-tabs = მეტი ჩანართის ჩვენება
+
 appmenuitem-save-page =
     .label = გვერდის შენახვა როგორც…
 
 ## What's New panel in App menu.
 
 whatsnew-panel-header = რა სიახლეებია
+
 # Checkbox displayed at the bottom of the What's New panel, allowing users to
 # enable/disable What's New notifications.
 whatsnew-panel-footer-checkbox =
@@ -116,44 +135,54 @@ whatsnew-panel-footer-checkbox =
 ## "Enable Profiler Menu Button".
 
 profiler-popup-button-idle =
-    .label = აღმრიცხავი
+    .label = აღმწერი
     .tooltiptext = წარმადობის მახასიათებლების აღრიცხვა
-profiler-popup-title =
-    .value = { -profiler-brand-name }
+
+profiler-popup-button-recording =
+    .label = აღმწერი
+    .tooltiptext = იწერს მახასიათებლებს
+
+profiler-popup-button-capturing =
+    .label = აღმწერი
+    .tooltiptext = აღრიცხავს მახასიათებლებს
+
+profiler-popup-header-text = { -profiler-brand-name }
+
 profiler-popup-reveal-description-button =
     .aria-label = მეტი ინფორმაციის გამოვლენა
+
 profiler-popup-description-title =
     .value = ჩაწერა, გამოკვლევა, გაზიარება
+
 profiler-popup-description = იმუშავეთ წარმადობის საკითხებზე მახასიათებლების გამოქვეყნებით, გუნდისთვის გასაზიარებლად.
-profiler-popup-learn-more = ვრცლად
+
 profiler-popup-learn-more-button =
     .label = ვრცლად
+
 profiler-popup-settings =
     .value = პარამეტრები
-# This link takes the user to about:profiling, and is only visible with the Custom preset.
-profiler-popup-edit-settings = პარამეტრების ჩასწორება…
+
 # This link takes the user to about:profiling, and is only visible with the Custom preset.
 profiler-popup-edit-settings-button =
     .label = პარამეტრების ჩასწორება…
-profiler-popup-disabled =
-    მახასიათებლების აღრიცხვა ამჟამად გამორთულია, უმეტესად პირადი ფანჯრის
-    გახსნის გამო.
+
 profiler-popup-recording-screen = იწერება…
-# The profiler presets list is generated elsewhere, but the custom preset is defined
-# here only.
-profiler-popup-presets-custom =
-    .label = მორგებული
+
 profiler-popup-start-recording-button =
     .label = ჩაწერის დაწყება
+
 profiler-popup-discard-button =
     .label = გაუქმება
+
 profiler-popup-capture-button =
     .label = აღება
+
 profiler-popup-start-shortcut =
     { PLATFORM() ->
         [macos] ⌃⇧1
        *[other] Ctrl+Shift+1
     }
+
 profiler-popup-capture-shortcut =
     { PLATFORM() ->
         [macos] ⌃⇧2
@@ -169,12 +198,42 @@ profiler-popup-capture-shortcut =
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
 
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
+profiler-popup-presets-web-developer-description = მზა პარამეტრები, პროგრამების ხარვეზების გამოსავლენად, ნაკლები დატვირთვით.
+profiler-popup-presets-web-developer-label =
+    .label = ვებშემუშავება
+
+profiler-popup-presets-firefox-description = მზა პარამეტრები, რომლითაც აღიწერება { -brand-shorter-name }.
+profiler-popup-presets-firefox-label =
+    .label = { -brand-shorter-name }
+
+profiler-popup-presets-graphics-description = მზა პარამეტრები, გრაფიკული ხარვეზების გამოსავლენად – { -brand-shorter-name }.
+profiler-popup-presets-graphics-label =
+    .label = გრაფიკა
+
+profiler-popup-presets-media-description2 = მზა პარამეტრები, ხმოვანი და ვიდეოფაილების ხარვეზების გამოსავლენად – { -brand-shorter-name }.
+profiler-popup-presets-media-label =
+    .label = ფაილები
+
+profiler-popup-presets-networking-description = მზა პარამეტრები, ქსელის ხარვეზების გამოსავლენად – { -brand-shorter-name }.
+profiler-popup-presets-networking-label =
+    .label = ქსელი
+
+profiler-popup-presets-power-description = მზა პარამეტრები, კვების მიწოდების ხარვეზების გამოსავლენად – { -brand-shorter-name }, ჭარბი დატვირთვის შეზღუდვით.
+# "Power" is used in the sense of energy (electricity used by the computer).
+profiler-popup-presets-power-label =
+    .label = კვება
+
+profiler-popup-presets-custom-label =
+    .label = მორგებული
+
 ## History panel
 
 appmenu-manage-history =
     .label = ისტორიის მართვა
-appmenu-reopen-all-tabs = ყველა ჩანართის ხელახლა გახსნა
-appmenu-reopen-all-windows = ყველა ფანჯრის ხელახლა გახსნა
 appmenu-restore-session =
     .label = წინა სეანსის აღდგენა
 appmenu-clear-history =
@@ -184,6 +243,9 @@ appmenu-recently-closed-tabs =
     .label = ბოლოს დახურული ჩანართები
 appmenu-recently-closed-windows =
     .label = ბოლოს დახურული ფანჯრები
+# This allows to search through the browser's history.
+appmenu-search-history =
+    .label = ძიების ისტორია
 
 ## Help panel
 
@@ -200,9 +262,11 @@ appmenu-help-more-troubleshooting-info =
     .accesskey = ფ
 appmenu-help-report-site-issue =
     .label = საიტის ხარვეზის მოხსენება…
-appmenu-help-feedback-page =
-    .label = გამოგვეხმაურეთ…
-    .accesskey = უ
+appmenu-help-share-ideas =
+    .label = გაგვიზიარეთ მოსაზრებები და გამოგვეხმაურეთ…
+    .accesskey = ზ
+appmenu-help-switch-device =
+    .label = ახალ მოწყობილობაზე გადასვლა
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -228,8 +292,7 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = ხელსაწყოთა ზოლის მორგება...
-appmenu-taskmanager =
-    .label = ამოცანათა მმართველი
+
 appmenu-developer-tools-subheader = ბრაუზერის ხელსაწყოები
 appmenu-developer-tools-extensions =
     .label = Extensions for Developers

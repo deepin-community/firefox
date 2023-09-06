@@ -101,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Dej znać ô strōnie, co niy funguje
 protections-panel-content-blocking-breakage-report-view-description = Skuli zaszperowanio jednych śledzōncych elymyntōw mogōm pokozać sie problymy z niykerymi strōnami. { -brand-short-name } bydzie lepszy do wszyskich, jak bydziesz dować znać ô takich problymach. Z raportym pudzie do Mozille informacyjo ô adresie URL i nasztalowaniach tyj przeglōndarki. <label data-l10n-name="learn-more">Przewiydz sie wiyncyj</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Skuli zaszperowanio jednych śledzōncych elymyntōw mogōm pokozać sie problymy z niykerymi strōnami. { -brand-short-name } bydzie lepszy do wszyskich, jak bydziesz dować znać ô takich problymach. Z raportym pudzie do Mozille informacyjo ô adresie URL i nasztalowaniach tyj przeglōndarki.
 protections-panel-content-blocking-breakage-report-view-collection-url = Adresa URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = Adresa URL
@@ -111,3 +112,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Pociep
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Poślij raport
+
+# Cookie Banner Handling
+

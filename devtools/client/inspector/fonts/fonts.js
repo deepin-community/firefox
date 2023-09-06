@@ -4,37 +4,41 @@
 
 "use strict";
 
-const { gDevTools } = require("devtools/client/framework/devtools");
-const { getColor } = require("devtools/client/shared/theme");
+const {
+  gDevTools,
+} = require("resource://devtools/client/framework/devtools.js");
+const { getColor } = require("resource://devtools/client/shared/theme.js");
 const {
   createFactory,
   createElement,
-} = require("devtools/client/shared/vendor/react");
-const { Provider } = require("devtools/client/shared/vendor/react-redux");
-const { debounce } = require("devtools/shared/debounce");
+} = require("resource://devtools/client/shared/vendor/react.js");
+const {
+  Provider,
+} = require("resource://devtools/client/shared/vendor/react-redux.js");
+const { debounce } = require("resource://devtools/shared/debounce.js");
 const {
   style: { ELEMENT_STYLE },
-} = require("devtools/shared/constants");
+} = require("resource://devtools/shared/constants.js");
 
 const FontsApp = createFactory(
-  require("devtools/client/inspector/fonts/components/FontsApp")
+  require("resource://devtools/client/inspector/fonts/components/FontsApp.js")
 );
 
-const { LocalizationHelper } = require("devtools/shared/l10n");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 const INSPECTOR_L10N = new LocalizationHelper(
   "devtools/client/locales/inspector.properties"
 );
 
 const {
   parseFontVariationAxes,
-} = require("devtools/client/inspector/fonts/utils/font-utils");
+} = require("resource://devtools/client/inspector/fonts/utils/font-utils.js");
 
-const fontDataReducer = require("devtools/client/inspector/fonts/reducers/fonts");
-const fontEditorReducer = require("devtools/client/inspector/fonts/reducers/font-editor");
-const fontOptionsReducer = require("devtools/client/inspector/fonts/reducers/font-options");
+const fontDataReducer = require("resource://devtools/client/inspector/fonts/reducers/fonts.js");
+const fontEditorReducer = require("resource://devtools/client/inspector/fonts/reducers/font-editor.js");
+const fontOptionsReducer = require("resource://devtools/client/inspector/fonts/reducers/font-options.js");
 const {
   updateFonts,
-} = require("devtools/client/inspector/fonts/actions/fonts");
+} = require("resource://devtools/client/inspector/fonts/actions/fonts.js");
 const {
   applyInstance,
   resetFontEditor,
@@ -42,10 +46,10 @@ const {
   updateAxis,
   updateFontEditor,
   updateFontProperty,
-} = require("devtools/client/inspector/fonts/actions/font-editor");
+} = require("resource://devtools/client/inspector/fonts/actions/font-editor.js");
 const {
   updatePreviewText,
-} = require("devtools/client/inspector/fonts/actions/font-options");
+} = require("resource://devtools/client/inspector/fonts/actions/font-options.js");
 
 const FONT_PROPERTIES = [
   "font-family",
@@ -107,9 +111,9 @@ class FontInspector {
     this.onToggleFontHighlight = this.onToggleFontHighlight.bind(this);
     this.onThemeChanged = this.onThemeChanged.bind(this);
     this.update = this.update.bind(this);
-    this.updateFontVariationSettings = this.updateFontVariationSettings.bind(
-      this
-    );
+    this.updateFontVariationSettings =
+      this.updateFontVariationSettings.bind(this);
+    this.onResourceAvailable = this.onResourceAvailable.bind(this);
 
     this.init();
   }
@@ -175,6 +179,11 @@ class FontInspector {
     this.inspector.selection.on("new-node-front", this.onNewNode);
     // @see ToolSidebar.onSidebarTabSelected()
     this.inspector.sidebar.on("fontinspector-selected", this.onNewNode);
+
+    this.inspector.toolbox.resourceCommand.watchResources(
+      [this.inspector.toolbox.resourceCommand.TYPES.DOCUMENT_EVENT],
+      { onAvailable: this.onResourceAvailable }
+    );
 
     // Listen for theme changes as the color of the previews depend on the theme
     gDevTools.on("theme-switched", this.onThemeChanged);
@@ -316,6 +325,12 @@ class FontInspector {
     this.ruleView.off("property-value-updated", this.onRulePropertyUpdated);
     gDevTools.off("theme-switched", this.onThemeChanged);
 
+    this.inspector.toolbox.resourceCommand.unwatchResources(
+      [this.inspector.toolbox.resourceCommand.TYPES.DOCUMENT_EVENT],
+      { onAvailable: this.onResourceAvailable }
+    );
+
+    this.fontsHighlighter = null;
     this.document = null;
     this.inspector = null;
     this.node = null;
@@ -326,6 +341,21 @@ class FontInspector {
     this.store = null;
     this.writers.clear();
     this.writers = null;
+  }
+
+  onResourceAvailable(resources) {
+    for (const resource of resources) {
+      if (
+        resource.resourceType ===
+          this.inspector.commands.resourceCommand.TYPES.DOCUMENT_EVENT &&
+        resource.name === "will-navigate" &&
+        resource.targetFront.isTopLevel
+      ) {
+        // Reset the fontsHighlighter so the next call to `onToggleFontHighlight` will
+        // re-create it from the inspector front tied to the new document.
+        this.fontsHighlighter = null;
+      }
+    }
   }
 
   /**
@@ -863,13 +893,13 @@ class FontInspector {
   async onToggleFontHighlight(font, show, isForCurrentElement = true) {
     if (!this.fontsHighlighter) {
       try {
-        this.fontsHighlighter = await this.inspector.inspectorFront.getHighlighterByType(
-          "FontsHighlighter"
-        );
+        this.fontsHighlighter =
+          await this.inspector.inspectorFront.getHighlighterByType(
+            "FontsHighlighter"
+          );
       } catch (e) {
-        // When connecting to an older server or when debugging a XUL document, the
-        // FontsHighlighter won't be available. Silently fail here and prevent any future
-        // calls to the function.
+        // the FontsHighlighter won't be available when debugging a XUL document.
+        // Silently fail here and prevent any future calls to the function.
         this.onToggleFontHighlight = () => {};
         return;
       }

@@ -11,11 +11,6 @@ about-logins-page-title = Ceŋorɗe e pinle
 
 # "Google Play" and "App Store" are both branding and should not be translated
 
-login-filter =
-    .placeholder = Yiylo Ceŋorɗe
-
-create-login-button = Sos Seŋorde Hesere
-
 fxaccounts-sign-in-text = Heɓ pinle maa e kaɓirɗe maa goɗɗe
 fxaccounts-avatar-button =
     .title = Yiil konte
@@ -64,7 +59,6 @@ about-logins-list-item-vulnerable-password-icon =
 
 about-logins-login-intro-heading-logged-in = Alaa ceŋorɗe jahdinaaɗe njiytaa.
 login-intro-description = So a danndii ceŋorɗe maa e { -brand-product-name } e kaɓirgal goɗngal, ko nii keɓirtaaɗe ɗoo:
-about-logins-intro-import = So ceŋorɗe maa ndanndaama e wanngorde woɗnde, aɗa waawi  <a data-l10n-name="import-link">jiggaade-ɗe nder { -lockwise-brand-short-name }</a>
 
 ## Login
 
@@ -87,9 +81,10 @@ login-item-copied-password-button-text = Nattaama!
 login-item-save-changes-button = Danndu bayle
 login-item-save-new-button = Danndu
 login-item-cancel-button = Haaytu
-login-item-time-changed = Sakkitii wayleede: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Sosaa: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Sakkitii huutoreede: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
 
 ## OS Authentication dialog
 
@@ -137,6 +132,11 @@ about-logins-confirm-remove-dialog-title = Momtu ndee seŋorde?
 confirm-delete-dialog-message = Ngal baɗal waawaa firteede.
 about-logins-confirm-remove-dialog-confirm-button = Ittu
 
+## Variables
+##   $count (number) - Number of items
+
+##
+
 confirm-discard-changes-dialog-title = Faalkisaade bayle ɗe ndanndaaka?
 confirm-discard-changes-dialog-message = Bayle ɗe ndanndaaka fof ko baasateeɗe.
 confirm-discard-changes-dialog-confirm-button = Woppu
@@ -149,7 +149,6 @@ about-logins-breach-alert-date = Ngol cigol keɓe waɗi ko { DATETIME($date, day
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Yah to { $hostname }
-about-logins-breach-alert-learn-more-link = Ɓeydu humpito
 
 ## Vulnerable Password notification
 

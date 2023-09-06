@@ -46,7 +46,7 @@ fonts-langgroup-hebrew =
 fonts-langgroup-kannada =
     .label = Kanara
 fonts-langgroup-khmer =
-    .label = Ĥmera
+    .label = Kmera
 fonts-langgroup-korean =
     .label = Korea
 # Translate "Latin" as the name of Latin (Roman) script, not as the name of the Latin language.
@@ -107,11 +107,6 @@ fonts-minsize-none =
 fonts-allow-own =
     .label = Permesi al paĝoj elekti siajn proprajn tiparojn, anstataŭ tiujn, kiujn vi supre elektis
     .accesskey = P
-
-## Text Encodings
-##
-## Translate the encoding names as adjectives for an encoding, not as the name
-## of the language.
 
 # Variables:
 #   $name {string, "Arial"} - Name of the default font

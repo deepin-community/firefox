@@ -2,12 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+screenshot-shortcut =
+    .key = S
+
 screenshots-instructions = Влечете и кликнете на страницата за да означите регион. Притиснете ESC за да се откажете.
 screenshots-cancel-button = Откажи
 screenshots-save-visible-button = Сними видлив дел
 screenshots-save-page-button = Сними цела страница
 screenshots-download-button = Преземи
 screenshots-copy-button = Копирај
+screenshots-cancel-button-title =
+    .title = Откажи
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -38,3 +43,4 @@ screenshots-private-window-error-details = Извинете за незгода�
 
 screenshots-generic-error-title = Ајдее! { -screenshots-brand-name } излезе од контрола.
 screenshots-generic-error-details = Не сме баш сигурни што се случи. Сакате да се обидете повторно или да направите слика од друга страница?
+

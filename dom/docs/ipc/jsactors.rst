@@ -5,7 +5,7 @@ In the Fission world, the preferred method of communication between between thin
 
 At the time of this writing, Fission offers the following JSActors:
 
-- `JSProcessActor`, to communicate between the a child process and its parent;
+- `JSProcessActor`, to communicate between a child process and its parent;
 - `JSWindowActor`, to communicate between a frame and its parent.
 
 JSProcessActor
@@ -14,7 +14,7 @@ JSProcessActor
 What are JSProcessActors?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A JSProcess pair (see below) is the preferred method of communication between a child process and a parent process.
+A JSProcess pair (see below) is the preferred method of communication between a child process and its parent process.
 
 In the Fission world, JSProcessActors are the replacement for e10s-era *process scripts*.
 
@@ -59,8 +59,8 @@ However, the framescripts had no way to establish further process separation dow
 How are they structured?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A review of the current Message Manager mechanism
-`````````````````````````````````````````````````
+A review of the pre-Fission Message Manager mechanism
+`````````````````````````````````````````````````````
 
 .. note::
    There are actually several types of Message Managers: Frame Message Managers, Window Message Managers, Group Message Managers and Process Message Managers. For the purposes of this documentation, it's simplest to refer to all of these mechanisms altogether as the "Message Manager mechanism". Most of the examples in this document will be operating on the assumption that the Message Manager is a Frame Message Manager, which is the most commonly used one.
@@ -99,7 +99,7 @@ Other notable differences between JSWindowActor's and Message Manager / framescr
        <iframe src="https://www.a.com" />
        <iframe src="https://www.b.com" />
 
-   A ``JSWindowActorParent / ``JSWindowActorChild`` pair instantiated for either of the ``iframe``'s would only be sending messages to and from that ``iframe``.
+   A ``JSWindowActorParent`` / ``JSWindowActorChild`` pair instantiated for either of the ``iframe``'s would only be sending messages to and from that ``iframe``.
 
 #. There's only one pair per actor type, per frame.
 
@@ -218,7 +218,7 @@ Other things exposed on a JSWindowActorParent
 ``CanonicalBrowsingContext``
 ````````````````````````````
 
-TODO
+Getter: ``this.browsingcontext``.
 
 ``WindowGlobalParent``
 ``````````````````````
@@ -271,7 +271,7 @@ Message Manager Actors
 
 While the JSWindowActor mechanism was being designed and developed, large sections of our framescripts were converted to an "actor style" pattern to make eventual porting to JSWindowActors easier. These Actors use the Message Manager under the hood, but made it much easier to shrink our framescripts, and also allowed us to gain significant memory savings by having the actors be lazily instantiated.
 
-You can find the list of Message Manager Actors (or "Legacy Actors") in `BrowserGlue.jsm <https://searchfox.org/mozilla-central/source/browser/components/BrowserGlue.jsm>`_ and `ActorManagerParent.jsm <https://searchfox.org/mozilla-central/source/toolkit/modules/ActorManagerParent.jsm>`_, in the ``LEGACY_ACTORS`` lists.
+You can find the list of Message Manager Actors (or "Legacy Actors") in :searchfox:`BrowserGlue.sys.mjs <browser/components/BrowserGlue.sys.mjs>` and :searchfox:`ActorManagerParent.sys.mjs <toolkit/modules/ActorManagerParent.sys.mjs>`, in the ``LEGACY_ACTORS`` lists.
 
 .. note::
   The split in Message Manager Actors defined between ``BrowserGlue`` and ``ActorManagerParent`` is mainly to keep Firefox Desktop specific Actors separate from Actors that can (in theory) be instantiated for non-Desktop browsers (like Fennec and GeckoView-based browsers). Firefox Desktop-specific Actors should be registered in ``BrowserGlue``. Shared "toolkit" Actors should go into ``ActorManagerParent``.
@@ -303,7 +303,7 @@ Despite being outlawed as a way of synchronously accessing the properties of obj
 
 CPOW messages, however, cannot be sent over the JSWindowActor communications pipe, so this handy mechanism will no longer work.
 
-Instead, a new module called `ContentDOMReference.jsm`_ has been created which supplies the same capability. See that file for documentation.
+Instead, a new module called :searchfox:`ContentDOMReference.sys.mjs <toolkit/modules/ContentDOMReference.sys.mjs>` has been created which supplies the same capability. See that file for documentation.
 
 How to start porting parent-process browser code to use JSWindowActors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -386,17 +386,17 @@ The full list of registration parameters can be found:
 - for JSProcessActor in file `JSProcessActor.webidl`_ as ``WindowActorOptions``, ``ProcessActorSidedOptions`` and ``ProcessActorChildOptions``.
 - for JSWindowActor in file `JSWindowActor.webidl`_ as ``WindowActorOptions``, ``WindowActorSidedOptions`` and ``WindowActorChildOptions``.
 
-Here's an example ``JSWindowActor`` registration pulled from ``BrowserGlue.jsm``:
+Here's an example ``JSWindowActor`` registration pulled from ``BrowserGlue.sys.mjs``:
 
 .. code-block:: javascript
 
    Plugin: {
       kind: "JSWindowActor",
       parent: {
-        moduleURI: "resource:///actors/PluginParent.jsm",
+        esModuleURI: "resource:///actors/PluginParent.sys.mjs",
       },
       child: {
-        moduleURI: "resource:///actors/PluginChild.jsm",
+        esModuleURI: "resource:///actors/PluginChild.sys.mjs",
         events: {
           PluginCrashed: { capture: true },
         },
@@ -414,10 +414,10 @@ Let's examine parent registration:
 .. code-block:: javascript
 
       parent: {
-        moduleURI: "resource:///actors/PluginParent.jsm",
+        esModuleURI: "resource:///actors/PluginParent.sys.mjs",
       },
 
-Here, we're declaring that class ``PluginParent`` (here, a subclass of ``JSWindowActorParent``) is defined and exported from module ``PluginParent.jsm``. That's all we have to say for the parent (main process) side of things.
+Here, we're declaring that class ``PluginParent`` (here, a subclass of ``JSWindowActorParent``) is defined and exported from module ``PluginParent.sys.mjs``. That's all we have to say for the parent (main process) side of things.
 
 .. note::
     It's not sufficient to just add a new .jsm file to the actors subdirectories. You also need to update the ``moz.build`` files in the same directory to get the ``resource://`` linkages set up correctly.
@@ -427,7 +427,7 @@ Let's look at the second chunk:
 .. code-block:: javascript
 
       child: {
-        moduleURI: "resource:///actors/PluginChild.jsm",
+        esModuleURI: "resource:///actors/PluginChild.sys.mjs",
         events: {
           PluginCrashed: { capture: true },
         },
@@ -542,7 +542,6 @@ And more
 .. _Electrolysis Project: https://wiki.mozilla.org/Electrolysis
 .. _IPC Actors: https://developer.mozilla.org/en-US/docs/Mozilla/IPDL/Tutorial
 .. _Context Menu Fission Port: https://hg.mozilla.org/mozilla-central/rev/adc60720b7b8
-.. _ContentDOMReference.jsm: https://searchfox.org/mozilla-central/source/toolkit/modules/ContentDOMReference.jsm
-.. _JSProcessActor.webidl: https://searchfox.org/mozilla-central/source/dom/chrome-webidl/JSWindowActor.webidl
+.. _JSProcessActor.webidl: https://searchfox.org/mozilla-central/source/dom/chrome-webidl/JSProcessActor.webidl
 .. _JSWindowActor.webidl: https://searchfox.org/mozilla-central/source/dom/chrome-webidl/JSWindowActor.webidl
 .. _BrowserElementParent.jsm: https://searchfox.org/mozilla-central/rev/ec806131cb7bcd1c26c254d25cd5ab8a61b2aeb6/toolkit/actors/BrowserElementParent.jsm

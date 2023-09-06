@@ -26,9 +26,9 @@ certmgr-people = Aşağıdaki kişileri tanımlayan kayıtlı sertifikalarınız
 certmgr-server = Bu girdiler, sunucu sertifikası hata ayrıcalıklarını tanımlar
 certmgr-ca = Aşağıdaki sertifika makamlarını tanımlayan kayıtlı sertifikalarınız var
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = CA sertifikası güven ayarlarını düzenle
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Güven ayarlarını düzenle:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Bu sertifika posta kullanıcılarını tanımlayabilir.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Sertifikayı sil
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Ana makine
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Sunucu
-
-certmgr-override-lifetime =
-    .label = Yaşam süresi
 
 certmgr-token-name =
     .label = Güvenlik aygıtı
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Seri numarası
+
+certmgr-fingerprint-sha-256 =
+    .label = SHA-256 parmak izi
 
 certmgr-view =
     .label = Görüntüle…
@@ -185,8 +185,6 @@ delete-email-cert-impact = Bir şahsın e-posta sertifikasını silerseniz, art�
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Sertifika seri numarası: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = İstemci sertifikası gönderme

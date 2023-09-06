@@ -33,7 +33,7 @@ add_task(async function test_doorhanger_dismissal_un() {
       // password edited vs form submitted w. cc number as username
       await clearMessageCache(browser);
 
-      let processedPromise = listenForTestNotification("FormSubmit");
+      let processedPromise = listenForTestNotification("ShowDoorhanger");
       await SpecialPowers.spawn(browser, [], async () => {
         content.document.getElementById("form-basic-submit").click();
       });
@@ -41,8 +41,11 @@ add_task(async function test_doorhanger_dismissal_un() {
       await processedPromise;
 
       let notif = getCaptureDoorhanger("password-save");
-      ok(notif, "got notification popup");
-      ok(notif.dismissed, "notification popup was automatically dismissed");
+      Assert.ok(notif, "got notification popup");
+      Assert.ok(
+        notif.dismissed,
+        "notification popup was automatically dismissed"
+      );
       await cleanupDoorhanger(notif);
     }
   );
@@ -80,15 +83,18 @@ add_task(async function test_doorhanger_dismissal_pw() {
       // password edited vs form submitted w. cc number as password
       await clearMessageCache(browser);
 
-      let processedPromise = listenForTestNotification("FormSubmit");
+      let processedPromise = listenForTestNotification("ShowDoorhanger");
       await SpecialPowers.spawn(browser, [], async () => {
         content.document.getElementById("form-basic-submit").click();
       });
       await processedPromise;
 
       let notif = getCaptureDoorhanger("password-save");
-      ok(notif, "got notification popup");
-      ok(notif.dismissed, "notification popup was automatically dismissed");
+      Assert.ok(notif, "got notification popup");
+      Assert.ok(
+        notif.dismissed,
+        "notification popup was automatically dismissed"
+      );
       await cleanupDoorhanger(notif);
     }
   );
@@ -121,15 +127,15 @@ add_task(async function test_doorhanger_shown_on_un_with_invalid_ccnumber() {
       // password edited vs form submitted w. cc number as password
       await clearMessageCache(browser);
 
-      let processedPromise = listenForTestNotification("FormSubmit");
+      let processedPromise = listenForTestNotification("ShowDoorhanger");
       await SpecialPowers.spawn(browser, [], async () => {
         content.document.getElementById("form-basic-submit").click();
       });
       await processedPromise;
 
       let notif = await getCaptureDoorhangerThatMayOpen("password-save");
-      ok(notif, "got notification popup");
-      ok(
+      Assert.ok(notif, "got notification popup");
+      Assert.ok(
         !notif.dismissed,
         "notification popup was not automatically dismissed"
       );
@@ -160,7 +166,7 @@ add_task(async function test_doorhanger_dismissal_on_change() {
         "form-basic-username",
         "form-basic-password"
       );
-      Services.logins.addLogin(login);
+      await Services.logins.addLoginAsync(login);
 
       let passwordFilledPromise = listenForTestNotification(
         "PasswordEditedOrGenerated"
@@ -178,15 +184,18 @@ add_task(async function test_doorhanger_dismissal_on_change() {
       // password edited vs form submitted w. cc number as username
       await clearMessageCache(browser);
 
-      let processedPromise = listenForTestNotification("FormSubmit");
+      let processedPromise = listenForTestNotification("ShowDoorhanger");
       await SpecialPowers.spawn(browser, [], async () => {
         content.document.getElementById("form-basic-submit").click();
       });
       await processedPromise;
 
       let notif = getCaptureDoorhanger("password-change");
-      ok(notif, "got notification popup");
-      ok(notif.dismissed, "notification popup was automatically dismissed");
+      Assert.ok(notif, "got notification popup");
+      Assert.ok(
+        notif.dismissed,
+        "notification popup was automatically dismissed"
+      );
       await cleanupDoorhanger(notif);
     }
   );

@@ -2,14 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 ## These strings appear on the warning you see when first visiting about:config.
 
 about-config-intro-warning-title = Mag-ingat sa Pagpatuloy
 about-config-intro-warning-text = Ang pagbago sa mga advanced configuration preferences ay maaaring makaapekto sa performance o seguridad ng { -brand-short-name }.
 about-config-intro-warning-checkbox = Balaan ako kapag tinangka kong i-access ang mga kagustuhang ito
 about-config-intro-warning-button = Tanggapin ang Panganib at Magpatuloy
-
-
 
 ##
 
@@ -21,6 +20,8 @@ about-config-page-title = Advanced Preferences
 about-config-search-input1 =
     .placeholder = Maghanap ng config property
 about-config-show-all = Ipakita Lahat
+
+about-config-show-only-modified = Ipakita lang ang mga nabagong setting
 
 about-config-pref-add-button =
     .title = Magdagdag

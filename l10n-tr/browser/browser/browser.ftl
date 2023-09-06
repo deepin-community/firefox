@@ -5,44 +5,52 @@
 
 ## The main browser window's title
 
-# These are the default window titles everywhere except macOS. The first two
-# attributes are used when the web content opened has no title:
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
 #
 # default - "Mozilla Firefox"
 # private - "Mozilla Firefox (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
 # Variables:
 #  $content-title (String): the title of the web content.
-browser-main-window =
+browser-main-window-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } (Gizli Gezinti)
+    .data-title-private = { -brand-full-name } Gizli Gezinti
     .data-content-title-default = { $content-title } — { -brand-full-name }
-    .data-content-title-private = { $content-title } — { -brand-full-name } (Gizli Gezinti)
-# These are the default window titles on macOS. The first two are for use when
-# there is no content title:
+    .data-content-title-private = { $content-title } — { -brand-full-name } Gizli Gezinti
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
 #
 # "default" - "Mozilla Firefox"
 # "private" - "Mozilla Firefox — (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
-# Do not use the brand name in the last two attributes, as we do on non-macOS.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
 #
 # Also note the other subtle difference here: we use a `-` to separate the
 # brand name from `(Private Browsing)`, which does not happen on other OSes.
 #
 # Variables:
 #  $content-title (String): the title of the web content.
-browser-main-window-mac =
+browser-main-window-mac-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } — (Gizli Gezinti)
+    .data-title-private = { -brand-full-name } — Gizli Gezinti
     .data-content-title-default = { $content-title }
-    .data-content-title-private = { $content-title } — (Gizli Gezinti)
+    .data-content-title-private = { $content-title } — Gizli Gezinti
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+# The non-variable portion of this MUST match the translation of
+# "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
+private-browsing-shortcut-text-2 = { -brand-shortcut-name } Gizli Gezinti
 
 ##
 
@@ -73,16 +81,12 @@ urlbar-xr-notification-anchor =
     .tooltiptext = Sanal gerçeklik izin panelini aç
 urlbar-storage-access-anchor =
     .tooltiptext = Gezinme etkinliği izin panelini aç
-urlbar-translate-notification-anchor =
-    .tooltiptext = Bu sayfayı çevir
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = Siteyle pencerelerimi veya ekranımı paylaşmayı yönet
 urlbar-indexed-db-notification-anchor =
     .tooltiptext = Çevrimdışı depolama mesajı panelini aç
 urlbar-password-notification-anchor =
     .tooltiptext = Parolayı kaydet mesajı panelini aç
-urlbar-translated-notification-anchor =
-    .tooltiptext = Sayfa çevirisini yönet
 urlbar-plugins-notification-anchor =
     .tooltiptext = Yan uygulama kullanımını yönet
 urlbar-web-rtc-share-devices-notification-anchor =
@@ -100,11 +104,25 @@ urlbar-addons-notification-anchor =
 urlbar-tip-help-icon =
     .title = Yardım al
 urlbar-search-tips-confirm = Tamam, anladım
+urlbar-search-tips-confirm-short = Anladım
 # Read out before Urlbar Tip text content so screenreader users know the
 # subsequent text is a tip offered by the browser. It should end in a colon or
 # localized equivalent.
 urlbar-tip-icon-description =
     .alt = İpucu:
+urlbar-result-menu-button =
+    .title = Menüyü aç
+urlbar-result-menu-button-feedback = Görüş bildir
+    .title = Menüyü aç
+urlbar-result-menu-learn-more =
+    .label = Daha fazla bilgi al
+    .accesskey = D
+urlbar-result-menu-remove-from-history =
+    .label = Geçmişten kaldır
+    .accesskey = G
+urlbar-result-menu-tip-get-help =
+    .label = Yardım al
+    .accesskey = Y
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -113,6 +131,8 @@ urlbar-tip-icon-description =
 
 urlbar-search-tips-onboard = Daha az yazın, daha çok bulun: Adres çubuğunuzdan { $engineName } ile arama yapın.
 urlbar-search-tips-redirect-2 = { $engineName } ve gezinti geçmişinizden gelen önerileri görmek için adres çubuğunda arama yapmaya başlayın.
+# Make sure to match the name of the Search panel in settings.
+urlbar-search-tips-persist = Arama yapmak artık daha basit. Aramanızı doğrudan adres çubuğunda düzenlemeyi deneyin. Bunun yerine adresi görmek isterseniz ayarlardaki Arama kısmına bakın.
 # Prompts users to use the Urlbar when they are typing in the domain of a
 # search engine, e.g. google.com or amazon.com.
 urlbar-tabtosearch-onboard = Aradığınızı daha hızlı bulmak için bu kısayolu seçin.
@@ -122,6 +142,7 @@ urlbar-tabtosearch-onboard = Aradığınızı daha hızlı bulmak için bu kısa
 urlbar-search-mode-bookmarks = Yer imleri
 urlbar-search-mode-tabs = Sekmeler
 urlbar-search-mode-history = Geçmiş
+urlbar-search-mode-actions = Eylemler
 
 ##
 
@@ -160,10 +181,12 @@ urlbar-star-add-bookmark =
 
 ## Page Action Context Menu
 
-page-action-manage-extension =
+page-action-manage-extension2 =
     .label = Uzantıyı yönet…
-page-action-remove-extension =
+    .accesskey = U
+page-action-remove-extension2 =
     .label = Uzantıyı kaldır
+    .accesskey = k
 
 ## Auto-hide Context Menu
 
@@ -222,6 +245,67 @@ search-one-offs-tabs =
     .tooltiptext = Sekmeler ({ $restrict })
 search-one-offs-history =
     .tooltiptext = Geçmiş ({ $restrict })
+search-one-offs-actions =
+    .tooltiptext = Eylemler ({ $restrict })
+
+## QuickActions are shown in the urlbar as the user types a matching string
+## The -cmd- strings are comma separated list of keywords that will match
+## the action.
+
+# Opens the about:addons page in the home / recommendations section
+quickactions-addons = Eklentileri görüntüle
+quickactions-cmd-addons2 = eklentiler
+# Opens the bookmarks library window
+quickactions-bookmarks2 = Yer imlerini yönet
+quickactions-cmd-bookmarks = yer imleri
+# Opens a SUMO article explaining how to clear history
+quickactions-clearhistory = Geçmişi temizle
+quickactions-cmd-clearhistory = geçmişi temizle
+# Opens about:downloads page
+quickactions-downloads2 = İndirilenleri göster
+quickactions-cmd-downloads = indirilenler
+# Opens about:addons page in the extensions section
+quickactions-extensions = Uzantıları yönet
+quickactions-cmd-extensions = uzantılar
+# Opens the devtools web inspector
+quickactions-inspector2 = Geliştirici araçlarını aç
+quickactions-cmd-inspector = denetçi, geliştirici araçları
+# Opens about:logins
+quickactions-logins2 = Parolaları yönet
+quickactions-cmd-logins = hesaplar, parolalar
+# Opens about:addons page in the plugins section
+quickactions-plugins = Yan uygulamaları yönet
+quickactions-cmd-plugins = yan uygulamalar
+# Opens the print dialog
+quickactions-print2 = Sayfayı yazdır
+quickactions-cmd-print = yazdır
+# Opens a new private browsing window
+quickactions-private2 = Gizli pencere aç
+quickactions-cmd-private = gizli gezinti
+# Opens a SUMO article explaining how to refresh
+quickactions-refresh = { -brand-short-name } tarayıcısını yenile
+quickactions-cmd-refresh = tazele
+# Restarts the browser
+quickactions-restart = { -brand-short-name } tarayıcısını yeniden başlat
+quickactions-cmd-restart = yeniden başlat
+# Opens the screenshot tool
+quickactions-screenshot3 = Ekran görüntüsü al
+quickactions-cmd-screenshot = ekran görüntüsü
+# Opens about:preferences
+quickactions-settings2 = Ayarları yönet
+quickactions-cmd-settings = ayarlar, tercihler, seçenekler
+# Opens about:addons page in the themes section
+quickactions-themes = Temaları yönet
+quickactions-cmd-themes = temalar
+# Opens a SUMO article explaining how to update the browser
+quickactions-update = { -brand-short-name } tarayıcısını güncelle
+quickactions-cmd-update = güncelle
+# Opens the view-source UI with current pages source
+quickactions-viewsource2 = Sayfa kaynağını göster
+quickactions-cmd-viewsource = kaynağı görüntüle, kaynak
+# Tooltip text for the help button shown in the result.
+quickactions-learn-more =
+    .title = Hızlı eylemler hakkında daha fazla bilgi alın
 
 ## Bookmark Panel
 
@@ -273,6 +357,7 @@ identity-weak-encryption = Bu sayfada zayıf şifreleme kullanılıyor.
 identity-insecure-login-forms = Bu sayfaya girilen hesap bilgileri ele geçirilebilir.
 identity-https-only-connection-upgraded = (HTTPS’e yükseltildi)
 identity-https-only-label = Yalnızca HTTPS modu
+identity-https-only-label2 = Bu siteyi otomatik olarak güvenli bağlantıya yükselt
 identity-https-only-dropdown-on =
     .label = Açık
 identity-https-only-dropdown-off =
@@ -281,9 +366,11 @@ identity-https-only-dropdown-off-temporarily =
     .label = Geçici olarak kapalı
 identity-https-only-info-turn-on2 = Mümkün olduğunda { -brand-short-name } tarayıcınızın güvenli bağlantıya geçmesini istiyorsanız bu site için Yalnızca HTTPS modunu açın.
 identity-https-only-info-turn-off2 = Sayfa düzgün çalışmazsa bu site için Yalnızca HTTPS modunu kapatarak siteyi güvensiz HTTP ile yüklemeyi deneyebilirsiniz.
+identity-https-only-info-turn-on3 = Mümkün olduğunda { -brand-short-name } tarayıcınızın güvenli bağlantıya geçmesini istiyorsanız bu site için HTTPS yükseltmelerini açın.
+identity-https-only-info-turn-off3 = Sayfa düzgün çalışmazsa bu site için HTTPS yükseltmelerini kapatarak siteyi güvensiz HTTP ile yüklemeyi deneyebilirsiniz.
 identity-https-only-info-no-upgrade = HTTP bağlantısı yükseltilemedi.
 identity-permissions-storage-access-header = Siteler arası çerezler
-identity-permissions-storage-access-hint = Bu siteler, siz bu sitedeyken siteler diğer sitelerdeki çerezleri ve site verilerini kullanabilir.
+identity-permissions-storage-access-hint = Aşağıdaki siteler, siz bu sitedeyken başka sitelerin çerezlerini ve site verilerini kullanabilir.
 identity-permissions-storage-access-learn-more = Daha fazla bilgi al
 identity-permissions-reload-hint = Değişikliklerin uygulanması için bu sayfayı tazelemeniz gerekebilir.
 identity-clear-site-data =
@@ -291,7 +378,7 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = Bu siteye güvenli bir şekilde bağlanmadınız.
 identity-connection-verified = Bu siteye güvenli bir şekilde bağlandınız.
 identity-ev-owner-label = Sertifika sahibi:
-identity-description-custom-root = Mozilla bu sertifika yayıncısını tanımıyor. İşletim sisteminiz üzerinden veya sistem yöneticiniz tarafından eklenmiş olabilir. <label data-l10n-name="link">Daha fazla bilgi al</label>
+identity-description-custom-root2 = Mozilla bu sertifika yayıncısını tanımıyor. İşletim sisteminiz üzerinden veya sistem yöneticiniz tarafından eklenmiş olabilir.
 identity-remove-cert-exception =
     .label = Ayrıcalığı kaldır
     .accesskey = k
@@ -299,14 +386,12 @@ identity-description-insecure = Bu siteye bağlantınız size özel değil. Gön
 identity-description-insecure-login-forms = Bu sayfaya yazdığınız hesap bilgileri güvende değildir ve saldırganlar tarafından ele geçirilebilir.
 identity-description-weak-cipher-intro = Bu siteye bağlatnınız zayıf bir şifreleme kullanıyor ve size özel değil.
 identity-description-weak-cipher-risk = Başkaları bilgilerinizi görebilir veya web sitesinin davranışını değiştirebilir.
-identity-description-active-blocked = { -brand-short-name } bu sayfanın güvenli olmayan kısımlarını engelledi. <label data-l10n-name="link">Daha fazla bilgi al</label>
+identity-description-active-blocked2 = { -brand-short-name } bu sayfanın güvenli olmayan kısımlarını engelledi.
 identity-description-passive-loaded = Bağlantınız size özel değil ve bu siteyle paylaştığınız bilgiler başkaları tarafından görülebilir.
-identity-description-passive-loaded-insecure = Bu sitede güvenli olmayan içerikler (resimler vb.) var. <label data-l10n-name="link">Daha fazla bilgi al</label>
-identity-description-passive-loaded-mixed = { -brand-short-name } bazı içerikleri engellemiş olmasına rağmen bu sayfada hâlâ güvenli olmayan içerikler (örn. resimler) var. <label data-l10n-name="link">Daha fazla bilgi al</label>
+identity-description-passive-loaded-insecure2 = Bu sitede güvenli olmayan içerikler (resimler vb.) var.
+identity-description-passive-loaded-mixed2 = { -brand-short-name } bazı içerikleri engellemiş olmasına rağmen bu sayfada hâlâ güvenli olmayan içerikler (örn. resimler) var.
 identity-description-active-loaded = Bu web sitesinde güvenli olmayan içerikler var (örn. betikler) ve siteye olan bağlantınız gizli değil.
 identity-description-active-loaded-insecure = Bu siteyle paylaştığınız bilgiler (örn. parolalar, mesajlar, kredi kartı bilgileri vb.) başkaları tarafından görülebilir.
-identity-learn-more =
-    .value = Daha fazla bilgi al
 identity-disable-mixed-content-blocking =
     .label = Korumayı şimdilik devre dışı bırak
     .accesskey = d
@@ -381,14 +466,10 @@ popup-select-microphone-icon =
     .tooltiptext = Mikrofon
 popup-select-speaker-icon =
     .tooltiptext = Hoparlör
+popup-select-window-or-screen =
+    .label = Pencere veya ekran:
+    .accesskey = P
 popup-all-windows-shared = Ekranınızdaki tüm görünür pencereler paylaşılacaktır.
-popup-screen-sharing-block =
-    .label = Engelle
-    .accesskey = E
-popup-screen-sharing-always-block =
-    .label = Her zaman engelle
-    .accesskey = H
-popup-mute-notifications-checkbox = Paylaşırken web sitesi bildirimlerini sessize al
 
 ## WebRTC window or screen share tab switch warning
 
@@ -401,7 +482,7 @@ sharing-warning-disable-for-session =
 
 ## DevTools F12 popup
 
-enable-devtools-popup-description = F12 kısayolunu kullanmak için önce Web geliştirici menüsünden geliştirici araçlarını açın.
+enable-devtools-popup-description2 = F12 kısayolunu kullanmak için önce tarayıcı araçları menüsünden geliştirici araçlarını açın.
 
 ## URL Bar
 
@@ -437,6 +518,10 @@ urlbar-placeholder-search-mode-other-history =
 urlbar-placeholder-search-mode-other-tabs =
     .placeholder = Aranacak terimleri yazın
     .aria-label = Sekmelerde ara
+# This placeholder is used when searching quick actions.
+urlbar-placeholder-search-mode-other-actions =
+    .placeholder = Aranacak terimleri yazın
+    .aria-label = Eylemlerde ara
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
@@ -477,6 +562,8 @@ urlbar-result-action-search-w-engine = { $engine } ile ara
 urlbar-result-action-sponsored = Sponsorlu
 urlbar-result-action-switch-tab = Sekmeye geç
 urlbar-result-action-visit = Ziyaret et
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-your-clipboard = Panodan ziyaret et
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -512,6 +599,7 @@ urlbar-result-action-calculator-result = = { $result }
 urlbar-result-action-search-bookmarks = Yer imlerinde ara
 urlbar-result-action-search-history = Geçmişte ara
 urlbar-result-action-search-tabs = Sekmelerde ara
+urlbar-result-action-search-actions = İşlemlerde ara
 
 ## Labels shown above groups of urlbar results
 
@@ -520,11 +608,37 @@ urlbar-result-action-search-tabs = Sekmelerde ara
 urlbar-group-firefox-suggest =
     .label = { -firefox-suggest-brand-name }
 # A label shown above the search suggestions group in the urlbar results. It
-# should use title case.
+# should use sentence case.
 # Variables
 #  $engine (String): the name of the search engine providing the suggestions
 urlbar-group-search-suggestions =
     .label = { $engine } Önerileri
+# A label shown above Quick Actions in the urlbar results.
+urlbar-group-quickactions =
+    .label = Hızlı Eylemler
+
+## Reader View toolbar buttons
+
+# This should match menu-view-enter-readerview in menubar.ftl
+reader-view-enter-button =
+    .aria-label = Okuyucu Görünümü'ne geç
+# This should match menu-view-close-readerview in menubar.ftl
+reader-view-close-button =
+    .aria-label = Okuyucu Görünümü'nü kapat
+
+## Picture-in-Picture urlbar button
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
+
+picture-in-picture-urlbar-button-open =
+    .tooltiptext = Görüntü içinde görüntüyü aç ({ $shortcut })
+picture-in-picture-urlbar-button-close =
+    .tooltiptext = Görüntü içinde görüntüyü kapat ({ $shortcut })
+picture-in-picture-panel-header = Görüntü içinde görüntü
+picture-in-picture-panel-headline = Bu web sitesi görüntü içinde görüntüyü önermiyor
+picture-in-picture-panel-body = Görüntü içinde görüntüyü açarsanız videolar geliştiricinin amaçladığı gibi görünmeyebilir.
+picture-in-picture-enable-toggle =
+    .label = Yine de etkinleştir
 
 ## Full Screen and Pointer Lock UI
 
@@ -542,19 +656,6 @@ fullscreen-exit-mac-button = Tam ekrandan çık (esc)
 pointerlock-warning-domain = <span data-l10n-name="domain">{ $domain }</span> işaretçinizi kontrol ediyor. Kontrolü geri almak için Esc tuşuna basın.
 pointerlock-warning-no-domain = Bu belge işaretçinizi kontrol ediyor. Kontrolü geri almak için Esc tuşuna basın.
 
-## Subframe crash notification
-
-crashed-subframe-message = <strong>Bu sayfanın bir kısmı çöktü.</strong> Bize rapor göndererek sorunu bildirirseniz { -brand-product-name } tarayıcınızı daha hızlı düzeltebiliriz.
-# The string for crashed-subframe-title.title should match crashed-subframe-message,
-# but without any markup.
-crashed-subframe-title =
-    .title = Bu sayfanın bir kısmı çöktü. Bize rapor göndererek sorunu bildirirseniz { -brand-product-name } tarayıcınızı daha hızlı düzeltebiliriz.
-crashed-subframe-learnmore-link =
-    .value = Daha fazla bilgi al
-crashed-subframe-submit =
-    .label = Rapor gönder
-    .accesskey = R
-
 ## Bookmarks panels, menus and toolbar
 
 bookmarks-manage-bookmarks =
@@ -570,6 +671,11 @@ bookmarks-other-bookmarks-menu =
     .label = Diğer yer imleri
 bookmarks-mobile-bookmarks-menu =
     .label = Mobil yer imleri
+
+## Variables:
+##   $isVisible (boolean): if the specific element (e.g. bookmarks sidebar,
+##                         bookmarks toolbar, etc.) is visible or not.
+
 bookmarks-tools-sidebar-visibility =
     .label =
         { $isVisible ->
@@ -594,12 +700,15 @@ bookmarks-tools-menu-button-visibility =
             [true] Yer imleri menüsünü araç çubuğundan çıkar
            *[other] Yer imleri menüsünü araç çubuğuna ekle
         }
+
+##
+
 bookmarks-search =
     .label = Yer imlerinde ara
 bookmarks-tools =
     .label = Yer imi araçları
-bookmarks-bookmark-edit-panel =
-    .label = Bu yer imini düzenle
+bookmarks-subview-edit-bookmark =
+    .label = Bu yer imini düzenle…
 # The aria-label is a spoken label that should not include the word "toolbar" or
 # such, because screen readers already know that this container is a toolbar.
 # This avoids double-speaking.
@@ -614,8 +723,8 @@ bookmarks-toolbar-placeholder =
 bookmarks-toolbar-placeholder-button =
     .label = Yer imleri araç çubuğu öğeleri
 # "Bookmark" is a verb, as in "Add current tab to bookmarks".
-bookmarks-current-tab =
-    .label = Bu sekmeyi yer imlerine ekle
+bookmarks-subview-bookmark-tab =
+    .label = Bu sekmeyi yer imlerine ekle…
 
 ## Library Panel items
 
@@ -639,11 +748,6 @@ repair-text-encoding-button =
 ## Customize Toolbar Buttons
 
 # Variables:
-#  $shortcut (String): keyboard shortcut to open the add-ons manager
-toolbar-addons-themes-button =
-    .label = Eklentiler ve temalar
-    .tooltiptext = Eklentilerinizi ve temalarınızı yönetin ({ $shortcut })
-# Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
 toolbar-settings-button =
     .label = Ayarlar
@@ -652,18 +756,15 @@ toolbar-settings-button =
             [macos] Ayarları aç ({ $shortcut })
            *[other] Ayarları aç
         }
-
-## More items
-
-more-menu-go-offline =
-    .label = Çevrimdışı çalış
-    .accesskey = d
 toolbar-overflow-customize-button =
     .label = Araç çubuğunu özelleştir…
     .accesskey = u
 toolbar-button-email-link =
     .label = Bağlantıyı e-postala
     .tooltiptext = Bu sayfanın linkini e-postayla gönder
+toolbar-button-logins =
+    .label = Parolalar
+    .tooltiptext = Kayıtlı parolalarımı görüntüle ve yönet
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -696,19 +797,6 @@ eme-notifications-drm-content-playing-dismiss-accesskey = K
 panel-save-update-username = Kullanıcı adı
 panel-save-update-password = Parola
 
-## Add-on removal warning
-
-# Variables:
-#  $name (String): The name of the addon that will be removed.
-addon-removal-title = { $name } kaldırılsın mı?
-addon-removal-abuse-report-checkbox = Bu uzantıyı { -vendor-short-name }’ya şikâyet et
-
-## Remote / Synced tabs
-
-remote-tabs-manage-account =
-    .label = Hesabı yönet
-remote-tabs-sync-now = Şimdi eşitle
-
 ##
 
 # "More" item in macOS share menu
@@ -739,6 +827,19 @@ picture-in-picture-hide-toggle =
     .label = Görüntü içinde görüntü düğmesini gizle
     .accesskey = G
 
+## Since the default position for PiP controls does not change for RTL layout,
+## right-to-left languages should use "Left" and "Right" as in the English strings,
+
+picture-in-picture-move-toggle-right =
+    .label = Görüntü içinde görüntü düğmesini sağa taşı
+    .accesskey = G
+picture-in-picture-move-toggle-left =
+    .label = Görüntü içinde görüntü düğmesini sola taşı
+    .accesskey = ö
+
+##
+
+
 # Navigator Toolbox
 
 # This string is a spoken label that should not include
@@ -755,9 +856,6 @@ navbar-overflow =
 navbar-print =
     .label = Yazdır
     .tooltiptext = Bu sayfayı yazdır… ({ $shortcut })
-navbar-print-tab-modal-disabled =
-    .label = Yazdır
-    .tooltiptext = Bu sayfayı yazdır
 navbar-home =
     .label = Başlangıç
     .tooltiptext = { -brand-short-name } Giriş Sayfası
@@ -766,8 +864,6 @@ navbar-library =
     .tooltiptext = Geçmişinize, kayıtlı yer imlerinize ve daha fazlasına bakın
 navbar-search =
     .title = Ara
-navbar-accessibility-indicator =
-    .tooltiptext = Erişilebilirlik özellikleri açık
 # Name for the tabs toolbar as spoken by screen readers. The word
 # "toolbar" is appended automatically and should not be included in
 # in the string
@@ -782,5 +878,91 @@ tabs-toolbar-list-all-tabs =
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
-restore-session-startup-suggestion-message = <strong>Önceki seçmeler açılsın mı?</strong> Önceki oturumunuzu { -brand-short-name } uygulama menüsündeki <img data-l10n-name="icon"/> “Geçmiş” kısmından geri yükleyebilirsiniz.
+restore-session-startup-suggestion-message = <strong>Önceki sekmeler açılsın mı?</strong> Önceki oturumunuzu { -brand-short-name } menüsündeki (<img data-l10n-name="icon"/>) “Geçmiş” kısmından geri yükleyebilirsiniz.
 restore-session-startup-suggestion-button = Nasıl yapacağımı göster
+
+## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
+
+data-reporting-notification-message = { -brand-short-name }, deneyiminizi geliştirebilmemiz için bazı verileri otomatik olarak { -vendor-short-name } sunucularına gönderir.
+data-reporting-notification-button =
+    .label = Ne paylaşacağımı seç
+    .accesskey = N
+# Label for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-label = Gizli gezinti
+
+## Unified extensions (toolbar) button
+
+unified-extensions-button =
+    .label = Uzantılar
+    .tooltiptext = Uzantılar
+
+## Unified extensions button when permission(s) are needed.
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-permissions-needed =
+    .label = Uzantılar
+    .tooltiptext =
+        Uzantılar
+        İzin gerekli
+
+## Unified extensions button when some extensions are quarantined.
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-quarantined =
+    .label = Uzantılar
+    .tooltiptext = Bazı uzantılara izin verilmiyor
+
+## Autorefresh blocker
+
+refresh-blocked-refresh-label = { -brand-short-name } bu sayfanın kendiliğinden yenilenmesini önledi.
+refresh-blocked-redirect-label = { -brand-short-name } bu sayfanın başka sayfaya yönlenmesini önledi.
+refresh-blocked-allow =
+    .label = İzin ver
+    .accesskey = z
+
+## Firefox Relay integration
+
+firefox-relay-offer-why-to-use-relay = Güvenli, kullanımı kolay maskelerimiz kimliğinizi korur ve e-posta adresinizi gizleyerek istenmeyen e-postaları önler.
+# Variables:
+#  $useremail (String): user email that will receive messages
+firefox-relay-offer-what-relay-provides = E-posta maskelerinize gönderilen tüm e-postalar <strong>{ $useremail }</strong> adresine yönlendirilecektir (siz engellemeye karar vermediğiniz sürece).
+firefox-relay-offer-legal-notice = “E-posta maskesi kullan”a tıkladığınızda <label data-l10n-name="tos-url">Hizmet Koşulları</label>’nı ve <label data-l10n-name="privacy-url">Gizlilik Bildirimi</label>’ni kabul etmiş sayılırsınız.
+
+## Add-on Pop-up Notifications
+
+popup-notification-addon-install-unsigned =
+    .value = (Doğrulanmamış)
+popup-notification-xpinstall-prompt-learn-more = Eklentileri güvenle yükleme hakkında daha fazla bilgi alın
+
+## Pop-up warning
+
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-message =
+    { $popupCount ->
+        [one] { -brand-short-name } bu sitenin açılır pencere açmasını engelledi.
+       *[other] { -brand-short-name } bu sitenin { $popupCount } açılır pencere açmasını engelledi.
+    }
+# The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-message =
+    { $popupCount ->
+        [one] { -brand-short-name } bu sitenin { $popupCount } açılır pencere açmasını engelledi.
+       *[other] { -brand-short-name } bu sitenin { $popupCount } açılır pencere açmasını engelledi.
+    }
+popup-warning-button =
+    .label =
+        { PLATFORM() ->
+            [windows] Seçenekler
+           *[other] Tercihler
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [windows] S
+           *[other] T
+        }
+# Variables:
+#   $popupURI (String): the URI for the pop-up window
+popup-show-popup-menuitem =
+    .label = “{ $popupURI }” penceresini göster

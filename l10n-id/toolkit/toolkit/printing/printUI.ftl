@@ -14,6 +14,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Semua
+printui-page-range-current = Saat Ini
+printui-page-range-odd = Ganjil
+printui-page-range-even = Genap
 printui-page-range-custom = Ubahsuai
 printui-page-range-label = Halaman
 printui-page-range-picker =
@@ -60,6 +63,15 @@ printui-backgrounds-checkbox = Cetak latar
 ## The "Format" section, select a version of the website to print. Radio
 ## options to select between the original page, selected text only, or a version
 ## where the page is processed with "Reader View".
+
+# The section title.
+printui-source-label = Format
+# Option for printing the original page.
+printui-source-radio = Asli
+# Option for printing just the content a user selected prior to printing.
+printui-selection-radio = Pilihan
+# Option for "simplifying" the page by printing the Reader View version.
+printui-simplify-page-radio = Disederhanakan
 
 ##
 

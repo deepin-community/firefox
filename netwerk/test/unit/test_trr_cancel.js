@@ -4,13 +4,6 @@
 
 "use strict";
 
-const dns = Cc["@mozilla.org/network/dns-service;1"].getService(
-  Ci.nsIDNSService
-);
-const { TestUtils } = ChromeUtils.import(
-  "resource://testing-common/TestUtils.jsm"
-);
-
 trr_test_setup();
 registerCleanupFunction(async () => {
   trr_clear_prefs();
@@ -48,42 +41,47 @@ add_task(async function sanity_check() {
   await new TRRDNSListener("example.com", { expectedAnswer: "1.2.3.4" });
 });
 
-add_task(async function cancel_immediately() {
-  await trrServer.registerDoHAnswers("example.org", "A", {
-    answers: [
-      {
-        name: "example.org",
-        ttl: 55,
-        type: "A",
-        flush: false,
-        data: "2.3.4.5",
-      },
-    ],
-  });
-  let r1 = new TRRDNSListener("example.org", { expectedSuccess: false });
-  let r2 = new TRRDNSListener("example.org", { expectedAnswer: "2.3.4.5" });
-  r1.cancel();
-  let [, , inStatus] = await r1;
-  equal(inStatus, Cr.NS_ERROR_ABORT);
-  await r2;
-  equal(await trrServer.requestCount("example.org", "A"), 1);
+// Cancelling the request is not sync when using the socket process, so
+// we skip this test when it's enabled.
+add_task(
+  { skip_if: () => mozinfo.socketprocess_networking },
+  async function cancel_immediately() {
+    await trrServer.registerDoHAnswers("example.org", "A", {
+      answers: [
+        {
+          name: "example.org",
+          ttl: 55,
+          type: "A",
+          flush: false,
+          data: "2.3.4.5",
+        },
+      ],
+    });
+    let r1 = new TRRDNSListener("example.org", { expectedSuccess: false });
+    let r2 = new TRRDNSListener("example.org", { expectedAnswer: "2.3.4.5" });
+    r1.cancel();
+    let { inStatus } = await r1;
+    equal(inStatus, Cr.NS_ERROR_ABORT);
+    await r2;
+    equal(await trrServer.requestCount("example.org", "A"), 1);
 
-  // Now we cancel both of them
-  dns.clearCache(true);
-  r1 = new TRRDNSListener("example.org", { expectedSuccess: false });
-  r2 = new TRRDNSListener("example.org", { expectedSuccess: false });
-  r1.cancel();
-  r2.cancel();
-  [, , inStatus] = await r1;
-  equal(inStatus, Cr.NS_ERROR_ABORT);
-  [, , inStatus] = await r2;
-  equal(inStatus, Cr.NS_ERROR_ABORT);
-  await new Promise(resolve => do_timeout(50, resolve));
-  equal(await trrServer.requestCount("example.org", "A"), 2);
-});
+    // Now we cancel both of them
+    Services.dns.clearCache(true);
+    r1 = new TRRDNSListener("example.org", { expectedSuccess: false });
+    r2 = new TRRDNSListener("example.org", { expectedSuccess: false });
+    r1.cancel();
+    r2.cancel();
+    ({ inStatus } = await r1);
+    equal(inStatus, Cr.NS_ERROR_ABORT);
+    ({ inStatus } = await r2);
+    equal(inStatus, Cr.NS_ERROR_ABORT);
+    await new Promise(resolve => do_timeout(50, resolve));
+    equal(await trrServer.requestCount("example.org", "A"), 2);
+  }
+);
 
 add_task(async function cancel_delayed() {
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   await trrServer.registerDoHAnswers("example.com", "A", {
     answers: [
       {
@@ -100,13 +98,13 @@ add_task(async function cancel_delayed() {
   let r2 = new TRRDNSListener("example.com", { expectedAnswer: "1.1.1.1" });
   await new Promise(resolve => do_timeout(50, resolve));
   r1.cancel();
-  let [, , inStatus] = await r1;
+  let { inStatus } = await r1;
   equal(inStatus, Cr.NS_ERROR_ABORT);
   await r2;
 });
 
 add_task(async function cancel_after_completed() {
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   await trrServer.registerDoHAnswers("example.com", "A", {
     answers: [
       {
@@ -127,7 +125,7 @@ add_task(async function cancel_after_completed() {
 });
 
 add_task(async function clearCacheWhileResolving() {
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   await trrServer.registerDoHAnswers("example.com", "A", {
     answers: [
       {
@@ -143,7 +141,7 @@ add_task(async function clearCacheWhileResolving() {
   // Check that calling clearCache does not leave the request hanging.
   let r1 = new TRRDNSListener("example.com", { expectedAnswer: "3.3.3.3" });
   let r2 = new TRRDNSListener("example.com", { expectedAnswer: "3.3.3.3" });
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   await r1;
   await r2;
 
@@ -170,11 +168,11 @@ add_task(async function clearCacheWhileResolving() {
   let r4 = new TRRDNSListener("httpsvc.com", {
     type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
   });
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   await r3;
   await r4;
   equal(await trrServer.requestCount("httpsvc.com", "HTTPS"), 1);
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   await new TRRDNSListener("httpsvc.com", {
     type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
   });

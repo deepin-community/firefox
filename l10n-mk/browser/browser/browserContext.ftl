@@ -50,6 +50,9 @@ toolbar-button-stop-reload =
 
 ## Firefox Account Button
 
+toolbar-button-fxaccount =
+    .label = { -fxaccount-brand-name }
+    .tooltiptext = { -fxaccount-brand-name }
 
 ## Save Page
 
@@ -83,11 +86,6 @@ main-context-menu-save-link =
     .label = Сними ја врската како…
     .accesskey = С
 
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
-
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
 ## are mutually exclusive.
@@ -119,6 +117,21 @@ main-context-menu-media-mute =
 main-context-menu-media-unmute =
     .label = Пушти звук
     .accesskey = m
+
+main-context-menu-media-play-speed-slow-2 =
+    .label = 0.5×
+
+main-context-menu-media-play-speed-normal-2 =
+    .label = 1.0×
+
+main-context-menu-media-play-speed-fast-2 =
+    .label = 1.25×
+
+main-context-menu-media-play-speed-faster-2 =
+    .label = 1.5×
+
+main-context-menu-media-play-speed-fastest-2 =
+    .label = 2×
 
 main-context-menu-media-loop =
     .label = Повторувај
@@ -185,14 +198,6 @@ main-context-menu-audio-email =
     .label = Испрати аудио…
     .accesskey = a
 
-main-context-menu-plugin-play =
-    .label = Активирај го овој приклучок
-    .accesskey = к
-
-main-context-menu-plugin-hide =
-    .label = Скриј го овој приклучок
-    .accesskey = ф
-
 main-context-menu-send-to-device =
     .label = Испрати страница на уред
     .accesskey = и
@@ -231,10 +236,6 @@ main-context-menu-frame-open-window =
 main-context-menu-frame-reload =
     .label = Превчитај ја рамката
     .accesskey = ч
-
-main-context-menu-frame-bookmark =
-    .label = Обележи ја оваа рамка
-    .accesskey = б
 
 main-context-menu-frame-save-as =
     .label = Сними ја рамката како…

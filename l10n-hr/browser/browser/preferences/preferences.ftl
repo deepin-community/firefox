@@ -71,23 +71,8 @@ restart-later = Ponovo pokreni kasnije
 ## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
 ##
 ## Variables:
-##   $name (String): name of the extension
+##   $name (string) - Name of the extension
 
-# This string is shown to notify the user that the password manager setting
-# is being controlled by an extension
-extension-controlled-password-saving = Dodatak <img data-l10n-name="icon"/> { $name } upravlja ovom postavkom.
-# This string is shown to notify the user that their notifications permission
-# is being controlled by an extension.
-extension-controlled-web-notifications = Dodatak, <img data-l10n-name="icon"/> { $name }, kontrolira ovu postavku.
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = Dodatak, <img data-l10n-name="icon"/> { $name }, zahtijeva kontejnerske kartice.
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = Dodatak, <img data-l10n-name="icon"/> { $name }, kontrolira ovu postavku.
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = Dodatak, <img data-l10n-name="icon"/> { $name }, kontrolira kako se { -brand-short-name } povezuje na internet.
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
 #
@@ -113,13 +98,18 @@ is-not-default = { -brand-short-name } trenutačno nije tvoj standardni pregledn
 set-as-my-default-browser =
     .label = Postavi kao standardni …
     .accesskey = d
-startup-restore-previous-session =
-    .label = Vrati prethodnu sesiju
+startup-restore-windows-and-tabs =
+    .label = Otvori prethodne prozore i kartice (s)
     .accesskey = s
 startup-restore-warn-on-quit =
     .label = Upozorava te prilikom izlaska iz preglednika
 disable-extension =
     .label = Onemogući dodatak
+preferences-data-migration-header = Uvezi podatke preglednika
+preferences-data-migration-description = Uvezi zabilješke, lozinke, povijest i podatke za automatsku ispunu u { -brand-short-name }.
+preferences-data-migration-button =
+    .label = Uvezi podatke (m)
+    .accesskey = m
 tabs-group-header = Kartice
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab kruži kroz kartice redoslijedom zadnjeg korištenja
@@ -127,12 +117,15 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Otvori poveznice u karticama umjesto u novim prozorima
     .accesskey = p
-warn-on-close-multiple-tabs =
-    .label = Upozorava te prilikom zatvaranja višestrukih kartica
-    .accesskey = v
+confirm-on-close-multiple-tabs =
+    .label = Potvrdi prije zatvaranja više kartica (m)
+    .accesskey = m
 warn-on-open-many-tabs =
     .label = Upozorava te prilikom otvaranja višestrukih kartica, što može usporiti { -brand-short-name }
     .accesskey = u
+switch-to-new-tabs =
+    .label = Kod otvaranja poveznice, slike ili medija u novoj kartici, odmah prijeđi na nju
+    .accesskey = h
 show-tabs-in-taskbar =
     .label = Prikaži preglede kartica u Windows traci zadataka
     .accesskey = k
@@ -144,6 +137,10 @@ browser-containers-settings =
     .label = Postavke…
     .accesskey = t
 containers-disable-alert-title = Zatvoriti sve kontejnerske kartice?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Ako sad deaktiviraš kontejnerske kartice, zatvorit će se { $tabCount } kontejnerska kartica. Zaista želiš deaktivirati kontejnerske kartice?
@@ -156,10 +153,13 @@ containers-disable-alert-ok-button =
         [few] Zatvori { $tabCount } kontejnerske kartice
        *[other] Zatvori { $tabCount } kontejnerskih kartica
     }
+
+##
+
 containers-disable-alert-cancel-button = Ostavi aktivirano
 containers-remove-alert-title = Ukloniti ovaj kontejner?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] Ako sad ukloniš kontejnerske kartice, zatvorit će se { $count } kontejnerska kartica. Zaista želiš ukloniti kontejnerske kartice?
@@ -172,7 +172,19 @@ containers-remove-cancel-button = Nemoj ukloniti ovaj kontejner
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Jezik i izgled
-fonts-and-colors-header = Fontovi i boje
+preferences-web-appearance-header = Izgled web-stranica
+preferences-web-appearance-description = Neke web-stranice prilagođavaju svoju shemu boja prema tvojim preferencijama. Odaberi koju shemu boja želiš koristiti na tim stranicama.
+preferences-web-appearance-choice-auto = Automatski
+preferences-web-appearance-choice-light = Svijetla
+preferences-web-appearance-choice-dark = Tamna
+# This message contains one link. It can be moved within the sentence as needed
+# to adapt to your language, but should not be changed.
+preferences-web-appearance-footer = Upravljaj temama za { -brand-short-name } u sekciji <a data-l10n-name="themes-link">Dodaci i teme</a>
+preferences-colors-header = Boje
+preferences-colors-manage-button =
+    .label = Upravljaj bojama …
+    .accesskey = b
+preferences-fonts-header = Fontovi
 default-font = Standardni font
     .accesskey = d
 default-font-size = Veličina
@@ -180,13 +192,12 @@ default-font-size = Veličina
 advanced-fonts =
     .label = Napredno …
     .accesskey = a
-colors-settings =
-    .label = Boje …
-    .accesskey = B
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Zumiranje
 preferences-default-zoom = Standardni postotak zumiranja
     .accesskey = z
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
@@ -225,8 +236,7 @@ check-user-spelling =
 
 files-and-applications-title = Datoteke i aplikacije
 download-header = Preuzimanja
-download-save-to =
-    .label = Spremi datoteke u
+download-save-where = Spremi datoteke u
     .accesskey = u
 download-choose-folder =
     .label =
@@ -280,15 +290,15 @@ applications-manage-app =
 applications-always-ask =
     .label = Uvijek pitaj
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Koristi { $plugin-name } (u { -brand-short-name })
 applications-open-inapp =
@@ -324,6 +334,8 @@ play-drm-content =
 play-drm-content-learn-more = Saznaj više
 update-application-title = { -brand-short-name } dopune
 update-application-description = Aktualiziraj { -brand-short-name } za najbolju performancu, stabilnost i sigurnost.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Verzija { $version } <a data-l10n-name="learn-more">Što je novo</a>
 update-history =
     .label = Prikaži povijest nadogradnji …
@@ -345,7 +357,7 @@ update-application-warning-cross-user-setting = Ove postavke će se primijeniti 
 update-application-use-service =
     .label = Koristi pozadinski servis za instalaciju dopuna
     .accesskey = K
-update-setting-write-failure-title2 = Pogreška prilikom spremanju postavki ažuriranja
+update-setting-write-failure-title2 = Greška prilikom spremanja postavki aktualiziranja
 update-in-progress-title = Aktualiziranje u tijeku
 update-in-progress-message = Želiš li da { -brand-short-name } nastavi s ovim aktualiziranjem?
 update-in-progress-ok-button = O&dbaci
@@ -369,7 +381,7 @@ performance-limit-content-process-option = Granica procesiranja sadržaja
 performance-limit-content-process-enabled-desc = Dodatni procesi sadržaja mogu poboljšati performansu kad koristiš više kartica, ali će koristiti i više memorije.
 performance-limit-content-process-blocked-desc = Izmjena broja procesa sadržaja je moguća samo s višeprocesnim { -brand-short-name }om. <a data-l10n-name="learn-more">Saznaj kako provjeriti je li višeprocesni rad aktiviran.</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (standardno)
 
@@ -428,10 +440,6 @@ home-newtabs-mode-label = Nove kartice
 home-restore-defaults =
     .label = Vrati standardne vrijednosti
     .accesskey = r
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Firefoxova početna stranica (standardno)
 home-mode-choice-custom =
     .label = Prilagođeni URL-ovi…
 home-mode-choice-blank =
@@ -455,15 +463,8 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Sadržaj Firefoxove početne stranice
-home-prefs-content-description = Odaberi sadržaj koji želiš na početnoj stranici Firefoxa.
 home-prefs-search-header =
     .label = Web pretraga
-home-prefs-topsites-header =
-    .label = Najbolje stranice
-home-prefs-topsites-description = Stranice koje najčešće posjećuješ
-home-prefs-topsites-by-option-sponsored =
-    .label = Sponzorirane najpopularnije stranice
 home-prefs-shortcuts-header =
     .label = Prečaci
 home-prefs-shortcuts-description = Stranice koje spremiš ili posjetiš
@@ -471,11 +472,10 @@ home-prefs-shortcuts-by-option-sponsored =
     .label = Sponzorirani prečaci
 
 ## Variables:
-##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 home-prefs-recommended-by-header =
     .label = Preporučeno od { $provider }
-home-prefs-recommended-by-description-update = Izniman sadržaj sa svih strana weba, kojeg izabire { $provider }
 home-prefs-recommended-by-description-new = Izuzetan sadržaj kojeg odabire { $provider }, dio obitelji { -brand-product-name }
 
 ##
@@ -483,9 +483,6 @@ home-prefs-recommended-by-description-new = Izuzetan sadržaj kojeg odabire { $p
 home-prefs-recommended-by-learn-more = Kako ovo funkcionira
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Sponzorirane priče
-home-prefs-highlights-header =
-    .label = Istaknuto
-home-prefs-highlights-description = Izbor spremljenih ili posjećenih stranica
 home-prefs-highlights-option-visited-pages =
     .label = Posjećene stranice
 home-prefs-highlights-options-bookmarks =
@@ -496,15 +493,16 @@ home-prefs-highlights-option-saved-to-pocket =
     .label = Stranice spremljene u { -pocket-brand-name }
 home-prefs-recent-activity-header =
     .label = Nedavna aktivnost
-home-prefs-recent-activity-description = Izbor nedavnih stranica i sadržaja
+home-prefs-recent-activity-description = Izbor nedavno posjećenih stranica i sadržaja
 # For the "Snippets" feature traditionally on about:home.
 # Alternative translation options: "Small Note" or something that
 # expresses the idea of "a small message, shortened from something else,
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Kratke obavijesti
-home-prefs-snippets-description = { -vendor-short-name } i { -brand-product-name } aktualiziranja
 home-prefs-snippets-description-new = Savjeti i vijesti od { -vendor-short-name } i { -brand-product-name }
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -565,7 +563,7 @@ search-find-more-link = Pronađi daljnje tražilice
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Postojeća ključna riječ
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Odabrana je ključna riječ koju trenutačno koristi "{ $name }". Odaberi jednu drugu.
 search-keyword-warning-bookmark = Odabrana je ključna riječ koju koristi zabilješka. Odaberi jednu drugu.
 
@@ -585,7 +583,7 @@ containers-settings-button =
 containers-remove-button =
     .label = Ukloni
 
-## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = Ponesi svoj web sa sobom
@@ -603,7 +601,7 @@ sync-signedout-account-signin3 =
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Preuzmi Firefox za <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> ili <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a> za sinkroniziranje s tvojim mobilnim uređajem.
 
-## Firefox Account - Signed in
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = Primijeni sliku profila
@@ -612,8 +610,15 @@ sync-sign-out =
     .accesskey = O
 sync-manage-account = Upravljaj računom
     .accesskey = u
+
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } nije potvrđen.
 sync-signedin-login-failure = Prijavi se za ponovno povezivanje s { $email }
+
+##
+
 sync-resend-verification =
     .label = Ponovo pošalji potvrdu
     .accesskey = d
@@ -636,10 +641,14 @@ prefs-sync-now =
     .labelnotsyncing = Sinkroniziraj sada
     .accesskeynotsyncing = n
     .labelsyncing = Sinkroniziranje…
+prefs-sync-now-button =
+    .label = Sinkroniziraj sada
+    .accesskey = n
+prefs-syncing-button =
+    .label = Sinkroniziranje…
 
 ## The list of things currently syncing.
 
-sync-currently-syncing-heading = Trenutačno sinkroniziraš ove stavke:
 sync-currently-syncing-bookmarks = Zabilješke
 sync-currently-syncing-history = Povijest
 sync-currently-syncing-tabs = Otvorene kartice
@@ -654,9 +663,9 @@ sync-change-options =
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog =
+sync-choose-what-to-sync-dialog3 =
     .title = Odaberi što će se sinkronizirati
-    .style = width: 36em; min-height: 35em;
+    .style = min-width: 36em;
     .buttonlabelaccept = Spremi izmjene
     .buttonaccesskeyaccept = S
     .buttonlabelextra2 = Odspoji …
@@ -706,6 +715,16 @@ sync-device-name-save =
     .accesskey = e
 sync-connect-another-device = Poveži drugi uređaj
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Potvrda poslana
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Link potvrde je poslan na { $email }.
+sync-verification-not-sent-title = Slanje potvrde nije moguće
+sync-verification-not-sent-body = Trenutačno ne možemo poslati e-poštu za potvrdu, pokušaj kasnije ponovo.
+
 ## Privacy Section
 
 privacy-header = Privatnost preglednika
@@ -729,6 +748,7 @@ forms-breach-alerts =
     .label = Prikaži upozorenja o lozinkama za hakirane web stranice
     .accesskey = u
 forms-breach-alerts-learn-more-link = Saznaj više
+relay-integration-learn-more-link = Saznaj više
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
     .label = Automatski popuni prijave i lozinke
@@ -768,7 +788,7 @@ primary-password-os-auth-dialog-message-win = Za stvaranje primarne lozinke, une
 # The macOS strings are preceded by the operating system with "Firefox is trying to "
 # and includes subtitle of "Enter password for the user "xxx" to allow this." These
 # notes are only valid for English. Please test in your locale.
-primary-password-os-auth-dialog-message-macosx = stvori glavnu lozinku
+primary-password-os-auth-dialog-message-macosx = stvori primarnu lozinku
 master-password-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy Section - History
@@ -817,8 +837,8 @@ history-clear-button =
 sitedata-header = Kolačići i podaci web stranice
 sitedata-total-size-calculating = Izračunavanje veličine podataka web stranice i privremene memorije…
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = Tvoji spremljeni kolačići, podaci web stranica i privremena memorija trenutačno zauzimaju { $value } { $unit } prostora na disku.
 sitedata-learn-more = Saznaj više
 sitedata-delete-on-close =
@@ -837,18 +857,8 @@ sitedata-block-desc = Vrsta blokiranog
     .accesskey = t
 sitedata-option-block-cross-site-trackers =
     .label = Programi za praćenje među različitim web lokacijama
-sitedata-option-block-cross-site-and-social-media-trackers =
-    .label = Programi za praćenje među različitim web lokacijama i društvenim mrežama
-sitedata-option-block-cross-site-tracking-cookies-including-social-media =
-    .label = Međustranični kolačići za praćenje — uključuje kolačiće društvenih mreža
-sitedata-option-block-cross-site-cookies-including-social-media =
-    .label = Međustranični kolačići (cross-site cookies) — uključuje kolačiće društvenih mreža
-sitedata-option-block-cross-site-and-social-media-trackers-plus-isolate =
-    .label = Pratitelji između više stranica, medijski pratitelji, te izoliranje preostalih kolačića
 sitedata-option-block-unvisited =
     .label = Kolačići neposjećenih web-stranica
-sitedata-option-block-all-third-party =
-    .label = Sve kolačiće trećih strana (može uzrokovati greške na stranici)
 sitedata-option-block-all =
     .label = Sve kolačiće (uzrokovat će greške na stranicama)
 sitedata-clear =
@@ -860,6 +870,9 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Upravljanje iznimkama…
     .accesskey = z
+
+## Privacy Section - Cookie Banner Handling
+
 
 ## Privacy Section - Address Bar
 
@@ -885,6 +898,7 @@ addressbar-locbar-engines-option =
     .label = Tražilice
     .accesskey = a
 addressbar-suggestions-settings = Promijeni postavke za prijedloge tražilica
+addressbar-quickactions-learn-more = Saznaj više
 
 ## Privacy Section - Content Blocking
 
@@ -914,7 +928,6 @@ content-blocking-etp-strict-desc = Jača zaštita, ali može prouzročiti proble
 content-blocking-etp-custom-desc = Odaberi programe za praćenje i skripte koje želiš blokirati.
 content-blocking-etp-blocking-desc = { -brand-short-name } blokira sljedeće:
 content-blocking-private-windows = Praćenje sadržaja u privatnim prozorima
-content-blocking-cross-site-cookies-in-all-windows = Međustranični kolačići u svim prozorima (uključujući kolačiće za praćenje)
 content-blocking-cross-site-tracking-cookies = Višestranični kolačići za praćenje
 content-blocking-all-cross-site-cookies-private-windows = Međustranični kolačići u privatnim prozorima
 content-blocking-cross-site-tracking-cookies-plus-isolate = Pratitelji između više stranica, te izoliranje preostalih kolačića
@@ -922,11 +935,13 @@ content-blocking-social-media-trackers = Programi za praćenje s društvenih mre
 content-blocking-all-cookies = Sve kolačiće
 content-blocking-unvisited-cookies = Kolačići neposjećenih stranica
 content-blocking-all-windows-tracking-content = Praćenje sadržaja u svim prozorima
-content-blocking-all-third-party-cookies = Svi kolačići trećih strana
 content-blocking-cryptominers = Kripto-rudari
 content-blocking-fingerprinters = Jedinstvene otiske
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
+
+content-blocking-etp-standard-tcp-rollout-learn-more = Saznaj više
 content-blocking-warning-title = Upozorenje!
-content-blocking-and-isolating-etp-warning-description = Blokiranje pratitelja i izoliranje kolačića može utjecati na funkcionalnost nekih stranica. Ponovno učitajte stranicu sa pratiteljem kako bi se učitao sav sadržaj.
 content-blocking-and-isolating-etp-warning-description-2 = Ova postavka može uzrokovati da neke web stranice ne prikazuju sadržaj ili ne rade ispravno. Ako se neka stranica čini slomljenom, možda ćeš htjeti isključiti zaštitu od praćenja da bi ta stranica učitala sav sadržaj.
 content-blocking-warning-learn-how = Saznaj kako
 content-blocking-reload-description = Morat ćeš ponovo učitati svoje kartice, kako bi se ove promjene primijenile.
@@ -998,9 +1013,6 @@ permissions-autoplay-settings =
 permissions-block-popups =
     .label = Blokiraj skočne prozore
     .accesskey = s
-permissions-block-popups-exceptions =
-    .label = Iznimke …
-    .accesskey = e
 permissions-addon-install-warning =
     .label = Upozorava te kad stranice pokušaju instalirati dodatke
     .accesskey = d
@@ -1028,6 +1040,10 @@ addon-recommendations-link = Saznaj više
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Izvještaji o podacima su deaktivirani za konfiguraciju za izgradnju
+privacy-segmentation-radio-off =
+    .label = Koristi { -brand-product-name } preporuke
+privacy-segmentation-radio-on =
+    .label = Prikaži detaljne informacije
 
 ## Privacy Section - Security
 ##
@@ -1075,12 +1091,11 @@ httpsonly-radio-enabled-pbm =
 httpsonly-radio-disabled =
     .label = Nemoj aktivirati način rada "Samo HTTPS"
 
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Radna površina
 downloads-folder-name = Preuzimanja
 choose-download-folder-title = Izaberite mapu za preuzimanja:
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Spremi datoteke u { $service-name }

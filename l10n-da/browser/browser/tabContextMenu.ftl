@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Vælg alle faneblade
     .accesskey = V
+tab-context-play-tab =
+    .label = Afspil lyd/video i faneblad
+    .accesskey = A
+tab-context-play-tabs =
+    .label = Afspil lyd/video i fanebladene.
+    .accesskey = s
 duplicate-tab =
     .label = Kopier faneblad
     .accesskey = K
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Bogmærk faneblade…
     .accesskey = B
-bookmark-tab =
-    .label = Bogmærk faneblad
+tab-context-bookmark-tab =
+    .label = Bogmærk faneblad…
     .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = Åbn i nyt kontekst-faneblad
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Del
     .accesskey = D
-tab-context-share-more =
-    .label = Mere…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -81,14 +85,6 @@ tab-context-reopen-closed-tabs =
             [1] Åbn lukket faneblad igen
             [one] Åbn lukket faneblad igen
            *[other] Åbn lukkede faneblade igen
-        }
-    .accesskey = u
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Luk faneblad
-            [one] Luk et faneblad
-           *[other] Luk faneblade
         }
     .accesskey = u
 tab-context-close-n-tabs =

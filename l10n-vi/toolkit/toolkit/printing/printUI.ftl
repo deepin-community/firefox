@@ -14,6 +14,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Tất cả
+printui-page-range-current = Hiện tại
+printui-page-range-odd = Số lẻ
+printui-page-range-even = Số chẵn
 printui-page-range-custom = Tùy chọn
 printui-page-range-label = Trang
 printui-page-range-picker =

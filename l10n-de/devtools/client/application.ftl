@@ -144,4 +144,3 @@ icon-warning =
 icon-error =
     .alt = Fehlersymbol
     .title = Fehler
-

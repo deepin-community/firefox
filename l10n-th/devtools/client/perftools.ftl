@@ -21,6 +21,7 @@ perftools-heading-features-default = คุณสมบัติ (แนะน�
 perftools-heading-features-disabled = คุณสมบัติที่ปิดใช้งาน
 perftools-heading-features-experimental = การทดลอง
 perftools-heading-threads = เธรด
+perftools-heading-threads-jvm = เธรด JVM
 perftools-heading-local-build = บิลด์ภายในเครื่อง
 
 ##
@@ -51,9 +52,6 @@ perftools-devtools-settings-label = การตั้งค่า
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice =
-    ตัวสร้างโปรไฟล์จะถูกปิดใช้งานเมื่อเปิดใช้งานการเรียกดูแบบส่วนตัว
-    ให้ปิดหน้าต่างส่วนตัวทั้งหมดเพื่อเปิดใช้งานตัวสร้างโปรไฟล์ใหม่
 perftools-status-recording-stopped-by-another-tool = การบันทึกถูกหยุดโดยเครื่องมืออื่น
 perftools-status-restart-required = ต้องเริ่มการทำงานเบราว์เซอร์ใหม่เพื่อเปิดใช้งานคุณลักษณะนี้
 
@@ -76,7 +74,7 @@ perftools-button-edit-settings = แก้ไขการตั้งค่า�
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
 perftools-thread-gecko-main =
-    .title = กระบวนการหลักสำหรับทั้งกระบวนการแม่และกระบวนการเนื้อหา
+    .title = โปรเซสหลักสำหรับทั้งโปรเซสแม่และโปรเซสเนื้อหา
 perftools-thread-compositor =
     .title = รวมองค์ประกอบที่ถูกระบายสีต่าง ๆ บนหน้านี้เข้าด้วยกัน
 perftools-thread-dom-worker =
@@ -85,8 +83,8 @@ perftools-thread-renderer =
     .title = เมื่อเปิดใช้งาน WebRender แล้ว เธรดที่ดำเนินการเรียก OpenGL
 perftools-thread-render-backend =
     .title = เธรด RenderBackend ของ WebRender
-perftools-thread-paint-worker =
-    .title = เมื่อเปิดใช้งานการวาดนอกเธรดหลักแล้ว เธรดที่ทำการวาด
+perftools-thread-timer =
+    .title = ตัวจับเวลาการจัดการเธรด (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
     .title = การคำนวณรูปแบบจะแบ่งออกเป็นหลายเธรด
 pref-thread-stream-trans =
@@ -97,6 +95,20 @@ perftools-thread-img-decoder =
     .title = เธรดการถอดรหัสรูปภาพ
 perftools-thread-dns-resolver =
     .title = การแก้ปัญหา DNS เกิดขึ้นในเธรดนี้
+perftools-thread-task-controller =
+    .title = เธรดในเธรดพูล TaskController
+perftools-thread-jvm-gecko =
+    .title = เธรดหลักของ Gecko JVM
+perftools-thread-jvm-nimbus =
+    .title = เธรดหลักสำหรับ Nimbus experiments SDK
+perftools-thread-jvm-default-dispatcher =
+    .title = ตัวจ่ายงานเริ่มต้นสำหรับไลบรารี coroutines ของ Kotlin
+perftools-thread-jvm-glean =
+    .title = เธรดหลักสำหรับ Glean telemetry SDK
+perftools-thread-jvm-arch-disk-io =
+    .title = ตัวจ่ายงาน IO สำหรับไลบรารี coroutines ของ Kotlin
+perftools-thread-jvm-pool =
+    .title = เธรดที่สร้างขึ้นในพูลเธรดที่ไม่มีชื่อ
 
 ##
 
@@ -106,13 +118,44 @@ perftools-tools-threads-input-label =
     .title = ชื่อเธรดเหล่านี้เป็นรายการที่คั่นด้วยจุลภาคที่ใช้ในการเปิดใช้งานการสร้างโปรไฟล์ของเธรดในตัวสร้างโปรไฟล์ ชื่อจะต้องตรงกับชื่อเธรดที่จะรวมเพียงบางส่วนเท่านั้น โดยจะมีการเทียบช่องว่างด้วย
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>ใหม่</b>: { -profiler-brand-name } ถูกรวมเข้ากับเครื่องมือสำหรับนักพัฒนาแล้ว <a>เรียนรู้เพิ่มเติม</a>เกี่ยวกับเครื่องมือใหม่อันทรงพลังนี้
 
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (คุณสามารถเข้าถึงแผงประสิทธิภาพแบบเดิมได้ผ่านทาง <a>{ options-context-advanced-settings }</a> ในระยะเวลาจำกัด)
-
 perftools-onboarding-close-button =
     .aria-label = ปิดข้อความออนบอร์ด
+
+## Profiler presets
+
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/popup/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
+perftools-presets-web-developer-label = นักพัฒนาเว็บ
+perftools-presets-web-developer-description = ค่าที่ตั้งล่วงหน้าที่แนะนำสำหรับการดีบั๊กเว็บแอปส่วนใหญ่ โดยมีโอเวอร์เฮดต่ำ
+
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = ค่าที่ตั้งล่วงหน้าที่แนะนำสำหรับการรวบรวมประวัติ { -brand-shorter-name }
+
+perftools-presets-graphics-label = กราฟิก
+perftools-presets-graphics-description = ค่าที่ตั้งล่วงหน้าสำหรับการตรวจสอบบั๊กเกี่ยวกับกราฟิกใน { -brand-shorter-name }
+
+perftools-presets-media-label = สื่อ
+perftools-presets-media-description2 = ค่าที่ตั้งล่วงหน้าสำหรับการตรวจสอบบั๊กเกี่ยวกับเสียงและวิดีโอใน { -brand-shorter-name }
+
+perftools-presets-networking-label = ระบบเครือข่าย
+perftools-presets-networking-description = ค่าที่ตั้งล่วงหน้าสำหรับการตรวจสอบบั๊กเกี่ยวกับระบบเครือข่ายใน { -brand-shorter-name }
+
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = พลังงาน
+perftools-presets-power-description = ค่าที่ตั้งล่วงหน้าสำหรับการตรวจสอบบั๊กเกี่ยวกับการใช้พลังงานใน { -brand-shorter-name } โดยมีโอเวอร์เฮดต่ำ
+
+perftools-presets-custom-label = กำหนดเอง
+
+##
+

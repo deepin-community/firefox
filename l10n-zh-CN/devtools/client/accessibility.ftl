@@ -13,6 +13,22 @@ accessibility-keyboard-header = 键盘
 
 ## Text entries that are used as text alternative for icons that depict accessibility isses.
 
+
+## These strings are used in the overlay displayed when running an audit in the accessibility panel
+
+accessibility-progress-initializing = 正在初始化…
+    .aria-valuetext = 正在初始化…
+
+# This string is displayed in the audit progress bar in the accessibility panel.
+# Variables:
+#   $nodeCount (Integer) - The number of nodes for which the audit was run so far.
+accessibility-progress-progressbar = 检查 { $nodeCount } 个节点
+
+accessibility-progress-finishing = 即将完成…
+    .aria-valuetext = 即将完成…
+
+## Text entries that are used as text alternative for icons that depict accessibility issues.
+
 accessibility-warning =
     .alt = 警告
 
@@ -68,7 +84,7 @@ accessibility-text-label-issue-toolbar = 当有超过一个工具栏时，工具
 
 accessibility-keyboard-issue-semantics = 可聚焦元素应有交互式语义。<a>详细了解</a>
 
-accessibility-keyboard-issue-tabindex = 避免使用大于 0 的 <code>tabindex<code> 属性。<a>详细了解</a>
+accessibility-keyboard-issue-tabindex = 避免使用大于 0 的 <code>tabindex</code> 属性。<a>详细了解</a>
 
 accessibility-keyboard-issue-action = 交互式元素必须可用键盘激活。<a>详细了解</a>
 

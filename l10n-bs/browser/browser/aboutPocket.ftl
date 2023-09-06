@@ -26,7 +26,6 @@ pocket-panel-saved-save-tags = Spasi
 pocket-panel-saved-saving-tags = Spašavam…
 pocket-panel-saved-suggested-tags = Preporučeni tagovi
 pocket-panel-saved-tags-saved = Tagovi dodani
-pocket-panel-signup-view-list = Prikaži listu
 
 ## about:pocket-signup panel
 
@@ -42,9 +41,13 @@ pocket-panel-signup-tagline-story-two = Pregledajte u { -pocket-brand-name }u na
 
 ## about:pocket-home panel
 
-pocket-panel-home-my-list = Moja lista
 pocket-panel-home-welcome-back = Dobrodošli nazad
 pocket-panel-home-paragraph = Možete koristiti { -pocket-brand-name } da istražite i spasite web stranice, članke, video, podcaste, ili da se vratite na ono što ste ranije čitali.
 pocket-panel-home-explore-popular-topics = Istražite popularne teme
 pocket-panel-home-discover-more = Istražite više
 pocket-panel-home-explore-more = Istraži
+
+## Pocket panel header component
+
+## Pocket panel buttons
+

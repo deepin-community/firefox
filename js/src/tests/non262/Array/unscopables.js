@@ -20,19 +20,26 @@ assertDeepEq(desc2, {
 
 let keys = Reflect.ownKeys(Array_unscopables);
 
-assertDeepEq(keys, [
-    "at",
-    "copyWithin",
-    "entries",
-    "fill",
-    "find",
-    "findIndex",
-    "flat",
-    "flatMap",
-    "includes",
-    "keys",
-    "values"
-]);
+// FIXME: Once bug 1826643 is fixed, change this test so that all
+// the keys are in alphabetical order
+let expectedKeys = ["at",
+		    "copyWithin",
+		    "entries",
+		    "fill",
+		    "find",
+		    "findIndex",
+		    "findLast",
+		    "findLastIndex",
+		    "flat",
+		    "flatMap",
+		    "includes",
+		    "keys",
+            "toReversed",
+            "toSorted",
+            "toSpliced",
+		    "values"];
+
+assertDeepEq(keys, expectedKeys);
 
 for (let key of keys)
     assertEq(Array_unscopables[key], true);

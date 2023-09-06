@@ -1,15 +1,13 @@
 // This file tests async handling of a channel suspended in http-on-modify-request.
 "use strict";
 
-var CC = Components.Constructor;
-
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
-
-var obs = Cc["@mozilla.org/observer-service;1"].getService(
-  Ci.nsIObserverService
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
 );
 
-var ios = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
+var obs = Services.obs;
+
+var ios = Services.io;
 
 // baseUrl is always the initial connection attempt and is handled by
 // failResponseHandler since every test expects that request will either be
@@ -34,8 +32,6 @@ function onModifyListener(callback) {
   obs.addObserver(
     {
       observe(subject, topic, data) {
-        var obs = Cc["@mozilla.org/observer-service;1"].getService();
-        obs = obs.QueryInterface(Ci.nsIObserverService);
         obs.removeObserver(this, "http-on-modify-request");
         callback(subject.QueryInterface(Ci.nsIHttpChannel));
       },
@@ -44,9 +40,9 @@ function onModifyListener(callback) {
   );
 }
 
-function startChannelRequest(baseUrl, flags, expectedResponse = null) {
+function startChannelRequest(uri, flags, expectedResponse = null) {
   var chan = NetUtil.newChannel({
-    uri: baseUrl,
+    uri,
     loadUsingSystemPrincipal: true,
   });
   chan.asyncOpen(
@@ -175,7 +171,7 @@ function run_test() {
 
   run_next_test();
 
-  registerCleanupFunction(function() {
+  registerCleanupFunction(function () {
     httpServer.stop(() => {});
   });
 }

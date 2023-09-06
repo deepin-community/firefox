@@ -1,8 +1,6 @@
-ChromeUtils.defineModuleGetter(
-  this,
-  "WindowsRegistry",
-  "resource://gre/modules/WindowsRegistry.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  WindowsRegistry: "resource://gre/modules/WindowsRegistry.sys.mjs",
+});
 
 function getFirefoxExecutableFile() {
   let file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
@@ -12,9 +10,9 @@ function getFirefoxExecutableFile() {
   return file;
 }
 
-// This is copied from WindowsRegistry.jsm, but extended to support
+// This is copied from WindowsRegistry.sys.mjs, but extended to support
 // TYPE_BINARY, as that is how we represent doubles in the registry for
-// the skeleton UI. However, we didn't extend WindowsRegistry.jsm itself,
+// the skeleton UI. However, we didn't extend WindowsRegistry.sys.mjs itself,
 // because TYPE_BINARY is kind of a footgun for javascript callers - our
 // use case is just trivial (checking that the value is non-zero).
 function readRegKeyExtended(aRoot, aPath, aKey, aRegistryNode = 0) {
@@ -71,7 +69,7 @@ add_task(async function testWritesEnabledOnPrefChange() {
   is(enabled, 0, "Pre-XUL skeleton UI is disabled in the Windows registry");
 
   Services.prefs.setBoolPref("browser.startup.preXulSkeletonUI", true);
-  Services.prefs.setBoolPref("browser.tabs.drawInTitlebar", false);
+  Services.prefs.setIntPref("browser.tabs.inTitlebar", 0);
   enabled = WindowsRegistry.readRegKey(
     Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER,
     "Software\\Mozilla\\Firefox\\PreXULSkeletonUISettings",

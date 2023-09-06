@@ -61,24 +61,123 @@ const TESTCASES = [
     targetElementId: "cc-number",
     expectedResult: ["cc-number", "cc-name", "cc-exp-month", "cc-exp-year"],
   },
+  {
+    description:
+      "Form containing multiple cc-number fields without autocomplete attributes.",
+    document: `<form>
+                <input id="cc-number1" maxlength="4">
+                <input id="cc-number2" maxlength="4">
+                <input id="cc-number3" maxlength="4">
+                <input id="cc-number4" maxlength="4">
+                <input id="cc-name">
+                <input id="cc-exp-month">
+                <input id="cc-exp-year">
+               </form>`,
+    targetElementId: "cc-number1",
+    expectedResult: [
+      "cc-number1",
+      "cc-number2",
+      "cc-number3",
+      "cc-number4",
+      "cc-name",
+      "cc-exp-month",
+      "cc-exp-year",
+    ],
+  },
+  {
+    description:
+      "Invalid form containing three consecutive cc-number fields without autocomplete attributes.",
+    document: `<form>
+                <input id="cc-number1" maxlength="4">
+                <input id="cc-number2" maxlength="4">
+                <input id="cc-number3" maxlength="4">
+               </form>`,
+    targetElementId: "cc-number1",
+    expectedResult: [],
+    prefs: [
+      [
+        "extensions.formautofill.creditCards.heuristics.fathom.testConfidence",
+        "1.0",
+      ],
+    ],
+  },
+  {
+    description:
+      "Invalid form containing five consecutive cc-number fields without autocomplete attributes.",
+    document: `<form>
+                <input id="cc-number1" maxlength="4">
+                <input id="cc-number2" maxlength="4">
+                <input id="cc-number3" maxlength="4">
+                <input id="cc-number4" maxlength="4">
+                <input id="cc-number5" maxlength="4">
+               </form>`,
+    targetElementId: "cc-number1",
+    expectedResult: [],
+    prefs: [
+      [
+        "extensions.formautofill.creditCards.heuristics.fathom.testConfidence",
+        "1.0",
+      ],
+    ],
+  },
+  {
+    description:
+      "Valid form containing three consecutive cc-number fields without autocomplete attributes.",
+    document: `<form>
+                <input id="cc-number1" maxlength="4">
+                <input id="cc-number2" maxlength="4">
+                <input id="cc-number3" maxlength="4">
+                <input id="cc-name">
+                <input id="cc-exp-month">
+                <input id="cc-exp-year">
+               </form>`,
+    targetElementId: "cc-number1",
+    expectedResult: ["cc-number3", "cc-name", "cc-exp-month", "cc-exp-year"],
+    prefs: [
+      [
+        "extensions.formautofill.creditCards.heuristics.fathom.testConfidence",
+        "1.0",
+      ],
+    ],
+  },
+  {
+    description:
+      "Valid form containing five consecutive cc-number fields without autocomplete attributes.",
+    document: `<form>
+                <input id="cc-number1" maxlength="4">
+                <input id="cc-number2" maxlength="4">
+                <input id="cc-number3" maxlength="4">
+                <input id="cc-number4" maxlength="4">
+                <input id="cc-number5" maxlength="4">
+                <input id="cc-name">
+                <input id="cc-exp-month">
+                <input id="cc-exp-year">
+               </form>`,
+    targetElementId: "cc-number1",
+    expectedResult: ["cc-number5", "cc-name", "cc-exp-month", "cc-exp-year"],
+  },
 ];
 
 let markedFieldId = [];
 
 var FormAutofillContent;
-add_task(async function setup() {
-  ({ FormAutofillContent } = ChromeUtils.import(
-    "resource://autofill/FormAutofillContent.jsm"
+add_setup(async () => {
+  ({ FormAutofillContent } = ChromeUtils.importESModule(
+    "resource://autofill/FormAutofillContent.sys.mjs"
   ));
 
-  FormAutofillContent._markAsAutofillField = function(field) {
+  FormAutofillContent._markAsAutofillField = function (field) {
     markedFieldId.push(field.id);
   };
 });
 
 TESTCASES.forEach(testcase => {
-  add_task(async function() {
+  add_task(async function () {
     info("Starting testcase: " + testcase.description);
+
+    if (testcase.prefs) {
+      testcase.prefs.forEach(pref => SetPref(pref[0], pref[1]));
+    }
 
     markedFieldId = [];
 
@@ -94,5 +193,9 @@ TESTCASES.forEach(testcase => {
       testcase.expectedResult,
       "Check the fields were marked correctly."
     );
+
+    if (testcase.prefs) {
+      testcase.prefs.forEach(pref => Services.prefs.clearUserPref(pref[0]));
+    }
   });
 });

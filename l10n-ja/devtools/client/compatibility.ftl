@@ -13,7 +13,6 @@ compatibility-issue-deprecated = (非推奨)
 compatibility-issue-experimental = (実験的)
 compatibility-issue-prefixneeded = (接頭辞が必要)
 compatibility-issue-deprecated-experimental = (非推奨、実験的)
-
 compatibility-issue-deprecated-prefixneeded = (非推奨、接頭辞が必要)
 compatibility-issue-experimental-prefixneeded = (実験的、接頭辞が必要)
 compatibility-issue-deprecated-experimental-prefixneeded = (非推奨、実験的、接頭辞が必要)
@@ -23,9 +22,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (非推奨、実験�
 compatibility-settings-button-label = 設定
 compatibility-settings-button-title =
     .title = 設定
-compatibility-feedback-button-label = フィードバック
-compatibility-feedback-button-title =
-    .title = フィードバック
 
 ## Messages used as headers in settings pane
 
@@ -42,3 +38,11 @@ compatibility-issue-occurrences = { $number } 件の非互換
 compatibility-no-issues-found = 互換性に問題はありません。
 compatibility-close-settings-button =
     .title = 設定を閉じる
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title = 互換性に問題あり:
+    { $browsers }

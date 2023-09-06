@@ -36,3 +36,41 @@ findbar-entire-word =
     .label = Сөздер толығымен
     .accesskey = т
     .tooltiptext = Тек толық сөздерді іздеу
+
+findbar-not-found = Сөз(дер) табылмады
+
+findbar-wrapped-to-top = Парақтың соңына жеттік, басынан бастап жалғастырамыз
+findbar-wrapped-to-bottom = Парақтың басына жеттік, соңынан бастап жалғастырамыз
+
+findbar-normal-find =
+    .placeholder = Беттен табу
+findbar-fast-find =
+    .placeholder = Жылдам табу
+findbar-fast-find-links =
+    .placeholder = Жылдам табу (тек сілтемелер ғана):
+
+findbar-case-sensitive-status =
+    .value = (Регистрді ескеру)
+findbar-match-diacritics-status =
+    .value = (Диакритиканы ескеру)
+findbar-entire-word-status =
+    .value = (Тек толық сөздер)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $current } сәйкестік, барлығы { $total }
+           *[other] { $current } сәйкестік, барлығы { $total }
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] { $limit } сәйкестіктен көп
+           *[other] { $limit } сәйкестіктен көп
+        }

@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import
-
 
 import mozunit
 import pytest
@@ -21,8 +19,8 @@ def harness_class(request):
     Mock based on MarionetteHarness whose run method just returns a number of
     failures according to the supplied test parameter
     """
-    if "num_fails_crashed" in request.funcargnames:
-        num_fails_crashed = request.getfuncargvalue("num_fails_crashed")
+    if "num_fails_crashed" in request.fixturenames:
+        num_fails_crashed = request.getfixturevalue("num_fails_crashed")
     else:
         num_fails_crashed = (0, 0)
     harness_cls = Mock(spec=MarionetteHarness)
@@ -40,8 +38,8 @@ def runner_class(request):
     Mock based on MarionetteTestRunner, wherein the runner.failed,
     runner.crashed attributes are provided by a test parameter
     """
-    if "num_fails_crashed" in request.funcargnames:
-        failures, crashed = request.getfuncargvalue("num_fails_crashed")
+    if "num_fails_crashed" in request.fixturenames:
+        failures, crashed = request.getfixturevalue("num_fails_crashed")
     else:
         failures = 0
         crashed = 0

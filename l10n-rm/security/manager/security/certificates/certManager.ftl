@@ -26,9 +26,9 @@ certmgr-people = Ti has certificats memorisads che identifitgeschan questas pers
 certmgr-server = Questas endataziuns identifitgeschan las excepziuns da las errurs da certificats da servers
 certmgr-ca = Ti has certificats memorisads che identifitgeschan quests posts da certificaziun
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Modifitgar ils parameters da fidanza en certificats CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Modifitgar ils parameters da fidanza:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Quest certificat po identifitgar utilisaders dad e-mail.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Stizzar il certificat
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Host
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Server
-
-certmgr-override-lifetime =
-    .label = Durada da vita
 
 certmgr-token-name =
     .label = Modul da criptografia
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Numer da seria
+
+certmgr-fingerprint-sha-256 =
+    .label = Impronta SHA-256
 
 certmgr-view =
     .label = Vesair…
@@ -185,8 +185,6 @@ delete-email-cert-impact = Sche ti stizzas in certificat dad e-mail d'ina persun
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Certificat cun il numer da seria: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Na trametter nagin certificat da client

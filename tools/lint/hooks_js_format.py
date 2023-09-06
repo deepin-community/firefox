@@ -5,21 +5,22 @@
 
 import os
 import subprocess
-from subprocess import check_output, CalledProcessError
 import sys
+from subprocess import CalledProcessError, check_output
 
 here = os.path.dirname(os.path.realpath(__file__))
 topsrcdir = os.path.join(here, os.pardir, os.pardir)
 
 EXTRA_PATHS = (
-    "python/mozversioncontrol",
+    "python/mach",
     "python/mozbuild",
+    "python/mozversioncontrol",
     "testing/mozbase/mozfile",
     "third_party/python/jsmin",
 )
 sys.path[:0] = [os.path.join(topsrcdir, p) for p in EXTRA_PATHS]
 
-from mozversioncontrol import get_repository_object, InvalidRepoPath
+from mozversioncontrol import InvalidRepoPath, get_repository_object
 
 
 def run_js_format(hooktype, changedFiles):
@@ -32,11 +33,11 @@ def run_js_format(hooktype, changedFiles):
         # No files have been touched
         return
 
-    extensions = (".js", ".jsx", ".jsm")
+    extensions = (".js", ".jsx", ".jsm", ".json", ".mjs", "sjs", "html", "xhtml")
     path_list = []
     for filename in sorted(changedFiles):
         # Ignore files unsupported in eslint and prettier
-        if filename.decode().endswith(extensions):
+        if filename.endswith(extensions):
             path_list.append(filename)
 
     if not path_list:
@@ -67,7 +68,8 @@ def git():
 
     try:
         changedFiles = check_output(
-            ["git", "diff", "--staged", "--diff-filter=d", "--name-only", "HEAD"]
+            ["git", "diff", "--staged", "--diff-filter=d", "--name-only", "HEAD"],
+            text=True,
         ).split()
         # TODO we should detect if we are in a "add -p" mode and show a warning
         return run_js_format(hooktype, changedFiles)

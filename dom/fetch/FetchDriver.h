@@ -9,6 +9,7 @@
 
 #include "nsIChannelEventSink.h"
 #include "nsIInterfaceRequestor.h"
+#include "nsINetworkInterceptController.h"
 #include "nsIStreamListener.h"
 #include "nsIThreadRetargetableStreamListener.h"
 #include "mozilla/ConsoleReportCollector.h"
@@ -38,6 +39,7 @@ class Document;
 class InternalRequest;
 class InternalResponse;
 class PerformanceStorage;
+class PerformanceTimingData;
 
 /**
  * Provides callbacks to be called when response is available or on error.
@@ -51,18 +53,15 @@ class FetchDriverObserver {
       : mReporter(new ConsoleReportCollector()), mGotResponseAvailable(false) {}
 
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(FetchDriverObserver);
-  void OnResponseAvailable(InternalResponse* aResponse) {
-    MOZ_ASSERT(!mGotResponseAvailable);
-    mGotResponseAvailable = true;
-    OnResponseAvailableInternal(aResponse);
-  }
+  void OnResponseAvailable(SafeRefPtr<InternalResponse> aResponse);
 
   enum EndReason {
     eAborted,
     eByNetworking,
   };
 
-  virtual void OnResponseEnd(EndReason aReason){};
+  virtual void OnResponseEnd(EndReason aReason,
+                             JS::Handle<JS::Value> aReasonDetails){};
 
   nsIConsoleReportCollector* GetReporter() const { return mReporter; }
 
@@ -77,10 +76,15 @@ class FetchDriverObserver {
   // NeedOnDataAvailable() returned true when called in OnStartRequest().
   virtual void OnDataAvailable() = 0;
 
+  virtual void OnReportPerformanceTiming() {}
+
+  virtual void OnNotifyNetworkMonitorAlternateStack(uint64_t aChannelID) {}
+
  protected:
   virtual ~FetchDriverObserver() = default;
 
-  virtual void OnResponseAvailableInternal(InternalResponse* aResponse) = 0;
+  virtual void OnResponseAvailableInternal(
+      SafeRefPtr<InternalResponse> aResponse) = 0;
 
   nsCOMPtr<nsIConsoleReportCollector> mReporter;
 
@@ -93,6 +97,7 @@ class AlternativeDataStreamListener;
 class FetchDriver final : public nsIStreamListener,
                           public nsIChannelEventSink,
                           public nsIInterfaceRequestor,
+                          public nsINetworkInterceptController,
                           public nsIThreadRetargetableStreamListener,
                           public AbortFollower {
  public:
@@ -101,6 +106,7 @@ class FetchDriver final : public nsIStreamListener,
   NS_DECL_NSISTREAMLISTENER
   NS_DECL_NSICHANNELEVENTSINK
   NS_DECL_NSIINTERFACEREQUESTOR
+  NS_DECL_NSINETWORKINTERCEPTCONTROLLER
   NS_DECL_NSITHREADRETARGETABLESTREAMLISTENER
 
   FetchDriver(SafeRefPtr<InternalRequest> aRequest, nsIPrincipal* aPrincipal,
@@ -127,14 +133,24 @@ class FetchDriver final : public nsIStreamListener,
     mOriginStack = std::move(aOriginStack);
   }
 
+  PerformanceTimingData* GetPerformanceTimingData(nsAString& aInitiatorType,
+                                                  nsAString& aEntryName);
+
   // AbortFollower
   void RunAbortAlgorithm() override;
+  void FetchDriverAbortActions(AbortSignalImpl* aSignalImpl);
+
+  void EnableNetworkInterceptControl();
+
+  void SetAssociatedBrowsingContextID(uint64_t aID) {
+    mAssociatedBrowsingContextID = aID;
+  }
 
  private:
   nsCOMPtr<nsIPrincipal> mPrincipal;
   nsCOMPtr<nsILoadGroup> mLoadGroup;
   SafeRefPtr<InternalRequest> mRequest;
-  RefPtr<InternalResponse> mResponse;
+  SafeRefPtr<InternalResponse> mResponse;
   nsCOMPtr<nsIOutputStream> mPipeOutputStream;
   RefPtr<FetchDriverObserver> mObserver;
   RefPtr<Document> mDocument;
@@ -178,6 +194,9 @@ class FetchDriver final : public nsIStreamListener,
   bool mResponseAvailableCalled;
   bool mFetchCalled;
 #endif
+  nsCOMPtr<nsINetworkInterceptController> mInterceptController;
+
+  uint64_t mAssociatedBrowsingContextID{0};
 
   friend class AlternativeDataStreamListener;
 
@@ -192,14 +211,14 @@ class FetchDriver final : public nsIStreamListener,
 
   nsresult HttpFetch(const nsACString& aPreferredAlternativeDataType = ""_ns);
   // Returns the filtered response sent to the observer.
-  already_AddRefed<InternalResponse> BeginAndGetFilteredResponse(
-      InternalResponse* aResponse, bool aFoundOpaqueRedirect);
+  SafeRefPtr<InternalResponse> BeginAndGetFilteredResponse(
+      SafeRefPtr<InternalResponse> aResponse, bool aFoundOpaqueRedirect);
   // Utility since not all cases need to do any post processing of the filtered
   // response.
   void FailWithNetworkError(nsresult rv);
 
-  void SetRequestHeaders(nsIHttpChannel* aChannel,
-                         bool aStripRequestBodyHeader) const;
+  void SetRequestHeaders(nsIHttpChannel* aChannel, bool aStripRequestBodyHeader,
+                         bool aStripAuthHeader) const;
 
   void FinishOnStopRequest(AlternativeDataStreamListener* aAltDataListener);
 };

@@ -8,6 +8,7 @@ about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Очисти DNS кеш
 about-networking-dns-trr-url = DoH адреса
+about-networking-dns-trr-mode = DoH режим
 about-networking-dns-suffix = DNS суфикс
 about-networking-websockets = WebSockets
 about-networking-refresh = Освежи
@@ -19,27 +20,20 @@ about-networking-ssl = SSL
 about-networking-active = Активно
 about-networking-idle = Чекање
 about-networking-host = Хост
-about-networking-tcp = TCP
 about-networking-type = Тип
-about-networking-sent = Послато
+about-networking-sent = Послано
 about-networking-received = Примљено
 about-networking-family = Породица
 about-networking-trr = TRR
 about-networking-addresses = Адресе
 about-networking-expires = Истиче (у секундама)
 about-networking-originAttributesSuffix = Изолациони кључ
-about-networking-messages-sent = Поруке послате
+about-networking-flags = Додатне заставице
+about-networking-messages-sent = Порука послано
 about-networking-messages-received = Поруке примљене
-about-networking-bytes-sent = Бајтова послато
+about-networking-bytes-sent = Бајтова послано
 about-networking-bytes-received = Бајтова примљено
 about-networking-logging = Бележење
-about-networking-log-tutorial = Погледајте <a data-l10n-name="logging">HTTP бележење</a> за инструкције о коришћењу овог алата.
-about-networking-current-log-file = Тренутна датотека евиденције:
-about-networking-current-log-modules = Тренутни модули за бележење:
-about-networking-set-log-file = Подеси датотеку за бележење
-about-networking-set-log-modules = Подеси модуле за бележење
-about-networking-start-logging = Покрени бележење
-about-networking-stop-logging = Заустави бележење
 about-networking-dns-lookup = DNS Lookup
 about-networking-dns-lookup-button = Решити
 about-networking-dns-domain = Домен:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Број успореног кеша
 about-networking-rcwn-cache-not-slow = Брз неуспореног кеша
 about-networking-networkid = ИБ мреже
 about-networking-networkid-id = ИБ мреже
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Ова страница је премештена у <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

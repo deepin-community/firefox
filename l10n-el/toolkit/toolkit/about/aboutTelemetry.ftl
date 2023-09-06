@@ -34,7 +34,6 @@ about-telemetry-events-section = Συμβάντα
 about-telemetry-simple-measurements-section = Απλές μετρήσεις
 about-telemetry-slow-sql-section = Αργές εντολές SQL
 about-telemetry-addon-details-section = Λεπτομέρειες προσθέτου
-about-telemetry-captured-stacks-section = Κατειλημμένες Στοίβες
 about-telemetry-late-writes-section = Καθυστερημένες εγγραφές
 about-telemetry-raw-payload-section = Ακατέργαστο ωφέλιμο φορτίο
 about-telemetry-raw = Ακατέργαστη JSON
@@ -122,10 +121,6 @@ about-telemetry-keys-header = Ιδιότητα
 about-telemetry-names-header = Όνομα
 about-telemetry-values-header = Τιμή
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (μέτρηση καταλήψεων: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Καθυστερημένη εγγραφή #{ $lateWriteCount }
 about-telemetry-stack-title = Στοίβα:
@@ -136,12 +131,6 @@ about-telemetry-category-header = κατηγορία
 about-telemetry-method-header = μέθοδος
 about-telemetry-object-header = αντικείμενο
 about-telemetry-extra-header = επιπλέον
-about-telemetry-origin-section = Origin Telemetry
-about-telemetry-origin-origin = προέλευση
-about-telemetry-origin-count = μέτρηση
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = Το <a data-l10n-name="origin-doc-link">Firefox Origin Telemetry</a> κωδικοποιεί τα δεδομένα πριν αποσταλούν έτσι, ώστε η { $telemetryServerOwner } να μπορέσει να μετρήσει πράγματα, αλλά δεν θα γνωρίζει αν συνεισέφερε το παρόν { -brand-product-name } σε αυτή τη μέτρηση. (<a data-l10n-name="prio-blog-link">Μάθετε περισσότερα</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = Διεργασία { $process }

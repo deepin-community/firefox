@@ -13,13 +13,13 @@
             "name": "oldPrefs",
             "type": "object",
             "properties": {},
-            "additionalProperties": {"type": "any"}
+            "additionalProperties": { "type": "any" }
           },
           {
             "name": "newPrefs",
             "type": "object",
             "properties": {},
-            "additionalProperties": {"type": "any"}
+            "additionalProperties": { "type": "any" }
           }
         ]
       },
@@ -54,11 +54,11 @@
         "name": "getLinkColor",
         "type": "function",
         "async": true,
-        "description": "Get resolved color for link for a given page and selector.",
+        "description": "Get resolved color for the link resolved by a given selector.",
         "parameters": [
           {
-            "type": "string",
-            "name": "uri"
+            "type": "number",
+            "name": "tabId"
           },
           {
             "type": "string",
@@ -120,6 +120,10 @@
         "parameters": [
           {
             "type": "number",
+            "name": "tabId"
+          },
+          {
+            "type": "number",
             "name": "resolution"
           }
         ]
@@ -149,14 +153,14 @@
         ]
       },
       {
-        "name":  "getAllBrowserPids",
+        "name": "getAllBrowserPids",
         "type": "function",
         "async": true,
         "description": "Gets the list of pids of the running browser processes",
         "parameters": []
       },
       {
-        "name":  "getProfilePath",
+        "name": "getProfilePath",
         "type": "function",
         "async": true,
         "description": "Gets the path of the current profile",
@@ -191,6 +195,63 @@
         "type": "function",
         "async": true,
         "description": "A simplified version of promiseAllPaintsDone in paint_listeners.js.",
+        "parameters": [
+          {
+            "type": "number",
+            "name": "tabId"
+          }
+        ]
+      },
+      {
+        "name": "usingGpuProcess",
+        "type": "function",
+        "async": true,
+        "description": "Returns true if Gecko is using a GPU process.",
+        "parameters": []
+      },
+
+      {
+        "name": "killGpuProcess",
+        "type": "function",
+        "async": true,
+        "description": "Kills the GPU process cleanly without generating a crash report.",
+        "parameters": []
+      },
+
+      {
+        "name": "crashGpuProcess",
+        "type": "function",
+        "async": true,
+        "description": "Causes the GPU process to crash.",
+        "parameters": []
+      },
+
+      {
+        "name": "clearHSTSState",
+        "type": "function",
+        "async": true,
+        "description": "Clears the sites on the HSTS list.",
+        "parameters": []
+      },
+
+      {
+        "name": "triggerCookieBannerDetected",
+        "type": "function",
+        "async": true,
+        "description": "Simulates a cookie banner detection",
+        "parameters": [
+          {
+            "type": "number",
+            "name": "tabId"
+          }
+        ]
+      },
+
+      {
+        "name": "triggerCookieBannerHandled",
+        "type": "function",
+        "async": true,
+        "description": "Simulates a cookie banner handling",
         "parameters": [
           {
             "type": "number",

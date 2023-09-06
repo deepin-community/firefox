@@ -10,7 +10,7 @@ const COLOR_DIV_2 = "rgb(0, 200, 0)";
 const COLOR_DIV_3 = "rgb(0, 0, 150)";
 const COLOR_DIV_4 = "rgb(100, 0, 100)";
 
-const TEST_URI = `data:text/html,<meta charset=utf8>
+const TEST_URI = `data:text/html,<!DOCTYPE html><meta charset=utf8>
     <style>
       body {
         margin: 0;
@@ -31,25 +31,28 @@ const TEST_URI = `data:text/html,<meta charset=utf8>
       <div></div>
     </body>`;
 
-const { FileUtils } = ChromeUtils.import(
-  "resource://gre/modules/FileUtils.jsm"
-);
-
-add_task(async function() {
+add_task(async function () {
   await addTab(TEST_URI);
   const hud = await BrowserConsoleManager.toggleBrowserConsole();
 
   info("Execute :screenshot");
-  const file = FileUtils.getFile("TmpD", ["TestScreenshotFile.png"]);
+  const file = new FileUtils.File(
+    PathUtils.join(PathUtils.tempDir, "TestScreenshotFile.png")
+  );
   // on some machines, such as macOS, dpr is set to 2. This is expected behavior, however
   // to keep tests consistant across OSs we are setting the dpr to 1
   const command = `:screenshot ${file.path} --dpr 1`;
 
-  await executeAndWaitForMessage(hud, command, `Saved to ${file.path}`);
+  await executeAndWaitForMessageByType(
+    hud,
+    command,
+    `Saved to ${file.path}`,
+    ".console-api"
+  );
 
   info("Create an image using the downloaded file as source");
   const image = new Image();
-  image.src = OS.Path.toFileURI(file.path);
+  image.src = PathUtils.toFileURI(file.path);
   await once(image, "load");
 
   info(
@@ -101,6 +104,6 @@ add_task(async function() {
   });
 
   info("Remove the downloaded screenshot file and cleanup downloads");
-  await OS.File.remove(file.path);
+  await IOUtils.remove(file.path);
   await resetDownloads();
 });

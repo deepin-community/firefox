@@ -7,12 +7,12 @@ const CC = Components.Constructor;
 const FIRST_PARTY_OPENER = "example.com";
 const FIRST_PARTY_TARGET = "example.org";
 const OPENER_PAGE =
-  "http://" +
+  "https://" +
   FIRST_PARTY_OPENER +
   "/browser/browser/components/" +
   "originattributes/test/browser/file_windowOpenerRestriction.html";
 const TARGET_PAGE =
-  "http://" +
+  "https://" +
   FIRST_PARTY_TARGET +
   "/browser/browser/components/" +
   "originattributes/test/browser/file_windowOpenerRestrictionTarget.html";
@@ -35,13 +35,13 @@ async function testPref(aIsPrefEnabled) {
   await SpecialPowers.spawn(
     browser,
     [{ cookieStr, page: TARGET_PAGE, isPrefEnabled: aIsPrefEnabled }],
-    async function(obj) {
+    async function (obj) {
       // Acquire the iframe element.
       let childFrame = content.document.getElementById("child");
 
       // Insert a cookie into this iframe.
       await SpecialPowers.spawn(childFrame, [obj.cookieStr], aCookieStr => {
-        content.document.cookie = aCookieStr;
+        content.document.cookie = aCookieStr + "; SameSite=None; Secure;";
       });
 
       // Open the tab here and focus on it.
@@ -70,7 +70,7 @@ async function testPref(aIsPrefEnabled) {
   );
 
   // Close Tabs.
-  await SpecialPowers.spawn(browser, [], async function() {
+  await SpecialPowers.spawn(browser, [], async function () {
     content.openedWindow.close();
   });
   BrowserTestUtils.removeTab(tab);

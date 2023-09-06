@@ -22,13 +22,13 @@ process-type-extension = გაფართოება
 # process used to open file:// URLs
 process-type-file = ადგილობრივი ფაილი
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = დიდი განაწილება
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = განცალკევებული ვებშიგთავსი
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = გამიჯნული Service Worker
 
 # process preallocated; may change to other types
 process-type-prealloc = წინასწარ განაწილებული
@@ -49,6 +49,9 @@ process-type-socket = სოკეტი
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = გამიჯნული IPC Actor
 
 ##
 ## Other

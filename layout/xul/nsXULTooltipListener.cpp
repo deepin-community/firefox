@@ -6,29 +6,27 @@
 
 #include "nsXULTooltipListener.h"
 
+#include "XULButtonElement.h"
+#include "XULTreeElement.h"
 #include "nsXULElement.h"
 #include "mozilla/dom/Document.h"
 #include "nsGkAtoms.h"
 #include "nsMenuPopupFrame.h"
 #include "nsIDragService.h"
 #include "nsIDragSession.h"
-#ifdef MOZ_XUL
-#  include "nsITreeView.h"
-#endif
+#include "nsITreeView.h"
 #include "nsIScriptContext.h"
 #include "nsPIDOMWindow.h"
-#ifdef MOZ_XUL
-#  include "nsXULPopupManager.h"
-#endif
+#include "nsXULPopupManager.h"
 #include "nsIPopupContainer.h"
 #include "nsServiceManagerUtils.h"
 #include "nsTreeColumns.h"
 #include "nsContentUtils.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/LookAndFeel.h"
-#include "mozilla/Preferences.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/ScopeExit.h"
+#include "mozilla/StaticPrefs_browser.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/Event.h"  // for Event
 #include "mozilla/dom/MouseEvent.h"
@@ -45,35 +43,16 @@ nsXULTooltipListener* nsXULTooltipListener::sInstance = nullptr;
 //// nsISupports
 
 nsXULTooltipListener::nsXULTooltipListener()
-    : mMouseScreenX(0),
-      mMouseScreenY(0),
-      mTooltipShownOnce(false)
-#ifdef MOZ_XUL
-      ,
+    : mTooltipShownOnce(false),
       mIsSourceTree(false),
       mNeedTitletip(false),
-      mLastTreeRow(-1)
-#endif
-{
-  // FIXME(emilio): This can be faster, this should use static prefs.
-  //
-  // register the callback so we get notified of updates
-  Preferences::RegisterCallback(ToolbarTipsPrefChanged,
-                                "browser.chrome.toolbar_tips");
-
-  // Call the pref callback to initialize our state.
-  ToolbarTipsPrefChanged("browser.chrome.toolbar_tips", nullptr);
-}
+      mLastTreeRow(-1) {}
 
 nsXULTooltipListener::~nsXULTooltipListener() {
   MOZ_ASSERT(sInstance == this);
   sInstance = nullptr;
 
   HideTooltip();
-
-  // Unregister our pref observer
-  Preferences::UnregisterCallback(ToolbarTipsPrefChanged,
-                                  "browser.chrome.toolbar_tips");
 }
 
 NS_IMPL_ISUPPORTS(nsXULTooltipListener, nsIDOMEventListener)
@@ -97,18 +76,16 @@ void nsXULTooltipListener::MouseOut(Event* aEvent) {
   if (mNeedTitletip) return;
 #endif
 
-#ifdef MOZ_XUL
   // check to see if the mouse left the targetNode, and if so,
   // hide the tooltip
   if (currentTooltip) {
     // which node did the mouse leave?
     EventTarget* eventTarget = aEvent->GetComposedTarget();
-    nsCOMPtr<nsIContent> content = do_QueryInterface(eventTarget);
-    if (content && !content->GetContainingShadow()) {
+    nsCOMPtr<nsINode> targetNode = nsINode::FromEventTargetOrNull(eventTarget);
+    if (targetNode && targetNode->IsContent() &&
+        !targetNode->AsContent()->GetContainingShadow()) {
       eventTarget = aEvent->GetTarget();
     }
-
-    nsCOMPtr<nsINode> targetNode = do_QueryInterface(eventTarget);
 
     nsXULPopupManager* pm = nsXULPopupManager::GetInstance();
     if (pm) {
@@ -121,7 +98,8 @@ void nsXULTooltipListener::MouseOut(Event* aEvent) {
       // tooltip appears positioned near the mouse.
       nsCOMPtr<EventTarget> relatedTarget =
           aEvent->AsMouseEvent()->GetRelatedTarget();
-      nsCOMPtr<nsIContent> relatedContent = do_QueryInterface(relatedTarget);
+      nsIContent* relatedContent =
+          nsIContent::FromEventTargetOrNull(relatedTarget);
       if (tooltipNode == targetNode && relatedContent != currentTooltip) {
         HideTooltip();
         // reset special tree tracking
@@ -132,11 +110,12 @@ void nsXULTooltipListener::MouseOut(Event* aEvent) {
       }
     }
   }
-#endif
 }
 
 void nsXULTooltipListener::MouseMove(Event* aEvent) {
-  if (!sShowTooltips) return;
+  if (!ShowTooltips()) {
+    return;
+  }
 
   // stash the coordinates of the event so that we can still get back to it from
   // within the timer callback. On win32, we'll get a MouseMove event even when
@@ -146,15 +125,16 @@ void nsXULTooltipListener::MouseMove(Event* aEvent) {
   if (!mouseEvent) {
     return;
   }
-  int32_t newMouseX = mouseEvent->ScreenX(CallerType::System);
-  int32_t newMouseY = mouseEvent->ScreenY(CallerType::System);
+  auto newMouseScreenPoint = mouseEvent->ScreenPointLayoutDevicePix();
 
   // filter out false win32 MouseMove event
-  if (mMouseScreenX == newMouseX && mMouseScreenY == newMouseY) return;
+  if (mMouseScreenPoint == newMouseScreenPoint) {
+    return;
+  }
 
   nsCOMPtr<nsIContent> currentTooltip = do_QueryReferent(mCurrentTooltip);
   nsCOMPtr<EventTarget> eventTarget = aEvent->GetComposedTarget();
-  nsCOMPtr<nsIContent> content = do_QueryInterface(eventTarget);
+  nsIContent* content = nsIContent::FromEventTargetOrNull(eventTarget);
 
   bool isSameTarget = true;
   nsCOMPtr<nsIContent> tempContent = do_QueryReferent(mPreviousMouseMoveTarget);
@@ -165,21 +145,21 @@ void nsXULTooltipListener::MouseMove(Event* aEvent) {
   // filter out minor movements due to crappy optical mice and shaky hands
   // to prevent tooltips from hiding prematurely. Do not filter out movements
   // if we are changing targets, as they may register new tooltips.
-  if ((currentTooltip && isSameTarget) &&
-      (abs(mMouseScreenX - newMouseX) <= kTooltipMouseMoveTolerance) &&
-      (abs(mMouseScreenY - newMouseY) <= kTooltipMouseMoveTolerance))
+  if (currentTooltip && isSameTarget &&
+      abs(mMouseScreenPoint.x - newMouseScreenPoint.x) <=
+          kTooltipMouseMoveTolerance &&
+      abs(mMouseScreenPoint.y - newMouseScreenPoint.y) <=
+          kTooltipMouseMoveTolerance) {
     return;
-  mMouseScreenX = newMouseX;
-  mMouseScreenY = newMouseY;
+  }
+  mMouseScreenPoint = newMouseScreenPoint;
   mPreviousMouseMoveTarget = do_GetWeakReference(content);
 
   nsCOMPtr<nsIContent> sourceContent =
       do_QueryInterface(aEvent->GetCurrentTarget());
   mSourceNode = do_GetWeakReference(sourceContent);
-#ifdef MOZ_XUL
   mIsSourceTree = sourceContent->IsXULElement(nsGkAtoms::treechildren);
   if (mIsSourceTree) CheckTreeBodyMove(mouseEvent);
-#endif
 
   // as the mouse moves, we want to make sure we reset the timer to show it,
   // so that the delay is from when the mouse stops moving, not when it enters
@@ -208,15 +188,15 @@ void nsXULTooltipListener::MouseMove(Event* aEvent) {
         !sourceContent->AsElement()->AttrValueIs(
             kNameSpaceID_None, nsGkAtoms::popupsinherittooltip,
             nsGkAtoms::_true, eCaseMatters)) {
-      nsCOMPtr<nsIContent> targetContent = do_QueryInterface(eventTarget);
-      while (targetContent && targetContent != sourceContent) {
+      for (nsIContent* targetContent =
+               nsIContent::FromEventTargetOrNull(eventTarget);
+           targetContent && targetContent != sourceContent;
+           targetContent = targetContent->GetParent()) {
         if (targetContent->IsAnyOfXULElements(
                 nsGkAtoms::menupopup, nsGkAtoms::panel, nsGkAtoms::tooltip)) {
           mSourceNode = nullptr;
           return;
         }
-
-        targetContent = targetContent->GetParent();
       }
     }
 
@@ -235,9 +215,7 @@ void nsXULTooltipListener::MouseMove(Event* aEvent) {
     return;
   }
 
-#ifdef MOZ_XUL
   if (mIsSourceTree) return;
-#endif
   // Hide the tooltip if it is currently showing.
   if (currentTooltip) {
     HideTooltip();
@@ -260,10 +238,9 @@ nsXULTooltipListener::HandleEvent(Event* aEvent) {
   if (type.EqualsLiteral("keydown")) {
     // Hide the tooltip if a non-modifier key is pressed.
     WidgetKeyboardEvent* keyEvent = aEvent->WidgetEventPtr()->AsKeyboardEvent();
-    if (!keyEvent->IsModifierKeyEvent()) {
+    if (KeyEventHidesTooltip(*keyEvent)) {
       HideTooltip();
     }
-
     return NS_OK;
   }
 
@@ -301,17 +278,21 @@ nsXULTooltipListener::HandleEvent(Event* aEvent) {
 //////////////////////////////////////////////////////////////////////////
 //// nsXULTooltipListener
 
-// static
-void nsXULTooltipListener::ToolbarTipsPrefChanged(const char* aPref,
-                                                  void* aClosure) {
-  sShowTooltips =
-      Preferences::GetBool("browser.chrome.toolbar_tips", sShowTooltips);
+bool nsXULTooltipListener::ShowTooltips() {
+  return StaticPrefs::browser_chrome_toolbar_tips();
 }
 
-//////////////////////////////////////////////////////////////////////////
-//// nsXULTooltipListener
-
-bool nsXULTooltipListener::sShowTooltips = false;
+bool nsXULTooltipListener::KeyEventHidesTooltip(
+    const WidgetKeyboardEvent& aEvent) {
+  switch (StaticPrefs::browser_chrome_toolbar_tips_hide_on_keydown()) {
+    case 0:
+      return false;
+    case 1:
+      return true;
+    default:
+      return !aEvent.IsModifierKeyEvent();
+  }
+}
 
 void nsXULTooltipListener::AddTooltipSupport(nsIContent* aNode) {
   MOZ_ASSERT(aNode);
@@ -338,7 +319,6 @@ void nsXULTooltipListener::RemoveTooltipSupport(nsIContent* aNode) {
   aNode->RemoveSystemEventListener(u"dragstart"_ns, this, true);
 }
 
-#ifdef MOZ_XUL
 void nsXULTooltipListener::CheckTreeBodyMove(MouseEvent* aMouseEvent) {
   nsCOMPtr<nsIContent> sourceNode = do_QueryReferent(mSourceNode);
   if (!sourceNode) return;
@@ -349,17 +329,16 @@ void nsXULTooltipListener::CheckTreeBodyMove(MouseEvent* aMouseEvent) {
   RefPtr<XULTreeElement> tree = GetSourceTree();
   Element* root = doc ? doc->GetRootElement() : nullptr;
   if (root && root->GetPrimaryFrame() && tree) {
-    int32_t x = aMouseEvent->ScreenX(CallerType::System);
-    int32_t y = aMouseEvent->ScreenY(CallerType::System);
+    CSSIntPoint pos = aMouseEvent->ScreenPoint(CallerType::System);
 
     // subtract off the documentElement's position
+    // XXX Isn't this just converting to client points?
     CSSIntRect rect = root->GetPrimaryFrame()->GetScreenRect();
-    x -= rect.x;
-    y -= rect.y;
+    pos -= rect.TopLeft();
 
     ErrorResult rv;
     TreeCellInfo cellInfo;
-    tree->GetCellAt(x, y, cellInfo, rv);
+    tree->GetCellAt(pos.x, pos.y, cellInfo, rv);
 
     int32_t row = cellInfo.mRow;
     RefPtr<nsTreeColumn> col = cellInfo.mCol;
@@ -380,7 +359,6 @@ void nsXULTooltipListener::CheckTreeBodyMove(MouseEvent* aMouseEvent) {
     mLastTreeCol = col;
   }
 }
-#endif
 
 nsresult nsXULTooltipListener::ShowTooltip() {
   nsCOMPtr<nsIContent> sourceNode = do_QueryReferent(mSourceNode);
@@ -397,12 +375,10 @@ nsresult nsXULTooltipListener::ShowTooltip() {
     // Make sure the target node is still attached to some document.
     // It might have been deleted.
     if (sourceNode->IsInComposedDoc()) {
-#ifdef MOZ_XUL
       if (!mIsSourceTree) {
         mLastTreeRow = -1;
         mLastTreeCol = nullptr;
       }
-#endif
 
       mCurrentTooltip = do_GetWeakReference(tooltipNode);
       LaunchTooltip();
@@ -418,8 +394,7 @@ nsresult nsXULTooltipListener::ShowTooltip() {
 
       // listen for mousedown, mouseup, keydown, and mouse events at
       // document level
-      Document* doc = sourceNode->GetComposedDoc();
-      if (doc) {
+      if (Document* doc = sourceNode->GetComposedDoc()) {
         // Probably, we should listen to untrusted events for hiding tooltips
         // on content since tooltips might disturb something of web
         // applications.  If we don't specify the aWantsUntrusted of
@@ -428,10 +403,7 @@ nsresult nsXULTooltipListener::ShowTooltip() {
         doc->AddSystemEventListener(u"wheel"_ns, this, true);
         doc->AddSystemEventListener(u"mousedown"_ns, this, true);
         doc->AddSystemEventListener(u"mouseup"_ns, this, true);
-#ifndef XP_WIN
-        // On Windows, key events don't close tooltips.
         doc->AddSystemEventListener(u"keydown"_ns, this, true);
-#endif
       }
       mSourceNode = nullptr;
     }
@@ -440,21 +412,19 @@ nsresult nsXULTooltipListener::ShowTooltip() {
   return NS_OK;
 }
 
-#ifdef MOZ_XUL
 static void SetTitletipLabel(XULTreeElement* aTree, Element* aTooltip,
                              int32_t aRow, nsTreeColumn* aCol) {
   nsCOMPtr<nsITreeView> view = aTree->GetView();
   if (view) {
     nsAutoString label;
-#  ifdef DEBUG
+#ifdef DEBUG
     nsresult rv =
-#  endif
+#endif
         view->GetCellText(aRow, aCol, label);
     NS_WARNING_ASSERTION(NS_SUCCEEDED(rv), "Couldn't get the cell text!");
     aTooltip->SetAttr(kNameSpaceID_None, nsGkAtoms::label, label, true);
   }
 }
-#endif
 
 void nsXULTooltipListener::LaunchTooltip() {
   RefPtr<Element> currentTooltip = do_QueryReferent(mCurrentTooltip);
@@ -462,7 +432,6 @@ void nsXULTooltipListener::LaunchTooltip() {
     return;
   }
 
-#ifdef MOZ_XUL
   if (mIsSourceTree && mNeedTitletip) {
     RefPtr<XULTreeElement> tree = GetSourceTree();
 
@@ -499,18 +468,15 @@ void nsXULTooltipListener::LaunchTooltip() {
     return;
   }
 
-  pm->ShowTooltipAtScreen(currentTooltip, target, mMouseScreenX, mMouseScreenY);
-#endif
+  pm->ShowTooltipAtScreen(currentTooltip, target, mMouseScreenPoint);
 }
 
 nsresult nsXULTooltipListener::HideTooltip() {
-#ifdef MOZ_XUL
-  nsCOMPtr<nsIContent> currentTooltip = do_QueryReferent(mCurrentTooltip);
-  if (currentTooltip) {
-    nsXULPopupManager* pm = nsXULPopupManager::GetInstance();
-    if (pm) pm->HidePopup(currentTooltip, false, false, false, false);
+  if (nsCOMPtr<Element> currentTooltip = do_QueryReferent(mCurrentTooltip)) {
+    if (nsXULPopupManager* pm = nsXULPopupManager::GetInstance()) {
+      pm->HidePopup(currentTooltip, {});
+    }
   }
-#endif
 
   DestroyTooltip();
   return NS_OK;
@@ -561,14 +527,15 @@ nsresult nsXULTooltipListener::FindTooltip(nsIContent* aTarget,
 
   // On Windows, the OS shows the tooltip, so we don't want Gecko to do it
 #ifdef XP_WIN
-  if (aTarget->AsElement()->HasAttr(nsGkAtoms::titlebar_button)) {
-    return NS_OK;
+  if (nsIFrame* f = aTarget->GetPrimaryFrame()) {
+    if (f->StyleDisplay()->GetWindowButtonType()) {
+      return NS_OK;
+    }
   }
 #endif
 
   nsAutoString tooltipText;
-  aTarget->AsElement()->GetAttr(kNameSpaceID_None, nsGkAtoms::tooltiptext,
-                                tooltipText);
+  aTarget->AsElement()->GetAttr(nsGkAtoms::tooltiptext, tooltipText);
 
   if (!tooltipText.IsEmpty()) {
     // specifying tooltiptext means we will always use the default tooltip
@@ -583,8 +550,7 @@ nsresult nsXULTooltipListener::FindTooltip(nsIContent* aTarget,
   }
 
   nsAutoString tooltipId;
-  aTarget->AsElement()->GetAttr(kNameSpaceID_None, nsGkAtoms::tooltip,
-                                tooltipId);
+  aTarget->AsElement()->GetAttr(nsGkAtoms::tooltip, tooltipId);
 
   // if tooltip == _child, look for first <tooltip> child
   if (tooltipId.EqualsLiteral("_child")) {
@@ -601,16 +567,13 @@ nsresult nsXULTooltipListener::FindTooltip(nsIContent* aTarget,
           documentOrShadowRoot->GetElementById(tooltipId);
 
       if (tooltipEl) {
-#ifdef MOZ_XUL
         mNeedTitletip = false;
-#endif
         tooltipEl.forget(aTooltip);
         return NS_OK;
       }
     }
   }
 
-#ifdef MOZ_XUL
   // titletips should just use the default tooltip
   if (mIsSourceTree && mNeedTitletip) {
     nsIPopupContainer* popupContainer =
@@ -618,7 +581,6 @@ nsresult nsXULTooltipListener::FindTooltip(nsIContent* aTarget,
     NS_ENSURE_STATE(popupContainer);
     NS_IF_ADDREF(*aTooltip = popupContainer->GetDefaultTooltip());
   }
-#endif
 
   return NS_OK;
 }
@@ -632,17 +594,15 @@ nsresult nsXULTooltipListener::GetTooltipFor(nsIContent* aTarget,
     return rv;
   }
 
-#ifdef MOZ_XUL
   // Submenus can't be used as tooltips, see bug 288763.
-  nsIContent* parent = tooltip->GetParent();
-  if (parent) {
-    nsMenuFrame* menu = do_QueryFrame(parent->GetPrimaryFrame());
-    if (menu) {
-      NS_WARNING("Menu cannot be used as a tooltip");
-      return NS_ERROR_FAILURE;
+  if (nsIContent* parent = tooltip->GetParent()) {
+    if (auto* button = XULButtonElement::FromNode(parent)) {
+      if (button->IsMenu()) {
+        NS_WARNING("Menu cannot be used as a tooltip");
+        return NS_ERROR_FAILURE;
+      }
     }
   }
-#endif
 
   tooltip.swap(*aTooltip);
   return rv;
@@ -657,15 +617,12 @@ nsresult nsXULTooltipListener::DestroyTooltip() {
     mCurrentTooltip = nullptr;
 
     // clear out the tooltip node on the document
-    nsCOMPtr<Document> doc = currentTooltip->GetComposedDoc();
-    if (doc) {
+    if (nsCOMPtr<Document> doc = currentTooltip->GetComposedDoc()) {
       // remove the mousedown and keydown listener from document
       doc->RemoveSystemEventListener(u"wheel"_ns, this, true);
       doc->RemoveSystemEventListener(u"mousedown"_ns, this, true);
       doc->RemoveSystemEventListener(u"mouseup"_ns, this, true);
-#ifndef XP_WIN
       doc->RemoveSystemEventListener(u"keydown"_ns, this, true);
-#endif
     }
 
     // remove the popuphidden listener from tooltip
@@ -675,9 +632,7 @@ nsresult nsXULTooltipListener::DestroyTooltip() {
   // kill any ongoing timers
   KillTooltipTimer();
   mSourceNode = nullptr;
-#ifdef MOZ_XUL
   mLastTreeCol = nullptr;
-#endif
 
   return NS_OK;
 }
@@ -695,7 +650,6 @@ void nsXULTooltipListener::sTooltipCallback(nsITimer* aTimer, void* aListener) {
   if (instance) instance->ShowTooltip();
 }
 
-#ifdef MOZ_XUL
 XULTreeElement* nsXULTooltipListener::GetSourceTree() {
   nsCOMPtr<nsIContent> sourceNode = do_QueryReferent(mSourceNode);
   if (mIsSourceTree && sourceNode) {
@@ -706,4 +660,3 @@ XULTreeElement* nsXULTooltipListener::GetSourceTree() {
 
   return nullptr;
 }
-#endif

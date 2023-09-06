@@ -6,9 +6,16 @@ addons-page-title = Administrador de complementos
 search-header =
     .placeholder = Buscar en addons.mozilla.org
     .searchbuttonlabel = Buscar
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Obtener extensiones y temas en <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Obtén diccionarios en <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Obtén paquetes de idioma en <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = No tienes complementos de este tipo instalados
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Versión
 detail-last-updated =
     .label = Última actualización
+addon-detail-description-expand = Mostrar más
+addon-detail-description-collapse = Mostrar menos
 detail-contributions-description = El desarrollador de este complemento te pide que le ayudes en su desarrollo, haciendo una pequeña contribución.
 detail-contributions-button = Contribuir
     .title = Contribuir al desarrollo de este complemento
@@ -135,14 +144,27 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Actualizaciones recientes
 addon-category-recent-updates-title =
     .title = Actualizaciones recientes
+addon-category-sitepermission = Permisos del sitio
+addon-category-sitepermission-title =
+    .title = Permisos del sitio
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string): DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Permisos del sitio para { $host }
 
 ## These are global warnings
 
 extensions-warning-safe-mode = Todos los complementos han sido deshabilitados en modo seguro.
 extensions-warning-check-compatibility = Chequeo de compatibilidad para complementos esta deshabilitada. Tu puedes tener complementos incompatibles.
+extensions-warning-safe-mode2 =
+    .message = Todos los complementos han sido deshabilitados en modo seguro.
+extensions-warning-check-compatibility2 =
+    .message = Chequeo de compatibilidad para complementos esta deshabilitada. Tu puedes tener complementos incompatibles.
 extensions-warning-check-compatibility-button = Habilitar
     .title = Habilitar chequeo de compatibilidad para complementos.
 extensions-warning-update-security = El chequeo de seguridad para actualización del complemento esta deshabilitada. Tu navegador puede estar en peligro por las actualizaciones.
+extensions-warning-update-security2 =
+    .message = El chequeo de seguridad para actualización del complemento esta deshabilitada. Tu navegador puede estar en peligro por las actualizaciones.
 extensions-warning-update-security-button = Habilitar
     .title = Habilitar chequeo de seguridad para la actualización del complemento
 
@@ -209,6 +231,11 @@ shortcuts-duplicate = Duplicar acceso directo
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = { $shortcut } se está usando como atajo en más de un caso. Los accesos directos duplicados pueden causar un comportamiento inesperado.
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = { $shortcut } se está usando como atajo en más de un caso. Los accesos directos duplicados pueden causar un comportamiento inesperado.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
@@ -235,6 +262,9 @@ discopane-intro =
     y funcionalidad excepcionales.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations = Algunas de estas recomendaciones son personalizadas. Se basan complementos instaladas, preferencias de tu perfil y estadísticas de uso.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message = Algunas de estas recomendaciones son personalizadas. Se basan complementos instaladas, preferencias de tu perfil y estadísticas de uso.
 discopane-notice-learn-more = Saber más
 privacy-policy = Política de privacidad
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -280,13 +310,15 @@ permissions-addon-button = Permisos
 extension-enabled-heading = Habilitado
 extension-disabled-heading = Deshabilitado
 theme-enabled-heading = Habilitado
-theme-disabled-heading = Deshabilitado
+theme-disabled-heading2 = Guardar temas
 plugin-enabled-heading = Habilitado
 plugin-disabled-heading = Deshabilitado
 dictionary-enabled-heading = Habilitado
 dictionary-disabled-heading = Deshabilitado
 locale-enabled-heading = Habilitado
 locale-disabled-heading = Deshabilitado
+sitepermission-enabled-heading = Habilitado
+sitepermission-disabled-heading = Deshabilitado
 always-activate-button = Siempre activar
 never-activate-button = Nunca activar
 addon-detail-author-label = Autor
@@ -296,6 +328,9 @@ addon-detail-homepage-label = Página de inicio
 addon-detail-rating-label = Calificación
 # Message for add-ons with a staged pending update.
 install-postponed-message = Esta extensión se actualizará cuando se reinicie { -brand-short-name }.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Esta extensión se actualizará cuando se reinicie { -brand-short-name }.
 install-postponed-button = Actualizar ahora
 # The average rating that the add-on has received.
 # Variables:
@@ -336,6 +371,10 @@ addon-detail-private-browsing-help = Cuando está activada, la extensión tendr�
 addon-detail-private-browsing-allow = Permitir
 addon-detail-private-browsing-disallow = No permitir
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
@@ -363,6 +402,7 @@ addon-permissions-optional = Permisos opcionales para funciones adicionales:
 addon-permissions-learnmore = Conocer más sobre permisos
 recommended-extensions-heading = Complementos recomendados
 recommended-themes-heading = Temas recomendados
+addon-sitepermissions-required = Otorga las siguientes capacidades a <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = ¿Te sientes creativo? <a data-l10n-name="link"> Crea tu propio tema con Firefox Color. </a>
@@ -375,6 +415,7 @@ plugin-heading = Administra tus plugins
 dictionary-heading = Administrar diccionarios
 locale-heading = Administra tus idiomas
 updates-heading = Administra tus actualizaciones
+sitepermission-heading = Administrar permisos de sitios
 discover-heading = Personaliza tu { -brand-short-name }
 shortcuts-heading = Administrar atajos de extensiones
 default-heading-search-label = Encontrar más complementos
@@ -382,3 +423,35 @@ addons-heading-search-input =
     .placeholder = Buscar en addons.mozilla.org
 addon-page-options-button =
     .title = Herramientas para todos los complementos
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } es incompatible con { -brand-short-name } { $version }.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = { $name } es incompatible con { -brand-short-name } { $version }.
+details-notification-incompatible-link = Más información
+details-notification-unsigned-and-disabled = { $name } no ha podido ser verificado para su uso en { -brand-short-name } y ha sido deshabilitado.
+details-notification-unsigned-and-disabled2 =
+    .message = { $name } no ha podido ser verificado para su uso en { -brand-short-name } y ha sido deshabilitado.
+details-notification-unsigned-and-disabled-link = Más información
+details-notification-unsigned = { $name } no se ha podido verificar para su uso en { -brand-short-name }. Procede con precaución.
+details-notification-unsigned2 =
+    .message = { $name } no se ha podido verificar para su uso en { -brand-short-name }. Procede con precaución.
+details-notification-unsigned-link = Más información
+details-notification-blocked = { $name } ha sido deshabilitado debido a problemas de seguridad o estabilidad.
+details-notification-blocked2 =
+    .message = { $name } ha sido deshabilitado debido a problemas de seguridad o estabilidad.
+details-notification-blocked-link = Más información
+details-notification-softblocked = { $name } se sabe que causa problemas de seguridad o estabilidad.
+details-notification-softblocked2 =
+    .message = { $name } se sabe que causa problemas de seguridad o estabilidad.
+details-notification-softblocked-link = Más información
+details-notification-gmp-pending = { $name } se instalará en breve.
+details-notification-gmp-pending2 =
+    .message = { $name } se instalará en breve.

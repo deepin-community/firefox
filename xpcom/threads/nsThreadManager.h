@@ -12,13 +12,12 @@
 #include "mozilla/ShutdownPhase.h"
 
 class nsIRunnable;
-class nsIEventTarget;
-class nsISerialEventTarget;
 class nsIThread;
 
 namespace mozilla {
 class IdleTaskManager;
 class SynchronizedEventQueue;
+class TaskQueue;
 }  // namespace mozilla
 
 class BackgroundEventTarget;
@@ -32,9 +31,18 @@ class nsThreadManager : public nsIThreadManager {
 
   nsresult Init();
 
-  // Shutdown all threads.  This function should only be called on the main
-  // thread of the application process.
-  void Shutdown();
+  // Shutdown all threads other than the main thread.  This function should only
+  // be called on the main thread of the application process.
+  void ShutdownNonMainThreads();
+
+  // Finish shutting down all threads. This function must be called after
+  // ShutdownNonMainThreads and will delete the BackgroundEventTarget and
+  // take the main thread event target out of commission, but without
+  // releasing the underlying nsThread object.
+  void ShutdownMainThread();
+
+  // Release the underlying main thread nsThread object.
+  void ReleaseMainThread();
 
   // Called by nsThread to inform the ThreadManager it exists.  This method
   // must be called when the given thread is the current thread.
@@ -64,16 +72,8 @@ class nsThreadManager : public nsIThreadManager {
   nsresult DispatchToBackgroundThread(nsIRunnable* aEvent,
                                       uint32_t aDispatchFlags);
 
-  already_AddRefed<nsISerialEventTarget> CreateBackgroundTaskQueue(
+  already_AddRefed<mozilla::TaskQueue> CreateBackgroundTaskQueue(
       const char* aName);
-
-  // For each background TaskQueue cancel pending DelayedRunnables, and prohibit
-  // creating future DelayedRunnables for them, since we'll soon be shutting
-  // them down.
-  // Pending DelayedRunnables are canceled on their respective TaskQueue.
-  // We block main thread until they are all done, but spin the eventloop in the
-  // meantime.
-  void CancelBackgroundDelayedRunnables();
 
   ~nsThreadManager();
 
@@ -92,7 +92,7 @@ class nsThreadManager : public nsIThreadManager {
   nsresult SpinEventLoopUntilInternal(
       const nsACString& aVeryGoodReasonToDoThis,
       nsINestedEventLoopCondition* aCondition,
-      mozilla::ShutdownPhase aCheckingShutdownPhase);
+      mozilla::ShutdownPhase aShutdownPhaseToCheck);
 
   static void ReleaseThread(void* aData);
 

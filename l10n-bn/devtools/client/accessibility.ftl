@@ -13,6 +13,26 @@ accessibility-keyboard-header = কীবোর্ড
 
 ## Text entries that are used as text alternative for icons that depict accessibility isses.
 
+
+## These strings are used in the overlay displayed when running an audit in the accessibility panel
+
+accessibility-progress-initializing = আরম্ভ হচ্ছে…
+    .aria-valuetext = আরম্ভ হচ্ছে…
+
+# This string is displayed in the audit progress bar in the accessibility panel.
+# Variables:
+#   $nodeCount (Integer) - The number of nodes for which the audit was run so far.
+accessibility-progress-progressbar =
+    { $nodeCount ->
+        [one] নোড { $nodeCount } চেক করা হচ্ছে
+       *[other] নোড { $nodeCount } চেক করা হচ্ছে
+    }
+
+accessibility-progress-finishing = শেষ হচ্ছে…
+    .aria-valuetext = শেষ হচ্ছে…
+
+## Text entries that are used as text alternative for icons that depict accessibility issues.
+
 accessibility-warning =
     .alt = সতর্কীকরণ
 
@@ -25,6 +45,8 @@ accessibility-best-practices =
 ## Text entries for a paragraph used in the accessibility panel sidebar's checks section
 ## that describe that currently selected accessible object has an accessibility issue
 ## with its text label or accessible name.
+
+accessibility-text-label-issue-area = <span>href</span> বৈশিষ্ট্যযুক্ত <div>অঞ্চল</div> উপাদানসমূহে <code>Alt</code> বৈশিষ্ট্যটি ব্যবহার করুন। <a>আরও জানুন</a>
 
 accessibility-text-label-issue-dialog = সংলাপ টি লেবেল হওয়া উচিত। <a> আরও শিখুন </a>
 
@@ -66,5 +88,8 @@ accessibility-keyboard-issue-tabindex = শূন্যের চেয়ে ব�
 
 accessibility-keyboard-issue-action = ইন্টারেক্টিভ এলিমেন্টগুলি একটি কীবোর্ড ব্যবহার করে সক্রিয় করতে সক্ষম হতে হবে। <a> আরও জানুন </a>
 
+accessibility-keyboard-issue-focusable = ইন্টারেক্টিভ উপাদানসমূহ অবশ্যই ফোকাসযোগ্য হতে হবে। <a>আরও জানুন</a>
+
 accessibility-keyboard-issue-focus-visible = ফোকাসযোগ্য এলিমেন্টের ফোকাস স্টাইলিং নাও থাকতে পারে। <a> আরও জানুন </a>
 
+accessibility-keyboard-issue-mouse-only = ক্লিকযোগ্যযোগ্য উপাদানসমূহ অবশ্যই ফোকাসযোগ্য এবং ইন্টারেক্টিভ সিমেনটিকস হওয়া উচিত। <a>আরও জানুন</a>

@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Amaga
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Mostra totes les carpetes de les adreces d'interés
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Amaga
+
 bookmark-overlay-new-folder-button =
     .label = Crea una carpeta
     .accesskey = p
@@ -40,9 +46,16 @@ bookmark-overlay-tags-expander =
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Amaga
 
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Mostra totes les etiquetes
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Amaga
+
 bookmark-overlay-keyword-2 =
     .value = Paraula clau
     .accesskey = P
 
 bookmark-overlay-tags-caption-label = Utilitzeu etiquetes per organitzar i cercar les adreces d'interés des de la barra d'adreces
 
+bookmark-overlay-keyword-caption-label-2 = Utilitzeu una única paraula clau per a obrir adreces d'interés directament des de la barra d'adreces

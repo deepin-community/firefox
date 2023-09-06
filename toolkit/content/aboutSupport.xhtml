@@ -6,12 +6,12 @@
 
 <!DOCTYPE html [
   <!ENTITY % htmlDTD PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> %htmlDTD;
-  <!ENTITY % brandDTD SYSTEM "chrome://branding/locale/brand.dtd"> %brandDTD;
 ]>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Security-Policy" content="default-src chrome:; object-src 'none'" />
+    <meta name="color-scheme" content="light dark" />
     <title data-l10n-id="page-title"/>
 
     <link rel="icon" type="image/png" id="favicon"
@@ -30,40 +30,40 @@
   </head>
 
   <body class="wide-container">
+    <h1 data-l10n-id="page-title"/>
+    <div class="header-flex">
+      <div class="content-flex">
+        <div class="page-subtitle" data-l10n-id="page-subtitle">
+          <a id="supportLink" data-l10n-name="support-link"></a>
+        </div>
+        <div>
+          <button id="copy-raw-data-to-clipboard" data-l10n-id="copy-raw-data-to-clipboard-label"/>
+          <button id="copy-to-clipboard" data-l10n-id="copy-text-to-clipboard-label"/>
+        </div>
+      </div>
 
 #ifndef ANDROID
-    <div id="action-box" class="notice-box">
-      <div id="reset-box">
-        <h3 data-l10n-id="refresh-profile"/>
-        <button id="reset-box-button" data-l10n-id="refresh-profile-button"/>
+      <div class="action-box">
+        <div id="reset-box">
+          <h3 data-l10n-id="refresh-profile"/>
+          <button id="reset-box-button" data-l10n-id="refresh-profile-button"/>
+        </div>
+        <div id="safe-mode-box">
+          <h3 data-l10n-id="troubleshoot-mode-title"/>
+          <button id="restart-in-safe-mode-button" data-l10n-id="restart-in-troubleshoot-mode-label"/>
+        </div>
+        <div id="clear-startup-cache-box">
+          <h3 data-l10n-id="clear-startup-cache-title"/>
+          <button id="clear-startup-cache-button" data-l10n-id="clear-startup-cache-label"/>
+        </div>
       </div>
-      <div id="safe-mode-box">
-        <h3 data-l10n-id="troubleshoot-mode-title"/>
-        <button id="restart-in-safe-mode-button" data-l10n-id="restart-in-troubleshoot-mode-label"/>
-      </div>
-      <div id="clear-startup-cache-box">
-        <h3 data-l10n-id="clear-startup-cache-title"/>
-        <button id="clear-startup-cache-button" data-l10n-id="clear-startup-cache-label"/>
-      </div>
-    </div>
 #endif
-
-    <h1 data-l10n-id="page-title"/>
-
-    <div class="page-subtitle" data-l10n-id="page-subtitle">
-      <a id="supportLink" data-l10n-name="support-link"></a>
     </div>
-
-    <div>
-      <button id="copy-raw-data-to-clipboard" data-l10n-id="copy-raw-data-to-clipboard-label"/>
-      <button id="copy-to-clipboard" data-l10n-id="copy-text-to-clipboard-label"/>
-    </div>
-
     <div id="contents">
 
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" data-l10n-id="app-basics-title"/>
+      <h2 class="major-section" id="app-basics" data-l10n-id="app-basics-title"/>
 
       <table>
         <tbody>
@@ -167,6 +167,7 @@
             </td>
           </tr>
 
+#ifndef ANDROID
           <tr class="no-copy">
             <th class="column" data-l10n-id="app-basics-enabled-plugins"/>
 
@@ -174,6 +175,7 @@
               <a href="about:plugins">about:plugins</a>
             </td>
           </tr>
+#endif
 
           <tr class="no-copy">
             <th class="column" data-l10n-id="app-basics-build-config"/>
@@ -195,7 +197,7 @@
             <th class="column" data-l10n-id="app-basics-performance"/>
 
             <td>
-              <a href="about:performance">about:performance</a>
+              <a href="about:processes">about:processes</a>
             </td>
           </tr>
 
@@ -286,6 +288,20 @@
             </td>
           </tr>
 
+          <tr>
+            <th class="column" data-l10n-id="app-basics-memory-size"/>
+
+            <td id="memory-size-box">
+            </td>
+          </tr>
+
+          <tr>
+            <th class="column" data-l10n-id="app-basics-disk-available"/>
+
+            <td id="disk-available-box">
+            </td>
+          </tr>
+
 #ifndef ANDROID
           <tr class="no-copy">
             <th class="column" data-l10n-id="app-basics-profiles"/>
@@ -296,13 +312,22 @@
           </tr>
 #endif
 
+#if defined(XP_WIN)
+          <tr>
+            <th class="column" data-l10n-id="app-basics-pointing-devices"/>
+
+            <td id="pointing-devices-box">
+            </td>
+          </tr>
+#endif
+
         </tbody>
       </table>
 
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 #ifdef MOZ_CRASHREPORTER
 
-      <h2 class="major-section" id="crashes-title" data-l10n-id="crashes-title"/>
+      <h2 class="major-section" id="crashes" data-l10n-id="crashes-title"/>
 
       <table id="crashes-table">
         <thead>
@@ -323,7 +348,7 @@
 #endif
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" data-l10n-id="features-title"/>
+      <h2 class="major-section" id="features" data-l10n-id="features-title"/>
 
       <table id="features-table">
         <thead>
@@ -340,7 +365,7 @@
 #ifdef MOZ_NORMANDY
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" data-l10n-id="support-remote-features-title"/>
+      <h2 class="major-section" id="remote-features" data-l10n-id="support-remote-features-title"/>
 
       <table class="prefs-table">
         <thead class="no-copy">
@@ -370,7 +395,7 @@
 
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" data-l10n-id="support-addons-title"/>
+      <h2 class="major-section" id="addons" data-l10n-id="support-addons-title"/>
 
       <table>
         <thead>
@@ -388,7 +413,7 @@
 
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" id="security-software-title" data-l10n-id="security-software-title"/>
+      <h2 class="major-section" id="security-software" data-l10n-id="security-software-title"/>
 
       <table id="security-software-table">
         <thead>
@@ -423,7 +448,29 @@
 
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" data-l10n-id="graphics-title"/>
+      <h2 class="major-section" id="legacyUserStylesheets" data-l10n-id="legacy-user-stylesheets-title"/>
+
+      <table>
+        <tbody id="legacyUserStylesheets-info-tbody">
+          <tr>
+            <th class="column" data-l10n-id="legacy-user-stylesheets-enabled"/>
+
+            <td id="legacyUserStylesheets-enabled">
+            </td>
+          </tr>
+
+          <tr>
+            <th class="column" data-l10n-id="legacy-user-stylesheets-stylesheet-types"/>
+
+            <td id="legacyUserStylesheets-types">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- - - - - - - - - - - - - - - - - - - - - -->
+
+      <h2 class="major-section" id="graphics" data-l10n-id="graphics-title"/>
 
       <table>
         <tbody id="graphics-features-tbody">
@@ -477,7 +524,7 @@
 
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" data-l10n-id="media-title"/>
+      <h2 class="major-section" id="media" data-l10n-id="media-title"/>
       <table>
         <tbody id="media-info-tbody">
         </tbody>
@@ -532,7 +579,7 @@
 
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" data-l10n-id="environment-variables-title"/>
+      <h2 class="major-section" id="environment-variables" data-l10n-id="environment-variables-title"/>
 
       <table class="prefs-table">
         <thead class="no-copy">
@@ -549,7 +596,7 @@
 #ifndef ANDROID
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" data-l10n-id="experimental-features-title"/>
+      <h2 class="major-section" id="experimental-features" data-l10n-id="experimental-features-title"/>
 
       <table class="prefs-table">
         <thead class="no-copy">
@@ -565,7 +612,7 @@
 #endif
 #ifdef MOZ_NORMANDY
       <!-- - - - - - - - - - - - - - - - - - - - - -->
-      <h2 class="major-section" data-l10n-id="support-remote-experiments-title"/>
+      <h2 class="major-section" id="remote-experiments" data-l10n-id="support-remote-experiments-title"/>
 
       <table class="prefs-table">
         <thead class="no-copy">
@@ -586,7 +633,7 @@
 #endif
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" data-l10n-id="modified-key-prefs-title"/>
+      <h2 class="major-section" id="modified-key-prefs" data-l10n-id="modified-key-prefs-title"/>
 
       <table class="prefs-table">
         <thead class="no-copy">
@@ -608,7 +655,7 @@
 
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" data-l10n-id="locked-key-prefs-title"/>
+      <h2 class="major-section" id="locked-key-prefs" data-l10n-id="locked-key-prefs-title"/>
 
       <table class="prefs-table">
         <thead class="no-copy">
@@ -624,22 +671,41 @@
 #ifndef ANDROID
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" data-l10n-id="place-database-title"/>
+      <h2 class="major-section" id="place-database" data-l10n-id="place-database-title"/>
 
       <table>
-        <tr class="no-copy">
-          <th class="column" data-l10n-id="place-database-integrity"/>
+        <tbody>
+          <tr class="no-copy">
+            <th class="column" data-l10n-id="place-database-integrity"/>
 
-          <td>
-            <button id="verify-place-integrity-button" data-l10n-id="place-database-verify-integrity"/>
-            <pre id="verify-place-result" class="hidden no-copy"></pre>
-          </td>
-        </tr>
+            <td colspan="5">
+              <button id="verify-place-integrity-button" data-l10n-id="place-database-verify-integrity"/>
+              <pre id="verify-place-result" class="hidden no-copy"></pre>
+            </td>
+          </tr>
+          <tr class="no-copy">
+            <th class="column" data-l10n-id="place-database-stats"/>
+
+            <td colspan="5">
+              <button id="place-database-stats-toggle" data-l10n-id="place-database-stats-show"/>
+            </td>
+          </tr>
+        </tbody>
+        <tbody id="place-database-stats-tbody">
+          <tr>
+            <th data-l10n-id="place-database-stats-entity"/>
+            <th data-l10n-id="place-database-stats-count"/>
+            <th data-l10n-id="place-database-stats-size-kib"/>
+            <th data-l10n-id="place-database-stats-size-perc"/>
+            <th data-l10n-id="place-database-stats-efficiency-perc"/>
+            <th data-l10n-id="place-database-stats-sequentiality-perc"/>
+          </tr>
+        </tbody>
       </table>
 #endif
 
       <!-- - - - - - - - - - - - - - - - - - - - - -->
-      <h2 class="major-section" data-l10n-id="a11y-title"/>
+      <h2 class="major-section" id="a11y" data-l10n-id="a11y-title"/>
 
       <table>
         <tbody>
@@ -657,13 +723,6 @@
           </tr>
 #if defined(XP_WIN)
           <tr>
-            <th class="column" data-l10n-id="a11y-handler-used"/>
-
-            <td id="a11y-handler-used">
-            </td>
-          </tr>
-
-          <tr>
             <th class="column" data-l10n-id="a11y-instantiator"/>
 
             <td id="a11y-instantiator">
@@ -674,7 +733,7 @@
       </table>
 
       <!-- - - - - - - - - - - - - - - - - - - - - -->
-      <h2 class="major-section" data-l10n-id="library-version-title"/>
+      <h2 class="major-section" id="library-version" data-l10n-id="library-version-title"/>
 
       <table>
         <tbody id="libversions-tbody">
@@ -711,7 +770,7 @@
 #endif
 #endif
 
-      <h2 class="major-section" data-l10n-id="startup-cache-title"/>
+      <h2 class="major-section" id="startup-cache" data-l10n-id="startup-cache-title"/>
 
       <table>
         <tbody>
@@ -742,7 +801,7 @@
         </tbody>
       </table>
 
-      <h2 class="major-section" data-l10n-id="intl-title"/>
+      <h2 class="major-section" id="intl" data-l10n-id="intl-title"/>
 
       <table>
         <tbody id="intl-localeservice-tbody">
@@ -795,7 +854,7 @@
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
 #if defined(ENABLE_WEBDRIVER)
-      <h2 class="major-section" data-l10n-id="remote-debugging-title"/>
+      <h2 class="major-section" id="remote-debugging" data-l10n-id="remote-debugging-title"/>
 
       <table>
         <tbody>
@@ -814,7 +873,7 @@
 #ifndef ANDROID
       <!-- - - - - - - - - - - - - - - - - - - - - -->
 
-      <h2 class="major-section" data-l10n-id="support-printing-title"/>
+      <h2 class="major-section" id="printing" data-l10n-id="support-printing-title"/>
 
       <table>
         <tr class="no-copy">

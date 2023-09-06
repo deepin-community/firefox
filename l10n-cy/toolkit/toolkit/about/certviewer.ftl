@@ -70,7 +70,7 @@ certificate-viewer-validity = Dilysrwydd
 certificate-viewer-subject-alt-names = Enwau Alt Pwnc
 certificate-viewer-public-key-info = Manylion Allweddol Cyhoeddus
 certificate-viewer-miscellaneous = Amrywiol
-certificate-viewer-fingerprints = Bysbrint
+certificate-viewer-fingerprints = Bysbrintiau
 certificate-viewer-basic-constraints = Cyfyngiadau Sylfaenol
 certificate-viewer-key-usages = Defnyddiau Allweddol
 certificate-viewer-extended-key-usages = Defnydd Allwedd Estynedig
@@ -84,7 +84,7 @@ certificate-viewer-crl-endpoints = Diweddbwynt CRL
 
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
-certificate-viewer-download = Llwytho i Lawr
+certificate-viewer-download = Llwytho i lawr
 # This message is used to replace boolean values (true/false) in several certificate fields, e.g. Certificate Authority
 # Variables:
 #   $boolean (String) - true/false value for the specific field

@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = ಹೊಸ ಪ್ರೊಫೈಲ್‌ ಗಾರುಡಿ
-    .style = width: 45em; height: 34em;
+    .style = min-width: 45em; min-height: 34em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] ಪರಿಚಯ
-       *[other] { create-profile-window.title } ಗೆ ಸ್ವಾಗತ
+       *[other] { create-profile-window2.title } ಗೆ ಸ್ವಾಗತ
     }
 
 profile-creation-explanation-1 = { -brand-short-name } ನಿಮ್ಮ  ವೈಯಕ್ತಿಕ ಸಿದ್ಧತೆಗಳ ಹಾಗು ಆದ್ಯತೆಗಳ ಬಗೆಗಿನ ಮಾಹಿತಿಯನ್ನು ಒಂದು ಖಾಸಗಿ ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ ಇರಿಸುತ್ತದೆ.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] ಮುಕ್ತಾಯ
-       *[other] { create-profile-window.title } ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಲಾಗುತ್ತಿದೆ
+       *[other] { create-profile-window2.title } ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಲಾಗುತ್ತಿದೆ
     }
 
 profile-creation-intro = ನೀವು ಅನೇಕ ಪ್ರೊಫೈಲ್‌ ಅನ್ನು ರಚಿಸಿದಲ್ಲಿ ಅವುಗಳ ಹೆಸರುಗಳ ಮೂಲಕ ಪ್ರತ್ಯೇಕವಾಗಿ ಉಲ್ಲೇಖಿಸಬಹುದು. ಇಲ್ಲಿ ಒದಗಿಸಲಾದ ಹೆಸರನ್ನು ಬಳಸಬಹುದು ಅಥವ ನಿಮ್ಮ ಸ್ವಂತದ್ದೇ ಆದಂತಹ ಹೆಸರನ್ನು ಬಳಸಬಹುದು.

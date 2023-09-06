@@ -12,21 +12,39 @@ synced-tabs-sidebar-tabsnotsyncing = Басқа құрылғыларыңызда
 synced-tabs-sidebar-connect-another-device = Басқа құрылғыны байланыстыру
 synced-tabs-sidebar-search =
     .placeholder = Синхрондалған беттерден іздеу
+
+## Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
+## and/or devices in the list. The "Open" strings below should be translated
+## consistently with the equivalent strings for the bookmarks manager's context
+## menu. That menu is activated by right-clicking a bookmark in the Library
+## window. The bookmarks manager context's strings are located in places.ftl.
+
 synced-tabs-context-open =
     .label = Ашу
     .accesskey = А
-synced-tabs-context-open-in-new-tab =
+synced-tabs-context-open-in-tab =
     .label = Жаңа бетте ашу
-    .accesskey = т
-synced-tabs-context-open-in-new-window =
+    .accesskey = Ж
+synced-tabs-context-open-in-container-tab =
+    .label = Жаңа контейнерлік бетте ашу
+    .accesskey = к
+synced-tabs-context-open-in-window =
     .label = Жаңа терезеде ашу
-    .accesskey = т
-synced-tabs-context-open-in-new-private-window =
+    .accesskey = а
+synced-tabs-context-open-in-private-window =
     .label = Жаңа жекелік терезесінде ашу
     .accesskey = к
-synced-tabs-context-bookmark-single-tab =
-    .label = Бұл бетті бетбелгілерге қосу…
-    .accesskey = с
+
+##
+
+# Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
+# and/or devices in the list. This string is for a menuitem equivalent to one in
+# the tab context menu (activated by right-clicking a tab in the tabstrip). That
+# string is located in tabContextMenu.ftl. So, this string should be translated
+# consistently with the "Bookmark Tab…" string there.
+synced-tabs-context-bookmark =
+    .label = Бетті бетбелгілерге қосу…
+    .accesskey = Б
 synced-tabs-context-copy =
     .label = Көшіріп алу
     .accesskey = К

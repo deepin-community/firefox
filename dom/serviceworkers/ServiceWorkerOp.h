@@ -9,6 +9,7 @@
 
 #include <functional>
 
+#include "mozilla/dom/ServiceWorkerOpPromise.h"
 #include "nsISupportsImpl.h"
 
 #include "ServiceWorkerEvents.h"
@@ -22,8 +23,7 @@
 #include "mozilla/dom/ServiceWorkerOpArgs.h"
 #include "mozilla/dom/WorkerRunnable.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 class FetchEventOpProxyChild;
 
@@ -49,6 +49,8 @@ class ServiceWorkerOp : public RemoteWorkerChild::Op {
   // Returns `true` if the operation has started and `false` otherwise.
   bool MaybeStart(RemoteWorkerChild* aOwner,
                   RemoteWorkerChild::State& aState) final;
+
+  void StartOnMainThread(RefPtr<RemoteWorkerChild>& aOwner) final;
 
   void Cancel() final;
 
@@ -135,9 +137,11 @@ class FetchEventOp final : public ExtendableEventOp,
    * `{Resolved,Reject}Callback()` are use to handle the
    * `FetchEvent::RespondWith()` promise.
    */
-  void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue) override;
+  void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue,
+                        ErrorResult& aRv) override;
 
-  void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue) override;
+  void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue,
+                        ErrorResult& aRv) override;
 
   void MaybeFinished();
 
@@ -174,11 +178,22 @@ class FetchEventOp final : public ExtendableEventOp,
   // destructor must be called on the worker thread.
   RefPtr<Promise> mHandled;
 
+  // Must be set to `nullptr` on the worker thread because `Promise`'s
+  // destructor must be called on the worker thread.
+  RefPtr<Promise> mPreloadResponse;
+
+  // Holds the callback that resolves mPreloadResponse.
+  MozPromiseRequestHolder<FetchEventPreloadResponseAvailablePromise>
+      mPreloadResponseAvailablePromiseRequestHolder;
+  MozPromiseRequestHolder<FetchEventPreloadResponseTimingPromise>
+      mPreloadResponseTimingPromiseRequestHolder;
+  MozPromiseRequestHolder<FetchEventPreloadResponseEndPromise>
+      mPreloadResponseEndPromiseRequestHolder;
+
   TimeStamp mFetchHandlerStart;
   TimeStamp mFetchHandlerFinish;
 };
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 #endif  // mozilla_dom_serviceworkerop_h__

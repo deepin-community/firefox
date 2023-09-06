@@ -28,6 +28,14 @@ serviceworker-worker-unregister = Отмяна на регистрацията
 serviceworker-worker-debug = Отстраняване на дефекти
     .title = Дефекти могат да бъдат отстранявани само от работещи обслужващи нишки
 
+# Alt text for the image icon displayed inside a debug link for a service worker.
+serviceworker-worker-inspect-icon =
+    .alt = Инспектиране
+
+# Text for the start link displayed for a registered but not running Service Worker.
+# Clicking on the link will attempt to start the service worker.
+serviceworker-worker-start3 = Включване
+
 # Text displayed for the updated time of the service worker. The <time> element will
 # display the last update time of the service worker script.
 serviceworker-worker-updated = Обновена на <time>{ DATETIME($date, day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric") }</time>
@@ -51,10 +59,18 @@ manifest-item-warnings = Грешки и предупреждения
 # Header for the Icon section of Manifest inspection displayed in the application panel.
 manifest-item-icons = Пиктограми
 
+# Text displayed while we are loading the manifest file
+manifest-loading = Зареждане на manifest…
+
 # Text displayed as the alt attribute for <img> tags showing the icons in the
 # manifest.
 manifest-icon-img =
     .alt = Пиктограма
+
+# Text displayed as the title attribute for <img> tags showing the icons in the
+# manifest. `$sizes` is a user-dependent string that has been parsed as a
+# space-separated list of `<width>x<height>` sizes or the keyword `any`.
+manifest-icon-img-title = Икона с размери: { $sizes }
 
 # Sidebar navigation item for Manifest sidebar item section
 sidebar-item-manifest = Манифест
@@ -66,3 +82,7 @@ icon-warning =
     .alt = Пиктограма на предупреждение
     .title = Предупреждение
 
+# Text for the ALT and TITLE attributes of the error icon
+icon-error =
+    .alt = Икона за грешка
+    .title = Грешка

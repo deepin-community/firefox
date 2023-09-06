@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Amagar
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Amostrar todas as carpetas de marcapachinas
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Amagar
+
 bookmark-overlay-new-folder-button =
     .label = Nueva carpeta
     .accesskey = t
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Amostrar todas as etiquetas
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Amagar
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Amostrar todas as etiquetas
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Amagar
 
 bookmark-overlay-keyword-2 =
     .value = Parola clau

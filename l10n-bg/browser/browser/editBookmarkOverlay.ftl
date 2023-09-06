@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Скриване
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Показване на всички папки с отметки
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Скриване
+
 bookmark-overlay-new-folder-button =
     .label = Нова папка
     .accesskey = Н
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Всички етикети
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Скриване
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Всички етикети
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Скриване
 
 bookmark-overlay-keyword-2 =
     .value = Ключова дума

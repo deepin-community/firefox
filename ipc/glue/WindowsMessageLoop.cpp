@@ -85,7 +85,6 @@ extern UINT sAppShellGeckoMsgId;
 namespace {
 
 const wchar_t kOldWndProcProp[] = L"MozillaIPCOldWndProc";
-const wchar_t k3rdPartyWindowProp[] = L"Mozilla3rdPartyWindow";
 
 // This isn't defined before Windows XP.
 enum { WM_XP_THEMECHANGED = 0x031A };
@@ -212,14 +211,9 @@ static void DumpNeuteredMessage(HWND hwnd, UINT uMsg) {
   nsAutoCString log("Received \"nonqueued\" ");
   // classify messages
   if (uMsg < WM_USER) {
-    int idx = 0;
-    while (mozilla::widget::gAllEvents[idx].mId != uMsg &&
-           mozilla::widget::gAllEvents[idx].mStr != nullptr) {
-      idx++;
-    }
-    if (mozilla::widget::gAllEvents[idx].mStr) {
-      log.AppendPrintf("ui message \"%s\"",
-                       mozilla::widget::gAllEvents[idx].mStr);
+    const char* msgText = mozilla::widget::WinUtils::WinEventToEventName(uMsg);
+    if (msgText) {
+      log.AppendPrintf("ui message \"%s\"", msgText);
     } else {
       log.AppendPrintf("ui message (0x%X)", uMsg);
     }
@@ -234,7 +228,7 @@ static void DumpNeuteredMessage(HWND hwnd, UINT uMsg) {
   }
 
   log.AppendLiteral(" during a synchronous IPC message for window ");
-  log.AppendPrintf("0x%X", hwnd);
+  log.AppendPrintf("0x%p", hwnd);
 
   wchar_t className[256] = {0};
   if (GetClassNameW(hwnd, className, sizeof(className) - 1) > 0) {
@@ -378,13 +372,11 @@ ProcessOrDeferMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
       // This should be safe, and needs to be sync.
 #if defined(ACCESSIBILITY)
     case WM_GETOBJECT: {
-      if (!::GetPropW(hwnd, k3rdPartyWindowProp)) {
-        DWORD objId = static_cast<DWORD>(lParam);
-        if (objId == OBJID_CLIENT || objId == MOZOBJID_UIAROOT) {
-          WNDPROC oldWndProc = (WNDPROC)GetProp(hwnd, kOldWndProcProp);
-          if (oldWndProc) {
-            return CallWindowProcW(oldWndProc, hwnd, uMsg, wParam, lParam);
-          }
+      LONG objId = static_cast<LONG>(lParam);
+      if (objId == OBJID_CLIENT || objId == MOZOBJID_UIAROOT) {
+        WNDPROC oldWndProc = (WNDPROC)GetProp(hwnd, kOldWndProcProp);
+        if (oldWndProc) {
+          return CallWindowProcW(oldWndProc, hwnd, uMsg, wParam, lParam);
         }
       }
       return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -466,13 +458,6 @@ static bool WindowIsDeferredWindow(HWND hWnd) {
     return true;
   }
 
-  // Plugin windows that can trigger ipc calls in child:
-  // 'ShockwaveFlashFullScreen' - flash fullscreen window
-  if (className.EqualsLiteral("ShockwaveFlashFullScreen")) {
-    SetPropW(hWnd, k3rdPartyWindowProp, (HANDLE)1);
-    return true;
-  }
-
   return false;
 }
 
@@ -507,7 +492,6 @@ bool NeuterWindowProcedure(HWND hWnd) {
     NS_WARNING("SetProp failed!");
     SetWindowLongPtr(hWnd, GWLP_WNDPROC, currentWndProc);
     RemovePropW(hWnd, kOldWndProcProp);
-    RemovePropW(hWnd, k3rdPartyWindowProp);
     return false;
   }
 
@@ -528,7 +512,6 @@ void RestoreWindowProcedure(HWND hWnd) {
                  "This should never be switched out from under us!");
   }
   RemovePropW(hWnd, kOldWndProcProp);
-  RemovePropW(hWnd, k3rdPartyWindowProp);
 }
 
 LRESULT CALLBACK CallWindowProcedureHook(int nCode, WPARAM wParam,
@@ -635,10 +618,8 @@ void InitUIThread() {
 }  // namespace mozilla
 
 // See SpinInternalEventLoop below
-MessageChannel::SyncStackFrame::SyncStackFrame(MessageChannel* channel,
-                                               bool interrupt)
-    : mInterrupt(interrupt),
-      mSpinNestedEvents(false),
+MessageChannel::SyncStackFrame::SyncStackFrame(MessageChannel* channel)
+    : mSpinNestedEvents(false),
       mListenerNotified(false),
       mChannel(channel),
       mPrev(mChannel->mTopFrame),
@@ -857,106 +838,16 @@ SuppressedNeuteringRegion::~SuppressedNeuteringRegion() {
 
 bool SuppressedNeuteringRegion::sSuppressNeutering = false;
 
-#if defined(ACCESSIBILITY)
-static DWORD WaitForSingleObjectExWrapper(HANDLE aEvent, DWORD aTimeout) {
-  return ::WaitForSingleObjectEx(aEvent, aTimeout, TRUE);
-}
-
-static DWORD CoWaitForMultipleHandlesWrapper(HANDLE aEvent, DWORD aTimeout) {
-  DWORD waitResult = 0;
-  ::SetLastError(ERROR_SUCCESS);
-  HRESULT hr = ::CoWaitForMultipleHandles(COWAIT_ALERTABLE, aTimeout, 1,
-                                          &aEvent, &waitResult);
-  if (hr == S_OK) {
-    return waitResult;
-  }
-  if (hr == RPC_S_CALLPENDING) {
-    return WAIT_TIMEOUT;
-  }
-  return WAIT_FAILED;
-}
-
-bool MessageChannel::WaitForSyncNotifyWithA11yReentry() {
-  mMonitor->AssertCurrentThreadOwns();
-  MonitorAutoUnlock unlock(*mMonitor);
-
-  static auto* sWaitForEvent = IsWin32kLockedDown()
-                                   ? WaitForSingleObjectExWrapper
-                                   : CoWaitForMultipleHandlesWrapper;
-
-  const DWORD waitStart = ::GetTickCount();
-  DWORD elapsed = 0;
-  DWORD timeout =
-      mTimeoutMs == kNoTimeout ? INFINITE : static_cast<DWORD>(mTimeoutMs);
-  bool timedOut = false;
-
-  while (true) {
-    {  // Scope for lock
-      MonitorAutoLock lock(*mMonitor);
-      if (!Connected()) {
-        break;
-      }
-    }
-
-    if (timeout != static_cast<DWORD>(kNoTimeout)) {
-      elapsed = ::GetTickCount() - waitStart;
-    }
-
-    if (elapsed >= timeout) {
-      timedOut = true;
-      break;
-    }
-
-    DWORD waitResult = sWaitForEvent(mEvent, timeout - elapsed);
-
-    if (waitResult == WAIT_OBJECT_0) {
-      // mEvent is signaled
-      BOOL success = ::ResetEvent(mEvent);
-      if (!success) {
-        gfxDevCrash(mozilla::gfx::LogReason::MessageChannelInvalidHandle)
-            << "WindowsMessageChannel::WaitForSyncNotifyWithA11yReentry "
-               "failed to reset event. GetLastError: "
-            << GetLastError();
-      }
-      break;
-    }
-
-    if (waitResult == WAIT_IO_COMPLETION) {
-      // APC fired, keep waiting
-      continue;
-    }
-
-    if (waitResult == WAIT_TIMEOUT) {
-      timeout = true;
-      break;
-    }
-
-    NS_ERROR("WaitForSyncNotifyWithA11yReentry failed");
-    break;
-  }
-
-  return WaitResponse(timedOut);
-}
-#endif
-
-bool MessageChannel::WaitForSyncNotify(bool aHandleWindowsMessages) {
+bool MessageChannel::WaitForSyncNotify() {
   mMonitor->AssertCurrentThreadOwns();
 
   if (!gUIThreadId) {
     mozilla::ipc::windows::InitUIThread();
   }
 
-#if defined(ACCESSIBILITY)
-  if (mFlags & REQUIRE_A11Y_REENTRY) {
-    MOZ_ASSERT(!(mFlags & REQUIRE_DEFERRED_MESSAGE_PROTECTION));
-    return WaitForSyncNotifyWithA11yReentry();
-  }
-#endif
-
   // Use a blocking wait if this channel does not require
   // Windows message deferral behavior.
-  if (!(mFlags & REQUIRE_DEFERRED_MESSAGE_PROTECTION) ||
-      !aHandleWindowsMessages) {
+  if (!(mFlags & REQUIRE_DEFERRED_MESSAGE_PROTECTION)) {
     TimeDuration timeout = (kNoTimeout == mTimeoutMs)
                                ? TimeDuration::Forever()
                                : TimeDuration::FromMilliseconds(mTimeoutMs);
@@ -977,8 +868,7 @@ bool MessageChannel::WaitForSyncNotify(bool aHandleWindowsMessages) {
   NS_ASSERTION(
       mFlags & REQUIRE_DEFERRED_MESSAGE_PROTECTION,
       "Shouldn't be here for channels that don't use message deferral!");
-  NS_ASSERTION(mTopFrame && !mTopFrame->mInterrupt,
-               "Top frame is not a sync frame!");
+  NS_ASSERTION(mTopFrame, "No top frame!");
 
   MonitorAutoUnlock unlock(*mMonitor);
 
@@ -1073,135 +963,6 @@ bool MessageChannel::WaitForSyncNotify(bool aHandleWindowsMessages) {
         // Message was for child, we should wait a bit.
         SwitchToThread();
       }
-    }
-  }
-
-  if (timerId) {
-    KillTimer(nullptr, timerId);
-    timerId = 0;
-  }
-
-  return WaitResponse(timedout);
-}
-
-bool MessageChannel::WaitForInterruptNotify() {
-  mMonitor->AssertCurrentThreadOwns();
-
-  // Receiving the interrupt notification may require JS to execute on a
-  // worker.
-  dom::AutoYieldJSThreadExecution yield;
-
-  if (!gUIThreadId) {
-    mozilla::ipc::windows::InitUIThread();
-  }
-
-  // Re-use sync notification wait code if this channel does not require
-  // Windows message deferral behavior.
-  if (!(mFlags & REQUIRE_DEFERRED_MESSAGE_PROTECTION)) {
-    return WaitForSyncNotify(true);
-  }
-
-  if (!InterruptStackDepth()) {
-    // There is currently no way to recover from this condition.
-    MOZ_CRASH("StackDepth() is 0 in call to MessageChannel::WaitForNotify!");
-  }
-
-  NS_ASSERTION(
-      mFlags & REQUIRE_DEFERRED_MESSAGE_PROTECTION,
-      "Shouldn't be here for channels that don't use message deferral!");
-  NS_ASSERTION(mTopFrame && mTopFrame->mInterrupt,
-               "Top frame is not a sync frame!");
-
-  MonitorAutoUnlock unlock(*mMonitor);
-
-  bool timedout = false;
-
-  UINT_PTR timerId = 0;
-  TimeoutData timeoutData = {0};
-
-  // gWindowHook is used as a flag variable for the loop below: if it is set
-  // and we start to spin a nested event loop, we need to clear the hook and
-  // process deferred/pending messages.
-  while (1) {
-    NS_ASSERTION((!!gWindowHook) == MessageChannel::IsPumpingMessages(),
-                 "gWindowHook out of sync with reality");
-
-    if (mTopFrame->mSpinNestedEvents) {
-      if (gWindowHook && timerId) {
-        KillTimer(nullptr, timerId);
-        timerId = 0;
-      }
-      DeneuteredWindowRegion deneuteredRgn;
-      SpinInternalEventLoop();
-      BOOL success = ResetEvent(mEvent);
-      if (!success) {
-        gfxDevCrash(mozilla::gfx::LogReason::MessageChannelInvalidHandle)
-            << "WindowsMessageChannel::WaitForInterruptNotify::"
-               "SpinNestedEvents failed to reset event. GetLastError: "
-            << GetLastError();
-      }
-      return true;
-    }
-
-    if (mTimeoutMs != kNoTimeout && !timerId) {
-      InitTimeoutData(&timeoutData, mTimeoutMs);
-      timerId = SetTimer(nullptr, 0, mTimeoutMs, nullptr);
-      NS_ASSERTION(timerId, "SetTimer failed!");
-    }
-
-    NeuteredWindowRegion neuteredRgn(true);
-
-    MSG msg = {0};
-
-    // Don't get wrapped up in here if the child connection dies.
-    {
-      MonitorAutoLock lock(*mMonitor);
-      if (!Connected()) {
-        break;
-      }
-    }
-
-    DWORD result =
-        MsgWaitForMultipleObjects(1, &mEvent, FALSE, INFINITE, QS_ALLINPUT);
-    if (result == WAIT_OBJECT_0) {
-      // Our NotifyWorkerThread event was signaled
-      BOOL success = ResetEvent(mEvent);
-      if (!success) {
-        gfxDevCrash(mozilla::gfx::LogReason::MessageChannelInvalidHandle)
-            << "WindowsMessageChannel::WaitForInterruptNotify::"
-               "WaitForMultipleObjects failed to reset event. GetLastError: "
-            << GetLastError();
-      }
-      break;
-    } else if (result != (WAIT_OBJECT_0 + 1)) {
-      NS_ERROR("Wait failed!");
-      break;
-    }
-
-    if (TimeoutHasExpired(timeoutData)) {
-      // A timeout was specified and we've passed it. Break out.
-      timedout = true;
-      break;
-    }
-
-    // See MessageChannel's WaitFor*Notify for details.
-    bool haveSentMessagesPending =
-        (HIWORD(GetQueueStatus(QS_SENDMESSAGE)) & QS_SENDMESSAGE) != 0;
-
-    // Run all COM messages *after* looking at the queue status.
-    if (gCOMWindow) {
-      if (PeekMessageW(&msg, gCOMWindow, 0, 0, PM_REMOVE)) {
-        TranslateMessage(&msg);
-        ::DispatchMessageW(&msg);
-      }
-    }
-
-    // PeekMessage markes the messages as "old" so that they don't wake up
-    // MsgWaitForMultipleObjects every time.
-    if (!PeekMessageW(&msg, nullptr, 0, 0, PM_NOREMOVE) &&
-        !haveSentMessagesPending) {
-      // Message was for child, we should wait a bit.
-      SwitchToThread();
     }
   }
 

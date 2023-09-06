@@ -11,8 +11,8 @@
 #include "PlatformDecoderModule.h"
 #include "VideoConduit.h"
 #include "WebrtcImageBuffer.h"
-#include "webrtc/common_video/include/video_frame_buffer.h"
-#include "webrtc/modules/video_coding/include/video_codec_interface.h"
+#include "common_video/include/video_frame_buffer.h"
+#include "modules/video_coding/include/video_codec_interface.h"
 
 namespace webrtc {
 class DecodedImageCallback;
@@ -29,17 +29,11 @@ class TaskQueue;
 
 class WebrtcMediaDataDecoder : public WebrtcVideoDecoder {
  public:
-  explicit WebrtcMediaDataDecoder(nsACString& aCodecMimeType);
+  WebrtcMediaDataDecoder(nsACString& aCodecMimeType, TrackingId aTrackingId);
 
-  // Implement VideoDecoder interface.
-  uint64_t PluginID() const override { return 0; }
-
-  int32_t InitDecode(const webrtc::VideoCodec* codecSettings,
-                     int32_t numberOfCores) override;
+  bool Configure(const webrtc::VideoDecoder::Settings& settings) override;
 
   int32_t Decode(const webrtc::EncodedImage& inputImage, bool missingFrames,
-                 const webrtc::RTPFragmentationHeader* fragmentation,
-                 const webrtc::CodecSpecificInfo* codecSpecificInfo = NULL,
                  int64_t renderTimeMs = -1) override;
 
   int32_t RegisterDecodeCompleteCallback(
@@ -67,6 +61,8 @@ class WebrtcMediaDataDecoder : public WebrtcVideoDecoder {
   MediaResult mError = NS_OK;
   MediaDataDecoder::DecodedData mResults;
   const nsCString mCodecType;
+  bool mDisabledHardwareAcceleration = false;
+  const TrackingId mTrackingId;
 };
 
 }  // namespace mozilla

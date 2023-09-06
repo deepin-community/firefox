@@ -22,14 +22,14 @@ add_task(
     const frame = response.frames[0];
     Assert.equal(objActor1, frame.arguments[0].actor);
 
-    threadFront.resume();
+    await threadFront.resume();
   })
 );
 
 function evaluateTestCode(debuggee) {
   debuggee.eval(
     "(" +
-      function() {
+      function () {
         function stopMe(obj) {
           debugger;
         }

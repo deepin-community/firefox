@@ -15,13 +15,16 @@ OS=`uname -s`
 MYDIR=$(dirname $(realpath "$0"))
 
 ### Environment parameters:
-TEST_STACK_LIMIT="${TEST_STACK_LIMIT:-128}"
+TEST_STACK_LIMIT="${TEST_STACK_LIMIT:-256}"
 CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-RelWithDebInfo}
 CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:-}
 CMAKE_C_COMPILER_LAUNCHER=${CMAKE_C_COMPILER_LAUNCHER:-}
 CMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER:-}
 CMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM:-}
+SKIP_BUILD="${SKIP_BUILD:-0}"
 SKIP_TEST="${SKIP_TEST:-0}"
+TARGETS="${TARGETS:-all doc}"
+TEST_SELECTOR="${TEST_SELECTOR:-}"
 BUILD_TARGET="${BUILD_TARGET:-}"
 ENABLE_WASM_SIMD="${ENABLE_WASM_SIMD:-0}"
 if [[ -n "${BUILD_TARGET}" ]]; then
@@ -41,27 +44,11 @@ FUZZER_MAX_TIME="${FUZZER_MAX_TIME:-0}"
 
 SANITIZER="none"
 
-if [[ "${BUILD_TARGET}" == wasm* ]]; then
-  # Check that environment is setup for the WASM build target.
-  if [[ -z "${EMSCRIPTEN}" ]]; then
-    echo "'EMSCRIPTEN' is not defined. Use 'emconfigure' wrapper to setup WASM build environment" >&2
-    return 1
-  fi
-  # Remove the side-effect of "emconfigure" wrapper - it considers NodeJS environment.
-  unset EMMAKEN_JUST_CONFIGURE
-  EMS_TOOLCHAIN_FILE="${EMSCRIPTEN}/cmake/Modules/Platform/Emscripten.cmake"
-  if [[ -f "${EMS_TOOLCHAIN_FILE}" ]]; then
-    CMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE:-${EMS_TOOLCHAIN_FILE}}
-  else
-    echo "Warning: EMSCRIPTEN CMake module not found" >&2
-  fi
-  CMAKE_CROSSCOMPILING_EMULATOR="${MYDIR}/js-wasm-wrapper.sh"
-fi
 
 if [[ "${BUILD_TARGET%%-*}" == "x86_64" ||
     "${BUILD_TARGET%%-*}" == "i686" ]]; then
   # Default to building all targets, even if compiler baseline is SSE4
-  HWY_BASELINE_TARGETS=${HWY_BASELINE_TARGETS:-HWY_SCALAR}
+  HWY_BASELINE_TARGETS=${HWY_BASELINE_TARGETS:-HWY_EMU128}
 else
   HWY_BASELINE_TARGETS=${HWY_BASELINE_TARGETS:-}
 fi
@@ -82,6 +69,11 @@ if [[ "${ENABLE_WASM_SIMD}" -ne "0" ]]; then
   CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -msimd128"
   CMAKE_C_FLAGS="${CMAKE_C_FLAGS} -msimd128"
   CMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS} -msimd128"
+fi
+
+if [[ "${ENABLE_WASM_SIMD}" -eq "2" ]]; then
+  CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -DHWY_WANT_WASM2"
+  CMAKE_C_FLAGS="${CMAKE_C_FLAGS} -DHWY_WANT_WASM2"
 fi
 
 if [[ ! -z "${HWY_BASELINE_TARGETS}" ]]; then
@@ -154,6 +146,7 @@ detect_clang_version() {
   fi
   local clang_version=$("${CC:-clang}" --version | head -n1)
   clang_version=${clang_version#"Debian "}
+  clang_version=${clang_version#"Ubuntu "}
   local llvm_tag
   case "${clang_version}" in
     "clang version 6."*)
@@ -350,7 +343,6 @@ cmake_configure() {
     -G Ninja
     -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}"
     -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS}"
-    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_FILE}"
     -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS}"
     -DCMAKE_MODULE_LINKER_FLAGS="${CMAKE_MODULE_LINKER_FLAGS}"
     -DCMAKE_SHARED_LINKER_FLAGS="${CMAKE_SHARED_LINKER_FLAGS}"
@@ -392,11 +384,14 @@ cmake_configure() {
         # Only the first element of the target triplet.
         -DCMAKE_SYSTEM_PROCESSOR="${BUILD_TARGET%%-*}"
         -DCMAKE_SYSTEM_NAME="${system_name}"
+        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_FILE}"
       )
     else
-      # sjpeg confuses WASM SIMD with SSE.
       args+=(
+        # sjpeg confuses WASM SIMD with SSE.
         -DSJPEG_ENABLE_SIMD=OFF
+        # Building shared libs is not very useful for WASM.
+        -DBUILD_SHARED_LIBS=OFF
       )
     fi
     args+=(
@@ -457,17 +452,26 @@ cmake_configure() {
       -DCMAKE_MAKE_PROGRAM="${CMAKE_MAKE_PROGRAM}"
     )
   fi
-  cmake "${args[@]}" "$@"
+  if [[ "${BUILD_TARGET}" == wasm* ]]; then
+    emcmake cmake "${args[@]}" "$@"
+  else
+    cmake "${args[@]}" "$@"
+  fi
 }
 
 cmake_build_and_test() {
+  if [[ "${SKIP_BUILD}" -eq "1" ]]; then
+      return 0
+  fi
   # gtest_discover_tests() runs the test binaries to discover the list of tests
   # at build time, which fails under qemu.
-  ASAN_OPTIONS=detect_leaks=0 cmake --build "${BUILD_DIR}" -- all doc
+  ASAN_OPTIONS=detect_leaks=0 cmake --build "${BUILD_DIR}" -- $TARGETS
   # Pack test binaries if requested.
   if [[ "${PACK_TEST:-}" == "1" ]]; then
     (cd "${BUILD_DIR}"
      ${FIND_BIN} -name '*.cmake' -a '!' -path '*CMakeFiles*'
+     # gtest / gmock / gtest_main shared libs
+     ${FIND_BIN} lib/ -name 'libg*.so*'
      ${FIND_BIN} -type d -name tests -a '!' -path '*CMakeFiles*'
     ) | tar -C "${BUILD_DIR}" -cf "${BUILD_DIR}/tests.tar.xz" -T - \
       --use-compress-program="xz --threads=$(nproc --all || echo 1) -6"
@@ -483,7 +487,7 @@ cmake_build_and_test() {
     (cd "${BUILD_DIR}"
      export UBSAN_OPTIONS=print_stacktrace=1
      [[ "${TEST_STACK_LIMIT}" == "none" ]] || ulimit -s "${TEST_STACK_LIMIT}"
-     ctest -j $(nproc --all || echo 1) --output-on-failure)
+     ctest -j $(nproc --all || echo 1) ${TEST_SELECTOR} --output-on-failure)
   fi
 }
 
@@ -492,7 +496,7 @@ cmake_build_and_test() {
 # library.
 strip_dead_code() {
   # Emscripten does tree shaking without any extra flags.
-  if [[ "${CMAKE_TOOLCHAIN_FILE##*/}" == "Emscripten.cmake" ]]; then
+  if [[ "${BUILD_TARGET}" == wasm* ]]; then
     return 0
   fi
   # -ffunction-sections, -fdata-sections and -Wl,--gc-sections effectively
@@ -554,8 +558,10 @@ cmd_coverage_report() {
     # Only print coverage information for the libjxl directories. The rest
     # is not part of the code under test.
     --filter '.*jxl/.*'
+    --exclude '.*_gbench.cc'
     --exclude '.*_test.cc'
-    --exclude '.*_test-only..*'
+    --exclude '.*_testonly..*'
+    --exclude '.*_debug.*'
     --exclude '.*test_utils..*'
     --object-directory "${real_build_dir}"
   )
@@ -582,7 +588,7 @@ cmd_test() {
   (cd "${BUILD_DIR}"
    export UBSAN_OPTIONS=print_stacktrace=1
    [[ "${TEST_STACK_LIMIT}" == "none" ]] || ulimit -s "${TEST_STACK_LIMIT}"
-   ctest -j $(nproc --all || echo 1) --output-on-failure "$@")
+   ctest -j $(nproc --all || echo 1) ${TEST_SELECTOR} --output-on-failure "$@")
 }
 
 cmd_gbench() {
@@ -597,8 +603,8 @@ cmd_gbench() {
 }
 
 cmd_asanfuzz() {
-  CMAKE_CXX_FLAGS+=" -fsanitize=fuzzer-no-link"
-  CMAKE_C_FLAGS+=" -fsanitize=fuzzer-no-link"
+  CMAKE_CXX_FLAGS+=" -fsanitize=fuzzer-no-link -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION=1"
+  CMAKE_C_FLAGS+=" -fsanitize=fuzzer-no-link -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION=1"
   cmd_asan -DJPEGXL_ENABLE_FUZZERS=ON "$@"
 }
 
@@ -612,8 +618,8 @@ cmd_msanfuzz() {
     cmd_msan_install
   fi
 
-  CMAKE_CXX_FLAGS+=" -fsanitize=fuzzer-no-link"
-  CMAKE_C_FLAGS+=" -fsanitize=fuzzer-no-link"
+  CMAKE_CXX_FLAGS+=" -fsanitize=fuzzer-no-link -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION=1"
+  CMAKE_C_FLAGS+=" -fsanitize=fuzzer-no-link -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION=1"
   cmd_msan -DJPEGXL_ENABLE_FUZZERS=ON "$@"
 }
 
@@ -694,7 +700,8 @@ cmd_msan() {
   strip_dead_code
   cmake_configure "$@" \
     -DCMAKE_CROSSCOMPILING=1 -DRUN_HAVE_STD_REGEX=0 -DRUN_HAVE_POSIX_REGEX=0 \
-    -DJPEGXL_ENABLE_TCMALLOC=OFF
+    -DJPEGXL_ENABLE_TCMALLOC=OFF -DJPEGXL_WARNINGS_AS_ERRORS=OFF \
+    -DCMAKE_REQUIRED_LINK_OPTIONS="${msan_linker_flags[@]}"
   cmake_build_and_test
 }
 
@@ -707,20 +714,24 @@ cmd_msan_install() {
   export CC="${CC:-clang}"
   export CXX="${CXX:-clang++}"
   detect_clang_version
-  local llvm_tag="llvmorg-${CLANG_VERSION}.0.0"
-  case "${CLANG_VERSION}" in
-    "6.0")
-      llvm_tag="llvmorg-6.0.1"
-      ;;
-    "7")
-      llvm_tag="llvmorg-7.0.1"
-      ;;
-  esac
-  local llvm_targz="${tmpdir}/${llvm_tag}.tar.gz"
-  curl -L --show-error -o "${llvm_targz}" \
-    "https://github.com/llvm/llvm-project/archive/${llvm_tag}.tar.gz"
-  tar -C "${tmpdir}" -zxf "${llvm_targz}"
-  local llvm_root="${tmpdir}/llvm-project-${llvm_tag}"
+  # Allow overriding the LLVM checkout.
+  local llvm_root="${LLVM_ROOT:-}"
+  if [ -z "${llvm_root}" ]; then
+    local llvm_tag="llvmorg-${CLANG_VERSION}.0.0"
+    case "${CLANG_VERSION}" in
+      "6.0")
+        llvm_tag="llvmorg-6.0.1"
+        ;;
+      "7")
+        llvm_tag="llvmorg-7.0.1"
+        ;;
+    esac
+    local llvm_targz="${tmpdir}/${llvm_tag}.tar.gz"
+    curl -L --show-error -o "${llvm_targz}" \
+      "https://github.com/llvm/llvm-project/archive/${llvm_tag}.tar.gz"
+    tar -C "${tmpdir}" -zxf "${llvm_targz}"
+    llvm_root="${tmpdir}/llvm-project-${llvm_tag}"
+  fi
 
   local msan_prefix="${HOME}/.msan/${CLANG_VERSION}"
   rm -rf "${msan_prefix}"
@@ -789,7 +800,7 @@ _cmd_ossfuzz() {
     -e MSAN_LIBS_PATH="/work/msan" \
     -e JPEGXL_EXTRA_ARGS="${jpegxl_extra_args}" \
     -v "${MYDIR}":/src/libjxl \
-    -v "${MYDIR}/tools/ossfuzz-build.sh":/src/build.sh \
+    -v "${MYDIR}/tools/scripts/ossfuzz-build.sh":/src/build.sh \
     -v "${real_build_dir}":/work \
     gcr.io/oss-fuzz/libjxl
 }
@@ -901,9 +912,9 @@ run_benchmark() {
 
   local benchmark_args=(
     --input "${src_img_dir}/*.png"
-    --codec=jpeg:yuv420:q85,webp:q80,jxl:fast:d1,jxl:fast:d1:downsampling=8,jxl:fast:d4,jxl:fast:d4:downsampling=8,jxl:cheetah:m,jxl:m:cheetah:P6,jxl:m:falcon:q80
+    --codec=jpeg:yuv420:q85,webp:q80,jxl:d1:6,jxl:d1:6:downsampling=8,jxl:d5:6,jxl:d5:6:downsampling=8,jxl:m:d0:2,jxl:m:d0:3,jxl:m:d2:2
     --output_dir "${output_dir}"
-    --noprofiler --show_progress
+    --show_progress
     --num_threads="${num_threads}"
   )
   if [[ "${STORE_IMAGES}" == "1" ]]; then
@@ -1016,11 +1027,11 @@ cmd_arm_benchmark() {
   )
 
   local images=(
-    "third_party/testdata/imagecompression.info/flower_foveon.png"
+    "testdata/jxl/flower/flower.png"
   )
 
   local jpg_images=(
-    "third_party/testdata/imagecompression.info/flower_foveon.png.im_q85_420.jpg"
+    "testdata/jxl/flower/flower.png.im_q85_420.jpg"
   )
 
   if [[ "${SKIP_CPUSET:-}" == "1" ]]; then
@@ -1185,22 +1196,38 @@ cmd_fuzz() {
   )
 }
 
-# Runs the linter (clang-format) on the pending CLs.
+# Runs the linters (clang-format, build_cleaner, buildirier) on the pending CLs.
 cmd_lint() {
   merge_request_commits
   { set +x; } 2>/dev/null
-  local versions=(${1:-6.0 7 8 9 10 11})
+  local versions=(${1:-16 15 14 13 12 11 10 9 8 7 6.0})
   local clang_format_bins=("${versions[@]/#/clang-format-}" clang-format)
   local tmpdir=$(mktemp -d)
   CLEANUP_FILES+=("${tmpdir}")
 
   local ret=0
   local build_patch="${tmpdir}/build_cleaner.patch"
-  if ! "${MYDIR}/tools/build_cleaner.py" >"${build_patch}"; then
+  if ! "${MYDIR}/tools/scripts/build_cleaner.py" >"${build_patch}"; then
     ret=1
     echo "build_cleaner.py findings:" >&2
     "${COLORDIFF_BIN}" <"${build_patch}"
-    echo "Run \`tools/build_cleaner.py --update\` to apply them" >&2
+    echo "Run \`tools/scripts/build_cleaner.py --update\` to apply them" >&2
+  fi
+
+  # It is ok, if buildifier is not installed.
+  if which buildifier >/dev/null; then
+    local buildifier_patch="${tmpdir}/buildifier.patch"
+    local bazel_files=`git -C ${MYDIR} ls-files | grep -E "/BUILD$|WORKSPACE|.bzl$"`
+    set -x
+    buildifier -d ${bazel_files} >"${buildifier_patch}"|| true
+    { set +x; } 2>/dev/null
+    if [ -s "${buildifier_patch}" ]; then
+      ret=1
+      echo 'buildifier have found some problems in Bazel build files:' >&2
+      "${COLORDIFF_BIN}" <"${buildifier_patch}"
+      echo 'To fix them run (from the base directory):' >&2
+      echo '  buildifier `git ls-files | grep -E "/BUILD$|WORKSPACE|.bzl$"`' >&2
+    fi
   fi
 
   local installed=()
@@ -1215,11 +1242,11 @@ cmd_lint() {
     # We include in this linter all the changes including the uncommitted changes
     # to avoid printing changes already applied.
     set -x
+    # Ignoring the error that git-clang-format outputs.
     git -C "${MYDIR}" "${clang_format}" --binary "${clang_format}" \
-      --style=file --diff "${MR_ANCESTOR_SHA}" -- >"${tmppatch}"
+      --style=file --diff "${MR_ANCESTOR_SHA}" -- >"${tmppatch}" || true
     { set +x; } 2>/dev/null
-
-    if grep -E '^--- ' "${tmppatch}">/dev/null; then
+    if grep -E '^--- ' "${tmppatch}" | grep -v 'a/third_party' >/dev/null; then
       if [[ -n "${LINT_OUTPUT:-}" ]]; then
         cp "${tmppatch}" "${LINT_OUTPUT}"
       fi
@@ -1375,7 +1402,7 @@ cmd_bump_version() {
   local newver="${1:-}"
 
   if ! which dch >/dev/null; then
-    echo "Run:\n  sudo apt install debhelper"
+    echo "Missing dch\nTo install it run:\n  sudo apt install devscripts"
     exit 1
   fi
 
@@ -1395,19 +1422,21 @@ cmd_bump_version() {
     fi
   fi
 
-  newver="${major}.${minor}"
-  if [[ "${patch}" != "0" ]]; then
-    newver="${newver}.${patch}"
-  fi
+  newver="${major}.${minor}.${patch}"
+
   echo "Bumping version to ${newver} (${major}.${minor}.${patch})"
   sed -E \
     -e "s/(set\\(JPEGXL_MAJOR_VERSION) [0-9]+\\)/\\1 ${major})/" \
     -e "s/(set\\(JPEGXL_MINOR_VERSION) [0-9]+\\)/\\1 ${minor})/" \
     -e "s/(set\\(JPEGXL_PATCH_VERSION) [0-9]+\\)/\\1 ${patch})/" \
     -i lib/CMakeLists.txt
+  sed -E \
+    -e "s/(LIBJXL_VERSION: )[0-9\\.]+/\\1 ${major}.${minor}.${patch}/" \
+    -e "s/(LIBJXL_ABI_VERSION: )[0-9\\.]+/\\1 ${major}.${minor}/" \
+    -i .github/workflows/conformance.yml
 
   # Update lib.gni
-  tools/build_cleaner.py --update
+  tools/scripts/build_cleaner.py --update
 
   # Mark the previous version as "unstable".
   DEBCHANGE_RELEASE_HEURISTIC=log dch -M --distribution unstable --release ''
@@ -1419,11 +1448,14 @@ cmd_bump_version() {
 # Check that the AUTHORS file contains the email of the committer.
 cmd_authors() {
   merge_request_commits
-  # TODO(deymo): Handle multiple commits and check that they are all the same
-  # author.
-  local email=$(git log --format='%ae' "${MR_HEAD_SHA}^!")
-  local name=$(git log --format='%an' "${MR_HEAD_SHA}^!")
-  "${MYDIR}"/tools/check_author.py "${email}" "${name}"
+  local emails
+  local names
+  readarray -t emails < <(git log --format='%ae' "${MR_ANCESTOR_SHA}..${MR_HEAD_SHA}")
+  readarray -t names < <(git log --format='%an' "${MR_ANCESTOR_SHA}..${MR_HEAD_SHA}")
+  for i in "${!names[@]}"; do
+    echo "Checking name '${names[$i]}' with email '${emails[$i]}' ..."
+    "${MYDIR}"/tools/scripts/check_author.py "${emails[$i]}" "${names[$i]}"
+  done
 }
 
 main() {
@@ -1450,7 +1482,7 @@ Where cmd is one of:
  benchmark Run the benchmark over the default corpus.
  fast_benchmark Run the benchmark over the small corpus.
 
- coverage  Buils and run tests with coverage support. Runs coverage_report as
+ coverage  Build and run tests with coverage support. Runs coverage_report as
            well.
  coverage_report Generate HTML, XML and text coverage report after a coverage
            run.
@@ -1483,9 +1515,11 @@ You can pass some optional environment variables as well:
  - FUZZER_MAX_TIME: "fuzz" command fuzzer running timeout in seconds.
  - LINT_OUTPUT: Path to the output patch from the "lint" command.
  - SKIP_CPUSET=1: Skip modifying the cpuset in the arm_benchmark.
+ - SKIP_BUILD=1: Skip the build stage, cmake configure only.
  - SKIP_TEST=1: Skip the test stage.
  - STORE_IMAGES=0: Makes the benchmark discard the computed images.
  - TEST_STACK_LIMIT: Stack size limit (ulimit -s) during tests, in KiB.
+ - TEST_SELECTOR: pass additional arguments to ctest, e.g. "-R .Resample.".
  - STACK_SIZE=1: Generate binaries with the .stack_sizes sections.
 
 These optional environment variables are forwarded to the cmake call as

@@ -61,7 +61,7 @@ policy-DisablePrimaryPasswordCreation = اگر درست ہے تو ، بنیاد�
 
 policy-DisablePasswordReveal = پاس ورڈز کو محفوظ لاگ ان میں ظاہر ہونے کی اجازت نہ دیں۔
 
-policy-DisablePocket = ویب صفحات کو Pocket مے محفوظ کرنے کی خصوصیات سے روکیں۔
+policy-DisablePocket2 = ویب صفحات کو { -pocket-brand-name } مے محفوظ کرنے کی خصوصیات سے روکیں۔
 
 policy-DisablePrivateBrowsing = نجی براؤزنگ غیر فعال کریں
 
@@ -94,10 +94,6 @@ policy-Extensions = ایکسٹنشن کو انسٹال، ان انسٹال یا 
 policy-ExtensionSettings = ایکسٹینشن کی تنصیب کے تمام پہلوؤں کو بندرست کریں کریں۔
 
 policy-ExtensionUpdate = خودکار ایکسٹینشن کی تازہ کاریوں کو فعال یا غیر فعال کریں۔
-
-policy-FirefoxHome = Firefox کی ابتدا کو تشکیل دیں۔
-
-policy-FlashPlugin = Flash پلگ ان کے استعمال کا اجازت دینے یا انکار کریں۔
 
 policy-HardwareAcceleration = غلط ہونے کی صورت میں ہارڈویئر تیز رفتاری کو بند کریں۔
 
@@ -138,9 +134,6 @@ policy-RequestedLocales = درخواست کے لئے درخواست کردہ ز�
 policy-SanitizeOnShutdown2 = بند کرنے پر تمام نیویگیشن ڈیٹا صاف کریں۔
 
 policy-SearchSuggestEnabled = تلاش تجاویز کو فعال یا غیر فعال کریں۔
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = PKCS #11 ماڈیول انسٹال کریں۔
 
 policy-SSLVersionMax = زیادہ سے زیادہ SSL ورژن مرتب کریں۔
 

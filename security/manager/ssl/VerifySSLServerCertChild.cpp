@@ -13,60 +13,56 @@
 #include "nsNSSIOLayer.h"
 #include "nsSerializationHelper.h"
 
+#include "secerr.h"
+
 extern mozilla::LazyLogModule gPIPNSSLog;
 
 namespace mozilla {
 namespace psm {
 
 VerifySSLServerCertChild::VerifySSLServerCertChild(
-    const UniqueCERTCertificate& aCert,
     SSLServerCertVerificationResult* aResultTask,
     nsTArray<nsTArray<uint8_t>>&& aPeerCertChain, uint32_t aProviderFlags)
-    : mCert(CERT_DupCertificate(aCert.get())),
-      mResultTask(aResultTask),
+    : mResultTask(aResultTask),
       mPeerCertChain(std::move(aPeerCertChain)),
       mProviderFlags(aProviderFlags) {}
 
 ipc::IPCResult VerifySSLServerCertChild::RecvOnVerifiedSSLServerCertSuccess(
     nsTArray<ByteArray>&& aBuiltCertChain,
     const uint16_t& aCertTransparencyStatus, const uint8_t& aEVStatus,
-    const bool& aIsBuiltCertChainRootBuiltInRoot) {
+    const bool& aIsBuiltCertChainRootBuiltInRoot,
+    const bool& aMadeOCSPRequests) {
   MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
           ("[%p] VerifySSLServerCertChild::RecvOnVerifiedSSLServerCertSuccess",
            this));
 
-  RefPtr<nsNSSCertificate> nsc = nsNSSCertificate::Create(mCert.get());
   nsTArray<nsTArray<uint8_t>> certBytesArray;
   for (auto& cert : aBuiltCertChain) {
     certBytesArray.AppendElement(std::move(cert.data()));
   }
 
-  mResultTask->Dispatch(nsc, std::move(certBytesArray),
-                        std::move(mPeerCertChain), aCertTransparencyStatus,
-                        static_cast<EVStatus>(aEVStatus), true, 0, 0,
-                        aIsBuiltCertChainRootBuiltInRoot, mProviderFlags);
+  mResultTask->Dispatch(
+      std::move(certBytesArray), std::move(mPeerCertChain),
+      aCertTransparencyStatus, static_cast<EVStatus>(aEVStatus), true, 0,
+      nsITransportSecurityInfo::OverridableErrorCategory::ERROR_UNSET,
+      aIsBuiltCertChainRootBuiltInRoot, mProviderFlags, aMadeOCSPRequests);
   return IPC_OK();
 }
 
 ipc::IPCResult VerifySSLServerCertChild::RecvOnVerifiedSSLServerCertFailure(
-    const uint32_t& aFinalError, const uint32_t& aCollectedErrors) {
-  MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
-          ("[%p]VerifySSLServerCertChild::"
-           "RecvOnVerifiedSSLServerCertFailure - aFinalError=%u, "
-           "aCollectedErrors=%u",
-           this, aFinalError, aCollectedErrors));
-
-  RefPtr<nsNSSCertificate> nsc = nsNSSCertificate::Create(mCert.get());
+    const int32_t& aFinalError, const uint32_t& aOverridableErrorCategory,
+    const bool& aMadeOCSPRequests) {
   mResultTask->Dispatch(
-      nsc, nsTArray<nsTArray<uint8_t>>(), std::move(mPeerCertChain),
+      nsTArray<nsTArray<uint8_t>>(), std::move(mPeerCertChain),
       nsITransportSecurityInfo::CERTIFICATE_TRANSPARENCY_NOT_APPLICABLE,
-      EVStatus::NotEV, false, aFinalError, aCollectedErrors, false,
-      mProviderFlags);
+      EVStatus::NotEV, false, aFinalError,
+      static_cast<nsITransportSecurityInfo::OverridableErrorCategory>(
+          aOverridableErrorCategory),
+      false, mProviderFlags, aMadeOCSPRequests);
   return IPC_OK();
 }
 
 SECStatus RemoteProcessCertVerification(
-    const UniqueCERTCertificate& aCert,
     nsTArray<nsTArray<uint8_t>>&& aPeerCertChain, const nsACString& aHostName,
     int32_t aPort, const OriginAttributes& aOriginAttributes,
     Maybe<nsTArray<uint8_t>>& aStapledOCSPResponse,
@@ -77,9 +73,6 @@ SECStatus RemoteProcessCertVerification(
     PR_SetError(SEC_ERROR_INVALID_ARGS, 0);
     return SECFailure;
   }
-
-  const ByteArray serverCertSerialized =
-      CopyableTArray<uint8_t>{aCert->derCert.data, aCert->derCert.len};
 
   nsTArray<ByteArray> peerCertBytes;
   for (auto& certBytes : aPeerCertChain) {
@@ -113,12 +106,11 @@ SECStatus RemoteProcessCertVerification(
   }
 
   RefPtr<VerifySSLServerCertChild> authCert = new VerifySSLServerCertChild(
-      aCert, aResultTask, std::move(aPeerCertChain), aProviderFlags);
+      aResultTask, std::move(aPeerCertChain), aProviderFlags);
   if (!actorChild->SendPVerifySSLServerCertConstructor(
-          authCert, serverCertSerialized, peerCertBytes,
-          PromiseFlatCString(aHostName), aPort, aOriginAttributes,
-          stapledOCSPResponse, sctsFromTLSExtension, dcInfo, aProviderFlags,
-          aCertVerifierFlags)) {
+          authCert, peerCertBytes, PromiseFlatCString(aHostName), aPort,
+          aOriginAttributes, stapledOCSPResponse, sctsFromTLSExtension, dcInfo,
+          aProviderFlags, aCertVerifierFlags)) {
     PR_SetError(SEC_ERROR_LIBRARY_FAILURE, 0);
     return SECFailure;
   }

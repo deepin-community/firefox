@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Kaikki
+printui-page-range-current = Nykyinen
+printui-page-range-odd = Parittomat
+printui-page-range-even = Parilliset
 printui-page-range-custom = Mukautettu
 printui-page-range-label = Sivut
 printui-page-range-picker =

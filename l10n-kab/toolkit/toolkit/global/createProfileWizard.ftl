@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Amarag n tmerna n umaɣnu
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Tazwart
-       *[other] Ansuf yis-k ɣeṛ { create-profile-window.title }
+       *[other] Ansuf yis-k ɣeṛ { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } ad igber talɣut n iɣewwaṛen n yismenyifen-ik deg umaɣnu-ik udmawan.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Tagrayt
-       *[other] { create-profile-window.title } - Immed
+       *[other] { create-profile-window2.title } - Immed
     }
 
 profile-creation-intro = Ma terniḍ imeɣna, tzemreḍ ad ten-tsemgiredeḍ s yisem. Tzemreḍ ad tesqedceḍ isem i d-ittusumren neɣ fren isem s yiman-ik.

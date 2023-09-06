@@ -6,6 +6,9 @@ screenshot-toolbarbutton =
     .label = Captura de pantalla
     .tooltiptext = Fes una captura de pantalla
 
+screenshot-shortcut =
+    .key = S
+
 screenshots-instructions = Arrossegueu o feu clic a la pàgina per seleccionar una regió. Premeu ESC per cancel·lar.
 screenshots-cancel-button = Cancel·la
 screenshots-save-visible-button = Captura la part visible
@@ -44,3 +47,4 @@ screenshots-private-window-error-details = Perdoneu les molèsties. Estem trebal
 
 screenshots-generic-error-title = El { -screenshots-brand-name } ha tingut un problema.
 screenshots-generic-error-details = S'ha produït un error inesperat. Torneu-ho a provar o captureu una altra pàgina.
+

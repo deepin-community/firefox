@@ -15,7 +15,7 @@ let db;
 // Allow this require to fail in case it's been deleted in the process of running
 // `mach devtools-css-db` to regenerate the database.
 try {
-  db = require("devtools/shared/css/generated/properties-db");
+  db = require("resource://devtools/shared/css/generated/properties-db.js");
 } catch (error) {
   console.error(
     `If this error is being displayed and "mach devtools-css-db" is not ` +
@@ -24,16 +24,8 @@ try {
   );
   db = {
     CSS_PROPERTIES: {},
-    PSEUDO_ELEMENTS: [],
   };
 }
-
-/**
- * The list of all CSS Pseudo Elements.
- *
- * This list can be updated with `mach devtools-css-db`.
- */
-exports.PSEUDO_ELEMENTS = db.PSEUDO_ELEMENTS;
 
 /**
  * A list of CSS Properties and their various characteristics. This is used on the
@@ -49,5 +41,4 @@ exports.CSS_PROPERTIES = db.CSS_PROPERTIES;
 
 exports.CSS_PROPERTIES_DB = {
   properties: db.CSS_PROPERTIES,
-  pseudoElements: db.PSEUDO_ELEMENTS,
 };

@@ -3,7 +3,7 @@
 
 requestLongerTimeout(5);
 
-var { Toolbox } = require("devtools/client/framework/toolbox");
+var { Toolbox } = require("resource://devtools/client/framework/toolbox.js");
 
 const NAME_1 = "";
 const NAME_2 = "Toolbox test for title update";
@@ -11,9 +11,11 @@ const NAME_3 = NAME_2;
 const NAME_4 = "Toolbox test for another title update";
 
 const URL_1 = "data:text/plain;charset=UTF-8,abcde";
-const URL_2 = URL_ROOT_ORG + "browser_toolbox_window_title_changes_page.html";
-const URL_3 = URL_ROOT_COM + "browser_toolbox_window_title_changes_page.html";
-const URL_4 = `http://example.com/document-builder.sjs?html=<head><title>${NAME_4}</title></head><h1>Hello`;
+const URL_2 =
+  URL_ROOT_ORG_SSL + "browser_toolbox_window_title_changes_page.html";
+const URL_3 =
+  URL_ROOT_COM_SSL + "browser_toolbox_window_title_changes_page.html";
+const URL_4 = `https://example.com/document-builder.sjs?html=<head><title>${NAME_4}</title></head><h1>Hello`;
 
 add_task(async function test() {
   await addTab(URL_1);
@@ -70,7 +72,6 @@ add_task(async function test() {
   gBrowser.removeCurrentTab();
   Services.prefs.clearUserPref("devtools.toolbox.host");
   Services.prefs.clearUserPref("devtools.toolbox.selectedTool");
-  Services.prefs.clearUserPref("devtools.toolbox.sideEnabled");
 });
 
 function getExpectedTitle(name, url) {

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import absolute_import
 from collections import OrderedDict
 
 
@@ -150,8 +149,6 @@ errors["NS_ERROR_ILLEGAL_VALUE"] = 0x80070057
 errors["NS_ERROR_INVALID_ARG"] = errors["NS_ERROR_ILLEGAL_VALUE"]
 errors["NS_ERROR_INVALID_POINTER"] = errors["NS_ERROR_INVALID_ARG"]
 errors["NS_ERROR_NULL_POINTER"] = errors["NS_ERROR_INVALID_ARG"]
-# Returned when a class doesn't allow aggregation
-errors["NS_ERROR_NO_AGGREGATION"] = 0x80040110
 # Returned when an operation can't complete due to an unavailable resource
 errors["NS_ERROR_NOT_AVAILABLE"] = 0x80040111
 # Returned when a class is not registered
@@ -340,6 +337,15 @@ with modules["NETWORK"]:
     errors["NS_ERROR_NET_TIMEOUT_EXTERNAL"] = FAILURE(85)
     # An error related to HTTPS-only mode
     errors["NS_ERROR_HTTPS_ONLY"] = FAILURE(86)
+    # A WebSocket connection is failed.
+    errors["NS_ERROR_WEBSOCKET_CONNECTION_REFUSED"] = FAILURE(87)
+    # A connection to a non local address is refused because
+    # xpc::AreNonLocalConnectionsDisabled() returns true.
+    errors["NS_ERROR_NON_LOCAL_CONNECTION_REFUSED"] = FAILURE(88)
+    # Connection to a sts host without a hsts header.
+    errors["NS_ERROR_BAD_HSTS_CERT"] = FAILURE(89)
+    # Error parsing the status line of an HTTP response
+    errors["NS_ERROR_PARSING_HTTP_STATUS_LINE"] = FAILURE(90)
 
     # XXX really need to better rationalize these error codes.  are consumers of
     # necko really expected to know how to discern the meaning of these??
@@ -355,9 +361,6 @@ with modules["NETWORK"]:
     # a type expected by the channel (for nested channels such as the JAR
     # channel).
     errors["NS_ERROR_UNSAFE_CONTENT_TYPE"] = FAILURE(74)
-    # The request failed because the user tried to access to a remote XUL
-    # document from a website that is not in its white-list.
-    errors["NS_ERROR_REMOTE_XUL"] = FAILURE(75)
     # The request resulted in an error page being displayed.
     errors["NS_ERROR_LOAD_SHOWED_ERRORPAGE"] = FAILURE(77)
     # The request occurred in docshell that lacks a treeowner, so it is
@@ -428,23 +431,28 @@ with modules["NETWORK"]:
     # These are really not "results", they're statuses, used by nsITransport and
     # friends.  This is abuse of nsresult, but we'll put up with it for now.
     # nsITransport
-    errors["NS_NET_STATUS_READING"] = FAILURE(8)
-    errors["NS_NET_STATUS_WRITING"] = FAILURE(9)
+    errors["NS_NET_STATUS_READING"] = SUCCESS(8)
+    errors["NS_NET_STATUS_WRITING"] = SUCCESS(9)
 
     # nsISocketTransport
-    errors["NS_NET_STATUS_RESOLVING_HOST"] = FAILURE(3)
-    errors["NS_NET_STATUS_RESOLVED_HOST"] = FAILURE(11)
-    errors["NS_NET_STATUS_CONNECTING_TO"] = FAILURE(7)
-    errors["NS_NET_STATUS_CONNECTED_TO"] = FAILURE(4)
-    errors["NS_NET_STATUS_TLS_HANDSHAKE_STARTING"] = FAILURE(12)
-    errors["NS_NET_STATUS_TLS_HANDSHAKE_ENDED"] = FAILURE(13)
-    errors["NS_NET_STATUS_SENDING_TO"] = FAILURE(5)
-    errors["NS_NET_STATUS_WAITING_FOR"] = FAILURE(10)
-    errors["NS_NET_STATUS_RECEIVING_FROM"] = FAILURE(6)
+    errors["NS_NET_STATUS_RESOLVING_HOST"] = SUCCESS(3)
+    errors["NS_NET_STATUS_RESOLVED_HOST"] = SUCCESS(11)
+    errors["NS_NET_STATUS_CONNECTING_TO"] = SUCCESS(7)
+    errors["NS_NET_STATUS_CONNECTED_TO"] = SUCCESS(4)
+    errors["NS_NET_STATUS_TLS_HANDSHAKE_STARTING"] = SUCCESS(12)
+    errors["NS_NET_STATUS_TLS_HANDSHAKE_ENDED"] = SUCCESS(13)
+    errors["NS_NET_STATUS_SENDING_TO"] = SUCCESS(5)
+    errors["NS_NET_STATUS_WAITING_FOR"] = SUCCESS(10)
+    errors["NS_NET_STATUS_RECEIVING_FROM"] = SUCCESS(6)
 
     # nsIInterceptedChannel
     # Generic error for non-specific failures during service worker interception
     errors["NS_ERROR_INTERCEPTION_FAILED"] = FAILURE(100)
+
+    errors["NS_ERROR_WEBTRANSPORT_CODE_BASE"] = FAILURE(200)
+    errors["NS_ERROR_WEBTRANSPORT_CODE_END"] = (
+        errors["NS_ERROR_WEBTRANSPORT_CODE_BASE"] + 255
+    )
 
     # All Http proxy CONNECT response codes
     errors["NS_ERROR_PROXY_CODE_BASE"] = FAILURE(1000)
@@ -557,8 +565,6 @@ with modules["PLUGINS"]:
 with modules["LAYOUT"]:
     # Return code for SheetLoadData::VerifySheetReadyToParse
     errors["NS_OK_PARSE_SHEET"] = SUCCESS(1)
-    # Return code for nsFrame::GetNextPrevLineFromeBlockFrame
-    errors["NS_POSITION_BEFORE_TABLE"] = SUCCESS(3)
 
 
 # =======================================================================
@@ -634,7 +640,6 @@ with modules["FILES"]:
     errors["NS_ERROR_FILE_EXECUTION_FAILED"] = FAILURE(3)
     errors["NS_ERROR_FILE_UNKNOWN_TYPE"] = FAILURE(4)
     errors["NS_ERROR_FILE_DESTINATION_NOT_DIR"] = FAILURE(5)
-    errors["NS_ERROR_FILE_TARGET_DOES_NOT_EXIST"] = FAILURE(6)
     errors["NS_ERROR_FILE_COPY_OR_MOVE_FAILED"] = FAILURE(7)
     errors["NS_ERROR_FILE_ALREADY_EXISTS"] = FAILURE(8)
     errors["NS_ERROR_FILE_INVALID_PATH"] = FAILURE(9)
@@ -651,6 +656,8 @@ with modules["FILES"]:
     errors["NS_ERROR_FILE_ACCESS_DENIED"] = FAILURE(21)
     errors["NS_ERROR_FILE_FS_CORRUPTED"] = FAILURE(22)
     errors["NS_ERROR_FILE_DEVICE_FAILURE"] = FAILURE(23)
+    errors["NS_ERROR_FILE_DEVICE_TEMPORARY_FAILURE"] = FAILURE(24)
+    errors["NS_ERROR_FILE_INVALID_HANDLE"] = FAILURE(25)
 
     errors["NS_SUCCESS_FILE_DIRECTORY_EMPTY"] = SUCCESS(1)
     # Result codes used by nsIDirectoryServiceProvider2
@@ -696,14 +703,8 @@ with modules["DOM"]:
     # https://heycam.github.io/webidl/#notallowederror
     errors["NS_ERROR_DOM_NOT_ALLOWED_ERR"] = FAILURE(33)
     # DOM error codes defined by us
-    errors["NS_ERROR_DOM_SECMAN_ERR"] = FAILURE(1001)
     errors["NS_ERROR_DOM_WRONG_TYPE_ERR"] = FAILURE(1002)
-    errors["NS_ERROR_DOM_NOT_OBJECT_ERR"] = FAILURE(1003)
-    errors["NS_ERROR_DOM_NOT_XPC_OBJECT_ERR"] = FAILURE(1004)
     errors["NS_ERROR_DOM_NOT_NUMBER_ERR"] = FAILURE(1005)
-    errors["NS_ERROR_DOM_NOT_BOOLEAN_ERR"] = FAILURE(1006)
-    errors["NS_ERROR_DOM_NOT_FUNCTION_ERR"] = FAILURE(1007)
-    errors["NS_ERROR_DOM_TOO_FEW_PARAMETERS_ERR"] = FAILURE(1008)
     errors["NS_ERROR_DOM_PROP_ACCESS_DENIED"] = FAILURE(1010)
     errors["NS_ERROR_DOM_XPCONNECT_ACCESS_DENIED"] = FAILURE(1011)
     errors["NS_ERROR_DOM_BAD_URI"] = FAILURE(1012)
@@ -752,6 +753,8 @@ with modules["DOM"]:
     # Cross-Origin-Opener-Policy response header.
     # https://html.spec.whatwg.org/multipage/origin.html#cross-origin-opener-policies
     errors["NS_ERROR_DOM_COOP_FAILED"] = FAILURE(1041)
+
+    errors["NS_ERROR_DOM_INVALID_HEADER_VALUE"] = FAILURE(1042)
 
     # May be used to indicate when e.g. setting a property value didn't
     # actually change the value, like for obj.foo = "bar"; obj.foo = "bar";
@@ -804,6 +807,19 @@ with modules["EDITOR"]:
 
     errors["NS_SUCCESS_EDITOR_ELEMENT_NOT_FOUND"] = SUCCESS(1)
     errors["NS_SUCCESS_EDITOR_FOUND_TARGET"] = SUCCESS(2)
+
+    # If most callers ignore error except serious error (like
+    # NS_ERROR_EDITOR_DESTROYED), this success code is useful.  E.g. such
+    # callers can do:
+    # nsresult rv = Foo();
+    # if (MOZ_UNLIKELY(NS_FAILED(rv))) {
+    #   NS_WARNING("Foo() failed");
+    #   return rv;
+    # }
+    # NS_WARNING_ASSERTION(
+    #   rv != NS_SUCCESS_EDITOR_BUT_IGNORED_TRIVIAL_ERROR,
+    #   "Foo() failed, but ignored");
+    errors["NS_SUCCESS_EDITOR_BUT_IGNORED_TRIVIAL_ERROR"] = SUCCESS(3)
 
 
 # =======================================================================
@@ -929,6 +945,7 @@ with modules["URILOADER"]:
     errors["NS_ERROR_FINGERPRINTING_URI"] = FAILURE(41)
     errors["NS_ERROR_CRYPTOMINING_URI"] = FAILURE(42)
     errors["NS_ERROR_SOCIALTRACKING_URI"] = FAILURE(43)
+    errors["NS_ERROR_EMAILTRACKING_URI"] = FAILURE(44)
     # Used when "Save Link As..." doesn't see the headers quickly enough to
     # choose a filename.  See nsContextMenu.js.
     errors["NS_ERROR_SAVE_LINK_AS_TIMEOUT"] = FAILURE(32)
@@ -936,9 +953,10 @@ with modules["URILOADER"]:
     # doesn't need to be reparsed from the original source.
     errors["NS_ERROR_PARSED_DATA_CACHED"] = FAILURE(33)
 
-    # This success code indicates that a refresh header was found and
-    # successfully setup.
-    errors["NS_REFRESHURI_HEADER_FOUND"] = SUCCESS(2)
+    # When browser.tabs.documentchannel.parent-controlled pref and SHIP
+    # are enabled and a load gets cancelled due to another one
+    # starting, the error is NS_BINDING_CANCELLED_OLD_LOAD.
+    errors["NS_BINDING_CANCELLED_OLD_LOAD"] = FAILURE(39)
 
 
 # =======================================================================
@@ -1058,10 +1076,8 @@ with modules["DOM_INDEXEDDB"]:
     errors["NS_ERROR_DOM_INDEXEDDB_TRANSACTION_INACTIVE_ERR"] = FAILURE(7)
     errors["NS_ERROR_DOM_INDEXEDDB_ABORT_ERR"] = FAILURE(8)
     errors["NS_ERROR_DOM_INDEXEDDB_READ_ONLY_ERR"] = FAILURE(9)
-    errors["NS_ERROR_DOM_INDEXEDDB_TIMEOUT_ERR"] = FAILURE(10)
     errors["NS_ERROR_DOM_INDEXEDDB_QUOTA_ERR"] = FAILURE(11)
     errors["NS_ERROR_DOM_INDEXEDDB_VERSION_ERR"] = FAILURE(12)
-    errors["NS_ERROR_DOM_INDEXEDDB_RECOVERABLE_ERR"] = FAILURE(1001)
     errors["NS_ERROR_DOM_INDEXEDDB_KEY_ERR"] = FAILURE(1002)
     errors["NS_ERROR_DOM_INDEXEDDB_RENAME_OBJECT_STORE_ERR"] = FAILURE(1003)
     errors["NS_ERROR_DOM_INDEXEDDB_RENAME_INDEX_ERR"] = FAILURE(1004)
@@ -1116,13 +1132,11 @@ with modules["SIGNED_APP"]:
 # 40: NS_ERROR_MODULE_DOM_PUSH
 # =======================================================================
 with modules["DOM_PUSH"]:
-    errors["NS_ERROR_DOM_PUSH_INVALID_REGISTRATION_ERR"] = FAILURE(1)
     errors["NS_ERROR_DOM_PUSH_DENIED_ERR"] = FAILURE(2)
     errors["NS_ERROR_DOM_PUSH_ABORT_ERR"] = FAILURE(3)
     errors["NS_ERROR_DOM_PUSH_SERVICE_UNREACHABLE"] = FAILURE(4)
     errors["NS_ERROR_DOM_PUSH_INVALID_KEY_ERR"] = FAILURE(5)
     errors["NS_ERROR_DOM_PUSH_MISMATCHED_KEY_ERR"] = FAILURE(6)
-    errors["NS_ERROR_DOM_PUSH_GCM_DISABLED"] = FAILURE(7)
 
 
 # =======================================================================
@@ -1148,10 +1162,24 @@ with modules["DOM_MEDIA"]:
     errors["NS_ERROR_DOM_MEDIA_CDM_ERR"] = FAILURE(13)
     errors["NS_ERROR_DOM_MEDIA_NEED_NEW_DECODER"] = FAILURE(14)
     errors["NS_ERROR_DOM_MEDIA_INITIALIZING_DECODER"] = FAILURE(15)
+    errors["NS_ERROR_DOM_MEDIA_REMOTE_DECODER_CRASHED_RDD_OR_GPU_ERR"] = FAILURE(16)
+    errors["NS_ERROR_DOM_MEDIA_REMOTE_DECODER_CRASHED_UTILITY_ERR"] = FAILURE(17)
+    errors["NS_ERROR_DOM_MEDIA_REMOTE_DECODER_CRASHED_MF_CDM_ERR"] = FAILURE(18)
+
+    # QuotaExceededError specializations
+    errors["NS_ERROR_DOM_MEDIA_KEY_QUOTA_EXCEEDED_ERR"] = FAILURE(30)
+    errors["NS_ERROR_DOM_MEDIA_SOURCE_MAX_BUFFER_QUOTA_EXCEEDED_ERR"] = FAILURE(31)
+    errors["NS_ERROR_DOM_MEDIA_SOURCE_FULL_BUFFER_QUOTA_EXCEEDED_ERR"] = FAILURE(32)
+
+    # Internal CDM error
+    errors["NS_ERROR_DOM_MEDIA_CDM_NO_SESSION_ERR"] = FAILURE(50)
+    errors["NS_ERROR_DOM_MEDIA_CDM_SESSION_OPERATION_ERR"] = FAILURE(51)
 
     # Internal platform-related errors
     errors["NS_ERROR_DOM_MEDIA_CUBEB_INITIALIZATION_ERR"] = FAILURE(101)
-
+    errors["NS_ERROR_DOM_MEDIA_EXTERNAL_ENGINE_NOT_SUPPORTED_ERR"] = FAILURE(102)
+    errors["NS_ERROR_DOM_MEDIA_CDM_PROXY_NOT_SUPPORTED_ERR"] = FAILURE(103)
+    errors["NS_ERROR_DOM_MEDIA_DENIED_IN_NON_UTILITY"] = FAILURE(104)
 
 # =======================================================================
 # 42: NS_ERROR_MODULE_URL_CLASSIFIER
@@ -1356,3 +1384,28 @@ use super::nsresult;
 
     for error, val in errors.items():
         output.write("pub const {}: nsresult = nsresult(0x{:X});\n".format(error, val))
+
+
+def gen_jinja(output, input_filename):
+    # This is used to generate Java code for error lists, and can be expanded to
+    # other required contexts in the future if desired.
+    import os
+
+    from jinja2 import Environment, FileSystemLoader, StrictUndefined
+
+    # FileSystemLoader requires the path to the directory containing templates,
+    # not the file name of the template itself.
+    (path, leaf) = os.path.split(input_filename)
+    env = Environment(
+        loader=FileSystemLoader(path, encoding="utf-8"),
+        undefined=StrictUndefined,
+    )
+    tpl = env.get_template(leaf)
+
+    context = {
+        "MODULE_BASE_OFFSET": MODULE_BASE_OFFSET,
+        "modules": ((mod, val.num) for mod, val in modules.items()),
+        "errors": errors.items(),
+    }
+
+    tpl.stream(context).dump(output, encoding="utf-8")

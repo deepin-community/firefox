@@ -14,7 +14,6 @@ compatibility-issue-deprecated = (ескірген)
 compatibility-issue-experimental = (тәжірибелік)
 compatibility-issue-prefixneeded = (префикс қажет)
 compatibility-issue-deprecated-experimental = (ескірген, тәжірибелік)
-
 compatibility-issue-deprecated-prefixneeded = (ескірген, префикс қажет)
 compatibility-issue-experimental-prefixneeded = (тәжірибелік, префикс қажет)
 compatibility-issue-deprecated-experimental-prefixneeded = (ескірген, тәжірибелік, префикс қажет)
@@ -24,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (ескірген, т
 compatibility-settings-button-label = Баптаулар
 compatibility-settings-button-title =
     .title = Баптаулар
-compatibility-feedback-button-label = Кері байланыс
-compatibility-feedback-button-title =
-    .title = Кері байланыс
 
 ## Messages used as headers in settings pane
 
@@ -47,3 +43,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Үйлесімділік мәселелері табылмады.
 compatibility-close-settings-button =
     .title = Баптауларды жабу
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Келесідегі үйлесімділік мәселелері:
+        { $browsers }

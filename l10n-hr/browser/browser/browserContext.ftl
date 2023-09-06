@@ -96,43 +96,43 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
-main-context-menu-bookmark-add =
-    .aria-label = Zabilježi ovu stranicu
+main-context-menu-bookmark-page =
+    .aria-label = Zabilježi stranicu …
     .accesskey = Z
-    .tooltiptext = Zabilježi ovu stranicu
+    .tooltiptext = Zabilježi stranicu
 
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
+# Cannot be shown at the same time as main-context-menu-edit-bookmark-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = Zabilježi stranicu (m)
-    .accesskey = m
+main-context-menu-bookmark-page-mac =
+    .label = Zabilježi stranicu …
+    .accesskey = Z
 
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-add-mac,
+# Cannot be shown at the same time as main-context-menu-bookmark-page-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-edit-mac =
-    .label = Uredi zabilješku (m)
-    .accesskey = m
+main-context-menu-edit-bookmark-mac =
+    .label = Uredi zabilješku …
+    .accesskey = U
 
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Zabilježi ovu stranicu
+main-context-menu-bookmark-page-with-shortcut =
+    .aria-label = Zabilježi stranicu …
     .accesskey = Z
-    .tooltiptext = Zabilježi ovu stranicu ({ $shortcut })
+    .tooltiptext = Zabilježi stranicu ({ $shortcut })
 
-main-context-menu-bookmark-change =
-    .aria-label = Uredi ovu zabilješku
-    .accesskey = Z
-    .tooltiptext = Uredi ovu zabilješku
+main-context-menu-edit-bookmark =
+    .aria-label = Uredi zabilješku …
+    .accesskey = U
+    .tooltiptext = Uredi zabilješku
 
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Uredi ovu zabilješku
-    .accesskey = Z
-    .tooltiptext = Uredi ovu zabilješku ({ $shortcut })
+main-context-menu-edit-bookmark-with-shortcut =
+    .aria-label = Uredi zabilješku …
+    .accesskey = U
+    .tooltiptext = Uredi zabilješku ({ $shortcut })
 
 main-context-menu-open-link =
     .label = Otvori poveznicu
@@ -154,8 +154,8 @@ main-context-menu-open-link-new-private-window =
     .label = Otvori poveznicu u novom privatnom prozoru
     .accesskey = p
 
-main-context-menu-bookmark-link =
-    .label = Zabilježi poveznicu
+main-context-menu-bookmark-link-2 =
+    .label = Zabilježi poveznicu …
     .accesskey = b
 
 main-context-menu-save-link =
@@ -166,11 +166,6 @@ main-context-menu-save-link-to-pocket =
     .label = Spremi poveznicu u { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
-
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
 ## are mutually exclusive.
@@ -178,6 +173,10 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = Kopiraj adresu e-pošte
     .accesskey = e
+
+main-context-menu-copy-phone =
+    .label = Kopiraj telefonski broj
+    .accesskey = o
 
 main-context-menu-copy-link-simple =
     .label = Kopiraj poveznicu (L)
@@ -297,6 +296,10 @@ main-context-menu-image-set-image-as-background =
     .label = Postavi sliku kao pozadinsku sliku…
     .accesskey = k
 
+main-context-menu-image-copy-text =
+    .label = Kopiraj tekst iz slike
+    .accesskey = K
+
 main-context-menu-image-info =
     .label = Prikaži informacije o slici
     .accesskey = f
@@ -314,7 +317,7 @@ main-context-menu-audio-save-as =
     .accesskey = z
 
 main-context-menu-video-take-snapshot =
-    .label = Spremi snimku...
+    .label = Snimi sliku …
     .accesskey = S
 
 main-context-menu-video-email =
@@ -324,14 +327,6 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Pošalji zvuk e-poštom…
     .accesskey = a
-
-main-context-menu-plugin-play =
-    .label = Aktiviraj ovaj priključak
-    .accesskey = k
-
-main-context-menu-plugin-hide =
-    .label = Sakrij ovaj priključak
-    .accesskey = S
 
 main-context-menu-save-to-pocket =
     .label = Spremi stranicu u { -pocket-brand-name }
@@ -356,7 +351,7 @@ main-context-menu-use-saved-password =
 ##
 
 main-context-menu-suggest-strong-password =
-    .label = Predloži jaku lozinku...
+    .label = Predloži jaku lozinku …
     .accesskey = j
 
 main-context-menu-manage-logins2 =
@@ -391,9 +386,9 @@ main-context-menu-frame-reload =
     .label = Ponovo učitaj okvir
     .accesskey = r
 
-main-context-menu-frame-bookmark =
-    .label = Zabilježi ovaj okvir
-    .accesskey = o
+main-context-menu-frame-add-bookmark =
+    .label = Zabilježi okvir …
+    .accesskey = Z
 
 main-context-menu-frame-save-as =
     .label = Spremi okvir kao …
@@ -411,8 +406,8 @@ main-context-menu-frame-view-info =
     .label = Prikaži informacije o okviru
     .accesskey = i
 
-main-context-menu-print-selection =
-    .label = Ispiši odabir
+main-context-menu-print-selection-2 =
+    .label = Ispiši odabir …
     .accesskey = r
 
 main-context-menu-view-selection-source =
@@ -455,3 +450,7 @@ main-context-menu-eme-learn-more =
 main-context-menu-open-link-in-container-tab =
     .label = Otvori poveznicu u novoj kontejnerskoj kartici { $containerName }
     .accesskey = t
+
+main-context-menu-reveal-password =
+    .label = Prikaži lozinku
+    .accesskey = k

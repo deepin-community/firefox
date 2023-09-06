@@ -96,6 +96,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Informe d'un sitiu estropiáu
 protections-panel-content-blocking-breakage-report-view-description = El bloquéu de ciertos rastrexadores pue causar problemes con dalgunos sitios web. Informar d'estos problemes ayuda a ameyorar { -brand-short-name } pa tol mundu. Poro, mandar esti informe va unviar a Mozilla la URL ya información tocante a los axustes del restolador. <label data-l10n-name="learn-more">Lleer más</label>
+protections-panel-content-blocking-breakage-report-view-description2 = El bloquéu de ciertos rastrexadores pue causar problemes con dalgunos sitios web. Informar d'estos problemes ayuda a ameyorar { -brand-short-name } pa tol mundu. Poro, mandar esti informe va unviar a { -vendor-short-name } la URL ya información tocante a los axustes del restolador.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -106,3 +107,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Encaboxar
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Unviar l'informe
+
+# Cookie Banner Handling
+

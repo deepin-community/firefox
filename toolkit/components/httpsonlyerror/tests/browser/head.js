@@ -1,7 +1,5 @@
-/* eslint-env mozilla/frame-script */
-
 // Enable HTTPS-Only Mode
-add_task(async function() {
+add_setup(async function () {
   await SpecialPowers.pushPrefEnv({
     set: [["dom.security.https_only_mode", true]],
   });
@@ -17,17 +15,18 @@ async function injectErrorPageFrame(tab, src, sandboxed) {
     true
   );
 
-  await SpecialPowers.spawn(tab.linkedBrowser, [src, sandboxed], async function(
-    frameSrc,
-    frameSandboxed
-  ) {
-    let iframe = content.document.createElement("iframe");
-    iframe.src = frameSrc;
-    if (frameSandboxed) {
-      iframe.setAttribute("sandbox", "allow-scripts");
+  await SpecialPowers.spawn(
+    tab.linkedBrowser,
+    [src, sandboxed],
+    async function (frameSrc, frameSandboxed) {
+      let iframe = content.document.createElement("iframe");
+      iframe.src = frameSrc;
+      if (frameSandboxed) {
+        iframe.setAttribute("sandbox", "allow-scripts");
+      }
+      content.document.body.appendChild(iframe);
     }
-    content.document.body.appendChild(iframe);
-  });
+  );
 
   await loadedPromise;
 }

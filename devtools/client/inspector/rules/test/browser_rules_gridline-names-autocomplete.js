@@ -39,6 +39,7 @@ const newAreaTestData = [
   ["VK_BACK_SPACE", {}, "c", !OPEN, !SELECTED, CHANGE],
   ["VK_BACK_SPACE", {}, "", OPEN, !SELECTED, CHANGE],
   ["r", {}, "revert", OPEN, SELECTED, CHANGE],
+  ["VK_DOWN", {}, "revert-layer", OPEN, SELECTED, CHANGE],
   ["VK_DOWN", {}, "row1-start", OPEN, SELECTED, CHANGE],
   ["r", {}, "rr", !OPEN, !SELECTED, CHANGE],
   ["VK_BACK_SPACE", {}, "r", !OPEN, !SELECTED, CHANGE],
@@ -60,13 +61,14 @@ const newRowTestData = [
   ["c", {}, "c", !OPEN, !SELECTED, CHANGE],
   ["VK_BACK_SPACE", {}, "", OPEN, !SELECTED, CHANGE],
   ["r", {}, "revert", OPEN, SELECTED, CHANGE],
+  ["VK_DOWN", {}, "revert-layer", OPEN, SELECTED, CHANGE],
   ["VK_DOWN", {}, "row1-start", OPEN, SELECTED, CHANGE],
   ["VK_TAB", {}, "", !OPEN, !SELECTED, CHANGE],
 ];
 
 const TEST_URL = URL_ROOT + "doc_grid_names.html";
 
-add_task(async function() {
+add_task(async function () {
   await addTab(TEST_URL);
   const { toolbox, inspector, view } = await openRuleView();
 

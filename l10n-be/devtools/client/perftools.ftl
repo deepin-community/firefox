@@ -10,7 +10,7 @@
 perftools-intro-title = Налады прафайлера
 perftools-intro-description =
     Запісы запускаюць profiler.firefox.com у новай картцы. Усе дадзеныя захоўваюцца
-    лакальна, але вы можаце зацягнуць iх для сумеснага выкарыстання.
+    лакальна, але вы можаце зацягнуць іх для сумеснага выкарыстання.
 
 ## All of the headings for the various sections.
 
@@ -21,13 +21,14 @@ perftools-heading-features-default = Магчымасці (рэкамендав�
 perftools-heading-features-disabled = Адключаныя магчымасці
 perftools-heading-features-experimental = Эксперыментальныя
 perftools-heading-threads = Патокі
+perftools-heading-threads-jvm = Патокі JVM
 perftools-heading-local-build = Лакальная зборка
 
 ##
 
 perftools-description-intro =
     Запісы запускаюць <a>profiler.firefox.com</a> у новай картцы. Усе дадзеныя захоўваюцца
-    лакальна, але вы можаце зацягнуць iх для сумеснага выкарыстання.
+    лакальна, але вы можаце зацягнуць іх для сумеснага выкарыстання.
 perftools-description-local-build =
     Калі вы прафілюеце зборку, якую вы зкампілявалі самі, на гэтай
     машыне, калі ласка, дадайце objdir вашай зборкі ў спіс ніжэй, каб
@@ -42,16 +43,15 @@ perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Памер буфера:
+
 perftools-custom-threads-label = Дадаць адмысловыя патокi па назве:
+
 perftools-devtools-interval-label = Інтэрвал:
 perftools-devtools-threads-label = Патокі:
 perftools-devtools-settings-label = Налады
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice =
-    Прафайлер адключаны, калі ўключана прыватнае агляданне.
-    Закройце ўсе прыватныя вокны, каб зноў уключыць прафайлер
 perftools-status-recording-stopped-by-another-tool = Запіс быў спынены іншай прыладай.
 perftools-status-restart-required = Каб уключыць гэтую функцыю, трэба перазапусціць браўзeр.
 
@@ -83,8 +83,8 @@ perftools-thread-renderer =
     .title = Калі WebRender уключаны, гэты паток выконвае выклікі OpenGL
 perftools-thread-render-backend =
     .title = Паток WebRender RenderBackend
-perftools-thread-paint-worker =
-    .title = Паток, у якім адбываецца прамалёўка, калі ўключана маляванне па-за асноўным патокам
+perftools-thread-timer =
+    .title = Таймеры апрацоўкі патоку (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
     .title = Вылічэнне стыляў падзелена на некалькі патокаў
 pref-thread-stream-trans =
@@ -92,25 +92,36 @@ pref-thread-stream-trans =
 perftools-thread-socket-thread =
     .title = Паток, у якім сеткавы код выконвае любыя выклікі, якія блакуюць сокеты
 perftools-thread-img-decoder =
-    .title = Патокі дэкадавання відарысаў
+    .title = Патокі дэкадавання выяваў
 perftools-thread-dns-resolver =
     .title = У гэтым патоку адбываецца вызначэнне DNS
 perftools-thread-task-controller =
     .title = Патокi пула патокаў TaskController
+perftools-thread-jvm-gecko =
+    .title = Асноўны паток Gecko JVM
+perftools-thread-jvm-nimbus =
+    .title = Асноўныя патокі для SDK эксперыментаў Nimbus
+perftools-thread-jvm-default-dispatcher =
+    .title = Прадвызначаны дыспетчар для бібліятэкі сапраграм Kotlin
+perftools-thread-jvm-glean =
+    .title = Асноўныя патокі для SDK тэлеметрыі Glean
+perftools-thread-jvm-arch-disk-io =
+    .title = Дыспетчар IO для бібліятэкі сапраграм Kotlin
+perftools-thread-jvm-pool =
+    .title = Патокі, створаныя ў пуле патокаў без назвы
 
 ##
 
 perftools-record-all-registered-threads = Iгнараваць абранае вышэй і запісваць усе зарэгістраваныя патокі
+
 perftools-tools-threads-input-label =
     .title = Гэтыя назвы патокаў уяўляюць сабой пералік, падзелены коскамі, які ўжываецца для ўключэння прафілявання патокаў у прафайлеры. Назва можа толькі часткова адпавядаць назве патоку для ўключэння. Прабелы ўлічваюцца.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>Новае</b>: { -profiler-brand-name } цяпер інтэграваны ў Інструменты распрацоўшчыка. <a>Даведайцеся больш</a> пра гэты новы магутны інструмент.
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (На працягу абмежаванага часу вы можаце атрымаць доступ да арыгінальнай панэлі Прадукцыйнасці праз <a>{ options-context-advanced-settings }</a>)
+
 perftools-onboarding-close-button =
     .aria-label = Закрыць прывiтальнае паведамленне
 
@@ -121,16 +132,29 @@ perftools-onboarding-close-button =
 # devtools/client/performance-new/popup/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
 perftools-presets-web-developer-label = Вэб-распрацоўка
 perftools-presets-web-developer-description = Рэкамендаваныя папярэднія налады для адладкі большасці вэб-прыкладанняў, з невялікімі выдаткамі.
-perftools-presets-firefox-platform-label = Платформа Firefox
-perftools-presets-firefox-platform-description = Рэкамендаваныя папярэднія налады для ўнутранай адладкі платформы Firefox.
-perftools-presets-firefox-front-end-label = Кліенцкая частка Firefox
-perftools-presets-firefox-front-end-description = Рэкамендаваныя папярэднія налады для ўнутранай адладкі кліенцкай часткі Firefox.
-perftools-presets-firefox-graphics-label = Графіка Firefox
-perftools-presets-firefox-graphics-description = Рэкамендаваныя папярэднія налады для даследавання прадукцыйнасці графікі Firefox.
+
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = Рэкамендаваныя налады для прафілявання { -brand-shorter-name }.
+
+perftools-presets-graphics-label = Графіка
+perftools-presets-graphics-description = Папярэднія налады для даследавання хібаў графікі ў { -brand-shorter-name }.
+
 perftools-presets-media-label = Медыя
-perftools-presets-media-description = Рэкамендаваныя папярэднія налады для дыягностыкі праблем з гукам і відэа.
+perftools-presets-media-description2 = Папярэднія налады для даследавання хібаў гуку і відэа ў { -brand-shorter-name }.
+
+perftools-presets-networking-label = Сетка
+perftools-presets-networking-description = Папярэднія налады для даследавання сеткавых хібаў у { -brand-shorter-name }.
+
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = Сілкаванне
+perftools-presets-power-description = Папярэднія налады для даследавання хібаў спажывання энергіі ў { -brand-shorter-name }, з невялікімі выдаткамі.
+
 perftools-presets-custom-label = Адмысловыя
 
 ##

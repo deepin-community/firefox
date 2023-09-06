@@ -17,6 +17,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Na h-uile
+printui-page-range-current = Làithreach
+printui-page-range-odd = Còrr
+printui-page-range-even = Cothrom
 printui-page-range-custom = Gnàthaichte
 printui-page-range-label = Duilleagan
 printui-page-range-picker =
@@ -63,6 +66,15 @@ printui-backgrounds-checkbox = Clò-bhuail na cùlaibhean
 ## The "Format" section, select a version of the website to print. Radio
 ## options to select between the original page, selected text only, or a version
 ## where the page is processed with "Reader View".
+
+# The section title.
+printui-source-label = Fòrmat
+# Option for printing the original page.
+printui-source-radio = Tùsail
+# Option for printing just the content a user selected prior to printing.
+printui-selection-radio = An taghadh
+# Option for "simplifying" the page by printing the Reader View version.
+printui-simplify-page-radio = Sìmplichte
 
 ##
 

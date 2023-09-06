@@ -1,4 +1,4 @@
-import { CFRMessageProvider } from "lib/CFRMessageProvider.jsm";
+import { CFRMessageProvider } from "lib/CFRMessageProvider.sys.mjs";
 import CFRDoorhangerSchema from "content-src/asrouter/templates/CFR/templates/ExtensionDoorhanger.schema.json";
 import CFRChicletSchema from "content-src/asrouter/templates/CFR/templates/CFRUrlbarChiclet.schema.json";
 import InfoBarSchema from "content-src/asrouter/templates/CFR/templates/InfoBar.schema.json";
@@ -39,13 +39,15 @@ const DEFAULT_CONTENT = {
         data: { url: "https://example.com" },
       },
     },
-    secondary: {
-      label: {
-        value: "Not Now",
-        attributes: { accesskey: "N" },
+    secondary: [
+      {
+        label: {
+          value: "Not Now",
+          attributes: { accesskey: "N" },
+        },
+        action: { type: "CANCEL" },
       },
-      action: { type: "CANCEL" },
-    },
+    ],
   },
 };
 
@@ -75,24 +77,36 @@ const L10N_CONTENT = {
         data: { url: "https://example.com" },
       },
     },
-    secondary: {
-      label: { string_id: "btn_cancel_id" },
-      action: { type: "CANCEL" },
-    },
+    secondary: [
+      {
+        label: { string_id: "btn_cancel_id" },
+        action: { type: "CANCEL" },
+      },
+    ],
   },
 };
 
 describe("ExtensionDoorhanger", () => {
-  it("should validate DEFAULT_CONTENT", () => {
-    assert.jsonSchema(DEFAULT_CONTENT, CFRDoorhangerSchema);
+  it("should validate DEFAULT_CONTENT", async () => {
+    const messages = await CFRMessageProvider.getMessages();
+    let doorhangerMessage = messages.find(m => m.id === "FACEBOOK_CONTAINER_3");
+    assert.ok(doorhangerMessage, "Message found");
+    assert.jsonSchema(
+      { ...doorhangerMessage, content: DEFAULT_CONTENT },
+      CFRDoorhangerSchema
+    );
   });
-  it("should validate L10N_CONTENT", () => {
-    assert.jsonSchema(L10N_CONTENT, CFRDoorhangerSchema);
+  it("should validate L10N_CONTENT", async () => {
+    const messages = await CFRMessageProvider.getMessages();
+    let doorhangerMessage = messages.find(m => m.id === "FACEBOOK_CONTAINER_3");
+    assert.ok(doorhangerMessage, "Message found");
+    assert.jsonSchema(
+      { ...doorhangerMessage, content: L10N_CONTENT },
+      CFRDoorhangerSchema
+    );
   });
   it("should validate all messages from CFRMessageProvider", async () => {
     const messages = await CFRMessageProvider.getMessages();
-    messages.forEach(msg =>
-      assert.jsonSchema(msg.content, SCHEMAS[msg.template])
-    );
+    messages.forEach(msg => assert.jsonSchema(msg, SCHEMAS[msg.template]));
   });
 });

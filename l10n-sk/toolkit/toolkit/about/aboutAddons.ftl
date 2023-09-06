@@ -6,9 +6,16 @@ addons-page-title = Správca doplnkov
 search-header =
     .placeholder = Hľadať na addons.mozilla.org
     .searchbuttonlabel = Hľadať
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Rozšírenia a témy získate na stránkach <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Slovníky získate na stránkach <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Jazykové balíky získate na stránkach <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Nemáte nainštalované žiadne doplnky tohto typu
 list-empty-available-updates =
@@ -22,9 +29,9 @@ list-empty-button =
 help-button = Podpora pre doplnky
 sidebar-help-button-title =
     .title = Podpora pre doplnky
-addons-settings-button = Nastavenia { -brand-short-name }u
+addons-settings-button = Nastavenia { -brand-short-name(case: "gen") }
 sidebar-settings-button-title =
-    .title = Nastavenia { -brand-short-name }u
+    .title = Nastavenia { -brand-short-name(case: "gen") }
 show-unsigned-extensions-button =
     .label = Niektoré rozšírenia nemohli byť overené
 show-all-extensions-button =
@@ -33,6 +40,8 @@ detail-version =
     .label = Verzia
 detail-last-updated =
     .label = Naposledy aktualizované
+addon-detail-description-expand = Zobraziť viac
+addon-detail-description-collapse = Zobraziť menej
 detail-contributions-description = Vývojár tohto doplnku by bol rád, keby ste mu na jeho vývoj prispeli malou čiastkou.
 detail-contributions-button = Prispieť
     .title = Prispejte na vývoj tohto doplnku
@@ -104,7 +113,7 @@ plugin-deprecation-description = Chýba vám tu niečo? Niektoré zásuvné modu
 legacy-warning-show-legacy = Zobraziť zastarané rozšírenia
 legacy-extensions =
     .value = Zastarané rozšírenia
-legacy-extensions-description = Tieto rozšírenia nespĺňajú súčasné kritériá prehliadača { -brand-short-name } a boli preto deaktivované. <label data-l10n-name="legacy-learn-more">Ďalšie informácie o zmenách ohľadom doplnkov</label>
+legacy-extensions-description = Tieto rozšírenia nespĺňajú súčasné kritériá aplikácie { -brand-short-name } a boli preto deaktivované. <label data-l10n-name="legacy-learn-more">Ďalšie informácie o zmenách ohľadom doplnkov</label>
 private-browsing-description2 =
     Fungovanie rozšírení v aplikácii { -brand-short-name } v súkromnom prehliadaní sa mení. Všetky novo nainštalované 
     rozšírenia do aplikácie { -brand-short-name } nebudú fungovať v súkromných oknách, pokiaľ im to nepovolíte.
@@ -135,16 +144,33 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Nedávno aktualizované
 addon-category-recent-updates-title =
     .title = Nedávno aktualizované
+addon-category-sitepermission = Oprávnenia stránok
+addon-category-sitepermission-title =
+    .title = Oprávnenia stránok
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Povolenia stránky pre { $host }
 
 ## These are global warnings
 
 extensions-warning-safe-mode = Všetky doplnky boli zakázané núdzovým režimom.
 extensions-warning-check-compatibility = Kontrola kompatibility doplnkov je vypnutá. Môžete mať nekompatibilné doplnky.
+extensions-warning-safe-mode2 =
+    .message = Všetky doplnky boli zakázané núdzovým režimom.
+extensions-warning-check-compatibility2 =
+    .message = Kontrola kompatibility doplnkov je vypnutá. Môžete mať nekompatibilné doplnky.
 extensions-warning-check-compatibility-button = Zapnúť
     .title = Povoliť kontrolu kompatibility doplnkov
 extensions-warning-update-security = Kontrola bezpečnosti aktualizácií doplnkov je vypnutá. Aktualizácie vás môžu ohroziť.
+extensions-warning-update-security2 =
+    .message = Kontrola bezpečnosti aktualizácií doplnkov je vypnutá. Aktualizácie vás môžu ohroziť.
 extensions-warning-update-security-button = Zapnúť
     .title = Povoliť kontrolu bezpečnosti aktualizácií doplnkov
+extensions-warning-imported-addons = Dokončite inštaláciu rozšírení, ktoré boli importované do { -brand-short-name(case: "gen") }.
+extensions-warning-imported-addons2 =
+    .message = Dokončite inštaláciu rozšírení, ktoré boli importované do { -brand-short-name(case: "gen") }.
+extensions-warning-imported-addons-button = Nainštalovať rozšírenia
 
 ## Strings connected to add-on updates
 
@@ -209,10 +235,17 @@ shortcuts-duplicate = Duplicitná skratka
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = Skratka { $shortcut } sa používa na viacerých miestach. To môže spôsobiť jej neočakávané správanie.
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = Skratka { $shortcut } sa používa na viacerých miestach. To môže spôsobiť jej neočakávané správanie.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Túto skratku už používa { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Zobraziť { $numberToShow } ďalšiu
@@ -230,15 +263,20 @@ header-back-button =
 discopane-intro =
     Rozšírenia a témy vzhľadu sú ako aplikácie pre váš prehliadač. S nimi môžete
     chrániť svoje heslá, sťahovať videá, hľadať výhodné ponuky, blokovať reklamy,
-    meniť vzhľad prehliadača a omnoho viac. Tieto malé programy väčšinou vyrába
-    niekto iný ako my. Tu je výber <a data-l10n-name="learn-more-trigger">odporúčaných</a>
-    rozšírení pre { -brand-product-name }, ktoré majú jedinečnú bezpečnosť a funkcie.
+    meniť vzhľad prehliadača a omnoho viac. Tieto malé programy väčšinou vytvára
+    niekto iný ako my. Tu je výber <a data-l10n-name="learn-more-trigger">odporúčaných rozšírení</a>
+    pre { -brand-product-name }, ktoré majú jedinečnú bezpečnosť a funkcie.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations =
-    Niektoré z týchto odporúčaní sú vám prispôsobené. Sú založené na rozšíreniach, ktoré už
+    Niektoré z týchto odporúčaní sú prispôsobené. Sú založené na iných rozšíreniach, ktoré už
     máte nainštalované, nastaveniach profilu a štatistikách používania.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message =
+        Niektoré z týchto odporúčaní sú prispôsobené. Sú založené na iných rozšíreniach, ktoré už
+        máte nainštalované, nastaveniach profilu a štatistikách používania.
 discopane-notice-learn-more = Ďalšie informácie
-privacy-policy = Zásady ochrany súkromia
+privacy-policy = Zásady ochrany osobných údajov
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
 #   $author (string) - The name of the add-on developer.
@@ -247,7 +285,7 @@ created-by-author = Autor: <a data-l10n-name="author">{ $author }</a>
 # Variables:
 #   $dailyUsers (number) - The number of daily users.
 user-count = Počet používateľov: { $dailyUsers }
-install-extension-button = Pridať do { -brand-product-name }u
+install-extension-button = Pridať do { -brand-product-name(case: "gen") }
 install-theme-button = Nainštalovať tému vzhľadu
 # The label of the button that appears after installing an add-on. Upon click,
 # the detailed add-on view is opened, from where the add-on can be managed.
@@ -282,15 +320,15 @@ permissions-addon-button = Povolenia
 extension-enabled-heading = Povolené rozšírenia
 extension-disabled-heading = Zakázané rozšírenia
 theme-enabled-heading = Aktívna téma vzhľadu
-theme-disabled-heading = Neaktívne témy vzhľadu
-theme-monochromatic-heading = Farebné témy
-theme-monochromatic-subheading = Nové živé farebné témy { -brand-product-name(case: "gen") }. K dispozícii na obmedzený čas.
+theme-disabled-heading2 = Uložené témy vzhľadu
 plugin-enabled-heading = Povolené zásuvné moduly
 plugin-disabled-heading = Zakázané zásuvné moduly
 dictionary-enabled-heading = Povolené slovníky
 dictionary-disabled-heading = Zakázané slovníky
 locale-enabled-heading = Povolené jazyky
 locale-disabled-heading = Zakázané jazyky
+sitepermission-enabled-heading = Povolené
+sitepermission-disabled-heading = Zakázané
 always-activate-button = Vždy aktivovať
 never-activate-button = Nikdy neaktivovať
 addon-detail-author-label = Autor
@@ -300,6 +338,9 @@ addon-detail-homepage-label = Domovská stránka
 addon-detail-rating-label = Hodnotenie
 # Message for add-ons with a staged pending update.
 install-postponed-message = Toto rozšírenie bude aktualizované pri reštarte aplikácie { -brand-short-name }.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Toto rozšírenie bude aktualizované pri reštarte aplikácie { -brand-short-name }.
 install-postponed-button = Aktualizovať teraz
 # The average rating that the add-on has received.
 # Variables:
@@ -332,6 +373,10 @@ addon-detail-updates-radio-on = Zapnuté
 addon-detail-updates-radio-off = Vypnuté
 addon-detail-update-check-label = Vyhľadať aktualizácie
 install-update-button = Aktualizovať
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -340,6 +385,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Povolené rozšírenia majú prístup k vašim aktivitám na internete v súkromných oknách. <a data-l10n-name="learn-more">Ďalšie informácie</a>
 addon-detail-private-browsing-allow = Povoliť
 addon-detail-private-browsing-disallow = Nepovoliť
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Spúšťať na stránkach s obmedzeniami
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Ak je povolené, rozšírenie bude mať prístup aj na stránky, pri ktorých { -vendor-short-name } zaviedla obmedzenia. Voľbu povoľte iba v prípade, že tomuto rozšíreniu dôverujete.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Povoliť
+addon-detail-quarantined-domains-disallow = Nepovoliť
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -368,6 +431,9 @@ addon-permissions-optional = Voliteľné povolenia pre splnenie prídavných fun
 addon-permissions-learnmore = Ďalšie informácie o povoleniach
 recommended-extensions-heading = Odporúčané rozšírenia
 recommended-themes-heading = Odporúčané témy vzhľadu
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Poskytuje nasledujúce oprávnenia pre <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Ste tvoriví? <a data-l10n-name="link">Vytvorte si svoju vlastnú tému vzhľadu pomocou Firefox Color.</a>
@@ -380,6 +446,7 @@ plugin-heading = Spravujte svoje zásuvné moduly
 dictionary-heading = Spravujte svoje slovníky
 locale-heading = Spravujte svoje jazyky
 updates-heading = Spravujte svoje aktualizácie
+sitepermission-heading = Spravujte svoje doplnky pre oprávnenia stránok
 discover-heading = Prispôsobte si { -brand-short-name }
 shortcuts-heading = Správa klávesových skratiek pre rozšírenia
 default-heading-search-label = Zobraziť ďalšie doplnky
@@ -387,3 +454,35 @@ addons-heading-search-input =
     .placeholder = Hľadať na addons.mozilla.org
 addon-page-options-button =
     .title = Nástroje pre všetky doplnky
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = Doplnok { $name } nie je kompatibilný s { -brand-short-name(case: "ins") } verzie { $version }.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = Doplnok { $name } nie je kompatibilný s { -brand-short-name(case: "ins") } verzie { $version }.
+details-notification-incompatible-link = Ďalšie informácie
+details-notification-unsigned-and-disabled = Doplnok { $name } nemohol byť overený pre použitie v aplikácii { -brand-short-name } a bol preto zakázaný.
+details-notification-unsigned-and-disabled2 =
+    .message = Doplnok { $name } nemohol byť overený pre použitie v aplikácii { -brand-short-name } a bol preto zakázaný.
+details-notification-unsigned-and-disabled-link = Ďalšie informácie
+details-notification-unsigned = Doplnok { $name } nemohol byť overený pre použitie v aplikácii { -brand-short-name }. Pokračujte opatrne.
+details-notification-unsigned2 =
+    .message = Doplnok { $name } nemohol byť overený pre použitie v aplikácii { -brand-short-name }. Pokračujte opatrne.
+details-notification-unsigned-link = Ďalšie informácie
+details-notification-blocked = Doplnok { $name } bol zablokovaný kvôli problémom so stabilitou alebo bezpečnosťou.
+details-notification-blocked2 =
+    .message = Doplnok { $name } bol zablokovaný kvôli problémom so stabilitou alebo bezpečnosťou.
+details-notification-blocked-link = Ďalšie informácie
+details-notification-softblocked = Doplnok { $name } zapríčiňuje problémy so stabilitou alebo bezpečnosťou.
+details-notification-softblocked2 =
+    .message = Doplnok { $name } zapríčiňuje problémy so stabilitou alebo bezpečnosťou.
+details-notification-softblocked-link = Ďalšie informácie
+details-notification-gmp-pending = Doplnok { $name } bude čoskoro nainštalovaný.
+details-notification-gmp-pending2 =
+    .message = Doplnok { $name } bude čoskoro nainštalovaný.

@@ -120,12 +120,9 @@ impl Example for App {
             let mut txn = Transaction::new();
             txn.set_display_list(
                 Epoch(0),
-                None,
-                doc.content_rect.size(),
                 builder.end(),
-                true,
             );
-            txn.generate_frame(0);
+            txn.generate_frame(0, RenderReasons::empty());
             api.send_transaction(doc.id, txn);
         }
     }

@@ -38,12 +38,7 @@ pub struct QpackSettings {
     pub max_blocked_streams: u16,
 }
 
-#[derive(Clone, Debug, PartialEq)]
-#[allow(
-    renamed_and_removed_lints,
-    clippy::pub_enum_variant_names,
-    clippy::enum_variant_names
-)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Error {
     DecompressionFailed,
     EncoderStream,
@@ -106,7 +101,7 @@ impl ::std::error::Error for Error {
 
 impl ::std::fmt::Display for Error {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        write!(f, "QPACK error: {:?}", self)
+        write!(f, "QPACK error: {self:?}")
     }
 }
 

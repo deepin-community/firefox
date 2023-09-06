@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Tagh gach taba
     .accesskey = S
+tab-context-play-tab =
+    .label = Cluich an taba
+    .accesskey = l
+tab-context-play-tabs =
+    .label = Cluich na tabaichean
+    .accesskey = y
 duplicate-tab =
     .label = Dùblaich an taba
     .accesskey = D
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Dèan comharran-lìn dhe na tabaichean…
     .accesskey = B
-bookmark-tab =
-    .label = Dèan comharra-lìn dhen taba
-    .accesskey = B
+tab-context-bookmark-tab =
+    .label = Dèan comharra-lìn dhen taba…
+    .accesskey = D
 tab-context-open-in-new-container-tab =
     .label = Fosgail ann an taba soithich ùr
     .accesskey = F
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Co-roinn
     .accesskey = C
-tab-context-share-more =
-    .label = Barrachd…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -85,16 +89,16 @@ tab-context-reopen-closed-tabs =
            *[other] Ath-fhosgail na tabaichean a chaidh a dhùnadh
         }
     .accesskey = o
-tab-context-close-tabs =
+tab-context-close-n-tabs =
     .label =
         { $tabCount ->
             [1] Dùin an taba
-            [one] Dùin na tabaichean
-            [two] Dùin na tabaichean
-            [few] Dùin na tabaichean
-           *[other] Dùin na tabaichean
+            [one] Dùin { $tabCount } taba
+            [two] Dùin { $tabCount } thaba
+            [few] Dùin { $tabCount } tabaichean
+           *[other] Dùin { $tabCount } taba
         }
-    .accesskey = D
+    .accesskey = t
 tab-context-move-tabs =
     .label =
         { $tabCount ->

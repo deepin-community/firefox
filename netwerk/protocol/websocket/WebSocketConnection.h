@@ -13,6 +13,8 @@
 #include "nsIAsyncInputStream.h"
 #include "nsIAsyncOutputStream.h"
 #include "mozilla/net/WebSocketConnectionBase.h"
+#include "nsTArray.h"
+#include "nsISocketTransport.h"
 
 class nsISocketTransport;
 
@@ -42,7 +44,7 @@ class WebSocketConnection : public nsIInputStreamCallback,
   nsresult WriteOutputData(nsTArray<uint8_t>&& aData);
   nsresult StartReading() override;
   void DrainSocketData() override;
-  nsresult GetSecurityInfo(nsISupports** aSecurityInfo) override;
+  nsresult GetSecurityInfo(nsITransportSecurityInfo** aSecurityInfo) override;
 
  private:
   virtual ~WebSocketConnection();

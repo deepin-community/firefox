@@ -65,22 +65,20 @@ cryptominer-tab-content = Cryptominers gebruiken de rekenkracht van uw systeem o
 protections-close-button2 =
     .aria-label = Sluiten
     .title = Sluiten
-  
+
 mobile-app-title = Blokkeer advertentietrackers op meerdere apparaten
 mobile-app-card-content = Gebruik de mobiele browser met ingebouwde bescherming tegen advertentietrackers.
 mobile-app-links = { -brand-product-name } Browser voor <a data-l10n-name="android-mobile-inline-link">Android</a> en <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Vergeet nooit meer een wachtwoord
-lockwise-title-logged-in2 = Wachtwoordenbeheer
-lockwise-header-content = { -lockwise-brand-name } slaat uw wachtwoorden veilig op in uw browser.
+passwords-title-logged-in = Uw wachtwoorden beheren
+passwords-header-content = { -brand-product-name } slaat uw wachtwoorden veilig op in uw browser.
 lockwise-header-content-logged-in = Bewaar en synchroniseer uw wachtwoorden veilig op al uw apparaten.
-protection-report-save-passwords-button = Wachtwoorden opslaan
-    .title = Wachtwoorden opslaan in { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Wachtwoorden beheren
-    .title = Wachtwoorden in { -lockwise-brand-short-name } beheren
-lockwise-mobile-app-title = Neem uw wachtwoorden overal mee naartoe
-lockwise-no-logins-card-content = Gebruik in { -brand-short-name } opgeslagen wachtwoorden op elk apparaat.
-lockwise-app-links = { -lockwise-brand-name } voor <a data-l10n-name="lockwise-android-inline-link">Android</a> en <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Wachtwoorden opslaan
+    .title = Wachtwoorden opslaan
+protection-report-passwords-manage-passwords-button = Wachtwoorden beheren
+    .title = Wachtwoorden beheren
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

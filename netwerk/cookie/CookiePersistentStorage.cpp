@@ -362,6 +362,7 @@ NS_IMPL_ISUPPORTS(CloseCookieDBListener, mozIStorageCompletionCallback)
 already_AddRefed<CookiePersistentStorage> CookiePersistentStorage::Create() {
   RefPtr<CookiePersistentStorage> storage = new CookiePersistentStorage();
   storage->Init();
+  storage->Activate();
 
   return storage.forget();
 }
@@ -816,8 +817,9 @@ CookiePersistentStorage::OpenDBResult CookiePersistentStorage::TryInitDB(
     // open a connection to the cookie database, and only cache our connection
     // and statements upon success. The connection is opened unshared to
     // eliminate cache contention between the main and background threads.
-    rv = mStorageService->OpenUnsharedDatabase(mCookieFile,
-                                               getter_AddRefs(mSyncConn));
+    rv = mStorageService->OpenUnsharedDatabase(
+        mCookieFile, mozIStorageService::CONNECTION_DEFAULT,
+        getter_AddRefs(mSyncConn));
     NS_ENSURE_SUCCESS(rv, RESULT_RETRY);
   }
 
@@ -1689,7 +1691,7 @@ UniquePtr<CookieStruct> CookiePersistentStorage::GetCookieFromRow(
       static_cast<nsICookie::schemeType>(schemeMap));
 }
 
-void CookiePersistentStorage::EnsureReadComplete() {
+void CookiePersistentStorage::EnsureInitialized() {
   MOZ_ASSERT(NS_IsMainThread());
 
   bool isAccumulated = false;
@@ -1749,8 +1751,17 @@ void CookiePersistentStorage::InitDBConn() {
     CookieDomainTuple& tuple = mReadArray[i];
     MOZ_ASSERT(!tuple.cookie->isSession());
 
+    // CreateValidated fixes up the creation and lastAccessed times.
+    // If the DB is corrupted and the timestaps are far away in the future
+    // we don't want the creation timestamp to update gLastCreationTime
+    // as that would contaminate all the next creation times.
+    // We fix up these dates to not be later than the current time.
+    // The downside is that if the user sets the date far away in the past
+    // then back to the current date, those cookies will be stale,
+    // but if we don't fix their dates, those cookies might never be
+    // evicted.
     RefPtr<Cookie> cookie =
-        Cookie::Create(*tuple.cookie, tuple.originAttributes);
+        Cookie::CreateValidated(*tuple.cookie, tuple.originAttributes);
     AddCookieToList(tuple.key.mBaseDomain, tuple.key.mOriginAttributes, cookie);
   }
 
@@ -1785,8 +1796,9 @@ void CookiePersistentStorage::InitDBConn() {
 nsresult CookiePersistentStorage::InitDBConnInternal() {
   MOZ_ASSERT(NS_IsMainThread());
 
-  nsresult rv = mStorageService->OpenUnsharedDatabase(mCookieFile,
-                                                      getter_AddRefs(mDBConn));
+  nsresult rv = mStorageService->OpenUnsharedDatabase(
+      mCookieFile, mozIStorageService::CONNECTION_DEFAULT,
+      getter_AddRefs(mDBConn));
   NS_ENSURE_SUCCESS(rv, rv);
 
   // Set up our listeners.

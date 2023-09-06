@@ -3,13 +3,11 @@
  */
 "use strict";
 
-const { Weave } = ChromeUtils.import("resource://services-sync/main.js");
-const { SyncedTabs } = ChromeUtils.import(
-  "resource://services-sync/SyncedTabs.jsm"
+const { Weave } = ChromeUtils.importESModule(
+  "resource://services-sync/main.sys.mjs"
 );
-
-const faviconService = Cc["@mozilla.org/browser/favicon-service;1"].getService(
-  Ci.nsIFaviconService
+const { SyncedTabs } = ChromeUtils.importESModule(
+  "resource://services-sync/SyncedTabs.sys.mjs"
 );
 
 Log.repository.getLogger("Sync.RemoteTabs").addAppender(new Log.DumpAppender());
@@ -18,6 +16,27 @@ Log.repository.getLogger("Sync.RemoteTabs").addAppender(new Log.DumpAppender());
 // engine. We pass a constructor that Sync creates.
 function MockTabsEngine() {
   this.clients = {}; // We'll set this dynamically
+  // Mock fxAccounts + recentDeviceList as if we hit the FxA server
+  this.fxAccounts = {
+    device: {
+      recentDeviceList: [
+        {
+          id: 1,
+          name: "updated desktop name",
+          availableCommands: {
+            "https://identity.mozilla.com/cmd/open-uri": "baz",
+          },
+        },
+        {
+          id: 2,
+          name: "updated mobile name",
+          availableCommands: {
+            "https://identity.mozilla.com/cmd/open-uri": "boo",
+          },
+        },
+      ],
+    },
+  };
 }
 
 MockTabsEngine.prototype = {
@@ -25,7 +44,7 @@ MockTabsEngine.prototype = {
   enabled: true,
 
   getAllClients() {
-    return this.clients;
+    return Object.values(this.clients);
   },
 
   getOpenURLs() {
@@ -54,7 +73,18 @@ let MockClientsEngine = {
     if (this.clientSettings[id]) {
       return this.clientSettings[id];
     }
-    return tabsEngine.clients[id].clientName;
+    let client = tabsEngine.clients[id];
+    let fxaDevice = tabsEngine.fxAccounts.device.recentDeviceList.find(
+      device => device.id === client.fxaDeviceId
+    );
+    return fxaDevice ? fxaDevice.name : client.clientName;
+  },
+
+  getClientFxaDeviceId(id) {
+    if (this.clientSettings[id]) {
+      return this.clientSettings[id];
+    }
+    return tabsEngine.clients[id].fxaDeviceId;
   },
 
   getClientType(id) {
@@ -106,6 +136,7 @@ add_task(async function test_clientWithTabs() {
         {
           urlHistory: ["http://foo.com/"],
           icon: "http://foo.com/favicon",
+          lastUsed: 1655745700, // Mon, 20 Jun 2022 17:21:40 GMT
         },
       ],
     },
@@ -123,6 +154,7 @@ add_task(async function test_clientWithTabs() {
   equal(clients[0].tabs.length, 1);
   equal(clients[0].tabs[0].url, "http://foo.com/");
   equal(clients[0].tabs[0].icon, "http://foo.com/favicon");
+  equal(clients[0].tabs[0].lastUsed, 1655745700);
   // second client has no tabs.
   equal(clients[1].tabs.length, 0);
 });
@@ -136,6 +168,7 @@ add_task(async function test_staleClientWithTabs() {
           {
             urlHistory: ["http://foo.com/"],
             icon: "http://foo.com/favicon",
+            lastUsed: 1655745750,
           },
         ],
       },
@@ -153,6 +186,7 @@ add_task(async function test_staleClientWithTabs() {
           {
             urlHistory: ["https://bar.com/"],
             icon: "https://bar.com/favicon",
+            lastUsed: 1655745700,
           },
         ],
       },
@@ -162,6 +196,7 @@ add_task(async function test_staleClientWithTabs() {
           {
             urlHistory: ["https://example.edu/"],
             icon: "https://example.edu/favicon",
+            lastUsed: 1655745800,
           },
         ],
       },
@@ -182,9 +217,11 @@ add_task(async function test_staleClientWithTabs() {
   equal(clients[0].name, "My Desktop");
   equal(clients[0].tabs.length, 1);
   equal(clients[0].tabs[0].url, "http://foo.com/");
+  equal(clients[0].tabs[0].lastUsed, 1655745750);
   equal(clients[1].name, "My Laptop");
   equal(clients[1].tabs.length, 1);
   equal(clients[1].tabs[0].url, "https://example.edu/");
+  equal(clients[1].tabs[0].lastUsed, 1655745800);
   equal(clients[2].name, "My Phone");
   equal(clients[2].tabs.length, 0);
 });
@@ -272,4 +309,34 @@ add_task(async function test_duplicatesTabsAcrossClients() {
   equal(clients[1].tabs.length, 1);
   equal(clients[0].tabs[0].url, "http://foo.com/");
   equal(clients[1].tabs[0].url, "http://foo.com/");
+});
+
+add_task(async function test_clientsTabUpdatedName() {
+  // See the "fxAccounts" object in the MockEngine above for the device list
+  await configureClients({
+    guid_desktop: {
+      clientName: "My Desktop",
+      tabs: [
+        {
+          urlHistory: ["http://foo.com/"],
+          icon: "http://foo.com/favicon",
+        },
+      ],
+      fxaDeviceId: 1,
+    },
+    guid_mobile: {
+      clientName: "My Phone",
+      tabs: [
+        {
+          urlHistory: ["http://bar.com/"],
+          icon: "http://bar.com/favicon",
+        },
+      ],
+      fxaDeviceId: 2,
+    },
+  });
+  let clients = await SyncedTabs.getTabClients();
+  equal(clients.length, 2);
+  equal(clients[0].name, "updated desktop name");
+  equal(clients[1].name, "updated mobile name");
 });

@@ -20,19 +20,33 @@ namespace mozilla::glean {
 NS_IMPL_CLASSINFO(GleanEvent, nullptr, 0, {0})
 NS_IMPL_ISUPPORTS_CI(GleanEvent, nsIGleanEvent)
 
+// Convert all capital letters to "_x" where "x" is the corresponding lowercase.
+nsCString camelToSnake(const nsACString& aCamel) {
+  nsCString snake;
+  const auto* start = aCamel.BeginReading();
+  const auto* end = aCamel.EndReading();
+  for (; start != end; ++start) {
+    if ('A' <= *start && *start <= 'Z') {
+      snake.AppendLiteral("_");
+      snake.Append(static_cast<char>(std::tolower(*start)));
+    } else {
+      snake.Append(*start);
+    }
+  }
+  return snake;
+}
+
 NS_IMETHODIMP
-GleanEvent::Record(JS::HandleValue aExtra, JSContext* aCx) {
-#ifdef MOZ_GLEAN_ANDROID
-  return NS_OK;
-#else
+GleanEvent::Record(JS::Handle<JS::Value> aExtra, JSContext* aCx) {
   if (aExtra.isNullOrUndefined()) {
     mEvent.Record();
     return NS_OK;
   }
 
   if (!aExtra.isObject()) {
-    LogToBrowserConsole(nsIScriptError::warningFlag,
-                        u"Extras need to be an object"_ns);
+    LogToBrowserConsole(
+        nsIScriptError::warningFlag,
+        u"Extras need to be an object. Event will not be recorded."_ns);
     return NS_OK;
   }
 
@@ -40,11 +54,12 @@ GleanEvent::Record(JS::HandleValue aExtra, JSContext* aCx) {
   nsTArray<nsCString> extraValues;
   CopyableTArray<Telemetry::EventExtraEntry> telExtras;
 
-  JS::RootedObject obj(aCx, &aExtra.toObject());
+  JS::Rooted<JSObject*> obj(aCx, &aExtra.toObject());
   JS::Rooted<JS::IdVector> ids(aCx, JS::IdVector(aCx));
   if (!JS_Enumerate(aCx, obj, &ids)) {
-    LogToBrowserConsole(nsIScriptError::warningFlag,
-                        u"Failed to enumerate object."_ns);
+    LogToBrowserConsole(
+        nsIScriptError::warningFlag,
+        u"Failed to enumerate object. Event will not be recorded."_ns);
     return NS_OK;
   }
 
@@ -53,14 +68,18 @@ GleanEvent::Record(JS::HandleValue aExtra, JSContext* aCx) {
     if (!jsKey.init(aCx, ids[i])) {
       LogToBrowserConsole(
           nsIScriptError::warningFlag,
-          u"Extra dictionary should only contain string keys."_ns);
+          u"Extra dictionary should only contain string keys. Event will not be recorded."_ns);
       return NS_OK;
     }
 
+    // We accept camelCase extra keys, but Glean requires snake_case.
+    auto snakeKey = camelToSnake(jsKey);
+
     JS::Rooted<JS::Value> value(aCx);
     if (!JS_GetPropertyById(aCx, obj, ids[i], &value)) {
-      LogToBrowserConsole(nsIScriptError::warningFlag,
-                          u"Failed to get extra property."_ns);
+      LogToBrowserConsole(
+          nsIScriptError::warningFlag,
+          u"Failed to get extra property. Event will not be recorded."_ns);
       return NS_OK;
     }
 
@@ -68,18 +87,23 @@ GleanEvent::Record(JS::HandleValue aExtra, JSContext* aCx) {
     if (value.isString() || (value.isInt32() && value.toInt32() >= 0) ||
         value.isBoolean()) {
       if (!jsValue.init(aCx, value)) {
-        LogToBrowserConsole(nsIScriptError::warningFlag,
-                            u"Can't extract extra property"_ns);
+        LogToBrowserConsole(
+            nsIScriptError::warningFlag,
+            u"Can't extract extra property. Event will not be recorded."_ns);
         return NS_OK;
       }
+    } else if (value.isNullOrUndefined()) {
+      // The extra key is present, but has an empty value.
+      // Treat as though it weren't here at all.
+      continue;
     } else {
       LogToBrowserConsole(
           nsIScriptError::warningFlag,
-          u"Extra properties should have string, bool or non-negative integer values."_ns);
+          u"Extra properties should have string, bool or non-negative integer values. Event will not be recorded."_ns);
       return NS_OK;
     }
 
-    extraKeys.AppendElement(jsKey);
+    extraKeys.AppendElement(snakeKey);
     extraValues.AppendElement(jsValue);
     telExtras.EmplaceBack(Telemetry::EventExtraEntry{jsKey, jsValue});
   }
@@ -94,14 +118,13 @@ GleanEvent::Record(JS::HandleValue aExtra, JSContext* aCx) {
 
   // Calling the implementation directly, because we have a `string->string`
   // map, not a `T->string` map the C++ API expects.
-  impl::fog_event_record_str(mEvent.mId, &extraKeys, &extraValues);
+  impl::fog_event_record(mEvent.mId, &extraKeys, &extraValues);
   return NS_OK;
-#endif
 }
 
 NS_IMETHODIMP
 GleanEvent::TestGetValue(const nsACString& aStorageName, JSContext* aCx,
-                         JS::MutableHandleValue aResult) {
+                         JS::MutableHandle<JS::Value> aResult) {
   auto resEvents = mEvent.TestGetValue(aStorageName);
   if (resEvents.isErr()) {
     aResult.set(JS::UndefinedValue());
@@ -118,7 +141,7 @@ GleanEvent::TestGetValue(const nsACString& aStorageName, JSContext* aCx,
   auto events = optEvents.extract();
 
   auto count = events.Length();
-  JS::RootedObject eventArray(aCx, JS::NewArrayObject(aCx, count));
+  JS::Rooted<JSObject*> eventArray(aCx, JS::NewArrayObject(aCx, count));
   if (NS_WARN_IF(!eventArray)) {
     return NS_ERROR_FAILURE;
   }
@@ -126,7 +149,7 @@ GleanEvent::TestGetValue(const nsACString& aStorageName, JSContext* aCx,
   for (size_t i = 0; i < count; i++) {
     auto* value = &events[i];
 
-    JS::RootedObject eventObj(aCx, JS_NewPlainObject(aCx));
+    JS::Rooted<JSObject*> eventObj(aCx, JS_NewPlainObject(aCx));
     if (NS_WARN_IF(!eventObj)) {
       return NS_ERROR_FAILURE;
     }
@@ -151,7 +174,7 @@ GleanEvent::TestGetValue(const nsACString& aStorageName, JSContext* aCx,
       return NS_ERROR_FAILURE;
     }
 
-    JS::RootedObject extraObj(aCx, JS_NewPlainObject(aCx));
+    JS::Rooted<JSObject*> extraObj(aCx, JS_NewPlainObject(aCx));
     if (!JS_DefineProperty(aCx, eventObj, "extra", extraObj,
                            JSPROP_ENUMERATE)) {
       NS_WARNING("Failed to define extra for event object.");
@@ -159,8 +182,8 @@ GleanEvent::TestGetValue(const nsACString& aStorageName, JSContext* aCx,
     }
 
     for (auto pair : value->mExtra) {
-      auto key = mozilla::Get<0>(pair);
-      auto val = mozilla::Get<1>(pair);
+      auto key = std::get<0>(pair);
+      auto val = std::get<1>(pair);
       JS::Rooted<JS::Value> valStr(aCx);
       if (!dom::ToJSValue(aCx, val, &valStr) ||
           !JS_DefineProperty(aCx, extraObj, key.Data(), valStr,

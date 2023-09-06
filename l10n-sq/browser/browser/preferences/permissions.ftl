@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-permissions-window =
+permissions-window2 =
     .title = Përjashtime
-    .style = width: 36em
+    .style = min-width: 36em
 
 permissions-close-key =
     .key = w
@@ -16,6 +16,10 @@ permissions-block =
     .label = Bllokoje
     .accesskey = B
 
+permissions-disable-etp =
+    .label = Shtoni Përjashtim
+    .accesskey = S
+
 permissions-session =
     .label = Lejoje për Sesionin
     .accesskey = S
@@ -23,6 +27,14 @@ permissions-session =
 permissions-allow =
     .label = Lejoje
     .accesskey = L
+
+permissions-button-off =
+    .label = Çaktivizoje
+    .accesskey = Ç
+
+permissions-button-off-temporarily =
+    .label = Çaktivizoje Përkohësisht
+    .accesskey = P
 
 permissions-site-name =
     .label = Sajt
@@ -68,6 +80,11 @@ permissions-capabilities-listitem-block =
 permissions-capabilities-listitem-allow-session =
     .value = Lejoje për Sesionin
 
+permissions-capabilities-listitem-off =
+    .value = Off
+permissions-capabilities-listitem-off-temporarily =
+    .value = Off përkohësisht
+
 ## Invalid Hostname Dialog
 
 permissions-invalid-uri-title = U dha Strehëemër i Pavlefshëm
@@ -75,53 +92,58 @@ permissions-invalid-uri-label = Ju lutemi, jepni një strehëemër të vlefshëm
 
 ## Exceptions - Tracking Protection
 
-permissions-exceptions-etp-window =
-    .title = Përjashtime për Mbrojtje të Thelluar Nga Gjurmimet
-    .style = { permissions-window.style }
-permissions-exceptions-etp-desc = I keni çaktivizuar mbrojtjet në këto sajte.
+permissions-exceptions-etp-window2 =
+    .title = Përjashtime nga Mbrojtje e Thelluar Nga Gjurmimet
+    .style = { permissions-window2.style }
+permissions-exceptions-manage-etp-desc = Mund të përcaktoni cilët sajte e kanë të mbyllur Mbrojtjen e Thelluar Nga Gjurmimet. Shtypni adresën e saktë të sajtit që doni të administroni dhe mandej klikoni mbi Shto Përjashtim.
 
 ## Exceptions - Cookies
 
-permissions-exceptions-cookie-window =
+permissions-exceptions-cookie-window2 =
     .title = Përjashtime - Cookies dhe të Dhëna Sajtesh
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Mund të caktoni cilëve sajte u lejohet përherë ose kurrë të përdorin cookies dhe të dhëna sajtesh. Shtypni adresën e saktë të sajtit që doni të administroni dhe mandej klikoni Bllokoje, Lejoje për Sesion, ose Lejoje.
 
 ## Exceptions - HTTPS-Only Mode
 
+permissions-exceptions-https-only-window2 =
+    .title = Përjashtime - Mënyra Vetëm-HTTPS
+    .style = { permissions-window2.style }
+permissions-exceptions-https-only-desc = Mënyrën Vetëm-HTTPS mund ta çaktivizoni për sajte specifike. Për këto sajte, { -brand-short-name }-i s’do të provojë të përmirësojë lidhjen me HTTPS të sigurt. Përjashtimet nuk vlejnë për dritare private.
+
 ## Exceptions - Pop-ups
 
-permissions-exceptions-popup-window =
+permissions-exceptions-popup-window2 =
     .title = Sajte të Lejuar - Flluska
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-popup-desc = Mund të caktoni cilëve sajte u lejohet të hapin dritare flluska. Shtypni adresën e saktë të sajtit që doni të lejohet dhe mandej klikoni Lejoje.
 
 ## Exceptions - Saved Logins
 
-permissions-exceptions-saved-logins-window =
+permissions-exceptions-saved-logins-window2 =
     .title = Përjashtime - Kredenciale Hyrjesh të Ruajtur
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-saved-logins-desc = Për sajtet vijues s’do të ruhen kredenciale hyrjesh
 
 ## Exceptions - Add-ons
 
-permissions-exceptions-addons-window =
+permissions-exceptions-addons-window2 =
     .title = Sajte të Lejuar - Instalim Shtesash
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-addons-desc = Mund të përcaktoni cilëve sajte u lejohet të instalojnë shtesa. Shtypni adresën e saktë të sajtit që doni të lejoni dhe mandej klikoni Lejoje
 
 ## Site Permissions - Autoplay
 
-permissions-site-autoplay-window =
+permissions-site-autoplay-window2 =
     .title = Rregullime - Vetëluajtje
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-autoplay-desc = Këtu mund të trajtoni sajtet që nuk ndjekin rregullimet tuaja parazgjedhje për vetëluajtjen.
 
 ## Site Permissions - Notifications
 
-permissions-site-notification-window =
+permissions-site-notification-window2 =
     .title = Rregullime - Leje Njoftimesh
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-notification-desc = Sajtet vijues kanë kërkuar t’ju dërgojnë njoftime. Mund të specifikoni cilët sajte lejohen t’ju dërgojnë njoftime. Mundeni edhe të bllokoni kërkesa të reja për lejim njoftimesh.
 permissions-site-notification-disable-label =
     .label = Blloko kërkesa të reja për lejim njoftimesh
@@ -129,9 +151,9 @@ permissions-site-notification-disable-desc = Kjo do të pengojë çfarëdo sajti
 
 ## Site Permissions - Location
 
-permissions-site-location-window =
+permissions-site-location-window2 =
     .title = Rregullime - Leje Vendndodhjesh
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-location-desc = Sajtet vijues kanë kërkuar të dinë vendndodhjen tuaj. Mund të specifikoni cilët sajte lejohen të mësojnë vendndodhjen tuaj. Mundeni edhe të bllokoni kërkesa të reja për njohje vendndodhjesh.
 permissions-site-location-disable-label =
     .label = Blloko kërkesa të reja për njohje vendndodhjesh
@@ -139,9 +161,9 @@ permissions-site-location-disable-desc = Kjo do të pengojë çfarëdo sajti jo 
 
 ## Site Permissions - Virtual Reality
 
-permissions-site-xr-window =
+permissions-site-xr-window2 =
     .title = Rregullime - Leje Realiteti Virtual
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-xr-desc = Sajtet vijues kanë kërkuar të hyjnë në pajisje tuajat për realitet virtual. Mund të specifikoni cilët sajte lejohen të hyjnë në pajisjet tuaja të realitetit virtual. Mundeni edhe të bllokoni kërkesa të reja për hyrje në pajisjet tuaja të realitetit virtual.
 permissions-site-xr-disable-label =
     .label = Blloko kërkesa të reja për hyrje në pajisjet tuaja të realitetit virtual
@@ -149,9 +171,9 @@ permissions-site-xr-disable-desc = Kjo do të pengojë çfarëdo sajti jo të pr
 
 ## Site Permissions - Camera
 
-permissions-site-camera-window =
+permissions-site-camera-window2 =
     .title = Rregullime - Leje Kamere
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-camera-desc = Sajtet vijues kanë kërkuar të përdorin kamerën tuaj. Mund të specifikoni cilët sajte lejohen të përdorin kamerën tuaj. Mundeni edhe të bllokoni kërkesa të reja për përdorim kamere.
 permissions-site-camera-disable-label =
     .label = Bllokoni kërkesa të reja për përdorim kamere
@@ -159,10 +181,20 @@ permissions-site-camera-disable-desc = Kjo do të pengojë çfarëdo sajti jo t�
 
 ## Site Permissions - Microphone
 
-permissions-site-microphone-window =
+permissions-site-microphone-window2 =
     .title = Rregullime - Leje Mikrofoni
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-microphone-desc = Sajtet vijues kanë kërkuar të përdorin mikrofonin tuaj. Mund të specifikoni cilët sajte lejohen të përdorin mikrofonin tuaj. Mundeni edhe të bllokoni kërkesa të reja për përdorim të mikrofonit.
 permissions-site-microphone-disable-label =
     .label = Bllokoni kërkesa të reja për përdorim të mikrofonit
 permissions-site-microphone-disable-desc = Kjo do të pengojë çfarëdo sajti jo të pranishëm më sipër të kërkojë leje për të përdorur mikrofonin tuaj. Bllokimi i përdorimit të mikrofonit tuaj mund të prishë punimin e ndonjë veçorie të sajtit.
+
+## Site Permissions - Speaker
+##
+## "Speaker" refers to an audio output device.
+
+permissions-site-speaker-window =
+    .title = Rregullime - Leje Altoparlanti
+    .style = { permissions-window2.style }
+permissions-site-speaker-desc = Sajtet vijues kanë kërkuar të përzgjedhin një pajisje zëri në dalje. Mund të përcaktoni cilëve sajte u lejohet të përzgjedhin një pajisje zëri në dalje.
+

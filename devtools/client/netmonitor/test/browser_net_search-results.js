@@ -8,10 +8,10 @@
  * Search panel is visible and clicking matches shows them in the request details.
  */
 
-add_task(async function() {
+add_task(async function () {
   await pushPref("devtools.netmonitor.features.search", true);
 
-  const { tab, monitor } = await initNetMonitor(CUSTOM_GET_URL, {
+  const { tab, monitor } = await initNetMonitor(HTTPS_CUSTOM_GET_URL, {
     requestCount: 1,
   });
   info("Starting test... ");
@@ -24,25 +24,21 @@ add_task(async function() {
 
   const SEARCH_STRING = "test";
   // Execute two XHRs and wait until they are finished.
-  const URLS = [SEARCH_SJS + "?value=test1", SEARCH_SJS + "?value=test2"];
+  const URLS = [
+    HTTPS_SEARCH_SJS + "?value=test1",
+    HTTPS_SEARCH_SJS + "?value=test2",
+  ];
 
   const wait = waitForNetworkEvents(monitor, 2);
   await SpecialPowers.spawn(tab.linkedBrowser, [URLS], makeRequests);
   await wait;
 
   // Open the Search panel
-  store.dispatch(Actions.openSearch());
-
-  // Helper for keyboard typing
-  const type = string => {
-    for (const ch of string) {
-      EventUtils.synthesizeKey(ch, {}, monitor.panelWin);
-    }
-  };
+  await store.dispatch(Actions.openSearch());
 
   // Fill Filter input with text and check displayed messages.
   // The filter should be focused automatically.
-  type(SEARCH_STRING);
+  typeInNetmonitor(SEARCH_STRING, monitor);
   EventUtils.synthesizeKey("KEY_Enter");
 
   // Wait until there are two resources rendered in the results
@@ -173,11 +169,9 @@ add_task(async function() {
 });
 
 async function makeRequests(urls) {
-  content.wrappedJSObject.get(urls[0], () => {
-    content.wrappedJSObject.get(urls[1], () => {
-      info("XHR Requests executed");
-    });
-  });
+  await content.wrappedJSObject.get(urls[0]);
+  await content.wrappedJSObject.get(urls[1]);
+  info("XHR Requests executed");
 }
 
 /**

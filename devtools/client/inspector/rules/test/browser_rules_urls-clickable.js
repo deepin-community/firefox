@@ -5,14 +5,14 @@
 
 // Tests to make sure that URLs are clickable in the rule view
 
-const TEST_URI = URL_ROOT + "doc_urls_clickable.html";
-const TEST_IMAGE = URL_ROOT + "doc_test_image.png";
+const TEST_URI = URL_ROOT_SSL + "doc_urls_clickable.html";
+const TEST_IMAGE = URL_ROOT_SSL + "doc_test_image.png";
 const BASE_64_URL =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAA" +
   "FCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAA" +
   "BJRU5ErkJggg==";
 
-add_task(async function() {
+add_task(async function () {
   await addTab(TEST_URI);
   const { inspector, view } = await openRuleView();
   await selectNodes(inspector, view);

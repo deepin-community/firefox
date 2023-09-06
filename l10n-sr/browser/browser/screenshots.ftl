@@ -6,6 +6,9 @@ screenshot-toolbarbutton =
     .label = Снимак екрана
     .tooltiptext = Направи снимак екрана
 
+screenshot-shortcut =
+    .key = S
+
 screenshots-instructions = Изаберите област превлачењем мишем или кликом на страницу. Притисните Esc да бисте отказали.
 screenshots-cancel-button = Откажи
 screenshots-save-visible-button = Сачувај видљиву област
@@ -14,6 +17,14 @@ screenshots-download-button = Преузми
 screenshots-download-button-tooltip = Преузми снимак екрана
 screenshots-copy-button = Копирај
 screenshots-copy-button-tooltip = Копирај снимак екрана у привремену меморију
+screenshots-download-button-title =
+    .title = Преузми снимак
+screenshots-copy-button-title =
+    .title = Копирај снимак екрана у оставу
+screenshots-cancel-button-title =
+    .title = Откажи
+screenshots-retry-button-title =
+    .title = Понови снимак
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -44,3 +55,6 @@ screenshots-private-window-error-details = Извињавамо се на неп
 
 screenshots-generic-error-title = Ау! Услуга { -screenshots-brand-name } је престала са радом.
 screenshots-generic-error-details = Нисмо сигурни шта се управо догодило. Желите ли покушати поново или да усликате другачију страницу?
+
+screenshots-too-large-error-title = Снимак екрана је исечен јер је превелик
+screenshots-too-large-error-details = Покушајте да изаберете област мању од 32,700 пиксела дуж најдуже стране или 124,900,000 пиксела укупне површине.

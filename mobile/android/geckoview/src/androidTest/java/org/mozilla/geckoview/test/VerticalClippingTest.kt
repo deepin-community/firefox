@@ -4,22 +4,21 @@
 
 package org.mozilla.geckoview.test
 
-import android.graphics.*
-import androidx.test.filters.MediumTest
+import android.graphics.* // ktlint-disable no-wildcard-imports
+import android.graphics.Bitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.MediumTest
+import org.hamcrest.Matchers
+import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.notNullValue
 import org.junit.Assume.assumeThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.geckoview.GeckoResult
-import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.WithDisplay
-import android.graphics.Bitmap
-import org.hamcrest.Matchers
-import org.hamcrest.Matchers.equalTo
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSession.ContentDelegate
 import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.AssertCalled
-
+import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.WithDisplay
 
 private const val SCREEN_HEIGHT = 800
 private const val SCREEN_WIDTH = 800
@@ -39,26 +38,35 @@ class VerticalClippingTest : BaseSessionTest() {
 
         // Draw bottom banner
         paint.color = Color.rgb(0, 255, 0)
-        canvas.drawRect(0f, SCREEN_HEIGHT - BANNER_HEIGHT - bottomOffset,
-                SCREEN_WIDTH.toFloat(), (SCREEN_HEIGHT - bottomOffset).toFloat(), paint)
+        canvas.drawRect(
+            0f,
+            SCREEN_HEIGHT - BANNER_HEIGHT - bottomOffset,
+            SCREEN_WIDTH.toFloat(),
+            (SCREEN_HEIGHT - bottomOffset).toFloat(),
+            paint,
+        )
 
         return screenshotFile
     }
 
     private fun assertScreenshotResult(result: GeckoResult<Bitmap>, comparisonImage: Bitmap) {
         sessionRule.waitForResult(result).let {
-            assertThat("Screenshot is not null",
-                    it, notNullValue())
+            assertThat(
+                "Screenshot is not null",
+                it,
+                notNullValue(),
+            )
             assertThat("Widths are the same", comparisonImage.width, equalTo(it.width))
             assertThat("Heights are the same", comparisonImage.height, equalTo(it.height))
             assertThat("Byte counts are the same", comparisonImage.byteCount, equalTo(it.byteCount))
             assertThat("Configs are the same", comparisonImage.config, equalTo(it.config))
-            assertThat("Images are almost identical",
-                    ScreenshotTest.Companion.imageElementDifference(comparisonImage, it),
-                    Matchers.lessThanOrEqualTo(1))
+            assertThat(
+                "Images are almost identical",
+                ScreenshotTest.Companion.imageElementDifference(comparisonImage, it),
+                Matchers.lessThanOrEqualTo(1),
+            )
         }
     }
-
 
     @WithDisplay(height = SCREEN_HEIGHT, width = SCREEN_WIDTH)
     @Test
@@ -66,7 +74,7 @@ class VerticalClippingTest : BaseSessionTest() {
         // Disable failing test on Webrender. Bug 1670267
         assumeThat(sessionRule.env.isWebrender, equalTo(false))
         sessionRule.display?.setVerticalClipping(45)
-        sessionRule.session.loadTestPath(FIXED_BOTTOM)
+        mainSession.loadTestPath(FIXED_BOTTOM)
         sessionRule.waitUntilCalled(object : ContentDelegate {
             @AssertCalled(count = 1)
             override fun onFirstContentfulPaint(session: GeckoSession) {
@@ -77,5 +85,4 @@ class VerticalClippingTest : BaseSessionTest() {
             assertScreenshotResult(it.capturePixels(), getComparisonScreenshot(45))
         }
     }
-
 }

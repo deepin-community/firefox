@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/* eslint-env mozilla/frame-script */
+
 /**
  * This utility script is for instrumenting your Talos test for
  * performance profiles while running within content. If your test
@@ -20,7 +22,7 @@ if (typeof window !== "undefined") {
 
 var TalosContentProfiler;
 
-(function() {
+(function () {
   // Whether or not this TalosContentProfiler object has had initFromObject
   // or initFromURLQueryParams called on it. Any functions that will send
   // events to the parent to change the behaviour of the Gecko Profiler
@@ -55,16 +57,17 @@ var TalosContentProfiler;
     if (typeof sendAsyncMessage !== "undefined") {
       return new Promise(resolve => {
         sendAsyncMessage("TalosContentProfiler:Command", { name, data });
-        addMessageListener("TalosContentProfiler:Response", function onMsg(
-          msg
-        ) {
-          if (msg.data.name != name) {
-            return;
-          }
+        addMessageListener(
+          "TalosContentProfiler:Response",
+          function onMsg(msg) {
+            if (msg.data.name != name) {
+              return;
+            }
 
-          removeMessageListener("TalosContentProfiler:Response", onMsg);
-          resolve(msg.data);
-        });
+            removeMessageListener("TalosContentProfiler:Response", onMsg);
+            resolve(msg.data);
+          }
+        );
       });
     }
 
@@ -78,17 +81,18 @@ var TalosContentProfiler;
       });
       document.dispatchEvent(event);
 
-      addEventListener("TalosContentProfilerResponse", function onResponse(
-        event
-      ) {
-        if (event.detail.name != name) {
-          return;
+      addEventListener(
+        "TalosContentProfilerResponse",
+        function onResponse(event) {
+          if (event.detail.name != name) {
+            return;
+          }
+
+          removeEventListener("TalosContentProfilerResponse", onResponse);
+
+          resolve(event.detail.data);
         }
-
-        removeEventListener("TalosContentProfilerResponse", onResponse);
-
-        resolve(event.detail.data);
-      });
+      );
     });
   }
 
@@ -204,8 +208,8 @@ var TalosContentProfiler;
      */
     finishTest() {
       if (initted) {
-        let profileFile = profileDir + "/" + currentTest + ".profile";
-        return sendEventAndWait("Profiler:Finish", { profileFile });
+        let profileFile = `${currentTest}.profile`;
+        return sendEventAndWait("Profiler:Finish", { profileDir, profileFile });
       }
       return Promise.resolve();
     },
@@ -221,8 +225,8 @@ var TalosContentProfiler;
      */
     finishStartupProfiling() {
       if (initted) {
-        let profileFile = profileDir + "/startup.profile";
-        return sendEventAndWait("Profiler:Finish", { profileFile });
+        let profileFile = "startup.profile";
+        return sendEventAndWait("Profiler:Finish", { profileDir, profileFile });
       }
       return Promise.resolve();
     },

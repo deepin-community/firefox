@@ -16,12 +16,18 @@
  * transport types.
  */
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
+
+class WebAuthnGetAssertionResultWrapper {
+ public:
+  WebAuthnGetAssertionResult assertion;
+  mozilla::Maybe<nsCString> username;
+};
 
 typedef MozPromise<WebAuthnMakeCredentialResult, nsresult, true>
     U2FRegisterPromise;
-typedef MozPromise<WebAuthnGetAssertionResult, nsresult, true> U2FSignPromise;
+typedef MozPromise<nsTArray<WebAuthnGetAssertionResultWrapper>, nsresult, true>
+    U2FSignPromise;
 
 class U2FTokenTransport {
  public:
@@ -42,7 +48,6 @@ class U2FTokenTransport {
   virtual ~U2FTokenTransport() = default;
 };
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 #endif  // mozilla_dom_U2FTokenTransport_h

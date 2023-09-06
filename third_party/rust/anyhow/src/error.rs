@@ -1,10 +1,12 @@
-use crate::alloc::Box;
 use crate::backtrace::Backtrace;
 use crate::chain::Chain;
 #[cfg(any(feature = "std", anyhow_no_ptr_addr_of))]
 use crate::ptr::Mut;
 use crate::ptr::{Own, Ref};
 use crate::{Error, StdError};
+use alloc::boxed::Box;
+#[cfg(backtrace)]
+use core::any::Demand;
 use core::any::TypeId;
 use core::fmt::{self, Debug, Display};
 use core::mem::ManuallyDrop;
@@ -25,11 +27,13 @@ impl Error {
     /// created here to ensure that a backtrace exists.
     #[cfg(feature = "std")]
     #[cfg_attr(doc_cfg, doc(cfg(feature = "std")))]
+    #[cold]
+    #[must_use]
     pub fn new<E>(error: E) -> Self
     where
         E: StdError + Send + Sync + 'static,
     {
-        let backtrace = backtrace_if_absent!(error);
+        let backtrace = backtrace_if_absent!(&error);
         Error::from_std(error, backtrace)
     }
 
@@ -70,6 +74,8 @@ impl Error {
     ///         .await
     /// }
     /// ```
+    #[cold]
+    #[must_use]
     pub fn msg<M>(message: M) -> Self
     where
         M: Display + Debug + Send + Sync + 'static,
@@ -78,6 +84,7 @@ impl Error {
     }
 
     #[cfg(feature = "std")]
+    #[cold]
     pub(crate) fn from_std<E>(error: E, backtrace: Option<Backtrace>) -> Self
     where
         E: StdError + Send + Sync + 'static,
@@ -100,6 +107,7 @@ impl Error {
         unsafe { Error::construct(error, vtable, backtrace) }
     }
 
+    #[cold]
     pub(crate) fn from_adhoc<M>(message: M, backtrace: Option<Backtrace>) -> Self
     where
         M: Display + Debug + Send + Sync + 'static,
@@ -125,6 +133,7 @@ impl Error {
         unsafe { Error::construct(error, vtable, backtrace) }
     }
 
+    #[cold]
     pub(crate) fn from_display<M>(message: M, backtrace: Option<Backtrace>) -> Self
     where
         M: Display + Send + Sync + 'static,
@@ -151,6 +160,7 @@ impl Error {
     }
 
     #[cfg(feature = "std")]
+    #[cold]
     pub(crate) fn from_context<C, E>(context: C, error: E, backtrace: Option<Backtrace>) -> Self
     where
         C: Display + Send + Sync + 'static,
@@ -177,6 +187,7 @@ impl Error {
     }
 
     #[cfg(feature = "std")]
+    #[cold]
     pub(crate) fn from_boxed(
         error: Box<dyn StdError + Send + Sync>,
         backtrace: Option<Backtrace>,
@@ -207,6 +218,7 @@ impl Error {
     //
     // Unsafe because the given vtable must have sensible behavior on the error
     // value of type E.
+    #[cold]
     unsafe fn construct<E>(
         error: E,
         vtable: &'static ErrorVTable,
@@ -284,6 +296,8 @@ impl Error {
     ///     })
     /// }
     /// ```
+    #[cold]
+    #[must_use]
     pub fn context<C>(self, context: C) -> Self
     where
         C: Display + Send + Sync + 'static,
@@ -373,6 +387,7 @@ impl Error {
     /// ```
     #[cfg(feature = "std")]
     #[cfg_attr(doc_cfg, doc(cfg(feature = "std")))]
+    #[cold]
     pub fn chain(&self) -> Chain {
         unsafe { ErrorImpl::chain(self.inner.by_ref()) }
     }
@@ -509,14 +524,27 @@ impl Error {
     }
 }
 
+#[cfg(backtrace)]
+impl std::any::Provider for Error {
+    // Called by thiserror when you have `#[source] anyhow::Error`. This provide
+    // implementation includes the anyhow::Error's Backtrace if any, unlike
+    // deref'ing to dyn Error where the provide implementation would include
+    // only the original error's Backtrace from before it got wrapped into an
+    // anyhow::Error.
+    fn provide<'a>(&'a self, demand: &mut Demand<'a>) {
+        unsafe { ErrorImpl::provide(self.inner.by_ref(), demand) }
+    }
+}
+
 #[cfg(feature = "std")]
 #[cfg_attr(doc_cfg, doc(cfg(feature = "std")))]
 impl<E> From<E> for Error
 where
     E: StdError + Send + Sync + 'static,
 {
+    #[cold]
     fn from(error: E) -> Self {
-        let backtrace = backtrace_if_absent!(error);
+        let backtrace = backtrace_if_absent!(&error);
         Error::from_std(error, backtrace)
     }
 }
@@ -872,13 +900,22 @@ impl ErrorImpl {
             .as_ref()
             .or_else(|| {
                 #[cfg(backtrace)]
-                return Self::error(this).backtrace();
-                #[cfg(all(not(backtrace), feature = "backtrace"))]
+                return Self::error(this).request_ref::<Backtrace>();
+                #[cfg(not(backtrace))]
                 return (vtable(this.ptr).object_backtrace)(this);
             })
             .expect("backtrace capture failed")
     }
 
+    #[cfg(backtrace)]
+    unsafe fn provide<'a>(this: Ref<'a, Self>, demand: &mut Demand<'a>) {
+        if let Some(backtrace) = &this.deref().backtrace {
+            demand.provide_ref(backtrace);
+        }
+        Self::error(this).provide(demand);
+    }
+
+    #[cold]
     pub(crate) unsafe fn chain(this: Ref<Self>) -> Chain {
         Chain::new(Self::error(this))
     }
@@ -888,13 +925,13 @@ impl<E> StdError for ErrorImpl<E>
 where
     E: StdError,
 {
-    #[cfg(backtrace)]
-    fn backtrace(&self) -> Option<&Backtrace> {
-        Some(unsafe { ErrorImpl::backtrace(self.erase()) })
-    }
-
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         unsafe { ErrorImpl::error(self.erase()).source() }
+    }
+
+    #[cfg(backtrace)]
+    fn provide<'a>(&'a self, demand: &mut Demand<'a>) {
+        unsafe { ErrorImpl::provide(self.erase(), demand) }
     }
 }
 
@@ -917,6 +954,7 @@ where
 }
 
 impl From<Error> for Box<dyn StdError + Send + Sync + 'static> {
+    #[cold]
     fn from(error: Error) -> Self {
         let outer = ManuallyDrop::new(error);
         unsafe {

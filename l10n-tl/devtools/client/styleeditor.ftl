@@ -16,7 +16,6 @@ styleeditor-save-button = I-save
     .accesskey = s
 styleeditor-options-button =
     .tooltiptext = Mga pagpipilian sa Style Editor
-styleeditor-media-rules = @media rules
 styleeditor-editor-textbox =
     .data-placeholder = I-type ang CSS dito.
 styleeditor-no-stylesheet = Ang pahinang ito ay walang style sheet.
@@ -25,3 +24,21 @@ styleeditor-open-link-new-tab =
     .label = Buksan ang Link sa Bagong Tab
 styleeditor-copy-url =
     .label = Kopyahin ang URL
+styleeditor-find =
+    .label = Hanapin
+    .accesskey = H
+styleeditor-find-again =
+    .label = Hanapin Muli
+    .accesskey = g
+styleeditor-go-to-line =
+    .label = Tumalon sa linya…
+    .accesskey = J
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } panuntunan.
+       *[other] { $ruleCount } mga panuntunan.
+    }

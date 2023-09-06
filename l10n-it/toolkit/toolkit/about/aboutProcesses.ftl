@@ -58,6 +58,8 @@ about-processes-remote-sandbox-broker-process = Broker per sandbox remota ({ $pi
 about-processes-fork-server-process = Fork server ({ $pid })
 about-processes-preallocated-process = Preallocato ({ $pid })
 
+about-processes-utility-process = Utilità ({ $pid })
+
 about-processes-unknown-process = Altro: { $type } ({ $pid })
 
 ## Isolated process names
@@ -66,10 +68,9 @@ about-processes-unknown-process = Altro: { $type } ({ $pid })
 ##    $origin (String) The domain name for this process.
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
-about-processes-web-large-allocation-process = { $origin } ({ $pid }, grande)
+about-processes-web-serviceworker = { $origin } ({ $pid }, serviceworker)
 about-processes-with-coop-coep-process = { $origin } ({ $pid }, cross-origin isolato)
 about-processes-web-isolated-process-private = { $origin } — Anonima ({ $pid })
-about-processes-web-large-allocation-process-private = { $origin } — Anonima ({ $pid }, grande)
 about-processes-with-coop-coep-process-private = { $origin } — Anonima ({ $pid }, cross-origin isolato)
 
 ## Details within processes
@@ -108,6 +109,19 @@ about-processes-frame-name-one = Sottoframe: { $url }
 #   $shortUrl (String) The shared prefix for the subframes in the group.
 about-processes-frame-name-many = Sottoframe ({ $number }): { $shortUrl }
 
+## Utility process actor names
+
+# Utility process actor names
+about-processes-utility-actor-unknown = Attore sconosciuto
+
+about-processes-utility-actor-audio-decoder-generic = Decodificatore audio generico
+about-processes-utility-actor-audio-decoder-applemedia = Decodificatore audio Apple Media
+about-processes-utility-actor-audio-decoder-wmf = Decodificatore audio Windows Media Framework
+about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media Engine CDM
+# "Oracle" refers to an internal Firefox process and should be kept in English
+about-processes-utility-actor-js-oracle = JavaScript Oracle
+about-processes-utility-actor-windows-utils = Utilità Windows
+
 ## Displaying CPU (percentage and total)
 ## Variables:
 ##    $percent (Number) The percentage of CPU used by the process or thread.
@@ -130,9 +144,6 @@ about-processes-cpu-almost-idle = < 0,1%
 
 about-processes-cpu-fully-idle = non attivo
     .title = Tempo CPU complessivo: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
-
-about-processes-cpu-idle = non attivo
-    .title = Tempo CPU complessivo: { NUMBER($total, maximumFractionDigits: 2) }{ $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:

@@ -5,9 +5,9 @@
 
 ## Strings used for device manager
 
-devmgr =
+devmgr-window =
     .title = Enhedsadministration
-    .style = width: 57em; height: 25em;
+    .style = min-width: 57em; min-height: 25em;
 
 devmgr-devlist =
     .label = Sikkerhedsmoduler og -enheder

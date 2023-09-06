@@ -25,7 +25,6 @@ pocket-panel-saved-save-tags = Danndu
 pocket-panel-saved-saving-tags = Nana dannda…
 pocket-panel-saved-suggested-tags = Tage Basiyaaɗe
 pocket-panel-saved-tags-saved = Tage Ɓeydaama
-pocket-panel-signup-view-list = Yiy Doggol
 
 ## about:pocket-signup panel
 
@@ -35,9 +34,15 @@ pocket-panel-signup-login = Seŋo
 pocket-panel-signup-signup-email = Winnditoro iimeel
 pocket-panel-signup-signup-cta = Winndito e { -pocket-brand-name }. Yoɓetaake.
 pocket-panel-signup-signup-firefox = Winnditoro { -brand-product-name }
-pocket-panel-signup-tagline = Danndu binndanɗe e widewooji Firedox ngam yiyde e { -pocket-brand-name }e kaɓirgol kala, sahaa kala.
+pocket-panel-signup-tagline = Danndu binndanɗe e widewooji { -brand-product-name } ngam yiyde e { -pocket-brand-name }e kaɓirgol kala, sahaa kala.
 pocket-panel-signup-tagline-story-one = Dobo e Butoŋ { -pocket-brand-name } oo ngam danndude winndannde, widewoo wala hello iwde e { -brand-product-name }.
 pocket-panel-signup-tagline-story-two = Yiy e { -pocket-brand-name } e kaɓirgol kala, sahaa kala.
 
 ## about:pocket-home panel
+
+
+## Pocket panel header component
+
+
+## Pocket panel buttons
 

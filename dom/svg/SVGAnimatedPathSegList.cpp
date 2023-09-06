@@ -25,7 +25,6 @@ nsresult SVGAnimatedPathSegList::SetBaseValueString(const nsAString& aValue) {
   // The spec says that the path data is parsed and accepted up to the first
   // error encountered, so we don't return early if an error occurs. However,
   // we do want to throw any error code from setAttribute if there's a problem.
-
   nsresult rv = newBaseValue.SetValueFromString(aValue);
 
   // We must send these notifications *before* changing mBaseVal! Our baseVal's
@@ -33,18 +32,20 @@ nsresult SVGAnimatedPathSegList::SetBaseValueString(const nsAString& aValue) {
   // DOM items need to copy their internal counterpart's values *before* we
   // change them. See the comments in
   // DOMSVGPathSegList::InternalListWillChangeTo().
-
-  DOMSVGPathSegList* baseValWrapper =
-      DOMSVGPathSegList::GetDOMWrapperIfExists(GetBaseValKey());
-  if (baseValWrapper) {
-    baseValWrapper->InternalListWillChangeTo(newBaseValue);
-  }
-
+  DOMSVGPathSegList* baseValWrapper = nullptr;
   DOMSVGPathSegList* animValWrapper = nullptr;
-  if (!IsAnimating()) {  // DOM anim val wraps our base val too!
-    animValWrapper = DOMSVGPathSegList::GetDOMWrapperIfExists(GetAnimValKey());
-    if (animValWrapper) {
-      animValWrapper->InternalListWillChangeTo(newBaseValue);
+  if (StaticPrefs::dom_svg_pathSeg_enabled()) {
+    baseValWrapper = DOMSVGPathSegList::GetDOMWrapperIfExists(GetBaseValKey());
+    if (baseValWrapper) {
+      baseValWrapper->InternalListWillChangeTo(newBaseValue);
+    }
+
+    if (!IsAnimating()) {  // DOM anim val wraps our base val too!
+      animValWrapper =
+          DOMSVGPathSegList::GetDOMWrapperIfExists(GetAnimValKey());
+      if (animValWrapper) {
+        animValWrapper->InternalListWillChangeTo(newBaseValue);
+      }
     }
   }
 
@@ -54,35 +55,26 @@ nsresult SVGAnimatedPathSegList::SetBaseValueString(const nsAString& aValue) {
   // SVGElement::ParseAttribute under Element::SetAttr,
   // which takes care of notifying.
 
-  nsresult rv2 = mBaseVal.CopyFrom(newBaseValue);
-  if (NS_FAILED(rv2)) {
-    // Attempting to increase mBaseVal's length failed (mBaseVal is left
-    // unmodified). We MUST keep any DOM wrappers in sync:
-    if (baseValWrapper) {
-      baseValWrapper->InternalListWillChangeTo(mBaseVal);
-    }
-    if (animValWrapper) {
-      animValWrapper->InternalListWillChangeTo(mBaseVal);
-    }
-    return rv2;
-  }
+  mBaseVal.SwapWith(newBaseValue);
   return rv;
 }
 
 void SVGAnimatedPathSegList::ClearBaseValue() {
-  // We must send these notifications *before* changing mBaseVal! (See above.)
+  if (StaticPrefs::dom_svg_pathSeg_enabled()) {
+    // We must send these notifications *before* changing mBaseVal! (See above.)
 
-  DOMSVGPathSegList* baseValWrapper =
-      DOMSVGPathSegList::GetDOMWrapperIfExists(GetBaseValKey());
-  if (baseValWrapper) {
-    baseValWrapper->InternalListWillChangeTo(SVGPathData());
-  }
+    DOMSVGPathSegList* baseValWrapper =
+        DOMSVGPathSegList::GetDOMWrapperIfExists(GetBaseValKey());
+    if (baseValWrapper) {
+      baseValWrapper->InternalListWillChangeTo(SVGPathData());
+    }
 
-  if (!IsAnimating()) {  // DOM anim val wraps our base val too!
-    DOMSVGPathSegList* animValWrapper =
-        DOMSVGPathSegList::GetDOMWrapperIfExists(GetAnimValKey());
-    if (animValWrapper) {
-      animValWrapper->InternalListWillChangeTo(SVGPathData());
+    if (!IsAnimating()) {  // DOM anim val wraps our base val too!
+      DOMSVGPathSegList* animValWrapper =
+          DOMSVGPathSegList::GetDOMWrapperIfExists(GetAnimValKey());
+      if (animValWrapper) {
+        animValWrapper->InternalListWillChangeTo(SVGPathData());
+      }
     }
   }
 
@@ -103,12 +95,14 @@ nsresult SVGAnimatedPathSegList::SetAnimValue(const SVGPathData& aNewAnimValue,
   // other DOM list classes, so this is a shame. We'd quite like to be able to
   // skip the call if possible.
 
-  // We must send these notifications *before* changing mAnimVal! (See above.)
+  if (StaticPrefs::dom_svg_pathSeg_enabled()) {
+    // We must send these notifications *before* changing mAnimVal! (See above.)
 
-  DOMSVGPathSegList* domWrapper =
-      DOMSVGPathSegList::GetDOMWrapperIfExists(GetAnimValKey());
-  if (domWrapper) {
-    domWrapper->InternalListWillChangeTo(aNewAnimValue);
+    DOMSVGPathSegList* domWrapper =
+        DOMSVGPathSegList::GetDOMWrapperIfExists(GetAnimValKey());
+    if (domWrapper) {
+      domWrapper->InternalListWillChangeTo(aNewAnimValue);
+    }
   }
   if (!mAnimVal) {
     mAnimVal = MakeUnique<SVGPathData>();
@@ -124,15 +118,17 @@ nsresult SVGAnimatedPathSegList::SetAnimValue(const SVGPathData& aNewAnimValue,
 }
 
 void SVGAnimatedPathSegList::ClearAnimValue(SVGElement* aElement) {
-  // We must send these notifications *before* changing mAnimVal! (See above.)
+  if (StaticPrefs::dom_svg_pathSeg_enabled()) {
+    // We must send these notifications *before* changing mAnimVal! (See above.)
 
-  DOMSVGPathSegList* domWrapper =
-      DOMSVGPathSegList::GetDOMWrapperIfExists(GetAnimValKey());
-  if (domWrapper) {
-    // When all animation ends, animVal simply mirrors baseVal, which may have
-    // a different number of items to the last active animated value.
-    //
-    domWrapper->InternalListWillChangeTo(mBaseVal);
+    DOMSVGPathSegList* domWrapper =
+        DOMSVGPathSegList::GetDOMWrapperIfExists(GetAnimValKey());
+    if (domWrapper) {
+      // When all animation ends, animVal simply mirrors baseVal, which may have
+      // a different number of items to the last active animated value.
+      //
+      domWrapper->InternalListWillChangeTo(mBaseVal);
+    }
   }
   mAnimVal = nullptr;
   aElement->DidAnimatePathSegList();
@@ -156,7 +152,6 @@ nsresult SVGAnimatedPathSegList::SMILAnimatedPathSegList::ValueFromString(
     list->SetElement(mElement);
     aValue = std::move(val);
   }
-  aPreventCachingOfSandwich = false;
   return rv;
 }
 
@@ -168,7 +163,7 @@ SMILValue SVGAnimatedPathSegList::SMILAnimatedPathSegList::GetBaseValue()
   SMILValue val;
 
   SMILValue tmp(SVGPathSegListSMILType::Singleton());
-  SVGPathDataAndInfo* list = static_cast<SVGPathDataAndInfo*>(tmp.mU.mPtr);
+  auto* list = static_cast<SVGPathDataAndInfo*>(tmp.mU.mPtr);
   nsresult rv = list->CopyFrom(mVal->mBaseVal);
   if (NS_SUCCEEDED(rv)) {
     list->SetElement(mElement);

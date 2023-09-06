@@ -22,13 +22,13 @@ process-type-extension = Ekstensi
 # process used to open file:// URLs
 process-type-file = Berkas Lokal
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Alokasi Besar
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Konten Web Terisolasi
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Pekerja Layanan Terisolasi
 
 # process preallocated; may change to other types
 process-type-prealloc = Teralokasikan
@@ -37,12 +37,21 @@ process-type-prealloc = Teralokasikan
 ## Localization for Gecko process types defined in GeckoProcessTypes.h
 ##
 
+process-type-default = Utama
+process-type-tab = Tab
+
 # process used to communicate with the GPU for
 # graphics acceleration
 process-type-gpu = GPU
 
 # process used to perform network operations
 process-type-socket = Soket
+
+# process used to decode media
+process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Aktor IPC dalam Kotak Pasir
 
 ##
 ## Other

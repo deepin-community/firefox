@@ -69,10 +69,9 @@ gfxCoreTextShaper::~gfxCoreTextShaper() {
   }
 }
 
-static bool IsBuggyIndicScript(unicode::Script aScript) {
-  return aScript == unicode::Script::BENGALI ||
-         aScript == unicode::Script::KANNADA ||
-         aScript == unicode::Script::ORIYA || aScript == unicode::Script::KHMER;
+static bool IsBuggyIndicScript(intl::Script aScript) {
+  return aScript == intl::Script::BENGALI || aScript == intl::Script::KANNADA ||
+         aScript == intl::Script::ORIYA || aScript == intl::Script::KHMER;
 }
 
 bool gfxCoreTextShaper::ShapeText(DrawTarget* aDrawTarget,
@@ -94,7 +93,7 @@ bool gfxCoreTextShaper::ShapeText(DrawTarget* aDrawTarget,
   // among them.
   const gfxFontStyle* style = mFont->GetStyle();
   gfxFontEntry* entry = mFont->GetFontEntry();
-  auto handleFeatureTag = [](const uint32_t& aTag, uint32_t& aValue,
+  auto handleFeatureTag = [](uint32_t aTag, uint32_t aValue,
                              void* aUserArg) -> void {
     if (aTag == HB_TAG('s', 'm', 'c', 'p') && aValue) {
       *static_cast<bool*>(aUserArg) = true;

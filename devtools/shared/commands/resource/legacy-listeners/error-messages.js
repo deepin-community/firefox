@@ -4,16 +4,16 @@
 
 "use strict";
 
-const ResourceCommand = require("devtools/shared/commands/resource/resource-command");
-const { MESSAGE_CATEGORY } = require("devtools/shared/constants");
+const ResourceCommand = require("resource://devtools/shared/commands/resource/resource-command.js");
+const { MESSAGE_CATEGORY } = require("resource://devtools/shared/constants.js");
 
-module.exports = async function({ targetCommand, targetFront, onAvailable }) {
+module.exports = async function ({ targetCommand, targetFront, onAvailable }) {
   // Allow the top level target unconditionnally.
   // Also allow frame, but only in content toolbox, i.e. still ignore them in
   // the context of the browser toolbox as we inspect messages via the process
   // targets
   // Also ignore workers as they are not supported yet. (see bug 1592584)
-  const listenForFrames = targetCommand.descriptorFront.isLocalTab;
+  const listenForFrames = targetCommand.descriptorFront.isTabDescriptor;
   const isAllowed =
     targetFront.isTopLevel ||
     targetFront.targetType === targetCommand.TYPES.PROCESS ||

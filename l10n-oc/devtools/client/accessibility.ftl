@@ -13,6 +13,26 @@ accessibility-keyboard-header = Clavièr
 
 ## Text entries that are used as text alternative for icons that depict accessibility isses.
 
+
+## These strings are used in the overlay displayed when running an audit in the accessibility panel
+
+accessibility-progress-initializing = Initializacion…
+    .aria-valuetext = Initializacion…
+
+# This string is displayed in the audit progress bar in the accessibility panel.
+# Variables:
+#   $nodeCount (Integer) - The number of nodes for which the audit was run so far.
+accessibility-progress-progressbar =
+    { $nodeCount ->
+        [one] Verificacion d’un nos
+       *[other] Verificacion de { $nodeCount } noses
+    }
+
+accessibility-progress-finishing = Finiment…
+    .aria-valuetext = Finiment…
+
+## Text entries that are used as text alternative for icons that depict accessibility issues.
+
 accessibility-warning =
     .alt = Avertiment
 
@@ -66,14 +86,14 @@ accessibility-text-label-issue-toolbar = Las barras d’aisinas devon èsser eti
 ## that describe that currently selected accessible object has a keyboard accessibility
 ## issue.
 
-accessibility-keyboard-issue-semantics = Los elements que pòdon aver lo focus devon téner una semantica interactiva. <a>Ne saber mai</a>
+accessibility-keyboard-issue-semantics = Los elements que pòdon aver lo fòcus devon téner una semantica interactiva. <a>Ne saber mai</a>
 
 accessibility-keyboard-issue-tabindex = Evitatz d’utilizar un atribut <code>tabindex</code> superior a zèro. <a>Ne saber mai</a>
 
 accessibility-keyboard-issue-action = Los elements interactius devon poder s’activar en utilizant un clavièr. <a>Ne saber mai</a>
 
-accessibility-keyboard-issue-focusable = Los elements interactius devon poder obténer lo focus. <a>Ne saber mai</a>
+accessibility-keyboard-issue-focusable = Los elements interactius devon poder obténer lo fòcus. <a>Ne saber mai</a>
 
-accessibility-keyboard-issue-focus-visible = Se pòt qu’un element que pòt aver lo focus aja pas un estil ligat al focus. <a>Ne saber mai</a>
+accessibility-keyboard-issue-focus-visible = Se pòt qu’un element que pòt aver lo fòcus aja pas un estil ligat al fòcus. <a>Ne saber mai</a>
 
-accessibility-keyboard-issue-mouse-only = Los elements clicables devon poder obténer lo focus e téner una semantica interactiva. <a>Ne saber mai</a>
+accessibility-keyboard-issue-mouse-only = Los elements clicables devon poder obténer lo fòcus e téner una semantica interactiva. <a>Ne saber mai</a>

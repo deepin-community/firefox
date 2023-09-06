@@ -10,12 +10,9 @@ const TEST_URI =
   "<p>bug 699308 - test iframe navigation</p>" +
   "<iframe src='data:text/html;charset=utf-8,hello world'></iframe>";
 
-add_task(async function() {
-  const {
-    inspector,
-    toolbox,
-    highlighterTestFront,
-  } = await openInspectorForURL(TEST_URI);
+add_task(async function () {
+  const { inspector, toolbox, highlighterTestFront } =
+    await openInspectorForURL(TEST_URI);
 
   info("Starting element picker.");
   await startPicker(toolbox);
@@ -26,25 +23,36 @@ add_task(async function() {
   let isVisible = await highlighterTestFront.isHighlighting();
   ok(isVisible, "Inspector is highlighting.");
 
-  await reloadIframe();
+  await reloadIframe(inspector);
   info("Frame reloaded. Reloading again.");
 
-  await reloadIframe();
+  await reloadIframe(inspector);
   info("Frame reloaded twice.");
 
   isVisible = await highlighterTestFront.isHighlighting();
   ok(isVisible, "Inspector is highlighting after iframe nav.");
 
   info("Stopping element picker.");
-  await toolbox.nodePicker.stop();
+  await toolbox.nodePicker.stop({ canceled: true });
 });
 
-function reloadIframe() {
-  return SpecialPowers.spawn(gBrowser.selectedBrowser, [], async () => {
+async function reloadIframe(inspector) {
+  const { resourceCommand } = inspector.commands;
+
+  const { onResource: onNewRoot } = await resourceCommand.waitForNextResource(
+    resourceCommand.TYPES.ROOT_NODE,
+    {
+      ignoreExistingResources: true,
+    }
+  );
+
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async () => {
     const iframeEl = content.document.querySelector("iframe");
     await new Promise(resolve => {
       iframeEl.addEventListener("load", () => resolve(), { once: true });
       iframeEl.contentWindow.location.reload();
     });
   });
+
+  await onNewRoot;
 }

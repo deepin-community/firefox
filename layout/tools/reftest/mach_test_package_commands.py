@@ -2,16 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, unicode_literals, print_function
-
 import os
 import sys
 from argparse import Namespace
 from functools import partial
 
-from mach.decorators import (
-    Command,
-)
+from mach.decorators import Command
 
 here = os.path.abspath(os.path.dirname(__file__))
 logger = None
@@ -61,7 +57,7 @@ def run_reftest_desktop(context, args):
 def run_reftest_android(context, args):
     from remotereftest import run_test_harness
 
-    args.app = args.app or "org.mozilla.geckoview.test"
+    args.app = args.app or "org.mozilla.geckoview.test_runner"
     args.utilityPath = context.hostutils
     args.xrePath = context.hostutils
     args.httpdPath = context.module_dir

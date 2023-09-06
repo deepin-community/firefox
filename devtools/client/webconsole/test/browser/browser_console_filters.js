@@ -6,9 +6,10 @@
 
 "use strict";
 
-const TEST_URI = "data:text/html;charset=utf8,<p>browser console filters";
+const TEST_URI =
+  "data:text/html;charset=utf8,<!DOCTYPE html><p>browser console filters";
 
-add_task(async function() {
+add_task(async function () {
   let hud = await openNewTabAndConsole(TEST_URI);
   ok(hud, "web console opened");
 

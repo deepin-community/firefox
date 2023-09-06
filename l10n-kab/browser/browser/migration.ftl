@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Iminig aɣelsan
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Ulac aseɣẓan i igebren ticraḍ n yisebtar, azray, neɣ awalen uffiren ikelsen.
 
@@ -60,9 +72,6 @@ import-items-page-title = Iferdisen ara yettwaketren
 import-items-description = Fren iferdisen ara yettwaketren:
 
 import-permissions-page-title = Ma ulac aɣilif, mudd tisirag i { -brand-short-name }
-
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS yesra ad tsirgeḍ s uwekked n tidet { -brand-short-name } ad yekcem ɣer tecraḍ n yisebtar n Safari. sit ɣef “Kemmel” syen ɣef ufaylu “Bookmarks.plist” deg ugalis n twaledyawt n yifuyla i d-ibanen.
 
 import-migrating-page-title = Aktar…
 
@@ -78,23 +87,9 @@ import-done-description = Iferdisen-a ttwaketren akken iwata:
 
 import-close-source-browser = Ma ulac aɣilif, wali ma yella iminig-inek yemdel send ad tedduḍ deg umahil-inek.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Sɣur { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Iminig aɣelsan
 
 imported-safari-reading-list = Tabdart n tɣuṛi (seg Safari)
 imported-edge-reading-list = Tabdart n tɣuṛi (seg Safari)
@@ -169,3 +164,8 @@ browser-data-session-checkbox =
     .label = Isfuyla d yiccaren
 browser-data-session-label =
     .value = Isfuyla d yiccaren
+
+browser-data-payment-methods-checkbox =
+    .label = Tarrayin n uxelleṣ
+browser-data-payment-methods-label =
+    .value = Tarrayin n uxelleṣ

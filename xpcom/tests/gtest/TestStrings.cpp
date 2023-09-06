@@ -22,6 +22,7 @@
 #include "gtest/MozGTestBench.h"  // For MOZ_GTEST_BENCH
 #include "gtest/BlackBox.h"
 #include "nsBidiUtils.h"
+#include "js/String.h"
 
 #define CONVERSION_ITERATIONS 50000
 
@@ -45,6 +46,9 @@ using mozilla::BlackBox;
 using mozilla::fallible;
 using mozilla::IsAscii;
 using mozilla::IsUtf8;
+using mozilla::Maybe;
+using mozilla::Nothing;
+using mozilla::Some;
 using mozilla::Span;
 
 #define TestExample1                                                           \
@@ -612,33 +616,42 @@ TEST_F(Strings, test2) {
 TEST_F(Strings, find) {
   nsCString src("<!DOCTYPE blah blah blah>");
 
-  int32_t i = src.Find("DOCTYPE", true, 2, 1);
+  int32_t i = src.Find("DOCTYPE", 2);
+  EXPECT_EQ(i, 2);
+
+  i = src.Find("DOCTYPE");
+  EXPECT_EQ(i, 2);
+}
+
+TEST_F(Strings, lower_case_find) {
+  nsCString src("<!DOCTYPE blah blah blah>");
+
+  int32_t i = src.LowerCaseFindASCII("doctype", 2);
+  EXPECT_EQ(i, 2);
+
+  i = src.LowerCaseFindASCII("doctype");
   EXPECT_EQ(i, 2);
 }
 
 TEST_F(Strings, rfind) {
-  const char text[] = "<!DOCTYPE blah blah blah>";
-  const char term[] = "bLaH";
+  const char text[] = "<!DOCTYPE blah bLaH bLaH>";
   nsCString src(text);
   int32_t i;
 
-  i = src.RFind(term, true, 3, -1);
-  EXPECT_EQ(i, kNotFound);
-
-  i = src.RFind(term, true, -1, -1);
+  i = src.RFind("bLaH");
   EXPECT_EQ(i, 20);
 
-  i = src.RFind(term, true, 13, -1);
+  i = src.RFind("blah");
   EXPECT_EQ(i, 10);
 
-  i = src.RFind(term, true, 22, 3);
-  EXPECT_EQ(i, 20);
+  i = src.RFind("BLAH");
+  EXPECT_EQ(i, kNotFound);
 }
 
 TEST_F(Strings, rfind_2) {
   const char text[] = "<!DOCTYPE blah blah blah>";
   nsCString src(text);
-  int32_t i = src.RFind("TYPE", false, 5, -1);
+  int32_t i = src.RFind("TYPE");
   EXPECT_EQ(i, 5);
 }
 
@@ -1440,192 +1453,223 @@ TEST_F(Strings, bulk_write_fail) {
 }
 
 TEST_F(Strings, huge_capacity) {
-  nsString a, b, c, d, e, f, g, h, i, j, k, l, m, n;
-  nsCString n1;
+  nsString a, b, c, d, e, f, g, h, i, j, k, l, m, n, o;
+  nsCString n1, o1;
 
   // Ignore the result if the address space is less than 64-bit because
   // some of the allocations above will exhaust the address space.
   if (sizeof(void*) >= 8) {
     EXPECT_TRUE(a.SetCapacity(1, fallible));
-    EXPECT_FALSE(a.SetCapacity(nsString::size_type(-1) / 2, fallible));
+    EXPECT_FALSE(a.SetCapacity(uint32_t(-1) / 2, fallible));
     a.Truncate();  // free the allocated memory
 
     EXPECT_TRUE(b.SetCapacity(1, fallible));
-    EXPECT_FALSE(b.SetCapacity(nsString::size_type(-1) / 2 - 1, fallible));
+    EXPECT_FALSE(b.SetCapacity(uint32_t(-1) / 2 - 1, fallible));
     b.Truncate();
 
     EXPECT_TRUE(c.SetCapacity(1, fallible));
-    EXPECT_FALSE(c.SetCapacity(nsString::size_type(-1) / 2, fallible));
+    EXPECT_FALSE(c.SetCapacity(uint32_t(-1) / 2, fallible));
     c.Truncate();
 
-    EXPECT_FALSE(d.SetCapacity(nsString::size_type(-1) / 2 - 1, fallible));
-    EXPECT_FALSE(d.SetCapacity(nsString::size_type(-1) / 2, fallible));
+    EXPECT_FALSE(d.SetCapacity(uint32_t(-1) / 2 - 1, fallible));
+    EXPECT_FALSE(d.SetCapacity(uint32_t(-1) / 2, fallible));
     d.Truncate();
 
-    EXPECT_FALSE(e.SetCapacity(nsString::size_type(-1) / 4, fallible));
-    EXPECT_FALSE(e.SetCapacity(nsString::size_type(-1) / 4 + 1, fallible));
+    EXPECT_FALSE(e.SetCapacity(uint32_t(-1) / 4, fallible));
+    EXPECT_FALSE(e.SetCapacity(uint32_t(-1) / 4 + 1, fallible));
     e.Truncate();
 
-    EXPECT_FALSE(f.SetCapacity(nsString::size_type(-1) / 2, fallible));
+    EXPECT_FALSE(f.SetCapacity(uint32_t(-1) / 2, fallible));
     f.Truncate();
 
-    EXPECT_FALSE(g.SetCapacity(nsString::size_type(-1) / 4 + 1000, fallible));
-    EXPECT_FALSE(g.SetCapacity(nsString::size_type(-1) / 4 + 1001, fallible));
+    EXPECT_FALSE(g.SetCapacity(uint32_t(-1) / 4 + 1000, fallible));
+    EXPECT_FALSE(g.SetCapacity(uint32_t(-1) / 4 + 1001, fallible));
     g.Truncate();
 
-    EXPECT_FALSE(h.SetCapacity(nsString::size_type(-1) / 4 + 1, fallible));
-    EXPECT_FALSE(h.SetCapacity(nsString::size_type(-1) / 2, fallible));
+    EXPECT_FALSE(h.SetCapacity(uint32_t(-1) / 4 + 1, fallible));
+    EXPECT_FALSE(h.SetCapacity(uint32_t(-1) / 2, fallible));
     h.Truncate();
 
     EXPECT_TRUE(i.SetCapacity(1, fallible));
-    EXPECT_TRUE(i.SetCapacity(nsString::size_type(-1) / 4 - 1000, fallible));
-    EXPECT_FALSE(i.SetCapacity(nsString::size_type(-1) / 4 + 1, fallible));
+    EXPECT_TRUE(i.SetCapacity(uint32_t(-1) / 4 - 1000, fallible));
+    EXPECT_FALSE(i.SetCapacity(uint32_t(-1) / 4 + 1, fallible));
     i.Truncate();
 
-    EXPECT_TRUE(j.SetCapacity(nsString::size_type(-1) / 4 - 1000, fallible));
-    EXPECT_FALSE(j.SetCapacity(nsString::size_type(-1) / 4 + 1, fallible));
+    EXPECT_TRUE(j.SetCapacity(uint32_t(-1) / 4 - 1000, fallible));
+    EXPECT_FALSE(j.SetCapacity(uint32_t(-1) / 4 + 1, fallible));
     j.Truncate();
 
 // Disabled due to intermittent failures.
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1493458
 #if 0
-    EXPECT_TRUE(k.SetCapacity(nsString::size_type(-1)/8 - 1000, fallible));
-    EXPECT_TRUE(k.SetCapacity(nsString::size_type(-1)/4 - 1001, fallible));
-    EXPECT_TRUE(k.SetCapacity(nsString::size_type(-1)/4 - 998, fallible));
-    EXPECT_FALSE(k.SetCapacity(nsString::size_type(-1)/4 + 1, fallible));
+    EXPECT_TRUE(k.SetCapacity(uint32_t(-1)/8 - 1000, fallible));
+    EXPECT_TRUE(k.SetCapacity(uint32_t(-1)/4 - 1001, fallible));
+    EXPECT_TRUE(k.SetCapacity(uint32_t(-1)/4 - 998, fallible));
+    EXPECT_FALSE(k.SetCapacity(uint32_t(-1)/4 + 1, fallible));
     k.Truncate();
 #endif
 
-    EXPECT_TRUE(l.SetCapacity(nsString::size_type(-1) / 8, fallible));
-    EXPECT_TRUE(l.SetCapacity(nsString::size_type(-1) / 8 + 1, fallible));
-    EXPECT_TRUE(l.SetCapacity(nsString::size_type(-1) / 8 + 2, fallible));
+    EXPECT_TRUE(l.SetCapacity(uint32_t(-1) / 8, fallible));
+    EXPECT_TRUE(l.SetCapacity(uint32_t(-1) / 8 + 1, fallible));
+    EXPECT_TRUE(l.SetCapacity(uint32_t(-1) / 8 + 2, fallible));
     l.Truncate();
 
-    EXPECT_TRUE(m.SetCapacity(nsString::size_type(-1) / 8 + 1000, fallible));
-    EXPECT_TRUE(m.SetCapacity(nsString::size_type(-1) / 8 + 1001, fallible));
+    EXPECT_TRUE(m.SetCapacity(uint32_t(-1) / 8 + 1000, fallible));
+    EXPECT_TRUE(m.SetCapacity(uint32_t(-1) / 8 + 1001, fallible));
     m.Truncate();
 
-    EXPECT_TRUE(n.SetCapacity(nsString::size_type(-1) / 8 + 1, fallible));
-    EXPECT_FALSE(n.SetCapacity(nsString::size_type(-1) / 4, fallible));
+    EXPECT_TRUE(n.SetCapacity(uint32_t(-1) / 8 + 1, fallible));
+    EXPECT_FALSE(n.SetCapacity(uint32_t(-1) / 4, fallible));
     n.Truncate();
 
     n.Truncate();
-    EXPECT_TRUE(n.SetCapacity(
-        (nsString::size_type(-1) / 2 - sizeof(nsStringBuffer)) / 2 - 2,
-        fallible));
+    EXPECT_TRUE(n.SetCapacity((uint32_t(-1) / 2) / 2 - 1, fallible));
     n.Truncate();
-    EXPECT_FALSE(n.SetCapacity(
-        (nsString::size_type(-1) / 2 - sizeof(nsStringBuffer)) / 2 - 1,
-        fallible));
+    EXPECT_FALSE(n.SetCapacity((uint32_t(-1) / 2) / 2, fallible));
     n.Truncate();
     n1.Truncate();
-    EXPECT_TRUE(n1.SetCapacity(
-        (nsCString::size_type(-1) / 2 - sizeof(nsStringBuffer)) / 1 - 2,
-        fallible));
+    EXPECT_TRUE(n1.SetCapacity((uint32_t(-1) / 2) / 1 - 1, fallible));
     n1.Truncate();
-    EXPECT_FALSE(n1.SetCapacity(
-        (nsCString::size_type(-1) / 2 - sizeof(nsStringBuffer)) / 1 - 1,
-        fallible));
+    EXPECT_FALSE(n1.SetCapacity((uint32_t(-1) / 2) / 1, fallible));
     n1.Truncate();
+
+    // The longest possible JS string should fit within both a `nsString` and
+    // nsCString.
+    EXPECT_TRUE(o.SetCapacity(JS::MaxStringLength, fallible));
+    o.Truncate();
+    EXPECT_TRUE(o1.SetCapacity(JS::MaxStringLength, fallible));
+    o1.Truncate();
   }
 }
 
-static void test_tofloat_helper(const nsString& aStr, float aExpected,
-                                bool aSuccess) {
+static void test_tofloat_helper(const nsString& aStr,
+                                mozilla::Maybe<float> aExpected) {
   nsresult result;
-  EXPECT_EQ(aStr.ToFloat(&result), aExpected);
-  if (aSuccess) {
-    EXPECT_EQ(result, NS_OK);
+  float value = aStr.ToFloat(&result);
+  if (aExpected) {
+    EXPECT_TRUE(NS_SUCCEEDED(result));
+    EXPECT_EQ(value, *aExpected);
   } else {
-    EXPECT_NE(result, NS_OK);
+    EXPECT_TRUE(NS_FAILED(result));
   }
 }
 
 TEST_F(Strings, tofloat) {
-  test_tofloat_helper(u"42"_ns, 42.f, true);
-  test_tofloat_helper(u"42.0"_ns, 42.f, true);
-  test_tofloat_helper(u"-42"_ns, -42.f, true);
-  test_tofloat_helper(u"+42"_ns, 42, true);
-  test_tofloat_helper(u"13.37"_ns, 13.37f, true);
-  test_tofloat_helper(u"1.23456789"_ns, 1.23456789f, true);
-  test_tofloat_helper(u"1.98765432123456"_ns, 1.98765432123456f, true);
-  test_tofloat_helper(u"0"_ns, 0.f, true);
-  test_tofloat_helper(u"1.e5"_ns, 100000, true);
-  test_tofloat_helper(u""_ns, 0.f, false);
-  test_tofloat_helper(u"42foo"_ns, 42.f, false);
-  test_tofloat_helper(u"foo"_ns, 0.f, false);
-  test_tofloat_helper(u"1.5e-"_ns, 1.5f, false);
+  test_tofloat_helper(u"42"_ns, Some(42.f));
+  test_tofloat_helper(u"42.0"_ns, Some(42.f));
+  test_tofloat_helper(u"-42"_ns, Some(-42.f));
+  test_tofloat_helper(u"+42"_ns, Some(42));
+  test_tofloat_helper(u"13.37"_ns, Some(13.37f));
+  test_tofloat_helper(u"1.23456789"_ns, Some(1.23456789f));
+  test_tofloat_helper(u"1.98765432123456"_ns, Some(1.98765432123456f));
+  test_tofloat_helper(u"0"_ns, Some(0.f));
+  test_tofloat_helper(u"1.e5"_ns, Some(100000));
+  test_tofloat_helper(u""_ns, Nothing());
+  test_tofloat_helper(u"42foo"_ns, Nothing());
+  test_tofloat_helper(u"foo"_ns, Nothing());
+  test_tofloat_helper(u"1.5e-"_ns, Nothing());
+
+  // Leading spaces are ignored
+  test_tofloat_helper(u"  \t5"_ns, Some(5.f));
+
+  // Values which are too large generate an error
+  test_tofloat_helper(u"3.402823e38"_ns, Some(3.402823e+38));
+  test_tofloat_helper(u"1e39"_ns, Nothing());
+  test_tofloat_helper(u"-3.402823e38"_ns, Some(-3.402823e+38));
+  test_tofloat_helper(u"-1e39"_ns, Nothing());
+
+  // Values which are too small round to zero
+  test_tofloat_helper(u"1.4013e-45"_ns, Some(1.4013e-45f));
+  test_tofloat_helper(u"1e-46"_ns, Some(0.f));
+  test_tofloat_helper(u"-1.4013e-45"_ns, Some(-1.4013e-45f));
+  test_tofloat_helper(u"-1e-46"_ns, Some(-0.f));
 }
 
 static void test_tofloat_allow_trailing_chars_helper(const nsString& aStr,
-                                                     float aExpected,
-                                                     bool aSuccess) {
+                                                     Maybe<float> aExpected) {
   nsresult result;
-  EXPECT_EQ(aStr.ToFloatAllowTrailingChars(&result), aExpected);
-  if (aSuccess) {
-    EXPECT_EQ(result, NS_OK);
+  float value = aStr.ToFloatAllowTrailingChars(&result);
+  if (aExpected) {
+    EXPECT_TRUE(NS_SUCCEEDED(result));
+    EXPECT_EQ(value, *aExpected);
   } else {
-    EXPECT_NE(result, NS_OK);
+    EXPECT_TRUE(NS_FAILED(result));
   }
 }
 
 TEST_F(Strings, ToFloatAllowTrailingChars) {
-  test_tofloat_allow_trailing_chars_helper(u""_ns, 0.f, false);
-  test_tofloat_allow_trailing_chars_helper(u"foo"_ns, 0.f, false);
-  test_tofloat_allow_trailing_chars_helper(u"42foo"_ns, 42.f, true);
-  test_tofloat_allow_trailing_chars_helper(u"42-5"_ns, 42.f, true);
-  test_tofloat_allow_trailing_chars_helper(u"13.37.8"_ns, 13.37f, true);
-  test_tofloat_allow_trailing_chars_helper(u"1.5e-"_ns, 1.5f, true);
+  test_tofloat_allow_trailing_chars_helper(u""_ns, Nothing());
+  test_tofloat_allow_trailing_chars_helper(u"foo"_ns, Nothing());
+  test_tofloat_allow_trailing_chars_helper(u"42foo"_ns, Some(42.f));
+  test_tofloat_allow_trailing_chars_helper(u"42-5"_ns, Some(42.f));
+  test_tofloat_allow_trailing_chars_helper(u"13.37.8"_ns, Some(13.37f));
+  test_tofloat_allow_trailing_chars_helper(u"1.5e-"_ns, Some(1.5f));
 }
 
-static void test_todouble_helper(const nsString& aStr, double aExpected,
-                                 bool aSuccess) {
+static void test_todouble_helper(const nsString& aStr,
+                                 Maybe<double> aExpected) {
   nsresult result;
-  EXPECT_EQ(aStr.ToDouble(&result), aExpected);
-  if (aSuccess) {
-    EXPECT_EQ(result, NS_OK);
+  double value = aStr.ToDouble(&result);
+  if (aExpected) {
+    EXPECT_TRUE(NS_SUCCEEDED(result));
+    EXPECT_EQ(value, *aExpected);
   } else {
-    EXPECT_NE(result, NS_OK);
+    EXPECT_TRUE(NS_FAILED(result));
   }
 }
 
 TEST_F(Strings, todouble) {
-  test_todouble_helper(u"42"_ns, 42, true);
-  test_todouble_helper(u"42.0"_ns, 42, true);
-  test_todouble_helper(u"-42"_ns, -42, true);
-  test_todouble_helper(u"+42"_ns, 42, true);
-  test_todouble_helper(u"13.37"_ns, 13.37, true);
-  test_todouble_helper(u"1.23456789"_ns, 1.23456789, true);
-  test_todouble_helper(u"1.98765432123456"_ns, 1.98765432123456, true);
-  test_todouble_helper(u"123456789.98765432123456"_ns, 123456789.98765432123456,
-                       true);
-  test_todouble_helper(u"0"_ns, 0, true);
-  test_todouble_helper(u"1.e5"_ns, 100000, true);
-  test_todouble_helper(u""_ns, 0, false);
-  test_todouble_helper(u"42foo"_ns, 42, false);
-  test_todouble_helper(u"foo"_ns, 0, false);
-  test_todouble_helper(u"1.5e-"_ns, 1.5, false);
+  test_todouble_helper(u"42"_ns, Some(42));
+  test_todouble_helper(u"42.0"_ns, Some(42));
+  test_todouble_helper(u"-42"_ns, Some(-42));
+  test_todouble_helper(u"+42"_ns, Some(42));
+  test_todouble_helper(u"13.37"_ns, Some(13.37));
+  test_todouble_helper(u"1.23456789"_ns, Some(1.23456789));
+  test_todouble_helper(u"1.98765432123456"_ns, Some(1.98765432123456));
+  test_todouble_helper(u"123456789.98765432123456"_ns,
+                       Some(123456789.98765432123456));
+  test_todouble_helper(u"0"_ns, Some(0));
+  test_todouble_helper(u"1.e5"_ns, Some(100000));
+  test_todouble_helper(u""_ns, Nothing());
+  test_todouble_helper(u"42foo"_ns, Nothing());
+  test_todouble_helper(u"foo"_ns, Nothing());
+  test_todouble_helper(u"1.5e-"_ns, Nothing());
+
+  // Leading spaces are ignored
+  test_todouble_helper(u"  \t5"_ns, Some(5.));
+
+  // Values which are too large generate an error
+  test_todouble_helper(u"1.797693e+308"_ns, Some(1.797693e+308));
+  test_todouble_helper(u"1e309"_ns, Nothing());
+  test_todouble_helper(u"-1.797693e+308"_ns, Some(-1.797693e+308));
+  test_todouble_helper(u"-1e309"_ns, Nothing());
+
+  // Values which are too small round to zero
+  test_todouble_helper(u"4.940656e-324"_ns, Some(4.940656e-324));
+  test_todouble_helper(u"1e-325"_ns, Some(0.));
+  test_todouble_helper(u"-4.940656e-324"_ns, Some(-4.940656e-324));
+  test_todouble_helper(u"-1e-325"_ns, Some(-0.));
 }
 
 static void test_todouble_allow_trailing_chars_helper(const nsString& aStr,
-                                                      double aExpected,
-                                                      bool aSuccess) {
+                                                      Maybe<double> aExpected) {
   nsresult result;
-  EXPECT_EQ(aStr.ToDoubleAllowTrailingChars(&result), aExpected);
-  if (aSuccess) {
-    EXPECT_EQ(result, NS_OK);
+  double value = aStr.ToDoubleAllowTrailingChars(&result);
+  if (aExpected) {
+    EXPECT_TRUE(NS_SUCCEEDED(result));
+    EXPECT_EQ(value, *aExpected);
   } else {
-    EXPECT_NE(result, NS_OK);
+    EXPECT_TRUE(NS_FAILED(result));
   }
 }
 
 TEST_F(Strings, ToDoubleAllowTrailingChars) {
-  test_todouble_allow_trailing_chars_helper(u""_ns, 0, false);
-  test_todouble_allow_trailing_chars_helper(u"foo"_ns, 0, false);
-  test_todouble_allow_trailing_chars_helper(u"42foo"_ns, 42, true);
-  test_todouble_allow_trailing_chars_helper(u"42-5"_ns, 42, true);
-  test_todouble_allow_trailing_chars_helper(u"13.37.8"_ns, 13.37, true);
-  test_todouble_allow_trailing_chars_helper(u"1.5e-"_ns, 1.5, true);
+  test_todouble_allow_trailing_chars_helper(u""_ns, Nothing());
+  test_todouble_allow_trailing_chars_helper(u"foo"_ns, Nothing());
+  test_todouble_allow_trailing_chars_helper(u"42foo"_ns, Some(42));
+  test_todouble_allow_trailing_chars_helper(u"42-5"_ns, Some(42));
+  test_todouble_allow_trailing_chars_helper(u"13.37.8"_ns, Some(13.37));
+  test_todouble_allow_trailing_chars_helper(u"1.5e-"_ns, Some(1.5));
 }
 
 TEST_F(Strings, Split) {
@@ -2049,6 +2093,23 @@ TEST_F(Strings, ConvertToSpan) {
     static_assert(std::is_same_v<decltype(span), Span<char>>);
   }
 }
+
+template <typename T>
+void InsertSpanHelper() {
+  T str1, str2;
+  str1.AssignLiteral("hello world");
+  str2.AssignLiteral("span ");
+
+  T expect;
+  expect.AssignLiteral("hello span world");
+
+  Span span(str2);
+  str1.Insert(span, 6);
+  EXPECT_TRUE(str1.Equals(expect));
+}
+
+TEST_F(Strings, InsertSpan) { InsertSpanHelper<nsCString>(); }
+TEST_F(Strings, InsertSpanW) { InsertSpanHelper<nsString>(); }
 
 TEST_F(Strings, TokenizedRangeEmpty) {
   // 8-bit strings

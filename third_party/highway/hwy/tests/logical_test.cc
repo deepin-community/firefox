@@ -1,4 +1,5 @@
 // Copyright 2019 Google LLC
+// SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>  // memcmp
-
-#include "hwy/base.h"
-
 #undef HWY_TARGET_INCLUDE
 #define HWY_TARGET_INCLUDE "tests/logical_test.cc"
-#include "hwy/foreach_target.h"
-
+#include "hwy/foreach_target.h"  // IWYU pragma: keep
 #include "hwy/highway.h"
 #include "hwy/tests/test_util-inl.h"
 
@@ -29,64 +23,47 @@ HWY_BEFORE_NAMESPACE();
 namespace hwy {
 namespace HWY_NAMESPACE {
 
-struct TestLogicalInteger {
+struct TestNot {
   template <class T, class D>
   HWY_NOINLINE void operator()(T /*unused*/, D d) {
     const auto v0 = Zero(d);
-    const auto vi = Iota(d, 0);
     const auto ones = VecFromMask(d, Eq(v0, v0));
     const auto v1 = Set(d, 1);
-    const auto vnot1 = Set(d, ~T(1));
+    const auto vnot1 = Set(d, T(~T(1)));
 
     HWY_ASSERT_VEC_EQ(d, v0, Not(ones));
     HWY_ASSERT_VEC_EQ(d, ones, Not(v0));
     HWY_ASSERT_VEC_EQ(d, v1, Not(vnot1));
     HWY_ASSERT_VEC_EQ(d, vnot1, Not(v1));
-
-    HWY_ASSERT_VEC_EQ(d, v0, And(v0, vi));
-    HWY_ASSERT_VEC_EQ(d, v0, And(vi, v0));
-    HWY_ASSERT_VEC_EQ(d, vi, And(vi, vi));
-
-    HWY_ASSERT_VEC_EQ(d, vi, Or(v0, vi));
-    HWY_ASSERT_VEC_EQ(d, vi, Or(vi, v0));
-    HWY_ASSERT_VEC_EQ(d, vi, Or(vi, vi));
-
-    HWY_ASSERT_VEC_EQ(d, vi, Xor(v0, vi));
-    HWY_ASSERT_VEC_EQ(d, vi, Xor(vi, v0));
-    HWY_ASSERT_VEC_EQ(d, v0, Xor(vi, vi));
-
-    HWY_ASSERT_VEC_EQ(d, vi, AndNot(v0, vi));
-    HWY_ASSERT_VEC_EQ(d, v0, AndNot(vi, v0));
-    HWY_ASSERT_VEC_EQ(d, v0, AndNot(vi, vi));
-
-    auto v = vi;
-    v = And(v, vi);
-    HWY_ASSERT_VEC_EQ(d, vi, v);
-    v = And(v, v0);
-    HWY_ASSERT_VEC_EQ(d, v0, v);
-
-    v = Or(v, vi);
-    HWY_ASSERT_VEC_EQ(d, vi, v);
-    v = Or(v, v0);
-    HWY_ASSERT_VEC_EQ(d, vi, v);
-
-    v = Xor(v, vi);
-    HWY_ASSERT_VEC_EQ(d, v0, v);
-    v = Xor(v, v0);
-    HWY_ASSERT_VEC_EQ(d, v0, v);
   }
 };
 
-HWY_NOINLINE void TestAllLogicalInteger() {
-  ForIntegerTypes(ForPartialVectors<TestLogicalInteger>());
+HWY_NOINLINE void TestAllNot() {
+  ForIntegerTypes(ForPartialVectors<TestNot>());
 }
 
-struct TestLogicalFloat {
+struct TestLogical {
   template <class T, class D>
   HWY_NOINLINE void operator()(T /*unused*/, D d) {
     const auto v0 = Zero(d);
     const auto vi = Iota(d, 0);
 
+    auto v = vi;
+    v = And(v, vi);
+    HWY_ASSERT_VEC_EQ(d, vi, v);
+    v = And(v, v0);
+    HWY_ASSERT_VEC_EQ(d, v0, v);
+
+    v = Or(v, vi);
+    HWY_ASSERT_VEC_EQ(d, vi, v);
+    v = Or(v, v0);
+    HWY_ASSERT_VEC_EQ(d, vi, v);
+
+    v = Xor(v, vi);
+    HWY_ASSERT_VEC_EQ(d, v0, v);
+    v = Xor(v, v0);
+    HWY_ASSERT_VEC_EQ(d, v0, v);
+
     HWY_ASSERT_VEC_EQ(d, v0, And(v0, vi));
     HWY_ASSERT_VEC_EQ(d, v0, And(vi, v0));
     HWY_ASSERT_VEC_EQ(d, vi, And(vi, vi));
@@ -103,26 +80,37 @@ struct TestLogicalFloat {
     HWY_ASSERT_VEC_EQ(d, v0, AndNot(vi, v0));
     HWY_ASSERT_VEC_EQ(d, v0, AndNot(vi, vi));
 
-    auto v = vi;
-    v = And(v, vi);
-    HWY_ASSERT_VEC_EQ(d, vi, v);
-    v = And(v, v0);
-    HWY_ASSERT_VEC_EQ(d, v0, v);
+    HWY_ASSERT_VEC_EQ(d, v0, Or3(v0, v0, v0));
+    HWY_ASSERT_VEC_EQ(d, vi, Or3(v0, vi, v0));
+    HWY_ASSERT_VEC_EQ(d, vi, Or3(v0, v0, vi));
+    HWY_ASSERT_VEC_EQ(d, vi, Or3(v0, vi, vi));
+    HWY_ASSERT_VEC_EQ(d, vi, Or3(vi, v0, v0));
+    HWY_ASSERT_VEC_EQ(d, vi, Or3(vi, vi, v0));
+    HWY_ASSERT_VEC_EQ(d, vi, Or3(vi, v0, vi));
+    HWY_ASSERT_VEC_EQ(d, vi, Or3(vi, vi, vi));
 
-    v = Or(v, vi);
-    HWY_ASSERT_VEC_EQ(d, vi, v);
-    v = Or(v, v0);
-    HWY_ASSERT_VEC_EQ(d, vi, v);
+    HWY_ASSERT_VEC_EQ(d, v0, Xor3(v0, v0, v0));
+    HWY_ASSERT_VEC_EQ(d, vi, Xor3(v0, vi, v0));
+    HWY_ASSERT_VEC_EQ(d, vi, Xor3(v0, v0, vi));
+    HWY_ASSERT_VEC_EQ(d, v0, Xor3(v0, vi, vi));
+    HWY_ASSERT_VEC_EQ(d, vi, Xor3(vi, v0, v0));
+    HWY_ASSERT_VEC_EQ(d, v0, Xor3(vi, vi, v0));
+    HWY_ASSERT_VEC_EQ(d, v0, Xor3(vi, v0, vi));
+    HWY_ASSERT_VEC_EQ(d, vi, Xor3(vi, vi, vi));
 
-    v = Xor(v, vi);
-    HWY_ASSERT_VEC_EQ(d, v0, v);
-    v = Xor(v, v0);
-    HWY_ASSERT_VEC_EQ(d, v0, v);
+    HWY_ASSERT_VEC_EQ(d, v0, OrAnd(v0, v0, v0));
+    HWY_ASSERT_VEC_EQ(d, v0, OrAnd(v0, vi, v0));
+    HWY_ASSERT_VEC_EQ(d, v0, OrAnd(v0, v0, vi));
+    HWY_ASSERT_VEC_EQ(d, vi, OrAnd(v0, vi, vi));
+    HWY_ASSERT_VEC_EQ(d, vi, OrAnd(vi, v0, v0));
+    HWY_ASSERT_VEC_EQ(d, vi, OrAnd(vi, vi, v0));
+    HWY_ASSERT_VEC_EQ(d, vi, OrAnd(vi, v0, vi));
+    HWY_ASSERT_VEC_EQ(d, vi, OrAnd(vi, vi, vi));
   }
 };
 
-HWY_NOINLINE void TestAllLogicalFloat() {
-  ForFloatTypes(ForPartialVectors<TestLogicalFloat>());
+HWY_NOINLINE void TestAllLogical() {
+  ForAllTypes(ForPartialVectors<TestLogical>());
 }
 
 struct TestCopySign {
@@ -160,335 +148,13 @@ HWY_NOINLINE void TestAllCopySign() {
   ForFloatTypes(ForPartialVectors<TestCopySign>());
 }
 
-struct TestFirstN {
-  template <class T, class D>
-  HWY_NOINLINE void operator()(T /*unused*/, D d) {
-    const size_t N = Lanes(d);
-    auto mask_lanes = AllocateAligned<T>(N);
-
-    // GCC workaround: we previously used zero to indicate true because we can
-    // safely compare with that value. However, that hits an ICE for u64x1 on
-    // GCC 8.3 but not 8.4, even if the implementation of operator== is
-    // simplified to return zero. Using MaskFromVec avoids this, and requires
-    // FF..FF and 0 constants.
-    T on;
-    memset(&on, 0xFF, sizeof(on));
-    const T off = 0;
-
-    for (size_t len = 0; len <= N; ++len) {
-      for (size_t i = 0; i < N; ++i) {
-        mask_lanes[i] = i < len ? on : off;
-      }
-      const auto mask_vals = Load(d, mask_lanes.get());
-      const auto mask = MaskFromVec(mask_vals);
-      HWY_ASSERT_MASK_EQ(d, mask, FirstN(d, len));
-    }
-  }
-};
-
-HWY_NOINLINE void TestAllFirstN() {
-  ForAllTypes(ForPartialVectors<TestFirstN>());
-}
-
-struct TestIfThenElse {
-  template <class T, class D>
-  HWY_NOINLINE void operator()(T /*unused*/, D d) {
-    RandomState rng;
-
-    const size_t N = Lanes(d);
-    auto in1 = AllocateAligned<T>(N);
-    auto in2 = AllocateAligned<T>(N);
-    auto mask_lanes = AllocateAligned<T>(N);
-    auto expected = AllocateAligned<T>(N);
-
-    // NOTE: reverse polarity (mask is true iff lane == 0) because we cannot
-    // reliably compare against all bits set (NaN for float types).
-    const T off = 1;
-
-    // Each lane should have a chance of having mask=true.
-    for (size_t rep = 0; rep < 50; ++rep) {
-      for (size_t i = 0; i < N; ++i) {
-        in1[i] = static_cast<T>(Random32(&rng));
-        in2[i] = static_cast<T>(Random32(&rng));
-        mask_lanes[i] = (Random32(&rng) & 1024) ? off : T(0);
-      }
-
-      const auto v1 = Load(d, in1.get());
-      const auto v2 = Load(d, in2.get());
-      const auto mask = Eq(Load(d, mask_lanes.get()), Zero(d));
-
-      for (size_t i = 0; i < N; ++i) {
-        expected[i] = (mask_lanes[i] == off) ? in2[i] : in1[i];
-      }
-      HWY_ASSERT_VEC_EQ(d, expected.get(), IfThenElse(mask, v1, v2));
-
-      for (size_t i = 0; i < N; ++i) {
-        expected[i] = mask_lanes[i] ? T(0) : in1[i];
-      }
-      HWY_ASSERT_VEC_EQ(d, expected.get(), IfThenElseZero(mask, v1));
-
-      for (size_t i = 0; i < N; ++i) {
-        expected[i] = mask_lanes[i] ? in2[i] : T(0);
-      }
-      HWY_ASSERT_VEC_EQ(d, expected.get(), IfThenZeroElse(mask, v2));
-    }
-  }
-};
-
-HWY_NOINLINE void TestAllIfThenElse() {
-  ForAllTypes(ForPartialVectors<TestIfThenElse>());
-}
-
-struct TestMaskVec {
-  template <class T, class D>
-  HWY_NOINLINE void operator()(T /*unused*/, D d) {
-    RandomState rng;
-
-    const size_t N = Lanes(d);
-    auto mask_lanes = AllocateAligned<T>(N);
-
-    // Each lane should have a chance of having mask=true.
-    for (size_t rep = 0; rep < 100; ++rep) {
-      for (size_t i = 0; i < N; ++i) {
-        mask_lanes[i] = static_cast<T>(Random32(&rng) & 1);
-      }
-
-      const auto mask = RebindMask(d, Eq(Load(d, mask_lanes.get()), Zero(d)));
-      HWY_ASSERT_MASK_EQ(d, mask, MaskFromVec(VecFromMask(d, mask)));
-    }
-  }
-};
-
-HWY_NOINLINE void TestAllMaskVec() {
-  const ForPartialVectors<TestMaskVec> test;
-
-  test(uint16_t());
-  test(int16_t());
-  // TODO(janwas): float16_t - cannot compare yet
-
-  test(uint32_t());
-  test(int32_t());
-  test(float());
-
-#if HWY_CAP_INTEGER64
-  test(uint64_t());
-  test(int64_t());
-#endif
-#if HWY_CAP_FLOAT64
-  test(double());
-#endif
-}
-
-struct TestCompress {
-  template <class T, class D>
-  HWY_NOINLINE void operator()(T /*unused*/, D d) {
-    RandomState rng;
-
-    using TU = MakeUnsigned<T>;
-    const Rebind<TU, D> du;
-    const size_t N = Lanes(d);
-    auto in_lanes = AllocateAligned<T>(N);
-    auto mask_lanes = AllocateAligned<TU>(N);
-    auto expected = AllocateAligned<T>(N);
-    auto actual = AllocateAligned<T>(N);
-
-    // Each lane should have a chance of having mask=true.
-    for (size_t rep = 0; rep < 100; ++rep) {
-      size_t expected_pos = 0;
-      for (size_t i = 0; i < N; ++i) {
-        const uint64_t bits = Random32(&rng);
-        in_lanes[i] = T();  // cannot initialize float16_t directly.
-        CopyBytes<sizeof(T)>(&bits, &in_lanes[i]);
-        mask_lanes[i] = static_cast<TU>(Random32(&rng) & 1);
-        if (mask_lanes[i] == 0) {  // Zero means true (easier to compare)
-          expected[expected_pos++] = in_lanes[i];
-        }
-      }
-
-      const auto in = Load(d, in_lanes.get());
-      const auto mask = RebindMask(d, Eq(Load(du, mask_lanes.get()), Zero(du)));
-
-      Store(Compress(in, mask), d, actual.get());
-      // Upper lanes are undefined.
-      for (size_t i = 0; i < expected_pos; ++i) {
-        HWY_ASSERT(memcmp(&actual[i], &expected[i], sizeof(T)) == 0);
-      }
-
-      // Also check CompressStore in the same way.
-      memset(actual.get(), 0, N * sizeof(T));
-      const size_t num_written = CompressStore(in, mask, d, actual.get());
-      HWY_ASSERT_EQ(expected_pos, num_written);
-      for (size_t i = 0; i < expected_pos; ++i) {
-        HWY_ASSERT(memcmp(&actual[i], &expected[i], sizeof(T)) == 0);
-      }
-    }
-  }
-};
-
-#if 0
-namespace detail {  // for code folding
-void PrintCompress16x8Tables() {
-  constexpr size_t N = 8;  // 128-bit SIMD
-  for (uint64_t code = 0; code < 1ull << N; ++code) {
-    std::array<uint8_t, N> indices{0};
-    size_t pos = 0;
-    for (size_t i = 0; i < N; ++i) {
-      if (code & (1ull << i)) {
-        indices[pos++] = i;
-      }
-    }
-
-    // Doubled (for converting lane to byte indices)
-    for (size_t i = 0; i < N; ++i) {
-      printf("%d,", 2 * indices[i]);
-    }
-  }
-  printf("\n");
-}
-
-// Compressed to nibbles
-void PrintCompress32x8Tables() {
-  constexpr size_t N = 8;  // AVX2
-  for (uint64_t code = 0; code < 1ull << N; ++code) {
-    std::array<uint32_t, N> indices{0};
-    size_t pos = 0;
-    for (size_t i = 0; i < N; ++i) {
-      if (code & (1ull << i)) {
-        indices[pos++] = i;
-      }
-    }
-
-    // Convert to nibbles
-    uint64_t packed = 0;
-    for (size_t i = 0; i < N; ++i) {
-      HWY_ASSERT(indices[i] < 16);
-      packed += indices[i] << (i * 4);
-    }
-
-    HWY_ASSERT(packed < (1ull << 32));
-    printf("0x%08x,", static_cast<uint32_t>(packed));
-  }
-  printf("\n");
-}
-
-// Pairs of 32-bit lane indices
-void PrintCompress64x4Tables() {
-  constexpr size_t N = 4;  // AVX2
-  for (uint64_t code = 0; code < 1ull << N; ++code) {
-    std::array<uint32_t, N> indices{0};
-    size_t pos = 0;
-    for (size_t i = 0; i < N; ++i) {
-      if (code & (1ull << i)) {
-        indices[pos++] = i;
-      }
-    }
-
-    for (size_t i = 0; i < N; ++i) {
-      printf("%d,%d,", 2 * indices[i], 2 * indices[i] + 1);
-    }
-  }
-  printf("\n");
-}
-
-// 4-tuple of byte indices
-void PrintCompress32x4Tables() {
-  using T = uint32_t;
-  constexpr size_t N = 4;  // SSE4
-  for (uint64_t code = 0; code < 1ull << N; ++code) {
-    std::array<uint32_t, N> indices{0};
-    size_t pos = 0;
-    for (size_t i = 0; i < N; ++i) {
-      if (code & (1ull << i)) {
-        indices[pos++] = i;
-      }
-    }
-
-    for (size_t i = 0; i < N; ++i) {
-      for (size_t idx_byte = 0; idx_byte < sizeof(T); ++idx_byte) {
-        printf("%zu,", sizeof(T) * indices[i] + idx_byte);
-      }
-    }
-  }
-  printf("\n");
-}
-
-// 8-tuple of byte indices
-void PrintCompress64x2Tables() {
-  using T = uint64_t;
-  constexpr size_t N = 2;  // SSE4
-  for (uint64_t code = 0; code < 1ull << N; ++code) {
-    std::array<uint32_t, N> indices{0};
-    size_t pos = 0;
-    for (size_t i = 0; i < N; ++i) {
-      if (code & (1ull << i)) {
-        indices[pos++] = i;
-      }
-    }
-
-    for (size_t i = 0; i < N; ++i) {
-      for (size_t idx_byte = 0; idx_byte < sizeof(T); ++idx_byte) {
-        printf("%zu,", sizeof(T) * indices[i] + idx_byte);
-      }
-    }
-  }
-  printf("\n");
-}
-}  // namespace detail
-#endif
-
-HWY_NOINLINE void TestAllCompress() {
-  // detail::PrintCompress32x8Tables();
-  // detail::PrintCompress64x4Tables();
-  // detail::PrintCompress32x4Tables();
-  // detail::PrintCompress64x2Tables();
-  // detail::PrintCompress16x8Tables();
-
-  const ForPartialVectors<TestCompress> test;
-
-  test(uint16_t());
-  test(int16_t());
-  test(float16_t());
-
-  test(uint32_t());
-  test(int32_t());
-  test(float());
-
-#if HWY_CAP_INTEGER64
-  test(uint64_t());
-  test(int64_t());
-#endif
-#if HWY_CAP_FLOAT64
-  test(double());
-#endif
-}
-
-struct TestZeroIfNegative {
-  template <class T, class D>
-  HWY_NOINLINE void operator()(T /*unused*/, D d) {
-    const auto v0 = Zero(d);
-    const auto vp = Iota(d, 1);
-    const auto vn = Iota(d, T(-1E5));  // assumes N < 10^5
-
-    // Zero and positive remain unchanged
-    HWY_ASSERT_VEC_EQ(d, v0, ZeroIfNegative(v0));
-    HWY_ASSERT_VEC_EQ(d, vp, ZeroIfNegative(vp));
-
-    // Negative are all replaced with zero
-    HWY_ASSERT_VEC_EQ(d, v0, ZeroIfNegative(vn));
-  }
-};
-
-HWY_NOINLINE void TestAllZeroIfNegative() {
-  ForFloatTypes(ForPartialVectors<TestZeroIfNegative>());
-}
-
 struct TestBroadcastSignBit {
   template <class T, class D>
   HWY_NOINLINE void operator()(T /*unused*/, D d) {
     const auto s0 = Zero(d);
     const auto s1 = Set(d, -1);  // all bit set
     const auto vpos = And(Iota(d, 0), Set(d, LimitsMax<T>()));
-    const auto vneg = s1 - vpos;
+    const auto vneg = Sub(s1, vpos);
 
     HWY_ASSERT_VEC_EQ(d, s0, BroadcastSignBit(vpos));
     HWY_ASSERT_VEC_EQ(d, s0, BroadcastSignBit(Set(d, LimitsMax<T>())));
@@ -508,23 +174,23 @@ struct TestTestBit {
   HWY_NOINLINE void operator()(T /*unused*/, D d) {
     const size_t kNumBits = sizeof(T) * 8;
     for (size_t i = 0; i < kNumBits; ++i) {
-      const auto bit1 = Set(d, 1ull << i);
-      const auto bit2 = Set(d, 1ull << ((i + 1) % kNumBits));
-      const auto bit3 = Set(d, 1ull << ((i + 2) % kNumBits));
+      const auto bit1 = Set(d, T(1ull << i));
+      const auto bit2 = Set(d, T(1ull << ((i + 1) % kNumBits)));
+      const auto bit3 = Set(d, T(1ull << ((i + 2) % kNumBits)));
       const auto bits12 = Or(bit1, bit2);
       const auto bits23 = Or(bit2, bit3);
-      HWY_ASSERT(AllTrue(TestBit(bit1, bit1)));
-      HWY_ASSERT(AllTrue(TestBit(bits12, bit1)));
-      HWY_ASSERT(AllTrue(TestBit(bits12, bit2)));
+      HWY_ASSERT(AllTrue(d, TestBit(bit1, bit1)));
+      HWY_ASSERT(AllTrue(d, TestBit(bits12, bit1)));
+      HWY_ASSERT(AllTrue(d, TestBit(bits12, bit2)));
 
-      HWY_ASSERT(AllFalse(TestBit(bits12, bit3)));
-      HWY_ASSERT(AllFalse(TestBit(bits23, bit1)));
-      HWY_ASSERT(AllFalse(TestBit(bit1, bit2)));
-      HWY_ASSERT(AllFalse(TestBit(bit2, bit1)));
-      HWY_ASSERT(AllFalse(TestBit(bit1, bit3)));
-      HWY_ASSERT(AllFalse(TestBit(bit3, bit1)));
-      HWY_ASSERT(AllFalse(TestBit(bit2, bit3)));
-      HWY_ASSERT(AllFalse(TestBit(bit3, bit2)));
+      HWY_ASSERT(AllFalse(d, TestBit(bits12, bit3)));
+      HWY_ASSERT(AllFalse(d, TestBit(bits23, bit1)));
+      HWY_ASSERT(AllFalse(d, TestBit(bit1, bit2)));
+      HWY_ASSERT(AllFalse(d, TestBit(bit2, bit1)));
+      HWY_ASSERT(AllFalse(d, TestBit(bit1, bit3)));
+      HWY_ASSERT(AllFalse(d, TestBit(bit3, bit1)));
+      HWY_ASSERT(AllFalse(d, TestBit(bit2, bit3)));
+      HWY_ASSERT(AllFalse(d, TestBit(bit3, bit2)));
     }
   }
 };
@@ -533,198 +199,95 @@ HWY_NOINLINE void TestAllTestBit() {
   ForIntegerTypes(ForPartialVectors<TestTestBit>());
 }
 
-struct TestAllTrueFalse {
-  template <class T, class D>
-  HWY_NOINLINE void operator()(T /*unused*/, D d) {
-    const auto zero = Zero(d);
-    auto v = zero;
-
-    const size_t N = Lanes(d);
-    auto lanes = AllocateAligned<T>(N);
-    std::fill(lanes.get(), lanes.get() + N, T(0));
-
-    auto mask_lanes = AllocateAligned<T>(N);
-
-    HWY_ASSERT(AllTrue(Eq(v, zero)));
-    HWY_ASSERT(!AllFalse(Eq(v, zero)));
-
-    // Single lane implies AllFalse = !AllTrue. Otherwise, there are multiple
-    // lanes and one is nonzero.
-    const bool expected_all_false = (N != 1);
-
-    // Set each lane to nonzero and back to zero
-    for (size_t i = 0; i < N; ++i) {
-      lanes[i] = T(1);
-      v = Load(d, lanes.get());
-
-      // GCC 10.2.1 workaround: AllTrue(Eq(v, zero)) is true but should not be.
-      // Assigning to an lvalue is insufficient but storing to memory prevents
-      // the bug; so does Print of VecFromMask(d, Eq(v, zero)).
-      Store(VecFromMask(d, Eq(v, zero)), d, mask_lanes.get());
-      HWY_ASSERT(!AllTrue(MaskFromVec(Load(d, mask_lanes.get()))));
-
-      HWY_ASSERT(expected_all_false ^ AllFalse(Eq(v, zero)));
-
-      lanes[i] = T(-1);
-      v = Load(d, lanes.get());
-      HWY_ASSERT(!AllTrue(Eq(v, zero)));
-      HWY_ASSERT(expected_all_false ^ AllFalse(Eq(v, zero)));
-
-      // Reset to all zero
-      lanes[i] = T(0);
-      v = Load(d, lanes.get());
-      HWY_ASSERT(AllTrue(Eq(v, zero)));
-      HWY_ASSERT(!AllFalse(Eq(v, zero)));
-    }
+class TestBitwiseIfThenElse {
+ private:
+  template <class T>
+  static constexpr T ValueFromBitPattern(hwy::FloatTag /* type_tag */,
+                                         T /* unused */, uint64_t bits) {
+    using TI = MakeSigned<T>;
+    return static_cast<T>(static_cast<TI>(bits & MantissaMask<T>())) +
+           MantissaEnd<T>();
   }
-};
+  template <class T>
+  static constexpr MakeUnsigned<T> ValueFromBitPattern(
+      hwy::NonFloatTag /* type_tag */, T /* unused */, uint64_t bits) {
+    return static_cast<MakeUnsigned<T>>(bits);
+  }
 
-HWY_NOINLINE void TestAllAllTrueFalse() {
-  ForAllTypes(ForPartialVectors<TestAllTrueFalse>());
-}
-
-class TestStoreMaskBits {
  public:
   template <class T, class D>
-  HWY_NOINLINE void operator()(T /*t*/, D d) {
-    // TODO(janwas): remove once implemented (cast or vse1)
-#if HWY_TARGET != HWY_RVV
-    RandomState rng;
-    const size_t N = Lanes(d);
-    auto lanes = AllocateAligned<T>(N);
-    const size_t expected_bytes = (N + 7) / 8;
-    auto bits = AllocateAligned<uint8_t>(expected_bytes);
-
-    for (size_t rep = 0; rep < 100; ++rep) {
-      // Generate random mask pattern.
-      for (size_t i = 0; i < N; ++i) {
-        lanes[i] = static_cast<T>((rng() & 1024) ? 1 : 0);
-      }
-      const auto mask = Load(d, lanes.get()) == Zero(d);
-
-      const size_t bytes_written = StoreMaskBits(mask, bits.get());
-
-      HWY_ASSERT_EQ(expected_bytes, bytes_written);
-      size_t i = 0;
-      // Stored bits must match original mask
-      for (; i < N; ++i) {
-        const bool bit = (bits[i / 8] & (1 << (i % 8))) != 0;
-        HWY_ASSERT_EQ(bit, lanes[i] == 0);
-      }
-      // Any partial bits in the last byte must be zero
-      for (; i < 8 * bytes_written; ++i) {
-        const int bit = (bits[i / 8] & (1 << (i % 8)));
-        HWY_ASSERT_EQ(bit, 0);
-      }
-    }
-#else
-    (void)d;
-#endif
-  }
-};
-
-HWY_NOINLINE void TestAllStoreMaskBits() {
-  ForAllTypes(ForPartialVectors<TestStoreMaskBits>());
-}
-
-struct TestCountTrue {
-  template <class T, class D>
   HWY_NOINLINE void operator()(T /*unused*/, D d) {
-    const size_t N = Lanes(d);
-    // For all combinations of zero/nonzero state of subset of lanes:
-    const size_t max_lanes = std::min(N, size_t(10));
+    using TU = MakeUnsigned<T>;
+    using TVal = RemoveConst<decltype(ValueFromBitPattern(IsFloatTag<T>(), T(),
+                                                          uint64_t{0}))>;
+    static_assert(!IsFloat<T>() || IsSame<TVal, T>(),
+                  "TVal should be the same as T if T is a floating-point type");
+    static_assert(IsFloat<T>() || IsSame<TVal, TU>(),
+                  "TVal should be the same as TU if T is a integer type");
 
-    auto lanes = AllocateAligned<T>(N);
-    std::fill(lanes.get(), lanes.get() + N, T(1));
+    static constexpr TVal a0 = ValueFromBitPattern(
+        IsFloatTag<T>(), T(), uint64_t{0x0FF00FF00FF00FF0u});
+    static constexpr TVal b0 = ValueFromBitPattern(
+        IsFloatTag<T>(), T(), uint64_t{0x33CC33CC33CC33CCu});
+    static constexpr TVal c0 = ValueFromBitPattern(
+        IsFloatTag<T>(), T(), uint64_t{0x55AA55AA55AA55AAu});
+    static constexpr TVal a1 = ValueFromBitPattern(
+        IsFloatTag<T>(), T(), uint64_t{0xF00FF00FF00FF00Fu});
+    static constexpr TVal b1 = ValueFromBitPattern(
+        IsFloatTag<T>(), T(), uint64_t{0xCC33CC33CC33CC33u});
+    static constexpr TVal c1 = ValueFromBitPattern(
+        IsFloatTag<T>(), T(), uint64_t{0xAA55AA55AA55AA55u});
 
-    for (size_t code = 0; code < (1ull << max_lanes); ++code) {
-      // Number of zeros written = number of mask lanes that are true.
-      size_t expected = 0;
-      for (size_t i = 0; i < max_lanes; ++i) {
-        lanes[i] = T(1);
-        if (code & (1ull << i)) {
-          ++expected;
-          lanes[i] = T(0);
-        }
-      }
+    const RebindToUnsigned<decltype(d)> du;
+    const Rebind<TVal, decltype(d)> d_val;
+    const auto v_a0 = BitCast(d, Set(d_val, a0));
+    const auto v_b0 = BitCast(d, Set(d_val, b0));
+    const auto v_c0 = BitCast(d, Set(d_val, c0));
 
-      const auto mask = Eq(Load(d, lanes.get()), Zero(d));
-      const size_t actual = CountTrue(mask);
-      HWY_ASSERT_EQ(expected, actual);
-    }
+    const auto v_a1 = BitCast(d, Set(d_val, a1));
+    const auto v_b1 = BitCast(d, Set(d_val, b1));
+    const auto v_c1 = BitCast(d, Set(d_val, c1));
+
+    static constexpr TVal expected_1 = ValueFromBitPattern(
+        IsFloatTag<T>(), T(), uint64_t{0x53CA53CA53CA53CAu});
+    HWY_ASSERT_VEC_EQ(d, BitCast(d, Set(d_val, expected_1)),
+                      BitwiseIfThenElse(v_a0, v_b0, v_c0));
+
+    static constexpr TVal expected_2 = ValueFromBitPattern(
+        IsFloatTag<T>(), T(), uint64_t{0xCA53CA53CA53CA53u});
+    HWY_ASSERT_VEC_EQ(d, BitCast(d, Set(d_val, expected_2)),
+                      BitwiseIfThenElse(v_a1, v_b1, v_c1));
+
+    static constexpr TVal expected_3 = ValueFromBitPattern(
+        IsFloatTag<T>(), T(), uint64_t{0x1DB81DB81DB81DB8u});
+    HWY_ASSERT_VEC_EQ(d, BitCast(d, Set(d_val, expected_3)),
+                      BitwiseIfThenElse(v_b1, v_a0, v_c0));
+
+    const auto v_all_ones = BitCast(d, Set(du, static_cast<TU>(-1)));
+    HWY_ASSERT_VEC_EQ(d, v_a0, BitwiseIfThenElse(v_all_ones, v_a0, v_b0));
+    HWY_ASSERT_VEC_EQ(d, v_b0, BitwiseIfThenElse(Zero(d), v_a0, v_b0));
   }
 };
 
-HWY_NOINLINE void TestAllCountTrue() {
-  ForAllTypes(ForPartialVectors<TestCountTrue>());
+HWY_NOINLINE void TestAllBitwiseIfThenElse() {
+  ForAllTypes(ForPartialVectors<TestBitwiseIfThenElse>());
 }
 
-struct TestLogicalMask {
-  template <class T, class D>
-  HWY_NOINLINE void operator()(T /*unused*/, D d) {
-    const auto m0 = MaskFalse(d);
-    const auto m_all = MaskTrue(d);
-
-    const size_t N = Lanes(d);
-    auto lanes = AllocateAligned<T>(N);
-    std::fill(lanes.get(), lanes.get() + N, T(1));
-
-    HWY_ASSERT_MASK_EQ(d, m0, Not(m_all));
-    HWY_ASSERT_MASK_EQ(d, m_all, Not(m0));
-
-    // For all combinations of zero/nonzero state of subset of lanes:
-    const size_t max_lanes = std::min(N, size_t(6));
-    for (size_t code = 0; code < (1ull << max_lanes); ++code) {
-      for (size_t i = 0; i < max_lanes; ++i) {
-        lanes[i] = T(1);
-        if (code & (1ull << i)) {
-          lanes[i] = T(0);
-        }
-      }
-
-      const auto m = Eq(Load(d, lanes.get()), Zero(d));
-
-      HWY_ASSERT_MASK_EQ(d, m0, Xor(m, m));
-      HWY_ASSERT_MASK_EQ(d, m0, AndNot(m, m));
-      HWY_ASSERT_MASK_EQ(d, m0, AndNot(m_all, m));
-
-      HWY_ASSERT_MASK_EQ(d, m, Or(m, m));
-      HWY_ASSERT_MASK_EQ(d, m, Or(m0, m));
-      HWY_ASSERT_MASK_EQ(d, m, Or(m, m0));
-      HWY_ASSERT_MASK_EQ(d, m, Xor(m0, m));
-      HWY_ASSERT_MASK_EQ(d, m, Xor(m, m0));
-      HWY_ASSERT_MASK_EQ(d, m, And(m, m));
-      HWY_ASSERT_MASK_EQ(d, m, And(m_all, m));
-      HWY_ASSERT_MASK_EQ(d, m, And(m, m_all));
-      HWY_ASSERT_MASK_EQ(d, m, AndNot(m0, m));
-    }
-  }
-};
-
-HWY_NOINLINE void TestAllLogicalMask() {
-  ForAllTypes(ForPartialVectors<TestLogicalMask>());
-}
 // NOLINTNEXTLINE(google-readability-namespace-comments)
 }  // namespace HWY_NAMESPACE
 }  // namespace hwy
 HWY_AFTER_NAMESPACE();
 
 #if HWY_ONCE
+
 namespace hwy {
 HWY_BEFORE_TEST(HwyLogicalTest);
-HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllLogicalInteger);
-HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllLogicalFloat);
+HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllNot);
+HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllLogical);
 HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllCopySign);
-HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllFirstN);
-HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllIfThenElse);
-HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllMaskVec);
-HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllCompress);
-HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllZeroIfNegative);
 HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllBroadcastSignBit);
 HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllTestBit);
-HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllAllTrueFalse);
-HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllStoreMaskBits);
-HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllCountTrue);
-HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllLogicalMask);
+HWY_EXPORT_AND_TEST_P(HwyLogicalTest, TestAllBitwiseIfThenElse);
 }  // namespace hwy
+
 #endif

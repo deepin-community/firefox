@@ -4,22 +4,51 @@
 
 unknowncontenttype-handleinternally =
     .label =
-        Otevřít { -brand-short-name.gender ->
-            [masculine] ve { -brand-short-name(case: "loc") }
-            [feminine] v { -brand-short-name(case: "loc") }
-            [neuter] v { -brand-short-name(case: "loc") }
-           *[other] v aplikaci { -brand-short-name }
+        { -brand-short-name.case-status ->
+            [with-cases] Otevřít ve { -brand-short-name(case: "loc") }
+           *[no-cases] Otevřít v aplikaci { -brand-short-name }
         }
     .accesskey = e
 
 unknowncontenttype-settingschange =
     .value =
-        Nastavení lze změnit v { PLATFORM() ->
-            [windows] Možnostech
-           *[other] Předvolbách
-        } { -brand-short-name.gender ->
-            [masculine] { -brand-short-name(case: "gen") }
-            [feminine] { -brand-short-name(case: "gen") }
-            [neuter] { -brand-short-name(case: "gen") }
-           *[other] aplikace { -brand-short-name }
-        }.
+        { PLATFORM() ->
+            [windows]
+                { -brand-short-name.case-status ->
+                    [with-cases] Nastavení lze změnit v Možnostech { -brand-short-name(case: "gen") }.
+                   *[no-cases] Nastavení lze změnit v Možnostech aplikace { -brand-short-name }.
+                }
+           *[other]
+                { -brand-short-name.case-status ->
+                    [with-cases] Nastavení lze změnit v Předvolbách { -brand-short-name(case: "gen") }.
+                   *[no-cases] Nastavení lze změnit v Předvolbách aplikace { -brand-short-name }.
+                }
+        }
+
+unknowncontenttype-intro = Stažení souboru:
+unknowncontenttype-which-is = typ:
+unknowncontenttype-from = zdroj:
+unknowncontenttype-prompt = Chcete tento soubor uložit?
+unknowncontenttype-action-question = Co má { -brand-short-name } s tímto souborem udělat?
+unknowncontenttype-open-with =
+    .label = Otevřít pomocí
+    .accesskey = O
+unknowncontenttype-other =
+    .label = Jiná…
+unknowncontenttype-choose-handler =
+    .label =
+        { PLATFORM() ->
+            [macos] Vybrat…
+           *[other] Procházet…
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [macos] V
+           *[other] P
+        }
+unknowncontenttype-save-file =
+    .label = Uložit soubor
+    .accesskey = s
+unknowncontenttype-remember-choice =
+    .label = Provádět od teď s podobnými soubory automaticky.
+    .accesskey = P

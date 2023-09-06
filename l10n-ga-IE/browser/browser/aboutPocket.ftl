@@ -25,7 +25,6 @@ pocket-panel-saved-save-tags = Sábháil
 pocket-panel-saved-saving-tags = Á Sábháil…
 pocket-panel-saved-suggested-tags = Clibeanna Molta
 pocket-panel-saved-tags-saved = Clibeanna curtha leis
-pocket-panel-signup-view-list = Féach ar an Liosta
 
 ## about:pocket-signup panel
 
@@ -40,4 +39,8 @@ pocket-panel-signup-tagline-story-one = Cliceáil an cnaipe { -pocket-brand-name
 pocket-panel-signup-tagline-story-two = Féach orthu i b{ -pocket-brand-name } ar aon ghléas, am ar bith.
 
 ## about:pocket-home panel
+
+## Pocket panel header component
+
+## Pocket panel buttons
 

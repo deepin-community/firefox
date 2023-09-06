@@ -21,9 +21,9 @@ certmgr-mine = Anda memiliki sijil daripada organisasi ini yang mengenali anda
 certmgr-people = Anda memiliki sijil fail yang mengenal pasti orang ini
 certmgr-ca = Anda memiliki sijil fail yang mengenal pasti autoriti sijil ini
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Edit tetapan sijil CA dipercaya
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Edit tetapan dipercaya:
 
@@ -33,18 +33,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Sijil ini boleh mengenal pasti pengguna e-mel.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Buang Sijil
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = Nama Sijil
 
 certmgr-cert-server =
     .label = Pelayan
-
-certmgr-override-lifetime =
-    .label = Seumur hidup
 
 certmgr-token-name =
     .label = Peranti Sekuriti
@@ -173,9 +170,8 @@ delete-email-cert-impact = Jika anda menghapuskan sijil e-mel seseorang pengguna
 cert-with-serial =
     .value = Sijil dengan nombor siri: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

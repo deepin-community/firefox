@@ -4,15 +4,16 @@
 
 use crate::error::*;
 use crate::schema;
+use interrupt_support::{SqlInterruptHandle, SqlInterruptScope};
+use parking_lot::Mutex;
 use rusqlite::types::{FromSql, ToSql};
 use rusqlite::Connection;
 use rusqlite::OpenFlags;
-use sql_support::{ConnExt, SqlInterruptHandle, SqlInterruptScope};
-use std::fs;
+use sql_support::open_database::open_database_with_flags;
+use sql_support::ConnExt;
 use std::ops::{Deref, DerefMut};
 use std::path::{Path, PathBuf};
-use std::result;
-use std::sync::{atomic::AtomicUsize, Arc};
+use std::sync::Arc;
 use url::Url;
 
 /// A `StorageDb` wraps a read-write SQLite connection, and handles schema
@@ -24,7 +25,7 @@ use url::Url;
 /// store. It's still a bit overkill, but there's only so many yaks in a day.
 pub struct StorageDb {
     writer: Connection,
-    interrupt_counter: Arc<AtomicUsize>,
+    interrupt_handle: Arc<SqlInterruptHandle>,
 }
 impl StorageDb {
     /// Create a new, or fetch an already open, StorageDb backed by a file on disk.
@@ -50,67 +51,36 @@ impl StorageDb {
             | OpenFlags::SQLITE_OPEN_CREATE
             | OpenFlags::SQLITE_OPEN_READ_WRITE;
 
-        let conn = Connection::open_with_flags(db_path.clone(), flags)?;
-        match init_sql_connection(&conn, true) {
-            Ok(()) => Ok(Self {
-                writer: conn,
-                interrupt_counter: Arc::new(AtomicUsize::new(0)),
-            }),
-            Err(e) => {
-                // like with places, failure to upgrade means "you lose your data"
-                if let ErrorKind::DatabaseUpgradeError = e.kind() {
-                    fs::remove_file(&db_path)?;
-                    Self::new_named(db_path)
-                } else {
-                    Err(e)
-                }
-            }
-        }
+        let conn = open_database_with_flags(db_path, flags, &schema::WebExtMigrationLogin)?;
+        Ok(Self {
+            interrupt_handle: Arc::new(SqlInterruptHandle::new(&conn)),
+            writer: conn,
+        })
     }
 
-    /// Returns an interrupt handle for this database connection. This handle
-    /// should be handed out to consumers that want to interrupt long-running
-    /// operations. It's FFI-safe, and `Send + Sync`, since it only makes sense
-    /// to use from another thread. Calling `interrupt` on the handle sets a
-    /// flag on all currently active interrupt scopes.
-    pub fn interrupt_handle(&self) -> SqlInterruptHandle {
-        SqlInterruptHandle::new(
-            self.writer.get_interrupt_handle(),
-            self.interrupt_counter.clone(),
-        )
+    pub fn interrupt_handle(&self) -> Arc<SqlInterruptHandle> {
+        Arc::clone(&self.interrupt_handle)
     }
 
-    /// Creates an object that knows when it's been interrupted. A new interrupt
-    /// scope should be created inside each method that does long-running
-    /// database work, like batch writes. This is the other side of a
-    /// `SqlInterruptHandle`: when a handle is interrupted, it flags all active
-    /// interrupt scopes as interrupted, too, so that they can abort pending
-    /// work as soon as possible.
     #[allow(dead_code)]
-    pub fn begin_interrupt_scope(&self) -> SqlInterruptScope {
-        SqlInterruptScope::new(self.interrupt_counter.clone())
+    pub fn begin_interrupt_scope(&self) -> Result<SqlInterruptScope> {
+        Ok(self.interrupt_handle.begin_interrupt_scope()?)
     }
 
     /// Closes the database connection. If there are any unfinalized prepared
     /// statements on the connection, `close` will fail and the `StorageDb` will
-    /// be returned to the caller so that it can retry, drop (via `mem::drop`)
-    // or leak (`mem::forget`) the connection.
-    ///
-    /// Keep in mind that dropping the connection tries to close it again, and
-    /// panics on error.
-    pub fn close(self) -> result::Result<(), (StorageDb, Error)> {
-        let StorageDb {
-            writer,
-            interrupt_counter,
-        } = self;
-        writer.close().map_err(|(writer, err)| {
-            (
-                StorageDb {
-                    writer,
-                    interrupt_counter,
-                },
-                err.into(),
-            )
+    /// remain open and the connection will be leaked - we used to return the
+    /// underlying connection so the caller can retry but (a) that's very tricky
+    /// in an Arc<Mutex<>> world and (b) we never actually took advantage of
+    /// that retry capability.
+    pub fn close(self) -> Result<()> {
+        self.writer.close().map_err(|(writer, err)| {
+            // In rusqlite 0.28.0 and earlier, if we just let `writer` drop,
+            // the close would panic on failure.
+            // Later rusqlite versions will not panic, but this behavior doesn't
+            // hurt there.
+            std::mem::forget(writer);
+            err.into()
         })
     }
 }
@@ -129,36 +99,51 @@ impl DerefMut for StorageDb {
     }
 }
 
-fn init_sql_connection(conn: &Connection, is_writable: bool) -> Result<()> {
-    let initial_pragmas = "
-        -- We don't care about temp tables being persisted to disk.
-        PRAGMA temp_store = 2;
-        -- we unconditionally want write-ahead-logging mode
-        PRAGMA journal_mode=WAL;
-        -- foreign keys seem worth enforcing!
-        PRAGMA foreign_keys = ON;
-    ";
-
-    conn.execute_batch(initial_pragmas)?;
-    define_functions(&conn)?;
-    conn.set_prepared_statement_cache_capacity(128);
-    if is_writable {
-        let tx = conn.unchecked_transaction()?;
-        schema::init(&conn)?;
-        tx.commit()?;
-    };
-    Ok(())
+// We almost exclusively use this ThreadSafeStorageDb
+pub struct ThreadSafeStorageDb {
+    db: Mutex<StorageDb>,
+    // This "outer" interrupt_handle not protected by the mutex means
+    // consumers can interrupt us when the mutex is held - which it always will
+    // be if we are doing anything interruptable!
+    interrupt_handle: Arc<SqlInterruptHandle>,
 }
 
-fn define_functions(c: &Connection) -> Result<()> {
-    use rusqlite::functions::FunctionFlags;
-    c.create_scalar_function(
-        "generate_guid",
-        0,
-        FunctionFlags::SQLITE_UTF8,
-        sql_fns::generate_guid,
-    )?;
-    Ok(())
+impl ThreadSafeStorageDb {
+    pub fn new(db: StorageDb) -> Self {
+        Self {
+            interrupt_handle: db.interrupt_handle(),
+            db: Mutex::new(db),
+        }
+    }
+
+    pub fn interrupt_handle(&self) -> Arc<SqlInterruptHandle> {
+        Arc::clone(&self.interrupt_handle)
+    }
+
+    pub fn begin_interrupt_scope(&self) -> Result<SqlInterruptScope> {
+        Ok(self.interrupt_handle.begin_interrupt_scope()?)
+    }
+
+    pub fn into_inner(self) -> StorageDb {
+        self.db.into_inner()
+    }
+}
+
+// Deref to a Mutex<StorageDb>, which is how we will use ThreadSafeStorageDb most of the time
+impl Deref for ThreadSafeStorageDb {
+    type Target = Mutex<StorageDb>;
+
+    #[inline]
+    fn deref(&self) -> &Mutex<StorageDb> {
+        &self.db
+    }
+}
+
+// Also implement AsRef<SqlInterruptHandle> so that we can interrupt this at shutdown
+impl AsRef<SqlInterruptHandle> for ThreadSafeStorageDb {
+    fn as_ref(&self) -> &SqlInterruptHandle {
+        &self.interrupt_handle
+    }
 }
 
 pub(crate) mod sql_fns {
@@ -173,9 +158,9 @@ pub(crate) mod sql_fns {
 
 // These should be somewhere else...
 pub fn put_meta(db: &Connection, key: &str, value: &dyn ToSql) -> Result<()> {
-    db.conn().execute_named_cached(
+    db.conn().execute_cached(
         "REPLACE INTO meta (key, value) VALUES (:key, :value)",
-        &[(":key", &key), (":value", value)],
+        rusqlite::named_params! { ":key": key, ":value": value },
     )?;
     Ok(())
 }
@@ -191,7 +176,7 @@ pub fn get_meta<T: FromSql>(db: &Connection, key: &str) -> Result<Option<T>> {
 
 pub fn delete_meta(db: &Connection, key: &str) -> Result<()> {
     db.conn()
-        .execute_named_cached("DELETE FROM meta WHERE key = :key", &[(":key", &key)])?;
+        .execute_cached("DELETE FROM meta WHERE key = :key", &[(":key", &key)])?;
     Ok(())
 }
 
@@ -282,6 +267,10 @@ pub mod test {
         let _ = env_logger::try_init();
         let counter = ATOMIC_COUNTER.fetch_add(1, Ordering::Relaxed);
         StorageDb::new_memory(&format!("test-api-{}", counter)).expect("should get an API")
+    }
+
+    pub fn new_mem_thread_safe_storage_db() -> Arc<ThreadSafeStorageDb> {
+        Arc::new(ThreadSafeStorageDb::new(new_mem_db()))
     }
 }
 

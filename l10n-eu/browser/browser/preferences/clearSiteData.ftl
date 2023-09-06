@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Garbitu datuak
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = { -brand-short-name }(e)k biltegiratutako cookie eta guneen datu guztiak garbitzean, webguneetako saioak amaitzea eragin eta lineaz kanpoko web edukia ken lezake. Cachearen datuak garbitzeak ez du zure saio-hasieretan eraginik izango.
 

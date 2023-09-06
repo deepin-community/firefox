@@ -18,8 +18,7 @@
 class nsAtom;
 class nsIContent;
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 class Document;
 class Element;
@@ -57,10 +56,10 @@ class DocumentFragment : public FragmentOrElement {
     Init();
   }
 
-  virtual JSObject* WrapNode(JSContext* aCx,
-                             JS::Handle<JSObject*> aGivenProto) override;
+  NS_IMPL_FROMNODE_HELPER(DocumentFragment, IsDocumentFragment());
 
-  virtual bool IsNodeOfType(uint32_t aFlags) const override;
+  JSObject* WrapNode(JSContext* aCx,
+                     JS::Handle<JSObject*> aGivenProto) override;
 
   nsresult BindToTree(BindContext&, nsINode& aParent) override {
     NS_ASSERTION(false, "Trying to bind a fragment to a tree");
@@ -71,7 +70,7 @@ class DocumentFragment : public FragmentOrElement {
     NS_ASSERTION(false, "Trying to unbind a fragment from a tree");
   }
 
-  virtual Element* GetNameSpaceElement() override { return nullptr; }
+  Element* GetNameSpaceElement() override { return nullptr; }
 
   Element* GetHost() const { return mHost; }
 
@@ -98,8 +97,7 @@ class DocumentFragment : public FragmentOrElement {
   RefPtr<Element> mHost;
 };
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 inline mozilla::dom::DocumentFragment* nsINode::AsDocumentFragment() {
   MOZ_ASSERT(IsDocumentFragment());

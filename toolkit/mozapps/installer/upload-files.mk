@@ -35,11 +35,11 @@ ifndef _APPNAME
 _APPNAME = $(MOZ_MACBUNDLE_NAME)
 endif
 ifndef _BINPATH
-_BINPATH = /$(_APPNAME)/Contents/MacOS
+_BINPATH = $(_APPNAME)/Contents/MacOS
 endif # _BINPATH
 ifndef _RESPATH
 # Resource path for the precomplete file
-_RESPATH = /$(_APPNAME)/Contents/Resources
+_RESPATH = $(_APPNAME)/Contents/Resources
 endif
 endif
 
@@ -67,21 +67,15 @@ endif # MOZ_SYSTEM_NSPR
 ifdef MSVC_C_RUNTIME_DLL
   JSSHELL_BINS += $(MSVC_C_RUNTIME_DLL)
 endif
+ifdef MSVC_C_RUNTIME_1_DLL
+  JSSHELL_BINS += $(MSVC_C_RUNTIME_1_DLL)
+endif
 ifdef MSVC_CXX_RUNTIME_DLL
   JSSHELL_BINS += $(MSVC_CXX_RUNTIME_DLL)
 endif
 
-ifdef WIN_UCRT_REDIST_DIR
-  JSSHELL_BINS += $(notdir $(wildcard $(DIST)/bin/api-ms-win-*.dll))
-  JSSHELL_BINS += ucrtbase.dll
-endif
-
 ifdef LLVM_SYMBOLIZER
   JSSHELL_BINS += $(notdir $(LLVM_SYMBOLIZER))
-  # On Windows, llvm-symbolizer depends on the MS DIA library.
-  ifdef WIN_DIA_SDK_BIN_DIR
-    JSSHELL_BINS += msdia140.dll
-  endif
 endif
 ifdef MOZ_CLANG_RT_ASAN_LIB_PATH
   JSSHELL_BINS += $(notdir $(MOZ_CLANG_RT_ASAN_LIB_PATH))
@@ -134,14 +128,8 @@ endif
 
 ifeq ($(MOZ_PKG_FORMAT),ZIP)
   PKG_SUFFIX	= .zip
-  INNER_MAKE_PACKAGE = $(call py_action,make_zip,'$(MOZ_PKG_DIR)' '$(PACKAGE)')
+  INNER_MAKE_PACKAGE = $(call py_action,zip,'$(PACKAGE)' '$(MOZ_PKG_DIR)' -x '**/.mkdir.done')
   INNER_UNMAKE_PACKAGE = $(call py_action,make_unzip,$(UNPACKAGE))
-endif
-
-ifeq ($(MOZ_PKG_FORMAT),SFX7Z)
-  PKG_SUFFIX	= .exe
-  INNER_MAKE_PACKAGE = $(call py_action,exe_7z_archive,'$(MOZ_PKG_DIR)' '$(MOZ_INSTALLER_PATH)/app.tag' '$(MOZ_SFX_PACKAGE)' '$(PACKAGE)')
-  INNER_UNMAKE_PACKAGE = $(call py_action,exe_7z_extract,$(UNPACKAGE) $(MOZ_PKG_DIR))
 endif
 
 #Create an RPM file
@@ -274,6 +262,7 @@ NO_PKG_FILES += \
 	BadCertAndPinningServer* \
 	DelegatedCredentialsServer* \
 	EncryptedClientHelloServer* \
+	FaultyServer* \
 	OCSPStaplingServer* \
 	SanctionsTestServer* \
 	GenerateOCSPResponse* \
@@ -321,16 +310,6 @@ endif
 
 ifneq (android,$(MOZ_WIDGET_TOOLKIT))
   JAR_COMPRESSION ?= none
-endif
-
-# A js binary is needed to perform verification of JavaScript minification.
-# We can only use the built binary when not cross-compiling. Environments
-# (such as release automation) can provide their own js binary to enable
-# verification when cross-compiling.
-ifndef JS_BINARY
-  ifndef CROSS_COMPILE
-    JS_BINARY = $(wildcard $(DIST)/bin/js)
-  endif
 endif
 
 ifeq ($(OS_TARGET), WINNT)
@@ -392,12 +371,6 @@ ifneq ($(filter-out en-US,$(AB_CD)),)
     $(call QUOTED_WILDCARD,$(topobjdir)/$(MOZ_BUILD_APP)/installer/windows/l10ngen/setup-stub.exe)
 endif
 
-ifdef MOZ_NORMANDY
-ifndef CROSS_COMPILE
-  UPLOAD_FILES += $(call QUOTED_WILDCARD,$(MOZ_NORMANDY_JSON))
-endif
-endif
-
 ifdef MOZ_CODE_COVERAGE
   UPLOAD_FILES += \
     $(call QUOTED_WILDCARD,$(DIST)/$(PKG_PATH)$(CODE_COVERAGE_ARCHIVE_BASENAME).zip) \
@@ -408,8 +381,7 @@ endif
 
 ifdef ENABLE_MOZSEARCH_PLUGIN
   UPLOAD_FILES += $(call QUOTED_WILDCARD,$(DIST)/$(PKG_PATH)$(MOZSEARCH_ARCHIVE_BASENAME).zip)
-  UPLOAD_FILES += $(call QUOTED_WILDCARD,$(DIST)/$(PKG_PATH)$(MOZSEARCH_RUST_ANALYSIS_BASENAME).zip)
-  UPLOAD_FILES += $(call QUOTED_WILDCARD,$(DIST)/$(PKG_PATH)$(MOZSEARCH_RUST_STDLIB_BASENAME).zip)
+  UPLOAD_FILES += $(call QUOTED_WILDCARD,$(DIST)/$(PKG_PATH)$(MOZSEARCH_SCIP_INDEX_BASENAME).zip)
   UPLOAD_FILES += $(call QUOTED_WILDCARD,$(DIST)/$(PKG_PATH)$(MOZSEARCH_INCLUDEMAP_BASENAME).map)
 endif
 
@@ -420,6 +392,9 @@ endif
 ifdef MOZ_STUB_INSTALLER
   UPLOAD_FILES += $(call QUOTED_WILDCARD,$(DIST)/$(PKG_INST_PATH)$(PKG_STUB_BASENAME).exe)
 endif
+
+# Upload `.xpt` artifacts for use in artifact builds.
+UPLOAD_FILES += $(call QUOTED_WILDCARD,$(DIST)/$(PKG_PATH)$(XPT_ARTIFACTS_ARCHIVE_BASENAME).zip)
 
 ifndef MOZ_PKG_SRCDIR
   MOZ_PKG_SRCDIR = $(topsrcdir)

@@ -7,17 +7,19 @@
 const {
   Component,
   createFactory,
-} = require("devtools/client/shared/vendor/react");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
-const { LocalizationHelper } = require("devtools/shared/l10n");
+} = require("resource://devtools/client/shared/vendor/react.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 
 const l10n = new LocalizationHelper(
   "devtools/client/locales/components.properties"
 );
 const { div, span, button } = dom;
-loader.lazyGetter(this, "MDNLink", function() {
-  return createFactory(require("devtools/client/shared/components/MdnLink"));
+loader.lazyGetter(this, "MDNLink", function () {
+  return createFactory(
+    require("resource://devtools/client/shared/components/MdnLink.js")
+  );
 });
 
 // Priority Levels
@@ -25,13 +27,16 @@ const PriorityLevels = {
   PRIORITY_INFO_LOW: 1,
   PRIORITY_INFO_MEDIUM: 2,
   PRIORITY_INFO_HIGH: 3,
-  PRIORITY_WARNING_LOW: 4,
-  PRIORITY_WARNING_MEDIUM: 5,
-  PRIORITY_WARNING_HIGH: 6,
-  PRIORITY_CRITICAL_LOW: 7,
-  PRIORITY_CRITICAL_MEDIUM: 8,
-  PRIORITY_CRITICAL_HIGH: 9,
-  PRIORITY_CRITICAL_BLOCK: 10,
+  // Type NEW should be used to highlight new features, and should be more
+  // eye-catchy than INFO level notifications.
+  PRIORITY_NEW: 4,
+  PRIORITY_WARNING_LOW: 5,
+  PRIORITY_WARNING_MEDIUM: 6,
+  PRIORITY_WARNING_HIGH: 7,
+  PRIORITY_CRITICAL_LOW: 8,
+  PRIORITY_CRITICAL_MEDIUM: 9,
+  PRIORITY_CRITICAL_HIGH: 10,
+  PRIORITY_CRITICAL_BLOCK: 11,
 };
 
 /**
@@ -230,7 +235,7 @@ class NotificationBox extends Component {
         key: props.label,
         className: "notificationButton",
         accesskey: props.accesskey,
-        onClick: onClick,
+        onClick,
       },
       props.label
     );
@@ -331,7 +336,9 @@ function appendNotification(state, props) {
   }
 
   let type = "warning";
-  if (priority >= PriorityLevels.PRIORITY_CRITICAL_LOW) {
+  if (priority == PriorityLevels.PRIORITY_NEW) {
+    type = "new";
+  } else if (priority >= PriorityLevels.PRIORITY_CRITICAL_LOW) {
     type = "critical";
   } else if (priority <= PriorityLevels.PRIORITY_INFO_HIGH) {
     type = "info";

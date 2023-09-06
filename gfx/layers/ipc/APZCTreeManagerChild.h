@@ -11,6 +11,8 @@
 #include "mozilla/layers/IAPZCTreeManager.h"
 #include "mozilla/layers/PAPZCTreeManagerChild.h"
 
+#include <unordered_map>
+
 namespace mozilla {
 namespace layers {
 
@@ -51,6 +53,9 @@ class APZCTreeManagerChild : public IAPZCTreeManager,
       uint64_t aInputBlockId,
       const nsTArray<TouchBehaviorFlags>& aValues) override;
 
+  void SetBrowserGestureResponse(uint64_t aInputBlockId,
+                                 BrowserGestureResponse aResponse) override;
+
   void StartScrollbarDrag(const ScrollableLayerGuid& aGuid,
                           const AsyncDragMetrics& aDragMetrics) override;
 
@@ -62,9 +67,6 @@ class APZCTreeManagerChild : public IAPZCTreeManager,
   void SetLongTapEnabled(bool aTapGestureEnabled) override;
 
   APZInputBridge* InputBridge() override;
-
-  void AddInputBlockCallback(uint64_t aInputBlockId,
-                             InputBlockCallback&& aCallback) override;
 
   void AddIPDLReference();
   void ReleaseIPDLReference();
@@ -85,6 +87,9 @@ class APZCTreeManagerChild : public IAPZCTreeManager,
 
   mozilla::ipc::IPCResult RecvCancelAutoscroll(
       const ScrollableLayerGuid::ViewID& aScrollId);
+
+  mozilla::ipc::IPCResult RecvNotifyScaleGestureComplete(
+      const ScrollableLayerGuid::ViewID& aScrollId, float aScale);
 
   virtual ~APZCTreeManagerChild();
 

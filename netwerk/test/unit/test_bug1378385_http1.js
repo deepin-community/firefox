@@ -27,7 +27,9 @@
 
 "use strict";
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
 var server = new HttpServer();
 server.start(-1);
@@ -62,10 +64,10 @@ function serverStopListener() {
   server.stop();
 }
 
-function createHttpRequest(windowId, requestId, priority) {
+function createHttpRequest(browserId, requestId, priority) {
   let uri = baseURL;
   var chan = make_channel(uri);
-  chan.topBrowsingContextId = windowId;
+  chan.browserId = browserId;
   chan.QueryInterface(Ci.nsISupportsPriority).priority = priority;
   var listner = new HttpResponseListener(requestId);
   chan.setRequestHeader("X-ID", requestId, false);
@@ -121,21 +123,18 @@ HttpResponseListener.prototype = {
   },
 };
 
-function check_response_id(responses, windowId) {
+function check_response_id(responses, browserId) {
   for (var i = 0; i < responses.length; i++) {
     var id = responses[i].getHeader("X-ID");
-    log("response id=" + id + " windowId=" + windowId);
-    Assert.equal(id, windowId);
+    log("response id=" + id + " browserId=" + browserId);
+    Assert.equal(id, browserId);
   }
 }
 
 var responseQueue = [];
 function setup_http_server() {
   log("setup_http_server");
-  var prefs = Cc["@mozilla.org/preferences-service;1"].getService(
-    Ci.nsIPrefBranch
-  );
-  maxConnections = prefs.getIntPref(
+  maxConnections = Services.prefs.getIntPref(
     "network.http.max-persistent-connections-per-server"
   );
   FOCUSED_WINDOW_REQUEST_COUNT = Math.floor(maxConnections * 0.5);
@@ -145,7 +144,7 @@ function setup_http_server() {
 
   var allDummyHttpRequestReceived = false;
   // Start server; will be stopped at test cleanup time.
-  server.registerPathHandler("/", function(metadata, response) {
+  server.registerPathHandler("/", function (metadata, response) {
     var id = metadata.getHeader("X-ID");
     log("Server recived the response id=" + id);
 
@@ -177,7 +176,7 @@ function setup_http_server() {
     }
   });
 
-  registerCleanupFunction(function() {
+  registerCleanupFunction(function () {
     server.stop(serverStopListener);
   });
 }
@@ -192,10 +191,7 @@ function processResponses() {
 function run_test() {
   // Set "network.http.active_tab_priority" to false, so we can expect to
   // receive http requests with higher priority first.
-  var prefs = Cc["@mozilla.org/preferences-service;1"].getService(
-    Ci.nsIPrefBranch
-  );
-  prefs.setBoolPref("network.http.active_tab_priority", false);
+  Services.prefs.setBoolPref("network.http.active_tab_priority", false);
 
   setup_http_server();
   setup_dummyHttpRequests();

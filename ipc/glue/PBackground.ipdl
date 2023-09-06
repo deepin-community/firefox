@@ -12,6 +12,7 @@ include protocol PBackgroundLSRequest;
 include protocol PBackgroundLSSimpleRequest;
 include protocol PBackgroundLocalStorageCache;
 include protocol PBackgroundSessionStorageManager;
+include protocol PBackgroundSessionStorageService;
 include protocol PBackgroundStorage;
 include protocol PBackgroundTest;
 include protocol PBroadcastChannel;
@@ -20,13 +21,13 @@ include protocol PCacheStorage;
 include protocol PCacheStreamControl;
 include protocol PClientManager;
 include protocol PEndpointForReport;
-include protocol PFileDescriptorSet;
+include protocol PFileSystemManager;
 include protocol PFileSystemRequest;
 include protocol PGamepadEventChannel;
 include protocol PGamepadTestChannel;
 include protocol PHttpBackgroundChannel;
+include protocol PIPCClientCerts;
 include protocol PIdleScheduler;
-include protocol PRemoteLazyInputStream;
 include protocol PMediaTransport;
 include protocol PRemoteWorker;
 include protocol PRemoteWorkerController;
@@ -36,11 +37,11 @@ include protocol PTemporaryIPCBlob;
 include protocol PFileCreator;
 include protocol PMessagePort;
 include protocol PCameras;
+include protocol PLockManager;
 include protocol PMIDIManager;
 include protocol PMIDIPort;
 include protocol PQuota;
-include protocol PChildToParentStream;
-include protocol PParentToChildStream;
+include protocol PSelectTLSClientAuthCert;
 include protocol PServiceWorker;
 include protocol PServiceWorkerContainer;
 include protocol PServiceWorkerManager;
@@ -51,7 +52,10 @@ include protocol PVerifySSLServerCert;
 include protocol PVsync;
 include protocol PRemoteDecoderManager;
 include protocol PWebSocketConnection;
+include protocol PWebTransport;
+include protocol PFetch;
 
+include ClientIPCTypes;
 include DOMTypes;
 include IPCBlob;
 include IPCServiceWorkerDescriptor;
@@ -75,10 +79,13 @@ using mozilla::dom::cache::Namespace
 
 using class mozilla::dom::SSCacheCopy from "mozilla/dom/PBackgroundSessionStorageCache.h";
 
+using mozilla::RemoteDecodeIn from "mozilla/RemoteDecoderManagerChild.h";
+
 namespace mozilla {
 namespace ipc {
 
-[RefCounted] sync protocol PBackground
+[NeedsOtherPid, ChildImpl=virtual, ParentImpl=virtual]
+sync protocol PBackground
 {
   manages PBackgroundDataBridge;
   manages PBackgroundIDBFactory;
@@ -90,6 +97,7 @@ namespace ipc {
   manages PBackgroundLSSimpleRequest;
   manages PBackgroundLocalStorageCache;
   manages PBackgroundSessionStorageManager;
+  manages PBackgroundSessionStorageService;
   manages PBackgroundStorage;
   manages PBackgroundTest;
   manages PBroadcastChannel;
@@ -98,13 +106,13 @@ namespace ipc {
   manages PCacheStreamControl;
   manages PClientManager;
   manages PEndpointForReport;
-  manages PFileDescriptorSet;
   manages PFileSystemRequest;
   manages PGamepadEventChannel;
   manages PGamepadTestChannel;
   manages PHttpBackgroundChannel;
+  manages PIPCClientCerts;
   manages PIdleScheduler;
-  manages PRemoteLazyInputStream;
+  manages PLockManager;
   manages PMediaTransport;
   manages PRemoteWorker;
   manages PRemoteWorkerController;
@@ -114,11 +122,8 @@ namespace ipc {
   manages PFileCreator;
   manages PMessagePort;
   manages PCameras;
-  manages PMIDIManager;
-  manages PMIDIPort;
   manages PQuota;
-  manages PChildToParentStream;
-  manages PParentToChildStream;
+  manages PSelectTLSClientAuthCert;
   manages PServiceWorker;
   manages PServiceWorkerContainer;
   manages PServiceWorkerManager;
@@ -128,6 +133,7 @@ namespace ipc {
   manages PUDPSocket;
   manages PVerifySSLServerCert;
   manages PVsync;
+  manages PFetch;
 
 parent:
   // Only called at startup during mochitests to check the basic infrastructure.
@@ -166,22 +172,37 @@ parent:
    */
   async PBackgroundLSSimpleRequest(LSSimpleRequestParams params);
 
-  /**
-   * Asynchronously propagates the "last-pb-context-exited" observer
-   * notification to LocalStorage NextGen implementation so it can clear
-   * retained private-browsing in-memory Datastores.  Using a (same-process)
-   * IPC message avoids the need for the main-thread nsIObserver to have a
-   * reference to the PBackground thread and directly dispatch a runnable to it.
-   */
-  async LSClearPrivateBrowsing();
-
   async PBackgroundLocalStorageCache(PrincipalInfo principalInfo,
                                      nsCString originKey,
                                      uint32_t privateBrowsingId);
 
   async PBackgroundSessionStorageManager(uint64_t aTopContextId);
 
+  async PBackgroundSessionStorageService();
+
   async PBackgroundStorage(nsString profilePath, uint32_t privateBrowsingId);
+
+  /**
+   * Finish the setup of a new PFileSystemManager top level protocol.
+   */
+  async CreateFileSystemManagerParent(
+      PrincipalInfo principalInfo,
+      Endpoint<PFileSystemManagerParent> aParentEndpoint)
+      returns(nsresult rv);
+
+  /**
+   * Finish the setup of a new PWebTransport top level protocol.
+   */
+  async CreateWebTransportParent(
+      nsString aURL,
+      nullable nsIPrincipal aPrincipal,
+      IPCClientInfo?  aClientInfo,
+      bool aDedicated,
+      bool aRequireUnreliable,
+      uint32_t aCongestionControl,
+      /* Sequence<WebTransportHash>* aServerCertHashes, */
+      Endpoint<PWebTransportParent> aParentEndpoint)
+      returns(nsresult rv, uint8_t aReliability); // Actually WebTransportReliabityMode enum
 
   async PVsync();
 
@@ -197,8 +218,6 @@ parent:
   async PCacheStorage(Namespace aNamespace, PrincipalInfo aPrincipalInfo);
 
   async PMessagePort(nsID uuid, nsID destinationUuid, uint32_t sequenceId);
-
-  async PChildToParentStream();
 
   async MessagePortForceClose(nsID uuid, nsID destinationUuid, uint32_t sequenceId);
 
@@ -240,8 +259,10 @@ parent:
 
   async PClientManager();
 
-  async PMIDIManager();
-  async PMIDIPort(MIDIPortInfo portInfo, bool sysexEnabled);
+  async CreateMIDIManager(Endpoint<PMIDIManagerParent> aEndpoint);
+  async CreateMIDIPort(Endpoint<PMIDIPortParent> aEndpoint,
+                       MIDIPortInfo portInfo, bool sysexEnabled);
+  async HasMIDIDevice() returns (bool hasDevice);
 
   // This method is used to propagate storage activities from the child actor
   // to the parent actor. See StorageActivityService.
@@ -266,8 +287,15 @@ parent:
 
   async PMediaTransport();
 
-  async PVerifySSLServerCert(ByteArray aServerCert,
-                             ByteArray[] aPeerCertChain,
+  async PSelectTLSClientAuthCert(nsCString aHostName,
+                                 OriginAttributes aOriginAttributes,
+                                 int32_t aPort,
+                                 uint32_t aProviderFlags,
+                                 uint32_t aProviderTlsFlags,
+                                 ByteArray aServerCertBytes,
+                                 ByteArray[] aCANames);
+
+  async PVerifySSLServerCert(ByteArray[] aPeerCertChain,
                              nsCString aHostName,
                              int32_t aPort,
                              OriginAttributes aOriginAttributes,
@@ -280,22 +308,24 @@ parent:
   async EnsureRDDProcessAndCreateBridge()
       returns (nsresult rv, Endpoint<PRemoteDecoderManagerChild> aEndpoint);
 
+  async EnsureUtilityProcessAndCreateBridge(RemoteDecodeIn aLocation)
+      returns (nsresult rv, Endpoint<PRemoteDecoderManagerChild> aEndpoint);
+
   async PWebSocketConnection(uint32_t aListenerId);
+
+  async PLockManager(nsIPrincipal aPrincipalInfo, nsID aClientId);
+
+  async PIPCClientCerts();
+
+  async PFetch();
+
+  async RequestCameraAccess() returns (nsresult rv);
 
 child:
   async PCache();
   async PCacheStreamControl();
 
-  async PParentToChildStream();
-
   async PRemoteWorker(RemoteWorkerData data);
-
-both:
-  // PRemoteLazyInputStream is created on the parent side only if the child
-  // starts a migration.
-  async PRemoteLazyInputStream(nsID aID, uint64_t aSize);
-
-  async PFileDescriptorSet(FileDescriptor fd);
 };
 
 } // namespace ipc

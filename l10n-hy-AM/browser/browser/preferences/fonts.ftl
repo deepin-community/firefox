@@ -16,7 +16,7 @@ fonts-langgroup-header = Տառատեսակներ
 fonts-langgroup-arabic =
     .label = Արաբերեն
 fonts-langgroup-armenian =
-    .label = ՀԱՅԵՐԵՆ
+    .label = Հայերեն
 fonts-langgroup-bengali =
     .label = Բենգալի
 fonts-langgroup-simpl-chinese =
@@ -107,11 +107,6 @@ fonts-minsize-none =
 fonts-allow-own =
     .label = Էջերին թույլատրել օգտագործել իրենց սեփական տառատեսակները
     .accesskey = Է
-
-## Text Encodings
-##
-## Translate the encoding names as adjectives for an encoding, not as the name
-## of the language.
 
 # Variables:
 #   $name {string, "Arial"} - Name of the default font

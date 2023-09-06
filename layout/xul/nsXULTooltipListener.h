@@ -11,9 +11,7 @@
 #include "nsITimer.h"
 #include "nsCOMPtr.h"
 #include "nsString.h"
-#ifdef MOZ_XUL
-#  include "XULTreeElement.h"
-#endif
+#include "Units.h"
 #include "nsIWeakReferenceUtils.h"
 #include "mozilla/Attributes.h"
 
@@ -24,7 +22,9 @@ namespace mozilla {
 namespace dom {
 class Event;
 class MouseEvent;
+class XULTreeElement;
 }  // namespace dom
+class WidgetKeyboardEvent;
 }  // namespace mozilla
 
 class nsXULTooltipListener final : public nsIDOMEventListener {
@@ -42,19 +42,17 @@ class nsXULTooltipListener final : public nsIDOMEventListener {
     return sInstance;
   }
 
+  static bool KeyEventHidesTooltip(const mozilla::WidgetKeyboardEvent&);
+  static bool ShowTooltips();
+
  protected:
   nsXULTooltipListener();
   ~nsXULTooltipListener();
 
-  // pref callback for when the "show tooltips" pref changes
-  static bool sShowTooltips;
-
   void KillTooltipTimer();
 
-#ifdef MOZ_XUL
   void CheckTreeBodyMove(mozilla::dom::MouseEvent* aMouseEvent);
   mozilla::dom::XULTreeElement* GetSourceTree();
-#endif
 
   nsresult ShowTooltip();
   void LaunchTooltip();
@@ -67,7 +65,6 @@ class nsXULTooltipListener final : public nsIDOMEventListener {
   nsresult GetTooltipFor(nsIContent* aTarget, nsIContent** aTooltip);
 
   static nsXULTooltipListener* sInstance;
-  static void ToolbarTipsPrefChanged(const char* aPref, void* aClosure);
 
   nsWeakPtr mSourceNode;
   nsWeakPtr mTargetNode;
@@ -78,27 +75,25 @@ class nsXULTooltipListener final : public nsIDOMEventListener {
   nsCOMPtr<nsITimer> mTooltipTimer;
   static void sTooltipCallback(nsITimer* aTimer, void* aListener);
 
-  // screen coordinates of the last mousemove event, stored so that the
-  // tooltip can be opened at this location.
-  int32_t mMouseScreenX, mMouseScreenY;
+  // Screen coordinates of the last mousemove event, stored so that the tooltip
+  // can be opened at this location.
+  //
+  // TODO(emilio): This duplicates a lot of code with ChromeTooltipListener.
+  mozilla::LayoutDeviceIntPoint mMouseScreenPoint;
 
-  // various constants for tooltips
-  enum {
-    kTooltipMouseMoveTolerance = 7  // 7 pixel tolerance for mousemove event
-  };
+  // Tolerance for mousemove event
+  static constexpr mozilla::LayoutDeviceIntCoord kTooltipMouseMoveTolerance = 7;
 
   // flag specifying if the tooltip has already been displayed by a MouseMove
   // event. The flag is reset on MouseOut so that the tooltip will display
   // the next time the mouse enters the node (bug #395668).
   bool mTooltipShownOnce;
 
-#ifdef MOZ_XUL
   // special members for handling trees
   bool mIsSourceTree;
   bool mNeedTitletip;
   int32_t mLastTreeRow;
   RefPtr<nsTreeColumn> mLastTreeCol;
-#endif
 };
 
 #endif  // nsXULTooltipListener

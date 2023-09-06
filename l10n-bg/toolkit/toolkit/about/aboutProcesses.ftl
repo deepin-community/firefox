@@ -14,14 +14,9 @@ about-processes-shutdown-tab =
 ## Process names
 ## Variables:
 ##    $pid (String) The process id of this process, assigned by the OS.
-##    $origin (String) The domain name for this process.
-##    $type (String) The raw type for this process. Used for unknown processes.
 
-
-## Process names
-## Variables:
-##    $pid (String) The process id of this process, assigned by the OS.
-
+about-processes-plugin-process = Приставки ({ $pid })
+about-processes-gmp-plugin-process = Приставки за медия на Gecko ({ $pid })
 
 ## Isolated process names
 ## Variables:
@@ -35,6 +30,8 @@ about-processes-shutdown-tab =
 # Variables:
 #   $name (String) The name of the tab (typically the title of the page, might be the url while the page is loading).
 about-processes-tab-name = Раздел: { $name }
+
+## Utility process actor names
 
 ## Displaying CPU (percentage and total)
 ## Variables:

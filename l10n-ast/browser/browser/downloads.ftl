@@ -13,12 +13,6 @@ downloads-panel =
 
 ##
 
-# The style attribute has the width of the Downloads Panel expressed using
-# a CSS unit. The longest labels that should fit are usually those of
-# in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
-
 downloads-cmd-pause =
     .label = Posar
     .accesskey = P
@@ -30,15 +24,10 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Encaboxar
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Abrir la carpeta contenedora
-    .accesskey = c
-
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Amosar en Finder
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = Abrir nel visor del sistema
@@ -48,25 +37,7 @@ downloads-cmd-always-use-system-default =
     .label = Abrir siempres nel visor del sistema
     .accesskey = S
 
-downloads-cmd-show-button =
-    .tooltiptext =
-        { PLATFORM() ->
-            [macos] Amosar en Finder
-           *[other] Abrir la carpeta contenedora
-        }
-
-downloads-cmd-show-panel =
-    .aria-label =
-        { PLATFORM() ->
-            [macos] Amosar en Finder
-           *[other] Abrir la carpeta contenedora
-        }
-downloads-cmd-show-description =
-    .value =
-        { PLATFORM() ->
-            [macos] Amosar en Finder
-           *[other] Abrir la carpeta contenedora
-        }
+##
 
 downloads-cmd-show-downloads =
     .label = Amosar la carpeta Descargues
@@ -138,11 +109,16 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
-downloading-file-opens-in-hours-and-minutes = Va abrise en { $hours }h { $minutes }m…
-downloading-file-opens-in-minutes = Va abrise en { $minutes }m…
-downloading-file-opens-in-minutes-and-seconds = Va abrise en { $minutes }m { $seconds }s…
-downloading-file-opens-in-seconds = Va abrise en { $seconds }s…
-downloading-file-opens-in-some-time = Va abrise darréu de completar la descarga…
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = Va abrise en { $hours }h { $minutes }m…
+downloading-file-opens-in-minutes-2 =
+    .value = Va abrise en { $minutes }m…
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = Va abrise en { $minutes }m { $seconds }s…
+downloading-file-opens-in-seconds-2 =
+    .value = Va abrise en { $seconds }s…
+downloading-file-opens-in-some-time-2 =
+    .value = Va abrise darréu de completar la descarga…
 
 ##
 
@@ -168,6 +144,14 @@ downloads-history =
 downloads-details =
     .title = Detalles de la descarga
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
+
 downloads-clear-downloads-button =
     .label = Llimpiar les descargues
     .tooltiptext = Llimpia les descargues completes, encaboxaes y fallíes
@@ -180,3 +164,17 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Nun hai descargues nesta sesión.
+
+## Download errors
+
+downloads-error-alert-title = Fallu de descarga
+# Variables:
+#   $extension (String): the name of the blocking extension.
+downloads-error-blocked-by = La descarga nun pue guardase porque ta bloquiada por { $extension }.
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = La descarga nun pue guardase porque ta bloquiada por una estensión.
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    La descarga nun pue guardase porque asocedió un fallu desconocíu.
+    
+    Volvi tentalo, por favor.

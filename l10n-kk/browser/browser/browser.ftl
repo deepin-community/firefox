@@ -5,44 +5,52 @@
 
 ## The main browser window's title
 
-# These are the default window titles everywhere except macOS. The first two
-# attributes are used when the web content opened has no title:
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
 #
 # default - "Mozilla Firefox"
 # private - "Mozilla Firefox (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
 # Variables:
 #  $content-title (String): the title of the web content.
-browser-main-window =
+browser-main-window-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } (Жекелік шолу режимі)
-    .data-content-title-default = { $content-title } - { -brand-full-name }
-    .data-content-title-private = { $content-title } - { -brand-full-name } (Жекелік шолу режимі)
-# These are the default window titles on macOS. The first two are for use when
-# there is no content title:
+    .data-title-private = { -brand-full-name } жекелік шолу режимі
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } жекелік шолу режимі
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
 #
 # "default" - "Mozilla Firefox"
 # "private" - "Mozilla Firefox — (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
-# Do not use the brand name in the last two attributes, as we do on non-macOS.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
 #
 # Also note the other subtle difference here: we use a `-` to separate the
 # brand name from `(Private Browsing)`, which does not happen on other OSes.
 #
 # Variables:
 #  $content-title (String): the title of the web content.
-browser-main-window-mac =
+browser-main-window-mac-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } - (Жекелік шолу режимі)
+    .data-title-private = { -brand-full-name } — жекелік шолу режимі
     .data-content-title-default = { $content-title }
-    .data-content-title-private = { $content-title } - (Жекелік шолу режимі)
+    .data-content-title-private = { $content-title } — жекелік шолу режимі
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+# The non-variable portion of this MUST match the translation of
+# "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
+private-browsing-shortcut-text-2 = { -brand-shortcut-name } жекелік шолу режимі
 
 ##
 
@@ -73,16 +81,12 @@ urlbar-xr-notification-anchor =
     .tooltiptext = Виртуалды шынайылық рұқсаттар панелін ашу
 urlbar-storage-access-anchor =
     .tooltiptext = Веб-шолу кезіндегі рұқсаттардың панелін ашу
-urlbar-translate-notification-anchor =
-    .tooltiptext = Бұл парақты аудару
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = Терезелеріңізбен немесе экранмен бұл сайтпен бөлісуді басқару
 urlbar-indexed-db-notification-anchor =
     .tooltiptext = Желіден тыс қойма хабарламалары панелін ашу
 urlbar-password-notification-anchor =
     .tooltiptext = Парольді сақтау хабарламасы панелін ашу
-urlbar-translated-notification-anchor =
-    .tooltiptext = Бет аудармасын басқару
 urlbar-plugins-notification-anchor =
     .tooltiptext = Плагиндерді қолдануды басқару
 urlbar-web-rtc-share-devices-notification-anchor =
@@ -100,11 +104,25 @@ urlbar-addons-notification-anchor =
 urlbar-tip-help-icon =
     .title = Көмек алу
 urlbar-search-tips-confirm = Жақсы, түсіндім
+urlbar-search-tips-confirm-short = Түсіндім
 # Read out before Urlbar Tip text content so screenreader users know the
 # subsequent text is a tip offered by the browser. It should end in a colon or
 # localized equivalent.
 urlbar-tip-icon-description =
     .alt = Кеңес:
+urlbar-result-menu-button =
+    .title = Мәзірді ашу
+urlbar-result-menu-button-feedback = Кері байланыс
+    .title = Мәзірді ашу
+urlbar-result-menu-learn-more =
+    .label = Көбірек білу
+    .accesskey = л
+urlbar-result-menu-remove-from-history =
+    .label = Тарихтан өшіру
+    .accesskey = р
+urlbar-result-menu-tip-get-help =
+    .label = Көмек алу
+    .accesskey = м
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -113,6 +131,8 @@ urlbar-tip-icon-description =
 
 urlbar-search-tips-onboard = Азырақ теріп, көбірек табыңыз: { $engineName } қызметінен тура адрестік жолақтан іздеңіз.
 urlbar-search-tips-redirect-2 = { $engineName } және шолу тарихы ұсыныстарын көру үшін, іздеуді адрестік жолағында бастаңыз.
+# Make sure to match the name of the Search panel in settings.
+urlbar-search-tips-persist = Іздеу енді оңайырақ болды. Адрестік жолағында іздеуді нақтырақ етіп көріңіз. Оның орнына URL адресін көрсету үшін параметрлердегі Іздеу бөліміне өтіңіз.
 # Prompts users to use the Urlbar when they are typing in the domain of a
 # search engine, e.g. google.com or amazon.com.
 urlbar-tabtosearch-onboard = Қажетті нәрсені тезірек табу үшін бұл жарлықты таңдаңыз.
@@ -122,6 +142,7 @@ urlbar-tabtosearch-onboard = Қажетті нәрсені тезірек таб
 urlbar-search-mode-bookmarks = Бетбелгілер
 urlbar-search-mode-tabs = Беттер
 urlbar-search-mode-history = Тарих
+urlbar-search-mode-actions = Әрекеттер
 
 ##
 
@@ -160,10 +181,12 @@ urlbar-star-add-bookmark =
 
 ## Page Action Context Menu
 
-page-action-manage-extension =
+page-action-manage-extension2 =
     .label = Кеңейтуді басқару…
-page-action-remove-extension =
+    .accesskey = е
+page-action-remove-extension2 =
     .label = Кеңейтуді өшіру
+    .accesskey = ш
 
 ## Auto-hide Context Menu
 
@@ -222,6 +245,67 @@ search-one-offs-tabs =
     .tooltiptext = Беттер ({ $restrict })
 search-one-offs-history =
     .tooltiptext = Тарих ({ $restrict })
+search-one-offs-actions =
+    .tooltiptext = Әрекеттер ({ $restrict })
+
+## QuickActions are shown in the urlbar as the user types a matching string
+## The -cmd- strings are comma separated list of keywords that will match
+## the action.
+
+# Opens the about:addons page in the home / recommendations section
+quickactions-addons = Қосымшаларды қарау
+quickactions-cmd-addons2 = қосымшалар
+# Opens the bookmarks library window
+quickactions-bookmarks2 = Бетбелгілерді басқару
+quickactions-cmd-bookmarks = бетбелгілер
+# Opens a SUMO article explaining how to clear history
+quickactions-clearhistory = Тарихты тазарту
+quickactions-cmd-clearhistory = тарихты тазарту
+# Opens about:downloads page
+quickactions-downloads2 = Жүктемелерді қарау
+quickactions-cmd-downloads = жүктемелер
+# Opens about:addons page in the extensions section
+quickactions-extensions = Кеңейтулерді басқару
+quickactions-cmd-extensions = кеңейтулер
+# Opens the devtools web inspector
+quickactions-inspector2 = Әзірлеуші құралдарын ашу
+quickactions-cmd-inspector = бақылаушы, әзірлеуші құралдары
+# Opens about:logins
+quickactions-logins2 = Парольдерді басқару
+quickactions-cmd-logins = логиндер, парольдер
+# Opens about:addons page in the plugins section
+quickactions-plugins = Плагиндерді басқару
+quickactions-cmd-plugins = плагиндер
+# Opens the print dialog
+quickactions-print2 = Бетті баспаға шығару
+quickactions-cmd-print = баспаға шығару
+# Opens a new private browsing window
+quickactions-private2 = Жекелік шолу терезесін ашу
+quickactions-cmd-private = жекелік шолу
+# Opens a SUMO article explaining how to refresh
+quickactions-refresh = { -brand-short-name } жаңғырту
+quickactions-cmd-refresh = жаңарту
+# Restarts the browser
+quickactions-restart = { -brand-short-name } қайта қосу
+quickactions-cmd-restart = қайта қосу
+# Opens the screenshot tool
+quickactions-screenshot3 = Скриншотты түсіру
+quickactions-cmd-screenshot = скриншот
+# Opens about:preferences
+quickactions-settings2 = Баптауларды басқару
+quickactions-cmd-settings = баптаулар, қалаулар, опциялар
+# Opens about:addons page in the themes section
+quickactions-themes = Темаларды басқару
+quickactions-cmd-themes = темалар
+# Opens a SUMO article explaining how to update the browser
+quickactions-update = { -brand-short-name } жаңарту
+quickactions-cmd-update = жаңарту
+# Opens the view-source UI with current pages source
+quickactions-viewsource2 = Парақтың бастапқы кодын қарау
+quickactions-cmd-viewsource = бастапқы кодын қарау, бастапқы код
+# Tooltip text for the help button shown in the result.
+quickactions-learn-more =
+    .title = Жылдам әрекеттер туралы көбірек біліңіз
 
 ## Bookmark Panel
 
@@ -273,6 +357,7 @@ identity-weak-encryption = Бұл парақ әлсіз шифрлеуді қо�
 identity-insecure-login-forms = Бұл парақта енгізілген логин ақпаратына бөтен адамдардың қолы жетуі мүмкін.
 identity-https-only-connection-upgraded = (HTTPS дейін жаңартылды)
 identity-https-only-label = Тек-HTTPS режимі
+identity-https-only-label2 = Бұл сайтты қауіпсіз байланысқа автоматты түрде жаңарту
 identity-https-only-dropdown-on =
     .label = Іске қосулы
 identity-https-only-dropdown-off =
@@ -281,6 +366,8 @@ identity-https-only-dropdown-off-temporarily =
     .label = Уақытша сөндірулі
 identity-https-only-info-turn-on2 = { -brand-short-name } мүмкін болған кезде байланысты қауіпсіз нұсқасына жаңартуы үшін, бұл сайт үшін тек-HTTPS режимін іске қосыңыз.
 identity-https-only-info-turn-off2 = Егер парақ бұзылған сияқты көрінсе, сіз оны қауіпсіз емес HTTP арқылы қайта жүктеу үшін осы сайт үшін тек-HTTPS режимін өшіре аласыз.
+identity-https-only-info-turn-on3 = { -brand-short-name } мүмкін болған кезде байланысты қауіпсіз нұсқасына жаңартуы үшін, бұл сайт үшін HTTPS дейін жаңартуды іске қосыңыз.
+identity-https-only-info-turn-off3 = Егер парақ бұзылған сияқты көрінсе, сіз оны қауіпсіз емес HTTP арқылы қайта жүктеу үшін осы сайт үшін HTTPS дейін жаңартуды сөндіре аласыз.
 identity-https-only-info-no-upgrade = Байланысты HTTP-дан жаңарту мүмкін емес.
 identity-permissions-storage-access-header = Сайтаралық cookie файлдары
 identity-permissions-storage-access-hint = Бұл тараптар сіз осы сайтта болған кезде сайтаралық cookie файлдарын және сайт деректерін қолдана алады.
@@ -291,7 +378,7 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = Бұл сайтқа қауіпсіз түрде байланысқан емессіз.
 identity-connection-verified = Бұл сайтқа қауіпсіз түрде байланысқансыз.
 identity-ev-owner-label = Сертификат кімге шығарылған:
-identity-description-custom-root = Mozilla бұл сертификатты шығарушысын танымайды. Ол сіздің операциялық жүйеңіз немесе әкімшіңізбен қосылған болуы мүмкін. <label data-l10n-name="link">Көбірек білу</label>
+identity-description-custom-root2 = Mozilla бұл сертификатты шығарушысын танымайды. Ол сіздің операциялық жүйеңіз немесе әкімшіңізбен қосылған болуы мүмкін.
 identity-remove-cert-exception =
     .label = Ережеден тыс жағдайды өшіру
     .accesskey = ш
@@ -299,14 +386,12 @@ identity-description-insecure = Бұл веб сайтқа байланысың�
 identity-description-insecure-login-forms = Бұл парақта енгізілген логин ақпараты қауіпсіз емес, және оған бөтен адамдардың қолы жетуі мүмкін.
 identity-description-weak-cipher-intro = Бұл веб сайтқа байланысыңыз әлсіз шифрлеуді қолданады және шын жеке емес.
 identity-description-weak-cipher-risk = Басқа адамдар сіздің ақпаратыңызды көре алады немесе веб сайттың мінез-құлығын өзгерте алады.
-identity-description-active-blocked = { -brand-short-name } бұл парақтың кейбір қауіпсіз емес бөліктерін блоктаған. <label data-l10n-name="link">Көбірек білу</label>
+identity-description-active-blocked2 = { -brand-short-name } бұл парақтың кейбір қауіпсіз емес бөліктерін блоктаған.
 identity-description-passive-loaded = Бұл веб сайтқа байланысыңыз шынымен жеке емес және басқа адамдар сіз осы сайтпен бөліскен ақпаратты көре алады.
-identity-description-passive-loaded-insecure = Бұл веб сайттың кейбір құрамасы қауіпсіз емес (суреттер сияқты). <label data-l10n-name="link">Көбірек білу</label>
-identity-description-passive-loaded-mixed = { -brand-short-name } кейбір құраманы блоктаса да, бұл парақтың кейбір құрамасы қауіпсіз емес (суреттер сияқты). <label data-l10n-name="link">Көбірек білу</label>
+identity-description-passive-loaded-insecure2 = Бұл веб сайттың кейбір құрамасы қауіпсіз емес (суреттер сияқты).
+identity-description-passive-loaded-mixed2 = { -brand-short-name } кейбір құраманы блоктаса да, бұл парақтың кейбір құрамасы қауіпсіз емес (суреттер сияқты).
 identity-description-active-loaded = Бұл веб сайттың кейбір құрамасы қауіпсіз емес (скрипттер сияқты) және сіздің оған байланысыңыз шынымен жеке емес.
 identity-description-active-loaded-insecure = Бұл сайтпен сіз бөліскен ақпаратты басқа адамдар көре алады (парольдер, хабарламалар, кредит карталар, т.б.).
-identity-learn-more =
-    .value = Көбірек білу
 identity-disable-mixed-content-blocking =
     .label = Қорғанысты қазірге сөндіру
     .accesskey = н
@@ -379,14 +464,10 @@ popup-select-microphone-icon =
     .tooltiptext = Микрофон
 popup-select-speaker-icon =
     .tooltiptext = Динамиктер
+popup-select-window-or-screen =
+    .label = Терезе немесе экран:
+    .accesskey = т
 popup-all-windows-shared = Экраныңыздаға барлық көрінетін терезелермен бөлісетін боласыз.
-popup-screen-sharing-block =
-    .label = Бұғаттау
-    .accesskey = Б
-popup-screen-sharing-always-block =
-    .label = Әрқашан бұғаттау
-    .accesskey = ш
-popup-mute-notifications-checkbox = Бөлісу кезінде веб-сайт хабарламаларының дыбысын сөндіру
 
 ## WebRTC window or screen share tab switch warning
 
@@ -399,7 +480,7 @@ sharing-warning-disable-for-session =
 
 ## DevTools F12 popup
 
-enable-devtools-popup-description = F12 жарлығын қолдану үшін, алдымен Веб-әзірлеуші мәзірі арқылы Әзірлеуші құралдарын ашыңыз.
+enable-devtools-popup-description2 = F12 жарлығын қолдану үшін, алдымен Браузер құралдары мәзірі арқылы Әзірлеуші құралдарын ашыңыз.
 
 ## URL Bar
 
@@ -435,6 +516,10 @@ urlbar-placeholder-search-mode-other-history =
 urlbar-placeholder-search-mode-other-tabs =
     .placeholder = Іздеу жолын енгізіңіз
     .aria-label = Беттерден іздеу
+# This placeholder is used when searching quick actions.
+urlbar-placeholder-search-mode-other-actions =
+    .placeholder = Іздеу жолын енгізіңіз
+    .aria-label = Іздеу әрекеттері
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
@@ -475,6 +560,8 @@ urlbar-result-action-search-w-engine = { $engine } көмегімен іздеу
 urlbar-result-action-sponsored = Демеуленген
 urlbar-result-action-switch-tab = Бетке ауысу
 urlbar-result-action-visit = Шолу
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-your-clipboard = Алмасу буферінен сілтемені шолу
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -510,6 +597,7 @@ urlbar-result-action-calculator-result = = { $result }
 urlbar-result-action-search-bookmarks = Бетбелгілерден іздеу
 urlbar-result-action-search-history = Тарихтан іздеу
 urlbar-result-action-search-tabs = Беттерден іздеу
+urlbar-result-action-search-actions = Әрекеттерден іздеу
 
 ## Labels shown above groups of urlbar results
 
@@ -518,11 +606,37 @@ urlbar-result-action-search-tabs = Беттерден іздеу
 urlbar-group-firefox-suggest =
     .label = { -firefox-suggest-brand-name }
 # A label shown above the search suggestions group in the urlbar results. It
-# should use title case.
+# should use sentence case.
 # Variables
 #  $engine (String): the name of the search engine providing the suggestions
 urlbar-group-search-suggestions =
     .label = { $engine } ұсыныстары
+# A label shown above Quick Actions in the urlbar results.
+urlbar-group-quickactions =
+    .label = Жылдам әрекеттер
+
+## Reader View toolbar buttons
+
+# This should match menu-view-enter-readerview in menubar.ftl
+reader-view-enter-button =
+    .aria-label = Оқу көрінісіне өту
+# This should match menu-view-close-readerview in menubar.ftl
+reader-view-close-button =
+    .aria-label = Оқу режимін жабу
+
+## Picture-in-Picture urlbar button
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
+
+picture-in-picture-urlbar-button-open =
+    .tooltiptext = Суреттегі суретті ашу ({ $shortcut })
+picture-in-picture-urlbar-button-close =
+    .tooltiptext = Суреттегі суретті жабу ({ $shortcut })
+picture-in-picture-panel-header = Суреттегі сурет
+picture-in-picture-panel-headline = Бұл веб-сайт "Суреттегі сурет" функциясын қолдануға ұсынбайды
+picture-in-picture-panel-body = "Суреттегі сурет" режимі іске қосулы кезінде суреттер әзірлеуші ойлағандай көрсетілмеуі мүмкін.
+picture-in-picture-enable-toggle =
+    .label = Сонда да іске қосу
 
 ## Full Screen and Pointer Lock UI
 
@@ -540,19 +654,6 @@ fullscreen-exit-mac-button = Толық экраннан шығу (Esc)
 pointerlock-warning-domain = <span data-l10n-name="domain">{ $domain }</span> курсорыңызды басқаруда. Басқаруды қайта алу үшін Esc басыңыз.
 pointerlock-warning-no-domain = Бұл құжат курсорыңызды басқаруда. Басқаруды қайта алу үшін Esc басыңыз.
 
-## Subframe crash notification
-
-crashed-subframe-message = <strong>Бұл парақтың бір бөлігі құлады.</strong> Бұл мәселе туралы { -brand-product-name } хабардар ету және оны тезірек шешу үшін есептеме жіберіңіз.
-# The string for crashed-subframe-title.title should match crashed-subframe-message,
-# but without any markup.
-crashed-subframe-title =
-    .title = Бұл парақтың бір бөлігі құлады. Бұл мәселе туралы { -brand-product-name } хабардар ету және оны тезірек шешу үшін есептеме жіберіңіз.
-crashed-subframe-learnmore-link =
-    .value = Көбірек білу
-crashed-subframe-submit =
-    .label = Есептемені жіберу
-    .accesskey = с
-
 ## Bookmarks panels, menus and toolbar
 
 bookmarks-manage-bookmarks =
@@ -568,6 +669,11 @@ bookmarks-other-bookmarks-menu =
     .label = Басқа бетбелгілер
 bookmarks-mobile-bookmarks-menu =
     .label = Мобильді бетбелгілер
+
+## Variables:
+##   $isVisible (boolean): if the specific element (e.g. bookmarks sidebar,
+##                         bookmarks toolbar, etc.) is visible or not.
+
 bookmarks-tools-sidebar-visibility =
     .label =
         { $isVisible ->
@@ -592,12 +698,15 @@ bookmarks-tools-menu-button-visibility =
             [true] Бетбелгілер мәзірін құралдар панелінен алып тастау
            *[other] Бетбелгілер мәзірін құралдар панеліне қосу
         }
+
+##
+
 bookmarks-search =
     .label = Бетбелгілер ішінен іздеу
 bookmarks-tools =
     .label = Бетбелгілер құралдары
-bookmarks-bookmark-edit-panel =
-    .label = Бетбелгіні түзету
+bookmarks-subview-edit-bookmark =
+    .label = Бетбелгіні түзету…
 # The aria-label is a spoken label that should not include the word "toolbar" or
 # such, because screen readers already know that this container is a toolbar.
 # This avoids double-speaking.
@@ -612,8 +721,8 @@ bookmarks-toolbar-placeholder =
 bookmarks-toolbar-placeholder-button =
     .label = Бетбелгілер панелінің элементтері
 # "Bookmark" is a verb, as in "Add current tab to bookmarks".
-bookmarks-current-tab =
-    .label = Ағымдағы бетті бетбелгілерге қосу
+bookmarks-subview-bookmark-tab =
+    .label = Ағымдағы бетті бетбелгілерге қосу…
 
 ## Library Panel items
 
@@ -637,11 +746,6 @@ repair-text-encoding-button =
 ## Customize Toolbar Buttons
 
 # Variables:
-#  $shortcut (String): keyboard shortcut to open the add-ons manager
-toolbar-addons-themes-button =
-    .label = Қосымшалар және темалар
-    .tooltiptext = Қосымшалар және темаларыңызды басқару ({ $shortcut })
-# Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
 toolbar-settings-button =
     .label = Баптаулар
@@ -650,18 +754,15 @@ toolbar-settings-button =
             [macos] Баптауларды ашу ({ $shortcut })
            *[other] Баптауларды ашу
         }
-
-## More items
-
-more-menu-go-offline =
-    .label = Дербес жұмыс істеу
-    .accesskey = Д
 toolbar-overflow-customize-button =
     .label = Құралдар панелін баптау…
     .accesskey = б
 toolbar-button-email-link =
     .label = Сілтемені эл. поштамен жіберу
     .tooltiptext = Бұл парақ сілтемесін эл. поштамен жіберу
+toolbar-button-logins =
+    .label = Парольдер
+    .tooltiptext = Сақталған парольдеріңізді қарау және басқару
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -694,19 +795,6 @@ eme-notifications-drm-content-playing-dismiss-accesskey = д
 panel-save-update-username = Пайдаланушы аты
 panel-save-update-password = Пароль
 
-## Add-on removal warning
-
-# Variables:
-#  $name (String): The name of the addon that will be removed.
-addon-removal-title = { $name } өшіру керек пе?
-addon-removal-abuse-report-checkbox = Бұл кеңейту туралы { -vendor-short-name } адресіне шағым жасау
-
-## Remote / Synced tabs
-
-remote-tabs-manage-account =
-    .label = Тіркелгіні басқару
-remote-tabs-sync-now = Қазір синхрондау
-
 ##
 
 # "More" item in macOS share menu
@@ -730,9 +818,25 @@ popups-infobar-block =
 popups-infobar-dont-show-message =
     .label = "Атып шығатын" терезелерді болдырмау мүмкіндігі қосулы кезінде осы хабарламаны көрсетпеу
     .accesskey = п
+edit-popup-settings =
+    .label = Атып шығатын терезелер баптаулары…
+    .accesskey = п
 picture-in-picture-hide-toggle =
     .label = Суреттегі сурет қосқышын жасыру
     .accesskey = ы
+
+## Since the default position for PiP controls does not change for RTL layout,
+## right-to-left languages should use "Left" and "Right" as in the English strings,
+
+picture-in-picture-move-toggle-right =
+    .label = Суреттегі-сурет ауыстырғышын оң жаққа жылжыту
+    .accesskey = о
+picture-in-picture-move-toggle-left =
+    .label = Суреттегі-сурет ауыстырғышын сол жаққа жылжыту
+    .accesskey = с
+
+##
+
 
 # Navigator Toolbox
 
@@ -750,9 +854,6 @@ navbar-overflow =
 navbar-print =
     .label = Баспаға шығару
     .tooltiptext = Ағымдағы бетті баспаға шығару… ({ $shortcut })
-navbar-print-tab-modal-disabled =
-    .label = Баспаға шығару
-    .tooltiptext = Ағымдағы бетті баспаға шығару
 navbar-home =
     .label = Үйге
     .tooltiptext = { -brand-short-name } үй беті
@@ -761,8 +862,6 @@ navbar-library =
     .tooltiptext = Тарихты, сақталған бетбелгілерді қарау және т.б.
 navbar-search =
     .title = Іздеу
-navbar-accessibility-indicator =
-    .tooltiptext = Қолжетерлілік мүмкіндіктері іске қосылған
 # Name for the tabs toolbar as spoken by screen readers. The word
 # "toolbar" is appended automatically and should not be included in
 # in the string
@@ -776,4 +875,90 @@ tabs-toolbar-list-all-tabs =
 
 ## Infobar shown at startup to suggest session-restore
 
+# <img data-l10n-name="icon"/> will be replaced by the application menu icon
+restore-session-startup-suggestion-message = <strong>Алдыңғы беттерді ашу керек пе?</strong> Сіз алдыңғы сессияны { -brand-short-name } қолданба мәзірі ішіндегі <img data-l10n-name="icon"/> Тарих бөлімінен қалпына келтіре аласыз.
 restore-session-startup-suggestion-button = Қалай жасау керектігін көрсету
+
+## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
+
+data-reporting-notification-message = { -brand-short-name } автоматты түрде { -vendor-short-name } адресіне өнімді жақсартуға көмектесетін ақпаратты жібереді.
+data-reporting-notification-button =
+    .label = Мен немен бөлісе алатынымды көрсету
+    .accesskey = М
+# Label for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-label = Жекелік шолу
+
+## Unified extensions (toolbar) button
+
+unified-extensions-button =
+    .label = Кеңейтулер
+    .tooltiptext = Кеңейтулер
+
+## Unified extensions button when permission(s) are needed.
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-permissions-needed =
+    .label = Кеңейтулер
+    .tooltiptext =
+        Кеңейтулер
+        Керек рұқсаттар
+
+## Unified extensions button when some extensions are quarantined.
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-quarantined =
+    .label = Кеңейтулер
+    .tooltiptext =
+        Кеңейтулер
+        Кейбір кеңейтулер рұқсат етілмеген
+
+## Autorefresh blocker
+
+refresh-blocked-refresh-label = { -brand-short-name } осы парақтың өзіндік жаңартуын тоқтатты.
+refresh-blocked-redirect-label = { -brand-short-name } басқа параққа автоматты бағдарлауын тоқтатты.
+refresh-blocked-allow =
+    .label = Рұқсат ету
+    .accesskey = а
+
+## Firefox Relay integration
+
+firefox-relay-offer-why-to-use-relay = Біздің қауіпсіз, қолдануға оңай маскалар сіздің тұлғаңызды қорғайды және электрондық пошта адресіңізді жасыру арқылы спамның алдын алады.
+# Variables:
+#  $useremail (String): user email that will receive messages
+firefox-relay-offer-what-relay-provides = Электрондық пошта маскаларына жіберілген барлық хаттар <strong>{ $useremail }</strong> адресіне жіберіледі (егер сіз оларды блоктауды шешпесеңіз).
+firefox-relay-offer-legal-notice = "Электронды пошта маскасын қолдану" шерту арқылы, сіз <label data-l10n-name="tos-url">Қызмет көрсету шарттары</label> мен <label data-l10n-name="privacy-url">Жекелік ескертуімен</label> келісесіз.
+
+## Add-on Pop-up Notifications
+
+popup-notification-addon-install-unsigned =
+    .value = (Тексерілмеген)
+popup-notification-xpinstall-prompt-learn-more = Қосымшаларды қауіпсіз орнату туралы көбірек біліңіз
+
+## Pop-up warning
+
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-message =
+    { $popupCount ->
+        [one] { -brand-short-name } бұл веб сайттан атып шығатын терезені болдырмады.
+       *[other] { -brand-short-name } бұл веб сайттан атып шығатын { $popupCount } терезені болдырмады.
+    }
+# The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-message = { -brand-short-name } бұл сайтқа { $popupCount } көп атып шығатын терезені ашуға жол бермеген.
+popup-warning-button =
+    .label =
+        { PLATFORM() ->
+            [windows] Баптаулар
+           *[other] Баптаулар
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [windows] Б
+           *[other] П
+        }
+# Variables:
+#   $popupURI (String): the URI for the pop-up window
+popup-show-popup-menuitem =
+    .label = "{ $popupURI }" көрсету

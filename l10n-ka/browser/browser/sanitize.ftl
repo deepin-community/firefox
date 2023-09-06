@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = ისტორიის გასუფთავების პარამეტრები
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = უახლესი ისტორიის გასუფთავება
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = ისტორიის სრულად გასუფთავება
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = როცა { -brand-short-name } დაიხურება, სრულად წაიშლება
 
@@ -66,10 +66,10 @@ item-cookies =
 
 item-active-logins =
     .label = მოქმედი ანგარიშები
-    .accesskey = შ
+    .accesskey = ქ
 
 item-cache =
-    .label = დროებითი ფაილები
+    .label = მომარაგებული
     .accesskey = ო
 
 item-form-search-history =
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = შ
 
 data-section-label = მონაცემები
-
-item-site-preferences =
-    .label = საიტის პარამეტრები
-    .accesskey = პ
 
 item-site-settings =
     .label = საიტის პარამეტრები
@@ -111,4 +107,4 @@ sanitize-everything-warning = ისტორია სრულად გას
 # Warning that appears when "Time range to clear" is set to "Everything" in Clear
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
-sanitize-selected-warning = ყველა მონიშნული ელემენტი გასუფთავდება.
+sanitize-selected-warning = ყველა მონიშნული ერთეული გასუფთავდება.

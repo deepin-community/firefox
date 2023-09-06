@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 text-action-undo =
-    .label = Razveljavi …
+    .label = Razveljavi
     .accesskey = Z
 text-action-undo-shortcut =
     .key = Z
@@ -22,9 +22,17 @@ text-action-copy =
     .accesskey = K
 text-action-copy-shortcut =
     .key = c
+# This command copies the link, removing additional
+# query parameters used to track users across sites.
+text-action-strip-on-share =
+    .label = Kopiraj brez sledilnih parametrov
+    .accesskey = z
 text-action-paste =
     .label = Prilepi
     .accesskey = P
+text-action-paste-no-formatting =
+    .label = Prilepi brez oblikovanja
+    .accesskey = n
 text-action-paste-shortcut =
     .key = V
 text-action-delete =

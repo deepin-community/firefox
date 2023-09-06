@@ -10,7 +10,7 @@ use crate::values::specified::angle::Angle as SpecifiedAngle;
 use crate::values::specified::length::Length as SpecifiedLength;
 use crate::values::specified::length::LengthPercentage as SpecifiedLengthPercentage;
 use crate::values::{computed, CSSFloat};
-use crate::Zero;
+use crate::{Zero, ZeroNoPercent};
 use euclid;
 use euclid::default::{Rect, Transform3D};
 use std::fmt::{self, Write};
@@ -168,7 +168,7 @@ impl<L> GenericPerspectiveFunction<L> {
     /// Returns `f32::INFINITY` or the result of a function on the length value.
     pub fn infinity_or(&self, f: impl FnOnce(&L) -> f32) -> f32 {
         match *self {
-            Self::None => std::f32::INFINITY,
+            Self::None => f32::INFINITY,
             Self::Length(ref l) => f(l),
         }
     }
@@ -194,7 +194,7 @@ pub use self::GenericPerspectiveFunction as PerspectiveFunction;
 pub enum GenericTransformOperation<Angle, Number, Length, Integer, LengthPercentage>
 where
     Angle: Zero,
-    LengthPercentage: Zero,
+    LengthPercentage: Zero + ZeroNoPercent,
     Number: PartialEq,
 {
     /// Represents a 2D 2x3 matrix.
@@ -218,7 +218,7 @@ where
     #[css(comma, function)]
     Translate(
         LengthPercentage,
-        #[css(skip_if = "Zero::is_zero")] LengthPercentage,
+        #[css(skip_if = "ZeroNoPercent::is_zero_no_percent")] LengthPercentage,
     ),
     /// translateX(x)
     #[css(function = "translateX")]
@@ -327,7 +327,7 @@ impl<Angle, Number, Length, Integer, LengthPercentage>
     TransformOperation<Angle, Number, Length, Integer, LengthPercentage>
 where
     Angle: Zero,
-    LengthPercentage: Zero,
+    LengthPercentage: Zero + ZeroNoPercent,
     Number: PartialEq,
 {
     /// Check if it is any rotate function.
@@ -404,15 +404,10 @@ impl ToAbsoluteLength for ComputedLength {
 impl ToAbsoluteLength for ComputedLengthPercentage {
     #[inline]
     fn to_pixel_length(&self, containing_len: Option<ComputedLength>) -> Result<CSSFloat, ()> {
-        match containing_len {
-            Some(relative_len) => Ok(self.resolve(relative_len).px()),
-            // If we don't have reference box, we cannot resolve the used value,
-            // so only retrieve the length part. This will be used for computing
-            // distance without any layout info.
-            //
-            // FIXME(emilio): This looks wrong.
-            None => Ok(self.resolve(Zero::zero()).px()),
-        }
+        Ok(self
+            .maybe_percentage_relative_to(containing_len)
+            .ok_or(())?
+            .px())
     }
 }
 
@@ -454,7 +449,7 @@ where
     Angle: Zero + ToRadians + Copy,
     Number: PartialEq + Copy + Into<f32> + Into<f64>,
     Length: ToAbsoluteLength,
-    LoP: Zero + ToAbsoluteLength,
+    LoP: Zero + ToAbsoluteLength + ZeroNoPercent,
 {
     #[inline]
     fn is_3d(&self) -> bool {
@@ -476,7 +471,6 @@ where
         reference_box: Option<&Rect<ComputedLength>>,
     ) -> Result<Transform3D<f64>, ()> {
         use self::TransformOperation::*;
-        use std::f64;
 
         let reference_width = reference_box.map(|v| v.size.width);
         let reference_height = reference_box.map(|v| v.size.height);
@@ -506,7 +500,7 @@ where
             },
             Perspective(ref p) => {
                 let px = match p {
-                    PerspectiveFunction::None => std::f32::INFINITY,
+                    PerspectiveFunction::None => f32::INFINITY,
                     PerspectiveFunction::Length(ref p) => p.to_pixel_length(None)?,
                 };
                 create_perspective_matrix(px).cast()
@@ -572,6 +566,7 @@ impl<T> Transform<T> {
 
 impl<T: ToMatrix> Transform<T> {
     /// Return the equivalent 3d matrix of this transform list.
+    ///
     /// We return a pair: the first one is the transform matrix, and the second one
     /// indicates if there is any 3d transform function in this transform list.
     #[cfg_attr(rustfmt, rustfmt_skip)]
@@ -579,9 +574,18 @@ impl<T: ToMatrix> Transform<T> {
         &self,
         reference_box: Option<&Rect<ComputedLength>>
     ) -> Result<(Transform3D<CSSFloat>, bool), ()> {
+        Self::components_to_transform_3d_matrix(&self.0, reference_box)
+    }
+
+    /// Converts a series of components to a 3d matrix.
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    pub fn components_to_transform_3d_matrix(
+        ops: &[T],
+        reference_box: Option<&Rect<ComputedLength>>,
+    ) -> Result<(Transform3D<CSSFloat>, bool), ()> {
         let cast_3d_transform = |m: Transform3D<f64>| -> Transform3D<CSSFloat> {
             use std::{f32, f64};
-            let cast = |v: f64| { v.min(f32::MAX as f64).max(f32::MIN as f64) as f32 };
+            let cast = |v: f64| v.min(f32::MAX as f64).max(f32::MIN as f64) as f32;
             Transform3D::new(
                 cast(m.m11), cast(m.m12), cast(m.m13), cast(m.m14),
                 cast(m.m21), cast(m.m22), cast(m.m23), cast(m.m24),
@@ -590,26 +594,27 @@ impl<T: ToMatrix> Transform<T> {
             )
         };
 
-        let (m, is_3d) = self.to_transform_3d_matrix_f64(reference_box)?;
+        let (m, is_3d) = Self::components_to_transform_3d_matrix_f64(ops, reference_box)?;
         Ok((cast_3d_transform(m), is_3d))
     }
 
     /// Same as Transform::to_transform_3d_matrix but a f64 version.
-    pub fn to_transform_3d_matrix_f64(
-        &self,
+    fn components_to_transform_3d_matrix_f64(
+        ops: &[T],
         reference_box: Option<&Rect<ComputedLength>>,
     ) -> Result<(Transform3D<f64>, bool), ()> {
-        // We intentionally use Transform3D<f64> during computation to avoid error propagation
-        // because using f32 to compute triangle functions (e.g. in rotation()) is not
-        // accurate enough. In Gecko, we also use "double" to compute the triangle functions.
-        // Therefore, let's use Transform3D<f64> during matrix computation and cast it into f32
-        // in the end.
+        // We intentionally use Transform3D<f64> during computation to avoid
+        // error propagation because using f32 to compute triangle functions
+        // (e.g. in rotation()) is not accurate enough. In Gecko, we also use
+        // "double" to compute the triangle functions. Therefore, let's use
+        // Transform3D<f64> during matrix computation and cast it into f32 in
+        // the end.
         let mut transform = Transform3D::<f64>::identity();
         let mut contain_3d = false;
 
-        for operation in &*self.0 {
+        for operation in ops {
             let matrix = operation.to_3d_matrix(reference_box)?;
-            contain_3d |= operation.is_3d();
+            contain_3d = contain_3d || operation.is_3d();
             transform = matrix.then(&transform);
         }
 
@@ -666,7 +671,6 @@ pub fn get_normalized_vector_and_angle<T: Zero>(
 /// A value of the `Rotate` property
 ///
 /// <https://drafts.csswg.org/css-transforms-2/#individual-transforms>
-/// cbindgen:private-default-tagged-enum-constructor=false
 pub enum GenericRotate<Number, Angle> {
     /// 'none'
     None,
@@ -687,7 +691,7 @@ pub trait IsParallelTo {
 
 impl<Number, Angle> ToCss for Rotate<Number, Angle>
 where
-    Number: Copy + ToCss,
+    Number: Copy + ToCss + Zero,
     Angle: ToCss,
     (Number, Number, Number): IsParallelTo,
 {
@@ -700,25 +704,41 @@ where
             Rotate::None => dest.write_str("none"),
             Rotate::Rotate(ref angle) => angle.to_css(dest),
             Rotate::Rotate3D(x, y, z, ref angle) => {
-                // If a 3d rotation is specified, the property must serialize with an axis
-                // specified. If the axis is parallel with the x, y, or z axises, it must
-                // serialize as the appropriate keyword.
+                // If the axis is parallel with the x or y axes, it must serialize as the
+                // appropriate keyword. If a rotation about the z axis (that is, in 2D) is
+                // specified, the property must serialize as just an <angle>
+                //
                 // https://drafts.csswg.org/css-transforms-2/#individual-transform-serialization
                 let v = (x, y, z);
-                if v.is_parallel_to(&DirectionVector::new(1., 0., 0.)) {
-                    dest.write_char('x')?;
+                let axis = if x.is_zero() && y.is_zero() && z.is_zero() {
+                    // The zero length vector is parallel to every other vector, so
+                    // is_parallel_to() returns true for it. However, it is definitely different
+                    // from x axis, y axis, or z axis, and it's meaningless to perform a rotation
+                    // using that direction vector. So we *have* to serialize it using that same
+                    // vector - we can't simplify to some theoretically parallel axis-aligned
+                    // vector.
+                    None
+                } else if v.is_parallel_to(&DirectionVector::new(1., 0., 0.)) {
+                    Some("x ")
                 } else if v.is_parallel_to(&DirectionVector::new(0., 1., 0.)) {
-                    dest.write_char('y')?;
+                    Some("y ")
                 } else if v.is_parallel_to(&DirectionVector::new(0., 0., 1.)) {
-                    dest.write_char('z')?;
+                    // When we're parallel to the z-axis, we can just serialize the angle.
+                    return angle.to_css(dest);
                 } else {
-                    x.to_css(dest)?;
-                    dest.write_char(' ')?;
-                    y.to_css(dest)?;
-                    dest.write_char(' ')?;
-                    z.to_css(dest)?;
+                    None
+                };
+                match axis {
+                    Some(a) => dest.write_str(a)?,
+                    None => {
+                        x.to_css(dest)?;
+                        dest.write_char(' ')?;
+                        y.to_css(dest)?;
+                        dest.write_char(' ')?;
+                        z.to_css(dest)?;
+                        dest.write_char(' ')?;
+                    },
                 }
-                dest.write_char(' ')?;
                 angle.to_css(dest)
             },
         }
@@ -743,7 +763,6 @@ where
 /// A value of the `Scale` property
 ///
 /// <https://drafts.csswg.org/css-transforms-2/#individual-transforms>
-/// cbindgen:private-default-tagged-enum-constructor=false
 pub enum GenericScale<Number> {
     /// 'none'
     None,
@@ -785,12 +804,12 @@ where
 }
 
 #[inline]
-fn y_axis_and_z_axis_are_zero<LengthPercentage: Zero, Length: Zero>(
+fn y_axis_and_z_axis_are_zero<LengthPercentage: Zero + ZeroNoPercent, Length: Zero>(
     _: &LengthPercentage,
     y: &LengthPercentage,
     z: &Length,
 ) -> bool {
-    y.is_zero() && z.is_zero()
+    y.is_zero_no_percent() && z.is_zero()
 }
 
 #[derive(
@@ -814,17 +833,16 @@ fn y_axis_and_z_axis_are_zero<LengthPercentage: Zero, Length: Zero>(
 ///
 /// If a 2d translation is specified, the property must serialize with only one
 /// or two values (per usual, if the second value is 0px, the default, it must
-/// be omitted when serializing).
+/// be omitted when serializing; however if 0% is the second value, it is included).
 ///
 /// If a 3d translation is specified and the value can be expressed as 2d, we treat as 2d and
 /// serialize accoringly. Otherwise, we serialize all three values.
 /// https://github.com/w3c/csswg-drafts/issues/3305
 ///
 /// <https://drafts.csswg.org/css-transforms-2/#individual-transforms>
-/// cbindgen:private-default-tagged-enum-constructor=false
 pub enum GenericTranslate<LengthPercentage, Length>
 where
-    LengthPercentage: Zero,
+    LengthPercentage: Zero + ZeroNoPercent,
     Length: Zero,
 {
     /// 'none'

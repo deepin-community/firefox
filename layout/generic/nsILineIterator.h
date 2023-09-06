@@ -7,9 +7,11 @@
 #define nsILineIterator_h___
 
 #include "nscore.h"
+#include "nsINode.h"
 #include "nsRect.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/Result.h"
+#include "mozilla/WritingModes.h"
 
 class nsIFrame;
 
@@ -20,30 +22,25 @@ class nsIFrame;
  * the bottom line.
  *
  * Obtain this interface from frames via nsIFrame::GetLineIterator.
- * When you are finished using the iterator, call DisposeLineIterator()
- * to destroy the iterator if appropriate.
+ * This iterator belongs to the frame from which it was obtained, and should
+ * not be deleted by the caller.
+ * Note that any modification of the frame will invalidate the iterator!
+ * Users must get a new iterator any time the target may have been touched.
  */
 class nsILineIterator {
  protected:
   ~nsILineIterator() = default;
 
  public:
-  virtual void DisposeLineIterator() = 0;
-
   /**
    * The number of lines in the block
    */
   virtual int32_t GetNumLines() const = 0;
 
   /**
-   * The prevailing direction of lines.
-   *
-   * @return true if the CSS direction property for the block is
-   *         "rtl", otherwise false
-   *
-   *XXX after bug 924851 change this to return a UBiDiDirection
+   * Returns whether our lines are rtl.
    */
-  virtual bool GetDirection() = 0;
+  virtual bool IsLineIteratorFlowRTL() = 0;
 
   struct LineInfo {
     /** The first frame on the line. */
@@ -57,12 +54,11 @@ class nsILineIterator {
      */
     nsRect mLineBounds;
     /** Whether the line is wrapped at the end */
-    bool mIsWrapped;
+    bool mIsWrapped = false;
   };
 
   // Return miscellaneous information about a line.
-  virtual mozilla::Result<LineInfo, nsresult> GetLine(
-      int32_t aLineNumber) const = 0;
+  virtual mozilla::Result<LineInfo, nsresult> GetLine(int32_t aLineNumber) = 0;
 
   /**
    * Given a frame that's a child of the block, find which line its on
@@ -80,7 +76,7 @@ class nsILineIterator {
   // appropriately.
   NS_IMETHOD FindFrameAt(int32_t aLineNumber, nsPoint aPos,
                          nsIFrame** aFrameFound, bool* aPosIsBeforeFirstFrame,
-                         bool* aPosIsAfterLastFrame) const = 0;
+                         bool* aPosIsAfterLastFrame) = 0;
 
   // Check whether visual and logical order of frames within a line are
   // identical.
@@ -90,31 +86,48 @@ class nsILineIterator {
                             nsIFrame** aLastVisual) = 0;
 };
 
-class nsAutoLineIterator {
- public:
-  nsAutoLineIterator() : mRawPtr(nullptr) {}
-  MOZ_IMPLICIT nsAutoLineIterator(nsILineIterator* i) : mRawPtr(i) {}
+namespace mozilla {
 
-  ~nsAutoLineIterator() {
-    if (mRawPtr) mRawPtr->DisposeLineIterator();
-  }
+// Helper struct for FindFrameAt.
+struct LineFrameFinder {
+  LineFrameFinder(const nsPoint& aPos, const nsSize& aContainerSize,
+                  WritingMode aWM, bool aIsReversed)
+      : mPos(aWM, aPos, aContainerSize),
+        mContainerSize(aContainerSize),
+        mWM(aWM),
+        mIsReversed(aIsReversed) {}
 
-  operator const nsILineIterator*() const { return mRawPtr; }
-  operator nsILineIterator*() { return mRawPtr; }
-  const nsILineIterator* operator->() const { return mRawPtr; }
-  nsILineIterator* operator->() { return mRawPtr; }
+  void Scan(nsIFrame*);
+  void Finish(nsIFrame**, bool* aPosIsBeforeFirstFrame,
+              bool* aPosIsAfterLastFrame);
 
-  nsILineIterator* operator=(nsILineIterator* i) {
-    if (i == mRawPtr) return i;
+  const LogicalPoint mPos;
+  const nsSize mContainerSize;
+  const WritingMode mWM;
+  const bool mIsReversed;
 
-    if (mRawPtr) mRawPtr->DisposeLineIterator();
-
-    mRawPtr = i;
-    return i;
-  }
+  bool IsDone() const { return mDone; }
 
  private:
-  nsILineIterator* mRawPtr;
+  bool mDone = false;
+  nsIFrame* mFirstFrame = nullptr;
+  nsIFrame* mClosestFromStart = nullptr;
+  nsIFrame* mClosestFromEnd = nullptr;
+};
+
+}  // namespace mozilla
+
+/**
+ * Helper intended to be used in a scope where we're using an nsILineIterator
+ * and want to verify that no DOM mutations (which would invalidate the
+ * iterator) occur while we're using it.
+ */
+class MOZ_STACK_CLASS AutoAssertNoDomMutations final {
+#ifdef MOZ_DIAGNOSTIC_ASSERT_ENABLED
+  nsMutationGuard mGuard;
+#endif
+ public:
+  ~AutoAssertNoDomMutations() { MOZ_DIAGNOSTIC_ASSERT(!mGuard.Mutated(0)); }
 };
 
 #endif /* nsILineIterator_h___ */

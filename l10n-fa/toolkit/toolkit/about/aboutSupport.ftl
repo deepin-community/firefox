@@ -3,14 +3,17 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 page-title = اطلاعات رفع اشکال
-page-subtitle = این صفحه حاوی اطلاعات فنی است که امکان دارد هنگامی که به دنبال حل مشکلی هستید به شما کمک کند.  اگر به دنبال پاسخی برای پرسش‌های معمول دربارهٔ { -brand-short-name } هستید، از <a data-l10n-name="support-link">وب‌گاه پشتیبانی ما</a> بازدید نمایید.
+page-subtitle = این صفحه حاوی اطلاعات فنی است که امکان دارد هنگامی که به دنبال حل مشکلی هستید به شما کمک کند.  اگر به دنبال پاسخی برای پرسش‌های معمول دربارهٔ { -brand-short-name } هستید، از <a data-l10n-name="support-link">وبگاه پشتیبانی ما</a> بازدید نمایید.
 
 crashes-title = گزارش‌های فروپاشی
 crashes-id = شناسهٔ گزارش
 crashes-send-date = ثبت شد
 crashes-all-reports = تمام گزارش‌های فروپاشی
 crashes-no-config = این برنامه برای نمایش گزارش‌های فروپاشی پیکربندی نشده است.
+support-addons-title = افزونه‌ها
 support-addons-name = نام
+support-addons-type = نوع
+support-addons-enabled = فعال شده
 support-addons-version = نسخه
 support-addons-id = شناسه
 security-software-title = نرم‌افزار امنیتی
@@ -30,6 +33,7 @@ app-basics-title = اطلاعات اولیهٔ برنامه
 app-basics-name = نام
 app-basics-version = نسخه
 app-basics-build-id = شناسه ساخت
+app-basics-distribution-id = شناسه توزیع
 app-basics-update-channel = کانال بروزرسانی
 # This message refers to the folder used to store updates on the device,
 # as in "Folder for updates". "Update" is a noun, not a verb.
@@ -51,10 +55,13 @@ app-basics-enabled-plugins = متصل‌شونده‌های فعال
 app-basics-build-config = تنظیمات هنگام ساخت
 app-basics-user-agent = نام نمایندهٔ کاربر
 app-basics-os = سیستم عامل
+app-basics-os-theme = تم سیستم‌عامل
 app-basics-memory-use = استفاده حافظه
 app-basics-performance = کارایی
 app-basics-service-workers = Service Workerهای ثبت شده
+app-basics-third-party = ماژول‌های شخص ثالث
 app-basics-profiles = نمایه
+app-basics-launcher-process-status = فرآیند راه‌اندازی
 app-basics-multi-process-support = پنجره‌های چندپردازشی
 app-basics-remote-processes-count = پردازش‌های راه دور
 app-basics-enterprise-policies = خط و مش های سازمانی
@@ -62,12 +69,19 @@ app-basics-location-service-key-google = کلید سرویس مکان‌یابی
 app-basics-safebrowsing-key-google = کلید مرور امن گوگل
 app-basics-key-mozilla = کلید سرویس مکان‌یابی موزیلا
 app-basics-safe-mode = حالت امن
+
 show-dir-label =
     { PLATFORM() ->
         [macos] نمایش در Finder
         [windows] باز کردن پوشه
        *[other] باز کردن پوشه
     }
+environment-variables-title = متغیرهای محیطی
+environment-variables-name = نام
+environment-variables-value = مقدار
+experimental-features-title = ویژگی‌های آزمایشی
+experimental-features-name = نام
+experimental-features-value = مقدار
 modified-key-prefs-title = ترجیحاتِ تغییر یافتهٔ مهم
 modified-prefs-name = نام
 modified-prefs-value = مقدار
@@ -87,6 +101,8 @@ graphics-crash-guards-title = امکانات غیرفعال شده محافظ ف
 graphics-workarounds-title = راه‌حل
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = پروتکل پنجره
+# Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
+graphics-desktop-environment = محیط رومیزی
 place-database-title = پایگاه مکان‌ها
 place-database-integrity = یکپارچگی
 place-database-verify-integrity = بررسی یکپارچگی
@@ -107,6 +123,11 @@ sandbox-sys-call-tid = TID
 sandbox-sys-call-proc-type = نوع فرآیند
 sandbox-sys-call-number = Syscall
 sandbox-sys-call-args = آرگومان‌ها
+troubleshoot-mode-title = بررسی مشکلات
+restart-in-troubleshoot-mode-label = حالت عیب‌یابی…
+clear-startup-cache-title = سعی کنید کَشِ راه اندازی را پاک کنید
+clear-startup-cache-label = پاک کردن کَشِ راه اندازی…
+restart-button-label = راه‌اندازی مجدد
 
 ## Media titles
 
@@ -126,6 +147,8 @@ media-device-channels = کانال‌ها
 media-device-rate = ارزیابی
 media-device-latency = تاخیر
 media-capabilities-title = قابلیت‌های رسانه
+
+## Codec support table
 
 ##
 
@@ -148,6 +171,9 @@ intl-regional-prefs = ترجیحات منطقه‌ای
 ##
 ## See also https://firefox-source-docs.mozilla.org/remote/
 
+remote-debugging-title = رفع‌اشکال دوردست (قرارداد کرومیوم)
+remote-debugging-accepting-connections = پذیرش اتصال‌ها
+remote-debugging-url = نشانی اینترنتی
 
 ##
 
@@ -231,6 +257,7 @@ gpu-device-id = شناسهٔ سخت‌افزار گرافیکی
 gpu-subsys-id = شناسه Subsys
 gpu-drivers = درایور‌ها
 gpu-ram = رم
+gpu-driver-vendor = فراهم‌کننده راه‌انداز
 gpu-driver-version = نسخهٔ نرم‌افزار گرداننده
 gpu-driver-date = تاریخ تولید نرم‌افزار گرداننده
 gpu-active = فعال
@@ -251,6 +278,7 @@ unknown-failure = مسدود شده،‌ کد خطا { $failureCode }
 
 d3d11layers-crash-guard = حروفچین D3D11
 glcontext-crash-guard = OpenGL
+wmfvpxvideo-crash-guard = رمزگشا ویدئویی WMF VPX
 
 reset-on-next-restart = تنظیم مجدد بعد از راه اندازی مجدد
 gpu-process-kill-button = خاتمه پروسهٔ GPU
@@ -309,5 +337,19 @@ policies-error = خطا
 
 ## Printing section
 
+support-printing-title = در حال چاپ
+support-printing-troubleshoot = عیب‌یابی
+support-printing-clear-settings-button = پاک کردن تنظیمات چاپ ذخیره شده
+support-printing-modified-settings = تنظیمات چاپ اصلاح شده
+support-printing-prefs-name = نام
+support-printing-prefs-value = مقدار
+
 ## Normandy sections
 
+support-remote-experiments-title = آزمایش‌های از راه دور
+support-remote-experiments-name = نام
+support-remote-experiments-branch = شاخهٔ آزمایش
+
+support-remote-features-title = ویژگی‌های از راه دور
+support-remote-features-name = نام
+support-remote-features-status = وضعیت

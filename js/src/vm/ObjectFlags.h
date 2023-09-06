@@ -7,6 +7,8 @@
 #ifndef vm_ObjectFlags_h
 #define vm_ObjectFlags_h
 
+#include <stdint.h>
+
 #include "util/EnumFlags.h"  // js::EnumFlags
 
 namespace js {
@@ -58,6 +60,27 @@ enum class ObjectFlag : uint16_t {
   // used to invalidate IC/Warp code specializing on specific getter/setter
   // objects. See also the SMDOC comment in vm/GetterSetter.h.
   HadGetterSetterChange = 1 << 10,
+
+  // If set, use the watchtower testing mechanism to log changes to this object.
+  UseWatchtowerTestingLog = 1 << 11,
+
+  // If set, access to existing properties of this global object can be guarded
+  // based on a per-global counter that is incremented when the global object
+  // has its properties reordered/shadowed, instead of a shape guard.
+  GenerationCountedGlobal = 1 << 12,
+
+  // If set, we need to verify the result of a proxy get/set trap.
+  //
+  // The [[Get]] and [[Set]] traps for proxy objects enforce certain invariants
+  // for non-configurable, non-writable data properties and non-configurable
+  // accessors. If the invariants are not maintained, we must throw a type
+  // error. If this flag is not set, and this is a NativeObject, *and* the
+  // class does not have a resolve hook, then this object does not have any
+  // such properties, and we can skip the slow check.
+  //
+  // See
+  // https://tc39.es/ecma262/#sec-proxy-object-internal-methods-and-internal-slots
+  NeedsProxyGetSetResultValidation = 1 << 13
 };
 
 using ObjectFlags = EnumFlags<ObjectFlag>;

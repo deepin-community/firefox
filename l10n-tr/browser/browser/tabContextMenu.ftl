@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Tüm sekmeleri seç
     .accesskey = ü
+tab-context-play-tab =
+    .label = Sekmeyi oynat
+    .accesskey = o
+tab-context-play-tabs =
+    .label = Sekmeleri oynat
+    .accesskey = o
 duplicate-tab =
     .label = Sekmeyi çoğalt
     .accesskey = o
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Sekmeleri yer imlerine ekle…
     .accesskey = r
-bookmark-tab =
-    .label = Sekmeyi yer imlerine ekle
-    .accesskey = i
+tab-context-bookmark-tab =
+    .label = Sekmeyi yer imlerine ekle…
+    .accesskey = m
 tab-context-open-in-new-container-tab =
     .label = Yeni kapsayıcı sekmede aç
     .accesskey = k
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Paylaş
     .accesskey = P
-tab-context-share-more =
-    .label = Daha fazla…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -83,14 +87,6 @@ tab-context-reopen-closed-tabs =
            *[other] Kapatılan sekmeleri yeniden aç
         }
     .accesskey = d
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Sekmeyi kapat
-            [one] Sekmeyi kapat
-           *[other] Sekmeleri kapat
-        }
-    .accesskey = e
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

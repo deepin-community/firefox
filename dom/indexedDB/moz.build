@@ -9,7 +9,8 @@ with Files("**"):
 
 MOCHITEST_MANIFESTS += [
     "test/mochitest-intl-api.ini",
-    "test/mochitest.ini",
+    "test/mochitest-private.ini",
+    "test/mochitest-regular.ini",
 ]
 
 BROWSER_CHROME_MANIFESTS += ["test/browser.ini"]
@@ -31,11 +32,8 @@ EXPORTS.mozilla.dom += [
     "IDBDatabase.h",
     "IDBEvents.h",
     "IDBFactory.h",
-    "IDBFileHandle.h",
-    "IDBFileRequest.h",
     "IDBIndex.h",
     "IDBKeyRange.h",
-    "IDBMutableFile.h",
     "IDBObjectStore.h",
     "IDBRequest.h",
     "IDBTransaction.h",
@@ -50,7 +48,6 @@ EXPORTS.mozilla.dom.indexedDB += [
     "IDBResult.h",
     "Key.h",
     "KeyPath.h",
-    "PermissionRequestBase.h",
     "SerializationHelpers.h",
     "ThreadLocal.h",
 ]
@@ -65,19 +62,16 @@ UNIFIED_SOURCES += [
     "IDBDatabase.cpp",
     "IDBEvents.cpp",
     "IDBFactory.cpp",
-    "IDBFileHandle.cpp",
-    "IDBFileRequest.cpp",
     "IDBIndex.cpp",
     "IDBKeyRange.cpp",
-    "IDBMutableFile.cpp",
     "IDBObjectStore.cpp",
     "IDBRequest.cpp",
     "IDBTransaction.cpp",
     "IndexedDatabase.cpp",
     "IndexedDatabaseManager.cpp",
+    "IndexedDBCipherKeyManager.cpp",
     "IndexedDBCommon.cpp",
     "KeyPath.cpp",
-    "PermissionRequestBase.cpp",
     "ProfilerHelpers.cpp",
     "ReportInternalError.cpp",
     "SchemaUpgrades.cpp",
@@ -93,7 +87,6 @@ IPDL_SOURCES += [
     "PBackgroundIDBCursor.ipdl",
     "PBackgroundIDBDatabase.ipdl",
     "PBackgroundIDBDatabaseFile.ipdl",
-    "PBackgroundIDBDatabaseRequest.ipdl",
     "PBackgroundIDBFactory.ipdl",
     "PBackgroundIDBFactoryRequest.ipdl",
     "PBackgroundIDBRequest.ipdl",
@@ -111,7 +104,6 @@ if CONFIG["CC_TYPE"] in ("clang", "gcc"):
     # Suppress gcc warning about a comparison being always false due to the
     # range of the data type
     SOURCES["Key.cpp"].flags += ["-Wno-error=type-limits"]
-    CXXFLAGS += ["-Wno-error=shadow"]
 
 LOCAL_INCLUDES += [
     "/dom/base",

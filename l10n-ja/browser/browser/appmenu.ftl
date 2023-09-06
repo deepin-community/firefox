@@ -5,13 +5,16 @@
 
 ## App Menu
 
-appmenuitem-update-banner3 =
-    .label-update-downloading = { -brand-shorter-name } の更新をダウンロード中
-    .label-update-available = 更新可能 — 今すぐダウンロード
-    .label-update-manual = 更新可能 — 今すぐダウンロード
-    .label-update-unsupported = 更新不可 — システムの互換性なし
-    .label-update-restart = 更新可能 — 今すぐ再起動
-appmenuitem-protection-dashboard-title = プライバシー保護ダッシュボード
+appmenuitem-banner-update-downloading =
+    .label = { -brand-shorter-name } の更新をダウンロード中
+appmenuitem-banner-update-available =
+    .label = 更新可能 — 今すぐダウンロード
+appmenuitem-banner-update-manual =
+    .label = 更新可能 — 今すぐダウンロード
+appmenuitem-banner-update-unsupported =
+    .label = 更新不可 — システムの互換性なし
+appmenuitem-banner-update-restart =
+    .label = 更新可能 — 今すぐ再起動
 appmenuitem-new-tab =
     .label = 新しいタブ
 appmenuitem-new-window =
@@ -29,7 +32,9 @@ appmenuitem-addons-and-themes =
 appmenuitem-print =
     .label = 印刷...
 appmenuitem-find-in-page =
-    .label = このページを検索...
+    .label = ページ内を検索...
+appmenuitem-translate =
+    .label = ページを翻訳...
 appmenuitem-zoom =
     .value = ズーム
 appmenuitem-more-tools =
@@ -94,7 +99,6 @@ appmenu-fxa-sync-and-save-data2 = 同期してデータを保存
 appmenu-fxa-signed-in-label = ログイン
 appmenu-fxa-setup-sync =
     .label = 同期をオンにする...
-appmenu-fxa-show-more-tabs = さらにタブを表示
 appmenuitem-save-page =
     .label = 名前を付けてページを保存...
 
@@ -120,29 +124,20 @@ profiler-popup-button-recording =
 profiler-popup-button-capturing =
     .label = プロファイラー
     .tooltiptext = プロファイラーがプロファイルをキャプチャ中です
-profiler-popup-title =
-    .value = { -profiler-brand-name }
+profiler-popup-header-text = { -profiler-brand-name }
 profiler-popup-reveal-description-button =
     .aria-label = 詳細な情報を表示
 profiler-popup-description-title =
     .value = 記録、分析、共有
 profiler-popup-description = プロファイルを公開してあなたのチームと共有し、パフォーマンス問題に協力しましょう。
-profiler-popup-learn-more = 詳細
 profiler-popup-learn-more-button =
     .label = 詳細
 profiler-popup-settings =
     .value = 設定
 # This link takes the user to about:profiling, and is only visible with the Custom preset.
-profiler-popup-edit-settings = 設定を編集...
-# This link takes the user to about:profiling, and is only visible with the Custom preset.
 profiler-popup-edit-settings-button =
     .label = 設定を編集...
-profiler-popup-disabled = プライベートウィンドウを開いているため、プロファイラーは現在無効です。
 profiler-popup-recording-screen = 記録中...
-# The profiler presets list is generated elsewhere, but the custom preset is defined
-# here only.
-profiler-popup-presets-custom =
-    .label = カスタム
 profiler-popup-start-recording-button =
     .label = 記録を開始
 profiler-popup-discard-button =
@@ -164,23 +159,28 @@ profiler-popup-capture-shortcut =
 ## They are shown in the popup's select box.
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
+# devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
+
 profiler-popup-presets-web-developer-description = 一般的なウェブアプリをデバッグするための低負荷な推奨プリセットです。
 profiler-popup-presets-web-developer-label =
     .label = ウェブ開発
-profiler-popup-presets-firefox-platform-description = Firefox のプラットフォーム内部をデバッグするための推奨プリセットです。
-profiler-popup-presets-firefox-platform-label =
-    .label = Firefox プラットフォーム
-profiler-popup-presets-firefox-front-end-description = Firefox のフロントエンド内部をデバッグするための推奨プリセットです。
-profiler-popup-presets-firefox-front-end-label =
-    .label = Firefox フロントエンド
-profiler-popup-presets-firefox-graphics-description = Firefox のグラフィック性能を調査するための推奨プリセットです。
-profiler-popup-presets-firefox-graphics-label =
-    .label = Firefox グラフィック
-profiler-popup-presets-media-description = 音声と動画の問題を診断するための推奨プリセットです。
+profiler-popup-presets-firefox-description = { -brand-shorter-name } のプロファイリングのための推奨プリセットです。
+profiler-popup-presets-firefox-label =
+    .label = { -brand-shorter-name }
+profiler-popup-presets-graphics-description = { -brand-shorter-name } のグラフィックバグを調査するための推奨プリセットです。
+profiler-popup-presets-graphics-label =
+    .label = グラフィック
+profiler-popup-presets-media-description2 = { -brand-shorter-name } の音声と動画のバグを調査するための推奨プリセットです。
 profiler-popup-presets-media-label =
     .label = メディア
+profiler-popup-presets-networking-description = { -brand-shorter-name } のネットワークバグを調査するための推奨プリセットです。
+profiler-popup-presets-networking-label =
+    .label = ネットワーク
+profiler-popup-presets-power-description = { -brand-shorter-name } の消費電力のバグを少ないオーバーヘッドで調査するための推奨プリセットです。
+# "Power" is used in the sense of energy (electricity used by the computer).
+profiler-popup-presets-power-label =
+    .label = 消費電力
 profiler-popup-presets-custom-label =
     .label = カスタム
 
@@ -188,8 +188,6 @@ profiler-popup-presets-custom-label =
 
 appmenu-manage-history =
     .label = 履歴を管理
-appmenu-reopen-all-tabs = タブをすべて開きなおす
-appmenu-reopen-all-windows = ウィンドウをすべて開きなおす
 appmenu-restore-session =
     .label = 以前のセッションを復元
 appmenu-clear-history =
@@ -199,6 +197,9 @@ appmenu-recently-closed-tabs =
     .label = 最近閉じたタブ
 appmenu-recently-closed-windows =
     .label = 最近閉じたウィンドウ
+# This allows to search through the browser's history.
+appmenu-search-history =
+    .label = 履歴を検索
 
 ## Help panel
 
@@ -215,9 +216,11 @@ appmenu-help-more-troubleshooting-info =
     .accesskey = t
 appmenu-help-report-site-issue =
     .label = サイトの問題を報告...
-appmenu-help-feedback-page =
-    .label = フィードバックを送信...
+appmenu-help-share-ideas =
+    .label = 意見とフィードバックを共有...
     .accesskey = S
+appmenu-help-switch-device =
+    .label = 新しい端末に切り替え
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -243,8 +246,6 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = ツールバーをカスタマイズ...
-appmenu-taskmanager =
-    .label = タスクマネージャー
 appmenu-developer-tools-subheader = ブラウザーツール
 appmenu-developer-tools-extensions =
     .label = 開発者用拡張機能

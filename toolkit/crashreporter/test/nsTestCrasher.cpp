@@ -11,6 +11,9 @@
 #  include <malloc.h>
 #  include <windows.h>
 #elif defined(XP_MACOSX)
+#  include <sys/types.h>
+#  include <sys/fcntl.h>
+#  include <unistd.h>
 #  include <dlfcn.h>  // For dlsym()
 // See https://github.com/apple/darwin-xnu/blob/main/bsd/sys/guarded.h
 #  define GUARD_CLOSE (1u << 0)
@@ -21,6 +24,10 @@
 typedef uint64_t guardid_t;
 typedef int (*guarded_open_np_t)(const char*, const guardid_t*, u_int, int,
                                  ...);
+#endif
+
+#ifndef XP_WIN
+#  include <pthread.h>
 #endif
 
 #ifdef MOZ_PHC
@@ -80,6 +87,7 @@ const int16_t CRASH_OOM = 3;
 const int16_t CRASH_MOZ_CRASH = 4;
 const int16_t CRASH_ABORT = 5;
 const int16_t CRASH_UNCAUGHT_EXCEPTION = 6;
+#if XP_WIN && HAVE_64BIT_BUILD && defined(_M_X64) && !defined(__MINGW32__)
 const int16_t CRASH_X64CFI_NO_MANS_LAND = 7;
 const int16_t CRASH_X64CFI_LAUNCHER = 8;
 const int16_t CRASH_X64CFI_UNKNOWN_OPCODE = 9;
@@ -92,11 +100,19 @@ const int16_t CRASH_X64CFI_SAVE_XMM128 = 17;
 const int16_t CRASH_X64CFI_SAVE_XMM128_FAR = 18;
 const int16_t CRASH_X64CFI_EPILOG = 19;
 const int16_t CRASH_X64CFI_EOF = 20;
+#endif
 const int16_t CRASH_PHC_USE_AFTER_FREE = 21;
 const int16_t CRASH_PHC_DOUBLE_FREE = 22;
 const int16_t CRASH_PHC_BOUNDS_VIOLATION = 23;
+#if XP_WIN
 const int16_t CRASH_HEAP_CORRUPTION = 24;
+#endif
+#ifdef XP_MACOSX
 const int16_t CRASH_EXC_GUARD = 25;
+#endif
+#ifndef XP_WIN
+const int16_t CRASH_STACK_OVERFLOW = 26;
+#endif
 
 #if XP_WIN && HAVE_64BIT_BUILD && defined(_M_X64) && !defined(__MINGW32__)
 
@@ -152,6 +168,31 @@ uint8_t* GetPHCAllocation(size_t aSize) {
   MOZ_CRASH("failed to get a PHC allocation");
 }
 #endif
+
+#ifndef XP_WIN
+static int64_t recurse(int64_t aRandom) {
+  char buff[256] = {};
+  int64_t result = aRandom;
+
+  strncpy(buff, "This is gibberish", sizeof(buff));
+
+  for (auto& c : buff) {
+    result += c;
+  }
+
+  if (result == 0) {
+    return result;
+  }
+
+  return recurse(result) + 1;
+}
+
+static void* overflow_stack(void* aInput) {
+  int64_t result = recurse(*((int64_t*)(aInput)));
+
+  return (void*)result;
+}
+#endif  // XP_WIN
 
 extern "C" NS_EXPORT void Crash(int16_t how) {
   switch (how) {
@@ -265,6 +306,18 @@ extern "C" NS_EXPORT void Crash(int16_t how) {
       }
     }
 #endif  // XP_MACOSX
+#ifndef XP_WIN
+    case CRASH_STACK_OVERFLOW: {
+      pthread_t thread_id;
+      int64_t data = 1337;
+      int rv = pthread_create(&thread_id, nullptr, overflow_stack, &data);
+      if (!rv) {
+        pthread_join(thread_id, nullptr);
+      }
+
+      break;  // This should be unreachable
+    }
+#endif  // XP_WIN
     default:
       break;
   }

@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "CocoaFileUtils.h"
-#include "nsCocoaFeatures.h"
 #include "nsCocoaUtils.h"
 #include <Cocoa/Cocoa.h>
 #include "nsObjCExceptions.h"
@@ -277,6 +276,13 @@ void CopyQuarantineReferrerUrl(const CFStringRef aFilePath, nsAString& aReferrer
 CFURLRef GetTemporaryFolderCFURLRef() {
   NSString* tempDir = ::NSTemporaryDirectory();
   return tempDir == nil ? NULL : (CFURLRef)[NSURL fileURLWithPath:tempDir isDirectory:YES];
+}
+
+CFURLRef GetProductDirectoryCFURLRef(bool aLocal) {
+  NSSearchPathDirectory folderType = aLocal ? NSCachesDirectory : NSLibraryDirectory;
+  NSFileManager* manager = [NSFileManager defaultManager];
+  return static_cast<CFURLRef>([[manager URLsForDirectory:folderType
+                                                inDomains:NSUserDomainMask] firstObject]);
 }
 
 }  // namespace CocoaFileUtils

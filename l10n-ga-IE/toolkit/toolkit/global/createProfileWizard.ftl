@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Treoraí na bPróifílí
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Réamhrá
-       *[other] Fáilte go dtí { create-profile-window.title }
+       *[other] Fáilte go dtí { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = Sábhálann { -brand-short-name } eolas faoi do shocruithe agus sainroghanna i do phróifíl phearsanta.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Críoch
-       *[other] { create-profile-window.title } á chur i gcrích
+       *[other] { create-profile-window2.title } á chur i gcrích
     }
 
 profile-creation-intro = Má chruthaíonn tú próifílí éagsúla, is féidir iad a aithint óna chéile le hainmneacha na bpróifílí. Is féidir an t-ainm a thugtar anseo a úsáid, nó do cheann féin.

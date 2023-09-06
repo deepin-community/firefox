@@ -4,7 +4,7 @@
 "use strict";
 
 const TEST_URI =
-  "data:text/html;charset=utf8,Test that 'Open in Network Panel' " +
+  "data:text/html;charset=utf8,<!DOCTYPE html>Test that 'Open in Network Panel' " +
   "context menu item opens the selected request in netmonitor panel.";
 
 const TEST_FILE = "test-network-request.html";
@@ -33,7 +33,7 @@ add_task(async function task() {
   const hud = await openNewTabAndConsole(TEST_URI);
 
   const currentTab = gBrowser.selectedTab;
-  const toolbox = await gDevTools.getToolboxForTab(currentTab);
+  const toolbox = gDevTools.getToolboxForTab(currentTab);
 
   const documentUrl = TEST_PATH + TEST_FILE;
   await navigateTo(documentUrl);
@@ -61,7 +61,7 @@ add_task(async function task() {
   info("console panel open again.");
 
   // Fire an XHR request.
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function() {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function () {
     // Ensure XHR request is completed
     await new Promise(resolve => content.wrappedJSObject.testXhrGet(resolve));
   });
@@ -93,7 +93,7 @@ add_task(async function task() {
 
 const {
   getSortedRequests,
-} = require("devtools/client/netmonitor/src/selectors/index");
+} = require("resource://devtools/client/netmonitor/src/selectors/index.js");
 
 function waitForRequestData(store, fields, i) {
   return waitUntil(() => {

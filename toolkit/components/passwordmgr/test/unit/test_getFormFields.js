@@ -1,19 +1,16 @@
 /**
- * Test for LoginManagerChild._getFormFields.
+ * Test for LoginFormState._getFormFields.
  */
 
 "use strict";
 
-XPCOMUtils.defineLazyGlobalGetters(this, ["URL"]);
+const { LoginFormFactory } = ChromeUtils.importESModule(
+  "resource://gre/modules/LoginFormFactory.sys.mjs"
+);
 
-const { LoginFormFactory } = ChromeUtils.import(
-  "resource://gre/modules/LoginFormFactory.jsm"
+const { LoginManagerChild } = ChromeUtils.importESModule(
+  "resource://gre/modules/LoginManagerChild.sys.mjs"
 );
-const LMCBackstagePass = ChromeUtils.import(
-  "resource://gre/modules/LoginManagerChild.jsm",
-  null
-);
-const { LoginManagerChild } = LMCBackstagePass;
 
 const TESTENVIRONMENTS = {
   filledPW1WithGeneratedPassword: {
@@ -471,14 +468,14 @@ function _setPrefs() {
   });
 }
 
-this._setPrefs();
+_setPrefs();
 
 for (let tc of TEST_ENVIRONMENT_CASES) {
   info("Sanity checking the testcase: " + tc.description);
 
-  (function() {
+  (function () {
     let testcase = tc;
-    add_task(async function() {
+    add_task(async function () {
       info("Starting testcase: " + testcase.description);
 
       for (let pref of testcase.extraTestPreferences) {
@@ -511,7 +508,7 @@ for (let tc of TEST_ENVIRONMENT_CASES) {
         document
       );
 
-      let actual = lmc._getFormFields(
+      let actual = loginFormState._getFormFields(
         formLike,
         testcase.skipEmptyFields,
         new Set()

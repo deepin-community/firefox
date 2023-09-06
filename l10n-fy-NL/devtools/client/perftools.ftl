@@ -21,6 +21,7 @@ perftools-heading-features-default = Funksjes (standert oan oanrekommandearre)
 perftools-heading-features-disabled = Utskeakele funksjes
 perftools-heading-features-experimental = Eksperiminteel
 perftools-heading-threads = Threads
+perftools-heading-threads-jvm = JVM-threads
 perftools-heading-local-build = Lokale build
 
 ##
@@ -29,7 +30,7 @@ perftools-description-intro =
     Opnamen starte <a>profiler.firefox.com</a> yn in nij ljepblêd. Alle gegevens wurde lokaal
     bewarre, mar jo kinne derfoar kieze se op te laden om se te dielen.
 perftools-description-local-build =
-    As jo in build profilearje dy't jo sels, op dizze masine, kompilearre hawwe,
+    As jo in build profilearje dy’t jo sels, op dizze masine, kompilearre hawwe,
     foegje dan de objdir fan jo build oan de ûndersteande list ta, sadat
     dizze brûkt wurde kin om symboalynformaasje op te sykjen.
 
@@ -42,16 +43,15 @@ perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Buffergrutte:
+
 perftools-custom-threads-label = Oanpaste threads op namme tafoegje:
+
 perftools-devtools-interval-label = Ynterfal:
 perftools-devtools-threads-label = Threads:
 perftools-devtools-settings-label = Ynstellingen
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice =
-    De profiler is útskeakele as priveenavigaasje ynskeakele is.
-    Slút alle priveefinsters om de profiler opnij yn te skeakeljen
 perftools-status-recording-stopped-by-another-tool = De opname is troch in oar helpmiddel stoppe.
 perftools-status-restart-required = De browser moat opnij start wurde om dizze funksje yn te skeakeljen.
 
@@ -80,11 +80,11 @@ perftools-thread-compositor =
 perftools-thread-dom-worker =
     .title = Dit ferwurket sawol webworkers as serviceworkers
 perftools-thread-renderer =
-    .title = As WebRender ynskeakele is, de thread dy't OpenGL-oanroppen útfiert
+    .title = As WebRender ynskeakele is, de thread dy’t OpenGL-oanroppen útfiert
 perftools-thread-render-backend =
     .title = De WebRender RenderBackend-thread
-perftools-thread-paint-worker =
-    .title = As off-main-threadpainting ynskeakele is, de thread wêrop painting útfierd wurdt
+perftools-thread-timer =
+    .title = De timers foar it ôfhanneljen fan threads (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
     .title = Stylberekkening is opsplitst yn meardere threads
 pref-thread-stream-trans =
@@ -97,20 +97,31 @@ perftools-thread-dns-resolver =
     .title = Op dizze thread fynt DNS-omsetting plak
 perftools-thread-task-controller =
     .title = TaskController-threadpoolthreads
+perftools-thread-jvm-gecko =
+    .title = De wichtichste Gecko JVM-thread
+perftools-thread-jvm-nimbus =
+    .title = De wichtichste threads foar de Nimbus-eksperiminten-SDK
+perftools-thread-jvm-default-dispatcher =
+    .title = De standert dispatcher foar de Kotlin-coroutines-biblioteek
+perftools-thread-jvm-glean =
+    .title = De wichtichste threads foar de Glean-telemetrie-SDK
+perftools-thread-jvm-arch-disk-io =
+    .title = De IO-dispatcher foar de Kotlin-coroutines-biblioteek
+perftools-thread-jvm-pool =
+    .title = Threads makke yn in namleaze thread-pool
 
 ##
 
 perftools-record-all-registered-threads = Boppesteande seleksje pasearje en alle registrearre threads opnimme
+
 perftools-tools-threads-input-label =
-    .title = Dizze threadnammen binne in kommaskieden list, dy't brûkt wurdt om it profilearjen fan de threads yn de profiler mooglik te meitsjen. De namme hoecht mar in part oerien te kommen mei de threadnamme om opnommen te wurden. Gefoelich foar wytromte.
+    .title = Dizze threadnammen binne in kommaskieden list, dy’t brûkt wurdt om it profilearjen fan de threads yn de profiler mooglik te meitsjen. De namme hoecht mar in part oerien te kommen mei de threadnamme om opnommen te wurden. Gefoelich foar wytromte.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>Nij</b>: { -profiler-brand-name } is no yntegrearre yn de Untwikkelershelpmiddelen. <a>Mear ynfo</a> oer dit krêftige nije helpmiddel.
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (Jo kinne tydlik it oarspronklike paniel Prestaasjes benaderje fia <a>{ options-context-advanced-settings }</a>)
+
 perftools-onboarding-close-button =
     .aria-label = It wolkomstberjocht slute
 
@@ -121,16 +132,29 @@ perftools-onboarding-close-button =
 # devtools/client/performance-new/popup/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
 perftools-presets-web-developer-label = Webûntwikkeler
 perftools-presets-web-developer-description = Oanrekommandearre foarynstelling foar de measte flateropspoaring yn web-apps, mei lege overhead.
-perftools-presets-firefox-platform-label = Firefox-platfoarm
-perftools-presets-firefox-platform-description = Oanrekommandearre foarynstelling foar ynterne flateropspoaring yn it Firefox-platfoarm.
-perftools-presets-firefox-front-end-label = Firefox-front-end
-perftools-presets-firefox-front-end-description = Oanrekommandearre foarynstelling foar ynterne flateropspoaring yn it front-end fan Firefox.
-perftools-presets-firefox-graphics-label = Firefox-grafysk
-perftools-presets-firefox-graphics-description = Oanrekommandearre foarynstelling foar ûndersyk nei grafyske prestaasjes fan Firefox.
+
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = Oanrekommandearre foarynstelling foar profilearjen { -brand-shorter-name }.
+
+perftools-presets-graphics-label = Grafysk
+perftools-presets-graphics-description = Foarynstelling foar it ûndersykjen fan grafyske bugs yn { -brand-shorter-name }.
+
 perftools-presets-media-label = Media
-perftools-presets-media-description = Oanrekommandearre foarynstelling foar it analysearjen fan audio- en fideoproblemen.
+perftools-presets-media-description2 = Foarynstelling foar it ûndersykjen fan audio- en fideobugs yn { -brand-shorter-name }.
+
+perftools-presets-networking-label = Netwurk
+perftools-presets-networking-description = Foarynstelling foar it ûndersykjen fan netwerkbugs yn { -brand-shorter-name }.
+
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = Fermogen
+perftools-presets-power-description = Foarynstelling foar it ûndersykjen fan stroomferbrûkbugs yn { -brand-shorter-name }, mei lege overhead.
+
 perftools-presets-custom-label = Oanpast
 
 ##

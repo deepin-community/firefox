@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Encontu pa crear perfiles
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Introducción
-       *[other] Afáyate en { create-profile-window.title }
+       *[other] Afáyate en { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } atroxa información tocante a los axustes y les preferencies nel perfil personal.

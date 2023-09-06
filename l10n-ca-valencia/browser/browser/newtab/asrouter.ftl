@@ -65,9 +65,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } usuaris
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Sincronitzeu les adreces d'interés a tot arreu.
@@ -95,26 +92,6 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Llegiu les notes de la versió
 
-## Search Bar
-
-## Search bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 # Variables:
@@ -126,25 +103,8 @@ cfr-doorhanger-milestone-heading2 =
     }
 cfr-doorhanger-milestone-ok-button = Mostra-ho tot
     .accesskey = M
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = Tanca
     .accesskey = T
-
-## What’s New Panel Content for Firefox 76
-## Protections Dashboard message
 
 ## DOH Message
 
@@ -157,30 +117,59 @@ cfr-doorhanger-doh-secondary-button = Inhabilita
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = La vostra privadesa és important. Ara el { -brand-short-name } aïlla els llocs web els uns dels altres, perquè siga més difícil per als furoners robar contrasenyes, números de targetes de crèdit i altra informació confidencial.
-cfr-doorhanger-fission-header = Aïllament de llocs
-cfr-doorhanger-fission-primary-button = Entesos
-    .accesskey = E
-cfr-doorhanger-fission-secondary-button = Més informació
-    .accesskey = M
-
-## What's new: Cookies message
-
-## What's new: Media controls message
-
-## What's new: Search shortcuts
-
-## What's new: Cookies protection
-
-## What's new: Better bookmarking
-
-## What's new: Cross-site cookie tracking
-
 ## Full Video Support CFR message
+
+cfr-doorhanger-video-support-body = És possible que els vídeos d'este lloc no es reproduïsquen correctament en esta versió del { -brand-short-name }. Per reproduir els vídeos correctament, actualitzeu el { -brand-short-name } ara.
+cfr-doorhanger-video-support-header = Actualitzeu el { -brand-short-name } per reproduir el vídeo
+cfr-doorhanger-video-support-primary-button = Actualitza ara
+    .accesskey = A
+
+## Spotlight modal shared strings
 
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
+
+# This header text can be explicitly wrapped.
+spotlight-public-wifi-vpn-header = Pareix que utilitzeu una connexió Wi-Fi pública
+spotlight-public-wifi-vpn-body = Per amagar la vostra ubicació i activitat de navegació, considereu utilitzar una xarxa privada virtual. Vos ajudarà a mantindre-vos protegit quan navegueu per llocs públics, com ara aeroports i cafeteries.
+spotlight-public-wifi-vpn-primary-button = Protegiu la vostra privadesa amb el { -mozilla-vpn-brand-name }
+    .accesskey = P
+spotlight-public-wifi-vpn-link = Ara no
+    .accesskey = n
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+## Firefox View CFR
+
+## Firefox View Spotlight
+
+## Colorways expiry reminder CFR
+
+## Cookie Banner Handling CFR
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
 

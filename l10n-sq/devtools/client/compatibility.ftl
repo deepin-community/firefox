@@ -23,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (e nxjerrë nga përd
 compatibility-settings-button-label = Rregullime
 compatibility-settings-button-title =
     .title = Rregullime
-compatibility-feedback-button-label = Përshtypje
-compatibility-feedback-button-title =
-    .title = Përshtypje
 
 ## Messages used as headers in settings pane
 
@@ -43,6 +40,15 @@ compatibility-issue-occurrences =
        *[other] { $number } hasje
     }
 
-compatibility-no-issues-found = S’u gjetën çështje përputhshmërie.
+compatibility-no-issues-found = S’u gjetën çështje përputhjeje.
 compatibility-close-settings-button =
     .title = Mbylli rregullimet
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Probleme përputhjeje te:
+        { $browsers }

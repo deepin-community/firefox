@@ -3,23 +3,30 @@
 "use strict";
 
 // Testing navigation between nodes in search results
-const { AppConstants } = require("resource://gre/modules/AppConstants.jsm");
 
 const TEST_URL = URL_ROOT + "doc_inspector_search.html";
 
-add_task(async function() {
+add_task(async function () {
   const { inspector } = await openInspectorForURL(TEST_URL);
 
   info("Focus the search box");
   await focusSearchBoxUsingShortcut(inspector.panelWin);
 
   info("Enter body > p to search");
-  const processingDone = once(inspector.searchSuggestions, "processing-done");
-  EventUtils.sendString("body > p", inspector.panelWin);
-  await processingDone;
+  const searchText = "body > p";
+  // EventUtils.sendString will trigger multiple updates, so wait until the final one.
+  const processingDone = new Promise(resolve => {
+    const off = inspector.searchSuggestions.on("processing-done", data => {
+      if (data.query == searchText) {
+        resolve();
+        off();
+      }
+    });
+  });
+  EventUtils.sendString(searchText, inspector.panelWin);
 
   info("Wait for search query to complete");
-  await inspector.searchSuggestions._lastQuery;
+  await processingDone;
 
   let msg = "Press enter and expect a new selection";
   await sendKeyAndCheck(inspector, msg, "VK_RETURN", {}, "#p1");
@@ -57,7 +64,7 @@ add_task(async function() {
   }
 });
 
-const sendKeyAndCheck = async function(
+const sendKeyAndCheck = async function (
   inspector,
   description,
   key,

@@ -13,6 +13,30 @@ accessibility-keyboard-header = Bysellfwrdd
 
 ## Text entries that are used as text alternative for icons that depict accessibility isses.
 
+
+## These strings are used in the overlay displayed when running an audit in the accessibility panel
+
+accessibility-progress-initializing = Cychwyn…
+    .aria-valuetext = Cychwyn…
+
+# This string is displayed in the audit progress bar in the accessibility panel.
+# Variables:
+#   $nodeCount (Integer) - The number of nodes for which the audit was run so far.
+accessibility-progress-progressbar =
+    { $nodeCount ->
+        [zero] Gwirio { $nodeCount } nod
+        [one] Gwirio { $nodeCount } nod
+        [two] Gwirio { $nodeCount } nod
+        [few] Gwirio { $nodeCount } nod
+        [many] Gwirio { $nodeCount } nod
+       *[other] Gwirio { $nodeCount } nod
+    }
+
+accessibility-progress-finishing = Cwblhau…
+    .aria-valuetext = Cwblhau…
+
+## Text entries that are used as text alternative for icons that depict accessibility issues.
+
 accessibility-warning =
     .alt = Rhybudd
 

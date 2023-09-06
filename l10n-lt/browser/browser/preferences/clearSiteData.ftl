@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Valyti duomenis
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Išvalius visus slapukus bei svetainių duomenis, saugomus „{ -brand-short-name }“, jūs galite būti atjungti iš svetainių bei netekti darbui neprisijungus skirto turinio. Podėlio duomenų išvalymas neturės įtakos jūsų prisijungimams.
 

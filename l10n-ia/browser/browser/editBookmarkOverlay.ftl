@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Celar
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Monstrar tote le dossiers de marcapaginas
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Celar
+
 bookmark-overlay-new-folder-button =
     .label = Nove dossier
     .accesskey = o
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Monstrar tote le etiquettas
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Celar
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Monstrar tote le etiquettas
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Celar
 
 bookmark-overlay-keyword-2 =
     .value = Parola clave

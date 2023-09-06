@@ -8,6 +8,7 @@ about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = DNS キャッシュを消去
 about-networking-dns-trr-url = DoH URL
+about-networking-dns-trr-mode = DoH モード
 about-networking-dns-suffix = DNS サフィックス
 about-networking-websockets = WebSockets
 about-networking-refresh = 更新
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = アクティブ
 about-networking-idle = 待機
 about-networking-host = ホスト
-about-networking-tcp = TCP
 about-networking-type = 種類
 about-networking-sent = 送信データ量
 about-networking-received = 受信データ量
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = アドレス
 about-networking-expires = 期限 (秒)
 about-networking-originAttributesSuffix = 隔離キー
+about-networking-flags = 追加フラグ
 about-networking-messages-sent = 送信メッセージ
 about-networking-messages-received = 受信メッセージ
 about-networking-bytes-sent = 送信バイト数
 about-networking-bytes-received = 受信バイト数
 about-networking-logging = HTTP ログ
-about-networking-log-tutorial = このツールの使い方は <a data-l10n-name="logging">HTTP Logging</a> を参照してください。
-about-networking-current-log-file = 現在のログファイル:
-about-networking-current-log-modules = 現在のログモジュール:
-about-networking-set-log-file = ログファイルを設定
-about-networking-set-log-modules = ログモジュールを設定
-about-networking-start-logging = 記録開始
-about-networking-stop-logging = 記録終了
 about-networking-dns-lookup = DNS 照会
 about-networking-dns-lookup-button = 解決
 about-networking-dns-domain = ドメイン:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = キャッシュ遅滞カウント
 about-networking-rcwn-cache-not-slow = キャッシュ非遅滞カウント
 about-networking-networkid = ネットワーク ID
 about-networking-networkid-id = ネットワーク ID
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = このページは <a data-l10n-name="about-logging-url">about:logging</a> へ移動しました。
 
 ## Link is intended as "network link"
 

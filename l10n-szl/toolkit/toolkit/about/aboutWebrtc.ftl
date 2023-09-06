@@ -13,6 +13,9 @@ about-webrtc-document-title = Wewnyntrzne dane WebRTC
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = spamiyntej about:webrtc za
 
+## These labels are for a disclosure which contains the information for closed PeerConnection sections
+
+
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = Protokōł AEC
@@ -20,7 +23,10 @@ about-webrtc-aec-logging-off-state-label = Sztartnij protokōł AEC
 about-webrtc-aec-logging-on-state-label = Sztopnij protokōł AAEC
 about-webrtc-aec-logging-on-state-msg = Protokōł AEC je aktywny (pora minut pogodej, a potym sztopnij nagrowanie)
 
+about-webrtc-aec-logging-toggled-on-state-msg = Protokōł AEC je aktywny (pora minut pogodej, a potym sztopnij nagrowanie)
+
 ##
+
 
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
@@ -58,10 +64,6 @@ about-webrtc-ice-pair-bytes-sent = Posłane bajty:
 about-webrtc-ice-pair-bytes-received = Dostane bajty:
 about-webrtc-ice-component-id = ID kōmponyntu
 
-## "Avg." is an abbreviation for Average. These are used as data labels.
-
-about-webrtc-avg-bitrate-label = Strz. gibkość transmisyje:
-
 ## These adjectives are used to label a line of statistics collected for a peer
 ## connection. The data represents either the local or remote end of the
 ## connection.
@@ -70,7 +72,6 @@ about-webrtc-type-local = Lokalne
 about-webrtc-type-remote = Zdalne
 
 ##
-
 
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
@@ -94,6 +95,11 @@ about-webrtc-log-show-msg = pokoż protokōł
 about-webrtc-log-hide-msg = skryj protokōł
     .title = kliknij, coby skryć ta sekcyjo
 
+about-webrtc-log-section-show-msg = Pokoż protokōł
+    .title = Kliknij, coby rozszyrzyć ta sekcyjo
+about-webrtc-log-section-hide-msg = Skryj protokōł
+    .title = Kliknij, coby skryć ta sekcyjo
+
 ## These are used to display a header for a PeerConnection.
 ## Variables:
 ##  $browser-id (Number) - A numeric id identifying the browser tab for the PeerConnection.
@@ -104,8 +110,12 @@ about-webrtc-log-hide-msg = skryj protokōł
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (zawarte) { $now }
 
-##
+## These are used to indicate what direction media is flowing.
+## Variables:
+##  $codecs - a list of media codecs
 
+
+##
 
 about-webrtc-local-candidate = Lokalny kandydat
 about-webrtc-remote-candidate = Zdalny kandydat
@@ -113,7 +123,12 @@ about-webrtc-remote-candidate = Zdalny kandydat
 ## SSRCs are identifiers that represent endpoints in an RTP stream
 
 
+## These are displayed on the button that shows or hides the
+## PeerConnection configuration disclosure
+
+
 ##
+
 
 ## These are paths used for saving the about:webrtc page or log files so
 ## they can be attached to bug reports.
@@ -128,9 +143,12 @@ about-webrtc-remote-candidate = Zdalny kandydat
 ## See http://wikipedia.org/wiki/Session_Description_Protocol
 
 
-##
+## These are displayed on the button that shows or hides the SDP information disclosure
 
-##
+
+## These are displayed on the button that shows or hides the Media Context information disclosure.
+## The Media Context is the set of preferences and detected capabilities that informs
+## the negotiated CODEC settings.
 
 
 ##

@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Skoazeller ar c'hrouiñ aelad
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Rakskrid
-       *[other] Donemat war { create-profile-window.title }
+       *[other] Donemat war { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } a vir stlennoù a-zivout hoc'h arventennoù ha gwellvezioù e-barzh hoc'h aelad personel.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Klozadenn
-       *[other] Oc'h echuiñ { create-profile-window.title }
+       *[other] Oc'h echuiñ { create-profile-window2.title }
     }
 
 profile-creation-intro = Mar bez krouet meur a aelad ganeoc'h e c'hallot o tiforc'hañ dre an anvioù aeladoù. Tu zo deoc'h d'ober gant an anv roet amañ pe arverañ unan e-touez ho re.

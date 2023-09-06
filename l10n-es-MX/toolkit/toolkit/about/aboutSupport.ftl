@@ -73,6 +73,14 @@ app-basics-location-service-key-google = Clave de servicio de ubicación de Goog
 app-basics-safebrowsing-key-google = Clave de navegación segura de Google
 app-basics-key-mozilla = Clave del servicio de localización de Mozilla
 app-basics-safe-mode = Modo Seguro
+app-basics-memory-size = Tamaño de la memoria (RAM)
+app-basics-disk-available = Espacio disponible del disco
+
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Mostrar en Finder
@@ -102,11 +110,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Registro de decisiones
 graphics-crash-guards-title = Características de protección contra fallos deshabilitadas
 graphics-workarounds-title = Soluciones
+graphics-device-pixel-ratios = Proporciones de píxeles de la ventana del dispositivo
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Protocolo de ventanas
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Entorno de escritorio
 place-database-title = Base de datos de lugares
+place-database-stats = Estadísticas
+place-database-stats-show = Mostrar estadísticas
+place-database-stats-hide = Ocultar estadísticas
+place-database-stats-entity = Entidad
+place-database-stats-count = Recuento
+place-database-stats-size-kib = Tamaño (KB)
+place-database-stats-size-perc = Tamaño (%)
+place-database-stats-efficiency-perc = Eficiencia (%)
+place-database-stats-sequentiality-perc = Secuencialidad (%)
 place-database-integrity = Integridad
 place-database-verify-integrity = Verificar integridad
 a11y-title = Accesibilidad
@@ -153,8 +171,11 @@ media-device-channels = Canales
 media-device-rate = Frecuencia
 media-device-latency = Latencia
 media-capabilities-title = Capacidades del contenido multimedia
+media-codec-support-info = Información de soporte de códecs
 # List all the entries of the database.
 media-capabilities-enumerate = Enumerar base de datos
+
+## Codec support table
 
 ##
 
@@ -277,6 +298,8 @@ webgl2-renderer = Procesador WebGL2
 webgl2-version = Versión del controlador WebGL 2
 webgl2-driver-extensions = Extensiones del controlador WebGL 2
 webgl2-extensions = Extensiones WebGL 2
+webgpu-default-adapter = Adaptador predeterminado de WebGPU
+webgpu-fallback-adapter = Adaptador alternativo de WebGPU
 
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
@@ -312,6 +335,7 @@ can-sandbox-media = Entorno de pruebas para extensiones de multimedia
 content-sandbox-level = Entorno de prueba para procesar contenidos
 effective-content-sandbox-level = Nivel efectivo del contenedor de proceso de contenido
 content-win32k-lockdown-state = Estado de bloqueo de Win32k para el proceso de contenido
+support-sandbox-gpu-level = Nivel de aislamiento de procesos de GPU
 sandbox-proc-type-content = contenido
 sandbox-proc-type-file = contenido del archivo
 sandbox-proc-type-media-plugin = plugin de medios
@@ -340,7 +364,7 @@ fission-status-experiment-control = Deshabilitado por el experimento
 fission-status-experiment-treatment = Habilitado por el experimento
 fission-status-disabled-by-e10s-env = Deshabilitado por el entorno
 fission-status-enabled-by-env = Habilitado por el entorno
-fission-status-disabled-by-safe-mode = Deshabilitado por el modo seguro
+fission-status-disabled-by-env = Deshabilitado por el entorno
 fission-status-enabled-by-default = Habilitado de forma predeterminada
 fission-status-disabled-by-default = Deshabilitado de forma predeterminada
 fission-status-enabled-by-user-pref = Habilitado por el usuario

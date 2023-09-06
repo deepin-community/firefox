@@ -6,7 +6,7 @@
 
 // Test that eager evaluation works as expected when paused in the debugger.
 
-const TEST_URI = `data:text/html;charset=utf-8,
+const TEST_URI = `data:text/html;charset=utf-8,<!DOCTYPE html>
 <script>
 var x = "global";
 
@@ -18,10 +18,10 @@ function pauseInDebugger(param) {
 </script>
 `;
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
 
-  const toolbox = await gDevTools.getToolboxForTab(gBrowser.selectedTab);
+  const toolbox = gDevTools.getToolboxForTab(gBrowser.selectedTab);
 
   setInputValue(hud, "x");
   await waitForEagerEvaluationResult(hud, `"global"`);
@@ -31,7 +31,7 @@ add_task(async function() {
   const dbg = createDebuggerContext(toolbox);
 
   info("Pause in Debugger");
-  SpecialPowers.spawn(gBrowser.selectedBrowser, [], function() {
+  SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     content.wrappedJSObject.pauseInDebugger("myParam");
   });
   await pauseDebugger(dbg);

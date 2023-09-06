@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = డేటాని తుడిచివేయి
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = { -brand-short-name } భద్రపరచుకున్న కుకీలను, సైట్ల డేటానూ తుడిచివేయడం వలన మీరు ప్రవేశించిన వెబ్‌సైట్ల నుండి నిష్క్రమించే అవకాశం ఉంది, వాటి ఆఫ్‌లైన్ డేటా కూడా తొలగిపోతుంది. క్యాషె డేటాను తుడిచివెయ్యండం మీ ప్రవేశాలపై ప్రభావం చూపదు.
 

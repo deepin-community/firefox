@@ -197,6 +197,12 @@
 %define L10N_TRANSITION 1
 %include @PRODUCT@-l10n.control.in
 
+%define L10N_LANG fur
+%define L10N_LANGUAGE Friulian
+%undef L10N_RECOMMENDS
+%undef L10N_TRANSITION
+%include @PRODUCT@-l10n.control.in
+
 %define L10N_LANG fy-nl
 %define L10N_LANGUAGE Western Frisian (Netherlands)
 %undef L10N_RECOMMENDS
@@ -318,7 +324,7 @@
 %include @PRODUCT@-l10n.control.in
 
 %define L10N_LANG km
-%define L10N_LANGUAGE Central Khmer
+%define L10N_LANGUAGE Khmer
 %undef L10N_RECOMMENDS
 %define L10N_TRANSITION 1
 %include @PRODUCT@-l10n.control.in
@@ -449,6 +455,12 @@
 %define L10N_TRANSITION 1
 %include @PRODUCT@-l10n.control.in
 
+%define L10N_LANG sc
+%define L10N_LANGUAGE Sardinian
+%undef L10N_RECOMMENDS
+%undef L10N_TRANSITION
+%include @PRODUCT@-l10n.control.in
+
 %define L10N_LANG sco
 %define L10N_LANGUAGE Scots
 %undef L10N_RECOMMENDS
@@ -513,6 +525,12 @@
 %define L10N_LANGUAGE Telugu
 %define L10N_RECOMMENDS hunspell-te
 %define L10N_TRANSITION 1
+%include @PRODUCT@-l10n.control.in
+
+%define L10N_LANG tg
+%define L10N_LANGUAGE Tajik
+%undef L10N_RECOMMENDS
+%undef L10N_TRANSITION
 %include @PRODUCT@-l10n.control.in
 
 %define L10N_LANG th

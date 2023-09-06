@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Asistente de creación de perfís
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Introdución
-       *[other] Benvido(a) a { create-profile-window.title }
+       *[other] Benvido(a) a { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } almacena información sobre a súa configuración e preferencias no seu perfil persoal.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Conclusión
-       *[other] Completar { create-profile-window.title }
+       *[other] Completar { create-profile-window2.title }
     }
 
 profile-creation-intro = Se crea diferentes perfís pode distinguilos polo seu nome. Pode usar o nome aquí definido ou outro.

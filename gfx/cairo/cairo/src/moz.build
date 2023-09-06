@@ -72,13 +72,6 @@ elif CONFIG['MOZ_WIDGET_TOOLKIT'] == 'beos':
     SOURCES += [
         'cairo-beos-surface.cpp',
     ]
-elif CONFIG['MOZ_WIDGET_TOOLKIT'] == 'gtk':
-    EXPORTS.cairo += [
-        'cairo-ps.h',
-    ]
-    SOURCES += [
-        'cairo-ps-surface.c',
-    ]
 
 if CONFIG['MOZ_X11']:
     EXPORTS.cairo += [
@@ -230,7 +223,6 @@ if CONFIG['MOZ_TREE_PIXMAN']:
     DEFINES['MOZ_TREE_PIXMAN'] = True
 
 if CONFIG['CC_TYPE'] in ('clang', 'gcc'):
-    DEFINES['HAVE_CXX11_ATOMIC_PRIMITIVES'] = True
     # We would normally use autoconf to set these up, using AC_CHECK_SIZEOF.
     # But AC_CHECK_SIZEOF requires running programs to determine the sizes,
     # and that doesn't work so well with cross-compiling.  So instead we
@@ -243,6 +235,7 @@ if CONFIG['CC_TYPE'] in ('clang', 'gcc'):
 
 # Normally determined by cairo's configure script.
 DEFINES['HAVE_UINT64_T'] = True
+DEFINES['HAVE_CXX11_ATOMIC_PRIMITIVES'] = True
 
 if CONFIG['MOZ_TREE_FREETYPE']:
     DEFINES['HAVE_FT_LIBRARY_SETLCDFILTER'] = True

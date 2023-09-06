@@ -26,9 +26,9 @@ certmgr-people = Maće certifikaty wo dataji, kotrež tutych ludźi identifikuja
 certmgr-server = Tute zapiski zmylkowe wuwzaća serweroweho certifikata identifikuja
 certmgr-ca = Maće certifikaty wo dataji, kotrež tute certifikatowe awtority identifikuja
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Nastajenja dowěryhódnosće certifikata certifikatoweje awtority wobdźěłać
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Nastajenja dwoěryhódnosće:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Tutón certifikat móže e-mejlowych wužiwarjow identifikować.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Certifikat zhašeć
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Host
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Serwer
-
-certmgr-override-lifetime =
-    .label = Žiwjenski čas
 
 certmgr-token-name =
     .label = Wěstotny grat
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Serijowe čisło
+
+certmgr-fingerprint-sha-256 =
+    .label = Porstowy wotćišć SHA-256
 
 certmgr-view =
     .label = Wobhladać…
@@ -185,8 +185,6 @@ delete-email-cert-impact = Jeli e-mejlowy certifikat někajkeje wosoby zhašeće
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Certifikat ze serijowym čisłom: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Žadyn klientowy certifikat pósłać

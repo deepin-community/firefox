@@ -27,13 +27,21 @@ class GPUChild final : public ipc::CrashReporterHelper<GeckoProcessType_GPU>,
   typedef mozilla::dom::MemoryReportRequestHost MemoryReportRequestHost;
 
  public:
+  NS_INLINE_DECL_REFCOUNTING(GPUChild, final)
+
   explicit GPUChild(GPUProcessHost* aHost);
-  virtual ~GPUChild();
 
   void Init();
 
   bool EnsureGPUReady();
-  base::ProcessHandle GetChildProcessHandle();
+  void MarkWaitForVarUpdate() { mWaitForVarUpdate = true; }
+
+  // Notifies that an unexpected GPU process shutdown has been noticed by a
+  // different IPDL actor, and the GPU process is being torn down as a result.
+  // ActorDestroy may receive either NormalShutdown or AbnormalShutdown as a
+  // reason, depending on timings, but either way we treat the shutdown as
+  // abnormal.
+  void OnUnexpectedShutdown();
 
   // gfxVarReceiver overrides.
   void OnVarChanged(const GfxVarUpdate& aVar) override;
@@ -63,6 +71,8 @@ class GPUChild final : public ipc::CrashReporterHelper<GeckoProcessType_GPU>,
   mozilla::ipc::IPCResult RecvGraphicsError(const nsCString& aError);
   mozilla::ipc::IPCResult RecvNotifyUiObservers(const nsCString& aTopic);
   mozilla::ipc::IPCResult RecvNotifyDeviceReset(const GPUDeviceData& aData);
+  mozilla::ipc::IPCResult RecvNotifyOverlayInfo(const OverlayInfo aInfo);
+  mozilla::ipc::IPCResult RecvNotifySwapChainInfo(const SwapChainInfo aInfo);
   mozilla::ipc::IPCResult RecvFlushMemory(const nsString& aReason);
   mozilla::ipc::IPCResult RecvAddMemoryReport(const MemoryReport& aReport);
   mozilla::ipc::IPCResult RecvUpdateFeature(const Feature& aFeature,
@@ -71,19 +81,24 @@ class GPUChild final : public ipc::CrashReporterHelper<GeckoProcessType_GPU>,
                                            const nsCString& aMessage);
   mozilla::ipc::IPCResult RecvBHRThreadHang(const HangDetails& aDetails);
   mozilla::ipc::IPCResult RecvUpdateMediaCodecsSupported(
-      const PDMFactory::MediaCodecsSupported& aSupported);
+      const media::MediaCodecsSupported& aSupported);
+  mozilla::ipc::IPCResult RecvFOGData(ByteBuf&& aBuf);
 
   bool SendRequestMemoryReport(const uint32_t& aGeneration,
                                const bool& aAnonymize,
                                const bool& aMinimizeMemoryUsage,
                                const Maybe<ipc::FileDescriptor>& aDMDFile);
 
-  static void Destroy(UniquePtr<GPUChild>&& aChild);
+  static void Destroy(RefPtr<GPUChild>&& aChild);
 
  private:
+  virtual ~GPUChild();
+
   GPUProcessHost* mHost;
   UniquePtr<MemoryReportRequestHost> mMemoryReportRequest;
   bool mGPUReady;
+  bool mWaitForVarUpdate = false;
+  bool mUnexpectedShutdown = false;
 };
 
 }  // namespace gfx

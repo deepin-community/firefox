@@ -31,13 +31,13 @@ XPIDL_MODULE = "xulapp"
 
 EXPORTS += [
     "nsAppRunner.h",
-    "nsIAppStartupNotifier.h",
 ]
 
 EXPORTS.mozilla += [
     "AutoSQLiteLifetime.h",
     "Bootstrap.h",
     "CmdLineAndEnvUtils.h",
+    "GeckoArgs.h",
     "MultiInstanceLock.h",
     "SafeMode.h",
 ]
@@ -99,6 +99,7 @@ elif CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
     UNIFIED_SOURCES += [
         "nsNativeAppSupportUnix.cpp",
     ]
+    CXXFLAGS += CONFIG["MOZ_X11_SM_CFLAGS"]
 else:
     UNIFIED_SOURCES += [
         "nsNativeAppSupportDefault.cpp",
@@ -136,9 +137,7 @@ UNIFIED_SOURCES += [
     "Bootstrap.cpp",
     "CmdLineAndEnvUtils.cpp",
     "CreateAppData.cpp",
-    "nsAppStartupNotifier.cpp",
     "nsConsoleWriter.cpp",
-    "nsEmbeddingModule.cpp",
     "nsNativeAppSupportBase.cpp",
     "nsSigHandlers.cpp",
     "nsXREDirProvider.cpp",
@@ -153,11 +152,6 @@ SOURCES += [
     "nsEmbedFunctions.cpp",
     "ProfileReset.cpp",
 ]
-
-if CONFIG["MOZ_X11"]:
-    UNIFIED_SOURCES += [
-        "glxtest.cpp",
-    ]
 
 if CONFIG["MOZ_INSTRUMENT_EVENT_LOOP"]:
     UNIFIED_SOURCES += [
@@ -185,8 +179,9 @@ include("/ipc/chromium/chromium-config.mozbuild")
 
 FINAL_LIBRARY = "xul"
 
-if CONFIG["MOZ_X11"]:
+if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
     DEFINES["USE_GLX_TEST"] = True
+    DIRS += ["glxtest"]
 
 for var in (
     "MOZ_APP_NAME",
@@ -213,6 +208,8 @@ if CONFIG["MOZ_WIDGET_TOOLKIT"] == "windows":
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "android":
     DEFINES["ANDROID_PACKAGE_NAME"] = '"%s"' % CONFIG["ANDROID_PACKAGE_NAME"]
 
+DEFINES["MOZ_DISTRIBUTION_ID"] = '"%s"' % CONFIG["MOZ_DISTRIBUTION_ID"]
+
 if CONFIG["TARGET_XPCOM_ABI"]:
     DEFINES["TARGET_OS_ABI"] = '"%s_%s"' % (
         CONFIG["OS_TARGET"],
@@ -230,6 +227,9 @@ for var in ("APP_VERSION", "APP_ID"):
 
 if CONFIG["MOZ_BUILD_APP"] == "browser":
     DEFINES["MOZ_BUILD_APP_IS_BROWSER"] = True
+
+if CONFIG["MOZ_USE_NSS_FOR_MAR"]:
+    DEFINES["MAR_NSS"] = True
 
 LOCAL_INCLUDES += [
     "../../other-licenses/nsis/Contrib/CityHash/cityhash",
@@ -266,26 +266,15 @@ if CONFIG["MOZ_WIDGET_TOOLKIT"] == "cocoa":
         "/xpcom/base",
     ]
 
-CXXFLAGS += CONFIG["TK_CFLAGS"]
 CXXFLAGS += CONFIG["MOZ_DBUS_CFLAGS"]
 CXXFLAGS += CONFIG["MOZ_DBUS_GLIB_CFLAGS"]
 
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
+    CXXFLAGS += CONFIG["MOZ_GTK3_CFLAGS"]
     CXXFLAGS += CONFIG["MOZ_PANGO_CFLAGS"]
 
 DEFINES["TOPOBJDIR"] = TOPOBJDIR
 FINAL_TARGET_PP_FILES += ["platform.ini"]
 
-if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-    CXXFLAGS += ["-Wno-error=shadow"]
-
-if CONFIG["MOZ_IPDL_TESTS"]:
-    DEFINES["MOZ_IPDL_TESTS"] = True
-
 if CONFIG["ENABLE_TESTS"]:
     DIRS += ["test/gtest"]
-
-if CONFIG["MOZ_BACKGROUNDTASKS"]:
-    DEFINES["MOZ_BACKGROUNDTASKS"] = True
-
-REQUIRES_UNIFIED_BUILD = True

@@ -1,4 +1,4 @@
-extern crate slab;
+#![warn(rust_2018_idioms)]
 
 use slab::*;
 
@@ -196,7 +196,15 @@ fn reserve_exact_does_not_allocate_if_available() {
 fn reserve_does_panic_with_capacity_overflow() {
     let mut slab = Slab::with_capacity(10);
     slab.insert(true);
-    slab.reserve(std::usize::MAX);
+    slab.reserve(std::isize::MAX as usize);
+}
+
+#[test]
+#[should_panic(expected = "capacity overflow")]
+fn reserve_does_panic_with_capacity_overflow_bytes() {
+    let mut slab = Slab::with_capacity(10);
+    slab.insert(1u16);
+    slab.reserve((std::isize::MAX as usize) / 2);
 }
 
 #[test]
@@ -204,7 +212,7 @@ fn reserve_does_panic_with_capacity_overflow() {
 fn reserve_exact_does_panic_with_capacity_overflow() {
     let mut slab = Slab::with_capacity(10);
     slab.insert(true);
-    slab.reserve_exact(std::usize::MAX);
+    slab.reserve_exact(std::isize::MAX as usize);
 }
 
 #[test]
@@ -403,6 +411,36 @@ fn from_iterator_unordered() {
     assert_eq!(iter.next(), None);
 }
 
+// https://github.com/tokio-rs/slab/issues/100
+#[test]
+fn from_iterator_issue_100() {
+    let mut slab: slab::Slab<()> = vec![(1, ())].into_iter().collect();
+    assert_eq!(slab.len(), 1);
+    assert_eq!(slab.insert(()), 0);
+    assert_eq!(slab.insert(()), 2);
+    assert_eq!(slab.insert(()), 3);
+
+    let mut slab: slab::Slab<()> = vec![(1, ()), (2, ())].into_iter().collect();
+    assert_eq!(slab.len(), 2);
+    assert_eq!(slab.insert(()), 0);
+    assert_eq!(slab.insert(()), 3);
+    assert_eq!(slab.insert(()), 4);
+
+    let mut slab: slab::Slab<()> = vec![(1, ()), (3, ())].into_iter().collect();
+    assert_eq!(slab.len(), 2);
+    assert_eq!(slab.insert(()), 2);
+    assert_eq!(slab.insert(()), 0);
+    assert_eq!(slab.insert(()), 4);
+
+    let mut slab: slab::Slab<()> = vec![(0, ()), (2, ()), (3, ()), (5, ())]
+        .into_iter()
+        .collect();
+    assert_eq!(slab.len(), 4);
+    assert_eq!(slab.insert(()), 4);
+    assert_eq!(slab.insert(()), 1);
+    assert_eq!(slab.insert(()), 6);
+}
+
 #[test]
 fn clear() {
     let mut slab = Slab::new();
@@ -413,9 +451,7 @@ fn clear() {
 
     // clear full
     slab.clear();
-
-    let vals: Vec<_> = slab.iter().map(|(_, r)| *r).collect();
-    assert!(vals.is_empty());
+    assert!(slab.is_empty());
 
     assert_eq!(0, slab.len());
     assert_eq!(4, slab.capacity());
@@ -429,9 +465,7 @@ fn clear() {
 
     // clear half-filled
     slab.clear();
-
-    let vals: Vec<_> = slab.iter().map(|(_, r)| *r).collect();
-    assert!(vals.is_empty());
+    assert!(slab.is_empty());
 }
 
 #[test]
@@ -658,4 +692,21 @@ fn drain_rev() {
 
     let vals: Vec<u64> = slab.drain().rev().collect();
     assert_eq!(vals, (0..9).rev().collect::<Vec<u64>>());
+}
+
+#[test]
+fn try_remove() {
+    let mut slab = Slab::new();
+
+    let key = slab.insert(1);
+
+    assert_eq!(slab.try_remove(key), Some(1));
+    assert_eq!(slab.try_remove(key), None);
+    assert_eq!(slab.get(key), None);
+}
+
+#[rustversion::since(1.39)]
+#[test]
+fn const_new() {
+    static _SLAB: Slab<()> = Slab::new();
 }

@@ -8,23 +8,23 @@ and fixed (probably in xulrunner).
 
 Closes: #552426, #553453
 ---
- browser/components/sessionstore/SessionStore.jsm | 5 ++---
+ browser/components/sessionstore/SessionStore.sys.mjs | 5 ++---
  1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/browser/components/sessionstore/SessionStore.jsm b/browser/components/sessionstore/SessionStore.jsm
-index b82ce50..5c6fb0b 100644
---- a/browser/components/sessionstore/SessionStore.jsm
-+++ b/browser/components/sessionstore/SessionStore.jsm
-@@ -4915,7 +4915,7 @@ var SessionStoreInternal = {
-         !isNaN(aTop) &&
-         (aLeft != win_("screenX") || aTop != win_("screenY"))
-       ) {
--        aWindow.moveTo(aLeft, aTop);
-+        aWindow.moveTo((aLeft < -aWidth) ? 0 : aLeft, (aTop < -aHeight) ? 0 : aTop);
+diff --git a/browser/components/sessionstore/SessionStore.sys.mjs b/browser/components/sessionstore/SessionStore.sys.mjs
+index 25aa373..be71b52 100644
+--- a/browser/components/sessionstore/SessionStore.sys.mjs
++++ b/browser/components/sessionstore/SessionStore.sys.mjs
+@@ -5844,7 +5844,7 @@ var SessionStoreInternal = {
+         // _getWindowDimension.
+         let desktopToCssScale =
+           aWindow.desktopToDeviceScale / aWindow.devicePixelRatio;
+-        aWindow.moveTo(aLeft * desktopToCssScale, aTop * desktopToCssScale);
++        aWindow.moveTo((aLeft < -aWidth) ? 0 : aLeft * desktopToCssScale, (aTop < -aHeight) ? 0 : aTop * desktopToCssScale);
        }
        if (
          aWidth &&
-@@ -4944,9 +4944,8 @@ var SessionStoreInternal = {
+@@ -5872,9 +5872,8 @@ var SessionStoreInternal = {
            case "minimized":
              if (aSizeModeBeforeMinimized == "maximized") {
                aWindow.maximize();

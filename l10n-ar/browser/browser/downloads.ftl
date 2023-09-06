@@ -16,8 +16,8 @@ downloads-panel =
 # The style attribute has the width of the Downloads Panel expressed using
 # a CSS unit. The longest labels that should fit are usually those of
 # in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
+downloads-panel-items =
+    .style = width: 35em
 
 downloads-cmd-pause =
     .label = ألبِث
@@ -30,42 +30,55 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = ألغِ
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = افتح المجلد المحتوي
-    .accesskey = م
-
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = اعرض في فايندر
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] اعرض في فايندر
+           *[other] اعرض في المجلد
+        }
     .accesskey = ف
+
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = افتح في عارِض النظام
     .accesskey = ظ
 
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
     .label = افتح دائمًا في عارِض النظام
     .accesskey = ع
 
-downloads-cmd-show-button =
+##
+
+# We can use the same accesskey as downloads-cmd-always-use-system-default.
+# Both should not be visible in the downloads context menu at the same time.
+downloads-cmd-always-open-similar-files =
+    .label = افتح الملفات المشابهة دائما
+    .accesskey = ئ
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
             [macos] اعرض في فايندر
-           *[other] افتح المجلد المحتوي
+           *[other] اعرض في المجلد
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
             [macos] اعرض في فايندر
-           *[other] افتح المجلد المحتوي
+           *[other] اعرض في المجلد
         }
-downloads-cmd-show-description =
+downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
             [macos] اعرض في فايندر
-           *[other] افتح المجلد المحتوي
+           *[other] اعرض في المجلد
         }
 
 downloads-cmd-show-downloads =
@@ -89,6 +102,9 @@ downloads-cmd-clear-list =
 downloads-cmd-clear-downloads =
     .label = امسح التنزيلات
     .accesskey = س
+downloads-cmd-delete-file =
+    .label = احذف
+    .accesskey = ح
 
 # This command is shown in the context menu when downloads are blocked.
 downloads-cmd-unblock =
@@ -138,6 +154,19 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = سيُفتح في غضون { $hours }سا { $minutes }دق…
+downloading-file-opens-in-minutes-2 =
+    .value = سيُفتح في غضون { $minutes } دق…
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = سيُفتح في غضون { $minutes } دق { $seconds } ثا…
+downloading-file-opens-in-seconds-2 =
+    .value = سيُفتح في غضون { $seconds } ثا…
+downloading-file-opens-in-some-time-2 =
+    .value = سيُفتح حين يكتمل…
+downloading-file-click-to-open =
+    .value = افتح عند الاكتمال
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -162,6 +191,25 @@ downloads-history =
 downloads-details =
     .title = تفاصيل التنزيل
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+downloads-files-not-downloaded =
+    { $num ->
+        [zero] لم يُنزّل الملف.
+        [one] لم يُنزّل الملف.
+        [two] لم يُنزّل الملفان.
+        [few] لم تُنزّل { $num } ملفات.
+        [many] لم يُنزّل { $num } ملفًا.
+       *[other] لم يُنزّل { $num } ملف.
+    }
+downloads-blocked-from-url = حُظرت التنزيلات من { $url }.
+downloads-blocked-download-detailed-info = حاول { $url } تنزيل ملفات عديدة تلقائيًا. قد يكون الموقع معطوبًا أو يحاول تخزين ملفات مزعجة على جهازك.
+
+##
+
 downloads-clear-downloads-button =
     .label = امسح التنزيلات
     .tooltiptext = امسح التنزيلات المكتملة و غير المكتملة و الملغاة
@@ -174,3 +222,28 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = لا توجد تنزيلات لهذه الجلسة.
+
+# This is displayed in an item at the bottom of the Downloads Panel when there
+# are more downloads than can fit in the list in the panel.
+#   $count (number) - number of files being downloaded that are not shown in the
+#                     panel list.
+downloads-more-downloading =
+    { $count ->
+        [zero] لا توجد ملفّات تُنزّل حاليًا
+        [one] ملفّ واحد يُنزّل حاليًا
+        [two] ملفّان يُنزّلان حاليًا
+        [few] { $count } ملفّات تُنزّل حاليًا
+        [many] { $count } ملفّا يُنزّل حاليًا
+       *[other] { $count } ملف تُنزّل حاليًا
+    }
+
+## Download errors
+
+downloads-error-alert-title = خطأ في التنزيل
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = تعذّر حفظ هذا التنزيل إذ حجبه أحد الامتدادات.
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    لا يمكن حفظ هذا التنزيل لحدوث خطأ مجهول.
+    
+    من فضلك أعِد المحاولة.

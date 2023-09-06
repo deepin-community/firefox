@@ -101,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Informar de problemas con un puesto
 protections-panel-content-blocking-breakage-report-view-description = Si blocas bell elementos de seguimiento, puede que qualques puestos deixen de funcionar. Si nos informas d'estes problemas, nos aduyarás a amillorar { -brand-short-name }. En ninviar este informe, Mozilla recibirá una URL y información sobre la configuración d'o tuyo navegador. <label data-l10n-name="learn-more">Saber mas</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Si blocas bell elementos de seguimiento, puede que qualques puestos deixen de funcionar. Si nos informas d'estes problemas, nos aduyarás a amillorar { -brand-short-name }. En ninviar este informe, { -vendor-short-name } recibirá una URL y información sobre la configuración d'o tuyo navegador.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -111,3 +112,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Cancelar
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Ninviar reporte
+
+# Cookie Banner Handling
+

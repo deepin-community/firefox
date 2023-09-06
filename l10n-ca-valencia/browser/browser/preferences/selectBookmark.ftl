@@ -2,8 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-select-bookmark-window =
+select-bookmark-window2 =
     .title = Defineix com a pàgina d'inici
-    .style = width: 32em;
+    .style = min-width: 32em;
 
 select-bookmark-desc = Trieu una adreça d'interés per que siga la vostra pàgina d'inici. Si trieu una carpeta, les adreces d'interés en aquella carpeta s'obriran com a pestanyes.

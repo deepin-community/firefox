@@ -2,9 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-containers-window-new =
-    .title = Bæta við nýjum innihaldsflipa
-    .style = width: 45em
+containers-window-new2 =
+    .title = Bæta við nýju sérefni
+    .style = min-width: 45em
+# Variables
+#   $name (String) - Name of the container
+containers-window-update-settings2 =
+    .title = Stillingar { $name } sérefnis
+    .style = min-width: 45em
 
 containers-window-close =
     .key = w
@@ -25,7 +30,7 @@ containers-name-label = Nafn
     .style = { -containers-labels-style }
 
 containers-name-text =
-    .placeholder = Sláðu inn nafn innihaldsflipa
+    .placeholder = Settu inn heiti sérefnis
 
 containers-icon-label = Táknmynd
     .accesskey = y
@@ -56,7 +61,7 @@ containers-color-pink =
 containers-color-purple =
     .label = Fjólublár
 containers-color-toolbar =
-    .label = Eins og verkfæraslá
+    .label = Eins og verkfærastika
 
 containers-icon-fence =
     .label = Girðing

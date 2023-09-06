@@ -101,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Pranešti apie neveikiančią svetainę
 protections-panel-content-blocking-breakage-report-view-description = Stebėjimo elementų blokavimas gali sutrikdyti kai kurių svetainių veikimą. Pranešdami apie problemas, padėsite tobulinti „{ -brand-short-name }“. Išsiuntus šį pranešimą, „Mozillai“ bus perduotas svetainės adresas bei informacija apie jūsų naršyklės nuostatas. <label data-l10n-name="learn-more">Sužinoti daugiau</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Stebėjimo elementų blokavimas gali sutrikdyti kai kurių svetainių veikimą. Pranešdami apie problemas, padėsite tobulinti „{ -brand-short-name }“. Išsiuntus šį pranešimą, „{ -vendor-short-name }i“ bus perduotas svetainės adresas bei informacija apie jūsų naršyklės nuostatas.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -111,3 +112,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Atsisakyti
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Siųsti pranešimą
+
+# Cookie Banner Handling
+

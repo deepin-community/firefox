@@ -3,20 +3,19 @@
 
 "use strict";
 
-/* import-globals-from ../head.js */
-
 Services.scriptloader.loadSubScript(
   "chrome://mochitests/content/browser/remote/cdp/test/browser/head.js",
   this
 );
 
-const { Input: I } = ChromeUtils.import(
-  "chrome://remote/content/cdp/domains/parent/Input.jsm"
+const { Input: I } = ChromeUtils.importESModule(
+  "chrome://remote/content/cdp/domains/parent/Input.sys.mjs"
+);
+const { AppInfo } = ChromeUtils.importESModule(
+  "chrome://remote/content/shared/AppInfo.sys.mjs"
 );
 
 const { alt, ctrl, meta, shift } = I.Modifier;
-
-const isMac = Services.appinfo.OS === "Darwin";
 
 // Map of key codes used in Input tests.
 const KEYCODES = {
@@ -42,7 +41,7 @@ const KEYCODES = {
 async function setupForInput(url) {
   await loadURL(url);
   info("Focus the input on the page");
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function() {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     const input = content.document.querySelector("input");
     input.focus();
     is(input, content.document.activeElement, "Input should be focused");
@@ -68,11 +67,25 @@ function dispatchKeyEvent(Input, key, type, modifiers = 0) {
   });
 }
 
+async function getEvents() {
+  const events = await SpecialPowers.spawn(gBrowser.selectedBrowser, [], () => {
+    return content.wrappedJSObject.allEvents;
+  });
+  info(`Events: ${JSON.stringify(events)}`);
+  return events;
+}
+
 function getInputContent() {
-  return SpecialPowers.spawn(gBrowser.selectedBrowser, [], function() {
+  return SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     const input = content.document.querySelector("input");
     return { value: input.value, caret: input.selectionStart };
   });
+}
+
+function checkEvent(event, type, key, property, expectedValue) {
+  let expected = { type, key };
+  expected[property] = expectedValue;
+  checkProperties(expected, event, "Event");
 }
 
 async function checkInputContent(expectedValue, expectedCaret) {
@@ -81,11 +94,17 @@ async function checkInputContent(expectedValue, expectedCaret) {
   is(caret, expectedCaret, "Check position of input caret");
 }
 
+function checkProperties(expectedObj, targetObj, message = "Compare objects") {
+  for (const prop in expectedObj) {
+    is(targetObj[prop], expectedObj[prop], message + `: check ${prop}`);
+  }
+}
+
 function keyForPlatform() {
   // TODO add cases for other key-combinations as the need arises
   let primary = ctrl;
   let primaryKey = "Control";
-  if (isMac) {
+  if (AppInfo.isMac) {
     primary = alt;
     primaryKey = "Alt";
   }
@@ -114,8 +133,16 @@ async function checkBackspace(Input, expected, modifiers = 0) {
   await checkInputContent(expected, expected.length);
 }
 
+async function resetEvents() {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], () => {
+    content.wrappedJSObject.resetEvents();
+    const events = content.wrappedJSObject.allEvents;
+    is(events.length, 0, "List of events should be empty");
+  });
+}
+
 function resetInput(value = "") {
-  return SpecialPowers.spawn(gBrowser.selectedBrowser, [value], function(arg) {
+  return SpecialPowers.spawn(gBrowser.selectedBrowser, [value], function (arg) {
     const input = content.document.querySelector("input");
     input.value = arg;
     input.focus();

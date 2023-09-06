@@ -48,6 +48,10 @@ inactive-css-not-table = <strong>{ $property }</strong> tidak berpengaruh pada e
 
 inactive-scroll-padding-when-not-scroll-container = <strong>{ $property }</strong> tidak berpengaruh pada elemen ini tidak menggulir.
 
+inactive-css-border-image = <strong>{ $property }</strong> tidak berdampak pada elemen ini karena tidak dapat diterapkan pada elemen tabel internal di mana <strong>border-collapse</strong> disetel menjadi <strong>collapse</strong> pada elemen tabel induk.
+
+inactive-css-ruby-element = <strong>{ $property }</strong> tidak berpengaruh pada elemen ini karena merupakan elemen ruby. Ukurannya ditentukan oleh ukuran font teks ruby.
+
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain how
 ## the problem can be solved.
@@ -56,7 +60,7 @@ inactive-css-not-grid-or-flex-container-fix = Coba tambahkan <strong>display:gri
 
 inactive-css-not-grid-or-flex-container-or-multicol-container-fix = Coba tambahkan baik <strong>display:grid</strong>, <strong>display:flex</strong>, maupun <strong>columns:2</strong>. { learn-more }
 
-inactive-css-not-grid-or-flex-item-fix-2 = Coba tambahkan <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong>, atau <strong>display:inline-flex</strong>. { learn-more }
+inactive-css-not-grid-or-flex-item-fix-3 = Coba tambahkan <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong>, atau <strong>display:inline-flex</strong> ke induk elemen. { learn-more }
 
 inactive-css-not-grid-item-fix-2 = Coba tambahkan <strong>display:grid</strong> atau <strong>display:inline-grid</strong> pada induk elemen. { learn-more }
 
@@ -85,6 +89,10 @@ inactive-css-not-for-internal-table-elements-except-table-cells-fix = Cobalah me
 inactive-css-not-table-fix = Coba tambahkan <strong>display:table</strong> atau <strong>display:inline-table</strong>. { learn-more }
 
 inactive-scroll-padding-when-not-scroll-container-fix = Coba tambahkan <strong>overflow:auto</strong>, <strong>overflow:scroll</strong>, atau <strong>overflow:hidden</strong>. { learn-more }
+
+inactive-css-border-image-fix = Pada elemen tabel induk, hapus properti atau ubah nilai <strong>border-collapse</strong> ke nilai selain <strong>collapse</strong>. { learn-more }
+
+inactive-css-ruby-element-fix = Coba ubah <strong>ukuran fon</strong> dari teks ruby. { learn-more }
 
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why

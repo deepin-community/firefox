@@ -9,7 +9,7 @@
 
 #include "nsISupportsImpl.h"
 #include "mozilla/Attributes.h"
-#include "mozilla/dom/WindowBinding.h"  // For FrameRequestCallback
+#include "mozilla/dom/AnimationFrameProviderBinding.h"
 #include "mozilla/dom/WebXRBinding.h"
 #include "mozilla/dom/XRFrame.h"
 #include "mozilla/gfx/PVRManagerChild.h"
@@ -50,7 +50,7 @@ class VRManagerChild : public PVRManagerChild {
   friend class PVRManagerChild;
 
  public:
-  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(VRManagerChild);
+  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(VRManagerChild, override);
 
   static VRManagerChild* Get();
 
@@ -80,8 +80,7 @@ class VRManagerChild : public PVRManagerChild {
   static bool IsPresenting();
   static TimeStamp GetIdleDeadlineHint(TimeStamp aDefault);
 
-  PVRLayerChild* CreateVRLayer(uint32_t aDisplayID,
-                               nsISerialEventTarget* aTarget, uint32_t aGroup);
+  PVRLayerChild* CreateVRLayer(uint32_t aDisplayID, uint32_t aGroup);
 
   static void IdentifyTextureHost(
       const layers::TextureFactoryIdentifier& aIdentifier);
@@ -103,7 +102,7 @@ class VRManagerChild : public PVRManagerChild {
   void FireDOMVRDisplayPresentChangeEvent(uint32_t aDisplayID);
   void FireDOMVRDisplayConnectEventsForLoad(VRManagerEventObserver* aObserver);
 
-  void HandleFatalError(const char* aMsg) const override;
+  void HandleFatalError(const char* aMsg) override;
   void ActorDestroy(ActorDestroyReason aReason) override;
 
   void RunPuppet(const nsTArray<uint64_t>& aBuffer, dom::Promise* aPromise,
@@ -117,8 +116,6 @@ class VRManagerChild : public PVRManagerChild {
   PVRLayerChild* AllocPVRLayerChild(const uint32_t& aDisplayID,
                                     const uint32_t& aGroup);
   bool DeallocPVRLayerChild(PVRLayerChild* actor);
-
-  void ActorDealloc() override;
 
   // MOZ_CAN_RUN_SCRIPT_BOUNDARY until we can mark ipdl-generated things as
   // MOZ_CAN_RUN_SCRIPT.

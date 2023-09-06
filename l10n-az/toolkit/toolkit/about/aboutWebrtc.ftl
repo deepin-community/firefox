@@ -13,6 +13,9 @@ about-webrtc-document-title = WebRTC daxili məlumatlar
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = about:webrtc-ni fərqli qeyd et
 
+## These labels are for a disclosure which contains the information for closed PeerConnection sections
+
+
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = AEC Qeydiyyatı
@@ -20,7 +23,13 @@ about-webrtc-aec-logging-off-state-label = AEC Qeydiyyatı başlat
 about-webrtc-aec-logging-on-state-label = AEC Qeydiyyatı dayandır
 about-webrtc-aec-logging-on-state-msg = AEC qeydiyyatı aktivdir (zəng edənlə bir neçə dəqiqə danışdıqdan sonra qeydiyyatı dayandırın)
 
+about-webrtc-aec-logging-toggled-on-state-msg = AEC qeydiyyatı aktivdir (zəng edənlə bir neçə dəqiqə danışdıqdan sonra qeydiyyatı dayandırın)
+# Variables:
+#  $path (String) - The path to which the aec log file is saved.
+about-webrtc-aec-logging-toggled-off-state-msg = Qeydiyyat faylları buradadır: { $path }
+
 ##
+
 
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
@@ -57,9 +66,6 @@ about-webrtc-ice-pair-bytes-sent = Göndərilmiş bayt:
 about-webrtc-ice-pair-bytes-received = Alınmış bayt:
 about-webrtc-ice-component-id = Hissə identifikatoru
 
-## "Avg." is an abbreviation for Average. These are used as data labels.
-
-
 ## These adjectives are used to label a line of statistics collected for a peer
 ## connection. The data represents either the local or remote end of the
 ## connection.
@@ -68,7 +74,6 @@ about-webrtc-type-local = Lokal
 about-webrtc-type-remote = Uzaq
 
 ##
-
 
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
@@ -92,6 +97,11 @@ about-webrtc-log-show-msg = qeydləri göstər
 about-webrtc-log-hide-msg = qeydləri gizlə
     .title = bu bölməni daraltmaq üşün klikləyin
 
+about-webrtc-log-section-show-msg = Qeydləri göstər
+    .title = Bu bölməni genişlətmək üçün klikləyin
+about-webrtc-log-section-hide-msg = Qeydləri gizlə
+    .title = Bu bölməni daraltmaq üşün klikləyin
+
 ## These are used to display a header for a PeerConnection.
 ## Variables:
 ##  $browser-id (Number) - A numeric id identifying the browser tab for the PeerConnection.
@@ -102,8 +112,12 @@ about-webrtc-log-hide-msg = qeydləri gizlə
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (bağlanıb) { $now }
 
-##
+## These are used to indicate what direction media is flowing.
+## Variables:
+##  $codecs - a list of media codecs
 
+
+##
 
 about-webrtc-local-candidate = Lokal Namizəd
 about-webrtc-remote-candidate = Uzaq Namizəd
@@ -114,18 +128,31 @@ about-webrtc-raw-cand-show-msg = xam namizədləri göstər
     .title = bu bölməni genişlətmək üçün klikləyin
 about-webrtc-raw-cand-hide-msg = xam namizədləri gizlət
     .title = bu bölməni daraltmaq üşün klikləyin
+about-webrtc-raw-cand-section-show-msg = Xam namizədləri göstər
+    .title = Bu bölməni genişlətmək üçün klikləyin
+about-webrtc-raw-cand-section-hide-msg = Xam namizədləri gizlət
+    .title = Bu bölməni daraltmaq üşün klikləyin
 about-webrtc-priority = Üstünlük
 about-webrtc-fold-show-msg = detalları göstər
     .title = bu bölməni genişlətmək üçün klikləyin
 about-webrtc-fold-hide-msg = detalları gizlə
     .title = bu bölməni daraltmaq üşün klikləyin
+about-webrtc-fold-default-show-msg = Detalları göstər
+    .title = Bu bölməni genişlətmək üçün klikləyin
+about-webrtc-fold-default-hide-msg = Detalları gizlə
+    .title = Bu bölməni daraltmaq üşün klikləyin
 about-webrtc-decoder-label = Dekodlayıcı
 about-webrtc-encoder-label = Kodlayıcı
 
 ## SSRCs are identifiers that represent endpoints in an RTP stream
 
 
+## These are displayed on the button that shows or hides the
+## PeerConnection configuration disclosure
+
+
 ##
+
 
 ## These are paths used for saving the about:webrtc page or log files so
 ## they can be attached to bug reports.
@@ -136,6 +163,10 @@ about-webrtc-save-page-msg = səhifə { $path } bölməsinə saxlandı
 about-webrtc-debug-mode-off-state-msg = izləmə qeydiyyatı { $path } ünvanındadır.
 about-webrtc-debug-mode-on-state-msg = sazlama modu açıqdır, izləmə qeydiyyatı: { $path }
 about-webrtc-aec-logging-off-state-msg = qeydiyyat faylları buradadır: { $path }
+
+about-webrtc-save-page-complete-msg = Səhifə { $path } bölməsinə saxlandı
+about-webrtc-debug-mode-toggled-off-state-msg = Izləmə qeydiyyatı { $path } ünvanındadır.
+about-webrtc-debug-mode-toggled-on-state-msg = Sazlama modu açıqdır, izləmə qeydiyyatı: { $path }
 
 ##
 
@@ -154,9 +185,12 @@ about-webrtc-trickle-caption-msg = Süzülən namizədlər (cavabdan sonra gəl�
 ## See http://wikipedia.org/wiki/Session_Description_Protocol
 
 
-##
+## These are displayed on the button that shows or hides the SDP information disclosure
 
-##
+
+## These are displayed on the button that shows or hides the Media Context information disclosure.
+## The Media Context is the set of preferences and detected capabilities that informs
+## the negotiated CODEC settings.
 
 
 ##

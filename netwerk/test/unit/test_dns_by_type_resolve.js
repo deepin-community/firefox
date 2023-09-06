@@ -4,29 +4,28 @@
 
 "use strict";
 
-ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
-
 let h2Port;
 
-const dns = Cc["@mozilla.org/network/dns-service;1"].getService(
-  Ci.nsIDNSService
+const { TestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/TestUtils.sys.mjs"
 );
 
-function setup() {
-  let env = Cc["@mozilla.org/process/environment;1"].getService(
-    Ci.nsIEnvironment
-  );
-  h2Port = env.get("MOZHTTP2_PORT");
+add_setup(async function setup() {
+  h2Port = Services.env.get("MOZHTTP2_PORT");
   Assert.notEqual(h2Port, null);
   Assert.notEqual(h2Port, "");
 
   trr_test_setup();
-  Services.prefs.setIntPref("network.trr.mode", Ci.nsIDNSService.MODE_TRRFIRST);
-}
+  registerCleanupFunction(() => {
+    trr_clear_prefs();
+  });
 
-setup();
-registerCleanupFunction(() => {
-  trr_clear_prefs();
+  if (mozinfo.socketprocess_networking) {
+    Services.dns; // Needed to trigger socket process.
+    await TestUtils.waitForCondition(() => Services.io.socketProcessLaunched);
+  }
+
+  Services.prefs.setIntPref("network.trr.mode", Ci.nsIDNSService.MODE_TRRFIRST);
 });
 
 let test_answer = "bXkgdm9pY2UgaXMgbXkgcGFzc3dvcmQ=";
@@ -39,8 +38,8 @@ add_task(async function testTXTResolve() {
     "https://foo.example.com:" + h2Port + "/doh"
   );
 
-  let [, inRecord] = await new TRRDNSListener("_esni.example.com", {
-    type: dns.RESOLVE_TYPE_TXT,
+  let { inRecord } = await new TRRDNSListener("_esni.example.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_TXT,
   });
 
   let answer = inRecord
@@ -55,8 +54,8 @@ add_task(async function testTXTRecordPushPart1() {
     "network.trr.uri",
     "https://foo.example.com:" + h2Port + "/txt-dns-push"
   );
-  let [, inRecord] = await new TRRDNSListener("_esni_push.example.com", {
-    type: dns.RESOLVE_TYPE_DEFAULT,
+  let { inRecord } = await new TRRDNSListener("_esni_push.example.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_DEFAULT,
     expectedAnswer: "127.0.0.1",
   });
 
@@ -73,8 +72,8 @@ add_task(async function testTXTRecordPushPart2() {
     "network.trr.uri",
     "https://foo.example.com:" + h2Port + "/404"
   );
-  let [, inRecord] = await new TRRDNSListener("_esni_push.example.com", {
-    type: dns.RESOLVE_TYPE_TXT,
+  let { inRecord } = await new TRRDNSListener("_esni_push.example.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_TXT,
   });
 
   let answer = inRecord

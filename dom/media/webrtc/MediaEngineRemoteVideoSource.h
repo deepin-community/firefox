@@ -34,8 +34,8 @@
 #include "NullTransport.h"
 
 // WebRTC includes
-#include "webrtc/common_video/include/i420_buffer_pool.h"
-#include "webrtc/modules/video_capture/video_capture_defines.h"
+#include "common_video/include/video_frame_buffer_pool.h"
+#include "modules/video_capture/video_capture_defines.h"
 
 namespace webrtc {
 using CaptureCapability = VideoCaptureCapability;
@@ -99,15 +99,13 @@ class MediaEngineRemoteVideoSource : public MediaEngineSource,
   static void TrimLessFitCandidates(nsTArray<CapabilityCandidate>& aSet);
 
  public:
-  MediaEngineRemoteVideoSource(int aIndex, camera::CaptureEngine aCapEngine,
-                               bool aScary);
+  explicit MediaEngineRemoteVideoSource(const MediaDevice* aMediaDevice);
 
   // ExternalRenderer
   int DeliverFrame(uint8_t* aBuffer,
                    const camera::VideoFrameProperties& aProps) override;
 
   // MediaEngineSource
-  dom::MediaSourceEnum GetMediaSource() const override;
   nsresult Allocate(const dom::MediaTrackConstraints& aConstraints,
                     const MediaEnginePrefs& aPrefs, uint64_t aWindowID,
                     const char** aOutBadConstraint) override;
@@ -126,27 +124,15 @@ class MediaEngineRemoteVideoSource : public MediaEngineSource,
       const override;
   void GetSettings(dom::MediaTrackSettings& aOutSettings) const override;
 
-  void Refresh(int aIndex);
-
-  nsString GetName() const override;
-  void SetName(nsString aName);
-
-  nsCString GetUUID() const override;
-  void SetUUID(const char* aUUID);
-
-  nsString GetGroupId() const override;
-  void SetGroupId(nsString aGroupId);
-
-  bool GetScary() const override { return mScary; }
-
   RefPtr<GenericNonExclusivePromise> GetFirstFramePromise() const override {
     return mFirstFramePromise;
   }
 
- private:
-  // Initialize the needed Video engine interfaces.
-  void Init();
+  const TrackingId& GetTrackingId() const override;
 
+  static camera::CaptureEngine CaptureEngine(dom::MediaSourceEnum aMediaSource);
+
+ private:
   /**
    * Returns the number of capabilities for the underlying device.
    *
@@ -163,13 +149,19 @@ class MediaEngineRemoteVideoSource : public MediaEngineSource,
    */
   webrtc::CaptureCapability& GetCapability(size_t aIndex) const;
 
-  int mCaptureIndex;
+  int mCaptureId = -1;
   const camera::CaptureEngine mCapEngine;  // source of media (cam, screen etc)
-  const bool mScary;
+
+  // A tracking id used to uniquely identify the source of video frames.
+  // Set under mMutex on the owning thread. Accessed under one of the two.
+  TrackingId mTrackingId;
+
+  // Mirror of mTrackingId on the frame-delivering thread (Cameras IPC).
+  Maybe<TrackingId> mFrameDeliveringTrackingId;
 
   // mMutex protects certain members on 3 threads:
   // MediaManager, Cameras IPC and MediaTrackGraph.
-  Mutex mMutex;
+  Mutex mMutex MOZ_UNANNOTATED;
 
   // Current state of this source.
   // Set under mMutex on the owning thread. Accessed under one of the two.
@@ -190,7 +182,7 @@ class MediaEngineRemoteVideoSource : public MediaEngineSource,
 
   // A buffer pool used to manage the temporary buffer used when rescaling
   // incoming images. Cameras IPC thread only.
-  webrtc::I420BufferPool mRescalingBufferPool;
+  webrtc::VideoFrameBufferPool mRescalingBufferPool;
 
   // The intrinsic size of the latest captured image, so we can feed black
   // images of the same size while stopped.
@@ -240,8 +232,8 @@ class MediaEngineRemoteVideoSource : public MediaEngineSource,
    */
   mutable bool mCapabilitiesAreHardcoded = false;
 
-  nsString mDeviceName;
-  nsCString mUniqueId;
+  const RefPtr<const MediaDevice> mMediaDevice;
+  const nsCString mDeviceUUID;
   Maybe<nsString> mFacingMode;
 };
 

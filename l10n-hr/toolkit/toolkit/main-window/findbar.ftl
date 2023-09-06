@@ -36,3 +36,43 @@ findbar-entire-word =
     .label = Cijele riječi
     .accesskey = C
     .tooltiptext = Traži samo cijele riječi
+
+findbar-not-found = Izraz nije pronađen
+
+findbar-wrapped-to-top = Dosegnut kraj stranice, nastavak s vrha
+findbar-wrapped-to-bottom = Dosegnut početak stranice, nastavak s kraja
+
+findbar-normal-find =
+    .placeholder = Pronađi na stranici
+findbar-fast-find =
+    .placeholder = Brza pretraga
+findbar-fast-find-links =
+    .placeholder = Brza pretraga (samo poveznice)
+
+findbar-case-sensitive-status =
+    .value = (Razlikovanje malih i velikih slova)
+findbar-match-diacritics-status =
+    .value = (Poklapanje dijakritičkih znakova)
+findbar-entire-word-status =
+    .value = (samo cijele riječi)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $current } od { $total } rezultata
+            [few] { $current } od { $total } rezultata
+           *[other] { $current } od { $total } rezultata
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Više od { $limit } rezultata
+            [few] Više od { $limit } rezultata
+           *[other] Više od { $limit } rezultata
+        }

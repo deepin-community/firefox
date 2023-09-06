@@ -7,18 +7,21 @@ interface Principal;
 interface URI;
 interface nsIDocShell;
 interface RemoteTab;
-interface nsITransportSecurityInfo;
 interface nsIDOMProcessParent;
 
 [Exposed=Window, ChromeOnly]
 interface WindowContext {
   readonly attribute BrowsingContext? browsingContext;
 
+  readonly attribute WindowGlobalChild? windowGlobalChild; // in-process only
+
   readonly attribute unsigned long long innerWindowId;
 
   readonly attribute WindowContext? parentWindowContext;
 
   readonly attribute WindowContext topWindowContext;
+
+  readonly attribute boolean isInProcess;
 
   // True if this WindowContext is currently frozen in the BFCache.
   readonly attribute boolean isInBFCache;
@@ -29,9 +32,7 @@ interface WindowContext {
   // True if the principal of this window is for a local ip address.
   readonly attribute boolean isLocalIP;
 
-  // True if the corresponding document has `loading='lazy'` images;
-  // It won't become false if the image becomes non-lazy.
-  readonly attribute boolean hadLazyLoadImage;
+  readonly attribute boolean shouldResistFingerprinting;
 
   /**
    * Partially determines whether script execution is allowed in this
@@ -54,7 +55,6 @@ enum PermitUnloadAction {
 [Exposed=Window, ChromeOnly]
 interface WindowGlobalParent : WindowContext {
   readonly attribute boolean isClosed;
-  readonly attribute boolean isInProcess;
 
   readonly attribute boolean isCurrentGlobal;
 
@@ -87,7 +87,7 @@ interface WindowGlobalParent : WindowContext {
   // navigation before proceeding. If the user needs to be prompted, however,
   // the promise will not resolve until the user has responded, regardless of
   // the timeout.
-  [Throws]
+  [NewObject]
   Promise<boolean> permitUnload(optional PermitUnloadAction action = "prompt",
                                 optional unsigned long timeout = 0);
 
@@ -98,6 +98,9 @@ interface WindowGlobalParent : WindowContext {
   readonly attribute URI? documentURI;
   readonly attribute DOMString documentTitle;
   readonly attribute nsICookieJarSettings? cookieJarSettings;
+
+  // True if the the currently loaded document is in fullscreen.
+  attribute boolean fullscreen;
 
   // Bit mask containing content blocking events that are recorded in
   // the document's content blocking log.
@@ -140,23 +143,16 @@ interface WindowGlobalParent : WindowContext {
    * cannot access the rendering of out of process iframes. This API works
    * with remote and local frames.
    */
-  [Throws]
+  [NewObject]
   Promise<ImageBitmap> drawSnapshot(DOMRect? rect,
                                     double scale,
                                     UTF8String backgroundColor,
                                     optional boolean resetScrollPosition = false);
 
-  /**
-   * Fetches the securityInfo object for this window. This function will
-   * look for failed and successful channels to find the security info,
-   * thus it will work on regular HTTPS pages as well as certificate
-   * error pages.
-   *
-   * This returns a Promise which resolves to an nsITransportSecurity
-   * object with certificate data or undefined if no security info is available.
-   */
-  [Throws]
-  Promise<nsITransportSecurityInfo> getSecurityInfo();
+  // True if any of the windows in the subtree rooted at this window
+  // has active peer connections.  If this is called for a non-top-level
+  // context, it always returns false.
+  boolean hasActivePeerConnections();
 };
 
 [Exposed=Window, ChromeOnly]
@@ -182,6 +178,8 @@ interface WindowGlobalChild {
   readonly attribute WindowGlobalParent? parentActor; // in-process only
 
   static WindowGlobalChild? getByInnerWindowId(unsigned long long innerWIndowId);
+
+  BrowsingContext? findBrowsingContextWithName(DOMString name);
 
   /**
    * Get or create the JSWindowActor with the given name.

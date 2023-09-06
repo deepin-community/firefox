@@ -7,6 +7,7 @@
 with Files("**"):
     BUG_COMPONENT = ("WebExtensions", "General")
 
+# WebExtensions API objects and request handling internals.
 UNIFIED_SOURCES += [
     "ExtensionAPIBase.cpp",
     "ExtensionAPIRequest.cpp",
@@ -22,6 +23,31 @@ EXPORTS.mozilla.extensions += [
     "ExtensionBrowser.h",
     "ExtensionEventManager.h",
     "ExtensionPort.h",
+]
+
+# WebExtensions API namespaces.
+UNIFIED_SOURCES += [
+    "ExtensionAlarms.cpp",
+    "ExtensionBrowserSettings.cpp",
+    "ExtensionBrowserSettingsColorManagement.cpp",
+    "ExtensionDns.cpp",
+    "ExtensionProxy.cpp",
+    "ExtensionRuntime.cpp",
+    "ExtensionScripting.cpp",
+    "ExtensionSetting.cpp",
+    "ExtensionTest.cpp",
+]
+
+EXPORTS.mozilla.extensions += [
+    "ExtensionAlarms.h",
+    "ExtensionBrowserSettings.h",
+    "ExtensionBrowserSettingsColorManagement.h",
+    "ExtensionDns.h",
+    "ExtensionProxy.h",
+    "ExtensionRuntime.h",
+    "ExtensionScripting.h",
+    "ExtensionSetting.h",
+    "ExtensionTest.h",
 ]
 
 # The following is not a real WebExtensions API, it is a test WebIDL
@@ -45,4 +71,8 @@ LOCAL_INCLUDES += [
 
 FINAL_LIBRARY = "xul"
 
-REQUIRES_UNIFIED_BUILD = True
+# Must be defined unconditionally (TC tasks doesn't account for build
+# configs and these tests do not depend on the bindings to be enabled).
+PYTHON_UNITTEST_MANIFESTS += ["test/python.ini"]
+
+include("/tools/fuzzing/libfuzzer-config.mozbuild")

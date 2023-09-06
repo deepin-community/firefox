@@ -9,10 +9,6 @@
 
 "use strict";
 
-// -----------------------------------------------------------------------------
-// Rule Definition
-// -----------------------------------------------------------------------------
-
 function isIdentifier(node, id) {
   return node && node.type === "Identifier" && node.name === id;
 }
@@ -27,18 +23,19 @@ function isMemberExpression(node, object, member) {
 
 module.exports = {
   meta: {
-    schema: [
-      {
-        type: "object",
-        properties: {
-          allowCu: {
-            type: "boolean",
-          },
-        },
-        additionalProperties: false,
-      },
-    ],
+    docs: {
+      url: "https://firefox-source-docs.mozilla.org/code-quality/lint/linters/eslint-plugin-mozilla/use-chromeutils-import.html",
+    },
     fixable: "code",
+    messages: {
+      useChromeUtilsImport:
+        "Please use ChromeUtils.import instead of Cu.import",
+      useDefineModuleGetter:
+        "Please use ChromeUtils.defineModuleGetter instead of " +
+        "XPCOMUtils.defineLazyModuleGetter",
+    },
+    schema: [],
+    type: "suggestion",
   },
 
   create(context) {
@@ -48,18 +45,17 @@ module.exports = {
           return;
         }
 
-        let { allowCu } = context.options[0] || {};
         let { callee } = node;
 
         // Is the expression starting with `Cu` or `Components.utils`?
         if (
-          ((!allowCu && isIdentifier(callee.object, "Cu")) ||
+          (isIdentifier(callee.object, "Cu") ||
             isMemberExpression(callee.object, "Components", "utils")) &&
           isIdentifier(callee.property, "import")
         ) {
           context.report({
             node,
-            message: "Please use ChromeUtils.import instead of Cu.import",
+            messageId: "useChromeUtilsImport",
             fix(fixer) {
               return fixer.replaceText(callee, "ChromeUtils.import");
             },
@@ -72,9 +68,7 @@ module.exports = {
         ) {
           context.report({
             node,
-            message:
-              "Please use ChromeUtils.defineModuleGetter instead of " +
-              "XPCOMUtils.defineLazyModuleGetter",
+            messageId: "useDefineModuleGetter",
             fix(fixer) {
               return fixer.replaceText(
                 callee,

@@ -17,6 +17,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Wšykne
+printui-page-range-current = Aktualny
+printui-page-range-odd = Njerowny
+printui-page-range-even = Rowny
 printui-page-range-custom = Swójski
 printui-page-range-label = Boki
 printui-page-range-picker =

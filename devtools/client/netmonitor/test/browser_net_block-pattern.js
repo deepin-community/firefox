@@ -9,10 +9,10 @@
  * an exact URL match
  */
 
-add_task(async function() {
+add_task(async function () {
   await pushPref("devtools.netmonitor.features.requestBlocking", true);
 
-  const { tab, monitor } = await initNetMonitor(CUSTOM_GET_URL, {
+  const { tab, monitor } = await initNetMonitor(HTTPS_CUSTOM_GET_URL, {
     requestCount: 1,
   });
   info("Starting test... ");
@@ -26,46 +26,30 @@ add_task(async function() {
   // Open the request blocking panel
   store.dispatch(Actions.toggleRequestBlockingPanel());
 
-  // Helper for keyboard typing
-  const type = string => {
-    for (const ch of string) {
-      EventUtils.synthesizeKey(ch, {}, monitor.panelWin);
-    }
-  };
-
-  // wait for the add input to get focus
-  await waitUntil(() => {
-    return document.querySelector(
-      "#network-action-bar-blocked-panel .request-blocking-add-form input.devtools-searchinput:focus"
-    );
-  });
-
   // Add patterns which should block some of the requests
-  type("test1");
-  EventUtils.synthesizeKey("KEY_Enter");
-  type("test/*/test3");
-  EventUtils.synthesizeKey("KEY_Enter");
+  await addBlockedRequest("test1", monitor);
+  await addBlockedRequest("test/*/test3", monitor);
 
   // Close the blocking panel to ensure it's opened by the context menu later
   store.dispatch(Actions.toggleRequestBlockingPanel());
 
   // Execute two XHRs (the same URL) and wait till they're finished
-  const TEST_URL_1 = SEARCH_SJS + "?value=test1";
-  const TEST_URL_2 = SEARCH_SJS + "?value=test2";
-  const TEST_URL_3 = SEARCH_SJS + "test/something/test3";
-  const TEST_URL_4 = SEARCH_SJS + "test/something/test4";
+  const TEST_URL_1 = HTTPS_SEARCH_SJS + "?value=test1";
+  const TEST_URL_2 = HTTPS_SEARCH_SJS + "?value=test2";
+  const TEST_URL_3 = HTTPS_SEARCH_SJS + "test/something/test3";
+  const TEST_URL_4 = HTTPS_SEARCH_SJS + "test/something/test4";
 
   let wait = waitForNetworkEvents(monitor, 4);
-  await ContentTask.spawn(tab.linkedBrowser, TEST_URL_1, async function(url) {
+  await ContentTask.spawn(tab.linkedBrowser, TEST_URL_1, async function (url) {
     content.wrappedJSObject.performRequests(1, url);
   });
-  await ContentTask.spawn(tab.linkedBrowser, TEST_URL_2, async function(url) {
+  await ContentTask.spawn(tab.linkedBrowser, TEST_URL_2, async function (url) {
     content.wrappedJSObject.performRequests(1, url);
   });
-  await ContentTask.spawn(tab.linkedBrowser, TEST_URL_3, async function(url) {
+  await ContentTask.spawn(tab.linkedBrowser, TEST_URL_3, async function (url) {
     content.wrappedJSObject.performRequests(1, url);
   });
-  await ContentTask.spawn(tab.linkedBrowser, TEST_URL_4, async function(url) {
+  await ContentTask.spawn(tab.linkedBrowser, TEST_URL_4, async function (url) {
     content.wrappedJSObject.performRequests(1, url);
   });
   await wait;
@@ -106,7 +90,7 @@ add_task(async function() {
 
   // Request the unblocked URL again, ensure the URL was not blocked
   wait = waitForNetworkEvents(monitor, 1);
-  await ContentTask.spawn(tab.linkedBrowser, TEST_URL_1, async function(url) {
+  await ContentTask.spawn(tab.linkedBrowser, TEST_URL_1, async function (url) {
     content.wrappedJSObject.performRequests(1, url);
   });
   await wait;
@@ -120,7 +104,3 @@ add_task(async function() {
 
   await teardown(monitor);
 });
-
-function checkRequestListItemBlocked(item) {
-  return item.className.includes("blocked");
-}

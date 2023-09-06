@@ -1,11 +1,5 @@
 // rustc-cfg emitted by the build script:
 //
-// "use_proc_macro"
-//     Link to extern crate proc_macro. Available on any compiler and any target
-//     except wasm32. Requires "proc-macro" Cargo cfg to be enabled (default is
-//     enabled). On wasm32 we never link to proc_macro even if "proc-macro" cfg
-//     is enabled.
-//
 // "wrap_proc_macro"
 //     Wrap types from libproc_macro rather than polyfilling the whole API.
 //     Enabled on rustc 1.29+ as long as procmacro2_semver_exempt is not set,
@@ -33,27 +27,30 @@
 //     location of a token. Enabled by procmacro2_semver_exempt or the
 //     "span-locations" Cargo cfg. This is behind a cfg because tracking
 //     location inside spans is a performance hit.
+//
+// "is_available"
+//     Use proc_macro::is_available() to detect if the proc macro API is
+//     available or needs to be polyfilled instead of trying to use the proc
+//     macro API and catching a panic if it isn't available. Enabled on Rust
+//     1.57+.
 
 use std::env;
-use std::process::{self, Command};
+use std::process::Command;
 use std::str;
+use std::u32;
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
 
-    let version = match rustc_version() {
-        Some(version) => version,
-        None => return,
-    };
+    let version = rustc_version().unwrap_or(RustcVersion {
+        minor: u32::MAX,
+        nightly: false,
+    });
 
-    if version.minor < 31 {
-        eprintln!("Minimum supported rustc version is 1.31");
-        process::exit(1);
-    }
-
-    let semver_exempt = cfg!(procmacro2_semver_exempt);
+    let docs_rs = env::var_os("DOCS_RS").is_some();
+    let semver_exempt = cfg!(procmacro2_semver_exempt) || docs_rs;
     if semver_exempt {
-        // https://github.com/alexcrichton/proc-macro2/issues/147
+        // https://github.com/dtolnay/proc-macro2/issues/147
         println!("cargo:rustc-cfg=procmacro2_semver_exempt");
     }
 
@@ -61,28 +58,17 @@ fn main() {
         println!("cargo:rustc-cfg=span_locations");
     }
 
-    if version.minor < 32 {
-        println!("cargo:rustc-cfg=no_libprocmacro_unwind_safe");
+    if version.minor < 57 {
+        println!("cargo:rustc-cfg=no_is_available");
     }
 
-    if version.minor < 39 {
-        println!("cargo:rustc-cfg=no_bind_by_move_pattern_guard");
+    if version.minor < 66 {
+        println!("cargo:rustc-cfg=no_source_text");
     }
 
-    if version.minor >= 44 {
-        println!("cargo:rustc-cfg=lexerror_display");
-    }
-
-    if version.minor >= 45 {
-        println!("cargo:rustc-cfg=hygiene");
-    }
-
-    let target = env::var("TARGET").unwrap();
-    if !enable_use_proc_macro(&target) {
+    if !cfg!(feature = "proc-macro") {
         return;
     }
-
-    println!("cargo:rustc-cfg=use_proc_macro");
 
     if version.nightly || !semver_exempt {
         println!("cargo:rustc-cfg=wrap_proc_macro");
@@ -95,16 +81,6 @@ fn main() {
     if semver_exempt && version.nightly {
         println!("cargo:rustc-cfg=super_unstable");
     }
-}
-
-fn enable_use_proc_macro(target: &str) -> bool {
-    // wasm targets don't have the `proc_macro` crate, disable this feature.
-    if target.contains("wasm32") {
-        return false;
-    }
-
-    // Otherwise, only enable it if our feature is actually enabled.
-    cfg!(feature = "proc-macro")
 }
 
 struct RustcVersion {
@@ -132,15 +108,23 @@ fn feature_allowed(feature: &str) -> bool {
     //
     //     -Zallow-features=feature1,feature2
 
-    if let Some(rustflags) = env::var_os("RUSTFLAGS") {
-        for mut flag in rustflags.to_string_lossy().split(' ') {
-            if flag.starts_with("-Z") {
-                flag = &flag["-Z".len()..];
-            }
-            if flag.starts_with("allow-features=") {
-                flag = &flag["allow-features=".len()..];
-                return flag.split(',').any(|allowed| allowed == feature);
-            }
+    let flags_var;
+    let flags_var_string;
+    let flags = if let Some(encoded_rustflags) = env::var_os("CARGO_ENCODED_RUSTFLAGS") {
+        flags_var = encoded_rustflags;
+        flags_var_string = flags_var.to_string_lossy();
+        flags_var_string.split('\x1f')
+    } else {
+        return true;
+    };
+
+    for mut flag in flags {
+        if flag.starts_with("-Z") {
+            flag = &flag["-Z".len()..];
+        }
+        if flag.starts_with("allow-features=") {
+            flag = &flag["allow-features=".len()..];
+            return flag.split(',').any(|allowed| allowed == feature);
         }
     }
 

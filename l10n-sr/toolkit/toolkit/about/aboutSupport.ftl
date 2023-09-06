@@ -48,12 +48,12 @@ app-basics-update-channel = Канал за ажурирање
 # as in "Folder for updates". "Update" is a noun, not a verb.
 app-basics-update-dir = Фасцикла за ажурирања
 app-basics-update-history = Историја ажурирања
-app-basics-show-update-history = Прикажи историјат ажурирања
+app-basics-show-update-history = Прикажи историју ажурирања
 # Represents the path to the binary used to start the application.
 app-basics-binary = Бинарна датотека програма
 app-basics-profile-dir = Фасцикла профила
 app-basics-enabled-plugins = Омогућене додатне компоненте
-app-basics-build-config = Конфигурација изградње
+app-basics-build-config = Конфигурација верзије
 app-basics-user-agent = Корисник
 app-basics-os = ОС
 app-basics-os-theme = Системска тема
@@ -74,6 +74,14 @@ app-basics-location-service-key-google = Google кључ за услуге ло�
 app-basics-safebrowsing-key-google = Google кључ за безбедно прегледање
 app-basics-key-mozilla = Кључ Mozilla сервиса за локацију
 app-basics-safe-mode = Безбедни режим
+app-basics-memory-size = Величина меморије (RAM)
+app-basics-disk-available = Доступан простор на диску
+
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
+
 show-dir-label = Прикажи у фасцикли
 environment-variables-title = Варијабле окружења
 environment-variables-name = Назив
@@ -98,11 +106,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Дневник одлука
 graphics-crash-guards-title = Онемогућене могућности чувара рушења
 graphics-workarounds-title = Алтернативна решења
+graphics-device-pixel-ratios = Односи пиксела у прозору уређаја
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Протокол прозора
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Радно окружење
 place-database-title = База података локација
+place-database-stats = Статистика
+place-database-stats-show = Прикажи статистику
+place-database-stats-hide = Сакриј статистику
+place-database-stats-entity = Објект
+place-database-stats-count = Укупно
+place-database-stats-size-kib = Величина (KiB)
+place-database-stats-size-perc = Величина (%)
+place-database-stats-efficiency-perc = Ефикасност (%)
+place-database-stats-sequentiality-perc = Секвенцијалност (%)
 place-database-integrity = Интегритет
 place-database-verify-integrity = Потврди интегритет
 a11y-title = Приступачност
@@ -111,8 +129,8 @@ a11y-force-disabled = Спречи приступачност
 a11y-handler-used = Приступни управљач искоришћен
 a11y-instantiator = Приступачност инстантиатору
 library-version-title = Издања библиотека
-copy-text-to-clipboard-label = Копирај текст у бележницу
-copy-raw-data-to-clipboard-label = Копирај податке у бележницу
+copy-text-to-clipboard-label = Копирај текст у привремену меморију
+copy-raw-data-to-clipboard-label = Копирај податке у привремену меморију
 sandbox-title = Sandbox
 sandbox-sys-call-log-title = Одбијени системски позиви
 sandbox-sys-call-index = #
@@ -128,7 +146,7 @@ clear-startup-cache-title = Покушајте да избришете пред�
 clear-startup-cache-label = Избриши предмеморију покретања…
 startup-cache-dialog-title2 = Рестартовати { -brand-short-name(case: "acc") } да бисте обрисали кеш покретања?
 startup-cache-dialog-body2 = Ово неће променити подешавања ни уклонити додатке.
-restart-button-label = Рестартуј
+restart-button-label = Поново покрени
 
 ## Media titles
 
@@ -149,8 +167,17 @@ media-device-channels = Канали
 media-device-rate = Стопа
 media-device-latency = Латентност
 media-capabilities-title = Могућности медија
+media-codec-support-info = Информације о подршци за кодек
 # List all the entries of the database.
 media-capabilities-enumerate = Попис уноса базе података
+
+## Codec support table
+
+media-codec-support-sw-decoding = Софтверско декодирање
+media-codec-support-hw-decoding = Хардверско декодирање
+media-codec-support-codec-name = Име кодека
+media-codec-support-supported = Подржано
+media-codec-support-unsupported = Није подржано
 
 ##
 
@@ -274,10 +301,12 @@ webgl1-version = WebGL 1 верзија драјвера
 webgl1-driver-extensions = WebGL 1 – проширења драјвера
 webgl1-extensions = WebGL 1 – проширења
 webgl2-wsiinfo = WebGL 2 WSI информације драјвера
-webgl2-renderer = WebGL2 Renderer
+webgl2-renderer = WebGL 2 Driver Renderer
 webgl2-version = WebGL 2 верзија драјвера
 webgl2-driver-extensions = WebGL 2 – проширења драјвера
 webgl2-extensions = WebGL 2 – проширења
+webgpu-default-adapter = Подразумевани WebGPU адаптер
+webgpu-fallback-adapter = Резервни WebGPU адаптер
 
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
@@ -313,6 +342,7 @@ can-sandbox-media = Медијска компонента Sandboxing
 content-sandbox-level = Ниво Sandbox процеса садржаја
 effective-content-sandbox-level = Ефективни ниво Sandbox процеса садржаја
 content-win32k-lockdown-state = Стање закључавања Win32k за процес садржаја
+support-sandbox-gpu-level = Ниво Sandbox GPU процеса
 sandbox-proc-type-content = садржај
 sandbox-proc-type-file = садржај дадотеке
 sandbox-proc-type-media-plugin = медијска компонента
@@ -341,7 +371,7 @@ fission-status-experiment-control = Онемогућио експеримент
 fission-status-experiment-treatment = Омогућио експеримент
 fission-status-disabled-by-e10s-env = Онемогућило окружење
 fission-status-enabled-by-env = Омогућило окружење
-fission-status-disabled-by-safe-mode = Онемогућио сигурни режим
+fission-status-disabled-by-env = Онемогућило окружење
 fission-status-enabled-by-default = Подразумевано омогућено
 fission-status-disabled-by-default = Подразумевано онемогућено
 fission-status-enabled-by-user-pref = Омогућио корисник

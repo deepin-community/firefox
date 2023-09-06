@@ -14,19 +14,24 @@ about-processes-column-action =
 about-processes-shutdown-process =
     .title = Hiqe ngarkimin e skedave dhe asgjësoje procesin
 about-processes-shutdown-tab =
-    .title = Mbylle skedën
+    .title = Mbylleni skedën
+
+# Profiler icons
+# Variables:
+#    $duration (Number) The time in seconds during which the profiler will be running.
+#                       The value will be an integer, typically less than 10.
+about-processes-profile-process =
+    .title =
+        { $duration ->
+            [one] Profilizo krejt përbërëset e këtij procesi për { $duration } sekondë
+           *[other] Profilizo krejt përbërëset e këtij procesi për { $duration } sekonda
+        }
 
 ## Column headers
 
 about-processes-column-name = Emër
 about-processes-column-memory-resident = Kujtesë
 about-processes-column-cpu-total = CPU
-
-## Process names
-## Variables:
-##    $pid (String) The process id of this process, assigned by the OS.
-##    $origin (String) The domain name for this process.
-##    $type (String) The raw type for this process. Used for unknown processes.
 
 ## Process names
 ## Variables:
@@ -58,6 +63,7 @@ about-processes-unknown-process = Tjetër: { $type } ({ $pid })
 ##    $origin (String) The domain name for this process.
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
+about-processes-web-serviceworker = { $origin } ({ $pid }, serviceworker)
 about-processes-web-isolated-process-private = { $origin } — Privat ({ $pid })
 
 ## Details within processes
@@ -114,6 +120,13 @@ about-processes-frame-name-one = Nënkornizë: { $url }
 #   $shortUrl (String) The shared prefix for the subframes in the group.
 about-processes-frame-name-many = Nënkorniza ({ $number }): { $shortUrl }
 
+## Utility process actor names
+
+about-processes-utility-actor-unknown = Aktor i panjohur
+about-processes-utility-actor-audio-decoder-generic = Shkodues Audio Elementar
+about-processes-utility-actor-audio-decoder-applemedia = Shkodues Audio Apple Media
+about-processes-utility-actor-audio-decoder-wmf = Shkodues Audio Windows Media Framework
+
 ## Displaying CPU (percentage and total)
 ## Variables:
 ##    $percent (Number) The percentage of CPU used by the process or thread.
@@ -125,14 +138,19 @@ about-processes-frame-name-many = Nënkorniza ({ $number }): { $shortUrl }
 
 # Common case.
 about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
-    .title = Kohë CPU gjithsej: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+    .title = Kohë CPU-je gjithsej: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
 
 # Special case: data is not available yet.
 about-processes-cpu-user-and-kernel-not-ready = (po bëhen matje)
 
+# Special case: process or thread is almost idle (using less than 0.1% of a CPU core).
+# This case only occurs on Windows where the precision of the CPU times is low.
+about-processes-cpu-almost-idle = < 0.1%
+    .title = Kohë CPU-je gjithsej: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+
 # Special case: process or thread is currently idle.
-about-processes-cpu-idle = idle
-    .title = Kohë CPU gjithsej: { NUMBER($total, maximumFractionDigits: 2) }{ $unit }
+about-processes-cpu-fully-idle = jo aktiv
+    .title = Kohë CPU-je gjithsej: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:

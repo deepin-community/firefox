@@ -6,9 +6,16 @@ addons-page-title = Zastojnik dodankow
 search-header =
     .placeholder = Na addons.mozilla.org pytaś
     .searchbuttonlabel = Pytaś
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Wobstarajśo se rozšyrjenja a drastwy na <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Wobstarajśo se słowniki na <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Wobstarajśo se rěcne pakśiki na <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Njejsćo dodanki toś togo typa instalěrował
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Wersija
 detail-last-updated =
     .label = Slědny raz zaktualizěrowany
+addon-detail-description-expand = Wěcej pokazaś
+addon-detail-description-collapse = Mjenjej pokazaś
 detail-contributions-description = Wuwijaŕ toś togo dodanka pšosy, aby wy pomagał, jogo stawne wuwiśe pódpěraś, z tym až pósćiwaśo mały pśinosk.
 detail-contributions-button = Pśinosowaś
     .title = K wuwijanjeju toś togo dodanka pśinosowaś
@@ -134,16 +143,33 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Nowe aktualizacije
 addon-category-recent-updates-title =
     .title = Nowe aktualizacije
+addon-category-sitepermission = Sedłowe pšawa
+addon-category-sitepermission-title =
+    .title = Sedłowe pšawa
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Sedłowe pšawa za { $host }
 
 ## These are global warnings
 
 extensions-warning-safe-mode = Wšykne dodanki su se pśez wěsty modus znjemóžnili.
 extensions-warning-check-compatibility = Pśespytowanje dodankoweje kompatibelnosći jo znjemóžnjone. Jo móžno, až maśo njekompatibelne dodanki.
+extensions-warning-safe-mode2 =
+    .message = Wšykne dodanki su se pśez wěsty modus znjemóžnili.
+extensions-warning-check-compatibility2 =
+    .message = Pśespytowanje dodankoweje kompatibelnosći jo znjemóžnjone. Jo móžno, až maśo njekompatibelne dodanki.
 extensions-warning-check-compatibility-button = Zmóžniś
     .title = Pśespytowanje dodankeje kompatibelnosći zmóžniś
 extensions-warning-update-security = Pśespytowanje wěstoty aktualizacije jo znjemóžnjone. Jo móžno, až aktualizacije wam wobgrozuju.
+extensions-warning-update-security2 =
+    .message = Pśespytowanje wěstoty aktualizacije jo znjemóžnjone. Jo móžno, až aktualizacije wam wobgrozuju.
 extensions-warning-update-security-button = Zmóžniś
     .title = Pśespytowanje wěstoty aktualizacije zmóžniś
+extensions-warning-imported-addons = Pšosym dokóńcćo instalaciju rozšyrjenjow, kótarež su se importěrowali do { -brand-short-name }.
+extensions-warning-imported-addons2 =
+    .message = Pšosym dokóńcćo instalaciju rozšyrjenjow, kótarež su se importěrowali do { -brand-short-name }.
+extensions-warning-imported-addons-button = Rozšyrjenja instalěrowaś
 
 ## Strings connected to add-on updates
 
@@ -208,10 +234,17 @@ shortcuts-duplicate = Dwójna tastowa skrotconka
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = { $shortcut } se ako tastowa skrotconka wěcej raz wužywa. Dwójne tastowe skrotconki mógu njewótcakane zaźaržanje zawinowaś.
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = { $shortcut } se ako tastowa skrotconka wěcej raz wužywa. Dwójne tastowe skrotconki mógu njewótcakane zaźaržanje zawinowaś.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Wužywa se južo pśez { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] { $numberToShow } dalšny pokazaś
@@ -230,6 +263,9 @@ header-back-button =
 discopane-intro = Rozšyrjenja a drastwy su ako nałoženja za waš wobglědowak, a šćitaju gronidła, ześěguju wideo, namakaju wułapotki, blokěruju gramne wabjenje, změnjaju naglěd wašogo wobglědowaka a wjele wěcej. Toś te małe softwarowe programy se cesto wót tśeśich wuwijaju. How jo wuběrk { -brand-product-name }<a data-l10n-name="learn-more-trigger">dopóruconych</a> rozšyrjenjow za { -brand-product-name } za wósebnu wěstotu, wugbaśe a funkcionalnosć.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations = Někotare z toś tych dopórucenjow su personalizěrowane. Bazěruju na rozšyrjenjach, kótarež sćo instalěrował, profilowych nastajenjach a wužywańskej statistice.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message = Někotare z toś tych dopórucenjow su personalizěrowane. Bazěruju na rozšyrjenjach, kótarež sćo instalěrował, profilowych nastajenjach a wužywańskej statistice.
 discopane-notice-learn-more = Dalšne informacije
 privacy-policy = Pšawidła priwatnosći
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -275,15 +311,15 @@ permissions-addon-button = Pšawa
 extension-enabled-heading = Zmóžnjony
 extension-disabled-heading = Znjemóžnjony
 theme-enabled-heading = Zmóžnjony
-theme-disabled-heading = Znjemóžnjony
-theme-monochromatic-heading = Barwowe kombinacije
-theme-monochromatic-subheading = Žywe nowe barwowe kombinacije z { -brand-product-name }. Za wobgranicowany cas k dispoziciji.
+theme-disabled-heading2 = Skłaźone drastwy
 plugin-enabled-heading = Zmóžnjony
 plugin-disabled-heading = Znjemóžnjony
 dictionary-enabled-heading = Zmóžnjony
 dictionary-disabled-heading = Znjemóžnjony
 locale-enabled-heading = Zmóžnjony
 locale-disabled-heading = Znjemóžnjony
+sitepermission-enabled-heading = Zmóžnjony
+sitepermission-disabled-heading = Znjemóžnjony
 always-activate-button = Pśecej aktiwěrowaś
 never-activate-button = Nigda njeaktiwěrowaś
 addon-detail-author-label = Awtor
@@ -293,6 +329,9 @@ addon-detail-homepage-label = Startowy bok
 addon-detail-rating-label = Pógódnośenje
 # Message for add-ons with a staged pending update.
 install-postponed-message = Toś to rozšyrjenje buźo se aktualizěrowaś, gaž se { -brand-short-name } znowego startujo.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Toś to rozšyrjenje buźo se aktualizěrowaś, gaž se { -brand-short-name } znowego startujo.
 install-postponed-button = Něnto aktualizěrowaś
 # The average rating that the add-on has received.
 # Variables:
@@ -326,6 +365,10 @@ addon-detail-updates-radio-on = Zašaltowany
 addon-detail-updates-radio-off = Wušaltowany
 addon-detail-update-check-label = Za aktualizacijami pytaś
 install-update-button = Aktualizěrowaś
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -334,6 +377,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Jolic maśo pšawo, ma rozšyrjenje pśistup na waše aktiwity online w priwatnem modusu. <a data-l10n-name="learn-more">Dalšne informacije</a>
 addon-detail-private-browsing-allow = Dowóliś
 addon-detail-private-browsing-disallow = Njedowóliś
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Na sedłach z wobgranicowanjami wuwjasć
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Jolic dowólone, ma rozšyrjenje pśistup k sedłam, kótarež su wót { -vendor-short-name } wobgranicowane. Dowólśo to jano, jolic toś tomu rozšyrjenjeju dowěriśo.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Dowóliś
+addon-detail-quarantined-domains-disallow = Njedowóliś
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -362,6 +423,9 @@ addon-permissions-optional = Opcionalne pšawa za pśidanu funkcionalnosć:
 addon-permissions-learnmore = Dalšne informacije wó pšawach
 recommended-extensions-heading = Dopórucone rozšyrjenja
 recommended-themes-heading = Dopórucone drastwy
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Garantěrujo <span data-l10n-name="hostname">{ $hostname }</span> slědujuce zamóžnosći:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Cujośo se kreatiwny? <a data-l10n-name="link">Napórajśo swójsku drastwu z Firefox Color.</a>
@@ -374,6 +438,7 @@ plugin-heading = Waše tykace zastojaś
 dictionary-heading = Waše słowniki zastojaś
 locale-heading = Waše rěcy zastojaś
 updates-heading = Waše aktualizacije zastojaś
+sitepermission-heading = Waše sedłowe pšawa zastojaś
 discover-heading = Personalizěrujśo swój { -brand-short-name }
 shortcuts-heading = Tastowe skrotconki rozšyrjenjow zastojaś
 default-heading-search-label = Woglědajśo se dalšne dodanki
@@ -381,3 +446,35 @@ addons-heading-search-input =
     .placeholder = Na addons.mozilla.org pytaś
 addon-page-options-button =
     .title = Rědy za wšykne dodanki
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } njejo z kompatibelny z { -brand-short-name } { $version }.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = { $name } njejo z kompatibelny z { -brand-short-name } { $version }.
+details-notification-incompatible-link = Dalšne informacije
+details-notification-unsigned-and-disabled = { $name } njedajo se za wužywanje w { -brand-short-name } wobkšuśiś a jo se znjemóžnił.
+details-notification-unsigned-and-disabled2 =
+    .message = { $name } njedajo se za wužywanje w { -brand-short-name } wobkšuśiś a jo se znjemóžnił.
+details-notification-unsigned-and-disabled-link = Dalšne informacije
+details-notification-unsigned = { $name } njedajo se za wužywanje w { -brand-short-name } wobkšuśiś. Pókšacujśo z glědanim.
+details-notification-unsigned2 =
+    .message = { $name } njedajo se za wužywanje w { -brand-short-name } wobkšuśiś. Pókšacujśo z glědanim.
+details-notification-unsigned-link = Dalšne informacije
+details-notification-blocked = { $name } jo se dla problemow wěstoty abo stabilnosći znjemóžnił.
+details-notification-blocked2 =
+    .message = { $name } jo se dla problemow wěstoty abo stabilnosći znjemóžnił.
+details-notification-blocked-link = Dalšne informacije
+details-notification-softblocked = { $name } jo za to znaty, až zawinujo problemy wěstoty abo stabilnosći.
+details-notification-softblocked2 =
+    .message = { $name } jo za to znaty, až zawinujo problemy wěstoty abo stabilnosći.
+details-notification-softblocked-link = Dalšne informacije
+details-notification-gmp-pending = { $name } buźo se skóro instalěrowaś.
+details-notification-gmp-pending2 =
+    .message = { $name } buźo se skóro instalěrowaś.

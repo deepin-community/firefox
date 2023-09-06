@@ -19,14 +19,14 @@ const TEST_URI = `
 const EXPECTED_CLIPBOARD_REMOVED = `/* color: red; */`;
 const EXPECTED_CLIPBOARD_ADDED = `color: green;`;
 
-add_task(async function() {
+add_task(async function () {
   await addTab("data:text/html;charset=utf-8," + encodeURIComponent(TEST_URI));
   const { inspector, view: ruleView } = await openRuleView();
   const changesView = selectChangesView(inspector);
   const { document: panelDoc, store } = changesView;
 
   await selectNode("div", inspector);
-  const onTrackChange = waitUntilAction(store, "TRACK_CHANGE");
+  const onTrackChange = waitForDispatch(store, "TRACK_CHANGE");
   await updateDeclaration(ruleView, 1, { color: "red" }, { color: "green" });
   await onTrackChange;
 
@@ -45,6 +45,9 @@ add_task(async function() {
     () => checkClipboardData(EXPECTED_CLIPBOARD_REMOVED)
   );
 
+  info("Hiding menu");
+  menu.hide(document);
+
   info(
     "Click the Copy Declaration context menu item for the added declaration"
   );
@@ -59,6 +62,6 @@ add_task(async function() {
 });
 
 function checkClipboardData(expected) {
-  const actual = SpecialPowers.getClipboardData("text/unicode");
+  const actual = SpecialPowers.getClipboardData("text/plain");
   return actual.trim() === expected.trim();
 }

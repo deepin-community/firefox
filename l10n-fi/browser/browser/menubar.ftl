@@ -38,20 +38,9 @@ menu-quit =
             [windows] S
            *[other] S
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Sulje { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Sulje { -brand-shorter-name }
-
 menu-about =
     .label = Tietoja: { -brand-shorter-name }
     .accesskey = T
@@ -81,8 +70,14 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Avaa tiedosto…
     .accesskey = d
-menu-file-close =
-    .label = Sulje
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Sulje välilehti
+           *[other] Sulje { $tabCount } välilehteä
+        }
     .accesskey = S
 menu-file-close-window =
     .label = Sulje ikkuna
@@ -99,9 +94,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Sivun asetukset…
     .accesskey = e
-menu-file-print-preview =
-    .label = Tulostuksen esikatselu
-    .accesskey = k
 menu-file-print =
     .label = Tulosta…
     .accesskey = o
@@ -188,6 +180,17 @@ menu-view-full-screen =
     .label = Koko näytön tila
     .accesskey = K
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Avaa lukunäkymä
+    .accesskey = A
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Sulje lukunäkymä
+    .accesskey = S
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +219,9 @@ menu-history-undo-menu =
     .label = Suljetut välilehdet
 menu-history-undo-window-menu =
     .label = Suljetut ikkunat
-menu-history-reopen-all-tabs = Avaa uudelleen kaikki välilehdet
-menu-history-reopen-all-windows = Avaa uudelleen kaikki ikkunat
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Etsi historiasta
 
 ## Bookmarks Menu
 
@@ -226,10 +230,13 @@ menu-bookmarks-menu =
     .accesskey = K
 menu-bookmarks-manage =
     .label = Järjestele kirjanmerkkejä
-menu-bookmark-current-tab =
-    .label = Lisää nykyinen välilehti kirjanmerkkeihin
-menu-bookmark-edit =
-    .label = Muokkaa kirjanmerkkiä
+menu-bookmark-tab =
+    .label = Lisää nykyinen välilehti kirjanmerkkeihin…
+menu-edit-bookmark =
+    .label = Muokkaa kirjanmerkkiä…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Etsi kirjanmerkeistä
 menu-bookmarks-all-tabs =
     .label = Lisää kaikki välilehdet kirjanmerkkeihin…
 menu-bookmarks-toolbar =
@@ -314,15 +321,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = L
 menu-help-report-site-issue =
     .label = Ilmoita sivuston ongelmasta…
-menu-help-feedback-page =
-    .label = Anna palautetta…
-    .accesskey = A
+menu-help-share-ideas =
+    .label = Jaa ideoita ja palautetta…
+    .accesskey = d
 menu-help-enter-troubleshoot-mode2 =
     .label = Vianmääritystila…
     .accesskey = V
 menu-help-exit-troubleshoot-mode =
     .label = Poista vianmääritystila käytöstä
     .accesskey = P
+menu-help-switch-device =
+    .label = Uuteen laitteeseen vaihtaminen
+    .accesskey = N
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

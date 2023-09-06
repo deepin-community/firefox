@@ -7,17 +7,21 @@
  * Makes sure Pie+Table Charts have the right internal structure.
  */
 
-add_task(async function() {
-  const { L10N } = require("devtools/client/netmonitor/src/utils/l10n");
+add_task(async function () {
+  const {
+    L10N,
+  } = require("resource://devtools/client/netmonitor/src/utils/l10n.js");
 
-  const { monitor } = await initNetMonitor(SIMPLE_URL, { requestCount: 1 });
+  const { monitor } = await initNetMonitor(HTTPS_SIMPLE_URL, {
+    requestCount: 1,
+  });
   info("Starting test... ");
 
   const { document, windowRequire } = monitor.panelWin;
   const { Chart } = windowRequire("devtools/client/shared/widgets/Chart");
 
   const wait = waitForNetworkEvents(monitor, 1);
-  await navigateTo(SIMPLE_URL);
+  await navigateTo(HTTPS_SIMPLE_URL);
   await wait;
 
   const chart = Chart.PieTable(document, {

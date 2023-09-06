@@ -12,12 +12,11 @@
 #define MODULES_VIDEO_CAPTURE_OBJC_VIDEO_CAPTURE_H_
 
 #include "modules/video_capture/video_capture_impl.h"
-#include "rtc_base/scoped_ref_ptr.h"
+#include "api/scoped_refptr.h"
 
 @class RTCVideoCaptureIosObjC;
 
-namespace webrtc {
-namespace videocapturemodule {
+namespace webrtc::videocapturemodule {
 class VideoCaptureIos : public VideoCaptureImpl {
  public:
   VideoCaptureIos();
@@ -37,7 +36,6 @@ class VideoCaptureIos : public VideoCaptureImpl {
   VideoCaptureCapability capability_;
 };
 
-}  // namespace videocapturemodule
-}  // namespace webrtc
+}  // namespace webrtc::videocapturemodule
 
 #endif  // MODULES_VIDEO_CAPTURE_OBJC_VIDEO_CAPTURE_H_

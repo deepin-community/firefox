@@ -8,6 +8,7 @@ about-networking-sockets = Sóckets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Limpar a caché de DNS
 about-networking-dns-trr-url = URL do DoH
+about-networking-dns-trr-mode = Modo DoH
 about-networking-dns-suffix = Sufixo de DNS
 about-networking-websockets = WebSockets
 about-networking-refresh = Actualizar
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Activo
 about-networking-idle = Inactivo
 about-networking-host = Servidor
-about-networking-tcp = TCP
 about-networking-type = Tipo
 about-networking-sent = Enviados
 about-networking-received = Recibidos
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Enderezos
 about-networking-expires = Caduca (Segundos)
 about-networking-originAttributesSuffix = Clave de illamento
+about-networking-flags = Bandeiras extra
 about-networking-messages-sent = Mensaxes enviadas
 about-networking-messages-received = Mensaxes recibidas
 about-networking-bytes-sent = Bytes enviados
 about-networking-bytes-received = Bytes recibidos
 about-networking-logging = Rexistro
-about-networking-log-tutorial = Vaia a <a data-l10n-name="logging">HTTP logging</a> para obter instrucións de como se usa esta ferramenta.
-about-networking-current-log-file = Ficheiro actual do rexistro:
-about-networking-current-log-modules = Módulos actuais do rexistro:
-about-networking-set-log-file = Estabelecer un ficheiro de rexistro
-about-networking-set-log-modules = Estabelecer módulos de rexistro
-about-networking-start-logging = Iniciar rexistro
-about-networking-stop-logging = Deter rexistro
 about-networking-dns-lookup = Buscar DNS
 about-networking-dns-lookup-button = Resolución
 about-networking-dns-domain = Dominio:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Reconto de caché lento
 about-networking-rcwn-cache-not-slow = Reconto de caché non lento
 about-networking-networkid = ID de rede
 about-networking-networkid-id = ID de rede
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Esta páxina moveuse a <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

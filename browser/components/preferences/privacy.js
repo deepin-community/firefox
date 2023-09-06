@@ -5,46 +5,6 @@
 /* import-globals-from extensionControlled.js */
 /* import-globals-from preferences.js */
 
-var { AppConstants } = ChromeUtils.import(
-  "resource://gre/modules/AppConstants.jsm"
-);
-
-ChromeUtils.defineModuleGetter(
-  this,
-  "DownloadUtils",
-  "resource://gre/modules/DownloadUtils.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "LoginHelper",
-  "resource://gre/modules/LoginHelper.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "OSKeyStore",
-  "resource://gre/modules/OSKeyStore.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "SiteDataManager",
-  "resource:///modules/SiteDataManager.jsm"
-);
-XPCOMUtils.defineLazyModuleGetters(this, {
-  NimbusFeatures: "resource://nimbus/ExperimentAPI.jsm",
-  UrlbarProviderQuickSuggest:
-    "resource:///modules/UrlbarProviderQuickSuggest.jsm",
-});
-XPCOMUtils.defineLazyGetter(this, "L10n", () => {
-  return new Localization([
-    "branding/brand.ftl",
-    "browser/preferences/preferences.ftl",
-  ]);
-});
-
-var { PrivateBrowsingUtils } = ChromeUtils.import(
-  "resource://gre/modules/PrivateBrowsingUtils.jsm"
-);
-
 const PREF_UPLOAD_ENABLED = "datareporting.healthreport.uploadEnabled";
 
 const TRACKING_PROTECTION_KEY = "websites.trackingProtectionMode";
@@ -59,6 +19,26 @@ const CONTENT_BLOCKING_PREFS = [
   "privacy.trackingprotection.fingerprinting.enabled",
   "privacy.trackingprotection.cryptomining.enabled",
   "privacy.firstparty.isolate",
+  "privacy.trackingprotection.emailtracking.enabled",
+  "privacy.trackingprotection.emailtracking.pbmode.enabled",
+  "privacy.fingerprintingProtection",
+  "privacy.fingerprintingProtection.pbmode",
+];
+
+const PREF_URLBAR_QUICKSUGGEST_BLOCKLIST =
+  "browser.urlbar.quicksuggest.blockedDigests";
+const PREF_URLBAR_WEATHER_USER_ENABLED = "browser.urlbar.suggest.weather";
+
+/*
+ * Prefs that are unique to sanitizeOnShutdown and are not shared
+ * with the deleteOnClose mechanism like privacy.clearOnShutdown.cookies, -cache and -offlineApps
+ */
+const SANITIZE_ON_SHUTDOWN_PREFS_ONLY = [
+  "privacy.clearOnShutdown.history",
+  "privacy.clearOnShutdown.downloads",
+  "privacy.clearOnShutdown.sessions",
+  "privacy.clearOnShutdown.formdata",
+  "privacy.clearOnShutdown.siteSettings",
 ];
 
 const PREF_OPT_OUT_STUDIES_ENABLED = "app.shield.optoutstudies.enabled";
@@ -70,9 +50,8 @@ const PREF_PASSWORD_GENERATION_AVAILABLE = "signon.generation.available";
 const { BEHAVIOR_REJECT_TRACKER_AND_PARTITION_FOREIGN } = Ci.nsICookieService;
 
 const PASSWORD_MANAGER_PREF_ID = "services.passwordSavingEnabled";
-const PREF_PASSWORD_MANAGER_ENABLED = "signon.rememberSignons";
 
-XPCOMUtils.defineLazyGetter(this, "AlertsServiceDND", function() {
+ChromeUtils.defineLazyGetter(this, "AlertsServiceDND", function () {
   try {
     let alertsService = Cc["@mozilla.org/alerts-service;1"]
       .getService(Ci.nsIAlertsService)
@@ -84,13 +63,6 @@ XPCOMUtils.defineLazyGetter(this, "AlertsServiceDND", function() {
     return undefined;
   }
 });
-
-XPCOMUtils.defineLazyServiceGetter(
-  this,
-  "listManager",
-  "@mozilla.org/url-classifier/listmanager;1",
-  "nsIUrlListManager"
-);
 
 XPCOMUtils.defineLazyPreferenceGetter(
   this,
@@ -106,12 +78,9 @@ XPCOMUtils.defineLazyPreferenceGetter(
   false
 );
 
-XPCOMUtils.defineLazyPreferenceGetter(
-  this,
-  "gStatePartitioningMVPEnabled",
-  "browser.contentblocking.state-partitioning.mvp.ui.enabled",
-  false
-);
+ChromeUtils.defineESModuleGetters(this, {
+  DoHConfigController: "resource:///modules/DoHConfig.sys.mjs",
+});
 
 Preferences.addAll([
   // Content blocking / Tracking Protection
@@ -119,6 +88,15 @@ Preferences.addAll([
   { id: "privacy.trackingprotection.pbmode.enabled", type: "bool" },
   { id: "privacy.trackingprotection.fingerprinting.enabled", type: "bool" },
   { id: "privacy.trackingprotection.cryptomining.enabled", type: "bool" },
+  { id: "privacy.trackingprotection.emailtracking.enabled", type: "bool" },
+  {
+    id: "privacy.trackingprotection.emailtracking.pbmode.enabled",
+    type: "bool",
+  },
+
+  // Fingerprinting Protection
+  { id: "privacy.fingerprintingProtection", type: "bool" },
+  { id: "privacy.fingerprintingProtection.pbmode", type: "bool" },
 
   // Social tracking
   { id: "privacy.trackingprotection.socialtracking.enabled", type: "bool" },
@@ -137,21 +115,25 @@ Preferences.addAll([
   },
 
   // Location Bar
+  { id: "browser.urlbar.suggest.bestmatch", type: "bool" },
   { id: "browser.urlbar.suggest.bookmark", type: "bool" },
   { id: "browser.urlbar.suggest.history", type: "bool" },
   { id: "browser.urlbar.suggest.openpage", type: "bool" },
   { id: "browser.urlbar.suggest.topsites", type: "bool" },
   { id: "browser.urlbar.suggest.engines", type: "bool" },
-  { id: "browser.urlbar.suggest.quicksuggest", type: "bool" },
+  { id: "browser.urlbar.suggest.quicksuggest.nonsponsored", type: "bool" },
   { id: "browser.urlbar.suggest.quicksuggest.sponsored", type: "bool" },
+  { id: "browser.urlbar.quicksuggest.dataCollection.enabled", type: "bool" },
+  { id: PREF_URLBAR_QUICKSUGGEST_BLOCKLIST, type: "string" },
+  { id: PREF_URLBAR_WEATHER_USER_ENABLED, type: "bool" },
 
   // History
   { id: "places.history.enabled", type: "bool" },
   { id: "browser.formfill.enable", type: "bool" },
   { id: "privacy.history.custom", type: "bool" },
+
   // Cookies
   { id: "network.cookie.cookieBehavior", type: "int" },
-  { id: "network.cookie.lifetimePolicy", type: "int" },
   { id: "network.cookie.blockFutureCookies", type: "bool" },
   // Content blocking category
   { id: "browser.contentblocking.category", type: "string" },
@@ -160,8 +142,20 @@ Preferences.addAll([
   // Clear Private Data
   { id: "privacy.sanitize.sanitizeOnShutdown", type: "bool" },
   { id: "privacy.sanitize.timeSpan", type: "int" },
+  { id: "privacy.clearOnShutdown.cookies", type: "bool" },
+  { id: "privacy.clearOnShutdown.cache", type: "bool" },
+  { id: "privacy.clearOnShutdown.offlineApps", type: "bool" },
+  { id: "privacy.clearOnShutdown.history", type: "bool" },
+  { id: "privacy.clearOnShutdown.downloads", type: "bool" },
+  { id: "privacy.clearOnShutdown.sessions", type: "bool" },
+  { id: "privacy.clearOnShutdown.formdata", type: "bool" },
+  { id: "privacy.clearOnShutdown.siteSettings", type: "bool" },
+
   // Do not track
   { id: "privacy.donottrackheader.enabled", type: "bool" },
+
+  // Global Privacy Control
+  { id: "privacy.globalprivacycontrol.enabled", type: "bool" },
 
   // Media
   { id: "media.autoplay.default", type: "int" },
@@ -173,6 +167,7 @@ Preferences.addAll([
   { id: "signon.generation.enabled", type: "bool" },
   { id: "signon.autofillForms", type: "bool" },
   { id: "signon.management.page.breach-alerts.enabled", type: "bool" },
+  { id: "signon.firefoxRelay.feature", type: "string" },
 
   // Buttons
   { id: "pref.privacy.disable_button.view_passwords", type: "bool" },
@@ -217,9 +212,29 @@ Preferences.addAll([
   // HTTPS-Only
   { id: "dom.security.https_only_mode", type: "bool" },
   { id: "dom.security.https_only_mode_pbm", type: "bool" },
+  { id: "dom.security.https_first", type: "bool" },
+  { id: "dom.security.https_first_pbm", type: "bool" },
 
   // Windows SSO
   { id: "network.http.windows-sso.enabled", type: "bool" },
+
+  // Quick Actions
+  { id: "browser.urlbar.quickactions.showPrefs", type: "bool" },
+  { id: "browser.urlbar.suggest.quickactions", type: "bool" },
+
+  // Cookie Banner Handling
+  { id: "cookiebanners.ui.desktop.enabled", type: "bool" },
+  { id: "cookiebanners.service.mode", type: "int" },
+  { id: "cookiebanners.service.detectOnly", type: "bool" },
+
+  // DoH
+  { id: "network.trr.mode", type: "int" },
+  { id: "network.trr.uri", type: "string" },
+  { id: "network.trr.default_provider_uri", type: "string" },
+  { id: "network.trr.custom_uri", type: "string" },
+  { id: "network.trr_ui.show_fallback_warning_option", type: "bool" },
+  { id: "network.trr.display_fallback_warning", type: "bool" },
+  { id: "doh-rollout.disable-heuristics", type: "bool" },
 ]);
 
 // Study opt out
@@ -231,6 +246,11 @@ if (AppConstants.MOZ_DATA_REPORTING) {
     { id: PREF_UPLOAD_ENABLED, type: "bool" },
   ]);
 }
+// Privacy segmentation section
+Preferences.add({
+  id: "browser.dataFeatureRecommendations.enabled",
+  type: "bool",
+});
 
 // Data Choices tab
 if (AppConstants.MOZ_CRASHREPORTER) {
@@ -288,28 +308,21 @@ function dataCollectionCheckboxHandler({
 
 // Sets the "Learn how" SUMO link in the Strict/Custom options of Content Blocking.
 function setUpContentBlockingWarnings() {
-  if (gStatePartitioningMVPEnabled) {
-    let warnings = document.querySelectorAll(
-      ".content-blocking-warning-description"
-    );
-    for (let warning of warnings) {
-      document.l10n.setAttributes(
-        warning,
-        "content-blocking-and-isolating-etp-warning-description-2"
-      );
-    }
-    document.getElementById(
-      "fpiIncompatibilityWarning"
-    ).hidden = !gIsFirstPartyIsolated;
-  }
+  document.getElementById("fpiIncompatibilityWarning").hidden =
+    !gIsFirstPartyIsolated;
+}
 
-  let links = document.querySelectorAll(".contentBlockWarningLink");
-  let contentBlockingWarningUrl =
-    Services.urlFormatter.formatURLPref("app.support.baseURL") +
-    "turn-off-etp-desktop";
-  for (let link of links) {
-    link.setAttribute("href", contentBlockingWarningUrl);
-  }
+function initTCPStandardSection() {
+  let cookieBehaviorPref = Preferences.get("network.cookie.cookieBehavior");
+  let updateTCPSectionVisibilityState = () => {
+    document.getElementById("etpStandardTCPBox").hidden =
+      cookieBehaviorPref.value !=
+      Ci.nsICookieService.BEHAVIOR_REJECT_TRACKER_AND_PARTITION_FOREIGN;
+  };
+
+  cookieBehaviorPref.on("change", updateTCPSectionVisibilityState);
+
+  updateTCPSectionVisibilityState();
 }
 
 var gPrivacyPane = {
@@ -427,12 +440,27 @@ var gPrivacyPane = {
     });
   },
 
+  _initQuickActionsSection() {
+    let showPref = Preferences.get("browser.urlbar.quickactions.showPrefs");
+    let showQuickActionsGroup = () => {
+      document.getElementById("quickActionsBox").hidden = !showPref.value;
+    };
+    showPref.on("change", showQuickActionsGroup);
+    showQuickActionsGroup();
+  },
+
   syncFromHttpsOnlyPref() {
     let httpsOnlyOnPref = Services.prefs.getBoolPref(
       "dom.security.https_only_mode"
     );
     let httpsOnlyOnPBMPref = Services.prefs.getBoolPref(
       "dom.security.https_only_mode_pbm"
+    );
+    let httpsFirstOnPref = Services.prefs.getBoolPref(
+      "dom.security.https_first"
+    );
+    let httpsFirstOnPBMPref = Services.prefs.getBoolPref(
+      "dom.security.https_first_pbm"
     );
     let httpsOnlyRadioGroup = document.getElementById("httpsOnlyRadioGroup");
     let httpsOnlyExceptionButton = document.getElementById(
@@ -441,13 +469,23 @@ var gPrivacyPane = {
 
     if (httpsOnlyOnPref) {
       httpsOnlyRadioGroup.value = "enabled";
-      httpsOnlyExceptionButton.disabled = false;
     } else if (httpsOnlyOnPBMPref) {
       httpsOnlyRadioGroup.value = "privateOnly";
-      httpsOnlyExceptionButton.disabled = true;
     } else {
       httpsOnlyRadioGroup.value = "disabled";
-      httpsOnlyExceptionButton.disabled = true;
+    }
+
+    httpsOnlyExceptionButton.disabled =
+      !httpsOnlyOnPref &&
+      !httpsFirstOnPref &&
+      !httpsOnlyOnPBMPref &&
+      !httpsFirstOnPBMPref;
+
+    if (
+      Services.prefs.prefIsLocked("dom.security.https_only_mode") ||
+      Services.prefs.prefIsLocked("dom.security.https_only_mode_pbm")
+    ) {
+      httpsOnlyRadioGroup.disabled = true;
     }
   },
 
@@ -467,12 +505,6 @@ var gPrivacyPane = {
    * Init HTTPS-Only mode and corresponding prefs
    */
   initHttpsOnly() {
-    let link = document.getElementById("httpsOnlyLearnMore");
-    let httpsOnlyURL =
-      Services.urlFormatter.formatURLPref("app.support.baseURL") +
-      "https-only-prefs";
-    link.setAttribute("href", httpsOnlyURL);
-
     // Set radio-value based on the pref value
     this.syncFromHttpsOnlyPref();
 
@@ -490,6 +522,346 @@ var gPrivacyPane = {
     Preferences.get("dom.security.https_only_mode_pbm").on("change", () =>
       this.syncFromHttpsOnlyPref()
     );
+    Preferences.get("dom.security.https_first").on("change", () =>
+      this.syncFromHttpsOnlyPref()
+    );
+    Preferences.get("dom.security.https_first_pbm").on("change", () =>
+      this.syncFromHttpsOnlyPref()
+    );
+  },
+
+  get dnsOverHttpsResolvers() {
+    let providers = DoHConfigController.currentConfig.providerList;
+    // if there's no default, we'll hold its position with an empty string
+    let defaultURI = DoHConfigController.currentConfig.fallbackProviderURI;
+    let defaultIndex = providers.findIndex(p => p.uri == defaultURI);
+    if (defaultIndex == -1 && defaultURI) {
+      // the default value for the pref isn't included in the resolvers list
+      // so we'll make a stub for it. Without an id, we'll have to use the url as the label
+      providers.unshift({ uri: defaultURI });
+    }
+    return providers;
+  },
+
+  updateDoHResolverList(mode) {
+    let resolvers = this.dnsOverHttpsResolvers;
+    let currentURI = Preferences.get("network.trr.uri").value;
+    if (!currentURI) {
+      currentURI = Preferences.get("network.trr.default_provider_uri").value;
+    }
+    let menu = document.getElementById(`${mode}ResolverChoices`);
+
+    let selectedIndex = currentURI
+      ? resolvers.findIndex(r => r.uri == currentURI)
+      : 0;
+    if (selectedIndex == -1) {
+      // select the last "Custom" item
+      selectedIndex = menu.itemCount - 1;
+    }
+    menu.selectedIndex = selectedIndex;
+
+    let customInput = document.getElementById(`${mode}InputField`);
+    customInput.hidden = menu.value != "custom";
+  },
+
+  populateDoHResolverList(mode) {
+    let resolvers = this.dnsOverHttpsResolvers;
+    let defaultURI = DoHConfigController.currentConfig.fallbackProviderURI;
+    let menu = document.getElementById(`${mode}ResolverChoices`);
+
+    // populate the DNS-Over-HTTPS resolver list
+    menu.removeAllItems();
+    for (let resolver of resolvers) {
+      let item = menu.appendItem(undefined, resolver.uri);
+      if (resolver.uri == defaultURI) {
+        document.l10n.setAttributes(
+          item,
+          "connection-dns-over-https-url-item-default",
+          {
+            name: resolver.UIName || resolver.uri,
+          }
+        );
+      } else {
+        item.label = resolver.UIName || resolver.uri;
+      }
+    }
+    let lastItem = menu.appendItem(undefined, "custom");
+    document.l10n.setAttributes(
+      lastItem,
+      "connection-dns-over-https-url-custom"
+    );
+
+    // set initial selection in the resolver provider picker
+    this.updateDoHResolverList(mode);
+
+    let customInput = document.getElementById(`${mode}InputField`);
+
+    function updateURIPref() {
+      if (customInput.value == "") {
+        // Setting the pref to empty string will make it have the default
+        // pref value which makes us fallback to using the default TRR
+        // resolver in network.trr.default_provider_uri.
+        // If the input is empty we set it to "(space)" which is essentially
+        // the same.
+        Services.prefs.setStringPref("network.trr.uri", " ");
+      } else {
+        Services.prefs.setStringPref("network.trr.uri", customInput.value);
+      }
+    }
+
+    menu.addEventListener("command", () => {
+      if (menu.value == "custom") {
+        customInput.hidden = false;
+        updateURIPref();
+      } else {
+        customInput.hidden = true;
+        Services.prefs.setStringPref("network.trr.uri", menu.value);
+      }
+      Services.telemetry.recordEvent(
+        "security.doh.settings",
+        "provider_choice",
+        "value",
+        menu.value
+      );
+
+      // Update other menu too.
+      let otherMode = mode == "dohEnabled" ? "dohStrict" : "dohEnabled";
+      let otherMenu = document.getElementById(`${otherMode}ResolverChoices`);
+      let otherInput = document.getElementById(`${otherMode}InputField`);
+      otherMenu.value = menu.value;
+      otherInput.hidden = otherMenu.value != "custom";
+    });
+
+    // Change the URL when you press ENTER in the input field it or loses focus
+    customInput.addEventListener("change", () => {
+      updateURIPref();
+    });
+  },
+
+  async updateDoHStatus() {
+    let trrURI = Services.dns.currentTrrURI;
+    let hostname = "";
+    try {
+      hostname = new URL(trrURI).hostname;
+    } catch (e) {
+      hostname = await document.l10n.formatValue("preferences-doh-bad-url");
+    }
+
+    let steering = document.getElementById("dohSteeringStatus");
+    steering.hidden = true;
+
+    let dohResolver = document.getElementById("dohResolver");
+    dohResolver.hidden = true;
+
+    let status = document.getElementById("dohStatus");
+
+    async function setStatus(localizedStringName, options) {
+      let opts = options || {};
+      let statusString = await document.l10n.formatValue(
+        localizedStringName,
+        opts
+      );
+      document.l10n.setAttributes(status, "preferences-doh-status", {
+        status: statusString,
+      });
+    }
+
+    function computeStatus() {
+      let mode = Services.dns.currentTrrMode;
+      let confirmationState = Services.dns.currentTrrConfirmationState;
+      if (
+        mode == Ci.nsIDNSService.MODE_TRRFIRST ||
+        mode == Ci.nsIDNSService.MODE_TRRONLY
+      ) {
+        switch (confirmationState) {
+          case Ci.nsIDNSService.CONFIRM_TRYING_OK:
+          case Ci.nsIDNSService.CONFIRM_OK:
+          case Ci.nsIDNSService.CONFIRM_DISABLED:
+            return "preferences-doh-status-active";
+          default:
+            return "preferences-doh-status-not-active";
+        }
+      }
+
+      return "preferences-doh-status-disabled";
+    }
+
+    let errReason = "";
+    let confirmationStatus = Services.dns.lastConfirmationStatus;
+    if (confirmationStatus != Cr.NS_OK) {
+      errReason = ChromeUtils.getXPCOMErrorName(confirmationStatus);
+    } else {
+      errReason = Services.dns.getTRRSkipReasonName(
+        Services.dns.lastConfirmationSkipReason
+      );
+    }
+    let statusLabel = computeStatus();
+    // setStatus will format and set the statusLabel asynchronously.
+    setStatus(statusLabel, { reason: errReason });
+    dohResolver.hidden = statusLabel == "preferences-doh-status-disabled";
+
+    let statusLearnMore = document.getElementById("dohStatusLearnMore");
+    statusLearnMore.hidden = statusLabel != "preferences-doh-status-not-active";
+
+    // No need to set the resolver name since we're not going to show it.
+    if (statusLabel == "preferences-doh-status-disabled") {
+      return;
+    }
+
+    function nameOrDomain() {
+      for (let resolver of DoHConfigController.currentConfig.providerList) {
+        if (resolver.uri == trrURI) {
+          return resolver.UIName || hostname || trrURI;
+        }
+      }
+
+      // Also check if this is a steering provider.
+      for (let resolver of DoHConfigController.currentConfig.providerSteering
+        .providerList) {
+        if (resolver.uri == trrURI) {
+          steering.hidden = false;
+          return resolver.UIName || hostname || trrURI;
+        }
+      }
+
+      return hostname;
+    }
+
+    let resolverNameOrDomain = nameOrDomain();
+    document.l10n.setAttributes(dohResolver, "preferences-doh-resolver", {
+      name: resolverNameOrDomain,
+    });
+  },
+
+  highlightDoHCategoryAndUpdateStatus() {
+    let value = Preferences.get("network.trr.mode").value;
+    let defaultOption = document.getElementById("dohOptionDefault");
+    let enabledOption = document.getElementById("dohOptionEnabled");
+    let strictOption = document.getElementById("dohOptionStrict");
+    let offOption = document.getElementById("dohOptionOff");
+    defaultOption.classList.remove("selected");
+    enabledOption.classList.remove("selected");
+    strictOption.classList.remove("selected");
+    offOption.classList.remove("selected");
+
+    switch (value) {
+      case Ci.nsIDNSService.MODE_NATIVEONLY:
+        defaultOption.classList.add("selected");
+        break;
+      case Ci.nsIDNSService.MODE_TRRFIRST:
+        enabledOption.classList.add("selected");
+        break;
+      case Ci.nsIDNSService.MODE_TRRONLY:
+        strictOption.classList.add("selected");
+        break;
+      case Ci.nsIDNSService.MODE_TRROFF:
+        offOption.classList.add("selected");
+        break;
+      default:
+        // The pref is set to a random value.
+        // This shouldn't happen, but let's make sure off is selected.
+        offOption.classList.add("selected");
+        document.getElementById("dohCategoryRadioGroup").selectedIndex = 3;
+        break;
+    }
+
+    // When the mode is set to 0 we need to clear the URI so
+    // doh-rollout can kick in.
+    if (value == Ci.nsIDNSService.MODE_NATIVEONLY) {
+      Services.prefs.clearUserPref("network.trr.uri");
+      Services.prefs.clearUserPref("doh-rollout.disable-heuristics");
+    }
+
+    gPrivacyPane.updateDoHStatus();
+  },
+
+  /**
+   * Init DoH corresponding prefs
+   */
+  initDoH() {
+    Services.telemetry.setEventRecordingEnabled("security.doh.settings", true);
+
+    setEventListener("dohDefaultArrow", "command", this.toggleExpansion);
+    setEventListener("dohEnabledArrow", "command", this.toggleExpansion);
+    setEventListener("dohStrictArrow", "command", this.toggleExpansion);
+
+    function modeButtonPressed(e) {
+      // Clicking the active mode again should not generate another event
+      if (
+        parseInt(e.target.value) == Preferences.get("network.trr.mode").value
+      ) {
+        return;
+      }
+      Services.telemetry.recordEvent(
+        "security.doh.settings",
+        "mode_changed",
+        "button",
+        e.target.id
+      );
+    }
+
+    setEventListener("dohDefaultRadio", "command", modeButtonPressed);
+    setEventListener("dohEnabledRadio", "command", modeButtonPressed);
+    setEventListener("dohStrictRadio", "command", modeButtonPressed);
+    setEventListener("dohOffRadio", "command", modeButtonPressed);
+
+    function warnCheckboxClicked(e) {
+      Services.telemetry.recordEvent(
+        "security.doh.settings",
+        "warn_checkbox",
+        "checkbox",
+        `${e.target.checked}`
+      );
+    }
+
+    setEventListener("dohWarnCheckbox1", "command", warnCheckboxClicked);
+    setEventListener("dohWarnCheckbox2", "command", warnCheckboxClicked);
+
+    this.populateDoHResolverList("dohEnabled");
+    this.populateDoHResolverList("dohStrict");
+
+    Preferences.get("network.trr.uri").on("change", () => {
+      gPrivacyPane.updateDoHResolverList("dohEnabled");
+      gPrivacyPane.updateDoHResolverList("dohStrict");
+      gPrivacyPane.updateDoHStatus();
+    });
+
+    // Update status box and hightlightling when the pref changes
+    Preferences.get("network.trr.mode").on(
+      "change",
+      gPrivacyPane.highlightDoHCategoryAndUpdateStatus
+    );
+    this.highlightDoHCategoryAndUpdateStatus();
+
+    Services.obs.addObserver(this, "network:trr-uri-changed");
+    Services.obs.addObserver(this, "network:trr-mode-changed");
+    Services.obs.addObserver(this, "network:trr-confirmation");
+    let unload = () => {
+      Services.obs.removeObserver(this, "network:trr-uri-changed");
+      Services.obs.removeObserver(this, "network:trr-mode-changed");
+      Services.obs.removeObserver(this, "network:trr-confirmation");
+    };
+    window.addEventListener("unload", unload, { once: true });
+
+    if (Preferences.get("network.trr_ui.show_fallback_warning_option").value) {
+      document.getElementById("dohWarningBox1").hidden = false;
+      document.getElementById("dohWarningBox2").hidden = false;
+    }
+
+    let uriPref = Services.prefs.getStringPref("network.trr.uri");
+    // If the value isn't one of the providers, we need to update the
+    // custom_uri pref to make sure the input box contains the correct URL.
+    if (uriPref && !this.dnsOverHttpsResolvers.some(e => e.uri == uriPref)) {
+      Services.prefs.setStringPref(
+        "network.trr.custom_uri",
+        Services.prefs.getStringPref("network.trr.uri")
+      );
+    }
+
+    if (Services.prefs.prefIsLocked("network.trr.mode")) {
+      document.getElementById("dohCategoryRadioGroup").disabled = true;
+      Services.prefs.setStringPref("network.trr.custom_uri", uriPref);
+    }
   },
 
   /**
@@ -498,6 +870,8 @@ var gPrivacyPane = {
    */
   init() {
     this._updateSanitizeSettingsButton();
+    this.initDeleteOnCloseBox();
+    this.syncSanitizationPrefsWithDeleteOnClose();
     this.initializeHistoryMode();
     this.updateHistoryModePane();
     this.updatePrivacyMicroControls();
@@ -508,8 +882,11 @@ var gPrivacyPane = {
 
     this._showCustomBlockList();
     this.trackingProtectionReadPrefs();
+    this.fingerprintingProtectionReadPrefs();
     this.networkCookieBehaviorReadPrefs();
     this._initTrackingProtectionExtensionControl();
+
+    Services.telemetry.setEventRecordingEnabled("privacy.ui.fpp", true);
 
     Services.telemetry.setEventRecordingEnabled("pwmgr", true);
 
@@ -524,10 +901,6 @@ var gPrivacyPane = {
 
     // Watch all of the prefs that the new Cookies & Site Data UI depends on
     Preferences.get("network.cookie.cookieBehavior").on(
-      "change",
-      gPrivacyPane.networkCookieBehaviorReadPrefs.bind(gPrivacyPane)
-    );
-    Preferences.get("network.cookie.lifetimePolicy").on(
       "change",
       gPrivacyPane.networkCookieBehaviorReadPrefs.bind(gPrivacyPane)
     );
@@ -554,19 +927,19 @@ var gPrivacyPane = {
       "change",
       gPrivacyPane.updatePrivacyMicroControls.bind(gPrivacyPane)
     );
-    setEventListener("historyMode", "command", function() {
+    setEventListener("historyMode", "command", function () {
       gPrivacyPane.updateHistoryModePane();
       gPrivacyPane.updateHistoryModePrefs();
       gPrivacyPane.updatePrivacyMicroControls();
       gPrivacyPane.updateAutostart();
     });
-    setEventListener("clearHistoryButton", "command", function() {
+    setEventListener("clearHistoryButton", "command", function () {
       let historyMode = document.getElementById("historyMode");
       // Select "everything" in the clear history dialog if the
       // user has set their history mode to never remember history.
       gPrivacyPane.clearPrivateDataNow(historyMode.value == "dontremember");
     });
-    setEventListener("openSearchEnginePreferences", "click", function(event) {
+    setEventListener("openSearchEnginePreferences", "click", function (event) {
       if (event.button == 0) {
         gotoPref("search");
       }
@@ -586,6 +959,11 @@ var gPrivacyPane = {
       "httpsOnlyExceptionButton",
       "command",
       gPrivacyPane.showHttpsOnlyModeExceptions
+    );
+    setEventListener(
+      "dohExceptionsButton",
+      "command",
+      gPrivacyPane.showDoHExceptions
     );
     setEventListener(
       "clearDataSettings",
@@ -626,18 +1004,12 @@ var gPrivacyPane = {
 
     this._pane = document.getElementById("panePrivacy");
 
+    this._initGlobalPrivacyControlUI();
     this._initPasswordGenerationUI();
+    this._initRelayIntegrationUI();
     this._initMasterPasswordUI();
 
     this.initListenersForExtensionControllingPasswordManager();
-    // set up the breach alerts Learn More link with the correct URL
-    const breachAlertsLearnMoreLink = document.getElementById(
-      "breachAlertsLearnMoreLink"
-    );
-    const breachAlertsLearnMoreUrl =
-      Services.urlFormatter.formatURLPref("app.support.baseURL") +
-      "lockwise-alerts";
-    breachAlertsLearnMoreLink.setAttribute("href", breachAlertsLearnMoreUrl);
 
     this._initSafeBrowsing();
 
@@ -671,6 +1043,13 @@ var gPrivacyPane = {
       "command",
       gPrivacyPane.showMicrophoneExceptions
     );
+    document.getElementById("speakerSettingsRow").hidden =
+      !Services.prefs.getBoolPref("media.setsinkid.enabled", false);
+    setEventListener(
+      "speakerSettingsButton",
+      "command",
+      gPrivacyPane.showSpeakerExceptions
+    );
     setEventListener(
       "popupPolicyButton",
       "command",
@@ -694,8 +1073,7 @@ var gPrivacyPane = {
     setSyncToPrefListener("blockCookiesMenu", () =>
       this.writeBlockCookiesFrom()
     );
-    setSyncFromPrefListener("deleteOnClose", () => this.readDeleteOnClose());
-    setSyncToPrefListener("deleteOnClose", () => this.writeDeleteOnClose());
+
     setSyncFromPrefListener("savePasswords", () => this.readSavePasswords());
 
     let microControlHandler = el =>
@@ -741,28 +1119,12 @@ var gPrivacyPane = {
       "command",
       gPrivacyPane.showSiteDataSettings
     );
-    let url =
-      Services.urlFormatter.formatURLPref("app.support.baseURL") +
-      "storage-permissions";
-    document.getElementById("siteDataLearnMoreLink").setAttribute("href", url);
 
-    let notificationInfoURL =
-      Services.urlFormatter.formatURLPref("app.support.baseURL") + "push";
-    document
-      .getElementById("notificationPermissionsLearnMore")
-      .setAttribute("href", notificationInfoURL);
+    this.initCookieBannerHandling();
 
-    if (AppConstants.platform == "win") {
-      let windowsSSOURL =
-        Services.urlFormatter.formatURLPref("app.support.baseURL") +
-        "windows-sso";
-      document
-        .getElementById("windowsSSOLearnMoreLink")
-        .setAttribute("href", windowsSSOURL);
-    }
+    this.initDataCollection();
 
     if (AppConstants.MOZ_DATA_REPORTING) {
-      this.initDataCollection();
       if (AppConstants.MOZ_CRASHREPORTER) {
         this.initSubmitCrashes();
       }
@@ -799,6 +1161,8 @@ var gPrivacyPane = {
 
     /* init HTTPS-Only mode */
     this.initHttpsOnly();
+
+    this.initDoH();
 
     // Notify observers that the UI is now ready
     Services.obs.notifyObservers(window, "privacy-pane-loaded");
@@ -847,6 +1211,20 @@ var gPrivacyPane = {
       "command",
       this.trackingProtectionWritePrefs
     );
+    setEventListener(
+      "contentBlockingFingerprintingProtectionCheckbox",
+      "command",
+      e => {
+        const extra = { checked: e.target.checked };
+        Glean.privacyUiFppClick.checkbox.record(extra);
+        this.fingerprintingProtectionWritePrefs();
+      }
+    );
+    setEventListener("fingerprintingProtectionMenu", "command", e => {
+      const extra = { value: e.target.value };
+      Glean.privacyUiFppClick.menu.record(extra);
+      this.fingerprintingProtectionWritePrefs();
+    });
     setEventListener("standardArrow", "command", this.toggleExpansion);
     setEventListener("strictArrow", "command", this.toggleExpansion);
     setEventListener("customArrow", "command", this.toggleExpansion);
@@ -912,12 +1290,6 @@ var gPrivacyPane = {
     this.highlightCBCategory();
     this.readBlockCookies();
 
-    let link = document.getElementById("contentBlockingLearnMore");
-    let contentBlockingUrl =
-      Services.urlFormatter.formatURLPref("app.support.baseURL") +
-      "enhanced-tracking-protection";
-    link.setAttribute("href", contentBlockingUrl);
-
     // Toggles the text "Cross-site and social media trackers" based on the
     // social tracking pref. If the pref is false, the text reads
     // "Cross-site trackers".
@@ -926,22 +1298,16 @@ var gPrivacyPane = {
       let contentBlockOptionSocialMedia = document.getElementById(
         "blockCookiesSocialMedia"
       );
-      let l10nID = gStatePartitioningMVPEnabled
-        ? "sitedata-option-block-cross-site-tracking-cookies-including-social-media"
-        : "sitedata-option-block-cross-site-and-social-media-trackers";
-      document.l10n.setAttributes(contentBlockOptionSocialMedia, l10nID);
-    }
-    if (gStatePartitioningMVPEnabled) {
-      let contentBlockOptionIsolate = document.getElementById(
-        "isolateCookiesSocialMedia"
-      );
+
       document.l10n.setAttributes(
-        contentBlockOptionIsolate,
-        "sitedata-option-block-cross-site-cookies-including-social-media"
+        contentBlockOptionSocialMedia,
+        "sitedata-option-block-cross-site-tracking-cookies"
       );
     }
 
     setUpContentBlockingWarnings();
+
+    initTCPStandardSection();
   },
 
   populateCategoryContents() {
@@ -1066,9 +1432,6 @@ var gPrivacyPane = {
       document.querySelector(
         selector + " .all-third-party-cookies-option"
       ).hidden = true;
-      document.querySelector(
-        selector + " .third-party-tracking-cookies-plus-isolate-option"
-      ).hidden = true;
       document.querySelector(selector + " .social-media-option").hidden = true;
 
       for (let item of rulesArray) {
@@ -1152,10 +1515,9 @@ var gPrivacyPane = {
             ).hidden = false;
             break;
           case "cookieBehavior5":
-            let cookieSelector = gStatePartitioningMVPEnabled
-              ? " .cross-site-cookies-option"
-              : " .third-party-tracking-cookies-plus-isolate-option";
-            document.querySelector(selector + cookieSelector).hidden = false;
+            document.querySelector(
+              selector + " .cross-site-cookies-option"
+            ).hidden = false;
             break;
           case "cookieBehaviorPBM5":
             // We only need to show the cookie option for private windows if the
@@ -1254,6 +1616,32 @@ var gPrivacyPane = {
   },
 
   /**
+   * Selects the right item of the Fingerprinting Protection menulist and
+   * checkbox.
+   */
+  fingerprintingProtectionReadPrefs() {
+    let enabledPref = Preferences.get("privacy.fingerprintingProtection");
+    let pbmPref = Preferences.get("privacy.fingerprintingProtection.pbmode");
+    let fppMenu = document.getElementById("fingerprintingProtectionMenu");
+    let fppCheckbox = document.getElementById(
+      "contentBlockingFingerprintingProtectionCheckbox"
+    );
+
+    // Global enable takes precedence over enabled in Private Browsing.
+    if (enabledPref.value) {
+      fppMenu.value = "always";
+      fppCheckbox.checked = true;
+    } else if (pbmPref.value) {
+      fppMenu.value = "private";
+      fppCheckbox.checked = true;
+    } else {
+      fppMenu.value = "never";
+      fppCheckbox.checked = false;
+    }
+    fppMenu.disabled = !fppCheckbox.checked;
+  },
+
+  /**
    * Selects the right items of the new Cookies & Site Data UI.
    */
   networkCookieBehaviorReadPrefs() {
@@ -1270,13 +1658,10 @@ var gPrivacyPane = {
 
     let completelyBlockCookies =
       behavior == Ci.nsICookieService.BEHAVIOR_REJECT;
-    let privateBrowsing = Preferences.get("browser.privatebrowsing.autostart")
-      .value;
-    let cookieExpirationLocked = Services.prefs.prefIsLocked(
-      "network.cookie.lifetimePolicy"
-    );
-    deleteOnCloseCheckbox.disabled =
-      privateBrowsing || completelyBlockCookies || cookieExpirationLocked;
+    let privateBrowsing = Preferences.get(
+      "browser.privatebrowsing.autostart"
+    ).value;
+    deleteOnCloseCheckbox.disabled = privateBrowsing || completelyBlockCookies;
     deleteOnCloseNote.hidden = !privateBrowsing;
 
     switch (behavior) {
@@ -1312,6 +1697,15 @@ var gPrivacyPane = {
     let stpCookiePref = Preferences.get(
       "privacy.socialtracking.block_cookies.enabled"
     );
+    // Currently, we don't expose the email tracking protection setting on our
+    // privacy UI. Instead, we use the existing tracking protection checkbox to
+    // control the email tracking protection.
+    let emailTPPref = Preferences.get(
+      "privacy.trackingprotection.emailtracking.enabled"
+    );
+    let emailTPPBMPref = Preferences.get(
+      "privacy.trackingprotection.emailtracking.pbmode.enabled"
+    );
     let tpMenu = document.getElementById("trackingProtectionMenu");
     let tpCheckbox = document.getElementById(
       "contentBlockingTrackingProtectionCheckbox"
@@ -1332,6 +1726,8 @@ var gPrivacyPane = {
       case "always":
         enabledPref.value = true;
         pbmPref.value = true;
+        emailTPPref.value = true;
+        emailTPPBMPref.value = true;
         if (stpCookiePref.value) {
           stpPref.value = true;
         }
@@ -1339,6 +1735,8 @@ var gPrivacyPane = {
       case "private":
         enabledPref.value = false;
         pbmPref.value = true;
+        emailTPPref.value = false;
+        emailTPPBMPref.value = true;
         if (stpCookiePref.value) {
           stpPref.value = false;
         }
@@ -1346,6 +1744,8 @@ var gPrivacyPane = {
       case "never":
         enabledPref.value = false;
         pbmPref.value = false;
+        emailTPPref.value = false;
+        emailTPPBMPref.value = false;
         if (stpCookiePref.value) {
           stpPref.value = false;
         }
@@ -1353,10 +1753,47 @@ var gPrivacyPane = {
     }
   },
 
+  fingerprintingProtectionWritePrefs() {
+    let enabledPref = Preferences.get("privacy.fingerprintingProtection");
+    let pbmPref = Preferences.get("privacy.fingerprintingProtection.pbmode");
+    let fppMenu = document.getElementById("fingerprintingProtectionMenu");
+    let fppCheckbox = document.getElementById(
+      "contentBlockingFingerprintingProtectionCheckbox"
+    );
+
+    let value;
+    if (fppCheckbox.checked) {
+      if (fppMenu.value == "never") {
+        fppMenu.value = "private";
+      }
+      value = fppMenu.value;
+    } else {
+      fppMenu.value = "never";
+      value = "never";
+    }
+
+    fppMenu.disabled = !fppCheckbox.checked;
+
+    switch (value) {
+      case "always":
+        enabledPref.value = true;
+        pbmPref.value = true;
+        break;
+      case "private":
+        enabledPref.value = false;
+        pbmPref.value = true;
+        break;
+      case "never":
+        enabledPref.value = false;
+        pbmPref.value = false;
+        break;
+    }
+  },
+
   toggleExpansion(e) {
     let carat = e.target;
     carat.classList.toggle("up");
-    carat.closest(".content-blocking-category").classList.toggle("expanded");
+    carat.closest(".privacy-detailedoption").classList.toggle("expanded");
     carat.setAttribute(
       "aria-expanded",
       carat.getAttribute("aria-expanded") === "false"
@@ -1489,10 +1926,6 @@ var gPrivacyPane = {
    * value of the private browsing auto-start preference.
    */
   updatePrivacyMicroControls() {
-    // Check the "Delete cookies when Firefox is closed" checkbox and disable the setting
-    // when we're in auto private mode (or reset it back otherwise).
-    document.getElementById("deleteOnClose").checked = this.readDeleteOnClose();
-
     let clearDataSettings = document.getElementById("clearDataSettings");
 
     if (document.getElementById("historyMode").value == "custom") {
@@ -1579,6 +2012,98 @@ var gPrivacyPane = {
         Services.obs.notifyObservers(null, "clear-private-data");
       },
     });
+  },
+
+  /*
+   * On loading the page, assigns the state to the deleteOnClose checkbox that fits the pref selection
+   */
+  initDeleteOnCloseBox() {
+    let deleteOnCloseBox = document.getElementById("deleteOnClose");
+    deleteOnCloseBox.checked =
+      (Preferences.get("privacy.sanitize.sanitizeOnShutdown").value &&
+        Preferences.get("privacy.clearOnShutdown.cookies").value &&
+        Preferences.get("privacy.clearOnShutdown.cache").value &&
+        Preferences.get("privacy.clearOnShutdown.offlineApps").value) ||
+      Preferences.get("browser.privatebrowsing.autostart").value;
+  },
+
+  /*
+   * Keeps the state of the deleteOnClose checkbox in sync with the pref selection
+   */
+  syncSanitizationPrefsWithDeleteOnClose() {
+    let deleteOnCloseBox = document.getElementById("deleteOnClose");
+    let historyMode = Preferences.get("privacy.history.custom");
+    let sanitizeOnShutdownPref = Preferences.get(
+      "privacy.sanitize.sanitizeOnShutdown"
+    );
+    // ClearOnClose cleaning categories
+    let cookiePref = Preferences.get("privacy.clearOnShutdown.cookies");
+    let cachePref = Preferences.get("privacy.clearOnShutdown.cache");
+    let offlineAppsPref = Preferences.get(
+      "privacy.clearOnShutdown.offlineApps"
+    );
+
+    // Sync the cleaning prefs with the deleteOnClose box
+    deleteOnCloseBox.addEventListener("command", () => {
+      let { checked } = deleteOnCloseBox;
+      cookiePref.value = checked;
+      cachePref.value = checked;
+      offlineAppsPref.value = checked;
+      // Forget the current pref selection if sanitizeOnShutdown is disabled,
+      // to not over clear when it gets enabled by the sync mechanism
+      if (!sanitizeOnShutdownPref.value) {
+        this._resetCleaningPrefs();
+      }
+      // If no other cleaning category is selected, sanitizeOnShutdown gets synced with deleteOnClose
+      sanitizeOnShutdownPref.value =
+        this._isCustomCleaningPrefPresent() || checked;
+
+      // Update the view of the history settings
+      if (checked && !historyMode.value) {
+        historyMode.value = "custom";
+        this.initializeHistoryMode();
+        this.updateHistoryModePane();
+        this.updatePrivacyMicroControls();
+      }
+    });
+
+    cookiePref.on("change", this._onSanitizePrefChangeSyncClearOnClose);
+    cachePref.on("change", this._onSanitizePrefChangeSyncClearOnClose);
+    offlineAppsPref.on("change", this._onSanitizePrefChangeSyncClearOnClose);
+    sanitizeOnShutdownPref.on(
+      "change",
+      this._onSanitizePrefChangeSyncClearOnClose
+    );
+  },
+
+  /*
+   * Sync the deleteOnClose box to its cleaning prefs
+   */
+  _onSanitizePrefChangeSyncClearOnClose() {
+    let deleteOnCloseBox = document.getElementById("deleteOnClose");
+    deleteOnCloseBox.checked =
+      Preferences.get("privacy.clearOnShutdown.cookies").value &&
+      Preferences.get("privacy.clearOnShutdown.cache").value &&
+      Preferences.get("privacy.clearOnShutdown.offlineApps").value &&
+      Preferences.get("privacy.sanitize.sanitizeOnShutdown").value;
+  },
+
+  /*
+   * Unsets cleaning prefs that do not belong to DeleteOnClose
+   */
+  _resetCleaningPrefs() {
+    SANITIZE_ON_SHUTDOWN_PREFS_ONLY.forEach(
+      pref => (Preferences.get(pref).value = false)
+    );
+  },
+
+  /*
+   Checks if the user set cleaning prefs that do not belong to DeleteOnClose
+   */
+  _isCustomCleaningPrefPresent() {
+    return SANITIZE_ON_SHUTDOWN_PREFS_ONLY.some(
+      pref => Preferences.get(pref).value
+    );
   },
 
   /**
@@ -1672,6 +2197,8 @@ var gPrivacyPane = {
   showTrackingProtectionExceptions() {
     let params = {
       permissionType: "trackingprotection",
+      disableETPVisible: true,
+      prefilledHost: "",
       hideStatusColumn: true,
     };
     gSubDialog.open(
@@ -1704,29 +2231,7 @@ var gPrivacyPane = {
    *     4   means reject all trackers
    *     5   means reject all trackers and partition third-party cookies
    *         see netwerk/cookie/src/CookieService.cpp for details
-   * network.cookie.lifetimePolicy
-   * - determines how long cookies are stored:
-   *     0   means keep cookies until they expire
-   *     2   means keep cookies until the browser is closed
    */
-
-  readDeleteOnClose() {
-    let privateBrowsing = Preferences.get("browser.privatebrowsing.autostart")
-      .value;
-    if (privateBrowsing) {
-      return true;
-    }
-
-    let lifetimePolicy = Preferences.get("network.cookie.lifetimePolicy").value;
-    return lifetimePolicy == Ci.nsICookieService.ACCEPT_SESSION;
-  },
-
-  writeDeleteOnClose() {
-    let checkbox = document.getElementById("deleteOnClose");
-    return checkbox.checked
-      ? Ci.nsICookieService.ACCEPT_SESSION
-      : Ci.nsICookieService.ACCEPT_NORMALLY;
-  },
 
   /**
    * Reads the network.cookie.cookieBehavior preference value and
@@ -1868,11 +2373,19 @@ var gPrivacyPane = {
       allowVisible: false,
       prefilledHost: "",
       permissionType: "https-only-load-insecure",
+      forcedHTTP: true,
     };
     gSubDialog.open(
       "chrome://browser/content/preferences/dialogs/permissions.xhtml",
       undefined,
       params
+    );
+  },
+
+  showDoHExceptions() {
+    gSubDialog.open(
+      "chrome://browser/content/preferences/dialogs/dohExceptions.xhtml",
+      undefined
     );
   },
 
@@ -1898,7 +2411,7 @@ var gPrivacyPane = {
   },
 
   updateTotalDataSizeLabel(siteDataUsage) {
-    SiteDataManager.getCacheSize().then(function(cacheUsage) {
+    SiteDataManager.getCacheSize().then(function (cacheUsage) {
       let totalSiteDataSizeLabel = document.getElementById("totalSiteDataSize");
       let totalUsage = siteDataUsage + cacheUsage;
       let [value, unit] = DownloadUtils.convertByteUnits(totalUsage);
@@ -1919,55 +2432,128 @@ var gPrivacyPane = {
     );
   },
 
+  /**
+   * Initializes the cookie banner handling subgroup on the privacy pane.
+   *
+   * This UI is shown if the "cookiebanners.ui.desktop.enabled" pref is true.
+   *
+   * The cookie banner handling checkbox reflects the cookie banner feature
+   * state. It is enabled when the service enabled via the
+   * cookiebanners.service.mode pref. If detection-only mode is enabled the
+   * checkbox is unchecked, since in this mode no banners are handled. It is
+   * only used for detection for banners which means we may prompt the user to
+   * enable the feature via other UI surfaces such as the onboarding doorhanger.
+   *
+   * If the user checks the checkbox, the pref value is set to
+   * nsICookieBannerService.MODE_REJECT_OR_ACCEPT.
+   *
+   * If the user unchecks the checkbox, the mode pref value is set to
+   * nsICookieBannerService.MODE_DISABLED.
+   *
+   * Advanced users can choose other int-valued modes via about:config.
+   */
+  initCookieBannerHandling() {
+    setSyncFromPrefListener("handleCookieBanners", () =>
+      this.readCookieBannerMode()
+    );
+    setSyncToPrefListener("handleCookieBanners", () =>
+      this.writeCookieBannerMode()
+    );
+
+    let preference = Preferences.get("cookiebanners.ui.desktop.enabled");
+    preference.on("change", () => this.updateCookieBannerHandlingVisibility());
+
+    this.updateCookieBannerHandlingVisibility();
+  },
+
+  /**
+   * Reads the cookiebanners.service.mode and detectOnly preference value and
+   * updates the cookie banner handling checkbox accordingly.
+   */
+  readCookieBannerMode() {
+    if (Preferences.get("cookiebanners.service.detectOnly").value) {
+      return false;
+    }
+    return (
+      Preferences.get("cookiebanners.service.mode").value !=
+      Ci.nsICookieBannerService.MODE_DISABLED
+    );
+  },
+
+  /**
+   * Translates user clicks on the cookie banner handling checkbox to the
+   * corresponding integer-valued cookie banner mode preference.
+   */
+  writeCookieBannerMode() {
+    let checkbox = document.getElementById("handleCookieBanners");
+    let mode;
+    if (checkbox.checked) {
+      mode = Ci.nsICookieBannerService.MODE_REJECT;
+
+      // Also unset the detect-only mode pref, just in case the user enabled
+      // the feature via about:preferences, not the onboarding doorhanger.
+      Services.prefs.setBoolPref("cookiebanners.service.detectOnly", false);
+    } else {
+      mode = Ci.nsICookieBannerService.MODE_DISABLED;
+    }
+
+    /**
+     * There is a second service.mode pref for private browsing,
+     * but for now we want it always be the same as service.mode
+     * more info: https://bugzilla.mozilla.org/show_bug.cgi?id=1817201
+     */
+    Services.prefs.setIntPref(
+      "cookiebanners.service.mode.privateBrowsing",
+      mode
+    );
+    return mode;
+  },
+
+  /**
+   * Shows or hides the cookie banner handling section based on the value of
+   * the "cookiebanners.ui.desktop.enabled" pref.
+   */
+  updateCookieBannerHandlingVisibility() {
+    let groupbox = document.getElementById("cookieBannerHandlingGroup");
+    let isEnabled = Preferences.get("cookiebanners.ui.desktop.enabled").value;
+
+    // Because the top-level pane showing code unsets the hidden attribute, we
+    // manually hide the section when cookie banner handling is preffed off.
+    if (isEnabled) {
+      groupbox.removeAttribute("style");
+    } else {
+      groupbox.setAttribute("style", "display: none !important");
+    }
+  },
+
   // ADDRESS BAR
 
   /**
    * Initializes the address bar section.
    */
   _initAddressBar() {
-    // Update the Firefox Suggest section when Firefox Suggest's enabled status
-    // or scenario changes.
-    this._urlbarPrefObserver = {
-      onPrefChanged: pref => {
-        if (["quicksuggest.enabled", "quicksuggest.scenario"].includes(pref)) {
-          this._updateFirefoxSuggestSection();
-        }
-      },
-    };
-    UrlbarPrefs.addObserver(this._urlbarPrefObserver);
+    // Update the Firefox Suggest section when its Nimbus config changes.
+    let onNimbus = () => this._updateFirefoxSuggestSection();
+    NimbusFeatures.urlbar.onUpdate(onNimbus);
     window.addEventListener("unload", () => {
-      // UrlbarPrefs holds a weak reference to our observer, which is why we
-      // don't remove it on unload.
-      this._urlbarPrefObserver = null;
+      NimbusFeatures.urlbar.offUpdate(onNimbus);
     });
 
-    // Set up the sponsored checkbox. When the main checkbox is checked, the
-    // sponsored checkbox should be enabled and its checked status should
-    // reflect the sponsored pref. When the main checkbox is unchecked, the
-    // sponsored checkbox should be disabled and unchecked, but the sponsored
-    // pref should retain its value. Due to this complexity, we manage the
-    // sponsored checkbox manually.
-    Preferences.get("browser.urlbar.suggest.quicksuggest").on("change", () =>
-      // Update the enabled and checked status of the sponsored checkbox when
-      // the main pref changes.
-      this._updateFirefoxSuggestSponsoredCheckbox()
-    );
-    setEventListener("firefoxSuggestSponsoredSuggestion", "command", () => {
-      // Update the sponsored pref value when the sponsored checkbox is
-      // toggled.
-      Preferences.get(
-        "browser.urlbar.suggest.quicksuggest.sponsored"
-      ).value = document.getElementById(
-        "firefoxSuggestSponsoredSuggestion"
-      ).checked;
-    });
-
-    // Set the Firefox Suggest learn-more link URL.
-    document
-      .getElementById("firefoxSuggestSuggestionLearnMore")
-      .setAttribute("href", UrlbarProviderQuickSuggest.helpUrl);
+    // The Firefox Suggest info box potentially needs updating when any of the
+    // toggles change.
+    let infoBoxPrefs = [
+      "browser.urlbar.suggest.quicksuggest.nonsponsored",
+      "browser.urlbar.suggest.quicksuggest.sponsored",
+      "browser.urlbar.quicksuggest.dataCollection.enabled",
+    ];
+    for (let pref of infoBoxPrefs) {
+      Preferences.get(pref).on("change", () =>
+        this._updateFirefoxSuggestInfoBox()
+      );
+    }
 
     this._updateFirefoxSuggestSection(true);
+    this._initQuickActionsSection();
   },
 
   /**
@@ -1978,6 +2564,10 @@ var gPrivacyPane = {
    *   Pass true when calling this when initializing the pane.
    */
   _updateFirefoxSuggestSection(onInit = false) {
+    // Show the best match checkbox container as appropriate.
+    document.getElementById("firefoxSuggestBestMatchContainer").hidden =
+      !UrlbarPrefs.get("bestMatchEnabled");
+
     let container = document.getElementById("firefoxSuggestContainer");
 
     if (UrlbarPrefs.get("quickSuggestEnabled")) {
@@ -1988,15 +2578,29 @@ var gPrivacyPane = {
       };
       for (let [elementId, l10nId] of Object.entries(l10nIdByElementId)) {
         let element = document.getElementById(elementId);
-        element.dataset.l10nIdOriginal = element.dataset.l10nId;
+        element.dataset.l10nIdOriginal ??= element.dataset.l10nId;
         element.dataset.l10nId = l10nId;
       }
-      // The main checkbox description discusses data collection, which we
-      // perform only in the "online" scenario. Hide it otherwise.
-      document.getElementById("firefoxSuggestSuggestionDescription").hidden =
-        UrlbarPrefs.get("quicksuggest.scenario") != "online";
+
+      // Add the extraMargin class to the engine-prefs link.
+      document
+        .getElementById("openSearchEnginePreferences")
+        .classList.add("extraMargin");
+
       // Show the container.
-      this._updateFirefoxSuggestSponsoredCheckbox();
+      this._updateFirefoxSuggestInfoBox();
+
+      this._updateDismissedSuggestionsStatus();
+      Preferences.get(PREF_URLBAR_QUICKSUGGEST_BLOCKLIST).on("change", () =>
+        this._updateDismissedSuggestionsStatus()
+      );
+      Preferences.get(PREF_URLBAR_WEATHER_USER_ENABLED).on("change", () =>
+        this._updateDismissedSuggestionsStatus()
+      );
+      setEventListener("restoreDismissedSuggestions", "command", () =>
+        this.restoreDismissedSuggestions()
+      );
+
       container.removeAttribute("hidden");
     } else if (!onInit) {
       // Firefox Suggest is not enabled. This is the default, so to avoid
@@ -2010,23 +2614,84 @@ var gPrivacyPane = {
         delete element.dataset.l10nIdOriginal;
         document.l10n.translateElements([element]);
       }
+      document
+        .getElementById("openSearchEnginePreferences")
+        .classList.remove("extraMargin");
     }
   },
 
   /**
-   * Updates the sponsored Firefox Suggest checkbox (in the address bar section)
-   * depending on the status of the main Firefox Suggest checkbox.
+   * Updates the Firefox Suggest info box (in the address bar section) depending
+   * on the states of the Firefox Suggest toggles.
    */
-  _updateFirefoxSuggestSponsoredCheckbox() {
-    let sponsoredCheckbox = document.getElementById(
-      "firefoxSuggestSponsoredSuggestion"
-    );
-    sponsoredCheckbox.disabled = !Preferences.get(
-      "browser.urlbar.suggest.quicksuggest"
+  _updateFirefoxSuggestInfoBox() {
+    let nonsponsored = Preferences.get(
+      "browser.urlbar.suggest.quicksuggest.nonsponsored"
     ).value;
-    sponsoredCheckbox.checked =
-      !sponsoredCheckbox.disabled &&
-      Preferences.get("browser.urlbar.suggest.quicksuggest.sponsored").value;
+    let sponsored = Preferences.get(
+      "browser.urlbar.suggest.quicksuggest.sponsored"
+    ).value;
+    let dataCollection = Preferences.get(
+      "browser.urlbar.quicksuggest.dataCollection.enabled"
+    ).value;
+
+    // Get the l10n ID of the appropriate text based on the values of the three
+    // prefs.
+    let l10nId;
+    if (nonsponsored && sponsored && dataCollection) {
+      l10nId = "addressbar-firefox-suggest-info-all";
+    } else if (nonsponsored && sponsored && !dataCollection) {
+      l10nId = "addressbar-firefox-suggest-info-nonsponsored-sponsored";
+    } else if (nonsponsored && !sponsored && dataCollection) {
+      l10nId = "addressbar-firefox-suggest-info-nonsponsored-data";
+    } else if (nonsponsored && !sponsored && !dataCollection) {
+      l10nId = "addressbar-firefox-suggest-info-nonsponsored";
+    } else if (!nonsponsored && sponsored && dataCollection) {
+      l10nId = "addressbar-firefox-suggest-info-sponsored-data";
+    } else if (!nonsponsored && sponsored && !dataCollection) {
+      l10nId = "addressbar-firefox-suggest-info-sponsored";
+    } else if (!nonsponsored && !sponsored && dataCollection) {
+      l10nId = "addressbar-firefox-suggest-info-data";
+    }
+
+    let instance = (this._firefoxSuggestInfoBoxInstance = {});
+    let infoBox = document.getElementById("firefoxSuggestInfoBox");
+    if (!l10nId) {
+      infoBox.hidden = true;
+    } else {
+      let infoText = document.getElementById("firefoxSuggestInfoText");
+      infoText.dataset.l10nId = l10nId;
+
+      // If the info box is currently hidden and we unhide it immediately, it
+      // will show its old text until the new text is asyncly fetched and shown.
+      // That's ugly, so wait for the fetch to finish before unhiding it.
+      document.l10n.translateElements([infoText]).then(() => {
+        if (instance == this._firefoxSuggestInfoBoxInstance) {
+          infoBox.hidden = false;
+        }
+      });
+    }
+  },
+
+  /**
+   * Enables/disables the "Restore" button for dismissed Firefox Suggest
+   * suggestions.
+   */
+  _updateDismissedSuggestionsStatus() {
+    document.getElementById("restoreDismissedSuggestions").disabled =
+      !Services.prefs.prefHasUserValue(PREF_URLBAR_QUICKSUGGEST_BLOCKLIST) &&
+      !(
+        Services.prefs.prefHasUserValue(PREF_URLBAR_WEATHER_USER_ENABLED) &&
+        !Services.prefs.getBoolPref(PREF_URLBAR_WEATHER_USER_ENABLED)
+      );
+  },
+
+  /**
+   * Restores Firefox Suggest suggestions dismissed by the user.
+   */
+  restoreDismissedSuggestions() {
+    Services.prefs.clearUserPref(PREF_URLBAR_QUICKSUGGEST_BLOCKLIST);
+    Services.prefs.clearUserPref(PREF_URLBAR_WEATHER_USER_ENABLED);
   },
 
   // GEOLOCATION
@@ -2085,6 +2750,22 @@ var gPrivacyPane = {
    */
   showMicrophoneExceptions() {
     let params = { permissionType: "microphone" };
+
+    gSubDialog.open(
+      "chrome://browser/content/preferences/dialogs/sitePermissions.xhtml",
+      { features: "resizable=yes" },
+      params
+    );
+  },
+
+  // SPEAKER
+
+  /**
+   * Displays the speaker exceptions dialog where specific site speaker
+   * preferences can be set.
+   */
+  showSpeakerExceptions() {
+    let params = { permissionType: "speaker" };
 
     gSubDialog.open(
       "chrome://browser/content/preferences/dialogs/sitePermissions.xhtml",
@@ -2195,7 +2876,7 @@ var gPrivacyPane = {
    * the UI for it can't be controlled by the normal preference bindings.
    */
   _initMasterPasswordUI() {
-    var noMP = !LoginHelper.isMasterPasswordSet();
+    var noMP = !LoginHelper.isPrimaryPasswordSet();
 
     var button = document.getElementById("changeMasterPassword");
     button.disabled = noMP;
@@ -2205,12 +2886,6 @@ var gPrivacyPane = {
     checkbox.disabled =
       (noMP && !Services.policies.isAllowed("createMasterPassword")) ||
       (!noMP && !Services.policies.isAllowed("removeMasterPassword"));
-
-    let learnMoreLink = document.getElementById("primaryPasswordLearnMoreLink");
-    let learnMoreURL =
-      Services.urlFormatter.formatURLPref("app.support.baseURL") +
-      "primary-password-stored-logins";
-    learnMoreLink.setAttribute("href", learnMoreURL);
   },
 
   /**
@@ -2259,19 +2934,21 @@ var gPrivacyPane = {
   },
 
   /**
-   * Displays a dialog in which the master password may be changed.
+   * Displays a dialog in which the primary password may be changed.
    */
   async changeMasterPassword() {
-    // Require OS authentication before the user can set a Master Password.
+    // Require OS authentication before the user can set a Primary Password.
     // OS reauthenticate functionality is not available on Linux yet (bug 1527745)
     if (
-      !LoginHelper.isMasterPasswordSet() &&
+      !LoginHelper.isPrimaryPasswordSet() &&
       OS_AUTH_ENABLED &&
       OSKeyStore.canReauth()
     ) {
+      // Uses primary-password-os-auth-dialog-message-win and
+      // primary-password-os-auth-dialog-message-macosx via concatenation:
       let messageId =
         "primary-password-os-auth-dialog-message-" + AppConstants.platform;
-      let [messageText, captionText] = await L10n.formatMessages([
+      let [messageText, captionText] = await document.l10n.formatMessages([
         {
           id: messageId,
         },
@@ -2298,6 +2975,22 @@ var gPrivacyPane = {
   },
 
   /**
+   * Set up the initial state for the GPC/DNT UI.
+   * The GPC part should only appear if the functionality is
+   * enabled.
+   */
+  _initGlobalPrivacyControlUI() {
+    let gpcEnabledPrefValue = Services.prefs.getBoolPref(
+      "privacy.globalprivacycontrol.functionality.enabled",
+      false
+    );
+    document.getElementById("globalPrivacyControlBox").hidden =
+      !gpcEnabledPrefValue;
+    document.getElementById("doNotTrackBox").hidden = !gpcEnabledPrefValue;
+    document.getElementById("legacyDoNotTrackBox").hidden = gpcEnabledPrefValue;
+  },
+
+  /**
    * Set up the initial state for the password generation UI.
    * It will be hidden unless the .available pref is true
    */
@@ -2308,6 +3001,42 @@ var gPrivacyPane = {
       false
     );
     document.getElementById("generatePasswordsBox").hidden = !prefValue;
+  },
+
+  toggleRelayIntegration() {
+    const checkbox = document.getElementById("relayIntegration");
+    if (checkbox.checked) {
+      FirefoxRelay.markAsAvailable();
+      FirefoxRelayTelemetry.recordRelayPrefEvent("enabled");
+    } else {
+      FirefoxRelay.markAsDisabled();
+      FirefoxRelayTelemetry.recordRelayPrefEvent("disabled");
+    }
+  },
+
+  _updateRelayIntegrationUI() {
+    document.getElementById("relayIntegrationBox").hidden =
+      !FirefoxRelay.isAvailable;
+    document.getElementById("relayIntegration").checked =
+      FirefoxRelay.isAvailable && !FirefoxRelay.isDisabled;
+  },
+
+  _initRelayIntegrationUI() {
+    document
+      .getElementById("relayIntegrationLearnMoreLink")
+      .setAttribute("href", FirefoxRelay.learnMoreUrl);
+
+    setEventListener(
+      "relayIntegration",
+      "command",
+      gPrivacyPane.toggleRelayIntegration.bind(gPrivacyPane)
+    );
+    Preferences.get("signon.firefoxRelay.feature").on(
+      "change",
+      gPrivacyPane._updateRelayIntegrationUI.bind(gPrivacyPane)
+    );
+
+    this._updateRelayIntegrationUI();
   },
 
   /**
@@ -2331,7 +3060,8 @@ var gPrivacyPane = {
     document.getElementById("passwordExceptions").disabled = !prefValue;
     document.getElementById("generatePasswords").disabled = !prefValue;
     document.getElementById("passwordAutofillCheckbox").disabled = !prefValue;
-
+    document.getElementById("relayIntegration").disabled =
+      !prefValue || Services.prefs.prefIsLocked("signon.firefoxRelay.feature");
     // don't override pref value in UI
     return undefined;
   },
@@ -2370,7 +3100,7 @@ var gPrivacyPane = {
     var warn = Preferences.get("xpinstall.whitelist.required");
     var exceptions = document.getElementById("addonExceptions");
 
-    exceptions.disabled = !warn.value;
+    exceptions.disabled = !warn.value || warn.locked;
 
     // don't override the preference value
     return undefined;
@@ -2402,37 +3132,28 @@ var gPrivacyPane = {
       "browser.safebrowsing.downloads.remote.block_uncommon"
     );
 
-    let learnMoreLink = document.getElementById("enableSafeBrowsingLearnMore");
-    let phishingUrl =
-      Services.urlFormatter.formatURLPref("app.support.baseURL") +
-      "phishing-malware";
-    learnMoreLink.setAttribute("href", phishingUrl);
-
-    enableSafeBrowsing.addEventListener("command", function() {
+    enableSafeBrowsing.addEventListener("command", function () {
       safeBrowsingPhishingPref.value = enableSafeBrowsing.checked;
       safeBrowsingMalwarePref.value = enableSafeBrowsing.checked;
 
-      if (enableSafeBrowsing.checked) {
-        blockDownloads.removeAttribute("disabled");
-        if (blockDownloads.checked) {
-          blockUncommonUnwanted.removeAttribute("disabled");
-        }
-      } else {
-        blockDownloads.setAttribute("disabled", "true");
-        blockUncommonUnwanted.setAttribute("disabled", "true");
-      }
+      blockDownloads.disabled =
+        !enableSafeBrowsing.checked || blockDownloadsPref.locked;
+      blockUncommonUnwanted.disabled =
+        !blockDownloads.checked ||
+        !enableSafeBrowsing.checked ||
+        blockUnwantedPref.locked ||
+        blockUncommonPref.locked;
     });
 
-    blockDownloads.addEventListener("command", function() {
+    blockDownloads.addEventListener("command", function () {
       blockDownloadsPref.value = blockDownloads.checked;
-      if (blockDownloads.checked) {
-        blockUncommonUnwanted.removeAttribute("disabled");
-      } else {
-        blockUncommonUnwanted.setAttribute("disabled", "true");
-      }
+      blockUncommonUnwanted.disabled =
+        !blockDownloads.checked ||
+        blockUnwantedPref.locked ||
+        blockUncommonPref.locked;
     });
 
-    blockUncommonUnwanted.addEventListener("command", function() {
+    blockUncommonUnwanted.addEventListener("command", function () {
       blockUnwantedPref.value = blockUncommonUnwanted.checked;
       blockUncommonPref.value = blockUncommonUnwanted.checked;
 
@@ -2479,6 +3200,16 @@ var gPrivacyPane = {
     }
     blockUncommonUnwanted.checked =
       blockUnwantedPref.value && blockUncommonPref.value;
+
+    if (safeBrowsingPhishingPref.locked || safeBrowsingMalwarePref.locked) {
+      enableSafeBrowsing.disabled = true;
+    }
+    if (blockDownloadsPref.locked) {
+      blockDownloads.disabled = true;
+    }
+    if (blockUnwantedPref.locked || blockUncommonPref.locked) {
+      blockUncommonUnwanted.disabled = true;
+    }
   },
 
   /**
@@ -2572,10 +3303,23 @@ var gPrivacyPane = {
   },
 
   initDataCollection() {
+    if (
+      !AppConstants.MOZ_DATA_REPORTING &&
+      !NimbusFeatures.majorRelease2022.getVariable(
+        "feltPrivacyShowPreferencesSection"
+      )
+    ) {
+      // Nothing to control in the data collection section, remove it.
+      document.getElementById("dataCollectionCategory").remove();
+      document.getElementById("dataCollectionGroup").remove();
+      return;
+    }
+
     this._setupLearnMoreLink(
       "toolkit.datacollection.infoURL",
       "dataCollectionPrivacyNotice"
     );
+    this.initPrivacySegmentation();
   },
 
   initSubmitCrashes() {
@@ -2583,13 +3327,34 @@ var gPrivacyPane = {
       "toolkit.crashreporter.infoURL",
       "crashReporterLearnMore"
     );
-    setEventListener("crashReporterLabel", "click", function(event) {
+    setEventListener("crashReporterLabel", "click", function (event) {
       if (event.target.localName == "a") {
         return;
       }
       const checkboxId = event.target.getAttribute("for");
       document.getElementById(checkboxId).click();
     });
+  },
+
+  initPrivacySegmentation() {
+    // Section visibility
+    let section = document.getElementById("privacySegmentationSection");
+    let updatePrivacySegmentationSectionVisibilityState = () => {
+      section.hidden = !NimbusFeatures.majorRelease2022.getVariable(
+        "feltPrivacyShowPreferencesSection"
+      );
+    };
+
+    NimbusFeatures.majorRelease2022.onUpdate(
+      updatePrivacySegmentationSectionVisibilityState
+    );
+    window.addEventListener("unload", () => {
+      NimbusFeatures.majorRelease2022.offUpdate(
+        updatePrivacySegmentationSectionVisibilityState
+      );
+    });
+
+    updatePrivacySegmentationSectionVisibilityState();
   },
 
   /**
@@ -2686,14 +3451,6 @@ var gPrivacyPane = {
   },
 
   initAddonRecommendationsCheckbox() {
-    // Setup the learn more link.
-    const url =
-      Services.urlFormatter.formatURLPref("app.support.baseURL") +
-      "personalized-addons";
-    document
-      .getElementById("addonRecommendationLearnMore")
-      .setAttribute("href", url);
-
     // Setup the checkbox.
     dataCollectionCheckboxHandler({
       checkbox: document.getElementById("addonRecommendationEnabled"),
@@ -2714,6 +3471,11 @@ var gPrivacyPane = {
         SiteDataManager.getTotalUsage().then(
           this.updateTotalDataSizeLabel.bind(this)
         );
+        break;
+      case "network:trr-uri-changed":
+      case "network:trr-mode-changed":
+      case "network:trr-confirmation":
+        gPrivacyPane.updateDoHStatus();
         break;
     }
   },

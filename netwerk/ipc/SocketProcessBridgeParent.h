@@ -17,14 +17,13 @@ namespace net {
 // called to destroy this actor.
 class SocketProcessBridgeParent final : public PSocketProcessBridgeParent {
  public:
-  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(SocketProcessBridgeParent)
+  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(SocketProcessBridgeParent, final)
 
-  explicit SocketProcessBridgeParent(
-      ProcessId aId, Endpoint<PSocketProcessBridgeParent>&& aEndpoint);
+  explicit SocketProcessBridgeParent(ProcessId aId);
 
   mozilla::ipc::IPCResult RecvTest();
   mozilla::ipc::IPCResult RecvInitBackground(
-      Endpoint<PBackgroundParent>&& aEndpoint);
+      Endpoint<PBackgroundStarterParent>&& aEndpoint);
 
   void ActorDestroy(ActorDestroyReason aWhy) override;
   void DeferredDestroy();

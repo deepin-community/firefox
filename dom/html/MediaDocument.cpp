@@ -41,11 +41,6 @@ MediaDocumentStreamListener::~MediaDocumentStreamListener() {
 NS_IMPL_ISUPPORTS(MediaDocumentStreamListener, nsIRequestObserver,
                   nsIStreamListener, nsIThreadRetargetableStreamListener)
 
-void MediaDocumentStreamListener::SetStreamListener(
-    nsIStreamListener* aListener) {
-  mNextStream = aListener;
-}
-
 NS_IMETHODIMP
 MediaDocumentStreamListener::OnStartRequest(nsIRequest* request) {
   NS_ENSURE_TRUE(mDocument, NS_ERROR_FAILURE);
@@ -117,8 +112,9 @@ MediaDocument::MediaDocument()
 }
 MediaDocument::~MediaDocument() = default;
 
-nsresult MediaDocument::Init() {
-  nsresult rv = nsHTMLDocument::Init();
+nsresult MediaDocument::Init(nsIPrincipal* aPrincipal,
+                             nsIPrincipal* aPartitionedPrincipal) {
+  nsresult rv = nsHTMLDocument::Init(aPrincipal, aPartitionedPrincipal);
   NS_ENSURE_SUCCESS(rv, rv);
 
   mIsSyntheticDocument = true;
@@ -126,14 +122,11 @@ nsresult MediaDocument::Init() {
   return NS_OK;
 }
 
-nsresult MediaDocument::StartDocumentLoad(const char* aCommand,
-                                          nsIChannel* aChannel,
-                                          nsILoadGroup* aLoadGroup,
-                                          nsISupports* aContainer,
-                                          nsIStreamListener** aDocListener,
-                                          bool aReset, nsIContentSink* aSink) {
-  nsresult rv = Document::StartDocumentLoad(
-      aCommand, aChannel, aLoadGroup, aContainer, aDocListener, aReset, aSink);
+nsresult MediaDocument::StartDocumentLoad(
+    const char* aCommand, nsIChannel* aChannel, nsILoadGroup* aLoadGroup,
+    nsISupports* aContainer, nsIStreamListener** aDocListener, bool aReset) {
+  nsresult rv = Document::StartDocumentLoad(aCommand, aChannel, aLoadGroup,
+                                            aContainer, aDocListener, aReset);
   if (NS_FAILED(rv)) {
     return rv;
   }

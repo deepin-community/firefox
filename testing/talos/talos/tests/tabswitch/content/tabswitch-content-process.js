@@ -1,6 +1,7 @@
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { ComponentUtils } = ChromeUtils.import(
-  "resource://gre/modules/ComponentUtils.jsm"
+/* eslint-env mozilla/process-script */
+
+const { ComponentUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/ComponentUtils.sys.mjs"
 );
 
 const WEBEXTENSION_ID = "tabswitch-talos@mozilla.org";
@@ -34,7 +35,7 @@ const TPSProcessScript = {
       }
     }
 
-    let factory = ComponentUtils._getFactory(TabSwitchAboutModule);
+    let factory = ComponentUtils.generateSingletonFactory(TabSwitchAboutModule);
     this._factory = factory;
 
     Registrar.registerFactory(

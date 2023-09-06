@@ -16,15 +16,9 @@ newtab-search-box-search-button =
     .title = Yeny
     .aria-label = Yeny
 
-newtab-search-box-search-the-web-input =
-    .placeholder = Yeny kakube
-    .title = Yeny kakube
-    .aria-label = Yeny kakube
-
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Med ingin me yeny
-newtab-topsites-add-topsites-header = Kakube maloyo manyen
 newtab-topsites-edit-topsites-header = Yub Kakube maloyo
 newtab-topsites-title-label = Wiye madit
 newtab-topsites-title-input =
@@ -157,7 +151,6 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = Kakube maloyo
-newtab-section-header-highlights = Wiye madito
 # Variables:
 #  $provider (String): Name of the corresponding content provider.
 newtab-section-header-pocket = Lami tam obedo { $provider }
@@ -170,7 +163,6 @@ newtab-empty-section-highlights = Cak yeny, ka wa binyuto coc akwana mabeco, vid
 # Variables:
 #  $provider (String): Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Ityeko weng. Rot doki lacen pi lok madito mapol ki bot { $provider }. Pe itwero kuro? Yer lok macuke lamal me nongo lok mabeco mapol ki i but kakube.
-
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -189,6 +181,15 @@ newtab-pocket-learn-more = Nong ngec mapol
 newtab-pocket-cta-button = Nong { -pocket-brand-name }
 newtab-pocket-cta-text = Gwok lok ma imaro ii { -pocket-brand-name }, ka i pik wii ki jami me akwana ma mako wii.
 
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+# A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-save = Gwoki
+newtab-pocket-saved = Kigwoko
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
+
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
@@ -197,3 +198,4 @@ newtab-error-fallback-refresh-link = Nwo cano potbuk me temo odoco.
 
 ## Customization Menu
 
+newtab-custom-close-button = Lor

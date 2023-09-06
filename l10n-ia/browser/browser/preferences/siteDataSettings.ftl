@@ -27,7 +27,7 @@ site-data-column-last-used =
 site-data-local-file-host = (file local)
 
 site-data-remove-selected =
-    .label = Remover le selecte
+    .label = Remover le selection
     .accesskey = s
 
 site-data-settings-dialog =
@@ -47,7 +47,7 @@ site-data-remove-all =
     .accesskey = e
 
 site-data-remove-shown =
-    .label = Remover tote le monstras
+    .label = Remover totes monstrate
     .accesskey = a
 
 ## Removing
@@ -59,7 +59,6 @@ site-data-removing-dialog =
 site-data-removing-header = Remotion de Cookies e Datos de sito
 
 site-data-removing-desc = Remover cookies e datos de sito pote clauder tu session de sitos web. Es tu secur de voler remover istes?
-
 # Variables:
 #   $baseDomain (String) - The single domain for which data is being removed
 site-data-removing-single-desc = Remover cookies e datos de sito pote disconnecter te de sitos web. Vole tu vermente remover cookies e datos de sito pro <strong>{ $baseDomain }</strong>?

@@ -9,7 +9,7 @@ set-desktop-background-accept =
     .label = Усталяваць фон працоўнага стала
 
 open-desktop-prefs =
-    .label = Адчыніць налады працоўнага стала
+    .label = Адкрыць налады працоўнага стала
 
 set-background-preview-unavailable = Папярэдні прагляд недаступны
 

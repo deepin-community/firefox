@@ -50,11 +50,26 @@ serviceworker-worker-status-running = Pokrenuto
 # Service Worker status. A stopped service worker is registered but not currently active.
 serviceworker-worker-status-stopped = Zaustavljeno
 
+# Text displayed when no service workers are visible for the current page.
+serviceworker-empty-intro2 = Nije pronađen nijedan uslužni radnik
+
 # Link will open https://developer.mozilla.org/docs/Web/API/Service_Worker_API/Using_Service_Workers
 serviceworker-empty-intro-link = Saznaj više
 
+# Text displayed when there are no Service Workers to display for the current page,
+# introducing hints to debug Service Worker issues.
+# <a> and <span> are links that will open the webconsole and the debugger, respectively.
+serviceworker-empty-suggestions2 = Ako bi trenutna stranica trebala imati uslužnog radnika, možeš potražiti pogreške u <a>konzoli</a> ili prelistati svoju registraciju uslužnog radnika u <span>programu za pronalaženje pogrešaka</span>.
+
+# Suggestion to go to about:debugging in order to see Service Workers for all domains.
+# Link will open about:debugging in a new tab.
+serviceworker-empty-suggestions-aboutdebugging2 = Pregledaj uslužne radnike s drugih domena
+
 # Header for the Manifest page when we have an actual manifest
 manifest-view-header = Manifest aplikacije
+
+# Header for the Manifest page when there's no manifest to inspect
+manifest-empty-intro2 = Nije otkriven nijedan manifest za web aplikacije
 
 # The link will open https://developer.mozilla.org/en-US/docs/Web/Manifest
 manifest-empty-intro-link = Saznaj kako dodati manifest
@@ -129,4 +144,3 @@ icon-warning =
 icon-error =
     .alt = Ikona za grešku
     .title = Greška
-

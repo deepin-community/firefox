@@ -10,12 +10,9 @@ const kPref = "browser.bookmarks.addedImportButton";
  * in the toolbar.
  */
 add_task(async function test_bookmark_import_button() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["browser.toolbars.bookmarks.2h2020", true]],
-  });
-  let bookmarkCount = PlacesUtils.getChildCountForFolder(
-    PlacesUtils.bookmarks.toolbarGuid
-  );
+  let bookmarkCount = (
+    await PlacesUtils.bookmarks.fetch(PlacesUtils.bookmarks.toolbarGuid)
+  ).childCount;
   Assert.less(bookmarkCount, 3, "we should start with less than 3 bookmarks");
 
   ok(
@@ -65,9 +62,9 @@ add_task(async function test_bookmark_import_button() {
  * Verify the button gets removed when we import bookmarks successfully.
  */
 add_task(async function test_bookmark_import_button_removal() {
-  let bookmarkCount = PlacesUtils.getChildCountForFolder(
-    PlacesUtils.bookmarks.toolbarGuid
-  );
+  let bookmarkCount = (
+    await PlacesUtils.bookmarks.fetch(PlacesUtils.bookmarks.toolbarGuid)
+  ).childCount;
   Assert.less(bookmarkCount, 3, "we should start with less than 3 bookmarks");
 
   ok(
@@ -83,7 +80,7 @@ add_task(async function test_bookmark_import_button_removal() {
   Services.obs.notifyObservers(
     null,
     "Migration:ItemAfterMigrate",
-    Ci.nsIBrowserProfileMigrator.BOOKMARKS
+    MigrationUtils.resourceTypes.BOOKMARKS
   );
 
   is(
@@ -98,7 +95,7 @@ add_task(async function test_bookmark_import_button_removal() {
   Services.obs.notifyObservers(
     null,
     "Migration:ItemAfterMigrate",
-    Ci.nsIBrowserProfileMigrator.BOOKMARKS
+    MigrationUtils.resourceTypes.BOOKMARKS
   );
 
   is(Services.prefs.prefHasUserValue(kPref), false, "Pref should be removed.");
@@ -116,9 +113,9 @@ add_task(async function test_bookmark_import_button_removal() {
  * we clear the pref and stop monitoring to remove the item.
  */
 add_task(async function test_bookmark_import_button_removal_cleanup() {
-  let bookmarkCount = PlacesUtils.getChildCountForFolder(
-    PlacesUtils.bookmarks.toolbarGuid
-  );
+  let bookmarkCount = (
+    await PlacesUtils.bookmarks.fetch(PlacesUtils.bookmarks.toolbarGuid)
+  ).childCount;
   Assert.less(bookmarkCount, 3, "we should start with less than 3 bookmarks");
 
   ok(
@@ -144,9 +141,9 @@ add_task(async function test_bookmark_import_button_removal_cleanup() {
  * _if_ we imported any bookmarks.
  */
 add_task(async function test_bookmark_import_button_errors() {
-  let bookmarkCount = PlacesUtils.getChildCountForFolder(
-    PlacesUtils.bookmarks.toolbarGuid
-  );
+  let bookmarkCount = (
+    await PlacesUtils.bookmarks.fetch(PlacesUtils.bookmarks.toolbarGuid)
+  ).childCount;
   Assert.less(bookmarkCount, 3, "we should start with less than 3 bookmarks");
 
   ok(
@@ -162,7 +159,7 @@ add_task(async function test_bookmark_import_button_errors() {
   Services.obs.notifyObservers(
     null,
     "Migration:ItemError",
-    Ci.nsIBrowserProfileMigrator.BOOKMARKS
+    MigrationUtils.resourceTypes.BOOKMARKS
   );
 
   is(
@@ -177,7 +174,7 @@ add_task(async function test_bookmark_import_button_errors() {
   Services.obs.notifyObservers(
     null,
     "Migration:ItemError",
-    Ci.nsIBrowserProfileMigrator.BOOKMARKS
+    MigrationUtils.resourceTypes.BOOKMARKS
   );
 
   is(Services.prefs.prefHasUserValue(kPref), false, "Pref should be removed.");
@@ -185,46 +182,6 @@ add_task(async function test_bookmark_import_button_errors() {
     !document.getElementById("import-button"),
     "Button should have been removed."
   );
-});
 
-add_task(async function test_bookmark_import_button_experiment_pref_flip() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["browser.toolbars.bookmarks.2h2020", false]],
-  });
-  let bookmarkCount = PlacesUtils.getChildCountForFolder(
-    PlacesUtils.bookmarks.toolbarGuid
-  );
-  Assert.less(bookmarkCount, 3, "we should start with less than 3 bookmarks");
-
-  ok(
-    !document.getElementById("import-button"),
-    "Shouldn't have button to start with."
-  );
-  await PlacesUIUtils.maybeAddImportButton();
-  ok(
-    !document.getElementById("import-button"),
-    "Still shouldn't have a button."
-  );
-
-  // Now flip the pref.
-  await SpecialPowers.pushPrefEnv({
-    set: [["browser.toolbars.bookmarks.2h2020", true]],
-  });
-
-  await TestUtils.waitForCondition(
-    () => document.getElementById("import-button"),
-    "Button should be added when experiment pref is flipped."
-  );
-
-  ok(document.getElementById("import-button"), "Button should be added.");
-  is(Services.prefs.getBoolPref(kPref), true, "Pref should be set.");
-
-  // Simulate the user removing the item.
-  CustomizableUI.removeWidgetFromArea("import-button");
-
-  // We'll call this next startup:
-  PlacesUIUtils.removeImportButtonWhenImportSucceeds();
-
-  // And it should clean up the pref:
-  is(Services.prefs.prefHasUserValue(kPref), false, "Pref should be removed.");
+  MigrationUtils._importQuantities.bookmarks = 0;
 });

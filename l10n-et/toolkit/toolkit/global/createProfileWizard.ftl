@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Profiili loomise nõustaja
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Sissejuhatus
-       *[other] { create-profile-window.title } tervitab
+       *[other] { create-profile-window2.title } tervitab
     }
 
 profile-creation-explanation-1 = { -brand-short-name } säilitab teavet sinu kasutajasätete ja eelistuste kohta isikliku profiili kujul.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Kokkuvõte
-       *[other] { create-profile-window.title } lõpetas
+       *[other] { create-profile-window2.title } lõpetas
     }
 
 profile-creation-intro = Profiile on võimalik eristada nime järgi. Võid kasutada siin pakutavat nime või kirjutada uue nime.

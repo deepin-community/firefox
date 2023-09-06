@@ -14,6 +14,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = 모두
+printui-page-range-current = 현재
+printui-page-range-odd = 홀수
+printui-page-range-even = 짝수
 printui-page-range-custom = 사용자 지정
 printui-page-range-label = 페이지
 printui-page-range-picker =

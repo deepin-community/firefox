@@ -20,6 +20,8 @@ toolbar-context-menu-bookmark-selected-tabs =
 toolbar-context-menu-select-all-tabs =
     .label = Eiporavo opaite tendayke
     .accesskey = S
+# Variables
+#   $tabCount (number) - Number of tabs
 toolbar-context-menu-reopen-closed-tabs =
     .label =
         { $tabCount ->
@@ -40,24 +42,32 @@ toolbar-context-menu-remove-extension =
 toolbar-context-menu-report-extension =
     .label = Emomarandu jepysokue rehegua
     .accesskey = o
-# Can appear on the same context menu as menubarCmd ("Menu Bar") and
-# personalbarCmd ("Bookmarks Toolbar"), so they should have different
-# access keys.
+# Can appear on the same context menu as toolbar-context-menu-menu-bar-cmd
+# ("Menu Bar") and personalbarCmd ("Bookmarks Toolbar"), so they should
+# have different access keys.
 toolbar-context-menu-pin-to-overflow-menu =
     .label = Pin poravorã hembypáva pegua
     .accesskey = P
 toolbar-context-menu-auto-hide-downloads-button-2 =
     .label = Eñomi votõ inandi jave
     .accesskey = H
+toolbar-context-menu-always-open-downloads-panel =
+    .label = Ehechauka ta’ãngarupa oñepyrũvo ñemboguejy
+    .accesskey = S
 toolbar-context-menu-remove-from-toolbar =
-    .label = Tembipuru rendágui mboguete
+    .label = Tembiporu rendágui mboguete
     .accesskey = R
 toolbar-context-menu-view-customize-toolbar =
     .label = Ñemomba’e…
     .accesskey = C
 toolbar-context-menu-view-customize-toolbar-2 =
-    .label = Emboava tembipuru renda…
+    .label = Emboava tembiporu renda…
     .accesskey = C
+# This is only ever shown when toolbar-context-menu-pin-to-overflow-menu
+# is hidden, so they can share access keys.
+toolbar-context-menu-pin-to-toolbar =
+    .label = Emboja tembiporu rendáre
+    .accesskey = P
 toolbar-context-menu-bookmarks-toolbar-always-show-2 =
     .label = Ehechauka tapiaite
     .accesskey = A

@@ -1,14 +1,8 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
-# License, v- 2-0- If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla-org/MPL/2-0/-
-
-
-# This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 crash-reports-title = Справаздачы пра крах
-
 submit-all-button-label = Адправіць усе
 delete-button-label = Ачысціць усё
 delete-confirm-title = Вы ўпэўнены?
@@ -28,4 +22,4 @@ date-submitted-heading = Дата адпраўкі
 view-crash-button-label = Прагледзець
 
 no-reports-label = Няма пададзеных справаздачаў.
-no-config-label = Гэтая праграма не наладжана адлюстроўваць справаздачы пра крах. Перавага <code>breakpad.reportURL</code> мусіць быць усталявана.
+no-config-label = Гэтая праграма не наладжана адлюстроўваць справаздачы пра крах. Павінен быць усталяваны параметр <code>breakpad.reportURL</code>.

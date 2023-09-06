@@ -14,7 +14,6 @@ compatibility-issue-deprecated = (przestarzałe)
 compatibility-issue-experimental = (eksperymentalne)
 compatibility-issue-prefixneeded = (wymagany przedrostek)
 compatibility-issue-deprecated-experimental = (przestarzałe, eksperymentalne)
-
 compatibility-issue-deprecated-prefixneeded = (przestarzałe, wymagany przedrostek)
 compatibility-issue-experimental-prefixneeded = (eksperymentalne, wymagany przedrostek)
 compatibility-issue-deprecated-experimental-prefixneeded = (przestarzałe, eksperymentalne, wymagany przedrostek)
@@ -24,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (przestarzałe, ekspe
 compatibility-settings-button-label = Ustawienia
 compatibility-settings-button-title =
     .title = Ustawienia
-compatibility-feedback-button-label = Wyślij opinię
-compatibility-feedback-button-title =
-    .title = Wyślij opinię
 
 ## Messages used as headers in settings pane
 
@@ -48,3 +44,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Nie znaleziono problemów ze zgodnością.
 compatibility-close-settings-button =
     .title = Zamknij ustawienia
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Problemy ze zgodnością w:
+        { $browsers }

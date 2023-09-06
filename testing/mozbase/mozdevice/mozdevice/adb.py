@@ -2,11 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, division, print_function
-
 import io
 import os
-import sys
 import pipes
 import posixpath
 import re
@@ -14,17 +11,17 @@ import shlex
 import shutil
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 import traceback
+from distutils import dir_util
 from threading import Thread
 
-from distutils import dir_util
 import six
 from six.moves import range
 
 from . import version_codes
-
 
 _TEST_ROOT = None
 
@@ -752,8 +749,8 @@ class ADBDevice(ADBCommand):
 
        adbdevice = ADBDevice()
        print(adbdevice.list_files("/mnt/sdcard"))
-       if adbdevice.process_exist("org.mozilla.geckoview.test"):
-           print("org.mozilla.geckoview.test is running")
+       if adbdevice.process_exist("org.mozilla.geckoview.test_runner"):
+           print("org.mozilla.geckoview.test_runner is running")
     """
 
     SOCKET_DIRECTION_REVERSE = "reverse"
@@ -2089,14 +2086,21 @@ class ADBDevice(ADBCommand):
                 exitcode = adb_process.proc.poll()
         else:
             stdout2 = io.open(adb_process.stdout_file.name, "rb")
+            partial = b""
             while ((time.time() - start_time) <= float(timeout)) and exitcode is None:
                 try:
                     line = _timed_read_line(stdout2)
                     if line and len(line) > 0:
-                        line = line.rstrip()
-                        if self._verbose:
-                            self._logger.info(six.ensure_str(line))
-                        stdout_callback(line)
+                        if line.endswith(b"\n") or line.endswith(b"\r"):
+                            line = partial + line
+                            partial = b""
+                            line = line.rstrip()
+                            if self._verbose:
+                                self._logger.info(six.ensure_str(line))
+                            stdout_callback(line)
+                        else:
+                            # no more output available now, but more to come?
+                            partial = partial + line
                     else:
                         # no new output, so sleep and poll
                         time.sleep(self._polling_interval)
@@ -2122,8 +2126,16 @@ class ADBDevice(ADBCommand):
         if stdout_callback:
             line = stdout2.readline()
             while line:
-                stdout_callback(line.rstrip())
+                if line.endswith(b"\n") or line.endswith(b"\r"):
+                    line = partial + line
+                    partial = b""
+                    stdout_callback(line.rstrip())
+                else:
+                    # no more output available now, but more to come?
+                    partial = partial + line
                 line = stdout2.readline()
+            if partial:
+                stdout_callback(partial)
             stdout2.close()
 
         adb_process.stdout_file.seek(0, os.SEEK_SET)
@@ -2965,7 +2977,7 @@ class ADBDevice(ADBCommand):
         sdcard_remote = None
         if os.path.isfile(local) and self.is_dir(remote):
             # force push to use the correct filename in the remote directory
-            remote = posixpath.join(remote, posixpath.basename(local))
+            remote = posixpath.join(remote, os.path.basename(local))
         elif os.path.isdir(local):
             copy_required = True
             temp_parent = tempfile.mkdtemp()
@@ -3000,7 +3012,7 @@ class ADBDevice(ADBCommand):
                 try:
                     with tempfile.NamedTemporaryFile(delete=True) as tmpf:
                         intermediate = posixpath.join(
-                            "/data/local/tmp", posixpath.basename(tmpf.name)
+                            "/data/local/tmp", os.path.basename(tmpf.name)
                         )
                     self.command_output(["push", local, intermediate], timeout=timeout)
                     self.chmod(intermediate, recursive=True, timeout=timeout)
@@ -3026,7 +3038,7 @@ class ADBDevice(ADBCommand):
             self._logger.info("Falling back to using intermediate /sdcard in push.")
             self.mkdir(posixpath.dirname(remote), parents=True, timeout=timeout)
             with tempfile.NamedTemporaryFile(delete=True) as tmpf:
-                sdcard_remote = posixpath.join("/sdcard", posixpath.basename(tmpf.name))
+                sdcard_remote = posixpath.join("/sdcard", os.path.basename(tmpf.name))
             self.command_output(["push", local, sdcard_remote], timeout=timeout)
             self.cp(sdcard_remote, remote, recursive=True, timeout=timeout)
         except BaseException:
@@ -3102,7 +3114,7 @@ class ADBDevice(ADBCommand):
                 try:
                     with tempfile.NamedTemporaryFile(delete=True) as tmpf:
                         intermediate = posixpath.join(
-                            "/data/local/tmp", posixpath.basename(tmpf.name)
+                            "/data/local/tmp", os.path.basename(tmpf.name)
                         )
                     # When using run-as <app>, we must first use the
                     # shell to create the intermediate and chmod it
@@ -3459,7 +3471,7 @@ class ADBDevice(ADBCommand):
         if self.is_file(source, timeout=timeout):
             if self.is_dir(destination, timeout=timeout):
                 # Copy the source file into the destination directory
-                destination = posixpath.join(destination, posixpath.basename(source))
+                destination = posixpath.join(destination, os.path.basename(source))
             self.shell_output("dd if=%s of=%s" % (source, destination), timeout=timeout)
             self.chmod(destination, recursive=recursive, timeout=timeout)
             self._sync(timeout=timeout)
@@ -3473,7 +3485,7 @@ class ADBDevice(ADBCommand):
 
         if self.is_dir(destination, timeout=timeout):
             # Copy the source directory into the destination directory.
-            destination_dir = posixpath.join(destination, posixpath.basename(source))
+            destination_dir = posixpath.join(destination, os.path.basename(source))
         else:
             # Copy the contents of the source directory into the
             # destination directory.
@@ -3860,6 +3872,28 @@ class ADBDevice(ADBCommand):
 
     # Application management methods
 
+    def add_change_device_settings(self, app_name, timeout=None):
+        """
+        Allows the test to change Android device settings.
+        :param str: app_name: Name of application (e.g. `org.mozilla.fennec`)
+        """
+        self.shell_output(
+            "appops set %s android:write_settings allow" % app_name,
+            timeout=timeout,
+            enable_run_as=False,
+        )
+
+    def add_mock_location(self, app_name, timeout=None):
+        """
+        Allows the Android device to use mock locations.
+        :param str: app_name: Name of application (e.g. `org.mozilla.fennec`)
+        """
+        self.shell_output(
+            "appops set %s android:mock_location allow" % app_name,
+            timeout=timeout,
+            enable_run_as=False,
+        )
+
     def grant_runtime_permissions(self, app_name, timeout=None):
         """
         Grant required runtime permissions to the specified app
@@ -3869,13 +3903,16 @@ class ADBDevice(ADBCommand):
         """
         if self.version >= version_codes.M:
             permissions = [
-                "android.permission.WRITE_EXTERNAL_STORAGE",
                 "android.permission.READ_EXTERNAL_STORAGE",
                 "android.permission.ACCESS_COARSE_LOCATION",
                 "android.permission.ACCESS_FINE_LOCATION",
                 "android.permission.CAMERA",
                 "android.permission.RECORD_AUDIO",
             ]
+            if self.version < version_codes.R:
+                # WRITE_EXTERNAL_STORAGE is no longer available
+                # in Android 11+
+                permissions.append("android.permission.WRITE_EXTERNAL_STORAGE")
             self._logger.info("Granting important runtime permissions to %s" % app_name)
             for permission in permissions:
                 try:
@@ -3889,6 +3926,93 @@ class ADBDevice(ADBCommand):
                         "Unable to grant runtime permission %s to %s due to %s"
                         % (permission, app_name, e)
                     )
+
+    def install_app_bundle(self, bundletool, bundle_path, java_home=None, timeout=None):
+        """Installs an app bundle (AAB) on the device.
+
+        :param str bundletool: Path to the bundletool jar
+        :param str bundle_path: The aab file name to be installed.
+        :param int timeout: The maximum time in
+            seconds for any spawned adb process to complete before
+            throwing an ADBTimeoutError.
+            This timeout is per adb call. The total time spent
+            may exceed this value. If it is not specified, the value
+            set in the ADB constructor is used.
+        :param str java_home: Path to the JDK location. Will default to
+            $JAVA_HOME when not specififed.
+        :raises: :exc:`ADBTimeoutError`
+                 :exc:`ADBError`
+        """
+        device_serial = self._device_serial or os.environ.get("ANDROID_SERIAL")
+        java_home = java_home or os.environ.get("JAVA_HOME")
+        with tempfile.TemporaryDirectory() as temporaryDirectory:
+            # bundletool doesn't come with a debug-key so we need to provide
+            # one ourselves.
+            keystore_path = os.path.join(temporaryDirectory, "debug.keystore")
+            keytool_path = os.path.join(java_home, "bin", "keytool")
+            key_gen = [
+                keytool_path,
+                "-genkey",
+                "-v",
+                "-keystore",
+                keystore_path,
+                "-alias",
+                "androiddebugkey",
+                "-storepass",
+                "android",
+                "-keypass",
+                "android",
+                "-keyalg",
+                "RSA",
+                "-validity",
+                "14000",
+                "-dname",
+                "cn=Unknown, ou=Unknown, o=Unknown, c=Unknown",
+            ]
+            self._logger.info("key_gen: %s" % key_gen)
+            try:
+                subprocess.check_call(key_gen, timeout=timeout)
+            except subprocess.TimeoutExpired:
+                raise ADBTimeoutError("ADBDevice: unable to generate key")
+
+            apks_path = "{}/tmp.apks".format(temporaryDirectory)
+            java_path = os.path.join(java_home, "bin", "java")
+            build_apks = [
+                java_path,
+                "-jar",
+                bundletool,
+                "build-apks",
+                "--bundle={}".format(bundle_path),
+                "--output={}".format(apks_path),
+                "--connected-device",
+                "--device-id={}".format(device_serial),
+                "--adb={}".format(self._adb_path),
+                "--ks={}".format(keystore_path),
+                "--ks-key-alias=androiddebugkey",
+                "--key-pass=pass:android",
+                "--ks-pass=pass:android",
+            ]
+            self._logger.info("build_apks: %s" % build_apks)
+
+            try:
+                subprocess.check_call(build_apks, timeout=timeout)
+            except subprocess.TimeoutExpired:
+                raise ADBTimeoutError("ADBDevice: unable to generate apks")
+            install_apks = [
+                java_path,
+                "-jar",
+                bundletool,
+                "install-apks",
+                "--apks={}".format(apks_path),
+                "--device-id={}".format(device_serial),
+                "--adb={}".format(self._adb_path),
+            ]
+            self._logger.info("install_apks: %s" % install_apks)
+
+            try:
+                subprocess.check_call(install_apks, timeout=timeout)
+            except subprocess.TimeoutExpired:
+                raise ADBTimeoutError("ADBDevice: unable to install apks")
 
     def install_app(self, apk_path, replace=False, timeout=None):
         """Installs an app on the device.
@@ -3994,13 +4118,15 @@ class ADBDevice(ADBCommand):
         if grant_runtime_permissions:
             self.grant_runtime_permissions(app_name)
 
-        acmd = ["am"] + [
-            "startservice" if is_service else "start",
-            "-W" if wait else "",
-            "-n",
-            "%s/%s" % (app_name, activity_name),
-        ]
-
+        acmd = ["am"] + ["startservice" if is_service else "start"]
+        if wait:
+            acmd.extend(["-W"])
+        acmd.extend(
+            [
+                "-n",
+                "%s/%s" % (app_name, activity_name),
+            ]
+        )
         if intent:
             acmd.extend(["-a", intent])
 
@@ -4027,7 +4153,9 @@ class ADBDevice(ADBCommand):
         if "Error:" in cmd_output:
             for line in cmd_output.split("\n"):
                 self._logger.info(line)
-            raise ADBError("launch_activity %s/%s failed" % (app_name, activity_name))
+            raise ADBError(
+                "launch_application %s/%s failed" % (app_name, activity_name)
+            )
 
     def launch_fennec(
         self,
@@ -4105,7 +4233,7 @@ class ADBDevice(ADBCommand):
         debugging arguments; convenient for geckoview apps.
 
         :param str app_name: Name of application (e.g.
-            `org.mozilla.geckoview_example` or `org.mozilla.geckoview.test`)
+            `org.mozilla.geckoview_example` or `org.mozilla.geckoview.test_runner`)
         :param str activity_name: Activity name, like `GeckoViewActivity`, or
             `TestRunnerActivity`.
         :param str intent: Intent to launch application.
@@ -4174,7 +4302,7 @@ class ADBDevice(ADBCommand):
         debugging arguments; convenient for geckoview apps.
 
         :param str app_name: Name of application (e.g.
-            `org.mozilla.geckoview_example` or `org.mozilla.geckoview.test`)
+            `org.mozilla.geckoview_example` or `org.mozilla.geckoview.test_runner`)
         :param str activity_name: Activity name, like `GeckoViewActivity`, or
             `TestRunnerActivity`.
         :param str intent: Intent to launch application.

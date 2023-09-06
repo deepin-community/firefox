@@ -1,4 +1,4 @@
-add_task(async function() {
+add_task(async function () {
   info("Starting doubly nested tracker test");
 
   await SpecialPowers.flushPrefEnv();
@@ -19,6 +19,8 @@ add_task(async function() {
         "privacy.restrict3rdpartystorage.userInteractionRequiredForHosts",
         "tracking.example.com,tracking.example.org",
       ],
+      // Bug 1617611: Fix all the tests broken by "cookies SameSite=lax by default"
+      ["network.cookie.sameSite.laxByDefault", false],
     ],
   });
 
@@ -78,7 +80,7 @@ add_task(async function() {
   await SpecialPowers.spawn(
     browser,
     [{ page: testAnotherThirdPartyPage, callback: loadSubpage.toString() }],
-    async function(obj) {
+    async function (obj) {
       await new content.Promise(resolve => {
         let ifr = content.document.createElement("iframe");
         ifr.onload = _ => {
@@ -117,8 +119,9 @@ add_task(async function() {
   UrlClassifierTestUtils.cleanupTestTrackers();
 });
 
-add_task(async function() {
+add_task(async function () {
   info("Cleaning up.");
+  SpecialPowers.clearUserPref("network.cookie.sameSite.laxByDefault");
   await new Promise(resolve => {
     Services.clearData.deleteData(Ci.nsIClearDataService.CLEAR_ALL, value =>
       resolve()

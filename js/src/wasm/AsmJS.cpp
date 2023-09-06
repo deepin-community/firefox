@@ -32,14 +32,19 @@
 
 #include "jsmath.h"
 
+#include "frontend/BytecodeCompiler.h"    // CompileStandaloneFunction
+#include "frontend/FrontendContext.h"     // js::FrontendContext
 #include "frontend/FunctionSyntaxKind.h"  // FunctionSyntaxKind
 #include "frontend/ParseNode.h"
 #include "frontend/Parser.h"
 #include "frontend/ParserAtom.h"     // ParserAtomsTable, TaggedParserAtomIndex
 #include "frontend/SharedContext.h"  // TopLevelFunction
 #include "frontend/TaggedParserAtomIndexHasher.h"  // TaggedParserAtomIndexHasher
+#include "gc/GC.h"
 #include "gc/Policy.h"
-#include "js/BuildId.h"               // JS::BuildIdCharVector
+#include "jit/InlinableNatives.h"
+#include "js/BuildId.h"  // JS::BuildIdCharVector
+#include "js/experimental/JitInfo.h"
 #include "js/friend/ErrorMessages.h"  // JSMSG_*
 #include "js/MemoryMetrics.h"
 #include "js/Printf.h"
@@ -53,21 +58,25 @@
 #include "vm/ErrorReporting.h"
 #include "vm/FunctionFlags.h"          // js::FunctionFlags
 #include "vm/GeneratorAndAsyncKind.h"  // js::GeneratorKind, js::FunctionAsyncKind
+#include "vm/Interpreter.h"
 #include "vm/SelfHosting.h"
 #include "vm/Time.h"
 #include "vm/TypedArrayObject.h"
 #include "vm/Warnings.h"  // js::WarnNumberASCII
 #include "wasm/WasmCompile.h"
+#include "wasm/WasmFeatures.h"
 #include "wasm/WasmGenerator.h"
 #include "wasm/WasmInstance.h"
 #include "wasm/WasmIonCompile.h"
 #include "wasm/WasmJS.h"
 #include "wasm/WasmSerialize.h"
+#include "wasm/WasmSignalHandlers.h"
 #include "wasm/WasmValidate.h"
 
 #include "frontend/SharedContext-inl.h"
 #include "vm/ArrayBufferObject-inl.h"
 #include "vm/JSObject-inl.h"
+#include "wasm/WasmInstance-inl.h"
 
 using namespace js;
 using namespace js::frontend;
@@ -83,7 +92,6 @@ using mozilla::Abs;
 using mozilla::AsVariant;
 using mozilla::CeilingLog2;
 using mozilla::HashGeneric;
-using mozilla::IsNaN;
 using mozilla::IsNegativeZero;
 using mozilla::IsPositiveZero;
 using mozilla::IsPowerOfTwo;
@@ -93,6 +101,8 @@ using mozilla::PositiveInfinity;
 using mozilla::Some;
 using mozilla::Utf8Unit;
 using mozilla::Compression::LZ4;
+
+using FunctionVector = JS::GCVector<JSFunction*>;
 
 /*****************************************************************************/
 
@@ -359,6 +369,7 @@ struct js::AsmJSMetadata : Metadata, AsmJSMetadataCacheablePod {
   uint32_t toStringStart;
   uint32_t srcStart;
   bool strict;
+  bool alwaysUseFdlibm = false;
   RefPtr<ScriptSource> source;
 
   uint32_t srcEndBeforeCurly() const { return srcStart + srcLength; }
@@ -594,10 +605,29 @@ static inline TaggedParserAtomIndex FunctionName(FunctionNode* funNode) {
   return TaggedParserAtomIndex::null();
 }
 
+static inline ParseNode* FunctionFormalParametersList(FunctionNode* fn,
+                                                      unsigned* numFormals) {
+  ParamsBodyNode* argsBody = fn->body();
+
+  // The number of formals is equal to the number of parameters (excluding the
+  // trailing lexical scope). There are no destructuring or rest parameters for
+  // asm.js functions.
+  *numFormals = argsBody->count();
+
+  // If the function has been fully parsed, the trailing function body node is a
+  // lexical scope. If we've only parsed the function parameters, the last node
+  // is the last parameter.
+  if (*numFormals > 0 && argsBody->last()->is<LexicalScopeNode>()) {
+    MOZ_ASSERT(argsBody->last()->as<LexicalScopeNode>().scopeBody()->isKind(
+        ParseNodeKind::StatementList));
+    (*numFormals)--;
+  }
+
+  return argsBody->head();
+}
+
 static inline ParseNode* FunctionStatementList(FunctionNode* funNode) {
-  MOZ_ASSERT(funNode->body()->isKind(ParseNodeKind::ParamsBody));
-  LexicalScopeNode* last =
-      &funNode->body()->as<ListNode>().last()->as<LexicalScopeNode>();
+  LexicalScopeNode* last = funNode->body()->body();
   MOZ_ASSERT(last->isEmptyScope());
   ParseNode* body = last->scopeBody();
   MOZ_ASSERT(body->isKind(ParseNodeKind::StatementList));
@@ -625,15 +655,14 @@ static inline bool IsUseOfName(ParseNode* pn, TaggedParserAtomIndex name) {
   return pn->isName(name);
 }
 
-static inline bool IsIgnoredDirectiveName(JSContext* cx,
-                                          TaggedParserAtomIndex atom) {
-  return atom != TaggedParserAtomIndex::WellKnown::useStrict();
+static inline bool IsIgnoredDirectiveName(TaggedParserAtomIndex atom) {
+  return atom != TaggedParserAtomIndex::WellKnown::use_strict_();
 }
 
-static inline bool IsIgnoredDirective(JSContext* cx, ParseNode* pn) {
+static inline bool IsIgnoredDirective(ParseNode* pn) {
   return pn->isKind(ParseNodeKind::ExpressionStmt) &&
          UnaryKid(pn)->isKind(ParseNodeKind::StringExpr) &&
-         IsIgnoredDirectiveName(cx, UnaryKid(pn)->as<NameNode>().atom());
+         IsIgnoredDirectiveName(UnaryKid(pn)->as<NameNode>().atom());
 }
 
 static inline bool IsEmptyStatement(ParseNode* pn) {
@@ -1132,8 +1161,6 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
     uint32_t mask_;
     bool defined_;
 
-    Table(Table&& rhs) = delete;
-
    public:
     Table(uint32_t sigIndex, TaggedParserAtomIndex name, uint32_t firstUse,
           uint32_t mask)
@@ -1142,6 +1169,8 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
           firstUse_(firstUse),
           mask_(mask),
           defined_(false) {}
+
+    Table(Table&& rhs) = delete;
 
     uint32_t sigIndex() const { return sigIndex_; }
     TaggedParserAtomIndex name() const { return name_; }
@@ -1296,9 +1325,9 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
 
     // Implement HashPolicy:
     using Lookup = const FuncType&;
-    static HashNumber hash(Lookup l) { return l.hash(); }
+    static HashNumber hash(Lookup l) { return l.hash(nullptr); }
     static bool match(HashableSig lhs, Lookup rhs) {
-      return lhs.funcType() == rhs;
+      return FuncType::strictlyEquals(lhs.funcType(), rhs);
     }
   };
 
@@ -1320,10 +1349,11 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
     };
     static HashNumber hash(Lookup l) {
       return HashGeneric(TaggedParserAtomIndexHasher::hash(l.name),
-                         l.funcType.hash());
+                         l.funcType.hash(nullptr));
     }
     static bool match(NamedSig lhs, Lookup rhs) {
-      return lhs.name() == rhs.name && lhs.funcType() == rhs.funcType;
+      return lhs.name() == rhs.name &&
+             FuncType::strictlyEquals(lhs.funcType(), rhs.funcType);
     }
   };
 
@@ -1336,7 +1366,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
   using ArrayViewVector = Vector<ArrayView>;
 
  protected:
-  JSContext* cx_;
+  FrontendContext* fc_;
   ParserAtomsTable& parserAtoms_;
   FunctionNode* moduleFunctionNode_;
   TaggedParserAtomIndex moduleFunctionName_;
@@ -1366,29 +1396,28 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
   bool errorOverRecursed_ = false;
 
  protected:
-  ModuleValidatorShared(JSContext* cx, ParserAtomsTable& parserAtoms,
+  ModuleValidatorShared(FrontendContext* fc, ParserAtomsTable& parserAtoms,
                         FunctionNode* moduleFunctionNode)
-      : cx_(cx),
+      : fc_(fc),
         parserAtoms_(parserAtoms),
         moduleFunctionNode_(moduleFunctionNode),
         moduleFunctionName_(FunctionName(moduleFunctionNode)),
-        standardLibraryMathNames_(cx),
+        standardLibraryMathNames_(fc),
         validationLifo_(VALIDATION_LIFO_DEFAULT_CHUNK_SIZE),
-        funcDefs_(cx),
-        tables_(cx),
-        globalMap_(cx),
-        sigSet_(cx),
-        funcImportMap_(cx),
-        arrayViews_(cx),
-        compilerEnv_(CompileMode::Once, Tier::Optimized, OptimizedBackend::Ion,
-                     DebugEnabled::False),
+        funcDefs_(fc),
+        tables_(fc),
+        globalMap_(fc),
+        sigSet_(fc),
+        funcImportMap_(fc),
+        arrayViews_(fc),
+        compilerEnv_(CompileMode::Once, Tier::Optimized, DebugEnabled::False),
         moduleEnv_(FeatureArgs(), ModuleKind::AsmJS) {
     compilerEnv_.computeParameters();
     memory_.minLength = RoundUpToNextValidAsmJSHeapLength(0);
   }
 
  protected:
-  [[nodiscard]] bool initModuleEnvironment() { return moduleEnv_.initTypes(0); }
+  [[nodiscard]] bool initModuleEnvironment() { return moduleEnv_.init(); }
 
   [[nodiscard]] bool addStandardLibraryMathInfo() {
     static constexpr struct {
@@ -1409,7 +1438,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
 
     auto AddMathFunction = [this](const char* name,
                                   AsmJSMathBuiltinFunction func) {
-      auto atom = parserAtoms_.internAscii(cx_, name, strlen(name));
+      auto atom = parserAtoms_.internAscii(fc_, name, strlen(name));
       if (!atom) {
         return false;
       }
@@ -1438,7 +1467,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
     };
 
     auto AddMathConstant = [this](const char* name, double cst) {
-      auto atom = parserAtoms_.internAscii(cx_, name, strlen(name));
+      auto atom = parserAtoms_.internAscii(fc_, name, strlen(name));
       if (!atom) {
         return false;
       }
@@ -1456,7 +1485,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
   }
 
  public:
-  JSContext* cx() const { return cx_; }
+  FrontendContext* fc() const { return fc_; }
   TaggedParserAtomIndex moduleFunctionName() const {
     return moduleFunctionName_;
   }
@@ -1478,7 +1507,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
   [[nodiscard]] bool initGlobalArgumentName(TaggedParserAtomIndex n) {
     globalArgumentName_ = n;
     if (n) {
-      asmJSMetadata_->globalArgumentName = parserAtoms_.toNewUTF8CharsZ(cx_, n);
+      asmJSMetadata_->globalArgumentName = parserAtoms_.toNewUTF8CharsZ(fc_, n);
       if (!asmJSMetadata_->globalArgumentName) {
         return false;
       }
@@ -1488,7 +1517,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
   [[nodiscard]] bool initImportArgumentName(TaggedParserAtomIndex n) {
     importArgumentName_ = n;
     if (n) {
-      asmJSMetadata_->importArgumentName = parserAtoms_.toNewUTF8CharsZ(cx_, n);
+      asmJSMetadata_->importArgumentName = parserAtoms_.toNewUTF8CharsZ(fc_, n);
       if (!asmJSMetadata_->importArgumentName) {
         return false;
       }
@@ -1498,7 +1527,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
   [[nodiscard]] bool initBufferArgumentName(TaggedParserAtomIndex n) {
     bufferArgumentName_ = n;
     if (n) {
-      asmJSMetadata_->bufferArgumentName = parserAtoms_.toNewUTF8CharsZ(cx_, n);
+      asmJSMetadata_->bufferArgumentName = parserAtoms_.toNewUTF8CharsZ(fc_, n);
       if (!asmJSMetadata_->bufferArgumentName) {
         return false;
       }
@@ -1540,7 +1569,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
                           bool isConst) {
     MOZ_ASSERT(type.isGlobalVarType());
 
-    UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(cx_, field);
+    UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(fc_, field);
     if (!fieldChars) {
       return false;
     }
@@ -1571,7 +1600,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
                     TaggedParserAtomIndex maybeField) {
     UniqueChars fieldChars;
     if (maybeField) {
-      fieldChars = parserAtoms_.toNewUTF8CharsZ(cx_, maybeField);
+      fieldChars = parserAtoms_.toNewUTF8CharsZ(fc_, maybeField);
       if (!fieldChars) {
         return false;
       }
@@ -1597,7 +1626,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
   bool addMathBuiltinFunction(TaggedParserAtomIndex var,
                               AsmJSMathBuiltinFunction func,
                               TaggedParserAtomIndex field) {
-    UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(cx_, field);
+    UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(fc_, field);
     if (!fieldChars) {
       return false;
     }
@@ -1629,7 +1658,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
  public:
   bool addMathBuiltinConstant(TaggedParserAtomIndex var, double constant,
                               TaggedParserAtomIndex field) {
-    UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(cx_, field);
+    UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(fc_, field);
     if (!fieldChars) {
       return false;
     }
@@ -1645,7 +1674,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
   }
   bool addGlobalConstant(TaggedParserAtomIndex var, double constant,
                          TaggedParserAtomIndex field) {
-    UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(cx_, field);
+    UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(fc_, field);
     if (!fieldChars) {
       return false;
     }
@@ -1661,7 +1690,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
   }
   bool addArrayViewCtor(TaggedParserAtomIndex var, Scalar::Type vt,
                         TaggedParserAtomIndex field) {
-    UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(cx_, field);
+    UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(fc_, field);
     if (!fieldChars) {
       return false;
     }
@@ -1680,7 +1709,7 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
     return asmJSMetadata_->asmJSGlobals.append(std::move(g));
   }
   bool addFFI(TaggedParserAtomIndex var, TaggedParserAtomIndex field) {
-    UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(cx_, field);
+    UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(fc_, field);
     if (!fieldChars) {
       return false;
     }
@@ -1705,20 +1734,19 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
   }
   bool addExportField(const Func& func, TaggedParserAtomIndex maybeField) {
     // Record the field name of this export.
-    CacheableChars fieldChars;
+    CacheableName fieldName;
     if (maybeField) {
-      fieldChars = parserAtoms_.toNewUTF8CharsZ(cx_, maybeField);
-    } else {
-      fieldChars = DuplicateString("");
-    }
-    if (!fieldChars) {
-      return false;
+      UniqueChars fieldChars = parserAtoms_.toNewUTF8CharsZ(fc_, maybeField);
+      if (!fieldChars) {
+        return false;
+      }
+      fieldName = CacheableName::fromUTF8Chars(std::move(fieldChars));
     }
 
     // Declare which function is exported which gives us an index into the
     // module ExportVector.
     uint32_t funcIndex = funcImportMap_.count() + func.funcDefIndex();
-    if (!moduleEnv_.exports.emplaceBack(std::move(fieldChars), funcIndex,
+    if (!moduleEnv_.exports.emplaceBack(std::move(fieldName), funcIndex,
                                         DefinitionKind::Function)) {
       return false;
     }
@@ -1812,9 +1840,10 @@ class MOZ_STACK_CLASS ModuleValidatorShared {
   bool failNameOffset(uint32_t offset, const char* fmt,
                       TaggedParserAtomIndex name) {
     // This function is invoked without the caller properly rooting its locals.
-    gc::AutoSuppressGC suppress(cx_);
-    if (UniqueChars bytes = parserAtoms_.toPrintableString(cx_, name)) {
+    if (UniqueChars bytes = parserAtoms_.toPrintableString(name)) {
       failfOffset(offset, fmt, bytes.get());
+    } else {
+      ReportOutOfMemory(fc_);
     }
     return false;
   }
@@ -1882,9 +1911,9 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
   AsmJSParser<Unit>& parser_;
 
  public:
-  ModuleValidator(JSContext* cx, ParserAtomsTable& parserAtoms,
+  ModuleValidator(FrontendContext* fc, ParserAtomsTable& parserAtoms,
                   AsmJSParser<Unit>& parser, FunctionNode* moduleFunctionNode)
-      : ModuleValidatorShared(cx, parserAtoms, moduleFunctionNode),
+      : ModuleValidatorShared(fc, parserAtoms, moduleFunctionNode),
         parser_(parser) {}
 
   ~ModuleValidator() {
@@ -1893,7 +1922,7 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
       typeFailure(errorOffset_, errorString_.get());
     }
     if (errorOverRecursed_) {
-      ReportOverRecursed(cx_);
+      ReportOverRecursed(fc_);
     }
   }
 
@@ -1905,14 +1934,14 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
     }
 
     *sigIndex = moduleEnv_.types->length();
-    return moduleEnv_.types->append(std::move(sig)) &&
-           moduleEnv_.typeIds.append(TypeIdDesc());
+    return moduleEnv_.types->addType(std::move(sig));
   }
   bool declareSig(FuncType&& sig, uint32_t* sigIndex) {
     SigSet::AddPtr p = sigSet_.lookupForAdd(sig);
     if (p) {
       *sigIndex = p->sigIndex();
-      MOZ_ASSERT(moduleEnv_.types->funcType(*sigIndex) == sig);
+      MOZ_ASSERT(FuncType::strictlyEquals(
+          moduleEnv_.types->type(*sigIndex).funcType(), sig));
       return true;
     }
 
@@ -1928,9 +1957,9 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
     auto& ts = tokenStream();
     ErrorMetadata metadata;
     if (ts.computeErrorMetadata(&metadata, AsVariant(offset))) {
-      if (ts.anyCharsAccess().options().throwOnAsmJSValidationFailureOption) {
-        ReportCompileErrorLatin1(cx_, std::move(metadata), nullptr,
-                                 JSMSG_USE_ASM_TYPE_FAIL, &args);
+      if (ts.anyCharsAccess().options().throwOnAsmJSValidationFailure()) {
+        ReportCompileErrorLatin1VA(fc_, std::move(metadata), nullptr,
+                                   JSMSG_USE_ASM_TYPE_FAIL, &args);
       } else {
         // asm.js type failure is indicated by calling one of the fail*
         // functions below.  These functions always return false to
@@ -1950,8 +1979,9 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
 
  public:
   bool init() {
-    asmJSMetadata_ = cx_->new_<AsmJSMetadata>();
+    asmJSMetadata_ = js_new<AsmJSMetadata>();
     if (!asmJSMetadata_) {
+      ReportOutOfMemory(fc_);
       return false;
     }
 
@@ -1960,6 +1990,7 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
     asmJSMetadata_->srcStart = moduleFunctionNode_->body()->pn_pos.begin;
     asmJSMetadata_->strict = parser_.pc_->sc()->strict() &&
                              !parser_.pc_->sc()->hasExplicitUseStrict();
+    asmJSMetadata_->alwaysUseFdlibm = parser_.options().alwaysUseFdlibm();
     asmJSMetadata_->source = do_AddRef(parser_.ss);
 
     if (!initModuleEnvironment()) {
@@ -1971,6 +2002,8 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
   AsmJSParser<Unit>& parser() const { return parser_; }
 
   auto& tokenStream() const { return parser_.tokenStream; }
+
+  bool alwaysUseFdlibm() const { return asmJSMetadata_->alwaysUseFdlibm; }
 
  public:
   bool addFuncDef(TaggedParserAtomIndex name, uint32_t firstUse, FuncType&& sig,
@@ -2021,6 +2054,7 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
 
     moduleEnv_.asmJSSigToTableIndex[sigIndex] = moduleEnv_.tables.length();
     if (!moduleEnv_.tables.emplaceBack(RefType::func(), mask + 1, Nothing(),
+                                       /* initExpr */ Nothing(),
                                        /*isAsmJS*/ true)) {
       return false;
     }
@@ -2074,7 +2108,7 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
   }
 
   SharedModule finish() {
-    MOZ_ASSERT(!moduleEnv_.usesMemory());
+    MOZ_ASSERT(moduleEnv_.numMemories() == 0);
     if (memory_.usage != MemoryUsage::None) {
       Limits limits;
       limits.shared = memory_.usage == MemoryUsage::Shared ? Shareable::True
@@ -2082,7 +2116,9 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
       limits.initial = memory_.minPages();
       limits.maximum = Nothing();
       limits.indexType = IndexType::I32;
-      moduleEnv_.memory = Some(MemoryDesc(limits));
+      if (!moduleEnv_.memories.append(MemoryDesc(limits))) {
+        return nullptr;
+      }
     }
     MOZ_ASSERT(moduleEnv_.funcs.empty());
     if (!moduleEnv_.funcs.resize(funcImportMap_.count() + funcDefs_.length())) {
@@ -2093,17 +2129,15 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
       uint32_t funcIndex = r.front().value();
       uint32_t funcTypeIndex = r.front().key().sigIndex();
       MOZ_ASSERT(!moduleEnv_.funcs[funcIndex].type);
-      moduleEnv_.funcs[funcIndex] =
-          FuncDesc(&moduleEnv_.types->funcType(funcTypeIndex),
-                   &moduleEnv_.typeIds[funcTypeIndex], funcTypeIndex);
+      moduleEnv_.funcs[funcIndex] = FuncDesc(
+          &moduleEnv_.types->type(funcTypeIndex).funcType(), funcTypeIndex);
     }
     for (const Func& func : funcDefs_) {
       uint32_t funcIndex = funcImportMap_.count() + func.funcDefIndex();
       uint32_t funcTypeIndex = func.sigIndex();
       MOZ_ASSERT(!moduleEnv_.funcs[funcIndex].type);
-      moduleEnv_.funcs[funcIndex] =
-          FuncDesc(&moduleEnv_.types->funcType(funcTypeIndex),
-                   &moduleEnv_.typeIds[funcTypeIndex], funcTypeIndex);
+      moduleEnv_.funcs[funcIndex] = FuncDesc(
+          &moduleEnv_.types->type(funcTypeIndex).funcType(), funcTypeIndex);
     }
     for (const Export& exp : moduleEnv_.exports) {
       if (exp.kind() != DefinitionKind::Function) {
@@ -2114,17 +2148,14 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
                                      /* canRefFunc */ false);
     }
 
-    if (!moduleEnv_.funcImportGlobalDataOffsets.resize(
-            funcImportMap_.count())) {
-      return nullptr;
-    }
+    moduleEnv_.numFuncImports = funcImportMap_.count();
 
     MOZ_ASSERT(asmJSMetadata_->asmJSFuncNames.empty());
     if (!asmJSMetadata_->asmJSFuncNames.resize(funcImportMap_.count())) {
       return nullptr;
     }
     for (const Func& func : funcDefs_) {
-      CacheableChars funcName = parserAtoms_.toNewUTF8CharsZ(cx_, func.name());
+      CacheableChars funcName = parserAtoms_.toNewUTF8CharsZ(fc_, func.name());
       if (!funcName ||
           !asmJSMetadata_->asmJSFuncNames.emplaceBack(std::move(funcName))) {
         return nullptr;
@@ -2152,10 +2183,10 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
     }
 
     // The default options are fine for asm.js
-    FeatureOptions options;
     SharedCompileArgs args =
-        CompileArgs::build(cx_, std::move(scriptedCaller), options);
+        CompileArgs::buildForAsmJS(std::move(scriptedCaller));
     if (!args) {
+      ReportOutOfMemory(fc_);
       return nullptr;
     }
 
@@ -2170,8 +2201,9 @@ class MOZ_STACK_CLASS ModuleValidator : public ModuleValidatorShared {
 
     // asm.js does not have any wasm bytecode to save; view-source is
     // provided through the ScriptSource.
-    SharedBytes bytes = cx_->new_<ShareableBytes>();
+    SharedBytes bytes = js_new<ShareableBytes>();
     if (!bytes) {
+      ReportOutOfMemory(fc_);
       return nullptr;
     }
 
@@ -2306,7 +2338,7 @@ static NumLit ExtractNumericLiteral(ModuleValidatorShared& m, ParseNode* pn) {
 
   // The syntactic checks above rule out these double values.
   MOZ_ASSERT(!IsNegativeZero(d));
-  MOZ_ASSERT(!IsNaN(d));
+  MOZ_ASSERT(!std::isnan(d));
 
   // Although doubles can only *precisely* represent 53-bit integers, they
   // can *imprecisely* represent integers much bigger than an int64_t.
@@ -2376,7 +2408,7 @@ class MOZ_STACK_CLASS FunctionValidatorShared {
   // This is also a ModuleValidator<Unit>& after the appropriate static_cast<>.
   ModuleValidatorShared& m_;
 
-  ParseNode* fn_;
+  FunctionNode* fn_;
   Bytes bytes_;
   Encoder encoder_;
   Uint32Vector callSiteLineNums_;
@@ -2393,29 +2425,29 @@ class MOZ_STACK_CLASS FunctionValidatorShared {
   Maybe<ValType> ret_;
 
  private:
-  FunctionValidatorShared(ModuleValidatorShared& m, ParseNode* fn,
-                          JSContext* cx)
+  FunctionValidatorShared(ModuleValidatorShared& m, FunctionNode* fn,
+                          FrontendContext* fc)
       : m_(m),
         fn_(fn),
         encoder_(bytes_),
-        locals_(cx),
-        breakLabels_(cx),
-        continueLabels_(cx),
+        locals_(fc),
+        breakLabels_(fc),
+        continueLabels_(fc),
         blockDepth_(0),
         hasAlreadyReturned_(false) {}
 
  protected:
   template <typename Unit>
-  FunctionValidatorShared(ModuleValidator<Unit>& m, ParseNode* fn,
-                          JSContext* cx)
+  FunctionValidatorShared(ModuleValidator<Unit>& m, FunctionNode* fn,
+                          FrontendContext* fc)
       : FunctionValidatorShared(static_cast<ModuleValidatorShared&>(m), fn,
-                                cx) {}
+                                fc) {}
 
  public:
   ModuleValidatorShared& m() const { return m_; }
 
-  JSContext* cx() const { return m_.cx(); }
-  ParseNode* fn() const { return fn_; }
+  FrontendContext* fc() const { return m_.fc(); }
+  FunctionNode* fn() const { return fn_; }
 
   void define(ModuleValidatorShared::Func* func, unsigned line) {
     MOZ_ASSERT(!blockDepth_);
@@ -2644,8 +2676,8 @@ class MOZ_STACK_CLASS FunctionValidatorShared {
 template <typename Unit>
 class MOZ_STACK_CLASS FunctionValidator : public FunctionValidatorShared {
  public:
-  FunctionValidator(ModuleValidator<Unit>& m, ParseNode* fn)
-      : FunctionValidatorShared(m, fn, m.cx()) {}
+  FunctionValidator(ModuleValidator<Unit>& m, FunctionNode* fn)
+      : FunctionValidatorShared(m, fn, m.fc()) {}
 
  public:
   ModuleValidator<Unit>& m() const {
@@ -2653,6 +2685,7 @@ class MOZ_STACK_CLASS FunctionValidator : public FunctionValidatorShared {
   }
 
   [[nodiscard]] bool writeCall(ParseNode* pn, Op op) {
+    MOZ_ASSERT(op == Op::Call);
     if (!encoder().writeOp(op)) {
       return false;
     }
@@ -2660,6 +2693,7 @@ class MOZ_STACK_CLASS FunctionValidator : public FunctionValidatorShared {
     return appendCallSiteLineNumber(pn);
   }
   [[nodiscard]] bool writeCall(ParseNode* pn, MozOp op) {
+    MOZ_ASSERT(op == MozOp::OldCallDirect || op == MozOp::OldCallIndirect);
     if (!encoder().writeOp(op)) {
       return false;
     }
@@ -2798,7 +2832,7 @@ static bool CheckPrecedingStatements(ModuleValidatorShared& m,
 
   ParseNode* stmt = ListHead(stmtList);
   for (unsigned i = 0, n = ListLength(stmtList); i < n; i++) {
-    if (!IsIgnoredDirective(m.cx(), stmt)) {
+    if (!IsIgnoredDirective(stmt)) {
       return m.fail(stmt, "invalid asm.js statement");
     }
   }
@@ -3129,8 +3163,7 @@ static bool CheckModuleProcessingDirectives(ModuleValidator<Unit>& m) {
       return true;
     }
 
-    if (!IsIgnoredDirectiveName(m.cx(),
-                                ts.anyCharsAccess().currentToken().atom())) {
+    if (!IsIgnoredDirectiveName(ts.anyCharsAccess().currentToken().atom())) {
       return m.failCurrentOffset("unsupported processing directive");
     }
 
@@ -3211,7 +3244,7 @@ static bool CheckProcessingDirectives(ModuleValidatorShared& m,
                                       ParseNode** stmtIter) {
   ParseNode* stmt = *stmtIter;
 
-  while (stmt && IsIgnoredDirective(m.cx(), stmt)) {
+  while (stmt && IsIgnoredDirective(stmt)) {
     stmt = NextNode(stmt);
   }
 
@@ -3338,7 +3371,7 @@ static bool CheckVariables(FunctionValidatorShared& f, ParseNode** stmtIter) {
   uint32_t firstVar = f.numLocals();
 
   ValTypeVector types;
-  Vector<NumLit> inits(f.cx());
+  Vector<NumLit> inits(f.fc());
 
   for (; stmt && stmt->isKind(ParseNodeKind::VarStmt);
        stmt = NextNonEmptyStatement(stmt)) {
@@ -3363,7 +3396,7 @@ static bool CheckVariables(FunctionValidatorShared& f, ParseNode** stmtIter) {
     if (!f.writeConstExpr(lit)) {
       return false;
     }
-    if (!f.encoder().writeOp(Op::SetLocal)) {
+    if (!f.encoder().writeOp(Op::LocalSet)) {
       return false;
     }
     if (!f.encoder().writeVarU32(firstVar + i)) {
@@ -3394,7 +3427,7 @@ static bool CheckVarRef(FunctionValidatorShared& f, ParseNode* varRef,
   TaggedParserAtomIndex name = varRef->as<NameNode>().name();
 
   if (const FunctionValidatorShared::Local* local = f.lookupLocal(name)) {
-    if (!f.encoder().writeOp(Op::GetLocal)) {
+    if (!f.encoder().writeOp(Op::LocalGet)) {
       return false;
     }
     if (!f.encoder().writeVarU32(local->slot)) {
@@ -3412,7 +3445,7 @@ static bool CheckVarRef(FunctionValidatorShared& f, ParseNode* varRef,
       case ModuleValidatorShared::Global::ConstantImport:
       case ModuleValidatorShared::Global::Variable: {
         *type = global->varOrConstType();
-        return f.encoder().writeOp(Op::GetGlobal) &&
+        return f.encoder().writeOp(Op::GlobalGet) &&
                f.encoder().writeVarU32(global->varOrConstIndex());
       }
       case ModuleValidatorShared::Global::Function:
@@ -3711,7 +3744,7 @@ static bool CheckAssignName(FunctionValidator<Unit>& f, ParseNode* lhs,
       return false;
     }
 
-    if (!f.encoder().writeOp(Op::TeeLocal)) {
+    if (!f.encoder().writeOp(Op::LocalTee)) {
       return false;
     }
     if (!f.encoder().writeVarU32(lhsVar->slot)) {
@@ -3977,7 +4010,7 @@ static bool CheckCallArgs(FunctionValidator<Unit>& f, ParseNode* callNode,
 static bool CheckSignatureAgainstExisting(ModuleValidatorShared& m,
                                           ParseNode* usepn, const FuncType& sig,
                                           const FuncType& existing) {
-  if (sig != existing) {
+  if (!FuncType::strictlyEquals(sig, existing)) {
     return m.failf(usepn, "incompatible argument types to function");
   }
   return true;
@@ -3999,7 +4032,8 @@ static bool CheckFunctionSignature(ModuleValidator<Unit>& m, ParseNode* usepn,
     return m.addFuncDef(name, usepn->pn_pos.begin, std::move(sig), func);
   }
 
-  const FuncType& existingSig = m.env().types->funcType(existing->sigIndex());
+  const FuncType& existingSig =
+      m.env().types->type(existing->sigIndex()).funcType();
 
   if (!CheckSignatureAgainstExisting(m, usepn, sig, existingSig)) {
     return false;
@@ -4073,7 +4107,7 @@ static bool CheckFuncPtrTableAgainstExisting(ModuleValidator<Unit>& m,
     }
 
     if (!CheckSignatureAgainstExisting(
-            m, usepn, sig, m.env().types->funcType(table.sigIndex()))) {
+            m, usepn, sig, m.env().types->type(table.sigIndex()).funcType())) {
       return false;
     }
 
@@ -4229,10 +4263,10 @@ static bool CheckFloatCoercionArg(FunctionValidatorShared& f,
     return f.encoder().writeOp(Op::F32DemoteF64);
   }
   if (inputType.isSigned()) {
-    return f.encoder().writeOp(Op::F32ConvertSI32);
+    return f.encoder().writeOp(Op::F32ConvertI32S);
   }
   if (inputType.isUnsigned()) {
-    return f.encoder().writeOp(Op::F32ConvertUI32);
+    return f.encoder().writeOp(Op::F32ConvertI32U);
   }
   if (inputType.isFloatish()) {
     return true;
@@ -4326,17 +4360,29 @@ static bool CheckMathBuiltinCall(FunctionValidator<Unit>& f,
       break;
     case AsmJSMathBuiltin_sin:
       arity = 1;
-      mozf64 = MozOp::F64Sin;
+      if (!f.m().alwaysUseFdlibm()) {
+        mozf64 = MozOp::F64SinNative;
+      } else {
+        mozf64 = MozOp::F64SinFdlibm;
+      }
       f32 = Op::Unreachable;
       break;
     case AsmJSMathBuiltin_cos:
       arity = 1;
-      mozf64 = MozOp::F64Cos;
+      if (!f.m().alwaysUseFdlibm()) {
+        mozf64 = MozOp::F64CosNative;
+      } else {
+        mozf64 = MozOp::F64CosFdlibm;
+      }
       f32 = Op::Unreachable;
       break;
     case AsmJSMathBuiltin_tan:
       arity = 1;
-      mozf64 = MozOp::F64Tan;
+      if (!f.m().alwaysUseFdlibm()) {
+        mozf64 = MozOp::F64TanNative;
+      } else {
+        mozf64 = MozOp::F64TanFdlibm;
+      }
       f32 = Op::Unreachable;
       break;
     case AsmJSMathBuiltin_asin:
@@ -4493,11 +4539,11 @@ static bool CoerceResult(FunctionValidatorShared& f, ParseNode* expr,
           return false;
         }
       } else if (actual.isSigned()) {
-        if (!f.encoder().writeOp(Op::F64ConvertSI32)) {
+        if (!f.encoder().writeOp(Op::F64ConvertI32S)) {
           return false;
         }
       } else if (actual.isUnsigned()) {
-        if (!f.encoder().writeOp(Op::F64ConvertUI32)) {
+        if (!f.encoder().writeOp(Op::F64ConvertI32U)) {
           return false;
         }
       } else {
@@ -4531,8 +4577,8 @@ static bool CheckCoercedCall(FunctionValidator<Unit>& f, ParseNode* call,
                              Type ret, Type* type) {
   MOZ_ASSERT(ret.isCanonical());
 
-  AutoCheckRecursionLimit recursion(f.cx());
-  if (!recursion.checkDontReport(f.cx())) {
+  AutoCheckRecursionLimit recursion(f.fc());
+  if (!recursion.checkDontReport(f.fc())) {
     return f.m().failOverRecursed();
   }
 
@@ -4658,7 +4704,7 @@ static bool CheckCoerceToInt(FunctionValidator<Unit>& f, ParseNode* expr,
   if (operandType.isMaybeDouble() || operandType.isMaybeFloat()) {
     *type = Type::Signed;
     Op opcode =
-        operandType.isMaybeDouble() ? Op::I32TruncSF64 : Op::I32TruncSF32;
+        operandType.isMaybeDouble() ? Op::I32TruncF64S : Op::I32TruncF32S;
     return f.encoder().writeOp(opcode);
   }
 
@@ -4864,8 +4910,8 @@ static bool CheckMultiply(FunctionValidator<Unit>& f, ParseNode* star,
 template <typename Unit>
 static bool CheckAddOrSub(FunctionValidator<Unit>& f, ParseNode* expr,
                           Type* type, unsigned* numAddOrSubOut = nullptr) {
-  AutoCheckRecursionLimit recursion(f.cx());
-  if (!recursion.checkDontReport(f.cx())) {
+  AutoCheckRecursionLimit recursion(f.fc());
+  if (!recursion.checkDontReport(f.fc())) {
     return f.m().failOverRecursed();
   }
 
@@ -5247,8 +5293,8 @@ static bool CheckBitwise(FunctionValidator<Unit>& f, ParseNode* bitwise,
 
 template <typename Unit>
 static bool CheckExpr(FunctionValidator<Unit>& f, ParseNode* expr, Type* type) {
-  AutoCheckRecursionLimit recursion(f.cx());
-  if (!recursion.checkDontReport(f.cx())) {
+  AutoCheckRecursionLimit recursion(f.fc());
+  if (!recursion.checkDontReport(f.fc())) {
     return f.m().failOverRecursed();
   }
 
@@ -5911,7 +5957,8 @@ static bool CheckReturnType(FunctionValidatorShared& f, ParseNode* usepn,
 
   if (f.returnedType() != type) {
     return f.failf(usepn, "%s incompatible with previous return of type %s",
-                   ToString(type).get(), ToString(f.returnedType()).get());
+                   ToString(type, nullptr).get(),
+                   ToString(f.returnedType(), nullptr).get());
   }
 
   return true;
@@ -5981,8 +6028,8 @@ static bool CheckBreakOrContinue(FunctionValidatorShared& f, bool isBreak,
 
 template <typename Unit>
 static bool CheckStatement(FunctionValidator<Unit>& f, ParseNode* stmt) {
-  AutoCheckRecursionLimit recursion(f.cx());
-  if (!recursion.checkDontReport(f.cx())) {
+  AutoCheckRecursionLimit recursion(f.fc());
+  if (!recursion.checkDontReport(f.fc())) {
     return f.m().failOverRecursed();
   }
 
@@ -6063,8 +6110,7 @@ static bool ParseFunction(ModuleValidator<Unit>& m, FunctionNode** funNodeOut,
   if (!funbox) {
     return false;
   }
-  funbox->initWithEnclosingParseContext(outerpc, flags,
-                                        FunctionSyntaxKind::Statement);
+  funbox->initWithEnclosingParseContext(outerpc, FunctionSyntaxKind::Statement);
 
   Directives newDirectives = directives;
   SourceParseContext funpc(&m.parser(), funbox, &newDirectives);
@@ -6143,10 +6189,11 @@ static bool CheckFunction(ModuleValidator<Unit>& m) {
     }
   }
 
+  FuncType sig(std::move(args), std::move(results));
+
   ModuleValidatorShared::Func* func = nullptr;
-  if (!CheckFunctionSignature(m, funNode,
-                              FuncType(std::move(args), std::move(results)),
-                              FunctionName(funNode), &func)) {
+  if (!CheckFunctionSignature(m, funNode, std::move(sig), FunctionName(funNode),
+                              &func)) {
     return false;
   }
 
@@ -6237,9 +6284,9 @@ static bool CheckFuncPtrTable(ModuleValidator<Unit>& m, ParseNode* decl) {
           elem, "function-pointer table's elements must be names of functions");
     }
 
-    const FuncType& funcSig = m.env().types->funcType(func->sigIndex());
+    const FuncType& funcSig = m.env().types->type(func->sigIndex()).funcType();
     if (sig) {
-      if (*sig != funcSig) {
+      if (!FuncType::strictlyEquals(*sig, funcSig)) {
         return m.fail(elem, "all functions in table must have same signature");
       }
     } else {
@@ -6397,14 +6444,15 @@ static bool CheckModuleEnd(ModuleValidator<Unit>& m) {
 }
 
 template <typename Unit>
-static SharedModule CheckModule(JSContext* cx, ParserAtomsTable& parserAtoms,
+static SharedModule CheckModule(FrontendContext* fc,
+                                ParserAtomsTable& parserAtoms,
                                 AsmJSParser<Unit>& parser, ParseNode* stmtList,
                                 unsigned* time) {
   int64_t before = PRMJ_Now();
 
   FunctionNode* moduleFunctionNode = parser.pc_->functionBox()->functionNode;
 
-  ModuleValidator<Unit> m(cx, parserAtoms, parser, moduleFunctionNode);
+  ModuleValidator<Unit> m(fc, parserAtoms, parser, moduleFunctionNode);
   if (!m.init()) {
     return nullptr;
   }
@@ -6471,8 +6519,8 @@ static bool IsMaybeWrappedScriptedProxy(JSObject* obj) {
   return unwrapped && IsScriptedProxy(unwrapped);
 }
 
-static bool GetDataProperty(JSContext* cx, HandleValue objVal, HandleAtom field,
-                            MutableHandleValue v) {
+static bool GetDataProperty(JSContext* cx, HandleValue objVal,
+                            Handle<JSAtom*> field, MutableHandleValue v) {
   if (!objVal.isObject()) {
     return LinkFail(cx, "accessing property of non-object");
   }
@@ -6503,7 +6551,8 @@ static bool GetDataProperty(JSContext* cx, HandleValue objVal, HandleAtom field,
 
 static bool GetDataProperty(JSContext* cx, HandleValue objVal,
                             const char* fieldChars, MutableHandleValue v) {
-  RootedAtom field(cx, AtomizeUTF8Chars(cx, fieldChars, strlen(fieldChars)));
+  Rooted<JSAtom*> field(cx,
+                        AtomizeUTF8Chars(cx, fieldChars, strlen(fieldChars)));
   if (!field) {
     return false;
   }
@@ -6512,9 +6561,9 @@ static bool GetDataProperty(JSContext* cx, HandleValue objVal,
 }
 
 static bool GetDataProperty(JSContext* cx, HandleValue objVal,
-                            const ImmutablePropertyNamePtr& field,
+                            const ImmutableTenuredPtr<PropertyName*>& field,
                             MutableHandleValue v) {
-  HandlePropertyName fieldHandle = field;
+  Handle<PropertyName*> fieldHandle = field;
   return GetDataProperty(cx, objVal, fieldHandle, v);
 }
 
@@ -6578,8 +6627,6 @@ static bool ValidateGlobalVariable(JSContext* cx, const AsmJSGlobal& global,
           MOZ_CRASH("int64");
         case ValType::V128:
           MOZ_CRASH("v128");
-        case ValType::Rtt:
-          MOZ_CRASH("rtt");
         case ValType::F32: {
           float f;
           if (!RoundFloat32(cx, v, &f)) {
@@ -6645,7 +6692,52 @@ static bool ValidateArrayView(JSContext* cx, const AsmJSGlobal& global,
   return true;
 }
 
+static InlinableNative ToInlinableNative(AsmJSMathBuiltinFunction func) {
+  switch (func) {
+    case AsmJSMathBuiltin_sin:
+      return InlinableNative::MathSin;
+    case AsmJSMathBuiltin_cos:
+      return InlinableNative::MathCos;
+    case AsmJSMathBuiltin_tan:
+      return InlinableNative::MathTan;
+    case AsmJSMathBuiltin_asin:
+      return InlinableNative::MathASin;
+    case AsmJSMathBuiltin_acos:
+      return InlinableNative::MathACos;
+    case AsmJSMathBuiltin_atan:
+      return InlinableNative::MathATan;
+    case AsmJSMathBuiltin_ceil:
+      return InlinableNative::MathCeil;
+    case AsmJSMathBuiltin_floor:
+      return InlinableNative::MathFloor;
+    case AsmJSMathBuiltin_exp:
+      return InlinableNative::MathExp;
+    case AsmJSMathBuiltin_log:
+      return InlinableNative::MathLog;
+    case AsmJSMathBuiltin_pow:
+      return InlinableNative::MathPow;
+    case AsmJSMathBuiltin_sqrt:
+      return InlinableNative::MathSqrt;
+    case AsmJSMathBuiltin_abs:
+      return InlinableNative::MathAbs;
+    case AsmJSMathBuiltin_atan2:
+      return InlinableNative::MathATan2;
+    case AsmJSMathBuiltin_imul:
+      return InlinableNative::MathImul;
+    case AsmJSMathBuiltin_fround:
+      return InlinableNative::MathFRound;
+    case AsmJSMathBuiltin_min:
+      return InlinableNative::MathMin;
+    case AsmJSMathBuiltin_max:
+      return InlinableNative::MathMax;
+    case AsmJSMathBuiltin_clz32:
+      return InlinableNative::MathClz32;
+  }
+  MOZ_CRASH("Invalid asm.js math builtin function");
+}
+
 static bool ValidateMathBuiltinFunction(JSContext* cx,
+                                        const AsmJSMetadata& metadata,
                                         const AsmJSGlobal& global,
                                         HandleValue globalVal) {
   RootedValue v(cx);
@@ -6657,69 +6749,19 @@ static bool ValidateMathBuiltinFunction(JSContext* cx,
     return false;
   }
 
-  Native native = nullptr;
-  switch (global.mathBuiltinFunction()) {
-    case AsmJSMathBuiltin_sin:
-      native = math_sin;
-      break;
-    case AsmJSMathBuiltin_cos:
-      native = math_cos;
-      break;
-    case AsmJSMathBuiltin_tan:
-      native = math_tan;
-      break;
-    case AsmJSMathBuiltin_asin:
-      native = math_asin;
-      break;
-    case AsmJSMathBuiltin_acos:
-      native = math_acos;
-      break;
-    case AsmJSMathBuiltin_atan:
-      native = math_atan;
-      break;
-    case AsmJSMathBuiltin_ceil:
-      native = math_ceil;
-      break;
-    case AsmJSMathBuiltin_floor:
-      native = math_floor;
-      break;
-    case AsmJSMathBuiltin_exp:
-      native = math_exp;
-      break;
-    case AsmJSMathBuiltin_log:
-      native = math_log;
-      break;
-    case AsmJSMathBuiltin_pow:
-      native = math_pow;
-      break;
-    case AsmJSMathBuiltin_sqrt:
-      native = math_sqrt;
-      break;
-    case AsmJSMathBuiltin_min:
-      native = math_min;
-      break;
-    case AsmJSMathBuiltin_max:
-      native = math_max;
-      break;
-    case AsmJSMathBuiltin_abs:
-      native = math_abs;
-      break;
-    case AsmJSMathBuiltin_atan2:
-      native = math_atan2;
-      break;
-    case AsmJSMathBuiltin_imul:
-      native = math_imul;
-      break;
-    case AsmJSMathBuiltin_clz32:
-      native = math_clz32;
-      break;
-    case AsmJSMathBuiltin_fround:
-      native = math_fround;
-      break;
-  }
+  InlinableNative native = ToInlinableNative(global.mathBuiltinFunction());
 
-  if (!IsNativeFunction(v, native)) {
+  JSFunction* fun;
+  if (!IsFunctionObject(v, &fun) || !fun->hasJitInfo() ||
+      fun->jitInfo()->type() != JSJitInfo::InlinableNative ||
+      fun->jitInfo()->inlinableNative != native) {
     return LinkFail(cx, "bad Math.* builtin function");
+  }
+  if (fun->realm()->creationOptions().alwaysUseFdlibm() !=
+      metadata.alwaysUseFdlibm) {
+    return LinkFail(cx,
+                    "Math.* builtin function and asm.js use different native"
+                    " math implementations.");
   }
 
   return true;
@@ -6744,8 +6786,8 @@ static bool ValidateConstant(JSContext* cx, const AsmJSGlobal& global,
   }
 
   // NaN != NaN
-  if (IsNaN(global.constantValue())) {
-    if (!IsNaN(v.toNumber())) {
+  if (std::isnan(global.constantValue())) {
+    if (!std::isnan(v.toNumber())) {
       return LinkFail(cx, "global constant value needs to be NaN");
     }
   } else {
@@ -6765,7 +6807,7 @@ static bool CheckBuffer(JSContext* cx, const AsmJSMetadata& metadata,
   }
   JSObject* bufferObj = &bufferVal.toObject();
 
-  if (metadata.usesSharedMemory()) {
+  if (metadata.memories[0].isShared()) {
     if (!bufferObj->is<SharedArrayBufferObject>()) {
       return LinkFail(
           cx, "shared views can only be constructed onto SharedArrayBuffer");
@@ -6805,8 +6847,9 @@ static bool CheckBuffer(JSContext* cx, const AsmJSMetadata& metadata,
   // This check is sufficient without considering the size of the loaded datum
   // because heap loads and stores start on an aligned boundary and the heap
   // byteLength has larger alignment.
-  uint64_t minMemoryLength =
-      metadata.usesMemory() ? metadata.memory->initialLength32() : 0;
+  uint64_t minMemoryLength = metadata.memories.length() != 0
+                                 ? metadata.memories[0].initialLength32()
+                                 : 0;
   MOZ_ASSERT((minMemoryLength - 1) <= INT32_MAX);
   if (memoryLength < minMemoryLength) {
     UniqueChars msg(JS_smprintf("ArrayBuffer byteLength of 0x%" PRIx64
@@ -6875,7 +6918,7 @@ static bool GetImports(JSContext* cx, const AsmJSMetadata& metadata,
         }
         break;
       case AsmJSGlobal::MathBuiltinFunction:
-        if (!ValidateMathBuiltinFunction(cx, global, globalVal)) {
+        if (!ValidateMathBuiltinFunction(cx, metadata, global, globalVal)) {
           return false;
         }
         break;
@@ -6898,28 +6941,30 @@ static bool GetImports(JSContext* cx, const AsmJSMetadata& metadata,
 
 static bool TryInstantiate(JSContext* cx, CallArgs args, const Module& module,
                            const AsmJSMetadata& metadata,
-                           MutableHandleWasmInstanceObject instanceObj,
+                           MutableHandle<WasmInstanceObject*> instanceObj,
                            MutableHandleObject exportObj) {
   HandleValue globalVal = args.get(0);
   HandleValue importVal = args.get(1);
   HandleValue bufferVal = args.get(2);
 
-  // Re-check HasPlatformSupport(cx) since this varies per-thread and
-  // 'module' may have been produced on a parser thread.
-  if (!HasPlatformSupport(cx)) {
-    return LinkFail(cx, "no platform support");
+  MOZ_RELEASE_ASSERT(HasPlatformSupport());
+
+  if (!wasm::EnsureFullSignalHandlers(cx)) {
+    return LinkFail(cx, "failed to install signal handlers");
   }
 
   Rooted<ImportValues> imports(cx);
 
-  if (module.metadata().usesMemory()) {
-    RootedArrayBufferObject buffer(cx);
+  if (module.metadata().memories.length() != 0) {
+    MOZ_ASSERT(module.metadata().memories.length() == 1);
+    Rooted<ArrayBufferObject*> buffer(cx);
     if (!CheckBuffer(cx, metadata, bufferVal, &buffer)) {
       return false;
     }
 
-    imports.get().memory = WasmMemoryObject::create(cx, buffer, nullptr);
-    if (!imports.get().memory) {
+    Rooted<WasmMemoryObject*> memory(
+        cx, WasmMemoryObject::create(cx, buffer, /* isHuge= */ false, nullptr));
+    if (!memory || !imports.get().memories.append(memory)) {
       return false;
     }
   }
@@ -6940,7 +6985,7 @@ static bool HandleInstantiationFailure(JSContext* cx, CallArgs args,
                                        const AsmJSMetadata& metadata) {
   using js::frontend::FunctionSyntaxKind;
 
-  RootedAtom name(cx, args.callee().as<JSFunction>().explicitName());
+  Rooted<JSAtom*> name(cx, args.callee().as<JSFunction>().explicitName());
 
   if (cx->isExceptionPending()) {
     return false;
@@ -6971,7 +7016,7 @@ static bool HandleInstantiationFailure(JSContext* cx, CallArgs args,
   options.setMutedErrors(source->mutedErrors())
       .setFile(source->filename())
       .setNoScriptRval(false);
-  options.asmJSOption = AsmJSOption::DisabledByLinker;
+  options.setAsmJSOption(AsmJSOption::DisabledByLinker);
 
   // The exported function inherits an implicit strict context if the module
   // also inherited it somehow.
@@ -6979,18 +7024,13 @@ static bool HandleInstantiationFailure(JSContext* cx, CallArgs args,
     options.setForceStrictMode();
   }
 
-  AutoStableStringChars stableChars(cx);
-  if (!stableChars.initTwoByte(cx, src)) {
+  AutoStableStringChars linearChars(cx);
+  if (!linearChars.initTwoByte(cx, src)) {
     return false;
   }
 
   SourceText<char16_t> srcBuf;
-
-  const char16_t* chars = stableChars.twoByteRange().begin().get();
-  SourceOwnership ownership = stableChars.maybeGiveOwnershipToCaller()
-                                  ? SourceOwnership::TakeOwnership
-                                  : SourceOwnership::Borrowed;
-  if (!srcBuf.init(cx, chars, end - begin, ownership)) {
+  if (!srcBuf.initMaybeBorrowed(cx, linearChars)) {
     return false;
   }
 
@@ -7025,7 +7065,7 @@ bool js::InstantiateAsmJS(JSContext* cx, unsigned argc, JS::Value* vp) {
   const Module& module = AsmJSModuleFunctionToModule(callee);
   const AsmJSMetadata& metadata = module.metadata().asAsmJS();
 
-  RootedWasmInstanceObject instanceObj(cx);
+  Rooted<WasmInstanceObject*> instanceObj(cx);
   RootedObject exportObj(cx);
   if (!TryInstantiate(cx, args, module, metadata, &instanceObj, &exportObj)) {
     // Link-time validation checks failed, so reparse the entire asm.js
@@ -7041,9 +7081,7 @@ bool js::InstantiateAsmJS(JSContext* cx, unsigned argc, JS::Value* vp) {
 /*****************************************************************************/
 // Top-level js::CompileAsmJS
 
-static bool NoExceptionPending(JSContext* cx) {
-  return cx->isHelperThreadContext() || !cx->isExceptionPending();
-}
+static bool NoExceptionPending(FrontendContext* fc) { return !fc->hadErrors(); }
 
 static bool SuccessfulValidation(frontend::ParserBase& parser,
                                  unsigned compilationTime) {
@@ -7058,7 +7096,7 @@ static bool SuccessfulValidation(frontend::ParserBase& parser,
 }
 
 static bool TypeFailureWarning(frontend::ParserBase& parser, const char* str) {
-  if (parser.options().throwOnAsmJSValidationFailureOption) {
+  if (parser.options().throwOnAsmJSValidationFailure()) {
     parser.errorNoOffset(JSMSG_USE_ASM_TYPE_FAIL, str ? str : "");
     return false;
   }
@@ -7073,22 +7111,11 @@ static bool TypeFailureWarning(frontend::ParserBase& parser, const char* str) {
 // asm.js requires Ion to be available on the current hardware/OS and to be
 // enabled for wasm, since asm.js compilation goes via wasm.
 static bool IsAsmJSCompilerAvailable(JSContext* cx) {
-  return HasPlatformSupport(cx) && WasmCompilerForAsmJSAvailable(cx);
+  return HasPlatformSupport() && WasmCompilerForAsmJSAvailable(cx);
 }
 
-static bool EstablishPreconditions(JSContext* cx,
-                                   frontend::ParserBase& parser) {
-  if (!IsAsmJSCompilerAvailable(cx)) {
-    if (cx->realm() && cx->realm()->debuggerObservesAsmJS()) {
-      return TypeFailureWarning(
-          parser, "Asm.js optimizer disabled because debugger is active");
-    }
-    return TypeFailureWarning(parser,
-                              "Asm.js optimizer disabled because the compiler "
-                              "is disabled or unavailable");
-  }
-
-  switch (parser.options().asmJSOption) {
+static bool EstablishPreconditions(frontend::ParserBase& parser) {
+  switch (parser.options().asmJSOption()) {
     case AsmJSOption::DisabledByAsmJSPref:
       return TypeFailureWarning(
           parser, "Asm.js optimizer disabled by 'asmjs' runtime option");
@@ -7133,22 +7160,22 @@ static bool EstablishPreconditions(JSContext* cx,
 }
 
 template <typename Unit>
-static bool DoCompileAsmJS(JSContext* cx, ParserAtomsTable& parserAtoms,
+static bool DoCompileAsmJS(FrontendContext* fc, ParserAtomsTable& parserAtoms,
                            AsmJSParser<Unit>& parser, ParseNode* stmtList,
                            bool* validated) {
   *validated = false;
 
   // Various conditions disable asm.js optimizations.
-  if (!EstablishPreconditions(cx, parser)) {
-    return NoExceptionPending(cx);
+  if (!EstablishPreconditions(parser)) {
+    return NoExceptionPending(fc);
   }
 
   // "Checking" parses, validates and compiles, producing a fully compiled
   // WasmModuleObject as result.
   unsigned time;
-  SharedModule module = CheckModule(cx, parserAtoms, parser, stmtList, &time);
+  SharedModule module = CheckModule(fc, parserAtoms, parser, stmtList, &time);
   if (!module) {
-    return NoExceptionPending(cx);
+    return NoExceptionPending(fc);
   }
 
   // Finished! Save the ref-counted module on the FunctionBox. When JSFunctions
@@ -7156,26 +7183,26 @@ static bool DoCompileAsmJS(JSContext* cx, ParserAtomsTable& parserAtoms,
   FunctionBox* funbox = parser.pc_->functionBox();
   MOZ_ASSERT(funbox->isInterpreted());
   if (!funbox->setAsmJSModule(module)) {
-    return NoExceptionPending(cx);
+    return NoExceptionPending(fc);
   }
 
   // Success! Write to the console with a "warning" message indicating
   // total compilation time.
   *validated = true;
   SuccessfulValidation(parser, time);
-  return NoExceptionPending(cx);
+  return NoExceptionPending(fc);
 }
 
-bool js::CompileAsmJS(JSContext* cx, ParserAtomsTable& parserAtoms,
+bool js::CompileAsmJS(FrontendContext* fc, ParserAtomsTable& parserAtoms,
                       AsmJSParser<char16_t>& parser, ParseNode* stmtList,
                       bool* validated) {
-  return DoCompileAsmJS(cx, parserAtoms, parser, stmtList, validated);
+  return DoCompileAsmJS(fc, parserAtoms, parser, stmtList, validated);
 }
 
-bool js::CompileAsmJS(JSContext* cx, ParserAtomsTable& parserAtoms,
+bool js::CompileAsmJS(FrontendContext* fc, ParserAtomsTable& parserAtoms,
                       AsmJSParser<Utf8Unit>& parser, ParseNode* stmtList,
                       bool* validated) {
-  return DoCompileAsmJS(cx, parserAtoms, parser, stmtList, validated);
+  return DoCompileAsmJS(fc, parserAtoms, parser, stmtList, validated);
 }
 
 /*****************************************************************************/
@@ -7350,8 +7377,8 @@ bool js::IsValidAsmJSHeapLength(size_t length) {
     return false;
   }
 
-  // The heap length is limited by what wasm can handle.
-  if (length > MaxMemoryBytes()) {
+  // The heap length is limited by what a wasm memory32 can handle.
+  if (length > MaxMemoryBytes(IndexType::I32)) {
     return false;
   }
 

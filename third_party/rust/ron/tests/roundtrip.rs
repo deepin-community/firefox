@@ -69,8 +69,8 @@ fn roundtrip_pretty() {
     };
 
     let pretty = ron::ser::PrettyConfig::new()
-        .with_enumerate_arrays(true)
-        .with_extensions(Extensions::IMPLICIT_SOME);
+        .enumerate_arrays(true)
+        .extensions(Extensions::IMPLICIT_SOME);
     let serial = ron::ser::to_string_pretty(&value, pretty).unwrap();
 
     println!("Serialized: {}", serial);
@@ -82,7 +82,7 @@ fn roundtrip_pretty() {
 
 #[test]
 fn roundtrip_sep_tuple_members() {
-    #[derive(Debug, Deserialize, PartialEq, Serialize)]
+    #[derive(Debug, Deserialize, PartialEq, Eq, Serialize)]
     pub enum FileOrMem {
         File(String),
         Memory,
@@ -110,7 +110,7 @@ fn roundtrip_sep_tuple_members() {
 
     let value = Both { a, b };
 
-    let pretty = ron::ser::PrettyConfig::new().with_separate_tuple_members(true);
+    let pretty = ron::ser::PrettyConfig::new().separate_tuple_members(true);
     let serial = ron::ser::to_string_pretty(&value, pretty).unwrap();
 
     println!("Serialized: {}", serial);

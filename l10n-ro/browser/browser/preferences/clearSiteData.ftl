@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Șterge datele
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Ștergerea tuturor cookie-urilor și a datelor de site-uri stocate de { -brand-short-name } te poate deconecta de pe site-urile web și va elimina conținutul web offline. Ștergerea datelor din cache nu va afecta datele de autentificare.
 

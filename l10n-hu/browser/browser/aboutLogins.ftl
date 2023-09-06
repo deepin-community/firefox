@@ -5,12 +5,12 @@
 
 about-logins-page-title = Bejelentkezések és jelszavak
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Bejelentkezések keresése
+    .key = F
 
-create-login-button = Új bejelentkezés létrehozása
+create-new-login-button =
+    .title = Új bejelentkezés létrehozása
 
 fxaccounts-sign-in-text = Érje el jelszavait a többi eszközén is
 fxaccounts-sign-in-sync-button = Bejelentkezés a szinkronizáláshoz
@@ -37,10 +37,20 @@ about-logins-menu-menuitem-help = Súgó
 
 login-list =
     .aria-label = A keresésnek megfelelő bejelentkezések
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } bejelentkezés
        *[other] { $count } bejelentkezés
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } / { $total } bejelentkezés
+       *[other] { $count } / { $total } bejelentkezés
     }
 login-list-sort-label-text = Rendezés:
 login-list-name-option = Név (A-Z)
@@ -61,7 +71,6 @@ about-logins-list-item-breach-icon =
     .title = Adatsértésben érintett weboldal
 about-logins-list-item-vulnerable-password-icon =
     .title = Sebezhető jelszó
-
 about-logins-list-section-breach = Adatsértésben érintett weboldalak
 about-logins-list-section-vulnerable = Sebezhető jelszavak
 about-logins-list-section-nothing = Nincs riasztás
@@ -76,8 +85,8 @@ about-logins-login-intro-heading-logged-in = Nem található szinkronizált beje
 login-intro-description = Ha egy másik eszközön mentette a bejelentkezéseit a { -brand-product-name }ban, akkor így érheti el őket itt:
 login-intro-instructions-fxa = Hozzon létre egyet, vagy jelentkezzen be a { -fxaccount-brand-name }jába azon az eszközön, amelyen a bejelentkezéseit menti
 login-intro-instructions-fxa-settings = Válassza a Beállítások > Szinkronizálás > Szinkronizálás bekapcsolása… lehetőséget. Jelölje be a Bejelentkezések és jelszavak jelölőnégyzetet.
-login-intro-instructions-fxa-help = További segítéségért keresse fel a <a data-l10n-name="help-link">{ -lockwise-brand-short-name } támogatást</a>.
-about-logins-intro-import = Ha bejelentkezéseit egy másik böngészőben mentette el, <a data-l10n-name="import-link">importálhatja azokat a { -lockwise-brand-short-name }-ba</a>
+login-intro-instructions-fxa-passwords-help = További segítségért keresse fel a <a data-l10n-name="passwords-help-link">jelszavak támogatását</a>.
+about-logins-intro-browser-only-import = Ha bejelentkezéseit egy másik böngészőben mentette el, <a data-l10n-name="import-link">importálhatja azokat a { -brand-product-name }ba</a>
 about-logins-intro-import2 = Ha a bejelentkezéseit a { -brand-product-name }on kívül mentette, akkor <a data-l10n-name="import-browser-link">importálhatja őket egy másik böngészőből</a> vagy <a data-l10n-name="import-file-link">egy fájlból</a>
 
 ## Login
@@ -102,9 +111,17 @@ login-item-copied-password-button-text = Másolva!
 login-item-save-changes-button = Változások mentése
 login-item-save-new-button = Mentés
 login-item-cancel-button = Mégse
-login-item-time-changed = Legutóbb módosítva: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Létrehozva: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Legutóbb használva: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Létrehozva
+login-item-timeline-action-updated = Frissítve
+login-item-timeline-action-used = Használva
 
 ## OS Authentication dialog
 
@@ -132,8 +149,6 @@ about-logins-copy-password-os-auth-dialog-message-win = A jelszava másolásáho
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = másolja a mentett jelszót
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = A bejelentkezés exportálásához írja be a Windows bejelentkezési adatait. Ez elősegíti a fiókja biztonságának védelmét.
 # This message can be seen when attempting to export a password in about:logins
@@ -147,8 +162,6 @@ master-password-reload-button =
     .label = Bejelentkezés
     .accesskey = B
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Mégse
@@ -158,6 +171,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Eltávolítja ezt a bejelentkezést?
 confirm-delete-dialog-message = Ez a művelet nem vonható vissza.
 about-logins-confirm-remove-dialog-confirm-button = Eltávolítás
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -197,6 +213,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Ez eltávolítja az összes, a { -brand-short-name }ba mentett bejelentkezést, az összes, a { -fxaccount-brand-name }jával szinkronizált eszközéről. Ez eltávolítja az itt megjelenő figyelmeztetéseket is. Ez a művelet nem vonható vissza.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Bejelentkezések és jelszavak exportálása
 about-logins-confirm-export-dialog-message = A jelszavai olvasható szövegként lesznek mentve (például R0sszJel$zó), így bárki megtekintheti, aki meg tudja nyitni az exportált fájlt.
 about-logins-confirm-export-dialog-confirm-button = Exportálás…
@@ -216,7 +234,6 @@ about-logins-breach-alert-date = Ez az adatsértés ekkor történt: { DATETIME(
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Ugrás ide: { $hostname }
-about-logins-breach-alert-learn-more-link = További tudnivalók
 
 ## Vulnerable Password notification
 

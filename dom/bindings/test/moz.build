@@ -12,19 +12,19 @@ DEFINES["MOZILLA_INTERNAL_API"] = True
 
 Library("dombindings_test_s")
 
-EXTRA_COMPONENTS += [
-    "TestInterfaceJS.js",
-    "TestInterfaceJS.manifest",
-]
-
 MOCHITEST_MANIFESTS += ["mochitest.ini"]
 
 MOCHITEST_CHROME_MANIFESTS += ["chrome.ini"]
 
 TEST_WEBIDL_FILES += [
+    "TestCallback.webidl",
     "TestDictionary.webidl",
     "TestJSImplInheritanceGen.webidl",
     "TestTypedef.webidl",
+]
+
+TESTING_JS_MODULES += [
+    "TestInterfaceJS.sys.mjs",
 ]
 
 PREPROCESSED_TEST_WEBIDL_FILES += [
@@ -53,9 +53,6 @@ LOCAL_INCLUDES += [
 ]
 
 include("/ipc/chromium/chromium-config.mozbuild")
-
-if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-    CXXFLAGS += ["-Wno-error=shadow"]
 
 if CONFIG["MOZ_DEBUG"]:
     XPIDL_SOURCES += [

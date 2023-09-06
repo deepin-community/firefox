@@ -9,12 +9,17 @@
 /*
  * Set the default browser by writing the UserChoice registry keys.
  *
- * This sets the associations for https, http, .html, and .htm.
+ * This sets the associations for https, http, .html, and .htm, and
+ * optionally for additional extra file extensions.
  *
  * When the agent is run with set-default-browser-user-choice,
  * the exit code is the result of this function.
  *
  * @param aAumi The AUMI of the installation to set as default.
+ *
+ * @param aExtraFileExtensions Optional null-terminated list of extra file
+ * association pairs to set as default, like `{ L".pdf", "FirefoxPDF", nullptr
+ * }`.
  *
  * @return S_OK             All associations set and checked successfully.
  *         MOZ_E_NO_PROGID  The ProgID classes had not been registered.
@@ -26,7 +31,25 @@
  *                          so do not attempt to update the UserChoice hash.
  *         E_FAIL           other failure
  */
-HRESULT SetDefaultBrowserUserChoice(const wchar_t* aAumi);
+HRESULT SetDefaultBrowserUserChoice(
+    const wchar_t* aAumi, const wchar_t* const* aExtraFileExtensions = nullptr);
+
+/*
+ * Set the default extension handlers for the given file extensions by writing
+ * the UserChoice registry keys.
+ *
+ * @param aAumi The AUMI of the installation to set as default.
+ *
+ * @param aFileExtensions Optional null-terminated list of file association
+ * pairs to set as default, like `{ L".pdf", "FirefoxPDF", nullptr }`.
+ *
+ * @returns S_OK           All associations set and checked successfully.
+ *          MOZ_E_REJECTED UserChoice was set, but checking the default did not
+ *                         return our ProgID.
+ *          E_FAIL         Failed to set at least one association.
+ */
+HRESULT SetDefaultExtensionHandlersUserChoice(
+    const wchar_t* aAumi, const wchar_t* const* aFileExtensions = nullptr);
 
 /*
  * Additional HRESULT error codes from SetDefaultBrowserUserChoice

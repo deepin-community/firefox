@@ -3,12 +3,11 @@
 
 // There are shutdown issues for which multiple rejections are left uncaught.
 // See bug 1018184 for resolving these issues.
-const { PromiseTestUtils } = ChromeUtils.import(
-  "resource://testing-common/PromiseTestUtils.jsm"
+const { PromiseTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/PromiseTestUtils.sys.mjs"
 );
 PromiseTestUtils.allowMatchingRejectionsGlobally(/File closed/);
 
-/* import-globals-from ../../../inspector/test/shared-head.js */
 Services.scriptloader.loadSubScript(
   "chrome://mochitests/content/browser/devtools/client/inspector/test/shared-head.js",
   this
@@ -23,10 +22,9 @@ requestLongerTimeout(4);
  * Pass --enable-fission to ./mach test to enable fission when running this
  * test locally.
  */
-add_task(async function() {
-  const ToolboxTask = await initBrowserToolboxTask({
-    enableBrowserToolboxFission: true,
-  });
+add_task(async function () {
+  await pushPref("devtools.browsertoolbox.scope", "everything");
+  const ToolboxTask = await initBrowserToolboxTask();
   await ToolboxTask.importFunctions({
     getNodeFront,
     getNodeFrontInFrames,
@@ -36,7 +34,7 @@ add_task(async function() {
   });
 
   const tab = await addTab(
-    `http://example.com/browser/devtools/client/framework/browser-toolbox/test/doc_browser_toolbox_fission_contentframe_inspector_page.html`
+    `https://example.com/browser/devtools/client/framework/browser-toolbox/test/doc_browser_toolbox_fission_contentframe_inspector_page.html`
   );
 
   // Set a custom attribute on the tab's browser, in order to easily select it in the markup view

@@ -101,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Report a Braken Site
 protections-panel-content-blocking-breakage-report-view-description = Blockin certain trackers can cause problems wi some wabsites. Reportin thon problems helps mak { -brand-short-name } better for awbodie. Sendin this report will send a URL and information aboot yer stravaiger settins tae Mozilla. <label data-l10n-name="learn-more">Lairn mair</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Blockin certain trackers can cause problems wi some wabsites. Reportin thon problems helps mak { -brand-short-name } better for awbodie. Sendin this report will send a URL and information aboot yer stravaiger settins tae { -vendor-short-name }.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -111,3 +112,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Stap
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Send Report
+
+# Cookie Banner Handling
+

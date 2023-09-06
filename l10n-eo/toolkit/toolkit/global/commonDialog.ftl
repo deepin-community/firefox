@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Nomo de uzanto
 common-dialog-password =
     .value = Pasvorto
+
+common-dialog-copy-cmd =
+    .label = Kopii
+    .accesskey = K
+common-dialog-select-all-cmd =
+    .label = Elekti ĉion
+    .accesskey = E

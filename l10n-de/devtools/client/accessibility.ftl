@@ -13,6 +13,26 @@ accessibility-keyboard-header = Tastatur
 
 ## Text entries that are used as text alternative for icons that depict accessibility isses.
 
+
+## These strings are used in the overlay displayed when running an audit in the accessibility panel
+
+accessibility-progress-initializing = Wird gestartet…
+    .aria-valuetext = Wird gestartet…
+
+# This string is displayed in the audit progress bar in the accessibility panel.
+# Variables:
+#   $nodeCount (Integer) - The number of nodes for which the audit was run so far.
+accessibility-progress-progressbar =
+    { $nodeCount ->
+        [one] { $nodeCount } Knoten wird überprüft
+       *[other] { $nodeCount } Knoten werden überprüft
+    }
+
+accessibility-progress-finishing = Wird abgeschlossen…
+    .aria-valuetext = Wird abgeschlossen…
+
+## Text entries that are used as text alternative for icons that depict accessibility issues.
+
 accessibility-warning =
     .alt = Warnung
 

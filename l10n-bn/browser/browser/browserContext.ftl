@@ -84,6 +84,7 @@ toolbar-button-stop-reload =
 
 ## Firefox Account Button
 
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -91,30 +92,6 @@ main-context-menu-page-save =
     .accesskey = P
 
 ## Simple menu items
-
-main-context-menu-bookmark-add =
-    .aria-label = এই পাতা বুকমার্ক করুন
-    .accesskey = m
-    .tooltiptext = পাতাটি বুকমার্ক করুন
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = এই পাতা বুকমার্ক করুন
-    .accesskey = m
-    .tooltiptext = পাতাটি বুকমার্ক করুন ({ $shortcut })
-
-main-context-menu-bookmark-change =
-    .aria-label = বুকমার্ক সম্পাদনা
-    .accesskey = m
-    .tooltiptext = এই বুকমার্কটি সম্পাদনা
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = বুকমার্ক সম্পাদনা
-    .accesskey = m
-    .tooltiptext = এই বুকমার্কটি সম্পাদনা ({ $shortcut })
 
 main-context-menu-open-link =
     .label = লিঙ্ক খুলুন O
@@ -143,11 +120,6 @@ main-context-menu-save-link =
 main-context-menu-save-link-to-pocket =
     .label = { -pocket-brand-name } এ লিঙ্ক সংরক্ষণ করুন
     .accesskey = o
-
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
 
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
@@ -246,14 +218,6 @@ main-context-menu-audio-email =
     .label = A অডিও ইমেইল করুন...
     .accesskey = A
 
-main-context-menu-plugin-play =
-    .label = এই প্লাগইনটি সচল করুন
-    .accesskey = c
-
-main-context-menu-plugin-hide =
-    .label = প্লাগইনটি আড়াল করুন
-    .accesskey = H
-
 main-context-menu-save-to-pocket =
     .label = { -pocket-brand-name } এ পাতাটি সংরক্ষণ করুন
     .accesskey = k
@@ -297,10 +261,6 @@ main-context-menu-frame-reload =
     .label = ফ্রেম পুনরায় লোড করা হবে
     .accesskey = R
 
-main-context-menu-frame-bookmark =
-    .label = এই ফ্রেম বুকমার্ক করা হবে
-    .accesskey = m
-
 main-context-menu-frame-save-as =
     .label = ফ্রেম নতুনভাবে সংরক্ষণ…
     .accesskey = F
@@ -310,7 +270,7 @@ main-context-menu-frame-print =
     .accesskey = P
 
 main-context-menu-frame-view-source =
-    .label = ফ্রেমের সোর্স প্রদর্শন
+    .label = ফ্রেমের উৎস দেখুন
     .accesskey = V
 
 main-context-menu-frame-view-info =
@@ -318,11 +278,11 @@ main-context-menu-frame-view-info =
     .accesskey = I
 
 main-context-menu-view-selection-source =
-    .label = নির্বাচিত অংশের সোর্স প্রদর্শন
+    .label = নির্বাচিত অংশের উৎস দেখুন
     .accesskey = e
 
 main-context-menu-view-page-source =
-    .label = পাতার সোর্স প্রদর্শন
+    .label = পাতার উৎস দেখুন
     .accesskey = V
 
 main-context-menu-bidi-switch-text =

@@ -1,57 +1,19 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-"use strict";
-
-var { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
-);
-
-XPCOMUtils.defineLazyModuleGetters(this, {
-  clearTimeout: "resource://gre/modules/Timer.jsm",
-  ExtensionCommon: "resource://gre/modules/ExtensionCommon.jsm",
-  setTimeout: "resource://gre/modules/Timer.jsm",
-});
 
 /* eslint-env mozilla/frame-script */
 
+"use strict";
+
+ChromeUtils.defineESModuleGetters(this, {
+  ExtensionCommon: "resource://gre/modules/ExtensionCommon.sys.mjs",
+  clearTimeout: "resource://gre/modules/Timer.sys.mjs",
+  setTimeout: "resource://gre/modules/Timer.sys.mjs",
+});
+
 // Minimum time between two resizes.
 const RESIZE_TIMEOUT = 100;
-
-/**
- * Check if the provided color is fully opaque.
- *
- * @param   {string} color
- *          Any valid CSS color.
- * @returns {boolean} true if the color is opaque.
- */
-const isOpaque = function(color) {
-  try {
-    if (/(rgba|hsla)/i.test(color)) {
-      // Match .123456, 123.456, 123456 with an optional % sign.
-      let numberRe = /(\.\d+|\d+\.?\d*)%?/g;
-      // hsla/rgba, opacity is the last number in the color string (can be a percentage).
-      let opacity = color.match(numberRe)[3];
-
-      // Convert to [0, 1] space if the opacity was expressed as a percentage.
-      if (opacity.includes("%")) {
-        opacity = opacity.slice(0, -1);
-        opacity = opacity / 100;
-      }
-
-      return opacity * 1 >= 1;
-    } else if (/^#[a-f0-9]{4}$/i.test(color)) {
-      // Hex color with 4 characters, opacity is one if last character is F
-      return color.toUpperCase().endsWith("F");
-    } else if (/^#[a-f0-9]{8}$/i.test(color)) {
-      // Hex color with 8 characters, opacity is one if last 2 characters are FF
-      return color.toUpperCase().endsWith("FF");
-    }
-  } catch (e) {
-    // Invalid color.
-  }
-  return true;
-};
 
 const BrowserListener = {
   init({
@@ -78,9 +40,6 @@ const BrowserListener = {
     if (allowScriptsToClose) {
       content.windowUtils.allowScriptsToClose();
     }
-
-    // Force external links to open in tabs.
-    docShell.isAppTab = true;
 
     if (this.blockParser) {
       this.blockingPromise = new Promise(resolve => {
@@ -136,7 +95,12 @@ const BrowserListener = {
     switch (event.type) {
       case "DOMDocElementInserted":
         if (this.blockingPromise) {
-          event.target.blockParsing(this.blockingPromise);
+          const doc = event.target;
+          const policy = doc?.nodePrincipal?.addonPolicy;
+          event.target.blockParsing(this.blockingPromise).then(() => {
+            policy?.weakExtension?.get()?.untrackBlockedParsingDocument(doc);
+          });
+          policy?.weakExtension?.get()?.trackBlockedParsingDocument(doc);
         }
         break;
 
@@ -277,33 +241,25 @@ const BrowserListener = {
 
       result = { height, detail };
     } else {
-      let background = doc.defaultView.getComputedStyle(body).backgroundColor;
-      if (!isOpaque(background)) {
-        // Ignore non-opaque backgrounds.
-        background = null;
-      }
-
-      if (background === null || background !== this.oldBackground) {
+      let background = content.windowUtils.canvasBackgroundColor;
+      if (background !== this.oldBackground) {
         sendAsyncMessage("Extension:BrowserBackgroundChanged", { background });
       }
       this.oldBackground = background;
 
       // Adjust the size of the browser based on its content's preferred size.
-      let { contentViewer } = docShell;
-      let ratio = content.devicePixelRatio;
-
       let w = {},
         h = {};
-      contentViewer.getContentSizeConstrained(
-        this.maxWidth * ratio,
-        this.maxHeight * ratio,
+      docShell.contentViewer.getContentSize(
+        this.maxWidth,
+        this.maxHeight,
+        /* prefWidth = */ 0,
         w,
         h
       );
 
-      let width = Math.ceil((w.value * zoom) / ratio);
-      let height = Math.ceil((h.value * zoom) / ratio);
-
+      let width = Math.ceil(w.value * zoom);
+      let height = Math.ceil(h.value * zoom);
       result = { width, height, detail };
     }
 

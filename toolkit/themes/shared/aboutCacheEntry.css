@@ -8,7 +8,6 @@ body {
 
 table {
   table-layout: fixed;
-  width: 100%;
 }
 
 th {
@@ -20,7 +19,7 @@ th {
 
 td {
   display: block;
-  font-family: -moz-fixed;
+  font-family: monospace;
   white-space: pre-wrap;
 }
 

@@ -23,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (zastarelo, poskusno,
 compatibility-settings-button-label = Nastavitve
 compatibility-settings-button-title =
     .title = Nastavitve
-compatibility-feedback-button-label = Povratne informacije
-compatibility-feedback-button-title =
-    .title = Povratne informacije
 
 ## Messages used as headers in settings pane
 
@@ -45,5 +42,15 @@ compatibility-issue-occurrences =
        *[other] { $number } pojavitev
     }
 
+compatibility-no-issues-found = Ni zaznanih težav z združljivostjo.
 compatibility-close-settings-button =
     .title = Zapri nastavitve
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Težave z združljivostjo v:
+        { $browsers }

@@ -53,21 +53,16 @@ restart-later = Arvi torna Dòppo
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that their notifications permission
-# is being controlled by an extension.
-extension-controlled-web-notifications = 'Na estencion, <img data-l10n-name="icon"/> { $name }, a contròlla sta inpostaçion.
 
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = 'Na estenscion, <img data-l10n-name="icon"/> { $name }, a domanda 'n feuggi contegnitô.
-
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = 'Na estenscion <img data-l10n-name="icon"/> { $name }, a contròlla sta inpostaçion.
-
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = 'Na estenscion, <img data-l10n-name="icon"/> { $name } a contròlla comme { -brand-short-name } o se conette a l'Internet.
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -97,10 +92,6 @@ set-as-my-default-browser =
     .label = Adeuvia comme predefinio…
     .accesskey = A
 
-startup-restore-previous-session =
-    .label = Repiggia vegia sescion
-    .accesskey = s
-
 startup-restore-warn-on-quit =
     .label = Avertime quande særo o navegatô
 
@@ -116,10 +107,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Arvi colegamento into feuggio in cangio do barcon
     .accesskey = V
-
-warn-on-close-multiple-tabs =
-    .label = Avertime quande særo ciù feuggi insemme
-    .accesskey = m
 
 warn-on-open-many-tabs =
     .label = Avertime quando l'arvetua de ciù feuggi a peu fâ anâ ciù lento { -brand-short-name }
@@ -140,6 +127,10 @@ browser-containers-settings =
     .accesskey = i
 
 containers-disable-alert-title = Særa tutti i contegnitoî de feuggi?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Se ti ti dizabiliti i Contegnitoî de Feuggi òua, { $tabCount } contegnitô de feuggi saiâ seròu. T'ê seguo de dizabilitâ i Contegnitoî de Feuggi?
@@ -151,6 +142,9 @@ containers-disable-alert-ok-button =
         [one] Særa { $tabCount } Contegnitô de feuggi
        *[other] Særa { $tabCount } Contegnitoî de feuggi
     }
+
+##
+
 containers-disable-alert-cancel-button = Lascia abilitou
 
 containers-remove-alert-title = Scancelâ sto contegnitô?
@@ -166,12 +160,9 @@ containers-remove-alert-msg =
 containers-remove-ok-button = Scancella sto Contegnitô
 containers-remove-cancel-button = No scancelâ sto Contegnitô
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Lengoa e Aparensa
-
-fonts-and-colors-header = Coî e testo
 
 default-font = Caratere predefinio
     .accesskey = C
@@ -181,10 +172,6 @@ default-font-size = Dimenscion
 advanced-fonts =
     .label = Avansæ…
     .accesskey = n
-
-colors-settings =
-    .label = Coi…
-    .accesskey = C
 
 language-header = Lengoa
 
@@ -223,8 +210,7 @@ files-and-applications-title = Schedai e aplicaçioin
 
 download-header = Descaregamenti
 
-download-save-to =
-    .label = Sarva schedai in
+download-save-where = Sarva schedai in
     .accesskey = v
 
 download-choose-folder =
@@ -443,11 +429,6 @@ home-restore-defaults =
     .label = Repiggia predefinii
     .accesskey = R
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Pagina prinçipâ (Predefinia)
-
 home-mode-choice-custom =
     .label = Indirissi cliénti...
 
@@ -475,17 +456,15 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Pagina iniçiâ de Firefox
-home-prefs-content-description = Çerni i contegnui che ti veu vedde inta pagina iniçiâ de Firefox.
-
 home-prefs-search-header =
     .label = Çerca into Web
-home-prefs-topsites-header =
-    .label = I megio sciti
-home-prefs-topsites-description = I sciti che ti vixiti de ciù
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 # Variables:
 #  $provider (String): Name of the corresponding content provider, e.g "Pocket".
@@ -498,9 +477,6 @@ home-prefs-recommended-by-learn-more = Comme o fonçionn-a
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Stöie sponsorizæ
 
-home-prefs-highlights-header =
-    .label = In evidensa
-home-prefs-highlights-description = 'Na seleçion di sciti che t'ê sarvou ò vixitou
 home-prefs-highlights-option-visited-pages =
     .label = Pagine vixitæ
 home-prefs-highlights-options-bookmarks =
@@ -516,7 +492,6 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Snippet
-home-prefs-snippets-description = Agiornamenti da { -vendor-short-name } e { -brand-product-name }
 
 home-prefs-sections-rows-option =
     .label =
@@ -542,6 +517,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Fanni vedde conseggi de riçerca tra i rizoltæ da bara di indirissi
     .accesskey = l
+
 
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
@@ -588,10 +564,11 @@ containers-add-button =
 containers-remove-button =
     .label = Scancella
 
-## Sync Section - Signed out
-
-
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = A teu Ræ, de longo con ti
@@ -606,10 +583,10 @@ sync-signedout-caption = A teu Ræ, de longo con ti
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Descarega Firefox pe <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> ò <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a> pe scincronizate con i dispoxitivi mòbili.
 
-## Sync Section - Signed in
-
-
 ## Firefox Account - Signed in
+
+
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = Cangia l’inmagine do profî
@@ -617,8 +594,13 @@ sync-profile-picture =
 sync-manage-account = Gestisci conto
     .accesskey = o
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } no l'é verificou.
 sync-signedin-login-failure = Acedi pe ativâ torna a conescion { $email }
+
+##
 
 sync-resend-verification =
     .label = Manda torna verifica
@@ -686,12 +668,19 @@ sync-device-name-save =
 
 sync-connect-another-device = Conetti atro dispoxitivo
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Verifica mandâ
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Un colegamento de verifica o l'é stæto mandou a { $email }.
+sync-verification-not-sent-title = No se peu mandâ a verifica
+sync-verification-not-sent-body = Òua no ariescimmo a mandâ 'na email de verifica, pe piaxei preuva torna dòppo.
+
 ## Privacy Section
 
 privacy-header = Privacy do navegatô
-
-## Privacy Section - Forms
-
 
 ## Privacy Section - Logins and Passwords
 
@@ -796,8 +785,6 @@ sitedata-block-desc = Tipo de contegnuo blocòu
 
 sitedata-option-block-unvisited =
     .label = Cookie de sciti no vixitæ
-sitedata-option-block-all-third-party =
-    .label = Tutti i cookie de terse parte (quarche scito o porieiva no fonçionâ ben)
 sitedata-option-block-all =
     .label = Tutti i cookie (quarche scito no fonçioniâ ben)
 
@@ -808,6 +795,9 @@ sitedata-clear =
 sitedata-settings =
     .label = Gestisci dæti…
     .accesskey = G
+
+## Privacy Section - Cookie Banner Handling
+
 
 ## Privacy Section - Address Bar
 
@@ -850,7 +840,8 @@ enhanced-tracking-protection-setting-custom =
 ##
 
 content-blocking-all-cookies = Tutti i cookie
-content-blocking-all-third-party-cookies = Tutti i cookie de terse parte
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
 content-blocking-warning-title = Stanni atento!
 
@@ -927,10 +918,6 @@ permissions-block-popups =
     .label = Blòcca i barcoin de pop-up
     .accesskey = B
 
-permissions-block-popups-exceptions =
-    .label = Eceçioin…
-    .accesskey = E
-
 permissions-addon-install-warning =
     .label = Avizime quande 'n scito o preuva a instalâ conponenti azonti
     .accesskey = A
@@ -1001,13 +988,12 @@ certs-devices =
 
 ## Privacy Section - HTTPS-Only
 
+
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Desktop
 downloads-folder-name = Descaregamenti
 choose-download-folder-title = Çerni a cartella de descaregamento:
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Sarva i schedai in { $service-name }

@@ -79,7 +79,7 @@ class AsyncScriptCompiler final : public nsIIncrementalStreamLoaderObserver,
   RefPtr<Promise> mPromise;
   nsString mCharset;
   JS::OffThreadToken* mToken;
-  UniqueTwoByteChars mScriptText;
+  UniquePtr<Utf8Unit[], JS::FreePolicy> mScriptText;
   size_t mScriptLength;
 };
 
@@ -136,7 +136,7 @@ static void OffThreadScriptLoaderCallback(JS::OffThreadToken* aToken,
 }
 
 bool AsyncScriptCompiler::StartCompile(JSContext* aCx) {
-  JS::SourceText<char16_t> srcBuf;
+  JS::SourceText<Utf8Unit> srcBuf;
   if (!srcBuf.init(aCx, std::move(mScriptText), mScriptLength)) {
     return false;
   }
@@ -169,7 +169,7 @@ AsyncScriptCompiler::Run() {
     FinishCompile(jsapi.cx());
   } else {
     jsapi.Init();
-    JS::CancelOffThreadCompileToStencil(jsapi.cx(), mToken);
+    JS::CancelOffThreadToken(jsapi.cx(), mToken);
 
     mPromise->MaybeReject(NS_ERROR_FAILURE);
   }
@@ -178,8 +178,7 @@ AsyncScriptCompiler::Run() {
 }
 
 void AsyncScriptCompiler::FinishCompile(JSContext* aCx) {
-  RefPtr<JS::Stencil> stencil =
-      JS::FinishOffThreadCompileToStencil(aCx, mToken);
+  RefPtr<JS::Stencil> stencil = JS::FinishOffThreadStencil(aCx, mToken);
   if (stencil) {
     Finish(aCx, stencil);
   } else {
@@ -242,7 +241,7 @@ AsyncScriptCompiler::OnStreamComplete(nsIIncrementalStreamLoader* aLoader,
     return NS_OK;
   }
 
-  nsresult rv = ScriptLoader::ConvertToUTF16(
+  nsresult rv = ScriptLoader::ConvertToUTF8(
       nullptr, aBuf, aLength, mCharset, nullptr, mScriptText, mScriptLength);
   if (NS_FAILED(rv)) {
     Reject(cx, "Unable to decode script");
@@ -289,36 +288,49 @@ PrecompiledScript::PrecompiledScript(nsISupports* aParent,
                                      JS::ReadOnlyCompileOptions& aOptions)
     : mParent(aParent),
       mStencil(aStencil),
-      mURL(aOptions.filename()),
-      mHasReturnValue(!aOptions.noScriptRval),
-      mLazilyParse(!aOptions.forceFullParse()) {
+      mURL(aOptions.filename().c_str()),
+      mHasReturnValue(!aOptions.noScriptRval) {
   MOZ_ASSERT(aParent);
   MOZ_ASSERT(aStencil);
+#ifdef DEBUG
+  JS::InstantiateOptions options(aOptions);
+  options.assertDefault();
+#endif
 };
 
 void PrecompiledScript::ExecuteInGlobal(JSContext* aCx, HandleObject aGlobal,
+                                        const ExecuteInGlobalOptions& aOptions,
                                         MutableHandleValue aRval,
                                         ErrorResult& aRv) {
   {
     RootedObject targetObj(aCx, JS_FindCompilationScope(aCx, aGlobal));
-    JSAutoRealm ar(aCx, targetObj);
+    // Use AutoEntryScript for its ReportException method call.
+    // This will ensure notified any exception happening in the content script
+    // directly to the console, so that exceptions are flagged with the right
+    // innerWindowID. It helps these exceptions to appear in the page's web
+    // console.
+    AutoEntryScript aes(targetObj, "pre-compiled-script execution");
+    JSContext* cx = aes.cx();
 
-    CompileOptions options(aCx);
-    if (!mLazilyParse) {
-      // See AsyncScriptCompiler::Start.
-      options.setForceFullParse();
-    }
-    // mHasReturnValue (noScriptRval) is unused during instantiation.
-
+    // See assertion in constructor.
+    JS::InstantiateOptions options;
     Rooted<JSScript*> script(
-        aCx, JS::InstantiateGlobalStencil(aCx, options, mStencil));
+        cx, JS::InstantiateGlobalStencil(cx, options, mStencil));
     if (!script) {
       aRv.NoteJSContextException(aCx);
       return;
     }
 
-    if (!JS_ExecuteScript(aCx, script, aRval)) {
-      aRv.NoteJSContextException(aCx);
+    if (!JS_ExecuteScript(cx, script, aRval)) {
+      JS::RootedValue exn(cx);
+      if (aOptions.mReportExceptions) {
+        // Note that ReportException will consume the exception.
+        aes.ReportException();
+      } else {
+        // Set the exception on our caller's cx.
+        aRv.MightThrowJSException();
+        aRv.StealExceptionFromJSContext(cx);
+      }
       return;
     }
   }

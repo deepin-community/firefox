@@ -6,9 +6,16 @@ addons-page-title = Tilläggshanterare
 search-header =
     .placeholder = Sök på addons.mozilla.org
     .searchbuttonlabel = Sök
-search-header-shortcut =
-    .key = f
-list-empty-get-extensions-message = Hämta tillägg och teman på <<a data-l10n-name="get-extensions">{ $domain }</a>
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+list-empty-get-extensions-message = Hämta tillägg och teman på <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Hämta ordböcker på <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Hämta språkpaket på <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Du har inga tillägg av den här typen installerade
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Version
 detail-last-updated =
     .label = Senast uppdaterad
+addon-detail-description-expand = Visa mer
+addon-detail-description-collapse = Visa mindre
 detail-contributions-description = Skaparen av det här tillägget ber dig om ett litet bidrag för att stödja den fortsatta utvecklingen.
 detail-contributions-button = Bidra
     .title = Bidra till utvecklingen av detta tillägg
@@ -53,7 +62,7 @@ detail-private-browsing-label = Kör i privata fönster
 # Some add-ons may elect to not run in private windows by setting incognito: not_allowed in the manifest.  This
 # cannot be overridden by the user.
 detail-private-disallowed-label = Ej tillåtet i privata fönster
-detail-private-disallowed-description2 = Tillägget körs inte när du surfar privat. <<a data-l10n-name="learn-more">Läs mer</a>
+detail-private-disallowed-description2 = Tillägget körs inte när du surfar privat. <a data-l10n-name="learn-more">Läs mer</a>
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
 detail-private-required-label = Kräver åtkomst till privata fönster
 detail-private-required-description2 = Detta tillägg har tillgång till dina onlineaktiviteter när du surfar privat. <a data-l10n-name="learn-more">Läs mer</a>
@@ -130,16 +139,33 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Senaste uppdateringar
 addon-category-recent-updates-title =
     .title = Senaste uppdateringar
+addon-category-sitepermission = Webbplatsbehörigheter
+addon-category-sitepermission-title =
+    .title = Webbplatsbehörigheter
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Webbplatsbehörigheter för { $host }
 
 ## These are global warnings
 
 extensions-warning-safe-mode = Alla tillägg är inaktiverade i felsäkert läge.
 extensions-warning-check-compatibility = Kompatibilitetskontroll av tillägg är inaktiverat. Du kan ha inkompatibla tillägg.
+extensions-warning-safe-mode2 =
+    .message = Alla tillägg är inaktiverade i felsäkert läge.
+extensions-warning-check-compatibility2 =
+    .message = Kompatibilitetskontroll av tillägg är inaktiverat. Du kan ha inkompatibla tillägg.
 extensions-warning-check-compatibility-button = Aktivera
     .title = Aktiverar kompatibilitetskontroll av tillägg
 extensions-warning-update-security = Säkerhetskontroll av tilläggsuppdateringar är inaktiverad. Du är sårbar för skadliga uppdateringar.
+extensions-warning-update-security2 =
+    .message = Säkerhetskontroll av tilläggsuppdateringar är inaktiverad. Du är sårbar för skadliga uppdateringar.
 extensions-warning-update-security-button = Aktivera
     .title = Aktiverar säkerhetskontroll av tilläggsuppdateringar
+extensions-warning-imported-addons = Slutför installationen av tillägg som importerades till { -brand-short-name }.
+extensions-warning-imported-addons2 =
+    .message = Slutför installationen av tillägg som importerades till { -brand-short-name }.
+extensions-warning-imported-addons-button = Installera tillägg
 
 ## Strings connected to add-on updates
 
@@ -204,10 +230,17 @@ shortcuts-duplicate = Dubblett av genväg
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = { $shortcut } används som genväg i mer än ett fall. Dubbletter av genvägar kan ge oväntade effekter.
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = { $shortcut } används som genväg i mer än ett fall. Dubbletter av genvägar kan ge oväntade effekter.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Används redan av { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Visa { $numberToShow } mer
@@ -232,6 +265,11 @@ discopane-intro =
 discopane-notice-recommendations =
     Några av dessa rekommendationer är personliga. De är baserade på andra
     tillägg som du har installerat, profilinställningar och användarstatistik.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message =
+        Några av dessa rekommendationer är personliga. De är baserade på andra
+        tillägg som du har installerat, profilinställningar och användarstatistik.
 discopane-notice-learn-more = Lär dig mer
 privacy-policy = Sekretesspolicy
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -277,15 +315,15 @@ permissions-addon-button = Behörigheter
 extension-enabled-heading = Aktiverad
 extension-disabled-heading = Inaktiverad
 theme-enabled-heading = Aktiverad
-theme-disabled-heading = Inaktiverad
-theme-monochromatic-heading = Colorways
-theme-monochromatic-subheading = Levande nya colorways från { -brand-product-name }. Tillgängliga under en begränsad tid.
+theme-disabled-heading2 = Sparade teman
 plugin-enabled-heading = Aktiverad
 plugin-disabled-heading = Inaktiverad
 dictionary-enabled-heading = Aktiverad
 dictionary-disabled-heading = Inaktiverad
 locale-enabled-heading = Aktiverad
 locale-disabled-heading = Inaktiverad
+sitepermission-enabled-heading = Aktiverad
+sitepermission-disabled-heading = Inaktiverad
 always-activate-button = Aktivera alltid
 never-activate-button = Aktivera aldrig
 addon-detail-author-label = Utvecklare
@@ -295,6 +333,9 @@ addon-detail-homepage-label = Startsida
 addon-detail-rating-label = Betyg
 # Message for add-ons with a staged pending update.
 install-postponed-message = Detta tillägg kommer att uppdateras när { -brand-short-name } startar om.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Detta tillägg kommer att uppdateras när { -brand-short-name } startar om.
 install-postponed-button = Uppdatera nu
 # The average rating that the add-on has received.
 # Variables:
@@ -326,6 +367,10 @@ addon-detail-updates-radio-on = På
 addon-detail-updates-radio-off = Av
 addon-detail-update-check-label = Sök efter uppdateringar
 install-update-button = Uppdatera
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -334,6 +379,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = När det är tillåtet kommer tillägget att ha tillgång till dina onlineaktiviteter under privat surfning. <a data-l10n-name="learn-more">Läs mer</a>
 addon-detail-private-browsing-allow = Tillåt
 addon-detail-private-browsing-disallow = Tillåt inte
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Kör på webbplatser med begränsningar
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = När det är tillåtet kommer tillägget att ha åtkomst till webbplatser som begränsas av { -vendor-short-name }. Tillåt endast om du litar på det här tillägget.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Tillåt
+addon-detail-quarantined-domains-disallow = Tillåt inte
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -362,6 +425,9 @@ addon-permissions-optional = Valfria behörigheter för extra funktionalitet:
 addon-permissions-learnmore = Läs mer om behörigheter
 recommended-extensions-heading = Rekommenderade tillägg
 recommended-themes-heading = Rekommenderade teman
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Ger följande funktioner till <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Känner du dig kreativ? <a data-l10n-name="link">Skapa ditt egna tema med Firefox Color.</a>
@@ -374,6 +440,7 @@ plugin-heading = Hantera dina insticksmoduler
 dictionary-heading = Hantera dina ordlistor
 locale-heading = Hantera dina språk
 updates-heading = Hantera dina uppdateringar
+sitepermission-heading = Hantera dina webbplatsbehörigheter
 discover-heading = Anpassa { -brand-short-name }
 shortcuts-heading = Hantera genvägar för tillägg
 default-heading-search-label = Hitta fler tillägg
@@ -381,3 +448,35 @@ addons-heading-search-input =
     .placeholder = Sök på addons.mozilla.org
 addon-page-options-button =
     .title = Verktyg för alla tillägg
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } är inkompatibelt med { -brand-short-name } { $version }.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = { $name } är inkompatibelt med { -brand-short-name } { $version }.
+details-notification-incompatible-link = Mer information
+details-notification-unsigned-and-disabled = { $name } kunde inte verifieras för användning i { -brand-short-name } och har inaktiverats.
+details-notification-unsigned-and-disabled2 =
+    .message = { $name } kunde inte verifieras för användning i { -brand-short-name } och har inaktiverats.
+details-notification-unsigned-and-disabled-link = Mer information
+details-notification-unsigned = { $name } kunde inte verifieras för användning i { -brand-short-name }. Fortsätt med försiktighet.
+details-notification-unsigned2 =
+    .message = { $name } kunde inte verifieras för användning i { -brand-short-name }. Fortsätt med försiktighet.
+details-notification-unsigned-link = Mer information
+details-notification-blocked = { $name } har inaktiverats av säkerhets- eller stabilitetsskäl.
+details-notification-blocked2 =
+    .message = { $name } har inaktiverats av säkerhets- eller stabilitetsskäl.
+details-notification-blocked-link = Mer information
+details-notification-softblocked = { $name } har kända säkerhets- eller stabilitetsproblem.
+details-notification-softblocked2 =
+    .message = { $name } har kända säkerhets- eller stabilitetsproblem.
+details-notification-softblocked-link = Mer information
+details-notification-gmp-pending = { $name } kommer att installeras inom kort.
+details-notification-gmp-pending2 =
+    .message = { $name } kommer att installeras inom kort.

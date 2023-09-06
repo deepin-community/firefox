@@ -61,9 +61,6 @@ import-items-description = Esbilla qué elementos importar:
 
 import-permissions-page-title = Da-y permisos a { -brand-short-name }, por favor
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS rique esplícitamente que permitas a { -brand-short-name } acceder a los marcadores de Safari. Calca «Siguir» y esbilla'l ficheru «Bookmarks.plist» nel panel d'apertura de ficheros que va apaecer.
-
 import-migrating-page-title = Importando…
 
 import-migrating-description = Tán importándose los elementos de darréu…
@@ -78,23 +75,9 @@ import-done-description = Importáronse con ésitu los elementos de darréu:
 
 import-close-source-browser = Asegúrate que'l restolador esbilláu ta zarráu enantes de siguir, por favor.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = De { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Llista de llectura (de Safari)
 imported-edge-reading-list = Llista de llectura (d'Edge)
@@ -169,3 +152,4 @@ browser-data-session-checkbox =
     .label = Ventanes y llingüetes
 browser-data-session-label =
     .value = Ventanes y llingüetes
+

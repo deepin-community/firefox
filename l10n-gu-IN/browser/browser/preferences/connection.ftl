@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = જોડાણ સેટીંગ
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -68,13 +68,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = આ વિકલ્પ ચુપચાપ પ્રોક્સી  માટે તમને સત્તાધિકરણ કરે છે જ્યારે તમે તેઓ માટે શ્રેયને સંગ્રહેલ હોય. તમે પૂછશો જો સત્તાધિકરણ નિષ્ફળ જાય.
 
+connection-proxy-autologin-checkbox =
+    .label = સત્તાધિકરણ માટે પૂછો નહિં જો પાસવર્ડ સંગ્રહેલ હોય
+    .accesskey = i
+    .tooltiptext = આ વિકલ્પ ચુપચાપ પ્રોક્સી  માટે તમને સત્તાધિકરણ કરે છે જ્યારે તમે તેઓ માટે શ્રેયને સંગ્રહેલ હોય. તમે પૂછશો જો સત્તાધિકરણ નિષ્ફળ જાય.
+
 connection-proxy-socks-remote-dns =
     .label = પ્રોક્સી DNS ઉપયોગ કરતી વખતે SOCKS v5
     .accesskey = d
-
-connection-dns-over-https =
-    .label = HTTPS પર DNS સક્ષમ કરો
-    .accesskey = H
 
 connection-dns-over-https-url-custom =
     .label = વૈવિધ્યપૂર્ણ

@@ -5,11 +5,11 @@
 
 "use strict";
 
-const TEST_URI = `data:text/html;charset=utf8,Test autocompletion for expression variables<script>
+const TEST_URI = `data:text/html;charset=utf8,<!DOCTYPE html>Test autocompletion for expression variables<script>
     var testGlobal;
   </script>`;
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
   const { jsterm } = hud;
   const { autocompletePopup } = jsterm;

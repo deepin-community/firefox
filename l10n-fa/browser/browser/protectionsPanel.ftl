@@ -82,7 +82,7 @@ protections-panel-site-not-working-view-send-report = ارسال گزارش
 
 ##
 
-protections-panel-cross-site-tracking-cookies = این کوکی‌ها شما را از پایگاهی به پایگاه اینترنتی دیگر دنبال می‌کنند و در خصوص شما اطلاعات جمع‌آوری می‌کنند. این‌ها توسط شرکت‌های ثالث شامل شرکت‌های تبلیغاتی و تحلیلی ایجاد شده‌اند.
+protections-panel-cross-site-tracking-cookies = این کلوچک‌ها شما را از پایگاهی به پایگاه دیگر دنبال می‌کنند و در خصوص شما اطلاعات جمع‌آوری می‌کنند. این‌ها توسط شرکت‌های ثالث شامل شرکت‌های تبلیغاتی و تحلیلی ایجاد شده‌اند.
 protections-panel-cryptominers = جمع‌کنندگان ارز دیجیتال سعی می‌کنند با استفاده از توان پردازشی کامپیوتر شما ارز دیجیتال تولید کنند. این‌ها باتری شما را خالی می‌کنند و باعث می‌شوند که هزینه بیشتری برای انرژی بدهید و کامپیوتر کُندتری داشته باشید.
 protections-panel-fingerprinters = برداشت کنندگان اثر انگشت، تنظیماتِ مرورگر و رایانه شما جمع‌آوری می‌کنند تا نمایه‌ای از شما ایجاد کنند. با استفاده از این اثر انگشت دیجیتالی، آنها می‌توانند شما را در وب‌سایت‌های مختلف ردیابی کنند.
 protections-panel-tracking-content = وب سایت‌ها ممکن است تبلیغات خارجی، فیلم‌ها و سایر محتواها را با کد رهگیری بارگذاری کنند. مسدود کردن محتوای ردیابی می‌تواند به بارگیری سریعتر سایت‌ها کمک کند، اما برخی از دکمه‌ها، فرم‌ها و فیلدهای ورود به سیستم ممکن است کار نکنند.
@@ -100,6 +100,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = گزارش یک سایت خراب
 protections-panel-content-blocking-breakage-report-view-description = مسدود کردن ردیاب‌های خاص می‌تواند مشکلاتی را در برخی وب سایت‌ها ایجاد کند. گزارش این مشکلات به بهتر شدن { -brand-short-name } برای همه کمک می‌کند. با ارسال این گزارش، نشانی اینترنتی و اطلاعات مربوط به تنظیمات مرورگر شما به موزیلا ارسال می‌شود. <label data-l10n-name="learn-more">بیشتر بدانید</label>
+protections-panel-content-blocking-breakage-report-view-description2 = مسدود کردن ردیاب‌های خاص می‌تواند مشکلاتی را در برخی وبگاه‌ها ایجاد کند. گزارش این مشکلات به بهتر شدن { -brand-short-name } برای همه کمک می‌کند. با ارسال این گزارش، نشانی اینترنتی و اطلاعات مربوط به تنظیمات مرورگر شما { -vendor-short-name } ارسال می‌شود.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = آدرس اینترنتی
@@ -110,3 +111,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = انصراف
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = ارسال گزارش
+
+# Cookie Banner Handling
+

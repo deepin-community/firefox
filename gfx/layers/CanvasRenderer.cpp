@@ -14,6 +14,11 @@
 #include "PersistentBufferProvider.h"
 #include "WebGLTypes.h"
 
+#ifdef MOZ_WIDGET_GTK
+#  include "mozilla/widget/DMABufSurface.h"
+#  include "mozilla/widget/DMABufLibWrapper.h"
+#endif
+
 namespace mozilla {
 namespace layers {
 
@@ -87,17 +92,12 @@ TextureType TexTypeForWebgl(KnowsCompositor* const knowsCompositor) {
   const auto layersBackend = knowsCompositor->GetCompositorBackendType();
 
   switch (layersBackend) {
-    case LayersBackend::LAYERS_CLIENT:
-      MOZ_CRASH("Unexpected LayersBackend::LAYERS_CLIENT");
     case LayersBackend::LAYERS_LAST:
       MOZ_CRASH("Unexpected LayersBackend::LAYERS_LAST");
 
     case LayersBackend::LAYERS_NONE:
-    case LayersBackend::LAYERS_BASIC:
       return TextureType::Unknown;
 
-    case LayersBackend::LAYERS_D3D11:
-    case LayersBackend::LAYERS_OPENGL:
     case LayersBackend::LAYERS_WR:
       break;
   }
@@ -106,20 +106,22 @@ TextureType TexTypeForWebgl(KnowsCompositor* const knowsCompositor) {
     if (knowsCompositor->SupportsD3D11()) {
       return TextureType::D3D11;
     }
-    return TextureType::Unknown;
   }
   if (kIsMacOS) {
     return TextureType::MacIOSurface;
   }
-  if (kIsWayland) {
-    if (knowsCompositor->UsingSoftwareWebRender()) {
-      return TextureType::Unknown;
+
+#ifdef MOZ_WIDGET_GTK
+  if (kIsLinux) {
+    if (!knowsCompositor->UsingSoftwareWebRender() &&
+        widget::DMABufDevice::IsDMABufWebGLEnabled()) {
+      return TextureType::DMABUF;
     }
-    return TextureType::DMABUF;
   }
+#endif
 
   if (kIsAndroid) {
-    if (gfx::gfxVars::UseAHardwareBufferSharedSurface()) {
+    if (gfx::gfxVars::UseAHardwareBufferSharedSurfaceWebglOop()) {
       return TextureType::AndroidHardwareBuffer;
     }
     if (StaticPrefs::webgl_enable_surface_texture()) {

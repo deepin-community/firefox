@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Wšykne rejtariki wubraś
     .accesskey = W
+tab-context-play-tab =
+    .label = Rejtarik wótgraś
+    .accesskey = R
+tab-context-play-tabs =
+    .label = Rejtariki wótgraś
+    .accesskey = g
 duplicate-tab =
     .label = Rejatark pódwójś
     .accesskey = R
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Rejtariki ako cytańske znamjenja składowaś…
     .accesskey = k
-bookmark-tab =
-    .label = Rejtarik ako cytańske znamje składowaś
-    .accesskey = t
+tab-context-bookmark-tab =
+    .label = Rejtarik ako cytańske znamje składowaś …
+    .accesskey = R
 tab-context-open-in-new-container-tab =
     .label = W nowem kontejnerowem rejtariku wócyniś
     .accesskey = k
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Źěliś
     .accesskey = i
-tab-context-share-more =
-    .label = Wěcej…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -85,16 +89,6 @@ tab-context-reopen-closed-tabs =
            *[other] $tabCount zacynjonych rejtarikow znowego wócyniś
         }
     .accesskey = z
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] { $tabCount } rejtarik zacyniś
-            [one] { $tabCount } rejtarik zacyniś
-            [two] { $tabCount } rejtarika zacyniś
-            [few] { $tabCount } rejtariki zacyniś
-           *[other] { $tabCount } rejtarikow zacyniś
-        }
-    .accesskey = r
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

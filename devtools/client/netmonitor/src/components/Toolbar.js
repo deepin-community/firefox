@@ -4,54 +4,55 @@
 
 "use strict";
 
-const Services = require("Services");
 const {
   Component,
   createFactory,
-} = require("devtools/client/shared/vendor/react");
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
+} = require("resource://devtools/client/shared/vendor/react.js");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
 const {
   connect,
-} = require("devtools/client/shared/redux/visibility-handler-connect");
-const Actions = require("devtools/client/netmonitor/src/actions/index");
+} = require("resource://devtools/client/shared/redux/visibility-handler-connect.js");
+const Actions = require("resource://devtools/client/netmonitor/src/actions/index.js");
 const {
   FILTER_SEARCH_DELAY,
   FILTER_TAGS,
   PANELS,
-} = require("devtools/client/netmonitor/src/constants");
+} = require("resource://devtools/client/netmonitor/src/constants.js");
 const {
   getDisplayedRequests,
   getRecordingState,
   getTypeFilteredRequests,
   getSelectedRequest,
-} = require("devtools/client/netmonitor/src/selectors/index");
+} = require("resource://devtools/client/netmonitor/src/selectors/index.js");
 const {
   autocompleteProvider,
-} = require("devtools/client/netmonitor/src/utils/filter-autocomplete-provider");
-const { L10N } = require("devtools/client/netmonitor/src/utils/l10n");
+} = require("resource://devtools/client/netmonitor/src/utils/filter-autocomplete-provider.js");
+const {
+  L10N,
+} = require("resource://devtools/client/netmonitor/src/utils/l10n.js");
 const {
   fetchNetworkUpdatePacket,
-} = require("devtools/client/netmonitor/src/utils/request-utils");
+} = require("resource://devtools/client/netmonitor/src/utils/request-utils.js");
 
 loader.lazyRequireGetter(
   this,
   "KeyShortcuts",
-  "devtools/client/shared/key-shortcuts"
+  "resource://devtools/client/shared/key-shortcuts.js"
 );
 
 // MDN
 const {
   getFilterBoxURL,
-} = require("devtools/client/netmonitor/src/utils/mdn-utils");
+} = require("resource://devtools/client/netmonitor/src/utils/doc-utils.js");
 const LEARN_MORE_URL = getFilterBoxURL();
 
 // Components
 const NetworkThrottlingMenu = createFactory(
-  require("devtools/client/shared/components/throttling/NetworkThrottlingMenu")
+  require("resource://devtools/client/shared/components/throttling/NetworkThrottlingMenu.js")
 );
 const SearchBox = createFactory(
-  require("devtools/client/shared/components/SearchBox")
+  require("resource://devtools/client/shared/components/SearchBox.js")
 );
 
 const { button, div, input, label, span, hr } = dom;
@@ -68,6 +69,9 @@ const COPY_KEY_SHORTCUT = L10N.getStr("netmonitor.toolbar.copy.key");
 const TOOLBAR_CLEAR = L10N.getStr("netmonitor.toolbar.clear");
 const TOOLBAR_TOGGLE_RECORDING = L10N.getStr(
   "netmonitor.toolbar.toggleRecording"
+);
+const TOOLBAR_HTTP_CUSTOM_REQUEST = L10N.getStr(
+  "netmonitor.toolbar.HTTPCustomRequest"
 );
 const TOOLBAR_SEARCH = L10N.getStr("netmonitor.toolbar.search");
 const TOOLBAR_BLOCKING = L10N.getStr("netmonitor.toolbar.requestBlocking");
@@ -93,18 +97,18 @@ const DISABLE_CACHE_LABEL = L10N.getStr(
 );
 
 const MenuButton = createFactory(
-  require("devtools/client/shared/components/menu/MenuButton")
+  require("resource://devtools/client/shared/components/menu/MenuButton.js")
 );
 
-loader.lazyGetter(this, "MenuItem", function() {
+loader.lazyGetter(this, "MenuItem", function () {
   return createFactory(
-    require("devtools/client/shared/components/menu/MenuItem")
+    require("resource://devtools/client/shared/components/menu/MenuItem.js")
   );
 });
 
-loader.lazyGetter(this, "MenuList", function() {
+loader.lazyGetter(this, "MenuList", function () {
   return createFactory(
-    require("devtools/client/shared/components/menu/MenuList")
+    require("resource://devtools/client/shared/components/menu/MenuList.js")
   );
 });
 
@@ -112,21 +116,21 @@ loader.lazyGetter(this, "MenuList", function() {
 loader.lazyRequireGetter(
   this,
   "HarMenuUtils",
-  "devtools/client/netmonitor/src/har/har-menu-utils",
+  "resource://devtools/client/netmonitor/src/har/har-menu-utils.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "copyString",
-  "devtools/shared/platform/clipboard",
+  "resource://devtools/shared/platform/clipboard.js",
   true
 );
 
 // Throttling
-const Types = require("devtools/client/shared/components/throttling/types");
+const Types = require("resource://devtools/client/shared/components/throttling/types.js");
 const {
   changeNetworkThrottling,
-} = require("devtools/client/shared/components/throttling/actions");
+} = require("resource://devtools/client/shared/components/throttling/actions.js");
 
 /**
  * Network monitor toolbar component.
@@ -163,6 +167,7 @@ class Toolbar extends Component {
       // Executed when throttling changes (through toolbar button).
       onChangeNetworkThrottling: PropTypes.func.isRequired,
       toggleSearchPanel: PropTypes.func.isRequired,
+      toggleHTTPCustomRequestPanel: PropTypes.func.isRequired,
       networkActionBarOpen: PropTypes.bool,
       toggleRequestBlockingPanel: PropTypes.func.isRequired,
       networkActionBarSelectedPanel: PropTypes.string.isRequired,
@@ -176,14 +181,14 @@ class Toolbar extends Component {
     super(props);
 
     this.autocompleteProvider = this.autocompleteProvider.bind(this);
+    this.onSearchBoxFocusKeyboardShortcut =
+      this.onSearchBoxFocusKeyboardShortcut.bind(this);
     this.onSearchBoxFocus = this.onSearchBoxFocus.bind(this);
     this.toggleRequestFilterType = this.toggleRequestFilterType.bind(this);
-    this.updatePersistentLogsEnabled = this.updatePersistentLogsEnabled.bind(
-      this
-    );
-    this.updateBrowserCacheDisabled = this.updateBrowserCacheDisabled.bind(
-      this
-    );
+    this.updatePersistentLogsEnabled =
+      this.updatePersistentLogsEnabled.bind(this);
+    this.updateBrowserCacheDisabled =
+      this.updateBrowserCacheDisabled.bind(this);
   }
 
   componentDidMount() {
@@ -270,6 +275,12 @@ class Toolbar extends Component {
 
   autocompleteProvider(filter) {
     return autocompleteProvider(filter, this.props.filteredRequests);
+  }
+
+  onSearchBoxFocusKeyboardShortcut(event) {
+    // Don't take focus when the keyboard shortcut is triggered in a CodeMirror instance,
+    // so the CodeMirror search UI is displayed.
+    return !!event.target.closest(".CodeMirror");
   }
 
   onSearchBoxFocus() {
@@ -395,6 +406,46 @@ class Toolbar extends Component {
   }
 
   /**
+   * Render a new HTTP Custom Request button.
+   */
+  renderHTTPCustomRequestButton() {
+    const {
+      networkActionBarOpen,
+      networkActionBarSelectedPanel,
+      toggleHTTPCustomRequestPanel,
+    } = this.props;
+
+    // The new HTTP Custom Request feature is available behind a pref.
+    if (
+      !Services.prefs.getBoolPref(
+        "devtools.netmonitor.features.newEditAndResend"
+      )
+    ) {
+      return null;
+    }
+
+    const className = [
+      "devtools-button",
+      "devtools-http-custom-request-icon",
+      "requests-list-http-custom-request-button",
+    ];
+
+    if (
+      networkActionBarOpen &&
+      networkActionBarSelectedPanel === PANELS.HTTP_CUSTOM_REQUEST
+    ) {
+      className.push("checked");
+    }
+
+    return button({
+      className: className.join(" "),
+      title: TOOLBAR_HTTP_CUSTOM_REQUEST,
+      "aria-pressed": networkActionBarOpen,
+      onClick: toggleHTTPCustomRequestPanel,
+    });
+  }
+
+  /**
    * Render filter buttons.
    */
   renderFilterButtons(requestFilterTypes) {
@@ -458,6 +509,7 @@ class Toolbar extends Component {
       type: "filter",
       ref: "searchbox",
       onChange: setRequestFilterText,
+      onFocusKeyboardShortcut: this.onSearchBoxFocusKeyboardShortcut,
       onFocus: this.onSearchBoxFocus,
       autocompleteProvider: this.autocompleteProvider,
       learnMoreUrl: LEARN_MORE_URL,
@@ -557,6 +609,7 @@ class Toolbar extends Component {
             this.renderFilterBox(setRequestFilterText),
             this.renderSeparator(),
             this.renderToggleRecordingButton(recording, toggleRecording),
+            this.renderHTTPCustomRequestButton(),
             this.renderSearchButton(toggleSearchPanel),
             this.renderBlockingButton(toggleSearchPanel),
             this.renderSeparator(),
@@ -578,6 +631,7 @@ class Toolbar extends Component {
             this.renderFilterBox(setRequestFilterText),
             this.renderSeparator(),
             this.renderToggleRecordingButton(recording, toggleRecording),
+            this.renderHTTPCustomRequestButton(),
             this.renderSearchButton(toggleSearchPanel),
             this.renderBlockingButton(toggleSearchPanel),
             this.renderSeparator(),
@@ -625,6 +679,8 @@ module.exports = connect(
       dispatch(Actions.toggleRequestFilterType(type)),
     onChangeNetworkThrottling: (enabled, profile) =>
       dispatch(changeNetworkThrottling(enabled, profile)),
+    toggleHTTPCustomRequestPanel: () =>
+      dispatch(Actions.toggleHTTPCustomRequestPanel()),
     toggleSearchPanel: () => dispatch(Actions.toggleSearchPanel()),
     toggleRequestBlockingPanel: () =>
       dispatch(Actions.toggleRequestBlockingPanel()),

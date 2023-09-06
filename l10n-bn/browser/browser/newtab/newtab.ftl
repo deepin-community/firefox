@@ -7,7 +7,12 @@
 
 newtab-page-title = নতুন ট্যাব
 newtab-settings-button =
-    .title = আপনার নতুন ট্যাব পেজটি কাস্টমাইজ করুন
+    .title = আপনার নতুন ট্যাবের পাতাটি কাস্টমাইজ করুন
+newtab-personalize-icon-label =
+    .title = নতুন ট্যাব ব্যক্তিগত করুন
+    .aria-label = নতুন ট্যাব ব্যক্তিগত করুন
+newtab-personalize-dialog-label =
+    .aria-label = ব্যক্তিগতকরণ
 
 ## Search box component.
 
@@ -16,23 +21,39 @@ newtab-search-box-search-button =
     .title = অনুসন্ধান
     .aria-label = অনুসন্ধান
 
-newtab-search-box-search-the-web-input =
-    .placeholder = ওয়েবে সন্ধান করুন
-    .title = ওয়েবে সন্ধান করুন
-    .aria-label = ওয়েবে সন্ধান করুন
+# Variables
+#  $engine (String): the name of the user's default search engine
+newtab-search-box-handoff-text = { $engine } দ্বারা অনুসন্ধান করুন অথবা ঠিকানা লিখুন
+newtab-search-box-handoff-text-no-engine = অনুসন্ধান করুন বা ঠিকানা লিখুন
+# Variables
+#  $engine (String): the name of the user's default search engine
+newtab-search-box-handoff-input =
+    .placeholder = { $engine } দ্বারা অনুসন্ধান করুন অথবা ঠিকানা লিখুন
+    .title = { $engine } দ্বারা অনুসন্ধান করুন অথবা ঠিকানা লিখুন
+    .aria-label = { $engine } দ্বারা অনুসন্ধান করুন অথবা ঠিকানা লিখুন
+newtab-search-box-handoff-input-no-engine =
+    .placeholder = অনুসন্ধান করুন বা ঠিকানা লিখুন
+    .title = অনুসন্ধান করুন বা ঠিকানা লিখুন
+    .aria-label = অনুসন্ধান করুন বা ঠিকানা লিখুন
+
+newtab-search-box-text = ওয়েবে অনুসন্ধান করুন
+newtab-search-box-input =
+    .placeholder = ওয়েবে অনুসন্ধান করুন
+    .aria-label = ওয়েবে অনুসন্ধান করুন
 
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = অনুসন্ধান ইঞ্জিন যোগ করুন
-newtab-topsites-add-topsites-header = নতুন শীর্ষ সাইট
+newtab-topsites-add-shortcut-header = নতুন শর্টকাট
 newtab-topsites-edit-topsites-header = শীর্ষ সাইট সম্পাদনা করুন
+newtab-topsites-edit-shortcut-header = শর্টকাট সম্পাদনা করুন
 newtab-topsites-title-label = শিরোনাম
 newtab-topsites-title-input =
-    .placeholder = নাম দিন
+    .placeholder = শিরোনাম লিখুন
 
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
-    .placeholder = টাইপ করুন অথবা পেস্ট করুন URL
+    .placeholder = একটি URL লিখুন বা প্রতিলেপন করুন
 newtab-topsites-url-validation = কার্যকর URL প্রয়োজন
 
 newtab-topsites-image-url-label = কাস্টম ছবির URL
@@ -45,7 +66,7 @@ newtab-topsites-cancel-button = বাতিল
 newtab-topsites-delete-history-button = ইতিহাস থেকে মুছে ফেলুন
 newtab-topsites-save-button = সংরক্ষণ
 newtab-topsites-preview-button = প্রাকদর্শন
-newtab-topsites-add-button = যোগ
+newtab-topsites-add-button = যোগ করুন
 
 ## Top Sites - Delete history confirmation dialog.
 
@@ -54,6 +75,8 @@ newtab-confirm-delete-history-p1 = আপনি কি নিশ্চিতভ�
 newtab-confirm-delete-history-p2 = এই পরিবর্তনটি অপরিবর্তনীয়।
 
 ## Top Sites - Sponsored label
+
+newtab-topsite-sponsored = স্পন্সরকৃত
 
 ## Context Menu - Action Tooltips.
 
@@ -80,23 +103,30 @@ newtab-menu-topsites-placeholder-tooltip =
 
 ## Context Menu: These strings are displayed in a context menu and are meant as a call to action for a given page.
 
-newtab-menu-edit-topsites = সম্পাদনা
+newtab-menu-edit-topsites = সম্পাদন করুন
 newtab-menu-open-new-window = নতুন উইন্ডোতে খুলুন
 newtab-menu-open-new-private-window = নতুন ব্যক্তিগত উইন্ডোতে খুলুন
 newtab-menu-dismiss = বাতিল
-newtab-menu-pin = পিন
-newtab-menu-unpin = আনপিন
+newtab-menu-pin = পিন করুন
+newtab-menu-unpin = আনপিন করুন
 newtab-menu-delete-history = ইতিহাস থেকে মুছে ফেলুন
 newtab-menu-save-to-pocket = { -pocket-brand-name } এ সংরক্ষণ করুন
 newtab-menu-delete-pocket = { -pocket-brand-name } থেকে মুছে দিন
 newtab-menu-archive-pocket = { -pocket-brand-name } এ আর্কাইভ করুন
-newtab-menu-show-privacy-info = আমাদের স্পনসর এবং আপনার গোপনীয়তা
+newtab-menu-show-privacy-info = আমাদের স্পন্সর ও আপনার গোপনীয়তা
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
 newtab-privacy-modal-button-done = সম্পন্ন
+newtab-privacy-modal-button-manage = স্পনসর করা সামগ্রীর সেটিংস পরিচালনা করুন
 newtab-privacy-modal-header = আপনার গোপনীয়তার বিষয়টি গুরুত্বপূর্ণ।
-newtab-privacy-modal-link = কীভাবে গোপনীয়তা নতুন ট্যাবে কাজ করে তা শিখুন
+newtab-privacy-modal-paragraph-2 =
+    মনোমুগ্ধকর গল্প পরিবেশন করার পাশাপাশি আমরা আপনাকে 
+    নির্বাচিত স্পনসরদের প্রাসঙ্গিক ,
+    উচ্চ-পরীক্ষিত বিষয়বস্তুও দেখাই। নিশ্চিত থাকুন, <strong>আপনার ব্রাউজিং
+    তথ্য কখনই আপনার ব্যক্তিগত { -brand-product-name } এ থাকে না</strong> - আমরা তা দেখতে পাই না এবং আমাদের
+    স্পনসরাও তা পায় না।
+newtab-privacy-modal-link = কীভাবে নতুন ট্যাবে গোপনীয়তা কাজ করে তা জানুন
 
 ##
 
@@ -109,7 +139,7 @@ newtab-menu-bookmark = বুকমার্ক
 ## it is a noun. As in, "Copy the link that belongs to this downloaded item".
 
 newtab-menu-copy-download-link = ডাউনলোডের লিঙ্ক অনুলিপি করুন
-newtab-menu-go-to-download-page = ডাউনলোড পাতায় যাও
+newtab-menu-go-to-download-page = ডাউনলোড পাতায় যান
 newtab-menu-remove-download = ইতিহাস থেকে মুছে ফেলুন
 
 ## Context Menu - Download Menu: These are platform specific strings found in the context menu of an item that has
@@ -130,7 +160,7 @@ newtab-menu-open-file = ফাইল খুলুন
 newtab-label-visited = পরিদর্শিত
 newtab-label-bookmarked = বুকমার্ক করা হয়েছে
 newtab-label-removed-bookmark = বুকমার্ক মুছে ফেলা হয়েছে
-newtab-label-recommended = ঝোঁক
+newtab-label-recommended = প্রবণতা
 newtab-label-saved = { -pocket-brand-name } এ সংরক্ষণ হয়েছে
 newtab-label-download = ডাউনলোড হয়েছে
 
@@ -138,6 +168,17 @@ newtab-label-download = ডাউনলোড হয়েছে
 # Variables:
 #  $sponsorOrSource (String): This is the name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource } । প্রযোজিত
+
+# This string is used at the bottom of story cards to indicate sponsored content
+# Variables:
+#  $sponsor (String): This is the name of a sponsor
+newtab-label-sponsored-by = { $sponsor } দ্বারা স্পনসরকৃত
+
+# This string is used under the image of story cards to indicate source and time to read
+# Variables:
+#  $source (String): This is the name of a company or their domain
+#  $timeToRead (Number): This is the estimated number of minutes to read this story
+newtab-label-source-read-time = { $source } · { $timeToRead } মিনিট
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -147,10 +188,10 @@ newtab-section-menu-collapse-section = সেকশনটি সংকোচন 
 newtab-section-menu-expand-section = সেকশনটি প্রসারিত করুন
 newtab-section-menu-manage-section = সেকশনটি পরিচালনা করুন
 newtab-section-menu-manage-webext = এক্সটেনসন ব্যবহার করুন
-newtab-section-menu-add-topsite = টপ সাইট যোগ করুন
+newtab-section-menu-add-topsite = শীর্ষ সাইট যোগ করুন
 newtab-section-menu-add-search-engine = অনুসন্ধান ইঞ্জিন যোগ করুন
-newtab-section-menu-move-up = উপরে উঠাও
-newtab-section-menu-move-down = নীচে নামাও
+newtab-section-menu-move-up = উপরে উঠান
+newtab-section-menu-move-down = নিচে নামান
 newtab-section-menu-privacy-notice = গোপনীয়তা নীতি
 
 ## Section aria-labels
@@ -163,7 +204,7 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = শীর্ঘ সাইট
-newtab-section-header-highlights = হাইলাইটস
+newtab-section-header-recent-activity = সাম্প্রতিক কার্যকলাপ
 # Variables:
 #  $provider (String): Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } দ্বারা সুপারিশকৃত
@@ -177,12 +218,11 @@ newtab-empty-section-highlights = ব্রাউজি করা শুরু �
 #  $provider (String): Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = কিছু একটা ঠিক নেই। { $provider } এর শীর্ষ গল্পগুলো পেতে কিছুক্ষণ পর আবার দেখুন। অপেক্ষা করতে চান না? বিশ্বের সেরা গল্পগুলো পেতে কোন জনপ্রিয় বিষয় নির্বাচন করুন।
 
-
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
 newtab-discovery-empty-section-topstories-header = আর কিছু নেই!
 newtab-discovery-empty-section-topstories-content = আরোও গল্পের জন্য পরে আবার দেখুন।
-newtab-discovery-empty-section-topstories-try-again-button = পুনরায় চেষ্টা করুন
+newtab-discovery-empty-section-topstories-try-again-button = আবার চেষ্টা করুন
 newtab-discovery-empty-section-topstories-loading = লোড করা হচ্ছে…
 # Displays when a layout in a section took too long to fetch articles.
 newtab-discovery-empty-section-topstories-timed-out = ওহো! আমরা এই অনুচ্ছেদ প্রায় লোড করেছিলাম, কিন্তু শেষ করতে পারিনি।
@@ -196,11 +236,29 @@ newtab-pocket-learn-more = আরও জানুন
 newtab-pocket-cta-button = { -pocket-brand-name } ব্যবহার করুন
 newtab-pocket-cta-text = { -pocket-brand-name } এ আপনার পছন্দের গল্পগুলো সংরক্ষণ করুন, এবং চমৎকার সব লেখা পড়ে আপনার মনের ইন্ধন যোগান।
 
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
+
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
 newtab-error-fallback-info = ওহো, কনটেন্টটি লোড করতে কিছু ভুল হয়েছে।
-newtab-error-fallback-refresh-link = পুনরায় চেস্টা করার জন্য পেজটি রিফ্রেশ করুন।
+newtab-error-fallback-refresh-link = আবার চেষ্টা করতে পাতাটি পুনঃসতেজ করুন।
 
 ## Customization Menu
 
+newtab-custom-shortcuts-title = শর্টকাট
+newtab-custom-shortcuts-subtitle = আপনার সংরক্ষণ বা পরিদর্শন করা সাইট
+newtab-custom-row-selector =
+    { $num ->
+        [one] { $num }টি সারি
+       *[other] { $num }টি সারি
+    }
+newtab-custom-sponsored-sites = স্পনসরকৃত শর্টকাট
+newtab-custom-pocket-title = { -pocket-brand-name } দ্বারা সুপারিশকৃত
+newtab-custom-recent-title = সাম্প্রতিক কার্যকলাপ
+newtab-custom-close-button = বন্ধ করুন
+newtab-custom-settings = আরও সেটিং পরিচালনা করুন

@@ -8,6 +8,8 @@
 #include "SandboxTestingChildTests.h"
 #include "SandboxTestingThread.h"
 #include "mozilla/ipc/Endpoint.h"
+#include "mozilla/ipc/UtilityProcessSandboxing.h"
+#include "mozilla/ipc/UtilityProcessChild.h"
 
 #ifdef XP_LINUX
 #  include "mozilla/Sandbox.h"
@@ -17,7 +19,7 @@
 
 namespace mozilla {
 
-SandboxTestingChild* SandboxTestingChild::sInstance = nullptr;
+StaticRefPtr<SandboxTestingChild> SandboxTestingChild::sInstance;
 
 bool SandboxTestingChild::IsTestThread() { return mThread->IsOnThread(); }
 
@@ -36,6 +38,9 @@ bool SandboxTestingChild::Initialize(
   }
   sInstance =
       new SandboxTestingChild(thread, std::move(aSandboxTestingEndpoint));
+  thread->Dispatch(NewRunnableMethod<Endpoint<PSandboxTestingChild>&&>(
+      "SandboxTestingChild::Bind", sInstance.get(), &SandboxTestingChild::Bind,
+      std::move(aSandboxTestingEndpoint)));
   return true;
 }
 
@@ -47,12 +52,9 @@ SandboxTestingChild* SandboxTestingChild::GetInstance() {
 
 SandboxTestingChild::SandboxTestingChild(
     SandboxTestingThread* aThread, Endpoint<PSandboxTestingChild>&& aEndpoint)
-    : mThread(aThread) {
-  MOZ_ASSERT(aThread);
-  PostToTestThread(NewNonOwningRunnableMethod<Endpoint<PSandboxTestingChild>&&>(
-      "SandboxTestingChild::Bind", this, &SandboxTestingChild::Bind,
-      std::move(aEndpoint)));
-}
+    : mThread(aThread) {}
+
+SandboxTestingChild::~SandboxTestingChild() = default;
 
 void SandboxTestingChild::Bind(Endpoint<PSandboxTestingChild>&& aEndpoint) {
   MOZ_RELEASE_ASSERT(mThread->IsOnThread());
@@ -79,6 +81,35 @@ void SandboxTestingChild::Bind(Endpoint<PSandboxTestingChild>&& aEndpoint) {
     RunTestsSocket(this);
   }
 
+  if (XRE_IsGPUProcess()) {
+    RunTestsGPU(this);
+  }
+
+  if (XRE_IsUtilityProcess()) {
+    RefPtr<ipc::UtilityProcessChild> s = ipc::UtilityProcessChild::Get();
+    MOZ_ASSERT(s, "Unable to grab a UtilityProcessChild");
+    switch (s->mSandbox) {
+      case ipc::SandboxingKind::GENERIC_UTILITY:
+        RunTestsGenericUtility(this);
+        RunTestsUtilityAudioDecoder(this, s->mSandbox);
+        break;
+#ifdef MOZ_APPLEMEDIA
+      case ipc::SandboxingKind::UTILITY_AUDIO_DECODING_APPLE_MEDIA:
+        RunTestsUtilityAudioDecoder(this, s->mSandbox);
+        break;
+#endif
+#ifdef XP_WIN
+      case ipc::SandboxingKind::UTILITY_AUDIO_DECODING_WMF:
+        RunTestsUtilityAudioDecoder(this, s->mSandbox);
+        break;
+#endif
+
+      default:
+        MOZ_ASSERT(false, "Invalid SandboxingKind");
+        break;
+    }
+  }
+
 #ifdef XP_LINUX
   SetSandboxCrashOnError(sandboxCrashOnError);
 #endif
@@ -96,22 +127,19 @@ void SandboxTestingChild::ActorDestroy(ActorDestroyReason aWhy) {
 void SandboxTestingChild::Destroy() {
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT(sInstance);
-  delete sInstance;
   sInstance = nullptr;
 }
 
-bool SandboxTestingChild::RecvShutDown() {
+ipc::IPCResult SandboxTestingChild::RecvShutDown() {
   Close();
-  return true;
+  return IPC_OK();
 }
 
 void SandboxTestingChild::ReportNoTests() {
-  SendReportTestResults("dummy_test"_ns, /* shouldSucceed */ true,
-                        /* didSucceed */ true,
+  SendReportTestResults("dummy_test"_ns, /* passed */ true,
                         "The test framework fails if there are no cases."_ns);
 }
 
-#ifdef XP_UNIX
 template <typename F>
 void SandboxTestingChild::ErrnoTest(const nsCString& aName, bool aExpectSuccess,
                                     F&& aFunction) {
@@ -121,25 +149,48 @@ void SandboxTestingChild::ErrnoTest(const nsCString& aName, bool aExpectSuccess,
 
 template <typename F>
 void SandboxTestingChild::ErrnoValueTest(const nsCString& aName,
-                                         bool aExpectEquals, int aExpectedErrno,
-                                         F&& aFunction) {
+                                         int aExpectedErrno, F&& aFunction) {
   int status = aFunction() >= 0 ? 0 : errno;
-  PosixTest(aName, aExpectEquals, status == aExpectedErrno);
+  PosixTest(aName, aExpectedErrno == 0, status, Some(aExpectedErrno));
 }
 
 void SandboxTestingChild::PosixTest(const nsCString& aName, bool aExpectSuccess,
-                                    int aStatus) {
-  bool succeeded = aStatus == 0;
+                                    int aStatus, Maybe<int> aExpectedError) {
   nsAutoCString message;
-  if (succeeded) {
+  bool passed;
+
+  // The "expected" arguments are a little redundant.
+  MOZ_ASSERT(!aExpectedError || aExpectSuccess == (*aExpectedError == 0));
+
+  // Decide whether the test passed, and stringify the actual result.
+  if (aStatus == 0) {
     message = "Succeeded"_ns;
+    passed = aExpectSuccess;
   } else {
     message = "Error: "_ns;
     message += strerror(aStatus);
+    if (aExpectedError) {
+      passed = aStatus == *aExpectedError;
+    } else {
+      passed = !aExpectSuccess;
+    }
   }
 
-  SendReportTestResults(aName, aExpectSuccess, succeeded, message);
+  // If something unexpected happened, mention the expected result.
+  if (!passed) {
+    message += "; expected ";
+    if (aExpectSuccess) {
+      message += "success";
+    } else {
+      message += "error";
+      if (aExpectedError) {
+        message += ": ";
+        message += strerror(*aExpectedError);
+      }
+    }
+  }
+
+  SendReportTestResults(aName, passed, message);
 }
-#endif  // XP_UNIX
 
 }  // namespace mozilla

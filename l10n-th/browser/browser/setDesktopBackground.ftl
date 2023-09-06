@@ -9,7 +9,7 @@ set-desktop-background-accept =
     .label = ตั้งพื้นหลังเดสก์ท็อป
 
 open-desktop-prefs =
-    .label = เปิดค่ากำหนดเดสก์ท็อป
+    .label = เปิดการกำหนดลักษณะเดสก์ท็อป
 
 set-background-preview-unavailable = การแสดงตัวอย่างไม่สามารถใช้ได้
 

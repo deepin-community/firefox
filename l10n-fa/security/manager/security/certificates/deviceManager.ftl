@@ -5,9 +5,9 @@
 
 ## Strings used for device manager
 
-devmgr =
+devmgr-window =
     .title = مدیر دستگاه‌ها
-    .style = width: 52em; height: 32em;
+    .style = min-width: 52em; min-height: 32em;
 
 devmgr-devlist =
     .label = واحد‌ها و دستگاه‌های امنیتی
@@ -116,6 +116,7 @@ devinfo-label =
 devinfo-serialnum =
     .label = شمارهٔ سریال
 
+fips-nonempty-primary-password-required = برای حالت FIPS لازم است شما برای هر دستگاه امنیتی یک گذرواژهٔ اصلی داشته باشید. لطفاً قبل از تلاش برای به کار انداختن حالت FIPS گذرواژه‌ها را تنظیم کنید.
 unable-to-toggle-fips = قادر به تغییر حالت FIPS برای دستگاه امنیتی نبود. پیشنهاد می‌شود که از برنامه خارج شوید و آن را دوباره اجرا کنید.
 load-pk11-module-file-picker-title = یک راه‌انداز دستگاه PKCS#11 برای بار شدن انتخاب کنید
 

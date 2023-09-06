@@ -10,6 +10,8 @@
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/EventTarget.h"
 #include "mozilla/PresShell.h"
+#include "mozilla/layers/InputAPZContext.h"
+#include "nsIContent.h"
 #include "nsIFrame.h"
 #include "nsLayoutUtils.h"
 #include "nsView.h"
@@ -48,7 +50,7 @@ void TouchManager::Destroy() {
 }
 
 static nsIContent* GetNonAnonymousAncestor(EventTarget* aTarget) {
-  nsCOMPtr<nsIContent> content(do_QueryInterface(aTarget));
+  nsIContent* content = nsIContent::FromEventTargetOrNull(aTarget);
   if (content && content->IsInNativeAnonymousSubtree()) {
     content = content->FindFirstNonChromeOnlyAccessContent();
   }
@@ -58,7 +60,8 @@ static nsIContent* GetNonAnonymousAncestor(EventTarget* aTarget) {
 /*static*/
 void TouchManager::EvictTouchPoint(RefPtr<Touch>& aTouch,
                                    Document* aLimitToDocument) {
-  nsCOMPtr<nsINode> node(do_QueryInterface(aTouch->mOriginalTarget));
+  nsCOMPtr<nsINode> node(
+      nsINode::FromEventTargetOrNull(aTouch->mOriginalTarget));
   if (node) {
     Document* doc = node->GetComposedDoc();
     if (doc && (!aLimitToDocument || aLimitToDocument == doc)) {
@@ -70,7 +73,6 @@ void TouchManager::EvictTouchPoint(RefPtr<Touch>& aTouch,
           nsCOMPtr<nsIWidget> widget = frame->GetView()->GetNearestWidget(&pt);
           if (widget) {
             WidgetTouchEvent event(true, eTouchEnd, widget);
-            event.mTime = PR_IntervalNow();
             event.mTouches.AppendElement(aTouch);
             nsEventStatus status;
             widget->DispatchEvent(&event, status);
@@ -327,6 +329,10 @@ bool TouchManager::PreHandleEvent(WidgetEvent* aEvent, nsEventStatus* aStatus,
             }
           }
         } else {
+          // This touch event isn't going to be dispatched on the main-thread,
+          // we need to tell it to APZ because returned nsEventStatus is
+          // unreliable to tell whether the event was preventDefaulted or not.
+          layers::InputAPZContext::SetDropped();
           return false;
         }
       }
@@ -409,7 +415,7 @@ already_AddRefed<nsIContent> TouchManager::GetAnyCapturedTouchTarget() {
     if (touch) {
       EventTarget* target = touch->GetTarget();
       if (target) {
-        result = do_QueryInterface(target);
+        result = nsIContent::FromEventTargetOrNull(target);
         break;
       }
     }
@@ -459,9 +465,7 @@ bool TouchManager::ShouldConvertTouchToPointer(const Touch* aTouch,
       return false;
     }
     case eTouchMove: {
-      // Always fire first pointermove event.
-      return info.mTouch->mMessage != eTouchMove ||
-             !aTouch->Equals(info.mTouch);
+      return !aTouch->Equals(info.mTouch);
     }
     default:
       break;

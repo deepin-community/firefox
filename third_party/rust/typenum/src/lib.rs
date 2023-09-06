@@ -59,6 +59,7 @@
     )
 )]
 #![cfg_attr(feature = "cargo-clippy", deny(clippy::missing_inline_in_public_items))]
+#![doc(html_root_url = "https://docs.rs/typenum/1.16.0")]
 
 // For debugging macros:
 // #![feature(trace_macros)]
@@ -70,12 +71,16 @@ use core::cmp::Ordering;
 mod generated {
     include!(concat!(env!("OUT_DIR"), "/op.rs"));
     include!(concat!(env!("OUT_DIR"), "/consts.rs"));
+    #[cfg(feature = "const-generics")]
+    include!(concat!(env!("OUT_DIR"), "/generic_const_mappings.rs"));
 }
 
 #[cfg(not(feature = "force_unix_path_separator"))]
 mod generated {
     include!(env!("TYPENUM_BUILD_OP"));
     include!(env!("TYPENUM_BUILD_CONSTS"));
+    #[cfg(feature = "const-generics")]
+    include!(env!("TYPENUM_BUILD_GENERIC_CONSTS"));
 }
 
 pub mod bit;
@@ -90,7 +95,6 @@ pub mod array;
 
 pub use crate::{
     array::{ATerm, TArr},
-    consts::*,
     generated::consts,
     int::{NInt, PInt},
     marker_traits::*,
@@ -99,19 +103,37 @@ pub use crate::{
     uint::{UInt, UTerm},
 };
 
+#[doc(no_inline)]
+#[rustfmt::skip]
+pub use consts::{
+    False, True, B0, B1,
+    U0, U1, U2, *,
+    N1, N2, Z0, P1, P2, *,
+};
+
+#[cfg(feature = "const-generics")]
+pub use crate::generated::generic_const_mappings;
+
+#[cfg(feature = "const-generics")]
+#[doc(no_inline)]
+pub use generic_const_mappings::{Const, ToUInt, U};
+
 /// A potential output from `Cmp`, this is the type equivalent to the enum variant
 /// `core::cmp::Ordering::Greater`.
 #[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash, Debug, Default)]
+#[cfg_attr(feature = "scale_info", derive(scale_info::TypeInfo))]
 pub struct Greater;
 
 /// A potential output from `Cmp`, this is the type equivalent to the enum variant
 /// `core::cmp::Ordering::Less`.
 #[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash, Debug, Default)]
+#[cfg_attr(feature = "scale_info", derive(scale_info::TypeInfo))]
 pub struct Less;
 
 /// A potential output from `Cmp`, this is the type equivalent to the enum variant
 /// `core::cmp::Ordering::Equal`.
 #[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash, Debug, Default)]
+#[cfg_attr(feature = "scale_info", derive(scale_info::TypeInfo))]
 pub struct Equal;
 
 /// Returns `core::cmp::Ordering::Greater`
@@ -154,4 +176,30 @@ macro_rules! assert_type {
         const _: core::marker::PhantomData<<$a as $crate::Same<True>>::Output> =
             core::marker::PhantomData;
     };
+}
+
+mod sealed {
+    use crate::{
+        ATerm, Bit, Equal, Greater, Less, NInt, NonZero, PInt, TArr, UInt, UTerm, Unsigned, B0, B1,
+        Z0,
+    };
+
+    pub trait Sealed {}
+
+    impl Sealed for B0 {}
+    impl Sealed for B1 {}
+
+    impl Sealed for UTerm {}
+    impl<U: Unsigned, B: Bit> Sealed for UInt<U, B> {}
+
+    impl Sealed for Z0 {}
+    impl<U: Unsigned + NonZero> Sealed for PInt<U> {}
+    impl<U: Unsigned + NonZero> Sealed for NInt<U> {}
+
+    impl Sealed for Less {}
+    impl Sealed for Equal {}
+    impl Sealed for Greater {}
+
+    impl Sealed for ATerm {}
+    impl<V, A> Sealed for TArr<V, A> {}
 }

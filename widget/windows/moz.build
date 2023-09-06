@@ -26,6 +26,10 @@ with Files("OSK*"):
 with Files("*TSFTextStore*"):
     BUG_COMPONENT = ("Core", "DOM: UI Events & Focus Handling")
 
+DIRS += [
+    "filedialog",
+]
+
 TEST_DIRS += ["tests"]
 
 EXPORTS += [
@@ -36,8 +40,10 @@ EXPORTS += [
 
 EXPORTS.mozilla += [
     "ShellHeaderOnlyUtils.h",
+    "ToastNotificationHeaderOnlyUtils.h",
     "UrlmonHeaderOnlyUtils.h",
     "WindowsConsole.h",
+    "WindowsEventLog.h",
     "WinHeaderOnlyUtils.h",
 ]
 
@@ -46,14 +52,16 @@ EXPORTS.mozilla.widget += [
     "CompositorWidgetChild.h",
     "CompositorWidgetParent.h",
     "InProcessWinCompositorWidget.h",
+    "nsWindowLoggedMessages.h",
     "WinCompositorWidget.h",
     "WinCompositorWindowThread.h",
-    "WinContentSystemParameters.h",
     "WindowsEMF.h",
     "WindowsSMTCProvider.h",
+    "WinEventObserver.h",
     "WinMessages.h",
     "WinModifierKeyState.h",
     "WinTaskbar.h",
+    "WinWindowOcclusionTracker.h",
 ]
 
 UNIFIED_SOURCES += [
@@ -62,7 +70,6 @@ UNIFIED_SOURCES += [
     "GfxInfo.cpp",
     "IEnumFE.cpp",
     "IMMHandler.cpp",
-    "InkCollector.cpp",
     "JumpListItem.cpp",
     "KeyboardLayout.cpp",
     "LSPAnnotator.cpp",
@@ -73,7 +80,6 @@ UNIFIED_SOURCES += [
     "nsDataObjCollection.cpp",
     "nsDragService.cpp",
     "nsLookAndFeel.cpp",
-    "nsNativeBasicThemeWin.cpp",
     "nsNativeDragSource.cpp",
     "nsNativeDragTarget.cpp",
     "nsNativeThemeWin.cpp",
@@ -82,15 +88,15 @@ UNIFIED_SOURCES += [
     "nsUserIdleServiceWin.cpp",
     "nsUXThemeData.cpp",
     "nsWindow.cpp",
-    "nsWindowBase.cpp",
     "nsWindowDbg.cpp",
     "nsWindowGfx.cpp",
+    "nsWindowLoggedMessages.cpp",
+    "nsWindowTaskbarConcealer.cpp",
     "nsWinGesture.cpp",
     "OSKTabTipManager.cpp",
     "OSKVRManager.cpp",
     "RemoteBackbuffer.cpp",
     "ScreenHelperWin.cpp",
-    "ScrollbarUtil.cpp",
     "SystemStatusBar.cpp",
     "TaskbarPreview.cpp",
     "TaskbarPreviewButton.cpp",
@@ -100,11 +106,13 @@ UNIFIED_SOURCES += [
     "WinCompositorWindowThread.cpp",
     "WindowHook.cpp",
     "WindowsConsole.cpp",
+    "WinEventObserver.cpp",
     "WinIMEHandler.cpp",
     "WinPointerEvents.cpp",
     "WinTaskbar.cpp",
     "WinTextEventDispatcherListener.cpp",
     "WinUtils.cpp",
+    "WinWindowOcclusionTracker.cpp",
 ]
 
 # The following files cannot be built in unified mode because of name clashes.
@@ -119,7 +127,6 @@ SOURCES += [
     "nsWidgetFactory.cpp",
     "OSKInputPaneManager.cpp",
     "WinCompositorWidget.cpp",
-    "WinContentSystemParameters.cpp",
     "WindowsSMTCProvider.cpp",
     "WindowsUIUtils.cpp",
     "WinMouseScrollHandler.cpp",
@@ -139,11 +146,13 @@ SOURCES += [
 if CONFIG["NS_PRINTING"]:
     UNIFIED_SOURCES += [
         "nsDeviceContextSpecWin.cpp",
-        "nsPrintDialogUtil.cpp",
         "nsPrintDialogWin.cpp",
         "nsPrinterWin.cpp",
         "nsPrintSettingsServiceWin.cpp",
         "nsPrintSettingsWin.cpp",
+    ]
+    SOURCES += [
+        "nsPrintDialogUtil.cpp",
     ]
 
 if CONFIG["MOZ_ENABLE_SKIA_PDF"]:
@@ -175,12 +184,16 @@ LOCAL_INCLUDES += [
 ]
 
 DEFINES["MOZ_UNICODE"] = True
+DEFINES["MOZ_APP_NAME"] = '"%s"' % CONFIG["MOZ_APP_NAME"]
+# Turn `firefox` into `Firefox`.
+DEFINES["MOZ_TOAST_APP_NAME"] = '"%s"' % CONFIG["MOZ_APP_NAME"].title()
 
-for var in "MOZ_ENABLE_D3D10_LAYER":
+for var in ("MOZ_ENABLE_D3D10_LAYER",):
     if CONFIG[var]:
         DEFINES[var] = True
 
 OS_LIBS += [
+    "ktmw32",
     "rpcrt4",
     "urlmon",
 ]
@@ -191,4 +204,4 @@ if CONFIG["CC_TYPE"] == "clang-cl":
         "ToastNotificationHandler.cpp",
     ]
 
-REQUIRES_UNIFIED_BUILD = True
+SPHINX_TREES["/widget/windows"] = "docs"

@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import
-
 import json
 import os
 import random
@@ -13,28 +11,23 @@ import sys
 import time
 import traceback
 import unittest
-
 from argparse import ArgumentParser
 from collections import defaultdict
 from copy import deepcopy
-
-import six
 
 import mozinfo
 import moznetwork
 import mozprofile
 import mozversion
-
+import six
 from manifestparser import TestManifest
 from manifestparser.filters import tags
 from marionette_driver.marionette import Marionette
 from moztest.adapters.unit import StructuredTestResult, StructuredTestRunner
 from moztest.results import TestResult, TestResultCollection, relevant_line
-
-from six import reraise, MAXSIZE
+from six import MAXSIZE, reraise
 
 from . import serve
-
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -422,18 +415,11 @@ class BaseMarionetteArguments(ArgumentParser):
             " Pass in the debugger you want to use, eg pdb or ipdb.",
         )
         self.add_argument(
-            "--enable-fission",
+            "--disable-fission",
             action="store_true",
-            dest="enable_fission",
+            dest="disable_fission",
             default=False,
-            help="Enable Fission (site isolation) in Gecko.",
-        )
-        self.add_argument(
-            "--enable-webrender",
-            action="store_true",
-            dest="enable_webrender",
-            default=False,
-            help="Enable the WebRender compositor in Gecko.",
+            help="Disable Fission (site isolation) in Gecko.",
         )
         self.add_argument(
             "-z",
@@ -650,8 +636,7 @@ class BaseMarionetteTestRunner(object):
         verbose=0,
         emulator=False,
         headless=False,
-        enable_fission=False,
-        enable_webrender=False,
+        disable_fission=False,
         **kwargs
     ):
         self._appName = None
@@ -695,15 +680,8 @@ class BaseMarionetteTestRunner(object):
         self.workspace_path = workspace or os.getcwd()
         self.verbose = verbose
         self.headless = headless
-        self.enable_webrender = enable_webrender
 
-        self.enable_fission = enable_fission
-        if self.enable_fission:
-            self.prefs.update(
-                {
-                    "fission.autostart": True,
-                }
-            )
+        self.prefs.update({"fission.autostart": not disable_fission})
 
         # If no repeat has been set, default to 30 extra runs
         if self.run_until_failure and repeat is None:
@@ -862,7 +840,6 @@ class BaseMarionetteTestRunner(object):
             "startup_timeout": self.startup_timeout,
             "verbose": self.verbose,
             "symbols_path": self.symbols_path,
-            "enable_webrender": self.enable_webrender,
         }
         if self.bin or self.emulator:
             kwargs.update(
@@ -1138,7 +1115,6 @@ class BaseMarionetteTestRunner(object):
                     "appname": self.appName,
                     "manage_instance": self.marionette.instance is not None,
                     "headless": self.headless,
-                    "webrender": self.enable_webrender,
                 }
             )
             self.logger.info("mozinfo updated from: {}".format(json_path))
@@ -1281,7 +1257,7 @@ class BaseMarionetteTestRunner(object):
                     # it is still running. If that fails, kill the process.
                     # Therefore a new session needs to be started.
                     self.marionette.start_session()
-                    self.marionette.quit(in_app=True)
+                    self.marionette.quit()
 
                 self.marionette.instance.close(clean=True)
                 self.marionette.instance = None

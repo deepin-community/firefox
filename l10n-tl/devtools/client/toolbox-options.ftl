@@ -48,6 +48,7 @@ options-default-color-unit-authored = As Authored
 options-default-color-unit-hex = Hex
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Mga Ngalan ng Kulay
 
 ## Style Editor section
@@ -125,9 +126,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Kasalukuyang session lang, ire-reload ang pahina
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Ipakita ang Gecko Platform Data
-options-show-platform-data-tooltip =
-    .title = Kapag inenable ang option na ito, ang mga JavaScript profiler report ay magsasama ng mga Gecko platform symbol

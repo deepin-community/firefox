@@ -1,16 +1,13 @@
 "use strict";
 
-const { ctypes } = ChromeUtils.import("resource://gre/modules/ctypes.jsm");
-let eseBackStage = ChromeUtils.import(
-  "resource:///modules/ESEDBReader.jsm",
-  null
+const { ctypes } = ChromeUtils.importESModule(
+  "resource://gre/modules/ctypes.sys.mjs"
 );
-let ESE = eseBackStage.ESE;
-let KERNEL = eseBackStage.KERNEL;
-let gLibs = eseBackStage.gLibs;
-let COLUMN_TYPES = eseBackStage.COLUMN_TYPES;
-let declareESEFunction = eseBackStage.declareESEFunction;
-let loadLibraries = eseBackStage.loadLibraries;
+const { ESE, KERNEL, gLibs, COLUMN_TYPES, declareESEFunction, loadLibraries } =
+  ChromeUtils.importESModule("resource:///modules/ESEDBReader.sys.mjs");
+const { EdgeProfileMigrator } = ChromeUtils.importESModule(
+  "resource:///modules/EdgeProfileMigrator.sys.mjs"
+);
 
 let gESEInstanceCounter = 1;
 
@@ -364,7 +361,7 @@ let eseDBWritingHelpers = {
       try {
         this._close();
       } catch (ex) {
-        Cu.reportError(ex);
+        console.error(ex);
       }
     }
   },
@@ -393,7 +390,7 @@ let eseDBWritingHelpers = {
   },
 };
 
-add_task(async function() {
+add_task(async function () {
   let tempFile = Services.dirsvc.get("TmpD", Ci.nsIFile);
   tempFile.append("fx-xpcshell-edge-db");
   tempFile.createUnique(tempFile.DIRECTORY_TYPE, 0o600);
@@ -495,6 +492,53 @@ add_task(async function() {
       IsDeleted: false,
     },
   ];
+
+  // The following entries are expected to be skipped as being too old to
+  // migrate.
+  let expiredTypedURLsReferenceItems = [
+    {
+      URL: "https://expired1.invalid/",
+      AccessDateTimeUTC: dateDaysAgo(500),
+    },
+    {
+      URL: "https://expired2.invalid/",
+      AccessDateTimeUTC: dateDaysAgo(300),
+    },
+    {
+      URL: "https://expired3.invalid/",
+      AccessDateTimeUTC: dateDaysAgo(190),
+    },
+  ];
+
+  // The following entries should be new enough to migrate.
+  let unexpiredTypedURLsReferenceItems = [
+    {
+      URL: "https://unexpired1.invalid/",
+      AccessDateTimeUTC: dateDaysAgo(179),
+    },
+    {
+      URL: "https://unexpired2.invalid/",
+      AccessDateTimeUTC: dateDaysAgo(50),
+    },
+    {
+      URL: "https://unexpired3.invalid/",
+    },
+  ];
+
+  let typedURLsReferenceItems = [
+    ...expiredTypedURLsReferenceItems,
+    ...unexpiredTypedURLsReferenceItems,
+  ];
+
+  Assert.ok(
+    MigrationUtils.HISTORY_MAX_AGE_IN_DAYS < 300,
+    "This test expects the current pref to be less than the youngest expired visit."
+  );
+  Assert.ok(
+    MigrationUtils.HISTORY_MAX_AGE_IN_DAYS > 160,
+    "This test expects the current pref to be greater than the oldest unexpired visit."
+  );
+
   eseDBWritingHelpers.setupDB(
     db,
     new Map([
@@ -534,22 +578,28 @@ add_task(async function() {
           rows: readingListReferenceItems,
         },
       ],
+      [
+        "TypedURLs",
+        {
+          columns: [
+            { type: COLUMN_TYPES.JET_coltypLongText, name: "URL", cbMax: 4096 },
+            {
+              type: COLUMN_TYPES.JET_coltypLongLong,
+              name: "AccessDateTimeUTC",
+            },
+          ],
+          rows: typedURLsReferenceItems,
+        },
+      ],
     ])
   );
 
-  let migrator = Cc[
-    "@mozilla.org/profile/migrator;1?app=browser&type=edge"
-  ].createInstance(Ci.nsIBrowserProfileMigrator);
-  let bookmarksMigrator = migrator.wrappedJSObject.getBookmarksMigratorForTesting(
-    db
-  );
+  // Manually create an EdgeProfileMigrator rather than going through
+  // MigrationUtils.getMigrator to avoid the user data availability check, since
+  // we're mocking out that stuff.
+  let migrator = new EdgeProfileMigrator();
+  let bookmarksMigrator = migrator.getBookmarksMigratorForTesting(db);
   Assert.ok(bookmarksMigrator.exists, "Should recognize db we just created");
-
-  let source = await MigrationUtils.getLocalizedString("source-name-edge");
-  let sourceLabel = await MigrationUtils.getLocalizedString(
-    "imported-bookmarks-source",
-    { source }
-  );
 
   let seenBookmarks = [];
   let listener = events => {
@@ -586,7 +636,7 @@ add_task(async function() {
   let migrateResult = await new Promise(resolve =>
     bookmarksMigrator.migrate(resolve)
   ).catch(ex => {
-    Cu.reportError(ex);
+    console.error(ex);
     Assert.ok(false, "Got an exception trying to migrate data! " + ex);
     return false;
   });
@@ -598,9 +648,9 @@ add_task(async function() {
     "Should have seen 5 items being bookmarked."
   );
   Assert.equal(
-    seenBookmarks.filter(bm => bm.title != sourceLabel).length,
+    seenBookmarks.length,
     MigrationUtils._importQuantities.bookmarks,
-    "Telemetry should have items except for 'From Microsoft Edge' folders"
+    "Telemetry should have items"
   );
 
   let menuParents = seenBookmarks.filter(
@@ -631,15 +681,10 @@ add_task(async function() {
     .filter(item => item.ParentId == "921dc8a0-6c83-40ef-8df1-9bd1c5c56aaf")
     .map(item => item.Title);
 
-  let importParentFolderName = sourceLabel;
-
   for (let bookmark of seenBookmarks) {
     let shouldBeInMenu = expectedTitlesInMenu.includes(bookmark.title);
     let shouldBeInToolbar = expectedTitlesInToolbar.includes(bookmark.title);
-    if (
-      bookmark.title == "Folder" ||
-      bookmark.title == importParentFolderName
-    ) {
+    if (bookmark.title == "Folder") {
       Assert.equal(
         bookmark.itemType,
         PlacesUtils.bookmarks.TYPE_FOLDER,
@@ -694,11 +739,6 @@ add_task(async function() {
       someItem => bookmark.title == someItem.Title
     );
     if (!dbItem) {
-      Assert.equal(
-        bookmark.title,
-        importParentFolderName,
-        "Only the extra layer of folders isn't in the input we stuck in the DB."
-      );
       Assert.ok(
         [menuParentGuid, toolbarParentGuid].includes(bookmark.guid),
         "This item should be one of the containers"
@@ -743,14 +783,12 @@ add_task(async function() {
   };
   PlacesUtils.observers.addListener(["bookmark-added"], listener);
 
-  let readingListMigrator = migrator.wrappedJSObject.getReadingListMigratorForTesting(
-    db
-  );
+  let readingListMigrator = migrator.getReadingListMigratorForTesting(db);
   Assert.ok(readingListMigrator.exists, "Should recognize db we just created");
   migrateResult = await new Promise(resolve =>
     readingListMigrator.migrate(resolve)
   ).catch(ex => {
-    Cu.reportError(ex);
+    console.error(ex);
     Assert.ok(false, "Got an exception trying to migrate data! " + ex);
     return false;
   });
@@ -762,9 +800,9 @@ add_task(async function() {
     "Should have seen 3 items being bookmarked (2 items + 1 folder)."
   );
   Assert.equal(
-    seenBookmarks.filter(bm => bm.title != sourceLabel).length,
+    seenBookmarks.length,
     MigrationUtils._importQuantities.bookmarks,
-    "Telemetry should have items except for 'From Microsoft Edge' folders"
+    "Telemetry should have items"
   );
   let readingListContainerLabel = await MigrationUtils.getLocalizedString(
     "imported-edge-reading-list"
@@ -788,4 +826,24 @@ add_task(async function() {
     !readingListReferenceItems.length,
     "Should have seen all expected items."
   );
+
+  let historyDBMigrator = migrator.getHistoryDBMigratorForTesting(db);
+  await new Promise(resolve => {
+    historyDBMigrator.migrate(resolve);
+  });
+  Assert.ok(true, "History DB migration done!");
+  for (let expiredEntry of expiredTypedURLsReferenceItems) {
+    let entry = await PlacesUtils.history.fetch(expiredEntry.URL, {
+      includeVisits: true,
+    });
+    Assert.equal(entry, null, "Should not have found an entry.");
+  }
+
+  for (let unexpiredEntry of unexpiredTypedURLsReferenceItems) {
+    let entry = await PlacesUtils.history.fetch(unexpiredEntry.URL, {
+      includeVisits: true,
+    });
+    Assert.equal(entry.url, unexpiredEntry.URL, "Should have the correct URL");
+    Assert.ok(!!entry.visits.length, "Should have some visits");
+  }
 });

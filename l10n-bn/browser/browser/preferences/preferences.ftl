@@ -9,6 +9,18 @@ do-not-track-option-default-content-blocking-known =
 do-not-track-option-always =
     .label = সর্বদা
 
+# This is used to determine the width of the search field in about:preferences,
+# in order to make the entire placeholder string visible
+#
+# Please keep the placeholder string short to avoid truncation.
+#
+# Notice: The value of the `.style` attribute is a CSS string, and the `width`
+# is the name of the CSS property. It is intended only to adjust the element's width.
+# Do not translate.
+search-input-box2 =
+    .style = width: 15.4em
+    .placeholder = সেটিংসে খুঁজুন
+
 managed-notice = আপনার ব্রাউজার আপনার প্রতিষ্ঠান দ্বারা পরিচালিত হচ্ছে।
 
 pane-general-title = সাধারণ
@@ -27,7 +39,9 @@ pane-privacy-title = গোপনীয়তা ও নিরাপত্তা
 category-privacy =
     .tooltiptext = { pane-privacy-title }
 
-help-button-label = { -brand-short-name } সাপোর্ট
+pane-sync-title3 = সিঙ্ক
+
+help-button-label = { -brand-short-name } সহায়তা
 addons-button-label = এক্সটেনশন ও থিম
 
 focus-search =
@@ -55,21 +69,16 @@ restart-later = পরে রিস্টার্ট করা হবে
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that their notifications permission
-# is being controlled by an extension.
-extension-controlled-web-notifications = এক্সটেনশন, <img data-l10n-name="icon"/> { $name }, এই সেটিং নিয়ন্ত্রণ করছে।
 
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = এক্সটেনশন <img data-l10n-name="icon"/> { $name }-র কন্টেইনার ট্যাব প্রয়োজন।
-
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = এক্সটেনশন, <img data-l10n-name="icon"/> { $name }, এই সেটিং নিয়ন্ত্রণ করছে।
-
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = একটি এক্সটেনসন, <img data-l10n-name="icon"/> { $name }, কিভাবে { -brand-short-name } ইন্টারনেটের সাথে সংযোগ করে তা নিয়ন্ত্রণ করছে।
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -82,7 +91,7 @@ extension-controlled-enable = এক্সটেনশনটি সক্রি�
 
 search-results-header = অনুসন্ধানের ফলাফল
 
-search-results-help-link = সাহায্য প্রয়োজন? <a data-l10n-name="url">{ -brand-short-name } সাপোর্ট</a> দেখুন
+search-results-help-link = সাহায্য প্রয়োজন? <a data-l10n-name="url">{ -brand-short-name } সহায়তা</a> দেখুন
 
 ## General Section
 
@@ -99,8 +108,8 @@ set-as-my-default-browser =
     .label = ডিফল্ট করুন…
     .accesskey = D
 
-startup-restore-previous-session =
-    .label = পূর্ববর্তী সেশন পুনরুদ্ধার
+startup-restore-windows-and-tabs =
+    .label = পূর্ববর্তী উইন্ডো ও ট্যাব খুলুন
     .accesskey = s
 
 startup-restore-warn-on-quit =
@@ -118,10 +127,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = নতুন উইন্ডোর পরিবর্তে নতুন ট্যাবে লিঙ্ক খুলুন
     .accesskey = w
-
-warn-on-close-multiple-tabs =
-    .label = যখন একাধিক ট্যাব বন্ধ করার চেষ্টা করা হলে আপনাকে সর্তক করা হবে।
-    .accesskey = m
 
 warn-on-open-many-tabs =
     .label = একাধিক ট্যাব খোলার ফলে { -brand-short-name } ধীর হয়ে যাবার সম্ভবনা থাকলে সতর্ক করা হবে।
@@ -142,6 +147,10 @@ browser-containers-settings =
     .accesskey = i
 
 containers-disable-alert-title = সব কন্টেইনার ট্যাব বন্ধ করবেন?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] আপনি যদি এখন কন্টেইনার ট্যাবগুলো নিস্ক্রিয় করেন, { $tabCount } কন্টেইনার ট্যাব বন্ধ হয়ে যাবে। আপনি কি নিশ্চিত আপনি কন্টেইনার ট্যাবগুলো নিষ্ক্রিয় করতে চান?
@@ -153,6 +162,9 @@ containers-disable-alert-ok-button =
         [one] { $tabCount } কন্টেইনার ট্যাব বন্ধ করুন
        *[other] { $tabCount } কন্টেইনার ট্যাবগুলো বন্ধ করুন
     }
+
+##
+
 containers-disable-alert-cancel-button = সক্রিয় রাখুন
 
 containers-remove-alert-title = এই কন্টেইনার সরাতে চান?
@@ -168,12 +180,9 @@ containers-remove-alert-msg =
 containers-remove-ok-button = এই কন্টেইনার সরান
 containers-remove-cancel-button = এই কন্টেইনার অপসারণ কর না
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = ভাষা ও অবয়ব
-
-fonts-and-colors-header = ফন্ট ও রঙ
 
 default-font = ডিফল্ট ফন্ট
     .accesskey = D
@@ -184,12 +193,18 @@ advanced-fonts =
     .label = উচ্চপর্যায়...
     .accesskey = A
 
-colors-settings =
-    .label = রঙ...
-    .accesskey = C
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header = জু়ম
+
+preferences-default-zoom = পূর্বনির্ধারিত জুম
+    .accesskey = z
 
 preferences-default-zoom-value =
     .label = { $percentage }%
+
+preferences-zoom-text-only =
+    .label = শুধুমাত্র লেখা বড় কর
+    .accesskey = t
 
 language-header = ভাষা
 
@@ -228,8 +243,7 @@ files-and-applications-title = ফাইল ও অ্যাপ্লিকে�
 
 download-header = ডাউনলোড
 
-download-save-to =
-    .label = ফাইল সংরক্ষণের স্থান
+download-save-where = ফাইল সংরক্ষণের স্থান
     .accesskey = v
 
 download-choose-folder =
@@ -302,6 +316,8 @@ applications-file-ending-with-type = { applications-file-ending } ({ $type })
 #   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = { $plugin-name } ব্যবহার করা হবে ({ -brand-short-name } তে)
+applications-open-inapp =
+    .label = { -brand-short-name } এ খুলুন
 
 ## The strings in this group are used to populate
 ## selected label element based on the string from
@@ -316,6 +332,9 @@ applications-action-save-label =
 applications-use-app-label =
     .value = { applications-use-app.label }
 
+applications-open-inapp-label =
+    .value = { applications-open-inapp.label }
+
 applications-always-ask-label =
     .value = { applications-always-ask.label }
 
@@ -324,6 +343,9 @@ applications-use-app-default-label =
 
 applications-use-other-label =
     .value = { applications-use-other.label }
+
+applications-use-os-default-label =
+    .value = { applications-use-os-default.label }
 
 ##
 
@@ -431,6 +453,8 @@ browsing-picture-in-picture-toggle-enabled =
 
 browsing-picture-in-picture-learn-more = আরও জানুন
 
+browsing-media-control-learn-more = আরও জানুন
+
 browsing-cfr-recommendations =
     .label = আপনার ব্রাউজ হিসাবে প্রস্তাবিত এক্সটেনশন
     .accesskey = R
@@ -468,11 +492,6 @@ home-restore-defaults =
     .label = ডিফল্ট মান পুনরায় স্থাপন
     .accesskey = R
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Firefox Home (ডিফল্ট)
-
 home-mode-choice-custom =
     .label = কাস্টম URLs…
 
@@ -490,7 +509,7 @@ use-current-pages =
     .label =
         { $tabCount ->
             [1] বর্তমান পাতা ব্যবহার করুন
-           *[other] বর্তমান পাতা ব্যবহার কর
+           *[other] বর্তমান পাতাগুলো ব্যবহার করুন
         }
     .accesskey = C
 
@@ -500,20 +519,16 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Firefox Home কনটেন্ট
-home-prefs-content-description = আপনার Firefox Home স্ক্রিনে যেসব কনটেন্ট রাখতে চান তা পছন্দ করুন।
-
 home-prefs-search-header =
     .label = ওয়েব অনুসন্ধান
-home-prefs-topsites-header =
-    .label = শীর্ষ সাইট
-home-prefs-topsites-description = যে সাইটগুলিতে আপনি বেশি যান
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 
-# Variables:
-#  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+
 home-prefs-recommended-by-header =
     .label = { $provider } দ্বারা সুপারিশকৃত
 
@@ -523,9 +538,6 @@ home-prefs-recommended-by-learn-more = কিভাবে এটা কাজ �
 home-prefs-recommended-by-option-sponsored-stories =
     .label = স্পন্সর করা স্টোরি
 
-home-prefs-highlights-header =
-    .label = হাইলাইটস
-home-prefs-highlights-description = সাইটের একটি সেকশন যা আপনি সংরক্ষণ অথবা গিয়েছিলেন
 home-prefs-highlights-option-visited-pages =
     .label = ঘুরে আসা পেজ
 home-prefs-highlights-options-bookmarks =
@@ -541,25 +553,23 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = টুকিটাকি
-home-prefs-snippets-description = { -vendor-short-name } and { -brand-product-name } থেকে হালনাগাদ
 
 home-prefs-sections-rows-option =
     .label =
         { $num ->
-            [one] { $num } সারি
-           *[other] { $num } সারিগুলি
+            [one] { $num }টি সারি
+           *[other] { $num }টি সারি
         }
 
 ## Search Section
 
-search-bar-header = অনুসন্ধান বার
+search-bar-header = অনুসন্ধান দণ্ড
 search-bar-hidden =
-    .label = অনুসন্ধান এবং নেভিগেশনের জন্য ঠিকানা বার ব্যবহার করুন
+    .label = অনুসন্ধান ও পরিভ্রমণের জন্য ঠিকানাদণ্ড ব্যবহার করুন
 search-bar-shown =
-    .label = টুলবারে অনুসন্ধান বার যুক্ত করুন
+    .label = সরঞ্জাম দণ্ডে অনুসন্ধান দণ্ড যুক্ত করুন
 
 search-engine-default-header = ডিফল্ট অনুসন্ধান ইঞ্জিন
-
 search-engine-default-desc-2 = এটি ঠিকানা বার এবং অনুসন্ধান বারে আপনার ডিফল্ট অনুসন্ধান ইঞ্জিন। আপনি যেকোন সময় পরিবর্তন করতে পারবেন।
 search-engine-default-private-desc-2 = কেবলমাত্র ব্যক্তিগত উইন্ডোজের জন্য আলাদা ডিফল্ট অনুসন্ধান ইঞ্জিন নির্বাচন করুন
 search-separate-default-engine =
@@ -576,6 +586,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = ঠিকানা বার ফলাফলে অনুসন্ধান পরামর্শ দেখাও
     .accesskey = l
+
 
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
@@ -622,13 +633,18 @@ containers-add-button =
     .label = নতুন কন্টেইনার যোগ
     .accesskey = A
 
+containers-new-tab-check =
+    .label = প্রতিটি নতুন ট্যাবের জন্য একটি কনটেইনার নির্বাচন করুন
+    .accesskey = S
+
 containers-remove-button =
     .label = অপসারণ
 
-## Sync Section - Signed out
-
-
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = আপনার ওয়েব আপনার সঙ্গে নিন
@@ -641,12 +657,12 @@ sync-signedout-caption = আপনার ওয়েব আপনার সঙ্�
 #
 # They can be moved within the sentence as needed to adapt
 # to your language, but should not be changed or translated.
-sync-mobile-promo = Firefox ডাউনলোড <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> অথবা <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a> আপনার মোবাইল ডিভাইসের সাথে সিঙ্ক করতে।
-
-## Sync Section - Signed in
-
+sync-mobile-promo = আপনার মোবাইল ডিভাইসের সাথে সিঙ্ক করতে <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">অ্যান্ড্রয়েড</a> বা <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">আইওএসের</a> জন্য ফায়ারফক্স ডাউনলোড করুন।
 
 ## Firefox Account - Signed in
+
+
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = প্রোফাইলের ছবি পরিবর্তন করুন
@@ -658,8 +674,13 @@ sync-sign-out =
 sync-manage-account = অ্যাকাউন্ট ব্যবস্থাপনা
     .accesskey = o
 
-sync-signedin-unverified = { $email } যাচাই কৃত না
-sync-signedin-login-failure = পুনরায় সংযোগ স্থাপন করতে সাইন ইন করুন { $email }
+## Variables
+## $email (string) - Email used for Firefox account
+
+sync-signedin-unverified = { $email } যাচাইকৃত নয়।
+sync-signedin-login-failure = { $email } পুনরায় সংযোগ করতে অনুগ্রহ করে সাইন ইন করুন
+
+##
 
 sync-resend-verification =
     .label = যাচাইকরণ পুনরায় পাঠান
@@ -684,9 +705,14 @@ prefs-sync-now =
     .accesskeynotsyncing = N
     .labelsyncing = সিঙ্ক হচ্ছে…
 
-## The list of things currently syncing.
+prefs-sync-now-button =
+    .label = এখনই সিঙ্ক করুন
+    .accesskey = N
 
-sync-currently-syncing-heading = আপনি বর্তমানে এই আইটেম সিঙ্ক করছেন:
+prefs-syncing-button =
+    .label = সিঙ্ক হচ্ছে…
+
+## The list of things currently syncing.
 
 sync-currently-syncing-bookmarks = বুকমার্ক
 sync-currently-syncing-history = ইতিহাস
@@ -695,6 +721,7 @@ sync-currently-syncing-logins-passwords = লগইন ও পাসওয়ার
 sync-currently-syncing-addresses = ঠিকানা
 sync-currently-syncing-creditcards = ক্রেডিট কার্ড
 sync-currently-syncing-addons = অ্যাড-অন
+sync-currently-syncing-settings = সেটিং
 
 sync-change-options =
     .label = পরিবর্তন করুন...
@@ -702,9 +729,9 @@ sync-change-options =
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog =
+sync-choose-what-to-sync-dialog3 =
     .title = কি সিঙ্ক করবেন তা ঠিক করুন
-    .style = width: 36em; min-height: 35em;
+    .style = min-width: 36em;
     .buttonlabelaccept = পরিবর্তন সংরক্ষণ করুন
     .buttonaccesskeyaccept = S
     .buttonlabelextra2 = বিছিন্ন...
@@ -761,12 +788,19 @@ sync-device-name-save =
 
 sync-connect-another-device = অন্য একটি ডিভাইস সংযুক্ত করুন
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = ভেরিফিকেশন পাঠানো হয়েছে
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = যাচাইকরণ লিঙ্ক { $email } এ পাঠানো হয়েছে।
+sync-verification-not-sent-title = ভেরিফিকেশন পাঠানো সম্ভব হয়নি
+sync-verification-not-sent-body = আমরা এই সময়ে একটি যাচাইকরণ মেইল পাঠাতে অক্ষম, দয়া করে পরে আবার চেষ্টা করুন।
+
 ## Privacy Section
 
 privacy-header = ব্রাউজার গোপনীয়তা
-
-## Privacy Section - Forms
-
 
 ## Privacy Section - Logins and Passwords
 
@@ -796,6 +830,9 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = সংরক্ষিত লগইন L…
     .accesskey = L
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = মাস্টার পাসওয়ার্ড পরিবর্তন...
     .accesskey = M
@@ -804,6 +841,7 @@ forms-master-pw-fips-desc = পাসওয়ার্ড পরিবর্তন
 
 ## OS Authentication dialog
 
+master-password-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy Section - History
 
@@ -889,12 +927,8 @@ sitedata-block-desc = টাইপ ব্লক করা হয়েছে
 
 sitedata-option-block-cross-site-trackers =
     .label = ক্রস সাইট ট্র্যাকার
-sitedata-option-block-cross-site-and-social-media-trackers =
-    .label = ক্রস সাইট এবং সোশ্যাল মিডিয়া ট্র্যাকার
 sitedata-option-block-unvisited =
     .label = অদেখা ওয়েবসাইট থেকে কুকি
-sitedata-option-block-all-third-party =
-    .label = সমস্ত তৃতীয় পক্ষের কুকি (ওয়েবসাইট ভাঙার কারণ হতে পারে)
 sitedata-option-block-all =
     .label = সমস্ত কুকি (ওয়েবসাইট ভাঙার কারণ হতে পারে)
 
@@ -906,6 +940,9 @@ sitedata-settings =
     .label = ডাটা ব্যবস্থাপনা…
     .accesskey = M
 
+## Privacy Section - Cookie Banner Handling
+
+
 ## Privacy Section - Address Bar
 
 addressbar-header = ঠিকানা বার
@@ -916,7 +953,7 @@ addressbar-locbar-history-option =
     .label = ব্রাউজ ইতিহাস
     .accesskey = H
 addressbar-locbar-bookmarks-option =
-    .label = বুকমার্কসমূহ k
+    .label = বুকমার্ক
     .accesskey = k
 addressbar-locbar-openpage-option =
     .label = ট্যাব খুলুন O
@@ -958,17 +995,17 @@ content-blocking-social-media-trackers = সোশ্যাল মিডিয�
 content-blocking-all-cookies = সব কুকি
 content-blocking-unvisited-cookies = অদেখা ওয়েবসাইটের কুকি
 content-blocking-all-windows-tracking-content = সমস্ত উইন্ডোতে কন্টেন্ট ট্র্যাকিং
-content-blocking-all-third-party-cookies = সকল তৃতীয়-পক্ষের কুকিগুলো
 content-blocking-cryptominers = ক্রিপ্টোমাইনার
 content-blocking-fingerprinters = ফিঙ্গারপ্রিন্টারস
 
-content-blocking-warning-title = সাধুবাদ জানাই!
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
+content-blocking-warning-title = সাধুবাদ জানাই!
 content-blocking-warning-learn-how = শিখুন কিভাবে হয়
 
 content-blocking-reload-description = এই পরিবর্তনগুলি প্রয়োগ করার জন্য আপনাকে আপনার ট্যাব পুনরায় লোড করতে হবে।
 content-blocking-reload-tabs-button =
-    .label = সকল ট্যাব পুনরায় লোড করুন
+    .label = সকল ট্যাব পুনঃলোড করুন
     .accesskey = R
 
 content-blocking-tracking-content-label =
@@ -1018,7 +1055,7 @@ permissions-location-settings =
 permissions-xr = ভার্চুয়াল রিয়েলিটি
 permissions-xr-settings =
     .label = সেটিংস…
-    .accesskey = ট
+    .accesskey = t
 
 permissions-camera = ক্যামেরা
 permissions-camera-settings =
@@ -1050,10 +1087,6 @@ permissions-block-popups =
     .label = পপ-আপ উইন্ডো ব্লক করা হবে B
     .accesskey = B
 
-permissions-block-popups-exceptions =
-    .label = ব্যতিক্রম... E
-    .accesskey = E
-
 permissions-addon-install-warning =
     .label = যখন ওয়েবসাইট কোন অ্যাড-অন ইন্সটল করার চেষ্টা করলে আপনাকে সর্তক করবে
     .accesskey = W
@@ -1069,6 +1102,7 @@ collection-header = { -brand-short-name } ডাটা সংগ্রহ ও �
 collection-description = আমরা আপনার ইচ্ছাকে সম্মান করি, আমরা ততটুকু তথ্যই সংগ্রহ করি যা সকলের জন্য { -brand-short-name } এর মানোন্নয়নে প্রয়োজন। কারও ব্যক্তিগত তথ্য গ্রহনের সময় আমরা সর্বদা অনুমতি চাই।
 collection-privacy-notice = গোপনীয়তা নীতি
 
+collection-health-report-telemetry-disabled = আপনি { -vendor-short-name } কে আর কোন টেকনিক্যাল এবং পারস্পরিক যোগাযোগ সংক্রান্ত তথ্য নিয়ন্ত্রণ করতে অনুমতি দিচ্ছেন না। পূর্বের সকল ডেটা ৩০ দিনের মধ্যে মুছে ফেলা হবে।
 collection-health-report-telemetry-disabled-link = আরও জানুন
 
 collection-health-report =
@@ -1128,13 +1162,12 @@ certs-devices =
 
 ## Privacy Section - HTTPS-Only
 
+
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = ডেস্কটপ
 downloads-folder-name = ডাউনলোড
 choose-download-folder-title = ডাউনলোড ফোল্ডার নির্বাচন করুন:
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = { $service-name } এ ফাইল সংরক্ষণ করুন

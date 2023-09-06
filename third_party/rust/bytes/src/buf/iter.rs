@@ -2,8 +2,6 @@ use crate::Buf;
 
 /// Iterator over the bytes contained by the buffer.
 ///
-/// This struct is created by the [`iter`] method on [`Buf`].
-///
 /// # Examples
 ///
 /// Basic usage:
@@ -34,10 +32,9 @@ impl<T> IntoIter<T> {
     ///
     /// ```
     /// use bytes::Bytes;
-    /// use bytes::buf::IntoIter;
     ///
     /// let buf = Bytes::from_static(b"abc");
-    /// let mut iter = IntoIter::new(buf);
+    /// let mut iter = buf.into_iter();
     ///
     /// assert_eq!(iter.next(), Some(b'a'));
     /// assert_eq!(iter.next(), Some(b'b'));
@@ -118,7 +115,7 @@ impl<T: Buf> Iterator for IntoIter<T> {
             return None;
         }
 
-        let b = self.inner.bytes()[0];
+        let b = self.inner.chunk()[0];
         self.inner.advance(1);
 
         Some(b)

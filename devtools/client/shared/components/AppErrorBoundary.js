@@ -5,31 +5,42 @@
 "use strict";
 
 // React deps
-const { Component } = require("devtools/client/shared/vendor/react");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
+const {
+  Component,
+} = require("resource://devtools/client/shared/vendor/react.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
 const { div, h1, h2, h3, p, a } = dom;
 
 // Localized strings for (devtools/client/locales/en-US/components.properties)
-loader.lazyGetter(this, "L10N", function() {
-  const { LocalizationHelper } = require("devtools/shared/l10n");
+loader.lazyGetter(this, "L10N", function () {
+  const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
   return new LocalizationHelper(
     "devtools/client/locales/components.properties"
   );
 });
 
-// File a bug for the Net Monitor specifically
+loader.lazyGetter(this, "FILE_BUG_BUTTON", function () {
+  return L10N.getStr("appErrorBoundary.fileBugButton");
+});
+
+loader.lazyGetter(this, "RELOAD_PAGE_INFO", function () {
+  return L10N.getStr("appErrorBoundary.reloadPanelInfo");
+});
+
+// File a bug for the selected component specifically
 const bugLink =
   "https://bugzilla.mozilla.org/enter_bug.cgi?product=DevTools&component=";
 
 /**
- * Error boundary that wraps around the main App component.
+ * Error boundary that wraps around the a given component.
  */
 class AppErrorBoundary extends Component {
   static get propTypes() {
     return {
       children: PropTypes.any.isRequired,
       panel: PropTypes.any.isRequired,
+      componentName: PropTypes.string.isRequired,
     };
   }
 
@@ -50,7 +61,7 @@ class AppErrorBoundary extends Component {
    *  componentStack: {"\n in (component) \n in (other component)..."}
    */
   renderErrorInfo(info = {}) {
-    if (Object.keys(info).length > 0) {
+    if (Object.keys(info).length) {
       return Object.keys(info).map((obj, outerIdx) => {
         const traceParts = info[obj]
           .split("\n")
@@ -108,18 +119,25 @@ class AppErrorBoundary extends Component {
   getBugLink() {
     const compStack = this.getValidInfo(this.state.errorInfo).componentStack;
     const errorMsg = this.state.errorMsg;
-    const msg = (errorMsg + compStack).replace(/\n/gi, "%0A");
-    return `${bugLink}${this.props.panel}&comment=${msg}`;
+    const errorStack = this.state.errorStack;
+    const msg = `Error: \n${errorMsg}\n\nReact Component Stack: ${compStack}\n\nStacktrace: \n${errorStack}`;
+    return `${bugLink}${this.props.componentName}&comment=${encodeURIComponent(
+      msg
+    )}`;
   }
 
   render() {
     if (this.state.errorInfo !== null) {
+      // "The (componentDesc) has crashed"
+      const errorDescription = L10N.getFormatStr(
+        "appErrorBoundary.description",
+        this.props.panel
+      );
       return div(
-        { className: "app-error-panel" },
-        h1(
-          { className: "error-panel-header" },
-          L10N.getFormatStr("appErrorBoundary.description", this.props.panel)
-        ),
+        {
+          className: `app-error-panel`,
+        },
+        h1({ className: "error-panel-header" }, errorDescription),
         a(
           {
             className: "error-panel-file-button",
@@ -128,15 +146,12 @@ class AppErrorBoundary extends Component {
               window.open(this.getBugLink(), "_blank");
             },
           },
-          L10N.getStr("appErrorBoundary.fileBugButton")
+          FILE_BUG_BUTTON
         ),
         h2({ className: "error-panel-error" }, this.state.errorMsg),
         div({}, this.renderErrorInfo(this.state.errorInfo)),
         div({}, this.renderStackTrace(this.state.errorStack)),
-        p(
-          { className: "error-panel-reload-info" },
-          L10N.getStr("appErrorBoundary.reloadPanelInfo")
-        )
+        p({ className: "error-panel-reload-info" }, RELOAD_PAGE_INFO)
       );
     }
     return this.props.children;

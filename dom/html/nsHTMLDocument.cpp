@@ -11,17 +11,14 @@
 #include "mozilla/StaticPrefs_intl.h"
 #include "nsCommandManager.h"
 #include "nsCOMPtr.h"
-#include "nsGlobalWindow.h"
 #include "nsString.h"
 #include "nsPrintfCString.h"
 #include "nsReadableUtils.h"
 #include "nsUnicharUtils.h"
-#include "nsGlobalWindowInner.h"
 #include "nsIHTMLContentSink.h"
 #include "nsIProtocolHandler.h"
 #include "nsIXMLContentSink.h"
 #include "nsHTMLParts.h"
-#include "nsHTMLStyleSheet.h"
 #include "nsGkAtoms.h"
 #include "nsPresContext.h"
 #include "nsPIDOMWindow.h"
@@ -40,7 +37,6 @@
 #include "nsAttrName.h"
 
 #include "nsNetCID.h"
-#include "nsParserCIID.h"
 #include "mozilla/parser/PrototypeDocumentParser.h"
 #include "mozilla/dom/PrototypeDocumentContentSink.h"
 #include "nsNameSpaceManager.h"
@@ -52,7 +48,6 @@
 #include "nsJSUtils.h"
 #include "DocumentInlines.h"
 #include "nsICachingChannel.h"
-#include "nsIContentViewer.h"
 #include "nsIScriptElement.h"
 #include "nsArrayUtils.h"
 
@@ -74,6 +69,7 @@
 #include "nsIRequest.h"
 #include "nsHtml5TreeOpExecutor.h"
 #include "nsHtml5Parser.h"
+#include "nsParser.h"
 #include "nsSandboxFlags.h"
 #include "mozilla/dom/HTMLBodyElement.h"
 #include "mozilla/dom/HTMLDocumentBinding.h"
@@ -94,9 +90,7 @@ using namespace mozilla::dom;
 
 #include "prtime.h"
 
-//#define DEBUG_charset
-
-static NS_DEFINE_CID(kCParserCID, NS_PARSER_CID);
+// #define DEBUG_charset
 
 // ==================================================================
 // =
@@ -106,10 +100,13 @@ static bool IsAsciiCompatible(const Encoding* aEncoding) {
   return aEncoding->IsAsciiCompatible() || aEncoding == ISO_2022_JP_ENCODING;
 }
 
-nsresult NS_NewHTMLDocument(Document** aInstancePtrResult, bool aLoadedAsData) {
+nsresult NS_NewHTMLDocument(Document** aInstancePtrResult,
+                            nsIPrincipal* aPrincipal,
+                            nsIPrincipal* aPartitionedPrincipal,
+                            bool aLoadedAsData) {
   RefPtr<nsHTMLDocument> doc = new nsHTMLDocument();
 
-  nsresult rv = doc->Init();
+  nsresult rv = doc->Init(aPrincipal, aPartitionedPrincipal);
 
   if (NS_FAILED(rv)) {
     *aInstancePtrResult = nullptr;
@@ -142,8 +139,9 @@ JSObject* nsHTMLDocument::WrapNode(JSContext* aCx,
   return HTMLDocument_Binding::Wrap(aCx, this, aGivenProto);
 }
 
-nsresult nsHTMLDocument::Init() {
-  nsresult rv = Document::Init();
+nsresult nsHTMLDocument::Init(nsIPrincipal* aPrincipal,
+                              nsIPrincipal* aPartitionedPrincipal) {
+  nsresult rv = Document::Init(aPrincipal, aPartitionedPrincipal);
   NS_ENSURE_SUCCESS(rv, rv);
 
   // Now reset the compatibility mode of the CSSLoader
@@ -180,7 +178,7 @@ void nsHTMLDocument::ResetToURI(nsIURI* aURI, nsILoadGroup* aLoadGroup,
   // Make the content type default to "text/html", we are a HTML
   // document, after all. Once we start getting data, this may be
   // changed.
-  SetContentTypeInternal(nsDependentCString("text/html"));
+  SetContentType(nsDependentCString("text/html"));
 }
 
 void nsHTMLDocument::TryReloadCharset(nsIContentViewer* aCv,
@@ -289,19 +287,12 @@ bool ShouldUsePrototypeDocument(nsIChannel* aChannel, Document* aDoc) {
   return nsContentUtils::IsChromeDoc(aDoc);
 }
 
-nsresult nsHTMLDocument::StartDocumentLoad(const char* aCommand,
-                                           nsIChannel* aChannel,
-                                           nsILoadGroup* aLoadGroup,
-                                           nsISupports* aContainer,
-                                           nsIStreamListener** aDocListener,
-                                           bool aReset, nsIContentSink* aSink) {
+nsresult nsHTMLDocument::StartDocumentLoad(
+    const char* aCommand, nsIChannel* aChannel, nsILoadGroup* aLoadGroup,
+    nsISupports* aContainer, nsIStreamListener** aDocListener, bool aReset) {
   if (!aCommand) {
     MOZ_ASSERT(false, "Command is mandatory");
     return NS_ERROR_INVALID_POINTER;
-  }
-  if (aSink) {
-    MOZ_ASSERT(false, "Got a sink override. Should not happen for HTML doc.");
-    return NS_ERROR_INVALID_ARG;
   }
   if (mType != eHTML) {
     MOZ_ASSERT(mType == eXHTML);
@@ -393,8 +384,7 @@ nsresult nsHTMLDocument::StartDocumentLoad(const char* aCommand,
     aChannel->GetOriginalURI(getter_AddRefs(originalURI));
     mParser = new mozilla::parser::PrototypeDocumentParser(originalURI, this);
   } else {
-    mParser = do_CreateInstance(kCParserCID, &rv);
-    NS_ENSURE_SUCCESS(rv, rv);
+    mParser = new nsParser();
   }
 
   // Look for the parent document.  Note that at this point we don't have our
@@ -513,7 +503,7 @@ nsresult nsHTMLDocument::StartDocumentLoad(const char* aCommand,
   }
 
   // parser the content of the URI
-  mParser->Parse(uri, this);
+  mParser->Parse(uri);
 
   return rv;
 }
@@ -561,7 +551,7 @@ void nsHTMLDocument::AddedForm() { ++mNumForms; }
 
 void nsHTMLDocument::RemovedForm() { --mNumForms; }
 
-int32_t nsHTMLDocument::GetNumFormsSynchronous() { return mNumForms; }
+int32_t nsHTMLDocument::GetNumFormsSynchronous() const { return mNumForms; }
 
 bool nsHTMLDocument::ResolveName(JSContext* aCx, const nsAString& aName,
                                  JS::MutableHandle<JS::Value> aRetval,
@@ -622,7 +612,7 @@ void nsHTMLDocument::GetSupportedNames(nsTArray<nsString>& aNames) {
 
 bool nsHTMLDocument::MatchFormControls(Element* aElement, int32_t aNamespaceID,
                                        nsAtom* aAtom, void* aData) {
-  return aElement->IsNodeOfType(nsIContent::eHTML_FORM_CONTROL);
+  return aElement->IsHTMLFormControlElement();
 }
 
 nsresult nsHTMLDocument::Clone(dom::NodeInfo* aNodeInfo,
@@ -686,11 +676,10 @@ bool nsHTMLDocument::WillIgnoreCharsetOverride() {
     case kCharsetFromDocTypeDefault:
     case kCharsetFromInitialAutoDetectionWouldHaveBeenUTF8:
     case kCharsetFromInitialAutoDetectionWouldNotHaveBeenUTF8DependedOnTLD:
-    case kCharsetFromFinalAutoDetectionWouldHaveBeenUTF8:
+    case kCharsetFromFinalAutoDetectionWouldHaveBeenUTF8InitialWasASCII:
     case kCharsetFromFinalAutoDetectionWouldNotHaveBeenUTF8DependedOnTLD:
     case kCharsetFromParentFrame:
     case kCharsetFromXmlDeclaration:
-    case kCharsetFromMetaPrescan:
     case kCharsetFromMetaTag:
     case kCharsetFromChannel:
       return false;

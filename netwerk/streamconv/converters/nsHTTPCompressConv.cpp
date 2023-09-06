@@ -5,8 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsHTTPCompressConv.h"
-#include "nsMemory.h"
-#include "plstr.h"
 #include "nsCOMPtr.h"
 #include "nsCRT.h"
 #include "nsError.h"
@@ -15,6 +13,7 @@
 #include "nsComponentManagerUtils.h"
 #include "nsThreadUtils.h"
 #include "mozilla/Preferences.h"
+#include "mozilla/StaticPrefs_network.h"
 #include "mozilla/Logging.h"
 #include "nsIForcePendingChannel.h"
 #include "nsIRequest.h"
@@ -162,8 +161,11 @@ nsHTTPCompressConv::OnStopRequest(nsIRequest* request, nsresult aStatus) {
     if (fpChannel && !isPending) {
       fpChannel->ForcePending(true);
     }
-    if (mBrotli && (mBrotli->mTotalOut == 0) &&
-        !mBrotli->mBrotliStateIsStreamEnd) {
+    bool allowTruncatedEmpty =
+        StaticPrefs::network_compress_allow_truncated_empty_brotli();
+    if (mBrotli && ((allowTruncatedEmpty && NS_FAILED(mBrotli->mStatus)) ||
+                    (!allowTruncatedEmpty && mBrotli->mTotalOut == 0 &&
+                     !mBrotli->mBrotliStateIsStreamEnd))) {
       status = NS_ERROR_INVALID_CONTENT_ENCODING;
     }
     LOG(("nsHttpCompresssConv %p onstop brotlihandler rv %" PRIx32 "\n", this,
@@ -206,7 +208,6 @@ nsresult nsHTTPCompressConv::BrotliHandler(nsIInputStream* stream,
     self->mBrotli->mStatus = NS_ERROR_OUT_OF_MEMORY;
     return self->mBrotli->mStatus;
   }
-
   do {
     outSize = kOutSize;
     outPtr = outBuffer.get();
@@ -242,15 +243,36 @@ nsresult nsHTTPCompressConv::BrotliHandler(nsIInputStream* stream,
         return self->mBrotli->mStatus;
       }
     }
-    if (outSize > 0) {
-      nsresult rv = self->do_OnDataAvailable(
-          self->mBrotli->mRequest, self->mBrotli->mContext,
-          self->mBrotli->mSourceOffset,
-          reinterpret_cast<const char*>(outBuffer.get()), outSize);
+
+    auto callOnDataAvailable = [&](uint64_t aSourceOffset, const char* aBuffer,
+                                   uint32_t aCount) {
+      nsresult rv = self->do_OnDataAvailable(self->mBrotli->mRequest,
+                                             aSourceOffset, aBuffer, aCount);
       LOG(("nsHttpCompressConv %p BrotliHandler ODA rv=%" PRIx32, self,
            static_cast<uint32_t>(rv)));
       if (NS_FAILED(rv)) {
         self->mBrotli->mStatus = rv;
+      }
+
+      return rv;
+    };
+
+    if (outSize > 0) {
+      if (NS_FAILED(callOnDataAvailable(
+              self->mBrotli->mSourceOffset,
+              reinterpret_cast<const char*>(outBuffer.get()), outSize))) {
+        return self->mBrotli->mStatus;
+      }
+    }
+
+    // See bug 1759745. If the decoder has more output data, take it.
+    while (::BrotliDecoderHasMoreOutput(&self->mBrotli->mState)) {
+      outSize = kOutSize;
+      const uint8_t* buffer =
+          ::BrotliDecoderTakeOutput(&self->mBrotli->mState, &outSize);
+      if (NS_FAILED(callOnDataAvailable(self->mBrotli->mSourceOffset,
+                                        reinterpret_cast<const char*>(buffer),
+                                        outSize))) {
         return self->mBrotli->mStatus;
       }
     }
@@ -361,8 +383,8 @@ nsHTTPCompressConv::OnDataAvailable(nsIRequest* request, nsIInputStream* iStr,
 
           if (code == Z_STREAM_END) {
             if (bytesWritten) {
-              rv = do_OnDataAvailable(request, nullptr, aSourceOffset,
-                                      (char*)mOutBuffer, bytesWritten);
+              rv = do_OnDataAvailable(request, aSourceOffset, (char*)mOutBuffer,
+                                      bytesWritten);
               if (NS_FAILED(rv)) {
                 return rv;
               }
@@ -374,16 +396,16 @@ nsHTTPCompressConv::OnDataAvailable(nsIRequest* request, nsIInputStream* iStr,
           }
           if (code == Z_OK) {
             if (bytesWritten) {
-              rv = do_OnDataAvailable(request, nullptr, aSourceOffset,
-                                      (char*)mOutBuffer, bytesWritten);
+              rv = do_OnDataAvailable(request, aSourceOffset, (char*)mOutBuffer,
+                                      bytesWritten);
               if (NS_FAILED(rv)) {
                 return rv;
               }
             }
           } else if (code == Z_BUF_ERROR) {
             if (bytesWritten) {
-              rv = do_OnDataAvailable(request, nullptr, aSourceOffset,
-                                      (char*)mOutBuffer, bytesWritten);
+              rv = do_OnDataAvailable(request, aSourceOffset, (char*)mOutBuffer,
+                                      bytesWritten);
               if (NS_FAILED(rv)) {
                 return rv;
               }
@@ -444,8 +466,8 @@ nsHTTPCompressConv::OnDataAvailable(nsIRequest* request, nsIInputStream* iStr,
 
           if (code == Z_STREAM_END) {
             if (bytesWritten) {
-              rv = do_OnDataAvailable(request, nullptr, aSourceOffset,
-                                      (char*)mOutBuffer, bytesWritten);
+              rv = do_OnDataAvailable(request, aSourceOffset, (char*)mOutBuffer,
+                                      bytesWritten);
               if (NS_FAILED(rv)) {
                 return rv;
               }
@@ -457,16 +479,16 @@ nsHTTPCompressConv::OnDataAvailable(nsIRequest* request, nsIInputStream* iStr,
           }
           if (code == Z_OK) {
             if (bytesWritten) {
-              rv = do_OnDataAvailable(request, nullptr, aSourceOffset,
-                                      (char*)mOutBuffer, bytesWritten);
+              rv = do_OnDataAvailable(request, aSourceOffset, (char*)mOutBuffer,
+                                      bytesWritten);
               if (NS_FAILED(rv)) {
                 return rv;
               }
             }
           } else if (code == Z_BUF_ERROR) {
             if (bytesWritten) {
-              rv = do_OnDataAvailable(request, nullptr, aSourceOffset,
-                                      (char*)mOutBuffer, bytesWritten);
+              rv = do_OnDataAvailable(request, aSourceOffset, (char*)mOutBuffer,
+                                      bytesWritten);
               if (NS_FAILED(rv)) {
                 return rv;
               }
@@ -523,7 +545,6 @@ nsHTTPCompressConv::Convert(nsIInputStream* aFromStream, const char* aFromType,
 }
 
 nsresult nsHTTPCompressConv::do_OnDataAvailable(nsIRequest* request,
-                                                nsISupports* context,
                                                 uint64_t offset,
                                                 const char* buffer,
                                                 uint32_t count) {

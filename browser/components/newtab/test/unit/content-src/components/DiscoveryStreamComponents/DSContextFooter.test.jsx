@@ -1,6 +1,7 @@
 import {
   DSContextFooter,
   StatusMessage,
+  DSMessageFooter,
 } from "content-src/components/DiscoveryStreamComponents/DSContextFooter/DSContextFooter";
 import React from "react";
 import { mount } from "enzyme";
@@ -25,10 +26,7 @@ describe("<DSContextFooter>", () => {
     sandbox.restore();
   });
 
-  it("should render", () => {
-    assert.isTrue(wrapper.exists());
-    assert.isOk(wrapper.find(".story-footer"));
-  });
+  it("should render", () => assert.isTrue(wrapper.exists()));
   it("should not render an engagement status if display_engagement_labels is false", () => {
     wrapper = mount(
       <DSContextFooter
@@ -39,17 +37,6 @@ describe("<DSContextFooter>", () => {
 
     const engagementLabel = wrapper.find(".story-view-count");
     assert.equal(engagementLabel.length, 0);
-  });
-  it("should render an engagement status if no badge and spoc passed", () => {
-    wrapper = mount(
-      <DSContextFooter
-        display_engagement_labels={true}
-        engagement={engagement}
-      />
-    );
-
-    const engagementLabel = wrapper.find(".story-view-count");
-    assert.equal(engagementLabel.text(), engagement);
   });
   it("should render a badge if a proper badge prop is passed", () => {
     wrapper = mount(
@@ -112,11 +99,7 @@ describe("<DSContextFooter>", () => {
     );
 
     assert.equal(
-      wrapper
-        .find(".story-sponsored-label")
-        .children()
-        .at(0)
-        .type(),
+      wrapper.find(".story-sponsored-label").children().at(0).type(),
       FluentOrText
     );
   });
@@ -129,9 +112,8 @@ describe("<DSContextFooter>", () => {
     );
     assert.isTrue(bookmarkStatusMessage.exists());
 
-    const { fluentID: removeBookmarkFluentID } = cardContextTypes[
-      removeBookmarkBadge
-    ];
+    const { fluentID: removeBookmarkFluentID } =
+      cardContextTypes[removeBookmarkBadge];
 
     wrapper.setProps({ context_type: removeBookmarkBadge });
     await wrapper.update();
@@ -141,5 +123,16 @@ describe("<DSContextFooter>", () => {
       `div[data-l10n-id='${removeBookmarkFluentID}']`
     );
     assert.isTrue(removedBookmarkStatusMessage.exists());
+  });
+  it("should render a story footer", () => {
+    wrapper = mount(
+      <DSMessageFooter
+        context_type={bookmarkBadge}
+        engagement={engagement}
+        display_engagement_labels={true}
+      />
+    );
+
+    assert.lengthOf(wrapper.find(".story-footer"), 1);
   });
 });

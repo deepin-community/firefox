@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Выбрать все вкладки
     .accesskey = б
+tab-context-play-tab =
+    .label = Воспроизвести звук во вкладке
+    .accesskey = о
+tab-context-play-tabs =
+    .label = Воспроизвести звук во вкладках
+    .accesskey = и
 duplicate-tab =
     .label = Дублировать вкладку
     .accesskey = л
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Добавить вкладки в закладки…
     .accesskey = а
-bookmark-tab =
-    .label = Добавить вкладку в закладки
-    .accesskey = а
+tab-context-bookmark-tab =
+    .label = Добавить вкладку в закладки…
+    .accesskey = в
 tab-context-open-in-new-container-tab =
     .label = Открыть в новой вкладке в контейнере
     .accesskey = к
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Поделиться
     .accesskey = д
-tab-context-share-more =
-    .label = Ещё…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -84,15 +88,6 @@ tab-context-reopen-closed-tabs =
            *[many] Восстановить { $tabCount } закрытых вкладок
         }
     .accesskey = о
-tab-context-close-tabs =
-    .label =
-        Закрыть { $tabCount ->
-            [1] вкладку
-            [one] { $tabCount } вкладку
-            [few] { $tabCount } вкладки
-           *[many] { $tabCount } вкладок
-        }
-    .accesskey = ь
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

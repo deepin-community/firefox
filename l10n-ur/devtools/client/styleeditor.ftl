@@ -16,7 +16,6 @@ styleeditor-save-button = محفوظ کریں
     .accesskey = م
 styleeditor-options-button =
     .tooltiptext = انداز تدوین کار اختیار
-styleeditor-media-rules = media قوانین
 styleeditor-editor-textbox =
     .data-placeholder = یہاں پر CSS لکھیں۔
 styleeditor-no-stylesheet = اس صفحے کا کوئی طرز ورق نہیں ہے۔
@@ -25,3 +24,21 @@ styleeditor-open-link-new-tab =
     .label = ربط نئی ٹیب میں کھولیں
 styleeditor-copy-url =
     .label = URL نقل کریں
+styleeditor-find =
+    .label = ڈھونڈیں
+    .accesskey = ڈ
+styleeditor-find-again =
+    .label = دوبارہ ڈھونڈیں
+    .accesskey = د
+styleeditor-go-to-line =
+    .label = لائن پر جست لگائیں
+    .accesskey = ج
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } مامعل۔
+       *[other] { $ruleCount } مامول۔
+    }

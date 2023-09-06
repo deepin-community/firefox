@@ -4,26 +4,29 @@
 
 "use strict";
 
-const nsIConsoleListenerWatcher = require("devtools/server/actors/resources/utils/nsi-console-listener-watcher");
-const { Ci } = require("chrome");
-const { DevToolsServer } = require("devtools/server/devtools-server");
-const ErrorDocs = require("devtools/server/actors/errordocs");
+const nsIConsoleListenerWatcher = require("resource://devtools/server/actors/resources/utils/nsi-console-listener-watcher.js");
+const {
+  DevToolsServer,
+} = require("resource://devtools/server/devtools-server.js");
+const ErrorDocs = require("resource://devtools/server/actors/errordocs.js");
 const {
   createStringGrip,
   makeDebuggeeValue,
   createValueGripForTarget,
-} = require("devtools/server/actors/object/utils");
+} = require("resource://devtools/server/actors/object/utils.js");
 const {
   getActorIdForInternalSourceId,
-} = require("devtools/server/actors/utils/dbg-source");
-const { WebConsoleUtils } = require("devtools/server/actors/webconsole/utils");
+} = require("resource://devtools/server/actors/utils/dbg-source.js");
+const {
+  WebConsoleUtils,
+} = require("resource://devtools/server/actors/webconsole/utils.js");
 
 const {
   TYPES: { ERROR_MESSAGE },
-} = require("devtools/server/actors/resources/index");
-const Targets = require("devtools/server/actors/targets/index");
+} = require("resource://devtools/server/actors/resources/index.js");
+const Targets = require("resource://devtools/server/actors/targets/index.js");
 
-const { MESSAGE_CATEGORY } = require("devtools/shared/constants");
+const { MESSAGE_CATEGORY } = require("resource://devtools/shared/constants.js");
 
 const PLATFORM_SPECIFIC_CATEGORIES = [
   "XPConnect JavaScript",
@@ -46,6 +49,7 @@ class ErrorMessageWatcher extends nsIConsoleListenerWatcher {
       return false;
     }
 
+    // Filter specific to CONTENT PROCESS targets
     if (this.isProcessTarget(targetActor)) {
       // Don't want to display cached messages from private windows.
       const isCachedFromPrivateWindow =
@@ -78,14 +82,9 @@ class ErrorMessageWatcher extends nsIConsoleListenerWatcher {
       return false;
     }
 
-    if (targetActor.ignoreSubFrames) {
-      return (
-        WebConsoleUtils.getInnerWindowId(targetActor.window) ===
-        message.innerWindowID
-      );
-    }
-
-    const ids = WebConsoleUtils.getInnerWindowIDsForFrames(targetActor.window);
+    const ids = targetActor.windows.map(window =>
+      WebConsoleUtils.getInnerWindowId(window)
+    );
     return ids.includes(message.innerWindowID);
   }
 
@@ -109,7 +108,12 @@ class ErrorMessageWatcher extends nsIConsoleListenerWatcher {
       return true;
     }
 
-    // For non-process targets, we filter-out platform-specific errors.
+    // Don't restrict any categories in the Browser Toolbox/Browser Console
+    if (targetActor.sessionContext.type == "all") {
+      return true;
+    }
+
+    // For non-process targets in other toolboxes, we filter-out platform-specific errors.
     return !PLATFORM_SPECIFIC_CATEGORIES.includes(category);
   }
 
@@ -154,7 +158,7 @@ class ErrorMessageWatcher extends nsIConsoleListenerWatcher {
       columnNumber,
       category: error.category,
       innerWindowID: error.innerWindowID,
-      timeStamp: error.timeStamp,
+      timeStamp: error.microSecondTimeStamp / 1000,
       warning: !!(error.flags & error.warningFlag),
       error: !(error.flags & (error.warningFlag | error.infoFlag)),
       info: !!(error.flags & error.infoFlag),

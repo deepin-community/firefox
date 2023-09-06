@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Savienojuma iestatījumi
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -68,12 +68,13 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = Šī iespēja nemanot autentificēs jūs starpniekserveros, kuriem jums ir saglabāta parole. Ja autentifikācija neizdosies, jums tiks parādīts autentifikācijas logs.
 
+connection-proxy-autologin-checkbox =
+    .label = Nejautāt autentifikāciju, ja ir saglabāta parole
+    .accesskey = i
+    .tooltiptext = Šī iespēja nemanot autentificēs jūs starpniekserveros, kuriem jums ir saglabāta parole. Ja autentifikācija neizdosies, jums tiks parādīts autentifikācijas logs.
+
 connection-proxy-socks-remote-dns =
     .label = Starpniekservera DNS izmantojot SOCKS v5
-    .accesskey = D
-
-connection-dns-over-https =
-    .label = Aktivēt DNS pa HTTPS
     .accesskey = D
 
 connection-dns-over-https-url-custom =

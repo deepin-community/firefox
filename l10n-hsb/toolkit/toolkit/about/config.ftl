@@ -7,7 +7,7 @@
 
 about-config-intro-warning-title = Pokročujće z kedźbliwosću
 about-config-intro-warning-text = Hdyž nastajenja rozšěrjeneje konfiguracije změniće, móže to wukon abo wěstotu { -brand-short-name } wobwliwować.
-about-config-intro-warning-checkbox = Warnować, hdyž pospytuju, přistup na tute nastajenja dóstać
+about-config-intro-warning-checkbox = Warnować, hdyž pospytuju, přistup k tutym nastajenjam dóstać
 about-config-intro-warning-button = Riziko akceptować a pokročować
 
 ##

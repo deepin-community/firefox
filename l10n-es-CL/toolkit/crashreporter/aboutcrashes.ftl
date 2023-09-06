@@ -5,7 +5,7 @@
 crash-reports-title = Reportes de fallos
 submit-all-button-label = Enviar todo
 delete-button-label = Limpiar todo
-delete-confirm-title = ¿Estás seguro?
+delete-confirm-title = ¿De verdad quieres hacerlo?
 delete-unsubmitted-description = Esto eliminará todos los reportes de fallos no enviados y no se puede deshacer.
 delete-submitted-description = Esto eliminará la lista de reportes de fallos enviados pero no eliminará los datos enviados. Esto no se puede deshacer.
 

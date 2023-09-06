@@ -84,6 +84,10 @@ toolbar-button-stop-reload =
 
 ## Firefox Account Button
 
+toolbar-button-fxaccount =
+    .label = { -fxaccount-brand-name }
+    .tooltiptext = { -fxaccount-brand-name }
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -91,30 +95,6 @@ main-context-menu-page-save =
     .accesskey = P
 
 ## Simple menu items
-
-main-context-menu-bookmark-add =
-    .aria-label = Ket alama buk i pot buk man
-    .accesskey = k
-    .tooltiptext = Ket alama buk i pot buk man
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Ket alama buk i pot buk man
-    .accesskey = k
-    .tooltiptext = Ket alama buk i pot buk man ({ $shortcut })
-
-main-context-menu-bookmark-change =
-    .aria-label = Yub alama buk man
-    .accesskey = k
-    .tooltiptext = Yub alama buk man
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Yub alama buk man
-    .accesskey = k
-    .tooltiptext = Yub alama buk man ({ $shortcut })
 
 main-context-menu-open-link =
     .label = Yab Kakube
@@ -143,11 +123,6 @@ main-context-menu-save-link =
 main-context-menu-save-link-to-pocket =
     .label = Gwok Kakube i { -pocket-brand-name }
     .accesskey = o
-
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
 
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
@@ -180,6 +155,21 @@ main-context-menu-media-mute =
 main-context-menu-media-unmute =
     .label = Yab dwone
     .accesskey = d
+
+main-context-menu-media-play-speed-slow-2 =
+    .label = 0.5×
+
+main-context-menu-media-play-speed-normal-2 =
+    .label = 1.0×
+
+main-context-menu-media-play-speed-fast-2 =
+    .label = 1.25×
+
+main-context-menu-media-play-speed-faster-2 =
+    .label = 1.5×
+
+main-context-menu-media-play-speed-fastest-2 =
+    .label = 2×
 
 main-context-menu-media-loop =
     .label = Lworre
@@ -246,14 +236,6 @@ main-context-menu-audio-email =
     .label = Cwal dwon…
     .accesskey = l
 
-main-context-menu-plugin-play =
-    .label = Cak larwak man
-    .accesskey = a
-
-main-context-menu-plugin-hide =
-    .label = Kan larwak man
-    .accesskey = K
-
 main-context-menu-save-to-pocket =
     .label = Gwok Potbuk i { -pocket-brand-name }
     .accesskey = k
@@ -296,10 +278,6 @@ main-context-menu-frame-open-window =
 main-context-menu-frame-reload =
     .label = Nwo cano pem
     .accesskey = N
-
-main-context-menu-frame-bookmark =
-    .label = Ket alama buk i pem man
-    .accesskey = a
 
 main-context-menu-frame-save-as =
     .label = Gwok pem calo…

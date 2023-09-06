@@ -11,6 +11,8 @@
 
 ## Application Menu (macOS only)
 
+menu-application-preferences =
+    .label = Преференции
 menu-application-services =
     .label = Сервиси
 menu-application-hide-this =
@@ -38,15 +40,6 @@ menu-quit =
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Излези од { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Излези од { -brand-shorter-name }
 
 menu-about =
     .label = За { -brand-shorter-name }
@@ -77,9 +70,6 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Отвори датотека…
     .accesskey = О
-menu-file-close =
-    .label = Затвори
-    .accesskey = т
 menu-file-close-window =
     .label = Затвори го прозорецот
     .accesskey = п
@@ -92,9 +82,6 @@ menu-file-email-link =
 menu-file-print-setup =
     .label = Поставување на страницата…
     .accesskey = с
-menu-file-print-preview =
-    .label = Преглед за печатење
-    .accesskey = г
 menu-file-print =
     .label = Печати…
     .accesskey = ч
@@ -172,6 +159,8 @@ menu-view-full-screen =
     .label = На цел екран
     .accesskey = ц
 
+## These menu items may use the same accesskey.
+
 ##
 
 menu-view-show-all-tabs =
@@ -206,8 +195,6 @@ menu-history-undo-window-menu =
 menu-bookmarks-menu =
     .label = Обележувачи
     .accesskey = б
-menu-bookmark-edit =
-    .label = Уреди го овој обележувач
 menu-bookmarks-all-tabs =
     .label = Обележи ги сите јазичиња…
 menu-bookmarks-toolbar =
@@ -256,9 +243,6 @@ menu-window-bring-all-to-front =
 menu-help =
     .label = Помош
     .accesskey = ш
-menu-help-feedback-page =
-    .label = Испрати коментар…
-    .accesskey = с
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

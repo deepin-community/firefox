@@ -63,22 +63,20 @@ cryptominer-tab-content = Penambang kripto menggunakan daya komputasi pada siste
 protections-close-button2 =
     .aria-label = Tutup
     .title = Tutup
-  
+
 mobile-app-title = Blokir pelacak iklan di lebih banyak perangkat
 mobile-app-card-content = Gunakan peramban seluler dengan perlindungan bawaan terhadap pelacakan iklan.
 mobile-app-links = Peramban { -brand-product-name } untuk <a data-l10n-name="android-mobile-inline-link">Android</a> dan <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Jangan pernah lupa kata sandi lagi
-lockwise-title-logged-in2 = Pengelolaan Kata Sandi
-lockwise-header-content = { -lockwise-brand-name } menyimpan sandi di peramban Anda dengan aman.
+passwords-title-logged-in = Kelola kata sandi Anda
+passwords-header-content = { -brand-product-name } menyimpan sandi di peramban Anda dengan aman.
 lockwise-header-content-logged-in = Simpan dan sinkronkan sandi dengan aman ke semua perangkat Anda.
-protection-report-save-passwords-button = Simpan Kata Sandi
-    .title = Simpan Kata Sandi di { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Kelola Kata Sandi
-    .title = Kelola Kata Sandi di { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Bawa kata sandi Anda ke mana saja
-lockwise-no-logins-card-content = Gunakan kata sandi yang disimpan dalam { -brand-short-name } di semua perangkat.
-lockwise-app-links = { -lockwise-brand-name } untuk <a data-l10n-name="lockwise-android-inline-link">Android</a> dan <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Simpan Sandi
+    .title = Simpan Sandi
+protection-report-passwords-manage-passwords-button = Kelola Kata Sandi
+    .title = Kelola Kata Sandi
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

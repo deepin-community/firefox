@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Избиране на всички раздели
     .accesskey = и
+tab-context-play-tab =
+    .label = Включване на звука
+    .accesskey = з
+tab-context-play-tabs =
+    .label = Включване на звука
+    .accesskey = з
 duplicate-tab =
     .label = Дублиране на раздела
     .accesskey = р
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Отмятане на разделите…
     .accesskey = о
-bookmark-tab =
-    .label = Отмятане на раздела
-    .accesskey = о
+tab-context-bookmark-tab =
+    .label = Отмятане на раздела…
+    .accesskey = т
 tab-context-open-in-new-container-tab =
     .label = Нов изолиран раздел
     .accesskey = и
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Споделяне
     .accesskey = С
-tab-context-share-more =
-    .label = Повече…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,11 +86,11 @@ tab-context-reopen-closed-tabs =
            *[other] Възстановяване на затворени раздели
         }
     .accesskey = т
-tab-context-close-tabs =
+tab-context-close-n-tabs =
     .label =
         { $tabCount ->
-            [one] Затваряне на раздел
-           *[other] Затваряне на раздели
+            [one] Затваряне на раздела
+           *[other] Затваряне на { $tabCount } раздела
         }
     .accesskey = з
 tab-context-move-tabs =

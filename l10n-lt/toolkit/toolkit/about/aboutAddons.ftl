@@ -6,9 +6,16 @@ addons-page-title = Priedų tvarkytuvė
 search-header =
     .placeholder = Ieškoti per addons.mozilla.org
     .searchbuttonlabel = Paieška
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Gaukite priedų ir grafinių apvalkalų iš <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Gaukite žodynų iš <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Gaukite kalbų rinkinių iš <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Nėra įdiegtų šio tipo priedų
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Laida
 detail-last-updated =
     .label = Paskiausiai atnaujintas
+addon-detail-description-expand = Rodyti daugiau
+addon-detail-description-collapse = Rodyti mažiau
 detail-contributions-description = Šio priedo autorius prašo paremti tolesnį jo kūrimą nedideliu finansiniu įnašu.
 detail-contributions-button = Prisidėkite
     .title = Prisidėkite prie šio priedo plėtojimo
@@ -103,8 +112,8 @@ disabled-unsigned-devinfo = Programuotojai, norintys atlikti savo priedų patikr
 plugin-deprecation-description = Kažko trūksta? Kai kurie papildiniai daugiau nepalaikomi „{ -brand-short-name }“. <label data-l10n-name="learn-more">Sužinoti daugiau.</label>
 legacy-warning-show-legacy = Rodyti pasenusius plėtinius
 legacy-extensions =
-    .value = Pasenę plėtiniai
-legacy-extensions-description = Šie plėtiniai neatitinka esamų „{ -brand-short-name }“ standartų, tad buvo išjungti. <label data-l10n-name="legacy-learn-more">Sužinokite apie priedų pokyčius</label>
+    .value = Pasenę priedai
+legacy-extensions-description = Šie priedai neatitinka esamų „{ -brand-short-name }“ standartų, tad buvo išjungti. <label data-l10n-name="legacy-learn-more">Sužinokite apie priedų pokyčius</label>
 private-browsing-description2 =
     „{ -brand-short-name }“ keičia priedų veikimą privačiojo naršymo languose. Visi nauji priedai, kuriuos pridėsite į
     „{ -brand-short-name }“, neveiks privačiojo naršymo languose. Nebent leisite tai per nuostatas, priedas
@@ -114,9 +123,9 @@ private-browsing-description2 =
 addon-category-discover = Rekomendacijos
 addon-category-discover-title =
     .title = Rekomendacijos
-addon-category-extension = Plėtiniai
+addon-category-extension = Priedai
 addon-category-extension-title =
-    .title = Plėtiniai
+    .title = Priedai
 addon-category-theme = Grafiniai apvalkalai
 addon-category-theme-title =
     .title = Grafiniai apvalkalai
@@ -135,14 +144,23 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Paskiausiai atnaujinti
 addon-category-recent-updates-title =
     .title = Paskiausiai atnaujinti
+addon-category-sitepermission = Svetainių leidimai
+addon-category-sitepermission-title =
+    .title = Svetainių leidimai
 
 ## These are global warnings
 
 extensions-warning-safe-mode = Ribotojoje veiksenoje visi priedai išjungti.
 extensions-warning-check-compatibility = Priedų suderinamumas netikrinamas. Gali būti, kad turite nesuderinamų priedų.
+extensions-warning-safe-mode2 =
+    .message = Ribotojoje veiksenoje visi priedai išjungti.
+extensions-warning-check-compatibility2 =
+    .message = Priedų suderinamumas netikrinamas. Gali būti, kad turite nesuderinamų priedų.
 extensions-warning-check-compatibility-button = Tikrinti
     .title = Įjungti priedų suderinamumo tikrinimą
 extensions-warning-update-security = Priedų naujinimų saugumas netikrinamas. Priedų naujinimai gali pakenkti jūsų saugumui.
+extensions-warning-update-security2 =
+    .message = Priedų naujinimų saugumas netikrinamas. Priedų naujinimai gali pakenkti jūsų saugumui.
 extensions-warning-update-security-button = Tikrinti
     .title = Įjungti priedų naujinimų saugumo tikrinimą
 
@@ -209,6 +227,11 @@ shortcuts-duplicate = Pasikartojantis spartusis klavišas
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = { $shortcut } jau naudojamas kaip spartusis klavišas. Pasikartojantys spartieji klavišai gali sukelti nepageidaujamų pasekmių.
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = { $shortcut } jau naudojamas kaip spartusis klavišas. Pasikartojantys spartieji klavišai gali sukelti nepageidaujamų pasekmių.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
@@ -238,6 +261,11 @@ discopane-intro =
 discopane-notice-recommendations =
     Kai kurios iš šių rekomendacijų yra pritaikytos būtent jums. Yra atsižvelgiama į kitus
     jūsų įdiegtus priedus, profilio pasirinkimus, ir naudojimo statistikas.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message =
+        Kai kurios iš šių rekomendacijų yra pritaikytos būtent jums. Yra atsižvelgiama į kitus
+        jūsų įdiegtus priedus, profilio pasirinkimus, ir naudojimo statistikas.
 discopane-notice-learn-more = Sužinoti daugiau
 privacy-policy = Privatumo nuostatai
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -280,18 +308,18 @@ preferences-addon-button =
 details-addon-button = Išsamiau
 release-notes-addon-button = Laidos apžvalga
 permissions-addon-button = Leidimai
-extension-enabled-heading = Įjungtas
-extension-disabled-heading = Išjungtas
-theme-enabled-heading = Įjungtas
-theme-disabled-heading = Išjungtas
-theme-monochromatic-heading = Spalvų rinkiniai
-theme-monochromatic-subheading = Ryškūs ir nauji spalvų rinkiniai iš „{ -brand-product-name }“. Pasiekiami ribotą laiką.
-plugin-enabled-heading = Įjungtas
-plugin-disabled-heading = Išjungtas
-dictionary-enabled-heading = Įjungtas
-dictionary-disabled-heading = Išjungtas
+extension-enabled-heading = Įjungta
+extension-disabled-heading = Išjungta
+theme-enabled-heading = Įjungta
+theme-disabled-heading2 = Įrašyti grafiniai apvalkalai
+plugin-enabled-heading = Įjungta
+plugin-disabled-heading = Išjungta
+dictionary-enabled-heading = Įjungta
+dictionary-disabled-heading = Išjungta
 locale-enabled-heading = Įjungta
 locale-disabled-heading = Išjungta
+sitepermission-enabled-heading = Įjungta
+sitepermission-disabled-heading = Išjungta
 always-activate-button = Visada aktyvinti
 never-activate-button = Niekada neaktyvinti
 addon-detail-author-label = Autorius
@@ -301,6 +329,9 @@ addon-detail-homepage-label = Svetainė
 addon-detail-rating-label = Įvertinimas
 # Message for add-ons with a staged pending update.
 install-postponed-message = Šis priedas atsinaujins, kai „{ -brand-short-name }“ bus paleista iš naujo.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Šis priedas atsinaujins, kai „{ -brand-short-name }“ bus paleista iš naujo.
 install-postponed-button = Atnaujinti dabar
 # The average rating that the add-on has received.
 # Variables:
@@ -342,6 +373,10 @@ addon-detail-private-browsing-help = Leidus, priedas turės priėjimą prie jūs
 addon-detail-private-browsing-allow = Leisti
 addon-detail-private-browsing-disallow = Neleisti
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
@@ -369,6 +404,7 @@ addon-permissions-optional = Papildomam funkcionalumui reikalingi leidimai:
 addon-permissions-learnmore = Sužinokite apie leidimus daugiau
 recommended-extensions-heading = Rekomenduojami priedai
 recommended-themes-heading = Rekomenduojami grafiniai apvalkalai
+addon-sitepermissions-required = Suteikia šias galimybes <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Jaučiatės kūrybiškai? <a data-l10n-name="link">Sukurkite savo grafinį apvalkalą su „Firefox Color“.</a>
@@ -381,6 +417,7 @@ plugin-heading = Tvarkykite savo papildinius
 dictionary-heading = Tvarkykite savo žodynus
 locale-heading = Tvarkykite savo kalbas
 updates-heading = Tvarkykite savo naujinimus
+sitepermission-heading = Tvarkykite savo svetainių leidimus
 discover-heading = Individualizuokite savo „{ -brand-short-name }“
 shortcuts-heading = Tvarkyti sparčiuosius klavišus priedams
 default-heading-search-label = Rasti daugiau priedų
@@ -388,3 +425,34 @@ addons-heading-search-input =
     .placeholder = Ieškoti per addons.mozilla.org
 addon-page-options-button =
     .title = Visiems priedams taikomos priemonės
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = Priedas „{ $name }“ yra nesuderinamas su „{ -brand-short-name } { $version }“.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = Priedas „{ $name }“ yra nesuderinamas su „{ -brand-short-name } { $version }“.
+details-notification-unsigned-and-disabled = Nepavyko patikrinti „{ $name }“ suderinamumo su „{ -brand-short-name }“, tad jis buvo išjungtas.
+details-notification-unsigned-and-disabled2 =
+    .message = Nepavyko patikrinti „{ $name }“ suderinamumo su „{ -brand-short-name }“, tad jis buvo išjungtas.
+details-notification-unsigned-and-disabled-link = Daugiau informacijos
+details-notification-unsigned = Nepavyko patikrinti „{ $name }“ suderinamumo su „{ -brand-short-name }“. Elkitės atsargiai.
+details-notification-unsigned2 =
+    .message = Nepavyko patikrinti „{ $name }“ suderinamumo su „{ -brand-short-name }“. Elkitės atsargiai.
+details-notification-unsigned-link = Daugiau informacijos
+details-notification-blocked = Priedas „{ $name }“ išjungtas saugumo arba stabilumo sumetimais.
+details-notification-blocked2 =
+    .message = Priedas „{ $name }“ išjungtas saugumo arba stabilumo sumetimais.
+details-notification-blocked-link = Plačiau
+details-notification-softblocked = Yra duomenų, jog priedas „{ $name }“ sukelia saugumo arba stabilumo problemas.
+details-notification-softblocked2 =
+    .message = Yra duomenų, jog priedas „{ $name }“ sukelia saugumo arba stabilumo problemas.
+details-notification-softblocked-link = Plačiau
+details-notification-gmp-pending = „{ $name }“ bus netrukus įdiegtas.
+details-notification-gmp-pending2 =
+    .message = „{ $name }“ bus netrukus įdiegtas.

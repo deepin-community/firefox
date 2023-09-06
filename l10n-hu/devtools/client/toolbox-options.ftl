@@ -41,6 +41,17 @@ options-collapse-attrs-label = DOM attribútumok csonkítása
 options-collapse-attrs-tooltip =
     .title = Hosszú attribútumok csonkítása a vizsgálóban
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Kattintson és húzza a méretértékek szerkesztéséhez
+options-inspector-draggable-properties-tooltip =
+    .title = Kattintson és húzza a méretértékek szerkesztéséhez a vizsgáló szabályok nézetében.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Egyszerűbb kiemelők használata a prefers-reduced-motion beállítás mellett
+options-inspector-simplified-highlighters-tooltip =
+    .title = Engedélyezi az egyszerűsített kiemelőket, ha a prefers-reduced-motion engedélyezett. A kitöltött téglalapok helyett vonalakat rajzol a kijelölt elemek köré, hogy elkerülje a villogó hatásokat.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Alapértelmezett színegység
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Ahogy elkészült
 options-default-color-unit-hex = Hexa
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Színnevek
 
 ## Style Editor section
@@ -118,6 +130,16 @@ options-enable-remote-label = Távoli hibakeresés be/ki
 options-enable-remote-tooltip2 =
     .title = A beállítás bekapcsolásával engedélyezi a böngészőpéldány távoli hibakeresését.
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Használja az F12 billentyűt a fejlesztői eszközök megnyitásához vagy bezárásához
+options-enable-f12-tooltip =
+    .title = A beállítás bekapcsolása hozzáköti az F12 billentyűt a fejlesztői eszköztár megnyitásához és bezárásához
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Egyéni formázók engedélyezése
+options-enable-custom-formatters-tooltip =
+    .title = A beállítás bekapcsolásával a webhelyek egyéni formázókat határozhatnak meg a DOM-objektumokhoz
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = A Service Workers bekapcsolása HTTP-n (ha az eszköztár nyitva van)
 options-enable-service-workers-http-tooltip =
@@ -130,9 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Csak ez a munkamenet, újratölti az oldalt
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = A Gecko platform adatainak megjelenítése
-options-show-platform-data-tooltip =
-    .title = A JavaScript profilozó jelentései tartalmazni fogják a Gecko platform szimbólumait is

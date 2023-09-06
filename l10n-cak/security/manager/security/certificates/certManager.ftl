@@ -26,9 +26,9 @@ certmgr-people = K'o taq ruwujil b'i'aj ri eyakon, ri nikiya' ketal re taq winaq
 certmgr-server = Re taq okitz'ib' nikiya' retal ri taq rucha'oj rusachoj ruwujil k'uxasamaj
 certmgr-ca = K'o taq ruwujil b'i'aj ri eyakon, ri nikiya' ketal re taqanel taq ya'öl ruwujil b'i'aj
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Tinuk' runuk'ulem qukub'äl k'u'x richin CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Kenuk' taq kuqub'äl taq nuk'ulem:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Re ruwujil b'i'aj re' nitikïr yerutz'ët ri e ruwinaq taqoya'l.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Tiyuj ruwujil b'i'aj
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Ruk'u'x Samaj
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = K'uxasamaj
-
-certmgr-override-lifetime =
-    .label = Rutzil k'aslem
 
 certmgr-token-name =
     .label = Okisaxel richin jikomal
@@ -186,13 +183,14 @@ delete-email-cert-impact = We nayüj el ri ruwujil rub'i' rutaqoya'l jun winäq,
 cert-with-serial =
     .value = Ruwujil b'i'aj rik'in retal rajilab'al: { $serialNumber }
 
-## Cert Viewer
-
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Man titaq ri riqitz'ijob'al winäq
 
 # Used when no cert is stored for an override
 no-cert-stored-for-override = (Man yakon ta)
+
+# When a certificate is unavailable (for example, it has been deleted or the token it exists on has been removed).
+certificate-not-available = (Man wachel ta)
 
 ## Used to show whether an override is temporary or permanent
 

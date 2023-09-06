@@ -7,7 +7,8 @@
 #define MOZILLA_A11Y_HTMLFormControlAccessible_H_
 
 #include "FormControlAccessible.h"
-#include "HyperTextAccessibleWrap.h"
+#include "HyperTextAccessible.h"
+#include "mozilla/a11y/AccTypes.h"
 #include "mozilla/dom/Element.h"
 #include "AccAttributes.h"
 #include "nsAccUtils.h"
@@ -27,13 +28,21 @@ class HTMLRadioButtonAccessible : public RadioButtonAccessible {
     // Ignore "RadioStateChange" DOM event in lieu of document observer
     // state change notification.
     mStateFlags |= eIgnoreDOMUIEvent;
+    mType = eHTMLRadioButtonType;
   }
 
   // LocalAccessible
   virtual uint64_t NativeState() const override;
-  virtual void GetPositionAndSizeInternal(int32_t* aPosInSet,
-                                          int32_t* aSetSize) override;
   virtual Relation RelationByType(RelationType aType) const override;
+
+ protected:
+  virtual void GetPositionAndSetSize(int32_t* aPosInSet,
+                                     int32_t* aSetSize) override;
+
+  virtual void DOMAttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                                   int32_t aModType,
+                                   const nsAttrValue* aOldValue,
+                                   uint64_t aOldState) override;
 
  private:
   Relation ComputeGroupAttributes(int32_t* aPosInSet, int32_t* aSetSize) const;
@@ -43,7 +52,7 @@ class HTMLRadioButtonAccessible : public RadioButtonAccessible {
  * Accessible for HTML input@type="button", @type="submit", @type="image"
  * and HTML button elements.
  */
-class HTMLButtonAccessible : public HyperTextAccessibleWrap {
+class HTMLButtonAccessible : public HyperTextAccessible {
  public:
   enum { eAction_Click = 0 };
 
@@ -55,9 +64,8 @@ class HTMLButtonAccessible : public HyperTextAccessibleWrap {
   virtual uint64_t NativeState() const override;
 
   // ActionAccessible
-  virtual uint8_t ActionCount() const override;
+  virtual bool HasPrimaryAction() const override;
   virtual void ActionNameAt(uint8_t aIndex, nsAString& aName) override;
-  virtual bool DoAction(uint8_t aIndex) const override;
 
   // Widgets
   virtual bool IsWidget() const override;
@@ -76,14 +84,14 @@ class HTMLButtonAccessible : public HyperTextAccessibleWrap {
  * Accessible for HTML input@type="text", input@type="password", textarea
  * and other HTML text controls.
  */
-class HTMLTextFieldAccessible : public HyperTextAccessibleWrap {
+class HTMLTextFieldAccessible : public HyperTextAccessible {
  public:
   enum { eAction_Click = 0 };
 
   HTMLTextFieldAccessible(nsIContent* aContent, DocAccessible* aDoc);
 
   NS_INLINE_DECL_REFCOUNTING_INHERITED(HTMLTextFieldAccessible,
-                                       HyperTextAccessibleWrap)
+                                       HyperTextAccessible)
 
   // HyperTextAccessible
   MOZ_CAN_RUN_SCRIPT_BOUNDARY virtual already_AddRefed<EditorBase> GetEditor()
@@ -95,9 +103,10 @@ class HTMLTextFieldAccessible : public HyperTextAccessibleWrap {
   virtual mozilla::a11y::role NativeRole() const override;
   virtual uint64_t NativeState() const override;
   virtual already_AddRefed<AccAttributes> NativeAttributes() override;
+  virtual bool AttributeChangesState(nsAtom* aAttribute) override;
 
   // ActionAccessible
-  virtual uint8_t ActionCount() const override;
+  virtual bool HasPrimaryAction() const override;
   virtual void ActionNameAt(uint8_t aIndex, nsAString& aName) override;
   virtual bool DoAction(uint8_t aIndex) const override;
 
@@ -111,24 +120,16 @@ class HTMLTextFieldAccessible : public HyperTextAccessibleWrap {
   // LocalAccessible
   virtual ENameValueFlag NativeName(nsString& aName) const override;
 
-  /**
-   * Return a widget element this input is part of, for example, search-textbox.
-   *
-   * FIXME: This should probably be renamed.
-   */
-  nsIContent* BindingOrWidgetParent() const {
-    if (auto* el = mContent->GetClosestNativeAnonymousSubtreeRootParent()) {
-      return el;
-    }
-    // XUL search-textbox custom element
-    return Elm()->Closest("search-textbox"_ns, IgnoreErrors());
-  }
+  virtual void DOMAttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                                   int32_t aModType,
+                                   const nsAttrValue* aOldValue,
+                                   uint64_t aOldState) override;
 };
 
 /**
  * Accessible for input@type="file" element.
  */
-class HTMLFileInputAccessible : public HyperTextAccessibleWrap {
+class HTMLFileInputAccessible : public HyperTextAccessible {
  public:
   HTMLFileInputAccessible(nsIContent* aContent, DocAccessible* aDoc);
 
@@ -187,7 +188,7 @@ class HTMLRangeAccessible : public LeafAccessible {
 /**
  * Accessible for HTML fieldset element.
  */
-class HTMLGroupboxAccessible : public HyperTextAccessibleWrap {
+class HTMLGroupboxAccessible : public HyperTextAccessible {
  public:
   HTMLGroupboxAccessible(nsIContent* aContent, DocAccessible* aDoc);
 
@@ -206,7 +207,7 @@ class HTMLGroupboxAccessible : public HyperTextAccessibleWrap {
 /**
  * Accessible for HTML legend element.
  */
-class HTMLLegendAccessible : public HyperTextAccessibleWrap {
+class HTMLLegendAccessible : public HyperTextAccessible {
  public:
   HTMLLegendAccessible(nsIContent* aContent, DocAccessible* aDoc);
 
@@ -217,7 +218,7 @@ class HTMLLegendAccessible : public HyperTextAccessibleWrap {
 /**
  * Accessible for HTML5 figure element.
  */
-class HTMLFigureAccessible : public HyperTextAccessibleWrap {
+class HTMLFigureAccessible : public HyperTextAccessible {
  public:
   HTMLFigureAccessible(nsIContent* aContent, DocAccessible* aDoc);
 
@@ -235,7 +236,7 @@ class HTMLFigureAccessible : public HyperTextAccessibleWrap {
 /**
  * Accessible for HTML5 figcaption element.
  */
-class HTMLFigcaptionAccessible : public HyperTextAccessibleWrap {
+class HTMLFigcaptionAccessible : public HyperTextAccessible {
  public:
   HTMLFigcaptionAccessible(nsIContent* aContent, DocAccessible* aDoc);
 
@@ -246,19 +247,22 @@ class HTMLFigcaptionAccessible : public HyperTextAccessibleWrap {
 /**
  * Used for HTML form element.
  */
-class HTMLFormAccessible : public HyperTextAccessibleWrap {
+class HTMLFormAccessible : public HyperTextAccessible {
  public:
   HTMLFormAccessible(nsIContent* aContent, DocAccessible* aDoc)
-      : HyperTextAccessibleWrap(aContent, aDoc) {}
+      : HyperTextAccessible(aContent, aDoc) {}
 
-  NS_INLINE_DECL_REFCOUNTING_INHERITED(HTMLFormAccessible,
-                                       HyperTextAccessibleWrap)
+  NS_INLINE_DECL_REFCOUNTING_INHERITED(HTMLFormAccessible, HyperTextAccessible)
 
   // LocalAccessible
-  virtual nsAtom* LandmarkRole() const override;
   virtual a11y::role NativeRole() const override;
 
  protected:
+  virtual void DOMAttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                                   int32_t aModType,
+                                   const nsAttrValue* aOldValue,
+                                   uint64_t aOldState) override;
+
   virtual ~HTMLFormAccessible() = default;
 };
 
@@ -342,23 +346,28 @@ class HTMLMeterAccessible : public LeafAccessible {
  * Accessible for HTML date/time inputs.
  */
 template <a11y::role R>
-class HTMLDateTimeAccessible : public AccessibleWrap {
+class HTMLDateTimeAccessible : public HyperTextAccessible {
  public:
   HTMLDateTimeAccessible(nsIContent* aContent, DocAccessible* aDoc)
-      : AccessibleWrap(aContent, aDoc) {}
+      : HyperTextAccessible(aContent, aDoc) {
+    mType = eHTMLDateTimeFieldType;
+  }
 
-  NS_INLINE_DECL_REFCOUNTING_INHERITED(HTMLDateTimeAccessible, AccessibleWrap)
+  NS_INLINE_DECL_REFCOUNTING_INHERITED(HTMLDateTimeAccessible,
+                                       HyperTextAccessible)
 
   // LocalAccessible
   virtual mozilla::a11y::role NativeRole() const override { return R; }
   virtual already_AddRefed<AccAttributes> NativeAttributes() override {
-    RefPtr<AccAttributes> attributes = AccessibleWrap::NativeAttributes();
+    RefPtr<AccAttributes> attributes = HyperTextAccessible::NativeAttributes();
     // Unfortunately, an nsStaticAtom can't be passed as a
     // template argument, so fetch the type from the DOM.
-    nsString type;
-    if (mContent->AsElement()->GetAttr(kNameSpaceID_None, nsGkAtoms::type,
-                                       type)) {
-      attributes->SetAttribute(nsGkAtoms::textInputType, std::move(type));
+    if (const nsAttrValue* attr =
+            mContent->AsElement()->GetParsedAttr(nsGkAtoms::type)) {
+      RefPtr<nsAtom> inputType = attr->GetAsAtom();
+      if (inputType) {
+        attributes->SetAttribute(nsGkAtoms::textInputType, inputType);
+      }
     }
     return attributes.forget();
   }

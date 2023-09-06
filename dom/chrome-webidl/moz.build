@@ -31,11 +31,19 @@ with Files("WebExtension*.webidl"):
 with Files("Glean*.webidl"):
     BUG_COMPONENT = ("Toolkit", "Telemetry")
 
+with Files("IOUtils.webidl"):
+    BUG_COMPONENT = ("Toolkit", "IOUtils and PathUtils")
+
+with Files("PathUtils.webidl"):
+    BUG_COMPONENT = ("Toolkit", "IOUtils and PathUtils")
+
 PREPROCESSED_WEBIDL_FILES = [
     "ChromeUtils.webidl",
+    "IOUtils.webidl",
 ]
 
 WEBIDL_FILES = [
+    "BrowserSessionStore.webidl",
     "BrowsingContext.webidl",
     "ChannelWrapper.webidl",
     "ClonedErrorHolder.webidl",
@@ -49,8 +57,8 @@ WEBIDL_FILES = [
     "Fluent.webidl",
     "FrameLoader.webidl",
     "HeapSnapshot.webidl",
+    "ImageText.webidl",
     "InspectorUtils.webidl",
-    "IOUtils.webidl",
     "IteratorResult.webidl",
     "JSActor.webidl",
     "JSProcessActor.webidl",
@@ -71,7 +79,10 @@ WEBIDL_FILES = [
     "PrecompiledScript.webidl",
     "PromiseDebugging.webidl",
     "SessionStoreUtils.webidl",
+    "StripOnShareRule.webidl",
     "StructuredCloneHolder.webidl",
+    "StyleSheetApplicableStateChangeEvent.webidl",
+    "StyleSheetRemovedEvent.webidl",
     "TelemetryStopwatch.webidl",
     "UserInteraction.webidl",
     "WebExtensionContentScript.webidl",
@@ -83,6 +94,16 @@ WEBIDL_FILES = [
     "XULTreeElement.webidl",
 ]
 
+GENERATED_EVENTS_WEBIDL_FILES = [
+    "StyleSheetApplicableStateChangeEvent.webidl",
+    "StyleSheetRemovedEvent.webidl",
+]
+
+if CONFIG["MOZ_BUILD_APP"] != "mobile/android":
+    WEBIDL_FILES += [
+        "UniFFI.webidl",
+    ]
+
 if CONFIG["MOZ_PLACES"]:
     WEBIDL_FILES += [
         "PlacesEvent.webidl",
@@ -92,8 +113,4 @@ if CONFIG["MOZ_PLACES"]:
 WEBIDL_FILES += [
     "Glean.webidl",
     "GleanPings.webidl",
-]
-
-WEBIDL_FILES += [
-    "PrioEncoder.webidl",
 ]

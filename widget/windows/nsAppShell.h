@@ -39,7 +39,6 @@ class nsAppShell : public nsBaseAppShell {
 
  protected:
   NS_IMETHOD Run() override;
-  NS_IMETHOD Exit() override;
   NS_IMETHOD Observe(nsISupports* aSubject, const char* aTopic,
                      const char16_t* aData) override;
 
@@ -53,9 +52,12 @@ class nsAppShell : public nsBaseAppShell {
   HWND mEventWnd;
   bool mNativeCallbackPending;
 
-  Mutex mLastNativeEventScheduledMutex;
+  Mutex mLastNativeEventScheduledMutex MOZ_UNANNOTATED;
   TimeStamp mLastNativeEventScheduled;
   std::vector<MSG> mMsgsToRepost;
+
+ private:
+  wchar_t mTimezoneName[128];
 };
 
 #endif  // nsAppShell_h__

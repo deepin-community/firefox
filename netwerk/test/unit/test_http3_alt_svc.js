@@ -2,7 +2,6 @@
 
 let httpsOrigin;
 let h3AltSvc;
-let h3Port;
 let h3Route;
 let prefs;
 
@@ -19,22 +18,19 @@ function run_next_test() {
 }
 
 function run_test() {
-  let env = Cc["@mozilla.org/process/environment;1"].getService(
-    Ci.nsIEnvironment
-  );
-  let h2Port = env.get("MOZHTTP2_PORT");
+  let h2Port = Services.env.get("MOZHTTP2_PORT");
   Assert.notEqual(h2Port, null);
   Assert.notEqual(h2Port, "");
-  let h3Port = env.get("MOZHTTP3_PORT");
+  let h3Port = Services.env.get("MOZHTTP3_PORT");
   Assert.notEqual(h3Port, null);
   Assert.notEqual(h3Port, "");
   h3AltSvc = ":" + h3Port;
 
   h3Route = "foo.example.com:" + h3Port;
   do_get_profile();
-  prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
+  prefs = Services.prefs;
 
-  prefs.setBoolPref("network.http.http3.enabled", true);
+  prefs.setBoolPref("network.http.http3.enable", true);
   prefs.setCharPref("network.dns.localDomains", "foo.example.com");
   // We always resolve elements of localDomains as it's hardcoded without the
   // following pref:
@@ -72,7 +68,7 @@ function makeChan(uri) {
   return chan;
 }
 
-let WaitForHttp3Listener = function() {};
+let WaitForHttp3Listener = function () {};
 
 WaitForHttp3Listener.prototype = {
   onDataAvailableFired: false,
@@ -133,7 +129,7 @@ function test_https_alt_svc() {
 }
 
 function testsDone() {
-  prefs.clearUserPref("network.http.http3.enabled");
+  prefs.clearUserPref("network.http.http3.enable");
   prefs.clearUserPref("network.dns.localDomains");
   prefs.clearUserPref("network.proxy.allow_hijacking_localhost");
   dump("testDone\n");

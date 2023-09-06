@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Ainm-cleachdaiche
 common-dialog-password =
     .value = Facal-faire
+
+common-dialog-copy-cmd =
+    .label = Dèan lethbhreac
+    .accesskey = c
+common-dialog-select-all-cmd =
+    .label = Tagh a h-uile
+    .accesskey = a

@@ -8,11 +8,11 @@
 Outputter to generate C++ code for metrics.
 """
 
-import jinja2
 import json
 
-from util import generate_metric_ids, generate_ping_ids
-from glean_parser import util
+import jinja2
+from glean_parser import metrics, util
+from util import generate_metric_ids, generate_ping_ids, get_metrics
 
 
 def cpp_datatypes_filter(value):
@@ -50,11 +50,14 @@ def type_name(obj):
 
     if getattr(obj, "labeled", False):
         class_name = util.Camelize(obj.type[8:])  # strips "labeled_" off the front.
-        return "Labeled<impl::{}Metric>".format(class_name)
+        label_enum = "DynamicLabel"
+        if obj.labels and len(obj.labels):
+            label_enum = f"{util.Camelize(obj.name)}Label"
+        return f"Labeled<impl::{class_name}Metric, {label_enum}>"
     generate_enums = getattr(obj, "_generate_enums", [])  # Extra Keys? Reasons?
     if len(generate_enums):
-        for name, suffix in generate_enums:
-            if not len(getattr(obj, name)) and suffix == "Keys":
+        for name, _ in generate_enums:
+            if not len(getattr(obj, name)) and isinstance(obj, metrics.Event):
                 return util.Camelize(obj.type) + "Metric<NoExtraKeys>"
             else:
                 # we always use the `extra` suffix,
@@ -91,7 +94,7 @@ def output_cpp(objs, output_fd, options={}):
     :param options: options dictionary.
     """
 
-    # Monkeypatch a util.snake_case function for the templates to use
+    # Monkeypatch util.snake_case for the templates to use
     util.snake_case = lambda value: value.replace(".", "_").replace("-", "_")
     # Monkeypatch util.get_jinja2_template to find templates nearby
 
@@ -111,10 +114,13 @@ def output_cpp(objs, output_fd, options={}):
     get_metric_id = generate_metric_ids(objs)
     get_ping_id = generate_ping_ids(objs)
 
-    if len(objs) == 1 and "pings" in objs:
+    if "pings" in objs:
         template_filename = "cpp_pings.jinja2"
+        if objs.get("tags"):
+            del objs["tags"]
     else:
         template_filename = "cpp.jinja2"
+        objs = get_metrics(objs)
 
     template = util.get_jinja2_template(
         template_filename,

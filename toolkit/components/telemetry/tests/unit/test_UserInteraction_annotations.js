@@ -3,11 +3,11 @@ http://creativecommons.org/publicdomain/zero/1.0/ */
 
 "use strict";
 
-const { TestUtils } = ChromeUtils.import(
-  "resource://testing-common/TestUtils.jsm"
+const { TestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/TestUtils.sys.mjs"
 );
-const { TelemetryUtils } = ChromeUtils.import(
-  "resource://gre/modules/TelemetryUtils.jsm"
+const { TelemetryUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/TelemetryUtils.sys.mjs"
 );
 
 const HANG_TIME = 1000; // ms
@@ -60,13 +60,8 @@ async function hangAndWaitForReport(expectTestAnnotation) {
  * of making sure that BHR is initialized as well.
  */
 function ensureProfilerInitialized() {
-  if (!Services.profiler.CanProfile()) {
-    return false;
-  }
-
   startProfiler();
   stopProfiler();
-  return true;
 }
 
 function stopProfiler() {
@@ -166,9 +161,7 @@ add_task(async function test_recording_annotations_and_markers() {
     return;
   }
 
-  if (!ensureProfilerInitialized()) {
-    return;
-  }
+  ensureProfilerInitialized();
 
   Services.prefs.setBoolPref(
     TelemetryUtils.Preferences.OverridePreRelease,
@@ -270,9 +263,7 @@ add_task(async function test_updating_annotations_and_markers() {
     return;
   }
 
-  if (!ensureProfilerInitialized()) {
-    return;
-  }
+  ensureProfilerInitialized();
 
   // First, we'll check to see if we can get a single annotation and
   // profiler marker to be set.
@@ -371,9 +362,7 @@ add_task(async function test_cancelling_annotations_and_markers() {
     return;
   }
 
-  if (!ensureProfilerInitialized()) {
-    return;
-  }
+  ensureProfilerInitialized();
 
   // First, we'll check to see if we can get a single annotation and
   // profiler marker to be set.

@@ -140,7 +140,7 @@ function timerGuard(p, time, message) {
 /**
  * Closes the peer connection if it is active
  */
-PeerConnectionTest.prototype.closePC = function() {
+PeerConnectionTest.prototype.closePC = function () {
   info("Closing peer connections");
 
   var closeIt = pc => {
@@ -195,7 +195,7 @@ PeerConnectionTest.prototype.closePC = function() {
 /**
  * Close the open data channels, followed by the underlying peer connection
  */
-PeerConnectionTest.prototype.close = function() {
+PeerConnectionTest.prototype.close = function () {
   var allChannels = (this.pcLocal || this.pcRemote).dataChannels;
   return timerGuard(
     Promise.all(allChannels.map((channel, i) => this.closeDataChannels(i))),
@@ -210,7 +210,7 @@ PeerConnectionTest.prototype.close = function() {
  * @param {Number} index
  *        Index of the data channels to close on both sides
  */
-PeerConnectionTest.prototype.closeDataChannels = function(index) {
+PeerConnectionTest.prototype.closeDataChannels = function (index) {
   info("closeDataChannels called with index: " + index);
   var localChannel = null;
   if (this.pcLocal) {
@@ -271,7 +271,7 @@ PeerConnectionTest.prototype.closeDataChannels = function(index) {
  * @param {DataChannelWrapper} [options.targetChannel=pcRemote.dataChannels[length - 1]]
  *        Data channel to use for receiving the message
  */
-PeerConnectionTest.prototype.send = async function(data, options) {
+PeerConnectionTest.prototype.send = async function (data, options) {
   options = options || {};
   const source =
     options.sourceChannel ||
@@ -287,7 +287,7 @@ PeerConnectionTest.prototype.send = async function(data, options) {
     } else if (d instanceof ArrayBuffer) {
       return d.byteLength;
     } else if (d instanceof String || typeof d === "string") {
-      return new TextEncoder("utf-8").encode(d).length;
+      return new TextEncoder().encode(d).length;
     } else {
       ok(false);
     }
@@ -324,7 +324,7 @@ PeerConnectionTest.prototype.send = async function(data, options) {
  * @param {Dict} options
  *        Options for the data channel (see nsIPeerConnection)
  */
-PeerConnectionTest.prototype.createDataChannel = function(options) {
+PeerConnectionTest.prototype.createDataChannel = function (options) {
   var remotePromise;
   if (!options.negotiated) {
     this.pcRemote.expectDataChannel("pcRemote expected data channel");
@@ -363,7 +363,7 @@ PeerConnectionTest.prototype.createDataChannel = function(options) {
  * @param {PeerConnectionWrapper} peer
  *        The peer connection wrapper to run the command on
  */
-PeerConnectionTest.prototype.createAnswer = function(peer) {
+PeerConnectionTest.prototype.createAnswer = function (peer) {
   return peer.createAnswer().then(answer => {
     // make a copy so this does not get updated with ICE candidates
     this.originalAnswer = new RTCSessionDescription(
@@ -380,7 +380,7 @@ PeerConnectionTest.prototype.createAnswer = function(peer) {
  * @param {PeerConnectionWrapper} peer
  *        The peer connection wrapper to run the command on
  */
-PeerConnectionTest.prototype.createOffer = function(peer) {
+PeerConnectionTest.prototype.createOffer = function (peer) {
   return peer.createOffer().then(offer => {
     // make a copy so this does not get updated with ICE candidates
     this.originalOffer = new RTCSessionDescription(
@@ -399,7 +399,7 @@ PeerConnectionTest.prototype.createOffer = function(peer) {
  * @param {RTCSessionDescriptionInit} desc
  *        Session description for the local description request
  */
-PeerConnectionTest.prototype.setLocalDescription = function(
+PeerConnectionTest.prototype.setLocalDescription = function (
   peer,
   desc,
   stateExpected
@@ -444,7 +444,7 @@ PeerConnectionTest.prototype.setLocalDescription = function(
  *        Media constrains for the local peer connection instance
  * @param constraintsRemote
  */
-PeerConnectionTest.prototype.setMediaConstraints = function(
+PeerConnectionTest.prototype.setMediaConstraints = function (
   constraintsLocal,
   constraintsRemote
 ) {
@@ -461,7 +461,7 @@ PeerConnectionTest.prototype.setMediaConstraints = function(
  *
  * @param {object} options the media constraints to use on createOffer
  */
-PeerConnectionTest.prototype.setOfferOptions = function(options) {
+PeerConnectionTest.prototype.setOfferOptions = function (options) {
   if (this.pcLocal) {
     this.pcLocal.offerOptions = options;
   }
@@ -476,7 +476,7 @@ PeerConnectionTest.prototype.setOfferOptions = function(options) {
  * @param {RTCSessionDescriptionInit} desc
  *        Session description for the remote description request
  */
-PeerConnectionTest.prototype.setRemoteDescription = function(
+PeerConnectionTest.prototype.setRemoteDescription = function (
   peer,
   desc,
   stateExpected
@@ -513,7 +513,7 @@ PeerConnectionTest.prototype.setRemoteDescription = function(
  * Adds and removes steps to/from the execution chain based on the configured
  * testOptions.
  */
-PeerConnectionTest.prototype.updateChainSteps = function() {
+PeerConnectionTest.prototype.updateChainSteps = function () {
   if (this.testOptions.h264) {
     this.chain.insertAfterEach("PC_LOCAL_CREATE_OFFER", [
       PC_LOCAL_REMOVE_ALL_BUT_H264_FROM_OFFER,
@@ -548,7 +548,7 @@ PeerConnectionTest.prototype.updateChainSteps = function() {
 /**
  * Start running the tests as assigned to the command chain.
  */
-PeerConnectionTest.prototype.run = async function() {
+PeerConnectionTest.prototype.run = async function () {
   /* We have to modify the chain here to allow tests which modify the default
    * test chain instantiating a PeerConnectionTest() */
   this.updateChainSteps();
@@ -567,7 +567,10 @@ PeerConnectionTest.prototype.run = async function() {
 /**
  * Routes ice candidates from one PCW to the other PCW
  */
-PeerConnectionTest.prototype.iceCandidateHandler = function(caller, candidate) {
+PeerConnectionTest.prototype.iceCandidateHandler = function (
+  caller,
+  candidate
+) {
   info("Received: " + JSON.stringify(candidate) + " from " + caller);
 
   var target = null;
@@ -596,7 +599,7 @@ PeerConnectionTest.prototype.iceCandidateHandler = function(caller, candidate) {
  * Installs a polling function for the socket.io client to read
  * all messages from the chat room into a message queue.
  */
-PeerConnectionTest.prototype.setupSignalingClient = function() {
+PeerConnectionTest.prototype.setupSignalingClient = function () {
   this.signalingMessageQueue = [];
   this.signalingCallbacks = {};
   this.signalingLoopRun = true;
@@ -629,7 +632,7 @@ PeerConnectionTest.prototype.setupSignalingClient = function() {
 /**
  * Sets a flag to stop reading further messages from the chat room.
  */
-PeerConnectionTest.prototype.signalingMessagesFinished = function() {
+PeerConnectionTest.prototype.signalingMessagesFinished = function () {
   this.signalingLoopRun = false;
 };
 
@@ -644,7 +647,7 @@ PeerConnectionTest.prototype.signalingMessagesFinished = function() {
  *        The function which gets invoked if a message of the messageType
  *        has been received from the chat room.
  */
-PeerConnectionTest.prototype.registerSignalingCallback = function(
+PeerConnectionTest.prototype.registerSignalingCallback = function (
   messageType,
   onMessage
 ) {
@@ -659,7 +662,7 @@ PeerConnectionTest.prototype.registerSignalingCallback = function(
  * @param {string} messageType
  *        The type of message to search and register for.
  */
-PeerConnectionTest.prototype.getSignalingMessage = function(messageType) {
+PeerConnectionTest.prototype.getSignalingMessage = function (messageType) {
   var i = this.signalingMessageQueue.findIndex(m => m.type === messageType);
   if (i >= 0) {
     info(
@@ -1626,9 +1629,9 @@ PeerConnectionWrapper.prototype = {
       info(
         this.label + ": iceCandidate = " + JSON.stringify(anEvent.candidate)
       );
-      ok(anEvent.candidate.sdpMid.length > 0, "SDP mid not empty");
+      ok(anEvent.candidate.sdpMid.length, "SDP mid not empty");
       ok(
-        anEvent.candidate.usernameFragment.length > 0,
+        anEvent.candidate.usernameFragment.length,
         "usernameFragment not empty"
       );
 
@@ -1749,13 +1752,14 @@ PeerConnectionWrapper.prototype = {
       return Promise.resolve();
     }
 
-    const haveEnoughData = (element.readyState == element.HAVE_ENOUGH_DATA
-      ? Promise.resolve()
-      : haveEvent(
-          element,
-          "canplay",
-          wait(60000, new Error("Timeout for element " + element.id))
-        )
+    const haveEnoughData = (
+      element.readyState == element.HAVE_ENOUGH_DATA
+        ? Promise.resolve()
+        : haveEvent(
+            element,
+            "canplay",
+            wait(60000, new Error("Timeout for element " + element.id))
+          )
     ).then(_ => info("Element " + element.id + " has enough data."));
 
     const startTime = element.currentTime;
@@ -1885,80 +1889,6 @@ PeerConnectionWrapper.prototype = {
     ]);
   },
 
-  async waitForSyncedRtcp() {
-    // Ensures that RTCP is present
-    let ensureSyncedRtcp = async () => {
-      let report = await this._pc.getStats();
-      for (const v of report.values()) {
-        if (v.type.endsWith("bound-rtp") && !(v.remoteId || v.localId)) {
-          info(`${v.id} is missing remoteId or localId: ${JSON.stringify(v)}`);
-          return null;
-        }
-        if (v.type == "remote-inbound-rtp" && v.roundTripTime === undefined) {
-          info(`${v.id} is missing roundTripTime: ${JSON.stringify(v)}`);
-          return null;
-        }
-      }
-      return report;
-    };
-    // Returns true if there is proof in aStats of rtcp flow for all remote stats
-    // objects, compared to baseStats.
-    const hasAllRtcpUpdated = (baseStats, stats) => {
-      let hasRtcpStats = false;
-      for (const v of stats.values()) {
-        if (v.type == "remote-outbound-rtp") {
-          hasRtcpStats = true;
-          if (!v.remoteTimestamp) {
-            // `remoteTimestamp` is 0 or not present.
-            return false;
-          }
-          if (v.remoteTimestamp <= baseStats.get(v.id)?.remoteTimestamp) {
-            // `remoteTimestamp` has not advanced further than the base stats,
-            // i.e., no new sender report has been received.
-            return false;
-          }
-        } else if (v.type == "remote-inbound-rtp") {
-          hasRtcpStats = true;
-          // The ideal thing here would be to check `reportsReceived`, but it's
-          // not yet implemented.
-          if (!v.packetsReceived) {
-            // `packetsReceived` is 0 or not present.
-            return false;
-          }
-          if (v.packetsReceived <= baseStats.get(v.id)?.packetsReceived) {
-            // `packetsReceived` has not advanced further than the base stats,
-            // i.e., no new receiver report has been received.
-            return false;
-          }
-        }
-      }
-      return hasRtcpStats;
-    };
-    let attempts = 0;
-    const baseStats = await this._pc.getStats();
-    // Time-units are MS
-    const waitPeriod = 100;
-    const maxTime = 20000;
-    for (let totalTime = maxTime; totalTime > 0; totalTime -= waitPeriod) {
-      try {
-        let syncedStats = await ensureSyncedRtcp();
-        if (syncedStats && hasAllRtcpUpdated(baseStats, syncedStats)) {
-          return syncedStats;
-        }
-      } catch (e) {
-        info(e);
-        info(e.stack);
-        throw e;
-      }
-      attempts += 1;
-      info(`waitForSyncedRtcp: no sync on attempt ${attempts}, retrying.`);
-      await wait(waitPeriod);
-    }
-    throw Error(
-      "Waiting for synced RTCP timed out after at least " + maxTime + "ms"
-    );
-  },
-
   /**
    * Check that correct audio (typically a flat tone) is flowing to this
    * PeerConnection for each transceiver that should be receiving. Uses
@@ -2075,16 +2005,14 @@ PeerConnectionWrapper.prototype = {
   /**
    * Check that stats are present by checking for known stats.
    */
-  getStats(selector) {
-    return this._pc.getStats(selector).then(stats => {
-      let dict = {};
-      for (const [k, v] of stats.entries()) {
-        dict[k] = v;
-      }
-      info(this + ": Got stats: " + JSON.stringify(dict));
-      this._last_stats = stats;
-      return stats;
-    });
+  async getStats(selector) {
+    const stats = await this._pc.getStats(selector);
+    const dict = {};
+    for (const [k, v] of stats.entries()) {
+      dict[k] = v;
+    }
+    info(`${this}: Got stats: ${JSON.stringify(dict)}`);
+    return stats;
   },
 
   /**
@@ -2150,7 +2078,16 @@ PeerConnectionWrapper.prototype = {
               ok(rem.localId == res.id, "Remote backlink match");
               if (res.type == "outbound-rtp") {
                 ok(rem.type == "remote-inbound-rtp", "Rtcp is inbound");
-                ok(rem.packetsLost !== undefined, "Rtcp packetsLost");
+                if (rem.packetsLost) {
+                  ok(
+                    rem.packetsLost >= 0,
+                    "Rtcp packetsLost " + rem.packetsLost + " >= 0"
+                  );
+                  ok(
+                    rem.packetsLost < 1000,
+                    "Rtcp packetsLost " + rem.packetsLost + " < 1000"
+                  );
+                }
                 if (!this.disableRtpCountChecking) {
                   // no guarantee which one is newer!
                   // Note: this must change when we add a timestamp field to remote RTCP reports
@@ -2168,7 +2105,10 @@ PeerConnectionWrapper.prototype = {
                     );
                   }
                 }
-                ok(rem.jitter !== undefined, "Rtcp jitter");
+                if (rem.jitter) {
+                  ok(rem.jitter >= 0, "Rtcp jitter " + rem.jitter + " >= 0");
+                  ok(rem.jitter < 5, "Rtcp jitter " + rem.jitter + " < 5 sec");
+                }
                 if (rem.roundTripTime) {
                   ok(
                     rem.roundTripTime >= 0,
@@ -2440,6 +2380,14 @@ function loadScript(...scripts) {
 }
 
 // Ensure SimpleTest.js is loaded before other scripts.
+/* import-globals-from /testing/mochitest/tests/SimpleTest/SimpleTest.js */
+/* import-globals-from head.js */
+/* import-globals-from templates.js */
+/* import-globals-from turnConfig.js */
+/* import-globals-from dataChannel.js */
+/* import-globals-from network.js */
+/* import-globals-from sdpUtils.js */
+
 var scriptsReady = loadScript("/tests/SimpleTest/SimpleTest.js").then(() => {
   return loadScript(
     "head.js",
@@ -2533,33 +2481,14 @@ var setupIceServerConfig = useIceServer => {
 };
 
 async function runNetworkTest(testFunction, fixtureOptions = {}) {
-  let { AppConstants } = SpecialPowers.Cu.import(
-    "resource://gre/modules/AppConstants.jsm",
-    {}
+  let { AppConstants } = SpecialPowers.ChromeUtils.importESModule(
+    "resource://gre/modules/AppConstants.sys.mjs"
   );
-  let isNightly = AppConstants.NIGHTLY_BUILD;
-  let isAndroid = AppConstants.platform == "android";
 
   await scriptsReady;
   await runTestWhenReady(async options => {
     await startNetworkAndTest();
     await setupIceServerConfig(fixtureOptions.useIceServer);
-
-    // currently we set android hardware encoder default enabled in nightly.
-    // But before QA approves the quality, we want to ensure the legacy
-    // encoder is working fine.
-    if (isNightly && isAndroid) {
-      let value = Math.random() >= 0.5;
-      await SpecialPowers.pushPrefEnv({
-        set: [
-          ["media.navigator.hardware.vp8_encode.acceleration_enabled", value],
-          [
-            "media.navigator.hardware.vp8_encode.acceleration_remote_enabled",
-            value,
-          ],
-        ],
-      });
-    }
     await testFunction(options);
     await networkTestFinished();
   });

@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Profila sortzeko morroia
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Sarrera
-       *[other] Ongi etorri { create-profile-window.title }-(e)ra
+       *[other] Ongi etorri { create-profile-window2.title }-(e)ra
     }
 
 profile-creation-explanation-1 = { -brand-short-name }(e)k zure ezarpen eta hobespenak gordetzen ditu profil pertsonalean.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Bukaera
-       *[other] { create-profile-window.title } bukatzen
+       *[other] { create-profile-window2.title } bukatzen
     }
 
 profile-creation-intro = Profil ugari sortuz gero, profil-izen desberdinez dei ditzakezu. Hemen eskaintzen zaizun izena edo aukerako beste edozein erabil dezakezu.

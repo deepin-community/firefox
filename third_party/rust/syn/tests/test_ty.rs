@@ -1,14 +1,16 @@
+#![allow(clippy::uninlined_format_args)]
+
 #[macro_use]
 mod macros;
 
 use proc_macro2::{Delimiter, Group, Ident, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::quote;
-use std::iter::FromIterator;
 use syn::Type;
 
 #[test]
 fn test_mut_self() {
     syn::parse_str::<Type>("fn(mut self)").unwrap();
+    syn::parse_str::<Type>("fn(mut self,)").unwrap();
     syn::parse_str::<Type>("fn(mut self: ())").unwrap();
     syn::parse_str::<Type>("fn(mut self: ...)").unwrap_err();
     syn::parse_str::<Type>("fn(mut self: mut self)").unwrap_err();
@@ -33,12 +35,11 @@ fn test_macro_variable_type() {
                     ident: "ty",
                     arguments: PathArguments::AngleBracketed {
                         args: [
-                            Type(Type::Path {
+                            GenericArgument::Type(Type::Path {
                                 path: Path {
                                     segments: [
                                         PathSegment {
                                             ident: "T",
-                                            arguments: None,
                                         },
                                     ],
                                 },
@@ -70,12 +71,11 @@ fn test_macro_variable_type() {
                     arguments: PathArguments::AngleBracketed {
                         colon2_token: Some,
                         args: [
-                            Type(Type::Path {
+                            GenericArgument::Type(Type::Path {
                                 path: Path {
                                     segments: [
                                         PathSegment {
                                             ident: "T",
-                                            arguments: None,
                                         },
                                     ],
                                 },
@@ -107,7 +107,7 @@ fn test_group_angle_brackets() {
                     ident: "Option",
                     arguments: PathArguments::AngleBracketed {
                         args: [
-                            Type(Type::Group {
+                            GenericArgument::Type(Type::Group {
                                 elem: Type::Path {
                                     path: Path {
                                         segments: [
@@ -115,12 +115,11 @@ fn test_group_angle_brackets() {
                                                 ident: "Vec",
                                                 arguments: PathArguments::AngleBracketed {
                                                     args: [
-                                                        Type(Type::Path {
+                                                        GenericArgument::Type(Type::Path {
                                                             path: Path {
                                                                 segments: [
                                                                     PathSegment {
                                                                         ident: "u8",
-                                                                        arguments: None,
                                                                     },
                                                                 ],
                                                             },
@@ -159,12 +158,11 @@ fn test_group_colons() {
                     ident: "Vec",
                     arguments: PathArguments::AngleBracketed {
                         args: [
-                            Type(Type::Path {
+                            GenericArgument::Type(Type::Path {
                                 path: Path {
                                     segments: [
                                         PathSegment {
                                             ident: "u8",
-                                            arguments: None,
                                         },
                                     ],
                                 },
@@ -174,7 +172,6 @@ fn test_group_colons() {
                 },
                 PathSegment {
                     ident: "Item",
-                    arguments: None,
                 },
             ],
         },
@@ -197,7 +194,6 @@ fn test_group_colons() {
                         segments: [
                             PathSegment {
                                 ident: "T",
-                                arguments: None,
                             },
                         ],
                     },
@@ -210,10 +206,132 @@ fn test_group_colons() {
             segments: [
                 PathSegment {
                     ident: "Element",
-                    arguments: None,
                 },
             ],
         },
+    }
+    "###);
+}
+
+#[test]
+fn test_trait_object() {
+    let tokens = quote!(dyn for<'a> Trait<'a> + 'static);
+    snapshot!(tokens as Type, @r###"
+    Type::TraitObject {
+        dyn_token: Some,
+        bounds: [
+            TypeParamBound::Trait(TraitBound {
+                lifetimes: Some(BoundLifetimes {
+                    lifetimes: [
+                        GenericParam::Lifetime(LifetimeParam {
+                            lifetime: Lifetime {
+                                ident: "a",
+                            },
+                        }),
+                    ],
+                }),
+                path: Path {
+                    segments: [
+                        PathSegment {
+                            ident: "Trait",
+                            arguments: PathArguments::AngleBracketed {
+                                args: [
+                                    GenericArgument::Lifetime(Lifetime {
+                                        ident: "a",
+                                    }),
+                                ],
+                            },
+                        },
+                    ],
+                },
+            }),
+            TypeParamBound::Lifetime {
+                ident: "static",
+            },
+        ],
+    }
+    "###);
+
+    let tokens = quote!(dyn 'a + Trait);
+    snapshot!(tokens as Type, @r###"
+    Type::TraitObject {
+        dyn_token: Some,
+        bounds: [
+            TypeParamBound::Lifetime {
+                ident: "a",
+            },
+            TypeParamBound::Trait(TraitBound {
+                path: Path {
+                    segments: [
+                        PathSegment {
+                            ident: "Trait",
+                        },
+                    ],
+                },
+            }),
+        ],
+    }
+    "###);
+
+    // None of the following are valid Rust types.
+    syn::parse_str::<Type>("for<'a> dyn Trait<'a>").unwrap_err();
+    syn::parse_str::<Type>("dyn for<'a> 'a + Trait").unwrap_err();
+}
+
+#[test]
+fn test_trailing_plus() {
+    #[rustfmt::skip]
+    let tokens = quote!(impl Trait +);
+    snapshot!(tokens as Type, @r###"
+    Type::ImplTrait {
+        bounds: [
+            TypeParamBound::Trait(TraitBound {
+                path: Path {
+                    segments: [
+                        PathSegment {
+                            ident: "Trait",
+                        },
+                    ],
+                },
+            }),
+        ],
+    }
+    "###);
+
+    #[rustfmt::skip]
+    let tokens = quote!(dyn Trait +);
+    snapshot!(tokens as Type, @r###"
+    Type::TraitObject {
+        dyn_token: Some,
+        bounds: [
+            TypeParamBound::Trait(TraitBound {
+                path: Path {
+                    segments: [
+                        PathSegment {
+                            ident: "Trait",
+                        },
+                    ],
+                },
+            }),
+        ],
+    }
+    "###);
+
+    #[rustfmt::skip]
+    let tokens = quote!(Trait +);
+    snapshot!(tokens as Type, @r###"
+    Type::TraitObject {
+        bounds: [
+            TypeParamBound::Trait(TraitBound {
+                path: Path {
+                    segments: [
+                        PathSegment {
+                            ident: "Trait",
+                        },
+                    ],
+                },
+            }),
+        ],
     }
     "###);
 }

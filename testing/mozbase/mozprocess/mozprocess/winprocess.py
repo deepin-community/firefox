@@ -38,21 +38,19 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-from __future__ import absolute_import, unicode_literals, print_function
-
 import subprocess
 import sys
 from ctypes import (
-    cast,
-    create_unicode_buffer,
+    POINTER,
+    WINFUNCTYPE,
+    Structure,
+    WinError,
     c_ulong,
     c_void_p,
-    POINTER,
+    cast,
+    create_unicode_buffer,
     sizeof,
-    Structure,
     windll,
-    WinError,
-    WINFUNCTYPE,
 )
 from ctypes.wintypes import BOOL, BYTE, DWORD, HANDLE, LPCWSTR, LPWSTR, UINT, WORD
 
@@ -499,6 +497,7 @@ STILL_ACTIVE = 259
 
 # Used when we terminate a process.
 ERROR_CONTROL_C_EXIT = 0x23C
+ERROR_CONTROL_C_EXIT_DECIMAL = 3221225786
 
 # GetExitCodeProcess()
 

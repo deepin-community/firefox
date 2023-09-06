@@ -30,6 +30,9 @@ import-from-nothing =
 import-from-safari =
     .label = سافاری
     .accesskey = س
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = کروم قناری
     .accesskey = ق
@@ -61,9 +64,6 @@ import-items-description = مواردی را که می‌خواهید وارد �
 
 import-permissions-page-title = لطفاً مجوزهای لازم را به { -brand-short-name } بدهید
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = در macOS لازم است که شما به { -brand-short-name } برای دسترسی به نشانک‌های Safari اجازه دهید. بر روی «ادامه» کلید کنید و در پنجره‌ای که باز می‌شود، پروندهٔ «Bookmarks.plist» را انتخاب کنید.
-
 import-migrating-page-title = در حال وارد کردن…
 
 import-migrating-description = موارد زیر در حال وارد شدن هستند…
@@ -78,23 +78,9 @@ import-done-description = موارد زیر با موفقیت وارد شدند:
 
 import-close-source-browser = لطفا قبل از ادامه دادن مطمئن شوید که مرورگر انتخاب شده بسته باشد.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = از { $source }:
-
 source-name-ie = اینترنت اکسپلورر
 source-name-edge = مایکروسافت Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = سافاری
-source-name-canary = گوگل کروم قناری
 source-name-chrome = گوگل کروم
-source-name-chrome-beta = گوگل کروم بتا
-source-name-chrome-dev = گوگل کروم Dev
-source-name-chromium = کرومیوم
-source-name-firefox = موزیلا فایرفاکس
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = لیست خواندن (از اپل سفری)
 imported-edge-reading-list = لیست مطالعه (از Edge)
@@ -114,9 +100,9 @@ imported-edge-reading-list = لیست مطالعه (از Edge)
 ## normalized to just "edge" and "chrome" for these strings.
 
 browser-data-cookies-checkbox =
-    .label = کوکی‌ها
+    .label = کلوچک‌ها
 browser-data-cookies-label =
-    .value = کوکی‌ها
+    .value = کلوچک‌ها
 
 browser-data-history-checkbox =
     .label =
@@ -169,3 +155,4 @@ browser-data-session-checkbox =
     .label = پنجره‌ها و سربرگ ها
 browser-data-session-label =
     .value = پنجره‌ها و سربرگ ها
+

@@ -41,6 +41,17 @@ options-collapse-attrs-label = חיתוך רכיבי DOM
 options-collapse-attrs-tooltip =
     .title = קיצור תכונות ארוכות במפקח
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = לחיצה וגרירה כדי לערוך ערכים של גדלים
+options-inspector-draggable-properties-tooltip =
+    .title = לחיצה וגרירה כדי לערוך ערכים של גדלים בתצוגת הכללים במפקח
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = שימוש במדגישים פשוטים יותר כש־prefers-reduced-motion מופעל
+options-inspector-simplified-highlighters-tooltip =
+    .title = מאפשר מדגישים פשוטים יותר כאשר prefers-reduced-motion מופעל. יצויירו קווים במקום מלבנים ממולאים סביב אלמנטים מסומנים כדי למנוע אפקטים מהבהבים.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = יחידת צבע כבררת מחדל
@@ -48,6 +59,7 @@ options-default-color-unit-authored = כפי שהוגדר מראש
 options-default-color-unit-hex = הקסדצימלי
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = שמות הצבעים
 
 ## Style Editor section
@@ -104,9 +116,9 @@ options-disable-http-cache-tooltip =
     .title = הפעלת אפשרות זו תשבית את מטמון ה־HTTP עבור כל הלשוניות בהן פתוח ארגז הכלים. Service Workers אינם מושפעים מאפשרות זו.
 
 # The label for checkbox that toggles JavaScript on or off
-options-disable-javascript-label = נטרול JavaScript *
+options-disable-javascript-label = השבתת JavaScript *
 options-disable-javascript-tooltip =
-    .title = הפעלת אפשרות זו תנטרל את JavaScript בלשונית הנוכחית. אם הלשונית או ארגז הכלים יסגרו הגדרה זו תישכח.
+    .title = הפעלת אפשרות זו תשבית את JavaScript בלשונית הנוכחית. אם הלשונית או ארגז הכלים יסגרו הגדרה זו תישכח.
 
 options-enable-chrome-tooltip =
     .title = הפעלת אפשרות זו תאפשר לך להשתמש במגוון כלי פיתוח בהקשר הדפדפן (דרך כלים -> כלי פיתוח -> ארגז הכלים של הדפדפן) ולנפות שגיאות בתוספות ממנהל התוספות
@@ -115,6 +127,11 @@ options-enable-chrome-tooltip =
 options-enable-remote-label = הפעלת מנפה שגיאות מרוחק
 options-enable-remote-tooltip2 =
     .title = הפעלת אפשרות זו תאפשר לנפות שגיאות מרחוק במופע דפדפן זה
+
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = שימוש במקש F12 כדי לפתוח או לסגור את כלי הפיתוח
+options-enable-f12-tooltip =
+    .title = הפעלת אפשרות זו תקשר את מקש F12 לפתיחה או סגירת ארגז הכלים של כלי הפיתוח
 
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = הפעלת Service Workers על גבי HTTP (כשארגז הכלים פתוח)
@@ -128,9 +145,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * הפעלה נוכחית בלבד, יש לטעון מחדש את הדף
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = הצגת נתוני סביבת Gecko
-options-show-platform-data-tooltip =
-    .title = אפשרות זו תגרום לדיווחי מאבחן ה־JavaScript להכיל גם סמלי סביבת Gecko

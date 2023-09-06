@@ -3,20 +3,23 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 """Utility functions for Talos"""
-from __future__ import absolute_import
-
 import os
 import platform
 import re
-import six
 import string
 import time
+import urllib.parse
+from sys import stdout
 
-from mozlog import get_proxy_logger
+try:
+    from mozlog import get_proxy_logger
+
+    LOG = get_proxy_logger()
+except ModuleNotFoundError:
+    LOG = stdout
 
 # directory of this file for use with interpolatePath()
 here = os.path.dirname(os.path.realpath(__file__))
-LOG = get_proxy_logger()
 
 
 class Timer(object):
@@ -95,13 +98,13 @@ def tokenize(string, start, end):
         end,
         len(_end),
     )
-    for i in six.moves.range(len(_start)):
+    for i in range(len(_start)):
         assert _end[i] > _start[i], "End token '%s' occurs before start token '%s'" % (
             end,
             start,
         )
     parts = []
-    for i in six.moves.range(len(_start)):
+    for i in range(len(_start)):
         parts.append(string[_start[i] + len(start) : _end[i]])
     return parts, _end[-1]
 
@@ -118,7 +121,7 @@ def urlsplit(url, default_scheme="file"):
         return ["file", "", url[len("file://") :], "", ""]
 
     # split the URL and return a list
-    return [i for i in six.moves.urllib.parse.urlsplit(url)]
+    return [i for i in urllib.parse.urlsplit(url)]
 
 
 def parse_pref(value):
@@ -153,9 +156,9 @@ def GenerateBrowserCommandLine(
         if url is not None:
             # for non-pageloader/non-manifest tests the profiling info is added to the test url
             if url.find("?") != -1:
-                url += "&" + six.moves.urllib.parse.urlencode(profiling_info)
+                url += "&" + urllib.parse.urlencode(profiling_info)
             else:
-                url += "?" + six.moves.urllib.parse.urlencode(profiling_info)
+                url += "?" + urllib.parse.urlencode(profiling_info)
             command_args.extend(url.split(" "))
 
     # if there's a url i.e. startup test / non-manifest test, add it to the cmd line args
@@ -163,18 +166,6 @@ def GenerateBrowserCommandLine(
         command_args.extend(url.split(" "))
 
     return command_args
-
-
-def indexed_items(itr):
-    """
-    Generator that allows us to figure out which item is the last one so
-    that we can serialize this data properly
-    """
-    prev_i, prev_val = 0, next(itr)
-    for i, val in enumerate(itr, start=1):
-        yield prev_i, prev_val
-        prev_i, prev_val = i, val
-    yield -1, prev_val
 
 
 def run_in_debug_mode(browser_config):

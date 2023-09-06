@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 history-title = 업데이트 기록
-history-intro = 다음 업데이트들이 설치됨
+history-intro = 다음 업데이트가 설치됨
 
 close-button-label =
     .buttonlabelcancel = 닫기
@@ -23,5 +23,7 @@ state-header = 상태
 update-full-build-name = { $name } ({ $buildID })
 
 update-details = 상세 정보
-update-installed-on = 설치 위치: { $date }
+
+update-installed-on = 설치 날짜: { $date }
+
 update-status = 상태: { $status }

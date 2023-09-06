@@ -15,6 +15,10 @@ support-addons-type = 유형
 support-addons-enabled = 사용
 support-addons-version = 버전
 support-addons-id = ID
+legacy-user-stylesheets-title = 레거시 사용자 스타일시트
+legacy-user-stylesheets-enabled = 활성화
+legacy-user-stylesheets-stylesheet-types = 스타일시트
+legacy-user-stylesheets-no-stylesheets-found = 스타일시트를 찾을 수 없음
 security-software-title = 보안 소프트웨어
 security-software-type = 유형
 security-software-name = 이름
@@ -72,6 +76,13 @@ app-basics-location-service-key-google = Google 위치 서비스 키
 app-basics-safebrowsing-key-google = Google Safebrowsing 키
 app-basics-key-mozilla = Mozilla 위치 서비스 키
 app-basics-safe-mode = 안전 모드
+app-basics-memory-size = 메모리 크기 (램)
+app-basics-disk-available = 사용 가능한 디스크 공간
+app-basics-pointing-devices = 포인팅 기기
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Finder에서 보기
@@ -81,7 +92,7 @@ show-dir-label =
 environment-variables-title = 환경 변수
 environment-variables-name = 이름
 environment-variables-value = 값
-experimental-features-title = 실험적인 기능
+experimental-features-title = 실험 기능
 experimental-features-name = 이름
 experimental-features-value = 값
 modified-key-prefs-title = 중요한 변경된 환경 설정
@@ -101,11 +112,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = 판단 로그
 graphics-crash-guards-title = 크래시 보호 비활성화 기능
 graphics-workarounds-title = 임시방편
+graphics-device-pixel-ratios = 창 기기 픽셀 비율
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = 윈도우 프로토콜
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = 데스크톱 환경
 place-database-title = 위치 데이터베이스
+place-database-stats = 통계
+place-database-stats-show = 통계 표시
+place-database-stats-hide = 통계 숨기기
+place-database-stats-entity = 엔터티
+place-database-stats-count = 수
+place-database-stats-size-kib = 크기 (KiB)
+place-database-stats-size-perc = 크기 (%)
+place-database-stats-efficiency-perc = 효율성 (%)
+place-database-stats-sequentiality-perc = 순차 (%)
 place-database-integrity = 무결성
 place-database-verify-integrity = 무결성 확인
 a11y-title = 접근성
@@ -152,8 +173,18 @@ media-device-channels = 채널
 media-device-rate = 레이트
 media-device-latency = 지연 시간
 media-capabilities-title = 미디어 기능
+media-codec-support-info = 코덱 지원 정보
 # List all the entries of the database.
 media-capabilities-enumerate = 데이터베이스 열거
+
+## Codec support table
+
+media-codec-support-sw-decoding = 소프트웨어 디코딩
+media-codec-support-hw-decoding = 하드웨어 디코딩
+media-codec-support-codec-name = 코덱 이름
+media-codec-support-supported = 지원됨
+media-codec-support-unsupported = 지원 안 됨
+media-codec-support-error = 코덱 지원 정보를 사용할 수 없습니다. 미디어 파일 재생 후 다시 시도하세요.
 
 ##
 
@@ -202,10 +233,10 @@ text-copied = 문자열을 클립보드에 복사함
 
 ## The verb "blocked" here refers to a graphics feature such as "Direct2D" or "OpenGL layers".
 
-blocked-driver = 그래픽 드라이버 버전이 지원하지 않기 때문에 그리기 지원을 차단하였습니다.
-blocked-gfx-card = 그래픽 카드 드라이버의 미해결 문제로 인해 그리기 지원을 차단하였습니다.
-blocked-os-version = 운영 체제 버전에서 지원하지 않기 때문에 그리기 지원을 차단하였습니다.
-blocked-mismatched-version = 레지스트리와 DLL간의 그래픽 드라이버 버전이 일치하지 않아서 차단하였습니다.
+blocked-driver = 그래픽 드라이버 버전이 지원하지 않기 때문에 그리기 지원을 차단했습니다.
+blocked-gfx-card = 그래픽 카드 드라이버의 미해결 문제로 인해 그리기 지원을 차단했습니다.
+blocked-os-version = 운영 체제 버전에서 지원하지 않기 때문에 그리기 지원을 차단했습니다.
+blocked-mismatched-version = 레지스트리와 DLL간의 그래픽 드라이버 버전이 일치하지 않아서 차단했습니다.
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = 그래픽 드라이버는 그리기 지원이 차단되었습니다.  그래픽 드라이버를 버전 { $driverVersion } 이상으로 업데이트해 보세요.
@@ -216,7 +247,7 @@ compositing = 합성
 hardware-h264 = 하드웨어 H264 디코딩
 main-thread-no-omtc = 주 스레드, OMTC 아님
 yes = 예
-no = 아니오
+no = 아니요
 unknown = 알 수 없음
 virtual-monitor-disp = 가상 모니터 디스플레이
 
@@ -248,6 +279,8 @@ webgl2-renderer = WebGL2 드라이버 랜더러
 webgl2-version = WebGL 2 드라이버 버전
 webgl2-driver-extensions = WebGL 2 드라이버 확장 기능
 webgl2-extensions = WebGL 2 확장 기능
+webgpu-default-adapter = WebGPU 기본 어댑터
+webgpu-fallback-adapter = WebGPU 폴백 어댑터
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = 알려진 문제로 인해 차단됨: <a data-l10n-name="bug-link">bug { $bugNumber }</a>
@@ -277,6 +310,7 @@ can-sandbox-media = 미디어 플러그인 샌드박싱
 content-sandbox-level = 콘텐츠 프로세스 샌드박스 수준
 effective-content-sandbox-level = 효과적인 콘텐츠 프로세스 샌드박스 수준
 content-win32k-lockdown-state = 콘텐츠 프로세스에 대한 Win32k 잠금 상태
+support-sandbox-gpu-level = GPU 프로세스 샌드박스 수준
 sandbox-proc-type-content = 내용
 sandbox-proc-type-file = 파일 내용
 sandbox-proc-type-media-plugin = 미디어 플러그인
@@ -302,7 +336,7 @@ fission-status-experiment-control = 실험에 의해 비활성화됨
 fission-status-experiment-treatment = 실험에 의해 활성화됨
 fission-status-disabled-by-e10s-env = 환경에 의해 비활성화됨
 fission-status-enabled-by-env = 환경에 의해 활성화됨
-fission-status-disabled-by-safe-mode = 안전 모드에 의해 비활성화됨
+fission-status-disabled-by-env = 환경에 의해 비활성화됨
 fission-status-enabled-by-default = 기본값에 의해 활성화됨
 fission-status-disabled-by-default = 기본값에 의해 비활성화됨
 fission-status-enabled-by-user-pref = 사용자에 의해 활성화됨
@@ -348,3 +382,10 @@ support-remote-experiments-see-about-studies = 개별 실험을 비활성화하�
 support-remote-features-title = 원격 기능
 support-remote-features-name = 이름
 support-remote-features-status = 상태
+
+## Pointing devices
+
+pointing-device-mouse = 마우스
+pointing-device-touchscreen = 터치 스크린
+pointing-device-pen-digitizer = 펜 디지타이저
+pointing-device-none = 포인팅 기기 없음

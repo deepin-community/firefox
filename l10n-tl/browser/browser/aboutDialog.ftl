@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = R
 
 update-checkingForUpdates = Naghahanap ng mga update...
-update-downloading = <img data-l10n-name="icon"/>Nagda-download ng update — <label data-l10n-name="download-status"/>
-update-downloading-message = Dina-download ang update —<label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Nagda-download ng update — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Dina-download ang update —<label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Inilalapat ang update...
 
 update-failed = Bigo ang pag-update. <label data-l10n-name="failed-link">I-download ang pinakabagong bersyon</label>
@@ -27,13 +34,21 @@ update-adminDisabled = Ang pagdadagdag ng mga pagbabago ay pinawalang bisa ng iy
 update-noUpdatesFound = Ang { -brand-short-name } ay up to date
 update-otherInstanceHandlingUpdates = Ang { -brand-short-name } ay kasalukuyang ina-update ng isa pang instance
 
-update-manual = Ang mga update ay matatagpuan sa <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Ang mga update ay matatagpuan sa <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Ang mga update ay matatagpuan sa <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Hindi ka na maaaring makapag-update sa sistemang ito. <label data-l10n-name="unsupported-link">Alamin</label>
 
 update-restarting = Nag-rerestart...
 
-channel-description = Ikaw ay kasalukuyang nasa <label data-l10n-name="current-channel"></label> update channel.
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Ikaw ay kasalukuyang nasa <label data-l10n-name="current-channel">{ $channel }</label> update channel.
 
 warningDesc-version = Ang { -brand-short-name } ay eksperimental at hindi pa pirmihan.
 

@@ -17,9 +17,9 @@ certmgr-tab-servers =
 certmgr-tab-ca =
     .label = အာဏာပိုင်များ
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = CA လက်မှတ် စိတ်ချမှု အပြင်အဆင်များကို တည်းဖြတ်ပါ
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = စိတ်ချမှု အပြင်အဆင်များကို တည်းဖြတ်ပါ -
 
@@ -29,18 +29,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = ဒီလက်မှတ်က အီးမေးလ် သုံးစွသူများကို ဖေါ်ထုတ်နိုင်တယ်။
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = လက်မှတ်ကို ဖျက်ရန်
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = လက်မှတ်အမည်
 
 certmgr-cert-server =
     .label = ဆာဗာ
-
-certmgr-override-lifetime =
-    .label = သက်တမ်း
 
 certmgr-token-name =
     .label = လုံခြုံရေး ကိရိယာ
@@ -169,9 +166,8 @@ delete-email-cert-impact = လူတဦးရဲ့ အီးမေးလ် လ
 cert-with-serial =
     .value = အမှတ်စဉ်ဖြင့် လက်မှတ် - { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

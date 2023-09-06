@@ -2,15 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
 import os
 import sys
 from argparse import Namespace
 
-from mach.decorators import (
-    Command,
-)
+from mach.decorators import Command
 
 here = os.path.abspath(os.path.dirname(__file__))
 parser = None
@@ -56,13 +52,7 @@ def run_gtest_desktop(context, args):
     import rungtests
 
     tester = rungtests.GTests()
-    return tester.run_gtest(
-        prog,
-        xre_path,
-        cwd,
-        utility_path=utility_path,
-        enable_webrender=args.enable_webrender,
-    )
+    return tester.run_gtest(prog, xre_path, cwd, utility_path=utility_path)
 
 
 def run_gtest_android(context, args):
@@ -97,7 +87,6 @@ def run_gtest_android(context, args):
         args.remote_test_root,
         libxul_path,
         args.symbols_path,
-        args.enable_webrender,
     )
 
 

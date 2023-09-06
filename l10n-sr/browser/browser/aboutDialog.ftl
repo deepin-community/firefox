@@ -19,17 +19,24 @@ update-checkForUpdatesButton =
 
 update-updateButton =
     .label =
-        Рестартуј и ажурирај { -brand-shorter-name.gender ->
-            [masculine] { -brand-shorter-name(case: "acc") }
-            [feminine] { -brand-shorter-name(case: "acc") }
-            [neuter] { -brand-shorter-name(case: "acc") }
-           *[other] програм { -brand-shorter-name }
+        { -brand-shorter-name.gender ->
+            [masculine] Поново покрени и ажурирај { -brand-shorter-name(case: "acc") }
+            [feminine] Поново покрени и ажурирај { -brand-shorter-name(case: "acc") }
+            [neuter] Поново покрени и ажурирај { -brand-shorter-name(case: "acc") }
+           *[other] Поново покрени и ажурирај програм { -brand-shorter-name }
         }
     .accesskey = Р
 
 update-checkingForUpdates = Провера доступности ажурирања…
-update-downloading = <img data-l10n-name="icon"/>Преузимање ажурирања — <label data-l10n-name="download-status"/>
-update-downloading-message = Преузимање ажурирања — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Преузимање ажурирања — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Преузимање ажурирања — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Примена ажурирања…
 
 update-failed = Ажурирање није успело. <label data-l10n-name="failed-link">Преузмите најновију верзију</label>
@@ -43,6 +50,7 @@ update-noUpdatesFound =
         [neuter] { -brand-short-name } је ажурно
        *[other] Програм { -brand-short-name } је ажуран
     }
+aboutdialog-update-checking-failed = Провера ажурирања није успела.
 update-otherInstanceHandlingUpdates =
     { -brand-short-name.gender ->
         [masculine] { -brand-short-name }
@@ -51,13 +59,23 @@ update-otherInstanceHandlingUpdates =
        *[other] Програм { -brand-short-name }
     } се ажурира у другом примерку
 
-update-manual = Ажурирања су доступна на <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Ажурирања су доступна на <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Ажурирања су доступна на <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Не можете да извршите ажурирања на овом систему. <label data-l10n-name="unsupported-link">Сазнајте више</label>
 
-update-restarting = Рестартовање…
+update-restarting = Поново покрећем…
 
-channel-description = Користите <label data-l10n-name="current-channel"></label> канал за ажурирања.
+update-internal-error2 = Интерна грешка спречава проверу ажурирања. Ажурирања су доступна на <label data-l10n-name="manual-link">{ $displayUrl }</label>
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Користите <label data-l10n-name="current-channel">{ $channel }</label> канал за ажурирања.
 
 warningDesc-version = { -brand-short-name } је експерименталан и може бити нестабилан.
 

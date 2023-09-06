@@ -11,3 +11,10 @@ common-dialog-username =
     .value = نام کاربری
 common-dialog-password =
     .value = گذرواژه
+
+common-dialog-copy-cmd =
+    .label = رونوشت برداشتن
+    .accesskey = ن
+common-dialog-select-all-cmd =
+    .label = انتخاب همه
+    .accesskey = ا

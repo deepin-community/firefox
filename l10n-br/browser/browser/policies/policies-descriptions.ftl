@@ -40,7 +40,7 @@ policy-DisableForgetButton = Diweredekaat an afell evit dilemel ar roadennoù.
 policy-DisableFormHistory = Chom hep derc'hel soñj eus ar roll istor klask ha furmskridoù.
 policy-DisablePrimaryPasswordCreation = M’eo gwir e vo tu krouiñ ur ger-tremen pennañ.
 policy-DisablePasswordReveal = Na aotren ar gerioù-tremen da vezañ diskouezet en titouroù kennaskañ enrollet.
-policy-DisablePocket = Diweredekaat ar c'heweriuster evit enrollañ pajennoù e Pocket.
+policy-DisablePocket2 = Diweredekaat ar c'heweriuster evit enrollañ pajennoù e { -pocket-brand-name }.
 policy-DisablePrivateBrowsing = Diweredekaat ar merdeiñ prevez.
 policy-DisableProfileImport = Diweredekaat arc'had al lañser evit enporzhiañ roadennoù adalek ur merdeer all.
 policy-DisableProfileRefresh = Diweredekaat an afell Azgrenaat { -brand-short-name } er bajenn about:support.
@@ -64,8 +64,8 @@ policy-EncryptedMediaExtensions = Gweredekaat pe diweredekaat astenn ar mediaoù
 policy-Extensions = Staliañ, distaliañ pe prennañ askouezhioù. An dibarzh staliañ a gemer URLoù pe treugoù evel arventennoù. An dibarzhioù distaliañ ha prennañ a gemer naoudioù askouezhioù.
 policy-ExtensionSettings = Ardoit pep tra a sell deus an askouezhioù
 policy-ExtensionUpdate = (Di)weredekaat hizivadennoù askouezhioù ent emgefreek.
-policy-FirefoxHome = Kefluniañ degemer firefox
-policy-FlashPlugin = Aotren pe difenn arver an enlugellad Flash.
+policy-FirefoxHome2 = Kefluniañ { -firefox-home-brand-name }.
+policy-FirefoxSuggest = Kefluniañ { -firefox-suggest-brand-name }.
 policy-Handlers = Kefluniañ ar verourien arloadoù dre ziouer.
 policy-HardwareAcceleration = M’eo lakaet da Gaou e vo diweredekaet herrekadur ar periant.
 # “lock” means that the user won’t be able to change this setting
@@ -92,6 +92,7 @@ policy-OfferToSaveLoginsDefault = Dibab ar gwerzh dre ziouer evit aotren { -bran
 policy-OverrideFirstRunPage = Merañ ar bajenn loc'hadur kentañ. Laoskit ar reolenn-mañ goullo ma fell deoc'h diweredekaat ar bajenn loc'hadur kentañ.
 policy-OverridePostUpdatePage = Merañ ar pajenn "Petra nevez?" goude un hizivadenn. Laoskit ar reolenn-mañ goullo ma fell deoc'h diweredekaat ar bajenn goude un hizivadenn.
 policy-PasswordManagerEnabled = Gweredekaat enrollañ ar gerioù-tremen en ardoer gerioù-tremen.
+policy-PasswordManagerExceptions = Mirout { -brand-short-name } da enrollañ gerioù-tremen evit lec’hiennoù resis.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Diweredekaat pe kefluniañ PDF.js, gweler PDF enkorfet { -brand-short-name }.
 policy-Permissions2 = Kefluniañ an aotreoù evit ar c'hamera, ar glevell, al lec'hiadurezh, ar rebuzadurioù hag al lenn emgefreek.
@@ -105,8 +106,6 @@ policy-SanitizeOnShutdown2 = Skarzhañ ar roadennoù merdeiñ en ur guitaat.
 policy-SearchBar = Despizañ al lec'hiadur dre ziouer er varrenn glask. AN arveriad a c'hallo kemmañ anezhañ.
 policy-SearchEngines = Kefluniañ arventennoù al lusker enklask. Ar reolenn-mañ a c'hall bezañ lakaet en handelv skor astennet (ESR).
 policy-SearchSuggestEnabled = (Di)weredekaat an alioù klask.
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Staliañ ar molladoù PKCS #11.
 policy-ShowHomeButton = Diskouez an afell degemer er varrenn ostilhoù.
 policy-SSLVersionMax = Arventennañ an handelv SSL uhelañ.
 policy-SSLVersionMin = Arventennañ an handelv SSL izelañ.

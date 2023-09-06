@@ -16,7 +16,14 @@ pub struct PadUsing<I, F> {
     filler: F,
 }
 
-/// Create a new **PadUsing** iterator.
+impl<I, F> std::fmt::Debug for PadUsing<I, F>
+where
+    I: std::fmt::Debug,
+{
+    debug_fmt_fields!(PadUsing, iter, min, pos);
+}
+
+/// Create a new `PadUsing` iterator.
 pub fn pad_using<I, F>(iter: I, min: usize, filler: F) -> PadUsing<I, F>
     where I: Iterator,
           F: FnMut(usize) -> I::Item

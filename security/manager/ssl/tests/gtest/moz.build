@@ -6,10 +6,9 @@
 
 SOURCES += [
     "CertDBTest.cpp",
-    "CertListTest.cpp",
     "CoseTest.cpp",
-    "DataStorageTest.cpp",
     "DeserializeCertTest.cpp",
+    "HMACTest.cpp",
     "MD4Test.cpp",
     "OCSPCacheTest.cpp",
     "TLSIntoleranceTest.cpp",
@@ -24,6 +23,3 @@ LOCAL_INCLUDES += [
 include("/ipc/chromium/chromium-config.mozbuild")
 
 FINAL_LIBRARY = "xul-gtest"
-
-if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-    CXXFLAGS += ["-Wno-error=shadow"]

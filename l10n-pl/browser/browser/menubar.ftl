@@ -38,20 +38,9 @@ menu-quit =
             [windows] k
            *[other] k
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Zakończ program { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Zakończ program { -brand-shorter-name }
-
 menu-about =
     .label = O programie { -brand-shorter-name }
     .accesskey = O
@@ -81,9 +70,17 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Otwórz plik…
     .accesskey = o
-menu-file-close =
-    .label = Zamknij
-    .accesskey = Z
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Zamknij kartę
+            [one] Zamknij kartę
+            [few] Zamknij { $tabCount } karty
+           *[many] Zamknij { $tabCount } kart
+        }
+    .accesskey = k
 menu-file-close-window =
     .label = Zamknij okno
     .accesskey = m
@@ -99,9 +96,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Ustawienia strony…
     .accesskey = U
-menu-file-print-preview =
-    .label = Podgląd wydruku
-    .accesskey = g
 menu-file-print =
     .label = Drukuj…
     .accesskey = D
@@ -188,6 +182,17 @@ menu-view-full-screen =
     .label = Tryb pełnoekranowy
     .accesskey = T
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Popraw czytelność
+    .accesskey = P
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Wygląd oryginalny
+    .accesskey = W
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +221,9 @@ menu-history-undo-menu =
     .label = Ostatnio zamknięte karty
 menu-history-undo-window-menu =
     .label = Ostatnio zamknięte okna
-menu-history-reopen-all-tabs = Przywróć wszystkie karty
-menu-history-reopen-all-windows = Przywróć wszystkie okna
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Szukaj w historii
 
 ## Bookmarks Menu
 
@@ -226,10 +232,13 @@ menu-bookmarks-menu =
     .accesskey = Z
 menu-bookmarks-manage =
     .label = Zarządzaj zakładkami
-menu-bookmark-current-tab =
-    .label = Dodaj zakładkę do tej karty
-menu-bookmark-edit =
-    .label = Edytuj tę zakładkę
+menu-bookmark-tab =
+    .label = Dodaj zakładkę do tej karty…
+menu-edit-bookmark =
+    .label = Edytuj tę zakładkę…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Szukaj w zakładkach
 menu-bookmarks-all-tabs =
     .label = Dodaj zakładki do wszystkich kart…
 menu-bookmarks-toolbar =
@@ -314,15 +323,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = n
 menu-help-report-site-issue =
     .label = Zgłoś problem ze stroną…
-menu-help-feedback-page =
-    .label = Prześlij swoją opinię…
-    .accesskey = e
+menu-help-share-ideas =
+    .label = Podziel się pomysłami i opiniami…
+    .accesskey = d
 menu-help-enter-troubleshoot-mode2 =
     .label = Tryb rozwiązywania problemów…
     .accesskey = T
 menu-help-exit-troubleshoot-mode =
     .label = Wyłącz tryb rozwiązywania problemów
     .accesskey = t
+menu-help-switch-device =
+    .label = Przechodzenie na nowe urządzenie
+    .accesskey = P
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

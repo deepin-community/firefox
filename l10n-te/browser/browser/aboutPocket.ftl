@@ -16,6 +16,7 @@ pocket-panel-saved-error-generic = { -pocket-brand-name }కు భద్రప�
 pocket-panel-saved-error-tag-length = ట్యాగులు 25 అక్షరాలకు పరిమితం
 pocket-panel-saved-error-only-links = కేవలం లంకెలను మాత్రమే భద్రపరచగలరు
 pocket-panel-saved-error-not-saved = పేజీ భద్రమవలేదు
+pocket-panel-saved-error-remove = ఈ పేజీని తీసివేయడంలో ఏదో పొరపాటు జరిగింది.
 pocket-panel-saved-page-removed = పేజీ తీసివేయబడెను
 pocket-panel-saved-page-saved = { -pocket-brand-name }కు భద్రపరచబడింది
 pocket-panel-saved-processing-remove = పేజీని తొలగించు…
@@ -25,7 +26,6 @@ pocket-panel-saved-save-tags = భద్రపరచు
 pocket-panel-saved-saving-tags = భద్రమవుతోంది…
 pocket-panel-saved-suggested-tags = సూచించిన ట్యాగులు
 pocket-panel-saved-tags-saved = ట్యాగులు చేర్చబడ్డాయి
-pocket-panel-signup-view-list = జాబితాను చూడండి
 
 ## about:pocket-signup panel
 
@@ -41,5 +41,18 @@ pocket-panel-signup-tagline-story-two = ఏ పరికరంలో అయి�
 
 ## about:pocket-home panel
 
-pocket-panel-home-my-list = నా జాబితా
 pocket-panel-home-welcome-back = పునఃస్వాగతం
+pocket-panel-home-explore-popular-topics = ప్రాచుర్య అంశాలను చూడండి
+pocket-panel-home-discover-more = మరింత కనుగొనండి
+
+pocket-panel-home-most-recent-saves = ఇటీవల మీరు భద్రపరచినవి ఇవి:
+pocket-panel-home-new-user-message = మీరు ఇటీవల భద్రపరచిన వాటిని ఇక్కడ చూడవచ్చు.
+
+## Pocket panel header component
+
+pocket-panel-header-sign-in = ప్రవేశించండి
+
+## Pocket panel buttons
+
+pocket-panel-button-show-all = అన్నీ చూపించు
+pocket-panel-button-remove = తీసివేయి

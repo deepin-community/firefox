@@ -24,14 +24,6 @@ function expected_fail(inputIDN) {
 }
 
 function run_test() {
-  // add an IDN whitelist pref
-  var pbi = Cc["@mozilla.org/preferences-service;1"].getService(
-    Ci.nsIPrefBranch
-  );
-  var whitelistPref = "network.IDN.whitelist.com";
-
-  pbi.setBoolPref(whitelistPref, true);
-
   idnService = Cc["@mozilla.org/network/idn-service;1"].getService(
     Ci.nsIIDNService
   );
@@ -53,9 +45,4 @@ function run_test() {
   // code point assigned since Unicode 3.0
   // XXX This test will unexpectedly pass when we update to IDNAbis
   expected_fail("foo\u0370bar.com");
-
-  // reset the pref
-  if (pbi.prefHasUserValue(whitelistPref)) {
-    pbi.clearUserPref(whitelistPref);
-  }
 }

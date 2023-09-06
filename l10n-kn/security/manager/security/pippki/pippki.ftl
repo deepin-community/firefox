@@ -13,8 +13,6 @@ change-password-old = ಪ್ರಸ್ತುತ ಗುಪ್ತಪದ:
 change-password-new = ಹೊಸ ಗುಪ್ತಪದ:
 change-password-reenter = ಹೊಸ ಗುಪ್ತಪದ (ಮತ್ತೊಮ್ಮೆ):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ಡೌನ್‍ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = ಒಂದು ಹೊಸ ಪ್ರಮಾಣಪತ್ರ ಅಥಾರಿಟಿಯನ್ನು(CA) ನಂಬುವಂತೆ ನಿಮ್ಮನ್ನು ಕೇಳಲಾಗಿದೆ .
 download-cert-trust-ssl =
     .label = ಜಾಲ ತಾಣಗಳನ್ನು ಗುರುತಿಸಲು ಈ CA ಅನ್ನು ನಂಬು.
@@ -37,10 +35,37 @@ download-cert-view-text = CA ಪ್ರಮಾಣಪತ್ರವನ್ನು ಪ�
 
 ## Client Authorization Ask dialog
 
+
+## Client Authentication Ask dialog
+
 client-auth-window =
     .title = ಬಳಕೆದಾರರ ಗುರುತಿಗೆ ಮನವಿ
 client-auth-site-description = ನೀವು ಒಂದು ಪ್ರಮಾಣಪತ್ರದಿಂದ ನಿಮ್ಮನ್ನು ಗುರುತಿಸಿಕೊಳ್ಳಲು ಈ ತಾಣವು ಅಪೇಕ್ಷಿಸಿದೆ:
 client-auth-choose-cert = ಗುರುತಾಗಿ ಪ್ರಸ್ತುತ ಪಡಿಸಲು ಒಂದು ಪ್ರಮಾಣಪತ್ರವನ್ನು ಆರಿಸಿ:
+# Variables:
+# $issuedTo (String) - The subject common name of the currently-selected client authentication certificate
+client-auth-cert-details-issued-to = ಇದಕ್ಕೆ ವಿತರಿಸಲಾಗಿದೆ: { $issuedTo }
+# Variables:
+# $serialNumber (String) - The serial number of the certificate (hexadecimal of the form "AA:BB:...")
+client-auth-cert-details-serial-number = ಅನುಕ್ರಮ ಸಂಖ್ಯೆ: { $serialNumber }
+# Variables:
+# $notBefore (String) - The date before which the certificate is not valid (e.g. Apr 21, 2023, 1:47:53 PM UTC)
+# $notAfter (String) - The date after which the certificate is not valid
+client-auth-cert-details-validity-period = { $notBefore } ಇಂದ { $notAfter } ವರೆಗೆ ಮಾನ್ಯವಾಗಿದೆ
+# Variables:
+# $keyUsages (String) - A list of already-localized key usages for which the certificate may be used
+client-auth-cert-details-key-usages = ಮಹತ್ವದ ಬಳಕೆಗಳು: { $keyUsages }
+# Variables:
+# $emailAddresses (String) - A list of email addresses present in the certificate
+client-auth-cert-details-email-addresses = ಇಮೇಲ್ ವಿಳಾಸಗಳು: { $emailAddresses }
+# Variables:
+# $issuedBy (String) - The issuer common name of the certificate
+client-auth-cert-details-issued-by = ಇದರಿಂದ ವಿತರಿಸಲಾಗಿದೆ: { $issuedBy }
+# Variables:
+# $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
+client-auth-cert-details-stored-on = ಇದರಲ್ಲಿ ಶೇಖರಿಸಲಾಗಿದೆ: { $storedOn }
+client-auth-cert-remember-box =
+    .label = ಈ ತೀರ್ಮಾನವನ್ನು ನೆನಪಿಟ್ಟುಕೊ
 
 ## Set password (p12) dialog
 
@@ -53,9 +78,5 @@ set-password-repeat-backup-pw =
     .value = ಪ್ರಮಾಣಪತ್ರದ ಬ್ಯಾಕ್ಅಪ್ ಗುಪ್ತಪದ (ಮತ್ತೊಮ್ಮೆ):
 set-password-reminder = ಗಮನಿಸಿ: ನೀವು ನಿಮ್ಮ ಪ್ರಮಾಣಪತ್ರ ಬ್ಯಾಕ್ ಅಪ್ ಗುಪ್ತಪದವನ್ನು ಮರೆತ ಪಕ್ಷದಲ್ಲಿ, ನೀವು ನಂತರದ ಸಮಯದಲ್ಲಿ ಈ ಬ್ಯಾಕ್ಅಪ್ ಮರುಗಳಿಸಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ.  ದಯವಿಟ್ಟು ಇದನ್ನು ಒಂದು ಸುರಕ್ಷಿತ ಸ್ಥಳದಲ್ಲಿ ಕಾಪಾಡಿ.
 
-## Protected Auth dialog
+## Protected authentication alert
 
-protected-auth-window =
-    .title = ಸಂರಕ್ಷಿತ ಟೋಕನ್ ದೃಢೀಕರಣ
-protected-auth-msg = ದಯವಿಟ್ಟು ಟೋಕನ್‌ಗೆ ದೃಢೀಕರಿಸಿ.ದೃಢೀಕರಣ ವಿಧಾನವು ನಿಮ್ಮ ಟೋಕನ್‌ ಪ್ರಕಾರದ ಮೇಲೆ ಆಧರಿತವಾಗಿರುತ್ತದೆ.
-protected-auth-token = ಟೋಕನ್:

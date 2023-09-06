@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Stillingar fyrir ferilhreinsun
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Hreinsa nýlega ferla
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Hreinsa alla ferla
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = Þegar lokað er ætti { -brand-short-name } sjálfkrafa að hreinsa allt.
 
@@ -61,8 +61,8 @@ item-history-and-downloads =
     .accesskey = V
 
 item-cookies =
-    .label = Smákökur
-    .accesskey = S
+    .label = Vefkökur
+    .accesskey = V
 
 item-active-logins =
     .label = Virkar innskráningar
@@ -73,12 +73,12 @@ item-cache =
     .accesskey = B
 
 item-form-search-history =
-    .label = Eyðublaða og leitarferill
+    .label = Innfyllingar- og leitarferill
     .accesskey = f
 
 data-section-label = Gögn
 
-item-site-preferences =
+item-site-settings =
     .label = Stillingar vefsvæðis
     .accesskey = S
 

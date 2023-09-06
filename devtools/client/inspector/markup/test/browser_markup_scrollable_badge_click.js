@@ -21,18 +21,21 @@ const TEST_URI = `
     .shift {
         margin-left: 300px;
     }
+    .has-before::before {
+      content: "-";
+    }
   </style>
   <div id="top" class="parent">
     <div id="child1" class="fixed shift">
         <div id="child2" class="fixed"></div>
     </div>
-    <div id="child3" class="shift">
+    <div id="child3" class="shift has-before">
         <div id="child4" class="fixed"></div>
     </div>
   </div>
 `;
 
-add_task(async function() {
+add_task(async function () {
   const { inspector } = await openInspectorForURL(
     "data:text/html;charset=utf-8," + encodeURIComponent(TEST_URI)
   );
@@ -143,7 +146,7 @@ async function checkOverflowHighlight(
 async function toggleClass(inspector) {
   const onStateChanged = inspector.walker.once("overflow-change");
 
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function() {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function () {
     content.document.querySelector("#child1").classList.toggle("fixed");
     content.document.querySelector("#child3").classList.toggle("fixed");
   });

@@ -7,11 +7,11 @@
 
 const {
   CSSFilterEditorWidget,
-} = require("devtools/client/shared/widgets/FilterWidget");
+} = require("resource://devtools/client/shared/widgets/FilterWidget.js");
 
 const TEST_URI = CHROME_URL_ROOT + "doc_filter-editor-01.html";
 
-add_task(async function() {
+add_task(async function () {
   const { doc } = await createHost("bottom", TEST_URI);
 
   const container = doc.querySelector("#filter-container");
@@ -28,4 +28,5 @@ add_task(async function() {
     "contrast(200%)",
     "Should remove the clicked filter"
   );
+  widget.destroy();
 });

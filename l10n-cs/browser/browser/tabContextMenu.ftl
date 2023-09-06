@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Vybrat všechny panely
     .accesskey = a
+tab-context-play-tab =
+    .label = Spustit v panelu přehrávání
+    .accesskey = p
+tab-context-play-tabs =
+    .label = Spustit v panelech přehrávání
+    .accesskey = p
 duplicate-tab =
     .label = Duplikovat panel
     .accesskey = D
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Přidat panely do záložek…
     .accesskey = P
-bookmark-tab =
-    .label = Přidat panel do záložek
+tab-context-bookmark-tab =
+    .label = Přidat panel do záložek…
     .accesskey = P
 tab-context-open-in-new-container-tab =
     .label = Otevřít v novém kontejnerovém panelu
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Sdílet
     .accesskey = S
-tab-context-share-more =
-    .label = Další…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -84,14 +88,6 @@ tab-context-reopen-closed-tabs =
            *[other] Obnovit zavřené panely
         }
     .accesskey = b
-tab-context-close-tabs =
-    .label =
-        Zavřít { $tabCount ->
-            [one] panel
-            [few] { $tabCount } panely
-           *[other] { $tabCount } panelů
-        }
-    .accesskey = Z
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

@@ -71,6 +71,8 @@ protections-panel-site-not-working-view-send-report = एक रिपोर्�
 
 ##
 
+protections-panel-description-shim-allowed-learn-more = अधिक जानें
+
 protections-panel-content-blocking-manage-settings =
     .label = सुरक्षा सेटिंग प्रबंधित करें
     .accesskey = M
@@ -87,3 +89,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = रद्द करें
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = रिपोर्ट भेजें
+
+# Cookie Banner Handling
+

@@ -13,13 +13,14 @@ pref("app.update.interval", 7200); // 2 hours
 pref("app.update.promptWaitTime", 43200);
 // URL user can browse to manually if for some reason all update installation
 // attempts fail.
-pref("app.update.url.manual", "https://www.mozilla.org/%LOCALE%/firefox/nightly/");
+pref("app.update.url.manual", "https://www.mozilla.org/%LOCALE%/firefox/nightly/?reason=manual-update");
 // A default value for the "More information about this update" link
 // supplied in the "An update is available" page of the update wizard.
 pref("app.update.url.details", "https://www.mozilla.org/%LOCALE%/firefox/nightly/notes/");
 
-pref("app.releaseNotesURL", "https://www.mozilla.org/%LOCALE%/firefox/%VERSION%/releasenotes/?utm_source=firefox-browser&utm_medium=firefox-browser&utm_campaign=whatsnew");
+pref("app.releaseNotesURL", "https://www.mozilla.org/%LOCALE%/firefox/%VERSION%/releasenotes/?utm_source=firefox-browser&utm_medium=firefox-desktop&utm_campaign=whatsnew");
 pref("app.releaseNotesURL.aboutDialog", "https://www.mozilla.org/%LOCALE%/firefox/%VERSION%/releasenotes/?utm_source=firefox-browser&utm_medium=firefox-desktop&utm_campaign=about-dialog");
+pref("app.releaseNotesURL.prompt", "https://www.mozilla.org/%LOCALE%/firefox/%VERSION%/releasenotes/?utm_source=firefox-browser&utm_medium=firefox-desktop&utm_campaign=updateprompt");
 
 // The number of days a binary is permitted to be old
 // without checking for an update.  This assumes that

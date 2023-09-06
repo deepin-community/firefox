@@ -53,7 +53,7 @@ async function get_command_function(cmd, commands) {
   return [func, parent_mod];
 }
 
-module.exports = async function(context, commands) {
+module.exports = async function (context, commands) {
   context.log.info("Starting an interactive browsertime test");
   let page_cycles = context.options.browsertime.page_cycles;
   let post_startup_delay = context.options.browsertime.post_startup_delay;
@@ -68,7 +68,6 @@ module.exports = async function(context, commands) {
   // unpack commands from python
   let cmds = input_cmds.split(";;;");
 
-  // let pages_visited = 0;
   for (let count = 0; count < page_cycles; count++) {
     context.log.info("Navigating to about:blank w/nav, count: " + count);
     await commands.navigate("about:blank");

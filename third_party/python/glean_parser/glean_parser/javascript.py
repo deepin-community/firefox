@@ -11,8 +11,9 @@ Outputter to generate Javascript code for metrics.
 import enum
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, Callable  # noqa
+from typing import Any, Dict, Optional, Callable
 
+from . import __version__
 from . import metrics
 from . import util
 
@@ -20,12 +21,27 @@ from . import util
 def javascript_datatypes_filter(value: util.JSONType) -> str:
     """
     A Jinja2 filter that renders Javascript literals.
+
+    Based on Python's JSONEncoder, but overrides:
+      - lists to use listOf
+      - sets to use setOf
+      - Rate objects to a CommonMetricData initializer
+        (for external Denominators' Numerators lists)
     """
 
     class JavascriptEncoder(json.JSONEncoder):
         def iterencode(self, value):
             if isinstance(value, enum.Enum):
                 yield from super().iterencode(util.camelize(value.name))
+            elif isinstance(value, list):
+                yield "["
+                first = True
+                for subvalue in value:
+                    if not first:
+                        yield ", "
+                    yield from self.iterencode(subvalue)
+                    first = False
+                yield "]"
             elif isinstance(value, set):
                 yield "["
                 first = True
@@ -35,6 +51,17 @@ def javascript_datatypes_filter(value: util.JSONType) -> str:
                     yield from self.iterencode(subvalue)
                     first = False
                 yield "]"
+            elif isinstance(value, metrics.Rate):
+                yield "CommonMetricData("
+                first = True
+                for arg_name in util.common_metric_args:
+                    if hasattr(value, arg_name):
+                        if not first:
+                            yield ", "
+                        yield f"{util.camelize(arg_name)} = "
+                        yield from self.iterencode(getattr(value, arg_name))
+                        first = False
+                yield ")"
             else:
                 yield from super().iterencode(value)
 
@@ -44,7 +71,7 @@ def javascript_datatypes_filter(value: util.JSONType) -> str:
 def class_name_factory(platform: str) -> Callable[[str], str]:
     """
     Returns a function that receives an obj_type and
-    returns the correct class name for that time in the current platform.
+    returns the correct class name for that type in the current platform.
     """
 
     def class_name(obj_type: str) -> str:
@@ -61,6 +88,16 @@ def class_name_factory(platform: str) -> Callable[[str], str]:
         return class_name
 
     return class_name
+
+
+def extra_type_name(extra_type: str) -> str:
+    """
+    Returns the equivalent TypeScript type to an extra type.
+    """
+    if extra_type == "quantity":
+        return "number"
+
+    return extra_type
 
 
 def import_path(obj_type: str) -> str:
@@ -87,6 +124,29 @@ def args(obj_type: str) -> Dict[str, object]:
     return {"common": util.common_metric_args, "extra": util.extra_metric_args}
 
 
+def generate_build_date(date: Optional[str]) -> str:
+    """
+    Generate the build Date object.
+    """
+
+    ts = util.build_date(date)
+
+    data = [
+        str(ts.year),
+        # In JavaScript the first month of the year in calendars is JANUARY which is 0.
+        # In Python it's 1-based
+        str(ts.month - 1),
+        str(ts.day),
+        str(ts.hour),
+        str(ts.minute),
+        str(ts.second),
+    ]
+    components = ", ".join(data)
+
+    # DatetimeMetricType takes a `Date` instance.
+    return f"new Date({components})"  # noqa
+
+
 def output(
     lang: str,
     objs: metrics.ObjectTree,
@@ -106,16 +166,23 @@ def output(
         - `version`: The version of the Glean.js Qt library being used.
                      This option is mandatory when targeting Qt. Note that the version
                      string must only contain the major and minor version i.e. 0.14.
-
+        - `with_buildinfo`: If "true" a `gleanBuildInfo.(js|ts)` file is generated.
+            Otherwise generation of that file is skipped. Defaults to "false".
+        - `build_date`: If set to `0` a static unix epoch time will be used.
+                        If set to a ISO8601 datetime string (e.g. `2022-01-03T17:30:00`)
+                        it will use that date.
+                        Other values will throw an error.
+                        If not set it will use the current date & time.
     """
 
     if options is None:
         options = {}
 
     platform = options.get("platform", "webext")
-    if platform not in ["qt", "webext"]:
+    accepted_platforms = ["qt", "webext", "node"]
+    if platform not in accepted_platforms:
         raise ValueError(
-            f"Unknown platform: {platform}. Accepted platforms are qt and webext."
+            f"Unknown platform: {platform}. Accepted platforms are: {accepted_platforms}."  # noqa
         )
     version = options.get("version")
     if platform == "qt" and version is None:
@@ -127,6 +194,7 @@ def output(
         "javascript.jinja2",
         filters=(
             ("class_name", class_name_factory(platform)),
+            ("extra_type_name", extra_type_name),
             ("import_path", import_path),
             ("js", javascript_datatypes_filter),
             ("args", args),
@@ -156,6 +224,7 @@ def output(
         with filepath.open("w", encoding="utf-8") as fd:
             fd.write(
                 template.render(
+                    parser_version=__version__,
                     category_name=category_key,
                     objs=category_val,
                     extra_args=util.extra_args,
@@ -169,13 +238,39 @@ def output(
             # Jinja2 squashes the final newline, so we explicitly add it
             fd.write("\n")
 
+    with_buildinfo = options.get("with_buildinfo", "").lower() == "true"
+    build_date = options.get("build_date", None)
+    if with_buildinfo:
+        # Write out the special "build info" file
+        template = util.get_jinja2_template(
+            "javascript.buildinfo.jinja2",
+        )
+        # This filename needs to start with "glean" so it can never
+        # clash with a metric category
+        filename = "gleanBuildInfo" + extension
+        filepath = output_dir / filename
+
+        with filepath.open("w", encoding="utf-8") as fd:
+            fd.write(
+                template.render(
+                    parser_version=__version__,
+                    platform=platform,
+                    build_date=generate_build_date(build_date),
+                )
+            )
+            fd.write("\n")
+
     if platform == "qt":
         # Explicitly create a qmldir file when building for Qt
         template = util.get_jinja2_template("qmldir.jinja2")
         filepath = output_dir / "qmldir"
 
         with filepath.open("w", encoding="utf-8") as fd:
-            fd.write(template.render(categories=objs.keys(), version=version))
+            fd.write(
+                template.render(
+                    parser_version=__version__, categories=objs.keys(), version=version
+                )
+            )
             # Jinja2 squashes the final newline, so we explicitly add it
             fd.write("\n")
 

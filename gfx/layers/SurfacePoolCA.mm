@@ -18,14 +18,15 @@
 
 #include "GLContextCGL.h"
 #include "MozFramebuffer.h"
+#include "ScopedGLHelpers.h"
 
 namespace mozilla {
 namespace layers {
 
 using gfx::IntPoint;
-using gfx::IntSize;
 using gfx::IntRect;
 using gfx::IntRegion;
+using gfx::IntSize;
 using gl::GLContext;
 using gl::GLContextCGL;
 
@@ -78,7 +79,7 @@ void SurfacePoolCA::LockedPool::MutateEntryStorage(const char* aMutationType,
 
   aFn();
 
-  if (profiler_thread_is_being_profiled()) {
+  if (profiler_thread_is_being_profiled_for_markers()) {
     PROFILER_MARKER_TEXT(
         "SurfacePool", GRAPHICS, MarkerTiming::IntervalUntilNowFrom(before),
         nsPrintfCString("%d -> %d in use | %d -> %d waiting for | %d -> %d "

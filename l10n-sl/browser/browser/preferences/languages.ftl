@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-webpage-languages-window =
+webpage-languages-window2 =
     .title = Nastavitve jezikov spletnih strani
-    .style = width: 40em
+    .style = min-width: 40em
 
 languages-close-key =
     .key = w
@@ -49,9 +49,9 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
-browser-languages-window =
+browser-languages-window2 =
     .title = Nastavitve jezikov { -brand-short-name(sklon: "rodilnik") }
-    .style = width: 40em
+    .style = min-width: 40em
 
 browser-languages-description = { -brand-short-name } bo privzeto prikazal prvi jezik, po potrebi pa pomožne jezike v navedenem vrstnem redu.
 
@@ -65,7 +65,7 @@ browser-languages-downloading =
 
 browser-languages-select-language =
     .label = Izberi dodaten jezik …
-    .placeholder = Izberi dodaten jezik ...
+    .placeholder = Izberi dodaten jezik …
 
 browser-languages-installed-label = Nameščeni jeziki
 browser-languages-available-label = Jeziki na razpolago

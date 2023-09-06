@@ -12,15 +12,18 @@ UNIFIED_SOURCES += [
 
 if CONFIG["OS_ARCH"] == "WINNT":
     OS_LIBS += [
+        "advapi32",
         "crypt32",
         "kernel32",
         "ncrypt",
         "userenv",
         "ws2_32",
+        "ntdll",
     ]
 
 if CONFIG["OS_ARCH"] == "Darwin":
     OS_LIBS += [
+        "-framework CoreFoundation",
         "-framework Security",
     ]
 

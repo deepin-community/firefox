@@ -6,9 +6,14 @@ privatebrowsingpage-open-private-window-label = Ga'nin riña 'ngo ventanahuìi
     .accesskey = h
 about-private-browsing-search-placeholder = Nanà'uì' Web
 about-private-browsing-info-title = Riña 'ngo bentanâ huìi nunt
-about-private-browsing-info-myths = Nuguan' ne hua rayi'î riña aché nu huì'
+about-private-browsing-search-btn =
+    .title = Nānà\'huì\' riña web
 about-private-browsing-not-private = Se riña ventana hua huìi nut akuan' nï
-about-private-browsing-info-description = { -brand-short-name } Nadure'ej ne sa nana'uî't nga gaché nunt ni naran riña daran' nej bentâna ni nej rakïj ñanj riña gaché nu huì'. Nan ni sê si gata ruhuaj sisi à'ngo nadure'e sò' riña nej sîtio asi riña duguî' du'uej internet, sani rugûñu'un da' 'ngorïnt gini'in sa 'iát ngà aché nunt ni si ga'ue gini'in a'ngô guìi gà'.
+about-private-browsing-learn-more-link = Gāhuin chrūn doj
+
+about-private-browsing-focus-promo-cta = Nādunïnj { -focus-brand-name }
+
+## The following strings will be used for experiments in Fx99 and Fx100
 
 # This string is the title for the banner for search engine selection
 # in a private window.
@@ -22,3 +27,12 @@ about-private-browsing-search-banner-description =
     }
 about-private-browsing-search-banner-close-button =
     .aria-label = Narán
+
+about-private-browsing-promo-close-button =
+    .title = Nārán
+
+## Strings used in a “pin promotion” message, which prompts users to pin a private window
+
+
+## Strings used in a promotion message for cookie banner reduction
+

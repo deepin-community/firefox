@@ -16,15 +16,9 @@ newtab-search-box-search-button =
     .title = Çerca
     .aria-label = Çerca
 
-newtab-search-box-search-the-web-input =
-    .placeholder = Çerca inta Ræ
-    .title = Çerca inta Ræ
-    .aria-label = Çerca inta Ræ
-
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Azonzi motô de riçerca
-newtab-topsites-add-topsites-header = Neuvo scito prinçipâ
 newtab-topsites-edit-topsites-header = Cangia scito prinçipâ
 newtab-topsites-title-label = Titolo
 newtab-topsites-title-input =
@@ -47,9 +41,6 @@ newtab-topsites-save-button = Sarva
 newtab-topsites-preview-button = Anteprimma
 newtab-topsites-add-button = Azonzi
 
-## Top Sites - Delete history confirmation dialog. 
-
-
 ## Top Sites - Delete history confirmation dialog.
 
 newtab-confirm-delete-history-p1 = Te seguo de scancelâ tutte e ripetiçioin de sta pagina da stöia?
@@ -57,6 +48,7 @@ newtab-confirm-delete-history-p1 = Te seguo de scancelâ tutte e ripetiçioin de
 newtab-confirm-delete-history-p2 = Sta açion a no se peu anulâ.
 
 ## Top Sites - Sponsored label
+
 
 ## Context Menu - Action Tooltips.
 
@@ -67,7 +59,7 @@ newtab-menu-section-tooltip =
 
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = Arvi menû
     .aria-label = Arvi into menû contesto pe { $title }
@@ -91,16 +83,13 @@ newtab-menu-archive-pocket = Archivia in { -pocket-brand-name }
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
+
 ##
 
 # Bookmark is a noun in this case, "Remove bookmark".
 newtab-menu-remove-bookmark = Scancella segnalibbro
 # Bookmark is a verb here.
 newtab-menu-bookmark = Azonzi a-i segnalibbri
-
-## Context Menu - Downloaded Menu. "Download" in these cases is not a verb, 
-## it is a noun. As in, "Copy the link that belongs to this downloaded item".
-
 
 ## Context Menu - Downloaded Menu. "Download" in these cases is not a verb,
 ## it is a noun. As in, "Copy the link that belongs to this downloaded item".
@@ -130,9 +119,11 @@ newtab-label-recommended = De tentensa
 newtab-label-saved = Sarvou in { -pocket-brand-name }
 newtab-label-download = Descaregou
 
-## Section Menu: These strings are displayed in the section context menu and are 
-## meant as a call to action for the given section.
-
+# This string is used under the image of story cards to indicate source and time to read
+# Variables:
+#   $source (string) - The name of a company or their domain
+#   $timeToRead (number) - The estimated number of minutes to read this story
+newtab-label-source-read-time = { $source } · { $timeToRead } men
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -150,13 +141,16 @@ newtab-section-menu-privacy-notice = Informativa in sciâ privacy
 
 ## Section aria-labels
 
+newtab-section-collapse-section-label =
+    .aria-label = Conprimmi seçion
+newtab-section-expand-section-label =
+    .aria-label = Espandi seçion
 
 ## Section Headers.
 
 newtab-section-header-topsites = I megio sciti
-newtab-section-header-highlights = In evidensa
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Consegiou da { $provider }
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
@@ -165,9 +159,8 @@ newtab-empty-section-highlights = Iniçia a navegâ e, in sta seçion, saian mos
 
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = No gh'é atro. Contròlla ciù tardi se gh'é atre stöie da { $provider }. No t'eu aspetâ? Seleçionn-a 'n argomento tra quelli ciù popolari pe descovrî atre notiçie interesanti da-o Web.
-
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -181,8 +174,19 @@ newtab-discovery-empty-section-topstories-timed-out = Ahime mi! Emmo squæxi car
 # This is shown at the bottom of the trending stories section and precedes a list of links to popular topics.
 newtab-pocket-read-more = Argomenti popolari:
 newtab-pocket-more-recommendations = Atri conseggi
+newtab-pocket-learn-more = Atre informaçioin
 newtab-pocket-cta-button = Piggite { -pocket-brand-name }
 newtab-pocket-cta-text = Sarva e stöie che te piaxan into { -pocket-brand-name }, e carega torna a mente con letue che incantan.
+
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+# A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-save = Sarva
+newtab-pocket-saved = Sarvòu
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
+
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -192,3 +196,13 @@ newtab-error-fallback-refresh-link = Agiorna pagina pe provâ torna.
 
 ## Customization Menu
 
+newtab-custom-shortcuts-title = Scorsaieu
+# Variables
+#   $num (number) - Number of rows to display
+newtab-custom-row-selector =
+    { $num ->
+        [one] { $num } riga
+       *[other] { $num } righe
+    }
+newtab-custom-sponsored-sites = Scorsaieu sponsorizæ
+newtab-custom-pocket-title = Consegiou da { -pocket-brand-name }

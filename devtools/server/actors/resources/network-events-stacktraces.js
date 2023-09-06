@@ -6,24 +6,21 @@
 
 const {
   TYPES: { NETWORK_EVENT_STACKTRACE },
-} = require("devtools/server/actors/resources/index");
-
-const { Ci, components } = require("chrome");
-const Services = require("Services");
+} = require("resource://devtools/server/actors/resources/index.js");
 
 loader.lazyRequireGetter(
   this,
   "ChannelEventSinkFactory",
-  "devtools/server/actors/network-monitor/channel-event-sink",
+  "resource://devtools/server/actors/network-monitor/channel-event-sink.js",
   true
 );
 
-loader.lazyRequireGetter(
-  this,
-  "matchRequest",
-  "devtools/server/actors/network-monitor/network-observer",
-  true
-);
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  NetworkUtils:
+    "resource://devtools/shared/network-observer/NetworkUtils.sys.mjs",
+});
 
 class NetworkEventStackTracesWatcher {
   /**
@@ -37,15 +34,21 @@ class NetworkEventStackTracesWatcher {
    *          This will be called for each resource.
    */
   async watch(targetActor, { onAvailable }) {
+    this.stacktraces = new Map();
+    this.onStackTraceAvailable = onAvailable;
+    this.targetActor = targetActor;
+
     Services.obs.addObserver(this, "http-on-opening-request");
     Services.obs.addObserver(this, "document-on-opening-request");
     Services.obs.addObserver(this, "network-monitor-alternate-stack");
     ChannelEventSinkFactory.getService().registerCollector(this);
+  }
 
-    this.targetActor = targetActor;
-    this.onStackTraceAvailable = onAvailable;
-
-    this.stacktraces = new Map();
+  /**
+   * Allows clearing of network stacktrace resources
+   */
+  clear() {
+    this.stacktraces.clear();
   }
 
   /**
@@ -55,7 +58,7 @@ class NetworkEventStackTracesWatcher {
    *        The target actor from which we should stop observing the strack traces
    */
   destroy(targetActor) {
-    this.stacktraces.clear();
+    this.clear();
     Services.obs.removeObserver(this, "http-on-opening-request");
     Services.obs.removeObserver(this, "document-on-opening-request");
     Services.obs.removeObserver(this, "network-monitor-alternate-stack");
@@ -100,18 +103,23 @@ class NetworkEventStackTracesWatcher {
           channel = subject.QueryInterface(Ci.nsIWebSocketChannel);
           id = channel.serial;
         } catch (e3) {
-          // Channels which don't implement the above interfaces can appear here,
-          // such as nsIFileChannel. Ignore these channels.
-          return;
+          // Try if the channel is a nsIWorkerChannelInfo which is the substitute
+          // of the channel in the parent process.
+          try {
+            channel = subject.QueryInterface(Ci.nsIWorkerChannelInfo);
+            id = channel.channelId;
+          } catch (e4) {
+            // Channels which don't implement the above interfaces can appear here,
+            // such as nsIFileChannel. Ignore these channels.
+            return;
+          }
         }
       }
     }
 
-    // XXX: is window the best filter to use?
     if (
-      !matchRequest(channel, {
-        window: this.targetActor.window,
-        matchExactWindow: this.targetActor.ignoreSubFrames,
+      !lazy.NetworkUtils.matchRequest(channel, {
+        targetActor: this.targetActor,
       })
     ) {
       return;
@@ -133,7 +141,7 @@ class NetworkEventStackTracesWatcher {
         //
         // Convert the nsIStackFrame XPCOM objects to a nice JSON that can be
         // passed around through message managers etc.
-        let frame = components.stack;
+        let frame = Components.stack;
         if (frame?.caller) {
           frame = frame.caller;
           while (frame) {
@@ -158,7 +166,7 @@ class NetworkEventStackTracesWatcher {
         //
         // - The HTTP channel is opened asynchronously or on a different thread
         //   from the code which triggered its creation, in which case the stack
-        //   from components.stack will be empty. The alternate stack will be
+        //   from Components.stack will be empty. The alternate stack will be
         //   for the point we want to associate with the channel.
         //
         // - The channel is not a nsIHttpChannel, and we will receive no
@@ -189,9 +197,8 @@ class NetworkEventStackTracesWatcher {
       {
         resourceType: NETWORK_EVENT_STACKTRACE,
         resourceId,
-        stacktraceAvailable: stacktrace && stacktrace.length > 0,
-        lastFrame:
-          stacktrace && stacktrace.length > 0 ? stacktrace[0] : undefined,
+        stacktraceAvailable: stacktrace && !!stacktrace.length,
+        lastFrame: stacktrace && stacktrace.length ? stacktrace[0] : undefined,
       },
     ]);
   }

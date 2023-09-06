@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Сакриј
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Прикажи све фасцикле са обележивачима
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Сакриј
+
 bookmark-overlay-new-folder-button =
     .label = Нова фасцикла
     .accesskey = ф
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Прикажи све ознаке
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Сакриј
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Прикажи све ознаке
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Сакриј
 
 bookmark-overlay-keyword-2 =
     .value = Кључна реч

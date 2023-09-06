@@ -15,7 +15,6 @@
 #include "mozilla/Components.h"
 #include "mozilla/ContentEvents.h"
 #include "mozilla/EventDispatcher.h"
-#include "mozilla/EventStates.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/dom/BindContext.h"
@@ -51,8 +50,6 @@
 #include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/StaticPrefs_prompts.h"
 #include "mozilla/StaticPrefs_signon.h"
-#include "nsIFormSubmitObserver.h"
-#include "nsIObserverService.h"
 #include "nsCategoryManagerUtils.h"
 #include "nsIContentInlines.h"
 #include "nsISimpleEnumerator.h"
@@ -79,6 +76,8 @@
 #include "nsIConstraintValidation.h"
 
 #include "nsSandboxFlags.h"
+
+#include "mozilla/dom/HTMLAnchorElement.h"
 
 // images
 #include "mozilla/dom/HTMLImageElement.h"
@@ -122,7 +121,7 @@ HTMLFormElement::HTMLFormElement(
       mIsConstructingEntryList(false),
       mIsFiringSubmissionEvents(false) {
   // We start out valid.
-  AddStatesSilently(NS_EVENT_STATE_VALID);
+  AddStatesSilently(ElementState::VALID);
 }
 
 HTMLFormElement::~HTMLFormElement() {
@@ -142,12 +141,14 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INHERITED(HTMLFormElement,
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mControls)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mImageNameLookupTable)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mPastNameLookupTable)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mRelList)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mTargetContext)
   RadioGroupManager::Traverse(tmp, cb);
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN_INHERITED(HTMLFormElement,
                                                 nsGenericHTMLElement)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mRelList)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mTargetContext)
   RadioGroupManager::Unlink(tmp);
   tmp->Clear();
@@ -167,13 +168,19 @@ void HTMLFormElement::AsyncEventRunning(AsyncEventDispatcher* aEvent) {
   }
 }
 
+nsDOMTokenList* HTMLFormElement::RelList() {
+  if (!mRelList) {
+    mRelList = new nsDOMTokenList(this, nsGkAtoms::rel, sSupportedRelValues);
+  }
+  return mRelList;
+}
+
 NS_IMPL_ELEMENT_CLONE(HTMLFormElement)
 
 nsIHTMLCollection* HTMLFormElement::Elements() { return mControls; }
 
-nsresult HTMLFormElement::BeforeSetAttr(int32_t aNamespaceID, nsAtom* aName,
-                                        const nsAttrValueOrString* aValue,
-                                        bool aNotify) {
+void HTMLFormElement::BeforeSetAttr(int32_t aNamespaceID, nsAtom* aName,
+                                    const nsAttrValue* aValue, bool aNotify) {
   if (aNamespaceID == kNameSpaceID_None) {
     if (aName == nsGkAtoms::action || aName == nsGkAtoms::target) {
       // Don't forget we've notified the password manager already if the
@@ -232,18 +239,29 @@ void HTMLFormElement::MaybeSubmit(Element* aSubmitter) {
   //      If the result is negative (i.e., the constraint validation concluded
   //      that there were invalid fields and probably informed the user of this)
   bool noValidateState =
-      HasAttr(kNameSpaceID_None, nsGkAtoms::novalidate) ||
-      (aSubmitter &&
-       aSubmitter->HasAttr(kNameSpaceID_None, nsGkAtoms::formnovalidate));
+      HasAttr(nsGkAtoms::novalidate) ||
+      (aSubmitter && aSubmitter->HasAttr(nsGkAtoms::formnovalidate));
   if (!noValidateState && !CheckValidFormSubmission()) {
     return;
+  }
+
+  RefPtr<PresShell> presShell = doc->GetPresShell();
+  if (!presShell) {
+    // We need the nsPresContext for dispatching the submit event. In some
+    // rare cases we need to flush notifications to force creation of the
+    // nsPresContext here (for example when a script calls form.requestSubmit()
+    // from script early during page load). We only flush the notifications
+    // if the PresShell hasn't been created yet, to limit the performance
+    // impact.
+    doc->FlushPendingNotifications(FlushType::EnsurePresShellInitAndFrames);
+    presShell = doc->GetPresShell();
   }
 
   // If |PresShell::Destroy| has been called due to handling the event the pres
   // context will return a null pres shell. See bug 125624. Using presShell to
   // dispatch the event. It makes sure that event is not handled if the window
   // is being destroyed.
-  if (RefPtr<PresShell> presShell = doc->GetPresShell()) {
+  if (presShell) {
     SubmitEventInit init;
     init.mBubbles = true;
     init.mCancelable = true;
@@ -270,18 +288,7 @@ void HTMLFormElement::MaybeReset(Element* aSubmitter) {
   }
 }
 
-void HTMLFormElement::Submit(ErrorResult& aRv) {
-  // Send the submit event
-  if (mPendingSubmission) {
-    // aha, we have a pending submission that was not flushed
-    // (this happens when form.submit() is called twice)
-    // we have to delete it and build a new one since values
-    // might have changed inbetween (we emulate IE here, that's all)
-    mPendingSubmission = nullptr;
-  }
-
-  aRv = DoSubmit();
-}
+void HTMLFormElement::Submit(ErrorResult& aRv) { aRv = DoSubmit(); }
 
 // https://html.spec.whatwg.org/multipage/forms.html#dom-form-requestsubmit
 void HTMLFormElement::RequestSubmit(nsGenericHTMLElement* aSubmitter,
@@ -299,7 +306,7 @@ void HTMLFormElement::RequestSubmit(nsGenericHTMLElement* aSubmitter,
     // 1.2. If submitter's form owner is not this form element, then throw a
     //      "NotFoundError" DOMException.
     if (fc->GetForm() != this) {
-      aRv.Throw(NS_ERROR_DOM_NOT_FOUND_ERR);
+      aRv.ThrowNotFoundError("The submitter is not owned by this form.");
       return;
     }
   }
@@ -320,10 +327,6 @@ bool HTMLFormElement::ParseAttribute(int32_t aNamespaceID, nsAtom* aAttribute,
                                      nsAttrValue& aResult) {
   if (aNamespaceID == kNameSpaceID_None) {
     if (aAttribute == nsGkAtoms::method) {
-      if (StaticPrefs::dom_dialog_element_enabled() || IsInChromeDocument()) {
-        return aResult.ParseEnumValue(aValue, kFormMethodTableDialogEnabled,
-                                      false);
-      }
       return aResult.ParseEnumValue(aValue, kFormMethodTable, false);
     }
     if (aAttribute == nsGkAtoms::enctype) {
@@ -382,7 +385,9 @@ static void CollectOrphans(nsINode* aRemovalRoot,
     if (node->HasFlag(MAYBE_ORPHAN_FORM_ELEMENT)) {
       node->UnsetFlags(MAYBE_ORPHAN_FORM_ELEMENT);
       if (!node->IsInclusiveDescendantOf(aRemovalRoot)) {
-        node->ClearForm(true, false);
+        nsCOMPtr<nsIFormControl> fc = do_QueryInterface(node);
+        MOZ_ASSERT(fc);
+        fc->ClearForm(true, false);
 
         // When a form control loses its form owner, its state can change.
         node->UpdateState(true);
@@ -394,7 +399,9 @@ static void CollectOrphans(nsINode* aRemovalRoot,
 
 #ifdef DEBUG
     if (!removed) {
-      HTMLFormElement* form = node->GetForm();
+      nsCOMPtr<nsIFormControl> fc = do_QueryInterface(node);
+      MOZ_ASSERT(fc);
+      HTMLFormElement* form = fc->GetForm();
       NS_ASSERTION(form == aThisForm, "How did that happen?");
     }
 #endif /* DEBUG */
@@ -510,10 +517,16 @@ void HTMLFormElement::GetEventTargetParent(EventChainPreVisitor& aVisitor) {
       }
       mGeneratingSubmit = true;
 
-      // let the form know that it needs to defer the submission,
-      // that means that if there are scripted submissions, the
-      // latest one will be deferred until after the exit point of the handler.
-      mDeferSubmission = true;
+      // XXXedgar, the untrusted event would trigger form submission, in this
+      // case, form need to handle defer flag and flushing pending submission by
+      // itself. This could be removed after Bug 1370630.
+      if (!aVisitor.mEvent->IsTrusted()) {
+        // let the form know that it needs to defer the submission,
+        // that means that if there are scripted submissions, the
+        // latest one will be deferred until after the exit point of the
+        // handler.
+        mDeferSubmission = true;
+      }
     } else if (msg == eFormReset) {
       if (mGeneratingReset) {
         aVisitor.mCanHandle = false;
@@ -541,11 +554,6 @@ nsresult HTMLFormElement::PostHandleEvent(EventChainPostVisitor& aVisitor) {
   if (aVisitor.mEvent->mOriginalTarget == static_cast<nsIContent*>(this) &&
       CanSubmit(*aVisitor.mEvent)) {
     EventMessage msg = aVisitor.mEvent->mMessage;
-    if (msg == eFormSubmit) {
-      // let the form know not to defer subsequent submissions
-      mDeferSubmission = false;
-    }
-
     if (aVisitor.mEventStatus == nsEventStatus_eIgnore) {
       switch (msg) {
         case eFormReset: {
@@ -553,33 +561,28 @@ nsresult HTMLFormElement::PostHandleEvent(EventChainPostVisitor& aVisitor) {
           break;
         }
         case eFormSubmit: {
-          if (mPendingSubmission) {
-            // tell the form to forget a possible pending submission.
-            // the reason is that the script returned true (the event was
-            // ignored) so if there is a stored submission, it will miss
-            // the name/value of the submitting element, thus we need
-            // to forget it and the form element will build a new one
-            mPendingSubmission = nullptr;
-          }
           if (!aVisitor.mEvent->IsTrusted()) {
             // Warning about the form submission is from untrusted event.
             OwnerDoc()->WarnOnceAbout(
                 DeprecatedOperations::eFormSubmissionUntrustedEvent);
           }
-          DoSubmit(aVisitor.mDOMEvent);
+          RefPtr<Event> event = aVisitor.mDOMEvent;
+          DoSubmit(event);
           break;
         }
         default:
           break;
       }
-    } else {
-      if (msg == eFormSubmit) {
-        // tell the form to flush a possible pending submission.
-        // the reason is that the script returned false (the event was
-        // not ignored) so if there is a stored submission, it needs to
-        // be submitted immediatelly.
-        FlushPendingSubmission();
-      }
+    }
+
+    // XXXedgar, the untrusted event would trigger form submission, in this
+    // case, form need to handle defer flag and flushing pending submission by
+    // itself. This could be removed after Bug 1370630.
+    if (msg == eFormSubmit && !aVisitor.mEvent->IsTrusted()) {
+      // let the form know not to defer subsequent submissions
+      mDeferSubmission = false;
+      // tell the form to flush a possible pending submission.
+      FlushPendingSubmission();
     }
 
     if (msg == eFormSubmit) {
@@ -603,8 +606,8 @@ nsresult HTMLFormElement::DoReset() {
   uint32_t numElements = mControls->Length();
   for (uint32_t elementX = 0; elementX < numElements; ++elementX) {
     // Hold strong ref in case the reset does something weird
-    nsCOMPtr<nsIFormControl> controlNode =
-        mControls->mElements.SafeElementAt(elementX, nullptr);
+    nsCOMPtr<nsIFormControl> controlNode = do_QueryInterface(
+        mControls->mElements.SafeElementAt(elementX, nullptr));
     if (controlNode) {
       controlNode->Reset();
     }
@@ -703,8 +706,6 @@ nsresult HTMLFormElement::DoSubmit(Event* aEvent) {
 
 nsresult HTMLFormElement::BuildSubmission(HTMLFormSubmission** aFormSubmission,
                                           Event* aEvent) {
-  NS_ASSERTION(!mPendingSubmission, "tried to build two submissions!");
-
   // Get the submitter element
   nsGenericHTMLElement* submitter = nullptr;
   if (aEvent) {
@@ -752,7 +753,8 @@ nsresult HTMLFormElement::BuildSubmission(HTMLFormSubmission** aFormSubmission,
 
 nsresult HTMLFormElement::SubmitSubmission(
     HTMLFormSubmission* aFormSubmission) {
-  nsresult rv;
+  MOZ_ASSERT(!mDeferSubmission);
+  MOZ_ASSERT(!mPendingSubmission);
 
   nsCOMPtr<nsIURI> actionURI = aFormSubmission->GetActionURL();
   if (!actionURI) {
@@ -761,7 +763,8 @@ nsresult HTMLFormElement::SubmitSubmission(
 
   // If there is no link handler, then we won't actually be able to submit.
   Document* doc = GetComposedDoc();
-  nsCOMPtr<nsIDocShell> container = doc ? doc->GetDocShell() : nullptr;
+  RefPtr<nsDocShell> container =
+      doc ? nsDocShell::Cast(doc->GetDocShell()) : nullptr;
   if (!container || IsEditable()) {
     return NS_OK;
   }
@@ -782,6 +785,7 @@ nsresult HTMLFormElement::SubmitSubmission(
   //
   // Notify observers of submit
   //
+  nsresult rv;
   bool cancelSubmit = false;
   if (mNotifiedObservers) {
     cancelSubmit = mNotifiedObserversResult;
@@ -805,7 +809,6 @@ nsresult HTMLFormElement::SubmitSubmission(
   //
   // Submit
   //
-  nsCOMPtr<nsIDocShell> docShell;
   uint64_t currentLoadId = 0;
 
   {
@@ -832,8 +835,8 @@ nsresult HTMLFormElement::SubmitSubmission(
     loadState->SetCsp(GetCsp());
     loadState->SetAllowFocusMove(UserActivation::IsHandlingUserInput());
 
-    rv = nsDocShell::Cast(container)->OnLinkClickSync(this, loadState, false,
-                                                      NodePrincipal());
+    nsCOMPtr<nsIPrincipal> nodePrincipal = NodePrincipal();
+    rv = container->OnLinkClickSync(this, loadState, false, nodePrincipal);
     NS_ENSURE_SUBMIT_SUCCESS(rv);
 
     mTargetContext = loadState->TargetBrowsingContext().GetMaybeDiscarded();
@@ -852,7 +855,7 @@ nsresult HTMLFormElement::SubmitSubmission(
   return rv;
 }
 
-// https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#submit-dialog
+// https://html.spec.whatwg.org/#concept-form-submit step 11
 nsresult HTMLFormElement::SubmitDialog(DialogFormSubmission* aFormSubmission) {
   // Close the dialog subject. If there is a result, let that be the return
   // value.
@@ -881,19 +884,6 @@ nsresult HTMLFormElement::DoSecureToInsecureSubmitCheck(nsIURI* aActionURL,
     return NS_OK;
   }
 
-  nsIPrincipal* principal = NodePrincipal();
-  if (!principal) {
-    *aCancelSubmit = true;
-    return NS_OK;
-  }
-  bool formIsHTTPS = principal->SchemeIs("https");
-  if (principal->IsSystemPrincipal() || principal->GetIsExpandedPrincipal()) {
-    formIsHTTPS = OwnerDoc()->GetDocumentURI()->SchemeIs("https");
-  }
-  if (!formIsHTTPS) {
-    return NS_OK;
-  }
-
   if (nsMixedContentBlocker::IsPotentiallyTrustworthyLoopbackURL(aActionURL)) {
     return NS_OK;
   }
@@ -910,6 +900,22 @@ nsresult HTMLFormElement::DoSecureToInsecureSubmitCheck(nsIURI* aActionURL,
   if (!window) {
     return NS_ERROR_FAILURE;
   }
+
+  // Now that we know the action URI is insecure check if we're submitting from
+  // a secure URI and if so fall thru and prompt user about posting.
+  if (nsCOMPtr<nsPIDOMWindowInner> innerWindow = OwnerDoc()->GetInnerWindow()) {
+    if (!innerWindow->IsSecureContext()) {
+      return NS_OK;
+    }
+  }
+
+  // Bug 1351358: While file URIs are considered to be secure contexts we allow
+  // submitting a form to an insecure URI from a file URI without an alert in an
+  // attempt to avoid compatibility issues.
+  if (window->GetDocumentURI()->SchemeIs("file")) {
+    return NS_OK;
+  }
+
   nsCOMPtr<nsIDocShell> docShell = window->GetDocShell();
   if (!docShell) {
     return NS_ERROR_FAILURE;
@@ -917,7 +923,7 @@ nsresult HTMLFormElement::DoSecureToInsecureSubmitCheck(nsIURI* aActionURL,
 
   nsresult rv;
   nsCOMPtr<nsIPromptService> promptSvc =
-      do_GetService("@mozilla.org/embedcomp/prompt-service;1", &rv);
+      do_GetService("@mozilla.org/prompter;1", &rv);
   if (NS_FAILED(rv)) {
     return rv;
   }
@@ -1017,8 +1023,13 @@ nsresult HTMLFormElement::ConstructEntryList(FormData* aFormData) {
   // Walk the list of nodes and call SubmitNamesValues() on the controls
   //
   for (uint32_t i = 0; i < len; ++i) {
-    // Tell the control to submit its name/value pairs to the submission
-    sortedControls[i]->SubmitNamesValues(aFormData);
+    // Disabled elements don't submit
+    if (!sortedControls[i]->IsDisabled()) {
+      nsCOMPtr<nsIFormControl> fc = do_QueryInterface(sortedControls[i]);
+      MOZ_ASSERT(fc);
+      // Tell the control to submit its name/value pairs to the submission
+      fc->SubmitNamesValues(aFormData);
+    }
   }
 
   FormDataEventInit init;
@@ -1029,15 +1040,16 @@ nsresult HTMLFormElement::ConstructEntryList(FormData* aFormData) {
       FormDataEvent::Constructor(this, u"formdata"_ns, init);
   event->SetTrusted(true);
 
-  EventDispatcher::DispatchDOMEvent(ToSupports(this), nullptr, event, nullptr,
-                                    nullptr);
+  // TODO: Bug 1506441
+  EventDispatcher::DispatchDOMEvent(MOZ_KnownLive(ToSupports(this)), nullptr,
+                                    event, nullptr, nullptr);
 
   return NS_OK;
 }
 
 NotNull<const Encoding*> HTMLFormElement::GetSubmitEncoding() {
   nsAutoString acceptCharsetValue;
-  GetAttr(kNameSpaceID_None, nsGkAtoms::acceptcharset, acceptCharsetValue);
+  GetAttr(nsGkAtoms::acceptcharset, acceptCharsetValue);
 
   int32_t charsetLen = acceptCharsetValue.Length();
   if (charsetLen > 0) {
@@ -1074,45 +1086,6 @@ Element* HTMLFormElement::IndexedGetter(uint32_t aIndex, bool& aFound) {
   return element;
 }
 
-/**
- * Compares the position of aControl1 and aControl2 in the document
- * @param aControl1 First control to compare.
- * @param aControl2 Second control to compare.
- * @param aForm Parent form of the controls.
- * @return < 0 if aControl1 is before aControl2,
- *         > 0 if aControl1 is after aControl2,
- *         0 otherwise
- */
-/* static */
-int32_t HTMLFormElement::CompareFormControlPosition(Element* aElement1,
-                                                    Element* aElement2,
-                                                    const nsIContent* aForm) {
-  NS_ASSERTION(aElement1 != aElement2, "Comparing a form control to itself");
-
-  // If an element has a @form, we can assume it *might* be able to not have
-  // a parent and still be in the form.
-  NS_ASSERTION((aElement1->HasAttr(kNameSpaceID_None, nsGkAtoms::form) ||
-                aElement1->GetParent()) &&
-                   (aElement2->HasAttr(kNameSpaceID_None, nsGkAtoms::form) ||
-                    aElement2->GetParent()),
-               "Form controls should always have parents");
-
-  // If we pass aForm, we are assuming both controls are form descendants which
-  // is not always the case. This function should work but maybe slower.
-  // However, checking if both elements are form descendants may be slow too...
-  // TODO: remove the prevent asserts fix, see bug 598468.
-#ifdef DEBUG
-  nsLayoutUtils::gPreventAssertInCompareTreePosition = true;
-  int32_t rVal =
-      nsLayoutUtils::CompareTreePosition(aElement1, aElement2, aForm);
-  nsLayoutUtils::gPreventAssertInCompareTreePosition = false;
-
-  return rVal;
-#else   // DEBUG
-  return nsLayoutUtils::CompareTreePosition(aElement1, aElement2, aForm);
-#endif  // DEBUG
-}
-
 #ifdef DEBUG
 /**
  * Checks that all form elements are in document order. Asserts if any pair of
@@ -1124,10 +1097,9 @@ int32_t HTMLFormElement::CompareFormControlPosition(Element* aElement1,
 /* static */
 void HTMLFormElement::AssertDocumentOrder(
     const nsTArray<nsGenericHTMLFormElement*>& aControls, nsIContent* aForm) {
-  // TODO: remove the return statement with bug 598468.
+  // TODO: remove the if directive with bug 598468.
   // This is done to prevent asserts in some edge cases.
-  return;
-
+#  if 0
   // Only iterate if aControls is not empty, since otherwise
   // |aControls.Length() - 1| will be a very large unsigned number... not what
   // we want here.
@@ -1138,6 +1110,7 @@ void HTMLFormElement::AssertDocumentOrder(
           "Form controls not ordered correctly");
     }
   }
+#  endif
 }
 
 /**
@@ -1150,10 +1123,9 @@ void HTMLFormElement::AssertDocumentOrder(
 void HTMLFormElement::AssertDocumentOrder(
     const nsTArray<RefPtr<nsGenericHTMLFormElement>>& aControls,
     nsIContent* aForm) {
-  // TODO: remove the return statement with bug 598468.
+  // TODO: remove the if directive with bug 598468.
   // This is done to prevent asserts in some edge cases.
-  return;
-
+#  if 0
   // Only iterate if aControls is not empty, since otherwise
   // |aControls.Length() - 1| will be a very large unsigned number... not what
   // we want here.
@@ -1164,6 +1136,7 @@ void HTMLFormElement::AssertDocumentOrder(
           "Form controls not ordered correctly");
     }
   }
+#  endif
 }
 #endif
 
@@ -1195,79 +1168,28 @@ void HTMLFormElement::PostPossibleUsernameEvent() {
   mFormPossibleUsernameEventDispatcher->PostDOMEvent();
 }
 
-namespace {
-
-struct FormComparator {
-  Element* const mChild;
-  HTMLFormElement* const mForm;
-  FormComparator(Element* aChild, HTMLFormElement* aForm)
-      : mChild(aChild), mForm(aForm) {}
-  int operator()(Element* aElement) const {
-    return HTMLFormElement::CompareFormControlPosition(mChild, aElement, mForm);
-  }
-};
-
-}  // namespace
-
-// This function return true if the element, once appended, is the last one in
-// the array.
-template <typename ElementType>
-static bool AddElementToList(nsTArray<ElementType*>& aList, ElementType* aChild,
-                             HTMLFormElement* aForm) {
-  NS_ASSERTION(aList.IndexOf(aChild) == aList.NoIndex,
-               "aChild already in aList");
-
-  const uint32_t count = aList.Length();
-  ElementType* element;
-  bool lastElement = false;
-
-  // Optimize most common case where we insert at the end.
-  int32_t position = -1;
-  if (count > 0) {
-    element = aList[count - 1];
-    position =
-        HTMLFormElement::CompareFormControlPosition(aChild, element, aForm);
-  }
-
-  // If this item comes after the last element, or the elements array is
-  // empty, we append to the end. Otherwise, we do a binary search to
-  // determine where the element should go.
-  if (position >= 0 || count == 0) {
-    // WEAK - don't addref
-    aList.AppendElement(aChild);
-    lastElement = true;
-  } else {
-    size_t idx;
-    BinarySearchIf(aList, 0, count, FormComparator(aChild, aForm), &idx);
-
-    // WEAK - don't addref
-    aList.InsertElementAt(idx, aChild);
-  }
-
-  return lastElement;
-}
-
 nsresult HTMLFormElement::AddElement(nsGenericHTMLFormElement* aChild,
                                      bool aUpdateValidity, bool aNotify) {
   // If an element has a @form, we can assume it *might* be able to not have
   // a parent and still be in the form.
-  NS_ASSERTION(aChild->HasAttr(kNameSpaceID_None, nsGkAtoms::form) ||
-                   aChild->GetParent(),
+  NS_ASSERTION(aChild->HasAttr(nsGkAtoms::form) || aChild->GetParent(),
                "Form control should have a parent");
-
+  nsCOMPtr<nsIFormControl> fc = do_QueryObject(aChild);
+  MOZ_ASSERT(fc);
   // Determine whether to add the new element to the elements or
   // the not-in-elements list.
-  bool childInElements = HTMLFormControlsCollection::ShouldBeInElements(aChild);
+  bool childInElements = HTMLFormControlsCollection::ShouldBeInElements(fc);
   nsTArray<nsGenericHTMLFormElement*>& controlList =
       childInElements ? mControls->mElements : mControls->mNotInElements;
 
-  bool lastElement = AddElementToList(controlList, aChild, this);
+  bool lastElement =
+      nsContentUtils::AddElementToListByTreeOrder(controlList, aChild, this);
 
 #ifdef DEBUG
   AssertDocumentOrder(controlList, this);
 #endif
 
-  auto type = aChild->ControlType();
+  auto type = fc->ControlType();
 
   // If it is a password control, inform the password manager.
   if (type == FormControlType::InputPassword) {
@@ -1280,7 +1202,7 @@ nsresult HTMLFormElement::AddElement(nsGenericHTMLFormElement* aChild,
   }
 
   // Default submit element handling
-  if (aChild->IsSubmitControl()) {
+  if (fc->IsSubmitControl()) {
     // Update mDefaultSubmitElement, mFirstSubmitInElements,
     // mFirstSubmitNotInElements.
 
@@ -1297,16 +1219,16 @@ nsresult HTMLFormElement::AddElement(nsGenericHTMLFormElement* aChild,
     // what's in the slot or the child is earlier than the default submit.
     nsGenericHTMLFormElement* oldDefaultSubmit = mDefaultSubmitElement;
     if (!*firstSubmitSlot ||
-        (!lastElement &&
-         CompareFormControlPosition(aChild, *firstSubmitSlot, this) < 0)) {
+        (!lastElement && nsContentUtils::CompareTreePosition(
+                             aChild, *firstSubmitSlot, this) < 0)) {
       // Update mDefaultSubmitElement if it's currently in a valid state.
       // Valid state means either non-null or null because there are in fact
       // no submit elements around.
       if ((mDefaultSubmitElement ||
            (!mFirstSubmitInElements && !mFirstSubmitNotInElements)) &&
           (*firstSubmitSlot == mDefaultSubmitElement ||
-           CompareFormControlPosition(aChild, mDefaultSubmitElement, this) <
-               0)) {
+           nsContentUtils::CompareTreePosition(aChild, mDefaultSubmitElement,
+                                               this) < 0)) {
         mDefaultSubmitElement = aChild;
       }
       *firstSubmitSlot = aChild;
@@ -1359,14 +1281,16 @@ nsresult HTMLFormElement::RemoveElement(nsGenericHTMLFormElement* aChild,
   // Remove it from the radio group if it's a radio button
   //
   nsresult rv = NS_OK;
-  if (aChild->ControlType() == FormControlType::InputRadio) {
+  nsCOMPtr<nsIFormControl> fc = do_QueryInterface(aChild);
+  MOZ_ASSERT(fc);
+  if (fc->ControlType() == FormControlType::InputRadio) {
     RefPtr<HTMLInputElement> radio = static_cast<HTMLInputElement*>(aChild);
     radio->WillRemoveFromRadioGroup();
   }
 
   // Determine whether to remove the child from the elements list
   // or the not in elements list.
-  bool childInElements = HTMLFormControlsCollection::ShouldBeInElements(aChild);
+  bool childInElements = HTMLFormControlsCollection::ShouldBeInElements(fc);
   nsTArray<nsGenericHTMLFormElement*>& controls =
       childInElements ? mControls->mElements : mControls->mNotInElements;
 
@@ -1386,9 +1310,10 @@ nsresult HTMLFormElement::RemoveElement(nsGenericHTMLFormElement* aChild,
     // We are removing the first submit in this list, find the new first submit
     uint32_t length = controls.Length();
     for (uint32_t i = index; i < length; ++i) {
-      nsGenericHTMLFormElement* currentControl = controls[i];
+      nsCOMPtr<nsIFormControl> currentControl = do_QueryInterface(controls[i]);
+      MOZ_ASSERT(currentControl);
       if (currentControl->IsSubmitControl()) {
-        *firstSubmitSlot = currentControl;
+        *firstSubmitSlot = controls[i];
         break;
       }
     }
@@ -1434,8 +1359,8 @@ void HTMLFormElement::HandleDefaultSubmitRemoval() {
                  "How did that happen?");
     // Have both; use the earlier one
     mDefaultSubmitElement =
-        CompareFormControlPosition(mFirstSubmitInElements,
-                                   mFirstSubmitNotInElements, this) < 0
+        nsContentUtils::CompareTreePosition(mFirstSubmitInElements,
+                                            mFirstSubmitNotInElements, this) < 0
             ? mFirstSubmitInElements
             : mFirstSubmitNotInElements;
   }
@@ -1577,6 +1502,8 @@ void HTMLFormElement::OnSubmitClickBegin(Element* aOriginatingElement) {
 void HTMLFormElement::OnSubmitClickEnd() { mDeferSubmission = false; }
 
 void HTMLFormElement::FlushPendingSubmission() {
+  MOZ_ASSERT(!mDeferSubmission);
+
   if (mPendingSubmission) {
     // Transfer owning reference so that the submission doesn't get deleted
     // if we reenter
@@ -1587,8 +1514,7 @@ void HTMLFormElement::FlushPendingSubmission() {
 }
 
 void HTMLFormElement::GetAction(nsString& aValue) {
-  if (!GetAttr(kNameSpaceID_None, nsGkAtoms::action, aValue) ||
-      aValue.IsEmpty()) {
+  if (!GetAttr(nsGkAtoms::action, aValue) || aValue.IsEmpty()) {
     Document* document = OwnerDoc();
     nsIURI* docURI = document->GetDocumentURI();
     if (docURI) {
@@ -1621,7 +1547,7 @@ nsresult HTMLFormElement::GetActionURL(nsIURI** aActionURL,
   nsAutoString action;
 
   if (aOriginatingElement &&
-      aOriginatingElement->HasAttr(kNameSpaceID_None, nsGkAtoms::formaction)) {
+      aOriginatingElement->HasAttr(nsGkAtoms::formaction)) {
 #ifdef DEBUG
     nsCOMPtr<nsIFormControl> formControl =
         do_QueryInterface(aOriginatingElement);
@@ -1782,8 +1708,8 @@ bool HTMLFormElement::IsDefaultSubmitElement(
 
   // We have both kinds of submits.  Check which comes first.
   nsGenericHTMLFormElement* defaultSubmit =
-      CompareFormControlPosition(mFirstSubmitInElements,
-                                 mFirstSubmitNotInElements, this) < 0
+      nsContentUtils::CompareTreePosition(mFirstSubmitInElements,
+                                          mFirstSubmitNotInElements, this) < 0
           ? mFirstSubmitInElements
           : mFirstSubmitNotInElements;
   return aElement == defaultSubmit;
@@ -1794,7 +1720,9 @@ bool HTMLFormElement::ImplicitSubmissionIsDisabled() const {
   uint32_t numDisablingControlsFound = 0;
   uint32_t length = mControls->mElements.Length();
   for (uint32_t i = 0; i < length && numDisablingControlsFound < 2; ++i) {
-    if (mControls->mElements[i]->IsSingleLineTextControl(false)) {
+    nsCOMPtr<nsIFormControl> fc = do_QueryInterface(mControls->mElements[i]);
+    MOZ_ASSERT(fc);
+    if (fc->IsSingleLineTextControl(false)) {
       numDisablingControlsFound++;
     }
   }
@@ -1806,8 +1734,10 @@ bool HTMLFormElement::IsLastActiveElement(
   MOZ_ASSERT(aElement, "Unexpected call");
 
   for (auto* element : Reversed(mControls->mElements)) {
+    nsCOMPtr<nsIFormControl> fc = do_QueryInterface(element);
+    MOZ_ASSERT(fc);
     // XXX How about date/time control?
-    if (element->IsTextControl(false) && !element->IsDisabled()) {
+    if (fc->IsTextControl(false) && !element->IsDisabled()) {
       return element == aElement;
     }
   }
@@ -1838,14 +1768,9 @@ bool HTMLFormElement::CheckFormValidity(
   for (uint32_t i = 0; i < len; ++i) {
     nsCOMPtr<nsIConstraintValidation> cvElmt =
         do_QueryObject(sortedControls[i]);
-    if (cvElmt && cvElmt->IsCandidateForConstraintValidation() &&
-        !cvElmt->IsValid()) {
+    bool defaultAction = true;
+    if (cvElmt && !cvElmt->CheckValidity(*sortedControls[i], &defaultAction)) {
       ret = false;
-      bool defaultAction = true;
-      nsContentUtils::DispatchTrustedEvent(
-          sortedControls[i]->OwnerDoc(),
-          static_cast<nsIContent*>(sortedControls[i]), u"invalid"_ns,
-          CanBubble::eNo, Cancelable::eYes, &defaultAction);
 
       // Add all unhandled invalid controls to aInvalidElements if the caller
       // requested them.
@@ -1864,26 +1789,17 @@ bool HTMLFormElement::CheckValidFormSubmission() {
    * invalid controls in the form.
    * This should not be done if the form has been submitted with .submit().
    *
-   * NOTE: for the moment, we are also checking that there is an observer for
-   * NS_INVALIDFORMSUBMIT_SUBJECT so it will prevent blocking form submission
-   * if the browser does not have implemented a UI yet.
+   * NOTE: for the moment, we are also checking that whether the MozInvalidForm
+   * event gets prevented default so it will prevent blocking form submission if
+   * the browser does not have implemented a UI yet.
    *
-   * TODO: the check for observer should be removed later when HTML5 Forms will
-   * be spread enough and authors will assume forms can't be submitted when
-   * invalid. See bug 587671.
+   * TODO: the check for MozInvalidForm event should be removed later when HTML5
+   * Forms will be spread enough and authors will assume forms can't be
+   * submitted when invalid. See bug 587671.
    */
 
-  NS_ASSERTION(!HasAttr(kNameSpaceID_None, nsGkAtoms::novalidate),
+  NS_ASSERTION(!HasAttr(nsGkAtoms::novalidate),
                "We shouldn't be there if novalidate is set!");
-
-  // When .submit() is called aEvent = nullptr so we can rely on that to know if
-  // we have to check the validity of the form.
-  nsCOMPtr<nsIObserverService> service =
-      mozilla::services::GetObserverService();
-  if (!service) {
-    NS_WARNING("No observer service available!");
-    return true;
-  }
 
   AutoTArray<RefPtr<Element>, 32> invalidElements;
   if (CheckFormValidity(&invalidElements)) {
@@ -1914,7 +1830,7 @@ bool HTMLFormElement::CheckValidFormSubmission() {
           // for the anonymous textnode inside, but not the number control
           // itself.  We can use the focus state, though, because that gets
           // synced to the number control by the anonymous text control.
-          mControls->mElements[i]->State().HasState(NS_EVENT_STATE_FOCUS)) {
+          mControls->mElements[i]->State().HasState(ElementState::FOCUS)) {
         static_cast<HTMLInputElement*>(mControls->mElements[i])
             ->UpdateValidityUIBits(true);
       }
@@ -1950,39 +1866,7 @@ bool HTMLFormElement::CheckValidFormSubmission() {
 
   DispatchEvent(*event);
 
-  bool result = !event->DefaultPrevented();
-
-  nsCOMPtr<nsISimpleEnumerator> theEnum;
-  nsresult rv = service->EnumerateObservers(NS_INVALIDFORMSUBMIT_SUBJECT,
-                                            getter_AddRefs(theEnum));
-  NS_ENSURE_SUCCESS(rv, result);
-
-  bool hasObserver = false;
-  rv = theEnum->HasMoreElements(&hasObserver);
-
-  if (NS_SUCCEEDED(rv) && hasObserver) {
-    result = false;
-
-    nsCOMPtr<nsISupports> inst;
-    nsCOMPtr<nsIFormSubmitObserver> observer;
-    bool more = true;
-    while (NS_SUCCEEDED(theEnum->HasMoreElements(&more)) && more) {
-      theEnum->GetNext(getter_AddRefs(inst));
-      observer = do_QueryInterface(inst);
-
-      if (observer) {
-        observer->NotifyInvalidSubmit(this, invalidElements);
-      }
-    }
-  }
-
-  if (result) {
-    NS_WARNING(
-        "There is no observer for \"invalidformsubmit\". \
-One should be implemented!");
-  }
-
-  return result;
+  return !event->DefaultPrevented();
 }
 
 void HTMLFormElement::UpdateValidity(bool aElementValidity) {
@@ -2003,38 +1887,12 @@ void HTMLFormElement::UpdateValidity(bool aElementValidity) {
     return;
   }
 
-  /*
-   * We are going to update states assuming submit controls want to
-   * be notified because we can't know.
-   * UpdateValidity shouldn't be called so much during parsing so it _should_
-   * be safe.
-   */
-
-  nsAutoScriptBlocker scriptBlocker;
-
-  // Inform submit controls that the form validity has changed.
-  for (uint32_t i = 0, length = mControls->mElements.Length(); i < length;
-       ++i) {
-    if (mControls->mElements[i]->IsSubmitControl()) {
-      mControls->mElements[i]->UpdateState(true);
-    }
-  }
-
-  // Because of backward compatibility, <input type='image'> is not in elements
-  // so we have to check for controls not in elements too.
-  uint32_t length = mControls->mNotInElements.Length();
-  for (uint32_t i = 0; i < length; ++i) {
-    if (mControls->mNotInElements[i]->IsSubmitControl()) {
-      mControls->mNotInElements[i]->UpdateState(true);
-    }
-  }
-
   UpdateState(true);
 }
 
-int32_t HTMLFormElement::IndexOfControl(nsIFormControl* aControl) {
+int32_t HTMLFormElement::IndexOfContent(nsIContent* aContent) {
   int32_t index = 0;
-  return mControls->IndexOfControl(aControl, &index) == NS_OK ? index : 0;
+  return mControls->IndexOfContent(aContent, &index) == NS_OK ? index : 0;
 }
 
 void HTMLFormElement::SetCurrentRadioButton(const nsAString& aName,
@@ -2064,7 +1922,7 @@ HTMLFormElement::WalkRadioGroup(const nsAString& aName,
 
 void HTMLFormElement::AddToRadioGroup(const nsAString& aName,
                                       HTMLInputElement* aRadio) {
-  RadioGroupManager::AddToRadioGroup(aName, aRadio);
+  RadioGroupManager::AddToRadioGroup(aName, aRadio, this);
 }
 
 void HTMLFormElement::RemoveFromRadioGroup(const nsAString& aName,
@@ -2090,13 +1948,13 @@ void HTMLFormElement::SetValueMissingState(const nsAString& aName,
   RadioGroupManager::SetValueMissingState(aName, aValue);
 }
 
-EventStates HTMLFormElement::IntrinsicState() const {
-  EventStates state = nsGenericHTMLElement::IntrinsicState();
+ElementState HTMLFormElement::IntrinsicState() const {
+  ElementState state = nsGenericHTMLElement::IntrinsicState();
 
   if (mInvalidElementsCount) {
-    state |= NS_EVENT_STATE_INVALID;
+    state |= ElementState::INVALID;
   } else {
-    state |= NS_EVENT_STATE_VALID;
+    state |= ElementState::VALID;
   }
 
   return state;
@@ -2220,7 +2078,7 @@ nsresult HTMLFormElement::AddElementToTableInternal(
 }
 
 nsresult HTMLFormElement::AddImageElement(HTMLImageElement* aChild) {
-  AddElementToList(mImageElements, aChild, this);
+  nsContentUtils::AddElementToListByTreeOrder(mImageElements, aChild, this);
   return NS_OK;
 }
 
@@ -2324,9 +2182,8 @@ void HTMLFormElement::MaybeFireFormRemoved() {
     return;
   }
 
-  RefPtr<AsyncEventDispatcher> asyncDispatcher = new AsyncEventDispatcher(
-      this, u"DOMFormRemoved"_ns, CanBubble::eNo, ChromeOnlyDispatch::eYes);
-  asyncDispatcher->RunDOMEventWhenSafe();
+  AsyncEventDispatcher::RunDOMEventWhenSafe(
+      *this, u"DOMFormRemoved"_ns, CanBubble::eNo, ChromeOnlyDispatch::eYes);
 }
 
 }  // namespace mozilla::dom

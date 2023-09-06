@@ -13,178 +13,113 @@
 #if defined(XP_MACOSX) && defined(MOZ_SANDBOX)
 #  include <stdlib.h>
 #  include "mozilla/Sandbox.h"
-#endif
-
-#if defined(XP_WIN) && defined(MOZ_SANDBOX)
-#  include "mozilla/WindowsProcessMitigations.h"
-#endif
-
-#if (defined(XP_WIN) || defined(XP_MACOSX)) && defined(MOZ_SANDBOX)
 #  include "mozilla/SandboxSettings.h"
-#  include "nsAppDirectoryServiceDefs.h"
-#  include "nsDirectoryService.h"
-#  include "nsDirectoryServiceDefs.h"
 #endif
 
 #include "nsAppRunner.h"
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/ProcessUtils.h"
+#include "mozilla/GeckoArgs.h"
+#include "mozilla/Omnijar.h"
+#include "nsCategoryManagerUtils.h"
 
 using mozilla::ipc::IOThreadChild;
 
 namespace mozilla::dom {
 
-#if defined(XP_WIN) && defined(MOZ_SANDBOX)
-static void SetTmpEnvironmentVariable(nsIFile* aValue) {
-  // Save the TMP environment variable so that is is picked up by GetTempPath().
-  // Note that we specifically write to the TMP variable, as that is the first
-  // variable that is checked by GetTempPath() to determine its output.
-  nsAutoString fullTmpPath;
-  nsresult rv = aValue->GetPath(fullTmpPath);
-  if (NS_WARN_IF(NS_FAILED(rv))) {
-    return;
-  }
-  Unused << NS_WARN_IF(!SetEnvironmentVariableW(L"TMP", fullTmpPath.get()));
-  // We also set TEMP in case there is naughty third-party code that is
-  // referencing the environment variable directly.
-  Unused << NS_WARN_IF(!SetEnvironmentVariableW(L"TEMP", fullTmpPath.get()));
-}
+static nsresult GetGREDir(nsIFile** aResult) {
+  nsCOMPtr<nsIFile> current;
+  nsresult rv = XRE_GetBinaryPath(getter_AddRefs(current));
+  NS_ENSURE_SUCCESS(rv, rv);
+
+#ifdef XP_DARWIN
+  // Walk out of [subprocess].app/Contents/MacOS to the real GRE dir
+  const int depth = 4;
+#else
+  const int depth = 1;
 #endif
 
-#if defined(XP_WIN) && defined(MOZ_SANDBOX)
-static void SetUpSandboxEnvironment() {
-  MOZ_ASSERT(
-      nsDirectoryService::gService,
-      "SetUpSandboxEnvironment relies on nsDirectoryService being initialized");
+  for (int i = 0; i < depth; ++i) {
+    nsCOMPtr<nsIFile> parent;
+    rv = current->GetParent(getter_AddRefs(parent));
+    NS_ENSURE_SUCCESS(rv, rv);
 
-  // On Windows, a sandbox-writable temp directory is used whenever the sandbox
-  // is enabled, except when win32k is locked down when we no longer require a
-  // temp directory.
-  if (!IsContentSandboxEnabled() || IsWin32kLockedDown()) {
-    return;
+    current = parent;
+    NS_ENSURE_TRUE(current, NS_ERROR_UNEXPECTED);
   }
 
-  nsCOMPtr<nsIFile> sandboxedContentTemp;
-  nsresult rv = nsDirectoryService::gService->Get(
-      NS_APP_CONTENT_PROCESS_TEMP_DIR, NS_GET_IID(nsIFile),
-      getter_AddRefs(sandboxedContentTemp));
-  if (NS_WARN_IF(NS_FAILED(rv))) {
-    return;
-  }
-
-  // Change the gecko defined temp directory to our sandbox-writable one.
-  // Undefine returns a failure if the property is not already set.
-  Unused << nsDirectoryService::gService->Undefine(NS_OS_TEMP_DIR);
-  rv = nsDirectoryService::gService->Set(NS_OS_TEMP_DIR, sandboxedContentTemp);
-  if (NS_WARN_IF(NS_FAILED(rv))) {
-    return;
-  }
-
-  SetTmpEnvironmentVariable(sandboxedContentTemp);
-}
+#ifdef XP_DARWIN
+  rv = current->SetNativeLeafName("Resources"_ns);
+  NS_ENSURE_SUCCESS(rv, rv);
 #endif
+
+  current.forget(aResult);
+
+  return NS_OK;
+}
+
+ContentProcess::ContentProcess(ProcessId aParentPid,
+                               const nsID& aMessageChannelId)
+    : ProcessChild(aParentPid, aMessageChannelId) {
+  NS_LogInit();
+}
+
+ContentProcess::~ContentProcess() { NS_LogTerm(); }
 
 bool ContentProcess::Init(int aArgc, char* aArgv[]) {
-  Maybe<uint64_t> childID;
-  Maybe<bool> isForBrowser;
-  Maybe<const char*> parentBuildID;
-  char* prefsHandle = nullptr;
-  char* prefMapHandle = nullptr;
-  char* prefsLen = nullptr;
-  char* prefMapSize = nullptr;
-  char* jsInitHandle = nullptr;
-  char* jsInitLen = nullptr;
-#if defined(XP_MACOSX) && defined(MOZ_SANDBOX)
-  nsCOMPtr<nsIFile> profileDir;
-#endif
+  Maybe<uint64_t> childID = geckoargs::sChildID.Get(aArgc, aArgv);
+  Maybe<bool> isForBrowser = Nothing();
+  Maybe<const char*> parentBuildID =
+      geckoargs::sParentBuildID.Get(aArgc, aArgv);
+  Maybe<uint64_t> jsInitHandle;
+  Maybe<uint64_t> jsInitLen = geckoargs::sJsInitLen.Get(aArgc, aArgv);
 
-  for (int i = 1; i < aArgc; i++) {
-    if (!aArgv[i]) {
-      continue;
-    }
-
-    if (strcmp(aArgv[i], "-appdir") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-      nsDependentCString appDir(aArgv[i]);
-      mXREEmbed.SetAppDir(appDir);
-
-    } else if (strcmp(aArgv[i], "-childID") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-      char* str = aArgv[i];
-      childID = Some(strtoull(str, &str, 10));
-      if (str[0] != '\0') {
-        return false;
-      }
-
-    } else if (strcmp(aArgv[i], "-isForBrowser") == 0) {
-      isForBrowser = Some(true);
-
-    } else if (strcmp(aArgv[i], "-notForBrowser") == 0) {
-      isForBrowser = Some(false);
-
-#ifdef XP_WIN
-    } else if (strcmp(aArgv[i], "-prefsHandle") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-      prefsHandle = aArgv[i];
-    } else if (strcmp(aArgv[i], "-prefMapHandle") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-      prefMapHandle = aArgv[i];
-#endif
-
-    } else if (strcmp(aArgv[i], "-prefsLen") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-      prefsLen = aArgv[i];
-    } else if (strcmp(aArgv[i], "-prefMapSize") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-      prefMapSize = aArgv[i];
-
-    } else if (strcmp(aArgv[i], "-jsInit") == 0) {
-      // command line: -jsInit [handle] length
-#ifdef XP_WIN
-      if (++i == aArgc) {
-        return false;
-      }
-      jsInitHandle = aArgv[i];
-#endif
-      if (++i == aArgc) {
-        return false;
-      }
-      jsInitLen = aArgv[i];
-    } else if (strcmp(aArgv[i], "-safeMode") == 0) {
-      gSafeMode = true;
-
-    } else if (strcmp(aArgv[i], "-parentBuildID") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-      parentBuildID = Some(aArgv[i]);
-
-#if defined(XP_MACOSX) && defined(MOZ_SANDBOX)
-    } else if (strcmp(aArgv[i], "-profile") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-      bool flag;
-      nsresult rv = XRE_GetFileFromPath(aArgv[i], getter_AddRefs(profileDir));
-      if (NS_FAILED(rv) || NS_FAILED(profileDir->Exists(&flag)) || !flag) {
-        NS_WARNING("Invalid profile directory passed to content process.");
-        profileDir = nullptr;
-      }
-#endif /* XP_MACOSX && MOZ_SANDBOX */
+  nsCOMPtr<nsIFile> appDirArg;
+  Maybe<const char*> appDir = geckoargs::sAppDir.Get(aArgc, aArgv);
+  if (appDir.isSome()) {
+    bool flag;
+    nsresult rv = XRE_GetFileFromPath(*appDir, getter_AddRefs(appDirArg));
+    if (NS_FAILED(rv) || NS_FAILED(appDirArg->Exists(&flag)) || !flag) {
+      NS_WARNING("Invalid application directory passed to content process.");
+      appDirArg = nullptr;
     }
   }
+
+  Maybe<bool> safeMode = geckoargs::sSafeMode.Get(aArgc, aArgv);
+  if (safeMode.isSome()) {
+    gSafeMode = *safeMode;
+  }
+
+  Maybe<bool> isForBrowerParam = geckoargs::sIsForBrowser.Get(aArgc, aArgv);
+  Maybe<bool> notForBrowserParam = geckoargs::sNotForBrowser.Get(aArgc, aArgv);
+  if (isForBrowerParam.isSome()) {
+    isForBrowser = Some(true);
+  }
+  if (notForBrowserParam.isSome()) {
+    isForBrowser = Some(false);
+  }
+
+  // command line: [-jsInitHandle handle] -jsInitLen length
+#ifdef XP_WIN
+  jsInitHandle = geckoargs::sJsInitHandle.Get(aArgc, aArgv);
+#endif
+
+#if defined(XP_MACOSX) && defined(MOZ_SANDBOX)
+  nsCOMPtr<nsIFile> profileDir;
+  bool flag;
+  Maybe<const char*> profile = geckoargs::sProfile.Get(aArgc, aArgv);
+  // xpcshell self-test on macOS will hit this, so check isSome() otherwise
+  // Maybe<> assertions will MOZ_CRASH() us.
+  if (profile.isSome()) {
+    nsresult rv = XRE_GetFileFromPath(*profile, getter_AddRefs(profileDir));
+    if (NS_FAILED(rv) || NS_FAILED(profileDir->Exists(&flag)) || !flag) {
+      NS_WARNING("Invalid profile directory passed to content process.");
+      profileDir = nullptr;
+    }
+  } else {
+    NS_WARNING("No profile directory passed to content process.");
+  }
+#endif /* XP_MACOSX && MOZ_SANDBOX */
 
   // Did we find all the mandatory flags?
   if (childID.isNothing() || isForBrowser.isNothing() ||
@@ -192,20 +127,44 @@ bool ContentProcess::Init(int aArgc, char* aArgv[]) {
     return false;
   }
 
-  ::mozilla::ipc::SharedPreferenceDeserializer deserializer;
-  if (!deserializer.DeserializeFromSharedMemory(prefsHandle, prefMapHandle,
-                                                prefsLen, prefMapSize)) {
+  if (!ProcessChild::InitPrefs(aArgc, aArgv)) {
     return false;
   }
 
-  if (!::mozilla::ipc::ImportSharedJSInit(jsInitHandle, jsInitLen)) {
+  if (!::mozilla::ipc::ImportSharedJSInit(jsInitHandle.valueOr(0),
+                                          jsInitLen.valueOr(0))) {
     return false;
   }
 
-  mContent.Init(ParentPid(), *parentBuildID, IOThreadChild::TakeInitialPort(),
-                *childID, *isForBrowser);
+  mContent.Init(TakeInitialEndpoint(), *parentBuildID, *childID, *isForBrowser);
 
-  mXREEmbed.Start();
+  nsCOMPtr<nsIFile> greDir;
+  nsresult rv = GetGREDir(getter_AddRefs(greDir));
+  if (NS_FAILED(rv)) {
+    return false;
+  }
+
+  nsCOMPtr<nsIFile> xpcomAppDir = appDirArg ? appDirArg : greDir;
+
+  rv = mDirProvider.Initialize(xpcomAppDir, greDir);
+  if (NS_FAILED(rv)) {
+    return false;
+  }
+
+  // Handle the -greomni/-appomni flags (unless the forkserver already
+  // preloaded the jar(s)).
+  if (!Omnijar::IsInitialized()) {
+    Omnijar::ChildProcessInit(aArgc, aArgv);
+  }
+
+  rv = NS_InitXPCOM(nullptr, xpcomAppDir, &mDirProvider);
+  if (NS_FAILED(rv)) {
+    return false;
+  }
+
+  // "app-startup" is the name of both the category and the event
+  NS_CreateServicesFromCategory("app-startup", nullptr, "app-startup", nullptr);
+
 #if (defined(XP_MACOSX)) && defined(MOZ_SANDBOX)
   mContent.SetProfileDir(profileDir);
 #  if defined(DEBUG)
@@ -215,19 +174,19 @@ bool ContentProcess::Init(int aArgc, char* aArgv[]) {
 #  endif /* DEBUG */
 #endif   /* XP_MACOSX && MOZ_SANDBOX */
 
-#if defined(XP_WIN) && defined(MOZ_SANDBOX)
-  SetUpSandboxEnvironment();
-#endif
-
   // Do this as early as possible to get the parent process to initialize the
   // background thread since we'll likely need database information very soon.
   mozilla::ipc::BackgroundChild::Startup();
+  mozilla::ipc::BackgroundChild::InitContentStarter(&mContent);
 
   return true;
 }
 
 // Note: CleanUp() never gets called in non-debug builds because we exit early
 // in ContentChild::ActorDestroy().
-void ContentProcess::CleanUp() { mXREEmbed.Stop(); }
+void ContentProcess::CleanUp() {
+  mDirProvider.DoShutdown();
+  NS_ShutdownXPCOM(nullptr);
+}
 
 }  // namespace mozilla::dom

@@ -65,22 +65,20 @@ cryptominer-tab-content = Los minaires de criptomoneda utilizan la poténcia de 
 protections-close-button2 =
     .aria-label = Tampar
     .title = Tampar
-  
+
 mobile-app-title = Blocatz los traçadors de publicitat sus mai d’un periferic
 mobile-app-card-content = Utilizatz lo navegador mobil amb una proteccion integrada contra las publicitats que pistan.
 mobile-app-links = Navegador { -brand-product-name } per <a data-l10n-name="android-mobile-inline-link">Android</a> et <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Oblidetz pas jamai un senhal
-lockwise-title-logged-in2 = Gestion de senhal
-lockwise-header-content = { -lockwise-brand-name } gardatz d’un biais segur vòstres senhals dins lo navegador.
+passwords-title-logged-in = Gerir vòstres senhals
+passwords-header-content = { -brand-product-name } gardatz d’un biais segur vòstres senhals dins lo navegador.
 lockwise-header-content-logged-in = Salvatz e sincronizatz vòstres senhals sus totes vòstres periferics d’un biais segur.
-protection-report-save-passwords-button = Salvar los senhals
-    .title = Salvar los senhals dins { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Gestion dels senhals
-    .title = Gestion dels senhals de { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Emportatz vòstres senhals pertot
-lockwise-no-logins-card-content = Utilizatz los senhals gardats dins { -brand-short-name } sus qual periferic que siá.
-lockwise-app-links = { -lockwise-brand-name } per <a data-l10n-name="lockwise-android-inline-link">Android</a> e <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Salvar los senhals
+    .title = Salvar los senhals
+protection-report-passwords-manage-passwords-button = Gestion dels senhals
+    .title = Gestion dels senhals
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

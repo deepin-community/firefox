@@ -4,14 +4,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function
-from abc import ABCMeta, abstractmethod
-from collections import deque
 import csv
 import os
 import re
 import subprocess
+from abc import ABCMeta, abstractmethod
+from collections import deque
 from uuid import UUID
+
 import six
 
 # This constant must match the event declared in
@@ -235,6 +235,8 @@ class XPerfInterval(XPerfAttribute):
             a.process()
 
     def __str__(self):
+        if len(self.seen_evtlist) == 0:
+            return ""
         end = self.seen_evtlist[-1]
         start = self.seen_evtlist[0]
         duration = end.get_timestamp() - start.get_timestamp()
@@ -253,6 +255,9 @@ class XPerfInterval(XPerfAttribute):
         """The result of an XPerf interval is the interval's duration, in
         milliseconds. The results of the sub-attributes are also provided.
         """
+        if len(self.seen_evtlist) == 0:
+            return {}
+
         end = self.seen_evtlist[-1]
         start = self.seen_evtlist[0]
         duration = end.get_timestamp() - start.get_timestamp()
@@ -652,7 +657,7 @@ class ClassicEvent(XPerfEvent):
 
 
 class SessionStoreWindowRestored(ClassicEvent):
-    """ The Firefox session store window restored event """
+    """The Firefox session store window restored event"""
 
     def __init__(self):
         super(SessionStoreWindowRestored, self).__init__(

@@ -20,11 +20,13 @@ SampledAPZCState::SampledAPZCState(const FrameMetrics& aMetrics)
 }
 
 SampledAPZCState::SampledAPZCState(const FrameMetrics& aMetrics,
-                                   Maybe<CompositionPayload>&& aPayload)
+                                   Maybe<CompositionPayload>&& aPayload,
+                                   APZScrollGeneration aGeneration)
     : mLayoutViewport(aMetrics.GetLayoutViewport()),
       mVisualScrollOffset(aMetrics.GetVisualScrollOffset()),
       mZoom(aMetrics.GetZoom()),
-      mScrollPayload(std::move(aPayload)) {
+      mScrollPayload(std::move(aPayload)),
+      mGeneration(aGeneration) {
   RemoveFractionalAsyncDelta();
 }
 
@@ -49,6 +51,12 @@ void SampledAPZCState::UpdateScrollProperties(const FrameMetrics& aMetrics) {
   mVisualScrollOffset = aMetrics.GetVisualScrollOffset();
 }
 
+void SampledAPZCState::UpdateScrollPropertiesWithRelativeDelta(
+    const FrameMetrics& aMetrics, const CSSPoint& aRelativeDelta) {
+  mVisualScrollOffset += aRelativeDelta;
+  KeepLayoutViewportEnclosingVisualViewport(aMetrics);
+}
+
 void SampledAPZCState::UpdateZoomProperties(const FrameMetrics& aMetrics) {
   mZoom = aMetrics.GetZoom();
 }
@@ -60,17 +68,10 @@ void SampledAPZCState::ClampVisualScrollOffset(const FrameMetrics& aMetrics) {
       aMetrics.GetScrollableRect(), aMetrics.GetCompositionBounds(), mZoom);
   mVisualScrollOffset = scrollRange.ClampPoint(mVisualScrollOffset);
 
-  FrameMetrics::KeepLayoutViewportEnclosingVisualViewport(
-      CSSRect(mVisualScrollOffset,
-              FrameMetrics::CalculateCompositedSizeInCssPixels(
-                  aMetrics.GetCompositionBounds(), mZoom)),
-      aMetrics.GetScrollableRect(), mLayoutViewport);
+  KeepLayoutViewportEnclosingVisualViewport(aMetrics);
 }
 
-void SampledAPZCState::ZoomBy(const gfxSize& aScale) {
-  mZoom.xScale *= aScale.width;
-  mZoom.yScale *= aScale.height;
-}
+void SampledAPZCState::ZoomBy(float aScale) { mZoom.scale *= aScale; }
 
 void SampledAPZCState::RemoveFractionalAsyncDelta() {
   // This function is a performance hack. With non-WebRender, having small
@@ -88,12 +89,22 @@ void SampledAPZCState::RemoveFractionalAsyncDelta() {
   if (mLayoutViewport.TopLeft() == mVisualScrollOffset) {
     return;
   }
+  const ParentLayerCoord EPSILON = 0.01;
   ParentLayerPoint paintedOffset = mLayoutViewport.TopLeft() * mZoom;
   ParentLayerPoint asyncOffset = mVisualScrollOffset * mZoom;
-  if (FuzzyEqualsAdditive(paintedOffset.x, asyncOffset.x, COORDINATE_EPSILON) &&
-      FuzzyEqualsAdditive(paintedOffset.y, asyncOffset.y, COORDINATE_EPSILON)) {
+  if (FuzzyEqualsAdditive(paintedOffset.x, asyncOffset.x, EPSILON) &&
+      FuzzyEqualsAdditive(paintedOffset.y, asyncOffset.y, EPSILON)) {
     mVisualScrollOffset = mLayoutViewport.TopLeft();
   }
+}
+
+void SampledAPZCState::KeepLayoutViewportEnclosingVisualViewport(
+    const FrameMetrics& aMetrics) {
+  FrameMetrics::KeepLayoutViewportEnclosingVisualViewport(
+      CSSRect(mVisualScrollOffset,
+              FrameMetrics::CalculateCompositedSizeInCssPixels(
+                  aMetrics.GetCompositionBounds(), mZoom)),
+      aMetrics.GetScrollableRect(), mLayoutViewport);
 }
 
 }  // namespace layers

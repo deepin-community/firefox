@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = إعدادات مسح التأريخ
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = امسح التأريخ الحالي
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = امسح كل التأريخ
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = على { -brand-short-name } مسح كل شيء تلقائيا عندما إغلاقه
 
@@ -78,9 +78,9 @@ item-form-search-history =
 
 data-section-label = البيانات
 
-item-site-preferences =
-    .label = تفضيلات الموقع
-    .accesskey = ض
+item-site-settings =
+    .label = إعدادات الموقع
+    .accesskey = ع
 
 item-offline-apps =
     .label = بيانات المواقع للعمل دون اتصال

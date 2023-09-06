@@ -1,28 +1,15 @@
 "use strict";
 
-const { CustomizableUI } = ChromeUtils.import(
-  "resource:///modules/CustomizableUI.jsm"
+const { CustomizableUI } = ChromeUtils.importESModule(
+  "resource:///modules/CustomizableUI.sys.mjs"
 );
 
-add_task(async function() {
+add_task(async function () {
   registerFakePath("AppData", do_get_file("AppData/Roaming/"));
 
-  let migrator = await MigrationUtils.getMigrator("360se");
+  let migrator = await MigrationUtils.getMigrator("chromium-360se");
   // Sanity check for the source.
   Assert.ok(await migrator.isSourceAvailable());
-
-  let profiles = await migrator.getSourceProfiles();
-  Assert.equal(profiles.length, 2, "Should present two profiles");
-  Assert.equal(
-    profiles[0].name,
-    "test@firefox.com.cn",
-    "Current logged in user should be the first"
-  );
-  Assert.equal(
-    profiles[profiles.length - 1].name,
-    "Default",
-    "Default user should be the last"
-  );
 
   let importedToBookmarksToolbar = false;
   let itemsSeen = { bookmarks: 0, folders: 0 };
@@ -34,7 +21,7 @@ add_task(async function() {
           ? "folders"
           : "bookmarks"
       ]++;
-      if (event.parentId == PlacesUtils.toolbarFolderId) {
+      if (event.parentGuid == PlacesUtils.bookmarks.toolbarGuid) {
         importedToBookmarksToolbar = true;
       }
     }
@@ -57,7 +44,7 @@ add_task(async function() {
   }, "browser-set-toolbar-visibility");
 
   await promiseMigration(migrator, MigrationUtils.resourceTypes.BOOKMARKS, {
-    id: "default",
+    id: "Default",
   });
   PlacesUtils.observers.removeListener(["bookmark-added"], listener);
 

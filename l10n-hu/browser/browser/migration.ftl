@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 biztonságos böngésző
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Nem található olyan program, amely könyvjelzőket, előzményeket vagy jelszóadatokat tartalmaz.
 
@@ -61,8 +73,8 @@ import-items-description = Válassza ki az importálni kívánt elemeket:
 
 import-permissions-page-title = Kérjük adjon engedélyt a { -brand-short-name }nak
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = A macOS megköveteli, hogy kifejezetten engedélyezze, hogy a { -brand-short-name } elérje a Safari könyvjelzőit. Kattintson a „Folytatás” gombra és a megjelenő Fájl megnyitása panelen válassza ki a „Bookmarks.plist” fájlt.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = A macOS megköveteli, hogy kifejezetten engedélyezze, hogy a { -brand-short-name } elérje a Safari adatait. Kattintson a „Folytatás” gombra, és válassza ki a „Safari” mappát a Finder párbeszédablakán, majd kattintson a „Megnyitás” gombra.
 
 import-migrating-page-title = Importálás…
 
@@ -78,23 +90,9 @@ import-done-description = A következő elemek sikeresen importálva lettek:
 
 import-close-source-browser = Ne feledje el bezárni a kiválasztott böngészőt a folytatás előtt.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = { $source } helyről
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge béta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome béta
-source-name-chrome-dev = Google Chrome fejlesztői
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 biztonságos böngésző
 
 imported-safari-reading-list = Olvasási lista (a Safariból)
 imported-edge-reading-list = Olvasási lista (az Edge-ből)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = Ablakok és lapok
 browser-data-session-label =
     .value = Ablakok és lapok
+
+browser-data-payment-methods-checkbox =
+    .label = Fizetési módok
+browser-data-payment-methods-label =
+    .value = Fizetési módok

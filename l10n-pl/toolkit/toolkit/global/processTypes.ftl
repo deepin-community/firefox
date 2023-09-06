@@ -22,13 +22,13 @@ process-type-extension = Rozszerzenie
 # process used to open file:// URLs
 process-type-file = Lokalny plik
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Duży przydział pamięci
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Wydzielone strony
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Wydzielony wątek usługowy
 
 # process preallocated; may change to other types
 process-type-prealloc = Wstępnie przydzielony
@@ -49,6 +49,9 @@ process-type-socket = Gniazdo
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Aktor IPC w piaskownicy
 
 ##
 ## Other

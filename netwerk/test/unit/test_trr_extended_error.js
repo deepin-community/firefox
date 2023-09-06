@@ -4,10 +4,6 @@
 
 "use strict";
 
-const dns = Cc["@mozilla.org/network/dns-service;1"].getService(
-  Ci.nsIDNSService
-);
-
 trr_test_setup();
 registerCleanupFunction(async () => {
   trr_clear_prefs();
@@ -20,8 +16,6 @@ function makeChan(url) {
   }).QueryInterface(Ci.nsIHttpChannel);
   return chan;
 }
-
-let processId;
 
 function channelOpenPromise(chan) {
   return new Promise(resolve => {
@@ -44,7 +38,7 @@ add_task(async function setup() {
   let [, resp] = await channelOpenPromise(chan);
   equal(resp, "<h1> 404 Path not found: /test?bla=some</h1>");
 
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   Services.prefs.setIntPref("network.trr.mode", 2);
   Services.prefs.setCharPref(
     "network.trr.uri",
@@ -87,7 +81,7 @@ add_task(async function test_extended_error_bogus() {
   });
 
   // Check that we don't fall back to DNS
-  let [, , inStatus] = await new TRRDNSListener("a.foo", {
+  let { inStatus } = await new TRRDNSListener("a.foo", {
     expectedSuccess: false,
   });
   Assert.ok(
@@ -116,7 +110,7 @@ add_task(async function test_extended_error_filtered() {
   });
 
   // Check that we don't fall back to DNS
-  let [, , inStatus] = await new TRRDNSListener("b.foo", {
+  let { inStatus } = await new TRRDNSListener("b.foo", {
     expectedSuccess: false,
   });
   Assert.ok(
@@ -315,7 +309,7 @@ add_task(async function test_only_ipv4_extended_error() {
       },
     ],
   });
-  let [, , inStatus] = await new TRRDNSListener("only.com", {
+  let { inStatus } = await new TRRDNSListener("only.com", {
     expectedSuccess: false,
   });
   Assert.ok(

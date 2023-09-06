@@ -1,11 +1,11 @@
-const { SharedDataMap } = ChromeUtils.import(
-  "resource://nimbus/lib/SharedDataMap.jsm"
+const { SharedDataMap } = ChromeUtils.importESModule(
+  "resource://nimbus/lib/SharedDataMap.sys.mjs"
 );
-const { FileTestUtils } = ChromeUtils.import(
-  "resource://testing-common/FileTestUtils.jsm"
+const { FileTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/FileTestUtils.sys.mjs"
 );
-const { TestUtils } = ChromeUtils.import(
-  "resource://testing-common/TestUtils.jsm"
+const { TestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/TestUtils.sys.mjs"
 );
 
 const PATH = FileTestUtils.getTempFile("shared-data-map").path;
@@ -38,22 +38,6 @@ with_sharedDataMap(async function test_set_notify({ instance, sandbox }) {
 
   Assert.equal(updateStub.callCount, 1, "Update event sent");
   Assert.equal(updateStub.firstCall.args[1], "bar", "Update event sent value");
-});
-
-with_sharedDataMap(async function test_setNonPersistent_notify({
-  instance,
-  sandbox,
-}) {
-  await instance.init();
-  let updateStub = sandbox.stub();
-
-  instance.on("parent-store-update:foo", updateStub);
-  instance.setNonPersistent("foo", "bar");
-
-  Assert.equal(updateStub.callCount, 1, "Update event sent");
-  Assert.equal(updateStub.firstCall.args[1], "bar", "Update event sent value");
-  Assert.equal(instance.get("foo"), "bar");
-  Assert.ok(!instance._data.foo, "Not in the persistent store");
 });
 
 with_sharedDataMap(async function test_set_child_notify({ instance, sandbox }) {
@@ -183,33 +167,6 @@ with_sharedDataMap(async function test_parentChildSync_async({
   );
 });
 
-with_sharedDataMap(async function test_parentChildSync_nonPersistent_async({
-  instance: parentInstance,
-  sandbox,
-}) {
-  const childInstance = new SharedDataMap("xpcshell", {
-    path: PATH,
-    isParent: false,
-  });
-
-  await parentInstance.init();
-  parentInstance.setNonPersistent("foo", { bar: 1 });
-
-  await parentInstance.ready();
-  await childInstance.ready();
-
-  await TestUtils.waitForCondition(
-    () => childInstance.get("foo"),
-    "Wait for child to sync"
-  );
-
-  Assert.deepEqual(
-    childInstance.get("foo"),
-    parentInstance.get("foo"),
-    "Parent and child should be in sync"
-  );
-});
-
 with_sharedDataMap(async function test_earlyChildSync({
   instance: parentInstance,
   sandbox,
@@ -234,16 +191,6 @@ with_sharedDataMap(async function test_earlyChildSync({
     parentInstance.get("baz"),
     "Parent and child should be in sync"
   );
-});
-
-with_sharedDataMap(async function test_set_notify({ instance, sandbox }) {
-  await instance.init();
-
-  Assert.ok(!instance.hasRemoteDefaultsReady(), "False on init");
-
-  instance.setNonPersistent("__REMOTE_DEFAULTS", { foo: 1 });
-
-  Assert.ok(instance.hasRemoteDefaultsReady(), "Has 1 entry");
 });
 
 with_sharedDataMap(async function test_updateStoreData({ instance, sandbox }) {

@@ -5,44 +5,52 @@
 
 ## The main browser window's title
 
-# These are the default window titles everywhere except macOS. The first two
-# attributes are used when the web content opened has no title:
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
 #
 # default - "Mozilla Firefox"
 # private - "Mozilla Firefox (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
 # Variables:
 #  $content-title (String): the title of the web content.
-browser-main-window =
+browser-main-window-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } (Priveesneupe)
-    .data-content-title-default = { $content-title } - { -brand-full-name }
-    .data-content-title-private = { $content-title } - { -brand-full-name } (Priveesneupe)
-# These are the default window titles on macOS. The first two are for use when
-# there is no content title:
+    .data-title-private = { -brand-full-name }-priveenavigaasje
+    .data-content-title-default = { $content-title } – { -brand-full-name }
+    .data-content-title-private = { $content-title } – { -brand-full-name }-priveenavigaasje
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
 #
 # "default" - "Mozilla Firefox"
 # "private" - "Mozilla Firefox — (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
-# Do not use the brand name in the last two attributes, as we do on non-macOS.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
 #
 # Also note the other subtle difference here: we use a `-` to separate the
 # brand name from `(Private Browsing)`, which does not happen on other OSes.
 #
 # Variables:
 #  $content-title (String): the title of the web content.
-browser-main-window-mac =
+browser-main-window-mac-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } - (Priveesneupe)
+    .data-title-private = { -brand-full-name } – Priveenavigaasje
     .data-content-title-default = { $content-title }
-    .data-content-title-private = { $content-title } - (Priveesneupe)
+    .data-content-title-private = { $content-title } – Priveenavigaasje
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+# The non-variable portion of this MUST match the translation of
+# "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
+private-browsing-shortcut-text-2 = { -brand-shortcut-name }-priveenavigaasje
 
 ##
 
@@ -73,16 +81,12 @@ urlbar-xr-notification-anchor =
     .tooltiptext = Machtigingsfinster foar virtual reality iepenje
 urlbar-storage-access-anchor =
     .tooltiptext = Tastimmingspaniel foar sneupaktiviteit iepenje
-urlbar-translate-notification-anchor =
-    .tooltiptext = Dizze side oersette
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = Dielen fan jo finsters of skerm mei de website beheare
 urlbar-indexed-db-notification-anchor =
     .tooltiptext = Offline ûnthâldberjochtpaniel iepenje
 urlbar-password-notification-anchor =
     .tooltiptext = Bewarre oanmeldingenberjochtpaniel iepenje
-urlbar-translated-notification-anchor =
-    .tooltiptext = Sideoersetting beheare
 urlbar-plugins-notification-anchor =
     .tooltiptext = Gebrûk ynstekker beheare
 urlbar-web-rtc-share-devices-notification-anchor =
@@ -100,11 +104,25 @@ urlbar-addons-notification-anchor =
 urlbar-tip-help-icon =
     .title = Help krije
 urlbar-search-tips-confirm = Oké, begrepen
+urlbar-search-tips-confirm-short = Begrepen
 # Read out before Urlbar Tip text content so screenreader users know the
 # subsequent text is a tip offered by the browser. It should end in a colon or
 # localized equivalent.
 urlbar-tip-icon-description =
     .alt = Tip:
+urlbar-result-menu-button =
+    .title = Menu iepenje
+urlbar-result-menu-button-feedback = Kommentaar
+    .title = Menu iepenje
+urlbar-result-menu-learn-more =
+    .label = Mear ynfo
+    .accesskey = M
+urlbar-result-menu-remove-from-history =
+    .label = Fuortsmite út skiednis
+    .accesskey = F
+urlbar-result-menu-tip-get-help =
+    .label = Help krije
+    .accesskey = H
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -113,6 +131,8 @@ urlbar-tip-icon-description =
 
 urlbar-search-tips-onboard = Type minder, fyn mear: Sykje nei { $engineName } streekrjocht fan jo adresbalke út.
 urlbar-search-tips-redirect-2 = Begjin yn de adresbalke mei sykjen om suggestjes fan { $engineName } en jo browserskiednis te sjen.
+# Make sure to match the name of the Search panel in settings.
+urlbar-search-tips-persist = Sykjen is no noch ienfâldiger wurden. Probearje jo sykopdracht hjir yn de adresbalke mear spesifyk te meitsjen. As jo yn stee derfan de URL sjen litte wolle, gean dan nei Sykjen yn de ynstellingen.
 # Prompts users to use the Urlbar when they are typing in the domain of a
 # search engine, e.g. google.com or amazon.com.
 urlbar-tabtosearch-onboard = Selektearje dizze fluchkeppeling om flugger te finen wat jo nedich hawwe.
@@ -122,6 +142,7 @@ urlbar-tabtosearch-onboard = Selektearje dizze fluchkeppeling om flugger te fine
 urlbar-search-mode-bookmarks = Blêdwizers
 urlbar-search-mode-tabs = Ljepblêden
 urlbar-search-mode-history = Skiednis
+urlbar-search-mode-actions = Aksjes
 
 ##
 
@@ -160,10 +181,12 @@ urlbar-star-add-bookmark =
 
 ## Page Action Context Menu
 
-page-action-manage-extension =
+page-action-manage-extension2 =
     .label = Utwreiding beheare…
-page-action-remove-extension =
+    .accesskey = U
+page-action-remove-extension2 =
     .label = Utwreiding fuortsmite
+    .accesskey = U
 
 ## Auto-hide Context Menu
 
@@ -222,6 +245,67 @@ search-one-offs-tabs =
     .tooltiptext = Ljepblêden ({ $restrict })
 search-one-offs-history =
     .tooltiptext = Skiednis ({ $restrict })
+search-one-offs-actions =
+    .tooltiptext = Aksjes ({ $restrict })
+
+## QuickActions are shown in the urlbar as the user types a matching string
+## The -cmd- strings are comma separated list of keywords that will match
+## the action.
+
+# Opens the about:addons page in the home / recommendations section
+quickactions-addons = Add-ons besjen
+quickactions-cmd-addons2 = add-ons
+# Opens the bookmarks library window
+quickactions-bookmarks2 = Blêdwizers beheare
+quickactions-cmd-bookmarks = blêdwizers
+# Opens a SUMO article explaining how to clear history
+quickactions-clearhistory = Skiednis wiskje
+quickactions-cmd-clearhistory = skiednis wiskje
+# Opens about:downloads page
+quickactions-downloads2 = Downloads besjen
+quickactions-cmd-downloads = downloads
+# Opens about:addons page in the extensions section
+quickactions-extensions = Utwreidingen beheare
+quickactions-cmd-extensions = útwreidingen
+# Opens the devtools web inspector
+quickactions-inspector2 = Developer Tools iepenje
+quickactions-cmd-inspector = inspector, devtools
+# Opens about:logins
+quickactions-logins2 = Wachtwurden beheare
+quickactions-cmd-logins = oanmeldingen, wachtwurden
+# Opens about:addons page in the plugins section
+quickactions-plugins = Ynstekkers beheare…
+quickactions-cmd-plugins = ynstekkers
+# Opens the print dialog
+quickactions-print2 = Side ôfdrukke
+quickactions-cmd-print = ôfdrukke
+# Opens a new private browsing window
+quickactions-private2 = Priveefinster iepenje
+quickactions-cmd-private = priveenavigaasje
+# Opens a SUMO article explaining how to refresh
+quickactions-refresh = { -brand-short-name } opfrisse
+quickactions-cmd-refresh = fernije
+# Restarts the browser
+quickactions-restart = { -brand-short-name } opnij starte
+quickactions-cmd-restart = opnij starte
+# Opens the screenshot tool
+quickactions-screenshot3 = In skermôfbylding meitsje
+quickactions-cmd-screenshot = skermôfdruk
+# Opens about:preferences
+quickactions-settings2 = Ynstellingen beheare
+quickactions-cmd-settings = ynstellingen, foarkarren, opsjes
+# Opens about:addons page in the themes section
+quickactions-themes = Tema’s beheare
+quickactions-cmd-themes = tema’s
+# Opens a SUMO article explaining how to update the browser
+quickactions-update = { -brand-short-name } bywurkje
+quickactions-cmd-update = bywurkje
+# Opens the view-source UI with current pages source
+quickactions-viewsource2 = Sideboarne besjen
+quickactions-cmd-viewsource = boarne besjen, boarne
+# Tooltip text for the help button shown in the result.
+quickactions-learn-more =
+    .title = Mear ynfo oer Flugge aksjes
 
 ## Bookmark Panel
 
@@ -265,14 +349,15 @@ identity-connection-failure = Ferbiningsflater
 identity-connection-internal = Dit is in befeilige { -brand-short-name }-side.
 identity-connection-file = Dizze side is op jo kompjûter bewarre.
 identity-extension-page = Dizze side is laden fan in útwreiding út.
-identity-active-blocked = { -brand-short-name } hat ûnderdielen fan dizze side dy't net befeilige binne blokkearre.
-identity-custom-root = Ferbining ferifiearre troch in sertifikaatútjouwer dy't net troch Mozilla werkend wurdt.
+identity-active-blocked = { -brand-short-name } hat ûnderdielen fan dizze side dy’t net befeilige binne blokkearre.
+identity-custom-root = Ferbining ferifiearre troch in sertifikaatútjouwer dy’t net troch Mozilla werkend wurdt.
 identity-passive-loaded = Underdielen fan dizze side binne net befeilige (lykas ôfbyldingen).
 identity-active-loaded = Jo hawwe befeiliging op dizze side útskeakele.
 identity-weak-encryption = Dizze side brûkt swakke befeiliging.
 identity-insecure-login-forms = Ynfierde oanmeldingen op dizze side soene oernommen wurde kinne.
 identity-https-only-connection-upgraded = (opwurdearre nei HTTPS)
 identity-https-only-label = Allinnich-HTTPS-modus
+identity-https-only-label2 = Dizze website automatysk nei in befeilige ferbining opwurdearje
 identity-https-only-dropdown-on =
     .label = Oan
 identity-https-only-dropdown-off =
@@ -281,6 +366,8 @@ identity-https-only-dropdown-off-temporarily =
     .label = Tydlik út
 identity-https-only-info-turn-on2 = Skeakelje Allinnich-HTTPS foar dizze website yn as jo wolle dat { -brand-short-name } wannear mooglik de ferbining opwurdearret.
 identity-https-only-info-turn-off2 = As de website net liket te wurkje, dan kinne jo probearje de Allinnich-HTTPS-modus foar dizze website út te skeakeljen en de side te fernijen mei it ûnfeilige HTTP.
+identity-https-only-info-turn-on3 = Skeakelje opwurdearring nei HTTPS foar dizze website yn as jo wolle dat { -brand-short-name } wannear mooglik de ferbining opwurdearret.
+identity-https-only-info-turn-off3 = As de website net liket te wurkjen, dan kinne jo probearje de HTTPS-opwurdearring foar dizze website út te skeakeljen en de side te fernijen mei it ûnfeilige HTTP.
 identity-https-only-info-no-upgrade = Kin HTTP-ferbining net fernije.
 identity-permissions-storage-access-header = Cross-sitecookies
 identity-permissions-storage-access-hint = Dizze partijen kinne wylst jo besite oan dizze website cross-sitecookies en websitegegevens brûke.
@@ -291,22 +378,20 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = Jo hawwe in ûnbefeilige ferbining mei dizze website.
 identity-connection-verified = Jo hawwe in befeilige ferbining mei dizze website.
 identity-ev-owner-label = Sertifikaat útjûn oan:
-identity-description-custom-root = Mozilla werkent dizze sertifikaatútjouwer net. Hy is mooglik fan jo bestjoeringssysteem út of troch in behearder tafoege. <label data-l10n-name="link">Mear ynfo</label>
+identity-description-custom-root2 = Mozilla werkent dizze sertifikaatútjouwer net. Hy is mooglik fan jo bestjoeringssysteem út of troch in behearder tafoege.
 identity-remove-cert-exception =
     .label = Utsûndering fuortsmite
     .accesskey = f
-identity-description-insecure = Jo ferbining mei dizze website is net privee. Gegevens dy't jo ferstjoere, soene troch oaren besjoen wurde kinne (lykas wachtwurden, berjochten, creditcardgegevens, ensfh.).
-identity-description-insecure-login-forms = De oanmeldingsgegevens dy't jo op dizze side ynfiere binne net feilich en kinne oernommen wurde.
+identity-description-insecure = Jo ferbining mei dizze website is net privee. Gegevens dy’t jo ferstjoere, soene troch oaren besjoen wurde kinne (lykas wachtwurden, berjochten, creditcardgegevens, ensfh.).
+identity-description-insecure-login-forms = De oanmeldingsgegevens dy’t jo op dizze side ynfiere binne net feilich en kinne oernommen wurde.
 identity-description-weak-cipher-intro = Jo ferbining mei dizze website brûkt swakke fersifering en is net privee.
 identity-description-weak-cipher-risk = Oare persoanen kinne jo gegevens besjen of it gedrach fan de website oanpasse.
-identity-description-active-blocked = { -brand-short-name } hat ûnderdielen fan dizze side dy't net befeilige binne blokkearre. <label data-l10n-name="link">Mear ynfo</label>
-identity-description-passive-loaded = Jo ferbining is net privee en gegevens dy't jo mei de website diele soene troch oaren besjoen wurde kinne.
-identity-description-passive-loaded-insecure = Dizze website befettet ynhâld dy't net befeilige is (lykas ôfbyldingen). <label data-l10n-name="link">Mear ynfo</label>
-identity-description-passive-loaded-mixed = Hoewol { -brand-short-name } bepaalde ynhâld blokkearre hat, is der noch hieltyd ynhâld op de side dy't net befeilige is (lykas ôfbyldingen). <label data-l10n-name="link">Mear ynfo</label>
-identity-description-active-loaded = Dizze website befettet ynhâld dy't net befeilige is (lykas scripts) en jo ferbining dêrmei is net privee.
-identity-description-active-loaded-insecure = Gegevens dy't jo mei dizze website diele, soene troch oaren besjoen wurde kinne (lykas wachtwurden, berjochten, creditcardgegevens, ensfh.).
-identity-learn-more =
-    .value = Mear ynfo
+identity-description-active-blocked2 = { -brand-short-name } hat ûnderdielen fan dizze side dy’t net befeilige binne blokkearre.
+identity-description-passive-loaded = Jo ferbining is net privee en gegevens dy’t jo mei de website diele soene troch oaren besjoen wurde kinne.
+identity-description-passive-loaded-insecure2 = Dizze website befettet ynhâld dy’t net befeilige is (lykas ôfbyldingen).
+identity-description-passive-loaded-mixed2 = Hoewol { -brand-short-name } bepaalde ynhâld blokkearre hat, is der noch hieltyd ynhâld op de side dy’t net befeilige is (lykas ôfbyldingen).
+identity-description-active-loaded = Dizze website befettet ynhâld dy’t net befeilige is (lykas scripts) en jo ferbining dêrmei is net privee.
+identity-description-active-loaded-insecure = Gegevens dy’t jo mei dizze website diele, soene troch oaren besjoen wurde kinne (lykas wachtwurden, berjochten, creditcardgegevens, ensfh.).
 identity-disable-mixed-content-blocking =
     .label = Beskerming foar no útskeakelje
     .accesskey = t
@@ -382,19 +467,15 @@ popup-select-microphone-icon =
     .tooltiptext = Mikrofoan
 popup-select-speaker-icon =
     .tooltiptext = Lûdsprekkers
+popup-select-window-or-screen =
+    .label = Finster of skerm:
+    .accesskey = F
 popup-all-windows-shared = Alle sichtbere finsters op jo skerm sille dield wurde.
-popup-screen-sharing-block =
-    .label = Blokkearje
-    .accesskey = B
-popup-screen-sharing-always-block =
-    .label = Altyd blokkearje
-    .accesskey = t
-popup-mute-notifications-checkbox = Websitemeldingen dôvje wylst dielen
 
 ## WebRTC window or screen share tab switch warning
 
-sharing-warning-window = Jo diele { -brand-short-name }. Oaren kinne sjen wannear't jo nei in nij ljepblêd wikselje.
-sharing-warning-screen = Jo diele jo folsleine skerm. Oaren kinne sjen wannear't jo nei in nij ljepblêd wikselje.
+sharing-warning-window = Jo diele { -brand-short-name }. Oaren kinne sjen wannear’t jo nei in nij ljepblêd wikselje.
+sharing-warning-screen = Jo diele jo folsleine skerm. Oaren kinne sjen wannear’t jo nei in nij ljepblêd wikselje.
 sharing-warning-proceed-to-tab =
     .label = Trochgean nei ljepblêd
 sharing-warning-disable-for-session =
@@ -402,7 +483,7 @@ sharing-warning-disable-for-session =
 
 ## DevTools F12 popup
 
-enable-devtools-popup-description = Iepenje earst DevTools yn it menu Webûntwikkeler om de fluchtoets F12 te brûken.
+enable-devtools-popup-description2 = Iepenje earst DevTools yn it menu Ekstra om de fluchtoets F12 te brûken.
 
 ## URL Bar
 
@@ -438,6 +519,10 @@ urlbar-placeholder-search-mode-other-history =
 urlbar-placeholder-search-mode-other-tabs =
     .placeholder = Fier syktermen yn
     .aria-label = Sykje yn ljepblêden
+# This placeholder is used when searching quick actions.
+urlbar-placeholder-search-mode-other-actions =
+    .placeholder = Fier syktermen yn
+    .aria-label = Sykaksjes
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
@@ -478,6 +563,8 @@ urlbar-result-action-search-w-engine = Sykje mei { $engine }
 urlbar-result-action-sponsored = Sponsore
 urlbar-result-action-switch-tab = Wikselje nei ljepblêd
 urlbar-result-action-visit = Besykje
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-your-clipboard = Besykje fan jo klamboerd ôf
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -513,6 +600,7 @@ urlbar-result-action-calculator-result = = { $result }
 urlbar-result-action-search-bookmarks = Blêdwizers trochsykje
 urlbar-result-action-search-history = Skiednis trochsykje
 urlbar-result-action-search-tabs = Ljepblêden trochsykje
+urlbar-result-action-search-actions = Sykaksjes
 
 ## Labels shown above groups of urlbar results
 
@@ -521,11 +609,37 @@ urlbar-result-action-search-tabs = Ljepblêden trochsykje
 urlbar-group-firefox-suggest =
     .label = { -firefox-suggest-brand-name }
 # A label shown above the search suggestions group in the urlbar results. It
-# should use title case.
+# should use sentence case.
 # Variables
 #  $engine (String): the name of the search engine providing the suggestions
 urlbar-group-search-suggestions =
     .label = { $engine }-suggestjes
+# A label shown above Quick Actions in the urlbar results.
+urlbar-group-quickactions =
+    .label = Flugge aksjes
+
+## Reader View toolbar buttons
+
+# This should match menu-view-enter-readerview in menubar.ftl
+reader-view-enter-button =
+    .aria-label = Lêzerwerjefte iepenje
+# This should match menu-view-close-readerview in menubar.ftl
+reader-view-close-button =
+    .aria-label = Lêzerwerjefte slute
+
+## Picture-in-Picture urlbar button
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
+
+picture-in-picture-urlbar-button-open =
+    .tooltiptext = Picture-in-picture iepenje ({ $shortcut })
+picture-in-picture-urlbar-button-close =
+    .tooltiptext = Picture-in-picture slute ({ $shortcut })
+picture-in-picture-panel-header = Picture-in-Picture
+picture-in-picture-panel-headline = Dizze website advisearret Picture-in-Picture net
+picture-in-picture-panel-body = Fideo’s wurde mooglik net toand sa as de ûntwikkeler it bedoeld hat, wylst Picture-in-Picture ynskeakele is.
+picture-in-picture-enable-toggle =
+    .label = Dochs ynskeakelje
 
 ## Full Screen and Pointer Lock UI
 
@@ -543,19 +657,6 @@ fullscreen-exit-mac-button = Folslein skerm ferlitte (esc)
 pointerlock-warning-domain = <span data-l10n-name="domain">{ $domain }</span> hat de kontrôle oer jo oanwizer. Druk op Esc om de kontrôle wer oer te nimmen.
 pointerlock-warning-no-domain = Dit dokumint hat de kontrôle oer jo oanwizer. Druk op Esc om de kontrôle wer oer te nimmen.
 
-## Subframe crash notification
-
-crashed-subframe-message = <strong>In part fan dizze side is ferûngelokke.</strong> Tsjinje in rapport yn om { -brand-product-name } te ynformearjen oer dit probleem en it rapper oplost te krijen.
-# The string for crashed-subframe-title.title should match crashed-subframe-message,
-# but without any markup.
-crashed-subframe-title =
-    .title = In part fan dizze side is ferûngelokke. Tsjinje in rapport yn om { -brand-product-name } te ynformearjen oer dit probleem en it rapper oplost te krijen.
-crashed-subframe-learnmore-link =
-    .value = Mear ynfo
-crashed-subframe-submit =
-    .label = Rapport ferstjoere
-    .accesskey = s
-
 ## Bookmarks panels, menus and toolbar
 
 bookmarks-manage-bookmarks =
@@ -571,6 +672,11 @@ bookmarks-other-bookmarks-menu =
     .label = Oare blêdwizers
 bookmarks-mobile-bookmarks-menu =
     .label = Mobyl-blêdwizers
+
+## Variables:
+##   $isVisible (boolean): if the specific element (e.g. bookmarks sidebar,
+##                         bookmarks toolbar, etc.) is visible or not.
+
 bookmarks-tools-sidebar-visibility =
     .label =
         { $isVisible ->
@@ -595,12 +701,15 @@ bookmarks-tools-menu-button-visibility =
             [true] Blêdwizers fan arkbalke fuortsmite
            *[other] Blêdwizers oan arkbalke tafoegje
         }
+
+##
+
 bookmarks-search =
     .label = Blêdwizers trochsykje
 bookmarks-tools =
     .label = Blêdwizerark
-bookmarks-bookmark-edit-panel =
-    .label = Dizze blêdwizer bewurkje
+bookmarks-subview-edit-bookmark =
+    .label = Dizze blêdwizer bewurkje…
 # The aria-label is a spoken label that should not include the word "toolbar" or
 # such, because screen readers already know that this container is a toolbar.
 # This avoids double-speaking.
@@ -615,8 +724,8 @@ bookmarks-toolbar-placeholder =
 bookmarks-toolbar-placeholder-button =
     .label = Blêdwizerarkbalke-ûnderdiel
 # "Bookmark" is a verb, as in "Add current tab to bookmarks".
-bookmarks-current-tab =
-    .label = Blêdwizer foar aktuele ljepblêd meitsje
+bookmarks-subview-bookmark-tab =
+    .label = Blêdwizer foar aktuele ljepblêd meitsje…
 
 ## Library Panel items
 
@@ -640,11 +749,6 @@ repair-text-encoding-button =
 ## Customize Toolbar Buttons
 
 # Variables:
-#  $shortcut (String): keyboard shortcut to open the add-ons manager
-toolbar-addons-themes-button =
-    .label = Add-ons en tema’s
-    .tooltiptext = Jo add-ons en tema’s beheare ({ $shortcut })
-# Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
 toolbar-settings-button =
     .label = Ynstellingen
@@ -653,18 +757,15 @@ toolbar-settings-button =
             [macos] Ynstellingen iepenje ({ $shortcut })
            *[other] Ynstellingen iepenje
         }
-
-## More items
-
-more-menu-go-offline =
-    .label = Offline wurkje
-    .accesskey = w
 toolbar-overflow-customize-button =
     .label = Arkbalke wizigje…
     .accesskey = A
 toolbar-button-email-link =
     .label = Keppeling e-maile
     .tooltiptext = Keppeling nei dizze side e-maile
+toolbar-button-logins =
+    .label = Wachtwurden
+    .tooltiptext = Jo bewarre wachtwurden besjen en beheare
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -697,19 +798,6 @@ eme-notifications-drm-content-playing-dismiss-accesskey = S
 panel-save-update-username = Brûkersnamme
 panel-save-update-password = Wachtwurd
 
-## Add-on removal warning
-
-# Variables:
-#  $name (String): The name of the addon that will be removed.
-addon-removal-title = { $name } fuortsmite?
-addon-removal-abuse-report-checkbox = Dizze útwreiding rapportearje oan { -vendor-short-name }
-
-## Remote / Synced tabs
-
-remote-tabs-manage-account =
-    .label = Account beheare
-remote-tabs-sync-now = No syngronisearje
-
 ##
 
 # "More" item in macOS share menu
@@ -740,6 +828,19 @@ picture-in-picture-hide-toggle =
     .label = Ofbylding-yn-ôfbylding-skeakeler ferstopje
     .accesskey = O
 
+## Since the default position for PiP controls does not change for RTL layout,
+## right-to-left languages should use "Left" and "Right" as in the English strings,
+
+picture-in-picture-move-toggle-right =
+    .label = Picture-in-picture-skeakeler nei de rjochterside ferpleatse
+    .accesskey = s
+picture-in-picture-move-toggle-left =
+    .label = Picture-in-picture-skeakeler nei de linkerside ferpleatse
+    .accesskey = l
+
+##
+
+
 # Navigator Toolbox
 
 # This string is a spoken label that should not include
@@ -756,9 +857,6 @@ navbar-overflow =
 navbar-print =
     .label = Ofdrukke
     .tooltiptext = Dizze side ôfdrukke… ({ $shortcut })
-navbar-print-tab-modal-disabled =
-    .label = Ofdrukke
-    .tooltiptext = Dizze side ôfdrukke
 navbar-home =
     .label = Begjinside
     .tooltiptext = { -brand-short-name }-startside
@@ -767,8 +865,6 @@ navbar-library =
     .tooltiptext = Skiednis, bewarre blêdwizers en mear besjen
 navbar-search =
     .title = Sykje
-navbar-accessibility-indicator =
-    .tooltiptext = Tagonklikheidsfunksjes ynskeakele
 # Name for the tabs toolbar as spoken by screen readers. The word
 # "toolbar" is appended automatically and should not be included in
 # in the string
@@ -785,3 +881,87 @@ tabs-toolbar-list-all-tabs =
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>Eardere ljepblêden iepenje?</strong> Jo kinne jo foarige sesje werstelle fan it tapassingsmenu fan { -brand-short-name } <img data-l10n-name="icon"/> út, ûnder Skiednis.
 restore-session-startup-suggestion-button = Toane hoe
+
+## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
+
+data-reporting-notification-message = { -brand-short-name } ferstjoerd automatysk in pear gegevens nei { -vendor-short-name }, sadat wy jo ûnderfining ferbetterje kinne.
+data-reporting-notification-button =
+    .label = Kieze wat ik diel
+    .accesskey = K
+# Label for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-label = Priveenavigaasje
+
+## Unified extensions (toolbar) button
+
+unified-extensions-button =
+    .label = Utwreidingen
+    .tooltiptext = Utwreidingen
+
+## Unified extensions button when permission(s) are needed.
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-permissions-needed =
+    .label = Utwreidingen
+    .tooltiptext =
+        Utwreidingen
+        Machtigingen benedige
+
+## Unified extensions button when some extensions are quarantined.
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-quarantined =
+    .label = Utwreidingen
+    .tooltiptext =
+        Utwreidingen
+        Guon útwreidingen binne net tastien
+
+## Autorefresh blocker
+
+refresh-blocked-refresh-label = { -brand-short-name } hat opkeard dat dizze side automatysk opnij laden waard.
+refresh-blocked-redirect-label = { -brand-short-name } hat opkeard dat dizze side automatysk trochstjoerd waard nei in oare side.
+refresh-blocked-allow =
+    .label = Tastean
+    .accesskey = T
+
+## Firefox Relay integration
+
+firefox-relay-offer-why-to-use-relay = Us feilige, maklik te brûken maskers beskermje jo identiteit en foarkomme spam troch jo e-mailadres te ferbergjen.
+# Variables:
+#  $useremail (String): user email that will receive messages
+firefox-relay-offer-what-relay-provides = Alle e-mailberjochten dy’t nei jo e-mailmaskers ferstjoerd wurde, wurde trochstjoerd nei <strong>{ $useremail }</strong> (útsein as jo beslute se te blokkearjen).
+firefox-relay-offer-legal-notice = Troch op ‘E-mailmasker brûke’ te klikken, geane jo akkoard mei de <label data-l10n-name="tos-url">Tsjinstbetingsten</label> en <label data-l10n-name="privacy-url">Privacyferklearring</label>.
+
+## Add-on Pop-up Notifications
+
+popup-notification-addon-install-unsigned =
+    .value = (Net ferifiearre)
+popup-notification-xpinstall-prompt-learn-more = Mear ynfo oer it feilich ynstallearjen fan add-ons
+
+## Pop-up warning
+
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-message =
+    { $popupCount ->
+        [one] { -brand-short-name } hat opkeard dat dizze website in pop-upfinster iepene.
+       *[other] { -brand-short-name } hat opkeard dat dizze website { $popupCount } pop-upfinsters iepene.
+    }
+# The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-message = { -brand-short-name } hat opkeard dat dizze website mear as { $popupCount } pop-upfinsters iepene.
+popup-warning-button =
+    .label =
+        { PLATFORM() ->
+            [windows] Opsjes
+           *[other] Foarkarren
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [windows] O
+           *[other] F
+        }
+# Variables:
+#   $popupURI (String): the URI for the pop-up window
+popup-show-popup-menuitem =
+    .label = “{ $popupURI }” sjen litte

@@ -6,17 +6,16 @@
 // This example encodes a file containing a floating point image to another
 // file containing JPEG XL image with a single frame.
 
+#include <jxl/encode.h>
+#include <jxl/encode_cxx.h>
+#include <jxl/thread_parallel_runner.h>
+#include <jxl/thread_parallel_runner_cxx.h>
 #include <limits.h>
 #include <string.h>
 
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "jxl/encode.h"
-#include "jxl/encode_cxx.h"
-#include "jxl/thread_parallel_runner.h"
-#include "jxl/thread_parallel_runner_cxx.h"
 
 /**
  * Reads from .pfm file (Portable FloatMap)
@@ -183,13 +182,17 @@ bool EncodeJxlOneshot(const std::vector<float>& pixels, const uint32_t xsize,
     return false;
   }
 
+  JxlEncoderFrameSettings* frame_settings =
+      JxlEncoderFrameSettingsCreate(enc.get(), nullptr);
+
   if (JXL_ENC_SUCCESS !=
-      JxlEncoderAddImageFrame(JxlEncoderOptionsCreate(enc.get(), nullptr),
-                              &pixel_format, (void*)pixels.data(),
+      JxlEncoderAddImageFrame(frame_settings, &pixel_format,
+                              (void*)pixels.data(),
                               sizeof(float) * pixels.size())) {
     fprintf(stderr, "JxlEncoderAddImageFrame failed\n");
     return false;
   }
+  JxlEncoderCloseInput(enc.get());
 
   compressed->resize(64);
   uint8_t* next_out = compressed->data();
@@ -225,6 +228,7 @@ bool WriteFile(const std::vector<uint8_t>& bytes, const char* filename) {
   if (fwrite(bytes.data(), sizeof(uint8_t), bytes.size(), file) !=
       bytes.size()) {
     fprintf(stderr, "Could not write bytes to %s\n", filename);
+    fclose(file);
     return false;
   }
   if (fclose(file) != 0) {

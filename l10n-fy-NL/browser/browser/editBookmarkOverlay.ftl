@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Ferbergje
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Alle blêdwizermappen toane
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Ferbergje
+
 bookmark-overlay-new-folder-button =
     .label = Nije map
     .accesskey = a
@@ -33,12 +39,18 @@ bookmark-overlay-tags-2 =
     .accesskey = a
 
 bookmark-overlay-tags-empty-description =
-    .placeholder = Labels skiede troch komma's.
+    .placeholder = Labels skiede troch komma’s.
 
 bookmark-overlay-tags-expander =
     .tooltiptext = Alle labels toane
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Ferbergje
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Alle labels toane
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Ferbergje
 
 bookmark-overlay-keyword-2 =
     .value = Kaaiwurd

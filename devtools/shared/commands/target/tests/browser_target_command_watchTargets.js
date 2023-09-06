@@ -8,9 +8,9 @@
 const TEST_URL =
   "data:text/html;charset=utf-8," + encodeURIComponent(`<div id="test"></div>`);
 
-add_task(async function() {
+add_task(async function () {
   // Enabled fission's pref as the TargetCommand is almost disabled without it
-  await pushPref("devtools.browsertoolbox.fission", true);
+  await pushPref("devtools.browsertoolbox.scope", "everything");
   // Disable the preloaded process as it gets created lazily and may interfere
   // with process count assertions
   await pushPref("dom.ipc.processPrelaunch.enabled", false);
@@ -18,7 +18,6 @@ add_task(async function() {
   await pushPref("dom.ipc.keepProcessesAlive.web", 1);
 
   await testWatchTargets();
-  await testContentProcessTarget();
   await testThrowingInOnAvailable();
 });
 
@@ -74,7 +73,11 @@ async function testWatchTargets() {
     );
     targets.delete(targetFront);
   };
-  await targetCommand.watchTargets([TYPES.PROCESS], onAvailable, onDestroyed);
+  await targetCommand.watchTargets({
+    types: [TYPES.PROCESS],
+    onAvailable,
+    onDestroyed,
+  });
   is(
     targets.size,
     originalProcessesCount,
@@ -101,10 +104,16 @@ async function testWatchTargets() {
       if (previousTargets.has(targetFront)) {
         return;
       }
-      targetCommand.unwatchTargets([TYPES.PROCESS], onAvailable2);
+      targetCommand.unwatchTargets({
+        types: [TYPES.PROCESS],
+        onAvailable: onAvailable2,
+      });
       resolve(targetFront);
     };
-    targetCommand.watchTargets([TYPES.PROCESS], onAvailable2);
+    targetCommand.watchTargets({
+      types: [TYPES.PROCESS],
+      onAvailable: onAvailable2,
+    });
   });
   const tab1 = await BrowserTestUtils.openNewForegroundTab({
     gBrowser,
@@ -124,9 +133,17 @@ async function testWatchTargets() {
     const onAvailable3 = () => {};
     const onDestroyed3 = ({ targetFront }) => {
       resolve(targetFront);
-      targetCommand.unwatchTargets([TYPES.PROCESS], onAvailable3, onDestroyed3);
+      targetCommand.unwatchTargets({
+        types: [TYPES.PROCESS],
+        onAvailable: onAvailable3,
+        onDestroyed: onDestroyed3,
+      });
     };
-    targetCommand.watchTargets([TYPES.PROCESS], onAvailable3, onDestroyed3);
+    targetCommand.watchTargets({
+      types: [TYPES.PROCESS],
+      onAvailable: onAvailable3,
+      onDestroyed: onDestroyed3,
+    });
   });
 
   BrowserTestUtils.removeTab(tab1);
@@ -147,58 +164,12 @@ async function testWatchTargets() {
     "The destroyed target is the one that has been reported as created"
   );
 
-  targetCommand.unwatchTargets([TYPES.PROCESS], onAvailable, onDestroyed);
+  targetCommand.unwatchTargets({
+    types: [TYPES.PROCESS],
+    onAvailable,
+    onDestroyed,
+  });
 
-  targetCommand.destroy();
-
-  await commands.destroy();
-}
-
-async function testContentProcessTarget() {
-  info("Test TargetCommand watchTargets with a content process target");
-
-  const {
-    osPid,
-  } = gBrowser.selectedBrowser.browsingContext.currentWindowGlobal;
-  const commands = await CommandsFactory.forProcess(osPid);
-  const targetCommand = commands.targetCommand;
-  const { TYPES } = targetCommand;
-
-  await targetCommand.startListening();
-
-  // Assert that watchTargets is only called for the top level content process target
-  // as listening for additional target is only enable for the parent process target.
-  // See bug 1593928.
-  const targets = new Set();
-  const topLevelTarget = targetCommand.targetFront;
-  const onAvailable = ({ targetFront }) => {
-    if (targets.has(targetFront)) {
-      // This may fail if the top level target is reported by LegacyImplementation
-      // to TargetCommand and emits an available event for it.
-      ok(false, "The same target is notified multiple times via onAvailable");
-    }
-    is(
-      targetFront.targetType,
-      TYPES.PROCESS,
-      "We are only notified about process targets"
-    );
-    is(targetFront, topLevelTarget, "This is the existing top level target");
-    ok(
-      targetFront.isTopLevel,
-      "We are only notified about the top level target"
-    );
-    targets.add(targetFront);
-  };
-  const onDestroyed = _ => {
-    ok(false, "onDestroyed should never be called in this test");
-  };
-  await targetCommand.watchTargets([TYPES.PROCESS], onAvailable, onDestroyed);
-
-  // This may fail if the top level target is reported by LegacyImplementation
-  // to TargetCommand and registers a duplicated entry
-  is(targets.size, 1, "We were only notified about the top level target");
-
-  targetCommand.unwatchTargets([TYPES.PROCESS], onAvailable, onDestroyed);
   targetCommand.destroy();
 
   await commands.destroy();
@@ -230,7 +201,7 @@ async function testThrowingInOnAvailable() {
     }
     targets.add(targetFront);
   };
-  await targetCommand.watchTargets([TYPES.PROCESS], onAvailable);
+  await targetCommand.watchTargets({ types: [TYPES.PROCESS], onAvailable });
   is(
     targets.size,
     originalProcessesCount - 1,

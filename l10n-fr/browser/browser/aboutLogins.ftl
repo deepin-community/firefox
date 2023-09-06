@@ -5,12 +5,12 @@
 
 about-logins-page-title = Identifiants et mots de passe
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Rechercher des identifiants
+    .key = F
 
-create-login-button = Créer un nouvel identifiant
+create-new-login-button =
+    .title = Créer un nouvel identifiant
 
 fxaccounts-sign-in-text = Accédez à vos mots de passe sur vos autres appareils
 fxaccounts-sign-in-sync-button = Se connecter pour synchroniser
@@ -37,10 +37,20 @@ about-logins-menu-menuitem-help = Aide
 
 login-list =
     .aria-label = Identifiants correspondants à la recherche
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } identifiant
        *[other] { $count } identifiants
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $count ->
+        [one] { $count } identifiant sur { $total }
+       *[other] { $count } identifiants sur { $total }
     }
 login-list-sort-label-text = Trier par :
 login-list-name-option = Nom (A-Z)
@@ -61,7 +71,6 @@ about-logins-list-item-breach-icon =
     .title = Site victime d’une fuite de données
 about-logins-list-item-vulnerable-password-icon =
     .title = Mot de passe vulnérable
-
 about-logins-list-section-breach = Sites web victimes de fuite de données
 about-logins-list-section-vulnerable = Mots de passe vulnérables
 about-logins-list-section-nothing = Aucune alerte
@@ -76,8 +85,8 @@ about-logins-login-intro-heading-logged-in = Aucun identifiant synchronisé trou
 login-intro-description = Si vous avez enregistré vos identifiants dans { -brand-product-name } sur un autre appareil, voici comment y accéder ici :
 login-intro-instructions-fxa = Connectez-vous ou créez un { -fxaccount-brand-name } sur l’appareil où vos identifiants sont enregistrés.
 login-intro-instructions-fxa-settings = Allez dans Paramètres > Synchronisation > Activer la synchronisation… et sélectionnez la case Identifiants et mots de passe.
-login-intro-instructions-fxa-help = Pour obtenir de l’aide, visitez l’<a data-l10n-name="help-link">assistance de { -lockwise-brand-short-name }</a>.
-about-logins-intro-import = Si vos identifiants sont enregistrés dans un autre navigateur, vous pouvez <a data-l10n-name="import-link">les importer dans { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = Consultez <a data-l10n-name="passwords-help-link">l’assistance sur les mots de passe</a> pour davantage d’aide.
+about-logins-intro-browser-only-import = Si vos identifiants sont enregistrés dans un autre navigateur, vous pouvez <a data-l10n-name="import-link">les importer dans { -brand-product-name }</a>
 about-logins-intro-import2 = Si vos identifiants de connexion et mots de passe sont enregistrés en dehors de { -brand-product-name }, vous pouvez <a data-l10n-name="import-browser-link">les importer depuis un autre navigateur</a> ou <a data-l10n-name="import-file-link">depuis un fichier</a>
 
 ## Login
@@ -102,9 +111,17 @@ login-item-copied-password-button-text = Copié !
 login-item-save-changes-button = Enregistrer les modifications
 login-item-save-new-button = Enregistrer
 login-item-cancel-button = Annuler
-login-item-time-changed = Dernière modification : { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Créé le : { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Dernière utilisation : { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Création
+login-item-timeline-action-updated = Mise à jour
+login-item-timeline-action-used = Utilisation
 
 ## OS Authentication dialog
 
@@ -132,8 +149,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Pour copier votre mot de
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = copier le mot de passe enregistré
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Pour exporter vos identifiants, entrez vos informations de connexion Windows. Cela contribue à protéger la sécurité de vos comptes.
 # This message can be seen when attempting to export a password in about:logins
@@ -147,8 +162,6 @@ master-password-reload-button =
     .label = Connexion
     .accesskey = C
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Annuler
@@ -158,6 +171,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Supprimer cet identifiant ?
 confirm-delete-dialog-message = Cette action est irréversible.
 about-logins-confirm-remove-dialog-confirm-button = Supprimer
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -193,6 +209,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Cette action supprimera tous les identifiants enregistrés pour { -brand-short-name } de tous vos appareils synchronisés à votre { -fxaccount-brand-name }. Cela supprimera également les alertes de fuites de données qui apparaissent ici. Cette action est irréversible.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Exporter les identifiants et les mots de passe
 about-logins-confirm-export-dialog-message = Vos mots de passe seront enregistrés sous forme de texte lisible (par exemple, « m0t2passeFaible ») ; ainsi toute personne pouvant ouvrir le fichier exporté pourra les consulter.
 about-logins-confirm-export-dialog-confirm-button = Exporter…
@@ -212,7 +230,6 @@ about-logins-breach-alert-date = Cette fuite de données s’est produite le { D
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Accéder à { $hostname }
-about-logins-breach-alert-learn-more-link = En savoir plus
 
 ## Vulnerable Password notification
 

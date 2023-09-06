@@ -10,6 +10,7 @@
 #include "mozilla/gfx/PVRManagerParent.h"
 #include "mozilla/ipc/Endpoint.h"
 #include "mozilla/ipc/ProtocolTypes.h"
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/ipc/ProtocolUtils.h"  // for IToplevelProtocol
 #include "mozilla/TimeStamp.h"          // for TimeStamp
 #include "mozilla/Unused.h"
@@ -45,6 +46,10 @@ VRManagerParent::~VRManagerParent() {
 
 PVRLayerParent* VRManagerParent::AllocPVRLayerParent(const uint32_t& aDisplayID,
                                                      const uint32_t& aGroup) {
+  if (!StaticPrefs::dom_vr_enabled() && !StaticPrefs::dom_vr_webxr_enabled()) {
+    return nullptr;
+  }
+
   RefPtr<VRLayerParent> layer;
   layer = new VRLayerParent(aDisplayID, aGroup);
   VRManager* vm = VRManager::Get();
@@ -91,7 +96,7 @@ void VRManagerParent::Bind(Endpoint<PVRManagerParent>&& aEndpoint) {
   if (!aEndpoint.Bind(this)) {
     return;
   }
-  mSelfRef = this;
+  mCompositorThreadHolder = CompositorThreadHolder::GetSingleton();
 
   RegisterWithManager();
 }
@@ -103,15 +108,14 @@ void VRManagerParent::RegisterVRManagerInCompositorThread(
 }
 
 /*static*/
-VRManagerParent* VRManagerParent::CreateSameProcess() {
+already_AddRefed<VRManagerParent> VRManagerParent::CreateSameProcess() {
   RefPtr<VRManagerParent> vmp =
       new VRManagerParent(base::GetCurrentProcId(), false);
   vmp->mCompositorThreadHolder = CompositorThreadHolder::GetSingleton();
-  vmp->mSelfRef = vmp;
   CompositorThread()->Dispatch(
       NewRunnableFunction("RegisterVRManagerIncompositorThreadRunnable",
                           RegisterVRManagerInCompositorThread, vmp.get()));
-  return vmp.get();
+  return vmp.forget();
 }
 
 bool VRManagerParent::CreateForGPUProcess(
@@ -119,7 +123,6 @@ bool VRManagerParent::CreateForGPUProcess(
   RefPtr<VRManagerParent> vmp =
       new VRManagerParent(aEndpoint.OtherPid(), false);
   vmp->mCompositorThreadHolder = CompositorThreadHolder::GetSingleton();
-  vmp->mSelfRef = vmp;
   CompositorThread()->Dispatch(NewRunnableMethod<Endpoint<PVRManagerParent>&&>(
       "gfx::VRManagerParent::Bind", vmp, &VRManagerParent::Bind,
       std::move(aEndpoint)));
@@ -143,20 +146,9 @@ void VRManagerParent::Shutdown() {
       }));
 }
 
-void VRManagerParent::ActorDestroy(ActorDestroyReason why) {}
-
-void VRManagerParent::ActorAlloc() {
-  // FIXME: This actor should probably use proper refcounting instead of manual
-  // reference management, and probably shouldn't manage
-  // `mCompositorThreadHolder` in the alloc/dealloc methods.
-  PVRManagerParent::ActorAlloc();
-  mCompositorThreadHolder = CompositorThreadHolder::GetSingleton();
-}
-
-void VRManagerParent::ActorDealloc() {
+void VRManagerParent::ActorDestroy(ActorDestroyReason why) {
   UnregisterFromManager();
   mCompositorThreadHolder = nullptr;
-  mSelfRef = nullptr;
 }
 
 mozilla::ipc::IPCResult VRManagerParent::RecvDetectRuntimes() {

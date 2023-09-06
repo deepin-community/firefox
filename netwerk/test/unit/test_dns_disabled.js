@@ -1,15 +1,9 @@
 "use strict";
 
-const dns = Cc["@mozilla.org/network/dns-service;1"].getService(
-  Ci.nsIDNSService
-);
-const threadManager = Cc["@mozilla.org/thread-manager;1"].getService(
-  Ci.nsIThreadManager
-);
 const override = Cc["@mozilla.org/network/native-dns-override;1"].getService(
   Ci.nsINativeDNSResolverOverride
 );
-const mainThread = threadManager.currentThread;
+const mainThread = Services.tm.currentThread;
 
 function makeListenerBlock(next) {
   return {
@@ -40,7 +34,7 @@ function do_test({ dnsDisabled, mustBlock, testDomain, expectedAnswer }) {
   return new Promise(resolve => {
     Services.prefs.setBoolPref("network.dns.disabled", dnsDisabled);
     try {
-      dns.asyncResolve(
+      Services.dns.asyncResolve(
         testDomain,
         Ci.nsIDNSService.RESOLVE_TYPE_DEFAULT,
         0,
@@ -60,7 +54,7 @@ function do_test({ dnsDisabled, mustBlock, testDomain, expectedAnswer }) {
 
 function setup() {
   override.addIPOverride("foo.bar", "127.0.0.1");
-  registerCleanupFunction(function() {
+  registerCleanupFunction(function () {
     override.clearOverrides();
     Services.prefs.clearUserPref("network.dns.disabled");
   });

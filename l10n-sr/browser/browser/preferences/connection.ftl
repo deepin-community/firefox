@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Подешавања везе
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -76,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = Ова опција потврђује веродостојност проксија када имате сачуване акредитиве за њих. Приказаће се порука ако је аутентификација неуспешна.
 
+connection-proxy-autologin-checkbox =
+    .label = Не питај за аутентификацију ако је лозинка сачувана
+    .accesskey = i
+    .tooltiptext = Ова опција потврђује веродостојност проксија када имате сачуване акредитиве за њих. Приказаће се порука ако је аутентификација неуспешна.
+
 connection-proxy-socks-remote-dns =
     .label = Proxy DNS када се користи SOCKS v5
     .accesskey = D
-
-connection-dns-over-https =
-    .label = Омогући DNS путем HTTPS
-    .accesskey = b
-
-connection-dns-over-https-url-resolver = Користи достављача
-    .accesskey = P
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider
@@ -95,7 +93,7 @@ connection-dns-over-https-url-item-default =
 
 connection-dns-over-https-url-custom =
     .label = Прилагођено
-    .accesskey = C
-    .tooltiptext = Унесите жељену адресу за разрешавање DNS-a преко HTTPS-а
+    .accesskey = П
+    .tooltiptext = Унесите жељени URL за разрешавање DNS преко HTTP-а
 
 connection-dns-over-https-custom-label = Прилагођено

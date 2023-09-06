@@ -20,8 +20,15 @@ update-updateButton =
     .accesskey = P
 
 update-checkingForUpdates = Haetaan päivityksiä…
-update-downloading = <img data-l10n-name="icon"/>Ladataan päivitystä — <label data-l10n-name="download-status"/>
-update-downloading-message = Ladataan päivitystä — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Ladataan päivitystä — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Ladataan päivitystä — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Päivitetään…
 
 update-failed = Päivitys ei onnistunut. <label data-l10n-name="failed-link">Lataa uusin versio</label>
@@ -29,15 +36,26 @@ update-failed-main = Päivitys ei onnistunut. <a data-l10n-name="failed-link-mai
 
 update-adminDisabled = Järjestelmän ylläpitäjä on estänyt päivitykset
 update-noUpdatesFound = Uusin { -brand-short-name }-versio käytössä
+aboutdialog-update-checking-failed = Päivitysten tarkistaminen epäonnistui.
 update-otherInstanceHandlingUpdates = { -brand-short-name }-ohjelman päivitys on jo käynnissä
 
-update-manual = Lataa päivitys: <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Lataa päivitys: <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Lataa päivitys: <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Tälle järjestelmälle ei enää tarjota päivityksiä. <label data-l10n-name="unsupported-link">Lue lisätietoja</label>
 
 update-restarting = Käynnistetään uudestaan…
 
-channel-description = Ohjelman päivitykset ovat tyyppiä <label data-l10n-name="current-channel"></label>.
+update-internal-error2 = Päivityksiä ei voi tarkistaa sisäisen virheen vuoksi. Päivitykset ovat saatavilla osoitteessa <label data-l10n-name="manual-link">{ $displayUrl }</label>
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Ohjelman päivitykset ovat tyyppiä <label data-l10n-name="current-channel">{ $channel }</label>.
 
 warningDesc-version = { -brand-short-name } on kokeellinen versio ja voi olla epävakaa.
 

@@ -8,6 +8,7 @@ about-networking-sockets = Sokety
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = DNS-pufrowak wuprózdnić
 about-networking-dns-trr-url = DoH URL
+about-networking-dns-trr-mode = DoH-modus
 about-networking-dns-suffix = DNS-sufiks
 about-networking-websockets = Websokety
 about-networking-refresh = Aktualizować
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Aktiwny
 about-networking-idle = Njeaktiwny
 about-networking-host = Host
-about-networking-tcp = TCP
 about-networking-type = Typ
 about-networking-sent = Pósłany
 about-networking-received = Přijaty
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Adresy
 about-networking-expires = Spadnje (sekundy)
 about-networking-originAttributesSuffix = Izolaciski kluč
+about-networking-flags = Přidatne chorhojčki
 about-networking-messages-sent = Pósłane powěsće
 about-networking-messages-received = Přijate powěsće
 about-networking-bytes-sent = Pósłane bajty
 about-networking-bytes-received = Přijate bajty
 about-networking-logging = Protokolowanje
-about-networking-log-tutorial = Hlejće <a data-l10n-name="logging">HTTP-protokolowanje</a> za instrukcije wo tym, kak so tutón nastroj wužiwa.
-about-networking-current-log-file = Aktualna protokolowa dataja:
-about-networking-current-log-modules = Aktualne protokolowe module:
-about-networking-set-log-file = Protokolowu dataju postajić
-about-networking-set-log-modules = Protokolowe module postajić
-about-networking-start-logging = Protokolowanje započeć
-about-networking-stop-logging = Protokolowanje skónčić
 about-networking-dns-lookup = DNS-pytanje
 about-networking-dns-lookup-button = Rozeznać
 about-networking-dns-domain = Domena:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Pomałe ličenje pufrować
 about-networking-rcwn-cache-not-slow = Pomałe ličenje njepufrować
 about-networking-networkid = Syćowy ID
 about-networking-networkid-id = Syćowy ID
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Tuta strona je so do <a data-l10n-name="about-logging-url">about:logging</a> přesunyła.
 
 ## Link is intended as "network link"
 

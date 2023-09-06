@@ -9,6 +9,8 @@ use core::iter;
 use itertools as it;
 use crate::it::Itertools;
 use crate::it::interleave;
+use crate::it::intersperse;
+use crate::it::intersperse_with;
 use crate::it::multizip;
 use crate::it::free::put_back;
 use crate::it::iproduct;
@@ -114,7 +116,7 @@ fn chain2() {
 fn write_to() {
     let xs = [7, 9, 8];
     let mut ys = [0; 5];
-    let cnt = ys.iter_mut().set_from(xs.iter().map(|x| *x));
+    let cnt = ys.iter_mut().set_from(xs.iter().copied());
     assert!(cnt == xs.len());
     assert!(ys == [7, 9, 8, 0, 0]);
 
@@ -134,6 +136,23 @@ fn test_interleave() {
     let rs = [7u8, 2, 9, 77, 8, 10];
     let it = interleave(ys.iter(), zs.iter());
     it::assert_equal(it, rs.iter());
+}
+
+#[test]
+fn test_intersperse() {
+    let xs = [1u8, 2, 3];
+    let ys = [1u8, 0, 2, 0, 3];
+    let it = intersperse(&xs, &0);
+    it::assert_equal(it, ys.iter());
+}
+
+#[test]
+fn test_intersperse_with() {
+    let xs = [1u8, 2, 3];
+    let ys = [1u8, 10, 2, 10, 3];
+    let i = 10;
+    let it = intersperse_with(&xs, || &i);
+    it::assert_equal(it, ys.iter());
 }
 
 #[allow(deprecated)]
@@ -161,15 +180,10 @@ fn batching() {
     let ys = [(0, 1), (2, 1)];
 
     // An iterator that gathers elements up in pairs
-    let pit = xs.iter().cloned().batching(|it| {
-               match it.next() {
-                   None => None,
-                   Some(x) => match it.next() {
-                       None => None,
-                       Some(y) => Some((x, y)),
-                   }
-               }
-           });
+    let pit = xs
+        .iter()
+        .cloned()
+        .batching(|it| it.next().and_then(|x| it.next().map(|y| (x, y))));
     it::assert_equal(pit, ys.iter().cloned());
 }
 

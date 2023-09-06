@@ -55,6 +55,7 @@ app-basics-enabled-plugins = Mga gumaganang Plugins
 app-basics-build-config = Build Configuration
 app-basics-user-agent = User Agent
 app-basics-os = OS
+app-basics-os-theme = OS Theme
 app-basics-memory-use = Paggamit ng Memory
 app-basics-performance = Pagganap
 app-basics-service-workers = Mga Nakarehistrong Service Worker
@@ -67,6 +68,12 @@ app-basics-location-service-key-google = Google Location Service Key
 app-basics-safebrowsing-key-google = Google Safebrowsing Key
 app-basics-key-mozilla = Mozilla Location Service Key
 app-basics-safe-mode = Safe Mode
+
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Ipakita sa Finder
@@ -120,7 +127,6 @@ sandbox-sys-call-tid = TID
 sandbox-sys-call-proc-type = Tipo ng Proseso
 sandbox-sys-call-number = Syscall
 sandbox-sys-call-args = Arguments
-
 clear-startup-cache-title = Subukang burahin ang startup cache
 clear-startup-cache-label = Burahin ang startup cache…
 restart-button-label = Mag-restart
@@ -146,6 +152,8 @@ media-device-latency = Latency
 media-capabilities-title = Mga Media Capability
 # List all the entries of the database.
 media-capabilities-enumerate = Ilista ang database
+
+## Codec support table
 
 ##
 
@@ -322,6 +330,10 @@ launcher-process-status-unknown = Di-kilalang status
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
+# Variables
+# $fissionWindows (integer) - Number of remote windows
+# $totalWindows (integer) - Number of total windows
+fission-windows = { $fissionWindows }/{ $totalWindows }
 
 async-pan-zoom = Asynchronous Pan/Zoom
 apz-none = wala
@@ -345,6 +357,7 @@ policies-active = Aktibo
 policies-error = Error
 
 ## Printing section
+
 
 ## Normandy sections
 

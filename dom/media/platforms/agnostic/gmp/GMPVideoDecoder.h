@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "mozilla/layers/KnowsCompositor.h"
 #if !defined(GMPVideoDecoder_h_)
 #  define GMPVideoDecoder_h_
 
@@ -11,8 +12,11 @@
 #  include "ImageContainer.h"
 #  include "MediaDataDecoderProxy.h"
 #  include "MediaInfo.h"
+#  include "PerformanceRecorder.h"
 #  include "PlatformDecoderModule.h"
+#  include "ReorderQueue.h"
 #  include "mozIGeckoMediaPluginService.h"
+#  include "nsClassHashtable.h"
 
 namespace mozilla {
 
@@ -22,14 +26,18 @@ struct MOZ_STACK_CLASS GMPVideoDecoderParams {
   const VideoInfo& mConfig;
   layers::ImageContainer* mImageContainer;
   GMPCrashHelper* mCrashHelper;
+  layers::KnowsCompositor* mKnowsCompositor;
+  const Maybe<TrackingId> mTrackingId;
 };
 
 DDLoggedTypeDeclNameAndBase(GMPVideoDecoder, MediaDataDecoder);
 
-class GMPVideoDecoder : public MediaDataDecoder,
-                        public GMPVideoDecoderCallbackProxy,
-                        public DecoderDoctorLifeLogger<GMPVideoDecoder> {
+class GMPVideoDecoder final : public MediaDataDecoder,
+                              public GMPVideoDecoderCallbackProxy,
+                              public DecoderDoctorLifeLogger<GMPVideoDecoder> {
  public:
+  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(GMPVideoDecoder, final);
+
   explicit GMPVideoDecoder(const GMPVideoDecoderParams& aParams);
 
   RefPtr<InitPromise> Init() override;
@@ -40,10 +48,12 @@ class GMPVideoDecoder : public MediaDataDecoder,
   nsCString GetDescriptionName() const override {
     return "gmp video decoder"_ns;
   }
+  nsCString GetCodecName() const override;
   ConversionRequired NeedsConversion() const override {
     return mConvertToAnnexB ? ConversionRequired::kNeedAnnexB
                             : ConversionRequired::kNeedAVCC;
   }
+  bool CanDecodeBatch() const override { return mCanDecodeBatch; }
 
   // GMPVideoDecoderCallbackProxy
   // All those methods are called on the GMP thread.
@@ -61,8 +71,12 @@ class GMPVideoDecoder : public MediaDataDecoder,
   virtual nsCString GetNodeId();
   virtual GMPUniquePtr<GMPVideoEncodedFrame> CreateFrame(MediaRawData* aSample);
   virtual const VideoInfo& GetConfig() const;
+  void ProcessReorderQueue(MozPromiseHolder<DecodePromise>& aPromise,
+                           const char* aMethodName);
 
  private:
+  ~GMPVideoDecoder() = default;
+
   class GMPInitDoneCallback : public GetGMPVideoDecoderCallback {
    public:
     explicit GMPInitDoneCallback(GMPVideoDecoder* aDecoder)
@@ -85,14 +99,29 @@ class GMPVideoDecoder : public MediaDataDecoder,
   MozPromiseHolder<InitPromise> mInitPromise;
   RefPtr<GMPCrashHelper> mCrashHelper;
 
-  int64_t mLastStreamOffset = 0;
+  struct SampleMetadata {
+    explicit SampleMetadata(MediaRawData* aSample)
+        : mOffset(aSample->mOffset), mKeyframe(aSample->mKeyframe) {}
+    int64_t mOffset;
+    bool mKeyframe;
+  };
+
+  nsClassHashtable<nsUint64HashKey, SampleMetadata> mSamples;
   RefPtr<layers::ImageContainer> mImageContainer;
+  RefPtr<layers::KnowsCompositor> mKnowsCompositor;
+  PerformanceRecorderMulti<DecodeStage> mPerformanceRecorder;
+  const Maybe<TrackingId> mTrackingId;
+
+  uint32_t mMaxRefFrames = 0;
+  ReorderQueue mReorderQueue;
+  DecodedData mUnorderedData;
 
   MozPromiseHolder<DecodePromise> mDecodePromise;
   MozPromiseHolder<DecodePromise> mDrainPromise;
   MozPromiseHolder<FlushPromise> mFlushPromise;
-  DecodedData mDecodedData;
   bool mConvertToAnnexB = false;
+  bool mCanDecodeBatch = false;
+  bool mReorderFrames = true;
 };
 
 }  // namespace mozilla

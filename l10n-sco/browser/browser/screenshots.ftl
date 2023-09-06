@@ -6,6 +6,9 @@ screenshot-toolbarbutton =
     .label = Screenshot
     .tooltiptext = Tak a screenshot
 
+screenshot-shortcut =
+    .key = S
+
 screenshots-instructions = Drag or click on the page tae wale a bittie. Press ESC tae stap.
 screenshots-cancel-button = Stap
 screenshots-save-visible-button = Save veesible
@@ -14,6 +17,12 @@ screenshots-download-button = Doonload
 screenshots-download-button-tooltip = Doonload screenshot
 screenshots-copy-button = Copy
 screenshots-copy-button-tooltip = Copy screenshot tae clipbuird
+screenshots-download-button-title =
+    .title = Doonload screenshot
+screenshots-copy-button-title =
+    .title = Copy screenshot tae clipbuird
+screenshots-cancel-button-title =
+    .title = Stap
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -44,3 +53,4 @@ screenshots-private-window-error-details = Sorry aboot aw the faff. We're wirkin
 
 screenshots-generic-error-title = Help ma boab! { -screenshots-brand-name } jist went radge!
 screenshots-generic-error-details = We're no shair whit jist happened. Want tae try again or tak a shot o anither page?
+

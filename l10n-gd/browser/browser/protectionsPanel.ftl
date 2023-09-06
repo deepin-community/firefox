@@ -63,7 +63,6 @@ protections-panel-not-found-label = Cha deach gin a lorg
 ##
 
 protections-panel-settings-label = Roghainnean an dìon
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Deas-bhòrd an dìona
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -78,6 +77,7 @@ protections-panel-site-not-working-view-issue-list-forms = Foirmean
 protections-panel-site-not-working-view-issue-list-payments = Pàighidhean
 protections-panel-site-not-working-view-issue-list-comments = Beachdan
 protections-panel-site-not-working-view-issue-list-videos = Videothan
+protections-panel-site-not-working-view-issue-list-fonts = Cruthan-clò
 
 protections-panel-site-not-working-view-send-report = Cuir aithisg
 
@@ -101,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Dèan aithris air làrach bhriste
 protections-panel-content-blocking-breakage-report-view-description = Adhbharaichidh bacadh thracaichean sònraichte duilgheadasan air cuid a làraichean. Ma chuireas tu aithris thugainn mu na duilgheadasan seo, cuidichidh sin gun doireamaid piseach air { -brand-short-name } dhan a h-uile duine. Ma chuireas tu an aithris thugainn, gheibh Mozilla URL agus fiosrachadh mu roghainnean a’ bhrabhsair agad. <label data-l10n-name="learn-more">Barrachd fiosrachaidh</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Adhbharaichidh bacadh thracaichean sònraichte duilgheadasan air cuid a làraichean. Ma chuireas tu aithris thugainn mu na duilgheadasan seo, cuidichidh sin gun doireamaid piseach air { -brand-short-name } dhan a h-uile duine. Ma chuireas tu an aithris thugainn, gheibh { -vendor-short-name } URL agus fiosrachadh mu roghainnean a’ bhrabhsair agad.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -111,3 +112,22 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Sguir dheth
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Cuir an aithisg
+
+# Cookie Banner Handling
+
+protections-panel-cookie-banner-handling-header = Nas lugha de bhrataichean bhriosgaidean
+protections-panel-cookie-banner-handling-enabled = Air air an làrach seo
+protections-panel-cookie-banner-handling-disabled = Dheth air an làrach seo
+protections-panel-cookie-banner-handling-undetected = Chan eil taic ris an làrach seo an-dràsta fhèin
+
+protections-panel-cookie-banner-view-title =
+    .title = Nas lugha de bhrataichean bhriosgaidean
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = A bheil thu airson gleus lùghdachadh brataichean nam briosgaidean a chur dheth airson { $host }?
+protections-panel-cookie-banner-view-turn-on-for-site = A bheil thu airson gleus lùghdachadh brataichean nam briosgaidean a chur air air an làrach seo?
+protections-panel-cookie-banner-view-cookie-clear-warning = Falamhaichidh { -brand-short-name } briosgaidean na làraich seo ’s ath-nuadhaichidh e an duilleag. Ma dh’fhalamhaicheas tu na briosgaidean air fad, dh’fhaoidte gun tèid do chlàradh a-mach ’s gum fàgaidh na cairtean seopadaireachd agad falamh.
+protections-panel-cookie-banner-view-turn-on-description = Feuchaidh { -brand-short-name } ri gach iarrtas airson briosgaidean a dhiùltadh air làraichean ris a bheil taic.
+protections-panel-cookie-banner-view-cancel = Sguir dheth
+protections-panel-cookie-banner-view-turn-off = Cuir dheth
+protections-panel-cookie-banner-view-turn-on = Cuir air

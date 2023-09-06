@@ -5,6 +5,12 @@
 
 ### "Glean" and "Glean SDK" should remain in English.
 
-about-glean-page-title = Glean ਬਾਰੇ
+### "FOG", "Glean", and "Glean SDK" should remain in English.
 
-controls-button-label = ਸੈਟਿੰਗਾਂ ਭੇਜੋ
+-fog-brand-name = FOG
+glean-sdk-brand-name = { -glean-brand-name } SDK
+
+about-glean-page-title2 = { -glean-brand-name } ਬਾਰੇ
+about-glean-header = { -glean-brand-name } ਬਾਰੇ
+
+

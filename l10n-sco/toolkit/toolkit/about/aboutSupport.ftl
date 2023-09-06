@@ -73,6 +73,7 @@ app-basics-location-service-key-google = Google Airtin Service Key
 app-basics-safebrowsing-key-google = Google Saufstravaigin Key
 app-basics-key-mozilla = Mozilla Airtin Service Key
 app-basics-safe-mode = Sauf Mode
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Kythe in Finder
@@ -155,6 +156,8 @@ media-device-latency = Latency
 media-capabilities-title = Media Capabilities
 # List all the entries of the database.
 media-capabilities-enumerate = Enumerate database
+
+## Codec support table
 
 ##
 
@@ -340,7 +343,7 @@ fission-status-experiment-control = Disabled by experiment
 fission-status-experiment-treatment = Enabled by experiment
 fission-status-disabled-by-e10s-env = Disabled by environment
 fission-status-enabled-by-env = Enabled by environment
-fission-status-disabled-by-safe-mode = Disabled by sauf mode
+fission-status-disabled-by-env = Disabled by environment
 fission-status-enabled-by-default = Enabled as staunart
 fission-status-disabled-by-default = Disabled by default
 fission-status-enabled-by-user-pref = Enabled by yaiser

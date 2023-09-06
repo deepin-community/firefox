@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Arventennoù kennaskañ
     .style =
         { PLATFORM() ->
-            [macos] width: 39em
-           *[other] width: 39em
+            [macos] min-width: 39em
+           *[other] min-width: 39em
         }
 
 connection-close-key =
@@ -35,7 +35,6 @@ connection-proxy-http = Proksi HTTP
     .accesskey = H
 connection-proxy-http-port = Porzh
     .accesskey = p
-
 connection-proxy-https-sharing =
     .label = Implijout ivez ar proksi-mañ evit HTTPS
     .accesskey = s
@@ -77,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = N
     .tooltip = An dibarzh-mañ a zilesa ac'hanoc'h ent emgefreek war ar proksioù ma'z eus naoudioù kennaskañ enrollet evito. Goulennet e vo anezho diganeoc'h ma vez c'hwitet an dilesa.
 
+connection-proxy-autologin-checkbox =
+    .label = Na c'houlenn diganin en em zilesa ma'z eus ur ger-tremen enrollet
+    .accesskey = N
+    .tooltiptext = An dibarzh-mañ a zilesa ac'hanoc'h ent emgefreek war ar proksioù ma'z eus naoudioù kennaskañ enrollet evito. Goulennet e vo anezho diganeoc'h ma vez c'hwitet an dilesa.
+
 connection-proxy-socks-remote-dns =
     .label = DNS Proksi p’eo arveret SOCKS v5
     .accesskey = d
-
-connection-dns-over-https =
-    .label = Gweredekaat DNS dre HTTPS
-    .accesskey = G
-
-connection-dns-over-https-url-resolver = Ober gant ar pourchaser
-    .accesskey = O
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

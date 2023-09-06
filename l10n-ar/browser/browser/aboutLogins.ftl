@@ -5,12 +5,8 @@
 
 about-logins-page-title = جلسات الولوج وكلمات السر
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
-    .placeholder = ابحث في جلسات الولوج
-
-create-login-button = أنشئ جلسة ولوج جديدة
+create-new-login-button =
+    .title = أنشِئ جلسة ولوج جديدة
 
 fxaccounts-sign-in-text = استعمل كلمات السر لحساباتك في أجهزتك الأخرى
 fxaccounts-sign-in-sync-button = لِج كي تبدأ المزامنة
@@ -37,6 +33,8 @@ about-logins-menu-menuitem-help = مساعدة
 
 login-list =
     .aria-label = جلسات الولوج المطابقة لعبارة البحث
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [zero] لا جلسات ولوج
@@ -49,6 +47,8 @@ login-list-count =
 login-list-sort-label-text = افرز حسب:
 login-list-name-option = الاسم (ا-ي)
 login-list-name-reverse-option = الاسم (ي-ا)
+login-list-username-option = اسم المستخدم (ا-ي)
+login-list-username-reverse-option = اسم المستخدم (ي-ا)
 about-logins-login-list-alerts-option = التنبيهات
 login-list-last-changed-option = آخر تعديل
 login-list-last-used-option = آخر استخدام
@@ -63,6 +63,12 @@ about-logins-list-item-breach-icon =
     .title = موقع مسرّب بياناته
 about-logins-list-item-vulnerable-password-icon =
     .title = كلمة سر ضعيفة
+about-logins-list-section-breach = مواقع سُرّبت بياناتها
+about-logins-list-section-vulnerable = كلمات سر عُرضة للاختراق
+about-logins-list-section-nothing = ما من تنبيهات
+about-logins-list-section-today = اليوم
+about-logins-list-section-yesterday = الأمس
+about-logins-list-section-week = آخر ٧ أيام
 
 ## Introduction screen
 
@@ -71,9 +77,8 @@ about-logins-login-intro-heading-logged-in = لم نجد أيّ جلسة ولو�
 login-intro-description = إن حفظت جلسات ولوجك في { -brand-product-name } على جهاز آخر، فهكذا يمكنك أن تزامنها هنا:
 login-intro-instructions-fxa = أنشِئ أو لِج إلى { -fxaccount-brand-name } على الأجهزة التي لديك عليها جلسات ولوج محفوظة
 login-intro-instructions-fxa-settings = انتقل إلى ”الإعدادات > المزامنة > فعّل المزامنة…“ وضَع علامة على ”جلسات الولوج وكلمات السر“.
-login-intro-instructions-fxa-help = زُر <a data-l10n-name="help-link">دعم { -lockwise-brand-short-name }</a> لمزيد من المساعدة.
-about-logins-intro-import = لو كانت جلسات ولوجك محفوظة في متصفّح آخر فيمكنك <a data-l10n-name="import-link">استيرادها إلى { -lockwise-brand-short-name }</a>
-
+login-intro-instructions-fxa-passwords-help = زُر <a data-l10n-name="passwords-help-link">دعم كلمات السر</a> لمزيد من المساعدة.
+about-logins-intro-browser-only-import = لو كانت جلسات ولوجك محفوظة في متصفّح آخر فيمكنك <a data-l10n-name="import-link">استيرادها إلى { -brand-product-name }</a>
 about-logins-intro-import2 = إن حفظت جلسات الولوج خارج { -brand-product-name } فيمكنك <a data-l10n-name="import-browser-link">استيرادها من متصفّح آخر</a> أو <a data-l10n-name="import-file-link">من ملف</a>
 
 ## Login
@@ -98,9 +103,17 @@ login-item-copied-password-button-text = نُسخ.
 login-item-save-changes-button = احفظ التغييرات
 login-item-save-new-button = احفظ
 login-item-cancel-button = ألغِ
-login-item-time-changed = آخر تعديل: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = تاريخ الإنشاء: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = آخر استخدام: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = أُنشِئ
+login-item-timeline-action-updated = حُدِّث
+login-item-timeline-action-used = استُعمِل
 
 ## OS Authentication dialog
 
@@ -128,8 +141,6 @@ about-logins-copy-password-os-auth-dialog-message-win = أدخِل معلوما�
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = نسخ كلمة السر المحفوظة
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = أدخِل معلومات ولوج وِندوز لتُصدّر جلسات الولوجج. يساعد هذا الأمر على حماية أمن حساباتك.
 # This message can be seen when attempting to export a password in about:logins
@@ -143,8 +154,6 @@ master-password-reload-button =
     .label = لِج
     .accesskey = ل
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = ألغِ
@@ -154,6 +163,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = أنُزيل هذا الولوج؟
 confirm-delete-dialog-message = هذا إجراء لا عودة فيه.
 about-logins-confirm-remove-dialog-confirm-button = أزِل
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -217,6 +229,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] بهذا تحذف جلسات الولوج المحفوظة في { -brand-short-name } من كلّ الأجهزة المتزامنة مع { -fxaccount-brand-name } لديك. كما سيُزيل أيّ تحذيرات أخرى تظهر هنا عن تسريبات البيانات. لا يمكنك العودة عن هذا الإجراء.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = صدّر جلسات الولوج وكلمات السر
 about-logins-confirm-export-dialog-message = ستُحفظ جلسات الولوج على هيئة نص مقروء (مثلا 12345 أو BadP@ssw0rd) وبهذا يستطيع أيّ شخص معاينتها لو فتح الملف المصدّر.
 about-logins-confirm-export-dialog-confirm-button = صدّر…
@@ -236,7 +250,6 @@ about-logins-breach-alert-date = حدث هذا التسرّب بتاريخ { DAT
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = انتقل إلى { $hostname }
-about-logins-breach-alert-learn-more-link = اطّلع على المزيد
 
 ## Vulnerable Password notification
 
@@ -257,7 +270,6 @@ about-logins-error-message-duplicate-login-with-link = جلسة الولوج ب�
 
 # This is a generic error message.
 about-logins-error-message-default = حدث خطأ أثناء محاولة حفظ كلمة السر هذه.
-
 
 ## Login Export Dialog
 
@@ -329,6 +341,15 @@ about-logins-import-dialog-items-no-change =
         [many] <span>وُجدت جلسات ولوج مكرّرة: </span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(لم تُستورد)</span>
        *[other] <span>وُجدت جلسات ولوج مكرّرة: </span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(لم تُستورد)</span>
     }
+about-logins-import-dialog-items-error =
+    { $count ->
+        [zero] <span>الأخطاء:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(لم تُستورد)</span>
+        [one] <span>الأخطاء:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(لم تُستورد)</span>
+        [two] <span>الأخطاء:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(لم تُستورد)</span>
+        [few] <span>الأخطاء:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(لم تُستورد)</span>
+        [many] <span>الأخطاء:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(لم تُستورد)</span>
+       *[other] <span>الأخطاء:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(لم تُستورد)</span>
+    }
 about-logins-import-dialog-done = تمّ
 
 about-logins-import-dialog-error-title = عُطل أثناء الاستيراد
@@ -368,6 +389,42 @@ about-logins-import-report-row-description-error-missing-field = خطأ: { $fiel
 ## Variables:
 ##  $count (number) - The number of affected elements
 
+about-logins-import-report-added =
+    { $count ->
+        [zero] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج التي أُضيفت</div>
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج التي أُضيفت</div>
+        [two] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">تم إضافة جلسات ولوج جديدة</div>
+        [few] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج التي أُضيفت</div>
+        [many] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج التي أُضيفت</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج التي أُضيفت</div>
+    }
+about-logins-import-report-modified =
+    { $count ->
+        [zero] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج التي حُدّثت</div>
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج التي حُدّثت</div>
+        [two] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج التي حُدّثت</div>
+        [few] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج التي حُدّثت</div>
+        [many] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج التي حُدّثت</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج التي حُدّثت</div>
+    }
+about-logins-import-report-no-change =
+    { $count ->
+        [zero] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج المتكرّرة</div> <div data-l10n-name="not-imported">(لم ُتستورد)</div>
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج المتكرّرة</div> <div data-l10n-name="not-imported">(لم ُتستورد)</div>
+        [two] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج المتكرّرة</div> <div data-l10n-name="not-imported">(لم ُتستورد)</div>
+        [few] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج المتكرّرة</div> <div data-l10n-name="not-imported">(لم ُتستورد)</div>
+        [many] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج المتكرّرة</div> <div data-l10n-name="not-imported">(لم ُتستورد)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">جلسات الولوج المتكرّرة</div> <div data-l10n-name="not-imported">(لم ُتستورد)</div>
+    }
+about-logins-import-report-error =
+    { $count ->
+        [zero] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">الأخطاء</div> <div data-l10n-name="not-imported">(لم تُستورد)</div>
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">الأخطاء</div> <div data-l10n-name="not-imported">(لم تُستورد)</div>
+        [two] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">الأخطاء</div> <div data-l10n-name="not-imported">(لم تُستورد)</div>
+        [few] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">الأخطاء</div> <div data-l10n-name="not-imported">(لم تُستورد)</div>
+        [many] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">الأخطاء</div> <div data-l10n-name="not-imported">(لم تُستورد)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">الأخطاء</div> <div data-l10n-name="not-imported">(لم تُستورد)</div>
+    }
 
 ## Logins import report page
 

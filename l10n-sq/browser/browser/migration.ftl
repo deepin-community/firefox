@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = B
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Nuk u gjetën dot programe që përmbajnë faqerojtës, historik apo fjalëkalime.
 
@@ -61,8 +73,8 @@ import-items-description = Përzgjidhni cilët objekte të importohen:
 
 import-permissions-page-title = Ju lutemi, jepni lejet { -brand-short-name }-it
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS kërkon që të lejoni shprehimisht { -brand-short-name }-in të përdorë faqerojtësit e Safari-it. Klikoni mbi “Vazhdoni” dhe përzgjidhni kartelën “Bookmarks.plist” fte paneli File Open që duket.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS-i lyp që të lejoni shprehimisht { -brand-short-name }-in të hyjë në të dhëna të Safari-t. Klikoni mbi “Vazhdoni”, përzgjidhni dosjen “Safari” te dialogu Finder që shfaqet dhe klikoni mbi “Hape”.
 
 import-migrating-page-title = Po importohet…
 
@@ -78,23 +90,9 @@ import-done-description = Objektet vijuese u importuan me sukses:
 
 import-close-source-browser = Ju lutemi, para se të vazhdohet, sigurohuni që shfletuesi i përzgjedhur të jetë i mbyllur.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Nga { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Listë Leximesh (Prej Safari-t)
 imported-edge-reading-list = Listë Leximesh (Prej Edge-it)
@@ -169,3 +167,4 @@ browser-data-session-checkbox =
     .label = Dritare dhe Skeda
 browser-data-session-label =
     .value = Dritare dhe Skeda
+

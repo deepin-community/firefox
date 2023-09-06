@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+@import url("chrome://global/skin/menulist-shared.css");
 
-%include ../../shared/menulist.inc.css
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 
 label:not([native]) {
   margin: 0 3px;
@@ -31,10 +31,8 @@ label:not([native]) {
 /* Label box */
 
 #label-box[native] {
-  appearance: auto;
-  -moz-default-appearance: menulist-text;
-  -moz-box-align: center;
-  -moz-box-pack: center;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 1px;
 }
 

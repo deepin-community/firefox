@@ -5,6 +5,7 @@
 "use strict";
 
 /* import-globals-from ../mochitest/common.js */
+/* import-globals-from ../mochitest/layout.js */
 /* import-globals-from ../mochitest/promisified-events.js */
 
 /* exported Logger, MOCHITESTS_DIR, invokeSetAttribute, invokeFocus,
@@ -14,7 +15,7 @@
             Cc, Cu, arrayFromChildren, forceGC, contentSpawnMutation,
             DEFAULT_IFRAME_ID, DEFAULT_IFRAME_DOC_BODY_ID, invokeContentTask,
             matchContentDoc, currentContentDoc, getContentDPR,
-            waitForImageMap, getContentBoundsForDOMElm */
+            waitForImageMap, getContentBoundsForDOMElm, untilCacheIs, untilCacheOk, testBoundsWithContent, waitForContentPaint */
 
 const CURRENT_FILE_DIR = "/browser/accessible/tests/browser/";
 
@@ -31,6 +32,7 @@ const MOCHITESTS_DIR =
 /**
  * A base URL for test files used in content.
  */
+// eslint-disable-next-line @microsoft/sdl/no-insecure-url
 const CURRENT_CONTENT_DIR = `http://example.com${CURRENT_FILE_DIR}`;
 
 const LOADED_CONTENT_SCRIPTS = new Map();
@@ -273,10 +275,6 @@ function invokeContentTask(browser, args, task) {
  */
 async function comparePIDs(browser, isRemote) {
   function getProcessID() {
-    const { Services } = ChromeUtils.import(
-      "resource://gre/modules/Services.jsm"
-    );
-
     return Services.appinfo.processID;
   }
 
@@ -313,16 +311,8 @@ function loadScripts(...scripts) {
  *        a list of scripts to load into content
  */
 async function loadContentScripts(target, ...scripts) {
-  for (let script of scripts) {
-    let contentScript;
-    if (typeof script === "string") {
-      // If script string includes a .jsm extention, assume it is a module path.
-      contentScript = `${CURRENT_DIR}${script}`;
-    } else {
-      // Script is a object that has { dir, name } format.
-      contentScript = `${script.dir}${script.name}`;
-    }
-
+  for (let { script, symbol } of scripts) {
+    let contentScript = `${CURRENT_DIR}${script}`;
     let loadedScriptSet = LOADED_CONTENT_SCRIPTS.get(contentScript);
     if (!loadedScriptSet) {
       loadedScriptSet = new WeakSet();
@@ -331,9 +321,14 @@ async function loadContentScripts(target, ...scripts) {
       continue;
     }
 
-    await SpecialPowers.spawn(target, [contentScript], async _contentScript => {
-      ChromeUtils.import(_contentScript, content.window);
-    });
+    await SpecialPowers.spawn(
+      target,
+      [contentScript, symbol],
+      async (_contentScript, importSymbol) => {
+        let module = ChromeUtils.importESModule(_contentScript);
+        content.window[importSymbol] = module[importSymbol];
+      }
+    );
     loadedScriptSet.add(target);
   }
 }
@@ -352,13 +347,15 @@ function wrapWithIFrame(doc, options = {}) {
     ...iframeDocBodyAttrs,
   };
   if (options.remoteIframe) {
+    // eslint-disable-next-line @microsoft/sdl/no-insecure-url
     const srcURL = new URL(`http://example.net/document-builder.sjs`);
     if (doc.endsWith("html")) {
       srcURL.searchParams.append("file", `${CURRENT_FILE_DIR}${doc}`);
     } else {
       srcURL.searchParams.append(
         "html",
-        `<html>
+        `<!doctype html>
+        <html>
           <head>
             <meta charset="utf-8"/>
             <title>Accessibility Fission Test</title>
@@ -377,7 +374,8 @@ function wrapWithIFrame(doc, options = {}) {
         `<body ${attrsToString(iframeDocBodyAttrs)}>`
       );
     } else {
-      doc = `<body ${attrsToString(iframeDocBodyAttrs)}>${doc}</body>`;
+      doc = `<!doctype html>
+      <body ${attrsToString(iframeDocBodyAttrs)}>${doc}</body>`;
     }
 
     src = `data:${mimeType};charset=utf-8,${encodeURIComponent(doc)}`;
@@ -414,7 +412,8 @@ function snippetToURL(doc, options = {}) {
   }
 
   const encodedDoc = encodeURIComponent(
-    `<html>
+    `<!doctype html>
+    <html>
       <head>
         <meta charset="utf-8"/>
         <title>Accessibility Test</title>
@@ -427,7 +426,7 @@ function snippetToURL(doc, options = {}) {
 }
 
 function accessibleTask(doc, task, options = {}) {
-  return async function() {
+  return async function () {
     gIsRemoteIframe = options.remoteIframe;
     gIsIframe = options.iframe || gIsRemoteIframe;
     let url;
@@ -468,9 +467,24 @@ function accessibleTask(doc, task, options = {}) {
     await BrowserTestUtils.withNewTab(
       {
         gBrowser,
-        url,
+        // For chrome, we need a non-remote browser.
+        opening: !options.chrome
+          ? url
+          : () => {
+              // Passing forceNotRemote: true still sets maychangeremoteness,
+              // which will cause data: URIs to load remotely. There's no way to
+              // avoid this with gBrowser or BrowserTestUtils. Therefore, we
+              // load a blank document initially and replace it below.
+              gBrowser.selectedTab = BrowserTestUtils.addTab(
+                gBrowser,
+                "about:blank",
+                {
+                  forceNotRemote: true,
+                }
+              );
+            },
       },
-      async function(browser) {
+      async function (browser) {
         registerCleanupFunction(() => {
           if (browser) {
             let tab = gBrowser.getTabForBrowser(browser);
@@ -480,8 +494,17 @@ function accessibleTask(doc, task, options = {}) {
           }
         });
 
+        if (options.chrome) {
+          await SpecialPowers.pushPrefEnv({
+            set: [["security.allow_unsafe_parent_loads", true]],
+          });
+          // Ensure this never becomes a remote browser.
+          browser.removeAttribute("maychangeremoteness");
+          // Now we can load our page without it becoming remote.
+          browser.setAttribute("src", url);
+        }
+
         await SimpleTest.promiseFocus(browser);
-        await loadContentScripts(browser, "Common.jsm");
 
         if (options.chrome) {
           ok(!browser.isRemoteBrowser, "Not remote browser");
@@ -517,6 +540,11 @@ function accessibleTask(doc, task, options = {}) {
           }
         }
 
+        await loadContentScripts(browser, {
+          script: "Common.sys.mjs",
+          symbol: "CommonUtils",
+        });
+
         await task(
           browser,
           iframeDocAccessible || docAccessible,
@@ -542,10 +570,11 @@ function accessibleTask(doc, task, options = {}) {
  *           Default is true.
  *         - {Boolean} chrome
  *           Flag to run the test with content as a chrome document in the
- *           parent process. Default is false. This is only valid if url is a
- *           relative URL to a XUL document, not a markup snippet. topLevel
- *           should usually be set to false in this case, since XUL documents
- *           don't work in the content process.
+ *           parent process. Default is false. Although url can be a markup
+ *           snippet, a snippet cannot be used for XUL content. To load XUL,
+ *           specify a relative URL to a XUL document. In that case, toplevel
+ *           should usually be set to false, since XUL documents don't work in
+ *           content processes.
  *         - {Boolean} iframe
  *           Flag to run the test with content wrapped in an iframe. Default is
  *           false.
@@ -737,7 +766,7 @@ async function contentSpawnMutation(browser, waitFor, func, args = []) {
   unexpectedListener.stop();
 
   // Go back to normal refresh driver ticks.
-  await invokeContentTask(browser, [], function() {
+  await invokeContentTask(browser, [], function () {
     content.windowUtils.restoreNormalRefresh();
   });
 
@@ -745,7 +774,13 @@ async function contentSpawnMutation(browser, waitFor, func, args = []) {
 }
 
 async function waitForImageMap(browser, accDoc, id = "imgmap") {
-  const acc = findAccessibleChildByID(accDoc, id);
+  let acc = findAccessibleChildByID(accDoc, id);
+
+  if (!acc) {
+    const onShow = waitForEvent(EVENT_SHOW, id);
+    acc = (await onShow).accessible;
+  }
+
   if (acc.firstChild) {
     return;
   }
@@ -753,8 +788,8 @@ async function waitForImageMap(browser, accDoc, id = "imgmap") {
   const onReorder = waitForEvent(EVENT_REORDER, id);
   // Wave over image map
   await invokeContentTask(browser, [id], contentId => {
-    const { ContentTaskUtils } = ChromeUtils.import(
-      "resource://testing-common/ContentTaskUtils.jsm"
+    const { ContentTaskUtils } = ChromeUtils.importESModule(
+      "resource://testing-common/ContentTaskUtils.sys.mjs"
     );
     const EventUtils = ContentTaskUtils.getEventUtils(content);
     EventUtils.synthesizeMouse(
@@ -770,10 +805,114 @@ async function waitForImageMap(browser, accDoc, id = "imgmap") {
 
 async function getContentBoundsForDOMElm(browser, id) {
   return invokeContentTask(browser, [id], contentId => {
-    const { Layout: LayoutUtils } = ChromeUtils.import(
-      "chrome://mochitests/content/browser/accessible/tests/browser/Layout.jsm"
+    const { Layout: LayoutUtils } = ChromeUtils.importESModule(
+      "chrome://mochitests/content/browser/accessible/tests/browser/Layout.sys.mjs"
     );
 
     return LayoutUtils.getBoundsForDOMElm(contentId, content.document);
   });
+}
+
+const CACHE_WAIT_TIMEOUT_MS = 5000;
+
+/**
+ * Wait for a predicate to be true after cache ticks.
+ * This function takes two callbacks, the condition is evaluated
+ * by calling the first callback with the arguments returned by the second.
+ * This allows us to asynchronously return the arguments as a result if the condition
+ * of the first callback is met, or if it times out. The returned arguments can then
+ * be used to record a pass or fail in the test.
+ */
+function untilCacheCondition(conditionFunc, argsFunc) {
+  return new Promise((resolve, reject) => {
+    let args = argsFunc();
+    if (conditionFunc(...args)) {
+      resolve(args);
+      return;
+    }
+
+    let cacheObserver = {
+      observe(subject) {
+        args = argsFunc();
+        if (conditionFunc(...args)) {
+          clearTimeout(this.timer);
+          Services.obs.removeObserver(this, "accessible-cache");
+          resolve(args);
+        }
+      },
+
+      timeout() {
+        ok(false, "Timeout while waiting for cache update");
+        Services.obs.removeObserver(this, "accessible-cache");
+        args = argsFunc();
+        resolve(args);
+      },
+    };
+
+    cacheObserver.timer = setTimeout(
+      cacheObserver.timeout.bind(cacheObserver),
+      CACHE_WAIT_TIMEOUT_MS
+    );
+    Services.obs.addObserver(cacheObserver, "accessible-cache");
+  });
+}
+
+function untilCacheOk(conditionFunc, message) {
+  return untilCacheCondition(
+    (v, _unusedMessage) => v,
+    () => [conditionFunc(), message]
+  ).then(([v, msg]) => ok(v, msg));
+}
+
+function untilCacheIs(retrievalFunc, expected, message) {
+  return untilCacheCondition(
+    (a, b, _unusedMessage) => Object.is(a, b),
+    () => [retrievalFunc(), expected, message]
+  ).then(([got, exp, msg]) => is(got, exp, msg));
+}
+
+async function waitForContentPaint(browser) {
+  await SpecialPowers.spawn(browser, [], () => {
+    return new Promise(function (r) {
+      content.requestAnimationFrame(() => content.setTimeout(r));
+    });
+  });
+}
+
+// Returns true if both number arrays match within `FUZZ`.
+function areBoundsFuzzyEqual(actual, expected) {
+  const FUZZ = 1;
+  return actual
+    .map((val, i) => Math.abs(val - expected[i]) <= FUZZ)
+    .reduce((a, b) => a && b, true);
+}
+
+function assertBoundsFuzzyEqual(actual, expected) {
+  ok(
+    areBoundsFuzzyEqual(actual, expected),
+    `${actual} fuzzily matches expected ${expected}`
+  );
+}
+
+async function testBoundsWithContent(iframeDocAcc, id, browser) {
+  // Retrieve layout bounds from content
+  let expectedBounds = await invokeContentTask(browser, [id], _id => {
+    const { Layout: LayoutUtils } = ChromeUtils.importESModule(
+      "chrome://mochitests/content/browser/accessible/tests/browser/Layout.sys.mjs"
+    );
+    return LayoutUtils.getBoundsForDOMElm(_id, content.document);
+  });
+
+  function isWithinExpected(bounds) {
+    return areBoundsFuzzyEqual(bounds, expectedBounds);
+  }
+
+  const acc = findAccessibleChildByID(iframeDocAcc, id);
+  let [accBounds] = await untilCacheCondition(isWithinExpected, () => [
+    getBounds(acc),
+  ]);
+
+  assertBoundsFuzzyEqual(accBounds, expectedBounds);
+
+  return accBounds;
 }

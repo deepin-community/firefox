@@ -38,20 +38,9 @@ menu-quit =
             [windows] ლ
            *[other] გ
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = დაიხუროს { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = დატოვეთ { -brand-shorter-name }
-
 menu-about =
     .label = { -brand-shorter-name } შესახებ
     .accesskey = შ
@@ -81,9 +70,15 @@ menu-file-open-location =
 menu-file-open-file =
     .label = ფაილის გახსნა...
     .accesskey = გ
-menu-file-close =
-    .label = დახურვა
-    .accesskey = დ
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] ჩანართის დახურვა
+           *[other] { $tabCount } ჩანართის დახურვა
+        }
+    .accesskey = უ
 menu-file-close-window =
     .label = ფანჯრის დახურვა
     .accesskey = ხ
@@ -99,9 +94,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = გვერდის პარამეტრები...
     .accesskey = ტ
-menu-file-print-preview =
-    .label = შეთვალიერება ამობეჭდვამდე
-    .accesskey = ჭ
 menu-file-print =
     .label = ამობეჭდვა…
     .accesskey = ა
@@ -188,6 +180,17 @@ menu-view-full-screen =
     .label = სრული ეკრანი
     .accesskey = ს
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = კითხვის რეჟიმზე გადასვლა
+    .accesskey = კ
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = კითხვის რეჟიმის დახურვა
+    .accesskey = კ
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +219,9 @@ menu-history-undo-menu =
     .label = ბოლოს დახურული ჩანართები
 menu-history-undo-window-menu =
     .label = ბოლოს დახურული ფანჯრები
-menu-history-reopen-all-tabs = ყველა ჩანართის ხელახლა გახსნა
-menu-history-reopen-all-windows = ყველა ფანჯრის ხელახლა გახსნა
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = ძიების ისტორია
 
 ## Bookmarks Menu
 
@@ -226,10 +230,13 @@ menu-bookmarks-menu =
     .accesskey = ს
 menu-bookmarks-manage =
     .label = სანიშნების მართვა
-menu-bookmark-current-tab =
-    .label = მიმდინარე ჩანართის ჩანიშვნა
-menu-bookmark-edit =
-    .label = სანიშნის ჩასწორება
+menu-bookmark-tab =
+    .label = მიმდინარე ჩანართის ჩანიშვნა…
+menu-edit-bookmark =
+    .label = ამ სანიშნის ჩასწორება…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = სანიშნების ძიება
 menu-bookmarks-all-tabs =
     .label = ყველა ჩანართის ჩანიშვნა...
 menu-bookmarks-toolbar =
@@ -314,15 +321,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = ფ
 menu-help-report-site-issue =
     .label = საიტის ხარვეზის მოხსენება…
-menu-help-feedback-page =
-    .label = გამოგვეხმაურეთ…
-    .accesskey = უ
+menu-help-share-ideas =
+    .label = გაგვიზიარეთ მოსაზრებები და გამოგვეხმაურეთ…
+    .accesskey = ზ
 menu-help-enter-troubleshoot-mode2 =
     .label = ხარვეზის აღმოფხვრის რეჟიმი…
     .accesskey = ხ
 menu-help-exit-troubleshoot-mode =
     .label = ხარვეზის აღმოფხვრის რეჟიმის გამორთვა
     .accesskey = ჟ
+menu-help-switch-device =
+    .label = ახალ მოწყობილობაზე გადასვლა
+    .accesskey = ა
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

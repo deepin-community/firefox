@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = Liostaí Coiscthe
-    .style = width: 60em
+    .style = min-width: 60em
 
 blocklist-close-key =
     .key = w

@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Жасыру
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Бетбелгілер бумаларының барлығын көрсету
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Жасыру
+
 bookmark-overlay-new-folder-button =
     .label = Жаңа бума
     .accesskey = б
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Белгілердің барлығын көрсету
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Жасыру
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Белгілердің барлығын көрсету
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Жасыру
 
 bookmark-overlay-keyword-2 =
     .value = Кілтсөз

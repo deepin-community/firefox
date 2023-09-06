@@ -6,7 +6,6 @@ privatebrowsingpage-open-private-window-label = Άνοιγμα ιδιωτικο�
     .accesskey = ι
 about-private-browsing-search-placeholder = Αναζήτηση στο διαδίκτυο
 about-private-browsing-info-title = Βρίσκεστε σε ιδιωτικό παράθυρο
-about-private-browsing-info-myths = Συνήθεις παρανοήσεις για την Ιδιωτική περιήγηση
 about-private-browsing-search-btn =
     .title = Αναζήτηση στο διαδίκτυο
 # Variables
@@ -20,16 +19,26 @@ about-private-browsing-handoff-no-engine =
 about-private-browsing-handoff-text = Αναζήτηση με { $engine } ή εισαγωγή διεύθυνσης
 about-private-browsing-handoff-text-no-engine = Αναζήτηση ή εισαγωγή διεύθυνσης
 about-private-browsing-not-private = Αυτήν τη στιγμή, δεν βρίσκεστε σε ιδιωτικό παράθυρο.
-about-private-browsing-info-description = Το { -brand-short-name } διαγράφει το ιστορικό αναζητήσεων και περιήγησής σας όταν κλείνετε την εφαρμογή ή όλα τα παράθυρα και τις καρτέλες ιδιωτικής περιήγησης. Αν και δεν έχετε πλήρη ανωνυμία στους ιστοτόπους ή τον πάροχο υπηρεσίας διαδικτύου σας, μπορείτε να διατηρείτε τις δραστηριότητές σας ιδιωτικές από τους άλλους χρήστες αυτού του υπολογιστή πιο εύκολα.
-about-private-browsing-need-more-privacy = Χρειάζεστε περισσότερη ιδιωτικότητα;
-about-private-browsing-turn-on-vpn = Δοκιμή του { -mozilla-vpn-brand-name }
 about-private-browsing-info-description-private-window = Ιδιωτικό παράθυρο: Το { -brand-short-name } διαγράφει το ιστορικό αναζητήσεων και περιήγησης όταν κλείνετε όλα τα ιδιωτικά παράθυρα. Αυτό δεν παρέχει ανωνυμία.
 about-private-browsing-info-description-simplified = Το { -brand-short-name } διαγράφει το ιστορικό αναζητήσεων και περιήγησής σας όταν κλείνετε όλα τα ιδιωτικά παράθυρα, αλλά δεν σας καθιστά ανώνυμους.
 about-private-browsing-learn-more-link = Μάθετε περισσότερα
+
 about-private-browsing-hide-activity = Αποκρύψτε τη δραστηριότητα και την τοποθεσία σας, όπου κι αν περιηγείστε
 about-private-browsing-get-privacy = Προστασία απορρήτου σε κάθε επίσκεψή σας
 about-private-browsing-hide-activity-1 = Αποκρύψτε τη δραστηριότητα και την τοποθεσία σας με το { -mozilla-vpn-brand-name }. Με ένα κλικ έχετε ασφαλή σύνδεση, ακόμα και σε δημόσιο Wi-Fi.
 about-private-browsing-prominent-cta = Προστατέψτε το απόρρητό σας με το { -mozilla-vpn-brand-name }
+
+about-private-browsing-focus-promo-cta = Λήψη του { -focus-brand-name }
+about-private-browsing-focus-promo-header = { -focus-brand-name }: Ιδιωτική περιήγηση εν κινήσει
+about-private-browsing-focus-promo-text = Η εφαρμογή ιδιωτικής περιήγησής μας για κινητές συσκευές διαγράφει το ιστορικό και τα cookies σας κάθε φορά.
+
+## The following strings will be used for experiments in Fx99 and Fx100
+
+about-private-browsing-focus-promo-header-b = Πάρτε την ιδιωτική περιήγηση στο τηλέφωνό σας
+about-private-browsing-focus-promo-text-b = Χρησιμοποιήστε το { -focus-brand-name } για τις ιδιωτικές αναζητήσεις που δεν θέλετε να βλέπει το κύριο πρόγραμμα περιήγησής σας.
+about-private-browsing-focus-promo-header-c = Απόρρητο ανώτερου επιπέδου στο κινητό
+about-private-browsing-focus-promo-text-c = Το { -focus-brand-name } διαγράφει το ιστορικό σας κάθε φορά, ενώ αποκλείει διαφημίσεις και ιχνηλάτες.
+
 # This string is the title for the banner for search engine selection
 # in a private window.
 # Variables:
@@ -42,3 +51,24 @@ about-private-browsing-search-banner-description =
     }
 about-private-browsing-search-banner-close-button =
     .aria-label = Κλείσιμο
+
+about-private-browsing-promo-close-button =
+    .title = Κλείσιμο
+
+## Strings used in a “pin promotion” message, which prompts users to pin a private window
+
+about-private-browsing-pin-promo-header = Ελευθερία ιδιωτικής περιήγησης με ένα κλικ
+about-private-browsing-pin-promo-link-text =
+    { PLATFORM() ->
+        [macos] Διατήρηση στο Dock
+       *[other] Καρφίτσωμα στη γραμμή εργασιών
+    }
+about-private-browsing-pin-promo-title = Χωρίς αποθήκευση cookies ή ιστορικού, απευθείας από την επιφάνεια εργασίας σας. Περιηγηθείτε σαν να μη σας παρακολουθεί κανείς.
+
+## Strings used in a promotion message for cookie banner reduction
+
+# Simplified version of the headline if the original text doesn't work
+# in your language: `See fewer cookie requests`.
+about-private-browsing-cookie-banners-promo-header = Εξαφανιστείτε μηνύματα για cookies!
+about-private-browsing-cookie-banners-promo-button = Μείωση μηνυμάτων για cookies
+about-private-browsing-cookie-banners-promo-message = Επιτρέψτε στο { -brand-short-name } να απαντά αυτόματα σε αναδυόμενα μηνύματα για cookies, ώστε να κάνετε περιήγηση χωρίς περισπασμούς. Το { -brand-short-name } θα απορρίψει όλα τα αιτήματα εάν αυτό είναι δυνατό.

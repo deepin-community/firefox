@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import
-
 import traceback
 
 import six
@@ -60,6 +58,10 @@ class MarionetteException(Exception):
         return self._message
 
 
+class DetachedShadowRootException(MarionetteException):
+    status = "detached shadow root"
+
+
 class ElementNotSelectableException(MarionetteException):
     status = "element not selectable"
 
@@ -90,6 +92,10 @@ class JavascriptException(MarionetteException):
 
 class NoSuchElementException(MarionetteException):
     status = "no such element"
+
+
+class NoSuchShadowRootException(MarionetteException):
+    status = "no such shadow root"
 
 
 class NoSuchWindowException(MarionetteException):

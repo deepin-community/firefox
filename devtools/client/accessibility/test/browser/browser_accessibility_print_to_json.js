@@ -8,7 +8,10 @@ const TEST_URI = "<h1>Top level header</h1>";
 function getMenuItems(toolbox) {
   const menuDoc = toolbox.doc.defaultView.windowRoot.ownerGlobal.document;
   const menu = menuDoc.getElementById("accessibility-row-contextmenu");
-  return [...menu.getElementsByTagName("menuitem")];
+  return {
+    menu,
+    items: [...menu.getElementsByTagName("menuitem")],
+  };
 }
 
 async function newTabSelected(tab) {
@@ -35,8 +38,14 @@ async function checkJSONSnapshotForRow({ doc, tab, toolbox }, index, expected) {
   );
 
   info(`Triggering "Print To JSON" menu item for row ${index}.`);
-  const [printToJSON] = getMenuItems(toolbox);
-  printToJSON.click();
+  const {
+    menu,
+    items: [printToJSON],
+  } = getMenuItems(toolbox);
+
+  await BrowserTestUtils.waitForPopupEvent(menu, "shown");
+
+  menu.activateItem(printToJSON);
 
   const jsonViewTab = await newTabSelected(tab);
   Assert.deepEqual(

@@ -6,62 +6,29 @@
 
 /* globals Services */
 
-const { OS } = ChromeUtils.import("resource://gre/modules/osfile.jsm");
-const { E10SUtils } = ChromeUtils.import(
-  "resource://gre/modules/E10SUtils.jsm"
+const { E10SUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/E10SUtils.sys.mjs"
 );
-const { Preferences } = ChromeUtils.import(
-  "resource://gre/modules/Preferences.jsm"
+const { Preferences } = ChromeUtils.importESModule(
+  "resource://gre/modules/Preferences.sys.mjs"
 );
 
-function linkColorFrameScript() {
-  addMessageListener("HistoryDelegateTest:GetLinkColor", function onMessage(
-    message
-  ) {
-    const { selector, uri } = message.data;
-
-    if (content.document.documentURI != uri) {
-      return;
-    }
-    const element = content.document.querySelector(selector);
-    if (!element) {
-      sendAsyncMessage("HistoryDelegateTest:GetLinkColor", {
-        ok: false,
-        error: "No element for " + selector,
-      });
-      return;
-    }
-    const color = content.windowUtils.getVisitedDependentComputedStyle(
-      element,
-      "",
-      "color"
-    );
-    sendAsyncMessage("HistoryDelegateTest:GetLinkColor", { ok: true, color });
-  });
-}
-
-function setResolutionAndScaleToFrameScript(resolution) {
-  addMessageListener("PanZoomControllerTest:SetResolutionAndScaleTo", () => {
-    content.window.visualViewport.addEventListener("resize", () => {
-      sendAsyncMessage("PanZoomControllerTest:SetResolutionAndScaleTo");
-    });
-    content.windowUtils.setResolutionAndScaleTo(resolution);
-  });
-}
+// eslint-disable-next-line mozilla/reject-importGlobalProperties
+Cu.importGlobalProperties(["PathUtils"]);
 
 this.test = class extends ExtensionAPI {
   onStartup() {
     ChromeUtils.registerWindowActor("TestSupport", {
       child: {
-        moduleURI:
-          "resource://android/assets/web_extensions/test-support/TestSupportChild.jsm",
+        esModuleURI:
+          "resource://android/assets/web_extensions/test-support/TestSupportChild.sys.mjs",
       },
       allFrames: true,
     });
     ChromeUtils.registerProcessActor("TestSupportProcess", {
       child: {
-        moduleURI:
-          "resource://android/assets/web_extensions/test-support/TestSupportProcessChild.jsm",
+        esModuleURI:
+          "resource://android/assets/web_extensions/test-support/TestSupportProcessChild.sys.mjs",
       },
     });
   }
@@ -75,6 +42,22 @@ this.test = class extends ExtensionAPI {
   }
 
   getAPI(context) {
+    /**
+     * Helper function for getting window or process actors.
+     *
+     * @param tabId - id of the tab; required
+     * @param actorName - a string; the name of the actor
+     *   Default: "TestSupport" which is our test framework actor
+     *   (you can still pass the second parameter when getting the TestSupport actor, for readability)
+     *
+     * @returns actor
+     */
+    function getActorForTab(tabId, actorName = "TestSupport") {
+      const tab = context.extension.tabManager.get(tabId);
+      const { browsingContext } = tab.browser;
+      return browsingContext.currentWindowGlobal.getActor(actorName);
+    }
+
     return {
       test: {
         /* Set prefs and returns set of saved prefs */
@@ -109,34 +92,11 @@ this.test = class extends ExtensionAPI {
         },
 
         /* Gets link color for a given selector. */
-        async getLinkColor(uri, selector) {
-          const frameScript = `data:text/javascript,(${encodeURI(
-            linkColorFrameScript
-          )}).call(this)`;
-          Services.mm.loadFrameScript(frameScript, true);
-
-          return new Promise((resolve, reject) => {
-            const onMessage = message => {
-              Services.mm.removeMessageListener(
-                "HistoryDelegateTest:GetLinkColor",
-                onMessage
-              );
-              if (message.data.ok) {
-                resolve(message.data.color);
-              } else {
-                reject(message.data.error);
-              }
-            };
-
-            Services.mm.addMessageListener(
-              "HistoryDelegateTest:GetLinkColor",
-              onMessage
-            );
-            Services.mm.broadcastAsyncMessage(
-              "HistoryDelegateTest:GetLinkColor",
-              { uri, selector }
-            );
-          });
+        async getLinkColor(tabId, selector) {
+          return getActorForTab(tabId, "TestSupport").sendQuery(
+            "GetLinkColor",
+            { selector }
+          );
         },
 
         async getRequestedLocales() {
@@ -186,29 +146,13 @@ this.test = class extends ExtensionAPI {
           return Services.telemetry.scalarSet(id, value);
         },
 
-        async setResolutionAndScaleTo(resolution) {
-          const frameScript = `data:text/javascript,(${encodeURI(
-            setResolutionAndScaleToFrameScript
-          )}).call(this, ${resolution})`;
-          Services.mm.loadFrameScript(frameScript, true);
-
-          return new Promise(resolve => {
-            const onMessage = () => {
-              Services.mm.removeMessageListener(
-                "PanZoomControllerTest:SetResolutionAndScaleTo",
-                onMessage
-              );
-              resolve();
-            };
-
-            Services.mm.addMessageListener(
-              "PanZoomControllerTest:SetResolutionAndScaleTo",
-              onMessage
-            );
-            Services.mm.broadcastAsyncMessage(
-              "PanZoomControllerTest:SetResolutionAndScaleTo"
-            );
-          });
+        async setResolutionAndScaleTo(tabId, resolution) {
+          return getActorForTab(tabId, "TestSupport").sendQuery(
+            "SetResolutionAndScaleTo",
+            {
+              resolution,
+            }
+          );
         },
 
         async getActive(tabId) {
@@ -217,31 +161,67 @@ this.test = class extends ExtensionAPI {
         },
 
         async getProfilePath() {
-          return OS.Constants.Path.profileDir;
+          return PathUtils.profileDir;
         },
 
         async flushApzRepaints(tabId) {
-          const tab = context.extension.tabManager.get(tabId);
-          const { browsingContext } = tab.browser;
-
           // TODO: Note that `waitUntilApzStable` in apz_test_utils.js does
           // flush APZ repaints in the parent process (i.e. calling
           // nsIDOMWindowUtils.flushApzRepaints for the parent process) before
           // flushApzRepaints is called for the target content document, if we
           // still meet intermittent failures, we might want to do it here as
           // well.
-          await browsingContext.currentWindowGlobal
-            .getActor("TestSupport")
-            .sendQuery("FlushApzRepaints");
+          await getActorForTab(tabId, "TestSupport").sendQuery(
+            "FlushApzRepaints"
+          );
         },
 
         async promiseAllPaintsDone(tabId) {
-          const tab = context.extension.tabManager.get(tabId);
-          const { browsingContext } = tab.browser;
+          await getActorForTab(tabId, "TestSupport").sendQuery(
+            "PromiseAllPaintsDone"
+          );
+        },
 
-          await browsingContext.currentWindowGlobal
-            .getActor("TestSupport")
-            .sendQuery("PromiseAllPaintsDone");
+        async usingGpuProcess() {
+          const gfxInfo = Cc["@mozilla.org/gfx/info;1"].getService(
+            Ci.nsIGfxInfo
+          );
+          return gfxInfo.usingGPUProcess;
+        },
+
+        async killGpuProcess() {
+          const gfxInfo = Cc["@mozilla.org/gfx/info;1"].getService(
+            Ci.nsIGfxInfo
+          );
+          return gfxInfo.killGPUProcessForTests();
+        },
+
+        async crashGpuProcess() {
+          const gfxInfo = Cc["@mozilla.org/gfx/info;1"].getService(
+            Ci.nsIGfxInfo
+          );
+          return gfxInfo.crashGPUProcessForTests();
+        },
+
+        async clearHSTSState() {
+          const sss = Cc["@mozilla.org/ssservice;1"].getService(
+            Ci.nsISiteSecurityService
+          );
+          return sss.clearAll();
+        },
+
+        async triggerCookieBannerDetected(tabId) {
+          const actor = getActorForTab(tabId, "CookieBanner");
+          return actor.receiveMessage({
+            name: "CookieBanner::DetectedBanner",
+          });
+        },
+
+        async triggerCookieBannerHandled(tabId) {
+          const actor = getActorForTab(tabId, "CookieBanner");
+          return actor.receiveMessage({
+            name: "CookieBanner::HandledBanner",
+          });
         },
       },
     };

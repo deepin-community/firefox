@@ -76,7 +76,9 @@ class DocumentOrShadowRoot : public RadioGroupManager {
 
   size_t SheetCount() const { return mStyleSheets.Length(); }
 
-  size_t AdoptedSheetCount() const { return mAdoptedStyleSheets.Length(); }
+  const nsTArray<RefPtr<StyleSheet>>& AdoptedStyleSheets() const {
+    return mAdoptedStyleSheets;
+  }
 
   /**
    * Returns an index for the sheet in relative style order.
@@ -89,11 +91,10 @@ class DocumentOrShadowRoot : public RadioGroupManager {
 
   StyleSheetList* StyleSheets();
 
-  void GetAdoptedStyleSheets(nsTArray<RefPtr<StyleSheet>>&) const;
-
   void RemoveStyleSheet(StyleSheet&);
 
-  Element* GetElementById(const nsAString& aElementId);
+  Element* GetElementById(const nsAString& aElementId) const;
+  Element* GetElementById(nsAtom* aElementId) const;
 
   /**
    * This method returns _all_ the elements in this scope which have id
@@ -201,17 +202,16 @@ class DocumentOrShadowRoot : public RadioGroupManager {
     return true;
   }
 
-  void ReportEmptyGetElementByIdArg();
+  void ReportEmptyGetElementByIdArg() const;
 
   // Web Animations
   MOZ_CAN_RUN_SCRIPT
   void GetAnimations(nsTArray<RefPtr<Animation>>& aAnimations);
 
-  nsIContent* Retarget(nsIContent* aContent) const;
+  nsINode* Retarget(nsINode*) const;
 
-  void SetAdoptedStyleSheets(
-      const Sequence<OwningNonNull<StyleSheet>>& aAdoptedStyleSheets,
-      ErrorResult& aRv);
+  void OnSetAdoptedStyleSheets(StyleSheet&, uint32_t aIndex, ErrorResult&);
+  void OnDeleteAdoptedStyleSheets(StyleSheet&, uint32_t aIndex, ErrorResult&);
 
   // This is needed because ServoStyleSet / ServoAuthorData don't deal with
   // duplicate stylesheets (and it's unclear we'd want to support that as it'd

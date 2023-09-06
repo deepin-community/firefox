@@ -1,58 +1,45 @@
 "use strict";
 
-var { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+var { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
-var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-
-var _CSvc;
-function get_cache_service() {
-  if (_CSvc) {
-    return _CSvc;
-  }
-
-  return (_CSvc = Cc["@mozilla.org/netwerk/cache-storage-service;1"].getService(
-    Ci.nsICacheStorageService
-  ));
-}
 
 function evict_cache_entries(where) {
   var clearDisk = !where || where == "disk" || where == "all";
   var clearMem = !where || where == "memory" || where == "all";
 
-  var svc = get_cache_service();
   var storage;
 
   if (clearMem) {
-    storage = svc.memoryCacheStorage(Services.loadContextInfo.default);
+    storage = Services.cache2.memoryCacheStorage(
+      Services.loadContextInfo.default
+    );
     storage.asyncEvictStorage(null);
   }
 
   if (clearDisk) {
-    storage = svc.diskCacheStorage(Services.loadContextInfo.default);
+    storage = Services.cache2.diskCacheStorage(
+      Services.loadContextInfo.default
+    );
     storage.asyncEvictStorage(null);
   }
 }
 
 function createURI(urispec) {
-  var ioServ = Cc["@mozilla.org/network/io-service;1"].getService(
-    Ci.nsIIOService
-  );
-  return ioServ.newURI(urispec);
+  return Services.io.newURI(urispec);
 }
 
 function getCacheStorage(where, lci) {
   if (!lci) {
     lci = Services.loadContextInfo.default;
   }
-  var svc = get_cache_service();
   switch (where) {
     case "disk":
-      return svc.diskCacheStorage(lci);
+      return Services.cache2.diskCacheStorage(lci);
     case "memory":
-      return svc.memoryCacheStorage(lci);
+      return Services.cache2.memoryCacheStorage(lci);
     case "pin":
-      return svc.pinningCacheStorage(lci);
+      return Services.cache2.pinningCacheStorage(lci);
   }
   return null;
 }
@@ -97,7 +84,7 @@ function syncWithCacheIOThread(callback, force) {
       "disk",
       Ci.nsICacheStorage.OPEN_READONLY,
       null,
-      function(status, entry) {
+      function (status, entry) {
         Assert.equal(status, Cr.NS_ERROR_CACHE_KEY_NOT_FOUND);
         callback();
       }
@@ -116,7 +103,7 @@ function get_device_entry_count(where, lci, continuation) {
 
   var visitor = {
     onCacheStorageInfo(entryCount, consumption) {
-      executeSoon(function() {
+      executeSoon(function () {
         continuation(entryCount, consumption);
       });
     },
@@ -132,7 +119,7 @@ function asyncCheckCacheEntryPresence(key, where, shouldExist, continuation) {
     where,
     Ci.nsICacheStorage.OPEN_READONLY,
     null,
-    function(status, entry) {
+    function (status, entry) {
       if (shouldExist) {
         dump("TEST-INFO | checking cache key " + key + " exists @ " + where);
         Assert.equal(status, Cr.NS_OK);

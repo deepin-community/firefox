@@ -25,7 +25,7 @@ about-telemetry-show-in-Firefox-json-viewer = Открыть в просмотр
 about-telemetry-home-section = Главная
 about-telemetry-general-data-section = Общие данные
 about-telemetry-environment-data-section = Данные окружения
-about-telemetry-session-info-section = Информация о сессии
+about-telemetry-session-info-section = Сведения о сессии
 about-telemetry-scalar-section = Скаляры
 about-telemetry-keyed-scalar-section = Скаляры ключей
 about-telemetry-histograms-section = Гистограммы
@@ -34,7 +34,6 @@ about-telemetry-events-section = События
 about-telemetry-simple-measurements-section = Простые измерения
 about-telemetry-slow-sql-section = Медленные SQL-инструкции
 about-telemetry-addon-details-section = Сведения о дополнении
-about-telemetry-captured-stacks-section = Захваченные Стеки
 about-telemetry-late-writes-section = Поздние записи
 about-telemetry-raw-payload-section = Необработанная нагрузка
 about-telemetry-raw = Необработанный JSON
@@ -106,7 +105,7 @@ about-telemetry-current-data-sidebar = текущие данные
 # used in the “Ping Type” select
 about-telemetry-telemetry-ping-type-all = все
 # button label to copy the histogram
-about-telemetry-histogram-copy = Копировать
+about-telemetry-histogram-copy = Скопировать
 # these strings are used in the “Slow SQL Statements” section
 about-telemetry-slow-sql-main = Медленные SQL-инструкции в главном потоке
 about-telemetry-slow-sql-other = Медленные SQL-инструкции во вспомогательных потоках
@@ -123,10 +122,6 @@ about-telemetry-keys-header = Свойство
 about-telemetry-names-header = Имя
 about-telemetry-values-header = Значение
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (число захваченных: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Поздняя запись #{ $lateWriteCount }
 about-telemetry-stack-title = Стек:
@@ -137,12 +132,6 @@ about-telemetry-category-header = категория
 about-telemetry-method-header = метод
 about-telemetry-object-header = объект
 about-telemetry-extra-header = экстра
-about-telemetry-origin-section = Телеметрия источников
-about-telemetry-origin-origin = источник
-about-telemetry-origin-count = количество
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Телеметрия источников Firefox</a> кодирует данные перед отправкой, поэтому { $telemetryServerOwner } может посчитать вещи, не узнав, внёс ли какой-либо { -brand-product-name } вклад для этого. (<a data-l10n-name="prio-blog-link">узнать больше</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = Процесс { $process }

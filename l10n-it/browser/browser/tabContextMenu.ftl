@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Seleziona tutte le schede
     .accesskey = z
+tab-context-play-tab =
+    .label = Riproduci audio nella scheda
+    .accesskey = e
+tab-context-play-tabs =
+    .label = Riproduci audio nelle schede
+    .accesskey = e
 duplicate-tab =
     .label = Duplica scheda
     .accesskey = D
@@ -44,7 +50,7 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Aggiungi schede ai segnalibri…
     .accesskey = b
-bookmark-tab =
+tab-context-bookmark-tab =
     .label = Aggiungi scheda ai segnalibri…
     .accesskey = A
 tab-context-open-in-new-container-tab =
@@ -65,8 +71,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Condividi
     .accesskey = o
-tab-context-share-more =
-    .label = Altro…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -78,13 +82,6 @@ tab-context-reopen-closed-tabs =
            *[other] Riapri schede chiuse
         }
     .accesskey = s
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Chiudi scheda
-           *[other] Chiudi schede
-        }
-    .accesskey = C
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

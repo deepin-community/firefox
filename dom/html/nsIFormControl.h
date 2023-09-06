@@ -32,8 +32,9 @@ enum class FormControlType : uint8_t {
   Select,
   Textarea,
   Object,
+  FormAssociatedCustomElement,
 
-  LastWithoutSubtypes = Object,
+  LastWithoutSubtypes = FormAssociatedCustomElement,
 
   ButtonButton = kFormControlButtonElementMask + 1,
   ButtonReset,
@@ -146,8 +147,6 @@ class nsIFormControl : public nsISupports {
   NS_IMETHOD
   SubmitNamesValues(mozilla::dom::FormData* aFormData) = 0;
 
-  virtual bool AllowDrop() = 0;
-
   /**
    * Returns whether this is a control which submits the form when activated by
    * the user.
@@ -174,6 +173,17 @@ class nsIFormControl : public nsISupports {
    * @return whether this is a submittable form control.
    */
   inline bool IsSubmittableControl() const;
+
+  /**
+   * https://html.spec.whatwg.org/multipage/forms.html#concept-button
+   */
+  inline bool IsConceptButton() const;
+
+  /**
+   * Returns whether this is an ordinal button or a concept button that has no
+   * form associated.
+   */
+  inline bool IsButtonControl() const;
 
   /**
    * Returns whether this form control can have draggable children.
@@ -209,12 +219,6 @@ class nsIFormControl : public nsISupports {
     return uint8_t(aType) & kFormControlInputElementMask;
   }
 
-  /**
-   * Returns whether this is a auto-focusable form control.
-   * @return whether this is a auto-focusable form control.
-   */
-  inline bool IsAutofocusable() const;
-
   FormControlType mType;
 };
 
@@ -249,8 +253,6 @@ bool nsIFormControl::IsSingleLineTextControl(bool aExcludePassword,
     case FormControlType::InputMonth:
     case FormControlType::InputWeek:
       return true;
-    case FormControlType::InputDatetimeLocal:
-      return !mozilla::StaticPrefs::dom_forms_datetime_local_widget();
     case FormControlType::InputPassword:
       return !aExcludePassword;
     default:
@@ -265,16 +267,20 @@ bool nsIFormControl::IsSubmittableControl() const {
          IsInputElement(type);
 }
 
+bool nsIFormControl::IsConceptButton() const {
+  auto type = ControlType();
+  return IsSubmitControl() || type == FormControlType::InputReset ||
+         type == FormControlType::InputButton || IsButtonElement(type);
+}
+
+bool nsIFormControl::IsButtonControl() const {
+  return IsConceptButton() && (!GetForm() || !IsSubmitControl());
+}
+
 bool nsIFormControl::AllowDraggableChildren() const {
   auto type = ControlType();
   return type == FormControlType::Object || type == FormControlType::Fieldset ||
          type == FormControlType::Output;
-}
-
-bool nsIFormControl::IsAutofocusable() const {
-  auto type = ControlType();
-  return IsInputElement(type) || IsButtonElement(type) ||
-         type == FormControlType::Textarea || type == FormControlType::Select;
 }
 
 NS_DEFINE_STATIC_IID_ACCESSOR(nsIFormControl, NS_IFORMCONTROL_IID)

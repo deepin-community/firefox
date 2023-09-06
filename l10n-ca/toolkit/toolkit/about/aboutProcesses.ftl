@@ -26,15 +26,32 @@ about-processes-column-cpu-total = CPU
 
 about-processes-browser-process = { -brand-short-name } ({ $pid })
 about-processes-file-process = Fitxers ({ $pid })
+about-processes-extension-process = Extensions ({ $pid })
+about-processes-plugin-process = Connectors ({ $pid })
 about-processes-gpu-process = GPU ({ $pid })
+about-processes-socket-process = Xarxa ({ $pid })
+
+# Unknown process names
+# Variables:
+#    $pid (String) The process id of this process, assigned by the OS.
+#    $type (String) The raw type for this process.
+about-processes-unknown-process = Altres: { $type } ({ $pid })
 
 ## Isolated process names
 ## Variables:
 ##    $pid (String) The process id of this process, assigned by the OS.
 ##    $origin (String) The domain name for this process.
 
+about-processes-web-isolated-process = { $origin } ({ $pid })
 
 ## Details within processes
+
+# Tab
+# Variables:
+#   $name (String) The name of the tab (typically the title of the page, might be the url while the page is loading).
+about-processes-tab-name = Pestanya: { $name }
+
+## Utility process actor names
 
 
 ## Displaying CPU (percentage and total)
@@ -46,6 +63,8 @@ about-processes-gpu-process = GPU ({ $pid })
 ##    $unit (String) The unit in which to display $total. See the definitions
 ##                   of `duration-unit-*`.
 
+# Special case: data is not available yet.
+about-processes-cpu-user-and-kernel-not-ready = (s'està mesurant)
 
 ## Displaying Memory (total and delta)
 ## Variables:
@@ -58,9 +77,19 @@ about-processes-gpu-process = GPU ({ $pid })
 ##    $deltaUnit (String) The unit in which to display $delta. See the definitions
 ##                        of `memory-unit-*`.
 
+# Special case: no change.
+about-processes-total-memory-size-no-change = { NUMBER($total, maximumFractionDigits: 0) } { $totalUnit }
 
 ## Duration units
 
+duration-unit-h = h
+duration-unit-d = d
 
 ## Memory units
 
+memory-unit-KB = kB
+memory-unit-MB = MB
+memory-unit-GB = GB
+memory-unit-TB = TB
+memory-unit-PB = PB
+memory-unit-EB = EB

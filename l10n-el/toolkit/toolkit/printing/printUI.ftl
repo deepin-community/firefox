@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Όλες
+printui-page-range-current = Τρέχουσα
+printui-page-range-odd = Περιττό
+printui-page-range-even = Άρτιο
 printui-page-range-custom = Προσαρμογή
 printui-page-range-label = Σελίδες
 printui-page-range-picker =

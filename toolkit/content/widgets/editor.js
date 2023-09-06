@@ -50,8 +50,9 @@
           return null;
         }
 
-        let Finder = ChromeUtils.import("resource://gre/modules/Finder.jsm", {})
-          .Finder;
+        let { Finder } = ChromeUtils.importESModule(
+          "resource://gre/modules/Finder.sys.mjs"
+        );
         this._finder = new Finder(this.docShell);
       }
       return this._finder;
@@ -91,10 +92,6 @@
       return this.docShell
         .QueryInterface(Ci.nsIInterfaceRequestor)
         .getInterface(Ci.nsIWebBrowserFind);
-    }
-
-    get markupDocumentViewer() {
-      return this.docShell.contentViewer;
     }
 
     get editingSession() {
@@ -188,9 +185,8 @@
 
       this.docShell
         .QueryInterface(Ci.nsIInterfaceRequestor)
-        .getInterface(
-          Ci.nsIURIContentListener
-        ).parentContentListener = this._editorContentListener;
+        .getInterface(Ci.nsIURIContentListener).parentContentListener =
+        this._editorContentListener;
     }
 
     getEditor(containingWindow) {
@@ -200,14 +196,6 @@
     getHTMLEditor(containingWindow) {
       var editor = this.editingSession.getEditorForWindow(containingWindow);
       return editor.QueryInterface(Ci.nsIHTMLEditor);
-    }
-
-    print(aOuterWindowID, aPrintSettings) {
-      if (!this.frameLoader) {
-        throw Components.Exception("No frame loader.", Cr.NS_ERROR_FAILURE);
-      }
-
-      return this.frameLoader.print(aOuterWindowID, aPrintSettings);
     }
   }
 

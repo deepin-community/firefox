@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Piilota
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Näytä kaikki kirjanmerkkikansiot
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Piilota
+
 bookmark-overlay-new-folder-button =
     .label = Uusi kansio
     .accesskey = U
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Näytä kaikki avainsanat
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Piilota
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Näytä kaikki avainsanat
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Piilota
 
 bookmark-overlay-keyword-2 =
     .value = Pikakomento

@@ -14,8 +14,8 @@
 #include "mozilla/dom/StructuredCloneHolder.h"
 #include "mozilla/dom/ipc/StructuredCloneData.h"
 #include "mozilla/dom/RefMessageBodyService.h"
+#include "mozilla/dom/RootedDictionary.h"
 #include "mozilla/dom/SharedMessageBody.h"
-#include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/dom/WorkerScope.h"
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/dom/WorkerRunnable.h"
@@ -23,9 +23,7 @@
 #include "mozilla/ipc/BackgroundUtils.h"
 #include "mozilla/ipc/PBackgroundChild.h"
 #include "mozilla/StorageAccess.h"
-#include "nsContentUtils.h"
 
-#include "nsIBFCacheEntry.h"
 #include "nsICookieJarSettings.h"
 #include "mozilla/dom/Document.h"
 
@@ -128,7 +126,7 @@ BroadcastChannel::BroadcastChannel(nsIGlobalObject* aGlobal,
       mState(StateActive),
       mPortUUID(aPortUUID) {
   MOZ_ASSERT(aGlobal);
-  KeepAliveIfHasListenersFor(u"message"_ns);
+  KeepAliveIfHasListenersFor(nsGkAtoms::onmessage);
 }
 
 BroadcastChannel::~BroadcastChannel() {
@@ -151,7 +149,7 @@ already_AddRefed<BroadcastChannel> BroadcastChannel::Constructor(
   }
 
   nsID portUUID = {};
-  aRv = nsContentUtils::GenerateUUIDInPlace(portUUID);
+  aRv = nsID::GenerateUUIDInPlace(portUUID);
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -159,9 +157,7 @@ already_AddRefed<BroadcastChannel> BroadcastChannel::Constructor(
   RefPtr<BroadcastChannel> bc =
       new BroadcastChannel(global, aChannel, portUUID);
 
-  nsAutoCString origin;
-  nsAutoString originNoSuffix;
-  PrincipalInfo storagePrincipalInfo;
+  nsCOMPtr<nsIPrincipal> storagePrincipal;
 
   StorageAccess storageAccess;
 
@@ -186,29 +182,11 @@ already_AddRefed<BroadcastChannel> BroadcastChannel::Constructor(
       return nullptr;
     }
 
-    nsIPrincipal* storagePrincipal = sop->GetEffectiveStoragePrincipal();
+    storagePrincipal = sop->GetEffectiveStoragePrincipal();
     if (!storagePrincipal) {
       aRv.Throw(NS_ERROR_UNEXPECTED);
       return nullptr;
     }
-
-    aRv = storagePrincipal->GetOrigin(origin);
-    if (NS_WARN_IF(aRv.Failed())) {
-      return nullptr;
-    }
-
-    nsAutoCString originNoSuffix8;
-    aRv = storagePrincipal->GetOriginNoSuffix(originNoSuffix8);
-    if (NS_WARN_IF(aRv.Failed())) {
-      return nullptr;
-    }
-    CopyUTF8toUTF16(originNoSuffix8, originNoSuffix);
-
-    aRv = PrincipalToPrincipalInfo(storagePrincipal, &storagePrincipalInfo);
-    if (NS_WARN_IF(aRv.Failed())) {
-      return nullptr;
-    }
-
     storageAccess = StorageAllowedForWindow(window);
 
     Document* doc = window->GetExtantDoc();
@@ -231,10 +209,8 @@ already_AddRefed<BroadcastChannel> BroadcastChannel::Constructor(
     }
 
     storageAccess = workerPrivate->StorageAccess();
-    storagePrincipalInfo = workerPrivate->GetEffectiveStoragePrincipalInfo();
-    origin = workerPrivate->EffectiveStoragePrincipalOrigin();
 
-    originNoSuffix = workerPrivate->GetLocationInfo().mOrigin;
+    storagePrincipal = workerPrivate->GetEffectiveStoragePrincipal();
 
     bc->mWorkerRef = workerRef;
 
@@ -242,7 +218,7 @@ already_AddRefed<BroadcastChannel> BroadcastChannel::Constructor(
   }
 
   // We want to allow opaque origins.
-  if (storagePrincipalInfo.type() != PrincipalInfo::TNullPrincipalInfo &&
+  if (!storagePrincipal->GetIsNullPrincipal() &&
       (storageAccess == StorageAccess::eDeny ||
        (ShouldPartitionStorage(storageAccess) &&
         !StoragePartitioningEnabled(storageAccess, cjs)))) {
@@ -258,6 +234,25 @@ already_AddRefed<BroadcastChannel> BroadcastChannel::Constructor(
     return nullptr;
   }
 
+  nsAutoCString origin;
+  aRv = storagePrincipal->GetOrigin(origin);
+  if (NS_WARN_IF(aRv.Failed())) {
+    return nullptr;
+  }
+
+  nsString originForEvents;
+  aRv = nsContentUtils::GetWebExposedOriginSerialization(storagePrincipal,
+                                                         originForEvents);
+  if (NS_WARN_IF(aRv.Failed())) {
+    return nullptr;
+  }
+
+  PrincipalInfo storagePrincipalInfo;
+  aRv = PrincipalToPrincipalInfo(storagePrincipal, &storagePrincipalInfo);
+  if (NS_WARN_IF(aRv.Failed())) {
+    return nullptr;
+  }
+
   PBroadcastChannelChild* actor = actorChild->SendPBroadcastChannelConstructor(
       storagePrincipalInfo, origin, nsString(aChannel));
 
@@ -265,7 +260,7 @@ already_AddRefed<BroadcastChannel> BroadcastChannel::Constructor(
   MOZ_ASSERT(bc->mActor);
 
   bc->mActor->SetParent(bc);
-  bc->mOriginNoSuffix = originNoSuffix;
+  bc->mOriginForEvents = std::move(originForEvents);
 
   return bc.forget();
 }
@@ -283,6 +278,10 @@ void BroadcastChannel::PostMessage(JSContext* aCx,
   MOZ_ASSERT(global);
   if (global) {
     agentClusterId = global->GetAgentClusterId();
+  }
+
+  if (!global->IsEligibleForMessaging()) {
+    return;
   }
 
   RefPtr<SharedMessageBody> data = new SharedMessageBody(
@@ -343,7 +342,7 @@ void BroadcastChannel::Shutdown() {
     mActor = nullptr;
   }
 
-  IgnoreKeepAliveIfHasListenersFor(u"message"_ns);
+  IgnoreKeepAliveIfHasListenersFor(nsGkAtoms::onmessage);
 }
 
 void BroadcastChannel::RemoveDocFromBFCache() {
@@ -413,7 +412,7 @@ void BroadcastChannel::MessageReceived(const MessageData& aData) {
   RootedDictionary<MessageEventInit> init(cx);
   init.mBubbles = false;
   init.mCancelable = false;
-  init.mOrigin = mOriginNoSuffix;
+  init.mOrigin = mOriginForEvents;
   init.mData = value;
 
   RefPtr<MessageEvent> event =
@@ -433,7 +432,7 @@ void BroadcastChannel::DispatchError(JSContext* aCx) {
   RootedDictionary<MessageEventInit> init(aCx);
   init.mBubbles = false;
   init.mCancelable = false;
-  init.mOrigin = mOriginNoSuffix;
+  init.mOrigin = mOriginForEvents;
 
   RefPtr<Event> event =
       MessageEvent::Constructor(this, u"messageerror"_ns, init);

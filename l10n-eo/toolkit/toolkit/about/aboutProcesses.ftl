@@ -16,17 +16,22 @@ about-processes-shutdown-process =
 about-processes-shutdown-tab =
     .title = Fermi langeton
 
+# Profiler icons
+# Variables:
+#    $duration (Number) The time in seconds during which the profiler will be running.
+#                       The value will be an integer, typically less than 10.
+about-processes-profile-process =
+    .title =
+        { $duration ->
+            [one] Rulanalizi ĉiujn fadenojn de tiu ĉi procezo dum { $duration } sekundo
+           *[other] Rulanalizi ĉiujn fadenojn de tiu ĉi procezo dum { $duration } sekundoj
+        }
+
 ## Column headers
 
 about-processes-column-name = Nomo
 about-processes-column-memory-resident = Memoro
 about-processes-column-cpu-total = Procezilo
-
-## Process names
-## Variables:
-##    $pid (String) The process id of this process, assigned by the OS.
-##    $origin (String) The domain name for this process.
-##    $type (String) The raw type for this process. Used for unknown processes.
 
 ## Process names
 ## Variables:
@@ -47,6 +52,7 @@ about-processes-socket-process = Reto ({ $pid })
 about-processes-remote-sandbox-broker-process = Agento por mallokaj izolejoj  ({ $pid })
 about-processes-fork-server-process = Forka servilo ({ $pid })
 about-processes-preallocated-process = Antaŭasignado ({ $pid })
+about-processes-utility-process = Utilaĵo ({ $pid })
 
 # Unknown process names
 # Variables:
@@ -60,10 +66,9 @@ about-processes-unknown-process = Aliaj: { $type } ({ $pid })
 ##    $origin (String) The domain name for this process.
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
-about-processes-web-large-allocation-process = { $origin } ({ $pid }, granda)
+about-processes-web-serviceworker = { $origin } ({ $pid }, serviceworker)
 about-processes-with-coop-coep-process = { $origin } ({ $pid }, malsamorigina izolejo)
 about-processes-web-isolated-process-private = { $origin } — Privata ({ $pid })
-about-processes-web-large-allocation-process-private = { $origin } — Privata ({ $pid }, granda)
 about-processes-with-coop-coep-process-private = { $origin } — Privata ({ $pid }, malsamorigina izolejo)
 
 ## Details within processes
@@ -120,6 +125,17 @@ about-processes-frame-name-one = Subkadro: { $url }
 #   $shortUrl (String) The shared prefix for the subframes in the group.
 about-processes-frame-name-many = Subkadroj ({ $number }): { $shortUrl }
 
+## Utility process actor names
+
+about-processes-utility-actor-unknown = Nekonata agento
+about-processes-utility-actor-audio-decoder-generic = Nespecifa sona malkodilo
+about-processes-utility-actor-audio-decoder-applemedia = Sona malkodilo de Apple Media
+about-processes-utility-actor-audio-decoder-wmf = Sona malkodilo de Windows Media Framework
+about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media Engine CDM
+# "Oracle" refers to an internal Firefox process and should be kept in English
+about-processes-utility-actor-js-oracle = JavaScript Oracle
+about-processes-utility-actor-windows-utils = Iloj de Windows
+
 ## Displaying CPU (percentage and total)
 ## Variables:
 ##    $percent (Number) The percentage of CPU used by the process or thread.
@@ -136,9 +152,14 @@ about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "pe
 # Special case: data is not available yet.
 about-processes-cpu-user-and-kernel-not-ready = (mezurata)
 
+# Special case: process or thread is almost idle (using less than 0.1% of a CPU core).
+# This case only occurs on Windows where the precision of the CPU times is low.
+about-processes-cpu-almost-idle = < 0.1%
+    .title = Total CPU time: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+
 # Special case: process or thread is currently idle.
-about-processes-cpu-idle = senokupa
-    .title = Tempo de CPU: { NUMBER($total, maximumFractionDigits: 2) }{ $unit }
+about-processes-cpu-fully-idle = senokupa
+    .title = Tuta tempo de CPU: { NUMBER($total, maximumFractionDigits: 0) }{ NUMBER($total, maximumFractionDigits: 0) }{ $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:

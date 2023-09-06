@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Tetapan untuk Buang Sejarah
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Buang Sejarah Terkini
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Buang Semua Sejarah
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = Apabila ditutup, { -brand-short-name } buang semua secara automatik
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = B
 
 data-section-label = Data
-
-item-site-preferences =
-    .label = Keutamaan Laman
-    .accesskey = K
 
 item-offline-apps =
     .label = Data Laman web Luar talian

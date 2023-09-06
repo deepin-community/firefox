@@ -5,27 +5,27 @@
 
 about-logins-page-title = ورودها و گذرواژه‌ها
 
-# "Google Play" and "App Store" are both branding and should not be translated
+about-logins-login-filter =
+    .placeholder = جست‌وجوی ورودها
+    .key = F
 
-login-filter =
-    .placeholder = جست‌وجو در اطلاعات ورودها
-
-create-login-button = ایجاد کردن ورود جدید
+create-new-login-button =
+    .title = ایجاد ورود جدید
 
 fxaccounts-sign-in-text = گذرواژه‌هایتان را دستگاه‌های دیگر خود همراه داشته باشید
-fxaccounts-sign-in-sync-button = برای همگام‌سازی وارد شوید
+fxaccounts-sign-in-sync-button = ورود برای همگام‌سازی
 fxaccounts-avatar-button =
     .title = مدیریت حساب
 
 ## The ⋯ menu that is in the top corner of the page
 
 menu =
-    .title = باز کردن منو
+    .title = گشودن فهرست
 # This menuitem is only visible on Windows and macOS
-about-logins-menu-menuitem-import-from-another-browser = وارد کردن از یک مرورگر دیگر…
-about-logins-menu-menuitem-import-from-a-file = افزودن از طریق یک پرونده…
+about-logins-menu-menuitem-import-from-another-browser = درون‌ریزی از مرورگری دیگر…
+about-logins-menu-menuitem-import-from-a-file = درون‌ریزی از یک پرونده…
 about-logins-menu-menuitem-export-logins = برون‌ریزی ورودها…
-about-logins-menu-menuitem-remove-all-logins = حذف تمامی ورودها…
+about-logins-menu-menuitem-remove-all-logins = برداشتن تمامی ورودها…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] گزینه‌ها
@@ -37,33 +37,42 @@ about-logins-menu-menuitem-help = راهنما
 
 login-list =
     .aria-label = ورودهای مطابق با عبارت جست‌وجو شده
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } ورود
        *[other] { $count } ورود
     }
-login-list-sort-label-text = مرتب کردن بر اساس:
-login-list-name-option = نام (A-Z)
-login-list-name-reverse-option = نام (A-Z)
-login-list-username-option = نام کاربری (A-Z)
-login-list-username-reverse-option = نام کاربری (Z-A)
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } از { $total } ورود
+       *[other] { $count } از { $total } ورود
+    }
+login-list-sort-label-text = چیدن بر اساس:
+login-list-name-option = نام (آ-ی)
+login-list-name-reverse-option = نام (ی-آ)
+login-list-username-option = نام کاربری (آ-ی)
+login-list-username-reverse-option = نام کاربری (ی-آ)
 about-logins-login-list-alerts-option = هشدارها
 login-list-last-changed-option = آخرین تغییر
 login-list-last-used-option = آخرین استفاده
 login-list-intro-title = هیچ اطلاعات ورودی پیدا نشد
 login-list-intro-description = وقتی گذرواژه‌ای را در { -brand-product-name } ذخیره می‌کنید، آنها را اینجا می‌بینید.
 about-logins-login-list-empty-search-title = هیچ اطلاعات ورودی پیدا نشد
-about-logins-login-list-empty-search-description = هیچ نتیجه‌ای مطابق با جستجوی شما یافت نشد.
+about-logins-login-list-empty-search-description = هیچ نتیجه‌ای مطابق با جست‌وجوی شما یافت نشد.
 login-list-item-title-new-login = ورود جدید
 login-list-item-subtitle-new-login = اطلاعات ورود خود را وارد کنید
 login-list-item-subtitle-missing-username = (بدون نام‌کاربری)
 about-logins-list-item-breach-icon =
-    .title = وب‌سایت هک شده
+    .title = پایگاه لو رفته
 about-logins-list-item-vulnerable-password-icon =
-    .title = رمز عبور آسیب پذیر
-
-about-logins-list-section-breach = وب‌سایت‌های هک شده
-about-logins-list-section-vulnerable = گذرواژه‌های ناامن
+    .title = گذرواژهٔ آسیب‌پذیر
+about-logins-list-section-breach = پایگاه‌های لو رفته
+about-logins-list-section-vulnerable = گذرواژه‌های آسیب‌پذیر
 about-logins-list-section-nothing = هیچ هشداری وجود ندارد
 about-logins-list-section-today = امروز
 about-logins-list-section-yesterday = دیروز
@@ -76,16 +85,16 @@ about-logins-login-intro-heading-logged-in = هیچ ورود همگام شده�
 login-intro-description = اگر شما ورودتون به{ -brand-product-name } را بر روی دستگاه دیگری ذخیره کرده‌اید،‌ به این شکل بدستشون بیارید:
 login-intro-instructions-fxa = { -fxaccount-brand-name } خود را در دستگاهی که ورودهای شما در آن ذخیره شده‌اند ایجاد یا در آن وارد شوید.
 login-intro-instructions-fxa-settings = به تنظیمات> همگام‌سازی> روشن کردن همگام‌سازی… بروید و گزینهٔ ورودها و گذرواژها را انتخاب کنید.
-login-intro-instructions-fxa-help = برای راهنمایی بیشتر به <a data-l10n-name="help-link">{ -lockwise-brand-short-name }پشتیبانی</a> مراجعه کنید.
-about-logins-intro-import = اگر اطلاعات ورود شما، در مرورگر دیگری ثبت شده است، می‌توانید از طریق <a data-l10n-name="import-link"> آن‌ها را به { -lockwise-brand-short-name }</a> منتقل کنید.
+login-intro-instructions-fxa-passwords-help = برای راهنمایی بیشتر به <a data-l10n-name="passwords-help-link">پشتیبانی مربوط به گذرواژه</a> مراجعه کنید.
+about-logins-intro-browser-only-import = اگر اطلاعات ورود شما در یک مرورگر دیگر ذخیره شده است، شما می‌توانید <a data-l10n-name="import-link">آن‌ها را به { -brand-product-name } منتقل کنید</a>
 about-logins-intro-import2 = اگر ورودهای شما خارج از { -brand-product-name } ذخیره شده‌اند، می‌توانید <a data-l10n-name="import-browser-link">آنها را از مرورگری دیگر</a> یا <a data-l10n-name="import-file-link">از طریق یک پرونده</a> وارد کنید
 
 ## Login
 
-login-item-new-login-title = ایجاد اطلاعات ورود جدید
+login-item-new-login-title = ایجاد ورود جدید
 login-item-edit-button = ویرایش
-about-logins-login-item-remove-button = حذف
-login-item-origin-label = آدرس پایگاه
+about-logins-login-item-remove-button = برداشتن
+login-item-origin-label = نشانی پایگاه
 login-item-tooltip-message = مطمئن شوید که این آدرس با آدرس دقیق وب سایتی که در آن وارد شده‌اید مطابقت دارد.
 login-item-origin =
     .placeholder = https://www.example.com
@@ -101,10 +110,18 @@ login-item-copy-password-button-text = رونوشت
 login-item-copied-password-button-text = رونوشت شد!
 login-item-save-changes-button = ذخیره تغییرات
 login-item-save-new-button = ذخیره
-login-item-cancel-button = انصراف
-login-item-time-changed = آخرین تغییر: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = تاریخ ایجاد: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = آخرین استفاده: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+login-item-cancel-button = لغو
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = ایجاد شده در
+login-item-timeline-action-updated = به‌روزرسانی شده در
+login-item-timeline-action-used = استفاده شده در
 
 ## OS Authentication dialog
 
@@ -130,9 +147,7 @@ about-logins-reveal-password-os-auth-dialog-message-macosx = نمایش گذرو
 about-logins-copy-password-os-auth-dialog-message-win = برای رونوشت از گذرواژه خود، گذواژهٔ ویندوز خود را وارد کنید. این به امنیت حساب شما کمک می‌کند.
 # This message can be seen when attempting to copy a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-copy-password-os-auth-dialog-message-macosx = کپی رمز عبور ذخیره شده
-
-## Master Password notification
+about-logins-copy-password-os-auth-dialog-message-macosx = رونوشت از گذرواژهٔ ذخیره شده
 
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = برای برون‌ریزی گذرواژه‌های خود، گذواژهٔ ویندوز خود را وارد کنید. این به امنیت حساب شما کمک می‌کند.
@@ -147,8 +162,6 @@ master-password-reload-button =
     .label = ورود
     .accesskey = و
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = انصراف
@@ -157,19 +170,22 @@ confirmation-dialog-dismiss-button =
 
 about-logins-confirm-remove-dialog-title = حذف این ورود؟
 confirm-delete-dialog-message = این عمل قابل برگشت نیست.
-about-logins-confirm-remove-dialog-confirm-button = حذف
+about-logins-confirm-remove-dialog-confirm-button = برداشتن
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
-        [1] حذف
-        [one] حذف همه
-       *[other] حذف همه
+        [1] برداشتن
+        [one] برداشتن
+       *[other] برداشتن همه
     }
 
 about-logins-confirm-remove-all-dialog-checkbox-label =
     { $count ->
-        [1] بله، این ورودها را حذف کن
-       *[other] بله، این ورودها را حذف کن
+        [1] بله، این ورود را بردار
+       *[other] بله، این ورودها را بردار
     }
 
 about-logins-confirm-remove-all-dialog-title =
@@ -194,6 +210,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] این کار همه ورودهایی که در { -brand-short-name } ذخیره شده و در دستگاه‌هایی که با { -fxaccount-brand-name } همگام‌سازی شده‌اند، حذف خواهند شد. این کار هشدارهای ورود ناخواسته‌ای که در اینجا نمایش داده شده‌اند نیز حذف خواهند شد. این عمل غیرقابل بازگشت است.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = برون‌ریزی ورودها و گذرواژه‌ها
 about-logins-confirm-export-dialog-message = گذرواژه‌های شما به عنوان متن قابل خواندن ذخیره خواهد شد (مثلاً BadP@ssw0rd) بنابراین هر کسی که بتواند پرونده صادر شده را باز کند، می‌تواند آنها را ببیند.
 about-logins-confirm-export-dialog-confirm-button = برون‌ریزی…
@@ -213,7 +231,6 @@ about-logins-breach-alert-date = این رخنه در تاریخ { DATETIME($dat
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = برو به { $hostname }
-about-logins-breach-alert-learn-more-link = بیشتر بدانید
 
 ## Vulnerable Password notification
 

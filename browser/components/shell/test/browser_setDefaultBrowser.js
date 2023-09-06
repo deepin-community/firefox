@@ -1,12 +1,30 @@
 /* Any copyright is dedicated to the Public Domain.
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  ExperimentAPI: "resource://nimbus/ExperimentAPI.jsm",
-  ExperimentFakes: "resource://testing-common/NimbusTestUtils.jsm",
-  NimbusFeatures: "resource://nimbus/ExperimentAPI.jsm",
-  sinon: "resource://testing-common/Sinon.jsm",
+ChromeUtils.defineESModuleGetters(this, {
+  ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
+  ExperimentFakes: "resource://testing-common/NimbusTestUtils.sys.mjs",
+  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
+  sinon: "resource://testing-common/Sinon.sys.mjs",
 });
+
+const _handleWDBAResultStub = sinon
+  .stub(ShellService, "_handleWDBAResult")
+  .callsFake(async () => {
+    throw new Error("from _handleWDBAResultStub");
+  });
+
+const _callExternalDefaultBrowserAgentStub = sinon
+  .stub(ShellService, "_callExternalDefaultBrowserAgent")
+  .callsFake(async () => ({
+    async wait() {
+      return { exitCode: 0 };
+    },
+  }));
+
+const _userChoiceImpossibleTelemetryResultStub = sinon
+  .stub(ShellService, "_userChoiceImpossibleTelemetryResult")
+  .callsFake(() => null);
 
 const userChoiceStub = sinon
   .stub(ShellService, "setAsDefaultUserChoice")
@@ -15,7 +33,11 @@ const setDefaultStub = sinon.stub();
 const shellStub = sinon
   .stub(ShellService, "shellService")
   .value({ setDefaultBrowser: setDefaultStub });
+
 registerCleanupFunction(() => {
+  _handleWDBAResultStub.restore();
+  _callExternalDefaultBrowserAgentStub.restore();
+  _userChoiceImpossibleTelemetryResultStub.restore();
   userChoiceStub.restore();
   shellStub.restore();
 
@@ -46,15 +68,11 @@ add_task(async function remote_disable() {
 
   userChoiceStub.resetHistory();
   setDefaultStub.resetHistory();
-  await ExperimentFakes.remoteDefaultsHelper({
-    feature: NimbusFeatures.shellService,
-    configuration: {
-      slug: "shellService_remoteDisable",
-      variables: {
-        setDefaultBrowserUserChoice: false,
-        enabled: true,
-      },
-      targeting: "true",
+  let doCleanup = await ExperimentFakes.enrollWithRollout({
+    featureId: NimbusFeatures.shellService.featureId,
+    value: {
+      setDefaultBrowserUserChoice: false,
+      enabled: true,
     },
   });
 
@@ -65,6 +83,8 @@ add_task(async function remote_disable() {
     "Set default with user choice disabled via nimbus"
   );
   Assert.ok(setDefaultStub.called, "Used plain set default insteead");
+
+  await doCleanup();
 });
 
 add_task(async function restore_default() {
@@ -89,4 +109,38 @@ add_task(async function restore_default() {
     defaultUserChoice,
     "Plain set default behavior restored to original"
   );
+});
+
+add_task(async function ensure_fallback() {
+  if (AppConstants.platform != "win") {
+    info("Nothing to test on non-Windows");
+    return;
+  }
+
+  let userChoicePromise = Promise.resolve();
+  userChoiceStub.callsFake(function (...args) {
+    return (userChoicePromise = userChoiceStub.wrappedMethod.apply(this, args));
+  });
+  userChoiceStub.resetHistory();
+  setDefaultStub.resetHistory();
+  let doCleanup = await ExperimentFakes.enrollWithRollout({
+    featureId: NimbusFeatures.shellService.featureId,
+    value: {
+      setDefaultBrowserUserChoice: true,
+      setDefaultPDFHandler: false,
+      enabled: true,
+    },
+  });
+
+  ShellService.setDefaultBrowser();
+
+  Assert.ok(userChoiceStub.called, "Set default with user choice called");
+
+  let thrown = false;
+  await userChoicePromise.catch(() => (thrown = true));
+
+  Assert.ok(thrown, "Set default with user choice threw an error");
+  Assert.ok(setDefaultStub.called, "Fallbacked to plain set default");
+
+  await doCleanup();
 });

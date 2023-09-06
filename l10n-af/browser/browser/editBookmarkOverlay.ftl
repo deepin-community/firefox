@@ -10,6 +10,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Verskuil
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Wys al die boekmerkvouers
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Verskuil
+
 bookmark-overlay-new-folder-button =
     .label = Nuwe vouer
     .accesskey = o
@@ -21,4 +27,10 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Wys alle oortjies
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Verskuil
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Wys alle oortjies
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Verskuil
 

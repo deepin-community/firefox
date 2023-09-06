@@ -7,10 +7,6 @@
 // This is loaded into chrome windows with the subscript loader. If you need to
 // define globals, wrap in a block to prevent leaking onto `window`.
 {
-  const { Services } = ChromeUtils.import(
-    "resource://gre/modules/Services.jsm"
-  );
-
   MozElements.NotificationBox = class NotificationBox {
     /**
      * Creates a new class to handle a notification box, but does not add any
@@ -89,7 +85,8 @@
      *        the notification based on severity (using the "type" attribute), and
      *        only the notification with the highest priority is displayed.
      *    label
-     *        The main message text, or a DocumentFragment containing elements to
+     *        The main message text (as string), or object (with l10n-id, l10n-args),
+     *        or a DocumentFragment containing elements to
      *        add as children of the notification's main <description> element.
      *    eventCallback
      *        This may be called with the "removed", "dismissed" or "disconnected"
@@ -196,6 +193,18 @@
             aNotification.label.DOCUMENT_FRAGMENT_NODE
         ) {
           newitem.messageText.appendChild(aNotification.label);
+        } else if (
+          aNotification.label &&
+          typeof aNotification.label == "object" &&
+          "l10n-id" in aNotification.label
+        ) {
+          let message = document.createElement("span");
+          document.l10n.setAttributes(
+            message,
+            aNotification.label["l10n-id"],
+            aNotification.label["l10n-args"]
+          );
+          newitem.messageText.appendChild(message);
         } else {
           newitem.messageText.textContent = aNotification.label;
         }
@@ -258,13 +267,15 @@
     }
 
     _removeNotificationElement(aChild) {
+      let hadFocus = aChild.matches(":focus-within");
+
       if (aChild.eventCallback) {
         aChild.eventCallback("removed");
       }
       aChild.remove();
 
-      // make sure focus doesn't get lost (workaround for bug 570835)
-      if (!Services.focus.getFocusedElementForWindow(window, false, {})) {
+      // Make sure focus doesn't get lost (workaround for bug 570835).
+      if (hadFocus) {
         Services.focus.moveFocus(
           window,
           this.stack,
@@ -405,13 +416,9 @@
       </hbox>
       <toolbarbutton ondblclick="event.stopPropagation();"
                      class="messageCloseButton close-icon tabbable"
-                     tooltiptext="&closeNotification.tooltip;"
+                     data-l10n-id="close-notification-message"
                      oncommand="this.parentNode.dismiss();"/>
       `;
-    }
-
-    static get entities() {
-      return ["chrome://global/locale/notification.dtd"];
     }
 
     constructor() {
@@ -419,11 +426,12 @@
       this.persistence = 0;
       this.priority = 0;
       this.timeout = 0;
-      this.telemetry = [];
+      this.telemetry = null;
       this._shown = false;
     }
 
     connectedCallback() {
+      MozXULElement.insertFTLIfNeeded("toolkit/global/notification.ftl");
       this.appendChild(this.constructor.fragment);
 
       for (let [propertyName, selector] of [
@@ -479,7 +487,7 @@
         }
 
         if (localeId) {
-          buttonElem.setAttribute("data-l10n-id", localeId);
+          document.l10n.setAttributes(buttonElem, localeId);
         } else {
           buttonElem.setAttribute(link ? "value" : "label", button.label);
           if (typeof button.accessKey == "string") {
@@ -502,10 +510,26 @@
 
     /**
      * Changes the text of an existing notification. If the notification was
-     * created with a custom fragment, it will be overwritten with plain text.
+     * created with a custom fragment, it will be overwritten with plain text
+     * or a localized message.
+     *
+     * @param {string | { "l10n-id": string, "l10n-args"?: string }} value
      */
     set label(value) {
-      this.messageText.textContent = value;
+      if (value && typeof value == "object" && "l10n-id" in value) {
+        const message = document.createElement("span");
+        document.l10n.setAttributes(
+          message,
+          value["l10n-id"],
+          value["l10n-args"]
+        );
+        while (this.messageText.firstChild) {
+          this.messageText.firstChild.remove();
+        }
+        this.messageText.appendChild(message);
+      } else {
+        this.messageText.textContent = value;
+      }
     }
 
     /**
@@ -593,7 +617,7 @@
         this.persistence = 0;
         this.priority = 0;
         this.timeout = 0;
-        this.telemetry = [];
+        this.telemetry = null;
         this._shown = false;
       }
 
@@ -703,38 +727,57 @@
         }
       }
 
+      /**
+       * Changes the text of an existing notification. If the notification was
+       * created with a custom fragment, it will be overwritten with plain text
+       * or a localized message.
+       *
+       * @param {string | { "l10n-id": string, "l10n-args"?: string }} value
+       */
       set label(value) {
-        this.messageText.textContent = value;
+        if (value && typeof value == "object" && "l10n-id" in value) {
+          const message = document.createElement("span");
+          document.l10n.setAttributes(
+            message,
+            value["l10n-id"],
+            value["l10n-args"]
+          );
+          while (this.messageText.firstChild) {
+            this.messageText.firstChild.remove();
+          }
+          this.messageText.appendChild(message);
+        } else {
+          this.messageText.textContent = value;
+        }
         this.setAlertRole();
       }
 
       setButtons(buttons) {
         this._buttons = buttons;
         for (let button of buttons) {
-          let link = button.link;
+          let link = button.link || button.supportPage;
           let localeId = button["l10n-id"];
-          if (!link && button.supportPage) {
-            link =
-              Services.urlFormatter.formatURLPref("app.support.baseURL") +
-              button.supportPage;
-            if (!button.label && !localeId) {
-              localeId = "notification-learnmore-default-label";
-            }
-          }
 
           let buttonElem;
-          if (link) {
+          if (button.hasOwnProperty("supportPage")) {
+            window.ensureCustomElements("moz-support-link");
+            buttonElem = document.createElement("a", {
+              is: "moz-support-link",
+            });
+            buttonElem.classList.add("notification-link");
+            buttonElem.setAttribute("support-page", button.supportPage);
+          } else if (link) {
             buttonElem = document.createXULElement("label", {
               is: "text-link",
             });
             buttonElem.setAttribute("href", link);
-            buttonElem.classList.add("notification-link");
+            buttonElem.classList.add("notification-link", "text-link");
           } else {
             buttonElem = document.createXULElement(
               "button",
               button.is ? { is: button.is } : {}
             );
-            buttonElem.classList.add("notification-button", "small");
+            buttonElem.classList.add("notification-button", "small-button");
 
             if (button.primary) {
               buttonElem.classList.add("primary");

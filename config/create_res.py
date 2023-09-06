@@ -2,14 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from argparse import (
-    Action,
-    ArgumentParser,
-)
 import os
 import subprocess
 import sys
 import tempfile
+from argparse import Action, ArgumentParser
 
 import buildconfig
 
@@ -53,6 +50,14 @@ def generate_res():
             fd, path = tempfile.mkstemp(suffix=".rc")
             command = buildconfig.substs["CXXCPP"] + CPPFlag.all_flags
             command.extend(("-DRC_INVOKED", args.input))
+
+            cpu_arch_dict = {"x86_64": "_AMD64_", "x86": "_X86_", "aarch64": "_ARM64_"}
+
+            # add a preprocessor #define that specifies the CPU architecture
+            cpu_arch_ppd = cpu_arch_dict[buildconfig.substs["CPU_ARCH"]]
+
+            command.extend(("-D", cpu_arch_ppd))
+
             if verbose:
                 print("Executing:", " ".join(command))
             with os.fdopen(fd, "wb") as fh:

@@ -26,9 +26,9 @@ certmgr-people = Сізде келесі адамдарды анықтайтын
 certmgr-server = Бұл жазбалар сервер сертификатының қателері үшін ережеден тыс жағдайларды анықтайды
 certmgr-ca = Сізде келесі сертификаттарды растаушыларды анықтайтын сертификаттар файлы бар
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = CA сертификатына сену баптауларын түзету
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Сену баптауларын түзету:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Осы сертификат электронды пошта пайдаланушыларын анықтай алады.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Сертификатты өшіру
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Хост
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Сервері
-
-certmgr-override-lifetime =
-    .label = Мерзімі
 
 certmgr-token-name =
     .label = Қауіпсіздік құрылғысы
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Сериялық нөмірі
+
+certmgr-fingerprint-sha-256 =
+    .label = SHA-256 баспасы
 
 certmgr-view =
     .label = Қарап шығу…
@@ -185,8 +185,6 @@ delete-email-cert-impact = Егер сіз электронды пошта па�
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Сериялық нөмірі бар сертификат: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Клиент сертификатын жібермеу

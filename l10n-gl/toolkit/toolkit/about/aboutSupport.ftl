@@ -15,6 +15,9 @@ support-addons-type = Tipo
 support-addons-enabled = Activado
 support-addons-version = Versión
 support-addons-id = ID
+legacy-user-stylesheets-enabled = Activo
+legacy-user-stylesheets-stylesheet-types = Follas de estilo
+legacy-user-stylesheets-no-stylesheets-found = Non se atoparon follas de estilo
 security-software-title = Software de seguranza
 security-software-type = Tipo
 security-software-name = Nome
@@ -27,7 +30,7 @@ features-version = Versión
 features-id = ID
 processes-title = Procesos remotos
 processes-type = Tipo
-processes-count = Contar
+processes-count = Conta
 app-basics-title = Configuración básica do aplicativo
 app-basics-name = Nome
 app-basics-version = Versión
@@ -72,6 +75,12 @@ app-basics-location-service-key-google = Clave de servizo de localización de Go
 app-basics-safebrowsing-key-google = Clave de navegación segura de Google
 app-basics-key-mozilla = Chave do servizo de localización de Mozilla
 app-basics-safe-mode = Modo seguro
+app-basics-memory-size = Tamaño da memoria (RAM)
+app-basics-disk-available = Espazo de disco dispoñíbel
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Amosar no Finder
@@ -101,11 +110,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Rexistro de decisións
 graphics-crash-guards-title = Características desactivadas para a protección contra fallos
 graphics-workarounds-title = Solucións alternativas
+graphics-device-pixel-ratios = Proporcións de píxeles de dispositivos de xanela
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Protocolo de xanelas
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Ambiente de escritorio
 place-database-title = Bases de datos de lugares
+place-database-stats = Estatísticas
+place-database-stats-show = Mostrar as estatísticas
+place-database-stats-hide = Agochar as estatísticas
+place-database-stats-entity = Entidade
+place-database-stats-count = Número
+place-database-stats-size-kib = Tamaño (KiB)
+place-database-stats-size-perc = Tamaño (%)
+place-database-stats-efficiency-perc = Eficiencia (%)
+place-database-stats-sequentiality-perc = Secuencialidade (%)
 place-database-integrity = Integridade
 place-database-verify-integrity = Verificar a integridade
 a11y-title = Accesibilidade
@@ -152,8 +171,18 @@ media-device-channels = Canles
 media-device-rate = Frecuencia
 media-device-latency = Latencia
 media-capabilities-title = Capacidades de multimedia
+media-codec-support-info = Información de compatibilidade con códecs
 # List all the entries of the database.
 media-capabilities-enumerate = Enumerar a base de datos
+
+## Codec support table
+
+media-codec-support-sw-decoding = Decodificación por software
+media-codec-support-hw-decoding = Decodificación por hardware
+media-codec-support-codec-name = Nome do códec
+media-codec-support-supported = Compatible
+media-codec-support-unsupported = Non compatible
+media-codec-support-error = A información de soporte do códec non está dispoñible. Ténteo de novo despois de reproducir un ficheiro multimedia.
 
 ##
 
@@ -268,6 +297,8 @@ webgl2-renderer = Renderizador do controlador WebGL 2
 webgl2-version = Versión do controlador WebGL 2
 webgl2-driver-extensions = Extensións do controlador WebGL 2
 webgl2-extensions = Extensións WebGL 2
+webgpu-default-adapter = Adaptador predeterminado de WebGPU
+webgpu-fallback-adapter = Adaptador de reserva de WebGPU
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = Lista bloqueada por problemas coñecidos: <a data-l10n-name="bug-link">erro { $bugNumber }</a>
@@ -297,6 +328,7 @@ can-sandbox-media = Illamento (sandbox) para os engadidos multimedia
 content-sandbox-level = Nivel de illamento (sandbox) para o proceso do contido
 effective-content-sandbox-level = Nivel efectivo de illamento (sandbox) para o proceso do contido
 content-win32k-lockdown-state = Estado de bloqueo Win32k para o proceso de contido
+support-sandbox-gpu-level = Nivel de illamento de proceso de GPU
 sandbox-proc-type-content = contido
 sandbox-proc-type-file = contido do ficheiro
 sandbox-proc-type-media-plugin = engadido de medios
@@ -322,12 +354,13 @@ fission-status-experiment-control = Desactivada polo experimento
 fission-status-experiment-treatment = Activada polo experimento
 fission-status-disabled-by-e10s-env = Desactivada polo entorno
 fission-status-enabled-by-env = Activada polo entorno
-fission-status-disabled-by-safe-mode = Desactivada polo modo seguro
+fission-status-disabled-by-env = Desactivada polo ambiente
 fission-status-enabled-by-default = Activada por omisión
 fission-status-disabled-by-default = Desactivada por omisión
 fission-status-enabled-by-user-pref = Activada polo usuario
 fission-status-disabled-by-user-pref = Desactivada polo usuario
 fission-status-disabled-by-e10s-other = Desactivadas por E10s
+fission-status-enabled-by-rollout = Activada por unha publicación gradual
 async-pan-zoom = Pan/Zoom asíncrono
 apz-none = ningún
 wheel-enabled = entrada da roda do rato activada

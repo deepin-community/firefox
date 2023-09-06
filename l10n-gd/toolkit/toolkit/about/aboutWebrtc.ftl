@@ -13,6 +13,9 @@ about-webrtc-document-title = WebRTC Internals
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = sàbhail about:webrtc mar
 
+## These labels are for a disclosure which contains the information for closed PeerConnection sections
+
+
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = Logadh AEC
@@ -20,7 +23,16 @@ about-webrtc-aec-logging-off-state-label = Tòisich air logadh AEC
 about-webrtc-aec-logging-on-state-label = Sguir de logadh AEC
 about-webrtc-aec-logging-on-state-msg = Tha an logadh AEC gnìomhach (bruidhinn ris an neach a ghairm beagan mhionaidean is sguir dhen ghlacadh an uairsin)
 
+about-webrtc-aec-logging-toggled-on-state-msg = Tha an logadh AEC gnìomhach (bruidhinn ris an neach a ghairm beagan mhionaidean is sguir dhen ghlacadh an uairsin)
+# Variables:
+#  $path (String) - The path to which the aec log file is saved.
+about-webrtc-aec-logging-toggled-off-state-msg = Gheibhear na faidhlichean loga an-seo: { $path }
+
 ##
+
+# The autorefresh checkbox causes the page to autorefresh its content when checked
+about-webrtc-auto-refresh-label = Auto Refresh
+
 
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
@@ -59,11 +71,6 @@ about-webrtc-ice-pair-bytes-sent = Bytes sent:
 about-webrtc-ice-pair-bytes-received = Bytes received:
 about-webrtc-ice-component-id = Component ID
 
-## "Avg." is an abbreviation for Average. These are used as data labels.
-
-about-webrtc-avg-bitrate-label = Reat bhiodan cuibheasach
-about-webrtc-avg-framerate-label = Reat fhrèamaichean cuibheasach
-
 ## These adjectives are used to label a line of statistics collected for a peer
 ## connection. The data represents either the local or remote end of the
 ## connection.
@@ -95,6 +102,11 @@ about-webrtc-log-show-msg = seall an loga
 about-webrtc-log-hide-msg = falaich an loga
     .title = dèan briogadh gus an earrann seo a cho-theannadh
 
+about-webrtc-log-section-show-msg = Seall an loga
+    .title = Dèan briogadh gus an earrann seo a leudachadh
+about-webrtc-log-section-hide-msg = Falaich an loga
+    .title = Dèan briogadh gus an earrann seo a cho-theannadh
+
 ## These are used to display a header for a PeerConnection.
 ## Variables:
 ##  $browser-id (Number) - A numeric id identifying the browser tab for the PeerConnection.
@@ -104,6 +116,11 @@ about-webrtc-log-hide-msg = falaich an loga
 
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (air a dhùnadh) { $now }
+
+## These are used to indicate what direction media is flowing.
+## Variables:
+##  $codecs - a list of media codecs
+
 
 ##
 
@@ -116,16 +133,25 @@ about-webrtc-raw-cand-show-msg = show raw candidates
     .title = dèan briogadh gus an earrann seo a leudachadh
 about-webrtc-raw-cand-hide-msg = hide raw candidates
     .title = dèan briogadh gus an earrann seo a cho-theannadh
+about-webrtc-raw-cand-section-show-msg = Show raw candidates
+    .title = Dèan briogadh gus an earrann seo a leudachadh
+about-webrtc-raw-cand-section-hide-msg = Hide raw candidates
+    .title = Dèan briogadh gus an earrann seo a cho-theannadh
 about-webrtc-priority = Prìomhachas
 about-webrtc-fold-show-msg = seall am mion-fhiosrachadh
     .title = dèan briogadh gus an earrann seo a leudachadh
 about-webrtc-fold-hide-msg = falaich am mion-fhiosrachadh
     .title = dèan briogadh gus an earrann seo a cho-theannadh
+about-webrtc-fold-default-show-msg = Seall am mion-fhiosrachadh
+    .title = Dèan briogadh gus an earrann seo a leudachadh
+about-webrtc-fold-default-hide-msg = Falaich am mion-fhiosrachadh
+    .title = Dèan briogadh gus an earrann seo a cho-theannadh
 about-webrtc-dropped-frames-label = Frèamaichean a thuit:
 about-webrtc-discarded-packets-label = Pacaidean a chaidh a thilgeil air falbh:
 about-webrtc-decoder-label = Dì-chòdaichear
 about-webrtc-encoder-label = Còdaichear
 about-webrtc-show-tab-label = Seall an taba
+about-webrtc-current-framerate-label = Framerate
 about-webrtc-width-px = Leud (px)
 about-webrtc-height-px = Àirde (px)
 about-webrtc-consecutive-frames = Frèamaichean leantach
@@ -141,6 +167,12 @@ about-webrtc-last-frame-timestamp = Stampa-tìde an fhrèam mu dheireadh a fhuar
 about-webrtc-local-receive-ssrc = Faighinn SSRC ionadail
 # This is an SSRC on the remote side of the connection that is sending RTP
 about-webrtc-remote-send-ssrc = Cur SSRC cèin
+
+## These are displayed on the button that shows or hides the
+## PeerConnection configuration disclosure
+
+about-webrtc-pc-configuration-show-msg = Show Configuration
+about-webrtc-pc-configuration-hide-msg = Hide Configuration
 
 ##
 
@@ -193,7 +225,33 @@ about-webrtc-debug-mode-off-state-msg = gheibhear an trace log an-seo: { $path }
 about-webrtc-debug-mode-on-state-msg = tha am modh dì-bhugachaidh air, an trace log an-seo: { $path }
 about-webrtc-aec-logging-off-state-msg = gheibhear na faidhlichean loga an-seo: { $path }
 
+about-webrtc-save-page-complete-msg = Chaidh an duilleag a shàbhaladh an-seo: { $path }
+about-webrtc-debug-mode-toggled-off-state-msg = Gheibhear an trace log an-seo: { $path }
+about-webrtc-debug-mode-toggled-on-state-msg = Tha am modh dì-bhugachaidh air, an trace log an-seo: { $path }
+
 ##
+
+# This is the total number of frames encoded or decoded over an RTP stream.
+# Variables:
+#  $frames (Number) - The number of frames encoded or decoded.
+about-webrtc-frames =
+    { $frames ->
+        [one] { $frames } frame
+        [two] { $frames } frames
+        [few] { $frames } frames
+       *[other] { $frames } frames
+    }
+
+# This is the number of audio channels encoded or decoded over an RTP stream.
+# Variables:
+#  $channels (Number) - The number of channels encoded or decoded.
+about-webrtc-channels =
+    { $channels ->
+        [one] { $channels } channel
+        [two] { $channels } channels
+        [few] { $channels } channels
+       *[other] { $channels } channels
+    }
 
 # This is the total number of packets received on the PeerConnection.
 # Variables:
@@ -257,6 +315,16 @@ about-webrtc-sdp-set-at-timestamp-remote = Chaidh SDP cèin a shuidheachadh air 
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 #  $relative-timestamp (Number) - The timestamp relative to the timestamp of the earliest received SDP.
 about-webrtc-sdp-set-timestamp = Stampa-tìde { NUMBER($timestamp, useGrouping: "false") } (+ { $relative-timestamp } ms)
+
+## These are displayed on the button that shows or hides the SDP information disclosure
+
+about-webrtc-show-msg-sdp = Show SDP
+about-webrtc-hide-msg-sdp = Hide SDP
+
+## These are displayed on the button that shows or hides the Media Context information disclosure.
+## The Media Context is the set of preferences and detected capabilities that informs
+## the negotiated CODEC settings.
+
 
 ##
 

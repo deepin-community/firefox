@@ -15,8 +15,7 @@
 #include "nsCycleCollectionParticipant.h"
 #include "nsWrapperCache.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 class AuthenticatorAssertionResponse final : public AuthenticatorResponse {
  public:
@@ -33,16 +32,18 @@ class AuthenticatorAssertionResponse final : public AuthenticatorResponse {
   virtual JSObject* WrapObject(JSContext* aCx,
                                JS::Handle<JSObject*> aGivenProto) override;
 
-  void GetAuthenticatorData(JSContext* aCx,
-                            JS::MutableHandle<JSObject*> aRetVal);
+  void GetAuthenticatorData(JSContext* aCx, JS::MutableHandle<JSObject*> aValue,
+                            ErrorResult& aRv);
 
   nsresult SetAuthenticatorData(CryptoBuffer& aBuffer);
 
-  void GetSignature(JSContext* aCx, JS::MutableHandle<JSObject*> aRetVal);
+  void GetSignature(JSContext* aCx, JS::MutableHandle<JSObject*> aValue,
+                    ErrorResult& aRv);
 
   nsresult SetSignature(CryptoBuffer& aBuffer);
 
-  void GetUserHandle(JSContext* aCx, JS::MutableHandle<JSObject*> aRetVal);
+  void GetUserHandle(JSContext* aCx, JS::MutableHandle<JSObject*> aValue,
+                     ErrorResult& aRv);
 
   nsresult SetUserHandle(CryptoBuffer& aUserHandle);
 
@@ -55,7 +56,6 @@ class AuthenticatorAssertionResponse final : public AuthenticatorResponse {
   JS::Heap<JSObject*> mUserHandleCachedObj;
 };
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 #endif  // mozilla_dom_AuthenticatorAssertionResponse_h

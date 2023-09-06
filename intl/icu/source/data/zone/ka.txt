@@ -258,6 +258,9 @@ ka{
         "America:Chihuahua"{
             ec{"ჩიჰუაჰუა"}
         }
+        "America:Ciudad_Juarez"{
+            ec{"სიუდად-ხუარესი"}
+        }
         "America:Coral_Harbour"{
             ec{"ატიკოკანი"}
         }
@@ -1223,6 +1226,9 @@ ka{
         "Pacific:Johnston"{
             ec{"ჯონსტონი"}
         }
+        "Pacific:Kanton"{
+            ec{"კანტონი"}
+        }
         "Pacific:Kiritimati"{
             ec{"კირიტიმატი"}
         }
@@ -1882,6 +1888,9 @@ ka{
             ld{"ეკატერინბურგის ზაფხულის დრო"}
             lg{"ეკატერინბურგის დრო"}
             ls{"ეკატერინბურგის სტანდარტული დრო"}
+        }
+        "meta:Yukon"{
+            ls{"იუკონის დრო"}
         }
         fallbackFormat{"{1} ({0})"}
         gmtFormat{"GMT{0}"}

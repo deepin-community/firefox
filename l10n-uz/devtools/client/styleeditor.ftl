@@ -16,8 +16,25 @@ styleeditor-save-button = Saqlash
     .accesskey = S
 styleeditor-options-button =
     .tooltiptext = Uslubni tahrirlagich moslamalari
-styleeditor-media-rules = @media qoidalari
 styleeditor-editor-textbox =
     .data-placeholder = CSS‘ni shu joyda kiriting.
 styleeditor-no-stylesheet = Ushbu sahifada uslublar jadvali yo‘q.
 styleeditor-no-stylesheet-tip = Balkim siz <a data-l10n-name="append-new-stylesheet">yangi uslub jadvaliga qo‘shishni xohlarsiz</a>?
+styleeditor-find =
+    .label = Topish
+    .accesskey = T
+styleeditor-find-again =
+    .label = Yana topish
+    .accesskey = p
+styleeditor-go-to-line =
+    .label = Satrga oʻtish
+    .accesskey = o
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } ta qoida.
+       *[other] { $ruleCount } ta qoida.
+    }

@@ -22,9 +22,17 @@ text-action-copy =
     .accesskey = C
 text-action-copy-shortcut =
     .key = C
+# This command copies the link, removing additional
+# query parameters used to track users across sites.
+text-action-strip-on-share =
+    .label = Copi Heb Tracio Gwefan
+    .accesskey = G
 text-action-paste =
     .label = Gludo
     .accesskey = G
+text-action-paste-no-formatting =
+    .label = Gludo heb Fformatio
+    .accesskey = F
 text-action-paste-shortcut =
     .key = V
 text-action-delete =
@@ -50,7 +58,7 @@ text-action-spell-add-dictionaries =
     .label = Ychwanegu Geiriaduron…
     .accesskey = Y
 text-action-spell-dictionaries =
-    .label = Ieithoedd
+    .label = Iaith
     .accesskey = I
 text-action-search-text-box-clear =
     .title = Clirio

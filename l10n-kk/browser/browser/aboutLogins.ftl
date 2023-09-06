@@ -5,12 +5,12 @@
 
 about-logins-page-title = Логиндер және парольдер
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Логиндерден іздеу
+    .key = F
 
-create-login-button = Жаңа логинді жасау
+create-new-login-button =
+    .title = Жаңа логинді жасау
 
 fxaccounts-sign-in-text = Парольдеріңізді басқа құрылғыларыңызды алыңыз
 fxaccounts-sign-in-sync-button = Синхрондау үшін кіру
@@ -37,9 +37,19 @@ about-logins-menu-menuitem-help = Көмек
 
 login-list =
     .aria-label = Іздеу сұрауына сәйкес логиндер
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
        *[other] { $count } логин
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } логин, барлығы { $total }
+       *[other] { $count } логин, барлығы { $total }
     }
 login-list-sort-label-text = Бойынша сұрыптау:
 login-list-name-option = Аты (A-Z)
@@ -60,7 +70,6 @@ about-logins-list-item-breach-icon =
     .title = Шабуылданған сайт
 about-logins-list-item-vulnerable-password-icon =
     .title = Осал пароль
-
 about-logins-list-section-breach = Шабуылданған веб-сайттар
 about-logins-list-section-vulnerable = Осал парольдер
 about-logins-list-section-nothing = Ескерту жоқ
@@ -75,8 +84,8 @@ about-logins-login-intro-heading-logged-in = Синхрондалған логи
 login-intro-description = Логиндерді басқа құрылғыдағы { -brand-product-name } ішіне сақтасаңыз, оларды осында келесідей алуға болады:
 login-intro-instructions-fxa = Логиндеріңіз сақталған құрылғыда { -fxaccount-brand-name } тіркелгісін жасаңыз немесе оған кіріңіз.
 login-intro-instructions-fxa-settings = Баптаулар > Синхрондау > Синхрондауды іске қосу… таңдаңыз. Логиндер және парольдер жалаушасын орнатыңыз.
-login-intro-instructions-fxa-help = Көбірек білу үшін, <a data-l10n-name="help-link">{ -lockwise-brand-short-name } қолдау көрсету сайтын</a> шолыңыз.
-about-logins-intro-import = Егер сіздің логиндеріңіз басқа браузерде сақталған болса, оларды <a data-l10n-name="import-link">{ -lockwise-brand-short-name } ішіне импорттай аласыз</a>
+login-intro-instructions-fxa-passwords-help = Көбірек білу үшін, <a data-l10n-name="passwords-help-link">парольдер бойынша қолдау көрсету</a> адресін шолыңыз.
+about-logins-intro-browser-only-import = Егер сіздің логиндеріңіз басқа браузерде сақталған болса, оларды <a data-l10n-name="import-link">{ -brand-product-name } ішіне импорттай аласыз</a>
 about-logins-intro-import2 = Егер сіздің логиндеріңіз { -brand-product-name } сыртында сақталса, оларды <a data-l10n-name="import-browser-link">басқа браузерден</a> немесе <a data-l10n-name="import-file-link">файлдан</a> импорттауға болады
 
 ## Login
@@ -101,9 +110,17 @@ login-item-copied-password-button-text = Көшірілді!
 login-item-save-changes-button = Өзгерістерді сақтау
 login-item-save-new-button = Сақтау
 login-item-cancel-button = Бас тарту
-login-item-time-changed = Соңғы өзгертілген: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Жасалған: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Соңғы рет қолданылған: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Жасалған
+login-item-timeline-action-updated = Жаңартылды
+login-item-timeline-action-used = Пайдаланылды
 
 ## OS Authentication dialog
 
@@ -131,8 +148,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Пароліңізді �
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = сақталған парольді көшіру
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Логиндеріңізді экспорттау үшін, Windows ішіне кірудің есептік жазба мәліметтерін енгізіңіз. Бұл тіркелгілеріңіздің қауіпсіздігін қорғауға көмектеседі.
 # This message can be seen when attempting to export a password in about:logins
@@ -146,8 +161,6 @@ master-password-reload-button =
     .label = Кіру
     .accesskey = к
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Бас тарту
@@ -157,6 +170,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Бұл логинді өшіру керек пе?
 confirm-delete-dialog-message = Бұл әрекетті болдырмау мүмкін емес болады.
 about-logins-confirm-remove-dialog-confirm-button = Өшіру
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -190,6 +206,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Бұл { -brand-short-name } жүйесіне сақтаған барлық логиндерді сіздің барлық { -fxaccount-brand-name } арқылы синхрондалған құрылғылардан өшіреді. Сонымен қатар, осы жерде көрсетілетін бұзушылық туралы ескертулерді өшіреді. Бұл әрекетті болдырмау мүмкін болмайды.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Логиндер және парольдерді экспорттау
 about-logins-confirm-export-dialog-message = Парольдеріңіз ашық, оқуға келетін мәтін ретінде сақталатын болады (мыс., BadP@ssw0rd) сондықтан экспортталған файлды аша алатын адам оларды көре алады.
 about-logins-confirm-export-dialog-confirm-button = Экспорттау…
@@ -209,7 +227,6 @@ about-logins-breach-alert-date = Деректерді бұзу орын алға
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = { $hostname } адресіне өту
-about-logins-breach-alert-learn-more-link = Көбірек білу
 
 ## Vulnerable Password notification
 

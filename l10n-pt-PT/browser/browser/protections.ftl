@@ -65,22 +65,20 @@ cryptominer-tab-content = Os cripto-mineradores utilizam o poder de computação
 protections-close-button2 =
     .aria-label = Fechar
     .title = Fechar
-  
+
 mobile-app-title = Bloquear anúncios de monitorização em mais dispositivos
 mobile-app-card-content = Utilize o navegador móvel com proteção integrada contra anúncios de monitorização.
 mobile-app-links = O navegador { -brand-product-name } para <a data-l10n-name="android-mobile-inline-link">Android</a> e <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Nunca mais esqueça uma palavra-passe
-lockwise-title-logged-in2 = Gestão de palavras-passe
-lockwise-header-content = O { -lockwise-brand-name } guarda as suas palavras-passe em segurança no seu navegador.
+passwords-title-logged-in = Gira as suas palavras-passe
+passwords-header-content = O { -brand-product-name } guarda as suas palavras-passe em segurança no seu navegador.
 lockwise-header-content-logged-in = Guarde e sincronize em segurança as suas palavras-passe em todos os seus dispositivos.
-protection-report-save-passwords-button = Guardar palavras-passe
-    .title = Guardar palavras-passe no { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Gerir palavras-passe
-    .title = Gerir palavras-passe no { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Leve as suas palavras-passe para todo o lado
-lockwise-no-logins-card-content = Utilize as palavras-passe guardadas no { -brand-short-name } em qualquer dispositivo.
-lockwise-app-links = { -lockwise-brand-name } para <a data-l10n-name="lockwise-android-inline-link">Android</a> e <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Guardar palavras-passe
+    .title = Guardar palavras-passe
+protection-report-passwords-manage-passwords-button = Gerir palavras-passe
+    .title = Gerir palavras-passe
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

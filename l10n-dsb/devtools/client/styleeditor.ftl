@@ -8,15 +8,19 @@ styleeditor-new-button =
 styleeditor-import-button =
     .tooltiptext = Eksistěrujucy stil importěrowaś a k dokumentoju pśipowjesyś
     .accesskey = I
+styleeditor-filter-input =
+    .placeholder = Stilowe pśedłogi filtrowaś
 styleeditor-visibility-toggle =
     .tooltiptext = Widobnosć stiloweje pśedłogi pśepěś
     .accesskey = S
+styleeditor-visibility-toggle-system =
+    .tooltiptext = Systemowe stilowe pśedłogi njedaju se znjemóžniś
 styleeditor-save-button = Składowaś
     .tooltiptext = Toś tu stilowu pśedłogu do dataje składowaś
     .accesskey = S
 styleeditor-options-button =
     .tooltiptext = Nastajenja stilowego editora
-styleeditor-media-rules = pšawidła @media
+styleeditor-at-rules = @-pšawidła
 styleeditor-editor-textbox =
     .data-placeholder = Zapišćo how CSS.
 styleeditor-no-stylesheet = Toś ten bok njama stilowu pśedłogu.
@@ -25,3 +29,25 @@ styleeditor-open-link-new-tab =
     .label = Wótkaz w nowem rejtariku wócyniś
 styleeditor-copy-url =
     .label = URL kopěrowaś
+styleeditor-find =
+    .label = Pytaś
+    .accesskey = P
+styleeditor-find-again =
+    .label = Dalej pytaś
+    .accesskey = D
+styleeditor-go-to-line =
+    .label = K slědujucej smužce skócyś…
+    .accesskey = l
+# Label displayed when searching a term that is not found in any stylesheet path
+styleeditor-stylesheet-all-filtered = Pśigódna stilowa pśedłoga njejo se namakała.
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } pšawidło.
+        [two] { $ruleCount } pšawidle.
+        [few] { $ruleCount } pšawidła.
+       *[other] { $ruleCount } pšawidłow.
+    }

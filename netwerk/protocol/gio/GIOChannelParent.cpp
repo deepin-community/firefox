@@ -18,6 +18,8 @@
 #include "nsISecureBrowserUI.h"
 #include "nsQueryObject.h"
 #include "mozilla/Logging.h"
+#include "mozilla/net/ChannelEventQueue.h"
+#include "mozilla/ipc/URIUtils.h"
 
 using namespace mozilla::dom;
 using namespace mozilla::ipc;
@@ -74,7 +76,7 @@ bool GIOChannelParent::DoAsyncOpen(const URIParams& aURI,
                                    const uint64_t& aStartPos,
                                    const nsCString& aEntityID,
                                    const Maybe<IPCStream>& aUploadStream,
-                                   const Maybe<LoadInfoArgs>& aLoadInfoArgs,
+                                   const LoadInfoArgs& aLoadInfoArgs,
                                    const uint32_t& aLoadFlags) {
   nsresult rv;
 
@@ -93,8 +95,14 @@ bool GIOChannelParent::DoAsyncOpen(const URIParams& aURI,
     return SendFailedAsyncOpen(rv);
   }
 
+  nsAutoCString remoteType;
+  rv = GetRemoteType(remoteType);
+  if (NS_FAILED(rv)) {
+    return SendFailedAsyncOpen(rv);
+  }
+
   nsCOMPtr<nsILoadInfo> loadInfo;
-  rv = mozilla::ipc::LoadInfoArgsToLoadInfo(aLoadInfoArgs,
+  rv = mozilla::ipc::LoadInfoArgsToLoadInfo(aLoadInfoArgs, remoteType,
                                             getter_AddRefs(loadInfo));
   if (NS_FAILED(rv)) {
     return SendFailedAsyncOpen(rv);
@@ -249,13 +257,6 @@ GIOChannelParent::SetParentListener(ParentChannelListener* aListener) {
 NS_IMETHODIMP
 GIOChannelParent::NotifyClassificationFlags(uint32_t aClassificationFlags,
                                             bool aIsThirdParty) {
-  // Nothing to do.
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-GIOChannelParent::NotifyFlashPluginStateChanged(
-    nsIHttpChannel::FlashPluginState aState) {
   // Nothing to do.
   return NS_OK;
 }

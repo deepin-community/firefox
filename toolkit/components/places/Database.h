@@ -16,10 +16,6 @@
 #include "Shutdown.h"
 #include "nsCategoryCache.h"
 
-// This is the schema version. Update it at any schema change and add a
-// corresponding migrateVxx method below.
-#define DATABASE_SCHEMA_VERSION 59
-
 // Fired after Places inited.
 #define TOPIC_PLACES_INIT_COMPLETE "places-init-complete"
 // This topic is received when the profile is about to be lost.  Places does
@@ -42,8 +38,7 @@ class mozIStorageService;
 class nsIAsyncShutdownClient;
 class nsIRunnable;
 
-namespace mozilla {
-namespace places {
+namespace mozilla::places {
 
 enum JournalMode {
   // Default SQLite journal mode.
@@ -64,9 +59,9 @@ class ClientsShutdownBlocker;
 class ConnectionShutdownBlocker;
 
 class Database final : public nsIObserver, public nsSupportsWeakReference {
-  typedef mozilla::storage::StatementCache<mozIStorageStatement> StatementCache;
-  typedef mozilla::storage::StatementCache<mozIStorageAsyncStatement>
-      AsyncStatementCache;
+  using StatementCache = mozilla::storage::StatementCache<mozIStorageStatement>;
+  using AsyncStatementCache =
+      mozilla::storage::StatementCache<mozIStorageAsyncStatement>;
 
  public:
   NS_DECL_THREADSAFE_ISUPPORTS
@@ -203,30 +198,11 @@ class Database final : public nsIObserver, public nsSupportsWeakReference {
   already_AddRefed<mozIStorageAsyncStatement> GetAsyncStatement(
       const nsACString& aQuery);
 
-  int64_t GetRootFolderId() {
-    mozilla::Unused << EnsureConnection();
-    return mRootId;
-  }
-  int64_t GetMenuFolderId() {
-    mozilla::Unused << EnsureConnection();
-    return mMenuRootId;
-  }
   int64_t GetTagsFolderId() {
     mozilla::Unused << EnsureConnection();
     return mTagsRootId;
   }
-  int64_t GetUnfiledFolderId() {
-    mozilla::Unused << EnsureConnection();
-    return mUnfiledRootId;
-  }
-  int64_t GetToolbarFolderId() {
-    mozilla::Unused << EnsureConnection();
-    return mToolbarRootId;
-  }
-  int64_t GetMobileFolderId() {
-    mozilla::Unused << EnsureConnection();
-    return mMobileRootId;
-  }
+  nsresult RecalculateOriginFrecencyStatsInternal();
 
  protected:
   /**
@@ -315,32 +291,30 @@ class Database final : public nsIObserver, public nsSupportsWeakReference {
 
   /**
    * Helpers used by schema upgrades.
+   * When adding a new function remember to bump up the schema version in
+   * nsINavHistoryService.
    */
-  nsresult MigrateV44Up();
-  nsresult MigrateV45Up();
-  nsresult MigrateV46Up();
-  nsresult MigrateV47Up();
-  nsresult MigrateV48Up();
-  nsresult MigrateV49Up();
-  nsresult MigrateV50Up();
-  nsresult MigrateV51Up();
-  nsresult MigrateV52Up();
   nsresult MigrateV53Up();
   nsresult MigrateV54Up();
   nsresult MigrateV55Up();
   nsresult MigrateV56Up();
   nsresult MigrateV57Up();
-  nsresult MigrateV58Up();
-  nsresult MigrateV59Up();
-
-  void MigrateV52OriginFrecencies();
+  nsresult MigrateV60Up();
+  nsresult MigrateV61Up();
+  nsresult MigrateV67Up();
+  nsresult MigrateV69Up();
+  nsresult MigrateV70Up();
+  nsresult MigrateV71Up();
+  nsresult MigrateV72Up();
+  nsresult MigrateV73Up();
+  nsresult MigrateV74Up();
+  nsresult MigrateV75Up();
 
   nsresult UpdateBookmarkRootTitles();
 
   friend class ConnectionShutdownBlocker;
 
   int64_t CreateMobileRoot();
-  nsresult ConvertOldStyleQuery(nsCString& aURL);
 
  private:
   ~Database();
@@ -397,7 +371,6 @@ class Database final : public nsIObserver, public nsSupportsWeakReference {
   int64_t mMobileRootId;
 };
 
-}  // namespace places
-}  // namespace mozilla
+}  // namespace mozilla::places
 
 #endif  // mozilla_places_Database_h_

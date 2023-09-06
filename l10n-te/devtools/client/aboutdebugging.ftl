@@ -31,7 +31,7 @@ about-debugging-sidebar-runtime-item-name-no-device =
     .title = { $displayName }
 
 # Text to show in the footer of the sidebar that links to a help page
-# (currently: https://developer.mozilla.org/docs/Tools/about:debugging)
+# (currently: https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/)
 about-debugging-sidebar-support = డీబగ్గింగ్ తోడ్పాటు
 
 # Text to show as the ALT attribute of a help icon that accompanies the help about
@@ -93,6 +93,10 @@ about-debugging-tmp-extension-remove-button = తొలగించు
 # displaying the location of the temporary extension.
 about-debugging-extension-location =
     .label = స్థానం
+
+# Alt text used for the close icon of message component (warnings, errors and notifications).
+about-debugging-message-close-icon =
+    .alt = సందేశాన్ని మూసివేయి
 
 # Label text used for the error details of message component.
 about-debugging-message-details-label-error = దోష వివరాలు

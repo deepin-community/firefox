@@ -63,22 +63,20 @@ cryptominer-tab-content = 암호화폐 채굴기는 디지털 화폐를 채굴�
 protections-close-button2 =
     .aria-label = 닫기
     .title = 닫기
-  
+
 mobile-app-title = 더 많은 기기에서 광고 추적기 차단
 mobile-app-card-content = 광고 추적에 대한 보호 기능이 내장된 모바일 브라우저를 사용하세요.
 mobile-app-links = <a data-l10n-name="android-mobile-inline-link">Android</a> 및 <a data-l10n-name="ios-mobile-inline-link">iOS</a>용 { -brand-product-name } 브라우저
 
 lockwise-title = 비밀번호를 다시 잊지 마세요
-lockwise-title-logged-in2 = 비밀번호 관리
-lockwise-header-content = { -lockwise-brand-name }는 비밀번호를 브라우저에 안전하게 저장합니다.
+passwords-title-logged-in = 비밀번호 관리
+passwords-header-content = { -brand-product-name }는 비밀번호를 브라우저에 안전하게 저장합니다.
 lockwise-header-content-logged-in = 비밀번호를 모든 기기에 안전하게 저장하고 동기화합니다.
-protection-report-save-passwords-button = 비밀번호 저장
-    .title = { -lockwise-brand-short-name }에 비밀번호 저장
-protection-report-manage-passwords-button = 비밀번호 관리
-    .title = { -lockwise-brand-short-name }에서 비밀번호 관리
-lockwise-mobile-app-title = 어디에서나 비밀번호를 사용하세요
-lockwise-no-logins-card-content = 모든 기기에서 { -brand-short-name }에 저장된 비밀번호를 사용하세요.
-lockwise-app-links = <a data-l10n-name="lockwise-android-inline-link">Android</a> 및 <a data-l10n-name="lockwise-ios-inline-link">iOS</a>용 { -lockwise-brand-name }
+protection-report-passwords-save-passwords-button = 비밀번호 저장
+    .title = 비밀번호 저장
+protection-report-passwords-manage-passwords-button = 비밀번호 관리
+    .title = 비밀번호 관리
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

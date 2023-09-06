@@ -258,10 +258,10 @@ bool nsMixedContentBlocker::IsPotentiallyTrustworthyLoopbackURL(nsIURI* aURL) {
 }
 
 /* Maybe we have a .onion URL. Treat it as trustworthy as well if
- * `dom.securecontext.whitelist_onions` is `true`.
+ * `dom.securecontext.allowlist_onions` is `true`.
  */
 bool nsMixedContentBlocker::IsPotentiallyTrustworthyOnion(nsIURI* aURL) {
-  if (!StaticPrefs::dom_securecontext_whitelist_onions()) {
+  if (!StaticPrefs::dom_securecontext_allowlist_onions()) {
     return false;
   }
 
@@ -274,8 +274,8 @@ bool nsMixedContentBlocker::IsPotentiallyTrustworthyOnion(nsIURI* aURL) {
 // static
 void nsMixedContentBlocker::OnPrefChange(const char* aPref, void* aClosure) {
   MOZ_ASSERT(NS_IsMainThread());
-  MOZ_ASSERT(!strcmp(aPref, "dom.securecontext.whitelist"));
-  Preferences::GetCString("dom.securecontext.whitelist",
+  MOZ_ASSERT(!strcmp(aPref, "dom.securecontext.allowlist"));
+  Preferences::GetCString("dom.securecontext.allowlist",
                           *sSecurecontextAllowlist);
 }
 
@@ -287,7 +287,7 @@ void nsMixedContentBlocker::GetSecureContextAllowList(nsACString& aList) {
     sSecurecontextAllowlistCached = true;
     sSecurecontextAllowlist = new nsCString();
     Preferences::RegisterCallbackAndCall(OnPrefChange,
-                                         "dom.securecontext.whitelist");
+                                         "dom.securecontext.allowlist");
   }
   aList = *sSecurecontextAllowlist;
 }
@@ -363,18 +363,27 @@ bool nsMixedContentBlocker::IsPotentiallyTrustworthyOrigin(nsIURI* aURI) {
   }
 
   // Maybe we have a .onion URL. Treat it as trustworthy as well if
-  // `dom.securecontext.whitelist_onions` is `true`.
+  // `dom.securecontext.allowlist_onions` is `true`.
   if (nsMixedContentBlocker::IsPotentiallyTrustworthyOnion(aURI)) {
     return true;
   }
   return false;
 }
 
+/* static */
+bool nsMixedContentBlocker::IsUpgradableContentType(nsContentPolicyType aType) {
+  MOZ_ASSERT(NS_IsMainThread());
+  return (aType == nsIContentPolicy::TYPE_INTERNAL_IMAGE ||
+          aType == nsIContentPolicy::TYPE_INTERNAL_IMAGE_PRELOAD ||
+          aType == nsIContentPolicy::TYPE_INTERNAL_AUDIO ||
+          aType == nsIContentPolicy::TYPE_INTERNAL_VIDEO);
+}
+
 /*
  * Return the URI of the precusor principal or the URI of aPrincipal if there is
  * no precursor URI.
  */
-static already_AddRefed<nsIURI> GetPrincipalURIOrPrecursorPrincialURI(
+static already_AddRefed<nsIURI> GetPrincipalURIOrPrecursorPrincipalURI(
     nsIPrincipal* aPrincipal) {
   nsCOMPtr<nsIURI> precursorURI = nullptr;
   if (aPrincipal->GetIsNullPrincipal()) {
@@ -443,6 +452,8 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
   // external type in all cases right now.
   bool isWorkerType =
       internalContentType == nsIContentPolicy::TYPE_INTERNAL_WORKER ||
+      internalContentType ==
+          nsIContentPolicy::TYPE_INTERNAL_WORKER_STATIC_MODULE ||
       internalContentType == nsIContentPolicy::TYPE_INTERNAL_SHARED_WORKER ||
       internalContentType == nsIContentPolicy::TYPE_INTERNAL_SERVICE_WORKER;
   ExtContentPolicyType contentType =
@@ -578,6 +589,7 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
     case ExtContentPolicy::TYPE_XSLT:
     case ExtContentPolicy::TYPE_OTHER:
     case ExtContentPolicy::TYPE_SPECULATIVE:
+    case ExtContentPolicy::TYPE_WEB_TRANSPORT:
       break;
 
     case ExtContentPolicy::TYPE_INVALID:
@@ -645,13 +657,13 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
   auto* baseLoadingPrincipal = BasePrincipal::Cast(loadingPrincipal);
   if (baseLoadingPrincipal) {
     requestingLocation =
-        GetPrincipalURIOrPrecursorPrincialURI(baseLoadingPrincipal);
+        GetPrincipalURIOrPrecursorPrincipalURI(baseLoadingPrincipal);
   }
   if (!requestingLocation) {
     auto* baseTriggeringPrincipal = BasePrincipal::Cast(triggeringPrincipal);
     if (baseTriggeringPrincipal) {
       requestingLocation =
-          GetPrincipalURIOrPrecursorPrincialURI(baseTriggeringPrincipal);
+          GetPrincipalURIOrPrecursorPrincipalURI(baseTriggeringPrincipal);
     }
   }
 
@@ -752,12 +764,14 @@ nsresult nsMixedContentBlocker::ShouldLoad(bool aHadInsecureImageRedirect,
   // pref "security.mixed_content.upgrade_display_content" is true.
   // This behaves like GetUpgradeInsecureRequests above in that the channel will
   // be upgraded to https before fetching any data from the netwerk.
-  bool isUpgradableDisplayType =
-      nsContentUtils::IsUpgradableDisplayType(contentType) &&
-      StaticPrefs::security_mixed_content_upgrade_display_content();
-  if (isHttpScheme && isUpgradableDisplayType) {
-    *aDecision = ACCEPT;
-    return NS_OK;
+  if (isHttpScheme) {
+    bool isUpgradableContentType =
+        IsUpgradableContentType(internalContentType) &&
+        StaticPrefs::security_mixed_content_upgrade_display_content();
+    if (isUpgradableContentType) {
+      *aDecision = ACCEPT;
+      return NS_OK;
+    }
   }
 
   // The page might have set the CSP directive 'block-all-mixed-content' which
@@ -1012,7 +1026,7 @@ void nsMixedContentBlocker::AccumulateMixedContentHSTS(
   if (NS_FAILED(rv)) {
     return;
   }
-  rv = sss->IsSecureURI(aURI, 0, aOriginAttributes, nullptr, nullptr, &hsts);
+  rv = sss->IsSecureURI(aURI, aOriginAttributes, &hsts);
   if (NS_FAILED(rv)) {
     return;
   }

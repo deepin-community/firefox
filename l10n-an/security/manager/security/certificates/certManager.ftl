@@ -25,9 +25,9 @@ certmgr-remembered = Estos certificaus se fan servir para identificar-te en pach
 certmgr-people = Tiens certificaus en o fichero que identifican a estas personas
 certmgr-ca = Tiens certificaus en o fichero que identifican estas autoridatz de certificación
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Editar os parametros de confianza d'o certificau d'a CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Editar os parametros de confianza:
 
@@ -37,9 +37,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Iste certificau puede identificar usuarios de correu.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Eliminar o certificau
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Servidor
@@ -49,9 +49,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Servidor
-
-certmgr-override-lifetime =
-    .label = Tiempo de vida
 
 certmgr-token-name =
     .label = Dispositivo de seguranza
@@ -180,12 +177,11 @@ delete-email-cert-impact = Si elimina un certificau de correu electronico d'una 
 cert-with-serial =
     .value = Certificau con numero de serie: { $serialNumber }
 
-## Cert Viewer
-
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = No ninviar lo certificau de client
 
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

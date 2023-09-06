@@ -36,15 +36,9 @@ newtab-search-box-handoff-input-no-engine =
     .title = Caută sau introdu adresa
     .aria-label = Caută sau introdu adresa
 
-newtab-search-box-search-the-web-input =
-    .placeholder = Caută pe web
-    .title = Caută pe web
-    .aria-label = Caută pe web
-
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Adaugă motor de căutare
-newtab-topsites-add-topsites-header = Site de top nou
 newtab-topsites-edit-topsites-header = Editează site-ul de top
 newtab-topsites-title-label = Titlu
 newtab-topsites-title-input =
@@ -151,7 +145,7 @@ newtab-menu-open-file = Deschide fișierul
 ## the page is bookmarked, or is currently open on another device.
 
 newtab-label-visited = Vizitat
-newtab-label-bookmarked = Însemnat
+newtab-label-bookmarked = Marcat
 newtab-label-removed-bookmark = Marcaj eliminat
 newtab-label-recommended = În tendințe
 newtab-label-saved = Salvat în { -pocket-brand-name }
@@ -191,7 +185,6 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = Site-uri de top
-newtab-section-header-highlights = Evidențieri
 newtab-section-header-recent-activity = Activitate recentă
 # Variables:
 #  $provider (String): Name of the corresponding content provider.
@@ -223,6 +216,12 @@ newtab-pocket-more-recommendations = Mai multe recomandări
 newtab-pocket-learn-more = Află mai multe
 newtab-pocket-cta-button = Obține { -pocket-brand-name }
 newtab-pocket-cta-text = Salvează în { -pocket-brand-name } articolele care ți-au plăcut și hrănește-ți mintea cu lecturi fascinante.
+
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.

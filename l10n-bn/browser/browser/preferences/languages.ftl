@@ -2,17 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-webpage-languages-window =
-    .title = ওয়েবপেজ ভাষা সেটিং
-    .style = width: 40em
+webpage-languages-window2 =
+    .title = ওয়েবপাতার ভাষা সেটিং
+    .style = min-width: 40em
 
 languages-close-key =
     .key = w
 
-languages-description = অনেক ক্ষেত্রে ওয়েবপেজ একাধিক ভাষা সমর্থন করে। আপনার পছন্দ অনুসারে, ওয়েবপেজ প্রদর্শনের ভাষা নির্বাচন করুন
+languages-description = অনেক ক্ষেত্রে ওয়েবপাতাগুলো একাধিক ভাষা সমর্থন করে। আপনার পছন্দ অনুসারে, ওয়েবপাতা প্রদর্শনের ভাষার ক্রম নির্বাচন করুন
 
 languages-customize-spoof-english =
-    .label = উন্নত গোপনীয়তা পেতে ওয়েব পেজের ইংরেজি সংস্করণের জন্য অনুরোধ করুন
+    .label = উন্নত গোপনীয়তা পেতে ওয়েব পাতাগুলোর ইংরেজি সংস্করণের জন্য অনুরোধ করুন
 
 languages-customize-moveup =
     .label = উপরে উঠাও
@@ -27,10 +27,10 @@ languages-customize-remove =
     .accesskey = R
 
 languages-customize-select-language =
-    .placeholder = ভাষা যোগ...
+    .placeholder = যোগ করতে ভাষা নির্বাচন করুন…
 
 languages-customize-add =
-    .label = যোগ
+    .label = যোগ করুন
     .accesskey = A
 
 # The pattern used to generate strings presented to the user in the
@@ -49,9 +49,9 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
-browser-languages-window =
+browser-languages-window2 =
     .title = { -brand-short-name } ভাষা সেটিং
-    .style = width: 40em
+    .style = min-width: 40em
 
 browser-languages-description = { -brand-short-name } প্রথম ভাষাকে আপনার ডিফল্ট ভাষা হিসেবে প্রদর্শন করবে এবং বিকল্প ভাষাগুলো প্রয়োজন অনুযায়ী তাদের আবির্ভাবের ক্রমানুসারে প্রদর্শন করবে।
 

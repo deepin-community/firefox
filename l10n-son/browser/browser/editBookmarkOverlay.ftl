@@ -10,6 +10,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Tugu
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Doo-šilba foolawey kul cebe
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Tugu
+
 bookmark-overlay-new-folder-button =
     .label = Foolo taaga
     .accesskey = F
@@ -21,4 +27,10 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Kanjey kul cebe
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Tugu
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Kanjey kul cebe
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Tugu
 

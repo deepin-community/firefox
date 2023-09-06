@@ -10,7 +10,7 @@ fonts-window-close =
 
 ## Font groups by language
 
-fonts-langgroup-header = 사용 글꼴
+fonts-langgroup-header = 언어별 글꼴
     .accesskey = F
 
 fonts-langgroup-arabic =
@@ -105,13 +105,8 @@ fonts-minsize-none =
     .label = 없음
 
 fonts-allow-own =
-    .label = 위에 선택된 글꼴 대신에 페이지 글꼴 설정 표시 허용
+    .label = 위에서 선택한 글꼴 대신, 페이지에서 지정된 글꼴을 사용하도록 허용
     .accesskey = A
-
-## Text Encodings
-##
-## Translate the encoding names as adjectives for an encoding, not as the name
-## of the language.
 
 # Variables:
 #   $name {string, "Arial"} - Name of the default font

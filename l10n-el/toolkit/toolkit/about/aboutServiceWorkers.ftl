@@ -33,8 +33,8 @@ push-end-point-result = <strong>Σημείο τερματισμού:</strong> { 
 # This term is used as a button label (verb, not noun).
 update-button = Ενημέρωση
 
-unregister-button = Διαγραφή
+unregister-button = Κατάργηση
 
-unregister-error = Αποτυχία κατάργησης εγγραφής service worker.
+unregister-error = Αποτυχία κατάργησης service worker.
 
 waiting = Σε αναμονή…

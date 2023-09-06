@@ -32,7 +32,7 @@ interface ImageBitmap {
 // new interface type "Closeable".
 partial interface ImageBitmap {
   // Dispose of all graphical resources associated with this ImageBitmap.
-  void close();
+  undefined close();
 };
 
 // ImageBitmap-extensions
@@ -387,17 +387,17 @@ dictionary ChannelPixelLayout {
 
 typedef sequence<ChannelPixelLayout> ImagePixelLayout;
 
-enum ImageOrientation { "none", "flipY" };
+enum ImageOrientation { "none", "flipY", "from-image" };
 enum PremultiplyAlpha { "none", "premultiply", "default" };
-//enum ColorSpaceConversion { "none", "default" };
+enum ColorSpaceConversion { "none", "default" };
 //enum ResizeQuality { "pixelated", "low", "medium", "high" };
 
 dictionary ImageBitmapOptions {
   ImageOrientation imageOrientation = "none";
   PremultiplyAlpha premultiplyAlpha = "default";
   // options to be added  bugs: 1363861
-  //ColorSpaceConversion colorSpaceConversion = "default";
-  //[EnforceRange] unsigned long resizeWidth;
-  //[EnforceRange] unsigned long resizeHeight;
+  ColorSpaceConversion colorSpaceConversion = "default";
+  [EnforceRange] unsigned long resizeWidth;
+  [EnforceRange] unsigned long resizeHeight;
   //ResizeQuality resizeQuality = "low";
 };

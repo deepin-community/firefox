@@ -29,15 +29,12 @@ class XPCWrappedNative;
 class XPCWrappedNativeProto;
 class XPCWrappedNativeTearOff;
 
-class XPCTraceableVariant;
-
 class JSObject2WrappedJSMap;
 class Native2WrappedNativeMap;
 class IID2NativeInterfaceMap;
 class ClassInfo2NativeSetMap;
 class ClassInfo2WrappedNativeProtoMap;
 class NativeSetMap;
-class XPCWrappedNativeProtoMap;
 class JSObject2JSObjectMap;
 
 class nsXPCComponents;

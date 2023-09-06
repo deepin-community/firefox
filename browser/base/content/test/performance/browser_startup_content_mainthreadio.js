@@ -232,7 +232,7 @@ function pathMatches(path, filename) {
   );
 }
 
-add_task(async function() {
+add_task(async function () {
   if (
     !AppConstants.NIGHTLY_BUILD &&
     !AppConstants.MOZ_DEV_EDITION &&
@@ -246,21 +246,10 @@ add_task(async function() {
     return;
   }
 
-  {
-    let omniJa = Services.dirsvc.get("XCurProcD", Ci.nsIFile);
-    omniJa.append("omni.ja");
-    if (!omniJa.exists()) {
-      ok(
-        false,
-        "This test requires a packaged build, " +
-          "run 'mach package' and then use --appname=dist"
-      );
-      return;
-    }
-  }
+  TestUtils.assertPackagedBuild();
 
-  let startupRecorder = Cc["@mozilla.org/test/startuprecorder;1"].getService()
-    .wrappedJSObject;
+  let startupRecorder =
+    Cc["@mozilla.org/test/startuprecorder;1"].getService().wrappedJSObject;
   await startupRecorder.done;
 
   for (let process in processes) {
@@ -269,7 +258,7 @@ add_task(async function() {
     );
     processes[process].forEach(entry => {
       entry.listedPath = entry.path;
-      entry.path = expandPathWithDirServiceKey(entry.path, entry.canonicalize);
+      entry.path = expandPathWithDirServiceKey(entry.path);
     });
   }
 
@@ -437,15 +426,9 @@ add_task(async function() {
     ok(shouldPass, "No unexpected main thread I/O during startup");
   } else {
     const filename = "profile_startup_content_mainthreadio.json";
-    let path = Cc["@mozilla.org/process/environment;1"]
-      .getService(Ci.nsIEnvironment)
-      .get("MOZ_UPLOAD_DIR");
-    let encoder = new TextEncoder();
-    let profilePath = OS.Path.join(path, filename);
-    await OS.File.writeAtomic(
-      profilePath,
-      encoder.encode(JSON.stringify(startupRecorder.data.profile))
-    );
+    let path = Services.env.get("MOZ_UPLOAD_DIR");
+    let profilePath = PathUtils.join(path, filename);
+    await IOUtils.writeJSON(profilePath, startupRecorder.data.profile);
     ok(
       false,
       "Unexpected main thread I/O behavior during child process startup; " +

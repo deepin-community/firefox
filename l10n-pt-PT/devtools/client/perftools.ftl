@@ -19,6 +19,7 @@ perftools-heading-features-default = Funcionalidades (as recomendadas estão ati
 perftools-heading-features-disabled = Funcionalidades desativadas
 perftools-heading-features-experimental = Experimentais
 perftools-heading-threads = Threads
+perftools-heading-threads-jvm = Threads JVM
 perftools-heading-local-build = Compilação local
 
 ##
@@ -40,16 +41,15 @@ perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Tamanho do buffer:
+
 perftools-custom-threads-label = Adicionar threads personalizadas por nome:
+
 perftools-devtools-interval-label = Intervalo:
 perftools-devtools-threads-label = Threads:
 perftools-devtools-settings-label = Definições
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice =
-    O profiler é desativado quando a Navegação privada está ativada.
-    Feche todas as janelas privadas e reative o profiler
 perftools-status-recording-stopped-by-another-tool = A gravação foi interrompida por outra ferramenta.
 perftools-status-restart-required = O navegador deve ser reiniciado para ativar esta funcionalidade.
 
@@ -81,8 +81,8 @@ perftools-thread-renderer =
     .title = Quando o WebRender está ativo, a thread que executa as chamadas OpenGL
 perftools-thread-render-backend =
     .title = A thread RenderBackend do WebRender
-perftools-thread-paint-worker =
-    .title = Quando o desenho fora da thread principal estiver ativo, a thread na qual o desenho acontece
+perftools-thread-timer =
+    .title = Os temporizadores de tratamento de threads (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
     .title = A computação de estilo é dividida em múltiplas threads
 pref-thread-stream-trans =
@@ -95,20 +95,31 @@ perftools-thread-dns-resolver =
     .title = A resolução de DNS acontece nesta thread
 perftools-thread-task-controller =
     .title = Threads do conjunto de threads do TaskController
+perftools-thread-jvm-gecko =
+    .title = A thread principal da Gecko JVM
+perftools-thread-jvm-nimbus =
+    .title = As principais threads do SDK de experiências Nimbus
+perftools-thread-jvm-default-dispatcher =
+    .title = O dispatcher Padrão para a biblioteca de co-rotinas Kotlin
+perftools-thread-jvm-glean =
+    .title = As threads principais do SDK de telemetria Glean
+perftools-thread-jvm-arch-disk-io =
+    .title = O dispatcher IO para a biblioteca de co-rotinas Kotlin
+perftools-thread-jvm-pool =
+    .title = Threads criadas num conjunto de threads sem nome
 
 ##
 
 perftools-record-all-registered-threads = Ignora as seleções acima e grava todas as threads registadas
+
 perftools-tools-threads-input-label =
     .title = Estes nomes de threads são uma lista separada por vírgulas que é utilizada para ativar o profiling das threads no profiler. O nome apenas necessita de ser uma correspondência parcial do nome da thread para ser incluído. É sensível a espaços em branco.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>Novo</b>: O { -profiler-brand-name } está agora integrado nas ferramentas de desenvolvimento. <a>Saber mais</a> sobre esta poderosa nova ferramenta.
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (Por tempo limitado, pode aceder ao painel Desempenho original via  <a>{ options-context-advanced-settings }</a>)
+
 perftools-onboarding-close-button =
     .aria-label = Fechar mensagem de introdução
 
@@ -119,16 +130,29 @@ perftools-onboarding-close-button =
 # devtools/client/performance-new/popup/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
 perftools-presets-web-developer-label = Programador Web
 perftools-presets-web-developer-description = Predefinição recomendada para a maioria das depurações de aplicações web, com pouca sobrecarga.
-perftools-presets-firefox-platform-label = Plataforma Firefox
-perftools-presets-firefox-platform-description = Predefinição recomendada para a depuração da plataforma interna do Firefox.
-perftools-presets-firefox-front-end-label = Front-End do Firefox
-perftools-presets-firefox-front-end-description = Predefinição recomendada para a depuração do front-end interno do Firefox.
-perftools-presets-firefox-graphics-label = Gráficos do Firefox
-perftools-presets-firefox-graphics-description = Predefinição recomendada para a investigação de desempenho gráfico do Firefox.
+
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = Predefinição recomendada para perfilar o { -brand-shorter-name }.
+
+perftools-presets-graphics-label = Gráficos
+perftools-presets-graphics-description = Predefinição para investigar bugs gráficos no { -brand-shorter-name }.
+
 perftools-presets-media-label = Multimédia
-perftools-presets-media-description = Predefinição recomendada para diagnosticar problemas de áudio e vídeo.
+perftools-presets-media-description2 = Predefinição para investigar bugs de áudio e vídeo no { -brand-shorter-name }.
+
+perftools-presets-networking-label = Rede
+perftools-presets-networking-description = Predefinição para investigar bugs de rede no { -brand-shorter-name }.
+
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = Potência
+perftools-presets-power-description = Predefinição para investigar bugs relacionados com a utilização de energia no { -brand-shorter-name }, com baixa sobrecarga.
+
 perftools-presets-custom-label = Personalizada
 
 ##

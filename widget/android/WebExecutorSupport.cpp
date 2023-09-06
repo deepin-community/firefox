@@ -5,34 +5,31 @@
 
 #include <algorithm>
 
+#include "GeckoViewStreamListener.h"
+#include "InetAddress.h"  // for java::sdk::InetAddress and java::sdk::UnknownHostException
+#include "ReferrerInfo.h"
 #include "WebExecutorSupport.h"
 
 #include "nsIAsyncVerifyRedirectCallback.h"
 #include "nsIHttpChannel.h"
 #include "nsIHttpChannelInternal.h"
 #include "nsIHttpHeaderVisitor.h"
-#include "nsINSSErrorsService.h"
-#include "nsIUploadChannel2.h"
-#include "nsIX509Cert.h"
-
 #include "nsIDNSService.h"
 #include "nsIDNSListener.h"
 #include "nsIDNSRecord.h"
+#include "nsINSSErrorsService.h"
+#include "nsNetUtil.h"  // for NS_NewURI, NS_NewChannel, NS_NewStreamLoader
+#include "nsIPrivateBrowsingChannel.h"
+#include "nsIUploadChannel2.h"
+#include "nsIX509Cert.h"
 
+#include "mozilla/Preferences.h"
+#include "mozilla/net/CookieJarSettings.h"
+#include "mozilla/net/DNS.h"  // for NetAddr
 #include "mozilla/java/GeckoWebExecutorWrappers.h"
 #include "mozilla/java/WebMessageWrappers.h"
 #include "mozilla/java/WebRequestErrorWrappers.h"
 #include "mozilla/java/WebResponseWrappers.h"
-#include "mozilla/net/DNS.h"  // for NetAddr
-#include "mozilla/net/CookieJarSettings.h"
-#include "mozilla/Preferences.h"
-#include "GeckoViewStreamListener.h"
-#include "nsIPrivateBrowsingChannel.h"
-
-#include "nsNetUtil.h"  // for NS_NewURI, NS_NewChannel, NS_NewStreamLoader
-
-#include "InetAddress.h"  // for java::sdk::InetAddress and java::sdk::UnknownHostException
-#include "ReferrerInfo.h"
 
 namespace mozilla {
 using namespace net;
@@ -93,6 +90,9 @@ class ByteBufferStream final : public nsIInputStream {
     *aResult = (mBuffer->Capacity() - mPosition);
     return NS_OK;
   }
+
+  NS_IMETHOD
+  StreamStatus() override { return mClosed ? NS_BASE_STREAM_CLOSED : NS_OK; }
 
   NS_IMETHOD
   Read(char* aBuf, uint32_t aCount, uint32_t* aCountRead) override {
@@ -353,6 +353,11 @@ static nsresult SetupHttpChannel(nsIHttpChannel* aHttpChannel,
   rv = internalChannel->SetFetchCacheMode(cacheMode);
   NS_ENSURE_SUCCESS(rv, rv);
 
+  if (req->BeConservative()) {
+    rv = internalChannel->SetBeConservative(true);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
   // We don't have any UI
   rv = internalChannel->SetBlockAuthPrompt(true);
   NS_ENSURE_SUCCESS(rv, rv);
@@ -381,14 +386,18 @@ nsresult WebExecutorSupport::CreateStreamLoader(
     channel->SetLoadFlags(nsIRequest::LOAD_ANONYMOUS);
   }
 
+  bool shouldResistFingerprinting = nsContentUtils::ShouldResistFingerprinting(
+      channel, RFPTarget::IsAlwaysEnabledForPrecompute);
   nsCOMPtr<nsICookieJarSettings> cookieJarSettings;
   if (aFlags & java::GeckoWebExecutor::FETCH_FLAGS_PRIVATE) {
     nsCOMPtr<nsIPrivateBrowsingChannel> pbChannel = do_QueryInterface(channel);
     NS_ENSURE_TRUE(pbChannel, NS_ERROR_FAILURE);
     pbChannel->SetPrivate(true);
-    cookieJarSettings = CookieJarSettings::Create(CookieJarSettings::ePrivate);
+    cookieJarSettings = CookieJarSettings::Create(CookieJarSettings::ePrivate,
+                                                  shouldResistFingerprinting);
   } else {
-    cookieJarSettings = CookieJarSettings::Create(CookieJarSettings::eRegular);
+    cookieJarSettings = CookieJarSettings::Create(CookieJarSettings::eRegular,
+                                                  shouldResistFingerprinting);
   }
   MOZ_ASSERT(cookieJarSettings);
 
@@ -436,8 +445,9 @@ static nsresult ResolveHost(nsCString& host, java::GeckoResult::Param result) {
 
   nsCOMPtr<nsICancelable> cancelable;
   RefPtr<DNSListener> listener = new DNSListener(host, result);
-  rv = dns->AsyncResolveNative(host, nsIDNSService::RESOLVE_TYPE_DEFAULT, 0,
-                               nullptr, listener, nullptr /* aListenerTarget */,
+  rv = dns->AsyncResolveNative(host, nsIDNSService::RESOLVE_TYPE_DEFAULT,
+                               nsIDNSService::RESOLVE_DEFAULT_FLAGS, nullptr,
+                               listener, nullptr /* aListenerTarget */,
                                OriginAttributes(), getter_AddRefs(cancelable));
   return rv;
 }

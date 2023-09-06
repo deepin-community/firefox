@@ -9,9 +9,8 @@ failed-pp-change = Cha ghabh am prìomh fhacal-faire atharrachadh.
 incorrect-pp = Cha do chuir thu a-steach am prìomh fhacal-faire làithreach ceart. Feuch ris a-rithist.
 pp-change-ok = Chaidh am prìomh fhacal-faire atharrachadh.
 
-pp-empty-warning = Cha dèid na faclan-faire is iuchraichean prìobhaideach air an stòradh a dhìon.
-pp-erased-ok = Sguab thu às am prìomh fhacal-faire agad. { pp-empty-warning }
-pp-not-wanted = Rabhadh! Chuir thu romhad gun a bhith a' cleachdadh prìomh fhacal-faire. { pp-empty-warning }
+settings-pp-erased-ok = Sguab thu am prìomh-fhacal-faire agad às. Cha bhi faclan-faire is iuchraichean prìobhaideach theisteasan a tha fo stiùireadh { -brand-short-name } fo dhìon.
+settings-pp-not-wanted = Rabhadh! Cuir thu romhad gun a bhith a’ cleachdadh prìomh-fhacal-faire agad às. Cha bhi faclan-faire is iuchraichean prìobhaideach theisteasan a tha fo stiùireadh { -brand-short-name } fo dhìon.
 
 pp-change2empty-in-fips-mode = Tha thu ann am modh FIPS an-dràsta. Feumaidh FIPS prìomh fhacal-faire nach eil falamh.
 pw-change-success-title = Shoirbhich leat le atharrachadh an fhacail-fhaire
@@ -26,7 +25,6 @@ set-password-new-password = Cuir a-steach am facal-faire ùr:
 set-password-reenter-password = Cuir a-steach am facal-faire a-rithist:
 set-password-meter = Tomhas càileachd an fhacail-fhaire
 set-password-meter-loading = 'Ga luchdadh
-
 primary-password-admin = Tha an rianaire agad ag iarraidh prìomh fhacal-faire ort mus sàbhail thu clàraidhean a-steach is faclan-faire.
 primary-password-description = Tha prìomh fhacal-faire 'ga chleachdadh gus fiosrachadh cugallach mar clàraidhean a-steach is faclan-faire a dhìon air an uidheam seo.  Ma chruthaicheas tu prìomh fhacal-faire, thèid iarraidh ort a chur a-steach aon turas gach seisean nuair a dh’iarras { -brand-short-name } fiosrachadh a chaidh a sàbhaladh fo dhìon an fhacail-fhaire seo.
 primary-password-warning = Dèan cinnteach gun cùm thu am prìomh fhacal-faire agad ’nad chuimhne.  Ma dhìochuimhnicheas tu am prìomh fhacal-faire agad, chan urrainn dhut smid dhen fhiosrachadh fhaighinn a tha fo dhìon air an uidheam seo.

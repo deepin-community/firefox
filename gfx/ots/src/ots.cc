@@ -14,7 +14,7 @@
 #include <map>
 #include <vector>
 
-#include <woff2/decode.h>
+#include "../RLBoxWOFF2Host.h"
 
 // The OpenType Font File
 // http://www.microsoft.com/typography/otspec/otff.htm
@@ -22,6 +22,8 @@
 #include "avar.h"
 #include "cff.h"
 #include "cmap.h"
+#include "colr.h"
+#include "cpal.h"
 #include "cvar.h"
 #include "cvt.h"
 #include "fpgm.h"
@@ -144,6 +146,11 @@ const struct {
   { OTS_TAG_STAT, false },
   { OTS_TAG_VVAR, false },
   { OTS_TAG_CFF2, false },
+  // Color font tables.
+  // We need to parse CPAL before COLR so that the number of palette entries
+  // is known; and these tables follow fvar because COLR may use variations.
+  { OTS_TAG_CPAL, false },
+  { OTS_TAG_COLR, false },
   // We need to parse GDEF table in advance of parsing GSUB/GPOS tables
   // because they could refer GDEF table.
   { OTS_TAG_GDEF, false },
@@ -229,13 +236,13 @@ bool ProcessTTF(ots::FontFile *header,
   // Don't call ots_failure() here since ~25% of fonts (250+ fonts) in
   // http://www.princexml.com/fonts/ have unexpected search_range value.
   if (font->search_range != expected_search_range) {
-    OTS_WARNING_MSG_HDR("bad search range");
+    OTS_WARNING_MSG_HDR("bad table directory searchRange");
     font->search_range = expected_search_range;  // Fix the value.
   }
 
   // entry_selector is Log2(maximum power of 2 <= numTables)
   if (font->entry_selector != max_pow2) {
-    OTS_WARNING_MSG_HDR("incorrect entrySelector for table directory");
+    OTS_WARNING_MSG_HDR("bad table directory entrySelector");
     font->entry_selector = max_pow2;  // Fix the value.
   }
 
@@ -245,7 +252,7 @@ bool ProcessTTF(ots::FontFile *header,
   const uint16_t expected_range_shift =
       16 * font->num_tables - font->search_range;
   if (font->range_shift != expected_range_shift) {
-    OTS_WARNING_MSG_HDR("bad range shift");
+    OTS_WARNING_MSG_HDR("bad table directory rangeShift");
     font->range_shift = expected_range_shift;  // the same as above.
   }
 
@@ -511,39 +518,9 @@ bool ProcessWOFF(ots::FontFile *header,
   return ProcessGeneric(header, font, woff_tag, output, data, length, tables, file);
 }
 
-bool ProcessWOFF2(ots::FontFile *header,
-                  ots::OTSStream *output,
-                  const uint8_t *data,
-                  size_t length,
-                  uint32_t index) {
-  size_t decompressed_size = woff2::ComputeWOFF2FinalSize(data, length);
-
-  if (decompressed_size < length) {
-    return OTS_FAILURE_MSG_HDR("Size of decompressed WOFF 2.0 is less than compressed size");
-  }
-
-  if (decompressed_size == 0) {
-    return OTS_FAILURE_MSG_HDR("Size of decompressed WOFF 2.0 is set to 0");
-  }
-  // decompressed font must be <= OTS_MAX_DECOMPRESSED_FILE_SIZE
-  if (decompressed_size > OTS_MAX_DECOMPRESSED_FILE_SIZE) {
-    return OTS_FAILURE_MSG_HDR("Size of decompressed WOFF 2.0 font exceeds %gMB",
-                               OTS_MAX_DECOMPRESSED_FILE_SIZE / (1024.0 * 1024.0));
-  }
-
-  std::string buf(decompressed_size, 0);
-  woff2::WOFF2StringOut out(&buf);
-  if (!woff2::ConvertWOFF2ToTTF(data, length, &out)) {
-    return OTS_FAILURE_MSG_HDR("Failed to convert WOFF 2.0 font to SFNT");
-  }
-  const uint8_t *decompressed = reinterpret_cast<const uint8_t*>(buf.data());
-
-  if (data[4] == 't' && data[5] == 't' && data[6] == 'c' && data[7] == 'f') {
-    return ProcessTTC(header, output, decompressed, out.Size(), index);
-  } else {
-    ots::Font font(header);
-    return ProcessTTF(header, &font, output, decompressed, out.Size());
-  }
+bool ProcessWOFF2(ots::FontFile* header, ots::OTSStream* output,
+                  const uint8_t* data, size_t length, uint32_t index) {
+  return RLBoxProcessWOFF2(header, output, data, length, index, ProcessTTC, ProcessTTF);
 }
 
 ots::TableAction GetTableAction(const ots::FontFile *header, uint32_t tag) {
@@ -672,6 +649,10 @@ bool ProcessGeneric(ots::FontFile *header,
                                OTS_MAX_DECOMPRESSED_FILE_SIZE / (1024.0 * 1024.0));        
   }
 
+  if (uncompressed_sum > output->size()) {
+    return OTS_FAILURE_MSG_HDR("decompressed sum exceeds output size (%gMB)", output->size() / (1024.0 * 1024.0));
+  }
+
   // check that the tables are not overlapping.
   std::vector<std::pair<uint32_t, uint8_t> > overlap_checker;
   for (unsigned i = 0; i < font->num_tables; ++i) {
@@ -721,6 +702,27 @@ bool ProcessGeneric(ots::FontFile *header,
       }
     }
   }
+
+#ifdef OTS_SYNTHESIZE_MISSING_GVAR
+  // If there was an fvar table but no gvar, synthesize an empty gvar to avoid
+  // issues with rasterizers (e.g. Core Text) that assume it must be present.
+  if (font->GetTable(OTS_TAG_FVAR) && !font->GetTable(OTS_TAG_GVAR)) {
+    ots::TableEntry table_entry{ OTS_TAG_GVAR, 0, 0, 0, 0 };
+    const auto &it = font->file->tables.find(table_entry);
+    if (it != font->file->tables.end()) {
+      table_map[OTS_TAG_GVAR] = table_entry;
+      font->AddTable(table_entry, it->second);
+    } else {
+      ots::OpenTypeGVAR *gvar = new ots::OpenTypeGVAR(font, OTS_TAG_GVAR);
+      if (gvar->InitEmpty()) {
+        table_map[OTS_TAG_GVAR] = table_entry;
+        font->AddTable(table_entry, gvar);
+      } else {
+        delete gvar;
+      }
+    }
+  }
+#endif
 
   ots::Table *glyf = font->GetTable(OTS_TAG_GLYF);
   ots::Table *loca = font->GetTable(OTS_TAG_LOCA);
@@ -874,6 +876,32 @@ bool ProcessGeneric(ots::FontFile *header,
   return true;
 }
 
+bool IsGraphiteTag(uint32_t tag) {
+  if (tag == OTS_TAG_FEAT ||
+      tag == OTS_TAG_GLAT ||
+      tag == OTS_TAG_GLOC ||
+      tag == OTS_TAG_SILE ||
+      tag == OTS_TAG_SILF ||
+      tag == OTS_TAG_SILL) {
+    return true;
+  }
+  return false;
+}
+
+bool IsVariationsTag(uint32_t tag) {
+  if (tag == OTS_TAG_AVAR ||
+      tag == OTS_TAG_CVAR ||
+      tag == OTS_TAG_FVAR ||
+      tag == OTS_TAG_GVAR ||
+      tag == OTS_TAG_HVAR ||
+      tag == OTS_TAG_MVAR ||
+      tag == OTS_TAG_STAT ||
+      tag == OTS_TAG_VVAR) {
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace ots {
@@ -910,6 +938,8 @@ bool Font::ParseTable(const TableEntry& table_entry, const uint8_t* data,
       case OTS_TAG_CFF:  table = new OpenTypeCFF(this,  tag); break;
       case OTS_TAG_CFF2: table = new OpenTypeCFF2(this, tag); break;
       case OTS_TAG_CMAP: table = new OpenTypeCMAP(this, tag); break;
+      case OTS_TAG_COLR: table = new OpenTypeCOLR(this, tag); break;
+      case OTS_TAG_CPAL: table = new OpenTypeCPAL(this, tag); break;
       case OTS_TAG_CVAR: table = new OpenTypeCVAR(this, tag); break;
       case OTS_TAG_CVT:  table = new OpenTypeCVT(this,  tag); break;
       case OTS_TAG_FPGM: table = new OpenTypeFPGM(this, tag); break;
@@ -960,14 +990,9 @@ bool Font::ParseTable(const TableEntry& table_entry, const uint8_t* data,
 
     ret = GetTableData(data, table_entry, arena, &table_length, &table_data);
     if (ret) {
-      // FIXME: Parsing some tables will fail if the table is not added to
-      // m_tables first.
-      m_tables[tag] = table;
       ret = table->Parse(table_data, table_length);
       if (ret)
-        file->tables[table_entry] = table;
-      else
-        m_tables.erase(tag);
+        AddTable(table_entry, table);
     }
   }
 
@@ -991,15 +1016,18 @@ Table* Font::GetTypedTable(uint32_t tag) const {
   return NULL;
 }
 
+void Font::AddTable(TableEntry entry, Table* table) {
+  // Attempting to add a duplicate table would be an error; this should only
+  // be used to add a table that does not already exist.
+  assert(m_tables.find(table->Tag()) == m_tables.end());
+  m_tables[table->Tag()] = table;
+  file->tables[entry] = table;
+}
+
 void Font::DropGraphite() {
   file->context->Message(0, "Dropping all Graphite tables");
   for (const std::pair<uint32_t, Table*> entry : m_tables) {
-    if (entry.first == OTS_TAG_FEAT ||
-        entry.first == OTS_TAG_GLAT ||
-        entry.first == OTS_TAG_GLOC ||
-        entry.first == OTS_TAG_SILE ||
-        entry.first == OTS_TAG_SILF ||
-        entry.first == OTS_TAG_SILL) {
+    if (IsGraphiteTag(entry.first)) {
       entry.second->Drop("Discarding Graphite table");
     }
   }
@@ -1008,14 +1036,7 @@ void Font::DropGraphite() {
 void Font::DropVariations() {
   file->context->Message(0, "Dropping all Variation tables");
   for (const std::pair<uint32_t, Table*> entry : m_tables) {
-    if (entry.first == OTS_TAG_AVAR ||
-        entry.first == OTS_TAG_CVAR ||
-        entry.first == OTS_TAG_FVAR ||
-        entry.first == OTS_TAG_GVAR ||
-        entry.first == OTS_TAG_HVAR ||
-        entry.first == OTS_TAG_MVAR ||
-        entry.first == OTS_TAG_STAT ||
-        entry.first == OTS_TAG_VVAR) {
+    if (IsVariationsTag(entry.first)) {
       entry.second->Drop("Discarding Variations table");
     }
   }
@@ -1068,6 +1089,9 @@ bool Table::DropGraphite(const char *format, ...) {
   va_end(va);
 
   m_font->DropGraphite();
+  if (IsGraphiteTag(m_tag))
+      Drop("Discarding Graphite table");
+
   return true;
 }
 
@@ -1078,6 +1102,9 @@ bool Table::DropVariations(const char *format, ...) {
   va_end(va);
 
   m_font->DropVariations();
+  if (IsVariationsTag(m_tag))
+      Drop("Discarding Variations table");
+
   return true;
 }
 

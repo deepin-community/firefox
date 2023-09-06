@@ -13,12 +13,13 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-#include "webrtc/modules/video_capture/video_capture_defines.h"
+#include "modules/video_capture/video_capture_defines.h"
+#include "device_info.h"
 
 @interface DeviceInfoIosObjC : NSObject {
   NSArray* _observers;
   NSLock* _lock;
-  webrtc::videocapturemodule::DeviceInfoIos* _owner;
+  webrtc::VideoCaptureModule::DeviceInfo* _owner;
 }
 
 + (int)captureDeviceCount;
@@ -29,7 +30,7 @@
 + (NSString*)deviceNameForUniqueId:(NSString*)uniqueId;
 + (webrtc::VideoCaptureCapability)capabilityForPreset:(NSString*)preset;
 
-- (void)registerOwner:(webrtc::videocapturemodule::DeviceInfoIos*)owner;
+- (void)registerOwner:(webrtc::VideoCaptureModule::DeviceInfo*)owner;
 - (void)configureObservers;
 
 @end

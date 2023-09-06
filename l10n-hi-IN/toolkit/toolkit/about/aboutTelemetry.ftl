@@ -32,7 +32,6 @@ about-telemetry-events-section = घटनाएँ
 about-telemetry-simple-measurements-section = साधारण  माप
 about-telemetry-slow-sql-section = धीरे sql निवेदन
 about-telemetry-addon-details-section = सहयुक्ति विवरण
-about-telemetry-captured-stacks-section = कैप्चर किए गए स्टैक
 about-telemetry-late-writes-section = कुछ देर से लिखें
 about-telemetry-raw-payload-section = कच्चा पेलोड
 about-telemetry-raw = कच्चा JSON
@@ -87,6 +86,8 @@ about-telemetry-no-search-results-all = माफ़ कीजिए! “{ $sear
 # Variables:
 #   $sectionName (String): is replaced by the section name.
 about-telemetry-no-data-to-display = माफ़ कीजिए! “{ $sectionName }” के लिए फ़िलहाल कोई डेटा उपलब्ध नहीं है
+# used as a tooltip for the “current” ping title in the sidebar
+about-telemetry-current-data-sidebar = मौजूदा डेटा
 # used in the “Ping Type” select
 about-telemetry-telemetry-ping-type-all = सभी
 # button label to copy the histogram
@@ -106,10 +107,6 @@ about-telemetry-addon-provider = { $addonProvider } प्रदाता
 about-telemetry-keys-header = गुण
 about-telemetry-names-header = नाम
 about-telemetry-values-header = मान
-# Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (कैप्चर संख्या: { $capturedStacksCount })
 # Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = विलंब लेखन #{ $lateWriteCount }

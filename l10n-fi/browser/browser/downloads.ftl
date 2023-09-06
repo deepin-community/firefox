@@ -16,8 +16,8 @@ downloads-panel =
 # The style attribute has the width of the Downloads Panel expressed using
 # a CSS unit. The longest labels that should fit are usually those of
 # in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
+downloads-panel-items =
+    .style = width: 35em
 
 downloads-cmd-pause =
     .label = Pysäytä
@@ -30,42 +30,65 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Peruuta
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Avaa tallennuskansio
-    .accesskey = A
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] Näytä Finderissa
+           *[other] Näytä kansiossa
+        }
+    .accesskey = N
 
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Avaa Finderissa
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = Avaa järjestelmän katseluohjelmassa
     .accesskey = v
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-use-system-default-named =
+    .label = Avaa sovelluksella { $handler }
+    .accesskey = s
 
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
     .label = Avaa aina järjestelmän katseluohjelmassa
     .accesskey = t
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-always-use-system-default-named =
+    .label = Avaa aina sovelluksella { $handler }
+    .accesskey = a
 
-downloads-cmd-show-button =
+##
+
+# We can use the same accesskey as downloads-cmd-always-use-system-default.
+# Both should not be visible in the downloads context menu at the same time.
+downloads-cmd-always-open-similar-files =
+    .label = Avaa aina samankaltaiset tiedostot
+    .accesskey = A
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
-            [macos] Avaa Finderissa
-           *[other] Avaa tallennuskansio
+            [macos] Näytä Finderissa
+           *[other] Näytä kansiossa
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
-            [macos] Avaa Finderissa
-           *[other] Avaa tallennuskansio
+            [macos] Näytä Finderissa
+           *[other] Näytä kansiossa
         }
-downloads-cmd-show-description =
+downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
-            [macos] Avaa Finderissa
-           *[other] Avaa tallennuskansio
+            [macos] Näytä Finderissa
+           *[other] Näytä kansiossa
         }
 
 downloads-cmd-show-downloads =
@@ -89,6 +112,9 @@ downloads-cmd-clear-list =
 downloads-cmd-clear-downloads =
     .label = Tyhjennä latauslista
     .accesskey = a
+downloads-cmd-delete-file =
+    .label = Poista
+    .accesskey = P
 
 # This command is shown in the context menu when downloads are blocked.
 downloads-cmd-unblock =
@@ -138,11 +164,18 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
-downloading-file-opens-in-hours-and-minutes = Avataan { $hours } t { $minutes } min kuluttua…
-downloading-file-opens-in-minutes = Avataan { $minutes } min kuluttua…
-downloading-file-opens-in-minutes-and-seconds = Avataan { $minutes } min { $seconds } s kuluttua…
-downloading-file-opens-in-seconds = Avataan { $seconds } s kuluttua…
-downloading-file-opens-in-some-time = Avataan latauksen valmistuttua…
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = Avataan { $hours } t { $minutes } min kuluttua…
+downloading-file-opens-in-minutes-2 =
+    .value = Avataan { $minutes } min kuluttua…
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = Avataan { $minutes } min { $seconds } s kuluttua…
+downloading-file-opens-in-seconds-2 =
+    .value = Avataan { $seconds } s kuluttua…
+downloading-file-opens-in-some-time-2 =
+    .value = Avataan latauksen valmistuttua…
+downloading-file-click-to-open =
+    .value = Avaa kun valmistuu
 
 ##
 
@@ -168,6 +201,21 @@ downloads-history =
 downloads-details =
     .title = Latauksen yksityiskohdat
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+downloads-files-not-downloaded =
+    { $num ->
+        [one] Tiedostoa ei ladattu.
+       *[other] { $num } tiedostoa ei ladattu.
+    }
+downloads-blocked-from-url = Lataukset estetty osoitteesta { $url }.
+downloads-blocked-download-detailed-info = { $url } yritti ladata automaattisesti useita tiedostoja. Sivusto saattaa olla rikki tai se yrittää tallentaa tarpeettomia roskatiedostoja laitteellesi.
+
+##
+
 downloads-clear-downloads-button =
     .label = Tyhjennä latauslista
     .tooltiptext = Poistaa listalta valmistuneet, peruutetut ja epäonnistuneet lataukset
@@ -180,3 +228,27 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Ei latauksia tämän istunnon aikana.
+
+# This is displayed in an item at the bottom of the Downloads Panel when there
+# are more downloads than can fit in the list in the panel.
+#   $count (number) - number of files being downloaded that are not shown in the
+#                     panel list.
+downloads-more-downloading =
+    { $count ->
+        [one] { $count } tiedosto lisää latautumassa
+       *[other] { $count } tiedostoa lisää latautumassa
+    }
+
+## Download errors
+
+downloads-error-alert-title = Latausvirhe
+# Variables:
+#   $extension (String): the name of the blocking extension.
+downloads-error-blocked-by = Tätä latausta ei voi tallentaa, koska laajennus { $extension } estää sen.
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = Tätä latausta ei voi tallentaa, koska laajennus estää sen.
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Latauksen tallennus ei onnistunut tuntemattomasta syystä.
+    
+    Yritä uudestaan.

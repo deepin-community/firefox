@@ -2,11 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 ##
 ## Localization for remote types defined in RemoteType.h
 ##
 
 process-type-web = محتوای وب
+
+# process used to run privileged about pages,
+# such as about:home
+process-type-privilegedabout = دربارهٔ ممتاز
 
 # process used to run privileged mozilla pages,
 # such as accounts.firefox.com
@@ -19,7 +24,11 @@ process-type-file = پروندهٔ محلی
 
 # process used to isolate a webpage from other web pages
 # to improve security
-process-type-webisolated = محتوای جدا شده وب
+process-type-webisolated = محتوای وب منزوی شده
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = کارگر خدمت منزوی شده
 
 ##
 ## Localization for Gecko process types defined in GeckoProcessTypes.h

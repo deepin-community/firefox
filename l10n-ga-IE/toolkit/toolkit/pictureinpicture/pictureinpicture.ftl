@@ -4,13 +4,23 @@
 
 pictureinpicture-player-title = Pictiúr i bPictiúr
 
-pictureinpicture-pause =
-    .aria-label = Cuir ar Sos
-pictureinpicture-play =
-    .aria-label = Seinn
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
 
-pictureinpicture-mute =
-    .aria-label = Gan fuaim
-pictureinpicture-unmute =
-    .aria-label = Le fuaim
+## Note that this uses .tooltip rather than the standard '.title'
+## or '.tooltiptext' -  but it has the same effect. Code in the
+## picture-in-picture window will read and copy this to an in-document
+## DOM node that then shows the tooltip.
+##
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
+
+##
+
+## Note that this uses .tooltip rather than the standard '.title'
+## or '.tooltiptext' -  but it has the same effect. Code in the
+## picture-in-picture window will read and copy this to an in-document
+## DOM node that then shows the tooltip.
+
+##
 

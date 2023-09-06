@@ -11,7 +11,9 @@ use crate::values::specified::image::Image;
 use crate::values::specified::Number;
 use cssparser::Parser;
 use std::fmt::{self, Write};
-use style_traits::{CssWriter, KeywordsCollectFn, ParseError, SpecifiedValueInfo, StyleParseErrorKind, ToCss};
+use style_traits::{
+    CssWriter, KeywordsCollectFn, ParseError, SpecifiedValueInfo, StyleParseErrorKind, ToCss,
+};
 
 /// A specified value for the `cursor` property.
 pub type Cursor = generics::GenericCursor<CursorImage>;
@@ -86,52 +88,37 @@ impl SpecifiedValueInfo for CursorImage {
     ToResolvedValue,
     ToShmem,
 )]
-pub struct MozForceBrokenImageIcon(pub bool);
+#[repr(transparent)]
+pub struct BoolInteger(pub bool);
 
-impl MozForceBrokenImageIcon {
-    /// Return initial value of -moz-force-broken-image-icon which is false.
+impl BoolInteger {
+    /// Returns 0
     #[inline]
-    pub fn false_value() -> MozForceBrokenImageIcon {
-        MozForceBrokenImageIcon(false)
+    pub fn zero() -> Self {
+        Self(false)
     }
 }
 
-impl Parse for MozForceBrokenImageIcon {
+impl Parse for BoolInteger {
     fn parse<'i, 't>(
         _context: &ParserContext,
         input: &mut Parser<'i, 't>,
-    ) -> Result<MozForceBrokenImageIcon, ParseError<'i>> {
+    ) -> Result<Self, ParseError<'i>> {
         // We intentionally don't support calc values here.
         match input.expect_integer()? {
-            0 => Ok(MozForceBrokenImageIcon(false)),
-            1 => Ok(MozForceBrokenImageIcon(true)),
+            0 => Ok(Self(false)),
+            1 => Ok(Self(true)),
             _ => Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError)),
         }
     }
 }
 
-impl ToCss for MozForceBrokenImageIcon {
+impl ToCss for BoolInteger {
     fn to_css<W>(&self, dest: &mut CssWriter<W>) -> fmt::Result
     where
         W: Write,
     {
         dest.write_str(if self.0 { "1" } else { "0" })
-    }
-}
-
-impl From<u8> for MozForceBrokenImageIcon {
-    fn from(bits: u8) -> MozForceBrokenImageIcon {
-        MozForceBrokenImageIcon(bits == 1)
-    }
-}
-
-impl From<MozForceBrokenImageIcon> for u8 {
-    fn from(v: MozForceBrokenImageIcon) -> u8 {
-        if v.0 {
-            1
-        } else {
-            0
-        }
     }
 }
 
@@ -242,4 +229,29 @@ pub enum CursorKind {
     #[parse(aliases = "-moz-zoom-out")]
     ZoomOut,
     Auto,
+}
+
+/// The keywords allowed in the -moz-theme property.
+#[allow(missing_docs)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    FromPrimitive,
+    MallocSizeOf,
+    Parse,
+    PartialEq,
+    SpecifiedValueInfo,
+    ToComputedValue,
+    ToCss,
+    ToResolvedValue,
+    ToShmem,
+)]
+#[repr(u8)]
+pub enum MozTheme {
+    /// Choose the default (maybe native) rendering.
+    Auto,
+    /// Choose the non-native rendering.
+    NonNative,
 }

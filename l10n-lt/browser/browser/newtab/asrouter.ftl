@@ -12,25 +12,33 @@ cfr-doorhanger-feature-heading = Rekomenduojama funkcija
 
 cfr-doorhanger-extension-sumo-link =
     .tooltiptext = Kodėl tai matau
+
 cfr-doorhanger-extension-cancel-button = Ne dabar
     .accesskey = N
+
 cfr-doorhanger-extension-ok-button = Pridėti dabar
     .accesskey = P
+
 cfr-doorhanger-extension-manage-settings-button = Tvarkyti rekomendacijų nuostatas
     .accesskey = T
+
 cfr-doorhanger-extension-never-show-recommendation = Nerodyti man šios rekomendacijos
     .accesskey = N
+
 cfr-doorhanger-extension-learn-more-link = Sužinoti daugiau
+
 # This string is used on a new line below the add-on name
 # Variables:
 #   $name (String) - Add-on author name
 cfr-doorhanger-extension-author = sukūrė { $name }
+
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Rekomendacija
 cfr-doorhanger-extension-notification2 = Rekomendacija
     .tooltiptext = Priedo rekomendacija
     .a11y-announcement = Siūloma priedo rekomendacija
+
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-feature-notification = Rekomendacija
@@ -79,9 +87,11 @@ cfr-protections-panel-link-text = Sužinoti daugiau
 # This string is used by screen readers to offer a text based alternative for
 # the notification icon
 cfr-badge-reader-label-newfeature = Naujovė:
+
 cfr-whatsnew-button =
     .label = Kas naujo
     .tooltiptext = Kas naujo
+
 cfr-whatsnew-release-notes-link-text = Skaityti laidos apžvalgą
 
 ## Enhanced Tracking Protection Milestones
@@ -111,13 +121,6 @@ cfr-doorhanger-doh-secondary-button = Išjungti
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Jūsų privatumas yra svarbus. „{ -brand-short-name }“ jau izoliuoja, arba laiko atskirai, svetaines vieną nuo kitos, kas apsunkina piktavalių bandymus pavogti slaptažodžius, banko kortelių duomenis, ir kitus jautrius duomenis.
-cfr-doorhanger-fission-header = Svetainių izoliavimas
-cfr-doorhanger-fission-primary-button = Gerai, supratau
-    .accesskey = G
-cfr-doorhanger-fission-secondary-button = Sužinoti daugiau
-    .accesskey = S
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Šios svetainės vaizdo įrašai gali būti rodomi netinkamai su šia „{ -brand-short-name }“ versija. Norėdami gauti geriausią palaikymą, atnaujinkite „{ -brand-short-name }“.
@@ -125,15 +128,63 @@ cfr-doorhanger-video-support-header = Atnaujinkite „{ -brand-short-name }“, 
 cfr-doorhanger-video-support-primary-button = Atnaujinti dabar
     .accesskey = A
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
 spotlight-public-wifi-vpn-header = Panašu, kad naudojatės viešu „Wi-Fi“
 spotlight-public-wifi-vpn-body = Norėdami paslėpti savo buvimo vietą ir naršymo veiklą, naudokite virtualų privatų tinklą (VPN). Tai leis apsisaugoti naršant viešose vietose, pvz., oro uostuose ir kavinėse.
 spotlight-public-wifi-vpn-primary-button = Išsaugoti privatumą su „{ -mozilla-vpn-brand-name }“
     .accesskey = I
 spotlight-public-wifi-vpn-link = Ne dabar
     .accesskey = N
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Geresnis internetas prasideda nuo jūsų
+spotlight-better-internet-body = Kai naudojate „{ -brand-short-name }“, balsuojate už atvirą ir prieinamą internetą, kuris būtų geresnis visiems.
+spotlight-peace-mind-header = Mes su jumis
+spotlight-peace-mind-body = Kiekvieną mėnesį „{ -brand-short-name }“ blokuoja vidutiniškai daugiau nei 3000 stebėjimo elementų, tenkančių vienam naudotojui. Nes niekas, ypač privatumo trikdžiai, tokie kaip sekimo elementai, neturėtų įsiterpti tarp jūsų ir gerojo interneto.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Laikyti užduočių juostoje
+       *[other] Įsegti į užduočių juostą
+    }
+spotlight-pin-secondary-button = Ne dabar
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+## Firefox View CFR
+
+## Firefox View Spotlight
+
+## Colorways expiry reminder CFR
+
+## Cookie Banner Handling CFR
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
+

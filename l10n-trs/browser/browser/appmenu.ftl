@@ -5,7 +5,14 @@
 
 ## App Menu
 
-appmenuitem-protection-dashboard-title = Riña màn nej sa dugumîn
+appmenuitem-banner-update-available =
+    .label = Huā sa gā’hue nāhuin nākà — nādunï̄nj man hìaj
+appmenuitem-banner-update-manual =
+    .label = Huā sa gā’hue nāhuin nākà — nādunï̄nj man hìaj
+appmenuitem-banner-update-unsupported =
+    .label = Na’hue nāhuin nàkaj — nitāj si aran’ si sitemânt ngàj
+appmenuitem-banner-update-restart =
+    .label = Huā sa gā’hue nāhuin nākà — dūna’àj da’ nāyi’ì man’an ñûn man
 appmenuitem-new-tab =
     .label = Rakïj ñanj nakàa
 appmenuitem-new-window =
@@ -16,12 +23,26 @@ appmenuitem-history =
     .label = Sa gini’iājt
 appmenuitem-downloads =
     .label = Nadunïnj
+appmenuitem-passwords =
+    .label = Nej da\'nga\' huìi
+appmenuitem-addons-and-themes =
+    .label = Nej sa nūtò’ nī nej têma
 appmenuitem-print =
     .label = Nari' ña du'ua
+appmenuitem-find-in-page =
+    .label = Nānà’huì’ riña pâgina…
 appmenuitem-zoom =
     .value = Soom
+appmenuitem-more-tools =
+    .label = Doj sa gā’hue gārasun’
 appmenuitem-help =
     .label = Sa ruguñu'unj un
+appmenuitem-exit2 =
+    .label =
+        { PLATFORM() ->
+            [linux] Dūnâj
+           *[other] Ña gāhui’
+        }
 
 ## Zoom and Fullscreen Controls
 
@@ -38,6 +59,8 @@ appmenuitem-fullscreen =
 appmenu-remote-tabs-notabs = Si na'nï' rakij ñanj
 # This is shown when Sync is configured but syncing tabs is disabled.
 appmenu-remote-tabs-tabsnotsyncing = Nachrūn si sinkronisasion rakïj ñaj da' ni'iaj nej rakïj ñaj asij riña a'ngo si agat.
+appmenu-remote-tabs-opensettings =
+    .label = Nāgi\'hiô\'
 # This is shown when Sync is configured but this appears to be the only device attached to
 # the account. We also show links to download Firefox for android/ios.
 appmenu-remote-tabs-noclients = Ni'iaj rakïj ñaj nū riña a'ngo si aga' asij ñuna ànj
@@ -45,7 +68,19 @@ appmenu-remote-tabs-connectdevice =
     .label = Ganachun' 'ngà a'ngo aga'a...
 appmenu-remote-tabs-welcome = Ni’iāj nej rakïj ñaj āsìj riña a'ngô nej si agâ’t.
 appmenu-remote-tabs-unverified = Da'ui' ma ganatsij ma si kuentat
+appmenuitem-fxa-toolbar-sync-now2 = Nāgi\'hiaj nūguàn\'àn hìaj
 appmenuitem-fxa-sign-in = Nutà' si yuguît riña { -brand-product-name }
+appmenuitem-fxa-manage-account = Si Kuendâ administrador
+appmenu-fxa-header2 = { -fxaccount-brand-name(capitalization: "sentence") }
+# Variables
+# $time (string) - Localized relative time since last sync (e.g. 1 second ago,
+# 3 hours ago, etc.)
+appmenu-fxa-last-sync = Sa nahuin gūñān rūku nïn’ïn { $time }
+    .label = Sa nahuin gūñān rūku nïn’ïn { $time }
+appmenu-fxa-sync-and-save-data2 = Nāgi’hiaj gūñān nī na’nïnj sa’t nej dâto
+appmenu-fxa-signed-in-label = Gāyi\'ì sēsiûn
+appmenu-fxa-setup-sync =
+    .label = Nāchrūn sa nāgi’hiaj gūñāan…
 appmenuitem-save-page =
     .label = Na'nïnj sà' Pâjina Gù'na…
 
@@ -65,15 +100,27 @@ whatsnew-panel-footer-checkbox =
 profiler-popup-button-idle =
     .label = Sa ri perfîl
     .tooltiptext = Gi'iaj grabândo 'ngō perfil nikāj rendimiênto
+profiler-popup-header-text = { -profiler-brand-name }
+profiler-popup-learn-more-button =
+    .label = Gāhuin chrūn doj
+profiler-popup-settings =
+    .value = Nāgi\'iô\'
+profiler-popup-discard-button =
+    .label = Dunâj man
 
 ## Profiler presets
 ## They are shown in the popup's select box.
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
+# devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+# "Power" is used in the sense of energy (electricity used by the computer).
+profiler-popup-presets-power-label =
+    .label = Ña'aan
+profiler-popup-presets-custom-label =
+    .label = Nāgi\'iaj mun\'ûn\'
 
 ## History panel
 
@@ -94,9 +141,6 @@ appmenu-about =
     .accesskey = r
 appmenu-help-report-site-issue =
     .label = Natà' si huā sa huā a'na' riña sitiô…
-appmenu-help-feedback-page =
-    .label = Ga'nïnj 'ngo si nuguàn't
-    .accesskey = S
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -114,5 +158,3 @@ appmenu-help-not-deceptive =
 
 ## More Tools
 
-appmenu-taskmanager =
-    .label = Sa nikaj ñu'unj nej suun

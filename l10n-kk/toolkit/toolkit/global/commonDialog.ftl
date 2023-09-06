@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Пайдаланушы аты
 common-dialog-password =
     .value = Пароль
+
+common-dialog-copy-cmd =
+    .label = Көшіріп алу
+    .accesskey = К
+common-dialog-select-all-cmd =
+    .label = Барлығын ерекшелеу
+    .accesskey = Б

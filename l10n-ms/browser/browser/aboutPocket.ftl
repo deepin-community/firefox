@@ -25,7 +25,6 @@ pocket-panel-saved-save-tags = Simpan
 pocket-panel-saved-saving-tags = Sedang menyimpan…
 pocket-panel-saved-suggested-tags = Tag Disyorkan
 pocket-panel-saved-tags-saved = Tag Ditambah
-pocket-panel-signup-view-list = Senarai Paparan
 
 ## about:pocket-signup panel
 
@@ -40,4 +39,8 @@ pocket-panel-signup-tagline-story-one = Klik butang { -pocket-brand-name } untuk
 pocket-panel-signup-tagline-story-two = Papar dalam { -pocket-brand-name } dalam mana-mana peranti, bila-bila masa saja.
 
 ## about:pocket-home panel
+
+## Pocket panel header component
+
+## Pocket panel buttons
 

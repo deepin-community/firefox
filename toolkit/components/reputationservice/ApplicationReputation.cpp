@@ -146,9 +146,13 @@ mozilla::LazyLogModule ApplicationReputationService::prlog(
 // reputation checks.
 /* static */
 const char* const ApplicationReputationService::kNonBinaryExecutables[] = {
+    // clang-format off
     ".ad",
+    ".afploc",
     ".air",
-    ".inetloc",
+    ".atloc",
+    ".ftploc",
+    // clang-format on
 };
 
 // Items that should be submitted for application reputation checks that users
@@ -176,7 +180,7 @@ const char* const ApplicationReputationService::kBinaryFileExtensions[] = {
     //".app", exec  // Executable application
     ".applescript",
     //".application", exec // MS ClickOnce
-    ".appref-ms",  // MS ClickOnce
+    //".appref-ms", exec // MS ClickOnce
     //".arc",
     //".arj",
     ".as",  // Mac archive
@@ -224,10 +228,11 @@ const char* const ApplicationReputationService::kBinaryFileExtensions[] = {
     ".definition",  // Automator action
     ".desktop",     // A shortcut that runs other files
     //".der", exec  // Signed certificate
-    ".dex",         // Android
-    ".dht",         // HTML
-    ".dhtm",        // HTML
-    ".dhtml",       // HTML
+    ".dex",    // Android
+    ".dht",    // HTML
+    ".dhtm",   // HTML
+    ".dhtml",  // HTML
+    //".diagcab", exec // Executable windows archive, like .cab
     ".diskcopy42",  // Apple DiskCopy Image
     ".dll",         // Windows executable
     ".dmg",         // Mac disk image
@@ -271,10 +276,12 @@ const char* const ApplicationReputationService::kBinaryFileExtensions[] = {
     ".internetconnect",  // Configuration file for Apple system
     //".inx", // InstallShield
     ".iso",  // CD image
-    //".isp", exec // IIS config
-    //".isu", // InstallShield
-    //".jar", exec // Java
-    //".jnlp", exec // Java
+             //".isp", exec // IIS config
+             //".isu", // InstallShield
+             //".jar", exec // Java
+#ifndef MOZ_ESR
+//".jnlp", exec // Java
+#endif
     //".job", // Windows
     //".jpg",
     //".jpeg",
@@ -503,11 +510,11 @@ const char* const ApplicationReputationService::kBinaryFileExtensions[] = {
     ".xar",   // MS Excel
     ".xbap",  // XAML Browser Application
     ".xht", ".xhtm", ".xhtml",
-    ".xip",     // Mac archive
-    ".xla",     // MS Excel
-    ".xlam",    // MS Excel
-    ".xldm",    // MS Excel
-    ".xll",     // MS Excel
+    ".xip",   // Mac archive
+    ".xla",   // MS Excel
+    ".xlam",  // MS Excel
+    ".xldm",  // MS Excel
+    //".xll", exec  // MS Excel
     ".xlm",     // MS Excel
     ".xls",     // MS Excel
     ".xlsb",    // MS Excel
@@ -684,9 +691,8 @@ class PendingLookup final : public nsIStreamListener,
 
   // Wrapper function for nsIStreamListener.onStopRequest to make it easy to
   // guarantee calling the callback
-  nsresult OnStopRequestInternal(nsIRequest* aRequest, nsISupports* aContext,
-                                 nsresult aResult, uint32_t& aVerdict,
-                                 Reason& aReason);
+  nsresult OnStopRequestInternal(nsIRequest* aRequest, nsresult aResult,
+                                 uint32_t& aVerdict, Reason& aReason);
 
   // Return the hex-encoded hash of the whole URI.
   nsresult GetSpecHash(nsACString& aSpec, nsACString& hexEncodedHash);
@@ -1291,12 +1297,9 @@ nsresult PendingLookup::StartLookup() {
 
 nsresult PendingLookup::GetSpecHash(nsACString& aSpec,
                                     nsACString& hexEncodedHash) {
-  nsresult rv;
-
-  nsCOMPtr<nsICryptoHash> cryptoHash =
-      do_CreateInstance("@mozilla.org/security/hash;1", &rv);
-  NS_ENSURE_SUCCESS(rv, rv);
-  rv = cryptoHash->Init(nsICryptoHash::SHA256);
+  nsCOMPtr<nsICryptoHash> cryptoHash;
+  nsresult rv =
+      NS_NewCryptoHash(nsICryptoHash::SHA256, getter_AddRefs(cryptoHash));
   NS_ENSURE_SUCCESS(rv, rv);
 
   rv = cryptoHash->Update(
@@ -1648,7 +1651,7 @@ nsresult PendingLookup::SendRemoteQueryInternal(Reason& aReason) {
     nsAutoCString serializedStr(serialized.c_str(), serialized.length());
     serializedStr.ReplaceSubstring("\0"_ns, "\\0"_ns);
 
-    LOG(("Serialized protocol buffer [this = %p]: (length=%d) %s", this,
+    LOG(("Serialized protocol buffer [this = %p]: (length=%zd) %s", this,
          serializedStr.Length(), serializedStr.get()));
   }
 
@@ -1779,14 +1782,12 @@ PendingLookup::OnStopRequest(nsIRequest* aRequest, nsresult aResult) {
 
   uint32_t verdict = nsIApplicationReputationService::VERDICT_SAFE;
   Reason reason = Reason::NotSet;
-  nsresult rv =
-      OnStopRequestInternal(aRequest, nullptr, aResult, verdict, reason);
+  nsresult rv = OnStopRequestInternal(aRequest, aResult, verdict, reason);
   OnComplete(verdict, reason, rv);
   return rv;
 }
 
 nsresult PendingLookup::OnStopRequestInternal(nsIRequest* aRequest,
-                                              nsISupports* aContext,
                                               nsresult aResult,
                                               uint32_t& aVerdict,
                                               Reason& aReason) {
@@ -1971,5 +1972,12 @@ nsresult ApplicationReputationService::QueryReputationInternal(
 nsresult ApplicationReputationService::IsBinary(const nsACString& aFileName,
                                                 bool* aBinary) {
   *aBinary = ::IsBinary(aFileName);
+  return NS_OK;
+}
+
+nsresult ApplicationReputationService::IsExecutable(const nsACString& aFileName,
+                                                    bool* aExecutable) {
+  *aExecutable =
+      ::IsFileType(aFileName, sExecutableExts, ArrayLength(sExecutableExts));
   return NS_OK;
 }

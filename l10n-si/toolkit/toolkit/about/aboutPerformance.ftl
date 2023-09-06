@@ -8,21 +8,21 @@ about-performance-title = කාර්ය කළමනාකරු
 ## Column headers
 
 column-name = නම
-column-type = වර්‍ගය
+column-type = වර්ගය:
 column-energy-impact = බලශක්ති බලපෑම
 column-memory = මතකය
 
 ## Special values for the Name column
 
-ghost-windows = මෑතකදි වැසු ටැබ
+ghost-windows = මෑත දී වසා දැමූ පටිති
 
 ## Values for the Type column
 
-type-tab = ටැබය
+type-tab = පටිත්ත
 type-subframe = අනුරාමුව
-type-addon = ඇඩෝන
-type-browser = ගවේශකය
-type-worker = සේවකයා
+type-tracker = ලුහුබැඳීම
+type-addon = එක්කහු
+type-browser = අතිරික්සුව
 type-other = වෙනත්
 
 ## Values for the Energy Impact column
@@ -33,21 +33,21 @@ type-other = වෙනත්
 
 energy-impact-high = ඉහළ ({ $value })
 energy-impact-medium = මධ්‍යම ({ $value })
-energy-impact-low = පහළ ({ $value })
+energy-impact-low = අඩු ({ $value })
 
 ## Values for the Memory column
 ##
 ## Variables:
 ##   $value (Number) - How much memory is used
 
-size-KB = { $value } KB
-size-MB = { $value } MB
-size-GB = { $value } GB
+size-KB = කි.බ. { $value }
+size-MB = මෙ.බ. { $value }
+size-GB = ගි.බ. { $value }
 
 ## Tooltips for the action buttons
 
 close-tab =
-    .title = ටැබය වසන්න
+    .title = පටිත්ත වසන්න
 show-addon =
-    .title = ඇඩෝන කළමනාකරු පෙන්වන්න
+    .title = එක්කහු කළමනාකරු පෙන්වන්න
 

@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Nastavitve povezave
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -35,7 +35,6 @@ connection-proxy-http = Posrednik HTTP
     .accesskey = H
 connection-proxy-http-port = Vrata
     .accesskey = v
-
 connection-proxy-https-sharing =
     .label = Uporabi ta posrednik tudi za HTTPS
     .accesskey = s
@@ -77,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = e
     .tooltip = Ta možnost izvede tiho overjanje s posredniki, če imate shranjena gesla zanje. Če overjanje ne uspe, boste morali vnesti geslo.
 
+connection-proxy-autologin-checkbox =
+    .label = Brez overjanja, če je geslo shranjeno
+    .accesskey = e
+    .tooltiptext = Ta možnost izvede tiho overjanje s posredniki, če imate shranjena gesla zanje. Če overjanje ne uspe, boste morali vnesti geslo.
+
 connection-proxy-socks-remote-dns =
     .label = Posredniški DNS, kadar se uporablja SOCKS v5
     .accesskey = d
-
-connection-dns-over-https =
-    .label = Omogoči DNS preko HTTPS
-    .accesskey = H
-
-connection-dns-over-https-url-resolver = Uporabi ponudnika
-    .accesskey = U
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

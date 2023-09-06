@@ -5,8 +5,6 @@
 # The content of this file comes orginally from automationutils.py
 # and *should* be revised.
 
-from __future__ import absolute_import, division
-
 import re
 from operator import itemgetter
 
@@ -118,11 +116,15 @@ class ShutdownLeaks(object):
                 % (self.numDomWindowCreatedLogsSeen, self.numDomWindowDestroyedLogsSeen)
             )
 
+        errors = []
         for test in self._parseLeakingTests():
             for url, count in self._zipLeakedWindows(test["leakedWindows"]):
-                self.logger.error(
-                    "TEST-UNEXPECTED-FAIL | %s | leaked %d window(s) until shutdown "
-                    "[url = %s]" % (test["fileName"], count, url)
+                errors.append(
+                    {
+                        "test": test["fileName"],
+                        "msg": "leaked %d window(s) until shutdown [url = %s]"
+                        % (count, url),
+                    }
                 )
                 failures += 1
 
@@ -133,9 +135,12 @@ class ShutdownLeaks(object):
                 )
 
             if test["leakedDocShells"]:
-                self.logger.error(
-                    "TEST-UNEXPECTED-FAIL | %s | leaked %d docShell(s) until "
-                    "shutdown" % (test["fileName"], len(test["leakedDocShells"]))
+                errors.append(
+                    {
+                        "test": test["fileName"],
+                        "msg": "leaked %d docShell(s) until shutdown"
+                        % (len(test["leakedDocShells"])),
+                    }
                 )
                 failures += 1
                 self.logger.info(
@@ -167,7 +172,7 @@ class ShutdownLeaks(object):
                     % (test["fileName"], test["hiddenDocShellsCount"])
                 )
 
-        return failures
+        return failures, errors
 
     def _logWindow(self, line, created):
         pid = self._parseValue(line, "pid")
@@ -178,9 +183,9 @@ class ShutdownLeaks(object):
         # log line has invalid format
         if not pid or not serial:
             self.logger.error(
-                "TEST-UNEXPECTED-FAIL | ShutdownLeaks | failed to parse line <%s>"
-                % line
+                "TEST-UNEXPECTED-FAIL | ShutdownLeaks | failed to parse line"
             )
+            self.logger.error("TEST-INFO | ShutdownLeaks | Unparsable line <%s>" % line)
             return
 
         key = (pid, serial)
@@ -207,9 +212,9 @@ class ShutdownLeaks(object):
         # log line has invalid format
         if not pid or not id:
             self.logger.error(
-                "TEST-UNEXPECTED-FAIL | ShutdownLeaks | failed to parse line <%s>"
-                % line
+                "TEST-UNEXPECTED-FAIL | ShutdownLeaks | failed to parse line"
             )
+            self.logger.error("TEST-INFO | ShutdownLeaks | Unparsable line <%s>" % line)
             return
 
         key = (pid, id)

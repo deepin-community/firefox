@@ -8,6 +8,7 @@ about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Vacuar le cache DNS
 about-networking-dns-trr-url = URL DoH
+about-networking-dns-trr-mode = Modo DoH
 about-networking-dns-suffix = Suffixo DNS
 about-networking-websockets = WebSockets
 about-networking-refresh = Actualisar
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Active
 about-networking-idle = Inactive
 about-networking-host = Hoste
-about-networking-tcp = TCP
 about-networking-type = Typo
 about-networking-sent = Inviate
 about-networking-received = Recipite
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Adresses
 about-networking-expires = Expira (Secundas)
 about-networking-originAttributesSuffix = Clave de isolation
+about-networking-flags = Altere marcas
 about-networking-messages-sent = Messages inviate
 about-networking-messages-received = Messages recipite
 about-networking-bytes-sent = Bytes inviate
 about-networking-bytes-received = Bytes recipite
 about-networking-logging = Registros
-about-networking-log-tutorial = Vide <a data-l10n-name="logging">HTTP Logging</a> pro instructiones re como usar iste instrumento.
-about-networking-current-log-file = File de diario actual:
-about-networking-current-log-modules = Modulos de diario actual:
-about-networking-set-log-file = Definir le file de registro
-about-networking-set-log-modules = Definir le modulos de registro
-about-networking-start-logging = Initiar le registration
-about-networking-stop-logging = Stoppar le registration
 about-networking-dns-lookup = Recerca de DNS
 about-networking-dns-lookup-button = Resolver
 about-networking-dns-domain = Dominio:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Contage lente de cache
 about-networking-rcwn-cache-not-slow = Contage non lente de cache
 about-networking-networkid = ID de rete
 about-networking-networkid-id = ID de rete
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Iste pagina es ora disponibile in <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

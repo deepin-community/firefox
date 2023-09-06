@@ -4,17 +4,17 @@
 
 "use strict";
 
-const { Ci } = require("chrome");
-const DevToolsUtils = require("devtools/shared/DevToolsUtils");
+const DevToolsUtils = require("resource://devtools/shared/DevToolsUtils.js");
 const { assert, fetch } = DevToolsUtils;
-const EventEmitter = require("devtools/shared/event-emitter");
-const { SourceLocation } = require("devtools/server/actors/common");
-const Services = require("Services");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
+const {
+  SourceLocation,
+} = require("resource://devtools/server/actors/common.js");
 
 loader.lazyRequireGetter(
   this,
   "SourceActor",
-  "devtools/server/actors/source",
+  "resource://devtools/server/actors/source.js",
   true
 );
 
@@ -30,12 +30,9 @@ const MINIFIED_SOURCE_REGEXP = /\bmin\.js$/;
  * the sources, etc for ThreadActors.
  */
 class SourcesManager extends EventEmitter {
-  constructor(threadActor, allowSourceFn = () => true) {
+  constructor(threadActor) {
     super();
     this._thread = threadActor;
-    this.allowSource = source => {
-      return !isHiddenSource(source) && allowSourceFn(source);
-    };
 
     this.blackBoxedSources = new Map();
 
@@ -87,14 +84,10 @@ class SourcesManager extends EventEmitter {
    *
    * @param Debugger.Source source
    *        The source to make an actor for.
-   * @returns a SourceActor representing the source or null.
+   * @returns a SourceActor representing the source.
    */
   createSourceActor(source) {
     assert(source, "SourcesManager.prototype.source needs a source");
-
-    if (!this.allowSource(source)) {
-      return null;
-    }
 
     if (this._sourceActors.has(source)) {
       return this._sourceActors.get(source);
@@ -266,9 +259,15 @@ class SourcesManager extends EventEmitter {
    *        boxed or not.
    */
   isBlackBoxed(url, line, column) {
+    if (!this.blackBoxedSources.has(url)) {
+      return false;
+    }
+
     const ranges = this.blackBoxedSources.get(url);
+
+    // If we have an entry in the map, but it is falsy, the source is fully blackboxed.
     if (!ranges) {
-      return this.blackBoxedSources.has(url);
+      return true;
     }
 
     const range = ranges.find(r => isLocationInRange({ line, column }, r));
@@ -345,6 +344,8 @@ class SourcesManager extends EventEmitter {
     if (topic == "devtools-html-content") {
       const { parserID, uri, contents, complete } = JSON.parse(data);
       if (this._urlContents.has(uri)) {
+        // We received many devtools-html-content events, if we already received one,
+        // aggregate the data with the one we already received.
         const existing = this._urlContents.get(uri);
         if (existing.parserID == parserID) {
           assert(!existing.complete);
@@ -364,7 +365,11 @@ class SourcesManager extends EventEmitter {
             }
           }
         }
-      } else {
+      } else if (contents) {
+        // Ensure that `contents` is non-empty. We may miss all the devtools-html-content events except the last
+        // one which has a empty `contents` and complete set to true.
+        // This reproduces when opening a same-process iframe. In this particular scenario, we instantiate the target and thread actor
+        // on `DOMDocElementInserted` and the HTML document is already parsed, but we still receive this one very last notification.
         this._urlContents.set(uri, {
           content: contents,
           complete,
@@ -402,7 +407,12 @@ class SourcesManager extends EventEmitter {
         contentType: data.contentType,
       };
     }
-
+    if (partial) {
+      return {
+        content: "",
+        contentType: "",
+      };
+    }
     return this._fetchURLContents(url, partial, canUseCache);
   }
 
@@ -485,14 +495,6 @@ class SourcesManager extends EventEmitter {
   }
 }
 
-/*
- * Checks if a source should never be displayed to the user because
- * it's either internal or we don't support in the UI yet.
- */
-function isHiddenSource(source) {
-  return source.introductionType === "Function.prototype";
-}
-
 function isLocationInRange({ line, column }, range) {
   return (
     (range.start.line <= line ||
@@ -503,4 +505,3 @@ function isLocationInRange({ line, column }, range) {
 }
 
 exports.SourcesManager = SourcesManager;
-exports.isHiddenSource = isHiddenSource;

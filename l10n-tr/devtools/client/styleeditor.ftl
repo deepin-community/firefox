@@ -8,15 +8,19 @@ styleeditor-new-button =
 styleeditor-import-button =
     .tooltiptext = Mevcut bir stil sayfasını içe al ve belgeye ekle
     .accesskey = e
+styleeditor-filter-input =
+    .placeholder = Stil dosyalarını filtrelere
 styleeditor-visibility-toggle =
     .tooltiptext = Stil sayfası görünürlüğünü aç/kapat
     .accesskey = K
+styleeditor-visibility-toggle-system =
+    .tooltiptext = Sistem stil dosyaları devre dışı bırakılamaz
 styleeditor-save-button = Kaydet
     .tooltiptext = Bu stil sayfasını bir dosyaya kaydet
     .accesskey = K
 styleeditor-options-button =
     .tooltiptext = Stil editörü seçenekleri
-styleeditor-media-rules = @media kuralları
+styleeditor-at-rules = “At” kuralları
 styleeditor-editor-textbox =
     .data-placeholder = CSS’i buraya yazın.
 styleeditor-no-stylesheet = Bu sayfanın stil sayfası yok.
@@ -25,3 +29,23 @@ styleeditor-open-link-new-tab =
     .label = Bağlantıyı yeni sekmede aç
 styleeditor-copy-url =
     .label = URL’yi kopyala
+styleeditor-find =
+    .label = Bul
+    .accesskey = B
+styleeditor-find-again =
+    .label = Sonrakini bul
+    .accesskey = n
+styleeditor-go-to-line =
+    .label = Satıra git…
+    .accesskey = r
+# Label displayed when searching a term that is not found in any stylesheet path
+styleeditor-stylesheet-all-filtered = Eşleşen stil dosyası bulunamadı.
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } kural.
+       *[other] { $ruleCount } kural.
+    }

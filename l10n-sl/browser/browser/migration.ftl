@@ -19,7 +19,7 @@ import-from-edge =
     .label = Microsoft Edga
     .accesskey = E
 import-from-edge-legacy =
-    .label = Microsoft Edge (starejše različice)
+    .label = Microsoft Edga (starejše različice)
     .accesskey = s
 import-from-edge-beta =
     .label = Microsoft Edge Beta
@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safarija
     .accesskey = S
+import-from-opera =
+    .label = Opere
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldija
+    .accesskey = V
+import-from-brave =
+    .label = Brava
+    .accesskey = B
 import-from-canary =
     .label = Chrome Canaryja
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opere GX
+    .accesskey = G
 
 no-migration-sources = Ni bilo mogoče najti nobenega programa z zaznamki, zgodovino ali gesli za uvoz.
 
@@ -61,8 +73,8 @@ import-items-description = Izberite, kaj želite uvoziti:
 
 import-permissions-page-title = Dajte { -brand-short-name(sklon: "dajalnik") } dovoljenja
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS zahteva, da { -brand-short-name(sklon: "dajalnik") } izrecno dovolite odstop do Safarijevih zaznamkov. Kliknite "Continue" in na plošči "File Open", ki se pojavi, izberite datoteko "Bookmarks.plist".
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS zahteva, da { -brand-short-name(sklon: "dajalnik") } izrecno dovolite odstop do Safarijevih podatkov. Kliknite "Continue", v pogovornem oknu Finderja izberite mapo "Safari" in nato kliknite "Odpri".
 
 import-migrating-page-title = Uvoz ...
 
@@ -78,23 +90,9 @@ import-done-description = Uspešno je bilo uvoženo naslednje:
 
 import-close-source-browser = Pred nadaljevanjem se prepričajte, da je izbrani brskalnik zaprt.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Od { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Bralni seznam (iz Safarija)
 imported-edge-reading-list = Bralni seznam (iz Edgea)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = Okna in zavihki
 browser-data-session-label =
     .value = Okna in zavihki
+
+browser-data-payment-methods-checkbox =
+    .label = Načini plačila
+browser-data-payment-methods-label =
+    .value = Načini plačila

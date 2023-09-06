@@ -9,8 +9,7 @@
 
 #include "mozilla/HoldDropJSObjects.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 NS_IMPL_CYCLE_COLLECTION_CLASS(AuthenticatorAttestationResponse)
 NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN_INHERITED(
@@ -52,11 +51,15 @@ JSObject* AuthenticatorAttestationResponse::WrapObject(
 }
 
 void AuthenticatorAttestationResponse::GetAttestationObject(
-    JSContext* aCx, JS::MutableHandle<JSObject*> aRetVal) {
+    JSContext* aCx, JS::MutableHandle<JSObject*> aValue, ErrorResult& aRv) {
   if (!mAttestationObjectCachedObj) {
     mAttestationObjectCachedObj = mAttestationObject.ToArrayBuffer(aCx);
+    if (!mAttestationObjectCachedObj) {
+      aRv.NoteJSContextException(aCx);
+      return;
+    }
   }
-  aRetVal.set(mAttestationObjectCachedObj);
+  aValue.set(mAttestationObjectCachedObj);
 }
 
 nsresult AuthenticatorAttestationResponse::SetAttestationObject(
@@ -67,5 +70,4 @@ nsresult AuthenticatorAttestationResponse::SetAttestationObject(
   return NS_OK;
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

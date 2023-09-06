@@ -88,6 +88,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = একটি অচল সাইট রিপোর্ট করুন
 protections-panel-content-blocking-breakage-report-view-description = নির্দিষ্ট কিছু ট্র্যাকার ব্লক করলে কিছু ওয়েবসাইটে সমস্যা হতে পারে। এই সমস্যা রিপোর্ট করা { -brand-short-name } কে সবার জন্য আরও ভাল করতে সহায়তা করে। এই রিপোর্ট পাঠানোর মাধ্যমে একটি URL এবং Mozilla তে আপনার ব্রাউজার সেটিংস সম্পর্কিত তথ্য প্রেরণ করবে। <label data-l10n-name="learn-more">আরও জানুন</label>
+protections-panel-content-blocking-breakage-report-view-description2 = নির্দিষ্ট কিছু ট্র্যাকার ব্লক করলে কিছু ওয়েবসাইটে সমস্যা হতে পারে। এই সমস্যা রিপোর্ট করা { -brand-short-name } কে সবার জন্য আরও ভাল করতে সহায়তা করে। এই রিপোর্ট পাঠানোর মাধ্যমে একটি URL এবং { -vendor-short-name } তে আপনার ব্রাউজার সেটিংস সম্পর্কিত তথ্য প্রেরণ করবে।
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -98,3 +99,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = বাতিল
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = রিপোর্ট পাঠান
+
+# Cookie Banner Handling
+

@@ -21,14 +21,14 @@ const TOP_SITES = [
 const FIREFOX_SUGGEST_LABEL = "Firefox Suggest";
 
 // %s is replaced with the engine name.
-const ENGINE_SUGGESTIONS_LABEL = "%s Suggestions";
+const ENGINE_SUGGESTIONS_LABEL = "%s suggestions";
 
 // Allow more time for Mac machines so they don't time out in verify mode.
 if (AppConstants.platform == "macosx") {
   requestLongerTimeout(3);
 }
 
-add_task(async function init() {
+add_setup(async function () {
   Assert.ok(
     UrlbarPrefs.get("showSearchSuggestionsFirst"),
     "Precondition: Search suggestions shown first by default"
@@ -53,13 +53,10 @@ add_task(async function init() {
   await updateTopSites(sites => sites && sites.length);
 
   // Add a mock engine so we don't hit the network.
-  await SearchTestUtils.installSearchExtension();
-  let oldDefaultEngine = await Services.search.getDefault();
-  await Services.search.setDefault(Services.search.getEngineByName("Example"));
+  await SearchTestUtils.installSearchExtension({}, { setAsDefault: true });
 
   registerCleanupFunction(async () => {
     await PlacesUtils.history.clear();
-    Services.search.setDefault(oldDefaultEngine);
   });
 });
 
@@ -410,6 +407,56 @@ add_task(async function clickLabel() {
   });
 });
 
+add_task(async function ariaLabel() {
+  const helpUrl = "http://example.com/help";
+  const results = [
+    new UrlbarResult(
+      UrlbarUtils.RESULT_TYPE.URL,
+      UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+      { url: "http://example.com/1", helpUrl }
+    ),
+    new UrlbarResult(
+      UrlbarUtils.RESULT_TYPE.URL,
+      UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+      { url: "http://example.com/2", helpUrl }
+    ),
+    new UrlbarResult(
+      UrlbarUtils.RESULT_TYPE.URL,
+      UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+      { url: "http://example.com/3" }
+    ),
+  ];
+
+  for (let i = 0; i < results.length; i++) {
+    results[i].suggestedIndex = i;
+  }
+
+  const provider = new UrlbarTestUtils.TestProvider({
+    results,
+    priority: Infinity,
+  });
+  UrlbarProvidersManager.registerProvider(provider);
+
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window,
+    value: "test",
+  });
+  await checkLabels(results.length, {
+    0: FIREFOX_SUGGEST_LABEL,
+  });
+
+  const expectedRows = [
+    { hasGroupAriaLabel: true, ariaLabel: FIREFOX_SUGGEST_LABEL },
+    { hasGroupAriaLabel: false },
+    { hasGroupAriaLabel: false },
+  ];
+  await checkGroupAriaLabels(expectedRows);
+
+  await UrlbarTestUtils.promisePopupClose(window);
+
+  UrlbarProvidersManager.unregisterProvider(provider);
+});
+
 /**
  * Provider that returns a suggested-index result.
  */
@@ -494,6 +541,41 @@ async function checkLabels(resultCount, labelsByIndex) {
   }
 }
 
+/**
+ * Asserts that an element for group aria label.
+ *
+ * @param {Array} expectedRows The expected rows.
+ */
+async function checkGroupAriaLabels(expectedRows) {
+  Assert.equal(
+    UrlbarTestUtils.getResultCount(window),
+    expectedRows.length,
+    "Expected result count"
+  );
+
+  for (let i = 0; i < expectedRows.length; i++) {
+    const result = await UrlbarTestUtils.getDetailsOfResultAt(window, i);
+    const { row } = result.element;
+    const groupAriaLabel = row.querySelector(".urlbarView-group-aria-label");
+
+    const expected = expectedRows[i];
+
+    Assert.equal(
+      !!groupAriaLabel,
+      expected.hasGroupAriaLabel,
+      `Group aria label exists as expected in the results[${i}]`
+    );
+
+    if (expected.hasGroupAriaLabel) {
+      Assert.equal(
+        groupAriaLabel.getAttribute("aria-label"),
+        expected.ariaLabel,
+        `Content of aria-label attribute in the element for group aria label in the results[${i}] is correct`
+      );
+    }
+  }
+}
+
 function engineSuggestionsLabel(engineName) {
   return ENGINE_SUGGESTIONS_LABEL.replace("%s", engineName);
 }
@@ -502,7 +584,7 @@ function engineSuggestionsLabel(engineName) {
  * Adds a search engine that provides suggestions, calls your callback, and then
  * remove the engine.
  *
- * @param {function} callback
+ * @param {Function} callback
  *   Your callback function.
  * @param {string} [engineBasename]
  *   The basename of the engine file.
@@ -514,15 +596,21 @@ async function withSuggestions(
   await SpecialPowers.pushPrefEnv({
     set: [[SUGGESTIONS_PREF, true]],
   });
-  let engine = await SearchTestUtils.promiseNewSearchEngine(
-    getRootDirectory(gTestPath) + engineBasename
-  );
+  let engine = await SearchTestUtils.promiseNewSearchEngine({
+    url: getRootDirectory(gTestPath) + engineBasename,
+  });
   let oldDefaultEngine = await Services.search.getDefault();
-  await Services.search.setDefault(engine);
+  await Services.search.setDefault(
+    engine,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
   try {
     await callback(engine);
   } finally {
-    await Services.search.setDefault(oldDefaultEngine);
+    await Services.search.setDefault(
+      oldDefaultEngine,
+      Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+    );
     await Services.search.removeEngine(engine);
     await SpecialPowers.popPrefEnv();
   }

@@ -12,19 +12,39 @@ about-webrtc-document-title = Εσωτερικά του WebRTC
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = αποθήκευση about:webrtc ως
 
+## These labels are for a disclosure which contains the information for closed PeerConnection sections
+
+about-webrtc-closed-peerconnection-disclosure-show-msg = Εμφάνιση κλεισμένων PeerConnections
+about-webrtc-closed-peerconnection-disclosure-hide-msg = Απόκρυψη κλεισμένων PeerConnections
+
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = Καταγραφή AEC
 about-webrtc-aec-logging-off-state-label = Έναρξη καταγραφής AEC
 about-webrtc-aec-logging-on-state-label = Διακοπή καταγραφής AEC
 about-webrtc-aec-logging-on-state-msg = Καταγραφή AEC ενεργή (μιλήστε με τον καλών για λίγα λεπτά και μετά σταματήστε την καταγραφή)
+about-webrtc-aec-logging-toggled-on-state-msg = Καταγραφή AEC ενεργή (μιλήστε με τον καλών για λίγα λεπτά και μετά σταματήστε την καταγραφή)
+about-webrtc-aec-logging-unavailable-sandbox = Απαιτείται η μεταβλητή περιβάλλοντος «MOZ_DISABLE_CONTENT_SANDBOX=1» για την εξαγωγή αρχείων καταγραφής AEC. Ορίστε αυτήν τη μεταβλητή μόνο εάν κατανοείτε τους πιθανούς κινδύνους.
+# Variables:
+#  $path (String) - The path to which the aec log file is saved.
+about-webrtc-aec-logging-toggled-off-state-msg = Τα αρχεία καταγραφής μπορούν να βρεθούν στο: { $path }
 
 ##
 
+# The autorefresh checkbox causes a stats section to autorefresh its content when checked
+about-webrtc-auto-refresh-label = Αυτόματη ανανέωση
+# Determines the default state of the Auto Refresh check boxes
+about-webrtc-auto-refresh-default-label = Αυτόματη ανανέωση από προεπιλογή
+# A button which forces a refresh of displayed statistics
+about-webrtc-force-refresh-button = Ανανέωση
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
 # and is used as a data label.
 about-webrtc-peerconnection-id-label = PeerConnection ID:
+# The number of DataChannels that a PeerConnection has opened
+about-webrtc-data-channels-opened-label = Ανοιγμένα κανάλια δεδομένων:
+# The number of once open DataChannels that a PeerConnection has closed
+about-webrtc-data-channels-closed-label = Κλεισμένα κανάλια δεδομένων:
 
 ## "SDP" is an abbreviation for Session Description Protocol, an IETF standard.
 ## See http://wikipedia.org/wiki/Session_Description_Protocol
@@ -58,11 +78,6 @@ about-webrtc-ice-pair-bytes-sent = Απεσταλμένα bytes:
 about-webrtc-ice-pair-bytes-received = Ληφθέντα bytes:
 about-webrtc-ice-component-id = Αναγνωριστικό στοιχείου
 
-## "Avg." is an abbreviation for Average. These are used as data labels.
-
-about-webrtc-avg-bitrate-label = Μέσος ρυθμός bit:
-about-webrtc-avg-framerate-label = Μέσος ρυθμός καρέ:
-
 ## These adjectives are used to label a line of statistics collected for a peer
 ## connection. The data represents either the local or remote end of the
 ## connection.
@@ -83,6 +98,7 @@ about-webrtc-save-page-label = Αποθήκευση σελίδας
 about-webrtc-debug-mode-msg-label = Λειτουργία ελέγχου σφαλμάτων
 about-webrtc-debug-mode-off-state-label = Έναρξη λειτουργίας ελέγχου σφαλμάτων
 about-webrtc-debug-mode-on-state-label = Διακοπή λειτουργίας ελέγχου σφαλμάτων
+about-webrtc-enable-logging-label = Ενεργοποίηση προεπιλογής καταγραφής WebRTC
 about-webrtc-stats-heading = Στατιστικά συνεδρίας
 about-webrtc-stats-clear = Απαλοιφή ιστορικού
 about-webrtc-log-heading = Αρχείο καταγραφής σύνδεσης
@@ -91,6 +107,12 @@ about-webrtc-log-show-msg = εμφάνιση αρχείου καταγραφής
     .title = κάντε κλικ για επέκταση ενότητας
 about-webrtc-log-hide-msg = απόκρυψη αρχείου καταγραφής
     .title = κάντε κλικ για σύμπτυξη ενότητας
+about-webrtc-log-section-show-msg = Εμφάνιση αρχείου καταγραφής
+    .title = Κάντε κλικ για επέκταση ενότητας
+about-webrtc-log-section-hide-msg = Απόκρυψη αρχείου καταγραφής
+    .title = Κάντε κλικ για σύμπτυξη ενότητας
+about-webrtc-copy-report-button = Αντιγραφή αναφοράς
+about-webrtc-copy-report-history-button = Αντιγραφή ιστορικού αναφορών
 
 ## These are used to display a header for a PeerConnection.
 ## Variables:
@@ -101,6 +123,14 @@ about-webrtc-log-hide-msg = απόκρυψη αρχείου καταγραφής
 
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (έκλεισε) { $now }
+
+## These are used to indicate what direction media is flowing.
+## Variables:
+##  $codecs - a list of media codecs
+
+about-webrtc-short-send-receive-direction = Αποστολή/Λήψη: { $codecs }
+about-webrtc-short-send-direction = Αποστολή: { $codecs }
+about-webrtc-short-receive-direction = Λήψη: { $codecs }
 
 ##
 
@@ -113,16 +143,25 @@ about-webrtc-raw-cand-show-msg = εμφάνιση ανεπεξέργαστων �
     .title = κάντε κλικ για επέκταση ενότητας
 about-webrtc-raw-cand-hide-msg = απόκρυψη ανεπεξέργαστων υποψήφιων
     .title = κάντε κλικ για σύμπτυξη ενότητας
+about-webrtc-raw-cand-section-show-msg = Εμφάνιση ανεπεξέργαστων υποψήφιων
+    .title = Κάντε κλικ για επέκταση ενότητας
+about-webrtc-raw-cand-section-hide-msg = Απόκρυψη ανεπεξέργαστων υποψήφιων
+    .title = Κάντε κλικ για σύμπτυξη ενότητας
 about-webrtc-priority = Προτεραιότητα
 about-webrtc-fold-show-msg = εμφάνιση λεπτομερειών
     .title = κάντε κλικ για επέκταση ενότητας
 about-webrtc-fold-hide-msg = απόκρυψη λεπτομερειών
     .title = κάντε κλικ για σύμπτυξη ενότητας
+about-webrtc-fold-default-show-msg = Εμφάνιση λεπτομερειών
+    .title = Κάντε κλικ για επέκταση ενότητας
+about-webrtc-fold-default-hide-msg = Απόκρυψη λεπτομερειών
+    .title = Κάντε κλικ για σύμπτυξη ενότητας
 about-webrtc-dropped-frames-label = Απορριφθέντα καρέ:
 about-webrtc-discarded-packets-label = Απορριφθέντα πακέτα:
 about-webrtc-decoder-label = Αποκωδικοποιητής
 about-webrtc-encoder-label = Κωδικοποιητής
 about-webrtc-show-tab-label = Εμφάνιση καρτέλας
+about-webrtc-current-framerate-label = Ρυθμός καρέ
 about-webrtc-width-px = Πλάτος (px)
 about-webrtc-height-px = Ύψος (px)
 about-webrtc-consecutive-frames = Διαδοχικά καρέ
@@ -138,6 +177,12 @@ about-webrtc-last-frame-timestamp = Χρονική σήμανση λήψης τ�
 about-webrtc-local-receive-ssrc = Τοπική λήψη SSRC
 # This is an SSRC on the remote side of the connection that is sending RTP
 about-webrtc-remote-send-ssrc = Απομακρυσμένη αποστολή SSRC
+
+## These are displayed on the button that shows or hides the
+## PeerConnection configuration disclosure
+
+about-webrtc-pc-configuration-show-msg = Εμφάνιση διαμόρφωσης
+about-webrtc-pc-configuration-hide-msg = Απόκρυψη διαμόρφωσης
 
 ##
 
@@ -179,9 +224,27 @@ about-webrtc-save-page-msg = η σελίδα αποθηκεύτηκε στην �
 about-webrtc-debug-mode-off-state-msg = το αρχείο πληροφοριών μπορεί να βρεθεί στο: { $path }
 about-webrtc-debug-mode-on-state-msg = κατάσταση ελέγχου σφαλμάτων ενεργή, αρχείο καταγραφής στο: { $path }
 about-webrtc-aec-logging-off-state-msg = τα αρχεία καταγραφής μπορούν να βρεθούν στο: { $path }
-
-##
-
+# This path is used for saving the about:webrtc page so it can be attached to
+# bug reports.
+# Variables:
+#  $path (String) - The path to which the file is saved.
+about-webrtc-save-page-complete-msg = Η σελίδα αποθηκεύτηκε στην διαδρομή: { $path }
+# This is the total number of frames encoded or decoded over an RTP stream.
+# Variables:
+#  $frames (Number) - The number of frames encoded or decoded.
+about-webrtc-frames =
+    { $frames ->
+        [one] { $frames } καρέ
+       *[other] { $frames } καρέ
+    }
+# This is the number of audio channels encoded or decoded over an RTP stream.
+# Variables:
+#  $channels (Number) - The number of channels encoded or decoded.
+about-webrtc-channels =
+    { $channels ->
+        [one] { $channels } κανάλι
+       *[other] { $channels } κανάλια
+    }
 # This is the total number of packets received on the PeerConnection.
 # Variables:
 #  $packets (Number) - The number of packets received.
@@ -232,6 +295,22 @@ about-webrtc-sdp-set-at-timestamp-remote = Ορισμός Απομακρυσμέ
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 #  $relative-timestamp (Number) - The timestamp relative to the timestamp of the earliest received SDP.
 about-webrtc-sdp-set-timestamp = Χρονική σήμανση { NUMBER($timestamp, useGrouping: "false") } (+ { $relative-timestamp } ms)
+
+## These are displayed on the button that shows or hides the SDP information disclosure
+
+about-webrtc-show-msg-sdp = Εμφάνιση SDP
+about-webrtc-hide-msg-sdp = Απόκρυψη SDP
+
+##
+
+
+## These are displayed on the button that shows or hides the Media Context information disclosure.
+## The Media Context is the set of preferences and detected capabilities that informs
+## the negotiated CODEC settings.
+
+about-webrtc-media-context-show-msg = Εμφάνιση πλαισίου πολυμέσων
+about-webrtc-media-context-hide-msg = Απόκρυψη πλαισίου πολυμέσων
+about-webrtc-media-context-heading = Πλαίσιο πολυμέσων
 
 ##
 

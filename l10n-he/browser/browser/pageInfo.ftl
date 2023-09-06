@@ -65,6 +65,9 @@ media-dimension =
     .value = ממדים:
 media-long-desc =
     .value = תיאור:
+media-select-all =
+    .label = בחירת הכול
+    .accesskey = ב
 media-save-as =
     .label = שמירה בשם…
     .accesskey = ש
@@ -240,6 +243,9 @@ media-dimensions =
 # Variables:
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } ק״ב
+
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
 
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab

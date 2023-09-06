@@ -20,12 +20,13 @@ newtab-personalize-dialog-label =
 newtab-search-box-search-button =
     .title = Traži
     .aria-label = Traži
-# Variables
-#  $engine (String): the name of the user's default search engine
+
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-text = Traži pomoću { $engine } ili upiši adresu
 newtab-search-box-handoff-text-no-engine = Traži ili upiši adresu
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-input =
     .placeholder = Traži pomoću { $engine } ili upiši adresu
     .title = Traži pomoću { $engine } ili upiši adresu
@@ -34,10 +35,7 @@ newtab-search-box-handoff-input-no-engine =
     .placeholder = Traži ili upiši adresu
     .title = Traži ili upiši adresu
     .aria-label = Traži ili upiši adresu
-newtab-search-box-search-the-web-input =
-    .placeholder = Pretraži web
-    .title = Pretraži web
-    .aria-label = Pretraži web
+
 newtab-search-box-text = Pretraži web
 newtab-search-box-input =
     .placeholder = Pretraži web
@@ -46,17 +44,18 @@ newtab-search-box-input =
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Dodaj tražilicu
-newtab-topsites-add-topsites-header = Nova najbolja stranica
 newtab-topsites-add-shortcut-header = Novi prečac
 newtab-topsites-edit-topsites-header = Uredi najbolju stranicu
 newtab-topsites-edit-shortcut-header = Uredi prečac
 newtab-topsites-title-label = Naslov
 newtab-topsites-title-input =
     .placeholder = Upiši naslov
+
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
     .placeholder = Utipkaj ili umetni URL
 newtab-topsites-url-validation = Potrebno je unijeti ispravan URL
+
 newtab-topsites-image-url-label = Prilagođeni URL slike
 newtab-topsites-use-image-link = Koristi prilagođenu sliku…
 newtab-topsites-image-validation = Neuspjelo učitavanje slike. Pokušaj jedan drugi URL.
@@ -85,13 +84,15 @@ newtab-topsite-sponsored = Sponzorirano
 newtab-menu-section-tooltip =
     .title = Otvori izbornik
     .aria-label = Otvori izbornik
+
 # Tooltip for dismiss button
 newtab-dismiss-button-tooltip =
     .title = Ukloni
     .aria-label = Ukloni
+
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = Otvori izbornik
     .aria-label = Otvorite kontekstni izbornik za { $title }
@@ -161,18 +162,21 @@ newtab-label-removed-bookmark = Zabilješka uklonjena
 newtab-label-recommended = Popularno
 newtab-label-saved = Spremljeno u { -pocket-brand-name }
 newtab-label-download = Preuzeto
+
 # This string is used in the story cards to indicate sponsored content
 # Variables:
-#  $sponsorOrSource (String): This is the name of a company or their domain
+#   $sponsorOrSource (string) - The name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource } · Sponzorirano
+
 # This string is used at the bottom of story cards to indicate sponsored content
 # Variables:
-#  $sponsor (String): This is the name of a sponsor
+#   $sponsor (string) - The name of a sponsor
 newtab-label-sponsored-by = Sponzor { $sponsor }
+
 # This string is used under the image of story cards to indicate source and time to read
 # Variables:
-#  $source (String): This is the name of a company or their domain
-#  $timeToRead (Number): This is the estimated number of minutes to read this story
+#   $source (string) - The name of a company or their domain
+#   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } min
 
 ## Section Menu: These strings are displayed in the section context menu and are
@@ -199,18 +203,18 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = Najbolje stranice
-newtab-section-header-highlights = Istaknuto
 newtab-section-header-recent-activity = Nedavna aktivnost
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Preporučeno od { $provider }
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
 newtab-empty-section-highlights = Započni pregledavanje i pokazat ćemo ti neke od izvrsnih članaka, videa i drugih web stranica prema tvojim nedavno posjećenim stranicama ili zabilješkama.
+
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Provjeri kasnije daljnje najpopularnije priče od { $provider }. Ne možeš dočekati? Odaberi popularnu temu za pronalaženje daljnjih kvalitetnih priča s cijelog weba.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -226,10 +230,23 @@ newtab-discovery-empty-section-topstories-timed-out = Uh! Nismo potpuno učitali
 
 # This is shown at the bottom of the trending stories section and precedes a list of links to popular topics.
 newtab-pocket-read-more = Popularne teme:
+newtab-pocket-new-topics-title = Želiš još više priča? Pogledaj ove popularne teme na servisu { -pocket-brand-name }
 newtab-pocket-more-recommendations = Više preporuka
 newtab-pocket-learn-more = Saznaj više
 newtab-pocket-cta-button = Nabavi { -pocket-brand-name }
 newtab-pocket-cta-text = Spremi priče koje ti se sviđaju u { -pocket-brand-name } i napuni si mozak vrhunskim štivom.
+newtab-pocket-pocket-firefox-family = { -pocket-brand-name } je dio { -brand-product-name } obitelji
+
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+# A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-save = Spremi
+newtab-pocket-saved = Spremljeno
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
+
+newtab-pocket-onboarding-discover = Otkrij najbolje na webu
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -241,6 +258,8 @@ newtab-error-fallback-refresh-link = Osvježi stranicu za ponovni pokušaj.
 
 newtab-custom-shortcuts-title = Prečaci
 newtab-custom-shortcuts-subtitle = Stranice koje spremiš ili posjetiš
+# Variables
+#   $num (number) - Number of rows to display
 newtab-custom-row-selector =
     { $num ->
         [one] { $num } redak
@@ -251,7 +270,8 @@ newtab-custom-sponsored-sites = Sponzorirani prečaci
 newtab-custom-pocket-title = Preporuke iz { -pocket-brand-name(case: "gen") }
 newtab-custom-pocket-subtitle = Izuzetan sadržaj kojeg odabire { -pocket-brand-name }, dio obitelji { -brand-product-name }
 newtab-custom-pocket-sponsored = Sponzorirane priče
+newtab-custom-pocket-show-recent-saves = Prikaži nedavna spremanja
 newtab-custom-recent-title = Nedavna aktivnost
-newtab-custom-recent-subtitle = Izbor nedavnih stranica i sadržaja
+newtab-custom-recent-subtitle = Izbor nedavno posjećenih stranica i sadržaja
 newtab-custom-close-button = Zatvori
 newtab-custom-settings = Upravljaj dodatnim postavkama

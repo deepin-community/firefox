@@ -65,6 +65,9 @@ media-dimension =
     .value = ਮਾਪ:
 media-long-desc =
     .value = ਲੰਮਾ ਵੇਰਵਾ:
+media-select-all =
+    .label = ਸਭ ਚੁਣੋ
+    .accesskey = e
 media-save-as =
     .label = … ਵਜੋਂ ਸੰਭਾਲੋ
     .accesskey = A
@@ -112,7 +115,7 @@ security-view-privacy-viewpasswords =
     .label = ਸੰਭਾਲੇ ਪਾਸਵਰਡ ਵੇਖੋ
     .accesskey = w
 security-view-technical =
-    .value = ਤਕਨੀਕੀ ਵੇਰਵਾ
+    .value = ਤਕਨੀਕੀ ਵੇਰਵੇ
 
 help-button =
     .label = ਮਦਦ
@@ -240,6 +243,9 @@ media-dimensions =
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } KB
 
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
+
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab
 # Variables:
@@ -251,7 +257,7 @@ media-block-image =
 # This string is used to display the URL of the website on top of the
 # pageInfo dialog box
 # Variables:
-#   $website (string) - The url of the website pageInfo is getting info for
+#   $website (string) — The url of the website pageInfo is getting info for
 page-info-page =
     .title = ਸਫ਼ਾ ਜਾਣਕਾਰੀ - { $website }
 page-info-frame =

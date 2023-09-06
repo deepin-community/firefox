@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = 모든 탭 선택
     .accesskey = S
+tab-context-play-tab =
+    .label = 탭 재생
+    .accesskey = P
+tab-context-play-tabs =
+    .label = 탭 재생
+    .accesskey = y
 duplicate-tab =
     .label = 탭 복제
     .accesskey = D
@@ -48,11 +54,11 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = 탭 북마크…
     .accesskey = k
-bookmark-tab =
-    .label = 탭 북마크
+tab-context-bookmark-tab =
+    .label = 탭 북마크…
     .accesskey = B
 tab-context-open-in-new-container-tab =
-    .label = 새 컨테이너에 열기
+    .label = 새 컨테이너 탭에서 열기
     .accesskey = e
 move-to-start =
     .label = 처음으로 이동
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = 공유
     .accesskey = h
-tab-context-share-more =
-    .label = 더보기…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,13 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] 닫은 탭 다시 열기
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] 탭 닫기
-           *[other] 탭 닫기
-        }
-    .accesskey = C
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

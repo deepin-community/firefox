@@ -15,6 +15,8 @@ site-data-column-cookies =
     .label = कुकीहरू
 site-data-column-storage =
     .label = भण्डारण
+site-data-column-last-used =
+    .label = अन्तिम प्रयोग
 
 site-data-remove-selected =
     .label = चयन गरिएको हटाउनुहोस्

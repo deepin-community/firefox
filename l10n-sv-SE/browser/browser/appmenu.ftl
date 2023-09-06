@@ -5,13 +5,16 @@
 
 ## App Menu
 
-appmenuitem-update-banner3 =
-    .label-update-downloading = Hämtar uppdatering av { -brand-shorter-name }
-    .label-update-available = Uppdatering tillgänglig — hämta nu
-    .label-update-manual = Uppdatering tillgänglig — hämta nu
-    .label-update-unsupported = Uppdatering misslyckades — systemet är inte kompatibelt
-    .label-update-restart = Uppdatering tillgänglig — starta om nu
-appmenuitem-protection-dashboard-title = Säkerhetsöversikt
+appmenuitem-banner-update-downloading =
+    .label = Hämtar uppdatering av { -brand-shorter-name }
+appmenuitem-banner-update-available =
+    .label = Uppdatering tillgänglig — hämta nu
+appmenuitem-banner-update-manual =
+    .label = Uppdatering tillgänglig — hämta nu
+appmenuitem-banner-update-unsupported =
+    .label = Uppdatering misslyckades — systemet är inte kompatibelt
+appmenuitem-banner-update-restart =
+    .label = Uppdatering tillgänglig — starta om nu
 appmenuitem-new-tab =
     .label = Ny flik
 appmenuitem-new-window =
@@ -30,6 +33,8 @@ appmenuitem-print =
     .label = Skriv ut…
 appmenuitem-find-in-page =
     .label = Hitta på sidan…
+appmenuitem-translate =
+    .label = Översätt sida…
 appmenuitem-zoom =
     .value = Zoom
 appmenuitem-more-tools =
@@ -98,7 +103,6 @@ appmenu-fxa-sync-and-save-data2 = Synkronisera och spara data
 appmenu-fxa-signed-in-label = Logga in
 appmenu-fxa-setup-sync =
     .label = Aktivera synkronisering…
-appmenu-fxa-show-more-tabs = Visa fler flikar
 appmenuitem-save-page =
     .label = Spara sida som…
 
@@ -124,31 +128,20 @@ profiler-popup-button-recording =
 profiler-popup-button-capturing =
     .label = Profilerare
     .tooltiptext = Profileraren fångar en profil
-profiler-popup-title =
-    .value = { -profiler-brand-name }
+profiler-popup-header-text = { -profiler-brand-name }
 profiler-popup-reveal-description-button =
     .aria-label = Avslöja mer information
 profiler-popup-description-title =
     .value = Spela in, analysera, dela
 profiler-popup-description = Samarbeta om prestandafrågor genom att publicera profiler för att dela med ditt team.
-profiler-popup-learn-more = Läs mer
 profiler-popup-learn-more-button =
     .label = Läs mer
 profiler-popup-settings =
     .value = Inställningar
 # This link takes the user to about:profiling, and is only visible with the Custom preset.
-profiler-popup-edit-settings = Redigera inställningar…
-# This link takes the user to about:profiling, and is only visible with the Custom preset.
 profiler-popup-edit-settings-button =
     .label = Redigera inställningar…
-profiler-popup-disabled =
-    Profilen är för närvarande inaktiverad, troligtvis på grund av att ett privat webbläsarfönster
-    är öppet.
 profiler-popup-recording-screen = Spelar in…
-# The profiler presets list is generated elsewhere, but the custom preset is defined
-# here only.
-profiler-popup-presets-custom =
-    .label = Anpassad
 profiler-popup-start-recording-button =
     .label = Starta inspelning
 profiler-popup-discard-button =
@@ -171,24 +164,28 @@ profiler-popup-capture-shortcut =
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
+# devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
 profiler-popup-presets-web-developer-description = Rekommenderad förinställning för de flesta webbappfelsökningar, med lite pålägg.
 profiler-popup-presets-web-developer-label =
     .label = Webbutvecklare
-profiler-popup-presets-firefox-platform-description = Rekommenderad förinställning för intern felsökning av plattformar i Firefox.
-profiler-popup-presets-firefox-platform-label =
-    .label = Firefox - Plattform
-profiler-popup-presets-firefox-front-end-description = Rekommenderad förinställning för intern felsökning av front-end i Firefox.
-profiler-popup-presets-firefox-front-end-label =
-    .label = Firefox - Front-End
-profiler-popup-presets-firefox-graphics-description = Rekommenderad förinställning för utredning av grafikprestanda i Firefox.
-profiler-popup-presets-firefox-graphics-label =
-    .label = Firefox - Grafik
-profiler-popup-presets-media-description = Rekommenderad förinställning för diagnos av ljud- och videoproblem.
+profiler-popup-presets-firefox-description = Rekommenderad förinställning för profilering av { -brand-shorter-name }.
+profiler-popup-presets-firefox-label =
+    .label = { -brand-shorter-name }
+profiler-popup-presets-graphics-description = Förinställd för att undersöka grafikbuggar i { -brand-shorter-name }.
+profiler-popup-presets-graphics-label =
+    .label = Grafik
+profiler-popup-presets-media-description2 = Förinställd för att undersöka ljud- och videobuggar i { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Media
+profiler-popup-presets-networking-description = Förinställd för att undersöka nätverksbuggar i { -brand-shorter-name }.
+profiler-popup-presets-networking-label =
+    .label = Nätverk
+profiler-popup-presets-power-description = Förinställd för att undersöka buggar för energianvändning i { -brand-shorter-name }, med låg omkostnad.
+# "Power" is used in the sense of energy (electricity used by the computer).
+profiler-popup-presets-power-label =
+    .label = Energi
 profiler-popup-presets-custom-label =
     .label = Anpassad
 
@@ -196,8 +193,6 @@ profiler-popup-presets-custom-label =
 
 appmenu-manage-history =
     .label = Hantera historik
-appmenu-reopen-all-tabs = Återöppna alla flikar
-appmenu-reopen-all-windows = Återöppna alla fönster
 appmenu-restore-session =
     .label = Återställ föregående session
 appmenu-clear-history =
@@ -207,6 +202,9 @@ appmenu-recently-closed-tabs =
     .label = Nyligen stängda flikar
 appmenu-recently-closed-windows =
     .label = Nyligen stängda fönster
+# This allows to search through the browser's history.
+appmenu-search-history =
+    .label = Sökhistorik
 
 ## Help panel
 
@@ -223,9 +221,11 @@ appmenu-help-more-troubleshooting-info =
     .accesskey = f
 appmenu-help-report-site-issue =
     .label = Rapportera webbplatsproblem…
-appmenu-help-feedback-page =
-    .label = Skicka in feedback…
-    .accesskey = k
+appmenu-help-share-ideas =
+    .label = Dela idéer och feedback...
+    .accesskey = D
+appmenu-help-switch-device =
+    .label = Byta till en ny enhet
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -251,8 +251,6 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Anpassa verktygsfält…
-appmenu-taskmanager =
-    .label = Aktivitetshanterare
 appmenu-developer-tools-subheader = Webbläsarverktyg
 appmenu-developer-tools-extensions =
     .label = Tillägg för utvecklare

@@ -58,6 +58,10 @@ app-basics-enabled-plugins = Pluginuri activate
 app-basics-build-config = Configurația versiunii compilate
 app-basics-user-agent = Agent utilizator
 app-basics-os = SO
+app-basics-os-theme = Tema SO-ului
+# Rosetta is Apple's translation process to run apps containing x86_64
+# instructions on Apple Silicon. This should remain in English.
+app-basics-rosetta = Tradus prin Rosetta
 app-basics-memory-use = Utilizarea memoriei
 app-basics-performance = Performanță
 app-basics-service-workers = Scripturi service worker înregistrate
@@ -71,6 +75,7 @@ app-basics-location-service-key-google = Cheie de servicii Google pentru localiz
 app-basics-safebrowsing-key-google = Cheie Google pentru navigare în siguranță
 app-basics-key-mozilla = Cheie pentru serviciul de localizare Mozilla
 app-basics-safe-mode = Mod sigur
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Afișează în Finder
@@ -118,17 +123,18 @@ copy-raw-data-to-clipboard-label = Copiază datele brute în clipboard
 sandbox-title = Sandbox
 sandbox-sys-call-log-title = Apeluri de sistem respinse
 sandbox-sys-call-index = #
-sandbox-sys-call-age = Secunde în urmă
+sandbox-sys-call-age = acum câteva secunde
 sandbox-sys-call-pid = PID
 sandbox-sys-call-tid = TID
 sandbox-sys-call-proc-type = Tipul de proces
 sandbox-sys-call-number = Apel sistem
 sandbox-sys-call-args = Argumente
-
 troubleshoot-mode-title = Diagnostică problemele
 restart-in-troubleshoot-mode-label = Mod de depanare…
 clear-startup-cache-title = Încearcă să golești cache-ul de pornire
 clear-startup-cache-label = Golește cache-ul de pornire…
+startup-cache-dialog-title2 = Repornești { -brand-short-name } pentru a goli cache-ul de pornire?
+startup-cache-dialog-body2 = Acest lucru nu va modifica setările și nu va elimina extensiile.
 restart-button-label = Repornește
 
 ## Media titles
@@ -152,6 +158,8 @@ media-device-latency = Latență
 media-capabilities-title = Capabilități media
 # List all the entries of the database.
 media-capabilities-enumerate = Enumeră baza de date
+
+## Codec support table
 
 ##
 
@@ -193,18 +201,18 @@ report-crash-for-days =
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
     { $minutes ->
-        [one] { $minutes } minut în urmă
-        [few] { $minutes } minute în urmă
-       *[other] { $minutes } de minute în urmă
+        [one] acum { $minutes } minut
+        [few] acum { $minutes } minute
+       *[other] acum { $minutes } de minute
     }
 
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
     { $hours ->
-        [one] { $hours } oră în urmă
-        [few] { $hours } ore în urmă
-       *[other] { $hours } de ore în urmă
+        [one] acum { $hours } oră
+        [few] acum { $hours } ore
+       *[other] acum { $hours } de ore
     }
 
 # Variables

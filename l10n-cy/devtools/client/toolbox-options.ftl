@@ -41,6 +41,17 @@ options-collapse-attrs-label = Tocio priodoleddau DOM
 options-collapse-attrs-tooltip =
     .title = Tocio'r priodoleddau hir yn yr arolygydd
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Cliciwch a llusgwch i olygu gwerthoedd maint
+options-inspector-draggable-properties-tooltip =
+    .title = Cliciwch a llusgwch i olygu gwerthoedd maint yng ngolwg rheolau'r arolygydd.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Defnyddiwch amlygwyr symlach gyda prefers-reduced-motion
+options-inspector-simplified-highlighters-tooltip =
+    .title = Yn galluogi amlygwyr symlach pan fydd prefers-reduced-motion wedi'i alluogi. Bydd yn tynnu llinellau yn lle petryalau wedi'u llenwi o amgylch elfennau wedi'u hamlygu er mwyn osgoi effeithiau fflachio.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Uned lliw rhagnodedig
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Fel ei Awduro
 options-default-color-unit-hex = Hecs
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Enw Lliwiau
 
 ## Style Editor section
@@ -118,6 +130,16 @@ options-enable-remote-label = Galluogi dadfygio pell
 options-enable-remote-tooltip2 =
     .title = Bydd troi'r dewis hwn ymlaen yn caniatáu dadfygio enghraifft y porwr hwn o bell
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Defnyddiwch y fysell F12 i agor neu gau DevTools
+options-enable-f12-tooltip =
+    .title = Bydd troi'r dewis hwn ymlaen yn rhwymo'r fysell F12 i agor neu gau blwch offer DevTools
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Galluogi fformatwyr cyfaddas
+options-enable-custom-formatters-tooltip =
+    .title = Bydd troi'r dewis hwn ymlaen yn caniatáu i wefannau ddiffinio fformatwyr personol ar gyfer gwrthrychau DOM
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Galluogi Service Workers dros HTTP (pan fydd y blwch offer ar agor)
 options-enable-service-workers-http-tooltip =
@@ -130,9 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Sesiwn gyfredol yn unig, ail-lwytho'r dudalen
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Dangos data platfform Gecko
-options-show-platform-data-tooltip =
-    .title = Os ydych wedi galluogi'r dewis hwn bydd adroddiadau Proffiliwr JavaScript yn cynnwys symbolau platfform Gecko

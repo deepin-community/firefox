@@ -34,6 +34,7 @@ app-basics-memory-use = Geheuegebruik
 app-basics-performance = Werkverrigting
 app-basics-profiles = Profiele
 app-basics-safe-mode = Veilige modus
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Wys in Finder
@@ -63,6 +64,8 @@ sandbox-title = Sandput
 
 ## Media titles
 
+
+## Codec support table
 
 ##
 

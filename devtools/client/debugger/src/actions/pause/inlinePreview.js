@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
-import { sortBy } from "lodash";
 import {
   getOriginalFrameScope,
   getGeneratedFrameScope,
@@ -10,7 +9,7 @@ import {
   getSelectedLocation,
 } from "../../selectors";
 import { features } from "../../utils/prefs";
-import { validateThreadContext } from "../../utils/context";
+import { validateSelectedFrame } from "../../utils/context";
 
 // We need to display all variables in the current functional scope so
 // include all data for block scopes until the first functional scope
@@ -25,49 +24,49 @@ function getLocalScopeLevels(originalAstScopes) {
   return levels;
 }
 
-export function generateInlinePreview(cx, frame) {
-  return async function({ dispatch, getState, parser, client }) {
-    if (!frame || !features.inlinePreview) {
-      return;
+export function generateInlinePreview(selectedFrame) {
+  return async function ({ dispatch, getState, parserWorker, client }) {
+    if (!features.inlinePreview) {
+      return null;
     }
 
-    const { thread } = cx;
-
     // Avoid regenerating inline previews when we already have preview data
-    if (getInlinePreviews(getState(), thread, frame.id)) {
-      return;
+    if (getInlinePreviews(getState(), selectedFrame.thread, selectedFrame.id)) {
+      return null;
     }
 
     const originalFrameScopes = getOriginalFrameScope(
       getState(),
-      thread,
-      frame.location.sourceId,
-      frame.id
+      selectedFrame
     );
 
     const generatedFrameScopes = getGeneratedFrameScope(
       getState(),
-      thread,
-      frame.id
+      selectedFrame
     );
 
     let scopes = originalFrameScopes?.scope || generatedFrameScopes?.scope;
 
     if (!scopes || !scopes.bindings) {
-      return;
+      return null;
     }
 
     // It's important to use selectedLocation, because we don't know
     // if we'll be viewing the original or generated frame location
     const selectedLocation = getSelectedLocation(getState());
     if (!selectedLocation) {
-      return;
+      return null;
     }
 
-    const originalAstScopes = await parser.getScopes(selectedLocation);
-    validateThreadContext(getState(), cx);
+    if (!parserWorker.isLocationSupported(selectedLocation)) {
+      return null;
+    }
+
+    const originalAstScopes = await parserWorker.getScopes(selectedLocation);
+    validateSelectedFrame(getState(), selectedFrame);
+
     if (!originalAstScopes) {
-      return;
+      return null;
     }
 
     const allPreviews = [];
@@ -98,7 +97,7 @@ export function generateInlinePreview(cx, frame) {
               path: name,
               contents: { value: objectGrip },
             },
-            cx.thread
+            selectedFrame.thread
           );
         }
 
@@ -118,22 +117,30 @@ export function generateInlinePreview(cx, frame) {
       scopes = scopes.parent;
     }
 
-    const previews = {};
-    const sortedPreviews = sortBy(allPreviews, ["line", "column"]);
+    // Sort previews by line and column so they're displayed in the right order in the editor
+    allPreviews.sort((previewA, previewB) => {
+      if (previewA.line < previewB.line) {
+        return -1;
+      }
+      if (previewA.line > previewB.line) {
+        return 1;
+      }
+      // If we have the same line number
+      return previewA.column < previewB.column ? -1 : 1;
+    });
 
-    sortedPreviews.forEach(preview => {
+    const previews = {};
+    for (const preview of allPreviews) {
       const { line } = preview;
       if (!previews[line]) {
-        previews[line] = [preview];
-      } else {
-        previews[line].push(preview);
+        previews[line] = [];
       }
-    });
+      previews[line].push(preview);
+    }
 
     return dispatch({
       type: "ADD_INLINE_PREVIEW",
-      thread,
-      frame,
+      selectedFrame,
       previews,
     });
   };

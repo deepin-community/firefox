@@ -2,14 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import
-
 import os
 
 import mozunit
 
 from mozversioncontrol import get_repository_object
-
 
 STEPS = {
     "hg": [
@@ -58,13 +55,13 @@ def assert_files(actual, expected):
 
 
 def test_workdir_outgoing(repo):
-    vcs = get_repository_object(repo.strpath)
-    assert vcs.path == repo.strpath
+    vcs = get_repository_object(repo.dir)
+    assert vcs.path == str(repo.dir)
 
-    remotepath = "../remoterepo" if repo.vcs == "hg" else "upstream/master"
+    remote_path = "../remoterepo" if repo.vcs == "hg" else "upstream/master"
 
     # Mutate files.
-    next(repo.step)
+    repo.execute_next_step()
 
     assert_files(vcs.get_changed_files("A", "all"), ["baz"])
     assert_files(vcs.get_changed_files("AM", "all"), ["bar", "baz"])
@@ -75,28 +72,28 @@ def test_workdir_outgoing(repo):
         # Mercurial does not use a staging area (and ignores the mode parameter.)
         assert_files(vcs.get_changed_files("AM", "unstaged"), ["bar", "baz"])
     assert_files(vcs.get_outgoing_files("AMD"), [])
-    assert_files(vcs.get_outgoing_files("AMD", remotepath), [])
+    assert_files(vcs.get_outgoing_files("AMD", remote_path), [])
 
     # Create a commit.
-    next(repo.step)
+    repo.execute_next_step()
 
     assert_files(vcs.get_changed_files("AMD", "all"), [])
     assert_files(vcs.get_changed_files("AMD", "staged"), [])
     assert_files(vcs.get_outgoing_files("AMD"), ["bar", "baz", "foo"])
-    assert_files(vcs.get_outgoing_files("AMD", remotepath), ["bar", "baz", "foo"])
+    assert_files(vcs.get_outgoing_files("AMD", remote_path), ["bar", "baz", "foo"])
 
     # Mutate again.
-    next(repo.step)
+    repo.execute_next_step()
 
     assert_files(vcs.get_changed_files("A", "all"), ["baby"])
     assert_files(vcs.get_changed_files("AM", "all"), ["baby", "baz"])
     assert_files(vcs.get_changed_files("D", "all"), [])
 
     # Create a second commit.
-    next(repo.step)
+    repo.execute_next_step()
 
     assert_files(vcs.get_outgoing_files("AM"), ["bar", "baz", "baby"])
-    assert_files(vcs.get_outgoing_files("AM", remotepath), ["bar", "baz", "baby"])
+    assert_files(vcs.get_outgoing_files("AM", remote_path), ["bar", "baz", "baby"])
     if repo.vcs == "git":
         assert_files(vcs.get_changed_files("AM", rev="HEAD~1"), ["bar", "baz"])
         assert_files(vcs.get_changed_files("AM", rev="HEAD"), ["baby", "baz"])

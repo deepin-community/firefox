@@ -104,8 +104,6 @@ Prefixes
 Other advices
 ~~~~~~~~~~~~~
 
--  Make sure you are aware of the `JavaScript
-   Tips <https://developer.mozilla.org/docs/Mozilla/JavaScript_Tips>`__.
 -  Do not compare ``x == true`` or ``x == false``. Use ``(x)`` or
    ``(!x)`` instead. ``x == true``, is certainly different from if
    ``(x)``! Compare objects to ``null``, numbers to ``0`` or strings to
@@ -147,4 +145,3 @@ Other advices
    extract substrings in known positions in the string. For instance,
    {{JSxRef("String.slice", "aString.slice(-1)")}} returns the last
    letter in ``aString``, or the empty string if ``aString`` is empty.
-

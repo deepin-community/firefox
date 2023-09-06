@@ -12,24 +12,30 @@
  * See devtools/docs/backend/actor-hierarchy.md for more details.
  */
 
-const { Ci } = require("chrome");
-const Services = require("Services");
+const { Actor } = require("resource://devtools/shared/protocol.js");
+const {
+  tabDescriptorSpec,
+} = require("resource://devtools/shared/specs/descriptors/tab.js");
+
 const {
   connectToFrame,
-} = require("devtools/server/connectors/frame-connector");
-loader.lazyImporter(
-  this,
-  "PlacesUtils",
-  "resource://gre/modules/PlacesUtils.jsm"
+} = require("resource://devtools/server/connectors/frame-connector.js");
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
+});
+
+const { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
 );
-const { ActorClassWithSpec, Actor } = require("devtools/shared/protocol");
-const { tabDescriptorSpec } = require("devtools/shared/specs/descriptors/tab");
-const { AppConstants } = require("resource://gre/modules/AppConstants.jsm");
+const {
+  createBrowserElementSessionContext,
+} = require("resource://devtools/server/actors/watcher/session-context.js");
 
 loader.lazyRequireGetter(
   this,
   "WatcherActor",
-  "devtools/server/actors/watcher",
+  "resource://devtools/server/actors/watcher.js",
   true
 );
 
@@ -42,16 +48,16 @@ loader.lazyRequireGetter(
  * @param connection The main RDP connection.
  * @param browser <xul:browser> or <iframe mozbrowser> element to connect to.
  */
-const TabDescriptorActor = ActorClassWithSpec(tabDescriptorSpec, {
-  initialize(connection, browser) {
-    Actor.prototype.initialize.call(this, connection);
-    this._conn = connection;
+class TabDescriptorActor extends Actor {
+  constructor(connection, browser) {
+    super(connection, tabDescriptorSpec);
     this._browser = browser;
-  },
+  }
 
   form() {
     const form = {
       actor: this.actorID,
+      browserId: this._browser.browserId,
       browsingContextID:
         this._browser && this._browser.browsingContext
           ? this._browser.browsingContext.id
@@ -69,7 +75,7 @@ const TabDescriptorActor = ActorClassWithSpec(tabDescriptorSpec, {
     };
 
     return form;
-  },
+  }
 
   _getTitle() {
     // If the content already provides a title, use it.
@@ -89,7 +95,7 @@ const TabDescriptorActor = ActorClassWithSpec(tabDescriptorSpec, {
 
     // No title available.
     return null;
-  },
+  }
 
   _getUrl() {
     if (!this._browser || !this._browser.browsingContext) {
@@ -98,7 +104,7 @@ const TabDescriptorActor = ActorClassWithSpec(tabDescriptorSpec, {
 
     const { browsingContext } = this._browser;
     return browsingContext.currentWindowGlobal.documentURI.spec;
-  },
+  }
 
   _getOuterWindowId() {
     if (!this._browser || !this._browser.browsingContext) {
@@ -107,7 +113,7 @@ const TabDescriptorActor = ActorClassWithSpec(tabDescriptorSpec, {
 
     const { browsingContext } = this._browser;
     return browsingContext.currentWindowGlobal.outerWindowId;
-  },
+  }
 
   get selected() {
     // getMostRecentBrowserWindow will find the appropriate window on Firefox
@@ -123,10 +129,10 @@ const TabDescriptorActor = ActorClassWithSpec(tabDescriptorSpec, {
     }
 
     return this._browser === selectedBrowser;
-  },
+  }
 
   async getTarget() {
-    if (!this._conn) {
+    if (!this.conn) {
       return {
         error: "tabDestroyed",
         message: "Tab destroyed while performing a TabDescriptorActor update",
@@ -159,7 +165,7 @@ const TabDescriptorActor = ActorClassWithSpec(tabDescriptorSpec, {
         }
 
         const connectForm = await connectToFrame(
-          this._conn,
+          this.conn,
           this._browser,
           onDestroy
         );
@@ -172,7 +178,7 @@ const TabDescriptorActor = ActorClassWithSpec(tabDescriptorSpec, {
         });
       }
     });
-  },
+  }
 
   /**
    * Return a Watcher actor, allowing to keep track of targets which
@@ -181,21 +187,24 @@ const TabDescriptorActor = ActorClassWithSpec(tabDescriptorSpec, {
    */
   getWatcher(config) {
     if (!this.watcher) {
-      this.watcher = new WatcherActor(this.conn, {
-        browser: this._browser,
-        config,
-      });
+      this.watcher = new WatcherActor(
+        this.conn,
+        createBrowserElementSessionContext(this._browser, {
+          isServerTargetSwitchingEnabled: config.isServerTargetSwitchingEnabled,
+          isPopupDebuggingEnabled: config.isPopupDebuggingEnabled,
+        })
+      );
       this.manage(this.watcher);
     }
     return this.watcher;
-  },
+  }
 
   get _tabbrowser() {
     if (this._browser && typeof this._browser.getTabBrowser == "function") {
       return this._browser.getTabBrowser();
     }
     return null;
-  },
+  }
 
   async getFavicon() {
     if (!AppConstants.MOZ_PLACES) {
@@ -204,20 +213,22 @@ const TabDescriptorActor = ActorClassWithSpec(tabDescriptorSpec, {
     }
 
     try {
-      const { data } = await PlacesUtils.promiseFaviconData(this._getUrl());
+      const { data } = await lazy.PlacesUtils.promiseFaviconData(
+        this._getUrl()
+      );
       return data;
     } catch (e) {
       // Favicon unavailable for this url.
       return null;
     }
-  },
+  }
 
   _isZombieTab() {
     // Note: GeckoView doesn't support zombie tabs
     const tabbrowser = this._tabbrowser;
     const tab = tabbrowser ? tabbrowser.getTabForBrowser(this._browser) : null;
     return tab?.hasAttribute && tab.hasAttribute("pending");
-  },
+  }
 
   reloadDescriptor({ bypassCache }) {
     if (!this._browser || !this._browser.browsingContext) {
@@ -229,14 +240,14 @@ const TabDescriptorActor = ActorClassWithSpec(tabDescriptorSpec, {
         ? Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE
         : Ci.nsIWebNavigation.LOAD_FLAGS_NONE
     );
-  },
+  }
 
   destroy() {
     this.emit("descriptor-destroyed");
     this._browser = null;
 
-    Actor.prototype.destroy.call(this);
-  },
-});
+    super.destroy();
+  }
+}
 
 exports.TabDescriptorActor = TabDescriptorActor;

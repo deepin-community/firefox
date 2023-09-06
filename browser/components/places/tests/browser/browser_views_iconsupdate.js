@@ -7,7 +7,7 @@
  * The menu is not tested since it uses the same code as the toolbar.
  */
 
-add_task(async function() {
+add_task(async function () {
   const PAGE_URI = NetUtil.newURI("http://places.test/");
   const ICON_URI = NetUtil.newURI(
     "http://mochi.test:8888/browser/browser/components/places/tests/browser/favicon-normal16.png"
@@ -18,7 +18,7 @@ add_task(async function() {
   let wasCollapsed = toolbar.collapsed;
   if (wasCollapsed) {
     await promiseSetToolbarVisibility(toolbar, true);
-    registerCleanupFunction(async function() {
+    registerCleanupFunction(async function () {
       await promiseSetToolbarVisibility(toolbar, false);
     });
   }
@@ -40,7 +40,7 @@ add_task(async function() {
     title: "test icon",
     parentGuid: PlacesUtils.bookmarks.toolbarGuid,
   });
-  registerCleanupFunction(async function() {
+  registerCleanupFunction(async function () {
     await PlacesUtils.bookmarks.remove(bm);
   });
 
@@ -54,6 +54,9 @@ add_task(async function() {
   let toolbarShot1 = TestUtils.screenshotArea(toolbarElt, window);
   let sidebarRect = await getRectForSidebarItem(bm.guid);
   let sidebarShot1 = TestUtils.screenshotArea(sidebarRect, window);
+
+  info("Toolbar: " + toolbarShot1);
+  info("Sidebar: " + sidebarShot1);
 
   let iconURI = await new Promise(resolve => {
     PlacesUtils.favicons.setAndFetchFaviconForPage(
@@ -74,7 +77,6 @@ add_task(async function() {
     // debugging purposes.
     let toolbarShot2 = TestUtils.screenshotArea(toolbarElt, window);
     if (toolbarShot1 != toolbarShot2) {
-      info("Before toolbar: " + toolbarShot1);
       info("After toolbar: " + toolbarShot2);
     }
     return toolbarShot1 != toolbarShot2;
@@ -83,7 +85,6 @@ add_task(async function() {
   await TestUtils.waitForCondition(() => {
     let sidebarShot2 = TestUtils.screenshotArea(sidebarRect, window);
     if (sidebarShot1 != sidebarShot2) {
-      info("Before sidebar: " + sidebarShot1);
       info("After sidebar: " + sidebarShot2);
     }
     return sidebarShot1 != sidebarShot2;

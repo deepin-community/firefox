@@ -8,7 +8,7 @@
 
 "use strict";
 
-/* import-globals-from ../../../content/contentAreaUtils.js */
+/* import-globals-from /toolkit/content/contentAreaUtils.js */
 
 const gUpdateElevationDialog = {
   openUpdateURL(event) {
@@ -127,10 +127,7 @@ const gUpdateElevationDialog = {
 
     // If already in safe mode restart in safe mode (bug 327119)
     if (Services.appinfo.inSafeMode) {
-      let env = Cc["@mozilla.org/process/environment;1"].getService(
-        Ci.nsIEnvironment
-      );
-      env.set("MOZ_SAFE_MODE_RESTART", "1");
+      Services.env.set("MOZ_SAFE_MODE_RESTART", "1");
     }
 
     // Restart the application

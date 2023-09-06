@@ -22,7 +22,7 @@ menu-application-hide-other =
 menu-application-show-all =
     .label = Visa alla
 menu-application-touch-bar =
-    .label = Anpassa menyrad för Touch…
+    .label = Anpassa Touch Bar…
 
 ##
 
@@ -41,13 +41,6 @@ menu-quit =
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Avsluta { -brand-shorter-name }
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Avsluta { -brand-shorter-name }
 menu-about =
     .label = Om { -brand-shorter-name }
     .accesskey = O
@@ -77,9 +70,15 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Öppna fil…
     .accesskey = Ö
-menu-file-close =
-    .label = Stäng
-    .accesskey = ä
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Stäng flik
+           *[other] Stäng { $tabCount } flikar
+        }
+    .accesskey = S
 menu-file-close-window =
     .label = Stäng fönster
     .accesskey = t
@@ -95,9 +94,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Utskriftsformat…
     .accesskey = o
-menu-file-print-preview =
-    .label = Förhandsgranska…
-    .accesskey = h
 menu-file-print =
     .label = Skriv ut…
     .accesskey = u
@@ -184,6 +180,17 @@ menu-view-full-screen =
     .label = Helskärm
     .accesskey = H
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Öppna läsarvy
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Stäng läsarvy
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -212,8 +219,9 @@ menu-history-undo-menu =
     .label = Nyligen stängda flikar
 menu-history-undo-window-menu =
     .label = Nyligen stängda fönster
-menu-history-reopen-all-tabs = Återöppna alla flikar
-menu-history-reopen-all-windows = Återöppna alla fönster
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Sök i historik
 
 ## Bookmarks Menu
 
@@ -222,10 +230,13 @@ menu-bookmarks-menu =
     .accesskey = B
 menu-bookmarks-manage =
     .label = Hantera bokmärken
-menu-bookmark-current-tab =
-    .label = Bokmärk aktuell flik
-menu-bookmark-edit =
-    .label = Redigera bokmärket
+menu-bookmark-tab =
+    .label = Bokmärk aktuell flik…
+menu-edit-bookmark =
+    .label = Redigera detta bokmärke…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Sök efter bokmärken
 menu-bookmarks-all-tabs =
     .label = Bokmärke för alla flikar…
 menu-bookmarks-toolbar =
@@ -310,15 +321,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = f
 menu-help-report-site-issue =
     .label = Rapportera webbplatsproblem…
-menu-help-feedback-page =
-    .label = Skicka in feedback…
-    .accesskey = k
+menu-help-share-ideas =
+    .label = Dela idéer och feedback...
+    .accesskey = D
 menu-help-enter-troubleshoot-mode2 =
     .label = Felsökningsläge…
     .accesskey = F
 menu-help-exit-troubleshoot-mode =
     .label = Stäng av felsökningsläge
     .accesskey = g
+menu-help-switch-device =
+    .label = Byter till en ny enhet
+    .accesskey = B
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

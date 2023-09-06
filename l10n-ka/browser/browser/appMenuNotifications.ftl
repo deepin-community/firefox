@@ -25,7 +25,7 @@ appmenu-update-unsupported2 =
 appmenu-update-unsupported-message2 = თქვენი საოპერაციო სისტემა და უახლესი { -brand-shorter-name } შეუთავსებლებია.
 appmenu-update-restart2 =
     .label = განახლება ხელმისაწვდომია
-    .buttonlabel = თავიდან გაშვება გასაახლებლად
+    .buttonlabel = კვლავ გაშვება გასაახლებლად
     .buttonaccesskey = ვ
     .secondarybuttonlabel = აცილება
     .secondarybuttonaccesskey = ც
@@ -36,16 +36,14 @@ appmenu-update-other-instance =
     .buttonaccesskey = გ
     .secondarybuttonlabel = ახლა არა
     .secondarybuttonaccesskey = ა
-appmenu-update-other-instance-message = ახალი { -brand-shorter-name } ხელმისაწვდომია, მაგრამ ვერ ყენდება, რადგან გაშვებულია სხვა { -brand-shorter-name }. დახურეთ განახლების დასაყენებლად ან აირჩიეთ, მაინც განახლება (უკვე გაშვებულმა შესაძლოა ვეღარ იმუშაოს, ხელახლა ჩართვის გარეშე).
-
+appmenu-update-other-instance-message = ახალი { -brand-shorter-name } ხელმისაწვდომია, მაგრამ ვერ ყენდება, რადგან გაშვებულია სხვა { -brand-shorter-name }. დახურეთ განახლების დასაყენებლად ან აირჩიეთ, მაინც განახლება (უკვე გაშვებულმა შესაძლოა, ვეღარ იმუშაოს, ხელახლა ჩართვის გარეშე).
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = კარგი
     .buttonaccesskey = კ
 appmenu-addon-post-install-message3 = მართეთ თქვენი დამატებები და თემები პროგრამის მენიუდან.
 appmenu-addon-post-install-incognito-checkbox =
-    .label = დაშვება ამ გაფართოების, პირად ფანჯრებში
+    .label = ნების დართვა, რომ გაეშვას პირად ფანჯრებში
     .accesskey = დ
-    
 appmenu-new-tab-controlled-changes =
     .label = ახალი ჩანართის გვერდი შეიცვალა.
     .buttonlabel = ცვლილებების დატოვება

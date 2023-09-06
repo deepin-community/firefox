@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Käyttäjätunnus
 common-dialog-password =
     .value = Salasana
+
+common-dialog-copy-cmd =
+    .label = Kopioi
+    .accesskey = K
+common-dialog-select-all-cmd =
+    .label = Valitse kaikki
+    .accesskey = V

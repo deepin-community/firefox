@@ -30,7 +30,7 @@ function testSelected(aTab) {
 add_task(async function testScreenSharingTabClose() {
   let initialTab = await BrowserTestUtils.openNewForegroundTab(
     gBrowser,
-    "http://example.com"
+    "https://example.com"
   );
 
   // Open another foreground tab and ensure its selected.
@@ -52,7 +52,7 @@ add_task(async function testScreenSharingTabClose() {
   );
 
   // Close tab
-  BrowserTestUtils.removeTab(tab, { animate: true, byMouse: true });
+  BrowserTestUtils.removeTab(tab, { animate: true });
 
   // Wait for screen sharing to end
   await recordingEndedPromise;

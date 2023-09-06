@@ -24,56 +24,16 @@ The --push-to-try flow is:
   perftest
 """
 import json
+import logging
 import os
 import shutil
 import sys
-import logging
 from pathlib import Path
-
 
 TASKCLUSTER = "TASK_ID" in os.environ.keys()
 RUNNING_TESTS = "RUNNING_TESTS" in os.environ.keys()
 HERE = Path(__file__).parent
 SRC_ROOT = Path(HERE, "..", "..", "..").resolve()
-SEARCH_PATHS = [
-    "python/mach",
-    "python/mozboot",
-    "python/mozbuild",
-    "python/mozperftest",
-    "python/mozterm",
-    "python/mozversioncontrol",
-    "testing/condprofile",
-    "testing/mozbase/mozdevice",
-    "testing/mozbase/mozfile",
-    "testing/mozbase/mozinfo",
-    "testing/mozbase/mozlog",
-    "testing/mozbase/mozprocess",
-    "testing/mozbase/mozprofile",
-    "testing/mozbase/mozproxy",
-    "third_party/python/attrs",
-    "third_party/python/blessings",
-    "third_party/python/certifi",
-    "third_party/python/chardet",
-    "third_party/python/distro",
-    "third_party/python/dlmanager",
-    "third_party/python/esprima",
-    "third_party/python/idna",
-    "third_party/python/importlib_metadata",
-    "third_party/python/jsmin",
-    "third_party/python/jsonschema",
-    "third_party/python/pyrsistent",
-    "third_party/python/PyYAML/lib3",
-    "third_party/python/redo",
-    "third_party/python/requests",
-    "third_party/python/six",
-    "third_party/python/typing_extensions",
-    "third_party/python/urllib3",
-    "third_party/python/zipp",
-]
-
-
-if TASKCLUSTER:
-    SEARCH_PATHS.append("xpcshell")
 
 
 # XXX need to make that for all systems flavors
@@ -81,16 +41,71 @@ if "SHELL" not in os.environ:
     os.environ["SHELL"] = "/bin/bash"
 
 
-def _setup_path():
+def _activate_virtualenvs():
     """Adds all available dependencies in the path.
 
     This is done so the runner can be used with no prior
     install in all execution environments.
     """
-    for path in SEARCH_PATHS:
-        path = Path(SRC_ROOT, path).resolve()
-        if path.exists():
-            sys.path.insert(0, str(path))
+
+    # We need the "mach" module to access the logic to parse virtualenv
+    # requirements. Since that depends on "packaging" (and, transitively,
+    # "pyparsing"), we add those to the path too.
+    sys.path[0:0] = [
+        os.path.join(SRC_ROOT, module)
+        for module in (
+            os.path.join("python", "mach"),
+            os.path.join("third_party", "python", "packaging"),
+            os.path.join("third_party", "python", "pyparsing"),
+        )
+    ]
+
+    from mach.site import (
+        CommandSiteManager,
+        ExternalPythonSite,
+        MachSiteManager,
+        SitePackagesSource,
+        resolve_requirements,
+    )
+    from mach.util import get_state_dir, get_virtualenv_base_dir
+
+    mach_site = MachSiteManager(
+        str(SRC_ROOT),
+        None,
+        resolve_requirements(str(SRC_ROOT), "mach"),
+        ExternalPythonSite(sys.executable),
+        SitePackagesSource.NONE,
+    )
+    mach_site.activate()
+
+    command_site_manager = CommandSiteManager.from_environment(
+        str(SRC_ROOT),
+        lambda: os.path.normpath(get_state_dir(True, topsrcdir=str(SRC_ROOT))),
+        "common",
+        get_virtualenv_base_dir(str(SRC_ROOT)),
+    )
+
+    command_site_manager.activate()
+
+    if TASKCLUSTER:
+        # In CI, the directory structure is different: xpcshell code is in
+        # "$topsrcdir/xpcshell/" rather than "$topsrcdir/testing/xpcshell".
+        sys.path.append("xpcshell")
+
+
+def _create_artifacts_dir(kwargs, artifacts):
+    from mozperftest.utils import create_path
+
+    results_dir = kwargs.get("test_name")
+    if results_dir is None:
+        results_dir = "results"
+
+    return create_path(artifacts / "artifacts" / kwargs["tool"] / results_dir)
+
+
+def _save_params(kwargs, artifacts):
+    with open(os.path.join(str(artifacts), "side-by-side-params.json"), "w") as file:
+        json.dump(kwargs, file, indent=4)
 
 
 def run_tests(mach_cmd, kwargs, client_args):
@@ -100,7 +115,6 @@ def run_tests(mach_cmd, kwargs, client_args):
     `PERFTEST_OPTIONS` environment variable that contains all options passed by
     the user via a ./mach perftest --push-to-try call.
     """
-    _setup_path()
     on_try = kwargs.pop("on_try", False)
 
     # trying to get the arguments from the task params
@@ -110,10 +124,10 @@ def run_tests(mach_cmd, kwargs, client_args):
         print(json.dumps(try_options, indent=4, sort_keys=True))
         kwargs.update(try_options)
 
-    from mozperftest.utils import build_test_list
     from mozperftest import MachEnvironment, Metadata
     from mozperftest.hooks import Hooks
     from mozperftest.script import ScriptInfo
+    from mozperftest.utils import build_test_list
 
     hooks_file = kwargs.pop("hooks", None)
     hooks = Hooks(mach_cmd, hooks_file)
@@ -175,15 +189,57 @@ def run_tests(mach_cmd, kwargs, client_args):
         hooks.cleanup()
 
 
+def run_tools(mach_cmd, kwargs):
+    """This tools runner can be used directly via main or via Mach.
+
+    **TODO**: Before adding any more tools, we need to split this logic out
+    into a separate file that runs the tools and sets them up dynamically
+    in a similar way to how we use layers.
+    """
+    from mozperftest.utils import ON_TRY, install_package
+
+    mach_cmd.activate_virtualenv()
+    install_package(mach_cmd.virtualenv_manager, "opencv-python==4.5.4.60")
+    install_package(
+        mach_cmd.virtualenv_manager,
+        "mozperftest-tools==0.2.6",
+    )
+
+    log_level = logging.INFO
+    if mach_cmd.log_manager.terminal_handler is not None:
+        mach_cmd.log_manager.terminal_handler.level = log_level
+    else:
+        mach_cmd.log_manager.add_terminal_logging(level=log_level)
+        mach_cmd.log_manager.enable_all_structured_loggers()
+        mach_cmd.log_manager.enable_unstructured()
+
+    if ON_TRY:
+        artifacts = Path(os.environ.get("MOZ_FETCHES_DIR"), "..").resolve()
+        artifacts = _create_artifacts_dir(kwargs, artifacts)
+    else:
+        artifacts = _create_artifacts_dir(kwargs, SRC_ROOT)
+
+    _save_params(kwargs, artifacts)
+
+    # Run the requested tool
+    from mozperftest.tools import TOOL_RUNNERS
+
+    tool = kwargs.pop("tool")
+    print(f"Running {tool} tool")
+
+    TOOL_RUNNERS[tool](artifacts, kwargs)
+
+
 def main(argv=sys.argv[1:]):
     """Used when the runner is directly called from the shell"""
-    _setup_path()
+    _activate_virtualenvs()
 
-    from mozbuild.mozconfig import MozconfigLoader
-    from mozbuild.base import MachCommandBase, MozbuildObject
-    from mozperftest import PerftestArgumentParser
-    from mozboot.util import get_state_dir
     from mach.logging import LoggingManager
+    from mach.util import get_state_dir
+    from mozbuild.base import MachCommandBase, MozbuildObject
+    from mozbuild.mozconfig import MozconfigLoader
+
+    from mozperftest import PerftestArgumentParser, PerftestToolsArgumentParser
 
     mozconfig = SRC_ROOT / "browser" / "config" / "mozconfig"
     if mozconfig.exists():
@@ -215,10 +271,20 @@ def main(argv=sys.argv[1:]):
     MozbuildObject.from_environment = _here
 
     mach_cmd = MachCommandBase(config)
-    parser = PerftestArgumentParser(description="vanilla perftest")
-    args = dict(vars(parser.parse_args(args=argv)))
-    user_args = parser.get_user_args(args)
-    run_tests(mach_cmd, args, user_args)
+
+    if "tools" in argv[0]:
+        if len(argv) == 1:
+            raise SystemExit("No tool specified, cannot continue parsing")
+        PerftestToolsArgumentParser.tool = argv[1]
+        perftools_parser = PerftestToolsArgumentParser()
+        args = dict(vars(perftools_parser.parse_args(args=argv[2:])))
+        args["tool"] = argv[1]
+        run_tools(mach_cmd, args)
+    else:
+        perftest_parser = PerftestArgumentParser(description="vanilla perftest")
+        args = dict(vars(perftest_parser.parse_args(args=argv)))
+        user_args = perftest_parser.get_user_args(args)
+        run_tests(mach_cmd, args, user_args)
 
 
 if __name__ == "__main__":

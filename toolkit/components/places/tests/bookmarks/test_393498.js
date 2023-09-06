@@ -5,8 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 var observer = {
-  __proto__: NavBookmarkObserver.prototype,
-
   handlePlacesEvents(events) {
     for (const event of events) {
       switch (event.type) {
@@ -14,6 +12,12 @@ var observer = {
           this._itemAddedId = event.id;
           this._itemAddedParent = event.parentId;
           this._itemAddedIndex = event.index;
+          break;
+        }
+        case "bookmark-time-changed": {
+          this._itemTimeChangedGuid = event.guid;
+          this._itemTimeChangedDateAdded = event.dateAdded;
+          this._itemTimeChangedLastModified = event.lastModified;
           break;
         }
         case "bookmark-title-changed": {
@@ -24,24 +28,17 @@ var observer = {
       }
     }
   },
-  onItemChanged(id, property, isAnnotationProperty, value) {
-    this._itemChangedId = id;
-    this._itemChangedProperty = property;
-    this._itemChanged_isAnnotationProperty = isAnnotationProperty;
-    this._itemChangedValue = value;
-  },
 };
-PlacesUtils.bookmarks.addObserver(observer);
+
 observer.handlePlacesEvents = observer.handlePlacesEvents.bind(observer);
 PlacesUtils.observers.addListener(
-  ["bookmark-added", "bookmark-title-changed"],
+  ["bookmark-added", "bookmark-time-changed", "bookmark-title-changed"],
   observer.handlePlacesEvents
 );
 
-registerCleanupFunction(function() {
-  PlacesUtils.bookmarks.removeObserver(observer);
+registerCleanupFunction(function () {
   PlacesUtils.observers.removeListener(
-    ["bookmark-added", "bookmark-title-changed"],
+    ["bookmark-added", "bookmark-time-changed", "bookmark-title-changed"],
     observer.handlePlacesEvents
   );
 });
@@ -80,8 +77,8 @@ add_task(async function test_bookmark_update_notifications() {
     dateAdded: PAST_DATE,
   });
 
-  Assert.equal(observer._itemChangedProperty, "dateAdded");
-  Assert.equal(observer._itemChangedValue, PlacesUtils.toPRTime(PAST_DATE));
+  Assert.equal(observer._itemTimeChangedGuid, bookmark.guid);
+  Assert.equal(observer._itemTimeChangedDateAdded, PAST_DATE.getTime());
 
   // After just inserting, modified should be the same as dateAdded.
   do_check_date_eq(bookmark.lastModified, bookmark.dateAdded);
@@ -98,8 +95,8 @@ add_task(async function test_bookmark_update_notifications() {
     lastModified: PAST_DATE,
   });
 
-  Assert.equal(observer._itemChangedProperty, "lastModified");
-  Assert.equal(observer._itemChangedValue, PlacesUtils.toPRTime(PAST_DATE));
+  Assert.equal(observer._itemTimeChangedGuid, bookmark.guid);
+  Assert.equal(observer._itemTimeChangedLastModified, PAST_DATE.getTime());
   do_check_date_eq(updatedBookmark.lastModified, PAST_DATE);
 
   // Set bookmark title
@@ -111,7 +108,7 @@ add_task(async function test_bookmark_update_notifications() {
   // Test notifications.
   Assert.equal(
     observer._itemTitleChangedId,
-    await PlacesUtils.promiseItemId(bookmark.guid)
+    await PlacesTestUtils.promiseItemId(bookmark.guid)
   );
   Assert.equal(observer._itemTitleChangedTitle, "Google");
 

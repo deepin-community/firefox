@@ -12,8 +12,11 @@
 #include "mozilla/dom/ClientInfo.h"
 #include "mozilla/dom/DispatcherTrait.h"
 #include "mozilla/dom/ServiceWorkerDescriptor.h"
+#include "mozilla/OriginTrials.h"
+#include "nsContentUtils.h"
 #include "nsHashKeys.h"
 #include "nsISupports.h"
+#include "nsRFPService.h"
 #include "nsStringFwd.h"
 #include "nsTArray.h"
 #include "nsTHashtable.h"
@@ -33,21 +36,38 @@ class nsPIDOMWindowInner;
 
 namespace mozilla {
 class DOMEventTargetHelper;
+template <typename V, typename E>
+class Result;
 enum class StorageAccess;
 namespace dom {
 class VoidFunction;
 class DebuggerNotificationManager;
+class FontFaceSet;
+class Function;
 class Report;
 class ReportBody;
 class ReportingObserver;
 class ServiceWorker;
 class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationDescriptor;
+class StorageManager;
+enum class CallerType : uint32_t;
 }  // namespace dom
+namespace ipc {
+class PrincipalInfo;
+}  // namespace ipc
 }  // namespace mozilla
 
+namespace JS::loader {
+class ModuleLoaderBase;
+}  // namespace JS::loader
+
+/**
+ * See <https://developer.mozilla.org/en-US/docs/Glossary/Global_object>.
+ */
 class nsIGlobalObject : public nsISupports,
                         public mozilla::dom::DispatcherTrait {
+ private:
   nsTArray<nsCString> mHostObjectURIs;
 
   // Raw pointers to bound DETH objects.  These are added by
@@ -63,6 +83,8 @@ class nsIGlobalObject : public nsISupports,
   nsIGlobalObject();
 
  public:
+  using RTPCallerType = mozilla::RTPCallerType;
+  using RFPTarget = mozilla::RFPTarget;
   NS_DECLARE_STATIC_IID_ACCESSOR(NS_IGLOBALOBJECT_IID)
 
   /**
@@ -119,7 +141,7 @@ class nsIGlobalObject : public nsISupports,
   bool HasJSGlobal() const { return GetGlobalJSObjectPreserveColor(); }
 
   // This method is not meant to be overridden.
-  nsIPrincipal* PrincipalOrNull();
+  nsIPrincipal* PrincipalOrNull() const;
 
   void RegisterHostObjectURI(const nsACString& aURI);
 
@@ -192,6 +214,9 @@ class nsIGlobalObject : public nsISupports,
    */
   virtual mozilla::StorageAccess GetStorageAccess();
 
+  // Returns the set of active origin trials for this global.
+  virtual mozilla::OriginTrials Trials() const = 0;
+
   // Returns a pointer to this object as an inner window if this is one or
   // nullptr otherwise.
   nsPIDOMWindowInner* AsInnerWindow();
@@ -209,6 +234,54 @@ class nsIGlobalObject : public nsISupports,
 
   void RemoveReportRecords();
 
+  // https://streams.spec.whatwg.org/#count-queuing-strategy-size-function
+  // This function is set once by CountQueuingStrategy::GetSize.
+  already_AddRefed<mozilla::dom::Function>
+  GetCountQueuingStrategySizeFunction();
+  void SetCountQueuingStrategySizeFunction(mozilla::dom::Function* aFunction);
+
+  already_AddRefed<mozilla::dom::Function>
+  GetByteLengthQueuingStrategySizeFunction();
+  void SetByteLengthQueuingStrategySizeFunction(
+      mozilla::dom::Function* aFunction);
+
+  /**
+   * Check whether we should avoid leaking distinguishing information to JS/CSS.
+   * https://w3c.github.io/fingerprinting-guidance/
+   */
+  virtual bool ShouldResistFingerprinting(RFPTarget aTarget) const = 0;
+
+  // CallerType::System callers never have to resist fingerprinting.
+  bool ShouldResistFingerprinting(mozilla::dom::CallerType aCallerType,
+                                  RFPTarget aTarget) const;
+
+  RTPCallerType GetRTPCallerType() const;
+
+  /**
+   * Get the module loader to use for this global, if any. By default this
+   * returns null.
+   */
+  virtual JS::loader::ModuleLoaderBase* GetModuleLoader(JSContext* aCx) {
+    return nullptr;
+  }
+
+  virtual mozilla::dom::FontFaceSet* GetFonts() { return nullptr; }
+
+  virtual mozilla::Result<mozilla::ipc::PrincipalInfo, nsresult>
+  GetStorageKey();
+  mozilla::Result<bool, nsresult> HasEqualStorageKey(
+      const mozilla::ipc::PrincipalInfo& aStorageKey);
+
+  virtual mozilla::dom::StorageManager* GetStorageManager() { return nullptr; }
+
+  /**
+   * https://html.spec.whatwg.org/multipage/web-messaging.html#eligible-for-messaging
+   * * a Window object whose associated Document is fully active, or
+   * * a WorkerGlobalScope object whose closing flag is false and whose worker
+   *   is not a suspendable worker.
+   */
+  virtual bool IsEligibleForMessaging() { return false; };
+
  protected:
   virtual ~nsIGlobalObject();
 
@@ -225,6 +298,12 @@ class nsIGlobalObject : public nsISupports,
   // List of Report objects for ReportingObservers.
   nsTArray<RefPtr<mozilla::dom::ReportingObserver>> mReportingObservers;
   nsTArray<RefPtr<mozilla::dom::Report>> mReportRecords;
+
+  // https://streams.spec.whatwg.org/#count-queuing-strategy-size-function
+  RefPtr<mozilla::dom::Function> mCountQueuingStrategySizeFunction;
+
+  // https://streams.spec.whatwg.org/#byte-length-queuing-strategy-size-function
+  RefPtr<mozilla::dom::Function> mByteLengthQueuingStrategySizeFunction;
 };
 
 NS_DEFINE_STATIC_IID_ACCESSOR(nsIGlobalObject, NS_IGLOBALOBJECT_IID)

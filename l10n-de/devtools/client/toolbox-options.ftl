@@ -41,6 +41,17 @@ options-collapse-attrs-label = DOM-Attribute kürzen
 options-collapse-attrs-tooltip =
     .title = Lange DOM-Attribute im Inspektor kürzen
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Größen mittels Klicken und Ziehen bearbeiten
+options-inspector-draggable-properties-tooltip =
+    .title = Klicken und ziehen, um Größen in der Regelansicht des Inspektors zu bearbeiten.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Vereinfachte Hervorhebung mit prefers-reduced-motion verwenden
+options-inspector-simplified-highlighters-tooltip =
+    .title = Aktiviert vereinfachte Hervorhebung, wenn prefers-reduced-motion aktiviert ist. Dies zeichnet Linien statt ausgefüllter Rechtecke um hervorgehobene Elemente, um Blinkeffekte zu vermeiden.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Standardfarbeinheit
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Wie vorgegeben
 options-default-color-unit-hex = Hexadezimal
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Farbnamen
 
 ## Style Editor section
@@ -118,6 +130,16 @@ options-enable-remote-label = Externes Debugging aktivieren
 options-enable-remote-tooltip2 =
     .title = Das Aktivieren dieser Einstellung ermöglicht das externe Debuggen dieser Browser-Instanz außerhalb des Programms, ggf. auf einem anderen Gerät.
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = F12-Taste zum Öffnen oder Schließen von DevTools verwenden
+options-enable-f12-tooltip =
+    .title = Wenn Sie diese Option aktivieren, wird die F12-Taste zum Öffnen oder Schließen des DevTools-Werkzeugkastens verwendet.
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Benutzerdefinierte Formatierungen aktivieren
+options-enable-custom-formatters-tooltip =
+    .title = Bei Aktivierung können Websites benutzerdefinierte Formatierer für DOM-Objekte definieren.
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Service-Worker über HTTP aktivieren (bei geöffneten Entwicklerwerkzeugen)
 options-enable-service-workers-http-tooltip =
@@ -130,9 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Nur für aktuelle Sitzung, lädt Seite neu
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Gecko-Plattformdaten anzeigen
-options-show-platform-data-tooltip =
-    .title = Das Aktivieren dieser Einstellung hat die Aufführung der Plattformsymbole für Gecko in den Berichten der JavaScript-Laufzeitanalyse zur Folge.

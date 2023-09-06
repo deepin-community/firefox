@@ -6,9 +6,16 @@ addons-page-title = Διαχείριση προσθέτων
 search-header =
     .placeholder = Αναζήτηση στο addons.mozilla.org
     .searchbuttonlabel = Αναζήτηση
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Λήψη επεκτάσεων και θεμάτων στο <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Λήψη λεξικών στο <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Λήψη πακέτων γλωσσών στο <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Δεν έχετε εγκατεστημένα πρόσθετα αυτού του τύπου
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Έκδοση
 detail-last-updated =
     .label = Τελευταία ενημέρωση
+addon-detail-description-expand = Εμφάνιση περισσότερων
+addon-detail-description-collapse = Εμφάνιση λιγότερων
 detail-contributions-description = Ο προγραμματιστής αυτού του προσθέτου σάς ζητά να συνεισφέρετε στην ανάπτυξή του με μια μικρή δωρεά.
 detail-contributions-button = Συνεισφορά
     .title = Συνεισφορά στην ανάπτυξη αυτού του προσθέτου
@@ -134,16 +143,33 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Πρόσφατες ενημερώσεις
 addon-category-recent-updates-title =
     .title = Πρόσφατες ενημερώσεις
+addon-category-sitepermission = Άδειες ιστοτόπων
+addon-category-sitepermission-title =
+    .title = Άδειες ιστοτόπων
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Άδειες ιστοτόπου για το { $host }
 
 ## These are global warnings
 
 extensions-warning-safe-mode = Όλα τα πρόσθετα έχουν απενεργοποιηθεί στην ασφαλή λειτουργία.
 extensions-warning-check-compatibility = Ο έλεγχος συμβατότητας προσθέτων είναι ανενεργός. Μπορεί να έχετε ασύμβατα πρόσθετα.
+extensions-warning-safe-mode2 =
+    .message = Όλα τα πρόσθετα έχουν απενεργοποιηθεί στην ασφαλή λειτουργία.
+extensions-warning-check-compatibility2 =
+    .message = Ο έλεγχος συμβατότητας προσθέτων είναι ανενεργός. Μπορεί να έχετε ασύμβατα πρόσθετα.
 extensions-warning-check-compatibility-button = Ενεργοποίηση
     .title = Ενεργοποίηση ελέγχου συμβατότητας προσθέτων
 extensions-warning-update-security = Ο έλεγχος ασφαλείας ενημερώσεων  προσθέτων είναι ανενεργός. Μπορεί να κινδυνέψετε.
+extensions-warning-update-security2 =
+    .message = Ο έλεγχος ασφαλείας ενημερώσεων  προσθέτων είναι ανενεργός. Μπορεί να κινδυνέψετε.
 extensions-warning-update-security-button = Ενεργοποίηση
     .title = Ενεργοποίηση ελέγχου ασφαλείας ενημερώσεων προσθέτων
+extensions-warning-imported-addons = Παρακαλώ ολοκληρώστε την εγκατάσταση των επεκτάσεων που εισήχθησαν στο { -brand-short-name }.
+extensions-warning-imported-addons2 =
+    .message = Παρακαλώ ολοκληρώστε την εγκατάσταση των επεκτάσεων που εισήχθησαν στο { -brand-short-name }.
+extensions-warning-imported-addons-button = Εγκατάσταση επεκτάσεων
 
 ## Strings connected to add-on updates
 
@@ -208,10 +234,17 @@ shortcuts-duplicate = Διπλή συντόμευση
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = Το { $shortcut } χρησιμοποιείται ως συντόμευση σε περισσότερες από μία περιπτώσεις. Οι διπλές συντομεύσεις ίσως προκαλέσουν απροσδόκητη συμπεριφορά.
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = Το { $shortcut } χρησιμοποιείται ως συντόμευση σε περισσότερες από μία περιπτώσεις. Οι διπλές συντομεύσεις ίσως προκαλέσουν απροσδόκητη συμπεριφορά.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Χρησιμοποιείται ήδη από το { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Εμφάνιση { $numberToShow } περισσότερου
@@ -234,6 +267,11 @@ discopane-intro =
 discopane-notice-recommendations =
     Μερικές από αυτές τις προτάσεις είναι εξατομικευμένες. Βασίζονται σε άλλες
     επεκτάσεις που έχετε εγκαταστήσει, σε προτιμήσεις προφίλ και σε στατιστικά χρήσης.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message =
+        Μερικές από αυτές τις προτάσεις είναι εξατομικευμένες. Βασίζονται σε άλλες
+        επεκτάσεις που έχετε εγκαταστήσει, σε προτιμήσεις προφίλ και σε στατιστικά χρήσης.
 discopane-notice-learn-more = Μάθετε περισσότερα
 privacy-policy = Πολιτική απορρήτου
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -279,15 +317,15 @@ permissions-addon-button = Δικαιώματα
 extension-enabled-heading = Ενεργές
 extension-disabled-heading = Ανενεργές
 theme-enabled-heading = Ενεργά
-theme-disabled-heading = Ανενεργά
-theme-monochromatic-heading = Χρωματικοί συνδυασμοί
-theme-monochromatic-subheading = Νέοι, δυναμικοί χρωματικοί συνδυασμοί από το { -brand-product-name }. Διαθέσιμοι για περιορισμένο χρονικό διάστημα.
+theme-disabled-heading2 = Αποθηκευμένα θέματα
 plugin-enabled-heading = Ενεργά
 plugin-disabled-heading = Ανενεργά
 dictionary-enabled-heading = Ενεργά
 dictionary-disabled-heading = Ανενεργά
 locale-enabled-heading = Ενεργές
 locale-disabled-heading = Ανενεργές
+sitepermission-enabled-heading = Ενεργές
+sitepermission-disabled-heading = Ανενεργές
 always-activate-button = Πάντα ενεργοποιημένο
 never-activate-button = Ποτέ ενεργοποιημένο
 addon-detail-author-label = Δημιουργός
@@ -297,6 +335,9 @@ addon-detail-homepage-label = Αρχική σελίδα
 addon-detail-rating-label = Βαθμολογία
 # Message for add-ons with a staged pending update.
 install-postponed-message = Αυτή η επέκταση θα ενημερωθεί όταν επανεκκινηθεί το { -brand-short-name }.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Αυτή η επέκταση θα ενημερωθεί όταν επανεκκινηθεί το { -brand-short-name }.
 install-postponed-button = Ενημέρωση τώρα
 # The average rating that the add-on has received.
 # Variables:
@@ -328,6 +369,10 @@ addon-detail-updates-radio-on = Ενεργό
 addon-detail-updates-radio-off = Ανενεργό
 addon-detail-update-check-label = Έλεγχος για ενημερώσεις
 install-update-button = Ενημέρωση
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -336,6 +381,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Όταν επιτρέπεται, η επέκταση θα έχει πρόσβαση στις δραστηριότητές σας στο διαδίκτυο κατά την ιδιωτική περιήγηση. <a data-l10n-name="learn-more">Μάθετε περισσότερα</a>
 addon-detail-private-browsing-allow = Αποδοχή
 addon-detail-private-browsing-disallow = Απόρριψη
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Εκτέλεση σε ιστοτόπους με περιορισμούς
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Όταν επιτρέπεται, η επέκταση θα έχει πρόσβαση σε ιστοτόπους που περιορίζονται από τη { -vendor-short-name }. Κάντε το μόνο εάν εμπιστεύεστε αυτήν την επέκταση.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Αποδοχή
+addon-detail-quarantined-domains-disallow = Να μην επιτρέπεται
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -364,6 +427,9 @@ addon-permissions-optional = Προαιρετικά δικαιώματα για 
 addon-permissions-learnmore = Μάθετε περισσότερα σχετικά με τα δικαιώματα
 recommended-extensions-heading = Προτεινόμενες επεκτάσεις
 recommended-themes-heading = Προτεινόμενα θέματα
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Παραχωρεί τις εξής δυνατότητες στο <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Αισθάνεστε δημιουργικοί; <a data-l10n-name="link">Δημιουργήστε το δικό σας θέμα με το Firefox Color.</a>
@@ -376,6 +442,7 @@ plugin-heading = Διαχείριση των αρθρωμάτων σας
 dictionary-heading = Διαχείριση των λεξικών σας
 locale-heading = Διαχείριση των γλωσσών σας
 updates-heading = Διαχείριση των ενημερώσεών σας
+sitepermission-heading = Διαχείριση αδειών ιστοτόπων
 discover-heading = Εξατομίκευση του { -brand-short-name }
 shortcuts-heading = Διαχείριση συντομεύσεων επεκτάσεων
 default-heading-search-label = Εύρεση περισσότερων προσθέτων
@@ -383,3 +450,35 @@ addons-heading-search-input =
     .placeholder = Αναζήτηση στο addons.mozilla.org
 addon-page-options-button =
     .title = Εργαλεία για όλα τα πρόσθετα
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = Το { $name } είναι ασύμβατο με τον { -brand-short-name } { $version }.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = Το { $name } είναι ασύμβατο με τον { -brand-short-name } { $version }.
+details-notification-incompatible-link = Περισσότερες πληροφορίες
+details-notification-unsigned-and-disabled = Το { $name } δεν ήταν δυνατό να επαληθευτεί για χρήση στο { -brand-short-name } και έχει απενεργοποιηθεί.
+details-notification-unsigned-and-disabled2 =
+    .message = Το { $name } δεν ήταν δυνατό να επαληθευτεί για χρήση στο { -brand-short-name } και έχει απενεργοποιηθεί.
+details-notification-unsigned-and-disabled-link = Περισσότερες πληροφορίες
+details-notification-unsigned = Το { $name } δεν ήταν δυνατό να επαληθευτεί για χρήση στο { -brand-short-name }. Συνεχίστε με προσοχή.
+details-notification-unsigned2 =
+    .message = Το { $name } δεν ήταν δυνατό να επαληθευτεί για χρήση στο { -brand-short-name }. Συνεχίστε με προσοχή.
+details-notification-unsigned-link = Περισσότερες πληροφορίες
+details-notification-blocked = Το { $name } έχει απενεργοποιηθεί για λόγους ασφαλείας ή σταθερότητας.
+details-notification-blocked2 =
+    .message = Το { $name } έχει απενεργοποιηθεί για λόγους ασφαλείας ή σταθερότητας.
+details-notification-blocked-link = Περισσότερες πληροφορίες
+details-notification-softblocked = Το { $name } είναι γνωστό ότι προκαλεί προβλήματα ασφαλείας ή σταθερότητας.
+details-notification-softblocked2 =
+    .message = Το { $name } είναι γνωστό ότι προκαλεί προβλήματα ασφαλείας ή σταθερότητας.
+details-notification-softblocked-link = Περισσότερες πληροφορίες
+details-notification-gmp-pending = Το πρόσθετο { $name } θα εγκατασταθεί σύντομα.
+details-notification-gmp-pending2 =
+    .message = Το πρόσθετο { $name } θα εγκατασταθεί σύντομα.

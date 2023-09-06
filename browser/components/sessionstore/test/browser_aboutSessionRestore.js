@@ -14,7 +14,7 @@ const TAB_FORMDATA = { url: TAB_URL, id: { sessionData: CRASH_STATE } };
 const TAB_SHENTRY = { url: TAB_URL, triggeringPrincipal_base64 };
 const TAB_STATE = { entries: [TAB_SHENTRY], formdata: TAB_FORMDATA };
 
-add_task(async function() {
+add_task(async function () {
   // Prepare a blank tab.
   let tab = BrowserTestUtils.addTab(gBrowser, "about:blank");
   let browser = tab.linkedBrowser;
@@ -26,6 +26,11 @@ add_task(async function() {
 
   ok(gBrowser.tabs.length > 1, "we have more than one tab");
 
+  let tabsToggle = browser.contentDocument.getElementById("tabsToggle");
+  tabsToggle.click();
+  await BrowserTestUtils.waitForCondition(
+    () => browser.contentWindow.gTreeInitialized
+  );
   let tree = browser.contentDocument.getElementById("tabList");
   let view = tree.view;
   ok(view.isContainer(0), "first entry is the window");
@@ -56,7 +61,7 @@ add_task(async function() {
         },
       ],
     },
-  ] = JSON.parse(ss.getClosedWindowData());
+  ] = ss.getClosedWindowData();
   is(url, CRASH_URL, "session was restored correctly");
   ss.forgetClosedWindow(0);
 });

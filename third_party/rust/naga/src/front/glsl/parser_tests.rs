@@ -3,18 +3,18 @@ use super::{
     error::ExpectedToken,
     error::{Error, ErrorKind},
     token::TokenValue,
-    Options, Parser, SourceMetadata,
+    Frontend, Options, Span,
 };
 use crate::ShaderStage;
 use pp_rs::token::PreprocessorError;
 
 #[test]
 fn version() {
-    let mut parser = Parser::default();
+    let mut frontend = Frontend::default();
 
     // invalid versions
     assert_eq!(
-        parser
+        frontend
             .parse(
                 &Options::from(ShaderStage::Vertex),
                 "#version 99000\n void main(){}",
@@ -23,12 +23,12 @@ fn version() {
             .unwrap(),
         vec![Error {
             kind: ErrorKind::InvalidVersion(99000),
-            meta: SourceMetadata { start: 9, end: 14 }
+            meta: Span::new(9, 14)
         }],
     );
 
     assert_eq!(
-        parser
+        frontend
             .parse(
                 &Options::from(ShaderStage::Vertex),
                 "#version 449\n void main(){}",
@@ -37,12 +37,12 @@ fn version() {
             .unwrap(),
         vec![Error {
             kind: ErrorKind::InvalidVersion(449),
-            meta: SourceMetadata { start: 9, end: 12 }
+            meta: Span::new(9, 12)
         }]
     );
 
     assert_eq!(
-        parser
+        frontend
             .parse(
                 &Options::from(ShaderStage::Vertex),
                 "#version 450 smart\n void main(){}",
@@ -51,12 +51,12 @@ fn version() {
             .unwrap(),
         vec![Error {
             kind: ErrorKind::InvalidProfile("smart".into()),
-            meta: SourceMetadata { start: 13, end: 18 },
+            meta: Span::new(13, 18),
         }]
     );
 
     assert_eq!(
-        parser
+        frontend
             .parse(
                 &Options::from(ShaderStage::Vertex),
                 "#version 450\nvoid main(){} #version 450",
@@ -66,58 +66,58 @@ fn version() {
         vec![
             Error {
                 kind: ErrorKind::PreprocessorError(PreprocessorError::UnexpectedHash,),
-                meta: SourceMetadata { start: 27, end: 28 },
+                meta: Span::new(27, 28),
             },
             Error {
                 kind: ErrorKind::InvalidToken(
                     TokenValue::Identifier("version".into()),
                     vec![ExpectedToken::Eof]
                 ),
-                meta: SourceMetadata { start: 28, end: 35 }
+                meta: Span::new(28, 35)
             }
         ]
     );
 
     // valid versions
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             "  #  version 450\nvoid main() {}",
         )
         .unwrap();
     assert_eq!(
-        (parser.metadata().version, parser.metadata().profile),
+        (frontend.metadata().version, frontend.metadata().profile),
         (450, Profile::Core)
     );
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             "#version 450\nvoid main() {}",
         )
         .unwrap();
     assert_eq!(
-        (parser.metadata().version, parser.metadata().profile),
+        (frontend.metadata().version, frontend.metadata().profile),
         (450, Profile::Core)
     );
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
-            "#version 450 core\nvoid main() {}",
+            "#version 450 core\nvoid main(void) {}",
         )
         .unwrap();
     assert_eq!(
-        (parser.metadata().version, parser.metadata().profile),
+        (frontend.metadata().version, frontend.metadata().profile),
         (450, Profile::Core)
     );
 }
 
 #[test]
 fn control_flow() {
-    let mut parser = Parser::default();
+    let mut frontend = Frontend::default();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -133,7 +133,7 @@ fn control_flow() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -147,7 +147,7 @@ fn control_flow() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -170,7 +170,7 @@ fn control_flow() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -188,7 +188,7 @@ fn control_flow() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -208,9 +208,9 @@ fn control_flow() {
 
 #[test]
 fn declarations() {
-    let mut parser = Parser::default();
+    let mut frontend = Frontend::default();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -227,7 +227,7 @@ fn declarations() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -244,7 +244,7 @@ fn declarations() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -261,7 +261,7 @@ fn declarations() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -278,7 +278,7 @@ fn declarations() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -297,7 +297,7 @@ fn declarations() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -309,7 +309,7 @@ fn declarations() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -324,9 +324,9 @@ fn declarations() {
 
 #[test]
 fn textures() {
-    let mut parser = Parser::default();
+    let mut frontend = Frontend::default();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -346,9 +346,9 @@ fn textures() {
 
 #[test]
 fn functions() {
-    let mut parser = Parser::default();
+    let mut frontend = Frontend::default();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -361,7 +361,7 @@ fn functions() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -375,7 +375,7 @@ fn functions() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -387,7 +387,7 @@ fn functions() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -402,7 +402,7 @@ fn functions() {
         .unwrap();
 
     // Function overloading
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -429,7 +429,7 @@ fn functions() {
         .unwrap();
 
     assert_eq!(
-        parser
+        frontend
             .parse(
                 &Options::from(ShaderStage::Vertex),
                 r#"
@@ -449,16 +449,13 @@ fn functions() {
             .unwrap(),
         vec![Error {
             kind: ErrorKind::SemanticError("Function already defined".into()),
-            meta: SourceMetadata {
-                start: 134,
-                end: 152
-            },
+            meta: Span::new(134, 152),
         }]
     );
 
     println!();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -477,7 +474,7 @@ fn functions() {
         .unwrap();
 
     // Nested function call
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -492,7 +489,7 @@ fn functions() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -512,10 +509,11 @@ fn functions() {
 
 #[test]
 fn constants() {
-    use crate::{Constant, ConstantInner, ScalarValue};
-    let mut parser = Parser::default();
+    use crate::{Constant, Expression, ScalarKind, Type, TypeInner};
 
-    let module = parser
+    let mut frontend = Frontend::default();
+
+    let module = frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -529,17 +527,49 @@ fn constants() {
         )
         .unwrap();
 
+    let mut types = module.types.iter();
     let mut constants = module.constants.iter();
+    let mut const_expressions = module.const_expressions.iter();
+
+    let (ty_handle, ty) = types.next().unwrap();
+    assert_eq!(
+        ty,
+        &Type {
+            name: None,
+            inner: TypeInner::Scalar {
+                kind: ScalarKind::Float,
+                width: 4
+            }
+        }
+    );
+
+    let (init_a_handle, init_a) = const_expressions.next().unwrap();
+    assert_eq!(init_a, &Expression::Literal(crate::Literal::F32(1.0)));
+
+    let (constant_a_handle, constant_a) = constants.next().unwrap();
+    assert_eq!(
+        constant_a,
+        &Constant {
+            name: Some("a".to_owned()),
+            r#override: crate::Override::None,
+            ty: ty_handle,
+            init: init_a_handle
+        }
+    );
+
+    // skip const expr that was inserted for `global` var
+    const_expressions.next().unwrap();
+
+    let (init_b_handle, init_b) = const_expressions.next().unwrap();
+    assert_eq!(init_b, &Expression::Constant(constant_a_handle));
 
     assert_eq!(
         constants.next().unwrap().1,
         &Constant {
-            name: None,
-            specialization: None,
-            inner: ConstantInner::Scalar {
-                width: 4,
-                value: ScalarValue::Float(1.0)
-            }
+            name: Some("b".to_owned()),
+            r#override: crate::Override::None,
+            ty: ty_handle,
+            init: init_b_handle
         }
     );
 
@@ -548,9 +578,9 @@ fn constants() {
 
 #[test]
 fn function_overloading() {
-    let mut parser = Parser::default();
+    let mut frontend = Frontend::default();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -574,9 +604,9 @@ fn function_overloading() {
 
 #[test]
 fn implicit_conversions() {
-    let mut parser = Parser::default();
+    let mut frontend = Frontend::default();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -591,7 +621,7 @@ fn implicit_conversions() {
         .unwrap();
 
     assert_eq!(
-        parser
+        frontend
             .parse(
                 &Options::from(ShaderStage::Vertex),
                 r#"
@@ -608,15 +638,12 @@ fn implicit_conversions() {
             .unwrap(),
         vec![Error {
             kind: ErrorKind::SemanticError("Unknown function \'test\'".into()),
-            meta: SourceMetadata {
-                start: 156,
-                end: 165
-            },
+            meta: Span::new(156, 165),
         }]
     );
 
     assert_eq!(
-        parser
+        frontend
             .parse(
                 &Options::from(ShaderStage::Vertex),
                 r#"
@@ -633,19 +660,16 @@ fn implicit_conversions() {
             .unwrap(),
         vec![Error {
             kind: ErrorKind::SemanticError("Ambiguous best function for \'test\'".into()),
-            meta: SourceMetadata {
-                start: 158,
-                end: 165
-            },
+            meta: Span::new(158, 165),
         }]
     );
 }
 
 #[test]
 fn structs() {
-    let mut parser = Parser::default();
+    let mut frontend = Frontend::default();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -659,7 +683,7 @@ fn structs() {
         )
         .unwrap_err();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -673,7 +697,7 @@ fn structs() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -688,7 +712,7 @@ fn structs() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -704,7 +728,7 @@ fn structs() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -716,7 +740,7 @@ fn structs() {
         )
         .unwrap_err();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -733,9 +757,9 @@ fn structs() {
 
 #[test]
 fn swizzles() {
-    let mut parser = Parser::default();
+    let mut frontend = Frontend::default();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -750,7 +774,7 @@ fn swizzles() {
         )
         .unwrap();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -763,7 +787,7 @@ fn swizzles() {
         )
         .unwrap_err();
 
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -779,10 +803,10 @@ fn swizzles() {
 
 #[test]
 fn expressions() {
-    let mut parser = Parser::default();
+    let mut frontend = Frontend::default();
 
     // Vector indexing
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
@@ -798,14 +822,14 @@ fn expressions() {
         .unwrap();
 
     // Prefix increment/decrement
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"
         #  version 450
         void main() {
             uint index = 0;
-            
+
             --index;
             ++index;
         }
@@ -814,7 +838,7 @@ fn expressions() {
         .unwrap();
 
     // Dynamic indexing of array
-    parser
+    frontend
         .parse(
             &Options::from(ShaderStage::Vertex),
             r#"

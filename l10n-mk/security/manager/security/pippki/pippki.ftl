@@ -6,14 +6,15 @@ password-quality-meter = Мерач на квалитетот на лозинк�
 
 ## Change Password dialog
 
+change-device-password-window =
+    .title = Промени лозинка
+
 # Variables:
 # $tokenName (String) - Security device of the change password dialog
 change-password-token = Безбедносен уред: { $tokenName }
 change-password-old = Актуелна лозинка:
 change-password-new = Нова лозинка:
 change-password-reenter = Нова лозинка (повторно):
-
-## Reset Password dialog
 
 ## Reset Primary Password dialog
 
@@ -22,9 +23,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Преземање на сертификат
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Од вас е побарано да му верувате на нов авторитет за сертификати (CA).
 download-cert-trust-ssl =
     .label = Верувај му на овој CA во идентифукувањето на мрежни места.
@@ -56,7 +57,5 @@ set-password-reminder = Важно: ако ја заборавите лозин�
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Проверка со зашитетен белег
-protected-auth-msg = Проверете се со белегот. Методот зависи од типот на белегот.
-protected-auth-token = Белег:
+## Protected authentication alert
+

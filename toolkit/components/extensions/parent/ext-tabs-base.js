@@ -7,8 +7,8 @@
 
 /* globals EventEmitter */
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.jsm",
+ChromeUtils.defineESModuleGetters(this, {
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
 });
 
 XPCOMUtils.defineLazyPreferenceGetter(
@@ -17,12 +17,8 @@ XPCOMUtils.defineLazyPreferenceGetter(
   "privacy.userContext.enabled"
 );
 
-var {
-  DefaultMap,
-  DefaultWeakMap,
-  ExtensionError,
-  parseMatchPatterns,
-} = ExtensionUtils;
+var { DefaultMap, DefaultWeakMap, ExtensionError, parseMatchPatterns } =
+  ExtensionUtils;
 
 var { defineLazyGetter } = ExtensionCommon;
 
@@ -30,11 +26,11 @@ var { defineLazyGetter } = ExtensionCommon;
  * The platform-specific type of native tab objects, which are wrapped by
  * TabBase instances.
  *
- * @typedef {Object|XULElement} NativeTab
+ * @typedef {object | XULElement} NativeTab
  */
 
 /**
- * @typedef {Object} MutedInfo
+ * @typedef {object} MutedInfo
  * @property {boolean} muted
  *        True if the tab is currently muted, false otherwise.
  * @property {string} [reason]
@@ -80,7 +76,7 @@ class TabBase {
    *        The extension context for which to perform the capture.
    * @param {number} zoom
    *        The current zoom for the page.
-   * @param {Object} [options]
+   * @param {object} [options]
    *        The options with which to perform the capture.
    * @param {string} [options.format = "png"]
    *        The image format in which to encode the captured data. May be one of
@@ -167,7 +163,8 @@ class TabBase {
    */
   get hasActiveTabPermission() {
     return (
-      this.extension.hasPermission("activeTab") &&
+      (this.extension.originControls ||
+        this.extension.hasPermission("activeTab")) &&
       this.activeTabWindowID != null &&
       this.activeTabWindowID === this.innerWindowID
     );
@@ -285,6 +282,16 @@ class TabBase {
    *        @abstract
    */
   get audible() {
+    throw new Error("Not implemented");
+  }
+
+  /**
+   * @property {boolean} autoDiscardable
+   *        Returns true if the tab can be discarded on memory pressure, false otherwise.
+   *        @readonly
+   *        @abstract
+   */
+  get autoDiscardable() {
     throw new Error("Not implemented");
   }
 
@@ -518,6 +525,8 @@ class TabBase {
    *        Matches against the exact value of the tab's `active` attribute.
    * @param {boolean} [queryInfo.audible]
    *        Matches against the exact value of the tab's `audible` attribute.
+   * @param {boolean} [queryInfo.autoDiscardable]
+   *        Matches against the exact value of the tab's `autoDiscardable` attribute.
    * @param {string} [queryInfo.cookieStoreId]
    *        Matches against the exact value of the tab's `cookieStoreId` attribute.
    * @param {boolean} [queryInfo.discarded]
@@ -555,7 +564,7 @@ class TabBase {
     const PROPS = [
       "active",
       "audible",
-      "cookieStoreId",
+      "autoDiscardable",
       "discarded",
       "hidden",
       "highlighted",
@@ -591,6 +600,13 @@ class TabBase {
         return false;
       }
     }
+
+    if (queryInfo.cookieStoreId) {
+      if (!queryInfo.cookieStoreId.includes(this.cookieStoreId)) {
+        return false;
+      }
+    }
+
     if (queryInfo.url || queryInfo.title) {
       if (!this.hasTabPermission) {
         return false;
@@ -612,7 +628,7 @@ class TabBase {
    * of its properties which the extension is permitted to access, in the format
    * required to be returned by WebExtension APIs.
    *
-   * @param {Object} [fallbackTabSize]
+   * @param {object} [fallbackTabSize]
    *        A geometry data if the lazy geometry data for this tab hasn't been
    *        initialized yet.
    * @returns {object}
@@ -634,6 +650,7 @@ class TabBase {
       height: this.height,
       lastAccessed: this.lastAccessed,
       audible: this.audible,
+      autoDiscardable: this.autoDiscardable,
       mutedInfo: this.mutedInfo,
       isArticle: this.isArticle,
       isInReaderMode: this.isInReaderMode,
@@ -670,29 +687,47 @@ class TabBase {
 
   /**
    * Query each content process hosting subframes of the tab, return results.
+   *
    * @param {string} message
    * @param {object} options
-   * @param {number} options.frameID
-   * @param {boolean} options.allFrames
+   *        These options are also sent to the message handler in the
+   *        `ExtensionContentChild`.
+   * @param {number[]} options.frameIds
+   *        When omitted, all frames will be queried.
+   * @param {boolean} options.returnResultsWithFrameIds
    * @returns {Promise[]}
    */
   async queryContent(message, options) {
-    let { allFrames, frameID } = options;
+    let { frameIds } = options;
 
     /** @type {Map<nsIDOMProcessParent, innerWindowId[]>} */
     let byProcess = new DefaultMap(() => []);
+    // We use this set to know which frame IDs are potentially invalid (as in
+    // not found when visiting the tab's BC tree below) when frameIds is a
+    // non-empty list of frame IDs.
+    let frameIdsSet = new Set(frameIds);
 
     // Recursively walk the tab's BC tree, find all frames, group by process.
     function visit(bc) {
       let win = bc.currentWindowGlobal;
-      if (win?.domProcess && (!frameID || frameID === bc.id)) {
+      let frameId = bc.parent ? bc.id : 0;
+
+      if (win?.domProcess && (!frameIds || frameIdsSet.has(frameId))) {
         byProcess.get(win.domProcess).push(win.innerWindowId);
+        frameIdsSet.delete(frameId);
       }
-      if (allFrames || (frameID && !byProcess.size)) {
+
+      if (!frameIds || frameIdsSet.size > 0) {
         bc.children.forEach(visit);
       }
     }
     visit(this.browsingContext);
+
+    if (frameIdsSet.size > 0) {
+      throw new ExtensionError(
+        `Invalid frame IDs: [${Array.from(frameIdsSet).join(", ")}].`
+      );
+    }
 
     let promises = Array.from(byProcess.entries(), ([proc, windows]) =>
       proc.getActor("ExtensionContent").sendQuery(message, { windows, options })
@@ -709,15 +744,15 @@ class TabBase {
     results = results.flat();
 
     if (!results.length) {
-      if (frameID) {
-        throw new ExtensionError("Frame not found, or missing host permission");
+      let errorMessage = "Missing host permission for the tab";
+      if (!frameIds || frameIds.length > 1 || frameIds[0] !== 0) {
+        errorMessage += " or frames";
       }
 
-      let frames = allFrames ? ", and any iframes" : "";
-      throw new ExtensionError(`Missing host permission for the tab${frames}`);
+      throw new ExtensionError(errorMessage);
     }
 
-    if (!allFrames && results.length > 1) {
+    if (frameIds && frameIds.length === 1 && results.length > 1) {
       throw new ExtensionError("Internal error: multiple windows matched");
     }
 
@@ -781,12 +816,15 @@ class TabBase {
       }
       options[`${kind}Paths`].push(url);
     }
+
     if (details.allFrames) {
-      options.allFrames = details.allFrames;
+      options.allFrames = true;
+    } else if (details.frameId !== null) {
+      options.frameIds = [details.frameId];
+    } else if (!details.allFrames) {
+      options.frameIds = [0];
     }
-    if (details.frameId !== null) {
-      options.frameID = details.frameId;
-    }
+
     if (details.matchAboutBlank) {
       options.matchAboutBlank = details.matchAboutBlank;
     }
@@ -802,6 +840,10 @@ class TabBase {
     }
 
     options.wantReturnValue = true;
+
+    // The scripting API (defined in `parent/ext-scripting.js`) has its own
+    // `execute()` function that calls `queryContent()` as well. Make sure to
+    // keep both in sync when relevant.
     return this.queryContent("Execute", options);
   }
 
@@ -859,7 +901,7 @@ class TabBase {
   }
 }
 
-defineLazyGetter(TabBase.prototype, "incognito", function() {
+defineLazyGetter(TabBase.prototype, "incognito", function () {
   return this._incognito;
 });
 
@@ -1200,7 +1242,7 @@ Object.assign(WindowBase, { WINDOW_ID_NONE, WINDOW_ID_CURRENT });
  * The parameter type of "tab-attached" events, which are emitted when a
  * pre-existing tab is attached to a new window.
  *
- * @typedef {Object} TabAttachedEvent
+ * @typedef {object} TabAttachedEvent
  * @property {NativeTab} tab
  *        The native tab object in the window to which the tab is being
  *        attached. This may be a different object than was used to represent
@@ -1218,7 +1260,7 @@ Object.assign(WindowBase, { WINDOW_ID_NONE, WINDOW_ID_CURRENT });
  * pre-existing tab is detached from a window, in order to be attached to a new
  * window.
  *
- * @typedef {Object} TabDetachedEvent
+ * @typedef {object} TabDetachedEvent
  * @property {NativeTab} tab
  *        The native tab object in the window from which the tab is being
  *        detached. This may be a different object than will be used to
@@ -1240,7 +1282,7 @@ Object.assign(WindowBase, { WINDOW_ID_NONE, WINDOW_ID_CURRENT });
  * The parameter type of "tab-created" events, which are emitted when a
  * new tab is created.
  *
- * @typedef {Object} TabCreatedEvent
+ * @typedef {object} TabCreatedEvent
  * @property {NativeTab} tab
  *        The native tab object for the tab which is being created.
  */
@@ -1249,7 +1291,7 @@ Object.assign(WindowBase, { WINDOW_ID_NONE, WINDOW_ID_CURRENT });
  * The parameter type of "tab-removed" events, which are emitted when a
  * tab is removed and destroyed.
  *
- * @typedef {Object} TabRemovedEvent
+ * @typedef {object} TabRemovedEvent
  * @property {NativeTab} tab
  *        The native tab object for the tab which is being removed.
  * @property {integer} tabId
@@ -1264,7 +1306,7 @@ Object.assign(WindowBase, { WINDOW_ID_NONE, WINDOW_ID_CURRENT });
  * An object containing basic, extension-independent information about the window
  * and tab that a XUL <browser> belongs to.
  *
- * @typedef {Object} BrowserData
+ * @typedef {object} BrowserData
  * @property {integer} tabId
  *        The numeric ID of the tab that a <browser> belongs to, or -1 if it
  *        does not belong to a tab.
@@ -1372,7 +1414,7 @@ class TabTrackerBase extends EventEmitter {
  * A browser progress listener instance which calls a given listener function
  * whenever the status of the given browser changes.
  *
- * @param {function(Object)} listener
+ * @param {function(object)} listener
  *        A function to be called whenever the status of a tab's top-level
  *        browser. It is passed an object with a `browser` property pointing to
  *        the XUL browser, and a `status` property with a string description of
@@ -1729,7 +1771,7 @@ class WindowTrackerBase extends EventEmitter {
    *           window.
    *        - "domwindowopened": Acts as an alias for addOpenListener.
    *        - "domwindowclosed": Acts as an alias for addCloseListener.
-   * @param {function|object} listener
+   * @param {Function | object} listener
    *        The listener to invoke in response to the given events.
    *
    * @returns {undefined}
@@ -1763,7 +1805,7 @@ class WindowTrackerBase extends EventEmitter {
    *
    * @param {string} type
    *        The type of event to stop listening for.
-   * @param {function|object} listener
+   * @param {Function | object} listener
    *        The listener to remove.
    *
    * @returns {undefined}
@@ -1809,7 +1851,7 @@ class WindowTrackerBase extends EventEmitter {
    * @param {string} eventType
    *        The type of DOM event to listen for, or "progress" to add a tab
    *        progress listener.
-   * @param {function|object} listener
+   * @param {Function | object} listener
    *        The listener to add.
    * @private
    */
@@ -1888,12 +1930,16 @@ class TabManagerBase {
    *        The native tab for which to grant permissions.
    */
   addActiveTabPermission(nativeTab) {
-    if (this.extension.hasPermission("activeTab")) {
+    let tab = this.getWrapper(nativeTab);
+    if (
+      this.extension.hasPermission("activeTab") ||
+      (this.extension.originControls &&
+        this.extension.optionalOrigins.matches(tab._uri))
+    ) {
       // Note that, unlike Chrome, we don't currently clear this permission with
       // the tab navigates. If the inner window is revived from BFCache before
       // we've granted this permission to a new inner window, the extension
       // maintains its permissions for it.
-      let tab = this.getWrapper(nativeTab);
       tab.activeTabWindowID = tab.innerWindowID;
     }
   }
@@ -1920,6 +1966,26 @@ class TabManagerBase {
    */
   hasActiveTabPermission(nativeTab) {
     return this.getWrapper(nativeTab).hasActiveTabPermission;
+  }
+
+  /**
+   * Activate MV3 content scripts if the extension has activeTab or an
+   * (ungranted) host permission.
+   *
+   * @param {NativeTab} nativeTab
+   */
+  activateScripts(nativeTab) {
+    let tab = this.getWrapper(nativeTab);
+    if (
+      this.extension.originControls &&
+      !tab.matchesHostPermission &&
+      (this.extension.optionalOrigins.matches(tab._uri) ||
+        this.extension.hasPermission("activeTab")) &&
+      (this.extension.contentScripts.length ||
+        this.extension.registeredContentScripts.size)
+    ) {
+      tab.queryContent("ActivateScripts", { id: this.extension.id });
+    }
   }
 
   /**
@@ -1982,11 +2048,11 @@ class TabManagerBase {
    *
    * @param {NativeTab} nativeTab
    *        The native tab to convert.
-   * @param {Object} [fallbackTabSize]
+   * @param {object} [fallbackTabSize]
    *        A geometry data if the lazy geometry data for this tab hasn't been
    *        initialized yet.
    *
-   * @returns {Object}
+   * @returns {object}
    */
   convert(nativeTab, fallbackTabSize = null) {
     return this.getWrapper(nativeTab).convert(fallbackTabSize);
@@ -1998,7 +2064,7 @@ class TabManagerBase {
   /**
    * Returns an iterator of TabBase objects which match the given query info.
    *
-   * @param {Object|null} [queryInfo = null]
+   * @param {object | null} [queryInfo = null]
    *        An object containing properties on which to filter. May contain any
    *        properties which are recognized by {@link TabBase#matches} or
    *        {@link WindowBase#matches}. Unknown properties will be ignored.
@@ -2014,6 +2080,10 @@ class TabManagerBase {
         queryInfo.url = parseMatchPatterns([].concat(queryInfo.url), {
           restrictSchemes: false,
         });
+      }
+
+      if (queryInfo.cookieStoreId !== null) {
+        queryInfo.cookieStoreId = [].concat(queryInfo.cookieStoreId);
       }
 
       if (queryInfo.title !== null) {
@@ -2061,7 +2131,7 @@ class TabManagerBase {
   /**
    * Returns a TabBase wrapper for the tab with the given ID.
    *
-   * @param {integer} id
+   * @param {integer} tabId
    *        The ID of the tab for which to return a wrapper.
    *
    * @returns {TabBase}
@@ -2112,7 +2182,7 @@ class WindowManagerBase {
    * @param {*} args
    *        Additional arguments to be passed to {@link WindowBase#convert}.
    *
-   * @returns {Object}
+   * @returns {object}
    */
   convert(window, ...args) {
     return this.getWrapper(window).convert(...args);
@@ -2158,7 +2228,7 @@ class WindowManagerBase {
   /**
    * Returns an iterator of WindowBase objects which match the given query info.
    *
-   * @param {Object|null} [queryInfo = null]
+   * @param {object | null} [queryInfo = null]
    *        An object containing properties on which to filter. May contain any
    *        properties which are recognized by {@link WindowBase#matches}.
    *        Unknown properties will be ignored.
@@ -2202,13 +2272,13 @@ class WindowManagerBase {
   /**
    * Returns a WindowBase wrapper for the browser window with the given ID.
    *
-   * @param {integer} id
+   * @param {integer} windowId
    *        The ID of the browser window for which to return a wrapper.
    * @param {BaseContext} context
    *        The extension context for which the matching is being performed.
    *        Used to determine the current window for relevant properties.
    *
-   * @returns{WindowBase}
+   * @returns {WindowBase}
    * @throws {ExtensionError}
    *        If no window exists with the given ID.
    * @abstract

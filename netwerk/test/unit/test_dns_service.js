@@ -1,13 +1,7 @@
 "use strict";
 
-const dns = Cc["@mozilla.org/network/dns-service;1"].getService(
-  Ci.nsIDNSService
-);
 const defaultOriginAttributes = {};
-const threadManager = Cc["@mozilla.org/thread-manager;1"].getService(
-  Ci.nsIThreadManager
-);
-const mainThread = threadManager.currentThread;
+const mainThread = Services.tm.currentThread;
 
 const overrideService = Cc[
   "@mozilla.org/network/native-dns-override;1"
@@ -34,13 +28,12 @@ Listener.prototype.QueryInterface = ChromeUtils.generateQI(["nsIDNSListener"]);
 const DOMAIN_IDN = "bücher.org";
 const ACE_IDN = "xn--bcher-kva.org";
 
-const DOMAIN = "localhost";
 const ADDR1 = "127.0.0.1";
 const ADDR2 = "::1";
 
 add_task(async function test_dns_localhost() {
   let listener = new Listener();
-  dns.asyncResolve(
+  Services.dns.asyncResolve(
     "localhost",
     Ci.nsIDNSService.RESOLVE_TYPE_DEFAULT,
     0,
@@ -57,7 +50,7 @@ add_task(async function test_dns_localhost() {
 
 add_task(async function test_idn_cname() {
   let listener = new Listener();
-  dns.asyncResolve(
+  Services.dns.asyncResolve(
     DOMAIN_IDN,
     Ci.nsIDNSService.RESOLVE_TYPE_DEFAULT,
     Ci.nsIDNSService.RESOLVE_CANONICAL_NAME,
@@ -74,14 +67,13 @@ add_task(async function test_idn_cname() {
 add_task(
   {
     skip_if: () =>
-      Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime)
-        .processType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT,
+      Services.appinfo.processType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT,
   },
   async function test_long_domain() {
     let listener = new Listener();
     let domain = "a".repeat(253);
     overrideService.addIPOverride(domain, "1.2.3.4");
-    dns.asyncResolve(
+    Services.dns.asyncResolve(
       domain,
       Ci.nsIDNSService.RESOLVE_TYPE_DEFAULT,
       Ci.nsIDNSService.RESOLVE_CANONICAL_NAME,
@@ -101,7 +93,7 @@ add_task(
 
     if (mozinfo.socketprocess_networking) {
       // When using the socket process, the call fails asynchronously.
-      dns.asyncResolve(
+      Services.dns.asyncResolve(
         domain,
         Ci.nsIDNSService.RESOLVE_TYPE_DEFAULT,
         Ci.nsIDNSService.RESOLVE_CANONICAL_NAME,
@@ -115,7 +107,7 @@ add_task(
     } else {
       Assert.throws(
         () => {
-          dns.asyncResolve(
+          Services.dns.asyncResolve(
             domain,
             Ci.nsIDNSService.RESOLVE_TYPE_DEFAULT,
             Ci.nsIDNSService.RESOLVE_CANONICAL_NAME,
@@ -133,7 +125,7 @@ add_task(
     listener = new Listener();
     domain = "a".repeat(254);
     Services.prefs.setBoolPref("network.dns.limit_253_chars", false);
-    dns.asyncResolve(
+    Services.dns.asyncResolve(
       domain,
       Ci.nsIDNSService.RESOLVE_TYPE_DEFAULT,
       Ci.nsIDNSService.RESOLVE_CANONICAL_NAME,

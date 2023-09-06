@@ -2,14 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
-import sys
 import logging
+import sys
 
-from mach.decorators import CommandArgument, Command, SubCommand
+from mach.decorators import Command, CommandArgument, SubCommand
 
-from mozbuild.vendor.moz_yaml import load_moz_yaml, MozYamlVerifyError
+from mozbuild.vendor.moz_yaml import MozYamlVerifyError, load_moz_yaml
 
 
 # Fun quirk of ./mach - you can specify a default argument as well as subcommands.
@@ -29,18 +27,30 @@ from mozbuild.vendor.moz_yaml import load_moz_yaml, MozYamlVerifyError
 @CommandArgument(
     "--add-to-exports",
     action="store_true",
-    help="Will attempt to add new header files into any relevant EXPORTS block",
+    help="Will attempt to add new header files into any relevant EXPORTS block.",
     default=False,
 )
 @CommandArgument(
     "--ignore-modified",
     action="store_true",
-    help="Ignore modified files in current checkout",
+    help="Ignore modified files in current checkout.",
     default=False,
 )
 @CommandArgument("-r", "--revision", help="Repository tag or commit to update to.")
 @CommandArgument(
-    "--verify", "-v", action="store_true", help="(Only) verify the manifest"
+    "-f",
+    "--force",
+    action="store_true",
+    help="Force a re-vendor even if we're up to date",
+)
+@CommandArgument(
+    "--verify", "-v", action="store_true", help="(Only) verify the manifest."
+)
+@CommandArgument(
+    "--patch-mode",
+    help="Select how vendored patches will be imported. 'none' skips patch import, and"
+    "'only' imports patches and skips library vendoring.",
+    default="",
 )
 @CommandArgument("library", nargs=1, help="The moz.yaml file of the library to vendor.")
 def vendor(
@@ -50,7 +60,9 @@ def vendor(
     ignore_modified=False,
     check_for_update=False,
     add_to_exports=False,
+    force=False,
     verify=False,
+    patch_mode="",
 ):
     """
     Vendor third-party dependencies into the source repository.
@@ -75,15 +87,58 @@ def vendor(
         print(e)
         sys.exit(1)
 
+    if "vendoring" not in manifest:
+        raise Exception(
+            "Cannot perform update actions if we don't have a 'vendoring' section in the moz.yaml"
+        )
+
+    if patch_mode and patch_mode not in ["none", "only"]:
+        print(
+            "Unknown patch mode given '%s'. Please use one of: 'none' or 'only'."
+            % patch_mode
+        )
+        sys.exit(1)
+    if (
+        manifest["vendoring"].get("patches", [])
+        and not patch_mode
+        and not check_for_update
+    ):
+        print(
+            "Patch mode was not given when required. Please use one of: 'none' or 'only'"
+        )
+        sys.exit(1)
+    if patch_mode == "only" and not manifest["vendoring"].get("patches", []):
+        print(
+            "Patch import was specified for %s but there are no vendored patches defined."
+            % library
+        )
+        sys.exit(1)
+
     if not ignore_modified and not check_for_update:
         check_modified_files(command_context)
+    elif ignore_modified and not check_for_update:
+        print(
+            "Because you passed --ignore-modified we will not be "
+            + "able to detect spurious upstream updates."
+        )
+
     if not revision:
         revision = "HEAD"
 
     from mozbuild.vendor.vendor_manifest import VendorManifest
 
     vendor_command = command_context._spawn(VendorManifest)
-    vendor_command.vendor(library, manifest, revision, check_for_update, add_to_exports)
+    vendor_command.vendor(
+        command_context,
+        library,
+        manifest,
+        revision,
+        ignore_modified,
+        check_for_update,
+        force,
+        add_to_exports,
+        patch_mode,
+    )
 
     sys.exit(0)
 
@@ -127,20 +182,29 @@ Please commit or stash these changes before vendoring, or re-run with `--ignore-
     default=False,
 )
 @CommandArgument(
-    "--build-peers-said-large-imports-were-ok",
+    "--force",
     action="store_true",
-    help=(
-        "Permit overly-large files to be added to the repository. "
-        "To get permission to set this, raise a question in the #build "
-        "channel at https://chat.mozilla.org."
-    ),
+    help=("Ignore any kind of error that happens during vendoring"),
     default=False,
+)
+@CommandArgument(
+    "--issues-json",
+    help="Path to a code-review issues.json file to write out",
 )
 def vendor_rust(command_context, **kwargs):
     from mozbuild.vendor.vendor_rust import VendorRust
 
     vendor_command = command_context._spawn(VendorRust)
-    vendor_command.vendor(**kwargs)
+    issues_json = kwargs.pop("issues_json", None)
+    ok = vendor_command.vendor(**kwargs)
+    if issues_json:
+        with open(issues_json, "w") as fh:
+            fh.write(vendor_command.serialize_issues_json())
+    if ok:
+        sys.exit(0)
+    else:
+        print("Errors occured; new rust crates were not vendored.")
+        sys.exit(1)
 
 
 # =====================================================================
@@ -153,6 +217,7 @@ def vendor_rust(command_context, **kwargs):
     "Some extra files like docs and tests will automatically be excluded."
     "Installs the packages listed in third_party/python/requirements.in and "
     "their dependencies.",
+    virtualenv_name="vendor",
 )
 @CommandArgument(
     "--keep-extra-files",
@@ -160,17 +225,8 @@ def vendor_rust(command_context, **kwargs):
     default=False,
     help="Keep all files, including tests and documentation.",
 )
-def vendor_python(command_context, **kwargs):
+def vendor_python(command_context, keep_extra_files):
     from mozbuild.vendor.vendor_python import VendorPython
 
-    if sys.version_info[:2] != (3, 6):
-        print(
-            "You must use Python 3.6 to vendor Python packages. If you don't "
-            "have Python 3.6, you can request that your package be added by "
-            "creating a bug: \n"
-            "https://bugzilla.mozilla.org/enter_bug.cgi?product=Firefox%20Build%20System&component=Mach%20Core"  # noqa F401
-        )
-        return 1
-
     vendor_command = command_context._spawn(VendorPython)
-    vendor_command.vendor(**kwargs)
+    vendor_command.vendor(keep_extra_files)

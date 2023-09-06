@@ -204,6 +204,13 @@ fn handle_mdns_socket(
     hosts: &mut HashMap<String, Vec<u8>>,
     pending_queries: &mut HashMap<String, Query>,
 ) -> bool {
+    // Record a simple marker to see how often this is called.
+    gecko_profiler::add_untyped_marker(
+        "handle_mdns_socket",
+        gecko_profiler::gecko_profiler_category!(Network),
+        Default::default(),
+    );
+
     match socket.recv_from(&mut buffer) {
         Ok((amt, _)) => {
             if amt > 0 {
@@ -405,7 +412,7 @@ impl MDNSService {
         let mdns_addr = std::net::Ipv4Addr::new(224, 0, 0, 251);
         let port = 5353;
 
-        let socket = Socket::new(Domain::ipv4(), Type::dgram(), None)?;
+        let socket = Socket::new(Domain::IPV4, Type::DGRAM, None)?;
         socket.set_reuse_address(true)?;
 
         #[cfg(not(target_os = "windows"))]
@@ -415,7 +422,7 @@ impl MDNSService {
             port,
         ))))?;
 
-        let socket = socket.into_udp_socket();
+        let socket = std::net::UdpSocket::from(socket);
         socket.set_multicast_loop_v4(true)?;
         socket.set_read_timeout(Some(time::Duration::from_millis(1)))?;
         socket.set_write_timeout(Some(time::Duration::from_millis(1)))?;
@@ -428,10 +435,12 @@ impl MDNSService {
             }
         }
 
-        let builder = thread::Builder::new().name("mdns_service".to_string());
+        let thread_name = "mdns_service";
+        let builder = thread::Builder::new().name(thread_name.into());
         self.handle = Some(builder.spawn(move || {
+            gecko_profiler::register_thread(thread_name);
             let mdns_addr = std::net::SocketAddr::from(([224, 0, 0, 251], port));
-            let mut buffer: [u8; 1024] = [0; 1024];
+            let mut buffer: [u8; 9_000] = [0; 9_000];
             let mut hosts = HashMap::new();
             let mut unsent_queries = LinkedList::new();
             let mut pending_queries = HashMap::new();
@@ -503,6 +512,7 @@ impl MDNSService {
                     break;
                 }
             }
+            gecko_profiler::unregister_thread();
         })?);
 
         Ok(())
@@ -648,7 +658,7 @@ mod tests {
     fn listen_until(addr: &std::net::Ipv4Addr, stop: u64) -> thread::JoinHandle<Vec<String>> {
         let port = 5353;
 
-        let socket = Socket::new(Domain::ipv4(), Type::dgram(), None).unwrap();
+        let socket = Socket::new(Domain::IPV4, Type::DGRAM, None).unwrap();
         socket.set_reuse_address(true).unwrap();
 
         #[cfg(not(target_os = "windows"))]
@@ -660,7 +670,7 @@ mod tests {
             ))))
             .unwrap();
 
-        let socket = socket.into_udp_socket();
+        let socket = std::net::UdpSocket::from(socket);
         socket.set_multicast_loop_v4(true).unwrap();
         socket
             .set_read_timeout(Some(time::Duration::from_millis(10)))
@@ -672,7 +682,7 @@ mod tests {
             .join_multicast_v4(&std::net::Ipv4Addr::new(224, 0, 0, 251), &addr)
             .unwrap();
 
-        let mut buffer: [u8; 1024] = [0; 1024];
+        let mut buffer: [u8; 9_000] = [0; 9_000];
         thread::spawn(move || {
             let start = time::Instant::now();
             let mut questions = Vec::new();
@@ -752,7 +762,7 @@ mod tests {
             resolved: mdns_service_resolved,
             timedout: mdns_service_timedout,
         };
-        let hostname = Uuid::new_v4().to_hyphenated().to_string() + ".local";
+        let hostname = Uuid::new_v4().as_hyphenated().to_string() + ".local";
         service.query_hostname(callback, &hostname);
         service.stop();
         let questions = handle.join().unwrap();
@@ -774,7 +784,7 @@ mod tests {
                 resolved: mdns_service_resolved,
                 timedout: mdns_service_timedout,
             };
-            let hostname = Uuid::new_v4().to_hyphenated().to_string() + ".local";
+            let hostname = Uuid::new_v4().as_hyphenated().to_string() + ".local";
             service.query_hostname(callback, &hostname);
             hostnames.insert(hostname);
         }
@@ -792,7 +802,7 @@ mod tests {
 
         service.start(vec![addr]).unwrap();
 
-        let hostname = Uuid::new_v4().to_hyphenated().to_string() + ".local";
+        let hostname = Uuid::new_v4().as_hyphenated().to_string() + ".local";
         let callback = Callback {
             data: 0 as *const c_void,
             resolved: mdns_service_resolved,
@@ -816,7 +826,7 @@ mod tests {
     fn multiple_queries_in_a_single_packet() {
         let mut hostnames: Vec<String> = Vec::new();
         for _ in 0..100 {
-            let hostname = Uuid::new_v4().to_hyphenated().to_string() + ".local";
+            let hostname = Uuid::new_v4().as_hyphenated().to_string() + ".local";
             hostnames.push(hostname);
         }
 

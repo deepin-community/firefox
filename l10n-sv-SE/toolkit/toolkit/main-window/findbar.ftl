@@ -36,3 +36,41 @@ findbar-entire-word =
     .label = Hela ord
     .accesskey = H
     .tooltiptext = Sök endast hela ord
+
+findbar-not-found = Frasen hittades inte
+
+findbar-wrapped-to-top = Kommit till slutet på sidan, börjat om
+findbar-wrapped-to-bottom = Kommit till början på sidan, börjat om
+
+findbar-normal-find =
+    .placeholder = Sök på sidan
+findbar-fast-find =
+    .placeholder = Snabbsök
+findbar-fast-find-links =
+    .placeholder = Snabbsök (endast länkar)
+
+findbar-case-sensitive-status =
+    .value = (Skiftlägeskänslig)
+findbar-match-diacritics-status =
+    .value = (Matchande diakritik)
+findbar-entire-word-status =
+    .value = (Endast hela ord)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $current } matchning av { $total }
+           *[other] { $current } matchning av { $total }
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Mer än { $limit } matchning
+           *[other] Mer än { $limit } matchningar
+        }

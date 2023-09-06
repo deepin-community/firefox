@@ -1,7 +1,7 @@
 
 /* pngwutil.c - utilities to write a PNG file
  *
- * Copyright (c) 2018 Cosmin Truta
+ * Copyright (c) 2018-2022 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -336,8 +336,10 @@ png_deflate_claim(png_structrp png_ptr, png_uint_32 owner,
          if ((png_ptr->flags & PNG_FLAG_ZLIB_CUSTOM_STRATEGY) != 0)
             strategy = png_ptr->zlib_strategy;
 
+#ifdef PNG_WRITE_FILTER_SUPPORTED
          else if (png_ptr->do_filter != PNG_FILTER_NONE)
             strategy = PNG_Z_DEFAULT_STRATEGY;
+#endif
 
          else
             strategy = PNG_Z_DEFAULT_NOFILTER_STRATEGY;
@@ -828,12 +830,16 @@ png_write_IHDR(png_structrp png_ptr, png_uint_32 width, png_uint_32 height,
 
    if ((png_ptr->do_filter) == PNG_NO_FILTERS)
    {
+#ifdef PNG_WRITE_FILTER_SUPPORTED
       if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE ||
           png_ptr->bit_depth < 8)
          png_ptr->do_filter = PNG_FILTER_NONE;
 
       else
          png_ptr->do_filter = PNG_ALL_FILTERS;
+#else
+      png_ptr->do_filter = PNG_FILTER_NONE;
+#endif
    }
 
    png_ptr->mode = PNG_HAVE_IHDR; /* not READY_FOR_ZTXT */
@@ -1772,7 +1778,7 @@ png_write_pCAL(png_structrp png_ptr, png_charp purpose, png_int_32 X0,
 {
    png_uint_32 purpose_len;
    size_t units_len, total_len;
-   png_size_tp params_len;
+   size_t *params_len;
    png_byte buf[10];
    png_byte new_purpose[80];
    int i;
@@ -1794,7 +1800,7 @@ png_write_pCAL(png_structrp png_ptr, png_charp purpose, png_int_32 X0,
    png_debug1(3, "pCAL units length = %d", (int)units_len);
    total_len = purpose_len + units_len + 10;
 
-   params_len = (png_size_tp)png_malloc(png_ptr,
+   params_len = (size_t *)png_malloc(png_ptr,
        (png_alloc_size_t)((png_alloc_size_t)nparams * (sizeof (size_t))));
 
    /* Find the length of each parameter, making sure we don't count the

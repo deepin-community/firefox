@@ -6,6 +6,9 @@ screenshot-toolbarbutton =
     .label = Agdil
     .tooltiptext = Tuṭṭfa n ugdil
 
+screenshot-shortcut =
+    .key = S
+
 screenshots-instructions = Zuγer sakin sit γef af usebter akken ad tferneḍ tamnaṭ. Senned γef ESC akken ad tesfesxeḍ.
 screenshots-cancel-button = Sefsex
 screenshots-save-visible-button = Sekles ayen ibanen
@@ -14,6 +17,14 @@ screenshots-download-button = Sader
 screenshots-download-button-tooltip = Sader tuṭṭfa n ugdil
 screenshots-copy-button = Nγel
 screenshots-copy-button-tooltip = Nɣel tuṭṭfa ɣef afus
+screenshots-download-button-title =
+    .title = Sader-d tuṭṭfa n ugdil
+screenshots-copy-button-title =
+    .title = Nɣel tuṭṭfa   ɣef afus
+screenshots-cancel-button-title =
+    .title = Sefsex
+screenshots-retry-button-title =
+    .title = Ales aneεruḍ n unegzum
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -44,3 +55,5 @@ screenshots-private-window-error-details = Suref-aɣ ɣef aya. Aqlaɣ nxeddem ɣ
 
 screenshots-generic-error-title = Ihuh! { -screenshots-brand-name } ur iteddu ara.
 screenshots-generic-error-details = Ur neẓri ara acu yeḍran. Ɛreḍ tikelt-nniḍen neɣ ṭṭef agdil n usebter-nniḍen?
+
+screenshots-too-large-error-title = Tuṭṭfiwin-ik•im n ugdil ttwagezment acku hrawit nezzeh

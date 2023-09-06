@@ -1,12 +1,13 @@
-use syn::{self, Field, Ident, Meta};
+use syn::spanned::Spanned;
+use syn::{Field, Ident, Meta};
 
-use options::{Core, DefaultExpression, ForwardAttrs, ParseAttribute, ParseData};
-use util::PathList;
-use {FromMeta, Result};
+use crate::options::{Core, DefaultExpression, ForwardAttrs, ParseAttribute, ParseData};
+use crate::util::PathList;
+use crate::{FromMeta, Result};
 
 /// Reusable base for `FromDeriveInput`, `FromVariant`, `FromField`, and other top-level
 /// `From*` traits.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct OuterFrom {
     /// The field on the target struct which should receive the type identifier, if any.
     pub ident: Option<Ident>,
@@ -28,15 +29,15 @@ pub struct OuterFrom {
 }
 
 impl OuterFrom {
-    pub fn start(di: &syn::DeriveInput) -> Self {
-        OuterFrom {
-            container: Core::start(di),
+    pub fn start(di: &syn::DeriveInput) -> Result<Self> {
+        Ok(OuterFrom {
+            container: Core::start(di)?,
             attrs: Default::default(),
             ident: Default::default(),
             attr_names: Default::default(),
             forward_attrs: Default::default(),
             from_ident: Default::default(),
-        }
+        })
     }
 }
 
@@ -50,10 +51,14 @@ impl ParseAttribute for OuterFrom {
         } else if path.is_ident("from_ident") {
             // HACK: Declaring that a default is present will cause fields to
             // generate correct code, but control flow isn't that obvious.
-            self.container.default = Some(DefaultExpression::Trait);
+            self.container.default = Some(DefaultExpression::Trait {
+                // Use the span of the `from_ident` keyword so that errors in generated code
+                // caused by this will point back to the correct location.
+                span: path.span(),
+            });
             self.from_ident = true;
         } else {
-            return self.container.parse_nested(mi)
+            return self.container.parse_nested(mi);
         }
         Ok(())
     }
@@ -61,13 +66,7 @@ impl ParseAttribute for OuterFrom {
 
 impl ParseData for OuterFrom {
     fn parse_field(&mut self, field: &Field) -> Result<()> {
-        match field
-            .ident
-            .as_ref()
-            .map(|v| v.to_string())
-            .as_ref()
-            .map(|v| v.as_str())
-        {
+        match field.ident.as_ref().map(|v| v.to_string()).as_deref() {
             Some("ident") => {
                 self.ident = field.ident.clone();
                 Ok(())

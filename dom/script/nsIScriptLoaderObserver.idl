@@ -31,7 +31,7 @@ interface nsIScriptLoaderObserver : nsISupports {
                        in nsIScriptElement aElement,
                        in boolean aIsInlineClassicScript,
                        in nsIURI aURI,
-                       in int32_t aLineNo);
+                       in uint32_t aLineNo);
 
   /**
    * The script has been evaluated.
@@ -41,6 +41,7 @@ interface nsIScriptLoaderObserver : nsISupports {
    * @param aElement The element being processed.
    * @param aIsInline Is this an inline script or externally loaded?
    */
+  [can_run_script]
   void scriptEvaluated(in nsresult aResult,
                        in nsIScriptElement aElement,
                        in boolean aIsInline);

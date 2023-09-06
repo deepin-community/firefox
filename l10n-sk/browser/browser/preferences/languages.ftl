@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-webpage-languages-window =
+webpage-languages-window2 =
     .title = Jazyk webových stránok
-    .style = width: 40em
+    .style = min-width: 40em
 
 languages-close-key =
     .key = w
@@ -20,11 +20,11 @@ languages-customize-moveup =
 
 languages-customize-movedown =
     .label = Posunúť nadol
-    .accesskey = d
+    .accesskey = n
 
 languages-customize-remove =
     .label = Odstrániť
-    .accesskey = O
+    .accesskey = d
 
 languages-customize-select-language =
     .placeholder = Pridať jazyk…
@@ -49,16 +49,16 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
-browser-languages-window =
-    .title = Jazyk aplikácie { -brand-short-name }
-    .style = width: 40em
+browser-languages-window2 =
+    .title = Jazyk prehliadača { -brand-short-name }
+    .style = min-width: 40em
 
 browser-languages-description = { -brand-short-name } zobrazí používateľské rozhranie v prvom vybranom jazyku. Ostatné použije podľa potreby a to vo vybranom poradí.
 
-browser-languages-search = Nájsť ďalšie jazyky…
+browser-languages-search = Vyhľadať ďalšie jazyky…
 
 browser-languages-searching =
-    .label = Hľadanie jazykov…
+    .label = Vyhľadávajú sa jazyky…
 
 browser-languages-downloading =
     .label = Sťahuje sa…

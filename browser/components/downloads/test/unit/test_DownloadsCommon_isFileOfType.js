@@ -24,15 +24,12 @@ const TESTFILES = {
   "download-test-missing.pdf": null,
 };
 let gPublicList;
-
 add_task(async function test_setup() {
-  Assert.ok(
-    OS.Constants.Path.profileDir,
-    "profileDir: " + OS.Constants.Path.profileDir
-  );
+  let profileDir = Services.dirsvc.get("ProfD", Ci.nsIFile).path;
+  Assert.ok(profileDir, "profileDir: " + profileDir);
   for (let [filename, contents] of Object.entries(TESTFILES)) {
     TESTFILES[filename] = await createDownloadedFile(
-      OS.Path.join(gDownloadDir, filename),
+      PathUtils.join(gDownloadDir, filename),
       contents
     );
   }
@@ -63,8 +60,7 @@ const TESTCASES = [
     expected: false,
   },
   {
-    name:
-      "download succeeded, file exists, unknown extension but contentType matches",
+    name: "download succeeded, file exists, unknown extension but contentType matches",
     typeArg: "application/pdf",
     downloadProps: {
       target: "download-test.xxunknown",
@@ -73,8 +69,7 @@ const TESTCASES = [
     expected: true,
   },
   {
-    name:
-      "download succeeded, file exists, contentType is generic and file extension maps to matching mime-type",
+    name: "download succeeded, file exists, contentType is generic and file extension maps to matching mime-type",
     typeArg: "application/pdf",
     downloadProps: {
       target: "download-test.pdf",
@@ -102,8 +97,7 @@ const TESTCASES = [
     expected: false,
   },
   {
-    name:
-      "contentType is missing and file extension doesnt map to a known mime-type",
+    name: "contentType is missing and file extension doesnt map to a known mime-type",
     typeArg: "application/pdf",
     downloadProps: {
       contentType: undefined,

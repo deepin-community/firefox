@@ -2,18 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-colors-window =
+colors-dialog2 =
     .title = 색상
-    .style =
-        { PLATFORM() ->
-            [macos] width: 41em
-           *[other] width: 38em
-        }
+    .style = min-width: 41em;
 
 colors-close-key =
     .key = w
 
-colors-page-override = 위에서 선택한 색상으로 페이지에서 지정한 색상을 덮어씀
+colors-page-override = 위에서 선택한 색상으로 페이지에서 지정한 색상을 재정의
     .accesskey = O
 
 colors-page-override-option-always =

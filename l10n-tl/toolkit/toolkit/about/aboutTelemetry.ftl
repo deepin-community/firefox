@@ -34,7 +34,6 @@ about-telemetry-events-section = Mga Kaganapan
 about-telemetry-simple-measurements-section = Simpleng Mga Sukat
 about-telemetry-slow-sql-section = Slow SQL Statements
 about-telemetry-addon-details-section = Detalye ng Add-on
-about-telemetry-captured-stacks-section = Captured Stacks
 about-telemetry-late-writes-section = Huling Sulat
 about-telemetry-raw-payload-section = Raw Payload
 about-telemetry-raw = Raw JSON
@@ -122,10 +121,6 @@ about-telemetry-keys-header = Property
 about-telemetry-names-header = Pangalan
 about-telemetry-values-header = Halaga
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (capture count: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Huli na Sinulat ${ $lateWriteCount }
 about-telemetry-stack-title = Stack
@@ -136,12 +131,6 @@ about-telemetry-category-header = categorya
 about-telemetry-method-header = paraan
 about-telemetry-object-header = bagay
 about-telemetry-extra-header = dagdag
-about-telemetry-origin-section = Origin Telemetry
-about-telemetry-origin-origin = pinanggalingan
-about-telemetry-origin-count = bilang
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = Ang <a data-l10n-name="origin-doc-link">Firefox Origin Telemetry</a> ay nag-e-encode ng data bago ipadala para makapagbilang ang { $telemetryServerOwner }, pero hindi malalaman kung may kahit anong { -brand-product-name } na dumagdag sa bilang na iyon. (<a data-l10n-name="prio-blog-link">alamin</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = { $process } process

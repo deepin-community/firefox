@@ -96,44 +96,6 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
-main-context-menu-bookmark-add =
-    .aria-label = यह पृष्ठ बुकमार्कित करें
-    .accesskey = m
-    .tooltiptext = यह पृष्ठ बुकमार्कित करें
-
-# This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
-# so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = पेज बुकमार्क करें
-    .accesskey = m
-
-# This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-add-mac,
-# so should probably have the same access key if possible.
-main-context-menu-bookmark-edit-mac =
-    .label = बुकमार्क संपादित करें
-    .accesskey = m
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = यह पृष्ठ बुकमार्कित करें
-    .accesskey = m
-    .tooltiptext = यह पृष्ठ बुकमार्कित करें ({ $shortcut })
-
-main-context-menu-bookmark-change =
-    .aria-label = यह बुकमार्क संपादित करें
-    .accesskey = m
-    .tooltiptext = यह बुकमार्क संपादित करें
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = यह बुकमार्क संपादित करें
-    .accesskey = m
-    .tooltiptext = यह बुकमार्क संपादित करें ({ $shortcut })
-
 main-context-menu-open-link =
     .label = कड़ी खोलें
     .accesskey = O
@@ -154,10 +116,6 @@ main-context-menu-open-link-new-private-window =
     .label = नए निजी विंडो में कड़ी खोलें
     .accesskey = P
 
-main-context-menu-bookmark-link =
-    .label = बुकमार्क लिंक
-    .accesskey = B
-
 main-context-menu-save-link =
     .label = कड़ी ऐसे सहेजें…
     .accesskey = k
@@ -165,11 +123,6 @@ main-context-menu-save-link =
 main-context-menu-save-link-to-pocket =
     .label = { -pocket-brand-name } में लिंक को सहेजें
     .accesskey = o
-
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
 
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
@@ -206,6 +159,10 @@ main-context-menu-media-mute =
 main-context-menu-media-unmute =
     .label = मौन समाप्त करें
     .accesskey = m
+
+main-context-menu-media-play-speed-2 =
+    .label = गति
+    .accesskey = d
 
 main-context-menu-media-play-speed-slow-2 =
     .label = 0.5×
@@ -255,6 +212,14 @@ main-context-menu-image-copy =
     .label = छवि की नकल लें
     .accesskey = y
 
+main-context-menu-video-copy-link =
+    .label = वीडियो लिंक कॉपी करें
+    .accesskey = o
+
+main-context-menu-audio-copy-link =
+    .label = ऑडियो लिंक कॉपी करें
+    .accesskey = o
+
 main-context-menu-image-save-as =
     .label = छवि ऐसे सहेजें…
     .accesskey = v
@@ -286,14 +251,6 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = ऑडियो ईमेल करें …
     .accesskey = a
-
-main-context-menu-plugin-play =
-    .label = इस प्लगिन सक्रिय करें
-    .accesskey = c
-
-main-context-menu-plugin-hide =
-    .label = इस प्लगइन को छिपाएँ
-    .accesskey = H
 
 main-context-menu-save-to-pocket =
     .label = { -pocket-brand-name } में पृष्ठ को सहेजें
@@ -338,10 +295,6 @@ main-context-menu-frame-reload =
     .label = ढाँचा फिर लोड करें
     .accesskey = R
 
-main-context-menu-frame-bookmark =
-    .label = यह फ्रेम बुकमार्कित करें
-    .accesskey = m
-
 main-context-menu-frame-save-as =
     .label = फ्रेम ऐसे सहेजें…
     .accesskey = F
@@ -381,6 +334,10 @@ main-context-menu-bidi-switch-text =
 main-context-menu-bidi-switch-page =
     .label = पृष्ठ दिशा बदलें
     .accesskey = D
+
+main-context-menu-inspect =
+    .label = जाँचें
+    .accesskey = Q
 
 main-context-menu-inspect-a11y-properties =
     .label = अभिगम्यता गुणों का निरीक्षण करें

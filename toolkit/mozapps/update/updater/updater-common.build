@@ -4,6 +4,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+link_with_nss = CONFIG["MOZ_USE_NSS_FOR_MAR"] or (
+    CONFIG["OS_ARCH"] == "Linux" and CONFIG["MOZ_VERIFY_MAR_SIGNATURE"]
+)
+if link_with_nss:
+    DEFINES["MAR_NSS"] = True
+
 srcs = [
     "archivereader.cpp",
     "updater.cpp",
@@ -36,9 +42,17 @@ if CONFIG["OS_ARCH"] == "WINNT":
         "ws2_32",
         "shell32",
         "shlwapi",
-        "crypt32",
-        "advapi32",
+        "gdi32",
+        "user32",
+        "userenv",
+        "uuid",
     ]
+
+    if not link_with_nss:
+        OS_LIBS += [
+            "crypt32",
+            "advapi32",
+        ]
 
 USE_LIBS += [
     "bspatch",
@@ -46,6 +60,13 @@ USE_LIBS += [
     "updatecommon",
     "xz-embedded",
 ]
+
+if link_with_nss:
+    USE_LIBS += [
+        "nspr",
+        "nss",
+        "signmar",
+    ]
 
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
     have_progressui = 1
@@ -61,9 +82,14 @@ if CONFIG["MOZ_WIDGET_TOOLKIT"] == "cocoa":
     ]
     OS_LIBS += [
         "-framework Cocoa",
-        "-framework Security",
         "-framework SystemConfiguration",
     ]
+    if link_with_nss:
+        LDFLAGS += ["-Wl,-rpath,@executable_path/../../../"]
+    else:
+        OS_LIBS += [
+            "-framework Security",
+        ]
     UNIFIED_SOURCES += [
         "/toolkit/xre/updaterfileutils_osx.mm",
     ]
@@ -88,7 +114,7 @@ if CONFIG["MOZ_TSAN"]:
 DEFINES["SPRINTF_H_USES_VSNPRINTF"] = True
 DEFINES["NS_NO_XPCOM"] = True
 DisableStlWrapping()
-for var in ("MAR_CHANNEL_ID", "MOZ_APP_VERSION", "MOZ_BACKGROUNDTASKS"):
+for var in ("MAR_CHANNEL_ID", "MOZ_APP_VERSION"):
     DEFINES[var] = '"%s"' % CONFIG[var]
 
 LOCAL_INCLUDES += [
@@ -109,8 +135,8 @@ elif CONFIG["OS_ARCH"] == "WINNT":
     WIN32_EXE_LDFLAGS += ["-municode"]
 
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
-    CXXFLAGS += CONFIG["TK_CFLAGS"]
-    OS_LIBS += CONFIG["TK_LIBS"]
+    CXXFLAGS += CONFIG["MOZ_GTK3_CFLAGS"]
+    OS_LIBS += CONFIG["MOZ_GTK3_LIBS"]
 
 if CONFIG["CC_TYPE"] == "gcc":
     CXXFLAGS += ["-Wno-format-truncation"]

@@ -4,7 +4,6 @@
 
 page-title = Feilsøking
 page-subtitle = Denne siden inneholder teknisk informasjon som kan være nyttig når du forsøker å løse et problem. Besøk også <a data-l10n-name="support-link">brukerstøttenettstedet</a> for å få svar på ofte stilte spørsmål om { -brand-short-name }.
-
 crashes-title = Krasjrapporter
 crashes-id = Rapport-ID
 crashes-send-date = Sendt
@@ -16,6 +15,10 @@ support-addons-type = Type
 support-addons-enabled = Påslått
 support-addons-version = Versjon
 support-addons-id = ID
+legacy-user-stylesheets-title = Eldre bruker-stilsett
+legacy-user-stylesheets-enabled = Aktiv
+legacy-user-stylesheets-stylesheet-types = Stilsett
+legacy-user-stylesheets-no-stylesheets-found = Ingen stilsett funnet
 security-software-title = Sikkerhetsprogramvare
 security-software-type = Type
 security-software-name = Navn
@@ -73,6 +76,13 @@ app-basics-location-service-key-google = Google Location Service-nøkkel
 app-basics-safebrowsing-key-google = Google Safebrowsing-nøkkel
 app-basics-key-mozilla = Mozilla Location Service-nøkkel
 app-basics-safe-mode = Sikker modus
+app-basics-memory-size = Minnestørrelse (RAM)
+app-basics-disk-available = Tilgjengelig diskplass
+app-basics-pointing-devices = Peke-enheter
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Vis i Finder
@@ -102,11 +112,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Beslutningslogg
 graphics-crash-guards-title = Krasjvern avslåtte funksjoner
 graphics-workarounds-title = Midlertidige løsninger
+graphics-device-pixel-ratios = Pikselforhold for vinduet
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Protokoll for vindusbehandler
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Skrivebordsmiljø
 place-database-title = Plasser-database
+place-database-stats = Statistikk
+place-database-stats-show = Vis statistikk
+place-database-stats-hide = Skjul statistikk
+place-database-stats-entity = Entitet
+place-database-stats-count = Antall
+place-database-stats-size-kib = Størrelse (KiB)
+place-database-stats-size-perc = Størrelse (%)
+place-database-stats-efficiency-perc = Effektivitet (%)
+place-database-stats-sequentiality-perc = Sekvensitet (%)
 place-database-integrity = Integritet
 place-database-verify-integrity = Verifiser integritet
 a11y-title = Tilgjengelighet
@@ -153,8 +173,18 @@ media-device-channels = Kanaler
 media-device-rate = Hastighet
 media-device-latency = Forsinkelse
 media-capabilities-title = Mediefunksjoner
+media-codec-support-info = Kodekstøtteinformasjon
 # List all the entries of the database.
 media-capabilities-enumerate = Telle opp databasen
+
+## Codec support table
+
+media-codec-support-sw-decoding = Programvaredekoding
+media-codec-support-hw-decoding = Maskinvaredekoding
+media-codec-support-codec-name = Kodeknavn
+media-codec-support-supported = Støttet
+media-codec-support-unsupported = Ikke støttet
+media-codec-support-error = Kodek-støtteinformasjon utilgjengelig. Prøv igjen etter å ha spilt av en mediefil.
 
 ##
 
@@ -190,7 +220,6 @@ report-crash-for-days =
         [one] Krasjrapporter den siste { $days } dag
        *[other] Krasjrapporter de siste { $days } dagene
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -198,7 +227,6 @@ crashes-time-minutes =
         [one] { $minutes } minutt siden
        *[other] { $minutes } minutter siden
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -206,7 +234,6 @@ crashes-time-hours =
         [one] { $hours } time siden
        *[other] { $hours } timer siden
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -214,7 +241,6 @@ crashes-time-days =
         [one] { $days } dag siden
        *[other] { $days } dager siden
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -222,7 +248,6 @@ pending-reports =
         [one] Alle krasjrapporter (inkludert { $reports } krasjrapport som venter behandling i tidsrommet)
        *[other] Alle krasjrapporter (inkludert { $reports } krasjrapport som venter behandling i tidsrommet)
     }
-
 raw-data-copied = Rådata kopiert til utklippstavlen
 text-copied = Tekst kopiert til utklippstavlen
 
@@ -235,11 +260,9 @@ blocked-mismatched-version = Blokkert for din versjon av grafikkdriver, ubalanse
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = Blokkert av grafikkdriveren. Prøv å oppdatere grafikkdriveren til versjon { $driverVersion } eller nyere.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType-parametere
-
 compositing = Kompositt
 hardware-h264 = Hardware H264 dekoding
 main-thread-no-omtc = hovedtråd, ingen OMTC
@@ -254,7 +277,6 @@ virtual-monitor-disp = Virtuell bildeskjermvisning
 
 found = Funnet
 missing = Mangler
-
 gpu-process-pid = GPUProcessPid
 gpu-process = GPUProcess
 gpu-description = Beskrivelse
@@ -277,19 +299,17 @@ webgl2-renderer = WebGL2-renderer
 webgl2-version = WebGL 2 driverversjon
 webgl2-driver-extensions = WebGL 2 driverutvidelse
 webgl2-extensions = WebGL 2 utvidelse
-
+webgpu-default-adapter = WebGPU standardadapter
+webgpu-fallback-adapter = WebGPU reserveadapter
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = Blokkert på grunn av kjente problemer: <a data-l10n-name="bug-link">bug { $bugNumber }</a>
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = Svartelistet; feilkode { $failureCode }
-
 d3d11layers-crash-guard = D3D11-kompositør
 glcontext-crash-guard = OpenGL
 wmfvpxvideo-crash-guard = WMF VPX-videodekoder
-
 reset-on-next-restart = Tilbakestill ved neste omstart
 gpu-process-kill-button = Avslutt GPU-prosess
 gpu-device-reset = Enhetstilbakestilling
@@ -299,10 +319,8 @@ content-uses-tiling = Bruker Tiling (innhold)
 off-main-thread-paint-enabled = Opptegning utenfor hovedtråd aktivert
 off-main-thread-paint-worker-count = Opptegning utenfor hovedtråd workerantall
 target-frame-rate = Mål for framerate
-
 min-lib-versions = Forventet minimumsversjon
 loaded-lib-versions = Versjon i bruk
-
 has-seccomp-bpf = Seccomp-BPF (systemkall-filtrering)
 has-seccomp-tsync = Seccomp trådsynkronisering
 has-user-namespaces = Brukernavnerom
@@ -312,22 +330,20 @@ can-sandbox-media = Sandkasse for medietillegg
 content-sandbox-level = Nivå for sandkasse for innholdsprosesser
 effective-content-sandbox-level = Effektiv sandbox-nivå for innholdsprosess
 content-win32k-lockdown-state = Win32k-låsestatus for innholdsprosesser
+support-sandbox-gpu-level = Nivå for sandkasse for GPU-prosesser
 sandbox-proc-type-content = innhold
 sandbox-proc-type-file = filinnhold
 sandbox-proc-type-media-plugin = programtillegg for medier
 sandbox-proc-type-data-decoder = datadekoder
-
 startup-cache-title = Oppstartshurtiglager
 startup-cache-disk-cache-path = Sti for diskhurtiglager
 startup-cache-ignore-disk-cache = Ignorer diskhurtiglager
 startup-cache-found-disk-cache-on-init = Fant diskhurtiglager på Init
 startup-cache-wrote-to-disk-cache = Skrev til diskhurtiglager
-
 launcher-process-status-0 = Aktivert
 launcher-process-status-1 = Deaktivert på grunn av feil
 launcher-process-status-2 = Tvunget deaktivert
 launcher-process-status-unknown = Ukjent status
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
@@ -340,14 +356,13 @@ fission-status-experiment-control = Avslått av eksperiment
 fission-status-experiment-treatment = Påslått av eksperiment
 fission-status-disabled-by-e10s-env = Avslått av miljøet
 fission-status-enabled-by-env = Påslått av miljøet
-fission-status-disabled-by-safe-mode = Avslått av sikker modus
+fission-status-disabled-by-env = Avslått av miljøet
 fission-status-enabled-by-default = Påslått som standard
 fission-status-disabled-by-default = Avslått som standard
 fission-status-enabled-by-user-pref = Påslått av bruker
 fission-status-disabled-by-user-pref = Avslått av bruker
 fission-status-disabled-by-e10s-other = E10s avslått
 fission-status-enabled-by-rollout = Aktivert av trinnvis utrulling
-
 async-pan-zoom = Asynkron pan/zoom
 apz-none = ingen
 wheel-enabled = hjulinput påslått
@@ -384,7 +399,13 @@ support-remote-experiments-title = Eksterne eksperimenter
 support-remote-experiments-name = Navn
 support-remote-experiments-branch = Eksperimentgren
 support-remote-experiments-see-about-studies = Se <a data-l10n-name="support-about-studies-link">about:studies</a> for mer informasjon, inkludert hvordan du slår av individuelle eksperimenter eller hvordan du hindrer { -brand-short-name } fra å kjøre denne typen eksperiment i fremtiden.
-
 support-remote-features-title = Eksterne funksjoner
 support-remote-features-name = Navn
 support-remote-features-status = Status
+
+## Pointing devices
+
+pointing-device-mouse = Mus
+pointing-device-touchscreen = Trykkskjerm
+pointing-device-pen-digitizer = Digitalpenn
+pointing-device-none = Ingen peke-enheter

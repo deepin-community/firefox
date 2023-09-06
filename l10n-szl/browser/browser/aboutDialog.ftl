@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = Z
 
 update-checkingForUpdates = Szukanie aktualizacyji…
-update-downloading = <img data-l10n-name="icon"/>Pobiyranie aktualizacyje — <label data-l10n-name="download-status"/>
-update-downloading-message = Aktualizacyjo je pobiyrano — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Pobiyranie aktualizacyje — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Aktualizacyjo je pobiyrano — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Przidowanie aktualizacyje…
 
 update-failed = Niy szło zaktualizować. <label data-l10n-name="failed-link">Pobier nojnowszo wersyjo</label>
@@ -27,13 +34,21 @@ update-adminDisabled = Aktualizacyje sōm zakozane ôd administratora systymu
 update-noUpdatesFound = { -brand-short-name } je aktualny
 update-otherInstanceHandlingUpdates = { -brand-short-name } je aktualizowany ôd inszyj instancyje
 
-update-manual = Aktualizacyje dostympne na <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Aktualizacyje dostympne na <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Aktualizacyje dostympne na <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Niy idzie robić dalszych aktualizacyji na tym systymie. <label data-l10n-name="unsupported-link">Wiyncyj</label>
 
 update-restarting = Resztartowanie…
 
-channel-description = Używosz teroz kanału aktualizacyji <label data-l10n-name="current-channel"></label>.
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Używosz teroz kanału aktualizacyji <label data-l10n-name="current-channel">{ $channel }</label>.
 
 warningDesc-version = { -brand-short-name } to wersyjo eksperymyntalno i może niy być stabilno.
 

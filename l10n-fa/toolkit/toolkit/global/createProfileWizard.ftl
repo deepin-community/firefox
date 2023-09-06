@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = راهنمای گام‌به‌گام ایجاد مجموعه تنظیمات
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] مقدمه
-       *[other] به { create-profile-window.title } خوش آمدید
+       *[other] به { create-profile-window2.title } خوش آمدید
     }
 
 profile-creation-explanation-1 = { -brand-short-name } اطلاعات مربوط به تنظبمات و ترجیحات شما را در یک مجوعه تنظیمات نگه‌داری می‌کند.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] نتیجه
-       *[other] در حال تکمیل { create-profile-window.title }
+       *[other] در حال تکمیل { create-profile-window2.title }
     }
 
 profile-creation-intro = اگر چندین مجموعه تنظیمات ایجاد کنید، می‌توانید آن‌ها را توسط نام از یکدیگر تشخیص دهید. می‌توانید از اسم موجود در اینجا و یا اسم دلخواه خود استفاده کنید.

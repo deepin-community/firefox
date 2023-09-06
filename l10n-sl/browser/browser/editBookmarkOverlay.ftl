@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Skrij
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Prikaži vse mape zaznamkov
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Skrij
+
 bookmark-overlay-new-folder-button =
     .label = Nova mapa
     .accesskey = o
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Prikaži vse oznake
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Skrij
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Prikaži vse oznake
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Skrij
 
 bookmark-overlay-keyword-2 =
     .value = Ključna beseda

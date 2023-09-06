@@ -8,15 +8,19 @@ styleeditor-new-button =
 styleeditor-import-button =
     .tooltiptext = Importar e adjunger un nove folio de stilo al documento
     .accesskey = I
+styleeditor-filter-input =
+    .placeholder = Filtrar folios de stilo
 styleeditor-visibility-toggle =
     .tooltiptext = Monstrar/celar le folio de stilo
     .accesskey = S
+styleeditor-visibility-toggle-system =
+    .tooltiptext = Le folios de stilo de systema non pote esser disactivate
 styleeditor-save-button = Salvar
     .tooltiptext = Salvar iste folio de stilo in un file
     .accesskey = S
 styleeditor-options-button =
     .tooltiptext = Optiones del editor de stilos
-styleeditor-media-rules = Regulas @media
+styleeditor-at-rules = At-rules
 styleeditor-editor-textbox =
     .data-placeholder = Scribe ci CSS.
 styleeditor-no-stylesheet = Iste pagina non ha folio de stilos.
@@ -25,3 +29,23 @@ styleeditor-open-link-new-tab =
     .label = Aperir le ligamine in un nove scheda
 styleeditor-copy-url =
     .label = Copiar le URL
+styleeditor-find =
+    .label = Cercar
+    .accesskey = r
+styleeditor-find-again =
+    .label = Cercar le sequente
+    .accesskey = s
+styleeditor-go-to-line =
+    .label = Saltar al linea…
+    .accesskey = S
+# Label displayed when searching a term that is not found in any stylesheet path
+styleeditor-stylesheet-all-filtered = Nulle folios de stilo concordante trovate.
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } regula.
+       *[other] { $ruleCount } regulas.
+    }

@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Profil ustasini yaratish
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Kirish
-       *[other] { create-profile-window.title }ga xush kelibsiz
+       *[other] { create-profile-window2.title }ga xush kelibsiz
     }
 
 profile-creation-explanation-1 = { -brand-short-name } barcha moslamalar va parametrlar ma`lumotlarini shaxsiy profilingizga saqlaydi.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Xotima
-       *[other] { create-profile-window.title } tugadi
+       *[other] { create-profile-window2.title } tugadi
     }
 
 profile-creation-intro = Agar bir nechta profil yaratmoqchi boʻlsangiz, ularga alohida profil nomlari qoʻyishingiz mumkin. Bu yerda keltirilgan nomlardan birini yoki oʻzingiz xohlagan nomdan foydalanishingiz mumkin.

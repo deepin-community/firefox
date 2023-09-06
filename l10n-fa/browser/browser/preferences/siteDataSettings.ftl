@@ -6,9 +6,9 @@
 ## Settings
 
 site-data-settings-window =
-    .title = مدیریت کوکی‌ها و اطلاعات پایگاه‌ها
+    .title = مدیریت کلوچک‌ها و داده‌های پایگاه
 
-site-data-settings-description = وب‌سایت‌های مقابل کوکی و اطلاعات پایگاه خود را بر روی رایانهٔ شما ذخیره می‌کنند. { -brand-short-name } اطلاعات مربوط به وب‌سایت‌ها را بطور همیشگی تا زمان حذف آنها توسط شما ذخیره می‌کند، و اطلاعات وب‌سایت‌هایی که از حافظهٔ غیر مداوم استفاده می‌کنند را فقط در صورت نیاز به فضا حذف می‌کند.
+site-data-settings-description = وبگاه‌های مقابل کلوچک‌ها و داده‌های پایگاه خود را بر روی رایانهٔ شما ذخیره می‌کنند. { -brand-short-name } اطلاعات مربوط به وبگاه‌ها را بطور همیشگی تا زمان حذف آن‌ها توسط شما ذخیره می‌کند، و اطلاعات وبگاه‌هایی که از حافظهٔ غیر مداوم استفاده می‌کنند را فقط در صورت نیاز به فضا حذف می‌کند.
 
 site-data-search-textbox =
     .placeholder = جستجوی وب‌سایت‌ها
@@ -17,7 +17,7 @@ site-data-search-textbox =
 site-data-column-host =
     .label = پایگاه اینترنتی
 site-data-column-cookies =
-    .label = کوکی‌ها
+    .label = کلوچک‌ها
 site-data-column-storage =
     .label = فضای ذخیره سازی
 site-data-column-last-used =
@@ -56,12 +56,11 @@ site-data-removing-dialog =
     .title = { site-data-removing-header }
     .buttonlabelaccept = حذف
 
-site-data-removing-header = در حال حذف کوکی‌ها و اطلاعات پایگاه‌ها
+site-data-removing-header = در حال حذف کلوچک‌ها و داده‌های پایگاه
 
-site-data-removing-desc = حذف کوکی‌ها و اطلاعات پایگاه‌ها ممکن است شما را از وب‌سایت‌ها خارج کند. آیا مطمئنید که می‌خواهید این کار را انجام دهید؟
-
+site-data-removing-desc = حذف کلوچک‌ها و داده‌های پایگاه ممکن است شما را از وبگاه‌ها خارج کند. آیا مطمئنید که می‌خواهید این کار را انجام دهید؟
 # Variables:
 #   $baseDomain (String) - The single domain for which data is being removed
-site-data-removing-single-desc = حذف کوکی‌ها و داده‌های سایت‌ها ممکن است شما را از وب‌سایت‌ها خارج کند. آیا مطئنید که می‌خواهید کوکی‌ها و داده‌های سایت <strong>{ $baseDomain }</strong> حذف کنید؟
+site-data-removing-single-desc = حذف کلوچک‌ها و داده‌های پایگاه ممکن است شما را از وبگاه‌ها خارج کند. آیا مطئنید که می‌خواهید کلوچک‌ها و داده‌های پایگاه <strong>{ $baseDomain }</strong> حذف کنید؟
 
-site-data-removing-table = کوکی‌ها و اطلاعات پایگاه‌ها برای وب‌سایت‌های مقابل حذف خواهند شد
+site-data-removing-table = کلوچک‌ها و داده‌های پایگاه برای وبگاه‌های مقابل حذف خواهند شد

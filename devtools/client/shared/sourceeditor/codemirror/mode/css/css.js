@@ -3,7 +3,7 @@
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
-    mod(require("devtools/client/shared/sourceeditor/codemirror/lib/codemirror"));
+    mod(require("resource://devtools/client/shared/sourceeditor/codemirror/lib/codemirror.js"));
   else if (typeof define == "function" && define.amd) // AMD
     define(["../../lib/codemirror"], mod);
   else // Plain browser env
@@ -622,7 +622,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
     "forwards", "from", "geometricPrecision", "georgian", "graytext", "grid", "groove",
     "gujarati", "gurmukhi", "hand", "hangul", "hangul-consonant", "hard-light", "hebrew",
     "help", "hidden", "hide", "higher", "highlight", "highlighttext",
-    "hiragana", "hiragana-iroha", "horizontal", "hsl", "hsla", "hue", "icon", "ignore",
+    "hiragana", "hiragana-iroha", "horizontal", "hsl", "hsla", "hue", "hwb", "icon", "ignore",
     "inactiveborder", "inactivecaption", "inactivecaptiontext", "infinite",
     "infobackground", "infotext", "inherit", "initial", "inline", "inline-axis",
     "inline-block", "inline-flex", "inline-grid", "inline-table", "inset", "inside", "intrinsic", "invert",

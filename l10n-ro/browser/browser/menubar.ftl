@@ -43,15 +43,6 @@ menu-quit =
 menu-quit-mac =
     .label = Ieși din { -brand-shorter-name }
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Ieși din { -brand-shorter-name }
-
 menu-about =
     .label = Despre { -brand-shorter-name }
     .accesskey = A
@@ -81,9 +72,6 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Deschide un fișier…
     .accesskey = O
-menu-file-close =
-    .label = Închide
-    .accesskey = C
 menu-file-close-window =
     .label = Închide fereastra
     .accesskey = d
@@ -96,9 +84,6 @@ menu-file-email-link =
 menu-file-print-setup =
     .label = Aranjare în pagină…
     .accesskey = u
-menu-file-print-preview =
-    .label = Previzualizează pentru tipărire
-    .accesskey = v
 menu-file-print =
     .label = Tipărește…
     .accesskey = P
@@ -168,7 +153,6 @@ menu-view-page-style-no-style =
 menu-view-page-basic-style =
     .label = Stilul de bază al paginii
     .accesskey = b
-
 menu-view-repair-text-encoding =
     .label = Repară codarea de text
     .accesskey = c
@@ -185,6 +169,17 @@ menu-view-exit-full-screen =
 menu-view-full-screen =
     .label = Ecran complet
     .accesskey = F
+
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Intră în modul de lectură
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Închide modul de lectură
+    .accesskey = R
 
 ##
 
@@ -215,9 +210,6 @@ menu-history-undo-menu =
 menu-history-undo-window-menu =
     .label = Ferestre închise recent
 
-menu-history-reopen-all-tabs = Redeschide toate filele
-menu-history-reopen-all-windows = Redeschise toate ferestrele
-
 ## Bookmarks Menu
 
 menu-bookmarks-menu =
@@ -225,10 +217,8 @@ menu-bookmarks-menu =
     .accesskey = B
 menu-bookmarks-manage =
     .label = Gestionează marcajele
-menu-bookmark-current-tab =
-    .label = Marchează fila actuală
-menu-bookmark-edit =
-    .label = Editează acest marcaj
+menu-bookmark-tab =
+    .label = Marchează fila actuală…
 menu-bookmarks-all-tabs =
     .label = Marchează toate filele…
 menu-bookmarks-toolbar =
@@ -313,8 +303,8 @@ menu-help-more-troubleshooting-info =
     .accesskey = T
 menu-help-report-site-issue =
     .label = Raportează problemă cu site-ul…
-menu-help-feedback-page =
-    .label = Trimite feedback…
+menu-help-share-ideas =
+    .label = Împărtășește idei și feedbackuri…
     .accesskey = S
 menu-help-enter-troubleshoot-mode2 =
     .label = Mod de depanare…
@@ -322,6 +312,9 @@ menu-help-enter-troubleshoot-mode2 =
 menu-help-exit-troubleshoot-mode =
     .label = Oprește modul de depanare
     .accesskey = M
+menu-help-switch-device =
+    .label = Comutarea pe un dispozitiv nou
+    .accesskey = N
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

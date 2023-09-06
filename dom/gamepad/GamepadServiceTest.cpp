@@ -17,8 +17,6 @@
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/PBackgroundChild.h"
 
-#include "mozilla/Unused.h"
-
 namespace mozilla::dom {
 
 /*
@@ -27,6 +25,12 @@ namespace mozilla::dom {
  * Mochitests that add and remove fake gamepads, avoiding the platform-specific
  * backends.
  */
+
+constexpr uint32_t kMaxButtons = 20;
+constexpr uint32_t kMaxAxes = 10;
+constexpr uint32_t kMaxHaptics = 2;
+constexpr uint32_t kMaxLightIndicator = 2;
+constexpr uint32_t kMaxTouchEvents = 4;
 
 NS_IMPL_CYCLE_COLLECTION_INHERITED(GamepadServiceTest, DOMEventTargetHelper,
                                    mWindow)
@@ -104,7 +108,15 @@ already_AddRefed<Promise> GamepadServiceTest::AddGamepad(
     const nsAString& aID, GamepadMappingType aMapping, GamepadHand aHand,
     uint32_t aNumButtons, uint32_t aNumAxes, uint32_t aNumHaptics,
     uint32_t aNumLightIndicator, uint32_t aNumTouchEvents, ErrorResult& aRv) {
+  if (aNumButtons > kMaxButtons || aNumAxes > kMaxAxes ||
+      aNumHaptics > kMaxHaptics || aNumLightIndicator > kMaxLightIndicator ||
+      aNumTouchEvents > kMaxTouchEvents) {
+    aRv.ThrowNotSupportedError("exceeded maximum hardware dimensions");
+    return nullptr;
+  }
+
   if (mShuttingDown) {
+    aRv.ThrowInvalidStateError("Shutting down");
     return nullptr;
   }
 
@@ -136,6 +148,7 @@ already_AddRefed<Promise> GamepadServiceTest::AddGamepad(
 already_AddRefed<Promise> GamepadServiceTest::RemoveGamepad(
     uint32_t aHandleSlot, ErrorResult& aRv) {
   if (mShuttingDown) {
+    aRv.ThrowInvalidStateError("Shutting down");
     return nullptr;
   }
 
@@ -163,6 +176,7 @@ already_AddRefed<Promise> GamepadServiceTest::NewButtonEvent(
     uint32_t aHandleSlot, uint32_t aButton, bool aPressed, bool aTouched,
     ErrorResult& aRv) {
   if (mShuttingDown) {
+    aRv.ThrowInvalidStateError("Shutting down");
     return nullptr;
   }
 
@@ -188,6 +202,7 @@ already_AddRefed<Promise> GamepadServiceTest::NewButtonValueEvent(
     uint32_t aHandleSlot, uint32_t aButton, bool aPressed, bool aTouched,
     double aValue, ErrorResult& aRv) {
   if (mShuttingDown) {
+    aRv.ThrowInvalidStateError("Shutting down");
     return nullptr;
   }
 
@@ -212,6 +227,7 @@ already_AddRefed<Promise> GamepadServiceTest::NewButtonValueEvent(
 already_AddRefed<Promise> GamepadServiceTest::NewAxisMoveEvent(
     uint32_t aHandleSlot, uint32_t aAxis, double aValue, ErrorResult& aRv) {
   if (mShuttingDown) {
+    aRv.ThrowInvalidStateError("Shutting down");
     return nullptr;
   }
 
@@ -241,6 +257,7 @@ already_AddRefed<Promise> GamepadServiceTest::NewPoseMove(
     const Nullable<Float32Array>& aLinVelocity,
     const Nullable<Float32Array>& aLinAcceleration, ErrorResult& aRv) {
   if (mShuttingDown) {
+    aRv.ThrowInvalidStateError("Shutting down");
     return nullptr;
   }
 
@@ -324,6 +341,7 @@ already_AddRefed<Promise> GamepadServiceTest::NewTouch(
     uint8_t aSurfaceId, const Float32Array& aPos,
     const Nullable<Float32Array>& aSurfDim, ErrorResult& aRv) {
   if (mShuttingDown) {
+    aRv.ThrowInvalidStateError("Shutting down");
     return nullptr;
   }
 
@@ -364,7 +382,7 @@ already_AddRefed<Promise> GamepadServiceTest::NewTouch(
 }
 
 JSObject* GamepadServiceTest::WrapObject(JSContext* aCx,
-                                         JS::HandleObject aGivenProto) {
+                                         JS::Handle<JSObject*> aGivenProto) {
   return GamepadServiceTest_Binding::Wrap(aCx, this, aGivenProto);
 }
 

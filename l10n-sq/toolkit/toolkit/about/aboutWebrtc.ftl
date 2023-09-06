@@ -13,6 +13,9 @@ about-webrtc-document-title = Hollësi të Brendshme WebRTC-je
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = ruajeni about:webrtc si
 
+## These labels are for a disclosure which contains the information for closed PeerConnection sections
+
+
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = Regjistrim EEA-je
@@ -20,7 +23,16 @@ about-webrtc-aec-logging-off-state-label = Fillo Regjistrim EEA-je
 about-webrtc-aec-logging-on-state-label = Ndale Regjistrimin e EEA-s
 about-webrtc-aec-logging-on-state-msg = Regjistrimi i EEA-s është aktiv (flisni për pak minuta me atë që ju bëri thirrjen dhe mandej ndaleni regjistrimin)
 
+about-webrtc-aec-logging-toggled-on-state-msg = Regjistrimi i EEA-s është aktiv (flisni për pak minuta me atë që ju bëri thirrjen dhe mandej ndaleni regjistrimin)
+# Variables:
+#  $path (String) - The path to which the aec log file is saved.
+about-webrtc-aec-logging-toggled-off-state-msg = Kartelat e regjistrimit të thirrjes mund të gjenden te: { $path }
+
 ##
+
+# The autorefresh checkbox causes the page to autorefresh its content when checked
+about-webrtc-auto-refresh-label = Vetërifreskohu
+
 
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
@@ -59,9 +71,6 @@ about-webrtc-ice-pair-bytes-sent = Bajte të dërguar:
 about-webrtc-ice-pair-bytes-received = Bajte të marrë:
 about-webrtc-ice-component-id = ID Përbërësi
 
-## "Avg." is an abbreviation for Average. These are used as data labels.
-
-
 ## These adjectives are used to label a line of statistics collected for a peer
 ## connection. The data represents either the local or remote end of the
 ## connection.
@@ -70,7 +79,6 @@ about-webrtc-type-local = Vendore
 about-webrtc-type-remote = E largët
 
 ##
-
 
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
@@ -94,6 +102,11 @@ about-webrtc-log-show-msg = shfaqe regjistrin
 about-webrtc-log-hide-msg = fshihe regjistrin
     .title = klikoni që të tkurret kjo pjesë
 
+about-webrtc-log-section-show-msg = Shfaqe regjistrin
+    .title = Klikoni që të zgjerohet kjo pjesë
+about-webrtc-log-section-hide-msg = Fshihe regjistrin
+    .title = Klikoni që të tkurret kjo pjesë
+
 ## These are used to display a header for a PeerConnection.
 ## Variables:
 ##  $browser-id (Number) - A numeric id identifying the browser tab for the PeerConnection.
@@ -104,8 +117,12 @@ about-webrtc-log-hide-msg = fshihe regjistrin
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (e mbyllur) { $now }
 
-##
+## These are used to indicate what direction media is flowing.
+## Variables:
+##  $codecs - a list of media codecs
 
+
+##
 
 about-webrtc-local-candidate = Kandidat Vendor
 about-webrtc-remote-candidate = Kandidat i Largët
@@ -114,11 +131,16 @@ about-webrtc-fold-show-msg = shfaqni hollësi
     .title = klikoni që të zgjerohet kjo pjesë
 about-webrtc-fold-hide-msg = fshihini hollësitë
     .title = klikoni që të tkurret kjo pjesë
+about-webrtc-fold-default-show-msg = Shfaqni hollësi
+    .title = Klikoni që të zgjerohet kjo pjesë
+about-webrtc-fold-default-hide-msg = Fshihini hollësitë
+    .title = Klikoni që të tkurret kjo pjesë
 about-webrtc-dropped-frames-label = Kuadro të humbura:
 about-webrtc-discarded-packets-label = Pakete të hedhur tej:
 about-webrtc-decoder-label = Shkodues
 about-webrtc-encoder-label = Kodues
 about-webrtc-show-tab-label = Shfaq skedë
+about-webrtc-current-framerate-label = Shpejtësi kuadrosh
 about-webrtc-width-px = Gjerësi (px)
 about-webrtc-height-px = Lartësi (px)
 about-webrtc-consecutive-frames = Kuadro të Njëpasnjëshme
@@ -134,6 +156,12 @@ about-webrtc-last-frame-timestamp = Vulë kohore e Marrjes së Kuadrit të Fundi
 about-webrtc-local-receive-ssrc = SSRC Vendore Marrëse
 # This is an SSRC on the remote side of the connection that is sending RTP
 about-webrtc-remote-send-ssrc = SSRC Vendore Dërguese
+
+## These are displayed on the button that shows or hides the
+## PeerConnection configuration disclosure
+
+about-webrtc-pc-configuration-show-msg = Shfaq Formësimin
+about-webrtc-pc-configuration-hide-msg = Fshihe Formësimin
 
 ##
 
@@ -183,7 +211,29 @@ about-webrtc-debug-mode-off-state-msg = regjistri i ndjekjes mund të gjendet te
 about-webrtc-debug-mode-on-state-msg = mënyra diagnostikim aktive, regjistër ndjekje te: { $path }
 about-webrtc-aec-logging-off-state-msg = kartelat e regjistrimit të thirrjes mund të gjenden te: { $path }
 
+about-webrtc-save-page-complete-msg = Faqe e ruajtur te: { $path }
+about-webrtc-debug-mode-toggled-off-state-msg = Regjistri i ndjekjes mund të gjendet te: { $path }
+about-webrtc-debug-mode-toggled-on-state-msg = Mënyra diagnostikim aktive, regjistër ndjekje te: { $path }
+
 ##
+
+# This is the total number of frames encoded or decoded over an RTP stream.
+# Variables:
+#  $frames (Number) - The number of frames encoded or decoded.
+about-webrtc-frames =
+    { $frames ->
+        [one] { $frames } kuadër
+       *[other] { $frames } kuadro
+    }
+
+# This is the number of audio channels encoded or decoded over an RTP stream.
+# Variables:
+#  $channels (Number) - The number of channels encoded or decoded.
+about-webrtc-channels =
+    { $channels ->
+        [one] { $channels } kanal
+       *[other] { $channels } kanale
+    }
 
 # This is the total number of packets received on the PeerConnection.
 # Variables:
@@ -231,9 +281,15 @@ about-webrtc-sdp-set-at-timestamp-remote = Ujdis SDP e Largët sipas vulës koho
 #  $relative-timestamp (Number) - The timestamp relative to the timestamp of the earliest received SDP.
 about-webrtc-sdp-set-timestamp = Vulë kohore { NUMBER($timestamp, useGrouping: "false") } (+ { $relative-timestamp } ms)
 
-##
+## These are displayed on the button that shows or hides the SDP information disclosure
 
-##
+about-webrtc-show-msg-sdp = Shfaq SDP
+about-webrtc-hide-msg-sdp = Fshih SDP
+
+## These are displayed on the button that shows or hides the Media Context information disclosure.
+## The Media Context is the set of preferences and detected capabilities that informs
+## the negotiated CODEC settings.
+
 
 ##
 

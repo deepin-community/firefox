@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Dölj
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Visa alla bokmärkesmappar
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Dölj
+
 bookmark-overlay-new-folder-button =
     .label = Ny mapp
     .accesskey = m
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Visa alla etiketter
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Dölj
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Visa alla etiketter
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Dölj
 
 bookmark-overlay-keyword-2 =
     .value = Nyckelord

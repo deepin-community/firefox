@@ -2,22 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* import-globals-from head.js */
-
 "use strict";
 
-// test without target switching
-add_task(async function() {
-  await testNavigation();
-});
-
-// test with target switching enabled
-add_task(async function() {
-  enableTargetSwitching();
-  await testNavigation();
-});
-
-async function testNavigation() {
+add_task(async function () {
   const URL1 = buildURLWithContent(
     "example.com",
     `<h1>example.com</h1>` +
@@ -35,14 +22,14 @@ async function testNavigation() {
 
   // Check first domain
   // check that both host appear in the storage tree
-  checkTree(doc, ["localStorage", "http://example.com"]);
+  checkTree(doc, ["localStorage", "https://example.com"]);
   // check the table for values
-  await selectTreeItem(["localStorage", "http://example.com"]);
+  await selectTreeItem(["localStorage", "https://example.com"]);
   checkStorageData("lorem", "ipsum");
 
   // clear up local storage data before navigating
   info("Cleaning up localStorage…");
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function() {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function () {
     const win = content.wrappedJSObject;
     await win.localStorage.clear();
   });
@@ -51,9 +38,9 @@ async function testNavigation() {
   await navigateTo(URL2);
   // wait for storage tree refresh, and check host
   info("Waiting for storage tree to refresh and show correct host…");
-  await waitUntil(() => isInTree(doc, ["localStorage", "http://example.net"]));
+  await waitUntil(() => isInTree(doc, ["localStorage", "https://example.net"]));
   ok(
-    !isInTree(doc, ["localStorage", "http://example.com"]),
+    !isInTree(doc, ["localStorage", "https://example.com"]),
     "example.com item is not in the tree anymore"
   );
 
@@ -61,10 +48,10 @@ async function testNavigation() {
   await reloadBrowser();
   // wait for storage tree refresh, and check host
   info("Waiting for storage tree to refresh and show correct host…");
-  await waitUntil(() => isInTree(doc, ["localStorage", "http://example.net"]));
+  await waitUntil(() => isInTree(doc, ["localStorage", "https://example.net"]));
 
   // check the table for values
-  await selectTreeItem(["localStorage", "http://example.net"]);
+  await selectTreeItem(["localStorage", "https://example.net"]);
   checkStorageData("foo", "bar");
 
   info("Check that the localStorage node still has the expected label");
@@ -73,4 +60,4 @@ async function testNavigation() {
     "Local Storage",
     "localStorage item is properly displayed"
   );
-}
+});

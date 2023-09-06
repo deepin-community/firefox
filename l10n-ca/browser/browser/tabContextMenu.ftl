@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Selecciona totes les pestanyes
     .accesskey = t
+tab-context-play-tab =
+    .label = Reprodueix la pestanya
+    .accesskey = x
+tab-context-play-tabs =
+    .label = Reprodueix les pestanyes
+    .accesskey = x
 duplicate-tab =
     .label = Duplica la pestanya
     .accesskey = D
@@ -35,7 +41,7 @@ reload-tabs =
     .accesskey = r
 pin-tab =
     .label = Fixa la pestanya
-    .accesskey = p
+    .accesskey = F
 unpin-tab =
     .label = No fixis la pestanya
     .accesskey = f
@@ -47,10 +53,10 @@ unpin-selected-tabs =
     .accesskey = f
 bookmark-selected-tabs =
     .label = Afegeix les pestanyes a les adreces d'interès…
-    .accesskey = x
-bookmark-tab =
-    .label = Afegeix la pestanya a les adreces d'interès
-    .accesskey = x
+    .accesskey = i
+tab-context-bookmark-tab =
+    .label = Afegeix la pestanya a les adreces d'interès…
+    .accesskey = i
 tab-context-open-in-new-container-tab =
     .label = Obre en una pestanya de contenidor nova
     .accesskey = b
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Comparteix
     .accesskey = x
-tab-context-share-more =
-    .label = Més…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,13 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] Torna a obrir les pestanyes tancades
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Tanca la pestanya
-           *[other] Tanca les pestanyes
-        }
-    .accesskey = c
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->
@@ -110,4 +107,4 @@ tab-context-send-tabs-to-device =
             [one] Envia la pestanya a un dispositiu
            *[other] Envia { $tabCount } pestanyes a un dispositiu
         }
-    .accesskey = n
+    .accesskey = v

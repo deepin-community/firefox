@@ -2,16 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, unicode_literals
-
 import os
 import sys
 
-from mach.decorators import (
-    CommandArgument,
-    Command,
-)
-
+from mach.decorators import Command, CommandArgument
 from mozbuild.util import mkdir
 
 
@@ -30,9 +24,9 @@ def get_test_parser():
     "interface", nargs="+", help="Interface(s) whose examples to generate."
 )
 def webidl_example(command_context, interface):
-    from mozwebidlcodegen import BuildSystemWebIDL
+    from mozwebidlcodegen import create_build_system_manager
 
-    manager = command_context._spawn(BuildSystemWebIDL).manager
+    manager = create_build_system_manager()
     for i in interface:
         manager.generate_example_files(i)
 

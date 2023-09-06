@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Triar totas las pestanyas
     .accesskey = T
+tab-context-play-tab =
+    .label = Reproduce la pestanya
+    .accesskey = l
+tab-context-play-tabs =
+    .label = Reproducir prestanyas
+    .accesskey = c
 duplicate-tab =
     .label = Duplicar la pestanya
     .accesskey = D
@@ -48,9 +54,6 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Anyadir las pestanyas a marcapachinas…
     .accesskey = m
-bookmark-tab =
-    .label = Anyadir la pestanya a los marcapachinas
-    .accesskey = m
 tab-context-open-in-new-container-tab =
     .label = Ubrir en nueva pestanya de contenedor
     .accesskey = e
@@ -69,8 +72,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Compartir
     .accesskey = t
-tab-context-share-more =
-    .label = Mas…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,14 +83,6 @@ tab-context-reopen-closed-tabs =
            *[other] Tornar a ubrir las pestanyas zarradas
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Zarrar la pestanya
-            [one] Zarrar la pestanya
-           *[other] Zarrar las pestanyas
-        }
-    .accesskey = Z
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

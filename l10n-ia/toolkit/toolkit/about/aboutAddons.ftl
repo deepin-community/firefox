@@ -6,9 +6,16 @@ addons-page-title = Gestor de additivos
 search-header =
     .placeholder = Cercar sur addons.mozilla.org
     .searchbuttonlabel = Cercar
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Obtene extensiones e themas sur <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Obtene dictionarios sur <<a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Obtene pacchettos de linguas sur <<a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Tu non ha additivos de iste typo installate
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Version
 detail-last-updated =
     .label = Ultime actualisation
+addon-detail-description-expand = Monstrar plus
+addon-detail-description-collapse = Monstrar minus
 detail-contributions-description = Le disveloppator de iste additivo requesta que tu adjuta a assecurar su disveloppamento continue faciente un parve contribution.
 detail-contributions-button = Contribuer
     .title = Contribue al disveloppamento de iste additivo.
@@ -130,16 +139,33 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Actualisationes recente
 addon-category-recent-updates-title =
     .title = Actualisationes recente
+addon-category-sitepermission = Permissiones del sito
+addon-category-sitepermission-title =
+    .title = Permissiones del sito
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Permissos de sito pro { $host }
 
 ## These are global warnings
 
 extensions-warning-safe-mode = Tote le additivos ha essite disactivate per le modo secur.
 extensions-warning-check-compatibility = Le verification de compatibilitate de additivos es inactive. Tu pote haber additivos incompatibile.
+extensions-warning-safe-mode2 =
+    .message = Tote le additivos ha essite disactivate per le modo secur.
+extensions-warning-check-compatibility2 =
+    .message = Le verification de compatibilitate de additivos es inactive. Tu pote haber additivos incompatibile.
 extensions-warning-check-compatibility-button = Activar
     .title = Activar le verification de compatibilitate de additivos
 extensions-warning-update-security = Le verification de securitate pro le actualisation del additivos es inactive. Le actualisationes poterea damnificar tu systema.
+extensions-warning-update-security2 =
+    .message = Le verification de securitate pro le actualisation del additivos es inactive. Le actualisationes poterea damnificar tu systema.
 extensions-warning-update-security-button = Activar
     .title = Activar le verification de securitate pro le actualisation del additivos
+extensions-warning-imported-addons = Completa le installation de extensiones que era importate a { -brand-short-name }.
+extensions-warning-imported-addons2 =
+    .message = Completa le installation de extensiones que era importate a { -brand-short-name }.
+extensions-warning-imported-addons-button = Installar le extensiones
 
 ## Strings connected to add-on updates
 
@@ -204,10 +230,17 @@ shortcuts-duplicate = Accesso directe duplicate
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = { $shortcut } es usate como accesso directe in plus de un caso. Le accessos directe duplicate pote causar un comportamento inexpectate.
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = { $shortcut } es usate como accesso directe in plus de un caso. Le accessos directe duplicate pote causar un comportamento inexpectate.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Jam in uso pro { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Mostrar altere { $numberToShow }
@@ -224,6 +257,9 @@ header-back-button =
 discopane-intro = Le extensiones e le themas es como mini-applicationes pro tu navigator e illos te permitte de proteger contrasignos, discargar videos, trovar offertas, blocar annuncios moleste, cambiar le apparentia de tu navigator e multo plus. Iste micre programmas software es sovente disveloppate per un tertio. Ecce un selection que { -brand-product-name } <a data-l10n-name="learn-more-trigger">recommenda</a> pro securitate, rendimento e functionalitate excellente.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations = Parte de iste recommendationes es personalisate. Illos basate sur preferentias de profilo e statistica de uso de altere extensiones que tu ha installate.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message = Parte de iste recommendationes es personalisate. Illos basate sur preferentias de profilo e statistica de uso de altere extensiones que tu ha installate.
 discopane-notice-learn-more = Saper plus
 privacy-policy = Politica de confidentialitate
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -240,7 +276,7 @@ install-theme-button = Installar thema
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Gerer
 find-more-addons = Trovar altere additivos
-find-more-themes = Trova plus themas
+find-more-themes = Cercar plus themas
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
 addon-options-button =
@@ -269,15 +305,15 @@ permissions-addon-button = Permissiones
 extension-enabled-heading = Activate
 extension-disabled-heading = Disactivate
 theme-enabled-heading = Activate
-theme-disabled-heading = Disactivate
-theme-monochromatic-heading = Combinationes de colores
-theme-monochromatic-subheading = Nove vibrante combinationes de colores de { -brand-product-name }. Disponibile pro tempore limitate.
+theme-disabled-heading2 = Themas salvate
 plugin-enabled-heading = Activate
 plugin-disabled-heading = Disactivate
 dictionary-enabled-heading = Activate
 dictionary-disabled-heading = Disactivate
 locale-enabled-heading = Activate
 locale-disabled-heading = Disactivate
+sitepermission-enabled-heading = Activate
+sitepermission-disabled-heading = Disactivate
 always-activate-button = Sempre activar
 never-activate-button = Non activar jammais
 addon-detail-author-label = Autor
@@ -287,6 +323,9 @@ addon-detail-homepage-label = Pagina initial
 addon-detail-rating-label = Evalutation
 # Message for add-ons with a staged pending update.
 install-postponed-message = Iste extension essera actualisate quando { -brand-short-name } reinitia.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Iste extension essera actualisate quando { -brand-short-name } reinitia.
 install-postponed-button = Actualisar ora
 # The average rating that the add-on has received.
 # Variables:
@@ -318,6 +357,10 @@ addon-detail-updates-radio-on = Activar
 addon-detail-updates-radio-off = Disactivar
 addon-detail-update-check-label = Cercar actualisationes
 install-update-button = Actualisar
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -326,6 +369,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Quando permittite, le extension habera accesso a tu activitates in linea durante le navigation private. <a data-l10n-name="learn-more">Saper plus</a>
 addon-detail-private-browsing-allow = Permitter
 addon-detail-private-browsing-disallow = Non permitter
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Functionamento in sitos con restrictiones
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Quando permittite, le extension habera accesso a sitos limitate per { -vendor-short-name }. Permitter solo si tu te fide de iste extension.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Permitter
+addon-detail-quarantined-domains-disallow = Non permitter
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -354,6 +415,9 @@ addon-permissions-optional = Permissiones facultative pro functionalitate additi
 addon-permissions-learnmore = Saper plus sur le permissiones
 recommended-extensions-heading = Extensiones recommendate
 recommended-themes-heading = Themas recommendate
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Garanti a <span data-l10n-name="hostname">{ $hostname }</span> le functionalitates sequente:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Te senti creative? <a data-l10n-name="link">Crea tu proprie thema con Firefox Color.</a>
@@ -366,6 +430,7 @@ plugin-heading = Gerer tu plugins
 dictionary-heading = Gerer tu dictionarios
 locale-heading = Gerer tu linguas
 updates-heading = Gerer tu actualisationes
+sitepermission-heading = Gere le permissiones de tu sito
 discover-heading = Personalisa tu { -brand-short-name }
 shortcuts-heading = Gerer le accessos directe al extensiones
 default-heading-search-label = Cercar altere additivos
@@ -373,3 +438,35 @@ addons-heading-search-input =
     .placeholder = Cercar sur addons.mozilla.org
 addon-page-options-button =
     .title = Instrumentos pro tote le additivos
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } es incompatibile con { -brand-short-name } { $version }.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = { $name } es incompatibile con { -brand-short-name } { $version }.
+details-notification-incompatible-link = Plus de informationes
+details-notification-unsigned-and-disabled = { $name } non ha potite esser verificate pro le utilisation in { -brand-short-name } e ha essite disactivate.
+details-notification-unsigned-and-disabled2 =
+    .message = { $name } non ha potite esser verificate pro le utilisation in { -brand-short-name } e ha essite disactivate.
+details-notification-unsigned-and-disabled-link = Plus de informationes
+details-notification-unsigned = { $name } non ha potite esser verificate pro le utilisation in { -brand-short-name }. Procede con prudentia.
+details-notification-unsigned2 =
+    .message = { $name } non ha potite esser verificate pro le utilisation in { -brand-short-name }. Procede con prudentia.
+details-notification-unsigned-link = Plus de informationes
+details-notification-blocked = { $name } ha essite disactivate a causa de problemas de securitate o de stabilitate.
+details-notification-blocked2 =
+    .message = { $name } ha essite disactivate a causa de problemas de securitate o de stabilitate.
+details-notification-blocked-link = Plus de informationes
+details-notification-softblocked = { $name } es cognoscite pro causar problemas de securitate o de stabilitate.
+details-notification-softblocked2 =
+    .message = { $name } es cognoscite pro causar problemas de securitate o de stabilitate.
+details-notification-softblocked-link = Plus de informationes
+details-notification-gmp-pending = { $name } essera installate tosto.
+details-notification-gmp-pending2 =
+    .message = { $name } essera installate tosto.

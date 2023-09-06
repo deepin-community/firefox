@@ -2,11 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = پاک کردن داده‌ها
-    .style = width: 35em
+    .style = min-width: 35em
 
-clear-site-data-description = پاک کردن تمام کوکی‌ها و داده‌های سایت‌ها توسط { -brand-short-name } ممکن از شما را از برخی سایت‌ها خارج و داده‌های برون‌خط شما را حذف کند. حذف داده‌های نهان، تاثیری بر ورودهای شما در سایت‌های مختلف ندارد.
+clear-site-data-description = پاک کردن تمام کلوچک‌ها و داده‌های پایگاه‌ها توسط { -brand-short-name } ممکن از شما را از برخی پایگاه‌ها خارج و داده‌های برون‌خط شما را حذف کند. حذف داده‌های نهان، تأثیری بر ورودهای شما در پایگاه‌های مختلف ندارد.
 
 clear-site-data-close-key =
     .key = w
@@ -17,7 +17,7 @@ clear-site-data-close-key =
 #   $amount (Number) - Amount of site data currently stored on disk
 #   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
 clear-site-data-cookies-with-data =
-    .label = کوکی‌ها و داده‌های سایت ({ $amount } { $unit })
+    .label = کلوچک‌ها و داده‌های پایگاه ({ $amount } { $unit })
     .accesskey = S
 
 # This string is a placeholder for while the data used to fill
@@ -26,10 +26,10 @@ clear-site-data-cookies-with-data =
 # or the same as clear-site-data-cookies-with-data (except the amount and unit),
 # to avoid flickering.
 clear-site-data-cookies-empty =
-    .label = کوکی‌ها و داده‌های سایت
+    .label = کلوچک‌ها و داده‌های پایگاه
     .accesskey = S
 
-clear-site-data-cookies-info = اگر پاک کنید، ممکن است از بعضی سایت‌ها خارج شوید
+clear-site-data-cookies-info = اگر پاک کنید، ممکن است از بعضی پایگاه‌ها خارج شوید
 
 # The parameters in parentheses in this string describe disk usage
 # in the format ($amount $unit), e.g. "Cached Web Content (24 KB)"

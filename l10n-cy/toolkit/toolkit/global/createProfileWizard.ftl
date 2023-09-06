@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Creu Proffil Dewin
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Cyflwyniad
-       *[other] Croeso i { create-profile-window.title }
+       *[other] Croeso i { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = Mae { -brand-short-name } yn storio gwybodaeth am eich gosodiadau a'ch dewisiadau yn eich proffil personol.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Diweddglo
-       *[other] Cwblhau { create-profile-window.title }
+       *[other] Cwblhau { create-profile-window2.title }
     }
 
 profile-creation-intro = Os ydych yn creu nifer o broffiliau mae modd eu gwahaniaethu wrth enw'r proffil. Mae modd defnyddio'r enw sy'n cael ei ddarparu yma neu enw eich hun.

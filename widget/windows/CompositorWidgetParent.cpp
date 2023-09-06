@@ -34,8 +34,10 @@ CompositorWidgetParent::CompositorWidgetParent(
                           aOptions),
       mWnd(reinterpret_cast<HWND>(
           aInitData.get_WinCompositorWidgetInitData().hWnd())),
-      mTransparencyMode(
-          aInitData.get_WinCompositorWidgetInitData().transparencyMode()),
+      mTransparencyMode(uint32_t(
+          aInitData.get_WinCompositorWidgetInitData().transparencyMode())),
+      mSizeMode(nsSizeMode_Normal),
+      mIsFullyOccluded(false),
       mRemoteBackbufferClient() {
   MOZ_ASSERT(XRE_GetProcessType() == GeckoProcessType_GPU);
   MOZ_ASSERT(mWnd && ::IsWindow(mWnd));
@@ -113,19 +115,7 @@ CompositorWidgetParent::EndBackBufferDrawing() {
 }
 
 bool CompositorWidgetParent::InitCompositor(layers::Compositor* aCompositor) {
-  if (aCompositor->GetBackendType() == layers::LayersBackend::LAYERS_BASIC) {
-    DeviceManagerDx::Get()->InitializeDirectDraw();
-  }
   return true;
-}
-
-bool CompositorWidgetParent::HasGlass() const {
-  MOZ_ASSERT(layers::CompositorThreadHolder::IsInCompositorThread() ||
-             wr::RenderThread::IsInRenderThread());
-
-  nsTransparencyMode transparencyMode = mTransparencyMode;
-  return transparencyMode == eTransparencyGlass ||
-         transparencyMode == eTransparencyBorderlessGlass;
 }
 
 bool CompositorWidgetParent::IsHidden() const { return ::IsIconic(mWnd); }
@@ -147,10 +137,28 @@ mozilla::ipc::IPCResult CompositorWidgetParent::RecvLeavePresentLock() {
 }
 
 mozilla::ipc::IPCResult CompositorWidgetParent::RecvUpdateTransparency(
-    const nsTransparencyMode& aMode) {
-  mTransparencyMode = aMode;
-
+    const TransparencyMode& aMode) {
+  mTransparencyMode = uint32_t(aMode);
   return IPC_OK();
+}
+
+mozilla::ipc::IPCResult CompositorWidgetParent::RecvNotifyVisibilityUpdated(
+    const nsSizeMode& aSizeMode, const bool& aIsFullyOccluded) {
+  mSizeMode = aSizeMode;
+  mIsFullyOccluded = aIsFullyOccluded;
+  return IPC_OK();
+}
+
+nsSizeMode CompositorWidgetParent::CompositorWidgetParent::GetWindowSizeMode()
+    const {
+  nsSizeMode sizeMode = mSizeMode;
+  return sizeMode;
+}
+
+bool CompositorWidgetParent::CompositorWidgetParent::GetWindowIsFullyOccluded()
+    const {
+  bool isFullyOccluded = mIsFullyOccluded;
+  return isFullyOccluded;
 }
 
 mozilla::ipc::IPCResult CompositorWidgetParent::RecvClearTransparentWindow() {
@@ -201,12 +209,13 @@ void CompositorWidgetParent::UpdateCompositorWnd(const HWND aCompositorWnd,
       ->Then(
           layers::CompositorThread(), __func__,
           [self](const bool& aSuccess) {
-            if (aSuccess && self->mRootLayerTreeID.isSome()) {
+            if (aSuccess && self->mRootLayerTreeID.isSome() &&
+                layers::CompositorThreadHolder::IsActive()) {
               self->mSetParentCompleted = true;
               // Schedule composition after ::SetParent() call in parent
               // process.
               layers::CompositorBridgeParent::ScheduleForcedComposition(
-                  self->mRootLayerTreeID.ref());
+                  self->mRootLayerTreeID.ref(), wr::RenderReasons::WIDGET);
             }
           },
           [self](const mozilla::ipc::ResponseRejectReason&) {});

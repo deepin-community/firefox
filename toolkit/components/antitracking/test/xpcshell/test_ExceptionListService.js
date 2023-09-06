@@ -7,20 +7,18 @@
 
 /* Unit tests for the nsIPartitioningExceptionListService implementation. */
 
-const { RemoteSettings } = ChromeUtils.import(
-  "resource://services-settings/remote-settings.js"
+const { RemoteSettings } = ChromeUtils.importESModule(
+  "resource://services-settings/remote-settings.sys.mjs"
 );
 
 const COLLECTION_NAME = "partitioning-exempt-urls";
 const PREF_NAME = "privacy.restrict3rdpartystorage.skip_list";
 
-XPCOMUtils.defineLazyGlobalGetters(this, ["EventTarget"]);
-
 do_get_profile();
 
 class UpdateEvent extends EventTarget {}
 function waitForEvent(element, eventName) {
-  return new Promise(function(resolve) {
+  return new Promise(function (resolve) {
     element.addEventListener(eventName, e => resolve(e.detail), { once: true });
   });
 }
@@ -38,15 +36,15 @@ add_task(async _ => {
   let records = [
     {
       id: "1",
-      last_modified: 100000000000000000001,
+      last_modified: 1000000000000001,
       firstPartyOrigin: "https://example.org",
       thirdPartyOrigin: "https://tracking.example.com",
     },
   ];
 
   // Add some initial data
-  let db = await RemoteSettings(COLLECTION_NAME).db;
-  await db.importChanges({}, 42, records);
+  let db = RemoteSettings(COLLECTION_NAME).db;
+  await db.importChanges({}, Date.now(), records);
 
   let promise = waitForEvent(updateEvent, "update");
   let obs = data => {
@@ -67,7 +65,7 @@ add_task(async _ => {
 
   records.push({
     id: "2",
-    last_modified: 100000000000000000002,
+    last_modified: 1000000000000002,
     firstPartyOrigin: "https://foo.org",
     thirdPartyOrigin: "https://bar.com",
   });

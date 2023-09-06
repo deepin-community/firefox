@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = Lista Bllokimesh
-    .style = width: 50em
+    .style = min-width: 50em
 
 blocklist-description = Zgjidhni listën që përdor { -brand-short-name } për të bllokuar gjurmues internetorë. Lista të furnizuara nga <a data-l10n-name="disconnect-link" title="Disconnect">Disconnect</a>.
 blocklist-close-key =

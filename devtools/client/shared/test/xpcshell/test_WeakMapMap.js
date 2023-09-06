@@ -5,8 +5,7 @@
 
 "use strict";
 
-const { require } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
-const WeakMapMap = require("devtools/client/shared/WeakMapMap");
+const WeakMapMap = require("resource://devtools/client/shared/WeakMapMap.js");
 
 const myWeakMapMap = new WeakMapMap();
 const key = { randomObject: true };

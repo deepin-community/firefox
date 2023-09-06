@@ -12,20 +12,38 @@ synced-tabs-sidebar-tabsnotsyncing = همگام‌سازی زبانه‌ها ر�
 synced-tabs-sidebar-connect-another-device = اتصال به دستگاه دیگر
 synced-tabs-sidebar-search =
     .placeholder = جست‌وجو در زبانه‌های همگام‌سازی شده
+
+## Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
+## and/or devices in the list. The "Open" strings below should be translated
+## consistently with the equivalent strings for the bookmarks manager's context
+## menu. That menu is activated by right-clicking a bookmark in the Library
+## window. The bookmarks manager context's strings are located in places.ftl.
+
 synced-tabs-context-open =
     .label = باز کردن‌
     .accesskey = ب
-synced-tabs-context-open-in-new-tab =
-    .label = باز کردن در زبانه جدید
-    .accesskey = ج
-synced-tabs-context-open-in-new-window =
-    .label = باز کردن در پنجره جدید
-    .accesskey = ج
-synced-tabs-context-open-in-new-private-window =
-    .label = باز کردن در پنجرهٔ ناشناس جدید
+synced-tabs-context-open-in-tab =
+    .label = گشودن در زبانهٔ جدید
+    .accesskey = گ
+synced-tabs-context-open-in-container-tab =
+    .label = گشودن در محفظهٔ جدید
+    .accesskey = ش
+synced-tabs-context-open-in-window =
+    .label = گشودن در پنجرهٔ جدید
+    .accesskey = و
+synced-tabs-context-open-in-private-window =
+    .label = گشودن در پنجرهٔ خصوصی جدید
     .accesskey = ن
-synced-tabs-context-bookmark-single-tab =
-    .label = نشانک‌گذاری این زبانه…
+
+##
+
+# Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
+# and/or devices in the list. This string is for a menuitem equivalent to one in
+# the tab context menu (activated by right-clicking a tab in the tabstrip). That
+# string is located in tabContextMenu.ftl. So, this string should be translated
+# consistently with the "Bookmark Tab…" string there.
+synced-tabs-context-bookmark =
+    .label = نشانک‌گذاری زبانه
     .accesskey = ن
 synced-tabs-context-copy =
     .label = رونوشت

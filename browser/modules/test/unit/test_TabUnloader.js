@@ -3,8 +3,8 @@
  */
 "use strict";
 
-const { TabUnloader } = ChromeUtils.import(
-  "resource:///modules/TabUnloader.jsm"
+const { TabUnloader } = ChromeUtils.importESModule(
+  "resource:///modules/TabUnloader.sys.mjs"
 );
 
 let TestTabUnloaderMethods = {
@@ -36,9 +36,17 @@ let TestTabUnloaderMethods = {
     return /\bwebrtc\b/.test(tab.keywords) ? weight : 0;
   },
 
+  isPrivate(tab, weight) {
+    return /\bprivate\b/.test(tab.keywords) ? weight : 0;
+  },
+
   getMinTabCount() {
     // Use a low number for testing.
     return 3;
+  },
+
+  getNow() {
+    return 100;
   },
 
   *iterateProcesses(tab) {
@@ -132,6 +140,24 @@ let unloadTests = [
       "6 selected",
     ],
     result: "2,0,3,5,1,4",
+  },
+  {
+    tabs: [
+      "10 selected",
+      "20 private",
+      "30 webrtc",
+      "40 pictureinpicture",
+      "50 loading pinned",
+      "60",
+    ],
+    result: "5,4,0,1,2,3",
+  },
+  {
+    // Since TestTabUnloaderMethods.getNow() returns 100 and the test
+    // passes minInactiveDuration = 0 to TabUnloader.getSortedTabs(),
+    // tab 200 and 300 are excluded from the result.
+    tabs: ["300", "10", "50", "100", "200"],
+    result: "1,2,3",
   },
   {
     tabs: ["1", "2", "3", "4", "5", "6"],
@@ -407,7 +433,10 @@ add_task(async function doTests() {
     TestTabUnloaderMethods.iterateTabs = iterateTabs;
 
     let expectedOrder = "";
-    let sortedTabs = await TabUnloader.getSortedTabs(TestTabUnloaderMethods);
+    const sortedTabs = await TabUnloader.getSortedTabs(
+      0,
+      TestTabUnloaderMethods
+    );
     for (let tab of sortedTabs) {
       if (expectedOrder) {
         expectedOrder += ",";

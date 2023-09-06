@@ -28,6 +28,14 @@ serviceworker-worker-unregister = ਅਣ-ਰਜਿਸਟਰ ਕਰੋ
 serviceworker-worker-debug = ਡੀਬੱਗ
     .title = ਸਿਰਫ਼ ਚੱਲ ਰਹੇ ਸਰਵਿਸ ਵਰਕਰਾਂ ਨੂੰ ਹੀ ਡੀਬੱਗ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ
 
+# Alt text for the image icon displayed inside a debug link for a service worker.
+serviceworker-worker-inspect-icon =
+    .alt = ਜਾਂਚ ਕਰੋ
+
+# Text for the start link displayed for a registered but not running Service Worker.
+# Clicking on the link will attempt to start the service worker.
+serviceworker-worker-start3 = ਸ਼ੁਰੂ
+
 # Text displayed for the updated time of the service worker. The <time> element will
 # display the last update time of the service worker script.
 serviceworker-worker-updated = <time>{ DATETIME($date, month: "long", year: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric") }</time> ਅੱਪਡੇਟ ਕੀਤਾ
@@ -48,6 +56,15 @@ serviceworker-empty-intro2 = ਕੋਈ ਸਰਵਿਸ ਵਰਕਰ ਨਹੀ �
 # Link will open https://developer.mozilla.org/docs/Web/API/Service_Worker_API/Using_Service_Workers
 serviceworker-empty-intro-link = ਹੋਰ ਸਿੱਖੋ
 
+# Header for the Manifest page when we have an actual manifest
+manifest-view-header = ਐਪ ਮੈਨੀਫੈਸਟ
+
+# Header for the Manifest page when there's no manifest to inspect
+manifest-empty-intro2 = ਕੋਈ ਵੈੱਬ ਐਪ ਮੈਨੀਫੈਸਟ ਖੋਜਿਆ ਨਹੀਂ ਗਿਆ
+
+# The link will open https://developer.mozilla.org/en-US/docs/Web/Manifest
+manifest-empty-intro-link = ਮੈਨੀਫੈਸਟ ਜੋੜਨ ਬਾਰੇ ਸਿੱਖੋ
+
 # Header for the Errors and Warnings section of Manifest inspection displayed in the application panel.
 manifest-item-warnings = ਗਲਤੀਆਂ ਤੇ ਚੇਤਾਵਨੀਆਂ
 
@@ -60,14 +77,49 @@ manifest-item-presentation = ਪੇਸ਼ਕਾਰੀ
 # Header for the Icon section of Manifest inspection displayed in the application panel.
 manifest-item-icons = ਆਈਕਨ
 
+# Text displayed while we are loading the manifest file
+manifest-loading = ਮੈਨੀਫੈਸਟ ਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...
+
+# Text displayed when the manifest has been successfully loaded
+manifest-loaded-ok = ਮੈਨੀਫੈਸਟ ਲੋਡ ਕੀਤਾ ਗਿਆ।
+
+# Text displayed as a caption when there has been an error while trying to
+# load the manifest
+manifest-loaded-error = ਮੈਨੀਫੈਸਟ ਲੋਡ ਕਰਦੇ ਸਮੇਂ ਕੋਈ ਗਲਤੀ ਆਈ:
+
 # Text displayed as an error when there has been a Firefox DevTools error while
 # trying to load the manifest
 manifest-loaded-devtools-error = ਫਾਇਰਫਾਕਸ DevTools ਗਲਤੀ
+
+# Text displayed when the page has no manifest available
+manifest-non-existing = ਜਾਂਚ ਕਰਨ ਲਈ ਕੋਈ ਮੈਨੀਫੈਸਟ ਨਹੀਂ ਮਿਲਿਆ।
+
+# Text displayed when the page has a manifest embedded in a Data URL and
+# thus we cannot link to it.
+manifest-json-link-data-url = ਮਨੋਰਥ ਡਾਟਾ URL ਵਿੱਚ ਮੜ੍ਹਿਆ ਹੋਇਆ ਹੈ।
+
+# Text displayed at manifest icons to label their purpose, as declared
+# in the manifest.
+manifest-icon-purpose = ਮਕਸਦ: <code>{ $purpose }</code>
 
 # Text displayed as the alt attribute for <img> tags showing the icons in the
 # manifest.
 manifest-icon-img =
     .alt = ਆਈਕਨ
+
+# Text displayed as the title attribute for <img> tags showing the icons in the
+# manifest. `$sizes` is a user-dependent string that has been parsed as a
+# space-separated list of `<width>x<height>` sizes or the keyword `any`.
+manifest-icon-img-title = ਆਈਕਨ ਦੇ ਅਕਾਰ: { $sizes }
+
+# Text displayed as the title attribute for <img> tags showing the icons in the
+# manifest, in case there's no icon size specified by the user
+manifest-icon-img-title-no-sizes = ਅਣਦਰਸਾਏ ਅਕਾਰ ਦਾ ਆਈਕਨ
+
+# Sidebar navigation item for Manifest sidebar item section
+sidebar-item-manifest = ਮੈਨੀਫੈਸਟ
+    .alt = ਮੈਨੀਫੈਸਟ ਆਈਕਨ
+    .title = ਮੈਨੀਫੈਸਟ
 
 # Sidebar navigation item for Service Workers sidebar item section
 sidebar-item-service-workers = ਸਰਵਿਸ ਵਰਕਰ
@@ -83,4 +135,3 @@ icon-warning =
 icon-error =
     .alt = ਗਲਤੀ ਦਾ ਆਈਕਾਨ
     .title = ਗਲਤੀ
-

@@ -3,6 +3,12 @@ Firefox Source Tree Documentation
 =================================
 
 .. toctree::
+   :caption: Overview
+   :maxdepth: 2
+
+   {overview_doc}
+
+.. toctree::
    :caption: Getting Started
    :maxdepth: 1
 
@@ -13,6 +19,12 @@ Firefox Source Tree Documentation
    :maxdepth: 2
 
    {contributing_doc}
+
+.. toctree::
+   :caption: Firefox User Guide
+   :maxdepth: 2
+
+   {user_guide}
 
 .. toctree::
    :caption: Source Code Documentation
@@ -33,13 +45,19 @@ Firefox Source Tree Documentation
    {testing_doc}
 
 .. toctree::
+   :caption: Releases & Updates
+   :maxdepth: 1
+
+   {release_doc}
+
+.. toctree::
    :caption: Localization & Internationalization
    :maxdepth: 2
 
    {l10n_doc}
 
 .. toctree::
-   :caption: Firefox and Python 
+   :caption: Firefox and Python
    :maxdepth: 1
 
    {python_doc}

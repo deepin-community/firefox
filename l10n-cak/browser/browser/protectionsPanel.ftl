@@ -63,7 +63,6 @@ protections-panel-not-found-label = Man Xilitäj Ta
 ##
 
 protections-panel-settings-label = Runuk'ulem Ojqanem
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Rupas taq Chajinïk
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -78,6 +77,7 @@ protections-panel-site-not-working-view-issue-list-forms = Taq Nojwuj
 protections-panel-site-not-working-view-issue-list-payments = Taq Tojïk
 protections-panel-site-not-working-view-issue-list-comments = Taq tzijol
 protections-panel-site-not-working-view-issue-list-videos = Taq Silowäch
+protections-panel-site-not-working-view-issue-list-fonts = Ruwäch tz'ib'
 
 protections-panel-site-not-working-view-send-report = Titaq jun rutzijol
 
@@ -101,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Tiya' Rutzijol jun Ruxaq Man Nisamäj ta
 protections-panel-content-blocking-breakage-report-view-description = Toq yeq'at jujun taq ojqanela' nitikïr nuya' k'ayewal pa jujun ajk'amaya'l ruxaq. Toq naya' kitzijol k'ayewal, yato'on chi ri { -brand-short-name } ütz nub'än chi qawäch qonojel. Toq natäq re rutzijol, xtitaq pa jun URL chuqa' ri etamab'äl chi rij ri runuk'ulem ri awokik'amaya'l chi re ri Mozilla. <label data-l10n-name="learn-more">Tetamäx ch'aqa' chik</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Toq yeq'at jujun taq ojqanela' nitikïr nuya' k'ayewal pa jujun ajk'amaya'l ruxaq. Toq naya' kitzijol k'ayewal, yato'on chi ri { -brand-short-name } ütz nub'än chi qawäch qonojel. Toq natäq re rutzijol, xtitaq pa jun URL chuqa' ri etamab'äl chi rij ri runuk'ulem ri awokik'amaya'l chi re ri { -vendor-short-name }.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -111,3 +112,22 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Tiq'at
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Titaq Rutzijol
+
+# Cookie Banner Handling
+
+protections-panel-cookie-banner-handling-header = Kech'utinirisäx kitzijol kuki
+protections-panel-cookie-banner-handling-enabled = Tzijïl pa re ruxaq re'
+protections-panel-cookie-banner-handling-disabled = Chupül pa re ruxaq re'
+protections-panel-cookie-banner-handling-undetected = Wakami man koch'el ta re ruxaq re'
+
+protections-panel-cookie-banner-view-title =
+    .title = Kech'utinirisäx kitzijol kuki
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = ¿La nichup ri kich'utinisaxik rutzijol kuki richin { $host }?
+protections-panel-cookie-banner-view-turn-on-for-site = ¿La nitzij ri kich'utinisaxik rutzijol kuki richin re ruxaq?
+protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } xkeruyüj ri taq rukuki re ruxaq chuqa' xtuk'ëx re ruxaq. Xkeruyüj ronojel ri taq kuki, nitikïr nutz'apij ri molojri'ïl o yerujäm ri taq ruch'ich' loq'oj.
+protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } nitikïr nutojtob'ej yeruxutuj pa ruyonil ronojel ri kik'utuxik taq kuki pa koch'el taq ruxaq.
+protections-panel-cookie-banner-view-cancel = Tiq'at
+protections-panel-cookie-banner-view-turn-off = Tichup
+protections-panel-cookie-banner-view-turn-on = Titzij

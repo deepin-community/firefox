@@ -6,3 +6,9 @@ privatebrowsingpage-open-private-window-label = Atvērt privāto logu
     .accesskey = p
 about-private-browsing-not-private = Šobrīd jūs neesat privātajā logā.
 
+## The following strings will be used for experiments in Fx99 and Fx100
+
+## Strings used in a “pin promotion” message, which prompts users to pin a private window
+
+## Strings used in a promotion message for cookie banner reduction
+

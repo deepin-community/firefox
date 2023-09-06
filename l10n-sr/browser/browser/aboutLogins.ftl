@@ -5,12 +5,12 @@
 
 about-logins-page-title = Пријаве
 
-# "Google Play" and "App Store" are both branding and should not be translated
+about-logins-login-filter =
+    .placeholder = Претражи пријаве
+    .key = F
 
-login-filter =
-    .placeholder = Претражите пријаве
-
-create-login-button = Направите нову пријаву
+create-new-login-button =
+    .title = Направите нову пријаву
 
 fxaccounts-sign-in-text = Приступите лозинкама на другим уређајима
 fxaccounts-sign-in-sync-button = Пријавите се ради синхронизације
@@ -33,11 +33,22 @@ about-logins-menu-menuitem-help = Помоћ
 
 login-list =
     .aria-label = Пронађене пријаве
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } пријава
         [few] { $count } пријаве
        *[other] { $count } пријава
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } од { $total } пријаве
+        [few] { $count } од { $total } пријаве
+       *[other] { $count } од { $total } пријава
     }
 login-list-sort-label-text = Сортирај по:
 login-list-name-option = називу (A–Z)
@@ -64,7 +75,6 @@ about-logins-list-item-breach-icon =
     .title = Хаковани веб-сајт
 about-logins-list-item-vulnerable-password-icon =
     .title = Рањива лозинка
-
 about-logins-list-section-breach = Сајтови са цурењем података
 about-logins-list-section-vulnerable = Рањиве лозинке
 about-logins-list-section-nothing = Без упозорења
@@ -85,8 +95,8 @@ login-intro-description =
     } на другом уређају, ево како их можете преузети:
 login-intro-instructions-fxa = Региструјте се или се пријавите на { -fxaccount-brand-name(case: "acc") } на уређају на ком сте сачували лозинке.
 login-intro-instructions-fxa-settings = Идите у Подешавања → Синхронизација → Укључи синхронизацију. Изаберите поље „Лозинке”.
-login-intro-instructions-fxa-help = За више информација посетите <a data-l10n-name="help-link">{ -lockwise-brand-short-name } подршку</a>.
-about-logins-intro-import = Ако су ваше лозинке сачуване у другом прегледачу, можете да их <a data-l10n-name="import-link">увезете у { -lockwise-brand-short-name(case: "acc") }</a>
+login-intro-instructions-fxa-passwords-help = Посетите <a data-l10n-name="passwords-help-link">подршку за лозинке</a> за додатну помоћ.
+about-logins-intro-browser-only-import = Ако су ваше пријаве сачуване у другом прегледачу, можете да их <a data-l10n-name="import-link">увезете у { -brand-product-name }</a>
 about-logins-intro-import2 = Ако се ваше лозинке налазе ван { -brand-product-name(case: "gen") }, можете да их <a data-l10n-name="import-browser-link">увезете из другог прегледача</a> или <a data-l10n-name="import-file-link">из датотеке</a>
 
 ## Login
@@ -111,9 +121,17 @@ login-item-copied-password-button-text = Копирано!
 login-item-save-changes-button = Сачувај
 login-item-save-new-button = Сачувај
 login-item-cancel-button = Откажи
-login-item-time-changed = Последња измена: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Направљено: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Последњи пут коришћено: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Направљено
+login-item-timeline-action-updated = Ажурирано
+login-item-timeline-action-used = Коришћено
 
 ## OS Authentication dialog
 
@@ -141,8 +159,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Из безбеднос�
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = копирај сачувану лозинку
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Из безбедносних разлога потребно је да унесете податке за пријаву на Windows да бисте извезли записе.
 # This message can be seen when attempting to export a password in about:logins
@@ -156,8 +172,6 @@ master-password-reload-button =
     .label = Пријави ме
     .accesskey = П
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Откажи
@@ -167,6 +181,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Уклонити ову пријаву?
 confirm-delete-dialog-message = Ова радња се не може опозвати.
 about-logins-confirm-remove-dialog-confirm-button = Уклони
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -244,6 +261,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
             } на свим уређајима синхронизованим са { -fxaccount-brand-name(case: "ins") }, као и упозорења о цурењу података која се појављују овде. Ова радња се не може опозвати.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Извезите податке за пријаву
 about-logins-confirm-export-dialog-message = Ваше лозинке ће бити сачуване као читљив текст (нпр. BadP@ssw0rd) тако да може погледати свако ко може да отвори извезену датотеку.
 about-logins-confirm-export-dialog-confirm-button = Извоз…
@@ -263,7 +282,6 @@ about-logins-breach-alert-date = Ово цурење података се де�
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Идите на { $hostname }
-about-logins-breach-alert-learn-more-link = Сазнајте више
 
 ## Vulnerable Password notification
 

@@ -2,18 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-colors-window =
+colors-dialog2 =
     .title = Cores
-    .style =
-        { PLATFORM() ->
-            [macos] width: 41em
-           *[other] width: 38em
-        }
+    .style = min-width: 41em;
 
 colors-close-key =
     .key = W
 
-colors-page-override = Substituir as cores das páginas pelas selecionadas acima
+colors-page-override = Substituir cores de páginas pelas selecionadas acima
     .accesskey = S
 
 colors-page-override-option-always =

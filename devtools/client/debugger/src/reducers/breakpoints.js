@@ -7,19 +7,12 @@
  * @module reducers/breakpoints
  */
 
-import { isGeneratedId } from "devtools-source-map";
-import { isEqual } from "lodash";
-
 import { makeBreakpointId } from "../utils/breakpoint";
-
-// eslint-disable-next-line max-len
-import { getBreakpointsList as getBreakpointsListSelector } from "../selectors/breakpoints";
 
 export function initialBreakpointsState(xhrBreakpoints = []) {
   return {
     breakpoints: {},
     xhrBreakpoints,
-    breakpointsDisabled: false,
   };
 }
 
@@ -39,12 +32,12 @@ function update(state = initialBreakpointsState(), action) {
       return state;
     }
 
-    case "REMOVE_BREAKPOINTS": {
+    case "CLEAR_BREAKPOINTS": {
       return { ...state, breakpoints: {} };
     }
 
-    case "NAVIGATE": {
-      return initialBreakpointsState(state.xhrBreakpoints);
+    case "REMOVE_THREAD": {
+      return removeBreakpointsForSources(state, action.sources);
     }
 
     case "SET_XHR_BREAKPOINT": {
@@ -65,6 +58,12 @@ function update(state = initialBreakpointsState(), action) {
 
     case "DISABLE_XHR_BREAKPOINT": {
       return updateXHRBreakpoint(state, action);
+    }
+    case "CLEAR_XHR_BREAKPOINTS": {
+      if (action.status == "start") {
+        return state;
+      }
+      return { ...state, xhrBreakpoints: [] };
     }
   }
 
@@ -107,7 +106,9 @@ function removeXHRBreakpoint(state, action) {
 
   return {
     ...state,
-    xhrBreakpoints: xhrBreakpoints.filter(bp => !isEqual(bp, breakpoint)),
+    xhrBreakpoints: xhrBreakpoints.filter(
+      bp => bp.path !== breakpoint.path || bp.method !== breakpoint.method
+    ),
   };
 }
 
@@ -135,72 +136,14 @@ function removeBreakpoint(state, { breakpoint }) {
   return { ...state, breakpoints };
 }
 
-function isMatchingLocation(location1, location2) {
-  return isEqual(location1, location2);
-}
-
-// Selectors
-// TODO: these functions should be moved out of the reducer
-
-export function getBreakpointsMap(state) {
-  return state.breakpoints.breakpoints;
-}
-
-export function getBreakpointsList(state) {
-  return getBreakpointsListSelector(state);
-}
-
-export function getBreakpointCount(state) {
-  return getBreakpointsList(state).length;
-}
-
-export function getBreakpoint(state, location) {
-  if (!location) {
-    return undefined;
+function removeBreakpointsForSources(state, sources) {
+  const remainingBreakpoints = {};
+  for (const [id, breakpoint] of Object.entries(state.breakpoints)) {
+    if (!sources.includes(breakpoint.location.source)) {
+      remainingBreakpoints[id] = breakpoint;
+    }
   }
-
-  const breakpoints = getBreakpointsMap(state);
-  return breakpoints[makeBreakpointId(location)];
-}
-
-export function getBreakpointsDisabled(state) {
-  const breakpoints = getBreakpointsList(state);
-  return breakpoints.every(breakpoint => breakpoint.disabled);
-}
-
-export function getBreakpointsForSource(state, sourceId, line) {
-  if (!sourceId) {
-    return [];
-  }
-
-  const isGeneratedSource = isGeneratedId(sourceId);
-  const breakpoints = getBreakpointsList(state);
-  return breakpoints.filter(bp => {
-    const location = isGeneratedSource ? bp.generatedLocation : bp.location;
-    return location.sourceId === sourceId && (!line || line == location.line);
-  });
-}
-
-export function getBreakpointForLocation(state, location) {
-  if (!location) {
-    return undefined;
-  }
-
-  const isGeneratedSource = isGeneratedId(location.sourceId);
-  return getBreakpointsList(state).find(bp => {
-    const loc = isGeneratedSource ? bp.generatedLocation : bp.location;
-    return isMatchingLocation(loc, location);
-  });
-}
-
-export function getHiddenBreakpoint(state) {
-  const breakpoints = getBreakpointsList(state);
-  return breakpoints.find(bp => bp.options.hidden);
-}
-
-export function hasLogpoint(state, location) {
-  const breakpoint = getBreakpoint(state, location);
-  return breakpoint?.options.logValue;
+  return { ...state, breakpoints: remainingBreakpoints };
 }
 
 export default update;

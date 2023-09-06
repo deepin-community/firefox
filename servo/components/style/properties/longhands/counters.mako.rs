@@ -15,6 +15,7 @@ ${helpers.predefined_type(
     animation_value_type="discrete",
     spec="https://drafts.csswg.org/css-content/#propdef-content",
     servo_restyle_damage="rebuild_and_reflow",
+    affects="layout",
 )}
 
 ${helpers.predefined_type(
@@ -25,24 +26,27 @@ ${helpers.predefined_type(
     animation_value_type="discrete",
     spec="https://drafts.csswg.org/css-lists/#propdef-counter-increment",
     servo_restyle_damage="rebuild_and_reflow",
+    affects="layout",
 )}
 
 ${helpers.predefined_type(
     "counter-reset",
-    "CounterSetOrReset",
+    "CounterReset",
     engines="gecko servo-2013",
     initial_value="Default::default()",
     animation_value_type="discrete",
     spec="https://drafts.csswg.org/css-lists-3/#propdef-counter-reset",
     servo_restyle_damage="rebuild_and_reflow",
+    affects="layout",
 )}
 
 ${helpers.predefined_type(
     "counter-set",
-    "CounterSetOrReset",
+    "CounterSet",
     engines="gecko",
     initial_value="Default::default()",
     animation_value_type="discrete",
     spec="https://drafts.csswg.org/css-lists-3/#propdef-counter-set",
     servo_restyle_damage="rebuild_and_reflow",
+    affects="layout",
 )}

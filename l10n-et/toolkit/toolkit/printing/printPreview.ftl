@@ -39,6 +39,11 @@ printpreview-page =
     .value = Lehekülg:
     .accesskey = l
 
+# Variables
+# $sheetNum (integer) - The current sheet number
+# $sheetCount (integer) - The total number of sheets to print
+printpreview-sheet-of-sheets = { $sheetNum }/{ $sheetCount }
+
 ## Variables
 ## $percent (integer) - menuitem percent label
 ## $arrow (String) - UTF-8 arrow character for navigation buttons
@@ -57,4 +62,11 @@ printpreview-nextarrow =
 printpreview-endarrow =
     .label = { $arrow }
     .tooltiptext = Viimane lehekülg
-
+printpreview-homearrow-button =
+    .title = Esimene lehekülg
+printpreview-previousarrow-button =
+    .title = Eelmine lehekülg
+printpreview-nextarrow-button =
+    .title = Järgmine lehekülg
+printpreview-endarrow-button =
+    .title = Viimane lehekülg

@@ -10,17 +10,18 @@
 #include "base/string_util.h"
 #include "mozilla/BackgroundHangMonitor.h"
 #include "mozilla/Preferences.h"
+#include "mozilla/GeckoArgs.h"
 #include "mozilla/ipc/ProcessUtils.h"
 #include "mozilla/ipc/IOThreadChild.h"
 
-#if defined(OS_WIN) && defined(MOZ_SANDBOX)
+#if defined(XP_WIN) && defined(MOZ_SANDBOX)
 #  include "mozilla/sandboxTarget.h"
 #elif defined(__OpenBSD__) && defined(MOZ_SANDBOX)
 #  include "mozilla/SandboxSettings.h"
 #  include "prlink.h"
 #endif
 
-#ifdef OS_POSIX
+#ifdef XP_UNIX
 #  include <unistd.h>  // For sleep().
 #endif
 
@@ -31,84 +32,45 @@ namespace net {
 
 LazyLogModule gSocketProcessLog("socketprocess");
 
-SocketProcessImpl::SocketProcessImpl(ProcessId aParentPid)
-    : ProcessChild(aParentPid) {}
-
 SocketProcessImpl::~SocketProcessImpl() = default;
 
 bool SocketProcessImpl::Init(int aArgc, char* aArgv[]) {
-#ifdef OS_POSIX
+#ifdef XP_UNIX
   if (PR_GetEnv("MOZ_DEBUG_SOCKET_PROCESS")) {
     printf_stderr("\n\nSOCKETPROCESSnSOCKETPROCESS\n  debug me @ %d\n\n",
                   base::GetCurrentProcId());
     sleep(30);
   }
 #endif
-#if defined(MOZ_SANDBOX) && defined(OS_WIN)
+#if defined(MOZ_SANDBOX) && defined(XP_WIN)
   LoadLibraryW(L"nss3.dll");
   LoadLibraryW(L"softokn3.dll");
   LoadLibraryW(L"freebl3.dll");
+  LoadLibraryW(L"ipcclientcerts.dll");
+  LoadLibraryW(L"winmm.dll");
   mozilla::SandboxTarget::Instance()->StartSandbox();
 #elif defined(__OpenBSD__) && defined(MOZ_SANDBOX)
   PR_LoadLibrary("libnss3.so");
   PR_LoadLibrary("libsoftokn3.so");
   PR_LoadLibrary("libfreebl3.so");
+  PR_LoadLibrary("libipcclientcerts.so");
   StartOpenBSDSandbox(GeckoProcessType_Socket);
 #endif
-  char* parentBuildID = nullptr;
-  char* prefsHandle = nullptr;
-  char* prefMapHandle = nullptr;
-  char* prefsLen = nullptr;
-  char* prefMapSize = nullptr;
 
-  for (int i = 1; i < aArgc; i++) {
-    if (!aArgv[i]) {
-      continue;
-    }
-
-    if (strcmp(aArgv[i], "-parentBuildID") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-
-      parentBuildID = aArgv[i];
-
-#ifdef XP_WIN
-    } else if (strcmp(aArgv[i], "-prefsHandle") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-      prefsHandle = aArgv[i];
-    } else if (strcmp(aArgv[i], "-prefMapHandle") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-      prefMapHandle = aArgv[i];
-#endif
-    } else if (strcmp(aArgv[i], "-prefsLen") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-      prefsLen = aArgv[i];
-    } else if (strcmp(aArgv[i], "-prefMapSize") == 0) {
-      if (++i == aArgc) {
-        return false;
-      }
-      prefMapSize = aArgv[i];
-    }
-  }
-
-  ipc::SharedPreferenceDeserializer deserializer;
-  if (!deserializer.DeserializeFromSharedMemory(prefsHandle, prefMapHandle,
-                                                prefsLen, prefMapSize)) {
+  Maybe<const char*> parentBuildID =
+      geckoargs::sParentBuildID.Get(aArgc, aArgv);
+  if (parentBuildID.isNothing()) {
     return false;
   }
 
-  return mSocketProcessChild.Init(ParentPid(), parentBuildID,
-                                  IOThreadChild::TakeInitialPort());
+  if (!ProcessChild::InitPrefs(aArgc, aArgv)) {
+    return false;
+  }
+
+  return mSocketProcessChild->Init(TakeInitialEndpoint(), *parentBuildID);
 }
 
-void SocketProcessImpl::CleanUp() { mSocketProcessChild.CleanUp(); }
+void SocketProcessImpl::CleanUp() { mSocketProcessChild->CleanUp(); }
 
 }  // namespace net
 }  // namespace mozilla

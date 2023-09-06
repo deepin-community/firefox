@@ -24,9 +24,9 @@ pippki-pw-change2empty-in-fips-mode = Tu es actualmente in modo FIPS. FIPS requi
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Reinitialisar contrasigno primari
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Reinitialisar
 reset-primary-password-text = Si tu reinitialisa tu contrasigno primari, tote tu contrasignos web e email, tu certificatos personal e claves private essera oblidate. Desira tu vermente reinitialisar tu contrasigno primari?
@@ -35,9 +35,9 @@ pippki-reset-password-confirmation-message = Tu contrasigno primari ha essite re
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Discargante certificato
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = On te ha demandate confider a un nove autoritate de certification (CA).
 download-cert-trust-ssl =
     .label = Confider a iste CA pro identificar sitos del web.
@@ -50,11 +50,43 @@ download-cert-view-text = Examinar le certificato de CA
 
 ## Client Authorization Ask dialog
 
+
+## Client Authentication Ask dialog
+
 client-auth-window =
     .title = Requesta de identification de usator
 client-auth-site-description = Iste sito ha requestate que tu identificar te per un certificato:
 client-auth-choose-cert = Elige un certificato a presentar como identification:
+client-auth-send-no-certificate =
+    .label = Non inviar un certificato
+# Variables:
+# $hostname (String) - The domain name of the site requesting the client authentication certificate
+client-auth-site-identification = “{ $hostname }” ha demandate que tu te identifica per un certificato:
 client-auth-cert-details = Detalios de certificato seligite:
+# Variables:
+# $issuedTo (String) - The subject common name of the currently-selected client authentication certificate
+client-auth-cert-details-issued-to = Emittite a: { $issuedTo }
+# Variables:
+# $serialNumber (String) - The serial number of the certificate (hexadecimal of the form "AA:BB:...")
+client-auth-cert-details-serial-number = Numero Serial: { $serialNumber }
+# Variables:
+# $notBefore (String) - The date before which the certificate is not valid (e.g. Apr 21, 2023, 1:47:53 PM UTC)
+# $notAfter (String) - The date after which the certificate is not valid
+client-auth-cert-details-validity-period = Valide desde { $notBefore } a { $notAfter }
+# Variables:
+# $keyUsages (String) - A list of already-localized key usages for which the certificate may be used
+client-auth-cert-details-key-usages = Usos del clave: { $keyUsages }
+# Variables:
+# $emailAddresses (String) - A list of email addresses present in the certificate
+client-auth-cert-details-email-addresses = Adresses email: { $emailAddresses }
+# Variables:
+# $issuedBy (String) - The issuer common name of the certificate
+client-auth-cert-details-issued-by = Emittite per: { $issuedBy }
+# Variables:
+# $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
+client-auth-cert-details-stored-on = Immagazinate sur: { $storedOn }
+client-auth-cert-remember-box =
+    .label = Memorisar iste decision
 
 ## Set password (p12) dialog
 
@@ -67,9 +99,8 @@ set-password-repeat-backup-pw =
     .value = Contrasigno de salveguarda del certificato (novemente):
 set-password-reminder = Importante: Si tu oblida le contrasigno de tu copia de reserva del certificato, tu non potera restaurar iste copia de reserva plus tarde. Per favor guarda lo in un loco secur.
 
-## Protected Auth dialog
+## Protected authentication alert
 
-protected-auth-window =
-    .title = Authentication protegite per token
-protected-auth-msg = Per favor authentica te al token. Le methodo de authentication depende del typo de tu token.
-protected-auth-token = Token:
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Per favor authenticar al jeton “{ $tokenName }”. Como facer assi depende del jeton (per exemplo, usante un lector de dactylogramma o inserente un codice con un claviero numeric).

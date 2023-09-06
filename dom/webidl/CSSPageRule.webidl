@@ -12,7 +12,6 @@
 // implement this yet.
 [Exposed=Window]
 interface CSSPageRule : CSSRule {
-  // selectorText not implemented yet
-  //         attribute DOMString selectorText;
+  attribute UTF8String selectorText;
   [SameObject, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
 };

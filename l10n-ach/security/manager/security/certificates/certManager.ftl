@@ -21,9 +21,9 @@ certmgr-mine = I tye ki catibiket ma aa kibot dul magi ma nyutu in kikome
 certmgr-people = I tye ki catibiket i pwail ma nyutu jo magi kikome
 certmgr-ca = I tye ki catibiket i pwail ma nyutu lumi catibiket magi kikome
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Yub CA tero gen me waraga
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Yub ter me gen:
 
@@ -33,18 +33,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Waraga man romo nyutu lutic kwede mail.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Kwany Waraga
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = Nying Waraga
 
 certmgr-cert-server =
     .label = Lapok tic
-
-certmgr-override-lifetime =
-    .label = Kare me kwo
 
 certmgr-token-name =
     .label = Nyonyo me Gwoko tic
@@ -173,9 +170,8 @@ delete-email-cert-impact = Ka i kwanyo waraga me e-mail pa dano, pe dong iromo c
 cert-with-serial =
     .value = Catibiket ma ciral namba ne: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

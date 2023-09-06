@@ -65,22 +65,20 @@ cryptominer-tab-content = Criptominiers maldovran las resursas da tes sistem per
 protections-close-button2 =
     .aria-label = Serrar
     .title = Serrar
-  
+
 mobile-app-title = Bloccar fastizaders da reclama sin plirs apparats
 mobile-app-card-content = Utilisar il navigatur mobil cun protecziun cunter fastizaders da reclama integrada.
 mobile-app-links = { -brand-product-name } Navigatur per <a data-l10n-name="android-mobile-inline-link">Android</a> ed <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Mai pli perder in pled-clav
-lockwise-title-logged-in2 = Administraziun da pleds-clav
-lockwise-header-content = { -lockwise-brand-name } memorisescha tes pleds-clav a moda segira en tes navigatur.
+passwords-title-logged-in = Administrar tes pleds-clav
+passwords-header-content = { -brand-product-name } memorisescha tes pleds-clav a moda segira en tes navigatur.
 lockwise-header-content-logged-in = Memorisescha e sincronisescha a moda segira tes pleds-clav sin tut tes apparats.
-protection-report-save-passwords-button = Memorisar ils pleds-clav
-    .title = Memorisar ils pleds-clav en { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Administrar ils pleds-clav
-    .title = Administrar ils pleds-clav cun { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Prenda tes pleds-clav adina cun tai
-lockwise-no-logins-card-content = Dovra ils pleds-clav memorisads en { -brand-short-name } sin mintga apparat.
-lockwise-app-links = { -lockwise-brand-name } per <a data-l10n-name="lockwise-android-inline-link">Android</a> ed <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Memorisar ils pleds-clav
+    .title = Memorisar ils pleds-clav
+protection-report-passwords-manage-passwords-button = Administrar ils pleds-clav
+    .title = Administrar ils pleds-clav
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

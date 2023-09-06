@@ -54,9 +54,11 @@ void ContentProcessController::NotifyPinchGesture(
 }
 
 void ContentProcessController::NotifyAPZStateChange(
-    const ScrollableLayerGuid& aGuid, APZStateChange aChange, int aArg) {
+    const ScrollableLayerGuid& aGuid, APZStateChange aChange, int aArg,
+    Maybe<uint64_t> aInputBlockId) {
   if (mBrowser) {
-    mBrowser->NotifyAPZStateChange(aGuid.mScrollId, aChange, aArg);
+    mBrowser->NotifyAPZStateChange(aGuid.mScrollId, aChange, aArg,
+                                   aInputBlockId);
   }
 }
 
@@ -97,11 +99,24 @@ void ContentProcessController::CancelAutoscroll(
   MOZ_ASSERT_UNREACHABLE("Unexpected message to content process");
 }
 
+void ContentProcessController::NotifyScaleGestureComplete(
+    const ScrollableLayerGuid& aGuid, float aScale) {
+  // This should never get called
+  MOZ_ASSERT_UNREACHABLE("Unexpected message to content process");
+}
+
 bool ContentProcessController::IsRepaintThread() { return NS_IsMainThread(); }
 
 void ContentProcessController::DispatchToRepaintThread(
     already_AddRefed<Runnable> aTask) {
   NS_DispatchToMainThread(std::move(aTask));
+}
+
+PresShell* ContentProcessController::GetTopLevelPresShell() const {
+  if (!mBrowser) {
+    return nullptr;
+  }
+  return mBrowser->GetTopLevelPresShell();
 }
 
 }  // namespace layers

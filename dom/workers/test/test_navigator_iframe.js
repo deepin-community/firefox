@@ -4,7 +4,7 @@ var is = window.parent.is;
 var ok = window.parent.ok;
 var SimpleTest = window.parent.SimpleTest;
 
-worker.onmessage = function(event) {
+worker.onmessage = function (event) {
   var args = JSON.parse(event.data);
 
   if (args.name == "testFinished") {
@@ -26,31 +26,20 @@ worker.onmessage = function(event) {
     return;
   }
 
-  if (args.name === "storage") {
-    is(typeof navigator.storage, typeof args.value, "storage type matches");
-    return;
-  }
+  const objectProperties = [
+    "connection",
+    "gpu",
+    "locks",
+    "mediaCapabilities",
+    "storage",
+  ];
 
-  if (args.name === "connection") {
+  if (objectProperties.includes(args.name)) {
     is(
-      typeof navigator.connection,
+      typeof navigator[args.name],
       typeof args.value,
-      "connection type matches"
+      `${args.name} type matches`
     );
-    return;
-  }
-
-  if (args.name === "mediaCapabilities") {
-    is(
-      typeof navigator.mediaCapabilities,
-      typeof args.value,
-      "mediaCapabilities type matches"
-    );
-    return;
-  }
-
-  if (args.name === "gpu") {
-    is(typeof navigator.gpu, typeof args.value, "gpu type matches");
     return;
   }
 
@@ -61,16 +50,16 @@ worker.onmessage = function(event) {
   );
 };
 
-worker.onerror = function(event) {
+worker.onerror = function (event) {
   ok(false, "Worker had an error: " + event.message);
   SimpleTest.finish();
 };
 
-var { AppConstants } = SpecialPowers.Cu.import(
-  "resource://gre/modules/AppConstants.jsm",
-  {}
+var { AppConstants } = SpecialPowers.ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
 );
 var isNightly = AppConstants.NIGHTLY_BUILD;
 var isRelease = AppConstants.RELEASE_OR_BETA;
+var isAndroid = AppConstants.platform == "android";
 
-worker.postMessage({ isNightly, isRelease });
+worker.postMessage({ isNightly, isRelease, isAndroid });

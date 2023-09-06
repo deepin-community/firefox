@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.10.4
+  - Add `EitherOrBoth::or` and `EitherOrBoth::or_else` (#593)
+  - Add `min_set`, `max_set` et al. (#613, #323)
+  - Use `either/use_std` (#628)
+  - Documentation fixes (#612, #625, #632, #633, #634, #638)
+  - Code maintenance (#623, #624, #627, #630)
+
+## 0.10.2
+  - Add `Itertools::multiunzip` (#362, #565)
+  - Add `intersperse` and `intersperse_with` free functions (#555)
+  - Add `Itertools::sorted_by_cached_key` (#424, #575)
+  - Specialize `ProcessResults::fold` (#563)
+  - Fix subtraction overflow in `DuplicatesBy::size_hint` (#552)
+  - Fix specialization tests (#574)
+  - More `Debug` impls (#573)
+  - Deprecate `fold1` (use `reduce` instead) (#580)
+  - Documentation fixes (`HomogenousTuple`, `into_group_map`, `into_group_map_by`, `MultiPeek::peek`) (#543 et al.)
+
 ## 0.10.1
   - Add `Itertools::contains` (#514)
   - Add `Itertools::counts_by` (#515)

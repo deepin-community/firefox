@@ -86,38 +86,38 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
-main-context-menu-bookmark-add =
-    .aria-label = Закласти цю сторінку
-    .accesskey = к
-    .tooltiptext = Закласти цю сторінку
+main-context-menu-bookmark-page =
+    .aria-label = Додати сторінку до закладок…
+    .accesskey = з
+    .tooltiptext = Додати сторінку до закладок…
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
+# Cannot be shown at the same time as main-context-menu-edit-bookmark-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = Закласти сторінку
-    .accesskey = З
+main-context-menu-bookmark-page-mac =
+    .label = Додати сторінку до закладок…
+    .accesskey = з
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-add-mac,
+# Cannot be shown at the same time as main-context-menu-bookmark-page-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-edit-mac =
-    .label = Редагувати закладку
+main-context-menu-edit-bookmark-mac =
+    .label = Редагувати закладку…
     .accesskey = Р
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Закласти цю сторінку
-    .accesskey = к
-    .tooltiptext = Закласти цю сторінку ({ $shortcut })
-main-context-menu-bookmark-change =
-    .aria-label = Редагувати цю закладку
-    .accesskey = к
-    .tooltiptext = Редагувати цю закладку
+main-context-menu-bookmark-page-with-shortcut =
+    .aria-label = Додати сторінку до закладок…
+    .accesskey = з
+    .tooltiptext = Додати сторінку до закладок ({ $shortcut })
+main-context-menu-edit-bookmark =
+    .aria-label = Редагувати закладку…
+    .accesskey = Р
+    .tooltiptext = Редагувати закладку
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Редагувати цю закладку
-    .accesskey = к
-    .tooltiptext = Редагувати цю закладку ({ $shortcut })
+main-context-menu-edit-bookmark-with-shortcut =
+    .aria-label = Редагувати закладку…
+    .accesskey = Р
+    .tooltiptext = Редагувати закладку ({ $shortcut })
 main-context-menu-open-link =
     .label = Відкрити посилання
     .accesskey = В
@@ -133,9 +133,9 @@ main-context-menu-open-link-new-window =
 main-context-menu-open-link-new-private-window =
     .label = Відкрити в приватному вікні
     .accesskey = и
-main-context-menu-bookmark-link =
-    .label = Закласти посилання
-    .accesskey = с
+main-context-menu-bookmark-link-2 =
+    .label = Додати посилання до закладок
+    .accesskey = п
 main-context-menu-save-link =
     .label = Зберегти посилання як…
     .accesskey = я
@@ -150,9 +150,17 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = Копіювати адресу е-пошти
     .accesskey = п
+main-context-menu-copy-phone =
+    .label = Копіювати номер телефону
+    .accesskey = о
 main-context-menu-copy-link-simple =
     .label = Копіювати посилання
     .accesskey = п
+# This command copies the link, removing additional
+# query parameters used to track users across sites.
+main-context-menu-strip-on-share-link =
+    .label = Копіювати посилання без елементів стеження сайту
+    .accesskey = е
 
 ## Media (video/audio) controls
 ##
@@ -245,6 +253,9 @@ main-context-menu-image-email =
 main-context-menu-image-set-image-as-background =
     .label = Призначити тлом стільниці…
     .accesskey = ч
+main-context-menu-image-copy-text =
+    .label = Копіювати текст із зображення
+    .accesskey = К
 main-context-menu-image-info =
     .label = Інформація про зображення
     .accesskey = І
@@ -266,12 +277,6 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Переслати аудіо…
     .accesskey = с
-main-context-menu-plugin-play =
-    .label = Активувати цей плагін
-    .accesskey = А
-main-context-menu-plugin-hide =
-    .label = Сховати цей плагін
-    .accesskey = С
 main-context-menu-save-to-pocket =
     .label = Зберегти сторінку в { -pocket-brand-name }
     .accesskey = с
@@ -292,6 +297,9 @@ main-context-menu-use-saved-password =
 
 ##
 
+main-context-menu-use-relay-mask =
+    .label = Використати маску електронної пошти { -relay-brand-short-name }
+    .accesskey = е
 main-context-menu-suggest-strong-password =
     .label = Запропонувати надійний пароль…
     .accesskey = й
@@ -319,9 +327,9 @@ main-context-menu-frame-open-window =
 main-context-menu-frame-reload =
     .label = Оновити фрейм
     .accesskey = в
-main-context-menu-frame-bookmark =
-    .label = Закласти цей фрейм
-    .accesskey = ф
+main-context-menu-frame-add-bookmark =
+    .label = Додати фрейм до закладок…
+    .accesskey = й
 main-context-menu-frame-save-as =
     .label = Зберегти фрейм як…
     .accesskey = ф
@@ -334,8 +342,8 @@ main-context-menu-frame-view-source =
 main-context-menu-frame-view-info =
     .label = Інформація про фрейм
     .accesskey = ф
-main-context-menu-print-selection =
-    .label = Друкувати вибране
+main-context-menu-print-selection-2 =
+    .label = Друкувати вибране…
     .accesskey = к
 main-context-menu-view-selection-source =
     .label = Програмний код вибірки
@@ -368,3 +376,6 @@ main-context-menu-eme-learn-more =
 main-context-menu-open-link-in-container-tab =
     .label = Відкрити посилання в новій вкладці { $containerName }
     .accesskey = о
+main-context-menu-reveal-password =
+    .label = Показати пароль
+    .accesskey = П

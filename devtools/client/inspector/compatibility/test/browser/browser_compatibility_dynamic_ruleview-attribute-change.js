@@ -3,19 +3,21 @@
 
 "use strict";
 
-const { COMPATIBILITY_ISSUE_TYPE } = require("devtools/shared/constants");
+const {
+  COMPATIBILITY_ISSUE_TYPE,
+} = require("resource://devtools/shared/constants.js");
 
 const {
   COMPATIBILITY_UPDATE_NODE_COMPLETE,
-} = require("devtools/client/inspector/compatibility/actions/index");
+} = require("resource://devtools/client/inspector/compatibility/actions/index.js");
 
 // Test the behavior rules are dynamically added
 
-const ISSUE_CURSOR = {
+const ISSUE_OUTLINE_RADIUS = {
   type: COMPATIBILITY_ISSUE_TYPE.CSS_PROPERTY,
-  property: "cursor",
-  url: "https://developer.mozilla.org/docs/Web/CSS/cursor",
-  deprecated: false,
+  property: "-moz-user-input",
+  url: "https://developer.mozilla.org/docs/Web/CSS/-moz-user-input",
+  deprecated: true,
   experimental: false,
 };
 
@@ -31,7 +33,7 @@ const ISSUE_HYPHENS = {
 const TEST_URI = `
   <style>
     .issue {
-      cursor: grab;
+      -moz-user-input: none;
     }
   </style>
   <body>
@@ -39,17 +41,14 @@ const TEST_URI = `
   </body>
 `;
 
-add_task(async function() {
+add_task(async function () {
   info("Testing dynamic style change via the devtools inspector's rule view");
   const tab = await addTab(
     "data:text/html;charset=utf-8," + encodeURIComponent(TEST_URI)
   );
 
-  const {
-    allElementsPane,
-    inspector,
-    selectedElementPane,
-  } = await openCompatibilityView();
+  const { allElementsPane, inspector, selectedElementPane } =
+    await openCompatibilityView();
 
   info("Select the div to undergo mutation");
   const waitForCompatibilityListUpdate = waitForUpdateSelectedNodeAction(
@@ -59,7 +58,9 @@ add_task(async function() {
   await waitForCompatibilityListUpdate;
 
   info("Check initial issues");
-  await checkPanelIssues(selectedElementPane, allElementsPane, [ISSUE_CURSOR]);
+  await checkPanelIssues(selectedElementPane, allElementsPane, [
+    ISSUE_OUTLINE_RADIUS,
+  ]);
 
   await addNewRule(
     "hyphens",
@@ -67,13 +68,15 @@ add_task(async function() {
     inspector,
     selectedElementPane,
     allElementsPane,
-    [ISSUE_CURSOR, ISSUE_HYPHENS]
+    [ISSUE_OUTLINE_RADIUS, ISSUE_HYPHENS]
   );
 
   info("Toggle the inline issue rendering it disable");
   await togglePropStatusOnRuleView(inspector, 0, 0);
   info("Check the issues listed in panel");
-  await checkPanelIssues(selectedElementPane, allElementsPane, [ISSUE_CURSOR]);
+  await checkPanelIssues(selectedElementPane, allElementsPane, [
+    ISSUE_OUTLINE_RADIUS,
+  ]);
 
   info("Toggle the class rule rendering it disabled");
   await togglePropStatusOnRuleView(inspector, 1, 0);

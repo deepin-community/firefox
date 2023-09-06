@@ -20,8 +20,11 @@
 #include "nsISupportsImpl.h"
 #include "mozilla/dom/HTMLScriptElement.h"
 #include "mozilla/dom/HTMLScriptElementBinding.h"
+#include "mozilla/StaticPrefs_dom.h"
 
 NS_IMPL_NS_NEW_HTML_ELEMENT_CHECK_PARSER(Script)
+
+using JS::loader::ScriptKind;
 
 namespace mozilla::dom {
 
@@ -96,11 +99,11 @@ nsresult HTMLScriptElement::Clone(dom::NodeInfo* aNodeInfo,
   return NS_OK;
 }
 
-nsresult HTMLScriptElement::AfterSetAttr(int32_t aNamespaceID, nsAtom* aName,
-                                         const nsAttrValue* aValue,
-                                         const nsAttrValue* aOldValue,
-                                         nsIPrincipal* aMaybeScriptedPrincipal,
-                                         bool aNotify) {
+void HTMLScriptElement::AfterSetAttr(int32_t aNamespaceID, nsAtom* aName,
+                                     const nsAttrValue* aValue,
+                                     const nsAttrValue* aOldValue,
+                                     nsIPrincipal* aMaybeScriptedPrincipal,
+                                     bool aNotify) {
   if (nsGkAtoms::async == aName && kNameSpaceID_None == aNamespaceID) {
     mForceAsync = false;
   }
@@ -126,7 +129,7 @@ void HTMLScriptElement::SetInnerHTML(const nsAString& aInnerHTML,
   aError = nsContentUtils::SetNodeTextContent(this, aInnerHTML, true);
 }
 
-void HTMLScriptElement::GetText(nsAString& aValue, ErrorResult& aRv) {
+void HTMLScriptElement::GetText(nsAString& aValue, ErrorResult& aRv) const {
   if (!nsContentUtils::GetNodeTextContent(this, false, aValue, fallible)) {
     aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
   }
@@ -139,22 +142,7 @@ void HTMLScriptElement::SetText(const nsAString& aValue, ErrorResult& aRv) {
 // variation of this code in SVGScriptElement - check if changes
 // need to be transfered when modifying
 
-bool HTMLScriptElement::GetScriptType(nsAString& aType) {
-  nsAutoString type;
-  if (!GetAttr(kNameSpaceID_None, nsGkAtoms::type, type)) {
-    return false;
-  }
-
-  // ASCII whitespace https://infra.spec.whatwg.org/#ascii-whitespace:
-  // U+0009 TAB, U+000A LF, U+000C FF, U+000D CR, or U+0020 SPACE.
-  static const char kASCIIWhitespace[] = "\t\n\f\r ";
-  type.Trim(kASCIIWhitespace);
-
-  aType.Assign(type);
-  return true;
-}
-
-void HTMLScriptElement::GetScriptText(nsAString& text) {
+void HTMLScriptElement::GetScriptText(nsAString& text) const {
   GetText(text, IgnoreErrors());
 }
 
@@ -162,24 +150,19 @@ void HTMLScriptElement::GetScriptCharset(nsAString& charset) {
   GetCharset(charset);
 }
 
-void HTMLScriptElement::FreezeExecutionAttrs(Document* aOwnerDoc) {
+void HTMLScriptElement::FreezeExecutionAttrs(const Document* aOwnerDoc) {
   if (mFrozen) {
     return;
   }
 
-  MOZ_ASSERT(!mIsModule && !mAsync && !mDefer && !mExternal);
-
-  // Determine whether this is a classic script or a module script.
-  nsAutoString type;
-  GetScriptType(type);
-  mIsModule = aOwnerDoc->ModuleScriptsEnabled() && !type.IsEmpty() &&
-              type.LowerCaseEqualsASCII("module");
+  // Determine whether this is a(n) classic/module/importmap script.
+  DetermineKindFromType(aOwnerDoc);
 
   // variation of this code in SVGScriptElement - check if changes
   // need to be transfered when modifying.  Note that we don't use GetSrc here
   // because it will return the base URL when the attr value is "".
   nsAutoString src;
-  if (GetAttr(kNameSpaceID_None, nsGkAtoms::src, src)) {
+  if (GetAttr(nsGkAtoms::src, src)) {
     // Empty src should be treated as invalid URL.
     if (!src.IsEmpty()) {
       nsContentUtils::NewURIWithDocumentCharset(getter_AddRefs(mUri), src,
@@ -206,7 +189,7 @@ void HTMLScriptElement::FreezeExecutionAttrs(Document* aOwnerDoc) {
     mExternal = true;
   }
 
-  bool async = (mExternal || mIsModule) && Async();
+  bool async = (mExternal || mKind == ScriptKind::eModule) && Async();
   bool defer = mExternal && Defer();
 
   mDefer = !async && defer;
@@ -224,7 +207,7 @@ mozilla::dom::ReferrerPolicy HTMLScriptElement::GetReferrerPolicy() {
 }
 
 bool HTMLScriptElement::HasScriptContent() {
-  return (mFrozen ? mExternal : HasAttr(kNameSpaceID_None, nsGkAtoms::src)) ||
+  return (mFrozen ? mExternal : HasAttr(nsGkAtoms::src)) ||
          nsContentUtils::HasNonEmptyTextContent(this);
 }
 
@@ -232,7 +215,10 @@ bool HTMLScriptElement::HasScriptContent() {
 /* static */
 bool HTMLScriptElement::Supports(const GlobalObject& aGlobal,
                                  const nsAString& aType) {
-  return aType.EqualsLiteral("classic") || aType.EqualsLiteral("module");
+  nsAutoString type(aType);
+  return aType.EqualsLiteral("classic") || aType.EqualsLiteral("module") ||
+         (StaticPrefs::dom_importMaps_enabled() &&
+          aType.EqualsLiteral("importmap"));
 }
 
 }  // namespace mozilla::dom

@@ -4,6 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ExtensionPort.h"
+#include "ExtensionBrowser.h"
 #include "ExtensionEventManager.h"
 
 #include "mozilla/dom/BindingUtils.h"  // SequenceRooter
@@ -16,19 +17,44 @@ namespace extensions {
 
 NS_IMPL_CYCLE_COLLECTING_ADDREF(ExtensionPort);
 NS_IMPL_CYCLE_COLLECTING_RELEASE(ExtensionPort)
-NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(ExtensionPort, mGlobal,
-                                      mOnDisconnectEventMgr,
-                                      mOnMessageEventMgr);
+
+NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(ExtensionPort)
+
+NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(ExtensionPort)
+  // Clean the entry for this instance from the ports lookup map
+  // stored in the related ExtensionBrowser instance.
+  tmp->ForgetReleasedPort();
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mExtensionBrowser, mOnDisconnectEventMgr,
+                                  mOnMessageEventMgr)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK_PRESERVED_WRAPPER
+  NS_IMPL_CYCLE_COLLECTION_UNLINK_WEAK_PTR
+NS_IMPL_CYCLE_COLLECTION_UNLINK_END
+
+NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(ExtensionPort)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mExtensionBrowser, mOnDisconnectEventMgr,
+                                    mOnMessageEventMgr)
+NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(ExtensionPort)
   NS_WRAPPERCACHE_INTERFACE_MAP_ENTRY
   NS_INTERFACE_MAP_ENTRY(nsISupports)
 NS_INTERFACE_MAP_END
 
+NS_IMPL_WEBEXT_EVENTMGR(ExtensionPort, u"onMessage"_ns, OnMessage)
+NS_IMPL_WEBEXT_EVENTMGR(ExtensionPort, u"onDisconnect"_ns, OnDisconnect)
+
 // static
 already_AddRefed<ExtensionPort> ExtensionPort::Create(
-    nsIGlobalObject* aGlobal, JS::Handle<JS::Value> aDescriptorValue,
-    ErrorResult& aRv) {
+    nsIGlobalObject* aGlobal, ExtensionBrowser* aExtensionBrowser,
+    UniquePtr<dom::ExtensionPortDescriptor>&& aPortDescriptor) {
+  RefPtr<ExtensionPort> port =
+      new ExtensionPort(aGlobal, aExtensionBrowser, std::move(aPortDescriptor));
+  return port.forget();
+}
+
+// static
+UniquePtr<dom::ExtensionPortDescriptor> ExtensionPort::ToPortDescriptor(
+    JS::Handle<JS::Value> aDescriptorValue, ErrorResult& aRv) {
   if (!aDescriptorValue.isObject()) {
     aRv.Throw(NS_ERROR_UNEXPECTED);
     return nullptr;
@@ -42,16 +68,26 @@ already_AddRefed<ExtensionPort> ExtensionPort::Create(
     return nullptr;
   }
 
-  RefPtr<ExtensionPort> port =
-      new ExtensionPort(aGlobal, std::move(portDescriptor));
-  return port.forget();
+  return portDescriptor;
 }
 
 ExtensionPort::ExtensionPort(
-    nsIGlobalObject* aGlobal,
-    UniquePtr<dom::ExtensionPortDescriptor> aPortDescriptor)
-    : mGlobal(aGlobal), mPortDescriptor(std::move(aPortDescriptor)) {
+    nsIGlobalObject* aGlobal, ExtensionBrowser* aExtensionBrowser,
+    UniquePtr<dom::ExtensionPortDescriptor>&& aPortDescriptor)
+    : mGlobal(aGlobal),
+      mExtensionBrowser(aExtensionBrowser),
+      mPortDescriptor(std::move(aPortDescriptor)) {
   MOZ_DIAGNOSTIC_ASSERT(mGlobal);
+  MOZ_DIAGNOSTIC_ASSERT(mExtensionBrowser);
+}
+
+void ExtensionPort::ForgetReleasedPort() {
+  if (mExtensionBrowser) {
+    mExtensionBrowser->ForgetReleasedPort(mPortDescriptor->mPortId);
+    mExtensionBrowser = nullptr;
+  }
+  mPortDescriptor = nullptr;
+  mGlobal = nullptr;
 }
 
 nsString ExtensionPort::GetAPIObjectId() const {
@@ -64,22 +100,6 @@ JSObject* ExtensionPort::WrapObject(JSContext* aCx,
 }
 
 nsIGlobalObject* ExtensionPort::GetParentObject() const { return mGlobal; }
-
-ExtensionEventManager* ExtensionPort::OnMessage() {
-  if (!mOnMessageEventMgr) {
-    mOnMessageEventMgr = CreateEventManager(u"onMessage"_ns);
-  }
-
-  return mOnMessageEventMgr;
-}
-
-ExtensionEventManager* ExtensionPort::OnDisconnect() {
-  if (!mOnDisconnectEventMgr) {
-    mOnDisconnectEventMgr = CreateEventManager(u"onDisconnect"_ns);
-  }
-
-  return mOnDisconnectEventMgr;
-}
 
 void ExtensionPort::GetName(nsAString& aString) {
   aString.Assign(mPortDescriptor->mName);

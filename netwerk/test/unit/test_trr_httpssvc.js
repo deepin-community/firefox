@@ -4,41 +4,40 @@
 
 "use strict";
 
-ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
+const { TestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/TestUtils.sys.mjs"
+);
 
 let h2Port;
 let trrServer;
 
 function inChildProcess() {
-  return (
-    Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime)
-      .processType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT
-  );
+  return Services.appinfo.processType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT;
 }
 
-const dns = Cc["@mozilla.org/network/dns-service;1"].getService(
-  Ci.nsIDNSService
-);
+add_setup(async function setup() {
+  if (inChildProcess()) {
+    return;
+  }
 
-function setup() {
   trr_test_setup();
-  let env = Cc["@mozilla.org/process/environment;1"].getService(
-    Ci.nsIEnvironment
-  );
-  h2Port = env.get("MOZHTTP2_PORT");
+  h2Port = Services.env.get("MOZHTTP2_PORT");
   Assert.notEqual(h2Port, null);
   Assert.notEqual(h2Port, "");
 
-  Services.prefs.setIntPref("network.trr.mode", 3);
-}
-
-if (!inChildProcess()) {
-  setup();
   registerCleanupFunction(async () => {
     trr_clear_prefs();
+    Services.prefs.clearUserPref("network.dns.port_prefixed_qname_https_rr");
     await trrServer.stop();
   });
-}
+
+  if (mozinfo.socketprocess_networking) {
+    Services.dns; // Needed to trigger socket process.
+    await TestUtils.waitForCondition(() => Services.io.socketProcessLaunched);
+  }
+
+  Services.prefs.setIntPref("network.trr.mode", 3);
+});
 
 add_task(async function testHTTPSSVC() {
   // use the h2 server as DOH provider
@@ -49,8 +48,8 @@ add_task(async function testHTTPSSVC() {
     );
   }
 
-  let [, inRecord] = await new TRRDNSListener("test.httpssvc.com", {
-    type: dns.RESOLVE_TYPE_HTTPSSVC,
+  let { inRecord } = await new TRRDNSListener("test.httpssvc.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
   });
   let answer = inRecord.QueryInterface(Ci.nsIDNSHTTPSSVCRecord).records;
   Assert.equal(answer[0].priority, 1);
@@ -155,8 +154,46 @@ add_task(async function test_aliasform() {
     );
   }
 
+  // Make sure that HTTPS AliasForm is only treated as a CNAME for HTTPS requests
+  await trrServer.registerDoHAnswers("test1.com", "A", {
+    answers: [
+      {
+        name: "test1.com",
+        ttl: 55,
+        type: "HTTPS",
+        flush: false,
+        data: {
+          priority: 0,
+          name: "something1.com",
+          values: [],
+        },
+      },
+    ],
+  });
+  await trrServer.registerDoHAnswers("something1.com", "A", {
+    answers: [
+      {
+        name: "something1.com",
+        ttl: 55,
+        type: "A",
+        flush: false,
+        data: "1.2.3.4",
+      },
+    ],
+  });
+
+  {
+    let { inStatus } = await new TRRDNSListener("test1.com", {
+      expectedSuccess: false,
+    });
+    Assert.ok(
+      !Components.isSuccessCode(inStatus),
+      `${inStatus} should be an error code`
+    );
+  }
+
   // Test that HTTPS priority = 0 (AliasForm) behaves like a CNAME
-  await trrServer.registerDoHAnswers("test.com", "A", {
+  await trrServer.registerDoHAnswers("test.com", "HTTPS", {
     answers: [
       {
         name: "test.com",
@@ -171,22 +208,35 @@ add_task(async function test_aliasform() {
       },
     ],
   });
-  await trrServer.registerDoHAnswers("something.com", "A", {
+  await trrServer.registerDoHAnswers("something.com", "HTTPS", {
     answers: [
       {
         name: "something.com",
         ttl: 55,
-        type: "A",
+        type: "HTTPS",
         flush: false,
-        data: "1.2.3.4",
+        data: {
+          priority: 1,
+          name: "h3pool",
+          values: [{ key: "alpn", value: ["h2", "h3"] }],
+        },
       },
     ],
   });
 
-  await new TRRDNSListener("test.com", { expectedAnswer: "1.2.3.4" });
+  {
+    let { inStatus, inRecord } = await new TRRDNSListener("test.com", {
+      type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
+      expectedSuccess: false,
+    });
+    Assert.ok(Components.isSuccessCode(inStatus), `${inStatus} should succeed`);
+    let answer = inRecord.QueryInterface(Ci.nsIDNSHTTPSSVCRecord).records;
+    Assert.equal(answer[0].priority, 1);
+    Assert.equal(answer[0].name, "h3pool");
+  }
 
   // Test a chain of HTTPSSVC AliasForm and CNAMEs
-  await trrServer.registerDoHAnswers("x.com", "A", {
+  await trrServer.registerDoHAnswers("x.com", "HTTPS", {
     answers: [
       {
         name: "x.com",
@@ -201,7 +251,7 @@ add_task(async function test_aliasform() {
       },
     ],
   });
-  await trrServer.registerDoHAnswers("y.com", "A", {
+  await trrServer.registerDoHAnswers("y.com", "HTTPS", {
     answers: [
       {
         name: "y.com",
@@ -213,7 +263,7 @@ add_task(async function test_aliasform() {
       },
     ],
   });
-  await trrServer.registerDoHAnswers("z.com", "A", {
+  await trrServer.registerDoHAnswers("z.com", "HTTPS", {
     answers: [
       {
         name: "z.com",
@@ -228,19 +278,30 @@ add_task(async function test_aliasform() {
       },
     ],
   });
-  await trrServer.registerDoHAnswers("target.com", "A", {
+  await trrServer.registerDoHAnswers("target.com", "HTTPS", {
     answers: [
       {
         name: "target.com",
         ttl: 55,
-        type: "A",
+        type: "HTTPS",
         flush: false,
-        data: "4.3.2.1",
+        data: {
+          priority: 1,
+          name: "h3pool",
+          values: [{ key: "alpn", value: ["h2", "h3"] }],
+        },
       },
     ],
   });
 
-  await new TRRDNSListener("x.com", { expectedAnswer: "4.3.2.1" });
+  let { inStatus, inRecord } = await new TRRDNSListener("x.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
+    expectedSuccess: false,
+  });
+  Assert.ok(Components.isSuccessCode(inStatus), `${inStatus} should succeed`);
+  let answer = inRecord.QueryInterface(Ci.nsIDNSHTTPSSVCRecord).records;
+  Assert.equal(answer[0].priority, 1);
+  Assert.equal(answer[0].name, "h3pool");
 
   // We get a ServiceForm instead of a A answer, CNAME or AliasForm
   await trrServer.registerDoHAnswers("no-ip-host.com", "A", {
@@ -266,16 +327,16 @@ add_task(async function test_aliasform() {
     ],
   });
 
-  let [, , inStatus] = await new TRRDNSListener("no-ip-host.com", {
+  ({ inStatus } = await new TRRDNSListener("no-ip-host.com", {
     expectedSuccess: false,
-  });
+  }));
   Assert.ok(
     !Components.isSuccessCode(inStatus),
     `${inStatus} should be an error code`
   );
 
   // Test CNAME/AliasForm loop
-  await trrServer.registerDoHAnswers("loop.com", "A", {
+  await trrServer.registerDoHAnswers("loop.com", "HTTPS", {
     answers: [
       {
         name: "loop.com",
@@ -287,7 +348,7 @@ add_task(async function test_aliasform() {
       },
     ],
   });
-  await trrServer.registerDoHAnswers("loop2.com", "A", {
+  await trrServer.registerDoHAnswers("loop2.com", "HTTPS", {
     answers: [
       {
         name: "loop2.com",
@@ -303,13 +364,21 @@ add_task(async function test_aliasform() {
     ],
   });
 
-  [, , inStatus] = await new TRRDNSListener("loop.com", {
+  // Make sure these are the first requests
+  Assert.equal(await trrServer.requestCount("loop.com", "HTTPS"), 0);
+  Assert.equal(await trrServer.requestCount("loop2.com", "HTTPS"), 0);
+
+  ({ inStatus } = await new TRRDNSListener("loop.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
     expectedSuccess: false,
-  });
+  }));
   Assert.ok(
     !Components.isSuccessCode(inStatus),
     `${inStatus} should be an error code`
   );
+  // Make sure the error was actually triggered by a loop.
+  Assert.greater(await trrServer.requestCount("loop.com", "HTTPS"), 2);
+  Assert.greater(await trrServer.requestCount("loop2.com", "HTTPS"), 2);
 
   // Alias form for .
   await trrServer.registerDoHAnswers("empty.com", "A", {
@@ -328,9 +397,9 @@ add_task(async function test_aliasform() {
     ],
   });
 
-  [, , inStatus] = await new TRRDNSListener("empty.com", {
+  ({ inStatus } = await new TRRDNSListener("empty.com", {
     expectedSuccess: false,
-  });
+  }));
   Assert.ok(
     !Components.isSuccessCode(inStatus),
     `${inStatus} should be an error code`
@@ -371,8 +440,8 @@ add_task(async function test_aliasform() {
     ],
   });
 
-  let [, , inStatus2] = await new TRRDNSListener("multi.com", {
-    type: dns.RESOLVE_TYPE_HTTPSSVC,
+  let { inStatus: inStatus2 } = await new TRRDNSListener("multi.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
     expectedSuccess: false,
   });
   Assert.ok(
@@ -404,10 +473,10 @@ add_task(async function test_aliasform() {
     ],
   });
 
-  [, , inStatus2] = await new TRRDNSListener("order.com", {
-    type: dns.RESOLVE_TYPE_HTTPSSVC,
+  ({ inStatus: inStatus2 } = await new TRRDNSListener("order.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
     expectedSuccess: false,
-  });
+  }));
   Assert.ok(
     !Components.isSuccessCode(inStatus2),
     `${inStatus2} should be an error code`
@@ -433,10 +502,10 @@ add_task(async function test_aliasform() {
     ],
   });
 
-  [, , inStatus2] = await new TRRDNSListener("duplicate.com", {
-    type: dns.RESOLVE_TYPE_HTTPSSVC,
+  ({ inStatus: inStatus2 } = await new TRRDNSListener("duplicate.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
     expectedSuccess: false,
-  });
+  }));
   Assert.ok(
     !Components.isSuccessCode(inStatus2),
     `${inStatus2} should be an error code`
@@ -463,10 +532,10 @@ add_task(async function test_aliasform() {
     ],
   });
 
-  [, , inStatus2] = await new TRRDNSListener("mandatory.com", {
-    type: dns.RESOLVE_TYPE_HTTPSSVC,
+  ({ inStatus: inStatus2 } = await new TRRDNSListener("mandatory.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
     expectedSuccess: false,
-  });
+  }));
   Assert.ok(!Components.isSuccessCode(inStatus2), `${inStatus2} should fail`);
 
   // mandatory svcparam
@@ -504,9 +573,9 @@ add_task(async function test_aliasform() {
     ],
   });
 
-  [, , inStatus2] = await new TRRDNSListener("mandatory2.com", {
-    type: dns.RESOLVE_TYPE_HTTPSSVC,
-  });
+  ({ inStatus: inStatus2 } = await new TRRDNSListener("mandatory2.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
+  }));
 
   Assert.ok(Components.isSuccessCode(inStatus2), `${inStatus2} should succeed`);
 
@@ -527,10 +596,10 @@ add_task(async function test_aliasform() {
     ],
   });
 
-  [, , inStatus2] = await new TRRDNSListener("no-alias.com", {
-    type: dns.RESOLVE_TYPE_HTTPSSVC,
+  ({ inStatus: inStatus2 } = await new TRRDNSListener("no-alias.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
     expectedSuccess: false,
-  });
+  }));
 
   Assert.ok(!Components.isSuccessCode(inStatus2), `${inStatus2} should fail`);
 
@@ -551,19 +620,18 @@ add_task(async function test_aliasform() {
     ],
   });
 
-  let inRecord;
-  [, inRecord, inStatus2] = await new TRRDNSListener("service.com", {
-    type: dns.RESOLVE_TYPE_HTTPSSVC,
-  });
+  ({ inRecord, inStatus: inStatus2 } = await new TRRDNSListener("service.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
+  }));
   Assert.ok(Components.isSuccessCode(inStatus2), `${inStatus2} should work`);
-  let answer = inRecord.QueryInterface(Ci.nsIDNSHTTPSSVCRecord).records;
+  answer = inRecord.QueryInterface(Ci.nsIDNSHTTPSSVCRecord).records;
   Assert.equal(answer[0].priority, 1);
   Assert.equal(answer[0].name, "service.com");
 });
 
 add_task(async function testNegativeResponse() {
-  let [, , inStatus] = await new TRRDNSListener("negative_test.com", {
-    type: dns.RESOLVE_TYPE_HTTPSSVC,
+  let { inStatus } = await new TRRDNSListener("negative_test.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
     expectedSuccess: false,
   });
   Assert.ok(
@@ -588,10 +656,10 @@ add_task(async function testNegativeResponse() {
   });
 
   // Should still be failed because a negative response is from DNS cache.
-  [, , inStatus] = await new TRRDNSListener("negative_test.com", {
-    type: dns.RESOLVE_TYPE_HTTPSSVC,
+  ({ inStatus } = await new TRRDNSListener("negative_test.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
     expectedSuccess: false,
-  });
+  }));
   Assert.ok(
     !Components.isSuccessCode(inStatus),
     `${inStatus} should be an error code`
@@ -601,16 +669,60 @@ add_task(async function testNegativeResponse() {
     do_send_remote_message("clearCache");
     await do_await_remote_message("clearCache-done");
   } else {
-    dns.clearCache(true);
+    Services.dns.clearCache(true);
   }
 
   let inRecord;
-  [, inRecord, inStatus] = await new TRRDNSListener("negative_test.com", {
-    type: dns.RESOLVE_TYPE_HTTPSSVC,
-  });
+  ({ inRecord, inStatus } = await new TRRDNSListener("negative_test.com", {
+    type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
+  }));
   Assert.ok(Components.isSuccessCode(inStatus), `${inStatus} should work`);
   let answer = inRecord.QueryInterface(Ci.nsIDNSHTTPSSVCRecord).records;
   Assert.equal(answer[0].priority, 1);
   Assert.equal(answer[0].name, "negative_test.com");
+});
+
+add_task(async function testPortPrefixedName() {
+  if (inChildProcess()) {
+    do_send_remote_message("set-port-prefixed-pref");
+    await do_await_remote_message("set-port-prefixed-pref-done");
+  } else {
+    Services.prefs.setBoolPref(
+      "network.dns.port_prefixed_qname_https_rr",
+      true
+    );
+  }
+
+  await trrServer.registerDoHAnswers(
+    "_4433._https.port_prefix.test.com",
+    "HTTPS",
+    {
+      answers: [
+        {
+          name: "_4433._https.port_prefix.test.com",
+          ttl: 55,
+          type: "HTTPS",
+          flush: false,
+          data: {
+            priority: 1,
+            name: "port_prefix.test1.com",
+            values: [{ key: "alpn", value: ["h2", "h3"] }],
+          },
+        },
+      ],
+    }
+  );
+
+  let { inRecord, inStatus } = await new TRRDNSListener(
+    "port_prefix.test.com",
+    {
+      type: Ci.nsIDNSService.RESOLVE_TYPE_HTTPSSVC,
+      port: 4433,
+    }
+  );
+  Assert.ok(Components.isSuccessCode(inStatus), `${inStatus} should work`);
+  let answer = inRecord.QueryInterface(Ci.nsIDNSHTTPSSVCRecord).records;
+  Assert.equal(answer[0].priority, 1);
+  Assert.equal(answer[0].name, "port_prefix.test1.com");
   await trrServer.stop();
 });

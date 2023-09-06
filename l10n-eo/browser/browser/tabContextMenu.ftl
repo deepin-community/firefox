@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Elekti ĉiujn langetojn
     .accesskey = E
+tab-context-play-tab =
+    .label = Ludi langeton
+    .accesskey = L
+tab-context-play-tabs =
+    .label = Ludi langetojn
+    .accesskey = L
 duplicate-tab =
     .label = Duobligi langeton
     .accesskey = D
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Aldoni langetojn al legosignoj…
     .accesskey = A
-bookmark-tab =
-    .label = Aldoni langeton al legosignoj
+tab-context-bookmark-tab =
+    .label = Aldoni langeton al legosignoj…
     .accesskey = l
 tab-context-open-in-new-container-tab =
     .label = Malfermi en nova inga langeto
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Dividi
     .accesskey = D
-tab-context-share-more =
-    .label = Pli…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -83,14 +87,6 @@ tab-context-reopen-closed-tabs =
            *[other] Malfermi denove fermitajn langetojn
         }
     .accesskey = f
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Fermi langeton
-            [one] Fermi langeton
-           *[other] Fermi langetojn
-        }
-    .accesskey = l
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

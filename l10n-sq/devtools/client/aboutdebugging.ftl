@@ -79,7 +79,7 @@ about-debugging-sidebar-runtime-item-name-no-device =
     .title = { $displayName }
 
 # Text to show in the footer of the sidebar that links to a help page
-# (currently: https://developer.mozilla.org/docs/Tools/about:debugging)
+# (currently: https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/)
 about-debugging-sidebar-support = Mbulim Për Diagnostikime
 
 # Text to show as the ALT attribute of a help icon that accompanies the help about
@@ -140,7 +140,7 @@ about-debugging-setup-usb-step-enable-debug-firefox2 = Aktivizoni Diagnostikim U
 about-debugging-setup-usb-step-plug-device = Lidheni pajisjen Android me kompjuterin tuaj.
 
 # Text shown in the USB section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/docs/Tools/Remote_Debugging/Debugging_over_USB
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-to-a-remote-device
 about-debugging-setup-usb-troubleshoot = Probleme lidhjeje me një pajisje USB? <a>Diagnostikojeni</a>
 
 # Network section of the Setup page
@@ -148,7 +148,7 @@ about-debugging-setup-network =
     .title = Vendndodhje Në Rrjet
 
 # Text shown in the Network section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/en-US/docs/Tools/Remote_Debugging/Debugging_over_a_network
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-over-the-network
 about-debugging-setup-network-troubleshoot = Probleme lidhjeje përmes vendndodhjeje rrjeti? <a>Diagnostikojeni</a>
 
 # Text of a button displayed after the network locations "Host" input.
@@ -208,12 +208,12 @@ about-debugging-runtime-processes =
 about-debugging-runtime-profile-button2 = Funksionim profili
 
 # This string is displayed in the runtime page if the current configuration of the
-# target runtime is incompatible with service workers. "Learn more" points to MDN.
-# https://developer.mozilla.org/en-US/docs/Tools/about%3Adebugging#Service_workers_not_compatible
+# target runtime is incompatible with service workers. "Learn more" points to:
+# https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#service-workers-not-compatible
 about-debugging-runtime-service-workers-not-compatible = Formësimi i shfletuesit tuaj s’është i përputhshëm me Service Workers. <a>Mësoni më tepër</a>
 
 # This string is displayed in the runtime page if the remote browser version is too old.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
 # { $minVersion } is the minimum version that is compatible with the current Firefox instance (same format)
 about-debugging-browser-version-too-old =
@@ -225,7 +225,7 @@ about-debugging-browser-version-too-old =
 about-debugging-browser-version-too-old-fennec = Ky version i Firefox-it s’mund të diagnostikojë Firefox-in për Android (68). Rekomandojmë që për testime në telefonin tuaj të instaloni Firefox-in për Android Nightly. <a>Më tepër hollësi</a>
 
 # This string is displayed in the runtime page if the remote browser version is too recent.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeID } is the build ID of the remote browser (for instance "20181231", format is yyyyMMdd)
 # { $localID } is the build ID of the current Firefox instance (same format)
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
@@ -266,7 +266,7 @@ about-debugging-debug-target-list-empty = Ende pa gjë.
 # Text of a button displayed next to debug targets of "runtime" pages. Clicking on this
 # button will open a DevTools toolbox that will allow inspecting the target.
 # A target can be an addon, a tab, a worker...
-about-debugging-debug-target-inspect-button = Shqyrtoje
+about-debugging-debug-target-inspect-button = Inspektoje
 
 # Text of a button displayed in the "This Firefox" page, in the Temporary Extension
 # section. Clicking on the button will open a file picker to load a temporary extension
@@ -282,6 +282,12 @@ about-debugging-tmp-extension-reload-button = Ringarkoje
 # Text of a button displayed for a temporary extension loaded in the "This Firefox" page.
 # Clicking on the button will uninstall the extension and remove it from the page.
 about-debugging-tmp-extension-remove-button = Hiqe
+
+# Text of a button displayed for a temporary extension loaded in the "This Firefox" page.
+# Clicking on the button will forcefully terminate the extension background script (button
+# only visible in extensions that includes a non-persistent background script, either an
+# event page or a background service worker).
+about-debugging-tmp-extension-terminate-bgscript-button = Përfundo programth prapaskene
 
 # Message displayed in the file picker that opens to select a temporary extension to load
 # (triggered by the button using "about-debugging-tmp-extension-install-button")
@@ -311,6 +317,18 @@ about-debugging-extension-location =
 # For instance "geckoprofiler@mozilla.com" or "{ed26ddcb-5611-4512-a89a-51b8db81cfb2}".
 about-debugging-extension-id =
     .label = ID Zgjerimi
+
+# Text displayed for extensions in "runtime" pages, before displaying the status of the
+# extension background script.
+about-debugging-extension-backgroundscript =
+    .label = Programth prapaskene
+
+# Displayed for extension using a non-persistent background page (either an event page or
+# background service worker) when the background script is currently running.
+about-debugging-extension-backgroundscript-status-running = Në xhirim
+
+# Displayed for extension using a non-persistent background page when is currently stopped.
+about-debugging-extension-backgroundscript-status-stopped = I ndalur
 
 # This string is displayed as a label of the button that pushes a test payload
 # to a service worker.
@@ -357,19 +375,11 @@ about-debugging-worker-push-service =
 
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
-    .title = Mbikëqyrja e Service Worker-it është aktualisht e çaktivizuar për { -brand-shorter-name } multiproces
+    .title = Inspektimi i Service Worker-it është aktualisht i çaktivizuar për { -brand-shorter-name } multiproces
 
 # Displayed as title of the inspect button for zombie tabs (e.g. tabs loaded via a session restore).
 about-debugging-zombie-tab-inspect-action-disabled =
     .title = Skeda s’është ngarkuar plotësisht dhe s’mund të inspektohet
-
-# Displayed as name for the Main Process debug target in the Processes category. Only for
-# remote runtimes, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-name = Procesi Kryesor
-
-# Displayed as description for the Main Process debug target in the Processes category.
-# Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-description2 = Proces Kryesor për shfletuesin e synuar
 
 # Displayed instead of the Main Process debug target when the preference
 # `devtools.browsertoolbox.fission` is true.

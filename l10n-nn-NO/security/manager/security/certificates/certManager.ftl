@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 certmgr-title =
-    .title = Sertifikat-handterar
+    .title = Sertifikat-handsamar
 
 certmgr-tab-mine =
     .label = Dine sertifikat
@@ -26,9 +26,9 @@ certmgr-people = Du har lagra sertifikat som identifiserer desse personane
 certmgr-server = Desse oppføringane identifiserer unntak frå serversertifikat
 certmgr-ca = Du har lagra sertifikat som identifiserer desse sertifikatstyremaktene
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Rediger tiltru for CA-sertifikatet
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Rediger tiltru:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Dette sertifikatet kan identifisera e-postbrukarar.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Slett sertifikat
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Vert
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Tenar
-
-certmgr-override-lifetime =
-    .label = Levetid
 
 certmgr-token-name =
     .label = Tryggingseining
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Serienummer
+
+certmgr-fingerprint-sha-256 =
+    .label = SHA-256-fingeravtrykk
 
 certmgr-view =
     .label = Vis…
@@ -185,8 +185,6 @@ delete-email-cert-impact = Dersom du slettar ein person sitt e-postsertifikat vi
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Sertifikat med serienummer: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Ikkje send klientsertifikat

@@ -144,12 +144,9 @@ void ChromeProcessController::HandleDoubleTap(
   ScrollableLayerGuid::ViewID viewId;
   if (APZCCallbackHelper::GetOrCreateScrollIdentifiers(
           document->GetDocumentElement(), &presShellId, &viewId)) {
-    APZThreadUtils::RunOnControllerThread(
-        NewRunnableMethod<ScrollableLayerGuid, ZoomTarget, uint32_t>(
-            "IAPZCTreeManager::ZoomToRect", mAPZCTreeManager,
-            &IAPZCTreeManager::ZoomToRect,
-            ScrollableLayerGuid(aGuid.mLayersId, presShellId, viewId),
-            zoomTarget, ZoomToRectBehavior::ZOOM_IN_IF_CANT_ZOOM_OUT));
+    mAPZCTreeManager->ZoomToRect(
+        ScrollableLayerGuid(aGuid.mLayersId, presShellId, viewId), zoomTarget,
+        ZoomToRectBehavior::DEFAULT_BEHAVIOR);
   }
 }
 
@@ -194,13 +191,15 @@ void ChromeProcessController::HandleTap(
 
   switch (aType) {
     case TapType::eSingleTap:
-      mAPZEventState->ProcessSingleTap(point, scale, aModifiers, 1);
+      mAPZEventState->ProcessSingleTap(point, scale, aModifiers, 1,
+                                       aInputBlockId);
       break;
     case TapType::eDoubleTap:
       HandleDoubleTap(point, aModifiers, aGuid);
       break;
     case TapType::eSecondTap:
-      mAPZEventState->ProcessSingleTap(point, scale, aModifiers, 2);
+      mAPZEventState->ProcessSingleTap(point, scale, aModifiers, 2,
+                                       aInputBlockId);
       break;
     case TapType::eLongTap: {
       RefPtr<APZEventState> eventState(mAPZEventState);
@@ -244,13 +243,14 @@ void ChromeProcessController::NotifyPinchGesture(
 }
 
 void ChromeProcessController::NotifyAPZStateChange(
-    const ScrollableLayerGuid& aGuid, APZStateChange aChange, int aArg) {
+    const ScrollableLayerGuid& aGuid, APZStateChange aChange, int aArg,
+    Maybe<uint64_t> aInputBlockId) {
   if (!mUIThread->IsOnCurrentThread()) {
-    mUIThread->Dispatch(
-        NewRunnableMethod<ScrollableLayerGuid, APZStateChange, int>(
-            "layers::ChromeProcessController::NotifyAPZStateChange", this,
-            &ChromeProcessController::NotifyAPZStateChange, aGuid, aChange,
-            aArg));
+    mUIThread->Dispatch(NewRunnableMethod<ScrollableLayerGuid, APZStateChange,
+                                          int, Maybe<uint64_t>>(
+        "layers::ChromeProcessController::NotifyAPZStateChange", this,
+        &ChromeProcessController::NotifyAPZStateChange, aGuid, aChange, aArg,
+        aInputBlockId));
     return;
   }
 
@@ -258,7 +258,8 @@ void ChromeProcessController::NotifyAPZStateChange(
     return;
   }
 
-  mAPZEventState->ProcessAPZStateChange(aGuid.mScrollId, aChange, aArg);
+  mAPZEventState->ProcessAPZStateChange(aGuid.mScrollId, aChange, aArg,
+                                        aInputBlockId);
 }
 
 void ChromeProcessController::NotifyMozMouseScrollEvent(
@@ -332,4 +333,24 @@ void ChromeProcessController::CancelAutoscroll(
   }
 
   APZCCallbackHelper::CancelAutoscroll(aGuid.mScrollId);
+}
+
+void ChromeProcessController::NotifyScaleGestureComplete(
+    const ScrollableLayerGuid& aGuid, float aScale) {
+  if (!mUIThread->IsOnCurrentThread()) {
+    mUIThread->Dispatch(NewRunnableMethod<ScrollableLayerGuid, float>(
+        "layers::ChromeProcessController::NotifyScaleGestureComplete", this,
+        &ChromeProcessController::NotifyScaleGestureComplete, aGuid, aScale));
+    return;
+  }
+
+  if (mWidget) {
+    // Dispatch the call to APZCCallbackHelper::NotifyScaleGestureComplete
+    // to the main thread so that it runs asynchronously from the current call.
+    // This is because the call can run arbitrary JS code, which can also spin
+    // the event loop and cause undesirable re-entrancy in APZ.
+    mUIThread->Dispatch(NewRunnableFunction(
+        "layers::ChromeProcessController::NotifyScaleGestureComplete",
+        &APZCCallbackHelper::NotifyScaleGestureComplete, mWidget, aScale));
+  }
 }

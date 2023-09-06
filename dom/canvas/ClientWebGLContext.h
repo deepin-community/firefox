@@ -34,7 +34,12 @@ class ClientWebGLExtensionBase;
 class HostWebGLContext;
 
 namespace dom {
+class OwningHTMLCanvasElementOrOffscreenCanvas;
 class WebGLChild;
+}  // namespace dom
+
+namespace gfx {
+class DrawTargetWebgl;
 }
 
 namespace webgl {
@@ -164,12 +169,14 @@ class ContextGenerationInfo final {
   std::array<float, 4> mClearColor = {{0, 0, 0, 0}};
   std::array<float, 4> mBlendColor = {{0, 0, 0, 0}};
   std::array<float, 2> mDepthRange = {{0, 1}};
-  webgl::PixelPackState mPixelPackState;
-  WebGLPixelStore mPixelUnpackState;
+  webgl::PixelPackingState mPixelPackState;
+  webgl::PixelUnpackStateWebgl mPixelUnpackState;
 
   std::vector<GLenum> mCompressedTextureFormats;
 
   Maybe<uvec2> mDrawingBufferSize;
+
+  webgl::ProvokingVertex mProvokingVertex = webgl::ProvokingVertex::LastVertex;
 
   ObjectId NextId() { return mLastId += 1; }
 };
@@ -195,6 +202,8 @@ struct NotLostData final {
   std::array<RefPtr<ClientWebGLExtensionBase>,
              UnderlyingValue(WebGLExtensionID::Max)>
       extensions;
+
+  RefPtr<layers::CanvasRenderer> mCanvasRenderer;
 
   explicit NotLostData(ClientWebGLContext& context);
   ~NotLostData();
@@ -263,13 +272,13 @@ class WebGLBufferJS final : public nsWrapperCache, public webgl::ObjectJS {
 
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(WebGLBufferJS)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(WebGLBufferJS)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(WebGLBufferJS)
 
   explicit WebGLBufferJS(const ClientWebGLContext& webgl)
       : webgl::ObjectJS(webgl) {}
 
  private:
-  ~WebGLBufferJS() = default;
+  ~WebGLBufferJS();
 
  public:
   JSObject* WrapObject(JSContext*, JS::Handle<JSObject*>) override;
@@ -289,10 +298,16 @@ class WebGLFramebufferJS final : public nsWrapperCache, public webgl::ObjectJS {
  private:
   bool mHasBeenBound = false;  // !IsFramebuffer until Bind
   std::unordered_map<GLenum, Attachment> mAttachments;
+  // Holds Some Id if async present is used
+  Maybe<layers::RemoteTextureId> mLastRemoteTextureId;
+  Maybe<layers::RemoteTextureOwnerId> mRemoteTextureOwnerId;
+  // Needs sync IPC to ensure that the remote texture exists in the
+  // RemoteTextureMap.
+  bool mNeedsRemoteTextureSync = true;
 
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(WebGLFramebufferJS)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(WebGLFramebufferJS)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(WebGLFramebufferJS)
 
   explicit WebGLFramebufferJS(const ClientWebGLContext&, bool opaque = false);
 
@@ -300,7 +315,7 @@ class WebGLFramebufferJS final : public nsWrapperCache, public webgl::ObjectJS {
   bool mInOpaqueRAF = false;
 
  private:
-  ~WebGLFramebufferJS() = default;
+  ~WebGLFramebufferJS();
 
   void EnsureColorAttachments();
 
@@ -324,7 +339,7 @@ class WebGLProgramJS final : public nsWrapperCache, public webgl::ObjectJS {
 
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(WebGLProgramJS)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(WebGLProgramJS)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(WebGLProgramJS)
   // Must come first!
   // If the REFCOUNTING macro isn't declared first, the AddRef at
   // mInnerRef->js will panic when REFCOUNTING's "owning thread" var is still
@@ -386,13 +401,13 @@ class WebGLQueryJS final : public nsWrapperCache,
 
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(WebGLQueryJS)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(WebGLQueryJS)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(WebGLQueryJS)
 
   explicit WebGLQueryJS(const ClientWebGLContext& webgl)
       : webgl::ObjectJS(webgl) {}
 
  private:
-  ~WebGLQueryJS() = default;
+  ~WebGLQueryJS();
 
  public:
   JSObject* WrapObject(JSContext*, JS::Handle<JSObject*>) override;
@@ -406,14 +421,14 @@ class WebGLRenderbufferJS final : public nsWrapperCache,
 
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(WebGLRenderbufferJS)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(WebGLRenderbufferJS)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(WebGLRenderbufferJS)
 
  private:
   bool mHasBeenBound = false;  // !IsRenderbuffer until Bind
 
   explicit WebGLRenderbufferJS(const ClientWebGLContext& webgl)
       : webgl::ObjectJS(webgl) {}
-  ~WebGLRenderbufferJS() = default;
+  ~WebGLRenderbufferJS();
 
  public:
   JSObject* WrapObject(JSContext*, JS::Handle<JSObject*>) override;
@@ -425,13 +440,13 @@ class WebGLSamplerJS final : public nsWrapperCache, public webgl::ObjectJS {
   // IsSampler without Bind
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(WebGLSamplerJS)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(WebGLSamplerJS)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(WebGLSamplerJS)
 
   explicit WebGLSamplerJS(const ClientWebGLContext& webgl)
       : webgl::ObjectJS(webgl) {}
 
  private:
-  ~WebGLSamplerJS() = default;
+  ~WebGLSamplerJS();
 
  public:
   JSObject* WrapObject(JSContext*, JS::Handle<JSObject*>) override;
@@ -444,7 +459,7 @@ class WebGLShaderJS final : public nsWrapperCache, public webgl::ObjectJS {
 
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(WebGLShaderJS)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(WebGLShaderJS)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(WebGLShaderJS)
 
  private:
   const GLenum mType;
@@ -481,17 +496,18 @@ class WebGLSyncJS final : public nsWrapperCache,
   friend class webgl::AvailabilityRunnable;
 
   bool mCanBeAvailable = false;
+  uint8_t mNumQueriesBeforeFirstFrameBoundary = 0;
   bool mSignaled = false;
 
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(WebGLSyncJS)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(WebGLSyncJS)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(WebGLSyncJS)
 
   explicit WebGLSyncJS(const ClientWebGLContext& webgl)
       : webgl::ObjectJS(webgl) {}
 
  private:
-  ~WebGLSyncJS() = default;
+  ~WebGLSyncJS();
 
  public:
   JSObject* WrapObject(JSContext*, JS::Handle<JSObject*>) override;
@@ -506,13 +522,13 @@ class WebGLTextureJS final : public nsWrapperCache, public webgl::ObjectJS {
 
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(WebGLTextureJS)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(WebGLTextureJS)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(WebGLTextureJS)
 
   explicit WebGLTextureJS(const ClientWebGLContext& webgl)
       : webgl::ObjectJS(webgl) {}
 
  private:
-  ~WebGLTextureJS() = default;
+  ~WebGLTextureJS();
 
  public:
   JSObject* WrapObject(JSContext*, JS::Handle<JSObject*>) override;
@@ -532,12 +548,12 @@ class WebGLTransformFeedbackJS final : public nsWrapperCache,
 
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(WebGLTransformFeedbackJS)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(WebGLTransformFeedbackJS)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(WebGLTransformFeedbackJS)
 
   explicit WebGLTransformFeedbackJS(const ClientWebGLContext&);
 
  private:
-  ~WebGLTransformFeedbackJS() = default;
+  ~WebGLTransformFeedbackJS();
 
  public:
   JSObject* WrapObject(JSContext*, JS::Handle<JSObject*>) override;
@@ -557,7 +573,7 @@ class WebGLUniformLocationJS final : public nsWrapperCache,
 
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(WebGLUniformLocationJS)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(WebGLUniformLocationJS)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(WebGLUniformLocationJS)
 
   WebGLUniformLocationJS(const ClientWebGLContext& webgl,
                          std::weak_ptr<webgl::LinkResult> parent, uint32_t loc,
@@ -585,12 +601,12 @@ class WebGLVertexArrayJS final : public nsWrapperCache, public webgl::ObjectJS {
 
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(WebGLVertexArrayJS)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(WebGLVertexArrayJS)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(WebGLVertexArrayJS)
 
   explicit WebGLVertexArrayJS(const ClientWebGLContext&);
 
  private:
-  ~WebGLVertexArrayJS() = default;
+  ~WebGLVertexArrayJS();
 
  public:
   JSObject* WrapObject(JSContext*, JS::Handle<JSObject*>) override;
@@ -676,6 +692,12 @@ struct TexImageSourceAdapter final : public TexImageSource {
     mImageData = imageData;
   }
 
+  TexImageSourceAdapter(const dom::OffscreenCanvas* offscreenCanvas,
+                        ErrorResult* const out_error) {
+    mOffscreenCanvas = offscreenCanvas;
+    mOut_error = out_error;
+  }
+
   TexImageSourceAdapter(const dom::Element* domElem,
                         ErrorResult* const out_error) {
     mDomElem = domElem;
@@ -687,17 +709,17 @@ struct TexImageSourceAdapter final : public TexImageSource {
  * Base class for all IDL implementations of WebGLContext
  */
 class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
-                                 public nsWrapperCache,
-                                 public SupportsWeakPtr {
+                                 public nsWrapperCache {
   friend class webgl::AvailabilityRunnable;
   friend class webgl::ObjectJS;
   friend class webgl::ProgramKeepAlive;
   friend class webgl::ShaderKeepAlive;
+  friend class gfx::DrawTargetWebgl;
 
   // ----------------------------- Lifetime and DOM ---------------------------
  public:
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS(ClientWebGLContext)
+  NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(ClientWebGLContext)
 
   JSObject* WrapObject(JSContext* cx,
                        JS::Handle<JSObject*> givenProto) override {
@@ -728,11 +750,18 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   mutable GLenum mNextError = 0;
   mutable webgl::LossStatus mLossStatus = webgl::LossStatus::Ready;
   mutable bool mAwaitingRestore = false;
+  // Holds Some Id if async present is used
+  mutable Maybe<layers::RemoteTextureId> mLastRemoteTextureId;
+  mutable Maybe<layers::RemoteTextureOwnerId> mRemoteTextureOwnerId;
+  // Needs sync IPC to ensure that the remote texture exists in the
+  // RemoteTextureMap.
+  bool mNeedsRemoteTextureSync = true;
 
   // -
 
  public:
   const auto& Limits() const { return mNotLost->info.limits; }
+  const auto& Vendor() const { return mNotLost->info.vendor; }
   // https://www.khronos.org/registry/webgl/specs/latest/1.0/#actual-context-parameters
   const WebGLContextOptions& ActualContextParameters() const {
     MOZ_ASSERT(mNotLost != nullptr);
@@ -767,13 +796,14 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   bool CreateHostContext(const uvec2& requestedSize);
   void ThrowEvent_WebGLContextCreationError(const std::string&) const;
 
+  void UpdateCanvasParameters();
+
  public:
   void MarkCanvasDirty();
 
   void MarkContextClean() override {}
 
   void OnBeforePaintTransaction() override;
-  ClientWebGLContext* AsWebgl() override { return this; }
 
   mozilla::dom::WebGLChild* GetChild() const {
     if (!mNotLost) return nullptr;
@@ -790,22 +820,17 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   class FuncScope final {
    public:
     const ClientWebGLContext& mWebGL;
+    const std::shared_ptr<webgl::NotLostData> mKeepNotLostOrNull;
     const char* const mFuncName;
-    const FuncScopeId mId;
 
     FuncScope(const ClientWebGLContext& webgl, const char* funcName)
         : mWebGL(webgl),
-          mFuncName(funcName),
-          mId(FuncScopeId::FuncScopeIdError) {
+          mKeepNotLostOrNull(webgl.mNotLost),
+          mFuncName(funcName) {
       // Only set if an "outer" scope hasn't already been set.
       if (!mWebGL.mFuncScope) {
         mWebGL.mFuncScope = this;
       }
-    }
-
-    FuncScope(const ClientWebGLContext* webgl, FuncScopeId aId)
-        : mWebGL(*webgl), mFuncName(GetFuncScopeName(aId)), mId(aId) {
-      mWebGL.mFuncScope = this;
     }
 
     ~FuncScope() {
@@ -813,6 +838,9 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
         mWebGL.mFuncScope = nullptr;
       }
     }
+
+    FuncScope(const FuncScope&) = delete;
+    FuncScope(FuncScope&&) = delete;
   };
 
  protected:
@@ -820,10 +848,6 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   // stack
   mutable FuncScope* mFuncScope = nullptr;
 
-  const auto& CurFuncScope() const { return *mFuncScope; }
-  FuncScopeId GetFuncScopeId() const {
-    return mFuncScope ? mFuncScope->mId : FuncScopeId::FuncScopeIdError;
-  }
   const char* FuncName() const {
     return mFuncScope ? mFuncScope->mFuncName : nullptr;
   }
@@ -911,16 +935,23 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
  public:
   bool InitializeCanvasRenderer(nsDisplayListBuilder* aBuilder,
                                 layers::CanvasRenderer* aRenderer) override;
+
+  void MarkContextCleanForFrameCapture() override {
+    mFrameCaptureState = FrameCaptureState::CLEAN;
+  }
   // Note that 'clean' here refers to its invalidation state, not the
   // contents of the buffer.
-  bool IsContextCleanForFrameCapture() override {
-    return !mCapturedFrameInvalidated;
-  }
-  void MarkContextCleanForFrameCapture() override {
-    mCapturedFrameInvalidated = false;
+  Watchable<FrameCaptureState>* GetFrameCaptureState() override {
+    return &mFrameCaptureState;
   }
 
   void OnMemoryPressure() override;
+  void SetContextOptions(const WebGLContextOptions& aOptions) {
+    mInitialOptions.emplace(aOptions);
+  }
+  const WebGLContextOptions& GetContextOptions() const {
+    return mInitialOptions.ref();
+  }
   NS_IMETHOD
   SetContextOptions(JSContext* cx, JS::Handle<JS::Value> options,
                     ErrorResult& aRvForDictionaryInit) override;
@@ -940,12 +971,10 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
     return NS_ERROR_NOT_IMPLEMENTED;
   }
 
-  NS_IMETHOD Reset() override {
-    /* (InitializeWithSurface) */
-    return NS_ERROR_NOT_IMPLEMENTED;
-  }
+  void ResetBitmap() override;
 
-  UniquePtr<uint8_t[]> GetImageBuffer(int32_t* out_format) override;
+  UniquePtr<uint8_t[]> GetImageBuffer(int32_t* out_format,
+                                      gfx::IntSize* out_imageSize) override;
   NS_IMETHOD GetInputStream(const char* mimeType,
                             const nsAString& encoderOptions,
                             nsIInputStream** out_stream) override;
@@ -955,8 +984,6 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
 
   void SetOpaqueValueFromOpaqueAttr(bool) override{};
   bool GetIsOpaque() override { return !mInitialOptions->alpha; }
-
-  NS_IMETHOD SetIsIPC(bool) override { return NS_ERROR_NOT_IMPLEMENTED; }
 
   /**
    * An abstract base class to be implemented by callers wanting to be notified
@@ -974,7 +1001,8 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
  protected:
   layers::LayersBackend GetCompositorBackendType() const;
 
-  bool mCapturedFrameInvalidated = false;
+  Watchable<FrameCaptureState> mFrameCaptureState = {
+      FrameCaptureState::CLEAN, "ClientWebGLContext::mFrameCaptureState"};
 
   // -------------------------------------------------------------------------
   // WebGLRenderingContext Basic Properties and Methods
@@ -995,10 +1023,28 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   }
   void GetContextAttributes(dom::Nullable<dom::WebGLContextAttributes>& retval);
 
-  void Present(WebGLFramebufferJS*, layers::TextureType,
-               const bool webvr = false);
-  Maybe<layers::SurfaceDescriptor> GetFrontBuffer(WebGLFramebufferJS*,
-                                                  const bool webvr = false);
+ private:
+  webgl::SwapChainOptions PrepareAsyncSwapChainOptions(
+      WebGLFramebufferJS* fb, bool webvr,
+      const webgl::SwapChainOptions& options = webgl::SwapChainOptions());
+
+ public:
+  layers::TextureType GetTexTypeForSwapChain() const;
+  void Present(
+      WebGLFramebufferJS*, const bool webvr = false,
+      const webgl::SwapChainOptions& options = webgl::SwapChainOptions());
+  void Present(
+      WebGLFramebufferJS*, layers::TextureType, const bool webvr = false,
+      const webgl::SwapChainOptions& options = webgl::SwapChainOptions());
+  void CopyToSwapChain(
+      WebGLFramebufferJS*,
+      const webgl::SwapChainOptions& options = webgl::SwapChainOptions());
+  void EndOfFrame();
+  Maybe<layers::SurfaceDescriptor> GetFrontBuffer(
+      WebGLFramebufferJS*, const bool webvr = false) override;
+  Maybe<layers::SurfaceDescriptor> PresentFrontBuffer(
+      WebGLFramebufferJS*, layers::TextureType,
+      const bool webvr = false) override;
   RefPtr<gfx::SourceSurface> GetFrontBufferSnapshot(
       bool requireAlphaPremult = true) override;
 
@@ -1006,7 +1052,10 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
 
  private:
   RefPtr<gfx::DataSourceSurface> BackBufferSnapshot();
-  void DoReadPixels(const webgl::ReadPixelsDesc&, Range<uint8_t>) const;
+  [[nodiscard]] bool DoReadPixels(const webgl::ReadPixelsDesc&,
+                                  Range<uint8_t>) const;
+  [[nodiscard]] bool DoReadPixels(const webgl::ReadPixelsDesc&,
+                                  const mozilla::ipc::Shmem&) const;
   uvec2 DrawingBufferSize();
 
   // -
@@ -1029,8 +1078,9 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
       strong->Flush(flushGl);
     };
 
-    already_AddRefed<mozilla::Runnable> runnable = NS_NewRunnableFunction(
-        "enqueue Event_webglcontextrestored", DeferredFlush);
+    already_AddRefed<mozilla::CancelableRunnable> runnable =
+        NS_NewCancelableRunnableFunction("enqueue Event_webglcontextrestored",
+                                         DeferredFlush);
     NS_DispatchToCurrentThread(std::move(runnable));
   }
 
@@ -1082,7 +1132,7 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                                 JS::MutableHandle<JS::Value> retval) const;
 
   void GetIndexedParameter(JSContext* cx, GLenum target, GLuint index,
-                           JS::MutableHandleValue retval,
+                           JS::MutableHandle<JS::Value> retval,
                            ErrorResult& rv) const;
 
   already_AddRefed<WebGLShaderPrecisionFormatJS> GetShaderPrecisionFormat(
@@ -1386,6 +1436,12 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                   GLenum usage, GLuint srcElemOffset = 0,
                   GLuint srcElemCountOverride = 0);
 
+  void RawBufferData(GLenum target, const uint8_t* srcBytes, size_t srcLen,
+                     GLenum usage);
+  void RawBufferSubData(GLenum target, WebGLsizeiptr dstByteOffset,
+                        const uint8_t* srcBytes, size_t srcLen,
+                        bool unsynchronized = false);
+
   void BufferSubData(GLenum target, WebGLsizeiptr dstByteOffset,
                      const dom::ArrayBufferView& src, GLuint srcElemOffset = 0,
                      GLuint srcElemCountOverride = 0);
@@ -1468,7 +1524,7 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   // ----------------------- Renderbuffer objects -----------------------
   void GetInternalformatParameter(JSContext* cx, GLenum target,
                                   GLenum internalformat, GLenum pname,
-                                  JS::MutableHandleValue retval,
+                                  JS::MutableHandle<JS::Value> retval,
                                   ErrorResult& rv);
 
   void BindRenderbuffer(GLenum target, WebGLRenderbufferJS*);
@@ -1503,10 +1559,13 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                   GLenum internalFormat, const ivec3& size) const;
 
   // Primitive tex upload functions
+  void RawTexImage(uint32_t level, GLenum respecFormat, uvec3 offset,
+                   const webgl::PackingInfo& pi,
+                   webgl::TexUnpackBlobDesc&&) const;
   void TexImage(uint8_t funcDims, GLenum target, GLint level,
-                GLenum respecFormat, const ivec3& offset, const ivec3& size,
-                GLint border, const webgl::PackingInfo& pi,
-                const TexImageSource& src) const;
+                GLenum respecFormat, const ivec3& offset,
+                const Maybe<ivec3>& size, GLint border,
+                const webgl::PackingInfo& pi, const TexImageSource& src) const;
   void CompressedTexImage(bool sub, uint8_t funcDims, GLenum target,
                           GLint level, GLenum format, const ivec3& offset,
                           const ivec3& size, GLint border,
@@ -1536,8 +1595,9 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                   GLenum unpackFormat, GLenum unpackType, const T& anySrc,
                   ErrorResult& out_error) const {
     const TexImageSourceAdapter src(&anySrc, &out_error);
-    TexImage(2, target, level, internalFormat, {0, 0, 0}, {width, height, 1},
-             border, {unpackFormat, unpackType}, src);
+    TexImage(2, target, level, internalFormat, {0, 0, 0},
+             Some(ivec3{width, height, 1}), border, {unpackFormat, unpackType},
+             src);
   }
 
   void TexImage2D(GLenum target, GLint level, GLenum internalFormat,
@@ -1546,8 +1606,9 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                   const dom::ArrayBufferView& view, GLuint viewElemOffset,
                   ErrorResult&) const {
     const TexImageSourceAdapter src(&view, viewElemOffset);
-    TexImage(2, target, level, internalFormat, {0, 0, 0}, {width, height, 1},
-             border, {unpackFormat, unpackType}, src);
+    TexImage(2, target, level, internalFormat, {0, 0, 0},
+             Some(ivec3{width, height, 1}), border, {unpackFormat, unpackType},
+             src);
   }
 
   // -
@@ -1558,8 +1619,8 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                      GLenum unpackType, const T& anySrc,
                      ErrorResult& out_error) const {
     const TexImageSourceAdapter src(&anySrc, &out_error);
-    TexImage(2, target, level, 0, {xOffset, yOffset, 0}, {width, height, 1}, 0,
-             {unpackFormat, unpackType}, src);
+    TexImage(2, target, level, 0, {xOffset, yOffset, 0},
+             Some(ivec3{width, height, 1}), 0, {unpackFormat, unpackType}, src);
   }
 
   void TexSubImage2D(GLenum target, GLint level, GLint xOffset, GLint yOffset,
@@ -1567,8 +1628,8 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                      GLenum unpackType, const dom::ArrayBufferView& view,
                      GLuint viewElemOffset, ErrorResult&) const {
     const TexImageSourceAdapter src(&view, viewElemOffset);
-    TexImage(2, target, level, 0, {xOffset, yOffset, 0}, {width, height, 1}, 0,
-             {unpackFormat, unpackType}, src);
+    TexImage(2, target, level, 0, {xOffset, yOffset, 0},
+             Some(ivec3{width, height, 1}), 0, {unpackFormat, unpackType}, src);
   }
 
   // -
@@ -1580,7 +1641,8 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                   ErrorResult& out_error) const {
     const TexImageSourceAdapter src(&anySrc, &out_error);
     TexImage(3, target, level, internalFormat, {0, 0, 0},
-             {width, height, depth}, border, {unpackFormat, unpackType}, src);
+             Some(ivec3{width, height, depth}), border,
+             {unpackFormat, unpackType}, src);
   }
 
   void TexImage3D(GLenum target, GLint level, GLenum internalFormat,
@@ -1590,7 +1652,8 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                   ErrorResult&) const {
     const TexImageSourceAdapter src(&view, viewElemOffset);
     TexImage(3, target, level, internalFormat, {0, 0, 0},
-             {width, height, depth}, border, {unpackFormat, unpackType}, src);
+             Some(ivec3{width, height, depth}), border,
+             {unpackFormat, unpackType}, src);
   }
 
   // -
@@ -1602,7 +1665,8 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                      const T& anySrc, ErrorResult& out_error) const {
     const TexImageSourceAdapter src(&anySrc, &out_error);
     TexImage(3, target, level, 0, {xOffset, yOffset, zOffset},
-             {width, height, depth}, 0, {unpackFormat, unpackType}, src);
+             Some(ivec3{width, height, depth}), 0, {unpackFormat, unpackType},
+             src);
   }
 
   void TexSubImage3D(GLenum target, GLint level, GLint xOffset, GLint yOffset,
@@ -1612,7 +1676,8 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                      GLuint srcElemOffset, ErrorResult&) const {
     const TexImageSourceAdapter src(&maybeSrcView, srcElemOffset);
     TexImage(3, target, level, 0, {xOffset, yOffset, zOffset},
-             {width, height, depth}, 0, {unpackFormat, unpackType}, src);
+             Some(ivec3{width, height, depth}), 0, {unpackFormat, unpackType},
+             src);
   }
 
   ////////////////////////////////////
@@ -1734,14 +1799,17 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   }
 
   // -------------------
-  // Forward legacy TexImageSource uploads for default width/height
+  // legacy TexImageSource uploads without width/height.
+  // The width/height params are webgl2 only, and let you do subrect
+  // selection with e.g. width < UNPACK_ROW_LENGTH.
 
   template <typename TexImageSourceT>
   void TexImage2D(GLenum target, GLint level, GLenum internalFormat,
                   GLenum unpackFormat, GLenum unpackType,
                   const TexImageSourceT& anySrc, ErrorResult& out_error) const {
-    TexImage2D(target, level, internalFormat, 0, 0, 0, unpackFormat, unpackType,
-               anySrc, out_error);
+    const TexImageSourceAdapter src(&anySrc, &out_error);
+    TexImage(2, target, level, internalFormat, {}, {}, 0,
+             {unpackFormat, unpackType}, src);
   }
 
   template <typename TexImageSourceT>
@@ -1749,8 +1817,9 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                      GLenum unpackFormat, GLenum unpackType,
                      const TexImageSourceT& anySrc,
                      ErrorResult& out_error) const {
-    TexSubImage2D(target, level, xOffset, yOffset, 0, 0, unpackFormat,
-                  unpackType, anySrc, out_error);
+    const TexImageSourceAdapter src(&anySrc, &out_error);
+    TexImage(2, target, level, 0, {xOffset, yOffset, 0}, {}, 0,
+             {unpackFormat, unpackType}, src);
   }
 
   // ------------------------ Uniforms and attributes ------------------------
@@ -1988,13 +2057,12 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   // -------------------------------- Drawing -------------------------------
  public:
   void DrawArrays(GLenum mode, GLint first, GLsizei count) {
-    DrawArraysInstanced(mode, first, count, 1, FuncScopeId::drawArrays);
+    DrawArraysInstanced(mode, first, count, 1);
   }
 
   void DrawElements(GLenum mode, GLsizei count, GLenum type,
                     WebGLintptr byteOffset) {
-    DrawElementsInstanced(mode, count, type, byteOffset, 1,
-                          FuncScopeId::drawElements);
+    DrawElementsInstanced(mode, count, type, byteOffset, 1);
   }
 
   void DrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count,
@@ -2004,8 +2072,7 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
       EnqueueError(LOCAL_GL_INVALID_VALUE, "end must be >= start.");
       return;
     }
-    DrawElementsInstanced(mode, count, type, byteOffset, 1,
-                          FuncScopeId::drawRangeElements);
+    DrawElementsInstanced(mode, count, type, byteOffset, 1);
   }
 
   // ------------------------------ Readback -------------------------------
@@ -2038,13 +2105,10 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   void BindVertexArray(WebGLVertexArrayJS*);
 
   void DrawArraysInstanced(GLenum mode, GLint first, GLsizei count,
-                           GLsizei primcount,
-                           FuncScopeId aFuncId = FuncScopeId::drawArrays);
+                           GLsizei primcount);
 
-  void DrawElementsInstanced(
-      GLenum mode, GLsizei count, GLenum type, WebGLintptr offset,
-      GLsizei primcount,
-      FuncScopeId aFuncId = FuncScopeId::drawElementsInstanced);
+  void DrawElementsInstanced(GLenum mode, GLsizei count, GLenum type,
+                             WebGLintptr offset, GLsizei primcount);
 
   void VertexAttribDivisor(GLuint index, GLuint divisor);
 
@@ -2052,9 +2116,9 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   // ---------------------------------
  public:
   void GetQuery(JSContext*, GLenum target, GLenum pname,
-                JS::MutableHandleValue retval) const;
+                JS::MutableHandle<JS::Value> retval) const;
   void GetQueryParameter(JSContext*, WebGLQueryJS&, GLenum pname,
-                         JS::MutableHandleValue retval) const;
+                         JS::MutableHandle<JS::Value> retval) const;
   void BeginQuery(GLenum target, WebGLQueryJS&);
   void EndQuery(GLenum target);
   void QueryCounter(WebGLQueryJS&, GLenum target) const;
@@ -2062,7 +2126,7 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   // -------------------------------- Sampler -------------------------------
 
   void GetSamplerParameter(JSContext*, const WebGLSamplerJS&, GLenum pname,
-                           JS::MutableHandleValue retval) const;
+                           JS::MutableHandle<JS::Value> retval) const;
 
   void BindSampler(GLuint unit, WebGLSamplerJS*);
   void SamplerParameteri(WebGLSamplerJS&, GLenum pname, GLint param) const;
@@ -2072,7 +2136,7 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
 
   GLenum ClientWaitSync(WebGLSyncJS&, GLbitfield flags, GLuint64 timeout) const;
   void GetSyncParameter(JSContext*, WebGLSyncJS&, GLenum pname,
-                        JS::MutableHandleValue retval) const;
+                        JS::MutableHandle<JS::Value> retval) const;
   void WaitSync(const WebGLSyncJS&, GLbitfield flags, GLint64 timeout) const;
 
   // -------------------------- Transform Feedback ---------------------------
@@ -2100,6 +2164,9 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                     dom::CallerType callerType, ErrorResult& rv);
 
  protected:
+  bool IsExtensionForbiddenForCaller(const WebGLExtensionID ext,
+                                     const dom::CallerType callerType) const;
+
   RefPtr<ClientWebGLExtensionBase> GetExtension(WebGLExtensionID ext,
                                                 dom::CallerType callerType);
   void RequestExtension(WebGLExtensionID) const;
@@ -2123,6 +2190,8 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
                             ErrorResult& rv) {
     GetParameter(cx, pname, retval, rv, true);
   }
+
+  void ProvokingVertex(GLenum rawMode) const;
 
   // -------------------------------------------------------------------------
   // Client-side methods.  Calls in the Host are forwarded to the client.
@@ -2156,7 +2225,7 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
   already_AddRefed<dom::Promise> MakeXRCompatible(ErrorResult& aRv);
 
  protected:
-  bool ShouldResistFingerprinting() const;
+  uint32_t GetPrincipalHashValue() const;
 
   // Prepare the context for capture before compositing
   void BeginComposition();
@@ -2166,7 +2235,7 @@ class ClientWebGLContext final : public nsICanvasRenderingContextInternal,
 
   mozilla::dom::Document* GetOwnerDoc() const;
 
-  bool mResetLayer = true;
+  mutable bool mResetLayer = true;
   Maybe<const WebGLContextOptions> mInitialOptions;
   bool mXRCompatible = false;
 };

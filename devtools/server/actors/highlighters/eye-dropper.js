@@ -8,20 +8,16 @@
 // It basically displays a magnifier that tracks mouse moves and shows a magnified version
 // of the page. On click, it samples the color at the pixel being hovered.
 
-const { Ci, Cc } = require("chrome");
 const {
   CanvasFrameAnonymousContentHelper,
-} = require("devtools/server/actors/highlighters/utils/markup");
-const Services = require("Services");
-const EventEmitter = require("devtools/shared/event-emitter");
-const {
-  rgbToHsl,
-  rgbToColorName,
-} = require("devtools/shared/css/color").colorUtils;
+} = require("resource://devtools/server/actors/highlighters/utils/markup.js");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
+const { rgbToHsl } =
+  require("resource://devtools/shared/css/color.js").colorUtils;
 const {
   getCurrentZoom,
   getFrameOffsets,
-} = require("devtools/shared/layout/utils");
+} = require("resource://devtools/shared/layout/utils.js");
 
 loader.lazyGetter(this, "clipboardHelper", () =>
   Cc["@mozilla.org/widget/clipboardhelper;1"].getService(Ci.nsIClipboardHelper)
@@ -50,6 +46,7 @@ const CLOSE_DELAY = 750;
  * showing a magnified circle and color preview while the user hover the page.
  */
 class EyeDropper {
+  #pageEventListenersAbortController;
   constructor(highlighterEnv) {
     EventEmitter.decorate(this);
 
@@ -160,11 +157,16 @@ class EyeDropper {
 
     // Start listening for user events.
     const { pageListenerTarget } = this.highlighterEnv;
-    pageListenerTarget.addEventListener("mousemove", this);
-    pageListenerTarget.addEventListener("click", this, true);
-    pageListenerTarget.addEventListener("keydown", this);
-    pageListenerTarget.addEventListener("DOMMouseScroll", this);
-    pageListenerTarget.addEventListener("FullZoomChange", this);
+    this.#pageEventListenersAbortController = new AbortController();
+    const signal = this.#pageEventListenersAbortController.signal;
+    pageListenerTarget.addEventListener("mousemove", this, { signal });
+    pageListenerTarget.addEventListener("click", this, {
+      signal,
+      useCapture: true,
+    });
+    pageListenerTarget.addEventListener("keydown", this, { signal });
+    pageListenerTarget.addEventListener("DOMMouseScroll", this, { signal });
+    pageListenerTarget.addEventListener("FullZoomChange", this, { signal });
 
     // Show the eye-dropper.
     this.getElement("root").removeAttribute("hidden");
@@ -196,28 +198,37 @@ class EyeDropper {
    * Hide the eye-dropper highlighter.
    */
   hide() {
-    if (this.highlighterEnv.isXUL) {
-      return;
-    }
-
     this.pageImage = null;
 
-    const { pageListenerTarget } = this.highlighterEnv;
+    if (this.#pageEventListenersAbortController) {
+      this.#pageEventListenersAbortController.abort();
+      this.#pageEventListenersAbortController = null;
 
-    if (pageListenerTarget) {
-      pageListenerTarget.removeEventListener("mousemove", this);
-      pageListenerTarget.removeEventListener("click", this, true);
-      pageListenerTarget.removeEventListener("keydown", this);
-      pageListenerTarget.removeEventListener("DOMMouseScroll", this);
-      pageListenerTarget.removeEventListener("FullZoomChange", this);
+      const rootElement = this.getElement("root");
+      rootElement.setAttribute("hidden", "true");
+      rootElement.removeAttribute("drawn");
+
+      this.emit("hidden");
+
+      this.win.document.setSuppressedEventListener(null);
+    }
+  }
+
+  /**
+   * Convert a base64 png data-uri to raw binary data.
+   */
+  #dataURItoBlob(dataURI) {
+    const byteString = atob(dataURI.split(",")[1]);
+
+    // write the bytes of the string to an ArrayBuffer
+    const buffer = new ArrayBuffer(byteString.length);
+    // Update the buffer through a typed array.
+    const typedArray = new Uint8Array(buffer);
+    for (let i = 0; i < byteString.length; i++) {
+      typedArray[i] = byteString.charCodeAt(i);
     }
 
-    this.getElement("root").setAttribute("hidden", "true");
-    this.getElement("root").removeAttribute("drawn");
-
-    this.emit("hidden");
-
-    this.win.document.setSuppressedEventListener(null);
+    return new Blob([buffer], { type: "image/png" });
   }
 
   /**
@@ -229,24 +240,17 @@ class EyeDropper {
    *                       (⚠️ but it won't handle remote frames).
    */
   async prepareImageCapture(screenshot) {
-    let imgData;
+    let imageSource;
     if (screenshot) {
-      // If a screenshot data URL was passed, we create an image tag with it which we
-      // use to create an image bitmap.
-      imgData = this.win.document.createElement("img");
-      const onImgLoaded = new Promise(resolve =>
-        imgData.addEventListener("load", resolve, { once: true })
-      );
-      imgData.src = screenshot;
-      await onImgLoaded;
+      imageSource = this.#dataURItoBlob(screenshot);
     } else {
-      imgData = getWindowAsImageData(this.win);
+      imageSource = getWindowAsImageData(this.win);
     }
 
-    // We need to transform imageData to something drawWindow will consume. An ImageBitmap
-    // works well. We could have used an Image, but doing so results in errors if the page
-    // defines CSP headers.
-    const image = await this.win.createImageBitmap(imgData);
+    // We need to transform the blob/imageData to something drawWindow will consume.
+    // An ImageBitmap works well. We could have used an Image, but doing so results
+    // in errors if the page defines CSP headers.
+    const image = await this.win.createImageBitmap(imageSource);
 
     this.pageImage = image;
     // We likely haven't drawn anything yet (no mousemove events yet), so start now.
@@ -582,7 +586,7 @@ function toColorString(rgb, format) {
       const [h, s, l] = rgbToHsl(rgb);
       return "hsl(" + h + ", " + s + "%, " + l + "%)";
     case "name":
-      const str = rgbToColorName(r, g, b) || hexString(rgb);
+      const str = InspectorUtils.rgbToColorName(r, g, b) || hexString(rgb);
       return str;
     default:
       return hexString(rgb);

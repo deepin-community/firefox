@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Vymazanie údajov
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Vymazanie všetkých cookies a údajov stránok, ktoré má aplikácia { -brand-short-name } uložené, vás môže odhlásiť z webových stránok a odstrániť offline webový obsah. Vymazanie údajov vo vyrovnávacej pamäti vaše prihlásenia neovplyvní.
 

@@ -5,13 +5,6 @@
 
 about-logins-page-title = Mga Login at Password
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
-    .placeholder = Hanapin sa mga Login
-
-create-login-button = Gumawa ng Panibagong Login
-
 fxaccounts-sign-in-text = Kuhanin ang iyong mga password sa iba mong mga device
 fxaccounts-sign-in-sync-button = Mag-sign in sa sync
 fxaccounts-avatar-button =
@@ -45,6 +38,8 @@ login-list-count =
 login-list-sort-label-text = Pagsunud-sunurin ayon sa:
 login-list-name-option = Pangalan (A-Z)
 login-list-name-reverse-option = Pangalan (Z-A)
+login-list-username-option = Username (A-Z)
+login-list-username-reverse-option = Username (Z-A)
 about-logins-login-list-alerts-option = Mga Alerto
 login-list-last-changed-option = Huling Binago
 login-list-last-used-option = Huling Ginamit
@@ -59,6 +54,12 @@ about-logins-list-item-breach-icon =
     .title = Breached website
 about-logins-list-item-vulnerable-password-icon =
     .title = Vulnerable password
+about-logins-list-section-breach = Mga Nakompromisong Website
+about-logins-list-section-vulnerable = Vulnerable na Password
+about-logins-list-section-nothing = Walang alerto
+about-logins-list-section-today = Ngayon
+about-logins-list-section-yesterday = Kahapon
+about-logins-list-section-week = Huling 7 araw
 
 ## Introduction screen
 
@@ -67,8 +68,7 @@ about-logins-login-intro-heading-logged-in = Walang natagpuang naka-sync na mga 
 login-intro-description = Kung nag-save ka ng mga login mo sa { -brand-product-name } sa ibang device, ganito ang dapat gawin para makuha mo sila rito:
 login-intro-instructions-fxa = Gumawa o mag-sign in sa iyong { -fxaccount-brand-name } sa pamamagitan ng device kung saan naka-save ang mga login mo.
 login-intro-instructions-fxa-settings = Pumunta sa Mga Setting> Sync> I-on ang pag-sync ... Piliin ang checkbox ng Mga login at password.
-login-intro-instructions-fxa-help = Bisitahin ang support sa <a data-l10n-name="help-link">{ -lockwise-brand-short-name } </a> para sa karagdagang tulong.
-about-logins-intro-import = Kung ang iyong mga login ay naka-save sa ibang browser, maaari mong <a data-l10n-name="import-link"> ilipat ang mga ito sa { -lockwise-brand-short-name } </a>
+login-intro-instructions-fxa-passwords-help = Visit <a data-l10n-name="passwords-help-link">passwords support</a> for more help.
 about-logins-intro-import2 = Kung naka-save ang mga login mo sa labas ng { -brand-product-name }, maaari mo <a data-l10n-name="import-browser-link">i-import ang mga ito mula sa ibang browser</a> o <a data-l10n-name="import-file-link">mula sa isang file</a>
 
 ## Login
@@ -93,9 +93,10 @@ login-item-copied-password-button-text = Nakopya na!
 login-item-save-changes-button = I-Save ang mga Pagbabago
 login-item-save-new-button = i-Save
 login-item-cancel-button = Ikansela
-login-item-time-changed = Huling binago: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Ginawa: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Huling ginamit: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
 
 ## OS Authentication dialog
 
@@ -123,8 +124,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Para makopya ang iyong p
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = kopyahin ang naka-save na password
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Para ma-export ang iyong mga login, ipasok ang iyong mga Windows login credential. Nakatutulong ito protektahan ang seguridad ng iyong mga account.
 # This message can be seen when attempting to export a password in about:logins
@@ -138,8 +137,6 @@ master-password-reload-button =
     .label = Mag-log in
     .accesskey = L
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Kanselahin
@@ -149,6 +146,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Alisin ang login?
 confirm-delete-dialog-message = Hindi na pwedeng bawiin ang kilos na ito.
 about-logins-confirm-remove-dialog-confirm-button = Tanggalin
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -186,6 +186,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Aalisin nito ang lahat ng mga login na nai-save mo sa { -brand-short-name } ng lahat ng mga device na naka-sync sa iyong { -fxaccount-brand-name }. Aalisin din nito ang mga alerto sa paglabag na lilitaw dito. Hindi mo maibabalik ang pagkilos na ito.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Mag-export ng mga login at password
 about-logins-confirm-export-dialog-message = Mase-save ang mga password mo bilang readable text (hal., PangitNaP@ssw0rd) kaya pwede itong makita ng kahit sinong makakapagbukas ng na-export na file.
 about-logins-confirm-export-dialog-confirm-button = i-Export…
@@ -205,7 +207,6 @@ about-logins-breach-alert-date = Naganap ang breach na ito noong { DATETIME($dat
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Pumunta sa { $hostname }
-about-logins-breach-alert-learn-more-link = Alamin
 
 ## Vulnerable Password notification
 

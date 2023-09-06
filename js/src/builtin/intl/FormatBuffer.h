@@ -8,14 +8,15 @@
 #define builtin_intl_FormatBuffer_h
 
 #include "mozilla/Assertions.h"
-#include "mozilla/Range.h"
 #include "mozilla/Span.h"
+#include "mozilla/TextUtils.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "gc/Allocator.h"
 #include "js/AllocPolicy.h"
+#include "js/CharacterEncoding.h"
 #include "js/TypeDecls.h"
 #include "js/UniquePtr.h"
 #include "js/Vector.h"
@@ -38,7 +39,20 @@ class FormatBuffer {
   FormatBuffer& operator=(FormatBuffer&& other) noexcept = default;
 
   explicit FormatBuffer(AllocPolicy aP = AllocPolicy())
-      : buffer_(std::move(aP)) {}
+      : buffer_(std::move(aP)) {
+    // The initial capacity matches the requested minimum inline capacity, as
+    // long as it doesn't exceed |Vector::kMaxInlineBytes / sizeof(CharT)|. If
+    // this assertion should ever fail, either reduce |MinInlineCapacity| or
+    // make the FormatBuffer initialization fallible.
+    MOZ_ASSERT(buffer_.capacity() == MinInlineCapacity);
+    if constexpr (MinInlineCapacity > 0) {
+      // Ensure the full capacity is marked as reserved.
+      //
+      // Reserving the minimum inline capacity can never fail, even when
+      // simulating OOM.
+      MOZ_ALWAYS_TRUE(buffer_.reserve(MinInlineCapacity));
+    }
+  }
 
   // Implicitly convert to a Span.
   operator mozilla::Span<CharType>() { return buffer_; }
@@ -47,7 +61,11 @@ class FormatBuffer {
   /**
    * Ensures the buffer has enough space to accommodate |size| elements.
    */
-  [[nodiscard]] bool reserve(size_t size) { return buffer_.reserve(size); }
+  [[nodiscard]] bool reserve(size_t size) {
+    // Call |reserve| a second time to ensure its full capacity is marked as
+    // reserved.
+    return buffer_.reserve(size) && buffer_.reserve(buffer_.capacity());
+  }
 
   /**
    * Returns the raw data inside the buffer.
@@ -72,8 +90,12 @@ class FormatBuffer {
     // This sets |buffer_|'s internal size so that it matches how much was
     // written. This is necessary because the write happens across FFI
     // boundaries.
-    mozilla::DebugOnly<bool> result = buffer_.resizeUninitialized(amount);
-    MOZ_ASSERT(result);
+    size_t curLength = length();
+    if (amount > curLength) {
+      buffer_.infallibleGrowByUninitialized(amount - curLength);
+    } else {
+      buffer_.shrinkBy(curLength - amount);
+    }
   }
 
   /**
@@ -88,14 +110,24 @@ class FormatBuffer {
                   std::is_same_v<CharT, unsigned char> ||
                   std::is_same_v<CharT, char>) {
       // Handle the UTF-8 encoding case.
-      return NewStringCopyUTF8N<CanGC>(
-          cx, mozilla::Range(reinterpret_cast<unsigned char>(buffer_.begin()),
-                             buffer_.length()));
+      return NewStringCopyUTF8N(
+          cx, JS::UTF8Chars(buffer_.begin(), buffer_.length()));
     } else {
       // Handle the UTF-16 encoding case.
       static_assert(std::is_same_v<CharT, char16_t>);
       return NewStringCopyN<CanGC>(cx, buffer_.begin(), buffer_.length());
     }
+  }
+
+  /**
+   * Copies the buffer's data to a JSString. The buffer must contain only
+   * ASCII characters.
+   */
+  JSLinearString* toAsciiString(JSContext* cx) const {
+    static_assert(std::is_same_v<CharT, char>);
+
+    MOZ_ASSERT(mozilla::IsAscii(buffer_));
+    return NewStringCopyN<CanGC>(cx, buffer_.begin(), buffer_.length());
   }
 
   /**

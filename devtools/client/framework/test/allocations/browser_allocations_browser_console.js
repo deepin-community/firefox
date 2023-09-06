@@ -8,10 +8,12 @@
 const TEST_URL =
   "http://example.com/browser/devtools/client/framework/test/allocations/reloaded-page.html";
 
-const { require } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
+const { require } = ChromeUtils.importESModule(
+  "resource://devtools/shared/loader/Loader.sys.mjs"
+);
 const {
   BrowserConsoleManager,
-} = require("devtools/client/webconsole/browser-console-manager");
+} = require("resource://devtools/client/webconsole/browser-console-manager.js");
 
 async function testScript() {
   // Open
@@ -33,13 +35,16 @@ async function testScript() {
 
   // Close
   await BrowserConsoleManager.toggleBrowserConsole();
+
+  // Browser console still cleanup stuff after the resolution of toggleBrowserConsole.
+  // So wait for a little while to ensure it completes all cleanups.
+  // eslint-disable-next-line mozilla/no-arbitrary-setTimeout
+  await new Promise(resolve => setTimeout(resolve, 500));
 }
 
-add_task(async function() {
-  // We only want to test the multiprocess browser console,
-  // even on beta and release.
+add_task(async function () {
   await SpecialPowers.pushPrefEnv({
-    set: [["devtools.browsertoolbox.fission", true]],
+    set: [["devtools.browsertoolbox.scope", "everything"]],
   });
 
   const tab = await addTab(TEST_URL);

@@ -4,8 +4,7 @@
 
 "use strict";
 
-// Test frame selection switching at toolbox level
-// when using the inspector
+// Test frame selection switching at toolbox level when using the inspector
 
 const FrameURL =
   "data:text/html;charset=UTF-8," +
@@ -14,9 +13,7 @@ const URL =
   "data:text/html;charset=UTF-8," +
   encodeURI('<iframe src="' + FrameURL + '"></iframe><div id="top">top</div>');
 
-add_task(async function() {
-  Services.prefs.setBoolPref("devtools.command-button-frames.enabled", true);
-
+add_task(async function () {
   const { inspector, toolbox } = await openInspectorForURL(URL);
 
   // Verify we are on the top level document
@@ -41,14 +38,12 @@ add_task(async function() {
   ok(panel, "popup panel has created.");
   await waitUntil(() => panel.classList.contains("tooltip-visible"));
 
-  // Verify that the menu is popuplated.
+  // Verify that the menu is populated.
   const menuList = toolbox.doc.getElementById("toolbox-frame-menu");
-  const frames = Array.prototype.slice.call(
-    menuList.querySelectorAll(".command")
-  );
+  const frames = Array.from(menuList.querySelectorAll(".command"));
   is(frames.length, 2, "We have both frames in the menu");
 
-  frames.sort(function(a, b) {
+  frames.sort(function (a, b) {
     return a.children[0].innerHTML.localeCompare(b.children[0].innerHTML);
   });
 
@@ -65,17 +60,16 @@ add_task(async function() {
 
   // Listen to will-navigate to check if the view is empty
   const { resourceCommand } = toolbox.commands;
-  const {
-    onResource: willNavigate,
-  } = await resourceCommand.waitForNextResource(
-    resourceCommand.TYPES.DOCUMENT_EVENT,
-    {
-      ignoreExistingResources: true,
-      predicate(resource) {
-        return resource.name == "will-navigate";
-      },
-    }
-  );
+  const { onResource: willNavigate } =
+    await resourceCommand.waitForNextResource(
+      resourceCommand.TYPES.DOCUMENT_EVENT,
+      {
+        ignoreExistingResources: true,
+        predicate(resource) {
+          return resource.name == "will-navigate";
+        },
+      }
+    );
   willNavigate.then(() => {
     info("Navigation to the iframe has started, the inspector should be empty");
     assertMarkupViewIsEmpty(inspector);
@@ -83,17 +77,17 @@ add_task(async function() {
 
   // Only select the iframe after we are able to select an element from the top
   // level document.
-  const newRoot = inspector.once("new-root");
+  let newRoot = inspector.once("new-root");
   await selectNode("#top", inspector);
   info("Select the iframe");
   frames[0].click();
 
-  await willNavigate;
+  if (!isEveryFrameTargetEnabled()) {
+    await willNavigate;
+  }
   await newRoot;
 
-  info("Navigation to the iframe is done, the inspector should be back up");
-
-  // Verify we are on page one
+  info("The iframe is selected, check that the markup view was updated");
   await assertMarkupViewAsTree(
     `
     body
@@ -101,13 +95,25 @@ add_task(async function() {
     "body",
     inspector
   );
-
-  // On page 2 load, verify we have the right content
   assertMarkupViewIsLoaded(inspector);
 
-  await selectNode("#frame", inspector);
+  info(
+    "Remove the iframe and check that the inspector gets updated to show the top level frame markup"
+  );
+  newRoot = inspector.once("new-root");
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function () {
+    content.document.querySelector("iframe").remove();
+  });
+  await newRoot;
 
-  Services.prefs.clearUserPref("devtools.command-button-frames.enabled");
+  await assertMarkupViewAsTree(
+    `
+    body
+      div id="top"`,
+    "body",
+    inspector
+  );
+  assertMarkupViewIsLoaded(inspector);
 });
 
 function assertMarkupViewIsLoaded(inspector) {

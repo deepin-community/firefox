@@ -19,8 +19,8 @@ about-telemetry-current-store = Aktuele winkel:
 about-telemetry-more-information = Sykje jo mear ynformaasje?
 about-telemetry-firefox-data-doc = De <a data-l10n-name="data-doc-link">Firefox Data Documentation</a> befettet hantliedingen oer it wurkjen mei ús gegevensark.
 about-telemetry-telemetry-client-doc = De <a data-l10n-name="client-doc-link">Firefox Telemetry-clientdokumintaasje</a> befettet definysjes foar konsepten, API-dokumintaasje en gegevensferwizingen.
-about-telemetry-telemetry-dashboard = Mei de <a data-l10n-name="dashboard-link">Telemetry-dashboerds</a> kinne jo de gegevens fisualisearje dy't Mozilla fia Telemetry ûntfangt.
-about-telemetry-telemetry-probe-dictionary = De <a data-l10n-name="probe-dictionary-link">Probe Dictionary</a> biedt details en beskriuwingen foar de probes dy't troch Telemetry sammele wurde.
+about-telemetry-telemetry-dashboard = Mei de <a data-l10n-name="dashboard-link">Telemetry-dashboerds</a> kinne jo de gegevens fisualisearje dy’t Mozilla fia Telemetry ûntfangt.
+about-telemetry-telemetry-probe-dictionary = De <a data-l10n-name="probe-dictionary-link">Probe Dictionary</a> biedt details en beskriuwingen foar de probes dy’t troch Telemetry sammele wurde.
 about-telemetry-show-in-Firefox-json-viewer = Iepenje yn de JSON-viewer
 about-telemetry-home-section = Startside
 about-telemetry-general-data-section = Algemiene gegevens
@@ -34,7 +34,6 @@ about-telemetry-events-section = Eveneminten
 about-telemetry-simple-measurements-section = Ienfâldige mjittingen
 about-telemetry-slow-sql-section = Stadige SQL-ynstruksjes
 about-telemetry-addon-details-section = Add-on-details
-about-telemetry-captured-stacks-section = Opnommen stacks
 about-telemetry-late-writes-section = Lêste add-ons
 about-telemetry-raw-payload-section = Net bewurke nettolading
 about-telemetry-raw = Net bewurke JSON
@@ -122,10 +121,6 @@ about-telemetry-keys-header = Eigenskip
 about-telemetry-names-header = Namme
 about-telemetry-values-header = Wearde
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (opnimteller: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Lette skriuwaksje #{ $lateWriteCount }
 about-telemetry-stack-title = Stack:
@@ -136,12 +131,6 @@ about-telemetry-category-header = kategory
 about-telemetry-method-header = metoade
 about-telemetry-object-header = objekt
 about-telemetry-extra-header = ekstra
-about-telemetry-origin-section = Origin-telemetry
-about-telemetry-origin-origin = oarsprong
-about-telemetry-origin-count = oantal
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Origin-telemetry yn Firefox</a> kodearret gegevens eardat se ferstjoerd wurde, sadat { $telemetryServerOwner } dingen telle kin, mar net witte kin of in bepaalde { -brand-product-name } wol of net oan dat oantal bydroegen hat. (<a data-l10n-name="prio-blog-link">mear ynfo</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = { $process }-proses

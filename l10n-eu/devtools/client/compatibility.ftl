@@ -23,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (zaharkituta, esperim
 compatibility-settings-button-label = Ezarpenak
 compatibility-settings-button-title =
     .title = Ezarpenak
-compatibility-feedback-button-label = Iritzia
-compatibility-feedback-button-title =
-    .title = Iritzia
 
 ## Messages used as headers in settings pane
 
@@ -46,3 +43,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Ez da bateragarritasun-arazorik aurkitu.
 compatibility-close-settings-button =
     .title = Itxi ezarpenak
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Bateragarritasun-arazoak nabigatzaile hauetan:
+        { $browsers }

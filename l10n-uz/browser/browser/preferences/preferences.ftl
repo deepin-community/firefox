@@ -27,6 +27,10 @@ pane-privacy-title = Maxfiylik va xavfsizlik
 category-privacy =
     .tooltiptext = { pane-privacy-title }
 
+pane-sync-title3 = Sinxronizatsiya
+category-sync3 =
+    .tooltiptext = { pane-sync-title3 }
+
 pane-experimental-search-results-header = { -brand-short-name } Tajriba: Ehtiyotkorlik bilan foydalaning
 
 help-button-label = { -brand-short-name } yordami
@@ -58,6 +62,17 @@ restart-later = Keyinroq qayta ishga tushirish
 ##   $name (String): name of the extension
 
 
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
+
+
 ## Preferences UI Search Results
 
 search-results-header = Qidiruv natijalari
@@ -79,9 +94,9 @@ set-as-my-default-browser =
     .label = Asosiy sifatida o‘rnatish
     .accesskey = A
 
-startup-restore-previous-session =
-    .label = Oldingi seansni tiklash
-    .accesskey = t
+startup-restore-windows-and-tabs =
+    .label = Oldingi oyna va varaqlarni ochish
+    .accesskey = O
 
 startup-restore-warn-on-quit =
     .label = Brauzerdan chiqishda sizni ogohlantiradi
@@ -99,13 +114,17 @@ open-new-link-as-tabs =
     .label = Havolalarni yangi oynalarning varaqlarida ochish
     .accesskey = w
 
-warn-on-close-multiple-tabs =
-    .label = Bir nechta varaqlar yopilayotganda ogohlantirilsin
-    .accesskey = m
+confirm-on-close-multiple-tabs =
+    .label = Bir nechta varaqlarni yopishdan oldin tasdiqlash
+    .accesskey = B
 
 warn-on-open-many-tabs =
     .label = { -brand-short-name }ni sekinlashtirishi mumkin bo‘lgan bir necha varaqlar ochilayotganda ogohlantirilsin
     .accesskey = o
+
+switch-to-new-tabs =
+    .label = Ochilgan havola, rasm yoki mediaga oʻtish
+    .accesskey = O
 
 show-tabs-in-taskbar =
     .label = Varaqlarning umumiy koʻrinishini vazifalar panelida koʻrsatish
@@ -122,6 +141,10 @@ browser-containers-settings =
     .accesskey = s
 
 containers-disable-alert-title = Barcha Container oynalari yopilsinmi?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Konteyner oynasini o‘chirib qo‘ysangiz, { $tabCount } ta konteyner oynasi yopiladi.
@@ -133,6 +156,9 @@ containers-disable-alert-ok-button =
         [one] Konteynerda { $tabCount } ta varaqni yopish
        *[other] Konteynerda { $tabCount } ta varaqni yopish
     }
+
+##
+
 containers-disable-alert-cancel-button = Yoniq qoldirish
 
 containers-remove-alert-title = Bu konteyner olib tashlansinmi?
@@ -152,8 +178,6 @@ containers-remove-cancel-button = Bu konteyner olib tahlanmasin
 
 language-and-appearance-header = Til va interfeys
 
-fonts-and-colors-header = Shriftlar va ranglar
-
 default-font = Standart shrift
     .accesskey = S
 default-font-size = Hajmi
@@ -163,9 +187,18 @@ advanced-fonts =
     .label = Qo‘shimcha…
     .accesskey = Q
 
-colors-settings =
-    .label = Ranglar…
-    .accesskey = R
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header = Masshtab
+
+preferences-default-zoom = Standart masshtab
+    .accesskey = S
+
+preferences-default-zoom-value =
+    .label = { $percentage }%
+
+preferences-zoom-text-only =
+    .label = Faqat matnni kattalashtirish
+    .accesskey = t
 
 language-header = Til
 
@@ -174,6 +207,11 @@ choose-language-description = Sahifalar ko‘rinishi kerak bo‘lgan til
 choose-button =
     .label = Tanlash…
     .accesskey = T
+
+choose-browser-language-description = { -brand-short-name } menyusi, xabarlar va bildirishnomalari chiqadigan tillarni tanlang.
+manage-browser-languages-button =
+    .label = Muqobillarini tanlash…
+    .accesskey = l
 
 translate-web-pages =
     .label = Veb saytni tarjima qilish
@@ -197,8 +235,7 @@ files-and-applications-title = Fayl va ilovalar
 
 download-header = Yuklab olishlar
 
-download-save-to =
-    .label = Fayllarni saqlash manzili:
+download-save-where = Fayllarni saqlash manzili:
     .accesskey = s
 
 download-choose-folder =
@@ -330,6 +367,8 @@ update-application-use-service =
     .label = Yangilanishlarni oʻrnatish uchun orqa fon xizmatidan foydalanish
     .accesskey = o
 
+update-in-progress-title = Yangilanmoqda
+
 update-in-progress-ok-button = &Rad etish
 # Continue is the cancel button so pressing escape or using a platform standard
 # method of closing the UI will not discard the update.
@@ -422,11 +461,6 @@ home-restore-defaults =
     .label = Asliga tiklash
     .accesskey = t
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Firefox bosh sahifasi (standart)
-
 home-mode-choice-custom =
     .label = Boshqa URL manzillar
 
@@ -454,17 +488,15 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Firefox bosh sahifasi
-home-prefs-content-description = Firefox bosh sahifasida qaysi kontent chiqishi kerakligini tanlang.
-
 home-prefs-search-header =
     .label = Internetdan qidirish
-home-prefs-topsites-header =
-    .label = Ommabop saytlar
-home-prefs-topsites-description = Tez-tez tashrif buyuradigan saytlaringiz
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 home-prefs-recommended-by-header =
     .label = { $provider } tomonidan tavsiya qilingan
@@ -475,9 +507,6 @@ home-prefs-recommended-by-learn-more = U qanday ishlaydi
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Homiylik maqolalari
 
-home-prefs-highlights-header =
-    .label = Ajratilgan saytlar
-home-prefs-highlights-description = Saqlangan yoki tashrif buyurgan saralangan saytlaringiz
 home-prefs-highlights-option-visited-pages =
     .label = Kirilgan sahifalar
 home-prefs-highlights-options-bookmarks =
@@ -493,7 +522,6 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Parchalar
-home-prefs-snippets-description = { -vendor-short-name } va { -brand-product-name } yangilanishlari
 
 home-prefs-sections-rows-option =
     .label =
@@ -527,6 +555,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Manzil panelida qidiruv tavsiyalari ko‘rsatilsin
     .accesskey = l
+
 
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
@@ -579,7 +608,16 @@ containers-remove-button =
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
 sync-signedout-caption = Internet doim siz bilan birga
+sync-signedout-description2 = Xatchoʻplar, tarix, varaqlar, parollar, qoʻshimcha dasturlar va boshqa sozlamalarni barcha qurilmalaringizga sinxronlang.
+
+sync-signedout-account-signin3 =
+    .label = Sinxronlash uchun kiring…
+    .accesskey = i
 
 # This message contains two links and two icon images.
 #   `<img data-l10n-name="android-icon"/>` - Android logo icon
@@ -593,6 +631,9 @@ sync-mobile-promo = Firefox brauzerini mobil qurilmangiz bilan sinxronlash uchun
 
 ## Firefox Account - Signed in
 
+
+## Firefox account - Signed in
+
 sync-profile-picture =
     .tooltiptext = Profil rasmini o‘zgartirish
 
@@ -603,8 +644,13 @@ sync-sign-out =
 sync-manage-account = Hisobni boshqarish
     .accesskey = o
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } tasdiqlanmagan.
 sync-signedin-login-failure = Qayta ulanish uchun kiring { $email }
+
+##
 
 sync-resend-verification =
     .label = Tasdiqlashni qayta yuborish
@@ -624,10 +670,48 @@ prefs-syncing-on = Sinxronizatsiya: YONIQ
 
 prefs-syncing-off = Sinxronizatsiya: OʻCHIQ
 
+prefs-sync-turn-on-syncing =
+    .label = Sinxronizatsiyani yoqish
+    .accesskey = S
+
+prefs-sync-offer-setup-label2 = Xatchoʻplar, tarix, varaqlar, parollar, qoʻshimcha dasturlar va boshqa sozlamalarni barcha qurilmalaringizga sinxronlang.
+
+prefs-sync-now =
+    .labelnotsyncing = Sinxronlash
+    .accesskeynotsyncing = N
+    .labelsyncing = Sinxronlanmoqda…
+
+prefs-sync-now-button =
+    .label = Sinxronlash
+    .accesskey = N
+
+prefs-syncing-button =
+    .label = Sinxronlanmoqda…
+
 ## The list of things currently syncing.
 
+sync-currently-syncing-bookmarks = Xatchoʻplar
+sync-currently-syncing-history = Tarix
+sync-currently-syncing-tabs = Ochiq varaqlar
+sync-currently-syncing-logins-passwords = Login va parollar
+sync-currently-syncing-addresses = Manzillar
+sync-currently-syncing-creditcards = Kredit kartalari
+sync-currently-syncing-addons = Qoʻshimcha dasturlar
+sync-currently-syncing-settings = Sozlamalar
+
+sync-change-options =
+    .label = Oʻzgartirish…
+    .accesskey = O
 
 ## The "Choose what to sync" dialog.
+
+sync-choose-what-to-sync-dialog3 =
+    .title = Nimani sinxronlashni tanlang
+    .style = min-width: 36em;
+    .buttonlabelaccept = Oʻzgarishlarni saqlash
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra2 = Uzish…
+    .buttonaccesskeyextra2 = D
 
 sync-engine-bookmarks =
     .label = Xatchoʻplar
@@ -641,6 +725,11 @@ sync-engine-tabs =
     .label = Ochiq varaqlar
     .tooltiptext = Barcha sinxronlangan qurilmalardagi ochiq ichki oynalar ro‘yxati
     .accesskey = O
+
+sync-engine-logins-passwords =
+    .label = Login va parollar
+    .tooltiptext = Siz saqlagan foydalanuvchi nomi va parollar
+    .accesskey = L
 
 sync-engine-addresses =
     .label = Manzillar
@@ -657,6 +746,11 @@ sync-engine-addons =
     .tooltiptext = Kompyuter uchun Firefox kengaytma va mavzulari
     .accesskey = Q
 
+sync-engine-settings =
+    .label = Sozlamalar
+    .tooltiptext = Siz oʻzgartirgan umumiy, maxfiy va xavfsizlik sozlamalari
+    .accesskey = s
+
 ## The device name controls.
 
 sync-device-name-header = Qurilma nomi
@@ -672,6 +766,18 @@ sync-device-name-cancel =
 sync-device-name-save =
     .label = Saqlash
     .accesskey = S
+
+sync-connect-another-device = Boshqa qurilmani ulash
+
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Tasdiqlash jo‘natilgan
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Tasdiqlash havolasi { $email } nomli e-pochtaga jo‘natildi
+sync-verification-not-sent-title = Tasdiqlash jo‘natilmadi
+sync-verification-not-sent-body = Ayni paytda tekshirish xatini yubora olmaymiz, keyinroq urinib ko‘ring.
 
 ## Privacy Section
 
@@ -762,6 +868,9 @@ sitedata-settings =
     .label = Ma’lumotlarni boshqarish
     .accesskey = M
 
+## Privacy Section - Cookie Banner Handling
+
+
 ## Privacy Section - Address Bar
 
 addressbar-header = Manzil paneli
@@ -788,6 +897,9 @@ addressbar-suggestions-settings = Qidiruv tizimi tavsiyalari uchun sozlamalarni 
 
 
 ##
+
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
 
 ## Privacy Section - Tracking
@@ -825,10 +937,6 @@ permissions-notification-pause =
 permissions-block-popups =
     .label = Paydo bo‘luvchi oynalarni bloklash
     .accesskey = P
-
-permissions-block-popups-exceptions =
-    .label = Istisnolar…
-    .accesskey = I
 
 permissions-addon-install-warning =
     .label = Saytlar qo‘shimcha dasturlarni o‘rnatishga uringanda menga ogohlantirish ko‘rsatilsin
@@ -896,9 +1004,11 @@ certs-devices =
 ## Privacy Section - HTTPS-Only
 
 
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Ish stoli
 downloads-folder-name = Yuklab olishlar
 choose-download-folder-title = Yuklanish jildini tanlang:
-

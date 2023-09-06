@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Iisetingi zonxibelelwano
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -40,6 +40,11 @@ connection-proxy-autologin =
     .label = Musa ukuyalela imfezeko ukuba ipasiwedi igciniwe
     .accesskey = z
     .tooltip = Ekunokukhethwa kuko kukufezekisa ngenzolo kwiiproksi xa ugcine iikhridenshali zazo. Uya kuyalelwa ukuba imfezeko ayiphumelelanga.
+
+connection-proxy-autologin-checkbox =
+    .label = Musa ukuyalela imfezeko ukuba ipasiwedi igciniwe
+    .accesskey = z
+    .tooltiptext = Ekunokukhethwa kuko kukufezekisa ngenzolo kwiiproksi xa ugcine iikhridenshali zazo. Uya kuyalelwa ukuba imfezeko ayiphumelelanga.
 
 connection-proxy-socks-remote-dns =
     .label = I-DNS yeproksi xa usebenzisa iSOCKS v5

@@ -7,6 +7,7 @@
 
 #include "ParentProcessDocumentChannel.h"
 
+#include "mozilla/extensions/StreamFilterParent.h"
 #include "mozilla/net/ParentChannelWrapper.h"
 #include "mozilla/net/UrlClassifierCommon.h"
 #include "mozilla/StaticPrefs_extensions.h"
@@ -15,6 +16,8 @@
 #include "nsIObserverService.h"
 #include "nsIClassifiedChannel.h"
 #include "nsIXULRuntime.h"
+#include "nsHttpHandler.h"
+#include "nsDocShellLoadState.h"
 
 extern mozilla::LazyLogModule gDocumentChannelLog;
 #define LOG(fmt) MOZ_LOG(gDocumentChannelLog, mozilla::LogLevel::Verbose, fmt)
@@ -45,7 +48,8 @@ RefPtr<RedirectToRealChannelPromise>
 ParentProcessDocumentChannel::RedirectToRealChannel(
     nsTArray<ipc::Endpoint<extensions::PStreamFilterParent>>&&
         aStreamFilterEndpoints,
-    uint32_t aRedirectFlags, uint32_t aLoadFlags) {
+    uint32_t aRedirectFlags, uint32_t aLoadFlags,
+    const nsTArray<EarlyHintConnectArgs>& aEarlyHints) {
   LOG(("ParentProcessDocumentChannel RedirectToRealChannel [this=%p]", this));
   nsCOMPtr<nsIChannel> channel = mDocumentLoadListener->GetChannel();
   channel->SetLoadFlags(aLoadFlags);
@@ -171,15 +175,15 @@ NS_IMETHODIMP ParentProcessDocumentChannel::AsyncOpen(
   RefPtr<DocumentLoadListener::OpenPromise> promise;
   if (isDocumentLoad) {
     promise = mDocumentLoadListener->OpenDocument(
-        mLoadState, mCacheKey, Some(mChannelId), mAsyncOpenTime, mTiming,
+        mLoadState, mCacheKey, Some(mChannelId), TimeStamp::Now(), mTiming,
         std::move(initialClientInfo), Some(mUriModified), Some(mIsXFOError),
         nullptr /* ContentParent */, &rv);
   } else {
     promise = mDocumentLoadListener->OpenObject(
-        mLoadState, mCacheKey, Some(mChannelId), mAsyncOpenTime, mTiming,
+        mLoadState, mCacheKey, Some(mChannelId), TimeStamp::Now(), mTiming,
         std::move(initialClientInfo), InnerWindowIDForExtantDoc(docShell),
         mLoadFlags, mLoadInfo->InternalContentPolicyType(),
-        UserActivation::IsHandlingUserInput(), nullptr /* ContentParent */,
+        dom::UserActivation::IsHandlingUserInput(), nullptr /* ContentParent */,
         nullptr /* ObjectUpgradeHandler */, &rv);
   }
 
@@ -199,12 +203,16 @@ NS_IMETHODIMP ParentProcessDocumentChannel::AsyncOpen(
   promise->Then(
       GetCurrentSerialEventTarget(), __func__,
       [self](DocumentLoadListener::OpenPromiseSucceededType&& aResolveValue) {
+        self->mDocumentLoadListener->CancelEarlyHintPreloads();
+        nsTArray<EarlyHintConnectArgs> earlyHints;
+
         // The DLL is waiting for us to resolve the
         // RedirectToRealChannelPromise given as parameter.
         RefPtr<RedirectToRealChannelPromise> p =
             self->RedirectToRealChannel(
                     std::move(aResolveValue.mStreamFilterEndpoints),
-                    aResolveValue.mRedirectFlags, aResolveValue.mLoadFlags)
+                    aResolveValue.mRedirectFlags, aResolveValue.mLoadFlags,
+                    earlyHints)
                 ->Then(
                     GetCurrentSerialEventTarget(), __func__,
                     [self](RedirectToRealChannelPromise::ResolveOrRejectValue&&
@@ -235,7 +243,7 @@ NS_IMETHODIMP ParentProcessDocumentChannel::AsyncOpen(
         // and notify them of the failure. If this is a process switch, then we
         // can just ignore it silently, and trust that the switch will shut down
         // our docshell and cancel us when it's ready.
-        if (!aRejectValue.mSwitchedProcess) {
+        if (!aRejectValue.mContinueNavigating) {
           self->DisconnectChildListeners(aRejectValue.mStatus,
                                          aRejectValue.mLoadGroupStatus);
         }
@@ -245,7 +253,12 @@ NS_IMETHODIMP ParentProcessDocumentChannel::AsyncOpen(
 }
 
 NS_IMETHODIMP ParentProcessDocumentChannel::Cancel(nsresult aStatus) {
-  LOG(("ParentProcessDocumentChannel Cancel [this=%p]", this));
+  return CancelWithReason(aStatus, "ParentProcessDocumentChannel::Cancel"_ns);
+}
+
+NS_IMETHODIMP ParentProcessDocumentChannel::CancelWithReason(
+    nsresult aStatusCode, const nsACString& aReason) {
+  LOG(("ParentProcessDocumentChannel CancelWithReason [this=%p]", this));
   if (mCanceled) {
     return NS_OK;
   }
@@ -253,7 +266,7 @@ NS_IMETHODIMP ParentProcessDocumentChannel::Cancel(nsresult aStatus) {
   mCanceled = true;
   // This will force the DocumentListener to abort the promise if there's one
   // pending.
-  mDocumentLoadListener->Cancel(aStatus);
+  mDocumentLoadListener->Cancel(aStatusCode, aReason);
 
   return NS_OK;
 }

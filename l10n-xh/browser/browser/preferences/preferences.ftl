@@ -46,6 +46,17 @@ restart-later = Qalisa ngokutsha Kamva
 ##   $name (String): name of the extension
 
 
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
+
+
 ## Preferences UI Search Results
 
 search-results-header = IZiphumo zoKhangelo
@@ -67,10 +78,6 @@ ctrl-tab-recently-used-order =
     .label = Imijikelo yeCtrl+Tab kwiithebhu kulungelelwano olusandul' ukusetyenziswa
     .accesskey = T
 
-warn-on-close-multiple-tabs =
-    .label = Ndikulumkise xa ndivala iithebhu ezininzi
-    .accesskey = e
-
 warn-on-open-many-tabs =
     .label = Ndikulumkise xa uvula iithebhu ezininzi ezingacothisa i-{ -brand-short-name }
     .accesskey = c
@@ -90,6 +97,10 @@ browser-containers-settings =
     .accesskey = s
 
 containers-disable-alert-title = Ufuna ukuvala Zonke iiThebhu zeeKhonteyina?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Ukuba uyazivala iiThebhu zeKhonteyina ngoku, i-{ $tabCount } ithebhu yekhonteyina iya kuvalwa. Uqinisekile ukuba ufuna ukuzivala iiThebhu zeKhonteyina?
@@ -101,6 +112,9 @@ containers-disable-alert-ok-button =
         [one] Vala iThebu yeKhonteyina i-{ $tabCount }
        *[other] Vala iiThebhu zeKhonteyina ii-{ $tabCount }.
     }
+
+##
+
 containers-disable-alert-cancel-button = Zigcina zivuliwe
 
 containers-remove-alert-title = Ufuna ukuSusa le Khonteyina?
@@ -116,10 +130,7 @@ containers-remove-alert-msg =
 containers-remove-ok-button = Yisuse le Khonteyina
 containers-remove-cancel-button = Musa ukuyisusa le Khonteyina
 
-
 ## General Section - Language & Appearance
-
-fonts-and-colors-header = Iifonti neMibala
 
 default-font = Ifonti esisiseko
     .accesskey = I
@@ -129,10 +140,6 @@ default-font-size = Isayizi
 advanced-fonts =
     .label = Kwangaphambili…
     .accesskey = K
-
-colors-settings =
-    .label = Imibala…
-    .accesskey = I
 
 choose-language-description = Khetha ulwimi oluthandayo lokubonisa amaphepha
 
@@ -160,8 +167,7 @@ check-user-spelling =
 
 download-header = Okukhutshelwayo
 
-download-save-to =
-    .label = Gcina iifayile kwi
+download-save-where = Gcina iifayile kwi
     .accesskey = c
 
 download-choose-folder =
@@ -360,6 +366,11 @@ choose-bookmark =
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+
+
 ##
 
 
@@ -370,6 +381,7 @@ search-engine-default-header = Injini yesiseko yokukhangela
 search-suggestions-option =
     .label = Nika khangela iingcebiso
     .accesskey = k
+
 
 search-suggestions-cant-show = Amacebiso okukhangela akayi kuboniswa kwiziphumo zebha yendawo ngenxa yokuba uyile i-{ -brand-short-name } ukuba ingaze iyikhumbule imbali.
 
@@ -401,10 +413,11 @@ containers-add-button =
     .label = Yongeza iKhonteyina eNtsha
     .accesskey = Y
 
-## Sync Section - Signed out
-
-
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = Phatha iWebhu Yakho Apho Ukhoyo
@@ -419,16 +432,21 @@ sync-signedout-caption = Phatha iWebhu Yakho Apho Ukhoyo
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Dawnlowuda iFirefox ye<img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">I-Android</a>okanye<img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a>ukuze ungqamanise nezixhobo zakho zemobhayili.
 
-## Sync Section - Signed in
-
-
 ## Firefox Account - Signed in
+
+
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = Tshintsha umfanekiso weprofayili
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } akuqinisekiswanga.
 sync-signedin-login-failure = Sicela ungene ukuze uphinde uqhagamshele { $email }
+
+##
 
 sync-sign-in =
     .label = Sayina uNgene
@@ -466,10 +484,17 @@ sync-device-name-save =
     .label = Gcina
     .accesskey = i
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Isiqinisekiso sithunyelwe
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Ikhonkco lesiqinisekiso lithunyelwe kwi-{ $email }.
+sync-verification-not-sent-title = Ayikwazi ukuThumela uQinisekiso
+sync-verification-not-sent-body = Asikwazi kuthumela imeyili yokuqinisekisa ngeli xesha, sicela uphinde uzame ngelinye ixesha.
+
 ## Privacy Section
-
-
-## Privacy Section - Forms
 
 
 ## Privacy Section - Logins and Passwords
@@ -488,6 +513,7 @@ forms-master-pw-change =
 forms-master-pw-fips-desc = Ukuguqulwa Kwegama Lokugqithisa Akuphumelelanga
 
 ## OS Authentication dialog
+
 
 ## Privacy Section - History
 
@@ -534,6 +560,9 @@ history-clear-on-close-settings =
 
 sitedata-learn-more = Funda okungakumbi
 
+## Privacy Section - Cookie Banner Handling
+
+
 ## Privacy Section - Address Bar
 
 addressbar-locbar-bookmarks-option =
@@ -554,6 +583,10 @@ addressbar-suggestions-settings = Tshintsha iipreferensi zamacebiso enjini yokuk
 
 ##
 
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
+
+
 ## Privacy Section - Tracking
 
 
@@ -564,10 +597,6 @@ permissions-header = Iimvume
 permissions-block-popups =
     .label = Thintela iifestile ezizivelelayo
     .accesskey = T
-
-permissions-block-popups-exceptions =
-    .label = Izinxaxhi…
-    .accesskey = I
 
 permissions-addon-exceptions =
     .label = Izinxaxhi…
@@ -610,9 +639,12 @@ certs-enable-ocsp =
 
 ## Privacy Section - HTTPS-Only
 
+
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Idesktophu
 downloads-folder-name = Okukhutshelweyo
 choose-download-folder-title = Khetha iFolda yokuKhutshelwayo:
-

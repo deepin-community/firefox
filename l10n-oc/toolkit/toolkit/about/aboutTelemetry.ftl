@@ -34,11 +34,10 @@ about-telemetry-events-section = Eveniments
 about-telemetry-simple-measurements-section = Mesuras simplas
 about-telemetry-slow-sql-section = Requèstas SQL lentas
 about-telemetry-addon-details-section =   Detalhs suls moduls complementaris
-about-telemetry-captured-stacks-section = Pilas capturadas
 about-telemetry-late-writes-section = Escrituras tardièras
 about-telemetry-raw-payload-section = Carga utila bruta
 about-telemetry-raw = JSON brut
-about-telemetry-full-sql-warning = NÒTA : Lo desbugatge de las requèstas SQL lentas es activat. De requèstas SQL completas pòdon èsser afichadas çaijós, mas seràn pas mandadas per telemetria.
+about-telemetry-full-sql-warning = NÒTA : Lo desbugatge de las requèstas SQL lentas es activat. De requèstas SQL complètas pòdon èsser afichadas çaijós, mas seràn pas mandadas per telemetria.
 about-telemetry-fetch-stack-symbols = Recuperar los noms de foncions per las pilas
 about-telemetry-hide-stack-symbols = Afichar las donadas brutas de las pilas
 # Selects the correct release version
@@ -122,10 +121,6 @@ about-telemetry-keys-header = Proprietat
 about-telemetry-names-header = Nom
 about-telemetry-values-header = Valor
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (Nombre de capturas : { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Escritura tardièra n°{ $lateWriteCount }
 about-telemetry-stack-title = Pila :
@@ -136,12 +131,6 @@ about-telemetry-category-header = categoria
 about-telemetry-method-header = metòde
 about-telemetry-object-header = objècte
 about-telemetry-extra-header = de sòbra
-about-telemetry-origin-section = Telemetria d’origina
-about-telemetry-origin-origin = origina
-about-telemetry-origin-count = comptatge
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Firefox Origin Telemetry</a> encòda las donadas abans de las mandar per que { $telemetryServerOwner } pòsca comptar mantuna causa, mas que pòscan pas saber se una { -brand-product-name } contribuiguèt a aqueste comptatge. (<a data-l10n-name="prio-blog-link">Ne saber mai</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = Processús « { $process } »

@@ -42,6 +42,7 @@ protections-panel-not-found-label = Pe ki Nongo mo
 
 ##
 
+
 ## In the Site Not Working? view, we suggest turning off protections if
 ## the user is experiencing issues with any of a variety of functionality.
 
@@ -58,6 +59,7 @@ protections-panel-site-not-working-view-send-report = Cwal ripot
 ##
 
 protections-panel-content-blocking-breakage-report-view-description = Gengo lulub kor moni mogo twero kelo peko ki kakube mogo. Miyo ripot ikom peko magi konyo weko { -brand-short-name } bedo ber pi dano weng. Cwalo ripot man bicwalo URL ki ngec ikom ter me layeny mamegi bot Mozilla. <label data-l10n-name="learn-more">Nong ngec mapol</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Gengo lulub kor moni mogo twero kelo peko ki kakube mogo. Miyo ripot ikom peko magi konyo weko { -brand-short-name } bedo ber pi dano weng. Cwalo ripot man bicwalo URL ki ngec ikom ter me layeny mamegi bot { -vendor-short-name }.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -65,3 +67,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Juki
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Cwal Ripot
+
+# Cookie Banner Handling
+

@@ -60,8 +60,7 @@ static bool CanBroadcast(int32_t aNameSpaceID, nsAtom* aAttribute) {
   return true;
 }
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 static LazyLogModule sXULBroadCastManager("XULBroadcastManager");
 
 class XULBroadcastManager::nsDelayedBroadcastUpdate {
@@ -87,8 +86,8 @@ class XULBroadcastManager::nsDelayedBroadcastUpdate {
   nsDelayedBroadcastUpdate(const nsDelayedBroadcastUpdate& aOther) = delete;
   nsDelayedBroadcastUpdate(nsDelayedBroadcastUpdate&& aOther) = default;
 
-  nsCOMPtr<Element> mBroadcaster;
-  nsCOMPtr<Element> mListener;
+  RefPtr<Element> mBroadcaster;
+  RefPtr<Element> mListener;
   // Note if mAttrName isn't used, this is the name of the attr, otherwise
   // this is the value of the attribute.
   nsString mAttr;
@@ -181,7 +180,7 @@ void XULBroadcastManager::SynchronizeBroadcastListener(Element* aBroadcaster,
     RefPtr<nsAtom> name = NS_Atomize(aAttr);
 
     nsAutoString value;
-    if (aBroadcaster->GetAttr(kNameSpaceID_None, name, value)) {
+    if (aBroadcaster->GetAttr(name, value)) {
       aListener->SetAttr(kNameSpaceID_None, name, value, notify);
     } else {
       aListener->UnsetAttr(kNameSpaceID_None, name, notify);
@@ -300,7 +299,7 @@ nsresult XULBroadcastManager::ExecuteOnBroadcastHandlerFor(
   // observer. We need to find the observer in order to
   // execute the handler.
 
-  for (nsIContent* child = aListener->GetFirstChild(); child;
+  for (nsCOMPtr<nsIContent> child = aListener->GetFirstChild(); child;
        child = child->GetNextSibling()) {
     // Look for an <observes> element beneath the listener. This
     // ought to have an |element| attribute that refers to
@@ -310,19 +309,17 @@ nsresult XULBroadcastManager::ExecuteOnBroadcastHandlerFor(
 
     // Is this the element that was listening to us?
     nsAutoString listeningToID;
-    child->AsElement()->GetAttr(kNameSpaceID_None, nsGkAtoms::element,
-                                listeningToID);
+    child->AsElement()->GetAttr(nsGkAtoms::element, listeningToID);
 
     nsAutoString broadcasterID;
-    aBroadcaster->GetAttr(kNameSpaceID_None, nsGkAtoms::id, broadcasterID);
+    aBroadcaster->GetAttr(nsGkAtoms::id, broadcasterID);
 
     if (listeningToID != broadcasterID) continue;
 
     // We are observing the broadcaster, but is this the right
     // attribute?
     nsAutoString listeningToAttribute;
-    child->AsElement()->GetAttr(kNameSpaceID_None, nsGkAtoms::attribute,
-                                listeningToAttribute);
+    child->AsElement()->GetAttr(nsGkAtoms::attribute, listeningToAttribute);
 
     if (!aAttr->Equals(listeningToAttribute) &&
         !listeningToAttribute.EqualsLiteral("*")) {
@@ -333,8 +330,7 @@ nsresult XULBroadcastManager::ExecuteOnBroadcastHandlerFor(
     // |onbroadcast| event handler
     WidgetEvent event(true, eXULBroadcast);
 
-    RefPtr<nsPresContext> presContext = mDocument->GetPresContext();
-    if (presContext) {
+    if (RefPtr<nsPresContext> presContext = mDocument->GetPresContext()) {
       // Handle the DOM event
       nsEventStatus status = nsEventStatus_eIgnore;
       EventDispatcher::Dispatch(child, presContext, &event, nullptr, &status);
@@ -360,7 +356,7 @@ void XULBroadcastManager::AttributeChanged(Element* aElement,
     if (entry) {
       // We've got listeners: push the value.
       nsAutoString value;
-      bool attrSet = aElement->GetAttr(kNameSpaceID_None, aAttribute, value);
+      bool attrSet = aElement->GetAttr(aAttribute, value);
 
       for (size_t i = entry->mListeners.Length() - 1; i != (size_t)-1; --i) {
         BroadcastListener* bl = entry->mListeners[i];
@@ -369,8 +365,7 @@ void XULBroadcastManager::AttributeChanged(Element* aElement,
           nsCOMPtr<Element> listenerEl = do_QueryReferent(bl->mListener);
           if (listenerEl) {
             nsAutoString currentValue;
-            bool hasAttr = listenerEl->GetAttr(kNameSpaceID_None, aAttribute,
-                                               currentValue);
+            bool hasAttr = listenerEl->GetAttr(aAttribute, currentValue);
             // We need to update listener only if we're
             // (1) removing an existing attribute,
             // (2) adding a new attribute or
@@ -416,10 +411,9 @@ void XULBroadcastManager::MaybeBroadcast() {
     if (!mHandlingDelayedAttrChange) {
       mHandlingDelayedAttrChange = true;
       for (uint32_t i = 0; i < mDelayedAttrChangeBroadcasts.Length(); ++i) {
-        nsAtom* attrName = mDelayedAttrChangeBroadcasts[i].mAttrName;
+        RefPtr<nsAtom> attrName = mDelayedAttrChangeBroadcasts[i].mAttrName;
+        RefPtr<Element> listener = mDelayedAttrChangeBroadcasts[i].mListener;
         if (mDelayedAttrChangeBroadcasts[i].mNeedsAttrChange) {
-          nsCOMPtr<Element> listener =
-              mDelayedAttrChangeBroadcasts[i].mListener;
           const nsString& value = mDelayedAttrChangeBroadcasts[i].mAttr;
           if (mDelayedAttrChangeBroadcasts[i].mSetAttr) {
             listener->SetAttr(kNameSpaceID_None, attrName, value, true);
@@ -427,9 +421,9 @@ void XULBroadcastManager::MaybeBroadcast() {
             listener->UnsetAttr(kNameSpaceID_None, attrName, true);
           }
         }
-        ExecuteOnBroadcastHandlerFor(
-            mDelayedAttrChangeBroadcasts[i].mBroadcaster,
-            mDelayedAttrChangeBroadcasts[i].mListener, attrName);
+        RefPtr<Element> broadcaster =
+            mDelayedAttrChangeBroadcasts[i].mBroadcaster;
+        ExecuteOnBroadcastHandlerFor(broadcaster, listener, attrName);
       }
       mDelayedAttrChangeBroadcasts.Clear();
       mHandlingDelayedAttrChange = false;
@@ -475,22 +469,22 @@ nsresult XULBroadcastManager::FindBroadcaster(Element* aElement,
     *aListener = Element::FromNode(parent);
     NS_IF_ADDREF(*aListener);
 
-    aElement->GetAttr(kNameSpaceID_None, nsGkAtoms::element, aBroadcasterID);
+    aElement->GetAttr(nsGkAtoms::element, aBroadcasterID);
     if (aBroadcasterID.IsEmpty()) {
       return NS_FINDBROADCASTER_NOT_FOUND;
     }
-    aElement->GetAttr(kNameSpaceID_None, nsGkAtoms::attribute, aAttribute);
+    aElement->GetAttr(nsGkAtoms::attribute, aAttribute);
   } else {
     // It's a generic element, which means that we'll use the
     // value of the 'observes' attribute to determine the ID of
     // the broadcaster element, and we'll watch _all_ of its
     // values.
-    aElement->GetAttr(kNameSpaceID_None, nsGkAtoms::observes, aBroadcasterID);
+    aElement->GetAttr(nsGkAtoms::observes, aBroadcasterID);
 
     // Bail if there's no aBroadcasterID
     if (aBroadcasterID.IsEmpty()) {
       // Try the command attribute next.
-      aElement->GetAttr(kNameSpaceID_None, nsGkAtoms::command, aBroadcasterID);
+      aElement->GetAttr(nsGkAtoms::command, aBroadcasterID);
       if (!aBroadcasterID.IsEmpty()) {
         // We've got something in the command attribute.  We
         // only treat this as a normal broadcaster if we are
@@ -592,5 +586,4 @@ nsresult XULBroadcastManager::RemoveListener(Element* aElement) {
   return UpdateListenerHookup(aElement, eHookupRemove);
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

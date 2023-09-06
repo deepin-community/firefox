@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Ausblenden
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Alle Lesezeichenordner anzeigen
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Ausblenden
+
 bookmark-overlay-new-folder-button =
     .label = Neuer Ordner
     .accesskey = O
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Alle Schlagwörter anzeigen
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Ausblenden
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Alle Schlagwörter anzeigen
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Ausblenden
 
 bookmark-overlay-keyword-2 =
     .value = Schlüsselwort

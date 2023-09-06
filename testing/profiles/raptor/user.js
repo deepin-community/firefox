@@ -15,9 +15,6 @@ user_pref("dom.performance.time_to_first_interactive.enabled", true);
 // required for geckoview logging
 user_pref("geckoview.console.enabled", true);
 
-// required to prevent non-local access to push.services.mozilla.com
-user_pref("dom.push.connection.enabled", false);
-
 // get the console logging out of the webext into the stdout
 user_pref("browser.dom.window.dump.enabled", true);
 user_pref("devtools.console.stdout.chrome", true);
@@ -43,3 +40,11 @@ user_pref('datareporting.healthreport.uploadEnabled', false);
 // profiles we use to analyze performance regressions.
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1706180
 user_pref('toolkit.telemetry.initDelay', 99999999);
+
+// disable autoplay for raptor tests
+user_pref('media.autoplay.default', 5);
+user_pref('media.autoplay.ask-permission', true);
+user_pref('media.autoplay.blocking_policy', 1);
+user_pref('media.autoplay.block-webaudio', true);
+user_pref('media.allowed-to-play.enabled', false);
+user_pref('media.block-autoplay-until-in-foreground', true);

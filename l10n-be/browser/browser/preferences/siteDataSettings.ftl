@@ -59,9 +59,8 @@ site-data-removing-dialog =
 site-data-removing-header = Выдаленне кукаў і дадзеных сайтаў
 
 site-data-removing-desc = Выдаленне кукаў і дадзеных сайтаў можа прывесці да выхаду з вэб-сайтаў. Вы ўпэўненыя, што жадаеце ўнесці змены?
-
 # Variables:
 #   $baseDomain (String) - The single domain for which data is being removed
-site-data-removing-single-desc = Выдаленне кукаў і дадзеных сайтаў можа прывесцi да выхаду з вэб-сайтаў. Вы ўпэўненыя, што жадаеце выдаліць кукi і дадзеныя сайта для <strong>{ $baseDomain }</strong>?
+site-data-removing-single-desc = Выдаленне кукаў і дадзеных сайтаў можа прывесці да выхаду з вэб-сайтаў. Вы ўпэўненыя, што жадаеце выдаліць кукі і дадзеныя сайта для <strong>{ $baseDomain }</strong>?
 
 site-data-removing-table = Кукі і дадзеныя сайтаў для наступных вэб-сайтаў будуць выдаленыя

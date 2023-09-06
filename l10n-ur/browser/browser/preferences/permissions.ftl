@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-permissions-window =
+permissions-window2 =
     .title = استثنیات
-    .style = width: 45em
+    .style = min-width: 45em
 
 permissions-close-key =
     .key = w
@@ -88,16 +88,15 @@ permissions-invalid-uri-label = کوئی جائز نام میزبان داخل �
 
 ## Exceptions - Tracking Protection
 
-permissions-exceptions-etp-window =
+permissions-exceptions-etp-window2 =
     .title = بہتر ٹریکنگ سے حفاظت کے لئے استثنا
-    .style = { permissions-window.style }
-permissions-exceptions-etp-desc = آپ نے ان ویب سائٹوں پر تحفظات بند کردیئے ہیں۔
+    .style = { permissions-window2.style }
 
 ## Exceptions - Cookies
 
-permissions-exceptions-cookie-window =
+permissions-exceptions-cookie-window2 =
     .title = استثنیات - کوکیز اور سائٹ کا ڈیٹا
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = آپ اختصاص کر سکتے ہیں کی کس ویب سائٹس کو ہمیشہ یا کبھی کوکیز اور سائٹ کا ڈیٹا کو استعمال کرنے کی اجازت ہے۔ اس سائٹ کا پرا نام ٹائپ کرے جسکا آپ انتظام کرنا چاھتے ہے اور پھر کلک کریں بلاک، سیشن کے لئے اجازت دے، یا اجازت دے۔
 
 ## Exceptions - HTTPS-Only Mode
@@ -105,36 +104,36 @@ permissions-exceptions-cookie-desc = آپ اختصاص کر سکتے ہیں کی
 
 ## Exceptions - Pop-ups
 
-permissions-exceptions-popup-window =
+permissions-exceptions-popup-window2 =
     .title = اجازت دی ویب سائٹ - پاپ اپ
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-popup-desc = آپ اختصاص کر سکتے ہیں کہ کونسی سائٹیں پاپ اپ کھولنے کے لیے اجازت دادہ ہیں۔ جس سائٹ کو اجازت دینا چاہتے ہیں اس کا ٹھیک ٹھیک پتہ ٹائپ کریں اور پھر اجازت دیں پر کلک کریں۔
 
 ## Exceptions - Saved Logins
 
-permissions-exceptions-saved-logins-window =
+permissions-exceptions-saved-logins-window2 =
     .title = استثنیات ۔ محفوظ شدہ لاگ ان
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-saved-logins-desc = درج ذیل ویب سائٹس کے لئے لاگ ان کو محفوظ نہیں کیا جائے گا
 
 ## Exceptions - Add-ons
 
-permissions-exceptions-addons-window =
+permissions-exceptions-addons-window2 =
     .title = اجازت دار ویب سائٹیں - ایڈ اون انسٹالیشن
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-addons-desc = آپ اختصاص کر سکتے ہیں کہ کونسی سائٹیں وابستہ دریچے کھولنے کےلیے اجازت دادہ ہیں۔ جس سائٹ کو اجازت دینا چاہتے ہیں اس کا ٹھیک ٹھیک پتہ ٹائپ کریں اور پھر 'اجازت دیں' پر کلک کریں۔
 
 ## Site Permissions - Autoplay
 
-permissions-site-autoplay-window =
+permissions-site-autoplay-window2 =
     .title = سیٹنگز - آٹو پلے
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 
 ## Site Permissions - Notifications
 
-permissions-site-notification-window =
+permissions-site-notification-window2 =
     .title = سیٹنگز - نوٹیفکیشن اجازات
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-notification-desc = مندرجہ ذیل ویب سائٹ نے آپ کو اطلاعات بھیجنیں کی درخواست کی ہے۔ آپ اس بات کی وظاحت کر سکتے ہے کہ کون سے ویب سائٹ آپکو اطلاعات بھیجنیں کی اجازت رخھتے ہے۔ آپ اطلاعات کی اجازت دینے کا مطالبہ کرتی نئی درخواست کو روک بھی سکتے ہے۔
 permissions-site-notification-disable-label =
     .label = اطلاعات کی اجازت دینے کا مطالبہ کرتی نئی درخواست کو روکیں۔
@@ -142,9 +141,9 @@ permissions-site-notification-disable-desc = یہ کسی بھی ویب سائٹ 
 
 ## Site Permissions - Location
 
-permissions-site-location-window =
+permissions-site-location-window2 =
     .title = سیٹنگز- محل وقوع اجازت
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-location-desc = مندرجہ ذیل ویب سائٹ نے آپکے موجودہ مقام کے رسائی کی درخواست کی ہے۔ آپ اس بات کی وظاحت کر سکتے ہے کہ کون سے ویب سائٹ آپکے موجودہ مقام کے رسائی کی اجازت رخھتے ہے۔ آپ اپنے موجودہ مقام کے رسائی کی اجازت دینے کا مطالبہ کرتی نئی درخواست کو روک بھی سکتے ہے۔
 permissions-site-location-disable-label =
     .label = آپ کے مقام تک رسائی حاصل کرنے سے متعلق نئی درخواستیں بند کریں
@@ -152,17 +151,17 @@ permissions-site-location-disable-desc = یہ کسی بھی ویب سائٹ کو
 
 ## Site Permissions - Virtual Reality
 
-permissions-site-xr-window =
+permissions-site-xr-window2 =
     .title = سیٹنگز - ورچوئل رئیلٹی اجازت
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-xr-disable-label =
     .label = اپنی ورچوئل رئیلٹی ڈیوائسز تک رسائی کے لیے نئی درخواستوں کو مسدود کریں
 
 ## Site Permissions - Camera
 
-permissions-site-camera-window =
+permissions-site-camera-window2 =
     .title = سیٹنگز- کیمرہ اجازتیں
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-camera-desc = مندرجہ ذیل ویب سائٹ نے آپکے کیمرے کے رسائی کی درخواست کی ہے۔ آپ اس بات کی وظاحت کر سکتے ہے کہ کون سے ویب سائٹ آپکے کیمرے کے رسائی کی اجازت رخھتے ہے۔ آپ اپنے کیمرے کے رسائی کی اجازت دینے کا مطالبہ کرتی نئی درخواست کو روک بھی سکتے ہے۔
 permissions-site-camera-disable-label =
     .label = اپنے کیمرے تک رسائی حاصل کرنے سے متعلق نئی درخواستیں بند کریں
@@ -170,10 +169,15 @@ permissions-site-camera-disable-desc = یہ کسی بھی ویب سائٹ کو �
 
 ## Site Permissions - Microphone
 
-permissions-site-microphone-window =
+permissions-site-microphone-window2 =
     .title = سیٹنگز - مائکروفون کی اجازت
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-microphone-desc = مندرجہ ذیل ویب سائٹ نے آپکے مائیکروفون کے رسائی کی درخواست کی ہے۔ آپ اس بات کی وظاحت کر سکتے ہے کہ کون سے ویب سائٹ آپکے مائیکروفون کے رسائی کی اجازت رخھتے ہے۔ آپ اپنے مائیکروفون کے رسائی کی اجازت دینے کا مطالبہ کرتی نئی درخواست کو روک بھی سکتے ہے۔
 permissions-site-microphone-disable-label =
     .label = اپنے مائیکروفون تک رسائی حاصل کرنے سے متعلق نئی درخواستیں بند کریں
 permissions-site-microphone-disable-desc = یہ کسی بھی ویب سائٹ کو آپکے مائکروفون کے رسائی کی اجازت کی درخواست کرنے سے روکتا ہے جو اوپر درج نہیں ہے۔ آپکے مائکروفون کے رسائی کو روکنے سے ویب سائٹ کی کچھ خوبی وقفہ ہو سکتی ہے۔
+
+## Site Permissions - Speaker
+##
+## "Speaker" refers to an audio output device.
+

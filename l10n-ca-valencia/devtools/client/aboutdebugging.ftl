@@ -289,6 +289,10 @@ about-debugging-extension-location =
 about-debugging-extension-id =
     .label = ID d'extensió
 
+# This string is displayed as a label of the button that starts a service worker.
+about-debugging-worker-action-start2 = Inicia
+    .disabledTitle = L'inici d'un procés de treball de servei està desactivat pel multiprocés del { -brand-shorter-name }
+
 # This string is displayed as a label of the button that unregisters a service worker.
 about-debugging-worker-action-unregister = Suprimeix el registre
 
@@ -318,10 +322,6 @@ about-debugging-worker-inspect-action-disabled =
 # Displayed as title of the inspect button for zombie tabs (e.g. tabs loaded via a session restore).
 about-debugging-zombie-tab-inspect-action-disabled =
     .title = Esta pestanya no s'ha acabat de carregat i no es pot inspeccionar
-
-# Displayed as name for the Main Process debug target in the Processes category. Only for
-# remote runtimes, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-name = Procés principal
 
 # Displayed instead of the Main Process debug target when the preference
 # `devtools.browsertoolbox.fission` is true.

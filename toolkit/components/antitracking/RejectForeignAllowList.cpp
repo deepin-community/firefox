@@ -6,9 +6,13 @@
 
 #include "RejectForeignAllowList.h"
 #include "mozilla/dom/Document.h"
+#include "mozilla/BasePrincipal.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/StaticPtr.h"
+#include "nsIHttpChannel.h"
+#include "nsIURI.h"
 #include "nsNetUtil.h"
+#include "nsScriptSecurityManager.h"
 
 #define REJECTFOREIGNALLOWLIST_PREF "privacy.rejectForeign.allowList"_ns
 #define REJECTFOREIGNALLOWLIST_NAME "RejectForeignAllowList"_ns
@@ -47,6 +51,11 @@ bool RejectForeignAllowList::Check(nsIHttpChannel* aChannel) {
 }
 
 // static
+bool RejectForeignAllowList::Check(nsIPrincipal* aPrincipal) {
+  return GetOrCreate()->CheckInternal(aPrincipal);
+}
+
+// static
 RejectForeignAllowList* RejectForeignAllowList::GetOrCreate() {
   if (!gRejectForeignAllowList) {
     gRejectForeignAllowList = new RejectForeignAllowList();
@@ -73,9 +82,28 @@ RejectForeignAllowList* RejectForeignAllowList::GetOrCreate() {
   return gRejectForeignAllowList;
 }
 
+// static
+bool RejectForeignAllowList::Check(nsIURI* aURI) {
+  return GetOrCreate()->CheckInternal(aURI);
+}
+
 bool RejectForeignAllowList::CheckInternal(nsIURI* aURI) {
   MOZ_ASSERT(aURI);
   return nsContentUtils::IsURIInList(aURI, mList);
+}
+
+bool RejectForeignAllowList::CheckInternal(nsIPrincipal* aPrincipal) {
+  MOZ_ASSERT(aPrincipal);
+
+  auto* basePrin = BasePrincipal::Cast(aPrincipal);
+  if (!basePrin) {
+    return false;
+  }
+
+  bool result = false;
+  basePrin->IsURIInList(mList, &result);
+
+  return result;
 }
 
 NS_IMETHODIMP

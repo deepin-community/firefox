@@ -10,7 +10,11 @@
 #include "mozilla/dom/nsMixedContentBlocker.h"
 #include "nsIMutableArray.h"
 #include "nsTPriorityQueue.h"
+#include "nsIScriptError.h"
+#include "nsServiceManagerUtils.h"
+#include "nsComponentManagerUtils.h"
 #include "prprf.h"
+#include "nsIPrefService.h"
 
 #undef ADD_TEN_PERCENT
 #define ADD_TEN_PERCENT(i) static_cast<uint32_t>((i) + (i) / 10)
@@ -402,6 +406,7 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
     potentiallyTrustworthy =
         nsMixedContentBlocker::IsPotentiallyTrustworthyOrigin(aHostURI);
   }
+  constexpr auto CONSOLE_REJECTION_CATEGORY = "cookiesRejection"_ns;
   bool oldCookieIsSession = false;
   // Step1, call FindSecureCookie(). FindSecureCookie() would
   // find the existing cookie with the security flag and has
@@ -444,12 +449,6 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
         // The new cookie has expired and the old one is stale. Nothing to do.
         COOKIE_LOGFAILURE(SET_COOKIE, aHostURI, aCookieHeader,
                           "cookie has already expired");
-        CookieLogging::LogMessageToConsole(
-            aCRC, aHostURI, nsIScriptError::warningFlag,
-            CONSOLE_REJECTION_CATEGORY, "CookieRejectedExpired"_ns,
-            AutoTArray<nsString, 1>{
-                NS_ConvertUTF8toUTF16(aCookie->Name()),
-            });
         return;
       }
 
@@ -490,6 +489,7 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
           oldCookie->IsSession() == aCookie->IsSession() &&
           oldCookie->IsHttpOnly() == aCookie->IsHttpOnly() &&
           oldCookie->SameSite() == aCookie->SameSite() &&
+          oldCookie->RawSameSite() == aCookie->RawSameSite() &&
           oldCookie->SchemeMap() == aCookie->SchemeMap() &&
           // We don't want to perform this optimization if the cookie is
           // considered stale, since in this case we would need to update the
@@ -513,12 +513,6 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
       if (aCookie->Expiry() <= currentTime) {
         COOKIE_LOGFAILURE(SET_COOKIE, aHostURI, aCookieHeader,
                           "previously stored cookie was deleted");
-        CookieLogging::LogMessageToConsole(
-            aCRC, aHostURI, nsIScriptError::warningFlag,
-            CONSOLE_REJECTION_CATEGORY, "CookieRejectedExpired"_ns,
-            AutoTArray<nsString, 1>{
-                NS_ConvertUTF8toUTF16(aCookie->Name()),
-            });
         NotifyChanged(oldCookie, u"deleted", oldCookieIsSession);
         return;
       }
@@ -532,12 +526,6 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
     if (aCookie->Expiry() <= currentTime) {
       COOKIE_LOGFAILURE(SET_COOKIE, aHostURI, aCookieHeader,
                         "cookie has already expired");
-      CookieLogging::LogMessageToConsole(
-          aCRC, aHostURI, nsIScriptError::warningFlag,
-          CONSOLE_REJECTION_CATEGORY, "CookieRejectedExpired"_ns,
-          AutoTArray<nsString, 1>{
-              NS_ConvertUTF8toUTF16(aCookie->Name()),
-          });
       return;
     }
 
@@ -571,7 +559,7 @@ void CookieStorage::AddCookie(nsIConsoleReportCollector* aCRC,
         RefPtr<Cookie> evictedCookie = (*it).Cookie();
         COOKIE_LOGEVICTED(evictedCookie, "Too many cookies for this domain");
         RemoveCookieFromList(*it);
-        CreateOrUpdatePurgeList(getter_AddRefs(purgedList), evictedCookie);
+        CreateOrUpdatePurgeList(purgedList, evictedCookie);
         MOZ_ASSERT((*it).entry);
       }
 
@@ -690,16 +678,15 @@ void CookieStorage::FindStaleCookies(CookieEntry* aEntry, int64_t aCurrentTime,
 }
 
 // static
-void CookieStorage::CreateOrUpdatePurgeList(nsIArray** aPurgedList,
+void CookieStorage::CreateOrUpdatePurgeList(nsCOMPtr<nsIArray>& aPurgedList,
                                             nsICookie* aCookie) {
-  if (!*aPurgedList) {
+  if (!aPurgedList) {
     COOKIE_LOGSTRING(LogLevel::Debug, ("Creating new purge list"));
-    nsCOMPtr<nsIArray> purgedList = CreatePurgeList(aCookie);
-    purgedList.forget(aPurgedList);
+    aPurgedList = CreatePurgeList(aCookie);
     return;
   }
 
-  nsCOMPtr<nsIMutableArray> purgedList = do_QueryInterface(*aPurgedList);
+  nsCOMPtr<nsIMutableArray> purgedList = do_QueryInterface(aPurgedList);
   if (purgedList) {
     COOKIE_LOGSTRING(LogLevel::Debug, ("Updating existing purge list"));
     purgedList->AppendElement(aCookie);

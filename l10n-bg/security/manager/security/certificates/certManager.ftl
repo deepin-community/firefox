@@ -25,9 +25,9 @@ certmgr-remembered = Тези сертификати се използват, з
 certmgr-people = Имате сертификати, които идентифицират следните хора
 certmgr-ca = Имате сертификати, които идентифицират следните удостоверители на сертификати
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Редактиране на настройките за доверие в сертификат на CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Редактиране на настройките за доверие:
 
@@ -37,9 +37,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Този сертификат може да идентифицира пощенски потребители.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Изтриване на сертификат
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Хост
@@ -49,9 +49,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Сървър
-
-certmgr-override-lifetime =
-    .label = Време на живот
 
 certmgr-token-name =
     .label = Устройство по безопасността
@@ -180,9 +177,8 @@ delete-email-cert-impact = Ако изтриете сертификат на е-
 cert-with-serial =
     .value = Сертификат със сериен номер: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

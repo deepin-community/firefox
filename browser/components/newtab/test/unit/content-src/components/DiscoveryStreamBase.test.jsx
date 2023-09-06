@@ -6,14 +6,12 @@ import { GlobalOverrider } from "test/unit/utils";
 import { CardGrid } from "content-src/components/DiscoveryStreamComponents/CardGrid/CardGrid";
 import { CollapsibleSection } from "content-src/components/CollapsibleSection/CollapsibleSection";
 import { DSMessage } from "content-src/components/DiscoveryStreamComponents/DSMessage/DSMessage";
-import { Hero } from "content-src/components/DiscoveryStreamComponents/Hero/Hero";
 import { HorizontalRule } from "content-src/components/DiscoveryStreamComponents/HorizontalRule/HorizontalRule";
-import { List } from "content-src/components/DiscoveryStreamComponents/List/List";
 import { Navigation } from "content-src/components/DiscoveryStreamComponents/Navigation/Navigation";
 import React from "react";
 import { shallow } from "enzyme";
 import { SectionTitle } from "content-src/components/DiscoveryStreamComponents/SectionTitle/SectionTitle";
-import { TopSites } from "content-src/components/DiscoveryStreamComponents/TopSites/TopSites";
+import { TopSites } from "content-src/components/TopSites/TopSites";
 
 describe("<isAllowedCSS>", () => {
   it("should allow colors", () => {
@@ -164,42 +162,8 @@ describe("<DiscoveryStreamBase>", () => {
     });
 
     assert.equal(
-      wrapper
-        .find(".ds-column-grid div")
-        .children()
-        .at(0)
-        .type(),
+      wrapper.find(".ds-column-grid div").children().at(0).type(),
       HorizontalRule
-    );
-  });
-
-  it("should render a List component", () => {
-    wrapper = mountComponent({
-      layout: [{ components: [{ properties: {}, type: "List" }] }],
-    });
-
-    assert.equal(
-      wrapper
-        .find(".ds-column-grid div")
-        .children()
-        .at(0)
-        .type(),
-      List
-    );
-  });
-
-  it("should render a Hero component", () => {
-    wrapper = mountComponent({
-      layout: [{ components: [{ properties: {}, type: "Hero" }] }],
-    });
-
-    assert.equal(
-      wrapper
-        .find(".ds-column-grid div")
-        .children()
-        .at(0)
-        .type(),
-      Hero
     );
   });
 
@@ -209,11 +173,7 @@ describe("<DiscoveryStreamBase>", () => {
     });
 
     assert.equal(
-      wrapper
-        .find(".ds-column-grid div")
-        .children()
-        .at(0)
-        .type(),
+      wrapper.find(".ds-column-grid div").children().at(0).type(),
       CardGrid
     );
   });
@@ -224,11 +184,7 @@ describe("<DiscoveryStreamBase>", () => {
     });
 
     assert.equal(
-      wrapper
-        .find(".ds-column-grid div")
-        .children()
-        .at(0)
-        .type(),
+      wrapper.find(".ds-column-grid div").children().at(0).type(),
       Navigation
     );
   });
@@ -252,11 +208,7 @@ describe("<DiscoveryStreamBase>", () => {
     });
 
     assert.equal(
-      wrapper
-        .find(".ds-column-grid div")
-        .children()
-        .at(0)
-        .type(),
+      wrapper.find(".ds-column-grid div").children().at(0).type(),
       DSMessage
     );
   });
@@ -273,20 +225,8 @@ describe("<DiscoveryStreamBase>", () => {
       ],
     });
 
-    assert.equal(
-      wrapper
-        .children()
-        .at(0)
-        .type(),
-      CollapsibleSection
-    );
-    assert.equal(
-      wrapper
-        .children()
-        .at(0)
-        .props().eventSource,
-      "CARDGRID"
-    );
+    assert.equal(wrapper.children().at(0).type(), CollapsibleSection);
+    assert.equal(wrapper.children().at(0).props().eventSource, "CARDGRID");
   });
 
   it("should render a Message component", () => {
@@ -302,11 +242,7 @@ describe("<DiscoveryStreamBase>", () => {
     });
 
     assert.equal(
-      wrapper
-        .find(".ds-column-grid div")
-        .children()
-        .at(0)
-        .type(),
+      wrapper.find(".ds-column-grid div").children().at(0).type(),
       DSMessage
     );
   });
@@ -317,11 +253,7 @@ describe("<DiscoveryStreamBase>", () => {
     });
 
     assert.equal(
-      wrapper
-        .find(".ds-column-grid div")
-        .children()
-        .at(0)
-        .type(),
+      wrapper.find(".ds-column-grid div").children().at(0).type(),
       SectionTitle
     );
   });
@@ -334,6 +266,7 @@ describe("<DiscoveryStreamBase>", () => {
     assert.equal(
       wrapper
         .find(".ds-column-grid div")
+        .find(".ds-top-sites")
         .children()
         .at(0)
         .type(),

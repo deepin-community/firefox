@@ -9,13 +9,13 @@
 const TEST_URI = `
   <style type="text/css">
   #testid {
-      background: url("http://example.com/browser/devtools/client/inspector/rules/test/doc_test_image.png"), linear-gradient(white, #F06 400px);
+      background: url("https://example.com/browser/devtools/client/inspector/rules/test/doc_test_image.png"), linear-gradient(white, #F06 400px);
   }
   </style>
   <div id="testid">Styled Node</div>
 `;
 
-add_task(async function() {
+add_task(async function () {
   await addTab("data:text/html;charset=utf-8," + encodeURIComponent(TEST_URI));
   const { inspector, view } = await openRuleView();
 

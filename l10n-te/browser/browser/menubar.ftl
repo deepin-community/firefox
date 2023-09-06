@@ -41,15 +41,6 @@ menu-quit =
 menu-quit-mac =
     .label = { -brand-shorter-name } నిష్క్రమించు
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = { -brand-shorter-name } నిష్క్రమించు
-
 menu-about =
     .label = { -brand-shorter-name } గురించి
     .accesskey = A
@@ -79,8 +70,15 @@ menu-file-open-location =
 menu-file-open-file =
     .label = ఫైలును తెరువు…
     .accesskey = O
-menu-file-close =
-    .label = మూసివేయి
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] ట్యాబును మూసివేయి
+            [one] ట్యాబును మూసివేయి
+           *[other] { $tabCount } ట్యాబులను మూసివేయి
+        }
     .accesskey = C
 menu-file-close-window =
     .label = విండో మూసివేయి
@@ -91,12 +89,12 @@ menu-file-save-page =
 menu-file-email-link =
     .label = లింకును ఈమెయిలు చేయి…
     .accesskey = E
+menu-file-share-url =
+    .label = పంచుకోండి
+    .accesskey = h
 menu-file-print-setup =
     .label = పేజీ అమరిక...
     .accesskey = u
-menu-file-print-preview =
-    .label = ముద్రణ మునుజూపు
-    .accesskey = v
 menu-file-print =
     .label = ముద్రించు…
     .accesskey = P
@@ -174,6 +172,17 @@ menu-view-full-screen =
     .label = నిండు తెర
     .accesskey = F
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = చదివేందుకు ప్రవేశించు
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = చదువరి వీక్షణం మూయి
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -208,8 +217,6 @@ menu-history-undo-window-menu =
 menu-bookmarks-menu =
     .label = ఇష్టాంశాలు
     .accesskey = B
-menu-bookmark-edit =
-    .label = ఈ ఇష్టాంశాన్ని సరిదిద్దు
 menu-bookmarks-all-tabs =
     .label = ట్యాబులన్నింటినీ ఇష్టాంశాలుగా చేయి…
 menu-bookmarks-toolbar =
@@ -279,9 +286,6 @@ menu-get-help =
     .accesskey = H
 menu-help-report-site-issue =
     .label = సైటులోని సమస్యను నివేదించండి…
-menu-help-feedback-page =
-    .label = ప్రతిస్పందనను తెలియజేయండి…
-    .accesskey = S
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

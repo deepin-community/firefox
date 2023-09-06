@@ -8,7 +8,7 @@
 site-data-settings-window =
     .title = Upravljanje piškotkov in podatkov strani
 
-site-data-settings-description = Naslednje spletne strani hranijo piškotke in podatke na vašem računalniku. { -brand-short-name } hrani podatke spletnih strani s trajno shrambo, dokler jih ne izbrišete, podatke strani s kratkotrajno shrambo pa izbriše, ko je potreben prostor.
+site-data-settings-description = Naslednja spletna mesta hranijo piškotke in podatke na vašem računalniku. Podatke spletnih mest s trajno shrambo { -brand-short-name } hrani, dokler jih ne izbrišete, podatke s kratkotrajno shrambo pa izbriše, ko je potreben prostor.
 
 site-data-search-textbox =
     .placeholder = Išči strani
@@ -59,9 +59,8 @@ site-data-removing-dialog =
 site-data-removing-header = Odstranjevanje piškotkov in podatkov strani
 
 site-data-removing-desc = Izbris piškotkov in podatkov strani vas lahko odjavi iz spletnih strani. Ste prepričani, da želite to storiti?
-
 # Variables:
 #   $baseDomain (String) - The single domain for which data is being removed
 site-data-removing-single-desc = Brisanje piškotkov in podatkov strani vas lahko odjavi iz spletnih mest. Ali ste prepričani, da želite izbrisati piškotke in podatke strani za <strong>{ $baseDomain }</strong>?
 
-site-data-removing-table = Odstranjeni bodo piškotki in podatki naslednjih strani
+site-data-removing-table = Odstranjeni bodo piškotki in podatki naslednjih spletnih mest

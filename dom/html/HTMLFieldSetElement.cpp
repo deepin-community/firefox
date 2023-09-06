@@ -6,7 +6,9 @@
 
 #include "mozilla/BasicEvents.h"
 #include "mozilla/EventDispatcher.h"
-#include "mozilla/EventStates.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/StaticPrefs_dom.h"
+#include "mozilla/dom/CustomElementRegistry.h"
 #include "mozilla/dom/HTMLFieldSetElement.h"
 #include "mozilla/dom/HTMLFieldSetElementBinding.h"
 #include "nsContentList.h"
@@ -18,7 +20,8 @@ namespace mozilla::dom {
 
 HTMLFieldSetElement::HTMLFieldSetElement(
     already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo)
-    : nsGenericHTMLFormElement(std::move(aNodeInfo), FormControlType::Fieldset),
+    : nsGenericHTMLFormControlElement(std::move(aNodeInfo),
+                                      FormControlType::Fieldset),
       mElements(nullptr),
       mFirstLegend(nullptr),
       mInvalidElementsCount(0) {
@@ -26,7 +29,7 @@ HTMLFieldSetElement::HTMLFieldSetElement(
   SetBarredFromConstraintValidation(true);
 
   // We start out enabled and valid.
-  AddStatesSilently(NS_EVENT_STATE_ENABLED | NS_EVENT_STATE_VALID);
+  AddStatesSilently(ElementState::ENABLED | ElementState::VALID);
 }
 
 HTMLFieldSetElement::~HTMLFieldSetElement() {
@@ -37,16 +40,19 @@ HTMLFieldSetElement::~HTMLFieldSetElement() {
 }
 
 NS_IMPL_CYCLE_COLLECTION_INHERITED(HTMLFieldSetElement,
-                                   nsGenericHTMLFormElement, mValidity,
+                                   nsGenericHTMLFormControlElement, mValidity,
                                    mElements)
 
 NS_IMPL_ISUPPORTS_CYCLE_COLLECTION_INHERITED(HTMLFieldSetElement,
-                                             nsGenericHTMLFormElement,
+                                             nsGenericHTMLFormControlElement,
                                              nsIConstraintValidation)
 
 NS_IMPL_ELEMENT_CLONE(HTMLFieldSetElement)
 
 bool HTMLFieldSetElement::IsDisabledForEvents(WidgetEvent* aEvent) {
+  if (StaticPrefs::dom_forms_fieldset_disable_only_descendants_enabled()) {
+    return false;
+  }
   return IsElementDisabledForEvents(aEvent, nullptr);
 }
 
@@ -58,34 +64,21 @@ void HTMLFieldSetElement::GetEventTargetParent(EventChainPreVisitor& aVisitor) {
     return;
   }
 
-  nsGenericHTMLFormElement::GetEventTargetParent(aVisitor);
+  nsGenericHTMLFormControlElement::GetEventTargetParent(aVisitor);
 }
 
-nsresult HTMLFieldSetElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
-                                           const nsAttrValue* aValue,
-                                           const nsAttrValue* aOldValue,
-                                           nsIPrincipal* aSubjectPrincipal,
-                                           bool aNotify) {
+void HTMLFieldSetElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
+                                       const nsAttrValue* aValue,
+                                       const nsAttrValue* aOldValue,
+                                       nsIPrincipal* aSubjectPrincipal,
+                                       bool aNotify) {
   if (aNameSpaceID == kNameSpaceID_None && aName == nsGkAtoms::disabled) {
     // This *has* to be called *before* calling FieldSetDisabledChanged on our
     // controls, as they may depend on our disabled state.
     UpdateDisabledState(aNotify);
-
-    if (nsINode::GetFirstChild()) {
-      if (!mElements) {
-        mElements = new nsContentList(this, MatchListedElements, nullptr,
-                                      nullptr, true);
-      }
-
-      uint32_t length = mElements->Length(true);
-      for (uint32_t i = 0; i < length; ++i) {
-        static_cast<nsGenericHTMLFormElement*>(mElements->Item(i))
-            ->FieldSetDisabledChanged(aNotify);
-      }
-    }
   }
 
-  return nsGenericHTMLFormElement::AfterSetAttr(
+  return nsGenericHTMLFormControlElement::AfterSetAttr(
       aNameSpaceID, aName, aValue, aOldValue, aSubjectPrincipal, aNotify);
 }
 
@@ -126,17 +119,21 @@ void HTMLFieldSetElement::InsertChildBefore(nsIContent* aChild,
     } else {
       // If mFirstLegend is before aIndex, we do not change it.
       // Otherwise, mFirstLegend is now aChild.
-      int32_t index =
-          aBeforeThis ? ComputeIndexOf(aBeforeThis) : GetChildCount();
-      if (index <= ComputeIndexOf(mFirstLegend)) {
+      const Maybe<uint32_t> indexOfRef =
+          aBeforeThis ? ComputeIndexOf(aBeforeThis) : Some(GetChildCount());
+      const Maybe<uint32_t> indexOfFirstLegend = ComputeIndexOf(mFirstLegend);
+      if ((indexOfRef.isSome() && indexOfFirstLegend.isSome() &&
+           *indexOfRef <= *indexOfFirstLegend) ||
+          // XXX Keep the odd traditional behavior for now.
+          indexOfRef.isNothing()) {
         mFirstLegend = aChild;
         firstLegendHasChanged = true;
       }
     }
   }
 
-  nsGenericHTMLFormElement::InsertChildBefore(aChild, aBeforeThis, aNotify,
-                                              aRv);
+  nsGenericHTMLFormControlElement::InsertChildBefore(aChild, aBeforeThis,
+                                                     aNotify, aRv);
   if (aRv.Failed()) {
     return;
   }
@@ -163,7 +160,7 @@ void HTMLFieldSetElement::RemoveChildNode(nsIContent* aKid, bool aNotify) {
     }
   }
 
-  nsGenericHTMLFormElement::RemoveChildNode(aKid, aNotify);
+  nsGenericHTMLFormControlElement::RemoveChildNode(aKid, aNotify);
 
   if (firstLegendHasChanged) {
     NotifyElementsForFirstLegendChange(aNotify);
@@ -181,6 +178,14 @@ void HTMLFieldSetElement::AddElement(nsGenericHTMLFormElement* aElement) {
       UpdateValidity(false);
     }
     return;
+  }
+
+  // If the element is a form-associated custom element, adding element might be
+  // caused by FACE upgrade which won't trigger mutation observer, so mark
+  // mElements dirty manually here.
+  CustomElementData* data = aElement->GetCustomElementData();
+  if (data && data->IsFormAssociated() && mElements) {
+    mElements->SetDirty();
   }
 
   // We need to update the validity of the fieldset.
@@ -248,6 +253,14 @@ void HTMLFieldSetElement::RemoveElement(nsGenericHTMLFormElement* aElement) {
 #endif
 }
 
+void HTMLFieldSetElement::UpdateDisabledState(bool aNotify) {
+  nsGenericHTMLFormControlElement::UpdateDisabledState(aNotify);
+
+  for (nsGenericHTMLFormElement* element : mDependentElements) {
+    element->FieldSetDisabledChanged(aNotify);
+  }
+}
+
 void HTMLFieldSetElement::NotifyElementsForFirstLegendChange(bool aNotify) {
   /**
    * NOTE: this could be optimized if only call when the fieldset is currently
@@ -290,13 +303,13 @@ void HTMLFieldSetElement::UpdateValidity(bool aElementValidity) {
   }
 }
 
-EventStates HTMLFieldSetElement::IntrinsicState() const {
-  EventStates state = nsGenericHTMLFormElement::IntrinsicState();
+ElementState HTMLFieldSetElement::IntrinsicState() const {
+  ElementState state = nsGenericHTMLFormControlElement::IntrinsicState();
 
   if (mInvalidElementsCount) {
-    state |= NS_EVENT_STATE_INVALID;
+    state |= ElementState::INVALID;
   } else {
-    state |= NS_EVENT_STATE_VALID;
+    state |= ElementState::VALID;
   }
 
   return state;

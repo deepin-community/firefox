@@ -39,6 +39,11 @@ printpreview-page =
     .value = صفحہ:
     .accesskey = ص
 
+# Variables
+# $sheetNum (integer) - The current sheet number
+# $sheetCount (integer) - The total number of sheets to print
+printpreview-sheet-of-sheets = { $sheetCount } میں سے { $sheetNum }
+
 ## Variables
 ## $percent (integer) - menuitem percent label
 ## $arrow (String) - UTF-8 arrow character for navigation buttons
@@ -57,7 +62,6 @@ printpreview-nextarrow =
 printpreview-endarrow =
     .label = { $arrow }
     .tooltiptext = آخری صفحہ
-
 printpreview-homearrow-button =
     .title = پہلا صفحہ
 printpreview-previousarrow-button =

@@ -5,12 +5,12 @@
 
 about-logins-page-title = Credenciales y contraseñas
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Buscar credenciales
+    .key = F
 
-create-login-button = Crear nueva credencial
+create-new-login-button =
+    .title = Crear nueva credencial
 
 fxaccounts-sign-in-text = Ten tus contraseñas en tus otros dispositivos
 fxaccounts-sign-in-sync-button = Conectarse para sincronizar
@@ -37,10 +37,21 @@ about-logins-menu-menuitem-help = Ayuda
 
 login-list =
     .aria-label = Credenciales que coinciden con  loscriterios de búsqueda
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } credencial
        *[other] { $count } credenciales
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } de { $total } conexión
+        [many] { $count } de { $total } conexiones
+       *[other] { $count } de { $total } conexiones
     }
 login-list-sort-label-text = Ordenar por:
 login-list-name-option = Nombre (A-Z)
@@ -61,7 +72,6 @@ about-logins-list-item-breach-icon =
     .title = Sitio web vulnerado
 about-logins-list-item-vulnerable-password-icon =
     .title = Contraseña vulnerable
-
 about-logins-list-section-breach = Sitios webs vulnerados
 about-logins-list-section-vulnerable = Contraseñas vulnerables
 about-logins-list-section-nothing = Sin alertas
@@ -76,8 +86,8 @@ about-logins-login-intro-heading-logged-in = No se encontraron credenciales sinc
 login-intro-description = Si guardaste tus credenciales en { -brand-product-name } en un dispositivo diferente, estas son las instrucciones para que puedas tenerlas también aquí:
 login-intro-instructions-fxa = Crea o conéctate a tu { -fxaccount-brand-name } en el dispositivo en que tienes guardadas tus credenciales
 login-intro-instructions-fxa-settings = Ve a Ajustes > Sincronizar > Activar la sincronización… Selecciona las casillas de Credenciales y contraseñas.
-login-intro-instructions-fxa-help = Visita el <a data-l10n-name="help-link">Soporte de { -lockwise-brand-short-name }</a> para más ayuda.
-about-logins-intro-import = Si tus credenciales están guardadas en otro navegador, puedes <a data-l10n-name="import-link">importarlas a { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = Visita la página de <a data-l10n-name="passwords-help-link">asistencia para contraseñas</a> para obtener más ayuda.
+about-logins-intro-browser-only-import = Si tus credenciales están guardadas en otro navegador, puedes <a data-l10n-name="import-link">importarlas a { -brand-product-name }</a>
 about-logins-intro-import2 = Si tus credenciales se guardan fuera de { -brand-product-name }, puedes <a data-l10n-name="import-browser-link">importarlas desde otro navegador</a> o <a data-l10n-name="import-file-link">desde un archivo</a>
 
 ## Login
@@ -102,9 +112,17 @@ login-item-copied-password-button-text = ¡Copiado!
 login-item-save-changes-button = Guardar cambios
 login-item-save-new-button = Guardar
 login-item-cancel-button = Cancelar
-login-item-time-changed = Última modificación: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Creación: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Último uso: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Creado
+login-item-timeline-action-updated = Actualizado
+login-item-timeline-action-used = Usado
 
 ## OS Authentication dialog
 
@@ -132,8 +150,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Para copiar tu contrase�
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = copiar la contraseña guardada
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Para exportar tus credenciales, ingresa tus datos de inicio de sesión de Windows. Esto ayuda a proteger la seguridad de tus cuentas.
 # This message can be seen when attempting to export a password in about:logins
@@ -147,8 +163,6 @@ master-password-reload-button =
     .label = Conectarse
     .accesskey = L
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Cancelar
@@ -158,6 +172,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = ¿Eliminar esta credencial?
 confirm-delete-dialog-message = Esta acción no puede revertirse.
 about-logins-confirm-remove-dialog-confirm-button = Eliminar
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -197,6 +214,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Esto eliminará todas las credenciales que has guardado en { -brand-short-name } en todos los dispositivos sincronizados con tu { -fxaccount-brand-name }. Esto también eliminará las alertas de filtraciones que aparecen aquí. No podrás deshacer esta acción.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Exportar credenciales y contraseñas
 about-logins-confirm-export-dialog-message = Tus contraseñas serán guardadas como texto legible (por ejemplo, BadP@ssw0rd) por lo que cualquiera que pueda abrir el archivo exportado podrá verlas.
 about-logins-confirm-export-dialog-confirm-button = Exportar…
@@ -216,7 +235,6 @@ about-logins-breach-alert-date = Esta filtración ocurrió el { DATETIME($date, 
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Ir a { $hostname }
-about-logins-breach-alert-learn-more-link = Aprender más
 
 ## Vulnerable Password notification
 

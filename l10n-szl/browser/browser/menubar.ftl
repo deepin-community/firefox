@@ -43,15 +43,6 @@ menu-quit =
 menu-quit-mac =
     .label = Skōńcz { -brand-shorter-name }
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Skōńcz { -brand-shorter-name }
-
 menu-about =
     .label = Ô aplikacyji { -brand-shorter-name }
     .accesskey = O
@@ -81,8 +72,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Ôtwōrz zbiōr…
     .accesskey = d
-menu-file-close =
-    .label = Zawrzij
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Zawrzij karta
+            [one] Zawrzij { $tabCount } karta
+            [few] Zawrzij { $tabCount } karty
+           *[many] Zawrzij { $tabCount } kart
+        }
     .accesskey = Z
 menu-file-close-window =
     .label = Zawrzij okno
@@ -93,12 +92,12 @@ menu-file-save-page =
 menu-file-email-link =
     .label = Poślij link emailym…
     .accesskey = E
+menu-file-share-url =
+    .label = Udostympnij
+    .accesskey = t
 menu-file-print-setup =
     .label = Nasztalowania strōny
     .accesskey = y
-menu-file-print-preview =
-    .label = Podlōnd durku
-    .accesskey = d
 menu-file-print =
     .label = Durkuj…
     .accesskey = D
@@ -168,7 +167,6 @@ menu-view-page-style-no-style =
 menu-view-page-basic-style =
     .label = Bazowy styl
     .accesskey = B
-
 menu-view-repair-text-encoding =
     .label = Naprow kodowanie tekstu
     .accesskey = n
@@ -185,6 +183,17 @@ menu-view-exit-full-screen =
 menu-view-full-screen =
     .label = Cołki ekran
     .accesskey = C
+
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Wlyź do podglōndu czytanio
+    .accesskey = P
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Zawrzij podglōnd czytanio
+    .accesskey = P
 
 ##
 
@@ -215,9 +224,6 @@ menu-history-undo-menu =
 menu-history-undo-window-menu =
     .label = Niydowno zawarte ôkna
 
-menu-history-reopen-all-tabs = Ôdewrzij nazod wszyskie karty
-menu-history-reopen-all-windows = Ôdewrzij nazod wszyskie ôkna
-
 ## Bookmarks Menu
 
 menu-bookmarks-menu =
@@ -225,10 +231,6 @@ menu-bookmarks-menu =
     .accesskey = Z
 menu-bookmarks-manage =
     .label = Regiyruj zokłodkami
-menu-bookmark-current-tab =
-    .label = Przidej aktualno karta do zookłodek
-menu-bookmark-edit =
-    .label = Edytuj ta zokłodka
 menu-bookmarks-all-tabs =
     .label = Przidej wszyskie karty do zokłodek…
 menu-bookmarks-toolbar =
@@ -313,9 +315,9 @@ menu-help-more-troubleshooting-info =
     .accesskey = r
 menu-help-report-site-issue =
     .label = Dej znać ô problymie ze strōnōm…
-menu-help-feedback-page =
-    .label = Poślij ôpinijo
-    .accesskey = S
+menu-help-share-ideas =
+    .label = Dej znać ô pōmysłach i ôpiniach…
+    .accesskey = D
 menu-help-enter-troubleshoot-mode2 =
     .label = Tryb rozwiōnzowanio problymōw…
     .accesskey = T

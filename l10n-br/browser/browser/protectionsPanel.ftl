@@ -101,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Danevelliñ ul lec'hienn torret
 protections-panel-content-blocking-breakage-report-view-description = Stankañ heulierien ’zo a c'hall degas kudennoù gant lec'hiennoù ’zo. Danevelliñ ar c'hudennoù-se a sikour da lakaat { -brand-short-name } gwelloc'h evit an holl. Kas an danevell-mañ da vMozilla a gaso un URL ha titouroù diwar-benn arventennoù ho merdeer. <label data-l10n-name="learn-more">Gouzout hiroc'h</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Stankañ heulierien ’zo a c'hall degas kudennoù gant lec'hiennoù ’zo. Danevelliñ ar c'hudennoù-se a sikour da lakaat { -brand-short-name } gwelloc'h evit an holl. Kas an danevell-mañ da v{ -vendor-short-name } a gaso un URL ha titouroù diwar-benn arventennoù ho merdeer.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -111,3 +112,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Nullañ
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Kas an danevell
+
+# Cookie Banner Handling
+

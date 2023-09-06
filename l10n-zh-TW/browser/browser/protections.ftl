@@ -63,22 +63,20 @@ cryptominer-tab-content = 加密貨幣採礦程式會使用您電腦的運算能
 protections-close-button2 =
     .aria-label = 關閉
     .title = 關閉
-  
+
 mobile-app-title = 在更多裝置上也能封鎖廣告追蹤器
 mobile-app-card-content = 使用內建廣告追蹤保護的行動瀏覽器
 mobile-app-links = { -brand-product-name } 瀏覽器 <a data-l10n-name="android-mobile-inline-link">Android</a> 版與 <a data-l10n-name="ios-mobile-inline-link">iOS</a> 版
 
 lockwise-title = 不再忘記密碼
-lockwise-title-logged-in2 = 密碼管理
-lockwise-header-content = { -lockwise-brand-name } 會安全地在您的瀏覽器中儲存密碼。
+passwords-title-logged-in = 管理您的密碼
+passwords-header-content = { -brand-product-name } 會安全地在您的瀏覽器中儲存密碼。
 lockwise-header-content-logged-in = 安全地儲存密碼，並同步到您的所有裝置中。
-protection-report-save-passwords-button = 儲存密碼
-    .title = 將密碼儲存到 { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = 管理密碼
-    .title = 用 { -lockwise-brand-short-name } 管理密碼
-lockwise-mobile-app-title = 密碼隨身帶著走
-lockwise-no-logins-card-content = 在任何裝置上使用儲存到 { -brand-short-name } 的密碼。
-lockwise-app-links = <a data-l10n-name="lockwise-android-inline-link">Android</a> 與 <a data-l10n-name="lockwise-ios-inline-link">iOS</a> 版的 { -lockwise-brand-name }
+protection-report-passwords-save-passwords-button = 儲存密碼
+    .title = 儲存密碼
+protection-report-passwords-manage-passwords-button = 管理密碼
+    .title = 管理密碼
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

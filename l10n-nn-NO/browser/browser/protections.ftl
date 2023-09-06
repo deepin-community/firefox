@@ -32,13 +32,13 @@ protection-report-page-summary = { -brand-short-name } kan ta vare på personver
 # This message shows when at least some protections are turned on, we are more assertive compared to the message above, Firefox is actively protecting you.
 protection-report-page-summary-default = { -brand-short-name } tar vare på personvernet ditt bak kulissene medan du surfar. Dette er ei personleg oppsummering av desse verna, inkludert verktøy for å ta kontroll over dsikkerheita di på nettet.
 
-protection-report-settings-link = Handter personvern- og tryggingsinnstillingar
+protection-report-settings-link = Handsam personvern- og tryggingsinnstillingar
 
 etp-card-title-always = Utvida sporingsvern: Alltid på
 etp-card-title-custom-not-blocking = Utvida sporingsvern: AV
 etp-card-content-description = { -brand-short-name } stoppar selskap automatisk frå å følgje deg rundt på nettet i løynd.
-protection-report-etp-card-content-custom-not-blocking = Alt vern er for tida slått av. Vel kva for sporarar du vil blokkere ved å handtere innstillingar for vern i { -brand-short-name }.
-protection-report-manage-protections = Handter innstillingar
+protection-report-etp-card-content-custom-not-blocking = Alt vern er for tida slått av. Vel kva for sporarar du vil blokkere ved å handsame innstillingar for vern i { -brand-short-name }.
+protection-report-manage-protections = Handsam innstillingar
 
 # This string is used to label the X axis of a graph. Other days of the week are generated via Intl.DateTimeFormat,
 # capitalization for this string should match the output for your locale.
@@ -65,22 +65,20 @@ cryptominer-tab-content = Kryptoutvinnarar brukar datakrafta til systemet for å
 protections-close-button2 =
     .aria-label = Lat att
     .title = Lat att
-  
+
 mobile-app-title = Blokker annonsesporarar på fleire einingar
 mobile-app-card-content = Bruk mobilnettlesaren med innebygd vern mot annonsesporing.
 mobile-app-links = { -brand-product-name } Nettlesar for <a data-l10n-name="android-mobile-inline-link">Android</a> og <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Glæym aldri eit passord igjen
-lockwise-title-logged-in2 = Passordhandtering
-lockwise-header-content = { -lockwise-brand-name } lagrar passorda dine trygt i nettlesaren din.
+passwords-title-logged-in = Handsam passorda dine
+passwords-header-content = { -brand-product-name } lagrar passorda dine sikkert i nettlesaren din.
 lockwise-header-content-logged-in = Lagre passorda dine trygt og synkroniser dei med alle eniningane dine.
-protection-report-save-passwords-button = Lagre passord
-    .title = Lagre passord i { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Handtere passord
-    .title = Handtere passord i { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Ta med deg passorda dine overalt
-lockwise-no-logins-card-content = Bruk passord som er lagra i { -brand-short-name } på kva som helst eining.
-lockwise-app-links = { -lockwise-brand-name } for <a data-l10n-name="lockwise-android-inline-link">Android</a> og <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Lagre passord
+    .title = Lagre passord
+protection-report-passwords-manage-passwords-button = Handsame passord
+    .title = Handsame passord
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -167,8 +165,8 @@ monitor-view-report-link = Vis rapport
     .title = Løys datalekkasjar på { -monitor-brand-short-name }
 monitor-breaches-unresolved-title = Løys datalekkasjane dine
 monitor-breaches-unresolved-description = Etter å ha gått gjennom datalekkasje-detaljar, og sett i verk tiltak for å ta vare på den personlege informasjonen din, kan du merke datalekkasjar som løyste.
-monitor-manage-breaches-link = Handter datalekkasjer
-    .title = Handter datalekkasjar på { -monitor-brand-short-name }
+monitor-manage-breaches-link = Handsam datalekkasjer
+    .title = Handsam datalekkasjar på { -monitor-brand-short-name }
 monitor-breaches-resolved-title = Bra! Du har løyst alle kjende datalekkasjar.
 monitor-breaches-resolved-description = Vi vil gi deg beskjed om e-postadressa di dukkar opp i nye datalekkasjar.
 

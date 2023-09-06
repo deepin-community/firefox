@@ -61,20 +61,9 @@ import-done-description = ធាតុ​ខាងក្រោម ត្រូ�
 
 import-close-source-browser = សូម​ប្រាកដ​ថា​​បាន​បិទ​កម្មវិធី​អ៊ីនធឺណិត​​ដែល​បាន​ជ្រើស​​មុន​ពេល​បន្ត។
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = ពី { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = បញ្ជី​អំណាន (ពី Safari)
 imported-edge-reading-list = បញ្ជី​អំណាន (ពី​​ Edge)
@@ -110,3 +99,4 @@ browser-data-session-checkbox =
     .label = បង្អួច និង​ផ្ទាំង
 browser-data-session-label =
     .value = បង្អួច និង​ផ្ទាំង
+

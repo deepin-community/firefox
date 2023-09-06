@@ -8,10 +8,7 @@ const TOOLBAR_VISIBILITY_PREF = "browser.toolbars.bookmarks.visibility";
 let bookmarkPanel;
 let win;
 
-add_task(async function setup() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["browser.toolbars.bookmarks.2h2020", true]],
-  });
+add_setup(async function () {
   Services.prefs.clearUserPref(LOCATION_PREF);
   await PlacesUtils.bookmarks.eraseEverything();
 
@@ -37,6 +34,15 @@ add_task(async function setup() {
 
 /**
  * Helper to check we've shown the toolbar
+ *
+ * @param {object} options
+ *   Options for the test
+ * @param {boolean} options.showToolbar
+ *   If the toolbar should be shown or not
+ * @param {string} options.expectedFolder
+ *   The expected folder to be shown
+ * @param {string} options.reason
+ *   The reason the toolbar should be shown
  */
 async function checkResponse({ showToolbar, expectedFolder, reason }) {
   // Check folder.
@@ -56,20 +62,12 @@ async function checkResponse({ showToolbar, expectedFolder, reason }) {
     `Toolbar should be ${showToolbar ? "visible" : "hidden"} ${reason}.`
   );
 
+  // Confirm and close the dialog.
   let hiddenPromise = promisePopupHidden(
     win.document.getElementById("editBookmarkPanel")
   );
-  // Confirm and close the dialog.
-
-  let guid = win.gEditItemOverlay._paneInfo.itemGuid;
-  let promiseRemoved = PlacesTestUtils.waitForNotification(
-    "bookmark-removed",
-    events => events.some(e => e.guid == guid),
-    "places"
-  );
   win.document.getElementById("editBookmarkPanelRemoveButton").click();
   await hiddenPromise;
-  await promiseRemoved;
 }
 
 /**
@@ -162,75 +160,6 @@ add_task(async function test_existing_on_toolbar() {
       let expectedFolder = "BookmarksToolbarFolderTitle";
       let reason = "when editing a bookmark there";
       await checkResponse({ showToolbar: false, expectedFolder, reason });
-    }
-  );
-});
-
-/**
- * Test that if we edit an existing bookmark to move it into the toolbar,
- * it gets shown.
- */
-add_task(async function test_move_existing_to_toolbar() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["browser.toolbars.bookmarks.2h2020", false]],
-  });
-  // Create the bookmark first:
-  let bm = await PlacesUtils.bookmarks.insert({
-    parentGuid: PlacesUtils.bookmarks.unfiledGuid,
-    title: "Test for editing",
-    url: "https://example.com/moving-test",
-  });
-  await BrowserTestUtils.withNewTab(
-    { gBrowser: win.gBrowser, url: "https://example.com/moving-test" },
-    async browser => {
-      let toolbar = win.document.getElementById("PersonalToolbar");
-      Assert.equal(
-        toolbar.collapsed,
-        true,
-        "Bookmarks toolbar should start out collapsed."
-      );
-      await TestUtils.waitForCondition(
-        () => win.BookmarkingUI.status == BookmarkingUI.STATUS_STARRED,
-        "Page should be starred."
-      );
-
-      await clickBookmarkStar(win);
-
-      let menuList = win.document.getElementById("editBMPanel_folderMenuList");
-      let itemMovedPromise = PlacesTestUtils.waitForNotification(
-        "bookmark-moved",
-        events =>
-          events.some(
-            e =>
-              e.parentGuid === PlacesUtils.bookmarks.toolbarGuid &&
-              e.guid === bm.guid
-          ),
-        "places"
-      );
-      let promisePopup = BrowserTestUtils.waitForEvent(
-        menuList.menupopup,
-        "popupshown"
-      );
-      EventUtils.synthesizeMouseAtCenter(menuList, {}, win);
-      await promisePopup;
-
-      info("Clicking the toolbar folder item.");
-      // Click the toolbar folder item.
-      EventUtils.synthesizeMouseAtCenter(
-        win.document.getElementById("editBMPanel_toolbarFolderItem"),
-        {},
-        win
-      );
-
-      await itemMovedPromise;
-      await TestUtils.waitForCondition(
-        () => !toolbar.collapsed,
-        "Toolbar should be shown."
-      );
-
-      let expectedFolder = "BookmarksToolbarFolderTitle";
-      let reason = "when moving a bookmark there.";
-      await checkResponse({ showToolbar: true, expectedFolder, reason });
     }
   );
 });
