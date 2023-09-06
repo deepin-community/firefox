@@ -63,9 +63,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } pengguna
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Sinkronkan markah Anda di mana saja.
@@ -93,26 +90,6 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Baca catatan rilis
 
-## Search Bar
-
-## Search bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 # Variables:
@@ -124,25 +101,8 @@ cfr-doorhanger-milestone-heading2 =
     }
 cfr-doorhanger-milestone-ok-button = Lihat Semua
     .accesskey = L
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = Tutup
     .accesskey = T
-
-## What’s New Panel Content for Firefox 76
-## Protections Dashboard message
 
 ## DOH Message
 
@@ -155,25 +115,6 @@ cfr-doorhanger-doh-secondary-button = Nonaktifkan
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Privasi Anda penting. { -brand-short-name } sekarang mengisolasi (atau memasukkan ke kotak pasir) masing-masing situs, yang mempersulit peretas untuk mencuri kata sandi, nomor kartu kredit, dan informasi sensitif lainnya.
-cfr-doorhanger-fission-header = Isolasi Situs
-cfr-doorhanger-fission-primary-button = Oke, paham
-    .accesskey = O
-cfr-doorhanger-fission-secondary-button = Pelajari lebih lanjut
-    .accesskey = P
-
-## What's new: Cookies message
-
-## What's new: Media controls message
-
-## What's new: Search shortcuts
-
-## What's new: Cookies protection
-
-## What's new: Better bookmarking
-
-## What's new: Cross-site cookie tracking
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Video pada situs ini mungkin tidak dapat diputar dengan benar dalam versi { -brand-short-name } ini. Untuk dukungan video penuh, perbarui { -brand-short-name } sekarang.
@@ -181,9 +122,114 @@ cfr-doorhanger-video-support-header = Perbarui { -brand-short-name } untuk memut
 cfr-doorhanger-video-support-primary-button = Perbarui Sekarang
     .accesskey = u
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
+
+# This header text can be explicitly wrapped.
+spotlight-public-wifi-vpn-header = Sepertinya Anda menggunakan Wi-Fi publik
+spotlight-public-wifi-vpn-body = Untuk menyembunyikan lokasi dan aktivitas penjelajahan Anda, pertimbangkan Jaringan Pribadi Virtual (VPN). Ini akan membantu Anda tetap terlindungi saat menjelajah di tempat umum seperti bandara dan kedai kopi.
+spotlight-public-wifi-vpn-primary-button = Tetap terjaga dengan { -mozilla-vpn-brand-name }
+    .accesskey = T
+spotlight-public-wifi-vpn-link = Jangan Sekarang
+    .accesskey = J
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Internet yang lebih baik dimulai dari Anda
+spotlight-better-internet-body = Ketika Anda menggunakan { -brand-short-name }, Anda memilih Internet yang terbuka dan dapat diakses secara lebih baik untuk semua orang.
+spotlight-peace-mind-header = Kami membantu Anda
+spotlight-peace-mind-body = Setiap bulan, { -brand-short-name } memblokir rata-rata lebih dari 3000 pelacak per pengguna. Karena tidak ada yang bisa menghalangi antara Anda dengan Internet yang baik, terutama gangguan privasi seperti pelacak.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Sematkan ke Dock
+       *[other] Sematkan ke bilah tugas
+    }
+spotlight-pin-secondary-button = Jangan sekarang
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+mr2022-background-update-toast-title = { -brand-short-name } baru. Lebih pribadi. Lebih sedikit pelacak. Tanpa kompromi.
+mr2022-background-update-toast-text = Coba { -brand-short-name } terbaru sekarang, dengan peningkatan atas perlindungan anti-pelacakan terkuat kami.
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it
+# using a variable font like Arial): the button can only fit 1-2
+# additional characters, exceeding characters will be truncated.
+mr2022-background-update-toast-primary-button-label = Buka { -brand-shorter-name } Sekarang
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = Ingatkan Saya nanti
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Coba sekarang
+    .accesskey = C
+firefoxview-cfr-secondarybutton = Jangan sekarang
+    .accesskey = J
+firefoxview-cfr-header-v2 = Cepat lanjutkan dari bagian terakhir yang Anda tinggalkan
+firefoxview-cfr-body-v2 = Dapatkan kembali tab yang baru saja ditutup, plus mulus melompat antar perangkat dengan { -firefoxview-brand-name }.
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = Mari menyambut { -firefoxview-brand-name }.
+
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = Ingin mendapatkan tab terbuka di ponsel Anda? Buka saja. Perlu situs yang baru saja dikunjungi? Tentu! Langsung kembali dengan { -firefoxview-brand-name }.
+firefoxview-spotlight-promo-primarybutton = Lihat cara kerjanya
+firefoxview-spotlight-promo-secondarybutton = Lewati
+
+## Colorways expiry reminder CFR
+
+colorways-cfr-primarybutton = Pilih ragam warna
+    .accesskey = r
+
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = Warnai peramban Anda dengan bayangan eksklusif { -brand-short-name } yang diilhami oleh suara yang mengubah budaya.
+colorways-cfr-header-28days = Ragam warna Suara Independen kedaluarsa pada 16 Januari
+colorways-cfr-header-14days = Ragam warna Suara Independen kedaluarsa dalam dua minggu
+colorways-cfr-header-7days = Ragam warna Suara Independen kedaluarsa minggu ini
+colorways-cfr-header-today = Ragam warna Suara Independen kedaluarsa hari ini
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-confirm-button = Tolak spanduk kuki
+    .accesskey = T
+cfr-cbh-dismiss-button = Jangan sekarang
+    .accesskey = J
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+july-jam-headline = Kami membantu Anda
+july-jam-body = Setiap bulan { -brand-short-name } memblokir rata-rata 3000+ pelacak per pengguna, memberikan Anda akses yang aman dan cepat ke internet yang baik.
+july-jam-set-default-primary = Buka tautan saya dengan { -brand-short-name }
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+set-default-pdf-handler-primary = Paham
+
+## FxA sync CFR
+
+
+## Device Migration FxA Spotlight
 

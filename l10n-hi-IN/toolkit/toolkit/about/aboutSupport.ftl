@@ -48,6 +48,7 @@ app-basics-enabled-plugins = सक्रिय प्लगिन
 app-basics-build-config = बिल्ड विन्यास
 app-basics-user-agent = उपयोक्ता प्रतिनिधि
 app-basics-os = OS
+app-basics-os-theme = OS थीम
 app-basics-memory-use = स्मृति के उपयोग
 app-basics-performance = प्रदर्शन
 app-basics-service-workers = सर्विस श्रमिक पंजीकृत किया गया
@@ -56,6 +57,12 @@ app-basics-multi-process-support = बहुप्रक्रिया वि�
 app-basics-enterprise-policies = एंटरप्राइज नीतियाँ
 app-basics-key-mozilla = Mozilla अवस्थिति सेवा कुंजी
 app-basics-safe-mode = सेफ मोड
+
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
+
 show-dir-label =
     { PLATFORM() ->
         [macos] फाइंडर में पता करें
@@ -119,6 +126,8 @@ media-device-format = प्रारूप
 media-device-channels = चैनल्स
 media-device-rate = दर
 media-device-latency = विलंबता
+
+## Codec support table
 
 ##
 
@@ -244,6 +253,7 @@ unknown-failure = निरुद्ध सूचीबद्ध किया �
 
 d3d11layers-crash-guard = डी3डी11 अक्षर योजक
 glcontext-crash-guard = जीएल खोलें
+wmfvpxvideo-crash-guard = WMF VPX वीडियो डिकोडर
 
 reset-on-next-restart = अगला पुनः आरंभ फिर सेट करें
 gpu-process-kill-button = GPU प्रक्रिया समाप्त करें
@@ -275,11 +285,12 @@ launcher-process-status-unknown = अज्ञात स्थिति
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
 # Variables
 # $fissionWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 fission-windows = { $fissionWindows }/{ $totalWindows }
+fission-status-enabled-by-user-pref = उपयोगकर्ता द्वारा सक्षम
+fission-status-disabled-by-user-pref = उपयोगकर्ता द्वारा अक्षम
 
 async-pan-zoom = असमन्वित पैन/Zoom
 apz-none = कोई नहीं

@@ -25,7 +25,6 @@ pocket-panel-saved-save-tags = Salvează
 pocket-panel-saved-saving-tags = Se salvează...
 pocket-panel-saved-suggested-tags = Etichete sugerate
 pocket-panel-saved-tags-saved = Etichete adăugate
-pocket-panel-signup-view-list = Vezi lista
 
 ## about:pocket-signup panel
 
@@ -40,4 +39,11 @@ pocket-panel-signup-tagline-story-one = Clic pe butonul { -pocket-brand-name } p
 pocket-panel-signup-tagline-story-two = Vezi în { -pocket-brand-name } de pe orice dispozitiv, oricând.
 
 ## about:pocket-home panel
+
+pocket-panel-home-discover-more = Descoperă mai multe
+
+## Pocket panel header component
+
+
+## Pocket panel buttons
 

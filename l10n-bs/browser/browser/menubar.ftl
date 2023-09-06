@@ -43,15 +43,6 @@ menu-quit =
 menu-quit-mac =
     .label = Zatvori { -brand-shorter-name }
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Zatvori { -brand-shorter-name }
-
 menu-about =
     .label = O { -brand-shorter-name }u
     .accesskey = O
@@ -81,9 +72,6 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Otvori fajl…
     .accesskey = O
-menu-file-close =
-    .label = Zatvori
-    .accesskey = Z
 menu-file-close-window =
     .label = Zatvori prozor
     .accesskey = Z
@@ -95,9 +83,6 @@ menu-file-email-link =
     .accesskey = e
 menu-file-print-setup =
     .label = Podešavanje strane…
-    .accesskey = P
-menu-file-print-preview =
-    .label = Pregled prije štampe
     .accesskey = P
 menu-file-print =
     .label = Štampaj…
@@ -182,6 +167,17 @@ menu-view-full-screen =
     .label = Prikaz preko cijelog ekrana
     .accesskey = c
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Uđi u prikaz za čitanje
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Zatvori prikaz za čitanje
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,10 +212,6 @@ menu-history-undo-window-menu =
 menu-bookmarks-menu =
     .label = Zabilješke
     .accesskey = b
-menu-bookmark-current-tab =
-    .label = Zabilježi trenutni tab
-menu-bookmark-edit =
-    .label = Uredi ovu Zabilješku
 menu-bookmarks-all-tabs =
     .label = Zabilježi sve tabove…
 menu-bookmarks-toolbar =
@@ -279,9 +271,6 @@ menu-get-help =
     .accesskey = H
 menu-help-report-site-issue =
     .label = Prijavite problem sa stranicom…
-menu-help-feedback-page =
-    .label = Pošalji povratnu informaciju…
-    .accesskey = P
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "DateTimeFormat.h"
 #include "ScopedNSSTypes.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/Casting.h"
@@ -97,14 +96,4 @@ void LossyUTF8ToUTF16(const char* str, uint32_t len,
     // Actually Latin1 despite ASCII in the legacy name
     CopyASCIItoUTF16(span, result);
   }
-}
-
-nsresult GetCertSha256Fingerprint(nsIX509Cert* aCert, nsCString& aResult) {
-  nsAutoString fpStrUTF16;
-  nsresult rv = aCert->GetSha256Fingerprint(fpStrUTF16);
-  if (NS_FAILED(rv)) {
-    return rv;
-  }
-  aResult.Assign(NS_ConvertUTF16toUTF8(fpStrUTF16));
-  return NS_OK;
 }

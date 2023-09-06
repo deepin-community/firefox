@@ -12,21 +12,39 @@ synced-tabs-sidebar-tabsnotsyncing = Activeu la sincronització de pestanyes per
 synced-tabs-sidebar-connect-another-device = Connecta un altre dispositiu
 synced-tabs-sidebar-search =
     .placeholder = Cerca en les pestanyes sincronitzades
+
+## Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
+## and/or devices in the list. The "Open" strings below should be translated
+## consistently with the equivalent strings for the bookmarks manager's context
+## menu. That menu is activated by right-clicking a bookmark in the Library
+## window. The bookmarks manager context's strings are located in places.ftl.
+
 synced-tabs-context-open =
     .label = Obre
     .accesskey = O
-synced-tabs-context-open-in-new-tab =
+synced-tabs-context-open-in-tab =
     .label = Obre en una pestanya nova
     .accesskey = t
-synced-tabs-context-open-in-new-window =
+synced-tabs-context-open-in-container-tab =
+    .label = Obre en una pestanya de contenidor nova
+    .accesskey = b
+synced-tabs-context-open-in-window =
     .label = Obre en una finestra nova
-    .accesskey = n
-synced-tabs-context-open-in-new-private-window =
+    .accesskey = f
+synced-tabs-context-open-in-private-window =
     .label = Obre en una finestra privada nova
     .accesskey = p
-synced-tabs-context-bookmark-single-tab =
-    .label = Afegeix aquesta pestanya a les adreces d'interès…
-    .accesskey = f
+
+##
+
+# Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
+# and/or devices in the list. This string is for a menuitem equivalent to one in
+# the tab context menu (activated by right-clicking a tab in the tabstrip). That
+# string is located in tabContextMenu.ftl. So, this string should be translated
+# consistently with the "Bookmark Tab…" string there.
+synced-tabs-context-bookmark =
+    .label = Afegeix la pestanya a les adreces d'interès…
+    .accesskey = i
 synced-tabs-context-copy =
     .label = Copia
     .accesskey = C

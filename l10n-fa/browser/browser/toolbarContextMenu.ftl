@@ -6,11 +6,11 @@ toolbar-context-menu-new-tab =
     .label = زبانهٔ جدید
     .accesskey = ز
 toolbar-context-menu-reload-selected-tab =
-    .label = بازآوری زبانه انتخاب شده
-    .accesskey = R
+    .label = بازخوانی زبانهٔ گزیده شده
+    .accesskey = خ
 toolbar-context-menu-reload-selected-tabs =
-    .label = بازآوری زبانه‌های انتخاب شده
-    .accesskey = R
+    .label = بازخوانی زبانه‌های گزیده شده
+    .accesskey = خ
 toolbar-context-menu-bookmark-selected-tab =
     .label = نشانک‌گذاری زبانه‌ انتخاب شده…
     .accesskey = T
@@ -27,27 +27,33 @@ toolbar-context-menu-reopen-closed-tabs =
            *[other] باز کردن دوبارهٔ زبانه‌های بسته شده
         }
     .accesskey = ا
+
 toolbar-context-menu-manage-extension =
     .label = مدیریت افزودنی‌ها
     .accesskey = E
 toolbar-context-menu-remove-extension =
     .label = حذف افزونه
     .accesskey = v
+
 # This label is used in the extensions toolbar buttons context menus,
 # a user can use this command to submit to Mozilla an abuse report
 # related to that extension. "Report" is a verb.
 toolbar-context-menu-report-extension =
     .label = گزارش برنامهٔ ضمیمه
     .accesskey = گ
-# Can appear on the same context menu as menubarCmd ("Menu Bar") and
-# personalbarCmd ("Bookmarks Toolbar"), so they should have different
-# access keys.
+
+# Can appear on the same context menu as toolbar-context-menu-menu-bar-cmd
+# ("Menu Bar") and personalbarCmd ("Bookmarks Toolbar"), so they should
+# have different access keys.
 toolbar-context-menu-pin-to-overflow-menu =
     .label = سنجاق کردن به منو شناور
     .accesskey = س
 toolbar-context-menu-auto-hide-downloads-button-2 =
     .label = مخفی کردن دکمه هنگام خالی بودن
     .accesskey = م
+toolbar-context-menu-always-open-downloads-panel =
+    .label = نمایش تابلو هنگام شروع بارگیری
+    .accesskey = ن
 toolbar-context-menu-remove-from-toolbar =
     .label = حذف از نوارابزار
     .accesskey = ح
@@ -57,6 +63,7 @@ toolbar-context-menu-view-customize-toolbar =
 toolbar-context-menu-view-customize-toolbar-2 =
     .label = سفارشی‌سازی نوار ابزار…
     .accesskey = س
+
 toolbar-context-menu-bookmarks-toolbar-always-show-2 =
     .label = همیشه نمایش بده
     .accesskey = ه
@@ -66,9 +73,11 @@ toolbar-context-menu-bookmarks-toolbar-never-show-2 =
 toolbar-context-menu-bookmarks-toolbar-on-new-tab-2 =
     .label = فقط در زبانه جدید نمایش داده شود
     .accesskey = ج
+
 toolbar-context-menu-bookmarks-show-other-bookmarks =
     .label = نمایش نشانک‌های دیگر
     .accesskey = ن
+
 toolbar-context-menu-menu-bar-cmd =
     .toolbarname = نوار منو
     .accesskey = ن

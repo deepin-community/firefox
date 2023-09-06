@@ -8,15 +8,19 @@ styleeditor-new-button =
 styleeditor-import-button =
     .tooltiptext = Importovať a pripojiť existujúci štýl k dokumentu
     .accesskey = I
+styleeditor-filter-input =
+    .placeholder = Filtrovať súbory štýlov
 styleeditor-visibility-toggle =
     .tooltiptext = Prepnúť zobrazenie štýlov
     .accesskey = U
+styleeditor-visibility-toggle-system =
+    .tooltiptext = Systémové štýly nie je možné deaktivovať
 styleeditor-save-button = Uložiť
     .tooltiptext = Uložiť tieto štýly do súboru
     .accesskey = U
 styleeditor-options-button =
     .tooltiptext = Nastavenia Editora štýlov
-styleeditor-media-rules = Pravidlá @media
+styleeditor-at-rules = @-pravidlá
 styleeditor-editor-textbox =
     .data-placeholder = Sem zadajte CSS
 styleeditor-no-stylesheet = Táto stránka nemá priradený súbor štýlov.
@@ -25,3 +29,24 @@ styleeditor-open-link-new-tab =
     .label = Otvoriť odkaz na novej karte
 styleeditor-copy-url =
     .label = Kopírovať adresu URL
+styleeditor-find =
+    .label = Hľadať
+    .accesskey = H
+styleeditor-find-again =
+    .label = Hľadať znova
+    .accesskey = n
+styleeditor-go-to-line =
+    .label = Prejsť na riadok…
+    .accesskey = r
+# Label displayed when searching a term that is not found in any stylesheet path
+styleeditor-stylesheet-all-filtered = Nenašla sa žiadna zodpovedajúca šablóna štýlov.
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } pravidlo
+        [few] { $ruleCount } pravidlá
+       *[other] { $ruleCount } pravidiel
+    }

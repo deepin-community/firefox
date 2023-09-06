@@ -7,10 +7,7 @@
 
 const FISSION_TEST_URL = URL_ROOT_SSL + "fission_document.html";
 
-add_task(async function() {
-  // Enabled devtools.browsertoolbox.fission to listen to all target types.
-  await pushPref("devtools.browsertoolbox.fission", true);
-
+add_task(async function () {
   // Disable the preloaded process as it creates processes intermittently
   // which forces the emission of RDP requests we aren't correctly waiting for.
   await pushPref("dom.ipc.processPrelaunch.enabled", false);
@@ -48,11 +45,11 @@ add_task(async function() {
   const onDestroyed = ({ targetFront }) =>
     targets.splice(targets.indexOf(targetFront), 1);
 
-  await targetCommand.watchTargets(
-    [TYPES.SERVICE_WORKER],
+  await targetCommand.watchTargets({
+    types: [TYPES.SERVICE_WORKER],
     onAvailable,
-    onDestroyed
-  );
+    onDestroyed,
+  });
 
   // We expect onAvailable to have been called one time, for the only service
   // worker target available in the test page.

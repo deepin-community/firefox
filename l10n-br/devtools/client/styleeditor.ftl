@@ -16,7 +16,6 @@ styleeditor-save-button = Save
     .accesskey = S
 styleeditor-options-button =
     .tooltiptext = Style Editor options
-styleeditor-media-rules = @media rules
 styleeditor-editor-textbox =
     .data-placeholder = Type CSS here.
 styleeditor-no-stylesheet = This page has no style sheet.
@@ -25,3 +24,24 @@ styleeditor-open-link-new-tab =
     .label = Open Link in New Tab
 styleeditor-copy-url =
     .label = Copy URL
+styleeditor-find =
+    .label = Klask
+    .accesskey = K
+styleeditor-find-again =
+    .label = Klask en-dro
+    .accesskey = n
+styleeditor-go-to-line =
+    .label = Jump to line…
+    .accesskey = J
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } rule(s).
+        [two] { $ruleCount } rules.
+        [few] { $ruleCount } rules.
+        [many] { $ruleCount } rules.
+       *[other] { $ruleCount } rules.
+    }

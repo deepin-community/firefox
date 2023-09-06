@@ -5,13 +5,16 @@
 
 ## App Menu
 
-appmenuitem-update-banner3 =
-    .label-update-downloading = Niqasäx ruk'exoj { -brand-shorter-name }
-    .label-update-available = Ütz k'exoj — tiqasäx wakami
-    .label-update-manual = Ütz k'exoj — tiqasäx wakami
-    .label-update-unsupported = Man ütz ta k'exoj —man k'amonel ta q'inoj
-    .label-update-restart = Ütz k'exoj — titzolïx wakami
-appmenuitem-protection-dashboard-title = Rupas taq Chajinïk
+appmenuitem-banner-update-downloading =
+    .label = Niqasäx ruk'exoj { -brand-shorter-name }
+appmenuitem-banner-update-available =
+    .label = Ütz k'exoj — tiqasäx wakami
+appmenuitem-banner-update-manual =
+    .label = Ütz k'exoj — tiqasäx wakami
+appmenuitem-banner-update-unsupported =
+    .label = Man ütz ta k'exoj —man k'amonel ta q'inoj
+appmenuitem-banner-update-restart =
+    .label = Ütz k'exoj — titzolïx wakami
 appmenuitem-new-tab =
     .label = K'ak'a' Ruwi'
 appmenuitem-new-window =
@@ -30,6 +33,8 @@ appmenuitem-print =
     .label = Titz'ajb'äx…
 appmenuitem-find-in-page =
     .label = Tilitäj Pa Ruxaq…
+appmenuitem-translate =
+    .label = Titzalq'omïx ruxaq…
 appmenuitem-zoom =
     .value = Runimilem
 appmenuitem-more-tools =
@@ -98,7 +103,6 @@ appmenu-fxa-sync-and-save-data2 = Tixim chuqa' Tiyak Tzij
 appmenu-fxa-signed-in-label = Titikirisäx Molojri'ïl
 appmenu-fxa-setup-sync =
     .label = Titzij Ximoj…
-appmenu-fxa-show-more-tabs = Kek'ut pe ch'aqa' taq ruwi'
 appmenuitem-save-page =
     .label = Tiyak Ruxaq Achi'el…
 
@@ -118,31 +122,26 @@ whatsnew-panel-footer-checkbox =
 profiler-popup-button-idle =
     .label = Wachinel B'i'aj
     .tooltiptext = Tiyak jun ruwäch rub'i' rub'eyal nisamäj
-profiler-popup-title =
-    .value = { -profiler-brand-name }
+profiler-popup-button-recording =
+    .label = Wachinel b'i'aj
+    .tooltiptext = Ri wachinel b'i'aj nuyäk jun ruwäch b'i'aj
+profiler-popup-button-capturing =
+    .label = Wachinel B'i'aj
+    .tooltiptext = Ri wachinel b'i'aj nuchäp jun ruwäch b'i'aj
+profiler-popup-header-text = { -profiler-brand-name }
 profiler-popup-reveal-description-button =
     .aria-label = Ketz'et juley rutzijol
 profiler-popup-description-title =
     .value = Tiyak, tinik'öx, tikomonïx
 profiler-popup-description = Kato'on pa kik'ayewal rub'eyal nisamäj, akuchi' nataluj kitzijol ruwäch taq b'i'aj richin nakomonij rik'in ri amolaj.
-profiler-popup-learn-more = Tetamäx juley
 profiler-popup-learn-more-button =
     .label = Tetamäx juley
 profiler-popup-settings =
     .value = Taq nuk'ulem
 # This link takes the user to about:profiling, and is only visible with the Custom preset.
-profiler-popup-edit-settings = Kenuk' taq Runuk'ulem…
-# This link takes the user to about:profiling, and is only visible with the Custom preset.
 profiler-popup-edit-settings-button =
     .label = Kenuk' taq Runuk'ulem…
-profiler-popup-disabled =
-    Wakami chupül ri ya'öl ruwäch rub'i', rik'in jub'a' ruma jun ichinan rokem tzuwäch
-    nijaq.
 profiler-popup-recording-screen = Niyak…
-# The profiler presets list is generated elsewhere, but the custom preset is defined
-# here only.
-profiler-popup-presets-custom =
-    .label = Ichinan
 profiler-popup-start-recording-button =
     .label = Titikïr Ruyakik
 profiler-popup-discard-button =
@@ -165,16 +164,35 @@ profiler-popup-capture-shortcut =
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
+# devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+profiler-popup-presets-web-developer-description = Chilab'en runuk'ulem richin yesamajïx b'ama konojel ri taq ruchokoy okik'amaya'l, rik'in jub'a' uchuq'ab'il.
+profiler-popup-presets-web-developer-label =
+    .label = Nuk'unel ajk'amaya'l
+profiler-popup-presets-firefox-description = Chilab'en rajil richin yenuk' taq ruwäch rub'i' { -brand-shorter-name }.
+profiler-popup-presets-firefox-label =
+    .label = { -brand-shorter-name }
+profiler-popup-presets-graphics-description = Runuk'ulem richin yekanöx sachoj wachib'äl pa { -brand-shorter-name }.
+profiler-popup-presets-graphics-label =
+    .label = Taq wachib'äl
+profiler-popup-presets-media-description2 = Runuk'ulem richin yekanöx sachoj k'oxom chuqa' taq silowäch pa { -brand-shorter-name }.
+profiler-popup-presets-media-label =
+    .label = K'ïy k'oxom
+profiler-popup-presets-networking-description = Runuk'ulem richin yekanöx sachoj taq k'amal pa { -brand-shorter-name }.
+profiler-popup-presets-networking-label =
+    .label = K'amab'ey
+profiler-popup-presets-power-description = Runuk'ulem richin yekanöx sachoj rokisaxik uchuq'a' pa { -brand-shorter-name }, rik'in jub'a' rokisaxik.
+# "Power" is used in the sense of energy (electricity used by the computer).
+profiler-popup-presets-power-label =
+    .label = Uchuq'a'
+profiler-popup-presets-custom-label =
+    .label = Ichinan
 
 ## History panel
 
 appmenu-manage-history =
     .label = Tinuk'samajïx Natab'äl
-appmenu-reopen-all-tabs = Kejaq Chik Ronojel Ruwi'
-appmenu-reopen-all-windows = Kejaq Chik Ronojel Taq Tzuwäch
 appmenu-restore-session =
     .label = Titzolin pa ri molojri'ïl xik'o
 appmenu-clear-history =
@@ -184,6 +202,9 @@ appmenu-recently-closed-tabs =
     .label = Taq Ruwi' k'a b'a' Ketz'apïx
 appmenu-recently-closed-windows =
     .label = Taq k'ajtz'ib' k'a b'a' etz'apin
+# This allows to search through the browser's history.
+appmenu-search-history =
+    .label = Tikanöx natab'äl
 
 ## Help panel
 
@@ -200,9 +221,11 @@ appmenu-help-more-troubleshooting-info =
     .accesskey = E
 appmenu-help-report-site-issue =
     .label = Tiya' rutzijol ri ruk'ayewal Ruxaq K'amaya'l…
-appmenu-help-feedback-page =
-    .label = Ketaq taq Rutzijol…
-    .accesskey = K
+appmenu-help-share-ideas =
+    .label = Kekomonïx taq na'oj chuqa' taq rutzijol…
+    .accesskey = m
+appmenu-help-switch-device =
+    .label = Tijal pa jun k'ak'a' okisaxel
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -228,8 +251,6 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Tichinäx Rukajtz'ik Samajib'äl…
-appmenu-taskmanager =
-    .label = Kinuk'samajel taq Samaj
 appmenu-developer-tools-subheader = Rusamajib'al Okik'amaya'l
 appmenu-developer-tools-extensions =
     .label = Kik'amal B'anonela'

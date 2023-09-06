@@ -38,20 +38,9 @@ menu-quit =
             [windows] x
            *[other] Q
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Thoát { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Thoát { -brand-shorter-name }
-
 menu-about =
     .label = Về { -brand-shorter-name }
     .accesskey = A
@@ -81,8 +70,14 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Mở tập tin…
     .accesskey = O
-menu-file-close =
-    .label = Đóng
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Đóng thẻ
+           *[other] Đóng { $tabCount } thẻ
+        }
     .accesskey = C
 menu-file-close-window =
     .label = Đóng cửa sổ
@@ -99,9 +94,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Thiết lập trang…
     .accesskey = u
-menu-file-print-preview =
-    .label = Xem trước trang in
-    .accesskey = v
 menu-file-print =
     .label = In…
     .accesskey = P
@@ -188,10 +180,21 @@ menu-view-full-screen =
     .label = Toàn màn hình
     .accesskey = F
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Vào chế độ đọc sách
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Đóng chế độ đọc sách
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
-    .label = Hiện tất cả các thẻ
+    .label = Hiển thị tất cả các thẻ
     .accesskey = A
 menu-view-bidi-switch-page-direction =
     .label = Chuyển hướng trang
@@ -216,8 +219,9 @@ menu-history-undo-menu =
     .label = Thẻ mới đóng gần đây
 menu-history-undo-window-menu =
     .label = Các cửa sổ mới đóng
-menu-history-reopen-all-tabs = Mở lại tất cả các thẻ
-menu-history-reopen-all-windows = Mở lại tất cả các cửa sổ
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Tìm kiếm lịch sử
 
 ## Bookmarks Menu
 
@@ -226,10 +230,13 @@ menu-bookmarks-menu =
     .accesskey = B
 menu-bookmarks-manage =
     .label = Quản lý dấu trang
-menu-bookmark-current-tab =
-    .label = Đánh dấu thẻ hiện tại
-menu-bookmark-edit =
-    .label = Chỉnh sửa dấu trang này
+menu-bookmark-tab =
+    .label = Đánh dấu thẻ hiện tại…
+menu-edit-bookmark =
+    .label = Chỉnh sửa dấu trang này…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Tìm kiếm dấu trang
 menu-bookmarks-all-tabs =
     .label = Đánh dấu tất cả các thẻ…
 menu-bookmarks-toolbar =
@@ -272,7 +279,7 @@ menu-tools-page-source =
     .label = Mở mã nguồn trang
     .accesskey = o
 menu-tools-page-info =
-    .label = Thông tin về trang này
+    .label = Thông tin trang
     .accesskey = I
 menu-settings =
     .label = Cài đặt
@@ -314,8 +321,8 @@ menu-help-more-troubleshooting-info =
     .accesskey = T
 menu-help-report-site-issue =
     .label = Báo cáo vấn đề về trang…
-menu-help-feedback-page =
-    .label = Gửi phản hồi…
+menu-help-share-ideas =
+    .label = Chia sẻ ý tưởng và phản hồi…
     .accesskey = S
 menu-help-enter-troubleshoot-mode2 =
     .label = Chế độ xử lý sự cố…
@@ -323,6 +330,9 @@ menu-help-enter-troubleshoot-mode2 =
 menu-help-exit-troubleshoot-mode =
     .label = Tắt chế độ xử lý sự cố
     .accesskey = M
+menu-help-switch-device =
+    .label = Chuyển sang một thiết bị mới
+    .accesskey = N
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

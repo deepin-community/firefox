@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = R
 
 update-checkingForUpdates = Ստուգվում է թարմացումները
-update-downloading = <img data-l10n-name="icon"/>Թարմացման ներբեռնում — <label data-l10n-name="download-status"/>
-update-downloading-message = Թարմացման ներբեռնում՝ <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Թարմացման ներբեռնում — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Թարմացման ներբեռնում՝ <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Թարմացման կիրառում...
 
 update-failed = Թարմացումը չհաջողվեց:<label data-l10n-name="failed-link">Ներբեռնել վերջին տարբերակը</label>
@@ -27,13 +34,21 @@ update-adminDisabled = Թարմացումներն անջատված են ձեր �
 update-noUpdatesFound = { -brand-short-name }-ն արդիական է
 update-otherInstanceHandlingUpdates = { -brand-short-name }-ը թարմացվել է այլ օրինակի կողմից
 
-update-manual = Թարմացումները հասանելի են՝ <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Թարմացումները հասանելի են՝ <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Թարմացումները հասանելի են՝ <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Չեք կարող կատարել հետագա թարմացումներ այս համակարգում:<label data-l10n-name="unsupported-link">Իմանալ ավելին</label>
 
 update-restarting = Վերամեկնարկում...
 
-channel-description = Այժմ գործում է <label data-l10n-name="current-channel"></label> թարմացումների աղբյուրը:
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Այժմ գործում է <label data-l10n-name="current-channel">{ $channel }</label> թարմացումների աղբյուրը:
 
 warningDesc-version = { -brand-short-name }-ն փորձնական է և կայուն չի աշխատի:
 

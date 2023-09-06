@@ -13,6 +13,7 @@
 #define LOG_ENABLED() LOG5_ENABLED()
 
 #include "ConnectionHandle.h"
+#include "nsHttpHandler.h"
 
 namespace mozilla {
 namespace net {
@@ -23,7 +24,8 @@ ConnectionHandle::~ConnectionHandle() {
     if (NS_FAILED(rv)) {
       LOG(
           ("ConnectionHandle::~ConnectionHandle\n"
-           "    failed to reclaim connection\n"));
+           "    failed to reclaim connection %p\n",
+           mConn.get()));
     }
   }
 }
@@ -46,6 +48,11 @@ nsresult ConnectionHandle::TakeTransport(nsISocketTransport** aTransport,
                                          nsIAsyncInputStream** aInputStream,
                                          nsIAsyncOutputStream** aOutputStream) {
   return mConn->TakeTransport(aTransport, aInputStream, aOutputStream);
+}
+
+Http3WebTransportSession* ConnectionHandle::GetWebTransportSession(
+    nsAHttpTransaction* aTransaction) {
+  return mConn->GetWebTransportSession(aTransaction);
 }
 
 bool ConnectionHandle::IsPersistent() {
@@ -79,8 +86,12 @@ already_AddRefed<HttpConnectionBase> ConnectionHandle::HttpConnection() {
   return rv.forget();
 }
 
-void ConnectionHandle::TopBrowsingContextIdChanged(uint64_t id) {
+void ConnectionHandle::CurrentBrowserIdChanged(uint64_t id) {
   // Do nothing.
+}
+
+PRIntervalTime ConnectionHandle::LastWriteTime() {
+  return mConn->LastWriteTime();
 }
 
 }  // namespace net

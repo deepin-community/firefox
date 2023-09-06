@@ -3,11 +3,7 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import { setupCommands, clientCommands } from "./firefox/commands";
-import {
-  setupCreate,
-  createPause,
-  prepareSourcePayload,
-} from "./firefox/create";
+import { setupCreate, createPause } from "./firefox/create";
 import { features } from "../utils/prefs";
 
 import { recordEvent } from "../utils/telemetry";
@@ -30,10 +26,14 @@ export async function onConnect(_commands, _resourceCommand, _actions, store) {
   sourceQueue.initialize(actions);
 
   const { descriptorFront } = commands;
-  const { targetFront } = targetCommand;
+
+  // For tab, browser and webextension toolboxes, we want to enable watching for
+  // worker targets as soon as the debugger is opened.
+  // And also for service workers, if the related experimental feature is enabled
   if (
-    targetFront.isBrowsingContext ||
-    descriptorFront.isParentProcessDescriptor
+    descriptorFront.isTabDescriptor ||
+    descriptorFront.isWebExtensionDescriptor ||
+    descriptorFront.isBrowserProcessDescriptor
   ) {
     targetCommand.listenForWorkers = true;
     if (descriptorFront.isLocalTab && features.windowlessServiceWorkers) {
@@ -42,30 +42,28 @@ export async function onConnect(_commands, _resourceCommand, _actions, store) {
     }
     await targetCommand.startListening();
   }
-  // `pauseWorkersUntilAttach` is one option set when the debugger panel is opened rather that from the toolbox.
-  // The reason is to support early breakpoints in workers, which will force the workers to pause
-  // and later on (when TargetMixin.attachThread is called) resume worker execution, after passing the breakpoints.
-  // We only observe workers when the debugger panel is opened (see the few lines before and listenForWorkers = true).
-  // So if we were passing `pauseWorkersUntilAttach=true` from the toolbox code, workers would freeze as we would not watch
-  // for their targets and not resume them.
-  const options = { pauseWorkersUntilAttach: true };
+
+  const options = {
+    // `pauseWorkersUntilAttach` is one option set when the debugger panel is opened rather that from the toolbox.
+    // The reason is to support early breakpoints in workers, which will force the workers to pause
+    // and later on (when TargetMixin.attachThread is called) resume worker execution, after passing the breakpoints.
+    // We only observe workers when the debugger panel is opened (see the few lines before and listenForWorkers = true).
+    // So if we were passing `pauseWorkersUntilAttach=true` from the toolbox code, workers would freeze as we would not watch
+    // for their targets and not resume them.
+    pauseWorkersUntilAttach: true,
+
+    // Bug 1719615 - Immediately turn on WASM debugging when the debugger opens.
+    // We avoid enabling that as soon as DevTools open as WASM generates different kind of machine code
+    // with debugging instruction which significantly increase the memory usage.
+    observeWasm: true,
+  };
   await commands.threadConfigurationCommand.updateConfiguration(options);
 
-  // We should probably only pass descriptor informations from here
-  // so only pass if that's a WebExtension toolbox.
-  // And let actions.willNavigate/NAVIGATE pass the current/selected thread
-  // from onTargetAvailable
-  await actions.connect(
-    targetFront.url,
-    targetFront.threadFront.actor,
-    targetFront.isWebExtension
-  );
-
-  await targetCommand.watchTargets(
-    targetCommand.ALL_TYPES,
-    onTargetAvailable,
-    onTargetDestroyed
-  );
+  await targetCommand.watchTargets({
+    types: targetCommand.ALL_TYPES,
+    onAvailable: onTargetAvailable,
+    onDestroyed: onTargetDestroyed,
+  });
 
   // Use independant listeners for SOURCE and THREAD_STATE in order to ease
   // doing batching and notify about a set of SOURCE's in one redux action.
@@ -73,7 +71,10 @@ export async function onConnect(_commands, _resourceCommand, _actions, store) {
     onAvailable: onSourceAvailable,
   });
   await resourceCommand.watchResources([resourceCommand.TYPES.THREAD_STATE], {
-    onAvailable: onBreakpointAvailable,
+    onAvailable: onThreadStateAvailable,
+  });
+  await resourceCommand.watchResources([resourceCommand.TYPES.TRACING_STATE], {
+    onAvailable: onTracingStateAvailable,
   });
 
   await resourceCommand.watchResources([resourceCommand.TYPES.ERROR_MESSAGE], {
@@ -87,16 +88,19 @@ export async function onConnect(_commands, _resourceCommand, _actions, store) {
 }
 
 export function onDisconnect() {
-  targetCommand.unwatchTargets(
-    targetCommand.ALL_TYPES,
-    onTargetAvailable,
-    onTargetDestroyed
-  );
+  targetCommand.unwatchTargets({
+    types: targetCommand.ALL_TYPES,
+    onAvailable: onTargetAvailable,
+    onDestroyed: onTargetDestroyed,
+  });
   resourceCommand.unwatchResources([resourceCommand.TYPES.SOURCE], {
     onAvailable: onSourceAvailable,
   });
   resourceCommand.unwatchResources([resourceCommand.TYPES.THREAD_STATE], {
-    onAvailable: onBreakpointAvailable,
+    onAvailable: onThreadStateAvailable,
+  });
+  resourceCommand.unwatchResources([resourceCommand.TYPES.TRACING_STATE], {
+    onAvailable: onTracingStateAvailable,
   });
   resourceCommand.unwatchResources([resourceCommand.TYPES.ERROR_MESSAGE], {
     onAvailable: actions.addExceptionFromResources,
@@ -108,7 +112,7 @@ export function onDisconnect() {
 }
 
 async function onTargetAvailable({ targetFront, isTargetSwitching }) {
-  const isBrowserToolbox = commands.descriptorFront.isParentProcessDescriptor;
+  const isBrowserToolbox = commands.descriptorFront.isBrowserProcessDescriptor;
   const isNonTopLevelFrameTarget =
     !targetFront.isTopLevel &&
     targetFront.targetType === targetCommand.TYPES.FRAME;
@@ -148,25 +152,17 @@ function onTargetDestroyed({ targetFront }) {
 }
 
 async function onSourceAvailable(sources) {
-  const frontendSources = await Promise.all(
-    sources
-      .filter(source => {
-        return !source.targetFront.isDestroyed();
-      })
-      .map(async source => {
-        const threadFront = await source.targetFront.getFront("thread");
-        const frontendSource = prepareSourcePayload(threadFront, source);
-        return frontendSource;
-      })
-  );
-  await actions.newGeneratedSources(frontendSources);
+  await actions.newGeneratedSources(sources);
 }
 
-async function onBreakpointAvailable(breakpoints) {
-  for (const resource of breakpoints) {
+async function onThreadStateAvailable(resources) {
+  for (const resource of resources) {
+    if (resource.targetFront.isDestroyed()) {
+      continue;
+    }
     const threadFront = await resource.targetFront.getFront("thread");
     if (resource.state == "paused") {
-      const pause = await createPause(threadFront.actor, resource);
+      const pause = await createPause(threadFront.actorID, resource);
       await actions.paused(pause);
       recordEvent("pause", { reason: resource.why.type });
     } else if (resource.state == "resumed") {
@@ -175,11 +171,31 @@ async function onBreakpointAvailable(breakpoints) {
   }
 }
 
+async function onTracingStateAvailable(resources) {
+  for (const resource of resources) {
+    if (resource.targetFront.isDestroyed()) {
+      continue;
+    }
+    const threadFront = await resource.targetFront.getFront("thread");
+    await actions.tracingToggled(threadFront.actor, resource.enabled);
+  }
+}
+
 function onDocumentEventAvailable(events) {
   for (const event of events) {
     // Only consider top level document, and ignore remote iframes top document
     if (!event.targetFront.isTopLevel) continue;
-
+    // The browser toolbox debugger doesn't support the iframe dropdown.
+    // you will always see all the sources of all targets of your debugging context.
+    //
+    // But still allow it to clear the debugger when reloading the addon, or when
+    // switching between fallback document and other addon document.
+    if (
+      event.isFrameSwitching &&
+      !commands.descriptorFront.isWebExtensionDescriptor
+    ) {
+      continue;
+    }
     if (event.name == "will-navigate") {
       actions.willNavigate({ url: event.newURI });
     } else if (event.name == "dom-complete") {

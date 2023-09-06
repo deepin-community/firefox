@@ -10,12 +10,13 @@
 #include "mozilla/BinarySearch.h"
 #include "mozilla/ComputedStyle.h"
 #include "mozilla/ComputedStyleInlines.h"
+#include "mozilla/StaticPrefs_mathml.h"
+#include "mozilla/intl/UnicodeScriptCodes.h"
 
 #include "nsStyleConsts.h"
 #include "nsTextFrameUtils.h"
 #include "nsFontMetrics.h"
 #include "nsDeviceContext.h"
-#include "nsUnicodeScriptCodes.h"
 
 using namespace mozilla;
 
@@ -170,7 +171,8 @@ static uint32_t MathvarMappingSearch(uint32_t aKey,
   http://lists.w3.org/Archives/Public/www-math/2013Sep/0012.html and
   https://en.wikipedia.org/wiki/Mathematical_Alphanumeric_Symbols
 */
-static uint32_t MathVariant(uint32_t aCh, uint8_t aMathVar) {
+/*static */ uint32_t MathMLTextRunFactory::MathVariant(
+    uint32_t aCh, StyleMathVariant aMathVar) {
   uint32_t baseChar;
   enum CharacterType {
     kIsLatin,
@@ -182,11 +184,11 @@ static uint32_t MathVariant(uint32_t aCh, uint8_t aMathVar) {
 
   int8_t multiplier;
 
-  if (aMathVar <= NS_MATHML_MATHVARIANT_NORMAL) {
+  if (aMathVar <= StyleMathVariant::Normal) {
     // nothing to do here
     return aCh;
   }
-  if (aMathVar > NS_MATHML_MATHVARIANT_STRETCHED) {
+  if (aMathVar > StyleMathVariant::Stretched) {
     NS_ASSERTION(false, "Illegal mathvariant value");
     return aCh;
   }
@@ -197,25 +199,25 @@ static uint32_t MathVariant(uint32_t aCh, uint8_t aMathVar) {
     return aCh;
   }
   if (aCh == GREEK_LETTER_DIGAMMA) {
-    if (aMathVar == NS_MATHML_MATHVARIANT_BOLD) {
+    if (aMathVar == StyleMathVariant::Bold) {
       return MATH_BOLD_CAPITAL_DIGAMMA;
     }
     return aCh;
   }
   if (aCh == GREEK_SMALL_LETTER_DIGAMMA) {
-    if (aMathVar == NS_MATHML_MATHVARIANT_BOLD) {
+    if (aMathVar == StyleMathVariant::Bold) {
       return MATH_BOLD_SMALL_DIGAMMA;
     }
     return aCh;
   }
   if (aCh == LATIN_SMALL_LETTER_DOTLESS_I) {
-    if (aMathVar == NS_MATHML_MATHVARIANT_ITALIC) {
+    if (aMathVar == StyleMathVariant::Italic) {
       return MATH_ITALIC_SMALL_DOTLESS_I;
     }
     return aCh;
   }
   if (aCh == LATIN_SMALL_LETTER_DOTLESS_J) {
-    if (aMathVar == NS_MATHML_MATHVARIANT_ITALIC) {
+    if (aMathVar == StyleMathVariant::Italic) {
       return MATH_ITALIC_SMALL_DOTLESS_J;
     }
     return aCh;
@@ -297,19 +299,19 @@ static uint32_t MathVariant(uint32_t aCh, uint8_t aMathVar) {
       // follows immediately after the end of the bold number range.
       // multiplier represents the order of the sequences relative to the first
       // one.
-      case NS_MATHML_MATHVARIANT_BOLD:
+      case StyleMathVariant::Bold:
         multiplier = 0;
         break;
-      case NS_MATHML_MATHVARIANT_DOUBLE_STRUCK:
+      case StyleMathVariant::DoubleStruck:
         multiplier = 1;
         break;
-      case NS_MATHML_MATHVARIANT_SANS_SERIF:
+      case StyleMathVariant::SansSerif:
         multiplier = 2;
         break;
-      case NS_MATHML_MATHVARIANT_BOLD_SANS_SERIF:
+      case StyleMathVariant::BoldSansSerif:
         multiplier = 3;
         break;
-      case NS_MATHML_MATHVARIANT_MONOSPACE:
+      case StyleMathVariant::Monospace:
         multiplier = 4;
         break;
       default:
@@ -328,19 +330,19 @@ static uint32_t MathVariant(uint32_t aCh, uint8_t aMathVar) {
            MATH_BOLD_DIGIT_ZERO;
   } else if (varType == kIsGreekish) {
     switch (aMathVar) {
-      case NS_MATHML_MATHVARIANT_BOLD:
+      case StyleMathVariant::Bold:
         multiplier = 0;
         break;
-      case NS_MATHML_MATHVARIANT_ITALIC:
+      case StyleMathVariant::Italic:
         multiplier = 1;
         break;
-      case NS_MATHML_MATHVARIANT_BOLD_ITALIC:
+      case StyleMathVariant::BoldItalic:
         multiplier = 2;
         break;
-      case NS_MATHML_MATHVARIANT_BOLD_SANS_SERIF:
+      case StyleMathVariant::BoldSansSerif:
         multiplier = 3;
         break;
-      case NS_MATHML_MATHVARIANT_SANS_SERIF_BOLD_ITALIC:
+      case StyleMathVariant::SansSerifBoldItalic:
         multiplier = 4;
         break;
       default:
@@ -362,23 +364,23 @@ static uint32_t MathVariant(uint32_t aCh, uint8_t aMathVar) {
        * monotonic mapping to the unencoded characters, requiring the use of a
        * lookup table.
        */
-      case NS_MATHML_MATHVARIANT_INITIAL:
+      case StyleMathVariant::Initial:
         mapTable = gArabicInitialMapTable;
         tableLength = ArrayLength(gArabicInitialMapTable);
         break;
-      case NS_MATHML_MATHVARIANT_TAILED:
+      case StyleMathVariant::Tailed:
         mapTable = gArabicTailedMapTable;
         tableLength = ArrayLength(gArabicTailedMapTable);
         break;
-      case NS_MATHML_MATHVARIANT_STRETCHED:
+      case StyleMathVariant::Stretched:
         mapTable = gArabicStretchedMapTable;
         tableLength = ArrayLength(gArabicStretchedMapTable);
         break;
-      case NS_MATHML_MATHVARIANT_LOOPED:
+      case StyleMathVariant::Looped:
         mapTable = gArabicLoopedMapTable;
         tableLength = ArrayLength(gArabicLoopedMapTable);
         break;
-      case NS_MATHML_MATHVARIANT_DOUBLE_STRUCK:
+      case StyleMathVariant::DoubleStruck:
         mapTable = gArabicDoubleMapTable;
         tableLength = ArrayLength(gArabicDoubleMapTable);
         break;
@@ -389,12 +391,12 @@ static uint32_t MathVariant(uint32_t aCh, uint8_t aMathVar) {
     newChar = MathvarMappingSearch(aCh, mapTable, tableLength);
   } else {
     // Must be Latin
-    if (aMathVar > NS_MATHML_MATHVARIANT_MONOSPACE) {
+    if (aMathVar > StyleMathVariant::Monospace) {
       // Latin doesn't support the Arabic mathvariants
       return aCh;
     }
-    multiplier = aMathVar - 2;
-    // This is possible because the values for NS_MATHML_MATHVARIANT_* are
+    multiplier = uint8_t(aMathVar) - 2;
+    // This is possible because the values for StyleMathVariant::* are
     // chosen to coincide with the order in which the encoded mathvariant
     // characters are located within their unicode block (less an offset to
     // avoid _NONE and _NORMAL variants)
@@ -456,9 +458,10 @@ void MathMLTextRunFactory::RebuildTextRun(
       }
       if (mSSTYScriptLevel && !foundSSTY) {
         uint8_t sstyLevel = 0;
+        // FIXME: Use the same logic as scale_factor_for_math_depth_change?
         float scriptScaling =
-            pow(styles[0]->mScriptSizeMultiplier, mSSTYScriptLevel);
-        static_assert(NS_MATHML_DEFAULT_SCRIPT_SIZE_MULTIPLIER < 1,
+            pow(kMathMLDefaultScriptSizeMultiplier, mSSTYScriptLevel);
+        static_assert(kMathMLDefaultScriptSizeMultiplier < 1,
                       "Shouldn't it make things smaller?");
         /*
           An SSTY level of 2 is set if the scaling factor is less than or equal
@@ -477,14 +480,14 @@ void MathMLTextRunFactory::RebuildTextRun(
           To opt out of this change, add the following to the stylesheet:
           "font-feature-settings: 'ssty' 0"
         */
-        if (scriptScaling <= (NS_MATHML_DEFAULT_SCRIPT_SIZE_MULTIPLIER +
-                              (NS_MATHML_DEFAULT_SCRIPT_SIZE_MULTIPLIER *
-                               NS_MATHML_DEFAULT_SCRIPT_SIZE_MULTIPLIER)) /
+        if (scriptScaling <= (kMathMLDefaultScriptSizeMultiplier +
+                              (kMathMLDefaultScriptSizeMultiplier *
+                               kMathMLDefaultScriptSizeMultiplier)) /
                                  2) {
           // Currently only the first two ssty settings are used, so two is
           // large as we go
           sstyLevel = 2;
-        } else if (scriptScaling <= NS_MATHML_DEFAULT_SCRIPT_SIZE_MULTIPLIER) {
+        } else if (scriptScaling <= kMathMLDefaultScriptSizeMultiplier) {
           sstyLevel = 1;
         }
         if (sstyLevel) {
@@ -513,7 +516,7 @@ void MathMLTextRunFactory::RebuildTextRun(
     }
   }
 
-  uint8_t mathVar = NS_MATHML_MATHVARIANT_NONE;
+  StyleMathVariant mathVar = StyleMathVariant::None;
   bool doMathvariantStyling = true;
 
   // Ensure it will be safe to call FindFontForChar in the loop below.
@@ -523,24 +526,10 @@ void MathMLTextRunFactory::RebuildTextRun(
     int extraChars = 0;
     mathVar = styles[i]->mMathVariant;
 
-    if (singleCharMI && mathVar == NS_MATHML_MATHVARIANT_NONE) {
-      // If the user has explicitly set a non-default value for fontstyle or
-      // fontweight, the italic mathvariant behaviour of <mi> is disabled
-      // This overrides the initial values specified in fontStyle, to avoid
-      // inconsistencies in which attributes allow CSS changes and which do not.
-      if (mFlags & MATH_FONT_WEIGHT_BOLD) {
-        font.weight = FontWeight::Bold();
-        if (mFlags & MATH_FONT_STYLING_NORMAL) {
-          font.style = FontSlantStyle::Normal();
-        } else {
-          font.style = FontSlantStyle::Italic();
-        }
-      } else if (mFlags & MATH_FONT_STYLING_NORMAL) {
-        font.style = FontSlantStyle::Normal();
-        font.weight = FontWeight::Normal();
-      } else {
-        mathVar = NS_MATHML_MATHVARIANT_ITALIC;
-      }
+    if (singleCharMI && mathVar == StyleMathVariant::None &&
+        (!StaticPrefs::mathml_legacy_mathvariant_attribute_disabled() ||
+         styles[i]->mTextTransform.case_ == StyleTextTransformCase::MathAuto)) {
+      mathVar = StyleMathVariant::Italic;
     }
 
     uint32_t ch = str[i];
@@ -549,9 +538,10 @@ void MathMLTextRunFactory::RebuildTextRun(
     }
     uint32_t ch2 = MathVariant(ch, mathVar);
 
-    if (mathVar == NS_MATHML_MATHVARIANT_BOLD ||
-        mathVar == NS_MATHML_MATHVARIANT_BOLD_ITALIC ||
-        mathVar == NS_MATHML_MATHVARIANT_ITALIC) {
+    if (!StaticPrefs::mathml_mathvariant_styling_fallback_disabled() &&
+        (mathVar == StyleMathVariant::Bold ||
+         mathVar == StyleMathVariant::BoldItalic ||
+         mathVar == StyleMathVariant::Italic)) {
       if (ch == ch2 && ch != 0x20 && ch != 0xA0) {
         // Don't apply the CSS style if a character cannot be
         // transformed. There is an exception for whitespace as it is both
@@ -564,7 +554,7 @@ void MathMLTextRunFactory::RebuildTextRun(
         // character is actually available.
         FontMatchType matchType;
         RefPtr<gfxFont> mathFont = fontGroup->FindFontForChar(
-            ch2, 0, 0, unicode::Script::COMMON, nullptr, &matchType);
+            ch2, 0, 0, intl::Script::COMMON, nullptr, &matchType);
         if (mathFont) {
           // Don't apply the CSS style if there is a math font for at least one
           // of the transformed character in this text run.
@@ -573,7 +563,7 @@ void MathMLTextRunFactory::RebuildTextRun(
           // We fallback to the original character.
           ch2 = ch;
           if (aMFR) {
-            aMFR->RecordScript(unicode::Script::MATHEMATICAL_NOTATION);
+            aMFR->RecordScript(intl::Script::MATHEMATICAL_NOTATION);
           }
         }
       }
@@ -614,22 +604,18 @@ void MathMLTextRunFactory::RebuildTextRun(
   RefPtr<gfxTextRun> cachedChild;
   gfxTextRun* child;
 
-  if (mathVar == NS_MATHML_MATHVARIANT_BOLD && doMathvariantStyling) {
-    font.style = FontSlantStyle::Normal();
-    font.weight = FontWeight::Bold();
-  } else if (mathVar == NS_MATHML_MATHVARIANT_ITALIC && doMathvariantStyling) {
-    font.style = FontSlantStyle::Italic();
-    font.weight = FontWeight::Normal();
-  } else if (mathVar == NS_MATHML_MATHVARIANT_BOLD_ITALIC &&
-             doMathvariantStyling) {
-    font.style = FontSlantStyle::Italic();
-    font.weight = FontWeight::Bold();
-  } else if (mathVar != NS_MATHML_MATHVARIANT_NONE) {
-    // Mathvariant overrides fontstyle and fontweight
-    // Need to check to see if mathvariant is actually applied as this function
-    // is used for other purposes.
-    font.style = FontSlantStyle::Normal();
-    font.weight = FontWeight::Normal();
+  if (!StaticPrefs::mathml_mathvariant_styling_fallback_disabled() &&
+      doMathvariantStyling) {
+    if (mathVar == StyleMathVariant::Bold) {
+      font.style = FontSlantStyle::NORMAL;
+      font.weight = FontWeight::BOLD;
+    } else if (mathVar == StyleMathVariant::Italic) {
+      font.style = FontSlantStyle::ITALIC;
+      font.weight = FontWeight::NORMAL;
+    } else if (mathVar == StyleMathVariant::BoldItalic) {
+      font.style = FontSlantStyle::ITALIC;
+      font.weight = FontWeight::BOLD;
+    }
   }
   gfxFontGroup* newFontGroup = nullptr;
 

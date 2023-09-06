@@ -16,7 +16,14 @@ update-updateButton =
     .accesskey = r
 
 update-checkingForUpdates = Kontroleer vir bywerkings…
-update-downloading = <img data-l10n-name="icon"/>Laai tans bywerking af — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Laai tans bywerking af — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Pas tans bywerking toe…
 
 update-failed = Bywerking het misluk. <label data-l10n-name="failed-link">Laai die jongste weergawe af</label>
@@ -26,13 +33,21 @@ update-adminDisabled = Bywerking deur die stelseladministrateur gedeaktiveer
 update-noUpdatesFound = { -brand-short-name } is op datum
 update-otherInstanceHandlingUpdates = { -brand-short-name } word tans bygewerk deur 'n ander programkopie
 
-update-manual = Bywerkings beskikbaar by <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Bywerkings beskikbaar by <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Bywerkings beskikbaar by <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = U kan nie verdere bywerkings op dié stelsel doen nie. <label data-l10n-name="unsupported-link">Meer inligting</label>
 
 update-restarting = Herbegin tans…
 
-channel-description = U is tans op die <label data-l10n-name="current-channel"></label>-bywerkkanaal.
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = U is tans op die <label data-l10n-name="current-channel">{ $channel }</label>-bywerkkanaal.
 
 warningDesc-version = { -brand-short-name } is eksperimenteel en moontlik onstabiel.
 

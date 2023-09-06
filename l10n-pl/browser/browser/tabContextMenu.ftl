@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Zaznacz wszystkie karty
     .accesskey = c
+tab-context-play-tab =
+    .label = Odtwarzaj
+    .accesskey = O
+tab-context-play-tabs =
+    .label = Odtwarzaj
+    .accesskey = O
 duplicate-tab =
     .label = Duplikuj kartę
     .accesskey = u
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Dodaj zakładki do zaznaczonych kart…
     .accesskey = D
-bookmark-tab =
-    .label = Dodaj zakładkę do karty
+tab-context-bookmark-tab =
+    .label = Dodaj zakładkę do karty…
     .accesskey = D
 tab-context-open-in-new-container-tab =
     .label = Otwórz w nowej karcie z kontekstem
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Udostępnij
     .accesskey = U
-tab-context-share-more =
-    .label = Więcej…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,13 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] Przywróć zamknięte karty
         }
     .accesskey = a
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Zamknij kartę
-           *[other] Zamknij karty
-        }
-    .accesskey = Z
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

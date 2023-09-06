@@ -18,6 +18,9 @@ about-telemetry-page-title = ਟੈਲੀਮੈਂਟਰੀ ਡਾਟਾ
 about-telemetry-current-store = ਮੌਜੂਦਾ ਸਟੋਰ:
 about-telemetry-more-information = ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ ਖੋਜਣਾ ਹੈ?
 about-telemetry-firefox-data-doc = <a data-l10n-name="data-doc-link">ਫਾਇਰਫਾਕਸ ਡਾਟਾ ਦਸਤਾਵੇਜ਼ (ਅੰਗਰੇਜ਼ੀ)</a> ਵਿੱਚ ਗਾਈਡਾਂ ਹਨ, ਜੋ ਕਿ ਸਾਡੇ ਡਾਟਾ ਟੂਲ ਨਾਲ ਕੰਮ ਕਰਨ ਬਾਰੇ ਜਾਣਕਾਰੀ ਦਿੰਦੀਆਂ ਹਨ।
+about-telemetry-telemetry-client-doc = <a data-l10n-name="client-doc-link">Firefox ਟੈਲੀਮੈਂਟਰੀ ਕਲਾਈਂਟ ਦਸਤਾਵੇਜ਼</a> ਵਿੱਚ ਸੰਕਲਪ ਦੀਆਂ ਪਰਿਭਾਸ਼ਾਵਾਂ, API ਦਸਤਾਵੇਜ਼ ਅਤੇ ਡਾਟਾ ਹਵਾਲੇ ਮੌਜੂਦ ਹਨ।
+about-telemetry-telemetry-dashboard = <a data-l10n-name="dashboard-link">ਟੈਲੀਮੈਂਟਰੀ ਡੈਸ਼ਬੋਰਡ</a> ਤੁਹਾਨੂੰ Mozilla ਨੂੰ ਟੈਲੀਮੈਂਟਰੀ ਰਾਹੀਂ ਮਿਲੇ ਡਾਟੇ ਨੂੰ ਦਿਖਾਉਂਦਾ ਹੈ।
+about-telemetry-telemetry-probe-dictionary = <a data-l10n-name="probe-dictionary-link">ਪਰੋਬ ਡਿਕਸ਼ਨਰੀ</a> ਟੈਲੀਮੈਂਟਰੀ ਵਲੋਂ ਇਕੱਤਰ ਕੀਤੀਆਂ ਪੜਤਾਲਾਂ ਦੇ ਬਾਰੇ ਵੇਰਵੇ ਅਤੇ ਵਰਣਨ ਦਿੰਦੀ ਹੈ।
 about-telemetry-show-in-Firefox-json-viewer = JSON ਦਰਸ਼ਕ 'ਚ ਖੋਲ੍ਹੋ
 about-telemetry-home-section = ਘਰ
 about-telemetry-general-data-section = ਆਮ ਡਾਟਾ
@@ -31,7 +34,6 @@ about-telemetry-events-section = Events
 about-telemetry-simple-measurements-section = ਸਧਾਰਨ ਮਾਪ
 about-telemetry-slow-sql-section = ਹੌਲੀ SQL ਸਟੇਟਮੈਂਟਾਂ
 about-telemetry-addon-details-section = ਐਡ-ਆਨ ਵੇਰਵੇ
-about-telemetry-captured-stacks-section = Captured Stacks
 about-telemetry-late-writes-section = ਦੇਰੀ ਨਾਲ ਰਾਇਟਰ
 about-telemetry-raw-payload-section = ਕੱਚਾ ਪੇਅਲੋਡ
 about-telemetry-raw = ਅਣਘੜ JSON
@@ -54,10 +56,25 @@ about-telemetry-upload-type =
         [enabled] ਸਮਰੱਥ ਹੈ
        *[disabled] ਅਸਮਰੱਥ ਹੈ
     }
+# Example Output: 1 sample, average = 0, sum = 0
+# Variables:
+#   $sampleCount (Integer): amount of histogram samples
+#   $prettyAverage (Integer): average of histogram samples
+#   $sum (Integer): sum of histogram samples
+about-telemetry-histogram-stats =
+    { $sampleCount ->
+        [one] { $sampleCount } ਨਮੂਨੇ, ਔਸਤ= { $prettyAverage }, ਜੋੜ= { $sum }
+       *[other] { $sampleCount } ਨਮੂਨੇ, ਔਸਤ= { $prettyAverage }, ਜੋੜ= { $sum }
+    }
 # Variables:
 #   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
 about-telemetry-page-subtitle = ਇਹ ਸਫ਼ਾ ਟੈਲੀਮੈਂਟਰੀ ਵਲੋਂ ਕਾਰਗੁਜ਼ਾਰੀ, ਹਾਰਡਵੇਅਰ, ਵਰਤੋਂ ਅਤੇ ਪਸੰਦ ਬਾਰੇ ਇੱਕਠੀ ਕੀਤੀ ਜਾਣਕਾਰੀ ਵੇਖਾਉਂਦਾ ਹੈ। ਇਹ ਜਾਣਕਾਰੀ ਨੂੰ { $telemetryServerOwner } ਨੂੰ ਭੇਜਿਆ ਜਾਂਦਾ ਹੈ ਤਾਂ ਕਿ { -brand-full-name } ਨੂੰ ਸੁਧਾਰਿਆ ਜਾ ਸਕੇ।
 about-telemetry-settings-explanation = ਟੈਲੀਮੈਂਟਰੀ { about-telemetry-data-type } ਇਕੱਤਰ ਕਰ ਰਿਹਾ ਹੈ ਅਤੇ <a data-l10n-name="upload-link">{ about-telemetry-upload-type }</a> ਅੱਪਲੋਡ ਕਰਦਾ ਹੈ।
+# Variables:
+#   $name (String): ping name, e.g. “saved-session”
+#   $timeStamp (String): ping localized timestamp, e.g. “2017/07/08 10:40:46”
+about-telemetry-ping-details = ਜਾਣਕਾਰੀ ਦੇ ਹਰ ਹਿੱਸੇ ਨੂੰ <a data-l10n-name="ping-link">ping</a> ਨਾਲ ਇਕੱਠਾ ਭੇਜਿਆ ਜਾਂਦਾ ਹੈ। ਤੁਸੀਂ { $name }, { $timestamp } ping ਨੂੰ ਵੇਖ ਰਹੇ ਹੋ।
+about-telemetry-data-details-current = ਜਾਣਕਾਰੀ ਦੇ ਹਰ ਹਿੱਸੇ ਨੂੰ <a data-l10n-name="ping-link">ping</a> ਨਾਲ ਇਕੱਠਾ ਭੇਜਿਆ ਜਾਂਦਾ ਹੈ। ਤੁਸੀਂ ਮੌਜੂਦਾ ਡਾਟੇ ਨੂੰ ਵੇਖ ਰਹੇ ਹੋ।
 # string used as a placeholder for the search field
 # More info about it can be found here:
 # https://firefox-source-docs.mozilla.org/toolkit/components/telemetry/telemetry/data/main-ping.html
@@ -82,6 +99,8 @@ about-telemetry-no-search-results-all = ਅਫ਼ਸੋਸ! “{ $searchTerms }” 
 # Variables:
 #   $sectionName (String): is replaced by the section name.
 about-telemetry-no-data-to-display = ਅਫ਼ਸੋਸ! ਇਸ ਵੇਲੇ “{ $sectionName }” ਵਿੱਚ ਕੋਈ ਵੀ ਡਾਟਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ
+# used as a tooltip for the “current” ping title in the sidebar
+about-telemetry-current-data-sidebar = ਮੌਜੂਦਾ ਡਾਟਾ
 # used in the “Ping Type” select
 about-telemetry-telemetry-ping-type-all = ਸਾਰੇ
 # button label to copy the histogram
@@ -101,10 +120,6 @@ about-telemetry-addon-provider = { $addonProvider } ਪਰੋਵਾਈਡਰ
 about-telemetry-keys-header = ਵਿਸ਼ੇਸ਼ਤਾ
 about-telemetry-names-header = ਨਾਂ
 about-telemetry-values-header = ਮੁੱਲ
-# Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (ਪ੍ਰਾਪਤੀ ਦੀ ਗਿਣਤੀ: { $capturedStacksCount })
 # Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = ਲੇਟ ਲਿਖਣਾ #{ $lateWriteCount }

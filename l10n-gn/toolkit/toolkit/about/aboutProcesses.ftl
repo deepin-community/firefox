@@ -50,6 +50,7 @@ about-processes-socket-process = Ñanduti ({ $pid })
 about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Fork Server ({ $pid })
 about-processes-preallocated-process = Ñeme’ẽmby ({ $pid })
+about-processes-utility-process = Jepururã ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
@@ -62,10 +63,9 @@ about-processes-unknown-process = Ambue: { $type } ({ $pid })
 ##    $origin (String) The domain name for this process.
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
-about-processes-web-large-allocation-process = { $origin } ({ $pid }, tuicha)
+about-processes-web-serviceworker = { $origin } ({ $pid }, serviceworker)
 about-processes-with-coop-coep-process = { $origin } ({ $pid }, teñoiha ojuasáva mombyrygua)
 about-processes-web-isolated-process-private = { $origin } — Tekoñemi ({ $pid })
-about-processes-web-large-allocation-process-private = { $origin } — Tekoñemi ({ $pid }), tuicha)
 about-processes-with-coop-coep-process-private = { $origin } — Tekoñemi ({ $pid }, teñoiha ojuasáva mombyrygua)
 
 ## Details within processes
@@ -117,6 +117,17 @@ about-processes-frame-name-one = Kora’ive: { $url }
 #   $shortUrl (String) The shared prefix for the subframes in the group.
 about-processes-frame-name-many = Kora’ive ({ $number }): { $shortUrl }
 
+## Utility process actor names
+
+about-processes-utility-actor-unknown = Moha’ãngahára ojekuaa’ỹva
+about-processes-utility-actor-audio-decoder-generic = Mba’epu papapy’oha ha’ete’ỹva
+about-processes-utility-actor-audio-decoder-applemedia = Apple mba’epu papapy’oha
+about-processes-utility-actor-audio-decoder-wmf = Windows Media Framework mba’epu mbopapapy’oha
+about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media Engine CDM
+# "Oracle" refers to an internal Firefox process and should be kept in English
+about-processes-utility-actor-js-oracle = JavaScript Ykekoha
+about-processes-utility-actor-windows-utils = Windows kuave’ẽmby
+
 ## Displaying CPU (percentage and total)
 ## Variables:
 ##    $percent (Number) The percentage of CPU used by the process or thread.
@@ -131,9 +142,13 @@ about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "pe
     .title = CPU aravo: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
 # Special case: data is not available yet.
 about-processes-cpu-user-and-kernel-not-ready = (ta’ãha)
+# Special case: process or thread is almost idle (using less than 0.1% of a CPU core).
+# This case only occurs on Windows where the precision of the CPU times is low.
+about-processes-cpu-almost-idle = < 0.1%
+    .title = CPU aravo oipurúva { NUMBER($total, maximumFractionDigits: 0) } { $unit }
 # Special case: process or thread is currently idle.
-about-processes-cpu-idle = Oĩreíva
-    .title = CPU aravo: { NUMBER($total, maximumFractionDigits: 2) }{ $unit }
+about-processes-cpu-fully-idle = Oĩreíva
+    .title = CPU aravo oipurúva { NUMBER($total, maximumFractionDigits: 0) } { $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:

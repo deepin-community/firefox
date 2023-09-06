@@ -22,13 +22,13 @@ process-type-extension = Etendaĵo
 # process used to open file:// URLs
 process-type-file = Loka dosiero
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Granda asigno
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Izolita enhavo de retejoj
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Izolita Service Worker
 
 # process preallocated; may change to other types
 process-type-prealloc = Antaŭe asignita
@@ -49,6 +49,9 @@ process-type-socket = Konektingo
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Izolita agento IPC
 
 ##
 ## Other

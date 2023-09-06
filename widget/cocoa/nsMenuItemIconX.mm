@@ -23,6 +23,7 @@
 
 #include "MOZIconHelper.h"
 #include "mozilla/dom/Document.h"
+#include "mozilla/dom/DocumentInlines.h"
 #include "nsCocoaUtils.h"
 #include "nsComputedDOMStyle.h"
 #include "nsContentUtils.h"
@@ -99,8 +100,7 @@ already_AddRefed<nsIURI> nsMenuItemIconX::GetIconURI(nsIContent* aContent) {
   // First, look at the content node's "image" attribute.
   nsAutoString imageURIString;
   bool hasImageAttr =
-      aContent->IsElement() &&
-      aContent->AsElement()->GetAttr(kNameSpaceID_None, nsGkAtoms::image, imageURIString);
+      aContent->IsElement() && aContent->AsElement()->GetAttr(nsGkAtoms::image, imageURIString);
 
   if (hasImageAttr) {
     // Use the URL from the image attribute.
@@ -111,7 +111,6 @@ already_AddRefed<nsIURI> nsMenuItemIconX::GetIconURI(nsIContent* aContent) {
     if (NS_FAILED(rv)) {
       return nullptr;
     }
-    mImageRegionRect.SetEmpty();
     return iconURI.forget();
   }
 
@@ -122,7 +121,7 @@ already_AddRefed<nsIURI> nsMenuItemIconX::GetIconURI(nsIContent* aContent) {
     return nullptr;
   }
 
-  RefPtr<ComputedStyle> sc = nsComputedDOMStyle::GetComputedStyle(aContent->AsElement());
+  RefPtr<const ComputedStyle> sc = nsComputedDOMStyle::GetComputedStyle(aContent->AsElement());
   if (!sc) {
     return nullptr;
   }
@@ -132,24 +131,8 @@ already_AddRefed<nsIURI> nsMenuItemIconX::GetIconURI(nsIContent* aContent) {
     return nullptr;
   }
 
-  // Check if the icon has a specified image region so that it can be
-  // cropped appropriately before being displayed.
-  const nsRect r = sc->StyleList()->GetImageRegion();
-
-  // Return nullptr if the image region is invalid so the image
-  // is not drawn, and behavior is similar to XUL menus.
-  if (r.X() < 0 || r.Y() < 0 || r.Width() < 0 || r.Height() < 0) {
-    return nullptr;
-  }
-
-  // 'auto' is represented by a [0, 0, 0, 0] rect. Only set mImageRegionRect
-  // if we have some other value.
-  if (r.IsEmpty()) {
-    mImageRegionRect.SetEmpty();
-  } else {
-    mImageRegionRect = r.ToNearestPixels(mozilla::AppUnitsPerCSSPixel());
-  }
   mComputedStyle = std::move(sc);
+  mPresContext = document->GetPresContext();
 
   return iconURI.forget();
 }
@@ -165,13 +148,14 @@ nsresult nsMenuItemIconX::OnComplete(imgIContainer* aImage) {
     [mIconImage release];
     mIconImage = nil;
   }
-
+  RefPtr<nsPresContext> pc = mPresContext.get();
   mIconImage = [[MOZIconHelper iconImageFromImageContainer:aImage
                                                   withSize:NSMakeSize(kIconSize, kIconSize)
+                                               presContext:pc
                                              computedStyle:mComputedStyle
-                                                   subrect:mImageRegionRect
                                                scaleFactor:0.0f] retain];
   mComputedStyle = nullptr;
+  mPresContext = nullptr;
 
   if (mListener) {
     mListener->IconUpdated();

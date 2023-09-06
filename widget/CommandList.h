@@ -105,7 +105,6 @@ NS_DEFINE_COMMAND(InsertHTML, cmd_insertHTML)
 NS_DEFINE_COMMAND(InsertText, cmd_insertText)
 NS_DEFINE_COMMAND(InsertOrderedList, cmd_ol)
 NS_DEFINE_COMMAND(InsertUnorderedList, cmd_ul)
-NS_DEFINE_COMMAND(GetHTML, cmd_getContents)
 NS_DEFINE_COMMAND(FormatRemove, cmd_removeStyles)
 NS_DEFINE_COMMAND(FormatRemoveLink, cmd_removeLinks)
 NS_DEFINE_COMMAND(SetDocumentUseCSS, cmd_setDocumentUseCSS)
@@ -117,6 +116,8 @@ NS_DEFINE_COMMAND(ToggleObjectResizers, cmd_enableObjectResizing)
 NS_DEFINE_COMMAND(ToggleInlineTableEditor, cmd_enableInlineTableEditing)
 NS_DEFINE_COMMAND(ToggleAbsolutePositionEditor,
                   cmd_enableAbsolutePositionEditing)
+NS_DEFINE_COMMAND(EnableCompatibleJoinSplitNodeDirection,
+                  cmd_enableCompatibleJoinSplitNodeDirection)
 
 // Commands not mapped from HTMLDocument.execCommand() but available with
 // command dispatcher and handled in editor.

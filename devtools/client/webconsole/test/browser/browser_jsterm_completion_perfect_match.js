@@ -5,7 +5,7 @@
 
 "use strict";
 
-const TEST_URI = `data:text/html;charset=utf8,<p>test completion perfect match.
+const TEST_URI = `data:text/html;charset=utf8,<!DOCTYPE html><p>test completion perfect match.
   <script>
     x = Object.create(null, Object.getOwnPropertyDescriptors({
       foo: 1,
@@ -15,7 +15,7 @@ const TEST_URI = `data:text/html;charset=utf8,<p>test completion perfect match.
     }));
   </script>`;
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
   const { jsterm } = hud;
   const { autocompletePopup } = jsterm;

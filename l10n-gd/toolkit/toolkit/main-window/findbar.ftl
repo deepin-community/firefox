@@ -36,3 +36,45 @@ findbar-entire-word =
     .label = Faclan slàna
     .accesskey = F
     .tooltiptext = Na lorg ach faclan slàna
+
+findbar-not-found = Cha deach an abairt a lorg
+
+findbar-wrapped-to-top = Ràinig sinn bun na duilleige, a' leantainn air adhart o bharr na duilleige
+findbar-wrapped-to-bottom = Ràinig sinn barr na duilleige, a' leantainn air adhart o bhun na duilleige
+
+findbar-normal-find =
+    .placeholder = Lorg air an duilleag
+findbar-fast-find =
+    .placeholder = Lorg luath
+findbar-fast-find-links =
+    .placeholder = Lorg luath (ceanglaichean a-mhàin)
+
+findbar-case-sensitive-status =
+    .value = (aire do litrichean mòra/beaga)
+findbar-match-diacritics-status =
+    .value = (An aire do shràcan)
+findbar-entire-word-status =
+    .value = (Faclan slàna a-mhàin)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $current } à { $total } mhaids
+            [two] { $current } à { $total } mhaids
+            [few] { $current } à { $total } maidsichean
+           *[other] { $current } à { $total } maids
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Barrachd air { $limit } mhaids
+            [two] Barrachd air { $limit } mhaids
+            [few] Barrachd air { $limit } maidsichean
+           *[other] Barrachd air { $limit } maids
+        }

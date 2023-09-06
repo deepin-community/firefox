@@ -34,11 +34,9 @@ enum MixedContentTypes {
 using mozilla::OriginAttributes;
 
 class nsILoadInfo;  // forward declaration
-namespace mozilla {
-namespace net {
+namespace mozilla::net {
 class nsProtocolProxyService;  // forward declaration
-}
-}  // namespace mozilla
+}  // namespace mozilla::net
 
 class nsMixedContentBlocker : public nsIContentPolicy,
                               public nsIChannelEventSink {
@@ -59,6 +57,12 @@ class nsMixedContentBlocker : public nsIContentPolicy,
   static bool IsPotentiallyTrustworthyLoopbackURL(nsIURI* aURL);
   static bool IsPotentiallyTrustworthyOnion(nsIURI* aURL);
   static bool IsPotentiallyTrustworthyOrigin(nsIURI* aURI);
+
+  /**
+   * Returns true if the provided content policy type is subject to the
+   * mixed content level 2 upgrading mechanism (audio, video, image).
+   */
+  static bool IsUpgradableContentType(nsContentPolicyType aType);
 
   /* Static version of ShouldLoad() that contains all the Mixed Content Blocker
    * logic.  Called from non-static ShouldLoad().

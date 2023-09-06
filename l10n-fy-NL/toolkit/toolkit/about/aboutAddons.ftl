@@ -6,9 +6,16 @@ addons-page-title = Add-onbehearder
 search-header =
     .placeholder = addons.mozilla.org trochsykje
     .searchbuttonlabel = Sykje
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Download útwreidingen en tema’s op <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Download wurdboeken op <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Download taalpakketten op <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Jo hawwe gjin add-ons fan dit type ynstallearre
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Ferzje
 detail-last-updated =
     .label = Lêst bywurke
+addon-detail-description-expand = Mear toane
+addon-detail-description-collapse = Minder toane
 detail-contributions-description = De ûnwikkeler fan dizze add-on freget om stipe foar de trochgeande ûntwikkeling troch it meitsjen fan in lytse bydrage.
 detail-contributions-button = Bydrage
     .title = Bydrage oan de ûntwikkeling fan dizze add-on
@@ -99,14 +108,14 @@ disabled-unsigned-heading =
     .value = Guon add-ons binne útskeakele
 disabled-unsigned-description = De folgjende add-ons binne net ferifiearre foar gebrûk yn { -brand-short-name }. Jo kinne <label data-l10n-name="find-addons">nei ferfangingen sykje</label> of de ûntwikkeler freegje dizze ferifiearje te litten.
 disabled-unsigned-learn-more = Mear ynfo oer ús besykjen om jo online feilich te hâlden.
-disabled-unsigned-devinfo = Untwikkelers dy't ynteresse hawwe yn it ferifiearjen litten fan harren add-ons kinne fierdergean troch ús <label data-l10n-name="learn-more">hantlieding</label> te lêzen.
+disabled-unsigned-devinfo = Untwikkelers dy’t ynteresse hawwe yn it ferifiearjen litten fan harren add-ons kinne fierdergean troch ús <label data-l10n-name="learn-more">hantlieding</label> te lêzen.
 plugin-deprecation-description = Misse jo wat? Guon ynstekkers wurde net langer stipe troch { -brand-short-name }. <label data-l10n-name="learn-more">Mear ynfo.</label>
 legacy-warning-show-legacy = Ferâldere útwreidingen toane
 legacy-extensions =
     .value = Ferâldere útwreidingen
 legacy-extensions-description = Dizze útwreidingen foldogge op dit stuit net oan de { -brand-short-name }-standerts binne dêrom de-aktivearre. <label data-l10n-name="legacy-learn-more">Lear mear oer de wizigingen oan add-ons</label>
 private-browsing-description2 =
-    { -brand-short-name } wizigt de manier wêrop útwreidingen yn priveenavigaasje wurkje. Nije útwreidingen dy't jo oan
+    { -brand-short-name } wizigt de manier wêrop útwreidingen yn priveenavigaasje wurkje. Nije útwreidingen dy’t jo oan
     { -brand-short-name } tafoegje, wurkje standert net yn priveefinsters. Utsein jo dit tastean yn de ynstellingen, wurket
     de útwreiding net yn priveenavigaasje, en hat dizze dêryn gjin tagong ta jo online-aktiviteiten.
     Dizze wiziging is oanbrocht om jo priveenavigaasje privee te hâlden.
@@ -117,9 +126,9 @@ addon-category-discover-title =
 addon-category-extension = Utwreidingen
 addon-category-extension-title =
     .title = Utwreidingen
-addon-category-theme = Tema's
+addon-category-theme = Tema’s
 addon-category-theme-title =
-    .title = Tema's
+    .title = Tema’s
 addon-category-plugin = Ynstekkers
 addon-category-plugin-title =
     .title = Ynstekkers
@@ -135,16 +144,33 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Resinte fernijingen
 addon-category-recent-updates-title =
     .title = Resinte fernijingen
+addon-category-sitepermission = Websitemachtigingen
+addon-category-sitepermission-title =
+    .title = Websitemachtigingen
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Websitemachtigingen foar { $host }
 
 ## These are global warnings
 
 extensions-warning-safe-mode = Alle add-ons binne útskeakele troch feilige modus.
 extensions-warning-check-compatibility = Kontrole op kompatibileit foar add-ons is útskeakele. Jo kinne ynkompatibele add-ons hawwe.
+extensions-warning-safe-mode2 =
+    .message = Alle add-ons binne útskeakele troch feilige modus.
+extensions-warning-check-compatibility2 =
+    .message = Kontrole op kompatibileit foar add-ons is útskeakele. Jo kinne ynkompatibele add-ons hawwe.
 extensions-warning-check-compatibility-button = Ynskeakelje
     .title = Skeakelje kontrole fan kompatibileit foar add-ons yn
 extensions-warning-update-security = Feilichheidskontrole foar add-onsfernijingen is útskeakele. Jo kinne efterrinne mei fernijingen.
+extensions-warning-update-security2 =
+    .message = Feilichheidskontrole foar add-onsfernijingen is útskeakele. Jo kinne efterrinne mei fernijingen.
 extensions-warning-update-security-button = Ynskeakelje
     .title = Skeakelje feilichheidskontrole foar add-onsfernijingen yn
+extensions-warning-imported-addons = Foltôgje de ynstallaasje fan útwreidingen dy’t ymportearre binne nei { -brand-short-name }.
+extensions-warning-imported-addons2 =
+    .message = Foltôgje de ynstallaasje fan útwreidingen dy’t ymportearre binne nei { -brand-short-name }.
+extensions-warning-imported-addons-button = Utwreidingen ynstallearje
 
 ## Strings connected to add-on updates
 
@@ -209,10 +235,17 @@ shortcuts-duplicate = Dûbele fluchkeppeling
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = { $shortcut } wurdt yn mear as ien gefal as fluchkeppeling brûkt. Dûbele fluckkeppelingen kinne unferwacht gedrach feroarsaakje.
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = { $shortcut } wurdt yn mear as ien gefal as fluchkeppeling brûkt. Dûbele fluckkeppelingen kinne unferwacht gedrach feroarsaakje.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Al yn gebrûk troch { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
        *[other] Noch { $numberToShow } toane
@@ -226,16 +259,21 @@ header-back-button =
 # Explanatory introduction to the list of recommended add-ons. The action word
 # ("recommends") in the final sentence is a link to external documentation.
 discopane-intro =
-    Utwreidingen en tema's binne as apps foar jo browser en sy litte jo wachtwurden
+    Utwreidingen en tema’s binne as apps foar jo browser en sy litte jo wachtwurden
     beskermje, fideo’s downloade, oanbiedingen fine, ferfelende advertinsjes blokkearje, wizigje
-    hoe't jo browser derút sjocht, en noch folle mear. Dizze lytse softwareprogramma's binne
-    faaks ûntwikkele troch in tredde partij. Hjir is in seleksje dy't { -brand-product-name }
+    hoe’t jo browser derút sjocht, en noch folle mear. Dizze lytse softwareprogramma's binne
+    faaks ûntwikkele troch in tredde partij. Hjir is in seleksje dy’t { -brand-product-name }
     <a data-l10n-name="learn-more-trigger">oanrekommandearret</a> foar bjusterbaarlike
     befeiliging, prestaasjes en funksjonaliteit.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations =
     Inkelde fan dizze oanrekommandaasjes binne personalisearre. Se binne basearre op oare
     troch jo ynstallearre útwreidingen, profylfoarkarren en brûksstatistiken.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message =
+        Inkelde fan dizze oanrekommandaasjes binne personalisearre. Se binne basearre op oare
+        troch jo ynstallearre útwreidingen, profylfoarkarren en brûksstatistiken.
 discopane-notice-learn-more = Mear ynfo
 privacy-policy = Privacybelied
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -252,7 +290,7 @@ install-theme-button = Tema ynstallearje
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Beheare
 find-more-addons = Mear add-ons sykje
-find-more-themes = Fyn mear tema's
+find-more-themes = Fyn mear tema’s
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
 addon-options-button =
@@ -281,15 +319,15 @@ permissions-addon-button = Tastimmingen
 extension-enabled-heading = Ynskeakele
 extension-disabled-heading = Utskeakele
 theme-enabled-heading = Ynskeakele
-theme-disabled-heading = Utskeakele
-theme-monochromatic-heading = Kleurstellingen
-theme-monochromatic-subheading = Libbene nije kleuren fan { -brand-product-name }. Beskikber foar in beheinde tiid.
+theme-disabled-heading2 = Bewarre tema’s
 plugin-enabled-heading = Ynskeakele
 plugin-disabled-heading = Utskeakele
 dictionary-enabled-heading = Ynskeakele
 dictionary-disabled-heading = Utskeakele
 locale-enabled-heading = Ynskeakele
 locale-disabled-heading = Utskeakele
+sitepermission-enabled-heading = Ynskeakele
+sitepermission-disabled-heading = Utskeakele
 always-activate-button = Altyd aktivearje
 never-activate-button = Nea aktivearje
 addon-detail-author-label = Skriuwer
@@ -298,7 +336,10 @@ addon-detail-last-updated-label = Lêst bywurke
 addon-detail-homepage-label = Startside
 addon-detail-rating-label = Wurdearring
 # Message for add-ons with a staged pending update.
-install-postponed-message = Dizze útwreiding wurdt bywurke wannear { -brand-short-name } opnij start.
+install-postponed-message = Dizze útwreiding wurdt bywurke wannear’t { -brand-short-name } opnij start.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Dizze útwreiding wurdt bywurke wannear’t { -brand-short-name } opnij start.
 install-postponed-button = No bywurkje
 # The average rating that the add-on has received.
 # Variables:
@@ -330,6 +371,10 @@ addon-detail-updates-radio-on = Oan
 addon-detail-updates-radio-off = Ut
 addon-detail-update-check-label = Kontrolearje op fernijingen
 install-update-button = Bywurkje
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -338,12 +383,30 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Wannear tastien, hat de útwreiding tagong ta jo online-aktiviteiten yn priveenavigaasje. <a data-l10n-name="learn-more">Mear ynfo</a>
 addon-detail-private-browsing-allow = Tastean
 addon-detail-private-browsing-disallow = Net tastean
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Utfiere op websites mei beheiningen
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Wannear tastien, hat de útwreiding tagong ta websites dy’t beheind binne troch { -vendor-short-name }. Stean dit allinnich ta as jo dizze útwreiding fertrouwe.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Tastean
+addon-detail-quarantined-domains-disallow = Net tastean
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 addon-badge-recommended2 =
-    .title = { -brand-product-name } rekommandearret allinnich útwreidingen oan dy't foldogge oan ús noarms foar feilichheid en prestaasjes.
+    .title = { -brand-product-name } rekommandearret allinnich útwreidingen oan dy’t foldogge oan ús noarms foar feilichheid en prestaasjes.
     .aria-label = { addon-badge-recommended2.title }
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
@@ -365,7 +428,10 @@ addon-permissions-required = Fereaske tastimmingen foar kernfunksjonaliteit:
 addon-permissions-optional = Opsjonele tastimmingen foar ekstra funksjonaliteit:
 addon-permissions-learnmore = Mear ynfo oer tastimmingen
 recommended-extensions-heading = Oanrekommandearre útwreidingen
-recommended-themes-heading = Oanrekommandearre tema's
+recommended-themes-heading = Oanrekommandearre tema’s
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Jout <span data-l10n-name="hostname">{ $hostname }</span> de folgjende mooglikheden:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Fiele jo jo kreätyf? <a data-l10n-name="link"> Bou jo eigen tema mei Firefox Color.</a>
@@ -378,6 +444,7 @@ plugin-heading = Jo ynstekkers beheare
 dictionary-heading = Jo wurdboeken beheare
 locale-heading = Jo talen beheare
 updates-heading = Jo fernijingen beheare
+sitepermission-heading = Jo websitemachtigingen beheare
 discover-heading = Personalisearje jo { -brand-short-name }
 shortcuts-heading = Utwreidingsfluchtoetsen beheare
 default-heading-search-label = Mear add-ons sykje
@@ -385,3 +452,35 @@ addons-heading-search-input =
     .placeholder = addons.mozilla.org trochsykje
 addon-page-options-button =
     .title = Ark foar alle add-ons
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } is ynkompatibel mei { -brand-short-name } { $version }.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = { $name } is ynkompatibel mei { -brand-short-name } { $version }.
+details-notification-incompatible-link = Mear ynformaasje
+details-notification-unsigned-and-disabled = { $name } koe net ferifiearre wurde foar gebrûk yn { -brand-short-name } en is útskeakele.
+details-notification-unsigned-and-disabled2 =
+    .message = { $name } koe net ferifiearre wurde foar gebrûk yn { -brand-short-name } en is útskeakele.
+details-notification-unsigned-and-disabled-link = Mear ynformaasje
+details-notification-unsigned = { $name } koe net ferifiearre wurde foar gebrûk yn { -brand-short-name }. Wês foarsichtich as jo fierdergean.
+details-notification-unsigned2 =
+    .message = { $name } koe net ferifiearre wurde foar gebrûk yn { -brand-short-name }. Wês foarsichtich as jo fierdergean.
+details-notification-unsigned-link = Mear ynformaasje
+details-notification-blocked = { $name } is útskeakele om reden fan feilichheid of stabiliteit.
+details-notification-blocked2 =
+    .message = { $name } is útskeakele om reden fan feilichheid of stabiliteit.
+details-notification-blocked-link = Mear ynformaasje
+details-notification-softblocked = { $name } kin feilichheids- of stabiliteitsproblemen feroarsaakje.
+details-notification-softblocked2 =
+    .message = { $name } kin feilichheids- of stabiliteitsproblemen feroarsaakje.
+details-notification-softblocked-link = Mear ynformaasje
+details-notification-gmp-pending = { $name } sil ynkoarten ynstallearre wurde.
+details-notification-gmp-pending2 =
+    .message = { $name } sil ynkoarten ynstallearre wurde.

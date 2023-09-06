@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = डेटा मिटायें
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = { -brand-short-name } द्वारा जमा सभी कूकीज तथा साइट डेटा मिटाना आपको वेबसाइटों से साइन आउट कर सकता है तथा ऑफलाइन वेब सामग्री को हटा सकता है. कैश डेटा मिटाना आपके लॉग इनो को प्रभावित नहीं करेगा.
 

@@ -26,9 +26,9 @@ certmgr-people = Seuraavat yksilöt todentavia varmenteita on tiedossa
 certmgr-server = Nämä tietueet identifioivat palvelinvarmenteen virhepoikkeukset
 certmgr-ca = Seuraavat varmentajat todentavia varmenteita on tiedossa
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Muokkaa varmentajan varmenteen luotettavuusasetuksia
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Muokkaa luotettavuusasetuksia:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Tämä varmenne voi todentaa sähköpostittajia.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Poista varmenne
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Palvelin
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Palvelin
-
-certmgr-override-lifetime =
-    .label = Elinikä
 
 certmgr-token-name =
     .label = Turvallisuuslaite
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Sarjanumero
+
+certmgr-fingerprint-sha-256 =
+    .label = SHA-256-sormenjälki
 
 certmgr-view =
     .label = Näytä…
@@ -185,8 +185,6 @@ delete-email-cert-impact = Jos sähköpostivarmenne poistetaan, varmenteen kohte
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Varmenne sarjanumerolla: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Älä lähetä asiakasvarmennetta

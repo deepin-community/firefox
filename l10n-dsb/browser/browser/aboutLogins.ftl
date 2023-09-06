@@ -5,12 +5,12 @@
 
 about-logins-page-title = Pśizjawjenja a gronidła
 
-# "Google Play" and "App Store" are both branding and should not be translated
+about-logins-login-filter =
+    .placeholder = Pśizjawjenja pśepytaś
+    .key = F
 
-login-filter =
-    .placeholder = Pśizjawjenja pytaś
-
-create-login-button = Nowe pśizjawjenje załožyś
+create-new-login-button =
+    .title = Nowe pśizjawjenje załožyś
 
 fxaccounts-sign-in-text = Pśinjasćo swóje gronidła do wašych drugich rědow
 fxaccounts-sign-in-sync-button = Pla Sync pśizjawiś
@@ -37,12 +37,24 @@ about-logins-menu-menuitem-help = Pomoc
 
 login-list =
     .aria-label = Pśizjawjenja, kótarež pytańskemu napšašowanjeju wótpowěduju
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } pśizjawjenje
         [two] { $count } pśizjawjeni
         [few] { $count } pśizjawjenja
        *[other] { $count } pśizjawjenjow
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } z { $total } přizjewjenja
+        [two] { $count } z { $total } přizjewjenjow
+        [few] { $count } z { $total } přizjewjenjow
+       *[other] { $count } z { $total } přizjewjenjow
     }
 login-list-sort-label-text = Sortěrowaś pó:
 login-list-name-option = Mjenju (A-Z)
@@ -63,7 +75,6 @@ about-logins-list-item-breach-icon =
     .title = Zranjone websedło
 about-logins-list-item-vulnerable-password-icon =
     .title = Napadojte gronidło
-
 about-logins-list-section-breach = Websedła z datowymi źěrami
 about-logins-list-section-vulnerable = Napadojte gronidła
 about-logins-list-section-nothing = Žedno warnowanje
@@ -78,8 +89,8 @@ about-logins-login-intro-heading-logged-in = Žedne synchronizěrowane pśizjawj
 login-intro-description = Jolic sćo składł swóje pśizjawjenja { -brand-product-name } na drugem rěźe, tak móžośo je sem pśinjasć:
 login-intro-instructions-fxa = Załožćo abo pśizjawśo se pla swójogo { -fxaccount-brand-name } na rěźe, źož waše pśizjawjenja su skłaźone
 login-intro-instructions-fxa-settings = Źiśo k Nastajenja > Sync > Synchronizaciju zmóžniś… Wubjeŕśo kontrolny kašćik „Pśizjawjenja a gronidła“.
-login-intro-instructions-fxa-help = Woglědajśo se k <a data-l10n-name="help-link">pomocy { -lockwise-brand-short-name }</a> za wěcej pomocy.
-about-logins-intro-import = Jolic waše pśizjawjenja su skłaźone w drugem wobglědowaku, móžośo <a data-l10n-name="import-link">je do { -lockwise-brand-short-name } importěrowaś</a>
+login-intro-instructions-fxa-passwords-help = Woglědajśo se k <a data-l10n-name="passwords-help-link">pomocy gronidłow</a> za wěcej pomocy.
+about-logins-intro-browser-only-import = Jolic waše pśizjawjenja su skłaźone w drugem wobglědowaku, móžośo <a data-l10n-name="import-link">je do { -brand-product-name } importěrowaś</a>
 about-logins-intro-import2 = Jolic waše pśizjawjenja se zwenka { -brand-product-name } składuju, móžośo <a data-l10n-name="import-browser-link">je z drugego wobglědowaka importěrowaś</a>, abo <a data-l10n-name="import-file-link">z dataje</a>
 
 ## Login
@@ -104,9 +115,17 @@ login-item-copied-password-button-text = Kopěrowany!
 login-item-save-changes-button = Změny składowaś
 login-item-save-new-button = Składowaś
 login-item-cancel-button = Pśetergnuś
-login-item-time-changed = Slědna změna: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Załožony: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Slědne wužyśe: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Napórany
+login-item-timeline-action-updated = Zaktualizěrowany
+login-item-timeline-action-used = Wužyty
 
 ## OS Authentication dialog
 
@@ -134,8 +153,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Zapódajśo swóje pśiz
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = skłaźone gronidło kopěrowaś
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Zapódajśo swóje pśizjawjeńske daty Windows, aby swóje pśizjawjenja eksportěrował. To wěstotu wašych kontow šćita.
 # This message can be seen when attempting to export a password in about:logins
@@ -149,8 +166,6 @@ master-password-reload-button =
     .label = Pśizjawiś
     .accesskey = P
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Pśetergnuś
@@ -160,6 +175,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Toś to pśizjawjenje wótwónoźeś?
 confirm-delete-dialog-message = Toś ta akcija njedajo se anulěrowaś.
 about-logins-confirm-remove-dialog-confirm-button = Wótwónoźeś
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -211,6 +229,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] To pśizjawjenja wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych rědach a kótarež su z wašym kontom { -fxaccount-brand-name } synchronizěrowane. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Pśizjawjenja a gronidła eksportěrowaś
 about-logins-confirm-export-dialog-message = Wašo gronidła budu se ako cytajobny tekst składowaś (na pś. BadP@ass0rd), togodla móžo kuždy, kótaryž móžo eksportěrowanu dataju wócyniś, je wiźeś.
 about-logins-confirm-export-dialog-confirm-button = Eksportěrowaś…
@@ -230,7 +250,6 @@ about-logins-breach-alert-date = Toś ta datowa źěra jo nastała { DATETIME($d
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = K { $hostname }
-about-logins-breach-alert-learn-more-link = Dalšne informacije
 
 ## Vulnerable Password notification
 

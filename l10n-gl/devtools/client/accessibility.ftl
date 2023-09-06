@@ -13,6 +13,26 @@ accessibility-keyboard-header = Teclado
 
 ## Text entries that are used as text alternative for icons that depict accessibility isses.
 
+
+## These strings are used in the overlay displayed when running an audit in the accessibility panel
+
+accessibility-progress-initializing = Inicializando…
+    .aria-valuetext = Inicializando…
+
+# This string is displayed in the audit progress bar in the accessibility panel.
+# Variables:
+#   $nodeCount (Integer) - The number of nodes for which the audit was run so far.
+accessibility-progress-progressbar =
+    { $nodeCount ->
+        [one] Comprobación { $nodeCount } nó
+       *[other] Comprobación de { $nodeCount } nós
+    }
+
+accessibility-progress-finishing = Rematando…
+    .aria-valuetext = Rematando…
+
+## Text entries that are used as text alternative for icons that depict accessibility issues.
+
 accessibility-warning =
     .alt = Advertencia
 
@@ -48,7 +68,7 @@ accessibility-text-label-issue-frame = Os elementos <code>frame</code> deben ser
 
 accessibility-text-label-issue-glyph = Use o atributo <code>alt</code> para etiquetar elementos <span>mglyph</span>. <a>Saiba máis</a>
 
-accessibility-text-label-issue-heading = Os títulos deben estar etiquetados. <a>Sai ba máis</a>
+accessibility-text-label-issue-heading = Os títulos deben estar etiquetados. <a>Saiba máis</a>
 
 accessibility-text-label-issue-heading-content = Os títulos deben ter contido de texto visible. <a>Saiba máis</a>
 

@@ -12,11 +12,17 @@
 
 policy-3rdparty = Mag-set ng mga policy na maaaring ma-access ng WebExtensions sa chrome.storage.managed.
 
+policy-AllowedDomainsForApps = Tukuyin ang mga domain na pinapayagang maka-access sa Google Workspace.
+
 policy-AppAutoUpdate = Mag-enable o mag-disable ng automatic application update.
 
 policy-AppUpdateURL = Set custom app update URL.
 
 policy-Authentication = I-configure ang integrated na pagpapatotoo para sa mga website na sumusuporta dito.I-configure ang integrated na pagpapatotoo para sa mga website na sumusuporta dito.
+
+policy-AutoLaunchProtocolsFromOrigins = Tukuyin ang isang listahan ng mga panlabas na protokol na maaaring magamit mula sa nakalistang mga pinagmulan nang hindi hinihimok ang gumagamit.
+
+policy-BackgroundAppUpdate2 = Buksan o patayin ang background updater.
 
 policy-BlockAboutAddons = Harangin ang access sa Add-ons Manager (about:addons).
 
@@ -63,7 +69,7 @@ policy-DisablePrimaryPasswordCreation = Kung true, hindi maaaring makagawa ng Pr
 
 policy-DisablePasswordReveal = Huwag payagang mailantad ang mga password sa mga naka-save na login.
 
-policy-DisablePocket = Huwag paganahin ang tampok na makapag-save ng mga webpage sa Pocket.
+policy-DisablePocket2 = Huwag paganahin ang tampok na makapag-save ng mga webpage sa { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Huwag paganahin ang Pribadong Pagba-browse.
 
@@ -106,10 +112,6 @@ policy-ExtensionSettings = I-manage ang lahat ng aspeto ng pag-install ng mga ex
 
 policy-ExtensionUpdate = I-enable o i-disable ang kusang pag-update ng mga extension.
 
-policy-FirefoxHome = I-configure ang Firefox Home.
-
-policy-FlashPlugin = Payagan o pagbawalan ang paggamit ng Flash plugin.
-
 policy-Handlers = I-configure ang mga default application handler.
 
 policy-HardwareAcceleration = Kung false, isara ang hardware acceleration.
@@ -132,6 +134,8 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Bumalik sa legacy Same
 policy-LocalFileLinks = Payagan ang ilang mga website na mag-link sa mga local file.
 
 policy-ManagedBookmarks = Nagco-configure ng isang listahan ng mga bookmark na pinamamahalaanan ng isang administrator na hindi maaaring baguhin ng user.
+
+policy-ManualAppUpdateOnly = Payagan lamang ang mga manu-manong pag-update at huwag ipagbigay-alam sa user ang tungkol sa mga update.
 
 policy-PrimaryPassword = Kailanganin o pigilang gumamit ng Primary Password.
 
@@ -175,9 +179,6 @@ policy-SearchBar = I-set ang default location ng search bar. Pinapayagan pa rin 
 policy-SearchEngines = I-configure ang mga setting ng search engine. Ang policy na ito ay matatagpuan lamang sa Extended Support Release (ESR) version.
 
 policy-SearchSuggestEnabled = I-enable o i-disable ang mga search suggestion.
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Ikabit ang mga PKCS #11 module.
 
 policy-ShowHomeButton = Ipakita ang home button sa toolbar.
 

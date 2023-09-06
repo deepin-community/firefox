@@ -16,10 +16,7 @@
 #include "nsIFrame.h"
 #include <type_traits>
 
-namespace mozilla {
-namespace dom {
-
-namespace SVGGeometryProperty {
+namespace mozilla::dom::SVGGeometryProperty {
 namespace ResolverTypes {
 struct LengthPercentNoAuto {};
 struct LengthPercentRXY {};
@@ -92,21 +89,21 @@ using dummy = int[];
 using CtxDirectionType = decltype(SVGContentUtils::X);
 
 template <CtxDirectionType CTD>
-float ResolvePureLengthPercentage(SVGElement* aElement,
+float ResolvePureLengthPercentage(const SVGElement* aElement,
                                   const LengthPercentage& aLP) {
   return aLP.ResolveToCSSPixelsWith(
       [&] { return CSSCoord{SVGElementMetrics(aElement).GetAxisLength(CTD)}; });
 }
 
 template <class Tag>
-float ResolveImpl(ComputedStyle const& aStyle, SVGElement* aElement,
+float ResolveImpl(ComputedStyle const& aStyle, const SVGElement* aElement,
                   ResolverTypes::LengthPercentNoAuto) {
   auto const& value = aStyle.StyleSVGReset()->*Tag::Getter;
   return ResolvePureLengthPercentage<Tag::CtxDirection>(aElement, value);
 }
 
 template <class Tag>
-float ResolveImpl(ComputedStyle const& aStyle, SVGElement* aElement,
+float ResolveImpl(ComputedStyle const& aStyle, const SVGElement* aElement,
                   ResolverTypes::LengthPercentWidthHeight) {
   static_assert(
       std::is_same<Tag, Tags::Width>{} || std::is_same<Tag, Tags::Height>{},
@@ -196,7 +193,7 @@ float ResolveImpl(ComputedStyle const& aStyle, SVGElement* aElement,
 }
 
 template <class Tag>
-float ResolveImpl(ComputedStyle const& aStyle, SVGElement* aElement,
+float ResolveImpl(ComputedStyle const& aStyle, const SVGElement* aElement,
                   ResolverTypes::LengthPercentRXY) {
   static_assert(std::is_same<Tag, Tags::Rx>{} || std::is_same<Tag, Tags::Ry>{},
                 "Wrong tag");
@@ -225,9 +222,7 @@ float ResolveImpl(ComputedStyle const& aStyle, SVGElement* aElement,
 
 template <class Tag>
 float ResolveWith(const ComputedStyle& aStyle, const SVGElement* aElement) {
-  // TODO: There are a lot of utilities lacking const-ness in dom/svg.
-  // We should fix that problem and remove this `const_cast`.
-  return details::ResolveImpl<Tag>(aStyle, const_cast<SVGElement*>(aElement),
+  return details::ResolveImpl<Tag>(aStyle, aElement,
                                    typename Tag::ResolverType{});
 }
 
@@ -238,7 +233,7 @@ bool DoForComputedStyle(const SVGElement* aElement, Func aFunc) {
     return true;
   }
 
-  if (RefPtr<ComputedStyle> computedStyle =
+  if (RefPtr<const ComputedStyle> computedStyle =
           nsComputedDOMStyle::GetComputedStyleNoFlush(aElement)) {
     aFunc(computedStyle.get());
     return true;
@@ -277,8 +272,6 @@ nsCSSPropertyID AttrEnumToCSSPropId(const SVGElement* aElement,
 bool IsNonNegativeGeometryProperty(nsCSSPropertyID aProp);
 bool ElementMapsLengthsToStyle(SVGElement const* aElement);
 
-}  // namespace SVGGeometryProperty
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom::SVGGeometryProperty
 
 #endif  // DOM_SVG_SVGGEOMETRYPROPERTY_H_

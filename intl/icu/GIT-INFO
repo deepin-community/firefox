@@ -1,5 +1,5 @@
-commit 0e7b4428866f3133b4abba2d932ee3faa708db1d
-Author: Long Nguyen <nguyen.long.908132@gmail.com>
-Date:   Thu Mar 25 22:26:56 2021 +0700
+commit 5861e1fd52f1d7673eee38bc3c965aa18b336062
+Author: Peter Edberg <pedberg@unicode.org>
+Date:   Tue Apr 11 10:32:35 2023 -0700
 
-    ICU-21560 mingw: Remove version numbers from link flags
+    ICU-22221 update cldr-icu instructions, and ICU tag for integration

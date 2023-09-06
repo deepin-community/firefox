@@ -7,10 +7,9 @@
 
 // Test whether hasCSSVariable function of utils.js works correctly or not.
 
-const { require } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
 const {
   hasCSSVariable,
-} = require("devtools/client/inspector/rules/utils/utils");
+} = require("resource://devtools/client/inspector/rules/utils/utils.js");
 
 function run_test() {
   info("Normal usage");

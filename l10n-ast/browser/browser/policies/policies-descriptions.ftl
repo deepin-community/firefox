@@ -65,7 +65,7 @@ policy-DisablePrimaryPasswordCreation = Si s'afita «true», nun pue crease una 
 
 policy-DisablePasswordReveal = Nun permite que les contraseñes se desvelen nes cuentes guardaes.
 
-policy-DisablePocket = Desactiva la carauterística de guardáu de páxines web en Pocket.
+policy-DisablePocket2 = Desactiva la carauterística de guardáu de páxines web en { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Desactiva'l restolar en privao.
 
@@ -107,10 +107,6 @@ policy-Extensions = Instala, desinstala o bloquia estensiones. La opción «Inst
 policy-ExtensionSettings = Xestiona tolos aspeutos de la instalación d'estensiones.
 
 policy-ExtensionUpdate = Des/activa l'anovamientu automáticu de les estensiones.
-
-policy-FirefoxHome = Configura la páxina d'aniciu de Firefox.
-
-policy-FlashPlugin = Permite o niega l'usu del plugin Flash.
 
 policy-Handlers = Configura los remanadores d'aplicaciones predeterminaos.
 
@@ -179,9 +175,6 @@ policy-SearchBar = Afita l'allugamientu predetermináu de la barra de busca. L'u
 policy-SearchEngines = Configura los axustes de los motores de busca. Esta política namás ta disponible na versión Extended Support Release (ESR)
 
 policy-SearchSuggestEnabled = Des/activa les suxerencies de busca.
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instala módulos de PKCS #11.
 
 policy-ShowHomeButton = Amuesa'l botón d'aniciu na barra de ferramientes.
 

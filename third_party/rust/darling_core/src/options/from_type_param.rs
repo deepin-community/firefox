@@ -1,10 +1,10 @@
 use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::{self, Ident};
+use syn::Ident;
 
-use codegen::FromTypeParamImpl;
-use options::{OuterFrom, ParseAttribute, ParseData};
-use Result;
+use crate::codegen::FromTypeParamImpl;
+use crate::options::{OuterFrom, ParseAttribute, ParseData};
+use crate::Result;
 
 #[derive(Debug)]
 pub struct FromTypeParamOptions {
@@ -16,7 +16,7 @@ pub struct FromTypeParamOptions {
 impl FromTypeParamOptions {
     pub fn new(di: &syn::DeriveInput) -> Result<Self> {
         (FromTypeParamOptions {
-            base: OuterFrom::start(di),
+            base: OuterFrom::start(di)?,
             bounds: None,
             default: None,
         })
@@ -37,13 +37,7 @@ impl ParseData for FromTypeParamOptions {
     }
 
     fn parse_field(&mut self, field: &syn::Field) -> Result<()> {
-        match field
-            .ident
-            .as_ref()
-            .map(|v| v.to_string())
-            .as_ref()
-            .map(|v| v.as_str())
-        {
+        match field.ident.as_ref().map(|v| v.to_string()).as_deref() {
             Some("bounds") => {
                 self.bounds = field.ident.clone();
                 Ok(())

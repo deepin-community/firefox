@@ -16,6 +16,8 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Wszyskie
+printui-page-range-odd = Niyparziste
+printui-page-range-even = Parziste
 printui-page-range-custom = Włosne
 printui-page-range-label = Strōny
 printui-page-range-picker =
@@ -25,7 +27,7 @@ printui-page-custom-range-input =
     .placeholder = bp. 2-6, 9, 12-16
 
 # Section title for the number of copies to print
-printui-copies-label = Kopie
+printui-copies-label = Kopije
 
 printui-orientation = Ôriyntacyjo
 printui-landscape = Poziōmo
@@ -49,6 +51,10 @@ printui-scale-pcent = Skala
 # Section title (noun) for the two-sided print options
 printui-two-sided-printing = Durk ôbuch strōn
 printui-two-sided-printing-off = Wyłōnczōne
+# Flip the sheet as if it were bound along its long edge.
+printui-two-sided-printing-long-edge = Ôbrōć bez dugi rant
+# Flip the sheet as if it were bound along its short edge.
+printui-two-sided-printing-short-edge = Ôbrōć bez krōtki rant
 
 # Section title for miscellaneous print options
 printui-options = Ôpcyje
@@ -58,6 +64,15 @@ printui-backgrounds-checkbox = Durkuj zadki
 ## The "Format" section, select a version of the website to print. Radio
 ## options to select between the original page, selected text only, or a version
 ## where the page is processed with "Reader View".
+
+# The section title.
+printui-source-label = Format
+# Option for printing the original page.
+printui-source-radio = Ôryginalny
+# Option for printing just the content a user selected prior to printing.
+printui-selection-radio = Ôbrane
+# Option for "simplifying" the page by printing the Reader View version.
+printui-simplify-page-radio = Polekszōny
 
 ##
 
@@ -70,14 +85,19 @@ printui-margins-default = Włosne
 printui-margins-min = Minimalne
 printui-margins-none = Żodne
 printui-margins-custom-inches = Włosne (w calach)
+printui-margins-custom-mm = Włosne (mm)
 printui-margins-custom-top = Z wiyrchu
 printui-margins-custom-top-inches = Z wiyrchu (cale)
+printui-margins-custom-top-mm = Z wiyrchu (mm)
 printui-margins-custom-bottom = Na spodku
 printui-margins-custom-bottom-inches = Na spodku (cale)
+printui-margins-custom-bottom-mm = Na spodku (mm)
 printui-margins-custom-left = Lewy
 printui-margins-custom-left-inches = Lewy (cale)
+printui-margins-custom-left-mm = Lewy (mm)
 printui-margins-custom-right = Prawy
 printui-margins-custom-right-inches = Prawy (cale)
+printui-margins-custom-right-mm = Prawy (mm)
 
 printui-system-dialog-link = Durkuj z pōmocōm systymowego dialogu…
 
@@ -120,6 +140,7 @@ printui-paper-tabloid = Tabloid
 
 printui-error-invalid-scale = Skala to mo być liczba miyndzy 10 a 200.
 printui-error-invalid-margin = Wkludź dobry margines do ôbranyj srogości papiōru.
+printui-error-invalid-copies = Wielość kopii to mo być liczba miyndzy 1 a 10000.
 
 # Variables
 # $numPages (integer) - Number of pages

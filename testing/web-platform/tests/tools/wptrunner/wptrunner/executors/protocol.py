@@ -1,10 +1,25 @@
+# mypy: allow-untyped-defs
+
 import traceback
+from http.client import HTTPConnection
 
 from abc import ABCMeta, abstractmethod
 from typing import ClassVar, List, Type
 
 
-class Protocol(object):
+def merge_dicts(target, source):
+    if not (isinstance(target, dict) and isinstance(source, dict)):
+        raise TypeError
+    for (key, source_value) in source.items():
+        if key not in target:
+            target[key] = source_value
+        else:
+            if isinstance(source_value, dict) and isinstance(target[key], dict):
+                merge_dicts(target[key], source_value)
+            else:
+                target[key] = source_value
+
+class Protocol:
     """Backend for a specific browser-control protocol.
 
     Each Protocol is composed of a set of ProtocolParts that implement
@@ -17,7 +32,7 @@ class Protocol(object):
     :param Browser browser: The Browser using this protocol"""
     __metaclass__ = ABCMeta
 
-    implements = []  # type: ClassVar[List[Type[ProtocolPart]]]
+    implements: ClassVar[List[Type["ProtocolPart"]]] = []
 
     def __init__(self, executor, browser):
         self.executor = executor
@@ -77,13 +92,13 @@ class Protocol(object):
             getattr(self, cls.name).teardown()
 
 
-class ProtocolPart(object):
+class ProtocolPart:
     """Base class  for all ProtocolParts.
 
     :param Protocol parent: The parent protocol"""
     __metaclass__ = ABCMeta
 
-    name = None  # type: ClassVar[str]
+    name: ClassVar[str]
 
     def __init__(self, parent):
         self.parent = parent
@@ -129,7 +144,9 @@ class BaseProtocolPart(ProtocolPart):
 
     @abstractmethod
     def wait(self):
-        """Wait indefinitely for the browser to close"""
+        """Wait indefinitely for the browser to close.
+
+        :returns: True to re-run the test, or False to continue with the next test"""
         pass
 
     @property
@@ -254,9 +271,9 @@ class SelectorProtocolPart(ProtocolPart):
     def element_by_selector(self, element_selector):
         elements = self.elements_by_selector(element_selector)
         if len(elements) == 0:
-            raise ValueError("Selector '%s' matches no elements" % (element_selector,))
+            raise ValueError(f"Selector '{element_selector}' matches no elements")
         elif len(elements) > 1:
-            raise ValueError("Selector '%s' matches multiple elements" % (element_selector,))
+            raise ValueError(f"Selector '{element_selector}' matches multiple elements")
         return elements[0]
 
     @abstractmethod
@@ -282,6 +299,27 @@ class ClickProtocolPart(ProtocolPart):
         pass
 
 
+
+class AccessibilityProtocolPart(ProtocolPart):
+    """Protocol part for accessibility introspection"""
+    __metaclass__ = ABCMeta
+
+    name = "accessibility"
+
+    @abstractmethod
+    def get_computed_label(self, element):
+        """Return the computed accessibility label for a specific element.
+
+        :param element: A protocol-specific handle to an element."""
+        pass
+
+    def get_computed_role(self, element):
+        """Return the computed accessibility role for a specific element.
+
+        :param element: A protocol-specific handle to an element."""
+        pass
+
+
 class CookiesProtocolPart(ProtocolPart):
     """Protocol part for managing cookies"""
     __metaclass__ = ABCMeta
@@ -291,6 +329,18 @@ class CookiesProtocolPart(ProtocolPart):
     @abstractmethod
     def delete_all_cookies(self):
         """Delete all cookies."""
+        pass
+
+    @abstractmethod
+    def get_all_cookies(self):
+        """Get all cookies."""
+        pass
+
+    @abstractmethod
+    def get_named_cookie(self, name):
+        """Get named cookie.
+
+        :param name: The name of the cookie to get."""
         pass
 
 
@@ -308,6 +358,21 @@ class SendKeysProtocolPart(ProtocolPart):
         :param keys: A protocol-specific handle to a string of input keys."""
         pass
 
+class WindowProtocolPart(ProtocolPart):
+    """Protocol part for manipulating the window"""
+    __metaclass__ = ABCMeta
+
+    name = "window"
+
+    @abstractmethod
+    def set_rect(self, rect):
+        """Restores the window to the given rect."""
+        pass
+
+    @abstractmethod
+    def minimize(self):
+        """Minimizes the window and returns the previous rect."""
+        pass
 
 class GenerateTestReportProtocolPart(ProtocolPart):
     """Protocol part for generating test reports"""
@@ -330,12 +395,11 @@ class SetPermissionProtocolPart(ProtocolPart):
     name = "set_permission"
 
     @abstractmethod
-    def set_permission(self, descriptor, state, one_realm=False):
+    def set_permission(self, descriptor, state):
         """Set permission state.
 
         :param descriptor: A PermissionDescriptor object.
-        :param state: The state to set the permission to.
-        :param one_realm: Whether to set the permission for only one realm."""
+        :param state: The state to set the permission to."""
         pass
 
 
@@ -350,6 +414,9 @@ class ActionSequenceProtocolPart(ProtocolPart):
         """Send a sequence of actions to the window.
 
         :param actions: A protocol-specific handle to an array of actions."""
+        pass
+
+    def release(self):
         pass
 
 
@@ -535,6 +602,66 @@ class VirtualAuthenticatorProtocolPart(ProtocolPart):
         pass
 
 
+class SPCTransactionsProtocolPart(ProtocolPart):
+    """Protocol part for Secure Payment Confirmation transactions"""
+    __metaclass__ = ABCMeta
+
+    name = "spc_transactions"
+
+    @abstractmethod
+    def set_spc_transaction_mode(self, mode):
+        """Set the SPC transaction automation mode
+
+        :param str mode: The automation mode to set"""
+        pass
+
+
+class FedCMProtocolPart(ProtocolPart):
+    """Protocol part for Federated Credential Management"""
+    __metaclass__ = ABCMeta
+
+    name = "fedcm"
+
+    @abstractmethod
+    def cancel_fedcm_dialog(self):
+        """Cancel the FedCM dialog"""
+        pass
+
+    @abstractmethod
+    def select_fedcm_account(self, account_index):
+        """Select a FedCM account
+
+        :param int account_index: The index of the account to select"""
+        pass
+
+    @abstractmethod
+    def get_fedcm_account_list(self):
+        """Get the FedCM account list"""
+        pass
+
+    @abstractmethod
+    def get_fedcm_dialog_title(self):
+        """Get the FedCM dialog title"""
+        pass
+
+    @abstractmethod
+    def get_fedcm_dialog_type(self):
+        """Get the FedCM dialog type"""
+        pass
+
+    @abstractmethod
+    def set_fedcm_delay_enabled(self, enabled):
+        """Sets the FedCM delay as enabled or disabled
+
+        :param bool enabled: The delay to set"""
+        pass
+
+    @abstractmethod
+    def reset_fedcm_cooldown(self):
+        """Set the FedCM cooldown"""
+        pass
+
+
 class PrintProtocolPart(ProtocolPart):
     """Protocol part for rendering to a PDF."""
     __metaclass__ = ABCMeta
@@ -574,3 +701,56 @@ class DebugProtocolPart(ProtocolPart):
         self.parent.base.load(urljoin(self.parent.executor.server_url("https"),
                               "/common/third_party/reftest-analyzer.xhtml#log=%s" %
                                quote(output.getvalue())))
+
+
+class ConnectionlessBaseProtocolPart(BaseProtocolPart):
+    def load(self, url):
+        pass
+
+    def execute_script(self, script, asynchronous=False):
+        pass
+
+    def set_timeout(self, timeout):
+        pass
+
+    def wait(self):
+        return False
+
+    def set_window(self, handle):
+        pass
+
+    def window_handles(self):
+        return []
+
+
+class ConnectionlessProtocol(Protocol):
+    implements = [ConnectionlessBaseProtocolPart]
+
+    def connect(self):
+        pass
+
+    def after_connect(self):
+        pass
+
+
+class WdspecProtocol(ConnectionlessProtocol):
+    implements = [ConnectionlessBaseProtocolPart]
+
+    def __init__(self, executor, browser):
+        super().__init__(executor, browser)
+
+    def is_alive(self):
+        """Test that the connection is still alive.
+
+        Because the remote communication happens over HTTP we need to
+        make an explicit request to the remote.  It is allowed for
+        WebDriver spec tests to not have a WebDriver session, since this
+        may be what is tested.
+
+        An HTTP request to an invalid path that results in a 404 is
+        proof enough to us that the server is alive and kicking.
+        """
+        conn = HTTPConnection(self.browser.host, self.browser.port)
+        conn.request("HEAD", "/invalid")
+        res = conn.getresponse()
+        return res.status == 404

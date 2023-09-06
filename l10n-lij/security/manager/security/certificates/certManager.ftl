@@ -21,9 +21,9 @@ certmgr-mine = Ti gh'é sti certificati da ste organizaçioin che te identifican
 certmgr-people = Ti gh'é sti certificati che identifican ste personn-e
 certmgr-ca = Ti gh'é sti certificati inti schedai che identifican ste aotoritæ
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Cangia e inpostaçioin de fiduccia do certificato CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Cangia e inpostaçioin de fiduccia:
 
@@ -33,18 +33,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Sto certificato o peu identificâ email.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Scancella certificato
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = Nomme do certificato
 
 certmgr-cert-server =
     .label = Server
-
-certmgr-override-lifetime =
-    .label = Durata de vitta
 
 certmgr-token-name =
     .label = Aparato de seguessa
@@ -173,9 +170,8 @@ delete-email-cert-impact = Se ti ti scancelli un certificato email, ti no saiæ 
 cert-with-serial =
     .value = Cartificato con numero seriale: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

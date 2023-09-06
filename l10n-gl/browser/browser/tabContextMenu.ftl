@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Seleccionar todas as lapelas
     .accesskey = S
+tab-context-play-tab =
+    .label = Reproducir son na lapela
+    .accesskey = l
+tab-context-play-tabs =
+    .label = Reproducir son nas lapelas
+    .accesskey = u
 duplicate-tab =
     .label = Duplicar a lapela
     .accesskey = D
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Marcar estas lapelas…
     .accesskey = l
-bookmark-tab =
-    .label = Marcar lapela
-    .accesskey = l
+tab-context-bookmark-tab =
+    .label = Marcar a lapela…
+    .accesskey = M
 tab-context-open-in-new-container-tab =
     .label = Abrir nunha nova lapela contedor
     .accesskey = e
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Compartir
     .accesskey = C
-tab-context-share-more =
-    .label = Máis…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -83,14 +87,6 @@ tab-context-reopen-closed-tabs =
            *[other] Reabrir lapelas pechadas
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Pechar a lapela
-            [one] Pechar a lapelas
-           *[other] Pechar as lapelas
-        }
-    .accesskey = C
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->
@@ -107,6 +103,7 @@ tab-context-move-tabs =
            *[other] Mover lapelas
         }
     .accesskey = v
+
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->

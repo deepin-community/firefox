@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = 기록 지우기 설정
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = 최근 기록 지우기
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = 모든 기록 지우기
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = 닫을 때, { -brand-short-name }가 자동으로 모두 지우기
 
@@ -78,10 +78,6 @@ item-form-search-history =
 
 data-section-label = 데이터
 
-item-site-preferences =
-    .label = 사이트 설정
-    .accesskey = S
-
 item-site-settings =
     .label = 사이트 설정
     .accesskey = S
@@ -111,4 +107,4 @@ sanitize-everything-warning = 모든 기록이 지워집니다.
 # Warning that appears when "Time range to clear" is set to "Everything" in Clear
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
-sanitize-selected-warning = 모든 선택 항목이 지워집니다.
+sanitize-selected-warning = 모든 선택한 항목이 지워집니다.

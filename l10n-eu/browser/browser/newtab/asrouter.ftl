@@ -28,11 +28,13 @@ cfr-doorhanger-extension-author = egilea: { $name }
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Gomendioa
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-extension-notification2 = Gomendioa
     .tooltiptext = Hedapenaren gomendioa
     .a11y-announcement = Hedapenaren gomendioa erabilgarri dago
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-feature-notification = Gomendioa
     .tooltiptext = Eginbidearen gomendioa
     .a11y-announcement = Eginbidearen gomendioa erabilgarri dago
@@ -105,15 +107,6 @@ cfr-doorhanger-doh-primary-button-2 = Ados
 cfr-doorhanger-doh-secondary-button = Desgaitu
     .accesskey = D
 
-## Fission Experiment Message
-
-cfr-doorhanger-fission-body-approved = Zure pribatutasuna garrantzitsua da. { -brand-short-name }(e)k webguneak bata bestearengandik isolatzen ditu eta horrela zailagoa da pasahitzak, kreditu-txartel zenbakiak eta bestelako kontuzko informazioa ostea.
-cfr-doorhanger-fission-header = Guneen isolazioa
-cfr-doorhanger-fission-primary-button = Ados, ulertuta
-    .accesskey = A
-cfr-doorhanger-fission-secondary-button = Argibide gehiago
-    .accesskey = A
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Gune honetako bideoak agian ez dira ondo erreproduzituko { -brand-short-name } bertsio honetan. Bideo-euskarri osorako, eguneratu { -brand-short-name } orain.
@@ -127,9 +120,115 @@ cfr-doorhanger-video-support-primary-button = Eguneratu orain
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
 spotlight-public-wifi-vpn-header = Badirudi Wi-Fi publikoa darabilzula
 spotlight-public-wifi-vpn-body = Zure kokapena eta nabigazio-jarduera ezkutatzeko, aintzat hartu sare pribatu birtuala (VPN) erabiltzea. Aireportu edo kafetegien tankerako gune publikoetan nabigatzean babestuta mantentzen lagunduko dizu.
 spotlight-public-wifi-vpn-primary-button = Mantendu pribatu { -mozilla-vpn-brand-name } erabiliz
     .accesskey = M
 spotlight-public-wifi-vpn-link = Une honetan ez
     .accesskey = z
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Internet hobea zurekin hasten da
+spotlight-better-internet-body = { -brand-short-name } erabiltzean, denontzat hobea den Internet ireki eta atzigarri baten alde egiten duzu bozka.
+spotlight-peace-mind-header = Babesean zaitugu
+spotlight-peace-mind-body = Hilero, { -brand-short-name }(e)k 3000 jarraipen-elementu baino gehiago blokeatzen ditu erabiltzaileko batez bestean. Izan ere ezerk ez bailuke zure eta Internet onaren artean egon behar — bereziki pribatutasunaren oztopo diren jarraipen-elementuak.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Mantendu Dock-ean
+       *[other] Ainguratu ataza-barran
+    }
+spotlight-pin-secondary-button = Une honetan ez
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+mr2022-background-update-toast-title = { -brand-short-name } berria. Pribatuagoa. Jarraipen-elementu gutxiago. Konpromisorik ez.
+mr2022-background-update-toast-text = Probatu orain { -brand-short-name } berriena, jarraipen-elementuei aurka egiteko inoizko babesik indartsuenarekin eguneratua.
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it
+# using a variable font like Arial): the button can only fit 1-2
+# additional characters, exceeding characters will be truncated.
+mr2022-background-update-toast-primary-button-label = Ireki { -brand-shorter-name } orain
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = Gogora iezadazu geroago
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Probatu
+    .accesskey = t
+firefoxview-cfr-secondarybutton = Une honetan ez
+    .accesskey = z
+firefoxview-cfr-header-v2 = Jarraitu utzi zenuen tokitik
+firefoxview-cfr-body-v2 = Berreskuratu itxitako azken fitxak eta aldatu di-da batean gailuen artean { -firefoxview-brand-name } erabiliz.
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = Esan kaixo { -firefoxview-brand-name }ri.
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = Telefonoan irekita daukazun fitxa hori nahi duzu? Har ezazu. Oraintxe bisitatu duzun gune hori behar duzu? Lasai, bueltan da { -firefoxview-brand-name }rekin.
+firefoxview-spotlight-promo-primarybutton = Ikusi nola dabilen
+firefoxview-spotlight-promo-secondarybutton = Saltatu
+
+## Colorways expiry reminder CFR
+
+colorways-cfr-primarybutton = Aukeratu kolore-konbinazioa
+    .accesskey = k
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = Eman kolorea zure nabigatzaileari { -brand-short-name } kultura aldatu zuten ahotsek inspiratutako itzaldura esklusiboekin.
+colorways-cfr-header-28days = Ahots independenteen kolore-konbinazioak urtarrilaren 16an iraungiko dira
+colorways-cfr-header-14days = Ahots independenteen kolore-konbinazioak bi aste barru iraungiko dira
+colorways-cfr-header-7days = Ahots independenteen kolore-konbinazioak aste honetan iraungiko dira
+colorways-cfr-header-today = Ahots independenteen kolore-konbinazioak gaur iraungiko dira
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-header = Baimendu { -brand-short-name }(r)i cookie iragarki-bandak ukatzea?
+cfr-cbh-body = { -brand-short-name }(e)k automatikoki uka ditzake cookie iragarki-bandetako eskaerak.
+cfr-cbh-confirm-button = Ukatu cookie iragarki-bandak
+    .accesskey = k
+cfr-cbh-dismiss-button = Une honetan ez
+    .accesskey = n
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+july-jam-headline = Babesean zaitugu
+july-jam-body = Hilero, { -brand-short-name }(e)k batez beste 3.000 jarraipen-elementu blokeatzen ditu erabiltzaileko, internet onerako sarbide seguru eta azkarra emanez.
+july-jam-set-default-primary = Ireki nire loturak { -brand-short-name } erabiliz
+fox-doodle-pin-headline = Ongi etorri berriro
+# “indie” is short for the term “independent”.
+# In this instance, free from outside influence or control.
+fox-doodle-pin-body = Hona hemen abisua gogorarazteko zure nabigatzaile independente gogokoena klik bakarrera manten dezakezula.
+fox-doodle-pin-primary = Ireki nire loturak { -brand-short-name } erabiliz
+fox-doodle-pin-secondary = Une honetan ez
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+set-default-pdf-handler-headline = <strong>Zure PDFak orain { -brand-short-name }(e)n irekitzen dira.</strong> Editatu edo sinatu inprimakiak zuzenean nabigatzailetik. Aldatzeko, bilatu "PDF" ezarpenetan.
+set-default-pdf-handler-primary = Ulertuta
+
+## FxA sync CFR
+
+fxa-sync-cfr-primary = Argibide gehiago
+    .accesskey = A
+fxa-sync-cfr-secondary = Gogora iezadazu geroago
+    .accesskey = G
+
+## Device Migration FxA Spotlight
+
+device-migration-fxa-spotlight-header = Gailu zaharragoa darabilzu?
+device-migration-fxa-spotlight-link = Gogora iezadazu geroago

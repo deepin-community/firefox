@@ -1,6 +1,8 @@
+/* eslint-env mozilla/chrome-script */
+
 Cu.importGlobalProperties(["File"]);
 
-addMessageListener("files.open", function(message) {
+addMessageListener("files.open", function (message) {
   let list = [];
   let promises = [];
   for (let path of message) {

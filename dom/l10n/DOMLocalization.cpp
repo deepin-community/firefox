@@ -9,6 +9,7 @@
 #include "nsContentUtils.h"
 #include "nsIScriptError.h"
 #include "DOMLocalization.h"
+#include "mozilla/intl/L10nRegistry.h"
 #include "mozilla/intl/LocaleService.h"
 #include "mozilla/dom/AutoEntryScript.h"
 #include "mozilla/dom/Element.h"
@@ -47,10 +48,11 @@ DOMLocalization::DOMLocalization(nsIGlobalObject* aGlobal, bool aIsSync,
 }
 
 already_AddRefed<DOMLocalization> DOMLocalization::Constructor(
-    const GlobalObject& aGlobal, const Sequence<nsCString>& aResourceIds,
+    const GlobalObject& aGlobal,
+    const Sequence<dom::OwningUTF8StringOrResourceId>& aResourceIds,
     bool aIsSync, const Optional<NonNull<L10nRegistry>>& aRegistry,
     const Optional<Sequence<nsCString>>& aLocales, ErrorResult& aRv) {
-  nsTArray<nsCString> resIds = ToTArray<nsTArray<nsCString>>(aResourceIds);
+  auto ffiResourceIds{L10nRegistry::ResourceIdsToFFI(aResourceIds)};
   Maybe<nsTArray<nsCString>> locales;
 
   if (aLocales.WasPassed()) {
@@ -66,11 +68,12 @@ already_AddRefed<DOMLocalization> DOMLocalization::Constructor(
 
   if (aRegistry.WasPassed()) {
     result = ffi::localization_new_with_locales(
-        &resIds, aIsSync, aRegistry.Value().Raw(), locales.ptrOr(nullptr),
-        getter_AddRefs(raw));
+        &ffiResourceIds, aIsSync, aRegistry.Value().Raw(),
+        locales.ptrOr(nullptr), getter_AddRefs(raw));
   } else {
-    result = ffi::localization_new_with_locales(
-        &resIds, aIsSync, nullptr, locales.ptrOr(nullptr), getter_AddRefs(raw));
+    result = ffi::localization_new_with_locales(&ffiResourceIds, aIsSync,
+                                                nullptr, locales.ptrOr(nullptr),
+                                                getter_AddRefs(raw));
   }
 
   if (result) {
@@ -93,11 +96,15 @@ void DOMLocalization::Destroy() { DisconnectMutations(); }
 
 DOMLocalization::~DOMLocalization() { Destroy(); }
 
+bool DOMLocalization::HasPendingMutations() const {
+  return mMutations && mMutations->HasPendingMutations();
+}
+
 /**
  * DOMLocalization API
  */
 
-void DOMLocalization::ConnectRoot(nsINode& aNode, ErrorResult& aRv) {
+void DOMLocalization::ConnectRoot(nsINode& aNode) {
   nsCOMPtr<nsIGlobalObject> global = aNode.GetOwnerGlobal();
   if (!global) {
     return;
@@ -118,33 +125,64 @@ void DOMLocalization::ConnectRoot(nsINode& aNode, ErrorResult& aRv) {
   aNode.AddMutationObserverUnlessExists(mMutations);
 }
 
-void DOMLocalization::DisconnectRoot(nsINode& aNode, ErrorResult& aRv) {
+void DOMLocalization::DisconnectRoot(nsINode& aNode) {
   if (mRoots.Contains(&aNode)) {
     aNode.RemoveMutationObserver(mMutations);
     mRoots.Remove(&aNode);
   }
 }
 
-void DOMLocalization::PauseObserving(ErrorResult& aRv) {
-  mMutations->PauseObserving();
-}
+void DOMLocalization::PauseObserving() { mMutations->PauseObserving(); }
 
-void DOMLocalization::ResumeObserving(ErrorResult& aRv) {
-  mMutations->ResumeObserving();
-}
+void DOMLocalization::ResumeObserving() { mMutations->ResumeObserving(); }
 
 void DOMLocalization::SetAttributes(
     JSContext* aCx, Element& aElement, const nsAString& aId,
     const Optional<JS::Handle<JSObject*>>& aArgs, ErrorResult& aRv) {
+  if (aArgs.WasPassed() && aArgs.Value()) {
+    nsAutoString data;
+    JS::Rooted<JS::Value> val(aCx, JS::ObjectValue(*aArgs.Value()));
+    if (!nsContentUtils::StringifyJSON(aCx, val, data,
+                                       UndefinedIsNullStringLiteral)) {
+      aRv.NoteJSContextException(aCx);
+      return;
+    }
+    if (!aElement.AttrValueIs(kNameSpaceID_None, nsGkAtoms::datal10nargs, data,
+                              eCaseMatters)) {
+      aElement.SetAttr(kNameSpaceID_None, nsGkAtoms::datal10nargs, data, true);
+    }
+  } else {
+    aElement.UnsetAttr(kNameSpaceID_None, nsGkAtoms::datal10nargs, true);
+  }
+
   if (!aElement.AttrValueIs(kNameSpaceID_None, nsGkAtoms::datal10nid, aId,
                             eCaseMatters)) {
     aElement.SetAttr(kNameSpaceID_None, nsGkAtoms::datal10nid, aId, true);
   }
+}
 
+void DOMLocalization::GetAttributes(Element& aElement, L10nIdArgs& aResult,
+                                    ErrorResult& aRv) {
+  nsAutoString l10nId;
+  nsAutoString l10nArgs;
+
+  if (aElement.GetAttr(nsGkAtoms::datal10nid, l10nId)) {
+    CopyUTF16toUTF8(l10nId, aResult.mId);
+  }
+
+  if (aElement.GetAttr(nsGkAtoms::datal10nargs, l10nArgs)) {
+    ConvertStringToL10nArgs(l10nArgs, aResult.mArgs.SetValue(), aRv);
+  }
+}
+
+void DOMLocalization::SetArgs(JSContext* aCx, Element& aElement,
+                              const Optional<JS::Handle<JSObject*>>& aArgs,
+                              ErrorResult& aRv) {
   if (aArgs.WasPassed() && aArgs.Value()) {
     nsAutoString data;
     JS::Rooted<JS::Value> val(aCx, JS::ObjectValue(*aArgs.Value()));
-    if (!nsContentUtils::StringifyJSON(aCx, &val, data)) {
+    if (!nsContentUtils::StringifyJSON(aCx, val, data,
+                                       UndefinedIsNullStringLiteral)) {
       aRv.NoteJSContextException(aCx);
       return;
     }
@@ -157,26 +195,13 @@ void DOMLocalization::SetAttributes(
   }
 }
 
-void DOMLocalization::GetAttributes(Element& aElement, L10nIdArgs& aResult,
-                                    ErrorResult& aRv) {
-  nsAutoString l10nId;
-  nsAutoString l10nArgs;
-
-  if (aElement.GetAttr(kNameSpaceID_None, nsGkAtoms::datal10nid, l10nId)) {
-    CopyUTF16toUTF8(l10nId, aResult.mId);
-  }
-
-  if (aElement.GetAttr(kNameSpaceID_None, nsGkAtoms::datal10nargs, l10nArgs)) {
-    ConvertStringToL10nArgs(l10nArgs, aResult.mArgs.SetValue(), aRv);
-  }
-}
-
 already_AddRefed<Promise> DOMLocalization::TranslateFragment(nsINode& aNode,
                                                              ErrorResult& aRv) {
   Sequence<OwningNonNull<Element>> elements;
-
   GetTranslatables(aNode, elements, aRv);
-
+  if (NS_WARN_IF(aRv.Failed())) {
+    return nullptr;
+  }
   return TranslateElements(elements, aRv);
 }
 
@@ -200,8 +225,8 @@ class ElementTranslationHandler : public PromiseNativeHandler {
     mReturnValuePromise = aReturnValuePromise;
   }
 
-  virtual void ResolvedCallback(JSContext* aCx,
-                                JS::Handle<JS::Value> aValue) override {
+  virtual void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue,
+                                ErrorResult& aRv) override {
     ErrorResult rv;
 
     nsTArray<Nullable<L10nMessage>> l10nData;
@@ -254,8 +279,8 @@ class ElementTranslationHandler : public PromiseNativeHandler {
     mReturnValuePromise->MaybeResolveWithUndefined();
   }
 
-  virtual void RejectedCallback(JSContext* aCx,
-                                JS::Handle<JS::Value> aValue) override {
+  virtual void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue,
+                                ErrorResult& aRv) override {
     mReturnValuePromise->MaybeRejectWithClone(aCx, aValue);
   }
 
@@ -292,27 +317,26 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(ElementTranslationHandler)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 already_AddRefed<Promise> DOMLocalization::TranslateElements(
-    const Sequence<OwningNonNull<Element>>& aElements, ErrorResult& aRv) {
+    const nsTArray<OwningNonNull<Element>>& aElements, ErrorResult& aRv) {
   return TranslateElements(aElements, nullptr, aRv);
 }
 
 already_AddRefed<Promise> DOMLocalization::TranslateElements(
-    const Sequence<OwningNonNull<Element>>& aElements,
+    const nsTArray<OwningNonNull<Element>>& aElements,
     nsXULPrototypeDocument* aProto, ErrorResult& aRv) {
-  JS::RootingContext* rcx = RootingCx();
   Sequence<OwningUTF8StringOrL10nIdArgs> l10nKeys;
-  SequenceRooter<OwningUTF8StringOrL10nIdArgs> rooter(rcx, &l10nKeys);
   RefPtr<ElementTranslationHandler> nativeHandler =
       new ElementTranslationHandler(this, aProto);
   nsTArray<nsCOMPtr<Element>>& domElements = nativeHandler->Elements();
   domElements.SetCapacity(aElements.Length());
 
   if (!mGlobal) {
+    aRv.Throw(NS_ERROR_UNEXPECTED);
     return nullptr;
   }
 
   for (auto& domElement : aElements) {
-    if (!domElement->HasAttr(kNameSpaceID_None, nsGkAtoms::datal10nid)) {
+    if (!domElement->HasAttr(nsGkAtoms::datal10nid)) {
       continue;
     }
 
@@ -328,6 +352,7 @@ already_AddRefed<Promise> DOMLocalization::TranslateElements(
     }
 
     if (!domElements.AppendElement(domElement, fallible)) {
+      // This can't really happen, we SetCapacity'd above...
       aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
       return nullptr;
     }
@@ -343,23 +368,27 @@ already_AddRefed<Promise> DOMLocalization::TranslateElements(
 
     FormatMessagesSync(l10nKeys, l10nMessages, aRv);
 
+    if (NS_WARN_IF(aRv.Failed())) {
+      promise->MaybeRejectWithUndefined();
+      return promise.forget();
+    }
+
     bool allTranslated =
         ApplyTranslations(domElements, l10nMessages, aProto, aRv);
     if (NS_WARN_IF(aRv.Failed()) || !allTranslated) {
       promise->MaybeRejectWithUndefined();
-      return MaybeWrapPromise(promise);
+      return promise.forget();
     }
 
     promise->MaybeResolveWithUndefined();
-  } else {
-    RefPtr<Promise> callbackResult = FormatMessages(l10nKeys, aRv);
-    if (NS_WARN_IF(aRv.Failed())) {
-      return nullptr;
-    }
-    nativeHandler->SetReturnValuePromise(promise);
-    callbackResult->AppendNativeHandler(nativeHandler);
+    return promise.forget();
   }
-
+  RefPtr<Promise> callbackResult = FormatMessages(l10nKeys, aRv);
+  if (NS_WARN_IF(aRv.Failed())) {
+    return nullptr;
+  }
+  nativeHandler->SetReturnValuePromise(promise);
+  callbackResult->AppendNativeHandler(nativeHandler);
   return MaybeWrapPromise(promise);
 }
 
@@ -374,12 +403,13 @@ class L10nRootTranslationHandler final : public PromiseNativeHandler {
 
   explicit L10nRootTranslationHandler(Element* aRoot) : mRoot(aRoot) {}
 
-  void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue) override {
+  void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue,
+                        ErrorResult& aRv) override {
     DOMLocalization::SetRootInfo(mRoot);
   }
 
-  void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue) override {
-  }
+  void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue,
+                        ErrorResult& aRv) override {}
 
  private:
   ~L10nRootTranslationHandler() = default;
@@ -401,6 +431,9 @@ already_AddRefed<Promise> DOMLocalization::TranslateRoots(ErrorResult& aRv) {
 
   for (nsINode* root : mRoots) {
     RefPtr<Promise> promise = TranslateFragment(*root, aRv);
+    if (MOZ_UNLIKELY(aRv.Failed())) {
+      return nullptr;
+    }
 
     // If the root is an element, we'll add a native handler
     // to set root info (language, direction etc.) on it
@@ -434,7 +467,7 @@ void DOMLocalization::GetTranslatables(
 
     Element* domElement = node->AsElement();
 
-    if (!domElement->HasAttr(kNameSpaceID_None, nsGkAtoms::datal10nid)) {
+    if (!domElement->HasAttr(nsGkAtoms::datal10nid)) {
       continue;
     }
 
@@ -475,11 +508,7 @@ bool DOMLocalization::ApplyTranslations(
     return false;
   }
 
-  PauseObserving(aRv);
-  if (NS_WARN_IF(aRv.Failed())) {
-    aRv.Throw(NS_ERROR_FAILURE);
-    return false;
-  }
+  PauseObserving();
 
   bool hasMissingTranslation = false;
 
@@ -502,7 +531,7 @@ bool DOMLocalization::ApplyTranslations(
     // It is possible that someone removed the `data-l10n-id` from the element
     // before the async translation completed. In that case, skip applying
     // the translation.
-    if (!elem->HasAttr(kNameSpaceID_None, nsGkAtoms::datal10nid)) {
+    if (!elem->HasAttr(nsGkAtoms::datal10nid)) {
       continue;
     }
     L10nOverlays::TranslateElement(*elem, aTranslations[i].Value(), errors,
@@ -521,11 +550,7 @@ bool DOMLocalization::ApplyTranslations(
 
   ReportL10nOverlaysErrors(errors);
 
-  ResumeObserving(aRv);
-  if (NS_WARN_IF(aRv.Failed())) {
-    aRv.Throw(NS_ERROR_FAILURE);
-    return false;
-  }
+  ResumeObserving();
 
   return !hasMissingTranslation;
 }
@@ -609,6 +634,7 @@ void DOMLocalization::ReportL10nOverlaysErrors(
       } else {
         NS_WARNING("Failed to report l10n DOM Overlay errors to console.");
       }
+      printf_stderr("%s\n", NS_ConvertUTF16toUTF8(msg).get());
     }
   }
 }
@@ -616,6 +642,10 @@ void DOMLocalization::ReportL10nOverlaysErrors(
 void DOMLocalization::ConvertStringToL10nArgs(const nsString& aInput,
                                               intl::L10nArgs& aRetVal,
                                               ErrorResult& aRv) {
+  if (aInput.IsEmpty()) {
+    // There are no properties.
+    return;
+  }
   // This method uses a temporary dictionary to automate
   // converting a JSON string into an IDL Record via a dictionary.
   //
@@ -623,7 +653,11 @@ void DOMLocalization::ConvertStringToL10nArgs(const nsString& aInput,
   // that.
   L10nArgsHelperDict helperDict;
   if (!helperDict.Init(u"{\"args\": "_ns + aInput + u"}"_ns)) {
-    aRv.Throw(NS_ERROR_UNEXPECTED);
+    nsTArray<nsCString> errors{
+        "[dom/l10n] Failed to parse l10n-args JSON: "_ns +
+            NS_ConvertUTF16toUTF8(aInput),
+    };
+    MaybeReportErrorsToGecko(errors, aRv, GetParentObject());
     return;
   }
   for (auto& entry : helperDict.mArgs.Entries()) {

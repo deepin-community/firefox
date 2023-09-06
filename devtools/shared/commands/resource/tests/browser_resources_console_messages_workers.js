@@ -9,18 +9,17 @@ const FISSION_TEST_URL = URL_ROOT_SSL + "fission_document_workers.html";
 const WORKER_FILE = "test_worker.js";
 const IFRAME_FILE = `${URL_ROOT_ORG_SSL}fission_iframe_workers.html`;
 
-add_task(async function() {
+add_task(async function () {
   // Set the following pref to false as it's the one that enables direct connection
   // to the worker targets
   await pushPref("dom.worker.console.dispatch_events_to_main_thread", false);
 
   const tab = await addTab(FISSION_TEST_URL);
 
-  const {
-    client,
-    resourceCommand,
-    targetCommand,
-  } = await initResourceCommand(tab, { listenForWorkers: true });
+  const { client, resourceCommand, targetCommand } = await initResourceCommand(
+    tab,
+    { listenForWorkers: true }
+  );
 
   info("Wait for the workers (from the main page and the iframe) to be ready");
   const targets = [];
@@ -31,7 +30,10 @@ add_task(async function() {
         resolve();
       }
     };
-    targetCommand.watchTargets([targetCommand.TYPES.WORKER], onAvailable);
+    targetCommand.watchTargets({
+      types: [targetCommand.TYPES.WORKER],
+      onAvailable,
+    });
   });
 
   // The worker logs a message right when it starts, containing its location, so we can
@@ -143,8 +145,9 @@ add_task(async function() {
   );
   await waitUntil(
     () => resources.length === messageCount + 4,
-    `Couldn't get the expected number of resources (expected ${messageCount +
-      4}, got ${resources.length})`
+    `Couldn't get the expected number of resources (expected ${
+      messageCount + 4
+    }, got ${resources.length})`
   );
   const startLogFromSpawnedWorkerInMainPage = resources.find(
     ({ message }) =>
@@ -197,8 +200,9 @@ add_task(async function() {
   info("Wait until the new log is available");
   await waitUntil(
     () => resources.length === messageCount + 1,
-    `Couldn't get the expected number of resources (expected ${messageCount +
-      1}, got ${resources.length})`
+    `Couldn't get the expected number of resources (expected ${
+      messageCount + 1
+    }, got ${resources.length})`
   );
   const startLogFromWorkerInSecondIframe = resources[resources.length - 1];
   checkStartWorkerLogMessage(startLogFromWorkerInSecondIframe, {

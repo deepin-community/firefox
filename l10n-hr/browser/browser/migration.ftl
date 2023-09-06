@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 siguran preglednik
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Niti jedan program koji sadrži zabilješke, povijest pretraživanja ili lozinke nije pronađen.
 
@@ -60,9 +72,6 @@ import-items-page-title = Stavke za uvoz
 import-items-description = Odaberi stavke za uvoz:
 
 import-permissions-page-title = Odobri { -brand-short-name }u dozvole
-
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS zahtijeva da izričito dopustiš { -brand-short-name }u pristup zabilješkama u Safariju. Klikni na “Nastavi” i odaberi datoteku “Bookmarks.plist” u prozoru File Open koji će se pojaviti.
 
 import-migrating-page-title = Uvozi se …
 
@@ -78,23 +87,9 @@ import-done-description = Sljedeće stavke su uspješno uvezene:
 
 import-close-source-browser = Prije nastavka, provjeri je li odabrani preglednik zatvoren.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Iz { $source }a
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 siguran preglednik
 
 imported-safari-reading-list = Popis čitanja (iz Safarija)
 imported-edge-reading-list = Popis čitanja (sa Edgea)
@@ -169,3 +164,4 @@ browser-data-session-checkbox =
     .label = Prozori i kartice
 browser-data-session-label =
     .value = Prozori i kartice
+

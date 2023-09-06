@@ -16,6 +16,7 @@
 #include "mozilla/extensions/StreamFilterParent.h"
 #include "mozilla/dom/AutoEntryScript.h"
 #include "mozilla/dom/ContentChild.h"
+#include "mozilla/dom/RootedDictionary.h"
 #include "mozilla/ipc/Endpoint.h"
 #include "nsContentUtils.h"
 #include "nsCycleCollectionParticipant.h"
@@ -102,9 +103,6 @@ void StreamFilter::FinishConnect(
   if (aEndpoint.IsValid()) {
     MOZ_RELEASE_ASSERT(aEndpoint.Bind(mActor));
     mActor->RecvInitialized(true);
-
-    // IPC now owns this reference.
-    Unused << do_AddRef(mActor);
   } else {
     mActor->RecvInitialized(false);
   }
@@ -256,7 +254,8 @@ bool StreamFilter::IsAllowedInContext(JSContext* aCx, JSObject* /* unused */) {
                                              nsGkAtoms::webRequestBlocking);
 }
 
-JSObject* StreamFilter::WrapObject(JSContext* aCx, HandleObject aGivenProto) {
+JSObject* StreamFilter::WrapObject(JSContext* aCx,
+                                   JS::Handle<JSObject*> aGivenProto) {
   return StreamFilter_Binding::Wrap(aCx, this, aGivenProto);
 }
 

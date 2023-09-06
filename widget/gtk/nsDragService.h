@@ -9,17 +9,13 @@
 
 #include "mozilla/RefPtr.h"
 #include "nsBaseDragService.h"
+#include "nsCOMArray.h"
 #include "nsIObserver.h"
 #include <gtk/gtk.h>
+#include "nsITimer.h"
 
 class nsICookieJarSettings;
 class nsWindow;
-
-#ifdef MOZ_WAYLAND
-class DataOffer;
-#else
-typedef nsISupports DataOffer;
-#endif
 
 namespace mozilla {
 namespace gfx {
@@ -36,7 +32,6 @@ class nsDragService final : public nsBaseDragService, public nsIObserver {
   nsDragService();
 
   NS_DECL_ISUPPORTS_INHERITED
-
   NS_DECL_NSIOBSERVER
 
   // nsBaseDragService
@@ -79,12 +74,10 @@ class nsDragService final : public nsBaseDragService, public nsIObserver {
                           guint aInfo, guint32 aTime);
 
   gboolean ScheduleMotionEvent(nsWindow* aWindow, GdkDragContext* aDragContext,
-                               RefPtr<DataOffer> aPendingWaylandDataOffer,
                                mozilla::LayoutDeviceIntPoint aWindowPoint,
                                guint aTime);
   void ScheduleLeaveEvent();
   gboolean ScheduleDropEvent(nsWindow* aWindow, GdkDragContext* aDragContext,
-                             RefPtr<DataOffer> aPendingWaylandDataOffer,
                              mozilla::LayoutDeviceIntPoint aWindowPoint,
                              guint aTime);
 
@@ -100,16 +93,36 @@ class nsDragService final : public nsBaseDragService, public nsIObserver {
   void SourceEndDragSession(GdkDragContext* aContext, gint aResult);
   void SourceDataGet(GtkWidget* widget, GdkDragContext* context,
                      GtkSelectionData* selection_data, guint32 aTime);
+  bool SourceDataGetText(nsITransferable* aItem, const nsACString& aMIMEType,
+                         bool aNeedToDoConversionToPlainText,
+                         GtkSelectionData* aSelectionData);
+  void SourceDataGetImage(nsITransferable* aItem,
+                          GtkSelectionData* aSelectionData);
+  void SourceDataGetXDND(nsITransferable* aItem, GdkDragContext* aContext,
+                         GtkSelectionData* aSelectionData);
+  void SourceDataGetUriList(GdkDragContext* aContext,
+                            GtkSelectionData* aSelectionData,
+                            uint32_t aDragItems);
+  bool SourceDataAppendURLFileItem(nsACString& aURI, nsITransferable* aItem);
+  bool SourceDataAppendURLItem(nsITransferable* aItem, bool aExternalDrop,
+                               nsACString& aURI);
 
   void SourceBeginDrag(GdkDragContext* aContext);
 
   // set the drag icon during drag-begin
   void SetDragIcon(GdkDragContext* aContext);
 
-  // Reply to drag_motion event according to recent DragService state.
-  // We need that on Wayland to reply immediately as it's requested
-  // there (see Bug 1730203).
-  void ReplyToDragMotion();
+  class AutoEventLoop {
+    RefPtr<nsDragService> mService;
+
+   public:
+    explicit AutoEventLoop(RefPtr<nsDragService> aService)
+        : mService(std::move(aService)) {
+      mService->mEventLoopDepth++;
+    }
+    ~AutoEventLoop() { mService->mEventLoopDepth--; }
+  };
+  int GetLoopDepth() const { return mEventLoopDepth; };
 
  protected:
   virtual ~nsDragService();
@@ -132,6 +145,9 @@ class nsDragService final : public nsBaseDragService, public nsIObserver {
   guint mTaskSource;
   bool mScheduledTaskIsRunning;
 
+  // Where the drag begins. We need to keep it open on Wayland.
+  RefPtr<nsWindow> mSourceWindow;
+
   // target/destination side vars
   // These variables keep track of the state of the current drag.
 
@@ -152,9 +168,6 @@ class nsDragService final : public nsBaseDragService, public nsIObserver {
   // any D&D operation.
   uintptr_t mCachedDragContext;
 
-#ifdef MOZ_WAYLAND
-  RefPtr<DataOffer> mPendingWaylandDataOffer;
-#endif
   guint mPendingTime;
 
   // mTargetWindow and mTargetWindowPoint record the position of the last
@@ -166,9 +179,6 @@ class nsDragService final : public nsBaseDragService, public nsIObserver {
   // motion or drop events.  mTime records the corresponding timestamp.
   RefPtr<GtkWidget> mTargetWidget;
   RefPtr<GdkDragContext> mTargetDragContext;
-#ifdef MOZ_WAYLAND
-  RefPtr<DataOffer> mTargetWaylandDataOffer;
-#endif
 
   // When we route D'n'D request to child process
   // (by EventStateManager::DispatchCrossProcessEvent)
@@ -179,9 +189,6 @@ class nsDragService final : public nsBaseDragService, public nsIObserver {
   // We need to store GdkDragContext because mTargetDragContext is cleared
   // after every D'n'D event.
   RefPtr<GdkDragContext> mTargetDragContextForRemote;
-#ifdef MOZ_WAYLAND
-  RefPtr<DataOffer> mTargetWaylandDataOfferForRemote;
-#endif
   guint mTargetTime;
 
   // is it OK to drop on us?
@@ -221,24 +228,37 @@ class nsDragService final : public nsBaseDragService, public nsIObserver {
 
   gboolean Schedule(DragTask aTask, nsWindow* aWindow,
                     GdkDragContext* aDragContext,
-                    RefPtr<DataOffer> aPendingWaylandDataOffer,
                     mozilla::LayoutDeviceIntPoint aWindowPoint, guint aTime);
 
   // Callback for g_idle_add_full() to run mScheduledTask.
   MOZ_CAN_RUN_SCRIPT static gboolean TaskDispatchCallback(gpointer data);
   MOZ_CAN_RUN_SCRIPT gboolean RunScheduledTask();
-  void UpdateDragAction();
   MOZ_CAN_RUN_SCRIPT void DispatchMotionEvents();
-  void ReplyToDragMotion(GdkDragContext* aDragContext);
-#ifdef MOZ_WAYLAND
-  void ReplyToDragMotion(RefPtr<DataOffer> aDragContext);
-#endif
+  void ReplyToDragMotion(GdkDragContext* aDragContext, guint aTime);
+  void ReplyToDragMotion();
+  void UpdateDragAction(GdkDragContext* aDragContext);
+  void UpdateDragAction();
+
 #ifdef MOZ_LOGGING
   const char* GetDragServiceTaskName(nsDragService::DragTask aTask);
 #endif
   void GetDragFlavors(nsTArray<nsCString>& aFlavors);
   gboolean DispatchDropEvent();
   static uint32_t GetCurrentModifiers();
+
+  nsresult CreateTempFile(nsITransferable* aItem, nsACString& aURI);
+  bool RemoveTempFiles();
+  static gboolean TaskRemoveTempFiles(gpointer data);
+
+  // the url of the temporary file that has been created in the current drag
+  // session
+  nsTArray<nsCString> mTempFileUrls;
+  // stores all temporary files
+  nsCOMArray<nsIFile> mTemporaryFiles;
+  // timer to trigger deletion of temporary files
+  guint mTempFileTimerID;
+  // How deep we're nested in event loops
+  int mEventLoopDepth;
 };
 
 #endif  // nsDragService_h__

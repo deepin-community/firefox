@@ -5,13 +5,13 @@
 
 "use strict";
 
-const TEST_URI = `data:text/html,<meta charset=utf8><script>
+const TEST_URI = `data:text/html,<!DOCTYPE html><meta charset=utf8><script>
   console.log("test message", [1,2,3]);
 </script>`;
 
 const ALL_CHANNELS = Ci.nsITelemetry.DATASET_ALL_CHANNELS;
 
-add_task(async function() {
+add_task(async function () {
   // Let's reset the counts.
   Services.telemetry.clearEvents();
 
@@ -21,7 +21,9 @@ add_task(async function() {
 
   const hud = await openNewTabAndConsole(TEST_URI);
 
-  const message = await waitFor(() => findMessage(hud, "test message"));
+  const message = await waitFor(() =>
+    findConsoleAPIMessage(hud, "test message")
+  );
 
   info("Click on the arrow icon to expand the node");
   const arrowIcon = message.querySelector(".arrow");

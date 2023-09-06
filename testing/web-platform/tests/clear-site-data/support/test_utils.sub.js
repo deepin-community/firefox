@@ -121,7 +121,7 @@ var TestUtils = (function() {
       "add": function() {
         return navigator.serviceWorker.register(
             "support/service_worker.js",
-            { scope: "support/"});
+            { scope: "support/page_using_service_worker.html"});
       },
       "isEmpty": function() {
         return new Promise(function(resolve, reject) {
@@ -129,6 +129,19 @@ var TestUtils = (function() {
               .then(function(registrations) {
                 resolve(!registrations.length);
               });
+        });
+      }
+    },
+    {
+      "name": "Storage Buckets",
+      "supported": function() { return !!navigator.storageBuckets; },
+      "add": function() {
+        return navigator.storageBuckets.open('inbox_bucket');
+      },
+      "isEmpty": function() {
+        return new Promise(async function(resolve, reject) {
+          var keys = await navigator.storageBuckets.keys();
+          resolve(!keys.includes('inbox_bucket'));
         });
       }
     },

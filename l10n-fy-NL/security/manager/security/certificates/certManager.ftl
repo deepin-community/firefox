@@ -20,15 +20,15 @@ certmgr-tab-servers =
 certmgr-tab-ca =
     .label = Organisaasjes
 
-certmgr-mine = Jo hawwe sertifikaten fan dizze organisaasjes, dy't jo identifisearje
+certmgr-mine = Jo hawwe sertifikaten fan dizze organisaasjes, dy’t jo identifisearje
 certmgr-remembered = Dizze sertifikaten wurde brûkt om jo by websites te identifisearjen
-certmgr-people = Jo hawwe sertifikaten argivearre dy't dizze persoanen identifisearje
+certmgr-people = Jo hawwe sertifikaten argivearre dy’t dizze persoanen identifisearje
 certmgr-server = Dizze fermeldingen identifisearje útsûnderingen op serversertifikaatflaters
-certmgr-ca = Jo hawwe sertifikaten argivearre dy't dizze sertifikaatautoriteiten identifisearje
+certmgr-ca = Jo hawwe sertifikaten argivearre dy’t dizze sertifikaatautoriteiten identifisearje
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = CA-sertifikaat-fertrouwensynstellingen bewurkje
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Fertrouwensynstellingen bewurkje:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Dit sertifikaat kin e-mailbrûkers identifisearje.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Sertifikaat fuortsmite
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Host
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Server
-
-certmgr-override-lifetime =
-    .label = Libbensdoer
 
 certmgr-token-name =
     .label = Befeiligingsapparaat
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Searjenûmer
+
+certmgr-fingerprint-sha-256 =
+    .label = SHA-256-fingerôfdruk
 
 certmgr-view =
     .label = Werjaan…
@@ -186,8 +186,6 @@ delete-email-cert-impact = As jo in e-mailsertifikaat fan in persoan fuortsmite,
 cert-with-serial =
     .value = Sertifikaat mei searjenûmer: { $serialNumber }
 
-## Cert Viewer
-
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Gjin clientsertifikaat ferstjoere
 
@@ -204,7 +202,7 @@ temporary-override = Tydlik
 
 ## Add Security Exception dialog
 
-add-exception-branded-warning = Jo steane op it punt om hoe't { -brand-short-name } dizze side identifisearet te oerskriuwen.
+add-exception-branded-warning = Jo steane op it punt om hoe’t { -brand-short-name } dizze side identifisearet te oerskriuwen.
 add-exception-invalid-header = Dizze side probearret om himsels te identifisearjen mei foute ynformaasje
 add-exception-domain-mismatch-short = Foute website
 add-exception-domain-mismatch-long = It sertifikaat heart ta oan in oare website, wat betsjutte kin dat ien dizze website probearret nei te meitsjen.

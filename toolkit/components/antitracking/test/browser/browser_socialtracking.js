@@ -1,5 +1,3 @@
-/* eslint-disable prettier/prettier */
-
 function runTest(obj) {
   add_task(async _ => {
     info("Test: " + obj.testName);
@@ -120,7 +118,6 @@ runTest({
   ],
 });
 
-let numBlockEvents = Services.prefs.getBoolPref("privacy.antitracking.cacheStorageAllowedForWindow") ? 1 : 2;
 runTest({
   testName:
     "Socialtracking-annotation feature enabled and considered for tracking detection.",
@@ -132,9 +129,9 @@ runTest({
     [Ci.nsIWebProgressListener.STATE_COOKIES_LOADED, true, 1],
     [Ci.nsIWebProgressListener.STATE_COOKIES_LOADED_SOCIALTRACKER, true, 1],
     [Ci.nsIWebProgressListener.STATE_LOADED_SOCIALTRACKING_CONTENT, true, 2],
-    // If we cache the storage allowed decision, we will only get one block
+    // We cache the storage allowed decision, so we will only get one block
     // event per window and origin.
-    [Ci.nsIWebProgressListener.STATE_COOKIES_BLOCKED_SOCIALTRACKER, true, numBlockEvents],
+    [Ci.nsIWebProgressListener.STATE_COOKIES_BLOCKED_SOCIALTRACKER, true, 1],
   ],
 });
 

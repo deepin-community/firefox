@@ -4,12 +4,14 @@
 
 #include "TestCommon.h"
 #include "gtest/gtest.h"
+#include "mozilla/gtest/MozAssertions.h"
 #include "nsISocketTransportService.h"
 #include "nsISocketTransport.h"
 #include "nsIServerSocket.h"
 #include "nsIAsyncInputStream.h"
 #include "mozilla/net/DNS.h"
 #include "prerror.h"
+#include "../../base/nsSocketTransportService2.h"
 #include "nsComponentManagerUtils.h"
 #include "nsServiceManagerUtils.h"
 
@@ -104,63 +106,72 @@ TEST(TestBind, MainTest)
   ASSERT_TRUE(server);
 
   nsresult rv = server->Init(-1, true, -1);
-  ASSERT_TRUE(NS_SUCCEEDED(rv));
+  ASSERT_NS_SUCCEEDED(rv);
 
   int32_t serverPort;
   rv = server->GetPort(&serverPort);
-  ASSERT_TRUE(NS_SUCCEEDED(rv));
+  ASSERT_NS_SUCCEEDED(rv);
 
   RefPtr<WaitForCondition> waiter = new WaitForCondition();
 
   // Listening.
   RefPtr<ServerListener> serverListener = new ServerListener(waiter);
   rv = server->AsyncListen(serverListener);
-  ASSERT_TRUE(NS_SUCCEEDED(rv));
+  ASSERT_NS_SUCCEEDED(rv);
 
   //
   // Client side
   //
   uint32_t bindingPort = 20000;
-  nsCOMPtr<nsISocketTransportService> sts =
+  nsCOMPtr<nsISocketTransportService> service =
       do_GetService("@mozilla.org/network/socket-transport-service;1", &rv);
-  ASSERT_TRUE(NS_SUCCEEDED(rv));
+  ASSERT_NS_SUCCEEDED(rv);
 
   nsCOMPtr<nsIInputStream> inputStream;
   RefPtr<ClientInputCallback> clientCallback;
 
+  auto* sts = gSocketTransportService;
+  ASSERT_TRUE(sts);
   for (int32_t tried = 0; tried < 100; tried++) {
-    nsCOMPtr<nsISocketTransport> client;
-    rv = sts->CreateTransport(nsTArray<nsCString>(), "127.0.0.1"_ns, serverPort,
-                              nullptr, nullptr, getter_AddRefs(client));
-    ASSERT_TRUE(NS_SUCCEEDED(rv));
+    NS_DispatchAndSpinEventLoopUntilComplete(
+        "test"_ns, sts, NS_NewRunnableFunction("test", [&]() {
+          nsCOMPtr<nsISocketTransport> client;
+          rv = service->CreateTransport(nsTArray<nsCString>(), "127.0.0.1"_ns,
+                                        serverPort, nullptr, nullptr,
+                                        getter_AddRefs(client));
+          ASSERT_NS_SUCCEEDED(rv);
 
-    // Bind to a port. It's possible that we are binding to a port that is
-    // currently in use. If we failed to bind, we try next port.
-    NetAddr bindingAddr;
-    bindingAddr.inet.family = AF_INET;
-    bindingAddr.inet.ip = 0;
-    bindingAddr.inet.port = PR_htons(bindingPort);
-    rv = client->Bind(&bindingAddr);
-    ASSERT_TRUE(NS_SUCCEEDED(rv));
+          // Bind to a port. It's possible that we are binding to a port
+          // that is currently in use. If we failed to bind, we try next
+          // port.
+          NetAddr bindingAddr;
+          bindingAddr.inet.family = AF_INET;
+          bindingAddr.inet.ip = 0;
+          bindingAddr.inet.port = PR_htons(bindingPort);
+          rv = client->Bind(&bindingAddr);
+          ASSERT_NS_SUCCEEDED(rv);
 
-    // Open IO streams, to make client SocketTransport connect to server.
-    clientCallback = new ClientInputCallback(waiter);
-    rv = client->OpenInputStream(nsITransport::OPEN_UNBUFFERED, 0, 0,
-                                 getter_AddRefs(inputStream));
-    ASSERT_TRUE(NS_SUCCEEDED(rv));
+          // Open IO streams, to make client SocketTransport connect to
+          // server.
+          clientCallback = new ClientInputCallback(waiter);
+          rv = client->OpenInputStream(nsITransport::OPEN_UNBUFFERED, 0, 0,
+                                       getter_AddRefs(inputStream));
+          ASSERT_NS_SUCCEEDED(rv);
 
-    nsCOMPtr<nsIAsyncInputStream> asyncInputStream =
-        do_QueryInterface(inputStream);
-    rv = asyncInputStream->AsyncWait(clientCallback, 0, 0, nullptr);
+          nsCOMPtr<nsIAsyncInputStream> asyncInputStream =
+              do_QueryInterface(inputStream);
+          rv = asyncInputStream->AsyncWait(clientCallback, 0, 0, nullptr);
+        }));
 
     // Wait for server's response or callback of input stream.
     waiter->Wait(1);
     if (clientCallback->mFailed) {
-      // if client received error, we likely have bound a port that is in use.
-      // we can try another port.
+      // if client received error, we likely have bound a port that is
+      // in use. we can try another port.
       bindingPort++;
     } else {
-      // We are unlocked by server side, leave the loop and check result.
+      // We are unlocked by server side, leave the loop and check
+      // result.
       break;
     }
   }

@@ -14,12 +14,6 @@ const TEST_PATH_SITE = getRootDirectory(gTestPath).replace(
 );
 
 add_task(async function test_print_blocks() {
-  // window.print() only shows print preview when print.tab_modal.enabled is
-  // true.
-  await SpecialPowers.pushPrefEnv({
-    set: [["print.tab_modal.enabled", true]],
-  });
-
   is(
     document.querySelector(".printPreviewBrowser"),
     null,
@@ -28,7 +22,7 @@ add_task(async function test_print_blocks() {
 
   await BrowserTestUtils.withNewTab(
     `${TEST_PATH}file_window_print.html`,
-    async function(browser) {
+    async function (browser) {
       info(
         "Waiting for the first window.print() to run and ensure we're showing the preview..."
       );
@@ -78,12 +72,6 @@ add_task(async function test_print_blocks() {
 });
 
 add_task(async function test_print_delayed_during_load() {
-  // window.print() only shows print preview when print.tab_modal.enabled is
-  // true.
-  await SpecialPowers.pushPrefEnv({
-    set: [["print.tab_modal.enabled", true]],
-  });
-
   is(
     document.querySelector(".printPreviewBrowser"),
     null,
@@ -92,7 +80,7 @@ add_task(async function test_print_delayed_during_load() {
 
   await BrowserTestUtils.withNewTab(
     `${TEST_PATH}file_window_print_delayed_during_load.html`,
-    async function(browser) {
+    async function (browser) {
       info(
         "Waiting for the first window.print() to run and ensure we're showing the preview..."
       );
@@ -118,12 +106,6 @@ add_task(async function test_print_delayed_during_load() {
 });
 
 add_task(async function test_print_on_sandboxed_frame() {
-  // window.print() only shows print preview when print.tab_modal.enabled is
-  // true.
-  await SpecialPowers.pushPrefEnv({
-    set: [["print.tab_modal.enabled", true]],
-  });
-
   is(
     document.querySelector(".printPreviewBrowser"),
     null,
@@ -132,7 +114,7 @@ add_task(async function test_print_on_sandboxed_frame() {
 
   await BrowserTestUtils.withNewTab(
     `${TEST_PATH}file_window_print_sandboxed_iframe.html`,
-    async function(browser) {
+    async function (browser) {
       info(
         "Waiting for the first window.print() to run and ensure we're showing the preview..."
       );
@@ -151,10 +133,6 @@ add_task(async function test_print_on_sandboxed_frame() {
 });
 
 add_task(async function test_print_another_iframe_and_remove() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["print.tab_modal.enabled", true]],
-  });
-
   is(
     document.querySelector(".printPreviewBrowser"),
     null,
@@ -163,7 +141,7 @@ add_task(async function test_print_another_iframe_and_remove() {
 
   await BrowserTestUtils.withNewTab(
     `${TEST_PATH}file_window_print_another_iframe_and_remove.html`,
-    async function(browser) {
+    async function (browser) {
       let firstFrame = browser.browsingContext.children[0];
       info("Clicking on the button in the first iframe");
       BrowserTestUtils.synthesizeMouse("button", 0, 0, {}, firstFrame);
@@ -181,10 +159,6 @@ add_task(async function test_print_another_iframe_and_remove() {
 });
 
 add_task(async function test_window_print_coop_site() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["print.tab_modal.enabled", true]],
-  });
-
   for (const base of [TEST_PATH, TEST_PATH_SITE]) {
     const url = `${base}file_coop_header2.html`;
     is(
@@ -192,7 +166,7 @@ add_task(async function test_window_print_coop_site() {
       null,
       "There shouldn't be any print preview browser"
     );
-    await BrowserTestUtils.withNewTab(url, async function(browser) {
+    await BrowserTestUtils.withNewTab(url, async function (browser) {
       await new PrintHelper(browser).waitForDialog();
 
       ok(true, "Shouldn't crash");
@@ -202,16 +176,13 @@ add_task(async function test_window_print_coop_site() {
 });
 
 add_task(async function test_window_print_iframe_remove_on_afterprint() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["print.tab_modal.enabled", true]],
-  });
   ok(
     !document.querySelector(".printPreviewBrowser"),
     "There shouldn't be any print preview browser"
   );
   await BrowserTestUtils.withNewTab(
     `${TEST_PATH}file_window_print_iframe_remove_on_afterprint.html`,
-    async function(browser) {
+    async function (browser) {
       await new PrintHelper(browser).waitForDialog();
       let modalBefore = await SpecialPowers.spawn(browser, [], () => {
         return content.windowUtils.isInModalState();
@@ -241,10 +212,6 @@ add_task(async function test_window_print_iframe_remove_on_afterprint() {
 
 // FIXME(emilio): This test doesn't use window.print(), why is it on this file?
 add_task(async function test_focused_browsing_context() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["print.tab_modal.enabled", true]],
-  });
-
   await BrowserTestUtils.openNewForegroundTab(
     gBrowser,
     `${TEST_PATH}longerArticle.html`
@@ -282,12 +249,6 @@ add_task(async function test_focused_browsing_context() {
 });
 
 add_task(async function test_print_with_oop_iframe() {
-  // window.print() only shows print preview when print.tab_modal.enabled is
-  // true.
-  await SpecialPowers.pushPrefEnv({
-    set: [["print.tab_modal.enabled", true]],
-  });
-
   is(
     document.querySelector(".printPreviewBrowser"),
     null,
@@ -296,7 +257,7 @@ add_task(async function test_print_with_oop_iframe() {
 
   await BrowserTestUtils.withNewTab(
     `${TEST_PATH}file_window_print_oop_iframe.html`,
-    async function(browser) {
+    async function (browser) {
       info(
         "Waiting for window.print() to run and ensure we're showing the preview..."
       );
@@ -312,4 +273,64 @@ add_task(async function test_print_with_oop_iframe() {
       gBrowser.getTabDialogBox(browser).abortAllDialogs();
     }
   );
+});
+
+add_task(async function test_base_uri_srcdoc() {
+  is(
+    document.querySelector(".printPreviewBrowser"),
+    null,
+    "There shouldn't be any print preview browser"
+  );
+
+  const PARENT_URI = `${TEST_PATH}file_window_print_srcdoc_base_uri.html`;
+  await BrowserTestUtils.withNewTab(PARENT_URI, async function (browser) {
+    info(
+      "Waiting for window.print() to run and ensure we're showing the preview..."
+    );
+
+    let helper = new PrintHelper(browser);
+    await helper.waitForDialog();
+
+    let previewBrowser = document.querySelector(".printPreviewBrowser");
+    isnot(previewBrowser, null, "Should open the print preview correctly");
+
+    let baseURI = await SpecialPowers.spawn(previewBrowser, [], () => {
+      return content.document.baseURI;
+    });
+
+    is(baseURI, PARENT_URI, "srcdoc print document base uri should be right");
+
+    gBrowser.getTabDialogBox(browser).abortAllDialogs();
+  });
+});
+
+add_task(async function test_print_reentrant() {
+  is(
+    document.querySelector(".printPreviewBrowser"),
+    null,
+    "There shouldn't be any print preview browser"
+  );
+
+  const URI = `${TEST_PATH}file_window_print_reentrant.html`;
+  await BrowserTestUtils.withNewTab(URI, async function (browser) {
+    info(
+      "Waiting for window.print() to run and ensure we're showing the preview..."
+    );
+
+    let helper = new PrintHelper(browser);
+    await helper.waitForDialog();
+
+    let previewBrowser = document.querySelector(".printPreviewBrowser");
+    isnot(previewBrowser, null, "Should open the print preview correctly");
+
+    gBrowser.getTabDialogBox(browser).abortAllDialogs();
+
+    let count = await SpecialPowers.spawn(browser, [], () => {
+      return parseInt(
+        content.document.getElementById("before-print-count").innerText
+      );
+    });
+
+    is(count, 1, "Should've fired beforeprint just once");
+  });
 });

@@ -4,19 +4,66 @@
 
 pictureinpicture-player-title = Gambar-dalam-Gambar
 
-pictureinpicture-pause =
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
+
+## Note that this uses .tooltip rather than the standard '.title'
+## or '.tooltiptext' -  but it has the same effect. Code in the
+## picture-in-picture window will read and copy this to an in-document
+## DOM node that then shows the tooltip.
+##
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
+
+pictureinpicture-pause-btn =
     .aria-label = Tunda
-pictureinpicture-play =
+    .tooltip = Tunda (Spacebar)
+pictureinpicture-play-btn =
     .aria-label = Mainkan
+    .tooltip = Mainkan (Spacebar)
 
-pictureinpicture-mute =
+pictureinpicture-mute-btn =
     .aria-label = Senyap
-pictureinpicture-unmute =
-    .aria-label = Keraskan
+    .tooltip = Senyap ({ $shortcut })
+pictureinpicture-unmute-btn =
+    .aria-label = Suarakan
+    .tooltip = Suarakan ({ $shortcut })
 
-pictureinpicture-unpip =
+pictureinpicture-unpip-btn =
     .aria-label = Kirim kembali ke tab
+    .tooltip = Kembali ke tab
 
-pictureinpicture-close =
+pictureinpicture-close-btn =
     .aria-label = Tutup
+    .tooltip = Tutup ({ $shortcut })
 
+pictureinpicture-subtitles-btn =
+    .aria-label = Subtitel
+    .tooltip = Subtitel
+
+##
+
+## Note that this uses .tooltip rather than the standard '.title'
+## or '.tooltiptext' -  but it has the same effect. Code in the
+## picture-in-picture window will read and copy this to an in-document
+## DOM node that then shows the tooltip.
+
+pictureinpicture-seekbackward-btn =
+    .aria-label = Mundur
+    .tooltip = Mundur (←)
+
+pictureinpicture-seekforward-btn =
+    .aria-label = Maju
+    .tooltip = Maju (→)
+
+##
+
+pictureinpicture-subtitles-label = Subtitel
+
+pictureinpicture-font-size-label = Ukuran fon
+
+pictureinpicture-font-size-small = Kecil
+
+pictureinpicture-font-size-medium = Sedang
+
+pictureinpicture-font-size-large = Besar

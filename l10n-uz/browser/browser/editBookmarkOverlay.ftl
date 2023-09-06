@@ -10,6 +10,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Yashirish
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Barcha xatchoʻplar jildini koʻrsatish
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Yashirish
+
 bookmark-overlay-new-folder-button =
     .label = Yangi jild
     .accesskey = j
@@ -21,4 +27,10 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Barcha teglarni koʻrsatish
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Yashirish
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Barcha teglarni koʻrsatish
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Yashirish
 

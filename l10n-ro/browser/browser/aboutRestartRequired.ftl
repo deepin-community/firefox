@@ -3,8 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 restart-required-title = Repornire necesară
-restart-required-header = Ne pare rău. Trebuie doar să facem un mic lucru pentru a continua.
-restart-required-intro-brand = { -brand-short-name } tocmai a fost actualizat în fundal. Clic pe Repornește { -brand-short-name } pentru a finaliza actualizarea.
-restart-required-description = Îți vom restaura toate paginile, ferestrele și filele după aceea, astfel încât să îți poți relua rapid treburile.
+restart-required-heading = Repornește pentru a continua să folosești { -brand-short-name }
+restart-required-intro = O actualizare pentru { -brand-short-name } a început în fundal. Va trebui să repornești pentru a finaliza actualizarea.
+window-restoration-info = Ferestrele și filele îți vor fi restaurate rapid, însă cele private nu.
 
 restart-button-label = Repornește { -brand-short-name }

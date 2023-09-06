@@ -177,13 +177,13 @@ assert_return(() => invoke($1, `simple-throw-catch`, [0]), [value("i32", 23)]);
 assert_return(() => invoke($1, `simple-throw-catch`, [1]), [value("i32", 42)]);
 
 // ./test/core/try_catch.wast:157
-assert_exception(() => invoke($1, `unreachable-not-caught`, []));
+assert_trap(() => invoke($1, `unreachable-not-caught`, []), `unreachable`);
 
 // ./test/core/try_catch.wast:159
 assert_return(() => invoke($1, `trap-in-callee`, [7, 2]), [value("i32", 3)]);
 
 // ./test/core/try_catch.wast:160
-assert_exception(() => invoke($1, `trap-in-callee`, [1, 0]));
+assert_trap(() => invoke($1, `trap-in-callee`, [1, 0]), `integer divide by zero`);
 
 // ./test/core/try_catch.wast:162
 assert_return(() => invoke($1, `catch-complex-1`, [0]), [value("i32", 3)]);
@@ -204,54 +204,34 @@ assert_return(() => invoke($1, `catch-complex-2`, [1]), [value("i32", 4)]);
 assert_exception(() => invoke($1, `catch-complex-2`, [2]));
 
 // ./test/core/try_catch.wast:170
-assert_return(() => invoke($1, `throw-catch-param-i32`, [0]), [
-  value("i32", 0),
-]);
+assert_return(() => invoke($1, `throw-catch-param-i32`, [0]), [value("i32", 0)]);
 
 // ./test/core/try_catch.wast:171
-assert_return(() => invoke($1, `throw-catch-param-i32`, [1]), [
-  value("i32", 1),
-]);
+assert_return(() => invoke($1, `throw-catch-param-i32`, [1]), [value("i32", 1)]);
 
 // ./test/core/try_catch.wast:172
-assert_return(() => invoke($1, `throw-catch-param-i32`, [10]), [
-  value("i32", 10),
-]);
+assert_return(() => invoke($1, `throw-catch-param-i32`, [10]), [value("i32", 10)]);
 
 // ./test/core/try_catch.wast:174
-assert_return(() => invoke($1, `throw-catch-param-f32`, [value("f32", 5)]), [
-  value("f32", 5),
-]);
+assert_return(() => invoke($1, `throw-catch-param-f32`, [value("f32", 5)]), [value("f32", 5)]);
 
 // ./test/core/try_catch.wast:175
-assert_return(() => invoke($1, `throw-catch-param-f32`, [value("f32", 10.5)]), [
-  value("f32", 10.5),
-]);
+assert_return(() => invoke($1, `throw-catch-param-f32`, [value("f32", 10.5)]), [value("f32", 10.5)]);
 
 // ./test/core/try_catch.wast:177
-assert_return(() => invoke($1, `throw-catch-param-i64`, [5n]), [
-  value("i64", 5n),
-]);
+assert_return(() => invoke($1, `throw-catch-param-i64`, [5n]), [value("i64", 5n)]);
 
 // ./test/core/try_catch.wast:178
-assert_return(() => invoke($1, `throw-catch-param-i64`, [0n]), [
-  value("i64", 0n),
-]);
+assert_return(() => invoke($1, `throw-catch-param-i64`, [0n]), [value("i64", 0n)]);
 
 // ./test/core/try_catch.wast:179
-assert_return(() => invoke($1, `throw-catch-param-i64`, [-1n]), [
-  value("i64", -1n),
-]);
+assert_return(() => invoke($1, `throw-catch-param-i64`, [-1n]), [value("i64", -1n)]);
 
 // ./test/core/try_catch.wast:181
-assert_return(() => invoke($1, `throw-catch-param-f64`, [value("f64", 5)]), [
-  value("f64", 5),
-]);
+assert_return(() => invoke($1, `throw-catch-param-f64`, [value("f64", 5)]), [value("f64", 5)]);
 
 // ./test/core/try_catch.wast:182
-assert_return(() => invoke($1, `throw-catch-param-f64`, [value("f64", 10.5)]), [
-  value("f64", 10.5),
-]);
+assert_return(() => invoke($1, `throw-catch-param-f64`, [value("f64", 10.5)]), [value("f64", 10.5)]);
 
 // ./test/core/try_catch.wast:184
 assert_return(() => invoke($1, `catch-param-i32`, [5]), [value("i32", 5)]);
@@ -266,19 +246,73 @@ assert_return(() => invoke($1, `catchless-try`, [0]), [value("i32", 0)]);
 assert_return(() => invoke($1, `catchless-try`, [1]), [value("i32", 1)]);
 
 // ./test/core/try_catch.wast:191
-assert_malformed(
-  () => instantiate(`(module (func (catch_all))) `),
-  `unexpected token`,
-);
+let $2 = instantiate(`(module
+  (func $$imported-throw (import "test" "throw"))
+  (tag $$e0)
 
-// ./test/core/try_catch.wast:196
+  (func (export "imported-mismatch") (result i32)
+    (try (result i32)
+      (do
+        (try (result i32)
+          (do
+            (i32.const 1)
+            (call $$imported-throw)
+          )
+          (catch $$e0 (i32.const 2))
+        )
+      )
+      (catch_all (i32.const 3))
+    )
+  )
+)`);
+
+// ./test/core/try_catch.wast:211
+assert_return(() => invoke($2, `imported-mismatch`, []), [value("i32", 3)]);
+
+// ./test/core/try_catch.wast:213
+assert_malformed(() => instantiate(`(module (func (catch_all))) `), `unexpected token`);
+
+// ./test/core/try_catch.wast:218
 assert_malformed(
   () => instantiate(`(module (tag $$e) (func (catch $$e))) `),
   `unexpected token`,
 );
 
-// ./test/core/try_catch.wast:201
+// ./test/core/try_catch.wast:223
 assert_malformed(
   () => instantiate(`(module (func (try (do) (catch_all) (catch_all)))) `),
   `unexpected token`,
+);
+
+// ./test/core/try_catch.wast:230
+assert_invalid(
+  () => instantiate(`(module (func (result i32) (try (result i32) (do))))`),
+  `type mismatch: instruction requires [i32] but stack has []`,
+);
+
+// ./test/core/try_catch.wast:232
+assert_invalid(
+  () => instantiate(`(module (func (result i32) (try (result i32) (do (i64.const 42)))))`),
+  `type mismatch: instruction requires [i32] but stack has [i64]`,
+);
+
+// ./test/core/try_catch.wast:234
+assert_invalid(
+  () => instantiate(`(module (tag) (func (try (do) (catch 0 (i32.const 42)))))`),
+  `type mismatch: block requires [] but stack has [i32]`,
+);
+
+// ./test/core/try_catch.wast:236
+assert_invalid(
+  () => instantiate(`(module
+                  (tag (param i64))
+                  (func (result i32)
+                    (try (result i32) (do (i32.const 42)) (catch 0))))`),
+  `type mismatch: instruction requires [i32] but stack has [i64]`,
+);
+
+// ./test/core/try_catch.wast:241
+assert_invalid(
+  () => instantiate(`(module (func (try (do) (catch_all (i32.const 42)))))`),
+  `type mismatch: block requires [] but stack has [i32]`,
 );

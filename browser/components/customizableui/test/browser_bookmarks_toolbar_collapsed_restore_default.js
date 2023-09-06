@@ -5,12 +5,7 @@
 "use strict";
 
 // Restoring default should set Bookmarks Toolbar back to "newtab"
-add_task(async function() {
-  if (!Services.prefs.getBoolPref("browser.toolbars.bookmarks.2h2020", false)) {
-    ok(true, "Skip as behavior only changes when the feature is enabled");
-    return;
-  }
-
+add_task(async function () {
   let prefName = "browser.toolbars.bookmarks.visibility";
   let toolbar = document.querySelector("#PersonalToolbar");
   for (let state of ["always", "never"]) {

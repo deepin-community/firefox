@@ -54,8 +54,8 @@ graph-legend-description = Graf, kotryž cyłkownu ličbu kóždeho typa přesć
 social-tab-title = Přesćěhowaki socialnych medijow
 social-tab-contant = Socialne syće placěruja přesćěhowaki na druhich websydłach, zo bychu slědowali, što online činiće, widźiće a wobkedźbujeće. To předewzaćam socialnych medijow dowola, wjace wo was zhonił hač w profilach socialnych medijow dźěliće. <a data-l10n-name="learn-more-link">Dalše informacije</a>
 
-cookie-tab-title = Slědowace placki mjez sydłami
-cookie-tab-content = Tute placki wam wot sydła do sydła slěduja, zo byšće daty wo tym hromadźili, štož online činiće. Stajeja so wot třećich poskićowarjow kaž na přikład wabjerjo a analyzowe předewzaća, Blokowanje slědowacych plackow mjez sydłami ličbu wabjenjow redukuje, kotrež wam slěduja. <a data-l10n-name="learn-more-link">Dalše informacije</a>
+cookie-tab-title = Sydła přesahowace slědowace placki
+cookie-tab-content = Tute placki wam wot sydła do sydła slěduja, zo byšće daty wo tym hromadźili, štož online činiće. Stajeja so wot třećich poskićowarjow kaž na přikład wabjerjo a analyzowe předewzaća, Blokowanje sydła přesahowacych plackow ličbu wabjenjow redukuje, kotrež wam slěduja. <a data-l10n-name="learn-more-link">Dalše informacije</a>
 
 tracker-tab-title = Slědowacy wobsah
 tracker-tab-description = Websydła móža eksterne wabjenje, wideja a druhi wobsah ze slědowacym kodom začitać. Hdyž slědowacy wobsah blokujeće, móže to pomhać, sydła spěšnišo začitać, ale někotre tłóčatka, formulary a přizjewjenske pola snano hižo njebudu fungować. <a data-l10n-name="learn-more-link">Dalše informacije</a>
@@ -69,22 +69,20 @@ cryptominer-tab-content = Kryptokopanje ličenski wukon wašeho systema wužiwa,
 protections-close-button2 =
     .aria-label = Začinić
     .title = Začinić
-  
+
 mobile-app-title = Wabjenske přesćěhowaki přez dalše graty blokować
 mobile-app-card-content = Mobilny wobhladowak ze zatwarjenym škitom přećiwo wabjenskemu slědowanju wužiwać
 mobile-app-links = Wobhladowak { -brand-product-name } za <a data-l10n-name="android-mobile-inline-link">Android</a> a <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Njezabywajće ženje wjace hesło
-lockwise-title-logged-in2 = Rjadowanje hesłow
-lockwise-header-content = { -lockwise-brand-name } waše hesła we wašim wobhladowaku wěsće składuje.
+passwords-title-logged-in = Waše hesła rjadować
+passwords-header-content = { -brand-product-name } waše hesła we wašim wobhladowaku wěsće składuje.
 lockwise-header-content-logged-in = Składujće a synchronizujće hesła za wšě waše graty.
-protection-report-save-passwords-button = Hesła składować
-    .title = Hesła w { -lockwise-brand-short-name } składować
-protection-report-manage-passwords-button = Hesła rjadować
-    .title = Hesła w { -lockwise-brand-short-name } rjadować
-lockwise-mobile-app-title = Wzmiće swoje hesła wšudźe sobu
-lockwise-no-logins-card-content = Wužiwajće hesła, kotrež sće w { -brand-short-name } składował, na kóždym graće.
-lockwise-app-links = { -lockwise-brand-name } za <a data-l10n-name="lockwise-android-inline-link">Android</a> a <a data-l10n-name="lockwise-ios-inline-link"></a>
+protection-report-passwords-save-passwords-button = Hesła składować
+    .title = Hesła składować
+protection-report-passwords-manage-passwords-button = Hesła rjadować
+    .title = Hesła rjadować
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -229,13 +227,13 @@ bar-tooltip-social =
            *[other] { $count } přesćěhowakow socialnych medijow ({ $percentage } %)
         }
 bar-tooltip-cookie =
-    .title = Slědowace placki mjez sydłami
+    .title = Sydła přesahowace slědowace placki
     .aria-label =
         { $count ->
-            [one] { $count } slědowacy plack mjez sydłami ({ $percentage } %)
-            [two] { $count } slědowacej plackaj mjez sydłami ({ $percentage } %)
-            [few] { $count } slědowace placki mjez sydłami ({ $percentage } %)
-           *[other] { $count } slědowacych plackow mjez sydłami ({ $percentage } %)
+            [one] { $count } sydła přesahowacy slědowacy plack ({ $percentage } %)
+            [two] { $count } sydła přesahowacej slědowacej plackaj ({ $percentage } %)
+            [few] { $count } sydła přesahowace slědowace placki ({ $percentage } %)
+           *[other] { $count } sydła přesahowacych slědowacych plackow ({ $percentage } %)
         }
 bar-tooltip-tracker =
     .title = Slědowacy wobsah

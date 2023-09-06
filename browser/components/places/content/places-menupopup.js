@@ -7,13 +7,26 @@
 /* eslint-env mozilla/browser-window */
 /* import-globals-from controller.js */
 
+// On Wayland when D&D source popup is closed,
+// D&D operation is canceled by window manager.
+function closingPopupEndsDrag(popup) {
+  if (!popup.isWaylandPopup) {
+    return false;
+  }
+  if (popup.isWaylandDragSource) {
+    return true;
+  }
+  for (let childPopup of popup.querySelectorAll("menu > menupopup")) {
+    if (childPopup.isWaylandDragSource) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // This is loaded into all XUL windows. Wrap in a block to prevent
 // leaking to window scope.
 {
-  const { AppConstants } = ChromeUtils.import(
-    "resource://gre/modules/AppConstants.jsm"
-  );
-
   /**
    * This class handles the custom element for the places popup menu.
    */
@@ -31,21 +44,21 @@
         "dragend",
       ];
       for (let event_name of event_names) {
-        this.addEventListener(event_name, ev => this[`on_${event_name}`](ev));
+        this.addEventListener(event_name, this);
       }
     }
 
     get markup() {
       return `
       <html:link rel="stylesheet" href="chrome://global/skin/global.css" />
-      <hbox flex="1">
+      <hbox part="drop-indicator-container">
         <vbox part="drop-indicator-bar" hidden="true">
           <image part="drop-indicator"/>
         </vbox>
         <arrowscrollbox class="menupopup-arrowscrollbox" flex="1" orient="vertical"
                         exportparts="scrollbox: arrowscrollbox-scrollbox"
                         smoothscroll="false" part="arrowscrollbox content">
-          <html:slot></html:slot>
+          <html:slot/>
         </arrowscrollbox>
       </hbox>
     `;
@@ -127,9 +140,10 @@
             // Timer to close a submenu that's been dragged off of.
             // Only close the submenu if the mouse isn't being dragged over any
             // of its child menus.
-            var draggingOverChild = PlacesControllerDragHelper.draggingOverChildNode(
-              this._folder.elt
-            );
+            var draggingOverChild =
+              PlacesControllerDragHelper.draggingOverChildNode(
+                this._folder.elt
+              );
             if (draggingOverChild) {
               this._folder.elt = null;
             }
@@ -138,7 +152,7 @@
             // Close any parent folders which aren't being dragged over.
             // (This is necessary because of the above code that keeps a folder
             // open while its children are being dragged over.)
-            if (!draggingOverChild) {
+            if (!draggingOverChild && !closingPopupEndsDrag(this._self)) {
               this.closeParentMenus();
             }
           } else if (aTimer == this.closeMenuTimer) {
@@ -146,19 +160,23 @@
             var popup = this._self;
             // if we are no more dragging we can leave the menu open to allow
             // for better D&D bookmark organization
-            if (
+            var hidePopup =
               PlacesControllerDragHelper.getSession() &&
               !PlacesControllerDragHelper.draggingOverChildNode(
                 popup.parentNode
-              )
-            ) {
-              popup.hidePopup();
-              // Close any parent menus that aren't being dragged over;
-              // otherwise they'll stay open because they couldn't close
-              // while this menu was being dragged over.
-              this.closeParentMenus();
+              );
+            if (hidePopup) {
+              if (!closingPopupEndsDrag(popup)) {
+                popup.hidePopup();
+                // Close any parent menus that aren't being dragged over;
+                // otherwise they'll stay open because they couldn't close
+                // while this menu was being dragged over.
+                this.closeParentMenus();
+              } else if (popup.isWaylandDragSource) {
+                // Postpone popup hide until drag end on Wayland.
+                this._closeMenuTimer = this.setTimer(this.hoverTime);
+              }
             }
-            this._closeMenuTimer = null;
           }
         },
 
@@ -188,8 +206,12 @@
         //  timers for opening/closing it.
         clear: function OF__clear() {
           if (this._folder.elt && this._folder.elt.lastElementChild) {
-            if (!this._folder.elt.lastElementChild.hasAttribute("dragover")) {
-              this._folder.elt.lastElementChild.hidePopup();
+            var popup = this._folder.elt.lastElementChild;
+            if (
+              !popup.hasAttribute("dragover") &&
+              !closingPopupEndsDrag(popup)
+            ) {
+              popup.hidePopup();
             }
             // remove menuactive style
             this._folder.elt.removeAttribute("_moz-menuactive");
@@ -218,6 +240,9 @@
 
     /**
      * This is the view that manages the popup.
+     *
+     * @see {@link PlacesUIUtils.getViewForNode}
+     * @returns {DOMNode}
      */
     get _rootView() {
       if (!this.__rootView) {
@@ -282,7 +307,6 @@
       if (!elt._placesNode) {
         // If we are dragging over a non places node drop at the end.
         dropPoint.ip = new PlacesInsertionPoint({
-          parentId: PlacesUtils.getConcreteItemId(resultNode),
           parentGuid: PlacesUtils.getConcreteItemGuid(resultNode),
         });
         // We can set folderElt if we are dropping over a static menu that
@@ -313,7 +337,6 @@
         if (eventY - eltY < eltHeight * 0.2) {
           // If mouse is in the top part of the element, drop above folder.
           dropPoint.ip = new PlacesInsertionPoint({
-            parentId: PlacesUtils.getConcreteItemId(resultNode),
             parentGuid: PlacesUtils.getConcreteItemGuid(resultNode),
             orientation: Ci.nsITreeView.DROP_BEFORE,
             tagName,
@@ -323,7 +346,6 @@
         } else if (eventY - eltY < eltHeight * 0.8) {
           // If mouse is in the middle of the element, drop inside folder.
           dropPoint.ip = new PlacesInsertionPoint({
-            parentId: PlacesUtils.getConcreteItemId(elt._placesNode),
             parentGuid: PlacesUtils.getConcreteItemGuid(elt._placesNode),
             tagName,
           });
@@ -334,7 +356,6 @@
         // This is a non-folder node or a readonly folder.
         // If the mouse is above the middle, drop above this item.
         dropPoint.ip = new PlacesInsertionPoint({
-          parentId: PlacesUtils.getConcreteItemId(resultNode),
           parentGuid: PlacesUtils.getConcreteItemGuid(resultNode),
           orientation: Ci.nsITreeView.DROP_BEFORE,
           tagName,
@@ -345,7 +366,6 @@
 
       // Drop below the item.
       dropPoint.ip = new PlacesInsertionPoint({
-        parentId: PlacesUtils.getConcreteItemId(resultNode),
         parentGuid: PlacesUtils.getConcreteItemGuid(resultNode),
         orientation: Ci.nsITreeView.DROP_AFTER,
         tagName,
@@ -364,24 +384,13 @@
     }
 
     on_DOMMenuItemActive(event) {
+      if (super.on_DOMMenuItemActive) {
+        super.on_DOMMenuItemActive(event);
+      }
+
       let elt = event.target;
       if (elt.parentNode != this) {
         return;
-      }
-
-      if (AppConstants.platform === "macosx") {
-        // XXX: The following check is a temporary hack until bug 420033 is
-        // resolved.
-        let parentElt = elt.parent;
-        while (parentElt) {
-          if (
-            parentElt.id == "bookmarksMenuPopup" ||
-            parentElt.id == "goPopup"
-          ) {
-            return;
-          }
-          parentElt = parentElt.parentNode;
-        }
       }
 
       if (window.XULBrowserWindow) {
@@ -440,7 +449,7 @@
         PlacesControllerDragHelper.onDrop(
           dropPoint.ip,
           event.dataTransfer
-        ).catch(Cu.reportError);
+        ).catch(console.error);
         event.preventDefault();
       }
 
@@ -515,11 +524,14 @@
       let newMarginTop = 0;
       if (scrollDir == 0) {
         let elt = this.firstElementChild;
-        while (
-          elt &&
-          event.screenY > elt.screenY + elt.getBoundingClientRect().height / 2
-        ) {
-          elt = elt.nextElementSibling;
+        for (; elt; elt = elt.nextElementSibling) {
+          let height = elt.getBoundingClientRect().height;
+          if (height == 0) {
+            continue;
+          }
+          if (event.screenY <= elt.screenY + height / 2) {
+            break;
+          }
         }
         newMarginTop = elt
           ? elt.screenY - this.scrollBox.screenY
@@ -529,7 +541,8 @@
       }
 
       // Set the new marginTop based on arrowscrollbox.
-      newMarginTop += scrollRect.y - this.scrollBox.getBoundingClientRect().y;
+      newMarginTop +=
+        scrollRect.y - this._indicatorBar.parentNode.getBoundingClientRect().y;
       this._indicatorBar.firstElementChild.style.marginTop =
         newMarginTop + "px";
       this._indicatorBar.hidden = false;
@@ -590,40 +603,12 @@
         "popupshowing",
         "popuppositioned",
         "popupshown",
-        "transitionend",
         "popuphiding",
         "popuphidden",
       ];
       for (let event_name of event_names) {
-        this.addEventListener(event_name, ev => this[`on_${event_name}`](ev));
+        this.addEventListener(event_name, this);
       }
-    }
-
-    static get inheritedAttributes() {
-      return {
-        ".panel-arrowcontent": "align,dir,orient,pack",
-      };
-    }
-
-    get markup() {
-      return `
-      <html:link rel="stylesheet" href="chrome://global/skin/global.css"/>
-      <vbox class="panel-arrowcontainer" flex="1">
-        <box class="panel-arrowbox" part="arrowbox">
-          <image class="panel-arrow" part="arrow"/>
-        </box>
-        <box class="panel-arrowcontent" part="arrowcontent" flex="1">
-          <vbox part="drop-indicator-bar" hidden="true">
-            <image part="drop-indicator"/>
-          </vbox>
-          <arrowscrollbox class="menupopup-arrowscrollbox" flex="1"
-                          orient="vertical" smoothscroll="false"
-                          part="arrowscrollbox content">
-            <html:slot/>
-          </arrowscrollbox>
-        </box>
-      </vbox>
-    `;
     }
 
     connectedCallback() {
@@ -636,93 +621,46 @@
 
       this.setAttribute("flip", "both");
       this.setAttribute("side", "top");
-      this.setAttribute("position", "bottomcenter topright");
-      this.style.pointerEvents = "none";
+      this.setAttribute("position", "bottomright topright");
     }
 
-    get container() {
-      return this.shadowRoot.querySelector(".panel-arrowcontainer");
-    }
-    get arrowbox() {
-      return this.shadowRoot.querySelector(".panel-arrowbox");
-    }
-    get arrow() {
-      return this.shadowRoot.querySelector(".panel-arrow");
-    }
-
-    adjustArrowPosition(event) {
-      let arrow = this.arrow;
-
-      let anchor = this.anchorNode;
-      if (!anchor) {
-        arrow.hidden = true;
+    _setSideAttribute(event) {
+      if (!this.anchorNode) {
         return;
       }
 
-      let container = this.container;
-      let arrowbox = this.arrowbox;
-
       var position = event.alignmentPosition;
-      var offset = event.alignmentOffset;
-
-      this.setAttribute("arrowposition", position);
-
-      // if this panel has a "sliding" arrow, we may have previously set margins...
-      arrowbox.style.removeProperty("transform");
       if (position.indexOf("start_") == 0 || position.indexOf("end_") == 0) {
-        container.setAttribute("orient", "horizontal");
-        arrowbox.setAttribute("orient", "vertical");
-        if (position.indexOf("_after") > 0) {
-          arrowbox.setAttribute("pack", "end");
-        } else {
-          arrowbox.setAttribute("pack", "start");
-        }
-        arrowbox.style.transform = "translate(0, " + -offset + "px)";
-
         // The assigned side stays the same regardless of direction.
         let isRTL = this.matches(":-moz-locale-dir(rtl)");
 
         if (position.indexOf("start_") == 0) {
-          container.style.MozBoxDirection = "reverse";
           this.setAttribute("side", isRTL ? "left" : "right");
         } else {
-          container.style.removeProperty("-moz-box-direction");
           this.setAttribute("side", isRTL ? "right" : "left");
         }
       } else if (
         position.indexOf("before_") == 0 ||
         position.indexOf("after_") == 0
       ) {
-        container.removeAttribute("orient");
-        arrowbox.removeAttribute("orient");
-        if (position.indexOf("_end") > 0) {
-          arrowbox.setAttribute("pack", "end");
-        } else {
-          arrowbox.setAttribute("pack", "start");
-        }
-        arrowbox.style.transform = "translate(" + -offset + "px, 0)";
-
         if (position.indexOf("before_") == 0) {
-          container.style.MozBoxDirection = "reverse";
           this.setAttribute("side", "bottom");
         } else {
-          container.style.removeProperty("-moz-box-direction");
           this.setAttribute("side", "top");
         }
       }
-
-      arrow.hidden = false;
     }
 
     on_popupshowing(event) {
       if (event.target == this) {
         this.setAttribute("animate", "open");
+        this.style.pointerEvents = "none";
       }
     }
 
     on_popuppositioned(event) {
       if (event.target == this) {
-        this.adjustArrowPosition(event);
+        this._setSideAttribute(event);
       }
     }
 
@@ -732,35 +670,7 @@
       }
 
       this.setAttribute("panelopen", "true");
-      let disablePointerEvents;
-      if (!this.hasAttribute("disablepointereventsfortransition")) {
-        let cs = getComputedStyle(this.container);
-        let transitionProp = cs.transitionProperty;
-        let transitionTime = parseFloat(cs.transitionDuration);
-        disablePointerEvents =
-          (transitionProp.includes("transform") || transitionProp == "all") &&
-          transitionTime > 0;
-        this.setAttribute(
-          "disablepointereventsfortransition",
-          disablePointerEvents
-        );
-      } else {
-        disablePointerEvents =
-          this.getAttribute("disablepointereventsfortransition") == "true";
-      }
-      if (!disablePointerEvents) {
-        this.style.removeProperty("pointer-events");
-      }
-    }
-
-    on_transitionend(event) {
-      if (
-        event.originalTarget.classList.contains("panel-arrowcontainer") &&
-        (event.propertyName == "transform" ||
-          event.propertyName == "-moz-window-transform")
-      ) {
-        this.style.removeProperty("pointer-events");
-      }
+      this.style.removeProperty("pointer-events");
     }
 
     on_popuphiding(event) {
@@ -772,9 +682,6 @@
     on_popuphidden(event) {
       if (event.target == this) {
         this.removeAttribute("panelopen");
-        if (this.getAttribute("disablepointereventsfortransition") == "true") {
-          this.style.pointerEvents = "none";
-        }
         this.removeAttribute("animate");
       }
     }

@@ -7,11 +7,11 @@ migration-wizard =
 
 import-from =
     { PLATFORM() ->
-        [windows] Importovať nastavenia, záložky, históriu, heslá a ostatné údaje z aplikácie:
-       *[other] Importovať nastavenia, záložky, históriu, heslá a ostatné údaje z aplikácie:
+        [windows] Importovať nastavenia, záložky, históriu, heslá a ostatné údaje z prehliadača:
+       *[other] Importovať nastavenia, záložky, históriu, heslá a ostatné údaje z prehliadača:
     }
 
-import-from-bookmarks = Importovať záložky z aplikácie:
+import-from-bookmarks = Importovať záložky z prehliadača:
 import-from-ie =
     .label = Microsoft Internet Explorer
     .accesskey = M
@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = a
+import-from-brave =
+    .label = Brave
+    .accesskey = v
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -47,10 +56,13 @@ import-from-chromium =
     .accesskey = u
 import-from-firefox =
     .label = Firefox
-    .accesskey = x
+    .accesskey = F
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Nebol nájdený žiadny program, ktorý by obsahoval záložky, históriu alebo uložené heslá.
 
@@ -61,8 +73,8 @@ import-items-description = Vyberte položky, ktoré chcete importovať:
 
 import-permissions-page-title = Prosím, udeľte povolenia aplikácii { -brand-short-name }
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS vyžaduje, aby ste aplikácii { -brand-short-name } výslovne povolili prístup k záložkám zo Safari. Kliknite na “Pokračovať” a v zobrazenom paneli vyberte súbor “Bookmarks.plist”.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS vyžaduje, aby ste { -brand-short-name(case: "dat") } explicitne povolili prístup k údajom prehliadača Safari. Kliknite na „Pokračovať“, v zobrazenom dialógovom okne Finder vyberte priečinok “Safari“ a potom kliknite na tlačidlo „Otvoriť“.
 
 import-migrating-page-title = Importuje sa…
 
@@ -78,23 +90,9 @@ import-done-description = Úspešne boli importované tieto položky:
 
 import-close-source-browser = Pred pokračovaním sa uistite, že vybraný prehliadač nie je spustený.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Z prehliadača { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Zoznam na prečítanie (zo Safari)
 imported-edge-reading-list = Zoznam na prečítanie (z Microsoft Edge)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = Okná a karty
 browser-data-session-label =
     .value = Okná a karty
+
+browser-data-payment-methods-checkbox =
+    .label = Spôsoby platby
+browser-data-payment-methods-label =
+    .value = Spôsoby platby

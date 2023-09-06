@@ -59,7 +59,7 @@ about-debugging-sidebar-item-connect-button-connection-failed = সংযোগ 
 about-debugging-sidebar-item-connect-button-connection-not-responding = সংযোগটি এখনও অমীমাংসিত, গন্তব্য ব্রাউজারের বার্তাগুলো দেখুন
 
 # Text displayed as connection error in sidebar item when the connection has timed out.
-about-debugging-sidebar-item-connect-button-connection-timeout = সংযোগের সময় উত্তীর্ণ হয়ে গেছে
+about-debugging-sidebar-item-connect-button-connection-timeout = সংযোগের সময়সীমা উত্তীর্ণ হয়েছে
 
 # Text displayed in sidebar items for remote devices where a compatible browser (eg
 # Firefox) has not been detected yet. Typically, Android phones connected via USB with
@@ -79,8 +79,8 @@ about-debugging-sidebar-runtime-item-name-no-device =
     .title = { $displayName }
 
 # Text to show in the footer of the sidebar that links to a help page
-# (currently: https://developer.mozilla.org/docs/Tools/about:debugging)
-about-debugging-sidebar-support = ডিবাগিং সাপোর্ট
+# (currently: https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/)
+about-debugging-sidebar-support = ডিবাগিং সহায়তা
 
 # Text to show as the ALT attribute of a help icon that accompanies the help about
 # debugging link in the footer of the sidebar
@@ -140,7 +140,7 @@ about-debugging-setup-usb-step-enable-debug-firefox2 = অ্যান্ড্�
 about-debugging-setup-usb-step-plug-device = Android ডিভাইসটিকে আপনার কম্পিউটারে সংযুক্ত করুন।
 
 # Text shown in the USB section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/docs/Tools/Remote_Debugging/Debugging_over_USB
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-to-a-remote-device
 about-debugging-setup-usb-troubleshoot = ইউএসবি ডিভাইসে সংযোগ স্থাপনে সমস্যা?<a> ট্রাবলশুট </a>
 
 # Network section of the Setup page
@@ -148,7 +148,7 @@ about-debugging-setup-network =
     .title = নেটওয়ার্ক এর অবস্থান
 
 # Text shown in the Network section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/en-US/docs/Tools/Remote_Debugging/Debugging_over_a_network
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-over-the-network
 about-debugging-setup-network-troubleshoot = নেটওয়ার্ক অবস্থানের মাধ্যমে সংযোগ স্থাপনে সমস্যা? <a>ট্রাবলশুট </a>
 
 # Text of a button displayed after the network locations "Host" input.
@@ -208,18 +208,18 @@ about-debugging-runtime-processes =
 about-debugging-runtime-profile-button2 = প্রোফাইল কর্মক্ষমতা
 
 # This string is displayed in the runtime page if the current configuration of the
-# target runtime is incompatible with service workers. "Learn more" points to MDN.
-# https://developer.mozilla.org/en-US/docs/Tools/about%3Adebugging#Service_workers_not_compatible
+# target runtime is incompatible with service workers. "Learn more" points to:
+# https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#service-workers-not-compatible
 about-debugging-runtime-service-workers-not-compatible = আপনার ব্রাউজার কনফিগারেশন পরিষেবা কর্মীদের সামঞ্জস্যপূর্ণ নয়। <a>আরো জানুন</a>
 
 # This string is displayed in the runtime page if the remote browser version is too old.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
 # { $minVersion } is the minimum version that is compatible with the current Firefox instance (same format)
 about-debugging-browser-version-too-old = সংযুক্ত ব্রাউজারটির একটু পুরানো সংস্করণ ({ $runtimeVersion }) রয়েছে। সর্বনিম্ন সমর্থিত সংস্করণ হলো ({ $minVersion })। এই অসমর্থিত সেটআপ DevTools কে বিকল করে দেয়ার জন্য দায়ি হতে পারে। অনুগ্রহ করে সংযুক্ত ব্রাউজার হালনাগাদ করুন। <a>সমস্যার সমাধান</a>
 
 # This string is displayed in the runtime page if the remote browser version is too recent.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeID } is the build ID of the remote browser (for instance "20181231", format is yyyyMMdd)
 # { $localID } is the build ID of the current Firefox instance (same format)
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
@@ -249,7 +249,7 @@ about-debugging-profiler-dialog-title2 = প্রোফাইলার
 # Clicking on the header of a debug target category will expand or collapse the debug
 # target items in the category. This text is used as ’title’ attribute of the header,
 # to describe this feature.
-about-debugging-collapse-expand-debug-targets = সংকুচিত / প্রসারিত
+about-debugging-collapse-expand-debug-targets = সংকুচিত / প্রসারিত করুন
 
 # Debug Targets strings
 
@@ -352,14 +352,6 @@ about-debugging-worker-push-service =
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Service Worker পরিদর্শন বর্তমানে { -brand-shorter-name } মাল্টিপ্রসেসের জন্য বন্ধ আছে
-
-# Displayed as name for the Main Process debug target in the Processes category. Only for
-# remote runtimes, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-name = প্রধান প্রক্রিয়া
-
-# Displayed as description for the Main Process debug target in the Processes category.
-# Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-description2 = কাঙ্খিত ব্রাউজারের জন্য মূল প্রসেস
 
 # Displayed instead of the Main Process debug target when the preference
 # `devtools.browsertoolbox.fission` is true.

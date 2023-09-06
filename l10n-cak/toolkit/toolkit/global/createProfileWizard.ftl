@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = To'onel richin kinuk'ik taq ruwäch b'i'aj
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Nab'ey taq tzij
-       *[other] Ütz apetik pa { create-profile-window.title }
+       *[other] Ütz apetik pa { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } nuyäk etamab'äl pa ruwi' ri anuk'ulem chuqa' awajowab'äl pa ri ruwäch ab'i'.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Ruk'isib'äl taq tzij
-       *[other] Tajin nitz'aqatisäx ri { create-profile-window.title }
+       *[other] Tajin nitz'aqatisäx ri { create-profile-window2.title }
     }
 
 profile-creation-intro = We ye'anük' k'ïy taq ruwäch b'i'aj, yatikïr naya' ketal ruma ri kib'i'. Yatikïr natz'ib'aj rub'i' achi'el re' chuqa' natz'ib'aj jun chik.

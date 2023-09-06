@@ -6,7 +6,6 @@ privatebrowsingpage-open-private-window-label = Fosgail uinneag phrìobhaideach
     .accesskey = p
 about-private-browsing-search-placeholder = Lorg air an lìon
 about-private-browsing-info-title = Tha thu ann an uinneag phrìobhaideach
-about-private-browsing-info-myths = Faoin-eòlas cumanta mu bhrabhsadh phrìobhaideach
 about-private-browsing-search-btn =
     .title = Lorg air an lìon
 # Variables
@@ -20,10 +19,26 @@ about-private-browsing-handoff-no-engine =
 about-private-browsing-handoff-text = Dèan lorg le { $engine } no cuir a-steach seòladh
 about-private-browsing-handoff-text-no-engine = Cuir ann lorg no seòladh
 about-private-browsing-not-private = Chan eil thu ann an uinneag phrìobhaideach an-dràsta fhèin.
-about-private-browsing-info-description = Falamhaichidh { -brand-short-name } eachdraidh nan lorg is a’ bhrabhsaidh agad nuair a dh’fhàgas tu an aplacaid no nuair a dhùineas tu gach taba agus uinneag ann am brabhsadh prìobhaideach. Fhad ’s nach cuir seo am falach cò thusa mu choinneamh làraichean-lìn no solaraiche nan seirbheisean-lìn agad, cumaidh e na nì thu air loidhne am falach o dhaoine eile a chleachdas an coimpiutair seo.
-about-private-browsing-need-more-privacy = A bheil thu feumach air barrachd prìobhaideachd?
-about-private-browsing-turn-on-vpn = Feuch { -mozilla-vpn-brand-name }
+about-private-browsing-info-description-private-window = Uinneag phrìobhaideach: Falamhaichidh { -brand-short-name } eachdraidh nan lorg is a’ bhrabhsaidh agad nuair a dhùineas tu na h-uinneagan prìobhaideach air fad. Chan eil sin gad fhàgail gu tur gun urra ge-tà.
+about-private-browsing-info-description-simplified = Uinneag phrìobhaideach: Falamhaichidh { -brand-short-name } eachdraidh nan lorg is a’ bhrabhsaidh agad nuair a dhùineas tu na h-uinneagan prìobhaideach air fad ach chan eil sin gad fhàgail gu tur gun urra ge-tà.
 about-private-browsing-learn-more-link = Barrachd fiosrachaidh
+
+about-private-browsing-hide-activity = Falaich do ghnìomhachd is ionad, ge be càit an dèan thu brabhsadh
+about-private-browsing-get-privacy = Dìon do phrìobhaideachd ge be càit an dèan thu brabhsadh
+about-private-browsing-hide-activity-1 = Falaich do ghnìomhachd brabhsaidh is d’ ionad le { -mozilla-vpn-brand-name }. Gheibh thu ceangal tèarainte le aon bhriogadh, fiù air WiFi poblach.
+about-private-browsing-prominent-cta = Dìon do phrìobhaideachd le { -mozilla-vpn-brand-name }
+
+about-private-browsing-focus-promo-cta = Luchdaich a-nuas { -focus-brand-name }
+about-private-browsing-focus-promo-header = { -focus-brand-name }: Brabhsadh prìobhaideach air an rathad
+about-private-browsing-focus-promo-text = Falamhaichidh an aplacaid brabhsaidh phrìobhaideach shònraichte againn an eachdraidh is na briosgaidean agad gach turas.
+
+## The following strings will be used for experiments in Fx99 and Fx100
+
+about-private-browsing-focus-promo-header-b = Dèan brabhsadh prìobhaideach fiù air an fhòn agad
+about-private-browsing-focus-promo-text-b = Cleachd { -focus-brand-name } airson lorg prìobhaideach a dhèanamh nach eil thu airson ’s gum faic am prìomh bhrabhsair mobile agad e.
+about-private-browsing-focus-promo-header-c = An ath-cheum de phrìobhaideachd mobile
+about-private-browsing-focus-promo-text-c = Falamhaichidh { -focus-brand-name } an eachdraidh agad gach turas agus bacaidh e sanasachd is tracaichean.
+
 # This string is the title for the banner for search engine selection
 # in a private window.
 # Variables:
@@ -36,3 +51,24 @@ about-private-browsing-search-banner-description =
     }
 about-private-browsing-search-banner-close-button =
     .aria-label = Dùin
+
+about-private-browsing-promo-close-button =
+    .title = Dùin
+
+## Strings used in a “pin promotion” message, which prompts users to pin a private window
+
+about-private-browsing-pin-promo-header = Brabhsadh prìobhaideach ann am briogadh
+about-private-browsing-pin-promo-link-text =
+    { PLATFORM() ->
+        [macos] Cùm air an doca
+       *[other] Prìnich ri bàr nan saothair
+    }
+about-private-browsing-pin-promo-title = Gun eachdraidh ’s gun bhriosgaidean gan sàbhaladh, air an desktop fhèin. Dèan brabhsadh mar nach eil duine sam bith a’ cumail sùil ort.
+
+## Strings used in a promotion message for cookie banner reduction
+
+# Simplified version of the headline if the original text doesn't work
+# in your language: `See fewer cookie requests`.
+about-private-browsing-cookie-banners-promo-header = Uam-sa brataichean nam briosgaidean!
+about-private-browsing-cookie-banners-promo-button = Nas lugha de bhrataichean bhriosgaidean
+about-private-browsing-cookie-banners-promo-message = Leig le { -brand-short-name } iarrtasan bhriosgaidean a fhreagairt leis fhèin airson ’s nach bris uiread a rudan a-steach ort is tu ri brabhsadh. Mas urrainn dha, diùltaidh { -brand-short-name } gach iarrtas.

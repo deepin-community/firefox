@@ -72,6 +72,12 @@ app-basics-location-service-key-google = Clau del servei d'ubicació de Google
 app-basics-safebrowsing-key-google = Clau del servei de navegació segura Google Safebrowsing
 app-basics-key-mozilla = Clau del servei d'ubicació de Mozilla
 app-basics-safe-mode = Mode segur
+app-basics-memory-size = Mida de la memòria (RAM)
+app-basics-disk-available = Espai de disc disponible
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Mostra-ho en el Finder
@@ -155,6 +161,9 @@ media-capabilities-title = Capacitats multimèdia
 # List all the entries of the database.
 media-capabilities-enumerate = Enumera la base de dades
 
+## Codec support table
+
+
 ##
 
 intl-title = Internacionalització i localització
@@ -231,7 +240,7 @@ blocked-mismatched-version = Blocat per què no coincideixen les versions del co
 try-newer-driver = Blocat pel controlador gràfic. Proveu d'actualitzar-lo a la versió { $driverVersion } o posterior.
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
-clear-type-parameters = Paràmetres ClearType
+clear-type-parameters = Paràmetres de ClearType
 compositing = Composició
 hardware-h264 = Descodificació H264 per maquinari
 main-thread-no-omtc = fil principal, sense OMTC
@@ -265,6 +274,7 @@ webgl2-extensions = Extensions WebGL 2
 unknown-failure = És a la llista de bloquejos; codi d'error { $failureCode }
 d3d11layers-crash-guard = Compositor D3D11
 glcontext-crash-guard = OpenGL
+wmfvpxvideo-crash-guard = Descodificador de vídeo WMF VPX
 reset-on-next-restart = Reinicialitza als valors per defecte en el proper reinici
 gpu-process-kill-button = Finalitza el procés de GPU
 min-lib-versions = Versió mínima esperada
@@ -279,6 +289,7 @@ content-sandbox-level = Nivell de l'entorn de proves de processos de contingut
 effective-content-sandbox-level = Nivell de l'entorn de proves de processos de contingut efectiu
 sandbox-proc-type-content = contingut
 sandbox-proc-type-media-plugin = connector multimèdia
+sandbox-proc-type-data-decoder = descodificador de dades
 startup-cache-title = Memòria cau d'inici
 launcher-process-status-0 = Activat
 launcher-process-status-1 = Desactivat a causa d'un error
@@ -295,13 +306,12 @@ fission-status-experiment-control = Desactivat per un experiment
 fission-status-experiment-treatment = Activat per un experiment
 fission-status-disabled-by-e10s-env = Desactivat per l'entorn
 fission-status-enabled-by-env = Activat per l'entorn
-fission-status-disabled-by-safe-mode = Desactivat pel mode segur
 fission-status-enabled-by-default = Activat per defecte
 fission-status-disabled-by-default = Desactivat per defecte
 fission-status-enabled-by-user-pref = Activat per l'usuari
 fission-status-disabled-by-user-pref = Desactivat per l'usuari
 fission-status-disabled-by-e10s-other = E10s desactivat
-async-pan-zoom = Pan/Zoom asíncrons
+async-pan-zoom = Desplaçament/zoom asíncrons
 apz-none = cap
 wheel-enabled = entrada amb roda activada
 touch-enabled = entrada tàctil activada
@@ -325,6 +335,7 @@ policies-error = Error
 
 support-printing-title = Impressió
 support-printing-troubleshoot = Resolució de problemes
+support-printing-clear-settings-button = Esborra la configuració d'impressió desada
 support-printing-prefs-name = Nom
 support-printing-prefs-value = Valor
 
@@ -336,3 +347,6 @@ support-remote-experiments-branch = Branca de l'experiment
 support-remote-features-title = Funcions remotes
 support-remote-features-name = Nom
 support-remote-features-status = Estat
+
+## Pointing devices
+

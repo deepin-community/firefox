@@ -32,21 +32,47 @@ third-party-tag-shellex = Shell проширења
     .title = Ова врста модула се учитава када отворите дијалог системске датотеке.
 third-party-tag-background = Позадина
     .title = Овај модул није блокирао апликацију јер је учитана у позадини.
-third-party-unsigned-icon =
+third-party-icon-unsigned =
     .title = Овај модул није потписан
-third-party-warning-icon =
-    .title = { -brand-short-name } се срушио у коду овог модула.
+    .alt = Овај модул није потписан
+third-party-icon-warning =
+    .title = { -brand-short-name } се срушио у коду овог модула
+    .alt = { -brand-short-name } се срушио у коду овог модула
 
 third-party-status-loaded = Учитано
 third-party-status-blocked = Блокирано
 third-party-status-redirected = Преусмерено
 
 third-party-button-copy-to-clipboard = Копирај необрађене податке
+third-party-loading-data =
+    .alt = Учитавање информација о систему…
+    .title = Учитавање информација о систему…
 third-party-button-reload = Поново учитајте информације о систему
     .title = Поново учитајте информације о систему
 third-party-button-open =
     .title = Отвори локацију датотеке…
+third-party-button-to-block =
+    .title = Блокирај овај модул
+    .aria-label = Блокирај овај модул
+third-party-button-to-unblock =
+    .title = Тренутно блокирано. Кликните да одблокирате.
+    .aria-label = Тренутно блокирано. Кликните да одблокирате.
+third-party-button-to-unblock-disabled =
+    .title =
+        Тренутно је означено као блокирано, иако је листа блокираних онемогућена за
+        ово { -brand-short-name } покретање. Кликните да одблокирате.
+    .aria-label =
+        Тренутно је означено као блокирано, иако је листа блокираних онемогућена за
+        ово { -brand-short-name } покретање. Кликните да одблокирате.
 third-party-button-expand =
     .title = Прикажи детаљне информације
 third-party-button-collapse =
     .title = Сакриј детаљне информације
+third-party-blocking-requires-restart = Да блокирате модуле треће стране, поново покрените { -brand-short-name }.
+third-party-should-restart-title = Поново покрени { -brand-short-name }
+third-party-restart-now = Поново покрени сада
+third-party-restart-later = Поново покрени касније
+
+third-party-blocked-by-builtin =
+    .title = Блокирао { -brand-short-name }
+    .alt = Блокирао { -brand-short-name }

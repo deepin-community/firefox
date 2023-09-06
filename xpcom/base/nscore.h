@@ -7,14 +7,6 @@
 #ifndef nscore_h___
 #define nscore_h___
 
-/**
- * Make sure that we have the proper platform specific
- * c++ definitions needed by nscore.h
- */
-#ifndef _XPCOM_CONFIG_H_
-#  include "xpcom-config.h"  // IWYU pragma: export
-#endif
-
 /* Definitions of functions and operators that allocate memory. */
 #if !defined(NS_NO_XPCOM) && !defined(MOZ_NO_MOZALLOC)
 #  include "mozilla/mozalloc.h"
@@ -151,19 +143,6 @@
 
 #define XPCOM_API(type) NS_EXTERN_C type
 
-#if (defined(DEBUG) || defined(FORCE_BUILD_REFCNT_LOGGING))
-/* Make refcnt logging part of the build. This doesn't mean that
- * actual logging will occur (that requires a separate enable; see
- * nsTraceRefcnt and nsISupportsImpl.h for more information).  */
-#  define NS_BUILD_REFCNT_LOGGING
-#endif
-
-/* If NO_BUILD_REFCNT_LOGGING is defined then disable refcnt logging
- * in the build. This overrides FORCE_BUILD_REFCNT_LOGGING. */
-#if defined(NO_BUILD_REFCNT_LOGGING)
-#  undef NS_BUILD_REFCNT_LOGGING
-#endif
-
 /* If a program allocates memory for the lifetime of the app, it doesn't make
  * sense to touch memory pages and free that memory at shutdown,
  * unless we are running leak stats.
@@ -243,7 +222,8 @@ template <typename V, typename E>
 class Result;
 
 // Allow MOZ_TRY to handle `nsresult` values.
-inline Result<Ok, nsresult> ToResult(nsresult aValue);
+template <typename E = nsresult>
+inline Result<Ok, E> ToResult(nsresult aValue);
 }  // namespace mozilla
 
 /*

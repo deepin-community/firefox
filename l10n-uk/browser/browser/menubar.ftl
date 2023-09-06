@@ -41,13 +41,6 @@ menu-quit =
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Вийти з { -brand-shorter-name }
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Вийти з { -brand-shorter-name }
 menu-about =
     .label = Про { -brand-shorter-name }
     .accesskey = о
@@ -77,8 +70,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Відкрити файл…
     .accesskey = а
-menu-file-close =
-    .label = Закрити
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Закрити вкладку
+            [one] Закрити { $tabCount } вкладку
+            [few] Закрити { $tabCount } вкладки
+           *[many] Закрити { $tabCount } вкладок
+        }
     .accesskey = к
 menu-file-close-window =
     .label = Закрити вікно
@@ -95,14 +96,11 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Параметри сторінки…
     .accesskey = П
-menu-file-print-preview =
-    .label = Попередній перегляд
-    .accesskey = г
 menu-file-print =
     .label = Друкувати…
     .accesskey = к
 menu-file-import-from-another-browser =
-    .label = Імпорт даних з іншого браузера…
+    .label = Імпортувати з іншого браузера…
     .accesskey = І
 menu-file-go-offline =
     .label = Працювати автономно
@@ -184,6 +182,17 @@ menu-view-full-screen =
     .label = На весь екран
     .accesskey = е
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Перейти в режим читача
+    .accesskey = П
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Закрити режим читача
+    .accesskey = З
+
 ##
 
 menu-view-show-all-tabs =
@@ -212,8 +221,9 @@ menu-history-undo-menu =
     .label = Недавно закриті вкладки
 menu-history-undo-window-menu =
     .label = Недавно закриті вікна
-menu-history-reopen-all-tabs = Знову відкрити всі вкладки
-menu-history-reopen-all-windows = Знову відкрити всі вікна
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Шукати в історії
 
 ## Bookmarks Menu
 
@@ -222,12 +232,15 @@ menu-bookmarks-menu =
     .accesskey = З
 menu-bookmarks-manage =
     .label = Керувати закладками
-menu-bookmark-current-tab =
-    .label = Закласти поточну вкладку
-menu-bookmark-edit =
-    .label = Редагувати цю закладку
+menu-bookmark-tab =
+    .label = Додати цю вкладку до закладок…
+menu-edit-bookmark =
+    .label = Редагувати цю закладку…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Шукати закладки
 menu-bookmarks-all-tabs =
-    .label = Закласти всі вкладки…
+    .label = Додати до закладок усі вкладки…
 menu-bookmarks-toolbar =
     .label = Панель закладок
 menu-bookmarks-other =
@@ -278,8 +291,8 @@ menu-settings =
            *[other] ш
         }
 menu-tools-layout-debugger =
-    .label = Зневаджувач шаблона
-    .accesskey = ш
+    .label = Налагоджувач макета
+    .accesskey = м
 
 ## Window Menu
 
@@ -310,15 +323,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = к
 menu-help-report-site-issue =
     .label = Проблема з сайтом…
-menu-help-feedback-page =
-    .label = Надіслати відгук…
-    .accesskey = Н
+menu-help-share-ideas =
+    .label = Поділіться ідеями та відгуком…
+    .accesskey = о
 menu-help-enter-troubleshoot-mode2 =
     .label = Режим усунення проблем…
     .accesskey = б
 menu-help-exit-troubleshoot-mode =
     .label = Вимкнути режим усунення проблем
     .accesskey = В
+menu-help-switch-device =
+    .label = Перехід на новий пристрій
+    .accesskey = х
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

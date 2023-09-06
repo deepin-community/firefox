@@ -12,7 +12,6 @@ EXPORTS += [
     "nsSpecialCasingData.h",
     "nsUnicharUtils.h",
     "nsUnicodeProperties.h",
-    "nsUnicodeScriptCodes.h",
 ]
 
 UNIFIED_SOURCES += [
@@ -36,5 +35,3 @@ GeneratedFile(
 GeneratedFile("IsCombiningDiacritic.h", script="is_combining_diacritic.py", force=True)
 
 FINAL_LIBRARY = "xul"
-
-REQUIRES_UNIFIED_BUILD = True

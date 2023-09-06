@@ -213,8 +213,10 @@
 #include "mozilla/AutoRestore.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/dom/Element.h"
+#include "mozilla/dom/HTMLInputElement.h"
 #include "mozilla/dom/HTMLSlotElement.h"
 #include "mozilla/dom/ShadowRoot.h"
+#include "mozilla/intl/UnicodeProperties.h"
 #include "nsUnicodeProperties.h"
 #include "nsTextFragment.h"
 #include "nsAttrValue.h"
@@ -303,12 +305,12 @@ static bool DoesNotAffectDirectionOfAncestors(const Element* aElement) {
  * Returns the directionality of a Unicode character
  */
 static Directionality GetDirectionFromChar(uint32_t ch) {
-  switch (mozilla::unicode::GetBidiCat(ch)) {
-    case eCharType_RightToLeft:
-    case eCharType_RightToLeftArabic:
+  switch (intl::UnicodeProperties::GetBidiClass(ch)) {
+    case intl::BidiClass::RightToLeft:
+    case intl::BidiClass::RightToLeftArabic:
       return eDir_RTL;
 
-    case eCharType_LeftToRight:
+    case intl::BidiClass::LeftToRight:
       return eDir_LTR;
 
     default:
@@ -682,6 +684,21 @@ Directionality RecomputeDirectionality(Element* aElement, bool aNotify) {
   }
 
   Directionality dir = eDir_LTR;
+
+  // https://html.spec.whatwg.org/multipage/dom.html#the-directionality:
+  //
+  // If the element is an input element whose type attribute is in the
+  // Telephone state, and the dir attribute is not in a defined state
+  // (i.e. it is not present or has an invalid value)
+  //
+  //     The directionality of the element is 'ltr'.
+  if (auto* input = HTMLInputElement::FromNode(*aElement)) {
+    if (input->ControlType() == FormControlType::InputTel) {
+      aElement->SetDirectionality(dir, aNotify);
+      return dir;
+    }
+  }
+
   if (nsIContent* parent = GetParentOrHostOrSlot(aElement)) {
     if (ShadowRoot* shadow = ShadowRoot::FromNode(parent)) {
       parent = shadow->GetHost();
@@ -1160,12 +1177,15 @@ void SetDirectionalityFromValue(Element* aElement, const nsAString& value,
     dir = eDir_LTR;
   }
 
-  aElement->SetDirectionality(dir, aNotify);
+  if (aElement->GetDirectionality() != dir) {
+    aElement->SetDirectionality(dir, aNotify);
+  }
 }
 
 void OnSetDirAttr(Element* aElement, const nsAttrValue* aNewValue,
                   bool hadValidDir, bool hadDirAuto, bool aNotify) {
-  if (aElement->IsHTMLElement(nsGkAtoms::input)) {
+  if (aElement->IsHTMLElement(nsGkAtoms::input) ||
+      aElement->IsHTMLElement(nsGkAtoms::textarea)) {
     return;
   }
 

@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add-engine-window =
+add-engine-window2 =
     .title = Agiuntar ina maschina da tschertgar
-    .style = width: 40em;
+    .style = min-width: 40em;
 
 add-engine-button = Agiuntar ina maschina persunalisada
 

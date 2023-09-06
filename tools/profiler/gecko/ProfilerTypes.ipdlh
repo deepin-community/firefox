@@ -4,6 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 using class mozilla::TimeStamp from "mozilla/TimeStamp.h";
+using struct mozilla::ProfileGenerationAdditionalInformation from "ProfileAdditionalInformation.h";
 
 namespace mozilla {
 
@@ -27,6 +28,16 @@ struct ProfileBufferChunkManagerUpdate {
   uint64_t releasedBytes;
   TimeStamp oldestDoneTimeStamp;
   ProfileBufferChunkMetadata[] newlyReleasedChunks;
+};
+
+struct GatherProfileProgress {
+  uint32_t progressProportionValueUnderlyingType;
+  nsCString progressLocation;
+};
+
+struct IPCProfileAndAdditionalInformation {
+  Shmem profileShmem;
+  ProfileGenerationAdditionalInformation? additionalInformation;
 };
 
 } // namespace mozilla

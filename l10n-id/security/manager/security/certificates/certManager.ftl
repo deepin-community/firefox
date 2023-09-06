@@ -26,9 +26,9 @@ certmgr-people = Anda memiliki sertifikat di berkas yang mengenali orang ini
 certmgr-server = Entri ini mengidentifikasi pengecualian kesalahan sertifikat server
 certmgr-ca = Anda memiliki sertifikat pada berkas yang mengidentifikasi otoritas sertifikat ini
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Ubah pengaturan kepercayaan sertifikat CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Ubah pengaturan kepercayaan:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Sertifikat ini dapat mengidentifikasi pengguna email.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Hapus Sertifikat
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Host
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Server
-
-certmgr-override-lifetime =
-    .label = Umur
 
 certmgr-token-name =
     .label = Perangkat Keamanan
@@ -186,13 +183,14 @@ delete-email-cert-impact = Jika Anda menghapus sertifikat email seseorang, Anda 
 cert-with-serial =
     .value = Sertifikat dengan nomor seri: { $serialNumber }
 
-## Cert Viewer
-
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Tidak mengirim sertifikat klien
 
 # Used when no cert is stored for an override
 no-cert-stored-for-override = (Tidak Disimpan)
+
+# When a certificate is unavailable (for example, it has been deleted or the token it exists on has been removed).
+certificate-not-available = (Tidak tersedia)
 
 ## Used to show whether an override is temporary or permanent
 

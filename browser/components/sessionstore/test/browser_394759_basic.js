@@ -8,10 +8,6 @@ const TEST_URL =
   "data:text/html;charset=utf-8,<input%20id=txt>" +
   "<input%20type=checkbox%20id=chk>";
 
-const { SessionStore } = ChromeUtils.import(
-  "resource:///modules/sessionstore/SessionStore.jsm"
-);
-
 /**
  * This test ensures that closing a window is a reversible action. We will
  * close the the window, restore it and check that all data has been restored.
@@ -45,7 +41,7 @@ function test() {
           "The closed window was added to Recently Closed Windows"
         );
 
-        let data = SessionStore.getClosedWindowData(false);
+        let data = SessionStore.getClosedWindowData();
 
         // Verify that non JSON serialized data is the same as JSON serialized data.
         is(
@@ -104,9 +100,8 @@ function test() {
             );
 
             let chk;
-            [txt, chk] = newWin2.content.document.querySelectorAll(
-              "#txt, #chk"
-            );
+            [txt, chk] =
+              newWin2.content.document.querySelectorAll("#txt, #chk");
             ok(
               txt.value == uniqueText && chk.checked,
               "The window correctly restored the form"

@@ -10,11 +10,14 @@
 #include "KeyEvent.h"
 #include "PuppetWidget.h"
 #include "nsIContent.h"
+#include "nsITransferable.h"
+#include "nsStringStream.h"
 
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/IMEStateManager.h"
 #include "mozilla/java/GeckoEditableChildWrappers.h"
 #include "mozilla/java/GeckoServiceChildProcessWrappers.h"
+#include "mozilla/jni/NativesInlines.h"
 #include "mozilla/Logging.h"
 #include "mozilla/MiscEvents.h"
 #include "mozilla/Preferences.h"
@@ -400,7 +403,6 @@ static void InitKeyEvent(WidgetKeyboardEvent& aEvent, int32_t aAction,
 
   aEvent.mLocation =
       WidgetKeyboardEvent::ComputeLocationFromCodeValue(aEvent.mCodeNameIndex);
-  aEvent.mTime = aTime;
   aEvent.mTimeStamp = nsWindow::GetEventTimeStamp(aTime);
 }
 
@@ -410,19 +412,14 @@ static nscolor ConvertAndroidColor(uint32_t aArgb) {
 }
 
 static jni::ObjectArray::LocalRef ConvertRectArrayToJavaRectFArray(
-    const nsTArray<LayoutDeviceIntRect>& aRects,
-    const CSSToLayoutDeviceScale aScale) {
+    const nsTArray<LayoutDeviceIntRect>& aRects) {
   const size_t length = aRects.Length();
   auto rects = jni::ObjectArray::New<java::sdk::RectF>(length);
 
   for (size_t i = 0; i < length; i++) {
     const LayoutDeviceIntRect& tmp = aRects[i];
 
-    // Character bounds in CSS units.
-    auto rect =
-        java::sdk::RectF::New(tmp.x / aScale.scale, tmp.y / aScale.scale,
-                              (tmp.x + tmp.width) / aScale.scale,
-                              (tmp.y + tmp.height) / aScale.scale);
+    auto rect = java::sdk::RectF::New(tmp.x, tmp.y, tmp.XMost(), tmp.YMost());
     rects->SetElement(i, rect);
   }
   return rects;
@@ -563,7 +560,6 @@ void GeckoEditableSupport::SendIMEDummyKeyEvent(nsIWidget* aWidget,
   MOZ_ASSERT(mDispatcher);
 
   WidgetKeyboardEvent event(true, msg, aWidget);
-  event.mTime = PR_Now() / 1000;
   // TODO: If we can know scan code of the key event which caused replacing
   //       composition string, we should set mCodeNameIndex here.  Then,
   //       we should rename this method because it becomes not a "dummy"
@@ -574,7 +570,9 @@ void GeckoEditableSupport::SendIMEDummyKeyEvent(nsIWidget* aWidget,
   // actions.  So, we should set their native key binding to none before
   // dispatch to avoid crash on PuppetWidget and avoid running redundant
   // path to look for native key bindings.
-  event.PreventNativeKeyBindings();
+  if (nsIWidget::UsePuppetWidgets()) {
+    event.PreventNativeKeyBindings();
+  }
   NS_ENSURE_SUCCESS_VOID(BeginInputTransaction(mDispatcher));
   mDispatcher->DispatchKeyboardEvent(msg, event, status);
 }
@@ -706,10 +704,10 @@ void GeckoEditableSupport::FlushIMEChanges(FlushChangesFlag aFlags) {
         return;
       }
 
-      selStart = static_cast<int32_t>(
-          querySelectedTextEvent.mReply->SelectionStartOffset());
-      selEnd = static_cast<int32_t>(
-          querySelectedTextEvent.mReply->SelectionEndOffset());
+      selStart =
+          static_cast<int32_t>(querySelectedTextEvent.mReply->AnchorOffset());
+      selEnd =
+          static_cast<int32_t>(querySelectedTextEvent.mReply->FocusOffset());
     }
 
     if (aFlags == FLUSH_FLAG_RECOVER && textTransaction.IsValid()) {
@@ -748,7 +746,8 @@ void GeckoEditableSupport::FlushIMEChanges(FlushChangesFlag aFlags) {
 
   if (textTransaction.IsValid()) {
     mEditable->OnTextChange(textTransaction.text, textTransaction.start,
-                            textTransaction.oldEnd, textTransaction.newEnd);
+                            textTransaction.oldEnd, textTransaction.newEnd,
+                            causedOnlyByComposition);
     if (flushOnException()) {
       return;
     }
@@ -800,25 +799,40 @@ void GeckoEditableSupport::UpdateCompositionRects() {
   RefPtr<TextComposition> composition(GetComposition());
   NS_ENSURE_TRUE_VOID(mDispatcher && widget);
 
-  if (!composition) {
-    return;
+  jni::ObjectArray::LocalRef rects;
+  if (composition) {
+    nsEventStatus status = nsEventStatus_eIgnore;
+    uint32_t offset = composition->NativeOffsetOfStartComposition();
+    WidgetQueryContentEvent queryTextRectsEvent(true, eQueryTextRectArray,
+                                                widget);
+    queryTextRectsEvent.InitForQueryTextRectArray(
+        offset, composition->String().Length());
+    widget->DispatchEvent(&queryTextRectsEvent, status);
+    rects = ConvertRectArrayToJavaRectFArray(
+        queryTextRectsEvent.Succeeded()
+            ? queryTextRectsEvent.mReply->mRectArray
+            : CopyableTArray<mozilla::LayoutDeviceIntRect>());
+  } else {
+    rects = ConvertRectArrayToJavaRectFArray(
+        CopyableTArray<mozilla::LayoutDeviceIntRect>());
   }
 
+  WidgetQueryContentEvent queryCaretRectEvent(true, eQueryCaretRect, widget);
+  WidgetQueryContentEvent::Options options;
+  options.mRelativeToInsertionPoint = true;
+  queryCaretRectEvent.InitForQueryCaretRect(0, options);
+
   nsEventStatus status = nsEventStatus_eIgnore;
-  uint32_t offset = composition->NativeOffsetOfStartComposition();
-  WidgetQueryContentEvent queryTextRectsEvent(true, eQueryTextRectArray,
-                                              widget);
-  queryTextRectsEvent.InitForQueryTextRectArray(offset,
-                                                composition->String().Length());
-  widget->DispatchEvent(&queryTextRectsEvent, status);
+  widget->DispatchEvent(&queryCaretRectEvent, status);
+  auto caretRect =
+      queryCaretRectEvent.Succeeded()
+          ? java::sdk::RectF::New(queryCaretRectEvent.mReply->mRect.x,
+                                  queryCaretRectEvent.mReply->mRect.y,
+                                  queryCaretRectEvent.mReply->mRect.XMost(),
+                                  queryCaretRectEvent.mReply->mRect.YMost())
+          : java::sdk::RectF::New();
 
-  auto rects = ConvertRectArrayToJavaRectFArray(
-      queryTextRectsEvent.Succeeded()
-          ? queryTextRectsEvent.mReply->mRectArray
-          : CopyableTArray<mozilla::LayoutDeviceIntRect>(),
-      widget->GetDefaultScale());
-
-  mEditable->UpdateCompositionRects(rects);
+  mEditable->UpdateCompositionRects(rects, caretRect);
 }
 
 void GeckoEditableSupport::OnImeSynchronize() {
@@ -966,11 +980,13 @@ bool GeckoEditableSupport::DoReplaceText(int32_t aStart, int32_t aEnd,
       }
     }
   } else if (composition->String().Equals(string)) {
-    /* If the new text is the same as the existing composition text,
-     * the NS_COMPOSITION_CHANGE event does not generate a text
-     * change notification. However, the Java side still expects
-     * one, so we manually generate a notification. */
-    IMENotification::TextChangeData dummyChange(aStart, aEnd, aEnd, false,
+    // If the new text is the same as the existing composition text,
+    // the NS_COMPOSITION_CHANGE event does not generate a text
+    // change notification. However, the Java side still expects
+    // one, so we manually generate a notification.
+    //
+    // Also, since this is IME change, we have to set mCausedOnlyByComposition.
+    IMENotification::TextChangeData dummyChange(aStart, aEnd, aEnd, true,
                                                 false);
     PostFlushIMEChanges();
     mIMESelectionChanged = true;
@@ -978,13 +994,9 @@ bool GeckoEditableSupport::DoReplaceText(int32_t aStart, int32_t aEnd,
     textChanged = true;
   }
 
-  if (StaticPrefs::
-          intl_ime_hack_on_any_apps_fire_key_events_for_composition() ||
-      mInputContext.mMayBeIMEUnaware) {
-    SendIMEDummyKeyEvent(widget, eKeyDown);
-    if (!mDispatcher || widget->Destroyed()) {
-      return false;
-    }
+  SendIMEDummyKeyEvent(widget, eKeyDown);
+  if (!mDispatcher || widget->Destroyed()) {
+    return false;
   }
 
   if (needDispatchCompositionStart) {
@@ -996,7 +1008,6 @@ bool GeckoEditableSupport::DoReplaceText(int32_t aStart, int32_t aEnd,
     }
   } else if (performDeletion) {
     WidgetContentCommandEvent event(true, eContentCommandDelete, widget);
-    event.mTime = PR_Now() / 1000;
     widget->DispatchEvent(&event, status);
     if (!mDispatcher || widget->Destroyed()) {
       return false;
@@ -1019,12 +1030,9 @@ bool GeckoEditableSupport::DoReplaceText(int32_t aStart, int32_t aEnd,
     return false;
   }
 
-  if (StaticPrefs::
-          intl_ime_hack_on_any_apps_fire_key_events_for_composition() ||
-      mInputContext.mMayBeIMEUnaware) {
-    SendIMEDummyKeyEvent(widget, eKeyUp);
-    // Widget may be destroyed after dispatching the above event.
-  }
+  SendIMEDummyKeyEvent(widget, eKeyUp);
+  // Widget may be destroyed after dispatching the above event.
+
   return textChanged;
 }
 
@@ -1146,7 +1154,7 @@ bool GeckoEditableSupport::DoUpdateComposition(int32_t aStart, int32_t aEnd,
     string = composition->String();
   }
 
-  ALOGIME("IME: IME_SET_TEXT: text=\"%s\", length=%u, range=%zu",
+  ALOGIME("IME: IME_SET_TEXT: text=\"%s\", length=%zu, range=%zu",
           NS_ConvertUTF16toUTF8(string).get(), string.Length(),
           mIMERanges->Length());
 
@@ -1347,11 +1355,14 @@ nsresult GeckoEditableSupport::NotifyIME(
       ALOGIME("IME: NOTIFY_IME_OF_SELECTION_CHANGE: SelectionChangeData=%s",
               ToString(aNotification.mSelectionChangeData).c_str());
 
-      mCachedSelection.mStartOffset =
-          aNotification.mSelectionChangeData.mOffset;
-      mCachedSelection.mEndOffset =
-          aNotification.mSelectionChangeData.mString->Length() +
-          aNotification.mSelectionChangeData.mOffset;
+      if (aNotification.mSelectionChangeData.HasRange()) {
+        mCachedSelection.mStartOffset = static_cast<int32_t>(
+            aNotification.mSelectionChangeData.AnchorOffset());
+        mCachedSelection.mEndOffset = static_cast<int32_t>(
+            aNotification.mSelectionChangeData.FocusOffset());
+      } else {
+        mCachedSelection.Reset();
+      }
 
       PostFlushIMEChanges();
       mIMESelectionChanged = true;
@@ -1434,10 +1445,10 @@ GeckoEditableSupport::GetIMENotificationRequests() {
 }
 
 static bool ShouldKeyboardDismiss(const nsAString& aInputType,
-                                  const nsAString& aInputmode) {
+                                  const nsAString& aInputMode) {
   // Some input type uses the prompt to input value. So it is unnecessary to
   // show software keyboard.
-  return aInputmode.EqualsLiteral("none") || aInputType.EqualsLiteral("date") ||
+  return aInputMode.EqualsLiteral("none") || aInputType.EqualsLiteral("date") ||
          aInputType.EqualsLiteral("time") ||
          aInputType.EqualsLiteral("month") ||
          aInputType.EqualsLiteral("week") ||
@@ -1460,7 +1471,7 @@ void GeckoEditableSupport::SetInputContext(const InputContext& aContext,
 
   if (mInputContext.mIMEState.mEnabled != IMEEnabled::Disabled &&
       !ShouldKeyboardDismiss(mInputContext.mHTMLInputType,
-                             mInputContext.mHTMLInputInputmode) &&
+                             mInputContext.mHTMLInputMode) &&
       aAction.UserMightRequestOpenVKB()) {
     // Don't reset keyboard when we should simply open the vkb
     mEditable->NotifyIME(EditableListener::NOTIFY_IME_OPEN_VKB);
@@ -1496,10 +1507,10 @@ void GeckoEditableSupport::NotifyIMEContext(const InputContext& aContext,
            ? EditableListener::IME_FOCUS_NOT_CHANGED
            : 0);
 
-  mEditable->NotifyIMEContext(
-      static_cast<int32_t>(aContext.mIMEState.mEnabled),
-      aContext.mHTMLInputType, aContext.mHTMLInputInputmode,
-      aContext.mActionHint, aContext.mAutocapitalize, flags);
+  mEditable->NotifyIMEContext(static_cast<int32_t>(aContext.mIMEState.mEnabled),
+                              aContext.mHTMLInputType, aContext.mHTMLInputMode,
+                              aContext.mActionHint, aContext.mAutocapitalize,
+                              flags);
 }
 
 InputContext GeckoEditableSupport::GetInputContext() {
@@ -1627,6 +1638,46 @@ nsWindow* GeckoEditableSupport::GetNsWindow() const {
   }
 
   return acc->GetNsWindow();
+}
+
+void GeckoEditableSupport::OnImeInsertImage(jni::ByteArray::Param aData,
+                                            jni::String::Param aMimeType) {
+  AutoGeckoEditableBlocker blocker(this);
+
+  nsCString mimeType(aMimeType->ToCString());
+  nsCOMPtr<nsIInputStream> byteStream;
+
+  nsresult rv = NS_NewByteInputStream(
+      getter_AddRefs(byteStream),
+      mozilla::Span(
+          reinterpret_cast<const char*>(aData->GetElements().Elements()),
+          aData->Length()),
+      NS_ASSIGNMENT_COPY);
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return;
+  }
+
+  nsCOMPtr<nsITransferable> trans =
+      do_CreateInstance("@mozilla.org/widget/transferable;1");
+  if (NS_WARN_IF(!trans)) {
+    return;
+  }
+  trans->Init(nullptr);
+  rv = trans->SetTransferData(mimeType.get(), byteStream);
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return;
+  }
+
+  nsCOMPtr<nsIWidget> widget = GetWidget();
+  if (NS_WARN_IF(!widget) || NS_WARN_IF(widget->Destroyed())) {
+    return;
+  }
+
+  WidgetContentCommandEvent command(true, eContentCommandPasteTransferable,
+                                    widget);
+  command.mTransferable = trans.forget();
+  nsEventStatus status;
+  widget->DispatchEvent(&command, status);
 }
 
 }  // namespace widget

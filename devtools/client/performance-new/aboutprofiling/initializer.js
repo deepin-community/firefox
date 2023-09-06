@@ -20,7 +20,7 @@
   // the section on "Do not overload require" for more information.
 
   const { BrowserLoader } = ChromeUtils.import(
-    "resource://devtools/client/shared/browser-loader.js"
+    "resource://devtools/shared/loader/browser-loader.js"
   );
   const browserLoader = BrowserLoader({
     baseURI: "resource://devtools/client/performance-new/aboutprofiling",
@@ -43,32 +43,30 @@
  * JSM module, that can be shared with the DevTools keyboard shortcut manager.
  */
 const { presets } = ChromeUtils.import(
-  "resource://devtools/client/performance-new/popup/background.jsm.js"
+  "resource://devtools/client/performance-new/shared/background.jsm.js"
 );
 
-const ReactDOM = require("devtools/client/shared/vendor/react-dom");
-const React = require("devtools/client/shared/vendor/react");
-const FluentReact = require("devtools/client/shared/vendor/fluent-react");
+const ReactDOM = require("resource://devtools/client/shared/vendor/react-dom.js");
+const React = require("resource://devtools/client/shared/vendor/react.js");
+const FluentReact = require("resource://devtools/client/shared/vendor/fluent-react.js");
 const {
   FluentL10n,
-} = require("devtools/client/shared/fluent-l10n/fluent-l10n");
+} = require("resource://devtools/client/shared/fluent-l10n/fluent-l10n.js");
 const Provider = React.createFactory(
-  require("devtools/client/shared/vendor/react-redux").Provider
+  require("resource://devtools/client/shared/vendor/react-redux.js").Provider
 );
 const ProfilerPreferenceObserver = React.createFactory(
-  require("devtools/client/performance-new/components/ProfilerPreferenceObserver")
+  require("resource://devtools/client/performance-new/components/shared/ProfilerPreferenceObserver.js")
 );
 const LocalizationProvider = React.createFactory(
   FluentReact.LocalizationProvider
 );
 const AboutProfiling = React.createFactory(
-  require("devtools/client/performance-new/components/AboutProfiling")
+  require("resource://devtools/client/performance-new/components/aboutprofiling/AboutProfiling.js")
 );
-const createStore = require("devtools/client/shared/redux/create-store");
-const reducers = require("devtools/client/performance-new/store/reducers");
-const actions = require("devtools/client/performance-new/store/actions");
-const { Ci } = require("chrome");
-const Services = require("Services");
+const createStore = require("resource://devtools/client/shared/redux/create-store.js");
+const reducers = require("resource://devtools/client/performance-new/store/reducers.js");
+const actions = require("resource://devtools/client/performance-new/store/actions.js");
 
 /**
  * Initialize the panel by creating a redux store, and render the root component.
@@ -91,8 +89,10 @@ async function gInit(
   await l10n.init(
     [
       "devtools/client/perftools.ftl",
+      // For -brand-shorter-name used in some profiler preset descriptions.
+      "branding/brand.ftl",
       // Needed for the onboarding UI
-      "browser/branding/brandings.ftl",
+      "toolkit/branding/brandings.ftl",
     ],
     {
       setAttributesOnDocument: true,

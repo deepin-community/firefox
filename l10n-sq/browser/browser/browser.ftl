@@ -14,11 +14,12 @@
 # The last two are for use when there *is* a content title.
 # Variables:
 #  $content-title (String): the title of the web content.
-browser-main-window =
+browser-main-window-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } (Shfletim Privat)
-    .data-content-title-default = { $content-title } - { -brand-full-name }
-    .data-content-title-private = { $content-title } - { -brand-full-name } (Shfletim Privat)
+    .data-title-private = Shfletim Privat { -brand-full-name }
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — Shfletim Privat { -brand-full-name }
+
 # These are the default window titles on macOS. The first two are for use when
 # there is no content title:
 #
@@ -33,16 +34,21 @@ browser-main-window =
 #
 # Variables:
 #  $content-title (String): the title of the web content.
-browser-main-window-mac =
+browser-main-window-mac-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } - (Shfletim Privat)
+    .data-title-private = { -brand-full-name } — Shfletim Privat
     .data-content-title-default = { $content-title }
-    .data-content-title-private = { $content-title } - (Shfletim Privat)
+    .data-content-title-private = { $content-title } — Shfletim Privat
+
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+
+# The non-variable portion of this MUST match the translation of
+# "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
+private-browsing-shortcut-text-2 = Shfletim Privat { -brand-shortcut-name }
 
 ##
 
@@ -73,20 +79,20 @@ urlbar-xr-notification-anchor =
     .tooltiptext = Hapni panel lejesh për realitet virtual
 urlbar-storage-access-anchor =
     .tooltiptext = Hapni panelin e lejeve mbi veprimtari shfletimi
-urlbar-translate-notification-anchor =
-    .tooltiptext = Përkthejeni këtë faqe
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = Administroni ndarjen me sajtin të dritares ose ekranit tuaj
 urlbar-indexed-db-notification-anchor =
     .tooltiptext = Hapni panelin për depozitim jashtë linje
 urlbar-password-notification-anchor =
     .tooltiptext = Hapni panel mesazhi ruajtje fjalëkalimi
-urlbar-translated-notification-anchor =
-    .tooltiptext = Administroni përkthim faqeje
 urlbar-plugins-notification-anchor =
     .tooltiptext = Administroni përdorim shtojcash
 urlbar-web-rtc-share-devices-notification-anchor =
     .tooltiptext = Administroni ndarjen me sajtin të kamerës dhe/ose mikrofonit tuaj
+# "Speakers" is used in a general sense that might include headphones or
+# another audio output connection.
+urlbar-web-rtc-share-speaker-notification-anchor =
+    .tooltiptext = Administroni ndarje altoparlantësh të tjerë me sajtin
 urlbar-autoplay-notification-anchor =
     .tooltiptext = Hap panel vetëluajtje
 urlbar-persistent-storage-notification-anchor =
@@ -96,11 +102,24 @@ urlbar-addons-notification-anchor =
 urlbar-tip-help-icon =
     .title = Merrni ndihmë
 urlbar-search-tips-confirm = OK, E mora vesh
+urlbar-search-tips-confirm-short = E mora vesh
 # Read out before Urlbar Tip text content so screenreader users know the
 # subsequent text is a tip offered by the browser. It should end in a colon or
 # localized equivalent.
 urlbar-tip-icon-description =
     .alt = Ndihmëz:
+
+urlbar-result-menu-button =
+    .title = Hape menunë
+urlbar-result-menu-learn-more =
+    .label = Mësoni më tepër
+    .accesskey = M
+urlbar-result-menu-remove-from-history =
+    .label = Hiqe prej historiku
+    .accesskey = H
+urlbar-result-menu-tip-get-help =
+    .label = Merrni ndihmë
+    .accesskey = d
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -109,6 +128,10 @@ urlbar-tip-icon-description =
 
 urlbar-search-tips-onboard = Shtypni më pak, gjeni më shumë: Kërkoni me { $engineName } drejt e nga shtylla juaj e adresave.
 urlbar-search-tips-redirect-2 = Filloni kërkimin tuaj te shtylla e adresave që të shihni sugjerime nga { $engineName } dhe nga historiku juaj i shfletimit.
+
+# Make sure to match the name of the Search panel in settings.
+urlbar-search-tips-persist = Kërkimi sapo u bë më i thjeshtë. Provoni ta bëni kërkimin tuaj më specifik, këtu te shtylla e adresave. Që të shfaqet URL, vizitoni Kërkim, te rregullimet.
+
 # Prompts users to use the Urlbar when they are typing in the domain of a
 # search engine, e.g. google.com or amazon.com.
 urlbar-tabtosearch-onboard = Përzgjidhni këtë shkurtore, që të gjeni më shpejt ç’ju duhet.
@@ -118,6 +141,7 @@ urlbar-tabtosearch-onboard = Përzgjidhni këtë shkurtore, që të gjeni më sh
 urlbar-search-mode-bookmarks = Faqerojtës
 urlbar-search-mode-tabs = Skeda
 urlbar-search-mode-history = Historik
+urlbar-search-mode-actions = Veprime
 
 ##
 
@@ -145,10 +169,12 @@ urlbar-midi-blocked =
     .tooltiptext = E keni bllokuar hyrjen MIDI për këtë sajt.
 urlbar-install-blocked =
     .tooltiptext = Ia keni bllokuar këtij sajti instalimin e shtesave.
+
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
 urlbar-star-edit-bookmark =
     .tooltiptext = Përpunoni këtë faqerojtës ({ $shortcut })
+
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
@@ -156,10 +182,12 @@ urlbar-star-add-bookmark =
 
 ## Page Action Context Menu
 
-page-action-manage-extension =
+page-action-manage-extension2 =
     .label = Administroni Zgjerime…
-page-action-remove-extension =
+    .accesskey = A
+page-action-remove-extension2 =
     .label = Hiqe Zgjerimin
+    .accesskey = H
 
 ## Auto-hide Context Menu
 
@@ -175,8 +203,10 @@ full-screen-exit =
 # This string prompts the user to use the list of search shortcuts in
 # the Urlbar and searchbar.
 search-one-offs-with-title = Këtë herë kërko me:
+
 search-one-offs-change-settings-compact-button =
     .tooltiptext = Ndryshoni rregullime kërkimi
+
 search-one-offs-context-open-new-tab =
     .label = Kërkoni në Skedë të Re
     .accesskey = S
@@ -186,12 +216,14 @@ search-one-offs-context-set-as-default =
 search-one-offs-context-set-as-default-private =
     .label = Vëre si Motor Kërkimi Parazgjedhje për Dritare Private
     .accesskey = V
+
 # Search engine one-off buttons with an @alias shortcut/keyword.
 # Variables:
 #  $engineName (String): The name of the engine.
 #  $alias (String): The @alias shortcut/keyword.
 search-one-offs-engine-with-alias =
     .tooltiptext = { $engineName } ({ $alias })
+
 # Shown when adding new engines from the address bar shortcut buttons or context
 # menu, or from the search bar shortcut buttons.
 # Variables:
@@ -218,11 +250,89 @@ search-one-offs-tabs =
     .tooltiptext = Skeda ({ $restrict })
 search-one-offs-history =
     .tooltiptext = Historik ({ $restrict })
+search-one-offs-actions =
+    .tooltiptext = Veprime ({ $restrict })
+
+## QuickActions are shown in the urlbar as the user types a matching string
+## The -cmd- strings are comma separated list of keywords that will match
+## the action.
+
+# Opens the about:addons page in the home / recommendations section
+quickactions-addons = Shihini Shtesa
+quickactions-cmd-addons2 = shtesa
+
+# Opens the bookmarks library window
+quickactions-bookmarks2 = Administroni faqerojtës
+quickactions-cmd-bookmarks = faqerojtës
+
+# Opens a SUMO article explaining how to clear history
+quickactions-clearhistory = Spastro Historikun
+quickactions-cmd-clearhistory = spastroni historikun
+
+# Opens about:downloads page
+quickactions-downloads2 = Shihni shkarkime
+quickactions-cmd-downloads = shkarkime
+
+# Opens about:addons page in the extensions section
+quickactions-extensions = Administroni zgjerime
+quickactions-cmd-extensions = zgjerime
+
+# Opens the devtools web inspector
+quickactions-inspector2 = Hap Mjete Zhvilluesish
+quickactions-cmd-inspector = mbikëqyrës, mjete zhvilluesish
+
+# Opens about:logins
+quickactions-logins2 = Administroni fjalëkalime
+quickactions-cmd-logins = kredenciale hyrjesh, fjalëkalime
+
+# Opens about:addons page in the plugins section
+quickactions-plugins = Administroni shtojca
+quickactions-cmd-plugins = shtojca
+
+# Opens the print dialog
+quickactions-print2 = Shtypni faqe
+quickactions-cmd-print = shtype
+
+# Opens a new private browsing window
+quickactions-private2 = Hap dritare private
+quickactions-cmd-private = shfletim privat
+
+# Opens a SUMO article explaining how to refresh
+quickactions-refresh = Rifreskoni { -brand-short-name }-in
+quickactions-cmd-refresh = rifreskoje
+
+# Restarts the browser
+quickactions-restart = Riniseni { -brand-short-name }-in
+quickactions-cmd-restart = rinise
+
+# Opens the screenshot tool
+quickactions-screenshot3 = Bëni një foto ekrani
+quickactions-cmd-screenshot = foto ekrani
+
+# Opens about:preferences
+quickactions-settings2 = Administroni rregullime
+quickactions-cmd-settings = rregullime, parapëlqime, mundësi
+
+# Opens about:addons page in the themes section
+quickactions-themes = Administroni tema
+quickactions-cmd-themes = tema
+
+# Opens a SUMO article explaining how to update the browser
+quickactions-update = Përditësoni { -brand-short-name }
+quickactions-cmd-update = përditësoje
+
+# Opens the view-source UI with current pages source
+quickactions-viewsource2 = Shihni Burim Faqeje
+quickactions-cmd-viewsource = shihni burimin, burim
+
+# Tooltip text for the help button shown in the result.
+quickactions-learn-more =
+    .title = Mësoni më tepër rreth Veprimesh të shpejta
 
 ## Bookmark Panel
 
-bookmarks-add-bookmark = Shto Faqerojtës
-bookmarks-edit-bookmark = Përpunoni Faqerojtësin
+bookmarks-add-bookmark = Shto faqerojtës
+bookmarks-edit-bookmark = Përpunoni faqerojtësin
 bookmark-panel-cancel =
     .label = Anuloje
     .accesskey = A
@@ -236,10 +346,11 @@ bookmark-panel-remove =
         }
     .accesskey = H
 bookmark-panel-show-editor-checkbox =
-    .label = Shfaqe përpunuesin kur bëhen ruajtje
+    .label = Shfaqe përpunuesin, kur bëhen ruajtje
     .accesskey = S
 bookmark-panel-save-button =
     .label = Ruaje
+
 # Width of the bookmark panel.
 # Should be large enough to fully display the Done and
 # Cancel/Remove Bookmark buttons.
@@ -267,6 +378,7 @@ identity-passive-loaded = Pjesë të kësaj faqeje (fjala vjen, figura) s'janë 
 identity-active-loaded = E keni çaktivizuar mbrojtjen për këtë faqe.
 identity-weak-encryption = Kjo faqe përdor fshehtëzim të dobët.
 identity-insecure-login-forms = Kredencialet e hyrjeve të dhëna në këtë faqe mund të komprometohen.
+
 identity-https-only-connection-upgraded = (u përmirësua në HTTPS)
 identity-https-only-label = Mënyra Vetëm-HTTPS
 identity-https-only-dropdown-on =
@@ -278,16 +390,18 @@ identity-https-only-dropdown-off-temporarily =
 identity-https-only-info-turn-on2 = Aktivizoni Mënyrën Vetëm-HTTPS për këtë sajt, nëse doni që { -brand-short-name }-i të përmirësojë lidhjen, kur është e mundur.
 identity-https-only-info-turn-off2 = Nëse faqja duket të jetë e dëmtuar, mund të doni të çaktivizoni Mënyrën Vetëm-HTTPS- për këtë sajt, që të ringarkohet duke përdorur HTTP jo të sigurt.
 identity-https-only-info-no-upgrade = S’arrihet të përmirësohet lidhja nga HTTP.
+
 identity-permissions-storage-access-header = Cookies nga sajti në sajt
 identity-permissions-storage-access-hint = Këto palë mund të përdorin “cross-site cookies” dhe të dhëna sajtesh, ndërkohë që jeni në këtë sajt.
 identity-permissions-storage-access-learn-more = Mësoni më tepër
+
 identity-permissions-reload-hint = Mund t'ju duhet të ringarkoni faqen që të hyjnë në fuqi ndryshimet.
 identity-clear-site-data =
     .label = Spastroni Cookie-t dhe të Dhëna Sajti…
 identity-connection-not-secure-security-view = S'jeni lidhur në mënyrë të siguruar me këtë sajt.
 identity-connection-verified = Jeni lidhur në mënyrë të siguruar me këtë sajt.
 identity-ev-owner-label = Dëshmi lëshuar për:
-identity-description-custom-root = Mozilla nuk e njeh këtë lëshues dëshmish. Mund të jetë shtuar nga sistemi juaj operativ ose nga një përgjegjës. <label data-l10n-name="link">Mësoni Më Tepër</label>
+identity-description-custom-root2 = Mozilla nuk e njeh këtë lëshues dëshmish. Mund të jetë shtuar nga sistemi juaj operativ ose nga një përgjegjës.
 identity-remove-cert-exception =
     .label = Hiqeni Përjashtimin
     .accesskey = H
@@ -295,14 +409,12 @@ identity-description-insecure = Lidhja juaj te ky sajt, s'është private. Të d
 identity-description-insecure-login-forms = Të dhënat e hyrjes që dhatë në këtë faqe s'janë të sigurta dhe mund të komprometohen.
 identity-description-weak-cipher-intro = Lidhja juaj te ky sajt përdor fshehtëzim të dobët dhe s'është private.
 identity-description-weak-cipher-risk = Të tjerët mund të shohin të dhënat tuaja ose të ndryshojnë sjelljen e sajtit.
-identity-description-active-blocked = { -brand-short-name }-i ka bllokuar pjesë të kësaj faqeje që s'janë të sigurta. <label data-l10n-name="link">Mësoni Më Tepër</label>
+identity-description-active-blocked2 = { -brand-short-name }-i ka bllokuar pjesë të kësaj faqeje që s'janë të sigurta.
 identity-description-passive-loaded = Lidhja juaj s'është private dhe të dhënat që ndani me të tjerët në këtë saj mund të shihen nga të tjerë.
-identity-description-passive-loaded-insecure = Ky sajt përmban lëndë që s'është e sigurt (fjala vjen, figura). <label data-l10n-name="link">Mësoni Më Tepër</label>
-identity-description-passive-loaded-mixed = Edhe pse { -brand-short-name }-i ka bllokuar një pjesë të lëndës, në këtë faqe prapë ka lëndë që s'është e sigurt (fjala vjen, figura). <label data-l10n-name="link">Mësoni Më Tepër</label>
+identity-description-passive-loaded-insecure2 = Ky sajt përmban lëndë që s'është e sigurt (fjala vjen, figura).
+identity-description-passive-loaded-mixed2 = Edhe pse { -brand-short-name }-i ka bllokuar një pjesë të lëndës, në këtë faqe prapë ka lëndë që s'është e sigurt (fjala vjen, figura).
 identity-description-active-loaded = Ky sajt përmban lëndë që s'është e sigurt (fjala vjen, programthe) dhe lidhja juaj me të s'është private.
 identity-description-active-loaded-insecure = Të dhënat që ndani me këtë sajt mund të shihen nga të tjerë (fjala vjen, fjalëkalime, mesazhe, karta krediti, etj.).
-identity-learn-more =
-    .value = Mësoni Më Tepër
 identity-disable-mixed-content-blocking =
     .label = Çaktivizoje mbrojtjen për tani
     .accesskey = Ç
@@ -310,7 +422,7 @@ identity-enable-mixed-content-blocking =
     .label = Aktivizo mbrojtjen
     .accesskey = A
 identity-more-info-link-text =
-    .label = Më Tepër të Dhëna
+    .label = Më tepër hollësi
 
 ## Window controls
 
@@ -343,11 +455,13 @@ browser-tab-mute =
         [1] HESHTOJE SKEDËN
        *[other] HESHTO { $count } SKEDA
     }
+
 browser-tab-unmute =
     { $count ->
         [1] KTHEJI ZËRIN SKEDËS
        *[other] KTHEJU ZËRIN { $count } SKEDAVE
     }
+
 browser-tab-unblock =
     { $count ->
         [1] LUAJE SKEDËN
@@ -359,6 +473,7 @@ browser-tab-unblock =
 browser-import-button2 =
     .label = Importoni faqerojtës…
     .tooltiptext = Importoni faqerojtës nga një shfletues tjetër në { -brand-short-name }
+
 bookmarks-toolbar-empty-message = Për përdorim të shpejtë, vendosini faqerojtësit këtu te paneli i faqerojtësve. <a data-l10n-name="manage-bookmarks">Administroni faqerojtës…</a>
 
 ## WebRTC Pop-up notifications
@@ -375,14 +490,10 @@ popup-select-microphone-icon =
     .tooltiptext = Mikrofon
 popup-select-speaker-icon =
     .tooltiptext = Altoparlantë
+popup-select-window-or-screen =
+    .label = Dritare ose skenë:
+    .accesskey = D
 popup-all-windows-shared = Do të ndahen me të tjerët krejt dritaret e dukshme në ekranin tuaj.
-popup-screen-sharing-block =
-    .label = Bllokoje
-    .accesskey = B
-popup-screen-sharing-always-block =
-    .label = Bllokoje përherë
-    .accesskey = B
-popup-mute-notifications-checkbox = Mos shfaq njoftime sajti, kur ndahen gjëra me të tjerë
 
 ## WebRTC window or screen share tab switch warning
 
@@ -395,14 +506,15 @@ sharing-warning-disable-for-session =
 
 ## DevTools F12 popup
 
-enable-devtools-popup-description = Që të përdorni shkurtoren F12, së pari hapni DevTools që nga menuja Zhvillues Web.
+enable-devtools-popup-description2 = Që të përdorni shkurtoren F12, së pari hapni DevTools që nga menuja Mjete Shfletuesi.
 
 ## URL Bar
 
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
-    .placeholder = Bëni kërkim ose jepni adresë
+    .placeholder = Bëni kërkim, ose jepni adresë
+
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -411,6 +523,7 @@ urlbar-placeholder =
 urlbar-placeholder-search-mode-web-2 =
     .placeholder = Kërkoni në Web
     .aria-label = Kërkoni me { $name }
+
 # This placeholder is used in search mode with search engines that search a
 # specific site (e.g., Amazon).
 # Variables
@@ -419,22 +532,32 @@ urlbar-placeholder-search-mode-web-2 =
 urlbar-placeholder-search-mode-other-engine =
     .placeholder = Jepni terma kërkimi
     .aria-label = Kërkoni me { $name }
+
 # This placeholder is used when searching bookmarks.
 urlbar-placeholder-search-mode-other-bookmarks =
     .placeholder = Jepni terma kërkimi
     .aria-label = Kërko te faqerojtësit
+
 # This placeholder is used when searching history.
 urlbar-placeholder-search-mode-other-history =
     .placeholder = Jepni terma kërkimi
     .aria-label = Kërko në historik
+
 # This placeholder is used when searching open tabs.
 urlbar-placeholder-search-mode-other-tabs =
     .placeholder = Jepni terma kërkimi
     .aria-label = Kërko në skeda
+
+# This placeholder is used when searching quick actions.
+urlbar-placeholder-search-mode-other-actions =
+    .placeholder = Jepni terma kërkimi
+    .aria-label = Veprime kërkimi
+
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
     .placeholder = Kërkoni me { $name } ose jepni adresë
+
 # Variables
 #  $component (String): the name of the component which forces remote control.
 #    Example: "DevTools", "Marionette", "RemoteAgent".
@@ -444,9 +567,11 @@ urlbar-permissions-granted =
     .tooltiptext = I keni akorduar leje shtesë këtij sajti.
 urlbar-switch-to-tab =
     .value = Kalo te skeda:
+
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Zgjerim:
+
 urlbar-go-button =
     .tooltiptext = Shkoni te adresa e dhënë te Shtylla e Vendndodhjeve
 urlbar-page-action-button =
@@ -504,10 +629,40 @@ urlbar-result-action-calculator-result = = { $result }
 ## In these actions "Search" is a verb, followed by where the search is performed.
 
 urlbar-result-action-search-bookmarks = Kërkoni Te Faqerojtësit
-urlbar-result-action-search-history = Kërkoni te Historiku
+urlbar-result-action-search-history = Kërkoni Në Historik
 urlbar-result-action-search-tabs = Kërkoni Në Skeda
+urlbar-result-action-search-actions = Veprime Kërkimi
 
 ## Labels shown above groups of urlbar results
+
+# A label shown above the "Firefox Suggest" (bookmarks/history) group in the
+# urlbar results.
+urlbar-group-firefox-suggest =
+    .label = { -firefox-suggest-brand-name }
+
+# A label shown above the search suggestions group in the urlbar results. It
+# should use sentence case.
+# Variables
+#  $engine (String): the name of the search engine providing the suggestions
+urlbar-group-search-suggestions =
+    .label = Sugjerime nga { $engine }
+
+# A label shown above Quick Actions in the urlbar results.
+urlbar-group-quickactions =
+    .label = Veprime të Shpejta
+
+## Reader View toolbar buttons
+
+# This should match menu-view-enter-readerview in menubar.ftl
+reader-view-enter-button =
+    .aria-label = Kalo në Pamjen Lexues
+# This should match menu-view-close-readerview in menubar.ftl
+reader-view-close-button =
+    .aria-label = Mbylle Pamjen Lexues
+
+## Picture-in-Picture urlbar button
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
 
 
 ## Full Screen and Pointer Lock UI
@@ -517,9 +672,12 @@ urlbar-result-action-search-tabs = Kërkoni Në Skeda
 #  $domain (String): the domain that is full screen, e.g. "mozilla.org"
 fullscreen-warning-domain = <span data-l10n-name="domain">{ $domain }</span> tani është sa krejt ekrani
 fullscreen-warning-no-domain = Ky dokument tani shfaqet sa krejt ekrani
+
+
 fullscreen-exit-button = Dilni nga Sa Krejt Ekrani (Esc)
 # "esc" is lowercase on mac keyboards, but uppercase elsewhere.
 fullscreen-exit-mac-button = Dilni Nga Sa Krejt Ekrani (esc)
+
 # Please ensure that the domain stays in the `<span data-l10n-name="domain">` markup.
 # Variables
 #  $domain (String): the domain that is using pointer-lock, e.g. "mozilla.org"
@@ -528,17 +686,10 @@ pointerlock-warning-no-domain = Kursori është nën kontrollin e kursorit tuaj.
 
 ## Subframe crash notification
 
-crashed-subframe-message = <strong>Një pjesë e kësaj faqeje u vithis.</strong> Për t’ia bërë të ditur { -brand-product-name }-it këtë çështje dhe për t’u zgjidhur më shpejt, ju lutemi, parashtroni një raport.
-crashed-subframe-learnmore-link =
-    .value = Mësoni Më Tepër
-crashed-subframe-submit =
-    .label = Parashtroni njoftim
-    .accesskey = P
-
 ## Bookmarks panels, menus and toolbar
 
 bookmarks-manage-bookmarks =
-    .label = Administroni Faqerojtës
+    .label = Administroni faqerojtës
 bookmarks-recent-bookmarks-panel-subheader = Faqerojtës Së Fundi
 bookmarks-toolbar-chevron =
     .tooltiptext = Shfaqni më tepër faqerojtës
@@ -550,6 +701,11 @@ bookmarks-other-bookmarks-menu =
     .label = Faqerojtës të Tjerë
 bookmarks-mobile-bookmarks-menu =
     .label = Faqerojtës Celulari
+
+## Variables:
+##   $isVisible (boolean): if the specific element (e.g. bookmarks sidebar,
+##                         bookmarks toolbar, etc.) is visible or not.
+
 bookmarks-tools-sidebar-visibility =
     .label =
         { $isVisible ->
@@ -574,12 +730,16 @@ bookmarks-tools-menu-button-visibility =
             [true] Hiqe Menunë e Faqerojtësve nga Paneli
            *[other] Shtoje Menunë e Faqerojtësve te Paneli
         }
+
+##
+
 bookmarks-search =
     .label = Kërkoni Te Faqerojtësit
 bookmarks-tools =
     .label = Mjete Faqeruajtjeje
-bookmarks-bookmark-edit-panel =
-    .label = Përpunojeni Këtë Faqerojtës
+bookmarks-subview-edit-bookmark =
+    .label = Përpunojeni këtë faqerojtës…
+
 # The aria-label is a spoken label that should not include the word "toolbar" or
 # such, because screen readers already know that this container is a toolbar.
 # This avoids double-speaking.
@@ -593,9 +753,10 @@ bookmarks-toolbar-placeholder =
     .title = Objekte Paneli Faqerojtësish
 bookmarks-toolbar-placeholder-button =
     .label = Objekte Paneli Faqerojtësish
+
 # "Bookmark" is a verb, as in "Add current tab to bookmarks".
-bookmarks-current-tab =
-    .label = Faqeruaj Skedën e Tanishme
+bookmarks-subview-bookmark-tab =
+    .label = Faqeruani skedën e tanishme…
 
 ## Library Panel items
 
@@ -619,11 +780,6 @@ repair-text-encoding-button =
 ## Customize Toolbar Buttons
 
 # Variables:
-#  $shortcut (String): keyboard shortcut to open the add-ons manager
-toolbar-addons-themes-button =
-    .label = Shtesa dhe Tema
-    .tooltiptext = Administroni shtesat dhe temat tuaja ({ $shortcut })
-# Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
 toolbar-settings-button =
     .label = Rregullime
@@ -633,40 +789,44 @@ toolbar-settings-button =
            *[other] Hapni rregullimet
         }
 
-## More items
-
-more-menu-go-offline =
-    .label = Puno i Palidhur
-    .accesskey = o
 toolbar-overflow-customize-button =
     .label = Përshtateni Panelin…
     .accesskey = P
+
 toolbar-button-email-link =
     .label = Dërgojeni Lidhjen me Email
     .tooltiptext = Dërgoni me email një lidhje për te kjo faqe
+
+toolbar-button-logins =
+    .label = Fjalëkalime
+    .tooltiptext = Shihni dhe administroni fjalëkalimet tuaj të ruajtur
+
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
     .label = Ruaje Faqen
     .tooltiptext = Ruajeni këtë faqe ({ $shortcut })
+
 # Variables:
 #  $shortcut (String): keyboard shortcut to open a local file
 toolbar-button-open-file =
     .label = Hap Kartelë
     .tooltiptext = Hapni kartelë ({ $shortcut })
+
 toolbar-button-synced-tabs =
     .label = Skeda të Njëkohësuara
     .tooltiptext = Shfaqni skeda nga pajisje të tjera
+
 # Variables
 # $shortcut (string) - Keyboard shortcut to open a new private browsing window
 toolbar-button-new-private-window =
-    .label = Dritare e Re Private
-    .tooltiptext = Hapni një dritare të re Shfletimi Privat ({ $shortcut })
+    .label = Dritare e re private
+    .tooltiptext = Hapni një dritare të re shfletimi privat ({ $shortcut })
 
 ## EME notification panel
 
 eme-notifications-drm-content-playing = Audio ose video në këtë sajt përdor software DRM, çka mund të kufizojë ato që { -brand-short-name }-i mund t’ju lejojë të bëni me të.
-eme-notifications-drm-content-playing-manage = Administroni Rregullime
+eme-notifications-drm-content-playing-manage = Administroni rregullime
 eme-notifications-drm-content-playing-manage-accesskey = A
 eme-notifications-drm-content-playing-dismiss = Hidhe tej
 eme-notifications-drm-content-playing-dismiss-accesskey = H
@@ -678,19 +838,11 @@ panel-save-update-password = Fjalëkalim
 
 ## Add-on removal warning
 
-# Variables:
-#  $name (String): The name of the addon that will be removed.
-addon-removal-title = Të hiqet { $name }?
-addon-removal-abuse-report-checkbox = Raportojeni këtë zgjerim te { -vendor-short-name }
-
-## Remote / Synced tabs
-
-remote-tabs-manage-account =
-    .label = Administroni Llogari
-remote-tabs-sync-now = Njëkohësoji Tani
-
 ##
 
+# "More" item in macOS share menu
+menu-share-more =
+    .label = Më tepër…
 ui-tour-info-panel-close =
     .tooltiptext = Mbylleni
 
@@ -700,6 +852,7 @@ ui-tour-info-panel-close =
 popups-infobar-allow =
     .label = Lejo flluska nga { $uriHost }
     .accesskey = L
+
 popups-infobar-block =
     .label = Blloko flluska nga { $uriHost }
     .accesskey = L
@@ -708,10 +861,29 @@ popups-infobar-block =
 
 popups-infobar-dont-show-message =
     .label = Mos e shfaq këtë mesazh kur bllokohen flluska
-    .accesskey = D
+    .accesskey = M
+
+edit-popup-settings =
+    .label = Administroni rregullime për flluskat…
+    .accesskey = A
+
 picture-in-picture-hide-toggle =
     .label = Fshih Buton Picture-in-Picture
     .accesskey = F
+
+## Since the default position for PiP controls does not change for RTL layout,
+## right-to-left languages should use "Left" and "Right" as in the English strings,
+
+picture-in-picture-move-toggle-right =
+    .label = Kaloje Butonin për “Picture-in-Picture” në të Djathtë Toggle to Right Side
+    .accesskey = D
+
+picture-in-picture-move-toggle-left =
+    .label = Kaloje Butonin për “Picture-in-Picture” në të Majtë
+    .accesskey = M
+
+##
+
 
 # Navigator Toolbox
 
@@ -720,35 +892,121 @@ picture-in-picture-hide-toggle =
 # this container is a toolbar. This avoids double-speaking.
 navbar-accessible =
     .aria-label = Lëvizje
+
 navbar-downloads =
     .label = Shkarkime
+
 navbar-overflow =
     .tooltiptext = Më tepër mjete…
+
 # Variables:
 #   $shortcut (String): keyboard shortcut to print the page
 navbar-print =
     .label = Shtype
     .tooltiptext = Shtypeni këtë faqe… ({ $shortcut })
-navbar-print-tab-modal-disabled =
-    .label = Shtype
-    .tooltiptext = Shtypeni këtë faqe
+
 navbar-home =
     .label = Kreu
     .tooltiptext = Faqe Hyrëse e { -brand-short-name }-it
+
 navbar-library =
     .label = Arkiv
     .tooltiptext = Shihni historikun, faqerojtësit e ruajtur, etj
+
 navbar-search =
     .title = Kërkoni
-navbar-accessibility-indicator =
-    .tooltiptext = Me Veçori Përdorshmërie të Aktivizuara
+
 # Name for the tabs toolbar as spoken by screen readers. The word
 # "toolbar" is appended automatically and should not be included in
 # in the string
 tabs-toolbar =
     .aria-label = Skedash shfletuesi
+
 tabs-toolbar-new-tab =
     .label = Skedë e Re
+
 tabs-toolbar-list-all-tabs =
     .label = Paraqiti krejt skedat
     .tooltiptext = Paraqiti krejt skedat
+
+## Infobar shown at startup to suggest session-restore
+
+# <img data-l10n-name="icon"/> will be replaced by the application menu icon
+restore-session-startup-suggestion-message = <strong>Të hapen skeda të mëparshme?</strong> Sesionin tuaj të mëparshëm mund ta riktheni që nga menuja e aplikacionit { -brand-short-name } <img data-l10n-name="icon"/>, nën Historik.
+restore-session-startup-suggestion-button = Tregomëni se si
+
+## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
+
+data-reporting-notification-message = { -brand-short-name } dërgon vetvetiu disa të dhëna te { -vendor-short-name } që të mund të përmirësojmë punimin e tij për ju.
+data-reporting-notification-button =
+    .label = Zgjidhni Ç’Të Ndahet Me Të Tjerët
+    .accesskey = Z
+
+# Label for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-label = Shfletim privat
+
+## Unified extensions (toolbar) button
+
+unified-extensions-button =
+    .label = Zgjerime
+    .tooltiptext = Zgjerime
+
+## Unified extensions button when permission(s) are needed.
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-permissions-needed =
+    .label = Zgjerime
+    .tooltiptext = Zgjerime
+
+## Unified extensions button when some extensions are quarantined.
+## Note that the new line is intentionally part of the tooltip.
+
+## Autorefresh blocker
+
+refresh-blocked-refresh-label = { -brand-short-name }-i i pengoi kësaj faqeje ringarkimin e vetvetishëm.
+refresh-blocked-redirect-label = { -brand-short-name }-i i pengoi kësaj faqeje ridrejtimin e vetvetishëm te një faqe tjetër.
+
+refresh-blocked-allow =
+    .label = Lejoje
+    .accesskey = L
+
+## Firefox Relay integration
+
+## Popup Notification
+
+
+## Add-on Pop-up Notifications
+
+popup-notification-addon-install-unsigned =
+    .value = (E paverifikuar)
+popup-notification-xpinstall-prompt-learn-more = Mësoni më tepër rreth instalimit të shtesave në mënyrë të parrezik
+
+## Pop-up warning
+
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-message =
+    { $popupCount ->
+        [one] { -brand-short-name } pengoi këtë sajt të hapë një dritare flluskë.
+       *[other] { -brand-short-name } pengoi kë të sajt të hapë { $popupCount } dritare flluska.
+    }
+# The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-message = { -brand-short-name } e pengoi këtë sajt të hapë më shumë se { $popupCount } dritare flluska.
+popup-warning-button =
+    .label =
+        { PLATFORM() ->
+            [windows] Mundësi
+           *[other] Parapëlqime
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [windows] M
+           *[other] P
+        }
+
+# Variables:
+#   $popupURI (String): the URI for the pop-up window
+popup-show-popup-menuitem =
+    .label = Shfaq '{ $popupURI }'

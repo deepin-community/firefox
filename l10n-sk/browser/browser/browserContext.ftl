@@ -86,38 +86,38 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
-main-context-menu-bookmark-add =
-    .aria-label = Pridať stránku medzi záložky
+main-context-menu-bookmark-page =
+    .aria-label = Pridať stránku medzi záložky…
     .accesskey = m
-    .tooltiptext = Pridá stránku medzi záložky
+    .tooltiptext = Pridať stránku medzi záložky
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
+# Cannot be shown at the same time as main-context-menu-edit-bookmark-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = Pridať stránku medzi záložky
+main-context-menu-bookmark-page-mac =
+    .label = Pridať stránku medzi záložky…
     .accesskey = m
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-add-mac,
+# Cannot be shown at the same time as main-context-menu-bookmark-page-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-edit-mac =
-    .label = Upraviť záložku
+main-context-menu-edit-bookmark-mac =
+    .label = Upraviť záložku…
     .accesskey = U
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Pridať stránku medzi záložky
-    .accesskey = m
-    .tooltiptext = Pridá stránku medzi záložky ({ $shortcut })
-main-context-menu-bookmark-change =
-    .aria-label = Upraviť túto záložku
-    .accesskey = m
-    .tooltiptext = Umožní upraviť túto záložku
+main-context-menu-bookmark-page-with-shortcut =
+    .aria-label = Pridať stránku medzi záložky…
+    .accesskey = r
+    .tooltiptext = Pridať stránku medzi záložky ({ $shortcut })
+main-context-menu-edit-bookmark =
+    .aria-label = Upraviť záložku…
+    .accesskey = U
+    .tooltiptext = Upraviť záložku
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Upraviť túto záložku
-    .accesskey = m
-    .tooltiptext = Umožní upraviť túto záložku ({ $shortcut })
+main-context-menu-edit-bookmark-with-shortcut =
+    .aria-label = Upraviť záložku…
+    .accesskey = U
+    .tooltiptext = Upraviť záložku ({ $shortcut })
 main-context-menu-open-link =
     .label = Otvoriť odkaz
     .accesskey = d
@@ -133,9 +133,9 @@ main-context-menu-open-link-new-window =
 main-context-menu-open-link-new-private-window =
     .label = Otvoriť odkaz v novom súkromnom okne
     .accesskey = s
-main-context-menu-bookmark-link =
-    .label = Pridať odkaz medzi záložky
-    .accesskey = o
+main-context-menu-bookmark-link-2 =
+    .label = Pridať odkaz medzi záložky…
+    .accesskey = m
 main-context-menu-save-link =
     .label = Uložiť cieľ odkazu ako…
     .accesskey = d
@@ -150,9 +150,17 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = Kopírovať e-mailovú adresu
     .accesskey = e
+main-context-menu-copy-phone =
+    .label = Kopírovať telefónne číslo
+    .accesskey = t
 main-context-menu-copy-link-simple =
     .label = Kopírovať odkaz
     .accesskey = a
+# This command copies the link, removing additional
+# query parameters used to track users across sites.
+main-context-menu-strip-on-share-link =
+    .label = Kopírovať odkaz bez sledovacích prvkov
+    .accesskey = b
 
 ## Media (video/audio) controls
 ##
@@ -174,7 +182,7 @@ main-context-menu-media-mute =
     .accesskey = m
 main-context-menu-media-unmute =
     .label = Zapnúť zvuk
-    .accesskey = m
+    .accesskey = Z
 main-context-menu-media-play-speed-2 =
     .label = Rýchlosť
     .accesskey = R
@@ -209,11 +217,11 @@ main-context-menu-media-video-fullscreen =
     .accesskey = c
 main-context-menu-media-video-leave-fullscreen =
     .label = Ukončiť režim celej obrazovky
-    .accesskey = U
+    .accesskey = c
 # This is used when right-clicking on a video in the
 # content area when the Picture-in-Picture feature is enabled.
 main-context-menu-media-watch-pip =
-    .label = Sledovať ako obraz v obraze
+    .label = Sledovať v režime Obraz v obraze
     .accesskey = S
 main-context-menu-image-reload =
     .label = Znova načítať obrázok
@@ -245,6 +253,9 @@ main-context-menu-image-email =
 main-context-menu-image-set-image-as-background =
     .label = Nastaviť ako pozadie pracovnej plochy…
     .accesskey = p
+main-context-menu-image-copy-text =
+    .label = Kopírovať text z obrázka
+    .accesskey = x
 main-context-menu-image-info =
     .label = Zobraziť informácie o obrázku
     .accesskey = f
@@ -266,12 +277,6 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Odoslať zvuk…
     .accesskey = v
-main-context-menu-plugin-play =
-    .label = Aktivovať tento zásuvný modul
-    .accesskey = A
-main-context-menu-plugin-hide =
-    .label = Skryť tento zásuvný modul
-    .accesskey = m
 main-context-menu-save-to-pocket =
     .label = Uložiť stránku do { -pocket-brand-name(case: "gen") }
     .accesskey = k
@@ -292,6 +297,9 @@ main-context-menu-use-saved-password =
 
 ##
 
+main-context-menu-use-relay-mask =
+    .label = Použiť e-mailovú masku služby { -relay-brand-short-name }
+    .accesskey = R
 main-context-menu-suggest-strong-password =
     .label = Navrhnúť silné heslo…
     .accesskey = h
@@ -319,9 +327,9 @@ main-context-menu-frame-open-window =
 main-context-menu-frame-reload =
     .label = Obnoviť rámec
     .accesskey = b
-main-context-menu-frame-bookmark =
-    .label = Vytvoriť záložku pre tento rámec
-    .accesskey = V
+main-context-menu-frame-add-bookmark =
+    .label = Pridať rámec medzi záložky…
+    .accesskey = r
 main-context-menu-frame-save-as =
     .label = Uložiť rámec ako…
     .accesskey = m
@@ -334,9 +342,9 @@ main-context-menu-frame-view-source =
 main-context-menu-frame-view-info =
     .label = Zobraziť informácie o rámci
     .accesskey = i
-main-context-menu-print-selection =
-    .label = Tlač výberu
-    .accesskey = r
+main-context-menu-print-selection-2 =
+    .label = Tlačiť výber…
+    .accesskey = b
 main-context-menu-view-selection-source =
     .label = Zobraziť zdrojový kód výberu
     .accesskey = r
@@ -368,3 +376,6 @@ main-context-menu-eme-learn-more =
 main-context-menu-open-link-in-container-tab =
     .label = Otvoriť odkaz na novej karte kontajnera { $containerName }
     .accesskey = z
+main-context-menu-reveal-password =
+    .label = Odhaliť heslo
+    .accesskey = h

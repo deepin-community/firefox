@@ -23,6 +23,8 @@ profile-selection-delete-button =
     .label = Eyða notanda…
     .accesskey = E
 
+profile-selection-conflict-message = Annað eintak af { -brand-product-name } hefur gert breytingar á notandasniðum. Þú verður að endurræsa { -brand-short-name } áður en þú gerir fleiri breytingar.
+
 ## Messages used in the profile manager
 
 profile-manager-description = { -brand-short-name } geymir fyrir þig upplýsingar um stillingar, og aðra hluti í notandastillingum.
@@ -32,5 +34,5 @@ profile-manager-work-offline =
     .accesskey = n
 
 profile-manager-use-selected =
-    .label = Notað valdan reikning án þess að spyrja í ræsingu
+    .label = Nota valinn notandareikning án þess að spyrja í ræsingu
     .accesskey = s

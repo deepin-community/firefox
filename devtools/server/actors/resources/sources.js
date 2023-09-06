@@ -6,7 +6,12 @@
 
 const {
   TYPES: { SOURCE },
-} = require("devtools/server/actors/resources/index");
+} = require("resource://devtools/server/actors/resources/index.js");
+const Targets = require("resource://devtools/server/actors/targets/index.js");
+
+const {
+  STATES: THREAD_STATES,
+} = require("resource://devtools/server/actors/thread.js");
 
 /**
  * Start watching for all JS sources related to a given Target Actor.
@@ -25,17 +30,38 @@ class SourceWatcher {
   }
 
   async watch(targetActor, { onAvailable }) {
-    // Force attaching the target in order to ensure it instantiates the ThreadActor
-    targetActor.attach();
+    // When debugging the whole browser, we instantiate both content process and browsing context targets.
+    // But sources will only be debugged the content process target, even browsing context sources.
+    if (
+      targetActor.sessionContext.type == "all" &&
+      targetActor.targetType === Targets.TYPES.FRAME &&
+      targetActor.typeName != "parentProcessTarget"
+    ) {
+      return;
+    }
 
     const { threadActor } = targetActor;
-    this.threadActor = threadActor;
+    this.sourcesManager = targetActor.sourcesManager;
     this.onAvailable = onAvailable;
 
     // Disable `ThreadActor.newSource` RDP event in order to avoid unnecessary traffic
     threadActor.disableNewSourceEvents();
 
     threadActor.sourcesManager.on("newSource", this.onNewSource);
+
+    // If the thread actors isn't bootstraped yet,
+    // (this might be the case when this watcher is created on target creation)
+    // attach the thread actor automatically.
+    // Otherwise it would not notify about future sources.
+    // However, do not attach the thread actor for Workers. They use a codepath
+    // which releases the worker on `attach`. For them, the client will call `attach`. (bug 1691986)
+    // Content process targets don't have attach method or sequence.
+    // Instead their thread actor is instantiated immediately, when generating their
+    // form. Which is called immediately when we notify the target actor to the TargetList.
+    const isTargetCreation = threadActor.state == THREAD_STATES.DETACHED;
+    if (isTargetCreation && !targetActor.targetType.endsWith("worker")) {
+      await threadActor.attach({});
+    }
 
     // Before fetching all sources, process existing ones.
     // The ThreadActor is already up and running before this code runs
@@ -56,7 +82,9 @@ class SourceWatcher {
    * Stop watching for sources
    */
   destroy() {
-    this.threadActor.sourcesManager.off("newSource", this.onNewSource);
+    if (this.sourcesManager) {
+      this.sourcesManager.off("newSource", this.onNewSource);
+    }
   }
 
   onNewSource(source) {

@@ -6,6 +6,9 @@
 # automatically converted to platform-specific code at build time using the
 # `glean_parser` PyPI package.
 
+# Adding a new metric? Please don't!
+# (At least not without the permission of a Telemetry Module Peer)
+
 ---
 $schema: moz://mozilla.org/schemas/glean/metrics/2-0-0
 
@@ -57,8 +60,7 @@ geckoview:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1625325#c2
     notification_emails:
-      - geckoview-team@mozilla.com
-      - asferro@mozilla.com
+      - android-probes@mozilla.com
     expires: never
 
   page_load_progress_time:
@@ -73,8 +75,7 @@ geckoview:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1580077#c10
     notification_emails:
-      - geckoview-team@mozilla.com
-      - esawin@mozilla.com
+      - android-probes@mozilla.com
     expires: never
 
   page_load_time:
@@ -93,8 +94,7 @@ geckoview:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1584109#c1
     notification_emails:
-      - geckoview-team@mozilla.com
-      - esawin@mozilla.com
+      - android-probes@mozilla.com
     expires: never
 
   page_reload_time:
@@ -111,7 +111,7 @@ geckoview:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1580077#c10
     notification_emails:
-      - geckoview-team@mozilla.com
+      - android-probes@mozilla.com
       - sefeng@mozilla.com
       - perf-telemetry-alerts@mozilla.com
     expires: never
@@ -128,8 +128,7 @@ geckoview:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1584109#c1
     notification_emails:
-      - geckoview-team@mozilla.com
-      - esawin@mozilla.com
+      - android-probes@mozilla.com
     expires: never
 
   document_site_origins:
@@ -334,8 +333,6 @@ gfx.content:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1584109#c1
     notification_emails:
       - gfx-telemetry-alerts@mozilla.com
-      - mwoodrow@mozilla.com
-      - dbolter@mozilla.com
     expires: never
 
   full_paint_time:
@@ -356,7 +353,6 @@ gfx.content:
     notification_emails:
       - gfx-telemetry-alerts@mozilla.com
       - jmuizelaar@mozilla.com
-      - dbolter@mozilla.com
     expires: never
 
 gfx.content.frame_time:
@@ -400,7 +396,6 @@ gfx.content.frame_time:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1584109#c1
     notification_emails:
       - gfx-telemetry-alerts@mozilla.com
-      - mwoodrow@mozilla.com
     expires: never
 
   with_svg:
@@ -422,7 +417,6 @@ gfx.content.frame_time:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1584109#c1
     notification_emails:
       - gfx-telemetry-alerts@mozilla.com
-      - mwoodrow@mozilla.com
     expires: never
 
   without_resource_upload:
@@ -443,7 +437,6 @@ gfx.content.frame_time:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1584109#c1
     notification_emails:
       - gfx-telemetry-alerts@mozilla.com
-      - mwoodrow@mozilla.com
     expires: never
 
   without_upload:
@@ -464,7 +457,6 @@ gfx.content.frame_time:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1584109#c1
     notification_emails:
       - gfx-telemetry-alerts@mozilla.com
-      - mwoodrow@mozilla.com
     expires: never
 
   reason:
@@ -489,7 +481,6 @@ gfx.content.frame_time:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1584109#c1
     notification_emails:
       - gfx-telemetry-alerts@mozilla.com
-      - mwoodrow@mozilla.com
     expires: never
 
 gfx.webrender:
@@ -846,13 +837,24 @@ avif:
       - alpha_y_sz_mismatch
       - alpha_y_bpc_mismatch
       - ispe_mismatch
+      - render_size_mismatch
+      - frame_size_changed
       - invalid_cicp
-      - unsupported_a1lx
-      - unsupported_a1op
-      - unsupported_clap
-      - unsupported_grid
-      - unsupported_ipro
-      - unsupported_lsel
+      - invalid_parse_status
+      - missing_brand
+      - ftyp_not_first
+      - no_image
+      - multiple_moov
+      - no_moov
+      - lsel_no_essential
+      - a1op_no_essential
+      - a1lx_essential
+      - txform_no_essential
+      - image_item_type
+      - item_type_missing
+      - construction_method
+      - item_loc_not_found
+      - no_item_data_box
     gecko_datapoint: AVIF_DECODE_RESULT
     description: >
       Decode result of AVIF image.
@@ -861,8 +863,7 @@ avif:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1670827#c9
     notification_emails:
-      - cchang@mozilla.com
-      - jbauman@mozilla.com
+      - media-alerts@mozilla.com
     expires: never
 
   decoder:
@@ -878,8 +879,7 @@ avif:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1670827#c9
     notification_emails:
-      - cchang@mozilla.com
-      - jbauman@mozilla.com
+      - media-alerts@mozilla.com
     expires: never
 
   aom_decode_error:
@@ -901,8 +901,7 @@ avif:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1690406#c3
     notification_emails:
-      - cchang@mozilla.com
-      - jbauman@mozilla.com
+      - media-alerts@mozilla.com
     expires: never
 
   # dav1d_decode_error is replaced by avif.dav1d_get_picture in Events.yaml
@@ -924,8 +923,7 @@ avif:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1670827#c9
     notification_emails:
-      - cchang@mozilla.com
-      - jbauman@mozilla.com
+      - media-alerts@mozilla.com
     expires: never
 
   bit_depth:
@@ -944,8 +942,7 @@ avif:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1670827#c9
     notification_emails:
-      - cchang@mozilla.com
-      - jbauman@mozilla.com
+      - media-alerts@mozilla.com
     expires: never
 
   alpha:
@@ -961,8 +958,7 @@ avif:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1696045#c5
     notification_emails:
-      - cchang@mozilla.com
-      - jbauman@mozilla.com
+      - media-alerts@mozilla.com
     expires: never
 
   colr:
@@ -982,8 +978,7 @@ avif:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1696045#c5
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1729071#c15
     notification_emails:
-      - cchang@mozilla.com
-      - jbauman@mozilla.com
+      - media-alerts@mozilla.com
     expires: never
 
   cicp_cp:
@@ -1021,8 +1016,7 @@ avif:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1696045#c5
     notification_emails:
-      - cchang@mozilla.com
-      - jbauman@mozilla.com
+      - media-alerts@mozilla.com
     expires: never
 
   cicp_tc:
@@ -1056,8 +1050,7 @@ avif:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1696045#c5
     notification_emails:
-      - cchang@mozilla.com
-      - jbauman@mozilla.com
+      - media-alerts@mozilla.com
     expires: never
 
   cicp_mc:
@@ -1087,8 +1080,7 @@ avif:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1696045#c5
     notification_emails:
-      - cchang@mozilla.com
-      - jbauman@mozilla.com
+      - media-alerts@mozilla.com
     expires: never
 
   ispe:
@@ -1105,8 +1097,7 @@ avif:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1696045#c5
     notification_emails:
-      - cchang@mozilla.com
-      - jbauman@mozilla.com
+      - media-alerts@mozilla.com
     expires: never
 
   pixi:
@@ -1123,8 +1114,152 @@ avif:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1696045#c5
     notification_emails:
-      - cchang@mozilla.com
-      - jbauman@mozilla.com
+      - media-alerts@mozilla.com
+    expires: never
+
+  pasp:
+    type: labeled_counter
+    labels:
+      - absent
+      - square
+      - nonsquare
+      - invalid
+    gecko_datapoint: AVIF_PASP
+    description: >
+      AVIF pixel aspect ratio.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608#c2
+    notification_emails:
+      - media-alerts@mozilla.com
+    expires: never
+
+  major_brand:
+    type: labeled_counter
+    labels:
+      - avif
+      - avis
+      - other
+    description: >
+      AVIF major brand.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608#c2
+    notification_emails:
+      - media-alerts@mozilla.com
+    expires: never
+
+  sequence:
+    type: labeled_counter
+    labels:
+      - present
+      - absent
+    description: >
+      AVIF image sequence.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608#c2
+    notification_emails:
+      - media-alerts@mozilla.com
+    expires: never
+
+  a1lx:
+    type: labeled_counter
+    labels:
+      - present
+      - absent
+    gecko_datapoint: AVIF_A1LX
+    description: >
+      AV1LayeredImageIndexingProperty (a1lx).
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608#c2
+    notification_emails:
+      - media-alerts@mozilla.com
+    expires: never
+
+  a1op:
+    type: labeled_counter
+    labels:
+      - present
+      - absent
+    gecko_datapoint: AVIF_A1OP
+    description: >
+      AVIF OperatingPointSelectorProperty (a1op).
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608#c2
+    notification_emails:
+      - media-alerts@mozilla.com
+    expires: never
+
+  clap:
+    type: labeled_counter
+    labels:
+      - present
+      - absent
+    gecko_datapoint: AVIF_CLAP
+    description: >
+      AVIF CleanApertureBox (clap).
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608#c2
+    notification_emails:
+      - media-alerts@mozilla.com
+    expires: never
+
+  grid:
+    type: labeled_counter
+    labels:
+      - present
+      - absent
+    gecko_datapoint: AVIF_GRID
+    description: >
+      AVIF AVIF grid-based image.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608#c2
+    notification_emails:
+      - media-alerts@mozilla.com
+    expires: never
+
+  ipro:
+    type: labeled_counter
+    labels:
+      - present
+      - absent
+    gecko_datapoint: AVIF_IPRO
+    description: >
+      AVIF ItemProtectionBox (ipro).
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608#c2
+    notification_emails:
+      - media-alerts@mozilla.com
+    expires: never
+
+  lsel:
+    type: labeled_counter
+    labels:
+      - present
+      - absent
+    gecko_datapoint: AVIF_LSEL
+    description: >
+      AVIF LayerSelectorProperty (lsel).
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1745608#c2
+    notification_emails:
+      - media-alerts@mozilla.com
     expires: never
 
 network:
@@ -1140,8 +1275,7 @@ network:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1580077#c10
     notification_emails:
-      - hbambas@mozilla.com
-      - mnovotny@mozilla.com
+      - necko@mozilla.com
     expires: never
 
   tls_handshake:
@@ -1238,7 +1372,6 @@ network:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1580077#c10
     notification_emails:
       - necko@mozilla.com
-      - mnovotny@mozilla.com
     expires: never
 
 performance.pageload:
@@ -1411,7 +1544,6 @@ performance.time:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1580077#c10
     notification_emails:
-      - hbambas@mozilla.com
       - vgosu@mozilla.com
       - perf-telemetry-alerts@mozilla.com
     expires: never
@@ -1465,7 +1597,6 @@ performance.time:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1580077#c10
     notification_emails:
-      - hbambas@mozilla.com
       - vgosu@mozilla.com
       - perf-telemetry-alerts@mozilla.com
     expires: never
@@ -1877,9 +2008,7 @@ media.audio:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1671714#c10
     notification_emails:
-      - padenot@mozilla.com
-      - kinetik@flim.org
-      - cchang@mozilla.com
+      - media-alerts@mozilla.com
     expires: never
 
   backend:
@@ -1907,7 +2036,5 @@ media.audio:
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1671714#c10
     notification_emails:
-      - padenot@mozilla.com
-      - kinetik@flim.org
-      - cchang@mozilla.com
+      - media-alerts@mozilla.com
     expires: never

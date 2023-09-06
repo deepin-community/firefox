@@ -4,21 +4,25 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use super::super::{Connection, ConnectionParameters, IdleTimeout, Output, State};
 use super::{
-    connect, connect_force_idle, connect_with_rtt, default_client, default_server,
-    maybe_authenticate, new_client, new_server, send_and_receive, send_something, AT_LEAST_PTO,
-    DEFAULT_STREAM_DATA,
+    super::{Connection, ConnectionParameters, IdleTimeout, Output, State},
+    connect, connect_force_idle, connect_rtt_idle, connect_with_rtt, default_client,
+    default_server, maybe_authenticate, new_client, new_server, send_and_receive, send_something,
+    AT_LEAST_PTO, DEFAULT_STREAM_DATA,
 };
-use crate::packet::PacketBuilder;
-use crate::stats::FrameStats;
-use crate::tparams::{self, TransportParameter};
-use crate::tracking::PacketNumberSpace;
-use crate::StreamType;
+use crate::{
+    packet::PacketBuilder,
+    stats::FrameStats,
+    stream_id::{StreamId, StreamType},
+    tparams::{self, TransportParameter},
+    tracking::PacketNumberSpace,
+};
 
 use neqo_common::{qtrace, Encoder};
-use std::mem;
-use std::time::{Duration, Instant};
+use std::{
+    mem,
+    time::{Duration, Instant},
+};
 use test_fixture::{self, now, split_datagram};
 
 fn default_timeout() -> Duration {
@@ -35,7 +39,10 @@ fn test_idle_timeout(client: &mut Connection, server: &mut Connection, timeout: 
     assert_eq!(res, Output::Callback(timeout));
 
     // Still connected after timeout-1 seconds. Idle timer not reset
-    mem::drop(client.process(None, now + timeout - Duration::from_secs(1)));
+    mem::drop(client.process(
+        None,
+        now + timeout.checked_sub(Duration::from_secs(1)).unwrap(),
+    ));
     assert!(matches!(client.state(), State::Confirmed));
 
     mem::drop(client.process(None, now + timeout));
@@ -239,13 +246,14 @@ fn idle_recv_packet() {
     let res = client.process(None, now);
     assert_eq!(res, Output::Callback(default_timeout()));
 
-    assert_eq!(client.stream_create(StreamType::BiDi).unwrap(), 0);
-    assert_eq!(client.stream_send(0, b"hello").unwrap(), 5);
+    let stream = client.stream_create(StreamType::BiDi).unwrap();
+    assert_eq!(stream, 0);
+    assert_eq!(client.stream_send(stream, b"hello").unwrap(), 5);
 
     // Respond with another packet
     let out = client.process(None, now + Duration::from_secs(10));
     server.process_input(out.dgram().unwrap(), now + Duration::from_secs(10));
-    assert_eq!(server.stream_send(0, b"world").unwrap(), 5);
+    assert_eq!(server.stream_send(stream, b"world").unwrap(), 5);
     let out = server.process_output(now + Duration::from_secs(10));
     assert_ne!(out.as_dgram_ref(), None);
 
@@ -271,7 +279,7 @@ fn idle_caching() {
     let mut client = default_client();
     let mut server = default_server();
     let start = now();
-    let mut builder = PacketBuilder::short(Encoder::new(), false, &[]);
+    let mut builder = PacketBuilder::short(Encoder::new(), false, []);
 
     // Perform the first round trip, but drop the Initial from the server.
     // The client then caches the Handshake packet.
@@ -350,7 +358,7 @@ fn create_stream_idle_rtt(
     responder: &mut Connection,
     mut now: Instant,
     rtt: Duration,
-) -> (Instant, u64) {
+) -> (Instant, StreamId) {
     let check_idle = |endpoint: &mut Connection, now: Instant| {
         let delay = endpoint.process_output(now).callback();
         qtrace!([endpoint], "idle timeout {:?}", delay);
@@ -363,15 +371,15 @@ fn create_stream_idle_rtt(
 
     // Exchange a message each way on a stream.
     let stream = initiator.stream_create(StreamType::BiDi).unwrap();
-    let _ = initiator.stream_send(stream, DEFAULT_STREAM_DATA).unwrap();
+    _ = initiator.stream_send(stream, DEFAULT_STREAM_DATA).unwrap();
     let req = initiator.process_output(now).dgram();
     now += rtt / 2;
     responder.process_input(req.unwrap(), now);
 
     // Reordering two packets from the responder forces the initiator to be idle.
-    let _ = responder.stream_send(stream, DEFAULT_STREAM_DATA).unwrap();
+    _ = responder.stream_send(stream, DEFAULT_STREAM_DATA).unwrap();
     let resp1 = responder.process_output(now).dgram();
-    let _ = responder.stream_send(stream, DEFAULT_STREAM_DATA).unwrap();
+    _ = responder.stream_send(stream, DEFAULT_STREAM_DATA).unwrap();
     let resp2 = responder.process_output(now).dgram();
 
     now += rtt / 2;
@@ -389,7 +397,7 @@ fn create_stream_idle_rtt(
     (now, stream)
 }
 
-fn create_stream_idle(initiator: &mut Connection, responder: &mut Connection) -> u64 {
+fn create_stream_idle(initiator: &mut Connection, responder: &mut Connection) -> StreamId {
     let (_, stream) = create_stream_idle_rtt(initiator, responder, now(), Duration::new(0, 0));
     stream
 }
@@ -650,9 +658,84 @@ fn keep_alive_uni() {
 
     let stream = client.stream_create(StreamType::UniDi).unwrap();
     client.stream_keep_alive(stream, true).unwrap_err();
-    let _ = client.stream_send(stream, DEFAULT_STREAM_DATA).unwrap();
+    _ = client.stream_send(stream, DEFAULT_STREAM_DATA).unwrap();
     let dgram = client.process_output(now()).dgram();
 
     server.process_input(dgram.unwrap(), now());
     server.stream_keep_alive(stream, true).unwrap();
+}
+
+/// Test a keep-alive ping is send if there are outstading ack-eliciting packets and that
+/// the connection is closed after the idle timeout passes.
+#[test]
+fn keep_alive_with_ack_eliciting_packet_lost() {
+    const RTT: Duration = Duration::from_millis(500); // PTO will be ~1.1125s
+
+    // The idle time  out  will be  set to ~ 5 * PTO. (IDLE_TIMEOUT/2 > pto and IDLE_TIMEOUT/2 < pto + 2pto)
+    // After handshake all packets will be lost. The following steps will happen after the handshake:
+    //  - data will be sent on a stream that is marked for keep-alive, (at start time)
+    //  - PTO timer will trigger first, and the data will be retransmited toghether with a PING, (at the start time + pto)
+    //  - keep-alive timer will trigger and a keep-alive PING will be sent, (at the start time + IDLE_TIMEOUT / 2)
+    //  - PTO timer will trigger again. (at the start time + pto + 2*pto)
+    //  - Idle time out  will trigger (at the timeout + IDLE_TIMEOUT)
+    const IDLE_TIMEOUT: Duration = Duration::from_millis(6000);
+
+    let mut client = new_client(ConnectionParameters::default().idle_timeout(IDLE_TIMEOUT));
+    let mut server = default_server();
+    let mut now = connect_rtt_idle(&mut client, &mut server, RTT);
+    // connect_rtt_idle increase now by RTT / 2;
+    now -= RTT / 2;
+    assert_idle(&mut client, now, IDLE_TIMEOUT);
+
+    // Create a stream.
+    let stream = client.stream_create(StreamType::BiDi).unwrap();
+    // Marking the stream for keep-alive changes the idle timeout.
+    client.stream_keep_alive(stream, true).unwrap();
+    assert_idle(&mut client, now, IDLE_TIMEOUT / 2);
+
+    // Send data on the stream that will be lost.
+    _ = client.stream_send(stream, DEFAULT_STREAM_DATA).unwrap();
+    let _lost_packet = client.process_output(now).dgram();
+
+    let pto = client.process_output(now).callback();
+    // Wait for packet to be marked lost.
+    assert!(pto < IDLE_TIMEOUT / 2);
+    now += pto;
+    let retransmit = client.process_output(now).dgram();
+    assert!(retransmit.is_some());
+    let retransmit = client.process_output(now).dgram();
+    assert!(retransmit.is_some());
+
+    // The next callback should be for an idle PING.
+    assert_eq!(
+        client.process_output(now).callback(),
+        IDLE_TIMEOUT / 2 - pto
+    );
+
+    // Wait that long and the client should send a PING frame.
+    now += IDLE_TIMEOUT / 2 - pto;
+    let pings_before = client.stats().frame_tx.ping;
+    let ping = client.process_output(now).dgram();
+    assert!(ping.is_some());
+    assert_eq!(client.stats().frame_tx.ping, pings_before + 1);
+
+    // The next callback is for a PTO, the PTO timer is 2 * pto now.
+    assert_eq!(client.process_output(now).callback(), pto * 2);
+    now += pto * 2;
+    // Now we will retransmit stream data.
+    let retransmit = client.process_output(now).dgram();
+    assert!(retransmit.is_some());
+    let retransmit = client.process_output(now).dgram();
+    assert!(retransmit.is_some());
+
+    // The next callback will be an idle timeout.
+    assert_eq!(
+        client.process_output(now).callback(),
+        IDLE_TIMEOUT / 2 - 2 * pto
+    );
+
+    now += IDLE_TIMEOUT / 2 - 2 * pto;
+    let out = client.process_output(now);
+    assert!(matches!(out, Output::None));
+    assert!(matches!(client.state(), State::Closed(_)));
 }

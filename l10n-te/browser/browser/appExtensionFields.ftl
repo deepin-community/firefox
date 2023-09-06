@@ -5,10 +5,17 @@
 
 ## Theme names and descriptions used in the Themes panel in about:addons
 
+# "Auto" is short for automatic. It can be localized without limitations.
+extension-default-theme-name-auto = వ్యవస్థ అలంకారం — స్వీయం
+extension-default-theme-description = బటన్లు, మెనూలు, విండోల కొరకు నిర్వాహక వ్యవస్థ అమరికను అనుసరించు.
+
 extension-firefox-compact-light-name = లేత
-extension-firefox-compact-light-description = లేత రంగు అలంకారం.
+extension-firefox-compact-light-description = లేత రంగులో అలంకారం.
+
 extension-firefox-compact-dark-name = ముదురు
 extension-firefox-compact-dark-description = ముదురు రంగు అలంకారం.
+
+extension-firefox-alpenglow-description = బటన్లు, మెనూలు, విండోల కోసం రంగురంగుల అలంకారాన్ని వాడు.
 
 ## Colorway Themes
 ## These themes are variants of a colorway. The colorway is specified in the
@@ -16,3 +23,8 @@ extension-firefox-compact-dark-description = ముదురు రంగు అ
 ## Variables
 ##   $colorway-name (String) The name of a colorway (e.g. Graffiti, Elemental).
 
+extension-colorways-soft-name = { $colorway-name } — కోమలం
+extension-colorways-balanced-name = { $colorway-name } — సమతుల్యం
+# "Bold" is used in the sense of bravery or courage, not in the sense of
+# emphasized text.
+extension-colorways-bold-name = { $colorway-name } — గంభీరం

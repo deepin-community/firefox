@@ -15,12 +15,14 @@
 #include "mozilla/dom/CustomElementRegistryBinding.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/Element.h"
-#include "mozilla/dom/WebComponentsBinding.h"
+#include "mozilla/dom/ElementInternals.h"
+#include "mozilla/dom/ElementInternalsBinding.h"
+#include "mozilla/dom/HTMLFormElement.h"
+#include "mozilla/RefPtr.h"
 #include "nsCycleCollectionParticipant.h"
-#include "nsGenericHTMLElement.h"
 #include "nsWrapperCache.h"
-#include "nsContentUtils.h"
 #include "nsTHashSet.h"
+#include "nsAtomHashKeys.h"
 
 namespace mozilla {
 class ErrorResult;
@@ -30,6 +32,7 @@ namespace dom {
 struct CustomElementData;
 struct ElementDefinitionOptions;
 class CallbackFunction;
+class CustomElementCallback;
 class CustomElementReaction;
 class DocGroup;
 class Promise;
@@ -39,53 +42,35 @@ enum class ElementCallbackType {
   eDisconnected,
   eAdopted,
   eAttributeChanged,
+  eFormAssociated,
+  eFormReset,
+  eFormDisabled,
+  eFormStateRestore,
   eGetCustomInterface
 };
 
 struct LifecycleCallbackArgs {
-  nsString name;
-  nsString oldValue;
-  nsString newValue;
-  nsString namespaceURI;
+  // Used by the attribute changed callback.
+  nsString mName;
+  nsString mOldValue;
+  nsString mNewValue;
+  nsString mNamespaceURI;
 
-  size_t SizeOfExcludingThis(MallocSizeOf aMallocSizeOf) const;
-};
-
-struct LifecycleAdoptedCallbackArgs {
+  // Used by the adopted callback.
   RefPtr<Document> mOldDocument;
   RefPtr<Document> mNewDocument;
-};
 
-class CustomElementCallback {
- public:
-  CustomElementCallback(Element* aThisObject, ElementCallbackType aCallbackType,
-                        CallbackFunction* aCallback);
-  void Traverse(nsCycleCollectionTraversalCallback& aCb) const;
-  size_t SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) const;
-  void Call();
-  void SetArgs(LifecycleCallbackArgs& aArgs) {
-    MOZ_ASSERT(mType == ElementCallbackType::eAttributeChanged,
-               "Arguments are only used by attribute changed callback.");
-    mArgs = aArgs;
-  }
+  // Used by the form associated callback.
+  RefPtr<HTMLFormElement> mForm;
 
-  void SetAdoptedCallbackArgs(
-      LifecycleAdoptedCallbackArgs& aAdoptedCallbackArgs) {
-    MOZ_ASSERT(mType == ElementCallbackType::eAdopted,
-               "Arguments are only used by adopted callback.");
-    mAdoptedCallbackArgs = aAdoptedCallbackArgs;
-  }
+  // Used by the form disabled callback.
+  bool mDisabled;
 
- private:
-  // The this value to use for invocation of the callback.
-  RefPtr<Element> mThisObject;
-  RefPtr<CallbackFunction> mCallback;
-  // The type of callback (eCreated, eAttached, etc.)
-  ElementCallbackType mType;
-  // Arguments to be passed to the callback,
-  // used by the attribute changed callback.
-  LifecycleCallbackArgs mArgs;
-  LifecycleAdoptedCallbackArgs mAdoptedCallbackArgs;
+  // Used by the form state restore callback.
+  Nullable<OwningFileOrUSVStringOrFormData> mState;
+  RestoreReason mReason;
+
+  size_t SizeOfExcludingThis(MallocSizeOf aMallocSizeOf) const;
 };
 
 // Each custom element has an associated callback queue and an element is
@@ -117,6 +102,8 @@ struct CustomElementData {
   void AttachedInternals();
   bool HasAttachedInternals() const { return mIsAttachedInternals; }
 
+  bool IsFormAssociated() const;
+
   void Traverse(nsCycleCollectionTraversalCallback& aCb) const;
   void Unlink();
   size_t SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) const;
@@ -127,11 +114,21 @@ struct CustomElementData {
     return aElement->NodeInfo()->NameAtom() == mType ? nullptr : mType.get();
   }
 
+  ElementInternals* GetElementInternals() const { return mElementInternals; }
+
+  ElementInternals* GetOrCreateElementInternals(HTMLElement* aTarget) {
+    if (!mElementInternals) {
+      mElementInternals = MakeAndAddRef<ElementInternals>(aTarget);
+    }
+    return mElementInternals;
+  }
+
  private:
   // Custom element type, for <button is="x-button"> or <x-button>
   // this would be x-button.
   RefPtr<nsAtom> mType;
   RefPtr<CustomElementDefinition> mCustomElementDefinition;
+  RefPtr<ElementInternals> mElementInternals;
   bool mIsAttachedInternals = false;
 };
 
@@ -140,16 +137,16 @@ struct CustomElementData {
 // The required information for a custom element as defined in:
 // https://html.spec.whatwg.org/multipage/scripting.html#custom-element-definition
 struct CustomElementDefinition {
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(CustomElementDefinition)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_CLASS(CustomElementDefinition)
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(CustomElementDefinition)
 
-  CustomElementDefinition(nsAtom* aType, nsAtom* aLocalName,
-                          int32_t aNamespaceID,
-                          CustomElementConstructor* aConstructor,
-                          nsTArray<RefPtr<nsAtom>>&& aObservedAttributes,
-                          UniquePtr<LifecycleCallbacks>&& aCallbacks,
-                          bool aFormAssociated, bool aDisableInternals,
-                          bool aDisableShadow);
+  CustomElementDefinition(
+      nsAtom* aType, nsAtom* aLocalName, int32_t aNamespaceID,
+      CustomElementConstructor* aConstructor,
+      nsTArray<RefPtr<nsAtom>>&& aObservedAttributes,
+      UniquePtr<LifecycleCallbacks>&& aCallbacks,
+      UniquePtr<FormAssociatedLifecycleCallbacks>&& aFormAssociatedCallbacks,
+      bool aFormAssociated, bool aDisableInternals, bool aDisableShadow);
 
   // The type (name) for this custom element, for <button is="x-foo"> or <x-foo>
   // this would be x-foo.
@@ -169,6 +166,7 @@ struct CustomElementDefinition {
 
   // The lifecycle callbacks to call for this custom element.
   UniquePtr<LifecycleCallbacks> mCallbacks;
+  UniquePtr<FormAssociatedLifecycleCallbacks> mFormAssociatedCallbacks;
 
   // If this is true, user agent treats elements associated to this custom
   // element definition as form-associated custom elements.
@@ -412,11 +410,10 @@ class CustomElementRegistry final : public nsISupports, public nsWrapperCache {
   CustomElementDefinition* LookupCustomElementDefinition(
       JSContext* aCx, JSObject* aConstructor) const;
 
-  static void EnqueueLifecycleCallback(
-      ElementCallbackType aType, Element* aCustomElement,
-      LifecycleCallbackArgs* aArgs,
-      LifecycleAdoptedCallbackArgs* aAdoptedCallbackArgs,
-      CustomElementDefinition* aDefinition);
+  static void EnqueueLifecycleCallback(ElementCallbackType aType,
+                                       Element* aCustomElement,
+                                       const LifecycleCallbackArgs& aArgs,
+                                       CustomElementDefinition* aDefinition);
 
   /**
    * Upgrade an element.
@@ -494,27 +491,19 @@ class CustomElementRegistry final : public nsISupports, public nsWrapperCache {
                            const nsString& aName,
                            nsTArray<RefPtr<nsAtom>>& aArray, ErrorResult& aRv);
 
-  static UniquePtr<CustomElementCallback> CreateCustomElementCallback(
-      ElementCallbackType aType, Element* aCustomElement,
-      LifecycleCallbackArgs* aArgs,
-      LifecycleAdoptedCallbackArgs* aAdoptedCallbackArgs,
-      CustomElementDefinition* aDefinition);
-
   void UpgradeCandidates(nsAtom* aKey, CustomElementDefinition* aDefinition,
                          ErrorResult& aRv);
 
-  typedef nsRefPtrHashtable<nsRefPtrHashKey<nsAtom>, CustomElementDefinition>
-      DefinitionMap;
-  typedef nsRefPtrHashtable<nsRefPtrHashKey<nsAtom>,
-                            CustomElementCreationCallback>
-      ElementCreationCallbackMap;
-  typedef nsClassHashtable<nsRefPtrHashKey<nsAtom>,
-                           nsTHashSet<RefPtr<nsIWeakReference>>>
-      CandidateMap;
-  typedef JS::GCHashMap<JS::Heap<JSObject*>, RefPtr<nsAtom>,
-                        js::MovableCellHasher<JS::Heap<JSObject*>>,
-                        js::SystemAllocPolicy>
-      ConstructorMap;
+  using DefinitionMap =
+      nsRefPtrHashtable<nsAtomHashKey, CustomElementDefinition>;
+  using ElementCreationCallbackMap =
+      nsRefPtrHashtable<nsAtomHashKey, CustomElementCreationCallback>;
+  using CandidateMap =
+      nsClassHashtable<nsAtomHashKey, nsTHashSet<RefPtr<nsIWeakReference>>>;
+  using ConstructorMap =
+      JS::GCHashMap<JS::Heap<JSObject*>, RefPtr<nsAtom>,
+                    js::StableCellHasher<JS::Heap<JSObject*>>,
+                    js::SystemAllocPolicy>;
 
   // Hashtable for custom element definitions in web components.
   // Custom prototypes are stored in the compartment where definition was
@@ -531,8 +520,7 @@ class CustomElementRegistry final : public nsISupports, public nsWrapperCache {
   // mCustomDefinitions again to get definitions.
   ConstructorMap mConstructors;
 
-  typedef nsRefPtrHashtable<nsRefPtrHashKey<nsAtom>, Promise>
-      WhenDefinedPromiseMap;
+  using WhenDefinedPromiseMap = nsRefPtrHashtable<nsAtomHashKey, Promise>;
   WhenDefinedPromiseMap mWhenDefinedPromiseMap;
 
   // The "upgrade candidates map" from the web components spec. Maps from a
@@ -564,8 +552,11 @@ class CustomElementRegistry final : public nsISupports, public nsWrapperCache {
               CustomElementConstructor& aFunctionConstructor,
               const ElementDefinitionOptions& aOptions, ErrorResult& aRv);
 
-  void Get(JSContext* cx, const nsAString& name,
-           JS::MutableHandle<JS::Value> aRetVal);
+  void Get(const nsAString& name,
+           OwningCustomElementConstructorOrUndefined& aRetVal);
+
+  void GetName(JSContext* aCx, CustomElementConstructor& aConstructor,
+               nsAString& aResult);
 
   already_AddRefed<Promise> WhenDefined(const nsAString& aName,
                                         ErrorResult& aRv);

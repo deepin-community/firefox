@@ -36,3 +36,41 @@ findbar-entire-word =
     .label = Լրիվ բառերը
     .accesskey = W
     .tooltiptext = Միայն փնտրել լրիվ բառերը
+
+findbar-not-found = Արտահայտությունը չգտնվեց
+
+findbar-wrapped-to-top = Հասել էր էջի վերջը, շարունակվել է սկզբից
+findbar-wrapped-to-bottom = Հասել էր էջի սկիզբը, շարունակվել է վերջից
+
+findbar-normal-find =
+    .placeholder = Գտնել էջում
+findbar-fast-find =
+    .placeholder = Արագ որոնում
+findbar-fast-find-links =
+    .placeholder = Արագ որոնում (միայն հղումները)
+
+findbar-case-sensitive-status =
+    .value = (Հաշվի առնելով ռեգիստրը)
+findbar-match-diacritics-status =
+    .value = (Տարբերիչ նշանների համապատասխանությամբ)
+findbar-entire-word-status =
+    .value = (Միայն լրիվ բառերը)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $total } համընկնումից { $current }-ը
+           *[other] { $total } համընկնումներից { $current }-ը
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Ավելի քան { $limit } համընկնում
+           *[other] Ավելի քան { $limit } համընկնումներ
+        }

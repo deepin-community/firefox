@@ -51,21 +51,16 @@ restart-later = Sonra yenidən başlat
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that their notifications permission
-# is being controlled by an extension.
-extension-controlled-web-notifications = <img data-l10n-name="icon"/> { $name } adlı uzantı bu tənzimləməni idarə edir.
 
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = Uzantı, <img data-l10n-name="icon"/> { $name }, Konteyner vərəqlərini tələb edir.
-
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = Bu tənzimləməni uzantı, <img data-l10n-name="icon"/> { $name }, idarə edir.
-
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = Uzantı, <img data-l10n-name="icon"/> { $name }, { -brand-short-name } səyyahının internetə necə qoşulduğunu idarə edir.
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -95,10 +90,6 @@ set-as-my-default-browser =
     .label = Əsas səyyahım et…
     .accesskey = m
 
-startup-restore-previous-session =
-    .label = Əvvəlki sessiyanı bərpa et
-    .accesskey = s
-
 disable-extension =
     .label = Uzantını söndür
 
@@ -111,10 +102,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Keçidləri yeni pəncərə yerinə vərəqlərdə aç
     .accesskey = p
-
-warn-on-close-multiple-tabs =
-    .label = Birdən çox vərəq bağlarkən xəbərdar olun
-    .accesskey = B
 
 warn-on-open-many-tabs =
     .label = Çoxlu vərəq açmağın { -brand-short-name } səyyahını yavaşlada biləcəyindən xəbərdar olun
@@ -135,6 +122,10 @@ browser-containers-settings =
     .accesskey = i
 
 containers-disable-alert-title = Bütün konteyner vərəqlər qapatılsın?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Əgər Konteyner Vərəqlərini indi söndürsəniz { $tabCount } konteyner vərəqi qapadılacaq. Konteyner Vərəqləri söndürmək istədiyinizə əminsiniz?
@@ -146,6 +137,9 @@ containers-disable-alert-ok-button =
         [one] { $tabCount } konteyner vərəqini qapat
        *[other] { $tabCount } konteyner vərəqini qapat
     }
+
+##
+
 containers-disable-alert-cancel-button = Açıq tut
 
 containers-remove-alert-title = Bu konteyner silinsin?
@@ -161,12 +155,9 @@ containers-remove-alert-msg =
 containers-remove-ok-button = Bu konteyneri sil
 containers-remove-cancel-button = Bu konteyneri silmə
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Dil və Görünüş
-
-fonts-and-colors-header = Şriftlər və Rənglər
 
 default-font = Əsas şrift
     .accesskey = f
@@ -176,10 +167,6 @@ default-font-size = Ölçü
 advanced-fonts =
     .label = Təkmilləşmiş…
     .accesskey = T
-
-colors-settings =
-    .label = Rənglər…
-    .accesskey = R
 
 language-header = Dil
 
@@ -218,8 +205,7 @@ files-and-applications-title = Fayllar və Tətbiqlər
 
 download-header = Endirilənlər
 
-download-save-to =
-    .label = Faylların saxlandığı yer
+download-save-where = Faylların saxlandığı yer
     .accesskey = y
 
 download-choose-folder =
@@ -433,11 +419,6 @@ home-restore-defaults =
     .label = İlkin Seçənəkləri Bərpa et
     .accesskey = R
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Firefox Ana Səhifə (İlkin)
-
 home-mode-choice-custom =
     .label = Fərdi Ünvanlar…
 
@@ -465,17 +446,15 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Firefox Ev Məzmunu
-home-prefs-content-description = Firefox Evdə hansı məzmunları görmək istədiyinizi seçin.
-
 home-prefs-search-header =
     .label = Web Axtarış
-home-prefs-topsites-header =
-    .label = Qabaqcıl Saytlar
-home-prefs-topsites-description = Ən çox ziyarət etdiyiniz saytlar
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 # Variables:
 #  $provider (String): Name of the corresponding content provider, e.g "Pocket".
@@ -488,9 +467,6 @@ home-prefs-recommended-by-learn-more = Bu necə işləyir
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Sponsorlaşdırılmış Hekayələr
 
-home-prefs-highlights-header =
-    .label = Seçilmişlər
-home-prefs-highlights-description = Saxladığınız və ya ziyarət etdiyiniz saytlardan seçmələr
 home-prefs-highlights-option-visited-pages =
     .label = Baxılmış Səhifələr
 home-prefs-highlights-options-bookmarks =
@@ -506,7 +482,6 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Hissələr
-home-prefs-snippets-description = { -vendor-short-name } və { -brand-product-name }dan yeniliklər
 
 home-prefs-sections-rows-option =
     .label =
@@ -532,6 +507,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Ünvan sətri nəticələrində axtarış təkliflərini göstər
     .accesskey = l
+
 
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
@@ -578,10 +554,11 @@ containers-add-button =
 containers-remove-button =
     .label = Sil
 
-## Sync Section - Signed out
-
-
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = Web-inizi özünüzlə gəzdirin
@@ -596,10 +573,10 @@ sync-signedout-caption = Web-inizi özünüzlə gəzdirin
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Mobil cihazınızda sinronlaşdırmaq istəyirsinizsə <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> və ya <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a> üçün Firefox endirin.
 
-## Sync Section - Signed in
-
-
 ## Firefox Account - Signed in
+
+
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = Profil şəklini dəyiş
@@ -607,8 +584,13 @@ sync-profile-picture =
 sync-manage-account = Hesabı idarə et
     .accesskey = b
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } təsdiqlənməyib.
 sync-signedin-login-failure = Yenidən qoşulmaq üçün daxil olun { $email }
+
+##
 
 sync-resend-verification =
     .label = Təsdiqi təkrar göndər
@@ -676,12 +658,19 @@ sync-device-name-save =
 
 sync-connect-another-device = Digər cihazı qoş
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Təsdiqləmə Göndərildi
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Təsdiqləmə keçidi { $email } ünvanına göndərildi.
+sync-verification-not-sent-title = Təsdiqləmə göndərilə bilmədi
+sync-verification-not-sent-body = Hazırda təsdiqləmə e-poçtunu göndərə bilmirik. Lütfən daha sonra təkrar yoxlayın.
+
 ## Privacy Section
 
 privacy-header = Səyahər Məxfiliyi
-
-## Privacy Section - Forms
-
 
 ## Privacy Section - Logins and Passwords
 
@@ -798,6 +787,9 @@ sitedata-settings =
     .label = Məlumatları idarə et…
     .accesskey = M
 
+## Privacy Section - Cookie Banner Handling
+
+
 ## Privacy Section - Address Bar
 
 addressbar-header = Ünvan Sətri
@@ -836,7 +828,7 @@ enhanced-tracking-protection-setting-custom =
 
 ##
 
-content-blocking-all-third-party-cookies = Bütün üçüncü tərəf çərəzləri
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
 content-blocking-warning-title = Diqqət!
 
@@ -895,10 +887,6 @@ permissions-notification-pause =
 permissions-block-popups =
     .label = Peyda olan pəncərələri blokla
     .accesskey = b
-
-permissions-block-popups-exceptions =
-    .label = İstisnalar…
-    .accesskey = a
 
 permissions-addon-install-warning =
     .label = Saytlar əlavə quraşdırmaq istədikdə xəbərdar olun
@@ -970,13 +958,12 @@ certs-devices =
 
 ## Privacy Section - HTTPS-Only
 
+
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = İşçi masası
 downloads-folder-name = Endirmələr
 choose-download-folder-title = Endirmə qovluğunu seçin:
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Faylları { $service-name } xidmətində saxla

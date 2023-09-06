@@ -51,17 +51,16 @@ restart-later = ចាប់ផ្ដើម​ឡើងវិញ​នៅ​ព�
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = ផ្នែកបន្ថែម <img data-l10n-name="icon"/> { $name } ត្រូវការផ្ទាំងឧបករណ៍ផ្ទុក។
 
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = ផ្នែកបន្ថែម <img data-l10n-name="icon"/> { $name } កំពុងគ្រប់គ្រងការកំណត់នេះ។
-
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = ផ្នែកបន្ថែម <img data-l10n-name="icon"/> { $name } កំពុងគ្រប់គ្រងរបៀបដែល { -brand-short-name } តភ្ជាប់ទៅអ៊ីនធឺណិត។
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -91,10 +90,6 @@ set-as-my-default-browser =
     .label = ដាក់​ជា​លំនាំ​ដើម
     .accesskey = D
 
-startup-restore-previous-session =
-    .label = ស្ដារ​សម័យ​មុន
-    .accesskey = s
-
 disable-extension =
     .label = បិទ​ផ្នែក​បន្ថែម
 
@@ -107,10 +102,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = បើក​តំណ​ក្នុង​ផ្ទាំង​ជំនួយ​ឲ្យ​វីនដូ​ថ្មី
     .accesskey = w
-
-warn-on-close-multiple-tabs =
-    .label = ព្រមាន​អ្នក​ពេល​បិទ​ផ្ទាំង​ច្រើន
-    .accesskey = m
 
 warn-on-open-many-tabs =
     .label = ព្រមាន​អ្នក​ពេល​បើក​ផ្ទាំង​ច្រើន អាច​ធ្វើឲ្យ { -brand-short-name } យឺត
@@ -131,9 +122,16 @@ browser-containers-settings =
     .accesskey = i
 
 containers-disable-alert-title = បិទ​ផ្ទាំង​ឧបករណ៍​ផ្ទុក​ទាំងអស់មែន​ទេ?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc = ប្រសិនបើ​អ្នក​បិទ​ផ្ទាំង​ឧបករណ៍​ផ្ទុក​ឥឡូវ​នេះ ផ្ទាំង​ឧបករណ៍​ផ្ទុក { $tabCount } នឹង​ត្រូវបាន​បិទ។ តើ​អ្នក​ពិត​ជា​ចង់​បិទ​ផ្ទាំង​ឧបករណ៍​ផ្ទុក​មែន​ទេ?
 
 containers-disable-alert-ok-button = បិទ​ផ្ទាំង​ឧបករណ៍​ផ្ទុក { $tabCount }
+
+##
+
 containers-disable-alert-cancel-button = បន្ត​បើក
 
 containers-remove-alert-title = លុប​ប្រអប់​នេះ​ចេញ?
@@ -145,12 +143,9 @@ containers-remove-alert-msg = បើ​អ្នក​លុប​​ឧបក�
 containers-remove-ok-button = លុប​ប្រអប់​នេះ​ចេញ
 containers-remove-cancel-button = កុំ​លុប​ប្រអប់​នេះ​ចេញ​អី
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = ភាសា និង​ការបង្ហាញ
-
-fonts-and-colors-header = ពុម្ព​អក្សរ & ពណ៌
 
 default-font = ពុម្ព​អក្សរ​លំនាំដើម
     .accesskey = D
@@ -160,10 +155,6 @@ default-font-size = ទំហំ
 advanced-fonts =
     .label = កម្រិតខ្ពស់…
     .accesskey = ត
-
-colors-settings =
-    .label = ពណ៌...
-    .accesskey = ព
 
 language-header = ភាសា
 
@@ -198,8 +189,7 @@ files-and-applications-title = ឯកសារ និងកម្មវិធី
 
 download-header = ទាញ​យក
 
-download-save-to =
-    .label = រក្សា​ទុក​ឯកសារ​ទៅ
+download-save-where = រក្សា​ទុក​ឯកសារ​ទៅ
     .accesskey = ក
 
 download-choose-folder =
@@ -409,11 +399,6 @@ home-restore-defaults =
     .label = ស្ដារ​លំនាំ​ដើម
     .accesskey = R
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = ទំព័រដើម Firefox (លំនាំដើម)
-
 home-mode-choice-custom =
     .label = URL ផ្ទាល់ខ្លួន…
 
@@ -441,17 +426,15 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = ខ្លឹមសារ Firefox Home
-home-prefs-content-description = ជ្រើសរើស​ខ្លឹមសារ​អ្វីដែលអ្នកចង់បាននៅលើអេក្រង់ Firefox Home របស់អ្នក។
-
 home-prefs-search-header =
     .label = ការស្វែងរកតាម​អ៊ីនធឺណិត
-home-prefs-topsites-header =
-    .label = សាយកំពូល
-home-prefs-topsites-description = គេហទំព័រ​ដែល​អ្នក​មើល​ច្រើន​បំផុត
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 home-prefs-recommended-by-header =
     .label = បានណែនាំដោយ { $provider }
@@ -462,9 +445,6 @@ home-prefs-recommended-by-learn-more = របៀប​ដែល​វា​ដ�
 home-prefs-recommended-by-option-sponsored-stories =
     .label = រឿងរ៉ាវដែលបានឧបត្ថម្ភ
 
-home-prefs-highlights-header =
-    .label = រឿងសំខាន់ៗ
-home-prefs-highlights-description = ការជ្រើសរើស​គេហទំព័រ​ដែល​អ្នក​បាន​រក្សាទុក ឬ​មើល
 home-prefs-highlights-option-visited-pages =
     .label = ទំព័រ​ដែល​បាន​ទស្សនា
 home-prefs-highlights-options-bookmarks =
@@ -480,7 +460,6 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = អត្ថបទសង្ខេប
-home-prefs-snippets-description = បច្ចុប្បន្នភាពពី { -vendor-short-name } និង { -brand-product-name }
 
 home-prefs-sections-rows-option =
     .label =
@@ -505,6 +484,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = បង្ហាញការណែនាំ​ស្វែងរកនៅក្នុងលទ្ធផលរបារអាសយដ្ឋាន
     .accesskey = I
+
 
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
@@ -551,10 +531,11 @@ containers-add-button =
 containers-remove-button =
     .label = លុប​ចេញ
 
-## Sync Section - Signed out
-
-
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = យក​បណ្ដាញ​របស់​អ្នក​ជាមួយ​អ្នក
@@ -569,10 +550,10 @@ sync-signedout-caption = យក​បណ្ដាញ​របស់​អ្ន�
 # to your language, but should not be changed or translated.
 sync-mobile-promo = ទាញ​យក​ Firefox សម្រាប់​<img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> ឬ <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a>ធ្វើ​សម​កាល​កម្ម​​ឧបករណ៍​ចល័ត​របស់​អ្នក។
 
-## Sync Section - Signed in
-
-
 ## Firefox Account - Signed in
+
+
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = ប្តូរ​​រូប​ប្រូ​ហ្វាល់
@@ -580,8 +561,13 @@ sync-profile-picture =
 sync-manage-account = គ្រប់គ្រង​គណនី
     .accesskey = o
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } មិន​ត្រូវ​បាន​ផ្ទៀងផ្ទាត់។
 sync-signedin-login-failure = សូម​ចូល​ដើម្បី​តភ្ជាប់​ឡើង​វិញ { $email }
+
+##
 
 sync-resend-verification =
     .label = ផ្ញើការផ្ទៀងផ្ទាត់ម្ដងទៀត
@@ -647,11 +633,19 @@ sync-device-name-save =
     .label = រក្សា​ទុក
     .accesskey = v
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = បាន​ផ្ញើ​ការ​ផ្ទៀងផ្ទាត់
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = តំណ​ការ​ផ្ទៀងផ្ទាត់​ត្រូវបាន​ផ្ញើ​ទៅ { $email } ។
+sync-verification-not-sent-title = មិន​អាច​ផ្ញើ​ការ​ផ្ទៀងផ្ទាត់​បាន​ទេ
+sync-verification-not-sent-body = យើង​មិន​អាច​ផ្ញើ​អ៊ីមែល​​ផ្ទៀងផ្ទាត់​បាន​ទេ​នៅ​ពេល​នេះ សូម​​ព្យាយាម​ម្ដង​ទៀត​នៅ​ពេល​ក្រោយ។
+
 ## Privacy Section
 
 privacy-header = ឯកជនភាព​កម្មវិធី​រុករក​តាម​អ៊ីនធឺណិត
-
-## Privacy Section - Forms
 
 ## Privacy Section - Logins and Passwords
 
@@ -751,6 +745,9 @@ sitedata-settings =
     .label = គ្រប់គ្រងទិន្នន័យ...
     .accesskey = M
 
+## Privacy Section - Cookie Banner Handling
+
+
 ## Privacy Section - Address Bar
 
 addressbar-header = របារអាសយដ្ឋាន
@@ -785,6 +782,9 @@ enhanced-tracking-protection-setting-custom =
     .accesskey = C
 
 ##
+
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
 content-blocking-cookies-label =
     .label = ​ខូគី
@@ -825,10 +825,6 @@ permissions-notification-pause =
 permissions-block-popups =
     .label = ទប់ស្កាត់​​បង្អួច​លេច​ឡើង
     .accesskey = ទ
-
-permissions-block-popups-exceptions =
-    .label = ករណី​លើក​លែង
-    .accesskey = ក
 
 permissions-addon-install-warning =
     .label = ព្រមានអ្នកនៅពេលគេហទំព័រព្យាយាមដំឡើងកម្មវិធីបន្ថែម
@@ -894,9 +890,12 @@ certs-devices =
 
 ## Privacy Section - HTTPS-Only
 
+
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = ផ្ទៃតុ
 downloads-folder-name = ទាញ​យក
 choose-download-folder-title = ជ្រើស​ថត​ទាញ​យក ៖
-

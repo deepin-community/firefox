@@ -6,9 +6,16 @@ addons-page-title = מנהל התוספות
 search-header =
     .placeholder = חיפוש ב־addons.mozilla.org
     .searchbuttonlabel = חיפוש
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = קבלת הרחבות וערכות נושא ב־<a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = קבלת מילונים ב־<a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = קבלת ערכות שפה ב־<a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = לא הותקנה אף תוספת מסוג זה
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = גרסה
 detail-last-updated =
     .label = עודכן לאחרונה
+addon-detail-description-expand = להציג יותר
+addon-detail-description-collapse = להציג פחות
 detail-contributions-description = המפתחים של תוספת זו מבקשים את עזרתך בהמשך הפיתוח שלה על־ידי מתן תרומה צנועה.
 detail-contributions-button = תרומה
     .title = מתן תרומה לפיתוח תוספת זו
@@ -132,16 +141,33 @@ addon-category-available-updates-title =
 addon-category-recent-updates = עדכונים אחרונים
 addon-category-recent-updates-title =
     .title = עדכונים אחרונים
+addon-category-sitepermission = הרשאות אתר
+addon-category-sitepermission-title =
+    .title = הרשאות אתר
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = הרשאות אתר עבור { $host }
 
 ## These are global warnings
 
 extensions-warning-safe-mode = כל התוספות נוטרלו במצב בטוח.
 extensions-warning-check-compatibility = בדיקת תאימות תוספות מנוטלת. ייתכן שברשותך תוספות לא תואמות.
+extensions-warning-safe-mode2 =
+    .message = כל התוספות נוטרלו במצב בטוח.
+extensions-warning-check-compatibility2 =
+    .message = בדיקת תאימות תוספות מנוטלת. ייתכן שברשותך תוספות לא תואמות.
 extensions-warning-check-compatibility-button = הפעלה
     .title = הפעלת בדיקת תאימות תוספות
 extensions-warning-update-security = בדיקת האבטחה של התוספות כרגע מנוטרלת. עדכונים לתוספות עלולים לסכן אותך.
+extensions-warning-update-security2 =
+    .message = בדיקת האבטחה של התוספות כרגע מנוטרלת. עדכונים לתוספות עלולים לסכן אותך.
 extensions-warning-update-security-button = הפעלה
     .title = הפעלת בדיקות אבטחה לעדכוני תוספות
+extensions-warning-imported-addons = נא להשלים את התקנת ההרחבות שיובאו אל { -brand-short-name }.
+extensions-warning-imported-addons2 =
+    .message = נא להשלים את התקנת ההרחבות שיובאו אל { -brand-short-name }.
+extensions-warning-imported-addons-button = התקנת הרחבות
 
 ## Strings connected to add-on updates
 
@@ -206,10 +232,17 @@ shortcuts-duplicate = קיצור דרך כפול
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = { $shortcut } משמש כקיצור דרך ביותר ממקרה אחד. קיצורי דרך כפולים עשויים לגרום להתנהגות בלתי צפויה.
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = { $shortcut } משמש כקיצור דרך ביותר ממקרה אחד. קיצורי דרך כפולים עשויים לגרום להתנהגות בלתי צפויה.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = כבר בשימוש על־ידי { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] הצגת אחד נוסף
@@ -226,6 +259,9 @@ header-back-button =
 discopane-intro = הרחבות הן כמו יישומים לדפדפן שלך, ומאפשרות לך להגן על ססמאות, להוריד סרטונים, למצוא מבצעים, לחסום פרסומות מציקות, לשנות את תצוגת הדפדפן שלך ועוד. היישומים הקטנים האלו לרוב מפותחים על־ידי גורמי צד־שלישי. להלן מבחר הרחבות ש־{ -brand-product-name } <a data-l10n-name="learn-more-trigger">ממליצה</a> עליהן בגלל האבטחה, הביצועים והפונקציונליות יוצאת הדופן שלהן.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations = חלק מהמלצות אלה מותאמות אישית. הן מבוססות על הרחבות אחרות שהתקנת, העדפות פרופיל וסטטיסטיקת שימוש.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message = חלק מהמלצות אלה מותאמות אישית. הן מבוססות על הרחבות אחרות שהתקנת, העדפות פרופיל וסטטיסטיקת שימוש.
 discopane-notice-learn-more = מידע נוסף
 privacy-policy = מדיניות פרטיות
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -268,8 +304,9 @@ preferences-addon-button =
 details-addon-button = פרטים
 release-notes-addon-button = הערות שחרור
 permissions-addon-button = הרשאות
-theme-monochromatic-heading = ערכות צבעים
-theme-monochromatic-subheading = ערכות צבעים חדשים ותוססים מ־{ -brand-product-name }. זמינים לזמן מוגבל.
+theme-disabled-heading2 = ערכות נושא שמורות
+sitepermission-enabled-heading = מופעל
+sitepermission-disabled-heading = מושבת
 always-activate-button = הפעלה תמיד
 never-activate-button = לא להפעיל לעולם
 addon-detail-author-label = מפתח
@@ -279,6 +316,9 @@ addon-detail-homepage-label = דף הבית
 addon-detail-rating-label = דירוג
 # Message for add-ons with a staged pending update.
 install-postponed-message = הרחבה זו תתעדכן כש־{ -brand-short-name } יופעל מחדש.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = הרחבה זו תתעדכן כש־{ -brand-short-name } יופעל מחדש.
 install-postponed-button = עדכון כעת
 # The average rating that the add-on has received.
 # Variables:
@@ -310,6 +350,10 @@ addon-detail-updates-radio-on = פעיל
 addon-detail-updates-radio-off = כבוי
 addon-detail-update-check-label = בדיקה אחר עדכונים
 install-update-button = עדכון
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -318,6 +362,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = אם אפשרות זו מופעלת, להרחבה תהיה גישה לפעילויות המקוונות שלך בזמן גלישה פרטית. <a data-l10n-name="learn-more">מידע נוסף</a>
 addon-detail-private-browsing-allow = לאפשר
 addon-detail-private-browsing-disallow = לא לאפשר
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = הפעלה באתרים עם הגבלות
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = אם אפשרות זו מופעלת, להרחבה תהיה גישה לאתרים המוגבלים על־ידי { -vendor-short-name }. יש לאפשר רק אם הרחבה זו מהימנה.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = לאפשר
+addon-detail-quarantined-domains-disallow = לא לאפשר
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -346,6 +408,9 @@ addon-permissions-optional = הרשאות רשות לתכונות נוספות:
 addon-permissions-learnmore = מידע נוסף על הרשאות
 recommended-extensions-heading = הרחבות מומלצות
 recommended-themes-heading = ערכות נושא מומלצות
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = מעניק ל־<span data-l10n-name="hostname">{ $hostname }</span> את היכולות הבאות:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = גל של יצירתיות שוטף אותך? <a data-l10n-name="link">ניתן ליצור ערכת נושא משלך בעזרת Firefox Color.</a>
@@ -358,6 +423,7 @@ plugin-heading = ניהול התוספים החיצוניים שלך
 dictionary-heading = ניהול המילונים שלך
 locale-heading = ניהול השפות שלך
 updates-heading = ניהול העדכונים שלך
+sitepermission-heading = ניהול ההרשאות שלך לאתרים
 discover-heading = התאמה אישית של ה־{ -brand-short-name } שלך
 shortcuts-heading = ניהול קיצורי דרך להרחבות
 default-heading-search-label = חיפוש תוספות נוספות
@@ -365,3 +431,35 @@ addons-heading-search-input =
     .placeholder = חיפוש ב־addons.mozilla.org
 addon-page-options-button =
     .title = כלים עבור כל התוספות
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } אינו תואם ל־{ -brand-short-name } { $version }.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = { $name } אינו תואם ל־{ -brand-short-name } { $version }.
+details-notification-incompatible-link = מידע נוסף
+details-notification-unsigned-and-disabled = לא ניתן לאמת את { $name } לשימוש ב־{ -brand-short-name } ולכן תוספת זו נוטרלה.
+details-notification-unsigned-and-disabled2 =
+    .message = לא ניתן לאמת את { $name } לשימוש ב־{ -brand-short-name } ולכן תוספת זו נוטרלה.
+details-notification-unsigned-and-disabled-link = מידע נוסף
+details-notification-unsigned = לא ניתן לאמת את { $name } לשימוש ב־{ -brand-short-name }. נא להיזהר.
+details-notification-unsigned2 =
+    .message = לא ניתן לאמת את { $name } לשימוש ב־{ -brand-short-name }. נא להיזהר.
+details-notification-unsigned-link = מידע נוסף
+details-notification-blocked = התוספת { $name } נחסמה עקב בעיות אבטחה או יציבות.
+details-notification-blocked2 =
+    .message = התוספת { $name } נחסמה עקב בעיות אבטחה או יציבות.
+details-notification-blocked-link = מידע נוסף
+details-notification-softblocked = התוספת { $name } נודעת בגרימת בעיות אבטחה או יציבות.
+details-notification-softblocked2 =
+    .message = התוספת { $name } נודעת בגרימת בעיות אבטחה או יציבות.
+details-notification-softblocked-link = מידע נוסף
+details-notification-gmp-pending = התוספת { $name } תותקן בהקדם.
+details-notification-gmp-pending2 =
+    .message = התוספת { $name } תותקן בהקדם.

@@ -6,10 +6,10 @@
 
 // Test dynamic updates in the storage inspector for localStorage.
 
-add_task(async function() {
-  const TEST_HOST = "http://test1.example.org";
+add_task(async function () {
+  const TEST_HOST = "https://test1.example.org";
 
-  await openTabAndSetupStorage(MAIN_DOMAIN + "storage-updates.html");
+  await openTabAndSetupStorage(MAIN_DOMAIN_SECURED + "storage-updates.html");
 
   gUI.tree.expandAll();
 
@@ -25,7 +25,7 @@ add_task(async function() {
   await testRemoveAndChange("non-json-parsable", expectedKeys, TEST_HOST);
 
   // Clearing items.
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function() {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     content.wrappedJSObject.clear();
   });
 

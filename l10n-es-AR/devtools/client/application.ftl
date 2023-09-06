@@ -87,7 +87,7 @@ manifest-item-presentation = Presentación
 manifest-item-icons = Íconos
 
 # Text displayed while we are loading the manifest file
-manifest-loading = Cargando manifiesto...
+manifest-loading = Cargando manifiesto…
 
 # Text displayed when the manifest has been successfully loaded
 manifest-loaded-ok = Manifiesto cargado.
@@ -144,4 +144,3 @@ icon-warning =
 icon-error =
     .alt = Icono de error
     .title = Error
-

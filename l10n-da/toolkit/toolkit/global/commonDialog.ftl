@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Brugernavn
 common-dialog-password =
     .value = Adgangskode
+
+common-dialog-copy-cmd =
+    .label = Kopier
+    .accesskey = K
+common-dialog-select-all-cmd =
+    .label = Marker alt
+    .accesskey = a

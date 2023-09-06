@@ -49,6 +49,7 @@ if CONFIG["JS_HAS_INTL_API"]:
     ]
 
 USE_LIBS += [
+    "fdlibm",
     "nspr",
     "zlib",
 ]
@@ -74,6 +75,12 @@ if CONFIG["OS_ARCH"] == "SunOS":
         "dl",
         "nsl",
         "socket",
+    ]
+
+if CONFIG["OS_ARCH"] == "WINNT":
+    OS_LIBS += [
+        "bcrypt",
+        "ntdll",
     ]
 
 if CONFIG["MOZ_NEEDS_LIBATOMIC"]:

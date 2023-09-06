@@ -1,13 +1,9 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
-# License, v- 2-0- If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla-org/MPL/2-0/-
-
-# This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 crash-reports-title = Vearaportid
-
+submit-all-button-label = Saada kõik
 delete-button-label = Kustuta kõik
 delete-confirm-title = Kas oled kindel?
 delete-unsubmitted-description = Jätkamisel kustutatakse kõik saatmata raportid ja seda pole võimalik tagasi võtta.

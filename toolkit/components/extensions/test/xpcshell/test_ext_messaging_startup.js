@@ -12,22 +12,14 @@ AddonTestUtils.createAppInfo(
   "43"
 );
 
-let {
-  promiseRestartManager,
-  promiseShutdownManager,
-  promiseStartupManager,
-} = AddonTestUtils;
-
-Services.prefs.setBoolPref(
-  "extensions.webextensions.background-delayed-startup",
-  true
-);
+let { promiseRestartManager, promiseShutdownManager, promiseStartupManager } =
+  AddonTestUtils;
 
 const PAGE_HTML = `<!DOCTYPE html><meta charset="utf-8"><script src="script.js"></script>`;
 
 function trackEvents(wrapper) {
   let events = new Map();
-  for (let event of ["background-page-event", "start-background-page"]) {
+  for (let event of ["background-script-event", "start-background-script"]) {
     events.set(event, false);
     wrapper.extension.once(event, () => events.set(event, true));
   }
@@ -62,12 +54,12 @@ async function test(what, background, script) {
   await extension.awaitMessage("bg-ran");
 
   info(`Test wakeup for ${what} from an extension page`);
-  await promiseRestartManager();
+  await promiseRestartManager({ earlyStartup: false });
   await extension.awaitStartup();
 
   function awaitBgEvent() {
     return new Promise(resolve =>
-      extension.extension.once("background-page-event", resolve)
+      extension.extension.once("background-script-event", resolve)
     );
   }
 
@@ -81,12 +73,12 @@ async function test(what, background, script) {
   ]);
 
   equal(
-    events.get("background-page-event"),
+    events.get("background-script-event"),
     true,
     "Should have gotten a background page event"
   );
   equal(
-    events.get("start-background-page"),
+    events.get("start-background-script"),
     false,
     "Background page should not be started"
   );
@@ -94,13 +86,13 @@ async function test(what, background, script) {
   equal(extension.messageQueue.size, 0, "Have not yet received bg-ran message");
 
   let promise = extension.awaitMessage("bg-ran");
-  Services.obs.notifyObservers(null, "browser-delayed-startup-finished");
+  AddonTestUtils.notifyEarlyStartup();
   await promise;
 
   equal(
-    events.get("start-background-page"),
+    events.get("start-background-script"),
     true,
-    "Should have gotten start-background-page event"
+    "Should have gotten start-background-script event"
   );
 
   await extension.awaitFinish("messaging-test");
@@ -109,8 +101,7 @@ async function test(what, background, script) {
   await page.close();
 
   info(`Test wakeup for ${what} from a content script`);
-  ExtensionParent._resetStartupPromises();
-  await promiseRestartManager();
+  await promiseRestartManager({ earlyStartup: false });
   await extension.awaitStartup();
 
   events = trackEvents(extension);
@@ -123,26 +114,26 @@ async function test(what, background, script) {
   ]);
 
   equal(
-    events.get("background-page-event"),
+    events.get("background-script-event"),
     true,
-    "Should have gotten a background page event"
+    "Should have gotten a background script event"
   );
   equal(
-    events.get("start-background-page"),
+    events.get("start-background-script"),
     false,
-    "Background page should not be started"
+    "Background script should not be started"
   );
 
   equal(extension.messageQueue.size, 0, "Have not yet received bg-ran message");
 
   promise = extension.awaitMessage("bg-ran");
-  Services.obs.notifyObservers(null, "browser-delayed-startup-finished");
+  AddonTestUtils.notifyEarlyStartup();
   await promise;
 
   equal(
-    events.get("start-background-page"),
+    events.get("start-background-script"),
     true,
-    "Should have gotten start-background-page event"
+    "Should have gotten start-background-script event"
   );
 
   await extension.awaitFinish("messaging-test");
@@ -152,7 +143,6 @@ async function test(what, background, script) {
   await extension.unload();
 
   await promiseShutdownManager();
-  ExtensionParent._resetStartupPromises();
 }
 
 add_task(function test_onMessage() {
@@ -248,11 +238,29 @@ add_task(async function test_other_startup() {
   await extension.startup();
   await extension.awaitMessage("bg-ran");
 
-  await promiseRestartManager();
+  await promiseRestartManager({ lateStartup: false });
   await extension.awaitStartup();
+  let events = trackEvents(extension);
+
+  equal(
+    events.get("background-script-event"),
+    false,
+    "Should not have gotten a background page event"
+  );
+  equal(
+    events.get("start-background-script"),
+    false,
+    "Background page should not be started"
+  );
 
   // Start the background page.  No message have been sent at this point.
-  Services.obs.notifyObservers(null, "sessionstore-windows-restored");
+  await AddonTestUtils.notifyLateStartup();
+  equal(
+    events.get("start-background-script"),
+    true,
+    "Background page should be started"
+  );
+
   await extension.awaitMessage("bg-ran");
 
   // Now that the background page is fully started, load a new page that
@@ -266,5 +274,4 @@ add_task(async function test_other_startup() {
   await extension.unload();
 
   await promiseShutdownManager();
-  ExtensionParent._resetStartupPromises();
 });

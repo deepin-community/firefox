@@ -6,6 +6,9 @@ screenshot-toolbarbutton =
     .label = Screenshot
     .tooltiptext = Kumuha ng screenshot
 
+screenshot-shortcut =
+    .key = S
+
 screenshots-instructions = Mag-drag o mag-click sa pahina upang pumili ng rehiyon. Pindutin ang ESC upang kanselahin.
 screenshots-cancel-button = Kanselahin
 screenshots-save-visible-button = I-save na nakikita
@@ -44,3 +47,4 @@ screenshots-private-window-error-details = Pasensya na sa abala. Inaayos namin a
 
 screenshots-generic-error-title = Aba! Nagkagulo na sa { -screenshots-brand-name }.
 screenshots-generic-error-details = Hindi kami sigurado kung ano ang nangyari. Nais mo bang subukan uli o kumuha ng shot ng ibang pahina?
+

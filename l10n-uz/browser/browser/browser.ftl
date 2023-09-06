@@ -5,44 +5,13 @@
 
 ## The main browser window's title
 
-# These are the default window titles everywhere except macOS. The first two
-# attributes are used when the web content opened has no title:
-#
-# default - "Mozilla Firefox"
-# private - "Mozilla Firefox (Private Browsing)"
-#
-# The last two are for use when there *is* a content title.
-# Variables:
-#  $content-title (String): the title of the web content.
-browser-main-window =
-    .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } (Maxfiy koʻrish)
-    .data-content-title-default = { $content-title } - { -brand-full-name }
-    .data-content-title-private = { $content-title } - { -brand-full-name } (Maxfiy koʻrish)
-# These are the default window titles on macOS. The first two are for use when
-# there is no content title:
-#
-# "default" - "Mozilla Firefox"
-# "private" - "Mozilla Firefox - (Private Browsing)"
-#
-# The last two are for use when there *is* a content title.
-# Do not use the brand name in the last two attributes, as we do on non-macOS.
-#
-# Also note the other subtle difference here: we use a `-` to separate the
-# brand name from `(Private Browsing)`, which does not happen on other OSes.
-#
-# Variables:
-#  $content-title (String): the title of the web content.
-browser-main-window-mac =
-    .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } - (Maxfiy koʻrish)
-    .data-content-title-default = { $content-title }
-    .data-content-title-private = { $content-title } - (Maxfiy koʻrish)
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+
+private-browsing-shortcut-text-2 = { -brand-shortcut-name } Maxfiy koʻrish
 
 ##
 
@@ -73,16 +42,12 @@ urlbar-xr-notification-anchor =
     .tooltiptext = Virtual reallikka ruxsat berish panelini ochish
 urlbar-storage-access-anchor =
     .tooltiptext = Internetda ishlashdan oldin ruxsatnomalar panelini ochish
-urlbar-translate-notification-anchor =
-    .tooltiptext = Bu sahifani tarjima qilish
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = Oynalar yoki ekranni sayt bilan ulashishni boshqarish
 urlbar-indexed-db-notification-anchor =
     .tooltiptext = Xabarlarni oflayn saqlash panelini ochish
 urlbar-password-notification-anchor =
     .tooltiptext = Parolni saqlash xabari panelini ochish
-urlbar-translated-notification-anchor =
-    .tooltiptext = Sahifani tarjima qilishi boshqarish
 urlbar-plugins-notification-anchor =
     .tooltiptext = Plaginlarni boshqarishdan foydalanilmoqda
 urlbar-web-rtc-share-devices-notification-anchor =
@@ -110,8 +75,16 @@ urlbar-tip-icon-description =
 urlbar-search-tips-onboard = Kamroq yozib, koʻproq toping: manzillar panelidan { $engineName } orqali qidiring.
 urlbar-search-tips-redirect-2 = { $engineName } tavsiyalari va brauzer tarixini koʻrish uchun qidiruvni manzillar panelidan boshlang.
 
+# Prompts users to use the Urlbar when they are typing in the domain of a
+# search engine, e.g. google.com or amazon.com.
+urlbar-tabtosearch-onboard = Kerakli narsalarni tezroq topish uchun bu yorliq ustiga bosing.
+
 ## Local search mode indicator labels in the urlbar
 
+urlbar-search-mode-bookmarks = Xatchoʻplar
+urlbar-search-mode-tabs = Varaqlar
+urlbar-search-mode-history = Tarix
+urlbar-search-mode-actions = Amallar
 
 ##
 
@@ -139,19 +112,18 @@ urlbar-midi-blocked =
     .tooltiptext = Bu sayt uchun MIDI ruxsatini blokladingiz.
 urlbar-install-blocked =
     .tooltiptext = Bu saytdan qoʻshimcha dastur oʻrnatishni bloklagansiz.
+
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
 urlbar-star-edit-bookmark =
     .tooltiptext = Ushbu xatcho‘pni tahrirlash ({ $shortcut })
+
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Sahifani xatcho‘pga qo‘shish ({ $shortcut })
 
 ## Page Action Context Menu
-
-page-action-manage-extension =
-    .label = Kengaytmani boshqarish
 
 ## Auto-hide Context Menu
 
@@ -164,11 +136,13 @@ full-screen-exit =
 
 ## Search Engine selection buttons (one-offs)
 
-# This string prompts the user to use the list of one-click search engines in
+# This string prompts the user to use the list of search shortcuts in
 # the Urlbar and searchbar.
 search-one-offs-with-title = Bu safar quyidagi bilan izlash:
+
 search-one-offs-change-settings-compact-button =
     .tooltiptext = Qidiruv sozlamalarini oʻzgartirish
+
 search-one-offs-context-open-new-tab =
     .label = Yangi varaqdan qidirish
     .accesskey = i
@@ -178,12 +152,22 @@ search-one-offs-context-set-as-default =
 search-one-offs-context-set-as-default-private =
     .label = Maxfiy oynalar uchun asosiy qidiruv tizimi sifatida oʻrnatish
     .accesskey = s
+
 # Search engine one-off buttons with an @alias shortcut/keyword.
 # Variables:
 #  $engineName (String): The name of the engine.
 #  $alias (String): The @alias shortcut/keyword.
 search-one-offs-engine-with-alias =
     .tooltiptext = { $engineName } ({ $alias })
+
+# Shown when adding new engines from the address bar shortcut buttons or context
+# menu, or from the search bar shortcut buttons.
+# Variables:
+#  $engineName (String): The name of the engine.
+search-one-offs-add-engine =
+    .label = { $engineName } qoʻshish
+    .tooltiptext = { $engineName } qidiruv tizimini qoʻshish
+    .aria-label = { $engineName } qidiruv tizimini qoʻshish
 # When more than 5 engines are offered by a web page, they are grouped in a
 # submenu using this as its label.
 search-one-offs-add-engine-menu =
@@ -196,15 +180,54 @@ search-one-offs-add-engine-menu =
 ##    restrict their searches to certain sources (e.g., "*" to search only
 ##    bookmarks).
 
+search-one-offs-bookmarks =
+    .tooltiptext = Xatchoʻplar ({ $restrict })
+search-one-offs-tabs =
+    .tooltiptext = Tarix ({ $restrict })
+search-one-offs-history =
+    .tooltiptext = Tarix ({ $restrict })
+search-one-offs-actions =
+    .tooltiptext = Amallar ({ $restrict })
+
+## QuickActions are shown in the urlbar as the user types a matching string
+## The -cmd- strings are comma separated list of keywords that will match
+## the action.
+
+# Opens the about:addons page in the home / recommendations section
+quickactions-addons = Qoʻshimchalarni koʻrish
+quickactions-cmd-addons2 = qoʻshimchalar
+
+quickactions-cmd-bookmarks = xatchoʻplar
+
+# Opens a SUMO article explaining how to clear history
+quickactions-clearhistory = Tarixni tozalash
+quickactions-cmd-clearhistory = tarixni tozalash
+
+quickactions-cmd-downloads = yuklab olingan fayllar
+
+# Opens about:addons page in the extensions section
+quickactions-extensions = Kengaytmalarni boshqarish
+quickactions-cmd-extensions = kengaytmalar
 
 ## Bookmark Panel
 
 bookmark-panel-cancel =
     .label = Bekor qilish
     .accesskey = B
+# Variables:
+#  $count (number): number of bookmarks that will be removed
+bookmark-panel-remove =
+    .label =
+        { $count ->
+            [1] Xatchoʻpni olib tashlash
+            [one] { $count } ta xatchoʻpni olib tashlash
+           *[other] { $count } ta xatchoʻpni olib tashlash
+        }
+    .accesskey = X
 bookmark-panel-show-editor-checkbox =
     .label = Saqlashda muharrirni ko‘rsatish
     .accesskey = S
+
 # Width of the bookmark panel.
 # Should be large enough to fully display the Done and
 # Cancel/Remove Bookmark buttons.
@@ -224,13 +247,14 @@ identity-passive-loaded = Ushbu sahifa qismlari xavfsiz emas (masalan, rasmlar).
 identity-active-loaded = Siz bu sahifadagi himoyani o‘chirib qo‘ygansiz.
 identity-weak-encryption = Ushbu sahifa kuchsiz kodlash usulidan foydalanadi.
 identity-insecure-login-forms = Bu sahifaga kiritilgan ma’lumotlar o‘g‘irlanishi mumkin.
+
 identity-permissions-reload-hint = O‘zgarishlar amalga oshishi uchun sahifani yangilashingiz kerak.
 identity-clear-site-data =
     .label = Kuki va sayt ma’lumotlarini tozalash
 identity-connection-not-secure-security-view = Bu saytga ishonchsiz aloqa bilan ulangansiz.
 identity-connection-verified = Bu saytga ishonchli aloqa bilan ulangansiz.
 identity-ev-owner-label = Sertifikat beruvchi:
-identity-description-custom-root = Mozilla bu sertifikat beruvchini tanimaydi. Uni operatsion tizim yoki administratoringiz qoʻshgan boʻlishi mumkin. <label data-l10n-name="link">Batafsil ma’lumot</label>
+identity-description-custom-root2 = Mozilla bu sertifikat beruvchini tanimaydi. Uni operatsion tizim yoki administratoringiz qoʻshgan boʻlishi mumkin.
 identity-remove-cert-exception =
     .label = Istisnoni olib tashlash
     .accesskey = o
@@ -238,14 +262,12 @@ identity-description-insecure = Ushbu saytga ulanish maxfiy emas. Siz jo‘natga
 identity-description-insecure-login-forms = Bu sahifada kiritiladigan login ma’lumotlari himoyalanmaydi, ular xavf ostida bo‘lishi mumkin.
 identity-description-weak-cipher-intro = Ushbu vebsahifaga ulanish kuchsiz kodlash usulidan foydalanadi, shuning uchun u maxfiy emas.
 identity-description-weak-cipher-risk = Boshqa odamlar ma’lumotlaringizni ko‘rishi yoki sayt xususiyatlarini o‘zgartirishi mumkin.
-identity-description-active-blocked = { -brand-short-name } ushbu sahifaning xavfli bo‘lgan qismlarini blokladi. <label data-l10n-name="link">Batafsil ma’lumot</label>
+identity-description-active-blocked2 = { -brand-short-name } ushbu sahifaning xavfli bo‘lgan qismlarini blokladi.
 identity-description-passive-loaded = Bu ulanish maxfiy emas, shu sababli siz sayt bilan bo‘lishgan ma’lumotlarni boshqalar ko‘rishi mumkin.
-identity-description-passive-loaded-insecure = Ushbu saytda xavfsiz bo‘lmagan kontent mavjud (masalan, rasmlar). <label data-l10n-name="link">Batafsil ma’lumot</label>
-identity-description-passive-loaded-mixed = { -brand-short-name } ba’zi tarkibni blokladi, ammo sahifada hali ham xavfli tarkiblar (masalan, rasmlar) bor. <label data-l10n-name="link">Batafsil ma’lumot</label>
+identity-description-passive-loaded-insecure2 = Ushbu saytda xavfsiz bo‘lmagan kontent mavjud (masalan, rasmlar).
+identity-description-passive-loaded-mixed2 = { -brand-short-name } ba’zi tarkibni blokladi, ammo sahifada hali ham xavfli tarkiblar (masalan, rasmlar) bor.
 identity-description-active-loaded = Ushbu saytda xavfli tarkib mavjud (masalan, skriptlar), shuning uchun ulanish maxfiy emas.
 identity-description-active-loaded-insecure = Bu sayt bilan bo‘lishgan ma’lumotlaringizni (masalan, parol, xabar, kredit kartalarini) boshqalar ko‘rishi mumkin.
-identity-learn-more =
-    .value = Batafsil ma’lumot
 identity-disable-mixed-content-blocking =
     .label = Himoyani hozir o‘chirish
     .accesskey = h
@@ -272,6 +294,9 @@ browser-window-close-button =
 
 ## Bookmarks toolbar items
 
+browser-import-button2 =
+    .label = Xatchoʻplarni import qilish…
+    .tooltiptext = Xatchoʻplarni boshqa brauzerdan { -brand-short-name }ga import qilish
 
 ## WebRTC Pop-up notifications
 
@@ -279,6 +304,8 @@ popup-all-windows-shared = Ekraningizdagi barcha ko‘rinadigan oynalar bo‘lis
 
 ## WebRTC window or screen share tab switch warning
 
+sharing-warning-window = { -brand-short-name }ni ulashyapsiz. Boshqa odamlar yangi varaqqa oʻtganingizda koʻra olishadi.
+sharing-warning-screen = Toʻliq ekranni ulashyapsiz. Boshqa odamlar yangi varaqqa oʻtganingizda koʻra olishadi.
 
 ## DevTools F12 popup
 
@@ -289,6 +316,7 @@ popup-all-windows-shared = Ekraningizdagi barcha ko‘rinadigan oynalar bo‘lis
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Izlang yoki manzilni kiriting
+
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -297,6 +325,7 @@ urlbar-placeholder =
 urlbar-placeholder-search-mode-web-2 =
     .placeholder = Internetdan qidirish
     .aria-label = { $name } bilan qidirish
+
 # This placeholder is used in search mode with search engines that search a
 # specific site (e.g., Amazon).
 # Variables
@@ -305,17 +334,26 @@ urlbar-placeholder-search-mode-web-2 =
 urlbar-placeholder-search-mode-other-engine =
     .placeholder = Qidiriladigan soʻzni kiriting
     .aria-label = { $name }ni qidirish
+
+# This placeholder is used when searching bookmarks.
+urlbar-placeholder-search-mode-other-bookmarks =
+    .placeholder = Qidiriladigan soʻzni kiriting
+    .aria-label = Xalachoʻplarni qidirish
+
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
     .placeholder = { $name } orqali qidiring yoki manzilni kiriting
+
 urlbar-permissions-granted =
     .tooltiptext = Bu saytga qoʻshimcha maxsus ruxsat bergansiz.
 urlbar-switch-to-tab =
     .value = Varaqqa oʻtish:
+
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Kengaytma:
+
 urlbar-go-button =
     .tooltiptext = Manzil panelidagi manzilga o‘tish
 urlbar-page-action-button =
@@ -337,6 +375,21 @@ urlbar-result-action-search-in-private-w-engine = Maxfiy oynada { $engine } yord
 urlbar-result-action-search-w-engine = { $engine } orqali izlash
 urlbar-result-action-switch-tab = Ichki oynaga o‘tish
 urlbar-result-action-visit = Kirish
+# Directs a user to press the Tab key to perform a search with the specified
+# engine.
+# Variables
+#  $engine (String): the name of a search engine that searches the entire Web
+#  (e.g. Google).
+urlbar-result-action-before-tabtosearch-web = { $engine } bilan qidirish uchun Tab tugmasini bosing
+# Variables
+#  $engine (String): the name of a search engine that searches the entire Web
+#  (e.g. Google).
+urlbar-result-action-tabtosearch-web = { $engine } yordamida toʻgʻridan-toʻgʻri manzil panelidan qidiring
+# Shows the result of a formula expression being calculated, the last = sign will be shown
+# as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result = = { $result }
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -346,6 +399,20 @@ urlbar-result-action-visit = Kirish
 ## Labels shown above groups of urlbar results
 
 
+## Reader View toolbar buttons
+
+# This should match menu-view-enter-readerview in menubar.ftl
+reader-view-enter-button =
+    .aria-label = O‘qish ko‘rinishiga o‘tish
+# This should match menu-view-close-readerview in menubar.ftl
+reader-view-close-button =
+    .aria-label = O‘qish ko‘rinishini yopish
+
+## Picture-in-Picture urlbar button
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
+
+
 ## Full Screen and Pointer Lock UI
 
 # Please ensure that the domain stays in the `<span data-l10n-name="domain">` markup.
@@ -353,9 +420,12 @@ urlbar-result-action-visit = Kirish
 #  $domain (String): the domain that is full screen, e.g. "mozilla.org"
 fullscreen-warning-domain = <span data-l10n-name="domain">{ $domain }</span> – hozir butun ekranda
 fullscreen-warning-no-domain = Bu hujjat hozir butun ekranda ko‘rinmoqda
+
+
 fullscreen-exit-button = "Butun ekranda" usulidan chiqish (Esc)
 # "esc" is lowercase on mac keyboards, but uppercase elsewhere.
 fullscreen-exit-mac-button = "Butun ekranda" usulidan chiqish (Esc)
+
 # Please ensure that the domain stays in the `<span data-l10n-name="domain">` markup.
 # Variables
 #  $domain (String): the domain that is using pointer-lock, e.g. "mozilla.org"
@@ -367,6 +437,8 @@ pointerlock-warning-no-domain = Bu hujat ko‘rsatkichingiz ustidan nazorat o‘
 
 ## Bookmarks panels, menus and toolbar
 
+bookmarks-manage-bookmarks =
+    .label = Xatchoʻplarni boshqarish
 bookmarks-toolbar-chevron =
     .tooltiptext = Ko‘proq xatcho‘plarni ko‘rsatish
 bookmarks-sidebar-content =
@@ -377,6 +449,11 @@ bookmarks-other-bookmarks-menu =
     .label = Boshqa xatcho‘plar
 bookmarks-mobile-bookmarks-menu =
     .label = Mobil xatcho‘plar
+
+## Variables:
+##   $isVisible (boolean): if the specific element (e.g. bookmarks sidebar,
+##                         bookmarks toolbar, etc.) is visible or not.
+
 bookmarks-tools-sidebar-visibility =
     .label =
         { $isVisible ->
@@ -389,18 +466,26 @@ bookmarks-tools-toolbar-visibility-menuitem =
             [true] Xatcho‘plar panelini berkitish
            *[other] Xatcho‘plar panelini ko‘rsatish
         }
+bookmarks-tools-toolbar-visibility-panel =
+    .label =
+        { $isVisible ->
+            [true] Xatchoʻplar panelini yashirish
+           *[other] Xatchoʻplar panelini koʻrsatish
+        }
 bookmarks-tools-menu-button-visibility =
     .label =
         { $isVisible ->
             [true] Xatcho‘plar menyusini paneldan olib tashlash
            *[other] Xatcho‘plar menyusini panelga qo‘shish
         }
+
+##
+
 bookmarks-search =
     .label = Xatcho‘plarni qidirish
 bookmarks-tools =
     .label = Xatcho‘p vositalari
-bookmarks-bookmark-edit-panel =
-    .label = Ushbu xatcho‘pni o‘zgartirish
+
 # The aria-label is a spoken label that should not include the word "toolbar" or
 # such, because screen readers already know that this container is a toolbar.
 # This avoids double-speaking.
@@ -428,34 +513,46 @@ save-to-pocket-button =
 
 ## Repair text encoding toolbar button
 
+repair-text-encoding-button =
+    .label = Matn shifrini tuzatish
+    .tooltiptext = Sahifa tarkibidan toʻgʻri matn shifrini taxmin qiling
 
 ## Customize Toolbar Buttons
 
+# Variables:
+#  $shortcut (String): keyboard shortcut to open settings (only on macOS)
+toolbar-settings-button =
+    .label = Sozlamalar
+    .tooltiptext =
+        { PLATFORM() ->
+            [macos] Sozlamalarni ({ $shortcut }) ochish
+           *[other] Sozlamalarni ochish
+        }
 
-## More items
-
-more-menu-go-offline =
-    .label = Oflayn ishlash
-    .accesskey = i
 toolbar-overflow-customize-button =
     .label = Asboblar panelini sozlash…
     .accesskey = C
+
 toolbar-button-email-link =
     .label = Havolani jo‘natish
     .tooltiptext = Sahifa havolasini jo‘natish
+
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
     .label = Sahifani saqlash
     .tooltiptext = Sahifani saqlash ({ $shortcut })
+
 # Variables:
 #  $shortcut (String): keyboard shortcut to open a local file
 toolbar-button-open-file =
     .label = Faylni ochish
     .tooltiptext = Faylni ochish ({ $shortcut })
+
 toolbar-button-synced-tabs =
     .label = Sinxronlangan varaqlar
     .tooltiptext = Boshqa qurilmalardagi varaqlarni koʻrsatish
+
 # Variables
 # $shortcut (string) - Keyboard shortcut to open a new private browsing window
 toolbar-button-new-private-window =
@@ -465,14 +562,14 @@ toolbar-button-new-private-window =
 ## EME notification panel
 
 eme-notifications-drm-content-playing = Ushbu saytdagi bir nechta audio yoki video DRM dasturiy ta’minotidan foydalanadi. Ushbu dasturiy ta’minot { -brand-short-name } imkoniyatlarini cheklashi mumkin.
+eme-notifications-drm-content-playing-manage = Sozlamalarni boshqarish
 
 ## Password save/update panel
 
+panel-save-update-username = Foydalanuvchi nomi
+panel-save-update-password = Parol
 
 ## Add-on removal warning
-
-
-## Remote / Synced tabs
 
 
 ##
@@ -486,6 +583,7 @@ ui-tour-info-panel-close =
 popups-infobar-allow =
     .label = { $uriHost } uchun paydo bo‘luvchi oynalarga ruxsat berish
     .accesskey = p
+
 popups-infobar-block =
     .label = { $uriHost } uchun paydo bo‘luvchi oynalarni bloklash
     .accesskey = p
@@ -495,9 +593,21 @@ popups-infobar-block =
 popups-infobar-dont-show-message =
     .label = Paydo bo‘luvchi oynalar bloklanganda ushbu xabar ko‘rsatilmasin
     .accesskey = D
+
+edit-popup-settings =
+    .label = Qalquvchi oyna sozlamalarini boshqarish…
+    .accesskey = m
+
 picture-in-picture-hide-toggle =
     .label = Rasm ichida rasm rejimini yashirish
     .accesskey = H
+
+## Since the default position for PiP controls does not change for RTL layout,
+## right-to-left languages should use "Left" and "Right" as in the English strings,
+
+
+##
+
 
 # Navigator Toolbox
 
@@ -506,35 +616,106 @@ picture-in-picture-hide-toggle =
 # this container is a toolbar. This avoids double-speaking.
 navbar-accessible =
     .aria-label = Navigatsiya
+
 navbar-downloads =
     .label = Yuklab olishlar
+
 navbar-overflow =
     .tooltiptext = Ko‘proq asboblar…
+
 # Variables:
 #   $shortcut (String): keyboard shortcut to print the page
 navbar-print =
     .label = Chop qilish
     .tooltiptext = { $shortcut } sahifasini chop qilish
-navbar-print-tab-modal-disabled =
-    .label = Chop qilish
-    .tooltiptext = Ushbu sahifani chop qilish
+
 navbar-home =
     .label = Uy
     .tooltiptext = { -brand-short-name } bosh sahifasi
+
 navbar-library =
     .label = Kutubxona
     .tooltiptext = Tarix va saqlangan xatcho‘p kabilarni ko‘rish
+
 navbar-search =
     .title = Qidiruv
-navbar-accessibility-indicator =
-    .tooltiptext = Qulay funksiyalar yoqildi
+
 # Name for the tabs toolbar as spoken by screen readers. The word
 # "toolbar" is appended automatically and should not be included in
 # in the string
 tabs-toolbar =
     .aria-label = Brauzer varaqlari
+
 tabs-toolbar-new-tab =
     .label = Yangi varaq
+
 tabs-toolbar-list-all-tabs =
     .label = Barcha varaqlar roʻyxati
     .tooltiptext = Barcha varaqlar roʻyxati
+
+## Infobar shown at startup to suggest session-restore
+
+
+## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
+
+data-reporting-notification-message = { -brand-short-name } automatik tarzda bir qancha ma`lumotlarni { -vendor-short-name }`ga  sizning tajribangizni ochirishimiz uchun jo'natdi.
+data-reporting-notification-button =
+    .label = Bo‘lishish kerak bo‘lganlarni tanlash
+    .accesskey = t
+
+## Unified extensions (toolbar) button
+
+
+## Unified extensions button when permission(s) are needed.
+## Note that the new line is intentionally part of the tooltip.
+
+
+## Unified extensions button when some extensions are quarantined.
+## Note that the new line is intentionally part of the tooltip.
+
+## Autorefresh blocker
+
+refresh-blocked-refresh-label = { -brand-short-name } ushbu sahifani avtomatik qayta yuklanishiga to‘sqinlik qildi.
+refresh-blocked-redirect-label = { -brand-short-name } ushbu sahifani avtomatik tarzda boshqa sahifaga yo‘naltirishiga to‘sqinlik qildi.
+
+refresh-blocked-allow =
+    .label = Ruxsat berish
+    .accesskey = A
+
+## Firefox Relay integration
+
+
+## Popup Notification
+
+
+## Add-on Pop-up Notifications
+
+popup-notification-addon-install-unsigned =
+    .value = (Tekshirilmagan)
+popup-notification-xpinstall-prompt-learn-more = Qoʻshimcha dasturlarni xavfsiz oʻrnatish haqida batafsil
+
+## Pop-up warning
+
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-message =
+    { $popupCount ->
+        [one] { -brand-short-name } ushbu saytni o‘zi paydo bo‘luvchi oynadan to‘sib turibdi.
+       *[other] { -brand-short-name } ushbu saytni o‘zi paydo bo‘luvchi { $popupCount } oynalardan to‘sib turibdi.
+    }
+popup-warning-button =
+    .label =
+        { PLATFORM() ->
+            [windows] Sozlamalar
+           *[other] Parametrlar
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [windows] S
+           *[other] P
+        }
+
+# Variables:
+#   $popupURI (String): the URI for the pop-up window
+popup-show-popup-menuitem =
+    .label = '{ $popupURI }”ni ko“rsatish

@@ -67,8 +67,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } корисника
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Приступите обележивачима свуда.
@@ -96,24 +94,6 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Прочитајте напомене о верзији
 
-## Search Bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 # Variables:
@@ -127,20 +107,6 @@ cfr-doorhanger-milestone-heading2 =
     }
 cfr-doorhanger-milestone-ok-button = Прикажи све
     .accesskey = П
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = Затвори
     .accesskey = C
 
@@ -155,13 +121,6 @@ cfr-doorhanger-doh-secondary-button = Онемогући
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Ваша приватност је битна. { -brand-short-name } сада изолује веб странице, што хакерима отежава крађу лозинки, бројева кредитних картица и других осетљивих података.
-cfr-doorhanger-fission-header = Изолација сајта
-cfr-doorhanger-fission-primary-button = Разумем
-    .accesskey = Р
-cfr-doorhanger-fission-secondary-button = Сазнајте више
-    .accesskey = L
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Видео записи на овом сајту се можда неће правилно репродуковати у овој { -brand-short-name } верзији. Ажурирајте { -brand-short-name } за потпуну видео подршку.
@@ -175,9 +134,134 @@ cfr-doorhanger-video-support-header =
 cfr-doorhanger-video-support-primary-button = Ажурирај
     .accesskey = А
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
+spotlight-public-wifi-vpn-header = Изгледа да користите јавни Wi-Fi
+spotlight-public-wifi-vpn-body = Да бисте сакрили вашу локацију и активност прегледања, размислите о коришћењу виртуелне приватне мреже (VPN). VPN ће вас заштитити када прегледате на јавним местима као што су аеродроми и кафићи.
+spotlight-public-wifi-vpn-primary-button = Будите приватни уз { -mozilla-vpn-brand-name }
+    .accesskey = S
+spotlight-public-wifi-vpn-link = Не сада
+    .accesskey = N
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Бољи интернет почиње са вама
+spotlight-better-internet-body = Када користите { -brand-short-name }, подржавате отворен, приступачан и бољи интернет за све.
+spotlight-peace-mind-header = Ту смо за вас
+spotlight-peace-mind-body = Сваког месеца, { -brand-short-name } блокира у просеку 3,000 елемената за праћење по кориснику. Јер ништа, а поготово не овакви уништавачи приватности, не треба да стоји између вас и доброг интернета.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Остави у доку
+       *[other] Закачи на траку
+    }
+spotlight-pin-secondary-button = Не сада
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+mr2022-background-update-toast-title = Нови { -brand-short-name }. Приватнији. Са мање праћења. Без компромиса.
+mr2022-background-update-toast-text = Испробајте нови { -brand-short-name }, надограђен нашом најјачом заштитом од праћења до сада.
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it
+# using a variable font like Arial): the button can only fit 1-2
+# additional characters, exceeding characters will be truncated.
+mr2022-background-update-toast-primary-button-label = Отвори { -brand-shorter-name }
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = Подсети ме касније
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Испробај
+    .accesskey = И
+firefoxview-cfr-secondarybutton = Не сада
+    .accesskey = Н
+firefoxview-cfr-header-v2 = Брзо наставите тамо где сте стали
+firefoxview-cfr-body-v2 = Вратите недавно затворене картице и лако прелазите између уређаја уз { -firefoxview-brand-name }.
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = Упознајте { -firefoxview-brand-name }
+
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = Желите ту отворену картицу на свом телефону? Треба вам сајт који сте управо посетили? Уз { -firefoxview-brand-name } све може!
+firefoxview-spotlight-promo-primarybutton = Сазнајте како ради
+firefoxview-spotlight-promo-secondarybutton = Прескочи
+
+## Colorways expiry reminder CFR
+
+colorways-cfr-primarybutton = Одаберите комбинацију боја
+    .accesskey = О
+
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = Обојите свој прегледач ексклузивним { -brand-short-name } нијансама инспирисаним гласовима који су утицали на културу.
+colorways-cfr-header-28days = Комбинације боја „Независни гласови” истичу 16. јануара
+colorways-cfr-header-14days = Комбинације боја „Независни гласови” истичу за две седмице
+colorways-cfr-header-7days = Комбинације боја „Независни гласови” истичу ове седмице
+colorways-cfr-header-today = Комбинације боја „Независни гласови” истичу данас
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-header = Дозволи да { -brand-short-name } одбаци банере колачића?
+cfr-cbh-body = { -brand-short-name } може аутоматски да одбаци више захтева за банере колачића.
+cfr-cbh-confirm-button = Одбаци банере колачића
+    .accesskey = О
+cfr-cbh-dismiss-button = Не сада
+    .accesskey = Н
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+july-jam-headline = Ту смо за вас
+july-jam-body = У просеку, { -brand-short-name } месечно блокира преко 3,000 елемената за праћење и пружа вам безбедан и брз приступ интернету.
+july-jam-set-default-primary = Отвори моје везе са { -brand-short-name }-ом
+fox-doodle-pin-headline = Добро дошли назад
+
+# “indie” is short for the term “independent”.
+# In this instance, free from outside influence or control.
+fox-doodle-pin-body = Мали подсетник да ваш омиљени независни прегледач можете закачити и отворити га једним кликом.
+fox-doodle-pin-primary = Отвори моје везе са { -brand-short-name }-ом
+fox-doodle-pin-secondary = Не сада
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+set-default-pdf-handler-headline = <strong>Ваши PDF-ови се сада отварају у { -brand-short-name }-у.</strong> Измените или потпишите обрасце директно у прегледачу. Да промените, потражите „PDF” у подешавањима.
+set-default-pdf-handler-primary = Важи
+
+## FxA sync CFR
+
+fxa-sync-cfr-header = Планирате да набавите нови уређај?
+fxa-sync-cfr-body = Побрините се да ваши обележивачи, лозинке и картице буду са вама када отворите нови { -brand-product-name } прегледач.
+fxa-sync-cfr-primary = Сазнајте више
+    .accesskey = С
+fxa-sync-cfr-secondary = Подсети ме касније
+    .accesskey = П
+
+## Device Migration FxA Spotlight
+
+device-migration-fxa-spotlight-header = Користите старији уређај?
+device-migration-fxa-spotlight-body = Направите резервну копију података да не изгубите важне податке као што су обележивачи и лозинке — посебно када их преносите на нови уређај.
+device-migration-fxa-spotlight-primary-button = Како да направим резервну копију
+device-migration-fxa-spotlight-link = Подсети ме касније

@@ -65,22 +65,20 @@ cryptominer-tab-content = Los criptomineros utilizan la potencia de cómputo de 
 protections-close-button2 =
     .aria-label = Cerrar
     .title = Cerrar
-  
+
 mobile-app-title = Bloquear los rastreadores de anuncios en más dispositivos
 mobile-app-card-content = Usa el navegador móvil con protección integrada contra el rastreo de la publicidad.
 mobile-app-links = Navegador { -brand-product-name } para <a data-l10n-name="android-mobile-inline-link">Android</a> e <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = No vuelvas a olvidar una contraseña
-lockwise-title-logged-in2 = Administración de contraseñas
-lockwise-header-content = { -lockwise-brand-name } almacena de forma segura tus contraseñas en tu navegador.
+passwords-title-logged-in = Gestiona tus contraseñas
+passwords-header-content = { -brand-product-name } almacena de forma segura tus contraseñas en el navegador.
 lockwise-header-content-logged-in = Almacena de forma segura tus contraseñas y sincronízalas en todos tus dispositivos.
-protection-report-save-passwords-button = Guardar contraseñas
-    .title = Guardar contraseñas en { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Gestionar contraseñas
-    .title = Gestionar contraseñas en { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Lleva tus contraseñas a todas partes
-lockwise-no-logins-card-content = Usa las contraseñas guardadas en { -brand-short-name } en cualquier dispositivo.
-lockwise-app-links = { -lockwise-brand-name } para <a data-l10n-name="lockwise-android-inline-link">Android</a> e <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Guardar contraseñas
+    .title = Guardar contraseñas
+protection-report-passwords-manage-passwords-button = Gestionar contraseñas
+    .title = Gestionar contraseñas
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

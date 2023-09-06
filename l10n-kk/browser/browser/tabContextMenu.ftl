@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Барлық беттерді таңдау
     .accesskey = т
+tab-context-play-tab =
+    .label = Бетті ойнату
+    .accesskey = о
+tab-context-play-tabs =
+    .label = Беттерді ойнату
+    .accesskey = у
 duplicate-tab =
     .label = Бетті қосарлау
     .accesskey = о
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Беттерді бетбелгілерге қосу…
     .accesskey = г
-bookmark-tab =
-    .label = Бетті бетбелгілерге қосу
-    .accesskey = б
+tab-context-bookmark-tab =
+    .label = Бетті бетбелгілерге қосу…
+    .accesskey = Б
 tab-context-open-in-new-container-tab =
     .label = Жаңа контейнерлік бетте ашу
     .accesskey = е
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Бөлісу
     .accesskey = л
-tab-context-share-more =
-    .label = Көбірек…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,13 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] Жабылған беттерді қайта ашу
         }
     .accesskey = й
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Бетті жабу
-           *[other] Беттерді жабу
-        }
-    .accesskey = ж
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

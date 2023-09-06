@@ -55,14 +55,13 @@ printpreview-homearrow =
     .tooltiptext = Tudalen gyntaf
 printpreview-previousarrow =
     .label = { $arrow }
-    .tooltiptext = Tudalen blaenorol
+    .tooltiptext = Tudalen flaenorol
 printpreview-nextarrow =
     .label = { $arrow }
     .tooltiptext = Tudalen nesaf
 printpreview-endarrow =
     .label = { $arrow }
     .tooltiptext = Tudalen olaf
-
 printpreview-homearrow-button =
     .title = Tudalen gyntaf
 printpreview-previousarrow-button =

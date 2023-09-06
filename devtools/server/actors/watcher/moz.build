@@ -9,6 +9,8 @@ DIRS += [
 ]
 
 DevToolsModules(
-    "WatchedDataHelpers.jsm",
-    "WatcherRegistry.jsm",
+    "browsing-context-helpers.sys.mjs",
+    "session-context.js",
+    "SessionDataHelpers.jsm",
+    "WatcherRegistry.sys.mjs",
 )

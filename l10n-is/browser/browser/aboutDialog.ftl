@@ -16,7 +16,15 @@ update-updateButton =
     .accesskey = r
 
 update-checkingForUpdates = Athuga með uppfærslur…
-update-downloading = <img data-l10n-name="icon"/>Niðurhala uppfærslu — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Niðurhala uppfærslu — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Sækir uppfærslu — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Virkja uppfærslu…
 
 update-failed = Uppfærsla mistókst. <label data-l10n-name="failed-link">Niðurhala nýjustu útgáfu</label>
@@ -24,26 +32,40 @@ update-failed-main = Uppfærsla mistókst. <a data-l10n-name="failed-link-main">
 
 update-adminDisabled = Uppfærslur hafa verið gerðar óvirkar af kerfistjóra
 update-noUpdatesFound = { -brand-short-name } er þegar með nýjustu útgáfu
+aboutdialog-update-checking-failed = Mistókst að athuga með uppfærslur.
 update-otherInstanceHandlingUpdates = Verið er að uppfæra { -brand-short-name } annarstaðar
 
-update-manual = Uppfærslur eru fáanlegar frá <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Uppfærslur eru fáanlegar frá <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Uppfærslur eru fáanlegar frá <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Ekki er hægt að setja inn fleiri uppfærslur. <label data-l10n-name="unsupported-link">Frekari upplýsingar</label>
 
 update-restarting = Endurræsir…
 
-channel-description = Þú ert núna á <label data-l10n-name="current-channel"></label> uppfærslu rásinni.{ " " }
+update-internal-error2 = Ekki er hægt að leita að uppfærslum vegna innri villu. Uppfærslur eru fáanlegar á <label data-l10n-name="manual-link">{ $displayUrl }</label>
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Þú ert núna á <label data-l10n-name="current-channel">{ $channel }</label> uppfærslurásinni.
 
 warningDesc-version = { -brand-short-name } er tilraunakenndur og gæti verið óstöðugur.
+
+aboutdialog-help-user = { -brand-product-name } hjálp
+aboutdialog-submit-feedback = Senda álit
 
 community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> er <label data-l10n-name="community-exp-creditsLink">samfélag</label> sem vinnur að því að gera vefinn opinn, frjálsan og aðgengilegan öllum.
 
 community-2 = { -brand-short-name } er hannað af <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, sem er <label data-l10n-name="community-creditsLink">samfélag</label> sem vinnur að því að gera vefinn opinn, frjálsan og aðgengilegan öllum.
 
-helpus = Viltu hjálpa? <label data-l10n-name="helpus-donateLink">Styrkja verkefnið</label> eða <label data-l10n-name="helpus-getInvolvedLink">taktu þátt!</label>
+helpus = Viltu hjálpa? <label data-l10n-name="helpus-donateLink">Styrktu verkefnið</label> eða <label data-l10n-name="helpus-getInvolvedLink">taktu þátt!</label>
 
-bottomLinks-license = Leyfisupplýsingar
-bottomLinks-rights = Notendaréttindi
+bottomLinks-license = Notkunarleyfi
+bottomLinks-rights = Réttindi notenda
 bottomLinks-privacy = Meðferð persónuupplýsinga
 
 # Example of resulting string: 66.0.1 (64-bit)

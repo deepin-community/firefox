@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = დამალვა
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = ყველა საქაღალდის გამოჩენა
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = დამალვა
+
 bookmark-overlay-new-folder-button =
     .label = ახალი საქაღალდე
     .accesskey = დ
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = ყველა ჭდის ჩვენება
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = დამალვა
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = ყველა ჭდის ჩვენება
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = დამალვა
 
 bookmark-overlay-keyword-2 =
     .value = საკვანძო სიტყვა

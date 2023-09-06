@@ -59,6 +59,7 @@ class nsCORSListenerProxy final : public nsIStreamListener,
 
   static void Shutdown();
   static void ClearCache();
+  static void ClearPrivateBrowsingCache();
 
   [[nodiscard]] nsresult Init(nsIChannel* aChannel,
                               DataURIHandling aAllowDataURI);
@@ -72,7 +73,8 @@ class nsCORSListenerProxy final : public nsIStreamListener,
                                     bool aPrivateBrowsing,
                                     bool aFromChromeContext,
                                     const nsAString& aMessage,
-                                    const nsACString& aCategory);
+                                    const nsACString& aCategory,
+                                    bool aIsWarning = false);
 
  private:
   // Only HttpChannelParent can call RemoveFromCorsPreflightCache
@@ -111,6 +113,7 @@ class nsCORSListenerProxy final : public nsIStreamListener,
   // an http: request to https: in nsHttpChannel::Connect() and hence
   // a request might not be marked as cross site request based on that promise.
   bool mHasBeenCrossSite;
+  bool mIsRedirect = false;
   // Under e10s, logging happens in the child process. Keep a reference to the
   // creator nsIHttpChannel in order to find the way back to the child. Released
   // in OnStopRequest().
@@ -122,7 +125,7 @@ class nsCORSListenerProxy final : public nsIStreamListener,
   // only locking mOuterListener, because it can be used on different threads.
   // We guarantee that OnStartRequest, OnDataAvailable and OnStopReques will be
   // called in order, but to make tsan happy we will lock mOuterListener.
-  mutable mozilla::Mutex mMutex;
+  mutable mozilla::Mutex mMutex MOZ_UNANNOTATED;
 };
 
 #endif

@@ -8,3 +8,31 @@ unknowncontenttype-settingschange =
             [windows] { -brand-short-name } मधिल पर्याय अंतर्गत संयोजना मध्ये बदल केला जाऊ शकतो.
            *[other] { -brand-short-name } मधिल प्राधान्यक्रमा द्वारे संयोजना मध्ये बदल केला जाऊ शकतो.
         }
+
+unknowncontenttype-intro = आपण उघडायचे, असे निश्चित केले आहे:
+unknowncontenttype-which-is = जे आहे:
+unknowncontenttype-from = पासून:
+unknowncontenttype-prompt = आपणास ही फाइल संचयीत करायची?
+unknowncontenttype-action-question = { -brand-short-name } नी या फाइलशी काय करावे?
+unknowncontenttype-open-with =
+    .label = यासह उघडा
+    .accesskey = O
+unknowncontenttype-other =
+    .label = इतर...
+unknowncontenttype-choose-handler =
+    .label =
+        { PLATFORM() ->
+            [macos] निवडा…
+           *[other] चाळा…
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [macos] C
+           *[other] B
+        }
+unknowncontenttype-save-file =
+    .label = फाइल साठवा
+    .accesskey = S
+unknowncontenttype-remember-choice =
+    .label = आत्तापासून यापुढे ह्या फाइल्सकरिता असेच आपोआप करा.
+    .accesskey = a

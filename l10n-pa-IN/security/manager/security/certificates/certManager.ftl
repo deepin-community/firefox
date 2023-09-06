@@ -26,9 +26,9 @@ certmgr-people = ਤੁਹਾਡੇ ਕੋਲ ਫ਼ਾਈਲ ਉੱਤੇ ਸ�
 certmgr-server = ਇਹ ਇੰਦਰਾਜ਼ ਸਰਵਰ ਸਰਟੀਫਿਕੇਟ ਗ਼ਲਤੀ ਛੋਟਾਂ ਦੀ ਪਛਾਣਦੇ ਹਨ
 certmgr-ca = ਤੁਹਾਡੇ ਕੋਲ ਫਾਇਲ 'ਤੇ ਸਰਟੀਫਿਕੇਟ ਹਨ, ਜੋ ਕਿ ਇਹਨਾਂ ਸਰਟੀਫਿਕੇਟ ਅਥਾਰਟੀਆਂ ਦੀ ਪਛਾਣ ਕਰਦੇ ਹਨ
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = CA ਸਰਟੀਫਿਕੇਟ ਟਰੱਸਟ ਸੈਟਿੰਗ ਸੋਧ
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = ਟਰੱਸਟ ਸੈਟਿੰਗਾਂ ਨੂੰ ਸੋਧੋ:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = ਇਹ ਸਰਟੀਫਿਕੇਟ ਮੇਲ ਯੂਜ਼ਰਾਂ ਨੂੰ ਪਛਾਣ ਸਕਦਾ ਹੈ।
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = ਸਰਟੀਫਕੇਟ ਨੂੰ ਹਟਾਓ
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = ਹੋਸਟ
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = ਸਰਵਰ
-
-certmgr-override-lifetime =
-    .label = ਲਾਇਫ-ਟਾਈਮ
 
 certmgr-token-name =
     .label = ਸੁਰੱਖਿਆ ਜੰਤਰ
@@ -186,13 +183,14 @@ delete-email-cert-impact = ਜੇ ਤੁਸੀਂ ਇੱਕ ਵਿਅਕਤੀ �
 cert-with-serial =
     .value = ਲੜੀ ਨੰਬਰ ਨਾਲ ਸਰਟੀਫਿਕੇਟ: { $serialNumber }
 
-## Cert Viewer
-
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = ਕੋਈ ਕਲਾਈਂਟ ਸਰਟੀਫਿਕੇਟ ਨਾ ਭੇਜੋ
 
 # Used when no cert is stored for an override
 no-cert-stored-for-override = (ਸੰਭਾਲਿਆ ਨਹੀਂ ਹੈ)
+
+# When a certificate is unavailable (for example, it has been deleted or the token it exists on has been removed).
+certificate-not-available = (ਨਾ-ਉਪਲੱਬਧ)
 
 ## Used to show whether an override is temporary or permanent
 

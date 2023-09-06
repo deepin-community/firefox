@@ -34,7 +34,6 @@ about-telemetry-events-section = Tachartasan
 about-telemetry-simple-measurements-section = Tomhaisean simplidh
 about-telemetry-slow-sql-section = SQL Statements slaodach
 about-telemetry-addon-details-section = Mion-fhiosrachadh an tuilleadain
-about-telemetry-captured-stacks-section = Stacan glacte
 about-telemetry-late-writes-section = Sgrìobhaidhean fadalach
 about-telemetry-raw-payload-section = Raw Payload
 about-telemetry-raw = JSON amh
@@ -124,10 +123,6 @@ about-telemetry-keys-header = Roghainn
 about-telemetry-names-header = Ainm
 about-telemetry-values-header = Luach
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (cunntas glacaidh: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Sgrìobhadh fadalach #{ $lateWriteCount }
 about-telemetry-stack-title = Staca:
@@ -138,12 +133,6 @@ about-telemetry-category-header = roinn
 about-telemetry-method-header = dòigh
 about-telemetry-object-header = oibseact
 about-telemetry-extra-header = extra
-about-telemetry-origin-section = Origin Telemetry
-about-telemetry-origin-origin = origin
-about-telemetry-origin-count = count
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Firefox Origin Telemetry</a> encodes data before it is sent so that { $telemetryServerOwner } can count things, but not know whether or not any given { -brand-product-name } contributed to that count. (<a data-l10n-name="prio-blog-link">learn more</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = Pròiseas { $process }

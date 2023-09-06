@@ -11,6 +11,7 @@
 
 #include "frontend/CompilationStencil.h"
 #include "js/CompilationAndEvaluation.h"
+#include "js/experimental/CompileScript.h"
 #include "js/experimental/JSStencil.h"
 #include "js/Modules.h"
 #include "js/OffThreadScriptCompilation.h"
@@ -48,8 +49,9 @@ bool basic_test(const CharT* chars) {
       JS::CompileGlobalScriptToStencil(cx, options, srcBuf);
   CHECK(stencil);
 
-  JS::RootedScript script(cx,
-                          JS::InstantiateGlobalStencil(cx, options, stencil));
+  JS::InstantiateOptions instantiateOptions(options);
+  JS::RootedScript script(
+      cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
   CHECK(script);
 
   JS::RootedValue rval(cx);
@@ -88,14 +90,15 @@ bool basic_test(const CharT* chars) {
       JS::CompileModuleScriptToStencil(cx, options, srcBuf);
   CHECK(stencil);
 
+  JS::InstantiateOptions instantiateOptions(options);
   JS::RootedObject moduleObject(
-      cx, JS::InstantiateModuleStencil(cx, options, stencil));
+      cx, JS::InstantiateModuleStencil(cx, instantiateOptions, stencil));
   CHECK(moduleObject);
 
   // Link and evaluate the module graph. The link step used to be call
   // "instantiate" but is unrelated to the concept in Stencil with same name.
   JS::RootedValue rval(cx);
-  CHECK(JS::ModuleInstantiate(cx, moduleObject));
+  CHECK(JS::ModuleLink(cx, moduleObject));
   CHECK(JS::ModuleEvaluate(cx, moduleObject, &rval));
   CHECK(!rval.isUndefined());
 
@@ -122,8 +125,9 @@ BEGIN_TEST(testStencil_NonSyntactic) {
       JS::CompileGlobalScriptToStencil(cx, options, srcBuf);
   CHECK(stencil);
 
-  JS::RootedScript script(cx,
-                          JS::InstantiateGlobalStencil(cx, options, stencil));
+  JS::InstantiateOptions instantiateOptions(options);
+  JS::RootedScript script(
+      cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
   CHECK(script);
 
   JS::RootedObject obj(cx, JS_NewPlainObject(cx));
@@ -178,9 +182,9 @@ bool RunInNewGlobal(JSContext* cx, RefPtr<JS::Stencil> stencil) {
 
   JSAutoRealm ar(cx, otherGlobal);
 
-  JS::CompileOptions options(cx);
-  JS::RootedScript script(cx,
-                          JS::InstantiateGlobalStencil(cx, options, stencil));
+  JS::InstantiateOptions instantiateOptions;
+  JS::RootedScript script(
+      cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
   CHECK(script);
 
   JS::RootedValue rval(cx);
@@ -210,13 +214,14 @@ BEGIN_TEST(testStencil_Transcode) {
     CHECK(stencil);
 
     // Encode Stencil to XDR
-    JS::TranscodeResult res = JS::EncodeStencil(cx, options, stencil, buffer);
+    JS::TranscodeResult res = JS::EncodeStencil(cx, stencil, buffer);
     CHECK(res == JS::TranscodeResult::Ok);
     CHECK(!buffer.empty());
 
     // Instantiate and Run
-    JS::RootedScript script(cx,
-                            JS::InstantiateGlobalStencil(cx, options, stencil));
+    JS::InstantiateOptions instantiateOptions(options);
+    JS::RootedScript script(
+        cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
     JS::RootedValue rval(cx);
     CHECK(script);
     CHECK(JS_ExecuteScript(cx, script, &rval));
@@ -234,14 +239,24 @@ BEGIN_TEST(testStencil_Transcode) {
 
   {
     // Decode the stencil into new range
-    JS::CompileOptions options(cx);
     RefPtr<JS::Stencil> stencil;
 
     {
+      JS::DecodeOptions decodeOptions;
       JS::TranscodeRange range(buffer.begin(), buffer.length());
       JS::TranscodeResult res =
-          JS::DecodeStencil(cx, options, range, getter_AddRefs(stencil));
+          JS::DecodeStencil(cx, decodeOptions, range, getter_AddRefs(stencil));
       CHECK(res == JS::TranscodeResult::Ok);
+    }
+
+    {
+      JS::FrontendContext* fc = JS::NewFrontendContext();
+      JS::DecodeOptions decodeOptions;
+      JS::TranscodeRange range(buffer.begin(), buffer.length());
+      JS::TranscodeResult res =
+          JS::DecodeStencil(fc, decodeOptions, range, getter_AddRefs(stencil));
+      CHECK(res == JS::TranscodeResult::Ok);
+      JS::DestroyFrontendContext(fc);
     }
 
     // Delete the buffer to verify that the decoded stencil has no dependency
@@ -250,8 +265,9 @@ BEGIN_TEST(testStencil_Transcode) {
     buffer.clear();
 
     // Instantiate and Run
-    JS::RootedScript script(cx,
-                            JS::InstantiateGlobalStencil(cx, options, stencil));
+    JS::InstantiateOptions instantiateOptions;
+    JS::RootedScript script(
+        cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
     stencil = nullptr;
     JS::RootedValue rval(cx);
     CHECK(script);
@@ -286,7 +302,7 @@ BEGIN_TEST(testStencil_TranscodeBorrowing) {
     CHECK(stencil);
 
     // Encode Stencil to XDR
-    JS::TranscodeResult res = JS::EncodeStencil(cx, options, stencil, buffer);
+    JS::TranscodeResult res = JS::EncodeStencil(cx, stencil, buffer);
     CHECK(res == JS::TranscodeResult::Ok);
     CHECK(!buffer.empty());
   }
@@ -294,14 +310,15 @@ BEGIN_TEST(testStencil_TranscodeBorrowing) {
   JS::RootedScript script(cx);
   {
     JS::TranscodeRange range(buffer.begin(), buffer.length());
-    JS::CompileOptions options(cx);
-    options.borrowBuffer = true;
+    JS::DecodeOptions decodeOptions;
+    decodeOptions.borrowBuffer = true;
     RefPtr<JS::Stencil> stencil;
     JS::TranscodeResult res =
-        JS::DecodeStencil(cx, options, range, getter_AddRefs(stencil));
+        JS::DecodeStencil(cx, decodeOptions, range, getter_AddRefs(stencil));
     CHECK(res == JS::TranscodeResult::Ok);
 
-    script = JS::InstantiateGlobalStencil(cx, options, stencil);
+    JS::InstantiateOptions instantiateOptions;
+    script = JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil);
     CHECK(script);
   }
 
@@ -330,19 +347,17 @@ BEGIN_TEST(testStencil_OffThread) {
   JS::SourceText<mozilla::Utf8Unit> srcBuf;
   CHECK(srcBuf.init(cx, chars, strlen(chars), JS::SourceOwnership::Borrowed));
 
-  js::Monitor monitor(js::mutexid::ShellOffThreadState);
+  js::Monitor monitor MOZ_UNANNOTATED(js::mutexid::ShellOffThreadState);
   JS::CompileOptions options(cx);
   JS::OffThreadToken* token;
 
   // Force off-thread even though if this is a small file.
   options.forceAsync = true;
 
-  CHECK(token = JS::CompileOffThread(cx, options, srcBuf, callback, &monitor));
+  CHECK(token = JS::CompileToStencilOffThread(cx, options, srcBuf, callback,
+                                              &monitor));
 
   {
-    // Finish any active GC in case it is blocking off-thread work.
-    js::gc::FinishGC(cx);
-
     js::AutoLockMonitor lock(monitor);
     lock.wait();
   }
@@ -350,8 +365,9 @@ BEGIN_TEST(testStencil_OffThread) {
   RefPtr<JS::Stencil> stencil = JS::FinishOffThreadStencil(cx, token);
   CHECK(stencil);
 
-  JS::RootedScript script(cx,
-                          JS::InstantiateGlobalStencil(cx, options, stencil));
+  JS::InstantiateOptions instantiateOptions(options);
+  JS::RootedScript script(
+      cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
   CHECK(script);
 
   JS::RootedValue rval(cx);
@@ -370,6 +386,56 @@ static void callback(JS::OffThreadToken* token, void* context) {
 
 END_TEST(testStencil_OffThread)
 
+BEGIN_TEST(testStencil_OffThreadWithInstantiationStorage) {
+  const char* chars =
+      "function f() { return 42; }"
+      "f();";
+
+  JS::SourceText<mozilla::Utf8Unit> srcBuf;
+  CHECK(srcBuf.init(cx, chars, strlen(chars), JS::SourceOwnership::Borrowed));
+
+  js::Monitor monitor MOZ_UNANNOTATED(js::mutexid::ShellOffThreadState);
+  JS::CompileOptions options(cx);
+  JS::OffThreadToken* token;
+
+  // Force off-thread even though if this is a small file.
+  options.forceAsync = true;
+
+  options.allocateInstantiationStorage = true;
+
+  CHECK(token = JS::CompileToStencilOffThread(cx, options, srcBuf, callback,
+                                              &monitor));
+
+  {
+    js::AutoLockMonitor lock(monitor);
+    lock.wait();
+  }
+
+  JS::InstantiationStorage storage;
+  RefPtr<JS::Stencil> stencil = JS::FinishOffThreadStencil(cx, token, &storage);
+  CHECK(stencil);
+
+  JS::InstantiateOptions instantiateOptions(options);
+  JS::RootedScript script(cx, JS::InstantiateGlobalStencil(
+                                  cx, instantiateOptions, stencil, &storage));
+  CHECK(script);
+
+  JS::RootedValue rval(cx);
+  CHECK(JS_ExecuteScript(cx, script, &rval));
+  CHECK(rval.isNumber() && rval.toNumber() == 42);
+
+  return true;
+}
+
+static void callback(JS::OffThreadToken* token, void* context) {
+  js::Monitor& monitor = *static_cast<js::Monitor*>(context);
+
+  js::AutoLockMonitor lock(monitor);
+  lock.notify();
+}
+
+END_TEST(testStencil_OffThreadWithInstantiationStorage)
+
 BEGIN_TEST(testStencil_OffThreadModule) {
   const char* chars =
       "export function f() { return 42; }"
@@ -378,20 +444,17 @@ BEGIN_TEST(testStencil_OffThreadModule) {
   JS::SourceText<mozilla::Utf8Unit> srcBuf;
   CHECK(srcBuf.init(cx, chars, strlen(chars), JS::SourceOwnership::Borrowed));
 
-  js::Monitor monitor(js::mutexid::ShellOffThreadState);
+  js::Monitor monitor MOZ_UNANNOTATED(js::mutexid::ShellOffThreadState);
   JS::CompileOptions options(cx);
   JS::OffThreadToken* token;
 
   // Force off-thread even though if this is a small file.
   options.forceAsync = true;
 
-  CHECK(token = JS::CompileOffThreadModule(cx, options, srcBuf, callback,
-                                           &monitor));
+  CHECK(token = JS::CompileModuleToStencilOffThread(cx, options, srcBuf,
+                                                    callback, &monitor));
 
   {
-    // Finish any active GC in case it is blocking off-thread work.
-    js::gc::FinishGC(cx);
-
     js::AutoLockMonitor lock(monitor);
     lock.wait();
   }
@@ -399,12 +462,13 @@ BEGIN_TEST(testStencil_OffThreadModule) {
   RefPtr<JS::Stencil> stencil = JS::FinishOffThreadStencil(cx, token);
   CHECK(stencil);
 
+  JS::InstantiateOptions instantiateOptions(options);
   JS::RootedObject moduleObject(
-      cx, JS::InstantiateModuleStencil(cx, options, stencil));
+      cx, JS::InstantiateModuleStencil(cx, instantiateOptions, stencil));
   CHECK(moduleObject);
 
   JS::RootedValue rval(cx);
-  CHECK(JS::ModuleInstantiate(cx, moduleObject));
+  CHECK(JS::ModuleLink(cx, moduleObject));
   CHECK(JS::ModuleEvaluate(cx, moduleObject, &rval));
   CHECK(!rval.isUndefined());
 
@@ -421,5 +485,392 @@ static void callback(JS::OffThreadToken* token, void* context) {
   js::AutoLockMonitor lock(monitor);
   lock.notify();
 }
-
 END_TEST(testStencil_OffThreadModule)
+
+BEGIN_TEST(testStencil_OffThreadModuleWithInstantiationStorage) {
+  const char* chars =
+      "export function f() { return 42; }"
+      "globalThis.x = f();";
+
+  JS::SourceText<mozilla::Utf8Unit> srcBuf;
+  CHECK(srcBuf.init(cx, chars, strlen(chars), JS::SourceOwnership::Borrowed));
+
+  js::Monitor monitor MOZ_UNANNOTATED(js::mutexid::ShellOffThreadState);
+  JS::CompileOptions options(cx);
+  JS::OffThreadToken* token;
+
+  // Force off-thread even though if this is a small file.
+  options.forceAsync = true;
+
+  options.allocateInstantiationStorage = true;
+
+  CHECK(token = JS::CompileModuleToStencilOffThread(cx, options, srcBuf,
+                                                    callback, &monitor));
+
+  {
+    js::AutoLockMonitor lock(monitor);
+    lock.wait();
+  }
+
+  JS::InstantiationStorage storage;
+  RefPtr<JS::Stencil> stencil = JS::FinishOffThreadStencil(cx, token, &storage);
+  CHECK(stencil);
+
+  JS::InstantiateOptions instantiateOptions(options);
+  JS::RootedObject moduleObject(
+      cx,
+      JS::InstantiateModuleStencil(cx, instantiateOptions, stencil, &storage));
+  CHECK(moduleObject);
+
+  JS::RootedValue rval(cx);
+  CHECK(JS::ModuleLink(cx, moduleObject));
+  CHECK(JS::ModuleEvaluate(cx, moduleObject, &rval));
+  CHECK(!rval.isUndefined());
+
+  js::RunJobs(cx);
+  CHECK(JS_GetProperty(cx, global, "x", &rval));
+  CHECK(rval.isNumber() && rval.toNumber() == 42);
+
+  return true;
+}
+
+static void callback(JS::OffThreadToken* token, void* context) {
+  js::Monitor& monitor = *static_cast<js::Monitor*>(context);
+
+  js::AutoLockMonitor lock(monitor);
+  lock.notify();
+}
+END_TEST(testStencil_OffThreadModuleWithInstantiationStorage)
+
+BEGIN_TEST(testStencil_OffThreadDecode) {
+  JS::SetProcessBuildIdOp(TestGetBuildId);
+
+  JS::TranscodeBuffer buffer;
+
+  {
+    const char* chars =
+        "function f() { return 42; }"
+        "f();";
+
+    JS::SourceText<mozilla::Utf8Unit> srcBuf;
+    CHECK(srcBuf.init(cx, chars, strlen(chars), JS::SourceOwnership::Borrowed));
+
+    JS::CompileOptions options(cx);
+    RefPtr<JS::Stencil> stencil =
+        JS::CompileGlobalScriptToStencil(cx, options, srcBuf);
+    CHECK(stencil);
+
+    // Encode Stencil to XDR
+    JS::TranscodeResult res = JS::EncodeStencil(cx, stencil, buffer);
+    CHECK(res == JS::TranscodeResult::Ok);
+    CHECK(!buffer.empty());
+
+    // Instantiate and Run
+    JS::InstantiateOptions instantiateOptions(options);
+    JS::RootedScript script(
+        cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
+    JS::RootedValue rval(cx);
+    CHECK(script);
+    CHECK(JS_ExecuteScript(cx, script, &rval));
+    CHECK(rval.isNumber() && rval.toNumber() == 42);
+  }
+
+  JS::OffThreadToken* token;
+  {
+    JS::DecodeOptions decodeOptions;
+    js::Monitor monitor MOZ_UNANNOTATED(js::mutexid::ShellOffThreadState);
+    JS::TranscodeRange range(buffer.begin(), buffer.length());
+
+    // Force off-thread even though if this is a small file.
+    decodeOptions.forceAsync = true;
+
+    CHECK(token = JS::DecodeStencilOffThread(cx, decodeOptions, range, callback,
+                                             &monitor));
+
+    {
+      js::AutoLockMonitor lock(monitor);
+      lock.wait();
+    }
+  }
+
+  RefPtr<JS::Stencil> stencil = JS::FinishOffThreadStencil(cx, token);
+  CHECK(stencil);
+
+  CHECK(!JS::StencilIsBorrowed(stencil));
+
+  JS::InstantiateOptions instantiateOptions;
+  JS::RootedScript script(
+      cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
+  CHECK(script);
+
+  JS::RootedValue rval(cx);
+  CHECK(JS_ExecuteScript(cx, script, &rval));
+  CHECK(rval.isNumber() && rval.toNumber() == 42);
+
+  return true;
+}
+static void callback(JS::OffThreadToken* token, void* context) {
+  js::Monitor& monitor = *static_cast<js::Monitor*>(context);
+
+  js::AutoLockMonitor lock(monitor);
+  lock.notify();
+}
+static bool TestGetBuildId(JS::BuildIdCharVector* buildId) {
+  const char buildid[] = "testXDR";
+  return buildId->append(buildid, sizeof(buildid));
+}
+END_TEST(testStencil_OffThreadDecode)
+
+BEGIN_TEST(testStencil_OffThreadDecodeWithInstantiationStorage) {
+  JS::SetProcessBuildIdOp(TestGetBuildId);
+
+  JS::TranscodeBuffer buffer;
+
+  {
+    const char* chars =
+        "function f() { return 42; }"
+        "f();";
+
+    JS::SourceText<mozilla::Utf8Unit> srcBuf;
+    CHECK(srcBuf.init(cx, chars, strlen(chars), JS::SourceOwnership::Borrowed));
+
+    JS::CompileOptions options(cx);
+    RefPtr<JS::Stencil> stencil =
+        JS::CompileGlobalScriptToStencil(cx, options, srcBuf);
+    CHECK(stencil);
+
+    // Encode Stencil to XDR
+    JS::TranscodeResult res = JS::EncodeStencil(cx, stencil, buffer);
+    CHECK(res == JS::TranscodeResult::Ok);
+    CHECK(!buffer.empty());
+
+    // Instantiate and Run
+    JS::InstantiateOptions instantiateOptions(options);
+    JS::RootedScript script(
+        cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
+    JS::RootedValue rval(cx);
+    CHECK(script);
+    CHECK(JS_ExecuteScript(cx, script, &rval));
+    CHECK(rval.isNumber() && rval.toNumber() == 42);
+  }
+
+  JS::OffThreadToken* token;
+  {
+    JS::DecodeOptions decodeOptions;
+    js::Monitor monitor MOZ_UNANNOTATED(js::mutexid::ShellOffThreadState);
+    JS::TranscodeRange range(buffer.begin(), buffer.length());
+
+    // Force off-thread even though if this is a small file.
+    decodeOptions.forceAsync = true;
+
+    decodeOptions.allocateInstantiationStorage = true;
+
+    CHECK(token = JS::DecodeStencilOffThread(cx, decodeOptions, range, callback,
+                                             &monitor));
+
+    {
+      js::AutoLockMonitor lock(monitor);
+      lock.wait();
+    }
+  }
+
+  JS::InstantiationStorage storage;
+  RefPtr<JS::Stencil> stencil = JS::FinishOffThreadStencil(cx, token, &storage);
+  CHECK(stencil);
+
+  CHECK(!JS::StencilIsBorrowed(stencil));
+
+  JS::InstantiateOptions instantiateOptions;
+  JS::RootedScript script(cx, JS::InstantiateGlobalStencil(
+                                  cx, instantiateOptions, stencil, &storage));
+  CHECK(script);
+
+  JS::RootedValue rval(cx);
+  CHECK(JS_ExecuteScript(cx, script, &rval));
+  CHECK(rval.isNumber() && rval.toNumber() == 42);
+
+  return true;
+}
+static void callback(JS::OffThreadToken* token, void* context) {
+  js::Monitor& monitor = *static_cast<js::Monitor*>(context);
+
+  js::AutoLockMonitor lock(monitor);
+  lock.notify();
+}
+static bool TestGetBuildId(JS::BuildIdCharVector* buildId) {
+  const char buildid[] = "testXDR";
+  return buildId->append(buildid, sizeof(buildid));
+}
+END_TEST(testStencil_OffThreadDecodeWithInstantiationStorage)
+
+BEGIN_TEST(testStencil_OffThreadDecodeBorrow) {
+  JS::SetProcessBuildIdOp(TestGetBuildId);
+
+  JS::TranscodeBuffer buffer;
+
+  {
+    const char* chars =
+        "function f() { return 42; }"
+        "f();";
+
+    JS::SourceText<mozilla::Utf8Unit> srcBuf;
+    CHECK(srcBuf.init(cx, chars, strlen(chars), JS::SourceOwnership::Borrowed));
+
+    JS::CompileOptions options(cx);
+    RefPtr<JS::Stencil> stencil =
+        JS::CompileGlobalScriptToStencil(cx, options, srcBuf);
+    CHECK(stencil);
+
+    // Encode Stencil to XDR
+    JS::TranscodeResult res = JS::EncodeStencil(cx, stencil, buffer);
+    CHECK(res == JS::TranscodeResult::Ok);
+    CHECK(!buffer.empty());
+
+    // Instantiate and Run
+    JS::InstantiateOptions instantiateOptions(options);
+    JS::RootedScript script(
+        cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
+    JS::RootedValue rval(cx);
+    CHECK(script);
+    CHECK(JS_ExecuteScript(cx, script, &rval));
+    CHECK(rval.isNumber() && rval.toNumber() == 42);
+  }
+
+  JS::OffThreadToken* token;
+  {
+    JS::DecodeOptions decodeOptions;
+    js::Monitor monitor MOZ_UNANNOTATED(js::mutexid::ShellOffThreadState);
+    JS::TranscodeRange range(buffer.begin(), buffer.length());
+
+    // Force off-thread even though if this is a small file.
+    decodeOptions.forceAsync = true;
+
+    decodeOptions.borrowBuffer = true;
+
+    CHECK(token = JS::DecodeStencilOffThread(cx, decodeOptions, range, callback,
+                                             &monitor));
+
+    {
+      js::AutoLockMonitor lock(monitor);
+      lock.wait();
+    }
+  }
+
+  RefPtr<JS::Stencil> stencil = JS::FinishOffThreadStencil(cx, token);
+  CHECK(stencil);
+
+  CHECK(JS::StencilIsBorrowed(stencil));
+
+  JS::InstantiateOptions instantiateOptions;
+  JS::RootedScript script(
+      cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
+  CHECK(script);
+
+  JS::RootedValue rval(cx);
+  CHECK(JS_ExecuteScript(cx, script, &rval));
+  CHECK(rval.isNumber() && rval.toNumber() == 42);
+
+  return true;
+}
+static void callback(JS::OffThreadToken* token, void* context) {
+  js::Monitor& monitor = *static_cast<js::Monitor*>(context);
+
+  js::AutoLockMonitor lock(monitor);
+  lock.notify();
+}
+static bool TestGetBuildId(JS::BuildIdCharVector* buildId) {
+  const char buildid[] = "testXDR";
+  return buildId->append(buildid, sizeof(buildid));
+}
+END_TEST(testStencil_OffThreadDecodeBorrow)
+
+constexpr size_t PinnedBufferMax = 1024;
+alignas(4) uint8_t pinnedBuffer[PinnedBufferMax];
+size_t pinnedBufferSize = 0;
+
+BEGIN_TEST(testStencil_OffThreadDecodePinned) {
+  JS::SetProcessBuildIdOp(TestGetBuildId);
+
+  JS::TranscodeBuffer buffer;
+
+  {
+    const char* chars =
+        "function f() { return 42; }"
+        "f();";
+
+    JS::SourceText<mozilla::Utf8Unit> srcBuf;
+    CHECK(srcBuf.init(cx, chars, strlen(chars), JS::SourceOwnership::Borrowed));
+
+    JS::CompileOptions options(cx);
+    RefPtr<JS::Stencil> stencil =
+        JS::CompileGlobalScriptToStencil(cx, options, srcBuf);
+    CHECK(stencil);
+
+    // Encode Stencil to XDR
+    JS::TranscodeResult res = JS::EncodeStencil(cx, stencil, buffer);
+    CHECK(res == JS::TranscodeResult::Ok);
+    CHECK(!buffer.empty());
+
+    // Instantiate and Run
+    JS::InstantiateOptions instantiateOptions(options);
+    JS::RootedScript script(
+        cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
+    JS::RootedValue rval(cx);
+    CHECK(script);
+    CHECK(JS_ExecuteScript(cx, script, &rval));
+    CHECK(rval.isNumber() && rval.toNumber() == 42);
+  }
+
+  CHECK(buffer.length() < PinnedBufferMax);
+
+  memcpy(pinnedBuffer, buffer.begin(), buffer.length());
+  pinnedBufferSize = buffer.length();
+
+  JS::OffThreadToken* token;
+  {
+    JS::DecodeOptions decodeOptions;
+    js::Monitor monitor MOZ_UNANNOTATED(js::mutexid::ShellOffThreadState);
+    JS::TranscodeRange range(pinnedBuffer, pinnedBufferSize);
+
+    // Force off-thread even though if this is a small file.
+    decodeOptions.forceAsync = true;
+
+    decodeOptions.borrowBuffer = true;
+    decodeOptions.usePinnedBytecode = true;
+
+    CHECK(token = JS::DecodeStencilOffThread(cx, decodeOptions, range, callback,
+                                             &monitor));
+
+    {
+      js::AutoLockMonitor lock(monitor);
+      lock.wait();
+    }
+  }
+
+  RefPtr<JS::Stencil> stencil = JS::FinishOffThreadStencil(cx, token);
+  CHECK(stencil);
+
+  CHECK(JS::StencilIsBorrowed(stencil));
+
+  JS::InstantiateOptions instantiateOptions;
+  JS::RootedScript script(
+      cx, JS::InstantiateGlobalStencil(cx, instantiateOptions, stencil));
+  CHECK(script);
+
+  JS::RootedValue rval(cx);
+  CHECK(JS_ExecuteScript(cx, script, &rval));
+  CHECK(rval.isNumber() && rval.toNumber() == 42);
+
+  return true;
+}
+static void callback(JS::OffThreadToken* token, void* context) {
+  js::Monitor& monitor = *static_cast<js::Monitor*>(context);
+
+  js::AutoLockMonitor lock(monitor);
+  lock.notify();
+}
+static bool TestGetBuildId(JS::BuildIdCharVector* buildId) {
+  const char buildid[] = "testXDR";
+  return buildId->append(buildid, sizeof(buildid));
+}
+END_TEST(testStencil_OffThreadDecodePinned)

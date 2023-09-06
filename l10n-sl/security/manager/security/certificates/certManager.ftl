@@ -26,9 +26,9 @@ certmgr-people = Imate digitalna potrdila, ki predstavljajo naslednje ljudi
 certmgr-server = Ti vnosi opredeljujejo izjeme napak strežniškega potrdila
 certmgr-ca = Imate digitalna potrdila, ki predstavljajo naslednje overitelje
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Urejanje nastavitev zaupanja overiteljem
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Spremeni nastavitve zaupanja:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Ta digitalno potrdilo lahko predstavlja uporabnike e-pošte.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Izbriši digitalno potrdilo
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Gostitelj
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Strežnik
-
-certmgr-override-lifetime =
-    .label = Življenjska doba
 
 certmgr-token-name =
     .label = Varnostna naprava
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Serijska številka
+
+certmgr-fingerprint-sha-256 =
+    .label = Prstni odtis SHA-256
 
 certmgr-view =
     .label = Ogled …
@@ -185,8 +185,6 @@ delete-email-cert-impact = Če zbrišete e-poštno digitalno potrdilo osebe, ne 
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Digitalno potrdilo s serijsko številko: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Ne pošiljaj klientovega digitalnega potrdila

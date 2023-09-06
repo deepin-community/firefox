@@ -16,7 +16,6 @@ styleeditor-save-button = Salvează
     .accesskey = S
 styleeditor-options-button =
     .tooltiptext = Opțiuni editor de stiluri
-styleeditor-media-rules = Reguli @media
 styleeditor-editor-textbox =
     .data-placeholder = Tastează CSS aici.
 styleeditor-no-stylesheet = Pagina nu are nicio fișă de stil.
@@ -25,3 +24,22 @@ styleeditor-open-link-new-tab =
     .label = Deschide linkul într-o filă nouă
 styleeditor-copy-url =
     .label = Copiază URL-ul
+styleeditor-find =
+    .label = Caută
+    .accesskey = F
+styleeditor-find-again =
+    .label = Caută din nou
+    .accesskey = G
+styleeditor-go-to-line =
+    .label = Sari la rândul…
+    .accesskey = J
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } regulă.
+        [few] { $ruleCount } reguli.
+       *[other] { $ruleCount } de reguli.
+    }

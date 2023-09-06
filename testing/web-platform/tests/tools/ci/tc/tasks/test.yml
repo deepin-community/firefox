@@ -4,7 +4,7 @@ components:
     workerType: ci
     schedulerId: taskcluster-github
     deadline: "24 hours"
-    image: webplatformtests/wpt:0.46
+    image: webplatformtests/wpt:0.54
     maxRunTime: 7200
     artifacts:
       public/results:
@@ -17,6 +17,7 @@ components:
 
   wpt-testharness:
     chunks: 16
+    maxRunTime: 10800
     vars:
       test-type: testharness
 
@@ -103,22 +104,29 @@ components:
 
   browser-chrome: {}
 
+  browser-chromium: {}
+
   browser-servo: {}
 
-  tox-python3_6:
+  tox-python3_7:
     env:
-      TOXENV: py36
-      PY_COLORS: 0
-
-  tox-python3_9:
-    env:
-      TOXENV: py39
-      PY_COLORS: 0
+      TOXENV: py37
+      PY_COLORS: "0"
     install:
-      - python3.9
-      - python3.9-distutils
-      - python3.9-dev
+      - python3.7
+      - python3.7-distutils
+      - python3.7-dev
+      - python3.7-venv
 
+  tox-python3_11:
+    env:
+      TOXENV: py311
+      PY_COLORS: "0"
+    install:
+      - python3.11
+      - python3.11-distutils
+      - python3.11-dev
+      - python3.11-venv
   tests-affected:
     options:
       browser:
@@ -166,7 +174,7 @@ tasks:
                 - trigger-push
             - vars:
                 # Chromium ToT
-                browser: chrome
+                browser: chromium
                 channel: nightly
               use:
                 - trigger-daily
@@ -211,7 +219,7 @@ tasks:
                 browser: servo
                 channel: nightly
               use:
-                - trigger-daily
+                - trigger-weekly
                 - trigger-push
           do:
             - ${vars.browser}-${vars.channel}-${vars.suite}:
@@ -254,7 +262,7 @@ tasks:
                 - trigger-push
             - vars:
                 # Chromium ToT
-                browser: chrome
+                browser: chromium
                 channel: nightly
               use:
                 - trigger-daily
@@ -295,9 +303,13 @@ tasks:
         - vars:
             browser: firefox
             channel: nightly
+            stability-exclude-users:
+              - moz-wptsync-bot
         - vars:
             browser: chrome
             channel: dev
+            stability-exclude-users:
+              - chromium-wpt-export-bot
       do:
         - wpt-${vars.browser}-${vars.channel}-stability:
             use:
@@ -321,6 +333,7 @@ tasks:
               --verify-repeat-loop=0
               --verify-repeat-restart=10
               --github-checks-text-file="/home/test/artifacts/checkrun.md"
+            exclude-users: ${vars.stability-exclude-users}
 
         - wpt-${vars.browser}-${vars.channel}-results:
             use:
@@ -397,30 +410,13 @@ tasks:
           - update_built
       command: "./tools/ci/ci_built_diff.sh"
 
-  - tools/ unittests (Python 3.6):
+  - tools/ unittests (Python 3.7):
       description: >-
-        Unit tests for tools running under Python 3.6, excluding wptrunner
+        Unit tests for tools running under Python 3.7, excluding wptrunner
       use:
         - wpt-base
         - trigger-pr
-        - tox-python3_6
-      command: ./tools/ci/ci_tools_unittest.sh
-      install:
-        - python3.6
-        - python3.6-dev
-      env:
-        HYPOTHESIS_PROFILE: ci
-      schedule-if:
-        run-job:
-          - tools_unittest
-
-  - tools/ unittests (Python 3.9):
-      description: >-
-        Unit tests for tools running under Python 3.9, excluding wptrunner
-      use:
-        - wpt-base
-        - trigger-pr
-        - tox-python3_9
+        - tox-python3_7
       command: ./tools/ci/ci_tools_unittest.sh
       env:
         HYPOTHESIS_PROFILE: ci
@@ -428,37 +424,27 @@ tasks:
         run-job:
           - tools_unittest
 
-  - tools/ integration tests (Python 3.6):
+  - tools/ unittests (Python 3.11):
       description: >-
-        Integration tests for tools running under Python 3.6
+        Unit tests for tools running under Python 3.11, excluding wptrunner
       use:
         - wpt-base
         - trigger-pr
-        - tox-python3_6
-      command: ./tools/ci/ci_tools_integration_test.sh
-      install:
-        - libnss3-tools
-        - python3.6
-        - python3.6-dev
-      options:
-        oom-killer: true
-        browser:
-          - firefox
-          - chrome
-        channel: experimental
-        xvfb: true
-        hosts: true
+        - tox-python3_11
+      command: ./tools/ci/ci_tools_unittest.sh
+      env:
+        HYPOTHESIS_PROFILE: ci
       schedule-if:
         run-job:
-          - wpt_integration
+          - tools_unittest
 
-  - tools/ integration tests (Python 3.9):
+  - tools/ integration tests (Python 3.7):
       description: >-
-        Integration tests for tools running under Python 3.9
+        Integration tests for tools running under Python 3.7
       use:
         - wpt-base
         - trigger-pr
-        - tox-python3_9
+        - tox-python3_7
       command: ./tools/ci/ci_tools_integration_test.sh
       install:
         - libnss3-tools
@@ -474,18 +460,38 @@ tasks:
         run-job:
           - wpt_integration
 
-  - resources/ tests (Python 3.6):
+  - tools/ integration tests (Python 3.11):
       description: >-
-        Tests for testharness.js and other files in resources/ under Python 3.6
+        Integration tests for tools running under Python 3.11
       use:
         - wpt-base
         - trigger-pr
-        - tox-python3_6
+        - tox-python3_11
+      command: ./tools/ci/ci_tools_integration_test.sh
+      install:
+        - libnss3-tools
+      options:
+        oom-killer: true
+        browser:
+          - firefox
+          - chrome
+        channel: experimental
+        xvfb: true
+        hosts: true
+      schedule-if:
+        run-job:
+          - wpt_integration
+
+  - resources/ tests (Python 3.7):
+      description: >-
+        Tests for testharness.js and other files in resources/ under Python 3.7
+      use:
+        - wpt-base
+        - trigger-pr
+        - tox-python3_7
       command: ./tools/ci/ci_resources_unittest.sh
       install:
         - libnss3-tools
-        - python3.6
-        - python3.6-dev
       options:
         browser:
           - firefox
@@ -495,13 +501,13 @@ tasks:
         run-job:
           - resources_unittest
 
-  - resources/ tests (Python 3.9):
+  - resources/ tests (Python 3.11):
       description: >-
-        Tests for testharness.js and other files in resources/ under Python 3.9
+        Tests for testharness.js and other files in resources/ under Python 3.11
       use:
         - wpt-base
         - trigger-pr
-        - tox-python3_9
+        - tox-python3_11
       command: ./tools/ci/ci_resources_unittest.sh
       install:
         - libnss3-tools

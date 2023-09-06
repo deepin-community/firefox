@@ -6,7 +6,6 @@
 # ***** END LICENSE BLOCK *****
 
 
-from __future__ import absolute_import
 import copy
 import os
 import sys
@@ -16,14 +15,11 @@ sys.path.insert(1, os.path.dirname(os.path.dirname(sys.path[0])))
 
 from mozharness.base.python import PreScriptAction
 from mozharness.mozilla.structuredlog import StructuredOutputParser
-from mozharness.mozilla.testing.testbase import (
-    TestingMixin,
-    testing_config_options,
-)
 from mozharness.mozilla.testing.codecoverage import (
     CodeCoverageMixin,
     code_coverage_config_options,
 )
+from mozharness.mozilla.testing.testbase import TestingMixin, testing_config_options
 from mozharness.mozilla.vcstools import VCSToolsScript
 
 # General command line arguments for Firefox ui tests
@@ -37,15 +33,6 @@ telemetry_tests_config_options = (
                 "default": False,
                 "help": "Permits a software GL implementation (such as LLVMPipe) "
                 "to use the GL compositor.",
-            },
-        ],
-        [
-            ["--enable-webrender"],
-            {
-                "action": "store_true",
-                "dest": "enable_webrender",
-                "default": False,
-                "help": "Enable the WebRender compositor in Gecko.",
             },
         ],
         [
@@ -63,6 +50,15 @@ telemetry_tests_config_options = (
                 "action": "store_false",
                 "default": True,
                 "help": "Disable multi-process (e10s) mode when running tests.",
+            },
+        ],
+        [
+            ["--disable-fission"],
+            {
+                "dest": "disable_fission",
+                "action": "store_true",
+                "default": False,
+                "help": "Disable fission mode when running tests.",
             },
         ],
         [
@@ -128,6 +124,7 @@ class TelemetryTests(TestingMixin, VCSToolsScript, CodeCoverageMixin):
         self.installer_url = self.config.get("installer_url")
         self.test_packages_url = self.config.get("test_packages_url")
         self.test_url = self.config.get("test_url")
+        self.disable_fission = self.config.get("disable_fission")
 
         if not self.test_url and not self.test_packages_url:
             self.fatal("You must use --test-url, or --test-packages-url")
@@ -201,9 +198,12 @@ class TelemetryTests(TestingMixin, VCSToolsScript, CodeCoverageMixin):
             "-vv",
         ]
 
-        if self.config["enable_webrender"]:
-            cmd.extend(["--enable-webrender"])
+        # Symbols for crash reports
+        if self.symbols_path:
+            cmd.extend(["--symbols-path", self.symbols_path])
 
+        if self.disable_fission:
+            cmd.append("--disable-fission")
         cmd.extend(["--setpref={}".format(p) for p in self.config["extra_prefs"]])
 
         if not self.config["e10s"]:
@@ -228,6 +228,9 @@ class TelemetryTests(TestingMixin, VCSToolsScript, CodeCoverageMixin):
         env["RUST_BACKTRACE"] = "1"
         env["MOZ_IGNORE_NSS_SHUTDOWN_LEAKS"] = "1"
 
+        # Causes Firefox to crash when using non-local connections.
+        env["MOZ_DISABLE_NONLOCAL_CONNECTIONS"] = "1"
+
         # If code coverage is enabled, set GCOV_PREFIX env variable
         if self.config.get("code_coverage"):
             env["GCOV_PREFIX"] = self.gcov_dir
@@ -235,7 +238,7 @@ class TelemetryTests(TestingMixin, VCSToolsScript, CodeCoverageMixin):
         return_code = self.run_command(
             cmd,
             cwd=dirs["abs_work_dir"],
-            output_timeout=300,
+            output_timeout=1000,
             output_parser=parser,
             env=env,
         )

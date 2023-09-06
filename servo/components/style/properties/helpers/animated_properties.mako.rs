@@ -10,16 +10,14 @@
 %>
 
 #[cfg(feature = "gecko")] use crate::gecko_bindings::structs::nsCSSPropertyID;
-use itertools::{EitherOrBoth, Itertools};
 use crate::properties::{CSSWideKeyword, PropertyDeclaration, NonCustomPropertyIterator};
 use crate::properties::longhands;
 use crate::properties::longhands::visibility::computed_value::T as Visibility;
 use crate::properties::LonghandId;
 use servo_arc::Arc;
-use smallvec::SmallVec;
 use std::ptr;
 use std::mem;
-use crate::hash::FxHashMap;
+use fxhash::FxHashMap;
 use super::ComputedValues;
 use crate::values::animated::{Animate, Procedure, ToAnimatedValue, ToAnimatedZero};
 use crate::values::animated::effects::AnimatedFilter;
@@ -272,11 +270,7 @@ impl AnimationValue {
                 let longhand_id = unsafe {
                     *(&decl_repr.tag as *const u16 as *const LonghandId)
                 };
-                % if inherit:
-                context.for_non_inherited_property = None;
-                % else:
-                context.for_non_inherited_property = Some(longhand_id);
-                % endif
+                context.for_non_inherited_property = ${"false" if inherit else "true"};
                 % if system:
                 if let Some(sf) = value.get_system() {
                     longhands::system_font::resolve_system_font(sf, context)
@@ -311,9 +305,9 @@ impl AnimationValue {
                     % for prop in data.longhands:
                     % if prop.animatable:
                     LonghandId::${prop.camel_case} => {
-                        // FIXME(emilio, bug 1533327): I think
-                        // CSSWideKeyword::Revert handling is not fine here, but
-                        // what to do instead?
+                        // FIXME(emilio, bug 1533327): I think revert (and
+                        // revert-layer) handling is not fine here, but what to
+                        // do instead?
                         //
                         // Seems we'd need the computed value as if it was
                         // revert, somehow. Treating it as `unset` seems fine
@@ -321,6 +315,7 @@ impl AnimationValue {
                         let style_struct = match declaration.keyword {
                             % if not prop.style_struct.inherited:
                             CSSWideKeyword::Revert |
+                            CSSWideKeyword::RevertLayer |
                             CSSWideKeyword::Unset |
                             % endif
                             CSSWideKeyword::Initial => {
@@ -328,6 +323,7 @@ impl AnimationValue {
                             },
                             % if prop.style_struct.inherited:
                             CSSWideKeyword::Revert |
+                            CSSWideKeyword::RevertLayer |
                             CSSWideKeyword::Unset |
                             % endif
                             CSSWideKeyword::Inherit => {
@@ -548,127 +544,6 @@ impl ToAnimatedZero for AnimationValue {
     }
 }
 
-/// A trait to abstract away the different kind of animations over a list that
-/// there may be.
-pub trait ListAnimation<T> : Sized {
-    /// <https://drafts.csswg.org/css-transitions/#animtype-repeatable-list>
-    fn animate_repeatable_list(&self, other: &Self, procedure: Procedure) -> Result<Self, ()>
-    where
-        T: Animate;
-
-    /// <https://drafts.csswg.org/css-transitions/#animtype-repeatable-list>
-    fn squared_distance_repeatable_list(&self, other: &Self) -> Result<SquaredDistance, ()>
-    where
-        T: ComputeSquaredDistance;
-
-    /// This is the animation used for some of the types like shadows and
-    /// filters, where the interpolation happens with the zero value if one of
-    /// the sides is not present.
-    fn animate_with_zero(&self, other: &Self, procedure: Procedure) -> Result<Self, ()>
-    where
-        T: Animate + Clone + ToAnimatedZero;
-
-    /// This is the animation used for some of the types like shadows and
-    /// filters, where the interpolation happens with the zero value if one of
-    /// the sides is not present.
-    fn squared_distance_with_zero(&self, other: &Self) -> Result<SquaredDistance, ()>
-    where
-        T: ToAnimatedZero + ComputeSquaredDistance;
-}
-
-macro_rules! animated_list_impl {
-    (<$t:ident> for $ty:ty) => {
-        impl<$t> ListAnimation<$t> for $ty {
-            fn animate_repeatable_list(
-                &self,
-                other: &Self,
-                procedure: Procedure,
-            ) -> Result<Self, ()>
-            where
-                T: Animate,
-            {
-                // If the length of either list is zero, the least common multiple is undefined.
-                if self.is_empty() || other.is_empty() {
-                    return Err(());
-                }
-                use num_integer::lcm;
-                let len = lcm(self.len(), other.len());
-                self.iter().cycle().zip(other.iter().cycle()).take(len).map(|(this, other)| {
-                    this.animate(other, procedure)
-                }).collect()
-            }
-
-            fn squared_distance_repeatable_list(
-                &self,
-                other: &Self,
-            ) -> Result<SquaredDistance, ()>
-            where
-                T: ComputeSquaredDistance,
-            {
-                if self.is_empty() || other.is_empty() {
-                    return Err(());
-                }
-                use num_integer::lcm;
-                let len = lcm(self.len(), other.len());
-                self.iter().cycle().zip(other.iter().cycle()).take(len).map(|(this, other)| {
-                    this.compute_squared_distance(other)
-                }).sum()
-            }
-
-            fn animate_with_zero(
-                &self,
-                other: &Self,
-                procedure: Procedure,
-            ) -> Result<Self, ()>
-            where
-                T: Animate + Clone + ToAnimatedZero
-            {
-                if procedure == Procedure::Add {
-                    return Ok(
-                        self.iter().chain(other.iter()).cloned().collect()
-                    );
-                }
-                self.iter().zip_longest(other.iter()).map(|it| {
-                    match it {
-                        EitherOrBoth::Both(this, other) => {
-                            this.animate(other, procedure)
-                        },
-                        EitherOrBoth::Left(this) => {
-                            this.animate(&this.to_animated_zero()?, procedure)
-                        },
-                        EitherOrBoth::Right(other) => {
-                            other.to_animated_zero()?.animate(other, procedure)
-                        }
-                    }
-                }).collect()
-            }
-
-            fn squared_distance_with_zero(
-                &self,
-                other: &Self,
-            ) -> Result<SquaredDistance, ()>
-            where
-                T: ToAnimatedZero + ComputeSquaredDistance
-            {
-                self.iter().zip_longest(other.iter()).map(|it| {
-                    match it {
-                        EitherOrBoth::Both(this, other) => {
-                            this.compute_squared_distance(other)
-                        },
-                        EitherOrBoth::Left(list) | EitherOrBoth::Right(list) => {
-                            list.to_animated_zero()?.compute_squared_distance(list)
-                        },
-                    }
-                }).sum()
-            }
-        }
-    }
-}
-
-animated_list_impl!(<T> for crate::OwnedSlice<T>);
-animated_list_impl!(<T> for SmallVec<[T; 1]>);
-animated_list_impl!(<T> for Vec<T>);
-
 /// <https://drafts.csswg.org/web-animations-1/#animating-visibility>
 impl Animate for Visibility {
     #[inline]
@@ -797,7 +672,7 @@ impl<'a> TransitionPropertyIterator<'a> {
     pub fn from_style(style: &'a ComputedValues) -> Self {
         Self {
             style,
-            index_range: 0..style.get_box().transition_property_count(),
+            index_range: 0..style.get_ui().transition_property_count(),
             longhand_iterator: None,
         }
     }
@@ -830,7 +705,7 @@ impl<'a> Iterator for TransitionPropertyIterator<'a> {
             }
 
             let index = self.index_range.next()?;
-            match self.style.get_box().transition_property_at(index) {
+            match self.style.get_ui().transition_property_at(index) {
                 TransitionProperty::Longhand(longhand_id) => {
                     return Some(TransitionPropertyIteration {
                         longhand_id,

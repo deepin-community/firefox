@@ -6,17 +6,13 @@
 /* import-globals-from head_cookies.js */
 
 async function http3_setup_tests(http3version) {
-  let env = Cc["@mozilla.org/process/environment;1"].getService(
-    Ci.nsIEnvironment
-  );
-
-  let h3Port = env.get("MOZHTTP3_PORT");
+  let h3Port = Services.env.get("MOZHTTP3_PORT");
   Assert.notEqual(h3Port, null);
   Assert.notEqual(h3Port, "");
   let h3Route = "foo.example.com:" + h3Port;
   do_get_profile();
 
-  Services.prefs.setBoolPref("network.http.http3.enabled", true);
+  Services.prefs.setBoolPref("network.http.http3.enable", true);
   Services.prefs.setCharPref("network.dns.localDomains", "foo.example.com");
   Services.prefs.setBoolPref("network.dns.disableIPv6", true);
   Services.prefs.setCharPref(
@@ -27,7 +23,8 @@ async function http3_setup_tests(http3version) {
   let certdb = Cc["@mozilla.org/security/x509certdb;1"].getService(
     Ci.nsIX509CertDB
   );
-  addCertFromFile(certdb, "http2-ca.pem", "CTu,u,u");
+  // `../unit/` so that unit_ipc tests can use as well
+  addCertFromFile(certdb, "../unit/http2-ca.pem", "CTu,u,u");
 
   await setup_altsvc("https://foo.example.com/", h3Route, http3version);
 }
@@ -41,7 +38,7 @@ function makeChan(uri) {
   return chan;
 }
 
-let CheckHttp3Listener = function() {};
+let CheckHttp3Listener = function () {};
 
 CheckHttp3Listener.prototype = {
   expectedRoute: "",
@@ -97,7 +94,7 @@ function altsvcSetupPromise(chan, listener) {
 }
 
 function http3_clear_prefs() {
-  Services.prefs.clearUserPref("network.http.http3.enabled");
+  Services.prefs.clearUserPref("network.http.http3.enable");
   Services.prefs.clearUserPref("network.dns.localDomains");
   Services.prefs.clearUserPref("network.dns.disableIPv6");
   Services.prefs.clearUserPref(

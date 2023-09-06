@@ -55,12 +55,14 @@ app-basics-enabled-plugins = Connectors habilitats
 app-basics-build-config = Configuració de la versió
 app-basics-user-agent = Agent d'usuari
 app-basics-os = Sistema operatiu
+app-basics-os-theme = Tema del sistema operatiu
 # Rosetta is Apple's translation process to run apps containing x86_64
 # instructions on Apple Silicon. This should remain in English.
 app-basics-rosetta = Traduït per Rosetta
 app-basics-memory-use = Utilització de la memòria
 app-basics-performance = Rendiment
 app-basics-service-workers = Processos de treball de servei registrats
+app-basics-third-party = Mòduls de tercers
 app-basics-profiles = Perfils
 app-basics-launcher-process-status = Procés d'inici
 app-basics-multi-process-support = Finestres multiprocés
@@ -71,6 +73,7 @@ app-basics-location-service-key-google = Clau del servei d'ubicació de Google
 app-basics-safebrowsing-key-google = Clau del servei de navegació segura Google Safebrowsing
 app-basics-key-mozilla = Clau del servei d'ubicació de Mozilla
 app-basics-safe-mode = Mode segur
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Mostra-ho en el Finder
@@ -124,9 +127,12 @@ sandbox-sys-call-tid = TID
 sandbox-sys-call-proc-type = Tipus de procés
 sandbox-sys-call-number = Crida del sistema
 sandbox-sys-call-args = Arguments
-
+troubleshoot-mode-title = Diagnostica problemes
+restart-in-troubleshoot-mode-label = Mode de resolució de problemes…
 clear-startup-cache-title = Proveu d'esborrar la memòria cau d'inici
 clear-startup-cache-label = Esborra la memòria cau d'inici…
+startup-cache-dialog-title2 = Voleu reiniciar el { -brand-short-name } per esborrar la memòria cau d'inici?
+startup-cache-dialog-body2 = Això no canviarà cap paràmetre ni eliminarà cap extensió.
 restart-button-label = Reinicia
 
 ## Media titles
@@ -148,6 +154,10 @@ media-device-channels = Canals
 media-device-rate = Freqüència
 media-device-latency = Latència
 media-capabilities-title = Capacitats multimèdia
+# List all the entries of the database.
+media-capabilities-enumerate = Enumera la base de dades
+
+## Codec support table
 
 ##
 
@@ -170,6 +180,8 @@ intl-regional-prefs = Preferències regionals
 ##
 ## See also https://firefox-source-docs.mozilla.org/remote/
 
+remote-debugging-title = Depuració remota (protocol Chromium)
+remote-debugging-accepting-connections = S'estan acceptant connexions
 remote-debugging-url = URL
 
 ##
@@ -254,8 +266,8 @@ gpu-device-id = ID del dispositiu
 gpu-subsys-id = ID del subsistema
 gpu-drivers = Controladors
 gpu-ram = RAM
-gpu-driver-vendor = Versió del controlador
-gpu-driver-version = Proveïdor del controlador
+gpu-driver-vendor = Proveïdor del controlador
+gpu-driver-version = Versió del controlador
 gpu-driver-date = Data del controlador
 gpu-active = Activa
 webgl1-extensions = Extensions WebGL 1
@@ -285,6 +297,8 @@ effective-content-sandbox-level = Nivell de l'entorn de proves de processos de c
 sandbox-proc-type-content = contingut
 sandbox-proc-type-media-plugin = connector multimèdia
 
+startup-cache-title = Memòria cau d'inici
+
 launcher-process-status-0 = Activat
 launcher-process-status-1 = Desactivat a causa d'un error
 launcher-process-status-unknown = Estat desconegut
@@ -293,7 +307,16 @@ launcher-process-status-unknown = Estat desconegut
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
+# Variables
+# $fissionWindows (integer) - Number of remote windows
+# $totalWindows (integer) - Number of total windows
+fission-windows = { $fissionWindows }/{ $totalWindows }
+fission-status-experiment-control = Desactivat per un experiment
+fission-status-experiment-treatment = Activat per un experiment
+fission-status-disabled-by-e10s-env = Desactivat per l'entorn
+fission-status-enabled-by-env = Activat per l'entorn
+fission-status-enabled-by-default = Activat per defecte
+fission-status-disabled-by-default = Desactivat per defecte
 fission-status-enabled-by-user-pref = Activat per l'usuari
 fission-status-disabled-by-user-pref = Desactivat per l'usuari
 fission-status-disabled-by-e10s-other = E10s desactivat
@@ -320,10 +343,17 @@ policies-error = Error
 
 ## Printing section
 
+support-printing-title = Impressió
+support-printing-troubleshoot = Resolució de problemes
 support-printing-prefs-name = Nom
 support-printing-prefs-value = Valor
 
 ## Normandy sections
 
+support-remote-experiments-title = Experiments remots
+support-remote-experiments-name = Nom
+support-remote-experiments-branch = Branca de l'experiment
+
+support-remote-features-title = Funcions remotes
 support-remote-features-name = Nom
 support-remote-features-status = Estat

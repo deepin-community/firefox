@@ -16,6 +16,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Vše
+printui-page-range-current = Aktuální
+printui-page-range-odd = Liché
+printui-page-range-even = Sudé
 printui-page-range-custom = Vlastní
 printui-page-range-label = Stránky
 printui-page-range-picker =

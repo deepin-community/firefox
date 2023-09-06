@@ -96,6 +96,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Mag-ulat ng Sirang Site
 protections-panel-content-blocking-breakage-report-view-description = Ang pagharang ng ilang mga tracker ay maaaring maging dahilan ng problema sa ilang mga website. Ang pag-ulat ng mga problemang ito ay nakatutulong pahusayin ang { -brand-short-name } para sa lahat. Ang pagpapadala ng ulat na ito ay magpapadala ng URL at impormasyon tungkol sa iyong mga browser setting sa Mozilla. <label data-l10n-name="learn-more">Alamin</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Ang pagharang ng ilang mga tracker ay maaaring maging dahilan ng problema sa ilang mga website. Ang pag-ulat ng mga problemang ito ay nakatutulong pahusayin ang { -brand-short-name } para sa lahat. Ang pagpapadala ng ulat na ito ay magpapadala ng URL at impormasyon tungkol sa iyong mga browser setting sa { -vendor-short-name }.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -106,3 +107,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Kanselahin
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Magpasa ng Report
+
+# Cookie Banner Handling
+

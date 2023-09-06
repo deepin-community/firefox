@@ -74,6 +74,25 @@ dictionary LoadURIOptions {
   * responsible for causing the load.
   */
   unsigned long triggeringSandboxFlags = 0;
+
+  /**
+  * The window id and storage access status of the window of the
+  * context that triggered the load. This is used to allow self-initiated
+  * same-origin navigations to propagate their "has storage access" bit
+  * to the next Document.
+  */
+  unsigned long long triggeringWindowId = 0;
+  boolean triggeringStorageAccess = false;
+
+  /**
+   * The RemoteType of the entity that's responsible for the load. Defaults to
+   * the current process.
+   *
+   * When starting a load in a content process, `triggeringRemoteType` must be
+   * either unset, or match the current remote type.
+   */
+  UTF8String? triggeringRemoteType;
+
   /**
    * If non-0, a value to pass to nsIDocShell::setCancelContentJSEpoch
    * when initiating the load.

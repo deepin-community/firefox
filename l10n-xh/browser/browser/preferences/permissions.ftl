@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-permissions-window =
+permissions-window2 =
     .title = Izinxaxhi
-    .style = width: 45em
+    .style = min-width: 45em
 
 permissions-close-key =
     .key = w
@@ -43,10 +43,12 @@ permissions-invalid-uri-label = Nceda ngenisa igama lomamkeli elisebenzayo
 
 ## Exceptions - Tracking Protection
 
+
 ## Exceptions - Cookies
 
 
 ## Exceptions - HTTPS-Only Mode
+
 
 ## Exceptions - Pop-ups
 
@@ -54,18 +56,16 @@ permissions-exceptions-popup-desc = Ungabalula ukuba zeziphi na iiwebhusayithi e
 
 ## Exceptions - Saved Logins
 
-permissions-exceptions-saved-logins-window =
+permissions-exceptions-saved-logins-window2 =
     .title = Ezikhethekileyo - IiLogini Ezigciniweyo
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 
 ## Exceptions - Add-ons
 
 permissions-exceptions-addons-desc = Ungabalula ukuba zeziphi na iiwebhusayithi ezivumeleke ukufakela izongezelelo. Tayipha idilesi yokwenene yesayithi ofuna ukuyivumela uze ucofe Vumela.
 
-## Exceptions - Autoplay Media
-
-
 ## Site Permissions - Autoplay
+
 
 ## Site Permissions - Notifications
 
@@ -75,8 +75,13 @@ permissions-exceptions-addons-desc = Ungabalula ukuba zeziphi na iiwebhusayithi 
 
 ## Site Permissions - Virtual Reality
 
+
 ## Site Permissions - Camera
 
 
 ## Site Permissions - Microphone
+
+## Site Permissions - Speaker
+##
+## "Speaker" refers to an audio output device.
 

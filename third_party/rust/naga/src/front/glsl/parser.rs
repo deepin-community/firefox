@@ -1,16 +1,15 @@
 use super::{
-    ast::{FunctionKind, Profile, TypeQualifier},
+    ast::{FunctionKind, Profile, TypeQualifiers},
     context::{Context, ExprPos},
     error::ExpectedToken,
     error::{Error, ErrorKind},
     lex::{Lexer, LexerResultKind},
     token::{Directive, DirectiveKind},
-    token::{SourceMetadata, Token, TokenValue},
+    token::{Token, TokenValue},
     variables::{GlobalOrConstant, VarDeclaration},
-    Parser, Result,
+    Frontend, Result,
 };
-use crate::{arena::Handle, Block, Constant, ConstantInner, Expression, ScalarValue, Type};
-use core::convert::TryFrom;
+use crate::{arena::Handle, proc::U32EvalError, Block, Expression, Span, Type};
 use pp_rs::token::{PreprocessorError, Token as PPToken, TokenValue as PPTokenValue};
 use std::iter::Peekable;
 
@@ -21,19 +20,43 @@ mod types;
 
 pub struct ParsingContext<'source> {
     lexer: Peekable<Lexer<'source>>,
-    last_meta: SourceMetadata,
+    /// Used to store tokens already consumed by the parser but that need to be backtracked
+    backtracked_token: Option<Token>,
+    last_meta: Span,
 }
 
 impl<'source> ParsingContext<'source> {
     pub fn new(lexer: Lexer<'source>) -> Self {
         ParsingContext {
             lexer: lexer.peekable(),
-            last_meta: SourceMetadata::none(),
+            backtracked_token: None,
+            last_meta: Span::default(),
         }
     }
 
-    pub fn expect_ident(&mut self, parser: &mut Parser) -> Result<(String, SourceMetadata)> {
-        let token = self.bump(parser)?;
+    /// Helper method for backtracking from a consumed token
+    ///
+    /// This method should always be used instead of assigning to `backtracked_token` since
+    /// it validates that backtracking hasn't occurred more than one time in a row
+    ///
+    /// # Panics
+    /// - If the parser already backtracked without bumping in between
+    pub fn backtrack(&mut self, token: Token) -> Result<()> {
+        // This should never happen
+        if let Some(ref prev_token) = self.backtracked_token {
+            return Err(Error {
+                kind: ErrorKind::InternalError("The parser tried to backtrack twice in a row"),
+                meta: prev_token.meta,
+            });
+        }
+
+        self.backtracked_token = Some(token);
+
+        Ok(())
+    }
+
+    pub fn expect_ident(&mut self, frontend: &mut Frontend) -> Result<(String, Span)> {
+        let token = self.bump(frontend)?;
 
         match token.value {
             TokenValue::Identifier(name) => Ok((name, token.meta)),
@@ -44,8 +67,8 @@ impl<'source> ParsingContext<'source> {
         }
     }
 
-    pub fn expect(&mut self, parser: &mut Parser, value: TokenValue) -> Result<Token> {
-        let token = self.bump(parser)?;
+    pub fn expect(&mut self, frontend: &mut Frontend, value: TokenValue) -> Result<Token> {
+        let token = self.bump(frontend)?;
 
         if token.value != value {
             Err(Error {
@@ -57,8 +80,13 @@ impl<'source> ParsingContext<'source> {
         }
     }
 
-    pub fn next(&mut self, parser: &mut Parser) -> Option<Token> {
+    pub fn next(&mut self, frontend: &mut Frontend) -> Option<Token> {
         loop {
+            if let Some(token) = self.backtracked_token.take() {
+                self.last_meta = token.meta;
+                break Some(token);
+            }
+
             let res = self.lexer.next()?;
 
             match res.kind {
@@ -67,9 +95,9 @@ impl<'source> ParsingContext<'source> {
                     break Some(token);
                 }
                 LexerResultKind::Directive(directive) => {
-                    parser.handle_directive(directive, res.meta)
+                    frontend.handle_directive(directive, res.meta)
                 }
-                LexerResultKind::Error(error) => parser.errors.push(Error {
+                LexerResultKind::Error(error) => frontend.errors.push(Error {
                     kind: ErrorKind::PreprocessorError(error),
                     meta: res.meta,
                 }),
@@ -77,136 +105,129 @@ impl<'source> ParsingContext<'source> {
         }
     }
 
-    pub fn bump(&mut self, parser: &mut Parser) -> Result<Token> {
-        self.next(parser).ok_or(Error {
+    pub fn bump(&mut self, frontend: &mut Frontend) -> Result<Token> {
+        self.next(frontend).ok_or(Error {
             kind: ErrorKind::EndOfFile,
             meta: self.last_meta,
         })
     }
 
     /// Returns None on the end of the file rather than an error like other methods
-    pub fn bump_if(&mut self, parser: &mut Parser, value: TokenValue) -> Option<Token> {
-        if self.peek(parser).filter(|t| t.value == value).is_some() {
-            self.bump(parser).ok()
+    pub fn bump_if(&mut self, frontend: &mut Frontend, value: TokenValue) -> Option<Token> {
+        if self.peek(frontend).filter(|t| t.value == value).is_some() {
+            self.bump(frontend).ok()
         } else {
             None
         }
     }
 
-    pub fn peek(&mut self, parser: &mut Parser) -> Option<&Token> {
-        match self.lexer.peek()?.kind {
-            LexerResultKind::Token(_) => {
-                let res = self.lexer.peek()?;
-
-                match res.kind {
-                    LexerResultKind::Token(ref token) => Some(token),
-                    _ => unreachable!(),
-                }
+    pub fn peek(&mut self, frontend: &mut Frontend) -> Option<&Token> {
+        loop {
+            if let Some(ref token) = self.backtracked_token {
+                break Some(token);
             }
-            LexerResultKind::Error(_) | LexerResultKind::Directive(_) => {
-                let res = self.lexer.next()?;
 
-                match res.kind {
-                    LexerResultKind::Directive(directive) => {
-                        parser.handle_directive(directive, res.meta)
+            match self.lexer.peek()?.kind {
+                LexerResultKind::Token(_) => {
+                    let res = self.lexer.peek()?;
+
+                    match res.kind {
+                        LexerResultKind::Token(ref token) => break Some(token),
+                        _ => unreachable!(),
                     }
-                    LexerResultKind::Error(error) => parser.errors.push(Error {
-                        kind: ErrorKind::PreprocessorError(error),
-                        meta: res.meta,
-                    }),
-                    _ => unreachable!(),
                 }
+                LexerResultKind::Error(_) | LexerResultKind::Directive(_) => {
+                    let res = self.lexer.next()?;
 
-                self.peek(parser)
+                    match res.kind {
+                        LexerResultKind::Directive(directive) => {
+                            frontend.handle_directive(directive, res.meta)
+                        }
+                        LexerResultKind::Error(error) => frontend.errors.push(Error {
+                            kind: ErrorKind::PreprocessorError(error),
+                            meta: res.meta,
+                        }),
+                        LexerResultKind::Token(_) => unreachable!(),
+                    }
+                }
             }
         }
     }
 
-    pub fn expect_peek(&mut self, parser: &mut Parser) -> Result<&Token> {
+    pub fn expect_peek(&mut self, frontend: &mut Frontend) -> Result<&Token> {
         let meta = self.last_meta;
-        self.peek(parser).ok_or(Error {
+        self.peek(frontend).ok_or(Error {
             kind: ErrorKind::EndOfFile,
             meta,
         })
     }
 
-    pub fn parse(&mut self, parser: &mut Parser) -> Result<()> {
+    pub fn parse(&mut self, frontend: &mut Frontend) -> Result<()> {
         // Body and expression arena for global initialization
         let mut body = Block::new();
-        let mut ctx = Context::new(parser, &mut body);
+        let mut ctx = Context::new(frontend, &mut body);
 
-        while self.peek(parser).is_some() {
-            self.parse_external_declaration(parser, &mut ctx, &mut body)?;
+        while self.peek(frontend).is_some() {
+            self.parse_external_declaration(frontend, &mut ctx, &mut body)?;
         }
 
-        match parser.lookup_function.get("main").and_then(|declaration| {
-            declaration
-                .overloads
-                .iter()
-                .find_map(|decl| match decl.kind {
-                    FunctionKind::Call(handle) if decl.defined && decl.parameters.is_empty() => {
-                        Some(handle)
+        // Add an `EntryPoint` to `parser.module` for `main`, if a
+        // suitable overload exists. Error out if we can't find one.
+        if let Some(declaration) = frontend.lookup_function.get("main") {
+            for decl in declaration.overloads.iter() {
+                if let FunctionKind::Call(handle) = decl.kind {
+                    if decl.defined && decl.parameters.is_empty() {
+                        frontend.add_entry_point(handle, body, ctx.expressions);
+                        return Ok(());
                     }
-                    _ => None,
-                })
-        }) {
-            Some(handle) => parser.add_entry_point(handle, body, ctx.expressions),
-            None => parser.errors.push(Error {
-                kind: ErrorKind::SemanticError("Missing entry point".into()),
-                meta: SourceMetadata::none(),
-            }),
+                }
+            }
         }
 
-        Ok(())
+        Err(Error {
+            kind: ErrorKind::SemanticError("Missing entry point".into()),
+            meta: Span::default(),
+        })
     }
 
-    fn parse_uint_constant(&mut self, parser: &mut Parser) -> Result<(u32, SourceMetadata)> {
-        let (value, meta) = self.parse_constant_expression(parser)?;
+    fn parse_uint_constant(&mut self, frontend: &mut Frontend) -> Result<(u32, Span)> {
+        let (const_expr, meta) = self.parse_constant_expression(frontend)?;
 
-        let int = match parser.module.constants[value].inner {
-            ConstantInner::Scalar {
-                value: ScalarValue::Uint(int),
-                ..
-            } => u32::try_from(int).map_err(|_| Error {
+        let res = frontend.module.to_ctx().eval_expr_to_u32(const_expr);
+
+        let int = match res {
+            Ok(value) => Ok(value),
+            Err(U32EvalError::Negative) => Err(Error {
                 kind: ErrorKind::SemanticError("int constant overflows".into()),
                 meta,
-            })?,
-            ConstantInner::Scalar {
-                value: ScalarValue::Sint(int),
-                ..
-            } => u32::try_from(int).map_err(|_| Error {
-                kind: ErrorKind::SemanticError("int constant overflows".into()),
+            }),
+            Err(U32EvalError::NonConst) => Err(Error {
+                kind: ErrorKind::SemanticError("Expected a uint constant".into()),
                 meta,
-            })?,
-            _ => {
-                return Err(Error {
-                    kind: ErrorKind::SemanticError("Expected a uint constant".into()),
-                    meta,
-                })
-            }
-        };
+            }),
+        }?;
 
         Ok((int, meta))
     }
 
     fn parse_constant_expression(
         &mut self,
-        parser: &mut Parser,
-    ) -> Result<(Handle<Constant>, SourceMetadata)> {
+        frontend: &mut Frontend,
+    ) -> Result<(Handle<Expression>, Span)> {
         let mut block = Block::new();
 
-        let mut ctx = Context::new(parser, &mut block);
+        let mut ctx = Context::new(frontend, &mut block);
 
         let mut stmt_ctx = ctx.stmt_ctx();
-        let expr = self.parse_conditional(parser, &mut ctx, &mut stmt_ctx, &mut block, None)?;
-        let (root, meta) = ctx.lower_expect(stmt_ctx, parser, expr, ExprPos::Rhs, &mut block)?;
+        let expr = self.parse_conditional(frontend, &mut ctx, &mut stmt_ctx, &mut block, None)?;
+        let (root, meta) = ctx.lower_expect(stmt_ctx, frontend, expr, ExprPos::Rhs, &mut block)?;
 
-        Ok((parser.solve_constant(&ctx, root, meta)?, meta))
+        Ok((frontend.solve_constant(&ctx, root, meta)?, meta))
     }
 }
 
-impl Parser {
-    fn handle_directive(&mut self, directive: Directive, meta: SourceMetadata) {
+impl Frontend {
+    fn handle_directive(&mut self, directive: Directive, meta: Span) {
         let mut tokens = directive.tokens.into_iter();
 
         match directive.kind {
@@ -366,25 +387,26 @@ impl Parser {
     }
 }
 
-pub struct DeclarationContext<'ctx> {
-    qualifiers: Vec<(TypeQualifier, SourceMetadata)>,
+pub struct DeclarationContext<'ctx, 'qualifiers> {
+    qualifiers: TypeQualifiers<'qualifiers>,
+    /// Indicates a global declaration
     external: bool,
 
     ctx: &'ctx mut Context,
     body: &'ctx mut Block,
 }
 
-impl<'ctx> DeclarationContext<'ctx> {
+impl<'ctx, 'qualifiers> DeclarationContext<'ctx, 'qualifiers> {
     fn add_var(
         &mut self,
-        parser: &mut Parser,
+        frontend: &mut Frontend,
         ty: Handle<Type>,
         name: String,
-        init: Option<Handle<Constant>>,
-        meta: SourceMetadata,
+        init: Option<Handle<Expression>>,
+        meta: Span,
     ) -> Result<Handle<Expression>> {
         let decl = VarDeclaration {
-            qualifiers: &self.qualifiers,
+            qualifiers: &mut self.qualifiers,
             ty,
             name: Some(name),
             init,
@@ -393,19 +415,24 @@ impl<'ctx> DeclarationContext<'ctx> {
 
         match self.external {
             true => {
-                let global = parser.add_global_var(self.ctx, self.body, decl)?;
+                let global = frontend.add_global_var(self.ctx, self.body, decl)?;
                 let expr = match global {
                     GlobalOrConstant::Global(handle) => Expression::GlobalVariable(handle),
                     GlobalOrConstant::Constant(handle) => Expression::Constant(handle),
                 };
                 Ok(self.ctx.add_expression(expr, meta, self.body))
             }
-            false => parser.add_local_var(self.ctx, self.body, decl),
+            false => frontend.add_local_var(self.ctx, self.body, decl),
         }
     }
 
+    /// Emits all the expressions captured by the emitter and starts the emitter again
+    ///
+    /// Alias to [`emit_restart`] with the declaration body
+    ///
+    /// [`emit_restart`]: Context::emit_restart
+    #[inline]
     fn flush_expressions(&mut self) {
-        self.ctx.emit_flush(self.body);
-        self.ctx.emit_start()
+        self.ctx.emit_restart(self.body);
     }
 }

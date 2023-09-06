@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = ਪਾਬੰਦੀਸ਼ੁਦਾ ਸੂਚੀ
-    .style = width: 50em
+    .style = min-width: 50em
 
 blocklist-description = { -brand-short-name } ਆਨਲਾਈਨ ਟਰੈਕਰਾਂ ਨੂੰ ਰੋਕਣ ਲਈ ਵਰਤੀ ਜਾਂਦੀ ਸੂਚੀ ਚੁਣੋ। <a data-l10n-name="disconnect-link" title="Disconnect">ਡਿਸਕਨੈਕਟ </a> ਵਲੋਂ ਦਿੱਤੀ ਜਾਂਦੀ ਸੂਚੀ ਹੈ।
 blocklist-close-key =

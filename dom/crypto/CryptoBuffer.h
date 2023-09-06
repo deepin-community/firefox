@@ -11,8 +11,7 @@
 #include "seccomon.h"
 #include "mozilla/dom/TypedArray.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 class ArrayBufferViewOrArrayBuffer;
 class OwningArrayBufferViewOrArrayBuffer;
@@ -38,7 +37,6 @@ class CryptoBuffer : public FallibleTArray<uint8_t> {
   bool ToSECItem(PLArenaPool* aArena, SECItem* aItem) const;
   JSObject* ToUint8Array(JSContext* aCx) const;
   JSObject* ToArrayBuffer(JSContext* aCx) const;
-  bool ToNewUnsignedBuffer(uint8_t** aBuf, uint32_t* aBufLen) const;
 
   bool GetBigIntValue(unsigned long& aRetVal);
 
@@ -51,7 +49,6 @@ class CryptoBuffer : public FallibleTArray<uint8_t> {
   }
 };
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 #endif  // mozilla_dom_CryptoBuffer_h

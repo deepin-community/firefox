@@ -42,10 +42,9 @@ welcome-back-page-info = { -brand-short-name } जान तयार छ।
 
 welcome-back-restore-button =
     .label = जाऔँ!
-    .accesskey = L
+    .accesskey = ज
 
 welcome-back-restore-all-label = सम्पूर्ण सञ्झ्याल & ट्याबहरु पुर्वावस्थामा ल्याउनुहोस्
 welcome-back-restore-some-label = तपाईँले चाहनुभएको मात्र पुनर्स्थापित गर्नुहोस्
 
 welcome-back-page-info-link = तपाईँको एडअनहरू र अनुकूलनहरू हटाइएको छ र तपाईँको ब्राउजरको पुर्वनिर्धारित सेटिङहरू पुनर्स्थापना गरिएको छ। यदि यसले तपाईँको समस्याको समाधान गरेन भने, <a data-l10n-name="link-more">तपाईँ के गर्न सक्नुहुन्छ थप जान्नुहोस्।</a>
-

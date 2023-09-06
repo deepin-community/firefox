@@ -14,7 +14,6 @@ compatibility-issue-deprecated = (zestarjony)
 compatibility-issue-experimental = (eksperimentelny)
 compatibility-issue-prefixneeded = (prefiks trjebny)
 compatibility-issue-deprecated-experimental = (zestarjony, eksperimentelny)
-
 compatibility-issue-deprecated-prefixneeded = (zestarjony, prefiks trjebny)
 compatibility-issue-experimental-prefixneeded = (eksperimentelny, prefiks trjebny)
 compatibility-issue-deprecated-experimental-prefixneeded = (zestarjony, eksperimentelny, prefiks trjebny)
@@ -24,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (zestarjony, eksperim
 compatibility-settings-button-label = Nastajenja
 compatibility-settings-button-title =
     .title = Nastajenja
-compatibility-feedback-button-label = Komentary
-compatibility-feedback-button-title =
-    .title = Komentary
 
 ## Messages used as headers in settings pane
 
@@ -49,3 +45,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Žedne problemy kompatibelnosći namakane.
 compatibility-close-settings-button =
     .title = Nastajenja zacyniś
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Problemy kompatibelnosći w:
+        { $browsers }

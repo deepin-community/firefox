@@ -10,7 +10,6 @@
 #include "frontend/ParserAtom.h"  // ParserAtom
 #include "frontend/SharedContext.h"
 #include "vm/Opcodes.h"
-#include "vm/StringType.h"
 #include "vm/ThrowMsgKind.h"  // ThrowMsgKind
 
 using namespace js;
@@ -190,7 +189,8 @@ bool PropOpEmitter::emitAssignment(TaggedParserAtomIndex prop) {
   return true;
 }
 
-bool PropOpEmitter::emitIncDec(TaggedParserAtomIndex prop) {
+bool PropOpEmitter::emitIncDec(TaggedParserAtomIndex prop,
+                               ValueUsage valueUsage) {
   MOZ_ASSERT(state_ == State::Obj);
   MOZ_ASSERT(isIncDec());
 
@@ -206,7 +206,7 @@ bool PropOpEmitter::emitIncDec(TaggedParserAtomIndex prop) {
     //              [stack] ... N
     return false;
   }
-  if (isPostIncDec()) {
+  if (isPostIncDec() && valueUsage == ValueUsage::WantValue) {
     //              [stack] OBJ SUPERBASE? N
     if (!bce_->emit1(JSOp::Dup)) {
       //            [stack] .. N N
@@ -230,7 +230,7 @@ bool PropOpEmitter::emitIncDec(TaggedParserAtomIndex prop) {
     //              [stack] N? N+1
     return false;
   }
-  if (isPostIncDec()) {
+  if (isPostIncDec() && valueUsage == ValueUsage::WantValue) {
     if (!bce_->emit1(JSOp::Pop)) {
       //            [stack] N
       return false;

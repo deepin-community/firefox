@@ -33,7 +33,8 @@ typedef enum {
     ssl_hs_certificate_status = 22,
     ssl_hs_key_update = 24,
     ssl_hs_next_proto = 67,
-    ssl_hs_message_hash = 254, /* Not a real message. */
+    ssl_hs_message_hash = 254,           /* Not a real message. */
+    ssl_hs_ech_outer_client_hello = 257, /* Not a real message. */
 } SSLHandshakeType;
 
 typedef enum {
@@ -446,6 +447,9 @@ typedef struct SSLPreliminaryChannelInfoStr {
      * should use the following hostname extracted from the ECHConfig. */
     const char* echPublicName;
 
+    /* The following field was added in NSS 3.88. */
+    PRBool ticketSupportsEarlyData;
+
     /* When adding new fields to this structure, please document the
      * NSS version in which they were added. */
 } SSLPreliminaryChannelInfo;
@@ -547,12 +551,13 @@ typedef enum {
     ssl_tls13_post_handshake_auth_xtn = 49,
     ssl_signature_algorithms_cert_xtn = 50,
     ssl_tls13_key_share_xtn = 51,
+    /* TLS 1.3 GREASE extension dummy type for builders. */
+    ssl_tls13_grease_xtn = 0x0a0a,
     ssl_next_proto_nego_xtn = 13172, /* Deprecated. */
     ssl_renegotiation_info_xtn = 0xff01,
     ssl_tls13_short_header_xtn = 0xff03, /* Deprecated. */
-    ssl_tls13_ech_is_inner_xtn = 0xda09,
     ssl_tls13_outer_extensions_xtn = 0xfd00,
-    ssl_tls13_encrypted_client_hello_xtn = 0xfe0a,
+    ssl_tls13_encrypted_client_hello_xtn = 0xfe0d,
     ssl_tls13_encrypted_sni_xtn = 0xffce, /* Deprecated. */
 } SSLExtensionType;
 

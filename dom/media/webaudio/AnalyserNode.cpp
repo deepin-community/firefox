@@ -11,6 +11,7 @@
 #include "mozilla/Mutex.h"
 #include "mozilla/PodOperations.h"
 #include "nsMathUtils.h"
+#include "Tracing.h"
 
 namespace mozilla {
 
@@ -53,6 +54,7 @@ class AnalyserNodeEngine final : public AudioNodeEngine {
   virtual void ProcessBlock(AudioNodeTrack* aTrack, GraphTime aFrom,
                             const AudioBlock& aInput, AudioBlock* aOutput,
                             bool* aFinished) override {
+    TRACE("AnalyserNodeEngine::ProcessBlock");
     *aOutput = aInput;
 
     if (aInput.IsNull()) {
@@ -242,8 +244,8 @@ void AnalyserNode::GetByteFrequencyData(const Uint8Array& aArray) {
         WebAudioUtils::ConvertLinearToDecibels(mOutputBuffer[i], mMinDecibels);
     // scale down the value to the range of [0, UCHAR_MAX]
     const double scaled = std::max(
-        0.0, std::min(double(UCHAR_MAX),
-                      UCHAR_MAX*(decibels - mMinDecibels) * rangeScaleFactor));
+        0.0, std::min(double(UCHAR_MAX), UCHAR_MAX * (decibels - mMinDecibels) *
+                                             rangeScaleFactor));
     buffer[i] = static_cast<unsigned char>(scaled);
   }
 }
@@ -297,7 +299,7 @@ bool AnalyserNode::FFTAnalysis() {
 
   for (uint32_t i = 0; i < mOutputBuffer.Length(); ++i) {
     double scalarMagnitude =
-        NS_hypot(mAnalysisBlock.RealData(i), mAnalysisBlock.ImagData(i)) *
+        fdlibm_hypot(mAnalysisBlock.RealData(i), mAnalysisBlock.ImagData(i)) *
         magnitudeScale;
     mOutputBuffer[i] = mSmoothingTimeConstant * mOutputBuffer[i] +
                        (1.0 - mSmoothingTimeConstant) * scalarMagnitude;
@@ -314,7 +316,8 @@ void AnalyserNode::ApplyBlackmanWindow(float* aBuffer, uint32_t aSize) {
 
   for (uint32_t i = 0; i < aSize; ++i) {
     double x = double(i) / aSize;
-    double window = a0 - a1 * cos(2 * M_PI * x) + a2 * cos(4 * M_PI * x);
+    double window =
+        a0 - a1 * fdlibm_cos(2 * M_PI * x) + a2 * fdlibm_cos(4 * M_PI * x);
     aBuffer[i] *= window;
   }
 }

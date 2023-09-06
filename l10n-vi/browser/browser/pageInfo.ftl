@@ -65,6 +65,9 @@ media-dimension =
     .value = Kích cỡ:
 media-long-desc =
     .value = Mô tả Đầy đủ:
+media-select-all =
+    .label = Chọn tất cả
+    .accesskey = e
 media-save-as =
     .label = Lưu thành…
     .accesskey = L
@@ -100,7 +103,7 @@ security-view-privacy =
     .value = Riêng tư & lịch sử
 
 security-view-privacy-history-value = Tôi đã từng truy cập trang web này trước ngày hôm nay chưa?
-security-view-privacy-sitedata-value = Có phải trang web này lưu trữ thông tin trên máy tính của tôi?
+security-view-privacy-sitedata-value = Trang web này lưu trữ thông tin trên máy tính của tôi hay không?
 
 security-view-privacy-clearsitedata =
     .label = Xóa cookie và dữ liệu trang web
@@ -236,6 +239,9 @@ media-dimensions =
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } KB
 
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
+
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab
 # Variables:
@@ -247,8 +253,8 @@ media-block-image =
 # This string is used to display the URL of the website on top of the
 # pageInfo dialog box
 # Variables:
-#   $website (string) - The url of the website pageInfo is getting info for
+#   $website (string) — The url of the website pageInfo is getting info for
 page-info-page =
-    .title = Thông tin Trang - { $website }
+    .title = Thông tin trang - { $website }
 page-info-frame =
     .title = Thông tin Khung - { $website }

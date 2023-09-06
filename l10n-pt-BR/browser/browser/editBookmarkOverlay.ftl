@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Ocultar
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Mostrar todas as pastas de favoritos
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Ocultar
+
 bookmark-overlay-new-folder-button =
     .label = Nova pasta
     .accesskey = o
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Mostrar todas as etiquetas
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Ocultar
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Mostrar todas as etiquetas
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Ocultar
 
 bookmark-overlay-keyword-2 =
     .value = Atalho

@@ -16,10 +16,37 @@ const cose_crv_P256 = 1;
 const cose_crv_x = -2;
 const cose_crv_y = -3;
 
-var { AppConstants } = SpecialPowers.Cu.import(
-  "resource://gre/modules/AppConstants.jsm",
-  {}
+var { AppConstants } = SpecialPowers.ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
 );
+
+async function addVirtualAuthenticator() {
+  let id = await SpecialPowers.spawnChrome([], () => {
+    let webauthnTransport = Cc["@mozilla.org/webauthn/transport;1"].getService(
+      Ci.nsIWebAuthnTransport
+    );
+    let id = webauthnTransport.addVirtualAuthenticator(
+      "ctap2",
+      "internal",
+      true,
+      true,
+      true,
+      true
+    );
+    return id;
+  });
+
+  SimpleTest.registerCleanupFunction(async () => {
+    await SpecialPowers.spawnChrome([id], id => {
+      let webauthnTransport = Cc[
+        "@mozilla.org/webauthn/transport;1"
+      ].getService(Ci.nsIWebAuthnTransport);
+      webauthnTransport.removeVirtualAuthenticator(id);
+    });
+  });
+
+  return id;
+}
 
 function handleEventMessage(event) {
   if ("test" in event.data) {
@@ -109,7 +136,7 @@ function buffer2string(buf) {
   if (!(buf.constructor === Uint8Array)) {
     buf = new Uint8Array(buf);
   }
-  buf.map(function(x) {
+  buf.map(function (x) {
     return (str += String.fromCharCode(x));
   });
   return str;
@@ -130,7 +157,7 @@ function base64ToBytes(b64encoded) {
     window
       .atob(b64encoded)
       .split("")
-      .map(function(c) {
+      .map(function (c) {
         return c.charCodeAt(0);
       })
   );
@@ -179,12 +206,21 @@ function webAuthnDecodeCBORAttestation(aCborAttBuf) {
   if (attObj.fmt == "fido-u2f" && !hasOnlyKeys(attObj.attStmt, "sig", "x5c")) {
     return Promise.reject("Invalid CBOR Attestation Statement");
   }
-  if (attObj.fmt == "none" && Object.keys(attObj.attStmt).length > 0) {
+  if (
+    attObj.fmt == "packed" &&
+    !(
+      hasOnlyKeys(attObj.attStmt, "alg", "sig") ||
+      hasOnlyKeys(attObj.attStmt, "alg", "sig", "x5c")
+    )
+  ) {
+    return Promise.reject("Invalid CBOR Attestation Statement");
+  }
+  if (attObj.fmt == "none" && Object.keys(attObj.attStmt).length) {
     return Promise.reject("Invalid CBOR Attestation Statement");
   }
 
   return webAuthnDecodeAuthDataArray(new Uint8Array(attObj.authData)).then(
-    function(aAuthDataObj) {
+    function (aAuthDataObj) {
       attObj.authDataObj = aAuthDataObj;
       return Promise.resolve(attObj);
     }
@@ -258,7 +294,7 @@ function webAuthnDecodeAuthDataArray(aAuthData) {
   console.log("Y: " + pubkeyObj[cose_crv_y]);
   console.log("Uncompressed (hex): " + hexEncode(pubKeyBytes));
 
-  return importPublicKey(pubKeyBytes).then(function(aKeyHandle) {
+  return importPublicKey(pubKeyBytes).then(function (aKeyHandle) {
     return Promise.resolve({
       rpIdHash,
       flags,
@@ -294,7 +330,7 @@ function deriveAppAndChallengeParam(appId, clientData, attestation) {
   return Promise.all([
     crypto.subtle.digest("SHA-256", appIdBuf),
     crypto.subtle.digest("SHA-256", clientData),
-  ]).then(function(digests) {
+  ]).then(function (digests) {
     return {
       appParam: new Uint8Array(digests[0]),
       challengeParam: new Uint8Array(digests[1]),
@@ -395,4 +431,57 @@ function verifySignature(key, data, derSig) {
 
   let alg = { name: "ECDSA", hash: "SHA-256" };
   return crypto.subtle.verify(alg, key, sigData, data);
+}
+
+async function addCredential(authenticatorId, rpId) {
+  let keyPair = await crypto.subtle.generateKey(
+    {
+      name: "ECDSA",
+      namedCurve: "P-256",
+    },
+    true,
+    ["sign"]
+  );
+
+  let credId = new Uint8Array(32);
+  crypto.getRandomValues(credId);
+  credId = bytesToBase64UrlSafe(credId);
+
+  let privateKey = await crypto.subtle
+    .exportKey("pkcs8", keyPair.privateKey)
+    .then(privateKey => bytesToBase64UrlSafe(privateKey));
+
+  await SpecialPowers.spawnChrome(
+    [authenticatorId, credId, rpId, privateKey],
+    (authenticatorId, credId, rpId, privateKey) => {
+      let webauthnTransport = Cc[
+        "@mozilla.org/webauthn/transport;1"
+      ].getService(Ci.nsIWebAuthnTransport);
+
+      webauthnTransport.addCredential(
+        authenticatorId,
+        credId,
+        true, // resident key
+        rpId,
+        privateKey,
+        "VGVzdCBVc2Vy", // "Test User"
+        0 // sign count
+      );
+    }
+  );
+
+  return credId;
+}
+
+async function removeCredential(authenticatorId, credId) {
+  await SpecialPowers.spawnChrome(
+    [authenticatorId, credId],
+    (authenticatorId, credId) => {
+      let webauthnTransport = Cc[
+        "@mozilla.org/webauthn/transport;1"
+      ].getService(Ci.nsIWebAuthnTransport);
+
+      webauthnTransport.removeCredential(authenticatorId, credId);
+    }
+  );
 }

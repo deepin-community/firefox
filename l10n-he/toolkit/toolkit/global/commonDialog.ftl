@@ -11,3 +11,10 @@ common-dialog-username =
     .value = שם משתמש
 common-dialog-password =
     .value = ססמה
+
+common-dialog-copy-cmd =
+    .label = העתקה
+    .accesskey = ה
+common-dialog-select-all-cmd =
+    .label = בחירת הכול
+    .accesskey = ב

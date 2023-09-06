@@ -54,8 +54,8 @@ graph-legend-description = Graf vključuje skupno število posameznih vrst sledi
 social-tab-title = Sledilci družbenih omrežij
 social-tab-contant = Družbena omrežja postavljajo sledilce na druga spletna mesta, da bi spremljali, kaj počnete, vidite in gledate na spletu. To družbenim medijem omogoča, da o vas izvedo več kot le tisto, kar delite na svojih družbenih profilih. <a data-l10n-name="learn-more-link">Več o tem</a>
 
-cookie-tab-title = Spletni sledilni piškotki
-cookie-tab-content = Ti piškotki vas spremljajo po straneh in zbirajo podatke o tem, kaj počnete na spletu. Namestijo jih tretje strani, kot so oglaševalci in analitična podjetja. Zavračanje sledilnih piškotkov zmanjša število oglasov, ki vam sledijo. <a data-l10n-name="learn-more-link">Več o tem</a>
+cookie-tab-title = Piškotki za sledenje med spletnimi mesti
+cookie-tab-content = Ti piškotki vas spremljajo od enega spletnega mesta do drugega in zbirajo podatke o tem, kaj počnete na spletu. Namestijo jih tretje strani, kot so oglaševalci in analitična podjetja. Zavračanje piškotkov za sledenje med spletnimi mesti zmanjša pogostost oglasov, ki vam sledijo. <a data-l10n-name="learn-more-link">Več o tem</a>
 
 tracker-tab-title = Sledilna vsebina
 tracker-tab-description = Spletne strani lahko naložijo zunanje oglase, videoposnetke in drugo vsebino s kodo za sledenje. Zavračanje sledilne vsebine lahko pospeši nalaganje spletnih strani, vendar nekateri gumbi in obrazci morda ne bodo delovali. <a data-l10n-name="learn-more-link">Več o tem</a>
@@ -69,22 +69,20 @@ cryptominer-tab-content = Kriptorudarji izrabljajo zmogljivost vašega računaln
 protections-close-button2 =
     .aria-label = Zapri
     .title = Zapri
-  
+
 mobile-app-title = Zavrnite sledilce oglasov na več napravah
 mobile-app-card-content = Uporabljajte mobilni brskalnik z vgrajeno zaščito pred sledilci oglasov.
 mobile-app-links = Brskalnik { -brand-product-name } za <a data-l10n-name="android-mobile-inline-link">Android</a> in <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Nikoli več ne pozabite gesla
-lockwise-title-logged-in2 = Upravljanje gesel
-lockwise-header-content = { -lockwise-brand-name } varno hrani vaša gesla v brskalniku.
+passwords-title-logged-in = Upravljaj gesla
+passwords-header-content = { -brand-product-name } varno hrani vaša gesla v brskalniku.
 lockwise-header-content-logged-in = Varno hranite in sinhronizirajte svoja gesla na vseh napravah.
-protection-report-save-passwords-button = Shranite gesla
-    .title = Shranite gesla v { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Upravljajte gesla
-    .title = Upravljajte gesla v { -lockwise-brand-short-name }u
-lockwise-mobile-app-title = Vzemite gesla s seboj
-lockwise-no-logins-card-content = Uporabljajte gesla, shranjena v { -brand-short-name }, na katerikoli napravi.
-lockwise-app-links = { -lockwise-brand-name } za <a data-l10n-name="lockwise-android-inline-link">Android</a> in <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Shrani gesla
+    .title = Shrani gesla
+protection-report-passwords-manage-passwords-button = Upravljanje gesel
+    .title = Upravljanje gesel
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -229,13 +227,13 @@ bar-tooltip-social =
            *[other] { $count } sledilcev družbenih omrežij ({ $percentage } %)
         }
 bar-tooltip-cookie =
-    .title = Spletni sledilni piškotki
+    .title = Piškotki za sledenje med spletnimi mesti
     .aria-label =
         { $count ->
-            [one] { $count } spletni sledilni piškotek ({ $percentage } %)
-            [two] { $count } spletna sledilna piškotka ({ $percentage } %)
-            [few] { $count } spletni sledilni piškotki ({ $percentage } %)
-           *[other] { $count } spletnih sledilnih piškotkov ({ $percentage } %)
+            [one] { $count } piškotek za sledenje med spletnimi mesti ({ $percentage } %)
+            [two] { $count } piškotka za sledenje med spletnimi mesti ({ $percentage } %)
+            [few] { $count } piškotki za sledenje med spletnimi mesti ({ $percentage } %)
+           *[other] { $count } piškotkov za sledenje med spletnimi mesti ({ $percentage } %)
         }
 bar-tooltip-tracker =
     .title = Sledilna vsebina

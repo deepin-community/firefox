@@ -15,9 +15,10 @@ use crate::selector_parser::{PseudoElementCascadeType, SelectorImpl};
 use crate::str::{starts_with_ignore_ascii_case, string_as_ascii_lowercase};
 use crate::string_cache::Atom;
 use crate::values::serialize_atom_identifier;
+use crate::values::AtomIdent;
 use cssparser::ToCss;
+use static_prefs::pref;
 use std::fmt;
-use thin_slice::ThinBoxedSlice;
 
 include!(concat!(
     env!("OUT_DIR"),
@@ -93,9 +94,10 @@ impl PseudoElement {
         EAGER_PSEUDOS[i].clone()
     }
 
-    /// Whether the current pseudo element is animatable.
+    /// Whether animations for the current pseudo element are stored in the
+    /// parent element.
     #[inline]
-    pub fn is_animatable(&self) -> bool {
+    pub fn animations_stored_in_parent(&self) -> bool {
         matches!(*self, Self::Before | Self::After | Self::Marker)
     }
 
@@ -153,6 +155,19 @@ impl PseudoElement {
         !self.is_eager() && !self.is_precomputed()
     }
 
+    /// The identifier of the highlight this pseudo-element represents.
+    pub fn highlight_name(&self) -> Option<&AtomIdent> {
+        match &*self {
+            PseudoElement::Highlight(name) => Some(&name),
+            _ => None,
+        }
+    }
+
+    /// Whether this pseudo-element is the ::highlight pseudo.
+    pub fn is_highlight(&self) -> bool {
+        matches!(*self, PseudoElement::Highlight(_))
+    }
+
     /// Whether this pseudo-element supports user action selectors.
     pub fn supports_user_action_state(&self) -> bool {
         (self.flags() & structs::CSS_PSEUDO_ELEMENT_SUPPORTS_USER_ACTION_STATE) != 0
@@ -160,7 +175,10 @@ impl PseudoElement {
 
     /// Whether this pseudo-element is enabled for all content.
     pub fn enabled_in_content(&self) -> bool {
-        self.flags() & structs::CSS_PSEUDO_ELEMENT_ENABLED_IN_UA_SHEETS_AND_CHROME == 0
+        if self.is_highlight() && !pref!("dom.customHighlightAPI.enabled") {
+            return false;
+        }
+        return self.flags() & structs::CSS_PSEUDO_ELEMENT_ENABLED_IN_UA_SHEETS_AND_CHROME == 0;
     }
 
     /// Whether this pseudo is enabled explicitly in UA sheets.

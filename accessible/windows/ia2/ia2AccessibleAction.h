@@ -10,11 +10,11 @@
 
 #include "nsISupports.h"
 
+#include "mozilla/a11y/Accessible.h"
 #include "AccessibleAction.h"
 
 namespace mozilla {
 namespace a11y {
-class AccessibleWrap;
 
 class ia2AccessibleAction : public IAccessibleAction {
  public:
@@ -47,7 +47,7 @@ class ia2AccessibleAction : public IAccessibleAction {
       /* [retval][out] */ BSTR* localizedName);
 
  private:
-  AccessibleWrap* LocalAcc();
+  Accessible* Acc();
 };
 
 }  // namespace a11y

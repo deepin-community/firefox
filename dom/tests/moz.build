@@ -161,6 +161,7 @@ MOCHITEST_MANIFESTS += [
     "mochitest/gamepad/mochitest.ini",
     "mochitest/general/mochitest.ini",
     "mochitest/geolocation/mochitest.ini",
+    "mochitest/integer-gemm/mochitest.ini",
     "mochitest/keyhandling/mochitest.ini",
     "mochitest/localstorage/mochitest.ini",
     "mochitest/orientation/mochitest.ini",
@@ -175,6 +176,7 @@ MOCHITEST_MANIFESTS += [
 MOCHITEST_CHROME_MANIFESTS += [
     "mochitest/beacon/chrome.ini",
     "mochitest/chrome/chrome.ini",
+    "mochitest/fs/chrome.ini",
     "mochitest/general/chrome.ini",
     "mochitest/geolocation/chrome.ini",
     "mochitest/keyhandling/chrome.ini",
@@ -187,7 +189,6 @@ MOCHITEST_CHROME_MANIFESTS += [
 XPCSHELL_TESTS_MANIFESTS += ["unit/xpcshell.ini"]
 BROWSER_CHROME_MANIFESTS += [
     "browser/browser.ini",
-    "browser/perfmetrics/browser.ini",
 ]
 
 TEST_HARNESS_FILES.testing.mochitest.tests.dom.tests.mochitest.ajax.lib += [

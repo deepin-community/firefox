@@ -2,28 +2,31 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-import sys
-import mozunit
-from unittest import mock
-import pytest
-from pathlib import Path
 import shutil
+import sys
 from datetime import date, timedelta
+from pathlib import Path
+from subprocess import CalledProcessError
+from unittest import mock
 
+import mozunit
+import pytest
+
+from mozperftest.tests.support import EXAMPLE_TESTS_DIR, requests_content, temp_file
 from mozperftest.utils import (
-    host_platform,
-    silence,
-    download_file,
-    install_package,
     build_test_list,
-    get_multi_tasks_url,
-    get_revision_namespace_url,
-    convert_day,
-    load_class,
     checkout_python_script,
+    convert_day,
+    create_path,
+    download_file,
+    get_multi_tasks_url,
     get_output_dir,
+    get_revision_namespace_url,
+    host_platform,
+    install_package,
+    load_class,
+    silence,
 )
-from mozperftest.tests.support import temp_file, requests_content, EXAMPLE_TESTS_DIR
 
 
 def test_silence():
@@ -80,8 +83,17 @@ def _req(package):
 def test_install_package():
     vem = mock.Mock()
     vem.bin_path = "someplace"
-    assert install_package(vem, "foo")
-    vem._run_pip.assert_called()
+    with mock.patch("subprocess.check_call") as mock_check_call:
+        assert install_package(vem, "foo")
+        mock_check_call.assert_called_once_with(
+            [
+                vem.python_path,
+                "-m",
+                "pip",
+                "install",
+                "foo",
+            ]
+        )
 
 
 @mock.patch("pip._internal.req.constructors.install_req_from_line", new=_req)
@@ -89,13 +101,12 @@ def test_install_package_failures():
     vem = mock.Mock()
     vem.bin_path = "someplace"
 
-    def run_pip(*args):
-        raise Exception()
+    def check_call(*args):
+        raise CalledProcessError(1, "")
 
-    vem._run_pip = run_pip
-
-    with pytest.raises(Exception):
-        install_package(vem, "foo")
+    with pytest.raises(CalledProcessError):
+        with mock.patch("subprocess.check_call", new=check_call):
+            install_package(vem, "foo")
 
     # we can also absorb the error, and just return False
     assert not install_package(vem, "foo", ignore_failure=True)
@@ -204,6 +215,18 @@ def test_get_output_dir():
         assert output_dir.exists()
         assert output_dir.is_dir()
         assert "artifacts" == output_dir.parts[-1]
+
+
+def test_create_path():
+    path = Path("path/doesnt/exist").resolve()
+    if path.exists():
+        shutil.rmtree(path.parent.parent)
+    try:
+        path = create_path(path)
+
+        assert path.exists()
+    finally:
+        shutil.rmtree(path.parent.parent)
 
 
 if __name__ == "__main__":

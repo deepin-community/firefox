@@ -8,6 +8,7 @@ about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Limpar cache de DNS
 about-networking-dns-trr-url = URL do DoH
+about-networking-dns-trr-mode = Modo DoH
 about-networking-dns-suffix = Sufixo DNS
 about-networking-websockets = WebSockets
 about-networking-refresh = Atualizar
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Ativo
 about-networking-idle = Inativo
 about-networking-host = Servidor
-about-networking-tcp = TCP
 about-networking-type = Tipo
 about-networking-sent = Enviado
 about-networking-received = Recebido
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Endereços
 about-networking-expires = Expira (segundos)
 about-networking-originAttributesSuffix = Chave de isolamento
+about-networking-flags = Flags adicionais
 about-networking-messages-sent = Mensagens enviadas
 about-networking-messages-received = Mensagens recebidas
 about-networking-bytes-sent = Bytes enviados
 about-networking-bytes-received = Bytes recebidos
 about-networking-logging = Registro
-about-networking-log-tutorial = Ver o <a data-l10n-name="logging">Registro HTTP </a> para instruções sobre como usar essa ferramenta.
-about-networking-current-log-file = Arquivo de registro atual:
-about-networking-current-log-modules = Módulos de registro atuais:
-about-networking-set-log-file = Configurar arquivo de registro
-about-networking-set-log-modules = Configurar módulo de registro
-about-networking-start-logging = Iniciar registro
-about-networking-stop-logging = Parar registro
 about-networking-dns-lookup = DNS Lookup
 about-networking-dns-lookup-button = Resolver
 about-networking-dns-domain = Domínio:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Contagem lenta de cache
 about-networking-rcwn-cache-not-slow = Contagem não lenta de cache
 about-networking-networkid = ID da rede
 about-networking-networkid-id = ID da rede
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Esta página foi movida para <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

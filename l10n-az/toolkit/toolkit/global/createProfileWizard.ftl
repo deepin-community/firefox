@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Hesab Yaratma Köməkçisi
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Başlatma
-       *[other] { create-profile-window.title } bölməsinə xoş gəlmisiniz
+       *[other] { create-profile-window2.title } bölməsinə xoş gəlmisiniz
     }
 
 profile-creation-explanation-1 = { -brand-short-name } nizamlarınızı, favoritlərinizi və oxşar seçimlərinizi hesabınızda saxlayır.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Nəticə
-       *[other] { create-profile-window.title } tamamlanır
+       *[other] { create-profile-window2.title } tamamlanır
     }
 
 profile-creation-intro = Birdən çox hesab yaratsanız bunları bir birindən ayırmaq üçün hesab adlarından istifadə edə bilərsiniz. Burada təqdim olunan  ya da özünüz seçdiyiniz bir addan istifadə edə bilərsiniz.

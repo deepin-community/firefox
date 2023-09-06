@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Përcaktoni përkatësi të lejuara të hyjnë n�
 
 policy-AppAutoUpdate = Aktivizoni ose çaktivizoni përditësime të vetvetishme aplikacionesh.
 
+policy-AppUpdatePin = Pengoje { -brand-short-name }-in të përditësohet tej versionit të treguar.
+
 policy-AppUpdateURL = Caktoni URL vetjake përditësimi aplikacioni.
 
 policy-Authentication = Formësoni mirëfilltësim të integruar për sajte që e mbulojnë atë.
@@ -69,7 +71,7 @@ policy-DisablePrimaryPasswordCreation = Në qoftë <em>true</em>, s’mund të k
 
 policy-DisablePasswordReveal = Mos lejo të shfaqen fjalëkalime te kredenciale hyrjesh të ruajtura.
 
-policy-DisablePocket = Çaktivizoni veçorinë e ruajtjes së faqeve web në Pocket.
+policy-DisablePocket2 = Çaktivizoni veçorinë e ruajtjes së faqeve web në { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Çaktivizoni Shfletimin Privat.
 
@@ -87,6 +89,8 @@ policy-DisableSystemAddonUpdate = Pengojini shfletuesit të instalojë dhe përd
 
 policy-DisableTelemetry = Çaktivizoni Telemetry-në.
 
+policy-DisableThirdPartyModuleBlocking = Pengoji përdoruesit bllokimin e moduleve nga palë të treta që injektohen te procesi i { -brand-short-name }-it.
+
 policy-DisplayBookmarksToolbar = Shfaqni Panel Faqerojtësish, si parazgjedhje.
 
 policy-DisplayMenuBar = Shfaqni Shtyllë Menush, si parazgjedhje.
@@ -98,10 +102,12 @@ policy-DontCheckDefaultBrowser = Çaktivizoni kontrollin gjatë nisjes për shfl
 policy-DownloadDirectory = Caktoni dhe kyçni drejtorinë e shkarkimeve.
 
 # “lock” means that the user won’t be able to change this setting
-policy-EnableTrackingProtection = Aktivizoni ose çaktivizoni Bllokim Lënde, dhe kyçeni, në daçi.
+policy-EnableTrackingProtection = Aktivizoni ose çaktivizoni Bllokim Lënde dhe kyçeni, në daçi.
 
 # “lock” means that the user won’t be able to change this setting
-policy-EncryptedMediaExtensions = Aktivizoni ose çaktivizoni Zgjerime Mediash të Fshehtëzuara, dhe kyçeni, në daçi.
+policy-EncryptedMediaExtensions = Aktivizoni ose çaktivizoni Zgjerime Mediash të Fshehtëzuara dhe kyçeni, në daçi.
+
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Çaktivizo sinjalizimet bazuar në zgjatim kartele, për lloje specifikë kartelash në përkatësi.
 
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
@@ -112,16 +118,16 @@ policy-ExtensionSettings = Administroni krejt anët e instalimit të zgjerimeve.
 
 policy-ExtensionUpdate = Aktivizoni ose çaktivizoni përditësime të vetvetishme të zgjerimeve.
 
-policy-FirefoxHome = Formësoni Kreun e Firefox-it
+policy-FirefoxHome2 = Formësoni { -firefox-home-brand-name }.
 
-policy-FlashPlugin = Lejoni ose jo përdorimin e shtojcës Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Detyro lëvizje të drejtpërdrejtë në sajt intraneti, në vend të kërkimit, kur te shtylla e adresave shtypen zëra kërkimi të përbërë nga një fjalë e vetme.
 
 policy-Handlers = Formësoni trajtues parazgjedhje aplikacionesh.
 
 policy-HardwareAcceleration = Në u caktoftë "false", çaktivizohet përshpejtimi përmes hardware-it.
 
 # “lock” means that the user won’t be able to change this setting
-policy-Homepage = Caktoni faqen hyrëse, dhe kyçeni në daçi.
+policy-Homepage = Caktoni faqen hyrëse dhe kyçeni në daçi.
 
 policy-InstallAddonsPermission = Lejojuni disa sajteve të caktuar të instalojnë shtesa.
 
@@ -147,7 +153,7 @@ policy-NetworkPrediction = Aktivizoni ose çaktivizoni parashikim rrjeti (<em>DN
 
 policy-NewTabPage = Aktivizoni ose çaktivizoni faqen Skedë e Re.
 
-policy-NoDefaultBookmarks = Çaktivizoni krijimin e faqerojtësve parazgjedhje të paketuar me { -brand-short-name }-in, dhe Faqerojtës të Mençur (Më të Vizituarit, Etiketa Së Fundi). Shënim: ky rregull ka efekt vetëm nëse përdoret përpara xhirimit për herë të parë nën profilin përkatës.
+policy-NoDefaultBookmarks = Çaktivizoni krijimin e faqerojtësve parazgjedhje të paketuar me { -brand-short-name }-in dhe Faqerojtës të Mençur (Më të Vizituarit, Etiketa Së Fundi). Shënim: ky rregull ka efekt vetëm nëse përdoret përpara xhirimit për herë të parë nën profilin përkatës.
 
 policy-OfferToSaveLogins = Bëjeni të detyrueshëm rregullimin për lejimin e { -brand-short-name }-it të ofrojë të mbajë mend kredenciale hyrjesh dhe fjalëkalime. Pranohet që të dyja vlerat, <em>true</em> dhe <em>false</em>.
 
@@ -158,6 +164,8 @@ policy-OverrideFirstRunPage = Anashkaloni faqen e xhirimit për herë të parë.
 policy-OverridePostUpdatePage = Anashkaloni faqen “Ç’ka të Re” që shfaqet pas përditësimesh. Lëreni të zbrazët, nëse doni të çaktivizohet faqja pas-përditësim.
 
 policy-PasswordManagerEnabled = Aktivizoni ruajtjen e fjalëkalimeve te përgjegjësi i fjalëkalimeve.
+
+policy-PasswordManagerExceptions = Pengojani { -brand-short-name }-it ruajtjen e fjalëkalimeve për sajte të caktuar.
 
 # PDF.js and PDF should not be translated
 policy-PDFjs = Çaktivizoni pse formësoni PDF.js, parësin e brendshëm të PDF-ve në { -brand-short-name }.
@@ -170,7 +178,7 @@ policy-PopupBlocking = Lejojuni, si parazgjedhje, disa sajteve të shfaqin fllus
 
 policy-Preferences = Caktoni dhe kyçni vlerën për një nëngrup parapëlqimesh.
 
-policy-PromptForDownloadLocation = Pyet ku të ruhen kartelat kur shkarkohen.
+policy-PromptForDownloadLocation = Pyet ku të ruhen kartelat, kur shkarkohen.
 
 policy-Proxy = Formësoni rregullime ndërmjetësi
 
@@ -184,19 +192,21 @@ policy-SearchEngines = Formësoni rregullime motori kërkimesh. Ky rregull tani 
 
 policy-SearchSuggestEnabled = Aktivizoni ose çaktivizoni sugjerime kërkimi.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instaloni module PKCS #11.
-
 policy-ShowHomeButton = Shfaqe butonin Shtëpi te paneli.
 
 policy-SSLVersionMax = Caktoni version maksimum SSL-je.
 
 policy-SSLVersionMin = Caktoni version minimum SSL-je.
 
+policy-StartDownloadsInTempDirectory = Detyroji shkarkimet të nisin në një vendndodhje lokale të përkohshme, në vend se në drejtorinë parazgjedhje të shkarkimeve.
+
 policy-SupportMenu = Shtoni te menuja e ndihmës një element vetjak menuje asistence.
 
 policy-UserMessaging = Mos i shfaq përdoruesit disa mesazhe të caktuara
 
+policy-UseSystemPrintDialog = Shtype duke përdorur dialogun e sistemit për shtypje.
+
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Bllokoni vizita në sajte. Për më tepër hollësi mbi këtë format, shihni dokumentimin.
 
+policy-Windows10SSO = Lejo hyrje njëshe Windows për llogari Microsoft, pune, apo shkolle.

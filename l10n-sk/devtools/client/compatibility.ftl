@@ -23,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (zastarané, experime
 compatibility-settings-button-label = Nastavenia
 compatibility-settings-button-title =
     .title = Nastavenia
-compatibility-feedback-button-label = Spätná väzba
-compatibility-feedback-button-title =
-    .title = Spätná väzba
 
 ## Messages used as headers in settings pane
 
@@ -47,3 +44,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Nenašli sa žiadne problémy s kompatibilitou.
 compatibility-close-settings-button =
     .title = Zavrieť nastavenia
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Problémy s kompatibilitou v:
+        { $browsers }

@@ -175,6 +175,16 @@ tg{
                 "{1} {0}",
                 "{1} {0}",
             }
+            DateTimeSkeletons{
+                "HHmmsszzzz",
+                "HHmmssz",
+                "HHmmss",
+                "HHmm",
+                "GyMMMMEEEEdd",
+                "GyMMMMdd",
+                "GyMMMdd",
+                "GGGGGyyMMdd",
+            }
             availableFormats{
                 Bh{"h B"}
                 Bhm{"h:mm B"}
@@ -185,8 +195,8 @@ tg{
                 EHm{"E HH:mm"}
                 EHms{"E HH:mm:ss"}
                 Ed{"d, E"}
-                Ehm{"E h:mm a"}
-                Ehms{"E h:mm:ss a"}
+                Ehm{"E h:mm a"}
+                Ehms{"E h:mm:ss a"}
                 Gy{"y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, d MMM y G"}
@@ -202,9 +212,9 @@ tg{
                 MMMd{"d MMM"}
                 Md{"dd-MM"}
                 d{"d"}
-                h{"h a"}
-                hm{"h:mm a"}
-                hms{"h:mm:ss a"}
+                h{"h a"}
+                hm{"h:mm a"}
+                hms{"h:mm:ss a"}
                 ms{"mm:ss"}
                 y{"y G"}
                 yyyy{"y G"}
@@ -334,6 +344,10 @@ tg{
                 "AM",
                 "PM",
             }
+            AmPmMarkersNarrow{
+                "AM",
+                "PM",
+            }
             DateTimePatterns{
                 "HH:mm:ss zzzz",
                 "HH:mm:ss z",
@@ -349,6 +363,16 @@ tg{
                 "{1} {0}",
                 "{1} {0}",
             }
+            DateTimeSkeletons{
+                "HHmmsszzzz",
+                "HHmmssz",
+                "HHmmss",
+                "HHmm",
+                "yMMMMEEEEdd",
+                "yMMMMdd",
+                "yMMMdd",
+                "yyMMdd",
+            }
             appendItems{
                 Timezone{"{0} {1}"}
             }
@@ -362,8 +386,8 @@ tg{
                 EHm{"E HH:mm"}
                 EHms{"E HH:mm:ss"}
                 Ed{"d, E"}
-                Ehm{"E h:mm a"}
-                Ehms{"E h:mm:ss a"}
+                Ehm{"E h:mm a"}
+                Ehms{"E h:mm:ss a"}
                 Gy{"y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, d MMM, y G"}
@@ -384,11 +408,11 @@ tg{
                 MMMd{"d MMM"}
                 Md{"dd-MM"}
                 d{"d"}
-                h{"h a"}
-                hm{"h:mm a"}
-                hms{"h:mm:ss a"}
-                hmsv{"h:mm:ss a v"}
-                hmv{"h:mm a v"}
+                h{"h a"}
+                hm{"h:mm a"}
+                hms{"h:mm:ss a"}
+                hmsv{"h:mm:ss a v"}
+                hmv{"h:mm a v"}
                 ms{"mm:ss"}
                 y{"y"}
                 yM{"MM-y"}
@@ -479,6 +503,22 @@ tg{
                         "Панҷшанбе",
                         "Ҷумъа",
                         "Шанбе",
+                    }
+                }
+            }
+            dayPeriod{
+                stand-alone{
+                    abbreviated{
+                        am{"AM"}
+                        pm{"PM"}
+                    }
+                    narrow{
+                        am{"AM"}
+                        pm{"PM"}
+                    }
+                    wide{
+                        am{"AM"}
+                        pm{"PM"}
                     }
                 }
             }
@@ -589,22 +629,22 @@ tg{
                 }
                 fallback{"{0} – {1}"}
                 h{
-                    a{"h a – h a"}
-                    h{"h – h a"}
+                    a{"h a – h a"}
+                    h{"h – h a"}
                 }
                 hm{
-                    a{"h:mm a – h:mm a"}
-                    h{"h:mm – h:mm a"}
-                    m{"h:mm – h:mm a"}
+                    a{"h:mm a – h:mm a"}
+                    h{"h:mm – h:mm a"}
+                    m{"h:mm – h:mm a"}
                 }
                 hmv{
-                    a{"h:mm a – h:mm a v"}
-                    h{"h:mm – h:mm a v"}
-                    m{"h:mm – h:mm a v"}
+                    a{"h:mm a – h:mm a v"}
+                    h{"h:mm – h:mm a v"}
+                    m{"h:mm – h:mm a v"}
                 }
                 hv{
-                    a{"h a – h a v"}
-                    h{"h – h a v"}
+                    a{"h a – h a v"}
+                    h{"h – h a v"}
                 }
                 y{
                     y{"y – y"}
@@ -790,6 +830,16 @@ tg{
                 "{1} {0}",
                 "{1} {0}",
             }
+            DateTimeSkeletons{
+                "HHmmsszzzz",
+                "HHmmssz",
+                "HHmmss",
+                "HHmm",
+                "GyMMMMEEEEd",
+                "GyMMMMd",
+                "GyMMMd",
+                "GGGGGyMd",
+            }
             availableFormats{
                 E{"ccc"}
                 Ed{"d E"}
@@ -837,6 +887,20 @@ tg{
                         "Шав.",
                         "Дхул-Қ.",
                         "Дхул-Ҳ.",
+                    }
+                    narrow{
+                        "1",
+                        "2",
+                        "3",
+                        "4",
+                        "5",
+                        "6",
+                        "7",
+                        "8",
+                        "9",
+                        "10",
+                        "11",
+                        "12",
                     }
                     wide{
                         "муҳаррам",
@@ -901,6 +965,16 @@ tg{
                 "{1} {0}",
                 "{1} {0}",
             }
+            DateTimeSkeletons{
+                "HHmmsszzzz",
+                "HHmmssz",
+                "HHmmss",
+                "HHmm",
+                "GyMMMMEEEEd",
+                "GyMMMMd",
+                "GyMMMdd",
+                "GGGGGyyMMdd",
+            }
             monthNames{
                 format{
                     wide{
@@ -956,6 +1030,11 @@ tg{
         }
         day-narrow{
             dn{"рӯз"}
+            relative{
+                "-1"{"дирӯз"}
+                "0"{"имрӯз"}
+                "1"{"фардо"}
+            }
             relativeTime{
                 future{
                     other{"пас аз {0} рӯз"}
@@ -966,6 +1045,12 @@ tg{
             }
         }
         day-short{
+            dn{"рӯз"}
+            relative{
+                "-1"{"дирӯз"}
+                "0"{"имрӯз"}
+                "1"{"фардо"}
+            }
             relativeTime{
                 future{
                     other{"пас аз {0} рӯз"}
@@ -987,10 +1072,19 @@ tg{
         dayperiod{
             dn{"AM/PM"}
         }
+        dayperiod-narrow{
+            dn{"AM/PM"}
+        }
+        dayperiod-short{
+            dn{"AM/PM"}
+        }
         era{
             dn{"мабдаи таърих"}
         }
         era-narrow{
+            dn{"мабдаи таърих"}
+        }
+        era-short{
             dn{"мабдаи таърих"}
         }
         fri{
@@ -1221,6 +1315,14 @@ tg{
         }
         quarter-narrow{
             dn{"чр."}
+            relativeTime{
+                future{
+                    other{"пас аз {0} чр."}
+                }
+                past{
+                    other{"{0} чр. пеш"}
+                }
+            }
         }
         quarter-short{
             dn{"чр."}
@@ -1512,6 +1614,7 @@ tg{
             }
         }
         week-narrow{
+            dn{"ҳ."}
             relative{
                 "-1"{"ҳафтаи г."}
                 "0"{"ҳафтаи ҷ."}
@@ -1622,6 +1725,12 @@ tg{
         zone{
             dn{"минтақаи вақт"}
         }
+        zone-narrow{
+            dn{"минтақаи вақт"}
+        }
+        zone-short{
+            dn{"минтақаи вақт"}
+        }
     }
     listPattern{
         standard{
@@ -1635,5 +1744,19 @@ tg{
         UK{"БК"}
         US{"ИМА"}
         metric{"Метрӣ"}
+    }
+    personNames{
+        nameOrderLocales{
+            givenFirst{
+                "und",
+                "tg",
+            }
+            surnameFirst{
+                "ko",
+                "vi",
+                "yue",
+                "zh",
+            }
+        }
     }
 }

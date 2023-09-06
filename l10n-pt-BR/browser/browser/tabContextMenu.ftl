@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Selecionar todas as abas
     .accesskey = t
+tab-context-play-tab =
+    .label = Reproduzir som na aba
+    .accesskey = R
+tab-context-play-tabs =
+    .label = Reproduzir abas
+    .accesskey = p
 duplicate-tab =
     .label = Duplicar aba
     .accesskey = D
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Adicionar abas aos favoritos…
     .accesskey = f
-bookmark-tab =
-    .label = Adicionar aba aos favoritos
-    .accesskey = A
+tab-context-bookmark-tab =
+    .label = Adicionar aba aos favoritos…
+    .accesskey = b
 tab-context-open-in-new-container-tab =
     .label = Abrir em nova aba contêiner
     .accesskey = e
@@ -61,16 +67,14 @@ move-to-end =
     .label = Mover para o final
     .accesskey = f
 move-to-new-window =
-    .label = Mover para uma nova janela
-    .accesskey = v
+    .label = Mover para nova janela
+    .accesskey = n
 tab-context-close-multiple-tabs =
     .label = Fechar várias abas
     .accesskey = v
 tab-context-share-url =
     .label = Compartilhar
     .accesskey = h
-tab-context-share-more =
-    .label = Mais…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,14 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] Reabrir abas fechadas
         }
     .accesskey = h
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Fechar aba
-            [one] Fechar aba
-           *[other] Fechar abas
-        }
-    .accesskey = F
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

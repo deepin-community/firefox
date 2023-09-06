@@ -32,6 +32,7 @@ var gPopupTests = null;
 var gTestIndex = -1;
 var gTestStepIndex = 0;
 var gTestEventIndex = 0;
+var gActualEvents = [];
 var gAutoHide = false;
 var gExpectedEventDetails = null;
 var gExpectedTriggerNode = null;
@@ -50,6 +51,9 @@ function startPopupTests(tests) {
   document.addEventListener("DOMMenuInactive", eventOccurred);
   document.addEventListener("DOMMenuBarActive", eventOccurred);
   document.addEventListener("DOMMenuBarInactive", eventOccurred);
+
+  // This is useful to explicitly finish a test that shouldn't trigger events.
+  document.addEventListener("TestDone", eventOccurred);
 
   gPopupTests = tests;
   gWindowUtils = SpecialPowers.getDOMWindowUtils(window);
@@ -75,6 +79,14 @@ function ok(condition, message) {
     window.opener.SimpleTest.ok(condition, message);
   } else {
     SimpleTest.ok(condition, message);
+  }
+}
+
+function info(message) {
+  if (window.opener) {
+    window.opener.SimpleTest.info(message);
+  } else {
+    SimpleTest.info(message);
   }
 }
 
@@ -122,6 +134,8 @@ function eventOccurred(event) {
       );
       return;
     }
+
+    gActualEvents.push(`${event.type} ${event.target.id}`);
 
     var eventitem = events[gTestEventIndex].split(" ");
     var matches;
@@ -205,6 +219,8 @@ function eventOccurred(event) {
       if (events.length <= gTestEventIndex) {
         setTimeout(checkResult, 0);
       }
+    } else {
+      info(`Actual events so far: ${JSON.stringify(gActualEvents)}`);
     }
   }
 }
@@ -230,7 +246,9 @@ async function checkResult() {
 }
 
 function goNextStep() {
+  info(`events: ${JSON.stringify(gActualEvents)}`);
   gTestEventIndex = 0;
+  gActualEvents = [];
 
   var step = null;
   var test = gPopupTests[gTestIndex];
@@ -249,7 +267,7 @@ function goNextStep() {
 function goNext() {
   // We want to continue after the next animation frame so that
   // we're in a stable state and don't get spurious mouse events at unexpected targets.
-  window.requestAnimationFrame(function() {
+  window.requestAnimationFrame(function () {
     setTimeout(goNextStepSync, 0);
   });
 }
@@ -270,6 +288,7 @@ function goNextStepSync() {
     var test = gPopupTests[gTestIndex];
     // Set the location hash so it's easy to see which test is running
     document.location.hash = test.testname;
+    info("Starting " + test.testname);
 
     // skip the test if the condition returns false
     if ("condition" in test && !test.condition()) {
@@ -391,8 +410,8 @@ function convertPosition(anchor, align) {
  * which can shift the bottom/right up to 0.5px from its "ideal" location,
  * and could cause it to round differently. (See bug 622507.)
  */
-function isWithinHalfPixel(a, b) {
-  return Math.abs(a - b) <= 0.5;
+function isWithinHalfPixel(a, b, message) {
+  ok(Math.abs(a - b) <= 0.5, `${message}: ${a}, ${b}`);
 }
 
 function compareEdge(anchor, popup, edge, offsetX, offsetY, testname) {
@@ -402,8 +421,6 @@ function compareEdge(anchor, popup, edge, offsetX, offsetY, testname) {
 
   var anchorrect = anchor.getBoundingClientRect();
   var popuprect = popup.getBoundingClientRect();
-  var check1 = false,
-    check2 = false;
 
   if (gPopupWidth == -1) {
     ok(
@@ -502,36 +519,68 @@ function compareEdge(anchor, popup, edge, offsetX, offsetY, testname) {
   }
 
   if (edge == "overlap") {
-    ok(
-      Math.round(anchorrect.left) + offsetY == Math.round(popuprect.left) &&
-        Math.round(anchorrect.top) + offsetY == Math.round(popuprect.top),
-      testname + " position"
+    is(
+      Math.round(anchorrect.left) + offsetY,
+      Math.round(popuprect.left),
+      testname + " position1"
+    );
+    is(
+      Math.round(anchorrect.top) + offsetY,
+      Math.round(popuprect.top),
+      testname + " position2"
     );
     return;
   }
 
   if (edge.indexOf("before") == 0) {
-    check1 = isWithinHalfPixel(anchorrect.top + offsetY, popuprect.bottom);
+    isWithinHalfPixel(
+      anchorrect.top + offsetY,
+      popuprect.bottom,
+      testname + " position1"
+    );
   } else if (edge.indexOf("after") == 0) {
-    check1 =
-      Math.round(anchorrect.bottom) + offsetY == Math.round(popuprect.top);
+    is(
+      Math.round(anchorrect.bottom) + offsetY,
+      Math.round(popuprect.top),
+      testname + " position1"
+    );
   } else if (edge.indexOf("start") == 0) {
-    check1 = isWithinHalfPixel(anchorrect.left + offsetX, popuprect.right);
+    isWithinHalfPixel(
+      anchorrect.left + offsetX,
+      popuprect.right,
+      testname + " position1"
+    );
   } else if (edge.indexOf("end") == 0) {
-    check1 =
-      Math.round(anchorrect.right) + offsetX == Math.round(popuprect.left);
+    is(
+      Math.round(anchorrect.right) + offsetX,
+      Math.round(popuprect.left),
+      testname + " position1"
+    );
   }
 
   if (0 < edge.indexOf("before")) {
-    check2 = Math.round(anchorrect.top) + offsetY == Math.round(popuprect.top);
+    is(
+      Math.round(anchorrect.top) + offsetY,
+      Math.round(popuprect.top),
+      testname + " position2"
+    );
   } else if (0 < edge.indexOf("after")) {
-    check2 = isWithinHalfPixel(anchorrect.bottom + offsetY, popuprect.bottom);
+    isWithinHalfPixel(
+      anchorrect.bottom + offsetY,
+      popuprect.bottom,
+      testname + " position2"
+    );
   } else if (0 < edge.indexOf("start")) {
-    check2 =
-      Math.round(anchorrect.left) + offsetX == Math.round(popuprect.left);
+    is(
+      Math.round(anchorrect.left) + offsetX,
+      Math.round(popuprect.left),
+      testname + " position2"
+    );
   } else if (0 < edge.indexOf("end")) {
-    check2 = isWithinHalfPixel(anchorrect.right + offsetX, popuprect.right);
+    isWithinHalfPixel(
+      anchorrect.right + offsetX,
+      popuprect.right,
+      testname + " position2"
+    );
   }
-
-  ok(check1 && check2, testname + " position");
 }

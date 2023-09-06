@@ -7,7 +7,7 @@ about-policies-title = Reglur fyrirtækis
 # 'Active' is used to describe the policies that are currently active
 active-policies-tab = Virkar
 errors-tab = Villur
-documentation-tab = Skjölun
+documentation-tab = Hjálparskjöl
 
 no-specified-policies-message = Enterprise Policy þjónustan er virk, en engar reglur hafa verið virkjaðar.
 inactive-message = Enterprise Policy þjónustan er óvirkjuð.

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#include "src/leb128.h"
+#include "wabt/leb128.h"
 
 #include <type_traits>
 
-#include "src/stream.h"
+#include "wabt/stream.h"
 
 #define MAX_U32_LEB128_BYTES 5
 #define MAX_U64_LEB128_BYTES 10
@@ -132,6 +132,13 @@ static void WriteS64Leb128(Stream* stream, int64_t value, const char* desc) {
 
 void WriteS32Leb128(Stream* stream, uint32_t value, const char* desc) {
   WriteS32Leb128(stream, Bitcast<int32_t>(value), desc);
+}
+
+void WriteU64Leb128(Stream* stream, uint64_t value, const char* desc) {
+  uint8_t data[MAX_U64_LEB128_BYTES];
+  Offset length = 0;
+  LEB128_LOOP_UNTIL(value == 0);
+  stream->WriteData(data, length, desc);
 }
 
 void WriteS64Leb128(Stream* stream, uint64_t value, const char* desc) {

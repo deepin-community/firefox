@@ -22,13 +22,13 @@ process-type-extension = Razširitev
 # process used to open file:// URLs
 process-type-file = Krajevna datoteka
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Velika dodelitev
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Ločena spletna vsebina
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Ločen Service Worker
 
 # process preallocated; may change to other types
 process-type-prealloc = Vnaprej dodeljeno
@@ -49,6 +49,9 @@ process-type-socket = Vtičnica
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Igralec IPC v peskovniku
 
 ##
 ## Other

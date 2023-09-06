@@ -7,36 +7,115 @@
 #ifndef RTCStatsReport_h_
 #define RTCStatsReport_h_
 
-#include "nsWrapperCache.h"
-#include "nsCOMPtr.h"
-
-#include "nsPIDOMWindow.h"  // nsPIDOMWindowInner
-#include "mozilla/dom/AutoEntryScript.h"
-#include "nsIGlobalObject.h"
-#include "js/RootingAPI.h"  // JS::Rooted
+#include "api/units/timestamp.h"  // webrtc::Timestamp
+#include "js/RootingAPI.h"        // JS::Rooted
 #include "js/Value.h"
-#include "mozilla/ErrorResult.h"
-#include "mozilla/UniquePtr.h"
-#include "prtime.h"  // PR_Now
+#include "mozilla/dom/AutoEntryScript.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/TimeStamp.h"
+#include "mozilla/dom/PerformanceService.h"
 #include "mozilla/dom/RTCStatsReportBinding.h"  // RTCStatsCollection
 #include "mozilla/dom/ToJSValue.h"
+#include "mozilla/ErrorResult.h"
+#include "mozilla/UniquePtr.h"
+#include "nsCOMPtr.h"
+#include "nsIGlobalObject.h"
+#include "nsPIDOMWindow.h"  // nsPIDOMWindowInner
+#include "nsContentUtils.h"
+#include "nsWrapperCache.h"
+#include "prtime.h"  // PR_Now
 
 namespace mozilla {
+
+extern TimeStamp WebrtcSystemTimeBase();
+
 namespace dom {
+
+/**
+ * Keeps the state needed to convert RTCStatsTimestamps.
+ */
+struct RTCStatsTimestampState {
+  RTCStatsTimestampState();
+  explicit RTCStatsTimestampState(Performance& aPerformance);
+
+  RTCStatsTimestampState(const RTCStatsTimestampState&) = default;
+
+  // These members are sampled when a non-copy constructor is called.
+
+  // Performance's random timeline seed.
+  const uint64_t mRandomTimelineSeed;
+  // TimeStamp::Now() when the members were sampled. This is equivalent to time
+  // 0 in DomRealtime.
+  const TimeStamp mStartDomRealtime;
+  // WebrtcSystemTime() when the members were sampled. This represents the same
+  // point in time as mStartDomRealtime, but as a webrtc timestamp.
+  const webrtc::Timestamp mStartRealtime;
+  // Performance's RTPCallerType.
+  const RTPCallerType mRTPCallerType;
+  // Performance.timeOrigin for mStartDomRealtime when the members were sampled.
+  const DOMHighResTimeStamp mStartWallClockRaw;
+};
+
+/**
+ * Classes that facilitate creating timestamps for webrtc stats by mimicking
+ * dom::Performance, as well as getting and converting timestamps for libwebrtc
+ * and our integration with it.
+ *
+ * They use the same clock to avoid drift and inconsistencies, base on
+ * mozilla::TimeStamp, and convert to and from these time bases:
+ * - Moz        : Monotonic, unspecified (but constant) and inaccessible epoch,
+ *                as implemented by mozilla::TimeStamp
+ * - Realtime   : Monotonic, unspecified (but constant) epoch.
+ * - 1Jan1970   : Monotonic, unix epoch (00:00:00 UTC on 1 January 1970).
+ * - Ntp        : Monotonic, ntp epoch (00:00:00 UTC on 1 January 1900).
+ * - Dom        : Monotonic, milliseconds since unix epoch, as the timestamps
+ *                defined by webrtc-pc. Corresponds to Performance.timeOrigin +
+ *                Performance.now(). Has reduced precision.
+ * - DomRealtime: Like Dom, but with full precision.
+ * - WallClock  : Non-monotonic, unix epoch. Not used here since it is
+ *                non-monotonic and cannot be correlated to the other time
+ *                bases.
+ */
+class RTCStatsTimestampMaker;
+class RTCStatsTimestamp {
+ public:
+  TimeStamp ToMozTime() const;
+  webrtc::Timestamp ToRealtime() const;
+  webrtc::Timestamp To1Jan1970() const;
+  webrtc::Timestamp ToNtp() const;
+  webrtc::Timestamp ToDomRealtime() const;
+  DOMHighResTimeStamp ToDom() const;
+
+  static RTCStatsTimestamp FromMozTime(const RTCStatsTimestampMaker& aMaker,
+                                       TimeStamp aMozTime);
+  static RTCStatsTimestamp FromRealtime(const RTCStatsTimestampMaker& aMaker,
+                                        webrtc::Timestamp aRealtime);
+  static RTCStatsTimestamp From1Jan1970(const RTCStatsTimestampMaker& aMaker,
+                                        webrtc::Timestamp aRealtime);
+  static RTCStatsTimestamp FromNtp(const RTCStatsTimestampMaker& aMaker,
+                                   webrtc::Timestamp aRealtime);
+  static RTCStatsTimestamp FromDomRealtime(const RTCStatsTimestampMaker& aMaker,
+                                           webrtc::Timestamp aDomRealtime);
+  // There is on purpose no conversion functions from DOMHighResTimeStamp
+  // because of the loss in precision of a floating point to integer conversion.
+
+ private:
+  RTCStatsTimestamp(RTCStatsTimestampState aState, TimeStamp aMozTime);
+
+  const RTCStatsTimestampState mState;
+  const TimeStamp mMozTime;
+};
 
 class RTCStatsTimestampMaker {
  public:
-  RTCStatsTimestampMaker() = default;
-  explicit RTCStatsTimestampMaker(const GlobalObject* aGlobal);
-  DOMHighResTimeStamp GetNow() const;
+  static RTCStatsTimestampMaker Create(nsPIDOMWindowInner* aWindow = nullptr);
+
+  RTCStatsTimestamp GetNow() const;
+
+  const RTCStatsTimestampState mState;
 
  private:
-  uint64_t mRandomTimelineSeed = 0;
-  DOMHighResTimeStamp mStartWallClockRaw = (double)PR_Now() / PR_USEC_PER_MSEC;
-  TimeStamp mStartMonotonic = TimeStamp::Now();
-  bool mCrossOriginIsolated = false;
+  explicit RTCStatsTimestampMaker(RTCStatsTimestampState aState);
 };
 
 // TODO(bug 1588303): If we ever get move semantics for webidl dictionaries, we
@@ -51,7 +130,7 @@ typedef MozPromise<UniquePtr<RTCStatsReportInternal>, nsresult, true>
 class RTCStatsReport final : public nsWrapperCache {
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(RTCStatsReport)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(RTCStatsReport)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(RTCStatsReport)
 
   explicit RTCStatsReport(nsPIDOMWindowInner* aParent);
 
@@ -113,6 +192,12 @@ class RTCStatsReport final : public nsWrapperCache {
 
   nsCOMPtr<nsPIDOMWindowInner> mParent;
 };
+
+void MergeStats(UniquePtr<dom::RTCStatsCollection> aFromStats,
+                dom::RTCStatsCollection* aIntoStats);
+
+void FlattenStats(nsTArray<UniquePtr<dom::RTCStatsCollection>> aFromStats,
+                  dom::RTCStatsCollection* aIntoStats);
 
 }  // namespace dom
 }  // namespace mozilla

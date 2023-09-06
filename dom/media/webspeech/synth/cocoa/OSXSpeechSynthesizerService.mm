@@ -171,7 +171,7 @@ SpeechTaskCallback::OnVolumeChanged(float aVolume) {
 
 float SpeechTaskCallback::GetTimeDurationFromStart() {
   TimeDuration duration = TimeStamp::Now() - mStartingTime;
-  return duration.ToMilliseconds();
+  return duration.ToSeconds();
 }
 
 void SpeechTaskCallback::OnWillSpeakWord(uint32_t aIndex, uint32_t aLength) {
@@ -293,7 +293,8 @@ EnumVoicesRunnable::Run() {
   }
 
   RefPtr<RegisterVoicesRunnable> runnable = new RegisterVoicesRunnable(mSpeechService, list);
-  NS_DispatchToMainThread(runnable, NS_DISPATCH_SYNC);
+  NS_DispatchAndSpinEventLoopUntilComplete("EnumVoicesRunnable"_ns,
+                                           GetMainThreadSerialEventTarget(), runnable.forget());
 
   return NS_OK;
 

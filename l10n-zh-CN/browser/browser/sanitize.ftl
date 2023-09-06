@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = 清除历史记录设置
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = 清除最近的历史记录
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = 清除全部历史
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = 退出后，{ -brand-short-name } 会自动清除所有
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = F
 
 data-section-label = 数据
-
-item-site-preferences =
-    .label = 站点设置
-    .accesskey = S
 
 item-site-settings =
     .label = 网站设置

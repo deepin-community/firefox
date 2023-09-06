@@ -14,10 +14,14 @@
 #include "mozilla/ErrorResult.h"
 #include "mozilla/StaticPrefs_media.h"
 #include "nsCOMPtr.h"
-#include "nsGlobalWindowOuter.h"
-#include "nsRect.h"
+#include "mozilla/gfx/Rect.h"
+#include "Units.h"
 
 class nsDeviceContext;
+
+namespace mozilla {
+enum class RFPTarget : uint64_t;
+}
 
 // Script "screen" object
 class nsScreen : public mozilla::DOMEventTargetHelper {
@@ -35,25 +39,25 @@ class nsScreen : public mozilla::DOMEventTargetHelper {
   nsPIDOMWindowOuter* GetOuter() const;
 
   int32_t GetTop(ErrorResult& aRv) {
-    nsRect rect;
+    mozilla::CSSIntRect rect;
     aRv = GetRect(rect);
     return rect.y;
   }
 
   int32_t GetLeft(ErrorResult& aRv) {
-    nsRect rect;
+    mozilla::CSSIntRect rect;
     aRv = GetRect(rect);
     return rect.x;
   }
 
   int32_t GetWidth(ErrorResult& aRv) {
-    nsRect rect;
+    mozilla::CSSIntRect rect;
     aRv = GetRect(rect);
     return rect.Width();
   }
 
   int32_t GetHeight(ErrorResult& aRv) {
-    nsRect rect;
+    mozilla::CSSIntRect rect;
     aRv = GetRect(rect);
     return rect.Height();
   }
@@ -62,25 +66,25 @@ class nsScreen : public mozilla::DOMEventTargetHelper {
   int32_t GetColorDepth(ErrorResult& aRv) { return GetPixelDepth(aRv); }
 
   int32_t GetAvailTop(ErrorResult& aRv) {
-    nsRect rect;
+    mozilla::CSSIntRect rect;
     aRv = GetAvailRect(rect);
     return rect.y;
   }
 
   int32_t GetAvailLeft(ErrorResult& aRv) {
-    nsRect rect;
+    mozilla::CSSIntRect rect;
     aRv = GetAvailRect(rect);
     return rect.x;
   }
 
   int32_t GetAvailWidth(ErrorResult& aRv) {
-    nsRect rect;
+    mozilla::CSSIntRect rect;
     aRv = GetAvailRect(rect);
     return rect.Width();
   }
 
   int32_t GetAvailHeight(ErrorResult& aRv) {
-    nsRect rect;
+    mozilla::CSSIntRect rect;
     aRv = GetAvailRect(rect);
     return rect.Height();
   }
@@ -100,6 +104,9 @@ class nsScreen : public mozilla::DOMEventTargetHelper {
 
   IMPL_EVENT_HANDLER(change);
 
+  uint16_t GetOrientationAngle() const;
+  mozilla::hal::ScreenOrientation GetOrientationType() const;
+
   // Deprecated
   void GetMozOrientation(nsString& aOrientation,
                          mozilla::dom::CallerType aCallerType) const;
@@ -115,18 +122,21 @@ class nsScreen : public mozilla::DOMEventTargetHelper {
                                JS::Handle<JSObject*> aGivenProto) override;
 
   mozilla::dom::ScreenOrientation* Orientation() const;
+  mozilla::dom::ScreenOrientation* GetOrientationIfExists() const {
+    return mScreenOrientation.get();
+  }
 
  protected:
-  nsDeviceContext* GetDeviceContext();
-  nsresult GetRect(nsRect& aRect);
-  nsresult GetAvailRect(nsRect& aRect);
-  nsresult GetWindowInnerRect(nsRect& aRect);
+  nsDeviceContext* GetDeviceContext() const;
+  nsresult GetRect(mozilla::CSSIntRect& aRect);
+  nsresult GetAvailRect(mozilla::CSSIntRect& aRect);
+  nsresult GetWindowInnerRect(mozilla::CSSIntRect& aRect);
 
  private:
   explicit nsScreen(nsPIDOMWindowInner* aWindow);
   virtual ~nsScreen();
 
-  bool ShouldResistFingerprinting() const;
+  bool ShouldResistFingerprinting(mozilla::RFPTarget aTarget) const;
 
   mozilla::dom::Document* TopContentDocumentInRDMPane() const;
 

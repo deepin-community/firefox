@@ -16,6 +16,7 @@ pocket-panel-saved-error-generic = { -pocket-brand-name } xizmatiga saqlashda xa
 pocket-panel-saved-error-tag-length = Teg uzunligi 25 ta belgidan oshmasin
 pocket-panel-saved-error-only-links = Faqat havolalarni saqlab olish mumkin
 pocket-panel-saved-error-not-saved = Sahifa saqlanmadi
+pocket-panel-saved-error-no-internet = { -pocket-brand-name } xizmatiga saqlash uchun internetga ulanish kerak. Internetga ulaning va qayta urining.
 pocket-panel-saved-page-removed = Sahifa olib tashlandi
 pocket-panel-saved-page-saved = { -pocket-brand-name } xizmatiga saqlandi
 pocket-panel-saved-processing-remove = Sahifa olib tashlanmoqda…
@@ -25,7 +26,6 @@ pocket-panel-saved-save-tags = Saqlash
 pocket-panel-saved-saving-tags = Saqlanmoqda…
 pocket-panel-saved-suggested-tags = Tavsiya etiladigan teglar
 pocket-panel-saved-tags-saved = Teglar kiritildi
-pocket-panel-signup-view-list = Ro‘yxatni ko‘rish
 
 ## about:pocket-signup panel
 
@@ -40,4 +40,14 @@ pocket-panel-signup-tagline-story-one = { -brand-product-name } brauzeridagi bir
 pocket-panel-signup-tagline-story-two = Istalgan vaqtda, istalgan qurilmada { -pocket-brand-name } orqali ko‘ring.
 
 ## about:pocket-home panel
+
+pocket-panel-home-welcome-back = Xush kelibsiz
+pocket-panel-home-paragraph = Sayt, maqola, video va podkastlar bilan tanishish, saqlash yoki qolgan joyidan davom ettirish uchun { -pocket-brand-name } xizmatidan foydalaning.
+pocket-panel-home-explore-popular-topics = Mashhur mavzular bilan tanishish
+pocket-panel-home-discover-more = Koʻproq tanishish
+pocket-panel-home-explore-more = Tanishish
+
+## Pocket panel header component
+
+## Pocket panel buttons
 

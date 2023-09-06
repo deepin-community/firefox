@@ -9,6 +9,7 @@
 
 #include "ChromiumCDMParent.h"
 #include "PlatformDecoderModule.h"
+#include "mozilla/layers/KnowsCompositor.h"
 
 namespace mozilla {
 
@@ -17,10 +18,12 @@ struct GMPVideoDecoderParams;
 
 DDLoggedTypeDeclNameAndBase(ChromiumCDMVideoDecoder, MediaDataDecoder);
 
-class ChromiumCDMVideoDecoder
+class ChromiumCDMVideoDecoder final
     : public MediaDataDecoder,
       public DecoderDoctorLifeLogger<ChromiumCDMVideoDecoder> {
  public:
+  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(ChromiumCDMVideoDecoder, final);
+
   ChromiumCDMVideoDecoder(const GMPVideoDecoderParams& aParams,
                           CDMProxy* aCDMProxy);
 
@@ -30,6 +33,7 @@ class ChromiumCDMVideoDecoder
   RefPtr<DecodePromise> Drain() override;
   RefPtr<ShutdownPromise> Shutdown() override;
   nsCString GetDescriptionName() const override;
+  nsCString GetCodecName() const override;
   ConversionRequired NeedsConversion() const override;
 
  private:
@@ -40,6 +44,7 @@ class ChromiumCDMVideoDecoder
   RefPtr<GMPCrashHelper> mCrashHelper;
   nsCOMPtr<nsISerialEventTarget> mGMPThread;
   RefPtr<layers::ImageContainer> mImageContainer;
+  RefPtr<layers::KnowsCompositor> mKnowsCompositor;
   MozPromiseHolder<InitPromise> mInitPromise;
   bool mConvertToAnnexB = false;
 };

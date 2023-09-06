@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = R
 
 update-checkingForUpdates = Tschertgar actualisaziuns disponiblas…
-update-downloading = <img data-l10n-name="icon"/>L'actualisaziun vegn telechargiada — <label data-l10n-name="download-status"/>
-update-downloading-message = Telechargiar in'actualisaziun – <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>L'actualisaziun vegn telechargiada — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Telechargiar in'actualisaziun – <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Applitgar l'actualisaziun…
 
 update-failed = L'actualisaziun n'è betg reussida. <label data-l10n-name="failed-link">Telechargiar la versiun actuala</label>
@@ -25,15 +32,26 @@ update-failed-main = L'actualisaziun n'è betg reussida. <a data-l10n-name="fail
 
 update-adminDisabled = La funcziun dad actualisaziuns è deactivada da tes administratur da sistem
 update-noUpdatesFound = { -brand-short-name } è actual
+aboutdialog-update-checking-failed = Betg reussì da controllar sche actualisaziuns stattan a disposiziun.
 update-otherInstanceHandlingUpdates = { -brand-short-name } vegn actualisà d'ina autra instanza
 
-update-manual = Actualisaziuns disponiblas sin <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Actualisaziuns disponiblas sin <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Actualisaziuns disponiblas sin <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Sin quest sistem na pon naginas actualisaziuns vegnir exequidas pli. <label data-l10n-name="unsupported-link">Dapli infurmaziuns</label>
 
 update-restarting = Reaviar…
 
-channel-description = Ti retschaivas actualmain las actualisaziuns dal chanal <label data-l10n-name="current-channel"></label>.
+update-internal-error2 = Impussibel da tschertgar actualisaziuns causa ina errur interna. Actualisaziuns stattan a disposiziun sin <label data-l10n-name="manual-link">{ $displayUrl }</label>
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Ti retschaivas actualmain las actualisaziuns dal chanal <label data-l10n-name="current-channel">{ $channel }</label>.
 
 warningDesc-version = { -brand-short-name } è experimental e pudess esser instabel.
 

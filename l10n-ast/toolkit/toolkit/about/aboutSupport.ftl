@@ -67,6 +67,7 @@ app-basics-fission-support = Ventanes Fission
 app-basics-remote-processes-count = Procesos remotos
 app-basics-enterprise-policies = Polítiques d'empresa
 app-basics-safe-mode = Mou seguru
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Amosar en Finder
@@ -116,6 +117,8 @@ media-input-devices-title = Preseos d'entrada
 media-device-name = Nome
 media-device-group = Grupu
 media-device-channels = Canales
+
+## Codec support table
 
 ##
 

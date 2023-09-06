@@ -22,7 +22,9 @@ class WorkerErrorBase {
  public:
   nsString mMessage;
   nsString mFilename;
+  // Line number (1-origin).
   uint32_t mLineNumber;
+  // Column number in UTF-16 code units (1-origin).
   uint32_t mColumnNumber;
   uint32_t mErrorNumber;
 
@@ -53,7 +55,8 @@ class WorkerErrorReport : public WorkerErrorBase, public SerializedStackHolder {
   // aWorkerPrivate is the worker thread we're on (or the main thread, if null)
   // aTarget is the worker object that we are going to fire an error at
   // (if any).
-  static void ReportError(
+  // TODO: Convert this to MOZ_CAN_RUN_SCRIPT (bug 1743443)
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY static void ReportError(
       JSContext* aCx, WorkerPrivate* aWorkerPrivate, bool aFireAtScope,
       DOMEventTargetHelper* aTarget, UniquePtr<WorkerErrorReport> aReport,
       uint64_t aInnerWindowId,
@@ -64,8 +67,8 @@ class WorkerErrorReport : public WorkerErrorBase, public SerializedStackHolder {
 
   static void LogErrorToConsole(const mozilla::dom::ErrorData& aReport,
                                 uint64_t aInnerWindowId,
-                                JS::HandleObject aStack = nullptr,
-                                JS::HandleObject aStackGlobal = nullptr);
+                                JS::Handle<JSObject*> aStack = nullptr,
+                                JS::Handle<JSObject*> aStackGlobal = nullptr);
 
   static void CreateAndDispatchGenericErrorRunnableToParent(
       WorkerPrivate* aWorkerPrivate);

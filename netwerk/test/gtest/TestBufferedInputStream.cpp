@@ -2,8 +2,9 @@
 
 #include "mozilla/SpinEventLoopUntil.h"
 #include "nsBufferedStreams.h"
-#include "nsStreamUtils.h"
 #include "nsIThread.h"
+#include "nsNetUtil.h"
+#include "nsStreamUtils.h"
 #include "nsThreadUtils.h"
 #include "Helpers.h"
 
@@ -89,7 +90,9 @@ TEST(TestBufferedInputStream, AsyncWait_async)
   ASSERT_FALSE(cb->Called());
 
   // Eventually it is called.
-  MOZ_ALWAYS_TRUE(mozilla::SpinEventLoopUntil([&]() { return cb->Called(); }));
+  MOZ_ALWAYS_TRUE(mozilla::SpinEventLoopUntil(
+      "TEST(TestBufferedInputStream, AsyncWait_async)"_ns,
+      [&]() { return cb->Called(); }));
   ASSERT_TRUE(cb->Called());
 }
 
@@ -132,7 +135,9 @@ TEST(TestBufferedInputStream, AsyncWait_async_closureOnly)
   ASSERT_FALSE(cb->Called());
 
   // Eventually it is called.
-  MOZ_ALWAYS_TRUE(mozilla::SpinEventLoopUntil([&]() { return cb->Called(); }));
+  MOZ_ALWAYS_TRUE(mozilla::SpinEventLoopUntil(
+      "TEST(TestBufferedInputStream, AsyncWait_async_closureOnly)"_ns,
+      [&]() { return cb->Called(); }));
   ASSERT_TRUE(cb->Called());
 }
 
@@ -147,14 +152,18 @@ TEST(TestBufferedInputStream, AsyncWait_after_close)
 
   auto cb = mozilla::MakeRefPtr<testing::InputStreamCallback>();
   ASSERT_EQ(NS_OK, bis->AsyncWait(cb, 0, 0, eventTarget));
-  MOZ_ALWAYS_TRUE(mozilla::SpinEventLoopUntil([&]() { return cb->Called(); }));
+  MOZ_ALWAYS_TRUE(mozilla::SpinEventLoopUntil(
+      "TEST(TestBufferedInputStream, AsyncWait_after_close) 1"_ns,
+      [&]() { return cb->Called(); }));
   ASSERT_TRUE(cb->Called());
 
   ASSERT_EQ(NS_OK, bis->Close());
 
   cb = mozilla::MakeRefPtr<testing::InputStreamCallback>();
   ASSERT_EQ(NS_OK, bis->AsyncWait(cb, 0, 0, eventTarget));
-  MOZ_ALWAYS_TRUE(mozilla::SpinEventLoopUntil([&]() { return cb->Called(); }));
+  MOZ_ALWAYS_TRUE(mozilla::SpinEventLoopUntil(
+      "TEST(TestBufferedInputStream, AsyncWait_after_close) 2"_ns,
+      [&]() { return cb->Called(); }));
   ASSERT_TRUE(cb->Called());
 }
 
@@ -169,7 +178,9 @@ TEST(TestBufferedInputStream, AsyncLengthWait_after_close)
 
   auto cb = mozilla::MakeRefPtr<testing::LengthCallback>();
   ASSERT_EQ(NS_OK, bis->AsyncLengthWait(cb, eventTarget));
-  MOZ_ALWAYS_TRUE(mozilla::SpinEventLoopUntil([&]() { return cb->Called(); }));
+  MOZ_ALWAYS_TRUE(mozilla::SpinEventLoopUntil(
+      "TEST(TestBufferedInputStream, AsyncLengthWait_after_close) 1"_ns,
+      [&]() { return cb->Called(); }));
   ASSERT_TRUE(cb->Called());
 
   uint64_t length;
@@ -178,6 +189,64 @@ TEST(TestBufferedInputStream, AsyncLengthWait_after_close)
 
   cb = mozilla::MakeRefPtr<testing::LengthCallback>();
   ASSERT_EQ(NS_OK, bis->AsyncLengthWait(cb, eventTarget));
-  MOZ_ALWAYS_TRUE(mozilla::SpinEventLoopUntil([&]() { return cb->Called(); }));
+  MOZ_ALWAYS_TRUE(mozilla::SpinEventLoopUntil(
+      "TEST(TestBufferedInputStream, AsyncLengthWait_after_close) 2"_ns,
+      [&]() { return cb->Called(); }));
   ASSERT_TRUE(cb->Called());
+}
+
+// This stream returns a few bytes on the first read, and error on the second.
+class BrokenInputStream : public nsIInputStream {
+  NS_DECL_THREADSAFE_ISUPPORTS
+  NS_DECL_NSIINPUTSTREAM
+ private:
+  virtual ~BrokenInputStream() = default;
+  bool mFirst = true;
+};
+
+NS_IMPL_ISUPPORTS(BrokenInputStream, nsIInputStream)
+
+NS_IMETHODIMP BrokenInputStream::Close(void) { return NS_OK; }
+
+NS_IMETHODIMP BrokenInputStream::Available(uint64_t* _retval) {
+  *_retval = 100;
+  return NS_OK;
+}
+
+NS_IMETHODIMP BrokenInputStream::StreamStatus(void) { return NS_OK; }
+
+NS_IMETHODIMP BrokenInputStream::Read(char* aBuf, uint32_t aCount,
+                                      uint32_t* _retval) {
+  if (mFirst) {
+    aBuf[0] = 'h';
+    aBuf[1] = 'e';
+    aBuf[2] = 'l';
+    aBuf[3] = 0;
+    *_retval = 4;
+    mFirst = false;
+    return NS_OK;
+  }
+  return NS_ERROR_CORRUPTED_CONTENT;
+}
+
+NS_IMETHODIMP BrokenInputStream::ReadSegments(nsWriteSegmentFun aWriter,
+                                              void* aClosure, uint32_t aCount,
+                                              uint32_t* _retval) {
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP BrokenInputStream::IsNonBlocking(bool* _retval) {
+  *_retval = false;
+  return NS_OK;
+}
+
+// Check that the error from BrokenInputStream::Read is propagated
+// through NS_ReadInputStreamToString
+TEST(TestBufferedInputStream, BrokenInputStreamToBuffer)
+{
+  nsAutoCString out;
+  RefPtr<BrokenInputStream> stream = new BrokenInputStream();
+
+  nsresult rv = NS_ReadInputStreamToString(stream, out, -1);
+  ASSERT_EQ(rv, NS_ERROR_CORRUPTED_CONTENT);
 }

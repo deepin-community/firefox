@@ -13,8 +13,6 @@ change-password-old = Sohõda šennikufal
 change-password-new = Šennikufal taaga:
 change-password-reenter = Šennikufal taaga (koyme):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Goo ma tabatiyan-tiira zumandi
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Ir ga hãa kaŋ war ma naanay tabatiyan-tiira hini taagaa.
 download-cert-trust-ssl =
     .label = Naanay tabatiyan-tiira hinoo woo ka Interneti nungey tammaasa.
@@ -37,11 +35,38 @@ download-cert-view-text = Tabatiyan-tiira hini koroši
 
 ## Client Authorization Ask dialog
 
+
+## Client Authentication Ask dialog
+
 client-auth-window =
     .title = Goykaw boŋtammaasa wiri
 client-auth-site-description = Nungoo woo wiri kaŋ war ma war boŋ tammaasa nda tabatiyan-tiiraa:
 client-auth-choose-cert = Tabatiyan-tiira suuba k'a cebe sanda boŋ-tammaasa:
 client-auth-cert-details = Tabatiyan-tiira suubantaa šilbayhayey:
+# Variables:
+# $issuedTo (String) - The subject common name of the currently-selected client authentication certificate
+client-auth-cert-details-issued-to = Fatta do: { $issuedTo }
+# Variables:
+# $serialNumber (String) - The serial number of the certificate (hexadecimal of the form "AA:BB:...")
+client-auth-cert-details-serial-number = Fannu lanba: { $serialNumber }
+# Variables:
+# $notBefore (String) - The date before which the certificate is not valid (e.g. Apr 21, 2023, 1:47:53 PM UTC)
+# $notAfter (String) - The date after which the certificate is not valid
+client-auth-cert-details-validity-period = Ga boori za { $notBefore } hala { $notAfter }
+# Variables:
+# $keyUsages (String) - A list of already-localized key usages for which the certificate may be used
+client-auth-cert-details-key-usages = Goyyan beerey: { $keyUsages }
+# Variables:
+# $emailAddresses (String) - A list of email addresses present in the certificate
+client-auth-cert-details-email-addresses = Bataga aderesey: { $emailAddresses }
+# Variables:
+# $issuedBy (String) - The issuer common name of the certificate
+client-auth-cert-details-issued-by = Fattadoo: { $issuedBy }
+# Variables:
+# $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
+client-auth-cert-details-stored-on = Jišidoo: { $storedOn }
+client-auth-cert-remember-box =
+    .label = Honga kayandiyanoo woo
 
 ## Set password (p12) dialog
 
@@ -54,9 +79,5 @@ set-password-repeat-backup-pw =
     .value = Tabatiyan-tiira banda-gaabu šennikufal (koyne):
 set-password-reminder = Hawgay: Nda war dirŋa war tabatiyan-tiira banda-gaabu šennikufaloo, war ši hin ka willi kate koyne hiino.  Taare w'a jiši doo saajantaa ra.
 
-## Protected Auth dialog
+## Protected authentication alert
 
-protected-auth-window =
-    .title = Tammaasa lasal-tabatandiyan jejebante
-protected-auth-msg = Taare tammaasa lasal-tabatandi. Lasal-tabatandiyan dabaroo ma tenji nda war boŋ tammaasa dumoo.
-protected-auth-token = Tammaasa:

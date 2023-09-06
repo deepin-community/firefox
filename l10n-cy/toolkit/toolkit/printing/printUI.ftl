@@ -19,7 +19,10 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Y Cyfan
-printui-page-range-custom = Cyfaddasu
+printui-page-range-current = Cyfredol
+printui-page-range-odd = Odrif
+printui-page-range-even = Eilrif
+printui-page-range-custom = Cyfaddas
 printui-page-range-label = Tudalen
 printui-page-range-picker =
     .aria-label = Dewis yr ystod tudalen
@@ -51,7 +54,7 @@ printui-scale-pcent = Graddfa
 
 # Section title (noun) for the two-sided print options
 printui-two-sided-printing = Argraffu dwy ochr
-printui-two-sided-printing-off = Wedi diffodd
+printui-two-sided-printing-off = Diffodd
 # Flip the sheet as if it were bound along its long edge.
 printui-two-sided-printing-long-edge = Fflipio ar ymyl hir
 # Flip the sheet as if it were bound along its short edge.

@@ -6,41 +6,52 @@
 const {
   Component,
   createFactory,
-} = require("devtools/client/shared/vendor/react");
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
+} = require("resource://devtools/client/shared/vendor/react.js");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
 const { div, button } = dom;
-
-const DebugTargetInfo = createFactory(
-  require("devtools/client/framework/components/DebugTargetInfo")
-);
 const MenuButton = createFactory(
-  require("devtools/client/shared/components/menu/MenuButton")
+  require("resource://devtools/client/shared/components/menu/MenuButton.js")
 );
 const ToolboxTabs = createFactory(
-  require("devtools/client/framework/components/ToolboxTabs")
+  require("resource://devtools/client/framework/components/ToolboxTabs.js")
 );
-
-loader.lazyGetter(this, "MeatballMenu", function() {
+loader.lazyGetter(this, "MeatballMenu", function () {
   return createFactory(
-    require("devtools/client/framework/components/MeatballMenu")
+    require("resource://devtools/client/framework/components/MeatballMenu.js")
   );
 });
-loader.lazyGetter(this, "MenuItem", function() {
+loader.lazyGetter(this, "MenuItem", function () {
   return createFactory(
-    require("devtools/client/shared/components/menu/MenuItem")
+    require("resource://devtools/client/shared/components/menu/MenuItem.js")
   );
 });
-loader.lazyGetter(this, "MenuList", function() {
+loader.lazyGetter(this, "MenuList", function () {
   return createFactory(
-    require("devtools/client/shared/components/menu/MenuList")
+    require("resource://devtools/client/shared/components/menu/MenuList.js")
   );
 });
+loader.lazyGetter(this, "LocalizationProvider", function () {
+  return createFactory(
+    require("resource://devtools/client/shared/vendor/fluent-react.js")
+      .LocalizationProvider
+  );
+});
+loader.lazyGetter(this, "DebugTargetInfo", () =>
+  createFactory(
+    require("resource://devtools/client/framework/components/DebugTargetInfo.js")
+  )
+);
+loader.lazyGetter(this, "ChromeDebugToolbar", () =>
+  createFactory(
+    require("resource://devtools/client/framework/components/ChromeDebugToolbar.js")
+  )
+);
 
 loader.lazyRequireGetter(
   this,
   "getUnicodeUrl",
-  "devtools/client/shared/unicode-url",
+  "resource://devtools/client/shared/unicode-url.js",
   true
 );
 
@@ -90,12 +101,24 @@ class ToolboxToolbar extends Component {
       // undefined means that the option is not relevant in this context
       // (i.e. we're not in a browser toolbox).
       disableAutohide: PropTypes.bool,
+      // Are we displaying the window always on top?
+      //
+      // This is a tri-state value that may be true/false or undefined where
+      // undefined means that the option is not relevant in this context
+      // (i.e. we're not in a local web extension toolbox).
+      alwaysOnTop: PropTypes.bool,
+      // Is the toolbox currently focused?
+      //
+      // This will only be defined when alwaysOnTop is true.
+      focusedState: PropTypes.bool,
       // Function to turn the options panel on / off.
       toggleOptions: PropTypes.func.isRequired,
       // Function to turn the split console on / off.
       toggleSplitConsole: PropTypes.func,
       // Function to turn the disable pop-up autohide behavior on / off.
       toggleNoAutohide: PropTypes.func,
+      // Function to turn the always on top behavior on / off.
+      toggleAlwaysOnTop: PropTypes.func,
       // Function to completely close the toolbox.
       closeToolbox: PropTypes.func,
       // Keep a record of what button is focused.
@@ -117,8 +140,10 @@ class ToolboxToolbar extends Component {
       // Data to show debug target info, if needed
       debugTargetData: PropTypes.shape({
         runtimeInfo: PropTypes.object.isRequired,
-        targetType: PropTypes.string.isRequired,
+        descriptorType: PropTypes.string.isRequired,
       }),
+      // The loaded Fluent localization bundles.
+      fluentBundles: PropTypes.array.isRequired,
     };
   }
 
@@ -128,7 +153,6 @@ class ToolboxToolbar extends Component {
     this.hideMenu = this.hideMenu.bind(this);
     this.createFrameList = this.createFrameList.bind(this);
     this.highlightFrame = this.highlightFrame.bind(this);
-    this.clickFrameButton = this.clickFrameButton.bind(this);
   }
 
   componentDidMount() {
@@ -221,8 +245,9 @@ class ToolboxToolbar extends Component {
         id,
         title: description,
         disabled,
-        className: `devtools-tabbar-button command-button ${buttonClass ||
-          ""} ${isChecked ? "checked" : ""}`,
+        className: `devtools-tabbar-button command-button ${
+          buttonClass || ""
+        } ${isChecked ? "checked" : ""}`,
         onClick: event => {
           onClick(event);
           focusButton(id);
@@ -311,17 +336,12 @@ class ToolboxToolbar extends Component {
     );
   }
 
-  clickFrameButton(event) {
-    const { toolbox } = this.props;
-    toolbox.onSelectFrame(event.target.id);
-  }
-
   highlightFrame(id) {
+    const { toolbox } = this.props;
     if (!id) {
       return;
     }
 
-    const { toolbox } = this.props;
     toolbox.onHighlightFrame(id);
   }
 
@@ -336,15 +356,21 @@ class ToolboxToolbar extends Component {
       const label = toolbox.target.isWebExtension
         ? toolbox.target.getExtensionPathName(frame.url)
         : getUnicodeUrl(frame.url);
-      items.push(
-        MenuItem({
-          id: frame.id.toString(),
-          key: "toolbox-frame-key-" + frame.id,
-          label,
-          checked: frame.id === toolbox.selectedFrameId,
-          onClick: this.clickFrameButton,
-        })
-      );
+
+      const item = MenuItem({
+        id: frame.id.toString(),
+        key: "toolbox-frame-key-" + frame.id,
+        label,
+        checked: frame.id === toolbox.selectedFrameId,
+        onClick: () => toolbox.onIframePickerFrameSelected(frame.id),
+      });
+
+      // Always put the top level frame at the top
+      if (frame.isTopLevel) {
+        items.unshift(item);
+      } else {
+        items.push(item);
+      }
     });
 
     return MenuList(
@@ -399,6 +425,8 @@ class ToolboxToolbar extends Component {
    *        Function to turn the split console on / off.
    * @param {Function} props.toggleNoAutohide
    *        Function to turn the disable pop-up autohide behavior on / off.
+   * @param {Function} props.toggleAlwaysOnTop
+   *        Function to turn the always on top behavior on / off.
    * @param {Function} props.closeToolbox
    *        Completely close the toolbox.
    * @param {Function} props.focusButton
@@ -466,7 +494,7 @@ class ToolboxToolbar extends Component {
    * render functions for how each of the sections is rendered.
    */
   render() {
-    const { L10N, debugTargetData, toolbox } = this.props;
+    const { L10N, debugTargetData, toolbox, fluentBundles } = this.props;
     const classnames = ["devtools-tabbar"];
     const startButtons = this.renderToolboxButtonsStart();
     const endButtons = this.renderToolboxButtonsEnd();
@@ -491,10 +519,26 @@ class ToolboxToolbar extends Component {
       : div({ className: classnames.join(" ") });
 
     const debugTargetInfo = debugTargetData
-      ? DebugTargetInfo({ debugTargetData, L10N, toolbox })
+      ? DebugTargetInfo({
+          alwaysOnTop: this.props.alwaysOnTop,
+          focusedState: this.props.focusedState,
+          toggleAlwaysOnTop: this.props.toggleAlwaysOnTop,
+          debugTargetData,
+          L10N,
+          toolbox,
+        })
       : null;
 
-    return div({}, debugTargetInfo, toolbar);
+    // Display the toolbar in the MBT and about:debugging MBT if we have server support for it.
+    const chromeDebugToolbar = toolbox.commands.targetCommand.descriptorFront
+      .isBrowserProcessDescriptor
+      ? ChromeDebugToolbar()
+      : null;
+
+    return LocalizationProvider(
+      { bundles: fluentBundles },
+      div({}, chromeDebugToolbar, debugTargetInfo, toolbar)
+    );
   }
 }
 

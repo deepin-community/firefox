@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = أخفِ
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = أظهر كلّ مجلدات العلامات
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = أخفِ
+
 bookmark-overlay-new-folder-button =
     .label = مجلد جديد
     .accesskey = ج
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = أظهر كل الوسوم
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = أخفِ
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = أظهر كل الوسوم
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = أخفِ
 
 bookmark-overlay-keyword-2 =
     .value = الكلمة المفتاحية

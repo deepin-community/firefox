@@ -5,9 +5,9 @@
 
 ## Strings used for device manager
 
-devmgr =
+devmgr-window =
     .title = Zastojnik rědow
-    .style = width: 67em; height: 32em;
+    .style = min-width: 67em; min-height: 32em;
 
 devmgr-devlist =
     .label = Wěstotne module a rědy
@@ -35,8 +35,8 @@ devmgr-button-load =
     .accesskey = Z
 
 devmgr-button-unload =
-    .label = Wótpóraś
-    .accesskey = t
+    .label = Wuwólniś
+    .accesskey = u
 
 devmgr-button-enable-fips =
     .label = FIPS zmóžniś

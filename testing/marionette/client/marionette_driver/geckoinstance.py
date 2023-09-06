@@ -4,27 +4,27 @@
 
 # ALL CHANGES TO THIS FILE MUST HAVE REVIEW FROM A MARIONETTE PEER!
 #
+# Please refer to INSTRUCTIONS TO ADD A NEW PREFERENCE in
+# remote/shared/RecommendedPreferences.sys.mjs
+#
 # The Marionette Python client is used out-of-tree with various builds of
 # Firefox. Removing a preference from this file will cause regressions,
 # so please be careful and get review from a Testing :: Marionette peer
 # before you make any changes to this file.
 
-from __future__ import absolute_import
-
 import codecs
+import json
 import os
 import sys
 import tempfile
 import time
 import traceback
-
 from copy import deepcopy
 
 import mozversion
-
-from mozprofile import Profile
-from mozrunner import Runner, FennecEmulatorRunner
 import six
+from mozprofile import Profile
+from mozrunner import FennecEmulatorRunner, Runner
 from six import reraise
 
 from . import errors
@@ -41,6 +41,17 @@ class GeckoInstance(object):
         # and causing false-positive test failures. See bug 1176798, bug 1177018,
         # bug 1210465.
         "apz.content_response_timeout": 60000,
+        # Don't pull sponsored Top Sites content from the network
+        "browser.newtabpage.activity-stream.showSponsoredTopSites": False,
+        # Disable geolocation ping (#1)
+        "browser.region.network.url": "",
+        # Don't pull Top Sites content from the network
+        "browser.topsites.contile.enabled": False,
+        # Disable UI tour
+        "browser.uitour.pinnedTabUrl": "http://%(server)s/uitour-dummy/pinnedTab",
+        "browser.uitour.url": "http://%(server)s/uitour-dummy/tour",
+        # Disable captive portal
+        "captivedetect.canonicalURL": "",
         # Defensively disable data reporting systems
         "datareporting.healthreport.documentServerURI": "http://%(server)s/dummy/healthreport/",
         "datareporting.healthreport.logging.consoleEnabled": False,
@@ -52,13 +63,19 @@ class GeckoInstance(object):
         "datareporting.policy.dataSubmissionPolicyBypassNotification": True,
         # Automatically unload beforeunload alerts
         "dom.disable_beforeunload": True,
+        # Enabling the support for File object creation in the content process.
+        "dom.file.createInChild": True,
         # Disable the ProcessHangMonitor
         "dom.ipc.reportProcessHangs": False,
         # No slow script dialogs
         "dom.max_chrome_script_run_time": 0,
         "dom.max_script_run_time": 0,
+        # Disable location change rate limitation
+        "dom.navigation.locationChangeRateLimit.count": 0,
         # DOM Push
         "dom.push.connection.enabled": False,
+        # Screen Orientation API
+        "dom.screenorientation.allow-lock": True,
         # Disable dialog abuse if alerts are triggered too quickly
         "dom.successive_dialog_time_limit": 0,
         # Only load extensions from the application and user profile
@@ -72,25 +89,48 @@ class GeckoInstance(object):
         # Turn off extension updates so they don't bother tests
         "extensions.update.enabled": False,
         "extensions.update.notifyUser": False,
+        # Redirect various extension update URLs
+        "extensions.blocklist.detailsURL": (
+            "http://%(server)s/extensions-dummy/blocklistDetailsURL"
+        ),
+        "extensions.blocklist.itemURL": "http://%(server)s/extensions-dummy/blocklistItemURL",
+        "extensions.hotfix.url": "http://%(server)s/extensions-dummy/hotfixURL",
+        "extensions.systemAddon.update.url": "http://%(server)s/dummy-system-addons.xml",
+        "extensions.update.background.url": (
+            "http://%(server)s/extensions-dummy/updateBackgroundURL"
+        ),
+        "extensions.update.url": "http://%(server)s/extensions-dummy/updateURL",
         # Make sure opening about:addons won"t hit the network
         "extensions.getAddons.discovery.api_url": "data:, ",
+        "extensions.getAddons.get.url": "http://%(server)s/extensions-dummy/repositoryGetURL",
+        "extensions.getAddons.search.browseURL": (
+            "http://%(server)s/extensions-dummy/repositoryBrowseURL"
+        ),
         # Allow the application to have focus even it runs in the background
         "focusmanager.testmode": True,
         # Disable useragent updates
         "general.useragent.updates.enabled": False,
+        # Disable geolocation ping (#2)
+        "geo.provider.network.url": "",
         # Always use network provider for geolocation tests
         # so we bypass the OSX dialog raised by the corelocation provider
         "geo.provider.testing": True,
         # Do not scan Wifi
         "geo.wifi.scan": False,
+        # Ensure webrender is on, no need for environment variables
+        "gfx.webrender.all": True,
         # Disable idle-daily notifications to avoid expensive operations
         # that may cause unexpected test timeouts.
         "idle.lastDailyNotification": -1,
+        # Disable Firefox accounts ping
+        "identity.fxaccounts.auth.uri": "https://{server}/dummy/fxa",
         # Disable download and usage of OpenH264, and Widevine plugins
         "media.gmp-manager.updateEnabled": False,
         # Disable the GFX sanity window
         "media.sanity-test.disabled": True,
         "media.volume_scale": "0.01",
+        # Disable connectivity service pings
+        "network.connectivity-service.enabled": False,
         # Do not prompt for temporary redirects
         "network.http.prompt-temp-redirect": False,
         # Do not automatically switch between offline and online
@@ -106,16 +146,16 @@ class GeckoInstance(object):
         # Tests don't wait for the notification button security delay
         "security.notification_enable_delay": 0,
         # Ensure blocklist updates don't hit the network
-        "services.settings.server": "http://%(server)s/dummy/blocklist/",
+        "services.settings.server": "data:,#remote-settings-dummy/v1",
         # Disable password capture, so that tests that include forms aren"t
         # influenced by the presence of the persistent doorhanger notification
         "signon.rememberSignons": False,
         # Prevent starting into safe mode after application crashes
         "toolkit.startup.max_resumed_crashes": -1,
-        # Enabling the support for File object creation in the content process.
-        "dom.file.createInChild": True,
-        # Don't pull Top Sites content from the network
-        "browser.topsites.contile.enabled": False,
+        # Disable most telemetry pings
+        "toolkit.telemetry.server": "https://%(server)s/telemetry-dummy/",
+        # Disable window occlusion on Windows, see Bug 1802473.
+        "widget.windows.window_occlusion_tracking.enabled": False,
     }
 
     def __init__(
@@ -132,7 +172,6 @@ class GeckoInstance(object):
         workspace=None,
         verbose=0,
         headless=False,
-        enable_webrender=False,
     ):
         self.runner_class = Runner
         self.app_args = app_args or []
@@ -152,7 +191,6 @@ class GeckoInstance(object):
         self._gecko_log = None
         self.verbose = verbose
         self.headless = headless
-        self.enable_webrender = enable_webrender
 
         # keep track of errors to decide whether instance is unresponsive
         self.unresponsive_count = 0
@@ -271,8 +309,7 @@ class GeckoInstance(object):
 
         if self.verbose:
             level = "Trace" if self.verbose >= 2 else "Debug"
-            args["preferences"]["marionette.log.level"] = level
-            args["preferences"]["marionette.logging"] = level
+            args["preferences"]["remote.log.level"] = level
 
         if "-jsdebugger" in self.app_args:
             args["preferences"].update(
@@ -281,6 +318,7 @@ class GeckoInstance(object):
                     "devtools.chrome.enabled": True,
                     "devtools.debugger.prompt-connection": False,
                     "devtools.debugger.remote-enabled": True,
+                    "devtools.testing": True,
                 }
             )
 
@@ -327,15 +365,13 @@ class GeckoInstance(object):
 
         env = os.environ.copy()
 
+        # Store all required preferences for tests which need to create clean profiles.
+        required_prefs_keys = list(self.required_prefs.keys())
+        env["MOZ_MARIONETTE_REQUIRED_PREFS"] = json.dumps(required_prefs_keys)
+
         if self.headless:
             env["MOZ_HEADLESS"] = "1"
             env["DISPLAY"] = "77"  # Set a fake display.
-
-        if self.enable_webrender:
-            env["MOZ_WEBRENDER"] = "1"
-            env["MOZ_ACCELERATED"] = "1"
-        else:
-            env["MOZ_WEBRENDER"] = "0"
 
         # environment variables needed for crashreporting
         # https://developer.mozilla.org/docs/Environment_variables_affecting_crash_reporting
@@ -396,19 +432,12 @@ class FennecInstance(GeckoInstance):
         # Enable output for dump() and chrome console API
         "browser.dom.window.dump.enabled": True,
         "devtools.console.stdout.chrome": True,
-        # Disable safebrowsing components
-        "browser.safebrowsing.blockedURIs.enabled": False,
-        "browser.safebrowsing.downloads.enabled": False,
-        "browser.safebrowsing.passwords.enabled": False,
-        "browser.safebrowsing.malware.enabled": False,
-        "browser.safebrowsing.phishing.enabled": False,
+        # Disable safe browsing / tracking protection updates
+        "browser.safebrowsing.update.enabled": False,
         # Do not restore the last open set of tabs if the browser has crashed
         "browser.sessionstore.resume_from_crash": False,
         # Disable e10s by default
         "browser.tabs.remote.autostart": False,
-        # Do not allow background tabs to be zombified, otherwise for tests that
-        # open additional tabs, the test harness tab itself might get unloaded
-        "browser.tabs.disableBackgroundZombification": True,
     }
 
     def __init__(
@@ -483,10 +512,6 @@ class FennecInstance(GeckoInstance):
         }
 
         env = {} if self.env is None else self.env.copy()
-        if self.enable_webrender:
-            env["MOZ_WEBRENDER"] = "1"
-        else:
-            env["MOZ_WEBRENDER"] = "0"
 
         runner_args = {
             "app": self.package_name,
@@ -551,23 +576,23 @@ class DesktopInstance(GeckoInstance):
         "browser.download.panel.shown": True,
         # Do not show the EULA notification which can interfer with tests
         "browser.EULA.override": True,
+        # Disable Activity Stream telemetry pings
+        "browser.newtabpage.activity-stream.telemetry": False,
         # Always display a blank page
         "browser.newtabpage.enabled": False,
         # Background thumbnails in particular cause grief, and disabling thumbnails
         # in general can"t hurt - we re-enable them when tests need them
         "browser.pagethumbnails.capturing_disabled": True,
-        # Disable safebrowsing components
-        "browser.safebrowsing.blockedURIs.enabled": False,
-        "browser.safebrowsing.downloads.enabled": False,
-        "browser.safebrowsing.passwords.enabled": False,
-        "browser.safebrowsing.malware.enabled": False,
-        "browser.safebrowsing.phishing.enabled": False,
+        # Disable safe browsing / tracking protection updates
+        "browser.safebrowsing.update.enabled": False,
         # Disable updates to search engines
         "browser.search.update": False,
         # Do not restore the last open set of tabs if the browser has crashed
         "browser.sessionstore.resume_from_crash": False,
         # Don't check for the default web browser during startup
         "browser.shell.checkDefaultBrowser": False,
+        # Disable session restore infobar
+        "browser.startup.couldRestoreSession.count": -1,
         # Needed for branded builds to prevent opening a second tab on startup
         "browser.startup.homepage_override.mstone": "ignore",
         # Start with a blank page by default
@@ -585,6 +610,9 @@ class DesktopInstance(GeckoInstance):
         "browser.toolbars.bookmarks.visibility": "never",
         # Disable the UI tour
         "browser.uitour.enabled": False,
+        # Turn off Merino suggestions in the location bar so as not to trigger network
+        # connections.
+        "browser.urlbar.merino.endpointURL": "",
         # Turn off search suggestions in the location bar so as not to trigger network
         # connections.
         "browser.urlbar.suggest.searches": False,

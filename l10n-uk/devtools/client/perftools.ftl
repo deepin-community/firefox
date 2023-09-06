@@ -21,6 +21,7 @@ perftools-heading-features-default = Функції (Рекомендовано 
 perftools-heading-features-disabled = Вимкнені функції
 perftools-heading-features-experimental = Експериментальне
 perftools-heading-threads = Потоки
+perftools-heading-threads-jvm = Потоки JVM
 perftools-heading-local-build = Локальна збірка
 
 ##
@@ -29,7 +30,7 @@ perftools-description-intro =
     Записи запускають <a>profiler.firefox.com</a> у новій вкладці. Усі дані зберігаються
     локально, але ви можете вивантажити їх для оприлюднення.
 perftools-description-local-build =
-    Якщо ви профілюєте збірку, яку ви склали власноруч на цьому
+    Якщо ви профілюєте збірку, яку склали власноруч на цьому
     комп'ютері, додайте objdir своєї збірки до списку внизу,
     щоб можна було виявляти інформацію про символи.
 
@@ -42,16 +43,15 @@ perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Розмір буфера:
+
 perftools-custom-threads-label = Додати власні потоки за назвою:
+
 perftools-devtools-interval-label = Інтервал:
 perftools-devtools-threads-label = Потоки:
 perftools-devtools-settings-label = Налаштування
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice =
-    Profiler вимикається після увімкнення приватного перегляду.
-    Закрийте всі вікна приватного перегляду, щоб знову увімкнути Profiler
 perftools-status-recording-stopped-by-another-tool = Запис було зупинено іншим інструментом.
 perftools-status-restart-required = Щоб увімкнути цю функцію, потрібно перезапустити браузер.
 
@@ -83,8 +83,8 @@ perftools-thread-renderer =
     .title = Коли увімкнено WebRender, потік, який виконує виклики OpenGL
 perftools-thread-render-backend =
     .title = Потік WebRender RenderBackend
-perftools-thread-paint-worker =
-    .title = Коли увімкнено розфарбування off-main-thread, потік, на якому відбувається фарбування
+perftools-thread-timer =
+    .title = Таймери обробки потоків (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
     .title = Обчислення стилів розділено на декілька потоків
 pref-thread-stream-trans =
@@ -97,20 +97,31 @@ perftools-thread-dns-resolver =
     .title = У цьому потоці відбувається визначення DNS
 perftools-thread-task-controller =
     .title = Потоки збірних потоків TaskController
+perftools-thread-jvm-gecko =
+    .title = Основний потік Gecko JVM
+perftools-thread-jvm-nimbus =
+    .title = Основні потоки для експериментального Nimbus SDK
+perftools-thread-jvm-default-dispatcher =
+    .title = Усталений диспетчер для бібліотеки співпрограм Kotlin
+perftools-thread-jvm-glean =
+    .title = Основні потоки для пакунка телеметрії Glean SDK
+perftools-thread-jvm-arch-disk-io =
+    .title = Диспетчер IO для бібліотеки співпрограм Kotlin
+perftools-thread-jvm-pool =
+    .title = Потоки, створені в об'єднанні потоків без назви
 
 ##
 
 perftools-record-all-registered-threads = Обходити вибране вгорі й записувати всі зареєстровані потоки
+
 perftools-tools-threads-input-label =
     .title = Назви потоків є розділеним комами списком, що використовується для увімкнення профілювання потоків у Profiler. Для включення, назва повинна мати лише частковий збіг з назвою потоку. Вони чутливі до пробілів.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>Нове</b>: { -profiler-brand-name } тепер вбудовано в Інструменти розробника. <a>Дізнайтеся докладніше</a> про цей потужний новий інструмент.
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (Впродовж обмеженого часу ви можете отримати доступ до оригінальної панелі швидкодії через <a>{ options-context-advanced-settings }</a>)
+
 perftools-onboarding-close-button =
     .aria-label = Закрити вітальне повідомлення
 
@@ -121,16 +132,30 @@ perftools-onboarding-close-button =
 # devtools/client/performance-new/popup/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
 perftools-presets-web-developer-label = Веброзробник
-perftools-presets-web-developer-description = Рекомендовані попередні налаштування для зневадження більшості застосунків. З низькими споживанням ресурсів.
-perftools-presets-firefox-platform-label = Платформа Firefox
-perftools-presets-firefox-platform-description = Рекомендовані попередні налаштування для внутрішнього зневадження Firefox.
-perftools-presets-firefox-front-end-label = Клієнтська частина Firefox
-perftools-presets-firefox-front-end-description = Рекомендовані попередні налаштування для внутрішнього зневадження клієнтської частини Firefox.
-perftools-presets-firefox-graphics-label = Графіка Firefox
-perftools-presets-firefox-graphics-description = Рекомендовані попередні налаштування для дослідження запису графіків швидкодії Firefox.
+perftools-presets-web-developer-description = Рекомендовані попередні налаштування для налагодження більшості вебзастосунків. З низьким споживанням ресурсів.
+
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = Рекомендовані налаштування для профілювання { -brand-shorter-name }.
+
+perftools-presets-graphics-label = Графіка
+perftools-presets-graphics-description = Налаштування для виявлення помилок графіки в { -brand-shorter-name }.
+
 perftools-presets-media-label = Медіа
-perftools-presets-media-description = Рекомендовані попередні налаштування для визначення проблем зі звуком та відео.
+perftools-presets-media-description2 = Налаштування для виявлення помилок аудіо та відео в { -brand-shorter-name }.
+
+perftools-presets-networking-label = Мережа
+perftools-presets-networking-description = Налаштування для виявлення помилок мережі в { -brand-shorter-name }.
+
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = Потужність
+perftools-presets-power-description = Налаштування для виявлення помилок використання потужності { -brand-shorter-name } із низьким накладанням.
+
 perftools-presets-custom-label = Власні
 
 ##

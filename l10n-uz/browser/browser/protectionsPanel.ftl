@@ -88,6 +88,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Buzilgan sayt haqida xabar berish
 protections-panel-content-blocking-breakage-report-view-description = Ayrim kuzatuvchilarni bloklasangiz, baʼzi saytlarda muammo paydo boʻlishi mumkin. Bu muammo haqida xabar berish bilan siz { -brand-short-name }ni yaxshilashda yordam bergan hisoblanasiz. Bu hisobot bilan birga URL manzili va brauzeringiz sozlamalari haqidagi maʼlumotlar ham Mozillaga yuboriladi <label data-l10n-name="learn-more">Batafsil</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Ayrim kuzatuvchilarni bloklasangiz, baʼzi saytlarda muammo paydo boʻlishi mumkin. Bu muammo haqida xabar berish bilan siz { -brand-short-name }ni yaxshilashda yordam bergan hisoblanasiz. Bu hisobot bilan birga URL manzili va brauzeringiz sozlamalari haqidagi maʼlumotlar ham { -vendor-short-name }ga yuboriladi
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -98,3 +99,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Bekor qilish
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Hisobot yuborish
+
+# Cookie Banner Handling
+

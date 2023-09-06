@@ -108,7 +108,7 @@ certificate-viewer-export = Eksporto
 ##
 
 # Label for a tab where we haven't found a better label:
-certificate-viewer-unknown-group-label = (e panjohur)
+certificate-viewer-unknown-group-label = (i panjohur)
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

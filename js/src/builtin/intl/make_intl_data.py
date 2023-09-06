@@ -6,7 +6,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 """ Usage:
-    make_intl_data.py langtags [cldr_core.zip]
+    make_intl_data.py langtags [cldr_common.zip]
     make_intl_data.py tzdata
     make_intl_data.py currency
     make_intl_data.py units
@@ -17,7 +17,8 @@
     This script extracts information about 1) mappings between deprecated and
     current Unicode BCP 47 locale identifiers, and 2) deprecated and current
     BCP 47 Unicode extension value from CLDR, and converts it to C++ mapping
-    code in LanguageTagGenerated.cpp. The code is used in LanguageTag.cpp.
+    code in intl/components/LocaleGenerated.cpp. The code is used in
+    intl/components/Locale.cpp.
 
 
     Target "tzdata":
@@ -40,35 +41,35 @@
     simple digit mappings and verifies that it's in sync with ICU/CLDR.
 """
 
-from __future__ import print_function
-import os
-import re
 import io
 import json
-import shutil
+import os
+import re
 import sys
 import tarfile
 import tempfile
-import yaml
 from contextlib import closing
 from functools import partial, total_ordering
 from itertools import chain, groupby, tee
 from operator import attrgetter, itemgetter
 from zipfile import ZipFile
 
+import yaml
+
 if sys.version_info.major == 2:
-    from itertools import (
-        ifilter as filter,
-        ifilterfalse as filterfalse,
-        imap as map,
-        izip_longest as zip_longest,
-    )
-    from urllib2 import urlopen, Request as UrlRequest
+    from itertools import ifilter as filter
+    from itertools import ifilterfalse as filterfalse
+    from itertools import imap as map
+    from itertools import izip_longest as zip_longest
+
+    from urllib2 import Request as UrlRequest
+    from urllib2 import urlopen
     from urlparse import urlsplit
 else:
     from itertools import filterfalse, zip_longest
-    from urllib.request import urlopen, Request as UrlRequest
     from urllib.parse import urlsplit
+    from urllib.request import Request as UrlRequest
+    from urllib.request import urlopen
 
 
 # From https://docs.python.org/3/library/itertools.html
@@ -125,9 +126,9 @@ def writeMappingsBinarySearch(
     writeMappingHeader(println, description, source, url)
     println(
         """
-bool js::intl::LanguageTag::{0}({1} {2}) {{
-  MOZ_ASSERT({3}({2}.span()));
-  MOZ_ASSERT({4}({2}.span()));
+bool mozilla::intl::Locale::{0}({1} {2}) {{
+  MOZ_ASSERT({3}({2}.Span()));
+  MOZ_ASSERT({4}({2}.Span()));
 """.format(
             fn_name, type_name, name, validate_fn, validate_case_fn
         ).strip()
@@ -177,7 +178,7 @@ def writeMappingsBinarySearchBody(
         if length != tag_maxlength:
             println(
                 """
-  if ({}.length() == {}) {{
+  if ({}.Length() == {}) {{
 """.format(
                     source_name, length
                 ).rstrip(
@@ -198,7 +199,7 @@ def writeMappingsBinarySearchBody(
         subtags = sorted(subtags)
 
         def equals(subtag):
-            return """{}.equalTo("{}")""".format(source_name, subtag)
+            return """{}.EqualTo("{}")""".format(source_name, subtag)
 
         # Don't emit a binary search for short lists.
         if len(subtags) == 1:
@@ -206,7 +207,7 @@ def writeMappingsBinarySearchBody(
                 println(
                     """
     if ({}) {{
-      {}.set(mozilla::MakeStringSpan("{}"));
+      {}.Set(mozilla::MakeStringSpan("{}"));
       return true;
     }}
     return false;
@@ -232,7 +233,7 @@ def writeMappingsBinarySearchBody(
                     println(
                         """
     if ({}) {{
-      {}.set("{}");
+      {}.Set("{}");
       return true;
     }}
 """.format(
@@ -270,7 +271,7 @@ def writeMappingsBinarySearchBody(
                 println(
                     """
     if (const char* replacement = SearchReplacement({0}s, aliases, {0})) {{
-      {1}.set(mozilla::MakeStringSpan(replacement));
+      {1}.Set(mozilla::MakeStringSpan(replacement));
       return true;
     }}
     return false;
@@ -309,9 +310,9 @@ def writeComplexLanguageTagMappings(
     writeMappingHeader(println, description, source, url)
     println(
         """
-void js::intl::LanguageTag::performComplexLanguageMappings() {
-  MOZ_ASSERT(IsStructurallyValidLanguageTag(language().span()));
-  MOZ_ASSERT(IsCanonicallyCasedLanguageTag(language().span()));
+void mozilla::intl::Locale::PerformComplexLanguageMappings() {
+  MOZ_ASSERT(IsStructurallyValidLanguageTag(Language().Span()));
+  MOZ_ASSERT(IsCanonicallyCasedLanguageTag(Language().Span()));
 """.lstrip()
     )
 
@@ -338,7 +339,7 @@ void js::intl::LanguageTag::performComplexLanguageMappings() {
         first_language = False
 
         cond = (
-            'language().equalTo("{}")'.format(lang)
+            'Language().EqualTo("{}")'.format(lang)
             for lang in [deprecated_language] + language_aliases[key]
         )
         cond = (" ||\n" + " " * (2 + len(if_kind) + 2)).join(cond)
@@ -354,7 +355,7 @@ void js::intl::LanguageTag::performComplexLanguageMappings() {
 
         println(
             """
-    setLanguage("{}");""".format(
+    SetLanguage("{}");""".format(
                 language
             ).strip(
                 "\n"
@@ -364,8 +365,8 @@ void js::intl::LanguageTag::performComplexLanguageMappings() {
         if script is not None:
             println(
                 """
-    if (script().missing()) {{
-      setScript("{}");
+    if (Script().Missing()) {{
+      SetScript("{}");
     }}""".format(
                     script
                 ).strip(
@@ -375,8 +376,8 @@ void js::intl::LanguageTag::performComplexLanguageMappings() {
         if region is not None:
             println(
                 """
-    if (region().missing()) {{
-      setRegion("{}");
+    if (Region().Missing()) {{
+      SetRegion("{}");
     }}""".format(
                     region
                 ).strip(
@@ -406,11 +407,11 @@ def writeComplexRegionTagMappings(
     writeMappingHeader(println, description, source, url)
     println(
         """
-void js::intl::LanguageTag::performComplexRegionMappings() {
-  MOZ_ASSERT(IsStructurallyValidLanguageTag(language().span()));
-  MOZ_ASSERT(IsCanonicallyCasedLanguageTag(language().span()));
-  MOZ_ASSERT(IsStructurallyValidRegionTag(region().span()));
-  MOZ_ASSERT(IsCanonicallyCasedRegionTag(region().span()));
+void mozilla::intl::Locale::PerformComplexRegionMappings() {
+  MOZ_ASSERT(IsStructurallyValidLanguageTag(Language().Span()));
+  MOZ_ASSERT(IsCanonicallyCasedLanguageTag(Language().Span()));
+  MOZ_ASSERT(IsStructurallyValidRegionTag(Region().Span()));
+  MOZ_ASSERT(IsCanonicallyCasedRegionTag(Region().Span()));
 """.lstrip()
     )
 
@@ -442,7 +443,7 @@ void js::intl::LanguageTag::performComplexRegionMappings() {
         first_region = False
 
         cond = (
-            'region().equalTo("{}")'.format(region)
+            'Region().EqualTo("{}")'.format(region)
             for region in [deprecated_region] + region_aliases[key]
         )
         cond = (" ||\n" + " " * (2 + len(if_kind) + 2)).join(cond)
@@ -473,8 +474,8 @@ void js::intl::LanguageTag::performComplexRegionMappings() {
 
             def compare_tags(language, script):
                 if script is None:
-                    return 'language().equalTo("{}")'.format(language)
-                return '(language().equalTo("{}") && script().equalTo("{}"))'.format(
+                    return 'Language().EqualTo("{}")'.format(language)
+                return '(Language().EqualTo("{}") && Script().EqualTo("{}"))'.format(
                     language, script
                 )
 
@@ -487,7 +488,7 @@ void js::intl::LanguageTag::performComplexRegionMappings() {
             println(
                 """
     {} ({}) {{
-      setRegion("{}");
+      SetRegion("{}");
     }}""".format(
                     if_kind, cond, replacement_region
                 )
@@ -498,7 +499,7 @@ void js::intl::LanguageTag::performComplexRegionMappings() {
         println(
             """
     else {{
-      setRegion("{}");
+      SetRegion("{}");
     }}
   }}""".format(
                 default
@@ -517,14 +518,14 @@ void js::intl::LanguageTag::performComplexRegionMappings() {
 
 
 def writeVariantTagMappings(println, variant_mappings, description, source, url):
-    """ Writes a function definition that maps variant subtags. """
+    """Writes a function definition that maps variant subtags."""
     println(
         """
 static const char* ToCharPointer(const char* str) {
   return str;
 }
 
-static const char* ToCharPointer(const js::UniqueChars& str) {
+static const char* ToCharPointer(const mozilla::intl::UniqueChars& str) {
   return str.get();
 }
 
@@ -537,35 +538,32 @@ static bool IsLessThan(const T& a, const U& b) {
     writeMappingHeader(println, description, source, url)
     println(
         """
-bool js::intl::LanguageTag::performVariantMappings(JSContext* cx) {
+bool mozilla::intl::Locale::PerformVariantMappings() {
   // The variant subtags need to be sorted for binary search.
-  MOZ_ASSERT(std::is_sorted(variants_.begin(), variants_.end(),
-                            IsLessThan<decltype(variants_)::ElementType>));
+  MOZ_ASSERT(std::is_sorted(mVariants.begin(), mVariants.end(),
+                            IsLessThan<decltype(mVariants)::ElementType>));
 
   auto removeVariantAt = [&](size_t index) {
-    variants_.erase(variants_.begin() + index);
+    mVariants.erase(mVariants.begin() + index);
   };
 
   auto insertVariantSortedIfNotPresent = [&](const char* variant) {
-    auto* p = std::lower_bound(variants_.begin(), variants_.end(), variant,
-                               IsLessThan<decltype(variants_)::ElementType,
-                                          decltype(variant)>);
+    auto* p = std::lower_bound(
+        mVariants.begin(), mVariants.end(), variant,
+        IsLessThan<decltype(mVariants)::ElementType, decltype(variant)>);
 
     // Don't insert the replacement when already present.
-    if (p != variants_.end() && strcmp(p->get(), variant) == 0) {
+    if (p != mVariants.end() && strcmp(p->get(), variant) == 0) {
       return true;
     }
 
     // Insert the preferred variant in sort order.
-    auto preferred = DuplicateString(cx, variant);
-    if (!preferred) {
-      return false;
-    }
-    return !!variants_.insert(p, std::move(preferred));
+    auto preferred = DuplicateStringToUniqueChars(variant);
+    return !!mVariants.insert(p, std::move(preferred));
   };
 
-  for (size_t i = 0; i < variants_.length(); ) {
-    const char* variant = variants_[i].get();
+  for (size_t i = 0; i < mVariants.length();) {
+    const char* variant = mVariants[i].get();
     MOZ_ASSERT(IsCanonicallyCasedVariantTag(mozilla::MakeStringSpan(variant)));
 """.lstrip()
     )
@@ -604,7 +602,7 @@ bool js::intl::LanguageTag::performVariantMappings(JSContext* cx) {
         if type == "language":
             println(
                 f"""
-      setLanguage("{replacement}");
+      SetLanguage("{replacement}");
 """.strip(
                     "\n"
                 )
@@ -612,7 +610,7 @@ bool js::intl::LanguageTag::performVariantMappings(JSContext* cx) {
         elif type == "region":
             println(
                 f"""
-      setRegion("{replacement}");
+      SetRegion("{replacement}");
 """.strip(
                     "\n"
                 )
@@ -652,12 +650,12 @@ bool js::intl::LanguageTag::performVariantMappings(JSContext* cx) {
 
 
 def writeLegacyMappingsFunction(println, legacy_mappings, description, source, url):
-    """ Writes a function definition that maps legacy language tags. """
+    """Writes a function definition that maps legacy language tags."""
     println("")
     writeMappingHeader(println, description, source, url)
     println(
         """\
-bool js::intl::LanguageTag::updateLegacyMappings(JSContext* cx) {
+bool mozilla::intl::Locale::UpdateLegacyMappings() {
   // We're mapping legacy tags to non-legacy form here.
   // Other tags remain unchanged.
   //
@@ -665,62 +663,61 @@ bool js::intl::LanguageTag::updateLegacyMappings(JSContext* cx) {
   // variant subtags. Therefore we can quickly exclude most tags by checking
   // these two subtags.
 
-  MOZ_ASSERT(IsCanonicallyCasedLanguageTag(language().span()));
+  MOZ_ASSERT(IsCanonicallyCasedLanguageTag(Language().Span()));
 
-  if (!language().equalTo("sgn") && variants().length() == 0) {
+  if (!Language().EqualTo("sgn") && mVariants.length() == 0) {
     return true;
   }
 
-  for ([[maybe_unused]] const auto& variant : variants()) {
-    MOZ_ASSERT(IsStructurallyValidVariantTag(mozilla::MakeStringSpan(variant.get())));
-    MOZ_ASSERT(IsCanonicallyCasedVariantTag(mozilla::MakeStringSpan(variant.get())));
+#ifdef DEBUG
+  for (const auto& variant : Variants()) {
+    MOZ_ASSERT(IsStructurallyValidVariantTag(variant));
+    MOZ_ASSERT(IsCanonicallyCasedVariantTag(variant));
   }
+#endif
 
   // The variant subtags need to be sorted for binary search.
-  MOZ_ASSERT(std::is_sorted(variants_.begin(), variants_.end(),
-                            IsLessThan<decltype(variants_)::ElementType>));
+  MOZ_ASSERT(std::is_sorted(mVariants.begin(), mVariants.end(),
+                            IsLessThan<decltype(mVariants)::ElementType>));
 
   auto findVariant = [this](const char* variant) {
-    auto* p = std::lower_bound(variants_.begin(), variants_.end(), variant,
-                               IsLessThan<decltype(variants_)::ElementType,
+    auto* p = std::lower_bound(mVariants.begin(), mVariants.end(), variant,
+                               IsLessThan<decltype(mVariants)::ElementType,
                                           decltype(variant)>);
 
-    if (p != variants_.end() && strcmp(p->get(), variant) == 0) {
+    if (p != mVariants.end() && strcmp(p->get(), variant) == 0) {
       return p;
     }
     return static_cast<decltype(p)>(nullptr);
   };
 
   auto insertVariantSortedIfNotPresent = [&](const char* variant) {
-    auto* p = std::lower_bound(variants_.begin(), variants_.end(), variant,
-                               IsLessThan<decltype(variants_)::ElementType,
+    auto* p = std::lower_bound(mVariants.begin(), mVariants.end(), variant,
+                               IsLessThan<decltype(mVariants)::ElementType,
                                           decltype(variant)>);
 
     // Don't insert the replacement when already present.
-    if (p != variants_.end() && strcmp(p->get(), variant) == 0) {
+    if (p != mVariants.end() && strcmp(p->get(), variant) == 0) {
       return true;
     }
 
     // Insert the preferred variant in sort order.
-    auto preferred = DuplicateString(cx, variant);
-    if (!preferred) {
-      return false;
-    }
-    return !!variants_.insert(p, std::move(preferred));
+    auto preferred = DuplicateStringToUniqueChars(variant);
+    return !!mVariants.insert(p, std::move(preferred));
   };
 
   auto removeVariant = [&](auto* p) {
-    size_t index = std::distance(variants_.begin(), p);
-    variants_.erase(variants_.begin() + index);
+    size_t index = std::distance(mVariants.begin(), p);
+    mVariants.erase(mVariants.begin() + index);
   };
 
   auto removeVariants = [&](auto* p, auto* q) {
-    size_t pIndex = std::distance(variants_.begin(), p);
-    size_t qIndex = std::distance(variants_.begin(), q);
+    size_t pIndex = std::distance(mVariants.begin(), p);
+    size_t qIndex = std::distance(mVariants.begin(), q);
     MOZ_ASSERT(pIndex < qIndex, "variant subtags are sorted");
 
-    variants_.erase(variants_.begin() + qIndex);
-    variants_.erase(variants_.begin() + pIndex);
+    mVariants.erase(mVariants.begin() + qIndex);
+    mVariants.erase(mVariants.begin() + pIndex);
   };"""
     )
 
@@ -752,7 +749,7 @@ bool js::intl::LanguageTag::updateLegacyMappings(JSContext* cx) {
 
         println(
             """
-  if (variants().length() >= 2) {
+  if (mVariants.length() >= 2) {
     if (auto* hepburn = findVariant("hepburn")) {
       if (auto* heploc = findVariant("heploc")) {
         removeVariants(hepburn, heploc);
@@ -781,9 +778,9 @@ bool js::intl::LanguageTag::updateLegacyMappings(JSContext* cx) {
 
         println(
             """
-  if (language().equalTo("sgn")) {
-    if (region().present() && signLanguageMapping(language_, region())) {
-      region_.set(mozilla::MakeStringSpan(""));
+  if (Language().EqualTo("sgn")) {
+    if (Region().Present() && SignLanguageMapping(mLanguage, Region())) {
+      mRegion.Set(mozilla::MakeStringSpan(""));
     }
   }
 """.rstrip().lstrip(
@@ -831,7 +828,7 @@ bool js::intl::LanguageTag::updateLegacyMappings(JSContext* cx) {
 
     for langs in legacy_mappings_compact.values():
         language_equal_to = (
-            f"""language().equalTo("{lang}")""" for lang in sorted(langs)
+            f"""Language().EqualTo("{lang}")""" for lang in sorted(langs)
         )
         cond = f""" ||\n{" " * len("  else if (")}""".join(language_equal_to)
 
@@ -885,7 +882,7 @@ bool js::intl::LanguageTag::updateLegacyMappings(JSContext* cx) {
                 println(
                     f"""
     {indent}removeVariant{"s" if len_variants > 1 else ""}({", ".join(sorted_variants)});
-    {indent}setLanguage("{r_language}");
+    {indent}SetLanguage("{r_language}");
     {indent}{"return true;" if not chain_if else ""}
 """.rstrip().lstrip(
                         "\n"
@@ -919,16 +916,16 @@ bool js::intl::LanguageTag::updateLegacyMappings(JSContext* cx) {
 def writeSignLanguageMappingsFunction(
     println, legacy_mappings, description, source, url
 ):
-    """ Writes a function definition that maps legacy sign language tags. """
+    """Writes a function definition that maps legacy sign language tags."""
     println("")
     writeMappingHeader(println, description, source, url)
     println(
         """\
-bool js::intl::LanguageTag::signLanguageMapping(LanguageSubtag& language,
+bool mozilla::intl::Locale::SignLanguageMapping(LanguageSubtag& language,
                                                 const RegionSubtag& region) {
-  MOZ_ASSERT(language.equalTo("sgn"));
-  MOZ_ASSERT(IsStructurallyValidRegionTag(region.span()));
-  MOZ_ASSERT(IsCanonicallyCasedRegionTag(region.span()));
+  MOZ_ASSERT(language.EqualTo("sgn"));
+  MOZ_ASSERT(IsStructurallyValidRegionTag(region.Span()));
+  MOZ_ASSERT(IsCanonicallyCasedRegionTag(region.Span()));
 """.rstrip()
     )
 
@@ -1433,6 +1430,23 @@ def readSupplementalData(core_file):
             if (language, script) not in default_replacements
         ]
 
+        # Remove redundant mappings.
+        #
+        # For example starting with CLDR 43, the deprecated region "SU" has the
+        # following non-default replacement entries for "GE":
+        # - ('sva', None, 'GE')
+        # - ('sva', 'Cyrl', 'GE')
+        # - ('sva', 'Latn', 'GE')
+        #
+        # The latter two entries are redundant, because they're already handled
+        # by the first entry.
+        non_default_replacements = [
+            (language, script, region)
+            for (language, script, region) in non_default_replacements
+            if script is None
+            or (language, None, region) not in non_default_replacements
+        ]
+
         # If there are no non-default replacements, we can handle the region as
         # part of the simple region mapping.
         if non_default_replacements:
@@ -1627,7 +1641,7 @@ def readUnicodeExtensions(core_file):
 
 
 def writeCLDRLanguageTagData(println, data, url):
-    """ Writes the language tag data to the Intl data file. """
+    """Writes the language tag data to the Intl data file."""
 
     println(generatedFileWarning)
     println("// Version: CLDR-{}".format(data["version"]))
@@ -1646,39 +1660,36 @@ def writeCLDRLanguageTagData(println, data, url):
 #include <string>
 #include <type_traits>
 
-#include "builtin/intl/LanguageTag.h"
-#include "util/Text.h"
-#include "vm/JSContext.h"
+#include "mozilla/intl/Locale.h"
 
-using namespace js::intl::LanguageTagLimits;
+using namespace mozilla::intl::LanguageTagLimits;
 
 template <size_t Length, size_t TagLength, size_t SubtagLength>
 static inline bool HasReplacement(
     const char (&subtags)[Length][TagLength],
-    const js::intl::LanguageTagSubtag<SubtagLength>& subtag) {
-  MOZ_ASSERT(subtag.length() == TagLength - 1,
+    const mozilla::intl::LanguageTagSubtag<SubtagLength>& subtag) {
+  MOZ_ASSERT(subtag.Length() == TagLength - 1,
              "subtag must have the same length as the list of subtags");
 
-  const char* ptr = subtag.span().data();
+  const char* ptr = subtag.Span().data();
   return std::binary_search(std::begin(subtags), std::end(subtags), ptr,
                             [](const char* a, const char* b) {
-    return memcmp(a, b, TagLength - 1) < 0;
-  });
+                              return memcmp(a, b, TagLength - 1) < 0;
+                            });
 }
 
 template <size_t Length, size_t TagLength, size_t SubtagLength>
 static inline const char* SearchReplacement(
-    const char (&subtags)[Length][TagLength],
-    const char* (&aliases)[Length],
-    const js::intl::LanguageTagSubtag<SubtagLength>& subtag) {
-  MOZ_ASSERT(subtag.length() == TagLength - 1,
+    const char (&subtags)[Length][TagLength], const char* (&aliases)[Length],
+    const mozilla::intl::LanguageTagSubtag<SubtagLength>& subtag) {
+  MOZ_ASSERT(subtag.Length() == TagLength - 1,
              "subtag must have the same length as the list of subtags");
 
-  const char* ptr = subtag.span().data();
+  const char* ptr = subtag.Span().data();
   auto p = std::lower_bound(std::begin(subtags), std::end(subtags), ptr,
                             [](const char* a, const char* b) {
-    return memcmp(a, b, TagLength - 1) < 0;
-  });
+                              return memcmp(a, b, TagLength - 1) < 0;
+                            });
   if (p != std::end(subtags) && memcmp(*p, ptr, TagLength - 1) == 0) {
     return aliases[std::distance(std::begin(subtags), p)];
   }
@@ -1695,32 +1706,23 @@ static bool IsAsciiLowercaseAlphanumericOrDash(char c) {
 }
 
 static bool IsCanonicallyCasedLanguageTag(mozilla::Span<const char> span) {
-  // Tell the analysis the |std::all_of| function can't GC.
-  JS::AutoSuppressGCAnalysis nogc;
-
-  return std::all_of(span.begin(), span.end(), mozilla::IsAsciiLowercaseAlpha<char>);
+  return std::all_of(span.begin(), span.end(),
+                     mozilla::IsAsciiLowercaseAlpha<char>);
 }
 
 static bool IsCanonicallyCasedScriptTag(mozilla::Span<const char> span) {
-  // Tell the analysis the |std::all_of| function can't GC.
-  JS::AutoSuppressGCAnalysis nogc;
-
   return mozilla::IsAsciiUppercaseAlpha(span[0]) &&
-         std::all_of(span.begin() + 1, span.end(), mozilla::IsAsciiLowercaseAlpha<char>);
+         std::all_of(span.begin() + 1, span.end(),
+                     mozilla::IsAsciiLowercaseAlpha<char>);
 }
 
 static bool IsCanonicallyCasedRegionTag(mozilla::Span<const char> span) {
-  // Tell the analysis the |std::all_of| function can't GC.
-  JS::AutoSuppressGCAnalysis nogc;
-
-  return std::all_of(span.begin(), span.end(), mozilla::IsAsciiUppercaseAlpha<char>) ||
+  return std::all_of(span.begin(), span.end(),
+                     mozilla::IsAsciiUppercaseAlpha<char>) ||
          std::all_of(span.begin(), span.end(), mozilla::IsAsciiDigit<char>);
 }
 
 static bool IsCanonicallyCasedVariantTag(mozilla::Span<const char> span) {
-  // Tell the analysis the |std::all_of| function can't GC.
-  JS::AutoSuppressGCAnalysis nogc;
-
   return std::all_of(span.begin(), span.end(), IsAsciiLowercaseAlphanumeric);
 }
 
@@ -1729,7 +1731,8 @@ static bool IsCanonicallyCasedUnicodeKey(mozilla::Span<const char> key) {
 }
 
 static bool IsCanonicallyCasedUnicodeType(mozilla::Span<const char> type) {
-  return std::all_of(type.begin(), type.end(), IsAsciiLowercaseAlphanumericOrDash);
+  return std::all_of(type.begin(), type.end(),
+                     IsAsciiLowercaseAlphanumericOrDash);
 }
 
 static bool IsCanonicallyCasedTransformKey(mozilla::Span<const char> key) {
@@ -1737,7 +1740,8 @@ static bool IsCanonicallyCasedTransformKey(mozilla::Span<const char> key) {
 }
 
 static bool IsCanonicallyCasedTransformType(mozilla::Span<const char> type) {
-  return std::all_of(type.begin(), type.end(), IsAsciiLowercaseAlphanumericOrDash);
+  return std::all_of(type.begin(), type.end(),
+                     IsAsciiLowercaseAlphanumericOrDash);
 }
 #endif
 """.rstrip()
@@ -1765,7 +1769,7 @@ static bool IsCanonicallyCasedTransformType(mozilla::Span<const char> type) {
 
     writeMappingsBinarySearch(
         println,
-        "languageMapping",
+        "LanguageMapping",
         "LanguageSubtag&",
         "language",
         "IsStructurallyValidLanguageTag",
@@ -1778,7 +1782,7 @@ static bool IsCanonicallyCasedTransformType(mozilla::Span<const char> type) {
     )
     writeMappingsBinarySearch(
         println,
-        "complexLanguageMapping",
+        "ComplexLanguageMapping",
         "const LanguageSubtag&",
         "language",
         "IsStructurallyValidLanguageTag",
@@ -1791,7 +1795,7 @@ static bool IsCanonicallyCasedTransformType(mozilla::Span<const char> type) {
     )
     writeMappingsBinarySearch(
         println,
-        "scriptMapping",
+        "ScriptMapping",
         "ScriptSubtag&",
         "script",
         "IsStructurallyValidScriptTag",
@@ -1804,7 +1808,7 @@ static bool IsCanonicallyCasedTransformType(mozilla::Span<const char> type) {
     )
     writeMappingsBinarySearch(
         println,
-        "regionMapping",
+        "RegionMapping",
         "RegionSubtag&",
         "region",
         "IsStructurallyValidRegionTag",
@@ -1817,7 +1821,7 @@ static bool IsCanonicallyCasedTransformType(mozilla::Span<const char> type) {
     )
     writeMappingsBinarySearch(
         println,
-        "complexRegionMapping",
+        "ComplexRegionMapping",
         "const RegionSubtag&",
         "region",
         "IsStructurallyValidRegionTag",
@@ -1865,7 +1869,7 @@ static bool IsCanonicallyCasedTransformType(mozilla::Span<const char> type) {
 
 
 def writeCLDRLanguageTagLikelySubtagsTest(println, data, url):
-    """ Writes the likely-subtags test file. """
+    """Writes the likely-subtags test file."""
 
     println(generatedFileWarning)
 
@@ -2049,7 +2053,7 @@ def readCLDRVersionFromICU():
 
 
 def updateCLDRLangTags(args):
-    """ Update the LanguageTagGenerated.cpp file. """
+    """Update the LanguageTagGenerated.cpp file."""
     version = args.version
     url = args.url
     out = args.out
@@ -2065,7 +2069,7 @@ def updateCLDRLangTags(args):
     print("\tCLDR version: %s" % version)
     print("\tDownload url: %s" % url)
     if filename is not None:
-        print("\tLocal CLDR core.zip file: %s" % filename)
+        print("\tLocal CLDR common.zip file: %s" % filename)
     print("\tOutput file: %s" % out)
     print("")
 
@@ -2080,11 +2084,11 @@ def updateCLDRLangTags(args):
 
     print("Processing CLDR data...")
     if filename is not None:
-        print("Always make sure you have the newest CLDR core.zip!")
+        print("Always make sure you have the newest CLDR common.zip!")
         with open(filename, "rb") as cldr_file:
             readFiles(cldr_file)
     else:
-        print("Downloading CLDR core.zip...")
+        print("Downloading CLDR common.zip...")
         with closing(urlopen(url)) as cldr_file:
             cldr_data = io.BytesIO(cldr_file.read())
             readFiles(cldr_data)
@@ -2109,7 +2113,7 @@ def updateCLDRLangTags(args):
 
 
 def flines(filepath, encoding="utf-8"):
-    """ Open filepath and iterate over its content. """
+    """Open filepath and iterate over its content."""
     with io.open(filepath, mode="r", encoding=encoding) as f:
         for line in f:
             yield line
@@ -2117,7 +2121,7 @@ def flines(filepath, encoding="utf-8"):
 
 @total_ordering
 class Zone(object):
-    """ Time zone with optional file name. """
+    """Time zone with optional file name."""
 
     def __init__(self, name, filename=""):
         self.name = name
@@ -2140,7 +2144,7 @@ class Zone(object):
 
 
 class TzDataDir(object):
-    """ tzdata source from a directory. """
+    """tzdata source from a directory."""
 
     def __init__(self, obj):
         self.name = partial(os.path.basename, obj)
@@ -2152,7 +2156,7 @@ class TzDataDir(object):
 
 
 class TzDataFile(object):
-    """ tzdata source from a file (tar or gzipped). """
+    """tzdata source from a file (tar or gzipped)."""
 
     def __init__(self, obj):
         self.name = lambda: os.path.splitext(
@@ -2171,7 +2175,7 @@ class TzDataFile(object):
 
 
 def validateTimeZones(zones, links):
-    """ Validate the zone and link entries. """
+    """Validate the zone and link entries."""
     linkZones = set(links.keys())
     intersect = linkZones.intersection(zones)
     if intersect:
@@ -2209,7 +2213,7 @@ def listIANAFiles(tzdataDir):
 
 
 def readIANAFiles(tzdataDir, files):
-    """ Read all IANA time zone files from the given iterable. """
+    """Read all IANA time zone files from the given iterable."""
     nameSyntax = "[\w/+\-]+"
     pZone = re.compile(r"Zone\s+(?P<name>%s)\s+.*" % nameSyntax)
     pLink = re.compile(
@@ -2241,7 +2245,7 @@ def readIANAFiles(tzdataDir, files):
 
 
 def readIANATimeZones(tzdataDir, ignoreBackzone, ignoreFactory):
-    """ Read the IANA time zone information from `tzdataDir`. """
+    """Read the IANA time zone information from `tzdataDir`."""
 
     backzoneFiles = {"backzone"}
     (bkfiles, tzfiles) = partition(listIANAFiles(tzdataDir), backzoneFiles.__contains__)
@@ -2538,7 +2542,7 @@ def otherICULegacyLinks():
 
 
 def icuTzDataVersion(icuTzDir):
-    """ Read the ICU time zone version from `icuTzDir`/zoneinfo64.txt. """
+    """Read the ICU time zone version from `icuTzDir`/zoneinfo64.txt."""
 
     def searchInFile(pattern, f):
         p = re.compile(pattern)
@@ -2560,7 +2564,7 @@ def icuTzDataVersion(icuTzDir):
 
 
 def findIncorrectICUZones(ianaZones, ianaLinks, icuZones, icuLinks, ignoreBackzone):
-    """ Find incorrect ICU zone entries. """
+    """Find incorrect ICU zone entries."""
 
     def isIANATimeZone(zone):
         return zone in ianaZones or zone in ianaLinks
@@ -2602,7 +2606,7 @@ def findIncorrectICUZones(ianaZones, ianaLinks, icuZones, icuLinks, ignoreBackzo
 
 
 def findIncorrectICULinks(ianaZones, ianaLinks, icuZones, icuLinks):
-    """ Find incorrect ICU link entries. """
+    """Find incorrect ICU link entries."""
 
     def isIANATimeZone(zone):
         return zone in ianaZones or zone in ianaLinks
@@ -2665,7 +2669,7 @@ tzdataVersionComment = "// tzdata version = {0}"
 def processTimeZones(
     tzdataDir, icuDir, icuTzDir, version, ignoreBackzone, ignoreFactory, out
 ):
-    """ Read the time zone info and create a new time zone cpp file. """
+    """Read the time zone info and create a new time zone cpp file."""
     print("Processing tzdata mapping...")
     (ianaZones, ianaLinks) = readIANATimeZones(tzdataDir, ignoreBackzone, ignoreFactory)
     (icuZones, icuLinks) = readICUTimeZones(icuDir, icuTzDir, ignoreFactory)
@@ -3026,7 +3030,7 @@ def generateTzDataTests(tzdataDir, version, ignoreBackzone, ignoreFactory, testD
 
 
 def updateTzdata(topsrcdir, args):
-    """ Update the time zone cpp file. """
+    """Update the time zone cpp file."""
 
     icuDir = os.path.join(topsrcdir, "intl/icu/source")
     if not os.path.isdir(icuDir):
@@ -3150,13 +3154,13 @@ def writeCurrencyFile(published, currencies, out):
             sorted(currencies, key=itemgetter(0)), itemgetter(0)
         ):
             for (_, minorUnits, currencyName, countryName) in entries:
-                println("    // {} ({})".format(currencyName, countryName))
-            println("    {}: {},".format(currency, minorUnits))
+                println("  // {} ({})".format(currencyName, countryName))
+            println("  {}: {},".format(currency, minorUnits))
         println("};")
 
 
 def updateCurrency(topsrcdir, args):
-    """ Update the CurrencyDataGenerated.js file. """
+    """Update the CurrencyDataGenerated.js file."""
     import xml.etree.ElementTree as ET
     from random import randint
 
@@ -3204,16 +3208,14 @@ def writeUnicodeExtensionsMappings(println, mapping, extension):
     println(
         """
 template <size_t Length>
-static inline bool Is{0}Key(
-  mozilla::Span<const char> key, const char (&str)[Length]) {{
+static inline bool Is{0}Key(mozilla::Span<const char> key, const char (&str)[Length]) {{
   static_assert(Length == {0}KeyLength + 1,
                 "{0} extension key is two characters long");
   return memcmp(key.data(), str, Length - 1) == 0;
 }}
 
 template <size_t Length>
-static inline bool Is{0}Type(
-  mozilla::Span<const char> type, const char (&str)[Length]) {{
+static inline bool Is{0}Type(mozilla::Span<const char> type, const char (&str)[Length]) {{
   static_assert(Length > {0}KeyLength + 1,
                 "{0} extension type contains more than two characters");
   return type.size() == (Length - 1) &&
@@ -3262,8 +3264,8 @@ static inline const char* Search{0}Replacement(
 
   auto p = std::lower_bound(std::begin(types), std::end(types), type,
                             [](const auto& a, const auto& b) {{
-    return Compare{0}Type(a, b) < 0;
-  }});
+                              return Compare{0}Type(a, b) < 0;
+                            }});
   if (p != std::end(types) && Compare{0}Type(*p, type) == 0) {{
     return aliases[std::distance(std::begin(types), p)];
   }}
@@ -3285,7 +3287,7 @@ static inline const char* Search{0}Replacement(
  * Spec: https://www.unicode.org/reports/tr35/#Unicode_Locale_Extension_Data_Files
  * Spec: https://www.unicode.org/reports/tr35/#t_Extension
  */
-const char* js::intl::LanguageTag::replace{0}ExtensionType(
+const char* mozilla::intl::Locale::Replace{0}ExtensionType(
     mozilla::Span<const char> key, mozilla::Span<const char> type) {{
   MOZ_ASSERT(key.size() == {0}KeyLength);
   MOZ_ASSERT(IsCanonicallyCased{0}Key(key));
@@ -3307,11 +3309,11 @@ const char* js::intl::LanguageTag::replace{0}ExtensionType(
 
         for entries in grouper(subtags, max_entries):
             entries = (
-                '"{}"'.format(tag).rjust(length + 2)
+                '"{}"'.format(tag).center(length + 2)
                 for tag in entries
                 if tag is not None
             )
-            println("      {},".format(", ".join(entries)))
+            println("        {},".format(", ".join(entries)))
 
         println("    };")
 
@@ -3558,6 +3560,9 @@ def readICUDataFilterForUnits(data_filter_file):
 
 def writeSanctionedSimpleUnitIdentifiersFiles(all_units, sanctioned_units):
     js_src_builtin_intl_dir = os.path.dirname(os.path.abspath(__file__))
+    intl_components_src_dir = os.path.join(
+        js_src_builtin_intl_dir, "../../../../intl/components/src"
+    )
 
     def find_unit_type(unit):
         result = [
@@ -3575,7 +3580,7 @@ def writeSanctionedSimpleUnitIdentifiersFiles(all_units, sanctioned_units):
         sanctioned_units_object = json.dumps(
             {unit: True for unit in sorted(sanctioned_units)},
             sort_keys=True,
-            indent=4,
+            indent=2,
             separators=(",", ": "),
         )
 
@@ -3590,21 +3595,25 @@ def writeSanctionedSimpleUnitIdentifiersFiles(all_units, sanctioned_units):
  */"""
         )
 
+        println("// prettier-ignore")
         println(
             "var sanctionedSimpleUnitIdentifiers = {};".format(sanctioned_units_object)
         )
 
-    sanctioned_cpp_file = os.path.join(
-        js_src_builtin_intl_dir, "MeasureUnitGenerated.h"
-    )
-    with io.open(sanctioned_cpp_file, mode="w", encoding="utf-8", newline="") as f:
+    sanctioned_h_file = os.path.join(intl_components_src_dir, "MeasureUnitGenerated.h")
+    with io.open(sanctioned_h_file, mode="w", encoding="utf-8", newline="") as f:
         println = partial(print, file=f)
 
         println(generatedFileWarning)
 
         println(
             """
-struct MeasureUnit {
+#ifndef intl_components_MeasureUnitGenerated_h
+#define intl_components_MeasureUnitGenerated_h
+
+namespace mozilla::intl {
+
+struct SimpleMeasureUnit {
   const char* const type;
   const char* const name;
 };
@@ -3614,7 +3623,7 @@ struct MeasureUnit {
  *
  * The list must be kept in alphabetical order of |name|.
  */
-inline constexpr MeasureUnit simpleMeasureUnits[] = {
+inline constexpr SimpleMeasureUnit simpleMeasureUnits[] = {
     // clang-format off"""
         )
 
@@ -3624,24 +3633,21 @@ inline constexpr MeasureUnit simpleMeasureUnits[] = {
         println(
             """
     // clang-format on
-};""".lstrip(
+};
+
+}  // namespace mozilla::intl
+
+#endif
+""".strip(
                 "\n"
             )
         )
-
-    shutil.copyfile(
-        sanctioned_cpp_file,
-        os.path.join(
-            js_src_builtin_intl_dir,
-            "../../../../intl/components/src/MeasureUnitGenerated.h",
-        ),
-    )
 
     writeUnitTestFiles(all_units, sanctioned_units)
 
 
 def writeUnitTestFiles(all_units, sanctioned_units):
-    """ Generate test files for unit number formatters. """
+    """Generate test files for unit number formatters."""
 
     js_src_builtin_intl_dir = os.path.dirname(os.path.abspath(__file__))
     test_dir = os.path.join(
@@ -3774,11 +3780,14 @@ for (const locale of locales) {
 
 
 def updateUnits(topsrcdir, args):
+    js_src_builtin_intl_dir = os.path.dirname(os.path.abspath(__file__))
     icu_path = os.path.join(topsrcdir, "intl", "icu")
     icu_unit_path = os.path.join(icu_path, "source", "data", "unit")
 
     with io.open(
-        "SanctionedSimpleUnitIdentifiers.yaml", mode="r", encoding="utf-8"
+        os.path.join(js_src_builtin_intl_dir, "SanctionedSimpleUnitIdentifiers.yaml"),
+        mode="r",
+        encoding="utf-8",
     ) as f:
         sanctioned_units = yaml.safe_load(f)
 
@@ -3989,10 +3998,15 @@ def writeNumberingSystemFiles(numbering_systems):
 
 
 def updateNumberingSystems(topsrcdir, args):
+    js_src_builtin_intl_dir = os.path.dirname(os.path.abspath(__file__))
     icu_path = os.path.join(topsrcdir, "intl", "icu")
     icu_misc_path = os.path.join(icu_path, "source", "data", "misc")
 
-    with io.open("NumberingSystems.yaml", mode="r", encoding="utf-8") as f:
+    with io.open(
+        os.path.join(js_src_builtin_intl_dir, "NumberingSystems.yaml"),
+        mode="r",
+        encoding="utf-8",
+    ) as f:
         numbering_systems = yaml.safe_load(f)
 
     # Read all possible ICU unit identifiers from the "misc/numberingSystems.txt" resource.
@@ -4025,10 +4039,10 @@ if __name__ == "__main__":
     import argparse
 
     # This script must reside in js/src/builtin/intl to work correctly.
-    (thisDir, thisFile) = os.path.split(os.path.abspath(sys.argv[0]))
+    (thisDir, thisFile) = os.path.split(os.path.abspath(__file__))
     dirPaths = os.path.normpath(thisDir).split(os.sep)
     if "/".join(dirPaths[-4:]) != "js/src/builtin/intl":
-        raise RuntimeError("%s must reside in js/src/builtin/intl" % sys.argv[0])
+        raise RuntimeError("%s must reside in js/src/builtin/intl" % __file__)
     topsrcdir = "/".join(dirPaths[:-4])
 
     def EnsureHttps(v):
@@ -4048,17 +4062,19 @@ if __name__ == "__main__":
     parser_cldr_tags.add_argument(
         "--url",
         metavar="URL",
-        default="https://unicode.org/Public/cldr/<VERSION>/core.zip",
+        default="https://unicode.org/Public/cldr/<VERSION>/cldr-common-<VERSION>.0.zip",
         type=EnsureHttps,
         help="Download url CLDR data (default: %(default)s)",
     )
     parser_cldr_tags.add_argument(
         "--out",
-        default="LanguageTagGenerated.cpp",
+        default=os.path.join(
+            topsrcdir, "intl", "components", "src", "LocaleGenerated.cpp"
+        ),
         help="Output file (default: %(default)s)",
     )
     parser_cldr_tags.add_argument(
-        "file", nargs="?", help="Local cldr-core.zip file, if omitted uses <URL>"
+        "file", nargs="?", help="Local cldr-common.zip file, if omitted uses <URL>"
     )
     parser_cldr_tags.set_defaults(func=updateCLDRLangTags)
 
@@ -4081,7 +4097,7 @@ if __name__ == "__main__":
     )
     parser_tz.add_argument(
         "--out",
-        default="TimeZoneDataGenerated.h",
+        default=os.path.join(thisDir, "TimeZoneDataGenerated.h"),
         help="Output file (default: %(default)s)",
     )
     parser_tz.set_defaults(func=partial(updateTzdata, topsrcdir))
@@ -4092,14 +4108,14 @@ if __name__ == "__main__":
     parser_currency.add_argument(
         "--url",
         metavar="URL",
-        default="https://www.currency-iso.org/dam/downloads/lists/list_one.xml",  # NOQA: E501
+        default="https://www.six-group.com/dam/download/financial-information/data-center/iso-currrency/lists/list-one.xml",  # NOQA: E501
         type=EnsureHttps,
         help="Download url for the currency & funds code list (default: "
         "%(default)s)",
     )
     parser_currency.add_argument(
         "--out",
-        default="CurrencyDataGenerated.js",
+        default=os.path.join(thisDir, "CurrencyDataGenerated.js"),
         help="Output file (default: %(default)s)",
     )
     parser_currency.add_argument(
@@ -4113,7 +4129,7 @@ if __name__ == "__main__":
     parser_units.set_defaults(func=partial(updateUnits, topsrcdir))
 
     parser_numbering_systems = subparsers.add_parser(
-        "numbering", help="Update numbering systems with simple " "digit mappings"
+        "numbering", help="Update numbering systems with simple digit mappings"
     )
     parser_numbering_systems.set_defaults(
         func=partial(updateNumberingSystems, topsrcdir)

@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Korisničko ime
 common-dialog-password =
     .value = Lozinka
+
+common-dialog-copy-cmd =
+    .label = Kopiraj
+    .accesskey = K
+common-dialog-select-all-cmd =
+    .label = Označi sve
+    .accesskey = s

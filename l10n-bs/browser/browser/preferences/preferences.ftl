@@ -45,13 +45,16 @@ restart-later = Restartuj kasnije
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = Ekstenzija, <img data-l10n-name="icon"/> { $name }, zahtijeva Container tabove.
 
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = Ekstenzija, <img data-l10n-name="icon"/> { $name }, upravlja kako se { -brand-short-name } konektuje na internet.
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -81,10 +84,6 @@ set-as-my-default-browser =
     .label = Učini glavnim…
     .accesskey = G
 
-startup-restore-previous-session =
-    .label = Vrati prethodnu sesiju
-    .accesskey = s
-
 disable-extension =
     .label = Onemogući ekstenziju
 
@@ -97,10 +96,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Otvori linkove u tabovima umjesto u novim prozorima
     .accesskey = p
-
-warn-on-close-multiple-tabs =
-    .label = Upozoriti vas kada zatvarate više tabova
-    .accesskey = o
 
 warn-on-open-many-tabs =
     .label = Upozoriti vas kada otvaranje više tabova može usporiti { -brand-short-name }
@@ -121,6 +116,10 @@ browser-containers-settings =
     .accesskey = t
 
 containers-disable-alert-title = Zatvoriti sve Container tabove?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Ukoliko sada onemogućite Container tabove, { $tabCount } container tab će biti zatvoren. Da li ste sigurni da želite onemogućiti Container tabove?
@@ -134,6 +133,9 @@ containers-disable-alert-ok-button =
         [few] Zatvori { $tabCount } Container tabova
        *[other] Zatvori { $tabCount } Container tabova
     }
+
+##
+
 containers-disable-alert-cancel-button = Ostavi omogućeno
 
 containers-remove-alert-title = Ukloniti ovaj Container?
@@ -150,12 +152,9 @@ containers-remove-alert-msg =
 containers-remove-ok-button = Ukloni ovaj Container
 containers-remove-cancel-button = Ne uklanjaj ovaj Container
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Jezik i izled
-
-fonts-and-colors-header = Fontovi & Boje
 
 default-font = Izvorni font:
     .accesskey = f
@@ -165,10 +164,6 @@ default-font-size = Veličina:
 advanced-fonts =
     .label = Napredno…
     .accesskey = a
-
-colors-settings =
-    .label = Boje…
-    .accesskey = o
 
 language-header = Jezik
 
@@ -200,8 +195,7 @@ files-and-applications-title = Fajlovi i aplikacije
 
 download-header = Preuzimanja
 
-download-save-to =
-    .label = Spasi fajlove u
+download-save-where = Spasi fajlove u
     .accesskey = v
 
 download-choose-folder =
@@ -399,11 +393,6 @@ home-new-windows-tabs-description2 = Izaberite šta želite vidjeti kada otvorit
 
 home-homepage-mode-label = Početna stranica i novi prozori
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Firefox Home (Izvorno)
-
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
 # standard CLDR forms, or only use the form for [other] if both strings should
@@ -422,17 +411,15 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Firefox početni sadržaj
-home-prefs-content-description = Odaberite koji sadržaj želite na vašem početnom ekranu Firefoxa.
-
 home-prefs-search-header =
     .label = Web pretraga
-home-prefs-topsites-header =
-    .label = Najposjećenije stranice
-home-prefs-topsites-description = Stranice koje najviše posjećujete
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 home-prefs-recommended-by-header =
     .label = Preporučeno od { $provider }
@@ -442,9 +429,6 @@ home-prefs-recommended-by-header =
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Sponzorisane priče
 
-home-prefs-highlights-header =
-    .label = Istaknuto
-home-prefs-highlights-description = Izbor stranica koje ste sačuvali ili posjetili
 home-prefs-highlights-option-visited-pages =
     .label = Posjećene stranice
 home-prefs-highlights-options-bookmarks =
@@ -460,7 +444,6 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Isječci
-home-prefs-snippets-description = Ažuriranja od Mozille i { -brand-product-name }a
 
 home-prefs-sections-rows-option =
     .label =
@@ -487,6 +470,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Prikazuj prijedloge za pretragu u rezultatima adresne trake
     .accesskey = l
+
 
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
@@ -536,6 +520,10 @@ containers-remove-button =
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
 sync-signedout-caption = Ponesite vaš Web sa vama
 
 # This message contains two links and two icon images.
@@ -550,14 +538,22 @@ sync-mobile-promo = Preuzmi Firefox za <img data-l10n-name="android-icon"/> <a d
 
 ## Firefox Account - Signed in
 
+
+## Firefox account - Signed in
+
 sync-profile-picture =
     .tooltiptext = Promijenite profilnu sliku
 
 sync-manage-account = Upravljanje računom
     .accesskey = o
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } nije potvrđen.
 sync-signedin-login-failure = Prijavite se za ponovno povezivanje { $email }
+
+##
 
 sync-resend-verification =
     .label = Ponovo pošalji verifikaciju
@@ -629,6 +625,16 @@ sync-device-name-save =
     .label = Spasi
     .accesskey = s
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Verifikacija poslana
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Verifikacijski link je poslan na { $email }.
+sync-verification-not-sent-title = Ne mogu poslati verifikaciju
+sync-verification-not-sent-body = Trenutno ne možemo poslati link za verifikaciju, molimo pokušajte kasnije.
+
 ## Privacy Section
 
 privacy-header = Privatnost browsera
@@ -668,7 +674,6 @@ forms-primary-pw-learn-more-link = Saznajte više
 forms-master-pw-change =
     .label = Promijeni glavnu lozinku…
     .accesskey = m
-
 forms-primary-pw-change =
     .label = Promijeni Primarnu lozinku…
     .accesskey = P
@@ -748,6 +753,9 @@ sitedata-settings =
     .label = Upravljanje podacima…
     .accesskey = m
 
+## Privacy Section - Cookie Banner Handling
+
+
 ## Privacy Section - Address Bar
 
 addressbar-header = Adresna traka
@@ -774,6 +782,9 @@ addressbar-suggestions-settings = Promijenite postavke prijedloga pretraživača
 
 
 ##
+
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
 
 ## Privacy Section - Tracking
@@ -811,10 +822,6 @@ permissions-notification-pause =
 permissions-block-popups =
     .label = Blokiraj pop-up prozore
     .accesskey = B
-
-permissions-block-popups-exceptions =
-    .label = Izuzeci…
-    .accesskey = e
 
 permissions-addon-install-warning =
     .label = Upozorava vas kada web stranice pokušaju instalirati add-one
@@ -885,9 +892,11 @@ certs-devices =
 ## Privacy Section - HTTPS-Only
 
 
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Desktop
 downloads-folder-name = Preuzimanja
 choose-download-folder-title = Izaberite direktorij za preuzimanja:
-

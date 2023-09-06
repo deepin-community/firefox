@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Ühenduse sätted
     .style =
         { PLATFORM() ->
-            [macos] width: 48em
-           *[other] width: 53em
+            [macos] min-width: 48em
+           *[other] min-width: 53em
         }
 
 connection-close-key =
@@ -35,7 +35,12 @@ connection-proxy-http = HTTP-puhverserver
     .accesskey = H
 connection-proxy-http-port = Port
     .accesskey = r
+connection-proxy-https-sharing =
+    .label = Seda puhverserverit kasutatakse ka HTTPSi jaoks
+    .accesskey = v
 
+connection-proxy-https = HTTPS-puhverserver
+    .accesskey = u
 connection-proxy-ssl-port = Port
     .accesskey = o
 
@@ -55,6 +60,9 @@ connection-proxy-noproxy = Erandid
 
 connection-proxy-noproxy-desc = Näide: .mozilla.org, .net.nz, 192.168.1.0/24
 
+# Do not translate "localhost", "127.0.0.1/8" and "::1". (You can translate "and".)
+connection-proxy-noproxy-localhost-desc-2 = Ühendusi järgnevatele aadressidele ei suunata kunagi puhverserverisse: localhost, 127.0.0.1/8 ja ::1.
+
 connection-proxy-autotype =
     .label = Puhverserveri automaatse häälestuse URL
     .accesskey = a
@@ -68,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = v
     .tooltip = Selle valiku korral autenditakse sind automaatselt puhverserveritega, mille parool on salvestatud. Parooli küsitakse juhul, kui autentimine ebaõnnestub.
 
+connection-proxy-autologin-checkbox =
+    .label = Salvestatud paroolide korral autentimist ei küsita
+    .accesskey = v
+    .tooltiptext = Selle valiku korral autenditakse sind automaatselt puhverserveritega, mille parool on salvestatud. Parooli küsitakse juhul, kui autentimine ebaõnnestub.
+
 connection-proxy-socks-remote-dns =
     .label = Puhverserveri DNS, kui kasutusel on SOCKS v5
     .accesskey = e
-
-connection-dns-over-https =
-    .label = Lubatakse DNS üle HTTPSi
-    .accesskey = D
-
-connection-dns-over-https-url-resolver = Teenusepakkuja
-    .accesskey = j
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

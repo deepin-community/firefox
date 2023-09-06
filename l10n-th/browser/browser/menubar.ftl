@@ -12,7 +12,7 @@
 ## Application Menu (macOS only)
 
 menu-application-preferences =
-    .label = ค่ากำหนด
+    .label = การกำหนดลักษณะ
 menu-application-services =
     .label = บริการ
 menu-application-hide-this =
@@ -38,20 +38,9 @@ menu-quit =
             [windows] อ
            *[other] อ
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = ออกจาก { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = ออกจาก { -brand-shorter-name }
-
 menu-about =
     .label = เกี่ยวกับ { -brand-shorter-name }
     .accesskey = ก
@@ -81,8 +70,14 @@ menu-file-open-location =
 menu-file-open-file =
     .label = เปิดไฟล์…
     .accesskey = ป
-menu-file-close =
-    .label = ปิด
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] ปิดแท็บ
+           *[other] ปิด { $tabCount } แท็บ
+        }
     .accesskey = ป
 menu-file-close-window =
     .label = ปิดหน้าต่าง
@@ -99,9 +94,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = ตั้งค่าหน้ากระดาษ…
     .accesskey = ร
-menu-file-print-preview =
-    .label = ตัวอย่างก่อนพิมพ์
-    .accesskey = ต
 menu-file-print =
     .label = พิมพ์…
     .accesskey = พ
@@ -188,6 +180,17 @@ menu-view-full-screen =
     .label = เต็มหน้าจอ
     .accesskey = จ
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = เข้าสู่มุมมองผู้อ่าน
+    .accesskey = ผ
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = ปิดมุมมองผู้อ่าน
+    .accesskey = ผ
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +219,9 @@ menu-history-undo-menu =
     .label = แท็บที่ปิดล่าสุด
 menu-history-undo-window-menu =
     .label = หน้าต่างที่ปิดล่าสุด
-menu-history-reopen-all-tabs = เปิดแท็บทั้งหมดใหม่
-menu-history-reopen-all-windows = เปิดหน้าต่างทั้งหมดใหม่
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = ค้นหาประวัติ
 
 ## Bookmarks Menu
 
@@ -226,10 +230,13 @@ menu-bookmarks-menu =
     .accesskey = ท
 menu-bookmarks-manage =
     .label = จัดการที่คั่นหน้า
-menu-bookmark-current-tab =
-    .label = เพิ่มที่คั่นหน้าแท็บปัจจุบัน
-menu-bookmark-edit =
-    .label = แก้ไขที่คั่นหน้านี้
+menu-bookmark-tab =
+    .label = เพิ่มที่คั่นหน้าสำหรับแท็บปัจจุบัน…
+menu-edit-bookmark =
+    .label = แก้ไขที่คั่นหน้านี้…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = ค้นหาที่คั่นหน้า
 menu-bookmarks-all-tabs =
     .label = เพิ่มที่คั่นหน้าสำหรับแท็บทั้งหมด…
 menu-bookmarks-toolbar =
@@ -248,7 +255,7 @@ menu-tools-downloads =
     .label = การดาวน์โหลด
     .accesskey = ด
 menu-tools-addons-and-themes =
-    .label = ส่วนเสริมและชุดตกแต่ง
+    .label = ส่วนเสริมและชุดรูปแบบ
     .accesskey = ส
 menu-tools-fxa-sign-in2 =
     .label = ลงชื่อเข้า
@@ -314,15 +321,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = ข
 menu-help-report-site-issue =
     .label = รายงานปัญหาไซต์…
-menu-help-feedback-page =
-    .label = ส่งข้อคิดเห็น…
-    .accesskey = ส
+menu-help-share-ideas =
+    .label = แบ่งปันแนวคิดและข้อเสนอแนะ…
+    .accesskey = S
 menu-help-enter-troubleshoot-mode2 =
     .label = โหมดแก้ไขปัญหา…
     .accesskey = ห
 menu-help-exit-troubleshoot-mode =
     .label = ปิดโหมดแก้ไขปัญหา
     .accesskey = ด
+menu-help-switch-device =
+    .label = การสลับไปยังอุปกรณ์ใหม่
+    .accesskey = ม
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

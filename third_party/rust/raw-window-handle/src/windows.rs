@@ -1,34 +1,71 @@
+use core::ffi::c_void;
 use core::ptr;
-use libc::c_void;
 
-/// Raw window handle for Windows.
+/// Raw display handle for Windows.
+///
+/// It could be used regardless of Windows window backend.
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::windows::WindowsHandle;
-/// let handle = WindowsHandle {
-///     /* fields */
-///     ..WindowsHandle::empty()
-/// };
+/// # use raw_window_handle::WindowsDisplayHandle;
+/// let mut display_handle = WindowsDisplayHandle::empty();
+/// /* set fields */
 /// ```
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WindowsHandle {
-    /// A Win32 HWND handle.
-    pub hwnd: *mut c_void,
-    /// The HINSTANCE associated with this type's HWND.
-    pub hinstance: *mut c_void,
-    #[doc(hidden)]
-    #[deprecated = "This field is used to ensure that this struct is non-exhaustive, so that it may be extended in the future. Do not refer to this field."]
-    pub _non_exhaustive_do_not_use: crate::seal::Seal,
+pub struct WindowsDisplayHandle;
+
+impl WindowsDisplayHandle {
+    pub fn empty() -> Self {
+        Self
+    }
 }
 
-impl WindowsHandle {
-    pub fn empty() -> WindowsHandle {
-        #[allow(deprecated)]
-        WindowsHandle {
+/// Raw window handle for Win32.
+///
+/// ## Construction
+/// ```
+/// # use raw_window_handle::Win32WindowHandle;
+/// let mut window_handle = Win32WindowHandle::empty();
+/// /* set fields */
+/// ```
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Win32WindowHandle {
+    /// A Win32 `HWND` handle.
+    pub hwnd: *mut c_void,
+    /// The `HINSTANCE` associated with this type's `HWND`.
+    pub hinstance: *mut c_void,
+}
+
+impl Win32WindowHandle {
+    pub fn empty() -> Self {
+        Self {
             hwnd: ptr::null_mut(),
             hinstance: ptr::null_mut(),
-            _non_exhaustive_do_not_use: crate::seal::Seal,
+        }
+    }
+}
+
+/// Raw window handle for WinRT.
+///
+/// ## Construction
+/// ```
+/// # use raw_window_handle::WinRtWindowHandle;
+/// let mut window_handle = WinRtWindowHandle::empty();
+/// /* set fields */
+/// ```
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct WinRtWindowHandle {
+    /// A WinRT `CoreWindow` handle.
+    pub core_window: *mut c_void,
+}
+
+impl WinRtWindowHandle {
+    pub fn empty() -> Self {
+        Self {
+            core_window: ptr::null_mut(),
         }
     }
 }

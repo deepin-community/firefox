@@ -43,15 +43,6 @@ menu-quit =
 menu-quit-mac =
     .label = Quit { -brand-shorter-name }
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Ootgang fae { -brand-shorter-name }
-
 menu-about =
     .label = Aboot { -brand-shorter-name }
     .accesskey = A
@@ -81,9 +72,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Open File…
     .accesskey = O
-menu-file-close =
-    .label = Sneck
-    .accesskey = C
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Sneck { $tabCount } Tabs
+            [one] Sneck Tab
+           *[other] Sneck Tabs
+        }
+    .accesskey = S
 menu-file-close-window =
     .label = Sneck Windae
     .accesskey = d
@@ -99,9 +97,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Page Setup…
     .accesskey = u
-menu-file-print-preview =
-    .label = Prent Preview
-    .accesskey = v
 menu-file-print =
     .label = Prent…
     .accesskey = P
@@ -188,6 +183,17 @@ menu-view-full-screen =
     .label = Hale Screen
     .accesskey = H
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Ingang Tae Reader View
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Sneck Reader View
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +222,6 @@ menu-history-undo-menu =
     .label = Recently Sneckit Tabs
 menu-history-undo-window-menu =
     .label = Recently Sneckit Windaes
-menu-history-reopen-all-tabs = Reopen Aw Tabs
-menu-history-reopen-all-windows = Reopen Aw Windaes
 
 ## Bookmarks Menu
 
@@ -226,10 +230,6 @@ menu-bookmarks-menu =
     .accesskey = B
 menu-bookmarks-manage =
     .label = Manage Buikmerks
-menu-bookmark-current-tab =
-    .label = Buikmerk Current Tab
-menu-bookmark-edit =
-    .label = Edit This Buikmerk
 menu-bookmarks-all-tabs =
     .label = Buikmerk Aw Tabs...
 menu-bookmarks-toolbar =
@@ -314,9 +314,6 @@ menu-help-more-troubleshooting-info =
     .accesskey = T
 menu-help-report-site-issue =
     .label = Report Site Issue…
-menu-help-feedback-page =
-    .label = Gie Feedback…
-    .accesskey = G
 menu-help-enter-troubleshoot-mode2 =
     .label = Fankle-fixin Mode…
     .accesskey = M

@@ -18,60 +18,40 @@ using namespace mozilla::a11y;
 extern "C" {
 
 static AtkHyperlink* getLinkCB(AtkHypertext* aText, gint aLinkIndex) {
-  AccessibleWrap* accWrap = GetAccessibleWrap(ATK_OBJECT(aText));
-  AtkObject* atkHyperLink = nullptr;
-  if (accWrap) {
-    HyperTextAccessible* hyperText = accWrap->AsHyperText();
-    NS_ENSURE_TRUE(hyperText, nullptr);
-
-    LocalAccessible* hyperLink = hyperText->LinkAt(aLinkIndex);
-    if (!hyperLink || !hyperLink->IsLink()) {
-      return nullptr;
+  if (Accessible* acc = GetInternalObj(ATK_OBJECT(aText))) {
+    if (HyperTextAccessibleBase* hyperText = acc->AsHyperTextBase()) {
+      Accessible* linkAcc = hyperText->LinkAt(aLinkIndex);
+      AtkObject* atkHyperLink = GetWrapperFor(linkAcc);
+      NS_ENSURE_TRUE(IS_MAI_OBJECT(atkHyperLink), nullptr);
+      return MAI_ATK_OBJECT(atkHyperLink)->GetAtkHyperlink();
     }
-
-    atkHyperLink = AccessibleWrap::GetAtkObject(hyperLink);
-  } else if (RemoteAccessible* proxy = GetProxy(ATK_OBJECT(aText))) {
-    RemoteAccessible* proxyLink = proxy->LinkAt(aLinkIndex);
-    if (!proxyLink) return nullptr;
-
-    atkHyperLink = GetWrapperFor(proxyLink);
   }
 
-  NS_ENSURE_TRUE(IS_MAI_OBJECT(atkHyperLink), nullptr);
-  return MAI_ATK_OBJECT(atkHyperLink)->GetAtkHyperlink();
+  return nullptr;
 }
 
 static gint getLinkCountCB(AtkHypertext* aText) {
-  AccessibleWrap* accWrap = GetAccessibleWrap(ATK_OBJECT(aText));
-  if (accWrap) {
-    HyperTextAccessible* hyperText = accWrap->AsHyperText();
-    NS_ENSURE_TRUE(hyperText, -1);
-    return hyperText->LinkCount();
+  if (Accessible* acc = GetInternalObj(ATK_OBJECT(aText))) {
+    if (HyperTextAccessibleBase* hyperText = acc->AsHyperTextBase()) {
+      return static_cast<gint>(hyperText->LinkCount());
+    }
   }
-
-  if (RemoteAccessible* proxy = GetProxy(ATK_OBJECT(aText))) {
-    return proxy->LinkCount();
-  }
-
   return -1;
 }
 
 static gint getLinkIndexCB(AtkHypertext* aText, gint aCharIndex) {
-  AccessibleWrap* accWrap = GetAccessibleWrap(ATK_OBJECT(aText));
-  if (accWrap) {
-    HyperTextAccessible* hyperText = accWrap->AsHyperText();
-    NS_ENSURE_TRUE(hyperText, -1);
-
-    return hyperText->LinkIndexAtOffset(aCharIndex);
+  Accessible* acc = GetInternalObj(ATK_OBJECT(aText));
+  if (!acc) {
+    return -1;
   }
-
-  if (RemoteAccessible* proxy = GetProxy(ATK_OBJECT(aText))) {
-    return proxy->LinkIndexAtOffset(aCharIndex);
+  HyperTextAccessibleBase* hyperText = acc->AsHyperTextBase();
+  if (!hyperText) {
+    return -1;
   }
+  return hyperText->LinkIndexAtOffset(aCharIndex);
+}
 
-  return -1;
-}
-}
+}  // extern "C"
 
 void hypertextInterfaceInitCB(AtkHypertextIface* aIface) {
   NS_ASSERTION(aIface, "no interface!");

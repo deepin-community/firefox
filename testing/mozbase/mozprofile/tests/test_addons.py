@@ -4,15 +4,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, unicode_literals
-
 import os
 import zipfile
 
+import mozprofile
 import mozunit
 import pytest
-
-import mozprofile
 from addon_stubs import generate_addon
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -259,7 +256,7 @@ def test_install_invalid_addons(tmpdir, am):
 
 @pytest.mark.xfail(reason="feature not implemented as part of AddonManger")
 def test_install_error(am):
-    """ Check install raises an error with an invalid addon"""
+    """Check install raises an error with an invalid addon"""
     temp_addon = generate_addon("test-addon-invalid-version@mozilla.org")
     # This should raise an error here
     with pytest.raises(Exception):

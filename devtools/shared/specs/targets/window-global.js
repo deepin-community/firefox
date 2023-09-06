@@ -9,13 +9,7 @@ const {
   RetVal,
   Option,
   Arg,
-} = require("devtools/shared/protocol");
-
-types.addDictType("windowGlobalTarget.attach", {
-  threadActor: "number",
-  javascriptEnabled: "nullable:boolean",
-  traits: "json",
-});
+} = require("resource://devtools/shared/protocol.js");
 
 types.addDictType("windowGlobalTarget.switchtoframe", {
   message: "string",
@@ -48,7 +42,6 @@ types.addDictType("windowGlobalTarget.reload", {
 types.addDictType("windowGlobalTarget.reconfigure", {
   cacheDisabled: "nullable:boolean",
   colorSchemeSimulation: "nullable:string",
-  paintFlashing: "nullable:boolean",
   printSimulationEnabled: "nullable:boolean",
   restoreFocus: "nullable:boolean",
   serviceWorkersTestingEnabled: "nullable:boolean",
@@ -58,15 +51,7 @@ const windowGlobalTargetSpecPrototype = {
   typeName: "windowGlobalTarget",
 
   methods: {
-    attach: {
-      request: {},
-      response: RetVal("windowGlobalTarget.attach"),
-    },
     detach: {
-      request: {},
-      response: {},
-    },
-    ensureCSSErrorReportingEnabled: {
       request: {},
       response: {},
     },
@@ -135,7 +120,6 @@ const windowGlobalTargetSpecPrototype = {
       type: "tabNavigated",
       url: Option(0, "string"),
       title: Option(0, "string"),
-      nativeConsoleAPI: Option(0, "boolean"),
       state: Option(0, "string"),
       isFrameSwitching: Option(0, "boolean"),
     },

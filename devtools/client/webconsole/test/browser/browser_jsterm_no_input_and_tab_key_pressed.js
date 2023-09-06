@@ -6,9 +6,9 @@
 // See Bug 583816.
 
 const TEST_URI =
-  "data:text/html,<meta charset=utf8>Testing jsterm with no input";
+  "data:text/html,<!DOCTYPE html><meta charset=utf8>Testing jsterm with no input";
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
   const jsterm = hud.jsterm;
 

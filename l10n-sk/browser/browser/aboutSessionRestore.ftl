@@ -47,5 +47,4 @@ welcome-back-restore-button =
 welcome-back-restore-all-label = Obnoviť všetky okná a karty
 welcome-back-restore-some-label = Obnoviť len zvolené karty
 
-welcome-back-page-info-link = Vaše doplnky a prispôsobenia boli odstránené a nastavenia prehliadača boli obnovené na ich predvolené hodnoty. Ak sa týmto váš problém nevyrieši, <a data-l10n-name="link-more">pozrite si ďalšie možné postupy riešenia.</a>.
-
+welcome-back-page-info-link = Vaše doplnky a prispôsobenia boli odstránené a nastavenia prehliadača boli obnovené na ich predvolené hodnoty. Ak sa týmto váš problém nevyrieši, <a data-l10n-name="link-more">pozrite si ďalšie možné postupy riešenia</a>.

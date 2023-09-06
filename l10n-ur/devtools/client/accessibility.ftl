@@ -13,6 +13,17 @@ accessibility-keyboard-header = کلیدی تختی
 
 ## Text entries that are used as text alternative for icons that depict accessibility isses.
 
+
+## These strings are used in the overlay displayed when running an audit in the accessibility panel
+
+accessibility-progress-initializing = شروع ہو رہا ہے…
+    .aria-valuetext = شروع ہو رہا ہے…
+
+accessibility-progress-finishing = ختم ہو رہا ہے…
+    .aria-valuetext = ختم ہو رہا ہے…
+
+## Text entries that are used as text alternative for icons that depict accessibility issues.
+
 accessibility-warning =
     .alt = انتباہ
 

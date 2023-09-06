@@ -2,9 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { EnableDelayHelper } = ChromeUtils.import(
-  "resource://gre/modules/SharedPromptUtils.jsm"
+const { EnableDelayHelper } = ChromeUtils.importESModule(
+  "resource://gre/modules/PromptUtils.sys.mjs"
 );
 
 let dialog = {
@@ -24,6 +23,8 @@ let dialog = {
 
     this._handlerInfo = handler.QueryInterface(Ci.nsIHandlerInfo);
     this._principal = principal?.QueryInterface(Ci.nsIPrincipal);
+    this._addonPolicy =
+      this._principal?.addonPolicy ?? this._principal?.contentScriptAddonPolicy;
     this._browsingContext = browsingContext;
     this._outArgs = outArgs.QueryInterface(Ci.nsIWritablePropertyBag);
     this._preferredHandlerName = preferredHandlerName;
@@ -44,9 +45,7 @@ let dialog = {
     }
 
     document.addEventListener("dialogaccept", () => this.onAccept());
-    document.mozSubdialogReady = this.initL10n().then(() => {
-      window.sizeToContent();
-    });
+    this.initL10n();
 
     this._delayHelper = new EnableDelayHelper({
       disableDialog: () => {
@@ -66,8 +65,12 @@ let dialog = {
    * If the triggering principal is null this method always returns false.
    */
   triggeringPrincipalIsTop() {
-    let topContentPrincipal = this._browsingContext?.top.embedderElement
-      ?.contentPrincipal;
+    if (!this._principal) {
+      return false;
+    }
+
+    let topContentPrincipal =
+      this._browsingContext?.top.embedderElement?.contentPrincipal;
     if (!topContentPrincipal) {
       return false;
     }
@@ -79,6 +82,13 @@ let dialog = {
    * the triggering principal and the preferred application handler.
    */
   get l10nDescriptionId() {
+    if (this._addonPolicy) {
+      if (this._preferredHandlerName) {
+        return "permission-dialog-description-extension-app";
+      }
+      return "permission-dialog-description-extension";
+    }
+
     if (this._principal?.schemeIs("file")) {
       if (this._preferredHandlerName) {
         return "permission-dialog-description-file-app";
@@ -87,8 +97,9 @@ let dialog = {
     }
 
     // We only show the website address if the request didn't come from the top
-    // level frame.
-    if (this._principal?.exposablePrePath && !this.triggeringPrincipalIsTop()) {
+    // level frame. If we can't get a host to display, fall back to the copy
+    // without host.
+    if (!this.triggeringPrincipalIsTop() && this.displayPrePath) {
       if (this._preferredHandlerName) {
         return "permission-dialog-description-host-app";
       }
@@ -112,13 +123,36 @@ let dialog = {
       return null;
     }
 
+    if (this._addonPolicy) {
+      return "permission-dialog-remember-extension";
+    }
     if (this._principal.schemeIs("file")) {
       return "permission-dialog-remember-file";
     }
     return "permission-dialog-remember";
   },
 
-  async initL10n() {
+  /**
+   * Computes the prePath to show in the prompt. It's the prePath of the site
+   * that wants to navigate to the external protocol.
+   * @returns {string|null} - prePath to show, or null if we can't derive an
+   * exposable prePath from the triggering principal.
+   */
+  get displayPrePath() {
+    if (!this._principal) {
+      return null;
+    }
+
+    // NullPrincipals don't expose a meaningful prePath. Instead use the
+    // precursorPrincipal, which the NullPrincipal was derived from.
+    if (this._principal.isNullPrincipal) {
+      return this._principal.precursorPrincipal?.exposablePrePath;
+    }
+
+    return this._principal?.exposablePrePath;
+  },
+
+  initL10n() {
     // The UI labels depend on whether we will show the application chooser next
     // or directly open the assigned protocol handler.
 
@@ -132,18 +166,18 @@ let dialog = {
       let descriptionExtra = document.getElementById("description-extra");
       descriptionExtra.hidden = false;
     }
+    let acceptButton = this._dialog.getButton("accept");
+    document.l10n.setAttributes(acceptButton, idAcceptButton);
 
     let description = document.getElementById("description");
 
-    document.l10n.pauseObserving();
-    let pendingElements = [description];
-
-    let host = this._principal?.exposablePrePath;
+    let host = this.displayPrePath;
     let scheme = this._handlerInfo.type;
 
     document.l10n.setAttributes(description, this.l10nDescriptionId, {
       host,
       scheme,
+      extension: this._addonPolicy?.name,
       appName: this._preferredHandlerName,
     });
 
@@ -153,26 +187,7 @@ let dialog = {
         host,
         scheme,
       });
-      pendingElements.push(checkboxLabel);
     }
-
-    // Set the dialog button labels.
-    // Ideally we would do this via attributes, however the <dialog> element
-    // does not support changing l10n ids on the fly.
-    let acceptButton = this._dialog.getButton("accept");
-    let [result] = await document.l10n.formatMessages([{ id: idAcceptButton }]);
-    result.attributes.forEach(attr => {
-      if (attr.name == "label") {
-        acceptButton.label = attr.value;
-      } else {
-        acceptButton.accessKey = attr.value;
-      }
-    });
-
-    document.l10n.resumeObserving();
-
-    await document.l10n.translateElements(pendingElements);
-    return document.l10n.ready;
   },
 
   onAccept() {

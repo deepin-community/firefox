@@ -17,6 +17,12 @@
 #include <limits>
 #include <stdint.h>
 
+extern mozilla::LogModule* GetMediaSourceLog();
+
+#define MSE_DEBUG(arg, ...)                                              \
+  DDMOZ_LOG(GetMediaSourceLog(), mozilla::LogLevel::Debug, "::%s: " arg, \
+            __func__, ##__VA_ARGS__)
+
 namespace mozilla {
 
 typedef TrackInfo::TrackType TrackType;
@@ -24,13 +30,15 @@ using media::TimeIntervals;
 using media::TimeUnit;
 
 MediaSourceDemuxer::MediaSourceDemuxer(AbstractThread* aAbstractMainThread)
-    : mTaskQueue(new TaskQueue(GetMediaThreadPool(MediaThreadType::SUPERVISOR),
-                               "MediaSourceDemuxer::mTaskQueue")),
+    : mTaskQueue(
+          TaskQueue::Create(GetMediaThreadPool(MediaThreadType::SUPERVISOR),
+                            "MediaSourceDemuxer::mTaskQueue")),
       mMonitor("MediaSourceDemuxer") {
   MOZ_ASSERT(NS_IsMainThread());
 }
 
 constexpr TimeUnit MediaSourceDemuxer::EOS_FUZZ;
+constexpr TimeUnit MediaSourceDemuxer::EOS_FUZZ_START;
 
 RefPtr<MediaSourceDemuxer::InitPromise> MediaSourceDemuxer::Init() {
   RefPtr<MediaSourceDemuxer> self = this;
@@ -230,20 +238,30 @@ MediaSourceDemuxer::~MediaSourceDemuxer() {
   mInitPromise.RejectIfExists(NS_ERROR_DOM_MEDIA_CANCELED, __func__);
 }
 
-void MediaSourceDemuxer::GetDebugInfo(dom::MediaSourceDemuxerDebugInfo& aInfo) {
+RefPtr<GenericPromise> MediaSourceDemuxer::GetDebugInfo(
+    dom::MediaSourceDemuxerDebugInfo& aInfo) const {
   MonitorAutoLock mon(mMonitor);
+  nsTArray<RefPtr<GenericPromise>> promises;
   if (mAudioTrack) {
-    mAudioTrack->GetDebugInfo(aInfo.mAudioTrack);
+    promises.AppendElement(mAudioTrack->RequestDebugInfo(aInfo.mAudioTrack));
   }
   if (mVideoTrack) {
-    mVideoTrack->GetDebugInfo(aInfo.mVideoTrack);
+    promises.AppendElement(mVideoTrack->RequestDebugInfo(aInfo.mVideoTrack));
   }
+  return GenericPromise::All(GetCurrentSerialEventTarget(), promises)
+      ->Then(
+          GetCurrentSerialEventTarget(), __func__,
+          []() { return GenericPromise::CreateAndResolve(true, __func__); },
+          [] {
+            return GenericPromise::CreateAndReject(NS_ERROR_FAILURE, __func__);
+          });
 }
 
 MediaSourceTrackDemuxer::MediaSourceTrackDemuxer(MediaSourceDemuxer* aParent,
                                                  TrackInfo::TrackType aType,
                                                  TrackBuffersManager* aManager)
     : mParent(aParent),
+      mTaskQueue(mParent->GetTaskQueue()),
       mType(aType),
       mMonitor("MediaSourceTrackDemuxer"),
       mManager(aManager),
@@ -261,7 +279,10 @@ MediaSourceTrackDemuxer::MediaSourceTrackDemuxer(MediaSourceDemuxer* aParent,
               // So we always seek 2112 frames
               ? (2112 * 1000000ULL /
                  mParent->GetTrackInfo(mType)->GetAsAudioInfo()->mRate)
-              : 0)) {}
+              : 0)) {
+  MOZ_ASSERT(mParent);
+  MOZ_ASSERT(mTaskQueue);
+}
 
 UniquePtr<TrackInfo> MediaSourceTrackDemuxer::GetInfo() const {
   return mParent->GetTrackInfo(mType)->Clone();
@@ -361,6 +382,12 @@ RefPtr<MediaSourceTrackDemuxer::SeekPromise> MediaSourceTrackDemuxer::DoSeek(
     seekTime = std::max(mManager->HighestStartTime(mType) - mPreRoll,
                         TimeUnit::Zero());
   }
+
+  MSE_DEBUG("DoSeek, original target=%" PRId64 "%s, seekTime=%" PRId64
+            "%s, buffered=%s",
+            aTime.ToMicroseconds(), aTime.ToString().get(),
+            seekTime.ToMicroseconds(), seekTime.ToString().get(),
+            DumpTimeRanges(buffered).get());
   if (!buffered.ContainsWithStrictEnd(seekTime)) {
     if (!buffered.ContainsWithStrictEnd(aTime)) {
       // We don't have the data to seek to.
@@ -374,6 +401,10 @@ RefPtr<MediaSourceTrackDemuxer::SeekPromise> MediaSourceTrackDemuxer::DoSeek(
     // the interval.
     TimeIntervals::IndexType index = buffered.Find(aTime);
     MOZ_ASSERT(index != TimeIntervals::NoIndex);
+    MSE_DEBUG("Can't find seekTime %" PRId64
+              " in the buffer range, use the earliest time %" PRId64,
+              seekTime.ToMicroseconds(),
+              buffered[index].mStart.ToMicroseconds());
     seekTime = buffered[index].mStart;
   }
   seekTime = mManager->Seek(mType, seekTime, MediaSourceDemuxer::EOS_FUZZ);
@@ -381,7 +412,9 @@ RefPtr<MediaSourceTrackDemuxer::SeekPromise> MediaSourceTrackDemuxer::DoSeek(
   RefPtr<MediaRawData> sample =
       mManager->GetSample(mType, TimeUnit::Zero(), result);
   MOZ_ASSERT(NS_SUCCEEDED(result) && sample);
-  mNextSample = Some(sample);
+  if (sample) {
+    mNextSample = Some(sample);
+  }
   mReset = false;
   {
     MonitorAutoLock mon(mMonitor);
@@ -402,15 +435,20 @@ MediaSourceTrackDemuxer::DoGetSamples(int32_t aNumSamples) {
 
   MOZ_ASSERT(OnTaskQueue());
   if (mReset) {
-    // If a seek (or reset) was recently performed, we ensure that the data
+    // If a reset was recently performed, we ensure that the data
     // we are about to retrieve is still available.
     TimeIntervals buffered = mManager->Buffered(mType);
-    buffered.SetFuzz(MediaSourceDemuxer::EOS_FUZZ / 2);
-
     if (buffered.IsEmpty() && mManager->IsEnded()) {
       return SamplesPromise::CreateAndReject(NS_ERROR_DOM_MEDIA_END_OF_STREAM,
                                              __func__);
     }
+
+    // We use a larger fuzz to determine the presentation start
+    // time than the fuzz we use to determine acceptable gaps between
+    // frames. This is needed to fix embedded video issues as seen in the wild
+    // from different muxed stream start times.
+    // See: https://www.w3.org/TR/media-source-2/#presentation-start-time
+    buffered.SetFuzz(MediaSourceDemuxer::EOS_FUZZ_START);
     if (!buffered.ContainsWithStrictEnd(TimeUnit::Zero())) {
       return SamplesPromise::CreateAndReject(
           NS_ERROR_DOM_MEDIA_WAITING_FOR_DATA, __func__);
@@ -436,12 +474,21 @@ MediaSourceTrackDemuxer::DoGetSamples(int32_t aNumSamples) {
       return SamplesPromise::CreateAndReject(result, __func__);
     }
   }
+  MOZ_DIAGNOSTIC_ASSERT(sample);
   RefPtr<SamplesHolder> samples = new SamplesHolder;
   samples->AppendSample(sample);
-  if (mNextRandomAccessPoint <= sample->mTime) {
-    MonitorAutoLock mon(mMonitor);
-    mNextRandomAccessPoint =
-        mManager->GetNextRandomAccessPoint(mType, MediaSourceDemuxer::EOS_FUZZ);
+  {
+    MonitorAutoLock mon(mMonitor);  // spurious warning will be given
+    // Diagnostic asserts for bug 1810396
+    MOZ_DIAGNOSTIC_ASSERT(sample, "Invalid sample pointer found!");
+    MOZ_DIAGNOSTIC_ASSERT(sample->HasValidTime(), "Invalid sample time found!");
+    if (!sample) {
+      return SamplesPromise::CreateAndReject(NS_ERROR_NULL_POINTER, __func__);
+    }
+    if (mNextRandomAccessPoint <= sample->mTime) {
+      mNextRandomAccessPoint = mManager->GetNextRandomAccessPoint(
+          mType, MediaSourceDemuxer::EOS_FUZZ);
+    }
   }
   return SamplesPromise::CreateAndResolve(samples, __func__);
 }
@@ -487,5 +534,7 @@ void MediaSourceTrackDemuxer::DetachManager() {
   MonitorAutoLock mon(mMonitor);
   mManager = nullptr;
 }
+
+#undef MSE_DEBUG
 
 }  // namespace mozilla

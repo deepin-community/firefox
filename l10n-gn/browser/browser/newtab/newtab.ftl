@@ -20,12 +20,12 @@ newtab-personalize-dialog-label =
 newtab-search-box-search-button =
     .title = Eheka
     .aria-label = Eheka
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-text = Eheka { $engine } ndive térã emoinge kundaharape
 newtab-search-box-handoff-text-no-engine = Eheka térã ehai kundaharape
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-input =
     .placeholder = Eheka { $engine } ndive térã emoinge kundaharape
     .title = Eheka { $engine } ndive térã emoinge kundaharape
@@ -34,10 +34,6 @@ newtab-search-box-handoff-input-no-engine =
     .placeholder = Eheka térã ehai kundaharape
     .title = Eheka térã ehai kundaharape
     .aria-label = Eheka térã ehai kundaharape
-newtab-search-box-search-the-web-input =
-    .placeholder = Ñandutivevépe Jeheka
-    .title = Ñandutivevépe Jeheka
-    .aria-label = Ñandutivevépe Jeheka
 newtab-search-box-text = Eheka ñandutípe
 newtab-search-box-input =
     .placeholder = Eheka ñandutípe
@@ -46,7 +42,6 @@ newtab-search-box-input =
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Embojuaju hekaha
-newtab-topsites-add-topsites-header = Tenda Pyahu Ojeikevéva
 newtab-topsites-add-shortcut-header = Mbopya’eha pyahu
 newtab-topsites-edit-topsites-header = Tenda Ojeikevéva Mbosako’i
 newtab-topsites-edit-shortcut-header = Mbopya’eha mbosako’i
@@ -59,7 +54,7 @@ newtab-topsites-url-input =
 newtab-topsites-url-validation = Oñeikotevẽ URL oiko porãva
 newtab-topsites-image-url-label = URL ra’anga ñemomba’etepyre
 newtab-topsites-use-image-link = Ta’anga ñemomba’etepyre…
-newtab-topsites-image-validation = Ta’anga nehenyhẽkuái. Eipuru peteĩ URL iñambuéva.
+newtab-topsites-image-validation = Ta’anga nehenyhẽkuái. Eiporu peteĩ URL iñambuéva.
 
 ## Top Sites - General form dialog buttons. These are verbs/actions.
 
@@ -91,7 +86,7 @@ newtab-dismiss-button-tooltip =
     .aria-label = Mboguete
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = Eike poravorãme
     .aria-label = Embojuruja poravorã { $title } peg̃uarã
@@ -146,7 +141,7 @@ newtab-menu-remove-download = Emboguepa tembiasakuégui
 newtab-menu-show-file =
     { PLATFORM() ->
         [macos] Ehechauka Finder-pe
-       *[other] Embojuruja ñongatuha guerekopýva
+       *[other] Embojuruja ñongatuha guerekopy
     }
 newtab-menu-open-file = Embojuruja marandurenda
 
@@ -162,16 +157,16 @@ newtab-label-saved = { -pocket-brand-name }-pe ñongatupyre
 newtab-label-download = Mboguejypyre
 # This string is used in the story cards to indicate sponsored content
 # Variables:
-#  $sponsorOrSource (String): This is the name of a company or their domain
+#   $sponsorOrSource (string) - The name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource } · Tepyme’ẽmbyre
 # This string is used at the bottom of story cards to indicate sponsored content
 # Variables:
-#  $sponsor (String): This is the name of a sponsor
+#   $sponsor (string) - The name of a sponsor
 newtab-label-sponsored-by = Ohepyme’ẽva { $sponsor }
 # This string is used under the image of story cards to indicate source and time to read
 # Variables:
-#  $source (String): This is the name of a company or their domain
-#  $timeToRead (Number): This is the estimated number of minutes to read this story
+#   $source (string) - The name of a company or their domain
+#   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } min
 
 ## Section Menu: These strings are displayed in the section context menu and are
@@ -198,10 +193,9 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = Tenda Ojehechavéva
-newtab-section-header-highlights = Mba’eporãitéva
 newtab-section-header-recent-activity = Tembiapo ramovegua
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } he’i ndéve reike hag̃ua
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
@@ -209,7 +203,7 @@ newtab-section-header-pocket = { $provider } he’i ndéve reike hag̃ua
 newtab-empty-section-highlights = Eñepyrũ eikundaha ha rohechaukáta ndéve mba’ehai, mba’erecharã oĩva ha ambue ñandutirenda reikeva’ekue ýrõ rembotechaukava’ekue.
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Ko’ág̃a reikuaapáma ipyahúva. Eikejey ag̃ave ápe eikuaávo mombe’upy pyahu { $provider } oikuave’ẽva ndéve. Ndaikatuvéima reha’ãrõ? Eiporavo peteĩ ñe’ẽmbyrã ha emoñe’ẽve oĩvéva ñande yvy ape ári.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -232,18 +226,13 @@ newtab-pocket-cta-button = Eguereko { -pocket-brand-name }
 newtab-pocket-cta-text = Eñongatu umi eipotáva tembiasakue { -pocket-brand-name }-pe ha emombarete ne akã ñemoñe’ẽ ha’evévape.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } ha’e { -brand-product-name } pehẽngue
 # A save to Pocket button that shows over the card thumbnail on hover.
-newtab-pocket-save-to-pocket = Eñongatu { -pocket-brand-name }-pe
-newtab-pocket-saved-to-pocket = Eñongatu { -pocket-brand-name }-pe
-# This is a button shown at the bottom of the Pocket section that loads more stories when clicked.
-newtab-pocket-load-more-stories-button = Emyanyhẽve tembiasakue
+newtab-pocket-save = Ñongatu
+newtab-pocket-saved = Ñongatupyre
 
-## Pocket Final Card Section.
-## This is for the final card in the Pocket grid.
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
-newtab-pocket-last-card-title = ¡Pejejokopa piko!
-newtab-pocket-last-card-desc = Ejujey eñemomanduve hag̃ua.
-newtab-pocket-last-card-image =
-    .alt = Ejujey eñemomanduve hag̃ua.
+newtab-pocket-onboarding-discover = Ehecha ñandutigua iporãvéva
+newtab-pocket-onboarding-cta = { -pocket-brand-name } ohecha hetaichagua ñemomarandu oguerukuaa hag̃ua tetepy maranduverã, py’aho ha jerovia añete ne kundahára rehe { -brand-product-name }.
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -255,6 +244,8 @@ newtab-error-fallback-refresh-link = Kuatiarogue mbopiro’y eñepyrũjey hag̃u
 
 newtab-custom-shortcuts-title = Jeike pya’eha
 newtab-custom-shortcuts-subtitle = Tenda eñongatúva térã eikeha
+# Variables
+#   $num (number) - Number of rows to display
 newtab-custom-row-selector =
     { $num ->
         [one] { $num } Mba’erysýi
@@ -264,6 +255,7 @@ newtab-custom-sponsored-sites = Jeike pya’eha jehepyme’ẽpyre
 newtab-custom-pocket-title = { -pocket-brand-name } oñe’ẽporãha
 newtab-custom-pocket-subtitle = Tetepy iporãva { -pocket-brand-name } oiporavopyre, { -brand-product-name } mba’éva pegua
 newtab-custom-pocket-sponsored = Tembiasakue jehepyme’ẽguáva
+newtab-custom-pocket-show-recent-saves = Ehechauka eñongaturamóva
 newtab-custom-recent-title = Tembiapo ramovegua
 newtab-custom-recent-subtitle = Tenda jeporavo ha tetepy ramovegua
 newtab-custom-close-button = Mboty

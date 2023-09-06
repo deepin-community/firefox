@@ -8,6 +8,8 @@ styleeditor-new-button =
 styleeditor-import-button =
     .tooltiptext = Tijik' pe chuqa' titz'aqatisäx jun rub'anikil ruxaq ri wuj
     .accesskey = T
+styleeditor-filter-input =
+    .placeholder = Kechayüx kib'anikil ruxaq
 styleeditor-visibility-toggle =
     .tooltiptext = Tijalwachïx rutz'etik ri rub'anikil ruxaq
     .accesskey = T
@@ -16,7 +18,7 @@ styleeditor-save-button = Tiyak
     .accesskey = T
 styleeditor-options-button =
     .tooltiptext = Taq rucha'oj ri kinuk'unel b'anikil
-styleeditor-media-rules = @q'ojom taq etab'äl
+styleeditor-at-rules = At-rules
 styleeditor-editor-textbox =
     .data-placeholder = Tatz'ib'aj CSS wawe'.
 styleeditor-no-stylesheet = Re ruxaq re' man k'o ta rub'anikil ruxaq.
@@ -25,3 +27,21 @@ styleeditor-open-link-new-tab =
     .label = Tijaq Ximonel pa K'ak'a' Ruwi'
 styleeditor-copy-url =
     .label = Tiwachib'ëx URL
+styleeditor-find =
+    .label = Tikanöx
+    .accesskey = T
+styleeditor-find-again =
+    .label = Tikanöx Chik
+    .accesskey = k
+styleeditor-go-to-line =
+    .label = Tik'o pa ri cholaj…
+    .accesskey = i
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } etab'äl
+       *[other] { $ruleCount } taq etab'äl.
+    }

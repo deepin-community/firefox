@@ -2,16 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# The following properties are under development, so they are not in this list.
-# FIXME: We should handle the developing properties properly by Bug 1577358:
-#    "backdrop-filter",
-#    "text-decoration-skip-ink",
-#    "column-span",
-#    "offset-distance",
-#    "offset-path",
-#    "offset-rotate",
-#    "offset",
-#    "text-underline-position",
 COUNTED_UNKNOWN_PROPERTIES = [
     "-webkit-font-smoothing",
     "-webkit-tap-highlight-color",
@@ -19,7 +9,6 @@ COUNTED_UNKNOWN_PROPERTIES = [
     "text-size-adjust",
     "-webkit-font-feature-settings",
     "-webkit-user-drag",
-    "-webkit-clip-path",
     "orphans",
     "widows",
     "-webkit-user-modify",
@@ -33,12 +22,10 @@ COUNTED_UNKNOWN_PROPERTIES = [
     "-webkit-print-color-adjust",
     "-webkit-mask-box-image",
     "-webkit-line-break",
-    "-webkit-text-security",
     "alignment-baseline",
     "-webkit-writing-mode",
     "baseline-shift",
     "-webkit-hyphenate-character",
-    "page",
     "-webkit-highlight",
     "background-repeat-x",
     "-webkit-padding-end",
@@ -74,7 +61,6 @@ COUNTED_UNKNOWN_PROPERTIES = [
     "-webkit-perspective-origin-y",
     "-webkit-margin-before-collapse",
     "-webkit-border-before-style",
-    "scroll-snap-stop",
     "-webkit-margin-bottom-collapse",
     "-webkit-ruby-position",
     "-webkit-column-break-after",
@@ -121,5 +107,5 @@ COUNTED_UNKNOWN_PROPERTIES = [
     "-webkit-columns",
     "-webkit-column-rule-color",
     "-webkit-shape-margin",
-    "content-visibility",
+    "zoom",
 ]

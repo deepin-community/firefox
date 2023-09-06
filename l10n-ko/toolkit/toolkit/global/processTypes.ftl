@@ -22,13 +22,13 @@ process-type-extension = 확장
 # process used to open file:// URLs
 process-type-file = 로컬 파일
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = 대량 할당
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = 격리된 웹 콘텐츠
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = 격리된 Service Worker
 
 # process preallocated; may change to other types
 process-type-prealloc = 사전 할당
@@ -49,6 +49,9 @@ process-type-socket = 소켓
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = 샌드박스 IPC 액터
 
 ##
 ## Other

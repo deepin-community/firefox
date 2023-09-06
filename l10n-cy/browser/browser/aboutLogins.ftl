@@ -5,12 +5,12 @@
 
 about-logins-page-title = Mewngofnodion a Chyfrineiriau
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Chwilio Mewngofnodion
+    .key = F
 
-create-login-button = Creu Mewngofnod Newydd
+create-new-login-button =
+    .title = Creu mewngofnod newydd
 
 fxaccounts-sign-in-text = Defnyddiwch eich cyfrineiriau ar eich dyfeisiau eraill
 fxaccounts-sign-in-sync-button = Mewngofnodi i gydweddu
@@ -37,6 +37,8 @@ about-logins-menu-menuitem-help = Cymorth
 
 login-list =
     .aria-label = Mewngofnodi yn cyfateb i ymholiad chwilio
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [zero] { $count } mewngofnod
@@ -45,6 +47,18 @@ login-list-count =
         [few] { $count } mewngofnod
         [many] { $count } mewngofnod
        *[other] { $count } mewngofnod
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [zero] { $count } o { $total } mewngofnod
+        [one] { $count } o { $total } mewngofnod
+        [two] { $count } o { $total } mewngofnod
+        [few] { $count } o { $total } mewngofnod
+        [many] { $count } o { $total } mewngofnod
+       *[other] { $count } o { $total } mewngofnod
     }
 login-list-sort-label-text = Trefnu yn ôl
 login-list-name-option = Enw (A-Z)
@@ -65,7 +79,6 @@ about-logins-list-item-breach-icon =
     .title = Gwefan wedi dioddef tor-data
 about-logins-list-item-vulnerable-password-icon =
     .title = Cyfrinair bregus
-
 about-logins-list-section-breach = Gwefannau wedi dioddef tor-data
 about-logins-list-section-vulnerable = Cyfrinair bregus
 about-logins-list-section-nothing = Dim rhybudd
@@ -80,8 +93,8 @@ about-logins-login-intro-heading-logged-in = Heb ganfod mewngofnodion wedi'u cyd
 login-intro-description = Os gwnaethoch gadw eich mewngofnodion i { -brand-product-name } ar ddyfais wahanol, dyma sut i'w cael yma:
 login-intro-instructions-fxa = Crëwch neu fewngofnodwch i'ch cyfrif { -fxaccount-brand-name } ar y ddyfais lle mae'ch mewngofnodion yn cael eu cadw
 login-intro-instructions-fxa-settings = Ewch i Gosodiadau > Sync > Cychwyn cydweddu... Dewiswch y blwch ticio Mewngofnodi a chyfrineiriau.
-login-intro-instructions-fxa-help = Ewch i <a data-l10n-name="help-link">Gefnogaeth { -lockwise-brand-short-name }</a> i gael rhagor o gymorth
-about-logins-intro-import = Os yw eich mewngofnodion yn cael eu cadw mewn porwr arall, gallwch <a data-l10n-name="import-link">eu mewnforio i { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = Ewch i <a data-l10n-name="passwords-help-link">cefnogaeth cyfrineiriau</a> i gael rhagor o gymorth.
+about-logins-intro-browser-only-import = Os yw eich mewngofnodion yn cael eu cadw mewn porwr arall, gallwch <a data-l10n-name="import-link">eu mewnforio i { -brand-product-name }</a>
 about-logins-intro-import2 = Os yw eich mewngofnodion wedi'u cadw y tu allan i { -brand-product-name }, gallwch <a data-l10n-name="import-browser-link">eu mewnforio o borwr arall</a> neu <a data-l10n-name="import-file-link">o ffeil</a>
 
 ## Login
@@ -106,9 +119,17 @@ login-item-copied-password-button-text = Copïwyd
 login-item-save-changes-button = Cadw Newidiadau
 login-item-save-new-button = Cadw
 login-item-cancel-button = Diddymu
-login-item-time-changed = Newidiwyd ddiwethaf: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Crëwyd: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Defnyddiwyd ddiwethaf: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Crëwyd
+login-item-timeline-action-updated = Diweddarwyd
+login-item-timeline-action-used = Defnyddiwyd
 
 ## OS Authentication dialog
 
@@ -136,8 +157,6 @@ about-logins-copy-password-os-auth-dialog-message-win = I gopïo'ch cyfrinair, r
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = copïo'r cyfrinair sydd wedi'i gadw
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = I allforio'ch mewngofnodion, nodwch eich manylion mewngofnodi Windows. Mae hyn yn helpu i amddiffyn diogelwch eich cyfrifon.
 # This message can be seen when attempting to export a password in about:logins
@@ -151,8 +170,6 @@ master-password-reload-button =
     .label = Mewngofnodi
     .accesskey = M
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Diddymu
@@ -162,6 +179,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Tynnu'r mewngofnod?
 confirm-delete-dialog-message = Nid oes modd dadwneud y weithred hon.
 about-logins-confirm-remove-dialog-confirm-button = Tynnu
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -225,6 +245,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Bydd hyn yn tynnu'r holl fewngofnodion rydych wedi'u cadw i { -brand-short-name } ar bob dyfais sy'n cael ei gydweddu i'ch { -fxaccount-brand-name }. Bydd hyn hefyd yn dileu rhybuddion tor-data sy'n ymddangos yma. Nid oes modd i chi ddadwneud y weithred hon.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Allforio mewngofnodion a chyfrineiriau
 about-logins-confirm-export-dialog-message = Bydd eich cyfrineiriau'n cael eu cadw fel testun darllenadwy (e.e. BadP@ssw0rd) fel y gall unrhyw un sy'n gallu agor y ffeil a allforiwyd eu gweld.
 about-logins-confirm-export-dialog-confirm-button = Allforio…
@@ -244,7 +266,6 @@ about-logins-breach-alert-date = Digwyddodd y tor-data hwn ar { DATETIME($date, 
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Mynd i { $hostname }
-about-logins-breach-alert-learn-more-link = Dysgu rhagor
 
 ## Vulnerable Password notification
 

@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Профильді жасау шебері
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Басы
-       *[other] { create-profile-window.title } өніміне қош келдіңіз
+       *[other] { create-profile-window2.title } өніміне қош келдіңіз
     }
 
 profile-creation-explanation-1 = { -brand-short-name } сіздің баптаулар, бетбелгілер туралы және т.б. ақпаратты жеке профиліңізде сақтайды.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Аяқталуы
-       *[other] { create-profile-window.title } жұмысының аяқталуы
+       *[other] { create-profile-window2.title } жұмысының аяқталуы
     }
 
 profile-creation-intro = Егер сізде бірнеше профиль бар болса, оларды атау арқылы ажырата аласыз. Өзіңіз атап көріңіз, немесе төменде көрсетілгенді қолдана аласыз.

@@ -67,22 +67,20 @@ cryptominer-tab-content = Elymynta, co używajōm siyły rachowanio twojigo kōm
 protections-close-button2 =
     .aria-label = Zawrzij
     .title = Zawrzij
-  
+
 mobile-app-title = Szperuj śledzōnce reklamy na roztōmajtych maszinach
 mobile-app-card-content = Używej mobilniokowyj przeglōndarki ze wbudowanōm ôchrōnōm ôd śledzōncych reklam.
 mobile-app-links = Przeglōndarka { -brand-product-name } na <a data-l10n-name="android-mobile-inline-link">Android</a> i <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Już nigdy niy zapōmnij hasła
-lockwise-title-logged-in2 = Regiyrowanie hasłami
-lockwise-header-content = { -lockwise-brand-name } bezpiecznie schranio twoje hasła w przeglōndarce.
+passwords-title-logged-in = Regiyruj hasłami
+passwords-header-content = { -brand-product-name } bezpiecznie schranio twoje hasła w przeglōndarce.
 lockwise-header-content-logged-in = Bezpiecznie schranio i synchrōnizuje hasła na wszyskich twojich maszinach.
-protection-report-save-passwords-button = Spamiyntej hasła
-    .title = Spamiyntej hasła na { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Regiyruj hasłami
-    .title = Regiyruj haslami na { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Weź swoje hasła wszyńdzie
-lockwise-no-logins-card-content = Używej haseł spamiyntanych w { -brand-short-name(case: "loc") } na kożdyj maszinie.
-lockwise-app-links = { -lockwise-brand-name } na <a data-l10n-name="lockwise-android-inline-link">Android</a> and <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Spamiyntej hasła
+    .title = Spamiyntej hasła
+protection-report-passwords-manage-passwords-button = Regiyruj hasłami
+    .title = Regiyruj hasłami
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

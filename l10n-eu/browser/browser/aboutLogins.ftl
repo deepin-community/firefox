@@ -5,12 +5,12 @@
 
 about-logins-page-title = Saio-hasierak eta pasahitzak
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Bilatu saio-hasierak
+    .key = F
 
-create-login-button = Sortu saio-hasiera berria
+create-new-login-button =
+    .title = Sortu saio-hasiera berria
 
 fxaccounts-sign-in-text = Eskuratu zure pasahitzak zure beste gailuetan
 fxaccounts-sign-in-sync-button = Hasi saioa sinkronizatzeko
@@ -37,10 +37,20 @@ about-logins-menu-menuitem-help = Laguntza
 
 login-list =
     .aria-label = Bilaketarekin bat datozen saio-hasierak
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] Saio-hasiera bat
        *[other] { $count } saio-hasiera
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $total } / { $count } saio-hasiera
+       *[other] { $total } / { $count } saio-hasiera
     }
 login-list-sort-label-text = Ordenatze-irizpidea:
 login-list-name-option = Izena (A-Z)
@@ -61,7 +71,6 @@ about-logins-list-item-breach-icon =
     .title = Datu-urratzea izandako webgunea
 about-logins-list-item-vulnerable-password-icon =
     .title = Pasahitz ahula
-
 about-logins-list-section-breach = Datu-urratzea izandako webguneak
 about-logins-list-section-vulnerable = Pasahitz ahulak
 about-logins-list-section-nothing = Alertarik ez
@@ -76,8 +85,8 @@ about-logins-login-intro-heading-logged-in = Ez da sinkronizatuta saio-hasierari
 login-intro-description = Saio-hasierarik gorde baduzu beste gailu bateko { -brand-product-name }(e)n, jarraian dituzu hauek hemen eskuratzeko urratsak:
 login-intro-instructions-fxa = Sortu edo hasi saioa zure { -fxaccount-brand-name(kasua: "n") } saio-hasierak gordeta dituzun gailuan
 login-intro-instructions-fxa-settings = Zoaz Ezarpenak > Sinkronizazioa > Gaitu sinkronizazioa… menu-aukerara eta hautatu 'Saio-hasierak eta pasahitzak' kontrol-laukia.
-login-intro-instructions-fxa-help = Laguntza jasotzeko, bisitatu <a data-l10n-name="help-link">{ -lockwise-brand-short-name } laguntza</a>.
-about-logins-intro-import = Zure saio-hasierak beste nabigatzaile batean gordeta badituzu, <a data-l10n-name="import-link">{ -lockwise-brand-short-name }(e)n inporta ditzakezu</a>
+login-intro-instructions-fxa-passwords-help = Laguntza gehiagorako, bisitatu <a data-l10n-name="passwords-help-link">pasahitzen laguntza</a>.
+about-logins-intro-browser-only-import = Zure saio-hasierak beste nabigatzaile batean gordeta badituzu, <a data-l10n-name="import-link">{ -brand-product-name }(e)n inporta ditzakezu</a>
 about-logins-intro-import2 = Zure saio-hasierak { -brand-product-name }(e)tik kanpo badaude gordeta, <a data-l10n-name="import-browser-link">beste nabigatzaile batetik</a> edo <a data-l10n-name="import-file-link">fitxategi batetik</a> inporta ditzakezu
 
 ## Login
@@ -102,9 +111,17 @@ login-item-copied-password-button-text = Kopiatuta!
 login-item-save-changes-button = Gorde aldaketak
 login-item-save-new-button = Gorde
 login-item-cancel-button = Utzi
-login-item-time-changed = Azken aldaketa: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Sortuta: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Azken erabilera: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Sortuta
+login-item-timeline-action-updated = Eguneratua
+login-item-timeline-action-used = Erabilita
 
 ## OS Authentication dialog
 
@@ -132,8 +149,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Zure pasahitza kopiatzek
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = kopiatu gordetako pasahitza
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Zure saio-hasierak esportatzeko, idatzi Windowseko zure saio-hasiera kredentzialak. Zure kontuen segurtasuna babesten laguntzen du honek.
 # This message can be seen when attempting to export a password in about:logins
@@ -147,8 +162,6 @@ master-password-reload-button =
     .label = Hasi saioa
     .accesskey = H
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Utzi
@@ -158,6 +171,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Kendu saio-hasiera hau?
 confirm-delete-dialog-message = Ekintza hau ezin da desegin.
 about-logins-confirm-remove-dialog-confirm-button = Kendu
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -195,12 +211,14 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Honekin, { -brand-short-name }(e)n gordetako saio-hasiera guztiak { -fxaccount-brand-name(kasua: "0") } bidez sinkronizatutako gailu guztietatik kenduko da. Hemen agertzen diren urratzeen inguruko abisuak ere kenduko ditu honek. Ekintza hau ezingo duzu desegin.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Esportatu saio-hasierak eta pasahitzak
 about-logins-confirm-export-dialog-message = Zure pasahitzak testu irakurgarri modura gordeko dira (adib. P@sahitz3skas4) beraz esportatutako fitxategia ireki dezakeen orok ikusi ahal izango ditu.
 about-logins-confirm-export-dialog-confirm-button = Esportatu…
 
 about-logins-alert-import-title = Inportazioa burutu da
-about-logins-alert-import-message = Ikusi inportazioaren laburpen xehetua
+about-logins-alert-import-message = Ikusi inportazioaren laburpen xehatua
 
 confirm-discard-changes-dialog-title = Baztertu gorde gabeko aldaketak?
 confirm-discard-changes-dialog-message = Gorde gabeko aldaketa guztiak galdu egingo dira.
@@ -214,7 +232,6 @@ about-logins-breach-alert-date = Datu-urratzea data honetan gertatu zen { DATETI
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Joan { $hostname } ostalarira
-about-logins-breach-alert-learn-more-link = Argibide gehiago
 
 ## Vulnerable Password notification
 

@@ -87,25 +87,36 @@ restart-later = Resztartuj niyskorzij
 ## Variables:
 ##   $name (String): name of the extension
 
+
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
+
 # This string is shown to notify the user that the password manager setting
 # is being controlled by an extension
-extension-controlled-password-saving = Rozszyrzynie <img data-l10n-name="icon"/> { $name } kōntroluje te nasztalowanie.
+extension-controlling-password-saving = <img data-l10n-name="icon"/><strong>{ $name }</strong> kōntroluje tyn sztalōnek.
 
 # This string is shown to notify the user that their notifications permission
 # is being controlled by an extension.
-extension-controlled-web-notifications = Rozszyrzynie <img data-l10n-name="icon"/> { $name } kōntroluje te nasztalowanie.
+extension-controlling-web-notifications = <img data-l10n-name="icon"/><strong>{ $name }</strong> kōntroluje tyn sztalōnek.
 
 # This string is shown to notify the user that Container Tabs
 # are being enabled by an extension.
-extension-controlled-privacy-containers = Rozszyrzynie <img data-l10n-name="icon"/> { $name } potrzebuje kōntynerowych kart.
+extension-controlling-privacy-containers = <img data-l10n-name="icon"/><strong>{ $name }</strong> potrzebuje kōntenerowych kart.
 
 # This string is shown to notify the user that their content blocking "All Detected Trackers"
 # preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = Rozszyrzynie <img data-l10n-name="icon"/> { $name } kōntroluje te nasztalowanie.
+extension-controlling-websites-content-blocking-all-trackers = <img data-l10n-name="icon"/><strong>{ $name }</strong> kōntroluje tyn sztalōnek.
 
 # This string is shown to notify the user that their proxy configuration preferences
 # are being controlled by an extension.
-extension-controlled-proxy-config = Rozszyrzynie <img data-l10n-name="icon"/> { $name } kōntroluje, jako { -brand-short-name } sie łōnczy z internetym.
+extension-controlling-proxy-config = <img data-l10n-name ="icon"/> <strong>{ $name }</strong> kōntroluje, jak aplikacyjo { -brand-short-name } łōnczy sie z internetym.
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -138,8 +149,8 @@ set-as-my-default-browser =
     .label = Nasztaluj za bazowo…
     .accesskey = B
 
-startup-restore-previous-session =
-    .label = Wrōć ôstatnio sesyjo
+startup-restore-windows-and-tabs =
+    .label = Ôtwōrz ôkna i karty z ôstatnigo razu
     .accesskey = s
 
 startup-restore-warn-on-quit =
@@ -158,9 +169,18 @@ open-new-link-as-tabs =
     .label = Ôtwiyrej linki w kartach, a niy we nowych ôknach
     .accesskey = w
 
-warn-on-close-multiple-tabs =
-    .label = Dej znać przi zawiyraniu mocki kart
-    .accesskey = m
+confirm-on-close-multiple-tabs =
+    .label = Pytej przi zawiyraniu wielu kart
+    .accesskey = P
+
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (String) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+confirm-on-quit-with-key =
+    .label = Przitupluj przed zawarciym aplikacyji z { $quitKey }
+    .accesskey = p
 
 warn-on-open-many-tabs =
     .label = Dej znać, jak ôtwarcie mocki kart może spōmalić { -brand-short-name }
@@ -185,6 +205,10 @@ browser-containers-settings =
     .accesskey = i
 
 containers-disable-alert-title = Zawrzić wszyskie kōntynerowe karty?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Jak teroz zastawisz kōntynerowe karty, { $tabCount } tako karta sie zawrze. Na zicher chcesz zastawić kōntynerowe karty?
@@ -198,6 +222,9 @@ containers-disable-alert-ok-button =
         [few] Zawrzij { $tabCount } kōntynerowe karty
        *[many] Zawrzij { $tabCount } kōntynerowych kart
     }
+
+##
+
 containers-disable-alert-cancel-button = Ôstow załōnczōne
 
 containers-remove-alert-title = Wyciepać tyn kōntyner?
@@ -214,12 +241,45 @@ containers-remove-alert-msg =
 containers-remove-ok-button = Wyciep tyn kōntyner
 containers-remove-cancel-button = Niy wyciepuj tego kōntynera
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Godki i wyglōnd
 
-fonts-and-colors-header = Fōnty i farby
+preferences-web-appearance-header = Wyglōnd strōn
+
+preferences-web-appearance-description = Niykere strōny przipasowujōm swoje schymaty farbōw do twojich preferyncyji. Ôbier, kery schymat farbōw chcesz mieć na takich strōnach.
+
+preferences-web-appearance-choice-light = Jasny
+preferences-web-appearance-choice-dark = Ćmawy
+
+preferences-web-appearance-choice-tooltip-light =
+    .title = Używej jasnego wyglōndu zadku i zawartości strōn.
+preferences-web-appearance-choice-tooltip-dark =
+    .title = Używej ćmawego wyglōndu zadku i zawartości strōn.
+
+preferences-web-appearance-choice-input-light =
+    .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
+
+preferences-web-appearance-choice-input-dark =
+    .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning = Sztalōnki farbōw nadpisujōm wyglōnd strōny. <a data-l10n-name="colors-link">Regiyruj farbami</a>
+
+# This message contains one link. It can be moved within the sentence as needed
+# to adapt to your language, but should not be changed.
+preferences-web-appearance-footer = Regiyruj motywami aplikacyje { -brand-short-name } w <a data-l10n-name="themes-link">Rozszyrzynia i motywy</a>
+
+preferences-colors-header = Farby
+
+preferences-colors-description = Nadpisuj bazowe farby aplikacyje { -brand-short-name } do tekstu, zadkōw strōn i linkōw.
+
+preferences-colors-manage-button =
+    .label = Regiyruj farbami…
+    .accesskey = R
+
+preferences-fonts-header = Fōnty
 
 default-font = Bazowy fōnt
     .accesskey = B
@@ -229,10 +289,6 @@ default-font-size = Srogość
 advanced-fonts =
     .label = Rozszyrzōne…
     .accesskey = R
-
-colors-settings =
-    .label = Farby…
-    .accesskey = F
 
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Srogość strōn
@@ -266,6 +322,8 @@ translate-web-pages =
     .label = Przekłodanie strōn
     .accesskey = P
 
+fx-translate-web-pages = { -translations-brand-name }
+
 # The <img> element is replaced by the logo of the provider
 # used to provide machine translations for web pages.
 translate-attribution = Przekłady ôd <img data-l10n-name="logo"/>
@@ -289,8 +347,7 @@ files-and-applications-title = Zbiory i aplikacyje
 
 download-header = Pobrania
 
-download-save-to =
-    .label = Spamiyntuj zbiory do
+download-save-where = Spamiyntuj zbiory do
     .accesskey = v
 
 download-choose-folder =
@@ -404,6 +461,16 @@ applications-use-os-default-label =
 
 ##
 
+applications-handle-new-file-types-description = Co { -brand-short-name } mo zrobić z inkszymi zbiorami?
+
+applications-save-for-new-types =
+    .label = Spamiyntej zbiory
+    .accesskey = S
+
+applications-ask-before-handling =
+    .label = Pytej sie, jeźli ôdewrzić abo spamiyntać zbiōr
+    .accesskey = P
+
 drm-content-header = Zawartość Digital Rights Management (DRM)
 
 play-drm-content =
@@ -446,7 +513,11 @@ update-application-use-service =
     .label = Używej usugi, co funguje na zadku, coby zainsztalować aktualizacyje
     .accesskey = z
 
-update-setting-write-failure-title2 = Feler przi spamiyntywaniu sztalōnkōw aktualizacyji
+update-application-suppress-prompts =
+    .label = Pokozuj mynij powiadōmiyń ô aktualizacyjach
+    .accesskey = m
+
+update-setting-write-failure-title2 = Feler przi spamiyntowaniu sztalōnkōw aktualizacyji
 
 # Variables:
 #   $path (String) - Path to the configuration file
@@ -504,6 +575,10 @@ browsing-use-autoscroll =
 browsing-use-smooth-scrolling =
     .label = Używej miynkigo przesuwanio
     .accesskey = m
+
+browsing-gtk-use-non-overlay-scrollbars =
+    .label = Zawdy pokazuj poski przewijanio
+    .accesskey = o
 
 browsing-use-onscreen-keyboard =
     .label = Jak trza, pokazuj tastatura do tykanio
@@ -566,16 +641,11 @@ home-restore-defaults =
     .label = Wrōć bazowe
     .accesskey = W
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Dōmowo strōna Firefoxa (bazowe)
-
 home-mode-choice-custom =
     .label = Włosne adresy…
 
 home-mode-choice-blank =
-    .label = Prōżno strōna
+    .label = Prōzno strōna
 
 home-homepage-custom-url =
     .placeholder = Wraź adresa URL…
@@ -600,17 +670,8 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Zawartość dōmowyj strōny Firefoxa
-home-prefs-content-description = Ôbier, co chcesz mieć na dōmowyj strōnie Firefoxa.
-
 home-prefs-search-header =
     .label = Szukanie w necu
-home-prefs-topsites-header =
-    .label = Topowe strōny
-home-prefs-topsites-description = Strōny, co je nojczyńścij nawiydzosz
-
-home-prefs-topsites-by-option-sponsored =
-    .label = Spōnsorowane topowe strōny
 home-prefs-shortcuts-header =
     .label = Skrōty
 home-prefs-shortcuts-description = Spamiyntane i nawiydzane strōny
@@ -620,9 +681,12 @@ home-prefs-shortcuts-by-option-sponsored =
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+
 home-prefs-recommended-by-header =
     .label = Rykōmyndowane ôd { $provider }
-home-prefs-recommended-by-description-update = Niyôbyczajno zawartość z cołkigo internetu, ôbrano ôd { $provider }
 home-prefs-recommended-by-description-new = Ekstra zawartość ôbrano ôd { $provider }, co je we familiji { -brand-product-name }
 
 ##
@@ -631,9 +695,6 @@ home-prefs-recommended-by-learn-more = Jak to funguje
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Spōnsorowane nowiny
 
-home-prefs-highlights-header =
-    .label = Szumne
-home-prefs-highlights-description = Wybōr ze spamiyntanych i nawiydzōnych strōn
 home-prefs-highlights-option-visited-pages =
     .label = Nawiedzōne strōny
 home-prefs-highlights-options-bookmarks =
@@ -653,7 +714,6 @@ home-prefs-recent-activity-description = Wybōr z niydownych strōn i zawartośc
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Krōtkie informacyje
-home-prefs-snippets-description = Nowiny ôd: { -vendor-short-name }, { -brand-product-name }
 
 home-prefs-snippets-description-new = Dorady i nowiny ze { -vendor-short-name } a aplikacyje { -brand-product-name }
 
@@ -691,6 +751,7 @@ search-show-suggestions-url-bar-option =
     .label = Pokazuj dorady szukanio we wynikach poska z adresōm
     .accesskey = I
 
+
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -722,7 +783,6 @@ search-restore-default =
 search-remove-engine =
     .label = Skasuj
     .accesskey = S
-
 search-add-engine =
     .label = Przidej
     .accesskey = P
@@ -758,8 +818,11 @@ containers-remove-button =
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
-sync-signedout-caption = Bier swōj nec ze sobōm
 
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+sync-signedout-caption = Bier swōj nec ze sobōm
 sync-signedout-description2 = Synchrōnizuj swoje zokłodki, historyjo, karty, hasła, rozszyrzynia i sztalōnki na wszyskich swojich maszinach.
 
 sync-signedout-account-signin3 =
@@ -778,6 +841,9 @@ sync-mobile-promo = Pobier Firefox na <img data-l10n-name="android-icon"/> <a da
 
 ## Firefox Account - Signed in
 
+
+## Firefox account - Signed in
+
 sync-profile-picture =
     .tooltiptext = Zmiyń profilowy ôbrozek
 
@@ -788,8 +854,13 @@ sync-sign-out =
 sync-manage-account = Regiyruj kōntym
     .accesskey = r
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = Kōnto { $email } niy ma zweryfikowane.
 sync-signedin-login-failure = Wloguj sie, coby zaś połōnczyć kōnto { $email }
+
+##
 
 sync-resend-verification =
     .label = Poślij zaś weryfikacyjo
@@ -820,9 +891,14 @@ prefs-sync-now =
     .accesskeynotsyncing = T
     .labelsyncing = Synchrōnizuja…
 
-## The list of things currently syncing.
+prefs-sync-now-button =
+    .label = Synchrōnizuj teroz
+    .accesskey = T
 
-sync-currently-syncing-heading = Mosz załōnczōno synchrōnizacyjo tego:
+prefs-syncing-button =
+    .label = Synchrōnizuja…
+
+## The list of things currently syncing.
 
 sync-currently-syncing-bookmarks = Zokłodki
 sync-currently-syncing-history = Historyjo
@@ -831,7 +907,6 @@ sync-currently-syncing-logins-passwords = Dane logowanio i hasła
 sync-currently-syncing-addresses = Adresy
 sync-currently-syncing-creditcards = Kredytowe karty
 sync-currently-syncing-addons = Rozszyrzynia
-
 sync-currently-syncing-settings = Sztalōnki
 
 sync-change-options =
@@ -840,9 +915,9 @@ sync-change-options =
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog =
+sync-choose-what-to-sync-dialog3 =
     .title = Ôbier, co synchrōnizować
-    .style = width: 36em; min-height: 35em;
+    .style = min-width: 36em;
     .buttonlabelaccept = Spamiyntej zmiany
     .buttonaccesskeyaccept = S
     .buttonlabelextra2 = Rozłōncz…
@@ -904,6 +979,16 @@ sync-device-name-save =
 
 sync-connect-another-device = Połōncz inkszo maszina
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Weryfikacyjo je posłano
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Link z weryfikacyjōm je posłany na { $email }.
+sync-verification-not-sent-title = Niy idzie posłać weryfikacyje
+sync-verification-not-sent-body = Niy idzie prawie posłać emaila z weryfikacyjōm. Sprōbuj zaś niyskorzij.
+
 ## Privacy Section
 
 privacy-header = Prywatność przeglōndarki
@@ -916,7 +1001,7 @@ pane-privacy-logins-and-passwords-header = Dane logowanio i hasła
 
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-logins =
-    .label = Pytej sie ô spamiyntywanie danych logowanio i haseł do strōn
+    .label = Pytej sie ô spamiyntowanie danych logowanio i haseł do strōn
     .accesskey = r
 forms-exceptions =
     .label = Wyjōntki…
@@ -946,7 +1031,6 @@ forms-primary-pw-learn-more-link = Przewiydz sie wiyncyj
 forms-master-pw-change =
     .label = Zmiyń głōwne hasło…
     .accesskey = G
-
 forms-primary-pw-change =
     .label = Zmiyń głōwne hasło…
     .accesskey = Z
@@ -957,6 +1041,10 @@ forms-primary-pw-former-name = { "" }
 
 forms-primary-pw-fips-title = Jeżeś prawie w trybie FIPS, co potrzebuje niyprōżnego głōwnego hasła.
 forms-master-pw-fips-desc = Zmiana hasła sie niy podarziła
+forms-windows-sso =
+    .label = Przizwolej na pojedyncze logowanie do kōnt Microsoft, roboczych i szkolnych
+forms-windows-sso-learn-more-link = Przewiydz sie wiyncyj
+forms-windows-sso-desc = Regiyruj kōntami w sztalōnkach masziny
 
 ## OS Authentication dialog
 
@@ -1054,18 +1142,12 @@ sitedata-block-desc = Do szperowanio
 
 sitedata-option-block-cross-site-trackers =
     .label = Elymynta śledzōnce miyndzy strōnami
-sitedata-option-block-cross-site-and-social-media-trackers =
-    .label = Elymynta śledzōnce miyndzy strōnami i ôd społecznościowych serwisōw
-sitedata-option-block-cross-site-tracking-cookies-including-social-media =
-    .label = Cookies elymyntōw, co śledzōm miyndzy strōnami — społym ze cookies ze social mydiōw
-sitedata-option-block-cross-site-cookies-including-social-media =
-    .label = Cookies elymyntōw miyndzy strōnami — społym ze cookies ze social mydiōw
-sitedata-option-block-cross-site-and-social-media-trackers-plus-isolate =
-    .label = Elymynta śledzōnce miyndzy strōnami i ôd społecznościowych serwisōw, a tyż izolowanie inkszych cookies
+sitedata-option-block-cross-site-tracking-cookies =
+    .label = Cookies elymyntōw, co śledzōm miyndzy strōnami
+sitedata-option-block-cross-site-cookies =
+    .label = Cookies elymyntōw, co śledzōm miyndzy strōnami i izolowanie inkszych cookies miyndzy strōnami
 sitedata-option-block-unvisited =
     .label = Cookies z niynawiydzōnych strōn
-sitedata-option-block-all-third-party =
-    .label = Wszyske śledzōnce elymynta z inkszych firmōw (niykere strōny mogōm niy fungować dobrze)
 sitedata-option-block-all =
     .label = Wszyskie cookies (niykere strōny mogōm niy fungować dobrze)
 
@@ -1080,6 +1162,9 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Regiyruj wyjōntkami…
     .accesskey = x
+
+## Privacy Section - Cookie Banner Handling
+
 
 ## Privacy Section - Address Bar
 
@@ -1103,7 +1188,6 @@ addressbar-locbar-shortcuts-option =
 addressbar-locbar-topsites-option =
     .label = Topowe strōny
     .accesskey = T
-
 addressbar-locbar-engines-option =
     .label = Wyszukowarki
     .accesskey = a
@@ -1139,11 +1223,9 @@ enhanced-tracking-protection-setting-custom =
 content-blocking-etp-standard-desc = Zbalansowane podug ôchrōny i sprowności. Strōny bydōm sie normalnie ladować.
 content-blocking-etp-strict-desc = Lepszo ôchrōna, ale niykere strōny abo jako zawartość mogōm niy fungować dobrze.
 content-blocking-etp-custom-desc = Ôbier, jakie śledzōnce elymynta i skrypty szperować.
-
 content-blocking-etp-blocking-desc = { -brand-short-name } szperuje:
 
 content-blocking-private-windows = Śledzōnce elymynta w prywatnych ôknach
-content-blocking-cross-site-cookies-in-all-windows = Cookies miyndzy strōnami we wszyskich ôknach (tyż cookies, co śledzōm)
 content-blocking-cross-site-tracking-cookies = Cookies elymyntōw, co śledzōm miyndzy strōnami
 content-blocking-all-cross-site-cookies-private-windows = Cookies miyndzy strōnami we prywatnych ôknach
 content-blocking-cross-site-tracking-cookies-plus-isolate = Cookies elymyntōw, co śledzōm miyndzy strōnami. Izoluj inksze cookies.
@@ -1151,12 +1233,16 @@ content-blocking-social-media-trackers = Elymynta śledzōnce ôd społeczności
 content-blocking-all-cookies = Wszyskie cookies
 content-blocking-unvisited-cookies = Cookies z niynawiydzōnych strōn
 content-blocking-all-windows-tracking-content = Śledzōnce elymynta we wszyskich ôknach
-content-blocking-all-third-party-cookies = Wszyskie cookies z inkszych firmōw
 content-blocking-cryptominers = Elymynta, co fedrujōm kryptopiniōndze
 content-blocking-fingerprinters = Elymynta, co rychtujōm ôdcisk ôd przeglōndarki
 
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
+
+# "Contains" here means "isolates", "limits".
+content-blocking-etp-standard-tcp-rollout-description = Połno ôchrōna cookies trzimie cookies na strōnie, na keryj żeś je, tak co elymynty śledzōnce niy idōm za tobōm miyndzy strōnami.
+content-blocking-etp-standard-tcp-rollout-learn-more = Przewiydz sie wiyncyj
+
 content-blocking-warning-title = Pozōr!
-content-blocking-and-isolating-etp-warning-description = Skuli szperowanio zawartości niykere i izolowanio cookies strōny mogōm mieć gorszo funkcjōnalność. Przeladuj strōna ze załōnczōnymi śledzōncymi elymyntami, coby pokozać cołko zawartość.
 content-blocking-and-isolating-etp-warning-description-2 = Skuli tego sztalōnku niykere strōny mogōm sie dobrze niy pokazować abo działać felernie. Jak strōna zdo sie felerno, idzie wyłōnczyć ôchrōna ôd śledzynio na tyj strōnie, coby poradziyła zaladować cołko zawartość.
 content-blocking-warning-learn-how = Przewiydz sie, jak
 
@@ -1244,9 +1330,12 @@ permissions-block-popups =
     .label = Szperuj wyskakujōnce ôkna
     .accesskey = S
 
-permissions-block-popups-exceptions =
+# "popup" is a misspelling that is more popular than the correct spelling of
+# "pop-up" so it's included as a search keyword, not displayed in the UI.
+permissions-block-popups-exceptions-button =
     .label = Wyjōntki…
-    .accesskey = W
+    .accesskey = y
+    .searchkeywords = popups
 
 permissions-addon-install-warning =
     .label = Dowej znać, jak strōny prōbujōm zainsztalować rozszyrzynia
@@ -1349,13 +1438,11 @@ httpsonly-radio-enabled-pbm =
 httpsonly-radio-disabled =
     .label = Niy załōnczej trybu "ino HTTPS"
 
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Biōrko
 downloads-folder-name = Pobrania
 choose-download-folder-title = Ôbier katalog na pobrane zbiory:
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Spamiyntuj zbiory do { $service-name }

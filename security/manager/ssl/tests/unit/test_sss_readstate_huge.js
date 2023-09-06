@@ -17,45 +17,34 @@ function checkStateRead(aSubject, aTopic, aData) {
   equal(aData, SSS_STATE_FILE_NAME);
 
   ok(
-    gSSService.isSecureURI(
-      Services.io.newURI("https://example0.example.com"),
-      0
-    )
+    gSSService.isSecureURI(Services.io.newURI("https://example0.example.com"))
+  );
+  ok(
+    gSSService.isSecureURI(Services.io.newURI("https://example423.example.com"))
   );
   ok(
     gSSService.isSecureURI(
-      Services.io.newURI("https://example423.example.com"),
-      0
-    )
-  );
-  ok(
-    gSSService.isSecureURI(
-      Services.io.newURI("https://example1023.example.com"),
-      0
+      Services.io.newURI("https://example1023.example.com")
     )
   );
   ok(
     !gSSService.isSecureURI(
-      Services.io.newURI("https://example1024.example.com"),
-      0
+      Services.io.newURI("https://example1024.example.com")
     )
   );
   ok(
     !gSSService.isSecureURI(
-      Services.io.newURI("https://example1025.example.com"),
-      0
+      Services.io.newURI("https://example1025.example.com")
     )
   );
   ok(
     !gSSService.isSecureURI(
-      Services.io.newURI("https://example9000.example.com"),
-      0
+      Services.io.newURI("https://example9000.example.com")
     )
   );
   ok(
     !gSSService.isSecureURI(
-      Services.io.newURI("https://example99999.example.com"),
-      0
+      Services.io.newURI("https://example99999.example.com")
     )
   );
   do_test_finished();
@@ -75,7 +64,7 @@ function run_test() {
     // The 0s will all get squashed down into one 0 when they are read.
     // This is just to make the file size large (>2MB).
     lines.push(
-      `example${i}.example.com:HSTS\t` +
+      `example${i}.example.com\t` +
         "0000000000000000000000000000000000000000000000000\t" +
         "00000000000000000000000000000000000000\t" +
         `${expiryTime},1,0000000000000000000000000000000000000000000000000000000000000000000000000`

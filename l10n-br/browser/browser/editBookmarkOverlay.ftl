@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Kuzhat
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Diskouez holl sinedoù an teuliadoù
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Kuzhat
+
 bookmark-overlay-new-folder-button =
     .label = Ouzhpennañ un teuliad
     .accesskey = O
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Diskouez an holl skritelligoù
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Kuzhat
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Diskouez an holl skritelligoù
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Kuzhat
 
 bookmark-overlay-keyword-2 =
     .value = Ger-alc'hwez

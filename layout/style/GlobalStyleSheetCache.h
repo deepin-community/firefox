@@ -15,6 +15,7 @@
 #include "mozilla/PreferenceSheet.h"
 #include "mozilla/NotNull.h"
 #include "mozilla/StaticPtr.h"
+#include "mozilla/UserAgentStyleSheetID.h"
 #include "mozilla/css/Loader.h"
 
 class nsIFile;
@@ -64,14 +65,13 @@ class GlobalStyleSheetCache final : public nsIObserver,
   // Called early on in a content process' life from
   // ContentChild::InitSharedUASheets, before the GlobalStyleSheetCache
   // singleton has been created.
-  static void SetSharedMemory(const base::SharedMemoryHandle& aHandle,
+  static void SetSharedMemory(base::SharedMemoryHandle aHandle,
                               uintptr_t aAddress);
 
   // Obtain a shared memory handle for the shared UA sheets to pass into a
   // content process.  Called by ContentParent::InitInternal shortly after
   // a content process has been created.
-  bool ShareToProcess(base::ProcessId aProcessId,
-                      base::SharedMemoryHandle* aHandle);
+  base::SharedMemoryHandle CloneHandle();
 
   // Returns the address of the shared memory segment that holds the shared UA
   // sheets.
@@ -91,7 +91,7 @@ class GlobalStyleSheetCache final : public nsIObserver,
   struct Header {
     static constexpr uint32_t kMagic = 0x55415353;
     uint32_t mMagic;  // Must be set to kMagic.
-    const ServoCssRules* mSheets[size_t(UserAgentStyleSheetID::Count)];
+    const StyleLockedCssRules* mSheets[size_t(UserAgentStyleSheetID::Count)];
     uint8_t mBuffer[1];
   };
 

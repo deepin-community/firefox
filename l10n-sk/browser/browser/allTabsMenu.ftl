@@ -13,5 +13,5 @@ all-tabs-menu-hidden-tabs =
     .label = Skryté karty
 
 all-tabs-menu-manage-user-context =
-    .label = Správa kontajnerov
-    .accesskey = o
+    .label = Spravovať kontajnery
+    .accesskey = S

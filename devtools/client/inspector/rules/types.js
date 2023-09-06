@@ -4,7 +4,7 @@
 
 "use strict";
 
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
 
 /**
  * A CSS class.
@@ -115,7 +115,7 @@ const selector = (exports.selector = {
   // Function that returns a Promise containing an unique CSS selector.
   getUniqueSelector: PropTypes.func,
   // Array of the selectors that match the selected element.
-  matchedSelectors: PropTypes.arrayOf(PropTypes.string),
+  matchedDesugaredSelectors: PropTypes.arrayOf(PropTypes.string),
   // The CSS rule's selector text content.
   selectorText: PropTypes.string,
   // Array of the CSS rule's selectors.
@@ -159,14 +159,6 @@ exports.rule = {
 
   // An object containing information about the CSS rule's selector.
   selector: PropTypes.shape(selector),
-
-  // An object containing information about the CSS rule's stylesheet source.
-  sourceLink: PropTypes.shape({
-    // The label used for the stylesheet source
-    label: PropTypes.string,
-    // The title used for the stylesheet source.
-    title: PropTypes.string,
-  }),
 
   // The CSS rule type.
   type: PropTypes.number,

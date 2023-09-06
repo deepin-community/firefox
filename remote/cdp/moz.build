@@ -9,7 +9,7 @@ with Files("**"):
 
 BROWSER_CHROME_MANIFESTS += [
     "test/browser/browser.ini",
-    "test/browser/component/browser.ini",
+    "test/browser/browser_cdp_only.ini",
     "test/browser/dom/browser.ini",
     "test/browser/emulation/browser.ini",
     "test/browser/fetch/browser.ini",
@@ -19,7 +19,9 @@ BROWSER_CHROME_MANIFESTS += [
     "test/browser/network/browser.ini",
     "test/browser/page/browser.ini",
     "test/browser/runtime/browser.ini",
+    "test/browser/runtime/browser_with_default_prefs.ini",
     "test/browser/security/browser.ini",
+    "test/browser/systemInfo/browser.ini",
     "test/browser/target/browser.ini",
 ]
 

@@ -21,6 +21,7 @@ perftools-heading-features-default = Búfer ñemboheko ijehegui reheguáva)
 perftools-heading-features-disabled = Tembiapoite pe’apyre
 perftools-heading-features-experimental = Mba’epyahu
 perftools-heading-threads = Inimbo
+perftools-heading-threads-jvm = JVM Ñe’ẽryru
 perftools-heading-local-build = Ñembyaty pypeguáva
 
 ##
@@ -31,7 +32,7 @@ perftools-description-intro =
 perftools-description-local-build =
     Ojehechahína peteĩ ñembyaty ejapova’ekue ndete ko
     mohendahápe, embojuaju pe objdir hesegua tysýi oĩva yvy gotyo ikatu hag̃ua
-    ojepuru ojeheka hag̃ua marandu ta’ãnga’i rehegua.
+    ojeporu ojeheka hag̃ua marandu ta’ãnga’i rehegua.
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -49,10 +50,7 @@ perftools-devtools-settings-label = Ñemboheko
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice =
-    Pe mbohapeha ogue hendy vove pe kundaha ñemigua.
-    Embotypaite umi ovetã ñemigua hendyjey hag̃ua pe mbohapeha.
-perftools-status-recording-stopped-by-another-tool = Ambue tembipuru ojoko ñeñongatu.
+perftools-status-recording-stopped-by-another-tool = Ambue tembiporu ojoko ñeñongatu.
 perftools-status-restart-required = Emoñepyrũjey kundahára embojuruja hag̃ua tembiapoite.
 
 ## These are shown briefly when the user is waiting for the profiler to respond.
@@ -83,8 +81,8 @@ perftools-thread-renderer =
     .title = WebRender hendy jave, pe inimbo omongu’éva umi OpenGL renoiha
 perftools-thread-render-backend =
     .title = Inimbo WebRender RenderBackend
-perftools-thread-paint-worker =
-    .title = Hendy vove pe mbosa’ypyre inimbógui okápe, pe inimbo ojejapohápe mbosa’ypyre
+perftools-thread-timer =
+    .title = Umi mboaravopapaha tapereko’i rehegua (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
     .title = Pe mbohekoha kuaarã oñemboja’o heta inimbópe
 pref-thread-stream-trans =
@@ -97,6 +95,18 @@ perftools-thread-dns-resolver =
     .title = Pe DNS jehaipy oiko ko inimbópe
 perftools-thread-task-controller =
     .title = TaskControllerrapereko’i aty inimbo
+perftools-thread-jvm-gecko =
+    .title = Pe Gecko JVM rembiapokue tenondegua
+perftools-thread-jvm-nimbus =
+    .title = Umi rosca principal umi experimento Nimbus SDK-pe g̃uarã
+perftools-thread-jvm-default-dispatcher =
+    .title = Pe ñangarekohára  Kotlin coroutines aranduka’i rehegua
+perftools-thread-jvm-glean =
+    .title = Umi subproceso tuichavéva SDK Glean telemetría rehegua
+perftools-thread-jvm-arch-disk-io =
+    .title = Pe IO despachante Kotlin coroutines aranduka’i rehegua
+perftools-thread-jvm-pool =
+    .title = Subproceso heñóiva peteĩ subproceso aty hera’ỹvape
 
 ##
 
@@ -105,12 +115,9 @@ perftools-tools-threads-input-label =
     .title = Ko’ã hilo ha’e tysýi ipa’ũva kyguái rupive ha ojepurúva oñemyandy hag̃ua mba’ete ñemoheñói mbohapehápe. Pe téra ojokupytyva’erã michĩmínte hilo réra emoingévape. Oñandukuaa umi pa’ũ inandíva.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
-perftools-onboarding-message = <b>Ipyahu</b>: { -profiler-brand-name } ko’ág̃a oĩ juajúpe mboguatahára rembipuru ndive. <a>Eikuaave</a> ko tembipuru guasu rehegua.
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (Ndahetái aravo’ípe, ikatu eike tembiapokue ra’ãngarupa ypyguápe <a>{ options-context-advanced-settings } rupive</a>)
+perftools-onboarding-message = <b>Ipyahu</b>: { -profiler-brand-name } ko’ág̃a oĩ juajúpe mboguatahára rembiporu ndive. <a>Eikuaave</a> ko tembiporu guasu rehegua.
 perftools-onboarding-close-button =
     .aria-label = Emboty pe ñe’ẽmondo jeikegua
 
@@ -118,19 +125,22 @@ perftools-onboarding-close-button =
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
+# devtools/client/performance-new/shared/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
 perftools-presets-web-developer-label = Ñanduti Mboguatahára
-perftools-presets-web-developer-description = Ñemboheko iporãva emopotĩ hag̃ua ñanduti tembipuru’i, nahenyhẽrasáiva.
-perftools-presets-firefox-platform-label = Firefox Pyendavusu
-perftools-presets-firefox-platform-description = Ñemboheko ypygua iporãva emopotĩ hag̃ua Firefox pyendavusu.
-perftools-presets-firefox-front-end-label = Firefox Rechaha
-perftools-presets-firefox-front-end-description = Ñemboheko iporãva emopotĩ hag̃ua Firefox jehechaha.
-perftools-presets-firefox-graphics-label = Firefox ra’ãngaryrugua
-perftools-presets-firefox-graphics-description = Ñemboheko ypygua iporãva ehapykuereka hag̃ua Firefox ra’ãngarenda.
+perftools-presets-web-developer-description = Ñemboheko iporãva emopotĩ hag̃ua ñanduti tembiporu’i, nahenyhẽrasáiva.
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = Ñemboheko ypykue eiporukuaáva emoheñói hag̃ua mba’ete { -brand-shorter-name }.
+perftools-presets-graphics-label = Ta’ãnga
+perftools-presets-graphics-description = Oñemoĩva ohapykuerereka hag̃ua mba’epu ha ta’ãngamýi { -brand-shorter-name }.
 perftools-presets-media-label = Momaranduha
-perftools-presets-media-description = Ñemboheko ypygua eikuaa hag̃ua mba’epu ha ta’ãngamýi apañuãi.
+perftools-presets-media-description2 = Oñemoĩva ohapykuerereka hag̃ua mba’epu ha ta’ãngamýi { -brand-shorter-name }.
+perftools-presets-networking-label = Pyha
+perftools-presets-networking-description = Oñemoĩva ohapykuereka hag̃ua pyha apañuãi { -brand-shorter-name }-pe.
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = Tendyry
+perftools-presets-power-description = Oñemoĩva ohapykuerereka hag̃ua tendyry ndoikóirõ eiporukuévo { -brand-shorter-name }.
 perftools-presets-custom-label = Mboavapyre
 
 ##

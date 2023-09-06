@@ -5,10 +5,9 @@
 
 // Test parseAttribute from node-attribute-parser.js
 
-const { require } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
 const {
   parseAttribute,
-} = require("devtools/client/shared/node-attribute-parser");
+} = require("resource://devtools/client/shared/node-attribute-parser.js");
 
 const TEST_DATA = [
   {

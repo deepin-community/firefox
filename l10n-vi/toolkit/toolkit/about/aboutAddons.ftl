@@ -6,9 +6,16 @@ addons-page-title = Quản lí tiện ích
 search-header =
     .placeholder = Tìm kiếm addons.mozilla.org
     .searchbuttonlabel = Tìm kiếm
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Tải tiện ích mở rộng và chủ đề trên <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Tải từ điển trên <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Tải gói ngôn ngữ trên <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Bạn không có tiện ích nào thuộc kiểu này được cài đặt
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Phiên bản
 detail-last-updated =
     .label = Cập nhật lần cuối
+addon-detail-description-expand = Hiện nhiều hơn
+addon-detail-description-collapse = Hiện ít hơn
 detail-contributions-description = Nhà phát triển tiện ích này đề nghị bạn hỗ trợ một khoản tài chính nhỏ cho việc phát triển.
 detail-contributions-button = Đóng góp
     .title = Đóng góp cho sự phát triển của tiện ích mở rộng này
@@ -135,16 +144,33 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Cập nhật gần đây
 addon-category-recent-updates-title =
     .title = Cập nhật gần đây
+addon-category-sitepermission = Quyền hạn trang web
+addon-category-sitepermission-title =
+    .title = Quyền hạn trang web
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Quyền hạn trang web cho { $host }
 
 ## These are global warnings
 
 extensions-warning-safe-mode = Tất cả tiện ích đã bị vô hiệu hóa bởi chế độ an toàn.
 extensions-warning-check-compatibility = Việc kiểm tra tính tương thích của tiện ích đã bị vô hiệu hóa. Có thể bạn đang dùng các tiện ích không còn tương thích nữa.
+extensions-warning-safe-mode2 =
+    .message = Tất cả tiện ích đã bị vô hiệu hóa bởi chế độ an toàn.
+extensions-warning-check-compatibility2 =
+    .message = Việc kiểm tra tính tương thích của tiện ích đã bị vô hiệu hóa. Có thể bạn đang dùng các tiện ích không còn tương thích nữa.
 extensions-warning-check-compatibility-button = Bật
     .title = Kích hoạt kiểm tra tính tương thích của tiện ích
 extensions-warning-update-security = Việc kiểm tra tính an toàn của các cập nhật tiện ích đã bị vô hiệu hóa. Bạn có thể bị tổn hại nếu cập nhật.
+extensions-warning-update-security2 =
+    .message = Việc kiểm tra tính an toàn của các cập nhật tiện ích đã bị vô hiệu hóa. Bạn có thể bị tổn hại nếu cập nhật.
 extensions-warning-update-security-button = Bật
     .title = Kích hoạt kiểm tra tính bảo mật của cập nhật cho tiện ích
+extensions-warning-imported-addons = Vui lòng hoàn tất việc cài đặt các tiện ích mở rộng đã được nhập vào { -brand-short-name }.
+extensions-warning-imported-addons2 =
+    .message = Vui lòng hoàn tất việc cài đặt các tiện ích mở rộng đã được nhập vào { -brand-short-name }.
+extensions-warning-imported-addons-button = Cài đặt tiện ích mở rộng
 
 ## Strings connected to add-on updates
 
@@ -209,10 +235,17 @@ shortcuts-duplicate = Phím tắt trùng lặp
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = { $shortcut } đang được sử dụng làm phím tắt trong nhiều trường hợp. Phím tắt trùng lặp có thể gây ra hành vi bất ngờ.
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = { $shortcut } đang được sử dụng làm phím tắt trong nhiều trường hợp. Phím tắt trùng lặp có thể gây ra hành vi bất ngờ.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Đã được sử dụng bởi { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
        *[other] Hiển thị { $numberToShow } khác
@@ -236,6 +269,11 @@ discopane-intro =
 discopane-notice-recommendations =
     Một số trong những khuyến nghị được cá nhân hóa. Nó dựa trên khác
     tiện ích mở rộng mà bạn đã cài đặt, tùy chọn hồ sơ và thống kê sử dụng.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message =
+        Một số trong những khuyến nghị được cá nhân hóa. Nó dựa trên khác
+        tiện ích mở rộng mà bạn đã cài đặt, tùy chọn hồ sơ và thống kê sử dụng.
 discopane-notice-learn-more = Tìm hiểu thêm
 privacy-policy = Chính sách riêng tư
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -281,15 +319,15 @@ permissions-addon-button = Quyền hạn
 extension-enabled-heading = Đã bật
 extension-disabled-heading = Đã vô hiệu hóa
 theme-enabled-heading = Đã bật
-theme-disabled-heading = Đã tắt
-theme-monochromatic-heading = Màu
-theme-monochromatic-subheading = Các màu mới sống động từ { -brand-product-name }. Có sẵn trong một thời gian giới hạn.
+theme-disabled-heading2 = Chủ đề đã lưu
 plugin-enabled-heading = Đã bật
 plugin-disabled-heading = Đã tắt
 dictionary-enabled-heading = Đã bật
 dictionary-disabled-heading = Đã tắt
 locale-enabled-heading = Đã bật
 locale-disabled-heading = Đã tắt
+sitepermission-enabled-heading = Đã bật
+sitepermission-disabled-heading = Đã tắt
 always-activate-button = Luôn kích hoạt
 never-activate-button = Không bao giờ kích hoạt
 addon-detail-author-label = Tác giả
@@ -299,6 +337,9 @@ addon-detail-homepage-label = Trang chủ
 addon-detail-rating-label = Xêp hạng
 # Message for add-ons with a staged pending update.
 install-postponed-message = Tiện ích mở rộng này sẽ được cập nhật khi { -brand-short-name } khởi động lại.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Tiện ích mở rộng này sẽ được cập nhật khi { -brand-short-name } khởi động lại.
 install-postponed-button = Cập nhật ngay
 # The average rating that the add-on has received.
 # Variables:
@@ -329,6 +370,10 @@ addon-detail-updates-radio-on = Bật
 addon-detail-updates-radio-off = Tắt
 addon-detail-update-check-label = Kiểm tra cập nhật
 install-update-button = Cập nhật
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -337,6 +382,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Khi được cho phép, tiện ích mở rộng sẽ có quyền truy cập vào các hoạt động trực tuyến của bạn trong khi duyệt web riêng tư. <a data-l10n-name="learn-more">Tìm hiểu thêm</a>
 addon-detail-private-browsing-allow = Cho phép
 addon-detail-private-browsing-disallow = Không cho phép
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Chạy trên trang web bị hạn chế
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Khi được phép, tiện ích mở rộng sẽ có quyền truy cập vào các trang web bị hạn chế bởi { -vendor-short-name }. Chỉ cho phép nếu bạn tin tưởng tiện ích mở rộng này.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Cho phép
+addon-detail-quarantined-domains-disallow = Không cho phép
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -365,6 +428,9 @@ addon-permissions-optional = Các quyền tùy chọn cho chức năng được 
 addon-permissions-learnmore = Tìm hiểu thêm về quyền hạn
 recommended-extensions-heading = Tiện ích mở rộng được đề xuất
 recommended-themes-heading = Chủ đề được đề xuất
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Cấp các khả năng sau cho <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Cảm thấy muốn sáng tạo? <a data-l10n-name="link">Xây dựng chủ đề của riêng bạn với Firefox Color.</a>
@@ -377,6 +443,7 @@ plugin-heading = Quản lí phần bổ trợ của bạn
 dictionary-heading = Quản lí từ điển của bạn
 locale-heading = Quản lí ngôn ngữ của bạn
 updates-heading = Quản lý cập nhật của bạn
+sitepermission-heading = Quản lý quyền hạn trang web của bạn
 discover-heading = Cá nhân hóa { -brand-short-name } của bạn
 shortcuts-heading = Quản lý phím tắt tiện ích mở rộng
 default-heading-search-label = Tìm thêm tiện ích
@@ -384,3 +451,35 @@ addons-heading-search-input =
     .placeholder = Tìm kiếm addons.mozilla.org
 addon-page-options-button =
     .title = Công cụ cho tất cả tiện ích
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } không tương thích với { -brand-short-name } { $version }.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = { $name } không tương thích với { -brand-short-name } { $version }.
+details-notification-incompatible-link = Thông tin chi tiết
+details-notification-unsigned-and-disabled = Không thể kiểm tra tính tương thích của { $name } với { -brand-short-name } nên nó đã bị vô hiệu hóa.
+details-notification-unsigned-and-disabled2 =
+    .message = Không thể kiểm tra tính tương thích của { $name } với { -brand-short-name } nên nó đã bị vô hiệu hóa.
+details-notification-unsigned-and-disabled-link = Thông tin chi tiết
+details-notification-unsigned = Không thể kiểm tra tính tương thích của { $name } với { -brand-short-name }. Bạn nên cẩn thận.
+details-notification-unsigned2 =
+    .message = Không thể kiểm tra tính tương thích của { $name } với { -brand-short-name }. Bạn nên cẩn thận.
+details-notification-unsigned-link = Thông tin chi tiết
+details-notification-blocked = { $name } đã bị vô hiệu hóa vì vấn đề bảo mật hoặc tính ổn định.
+details-notification-blocked2 =
+    .message = { $name } đã bị vô hiệu hóa vì vấn đề bảo mật hoặc tính ổn định.
+details-notification-blocked-link = Thông tin Chi tiết
+details-notification-softblocked = { $name } được cho là gây ra các vấn đề về bảo mật hoặc tính ổn định.
+details-notification-softblocked2 =
+    .message = { $name } được cho là gây ra các vấn đề về bảo mật hoặc tính ổn định.
+details-notification-softblocked-link = Thông tin Chi tiết
+details-notification-gmp-pending = { $name } sắp được cài.
+details-notification-gmp-pending2 =
+    .message = { $name } sắp được cài.

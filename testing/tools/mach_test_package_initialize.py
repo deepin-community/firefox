@@ -2,13 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
 import json
 import os
 import sys
 import types
-
 
 SEARCH_PATHS = [
     "gtest",
@@ -32,28 +29,19 @@ SEARCH_PATHS = [
     "mozbase/mozprofile",
     "mozbase/mozrunner",
     "mozbase/mozscreenshot",
+    "mozbase/mozserve",
     "mozbase/mozsystemmonitor",
     "mozbase/moztest",
     "mozbase/mozversion",
     "reftest",
     "tools/mach",
     "tools/mozterm",
+    "tools/geckoprocesstypes_generator",
     "tools/six",
     "tools/wptserve",
     "web-platform",
     "web-platform/tests/tools/wptrunner",
     "xpcshell",
-]
-
-# Individual files providing mach commands.
-MACH_MODULES = [
-    "gtest/mach_test_package_commands.py",
-    "marionette/mach_test_package_commands.py",
-    "mochitest/mach_test_package_commands.py",
-    "reftest/mach_test_package_commands.py",
-    "tools/mach/mach/commands/commandinfo.py",
-    "web-platform/mach_test_package_commands.py",
-    "xpcshell/mach_test_package_commands.py",
 ]
 
 
@@ -177,6 +165,34 @@ def bootstrap(test_package_root):
 
     sys.path[0:0] = [os.path.join(test_package_root, path) for path in SEARCH_PATHS]
     import mach.main
+    from mach.command_util import MachCommandReference, load_commands_from_spec
+
+    # Centralized registry of available mach commands
+    MACH_COMMANDS = {
+        "gtest": MachCommandReference("gtest/mach_test_package_commands.py"),
+        "marionette-test": MachCommandReference(
+            "marionette/mach_test_package_commands.py"
+        ),
+        "mochitest": MachCommandReference("mochitest/mach_test_package_commands.py"),
+        "geckoview-junit": MachCommandReference(
+            "mochitest/mach_test_package_commands.py"
+        ),
+        "reftest": MachCommandReference("reftest/mach_test_package_commands.py"),
+        "mach-commands": MachCommandReference(
+            "python/mach/mach/commands/commandinfo.py"
+        ),
+        "mach-debug-commands": MachCommandReference(
+            "python/mach/mach/commands/commandinfo.py"
+        ),
+        "mach-completion": MachCommandReference(
+            "python/mach/mach/commands/commandinfo.py"
+        ),
+        "web-platform-tests": MachCommandReference(
+            "web-platform/mach_test_package_commands.py"
+        ),
+        "wpt": MachCommandReference("web-platform/mach_test_package_commands.py"),
+        "xpcshell-test": MachCommandReference("xpcshell/mach_test_package_commands.py"),
+    }
 
     def populate_context(context, key=None):
         # These values will be set lazily, and cached after first being invoked.
@@ -226,12 +242,8 @@ def bootstrap(test_package_root):
     for category, meta in CATEGORIES.items():
         mach.define_category(category, meta["short"], meta["long"], meta["priority"])
 
-    for path in MACH_MODULES:
-        cmdfile = os.path.join(test_package_root, path)
-
-        # Depending on which test zips were extracted,
-        # the command module might not exist
-        if os.path.isfile(cmdfile):
-            mach.load_commands_from_file(cmdfile)
+    # Depending on which test zips were extracted,
+    # the command module might not exist
+    load_commands_from_spec(MACH_COMMANDS, test_package_root, missing_ok=True)
 
     return mach

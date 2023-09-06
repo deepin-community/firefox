@@ -243,7 +243,13 @@ let json = [
             type: "object",
             properties: {
               hostname: { type: "string", format: "hostname", optional: true },
+              canonicalDomain: {
+                type: "string",
+                format: "canonicalDomain",
+                optional: "omit-key-if-missing",
+              },
               url: { type: "string", format: "url", optional: true },
+              origin: { type: "string", format: "origin", optional: true },
               relativeUrl: {
                 type: "string",
                 format: "relativeUrl",
@@ -427,7 +433,7 @@ let json = [
   },
 ];
 
-add_task(async function() {
+add_task(async function () {
   let wrapper = getContextWrapper();
   let url = "data:," + JSON.stringify(json);
   Schemas._rootSchema = null;
@@ -646,6 +652,7 @@ add_task(async function() {
     {
       hostname: "foo",
       imageDataOrStrictRelativeUrl: null,
+      origin: null,
       relativeUrl: null,
       strictRelativeUrl: null,
       url: null,
@@ -658,6 +665,70 @@ add_task(async function() {
       /Invalid hostname/,
       "should throw for invalid hostname"
     );
+    Assert.throws(
+      () => root.testing.format({ canonicalDomain: invalid }),
+      /Invalid domain /,
+      `should throw for invalid canonicalDomain (${invalid})`
+    );
+  }
+
+  for (let invalid of [
+    "%61", // ASCII should not be URL-encoded.
+    "foo:12345", // It is a common mistake to use .host instead of .hostname.
+    "2", // Single digit is an IPv4 address, but should be written as 0.0.0.2.
+    "::1", // IPv6 addresses should have brackets.
+    "[::1A]", // not lowercase.
+    "[::ffff:127.0.0.1]", // not a canonical IPv6 representation.
+    "UPPERCASE", // not lowercase.
+    "straß.de", // not punycode.
+  ]) {
+    Assert.throws(
+      () => root.testing.format({ canonicalDomain: invalid }),
+      /Invalid domain /,
+      `should throw for invalid canonicalDomain (${invalid})`
+    );
+  }
+
+  for (let valid of ["0.0.0.2", "[::1]", "[::1a]", "lowercase", "."]) {
+    root.testing.format({ canonicalDomain: valid });
+    wrapper.verify("call", "testing", "format", [
+      {
+        canonicalDomain: valid,
+        hostname: null,
+        imageDataOrStrictRelativeUrl: null,
+        origin: null,
+        relativeUrl: null,
+        strictRelativeUrl: null,
+        url: null,
+      },
+    ]);
+  }
+
+  for (let valid of [
+    "https://example.com",
+    "http://example.com",
+    "https://foo.bar.栃木.jp",
+  ]) {
+    root.testing.format({ origin: valid });
+  }
+
+  for (let invalid of [
+    "https://example.com/testing",
+    "file:/foo/bar",
+    "file:///foo/bar",
+    "",
+    " ",
+    "https://foo.bar.栃木.jp/",
+    "https://user:pass@example.com",
+    "https://*.example.com",
+    "https://example.com#test",
+    "https://example.com?test",
+  ]) {
+    Assert.throws(
+      () => root.testing.format({ origin: invalid }),
+      /Invalid origin/,
+      "should throw for invalid origin"
+    );
   }
 
   root.testing.format({ url: "http://foo/bar", relativeUrl: "http://foo/bar" });
@@ -665,6 +736,7 @@ add_task(async function() {
     {
       hostname: null,
       imageDataOrStrictRelativeUrl: null,
+      origin: null,
       relativeUrl: "http://foo/bar",
       strictRelativeUrl: null,
       url: "http://foo/bar",
@@ -679,6 +751,7 @@ add_task(async function() {
     {
       hostname: null,
       imageDataOrStrictRelativeUrl: null,
+      origin: null,
       relativeUrl: `${wrapper.url}foo.html`,
       strictRelativeUrl: `${wrapper.url}foo.html`,
       url: null,
@@ -692,6 +765,7 @@ add_task(async function() {
     {
       hostname: null,
       imageDataOrStrictRelativeUrl: "data:image/png;base64,A",
+      origin: null,
       relativeUrl: null,
       strictRelativeUrl: null,
       url: null,
@@ -705,6 +779,7 @@ add_task(async function() {
     {
       hostname: null,
       imageDataOrStrictRelativeUrl: "data:image/jpeg;base64,A",
+      origin: null,
       relativeUrl: null,
       strictRelativeUrl: null,
       url: null,
@@ -716,6 +791,7 @@ add_task(async function() {
     {
       hostname: null,
       imageDataOrStrictRelativeUrl: `${wrapper.url}foo.html`,
+      origin: null,
       relativeUrl: null,
       strictRelativeUrl: null,
       url: null,
@@ -1806,7 +1882,7 @@ add_task(async function testDefaults() {
   await Schemas.load(url);
 
   let testingApiObj = {
-    defaultFoo: function(arg) {
+    defaultFoo: function (arg) {
       if (Object.keys(arg) != "prop1") {
         throw new Error(
           `Received the expected default object, default: ${JSON.stringify(
@@ -1969,4 +2045,74 @@ add_task(async function testBooleanEnum() {
     /Type error for parameter arg \(Invalid value false\) for booleanEnum\.paramMustBeTrue\./,
     "should throw because enum of the type restricts parameter to true"
   );
+});
+
+let xoriginJson = [
+  {
+    namespace: "xorigin",
+    types: [],
+    functions: [
+      {
+        name: "foo",
+        type: "function",
+        parameters: [
+          {
+            name: "arg",
+            type: "any",
+          },
+        ],
+      },
+      {
+        name: "crossFoo",
+        type: "function",
+        allowCrossOriginArguments: true,
+        parameters: [
+          {
+            name: "arg",
+            type: "any",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+add_task(async function testCrossOriginArguments() {
+  let url = "data:," + JSON.stringify(xoriginJson);
+  Schemas._rootSchema = null;
+  await Schemas.load(url);
+
+  let sandbox = new Cu.Sandbox("http://test.com");
+
+  let testingApiObj = {
+    foo(arg) {
+      sandbox.result = JSON.stringify(arg);
+    },
+    crossFoo(arg) {
+      sandbox.xResult = JSON.stringify(arg);
+    },
+  };
+
+  let localWrapper = {
+    manifestVersion: 2,
+    cloneScope: sandbox,
+    shouldInject(ns) {
+      return true;
+    },
+    getImplementation(ns, name) {
+      return new LocalAPIImplementation(testingApiObj, name, null);
+    },
+  };
+
+  let root = {};
+  Schemas.inject(root, localWrapper);
+
+  Assert.throws(
+    () => root.xorigin.foo({ key: 13 }),
+    /Permission denied to pass object/
+  );
+  equal(sandbox.result, undefined, "Foo can't read cross origin object.");
+
+  root.xorigin.crossFoo({ answer: 42 });
+  equal(sandbox.xResult, '{"answer":42}', "Can read cross origin object.");
 });

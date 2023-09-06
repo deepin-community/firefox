@@ -5,44 +5,52 @@
 
 ## The main browser window's title
 
-# These are the default window titles everywhere except macOS. The first two
-# attributes are used when the web content opened has no title:
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
 #
 # default - "Mozilla Firefox"
 # private - "Mozilla Firefox (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
 # Variables:
 #  $content-title (String): the title of the web content.
-browser-main-window =
+browser-main-window-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } (Duyệt web riêng tư)
-    .data-content-title-default = { $content-title } - { -brand-full-name }
-    .data-content-title-private = { $content-title } - { -brand-full-name } (Duyệt web riêng tư)
-# These are the default window titles on macOS. The first two are for use when
-# there is no content title:
+    .data-title-private = { -brand-full-name } duyệt web riêng tư
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } duyệt web riêng tư
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
 #
 # "default" - "Mozilla Firefox"
 # "private" - "Mozilla Firefox — (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
-# Do not use the brand name in the last two attributes, as we do on non-macOS.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
 #
 # Also note the other subtle difference here: we use a `-` to separate the
 # brand name from `(Private Browsing)`, which does not happen on other OSes.
 #
 # Variables:
 #  $content-title (String): the title of the web content.
-browser-main-window-mac =
+browser-main-window-mac-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } - (Duyệt web riêng tư)
+    .data-title-private = { -brand-full-name } — Duyệt web riêng tư
     .data-content-title-default = { $content-title }
-    .data-content-title-private = { $content-title } - (Duyệt web riêng tư)
+    .data-content-title-private = { $content-title } — Duyệt web riêng tư
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+# The non-variable portion of this MUST match the translation of
+# "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
+private-browsing-shortcut-text-2 = { -brand-shortcut-name } duyệt web riêng tư
 
 ##
 
@@ -73,16 +81,12 @@ urlbar-xr-notification-anchor =
     .tooltiptext = Mở bảng điều khiển thực tế ảo
 urlbar-storage-access-anchor =
     .tooltiptext = Mở bảng điều khiển quyền hoạt động duyệt web
-urlbar-translate-notification-anchor =
-    .tooltiptext = Dịch trang này
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = Quản lý chia sẻ cửa sổ hay màn hình của bạn với trang
 urlbar-indexed-db-notification-anchor =
     .tooltiptext = Mở bảng thông báo lưu trữ ngoại tuyến
 urlbar-password-notification-anchor =
     .tooltiptext = Mở bảng thông báo lưu mật khẩu
-urlbar-translated-notification-anchor =
-    .tooltiptext = Quản lý việc dịch trang
 urlbar-plugins-notification-anchor =
     .tooltiptext = Quản lý sử dụng phần bổ trợ
 urlbar-web-rtc-share-devices-notification-anchor =
@@ -100,11 +104,25 @@ urlbar-addons-notification-anchor =
 urlbar-tip-help-icon =
     .title = Trợ giúp
 urlbar-search-tips-confirm = OK, đã hiểu
+urlbar-search-tips-confirm-short = Đã hiểu
 # Read out before Urlbar Tip text content so screenreader users know the
 # subsequent text is a tip offered by the browser. It should end in a colon or
 # localized equivalent.
 urlbar-tip-icon-description =
     .alt = Mẹo:
+urlbar-result-menu-button =
+    .title = Mở menu
+urlbar-result-menu-button-feedback = Phản hồi
+    .title = Mở menu
+urlbar-result-menu-learn-more =
+    .label = Tìm hiểu thêm
+    .accesskey = L
+urlbar-result-menu-remove-from-history =
+    .label = Xóa khỏi lịch sử
+    .accesskey = R
+urlbar-result-menu-tip-get-help =
+    .label = Nhận trợ giúp
+    .accesskey = h
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -113,6 +131,8 @@ urlbar-tip-icon-description =
 
 urlbar-search-tips-onboard = Nhập ít hơn, tìm thêm: Tìm kiếm { $engineName } ngay từ thanh địa chỉ của bạn.
 urlbar-search-tips-redirect-2 = Bắt đầu tìm kiếm của bạn trong thanh địa chỉ để xem các đề xuất từ { $engineName } và lịch sử duyệt web của bạn.
+# Make sure to match the name of the Search panel in settings.
+urlbar-search-tips-persist = Việc tìm kiếm trở nên đơn giản hơn. Hãy thử làm cho tìm kiếm của bạn cụ thể hơn ở đây trong thanh địa chỉ. Để hiển thị URL, hãy tìm đến mục Tìm kiếm trong cài đặt.
 # Prompts users to use the Urlbar when they are typing in the domain of a
 # search engine, e.g. google.com or amazon.com.
 urlbar-tabtosearch-onboard = Chọn phím tắt này để tìm những gì bạn cần nhanh hơn.
@@ -122,6 +142,7 @@ urlbar-tabtosearch-onboard = Chọn phím tắt này để tìm những gì bạ
 urlbar-search-mode-bookmarks = Dấu trang
 urlbar-search-mode-tabs = Thẻ
 urlbar-search-mode-history = Lịch sử
+urlbar-search-mode-actions = Hành động
 
 ##
 
@@ -138,7 +159,7 @@ urlbar-microphone-blocked =
 urlbar-screen-blocked =
     .tooltiptext = Bạn đã chặn việc chia sẻ màn hình của mình với trang web này.
 urlbar-persistent-storage-blocked =
-    .tooltiptext = Bạn đã chặn lưu dữ liệu lâu dài ở trang này.
+    .tooltiptext = Bạn đã chặn lưu dữ liệu vào bộ nhớ lâu dài ở trang này.
 urlbar-popup-blocked =
     .tooltiptext = Bạn đã chặn cửa sổ bật lên ở trang web này.
 urlbar-autoplay-media-blocked =
@@ -160,10 +181,12 @@ urlbar-star-add-bookmark =
 
 ## Page Action Context Menu
 
-page-action-manage-extension =
+page-action-manage-extension2 =
     .label = Quản lý tiện ích mở rộng…
-page-action-remove-extension =
+    .accesskey = E
+page-action-remove-extension2 =
     .label = Xóa tiện ích mở rộng
+    .accesskey = v
 
 ## Auto-hide Context Menu
 
@@ -222,6 +245,67 @@ search-one-offs-tabs =
     .tooltiptext = Thẻ ({ $restrict })
 search-one-offs-history =
     .tooltiptext = Lịch sử ({ $restrict })
+search-one-offs-actions =
+    .tooltiptext = Hành động ({ $restrict })
+
+## QuickActions are shown in the urlbar as the user types a matching string
+## The -cmd- strings are comma separated list of keywords that will match
+## the action.
+
+# Opens the about:addons page in the home / recommendations section
+quickactions-addons = Xem tiện tích
+quickactions-cmd-addons2 = tiện ích
+# Opens the bookmarks library window
+quickactions-bookmarks2 = Quản lý dấu trang
+quickactions-cmd-bookmarks = dấu trang, dau trang
+# Opens a SUMO article explaining how to clear history
+quickactions-clearhistory = Xóa lịch sử
+quickactions-cmd-clearhistory = xóa lịch sử, xoa lich su
+# Opens about:downloads page
+quickactions-downloads2 = Xem tải xuống
+quickactions-cmd-downloads = tải xuống, tai xuong
+# Opens about:addons page in the extensions section
+quickactions-extensions = Quản lý tiện ích
+quickactions-cmd-extensions = tiện ích mở rộng
+# Opens the devtools web inspector
+quickactions-inspector2 = Mở Công cụ dành cho nhà phát triển
+quickactions-cmd-inspector = trình kiểm tra, devtools, trinh kiem tra
+# Opens about:logins
+quickactions-logins2 = Quản lý mật khẩu
+quickactions-cmd-logins = đăng nhập, thông tin đăng nhập, mật khẩu, dang nhap, thong tin dang nhap, mat khau
+# Opens about:addons page in the plugins section
+quickactions-plugins = Quản lý phần bổ trợ
+quickactions-cmd-plugins = phần bổ trợ
+# Opens the print dialog
+quickactions-print2 = Trang in
+quickactions-cmd-print = in
+# Opens a new private browsing window
+quickactions-private2 = Mở cửa sổ riêng tư
+quickactions-cmd-private = duyệt web riêng tư, duyet web rieng tu
+# Opens a SUMO article explaining how to refresh
+quickactions-refresh = Làm mới { -brand-short-name }
+quickactions-cmd-refresh = làm mới, lam moi
+# Restarts the browser
+quickactions-restart = Khởi động lại { -brand-short-name }
+quickactions-cmd-restart = khởi động lại, khoi dong lai
+# Opens the screenshot tool
+quickactions-screenshot3 = Chụp ảnh màn hình
+quickactions-cmd-screenshot = chụp ảnh màn hình, chup anh man hinh
+# Opens about:preferences
+quickactions-settings2 = Quản lý cài đặt
+quickactions-cmd-settings = cài đặt, tùy chọn, thiết lập, cai dat, tuy chon, thiet lap
+# Opens about:addons page in the themes section
+quickactions-themes = Quản lý chủ đề
+quickactions-cmd-themes = chủ đề
+# Opens a SUMO article explaining how to update the browser
+quickactions-update = Cập nhật { -brand-short-name }
+quickactions-cmd-update = cập nhật, cap nhat
+# Opens the view-source UI with current pages source
+quickactions-viewsource2 = Xem mã nguồn trang
+quickactions-cmd-viewsource = xem mã nguồn, xem nguồn, nguồn, xem ma nguon, xem nguon, nguon
+# Tooltip text for the help button shown in the result.
+quickactions-learn-more =
+    .title = Tìm hiểu thêm về Hành động nhanh
 
 ## Bookmark Panel
 
@@ -269,6 +353,7 @@ identity-weak-encryption = Trang này sử dụng mã hóa yếu.
 identity-insecure-login-forms = Đăng nhập vào trang này bạn có thể bị xâm nhập.
 identity-https-only-connection-upgraded = (đã nâng cấp lên HTTPS)
 identity-https-only-label = Chế độ chỉ HTTPS
+identity-https-only-label2 = Tự động nâng cấp trang web này lên kết nối an toàn
 identity-https-only-dropdown-on =
     .label = Bật
 identity-https-only-dropdown-off =
@@ -277,6 +362,8 @@ identity-https-only-dropdown-off-temporarily =
     .label = Tắt tạm thời
 identity-https-only-info-turn-on2 = Bật Chế độ chỉ HTTPS cho trang web này nếu bạn muốn { -brand-short-name } nâng cấp kết nối khi có thể.
 identity-https-only-info-turn-off2 = Nếu trang có vẻ bị hỏng, bạn có thể tắt Chế độ chỉ HTTPS để trang web này tải lại sử dụng HTTP không an toàn.
+identity-https-only-info-turn-on3 = Bật nâng cấp HTTPS cho trang web này nếu bạn muốn { -brand-short-name } nâng cấp kết nối khi có thể.
+identity-https-only-info-turn-off3 = Nếu trang có vẻ bị hỏng, bạn có thể muốn tắt nâng cấp HTTPS cho trang web này để tải lại bằng HTTP không an toàn.
 identity-https-only-info-no-upgrade = Không thể nâng cấp kết nối từ HTTP.
 identity-permissions-storage-access-header = Cookie trên nhiều trang web
 identity-permissions-storage-access-hint = Khi bạn mở trang web này, các trang web này có thể sử dụng cookie trên nhiều trang web và lấy thông tin của bạn trên trang web này.
@@ -287,7 +374,7 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = Bạn không được kết nối an toàn với trang web này.
 identity-connection-verified = Bạn đang kết nối an toàn tới trang này.
 identity-ev-owner-label = Chứng nhận được cấp cho:
-identity-description-custom-root = Mozilla không công nhận nhà phát hành chứng nhận này. Nó có thể đã được thêm từ hệ điều hành của bạn hoặc bởi quản trị viên. <label data-l10n-name="link">Tìm hiểu thêm</label>
+identity-description-custom-root2 = Mozilla không công nhận nhà phát hành chứng nhận này. Nó có thể đã được thêm từ hệ điều hành của bạn hoặc bởi quản trị viên.
 identity-remove-cert-exception =
     .label = Loại bỏ ngoại lệ
     .accesskey = R
@@ -295,14 +382,12 @@ identity-description-insecure = Kết nối của bạn đến trang này không
 identity-description-insecure-login-forms = Thông tin đăng nhập mà bạn nhập vào trên trang này không an toàn và có thể bị xâm nhập.
 identity-description-weak-cipher-intro = Kết nối đến trang này sử dụng mã hóa yếu và không bảo mật.
 identity-description-weak-cipher-risk = Người khác có thể thấy thông tin của bạn hoặc thay đổi hành vi của trang.
-identity-description-active-blocked = { -brand-short-name } đã chặn những phần không an toàn của trang này. <label data-l10n-name="link">Tìm hiểu thêm</label>
+identity-description-active-blocked2 = { -brand-short-name } đã chặn những phần không an toàn của trang này.
 identity-description-passive-loaded = Kết nối không được bảo mật và thông tin bạn chia sẻ với trang này có thể bị thấy bởi người khác.
-identity-description-passive-loaded-insecure = Trang web này chứa nội dung không an toàn (ví dụ: ảnh). <label data-l10n-name="link">Tìm hiểu thêm</label>
-identity-description-passive-loaded-mixed = Dù { -brand-short-name } đã chặn một số nội dung, vẫn có những nội dung trên trang không an toàn (ví dụ: ảnh). <label data-l10n-name="link">Tìm hiểu thêm</label>
+identity-description-passive-loaded-insecure2 = Trang web này chứa nội dung không an toàn (ví dụ: ảnh).
+identity-description-passive-loaded-mixed2 = Dù { -brand-short-name } đã chặn một số nội dung, vẫn có những nội dung trên trang không an toàn (ví dụ: ảnh).
 identity-description-active-loaded = Trang web này chứa nội dung không an toàn (ví dụ: các đoạn mã) và kết nối tới nội dung này không bảo mật.
 identity-description-active-loaded-insecure = Thông tin bạn chia sẻ với trang này có thể bị thấy bởi người khác (ví dụ: mật khẩu, tin nhắn, thẻ tín dụng, vâng vâng).
-identity-learn-more =
-    .value = Tìm hiểu thêm
 identity-disable-mixed-content-blocking =
     .label = Tạm thời tắt bảo vệ
     .accesskey = D
@@ -375,14 +460,10 @@ popup-select-microphone-icon =
     .tooltiptext = Micrô
 popup-select-speaker-icon =
     .tooltiptext = Loa
+popup-select-window-or-screen =
+    .label = Cửa sổ hoặc màn hình:
+    .accesskey = W
 popup-all-windows-shared = Tất cả các cửa sổ trên màn hình sẽ được chia sẻ.
-popup-screen-sharing-block =
-    .label = Chặn
-    .accesskey = B
-popup-screen-sharing-always-block =
-    .label = Luôn chặn
-    .accesskey = w
-popup-mute-notifications-checkbox = Ẩn thông báo trang web khi chia sẻ
 
 ## WebRTC window or screen share tab switch warning
 
@@ -395,7 +476,7 @@ sharing-warning-disable-for-session =
 
 ## DevTools F12 popup
 
-enable-devtools-popup-description = Để sử dụng phím tắt F12, trước tiên hãy mở DevTools thông qua menu Nhà phát triển Web.
+enable-devtools-popup-description2 = Để sử dụng phím tắt F12, trước tiên hãy mở Công cụ phát triển web qua menu Công cụ trình duyệt.
 
 ## URL Bar
 
@@ -431,6 +512,10 @@ urlbar-placeholder-search-mode-other-history =
 urlbar-placeholder-search-mode-other-tabs =
     .placeholder = Nhập từ tìm kiếm
     .aria-label = Tìm kiếm thẻ
+# This placeholder is used when searching quick actions.
+urlbar-placeholder-search-mode-other-actions =
+    .placeholder = Nhập từ tìm kiếm
+    .aria-label = Tìm kiếm hành động
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
@@ -471,6 +556,8 @@ urlbar-result-action-search-w-engine = Tìm với { $engine }
 urlbar-result-action-sponsored = Được tài trợ
 urlbar-result-action-switch-tab = Chuyển sang thẻ
 urlbar-result-action-visit = Truy cập
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-your-clipboard = Truy cập khay nhớ tạm của bạn
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -506,6 +593,7 @@ urlbar-result-action-calculator-result = = { $result }
 urlbar-result-action-search-bookmarks = Tìm kiếm dấu trang
 urlbar-result-action-search-history = Tìm kiếm lịch sử
 urlbar-result-action-search-tabs = Tìm kiếm thẻ
+urlbar-result-action-search-actions = Tìm kiếm hành động
 
 ## Labels shown above groups of urlbar results
 
@@ -514,11 +602,37 @@ urlbar-result-action-search-tabs = Tìm kiếm thẻ
 urlbar-group-firefox-suggest =
     .label = { -firefox-suggest-brand-name }
 # A label shown above the search suggestions group in the urlbar results. It
-# should use title case.
+# should use sentence case.
 # Variables
 #  $engine (String): the name of the search engine providing the suggestions
 urlbar-group-search-suggestions =
     .label = Đề xuất của { $engine }
+# A label shown above Quick Actions in the urlbar results.
+urlbar-group-quickactions =
+    .label = Hành động nhanh
+
+## Reader View toolbar buttons
+
+# This should match menu-view-enter-readerview in menubar.ftl
+reader-view-enter-button =
+    .aria-label = Vào chế độ đọc sách
+# This should match menu-view-close-readerview in menubar.ftl
+reader-view-close-button =
+    .aria-label = Đóng chế độ đọc sách
+
+## Picture-in-Picture urlbar button
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
+
+picture-in-picture-urlbar-button-open =
+    .tooltiptext = Mở hình trong hình ({ $shortcut })
+picture-in-picture-urlbar-button-close =
+    .tooltiptext = Đóng hình trong hình ({ $shortcut })
+picture-in-picture-panel-header = Hình trong hình
+picture-in-picture-panel-headline = Trang web này không khuyến nghị hình trong hình
+picture-in-picture-panel-body = Video có thể không hiển thị như ý định của nhà phát triển khi hình trong hình được bật.
+picture-in-picture-enable-toggle =
+    .label = Vẫn bật
 
 ## Full Screen and Pointer Lock UI
 
@@ -536,26 +650,13 @@ fullscreen-exit-mac-button = Thoát toàn màn hình (esc)
 pointerlock-warning-domain = <span data-l10n-name="domain">{ $domain }</span> có quyền điều khiển con trỏ của bạn. Ấn Esc để lấy lại quyền điều khiển.
 pointerlock-warning-no-domain = Trang này có quyền điều khiển con trỏ của bạn. Ấn Esc để lấy lại quyền điều khiển.
 
-## Subframe crash notification
-
-crashed-subframe-message = <strong>Một phần của trang này đã bị vớ.</strong> Để { -brand-product-name } biết về lỗi này và sửa nó nhanh hơn, vui lòng báo cáo nó.
-# The string for crashed-subframe-title.title should match crashed-subframe-message,
-# but without any markup.
-crashed-subframe-title =
-    .title = Một phần của trang này đã bị lỗi. Để cho { -brand-product-name } biết về vấn đề này và khắc phục sự cố nhanh hơn, vui lòng gửi báo cáo.
-crashed-subframe-learnmore-link =
-    .value = Tìm hiểu thêm
-crashed-subframe-submit =
-    .label = Gửi báo cáo
-    .accesskey = S
-
 ## Bookmarks panels, menus and toolbar
 
 bookmarks-manage-bookmarks =
     .label = Quản lý dấu trang
 bookmarks-recent-bookmarks-panel-subheader = Dấu trang gần đây
 bookmarks-toolbar-chevron =
-    .tooltiptext = Hiện thêm các dấu trang
+    .tooltiptext = Hiển thị thêm dấu trang
 bookmarks-sidebar-content =
     .aria-label = Dấu trang
 bookmarks-menu-button =
@@ -564,6 +665,11 @@ bookmarks-other-bookmarks-menu =
     .label = Dấu trang khác
 bookmarks-mobile-bookmarks-menu =
     .label = Dấu trang trên di động
+
+## Variables:
+##   $isVisible (boolean): if the specific element (e.g. bookmarks sidebar,
+##                         bookmarks toolbar, etc.) is visible or not.
+
 bookmarks-tools-sidebar-visibility =
     .label =
         { $isVisible ->
@@ -588,12 +694,15 @@ bookmarks-tools-menu-button-visibility =
             [true] Xóa bảng chọn dấu trang từ thanh công cụ
            *[other] Thêm bảng chọn dấu trang vào thanh công cụ
         }
+
+##
+
 bookmarks-search =
     .label = Tìm kiếm dấu trang
 bookmarks-tools =
     .label = Công cụ đánh dấu trang
-bookmarks-bookmark-edit-panel =
-    .label = Chỉnh sửa dấu trang này
+bookmarks-subview-edit-bookmark =
+    .label = Chỉnh sửa dấu trang này…
 # The aria-label is a spoken label that should not include the word "toolbar" or
 # such, because screen readers already know that this container is a toolbar.
 # This avoids double-speaking.
@@ -608,8 +717,8 @@ bookmarks-toolbar-placeholder =
 bookmarks-toolbar-placeholder-button =
     .label = Các mục của thanh dấu trang
 # "Bookmark" is a verb, as in "Add current tab to bookmarks".
-bookmarks-current-tab =
-    .label = Đánh dấu thẻ hiện tại
+bookmarks-subview-bookmark-tab =
+    .label = Đánh dấu thẻ hiện tại…
 
 ## Library Panel items
 
@@ -633,11 +742,6 @@ repair-text-encoding-button =
 ## Customize Toolbar Buttons
 
 # Variables:
-#  $shortcut (String): keyboard shortcut to open the add-ons manager
-toolbar-addons-themes-button =
-    .label = Tiện ích mở rộng và chủ đề
-    .tooltiptext = Quản lý các tiện ích mở rộng và chủ đề của bạn ({ $shortcut })
-# Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
 toolbar-settings-button =
     .label = Cài đặt
@@ -646,18 +750,15 @@ toolbar-settings-button =
             [macos] Mở cài đặt ({ $shortcut })
            *[other] Mở cài đặt
         }
-
-## More items
-
-more-menu-go-offline =
-    .label = Làm việc ngoại tuyến
-    .accesskey = k
 toolbar-overflow-customize-button =
     .label = Tùy biến thanh công cụ…
     .accesskey = C
 toolbar-button-email-link =
     .label = Gửi liên kết này qua email
     .tooltiptext = Gửi một thư điện tử chứa liên kết tới trang này
+toolbar-button-logins =
+    .label = Mật khẩu
+    .tooltiptext = Xem và quản lý mật khẩu đã lưu của bạn
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -690,19 +791,6 @@ eme-notifications-drm-content-playing-dismiss-accesskey = D
 panel-save-update-username = Tên đăng nhập
 panel-save-update-password = Mật khẩu
 
-## Add-on removal warning
-
-# Variables:
-#  $name (String): The name of the addon that will be removed.
-addon-removal-title = Xóa { $name }?
-addon-removal-abuse-report-checkbox = Báo cáo tiện ích mở rộng này cho { -vendor-short-name }
-
-## Remote / Synced tabs
-
-remote-tabs-manage-account =
-    .label = Quản lý tài khoản
-remote-tabs-sync-now = Đồng bộ ngay
-
 ##
 
 # "More" item in macOS share menu
@@ -724,7 +812,7 @@ popups-infobar-block =
 ##
 
 popups-infobar-dont-show-message =
-    .label = Không hiện thông báo này khi có cửa sổ bật lên bị chặn
+    .label = Không hiển thị thông báo này khi có cửa sổ bật lên bị chặn
     .accesskey = D
 edit-popup-settings =
     .label = Quản lý cài đặt cửa sổ bật lên…
@@ -732,6 +820,19 @@ edit-popup-settings =
 picture-in-picture-hide-toggle =
     .label = Ẩn nút hình trong hình
     .accesskey = H
+
+## Since the default position for PiP controls does not change for RTL layout,
+## right-to-left languages should use "Left" and "Right" as in the English strings,
+
+picture-in-picture-move-toggle-right =
+    .label = Chuyển chế độ hình trong hình sang phải
+    .accesskey = R
+picture-in-picture-move-toggle-left =
+    .label = Chuyển chế độ hình trong hình sang trái
+    .accesskey = L
+
+##
+
 
 # Navigator Toolbox
 
@@ -743,15 +844,12 @@ navbar-accessible =
 navbar-downloads =
     .label = Tải xuống
 navbar-overflow =
-    .tooltiptext = Thêm công cụ...
+    .tooltiptext = Công cụ khác...
 # Variables:
 #   $shortcut (String): keyboard shortcut to print the page
 navbar-print =
     .label = In
     .tooltiptext = In trang này… ({ $shortcut })
-navbar-print-tab-modal-disabled =
-    .label = In
-    .tooltiptext = In trang này
 navbar-home =
     .label = Trang chủ
     .tooltiptext = { -brand-short-name } Trang Chủ
@@ -760,8 +858,6 @@ navbar-library =
     .tooltiptext = Xem lịch sử, dấu trang đã lưu và nhiều hơn nữa
 navbar-search =
     .title = Tìm kiếm
-navbar-accessibility-indicator =
-    .tooltiptext = Chức năng về khả năng truy cập đã được bật
 # Name for the tabs toolbar as spoken by screen readers. The word
 # "toolbar" is appended automatically and should not be included in
 # in the string
@@ -778,3 +874,83 @@ tabs-toolbar-list-all-tabs =
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>Đã mở các thẻ trước đó?</strong> Bạn có thể khôi phục phiên trước đó của mình từ menu ứng dụng { -brand-short-name } <img data-l10n-name="icon"/>, trong mục Lịch sử.
 restore-session-startup-suggestion-button = Hướng dẫn cho tôi
+
+## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
+
+data-reporting-notification-message = { -brand-short-name } tự động gửi dữ liệu về { -vendor-short-name } để chúng tôi có thể cải thiện trải nghiệm của bạn.
+data-reporting-notification-button =
+    .label = Chọn những thứ tôi muốn chia sẻ
+    .accesskey = C
+# Label for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-label = Duyệt web riêng tư
+
+## Unified extensions (toolbar) button
+
+unified-extensions-button =
+    .label = Tiện ích mở rộng
+    .tooltiptext = Tiện ích mở rộng
+
+## Unified extensions button when permission(s) are needed.
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-permissions-needed =
+    .label = Tiện ích mở rộng
+    .tooltiptext =
+        Tiện ích mở rộng
+        Cần yêu cầu quyền hạn
+
+## Unified extensions button when some extensions are quarantined.
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-quarantined =
+    .label = Tiện ích mở rộng
+    .tooltiptext =
+        Tiện ích mở rộng
+        Vài tiện ích mở rộng không được phép
+
+## Autorefresh blocker
+
+refresh-blocked-refresh-label = { -brand-short-name } đã ngăn trang web này tự động tải lại.
+refresh-blocked-redirect-label = { -brand-short-name } đã ngăn trang web này tự động chuyển đến trang khác.
+refresh-blocked-allow =
+    .label = Cho phép
+    .accesskey = A
+
+## Firefox Relay integration
+
+firefox-relay-offer-why-to-use-relay = Mặt nạ an toàn, dễ sử dụng của chúng tôi bảo vệ danh tính của bạn và ngăn chặn thư rác bằng cách ẩn địa chỉ email của bạn.
+# Variables:
+#  $useremail (String): user email that will receive messages
+firefox-relay-offer-what-relay-provides = Tất cả email gửi đến mặt nạ email của bạn sẽ được chuyển đến <strong>{ $useremail }</strong> (trừ khi bạn quyết định chặn chúng).
+firefox-relay-offer-legal-notice = Bằng cách nhấp vào “Sử dụng mặt nạ email”, bạn đồng ý với <label data-l10n-name="tos-url">điều khoản sử dụng</label> và <label data-l10n-name="privacy-url">thông báo về quyền riêng tư</label>.
+
+## Add-on Pop-up Notifications
+
+popup-notification-addon-install-unsigned =
+    .value = (Chưa xác thực)
+popup-notification-xpinstall-prompt-learn-more = Tìm hiểu thêm về cách cài đặt tiện ích một cách an toàn
+
+## Pop-up warning
+
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-message = { -brand-short-name } đã chặn trang web này mở { $popupCount } cửa sổ bật lên.
+# The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-message = { -brand-short-name } đã ngăn trang web này mở nhiều hơn { $popupCount } cửa sổ bật lên.
+popup-warning-button =
+    .label =
+        { PLATFORM() ->
+            [windows] Tùy chọn
+           *[other] Tùy chỉnh
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [windows] O
+           *[other] P
+        }
+# Variables:
+#   $popupURI (String): the URI for the pop-up window
+popup-show-popup-menuitem =
+    .label = Hiển thị '{ $popupURI }'

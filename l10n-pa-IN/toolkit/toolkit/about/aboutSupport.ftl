@@ -18,6 +18,10 @@ support-addons-type = ਕਿਸਮ
 support-addons-enabled = ਸਮਰੱਥ ਹੈ
 support-addons-version = ਵਰਜ਼ਨ
 support-addons-id = ID
+legacy-user-stylesheets-title = ਪੁਰਾਣੀਆਂ ਵਰਤੋਂਕਾਰ ਸਟਾਈਲਸ਼ੀਟਾਂ
+legacy-user-stylesheets-enabled = ਸਰਗਰਮ
+legacy-user-stylesheets-stylesheet-types = ਸਟਾਈਲਸ਼ੀਟਾਂ
+legacy-user-stylesheets-no-stylesheets-found = ਕੋਈ ਸਟਾਈਲਸ਼ੀਟਾਂ ਨਹੀਂ ਲੱਭੀਆਂ
 security-software-title = ਸੁਰੱਖਿਆ ਸਾਫਟਵੇਅਰ
 security-software-type = ਕਿਸਮ
 security-software-name = ਨਾਂ
@@ -75,6 +79,13 @@ app-basics-location-service-key-google = ਗੂਗਲ ਟਿਕਾਣਾ ਸੇ�
 app-basics-safebrowsing-key-google = ਗੂਗਲ ਸੇਫ਼-ਬਰਾਊਜਿੰਗ ਕੁੰਜੀ
 app-basics-key-mozilla = Mozilla Location Service Key
 app-basics-safe-mode = ਸੁਰੱਖਿਅਤ ਮੋਡ
+app-basics-memory-size = ਮੈਮੋਰੀ ਆਕਾਰ (RAM)
+app-basics-disk-available = ਮੌਜੂਦ ਡਿਸਕ ਥਾਂ
+app-basics-pointing-devices = ਪੁਆਇੰਟ ਕਰਨ ਵਾਲੇ ਡਿਵਾਈਸ
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Finder ਵਿੱਚ ਵੇਖਾਓ
@@ -104,11 +115,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = ਫ਼ੈਸਲਾ ਲਾਗ
 graphics-crash-guards-title = ਕਰੈਸ਼ ਗਾਰਡ ਆਯੋਗ ਫੀਚਰ
 graphics-workarounds-title = ਜੁਗਾੜ
+graphics-device-pixel-ratios = ਵਿੰਡੋ ਡਿਵਾਈਸ ਪਿਕਸਲ ਅਨੁਪਾਤ
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = ਵਿੰਡੋ ਪਰੋਟੋਕਾਲ
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = ਡੈਸਕਟਾਪ ਇੰਵਾਇਰਨਮੈਂਟ
 place-database-title = ਥਾਵਾਂ ਦਾ ਡਾਟਾਬੇਸ
+place-database-stats = ਅੰਕੜੇ
+place-database-stats-show = ਅੰਕੜੇ ਵੇਖੋ
+place-database-stats-hide = ਅੰਕੜੇ ਓਹਲੇ
+place-database-stats-entity = ਐਨਟੇਟੀ
+place-database-stats-count = ਗਿਣਤੀ
+place-database-stats-size-kib = ਆਕਾਰ (KiB)
+place-database-stats-size-perc = ਆਕਾਰ (%)
+place-database-stats-efficiency-perc = ਕਾਰਗੁਜ਼ਾਰੀ (%)
+place-database-stats-sequentiality-perc = ਲੜੀ (%)
 place-database-integrity = ਇਕਸਾਰਤਾ
 place-database-verify-integrity = ਇਕਸਾਰਤਾ ਨੂੰ ਤਸਦੀਕ ਕਰੋ
 a11y-title = ਅਸੈਸਬਿਲਟੀ
@@ -155,8 +176,18 @@ media-device-channels = ਚੈਨਲ
 media-device-rate = ਰੇਟ
 media-device-latency = ਦੇਰੀ
 media-capabilities-title = ਮੀਡਿਆ ਸਮਰੱਥਾਵਾਂ
+media-codec-support-info = Codec ਸਹਿਯੋਗ ਜਾਣਕਾਰੀ
 # List all the entries of the database.
 media-capabilities-enumerate = ਡਾਟਾਬੇਸ ਦੇ ਇੰਦਰਾਜ਼ਾਂ ਦੀ ਸੂਚੀ
+
+## Codec support table
+
+media-codec-support-sw-decoding = ਸਾਫ਼ਟਵੇਅਰ ਡਿਕੋਡਿੰਗ
+media-codec-support-hw-decoding = ਹਾਰਡਵੇਅਰ ਡਿਕੋਡਿੰਗ
+media-codec-support-codec-name = Codec ਦਾ ਨਾਂ
+media-codec-support-supported = ਸਹਿਯੋਗੀ
+media-codec-support-unsupported = ਗ਼ੈਰ-ਸਹਿਯੋਗੀ
+media-codec-support-error = Codec ਸਹਿਯੋਗ ਦੀ ਜਾਣਕਾਰੀ ਮੌਜੂਦ ਨਹੀਂ ਹੈ। ਮੀਡੀਆ ਫ਼ਾਇਲ ਚਲਾਉਣ ਤੋਂ ਬਾਅਦ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।
 
 ##
 
@@ -271,6 +302,8 @@ webgl2-renderer = WebGL2 ਰੈਂਡਰਰ
 webgl2-version = WebGL 2 Driver Version
 webgl2-driver-extensions = WebGL 2 Driver Extensions
 webgl2-extensions = WebGL 2 Extensions
+webgpu-default-adapter = WebGPU ਮੂਲ ਅਡੈਪਟਰ
+webgpu-fallback-adapter = WebGPU ਫ਼ਾਲਬੈਕ ਅਡੈਪਟਰ
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = ਜਾਣੇ-ਪਛਾਣੇ ਮਸਲਿਆਂ ਕਰਕੇ ਪਾਬੰਦੀ ਲਾਈ: <a data-l10n-name="bug-link">ਬੱਗ { $bugNumber }</a>
@@ -299,6 +332,8 @@ can-sandbox-content = ਪ੍ਰਸੰਗ ਕਾਰਵਾਈ ਸੈਂਡਬੌ�
 can-sandbox-media = ਮੀਡੀਆ ਪਲੱਗਇਨ ਸੈਂਡਬੌਕਸਿੰਗ
 content-sandbox-level = Content Process Sandbox Level
 effective-content-sandbox-level = ਪ੍ਰਭਾਵੀ ਸਮੱਗਰੀ ਕਾਰਵਾਈ ਸੈਂਡਬਾਕਸ ਪੱਧਰ
+content-win32k-lockdown-state = ਸਮੱਗਰੀ ਸੁਰੱਖਿਆ ਲਈ Win32k ਲਾਕਡਾਊਨ ਸਥਿਤੀ
+support-sandbox-gpu-level = GPU ਪ੍ਰੋਸੈਸ ਸੈਂਡਬਾਕਸ ਪੱਧਰ
 sandbox-proc-type-content = ਸਮੱਗਰੀ
 sandbox-proc-type-file = ਫ਼ਾਇਲ ਸਮੱਗਰੀ
 sandbox-proc-type-media-plugin = ਮੀਡੀਆ ਪਲੱਗਇਨ
@@ -324,12 +359,13 @@ fission-status-experiment-control = ਤਰਜਬੇ ਵਲੋਂ ਅਸਮਰੱ
 fission-status-experiment-treatment = ਤਜਰਬੇ ਵਲੋਂ ਸਮਰੱਥ ਕੀਤਾ
 fission-status-disabled-by-e10s-env = ਵਾਤਾਵਰਨ ਰਾਹੀਂ ਅਸਮਰੱਥ ਕੀਤਾ
 fission-status-enabled-by-env = ਵਾਤਾਵਰਨ ਰਾਹੀਂ ਸਮਰੱਥ ਕੀਤਾ
-fission-status-disabled-by-safe-mode = ਸੁਰੱਖਿਅਤ ਢੰਗ ਰਾਹੀਂ ਅਸਮਰੱਥ ਕੀਤਾ
+fission-status-disabled-by-env = ਪ੍ਰਣਾਲੀ ਵਲੋਂ ਅਸਮਰੱਥ ਕੀਤਾ ਹੈ
 fission-status-enabled-by-default = ਮੂਲ ਰੂਪ ਵਿੱਚ ਸਮਰੱਥ ਹੈ
 fission-status-disabled-by-default = ਮੂਲ ਰੂਪ 'ਚ ਅਸਮਰੱਥ ਹੈ
 fission-status-enabled-by-user-pref = ਵਰਤੋਂਕਾਰ ਵਲੋਂ ਸਮਰੱਥ ਕੀਤਾ
 fission-status-disabled-by-user-pref = ਵਰਤੋਂਕਾਰ ਵਲੋਂ ਅਸਮਰੱਥ ਹੈ
 fission-status-disabled-by-e10s-other = E10s ਅਸਮਰੱਥ ਹੈ
+fission-status-enabled-by-rollout = ਲੜੀਵਾਰ ਵੰਡਣ ਰਾਹੀਂ ਸਮਰੱਥ ਕੀਤਾ
 async-pan-zoom = ਅਸਮਕਾਲੀ ਪੈਨ/ਜ਼ੂਮ
 apz-none = ਕੋਈ ਨਹੀਂ
 wheel-enabled = ਵ੍ਹੀਲ ਇਨਪੁਟ ਸਮਰੱਥ ਹੈ
@@ -369,3 +405,10 @@ support-remote-experiments-see-about-studies = ਹੋਰ ਜਾਣਕਾਰੀ �
 support-remote-features-title = ਰਿਮੋਟ ਫ਼ੀਚਰ
 support-remote-features-name = ਨਾਂ
 support-remote-features-status = ਹਾਲਤ
+
+## Pointing devices
+
+pointing-device-mouse = ਮਾਊਸ
+pointing-device-touchscreen = ਟੱਚ-ਸਕਰੀਨ
+pointing-device-pen-digitizer = ਪੈਨ ਡਿਜ਼ੀਟਾਈਜ਼ਰ
+pointing-device-none = ਕੋਈ ਪੁਆਇੰਟ ਕਰਨ ਵਾਲਾ ਡਿਵਾਈਸ ਨਹੀਂ ਹੈ

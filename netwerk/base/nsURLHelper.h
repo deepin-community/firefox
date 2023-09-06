@@ -226,6 +226,12 @@ bool net_IsValidIPv4Addr(const nsACString& aAddr);
  */
 bool net_IsValidIPv6Addr(const nsACString& aAddr);
 
+/**
+ * Returns the default status text for a given HTTP status code (useful if HTTP2
+ * does not provide one, for instance).
+ */
+bool net_GetDefaultStatusTextForCode(uint16_t aCode, nsACString& aOutText);
+
 namespace mozilla {
 /**
  * A class for handling form-urlencoded query strings.
@@ -295,8 +301,11 @@ class URLParams final {
 
   /**
    * Serializes the current state to a query string.
+   *
+   * \param[out] aValue will be assigned the result of the serialization
+   * \param aEncode If this is true, the serialization will encode the string.
    */
-  void Serialize(nsAString& aValue) const;
+  void Serialize(nsAString& aValue, bool aEncode) const;
 
   void Get(const nsAString& aName, nsString& aRetval);
 
@@ -315,10 +324,14 @@ class URLParams final {
 
   bool Has(const nsAString& aName);
 
+  bool Has(const nsAString& aName, const nsAString& aValue);
+
   /**
    * \brief Deletes all parameters with the given name.
    */
   void Delete(const nsAString& aName);
+
+  void Delete(const nsAString& aName, const nsAString& aValue);
 
   void DeleteAll() { mParams.Clear(); }
 

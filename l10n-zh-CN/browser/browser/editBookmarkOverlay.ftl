@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = 隐藏
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = 显示所有书签文件夹
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = 隐藏
+
 bookmark-overlay-new-folder-button =
     .label = 新建文件夹
     .accesskey = o
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = 显示所有标签
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = 隐藏
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = 显示所有标签
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = 隐藏
 
 bookmark-overlay-keyword-2 =
     .value = 关键词

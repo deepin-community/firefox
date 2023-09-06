@@ -4,15 +4,14 @@
 
 "use strict";
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
 var httpserver;
 
 function inChildProcess() {
-  return (
-    Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime)
-      .processType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT
-  );
+  return Services.appinfo.processType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT;
 }
 function makeChan(path) {
   return NetUtil.newChannel({
@@ -36,13 +35,15 @@ function set_private_cookie(value, callback) {
 }
 
 function check_cookie_presence(value, isPrivate, expected, callback) {
-  setup_chan("present?cookie=" + value.replace("=", "|"), isPrivate, function(
-    req
-  ) {
-    req.QueryInterface(Ci.nsIHttpChannel);
-    Assert.equal(req.responseStatus, expected ? 200 : 404);
-    callback(req);
-  });
+  setup_chan(
+    "present?cookie=" + value.replace("=", "|"),
+    isPrivate,
+    function (req) {
+      req.QueryInterface(Ci.nsIHttpChannel);
+      Assert.equal(req.responseStatus, expected ? 200 : 404);
+      callback(req);
+    }
+  );
 }
 
 function presentHandler(metadata, response) {
@@ -104,25 +105,25 @@ function run_test() {
     executeSoon(tests.shift());
   }
 
-  tests.push(function() {
+  tests.push(function () {
     set_cookie("C1=V1", check_cookie);
   });
-  tests.push(function() {
+  tests.push(function () {
     set_private_cookie("C2=V2", check_cookie);
   });
-  tests.push(function() {
+  tests.push(function () {
     // Check that the first cookie is present in a non-private request
     check_cookie_presence("C1=V1", false, true, runNextTest);
   });
-  tests.push(function() {
+  tests.push(function () {
     // Check that the second cookie is present in a private request
     check_cookie_presence("C2=V2", true, true, runNextTest);
   });
-  tests.push(function() {
+  tests.push(function () {
     // Check that the first cookie is not present in a private request
     check_cookie_presence("C1=V1", true, false, runNextTest);
   });
-  tests.push(function() {
+  tests.push(function () {
     // Check that the second cookie is not present in a non-private request
     check_cookie_presence("C2=V2", false, false, runNextTest);
   });
@@ -131,18 +132,15 @@ function run_test() {
   // since the notification needs to run in the parent process but there is
   // no existing mechanism to make that happen.
   if (!inChildProcess()) {
-    tests.push(function() {
+    tests.push(function () {
       // Simulate all private browsing instances being closed
-      var obsvc = Cc["@mozilla.org/observer-service;1"].getService(
-        Ci.nsIObserverService
-      );
-      obsvc.notifyObservers(null, "last-pb-context-exited");
+      Services.obs.notifyObservers(null, "last-pb-context-exited");
       // Check that all private cookies are now unavailable in new private requests
       check_cookie_presence("C2=V2", true, false, runNextTest);
     });
   }
 
-  tests.push(function() {
+  tests.push(function () {
     httpserver.stop(do_test_finished);
   });
 

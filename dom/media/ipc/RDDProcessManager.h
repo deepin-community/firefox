@@ -9,6 +9,7 @@
 #include "mozilla/PRemoteDecoderManagerChild.h"
 #include "mozilla/RDDProcessHost.h"
 #include "mozilla/ipc/TaskFactory.h"
+#include "mozilla/PRDDChild.h"
 #include "nsIObserver.h"
 
 namespace mozilla {
@@ -24,6 +25,7 @@ class RDDProcessManager final : public RDDProcessHost::Listener {
 
  public:
   static void Initialize();
+  static void RDDProcessShutdown();
   static void Shutdown();
   static RDDProcessManager* Get();
 
@@ -60,6 +62,13 @@ class RDDProcessManager final : public RDDProcessHost::Listener {
   // Returns the RDD Process
   RDDProcessHost* Process() { return mProcess; }
 
+  /*
+   * ** Test-only Method **
+   *
+   * Trigger RDD-process test metric instrumentation.
+   */
+  RefPtr<PRDDChild::TestTriggerMetricsPromise> TestTriggerMetrics();
+
  private:
   bool IsRDDProcessLaunching();
   bool IsRDDProcessDestroyed() const;
@@ -72,7 +81,6 @@ class RDDProcessManager final : public RDDProcessHost::Listener {
   RDDProcessManager();
 
   // Shutdown the RDD process.
-  void CleanShutdown();
   void DestroyProcess();
 
   bool IsShutdown() const;

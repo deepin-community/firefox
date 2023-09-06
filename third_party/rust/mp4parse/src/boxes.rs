@@ -15,7 +15,7 @@ struct String;
 
 macro_rules! box_database {
     ($($(#[$attr:meta])* $boxenum:ident $boxtype:expr),*,) => {
-        #[derive(Clone, Copy, PartialEq)]
+        #[derive(Clone, Copy, PartialEq, Eq)]
         pub enum BoxType {
             $($(#[$attr])* $boxenum),*,
             UnknownBox(u32),
@@ -102,6 +102,7 @@ box_database!(
     FileTypeBox                       0x6674_7970, // "ftyp"
     MediaDataBox                      0x6d64_6174, // "mdat"
     PrimaryItemBox                    0x7069_746d, // "pitm"
+    ItemDataBox                       0x6964_6174, // "idat"
     ItemInfoBox                       0x6969_6e66, // "iinf"
     ItemInfoEntry                     0x696e_6665, // "infe"
     ItemLocationBox                   0x696c_6f63, // "iloc"
@@ -109,6 +110,8 @@ box_database!(
     MovieHeaderBox                    0x6d76_6864, // "mvhd"
     TrackBox                          0x7472_616b, // "trak"
     TrackHeaderBox                    0x746b_6864, // "tkhd"
+    TrackReferenceBox                 0x7472_6566, // "tref"
+    AuxiliaryBox                      0x6175_786C, // "auxl"
     EditBox                           0x6564_7473, // "edts"
     MediaBox                          0x6d64_6961, // "mdia"
     EditListBox                       0x656c_7374, // "elst"
@@ -121,6 +124,7 @@ box_database!(
     ItemPropertyAssociationBox        0x6970_6d61, // "ipma"
     ColourInformationBox              0x636f_6c72, // "colr"
     ImageSpatialExtentsProperty       0x6973_7065, // "ispe"
+    PixelAspectRatioBox               0x7061_7370, // "pasp"
     PixelInformationBox               0x7069_7869, // "pixi"
     AuxiliaryTypeProperty             0x6175_7843, // "auxC"
     CleanApertureBox                  0x636c_6170, // "clap"
@@ -142,6 +146,9 @@ box_database!(
     AVCConfigurationBox               0x6176_6343, // "avcC"
     H263SampleEntry                   0x7332_3633, // "s263"
     H263SpecificBox                   0x6432_3633, // "d263"
+    HEV1SampleEntry                   0x6865_7631, // "hev1"
+    HVC1SampleEntry                   0x6876_6331, // "hvc1"
+    HEVCConfigurationBox              0x6876_6343, // "hvcC"
     MP4AudioSampleEntry               0x6d70_3461, // "mp4a"
     MP4VideoSampleEntry               0x6d70_3476, // "mp4v"
     #[cfg(feature = "3gpp")]

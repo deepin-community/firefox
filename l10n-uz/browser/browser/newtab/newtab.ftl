@@ -8,6 +8,11 @@
 newtab-page-title = Yangi varaq
 newtab-settings-button =
     .title = Yangi varaq sahifasini sozlash
+newtab-personalize-icon-label =
+    .title = Yangi varaqni moslashtirish
+    .aria-label = Yangi varaqni moslashtirish
+newtab-personalize-dialog-label =
+    .aria-label = Moslashtirish
 
 ## Search box component.
 
@@ -16,16 +21,32 @@ newtab-search-box-search-button =
     .title = Qidiruv
     .aria-label = Qidiruv
 
-newtab-search-box-search-the-web-input =
-    .placeholder = Internetdan izlash
-    .title = Internetdan izlash
+# Variables
+#  $engine (String): the name of the user's default search engine
+newtab-search-box-handoff-text = { $engine } orqali qidiring yoki manzilni kiriting
+newtab-search-box-handoff-text-no-engine = Izlang yoki manzilni kiriting
+# Variables
+#  $engine (String): the name of the user's default search engine
+newtab-search-box-handoff-input =
+    .placeholder = { $engine } orqali qidiring yoki manzilni kiriting
+    .title = { $engine } orqali qidiring yoki manzilni kiriting
+    .aria-label = { $engine } orqali qidiring yoki manzilni kiriting
+newtab-search-box-handoff-input-no-engine =
+    .placeholder = Qidiring yoki manzilni kiriting
+    .title = Qidiring yoki manzilni kiriting
+    .aria-label = Qidiring yoki manzilni kiriting
+
+newtab-search-box-text = Internetdan qidirish
+newtab-search-box-input =
+    .placeholder = Internetdan qidirish
     .aria-label = Internetdan izlash
 
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Qidiruv tizimini qoʻshish
-newtab-topsites-add-topsites-header = Yangi ommabop sayt
+newtab-topsites-add-shortcut-header = Yangi tugmalar birikmasi
 newtab-topsites-edit-topsites-header = Ommabop saytni tahrirlash
+newtab-topsites-edit-shortcut-header = Tugmalar birikmasini tahrirlash
 newtab-topsites-title-label = Nomi
 newtab-topsites-title-input =
     .placeholder = Nomini kiriting
@@ -54,6 +75,8 @@ newtab-confirm-delete-history-p1 = Ushbu sahifaning har bir nusxasini tarixingiz
 newtab-confirm-delete-history-p2 = Bu amalni ortga qaytarib boʻlmaydi.
 
 ## Top Sites - Sponsored label
+
+newtab-topsite-sponsored = Homiylik qilgan
 
 ## Context Menu - Action Tooltips.
 
@@ -95,6 +118,7 @@ newtab-menu-show-privacy-info = Bizning homiylarimiz va sizning maxfiyligingiz
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
 newtab-privacy-modal-button-done = Tayyor
+newtab-privacy-modal-button-manage = Reklama kontentni sozlamalarni boshqarish
 newtab-privacy-modal-header = Maxfiyligingiz juda muhim.
 newtab-privacy-modal-link = Yangi varaqda maxfiylik qanday boʻlishi haqida batafsil maʼlumot oling
 
@@ -139,6 +163,17 @@ newtab-label-download = Yuklab olindi
 #  $sponsorOrSource (String): This is the name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource } · Reklama huquqi asosida
 
+# This string is used at the bottom of story cards to indicate sponsored content
+# Variables:
+#  $sponsor (String): This is the name of a sponsor
+newtab-label-sponsored-by = Homiydan ({ $sponsor })
+
+# This string is used under the image of story cards to indicate source and time to read
+# Variables:
+#  $source (String): This is the name of a company or their domain
+#  $timeToRead (Number): This is the estimated number of minutes to read this story
+newtab-label-source-read-time = { $source } · { $timeToRead } daq
+
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
 
@@ -163,7 +198,7 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = Ommabop saytlar
-newtab-section-header-highlights = Saralangan saytlar
+newtab-section-header-recent-activity = Soʻnggi faoliyat
 # Variables:
 #  $provider (String): Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } tomonidan tavsiya qilingan
@@ -176,7 +211,6 @@ newtab-empty-section-highlights = Saytlarni koʻrishni boshlashingiz bilan biz s
 # Variables:
 #  $provider (String): Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Hammasini koʻrib chiqdingiz. { $provider }dan soʻnggi hikoyalarni o‘qish uchun keyinroq bu sahifaga qayting. Kuta olmaysizmi? Internetdan eng zoʻr hikoyalarni topish uchun ommabop mavzuni tanlang.
-
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -196,6 +230,12 @@ newtab-pocket-learn-more = Batafsil
 newtab-pocket-cta-button = { -pocket-brand-name }ni yuklab olish
 newtab-pocket-cta-text = Sizga yoqqan maqolalarni { -pocket-brand-name } xizmatiga saqlab qoʻying va maroqli oʻqib, tafakkuringizni rivojlantiring
 
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
+
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
@@ -204,3 +244,4 @@ newtab-error-fallback-refresh-link = Yana urinib ko‘rish uchun sahifani yangil
 
 ## Customization Menu
 
+newtab-custom-settings = Boshqa sozlamalarni boshqarish

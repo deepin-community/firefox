@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 ਸੁਰੱਖਿਅਤ ਬਰਾਊਜ਼ਰ
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = ਕੋਈ ਵੀ ਪ੍ਰੋਗਰਾਮ ਨਹੀਂ ਲੱਭਿਆ, ਜਿਸ ਵਿੱਚ ਬੁੱਕਮਾਰਕ, ਅਤੀਤ ਜਾਂ ਪਾਸਵਰਡ ਡਾਟਾ ਹੋਵੇ।
 
@@ -61,10 +73,8 @@ import-items-description = ਦਰਾਮਦ ਕਰਨ ਲਈ ਚੀਜ਼ਾਂ ਚ�
 
 import-permissions-page-title = { -brand-short-name } ਨੂੰ ਇਜਾਜ਼ਤਾਂ ਦਿਓ
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description =
-    macOS ਨੇ ਸਫ਼ਾਰੀ ਦੇ ਬੁੱਕਮਾਰਕ ਲਈ ਪਹੁੰਚ ਵਾਸਤੇ ਤੁਹਾਨੂੰ ਖਾਸ ਤੌਰ ਉੱਤੇ
-    { -brand-short-name } ਨੂੰ ਇਜਾਜ਼ਤ ਦੇਣਾ ਜ਼ਰੂਰੀ ਕੀਤਾ ਹੈ। “ਜਾਰੀ ਰੱਖੋ“ ਨੂੰ ਕਲਿੱਕ ਕਰੋ ਅਤੇ ਫ਼ਾਇਲ ਖੋਲ੍ਹੋ ਪੈਨਲ ਵਿੱਚ “Bookmarks.plist” ਫ਼ਾਇਲ ਨੂੰ ਚੁਣੋ।
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS { -brand-short-name } ਨੂੰ Safari ਦੇ ਡਾਟਾ ਵਰਤਣ ਲਈ ਤੁਹਾਡੇ ਵਲੋਂ ਖਾਸ ਇਜਾਜ਼ਤ ਚਾਹੁੰਦਾ ਹੈ। “ਜਾਰੀ ਰੱਖੋ” ਨੂੰ ਕਲਿੱਕ ਕਰੋ, ਦਿਖਾਈ ਦੇਣ ਵਾਲੇ ਫ਼ਾਈਡਰ (Finder) ਡਾਈਲਾਗ ਵਿੱਚ “Safari ਫ਼ੋਲਡਰ ਨੂੰ ਚੁਣੋ, ਅਤੇ “ਖੋਲ੍ਹੋ” ਨੂੰ ਕਲਿੱਕ ਕਰੋ।
 
 import-migrating-page-title = …ਦਰਾਮਦ ਕੀਤੀਆਂ ਜਾਂਦੀਆਂ ਹਨ
 
@@ -80,23 +90,9 @@ import-done-description = ਇਹ ਚੀਜ਼ਾਂ ਕਾਮਯਾਬੀ ਨਾਲ
 
 import-close-source-browser = ਜਾਰੀ ਰੱਖਣ ਤੋਂ ਪਹਿਲਾਂ ਚੁਣੇ ਗਏ ਬਰਾਊਜ਼ਰ ਦੇ ਬੰਦ ਕਰਨ ਨੂੰ ਯਕੀਨੀ ਬਣਾਓ।
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = { $source } ਤੋਂ
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = ਪੜ੍ਹਨ ਸੂਚੀ (Safari ਤੋਂ)
 imported-edge-reading-list = ਪੜ੍ਹਨ ਦੀ ਸੂਚੀ (Edge ਵਿੱਚੋਂ)
@@ -171,3 +167,8 @@ browser-data-session-checkbox =
     .label = ਵਿੰਡੋ ਅਤੇ ਟੈਬਾਂ
 browser-data-session-label =
     .value = ਵਿੰਡੋ ਅਤੇ ਟੈਬਾਂ
+
+browser-data-payment-methods-checkbox =
+    .label = ਭੁਗਤਾਨ ਦੇ ਢੰਗ
+browser-data-payment-methods-label =
+    .value = ਭੁਗਤਾਨ ਦੇ ਢੰਗ

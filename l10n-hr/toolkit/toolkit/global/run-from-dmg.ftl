@@ -9,7 +9,7 @@
 ## user accepts.
 
 prompt-to-install-title = Završiti instalaciju programa { -brand-short-name }?
-prompt-to-install-message = Završi ovu instalaciju u jednom koraku i zadrži { -brand-short-name } ažurnim i spriječi gubitak podataka. { -brand-short-name } bit će dodan u tvoju mapu Aplikacije i Dock.
+prompt-to-install-message = Završi ovu instalaciju u jednom koraku i zadrži { -brand-short-name } aktualnim i spriječi gubitak podataka. { -brand-short-name } bit će dodan u tvoju mapu Aplikacije i Dock.
 prompt-to-install-yes-button = Instaliraj
 prompt-to-install-no-button = Nemoj instalirati
 
@@ -17,3 +17,8 @@ prompt-to-install-no-button = Nemoj instalirati
 
 install-failed-title = { -brand-short-name } instalacija nije uspjela.
 install-failed-message = { -brand-short-name } instalacija nije uspjela, ali i dalje će se izvoditi.
+
+## Strings for a dialog that recommends to the user to start an existing
+## installation of the app in the Applications directory if one is detected,
+## rather than the app that was double-clicked in a .dmg.
+

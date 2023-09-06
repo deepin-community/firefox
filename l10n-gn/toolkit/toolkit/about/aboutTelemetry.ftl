@@ -34,7 +34,6 @@ about-telemetry-events-section = Tembiaporã
 about-telemetry-simple-measurements-section = Ha’ãha hypy’ũ’ỹva
 about-telemetry-slow-sql-section = Je’etepyre SQL imbegue
 about-telemetry-addon-details-section = Moĩmbaha mba’emimi
-about-telemetry-captured-stacks-section = Japyhypyre mbojo’a
 about-telemetry-late-writes-section = Jehaipy mbotapykuéva
 about-telemetry-raw-payload-section = Hetepy ojehecha’ỹva gueteri
 about-telemetry-raw = Raw JSON
@@ -75,7 +74,7 @@ about-telemetry-settings-explanation = Telemetría ombyaty hína { about-telemet
 #   $name (String): ping name, e.g. “saved-session”
 #   $timeStamp (String): ping localized timestamp, e.g. “2017/07/08 10:40:46”
 about-telemetry-ping-details = Marandu peteĩteĩva oñemondo “<a data-l10n-name="ping-link">Turuñe’ẽ</a>”-pe. Ehecha hína { $name }, { $timestamp } turuñe’ẽ.
-about-telemetry-data-details-current = Marandu peteĩteĩva oñemondo “<a data-l10n-name="ping-link">“-pe. Ojehecha mba’ekuaarã ag̃agua.
+about-telemetry-data-details-current = Marandu peteĩteĩva oñemondo “<a data-l10n-name="ping-link">pings</a>“. Ehechahína mba’ekuaarã ko’ag̃agua.
 # string used as a placeholder for the search field
 # More info about it can be found here:
 # https://firefox-source-docs.mozilla.org/toolkit/components/telemetry/telemetry/data/main-ping.html
@@ -122,10 +121,6 @@ about-telemetry-keys-header = Mba’etee
 about-telemetry-names-header = Téra
 about-telemetry-values-header = Tepykue
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (japyhypyre rehegua: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Jehaipy itapykuéva #{ $lateWriteCount }
 about-telemetry-stack-title = Mbojo’apy:
@@ -136,12 +131,6 @@ about-telemetry-category-header = mba’éichagua
 about-telemetry-method-header = tapereko
 about-telemetry-object-header = g̃uahẽseha
 about-telemetry-extra-header = mbohetapy
-about-telemetry-origin-section = Telemetría ñepyrũha
-about-telemetry-origin-origin = Ñepyrũha
-about-telemetry-origin-count = papa
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Firefox Origin Telemetry</a> ombopapapy mba’ekuaarã ojegueraha’ỹre { $telemetryServerOwner }-pe ikatúva omombe’u, hákatu ndoikuaái peteĩva { -brand-product-name } oipytyvõpa pe jepapápe. <a data-l10n-name="prio-blog-link">maranduve</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = Tapereko { $process }

@@ -1,20 +1,20 @@
 "use strict";
 
-const { XPCShellContentUtils } = ChromeUtils.import(
-  "resource://testing-common/XPCShellContentUtils.jsm"
+const { XPCShellContentUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/XPCShellContentUtils.sys.mjs"
 );
 
 XPCShellContentUtils.init(this);
 
 function childFrameScript() {
-  addMessageListener("test:ipcClonedMessage", function(message) {
+  addMessageListener("test:ipcClonedMessage", function (message) {
     if (!Blob.isInstance(message.json)) {
       sendAsyncMessage(message.name, message.json);
       return;
     }
 
     let reader = new FileReader();
-    reader.addEventListener("load", function() {
+    reader.addEventListener("load", function () {
       let response =
         reader.result == "this is a great success!" ? message.json : "error";
       sendAsyncMessage(message.name, response);
@@ -37,7 +37,7 @@ add_task(async function test() {
     "",
     2,
     -0.04,
-    3432987324987239872948732982,
+    34329873249872400000000000000,
     true,
     false,
     null,

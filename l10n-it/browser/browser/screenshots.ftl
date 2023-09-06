@@ -17,6 +17,14 @@ screenshots-download-button = Scarica
 screenshots-download-button-tooltip = Scarica screenshot
 screenshots-copy-button = Copia
 screenshots-copy-button-tooltip = Copia lo screenshot negli appunti
+screenshots-download-button-title =
+  .title = Scarica screenshot
+screenshots-copy-button-title =
+  .title = Copia lo screenshot negli appunti
+screenshots-cancel-button-title =
+  .title = Annulla
+screenshots-retry-button-title =
+  .title = Riprova cattura
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -47,3 +55,6 @@ screenshots-private-window-error-details = Ci dispiace per l’inconveniente. St
 
 screenshots-generic-error-title = Wow! { -screenshots-brand-name } è andato in tilt
 screenshots-generic-error-details = Non sappiamo che cosa sia successo. Riprova, magari con una pagina diversa.
+
+screenshots-too-large-error-title = Lo screenshot è stato ritagliato in quanto troppo grande
+screenshots-too-large-error-details = Selezionare un’area inferiore a 32.700 pixel nel lato più lungo, o con una superficie complessiva inferiore a 124.900.000 pixel.

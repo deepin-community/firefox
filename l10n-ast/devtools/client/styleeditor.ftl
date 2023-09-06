@@ -11,3 +11,21 @@ styleeditor-open-link-new-tab =
     .label = Abrir l'enllaz nuna llingüeta nueva
 styleeditor-copy-url =
     .label = Copiar la URL
+styleeditor-find =
+    .label = Atopar
+    .accesskey = t
+styleeditor-find-again =
+    .label = Volver atopar
+    .accesskey = v
+styleeditor-go-to-line =
+    .label = Saltar a la llinia…
+    .accesskey = S
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } regla.
+       *[other] { $ruleCount } regles.
+    }

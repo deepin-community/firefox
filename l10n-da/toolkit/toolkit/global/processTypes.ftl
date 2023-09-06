@@ -22,13 +22,13 @@ process-type-extension = Udvidelse
 # process used to open file:// URLs
 process-type-file = Lokal fil
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Stor allokering
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Isoleret web-indhold
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Isoleret Service Worker
 
 # process preallocated; may change to other types
 process-type-prealloc = Forhånds-allokeret
@@ -49,6 +49,9 @@ process-type-socket = Socket
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Sandboxed IPC Actor
 
 ##
 ## Other

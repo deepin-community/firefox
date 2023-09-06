@@ -16,10 +16,27 @@ styleeditor-save-button = Save
     .accesskey = S
 styleeditor-options-button =
     .tooltiptext = Style Editor options
-styleeditor-media-rules = @media rules
 styleeditor-editor-textbox =
     .data-placeholder = Type CSS here.
 styleeditor-no-stylesheet = This page has no style sheet.
 styleeditor-no-stylesheet-tip = Perhaps you'd like to <a data-l10n-name="append-new-stylesheet">append a new style sheet</a>?
 styleeditor-open-link-new-tab =
     .label = Open Link in New Tab
+styleeditor-find =
+    .label = फेला पार्नुहोस्
+    .accesskey = F
+styleeditor-find-again =
+    .label = फेरि फेला पार्नुहोस्
+    .accesskey = g
+styleeditor-go-to-line =
+    .label = Jump to line…
+    .accesskey = J
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } rule.
+       *[other] { $ruleCount } rules.
+    }

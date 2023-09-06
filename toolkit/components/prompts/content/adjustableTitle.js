@@ -4,17 +4,15 @@
 
 "use strict";
 
-let { PromptUtils } = ChromeUtils.import(
-  "resource://gre/modules/SharedPromptUtils.jsm"
+let { PromptUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/PromptUtils.sys.mjs"
 );
-
-// We expect our consumer to provide Services.jsm.
-/* global Services */
 
 const AdjustableTitle = {
   _cssSnippet: `
     #titleContainer {
-      display: flex; /* Try removing me when browser.proton.enabled goes away. */
+      /* This gets display: flex by virtue of being a row in a subdialog, from
+        * commonDialog.css . */
       flex-shrink: 0;
 
       flex-direction: row;
@@ -130,7 +128,7 @@ const AdjustableTitle = {
           !DOMException.isInstance(ex) ||
           ex.name != "NoModificationAllowedError"
         ) {
-          Cu.reportError(ex);
+          console.error(ex);
         }
         return;
       }

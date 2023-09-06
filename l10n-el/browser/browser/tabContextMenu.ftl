@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Επιλογή όλων των καρτελών
     .accesskey = Ε
+tab-context-play-tab =
+    .label = Αναπαραγωγή καρτέλας
+    .accesskey = Α
+tab-context-play-tabs =
+    .label = Αναπαραγωγή καρτελών
+    .accesskey = π
 duplicate-tab =
     .label = Αντιγραφή καρτέλας
     .accesskey = Α
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Αποθήκευση καρτελών…
     .accesskey = Α
-bookmark-tab =
-    .label = Προσθήκη σελιδοδείκτη
+tab-context-bookmark-tab =
+    .label = Προσθήκη σελιδοδείκτη…
     .accesskey = Π
 tab-context-open-in-new-container-tab =
     .label = Άνοιγμα σε νέα θεματική καρτέλα
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Κοινή χρήση
     .accesskey = χ
-tab-context-share-more =
-    .label = Περισσότερα…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,13 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] Επαναφορά κλειστών καρτελών
         }
     .accesskey = φ
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Κλείσιμο καρτέλας
-           *[other] Κλείσιμο καρτελών
-        }
-    .accesskey = Κ
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

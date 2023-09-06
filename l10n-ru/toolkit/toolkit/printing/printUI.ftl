@@ -16,6 +16,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Все
+printui-page-range-current = Текущая
+printui-page-range-odd = Нечётные
+printui-page-range-even = Чётные
 printui-page-range-custom = Диапазон
 printui-page-range-label = Страницы
 printui-page-range-picker =

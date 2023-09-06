@@ -7,7 +7,7 @@
 
 about-config-intro-warning-title = Vazhdoni me Kujdes
 about-config-intro-warning-text = Ndryshimi i parapëlqimeve për formësim të mëtejshëm mund të ketë ndikim në funksionimin dhe sigurinë e { -brand-short-name }-it.
-about-config-intro-warning-checkbox = Sinjalizomë kur provoj të hyj në këto parapëlqime
+about-config-intro-warning-checkbox = Sinjalizomë, kur provoj të hyj në këto parapëlqime
 about-config-intro-warning-button = Pranoni Rrezikun dhe Vazhdoni
 
 ##

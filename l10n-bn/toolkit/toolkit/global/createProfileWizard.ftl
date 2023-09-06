@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = প্রোফাইল উইজার্ড তৈরি
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] ভূমিকা
-       *[other] { create-profile-window.title } এ আপনাকে স্বাগতম
+       *[other] { create-profile-window2.title } এ আপনাকে স্বাগতম
     }
 
 profile-creation-explanation-1 = { -brand-short-name } আপনার ব্যক্তিগত প্রোফাইলে আপনার ব্যবহৃত সেটিংসমূহ ও পছন্দসমূহ সম্পর্কিত তথ্য সংরক্ষণ করে।
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] সমাপ্তি
-       *[other] { create-profile-window.title } সম্পন্ন করা হচ্ছে
+       *[other] { create-profile-window2.title } সম্পন্ন করা হচ্ছে
     }
 
 profile-creation-intro = একাধিক প্রোফাইল তৈরী করলে আপনি নাম দিয়ে এগুলোকে চিহ্নিত করতে পারবেন। এখানে দেয়া নাম অথবা আপনার পছন্দসই অন্য যে কোনো নাম ব্যবহার করতে পারেন।

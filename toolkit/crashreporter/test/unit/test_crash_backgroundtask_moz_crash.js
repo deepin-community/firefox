@@ -10,8 +10,11 @@ add_task(async function run_test() {
   await do_backgroundtask_crash(
     CrashTestUtils.CRASH_MOZ_CRASH,
     { TestKey: "TestValue" },
-    function(mdump, extra) {
+    function (mdump, extra) {
       Assert.equal(extra.TestKey, "TestValue");
+      Assert.equal(extra.BackgroundTaskMode, "1");
+      Assert.equal(extra.BackgroundTaskName, "crash");
+      Assert.equal(extra.HeadlessMode, "1");
       Assert.equal(false, "OOMAllocationSize" in extra);
       Assert.equal(false, "JSOutOfMemory" in extra);
       Assert.equal(false, "JSLargeAllocationFailure" in extra);

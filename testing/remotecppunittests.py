@@ -4,18 +4,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function
 import os
 import posixpath
-import sys
 import subprocess
+import sys
 import traceback
 from zipfile import ZipFile
-import runcppunittests as cppunittests
+
 import mozcrash
 import mozfile
 import mozinfo
 import mozlog
+import runcppunittests as cppunittests
 from mozdevice import ADBDeviceFactory, ADBProcessError, ADBTimeoutError
 
 try:
@@ -100,8 +100,8 @@ class RemoteCPPUnitTests(cppunittests.CPPUnitTests):
             )
             self.device.push(local_file, remote_file)
 
-    def build_environment(self, enable_webrender=False):
-        env = self.build_core_environment({}, enable_webrender)
+    def build_environment(self):
+        env = self.build_core_environment({})
         env["LD_LIBRARY_PATH"] = self.remote_bin_dir
         env["TMPDIR"] = self.remote_tmp_dir
         env["HOME"] = self.remote_home_dir
@@ -119,7 +119,13 @@ class RemoteCPPUnitTests(cppunittests.CPPUnitTests):
         return env
 
     def run_one_test(
-        self, prog, env, symbols_path=None, interactive=False, timeout_factor=1
+        self,
+        prog,
+        env,
+        symbols_path=None,
+        utility_path=None,
+        interactive=False,
+        timeout_factor=1,
     ):
         """
         Run a single C++ unit test program remotely.
@@ -268,7 +274,6 @@ def run_test_harness(options, args):
         progs,
         options.xre_path,
         options.symbols_path,
-        enable_webrender=options.enable_webrender,
     )
     return result
 

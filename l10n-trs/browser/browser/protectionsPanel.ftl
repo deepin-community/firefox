@@ -84,6 +84,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Natà' sna'ānj dàj hua 'ngō sitiô gire'e
 protections-panel-content-blocking-breakage-report-view-description = Ga'ue ga'uì' yi'ì da'āj nej sa naga'nāj naránt riña da'āj nej sîtio. Sisī natà' sna'ānjt nej sa huā nan nī rugûñu'ūnjt riña { -brand-short-name } da' gā hue'ej riña darûn'. Na'nïnj nuguan' ga'nïnt naj 'ngō URL nī 'ngō nuguan' dàj nadunā sa huā riña aché nunt si'iaj Mozilla. <label data-l10n-name="learn-more">Gahuin chrūn doj</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Ga'ue ga'uì' yi'ì da'āj nej sa naga'nāj naránt riña da'āj nej sîtio. Sisī natà' sna'ānjt nej sa huā nan nī rugûñu'ūnjt riña { -brand-short-name } da' gā hue'ej riña darûn'. Na'nïnj nuguan' ga'nïnt naj 'ngō URL nī 'ngō nuguan' dàj nadunā sa huā riña aché nunt si'iaj { -vendor-short-name }.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -94,3 +95,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Duyichin'
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Ga'ni' reporte
+
+# Cookie Banner Handling
+

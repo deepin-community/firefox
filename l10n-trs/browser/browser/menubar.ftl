@@ -41,15 +41,6 @@ menu-quit =
 menu-quit-mac =
     .label = Gahui' { -brand-shorter-name }
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Gahuit { -brand-shorter-name }
-
 menu-about =
     .label = rayi'î { -brand-shorter-name }
     .accesskey = r
@@ -79,9 +70,6 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Na'nïn' chrûn ñanj...
     .accesskey = O
-menu-file-close =
-    .label = Narán
-    .accesskey = C
 menu-file-close-window =
     .label = Nàrrun' Window
     .accesskey = d
@@ -94,9 +82,6 @@ menu-file-email-link =
 menu-file-print-setup =
     .label = Naduna daj gà riña Pâjina
     .accesskey = u
-menu-file-print-preview =
-    .label = Dàj ga man si narit ñadu'ua
-    .accesskey = v
 menu-file-print =
     .label = Nari' ña du'ua
     .accesskey = P
@@ -171,6 +156,17 @@ menu-view-full-screen =
     .label = Nagi'iaj gachrò' riña aga' sikà' ràa
     .accesskey = F
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Gatu' riña ahio'
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Nàrun' sa ahio'
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -205,8 +201,6 @@ menu-history-undo-window-menu =
 menu-bookmarks-menu =
     .label = Sa raj sun nichrò' doj
     .accesskey = B
-menu-bookmark-edit =
-    .label = Nagi'io' sa arajsun nichrò' doj
 menu-bookmarks-all-tabs =
     .label = Nuto' a'ngo rakïj ñanj...
 menu-bookmarks-toolbar =
@@ -253,15 +247,6 @@ menu-window-bring-all-to-front =
 # NOTE: For Engineers, any additions or changes to Help menu strings should
 # also be reflected in the related strings in appmenu.ftl. Those strings, by
 # convention, will have the same ID as these, but prefixed with "app".
-# Example: appmenu-help-product
-#
-# These strings are duplicated to allow for different casing depending on
-# where the strings appear.
-
-
-# NOTE: For Engineers, any additions or changes to Help menu strings should
-# also be reflected in the related strings in appmenu.ftl. Those strings, by
-# convention, will have the same ID as these, but prefixed with "app".
 # Example: appmenu-get-help
 #
 # These strings are duplicated to allow for different casing depending on
@@ -272,9 +257,6 @@ menu-help =
     .accesskey = H
 menu-help-report-site-issue =
     .label = Natà' si huā sa huā a'na' riña sitiô…
-menu-help-feedback-page =
-    .label = Ga'nïnj 'ngo si nuguàn't
-    .accesskey = S
 # Label of the Help menu item. Either this or
 # safeb.palm.notdeceptive.label from
 # phishing-afterload-warning-message.dtd is shown.

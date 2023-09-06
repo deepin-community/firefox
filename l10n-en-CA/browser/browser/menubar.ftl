@@ -38,20 +38,9 @@ menu-quit =
             [windows] x
            *[other] Q
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Quit { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Exit { -brand-shorter-name }
-
 menu-about =
     .label = About { -brand-shorter-name }
     .accesskey = A
@@ -81,8 +70,14 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Open File…
     .accesskey = O
-menu-file-close =
-    .label = Close
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Close Tab
+           *[other] Close { $tabCount } Tabs
+        }
     .accesskey = C
 menu-file-close-window =
     .label = Close Window
@@ -99,9 +94,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Page Setup…
     .accesskey = u
-menu-file-print-preview =
-    .label = Print Preview
-    .accesskey = v
 menu-file-print =
     .label = Print…
     .accesskey = P
@@ -188,6 +180,17 @@ menu-view-full-screen =
     .label = Full Screen
     .accesskey = F
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Enter Reader View
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Close Reader View
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +219,9 @@ menu-history-undo-menu =
     .label = Recently Closed Tabs
 menu-history-undo-window-menu =
     .label = Recently Closed Windows
-menu-history-reopen-all-tabs = Reopen All Tabs
-menu-history-reopen-all-windows = Reopen All Windows
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Search History
 
 ## Bookmarks Menu
 
@@ -226,10 +230,13 @@ menu-bookmarks-menu =
     .accesskey = B
 menu-bookmarks-manage =
     .label = Manage Bookmarks
-menu-bookmark-current-tab =
-    .label = Bookmark Current Tab
-menu-bookmark-edit =
-    .label = Edit This Bookmark
+menu-bookmark-tab =
+    .label = Bookmark Current Tab…
+menu-edit-bookmark =
+    .label = Edit This Bookmark…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Search Bookmarks
 menu-bookmarks-all-tabs =
     .label = Bookmark All Tabs…
 menu-bookmarks-toolbar =
@@ -314,8 +321,8 @@ menu-help-more-troubleshooting-info =
     .accesskey = T
 menu-help-report-site-issue =
     .label = Report Site Issue…
-menu-help-feedback-page =
-    .label = Submit Feedback…
+menu-help-share-ideas =
+    .label = Share Ideas and Feedback…
     .accesskey = S
 menu-help-enter-troubleshoot-mode2 =
     .label = Troubleshoot Mode…
@@ -323,6 +330,9 @@ menu-help-enter-troubleshoot-mode2 =
 menu-help-exit-troubleshoot-mode =
     .label = Turn Troubleshoot Mode Off
     .accesskey = M
+menu-help-switch-device =
+    .label = Switching to a New Device
+    .accesskey = N
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

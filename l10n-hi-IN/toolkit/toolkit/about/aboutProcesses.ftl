@@ -2,6 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+# The Actions column
+about-processes-column-action =
+    .title = क्रिया
 
 ## Tooltips
 
@@ -16,25 +19,44 @@ about-processes-column-cpu-total = CPU
 ## Process names
 ## Variables:
 ##    $pid (String) The process id of this process, assigned by the OS.
-##    $origin (String) The domain name for this process.
-##    $type (String) The raw type for this process. Used for unknown processes.
 
+about-processes-browser-process = { -brand-short-name } ({ $pid })
+about-processes-file-process = फाइल ({ $pid })
+about-processes-extension-process = एक्सटेंशन ({ $pid })
+about-processes-plugin-process = प्लगइन ({ $pid })
+about-processes-gpu-process = GPU ({ $pid })
+about-processes-vr-process = VR ({ $pid })
+about-processes-rdd-process = डेटा डिकोडर ({ $pid })
+about-processes-socket-process = नेटवर्क ({ $pid })
 
-## Process names
-## Variables:
-##    $pid (String) The process id of this process, assigned by the OS.
+# Unknown process names
+# Variables:
+#    $pid (String) The process id of this process, assigned by the OS.
+#    $type (String) The raw type for this process.
+about-processes-unknown-process = अन्य: { $type } ({ $pid })
 
 ## Isolated process names
 ## Variables:
 ##    $pid (String) The process id of this process, assigned by the OS.
 ##    $origin (String) The domain name for this process.
 
+about-processes-web-isolated-process = { $origin } ({ $pid })
+
 ## Details within processes
+
+# Thread details
+# Variables:
+#   $name (String) The name assigned to the thread.
+#   $tid (String) The thread id of this thread, assigned by the OS.
+about-processes-thread-name-and-id = { $name }
+    .title = थ्रेड आईडी: { $tid }
 
 # Tab
 # Variables:
 #   $name (String) The name of the tab (typically the title of the page, might be the url while the page is loading).
 about-processes-tab-name = टैब: { $name }
+
+## Utility process actor names
 
 ## Displaying CPU (percentage and total)
 ## Variables:
@@ -44,6 +66,10 @@ about-processes-tab-name = टैब: { $name }
 ##                    its start.
 ##    $unit (String) The unit in which to display $total. See the definitions
 ##                   of `duration-unit-*`.
+
+# Common case.
+about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
+    .title = कुल CPU समय: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:

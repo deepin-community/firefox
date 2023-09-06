@@ -47,6 +47,7 @@ app-basics-profiles = प्रोफाइल
 app-basics-multi-process-support = मल्टिप्रोसेस पटल
 app-basics-key-mozilla = Mozilla स्थान सेवा की
 app-basics-safe-mode = सुरक्षित मोड
+
 show-dir-label =
     { PLATFORM() ->
         [macos] फाइंडरमध्ये दाखवा
@@ -108,6 +109,8 @@ media-device-format = स्वरूप
 media-device-channels = माध्यम
 media-device-rate = दर
 media-device-latency = विलंब
+
+## Codec support table
 
 ##
 

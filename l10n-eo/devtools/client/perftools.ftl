@@ -19,6 +19,7 @@ perftools-heading-features-default = Trajtoj (rekomenditaj aŭ norme aktivaj)
 perftools-heading-features-disabled = Malaktivaj trajtoj
 perftools-heading-features-experimental = Eksperimentaj funkcioj
 perftools-heading-threads = Fadenoj
+perftools-heading-threads-jvm = Fadenoj de JVM
 perftools-heading-local-build = Loka versio
 
 ##
@@ -44,7 +45,6 @@ perftools-devtools-settings-label = Agordoj
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice = La rulanalizilo estas malaktiva dum privata retumo. Fermu ĉiujn fenestrojn de privata retumo por reaktivigi la rulanalizilon.
 perftools-status-recording-stopped-by-another-tool = La registro estis haltigita de alia ilo.
 perftools-status-restart-required = Por aktivigi tiun ĉi trajton vi devas restartigi la retumilon.
 
@@ -76,8 +76,8 @@ perftools-thread-renderer =
     .title = Kiam WebRender estas aktiva, tiu estas la fadeno kiu vokas OpenGL
 perftools-thread-render-backend =
     .title = La fadeno WebRender RenderBackend
-perftools-thread-paint-worker =
-    .title = Kiam farbado ekster la ĉefa fadeno estas aktiva, tiu estas la fadeno kiu farbas
+perftools-thread-timer =
+    .title = La fadeno kiu zorgas pri tempumiloj (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
     .title = La komputo de stiloj estas dividita inter pluraj fadenoj
 pref-thread-stream-trans =
@@ -90,6 +90,18 @@ perftools-thread-dns-resolver =
     .title = Serĉoj de DNS okazas en tiu ĉi fadeno
 perftools-thread-task-controller =
     .title = Fadenoj de la grupo de fadenoj de TaskController
+perftools-thread-jvm-gecko =
+    .title = La ĉefa fadeno JVM de Gecko
+perftools-thread-jvm-nimbus =
+    .title = La ĉefaj fadenoj por la SKD de eksperimentoj Nimbus
+perftools-thread-jvm-default-dispatcher =
+    .title = La norma disdonilo por la biblioteko de kunprogramoj de Kotlin
+perftools-thread-jvm-glean =
+    .title = La ĉefaj fadenoj por la SDK de telemezuro de Glean
+perftools-thread-jvm-arch-disk-io =
+    .title = La disdonilo de eneligo por la biblioteko de kunprogramoj de Kotlin
+perftools-thread-jvm-pool =
+    .title = Fadenoj kreitaj en sennoma aro de fadenoj
 
 ##
 
@@ -99,13 +111,44 @@ perftools-tools-threads-input-label =
     .title = Tiuj ĉi nomoj de fadenoj estas listo apartigita per komoj, kiu estas uzita por aktivigi la rulanalizon de la fadenoj en la rulanalizilo. La nomo bezonas nur parte kongrui kun la nomo de la fadeno, por esti inkluzivita. Ĝi ne ignoras blankspacojn.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>Nova</b>: { -profiler-brand-name } estas integrita al la iloj por programistoj. Jen <a>pli da informo</a> pri tiu pova nova ilo.
 
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (Dum iom da tempo, vi povas ankoraŭ aliri la originalan efikecan panelon ĉi tie <a>{ options-context-advanced-settings }</a>)
-
 perftools-onboarding-close-button =
     .aria-label = Fermi la enkondukan mesaĝon
+
+## Profiler presets
+
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/popup/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
+perftools-presets-web-developer-label = Teksaĵa programisto
+perftools-presets-web-developer-description = Rekomendita agordaro por la senerarigo de la plimulto de teksaĵaj programoj, kun malmulte da aldona kromprocezado.
+
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = Rekomendita agordaro por rulanalizo de { -brand-shorter-name }
+
+perftools-presets-graphics-label = Grafikoj
+perftools-presets-graphics-description = Rekomendita agordaro por senerarigo de grafikoj en { -brand-shorter-name }.
+
+perftools-presets-media-label = Aŭdvidaĵo
+perftools-presets-media-description2 = Rekomendita agordaro por senerarigo de sono kaj video en { -brand-shorter-name }.
+
+perftools-presets-networking-label = Reto
+perftools-presets-networking-description = Rekomendita agordaro por esploro de retaj eraroj en { -brand-shorter-name }.
+
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = Energio
+perftools-presets-power-description = Agordoj por senerarigo de uzo de energio en { -brand-shorter-name }, kun malmulte da aldona kromprocezado.
+
+perftools-presets-custom-label = Personecigita
+
+##
+

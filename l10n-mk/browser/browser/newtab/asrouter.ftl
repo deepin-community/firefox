@@ -53,12 +53,10 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } корисници
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Синхронизирајте ги вашите обележувачи насекаде.
+cfr-doorhanger-bookmark-fxa-body = Одличен пронајдок! Сега не останувајте без овој обележувач на мобилните уреди. Започнете со { -fxaccount-brand-name }.
 cfr-doorhanger-bookmark-fxa-link-text = Синхронизирај обележувачи сега...
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = копче Затвори
@@ -78,56 +76,7 @@ cfr-whatsnew-button =
     .label = Што е ново
     .tooltiptext = Што е ново
 
-## Search Bar
-
-
-## Search bar
-
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-
-## Bookmark Sync
-
-
-## Login Sync
-
-
-## Send Tab
-
-
-## Firefox Send
-
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
-
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-
-## Vulnerable Passwords message
-
-
-## Picture-in-Picture fullscreen message
-
-
-## Protections Dashboard message
-
-
-## What’s New Panel Content for Firefox 76
-## Protections Dashboard message
-
-
-## Better PDF message
 
 
 ## DOH Message
@@ -136,28 +85,52 @@ cfr-whatsnew-button =
 ## Fission Experiment Message
 
 
-## What's new: Cookies message
-
-
-## What's new: Media controls message
-
-
-## What's new: Search shortcuts
-
-
-## What's new: Cookies protection
-
-
-## What's new: Better bookmarking
-
-
-## What's new: Cross-site cookie tracking
-
 ## Full Video Support CFR message
+
+
+## Spotlight modal shared strings
+
 
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
+
+
+## Total Cookie Protection Rollout
+
+
+## Emotive Continuous Onboarding
+
+spotlight-pin-secondary-button = Не сега
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+## Firefox View CFR
+
+## Firefox View Spotlight
+
+## Colorways expiry reminder CFR
+
+## Cookie Banner Handling CFR
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
 

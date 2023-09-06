@@ -235,6 +235,15 @@ class Loader final {
 
   using StylePreloadKind = css::StylePreloadKind;
 
+  bool HasLoaded(const SheetLoadDataHashKey& aKey) const {
+    return mLoadsPerformed.Contains(aKey);
+  }
+
+  void WillStartPendingLoad() {
+    MOZ_DIAGNOSTIC_ASSERT(mPendingLoadCount, "Where did this load come from?");
+    mPendingLoadCount--;
+  }
+
   nsCompatibility CompatMode(StylePreloadKind aPreloadKind) const {
     // For Link header preload, we guess non-quirks, because otherwise it is
     // useless for modern pages.
@@ -263,10 +272,9 @@ class Loader final {
    * @param aObserver the observer to notify when the load completes.
    *        May be null.
    * @param aBuffer the stylesheet data
-   * @param aLineNumber the line number at which the stylesheet data started.
    */
   Result<LoadSheetResult, nsresult> LoadInlineStyle(
-      const SheetInfo&, const nsAString& aBuffer, uint32_t aLineNumber,
+      const SheetInfo&, const nsAString& aBuffer,
       nsICSSLoaderObserver* aObserver);
 
   /**
@@ -352,6 +360,8 @@ class Loader final {
    * @param aReferrerInfo referrer information of the sheet.
    * @param aObserver the observer to notify when the load completes.
    *                  Must not be null.
+   * @param aEarlyHintPreloaderId to connect back to the early hint preload
+   * channel. Null means no connect back should happen
    * @return the sheet to load. Note that the sheet may well not be loaded by
    * the time this method returns.
    *
@@ -362,7 +372,8 @@ class Loader final {
   Result<RefPtr<StyleSheet>, nsresult> LoadSheet(
       nsIURI* aURI, StylePreloadKind, const Encoding* aPreloadEncoding,
       nsIReferrerInfo* aReferrerInfo, nsICSSLoaderObserver* aObserver,
-      CORSMode = CORS_NONE, const nsAString& aIntegrity = u""_ns);
+      uint64_t aEarlyHintPreloaderId, CORSMode aCORSMode,
+      const nsAString& aNonce, const nsAString& aIntegrity);
 
   /**
    * As above, but without caring for a couple things.
@@ -400,6 +411,8 @@ class Loader final {
    */
   dom::Document* GetDocument() const { return mDocument; }
 
+  bool IsDocumentAssociated() const { return mIsDocumentAssociated; }
+
   /**
    * Return true if this loader has pending loads (ones that would send
    * notifications to an nsICSSLoaderObserver attached to this loader).
@@ -434,8 +447,6 @@ class Loader final {
   // IsAlternateSheet can change our currently selected style set if none is
   // selected and aHasAlternateRel is false.
   IsAlternate IsAlternateSheet(const nsAString& aTitle, bool aHasAlternateRel);
-
-  typedef nsTArray<RefPtr<SheetLoadData>> LoadDataArray;
 
   // Measure our size.
   size_t SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) const;
@@ -527,25 +538,22 @@ class Loader final {
       nsIURI* aURL, StylePreloadKind, SheetParsingMode aParsingMode,
       UseSystemPrincipal, const Encoding* aPreloadEncoding,
       nsIReferrerInfo* aReferrerInfo, nsICSSLoaderObserver* aObserver,
-      CORSMode aCORSMode, const nsAString& aIntegrity);
+      CORSMode aCORSMode, const nsAString& aNonce, const nsAString& aIntegrity,
+      uint64_t aEarlyHintPreloaderId);
 
-  RefPtr<StyleSheet> LookupInlineSheetInCache(const nsAString&);
+  RefPtr<StyleSheet> LookupInlineSheetInCache(const nsAString&, nsIPrincipal*);
 
-  // Post a load event for aObserver to be notified about aSheet.  The
-  // notification will be sent with status NS_OK unless the load event is
-  // canceled at some point (in which case it will be sent with
-  // NS_BINDING_ABORTED).
-  nsresult PostLoadEvent(RefPtr<SheetLoadData>);
+  // Synchronously notify of a cached load data.
+  void NotifyOfCachedLoad(RefPtr<SheetLoadData>);
 
   // Start the loads of all the sheets in mPendingDatas
   void StartDeferredLoads();
 
-  void HandleLoadEvent(SheetLoadData&);
-
   // Note: LoadSheet is responsible for setting the sheet to complete on
   // failure.
   enum class PendingLoad { No, Yes };
-  nsresult LoadSheet(SheetLoadData&, SheetState, PendingLoad = PendingLoad::No);
+  nsresult LoadSheet(SheetLoadData&, SheetState, uint64_t aEarlyHintPreloaderId,
+                     PendingLoad = PendingLoad::No);
 
   enum class AllowAsyncParse {
     Yes,
@@ -591,10 +599,6 @@ class Loader final {
 
   RefPtr<SharedStyleSheetCache> mSheets;
 
-  // The array of posted stylesheet loaded events (SheetLoadDatas) we have.
-  // Note that these are rare.
-  LoadDataArray mPostedEvents;
-
   // Our array of "global" observers
   nsTObserverArray<nsCOMPtr<nsICSSLoaderObserver>> mObservers;
 
@@ -622,6 +626,9 @@ class Loader final {
   uint32_t mParsedSheetCount = 0;
 
   bool mEnabled = true;
+
+  // Whether we had a document at the point of creation.
+  bool mIsDocumentAssociated = false;
 
 #ifdef DEBUG
   // Whether we're in a necko callback atm.

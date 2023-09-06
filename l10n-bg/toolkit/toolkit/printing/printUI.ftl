@@ -15,6 +15,8 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Всички
+printui-page-range-odd = Нечетни
+printui-page-range-even = Четни
 printui-page-range-custom = По избор
 printui-page-range-label = Страници
 printui-page-range-picker =
@@ -56,15 +58,24 @@ printui-two-sided-printing-short-edge = Обърнете на къс ръб
 # Section title for miscellaneous print options
 printui-options = Настройки
 printui-headers-footers-checkbox = Печат на горни и долни колонтитули
-printui-backgrounds-checkbox = Печат фонови изображения
+printui-backgrounds-checkbox = Печат на фонови изображения
 
 ## The "Format" section, select a version of the website to print. Radio
 ## options to select between the original page, selected text only, or a version
 ## where the page is processed with "Reader View".
 
+# The section title.
+printui-source-label = Формат
+# Option for printing the original page.
+printui-source-radio = Оригинален
+# Option for printing just the content a user selected prior to printing.
+printui-selection-radio = Избраното
+# Option for "simplifying" the page by printing the Reader View version.
+printui-simplify-page-radio = Опростен
+
 ##
 
-printui-color-mode-label = Цветно
+printui-color-mode-label = Цвят
 printui-color-mode-color = Цвят
 printui-color-mode-bw = Черно-бяло
 

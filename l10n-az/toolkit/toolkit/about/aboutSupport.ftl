@@ -48,6 +48,7 @@ app-basics-multi-process-support = Çox əməliyyatlı Pəncərələr
 app-basics-enterprise-policies = Sahibkarlıq Siyasəti
 app-basics-key-mozilla = Mozilla Mövqe Xidməti Açarı
 app-basics-safe-mode = Təhlükəsiz Rejim
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Finder-də göstər
@@ -109,6 +110,8 @@ media-device-format = Format
 media-device-channels = Kanallar
 media-device-rate = Tempi
 media-device-latency = Ləngimə
+
+## Codec support table
 
 ##
 

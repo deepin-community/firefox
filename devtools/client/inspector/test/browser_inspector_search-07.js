@@ -23,7 +23,7 @@ const TEST_DATA = [
   },
 ];
 
-add_task(async function() {
+add_task(async function () {
   const { inspector } = await openInspectorForURL(TEST_URL);
   const { searchBox } = inspector;
   const popup = inspector.searchSuggestions.searchPopup;
@@ -34,11 +34,13 @@ add_task(async function() {
     info("Pressing " + key + " to get " + suggestions);
 
     const command = once(searchBox, "input");
+    const onSearchProcessingDone =
+      inspector.searchSuggestions.once("processing-done");
     EventUtils.synthesizeKey(key, {}, inspector.panelWin);
     await command;
 
     info("Waiting for search query to complete and getting the suggestions");
-    await inspector.searchSuggestions._lastQuery;
+    await onSearchProcessingDone;
     const actualSuggestions = popup.getItems();
 
     is(

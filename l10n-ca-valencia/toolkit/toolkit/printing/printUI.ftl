@@ -62,6 +62,15 @@ printui-backgrounds-checkbox = Imprimeix els fons
 ## options to select between the original page, selected text only, or a version
 ## where the page is processed with "Reader View".
 
+# The section title.
+printui-source-label = Format
+# Option for printing the original page.
+printui-source-radio = Original
+# Option for printing just the content a user selected prior to printing.
+printui-selection-radio = Selecció
+# Option for "simplifying" the page by printing the Reader View version.
+printui-simplify-page-radio = Simplificat
+
 ##
 
 printui-color-mode-label = Mode de color
@@ -73,14 +82,19 @@ printui-margins-default = Per defecte
 printui-margins-min = Mínims
 printui-margins-none = Cap
 printui-margins-custom-inches = Personalitzats (polzades)
+printui-margins-custom-mm = Personalitzats (mm)
 printui-margins-custom-top = Superior
 printui-margins-custom-top-inches = Superior (polzades)
+printui-margins-custom-top-mm = Superior (mm)
 printui-margins-custom-bottom = Inferior
 printui-margins-custom-bottom-inches = Inferior (polzades)
+printui-margins-custom-bottom-mm = Inferior (mm)
 printui-margins-custom-left = Esquerre
 printui-margins-custom-left-inches = Esquerre (polzades)
+printui-margins-custom-left-mm = Esquerre (mm)
 printui-margins-custom-right = Dret
 printui-margins-custom-right-inches = Dret (polzades)
+printui-margins-custom-right-mm = Dret (mm)
 
 printui-system-dialog-link = Imprimeix mitjançant el diàleg del sistema…
 

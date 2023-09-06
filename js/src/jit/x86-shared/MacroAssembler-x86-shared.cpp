@@ -65,10 +65,9 @@ void MacroAssembler::clampDoubleToUint8(FloatRegister input, Register output) {
 }
 
 bool MacroAssemblerX86Shared::buildOOLFakeExitFrame(void* fakeReturnAddr) {
-  uint32_t descriptor = MakeFrameDescriptor(
-      asMasm().framePushed(), FrameType::IonJS, ExitFrameLayout::Size());
-  asMasm().Push(Imm32(descriptor));
+  asMasm().PushFrameDescriptor(FrameType::IonJS);
   asMasm().Push(ImmPtr(fakeReturnAddr));
+  asMasm().Push(FramePointer);
   return true;
 }
 
@@ -165,6 +164,19 @@ void MacroAssemblerX86Shared::binarySimd128(
     (asMasm().*regOp)(Operand(scratch), lhsDest, lhsDest);
   } else {
     (asMasm().*constOp)(rhs, lhsDest);
+  }
+}
+
+void MacroAssemblerX86Shared::binarySimd128(
+    FloatRegister lhs, const SimdConstant& rhs, FloatRegister dest,
+    void (MacroAssembler::*regOp)(const Operand&, FloatRegister, FloatRegister),
+    void (MacroAssembler::*constOp)(const SimdConstant&, FloatRegister,
+                                    FloatRegister)) {
+  ScratchSimd128Scope scratch(asMasm());
+  if (maybeInlineSimd128Int(rhs, scratch)) {
+    (asMasm().*regOp)(Operand(scratch), lhs, dest);
+  } else {
+    (asMasm().*constOp)(rhs, lhs, dest);
   }
 }
 
@@ -283,6 +295,36 @@ void MacroAssemblerX86Shared::minMaxFloat32(FloatRegister first,
 
   bind(&done);
 }
+
+#ifdef ENABLE_WASM_SIMD
+bool MacroAssembler::MustMaskShiftCountSimd128(wasm::SimdOp op, int32_t* mask) {
+  switch (op) {
+    case wasm::SimdOp::I8x16Shl:
+    case wasm::SimdOp::I8x16ShrU:
+    case wasm::SimdOp::I8x16ShrS:
+      *mask = 7;
+      break;
+    case wasm::SimdOp::I16x8Shl:
+    case wasm::SimdOp::I16x8ShrU:
+    case wasm::SimdOp::I16x8ShrS:
+      *mask = 15;
+      break;
+    case wasm::SimdOp::I32x4Shl:
+    case wasm::SimdOp::I32x4ShrU:
+    case wasm::SimdOp::I32x4ShrS:
+      *mask = 31;
+      break;
+    case wasm::SimdOp::I64x2Shl:
+    case wasm::SimdOp::I64x2ShrU:
+    case wasm::SimdOp::I64x2ShrS:
+      *mask = 63;
+      break;
+    default:
+      MOZ_CRASH("Unexpected shift operation");
+  }
+  return true;
+}
+#endif
 
 //{{{ check_macroassembler_style
 // ===============================================================
@@ -627,6 +669,12 @@ void MacroAssembler::PopFlags() {
 
 void MacroAssembler::PopStackPtr() { Pop(StackPointer); }
 
+void MacroAssembler::freeStackTo(uint32_t framePushed) {
+  MOZ_ASSERT(framePushed <= framePushed_);
+  lea(Operand(FramePointer, -int32_t(framePushed)), StackPointer);
+  framePushed_ = framePushed;
+}
+
 // ===============================================================
 // Simple call functions.
 
@@ -705,19 +753,18 @@ uint32_t MacroAssembler::pushFakeReturnAddress(Register scratch) {
 CodeOffset MacroAssembler::wasmTrapInstruction() { return ud2(); }
 
 void MacroAssembler::wasmBoundsCheck32(Condition cond, Register index,
-                                       Register boundsCheckLimit,
-                                       Label* label) {
+                                       Register boundsCheckLimit, Label* ok) {
   cmp32(index, boundsCheckLimit);
-  j(cond, label);
+  j(cond, ok);
   if (JitOptions.spectreIndexMasking) {
     cmovCCl(cond, Operand(boundsCheckLimit), index);
   }
 }
 
 void MacroAssembler::wasmBoundsCheck32(Condition cond, Register index,
-                                       Address boundsCheckLimit, Label* label) {
+                                       Address boundsCheckLimit, Label* ok) {
   cmp32(index, Operand(boundsCheckLimit));
-  j(cond, label);
+  j(cond, ok);
   if (JitOptions.spectreIndexMasking) {
     cmovCCl(cond, Operand(boundsCheckLimit), index);
   }
@@ -1079,6 +1126,8 @@ static void CompareExchange(MacroAssembler& masm,
     masm.append(*access, masm.size());
   }
 
+  // NOTE: the generated code must match the assembly code in gen_cmpxchg in
+  // GenerateAtomicOperations.py
   switch (Scalar::byteSize(type)) {
     case 1:
       CheckBytereg(newval);
@@ -1124,7 +1173,8 @@ static void AtomicExchange(MacroAssembler& masm,
                            const wasm::MemoryAccessDesc* access,
                            Scalar::Type type, const T& mem, Register value,
                            Register output)
-
+// NOTE: the generated code must match the assembly code in gen_exchange in
+// GenerateAtomicOperations.py
 {
   if (value != output) {
     masm.movl(value, output);
@@ -1201,6 +1251,8 @@ static void AtomicFetchOp(MacroAssembler& masm,
                           const T& mem, Register temp, Register output) {
   // Note value can be an Imm or a Register.
 
+  // NOTE: the generated code must match the assembly code in gen_fetchop in
+  // GenerateAtomicOperations.py
 #define ATOMIC_BITOP_BODY(LOAD, OP, LOCK_CMPXCHG)  \
   do {                                             \
     MOZ_ASSERT(output != temp);                    \
@@ -1867,11 +1919,11 @@ void MacroAssembler::roundFloat32ToInt32(FloatRegister src, Register dest,
   loadConstantFloat32(GetBiggestNumberLessThan(0.5f), temp);
   branchFloat(Assembler::DoubleLessThanOrEqual, src, scratch, &negativeOrZero);
   {
-    // Input is non-negative. Add the biggest float less than 0.5 and truncate,
-    // rounding down (because if the input is the biggest float less than 0.5,
-    // adding 0.5 would undesirably round up to 1). Note that we have to add the
-    // input to the temp register because we're not allowed to modify the input
-    // register.
+    // Input is strictly positive or NaN. Add the biggest float less than 0.5
+    // and truncate, rounding down (because if the input is the biggest float
+    // less than 0.5, adding 0.5 would undesirably round up to 1). Note that we
+    // have to add the input to the temp register because we're not allowed to
+    // modify the input register.
     addFloat32(src, temp);
     truncateFloat32ToInt32(temp, dest, fail);
     jump(&end);
@@ -1894,48 +1946,37 @@ void MacroAssembler::roundFloat32ToInt32(FloatRegister src, Register dest,
   // Input is negative.
   bind(&negative);
   {
-    // Inputs in ]-0.5; 0] need to be added 0.5, other negative inputs need to
-    // be added the biggest double less than 0.5.
-    Label loadJoin;
+    // Inputs in [-0.5, 0) are rounded to -0. Fail.
     loadConstantFloat32(-0.5f, scratch);
-    branchFloat(Assembler::DoubleLessThan, src, scratch, &loadJoin);
-    loadConstantFloat32(0.5f, temp);
-    bind(&loadJoin);
+    branchFloat(Assembler::DoubleGreaterThanOrEqual, src, scratch, fail);
+
+    // Other negative inputs need the biggest float less than 0.5 added.
+    //
+    // The result is stored in the temp register (currently contains the biggest
+    // float less than 0.5).
+    addFloat32(src, temp);
 
     if (HasSSE41()) {
-      // Add 0.5 and round toward -Infinity. The result is stored in the temp
-      // register (currently contains 0.5).
-      addFloat32(src, temp);
+      // Round toward -Infinity.
       vroundss(X86Encoding::RoundDown, temp, scratch);
 
       // Truncate.
       truncateFloat32ToInt32(scratch, dest, fail);
-
-      // If the result is positive zero, then the actual result is -0. Fail.
-      // Otherwise, the truncation will have produced the correct negative
-      // integer.
-      branchTest32(Assembler::Zero, dest, dest, fail);
     } else {
-      addFloat32(src, temp);
       // Round toward -Infinity without the benefit of ROUNDSS.
-      {
-        // If input + 0.5 >= 0, input is a negative number >= -0.5 and the
-        // result is -0.
-        branchFloat(Assembler::DoubleGreaterThanOrEqual, temp, scratch, fail);
 
-        // Truncate and round toward zero.
-        // This is off-by-one for everything but integer-valued inputs.
-        truncateFloat32ToInt32(temp, dest, fail);
+      // Truncate and round toward zero.
+      // This is off-by-one for everything but integer-valued inputs.
+      truncateFloat32ToInt32(temp, dest, fail);
 
-        // Test whether the truncated double was integer-valued.
-        convertInt32ToFloat32(dest, scratch);
-        branchFloat(Assembler::DoubleEqualOrUnordered, temp, scratch, &end);
+      // Test whether the truncated float was integer-valued.
+      convertInt32ToFloat32(dest, scratch);
+      branchFloat(Assembler::DoubleEqualOrUnordered, temp, scratch, &end);
 
-        // Input is not integer-valued, so we rounded off-by-one in the
-        // wrong direction. Correct by subtraction.
-        subl(Imm32(1), dest);
-        // Cannot overflow: output was already checked against INT_MIN.
-      }
+      // Input is not integer-valued, so we rounded off-by-one in the
+      // wrong direction. Correct by subtraction.
+      subl(Imm32(1), dest);
+      // Cannot overflow: output was already checked against INT_MIN.
     }
   }
 
@@ -1953,11 +1994,11 @@ void MacroAssembler::roundDoubleToInt32(FloatRegister src, Register dest,
   loadConstantDouble(GetBiggestNumberLessThan(0.5), temp);
   branchDouble(Assembler::DoubleLessThanOrEqual, src, scratch, &negativeOrZero);
   {
-    // Input is positive. Add the biggest double less than 0.5 and truncate,
-    // rounding down (because if the input is the biggest double less than 0.5,
-    // adding 0.5 would undesirably round up to 1). Note that we have to add the
-    // input to the temp register because we're not allowed to modify the input
-    // register.
+    // Input is strictly positive or NaN. Add the biggest double less than 0.5
+    // and truncate, rounding down (because if the input is the biggest double
+    // less than 0.5, adding 0.5 would undesirably round up to 1). Note that we
+    // have to add the input to the temp register because we're not allowed to
+    // modify the input register.
     addDouble(src, temp);
     truncateDoubleToInt32(temp, dest, fail);
     jump(&end);
@@ -1980,48 +2021,37 @@ void MacroAssembler::roundDoubleToInt32(FloatRegister src, Register dest,
   // Input is negative.
   bind(&negative);
   {
-    // Inputs in ]-0.5; 0] need to be added 0.5, other negative inputs need to
-    // be added the biggest double less than 0.5.
-    Label loadJoin;
+    // Inputs in [-0.5, 0) are rounded to -0. Fail.
     loadConstantDouble(-0.5, scratch);
-    branchDouble(Assembler::DoubleLessThan, src, scratch, &loadJoin);
-    loadConstantDouble(0.5, temp);
-    bind(&loadJoin);
+    branchDouble(Assembler::DoubleGreaterThanOrEqual, src, scratch, fail);
+
+    // Other negative inputs need the biggest double less than 0.5 added.
+    //
+    // The result is stored in the temp register (currently contains the biggest
+    // double less than 0.5).
+    addDouble(src, temp);
 
     if (HasSSE41()) {
-      // Add 0.5 and round toward -Infinity. The result is stored in the temp
-      // register (currently contains 0.5).
-      addDouble(src, temp);
+      // Round toward -Infinity.
       vroundsd(X86Encoding::RoundDown, temp, scratch);
 
       // Truncate.
       truncateDoubleToInt32(scratch, dest, fail);
-
-      // If the result is positive zero, then the actual result is -0. Fail.
-      // Otherwise, the truncation will have produced the correct negative
-      // integer.
-      branchTest32(Assembler::Zero, dest, dest, fail);
     } else {
-      addDouble(src, temp);
       // Round toward -Infinity without the benefit of ROUNDSD.
-      {
-        // If input + 0.5 >= 0, input is a negative number >= -0.5 and the
-        // result is -0.
-        branchDouble(Assembler::DoubleGreaterThanOrEqual, temp, scratch, fail);
 
-        // Truncate and round toward zero.
-        // This is off-by-one for everything but integer-valued inputs.
-        truncateDoubleToInt32(temp, dest, fail);
+      // Truncate and round toward zero.
+      // This is off-by-one for everything but integer-valued inputs.
+      truncateDoubleToInt32(temp, dest, fail);
 
-        // Test whether the truncated double was integer-valued.
-        convertInt32ToDouble(dest, scratch);
-        branchDouble(Assembler::DoubleEqualOrUnordered, temp, scratch, &end);
+      // Test whether the truncated double was integer-valued.
+      convertInt32ToDouble(dest, scratch);
+      branchDouble(Assembler::DoubleEqualOrUnordered, temp, scratch, &end);
 
-        // Input is not integer-valued, so we rounded off-by-one in the
-        // wrong direction. Correct by subtraction.
-        subl(Imm32(1), dest);
-        // Cannot overflow: output was already checked against INT_MIN.
-      }
+      // Input is not integer-valued, so we rounded off-by-one in the
+      // wrong direction. Correct by subtraction.
+      subl(Imm32(1), dest);
+      // Cannot overflow: output was already checked against INT_MIN.
     }
   }
 
@@ -2044,13 +2074,25 @@ void MacroAssembler::copySignDouble(FloatRegister lhs, FloatRegister rhs,
                                     FloatRegister output) {
   ScratchDoubleScope scratch(*this);
 
-  double clearSignMask = mozilla::BitwiseCast<double>(INT64_MAX);
-  loadConstantDouble(clearSignMask, scratch);
-  vandpd(scratch, lhs, output);
+  // TODO Support AVX2
+  if (rhs == output) {
+    MOZ_ASSERT(lhs != rhs);
+    double keepSignMask = mozilla::BitwiseCast<double>(INT64_MIN);
+    loadConstantDouble(keepSignMask, scratch);
+    vandpd(scratch, rhs, output);
 
-  double keepSignMask = mozilla::BitwiseCast<double>(INT64_MIN);
-  loadConstantDouble(keepSignMask, scratch);
-  vandpd(rhs, scratch, scratch);
+    double clearSignMask = mozilla::BitwiseCast<double>(INT64_MAX);
+    loadConstantDouble(clearSignMask, scratch);
+    vandpd(lhs, scratch, scratch);
+  } else {
+    double clearSignMask = mozilla::BitwiseCast<double>(INT64_MAX);
+    loadConstantDouble(clearSignMask, scratch);
+    vandpd(scratch, lhs, output);
+
+    double keepSignMask = mozilla::BitwiseCast<double>(INT64_MIN);
+    loadConstantDouble(keepSignMask, scratch);
+    vandpd(rhs, scratch, scratch);
+  }
 
   vorpd(scratch, output, output);
 }
@@ -2059,15 +2101,38 @@ void MacroAssembler::copySignFloat32(FloatRegister lhs, FloatRegister rhs,
                                      FloatRegister output) {
   ScratchFloat32Scope scratch(*this);
 
-  float clearSignMask = mozilla::BitwiseCast<float>(INT32_MAX);
-  loadConstantFloat32(clearSignMask, scratch);
-  vandps(scratch, lhs, output);
+  // TODO Support AVX2
+  if (rhs == output) {
+    MOZ_ASSERT(lhs != rhs);
+    float keepSignMask = mozilla::BitwiseCast<float>(INT32_MIN);
+    loadConstantFloat32(keepSignMask, scratch);
+    vandps(scratch, output, output);
 
-  float keepSignMask = mozilla::BitwiseCast<float>(INT32_MIN);
-  loadConstantFloat32(keepSignMask, scratch);
-  vandps(rhs, scratch, scratch);
+    float clearSignMask = mozilla::BitwiseCast<float>(INT32_MAX);
+    loadConstantFloat32(clearSignMask, scratch);
+    vandps(lhs, scratch, scratch);
+  } else {
+    float clearSignMask = mozilla::BitwiseCast<float>(INT32_MAX);
+    loadConstantFloat32(clearSignMask, scratch);
+    vandps(scratch, lhs, output);
+
+    float keepSignMask = mozilla::BitwiseCast<float>(INT32_MIN);
+    loadConstantFloat32(keepSignMask, scratch);
+    vandps(rhs, scratch, scratch);
+  }
 
   vorps(scratch, output, output);
+}
+
+void MacroAssembler::shiftIndex32AndAdd(Register indexTemp32, int shift,
+                                        Register pointer) {
+  if (IsShiftInScaleRange(shift)) {
+    computeEffectiveAddress(
+        BaseIndex(pointer, indexTemp32, ShiftToScale(shift)), pointer);
+    return;
+  }
+  lshift32(Imm32(shift), indexTemp32);
+  addPtr(indexTemp32, pointer);
 }
 
 //}}} check_macroassembler_style

@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Zuppentar
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Mussar tut ils ordinaturs da segnapaginas
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Zuppentar
+
 bookmark-overlay-new-folder-button =
     .label = Nov ordinatur
     .accesskey = o
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Mussar tut ils chavazzins
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Zuppentar
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Mussar tut ils chavazzins
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Zuppentar
 
 bookmark-overlay-keyword-2 =
     .value = Pled magic

@@ -19,12 +19,27 @@ interface DedicatedWorkerGlobalScope : WorkerGlobalScope {
   readonly attribute DOMString name;
 
   [Throws]
-  void postMessage(any message, sequence<object> transfer);
+  undefined postMessage(any message, sequence<object> transfer);
   [Throws]
-  void postMessage(any message, optional StructuredSerializeOptions options = {});
+  undefined postMessage(any message, optional StructuredSerializeOptions options = {});
 
-  void close();
+  undefined close();
 
   attribute EventHandler onmessage;
   attribute EventHandler onmessageerror;
+
+  // https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#animation-frames
+  // Ideally we would just include AnimationFrameProvider to add the interface,
+  // but we cannot make an include conditional.
+  [Pref="dom.workers.requestAnimationFrame", Throws]
+  long requestAnimationFrame(FrameRequestCallback callback);
+
+  [Pref="dom.workers.requestAnimationFrame", Throws]
+  undefined cancelAnimationFrame(long handle);
+};
+
+// https://w3c.github.io/webrtc-encoded-transform/#RTCEncodedAudioFrame-methods
+partial interface DedicatedWorkerGlobalScope {
+  [Pref="media.peerconnection.enabled",
+   Pref="media.peerconnection.scripttransform.enabled"] attribute EventHandler onrtctransform;
 };

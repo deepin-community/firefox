@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Δεν βρέθηκαν προγράμματα τα οποία περιέχουν σελιδοδείκτες, ιστορικό ή δεδομένα κωδικών.
 
@@ -61,8 +73,8 @@ import-items-description = Επιλέξτε στοιχεία προς εισαγ
 
 import-permissions-page-title = Παρακαλούμε παραχωρήστε στο { -brand-short-name } δικαιώματα
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = Το macOS απαιτεί τη ρητή έγκρισή σας ώστε το { -brand-short-name } να προσπελάσει τους σελιδοδείκτες του Safari. Κάντε κλικ στο «Συνέχεια» και επιλέξτε το αρχείο «Bookmarks.plist» στο παράθυρο «Άνοιγμα αρχείου».
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = Το macOS απαιτεί τη ρητή έγκρισή σας ώστε το { -brand-short-name } να προσπελάσει τα δεδομένα του Safari. Κάντε κλικ στο «Συνέχεια», επιλέξτε τον φάκελο του «Safari» στο παράθυρο διαλόγου του Finder και τέλος, κάντε κλικ στο «Άνοιγμα».
 
 import-migrating-page-title = Εισαγωγή…
 
@@ -78,23 +90,9 @@ import-done-description = Τα ακόλουθα στοιχεία εισήχθη�
 
 import-close-source-browser = Παρακαλώ βεβαιωθείτε ότι το επιλεγμένο πρόγραμμα περιήγησης είναι κλειστό πριν συνεχίσετε.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Από { $source }
-
 source-name-ie = Ιnternet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Λίστα ανάγνωσης (Από Safari)
 imported-edge-reading-list = Λίστα ανάγνωσης (Από Edge)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = Παράθυρα και καρτέλες
 browser-data-session-label =
     .value = Παράθυρα και καρτέλες
+
+browser-data-payment-methods-checkbox =
+    .label = Μέθοδοι πληρωμής
+browser-data-payment-methods-label =
+    .value = Μέθοδοι πληρωμής

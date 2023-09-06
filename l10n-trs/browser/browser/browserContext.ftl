@@ -84,6 +84,7 @@ toolbar-button-stop-reload =
 
 ## Firefox Account Button
 
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -91,30 +92,6 @@ main-context-menu-page-save =
     .accesskey = P
 
 ## Simple menu items
-
-main-context-menu-bookmark-add =
-    .aria-label = Sa raj sun nichrà' doj pagina na
-    .accesskey = m
-    .tooltiptext = Sa raj sun nichrà' doj pagina na
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Sa raj sun nichrà' doj pagina na
-    .accesskey = m
-    .tooltiptext = Sa raj sun nichrà' doj pagina na ({ $shortcut })
-
-main-context-menu-bookmark-change =
-    .aria-label = Nagi'io' sa arajsun nichrò' doj
-    .accesskey = m
-    .tooltiptext = Nagi'io' sa arajsun nichrò' doj
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Nagi'io' sa arajsun nichrò' doj
-    .accesskey = m
-    .tooltiptext = Nagi'io' sa arajsun nichrò' doj ({ $shortcut })
 
 main-context-menu-open-link =
     .label = Na'nïn Link
@@ -144,11 +121,6 @@ main-context-menu-save-link-to-pocket =
     .label = Na'nïnj sà' link riña { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
-
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
 ## are mutually exclusive.
@@ -156,6 +128,10 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = Guxun' dirección korreo da' nachrun' a'ngô hiuj u
     .accesskey = E
+
+main-context-menu-copy-link-simple =
+    .label = Guxûn Lînk
+    .accesskey = L
 
 ## Media (video/audio) controls
 ##
@@ -180,6 +156,25 @@ main-context-menu-media-mute =
 main-context-menu-media-unmute =
     .label = Naduyingo´nanee
     .accesskey = m
+
+main-context-menu-media-play-speed-2 =
+    .label = Sa hio ‘hiaj sunj
+    .accesskey = d
+
+main-context-menu-media-play-speed-slow-2 =
+    .label = 0.5×
+
+main-context-menu-media-play-speed-normal-2 =
+    .label = 1.0×
+
+main-context-menu-media-play-speed-fast-2 =
+    .label = 1.25×
+
+main-context-menu-media-play-speed-faster-2 =
+    .label = 1.5×
+
+main-context-menu-media-play-speed-fastest-2 =
+    .label = 2×
 
 main-context-menu-media-loop =
     .label = A'ngo ñu
@@ -246,14 +241,6 @@ main-context-menu-audio-email =
     .label = Ga'ni' nanèe 'ngà korreo…
     .accesskey = a
 
-main-context-menu-plugin-play =
-    .label = Dugi'iaj sun' plugin na
-    .accesskey = c
-
-main-context-menu-plugin-hide =
-    .label = Gachri huì' plugin
-    .accesskey = H
-
 main-context-menu-save-to-pocket =
     .label = Nannj sà' pâjina riña { -pocket-brand-name }
     .accesskey = k
@@ -297,10 +284,6 @@ main-context-menu-frame-reload =
     .label = Nachra ñu marko
     .accesskey = R
 
-main-context-menu-frame-bookmark =
-    .label = Sa raj sun nichrà' doj pagina na
-    .accesskey = m
-
 main-context-menu-frame-save-as =
     .label = Na'nïnj sà' Pâjina Gù'na…
     .accesskey = F
@@ -340,3 +323,6 @@ main-context-menu-eme-learn-more =
     .label = Gahuin chrūn doj rayi'ì DRM…
     .accesskey = D
 
+main-context-menu-reveal-password =
+    .label = Nādigân da’nga’ huii
+    .accesskey = v

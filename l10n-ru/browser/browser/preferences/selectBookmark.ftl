@@ -2,8 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-select-bookmark-window =
+select-bookmark-window2 =
     .title = Выбор домашней страницы
-    .style = width: 32em;
+    .style = min-width: 32em;
 
 select-bookmark-desc = Выберите требуемую закладку в качестве домашней страницы. При выборе папки все содержащиеся в ней закладки будут открыты во вкладках.

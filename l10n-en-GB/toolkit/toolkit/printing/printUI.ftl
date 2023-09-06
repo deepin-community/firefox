@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = All
+printui-page-range-current = Current
+printui-page-range-odd = Odd
+printui-page-range-even = Even
 printui-page-range-custom = Custom
 printui-page-range-label = Pages
 printui-page-range-picker =
@@ -96,7 +99,7 @@ printui-margins-custom-right = Right
 printui-margins-custom-right-inches = Right (inches)
 printui-margins-custom-right-mm = Right (mm)
 
-printui-system-dialog-link = Print using the system dialog…
+printui-system-dialog-link = Print using the system dialogue…
 
 printui-primary-button = Print
 printui-primary-button-save = Save

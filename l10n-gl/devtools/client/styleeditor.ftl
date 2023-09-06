@@ -8,15 +8,19 @@ styleeditor-new-button =
 styleeditor-import-button =
     .tooltiptext = Importar e engadir unha folla de estilo existente ao documento
     .accesskey = I
+styleeditor-filter-input =
+    .placeholder = Filtrar follas de estilo
 styleeditor-visibility-toggle =
     .tooltiptext = Alternar a visibilidade da folla de estilo
     .accesskey = G
+styleeditor-visibility-toggle-system =
+    .tooltiptext = Non se poden desactivar as follas de estilo do sistema
 styleeditor-save-button = Gardar
     .tooltiptext = Gardar esta folla de estilo a un ficheiro
     .accesskey = G
 styleeditor-options-button =
     .tooltiptext = Opcións do editor de estilo
-styleeditor-media-rules = Regras @media
+styleeditor-at-rules = Regras @
 styleeditor-editor-textbox =
     .data-placeholder = Escriba aquí a CSS.
 styleeditor-no-stylesheet = Esta páxina non ten folla de estilo.
@@ -25,3 +29,23 @@ styleeditor-open-link-new-tab =
     .label = Abrir a ligazón nunha nova lapela
 styleeditor-copy-url =
     .label = Copiar URL
+styleeditor-find =
+    .label = Localizar
+    .accesskey = L
+styleeditor-find-again =
+    .label = Localizar de novo
+    .accesskey = n
+styleeditor-go-to-line =
+    .label = Saltar á liña…
+    .accesskey = S
+# Label displayed when searching a term that is not found in any stylesheet path
+styleeditor-stylesheet-all-filtered = Non se atopou ningunha folla de estilo que coincida.
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } regra.
+       *[other] { $ruleCount } regras.
+    }

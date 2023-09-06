@@ -44,7 +44,7 @@ def dependentlibs_win32_objdump(lib):
 def dependentlibs_readelf(lib):
     """Returns the list of dependencies declared in the given ELF .so"""
     proc = subprocess.Popen(
-        [substs.get("TOOLCHAIN_PREFIX", "") + "readelf", "-d", lib],
+        [substs.get("READELF", "readelf"), "-d", lib],
         stdout=subprocess.PIPE,
         universal_newlines=True,
     )
@@ -110,10 +110,8 @@ def dependentlibs(lib, libpaths, func):
                 deps.update(dependentlibs(deppath, libpaths, func))
                 # Black list the ICU data DLL because preloading it at startup
                 # leads to startup performance problems because of its excessive
-                # size (around 10MB).  Same thing with d3dcompiler_47.dll, but
-                # to a lesser extent, and we were going to dynamically load it
-                # anyway.
-                if not dep.startswith(("icu", "d3dcompiler_47")):
+                # size (around 10MB).
+                if not dep.startswith(("icu")):
                     deps[dep] = deppath
                 break
 

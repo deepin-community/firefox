@@ -16,7 +16,6 @@ styleeditor-save-button = Saxla
     .accesskey = S
 styleeditor-options-button =
     .tooltiptext = Stil Redaktoru seçimləri
-styleeditor-media-rules = @media qaydaları
 styleeditor-editor-textbox =
     .data-placeholder = CSS-i bura yazın.
 styleeditor-no-stylesheet = Bu səhifənin stil səhifəsi yoxdur.
@@ -25,3 +24,21 @@ styleeditor-open-link-new-tab =
     .label = Keçidi Yeni Vərəqdə Aç
 styleeditor-copy-url =
     .label = URL-u köçür
+styleeditor-find =
+    .label = Tap
+    .accesskey = T
+styleeditor-find-again =
+    .label = Yenidən Tap
+    .accesskey = Y
+styleeditor-go-to-line =
+    .label = Sətrə keç…
+    .accesskey = J
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } qayda.
+       *[other] { $ruleCount } qayda.
+    }

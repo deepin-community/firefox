@@ -20,9 +20,6 @@ namespace mozilla {
 NS_IMPL_CYCLE_COLLECTION(PendingAnimationTracker, mPlayPendingSet,
                          mPausePendingSet, mDocument)
 
-NS_IMPL_CYCLE_COLLECTION_ROOT_NATIVE(PendingAnimationTracker, AddRef)
-NS_IMPL_CYCLE_COLLECTION_UNROOT_NATIVE(PendingAnimationTracker, Release)
-
 PendingAnimationTracker::PendingAnimationTracker(dom::Document* aDocument)
     : mDocument(aDocument) {}
 
@@ -62,6 +59,10 @@ void PendingAnimationTracker::TriggerPendingAnimationsOnNextTick(
         aAnimationSet.Remove(iter);
         continue;
       }
+
+      MOZ_ASSERT(timeline->IsMonotonicallyIncreasing(),
+                 "The non-monotonicially-increasing timeline should be in "
+                 "ScrollTimelineAnimationTracker");
 
       // When the timeline's refresh driver is under test control, its values
       // have no correspondance to wallclock times so we shouldn't try to

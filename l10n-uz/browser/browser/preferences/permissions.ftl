@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-permissions-window =
+permissions-window2 =
     .title = Istisnolar
-    .style = width: 45em
+    .style = min-width: 45em
 
 permissions-close-key =
     .key = w
@@ -60,10 +60,12 @@ permissions-invalid-uri-label = Iltimos, toʻgʻri host nomini kiriting
 
 ## Exceptions - Tracking Protection
 
+
 ## Exceptions - Cookies
 
 
 ## Exceptions - HTTPS-Only Mode
+
 
 ## Exceptions - Pop-ups
 
@@ -71,18 +73,16 @@ permissions-exceptions-popup-desc = Siz xohlagan vebsaytlaringizga paydo boʻluv
 
 ## Exceptions - Saved Logins
 
-permissions-exceptions-saved-logins-window =
+permissions-exceptions-saved-logins-window2 =
     .title = Istisnolar - saqlangan taxalluslar
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 
 ## Exceptions - Add-ons
 
 permissions-exceptions-addons-desc = Siz xohlagan vebsaytingizga qoʻshimcha dasturlarni oʻrnatishga ruxsat berishingiz mumkin. Ruxsat bermoqchi boʻlgan saytingiz nomini yozing va "Ruxsat berish"ni bosing.
 
-## Exceptions - Autoplay Media
-
-
 ## Site Permissions - Autoplay
+
 
 ## Site Permissions - Notifications
 
@@ -92,8 +92,13 @@ permissions-exceptions-addons-desc = Siz xohlagan vebsaytingizga qoʻshimcha das
 
 ## Site Permissions - Virtual Reality
 
+
 ## Site Permissions - Camera
 
 
 ## Site Permissions - Microphone
+
+## Site Permissions - Speaker
+##
+## "Speaker" refers to an audio output device.
 

@@ -8,8 +8,10 @@
 
 #include "ImageContainer.h"
 #include "MediaInfo.h"
+#include "PerformanceRecorder.h"
 #include "VideoUtils.h"
 #include "YCbCrUtils.h"
+#include "mozilla/gfx/gfxVars.h"
 #include "mozilla/layers/ImageBridgeChild.h"
 #include "mozilla/layers/KnowsCompositor.h"
 #include "mozilla/layers/SharedRGBImage.h"
@@ -17,7 +19,8 @@
 #include <stdint.h>
 
 #ifdef XP_WIN
-#  include "mozilla/WindowsVersion.h"
+#  include "mozilla/gfx/DeviceManagerDx.h"
+#  include "mozilla/layers/D3D11ShareHandleImage.h"
 #  include "mozilla/layers/D3D11YCbCrImage.h"
 #elif XP_MACOSX
 #  include "MacIOSurfaceImage.h"
@@ -27,7 +30,6 @@
 namespace mozilla {
 
 using namespace mozilla::gfx;
-using layers::ImageContainer;
 using layers::PlanarYCbCrData;
 using layers::PlanarYCbCrImage;
 using media::TimeUnit;
@@ -38,14 +40,22 @@ const char* VideoData::sTypeName = "video";
 AudioData::AudioData(int64_t aOffset, const media::TimeUnit& aTime,
                      AlignedAudioBuffer&& aData, uint32_t aChannels,
                      uint32_t aRate, uint32_t aChannelMap)
-    : MediaData(sType, aOffset, aTime,
-                FramesToTimeUnit(aData.Length() / aChannels, aRate)),
+    // Passing TimeUnit::Zero() here because we can't pass the result of an
+    // arithmetic operation to the CheckedInt ctor. We set the duration in the
+    // ctor body below.
+    : MediaData(sType, aOffset, aTime, TimeUnit::Zero()),
       mChannels(aChannels),
       mChannelMap(aChannelMap),
       mRate(aRate),
       mOriginalTime(aTime),
       mAudioData(std::move(aData)),
-      mFrames(mAudioData.Length() / aChannels) {}
+      mFrames(mAudioData.Length() / aChannels) {
+  MOZ_RELEASE_ASSERT(aChannels != 0,
+                     "Can't create an AudioData with 0 channels.");
+  MOZ_RELEASE_ASSERT(aRate != 0,
+                     "Can't create an AudioData with a sample-rate of 0.");
+  mDuration = TimeUnit(mFrames, aRate);
+}
 
 Span<AudioDataValue> AudioData::Data() const {
   return Span{GetAdjustedData(), mFrames * mChannels};
@@ -77,37 +87,31 @@ bool AudioData::SetTrimWindow(const media::TimeInterval& aTrim) {
     // MoveableData got called. Can no longer work on it.
     return false;
   }
-  const size_t originalFrames = mAudioData.Length() / mChannels;
-  const TimeUnit originalDuration = FramesToTimeUnit(originalFrames, mRate);
-  if (aTrim.mStart < mOriginalTime ||
-      aTrim.mEnd > mOriginalTime + originalDuration) {
+  if (aTrim.mStart < mOriginalTime || aTrim.mEnd > GetEndTime()) {
     return false;
   }
 
-  auto trimBefore = TimeUnitToFrames(aTrim.mStart - mOriginalTime, mRate);
-  auto trimAfter = aTrim.mEnd == GetEndTime()
-                       ? originalFrames
-                       : TimeUnitToFrames(aTrim.mEnd - mOriginalTime, mRate);
-  if (!trimBefore.isValid() || !trimAfter.isValid()) {
+  auto trimBefore = aTrim.mStart - mOriginalTime;
+  auto trimAfter = aTrim.mEnd - mOriginalTime;
+  if (!trimBefore.IsValid() || !trimAfter.IsValid()) {
     // Overflow.
     return false;
   }
-  MOZ_DIAGNOSTIC_ASSERT(trimAfter.value() >= trimBefore.value(),
-                        "Something went wrong with trimming value");
-  if (!mTrimWindow && trimBefore == 0 && trimAfter == originalFrames) {
+  if (!mTrimWindow && trimBefore.IsZero() && trimAfter == mDuration) {
     // Nothing to change, abort early to prevent rounding errors.
     return true;
   }
 
+  size_t frameOffset = trimBefore.ToTicksAtRate(mRate);
   mTrimWindow = Some(aTrim);
-  mDataOffset = trimBefore.value() * mChannels;
+  mDataOffset = frameOffset * mChannels;
   MOZ_DIAGNOSTIC_ASSERT(mDataOffset <= mAudioData.Length(),
                         "Data offset outside original buffer");
-  mFrames = (trimAfter - trimBefore).value();
-  MOZ_DIAGNOSTIC_ASSERT(mFrames <= originalFrames,
+  mFrames = (trimAfter - trimBefore).ToTicksAtRate(mRate);
+  MOZ_DIAGNOSTIC_ASSERT(mFrames <= mAudioData.Length() / mChannels,
                         "More frames than found in container");
-  mTime = mOriginalTime + FramesToTimeUnit(trimBefore.value(), mRate);
-  mDuration = FramesToTimeUnit(mFrames, mRate);
+  mTime = mOriginalTime + trimBefore;
+  mDuration = TimeUnit(mFrames, mRate);
 
   return true;
 }
@@ -229,6 +233,14 @@ size_t VideoData::SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) const {
   return size;
 }
 
+ColorDepth VideoData::GetColorDepth() const {
+  if (!mImage) {
+    return ColorDepth::COLOR_8;
+  }
+
+  return mImage->GetColorDepth();
+}
+
 void VideoData::UpdateDuration(const TimeUnit& aDuration) {
   MOZ_ASSERT(!aDuration.IsNegative());
   mDuration = aDuration;
@@ -261,22 +273,23 @@ PlanarYCbCrData ConstructPlanarYCbCrData(const VideoInfo& aInfo,
 
   PlanarYCbCrData data;
   data.mYChannel = Y.mData;
-  data.mYSize = IntSize(Y.mWidth, Y.mHeight);
-  data.mYStride = Y.mStride;
-  data.mYSkip = Y.mSkip;
+  data.mYStride = AssertedCast<int32_t>(Y.mStride);
+  data.mYSkip = AssertedCast<int32_t>(Y.mSkip);
   data.mCbChannel = Cb.mData;
   data.mCrChannel = Cr.mData;
-  data.mCbCrSize = IntSize(Cb.mWidth, Cb.mHeight);
-  data.mCbCrStride = Cb.mStride;
-  data.mCbSkip = Cb.mSkip;
-  data.mCrSkip = Cr.mSkip;
-  data.mPicX = aPicture.x;
-  data.mPicY = aPicture.y;
-  data.mPicSize = aPicture.Size();
+  data.mCbCrStride = AssertedCast<int32_t>(Cb.mStride);
+  data.mCbSkip = AssertedCast<int32_t>(Cb.mSkip);
+  data.mCrSkip = AssertedCast<int32_t>(Cr.mSkip);
+  data.mPictureRect = aPicture;
   data.mStereoMode = aInfo.mStereoMode;
   data.mYUVColorSpace = aBuffer.mYUVColorSpace;
+  data.mColorPrimaries = aBuffer.mColorPrimaries;
   data.mColorDepth = aBuffer.mColorDepth;
+  if (aInfo.mTransferFunction) {
+    data.mTransferFunction = *aInfo.mTransferFunction;
+  }
   data.mColorRange = aBuffer.mColorRange;
+  data.mChromaSubsampling = aBuffer.mChromaSubsampling;
   return data;
 }
 
@@ -291,12 +304,28 @@ bool VideoData::SetVideoDataToImage(PlanarYCbCrImage* aVideoImage,
 
   PlanarYCbCrData data = ConstructPlanarYCbCrData(aInfo, aBuffer, aPicture);
 
-  aVideoImage->SetDelayedConversion(true);
   if (aCopyData) {
     return aVideoImage->CopyData(data);
-  } else {
-    return aVideoImage->AdoptData(data);
   }
+  return aVideoImage->AdoptData(data);
+}
+
+/* static */
+bool VideoData::UseUseNV12ForSoftwareDecodedVideoIfPossible(
+    layers::KnowsCompositor* aAllocator) {
+#if XP_WIN
+  if (!aAllocator) {
+    return false;
+  }
+
+  if (StaticPrefs::gfx_video_convert_i420_to_nv12_force_enabled_AtStartup() ||
+      (gfx::DeviceManagerDx::Get()->CanUseNV12() &&
+       gfx::gfxVars::UseWebRenderDCompVideoSwOverlayWin() &&
+       aAllocator->GetCompositorUseDComp())) {
+    return true;
+  }
+#endif
+  return false;
 }
 
 /* static */
@@ -317,19 +346,33 @@ already_AddRefed<VideoData> VideoData::CreateAndCopyData(
     return nullptr;
   }
 
+  PerformanceRecorder<PlaybackStage> perfRecorder(MediaStage::CopyDecodedVideo,
+                                                  aInfo.mImage.height);
   RefPtr<VideoData> v(new VideoData(aOffset, aTime, aDuration, aKeyframe,
                                     aTimecode, aInfo.mDisplay, 0));
 
   // Currently our decoder only knows how to output to ImageFormat::PLANAR_YCBCR
   // format.
 #if XP_WIN
-  // We disable this code path on Windows version earlier of Windows 8 due to
-  // intermittent crashes with old drivers. See bug 1405110.
+  // Copy to NV12 format D3D11ShareHandleImage when video overlay could be used
+  // with the video frame
+  if (UseUseNV12ForSoftwareDecodedVideoIfPossible(aAllocator)) {
+    PlanarYCbCrData data = ConstructPlanarYCbCrData(aInfo, aBuffer, aPicture);
+    RefPtr<layers::D3D11ShareHandleImage> d3d11Image =
+        layers::D3D11ShareHandleImage::MaybeCreateNV12ImageAndSetData(
+            aAllocator, aContainer, data);
+    if (d3d11Image) {
+      v->mImage = d3d11Image;
+      perfRecorder.Record();
+      return v.forget();
+    }
+  }
+
   // D3D11YCbCrImage can only handle YCbCr images using 3 non-interleaved planes
   // non-zero mSkip value indicates that one of the plane would be interleaved.
-  if (IsWin8OrLater() && !XRE_IsParentProcess() && aAllocator &&
-      aAllocator->SupportsD3D11() && aBuffer.mPlanes[0].mSkip == 0 &&
-      aBuffer.mPlanes[1].mSkip == 0 && aBuffer.mPlanes[2].mSkip == 0) {
+  if (!XRE_IsParentProcess() && aAllocator && aAllocator->SupportsD3D11() &&
+      aBuffer.mPlanes[0].mSkip == 0 && aBuffer.mPlanes[1].mSkip == 0 &&
+      aBuffer.mPlanes[2].mSkip == 0) {
     RefPtr<layers::D3D11YCbCrImage> d3d11Image = new layers::D3D11YCbCrImage();
     PlanarYCbCrData data = ConstructPlanarYCbCrData(aInfo, aBuffer, aPicture);
     if (d3d11Image->SetData(layers::ImageBridgeChild::GetSingleton()
@@ -337,17 +380,19 @@ already_AddRefed<VideoData> VideoData::CreateAndCopyData(
                                 : aAllocator,
                             aContainer, data)) {
       v->mImage = d3d11Image;
+      perfRecorder.Record();
       return v.forget();
     }
   }
 #elif XP_MACOSX
-  if (aAllocator && aAllocator->GetCompositorBackendType() ==
-                        layers::LayersBackend::LAYERS_WR) {
+  if (aAllocator && aAllocator->GetWebRenderCompositorType() !=
+                        layers::WebRenderCompositor::SOFTWARE) {
     RefPtr<layers::MacIOSurfaceImage> ioImage =
         new layers::MacIOSurfaceImage(nullptr);
     PlanarYCbCrData data = ConstructPlanarYCbCrData(aInfo, aBuffer, aPicture);
     if (ioImage->SetData(aContainer, data)) {
       v->mImage = ioImage;
+      perfRecorder.Record();
       return v.forget();
     }
   }
@@ -369,6 +414,7 @@ already_AddRefed<VideoData> VideoData::CreateAndCopyData(
     return nullptr;
   }
 
+  perfRecorder.Record();
   return v.forget();
 }
 
@@ -431,7 +477,8 @@ already_AddRefed<VideoData> VideoData::CreateAndCopyData(
   // The naming convention in the gfx stack is byte-order.
   ConvertI420AlphaToARGB(aBuffer.mPlanes[0].mData, aBuffer.mPlanes[1].mData,
                          aBuffer.mPlanes[2].mData, aAlphaPlane.mData,
-                         aBuffer.mPlanes[0].mStride, aBuffer.mPlanes[1].mStride,
+                         AssertedCast<int>(aBuffer.mPlanes[0].mStride),
+                         AssertedCast<int>(aBuffer.mPlanes[1].mStride),
                          buffer.data, buffer.stride, buffer.size.width,
                          buffer.size.height);
 
@@ -477,6 +524,12 @@ MediaRawData::MediaRawData(AlignedByteBuffer&& aData,
       mAlphaBuffer(std::move(aAlphaData)) {}
 
 already_AddRefed<MediaRawData> MediaRawData::Clone() const {
+  int32_t sampleHeight = 0;
+  if (mTrackInfo && mTrackInfo->GetAsVideoInfo()) {
+    sampleHeight = mTrackInfo->GetAsVideoInfo()->mImage.height;
+  }
+  PerformanceRecorder<PlaybackStage> perfRecorder(MediaStage::CopyDemuxedData,
+                                                  sampleHeight);
   RefPtr<MediaRawData> s = new MediaRawData;
   s->mTimecode = mTimecode;
   s->mTime = mTime;
@@ -494,6 +547,7 @@ already_AddRefed<MediaRawData> MediaRawData::Clone() const {
   if (!s->mAlphaBuffer.Append(mAlphaBuffer.Data(), mAlphaBuffer.Length())) {
     return nullptr;
   }
+  perfRecorder.Record();
   return s.forget();
 }
 

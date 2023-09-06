@@ -82,6 +82,17 @@ interface nsIPermissionManager : nsISupports
    */
   Array<nsIPermission> getAllWithTypePrefix(in ACString prefix);
 
+
+  /**
+   * Get all custom permissions whose type exactly match one of the types defined
+   * in the passed array argument.
+   * This will return an array of all permissions which are not set to default.
+   *
+   * @param types  an array of case-sensitive ASCII strings, identifying the
+   *               permissions to be matched.
+   */
+  Array<nsIPermission> getAllByTypes(in Array<ACString> types);
+
   /**
    * Get all custom permissions of a specific type and that were modified after
    * the specified date. This will return an array of all permissions which are
@@ -104,6 +115,23 @@ interface nsIPermissionManager : nsISupports
                         in uint32_t permission,
                         [optional] in uint32_t expireType,
                         [optional] in int64_t expireTime);
+
+  /**
+   * Add permanent permission information for a given principal in private
+   * browsing.
+   *
+   * Normally permissions in private browsing are cleared at the end of the
+   * session, this method allows you to override this behavior and set
+   * permanent permissions.
+   *
+   * WARNING: setting permanent permissions _will_ leak data in private
+   * browsing. Only use if you understand the consequences and trade-offs. If
+   * you are unsure, |addFromPrincipal| is very likely what you want to use
+   * instead.
+   */
+  void addFromPrincipalAndPersistInPrivateBrowsing(in nsIPrincipal principal,
+                                                   in ACString type,
+                                                   in uint32_t permission);
 
   /**
    * Remove permission information for a given principal.

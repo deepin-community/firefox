@@ -92,7 +92,6 @@ CSS_ANON_BOX(firstLetterContinuation, ":-moz-first-letter-continuation")
 
 CSS_ANON_BOX(mozBlockInsideInlineWrapper, ":-moz-block-inside-inline-wrapper")
 CSS_WRAPPER_ANON_BOX(mozMathMLAnonymousBlock, ":-moz-mathml-anonymous-block")
-CSS_ANON_BOX(mozXULAnonymousBlock, ":-moz-xul-anonymous-block")
 
 CSS_ANON_BOX(mozLineFrame, ":-moz-line-frame")
 
@@ -125,13 +124,9 @@ CSS_ANON_BOX(columnContent, ":-moz-column-content")
 CSS_ANON_BOX(viewport, ":-moz-viewport")
 CSS_ANON_BOX(viewportScroll, ":-moz-viewport-scroll")
 
-// Inside a flex container, a contiguous run of text gets wrapped in
-// an anonymous block, which is then treated as a flex item.
-CSS_WRAPPER_ANON_BOX(anonymousFlexItem, ":-moz-anonymous-flex-item")
-
-// Inside a grid container, a contiguous run of text gets wrapped in
-// an anonymous block, which is then treated as a grid item.
-CSS_WRAPPER_ANON_BOX(anonymousGridItem, ":-moz-anonymous-grid-item")
+// Inside a flex/grid/-moz-box container, a contiguous run of text gets wrapped
+// in an anonymous block, which is then treated as a flex item.
+CSS_WRAPPER_ANON_BOX(anonymousItem, ":-moz-anonymous-item")
 
 CSS_ANON_BOX(blockRubyContent, ":-moz-block-ruby-content")
 CSS_WRAPPER_ANON_BOX(ruby, ":-moz-ruby")
@@ -140,7 +135,6 @@ CSS_WRAPPER_ANON_BOX(rubyBaseContainer, ":-moz-ruby-base-container")
 CSS_WRAPPER_ANON_BOX(rubyText, ":-moz-ruby-text")
 CSS_WRAPPER_ANON_BOX(rubyTextContainer, ":-moz-ruby-text-container")
 
-#ifdef MOZ_XUL
 CSS_ANON_BOX(mozTreeColumn, ":-moz-tree-column")
 CSS_ANON_BOX(mozTreeRow, ":-moz-tree-row")
 CSS_ANON_BOX(mozTreeSeparator, ":-moz-tree-separator")
@@ -152,7 +146,6 @@ CSS_ANON_BOX(mozTreeImage, ":-moz-tree-image")
 CSS_ANON_BOX(mozTreeCellText, ":-moz-tree-cell-text")
 CSS_ANON_BOX(mozTreeCheckbox, ":-moz-tree-checkbox")
 CSS_ANON_BOX(mozTreeDropFeedback, ":-moz-tree-drop-feedback")
-#endif
 
 CSS_ANON_BOX(mozSVGMarkerAnonChild, ":-moz-svg-marker-anon-child")
 CSS_ANON_BOX(mozSVGOuterSVGAnonChild, ":-moz-svg-outer-svg-anon-child")

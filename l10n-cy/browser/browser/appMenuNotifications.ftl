@@ -3,14 +3,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 appmenu-update-available2 =
-    .label = Diweddariad ar gael
+    .label = Mae diweddariad ar gael
     .buttonlabel = Llwytho i lawr
     .buttonaccesskey = L
     .secondarybuttonlabel = Cau
     .secondarybuttonaccesskey = C
 appmenu-update-available-message2 = Llwythwch y fersiwn ddiweddaraf o { -brand-shorter-name } i lawr.
 appmenu-update-manual2 =
-    .label = Diweddariad ar gael
+    .label = Mae diweddariad ar gael
     .buttonlabel = Llwytho i lawr
     .buttonaccesskey = L
     .secondarybuttonlabel = Cau
@@ -45,7 +45,7 @@ appmenu-addon-post-install-message3 = Rheolwch eich estyniadau a'ch themâu trwy
 appmenu-addon-post-install-incognito-checkbox =
     .label = Caniatáu i'r estyniad yma redeg mewn Ffenestri Preifat
     .accesskey = C
-    
+
 appmenu-new-tab-controlled-changes =
     .label = Mae eich tab newydd wedi newid.
     .buttonlabel = Cadw'r Newidiadau
@@ -62,5 +62,5 @@ appmenu-tab-hide-controlled =
     .label = Mynd i’ch Tabiau Cudd
     .buttonlabel = Cadw Tabiau’n Gudd
     .buttonaccesskey = C
-    .secondarybuttonlabel = Analluogi’r Estyniad
+    .secondarybuttonlabel = Analluogi Estyniad
     .secondarybuttonaccesskey = A

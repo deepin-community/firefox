@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = សម្អាតទិន្នន័យ
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = ការសម្អាតខូឃីនិងទិន្នន័យ​​គេហទំព័រ​ដែលបានរក្សាទុកដោយ { -brand-short-name } អាចចុះឈ្មោះអ្នកចេញពី​គេហទំព័រ និង​លុប​​ខ្លឹមសារ​​​បណ្ដាញ​​គ្មាន​អ៊ីនធឺណិត​ចេញ។ ការសម្អាតទិន្នន័យឃ្លាំងមិនប៉ះពាល់ដល់ការចូលរបស់អ្នកទេ។
 

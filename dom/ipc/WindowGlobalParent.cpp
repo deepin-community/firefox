@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "mozilla/AntiTrackingUtils.h"
 #include "mozilla/AsyncEventDispatcher.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/ContentBlockingAllowList.h"
@@ -21,31 +22,27 @@
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/BrowserHost.h"
 #include "mozilla/dom/BrowserParent.h"
+#include "mozilla/dom/IdentityCredential.h"
 #include "mozilla/dom/MediaController.h"
 #include "mozilla/dom/WindowGlobalChild.h"
 #include "mozilla/dom/ChromeUtils.h"
 #include "mozilla/dom/ipc/IdType.h"
 #include "mozilla/dom/ipc/StructuredCloneData.h"
-#include "mozilla/dom/sessionstore/SessionStoreTypes.h"
-#include "mozilla/dom/SessionStoreUtils.h"
-#include "mozilla/dom/SessionStoreUtilsBinding.h"
 #include "mozilla/Components.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/ServoCSSParser.h"
 #include "mozilla/ServoStyleSet.h"
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "mozilla/Telemetry.h"
 #include "mozilla/Variant.h"
-#include "mozJSComponentLoader.h"
 #include "nsContentUtils.h"
 #include "nsDocShell.h"
 #include "nsDocShellLoadState.h"
 #include "nsError.h"
 #include "nsFrameLoader.h"
 #include "nsFrameLoaderOwner.h"
-#include "nsGlobalWindowInner.h"
 #include "nsQueryObject.h"
-#include "nsFrameLoaderOwner.h"
 #include "nsNetUtil.h"
 #include "nsSandboxFlags.h"
 #include "nsSerializationHelper.h"
@@ -57,7 +54,7 @@
 #include "nsITransportSecurityInfo.h"
 #include "nsISharePicker.h"
 #include "nsIURIMutator.h"
-#include "mozilla/Telemetry.h"
+#include "nsIWebProgressListener.h"
 
 #include "mozilla/dom/DOMException.h"
 #include "mozilla/dom/DOMExceptionBinding.h"
@@ -323,7 +320,7 @@ mozilla::ipc::IPCResult WindowGlobalParent::RecvLoadURI(
     return IPC_FAIL(this, "Illegal cross-process javascript: load attempt");
   }
 
-  CanonicalBrowsingContext* targetBC = aTargetBC.get_canonical();
+  RefPtr<CanonicalBrowsingContext> targetBC = aTargetBC.get_canonical();
 
   // FIXME: For cross-process loads, we should double check CanAccess() for the
   // source browsing context in the parent process.
@@ -356,7 +353,7 @@ mozilla::ipc::IPCResult WindowGlobalParent::RecvInternalLoad(
     return IPC_FAIL(this, "Illegal cross-process javascript: load attempt");
   }
 
-  CanonicalBrowsingContext* targetBC =
+  RefPtr<CanonicalBrowsingContext> targetBC =
       aLoadState->TargetBrowsingContext().get_canonical();
 
   // FIXME: For cross-process loads, we should double check CanAccess() for the
@@ -455,9 +452,9 @@ mozilla::ipc::IPCResult WindowGlobalParent::RecvUpdateDocumentTitle(
     return IPC_OK();
   }
 
-  (new AsyncEventDispatcher(frameElement, u"pagetitlechanged"_ns,
-                            CanBubble::eYes, ChromeOnlyDispatch::eYes))
-      ->RunDOMEventWhenSafe();
+  AsyncEventDispatcher::RunDOMEventWhenSafe(
+      *frameElement, u"pagetitlechanged"_ns, CanBubble::eYes,
+      ChromeOnlyDispatch::eYes);
 
   return IPC_OK();
 }
@@ -518,12 +515,12 @@ IPCResult WindowGlobalParent::RecvRawMessage(
   Maybe<StructuredCloneData> data;
   if (aData) {
     data.emplace();
-    data->BorrowFromClonedMessageDataForParent(*aData);
+    data->BorrowFromClonedMessageData(*aData);
   }
   Maybe<StructuredCloneData> stack;
   if (aStack) {
     stack.emplace();
-    stack->BorrowFromClonedMessageDataForParent(*aStack);
+    stack->BorrowFromClonedMessageData(*aStack);
   }
   ReceiveRawMessage(aMeta, std::move(data), std::move(stack));
   return IPC_OK();
@@ -535,16 +532,6 @@ const nsACString& WindowGlobalParent::GetRemoteType() {
   }
 
   return NOT_REMOTE_TYPE;
-}
-
-static nsCString PointToString(const nsPoint& aPoint) {
-  int scrollX = nsPresContext::AppUnitsToIntCSSPixels(aPoint.x);
-  int scrollY = nsPresContext::AppUnitsToIntCSSPixels(aPoint.y);
-  if ((scrollX != 0) || (scrollY != 0)) {
-    return nsPrintfCString("%d,%d", scrollX, scrollY);
-  }
-
-  return ""_ns;
 }
 
 void WindowGlobalParent::NotifyContentBlockingEvent(
@@ -595,7 +582,8 @@ already_AddRefed<JSWindowActorParent> WindowGlobalParent::GetExistingActor(
 }
 
 already_AddRefed<JSActor> WindowGlobalParent::InitJSActor(
-    JS::HandleObject aMaybeActor, const nsACString& aName, ErrorResult& aRv) {
+    JS::Handle<JSObject*> aMaybeActor, const nsACString& aName,
+    ErrorResult& aRv) {
   RefPtr<JSWindowActorParent> actor;
   if (aMaybeActor.get()) {
     aRv = UNWRAP_OBJECT(JSWindowActorParent, aMaybeActor.get(), actor);
@@ -627,13 +615,13 @@ class ShareHandler final : public PromiseNativeHandler {
   NS_DECL_ISUPPORTS
 
  public:
-  virtual void ResolvedCallback(JSContext* aCx,
-                                JS::Handle<JS::Value> aValue) override {
+  virtual void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue,
+                                ErrorResult& aRv) override {
     mResolver(NS_OK);
   }
 
-  virtual void RejectedCallback(JSContext* aCx,
-                                JS::Handle<JS::Value> aValue) override {
+  virtual void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue,
+                                ErrorResult& aRv) override {
     if (NS_WARN_IF(!aValue.isObject())) {
       mResolver(NS_ERROR_FAILURE);
       return;
@@ -844,13 +832,15 @@ class CheckPermitUnloadRequest final : public PromiseNativeHandler,
     mState = State::REPLIED;
   }
 
-  void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue) override {
+  void ResolvedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue,
+                        ErrorResult& aRv) override {
     MOZ_ASSERT(mState == State::PROMPTING);
 
     SendReply(JS::ToBoolean(aValue));
   }
 
-  void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue) override {
+  void RejectedCallback(JSContext* aCx, JS::Handle<JS::Value> aValue,
+                        ErrorResult& aRv) override {
     MOZ_ASSERT(mState == State::PROMPTING);
 
     SendReply(false);
@@ -949,12 +939,13 @@ already_AddRefed<mozilla::dom::Promise> WindowGlobalParent::DrawSnapshot(
     return nullptr;
   }
 
-  gfx::CrossProcessPaintFlags flags = gfx::CrossProcessPaintFlags::None;
+  gfx::CrossProcessPaintFlags flags =
+      gfx::CrossProcessPaintFlags::UseHighQualityScaling;
   if (!aRect) {
     // If no explicit Rect was passed, we want the currently visible viewport.
-    flags = gfx::CrossProcessPaintFlags::DrawView;
+    flags |= gfx::CrossProcessPaintFlags::DrawView;
   } else if (aResetScrollPosition) {
-    flags = gfx::CrossProcessPaintFlags::ResetScrollPosition;
+    flags |= gfx::CrossProcessPaintFlags::ResetScrollPosition;
   }
 
   if (!gfx::CrossProcessPaint::Start(this, aRect, (float)aScale, color, flags,
@@ -982,45 +973,6 @@ void WindowGlobalParent::DrawSnapshotInternal(gfx::CrossProcessPaint* aPaint,
       [paint, wgp](ResponseRejectReason&& aReason) {
         paint->LostFragment(wgp);
       });
-}
-
-already_AddRefed<Promise> WindowGlobalParent::GetSecurityInfo(
-    ErrorResult& aRv) {
-  RefPtr<BrowserParent> browserParent = GetBrowserParent();
-  if (NS_WARN_IF(!browserParent)) {
-    aRv.Throw(NS_ERROR_FAILURE);
-    return nullptr;
-  }
-
-  nsIGlobalObject* global = GetParentObject();
-  RefPtr<Promise> promise = Promise::Create(global, aRv);
-  if (aRv.Failed()) {
-    return nullptr;
-  }
-
-  SendGetSecurityInfo(
-      [promise](Maybe<nsCString>&& aResult) {
-        if (aResult) {
-          nsCOMPtr<nsISupports> infoObj;
-          nsresult rv =
-              NS_DeserializeObject(aResult.value(), getter_AddRefs(infoObj));
-          if (NS_WARN_IF(NS_FAILED(rv))) {
-            promise->MaybeReject(NS_ERROR_FAILURE);
-          }
-          nsCOMPtr<nsITransportSecurityInfo> info = do_QueryInterface(infoObj);
-          if (!info) {
-            promise->MaybeReject(NS_ERROR_FAILURE);
-          }
-          promise->MaybeResolve(info);
-        } else {
-          promise->MaybeResolveWithUndefined();
-        }
-      },
-      [promise](ResponseRejectReason&& aReason) {
-        promise->MaybeReject(NS_ERROR_FAILURE);
-      });
-
-  return promise.forget();
 }
 
 /**
@@ -1142,19 +1094,34 @@ void WindowGlobalParent::FinishAccumulatingPageUseCounters() {
             (" > reporting [%s]",
              nsContentUtils::TruncatedURLForDisplay(mDocumentURI).get()));
 
+    Maybe<nsCString> urlForLogging;
+    const bool dumpCounters = StaticPrefs::dom_use_counters_dump_page();
+    if (dumpCounters) {
+      urlForLogging.emplace(
+          nsContentUtils::TruncatedURLForDisplay(mDocumentURI));
+    }
+
     Telemetry::Accumulate(Telemetry::TOP_LEVEL_CONTENT_DOCUMENTS_DESTROYED, 1);
 
+    bool any = false;
     for (int32_t c = 0; c < eUseCounter_Count; ++c) {
       auto uc = static_cast<UseCounter>(c);
       if (!mPageUseCounters->mUseCounters[uc]) {
         continue;
       }
-
+      any = true;
       auto id = static_cast<Telemetry::HistogramID>(
           Telemetry::HistogramFirstUseCounter + uc * 2 + 1);
-      MOZ_LOG(gUseCountersLog, LogLevel::Debug,
-              (" > %s\n", Telemetry::GetHistogramName(id)));
+      if (dumpCounters) {
+        printf_stderr("USE_COUNTER_PAGE: %s - %s\n",
+                      Telemetry::GetHistogramName(id), urlForLogging->get());
+      }
       Telemetry::Accumulate(id, 1);
+    }
+
+    if (!any) {
+      MOZ_LOG(gUseCountersLog, LogLevel::Debug,
+              (" > page use counter data was received, but was empty"));
     }
   } else {
     MOZ_LOG(gUseCountersLog, LogLevel::Debug,
@@ -1163,44 +1130,6 @@ void WindowGlobalParent::FinishAccumulatingPageUseCounters() {
 
   mSentPageUseCounters = true;
   mPageUseCounters = nullptr;
-}
-
-static void GetFormData(JSContext* aCx, const sessionstore::FormData& aFormData,
-                        nsIURI* aDocumentURI, SessionStoreFormData& aUpdate) {
-  if (!aFormData.hasData()) {
-    return;
-  }
-
-  bool parseSessionData = false;
-  if (aDocumentURI) {
-    nsCString& url = aUpdate.mUrl.Construct();
-    aDocumentURI->GetSpecIgnoringRef(url);
-    // We want to avoid saving data for about:sessionrestore as a string.
-    // Since it's stored in the form as stringified JSON, stringifying
-    // further causes an explosion of escape characters. cf. bug 467409
-    parseSessionData =
-        url == "about:sessionrestore"_ns || url == "about:welcomeback"_ns;
-  }
-
-  if (!aFormData.innerHTML().IsEmpty()) {
-    aUpdate.mInnerHTML.Construct(aFormData.innerHTML());
-  }
-
-  if (!aFormData.id().IsEmpty()) {
-    auto& id = aUpdate.mId.Construct();
-    if (NS_FAILED(SessionStoreUtils::ConstructFormDataValues(
-            aCx, aFormData.id(), id.Entries(), parseSessionData))) {
-      return;
-    }
-  }
-
-  if (!aFormData.xpath().IsEmpty()) {
-    auto& xpath = aUpdate.mXpath.Construct();
-    if (NS_FAILED(SessionStoreUtils::ConstructFormDataValues(
-            aCx, aFormData.xpath(), xpath.Entries()))) {
-      return;
-    }
-  }
 }
 
 Element* WindowGlobalParent::GetRootOwnerElement() {
@@ -1220,104 +1149,6 @@ Element* WindowGlobalParent::GetRootOwnerElement() {
   return nullptr;
 }
 
-nsresult WindowGlobalParent::WriteFormDataAndScrollToSessionStore(
-    const Maybe<FormData>& aFormData, const Maybe<nsPoint>& aScrollPosition,
-    uint32_t aEpoch) {
-  if (!aFormData && !aScrollPosition) {
-    return NS_OK;
-  }
-
-  RefPtr<CanonicalBrowsingContext> context = BrowsingContext();
-  if (!context) {
-    return NS_OK;
-  }
-
-  nsCOMPtr<nsISessionStoreFunctions> funcs = do_ImportModule(
-      "resource://gre/modules/SessionStoreFunctions.jsm", fallible);
-  if (!funcs) {
-    return NS_ERROR_FAILURE;
-  }
-
-  nsCOMPtr<nsIXPConnectWrappedJS> wrapped = do_QueryInterface(funcs);
-  AutoJSAPI jsapi;
-  if (!jsapi.Init(wrapped->GetJSObjectGlobal())) {
-    return NS_ERROR_FAILURE;
-  }
-
-  RootedDictionary<SessionStoreWindowStateChange> windowState(jsapi.cx());
-
-  if (aFormData) {
-    GetFormData(jsapi.cx(), *aFormData, mDocumentURI,
-                windowState.mFormdata.Construct());
-  }
-
-  if (aScrollPosition) {
-    auto& update = windowState.mScroll.Construct();
-    if (*aScrollPosition != nsPoint(0, 0)) {
-      update.mScroll.Construct() = PointToString(*aScrollPosition);
-    }
-  }
-
-  nsTArray<uint32_t> path;
-  if (!context->GetOffsetPath(path)) {
-    return NS_OK;
-  }
-
-  windowState.mPath = std::move(path);
-  windowState.mHasChildren.Construct() = !context->Children().IsEmpty();
-
-  JS::RootedValue update(jsapi.cx());
-  if (!ToJSValue(jsapi.cx(), windowState, &update)) {
-    return NS_ERROR_FAILURE;
-  }
-
-  JS::RootedValue key(jsapi.cx(), context->Top()->PermanentKey());
-
-  return funcs->UpdateSessionStoreForWindow(GetRootOwnerElement(), context, key,
-                                            aEpoch, update);
-}
-
-nsresult WindowGlobalParent::ResetSessionStore(uint32_t aEpoch) {
-  RefPtr<CanonicalBrowsingContext> context = BrowsingContext();
-  if (!context) {
-    return NS_OK;
-  }
-
-  nsCOMPtr<nsISessionStoreFunctions> funcs = do_ImportModule(
-      "resource://gre/modules/SessionStoreFunctions.jsm", fallible);
-  if (!funcs) {
-    return NS_ERROR_FAILURE;
-  }
-
-  nsCOMPtr<nsIXPConnectWrappedJS> wrapped = do_QueryInterface(funcs);
-  AutoJSAPI jsapi;
-  if (!jsapi.Init(wrapped->GetJSObjectGlobal())) {
-    return NS_ERROR_FAILURE;
-  }
-
-  RootedDictionary<SessionStoreWindowStateChange> windowState(jsapi.cx());
-
-  nsTArray<uint32_t> path;
-  if (!context->GetOffsetPath(path)) {
-    return NS_OK;
-  }
-
-  windowState.mPath = std::move(path);
-  windowState.mHasChildren.Construct() = false;
-  windowState.mFormdata.Construct();
-  windowState.mScroll.Construct();
-
-  JS::RootedValue update(jsapi.cx());
-  if (!ToJSValue(jsapi.cx(), windowState, &update)) {
-    return NS_ERROR_FAILURE;
-  }
-
-  JS::RootedValue key(jsapi.cx(), context->Top()->PermanentKey());
-
-  return funcs->UpdateSessionStoreForWindow(GetRootOwnerElement(), context, key,
-                                            aEpoch, update);
-}
-
 void WindowGlobalParent::NotifySessionStoreUpdatesComplete(Element* aEmbedder) {
   if (!aEmbedder) {
     aEmbedder = GetRootOwnerElement();
@@ -1330,27 +1161,6 @@ void WindowGlobalParent::NotifySessionStoreUpdatesComplete(Element* aEmbedder) {
   }
 }
 
-mozilla::ipc::IPCResult WindowGlobalParent::RecvUpdateSessionStore(
-    const Maybe<FormData>& aFormData, const Maybe<nsPoint>& aScrollPosition,
-    uint32_t aEpoch) {
-  if (NS_FAILED(WriteFormDataAndScrollToSessionStore(aFormData, aScrollPosition,
-                                                     aEpoch))) {
-    MOZ_LOG(BrowsingContext::GetLog(), LogLevel::Debug,
-            ("ParentIPC: Failed to update session store entry."));
-  }
-
-  return IPC_OK();
-}
-
-mozilla::ipc::IPCResult WindowGlobalParent::RecvResetSessionStore(
-    uint32_t aEpoch) {
-  if (NS_FAILED(ResetSessionStore(aEpoch))) {
-    MOZ_LOG(BrowsingContext::GetLog(), LogLevel::Debug,
-            ("ParentIPC: Failed to reset session store entry."));
-  }
-  return IPC_OK();
-}
-
 mozilla::ipc::IPCResult WindowGlobalParent::RecvRequestRestoreTabContent() {
   CanonicalBrowsingContext* bc = BrowsingContext();
   if (bc && bc->AncestorsAreCurrent()) {
@@ -1359,7 +1169,7 @@ mozilla::ipc::IPCResult WindowGlobalParent::RecvRequestRestoreTabContent() {
   return IPC_OK();
 }
 
-nsCString BFCacheStatusToString(uint16_t aFlags) {
+nsCString BFCacheStatusToString(uint32_t aFlags) {
   if (aFlags == 0) {
     return "0"_ns;
   }
@@ -1387,6 +1197,8 @@ nsCString BFCacheStatusToString(uint16_t aFlags) {
   ADD_BFCACHESTATUS_TO_STRING(HAS_USED_VR);
   ADD_BFCACHESTATUS_TO_STRING(CONTAINS_REMOTE_SUBFRAMES);
   ADD_BFCACHESTATUS_TO_STRING(NOT_ONLY_TOPLEVEL_IN_BCG);
+  ADD_BFCACHESTATUS_TO_STRING(BEFOREUNLOAD_LISTENER);
+  ADD_BFCACHESTATUS_TO_STRING(ACTIVE_LOCK);
 
 #undef ADD_BFCACHESTATUS_TO_STRING
 
@@ -1396,7 +1208,7 @@ nsCString BFCacheStatusToString(uint16_t aFlags) {
 }
 
 mozilla::ipc::IPCResult WindowGlobalParent::RecvUpdateBFCacheStatus(
-    const uint16_t& aOnFlags, const uint16_t& aOffFlags) {
+    const uint32_t& aOnFlags, const uint32_t& aOffFlags) {
   if (MOZ_UNLIKELY(MOZ_LOG_TEST(gSHIPBFCacheLog, LogLevel::Debug))) {
     nsAutoCString uri("[no uri]");
     if (mDocumentURI) {
@@ -1409,6 +1221,33 @@ mozilla::ipc::IPCResult WindowGlobalParent::RecvUpdateBFCacheStatus(
   }
   mBFCacheStatus |= aOnFlags;
   mBFCacheStatus &= ~aOffFlags;
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult
+WindowGlobalParent::RecvUpdateActivePeerConnectionStatus(bool aIsAdded) {
+  if (aIsAdded) {
+    RecvUpdateBFCacheStatus(BFCacheStatus::ACTIVE_PEER_CONNECTION, 0);
+  } else {
+    RecvUpdateBFCacheStatus(0, BFCacheStatus::ACTIVE_PEER_CONNECTION);
+  }
+
+  if (WindowGlobalParent* top = TopWindowContext()) {
+    CheckedUint32 newValue(top->mNumOfProcessesWithActivePeerConnections);
+    if (aIsAdded) {
+      ++newValue;
+    } else {
+      --newValue;
+    }
+    if (!newValue.isValid()) {
+      return IPC_FAIL(this,
+                      "mNumOfProcessesWithActivePeerConnections overflowed");
+    }
+
+    top->mNumOfProcessesWithActivePeerConnections = newValue.value();
+    Unused << top->SetHasActivePeerConnections(newValue.value() > 0);
+  }
+
   return IPC_OK();
 }
 
@@ -1437,13 +1276,13 @@ mozilla::ipc::IPCResult WindowGlobalParent::RecvSetDocumentDomain(
     }
   }
 
-  if (!Document::IsValidDomain(uri, aDomain)) {
+  if (!aDomain || !Document::IsValidDomain(uri, aDomain)) {
     // Error: illegal domain
     return IPC_FAIL(
         this, "Setting domain that's not a suffix of existing domain value.");
   }
 
-  if (GetBrowsingContext()->CrossOriginIsolated()) {
+  if (Group()->IsPotentiallyCrossOriginIsolated()) {
     return IPC_FAIL(this, "Setting domain in a cross-origin isolated BC.");
   }
 
@@ -1454,6 +1293,10 @@ mozilla::ipc::IPCResult WindowGlobalParent::RecvSetDocumentDomain(
 mozilla::ipc::IPCResult WindowGlobalParent::RecvReloadWithHttpsOnlyException() {
   nsresult rv;
   nsCOMPtr<nsIURI> currentUri = BrowsingContext()->Top()->GetCurrentURI();
+
+  if (!currentUri) {
+    return IPC_FAIL(this, "HTTPS-only mode: Failed to get current URI");
+  }
 
   bool isViewSource = currentUri->SchemeIs("view-source");
 
@@ -1520,14 +1363,54 @@ mozilla::ipc::IPCResult WindowGlobalParent::RecvReloadWithHttpsOnlyException() {
 
   RefPtr<nsDocShellLoadState> loadState = new nsDocShellLoadState(insecureURI);
   loadState->SetTriggeringPrincipal(nsContentUtils::GetSystemPrincipal());
-  loadState->SetLoadFlags(nsIWebNavigation::LOAD_FLAGS_REPLACE_HISTORY);
+  loadState->SetLoadType(LOAD_NORMAL_REPLACE);
 
-  BrowsingContext()->Top()->LoadURI(loadState, /* setNavigating */ true);
+  RefPtr<CanonicalBrowsingContext> topBC = BrowsingContext()->Top();
+  topBC->LoadURI(loadState, /* setNavigating */ true);
 
   return IPC_OK();
 }
 
+IPCResult WindowGlobalParent::RecvDiscoverIdentityCredentialFromExternalSource(
+    const IdentityCredentialRequestOptions& aOptions,
+    const DiscoverIdentityCredentialFromExternalSourceResolver& aResolver) {
+  IdentityCredential::DiscoverFromExternalSourceInMainProcess(
+      DocumentPrincipal(), this->BrowsingContext(), aOptions)
+      ->Then(
+          GetCurrentSerialEventTarget(), __func__,
+          [aResolver](const IPCIdentityCredential& aResult) {
+            return aResolver(Some(aResult));
+          },
+          [aResolver](nsresult aErr) { aResolver(Nothing()); });
+  return IPC_OK();
+}
+
+IPCResult WindowGlobalParent::RecvHasStorageAccessPermission(
+    HasStorageAccessPermissionResolver&& aResolve) {
+  WindowGlobalParent* top = TopWindowContext();
+  if (!top) {
+    return IPC_FAIL_NO_REASON(this);
+  }
+  nsIPrincipal* topPrincipal = top->DocumentPrincipal();
+  nsIPrincipal* principal = DocumentPrincipal();
+  bool result;
+  nsresult rv = AntiTrackingUtils::TestStoragePermissionInParent(
+      topPrincipal, principal, &result);
+  NS_ENSURE_SUCCESS(
+      rv, IPC_FAIL(
+              this,
+              "Storage Access Permission: Failed to test storage permission."));
+
+  aResolve(result);
+  return IPC_OK();
+}
+
 void WindowGlobalParent::ActorDestroy(ActorDestroyReason aWhy) {
+  if (GetBrowsingContext()->IsTopContent()) {
+    Telemetry::Accumulate(Telemetry::ORB_DID_EVER_BLOCK_RESPONSE,
+                          mShouldReportHasBlockedOpaqueResponse);
+  }
+
   if (mPageUseCountersWindow) {
     mPageUseCountersWindow->FinishAccumulatingPageUseCounters();
     mPageUseCountersWindow = nullptr;
@@ -1593,8 +1476,8 @@ void WindowGlobalParent::ActorDestroy(ActorDestroyReason aWhy) {
   WindowContext::Discard();
 
   // Report content blocking log when destroyed.
-  // There shouldn't have any content blocking log when a documnet is loaded in
-  // the parent process(See NotifyContentBlockingeEvent), so we could skip
+  // There shouldn't have any content blocking log when a document is loaded in
+  // the parent process(See NotifyContentBlockingEvent), so we could skip
   // reporting log when it is in-process.
   if (!IsInProcess()) {
     RefPtr<BrowserParent> browserParent =
@@ -1607,7 +1490,7 @@ void WindowGlobalParent::ActorDestroy(ActorDestroyReason aWhy) {
 
         if (mDocumentURI && (net::SchemeIsHTTP(mDocumentURI) ||
                              net::SchemeIsHTTPS(mDocumentURI))) {
-          GetContentBlockingLog()->ReportOrigins();
+          GetContentBlockingLog()->ReportEmailTrackingLog(DocumentPrincipal());
         }
       }
     }
@@ -1650,6 +1533,10 @@ void WindowGlobalParent::DidBecomeCurrentWindowGlobal(bool aCurrent) {
     top->mOriginCounter->UpdateSiteOriginsFrom(this,
                                                /* aIncrease = */ aCurrent);
   }
+
+  if (!aCurrent && Fullscreen()) {
+    ExitTopChromeDocumentFullscreen();
+  }
 }
 
 bool WindowGlobalParent::ShouldTrackSiteOriginTelemetry() {
@@ -1676,7 +1563,8 @@ void WindowGlobalParent::AddSecurityState(uint32_t aStateFlags) {
                nsIWebProgressListener::STATE_BLOCKED_MIXED_DISPLAY_CONTENT |
                nsIWebProgressListener::STATE_BLOCKED_MIXED_ACTIVE_CONTENT |
                nsIWebProgressListener::STATE_HTTPS_ONLY_MODE_UPGRADED |
-               nsIWebProgressListener::STATE_HTTPS_ONLY_MODE_UPGRADE_FAILED)) ==
+               nsIWebProgressListener::STATE_HTTPS_ONLY_MODE_UPGRADE_FAILED |
+               nsIWebProgressListener::STATE_HTTPS_ONLY_MODE_UPGRADED_FIRST)) ==
                  aStateFlags,
              "Invalid flags specified!");
 
@@ -1688,6 +1576,41 @@ void WindowGlobalParent::AddSecurityState(uint32_t aStateFlags) {
 
   if (GetBrowsingContext()->GetCurrentWindowGlobal() == this) {
     GetBrowsingContext()->UpdateSecurityState();
+  }
+}
+
+bool WindowGlobalParent::HasActivePeerConnections() {
+  MOZ_ASSERT(TopWindowContext() == this,
+             "mNumOfProcessesWithActivePeerConnections is set only "
+             "in the top window context");
+  return mNumOfProcessesWithActivePeerConnections > 0;
+}
+
+void WindowGlobalParent::ExitTopChromeDocumentFullscreen() {
+  RefPtr<CanonicalBrowsingContext> chromeTop =
+      BrowsingContext()->TopCrossChromeBoundary();
+  if (Document* chromeDoc = chromeTop->GetDocument()) {
+    Document::ClearPendingFullscreenRequests(chromeDoc);
+    if (chromeDoc->Fullscreen()) {
+      // This only clears the DOM fullscreen, will not exit from browser UI
+      // fullscreen mode.
+      Document::AsyncExitFullscreen(chromeDoc);
+    }
+  }
+}
+
+void WindowGlobalParent::SetShouldReportHasBlockedOpaqueResponse(
+    nsContentPolicyType aContentPolicy) {
+  // It's always okay to block TYPE_BEACON, TYPE_PING and TYPE_CSP_REPORT in
+  // the parent process because content processes can do nothing to their
+  // responses. Hence excluding them from the telemetry as blocking
+  // them have no webcompat concerns.
+  if (aContentPolicy != nsIContentPolicy::TYPE_BEACON &&
+      aContentPolicy != nsIContentPolicy::TYPE_PING &&
+      aContentPolicy != nsIContentPolicy::TYPE_CSP_REPORT) {
+    if (IsTop()) {
+      mShouldReportHasBlockedOpaqueResponse = true;
+    }
   }
 }
 

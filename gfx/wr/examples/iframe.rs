@@ -57,10 +57,7 @@ impl Example for App {
         let mut txn = Transaction::new();
         txn.set_display_list(
             Epoch(0),
-            None,
-            sub_bounds.size(),
             sub_builder.end(),
-            true,
         );
         api.send_transaction(document_id, txn);
 
@@ -72,6 +69,7 @@ impl Example for App {
             ReferenceFrameKind::Transform {
                 is_2d_scale_translation: false,
                 should_snap: false,
+                paired_with_perspective: false,
             },
             SpatialTreeItemKey::new(0, 0),
         );

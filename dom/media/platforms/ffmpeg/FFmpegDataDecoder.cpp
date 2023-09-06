@@ -5,31 +5,33 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <string.h>
+#include "libavutil/dict.h"
 #ifdef __GNUC__
 #  include <unistd.h>
 #endif
 
 #include "FFmpegDataDecoder.h"
 #include "FFmpegLog.h"
+#include "mozilla/StaticPrefs_media.h"
 #include "mozilla/TaskQueue.h"
 #include "prsystem.h"
 #include "VideoUtils.h"
 
 namespace mozilla {
 
-StaticMutex FFmpegDataDecoder<LIBAV_VER>::sMonitor;
+StaticMutex FFmpegDataDecoder<LIBAV_VER>::sMutex;
 
 FFmpegDataDecoder<LIBAV_VER>::FFmpegDataDecoder(FFmpegLibWrapper* aLib,
                                                 AVCodecID aCodecID)
     : mLib(aLib),
       mCodecContext(nullptr),
       mCodecParser(nullptr),
-      mFrame(NULL),
+      mFrame(nullptr),
       mExtraData(nullptr),
       mCodecID(aCodecID),
-      mTaskQueue(
-          new TaskQueue(GetMediaThreadPool(MediaThreadType::PLATFORM_DECODER),
-                        "FFmpegDataDecoder")),
+      mTaskQueue(TaskQueue::Create(
+          GetMediaThreadPool(MediaThreadType::PLATFORM_DECODER),
+          "FFmpegDataDecoder")),
       mLastInputDts(media::TimeUnit::FromNegativeInfinity()) {
   MOZ_ASSERT(aLib);
   MOZ_COUNT_CTOR(FFmpegDataDecoder);
@@ -69,18 +71,32 @@ MediaResult FFmpegDataDecoder<LIBAV_VER>::AllocateExtraData() {
   return NS_OK;
 }
 
-MediaResult FFmpegDataDecoder<LIBAV_VER>::InitDecoder() {
-  FFMPEG_LOG("Initialising FFmpeg decoder.");
+// Note: This doesn't run on the ffmpeg TaskQueue, it runs on some other media
+// taskqueue
+MediaResult FFmpegDataDecoder<LIBAV_VER>::InitDecoder(AVDictionary** aOptions) {
+  FFMPEG_LOG("Initialising FFmpeg decoder");
 
   AVCodec* codec = FindAVCodec(mLib, mCodecID);
   if (!codec) {
+    FFMPEG_LOG("  couldn't find ffmpeg decoder for codec id %d", mCodecID);
     return MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
-                       RESULT_DETAIL("Couldn't find ffmpeg decoder"));
+                       RESULT_DETAIL("unable to find codec"));
   }
+  // openh264 has broken decoding of some h264 videos so
+  // don't use it unless explicitly allowed for now.
+  if (!strcmp(codec->name, "libopenh264") &&
+      !StaticPrefs::media_ffmpeg_allow_openh264()) {
+    FFMPEG_LOG("  unable to find codec (openh264 disabled by pref)");
+    return MediaResult(
+        NS_ERROR_DOM_MEDIA_FATAL_ERR,
+        RESULT_DETAIL("unable to find codec (openh264 disabled by pref)"));
+  }
+  FFMPEG_LOG("  codec %s : %s", codec->name, codec->long_name);
 
-  StaticMutexAutoLock mon(sMonitor);
+  StaticMutexAutoLock mon(sMutex);
 
   if (!(mCodecContext = mLib->avcodec_alloc_context3(codec))) {
+    FFMPEG_LOG("  couldn't allocate ffmpeg context for codec %s", codec->name);
     return MediaResult(NS_ERROR_OUT_OF_MEMORY,
                        RESULT_DETAIL("Couldn't init ffmpeg context"));
   }
@@ -97,6 +113,8 @@ MediaResult FFmpegDataDecoder<LIBAV_VER>::InitDecoder() {
   InitCodecContext();
   MediaResult ret = AllocateExtraData();
   if (NS_FAILED(ret)) {
+    FFMPEG_LOG("  couldn't allocate ffmpeg extra data for codec %s",
+               codec->name);
     mLib->av_freep(&mCodecContext);
     return ret;
   }
@@ -107,13 +125,17 @@ MediaResult FFmpegDataDecoder<LIBAV_VER>::InitDecoder() {
   }
 #endif
 
-  if (mLib->avcodec_open2(mCodecContext, codec, nullptr) < 0) {
+  if (mLib->avcodec_open2(mCodecContext, codec, aOptions) < 0) {
+    if (mCodecContext->extradata) {
+      mLib->av_freep(&mCodecContext->extradata);
+    }
     mLib->av_freep(&mCodecContext);
+    FFMPEG_LOG("  Couldn't open avcodec");
     return MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
-                       RESULT_DETAIL("Couldn't initialise ffmpeg decoder"));
+                       RESULT_DETAIL("Couldn't open avcodec"));
   }
 
-  FFMPEG_LOG("FFmpeg init successful.");
+  FFMPEG_LOG("  FFmpeg decoder init successful.");
   return NS_OK;
 }
 
@@ -133,6 +155,8 @@ RefPtr<MediaDataDecoder::DecodePromise> FFmpegDataDecoder<LIBAV_VER>::Decode(
 
 RefPtr<MediaDataDecoder::DecodePromise>
 FFmpegDataDecoder<LIBAV_VER>::ProcessDecode(MediaRawData* aSample) {
+  MOZ_ASSERT(mTaskQueue->IsOnCurrentThread());
+  PROCESS_DECODE_LOG(aSample);
   bool gotFrame = false;
   DecodedData results;
   MediaResult rv = DoDecode(aSample, &gotFrame, results);
@@ -145,6 +169,8 @@ FFmpegDataDecoder<LIBAV_VER>::ProcessDecode(MediaRawData* aSample) {
 MediaResult FFmpegDataDecoder<LIBAV_VER>::DoDecode(
     MediaRawData* aSample, bool* aGotFrame,
     MediaDataDecoder::DecodedData& aResults) {
+  MOZ_ASSERT(mTaskQueue->IsOnCurrentThread());
+
   uint8_t* inputData = const_cast<uint8_t*>(aSample->Data());
   size_t inputSize = aSample->Size();
 
@@ -194,6 +220,8 @@ RefPtr<MediaDataDecoder::DecodePromise> FFmpegDataDecoder<LIBAV_VER>::Drain() {
 
 RefPtr<MediaDataDecoder::DecodePromise>
 FFmpegDataDecoder<LIBAV_VER>::ProcessDrain() {
+  MOZ_ASSERT(mTaskQueue->IsOnCurrentThread());
+  FFMPEG_LOG("FFmpegDataDecoder: draining buffers");
   RefPtr<MediaRawData> empty(new MediaRawData());
   empty->mTimecode = mLastInputDts;
   bool gotFrame = false;
@@ -210,9 +238,11 @@ RefPtr<MediaDataDecoder::FlushPromise>
 FFmpegDataDecoder<LIBAV_VER>::ProcessFlush() {
   MOZ_ASSERT(mTaskQueue->IsOnCurrentThread());
   if (mCodecContext) {
+    FFMPEG_LOG("FFmpegDataDecoder: flushing buffers");
     mLib->avcodec_flush_buffers(mCodecContext);
   }
   if (mCodecParser) {
+    FFMPEG_LOG("FFmpegDataDecoder: reinitializing parser");
     mLib->av_parser_close(mCodecParser);
     mCodecParser = mLib->av_parser_init(mCodecID);
   }
@@ -220,9 +250,11 @@ FFmpegDataDecoder<LIBAV_VER>::ProcessFlush() {
 }
 
 void FFmpegDataDecoder<LIBAV_VER>::ProcessShutdown() {
-  StaticMutexAutoLock mon(sMonitor);
+  MOZ_ASSERT(mTaskQueue->IsOnCurrentThread());
+  StaticMutexAutoLock mon(sMutex);
 
   if (mCodecContext) {
+    FFMPEG_LOG("FFmpegDataDecoder: shutdown");
     if (mCodecContext->extradata) {
       mLib->av_freep(&mCodecContext->extradata);
     }
@@ -263,5 +295,19 @@ AVFrame* FFmpegDataDecoder<LIBAV_VER>::PrepareFrame() {
     FFmpegLibWrapper* aLib, AVCodecID aCodec) {
   return aLib->avcodec_find_decoder(aCodec);
 }
+
+#ifdef MOZ_WIDGET_GTK
+/* static */ AVCodec* FFmpegDataDecoder<LIBAV_VER>::FindHardwareAVCodec(
+    FFmpegLibWrapper* aLib, AVCodecID aCodec) {
+  void* opaque = nullptr;
+  while (AVCodec* codec = aLib->av_codec_iterate(&opaque)) {
+    if (codec->id == aCodec && aLib->av_codec_is_decoder(codec) &&
+        aLib->avcodec_get_hw_config(codec, 0)) {
+      return codec;
+    }
+  }
+  return nullptr;
+}
+#endif
 
 }  // namespace mozilla

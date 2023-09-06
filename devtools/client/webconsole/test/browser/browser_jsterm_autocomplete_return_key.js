@@ -5,7 +5,7 @@
 
 // Test that the Enter keys works as expected. See Bug 585991 and 1483880.
 
-const TEST_URI = `data:text/html;charset=utf-8,
+const TEST_URI = `data:text/html;charset=utf-8,<!DOCTYPE html>
 <head>
   <script>
     /* Create a prototype-less object so popup does not contain native
@@ -23,7 +23,7 @@ const TEST_URI = `data:text/html;charset=utf-8,
 </head>
 <body>bug 585991 - test pressing return with open popup</body>`;
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
   const { jsterm } = hud;
   const { autocompletePopup: popup } = jsterm;

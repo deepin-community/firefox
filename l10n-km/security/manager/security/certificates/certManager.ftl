@@ -17,9 +17,9 @@ certmgr-tab-servers =
 certmgr-tab-ca =
     .label = អាជ្ញាធរ
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = កែសម្រួល​ការ​កំណត់​ទំនុកចិត្ត​លើ​វិញ្ញាបនបត្រ CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = កែសម្រួល​ការ​កំណត់​ទំនុកចិត្ត ៖
 
@@ -29,18 +29,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = វិញ្ញាបនបត្រ​នេះ​អាច​បញ្ជាក់​ប្រាប់​អំពី​អ្នក​ប្រើសំបុត្រ ។
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = លុប​វិញ្ញាបនបត្រ
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = ឈ្មោះ​វិញ្ញាបនបត្រ
 
 certmgr-cert-server =
     .label = ម៉ាស៊ីន​បម្រើ
-
-certmgr-override-lifetime =
-    .label = អាយុកាល
 
 certmgr-token-name =
     .label = ឧបករណ៍​សុវត្ថិភាព
@@ -162,9 +159,8 @@ delete-email-cert-title =
 delete-email-cert-confirm = តើ​អ្នក​ពិតជា​ចង់​លុប​វិញ្ញាបនបត្រ​អ៊ីមែល​របស់​មនុស្ស​ទាំងអស់​នេះ​ឬ ?
 delete-email-cert-impact = ប្រសិនបើ អ្នក​លុប​វិញ្ញាបនបត្រ​អ៊ីមែល​របស់​មនុស្ស​ណា​ម្នាក់ អ្នក​ក៏​នឹង​មិន​អាច​ផ្ញើ​អ៊ីមែល​ដែល​បាន​អ៊ិនគ្រីប​ទៅកាន់​មនុស្ស​ម្នាក់​នោះ​បាន​ទៀត​ដែរ ។
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

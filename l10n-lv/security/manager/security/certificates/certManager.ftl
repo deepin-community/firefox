@@ -21,9 +21,9 @@ certmgr-mine = Jums ir jūs identificējoši sertifikāti no šīm organizācij�
 certmgr-people = Jums failā ir šos cilvēkus identificējoši sertifikāti
 certmgr-ca = Jums failā ir šīs sertificēšanas autoritātes identificējoši sertifikāti
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Rediģēt CA sertifikātu uzticamības iestatījumus
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Rediģēt uzticamības iestatījumus:
 
@@ -33,18 +33,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Šis sertifikāts var identificēt pasta lietotājus.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Dzēst sertifikātu
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = Sertifikāta nosaukums
 
 certmgr-cert-server =
     .label = Serveris
-
-certmgr-override-lifetime =
-    .label = Dzīves ilgums
 
 certmgr-token-name =
     .label = Drošības ierīce
@@ -173,9 +170,8 @@ delete-email-cert-impact = Ja izdzēsīsiet personas e-pasta sertifikātu, jūs 
 cert-with-serial =
     .value = Sertifikāts ar sērijas numurs: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

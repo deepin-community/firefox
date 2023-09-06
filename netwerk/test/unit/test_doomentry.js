@@ -9,7 +9,7 @@
 "use strict";
 
 function doom(url, callback) {
-  get_cache_service()
+  Services.cache2
     .diskCacheStorage(Services.loadContextInfo.default)
     .asyncDoomURI(createURI(url), "", {
       onCacheEntryDoomed(result) {
@@ -39,7 +39,7 @@ function write_entry() {
     "disk",
     Ci.nsICacheStorage.OPEN_TRUNCATE,
     null,
-    function(status, entry) {
+    function (status, entry) {
       write_entry_cont(entry, entry.openOutputStream(0, -1));
     }
   );
@@ -65,7 +65,7 @@ function check_doom2(status) {
     "disk",
     Ci.nsICacheStorage.OPEN_TRUNCATE,
     null,
-    function(status, entry) {
+    function (status, entry) {
       write_entry2(entry, entry.openOutputStream(0, -1));
     }
   );

@@ -9,15 +9,11 @@
 #define __nsGNOMEShellDBusHelper_h__
 
 #include "mozilla/DBusHelpers.h"
-#include "nsIStringBundle.h"
 #include "nsINavHistoryService.h"
 
 #define MAX_SEARCH_RESULTS_NUM 9
 #define KEYWORD_SEARCH_STRING "special:search"
 #define KEYWORD_SEARCH_STRING_LEN 14
-
-#define DBUS_BUS_NAME "org.mozilla.Firefox.SearchProvider"
-#define DBUS_OBJECT_PATH "/org/mozilla/Firefox/SearchProvider"
 
 class nsGNOMEShellHistorySearchResult;
 
@@ -34,5 +30,8 @@ DBusHandlerResult DBusActivateResult(
 DBusHandlerResult DBusLaunchSearch(
     RefPtr<nsGNOMEShellHistorySearchResult> aSearchResult, DBusMessage* aMsg);
 bool IsHistoryResultNodeURI(nsINavHistoryResultNode* aHistoryNode);
+
+const char* GetDBusBusName();
+const char* GetDBusObjectPath();
 
 #endif  // __nsGNOMEShellDBusHelper_h__

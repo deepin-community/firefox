@@ -36,3 +36,37 @@ findbar-entire-word =
     .label = Pallabres completes
     .accesskey = a
     .tooltiptext = Busca namás pallabres completes
+
+findbar-not-found = Nun s'atopó la fras
+
+findbar-wrapped-to-top = Algamóse la fin de la páxina, síguese dende arriba
+findbar-wrapped-to-bottom = Algamóse'l comienzu de la páxina, síguese dende abaxo
+
+findbar-normal-find =
+    .placeholder = Atopar na páxina
+findbar-fast-find =
+    .placeholder = Busca rápida
+findbar-fast-find-links =
+    .placeholder = Busca rápida (namás enllaces)
+
+findbar-entire-word-status =
+    .value = (Namás pallabres completes)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $current } de { $total } coincidencia
+           *[other] { $current } de { $total } coincidencies
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Más de { $limit } coincidencia
+           *[other] Más de { $limit } coincidencies
+        }

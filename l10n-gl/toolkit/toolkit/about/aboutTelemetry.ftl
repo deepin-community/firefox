@@ -34,7 +34,6 @@ about-telemetry-events-section = Eventos
 about-telemetry-simple-measurements-section = Medidas simples
 about-telemetry-slow-sql-section = Sentenzas SQL lentas
 about-telemetry-addon-details-section = Detalles do complemento
-about-telemetry-captured-stacks-section = Pilas capturadas
 about-telemetry-late-writes-section = Escritura atrasada
 about-telemetry-raw-payload-section = Contido sen procesar
 about-telemetry-raw = JSOn sen procesar
@@ -122,10 +121,6 @@ about-telemetry-keys-header = Propiedade
 about-telemetry-names-header = Nome
 about-telemetry-values-header = Valor
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (Número de capturas: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = #{ $lateWriteCount } escrituras atrasadas
 about-telemetry-stack-title = Pila:
@@ -136,12 +131,6 @@ about-telemetry-category-header = categoría
 about-telemetry-method-header = método
 about-telemetry-object-header = obxecto
 about-telemetry-extra-header = extra
-about-telemetry-origin-section = Telemetría de orixe
-about-telemetry-origin-origin = orixe
-about-telemetry-origin-count = conta
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Telemetría de orixe de Firefox</a> codifica os datos antes de que se envíen para que { $telemetryServerOwner } poida contar cousas, pero non sabe se hai ou non algún { -brand-product-name } contribuíu a ese reconto. (<a data-l10n-name="prio-blog-link"> máis información </a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = proceso { $process }

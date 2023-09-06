@@ -23,7 +23,6 @@ about-telemetry-events-section = Teagmhais
 about-telemetry-simple-measurements-section = Tomhais Shimplí
 about-telemetry-slow-sql-section = Ráitis Mhalla SQL
 about-telemetry-addon-details-section = Mionsonraí an Bhreiseáin
-about-telemetry-captured-stacks-section = Cruacha Gafa
 about-telemetry-late-writes-section = Scríobh Déanach
 about-telemetry-raw = JSON amh
 about-telemetry-full-sql-warning = Nod: Tá dífhabhtú mall SQL ar siúl. D'fhéadfadh go mbeadh teaghráin iomlána SQL á dtaispeáint thíos, ach ní sheolfar chuig Telemetry iad.
@@ -43,6 +42,11 @@ about-telemetry-ping-details = Seoltar gach píosa eolais cuachta in “<a data-
 #   $selectedTitle (String): the section name from the structure of the ping.
 about-telemetry-filter-placeholder =
     .placeholder = Aimsigh in { $selectedTitle }
+about-telemetry-filter-all-placeholder =
+    .placeholder = Aimsigh i ngach rann
+# Variables:
+#   $searchTerms (String): the searched terms
+about-telemetry-results-for-search = Torthaí i gcomhair “{ $searchTerms }”
 # used in the “Ping Type” select
 about-telemetry-telemetry-ping-type-all = uile
 # button label to copy the histogram
@@ -62,10 +66,6 @@ about-telemetry-addon-provider = { $addonProvider }: Soláthraí
 about-telemetry-keys-header = Airí
 about-telemetry-names-header = Ainm
 about-telemetry-values-header = Luach
-# Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (gafa { $capturedStacksCount } uair)
 # Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Scríobh Déanach #{ $lateWriteCount }

@@ -20,7 +20,7 @@ import-from-edge =
     .accesskey = E
 import-from-edge-legacy =
     .label = Microsoft Edge Legacy
-    .accesskey = o
+    .accesskey = y
 import-from-edge-beta =
     .label = Microsoft Edge Beta
     .accesskey = B
@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = h
@@ -52,6 +61,10 @@ import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
 
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
+
 no-migration-sources = Non è stato trovato alcun programma contenente segnalibri, cronologie o password.
 
 import-source-page-title = Importa impostazioni e dati
@@ -61,8 +74,7 @@ import-items-description = Selezionare gli oggetti da importare:
 
 import-permissions-page-title = Garantire a { -brand-short-name } i permessi necessari
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = In macOS è necessario garantire esplicitamente a { -brand-short-name } il permesso di accedere ai segnalibri in Safari. Fare clic su “Continua” e selezionare il file “Bookmarks.plist” nel pannello che verrà visualizzato.
+import-safari-permissions-string = In macOS è necessario garantire esplicitamente a { -brand-short-name } il permesso di accedere ai dati di Safari. Fare clic su “Continua”, selezionare la cartella “Safari” nella finestra del Finder che verrà visualizzata e fare clic su “Apri”.
 
 import-migrating-page-title = Importazione…
 
@@ -78,23 +90,9 @@ import-done-description = I seguenti oggetti sono stati correttamente importati:
 
 import-close-source-browser = Assicurarsi che il browser selezionato sia chiuso prima di procedere.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Da { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Elenco lettura (da Safari)
 imported-edge-reading-list = Elenco di lettura (da Edge)
@@ -182,3 +180,8 @@ browser-data-session-checkbox =
     .label = Finestre e schede
 browser-data-session-label =
     .value = Finestre e schede
+
+browser-data-payment-methods-checkbox =
+  .label = Metodi di pagamento
+browser-data-payment-methods-label =
+  .value = Metodi di pagamento

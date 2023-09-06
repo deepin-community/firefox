@@ -10,8 +10,7 @@
 #include "mozilla/dom/Promise.h"
 #include "nsContentPermissionHelper.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 struct MIDIOptions;
 
@@ -30,11 +29,17 @@ class MIDIPermissionRequest final : public ContentPermissionRequestBase,
                                            ContentPermissionRequestBase)
   // nsIContentPermissionRequest
   NS_IMETHOD Cancel(void) override;
-  NS_IMETHOD Allow(JS::HandleValue choices) override;
+  NS_IMETHOD Allow(JS::Handle<JS::Value> choices) override;
   NS_IMETHOD GetTypes(nsIArray** aTypes) override;
 
  private:
   ~MIDIPermissionRequest() = default;
+  nsresult DoPrompt();
+  void CancelWithRandomizedDelay();
+
+  // If we're canceling on a timer, we need to hold a strong ref while it's
+  // outstanding.
+  nsCOMPtr<nsITimer> mCancelTimer;
 
   // Promise for returning MIDIAccess on request success
   RefPtr<Promise> mPromise;
@@ -42,7 +47,6 @@ class MIDIPermissionRequest final : public ContentPermissionRequestBase,
   bool mNeedsSysex;
 };
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 #endif  // mozilla_dom_MIDIPermissionRequest_h

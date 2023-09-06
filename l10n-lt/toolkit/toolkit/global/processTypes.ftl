@@ -22,13 +22,13 @@ process-type-extension = Plėtinys
 # process used to open file:// URLs
 process-type-file = Vietinis failas
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Didelis išskyrimas
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Izoliuotas saityno turinys
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Izoliuotas aptarnavimo scenarijus
 
 # process preallocated; may change to other types
 process-type-prealloc = Išskirtas iš anksto
@@ -49,6 +49,9 @@ process-type-socket = Sujungimas
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Izoliuotas IPC aktorius
 
 ##
 ## Other

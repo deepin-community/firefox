@@ -37,7 +37,7 @@ protections-panel-site-not-working-view =
 ## a tooltip explaining why these items were not blocked in the page.
 
 protections-panel-not-blocking-why-label = Pse?
-protections-panel-not-blocking-why-etp-on-tooltip = Bllokimi i këtyre mund të dëmtojmë funksionimin e disa elementëve në disa sajte. Pa gjurmues, disa butona, formularë, dhe fusha kredencialesh hyrjeje mund të mos funksionojnë.
+protections-panel-not-blocking-why-etp-on-tooltip = Bllokimi i këtyre mund të dëmtojë funksionimin e disa elementëve në disa sajte. Pa gjurmues, disa butona, formularë dhe fusha kredencialesh hyrjeje mund të mos funksionojnë.
 protections-panel-not-blocking-why-etp-off-tooltip = Janë ngarkuar krejt gjurmuesit në këtë sajt, ngaqë mbrojtjet janë të çaktivizuara.
 
 ##
@@ -63,7 +63,6 @@ protections-panel-not-found-label = S'u Pikas Ndonjë
 ##
 
 protections-panel-settings-label = Rregullime Mbrojtjeje
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Pult Mbrojtjesh
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -87,7 +86,7 @@ protections-panel-cross-site-tracking-cookies = Këto cookies ju ndjekin nga saj
 protections-panel-cryptominers = Nxjerrësit e kriptomonedhave e përdorin fuqinë përllogaritëse të sistemit tuaj për të nxjerrë para dixhitale. Programthet për nxjerrje kriptomonedhash konsumojnë energjinë e baterisë tuaj, ngadalësojnë kompjuterin tuaj dhe mund të sjellin shtim të faturës tuaj për energjinë.
 protections-panel-fingerprinters = Krijuesit e shenjave të gishtave (<em>Fingerprinters</em>) grumbullojnë rregullime nga shfletuesi dhe kompjuteri juaj për të krijuar një profil rreth jush. Duke përdorur këto shenja dixhitale gishtash, ata mund t’ju ndjekin nëpër sajte të ndryshme.
 protections-panel-tracking-content = Sajtet mund të ngarkojnë reklama, video dhe tjetër lëndë të jashtme me kod gjurmimi. Bllokimi i lëndës gjurmuese mund të ndihmojë për ngarkimin më të shpejtë të sajteve, por disa butona, formularë dhe fusha kredenciale hyrjesh mund të mos punojnë.
-protections-panel-social-media-trackers = Gjurmuesit prej rrjetesh shoqërore vendosin gjurmues në sajte të tjerë për të ndjekur ç’bëni, ç’shihni dhe vëzhgoni kur jeni në internet. Kjo u lejon shoqërive të rrjeteve shoqërore të mësojnë më tepër rreth jush, tej asaj çka ndani me të tjerët në profilet tuaj në media shoqërore.
+protections-panel-social-media-trackers = Gjurmuesit prej rrjetesh shoqërore vendosin gjurmues në sajte të tjerë për të ndjekur ç’bëni, ç’shihni dhe vëzhgoni në internet. Kjo u lejon shoqërive të rrjeteve shoqërore të mësojnë më tepër rreth jush, tej asaj çka ndani me të tjerët në profilet tuaj në media shoqërore.
 
 protections-panel-description-shim-allowed = Disa gjurmues të treguar më poshtë janë zhbllokuar pjesërisht në këtë faqe, ngaqë keni ndërvepruar me ta.
 protections-panel-description-shim-allowed-learn-more = Mësoni më tepër
@@ -101,6 +100,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Njoftoni një Sajt të Dëmtuar
 protections-panel-content-blocking-breakage-report-view-description = Bllokimi i disa gjurmuesve mund të shkaktojë probleme me disa sajte. Raportimi i këtyre problemeve ndihmon për ta bërë { -brand-short-name }-in më të mirë për këdo. Dërgimi i këtij raporti do të shkaktojë dërgimin te Mozilla të një URL-je dhe të të dhënave mbi rregullimet tuaja të shfletuesit <label data-l10n-name="learn-more">Mësoni më tepër</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Bllokimi i disa gjurmuesve mund të shkaktojë probleme me disa sajte. Raportimi i këtyre problemeve ndihmon për ta bërë { -brand-short-name }-in më të mirë për këdo. Dërgimi i këtij raporti do të shkaktojë dërgimin te { -vendor-short-name } të një URL-je dhe të të dhënave mbi rregullimet tuaja të shfletuesit
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -111,3 +111,22 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Anuloje
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Dërgoje Raportin
+
+# Cookie Banner Handling
+
+protections-panel-cookie-banner-handling-header = Reduktim Banderolash Për Cookie-t
+protections-panel-cookie-banner-handling-enabled = Aktivizuar për këtë sajt
+protections-panel-cookie-banner-handling-disabled = Çaktivizuar për këtë sajt
+protections-panel-cookie-banner-handling-undetected = Sajt aktualisht i pambuluar
+
+protections-panel-cookie-banner-view-title =
+    .title = Reduktim Banderolash Për Cookie-t
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = Të çaktivizohet Reduktim Banderolash Cookie-sh për { $host }?
+protections-panel-cookie-banner-view-turn-on-for-site = Të aktivizohet Reduktim Banderolash Cookie-sh për këtë sajt?
+protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name }-i do të spastrojë cookie-t për këtë sajt dhe do të rifreskojë faqen. Spastrimi i krejt cookie-ve mund të sjellë nxjerrjen tuaj nga llogaria, ose zbrazje shportash blerjesh.
+protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name }-i provon të hedhë poshtë automatikisht krejt kërkesat për cookies, në sajtet që e mbulojnë.
+protections-panel-cookie-banner-view-cancel = Anuloje
+protections-panel-cookie-banner-view-turn-off = Çaktivizoje
+protections-panel-cookie-banner-view-turn-on = Aktivizoje

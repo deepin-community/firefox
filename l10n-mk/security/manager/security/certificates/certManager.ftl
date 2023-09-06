@@ -17,9 +17,9 @@ certmgr-tab-servers =
 certmgr-tab-ca =
     .label = Авторитети
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Менување на поставките за доверба на CA сетификатот
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Промени ги поставките за доверба:
 
@@ -29,18 +29,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Овој сертификат може да идентификува поштенски корисници.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Бришење на сертификат
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = Име на сертификатот
 
 certmgr-cert-server =
     .label = Сервер
-
-certmgr-override-lifetime =
-    .label = Животен век
 
 certmgr-token-name =
     .label = Безбедносен уред
@@ -159,9 +156,8 @@ delete-email-cert-title =
 delete-email-cert-confirm = Сигурно сакате да ги избришете поштенските сертификати на овие луѓе?
 delete-email-cert-impact = Ако избришете нечив сертификат за е-пошта, повеќе нема да можете да праќате енкриптирана пошта до тој човек.
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-restart-required-title = راه‌اندازی مجدد لازم است
-restart-required-header = متاسفیم. فقط باید یک کار کوچک بکنیم تا بتوانیم ادامه بدهیم.
-restart-required-intro-brand = { -brand-short-name } به تازگی به‌روزرسانی شده است. بر روی راه اندازی مجدد { -brand-short-name } کلیک کنید تا به‌روزرسانی کامل شود.
-restart-required-description = پس از آن تمام صفحه‌ها، پنجره‌ها و زبانه‌های شما را بازآوری می‌کنیم تا بتوانید به راه خود ادامه دهید.
+restart-required-title = راه‌اندازی دوباره لازم است
+restart-required-heading = برای ادامهٔ استفاده از { -brand-short-name }، دوباره راه‌اندازی کنید
+restart-required-intro = یک به‌روز رسانی برای { -brand-short-name } در پس‌زمینه آغاز شد. برای به تکمیل بروز رسانی، باید دوباره راه‌اندازی کنید.
+window-restoration-info = پنجره‌ها و زبانه‌های شما به‌سرعت بازیابی خواهند شد؛ ولی پنجره‌های پنهانی خیر.
 
-restart-button-label = راه‌اندازی دوباره { -brand-short-name }
+restart-button-label = راه‌اندازی دوبارهٔ { -brand-short-name }

@@ -38,20 +38,9 @@ menu-quit =
             [windows] T
            *[other] T
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Terminar { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Terminar { -brand-shorter-name }
-
 menu-about =
     .label = Davart { -brand-shorter-name }
     .accesskey = D
@@ -81,8 +70,14 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Avrir ina datoteca…
     .accesskey = d
-menu-file-close =
-    .label = Serrar
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Serrar il tab
+           *[other] Serrar { $tabCount } tabs
+        }
     .accesskey = S
 menu-file-close-window =
     .label = Serrar la fanestra
@@ -99,9 +94,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Organisar la pagina…
     .accesskey = O
-menu-file-print-preview =
-    .label = Prevista per stampar
-    .accesskey = P
 menu-file-print =
     .label = Stampar…
     .accesskey = S
@@ -188,6 +180,17 @@ menu-view-full-screen =
     .label = Maletg entir
     .accesskey = M
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Midar a la vista da lectura
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Serrar la vista da lectura
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +219,9 @@ menu-history-undo-menu =
     .label = Tabs serrads dacurt
 menu-history-undo-window-menu =
     .label = Fanestras serradas dacurt
-menu-history-reopen-all-tabs = Reavrir tut ils tabs
-menu-history-reopen-all-windows = Reavrir tut las fanestras
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Tschertgar en la cronologia
 
 ## Bookmarks Menu
 
@@ -226,10 +230,13 @@ menu-bookmarks-menu =
     .accesskey = S
 menu-bookmarks-manage =
     .label = Administrar ils segnapaginas
-menu-bookmark-current-tab =
-    .label = Agiuntar in segnapagina per il tab actual
-menu-bookmark-edit =
-    .label = Modifitgar quest segnapagina
+menu-bookmark-tab =
+    .label = Agiuntar in segnapagina per il tab actual…
+menu-edit-bookmark =
+    .label = Modifitgar quest segnapagina…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Tschertgar en ils segnapaginas
 menu-bookmarks-all-tabs =
     .label = Agiuntar segnapaginas per tut ils tabs…
 menu-bookmarks-toolbar =
@@ -314,8 +321,8 @@ menu-help-more-troubleshooting-info =
     .accesskey = D
 menu-help-report-site-issue =
     .label = Rapportar in problem cun la pagina…
-menu-help-feedback-page =
-    .label = Trametter in resun…
+menu-help-share-ideas =
+    .label = Cundivida ideas e resuns…
     .accesskey = s
 menu-help-enter-troubleshoot-mode2 =
     .label = Modus per schliar problems…
@@ -323,6 +330,9 @@ menu-help-enter-troubleshoot-mode2 =
 menu-help-exit-troubleshoot-mode =
     .label = Deactivar il modus per schliar problems
     .accesskey = m
+menu-help-switch-device =
+    .label = Midar ad in nov apparat
+    .accesskey = n
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Kullanıcı adı
 common-dialog-password =
     .value = Parola
+
+common-dialog-copy-cmd =
+    .label = Kopyala
+    .accesskey = K
+common-dialog-select-all-cmd =
+    .label = Tümünü seç
+    .accesskey = T

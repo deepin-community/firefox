@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = અવરોધિત સૂચિઓ
-    .style = width: 55em
+    .style = min-width: 55em
 
 blocklist-description = ઑનલાઇન ટ્રેકરને અવરોધિત કરવા માટે સૂચિ { -brand-short-name } નો ઉપયોગ કરો. <a data-l10n-name="disconnect-link" title="Disconnect"> ડિસ્કનેક્ટ</a> દ્વારા પ્રદાન કરવામાં આવેલી સૂચિ.
 blocklist-close-key =

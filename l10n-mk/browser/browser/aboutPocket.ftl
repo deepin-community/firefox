@@ -18,6 +18,7 @@ pocket-panel-saved-error-only-links = Може да се зачувуваат с
 pocket-panel-saved-error-not-saved = Страницата не е зачувана
 pocket-panel-saved-page-removed = Страницата е отстранета
 pocket-panel-saved-page-saved = Зачувано во { -pocket-brand-name }
+pocket-panel-saved-page-saved-b = Зачувано во { -pocket-brand-name }!
 pocket-panel-saved-processing-remove = Страницата се отстранува…
 pocket-panel-saved-processing-tags = Додавам етикети …
 pocket-panel-saved-remove-page = Отстрани страница
@@ -25,7 +26,9 @@ pocket-panel-saved-save-tags = Сними
 pocket-panel-saved-saving-tags = Се снима…
 pocket-panel-saved-suggested-tags = Предложени етикети
 pocket-panel-saved-tags-saved = Додадени етикети
-pocket-panel-signup-view-list = Види листа
+
+# This is displayed above a field where the user can add tags
+pocket-panel-signup-add-tags = Додај етикети:
 
 ## about:pocket-signup panel
 
@@ -41,3 +44,15 @@ pocket-panel-signup-tagline-story-two = Прегледајте во { -pocket-br
 
 ## about:pocket-home panel
 
+pocket-panel-home-welcome-back = Добредојдовте назад
+pocket-panel-home-discover-more = Откријте повеќе
+pocket-panel-home-explore-more = Истражи
+
+## Pocket panel header component
+
+pocket-panel-header-sign-in = Најавете се
+
+## Pocket panel buttons
+
+pocket-panel-button-show-all = Прикажи сè
+pocket-panel-button-remove = Отстрани

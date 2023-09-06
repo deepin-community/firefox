@@ -41,6 +41,17 @@ options-collapse-attrs-label = Trunkera DOM-attribut
 options-collapse-attrs-tooltip =
     .title = Trunkera långa attribut i inspektören
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Klicka och dra för att redigera storleksvärden
+options-inspector-draggable-properties-tooltip =
+    .title = Klicka och dra för att redigera storleksvärden i vyn för inspektörsregler.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Använd förenklad markering med prefers-reduced-motion
+options-inspector-simplified-highlighters-tooltip =
+    .title = Möjliggör förenklade markering när prefers-reduced-motion är aktiverat. Ritar linjer istället för fyllda rektanglar runt markerade element för att undvika blinkande effekter.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Standardfärgvärde
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Som författat
 options-default-color-unit-hex = Hex
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Färgnamn
 
 ## Style Editor section
@@ -118,6 +130,16 @@ options-enable-remote-label = Aktivera fjärrfelsökning
 options-enable-remote-tooltip2 =
     .title = Om du slår på det här alternativet kan du felsöka den här webbläsarinstansen på distans
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Använd F12-tangenten för att öppna eller stänga DevTools
+options-enable-f12-tooltip =
+    .title = Om du aktiverar det här alternativet binds F12-tangenten för att öppna eller stänga DevTools verktygslåda
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Aktivera anpassade formaterare
+options-enable-custom-formatters-tooltip =
+    .title = Om du aktiverar det här alternativet kan webbplatser definiera anpassade formaterare för DOM-objekt
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Aktivera Service Workers över HTTP (när verktygslådan är öppen)
 options-enable-service-workers-http-tooltip =
@@ -130,9 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Endast aktuell session, laddar om sidan
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Visa Geckos plattformsdata
-options-show-platform-data-tooltip =
-    .title = Om du aktiverar denna inställning kommer JavaScript-profilerarens rapporter att inkludera plattformssymboler för Gecko

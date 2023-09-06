@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = प्रोफाइल विज़ार्ड बनायें
-    .style = width: 75em; height: 32em;
+    .style = min-width: 75em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] प्रस्तावना
-       *[other] { create-profile-window.title } में आपका स्वागत है
+       *[other] { create-profile-window2.title } में आपका स्वागत है
     }
 
 profile-creation-explanation-1 = { -brand-short-name }अपनी सैटिंग की जानकारी एवं वरीयतायें आपके निजी प्रोफाइल में सहेजता है.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] निष्कर्ष
-       *[other] { create-profile-window.title } को पूरा किया
+       *[other] { create-profile-window2.title } को पूरा किया
     }
 
 profile-creation-intro = यदि आप कई प्रोफाइल बनाते हैं तो आप उन्हें उनके प्रोफाइल नाम से पहचान सकते हैं. आप यहाँ उपलब्ध नाम का उपयोग कर सकते हैं या अपने द्वारा दिये गये नाम का उपयोग कर सकते हैं.

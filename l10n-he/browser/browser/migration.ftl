@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = ‎360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = לא נמצאו תוכנות שמכילות סימניות, היסטוריה, או מידע ססמאות.
 
@@ -61,8 +73,8 @@ import-items-description = נא לבחור אילו פריטים לייבא:
 
 import-permissions-page-title = נא להעניק הרשאות ל־{ -brand-short-name }
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = ‏macOS מחייב אותך לאפשר במפורש ל־{ -brand-short-name } גישה לסימניות של Safari. יש ללחוץ ״המשך״ ולבחור בקובץ ״Bookmarks.plist” שבחלונית שתופיע.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = ‏macOS מחייב אותך לאפשר במפורש ל־{ -brand-short-name } גישה לנתתונים של Safari. יש ללחוץ ״המשך״, לבחור בתיקייה ״Safari” שבחלונית שתופיע וללחוץ על ״פתיחה”.
 
 import-migrating-page-title = מתבצע ייבוא…
 
@@ -78,23 +90,9 @@ import-done-description = הפריטים הבאים יובאו בהצלחה:
 
 import-close-source-browser = נא לוודא שהדפדפן הנבחר סגור לפני המשך הפעילות.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = מ־{ $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = רשימת קריאה (מ־Safari)
 imported-edge-reading-list = רשימת קריאה (מ־Edge)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = חלונות ולשוניות
 browser-data-session-label =
     .value = חלונות ולשוניות
+
+browser-data-payment-methods-checkbox =
+    .label = אמצעי תשלום
+browser-data-payment-methods-label =
+    .value = אמצעי תשלום

@@ -6,10 +6,10 @@
 // Test that inspector updates when page is navigated.
 
 const TEST_URL_FILE =
-  "browser/devtools/client/inspector/test/" + "doc_inspector_breadcrumbs.html";
+  "browser/devtools/client/inspector/test/doc_inspector_breadcrumbs.html";
 
-const TEST_URL_1 = "http://test1.example.org/" + TEST_URL_FILE;
-const TEST_URL_2 = "http://test2.example.org/" + TEST_URL_FILE;
+const TEST_URL_1 = "https://test1.example.org/" + TEST_URL_FILE;
+const TEST_URL_2 = "https://test2.example.org/" + TEST_URL_FILE;
 
 // Bug 1340592: "srcset" attribute causes bfcache events (pageshow/pagehide)
 // with buggy "persisted" values.
@@ -19,7 +19,7 @@ const TEST_URL_3 =
 const TEST_URL_4 =
   "data:text/html;charset=utf-8," + encodeURIComponent("<h1>bar</h1>");
 
-add_task(async function() {
+add_task(async function () {
   const { inspector } = await openInspectorForURL(TEST_URL_1);
 
   await selectNode("#i1", inspector);
@@ -53,7 +53,7 @@ add_task(async function() {
   await selectNode("#i1", inspector);
 });
 
-add_task(async function() {
+add_task(async function () {
   const { inspector } = await openInspectorForURL(TEST_URL_3);
 
   await selectNode("img", inspector);

@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = П
 
 update-checkingForUpdates = Праверка існавання абнаўленняў…
-update-downloading = <img data-l10n-name="icon"/>Сцягванне абнаўлення — <label data-l10n-name="download-status"/>
-update-downloading-message = Сцягванне абнаўлення — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Сцягваецца абнаўленне — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Сцягваецца абнаўленне — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Прымяняецца абнаўленне…
 
 update-failed = Няўдача абнаўлення. <label data-l10n-name="failed-link">Сцягнуць апошнюю версію</label>
@@ -25,15 +32,26 @@ update-failed-main = Няўдача абнаўлення. <a data-l10n-name="fai
 
 update-adminDisabled = Абнаўленні забаронены вашым сістэмным адміністратарам
 update-noUpdatesFound = { -brand-short-name } абноўлены
+aboutdialog-update-checking-failed = Не ўдалося праверыць наяўнасць абнаўленняў.
 update-otherInstanceHandlingUpdates = { -brand-short-name } абнаўляецца іншым асобнікам
 
-update-manual = Абнаўленні даступныя на <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Абнаўленні даступныя на <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Абнаўленні даступныя на <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Вы не можаце працягнуць абнаўленне на гэтай сістэме. <label data-l10n-name="unsupported-link">Падрабязней</label>
 
-update-restarting = Перазапуск...
+update-restarting = Перазапуск…
 
-channel-description = Зараз вы на <label data-l10n-name="current-channel"></label> канале абнаўленняў.
+update-internal-error2 = Немагчыма праверыць наяўнасць абнаўленняў з-за ўнутранай памылкі. Абнаўленні даступныя па адрасе <label data-l10n-name="manual-link">{ $displayUrl }</label>
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Зараз вы на <label data-l10n-name="current-channel">{ $channel }</label> канале абнаўленняў.
 
 warningDesc-version = { -brand-short-name } — эксперыментальны, і можа быць няўстойлівым.
 

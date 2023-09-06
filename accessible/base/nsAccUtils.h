@@ -38,17 +38,6 @@ class nsAccUtils {
                                int32_t aSetSize, int32_t aPosInSet);
 
   /**
-   * Get default value of the level for the given accessible.
-   */
-  static int32_t GetDefaultLevel(const LocalAccessible* aAcc);
-
-  /**
-   * Return ARIA level value or the default one if ARIA is missed for the
-   * given accessible.
-   */
-  static int32_t GetARIAOrDefaultLevel(const LocalAccessible* aAccessible);
-
-  /**
    * Compute group level for nsIDOMXULContainerItemElement node.
    */
   static int32_t GetLevelForXULContainerItem(nsIContent* aContent);
@@ -57,10 +46,10 @@ class nsAccUtils {
    * Set container-foo live region attributes for the given node.
    *
    * @param aAttributes    where to store the attributes
-   * @param aStartContent  node to start from
+   * @param aStartAcc  Accessible to start from
    */
   static void SetLiveContainerAttributes(AccAttributes* aAttributes,
-                                         nsIContent* aStartContent);
+                                         Accessible* aStartAcc);
 
   /**
    * Any ARIA property of type boolean or NMTOKEN is undefined if the ARIA
@@ -70,18 +59,15 @@ class nsAccUtils {
    * Return true if the ARIA property is defined, otherwise false
    */
   static bool HasDefinedARIAToken(nsIContent* aContent, nsAtom* aAtom);
-
-  /**
-   * Return atomic value of ARIA attribute of boolean or NMTOKEN type.
-   */
-  static nsStaticAtom* GetARIAToken(mozilla::dom::Element* aElement,
-                                    nsAtom* aAttr);
+  static bool HasDefinedARIAToken(const AttrArray* aAttrs, nsAtom* aAtom);
 
   /**
    * If the given ARIA attribute has a specific known token value, return it.
    * If the specification demands for a fallback value for unknown attribute
    * values, return that. For all others, return a nullptr.
    */
+  static nsStaticAtom* NormalizeARIAToken(const AttrArray* aAttrs,
+                                          nsAtom* aAttr);
   static nsStaticAtom* NormalizeARIAToken(mozilla::dom::Element* aElement,
                                           nsAtom* aAttr);
 
@@ -107,6 +93,8 @@ class nsAccUtils {
    * @param  aAccessible  [in] the item accessible
    * @param  aState       [in] the state of the item accessible
    */
+  static Accessible* GetSelectableContainer(const Accessible* aAccessible,
+                                            uint64_t aState);
   static LocalAccessible* GetSelectableContainer(LocalAccessible* aAccessible,
                                                  uint64_t aState);
 
@@ -115,7 +103,12 @@ class nsAccUtils {
    */
   static HyperTextAccessible* GetTextContainer(nsINode* aNode);
 
+  static Accessible* TableFor(Accessible* aRow);
   static LocalAccessible* TableFor(LocalAccessible* aRow);
+
+  static const LocalAccessible* TableFor(const LocalAccessible* aAcc) {
+    return TableFor(const_cast<LocalAccessible*>(aAcc));
+  }
 
   /**
    * Return true if the DOM node of a given accessible has a given attribute
@@ -142,24 +135,24 @@ class nsAccUtils {
   /**
    * Converts the given coordinates to coordinates relative screen.
    *
-   * @param aX               [in] the given x coord
-   * @param aY               [in] the given y coord
+   * @param aX               [in] the given x coord in dev pixels
+   * @param aY               [in] the given y coord in dev pixels
    * @param aCoordinateType  [in] specifies coordinates origin (refer to
    *                         nsIAccessibleCoordinateType)
    * @param aAccessible      [in] the accessible if coordinates are given
    *                         relative it.
    * @return converted coordinates
    */
-  static nsIntPoint ConvertToScreenCoords(int32_t aX, int32_t aY,
-                                          uint32_t aCoordinateType,
-                                          LocalAccessible* aAccessible);
+  static LayoutDeviceIntPoint ConvertToScreenCoords(int32_t aX, int32_t aY,
+                                                    uint32_t aCoordinateType,
+                                                    Accessible* aAccessible);
 
   /**
    * Converts the given coordinates relative screen to another coordinate
    * system.
    *
-   * @param aX               [in, out] the given x coord
-   * @param aY               [in, out] the given y coord
+   * @param aX               [in, out] the given x coord in dev pixels
+   * @param aY               [in, out] the given y coord in dev pixels
    * @param aCoordinateType  [in] specifies coordinates origin (refer to
    *                         nsIAccessibleCoordinateType)
    * @param aAccessible      [in] the accessible if coordinates are given
@@ -167,14 +160,24 @@ class nsAccUtils {
    */
   static void ConvertScreenCoordsTo(int32_t* aX, int32_t* aY,
                                     uint32_t aCoordinateType,
-                                    LocalAccessible* aAccessible);
+                                    Accessible* aAccessible);
 
   /**
-   * Returns coordinates relative screen for the parent of the given accessible.
+   * Returns screen-relative coordinates (in dev pixels) for the parent of the
+   * given accessible.
    *
    * @param [in] aAccessible  the accessible
    */
-  static nsIntPoint GetScreenCoordsForParent(LocalAccessible* aAccessible);
+  static LayoutDeviceIntPoint GetScreenCoordsForParent(Accessible* aAccessible);
+
+  /**
+   * Returns coordinates in device pixels relative screen for the top level
+   * window.
+   *
+   * @param aAccessible the acc hosted in the window.
+   */
+  static mozilla::LayoutDeviceIntPoint GetScreenCoordsForWindow(
+      mozilla::a11y::Accessible* aAccessible);
 
   /**
    * Get the 'live' or 'container-live' object attribute value from the given
@@ -198,7 +201,7 @@ class nsAccUtils {
   /**
    * Return text length of the given accessible, return 0 on failure.
    */
-  static uint32_t TextLength(LocalAccessible* aAccessible);
+  static uint32_t TextLength(Accessible* aAccessible);
 
   /**
    * Transform nsIAccessibleStates constants to internal state constant.
@@ -220,7 +223,7 @@ class nsAccUtils {
   static uint32_t To32States(uint64_t aState, bool* aIsExtra) {
     uint32_t extraState = aState >> 31;
     *aIsExtra = !!extraState;
-    return aState | extraState;
+    return extraState ? extraState : aState;
   }
 
   /**
@@ -234,6 +237,60 @@ class nsAccUtils {
    * the container-live attribute would be something other than "off" or empty.
    */
   static bool IsARIALive(const LocalAccessible* aAccessible);
+
+  /**
+   * Get the document Accessible which owns a given Accessible.
+   * This function is needed because there is no unified base class for local
+   * and remote documents.
+   * If aAcc is null, null will be returned.
+   */
+  static Accessible* DocumentFor(Accessible* aAcc);
+
+  /**
+   * Get an Accessible in a given document by its unique id.
+   * An Accessible's id can be obtained using Accessible::ID.
+   * This function is needed because there is no unified base class for local
+   * and remote documents.
+   * If aDoc is nul, null will be returned.
+   */
+  static Accessible* GetAccessibleByID(Accessible* aDoc, uint64_t aID);
+
+  /**
+   * Get the URL for a given document.
+   * This function is needed because there is no unified base class for local
+   * and remote documents.
+   */
+  static void DocumentURL(Accessible* aDoc, nsAString& aURL);
+
+  /**
+   * Get the mime type for a given document.
+   * This function is needed because there is no unified base class for local
+   * and remote documents.
+   */
+  static void DocumentMimeType(Accessible* aDoc, nsAString& aMimeType);
+
+  /**
+   * Accessors for element attributes that are aware of CustomElement ARIA
+   * accessibility defaults. If the element does not have the provided
+   * attribute defined directly on it, we will then attempt to fetch the
+   * default instead.
+   */
+  static const AttrArray* GetARIADefaults(dom::Element* aElement);
+  static bool HasARIAAttr(dom::Element* aElement, const nsAtom* aName);
+  static bool GetARIAAttr(dom::Element* aElement, const nsAtom* aName,
+                          nsAString& aResult);
+  static const nsAttrValue* GetARIAAttr(dom::Element* aElement,
+                                        const nsAtom* aName);
+  static bool ARIAAttrValueIs(dom::Element* aElement, const nsAtom* aName,
+                              const nsAString& aValue,
+                              nsCaseTreatment aCaseSensitive);
+  static bool ARIAAttrValueIs(dom::Element* aElement, const nsAtom* aName,
+                              const nsAtom* aValue,
+                              nsCaseTreatment aCaseSensitive);
+  static int32_t FindARIAAttrValueIn(dom::Element* aElement,
+                                     const nsAtom* aName,
+                                     AttrArray::AttrValuesArray* aValues,
+                                     nsCaseTreatment aCaseSensitive);
 };
 
 }  // namespace a11y

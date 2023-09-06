@@ -39,10 +39,12 @@ permissions-invalid-uri-label = Tik 'n geldige gasheernaam in
 
 ## Exceptions - Tracking Protection
 
+
 ## Exceptions - Cookies
 
 
 ## Exceptions - HTTPS-Only Mode
+
 
 ## Exceptions - Pop-ups
 
@@ -50,18 +52,16 @@ permissions-exceptions-popup-desc = U kan spesifiseer watter webwerwe toegelaat 
 
 ## Exceptions - Saved Logins
 
-permissions-exceptions-saved-logins-window =
+permissions-exceptions-saved-logins-window2 =
     .title = Uitsonderings - Gestoorde aanmeldings
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 
 ## Exceptions - Add-ons
 
 permissions-exceptions-addons-desc = U kan spesifiseer watter webwerwe toegelaat word om byvoegings te installeer. Tik die presiese webadres van die werf wat u wil toelaat en klik dan Laat toe.
 
-## Exceptions - Autoplay Media
-
-
 ## Site Permissions - Autoplay
+
 
 ## Site Permissions - Notifications
 
@@ -71,8 +71,13 @@ permissions-exceptions-addons-desc = U kan spesifiseer watter webwerwe toegelaat
 
 ## Site Permissions - Virtual Reality
 
+
 ## Site Permissions - Camera
 
 
 ## Site Permissions - Microphone
+
+## Site Permissions - Speaker
+##
+## "Speaker" refers to an audio output device.
 

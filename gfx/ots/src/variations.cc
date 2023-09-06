@@ -67,12 +67,22 @@ ParseVariationDataSubtable(const ots::Font* font, const uint8_t* data, const siz
   ots::Buffer subtable(data, length);
 
   uint16_t itemCount;
-  uint16_t shortDeltaCount;
+  uint16_t wordDeltaCount;
+
+  const uint16_t LONG_WORDS	= 0x8000u;
+  const uint16_t WORD_DELTA_COUNT_MASK = 0x7FFF;
 
   if (!subtable.ReadU16(&itemCount) ||
-      !subtable.ReadU16(&shortDeltaCount) ||
+      !subtable.ReadU16(&wordDeltaCount) ||
       !subtable.ReadU16(regionIndexCount)) {
     return OTS_FAILURE_MSG("Failed to read variation data subtable header");
+  }
+
+  size_t valueSize = (wordDeltaCount & LONG_WORDS) ? 2 : 1;
+  wordDeltaCount &= WORD_DELTA_COUNT_MASK;
+
+  if (wordDeltaCount > *regionIndexCount) {
+    return OTS_FAILURE_MSG("Bad word delta count");
   }
 
   for (unsigned i = 0; i < *regionIndexCount; i++) {
@@ -82,7 +92,7 @@ ParseVariationDataSubtable(const ots::Font* font, const uint8_t* data, const siz
     }
   }
 
-  if (!subtable.Skip(size_t(itemCount) * (size_t(shortDeltaCount) + size_t(*regionIndexCount)))) {
+  if (!subtable.Skip(valueSize * size_t(itemCount) * (size_t(wordDeltaCount) + size_t(*regionIndexCount)))) {
     return OTS_FAILURE_MSG("Failed to read delta data");
   }
 
@@ -206,7 +216,7 @@ bool ParseVariationData(const Font* font, const uint8_t* data, size_t length,
           return OTS_FAILURE_MSG("Failed to read tuple coordinate");
         }
         if (coordinate < -0x4000 || coordinate > 0x4000) {
-          return OTS_FAILURE_MSG("Invalid tuple coordinate");
+          return OTS_FAILURE_MSG("Tuple coordinate not in the range [-1.0, 1.0]: %g", coordinate / 16384.);
         }
       }
     }
@@ -219,7 +229,7 @@ bool ParseVariationData(const Font* font, const uint8_t* data, size_t length,
           return OTS_FAILURE_MSG("Failed to read tuple coordinate");
         }
         if (coordinate < -0x4000 || coordinate > 0x4000) {
-          return OTS_FAILURE_MSG("Invalid tuple coordinate");
+          return OTS_FAILURE_MSG("Tuple coordinate not in the range [-1.0, 1.0]: %g", coordinate / 16384.);
         }
         startTuple.push_back(coordinate);
       }
@@ -231,7 +241,7 @@ bool ParseVariationData(const Font* font, const uint8_t* data, size_t length,
           return OTS_FAILURE_MSG("Failed to read tuple coordinate");
         }
         if (coordinate < -0x4000 || coordinate > 0x4000) {
-          return OTS_FAILURE_MSG("Invalid tuple coordinate");
+          return OTS_FAILURE_MSG("Tuple coordinate not in the range [-1.0, 1.0]: %g", coordinate / 16384.);
         }
         endTuple.push_back(coordinate);
       }

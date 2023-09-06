@@ -41,6 +41,17 @@ options-collapse-attrs-label = Trunki atributojn de DOM
 options-collapse-attrs-tooltip =
     .title = Trunki longajn atributojn en la inspektilo
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Alklaku kaj trenu por modifi valorojn pri grando
+options-inspector-draggable-properties-tooltip =
+    .title = Alklaku kaj trenu por modifi valorojn pri grando en la vido de reguloj de la inspektilo.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Uzi pli simplajn elstarigilojn per prefers-reduced-motion
+options-inspector-simplified-highlighters-tooltip =
+    .title = Tio ĉi aktivigas simpligitajn elstarigilojn, kiam prefers-reduced-motion estas aktiva. Por eviti lumpulsajn efektojn, tio ĉi desegnas liniojn anstataŭ plenigitajn rektangulojn ĉirkaŭ elstarigitaj elementoj.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Norma unuo de koloro
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Originala unuo
 options-default-color-unit-hex = Hex
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Nomoj de koloroj
 
 ## Style Editor section
@@ -118,6 +130,16 @@ options-enable-remote-label = Ebligi foran senerarigon
 options-enable-remote-tooltip2 =
     .title = Ŝalto de tiu ĉi eblo prefero permesos la foran senerarigon de tiu ĉi nuna programo
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Uzi la klavon F12 por malfermi aŭ fermi la ilojn por programistoj
+options-enable-f12-tooltip =
+    .title = Ŝalto de tiu ĉi elekteblo ligos la klavon F12 kun la malfermo aŭ fermo de la iloj por programistoj
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Aktivigi personecigitajn montrilojn
+options-enable-custom-formatters-tooltip =
+    .title = Ŝalto de tiu ĉi elekteblo permesos al retejoj difini personecigitajn montrilojn por objektoj DOM
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Aktivigi Service Workers sur HTTP (kiam la ilujo estas malfermita)
 options-enable-service-workers-http-tooltip =
@@ -130,9 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Nur en la nuna seanco, tio reŝargas la paĝon
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Montri datumojn de la soklo de Gecko
-options-show-platform-data-tooltip =
-    .title = Se vi aktivigas tiun elekteblon, la raportoj de la rulanalizilo de JavaScript enhavos simbolojn de la soklo de Gecko.

@@ -17,6 +17,9 @@ menu-select-all =
     .label = Избери сè
     .accesskey = е
 
+close-dialog =
+    .key = w
+
 general-tab =
     .label = Општо
     .accesskey = О
@@ -97,6 +100,7 @@ security-view-privacy =
     .value = Приватност и историја
 
 security-view-privacy-history-value = Сум го посетил ли ова мрежно место пред денес?
+security-view-privacy-sitedata-value = Дали оваа страница складира информации на мојот компјутер?
 
 security-view-privacy-clearsitedata =
     .label = Исчисти колачиња и податоци за мрежно место
@@ -158,6 +162,17 @@ permissions-use-default =
     .label = Користи основни
 security-no-visits = Не
 
+# This string is used to display the number of times
+# the user has visited the website prior
+# Variables:
+#   $visits (number) - The number of previous visits
+security-visits-number =
+    { $visits ->
+        [0] Не
+        [one] Да, еднаш
+       *[other] Да, { $visits } пати
+    }
+
 # This string is used to display the type of
 # an image
 # Variables:
@@ -187,6 +202,9 @@ media-dimensions =
 # Variables:
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } KB
+
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
 
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab

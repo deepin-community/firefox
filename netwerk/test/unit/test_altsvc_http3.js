@@ -1,6 +1,8 @@
 "use strict";
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
 var h3Port;
 
@@ -20,17 +22,14 @@ var httpBarOrigin; // http://bar.example.com:PORT/
 var httpsBarOrigin; // https://bar.example.com:PORT/
 
 function run_test() {
-  var env = Cc["@mozilla.org/process/environment;1"].getService(
-    Ci.nsIEnvironment
-  );
-  h3Port = env.get("MOZHTTP3_PORT");
+  h3Port = Services.env.get("MOZHTTP3_PORT");
   Assert.notEqual(h3Port, null);
   Assert.notEqual(h3Port, "");
 
   // Set to allow the cert presented by our H3 server
   do_get_profile();
 
-  Services.prefs.setBoolPref("network.http.http3.enabled", true);
+  Services.prefs.setBoolPref("network.http.http3.enable", true);
   Services.prefs.setBoolPref("network.http.altsvc.enabled", true);
   Services.prefs.setBoolPref("network.http.altsvc.oe", true);
   Services.prefs.setCharPref(
@@ -124,7 +123,7 @@ function h1ServerWK(metadata, response) {
 }
 
 function resetPrefs() {
-  Services.prefs.clearUserPref("network.http.http3.enabled");
+  Services.prefs.clearUserPref("network.http.http3.enable");
   Services.prefs.clearUserPref("network.dns.localDomains");
   Services.prefs.clearUserPref("network.http.altsvc.enabled");
   Services.prefs.clearUserPref("network.http.altsvc.oe");
@@ -141,7 +140,6 @@ function makeChan(origin) {
 
 var origin;
 var xaltsvc;
-var retryCounter = 0;
 var loadWithoutClearingMappings = false;
 var disallowH3 = false;
 var disallowH2 = false;
@@ -151,7 +149,7 @@ var expectPass = true;
 var waitFor = 0;
 var originAttributes = {};
 
-var Listener = function() {};
+var Listener = function () {};
 Listener.prototype = {
   onStartRequest: function testOnStartRequest(request) {
     Assert.ok(request instanceof Ci.nsIHttpChannel);

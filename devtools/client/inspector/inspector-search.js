@@ -4,12 +4,10 @@
 
 "use strict";
 
-const promise = require("promise");
-const { KeyCodes } = require("devtools/client/shared/keycodes");
+const { KeyCodes } = require("resource://devtools/client/shared/keycodes.js");
 
-const EventEmitter = require("devtools/shared/event-emitter");
-const AutocompletePopup = require("devtools/client/shared/autocomplete-popup");
-const Services = require("Services");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
+const AutocompletePopup = require("resource://devtools/client/shared/autocomplete-popup.js");
 
 // Maximum number of selector suggestions shown in the panel.
 const MAX_SUGGESTIONS = 15;
@@ -44,10 +42,6 @@ function InspectorSearch(inspector, input, clearBtn) {
   this.searchBox.addEventListener("input", this._onInput, true);
   this.searchClearButton.addEventListener("click", this._onClearSearch);
 
-  // For testing, we need to be able to wait for the most recent node request
-  // to finish.  Tests can watch this promise for that.
-  this._lastQuery = promise.resolve(null);
-
   this.autocompleter = new SelectorAutocompleter(inspector, input);
   EventEmitter.decorate(this);
 }
@@ -55,7 +49,7 @@ function InspectorSearch(inspector, input, clearBtn) {
 exports.InspectorSearch = InspectorSearch;
 
 InspectorSearch.prototype = {
-  destroy: function() {
+  destroy() {
     this.searchBox.removeEventListener("keydown", this._onKeyDown, true);
     this.searchBox.removeEventListener("input", this._onInput, true);
     this.searchClearButton.removeEventListener("click", this._onClearSearch);
@@ -64,7 +58,7 @@ InspectorSearch.prototype = {
     this.autocompleter.destroy();
   },
 
-  _onSearch: function(reverse = false) {
+  _onSearch(reverse = false) {
     this.doFullTextSearch(this.searchBox.value, reverse).catch(console.error);
   },
 
@@ -76,7 +70,7 @@ InspectorSearch.prototype = {
 
     if (query.length === 0) {
       searchContainer.classList.remove("devtools-searchbox-no-match");
-      if (!lastSearched || lastSearched.length > 0) {
+      if (!lastSearched || lastSearched.length) {
         this.emit("search-cleared");
       }
       return;
@@ -107,7 +101,7 @@ InspectorSearch.prototype = {
     }
   },
 
-  _onInput: function() {
+  _onInput() {
     if (this.searchBox.value.length === 0) {
       this.searchClearButton.hidden = true;
       this._onSearch();
@@ -116,7 +110,7 @@ InspectorSearch.prototype = {
     }
   },
 
-  _onKeyDown: function(event) {
+  _onKeyDown(event) {
     if (event.keyCode === KeyCodes.DOM_VK_RETURN) {
       this._onSearch(event.shiftKey);
     }
@@ -129,7 +123,7 @@ InspectorSearch.prototype = {
     }
   },
 
-  _onClearSearch: function() {
+  _onClearSearch() {
     this.searchBox.parentNode.classList.remove("devtools-searchbox-no-match");
     this.searchBox.value = "";
     this.searchClearButton.hidden = true;
@@ -177,9 +171,6 @@ function SelectorAutocompleter(inspector, inputNode) {
   this.searchBox.addEventListener("keypress", this._onSearchKeypress, true);
   this.inspector.on("markupmutation", this._onMarkupMutation);
 
-  // For testing, we need to be able to wait for the most recent node request
-  // to finish.  Tests can watch this promise for that.
-  this._lastQuery = promise.resolve(null);
   EventEmitter.decorate(this);
 }
 
@@ -312,7 +303,7 @@ SelectorAutocompleter.prototype = {
   /**
    * Removes event listeners and cleans up references.
    */
-  destroy: function() {
+  destroy() {
     this.searchBox.removeEventListener("input", this.showSuggestions, true);
     this.searchBox.removeEventListener(
       "keypress",
@@ -329,7 +320,7 @@ SelectorAutocompleter.prototype = {
   /**
    * Handles keypresses inside the input box.
    */
-  _onSearchKeypress: function(event) {
+  _onSearchKeypress(event) {
     const popup = this.searchPopup;
     switch (event.keyCode) {
       case KeyCodes.DOM_VK_RETURN:
@@ -343,7 +334,7 @@ SelectorAutocompleter.prototype = {
           // When tab is pressed with focus on searchbox and closed popup,
           // do not prevent the default to avoid a keyboard trap and move focus
           // to next/previous element.
-          this.emit("processing-done");
+          this.emitForTests("processing-done");
           return;
         }
         break;
@@ -366,7 +357,7 @@ SelectorAutocompleter.prototype = {
         if (popup.isOpen) {
           this.hidePopup();
         } else {
-          this.emit("processing-done");
+          this.emitForTests("processing-done");
           return;
         }
         break;
@@ -377,13 +368,13 @@ SelectorAutocompleter.prototype = {
 
     event.preventDefault();
     event.stopPropagation();
-    this.emit("processing-done");
+    this.emitForTests("processing-done");
   },
 
   /**
    * Handles click events from the autocomplete popup.
    */
-  _onSearchPopupClick: function(event) {
+  _onSearchPopupClick(event) {
     const selectedItem = this.searchPopup.selectedItem;
     if (selectedItem) {
       this.searchBox.value = selectedItem.label;
@@ -398,7 +389,7 @@ SelectorAutocompleter.prototype = {
    * Reset previous search results on markup-mutations to make sure we search
    * again after nodes have been added/removed/changed.
    */
-  _onMarkupMutation: function() {
+  _onMarkupMutation() {
     this._searchResults = null;
     this._lastSearched = null;
   },
@@ -409,7 +400,7 @@ SelectorAutocompleter.prototype = {
    * @return {Promise} promise that will resolve when the autocomplete popup is fully
    * displayed or hidden.
    */
-  _showPopup: function(list, popupState) {
+  _showPopup(list, popupState) {
     let total = 0;
     const query = this.searchBox.value;
     const items = [];
@@ -470,7 +461,7 @@ SelectorAutocompleter.prototype = {
   /**
    * Hide the suggestion popup if necessary.
    */
-  hidePopup: function() {
+  hidePopup() {
     const onPopupClosed = this.searchPopup.once("popup-closed");
     this.searchPopup.hidePopup();
     return onPopupClosed;
@@ -480,8 +471,10 @@ SelectorAutocompleter.prototype = {
    * Suggests classes,ids and tags based on the user input as user types in the
    * searchbox.
    */
-  showSuggestions: async function() {
+  async showSuggestions() {
     let query = this.searchBox.value;
+    const originalQuery = this.searchBox.value;
+
     const state = this.state;
     let firstPart = "";
 
@@ -490,6 +483,7 @@ SelectorAutocompleter.prototype = {
       // suggest all nodes) or if it is an attribute selector (because
       // it would give a lot of useless results).
       this.hidePopup();
+      this.emitForTests("processing-done", { query: originalQuery });
       return;
     }
 
@@ -513,26 +507,28 @@ SelectorAutocompleter.prototype = {
       query += "*";
     }
 
-    this._lastQuery = this.inspector.commands.inspectorCommand
-      .getSuggestionsForQuery(query, firstPart, state)
-      .then(suggestions => {
-        this.emit("processing-done");
+    let suggestions =
+      await this.inspector.commands.inspectorCommand.getSuggestionsForQuery(
+        query,
+        firstPart,
+        state
+      );
 
-        if (state === this.States.CLASS) {
-          firstPart = "." + firstPart;
-        } else if (state === this.States.ID) {
-          firstPart = "#" + firstPart;
-        }
+    if (state === this.States.CLASS) {
+      firstPart = "." + firstPart;
+    } else if (state === this.States.ID) {
+      firstPart = "#" + firstPart;
+    }
 
-        // If there is a single tag match and it's what the user typed, then
-        // don't need to show a popup.
-        if (suggestions.length === 1 && suggestions[0][0] === firstPart) {
-          suggestions = [];
-        }
+    // If there is a single tag match and it's what the user typed, then
+    // don't need to show a popup.
+    if (suggestions.length === 1 && suggestions[0][0] === firstPart) {
+      suggestions = [];
+    }
 
-        // Wait for the autocomplete-popup to fire its popup-opened event, to make sure
-        // the autoSelect item has been selected.
-        return this._showPopup(suggestions, state);
-      });
+    // Wait for the autocomplete-popup to fire its popup-opened event, to make sure
+    // the autoSelect item has been selected.
+    await this._showPopup(suggestions, state);
+    this.emitForTests("processing-done", { query: originalQuery });
   },
 };

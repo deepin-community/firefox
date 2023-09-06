@@ -7,7 +7,7 @@ let bookmarkPanel;
 let folders;
 let win;
 
-add_task(async function setup() {
+add_setup(async function () {
   await PlacesUtils.bookmarks.eraseEverything();
 
   Services.prefs.clearUserPref("browser.bookmarks.defaultLocation");
@@ -43,12 +43,8 @@ add_task(async function test_selectChoose() {
   let menuList = win.document.getElementById("editBMPanel_folderMenuList");
   let folderTreeRow = win.document.getElementById("editBMPanel_folderTreeRow");
 
-  let expectedFolder = gBookmarksToolbar2h2020
-    ? "BookmarksToolbarFolderTitle"
-    : "OtherBookmarksFolderTitle";
-  let expectedGuid = gBookmarksToolbar2h2020
-    ? PlacesUtils.bookmarks.toolbarGuid
-    : PlacesUtils.bookmarks.unfiledGuid;
+  let expectedFolder = "BookmarksToolbarFolderTitle";
+  let expectedGuid = PlacesUtils.bookmarks.toolbarGuid;
 
   Assert.equal(
     menuList.label,
@@ -61,9 +57,9 @@ add_task(async function test_selectChoose() {
     "Should have the correct default guid selected"
   );
   Assert.equal(
-    folderTreeRow.collapsed,
+    folderTreeRow.hidden,
     true,
-    "Should have the folder tree collapsed"
+    "Should have the folder tree hidden"
   );
 
   let promisePopup = BrowserTestUtils.waitForEvent(
@@ -81,7 +77,7 @@ add_task(async function test_selectChoose() {
   );
 
   await TestUtils.waitForCondition(
-    () => !folderTreeRow.collapsed,
+    () => !folderTreeRow.hidden,
     "Should show the folder tree"
   );
   let folderTree = win.document.getElementById("editBMPanel_folderTree");
@@ -116,7 +112,7 @@ add_task(async function test_selectChoose() {
   );
 
   await TestUtils.waitForCondition(
-    () => folderTreeRow.collapsed,
+    () => folderTreeRow.hidden,
     "Should hide the folder tree"
   );
   ok(input.hidden, "Folder tree should not be broken.");
@@ -129,7 +125,7 @@ add_task(async function test_selectChoose() {
   );
 
   await TestUtils.waitForCondition(
-    () => !folderTreeRow.collapsed,
+    () => !folderTreeRow.hidden,
     "Should re-show the folder tree"
   );
   ok(input.hidden, "Folder tree should still not be broken.");

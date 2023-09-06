@@ -5,20 +5,22 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 # ***** END LICENSE BLOCK *****
 
-from __future__ import absolute_import
 import datetime
+import functools
 import glob
 import os
 import posixpath
 import re
 import signal
-import six
 import subprocess
-import time
 import tempfile
+import time
 from threading import Timer
-from mozharness.mozilla.automation import TBPL_RETRY, EXIT_STATUS_DICT
-from mozharness.base.script import PreScriptAction, PostScriptAction
+
+import six
+
+from mozharness.base.script import PostScriptAction, PreScriptAction
+from mozharness.mozilla.automation import EXIT_STATUS_DICT, TBPL_RETRY
 
 
 def ensure_dir(dir):
@@ -46,6 +48,7 @@ class AndroidMixin(object):
         self.logcat_proc = None
         self.logcat_file = None
         self.use_gles3 = False
+        self.use_root = True
         self.xre_path = None
         super(AndroidMixin, self).__init__(**kwargs)
 
@@ -68,7 +71,7 @@ class AndroidMixin(object):
             import mozdevice
 
             self._device = mozdevice.ADBDeviceFactory(
-                adb=adb, device=self.device_serial
+                adb=adb, device=self.device_serial, use_root=self.use_root
             )
         return self._device
 
@@ -79,7 +82,10 @@ class AndroidMixin(object):
         return (
             self.device_serial is not None
             or self.is_emulator
-            or (installer_url is not None and installer_url.endswith(".apk"))
+            or (
+                installer_url is not None
+                and (installer_url.endswith(".apk") or installer_url.endswith(".aab"))
+            )
         )
 
     @property
@@ -384,14 +390,20 @@ class AndroidMixin(object):
             self.logcat_proc.kill()
             self.logcat_file.close()
 
-    def install_apk(self, apk, replace=False):
-        """
-        Install the specified apk.
-        """
+    def _install_android_app_retry(self, app_path, replace):
         import mozdevice
 
         try:
-            self.device.run_as_package = self.device.install_app(apk, replace=replace)
+            if app_path.endswith(".aab"):
+                self.device.install_app_bundle(
+                    self.query_abs_dirs()["abs_bundletool_path"], app_path, timeout=120
+                )
+                self.device.run_as_package = self.query_package_name()
+            else:
+                self.device.run_as_package = self.device.install_app(
+                    app_path, replace=replace, timeout=120
+                )
+            return True
         except (
             mozdevice.ADBError,
             mozdevice.ADBProcessError,
@@ -399,17 +411,30 @@ class AndroidMixin(object):
         ) as e:
             self.info(
                 "Failed to install %s on %s: %s %s"
-                % (apk, self.device_name, type(e).__name__, e)
+                % (app_path, self.device_name, type(e).__name__, e)
             )
+            return False
+
+    def install_android_app(self, app_path, replace=False):
+        """
+        Install the specified app.
+        """
+        app_installed = self._retry(
+            5,
+            10,
+            functools.partial(self._install_android_app_retry, app_path, replace),
+            "Install app",
+        )
+
+        if not app_installed:
             self.fatal(
-                "INFRA-ERROR: %s Failed to install %s"
-                % (type(e).__name__, os.path.basename(apk)),
+                "INFRA-ERROR: Failed to install %s" % os.path.basename(app_path),
                 EXIT_STATUS_DICT[TBPL_RETRY],
             )
 
-    def uninstall_apk(self):
+    def uninstall_android_app(self):
         """
-        Uninstall the app associated with the configured apk, if it is
+        Uninstall the app associated with the configured app, if it is
         installed.
         """
         import mozdevice
@@ -466,7 +491,7 @@ class AndroidMixin(object):
 
         :param prefix specifies a filename prefix for the screenshot
         """
-        from mozscreenshot import dump_screen, dump_device_screen
+        from mozscreenshot import dump_device_screen, dump_screen
 
         reset_dir = False
         if not os.environ.get("MOZ_UPLOAD_DIR", None):
@@ -508,6 +533,8 @@ class AndroidMixin(object):
             # target looks like geckoview.
             if "androidTest" in self.installer_path:
                 self.app_name = "org.mozilla.geckoview.test"
+            elif "test_runner" in self.installer_path:
+                self.app_name = "org.mozilla.geckoview.test_runner"
             elif "geckoview" in self.installer_path:
                 self.app_name = "org.mozilla.geckoview_example"
         if self.app_name is None:
@@ -518,12 +545,12 @@ class AndroidMixin(object):
             # other variations. 'aapt dump badging <apk>' could be used as an
             # alternative to package-name.txt, but introduces a dependency
             # on aapt, found currently in the Android SDK build-tools component.
-            apk_dir = self.abs_dirs["abs_work_dir"]
-            self.apk_path = os.path.join(apk_dir, self.installer_path)
+            app_dir = self.abs_dirs["abs_work_dir"]
+            self.app_path = os.path.join(app_dir, self.installer_path)
             unzip = self.query_exe("unzip")
-            package_path = os.path.join(apk_dir, "package-name.txt")
-            unzip_cmd = [unzip, "-q", "-o", self.apk_path]
-            self.run_command(unzip_cmd, cwd=apk_dir, halt_on_failure=True)
+            package_path = os.path.join(app_dir, "package-name.txt")
+            unzip_cmd = [unzip, "-q", "-o", self.app_path]
+            self.run_command(unzip_cmd, cwd=app_dir, halt_on_failure=True)
             self.app_name = str(
                 self.read_from_file(package_path, verbose=True)
             ).rstrip()

@@ -10,6 +10,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Folaigh
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Taispeáin gach fillteán leabharmhairc
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Folaigh
+
 bookmark-overlay-new-folder-button =
     .label = Fillteán Nua
     .accesskey = F
@@ -21,4 +27,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Taispeáin gach clib
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Folaigh
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Taispeáin gach clib
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Folaigh
+
+bookmark-overlay-tags-caption-label = Bain feidhm as clibeanna chun na leabharmharcanna a eagrú agus chun iad a chuardach go díreach ón mbarra seolta
 

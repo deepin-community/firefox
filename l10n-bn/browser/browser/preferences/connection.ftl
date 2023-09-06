@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = সংযোগের সেটিং
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -70,16 +70,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = আপনি যখন তাদের জন্য পরিচয়পত্র সংরক্ষণ করেছেন তখন এই অপশনটি নীরবে প্রক্সি করতে অনুমোদিতো হয়েছে। প্রমাণীকরণ ব্যর্থ হলে আপনাকে অনুরোধ জানানো হবে।
 
+connection-proxy-autologin-checkbox =
+    .label = পাসওয়ার্ড সংরক্ষিত থাকলে অনুমোদনের জন্য অনুরোধ করা থেকে বিরত থাকুন i
+    .accesskey = i
+    .tooltiptext = আপনি যখন তাদের জন্য পরিচয়পত্র সংরক্ষণ করেছেন তখন এই অপশনটি নীরবে প্রক্সি করতে অনুমোদিতো হয়েছে। প্রমাণীকরণ ব্যর্থ হলে আপনাকে অনুরোধ জানানো হবে।
+
 connection-proxy-socks-remote-dns =
     .label = SOCKS v5 ব্যবহারের সময় Proxy DNS
     .accesskey = d
-
-connection-dns-over-https =
-    .label = HTTPS এর উপর DNS সক্রিয় করুন
-    .accesskey = b
-
-connection-dns-over-https-url-resolver = সরবরাহকারী ব্যবহার করুন
-    .accesskey = P
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

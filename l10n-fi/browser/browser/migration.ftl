@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Ei löydetty ohjelmia, joista voitaisiin hakea kirjanmerkkejä, sivuhistoriaa tai salasanoja.
 
@@ -61,8 +73,8 @@ import-items-description = Valitse tuotavat tiedot:
 
 import-permissions-page-title = Anna { -brand-short-name }-selaimelle oikeudet
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS vaatii, että erikseen sallit { -brand-short-name }-selaimen käyttää Safarin kirjanmerkkejä. Napsauta ”Jatka” ja valitse ”Bookmarks.plist”-tiedosto avautuvasta tiedostonavauspaneelista.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS vaatii, että myönnät { -brand-short-name }ille erillisen oikeuden käyttää Safarin tietoja. Napsauta ”Jatka”, valitse avautuvasta Finderin ikkunasta ”Safari”-kansio ja napsauta sitten “Avaa”.
 
 import-migrating-page-title = Tuodaan…
 
@@ -78,23 +90,9 @@ import-done-description = Seuraavat tiedot tuotiin:
 
 import-close-source-browser = Varmista, että valittu selain on suljettu ennen kuin jatkat.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Ohjelmasta { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Lukulista (Safarista)
 imported-edge-reading-list = Lukulista (Edgestä)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = Ikkunat ja välilehdet
 browser-data-session-label =
     .value = Ikkunat ja välilehdet
+
+browser-data-payment-methods-checkbox =
+    .label = Maksutavat
+browser-data-payment-methods-label =
+    .value = Maksutavat

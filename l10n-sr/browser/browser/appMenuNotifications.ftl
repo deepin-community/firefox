@@ -43,7 +43,7 @@ appmenu-update-unsupported-message2 =
     }.
 appmenu-update-restart2 =
     .label = Доступно је ажурирање
-    .buttonlabel = Ажурирај и рестартуј
+    .buttonlabel = Ажурирај и поново покрени
     .buttonaccesskey = А
     .secondarybuttonlabel = Одбаци
     .secondarybuttonaccesskey = О
@@ -92,7 +92,7 @@ appmenu-addon-post-install-message3 = Управљајте додацима и �
 appmenu-addon-post-install-incognito-checkbox =
     .label = Дозволи рад у приватним прозорима
     .accesskey = Д
-    
+
 appmenu-new-tab-controlled-changes =
     .label = Страница нове картице је промењена.
     .buttonlabel = Задржи промене

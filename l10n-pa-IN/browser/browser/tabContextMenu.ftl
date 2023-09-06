@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = ਸਾਰੀਆਂ ਟੈਬਾਂ ਚੁਣੋ
     .accesskey = S
+tab-context-play-tab =
+    .label = ਟੈਬ ਚਲਾਓ
+    .accesskey = l
+tab-context-play-tabs =
+    .label = ਟੈਬਾਂ ਚਲਾਓ
+    .accesskey = y
 duplicate-tab =
     .label = ਡੁਪਲੀਕੇਟ ਟੈਬ
     .accesskey = D
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = …ਟੈਬਾਂ ਬੁੱਕਮਾਰਕ ਕਰੋ
     .accesskey = B
-bookmark-tab =
-    .label = ਟੈਬ ਬੁੱਕਮਾਰਕ ਕਰੋ
+tab-context-bookmark-tab =
+    .label = …ਟੈਬ ਨੂੰ ਬੁੱਕਮਾਰਕ ਕਰੋ
     .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = ਨਵੇਂ ਕਨਟੇਨਰ ਵਿੱਚ ਖੋਲ੍ਹੋ
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = ਸਾਂਝਾ ਕਰੋ
     .accesskey = h
-tab-context-share-more =
-    .label = …ਹੋਰ
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,14 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] ਬੰਦ ਕੀਤੀਆਂ ਟੈਬਾਂ ਮੁੜ-ਖੋਲ੍ਹੋ
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] ਟੈਬ ਬੰਦ ਕਰੋ
-            [one] ਟੈਬ ਬੰਦ ਕਰੋ
-           *[other] ਟੈਬਾਂ ਬੰਦ ਕਰੋ
-        }
-    .accesskey = C
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->
@@ -105,6 +101,7 @@ tab-context-move-tabs =
            *[other] ਟੈਬਾਂ ਭੇਜੋ
         }
     .accesskey = v
+
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->

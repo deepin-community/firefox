@@ -14,10 +14,10 @@ downloads-panel =
 ##
 
 # The style attribute has the width of the Downloads Panel expressed using
-# a CSS unit. The longest labels that should fit are usually those of 
+# a CSS unit. The longest labels that should fit are usually those of
 # in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
+downloads-panel-items =
+    .style = width: 35em
 
 downloads-cmd-pause =
     .label = Pösa
@@ -30,35 +30,13 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Anulla
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Arvi cartella
-    .accesskey = c
-  
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Fanni vedde into Finder
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
-downloads-cmd-show-button =
-    .tooltiptext =
-        { PLATFORM() ->
-            [macos] Fanni vedde into Finder
-           *[other] Arvi cartella
-        }
 
-downloads-cmd-show-panel =
-    .aria-label =
-        { PLATFORM() ->
-            [macos] Fanni vedde into Finder
-           *[other] Arvi cartella
-        }
-downloads-cmd-show-description =
-    .value =
-        { PLATFORM() ->
-            [macos] Fanni vedde into Finder
-           *[other] Arvi cartella
-        }
+##
 
 downloads-cmd-show-downloads =
     .label = Mostra cartella descaregamenti
@@ -130,6 +108,7 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -149,10 +128,18 @@ downloads-history =
     .label = Fanni vedde tutti i descaregamenti
     .accesskey = v
 
-# This string is shown at the top of the Download Details Panel, to indicate
+# This string is shown at the top of the download details sub-panel to indicate
 # that we are showing the details of a single download.
 downloads-details =
     .title = Detalli do descaregamento
+
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
 
 downloads-clear-downloads-button =
     .label = Scancella elenco descaregamenti
@@ -166,3 +153,12 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Nisciun descaregamento pe sta sescion.
+
+## Download errors
+
+downloads-error-alert-title = Erô de descaregamento
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    O descaregamento o no se peu sarvâ perché gh'é 'n erô sconosciuo.
+    
+    Pe piaxei preuva torna.

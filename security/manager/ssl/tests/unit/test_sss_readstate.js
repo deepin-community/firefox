@@ -16,102 +16,80 @@ function checkStateRead(aSubject, aTopic, aData) {
   equal(aData, SSS_STATE_FILE_NAME);
 
   ok(
-    !gSSService.isSecureURI(
-      Services.io.newURI("https://expired.example.com"),
-      0
-    )
+    !gSSService.isSecureURI(Services.io.newURI("https://expired.example.com"))
+  );
+  ok(
+    gSSService.isSecureURI(Services.io.newURI("https://notexpired.example.com"))
   );
   ok(
     gSSService.isSecureURI(
-      Services.io.newURI("https://notexpired.example.com"),
-      0
-    )
-  );
-  ok(
-    gSSService.isSecureURI(
-      Services.io.newURI("https://includesubdomains.preloaded.test"),
-      0
+      Services.io.newURI("https://includesubdomains.preloaded.test")
     )
   );
   ok(
     !gSSService.isSecureURI(
-      Services.io.newURI("https://sub.includesubdomains.preloaded.test"),
-      0
+      Services.io.newURI("https://sub.includesubdomains.preloaded.test")
     )
   );
   ok(
     gSSService.isSecureURI(
-      Services.io.newURI("https://incsubdomain.example.com"),
-      0
+      Services.io.newURI("https://incsubdomain.example.com")
     )
   );
   ok(
     gSSService.isSecureURI(
-      Services.io.newURI("https://sub.incsubdomain.example.com"),
-      0
+      Services.io.newURI("https://sub.incsubdomain.example.com")
     )
   );
   ok(
     !gSSService.isSecureURI(
-      Services.io.newURI("https://includesubdomains2.preloaded.test"),
-      0
+      Services.io.newURI("https://includesubdomains2.preloaded.test")
     )
   );
   ok(
     !gSSService.isSecureURI(
-      Services.io.newURI("https://sub.includesubdomains2.preloaded.test"),
-      0
+      Services.io.newURI("https://sub.includesubdomains2.preloaded.test")
     )
   );
 
   // Clearing the data should make everything go back to default.
   gSSService.clearAll();
   ok(
-    !gSSService.isSecureURI(
-      Services.io.newURI("https://expired.example.com"),
-      0
-    )
+    !gSSService.isSecureURI(Services.io.newURI("https://expired.example.com"))
   );
   ok(
     !gSSService.isSecureURI(
-      Services.io.newURI("https://notexpired.example.com"),
-      0
+      Services.io.newURI("https://notexpired.example.com")
     )
   );
   ok(
     gSSService.isSecureURI(
-      Services.io.newURI("https://includesubdomains.preloaded.test"),
-      0
+      Services.io.newURI("https://includesubdomains.preloaded.test")
     )
   );
   ok(
     gSSService.isSecureURI(
-      Services.io.newURI("https://sub.includesubdomains.preloaded.test"),
-      0
+      Services.io.newURI("https://sub.includesubdomains.preloaded.test")
     )
   );
   ok(
     !gSSService.isSecureURI(
-      Services.io.newURI("https://incsubdomain.example.com"),
-      0
+      Services.io.newURI("https://incsubdomain.example.com")
     )
   );
   ok(
     !gSSService.isSecureURI(
-      Services.io.newURI("https://sub.incsubdomain.example.com"),
-      0
+      Services.io.newURI("https://sub.incsubdomain.example.com")
     )
   );
   ok(
     gSSService.isSecureURI(
-      Services.io.newURI("https://includesubdomains2.preloaded.test"),
-      0
+      Services.io.newURI("https://includesubdomains2.preloaded.test")
     )
   );
   ok(
     gSSService.isSecureURI(
-      Services.io.newURI("https://sub.includesubdomains2.preloaded.test"),
-      0
+      Services.io.newURI("https://sub.includesubdomains2.preloaded.test")
     )
   );
   do_test_finished();
@@ -127,13 +105,13 @@ function run_test() {
   let outputStream = FileUtils.openFileOutputStream(stateFile);
   let now = Date.now();
   let lines = [
-    `expired.example.com:HSTS\t0\t0\t${now - 100000},1,0`,
-    `notexpired.example.com:HSTS\t0\t0\t${now + 100000},1,0`,
+    `expired.example.com\t0\t0\t${now - 100000},1,0`,
+    `notexpired.example.com\t0\t0\t${now + 100000},1,0`,
     // This overrides an entry on the preload list.
-    `includesubdomains.preloaded.test:HSTS\t0\t0\t${now + 100000},1,0`,
-    `incsubdomain.example.com:HSTS\t0\t0\t${now + 100000},1,1`,
+    `includesubdomains.preloaded.test\t0\t0\t${now + 100000},1,0`,
+    `incsubdomain.example.com\t0\t0\t${now + 100000},1,1`,
     // This overrides an entry on the preload list.
-    "includesubdomains2.preloaded.test:HSTS\t0\t0\t0,2,0",
+    "includesubdomains2.preloaded.test\t0\t0\t0,2,0",
   ];
   writeLinesAndClose(lines, outputStream);
   Services.obs.addObserver(checkStateRead, "data-storage-ready");

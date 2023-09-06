@@ -695,10 +695,8 @@ let tv = {
 
   // RFC 6070 <http://tools.ietf.org/html/rfc6070>
   pbkdf2_sha1: {
-    password: new TextEncoder("utf-8").encode("passwordPASSWORDpassword"),
-    salt: new TextEncoder("utf-8").encode(
-      "saltSALTsaltSALTsaltSALTsaltSALTsalt"
-    ),
+    password: new TextEncoder().encode("passwordPASSWORDpassword"),
+    salt: new TextEncoder().encode("saltSALTsaltSALTsaltSALTsaltSALTsalt"),
     iterations: 4096,
     length: 25 * 8,
 
@@ -712,10 +710,8 @@ let tv = {
 
   // https://stackoverflow.com/questions/5130513/pbkdf2-hmac-sha2-test-vectors
   pbkdf2_sha256: {
-    password: new TextEncoder("utf-8").encode("passwordPASSWORDpassword"),
-    salt: new TextEncoder("utf-8").encode(
-      "saltSALTsaltSALTsaltSALTsaltSALTsalt"
-    ),
+    password: new TextEncoder().encode("passwordPASSWORDpassword"),
+    salt: new TextEncoder().encode("saltSALTsaltSALTsaltSALTsaltSALTsalt"),
     iterations: 4096,
     length: 40 * 8,
 
@@ -739,9 +735,7 @@ let tv = {
 
   pbkdf2_sha256_no_pwd: {
     password: new Uint8Array(),
-    salt: new TextEncoder("utf-8").encode(
-      "saltSALTsaltSALTsaltSALTsaltSALTsalt"
-    ),
+    salt: new TextEncoder().encode("saltSALTsaltSALTsaltSALTsaltSALTsalt"),
     length: 32 * 8,
     iterations: 1,
 
@@ -959,6 +953,7 @@ let tv = {
     pub_jwk: {
       kty: "EC",
       crv: "P-521",
+      alg: "ES512",
 
       // 0061387fd6b95914e885f912edfbb5fb274655027f216c4091ca83e19336740fd8
       // 1aedfe047f51b42bdf68161121013e0d55b117a14e4303f926c8debb77a7fdaad1
@@ -999,6 +994,27 @@ let tv = {
         "0087488c859a96fea266ea13bf6d114c429b163be97a57559086edb64aed4a1859" +
         "4b46fb9efc7fd25d8b2de8f09ca0587f54bd287299f47b2ff124aac56600000000"
     ),
+  },
+
+  // An ECDSA key in JWK format, which an "alg" field that doesn't match the
+  // curve.
+  ecdsa_jwk_alg_mismatch: {
+    pub_jwk: {
+      kty: "EC",
+      crv: "P-521",
+      alg: "ES256",
+
+      // 0061387fd6b95914e885f912edfbb5fb274655027f216c4091ca83e19336740fd8
+      // 1aedfe047f51b42bdf68161121013e0d55b117a14e4303f926c8debb77a7fdaad1
+      x:
+        "AGE4f9a5WRTohfkS7fu1-ydGVQJ_IWxAkcqD4ZM2dA_Y" +
+        "Gu3-BH9RtCvfaBYRIQE-DVWxF6FOQwP5Jsjeu3en_arR",
+      // 00e7d0c75c38626e895ca21526b9f9fdf84dcecb93f2b233390550d2b1463b7ee3
+      // f58df7346435ff0434199583c97c665a97f12f706f2357da4b40288def888e59e6
+      y:
+        "AOfQx1w4Ym6JXKIVJrn5_fhNzsuT8rIzOQVQ0rFGO37j" +
+        "9Y33NGQ1_wQ0GZWDyXxmWpfxL3BvI1faS0Aoje-Ijlnm",
+    },
   },
 
   ecdsa_bad: {

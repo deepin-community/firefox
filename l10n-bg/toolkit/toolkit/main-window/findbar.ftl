@@ -36,3 +36,41 @@ findbar-entire-word =
     .label = Цели думи
     .accesskey = д
     .tooltiptext = Търсене на цели думи
+
+findbar-not-found = Фразата не е намерена
+
+findbar-wrapped-to-top = Край на страницата, продължаване от началото
+findbar-wrapped-to-bottom = Достигнато е началото на страницата, продължаване открая
+
+findbar-normal-find =
+    .placeholder = Търсене в страницата
+findbar-fast-find =
+    .placeholder = Бързо търсене
+findbar-fast-find-links =
+    .placeholder = Бързо търсене (препратки)
+
+findbar-case-sensitive-status =
+    .value = (Съвпадение на регистъра)
+findbar-match-diacritics-status =
+    .value = (Производни букви)
+findbar-entire-word-status =
+    .value = (Само цели думи)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $current } от { $total } съвпадение
+           *[other] { $current } от { $total } съвпадения
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Повече от { $limit } съвпадение
+           *[other] Повече от { $limit } съвпадения
+        }

@@ -4,9 +4,15 @@
     "searchPageRegexp",
     "queryParamName",
     "codeParamName",
-    "codePrefixes",
+    "taggedCodes",
+    "expectedOrganicCodes",
+    "organicCodes",
     "followOnParamNames",
     "followOnCookies",
-    "extraAdServersRegexps"
+    "extraAdServersRegexps",
+    "adServerAttributes",
+    "components",
+    "nonAdsLinkRegexps",
+    "shoppingTab"
   ]
 }

@@ -17,6 +17,7 @@
 #include "nsPrintfCString.h"
 
 #include "gtest/gtest.h"
+#include "mozilla/gtest/MozAssertions.h"
 
 #ifdef XP_WIN
 bool gTestWithPrefix_Win = false;
@@ -79,8 +80,7 @@ static bool TestInvalidFileName(nsIFile* aBase, const char* aName) {
   nsCString name = FixName(aName);
   nsresult rv = file->AppendNative(name);
   if (NS_SUCCEEDED(rv)) {
-    EXPECT_FALSE(NS_SUCCEEDED(rv))
-        << "AppendNative with invalid filename " << name.get();
+    EXPECT_NS_FAILED(rv) << "AppendNative with invalid filename " << name.get();
     return false;
   }
 
@@ -201,7 +201,8 @@ static bool TestDeleteOnClose(nsIFile* aBase, const char* aName, int32_t aFlags,
 }
 
 // Test nsIFile::Remove, verifying that the file does not exist and did before
-static bool TestRemove(nsIFile* aBase, const char* aName, bool aRecursive) {
+static bool TestRemove(nsIFile* aBase, const char* aName, bool aRecursive,
+                       uint32_t aExpectedRemoveCount = 1) {
   nsCOMPtr<nsIFile> file = NewFile(aBase);
   if (!file) return false;
 
@@ -217,8 +218,10 @@ static bool TestRemove(nsIFile* aBase, const char* aName, bool aRecursive) {
     return false;
   }
 
-  rv = file->Remove(aRecursive);
+  uint32_t removeCount = 0;
+  rv = file->Remove(aRecursive, &removeCount);
   if (!VerifyResult(rv, "Remove")) return false;
+  EXPECT_EQ(removeCount, aExpectedRemoveCount) << "Removal count was wrong";
 
   rv = file->Exists(&exists);
   if (!VerifyResult(rv, "Exists (after)")) return false;
@@ -392,6 +395,34 @@ static bool TestNormalizeNativePath(nsIFile* aBase, nsIFile* aStart) {
   return true;
 }
 
+// Test nsIFile::GetDiskSpaceAvailable
+static bool TestDiskSpaceAvailable(nsIFile* aBase) {
+  nsCOMPtr<nsIFile> file = NewFile(aBase);
+  if (!file) return false;
+
+  int64_t diskSpaceAvailable = 0;
+  nsresult rv = file->GetDiskSpaceAvailable(&diskSpaceAvailable);
+  VerifyResult(rv, "GetDiskSpaceAvailable");
+
+  EXPECT_GE(diskSpaceAvailable, 0);
+
+  return true;
+}
+
+// Test nsIFile::GetDiskCapacity
+static bool TestDiskCapacity(nsIFile* aBase) {
+  nsCOMPtr<nsIFile> file = NewFile(aBase);
+  if (!file) return false;
+
+  int64_t diskCapacity = 0;
+  nsresult rv = file->GetDiskCapacity(&diskCapacity);
+  VerifyResult(rv, "GetDiskCapacity");
+
+  EXPECT_GE(diskCapacity, 0);
+
+  return true;
+}
+
 static void SetupAndTestFunctions(const nsAString& aDirName,
                                   bool aTestCreateUnique, bool aTestNormalize) {
   nsCOMPtr<nsIFile> base;
@@ -461,7 +492,7 @@ static void SetupAndTestFunctions(const nsAString& aDirName,
   // Test moving across directories and renaming at the same time
   ASSERT_TRUE(TestMove(subdir, base, "file2.txt", "file4.txt"));
 
-  // Test copying across directoreis
+  // Test copying across directories
   ASSERT_TRUE(TestCopy(base, subdir, "file4.txt", "file5.txt"));
 
   if (aTestNormalize) {
@@ -470,7 +501,7 @@ static void SetupAndTestFunctions(const nsAString& aDirName,
   }
 
   // Test recursive directory removal
-  ASSERT_TRUE(TestRemove(base, "subdir", true));
+  ASSERT_TRUE(TestRemove(base, "subdir", true, 2));
 
   if (aTestCreateUnique) {
     ASSERT_TRUE(TestCreateUnique(base, "foo", nsIFile::NORMAL_FILE_TYPE, 0600));
@@ -483,6 +514,9 @@ static void SetupAndTestFunctions(const nsAString& aDirName,
 
   ASSERT_TRUE(
       TestDeleteOnClose(base, "file7.txt", PR_RDWR | PR_CREATE_FILE, 0600));
+
+  ASSERT_TRUE(TestDiskSpaceAvailable(base));
+  ASSERT_TRUE(TestDiskCapacity(base));
 
   // Clean up temporary stuff
   rv = base->Remove(true);

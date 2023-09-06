@@ -64,22 +64,20 @@ cryptominer-tab-content = כורי מטבעות דיגיטליים משתמשי�
 protections-close-button2 =
     .aria-label = סגירה
     .title = סגירה
-  
+
 mobile-app-title = חסימת רכיבי מעקב של פרסומות ביותר מכשירים
 mobile-app-card-content = ניתן להשתמש בדפדפן הנייד עם הגנה מובנית מפני מעקב של פרסומות.
 mobile-app-links = דפדפן { -brand-product-name } עבור <a data-l10n-name="android-mobile-inline-link">Android</a> ו־<a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = אף ססמה לא תלך עוד לאיבוד
-lockwise-title-logged-in2 = ניהול ססמאות
-lockwise-header-content = { -lockwise-brand-name } מאחסן באופן מאובטח את הססמאות שלך בדפדפן.
+passwords-title-logged-in = ניהול הססמאות שלך
+passwords-header-content = ‏{ -brand-product-name } מאחסן באופן מאובטח את הססמאות שלך בדפדפן.
 lockwise-header-content-logged-in = אחסון וסנכרון הססמאות שלך באופן מאובטח לכל המכשירים שלך.
-protection-report-save-passwords-button = שמירת ססמאות
-    .title = שמירת ססמאות ב־{ -lockwise-brand-short-name }
-protection-report-manage-passwords-button = ניהול ססמאות
-    .title = ניהול ססמאות ב־{ -lockwise-brand-short-name }
-lockwise-mobile-app-title = לקחת את הססמאות שלך לכל מקום
-lockwise-no-logins-card-content = ניתן להשתמש בססמאות השמורות ב־{ -brand-short-name } בכל מכשיר.
-lockwise-app-links = { -lockwise-brand-name } עבור <a data-l10n-name="lockwise-android-inline-link">Android</a> ו־<a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = שמירת ססמאות
+    .title = שמירת ססמאות
+protection-report-passwords-manage-passwords-button = ניהול ססמאות
+    .title = ניהול ססמאות
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

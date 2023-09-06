@@ -6,17 +6,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <random>
 #include <vector>
 
-#include "gtest/gtest.h"
 #include "lib/jxl/ans_params.h"
-#include "lib/jxl/aux_out_fwd.h"
+#include "lib/jxl/base/random.h"
 #include "lib/jxl/base/span.h"
 #include "lib/jxl/dec_ans.h"
 #include "lib/jxl/dec_bit_reader.h"
 #include "lib/jxl/enc_ans.h"
+#include "lib/jxl/enc_aux_out.h"
 #include "lib/jxl/enc_bit_writer.h"
+#include "lib/jxl/testing.h"
 
 namespace jxl {
 namespace {
@@ -30,7 +30,7 @@ void RoundtripTestcase(int n_histograms, int alphabet_size,
   // Space for magic bytes.
   BitWriter::Allotment allotment_magic1(&writer, 16);
   writer.Write(16, kMagic1);
-  ReclaimAndCharge(&writer, &allotment_magic1, 0, nullptr);
+  allotment_magic1.ReclaimAndCharge(&writer, 0, nullptr);
 
   std::vector<uint8_t> context_map;
   EntropyEncodingData codes;
@@ -45,7 +45,7 @@ void RoundtripTestcase(int n_histograms, int alphabet_size,
   BitWriter::Allotment allotment_magic2(&writer, 24);
   writer.Write(16, kMagic2);
   writer.ZeroPadToByte();
-  ReclaimAndCharge(&writer, &allotment_magic2, 0, nullptr);
+  allotment_magic2.ReclaimAndCharge(&writer, 0, nullptr);
 
   // We do not truncate the output. Reading past the end reads out zeroes
   // anyway.
@@ -87,20 +87,20 @@ TEST(ANSTest, SingleSymbolRoundtrip) {
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
     defined(THREAD_SANITIZER)
-constexpr size_t kReps = 10;
+constexpr size_t kReps = 3;
 #else
-constexpr size_t kReps = 100;
+constexpr size_t kReps = 10;
 #endif
 
 void RoundtripRandomStream(int alphabet_size, size_t reps = kReps,
                            size_t num = 1 << 18) {
   constexpr int kNumHistograms = 3;
-  std::mt19937_64 rng;
+  Rng rng(0);
   for (size_t i = 0; i < reps; i++) {
     std::vector<Token> symbols;
     for (size_t j = 0; j < num; j++) {
-      int context = std::uniform_int_distribution<>(0, kNumHistograms - 1)(rng);
-      int value = std::uniform_int_distribution<>(0, alphabet_size - 1)(rng);
+      int context = rng.UniformI(0, kNumHistograms);
+      int value = rng.UniformU(0, alphabet_size);
       symbols.emplace_back(context, value);
     }
     RoundtripTestcase(kNumHistograms, alphabet_size, symbols);
@@ -110,9 +110,9 @@ void RoundtripRandomStream(int alphabet_size, size_t reps = kReps,
 void RoundtripRandomUnbalancedStream(int alphabet_size) {
   constexpr int kNumHistograms = 3;
   constexpr int kPrecision = 1 << 10;
-  std::mt19937_64 rng;
+  Rng rng(0);
   for (size_t i = 0; i < kReps; i++) {
-    std::vector<int> distributions[kNumHistograms];
+    std::vector<int> distributions[kNumHistograms] = {};
     for (int j = 0; j < kNumHistograms; j++) {
       distributions[j].resize(kPrecision);
       int symbol = 0;
@@ -124,8 +124,7 @@ void RoundtripRandomUnbalancedStream(int alphabet_size) {
           // will create a nonuniform distribution and won't have too few
           // symbols usually. Also we want different distributions we get to be
           // sufficiently dissimilar.
-          remaining =
-              std::uniform_int_distribution<>(0, (kPrecision - k) / 1)(rng);
+          remaining = rng.UniformU(0, kPrecision - k + 1);
         }
         distributions[j][k] = symbol;
         remaining--;
@@ -133,9 +132,8 @@ void RoundtripRandomUnbalancedStream(int alphabet_size) {
     }
     std::vector<Token> symbols;
     for (int j = 0; j < 1 << 18; j++) {
-      int context = std::uniform_int_distribution<>(0, kNumHistograms - 1)(rng);
-      int value = distributions[context][std::uniform_int_distribution<>(
-          0, kPrecision - 1)(rng)];
+      int context = rng.UniformI(0, kNumHistograms);
+      int value = rng.UniformU(0, kPrecision);
       symbols.emplace_back(context, value);
     }
     RoundtripTestcase(kNumHistograms + 1, alphabet_size, symbols);
@@ -173,7 +171,7 @@ TEST(ANSTest, UintConfigRoundtrip) {
     BitWriter writer;
     BitWriter::Allotment allotment(&writer, 10 * uint_config.size());
     EncodeUintConfigs(uint_config, &writer, log_alpha_size);
-    ReclaimAndCharge(&writer, &allotment, 0, nullptr);
+    allotment.ReclaimAndCharge(&writer, 0, nullptr);
     writer.ZeroPadToByte();
     BitReader br(writer.GetSpan());
     EXPECT_TRUE(DecodeUintConfigs(log_alpha_size, &uint_config_dec, &br));
@@ -231,7 +229,7 @@ void TestCheckpointing(bool ans, bool lz77) {
     ANSSymbolReader reader(&decoded_codes, &br);
 
     ANSSymbolReader::Checkpoint checkpoint;
-    size_t br_pos;
+    size_t br_pos = 0;
     constexpr size_t kInterval = ANSSymbolReader::kMaxCheckpointInterval - 2;
     for (size_t i = 0; i < input_values[0].size(); i++) {
       if (i % kInterval == 0 && i > 0) {

@@ -258,6 +258,9 @@ as{
         "America:Chihuahua"{
             ec{"চিহুআহুৱা"}
         }
+        "America:Ciudad_Juarez"{
+            ec{"চিউডে‘ড জৰেজ"}
+        }
         "America:Coral_Harbour"{
             ec{"আটিকোকান"}
         }
@@ -1217,6 +1220,9 @@ as{
         "Pacific:Johnston"{
             ec{"জনষ্টন"}
         }
+        "Pacific:Kanton"{
+            ec{"কেণ্টন"}
+        }
         "Pacific:Kiritimati"{
             ec{"কিৰিটিমাটি"}
         }
@@ -1877,6 +1883,9 @@ as{
             ld{"য়েকাটেৰিণবাৰ্গৰ গ্ৰীষ্মকালীন সময়"}
             lg{"য়েকাটেৰিণবাৰ্গৰ সময়"}
             ls{"য়েকাটেৰিণবাৰ্গৰ মান সময়"}
+        }
+        "meta:Yukon"{
+            ls{"য়ুকোন সময়"}
         }
         fallbackFormat{"{1} ({0})"}
         gmtFormat{"GMT{0}"}

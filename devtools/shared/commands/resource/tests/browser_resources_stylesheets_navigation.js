@@ -26,7 +26,7 @@ const TEST_URI_NEW_BROWSING_CONTEXT =
   `&html=<h1>top-level example.org</div>` +
   `<style>.top-level-org-new-bc{}</style>`;
 
-add_task(async function() {
+add_task(async function () {
   info(
     "Open a new tab and check that styleSheetChangeEventsEnabled is false by default"
   );
@@ -85,9 +85,8 @@ add_task(async function() {
     `https://example.com/document-builder.sjs?` +
     `html=<h2>example.com new bc</h2><style title=6>.frame-com-new-bc{}</style>`;
   await SpecialPowers.spawn(tab.linkedBrowser, [iframeNewUrl], url => {
-    const { browsingContext } = content.document.querySelector(
-      "#remote-origin-2"
-    );
+    const { browsingContext } =
+      content.document.querySelector("#remote-origin-2");
     return SpecialPowers.spawn(browsingContext, [url], innerUrl => {
       content.document.location = innerUrl;
     });
@@ -115,16 +114,18 @@ add_task(async function() {
   info("Check that styleSheetChangeEventsEnabled persist after reloading");
   await reloadBrowser();
 
-  // ⚠️ We're only getting the stylesheets for the top-level document and the remote frames;
-  // the same-origin iframes stylesheets are missing.
-  // This should be fixed in Bug 1725547.
+  // ⚠️ When EFT is disabled, we're only getting the stylesheets for the top-level document
+  // and the remote frames; the same-origin iframes stylesheets are missing.
+  const expectedStylesheetResources = isEveryFrameTargetEnabled() ? 5 : 3;
   info(
     "Wait until we're notified about all the stylesheets (top-level document + iframe)"
   );
-  await waitFor(() => availableResources.length === 3);
+  await waitFor(
+    () => availableResources.length === expectedStylesheetResources
+  );
   is(
     availableResources.length,
-    3,
+    expectedStylesheetResources,
     "Retrieved the expected stylesheets after the page was reloaded"
   );
 
@@ -133,19 +134,27 @@ add_task(async function() {
   await assertResource(availableResources[0], {
     styleText: `.top-level-org{}`,
   });
-  // This should be uncommented as part of Bug 1725547.
-  // await assertResource(availableResources[1], {
-  //   styleText: `.frame-org-1{}`,
-  // });
-  // await assertResource(availableResources[2], {
-  //   styleText: `.frame-org-2{}`,
-  // });
-  await assertResource(availableResources[1], {
-    styleText: `.frame-com-1{}`,
-  });
-  await assertResource(availableResources[2], {
-    styleText: `.frame-com-new-bc{}`,
-  });
+  if (isEveryFrameTargetEnabled()) {
+    await assertResource(availableResources[1], {
+      styleText: `.frame-org-1{}`,
+    });
+    await assertResource(availableResources[2], {
+      styleText: `.frame-org-2{}`,
+    });
+    await assertResource(availableResources[3], {
+      styleText: `.frame-com-1{}`,
+    });
+    await assertResource(availableResources[4], {
+      styleText: `.frame-com-new-bc{}`,
+    });
+  } else {
+    await assertResource(availableResources[1], {
+      styleText: `.frame-com-1{}`,
+    });
+    await assertResource(availableResources[2], {
+      styleText: `.frame-com-new-bc{}`,
+    });
+  }
 
   is(
     await getDocumentStyleSheetChangeEventsEnabled(tab.linkedBrowser),
@@ -153,17 +162,18 @@ add_task(async function() {
     `styleSheetChangeEventsEnabled is still true on the top level document after reloading`
   );
 
-  // This should be uncommented as part of Bug 1725547.
-  // const bc = await SpecialPowers.spawn(
-  //   tab.linkedBrowser,
-  //   [],
-  //   () => content.document.querySelector("#same-origin-1").browsingContext
-  // );
-  // is(
-  //   await getDocumentStyleSheetChangeEventsEnabled(bc),
-  //   true,
-  //   `styleSheetChangeEventsEnabled is still true on the iframe after reloading`
-  // );
+  if (isEveryFrameTargetEnabled()) {
+    const bc = await SpecialPowers.spawn(
+      tab.linkedBrowser,
+      [],
+      () => content.document.querySelector("#same-origin-1").browsingContext
+    );
+    is(
+      await getDocumentStyleSheetChangeEventsEnabled(bc),
+      true,
+      `styleSheetChangeEventsEnabled is still true on the iframe after reloading`
+    );
+  }
 
   // clear availableResources so it's easier to test
   availableResources = [];
@@ -173,7 +183,7 @@ add_task(async function() {
   );
   const previousBrowsingContextId = tab.linkedBrowser.browsingContext.id;
   const onLoaded = BrowserTestUtils.browserLoaded(tab.linkedBrowser);
-  await BrowserTestUtils.loadURI(
+  await BrowserTestUtils.loadURIString(
     tab.linkedBrowser,
     TEST_URI_NEW_BROWSING_CONTEXT
   );

@@ -1,7 +1,3 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 //! Implements a container type providing RefCell-like semantics for objects
 //! shared across threads.
 //!
@@ -123,7 +119,7 @@ impl<T: ?Sized> AtomicRefCell<T> {
                 value: unsafe { &*self.value.get() },
                 borrow,
             },
-            Err(s) => panic!(s),
+            Err(s) => panic!("{}", s),
         }
     }
 
@@ -148,7 +144,7 @@ impl<T: ?Sized> AtomicRefCell<T> {
                 value: unsafe { &mut *self.value.get() },
                 borrow,
             },
-            Err(s) => panic!(s),
+            Err(s) => panic!("{}", s),
         }
     }
 
@@ -310,7 +306,7 @@ impl<'b> AtomicBorrowRefMut<'b> {
     }
 }
 
-unsafe impl<T: ?Sized + Send + Sync> Send for AtomicRefCell<T> {}
+unsafe impl<T: ?Sized + Send> Send for AtomicRefCell<T> {}
 unsafe impl<T: ?Sized + Send + Sync> Sync for AtomicRefCell<T> {}
 
 //

@@ -41,13 +41,6 @@ menu-quit =
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Tel pa { -brand-shorter-name }
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Tel el pa { -brand-shorter-name }
 menu-about =
     .label = Chi rij ri { -brand-shorter-name }
     .accesskey = C
@@ -77,9 +70,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Tijaq Yakb'äl…
     .accesskey = T
-menu-file-close =
-    .label = Titz'apïx
-    .accesskey = T
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Titz'apïx Ruwi'
+            [one] Titz'apïx ruwi'
+           *[other] Ketz'apïx { $tabCount } Ruwi'
+        }
+    .accesskey = z
 menu-file-close-window =
     .label = Titz'apïx Tzuwäch
     .accesskey = w
@@ -95,9 +95,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Tib'an Runuk'ulem Ruxaq…
     .accesskey = u
-menu-file-print-preview =
-    .label = Nab'ey Tz'etoj
-    .accesskey = e
 menu-file-print =
     .label = Titz'ajb'äx…
     .accesskey = T
@@ -184,6 +181,17 @@ menu-view-full-screen =
     .label = Chijun ruwa kematz'ib'
     .accesskey = C
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Titikirisäx pa rutz'etik sik'inïk
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Titz'apïx rutz'etik sik'inïk
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -212,8 +220,9 @@ menu-history-undo-menu =
     .label = Taq Ruwi' k'a b'a' Ketz'apïx
 menu-history-undo-window-menu =
     .label = Taq k'ajtz'ib' k'a b'a' etz'apin
-menu-history-reopen-all-tabs = Kejaq Chik Ronojel Ruwi'
-menu-history-reopen-all-windows = Kejaq Chik Ronojel Taq Tzuwäch
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Tikanöx Natab'äl
 
 ## Bookmarks Menu
 
@@ -222,10 +231,13 @@ menu-bookmarks-menu =
     .accesskey = y
 menu-bookmarks-manage =
     .label = Kenuk'samajïx Taq Yaketal
-menu-bookmark-current-tab =
-    .label = Tiya' Retal Ruwi' Wakami
-menu-bookmark-edit =
-    .label = Tinuk' re yaketal re'
+menu-bookmark-tab =
+    .label = Titz'aqatisäx Ruwi' pa Yaketal…
+menu-edit-bookmark =
+    .label = Tinuk' re yaketal re'…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Kekanöx taq yaketal
 menu-bookmarks-all-tabs =
     .label = Ketz'aqatisäx taq ruwi' pa taq yaketal…
 menu-bookmarks-toolbar =
@@ -310,15 +322,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = E
 menu-help-report-site-issue =
     .label = Tiya' rutzijol ri ruk'ayewal Ruxaq K'amaya'l…
-menu-help-feedback-page =
-    .label = Ketaq taq Rutzijol…
-    .accesskey = K
+menu-help-share-ideas =
+    .label = Kekomonïx taq na'oj chuqa' taq rutzijol…
+    .accesskey = k
 menu-help-enter-troubleshoot-mode2 =
     .label = Kib'anikil taq K'ayewal…
     .accesskey = K
 menu-help-exit-troubleshoot-mode =
     .label = Tichup ri Rub'anikil Kiwäch K'ayewal
     .accesskey = R
+menu-help-switch-device =
+    .label = Tijal pa jun K'ak'a' Okisaxel
+    .accesskey = K
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

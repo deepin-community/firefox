@@ -8,10 +8,8 @@
  * Implementation of the OS-independent methods of the TimeStamp class
  */
 
-#include "mozilla/Atomics.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/Uptime.h"
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -47,11 +45,7 @@ struct TimeStampInitialization {
 
 static TimeStampInitialization sInitOnce;
 
-MFBT_API TimeStamp TimeStamp::ProcessCreation(bool* aIsInconsistent) {
-  if (aIsInconsistent) {
-    *aIsInconsistent = false;
-  }
-
+MFBT_API TimeStamp TimeStamp::ProcessCreation() {
   if (sInitOnce.mProcessCreation.IsNull()) {
     char* mozAppRestart = getenv("MOZ_APP_RESTART");
     TimeStamp ts;
@@ -67,15 +61,9 @@ MFBT_API TimeStamp TimeStamp::ProcessCreation(bool* aIsInconsistent) {
       TimeStamp now = Now();
       uint64_t uptime = ComputeProcessUptime();
 
-      ts = now - TimeDuration::FromMicroseconds(uptime);
+      ts = now - TimeDuration::FromMicroseconds(static_cast<double>(uptime));
 
       if ((ts > sInitOnce.mFirstTimeStamp) || (uptime == 0)) {
-        /* If the process creation timestamp was inconsistent replace it with
-         * the first one instead and notify that a telemetry error was
-         * detected. */
-        if (aIsInconsistent) {
-          *aIsInconsistent = true;
-        }
         ts = sInitOnce.mFirstTimeStamp;
       }
     }
@@ -89,5 +77,39 @@ MFBT_API TimeStamp TimeStamp::ProcessCreation(bool* aIsInconsistent) {
 void TimeStamp::RecordProcessRestart() {
   sInitOnce.mProcessCreation = TimeStamp();
 }
+
+MFBT_API TimeStamp TimeStamp::FirstTimeStamp() {
+  return sInitOnce.mFirstTimeStamp;
+}
+
+class TimeStampTests {
+  // Check that nullity is set/not set correctly.
+  static_assert(TimeStamp{TimeStampValue{0}}.IsNull());
+  static_assert(!TimeStamp{TimeStampValue{1}}.IsNull());
+
+  // Check that some very basic comparisons work correctly.
+  static constexpr uint64_t sMidTime = (uint64_t)1 << 63;
+  static_assert(TimeStampValue{sMidTime + 5} > TimeStampValue{sMidTime - 5});
+  static_assert(TimeStampValue{sMidTime + 5} >= TimeStampValue{sMidTime - 5});
+  static_assert(TimeStampValue{sMidTime - 5} < TimeStampValue{sMidTime + 5});
+  static_assert(TimeStampValue{sMidTime - 5} <= TimeStampValue{sMidTime + 5});
+  static_assert(TimeStampValue{sMidTime} == TimeStampValue{sMidTime});
+  static_assert(TimeStampValue{sMidTime} >= TimeStampValue{sMidTime});
+  static_assert(TimeStampValue{sMidTime} <= TimeStampValue{sMidTime});
+  static_assert(TimeStampValue{sMidTime - 5} != TimeStampValue{sMidTime + 5});
+
+  // Check that comparisons involving very large and very small TimeStampValue's
+  // work correctly. This may seem excessive, but these asserts would have
+  // failed in the past due to a comparison such as "a > b" being implemented as
+  // "<cast to signed 64-bit value>(a - b) > 0". When a-b didn't fit into a
+  // signed 64-bit value, this would have given an incorrect result.
+  static_assert(TimeStampValue{UINT64_MAX} > TimeStampValue{1});
+  static_assert(TimeStampValue{1} < TimeStampValue{UINT64_MAX});
+
+  // NOTE/TODO: It would be nice to add some additional tests here that involve
+  // arithmetic between TimeStamps and TimeDurations (and verifying some of the
+  // special behaviors in some cases such as not wrapping around below zero) but
+  // that is not possible right now because those operators are not constexpr.
+};
 
 }  // namespace mozilla

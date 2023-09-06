@@ -13,6 +13,13 @@ use std::io::Cursor;
 use style_traits::{CssWriter, ParseError};
 use style_traits::{StyleParseErrorKind, ToCss};
 
+/// A trait for values that are labelled with a FontTag (for feature and
+/// variation settings).
+pub trait TaggedFontValue {
+    /// The value's tag.
+    fn tag(&self) -> FontTag;
+}
+
 /// https://drafts.csswg.org/css-fonts-4/#feature-tag-value
 #[derive(
     Clone,
@@ -30,6 +37,12 @@ pub struct FeatureTagValue<Integer> {
     pub tag: FontTag,
     /// The actual value.
     pub value: Integer,
+}
+
+impl<T> TaggedFontValue for FeatureTagValue<T> {
+    fn tag(&self) -> FontTag {
+        self.tag
+    }
 }
 
 impl<Integer> ToCss for FeatureTagValue<Integer>
@@ -76,18 +89,15 @@ pub struct VariationValue<Number> {
     pub value: Number,
 }
 
+impl<T> TaggedFontValue for VariationValue<T> {
+    fn tag(&self) -> FontTag {
+        self.tag
+    }
+}
+
 /// A value both for font-variation-settings and font-feature-settings.
 #[derive(
-    Clone,
-    Debug,
-    Eq,
-    MallocSizeOf,
-    PartialEq,
-    SpecifiedValueInfo,
-    ToComputedValue,
-    ToCss,
-    ToResolvedValue,
-    ToShmem,
+    Clone, Debug, Eq, MallocSizeOf, PartialEq, SpecifiedValueInfo, ToCss, ToResolvedValue, ToShmem,
 )]
 #[css(comma)]
 pub struct FontSettings<T>(#[css(if_empty = "normal", iterable)] pub Box<[T]>);
@@ -203,11 +213,36 @@ pub enum FontStyle<Angle> {
     Oblique(Angle),
 }
 
+/// A generic value that holds either a generic Number or the keyword
+/// `from-font`; used for values of font-size-adjust.
+#[repr(u8)]
+#[derive(
+    Animate,
+    Clone,
+    ComputeSquaredDistance,
+    Copy,
+    Debug,
+    MallocSizeOf,
+    Parse,
+    PartialEq,
+    SpecifiedValueInfo,
+    ToAnimatedValue,
+    ToAnimatedZero,
+    ToComputedValue,
+    ToResolvedValue,
+    ToCss,
+    ToShmem,
+)]
+pub enum GenericNumberOrFromFont<N> {
+    /// An explicitly-specified number.
+    Number(N),
+    /// The from-font keyword: resolve the number from font metrics.
+    FromFont,
+}
+
 /// A generic value for the `font-size-adjust` property.
 ///
-/// https://www.w3.org/TR/css-fonts-4/#font-size-adjust-prop
-/// https://github.com/w3c/csswg-drafts/issues/6160
-/// https://github.com/w3c/csswg-drafts/issues/6288
+/// https://drafts.csswg.org/css-fonts-5/#font-size-adjust-prop
 #[allow(missing_docs)]
 #[repr(u8)]
 #[derive(
@@ -226,22 +261,22 @@ pub enum FontStyle<Angle> {
     ToResolvedValue,
     ToShmem,
 )]
-pub enum GenericFontSizeAdjust<Number> {
+pub enum GenericFontSizeAdjust<Factor> {
     #[animation(error)]
     None,
     // 'ex-height' is the implied basis, so the keyword can be omitted
-    ExHeight(Number),
+    ExHeight(Factor),
     #[value_info(starts_with_keyword)]
-    CapHeight(Number),
+    CapHeight(Factor),
     #[value_info(starts_with_keyword)]
-    ChWidth(Number),
+    ChWidth(Factor),
     #[value_info(starts_with_keyword)]
-    IcWidth(Number),
+    IcWidth(Factor),
     #[value_info(starts_with_keyword)]
-    IcHeight(Number),
+    IcHeight(Factor),
 }
 
-impl<Number: ToCss> ToCss for GenericFontSizeAdjust<Number> {
+impl<Factor: ToCss> ToCss for GenericFontSizeAdjust<Factor> {
     fn to_css<W>(&self, dest: &mut CssWriter<W>) -> fmt::Result
     where
         W: Write,

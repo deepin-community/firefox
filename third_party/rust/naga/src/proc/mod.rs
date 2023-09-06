@@ -1,25 +1,18 @@
-//! Module processing functionality.
+/*!
+[`Module`](super::Module) processing functionality.
+*/
 
-mod index;
-mod interpolator;
+pub mod index;
 mod layouter;
 mod namer;
 mod terminator;
 mod typifier;
 
-pub use index::IndexableLength;
-pub use layouter::{Alignment, InvalidBaseType, Layouter, TypeLayout};
+pub use index::{BoundsCheckPolicies, BoundsCheckPolicy, IndexableLength, IndexableLengthError};
+pub use layouter::{Alignment, LayoutError, LayoutErrorInner, Layouter, TypeLayout};
 pub use namer::{EntryPointIndex, NameKey, Namer};
 pub use terminator::ensure_block_returns;
 pub use typifier::{ResolveContext, ResolveError, TypeResolution};
-
-#[derive(Clone, Debug, thiserror::Error, PartialEq)]
-pub enum ProcError {
-    #[error("type is not indexable, and has no length (validation error)")]
-    TypeNotIndexable,
-    #[error("array length is wrong kind of constant (validation error)")]
-    InvalidArraySizeConstant(crate::Handle<crate::Constant>),
-}
 
 impl From<super::StorageFormat> for super::ScalarKind {
     fn from(format: super::StorageFormat) -> Self {
@@ -57,17 +50,105 @@ impl From<super::StorageFormat> for super::ScalarKind {
             Sf::Rgba32Uint => Sk::Uint,
             Sf::Rgba32Sint => Sk::Sint,
             Sf::Rgba32Float => Sk::Float,
+            Sf::R16Unorm => Sk::Float,
+            Sf::R16Snorm => Sk::Float,
+            Sf::Rg16Unorm => Sk::Float,
+            Sf::Rg16Snorm => Sk::Float,
+            Sf::Rgba16Unorm => Sk::Float,
+            Sf::Rgba16Snorm => Sk::Float,
         }
     }
 }
 
-impl super::ScalarValue {
-    pub fn scalar_kind(&self) -> super::ScalarKind {
+impl super::ScalarKind {
+    pub const fn is_numeric(self) -> bool {
+        match self {
+            crate::ScalarKind::Sint | crate::ScalarKind::Uint | crate::ScalarKind::Float => true,
+            crate::ScalarKind::Bool => false,
+        }
+    }
+}
+
+impl PartialEq for crate::Literal {
+    fn eq(&self, other: &Self) -> bool {
+        match (*self, *other) {
+            (Self::F64(a), Self::F64(b)) => a.to_bits() == b.to_bits(),
+            (Self::F32(a), Self::F32(b)) => a.to_bits() == b.to_bits(),
+            (Self::U32(a), Self::U32(b)) => a == b,
+            (Self::I32(a), Self::I32(b)) => a == b,
+            (Self::Bool(a), Self::Bool(b)) => a == b,
+            _ => false,
+        }
+    }
+}
+impl Eq for crate::Literal {}
+impl std::hash::Hash for crate::Literal {
+    fn hash<H: std::hash::Hasher>(&self, hasher: &mut H) {
         match *self {
-            Self::Uint(_) => super::ScalarKind::Uint,
-            Self::Sint(_) => super::ScalarKind::Sint,
-            Self::Float(_) => super::ScalarKind::Float,
-            Self::Bool(_) => super::ScalarKind::Bool,
+            Self::F64(v) => {
+                hasher.write_u8(0);
+                v.to_bits().hash(hasher);
+            }
+            Self::F32(v) => {
+                hasher.write_u8(1);
+                v.to_bits().hash(hasher);
+            }
+            Self::U32(v) => {
+                hasher.write_u8(2);
+                v.hash(hasher);
+            }
+            Self::I32(v) => {
+                hasher.write_u8(3);
+                v.hash(hasher);
+            }
+            Self::Bool(v) => {
+                hasher.write_u8(4);
+                v.hash(hasher);
+            }
+        }
+    }
+}
+
+impl crate::Literal {
+    pub const fn new(value: u8, kind: crate::ScalarKind, width: crate::Bytes) -> Option<Self> {
+        match (value, kind, width) {
+            (value, crate::ScalarKind::Float, 8) => Some(Self::F64(value as _)),
+            (value, crate::ScalarKind::Float, 4) => Some(Self::F32(value as _)),
+            (value, crate::ScalarKind::Uint, 4) => Some(Self::U32(value as _)),
+            (value, crate::ScalarKind::Sint, 4) => Some(Self::I32(value as _)),
+            (1, crate::ScalarKind::Bool, 4) => Some(Self::Bool(true)),
+            (0, crate::ScalarKind::Bool, 4) => Some(Self::Bool(false)),
+            _ => None,
+        }
+    }
+
+    pub const fn zero(kind: crate::ScalarKind, width: crate::Bytes) -> Option<Self> {
+        Self::new(0, kind, width)
+    }
+
+    pub const fn one(kind: crate::ScalarKind, width: crate::Bytes) -> Option<Self> {
+        Self::new(1, kind, width)
+    }
+
+    pub const fn width(&self) -> crate::Bytes {
+        match *self {
+            Self::F64(_) => 8,
+            Self::F32(_) | Self::U32(_) | Self::I32(_) => 4,
+            Self::Bool(_) => 1,
+        }
+    }
+    pub const fn scalar_kind(&self) -> crate::ScalarKind {
+        match *self {
+            Self::F64(_) | Self::F32(_) => crate::ScalarKind::Float,
+            Self::U32(_) => crate::ScalarKind::Uint,
+            Self::I32(_) => crate::ScalarKind::Sint,
+            Self::Bool(_) => crate::ScalarKind::Bool,
+        }
+    }
+    pub const fn ty_inner(&self) -> crate::TypeInner {
+        crate::TypeInner::Scalar {
+            kind: self.scalar_kind(),
+            width: self.width(),
         }
     }
 }
@@ -75,7 +156,7 @@ impl super::ScalarValue {
 pub const POINTER_SPAN: u32 = 4;
 
 impl super::TypeInner {
-    pub fn scalar_kind(&self) -> Option<super::ScalarKind> {
+    pub const fn scalar_kind(&self) -> Option<super::ScalarKind> {
         match *self {
             super::TypeInner::Scalar { kind, .. } | super::TypeInner::Vector { kind, .. } => {
                 Some(kind)
@@ -85,31 +166,50 @@ impl super::TypeInner {
         }
     }
 
-    pub fn pointer_class(&self) -> Option<crate::StorageClass> {
+    pub const fn scalar_width(&self) -> Option<u8> {
+        // Multiply by 8 to get the bit width
         match *self {
-            Self::Pointer { class, .. } => Some(class),
-            Self::ValuePointer { class, .. } => Some(class),
+            super::TypeInner::Scalar { width, .. } | super::TypeInner::Vector { width, .. } => {
+                Some(width * 8)
+            }
+            super::TypeInner::Matrix { width, .. } => Some(width * 8),
             _ => None,
         }
     }
 
-    pub fn span(&self, constants: &super::Arena<super::Constant>) -> u32 {
+    pub const fn pointer_space(&self) -> Option<crate::AddressSpace> {
+        match *self {
+            Self::Pointer { space, .. } => Some(space),
+            Self::ValuePointer { space, .. } => Some(space),
+            _ => None,
+        }
+    }
+
+    pub fn is_atomic_pointer(&self, types: &crate::UniqueArena<crate::Type>) -> bool {
+        match *self {
+            crate::TypeInner::Pointer { base, .. } => match types[base].inner {
+                crate::TypeInner::Atomic { .. } => true,
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
+    /// Get the size of this type.
+    pub fn size(&self, _gctx: GlobalCtx) -> u32 {
         match *self {
             Self::Scalar { kind: _, width } | Self::Atomic { kind: _, width } => width as u32,
             Self::Vector {
                 size,
                 kind: _,
                 width,
-            } => (size as u8 * width) as u32,
+            } => size as u32 * width as u32,
             // matrices are treated as arrays of aligned columns
             Self::Matrix {
                 columns,
                 rows,
                 width,
-            } => {
-                let aligned_rows = if rows > crate::VectorSize::Bi { 4 } else { 2 };
-                columns as u32 * aligned_rows * width as u32
-            }
+            } => Alignment::from(rows) * width as u32 * columns as u32,
             Self::Pointer { .. } | Self::ValuePointer { .. } => POINTER_SPAN,
             Self::Array {
                 base: _,
@@ -117,29 +217,142 @@ impl super::TypeInner {
                 stride,
             } => {
                 let count = match size {
-                    super::ArraySize::Constant(handle) => {
-                        // Bad array lengths will be caught during validation.
-                        constants[handle].to_array_length().unwrap_or(1)
-                    }
+                    super::ArraySize::Constant(count) => count.get(),
                     // A dynamically-sized array has to have at least one element
                     super::ArraySize::Dynamic => 1,
                 };
                 count * stride
             }
             Self::Struct { span, .. } => span,
-            Self::Image { .. } | Self::Sampler { .. } => 0,
+            Self::Image { .. }
+            | Self::Sampler { .. }
+            | Self::AccelerationStructure
+            | Self::RayQuery
+            | Self::BindingArray { .. } => 0,
+        }
+    }
+
+    /// Return the canonical form of `self`, or `None` if it's already in
+    /// canonical form.
+    ///
+    /// Certain types have multiple representations in `TypeInner`. This
+    /// function converts all forms of equivalent types to a single
+    /// representative of their class, so that simply applying `Eq` to the
+    /// result indicates whether the types are equivalent, as far as Naga IR is
+    /// concerned.
+    pub fn canonical_form(
+        &self,
+        types: &crate::UniqueArena<crate::Type>,
+    ) -> Option<crate::TypeInner> {
+        use crate::TypeInner as Ti;
+        match *self {
+            Ti::Pointer { base, space } => match types[base].inner {
+                Ti::Scalar { kind, width } => Some(Ti::ValuePointer {
+                    size: None,
+                    kind,
+                    width,
+                    space,
+                }),
+                Ti::Vector { size, kind, width } => Some(Ti::ValuePointer {
+                    size: Some(size),
+                    kind,
+                    width,
+                    space,
+                }),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
+    /// Compare `self` and `rhs` as types.
+    ///
+    /// This is mostly the same as `<TypeInner as Eq>::eq`, but it treats
+    /// `ValuePointer` and `Pointer` types as equivalent.
+    ///
+    /// When you know that one side of the comparison is never a pointer, it's
+    /// fine to not bother with canonicalization, and just compare `TypeInner`
+    /// values with `==`.
+    pub fn equivalent(
+        &self,
+        rhs: &crate::TypeInner,
+        types: &crate::UniqueArena<crate::Type>,
+    ) -> bool {
+        let left = self.canonical_form(types);
+        let right = rhs.canonical_form(types);
+        left.as_ref().unwrap_or(self) == right.as_ref().unwrap_or(rhs)
+    }
+
+    pub fn is_dynamically_sized(&self, types: &crate::UniqueArena<crate::Type>) -> bool {
+        use crate::TypeInner as Ti;
+        match *self {
+            Ti::Array { size, .. } => size == crate::ArraySize::Dynamic,
+            Ti::Struct { ref members, .. } => members
+                .last()
+                .map(|last| types[last.ty].inner.is_dynamically_sized(types))
+                .unwrap_or(false),
+            _ => false,
+        }
+    }
+
+    pub fn components(&self) -> Option<u32> {
+        Some(match *self {
+            Self::Vector { size, .. } => size as u32,
+            Self::Matrix { columns, .. } => columns as u32,
+            Self::Array {
+                size: crate::ArraySize::Constant(len),
+                ..
+            } => len.get(),
+            Self::Struct { ref members, .. } => members.len() as u32,
+            _ => return None,
+        })
+    }
+
+    pub fn component_type(&self, index: usize) -> Option<TypeResolution> {
+        Some(match *self {
+            Self::Vector { kind, width, .. } => {
+                TypeResolution::Value(crate::TypeInner::Scalar { kind, width })
+            }
+            Self::Matrix { rows, width, .. } => TypeResolution::Value(crate::TypeInner::Vector {
+                size: rows,
+                kind: crate::ScalarKind::Float,
+                width,
+            }),
+            Self::Array {
+                base,
+                size: crate::ArraySize::Constant(_),
+                ..
+            } => TypeResolution::Handle(base),
+            Self::Struct { ref members, .. } => TypeResolution::Handle(members[index].ty),
+            _ => return None,
+        })
+    }
+}
+
+impl super::AddressSpace {
+    pub fn access(self) -> crate::StorageAccess {
+        use crate::StorageAccess as Sa;
+        match self {
+            crate::AddressSpace::Function
+            | crate::AddressSpace::Private
+            | crate::AddressSpace::WorkGroup => Sa::LOAD | Sa::STORE,
+            crate::AddressSpace::Uniform => Sa::LOAD,
+            crate::AddressSpace::Storage { access } => access,
+            crate::AddressSpace::Handle => Sa::LOAD,
+            crate::AddressSpace::PushConstant => Sa::LOAD,
         }
     }
 }
 
 impl super::MathFunction {
-    pub fn argument_count(&self) -> usize {
+    pub const fn argument_count(&self) -> usize {
         match *self {
             // comparison
             Self::Abs => 1,
             Self::Min => 2,
             Self::Max => 2,
             Self::Clamp => 3,
+            Self::Saturate => 1,
             // trigonometry
             Self::Cos => 1,
             Self::Cosh => 1,
@@ -154,6 +367,8 @@ impl super::MathFunction {
             Self::Asinh => 1,
             Self::Acosh => 1,
             Self::Atanh => 1,
+            Self::Radians => 1,
+            Self::Degrees => 1,
             // decomposition
             Self::Ceil => 1,
             Self::Floor => 1,
@@ -191,17 +406,37 @@ impl super::MathFunction {
             Self::Transpose => 1,
             Self::Determinant => 1,
             // bits
+            Self::CountTrailingZeros => 1,
+            Self::CountLeadingZeros => 1,
             Self::CountOneBits => 1,
             Self::ReverseBits => 1,
+            Self::ExtractBits => 3,
+            Self::InsertBits => 4,
+            Self::FindLsb => 1,
+            Self::FindMsb => 1,
+            // data packing
+            Self::Pack4x8snorm => 1,
+            Self::Pack4x8unorm => 1,
+            Self::Pack2x16snorm => 1,
+            Self::Pack2x16unorm => 1,
+            Self::Pack2x16float => 1,
+            // data unpacking
+            Self::Unpack4x8snorm => 1,
+            Self::Unpack4x8unorm => 1,
+            Self::Unpack2x16snorm => 1,
+            Self::Unpack2x16unorm => 1,
+            Self::Unpack2x16float => 1,
         }
     }
 }
 
 impl crate::Expression {
     /// Returns true if the expression is considered emitted at the start of a function.
-    pub fn needs_pre_emit(&self) -> bool {
+    pub const fn needs_pre_emit(&self) -> bool {
         match *self {
-            Self::Constant(_)
+            Self::Literal(_)
+            | Self::Constant(_)
+            | Self::ZeroValue(_)
             | Self::FunctionArgument(_)
             | Self::GlobalVariable(_)
             | Self::LocalVariable(_) => true,
@@ -225,15 +460,42 @@ impl crate::Expression {
     pub fn is_dynamic_index(&self, module: &crate::Module) -> bool {
         if let Self::Constant(handle) = *self {
             let constant = &module.constants[handle];
-            constant.specialization.is_some()
+            !matches!(constant.r#override, crate::Override::None)
         } else {
             true
         }
     }
 }
 
+impl crate::Function {
+    /// Return the global variable being accessed by the expression `pointer`.
+    ///
+    /// Assuming that `pointer` is a series of `Access` and `AccessIndex`
+    /// expressions that ultimately access some part of a `GlobalVariable`,
+    /// return a handle for that global.
+    ///
+    /// If the expression does not ultimately access a global variable, return
+    /// `None`.
+    pub fn originating_global(
+        &self,
+        mut pointer: crate::Handle<crate::Expression>,
+    ) -> Option<crate::Handle<crate::GlobalVariable>> {
+        loop {
+            pointer = match self.expressions[pointer] {
+                crate::Expression::Access { base, .. } => base,
+                crate::Expression::AccessIndex { base, .. } => base,
+                crate::Expression::GlobalVariable(handle) => return Some(handle),
+                crate::Expression::LocalVariable(_) => return None,
+                crate::Expression::FunctionArgument(_) => return None,
+                // There are no other expressions that produce pointer values.
+                _ => unreachable!(),
+            }
+        }
+    }
+}
+
 impl crate::SampleLevel {
-    pub fn implicit_derivatives(&self) -> bool {
+    pub const fn implicit_derivatives(&self) -> bool {
         match *self {
             Self::Auto | Self::Bias(_) => true,
             Self::Zero | Self::Exact(_) | Self::Gradient { .. } => false,
@@ -241,66 +503,11 @@ impl crate::SampleLevel {
     }
 }
 
-impl crate::Constant {
-    /// Interpret this constant as an array length, and return it as a `u32`.
-    ///
-    /// Ignore any specialization available for this constant; return its
-    /// unspecialized value.
-    ///
-    /// If the constant has an inappropriate kind (non-scalar or non-integer) or
-    /// value (negative, out of range for u32), return `None`. This usually
-    /// indicates an error, but only the caller has enough information to report
-    /// the error helpfully: in back ends, it's a validation error, but in front
-    /// ends, it may indicate ill-formed input (for example, a SPIR-V
-    /// `OpArrayType` referring to an inappropriate `OpConstant`). So we return
-    /// `Option` and let the caller sort things out.
-    pub(crate) fn to_array_length(&self) -> Option<u32> {
-        use std::convert::TryInto;
-        match self.inner {
-            crate::ConstantInner::Scalar { value, width: _ } => match value {
-                crate::ScalarValue::Uint(value) => value.try_into().ok(),
-                // Accept a signed integer size to avoid
-                // requiring an explicit uint
-                // literal. Type inference should make
-                // this unnecessary.
-                crate::ScalarValue::Sint(value) => value.try_into().ok(),
-                _ => None,
-            },
-            // caught by type validation
-            crate::ConstantInner::Composite { .. } => None,
-        }
-    }
-}
-
 impl crate::Binding {
-    pub fn to_built_in(&self) -> Option<crate::BuiltIn> {
+    pub const fn to_built_in(&self) -> Option<crate::BuiltIn> {
         match *self {
-            Self::BuiltIn(bi) => Some(bi),
+            crate::Binding::BuiltIn(built_in) => Some(built_in),
             Self::Location { .. } => None,
-        }
-    }
-}
-
-//TODO: should we use an existing crate for hashable floats?
-impl PartialEq for crate::ScalarValue {
-    fn eq(&self, other: &Self) -> bool {
-        match (*self, *other) {
-            (Self::Uint(a), Self::Uint(b)) => a == b,
-            (Self::Sint(a), Self::Sint(b)) => a == b,
-            (Self::Float(a), Self::Float(b)) => a.to_bits() == b.to_bits(),
-            (Self::Bool(a), Self::Bool(b)) => a == b,
-            _ => false,
-        }
-    }
-}
-impl Eq for crate::ScalarValue {}
-impl std::hash::Hash for crate::ScalarValue {
-    fn hash<H: std::hash::Hasher>(&self, hasher: &mut H) {
-        match *self {
-            Self::Sint(v) => v.hash(hasher),
-            Self::Uint(v) => v.hash(hasher),
-            Self::Float(v) => v.to_bits().hash(hasher),
-            Self::Bool(v) => v.hash(hasher),
         }
     }
 }
@@ -308,7 +515,7 @@ impl std::hash::Hash for crate::ScalarValue {
 impl super::SwizzleComponent {
     pub const XYZW: [Self; 4] = [Self::X, Self::Y, Self::Z, Self::W];
 
-    pub fn index(&self) -> u32 {
+    pub const fn index(&self) -> u32 {
         match *self {
             Self::X => 0,
             Self::Y => 1,
@@ -316,7 +523,7 @@ impl super::SwizzleComponent {
             Self::W => 3,
         }
     }
-    pub fn from_index(idx: u32) -> Self {
+    pub const fn from_index(idx: u32) -> Self {
         match idx {
             0 => Self::X,
             1 => Self::Y,
@@ -326,16 +533,104 @@ impl super::SwizzleComponent {
     }
 }
 
+impl super::ImageClass {
+    pub const fn is_multisampled(self) -> bool {
+        match self {
+            crate::ImageClass::Sampled { multi, .. } | crate::ImageClass::Depth { multi } => multi,
+            crate::ImageClass::Storage { .. } => false,
+        }
+    }
+
+    pub const fn is_mipmapped(self) -> bool {
+        match self {
+            crate::ImageClass::Sampled { multi, .. } | crate::ImageClass::Depth { multi } => !multi,
+            crate::ImageClass::Storage { .. } => false,
+        }
+    }
+}
+
+impl crate::Module {
+    pub const fn to_ctx(&self) -> GlobalCtx<'_> {
+        GlobalCtx {
+            types: &self.types,
+            constants: &self.constants,
+            const_expressions: &self.const_expressions,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub(super) enum U32EvalError {
+    NonConst,
+    Negative,
+}
+
+#[derive(Clone, Copy)]
+pub struct GlobalCtx<'a> {
+    pub types: &'a crate::UniqueArena<crate::Type>,
+    pub constants: &'a crate::Arena<crate::Constant>,
+    pub const_expressions: &'a crate::Arena<crate::Expression>,
+}
+
+impl GlobalCtx<'_> {
+    /// Try to evaluate the expression in `self.const_expressions` using its `handle` and return it as a `u32`.
+    #[allow(dead_code)]
+    pub(super) fn eval_expr_to_u32(
+        &self,
+        handle: crate::Handle<crate::Expression>,
+    ) -> Result<u32, U32EvalError> {
+        self.eval_expr_to_u32_from(handle, self.const_expressions)
+    }
+
+    /// Try to evaluate the expression in the `arena` using its `handle` and return it as a `u32`.
+    pub(super) fn eval_expr_to_u32_from(
+        &self,
+        handle: crate::Handle<crate::Expression>,
+        arena: &crate::Arena<crate::Expression>,
+    ) -> Result<u32, U32EvalError> {
+        fn get(
+            gctx: GlobalCtx,
+            handle: crate::Handle<crate::Expression>,
+            arena: &crate::Arena<crate::Expression>,
+        ) -> Result<u32, U32EvalError> {
+            match arena[handle] {
+                crate::Expression::Literal(crate::Literal::U32(value)) => Ok(value),
+                crate::Expression::Literal(crate::Literal::I32(value)) => {
+                    value.try_into().map_err(|_| U32EvalError::Negative)
+                }
+                crate::Expression::ZeroValue(ty)
+                    if matches!(
+                        gctx.types[ty].inner,
+                        crate::TypeInner::Scalar {
+                            kind: crate::ScalarKind::Sint | crate::ScalarKind::Uint,
+                            width: _
+                        }
+                    ) =>
+                {
+                    Ok(0)
+                }
+                _ => Err(U32EvalError::NonConst),
+            }
+        }
+        match arena[handle] {
+            crate::Expression::Constant(c) => {
+                get(*self, self.constants[c].init, self.const_expressions)
+            }
+            _ => get(*self, handle, arena),
+        }
+    }
+}
+
 #[test]
 fn test_matrix_size() {
-    let constants = crate::Arena::new();
+    let module = crate::Module::default();
     assert_eq!(
         crate::TypeInner::Matrix {
             columns: crate::VectorSize::Tri,
             rows: crate::VectorSize::Tri,
             width: 4
         }
-        .span(&constants),
-        48
+        .size(module.to_ctx()),
+        48,
     );
 }

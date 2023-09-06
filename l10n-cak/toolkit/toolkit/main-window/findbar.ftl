@@ -36,3 +36,41 @@ findbar-entire-word =
     .label = Tz'aqät taq tzij
     .accesskey = T
     .tooltiptext = Kekanöx xa xe tz'aqät taq tzij
+
+findbar-not-found = Man xilitäj ta ri pajtzij
+
+findbar-wrapped-to-top = Ruk'isib'äl ruxaq, nitikirisäx chik pa rutikirib'al
+findbar-wrapped-to-bottom = Rutikirib'al ruxaq, xtutikirisaj k'a nub'ek'isib'ej na
+
+findbar-normal-find =
+    .placeholder = Tikanöx pa ruxaq
+findbar-fast-find =
+    .placeholder = Anin rukanoxik
+findbar-fast-find-links =
+    .placeholder = Anin rukanoxik (taq ximonel)
+
+findbar-case-sensitive-status =
+    .value = (Na'onel chi ke taq nimatz'ib')
+findbar-match-diacritics-status =
+    .value = (Tiya' kikojol tz'aqat taq tz'ib')
+findbar-entire-word-status =
+    .value = (Xa xe tz'aqät taq tzij)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $current } richin { $total } nuk'äm ri'
+           *[other] { $current } richin { $total } nikik'äm ki'
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Jotöl chuwäch ri { $limit } nikik'äm ki'
+           *[other] Jotöl chuwäch ri { $limit } nikik'äm ki'
+        }

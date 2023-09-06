@@ -13,11 +13,12 @@
 [package]
 edition = "2018"
 name = "itertools"
-version = "0.10.1"
+version = "0.10.5"
 authors = ["bluss"]
 exclude = ["/bors.toml"]
 description = "Extra iterator adaptors, iterator methods, free functions, and macros."
 documentation = "https://docs.rs/itertools/"
+readme = "README.md"
 keywords = ["iterator", "data-structure", "zip", "product", "group-by"]
 categories = ["algorithms", "rust-patterns"]
 license = "MIT/Apache-2.0"
@@ -84,4 +85,4 @@ version = "0.7"
 [features]
 default = ["use_std"]
 use_alloc = []
-use_std = ["use_alloc"]
+use_std = ["use_alloc", "either/use_std"]

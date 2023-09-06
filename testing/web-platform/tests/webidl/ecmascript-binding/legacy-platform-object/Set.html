@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Legacy platform objects [[Set]] method</title>
-<link rel="help" href="https://heycam.github.io/webidl/#legacy-platform-object-set">
+<link rel="help" href="https://webidl.spec.whatwg.org/#legacy-platform-object-set">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script>
@@ -31,6 +31,21 @@
         element.attributes.foo = "foo";
         assert_equals(element.attributes.foo, "foo");
     }, "must allow assigning to a named property on an object which implements a named property getter but not a setter in strict mode");
+
+    test(function() {
+        "use strict";
+        var form = document.createElement("form");
+        assert_equals(form.method, "get");
+        var input = document.createElement("input");
+        input.name = "method";
+        input.id = "method";
+        form.appendChild(input);
+        assert_equals(form.method, input);
+        form.method = "post";
+        assert_equals(form.method, input);
+        input.remove();
+        assert_equals(form.method, "post");
+    }, "must allow setting built-in property on a [LegacyOverrideBuiltIns] object even if a named property shadows it");
 
     var symbol = Symbol();
 

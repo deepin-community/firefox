@@ -3,12 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const { TabUnloader } = ChromeUtils.import(
-  "resource:///modules/TabUnloader.jsm"
+const { TabUnloader } = ChromeUtils.importESModule(
+  "resource:///modules/TabUnloader.sys.mjs"
 );
 
 async function refreshData() {
-  const sortedTabs = await TabUnloader.getSortedTabs();
+  const sortedTabs = await TabUnloader.getSortedTabs(null);
   const tabTable = document.querySelector(".tab-table > tbody");
   const getHost = uri => {
     try {
@@ -36,9 +36,8 @@ async function refreshData() {
     updateTimestamp();
     return;
   }
-  document.getElementById(
-    "button-unload"
-  ).disabled = !TabUnloader.isDiscardable(sortedTabs[0]);
+  document.getElementById("button-unload").disabled =
+    !TabUnloader.isDiscardable(sortedTabs[0]);
   document.getElementById("no-unloadable-tab-message").hidden = true;
 
   const fragmentRows = new DocumentFragment();
@@ -114,7 +113,7 @@ async function onLoad() {
   document
     .getElementById("button-unload")
     .addEventListener("click", async () => {
-      await TabUnloader.unloadLeastRecentlyUsedTab();
+      await TabUnloader.unloadLeastRecentlyUsedTab(null);
       await refreshData();
     });
   await refreshData();
@@ -123,5 +122,5 @@ async function onLoad() {
 try {
   document.addEventListener("DOMContentLoaded", onLoad, { once: true });
 } catch (ex) {
-  Cu.reportError(ex);
+  console.error(ex);
 }

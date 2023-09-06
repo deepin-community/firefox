@@ -7,8 +7,8 @@ requestLongerTimeout(2);
 
 // Checks that the expected default node is selected after a page navigation or
 // a reload.
-var PAGE_1 = URL_ROOT + "doc_inspector_select-last-selected-01.html";
-var PAGE_2 = URL_ROOT + "doc_inspector_select-last-selected-02.html";
+var PAGE_1 = URL_ROOT_SSL + "doc_inspector_select-last-selected-01.html";
+var PAGE_2 = URL_ROOT_SSL + "doc_inspector_select-last-selected-02.html";
 
 // An array of test cases with following properties:
 // - url: URL to navigate to. If URL == content.location, reload instead.
@@ -53,7 +53,7 @@ var TEST_DATA = [
   },
 ];
 
-add_task(async function() {
+add_task(async function () {
   const { inspector } = await openInspectorForURL(PAGE_1);
 
   for (const { url, nodeToSelect, selectedNode } of TEST_DATA) {

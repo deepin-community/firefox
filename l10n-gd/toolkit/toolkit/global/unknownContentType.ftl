@@ -12,3 +12,31 @@ unknowncontenttype-settingschange =
             [windows] 'S urrainn dhut na roghainnean atharrachadh ann an roghainnean { -brand-short-name }.
            *[other] 'S urrainn dhut na roghainnean atharrachadh ann an roghainnean { -brand-short-name }.
         }
+
+unknowncontenttype-intro = Chuir thu romhad na leanas fhosgladh:
+unknowncontenttype-which-is = a tha 'na:
+unknowncontenttype-from = o:
+unknowncontenttype-prompt = A bheil thu airson am faidhle seo a shàbhaladh?
+unknowncontenttype-action-question = Dè nì { -brand-short-name } leis an fhaidhle seo?
+unknowncontenttype-open-with =
+    .label = Fosgail le
+    .accesskey = o
+unknowncontenttype-other =
+    .label = Eile…
+unknowncontenttype-choose-handler =
+    .label =
+        { PLATFORM() ->
+            [macos] Tagh…
+           *[other] Brabhsaich…
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [macos] T
+           *[other] B
+        }
+unknowncontenttype-save-file =
+    .label = Sàbhail am faidhle
+    .accesskey = S
+unknowncontenttype-remember-choice =
+    .label = Dèantar seo leis fhèin le faidhlichean d' a leithid san àm ri teachd.
+    .accesskey = a

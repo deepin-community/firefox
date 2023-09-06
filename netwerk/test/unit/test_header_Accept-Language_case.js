@@ -3,9 +3,7 @@
 var testpath = "/bug1054739";
 
 function run_test() {
-  let intlPrefs = Cc["@mozilla.org/preferences-service;1"]
-    .getService(Ci.nsIPrefService)
-    .getBranch("intl.");
+  let intlPrefs = Services.prefs.getBranch("intl.");
 
   let oldAcceptLangPref = intlPrefs.getCharPref("accept_languages");
 
@@ -33,9 +31,8 @@ function run_test() {
     let expectedHeader = testData[i][1];
 
     intlPrefs.setCharPref("accept_languages", acceptLangPref);
-    let acceptLangHeader = setupChannel(testpath).getRequestHeader(
-      "Accept-Language"
-    );
+    let acceptLangHeader =
+      setupChannel(testpath).getRequestHeader("Accept-Language");
     equal(acceptLangHeader, expectedHeader);
   }
 

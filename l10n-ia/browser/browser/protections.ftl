@@ -65,22 +65,20 @@ cryptominer-tab-content = Cryptominatores usa le potentia de calculo de tu syste
 protections-close-button2 =
     .aria-label = Clauder
     .title = Clauder
-  
+
 mobile-app-title = Blocar traciatores publicitari sur plure apparatos
 mobile-app-card-content = Usa le navigator mobile con protection integrate contra traciamento publicitari.
 mobile-app-links = Navigator { -brand-product-name } pro <a data-l10n-name="android-mobile-inline-link">Android</a> e <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Non oblida plus tu contrasignos
-lockwise-title-logged-in2 = Gestion de contrasignos
-lockwise-header-content = { -lockwise-brand-name } immagazina con securitate tu contrasignos in tu navigator.
+passwords-title-logged-in = Gere tu contrasignos
+passwords-header-content = { -brand-product-name } immagazina con securitate tu contrasignos in tu navigator.
 lockwise-header-content-logged-in = Memorisa e synchronisa tu contrasignos sur tote tu apparatos in tote securitate.
-protection-report-save-passwords-button = Salvar contrasignos
-    .title = Salvar contrasignos sur { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Gerer contrasignos
-    .title = Gerer contrasignos sur { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Porta tu contrasignos sempre con te
-lockwise-no-logins-card-content = Usa le contrasignos salvate in { -brand-short-name } sur qualcunque apparato.
-lockwise-app-links = { -lockwise-brand-name } pro <a data-l10n-name="lockwise-android-inline-link">Android</a> e <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Salvar contrasignos
+    .title = Salvar contrasignos
+protection-report-passwords-manage-passwords-button = Gerer contrasignos
+    .title = Gerer contrasignos
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -110,7 +108,7 @@ monitor-sign-up-link = Inscriber te al Avisos de violation
 auto-scan = Controlate automaticamente hodie
 
 monitor-emails-tooltip =
-    .title = Vider le adresses de e-mail surveliate sur { -monitor-brand-short-name }
+    .title = Vider le adresses email surveliate sur { -monitor-brand-short-name }
 monitor-breaches-tooltip =
     .title = Vider le violationes de datos cognoscite sur { -monitor-brand-short-name }
 monitor-passwords-tooltip =
@@ -121,8 +119,8 @@ monitor-passwords-tooltip =
 # your localization, because it would result in the number showing twice.
 info-monitored-emails =
     { $count ->
-        [one] Adresse de e-mail surveliate
-       *[other] Adresses de e-mail surveliate
+        [one] Adresse email surveliate
+       *[other] Adresses email surveliate
     }
 
 # This string is displayed after a large numeral that indicates the total number
@@ -139,8 +137,8 @@ info-known-breaches-found =
 # to your localization, because it would result in the number showing twice.
 info-known-breaches-resolved =
     { $count ->
-        [one] Violation de datos note marcate como resolvite
-       *[other] Violationes de datos note marcate como resolvite
+        [one] Violation de datos cognoscite marcate como resolvite
+       *[other] Violationes de datos cognoscite marcate como resolvite
     }
 
 # This string is displayed after a large numeral that indicates the total number

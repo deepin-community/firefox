@@ -2,10 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 # NOTE: For English locales, strings in this file should be in APA-style Title Case.
 # See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
 #
 # NOTE: For Engineers, please don't re-use these strings outside of the menubar.
+
 
 ## Application Menu (macOS only)
 
@@ -39,13 +41,6 @@ menu-quit =
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = { -brand-shorter-name } を終了
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = { -brand-shorter-name } を終了します
 menu-about =
     .label = { -brand-shorter-name } について
     .accesskey = A
@@ -75,8 +70,14 @@ menu-file-open-location =
 menu-file-open-file =
     .label = ファイルを開く...
     .accesskey = O
-menu-file-close =
-    .label = 閉じる
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] タブを閉じる
+           *[other] { $tabCount } 個のタブを閉じる
+        }
     .accesskey = C
 menu-file-close-window =
     .label = ウィンドウを閉じる
@@ -93,9 +94,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = ページ設定...
     .accesskey = u
-menu-file-print-preview =
-    .label = 印刷プレビュー
-    .accesskey = v
 menu-file-print =
     .label = 印刷...
     .accesskey = P
@@ -112,7 +110,7 @@ menu-edit =
     .label = 編集
     .accesskey = E
 menu-edit-find-in-page =
-    .label = ページを検索...
+    .label = ページ内を検索...
     .accesskey = F
 menu-edit-find-again =
     .label = 次を検索
@@ -182,6 +180,17 @@ menu-view-full-screen =
     .label = 全画面表示
     .accesskey = F
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = リーダービューで開く
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = リーダービューを閉じる
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -210,9 +219,9 @@ menu-history-undo-menu =
     .label = 最近閉じたタブ
 menu-history-undo-window-menu =
     .label = 最近閉じたウィンドウ
-
-menu-history-reopen-all-tabs = タブをすべて開きなおす
-menu-history-reopen-all-windows = ウィンドウをすべて開きなおす
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = 履歴を検索
 
 ## Bookmarks Menu
 
@@ -221,10 +230,13 @@ menu-bookmarks-menu =
     .accesskey = B
 menu-bookmarks-manage =
     .label = ブックマークを管理
-menu-bookmark-current-tab =
-    .label = 現在のタブをブックマーク
-menu-bookmark-edit =
-    .label = このブックマークを編集
+menu-bookmark-tab =
+    .label = 現在のタブをブックマーク...
+menu-edit-bookmark =
+    .label = このブックマークを編集...
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = ブックマークを検索
 menu-bookmarks-all-tabs =
     .label = すべてのタブをブックマーク...
 menu-bookmarks-toolbar =
@@ -289,6 +301,7 @@ menu-window-bring-all-to-front =
 
 ## Help Menu
 
+
 # NOTE: For Engineers, any additions or changes to Help menu strings should
 # also be reflected in the related strings in appmenu.ftl. Those strings, by
 # convention, will have the same ID as these, but prefixed with "app".
@@ -308,8 +321,8 @@ menu-help-more-troubleshooting-info =
     .accesskey = T
 menu-help-report-site-issue =
     .label = サイトの問題を報告...
-menu-help-feedback-page =
-    .label = フィードバックを送信...
+menu-help-share-ideas =
+    .label = 意見とフィードバックを共有...
     .accesskey = S
 menu-help-enter-troubleshoot-mode2 =
     .label = トラブルシューティングモード...
@@ -317,6 +330,9 @@ menu-help-enter-troubleshoot-mode2 =
 menu-help-exit-troubleshoot-mode =
     .label = トラブルシューティングモードをオフにする
     .accesskey = M
+menu-help-switch-device =
+    .label = 新しい端末に切り替え
+    .accesskey = N
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

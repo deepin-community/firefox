@@ -47,7 +47,7 @@ policy-DisableForgetButton = Halang akses ke butang Lupa.
 
 policy-DisableFormHistory = Jangan ingat sejarah carian dan borang.
 
-policy-DisablePocket = Nyahdayakan ciri untuk menyimpan laman web ke Pocket.
+policy-DisablePocket2 = Nyahdayakan ciri untuk menyimpan laman web ke { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Nyahdayakan Pelayaran Peribadi.
 
@@ -82,8 +82,6 @@ policy-EnableTrackingProtection = Dayakan atau Nyahdayakan Sekatan Kandungan dan
 # https://github.com/mozilla/policy-templates/blob/master/README.md#extensions-machine-only
 policy-Extensions = Pasang, nyahpasang atau kunci ekstensi. Pilihan Pasang menggunakan URL atau laluan sebagai parameter. Pilihan Nyahpasang dan Dikunci menggunakan ID ekstensi.
 
-policy-FlashPlugin = Izinkan atau tidak penggunaan plugin Flash.
-
 policy-HardwareAcceleration = Jika false, nyahaktifkan pecutan perkakasan.
 
 # “lock” means that the user won’t be able to change this setting
@@ -92,6 +90,7 @@ policy-Homepage = Tetapkan dan pilihan mengunci Laman.
 policy-InstallAddonsPermission = Izinkan laman web tertentu untuk memasang add-ons.
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
+
 
 ##
 
@@ -112,9 +111,6 @@ policy-RequestedLocales = Tetapkan senarai lokaliti aplikasi yang diminta mengik
 policy-SearchBar = Tetapkan lokasi piawai bar carian. Pengguna masih boleh menyesuaikannya.
 
 policy-SearchEngines = Konfigurasi tetapan enjin carian. Polisi ini hanya boleh didapati dalam versi Extended Support Release (ESR).
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Pasang modul PKCS #11.
 
 # “format” refers to the format used for the value of this policy. See also:
 # https://github.com/mozilla/policy-templates/blob/master/README.md#websitefilter-machine-only

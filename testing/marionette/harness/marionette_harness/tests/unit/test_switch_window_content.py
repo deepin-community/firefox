@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import
-
 import sys
 from unittest import skipIf
 
@@ -42,15 +40,18 @@ class TestSwitchToWindowContent(WindowManagerMixin, MarionetteTestCase):
         with self.marionette.using_context("chrome"):
             return self.marionette.execute_script(
                 """
-                Components.utils.import("resource://gre/modules/AppConstants.jsm");
+                const { AppConstants } = ChromeUtils.importESModule(
+                  "resource://gre/modules/AppConstants.sys.mjs"
+                );
 
                 let win = null;
 
                 if (AppConstants.MOZ_APP_NAME == "fennec") {
-                  Components.utils.import("resource://gre/modules/Services.jsm");
                   win = Services.wm.getMostRecentWindow("navigator:browser");
                 } else {
-                  Components.utils.import("resource:///modules/BrowserWindowTracker.jsm");
+                  const { BrowserWindowTracker } = ChromeUtils.importESModule(
+                    "resource:///modules/BrowserWindowTracker.sys.mjs"
+                  );
                   win = BrowserWindowTracker.getTopWindow();
                 }
 
@@ -186,7 +187,10 @@ class TestSwitchToWindowContent(WindowManagerMixin, MarionetteTestCase):
         current_tab = self.marionette.current_window_handle
         [other_tab] = filter(lambda handle: handle != current_tab, window_handles)
 
-        self.assertEqual(self.marionette.get_url(), second_page)
+        Wait(self.marionette, timeout=5).until(
+            lambda _: self.marionette.get_url() == second_page,
+            message="Expected URL in the second tab has been loaded",
+        )
 
         self.marionette.switch_to_window(other_tab)
         Wait(self.marionette, timeout=5).until(

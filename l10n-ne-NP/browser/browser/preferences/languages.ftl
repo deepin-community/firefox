@@ -39,3 +39,22 @@ languages-customize-add =
 languages-code-format =
     .label = { $locale }  [{ $code }]
 
+browser-languages-window2 =
+    .title = { -brand-short-name } भाषा  सेटिङ्गहरु
+    .style = min-width: 40em
+
+browser-languages-search = थप भाषाहरूको लागि खोजी गर्नुहोस् ...
+
+browser-languages-searching =
+    .label = भाषाहरू खोजी गरिँदै ...
+
+browser-languages-downloading =
+    .label = डाउनलोडिङ्ग…
+
+browser-languages-select-language =
+    .label = थप्नको लागि एक भाषा चयन गर्नुहोस्…
+    .placeholder = थप्नको लागि एक भाषा चयन गर्नुहोस्…
+
+browser-languages-installed-label = स्थापित भाषाहरु
+browser-languages-available-label = उपलब्ध भाषाहरु
+

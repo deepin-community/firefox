@@ -16,8 +16,8 @@ downloads-panel =
 # The style attribute has the width of the Downloads Panel expressed using
 # a CSS unit. The longest labels that should fit are usually those of
 # in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
+downloads-panel-items =
+    .style = width: 40em
 
 downloads-cmd-pause =
     .label = Pauză
@@ -30,42 +30,65 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Renunță
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Deschide dosarul conținător
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] Afișează în Finder
+           *[other] Afișează în dosar
+        }
     .accesskey = F
 
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Afișează în Finder
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = Deschide în lectorul de sistem
     .accesskey = V
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-use-system-default-named =
+    .label = Deschide în { $handler }
+    .accesskey = I
 
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
     .label = Deschide întotdeauna în lectorul de sistem
     .accesskey = w
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-always-use-system-default-named =
+    .label = Deschide întotdeauna în { $handler }
+    .accesskey = w
 
-downloads-cmd-show-button =
+##
+
+# We can use the same accesskey as downloads-cmd-always-use-system-default.
+# Both should not be visible in the downloads context menu at the same time.
+downloads-cmd-always-open-similar-files =
+    .label = Deschide întotdeauna fișiere similare
+    .accesskey = w
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
-            [macos] Afișează în Finder
-           *[other] Deschide dosarul conținător
+            [macos] Afișează în FInder
+           *[other] Afișează în dosar
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
-            [macos] Afișează în Finder
-           *[other] Deschide dosarul conținător
+            [macos] Afișează în FInder
+           *[other] Afișează în dosar
         }
-downloads-cmd-show-description =
+downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
             [macos] Afișează în Finder
-           *[other] Deschide dosarul conținător
+           *[other] Afișează în dosar
         }
 
 downloads-cmd-show-downloads =
@@ -89,6 +112,9 @@ downloads-cmd-clear-list =
 downloads-cmd-clear-downloads =
     .label = Șterge descărcările
     .accesskey = d
+downloads-cmd-delete-file =
+    .label = Șterge
+    .accesskey = D
 
 # This command is shown in the context menu when downloads are blocked.
 downloads-cmd-unblock =
@@ -138,6 +164,7 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -162,6 +189,14 @@ downloads-history =
 downloads-details =
     .title = Detalii privind descărcarea
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
+
 downloads-clear-downloads-button =
     .label = Șterge descărcările
     .tooltiptext = Șterge descărcările finalizate, anulate și eșuate
@@ -174,3 +209,23 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Nicio descărcare pentru această sesiune.
+
+# This is displayed in an item at the bottom of the Downloads Panel when there
+# are more downloads than can fit in the list in the panel.
+#   $count (number) - number of files being downloaded that are not shown in the
+#                     panel list.
+downloads-more-downloading =
+    { $count ->
+        [one] Încă { $count } fișier în descărcare
+        [few] Încă { $count } fișiere în descărcare
+       *[other] Încă { $count } de fișiere  în descărcare
+    }
+
+## Download errors
+
+downloads-error-alert-title = Eroare de descărcare
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Descărcarea nu poate fi salvată deoarece s-a produs o eroare necunoscută.
+    
+    Te rugăm să încerci din nou.

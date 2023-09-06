@@ -9,36 +9,16 @@
 #include "mozilla/MathAlgorithms.h"
 #include "mozilla/MemoryReporting.h"
 #include "xpcprivate.h"
+#include "XPCMaps.h"
 
 #include "js/HashTable.h"
 
 using namespace mozilla;
 
 /***************************************************************************/
-// static shared...
-
-// Note this is returning the hash of the bit pattern of the first part of the
-// nsID, not the hash of the pointer to the nsID.
-
-static PLDHashNumber HashIIDPtrKey(const void* key) {
-  uintptr_t v;
-  memcpy(&v, key, sizeof(v));
-  return HashGeneric(v);
-}
-
-static bool MatchIIDPtrKey(const PLDHashEntryHdr* entry, const void* key) {
-  return ((const nsID*)key)
-      ->Equals(*((const nsID*)((PLDHashEntryStub*)entry)->key));
-}
-
-static PLDHashNumber HashNativeKey(const void* data) {
-  return static_cast<const XPCNativeSetKey*>(data)->Hash();
-}
-
-/***************************************************************************/
 // implement JSObject2WrappedJSMap...
 
-void JSObject2WrappedJSMap::UpdateWeakPointersAfterGC() {
+void JSObject2WrappedJSMap::UpdateWeakPointersAfterGC(JSTracer* trc) {
   // Check all wrappers and update their JSObject pointer if it has been
   // moved. Release any wrappers whose weakly held JSObject has died.
 
@@ -47,24 +27,20 @@ void JSObject2WrappedJSMap::UpdateWeakPointersAfterGC() {
     nsXPCWrappedJS* wrapper = iter.get().value();
     MOZ_ASSERT(wrapper, "found a null JS wrapper!");
 
-    // Walk the wrapper chain and update all JSObjects.
-    while (wrapper) {
-      if (wrapper->IsSubjectToFinalization()) {
-        wrapper->UpdateObjectPointerAfterGC();
-        if (!wrapper->GetJSObjectPreserveColor()) {
-          dying.AppendElement(dont_AddRef(wrapper));
-        }
+    // There's no need to walk the entire chain, because only the root can be
+    // subject to finalization due to the double release behavior in Release.
+    // See the comment at the top of XPCWrappedJS.cpp about nsXPCWrappedJS
+    // lifetime.
+    if (wrapper && wrapper->IsSubjectToFinalization()) {
+      wrapper->UpdateObjectPointerAfterGC(trc);
+      if (!wrapper->GetJSObjectPreserveColor()) {
+        dying.AppendElement(dont_AddRef(wrapper));
       }
-      wrapper = wrapper->GetNextWrapper();
     }
 
     // Remove or update the JSObject key in the table if necessary.
-    JSObject* obj = iter.get().key().unbarrieredGet();
-    JS_UpdateWeakPointerAfterGCUnbarriered(&obj);
-    if (!obj) {
+    if (!JS_UpdateWeakPointerAfterGC(trc, &iter.get().mutableKey())) {
       iter.remove();
-    } else {
-      iter.get().mutableKey() = obj;
     }
   }
 }
@@ -98,15 +74,14 @@ size_t JSObject2WrappedJSMap::SizeOfWrappedJS(
 // implement Native2WrappedNativeMap...
 
 Native2WrappedNativeMap::Native2WrappedNativeMap()
-    : mTable(PLDHashTable::StubOps(), sizeof(Entry), XPC_NATIVE_MAP_LENGTH) {}
+    : mMap(XPC_NATIVE_MAP_LENGTH) {}
 
 size_t Native2WrappedNativeMap::SizeOfIncludingThis(
     mozilla::MallocSizeOf mallocSizeOf) const {
   size_t n = mallocSizeOf(this);
-  n += mTable.ShallowSizeOfExcludingThis(mallocSizeOf);
-  for (auto iter = mTable.ConstIter(); !iter.Done(); iter.Next()) {
-    auto entry = static_cast<Native2WrappedNativeMap::Entry*>(iter.Get());
-    n += mallocSizeOf(entry->value);
+  n += mMap.shallowSizeOfExcludingThis(mallocSizeOf);
+  for (auto iter = mMap.iter(); !iter.done(); iter.next()) {
+    n += mallocSizeOf(iter.get().value());
   }
   return n;
 }
@@ -114,20 +89,15 @@ size_t Native2WrappedNativeMap::SizeOfIncludingThis(
 /***************************************************************************/
 // implement IID2NativeInterfaceMap...
 
-const struct PLDHashTableOps IID2NativeInterfaceMap::Entry::sOps = {
-    HashIIDPtrKey, MatchIIDPtrKey, PLDHashTable::MoveEntryStub,
-    PLDHashTable::ClearEntryStub};
-
 IID2NativeInterfaceMap::IID2NativeInterfaceMap()
-    : mTable(&Entry::sOps, sizeof(Entry), XPC_NATIVE_INTERFACE_MAP_LENGTH) {}
+    : mMap(XPC_NATIVE_INTERFACE_MAP_LENGTH) {}
 
 size_t IID2NativeInterfaceMap::SizeOfIncludingThis(
     mozilla::MallocSizeOf mallocSizeOf) const {
   size_t n = mallocSizeOf(this);
-  n += mTable.ShallowSizeOfExcludingThis(mallocSizeOf);
-  for (auto iter = mTable.ConstIter(); !iter.Done(); iter.Next()) {
-    auto entry = static_cast<IID2NativeInterfaceMap::Entry*>(iter.Get());
-    n += entry->value->SizeOfIncludingThis(mallocSizeOf);
+  n += mMap.shallowSizeOfExcludingThis(mallocSizeOf);
+  for (auto iter = mMap.iter(); !iter.done(); iter.next()) {
+    n += iter.get().value()->SizeOfIncludingThis(mallocSizeOf);
   }
   return n;
 }
@@ -135,34 +105,13 @@ size_t IID2NativeInterfaceMap::SizeOfIncludingThis(
 /***************************************************************************/
 // implement ClassInfo2NativeSetMap...
 
-// static
-bool ClassInfo2NativeSetMap::Entry::Match(const PLDHashEntryHdr* aEntry,
-                                          const void* aKey) {
-  return static_cast<const Entry*>(aEntry)->key == aKey;
-}
-
-// static
-void ClassInfo2NativeSetMap::Entry::Clear(PLDHashTable* aTable,
-                                          PLDHashEntryHdr* aEntry) {
-  auto entry = static_cast<Entry*>(aEntry);
-  NS_RELEASE(entry->value);
-
-  entry->key = nullptr;
-  entry->value = nullptr;
-}
-
-const PLDHashTableOps ClassInfo2NativeSetMap::Entry::sOps = {
-    PLDHashTable::HashVoidPtrKeyStub, Match, PLDHashTable::MoveEntryStub, Clear,
-    nullptr};
-
 ClassInfo2NativeSetMap::ClassInfo2NativeSetMap()
-    : mTable(&ClassInfo2NativeSetMap::Entry::sOps, sizeof(Entry),
-             XPC_NATIVE_SET_MAP_LENGTH) {}
+    : mMap(XPC_NATIVE_SET_MAP_LENGTH) {}
 
 size_t ClassInfo2NativeSetMap::ShallowSizeOfIncludingThis(
     mozilla::MallocSizeOf mallocSizeOf) {
   size_t n = mallocSizeOf(this);
-  n += mTable.ShallowSizeOfExcludingThis(mallocSizeOf);
+  n += mMap.shallowSizeOfExcludingThis(mallocSizeOf);
   return n;
 }
 
@@ -170,17 +119,14 @@ size_t ClassInfo2NativeSetMap::ShallowSizeOfIncludingThis(
 // implement ClassInfo2WrappedNativeProtoMap...
 
 ClassInfo2WrappedNativeProtoMap::ClassInfo2WrappedNativeProtoMap()
-    : mTable(PLDHashTable::StubOps(), sizeof(Entry),
-             XPC_NATIVE_PROTO_MAP_LENGTH) {}
+    : mMap(XPC_NATIVE_PROTO_MAP_LENGTH) {}
 
 size_t ClassInfo2WrappedNativeProtoMap::SizeOfIncludingThis(
     mozilla::MallocSizeOf mallocSizeOf) const {
   size_t n = mallocSizeOf(this);
-  n += mTable.ShallowSizeOfExcludingThis(mallocSizeOf);
-  for (auto iter = mTable.ConstIter(); !iter.Done(); iter.Next()) {
-    auto entry =
-        static_cast<ClassInfo2WrappedNativeProtoMap::Entry*>(iter.Get());
-    n += mallocSizeOf(entry->value);
+  n += mMap.shallowSizeOfExcludingThis(mallocSizeOf);
+  for (auto iter = mMap.iter(); !iter.done(); iter.next()) {
+    n += mallocSizeOf(iter.get().value());
   }
   return n;
 }
@@ -188,11 +134,12 @@ size_t ClassInfo2WrappedNativeProtoMap::SizeOfIncludingThis(
 /***************************************************************************/
 // implement NativeSetMap...
 
-bool NativeSetMap::Entry::Match(const PLDHashEntryHdr* entry, const void* key) {
-  auto Key = static_cast<const XPCNativeSetKey*>(key);
-  XPCNativeSet* SetInTable = ((Entry*)entry)->key_value;
-  XPCNativeSet* Set = Key->GetBaseSet();
-  XPCNativeInterface* Addition = Key->GetAddition();
+bool NativeSetHasher::match(Key key, Lookup lookup) {
+  // The |key| argument is for the existing table entry and |lookup| is the
+  // value passed by the caller that is being compared with it.
+  XPCNativeSet* SetInTable = key;
+  XPCNativeSet* Set = lookup->GetBaseSet();
+  XPCNativeInterface* Addition = lookup->GetAddition();
 
   if (!Set) {
     // This is a special case to deal with the invariant that says:
@@ -229,29 +176,16 @@ bool NativeSetMap::Entry::Match(const PLDHashEntryHdr* entry, const void* key) {
   return !Addition || Addition == *(CurrentInTable++);
 }
 
-const struct PLDHashTableOps NativeSetMap::Entry::sOps = {
-    HashNativeKey, Match, PLDHashTable::MoveEntryStub,
-    PLDHashTable::ClearEntryStub};
-
-NativeSetMap::NativeSetMap()
-    : mTable(&Entry::sOps, sizeof(Entry), XPC_NATIVE_SET_MAP_LENGTH) {}
+NativeSetMap::NativeSetMap() : mSet(XPC_NATIVE_SET_MAP_LENGTH) {}
 
 size_t NativeSetMap::SizeOfIncludingThis(
     mozilla::MallocSizeOf mallocSizeOf) const {
   size_t n = mallocSizeOf(this);
-  n += mTable.ShallowSizeOfExcludingThis(mallocSizeOf);
-  for (auto iter = mTable.ConstIter(); !iter.Done(); iter.Next()) {
-    auto entry = static_cast<NativeSetMap::Entry*>(iter.Get());
-    n += entry->key_value->SizeOfIncludingThis(mallocSizeOf);
+  n += mSet.shallowSizeOfExcludingThis(mallocSizeOf);
+  for (auto iter = mSet.iter(); !iter.done(); iter.next()) {
+    n += iter.get()->SizeOfIncludingThis(mallocSizeOf);
   }
   return n;
 }
-
-/***************************************************************************/
-// implement XPCWrappedNativeProtoMap...
-
-XPCWrappedNativeProtoMap::XPCWrappedNativeProtoMap()
-    : mTable(PLDHashTable::StubOps(), sizeof(PLDHashEntryStub),
-             XPC_DYING_NATIVE_PROTO_MAP_LENGTH) {}
 
 /***************************************************************************/

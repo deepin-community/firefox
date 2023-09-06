@@ -14,7 +14,7 @@ const TEST_URI = `
   <span id="matches" class="matches">Some styled text</span>
 `;
 
-add_task(async function() {
+add_task(async function () {
   await addTab("data:text/html;charset=utf-8," + encodeURIComponent(TEST_URI));
   const { inspector, view } = await openComputedView();
   await selectNode("#matches", inspector);
@@ -41,16 +41,20 @@ async function checkColorCycling(container, view) {
 
   const tests = [
     {
+      value: "hwb(0 0% 0%)",
+      comment: "Color displayed as an HWB value.",
+    },
+    {
       value: "red",
       comment: "Color displayed as a color name.",
     },
     {
       value: "#f00",
-      comment: "Color displayed as an authored value.",
+      comment: "Color displayed as a HEX value.",
     },
     {
       value: "hsl(0, 100%, 50%)",
-      comment: "Color displayed as an HSL value again.",
+      comment: "Color displayed as an HSL value.",
     },
     {
       value: "rgb(255, 0, 0)",

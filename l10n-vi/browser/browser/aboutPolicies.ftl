@@ -5,7 +5,7 @@
 about-policies-title = Chính sách doanh nghiệp
 
 # 'Active' is used to describe the policies that are currently active
-active-policies-tab = Kích hoạt
+active-policies-tab = Đang hoạt động
 errors-tab = Lỗi
 documentation-tab = Tài liệu
 

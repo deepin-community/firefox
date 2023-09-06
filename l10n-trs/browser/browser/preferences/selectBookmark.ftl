@@ -2,8 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-select-bookmark-window =
+select-bookmark-window2 =
     .title = Nàgi'io' paginâ riña ayi'ij
-    .style = width: 32em;
+    .style = min-width: 32em;
 
 select-bookmark-desc = Nahui 'ngo pagina sa gayi'ì yitinjt. Si ganahuit ;ngo karpeta, da' go'ngo ma ni nayi'ni nìni ma.

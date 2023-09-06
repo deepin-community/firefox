@@ -8,15 +8,37 @@
 
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/StaticPrefs_dom.h"
+#include "mozilla/StaticPrefs_privacy.h"
 #include "mozilla/StorageAccess.h"
+#include "mozilla/StoragePrincipalHelper.h"
+#include "mozilla/dom/CanonicalBrowsingContext.h"
+#include "mozilla/dom/InternalRequest.h"
+#include "mozilla/net/HttpBaseChannel.h"
 #include "nsCOMPtr.h"
 #include "nsContentUtils.h"
 #include "nsIChannel.h"
+#include "nsICookieJarSettings.h"
 #include "ServiceWorkerManager.h"
 #include "nsIPrincipal.h"
+#include "nsQueryObject.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
+
+namespace {
+bool IsWithinObjectOrEmbed(const nsCOMPtr<nsILoadInfo>& loadInfo) {
+  RefPtr<BrowsingContext> browsingContext;
+  loadInfo->GetTargetBrowsingContext(getter_AddRefs(browsingContext));
+
+  for (BrowsingContext* cur = browsingContext.get(); cur;
+       cur = cur->GetParent()) {
+    if (cur->IsEmbedderTypeObjectOrEmbed()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+}  // namespace
 
 NS_IMPL_ISUPPORTS(ServiceWorkerInterceptController,
                   nsINetworkInterceptController)
@@ -28,6 +50,12 @@ ServiceWorkerInterceptController::ShouldPrepareForIntercept(
 
   nsCOMPtr<nsILoadInfo> loadInfo = aChannel->LoadInfo();
 
+  // Block interception if the request's destination is within an object or
+  // embed element.
+  if (IsWithinObjectOrEmbed(loadInfo)) {
+    return NS_OK;
+  }
+
   RefPtr<ServiceWorkerManager> swm = ServiceWorkerManager::GetInstance();
 
   // For subresource requests we base our decision solely on the client's
@@ -37,34 +65,56 @@ ServiceWorkerInterceptController::ShouldPrepareForIntercept(
   if (!nsContentUtils::IsNonSubresourceRequest(aChannel)) {
     const Maybe<ServiceWorkerDescriptor>& controller =
         loadInfo->GetController();
-    // If the controller doesn't handle fetch events, return false
-    if (controller.isSome()) {
-      *aShouldIntercept = controller.ref().HandlesFetch();
 
-      // The service worker has no fetch event handler, try to schedule a
-      // soft-update through ServiceWorkerRegistrationInfo.
-      // Get ServiceWorkerRegistrationInfo by the ServiceWorkerInfo's principal
-      // and scope
-      if (!*aShouldIntercept && swm) {
-        nsCOMPtr<nsIPrincipal> principal =
-            controller.ref().GetPrincipal().unwrap();
-        RefPtr<ServiceWorkerRegistrationInfo> registration =
-            swm->GetRegistration(principal, controller.ref().Scope());
-        // Could not get ServiceWorkerRegistration here if unregister is
-        // executed before getting here.
-        if (NS_WARN_IF(!registration)) {
-          return NS_OK;
-        }
-        registration->MaybeScheduleTimeCheckAndUpdate();
-      }
-    } else {
-      *aShouldIntercept = false;
+    // If the controller doesn't handle fetch events, return false
+    if (!controller.isSome()) {
+      return NS_OK;
     }
+
+    *aShouldIntercept = controller.ref().HandlesFetch();
+
+    // The service worker has no fetch event handler, try to schedule a
+    // soft-update through ServiceWorkerRegistrationInfo.
+    // Get ServiceWorkerRegistrationInfo by the ServiceWorkerInfo's principal
+    // and scope
+    if (!*aShouldIntercept && swm) {
+      nsCOMPtr<nsIPrincipal> principal =
+          controller.ref().GetPrincipal().unwrap();
+      RefPtr<ServiceWorkerRegistrationInfo> registration =
+          swm->GetRegistration(principal, controller.ref().Scope());
+      // Could not get ServiceWorkerRegistration here if unregister is
+      // executed before getting here.
+      if (NS_WARN_IF(!registration)) {
+        return NS_OK;
+      }
+      registration->MaybeScheduleTimeCheckAndUpdate();
+    }
+
+    RefPtr<net::HttpBaseChannel> httpChannel = do_QueryObject(aChannel);
+
+    if (httpChannel &&
+        httpChannel->GetRequestHead()->HasHeader(net::nsHttp::Range)) {
+      RequestMode requestMode =
+          InternalRequest::MapChannelToRequestMode(aChannel);
+      bool mayLoad = nsContentUtils::CheckMayLoad(
+          loadInfo->GetLoadingPrincipal(), aChannel,
+          /*allowIfInheritsPrincipal*/ false);
+      if (requestMode == RequestMode::No_cors && !mayLoad) {
+        *aShouldIntercept = false;
+      }
+    }
+
     return NS_OK;
   }
 
-  nsCOMPtr<nsIPrincipal> principal = BasePrincipal::CreateContentPrincipal(
-      aURI, loadInfo->GetOriginAttributes());
+  nsCOMPtr<nsIPrincipal> principal;
+  nsresult rv = StoragePrincipalHelper::GetPrincipal(
+      aChannel,
+      StaticPrefs::privacy_partition_serviceWorkers()
+          ? StoragePrincipalHelper::eForeignPartitionedPrincipal
+          : StoragePrincipalHelper::eRegularPrincipal,
+      getter_AddRefs(principal));
+  NS_ENSURE_SUCCESS(rv, rv);
 
   // First check with the ServiceWorkerManager for a matching service worker.
   if (!swm || !swm->IsAvailable(principal, aURI, aChannel)) {
@@ -82,8 +132,18 @@ ServiceWorkerInterceptController::ShouldPrepareForIntercept(
   // It is important to check for the availability of the service worker first
   // to avoid showing warnings about the use of third-party cookies in the UI
   // unnecessarily when no service worker is being accessed.
-  if (StorageAllowedForChannel(aChannel) != StorageAccess::eAllow) {
-    return NS_OK;
+  auto storageAccess = StorageAllowedForChannel(aChannel);
+  if (storageAccess != StorageAccess::eAllow) {
+    if (!StaticPrefs::privacy_partition_serviceWorkers()) {
+      return NS_OK;
+    }
+
+    nsCOMPtr<nsICookieJarSettings> cookieJarSettings;
+    loadInfo->GetCookieJarSettings(getter_AddRefs(cookieJarSettings));
+
+    if (!StoragePartitioningEnabled(storageAccess, cookieJarSettings)) {
+      return NS_OK;
+    }
   }
 
   *aShouldIntercept = true;
@@ -110,5 +170,4 @@ ServiceWorkerInterceptController::ChannelIntercepted(
   return NS_OK;
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

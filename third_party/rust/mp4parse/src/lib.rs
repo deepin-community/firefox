@@ -35,7 +35,7 @@ use std::io::{Read, Take};
 mod macros;
 
 mod boxes;
-use boxes::{BoxType, FourCC};
+use crate::boxes::{BoxType, FourCC};
 
 // Unit tests.
 #[cfg(test)]
@@ -44,21 +44,35 @@ mod tests;
 #[cfg(feature = "unstable-api")]
 pub mod unstable;
 
+/// The HEIF image and image collection brand
 /// The 'mif1' brand indicates structural requirements on files
 /// See HEIF (ISO 23008-12:2017) § 10.2.1
-const MIF1_BRAND: FourCC = FourCC { value: *b"mif1" };
+pub const MIF1_BRAND: FourCC = FourCC { value: *b"mif1" };
+
+/// The HEIF image sequence brand
+/// The 'msf1' brand indicates structural requirements on files
+/// See HEIF (ISO 23008-12:2017) § 10.3.1
+pub const MSF1_BRAND: FourCC = FourCC { value: *b"msf1" };
+
+/// The brand to identify AV1 image items
+/// The 'avif' brand indicates structural requirements on files
+/// See <https://aomediacodec.github.io/av1-avif/#image-and-image-collection-brand>
+pub const AVIF_BRAND: FourCC = FourCC { value: *b"avif" };
+
+/// The brand to identify AVIF image sequences
+/// The 'avis' brand indicates structural requirements on files
+/// See <https://aomediacodec.github.io/av1-avif/#image-and-image-collection-brand>
+pub const AVIS_BRAND: FourCC = FourCC { value: *b"avis" };
 
 /// A trait to indicate a type can be infallibly converted to `u64`.
 /// This should only be implemented for infallible conversions, so only unsigned types are valid.
 trait ToU64 {
-    // Remove when https://github.com/rust-lang/rust-clippy/issues/6727 is resolved
-    #[allow(clippy::wrong_self_convention)]
     fn to_u64(self) -> u64;
 }
 
 /// Statically verify that the platform `usize` can fit within a `u64`.
 /// If the size won't fit on the given platform, this will fail at compile time, but if a type
-/// which can fail TryInto<usize> is used, it may panic.
+/// which can fail `TryInto<usize>` is used, it may panic.
 impl ToU64 for usize {
     fn to_u64(self) -> u64 {
         static_assertions::const_assert!(
@@ -76,7 +90,7 @@ pub trait ToUsize {
 
 /// Statically verify that the given type can fit within a `usize`.
 /// If the size won't fit on the given platform, this will fail at compile time, but if a type
-/// which can fail TryInto<usize> is used, it may panic.
+/// which can fail `TryInto<usize>` is used, it may panic.
 macro_rules! impl_to_usize_from {
     ( $from_type:ty ) => {
         impl ToUsize for $from_type {
@@ -123,6 +137,7 @@ impl<'a, T> Offset for OffsetReader<'a, T> {
 impl<'a, T: Read> Read for OffsetReader<'a, T> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         let bytes_read = self.reader.read(buf)?;
+        trace!("Read {} bytes at offset {}", bytes_read, self.offset);
         self.offset = self
             .offset
             .checked_add(bytes_read.to_u64())
@@ -150,7 +165,7 @@ struct String;
 /// Any detail that needs to be communicated to the caller must be encoded here
 /// since the [`Error`] type's associated data is part of the FFI.
 #[repr(C)]
-#[derive(PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Status {
     Ok = 0,
     BadArg = 1,
@@ -159,19 +174,234 @@ pub enum Status {
     Eof = 4,
     Io = 5,
     Oom = 6,
-    UnsupportedA1lx,
-    UnsupportedA1op,
-    UnsupportedClap,
-    UnsupportedGrid,
-    UnsupportedIpro,
-    UnsupportedLsel,
+    A1lxEssential,
+    A1opNoEssential,
+    AlacBadMagicCookieSize,
+    AlacFlagsNonzero,
+    Av1cMissing,
+    BitReaderError,
+    BoxBadSize,
+    BoxBadWideSize,
+    CheckParserStateErr,
+    ColrBadQuantity,
+    ColrBadSize,
+    ColrBadType,
+    ColrReservedNonzero,
+    ConstructionMethod,
+    CttsBadSize,
+    CttsBadVersion,
+    DflaBadMetadataBlockSize,
+    DflaFlagsNonzero,
+    DflaMissingMetadata,
+    DflaStreamInfoBadSize,
+    DflaStreamInfoNotFirst,
+    DopsChannelMappingWriteErr,
+    DopsOpusHeadWriteErr,
+    ElstBadVersion,
+    EsdsBadAudioSampleEntry,
+    EsdsBadDescriptor,
+    EsdsDecSpecificIntoTagQuantity,
+    FtypBadSize,
+    FtypNotFirst,
+    HdlrNameNoNul,
+    HdlrNameNotUtf8,
+    HdlrNotFirst,
+    HdlrPredefinedNonzero,
+    HdlrReservedNonzero,
+    HdlrTypeNotPict,
+    HdlrUnsupportedVersion,
+    HdrlBadQuantity,
+    IdatBadQuantity,
+    IdatMissing,
+    IinfBadChild,
+    IinfBadQuantity,
+    IlocBadConstructionMethod,
+    IlocBadExtent,
+    IlocBadExtentCount,
+    IlocBadFieldSize,
+    IlocBadQuantity,
+    IlocBadSize,
+    IlocDuplicateItemId,
+    IlocNotFound,
+    IlocOffsetOverflow,
+    ImageItemType,
+    InfeFlagsNonzero,
+    InvalidUtf8,
+    IpcoIndexOverflow,
+    IpmaBadIndex,
+    IpmaBadItemOrder,
+    IpmaBadQuantity,
+    IpmaBadVersion,
+    IpmaDuplicateItemId,
+    IpmaFlagsNonzero,
+    IpmaIndexZeroNoEssential,
+    IpmaTooBig,
+    IpmaTooSmall,
+    IprpBadChild,
+    IprpBadQuantity,
+    IprpConflict,
+    IrefBadQuantity,
+    IrefRecursion,
+    IspeMissing,
+    ItemTypeMissing,
+    LselNoEssential,
+    MdhdBadTimescale,
+    MdhdBadVersion,
+    MehdBadVersion,
+    MetaBadQuantity,
+    MissingAvifOrAvisBrand,
+    MissingMif1Brand,
+    MoovBadQuantity,
+    MoovMissing,
+    MultipleAlpha,
+    MvhdBadTimescale,
+    MvhdBadVersion,
+    NoImage,
+    PitmBadQuantity,
+    PitmMissing,
+    PitmNotFound,
+    PixiBadChannelCount,
+    PixiMissing,
+    PsshSizeOverflow,
+    ReadBufErr,
+    SchiQuantity,
+    StsdBadAudioSampleEntry,
+    StsdBadVideoSampleEntry,
+    TkhdBadVersion,
+    TxformBeforeIspe,
+    TxformNoEssential,
+    TxformOrder,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Feature {
+    A1lx,
+    A1op,
+    Auxc,
+    Av1c,
+    Avis,
+    Clap,
+    Colr,
+    Grid,
+    Imir,
+    Ipro,
+    Irot,
+    Ispe,
+    Lsel,
+    Pasp,
+    Pixi,
+}
+
+impl Feature {
+    fn supported(self) -> bool {
+        match self {
+            Self::Auxc
+            | Self::Av1c
+            | Self::Avis
+            | Self::Colr
+            | Self::Imir
+            | Self::Irot
+            | Self::Ispe
+            | Self::Pasp
+            | Self::Pixi => true,
+            Self::A1lx | Self::A1op | Self::Clap | Self::Grid | Self::Ipro | Self::Lsel => false,
+        }
+    }
+}
+
+impl TryFrom<&ItemProperty> for Feature {
+    type Error = Error;
+
+    fn try_from(item_property: &ItemProperty) -> Result<Self, Self::Error> {
+        Ok(match item_property {
+            ItemProperty::AuxiliaryType(_) => Self::Auxc,
+            ItemProperty::AV1Config(_) => Self::Av1c,
+            ItemProperty::Channels(_) => Self::Pixi,
+            ItemProperty::CleanAperture => Self::Clap,
+            ItemProperty::Colour(_) => Self::Colr,
+            ItemProperty::ImageSpatialExtents(_) => Self::Ispe,
+            ItemProperty::LayeredImageIndexing => Self::A1lx,
+            ItemProperty::LayerSelection => Self::Lsel,
+            ItemProperty::Mirroring(_) => Self::Imir,
+            ItemProperty::OperatingPointSelector => Self::A1op,
+            ItemProperty::PixelAspectRatio(_) => Self::Pasp,
+            ItemProperty::Rotation(_) => Self::Irot,
+            item_property => {
+                error!("No known Feature variant for {:?}", item_property);
+                return Err(Error::Unsupported("missing Feature fox ItemProperty"));
+            }
+        })
+    }
+}
+
+/// A collection to indicate unsupported features that were encountered during
+/// parsing. Since the default behavior for many such features is to ignore
+/// them, this often not fatal and there may be several to report.
+#[derive(Debug, Default)]
+pub struct UnsupportedFeatures(u32);
+
+impl UnsupportedFeatures {
+    pub fn new() -> Self {
+        Self(0x0)
+    }
+
+    pub fn into_bitfield(&self) -> u32 {
+        self.0
+    }
+
+    fn feature_to_bitfield(feature: Feature) -> u32 {
+        let index = feature as usize;
+        assert!(
+            u8::BITS.to_usize() * std::mem::size_of::<Self>() > index,
+            "You're gonna need a bigger bitfield"
+        );
+        let bitfield = 1u32 << index;
+        assert_eq!(bitfield.count_ones(), 1);
+        bitfield
+    }
+
+    pub fn insert(&mut self, feature: Feature) {
+        warn!("Unsupported feature: {:?}", feature);
+        self.0 |= Self::feature_to_bitfield(feature);
+    }
+
+    pub fn contains(&self, feature: Feature) -> bool {
+        self.0 & Self::feature_to_bitfield(feature) != 0x0
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0 == 0x0
+    }
+}
+
+impl<T> From<Status> for Result<T> {
+    /// A convenience method to enable shortcuts like
+    /// ```
+    /// # use mp4parse::{Result,Status};
+    /// # let _: Result<()> =
+    /// Status::MissingAvifOrAvisBrand.into();
+    /// ```
+    /// instead of
+    /// ```
+    /// # use mp4parse::{Error,Result,Status};
+    /// # let _: Result<()> =
+    /// Err(Error::from(Status::MissingAvifOrAvisBrand));
+    /// ```
+    /// Note that `Status::Ok` can't be supported this way and will panic.
+    fn from(parse_status: Status) -> Self {
+        match parse_status {
+            Status::Ok => panic!("Can't determine Ok(_) inner value from Status"),
+            err_status => Err(err_status.into()),
+        }
+    }
 }
 
 /// For convenience of creating an error for an unsupported feature which we
 /// want to communicate the specific feature back to the C API caller
 impl From<Status> for Error {
     fn from(parse_status: Status) -> Self {
-        let msg = match parse_status {
+        match parse_status {
             Status::Ok
             | Status::BadArg
             | Status::Invalid
@@ -179,26 +409,382 @@ impl From<Status> for Error {
             | Status::Eof
             | Status::Io
             | Status::Oom => {
-                panic!("Status -> Error is only for Status:UnsupportedXXX errors")
+                panic!("Status -> Error is only for Status:InvalidData errors")
             }
+            _ => Self::InvalidData(parse_status),
+        }
+    }
+}
 
-            Status::UnsupportedA1lx => "AV1 layered image indexing (a1lx) is unsupported",
-            Status::UnsupportedA1op => "Operating point selection (a1op) is unsupported",
-            Status::UnsupportedClap => "Clean aperture (clap) transform is unsupported",
-            Status::UnsupportedGrid => "Grid-based images are unsupported",
-            Status::UnsupportedIpro => "Item protection (ipro) is unsupported",
-            Status::UnsupportedLsel => "Layer selection (lsel) is unsupported",
-        };
-        Self::UnsupportedDetail(parse_status, msg)
+impl From<Status> for &str {
+    fn from(status: Status) -> Self {
+        match status {
+            Status::Ok
+            | Status::BadArg
+            | Status::Invalid
+            | Status::Unsupported
+            | Status::Eof
+            | Status::Io
+            | Status::Oom => {
+                panic!("Status -> Error is only for specific parsing errors")
+            }
+            Status::A1lxEssential => {
+                "AV1LayeredImageIndexingProperty (a1lx) shall not be marked as essential \
+                 per https://aomediacodec.github.io/av1-avif/#layered-image-indexing-property-description"
+            }
+            Status::A1opNoEssential => {
+                "OperatingPointSelectorProperty (a1op) shall be marked as essential \
+                 per https://aomediacodec.github.io/av1-avif/#operating-point-selector-property-description"
+            }
+            Status::AlacBadMagicCookieSize => {
+                "ALACSpecificBox magic cookie is the wrong size"
+            }
+            Status::AlacFlagsNonzero => {
+                "no-zero alac (ALAC) flags"
+            }
+            Status::Av1cMissing => {
+                "One AV1 Item Configuration Property (av1C) is mandatory for an \
+                 image item of type 'av01' \
+                 per AVIF specification § 2.2.1"
+            }
+            Status::BitReaderError => {
+                "Bitwise read failed"
+            }
+            Status::BoxBadSize => {
+                "malformed size"
+            }
+            Status::BoxBadWideSize => {
+                "malformed wide size"
+            }
+            Status::CheckParserStateErr => {
+                "unread box content or bad parser sync"
+            }
+            Status::ColrBadQuantity => {
+                "Each item shall have at most one property association with a
+                 ColourInformationBox (colr) for a given value of colour_type \
+                 per HEIF (ISO/IEC DIS 23008-12) § 6.5.5.1"
+            }
+            Status::ColrBadSize => {
+                "Unexpected size for colr box"
+            }
+            Status::ColrBadType => {
+                "Unsupported colour_type for ColourInformationBox"
+            }
+            Status::ColrReservedNonzero => {
+                "The 7 reserved bits at the end of the ColourInformationBox \
+                 for colour_type == 'nclx' must be 0 \
+                 per ISOBMFF (ISO 14496-12:2020) § 12.1.5.2"
+            }
+            Status::ConstructionMethod => {
+                "construction_method shall be 0 (file) or 1 (idat) per MIAF (ISO 23000-22:2019) § 7.2.1.7"
+            }
+            Status::CttsBadSize => {
+                "insufficient data in 'ctts' box"
+            }
+            Status::CttsBadVersion => {
+                "unsupported version in 'ctts' box"
+            }
+            Status::DflaBadMetadataBlockSize => {
+                "FLACMetadataBlock larger than parent box"
+            }
+            Status::DflaFlagsNonzero => {
+                "no-zero dfLa (FLAC) flags"
+            }
+            Status::DflaMissingMetadata => {
+                "FLACSpecificBox missing metadata"
+            }
+            Status::DflaStreamInfoBadSize => {
+                "FLACSpecificBox STREAMINFO block is the wrong size"
+            }
+            Status::DflaStreamInfoNotFirst => {
+                "FLACSpecificBox must have STREAMINFO metadata first"
+            }
+            Status::DopsChannelMappingWriteErr => {
+                "Couldn't write channel mapping table data."
+            }
+            Status::DopsOpusHeadWriteErr => {
+                "Couldn't write OpusHead tag."
+            }
+            Status::ElstBadVersion => {
+                "unhandled elst version"
+            }
+            Status::EsdsBadAudioSampleEntry => {
+                "malformed audio sample entry"
+            }
+            Status::EsdsBadDescriptor => {
+                "Invalid descriptor."
+            }
+            Status::EsdsDecSpecificIntoTagQuantity => {
+                "There can be only one DecSpecificInfoTag descriptor"
+            }
+            Status::FtypBadSize => {
+                "invalid ftyp size"
+            }
+            Status::FtypNotFirst => {
+                "The FileTypeBox shall be placed as early as possible in the file \
+                 per ISOBMFF (ISO 14496-12:2020) § 4.3.1"
+            }
+            Status::HdlrNameNoNul => {
+                "The HandlerBox 'name' field shall be null-terminated \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.4.3.2"
+            }
+            Status::HdlrNameNotUtf8 => {
+                "The HandlerBox 'name' field shall be valid utf8 \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.4.3.2"
+            }
+            Status::HdlrNotFirst => {
+                "The HandlerBox shall be the first contained box within the MetaBox \
+                 per MIAF (ISO 23000-22:2019) § 7.2.1.5"
+            }
+            Status::HdlrPredefinedNonzero => {
+                "The HandlerBox 'pre_defined' field shall be 0 \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.4.3.2"
+            }
+            Status::HdlrReservedNonzero => {
+                "The HandlerBox 'reserved' fields shall be 0 \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.4.3.2"
+            }
+            Status::HdlrTypeNotPict => {
+                "The HandlerBox handler_type must be 'pict' \
+                 per MIAF (ISO 23000-22:2019) § 7.2.1.5"
+            }
+            Status::HdlrUnsupportedVersion => {
+                "The HandlerBox version shall be 0 (zero) \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.4.3.2"
+            }
+            Status::HdrlBadQuantity => {
+                "There shall be exactly one hdlr box \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.4.3.1"
+            }
+            Status::IdatBadQuantity => {
+                "There shall be zero or one idat boxes \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.11"
+            }
+            Status::IdatMissing => {
+                "ItemLocationBox (iloc) construction_method indicates 1 (idat), \
+                 but no idat box is present."
+            }
+            Status::IinfBadChild => {
+                "iinf box shall contain only infe boxes \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.6.2"
+            }
+            Status::IinfBadQuantity => {
+                "There shall be zero or one iinf boxes \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.6.1"
+            }
+            Status::IlocBadConstructionMethod => {
+                "construction_method is taken from the set 0, 1 or 2 \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.3.3"
+            }
+            Status::IlocBadExtent => {
+                "extent_count != 1 requires explicit offset and length \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.3.3"
+            }
+            Status::IlocBadExtentCount => {
+                "extent_count must have a value 1 or greater \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.3.3"
+            }
+            Status::IlocBadFieldSize => {
+                "value must be in the set {0, 4, 8}"
+            }
+            Status::IlocBadQuantity => {
+                "There shall be zero or one iloc boxes \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.3.1"
+            }
+            Status::IlocBadSize => {
+                "invalid iloc size"
+            }
+            Status::IlocDuplicateItemId => {
+                "duplicate item_ID in iloc"
+            }
+            Status::IlocNotFound => {
+                "ItemLocationBox (iloc) contains an extent not present in any mdat or idat box"
+            }
+            Status::IlocOffsetOverflow => {
+                "offset calculation overflow"
+            }
+            Status::ImageItemType => {
+                "Image item type is neither 'av01' nor 'grid'"
+            }
+            Status::InfeFlagsNonzero => {
+                "'infe' flags field shall be 0 \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.6.2"
+            }
+            Status::InvalidUtf8 => {
+                "invalid utf8"
+            }
+            Status::IpcoIndexOverflow => {
+                "ipco index overflow"
+            }
+            Status::IpmaBadIndex => {
+                "Invalid property index in ipma"
+            }
+            Status::IpmaBadItemOrder => {
+                "Each ItemPropertyAssociation box shall be ordered by increasing item_ID"
+            }
+            Status::IpmaBadQuantity => {
+                "There shall be at most one ItemPropertyAssociationbox with a given pair of \
+                 values of version and flags \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.14.1"
+            }
+            Status::IpmaBadVersion => {
+                "The ipma version 0 should be used unless 32-bit item_ID values are needed \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.14.1"
+            }
+            Status::IpmaDuplicateItemId => {
+                "There shall be at most one occurrence of a given item_ID, \
+                 in the set of ItemPropertyAssociationBox boxes \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.14.1"
+            }
+            Status::IpmaFlagsNonzero => {
+                "Unless there are more than 127 properties in the ItemPropertyContainerBox, \
+                 flags should be equal to 0 \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.14.1"
+            }
+            Status::IpmaIndexZeroNoEssential => {
+                "the essential indicator shall be 0 for property index 0 \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.14.3"
+            }
+            Status::IpmaTooBig => {
+                "ipma box exceeds maximum size for entry_count"
+            }
+            Status::IpmaTooSmall => {
+                "ipma box below minimum size for entry_count"
+            }
+            Status::IprpBadChild => {
+                "unexpected iprp child"
+            }
+            Status::IprpBadQuantity => {
+                "There shall be zero or one iprp boxes \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.14.1"
+            }
+            Status::IprpConflict => {
+                "conflicting item property values"
+            }
+            Status::IrefBadQuantity => {
+                "There shall be zero or one iref boxes \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.12.1"
+            }
+            Status::IrefRecursion => {
+                "from_item_id and to_item_id must be different"
+            }
+            Status::IspeMissing => {
+                "Missing 'ispe' property for image item, required \
+                 per HEIF (ISO/IEC 23008-12:2017) § 6.5.3.1"
+            }
+            Status::ItemTypeMissing => {
+                "No ItemInfoEntry for item_ID"
+            }
+            Status::LselNoEssential => {
+                "LayerSelectorProperty (lsel) shall be marked as essential \
+                 per HEIF (ISO/IEC 23008-12:2017) § 6.5.11.1"
+            }
+            Status::MdhdBadTimescale => {
+                "zero timescale in mdhd"
+            }
+            Status::MdhdBadVersion => {
+                "unhandled mdhd version"
+            }
+            Status::MehdBadVersion => {
+                "unhandled mehd version"
+            }
+            Status::MetaBadQuantity => {
+                "There should be zero or one meta boxes \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.1.1"
+            }
+            Status::MissingAvifOrAvisBrand => {
+                "The file shall list 'avif' or 'avis' in the compatible_brands field
+                 of the FileTypeBox \
+                 per https://aomediacodec.github.io/av1-avif/#file-constraints"
+            }
+            Status::MissingMif1Brand => {
+                "The FileTypeBox should contain 'mif1' in the compatible_brands list \
+                 per MIAF (ISO 23000-22:2019/Amd. 2:2021) § 7.2.1.2"
+            }
+            Status::MoovBadQuantity => {
+                "Multiple moov boxes found; \
+                 files with avis or msf1 brands shall contain exactly one moov box \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.2.1.1"
+            }
+            Status::MoovMissing => {
+                "No moov box found; \
+                 files with avis or msf1 brands shall contain exactly one moov box \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.2.1.1"
+            }
+            Status::MultipleAlpha => {
+                "multiple alpha planes"
+            }
+            Status::MvhdBadTimescale => {
+                "zero timescale in mvhd"
+            }
+            Status::MvhdBadVersion => {
+                "unhandled mvhd version"
+            }
+            Status::NoImage => "No primary image or image sequence found",
+            Status::PitmBadQuantity => {
+                "There shall be zero or one pitm boxes \
+                 per ISOBMFF (ISO 14496-12:2020) § 8.11.4.1"
+            }
+            Status::PitmMissing => {
+                "Missing required PrimaryItemBox (pitm), required \
+                 per HEIF (ISO/IEC 23008-12:2017) § 10.2.1"
+            }
+            Status::PitmNotFound => {
+                "PrimaryItemBox (pitm) referenced an item ID that was not present"
+            }
+            Status::PixiBadChannelCount => {
+                "invalid num_channels"
+            }
+            Status::PixiMissing => {
+                "The pixel information property shall be associated with every image \
+                 that is displayable (not hidden) \
+                 per MIAF (ISO/IEC 23000-22:2019) specification § 7.3.6.6"
+            }
+            Status::PsshSizeOverflow => {
+                "overflow in read_pssh"
+            }
+            Status::ReadBufErr => {
+                "failed buffer read"
+            }
+            Status::SchiQuantity => {
+                "tenc box should be only one at most in sinf box"
+            }
+            Status::StsdBadAudioSampleEntry => {
+                "malformed audio sample entry"
+            }
+            Status::StsdBadVideoSampleEntry => {
+                "malformed video sample entry"
+            }
+            Status::TkhdBadVersion => {
+                "unhandled tkhd version"
+            }
+            Status::TxformBeforeIspe => {
+                "Every image item shall be associated with one property of \
+                 type ImageSpatialExtentsProperty (ispe), prior to the \
+                 association of all transformative properties. \
+                 per HEIF (ISO/IEC 23008-12:2017) § 6.5.3.1"
+            }
+            Status::TxformNoEssential => {
+                "All transformative properties associated with coded and \
+                 derived images required or conditionally required by this \
+                 document shall be marked as essential \
+                 per MIAF (ISO 23000-22:2019) § 7.3.9"
+            }
+            Status::TxformOrder => {
+                "These properties, if used, shall be indicated to be applied \
+                 in the following order: clean aperture first, then rotation, \
+                 then mirror. \
+                 per MIAF (ISO/IEC 23000-22:2019) § 7.3.6.7"
+            }
+        }
     }
 }
 
 impl From<Error> for Status {
     fn from(error: Error) -> Self {
         match error {
-            Error::NoMoov | Error::InvalidData(_) => Self::Invalid,
             Error::Unsupported(_) => Self::Unsupported,
-            Error::UnsupportedDetail(parse_status, _msg) => parse_status,
+            Error::InvalidData(parse_status) => parse_status,
             Error::UnexpectedEOF => Self::Eof,
             Error::Io(_) => {
                 // Getting std::io::ErrorKind::UnexpectedEof is normal
@@ -206,6 +792,7 @@ impl From<Error> for Status {
                 // those to our Error::UnexpectedEOF variant.
                 Self::Io
             }
+            Error::MoovMissing => Self::MoovMissing,
             Error::OutOfMemory => Self::Oom,
         }
     }
@@ -221,9 +808,24 @@ impl From<Result<(), Status>> for Status {
     }
 }
 
+impl<T> From<Result<T>> for Status {
+    fn from(result: Result<T>) -> Self {
+        match result {
+            Ok(_) => Status::Ok,
+            Err(e) => Status::from(e),
+        }
+    }
+}
+
 impl From<fallible_collections::TryReserveError> for Status {
     fn from(_: fallible_collections::TryReserveError) -> Self {
         Status::Oom
+    }
+}
+
+impl From<std::io::Error> for Status {
+    fn from(_: std::io::Error) -> Self {
+        Status::Io
     }
 }
 
@@ -234,26 +836,23 @@ impl From<fallible_collections::TryReserveError> for Status {
 #[derive(Debug)]
 pub enum Error {
     /// Parse error caused by corrupt or malformed data.
-    InvalidData(&'static str),
+    /// See the helper [`From<Status> for Error`](enum.Error.html#impl-From<Status>)
+    InvalidData(Status),
     /// Parse error caused by limited parser support rather than invalid data.
     Unsupported(&'static str),
-    /// Similar to [`Self::Unsupported`], but for errors that have a specific
-    /// [`Status`] variant for communicating the detail across FFI.
-    /// See the helper [`From<Status> for Error`](enum.Error.html#impl-From<Status>)
-    UnsupportedDetail(Status, &'static str),
     /// Reflect `std::io::ErrorKind::UnexpectedEof` for short data.
     UnexpectedEOF,
     /// Propagate underlying errors from `std::io`.
     Io(std::io::Error),
     /// read_mp4 terminated without detecting a moov box.
-    NoMoov,
+    MoovMissing,
     /// Out of memory
     OutOfMemory,
 }
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
@@ -261,7 +860,7 @@ impl std::error::Error for Error {}
 
 impl From<bitreader::BitReaderError> for Error {
     fn from(_: bitreader::BitReaderError) -> Error {
-        Error::InvalidData("invalid data")
+        Status::BitReaderError.into()
     }
 }
 
@@ -276,13 +875,13 @@ impl From<std::io::Error> for Error {
 
 impl From<std::string::FromUtf8Error> for Error {
     fn from(_: std::string::FromUtf8Error) -> Error {
-        Error::InvalidData("invalid utf8")
+        Status::InvalidUtf8.into()
     }
 }
 
 impl From<std::str::Utf8Error> for Error {
     fn from(_: std::str::Utf8Error) -> Error {
-        Error::InvalidData("invalid utf8")
+        Status::InvalidUtf8.into()
     }
 }
 
@@ -295,7 +894,6 @@ impl From<std::num::TryFromIntError> for Error {
 impl From<Error> for std::io::Error {
     fn from(err: Error) -> Self {
         let kind = match err {
-            Error::InvalidData(_) => std::io::ErrorKind::InvalidData,
             Error::UnexpectedEOF => std::io::ErrorKind::UnexpectedEof,
             Error::Io(io_err) => return io_err,
             _ => std::io::ErrorKind::Other,
@@ -320,7 +918,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 /// four-byte box type which identifies the type of the box. Together these
 /// are enough to interpret the contents of that section of the file.
 ///
-/// See ISOBMFF (ISO 14496-12:2015) § 4.2
+/// See ISOBMFF (ISO 14496-12:2020) § 4.2
 #[derive(Debug, Clone, Copy)]
 struct BoxHeader {
     /// Box type.
@@ -347,6 +945,12 @@ struct FileTypeBox {
     #[allow(dead_code)] // See https://github.com/mozilla/mp4parse-rust/issues/340
     minor_version: u32,
     compatible_brands: TryVec<FourCC>,
+}
+
+impl FileTypeBox {
+    fn contains(&self, brand: &FourCC) -> bool {
+        self.compatible_brands.contains(brand) || self.major_brand == *brand
+    }
 }
 
 /// Movie header box 'mvhd'.
@@ -384,6 +988,7 @@ pub struct TrackHeaderBox {
 /// Edit list box 'elst'
 #[derive(Debug)]
 struct EditListBox {
+    looped: bool,
     edits: TryVec<Edit>,
 }
 
@@ -485,6 +1090,29 @@ pub enum SampleEntry {
     Unknown,
 }
 
+#[derive(Debug)]
+pub struct TrackReferenceBox {
+    pub references: TryVec<TrackReferenceEntry>,
+}
+
+impl TrackReferenceBox {
+    pub fn has_auxl_reference(&self, track_id: u32) -> bool {
+        self.references.iter().any(|entry| match entry {
+            TrackReferenceEntry::Auxiliary(aux_entry) => aux_entry.track_ids.contains(&track_id),
+        })
+    }
+}
+
+#[derive(Debug)]
+pub enum TrackReferenceEntry {
+    Auxiliary(TrackReference),
+}
+
+#[derive(Debug)]
+pub struct TrackReference {
+    pub track_ids: TryVec<u32>,
+}
+
 /// An Elementary Stream Descriptor
 /// See MPEG-4 Systems (ISO 14496-1:2010) § 7.2.6.5
 #[allow(non_camel_case_types)]
@@ -533,6 +1161,7 @@ pub enum VideoCodecSpecific {
     AV1Config(AV1ConfigBox),
     ESDSConfig(TryVec<u8>),
     H263Config(TryVec<u8>),
+    HEVCConfig(TryVec<u8>),
 }
 
 #[derive(Debug)]
@@ -864,7 +1493,7 @@ pub struct MetadataBox {
     pub xml: Option<XmlBox>,
 }
 
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.2.1
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.2.1
 #[cfg(feature = "meta-xml")]
 #[derive(Debug)]
 pub enum XmlBox {
@@ -889,20 +1518,35 @@ pub struct MediaContext {
 
 /// An ISOBMFF item as described by an iloc box. For the sake of avoiding copies,
 /// this can either be represented by the `Location` variant, which indicates
-/// where the data exists within a `MediaDataBox` stored separately, or the
-/// `Data` variant which owns the data. Unfortunately, it's not simple to
-/// represent this as a [`std::borrow::Cow`], or other reference-based type, because
-/// multiple instances may references different parts of the same [`MediaDataBox`]
+/// where the data exists within a `DataBox` stored separately, or the `Data`
+/// variant which owns the data. Unfortunately, it's not simple to represent
+/// this as a [`std::borrow::Cow`], or other reference-based type, because
+/// multiple instances may references different parts of the same [`DataBox`]
 /// and we want to avoid the copy that splitting the storage would entail.
-#[derive(Debug)]
 enum IsobmffItem {
-    Location(Extent),
+    MdatLocation(Extent),
+    IdatLocation(Extent),
     Data(TryVec<u8>),
+}
+
+impl fmt::Debug for IsobmffItem {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match &self {
+            IsobmffItem::MdatLocation(extent) | IsobmffItem::IdatLocation(extent) => f
+                .debug_struct("IsobmffItem::Location")
+                .field("0", &format_args!("{extent:?}"))
+                .finish(),
+            IsobmffItem::Data(data) => f
+                .debug_struct("IsobmffItem::Data")
+                .field("0", &format_args!("{} bytes", data.len()))
+                .finish(),
+        }
+    }
 }
 
 #[derive(Debug)]
 struct AvifItem {
-    /// The `item_ID` from ISOBMFF (ISO 14496-12:2015)
+    /// The `item_ID` from ISOBMFF (ISO 14496-12:2020) § 8.11.3
     ///
     /// See [`read_iloc`]
     id: ItemId,
@@ -912,13 +1556,6 @@ struct AvifItem {
 }
 
 impl AvifItem {
-    fn with_data_location(id: ItemId, extent: Extent) -> Self {
-        Self {
-            id,
-            image_data: IsobmffItem::Location(extent),
-        }
-    }
-
     fn with_inline_data(id: ItemId) -> Self {
         Self {
             id,
@@ -927,14 +1564,20 @@ impl AvifItem {
     }
 }
 
-#[derive(Debug)]
+#[derive(Default, Debug)]
 pub struct AvifContext {
     /// Level of deviation from the specification before failing the parse
     strictness: ParseStrictness,
-    /// Referred to by the `Location` variants of the `AvifItem`s in this struct
-    item_storage: TryVec<MediaDataBox>,
-    /// The item indicated by the `pitm` box, See ISOBMFF (ISO 14496-12:2015) § 8.11.4
-    primary_item: AvifItem,
+    /// Storage elements which can be located anywhere within the "file" identified by
+    /// [`BoxType::ItemLocationBox`]es using [`ConstructionMethod::File`].
+    /// Referred to by the [`IsobmffItem`]`::*Location` variants of the `AvifItem`s in this struct
+    media_storage: TryVec<DataBox>,
+    /// Similar to `media_storage`, but for a single optional chunk of storage within the
+    /// MetaBox itentified by [`BoxType::ItemLocationBox`]es using [`ConstructionMethod::Idat`].
+    item_data_box: Option<DataBox>,
+    /// The item indicated by the `pitm` box, See ISOBMFF (ISO 14496-12:2020) § 8.11.4
+    /// May be `None` in the pure image sequence case.
+    primary_item: Option<AvifItem>,
     /// Associated alpha channel for the primary item, if any
     alpha_item: Option<AvifItem>,
     /// If true, divide RGB values by the alpha value.
@@ -942,27 +1585,46 @@ pub struct AvifContext {
     pub premultiplied_alpha: bool,
     /// All properties associated with `primary_item` or `alpha_item`
     item_properties: ItemPropertiesBox,
+    /// Should probably only ever be [`AVIF_BRAND`] or [`AVIS_BRAND`], but other values
+    /// are legal as long as one of the two is the `compatible_brand` list.
+    pub major_brand: FourCC,
+    /// Information on the sequence contained in the image, or None if not present
+    pub sequence: Option<MediaContext>,
+    /// A collection of unsupported features encountered during the parse
+    pub unsupported_features: UnsupportedFeatures,
 }
 
 impl AvifContext {
-    pub fn primary_item_coded_data(&self) -> &[u8] {
-        self.item_as_slice(&self.primary_item)
+    pub fn primary_item_is_present(&self) -> bool {
+        self.primary_item.is_some()
     }
 
-    pub fn primary_item_bits_per_channel(&self) -> Result<&[u8]> {
-        self.image_bits_per_channel(self.primary_item.id)
+    pub fn primary_item_coded_data(&self) -> Option<&[u8]> {
+        self.primary_item
+            .as_ref()
+            .map(|item| self.item_as_slice(item))
     }
 
-    pub fn alpha_item_coded_data(&self) -> &[u8] {
+    pub fn primary_item_bits_per_channel(&self) -> Option<Result<&[u8]>> {
+        self.primary_item
+            .as_ref()
+            .map(|item| self.image_bits_per_channel(item.id))
+    }
+
+    pub fn alpha_item_is_present(&self) -> bool {
+        self.alpha_item.is_some()
+    }
+
+    pub fn alpha_item_coded_data(&self) -> Option<&[u8]> {
         self.alpha_item
             .as_ref()
-            .map_or(&[], |item| self.item_as_slice(item))
+            .map(|item| self.item_as_slice(item))
     }
 
-    pub fn alpha_item_bits_per_channel(&self) -> Result<&[u8]> {
+    pub fn alpha_item_bits_per_channel(&self) -> Option<Result<&[u8]>> {
         self.alpha_item
             .as_ref()
-            .map_or(Ok(&[]), |item| self.image_bits_per_channel(item.id))
+            .map(|item| self.image_bits_per_channel(item.id))
     }
 
     fn image_bits_per_channel(&self, item_id: ItemId) -> Result<&[u8]> {
@@ -977,79 +1639,114 @@ impl AvifContext {
     }
 
     pub fn spatial_extents_ptr(&self) -> Result<*const ImageSpatialExtentsProperty> {
-        match self
-            .item_properties
-            .get(self.primary_item.id, BoxType::ImageSpatialExtentsProperty)?
-        {
-            Some(ItemProperty::ImageSpatialExtents(ispe)) => Ok(ispe),
-            Some(other_property) => panic!("property key mismatch: {:?}", other_property),
-            None => {
-                fail_if(
-                    self.strictness == ParseStrictness::Permissive,
-                    "ispe is a mandatory property",
-                )?;
-                Ok(std::ptr::null())
+        if let Some(primary_item) = &self.primary_item {
+            match self
+                .item_properties
+                .get(primary_item.id, BoxType::ImageSpatialExtentsProperty)?
+            {
+                Some(ItemProperty::ImageSpatialExtents(ispe)) => Ok(ispe),
+                Some(other_property) => panic!("property key mismatch: {:?}", other_property),
+                None => {
+                    fail_with_status_if(
+                        self.strictness != ParseStrictness::Permissive,
+                        Status::IspeMissing,
+                    )?;
+                    Ok(std::ptr::null())
+                }
             }
+        } else {
+            Ok(std::ptr::null())
         }
     }
 
-    pub fn nclx_colour_information_ptr(&self) -> Result<*const NclxColourInformation> {
-        let nclx_colr_boxes = self
-            .item_properties
-            .get_multiple(self.primary_item.id, |prop| {
+    /// Returns None if there is no primary item or it has no associated NCLX colour boxes.
+    pub fn nclx_colour_information_ptr(&self) -> Option<Result<*const NclxColourInformation>> {
+        if let Some(primary_item) = &self.primary_item {
+            match self.item_properties.get_multiple(primary_item.id, |prop| {
                 matches!(prop, ItemProperty::Colour(ColourInformation::Nclx(_)))
-            })?;
-
-        match *nclx_colr_boxes.as_slice() {
-            [] => Ok(std::ptr::null()),
-            [ItemProperty::Colour(ColourInformation::Nclx(nclx)), ..] => {
-                if nclx_colr_boxes.len() > 1 {
-                    warn!("Multiple nclx colr boxes, using first");
-                }
-                Ok(nclx)
+            }) {
+                Ok(nclx_colr_boxes) => match *nclx_colr_boxes.as_slice() {
+                    [] => None,
+                    [ItemProperty::Colour(ColourInformation::Nclx(nclx)), ..] => {
+                        if nclx_colr_boxes.len() > 1 {
+                            warn!("Multiple nclx colr boxes, using first");
+                        }
+                        Some(Ok(nclx))
+                    }
+                    _ => unreachable!("Expect only ColourInformation::Nclx(_) matches"),
+                },
+                Err(e) => Some(Err(e)),
             }
-            _ => unreachable!("Expect only ColourInformation::Nclx(_) matches"),
+        } else {
+            None
         }
     }
 
-    pub fn icc_colour_information(&self) -> Result<&[u8]> {
-        let icc_colr_boxes = self
-            .item_properties
-            .get_multiple(self.primary_item.id, |prop| {
+    /// Returns None if there is no primary item or it has no associated ICC colour boxes.
+    pub fn icc_colour_information(&self) -> Option<Result<&[u8]>> {
+        if let Some(primary_item) = &self.primary_item {
+            match self.item_properties.get_multiple(primary_item.id, |prop| {
                 matches!(prop, ItemProperty::Colour(ColourInformation::Icc(_, _)))
-            })?;
-
-        match *icc_colr_boxes.as_slice() {
-            [] => Ok(&[]),
-            [ItemProperty::Colour(ColourInformation::Icc(icc, _)), ..] => {
-                if icc_colr_boxes.len() > 1 {
-                    warn!("Multiple ICC profiles in colr boxes, using first");
-                }
-                Ok(icc.bytes.as_slice())
+            }) {
+                Ok(icc_colr_boxes) => match *icc_colr_boxes.as_slice() {
+                    [] => None,
+                    [ItemProperty::Colour(ColourInformation::Icc(icc, _)), ..] => {
+                        if icc_colr_boxes.len() > 1 {
+                            warn!("Multiple ICC profiles in colr boxes, using first");
+                        }
+                        Some(Ok(icc.bytes.as_slice()))
+                    }
+                    _ => unreachable!("Expect only ColourInformation::Icc(_) matches"),
+                },
+                Err(e) => Some(Err(e)),
             }
-            _ => unreachable!("Expect only ColourInformation::Icc(_) matches"),
+        } else {
+            None
         }
     }
 
     pub fn image_rotation(&self) -> Result<ImageRotation> {
-        match self
-            .item_properties
-            .get(self.primary_item.id, BoxType::ImageRotation)?
-        {
-            Some(ItemProperty::Rotation(irot)) => Ok(*irot),
-            Some(other_property) => panic!("property key mismatch: {:?}", other_property),
-            None => Ok(ImageRotation::D0),
+        if let Some(primary_item) = &self.primary_item {
+            match self
+                .item_properties
+                .get(primary_item.id, BoxType::ImageRotation)?
+            {
+                Some(ItemProperty::Rotation(irot)) => Ok(*irot),
+                Some(other_property) => panic!("property key mismatch: {:?}", other_property),
+                None => Ok(ImageRotation::D0),
+            }
+        } else {
+            Ok(ImageRotation::D0)
         }
     }
 
     pub fn image_mirror_ptr(&self) -> Result<*const ImageMirror> {
-        match self
-            .item_properties
-            .get(self.primary_item.id, BoxType::ImageMirror)?
-        {
-            Some(ItemProperty::Mirroring(imir)) => Ok(imir),
-            Some(other_property) => panic!("property key mismatch: {:?}", other_property),
-            None => Ok(std::ptr::null()),
+        if let Some(primary_item) = &self.primary_item {
+            match self
+                .item_properties
+                .get(primary_item.id, BoxType::ImageMirror)?
+            {
+                Some(ItemProperty::Mirroring(imir)) => Ok(imir),
+                Some(other_property) => panic!("property key mismatch: {:?}", other_property),
+                None => Ok(std::ptr::null()),
+            }
+        } else {
+            Ok(std::ptr::null())
+        }
+    }
+
+    pub fn pixel_aspect_ratio_ptr(&self) -> Result<*const PixelAspectRatio> {
+        if let Some(primary_item) = &self.primary_item {
+            match self
+                .item_properties
+                .get(primary_item.id, BoxType::PixelAspectRatioBox)?
+            {
+                Some(ItemProperty::PixelAspectRatio(pasp)) => Ok(pasp),
+                Some(other_property) => panic!("property key mismatch: {:?}", other_property),
+                None => Ok(std::ptr::null()),
+            }
+        } else {
+            Ok(std::ptr::null())
         }
     }
 
@@ -1057,15 +1754,21 @@ impl AvifContext {
     /// underlying data while avoiding copies.
     fn item_as_slice<'a>(&'a self, item: &'a AvifItem) -> &'a [u8] {
         match &item.image_data {
-            IsobmffItem::Location(extent) => {
-                for mdat in &self.item_storage {
+            IsobmffItem::MdatLocation(extent) => {
+                for mdat in &self.media_storage {
                     if let Some(slice) = mdat.get(extent) {
                         return slice;
                     }
                 }
                 unreachable!(
-                    "IsobmffItem::Location requires the location exists in AvifContext::item_storage"
+                    "IsobmffItem::MdatLocation requires the location exists in AvifContext::media_storage"
                 );
+            }
+            IsobmffItem::IdatLocation(extent) => {
+                self.item_data_box
+                    .as_ref()
+                    .and_then(|idat| idat.get(extent))
+                    .unwrap_or_else(|| unreachable!("IsobmffItem::IdatLocation equires the location exists in AvifContext::item_data_box"))
             }
             IsobmffItem::Data(data) => data.as_slice(),
         }
@@ -1075,193 +1778,114 @@ impl AvifContext {
 struct AvifMeta {
     item_references: TryVec<SingleItemTypeReferenceBox>,
     item_properties: ItemPropertiesBox,
-    primary_item_id: ItemId,
+    /// Required for AvifImageType::Primary, but optional otherwise
+    /// See HEIF (ISO/IEC 23008-12:2017) § 7.1, 10.2.1
+    primary_item_id: Option<ItemId>,
+    item_infos: TryVec<ItemInfoEntry>,
     iloc_items: TryHashMap<ItemId, ItemLocationBoxItem>,
+    item_data_box: Option<DataBox>,
 }
 
-/// A Media Data Box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.1.1
-struct MediaDataBox {
-    /// Offset of `data` from the beginning of the "file". See ConstructionMethod::File.
-    /// Note: the file may not be an actual file, read_avif supports any `&mut impl Read`
-    /// source for input. However we try to match the terminology used in the spec.
-    file_offset: u64,
+#[derive(Debug)]
+enum DataBoxMetadata {
+    Idat,
+    Mdat {
+        /// Offset of `data` from the beginning of the "file". See ConstructionMethod::File.
+        /// Note: the file may not be an actual file, read_avif supports any `&mut impl Read`
+        /// source for input. However we try to match the terminology used in the spec.
+        file_offset: u64,
+    },
+}
+
+/// Represents either an Item Data Box (ISOBMFF (ISO 14496-12:2020) § 8.11.11)
+/// Or a Media Data Box (ISOBMFF (ISO 14496-12:2020) § 8.1.1)
+struct DataBox {
+    metadata: DataBoxMetadata,
     data: TryVec<u8>,
 }
 
-impl fmt::Debug for MediaDataBox {
+impl fmt::Debug for DataBox {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("MediaDataBox")
-            .field("file_offset", &self.file_offset)
+        f.debug_struct("DataBox")
+            .field("metadata", &self.metadata)
             .field("data", &format_args!("{} bytes", self.data.len()))
             .finish()
     }
 }
 
-impl MediaDataBox {
-    /// Convert an absolute offset to an offset relative to the beginning of the
-    /// `self.data` field. Returns None if the offset would be negative.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the offset would overflow a `usize`.
-    fn file_offset_to_data_offset(&self, offset: u64) -> Option<usize> {
-        let start = offset
-            .checked_sub(self.file_offset)?
-            .try_into()
-            .expect("usize overflow");
-        Some(start)
-    }
-
-    /// Return a slice from the MediaDataBox specified by the provided `extent`.
-    /// Returns `None` if the extent isn't fully contained by the MediaDataBox.
-    ///
-    /// # Panics
-    ///
-    /// Panics if either the offset or length (if the extent is bounded) of the
-    /// slice would overflow a `usize`.
-    pub fn get<'a>(&'a self, extent: &'a Extent) -> Option<&'a [u8]> {
-        match extent {
-            Extent::WithLength { offset, len } => {
-                let start = self.file_offset_to_data_offset(*offset)?;
-                let end = start.checked_add(*len).expect("usize overflow");
-                self.data.get(start..end)
-            }
-            Extent::ToEnd { offset } => {
-                let start = self.file_offset_to_data_offset(*offset)?;
-                self.data.get(start..)
-            }
+fn u64_to_usize_logged(x: u64) -> Option<usize> {
+    match x.try_into() {
+        Ok(x) => Some(x),
+        Err(e) => {
+            error!("{:?} converting {:?}", e, x);
+            None
         }
     }
 }
 
-#[cfg(test)]
-mod media_data_box_tests {
-    use super::*;
+impl DataBox {
+    fn from_mdat(file_offset: u64, data: TryVec<u8>) -> Self {
+        Self {
+            metadata: DataBoxMetadata::Mdat { file_offset },
+            data,
+        }
+    }
 
-    impl MediaDataBox {
-        fn at_offset(file_offset: u64, data: std::vec::Vec<u8>) -> Self {
-            MediaDataBox {
-                file_offset,
-                data: data.into(),
+    fn from_idat(data: TryVec<u8>) -> Self {
+        Self {
+            metadata: DataBoxMetadata::Idat,
+            data,
+        }
+    }
+
+    fn data(&self) -> &[u8] {
+        &self.data
+    }
+
+    /// Convert an absolute offset to an offset relative to the beginning of the
+    /// slice [`DataBox::data`] returns. Returns None if the offset would be
+    /// negative or if the offset would overflow a `usize`.
+    fn start(&self, offset: u64) -> Option<usize> {
+        match self.metadata {
+            DataBoxMetadata::Idat => u64_to_usize_logged(offset),
+            DataBoxMetadata::Mdat { file_offset } => {
+                let start = offset.checked_sub(file_offset);
+                if start.is_none() {
+                    error!("Overflow subtracting {} + {}", offset, file_offset);
+                }
+                u64_to_usize_logged(start?)
             }
         }
     }
 
-    #[test]
-    fn extent_with_length_before_mdat_returns_none() {
-        let mdat = MediaDataBox::at_offset(100, vec![1; 5]);
-        let extent = Extent::WithLength { offset: 0, len: 2 };
-
-        assert!(mdat.get(&extent).is_none());
+    /// Returns an appropriate variant of [`IsobmffItem`] to describe the extent
+    /// referencing data within this type of box.
+    fn location(&self, extent: &Extent) -> IsobmffItem {
+        match self.metadata {
+            DataBoxMetadata::Idat => IsobmffItem::IdatLocation(extent.clone()),
+            DataBoxMetadata::Mdat { .. } => IsobmffItem::MdatLocation(extent.clone()),
+        }
     }
 
-    #[test]
-    fn extent_to_end_before_mdat_returns_none() {
-        let mdat = MediaDataBox::at_offset(100, vec![1; 5]);
-        let extent = Extent::ToEnd { offset: 0 };
-
-        assert!(mdat.get(&extent).is_none());
-    }
-
-    #[test]
-    fn extent_with_length_crossing_front_mdat_boundary_returns_none() {
-        let mdat = MediaDataBox::at_offset(100, vec![1; 5]);
-        let extent = Extent::WithLength { offset: 99, len: 3 };
-
-        assert!(mdat.get(&extent).is_none());
-    }
-
-    #[test]
-    fn extent_with_length_which_is_subset_of_mdat() {
-        let mdat = MediaDataBox::at_offset(100, vec![1; 5]);
-        let extent = Extent::WithLength {
-            offset: 101,
-            len: 2,
-        };
-
-        assert_eq!(mdat.get(&extent), Some(&[1, 1][..]));
-    }
-
-    #[test]
-    fn extent_to_end_which_is_subset_of_mdat() {
-        let mdat = MediaDataBox::at_offset(100, vec![1; 5]);
-        let extent = Extent::ToEnd { offset: 101 };
-
-        assert_eq!(mdat.get(&extent), Some(&[1, 1, 1, 1][..]));
-    }
-
-    #[test]
-    fn extent_with_length_which_is_all_of_mdat() {
-        let mdat = MediaDataBox::at_offset(100, vec![1; 5]);
-        let extent = Extent::WithLength {
-            offset: 100,
-            len: 5,
-        };
-
-        assert_eq!(mdat.get(&extent), Some(mdat.data.as_slice()));
-    }
-
-    #[test]
-    fn extent_to_end_which_is_all_of_mdat() {
-        let mdat = MediaDataBox::at_offset(100, vec![1; 5]);
-        let extent = Extent::ToEnd { offset: 100 };
-
-        assert_eq!(mdat.get(&extent), Some(mdat.data.as_slice()));
-    }
-
-    #[test]
-    fn extent_with_length_crossing_back_mdat_boundary_returns_none() {
-        let mdat = MediaDataBox::at_offset(100, vec![1; 5]);
-        let extent = Extent::WithLength {
-            offset: 103,
-            len: 3,
-        };
-
-        assert!(mdat.get(&extent).is_none());
-    }
-
-    #[test]
-    fn extent_with_length_after_mdat_returns_none() {
-        let mdat = MediaDataBox::at_offset(100, vec![1; 5]);
-        let extent = Extent::WithLength {
-            offset: 200,
-            len: 2,
-        };
-
-        assert!(mdat.get(&extent).is_none());
-    }
-
-    #[test]
-    fn extent_to_end_after_mdat_returns_none() {
-        let mdat = MediaDataBox::at_offset(100, vec![1; 5]);
-        let extent = Extent::ToEnd { offset: 200 };
-
-        assert!(mdat.get(&extent).is_none());
-    }
-
-    #[test]
-    #[should_panic(expected = "usize overflow")]
-    fn extent_with_length_which_overflows_usize_panics() {
-        let mdat = MediaDataBox::at_offset(std::u64::MAX - 1, vec![1; 5]);
-        let extent = Extent::WithLength {
-            offset: std::u64::MAX,
-            len: std::usize::MAX,
-        };
-
-        mdat.get(&extent);
-    }
-
-    // The end of the range would overflow `usize` if it were calculated, but
-    // because the range end is unbounded, we don't calculate it.
-    #[test]
-    fn extent_to_end_which_overflows_usize() {
-        let mdat = MediaDataBox::at_offset(std::u64::MAX - 1, vec![1; 5]);
-        let extent = Extent::ToEnd {
-            offset: std::u64::MAX,
-        };
-
-        assert_eq!(mdat.get(&extent), Some(&[1, 1, 1, 1][..]));
+    /// Return a slice from the DataBox specified by the provided `extent`.
+    /// Returns `None` if the extent isn't fully contained by the DataBox or if
+    /// either the offset or length (if the extent is bounded) of the slice
+    /// would overflow a `usize`.
+    fn get<'a>(&'a self, extent: &'a Extent) -> Option<&'a [u8]> {
+        match extent {
+            Extent::WithLength { offset, len } => {
+                let start = self.start(*offset)?;
+                let end = start.checked_add(*len);
+                if end.is_none() {
+                    error!("Overflow adding {} + {}", start, len);
+                }
+                self.data().get(start..end?)
+            }
+            Extent::ToEnd { offset } => {
+                let start = self.start(*offset)?;
+                self.data().get(start..)
+            }
+        }
     }
 }
 
@@ -1281,7 +1905,7 @@ impl ItemId {
 }
 
 /// Used for 'infe' boxes within 'iinf' boxes
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.6
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.6
 /// Only versions {2, 3} are supported
 #[derive(Debug)]
 struct ItemInfoEntry {
@@ -1289,7 +1913,7 @@ struct ItemInfoEntry {
     item_type: u32,
 }
 
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.12
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.12
 #[derive(Debug)]
 struct SingleItemTypeReferenceBox {
     item_type: FourCC,
@@ -1298,8 +1922,8 @@ struct SingleItemTypeReferenceBox {
 }
 
 /// Potential sizes (in bytes) of variable-sized fields of the 'iloc' box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.3
-#[derive(Debug, Clone, Copy, PartialEq)]
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.3
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum IlocFieldSize {
     Zero,
     Four,
@@ -1324,12 +1948,12 @@ impl TryFrom<u8> for IlocFieldSize {
             0 => Ok(Self::Zero),
             4 => Ok(Self::Four),
             8 => Ok(Self::Eight),
-            _ => Err(Error::InvalidData("value must be in the set {0, 4, 8}")),
+            _ => Status::IlocBadFieldSize.into(),
         }
     }
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 enum IlocVersion {
     Zero,
     One,
@@ -1350,7 +1974,7 @@ impl TryFrom<u8> for IlocVersion {
 }
 
 /// Used for 'iloc' boxes
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.3
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.3
 /// `base_offset` is omitted since it is integrated into the ranges in `extents`
 /// `data_reference_index` is omitted, since only 0 (i.e., this file) is supported
 #[derive(Debug)]
@@ -1360,23 +1984,22 @@ struct ItemLocationBoxItem {
     extents: TryVec<Extent>,
 }
 
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.3
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.3
 ///
 /// Note: per MIAF (ISO 23000-22:2019) § 7.2.1.7:<br />
 /// > MIAF image items are constrained as follows:<br />
 /// > — `construction_method` shall be equal to 0 for MIAF image items that are coded image items.<br />
 /// > — `construction_method` shall be equal to 0 or 1 for MIAF image items that are derived image items.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum ConstructionMethod {
     File = 0,
     Idat = 1,
-    #[allow(dead_code)] // TODO: see https://github.com/mozilla/mp4parse-rust/issues/196
     Item = 2,
 }
 
 /// Describes a region where a item specified by an `ItemLocationBoxItem` is stored.
 /// The offset is `u64` since that's the maximum possible size and since the relative
-/// nature of `MediaDataBox` means this can still possibly succeed even in the case
+/// nature of `DataBox` means this can still possibly succeed even in the case
 /// that the raw value exceeds std::usize::MAX on platforms where that type is smaller
 /// than u64. However, `len` is stored as a `usize` since no value larger than
 /// `std::usize::MAX` can be used in a successful indexing operation in rust.
@@ -1388,41 +2011,41 @@ enum Extent {
     ToEnd { offset: u64 },
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub enum TrackType {
     Audio,
     Video,
+    Picture,
+    AuxiliaryVideo,
     Metadata,
+    #[default]
     Unknown,
-}
-
-impl Default for TrackType {
-    fn default() -> Self {
-        TrackType::Unknown
-    }
 }
 
 // This type is used by mp4parse_capi since it needs to be passed from FFI consumers
 // The C-visible struct is renamed via mp4parse_capi/cbindgen.toml to match naming conventions
 #[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum ParseStrictness {
     Permissive, // Error only on ambiguous inputs
-    Normal,     // Error on "shall" directives, log warnings for "should"
+    #[default]
+    Normal, // Error on "shall" directives, log warnings for "should"
     Strict,     // Error on "should" directives
 }
 
-fn fail_if(violation: bool, message: &'static str) -> Result<()> {
+fn fail_with_status_if(violation: bool, status: Status) -> Result<()> {
+    let error = Error::from(status);
     if violation {
-        Err(Error::InvalidData(message))
+        Err(error)
     } else {
-        warn!("{}", message);
+        warn!("{:?}", error);
         Ok(())
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum CodecType {
+    #[default]
     Unknown,
     MP3,
     AAC,
@@ -1438,34 +2061,29 @@ pub enum CodecType {
     LPCM, // QT
     ALAC,
     H263,
+    HEVC, // 23008-2
     #[cfg(feature = "3gpp")]
     AMRNB,
     #[cfg(feature = "3gpp")]
     AMRWB,
 }
 
-impl Default for CodecType {
-    fn default() -> Self {
-        CodecType::Unknown
-    }
-}
-
 /// The media's global (mvhd) timescale in units per second.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct MediaTimeScale(pub u64);
 
 /// A time to be scaled by the media's global (mvhd) timescale.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct MediaScaledTime(pub u64);
 
 /// The track's local (mdhd) timescale.
 /// Members are timescale units per second and the track id.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct TrackTimeScale<T: Num>(pub T, pub usize);
 
 /// A time to be scaled by the track's local (mdhd) timescale.
 /// Members are time in scale units and the track id.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct TrackScaledTime<T>(pub T, pub usize);
 
 impl<T> std::ops::Add for TrackScaledTime<T>
@@ -1483,7 +2101,9 @@ where
 pub struct Track {
     pub id: usize,
     pub track_type: TrackType,
+    pub looped: Option<bool>,
     pub empty_duration: Option<MediaScaledTime>,
+    pub edited_duration: Option<MediaScaledTime>,
     pub media_time: Option<TrackScaledTime<u64>>,
     pub timescale: Option<TrackTimeScale<u64>>,
     pub duration: Option<TrackScaledTime<u64>>,
@@ -1496,6 +2116,7 @@ pub struct Track {
     pub stco: Option<ChunkOffsetBox>, // It is for stco or co64.
     pub stss: Option<SyncSampleBox>,
     pub ctts: Option<CompositionOffsetBox>,
+    pub tref: Option<TrackReferenceBox>,
 }
 
 impl Track {
@@ -1507,7 +2128,7 @@ impl Track {
     }
 }
 
-/// See ISOBMFF (ISO 14496-12:2015) § 4.2
+/// See ISOBMFF (ISO 14496-12:2020) § 4.2
 struct BMFFBox<'a, T: 'a> {
     head: BoxHeader,
     content: Take<&'a mut T>,
@@ -1527,7 +2148,7 @@ impl<'a, T: Read> BoxIter<'a, T> {
         match r {
             Ok(h) => Ok(Some(BMFFBox {
                 head: h,
-                content: self.src.take(h.size - h.offset),
+                content: self.src.take(h.size.saturating_sub(h.offset)),
             })),
             Err(Error::UnexpectedEOF) => Ok(None),
             Err(e) => Err(e),
@@ -1583,27 +2204,26 @@ impl<'a, T> Drop for BMFFBox<'a, T> {
 /// parsers for the internal content, or to get the length to
 /// skip unknown or uninteresting boxes.
 ///
-/// See ISOBMFF (ISO 14496-12:2015) § 4.2
+/// See ISOBMFF (ISO 14496-12:2020) § 4.2
 fn read_box_header<T: ReadBytesExt>(src: &mut T) -> Result<BoxHeader> {
-    let size32 = be_u32(src)?;
+    let size32 = match be_u32(src) {
+        Ok(v) => v,
+        Err(error) => return Err(error),
+    };
     let name = BoxType::from(be_u32(src)?);
     let size = match size32 {
         // valid only for top-level box and indicates it's the last box in the file.  usually mdat.
-        0 => return Err(Error::Unsupported("unknown sized box")),
-        1 => {
-            let size64 = be_u64(src)?;
-            if size64 < BoxHeader::MIN_LARGE_SIZE {
-                return Err(Error::InvalidData("malformed wide size"));
+        0 => {
+            if name == BoxType::MediaDataBox {
+                0
+            } else {
+                return Err(Error::Unsupported("unknown sized box"));
             }
-            size64
         }
-        _ => {
-            if u64::from(size32) < BoxHeader::MIN_SIZE {
-                return Err(Error::InvalidData("malformed size"));
-            }
-            u64::from(size32)
-        }
+        1 => be_u64(src)?,
+        _ => u64::from(size32),
     };
+    trace!("read_box_header: name: {:?}, size: {}", name, size);
     let mut offset = match size32 {
         1 => BoxHeader::MIN_LARGE_SIZE,
         _ => BoxHeader::MIN_SIZE,
@@ -1616,17 +2236,21 @@ fn read_box_header<T: ReadBytesExt>(src: &mut T) -> Result<BoxHeader> {
             if count == 16 {
                 Some(buffer)
             } else {
-                debug!("malformed uuid (short read), skipping");
-                None
+                debug!("malformed uuid (short read)");
+                return Err(Error::UnexpectedEOF);
             }
         } else {
-            debug!("malformed uuid, skipping");
             None
         }
     } else {
         None
     };
-    assert!(offset <= size);
+    match size32 {
+        0 => (),
+        1 if offset > size => return Err(Error::from(Status::BoxBadWideSize)),
+        _ if offset > size => return Err(Error::from(Status::BoxBadSize)),
+        _ => (),
+    }
     Ok(BoxHeader {
         name,
         size,
@@ -1667,7 +2291,7 @@ fn skip_box_content<T: Read>(src: &mut BMFFBox<T>) -> Result<()> {
         header
             .size
             .checked_sub(header.offset)
-            .expect("header offset > size")
+            .ok_or(Error::Unsupported("Skipping past unknown sized box"))?
     };
     assert_eq!(to_skip, src.bytes_left());
     skip(src, to_skip)
@@ -1684,58 +2308,151 @@ fn skip_box_remain<T: Read>(src: &mut BMFFBox<T>) -> Result<()> {
     skip(src, remain)
 }
 
-/// Read the contents of an AVIF file
-pub fn read_avif<T: Read>(f: &mut T, strictness: ParseStrictness) -> Result<AvifContext> {
-    let _ = env_logger::try_init();
+#[derive(Debug)]
+enum AvifImageType {
+    Primary,
+    Sequence,
+    Both,
+}
 
-    debug!("read_avif(strictness: {:?})", strictness);
-
-    let mut f = OffsetReader::new(f);
-
-    let mut iter = BoxIter::new(&mut f);
-
-    // 'ftyp' box must occur first; see ISOBMFF (ISO 14496-12:2015) § 4.3.1
-    if let Some(mut b) = iter.next_box()? {
-        if b.head.name == BoxType::FileTypeBox {
-            let ftyp = read_ftyp(&mut b)?;
-            if !ftyp.compatible_brands.contains(&MIF1_BRAND) {
-                // This mandatory inclusion of this brand is in the process of being changed
-                // to optional. In anticipation of that, only give an error in strict mode
-                // See https://github.com/MPEGGroup/MIAF/issues/5
-                // and https://github.com/MPEGGroup/FileFormat/issues/23
-                fail_if(
-                    strictness == ParseStrictness::Strict,
-                    "The FileTypeBox should contain 'mif1' in the compatible_brands list \
-                     per MIAF (ISO 23000-22:2019) § 7.2.1.2",
-                )?;
-            }
-        } else {
-            return Err(Error::InvalidData("'ftyp' box must occur first"));
+impl AvifImageType {
+    fn has_primary(&self) -> bool {
+        match self {
+            Self::Primary | Self::Both => true,
+            Self::Sequence => false,
         }
     }
 
-    let mut meta = None;
-    let mut item_storage = TryVec::new();
+    fn has_sequence(&self) -> bool {
+        match self {
+            Self::Primary => false,
+            Self::Sequence | Self::Both => true,
+        }
+    }
+}
 
-    while let Some(mut b) = iter.next_box()? {
+/// Read the contents of an AVIF file
+pub fn read_avif<T: Read>(f: &mut T, strictness: ParseStrictness) -> Result<AvifContext> {
+    debug!("read_avif(strictness: {:?})", strictness);
+
+    let mut f = OffsetReader::new(f);
+    let mut iter = BoxIter::new(&mut f);
+    let expected_image_type;
+    let mut unsupported_features = UnsupportedFeatures::new();
+
+    // 'ftyp' box must occur first; see ISOBMFF (ISO 14496-12:2020) § 4.3.1
+    let major_brand = if let Some(mut b) = iter.next_box()? {
+        if b.head.name == BoxType::FileTypeBox {
+            let ftyp = read_ftyp(&mut b)?;
+
+            let has_avif_brand = ftyp.contains(&AVIF_BRAND);
+            let has_avis_brand = ftyp.contains(&AVIS_BRAND);
+            let has_mif1_brand = ftyp.contains(&MIF1_BRAND);
+            let has_msf1_brand = ftyp.contains(&MSF1_BRAND);
+
+            let primary_image_expected = has_mif1_brand || has_avif_brand;
+            let image_sequence_expected = has_msf1_brand || has_avis_brand;
+
+            expected_image_type = if primary_image_expected && image_sequence_expected {
+                AvifImageType::Both
+            } else if primary_image_expected {
+                AvifImageType::Primary
+            } else if image_sequence_expected {
+                AvifImageType::Sequence
+            } else {
+                return Status::NoImage.into();
+            };
+            debug!("expected_image_type: {:?}", expected_image_type);
+
+            if primary_image_expected && !has_mif1_brand {
+                fail_with_status_if(
+                    strictness == ParseStrictness::Strict,
+                    Status::MissingMif1Brand,
+                )?;
+            }
+
+            if !has_avif_brand && !has_avis_brand {
+                fail_with_status_if(
+                    strictness != ParseStrictness::Permissive,
+                    Status::MissingAvifOrAvisBrand,
+                )?;
+            }
+
+            ftyp.major_brand
+        } else {
+            return Status::FtypNotFirst.into();
+        }
+    } else {
+        return Status::FtypNotFirst.into();
+    };
+
+    let mut meta = None;
+    let mut image_sequence = None;
+    let mut media_storage = TryVec::new();
+
+    loop {
+        let mut b = match iter.next_box() {
+            Ok(Some(b)) => b,
+            Ok(_) => break,
+            Err(Error::UnexpectedEOF) => {
+                if strictness == ParseStrictness::Strict {
+                    return Err(Error::UnexpectedEOF);
+                }
+                break;
+            }
+            Err(error) => return Err(error),
+        };
+
         trace!("read_avif parsing {:?} box", b.head.name);
         match b.head.name {
             BoxType::MetadataBox => {
                 if meta.is_some() {
-                    return Err(Error::InvalidData(
-                        "There should be zero or one meta boxes per ISOBMFF (ISO 14496-12:2015) § 8.11.1.1",
-                    ));
+                    return Status::MetaBadQuantity.into();
                 }
-                meta = Some(read_avif_meta(&mut b, strictness)?);
+                meta = Some(read_avif_meta(
+                    &mut b,
+                    strictness,
+                    &mut unsupported_features,
+                )?);
+            }
+            BoxType::MovieBox if expected_image_type.has_sequence() => {
+                if image_sequence.is_some() {
+                    return Status::MoovBadQuantity.into();
+                }
+                image_sequence = Some(read_moov(&mut b, None)?);
             }
             BoxType::MediaDataBox => {
-                if b.bytes_left() > 0 {
-                    let file_offset = b.offset();
-                    let data = b.read_into_try_vec()?;
-                    item_storage.push(MediaDataBox { file_offset, data })?;
-                }
+                let file_offset = b.offset();
+                let data = if b.head.size == 0 {
+                    // Unknown sized `mdat`, read in chunks until EOF.
+                    const BUF_SIZE: usize = 64 * 1024;
+                    let mut data = TryVec::with_capacity(BUF_SIZE)?;
+                    loop {
+                        let got = fallible_collections::try_read_up_to(
+                            b.content.get_mut(),
+                            BUF_SIZE as u64,
+                            &mut data,
+                        )?;
+                        if got == 0 {
+                            // Mark `content` as consumed.
+                            b.content.set_limit(0);
+                            break;
+                        }
+                    }
+                    data
+                } else {
+                    b.read_into_try_vec()?
+                };
+                media_storage.push(DataBox::from_mdat(file_offset, data))?;
             }
-            _ => skip_box_content(&mut b)?,
+            _ => {
+                let result = skip_box_content(&mut b);
+                // Allow garbage at EOF if we aren't in strict mode.
+                if b.bytes_left() > 0 && strictness != ParseStrictness::Strict {
+                    break;
+                }
+                result?;
+            }
         }
 
         check_parser_state!(b.content);
@@ -1745,39 +2462,49 @@ pub fn read_avif<T: Read>(f: &mut T, strictness: ParseStrictness) -> Result<Avif
         item_references,
         item_properties,
         primary_item_id,
+        item_infos,
         iloc_items,
-    } = meta.ok_or(Error::InvalidData("missing meta"))?;
+        item_data_box,
+    } = meta.ok_or_else(|| Error::from(Status::MetaBadQuantity))?;
 
-    let mut alpha_item_ids = item_references
-        .iter()
-        // Auxiliary image for the primary image
-        .filter(|iref| {
-            iref.to_item_id == primary_item_id
-                && iref.from_item_id != primary_item_id
-                && iref.item_type == b"auxl"
-        })
-        .map(|iref| iref.from_item_id)
-        // which has the alpha property
-        .filter(|&item_id| item_properties.is_alpha(item_id));
-    let alpha_item_id = alpha_item_ids.next();
-    if alpha_item_ids.next().is_some() {
-        return Err(Error::InvalidData("multiple alpha planes"));
-    }
+    let (alpha_item_id, premultiplied_alpha) = if let Some(primary_item_id) = primary_item_id {
+        let mut alpha_item_ids = item_references
+            .iter()
+            // Auxiliary image for the primary image
+            .filter(|iref| {
+                iref.to_item_id == primary_item_id
+                    && iref.from_item_id != primary_item_id
+                    && iref.item_type == b"auxl"
+            })
+            .map(|iref| iref.from_item_id)
+            // which has the alpha property
+            .filter(|&item_id| item_properties.is_alpha(item_id));
+        let alpha_item_id = alpha_item_ids.next();
+        if alpha_item_ids.next().is_some() {
+            return Status::MultipleAlpha.into();
+        }
 
-    let premultiplied_alpha = alpha_item_id.map_or(false, |alpha_item_id| {
-        item_references.iter().any(|iref| {
-            iref.from_item_id == primary_item_id
-                && iref.to_item_id == alpha_item_id
-                && iref.item_type == b"prem"
-        })
-    });
+        let premultiplied_alpha = alpha_item_id.map_or(false, |alpha_item_id| {
+            item_references.iter().any(|iref| {
+                iref.from_item_id == primary_item_id
+                    && iref.to_item_id == alpha_item_id
+                    && iref.item_type == b"prem"
+            })
+        });
 
+        (alpha_item_id, premultiplied_alpha)
+    } else {
+        (None, false)
+    };
+
+    debug!("primary_item_id: {:?}", primary_item_id);
+    debug!("alpha_item_id: {:?}", alpha_item_id);
     let mut primary_item = None;
     let mut alpha_item = None;
 
     // store data or record location of relevant items
     for (item_id, loc) in iloc_items {
-        let item = if item_id == primary_item_id {
+        let item = if Some(item_id) == primary_item_id {
             &mut primary_item
         } else if Some(item_id) == alpha_item_id {
             &mut alpha_item
@@ -1785,121 +2512,213 @@ pub fn read_avif<T: Read>(f: &mut T, strictness: ParseStrictness) -> Result<Avif
             continue;
         };
 
-        if loc.construction_method != ConstructionMethod::File {
-            return Err(Error::Unsupported("unsupported construction_method"));
-        }
-
         assert!(item.is_none());
 
         // If our item is spread over multiple extents, we'll need to copy it
         // into a contiguous buffer. Otherwise, we can just store the extent
-        // and return a pointer into the mdat later to avoid the copy.
+        // and return a pointer into the mdat/idat later to avoid the copy.
         if loc.extents.len() > 1 {
             *item = Some(AvifItem::with_inline_data(item_id))
         }
 
-        for extent in loc.extents {
-            let mut found = false;
-            // try to find an mdat which contains the extent
-            for mdat in item_storage.iter_mut() {
-                if let Some(extent_slice) = mdat.get(&extent) {
-                    match item {
-                        None => {
-                            trace!("Using IsobmffItem::Location");
-                            *item = Some(AvifItem::with_data_location(item_id, extent));
-                        }
-                        Some(AvifItem {
-                            image_data: IsobmffItem::Data(item_data),
-                            ..
-                        }) => {
-                            trace!("Using IsobmffItem::Data");
-                            // We could potentially optimize memory usage by trying to avoid reading
-                            // or storing mdat boxes which aren't used by our API, but for now it seems
-                            // like unnecessary complexity
-                            item_data.extend_from_slice(extent_slice)?;
-                        }
-                        _ => unreachable!(),
+        trace!(
+            "{:?} construction_method: {:?}",
+            item_id,
+            loc.construction_method
+        );
+
+        // Generalize the process of connecting items to their data; returns
+        // true if the extent is successfully added to the AvifItem
+        let mut find_and_add_to_item = |extent: &Extent, dat: &DataBox| -> Result<bool> {
+            if let Some(extent_slice) = dat.get(extent) {
+                match item {
+                    None => {
+                        trace!("Using IsobmffItem::Location");
+                        *item = Some(AvifItem {
+                            id: item_id,
+                            image_data: dat.location(extent),
+                        });
                     }
-                    found = true;
-                    break;
+                    Some(AvifItem {
+                        image_data: IsobmffItem::Data(bytes),
+                        ..
+                    }) => {
+                        trace!("Using IsobmffItem::Data");
+                        // We could potentially optimize memory usage by trying to avoid reading
+                        // or storing dat boxes which aren't used by our API, but for now it seems
+                        // like unnecessary complexity
+                        bytes.extend_from_slice(extent_slice)?;
+                    }
+                    _ => unreachable!(),
+                }
+                return Ok(true);
+            }
+            Ok(false)
+        };
+
+        match loc.construction_method {
+            ConstructionMethod::File => {
+                for extent in loc.extents {
+                    let mut found = false;
+                    // try to find an mdat which contains the extent
+                    for mdat in media_storage.iter() {
+                        if find_and_add_to_item(&extent, mdat)? {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if !found {
+                        return Status::IlocNotFound.into();
+                    }
                 }
             }
-
-            if !found {
-                return Err(Error::InvalidData(
-                    "iloc contains an extent that is not in any mdat",
-                ));
+            ConstructionMethod::Idat => {
+                if let Some(idat) = &item_data_box {
+                    for extent in loc.extents {
+                        let found = find_and_add_to_item(&extent, idat)?;
+                        if !found {
+                            return Status::IlocNotFound.into();
+                        }
+                    }
+                } else {
+                    return Status::IdatMissing.into();
+                }
+            }
+            ConstructionMethod::Item => {
+                fail_with_status_if(
+                    strictness != ParseStrictness::Permissive,
+                    Status::ConstructionMethod,
+                )?;
             }
         }
 
         assert!(item.is_some());
     }
 
-    let primary_item = primary_item.ok_or(Error::InvalidData(
-        "Missing 'pitm' box, required per HEIF (ISO/IEC 23008-12:2017) § 10.2.1",
-    ))?;
-
-    let has_pixi = |item_id| {
-        item_properties
-            .get(item_id, BoxType::PixelInformationBox)
-            .map_or(false, |opt| opt.is_some())
-    };
-    if !has_pixi(primary_item_id) || !alpha_item_id.map_or(true, has_pixi) {
-        // The requirement to include pixi is in the process of being changed
-        // to allowing its omission to imply a default value. In anticipation
-        // of that, only give an error in strict mode
-        // See https://github.com/MPEGGroup/MIAF/issues/9
-        fail_if(
-            if cfg!(feature = "missing-pixi-permitted") {
-                strictness == ParseStrictness::Strict
-            } else {
-                strictness != ParseStrictness::Permissive
-            },
-            "The pixel information property shall be associated with every image \
-             that is displayable (not hidden) \
-             per MIAF (ISO/IEC 23000-22:2019) specification § 7.3.6.6",
-        )?;
+    if (primary_item_id.is_some() && primary_item.is_none())
+        || (alpha_item_id.is_some() && alpha_item.is_none())
+    {
+        fail_with_status_if(strictness == ParseStrictness::Strict, Status::PitmNotFound)?;
     }
 
-    let has_av1c = |item_id| {
-        item_properties
-            .get(item_id, BoxType::AV1CodecConfigurationBox)
-            .map_or(false, |opt| opt.is_some())
-    };
-    if !has_av1c(primary_item_id) || !alpha_item_id.map_or(true, has_av1c) {
-        fail_if(
+    assert!(primary_item.is_none() || primary_item_id.is_some());
+    assert!(alpha_item.is_none() || alpha_item_id.is_some());
+
+    if expected_image_type.has_primary() && primary_item_id.is_none() {
+        fail_with_status_if(
             strictness != ParseStrictness::Permissive,
-            "One AV1 Item Configuration Property (av1C) is mandatory for an \
-             image item of type 'av01' \
-             per AVIF specification § 2.2.1",
+            Status::PitmMissing,
         )?;
     }
 
-    if item_properties.get_ispe(primary_item_id)?.is_none() {
-        fail_if(
+    // Lacking a brand that requires them, it's fine for moov boxes to exist in
+    // BMFF files; they're simply ignored
+    if expected_image_type.has_sequence() && image_sequence.is_none() {
+        fail_with_status_if(
             strictness != ParseStrictness::Permissive,
-            "Missing 'ispe' property for primary item, required \
-             per HEIF (ISO/IEC 23008-12:2017) § 6.5.3.1",
+            Status::MoovMissing,
         )?;
     }
+
+    // Returns true iff `id` is `Some` and there is no corresponding property for it
+    let missing_property_for = |id: Option<ItemId>, property: BoxType| -> bool {
+        id.map_or(false, |id| {
+            item_properties
+                .get(id, property)
+                .map_or(true, |opt| opt.is_none())
+        })
+    };
+
+    // Generalize the property checks so we can apply them to primary and alpha items
+    let mut check_image_item = |item: &mut Option<AvifItem>| -> Result<()> {
+        let item_id = item.as_ref().map(|item| item.id);
+        let item_type = item_id.and_then(|item_id| {
+            item_infos
+                .iter()
+                .find(|item_info| item_id == item_info.item_id)
+                .map(|item_info| item_info.item_type)
+        });
+
+        match item_type.map(u32::to_be_bytes).as_ref() {
+            Some(b"av01") => {
+                if missing_property_for(item_id, BoxType::AV1CodecConfigurationBox) {
+                    fail_with_status_if(
+                        strictness != ParseStrictness::Permissive,
+                        Status::Av1cMissing,
+                    )?;
+                }
+
+                if missing_property_for(item_id, BoxType::PixelInformationBox) {
+                    // The requirement to include pixi is in the process of being changed
+                    // to allowing its omission to imply a default value. In anticipation
+                    // of that, only give an error in strict mode
+                    // See https://github.com/MPEGGroup/MIAF/issues/9
+                    fail_with_status_if(
+                        if cfg!(feature = "missing-pixi-permitted") {
+                            strictness == ParseStrictness::Strict
+                        } else {
+                            strictness != ParseStrictness::Permissive
+                        },
+                        Status::PixiMissing,
+                    )?;
+                }
+
+                if missing_property_for(item_id, BoxType::ImageSpatialExtentsProperty) {
+                    fail_with_status_if(
+                        strictness != ParseStrictness::Permissive,
+                        Status::IspeMissing,
+                    )?;
+                }
+            }
+            Some(b"grid") => {
+                // TODO: https://github.com/mozilla/mp4parse-rust/issues/198
+                unsupported_features.insert(Feature::Grid);
+                *item = None;
+            }
+            Some(_other_type) => return Status::ImageItemType.into(),
+            None => {
+                if item.is_some() {
+                    return Status::ItemTypeMissing.into();
+                }
+            }
+        }
+
+        if let Some(AvifItem { id, .. }) = item {
+            if item_properties.forbidden_items.contains(id) {
+                error!("Not processing item id {:?} since it is associated with essential, but unsupported properties", id);
+                *item = None;
+            }
+        }
+
+        Ok(())
+    };
+
+    check_image_item(&mut primary_item)?;
+    check_image_item(&mut alpha_item)?;
 
     Ok(AvifContext {
         strictness,
-        item_storage,
+        media_storage,
+        item_data_box,
         primary_item,
         alpha_item,
         premultiplied_alpha,
         item_properties,
+        major_brand,
+        sequence: image_sequence,
+        unsupported_features,
     })
 }
 
 /// Parse a metadata box in the context of an AVIF
 /// Currently requires the primary item to be an av01 item type and generates
 /// an error otherwise.
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.1
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.1
 fn read_avif_meta<T: Read + Offset>(
     src: &mut BMFFBox<T>,
     strictness: ParseStrictness,
+    unsupported_features: &mut UnsupportedFeatures,
 ) -> Result<AvifMeta> {
     let version = read_fullbox_version_no_flags(src)?;
 
@@ -1913,71 +2732,74 @@ fn read_avif_meta<T: Read + Offset>(
     let mut iloc_items = None;
     let mut item_references = None;
     let mut item_properties = None;
+    let mut item_data_box = None;
 
     let mut iter = src.box_iter();
     while let Some(mut b) = iter.next_box()? {
         trace!("read_avif_meta parsing {:?} box", b.head.name);
 
         if !read_handler_box && b.head.name != BoxType::HandlerBox {
-            fail_if(
+            fail_with_status_if(
                 strictness != ParseStrictness::Permissive,
-                "The HandlerBox shall be the first contained box within the MetaBox \
-                 per MIAF (ISO 23000-22:2019) § 7.2.1.5",
+                Status::HdlrNotFirst,
             )?;
         }
 
         match b.head.name {
             BoxType::HandlerBox => {
                 if read_handler_box {
-                    return Err(Error::InvalidData(
-                        "There shall be exactly one hdlr box per ISOBMFF (ISO 14496-12:2015) § 8.4.3.1",
-                    ));
+                    return Status::HdrlBadQuantity.into();
                 }
                 let HandlerBox { handler_type } = read_hdlr(&mut b, strictness)?;
                 if handler_type != b"pict" {
-                    fail_if(
+                    fail_with_status_if(
                         strictness != ParseStrictness::Permissive,
-                        "The HandlerBox handler_type must be 'pict' \
-                         per MIAF (ISO 23000-22:2019) § 7.2.1.5",
+                        Status::HdlrTypeNotPict,
                     )?;
                 }
                 read_handler_box = true;
             }
             BoxType::ItemInfoBox => {
                 if item_infos.is_some() {
-                    return Err(Error::InvalidData(
-                        "There shall be zero or one iinf boxes per ISOBMFF (ISO 14496-12:2015) § 8.11.6.1",
-                    ));
+                    return Status::IinfBadQuantity.into();
                 }
-                item_infos = Some(read_iinf(&mut b, strictness)?);
+                item_infos = Some(read_iinf(&mut b, strictness, unsupported_features)?);
             }
             BoxType::ItemLocationBox => {
                 if iloc_items.is_some() {
-                    return Err(Error::InvalidData(
-                        "There shall be zero or one iloc boxes per ISOBMFF (ISO 14496-12:2015) § 8.11.3.1",
-                    ));
+                    return Status::IlocBadQuantity.into();
                 }
                 iloc_items = Some(read_iloc(&mut b)?);
             }
             BoxType::PrimaryItemBox => {
                 if primary_item_id.is_some() {
-                    return Err(Error::InvalidData(
-                        "There shall be zero or one pitm boxes per ISOBMFF (ISO 14496-12:2015) § 8.11.4.1",
-                    ));
+                    return Status::PitmBadQuantity.into();
                 }
                 primary_item_id = Some(read_pitm(&mut b)?);
             }
             BoxType::ItemReferenceBox => {
                 if item_references.is_some() {
-                    return Err(Error::InvalidData("There shall be zero or one iref boxes per ISOBMFF (ISO 14496-12:2015) § 8.11.12.1"));
+                    return Status::IrefBadQuantity.into();
                 }
                 item_references = Some(read_iref(&mut b)?);
             }
             BoxType::ItemPropertiesBox => {
                 if item_properties.is_some() {
-                    return Err(Error::InvalidData("There shall be zero or one iprp boxes per ISOBMFF (ISO 14496-12:2020) § 8.11.14.1"));
+                    return Status::IprpBadQuantity.into();
                 }
-                item_properties = Some(read_iprp(&mut b, MIF1_BRAND, strictness)?);
+                item_properties = Some(read_iprp(
+                    &mut b,
+                    MIF1_BRAND,
+                    strictness,
+                    unsupported_features,
+                )?);
+            }
+            BoxType::ItemDataBox => {
+                if item_data_box.is_some() {
+                    return Status::IdatBadQuantity.into();
+                }
+                let data = b.read_into_try_vec()?;
+                item_data_box = Some(DataBox::from_idat(data));
             }
             _ => skip_box_content(&mut b)?,
         }
@@ -1985,39 +2807,18 @@ fn read_avif_meta<T: Read + Offset>(
         check_parser_state!(b.content);
     }
 
-    let primary_item_id = primary_item_id.ok_or(Error::InvalidData(
-        "Required pitm box not present in meta box",
-    ))?;
-
-    let item_infos = item_infos.ok_or(Error::InvalidData("iinf missing"))?;
-
-    if let Some(item_info) = item_infos.iter().find(|x| x.item_id == primary_item_id) {
-        debug!("primary_item_id type: {}", U32BE(item_info.item_type));
-        match &item_info.item_type.to_be_bytes() {
-            b"av01" => {}
-            b"grid" => return Err(Error::from(Status::UnsupportedGrid)),
-            _ => {
-                return Err(Error::InvalidData(
-                    "primary_item_id type is neither 'av01' nor 'grid'",
-                ))
-            }
-        }
-    } else {
-        return Err(Error::InvalidData(
-            "primary_item_id not present in iinf box",
-        ));
-    }
-
     Ok(AvifMeta {
         item_properties: item_properties.unwrap_or_default(),
         item_references: item_references.unwrap_or_default(),
         primary_item_id,
-        iloc_items: iloc_items.ok_or(Error::InvalidData("iloc missing"))?,
+        item_infos: item_infos.unwrap_or_default(),
+        iloc_items: iloc_items.unwrap_or_default(),
+        item_data_box,
     })
 }
 
 /// Parse a Primary Item Box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.4
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.4
 fn read_pitm<T: Read>(src: &mut BMFFBox<T>) -> Result<ItemId> {
     let version = read_fullbox_version_no_flags(src)?;
 
@@ -2031,10 +2832,11 @@ fn read_pitm<T: Read>(src: &mut BMFFBox<T>) -> Result<ItemId> {
 }
 
 /// Parse an Item Information Box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.6
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.6
 fn read_iinf<T: Read>(
     src: &mut BMFFBox<T>,
     strictness: ParseStrictness,
+    unsupported_features: &mut UnsupportedFeatures,
 ) -> Result<TryVec<ItemInfoEntry>> {
     let version = read_fullbox_version_no_flags(src)?;
 
@@ -2053,12 +2855,12 @@ fn read_iinf<T: Read>(
     let mut iter = src.box_iter();
     while let Some(mut b) = iter.next_box()? {
         if b.head.name != BoxType::ItemInfoEntry {
-            return Err(Error::InvalidData(
-                "iinf box shall contain only infe boxes per ISOBMFF (ISO 14496-12:2015) § 8.11.6.2",
-            ));
+            return Status::IinfBadChild.into();
         }
 
-        item_infos.push(read_infe(&mut b, strictness)?)?;
+        if let Some(infe) = read_infe(&mut b, strictness, unsupported_features)? {
+            item_infos.push(infe)?;
+        }
 
         check_parser_state!(b.content);
     }
@@ -2080,18 +2882,21 @@ impl std::fmt::Display for U32BE {
 }
 
 /// Parse an Item Info Entry
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.6.2
-fn read_infe<T: Read>(src: &mut BMFFBox<T>, strictness: ParseStrictness) -> Result<ItemInfoEntry> {
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.6.2
+fn read_infe<T: Read>(
+    src: &mut BMFFBox<T>,
+    strictness: ParseStrictness,
+    unsupported_features: &mut UnsupportedFeatures,
+) -> Result<Option<ItemInfoEntry>> {
     let (version, flags) = read_fullbox_extra(src)?;
 
     // According to the standard, it seems the flags field shall be 0, but at
     // least one sample AVIF image has a nonzero value.
     // See https://github.com/AOMediaCodec/av1-avif/issues/146
     if flags != 0 {
-        fail_if(
+        fail_with_status_if(
             strictness == ParseStrictness::Strict,
-            "'infe' flags field shall be 0 \
-             per ISOBMFF (ISO 14496-12:2015) § 8.11.6.2",
+            Status::InfeFlagsNonzero,
         )?;
     }
 
@@ -2104,21 +2909,22 @@ fn read_infe<T: Read>(src: &mut BMFFBox<T>, strictness: ParseStrictness) -> Resu
 
     let item_protection_index = be_u16(src)?;
 
-    if item_protection_index != 0 {
-        return Err(Error::from(Status::UnsupportedIpro));
-    }
-
     let item_type = be_u32(src)?;
     debug!("infe {:?} item_type: {}", item_id, U32BE(item_type));
 
     // There are some additional fields here, but they're not of interest to us
     skip_box_remain(src)?;
 
-    Ok(ItemInfoEntry { item_id, item_type })
+    if item_protection_index != 0 {
+        unsupported_features.insert(Feature::Ipro);
+        Ok(None)
+    } else {
+        Ok(Some(ItemInfoEntry { item_id, item_type }))
+    }
 }
 
 /// Parse an Item Reference Box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.12
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.12
 fn read_iref<T: Read>(src: &mut BMFFBox<T>) -> Result<TryVec<SingleItemTypeReferenceBox>> {
     let mut item_references = TryVec::new();
     let version = read_fullbox_version_no_flags(src)?;
@@ -2135,9 +2941,7 @@ fn read_iref<T: Read>(src: &mut BMFFBox<T>) -> Result<TryVec<SingleItemTypeRefer
         for _ in 0..reference_count {
             let to_item_id = ItemId::read(&mut b, version)?;
             if from_item_id == to_item_id {
-                return Err(Error::InvalidData(
-                    "from_item_id and to_item_id must be different",
-                ));
+                return Status::IrefRecursion.into();
             }
             item_references.push(SingleItemTypeReferenceBox {
                 item_type: b.head.name.into(),
@@ -2147,12 +2951,15 @@ fn read_iref<T: Read>(src: &mut BMFFBox<T>) -> Result<TryVec<SingleItemTypeRefer
         }
         check_parser_state!(b.content);
     }
+
+    trace!("read_iref -> {:#?}", item_references);
+
     Ok(item_references)
 }
 
 /// Parse an Item Properties Box
 ///
-/// See ISOBMFF (ISO 14496-12:2020 § 8.11.14)
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.14)
 ///
 /// Note: HEIF (ISO 23008-12:2017) § 9.3.1 also defines the `iprp` box and
 /// related types, but lacks additional requirements specified in 14496-12:2020.
@@ -2165,6 +2972,7 @@ fn read_iprp<T: Read>(
     src: &mut BMFFBox<T>,
     brand: FourCC,
     strictness: ParseStrictness,
+    unsupported_features: &mut UnsupportedFeatures,
 ) -> Result<ItemPropertiesBox> {
     let mut iter = src.box_iter();
 
@@ -2172,37 +2980,41 @@ fn read_iprp<T: Read>(
         Some(mut b) if b.head.name == BoxType::ItemPropertyContainerBox => {
             read_ipco(&mut b, strictness)
         }
-        Some(_) => Err(Error::InvalidData("unexpected iprp child")),
+        Some(_) => Status::IprpBadChild.into(),
         None => Err(Error::UnexpectedEOF),
     }?;
 
     let mut ipma_version_and_flag_values_seen = TryVec::with_capacity(1)?;
     let mut association_entries = TryVec::<ItemPropertyAssociationEntry>::new();
+    let mut forbidden_items = TryVec::new();
 
     while let Some(mut b) = iter.next_box()? {
         if b.head.name != BoxType::ItemPropertyAssociationBox {
-            return Err(Error::InvalidData("unexpected iprp child"));
+            return Status::IprpBadChild.into();
         }
 
         let (version, flags) = read_fullbox_extra(&mut b)?;
         if ipma_version_and_flag_values_seen.contains(&(version, flags)) {
-            fail_if(
+            fail_with_status_if(
                 strictness != ParseStrictness::Permissive,
-                "There shall be at most one ItemPropertyAssociationbox with a given pair of \
-                 values of version and flags \
-                 per ISOBMFF (ISO 14496-12:2020 § 8.11.14.1",
+                Status::IpmaBadQuantity,
             )?;
         }
         if flags != 0 && properties.len() <= 127 {
-            fail_if(
+            fail_with_status_if(
                 strictness == ParseStrictness::Strict,
-                "Unless there are more than 127 properties in the ItemPropertyContainerBox, \
-                 flags should be equal to 0 \
-                 per ISOBMFF (ISO 14496-12:2020 § 8.11.14.1",
+                Status::IpmaFlagsNonzero,
             )?;
         }
         ipma_version_and_flag_values_seen.push((version, flags))?;
         for association_entry in read_ipma(&mut b, strictness, version, flags)? {
+            if forbidden_items.contains(&association_entry.item_id) {
+                warn!(
+                    "Skipping {:?} since the item referenced shall not be processed",
+                    association_entry
+                );
+            }
+
             if let Some(previous_entry) = association_entries
                 .iter()
                 .find(|e| association_entry.item_id == e.item_id)
@@ -2214,19 +3026,11 @@ fn read_iprp<T: Read>(
                 // It's technically possible to make sense of this situation by merging ipma
                 // boxes, but this is a "shall" requirement, so we'd only do it in
                 // ParseStrictness::Permissive mode, and this hasn't shown up in the wild
-                return Err(Error::InvalidData(
-                    "There shall be at most one occurrence of a given item_ID, \
-                     in the set of ItemPropertyAssociationBox boxes \
-                     per ISOBMFF (ISO 14496-12:2020) § 8.11.14.1",
-                ));
+                return Status::IpmaDuplicateItemId.into();
             }
 
-            const TRANSFORM_ORDER_ERROR: &str =
-                "These properties, if used, shall be indicated to be applied \
-                 in the following order: clean aperture first, then rotation, \
-                 then mirror. \
-                 per MIAF (ISO/IEC 23000-22:2019) § 7.3.6.7";
             const TRANSFORM_ORDER: &[BoxType] = &[
+                BoxType::ImageSpatialExtentsProperty,
                 BoxType::CleanApertureBox,
                 BoxType::ImageRotation,
                 BoxType::ImageMirror,
@@ -2239,10 +3043,9 @@ fn read_iprp<T: Read>(
             for a in &association_entry.associations {
                 if a.property_index == PropertyIndex(0) {
                     if a.essential {
-                        fail_if(
+                        fail_with_status_if(
                             strictness != ParseStrictness::Permissive,
-                            "the essential indicator shall be 0 for property index 0 \
-                             per ISOBMFF (ISO 14496-12:2020 § 8.11.14.3",
+                            Status::IpmaIndexZeroNoEssential,
                         )?;
                     }
                     continue;
@@ -2250,25 +3053,56 @@ fn read_iprp<T: Read>(
 
                 if let Some(property) = properties.get(&a.property_index) {
                     assert!(brand == MIF1_BRAND);
+
+                    let feature = Feature::try_from(property);
+                    let property_supported = match feature {
+                        Ok(feature) => {
+                            if feature.supported() {
+                                true
+                            } else {
+                                unsupported_features.insert(feature);
+                                false
+                            }
+                        }
+                        Err(_) => false,
+                    };
+
+                    if !property_supported {
+                        if a.essential && strictness != ParseStrictness::Permissive {
+                            error!("Unsupported essential property {:?}", property);
+                            forbidden_items.push(association_entry.item_id)?;
+                        } else {
+                            debug!(
+                                "Ignoring unknown {} property {:?}",
+                                if a.essential {
+                                    "essential"
+                                } else {
+                                    "non-essential"
+                                },
+                                property
+                            );
+                        }
+                    }
+
+                    // Check additional requirements on specific properties
                     match property {
                         ItemProperty::AV1Config(_)
+                        | ItemProperty::CleanAperture
                         | ItemProperty::Mirroring(_)
                         | ItemProperty::Rotation(_) => {
                             if !a.essential {
-                                warn!("{:?} is invalid", property);
+                                warn!("{:?} is missing required 'essential' bit", property);
                                 // This is a "shall", but it is likely to change, so only
                                 // fail if using strict parsing.
                                 // See https://github.com/mozilla/mp4parse-rust/issues/284
-                                fail_if(
+                                fail_with_status_if(
                                     strictness == ParseStrictness::Strict,
-                                    "All transformative properties associated with coded and \
-                                     derived images required or conditionally required by this \
-                                     document shall be marked as essential \
-                                     per MIAF (ISO 23000-22:2019) § 7.3.9",
+                                    Status::TxformNoEssential,
                                 )?;
                             }
                         }
-                        // XXX this is contrary to the published specification; see doc comment
+
+                        // NOTE: this is contrary to the published specification; see doc comment
                         // at the beginning of this function for more details
                         ItemProperty::Colour(colr) => {
                             let colour_type = colr.colour_type();
@@ -2280,30 +3114,82 @@ fn read_iprp<T: Read>(
                                     a.property_index,
                                     prev_colr_index
                                 );
-                                fail_if(
+                                fail_with_status_if(
                                     strictness != ParseStrictness::Permissive,
-                                    "Each item shall have at most one property association with a
-                                     ColourInformationBox (colr) for a given value of colour_type \
-                                     per HEIF (ISO/IEC DIS 23008-12) § 6.5.5.1",
+                                    Status::ColrBadQuantity,
                                 )?;
                             } else {
                                 colour_type_indexes.insert(colour_type, a.property_index)?;
                             }
                         }
-                        _ => {}
+
+                        // The following properties are unsupported, but we still enforce that
+                        // they've been correctly marked as essential or not.
+                        ItemProperty::LayeredImageIndexing => {
+                            assert!(feature.is_ok() && unsupported_features.contains(feature?));
+                            if a.essential {
+                                fail_with_status_if(
+                                    strictness != ParseStrictness::Permissive,
+                                    Status::A1lxEssential,
+                                )?;
+                            }
+                        }
+
+                        ItemProperty::LayerSelection => {
+                            assert!(feature.is_ok() && unsupported_features.contains(feature?));
+                            if a.essential {
+                                assert!(
+                                    forbidden_items.contains(&association_entry.item_id)
+                                        || strictness == ParseStrictness::Permissive
+                                );
+                            } else {
+                                fail_with_status_if(
+                                    strictness != ParseStrictness::Permissive,
+                                    Status::LselNoEssential,
+                                )?;
+                            }
+                        }
+
+                        ItemProperty::OperatingPointSelector => {
+                            assert!(feature.is_ok() && unsupported_features.contains(feature?));
+                            if a.essential {
+                                assert!(
+                                    forbidden_items.contains(&association_entry.item_id)
+                                        || strictness == ParseStrictness::Permissive
+                                );
+                            } else {
+                                fail_with_status_if(
+                                    strictness != ParseStrictness::Permissive,
+                                    Status::A1opNoEssential,
+                                )?;
+                            }
+                        }
+
+                        other_property => {
+                            trace!("No additional checks for {:?}", other_property);
+                        }
                     }
 
                     if let Some(transform_index) = TRANSFORM_ORDER
                         .iter()
-                        .position(|t| *t == property.box_type())
+                        .position(|t| *t == BoxType::from(property))
                     {
                         if let Some(prev) = prev_transform_index {
                             if prev >= transform_index {
                                 error!(
-                                    "{:?} after {:?}",
+                                    "Invalid property order: {:?} after {:?}",
                                     TRANSFORM_ORDER[transform_index], TRANSFORM_ORDER[prev]
                                 );
-                                return Err(Error::InvalidData(TRANSFORM_ORDER_ERROR));
+                                fail_with_status_if(
+                                    strictness != ParseStrictness::Permissive,
+                                    if TRANSFORM_ORDER[transform_index]
+                                        == BoxType::ImageSpatialExtentsProperty
+                                    {
+                                        Status::TxformBeforeIspe
+                                    } else {
+                                        Status::TxformOrder
+                                    },
+                                )?;
                             }
                         }
                         prev_transform_index = Some(transform_index);
@@ -2313,9 +3199,9 @@ fn read_iprp<T: Read>(
                         "Missing property at {:?} for {:?}",
                         a.property_index, association_entry.item_id
                     );
-                    fail_if(
+                    fail_with_status_if(
                         strictness != ParseStrictness::Permissive,
-                        "Invalid property index in ipma",
+                        Status::IpmaBadIndex,
                     )?;
                 }
             }
@@ -2328,32 +3214,45 @@ fn read_iprp<T: Read>(
     let iprp = ItemPropertiesBox {
         properties,
         association_entries,
+        forbidden_items,
     };
     trace!("read_iprp -> {:#?}", iprp);
     Ok(iprp)
 }
 
-/// See ISOBMFF (ISO 14496-12:2020 § 8.11.14.1
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.14.1
+/// Variants with no associated data are recognized but not necessarily supported.
+/// See [`Feature`] to determine support.
 #[derive(Debug)]
 pub enum ItemProperty {
     AuxiliaryType(AuxiliaryTypeProperty),
     AV1Config(AV1ConfigBox),
     Channels(PixelInformation),
+    CleanAperture,
     Colour(ColourInformation),
     ImageSpatialExtents(ImageSpatialExtentsProperty),
+    LayeredImageIndexing,
+    LayerSelection,
     Mirroring(ImageMirror),
+    OperatingPointSelector,
+    PixelAspectRatio(PixelAspectRatio),
     Rotation(ImageRotation),
     /// Necessary to validate property indices in read_iprp
     Unsupported(BoxType),
 }
 
-impl ItemProperty {
-    fn box_type(&self) -> BoxType {
-        match self {
+impl From<&ItemProperty> for BoxType {
+    fn from(item_property: &ItemProperty) -> Self {
+        match item_property {
             ItemProperty::AuxiliaryType(_) => BoxType::AuxiliaryTypeProperty,
             ItemProperty::AV1Config(_) => BoxType::AV1CodecConfigurationBox,
+            ItemProperty::CleanAperture => BoxType::CleanApertureBox,
             ItemProperty::Colour(_) => BoxType::ColourInformationBox,
+            ItemProperty::LayeredImageIndexing => BoxType::AV1LayeredImageIndexingProperty,
+            ItemProperty::LayerSelection => BoxType::LayerSelectorProperty,
             ItemProperty::Mirroring(_) => BoxType::ImageMirror,
+            ItemProperty::OperatingPointSelector => BoxType::OperatingPointSelectorProperty,
+            ItemProperty::PixelAspectRatio(_) => BoxType::PixelAspectRatioBox,
             ItemProperty::Rotation(_) => BoxType::ImageRotation,
             ItemProperty::ImageSpatialExtents(_) => BoxType::ImageSpatialExtentsProperty,
             ItemProperty::Channels(_) => BoxType::PixelInformationBox,
@@ -2369,14 +3268,14 @@ struct ItemPropertyAssociationEntry {
 }
 
 /// For storing ItemPropertyAssociation data
-/// See ISOBMFF (ISO 14496-12:2020 § 8.11.14.1
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.14.1
 #[derive(Debug)]
 struct Association {
     essential: bool,
     property_index: PropertyIndex,
 }
 
-/// See ISOBMFF (ISO 14496-12:2020 § 8.11.14.1
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.14.1
 ///
 /// The properties themselves are stored in `properties`, but the items they're
 /// associated with are stored in `association_entries`. It's necessary to
@@ -2389,6 +3288,10 @@ pub struct ItemPropertiesBox {
     properties: TryHashMap<PropertyIndex, ItemProperty>,
     /// `ItemPropertyAssociationBox association[]` in the spec
     association_entries: TryVec<ItemPropertyAssociationEntry>,
+    /// Items that shall not be processed due to unsupported properties that
+    /// have been marked essential.
+    /// See HEIF (ISO/IEC 23008-12:2017) § 9.3.1
+    forbidden_items: TryVec<ItemId>,
 }
 
 impl ItemPropertiesBox {
@@ -2413,19 +3316,9 @@ impl ItemPropertiesBox {
         }
     }
 
-    fn get_ispe(&self, item_id: ItemId) -> Result<Option<&ImageSpatialExtentsProperty>> {
-        if let Some(ItemProperty::ImageSpatialExtents(ispe)) =
-            self.get(item_id, BoxType::ImageSpatialExtentsProperty)?
-        {
-            Ok(Some(ispe))
-        } else {
-            Ok(None)
-        }
-    }
-
     fn get(&self, item_id: ItemId, property_type: BoxType) -> Result<Option<&ItemProperty>> {
         match self
-            .get_multiple(item_id, |prop| prop.box_type() == property_type)?
+            .get_multiple(item_id, |prop| BoxType::from(prop) == property_type)?
             .as_slice()
         {
             &[] => Ok(None),
@@ -2436,7 +3329,7 @@ impl ItemPropertiesBox {
                     property_type, multiple_values
                 );
                 // TODO: add test
-                Err(Error::InvalidData("conflicting item property values"))
+                Status::IprpConflict.into()
             }
         }
     }
@@ -2517,7 +3410,7 @@ macro_rules! impl_bounded_product {
 }
 
 mod bounded_uints {
-    use UpperBounded;
+    use crate::UpperBounded;
 
     impl_bounded!(U8, u8);
     impl_bounded!(U16, u16);
@@ -2532,7 +3425,7 @@ mod bounded_uints {
     }
 }
 
-use bounded_uints::*;
+use crate::bounded_uints::*;
 
 /// Implement the multiplication operator for $lhs * $rhs giving $output, which
 /// is internally represented as $inner. The operation is statically checked
@@ -2543,8 +3436,13 @@ macro_rules! impl_mul {
             type Output = $output;
 
             fn mul(self, rhs: $rhs) -> Self::Output {
-                static_assertions::const_assert!(<$output>::MAX <= <$inner>::MAX as u64);
-                static_assertions::const_assert!(<$lhs>::MAX * <$rhs>::MAX <= <$output>::MAX);
+                static_assertions::const_assert!(
+                    <$output as UpperBounded>::MAX <= <$inner>::MAX as u64
+                );
+                static_assertions::const_assert!(
+                    <$lhs as UpperBounded>::MAX * <$rhs as UpperBounded>::MAX
+                        <= <$output as UpperBounded>::MAX
+                );
 
                 let lhs: $inner = self.get().into();
                 let rhs: $inner = rhs.get().into();
@@ -2578,7 +3476,7 @@ const MAX_IPMA_ASSOCIATION_COUNT: U8 = U8::new(u8::MAX);
 /// types implementing the UpperBounded trait. Types are declared explicitly to
 /// show there isn't any accidental inference to primitive types.
 ///
-/// See ISOBMFF (ISO 14496-12:2020 § 8.11.14.1
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.14.1
 fn calculate_ipma_total_associations(
     version: u8,
     bytes_left: u64,
@@ -2590,25 +3488,20 @@ fn calculate_ipma_total_associations(
             .unwrap();
 
     let total_non_association_bytes: U32MulU8 = entry_count * min_entry_bytes;
-    let total_association_bytes: u64;
-
-    if let Some(difference) = bytes_left.checked_sub(total_non_association_bytes.get()) {
-        // All the storage for the `essential` and `property_index` parts (assuming a valid ipma box size)
-        total_association_bytes = difference;
-    } else {
-        return Err(Error::InvalidData(
-            "ipma box below minimum size for entry_count",
-        ));
-    }
+    let total_association_bytes: u64 =
+        if let Some(difference) = bytes_left.checked_sub(total_non_association_bytes.get()) {
+            // All the storage for the `essential` and `property_index` parts (assuming a valid ipma box size)
+            difference
+        } else {
+            return Status::IpmaTooSmall.into();
+        };
 
     let max_association_bytes_per_entry: U16 = MAX_IPMA_ASSOCIATION_COUNT * num_association_bytes;
     let max_total_association_bytes: U32MulU16 = entry_count * max_association_bytes_per_entry;
     let max_bytes_left: U64 = total_non_association_bytes + max_total_association_bytes;
 
     if bytes_left > max_bytes_left.get() {
-        return Err(Error::InvalidData(
-            "ipma box exceeds maximum size for entry_count",
-        ));
+        return Status::IpmaTooBig.into();
     }
 
     let total_associations: u64 = total_association_bytes / u64::from(num_association_bytes.get());
@@ -2618,7 +3511,7 @@ fn calculate_ipma_total_associations(
 
 /// Parse an ItemPropertyAssociation box
 ///
-/// See ISOBMFF (ISO 14496-12:2020 § 8.11.14.1
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.14.1
 fn read_ipma<T: Read>(
     src: &mut BMFFBox<T>,
     strictness: ParseStrictness,
@@ -2650,11 +3543,9 @@ fn read_ipma<T: Read>(
         if let Some(previous_association) = entries.last() {
             #[allow(clippy::comparison_chain)]
             if previous_association.item_id > item_id {
-                return Err(Error::InvalidData(
-                    "Each ItemPropertyAssociation box shall be ordered by increasing item_ID",
-                ));
+                return Status::IpmaBadItemOrder.into();
             } else if previous_association.item_id == item_id {
-                return Err(Error::InvalidData("There shall be at most one association box for each item_ID, in any ItemPropertyAssociation box"));
+                return Status::IpmaDuplicateItemId.into();
             }
         }
 
@@ -2689,10 +3580,9 @@ fn read_ipma<T: Read>(
         }) = entries.last()
         {
             if *max_item_id <= ItemId(u16::MAX.into()) {
-                fail_if(
+                fail_with_status_if(
                     strictness == ParseStrictness::Strict,
-                    "The ipma version 0 should be used unless 32-bit item_ID values are needed \
-                     per ISOBMFF (ISO 14496-12:2020 § 8.11.14.1",
+                    Status::IpmaBadVersion,
                 )?;
             }
         }
@@ -2705,12 +3595,7 @@ fn read_ipma<T: Read>(
 
 /// Parse an ItemPropertyContainerBox
 ///
-/// For unsupported properties that we know about, return specific
-/// [`Status`] UnsupportedXXXX variants. Unless running in
-/// [`ParseStrictness::Permissive`] mode, in which case, unsupported properties
-/// will be ignored.
-///
-/// See ISOBMFF (ISO 14496-12:2020 § 8.11.14.1
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.14.1
 fn read_ipco<T: Read>(
     src: &mut BMFFBox<T>,
     strictness: ParseStrictness,
@@ -2720,51 +3605,43 @@ fn read_ipco<T: Read>(
     let mut index = PropertyIndex(1); // ipma uses 1-based indexing
     let mut iter = src.box_iter();
     while let Some(mut b) = iter.next_box()? {
-        if let Some(property) = match b.head.name {
-            BoxType::AuxiliaryTypeProperty => Some(ItemProperty::AuxiliaryType(read_auxc(&mut b)?)),
-            BoxType::AV1CodecConfigurationBox => Some(ItemProperty::AV1Config(read_av1c(&mut b)?)),
-            BoxType::AV1LayeredImageIndexingProperty
-                if strictness != ParseStrictness::Permissive =>
-            {
-                return Err(Error::from(Status::UnsupportedA1lx))
-            }
-            BoxType::CleanApertureBox if strictness != ParseStrictness::Permissive => {
-                return Err(Error::from(Status::UnsupportedClap))
-            }
-            BoxType::ColourInformationBox => {
-                Some(ItemProperty::Colour(read_colr(&mut b, strictness)?))
-            }
-            BoxType::ImageMirror => Some(ItemProperty::Mirroring(read_imir(&mut b)?)),
-            BoxType::ImageRotation => Some(ItemProperty::Rotation(read_irot(&mut b)?)),
+        let property = match b.head.name {
+            BoxType::AuxiliaryTypeProperty => ItemProperty::AuxiliaryType(read_auxc(&mut b)?),
+            BoxType::AV1CodecConfigurationBox => ItemProperty::AV1Config(read_av1c(&mut b)?),
+            BoxType::ColourInformationBox => ItemProperty::Colour(read_colr(&mut b, strictness)?),
+            BoxType::ImageMirror => ItemProperty::Mirroring(read_imir(&mut b)?),
+            BoxType::ImageRotation => ItemProperty::Rotation(read_irot(&mut b)?),
             BoxType::ImageSpatialExtentsProperty => {
-                Some(ItemProperty::ImageSpatialExtents(read_ispe(&mut b)?))
+                ItemProperty::ImageSpatialExtents(read_ispe(&mut b)?)
             }
-            BoxType::LayerSelectorProperty if strictness != ParseStrictness::Permissive => {
-                return Err(Error::from(Status::UnsupportedLsel))
-            }
-            BoxType::OperatingPointSelectorProperty
-                if strictness != ParseStrictness::Permissive =>
-            {
-                return Err(Error::from(Status::UnsupportedA1op))
-            }
-            BoxType::PixelInformationBox => Some(ItemProperty::Channels(read_pixi(&mut b)?)),
+            BoxType::PixelAspectRatioBox => ItemProperty::PixelAspectRatio(read_pasp(&mut b)?),
+            BoxType::PixelInformationBox => ItemProperty::Channels(read_pixi(&mut b)?),
+
             other_box_type => {
-                // Though we don't do anything with other property types, we still store
+                // Even if we didn't do anything with other property types, we still store
                 // a record at the index to identify invalid indices in ipma boxes
                 skip_box_remain(&mut b)?;
-                let item_property = ItemProperty::Unsupported(other_box_type);
+                let item_property = match other_box_type {
+                    BoxType::AV1LayeredImageIndexingProperty => ItemProperty::LayeredImageIndexing,
+                    BoxType::CleanApertureBox => ItemProperty::CleanAperture,
+                    BoxType::LayerSelectorProperty => ItemProperty::LayerSelection,
+                    BoxType::OperatingPointSelectorProperty => ItemProperty::OperatingPointSelector,
+                    _ => {
+                        warn!("No ItemProperty variant for {:?}", other_box_type);
+                        ItemProperty::Unsupported(other_box_type)
+                    }
+                };
                 debug!("Storing empty record {:?}", item_property);
-                Some(item_property)
+                item_property
             }
-        } {
-            properties.insert(index, property)?;
-        }
+        };
+        properties.insert(index, property)?;
 
         index = PropertyIndex(
             index
                 .0
                 .checked_add(1) // must include ignored properties to have correct indexes
-                .ok_or(Error::InvalidData("ipco index overflow"))?,
+                .ok_or_else(|| Error::from(Status::IpcoIndexOverflow))?,
         );
 
         check_parser_state!(b.content);
@@ -2774,7 +3651,7 @@ fn read_ipco<T: Read>(
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ImageSpatialExtentsProperty {
     image_width: u32,
     image_height: u32,
@@ -2797,6 +3674,27 @@ fn read_ispe<T: Read>(src: &mut BMFFBox<T>) -> Result<ImageSpatialExtentsPropert
     })
 }
 
+#[repr(C)]
+#[derive(Debug)]
+pub struct PixelAspectRatio {
+    h_spacing: u32,
+    v_spacing: u32,
+}
+
+/// Parse pixel aspect ratio property
+///
+/// See HEIF (ISO 23008-12:2017) § 6.5.4.1
+/// See ISOBMFF (ISO 14496-12:2020) § 12.1.4.2
+fn read_pasp<T: Read>(src: &mut BMFFBox<T>) -> Result<PixelAspectRatio> {
+    let h_spacing = be_u32(src)?;
+    let v_spacing = be_u32(src)?;
+
+    Ok(PixelAspectRatio {
+        h_spacing,
+        v_spacing,
+    })
+}
+
 #[derive(Debug)]
 pub struct PixelInformation {
     bits_per_channel: TryVec<u8>,
@@ -2815,7 +3713,7 @@ fn read_pixi<T: Read>(src: &mut BMFFBox<T>) -> Result<PixelInformation> {
     let num_channels_read = src.try_read_to_end(&mut bits_per_channel)?;
 
     if u8::try_from(num_channels_read)? != num_channels {
-        return Err(Error::InvalidData("invalid num_channels"));
+        return Status::PixiBadChannelCount.into();
     }
 
     check_parser_state!(src.content);
@@ -2891,14 +3789,12 @@ fn read_colr<T: Read>(
                     NUM_RESERVED_BITS,
                     bit_reader.remaining()
                 );
-                return Err(Error::InvalidData("Unexpected size for colr box"));
+                return Status::ColrBadSize.into();
             }
             if bit_reader.read_u8(NUM_RESERVED_BITS)? != 0 {
-                fail_if(
+                fail_with_status_if(
                     strictness != ParseStrictness::Permissive,
-                    "The 7 reserved bits at the end of the ColourInformationBox \
-                     for colour_type == 'nclx' must be 0 \
-                     per ISOBMFF (ISO 14496-12:2020) § 12.1.5.2",
+                    Status::ColrReservedNonzero,
                 )?;
             }
 
@@ -2917,9 +3813,7 @@ fn read_colr<T: Read>(
         )),
         _ => {
             error!("read_colr colour_type: {:?}", colour_type);
-            Err(Error::InvalidData(
-                "Unsupported colour_type for ColourInformationBox",
-            ))
+            Status::ColrBadType.into()
         }
     }
 }
@@ -3028,7 +3922,7 @@ fn read_auxc<T: Read>(src: &mut BMFFBox<T>) -> Result<AuxiliaryTypeProperty> {
     if let Some(nul_byte_pos) = aux.iter().position(|&b| b == b'\0') {
         let (a, b) = aux.as_slice().split_at(nul_byte_pos);
         aux_type = a.try_into()?;
-        aux_subtype = (&b[1..]).try_into()?;
+        aux_subtype = (b[1..]).try_into()?;
     } else {
         aux_type = aux;
         aux_subtype = TryVec::new();
@@ -3041,7 +3935,7 @@ fn read_auxc<T: Read>(src: &mut BMFFBox<T>) -> Result<AuxiliaryTypeProperty> {
 }
 
 /// Parse an item location box inside a meta box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.3
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.3
 fn read_iloc<T: Read>(src: &mut BMFFBox<T>) -> Result<TryHashMap<ItemId, ItemLocationBoxItem>> {
     let version: IlocVersion = read_fullbox_version_no_flags(src)?.try_into()?;
 
@@ -3085,27 +3979,23 @@ fn read_iloc<T: Read>(src: &mut BMFFBox<T>) -> Result<TryHashMap<ItemId, ItemLoc
                 match iloc.read_u16(4)? {
                     0 => ConstructionMethod::File,
                     1 => ConstructionMethod::Idat,
-                    2 => return Err(Error::Unsupported("construction_method 'item_offset' is not supported")),
-                    _ => return Err(Error::InvalidData("construction_method is taken from the set 0, 1 or 2 per ISOBMFF (ISO 14496-12:2015) § 8.11.3.3"))
+                    2 => ConstructionMethod::Item,
+                    _ => return Status::IlocBadConstructionMethod.into(),
                 }
             }
         };
 
         let data_reference_index = iloc.read_u16(16)?;
-
         if data_reference_index != 0 {
             return Err(Error::Unsupported(
                 "external file references (iloc.data_reference_index != 0) are not supported",
             ));
         }
-
         let base_offset = iloc.read_u64(base_offset_size.as_bits())?;
         let extent_count = iloc.read_u16(16)?;
 
         if extent_count < 1 {
-            return Err(Error::InvalidData(
-                "extent_count must have a value 1 or greater per ISOBMFF (ISO 14496-12:2015) § 8.11.3.3",
-            ));
+            return Status::IlocBadExtentCount.into();
         }
 
         // "If only one extent is used (extent_count = 1) then either or both of the
@@ -3113,9 +4003,7 @@ fn read_iloc<T: Read>(src: &mut BMFFBox<T>) -> Result<TryHashMap<ItemId, ItemLoc
         if extent_count != 1
             && (offset_size == IlocFieldSize::Zero || length_size == IlocFieldSize::Zero)
         {
-            return Err(Error::InvalidData(
-                "extent_count != 1 requires explicit offset and length per ISOBMFF (ISO 14496-12:2015) § 8.11.3.3",
-            ));
+            return Status::IlocBadExtent.into();
         }
 
         let mut extents = TryVec::with_capacity(extent_count.to_usize())?;
@@ -3130,7 +4018,7 @@ fn read_iloc<T: Read>(src: &mut BMFFBox<T>) -> Result<TryHashMap<ItemId, ItemLoc
                 }
             };
 
-            // Per ISOBMFF (ISO 14496-12:2015) § 8.11.3.1:
+            // Per ISOBMFF (ISO 14496-12:2020) § 8.11.3.1:
             // "If the offset is not identified (the field has a length of zero), then the
             //  beginning of the source (offset 0) is implied"
             // This behavior will follow from BitReader::read_u64(0) -> 0.
@@ -3141,7 +4029,7 @@ fn read_iloc<T: Read>(src: &mut BMFFBox<T>) -> Result<TryHashMap<ItemId, ItemLoc
             //  the source is implied" (ibid)
             let offset = base_offset
                 .checked_add(extent_offset)
-                .ok_or(Error::InvalidData("offset calculation overflow"))?;
+                .ok_or_else(|| Error::from(Status::IlocOffsetOverflow))?;
             let extent = if extent_length == 0 {
                 Extent::ToEnd { offset }
             } else {
@@ -3160,14 +4048,14 @@ fn read_iloc<T: Read>(src: &mut BMFFBox<T>) -> Result<TryHashMap<ItemId, ItemLoc
         };
 
         if items.insert(item_id, loc)?.is_some() {
-            return Err(Error::InvalidData("duplicate item_ID in iloc"));
+            return Status::IlocDuplicateItemId.into();
         }
     }
 
     if iloc.remaining() == 0 {
         Ok(items)
     } else {
-        Err(Error::InvalidData("invalid iloc size"))
+        Status::IlocBadSize.into()
     }
 }
 
@@ -3227,23 +4115,23 @@ pub fn read_mp4<T: Read>(f: &mut T) -> Result<MediaContext> {
     // XXX(kinetik): This isn't perfect, as a "moov" with no contents is
     // treated as okay but we haven't found anything useful.  Needs more
     // thought for clearer behaviour here.
-    context.ok_or(Error::NoMoov)
+    context.ok_or(Error::MoovMissing)
 }
 
 /// Parse a Movie Header Box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.2.2
+/// See ISOBMFF (ISO 14496-12:2020) § 8.2.2
 fn parse_mvhd<T: Read>(f: &mut BMFFBox<T>) -> Result<Option<MediaTimeScale>> {
     let mvhd = read_mvhd(f)?;
     debug!("{:?}", mvhd);
     if mvhd.timescale == 0 {
-        return Err(Error::InvalidData("zero timescale in mdhd"));
+        return Status::MvhdBadTimescale.into();
     }
     let timescale = Some(MediaTimeScale(u64::from(mvhd.timescale)));
     Ok(timescale)
 }
 
 /// Parse a Movie Box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.2.1
+/// See ISOBMFF (ISO 14496-12:2020) § 8.2.1
 /// Note that despite the spec indicating "exactly one" moov box should exist at
 /// the file container level, we support reading and merging multiple moov boxes
 /// such as with tests/test_case_1185230.mp4.
@@ -3315,9 +4203,15 @@ fn read_pssh<T: Read>(src: &mut BMFFBox<T>) -> Result<ProtectionSystemSpecificHe
 
         let mut kid = TryVec::<ByteData>::new();
         if version > 0 {
-            let count = be_u32(pssh)?;
+            const KID_ELEMENT_SIZE: usize = 16;
+            let count = be_u32(pssh)?.to_usize();
+            kid.reserve(
+                count
+                    .checked_mul(KID_ELEMENT_SIZE)
+                    .ok_or_else(|| Error::from(Status::PsshSizeOverflow))?,
+            )?;
             for _ in 0..count {
-                let item = read_buf(pssh, 16)?;
+                let item = read_buf(pssh, KID_ELEMENT_SIZE.to_u64())?;
                 kid.push(item)?;
             }
         }
@@ -3342,7 +4236,7 @@ fn read_pssh<T: Read>(src: &mut BMFFBox<T>) -> Result<ProtectionSystemSpecificHe
 }
 
 /// Parse a Movie Extends Box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.8.1
+/// See ISOBMFF (ISO 14496-12:2020) § 8.8.1
 fn read_mvex<T: Read>(src: &mut BMFFBox<T>) -> Result<MovieExtendsBox> {
     let mut iter = src.box_iter();
     let mut fragment_duration = None;
@@ -3363,13 +4257,13 @@ fn read_mehd<T: Read>(src: &mut BMFFBox<T>) -> Result<MediaScaledTime> {
     let fragment_duration = match version {
         1 => be_u64(src)?,
         0 => u64::from(be_u32(src)?),
-        _ => return Err(Error::InvalidData("unhandled mehd version")),
+        _ => return Status::MehdBadVersion.into(),
     };
     Ok(MediaScaledTime(fragment_duration))
 }
 
 /// Parse a Track Box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.3.1.
+/// See ISOBMFF (ISO 14496-12:2020) § 8.3.1.
 fn read_trak<T: Read>(f: &mut BMFFBox<T>, track: &mut Track) -> Result<()> {
     let mut iter = f.box_iter();
     while let Some(mut b) = iter.next_box()? {
@@ -3382,6 +4276,7 @@ fn read_trak<T: Read>(f: &mut BMFFBox<T>, track: &mut Track) -> Result<()> {
             }
             BoxType::EditBox => read_edts(&mut b, track)?,
             BoxType::MediaBox => read_mdia(&mut b, track)?,
+            BoxType::TrackReferenceBox => track.tref = Some(read_tref(&mut b)?),
             _ => skip_box_content(&mut b)?,
         };
         check_parser_state!(b.content);
@@ -3395,6 +4290,7 @@ fn read_edts<T: Read>(f: &mut BMFFBox<T>, track: &mut Track) -> Result<()> {
         match b.head.name {
             BoxType::EditListBox => {
                 let elst = read_elst(&mut b)?;
+                track.looped = Some(elst.looped);
                 if elst.edits.is_empty() {
                     debug!("empty edit list");
                     continue;
@@ -3414,6 +4310,7 @@ fn read_edts<T: Read>(f: &mut BMFFBox<T>, track: &mut Track) -> Result<()> {
                 if media_time < 0 {
                     debug!("unexpected negative media time in edit");
                 }
+                track.edited_duration = Some(MediaScaledTime(elst.edits[idx].segment_duration));
                 track.media_time = Some(TrackScaledTime::<u64>(
                     std::cmp::max(0, media_time) as u64,
                     track.id,
@@ -3433,7 +4330,7 @@ fn read_edts<T: Read>(f: &mut BMFFBox<T>, track: &mut Track) -> Result<()> {
 #[allow(clippy::type_complexity)] // Allow the complex return, maybe rework in future
 fn parse_mdhd<T: Read>(
     f: &mut BMFFBox<T>,
-    track: &mut Track,
+    track: &Track,
 ) -> Result<(
     MediaHeaderBox,
     Option<TrackScaledTime<u64>>,
@@ -3445,7 +4342,7 @@ fn parse_mdhd<T: Read>(
         duration => Some(TrackScaledTime::<u64>(duration, track.id)),
     };
     if mdhd.timescale == 0 {
-        return Err(Error::InvalidData("zero timescale in mdhd"));
+        return Status::MdhdBadTimescale.into();
     }
     let timescale = Some(TrackTimeScale::<u64>(u64::from(mdhd.timescale), track.id));
     Ok((mdhd, duration, timescale))
@@ -3466,6 +4363,8 @@ fn read_mdia<T: Read>(f: &mut BMFFBox<T>, track: &mut Track) -> Result<()> {
 
                 match hdlr.handler_type.value.as_ref() {
                     b"vide" => track.track_type = TrackType::Video,
+                    b"pict" => track.track_type = TrackType::Picture,
+                    b"auxv" => track.track_type = TrackType::AuxiliaryVideo,
                     b"soun" => track.track_type = TrackType::Audio,
                     b"meta" => track.track_type = TrackType::Metadata,
                     _ => (),
@@ -3478,6 +4377,32 @@ fn read_mdia<T: Read>(f: &mut BMFFBox<T>, track: &mut Track) -> Result<()> {
         check_parser_state!(b.content);
     }
     Ok(())
+}
+
+fn read_tref<T: Read>(f: &mut BMFFBox<T>) -> Result<TrackReferenceBox> {
+    // Will likely only see trefs with one auxl
+    let mut references = TryVec::with_capacity(1)?;
+    let mut iter = f.box_iter();
+    while let Some(mut b) = iter.next_box()? {
+        match b.head.name {
+            BoxType::AuxiliaryBox => {
+                references.push(TrackReferenceEntry::Auxiliary(read_tref_auxl(&mut b)?))?
+            }
+            _ => skip_box_content(&mut b)?,
+        };
+        check_parser_state!(b.content);
+    }
+    Ok(TrackReferenceBox { references })
+}
+
+fn read_tref_auxl<T: Read>(f: &mut BMFFBox<T>) -> Result<TrackReference> {
+    let num_track_ids = (f.bytes_left() / std::mem::size_of::<u32>().to_u64()).try_into()?;
+    let mut track_ids = TryVec::with_capacity(num_track_ids)?;
+    for _ in 0..num_track_ids {
+        track_ids.push(be_u32(f)?)?;
+    }
+
+    Ok(TrackReference { track_ids })
 }
 
 fn read_minf<T: Read>(f: &mut BMFFBox<T>, track: &mut Track) -> Result<()> {
@@ -3544,13 +4469,13 @@ fn read_stbl<T: Read>(f: &mut BMFFBox<T>, track: &mut Track) -> Result<()> {
 }
 
 /// Parse an ftyp box.
-/// See ISOBMFF (ISO 14496-12:2015) § 4.3
+/// See ISOBMFF (ISO 14496-12:2020) § 4.3
 fn read_ftyp<T: Read>(src: &mut BMFFBox<T>) -> Result<FileTypeBox> {
     let major = be_u32(src)?;
     let minor = be_u32(src)?;
     let bytes_left = src.bytes_left();
     if bytes_left % 4 != 0 {
-        return Err(Error::InvalidData("invalid ftyp size"));
+        return Status::FtypBadSize.into();
     }
     // Is a brand_count of zero valid?
     let brand_count = bytes_left / 4;
@@ -3577,7 +4502,7 @@ fn read_mvhd<T: Read>(src: &mut BMFFBox<T>) -> Result<MovieHeaderBox> {
         0 => {
             skip(src, 8)?;
         }
-        _ => return Err(Error::InvalidData("unhandled mvhd version")),
+        _ => return Status::MvhdBadVersion.into(),
     }
     let timescale = be_u32(src)?;
     let duration = match version {
@@ -3590,7 +4515,7 @@ fn read_mvhd<T: Read>(src: &mut BMFFBox<T>) -> Result<MovieHeaderBox> {
                 u64::from(d)
             }
         }
-        _ => return Err(Error::InvalidData("unhandled mvhd version")),
+        _ => unreachable!("Should have returned Status::MvhdBadVersion"),
     };
     // Skip remaining fields.
     skip(src, 80)?;
@@ -3613,14 +4538,14 @@ fn read_tkhd<T: Read>(src: &mut BMFFBox<T>) -> Result<TrackHeaderBox> {
         0 => {
             skip(src, 8)?;
         }
-        _ => return Err(Error::InvalidData("unhandled tkhd version")),
+        _ => return Status::TkhdBadVersion.into(),
     }
     let track_id = be_u32(src)?;
     skip(src, 4)?;
     let duration = match version {
         1 => be_u64(src)?,
         0 => u64::from(be_u32(src)?),
-        _ => return Err(Error::InvalidData("unhandled tkhd version")),
+        _ => unreachable!("Should have returned Status::TkhdBadVersion"),
     };
     // Skip uninteresting fields.
     skip(src, 16)?;
@@ -3650,9 +4575,9 @@ fn read_tkhd<T: Read>(src: &mut BMFFBox<T>) -> Result<TrackHeaderBox> {
 }
 
 /// Parse a elst box.
-/// See ISOBMFF (ISO 14496-12:2015) § 8.6.6
+/// See ISOBMFF (ISO 14496-12:2020) § 8.6.6
 fn read_elst<T: Read>(src: &mut BMFFBox<T>) -> Result<EditListBox> {
-    let (version, _) = read_fullbox_extra(src)?;
+    let (version, flags) = read_fullbox_extra(src)?;
     let edit_count = be_u32(src)?;
     let mut edits = TryVec::with_capacity(edit_count.to_usize())?;
     for _ in 0..edit_count {
@@ -3665,7 +4590,7 @@ fn read_elst<T: Read>(src: &mut BMFFBox<T>) -> Result<EditListBox> {
                 // 32 bit segment duration and media times.
                 (u64::from(be_u32(src)?), i64::from(be_i32(src)?))
             }
-            _ => return Err(Error::InvalidData("unhandled elst version")),
+            _ => return Status::ElstBadVersion.into(),
         };
         let media_rate_integer = be_i16(src)?;
         let media_rate_fraction = be_i16(src)?;
@@ -3680,7 +4605,10 @@ fn read_elst<T: Read>(src: &mut BMFFBox<T>) -> Result<EditListBox> {
     // Padding could be added in some contents.
     skip_box_remain(src)?;
 
-    Ok(EditListBox { edits })
+    Ok(EditListBox {
+        looped: flags == 1,
+        edits,
+    })
 }
 
 /// Parse a mdhd box.
@@ -3713,7 +4641,7 @@ fn read_mdhd<T: Read>(src: &mut BMFFBox<T>) -> Result<MediaHeaderBox> {
             };
             (timescale, duration)
         }
-        _ => return Err(Error::InvalidData("unhandled mdhd version")),
+        _ => return Status::MdhdBadVersion.into(),
     };
 
     // Skip uninteresting fields.
@@ -3726,7 +4654,7 @@ fn read_mdhd<T: Read>(src: &mut BMFFBox<T>) -> Result<MediaHeaderBox> {
 }
 
 /// Parse a stco box.
-/// See ISOBMFF (ISO 14496-12:2015) § 8.7.5
+/// See ISOBMFF (ISO 14496-12:2020) § 8.7.5
 fn read_stco<T: Read>(src: &mut BMFFBox<T>) -> Result<ChunkOffsetBox> {
     let (_, _) = read_fullbox_extra(src)?;
     let offset_count = be_u32(src)?;
@@ -3742,7 +4670,7 @@ fn read_stco<T: Read>(src: &mut BMFFBox<T>) -> Result<ChunkOffsetBox> {
 }
 
 /// Parse a co64 box.
-/// See ISOBMFF (ISO 14496-12:2015) § 8.7.5
+/// See ISOBMFF (ISO 14496-12:2020) § 8.7.5
 fn read_co64<T: Read>(src: &mut BMFFBox<T>) -> Result<ChunkOffsetBox> {
     let (_, _) = read_fullbox_extra(src)?;
     let offset_count = be_u32(src)?;
@@ -3758,7 +4686,7 @@ fn read_co64<T: Read>(src: &mut BMFFBox<T>) -> Result<ChunkOffsetBox> {
 }
 
 /// Parse a stss box.
-/// See ISOBMFF (ISO 14496-12:2015) § 8.6.2
+/// See ISOBMFF (ISO 14496-12:2020) § 8.6.2
 fn read_stss<T: Read>(src: &mut BMFFBox<T>) -> Result<SyncSampleBox> {
     let (_, _) = read_fullbox_extra(src)?;
     let sample_count = be_u32(src)?;
@@ -3774,7 +4702,7 @@ fn read_stss<T: Read>(src: &mut BMFFBox<T>) -> Result<SyncSampleBox> {
 }
 
 /// Parse a stsc box.
-/// See ISOBMFF (ISO 14496-12:2015) § 8.7.4
+/// See ISOBMFF (ISO 14496-12:2020) § 8.7.4
 fn read_stsc<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleToChunkBox> {
     let (_, _) = read_fullbox_extra(src)?;
     let sample_count = be_u32(src)?;
@@ -3797,7 +4725,7 @@ fn read_stsc<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleToChunkBox> {
 }
 
 /// Parse a Composition Time to Sample Box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.6.1.3
+/// See ISOBMFF (ISO 14496-12:2020) § 8.6.1.3
 fn read_ctts<T: Read>(src: &mut BMFFBox<T>) -> Result<CompositionOffsetBox> {
     let (version, _) = read_fullbox_extra(src)?;
 
@@ -3807,7 +4735,7 @@ fn read_ctts<T: Read>(src: &mut BMFFBox<T>) -> Result<CompositionOffsetBox> {
         .checked_mul(8)
         .map_or(true, |bytes| u64::from(bytes) > src.bytes_left())
     {
-        return Err(Error::InvalidData("insufficient data in 'ctts' box"));
+        return Status::CttsBadSize.into();
     }
 
     let mut offsets = TryVec::with_capacity(counts.to_usize())?;
@@ -3822,7 +4750,7 @@ fn read_ctts<T: Read>(src: &mut BMFFBox<T>) -> Result<CompositionOffsetBox> {
                 (count, offset)
             }
             _ => {
-                return Err(Error::InvalidData("unsupported version in 'ctts' box"));
+                return Status::CttsBadVersion.into();
             }
         };
         offsets.push(TimeOffset {
@@ -3837,7 +4765,7 @@ fn read_ctts<T: Read>(src: &mut BMFFBox<T>) -> Result<CompositionOffsetBox> {
 }
 
 /// Parse a stsz box.
-/// See ISOBMFF (ISO 14496-12:2015) § 8.7.3.2
+/// See ISOBMFF (ISO 14496-12:2020) § 8.7.3.2
 fn read_stsz<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleSizeBox> {
     let (_, _) = read_fullbox_extra(src)?;
     let sample_size = be_u32(src)?;
@@ -3860,7 +4788,7 @@ fn read_stsz<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleSizeBox> {
 }
 
 /// Parse a stts box.
-/// See ISOBMFF (ISO 14496-12:2015) § 8.6.1.2
+/// See ISOBMFF (ISO 14496-12:2020) § 8.6.1.2
 fn read_stts<T: Read>(src: &mut BMFFBox<T>) -> Result<TimeToSampleBox> {
     let (_, _) = read_fullbox_extra(src)?;
     let sample_count = be_u32(src)?;
@@ -4006,9 +4934,7 @@ fn read_flac_metadata<T: Read>(src: &mut BMFFBox<T>) -> Result<FLACMetadataBlock
     let block_type = temp & 0x7f;
     let length = be_u24(src)?.into();
     if length > src.bytes_left() {
-        return Err(Error::InvalidData(
-            "FLACMetadataBlock larger than parent box",
-        ));
+        return Status::DflaBadMetadataBlockSize.into();
     }
     let data = read_buf(src, length)?;
     Ok(FLACMetadataBlock { block_type, data })
@@ -4048,7 +4974,7 @@ fn find_descriptor(data: &[u8], esds: &mut ES_Descriptor) -> Result<()> {
         }
 
         if end.to_usize() > remains.len() || u64::from(end) < des.position() {
-            return Err(Error::InvalidData("Invalid descriptor."));
+            return Status::EsdsBadDescriptor.into();
         }
 
         let descriptor = &remains[des.position().try_into()?..end.to_usize()];
@@ -4096,7 +5022,7 @@ fn read_ds_descriptor(data: &[u8], esds: &mut ES_Descriptor) -> Result<()> {
     }
 
     // We are in an Audio esda Box.
-    let frequency_table = vec![
+    let frequency_table = [
         (0x0, 96000),
         (0x1, 88200),
         (0x2, 64000),
@@ -4243,9 +5169,7 @@ fn read_ds_descriptor(data: &[u8], esds: &mut ES_Descriptor) -> Result<()> {
             esds.audio_sample_rate = Some(sample_frequency_value);
             esds.audio_channel_count = Some(channel_counts);
             if !esds.decoder_specific_data.is_empty() {
-                return Err(Error::InvalidData(
-                    "There can be only one DecSpecificInfoTag descriptor",
-                ));
+                return Status::EsdsDecSpecificIntoTagQuantity.into();
             }
             esds.decoder_specific_data.extend_from_slice(data)?;
 
@@ -4286,7 +5210,7 @@ fn read_dc_descriptor(data: &[u8], esds: &mut ES_Descriptor) -> Result<()> {
     }
 
     esds.audio_codec = match object_profile {
-        0x40 | 0x41 => CodecType::AAC,
+        0x40 | 0x66 | 0x67 => CodecType::AAC,
         0x69 | 0x6B => CodecType::MP3,
         _ => CodecType::Unknown,
     };
@@ -4349,7 +5273,7 @@ fn read_dfla<T: Read>(src: &mut BMFFBox<T>) -> Result<FLACSpecificBox> {
         return Err(Error::Unsupported("unknown dfLa (FLAC) version"));
     }
     if flags != 0 {
-        return Err(Error::InvalidData("no-zero dfLa (FLAC) flags"));
+        return Status::DflaFlagsNonzero.into();
     }
     let mut blocks = TryVec::new();
     while src.bytes_left() > 0 {
@@ -4359,15 +5283,11 @@ fn read_dfla<T: Read>(src: &mut BMFFBox<T>) -> Result<FLACSpecificBox> {
     // The box must have at least one meta block, and the first block
     // must be the METADATA_BLOCK_STREAMINFO
     if blocks.is_empty() {
-        return Err(Error::InvalidData("FLACSpecificBox missing metadata"));
+        return Status::DflaMissingMetadata.into();
     } else if blocks[0].block_type != 0 {
-        return Err(Error::InvalidData(
-            "FLACSpecificBox must have STREAMINFO metadata first",
-        ));
+        return Status::DflaStreamInfoNotFirst.into();
     } else if blocks[0].data.len() != 34 {
-        return Err(Error::InvalidData(
-            "FLACSpecificBox STREAMINFO block is the wrong size",
-        ));
+        return Status::DflaStreamInfoBadSize.into();
     }
     Ok(FLACSpecificBox { version, blocks })
 }
@@ -4425,7 +5345,7 @@ pub fn serialize_opus_header<W: byteorder::WriteBytesExt + std::io::Write>(
         Err(e) => return Err(Error::from(e)),
         Ok(bytes) => {
             if bytes != 8 {
-                return Err(Error::InvalidData("Couldn't write OpusHead tag."));
+                return Status::DopsOpusHeadWriteErr.into();
             }
         }
     }
@@ -4448,9 +5368,7 @@ pub fn serialize_opus_header<W: byteorder::WriteBytesExt + std::io::Write>(
                 Err(e) => return Err(Error::from(e)),
                 Ok(bytes) => {
                     if bytes != table.channel_mapping.len() {
-                        return Err(Error::InvalidData(
-                            "Couldn't write channel mapping table data.",
-                        ));
+                        return Status::DopsChannelMappingWriteErr.into();
                     }
                 }
             }
@@ -4466,15 +5384,13 @@ fn read_alac<T: Read>(src: &mut BMFFBox<T>) -> Result<ALACSpecificBox> {
         return Err(Error::Unsupported("unknown alac (ALAC) version"));
     }
     if flags != 0 {
-        return Err(Error::InvalidData("no-zero alac (ALAC) flags"));
+        return Status::AlacFlagsNonzero.into();
     }
 
     let length = match src.bytes_left() {
         x @ 24 | x @ 48 => x,
         _ => {
-            return Err(Error::InvalidData(
-                "ALACSpecificBox magic cookie is the wrong size",
-            ))
+            return Status::AlacBadMagicCookieSize.into();
         }
     };
     let data = read_buf(src, length)?;
@@ -4487,15 +5403,14 @@ fn read_alac<T: Read>(src: &mut BMFFBox<T>) -> Result<ALACSpecificBox> {
 /// See [\[ISOBMFF\]: reserved (field = 0;) handling is ambiguous](https://github.com/MPEGGroup/FileFormat/issues/36)
 fn read_hdlr<T: Read>(src: &mut BMFFBox<T>, strictness: ParseStrictness) -> Result<HandlerBox> {
     if read_fullbox_version_no_flags(src)? != 0 {
-        return Err(Error::Unsupported("hdlr version"));
+        return Status::HdlrUnsupportedVersion.into();
     }
 
     let pre_defined = be_u32(src)?;
     if pre_defined != 0 {
-        fail_if(
+        fail_with_status_if(
             strictness == ParseStrictness::Strict,
-            "The HandlerBox 'pre_defined' field shall be 0 \
-             per ISOBMFF (ISO 14496-12:2020) § 8.4.3.2",
+            Status::HdlrPredefinedNonzero,
         )?;
     }
 
@@ -4504,28 +5419,28 @@ fn read_hdlr<T: Read>(src: &mut BMFFBox<T>, strictness: ParseStrictness) -> Resu
     for _ in 1..=3 {
         let reserved = be_u32(src)?;
         if reserved != 0 {
-            fail_if(
+            fail_with_status_if(
                 strictness == ParseStrictness::Strict,
-                "The HandlerBox 'reserved' fields shall be 0 \
-                 per ISOBMFF (ISO 14496-12:2020) § 8.4.3.2",
+                Status::HdlrReservedNonzero,
             )?;
         }
     }
 
     match std::str::from_utf8(src.read_into_try_vec()?.as_slice()) {
         Ok(name) => {
-            if name.bytes().last() != Some(b'\0') {
-                fail_if(
+            match name.bytes().position(|b| b == b'\0') {
+                None => fail_with_status_if(
                     strictness != ParseStrictness::Permissive,
-                    "The HandlerBox 'name' field shall be null-terminated \
-                     per ISOBMFF (ISO 14496-12:2020) § 8.4.3.2",
-                )?
+                    Status::HdlrNameNoNul,
+                )?,
+                // `name` must be nul-terminated and any trailing bytes after the first nul ignored.
+                // See https://github.com/MPEGGroup/FileFormat/issues/35
+                Some(_) => (),
             }
         }
-        Err(_) => fail_if(
+        Err(_) => fail_with_status_if(
             strictness != ParseStrictness::Permissive,
-            "The HandlerBox 'name' field shall be valid utf8 \
-             per ISOBMFF (ISO 14496-12:2020) § 8.4.3.2",
+            Status::HdlrNameNotUtf8,
         )?,
     }
 
@@ -4543,6 +5458,7 @@ fn read_video_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
         BoxType::AV1SampleEntry => CodecType::AV1,
         BoxType::ProtectedVisualSampleEntry => CodecType::EncryptedVideo,
         BoxType::H263SampleEntry => CodecType::H263,
+        BoxType::HEV1SampleEntry | BoxType::HVC1SampleEntry => CodecType::HEVC,
         _ => {
             debug!("Unsupported video codec, box {:?} found", name);
             CodecType::Unknown
@@ -4575,7 +5491,7 @@ fn read_video_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
                     && name != BoxType::ProtectedVisualSampleEntry)
                     || codec_specific.is_some()
                 {
-                    return Err(Error::InvalidData("malformed video sample entry"));
+                    return Status::StsdBadVideoSampleEntry.into();
                 }
                 let avcc_size = b
                     .head
@@ -4589,7 +5505,7 @@ fn read_video_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
             }
             BoxType::H263SpecificBox => {
                 if (name != BoxType::H263SampleEntry) || codec_specific.is_some() {
-                    return Err(Error::InvalidData("malformed video sample entry"));
+                    return Status::StsdBadVideoSampleEntry.into();
                 }
                 let h263_dec_spec_struc_size = b
                     .head
@@ -4608,21 +5524,21 @@ fn read_video_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
                     && name != BoxType::ProtectedVisualSampleEntry)
                     || codec_specific.is_some()
                 {
-                    return Err(Error::InvalidData("malformed video sample entry"));
+                    return Status::StsdBadVideoSampleEntry.into();
                 }
                 let vpcc = read_vpcc(&mut b)?;
                 codec_specific = Some(VideoCodecSpecific::VPxConfig(vpcc));
             }
             BoxType::AV1CodecConfigurationBox => {
                 if name != BoxType::AV1SampleEntry && name != BoxType::ProtectedVisualSampleEntry {
-                    return Err(Error::InvalidData("malformed video sample entry"));
+                    return Status::StsdBadVideoSampleEntry.into();
                 }
                 let av1c = read_av1c(&mut b)?;
                 codec_specific = Some(VideoCodecSpecific::AV1Config(av1c));
             }
             BoxType::ESDBox => {
                 if name != BoxType::MP4VideoSampleEntry || codec_specific.is_some() {
-                    return Err(Error::InvalidData("malformed video sample entry"));
+                    return Status::StsdBadVideoSampleEntry.into();
                 }
                 #[cfg(not(feature = "mp4v"))]
                 {
@@ -4640,7 +5556,7 @@ fn read_video_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
                 #[cfg(feature = "mp4v")]
                 {
                     // Read ES_Descriptor inside an esds box.
-                    // See ISOBMFF (ISO 14496-1:2010 §7.2.6.5)
+                    // See ISOBMFF (ISO 14496-1:2010) § 7.2.6.5
                     let esds = read_esds(&mut b)?;
                     codec_specific =
                         Some(VideoCodecSpecific::ESDSConfig(esds.decoder_specific_data));
@@ -4648,11 +5564,28 @@ fn read_video_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
             }
             BoxType::ProtectionSchemeInfoBox => {
                 if name != BoxType::ProtectedVisualSampleEntry {
-                    return Err(Error::InvalidData("malformed video sample entry"));
+                    return Status::StsdBadVideoSampleEntry.into();
                 }
                 let sinf = read_sinf(&mut b)?;
                 debug!("{:?} (sinf)", sinf);
                 protection_info.push(sinf)?;
+            }
+            BoxType::HEVCConfigurationBox => {
+                if (name != BoxType::HEV1SampleEntry
+                    && name != BoxType::HVC1SampleEntry
+                    && name != BoxType::ProtectedVisualSampleEntry)
+                    || codec_specific.is_some()
+                {
+                    return Status::StsdBadVideoSampleEntry.into();
+                }
+                let hvcc_size = b
+                    .head
+                    .size
+                    .checked_sub(b.head.offset)
+                    .expect("offset invalid");
+                let hvcc = read_buf(&mut b.content, hvcc_size)?;
+                debug!("{:?} (hvcc)", hvcc);
+                codec_specific = Some(VideoCodecSpecific::HEVCConfig(hvcc));
             }
             _ => {
                 debug!("Unsupported video codec, box {:?} found", b.head.name);
@@ -4689,11 +5622,11 @@ fn read_qt_wave_atom<T: Read>(src: &mut BMFFBox<T>) -> Result<ES_Descriptor> {
         }
     }
 
-    codec_specific.ok_or(Error::InvalidData("malformed audio sample entry"))
+    codec_specific.ok_or_else(|| Error::from(Status::EsdsBadAudioSampleEntry))
 }
 
 /// Parse an audio description inside an stsd box.
-/// See ISOBMFF (ISO 14496-12:2015) § 12.2.3
+/// See ISOBMFF (ISO 14496-12:2020) § 12.2.3
 fn read_audio_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry> {
     let name = src.get_header().name;
 
@@ -4766,7 +5699,7 @@ fn read_audio_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
                     && name != BoxType::ProtectedAudioSampleEntry)
                     || codec_specific.is_some()
                 {
-                    return Err(Error::InvalidData("malformed audio sample entry"));
+                    return Status::StsdBadAudioSampleEntry.into();
                 }
                 let esds = read_esds(&mut b)?;
                 codec_type = esds.audio_codec;
@@ -4776,7 +5709,7 @@ fn read_audio_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
                 if (name != BoxType::FLACSampleEntry && name != BoxType::ProtectedAudioSampleEntry)
                     || codec_specific.is_some()
                 {
-                    return Err(Error::InvalidData("malformed audio sample entry"));
+                    return Status::StsdBadAudioSampleEntry.into();
                 }
                 let dfla = read_dfla(&mut b)?;
                 codec_type = CodecType::FLAC;
@@ -4786,7 +5719,7 @@ fn read_audio_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
                 if (name != BoxType::OpusSampleEntry && name != BoxType::ProtectedAudioSampleEntry)
                     || codec_specific.is_some()
                 {
-                    return Err(Error::InvalidData("malformed audio sample entry"));
+                    return Status::StsdBadAudioSampleEntry.into();
                 }
                 let dops = read_dops(&mut b)?;
                 codec_type = CodecType::Opus;
@@ -4794,7 +5727,7 @@ fn read_audio_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
             }
             BoxType::ALACSpecificBox => {
                 if name != BoxType::ALACSpecificBox || codec_specific.is_some() {
-                    return Err(Error::InvalidData("malformed audio sample entry"));
+                    return Status::StsdBadAudioSampleEntry.into();
                 }
                 let alac = read_alac(&mut b)?;
                 codec_type = CodecType::ALAC;
@@ -4807,7 +5740,7 @@ fn read_audio_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
             }
             BoxType::ProtectionSchemeInfoBox => {
                 if name != BoxType::ProtectedAudioSampleEntry {
-                    return Err(Error::InvalidData("malformed audio sample entry"));
+                    return Status::StsdBadAudioSampleEntry.into();
                 }
                 let sinf = read_sinf(&mut b)?;
                 debug!("{:?} (sinf)", sinf);
@@ -4817,7 +5750,7 @@ fn read_audio_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
             #[cfg(feature = "3gpp")]
             BoxType::AMRSpecificBox => {
                 if codec_type != CodecType::AMRNB && codec_type != CodecType::AMRWB {
-                    return Err(Error::InvalidData("malformed audio sample entry"));
+                    return Status::StsdBadAudioSampleEntry.into();
                 }
                 let amr_dec_spec_struc_size = b
                     .head
@@ -4852,19 +5785,28 @@ fn read_audio_sample_entry<T: Read>(src: &mut BMFFBox<T>) -> Result<SampleEntry>
 }
 
 /// Parse a stsd box.
-/// See ISOBMFF (ISO 14496-12:2015) § 8.5.2
+/// See ISOBMFF (ISO 14496-12:2020) § 8.5.2
 /// See MP4 (ISO 14496-14:2020) § 6.7.2
-fn read_stsd<T: Read>(src: &mut BMFFBox<T>, track: &mut Track) -> Result<SampleDescriptionBox> {
-    let (_, _) = read_fullbox_extra(src)?;
+fn read_stsd<T: Read>(src: &mut BMFFBox<T>, track: &Track) -> Result<SampleDescriptionBox> {
+    let (_, flags) = read_fullbox_extra(src)?;
 
-    let description_count = be_u32(src)?;
-    let mut descriptions = TryVec::new();
+    if flags != 0 {
+        warn!(
+            "Unexpected `flags` value for SampleDescriptionBox (stsd): {}",
+            flags
+        );
+    }
 
-    {
-        let mut iter = src.box_iter();
-        while let Some(mut b) = iter.next_box()? {
+    let description_count = be_u32(src)?.to_usize();
+    let mut descriptions = TryVec::with_capacity(description_count)?;
+
+    let mut iter = src.box_iter();
+    while descriptions.len() < description_count {
+        if let Some(mut b) = iter.next_box()? {
             let description = match track.track_type {
                 TrackType::Video => read_video_sample_entry(&mut b),
+                TrackType::Picture => read_video_sample_entry(&mut b),
+                TrackType::AuxiliaryVideo => read_video_sample_entry(&mut b),
                 TrackType::Audio => read_audio_sample_entry(&mut b),
                 TrackType::Metadata => Err(Error::Unsupported("metadata track")),
                 TrackType::Unknown => Err(Error::Unsupported("unknown track type")),
@@ -4883,9 +5825,8 @@ fn read_stsd<T: Read>(src: &mut BMFFBox<T>, track: &mut Track) -> Result<SampleD
             };
             descriptions.push(description)?;
             check_parser_state!(b.content);
-            if descriptions.len() == description_count.to_usize() {
-                break;
-            }
+        } else {
+            break;
         }
     }
 
@@ -4926,9 +5867,7 @@ fn read_schi<T: Read>(src: &mut BMFFBox<T>) -> Result<Option<TrackEncryptionBox>
         match b.head.name {
             BoxType::TrackEncryptionBox => {
                 if tenc.is_some() {
-                    return Err(Error::InvalidData(
-                        "tenc box should be only one at most in sinf box",
-                    ));
+                    return Status::SchiQuantity.into();
                 }
                 tenc = Some(read_tenc(&mut b)?);
             }
@@ -4994,7 +5933,7 @@ fn read_schm<T: Read>(src: &mut BMFFBox<T>) -> Result<SchemeTypeBox> {
 }
 
 /// Parse a metadata box inside a moov, trak, or mdia box.
-/// See ISOBMFF (ISO 14496-12:2015) § 8.10.1.
+/// See ISOBMFF (ISO 14496-12:2020) § 8.10.1.
 fn read_udta<T: Read>(src: &mut BMFFBox<T>) -> Result<UserdataBox> {
     let mut iter = src.box_iter();
     let mut udta = UserdataBox { meta: None };
@@ -5013,7 +5952,7 @@ fn read_udta<T: Read>(src: &mut BMFFBox<T>) -> Result<UserdataBox> {
 }
 
 /// Parse the meta box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.111.
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.1
 fn read_meta<T: Read>(src: &mut BMFFBox<T>) -> Result<MetadataBox> {
     let (_, _) = read_fullbox_extra(src)?;
     let mut iter = src.box_iter();
@@ -5033,7 +5972,7 @@ fn read_meta<T: Read>(src: &mut BMFFBox<T>) -> Result<MetadataBox> {
 }
 
 /// Parse a XML box inside a meta box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.2
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.2
 #[cfg(feature = "meta-xml")]
 fn read_xml_<T: Read>(src: &mut BMFFBox<T>, meta: &mut MetadataBox) -> Result<()> {
     if read_fullbox_version_no_flags(src)? != 0 {
@@ -5044,7 +5983,7 @@ fn read_xml_<T: Read>(src: &mut BMFFBox<T>, meta: &mut MetadataBox) -> Result<()
 }
 
 /// Parse a Binary XML box inside a meta box
-/// See ISOBMFF (ISO 14496-12:2015) § 8.11.2
+/// See ISOBMFF (ISO 14496-12:2020) § 8.11.2
 #[cfg(feature = "meta-xml")]
 fn read_bxml<T: Read>(src: &mut BMFFBox<T>, meta: &mut MetadataBox) -> Result<()> {
     if read_fullbox_version_no_flags(src)? != 0 {
@@ -5119,7 +6058,7 @@ fn read_ilst<T: Read>(src: &mut BMFFBox<T>, meta: &mut MetadataBox) -> Result<()
             BoxType::CompilationEntry => meta.compilation = read_ilst_bool_data(&mut b)?,
             BoxType::AdvisoryEntry => {
                 meta.advisory = read_ilst_u8_data(&mut b)?.and_then(|rtng| {
-                    Some(match rtng.get(0)? {
+                    Some(match rtng.first()? {
                         2 => AdvisoryRating::Clean,
                         0 => AdvisoryRating::Inoffensive,
                         r => AdvisoryRating::Explicit(*r),
@@ -5128,7 +6067,7 @@ fn read_ilst<T: Read>(src: &mut BMFFBox<T>, meta: &mut MetadataBox) -> Result<()
             }
             BoxType::MediaTypeEntry => {
                 meta.media_type = read_ilst_u8_data(&mut b)?.and_then(|stik| {
-                    Some(match stik.get(0)? {
+                    Some(match stik.first()? {
                         0 => MediaType::Movie,
                         1 => MediaType::Normal,
                         2 => MediaType::AudioBook,
@@ -5159,7 +6098,7 @@ fn read_ilst<T: Read>(src: &mut BMFFBox<T>, meta: &mut MetadataBox) -> Result<()
 }
 
 fn read_ilst_bool_data<T: Read>(src: &mut BMFFBox<T>) -> Result<Option<bool>> {
-    Ok(read_ilst_u8_data(src)?.and_then(|d| Some(d.get(0)? == &1)))
+    Ok(read_ilst_u8_data(src)?.and_then(|d| Some(d.first()? == &1)))
 }
 
 fn read_ilst_string_data<T: Read>(src: &mut BMFFBox<T>) -> Result<Option<TryString>> {
@@ -5203,7 +6142,7 @@ fn skip<T: Read>(src: &mut T, bytes: u64) -> Result<()> {
 fn read_buf<T: Read>(src: &mut T, size: u64) -> Result<TryVec<u8>> {
     let buf = src.take(size).read_into_try_vec()?;
     if buf.len().to_u64() != size {
-        return Err(Error::InvalidData("failed buffer read"));
+        return Status::ReadBufErr.into();
     }
 
     Ok(buf)
@@ -5240,4 +6179,133 @@ fn be_u64<T: ReadBytesExt>(src: &mut T) -> Result<u64> {
 fn write_be_u32<T: WriteBytesExt>(des: &mut T, num: u32) -> Result<()> {
     des.write_u32::<byteorder::BigEndian>(num)
         .map_err(From::from)
+}
+
+#[cfg(test)]
+mod media_data_box_tests {
+    use super::*;
+
+    impl DataBox {
+        fn at_offset(file_offset: u64, data: std::vec::Vec<u8>) -> Self {
+            DataBox {
+                metadata: DataBoxMetadata::Mdat { file_offset },
+                data: data.into(),
+            }
+        }
+    }
+
+    #[test]
+    fn extent_with_length_before_mdat_returns_none() {
+        let mdat = DataBox::at_offset(100, vec![1; 5]);
+        let extent = Extent::WithLength { offset: 0, len: 2 };
+
+        assert!(mdat.get(&extent).is_none());
+    }
+
+    #[test]
+    fn extent_to_end_before_mdat_returns_none() {
+        let mdat = DataBox::at_offset(100, vec![1; 5]);
+        let extent = Extent::ToEnd { offset: 0 };
+
+        assert!(mdat.get(&extent).is_none());
+    }
+
+    #[test]
+    fn extent_with_length_crossing_front_mdat_boundary_returns_none() {
+        let mdat = DataBox::at_offset(100, vec![1; 5]);
+        let extent = Extent::WithLength { offset: 99, len: 3 };
+
+        assert!(mdat.get(&extent).is_none());
+    }
+
+    #[test]
+    fn extent_with_length_which_is_subset_of_mdat() {
+        let mdat = DataBox::at_offset(100, vec![1; 5]);
+        let extent = Extent::WithLength {
+            offset: 101,
+            len: 2,
+        };
+
+        assert_eq!(mdat.get(&extent), Some(&[1, 1][..]));
+    }
+
+    #[test]
+    fn extent_to_end_which_is_subset_of_mdat() {
+        let mdat = DataBox::at_offset(100, vec![1; 5]);
+        let extent = Extent::ToEnd { offset: 101 };
+
+        assert_eq!(mdat.get(&extent), Some(&[1, 1, 1, 1][..]));
+    }
+
+    #[test]
+    fn extent_with_length_which_is_all_of_mdat() {
+        let mdat = DataBox::at_offset(100, vec![1; 5]);
+        let extent = Extent::WithLength {
+            offset: 100,
+            len: 5,
+        };
+
+        assert_eq!(mdat.get(&extent), Some(mdat.data.as_slice()));
+    }
+
+    #[test]
+    fn extent_to_end_which_is_all_of_mdat() {
+        let mdat = DataBox::at_offset(100, vec![1; 5]);
+        let extent = Extent::ToEnd { offset: 100 };
+
+        assert_eq!(mdat.get(&extent), Some(mdat.data.as_slice()));
+    }
+
+    #[test]
+    fn extent_with_length_crossing_back_mdat_boundary_returns_none() {
+        let mdat = DataBox::at_offset(100, vec![1; 5]);
+        let extent = Extent::WithLength {
+            offset: 103,
+            len: 3,
+        };
+
+        assert!(mdat.get(&extent).is_none());
+    }
+
+    #[test]
+    fn extent_with_length_after_mdat_returns_none() {
+        let mdat = DataBox::at_offset(100, vec![1; 5]);
+        let extent = Extent::WithLength {
+            offset: 200,
+            len: 2,
+        };
+
+        assert!(mdat.get(&extent).is_none());
+    }
+
+    #[test]
+    fn extent_to_end_after_mdat_returns_none() {
+        let mdat = DataBox::at_offset(100, vec![1; 5]);
+        let extent = Extent::ToEnd { offset: 200 };
+
+        assert!(mdat.get(&extent).is_none());
+    }
+
+    #[test]
+    fn extent_with_length_which_overflows_usize() {
+        let mdat = DataBox::at_offset(std::u64::MAX - 1, vec![1; 5]);
+        let extent = Extent::WithLength {
+            offset: std::u64::MAX,
+            len: std::usize::MAX,
+        };
+
+        assert!(mdat.get(&extent).is_none());
+    }
+
+    // The end of the range would overflow `usize` if it were calculated, but
+    // because the range end is unbounded, we don't calculate it.
+    #[test]
+    fn extent_to_end_which_overflows_usize() {
+        let mdat = DataBox::at_offset(std::u64::MAX - 1, vec![1; 5]);
+        let extent = Extent::ToEnd {
+            offset: std::u64::MAX,
+        };
+
+        assert_eq!(mdat.get(&extent), Some(&[1, 1, 1, 1][..]));
+    }
 }

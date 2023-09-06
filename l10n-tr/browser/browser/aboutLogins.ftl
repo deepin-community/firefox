@@ -5,12 +5,12 @@
 
 about-logins-page-title = Hesaplar ve Parolalar
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Hesaplarda ara
+    .key = F
 
-create-login-button = Yeni hesap oluştur
+create-new-login-button =
+    .title = Yeni hesap oluştur
 
 fxaccounts-sign-in-text = Parolalarınızı tüm cihazlarınıza aktarın
 fxaccounts-sign-in-sync-button = Eşitlemek için giriş yap
@@ -37,10 +37,20 @@ about-logins-menu-menuitem-help = Yardım
 
 login-list =
     .aria-label = Arama sorgusuyla eşleşen hesaplar
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } hesap
        *[other] { $count } hesap
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $total } hesaptan { $count } hesap
+       *[other] { $total } hesaptan { $count } hesap
     }
 login-list-sort-label-text = Sıralama:
 login-list-name-option = Ad (A-Z)
@@ -61,7 +71,6 @@ about-logins-list-item-breach-icon =
     .title = Bu site ihlale uğramış
 about-logins-list-item-vulnerable-password-icon =
     .title = Güvensiz parola
-
 about-logins-list-section-breach = Veri ihlaline uğrayan siteler
 about-logins-list-section-vulnerable = Güvensiz parolalar
 about-logins-list-section-nothing = Uyarı yok
@@ -76,8 +85,8 @@ about-logins-login-intro-heading-logged-in = Eşitlenmiş hesap bulunamadı.
 login-intro-description = Hesaplarınızı farklı bir cihazdaki { -brand-product-name } tarayıcınıza kaydettiyseniz onları buraya aktarabilirsiniz:
 login-intro-instructions-fxa = Hesaplarınızın kayıtlı olduğu cihazda { -fxaccount-brand-name } açın veya hesabınıza giriş yapın.
 login-intro-instructions-fxa-settings = Ayarlar > Eşitleme > “Eşitlemeyi başlat…” kısmına gidip “Hesaplar ve parolalar”ı işaretleyin.
-login-intro-instructions-fxa-help = Yardıma ihtiyacınız varsa <a data-l10n-name="help-link">{ -lockwise-brand-short-name } Destek</a>’i ziyaret edebilirsiniz.
-about-logins-intro-import = Hesaplarınız başka bir tarayıcıda kayıtlıysa onları <a data-l10n-name="import-link">{ -lockwise-brand-short-name }’a aktarabilirsiniz</a>
+login-intro-instructions-fxa-passwords-help = Yardıma ihtiyacınız varsa <a data-l10n-name="passwords-help-link">parola desteğini</a> ziyaret edebilirsiniz.
+about-logins-intro-browser-only-import = Hesaplarınız başka bir tarayıcıda kayıtlıysa onları <a data-l10n-name="import-link">{ -brand-product-name }’a aktarabilirsiniz</a>
 about-logins-intro-import2 = Hesaplarınız { -brand-product-name } dışında kayıtlıysa onları <a data-l10n-name="import-browser-link">başka bir tarayıcıdan</a> veya <a data-l10n-name="import-file-link">dosyadan</a> içe aktarabilirsiniz
 
 ## Login
@@ -102,9 +111,17 @@ login-item-copied-password-button-text = Kopyalandı!
 login-item-save-changes-button = Değişiklikleri kaydet
 login-item-save-new-button = Kaydet
 login-item-cancel-button = İptal
-login-item-time-changed = Son değişiklik: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Oluşturulma: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Son kullanım: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Oluşturma
+login-item-timeline-action-updated = Güncelleme
+login-item-timeline-action-used = Kullanma
 
 ## OS Authentication dialog
 
@@ -132,8 +149,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Parolanızı kopyalamak 
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = kayıtlı parolayı kopyalama
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Hesaplarınızı dışa aktarmak için Windows hesap bilgilerinizi girin. Bu sayede hesaplarınızı daha güvenli bir şekilde koruyabiliriz.
 # This message can be seen when attempting to export a password in about:logins
@@ -147,8 +162,6 @@ master-password-reload-button =
     .label = Giriş yap
     .accesskey = G
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = İptal
@@ -158,6 +171,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Bu hesap kaldırılsın mı?
 confirm-delete-dialog-message = Bu işlem geri alınamaz.
 about-logins-confirm-remove-dialog-confirm-button = Kaldır
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -197,6 +213,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Bu işlem { -brand-short-name } tarayıcısına kaydettiğiniz tüm hesapları { -fxaccount-brand-name }nızla eşitlenen tüm cihazlardan kaldıracaktır. Burada görünen ihlal uyarıları da kaldırılacaktır. Bu işlemi geri alamazsınız.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Hesapları ve parolaları dışa aktarma
 about-logins-confirm-export-dialog-message = Parolalarınız okunabilir metin olarak kaydedilecek (örn. KotuP@r0la), yani dışa aktarılan dosyayı açabilen herkes parolalarınızı görebilecektir.
 about-logins-confirm-export-dialog-confirm-button = Dışa aktar…
@@ -216,7 +234,6 @@ about-logins-breach-alert-date = Bu ihlal { DATETIME($date, day: "numeric", mont
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = { $hostname } sitesine git
-about-logins-breach-alert-learn-more-link = Daha fazla bilgi al
 
 ## Vulnerable Password notification
 

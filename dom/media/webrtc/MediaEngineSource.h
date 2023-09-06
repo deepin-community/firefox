@@ -14,6 +14,7 @@
 #include "mozilla/RefPtr.h"
 #include "mozilla/ThreadSafeWeakPtr.h"
 #include "nsStringFwd.h"
+#include "PerformanceRecorder.h"
 
 namespace mozilla {
 
@@ -73,37 +74,19 @@ class MediaEngineSourceInterface {
   virtual bool IsFake() const = 0;
 
   /**
-   * Gets the human readable name of this device.
-   */
-  virtual nsString GetName() const = 0;
-
-  /**
-   * Gets the raw (non-anonymous) UUID of this device.
-   */
-  virtual nsCString GetUUID() const = 0;
-
-  /**
-   * Gets the raw Group id of this device.
-   */
-  virtual nsString GetGroupId() const = 0;
-
-  /**
-   * Get the enum describing the underlying type of MediaSource.
-   */
-  virtual dom::MediaSourceEnum GetMediaSource() const = 0;
-
-  /**
-   * Override w/true if source does end-run around cross origin restrictions.
-   */
-  virtual bool GetScary() const = 0;
-
-  /**
    * Override w/a promise if source has frames, in order to potentially allow
    * deferring success of source acquisition until first frame has arrived.
    */
   virtual RefPtr<GenericNonExclusivePromise> GetFirstFramePromise() const {
     return nullptr;
   }
+
+  /**
+   * Get an id uniquely identifying the source of video frames that this
+   * MediaEngineSource represents. This can be used in profiler markers to
+   * separate markers from different sources into different lanes.
+   */
+  virtual const TrackingId& GetTrackingId() const = 0;
 
   /**
    * Called by MediaEngine to allocate an instance of this source.
@@ -241,11 +224,13 @@ class MediaEngineSource : public MediaEngineSourceInterface {
     NS_ASSERT_OWNINGTHREAD(MediaEngineSource);
   }
 
+  const TrackingId& GetTrackingId() const override {
+    static auto notImplementedId = TrackingId();
+    return notImplementedId;
+  }
+
   // Not fake by default.
   bool IsFake() const override;
-
-  // Not scary by default.
-  bool GetScary() const override;
 
   // Returns NS_ERROR_NOT_AVAILABLE by default.
   nsresult FocusOnSelectedSource() override;

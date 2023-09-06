@@ -89,6 +89,11 @@ protections-panel-fingerprinters = Els generadors d'empremtes digitals recopilen
 protections-panel-tracking-content = Els llocs web poden carregar anuncis, vídeos i altre contingut extern amb un codi de seguiment. Si bloqueu este contingut que fa seguiment, els llocs web es poden carregar més de pressa, però és possible alguns botons, formularis o camps d'inici de sessió no funcionen.
 protections-panel-social-media-trackers = Les xarxes socials col·loquen elements de seguiment en altres llocs web per a fer el seguiment d'allò que feu i veieu a Internet. Això permet a les empreses de xarxes socials recopilar informació de tot allò que compartiu en els vostres perfils de xarxes socials.
 
+protections-panel-description-shim-allowed = Alguns elements de seguiment marcats a continuació s'han desblocat parcialment en esta pàgina perquè hi heu interactuat.
+protections-panel-description-shim-allowed-learn-more = Més informació
+protections-panel-shim-allowed-indicator =
+    .tooltiptext = Element de seguiment parcialment desblocat
+
 protections-panel-content-blocking-manage-settings =
     .label = Gestiona els paràmetres de protecció
     .accesskey = G
@@ -96,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Informeu sobre un lloc que no funciona
 protections-panel-content-blocking-breakage-report-view-description = El bloqueig d'alguns elements de seguiment pot causar problemes en alguns llocs web. Notificar estos problemes ajuda a millorar el { -brand-short-name } per a tothom. Juntament amb l'informe, també s'enviarà a Mozilla un URL i informació de la configuració del vostre navegador. <label data-l10n-name="learn-more">Més informació</label>
+protections-panel-content-blocking-breakage-report-view-description2 = El bloqueig d'alguns elements de seguiment pot causar problemes en alguns llocs web. Notificar estos problemes ajuda a millorar el { -brand-short-name } per a tothom. Juntament amb l'informe, també s'enviarà a { -vendor-short-name } un URL i informació de la configuració del vostre navegador.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -106,3 +112,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Cancel·la
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Envia l'informe
+
+# Cookie Banner Handling
+

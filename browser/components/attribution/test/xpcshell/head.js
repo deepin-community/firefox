@@ -3,20 +3,30 @@
  */
 "use strict";
 
-const { AttributionCode } = ChromeUtils.import(
-  "resource:///modules/AttributionCode.jsm"
+const { AttributionCode } = ChromeUtils.importESModule(
+  "resource:///modules/AttributionCode.sys.mjs"
 );
 
 let validAttrCodes = [
   {
-    code:
-      "source%3Dgoogle.com%26medium%3Dorganic%26campaign%3D(not%20set)%26content%3D(not%20set)",
+    code: "source%3Dgoogle.com%26medium%3Dorganic%26campaign%3D(not%20set)%26content%3D(not%20set)",
     parsed: {
       source: "google.com",
       medium: "organic",
       campaign: "(not%20set)",
       content: "(not%20set)",
     },
+  },
+  {
+    code: "source%3Dgoogle.com%26medium%3Dorganic%26campaign%3D(not%20set)%26content%3D(not%20set)%26msstoresignedin%3Dtrue",
+    parsed: {
+      source: "google.com",
+      medium: "organic",
+      campaign: "(not%20set)",
+      content: "(not%20set)",
+      msstoresignedin: true,
+    },
+    platforms: ["win"],
   },
   {
     code: "source%3Dgoogle.com%26medium%3Dorganic%26campaign%3D%26content%3D",
@@ -52,6 +62,12 @@ let validAttrCodes = [
     code: "dltoken%3Dc18f86a3-f228-4d98-91bb-f90135c0aa9c",
     parsed: { dltoken: "c18f86a3-f228-4d98-91bb-f90135c0aa9c" },
   },
+  {
+    code: "dlsource%3Dsome-dl-source",
+    parsed: {
+      dlsource: "some-dl-source",
+    },
+  },
 ];
 
 let invalidAttrCodes = [
@@ -81,21 +97,18 @@ let invalidAttrCodes = [
  */
 async function setupStubs() {
   // Local imports to avoid polluting the global namespace.
-  const { AppConstants } = ChromeUtils.import(
-    "resource://gre/modules/AppConstants.jsm"
+  const { AppConstants } = ChromeUtils.importESModule(
+    "resource://gre/modules/AppConstants.sys.mjs"
   );
-  const { OS } = ChromeUtils.import("resource://gre/modules/osfile.jsm");
-  const { sinon } = ChromeUtils.import("resource://testing-common/Sinon.jsm");
+  const { sinon } = ChromeUtils.importESModule(
+    "resource://testing-common/Sinon.sys.mjs"
+  );
 
   // This depends on the caller to invoke it by name.  We do try to
   // prevent the most obvious incorrect invocation, namely
   // `add_task(setupStubs)`.
   let caller = Components.stack.caller;
-  const testID = caller.filename
-    .toString()
-    .split("/")
-    .pop()
-    .split(".")[0];
+  const testID = caller.filename.toString().split("/").pop().split(".")[0];
   notEqual(testID, "head");
 
   let applicationFile = do_get_tempdir();
@@ -104,8 +117,8 @@ async function setupStubs() {
 
   if (AppConstants.platform == "macosx") {
     // We're implicitly using the fact that modules are shared between importers here.
-    const { MacAttribution } = ChromeUtils.import(
-      "resource:///modules/MacAttribution.jsm"
+    const { MacAttribution } = ChromeUtils.importESModule(
+      "resource:///modules/MacAttribution.sys.mjs"
     );
     sinon
       .stub(MacAttribution, "applicationPath")
@@ -117,5 +130,7 @@ async function setupStubs() {
   // directory for the attribution file, needed on both macOS and Windows.  We
   // don't ignore existing paths because we're inside a temporary directory:
   // this should never be invoked twice for the same test.
-  await OS.File.makeDir(applicationFile.path, { from: do_get_tempdir().path });
+  await IOUtils.makeDirectory(applicationFile.path, {
+    from: do_get_tempdir().path,
+  });
 }

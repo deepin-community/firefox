@@ -3,9 +3,9 @@
 
 "use strict";
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  SearchEngineSelector: "resource://gre/modules/SearchEngineSelector.jsm",
-  SearchService: "resource://gre/modules/SearchService.jsm",
+ChromeUtils.defineESModuleGetters(this, {
+  SearchEngineSelector: "resource://gre/modules/SearchEngineSelector.sys.mjs",
+  SearchService: "resource://gre/modules/SearchService.sys.mjs",
 });
 
 const tests = [];
@@ -18,38 +18,20 @@ for (let [locale, region] of [
   ["ru", "RU"],
   ["zh-CN", "CN"],
 ]) {
-  tests.push({
-    distribution: "acer-001",
-    locale,
-    region,
-    test: engines =>
-      hasParams(engines, "Bing", "searchbar", "pc=MOZD") &&
-      hasDefault(engines, "Bing") &&
-      hasEnginesFirst(engines, ["Bing"]),
-  });
-
-  tests.push({
-    distribution: "acer-002",
-    locale,
-    region,
-    test: engines =>
-      hasParams(engines, "Bing", "searchbar", "pc=MOZD") &&
-      hasDefault(engines, "Bing") &&
-      hasEnginesFirst(engines, ["Bing"]),
-  });
-
-  tests.push({
-    distribution: "acer-g-003",
-    locale,
-    region,
-    test: engines =>
-      hasParams(engines, "Bing", "searchbar", "pc=MOZE") &&
-      hasDefault(engines, "Bing") &&
-      hasEnginesFirst(engines, ["Bing"]),
-  });
+  for (let distribution of ["acer-003", "acer-004"]) {
+    tests.push({
+      distribution,
+      locale,
+      region,
+      test: engines =>
+        hasParams(engines, "Bing", "searchbar", "pc=MOZX") &&
+        hasDefault(engines, "Bing") &&
+        hasEnginesFirst(engines, ["Bing"]),
+    });
+  }
 }
 
-for (let canonicalId of ["canonical", "canonical-001", "canonical-002"]) {
+for (let canonicalId of ["canonical", "canonical-001"]) {
   tests.push({
     locale: "en-US",
     region: "US",
@@ -72,162 +54,23 @@ for (let canonicalId of ["canonical", "canonical-001", "canonical-002"]) {
 }
 
 tests.push({
-  locale: "ru",
-  distribution: "mailru-001",
+  locale: "en-US",
+  region: "US",
+  distribution: "canonical-002",
   test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900201") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900201") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "ru",
-  region: "RU",
-  distribution: "mailru-001",
-  test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900201") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900201") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "az",
-  distribution: "okru-001",
-  test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900209") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900209") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
+    hasParams(engines, "Google", "searchbar", "client=ubuntu-sn") &&
+    hasParams(engines, "Google", "searchbar", "channel=fs") &&
+    hasTelemetryId(engines, "Google", "google-ubuntu-sn"),
 });
 
 tests.push({
   locale: "en-US",
-  distribution: "okru-001",
+  region: "GB",
+  distribution: "canonical-002",
   test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900205") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900205") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "hy-AM",
-  distribution: "okru-001",
-  test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900211") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900211") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "kk",
-  distribution: "okru-001",
-  test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900206") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900206") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "kk",
-  region: "KZ",
-  distribution: "okru-001",
-  test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900206") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900206") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "ro",
-  distribution: "okru-001",
-  test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900207") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900207") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "ru",
-  distribution: "okru-001",
-  test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900203") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900203") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "ru",
-  region: "RU",
-  distribution: "okru-001",
-  test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900203") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900203") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "tr",
-  distribution: "okru-001",
-  test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900210") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900210") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "tr",
-  region: "TR",
-  distribution: "okru-001",
-  test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900210") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900210") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "uk",
-  distribution: "okru-001",
-  test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900204") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900204") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "uz",
-  distribution: "okru-001",
-  test: engines =>
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "gp=900208") &&
-    hasParams(engines, "Поиск Mail.Ru", "searchbar", "frc=900208") &&
-    hasDefault(engines, "Поиск Mail.Ru") &&
-    hasEnginesFirst(engines, ["Поиск Mail.Ru"]),
-});
-
-tests.push({
-  locale: "zh-CN",
-  region: "CN",
-  distribution: "MozillaOnline",
-  test: engines =>
-    hasParams(engines, "百度", "searchbar", "tn=monline_4_dg") &&
-    hasParams(engines, "百度", "suggestions", "tn=monline_4_dg") &&
-    hasParams(engines, "百度", "homepage", "tn=monline_3_dg") &&
-    hasParams(engines, "百度", "newtab", "tn=monline_3_dg") &&
-    hasParams(engines, "百度", "contextmenu", "tn=monline_4_dg") &&
-    hasParams(engines, "百度", "keyword", "tn=monline_4_dg") &&
-    hasDefault(engines, "百度") &&
-    hasEnginesFirst(engines, ["百度", "Bing", "Google", "亚马逊", "维基百科"]),
+    hasParams(engines, "Google", "searchbar", "client=ubuntu-sn") &&
+    hasParams(engines, "Google", "searchbar", "channel=fs") &&
+    hasTelemetryId(engines, "Google", "google-ubuntu-sn"),
 });
 
 tests.push({
@@ -463,86 +306,27 @@ tests.push({
 });
 
 tests.push({
-  locale: "ru",
-  distribution: "yandex-drp",
+  locale: "en-US",
+  region: "US",
+  distribution: "mint-001",
   test: engines =>
-    hasParams(engines, "Яндекс", "searchbar", "clid=2039342") &&
-    // Test that fallback works correct as well.
-    hasParams(engines, "Яндекс", "contextmenu", "clid=2039342") &&
-    hasDefault(engines, "Яндекс") &&
-    hasEnginesFirst(engines, ["Яндекс"]),
+    hasParams(engines, "DuckDuckGo", "searchbar", "t=lm") &&
+    hasParams(engines, "Google", "searchbar", "client=firefox-b-1-lm") &&
+    hasDefault(engines, "Google") &&
+    hasEnginesFirst(engines, ["Google"]) &&
+    hasTelemetryId(engines, "Google", "google-b-1-lm"),
 });
 
 tests.push({
-  locale: "ru",
-  distribution: "yandex-planb",
+  locale: "en-GB",
+  region: "GB",
+  distribution: "mint-001",
   test: engines =>
-    hasParams(engines, "Яндекс", "searchbar", "clid=1857376") &&
-    hasDefault(engines, "Яндекс") &&
-    hasEnginesFirst(engines, ["Яндекс"]),
-});
-
-tests.push({
-  locale: "ru",
-  distribution: "yandex-portals",
-  test: engines =>
-    hasParams(engines, "Яндекс", "searchbar", "clid=1923034") &&
-    hasDefault(engines, "Яндекс") &&
-    hasEnginesFirst(engines, ["Яндекс"]),
-});
-
-tests.push({
-  locale: "ru",
-  distribution: "yandex-ru",
-  test: engines =>
-    hasParams(engines, "Яндекс", "searchbar", "clid=1923018") &&
-    hasDefault(engines, "Яндекс") &&
-    hasEnginesFirst(engines, ["Яндекс"]),
-});
-
-tests.push({
-  locale: "tr",
-  distribution: "yandex-tr",
-  test: engines =>
-    hasParams(engines, "Yandex", "searchbar", "clid=1953197") &&
-    hasDefault(engines, "Yandex") &&
-    hasEnginesFirst(engines, ["Yandex"]),
-});
-
-tests.push({
-  locale: "tr",
-  distribution: "yandex-tr-gezginler",
-  test: engines =>
-    hasParams(engines, "Yandex", "searchbar", "clid=1945716") &&
-    hasDefault(engines, "Yandex") &&
-    hasEnginesFirst(engines, ["Yandex"]),
-});
-
-tests.push({
-  locale: "tr",
-  distribution: "yandex-tr-tamindir",
-  test: engines =>
-    hasParams(engines, "Yandex", "searchbar", "clid=1945686") &&
-    hasDefault(engines, "Yandex") &&
-    hasEnginesFirst(engines, ["Yandex"]),
-});
-
-tests.push({
-  locale: "uk",
-  distribution: "yandex-uk",
-  test: engines =>
-    hasParams(engines, "Яндекс", "searchbar", "clid=1923018") &&
-    hasDefault(engines, "Яндекс") &&
-    hasEnginesFirst(engines, ["Яндекс"]),
-});
-
-tests.push({
-  locale: "ru",
-  distribution: "yandex-ru-mz",
-  test: engines =>
-    hasParams(engines, "Яндекс", "searchbar", "clid=2320519") &&
-    hasDefault(engines, "Яндекс") &&
-    hasEnginesFirst(engines, ["Яндекс"]),
+    hasParams(engines, "DuckDuckGo", "searchbar", "t=lm") &&
+    hasParams(engines, "Google", "searchbar", "client=firefox-b-lm") &&
+    hasDefault(engines, "Google") &&
+    hasEnginesFirst(engines, ["Google"]) &&
+    hasTelemetryId(engines, "Google", "google-b-lm"),
 });
 
 function hasURLs(engines, engineName, url, suggestURL) {

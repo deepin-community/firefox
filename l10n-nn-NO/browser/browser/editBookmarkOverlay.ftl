@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Gøym
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Vis alle bokmerkemapper
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Gøym
+
 bookmark-overlay-new-folder-button =
     .label = Ny mappe
     .accesskey = N
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Vis alle etikettar
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Gøym
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Vis alle etikettar
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Gøym
 
 bookmark-overlay-keyword-2 =
     .value = Nøkkelord

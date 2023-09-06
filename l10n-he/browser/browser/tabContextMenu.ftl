@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = בחירת כל הלשוניות
     .accesskey = ב
+tab-context-play-tab =
+    .label = ניגון לשונית
+    .accesskey = נ
+tab-context-play-tabs =
+    .label = ניגון לשוניות
+    .accesskey = נ
 duplicate-tab =
     .label = שכפול לשונית
     .accesskey = כ
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = יצירת סימנייה ללשוניות…
     .accesskey = נ
-bookmark-tab =
-    .label = יצירת סימנייה ללשונית
-    .accesskey = צ
+tab-context-bookmark-tab =
+    .label = יצירת סימנייה ללשונית…
+    .accesskey = ס
 tab-context-open-in-new-container-tab =
     .label = פתיחה במגירת לשוניות חדשה
     .accesskey = ג
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = שיתוף
     .accesskey = ש
-tab-context-share-more =
-    .label = עוד…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,13 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] פתיחת הלשוניות שנסגרו מחדש
         }
     .accesskey = מ
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] סגירת לשונית
-           *[other] סגירת לשוניות
-        }
-    .accesskey = ס
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

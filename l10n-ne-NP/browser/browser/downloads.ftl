@@ -24,35 +24,13 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = रद्द गर्नुहोस्
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = समाविष्ट भएको फोल्डर खोल्नुहोस्
-    .accesskey = F
-  
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = फाइन्डरमा देखाउनुहोस्
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
-downloads-cmd-show-button =
-    .tooltiptext =
-        { PLATFORM() ->
-            [macos] फाइन्डरमा देखाउनुहोस्
-           *[other] समाविष्ट भएको फोल्डर खोल्नुहोस्
-        }
 
-downloads-cmd-show-panel =
-    .aria-label =
-        { PLATFORM() ->
-            [macos] फाइन्डरमा देखाउनुहोस्
-           *[other] समाविष्ट भएको फोल्डर खोल्नुहोस्
-        }
-downloads-cmd-show-description =
-    .value =
-        { PLATFORM() ->
-            [macos] फाइन्डरमा देखाउनुहोस्
-           *[other] समाविष्ट भएको फोल्डर खोल्नुहोस्
-        }
+##
 
 downloads-cmd-show-downloads =
     .label = डाउनलोड फोल्डर देखाउनुहोस्
@@ -124,6 +102,7 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -148,6 +127,14 @@ downloads-history =
 downloads-details =
     .title = डाउनलेाडको विवरणहरू
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
+
 downloads-clear-downloads-button =
     .label = डाउनलेाडहरू खाली गर्नुहोस्
     .tooltiptext = सबै सकिएका, रद्ध गरिएका र विफल भएका डाउनलोडहरू मेटाउनुहोस्
@@ -160,3 +147,12 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = यस सत्रमा केहि पनि डाउनलोड भएन।
+
+## Download errors
+
+downloads-error-alert-title = डाउनलोड त्रुटि
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    अज्ञात त्रुटिको कारणले डाउनलोडलाई सङ्ग्रह गर्न सकिएन ।
+    
+    कृपया पुनः प्रयास गर्नुहोस् ।

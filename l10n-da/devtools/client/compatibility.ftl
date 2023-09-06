@@ -14,7 +14,6 @@ compatibility-issue-deprecated = (forældet)
 compatibility-issue-experimental = (eksperimentel)
 compatibility-issue-prefixneeded = (præfiks påkrævet)
 compatibility-issue-deprecated-experimental = (forældet, eksperimentel)
-
 compatibility-issue-deprecated-prefixneeded = (forældet, præfiks påkrævet)
 compatibility-issue-experimental-prefixneeded = (eksperimentel, præfiks påkrævet)
 compatibility-issue-deprecated-experimental-prefixneeded = (forældet, eksperimentel, præfiks påkrævet)
@@ -24,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (forældet, eksperime
 compatibility-settings-button-label = Indstillinger
 compatibility-settings-button-title =
     .title = Indstillinger
-compatibility-feedback-button-label = Feedback
-compatibility-feedback-button-title =
-    .title = Feedback
 
 ## Messages used as headers in settings pane
 
@@ -47,3 +43,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Der blev ikke fundet problemer med kompatibilitet.
 compatibility-close-settings-button =
     .title = Luk indstillinger
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Kompatibilitetsproblemer i:
+        { $browsers }

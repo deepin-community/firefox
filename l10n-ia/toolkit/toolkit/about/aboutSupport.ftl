@@ -18,6 +18,10 @@ support-addons-type = Typo
 support-addons-enabled = Activate
 support-addons-version = Version
 support-addons-id = ID
+legacy-user-stylesheets-title = Ancian folios de stilo de usator
+legacy-user-stylesheets-enabled = Active
+legacy-user-stylesheets-stylesheet-types = Folios de stilo
+legacy-user-stylesheets-no-stylesheets-found = Nulle folios de stilo trovate
 security-software-title = Software de securitate
 security-software-type = Typo
 security-software-name = Nomine
@@ -75,6 +79,13 @@ app-basics-location-service-key-google = Clave del servicio de localisation de G
 app-basics-safebrowsing-key-google = Clave de Google Safebrowsing
 app-basics-key-mozilla = Clave del servicio de localisation de Mozilla
 app-basics-safe-mode = Modo secur
+app-basics-memory-size = Dimension de memoria (RAM)
+app-basics-disk-available = Spatio de disco disponibile
+app-basics-pointing-devices = Indicante apparatos
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Monstrar in Finder
@@ -104,11 +115,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Registro de decision
 graphics-crash-guards-title = Functionalitates inactive de protection contra collapso
 graphics-workarounds-title = Solutiones alternative
+graphics-device-pixel-ratios = Proportion in pixels del apparato del fenestras
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Protocollo de fenestra
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Ambiente scriptorio
 place-database-title = Base de datos de locos
+place-database-stats = Statistica
+place-database-stats-show = Monstrar statistica
+place-database-stats-hide = Celar statistica
+place-database-stats-entity = Entitate
+place-database-stats-count = Conto
+place-database-stats-size-kib = Dimension (KiB)
+place-database-stats-size-perc = Dimension (%)
+place-database-stats-efficiency-perc = Efficientia (%)
+place-database-stats-sequentiality-perc = Sequentialitate (%)
 place-database-integrity = Integritate
 place-database-verify-integrity = Verificar le integritate
 a11y-title = Accessibilitate
@@ -155,8 +176,18 @@ media-device-channels = Canales
 media-device-rate = Rata
 media-device-latency = Latentia
 media-capabilities-title = Functionalitates del medios
+media-codec-support-info = Informationes de supporto codec
 # List all the entries of the database.
 media-capabilities-enumerate = Enumerar base de datos
+
+## Codec support table
+
+media-codec-support-sw-decoding = Decodification del software
+media-codec-support-hw-decoding = Decodification del hardware
+media-codec-support-codec-name = Nomine del codec
+media-codec-support-supported = Supportate
+media-codec-support-unsupported = Non supportate
+media-codec-support-error = Informationes de supporto codecs indisponibile.
 
 ##
 
@@ -217,8 +248,8 @@ crashes-time-days =
 # $reports (integer) - Number of pending reports
 pending-reports =
     { $reports ->
-        [one] Tote le reportos de collapso (includente { $reports } collapso pendente in le intervallo indicate)
-       *[other] Tote le reportos de collapso (includente { $reports } collapsos pendente in le intervallo indicate)
+        [one] Tote le reportos de crash (includente { $reports } crash pendente in le intervallo indicate)
+       *[other] Tote le reportos de crashes (includente { $reports } crashes pendente in le intervallo indicate)
     }
 raw-data-copied = Datos brute copiate al area de transferentia
 text-copied = Texto copiate al area de transferentia
@@ -271,6 +302,8 @@ webgl2-renderer = Driver WebGL 2 - renditor
 webgl2-version = Driver WebGL 2 - version
 webgl2-driver-extensions = Driver WebGL 2 - extensiones
 webgl2-extensions = Extensiones WebGL 2
+webgpu-default-adapter = Scheda WebGPU predefinite
+webgpu-fallback-adapter = Scheda WebGPU predefinite
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = Inserite in lista del blocadas per note problemas: <a data-l10n-name="bug-link">bug { $bugNumber }</a>
@@ -300,6 +333,7 @@ can-sandbox-media = Sandbox pro le plugin de media
 content-sandbox-level = Nivello de sandbox del processo de contento
 effective-content-sandbox-level = Nivello de sandbox del contento effective
 content-win32k-lockdown-state = Stato de blocamento de Win32k pro le processo de contento
+support-sandbox-gpu-level = Nivello del alveo a sablo pro le processo del GPU
 sandbox-proc-type-content = contento
 sandbox-proc-type-file = contento del file
 sandbox-proc-type-media-plugin = plugin de media
@@ -325,7 +359,7 @@ fission-status-experiment-control = Disactivate per experimento
 fission-status-experiment-treatment = Activate per experimento
 fission-status-disabled-by-e10s-env = Disactivate per ambiente
 fission-status-enabled-by-env = Activate per ambiente
-fission-status-disabled-by-safe-mode = Disactivate per modo secur
+fission-status-disabled-by-env = Disactivate per ambiente
 fission-status-enabled-by-default = Activate per predefinition
 fission-status-disabled-by-default = Disactivate per predefinition
 fission-status-enabled-by-user-pref = Activate per le usator
@@ -371,3 +405,10 @@ support-remote-experiments-see-about-studies = Vide <a data-l10n-name="support-a
 support-remote-features-title = Functiones remote
 support-remote-features-name = Nomine
 support-remote-features-status = Stato
+
+## Pointing devices
+
+pointing-device-mouse = Mus
+pointing-device-touchscreen = Schermo tactile
+pointing-device-pen-digitizer = Penna digitalisator
+pointing-device-none = Nulle dispositivo de punctage

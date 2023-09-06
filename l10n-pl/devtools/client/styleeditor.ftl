@@ -8,15 +8,19 @@ styleeditor-new-button =
 styleeditor-import-button =
     .tooltiptext = Importuj istniejący arkusz stylów i dołącz go do dokumentu
     .accesskey = I
+styleeditor-filter-input =
+    .placeholder = Filtruj arkusze stylów
 styleeditor-visibility-toggle =
     .tooltiptext = Przełącz widoczność arkusza stylów
     .accesskey = Z
+styleeditor-visibility-toggle-system =
+    .tooltiptext = Systemowych arkuszy stylów nie można wyłączyć
 styleeditor-save-button = Zapisz
     .tooltiptext = Zapisz ten arkusz stylów do pliku
     .accesskey = Z
 styleeditor-options-button =
     .tooltiptext = Ustawienia edytora stylów
-styleeditor-media-rules = Reguły @media
+styleeditor-at-rules = Reguły @
 styleeditor-editor-textbox =
     .data-placeholder = Wprowadź tutaj CSS.
 styleeditor-no-stylesheet = Ta strona nie ma arkusza stylów.
@@ -25,3 +29,24 @@ styleeditor-open-link-new-tab =
     .label = Otwórz odnośnik w nowej karcie
 styleeditor-copy-url =
     .label = Kopiuj adres URL
+styleeditor-find =
+    .label = Znajdź
+    .accesskey = Z
+styleeditor-find-again =
+    .label = Znajdź następne
+    .accesskey = n
+styleeditor-go-to-line =
+    .label = Przejdź do wiersza…
+    .accesskey = P
+# Label displayed when searching a term that is not found in any stylesheet path
+styleeditor-stylesheet-all-filtered = Nie odnaleziono pasującego arkusza stylów.
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } reguła.
+        [few] { $ruleCount } reguły.
+       *[many] { $ruleCount } reguł.
+    }

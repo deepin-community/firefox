@@ -25,12 +25,6 @@ about-processes-column-cpu-total = CPU
 ## Process names
 ## Variables:
 ##    $pid (String) The process id of this process, assigned by the OS.
-##    $origin (String) The domain name for this process.
-##    $type (String) The raw type for this process. Used for unknown processes.
-
-## Process names
-## Variables:
-##    $pid (String) The process id of this process, assigned by the OS.
 
 about-processes-browser-process = { -brand-short-name } ({ $pid })
 about-processes-web-process = Komonin Rutajinik Ajk'amaya'l ({ $pid })
@@ -47,6 +41,7 @@ about-processes-socket-process = K'amab'ey ({ $pid })
 about-processes-remote-sandbox-broker-process = Näj Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Rukojol Ruk'u'x K'amab'ey ({ $pid })
 about-processes-preallocated-process = Ya'on ({ $pid })
+about-processes-utility-process = Rokisaxik ({ $pid })
 
 # Unknown process names
 # Variables:
@@ -60,10 +55,8 @@ about-processes-unknown-process = Juley: { $type } ({ $pid })
 ##    $origin (String) The domain name for this process.
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
-about-processes-web-large-allocation-process = { $origin } ({ $pid }), nïm)
 about-processes-with-coop-coep-process = { $origin } ({ $pid }), xoch'in-jech'en ruxe'el)
 about-processes-web-isolated-process-private = { $origin } — Ichinan ({ $pid })
-about-processes-web-large-allocation-process-private = { $origin } — Ichinan ({ $pid }, nïm)
 about-processes-with-coop-coep-process-private = { $origin } — Ichinan ({ $pid }), xoch'in-jech'en ruxe'el)
 
 ## Details within processes
@@ -120,6 +113,9 @@ about-processes-frame-name-one = Achruchi': { $url }
 #   $shortUrl (String) The shared prefix for the subframes in the group.
 about-processes-frame-name-many = Achruchi' ({ $number }): { $shortUrl }
 
+## Utility process actor names
+
+
 ## Displaying CPU (percentage and total)
 ## Variables:
 ##    $percent (Number) The percentage of CPU used by the process or thread.
@@ -135,10 +131,6 @@ about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "pe
 
 # Special case: data is not available yet.
 about-processes-cpu-user-and-kernel-not-ready = (netäx)
-
-# Special case: process or thread is currently idle.
-about-processes-cpu-idle = chupül
-    .title = Ronojel ruq'ijul: { NUMBER($total, maximumFractionDigits: 2) }{ $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:

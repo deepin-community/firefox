@@ -20,7 +20,7 @@ const TEST_DATA = [
         filename:
           getRootDirectory(gTestPath) +
           "browser_markup_events_chrome_not_blocked.js:45:34",
-        attributes: ["Bubbling", "DOM2"],
+        attributes: ["Bubbling"],
         handler: `() => {
           /* Do nothing */
         }`,
@@ -29,7 +29,7 @@ const TEST_DATA = [
   },
 ];
 
-add_task(async function() {
+add_task(async function () {
   waitForExplicitFinish();
   await pushPref("devtools.chrome.enabled", true);
 

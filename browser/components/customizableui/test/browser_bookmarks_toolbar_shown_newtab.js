@@ -5,12 +5,7 @@
 "use strict";
 
 // Entering customize mode should show the toolbar as long as it's not set to "never"
-add_task(async function() {
-  if (!Services.prefs.getBoolPref("browser.toolbars.bookmarks.2h2020", false)) {
-    ok(true, "Skip as behavior only changes when the feature is enabled");
-    return;
-  }
-
+add_task(async function () {
   await resetCustomization();
   ok(CustomizableUI.inDefaultState, "Default state to begin");
 

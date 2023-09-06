@@ -7,20 +7,21 @@
 #include "TouchActionHelper.h"
 
 #include "mozilla/layers/IAPZCTreeManager.h"
+#include "mozilla/PresShell.h"
+#include "mozilla/TouchEvents.h"
 #include "nsContainerFrame.h"
 #include "nsIFrameInlines.h"
 #include "nsIScrollableFrame.h"
 #include "nsLayoutUtils.h"
 
-namespace mozilla {
-namespace layers {
+namespace mozilla::layers {
 
 static void UpdateAllowedBehavior(StyleTouchAction aTouchActionValue,
                                   bool aConsiderPanning,
                                   TouchBehaviorFlags& aOutBehavior) {
   if (aTouchActionValue != StyleTouchAction::AUTO) {
     // Double-tap-zooming need property value AUTO
-    aOutBehavior &= ~AllowedTouchBehavior::DOUBLE_TAP_ZOOM;
+    aOutBehavior &= ~AllowedTouchBehavior::ANIMATING_ZOOM;
     if (aTouchActionValue != StyleTouchAction::MANIPULATION &&
         !(aTouchActionValue & StyleTouchAction::PINCH_ZOOM)) {
       // Pinch-zooming needs value AUTO or MANIPULATION, or the PINCH_ZOOM bit
@@ -48,23 +49,49 @@ static void UpdateAllowedBehavior(StyleTouchAction aTouchActionValue,
   }
 }
 
-TouchBehaviorFlags TouchActionHelper::GetAllowedTouchBehavior(
+static TouchBehaviorFlags GetAllowedTouchBehaviorForPoint(
     nsIWidget* aWidget, RelativeTo aRootFrame,
     const LayoutDeviceIntPoint& aPoint) {
-  TouchBehaviorFlags behavior = AllowedTouchBehavior::VERTICAL_PAN |
-                                AllowedTouchBehavior::HORIZONTAL_PAN |
-                                AllowedTouchBehavior::PINCH_ZOOM |
-                                AllowedTouchBehavior::DOUBLE_TAP_ZOOM;
-
   nsPoint relativePoint =
       nsLayoutUtils::GetEventCoordinatesRelativeTo(aWidget, aPoint, aRootFrame);
 
   nsIFrame* target = nsLayoutUtils::GetFrameForPoint(aRootFrame, relativePoint);
-  if (!target) {
+
+  return TouchActionHelper::GetAllowedTouchBehaviorForFrame(target);
+}
+
+nsTArray<TouchBehaviorFlags> TouchActionHelper::GetAllowedTouchBehavior(
+    nsIWidget* aWidget, dom::Document* aDocument,
+    const WidgetTouchEvent& aEvent) {
+  nsTArray<TouchBehaviorFlags> flags;
+  if (!aWidget || !aDocument) {
+    return flags;
+  }
+  if (PresShell* presShell = aDocument->GetPresShell()) {
+    if (nsIFrame* rootFrame = presShell->GetRootFrame()) {
+      for (const auto& touch : aEvent.mTouches) {
+        flags.AppendElement(GetAllowedTouchBehaviorForPoint(
+            aWidget, RelativeTo{rootFrame, ViewportType::Visual},
+            touch->mRefPoint));
+      }
+    }
+  }
+  return flags;
+}
+
+TouchBehaviorFlags TouchActionHelper::GetAllowedTouchBehaviorForFrame(
+    nsIFrame* aFrame) {
+  TouchBehaviorFlags behavior = AllowedTouchBehavior::VERTICAL_PAN |
+                                AllowedTouchBehavior::HORIZONTAL_PAN |
+                                AllowedTouchBehavior::PINCH_ZOOM |
+                                AllowedTouchBehavior::ANIMATING_ZOOM;
+
+  if (!aFrame) {
     return behavior;
   }
+
   nsIScrollableFrame* nearestScrollableParent =
-      nsLayoutUtils::GetNearestScrollableFrame(target, 0);
+      nsLayoutUtils::GetNearestScrollableFrame(aFrame, 0);
   nsIFrame* nearestScrollableFrame = do_QueryFrame(nearestScrollableParent);
 
   // We're walking up the DOM tree until we meet the element with touch behavior
@@ -87,10 +114,9 @@ TouchBehaviorFlags TouchActionHelper::GetAllowedTouchBehavior(
 
   bool considerPanning = true;
 
-  for (nsIFrame* frame = target; frame && frame->GetContent() && behavior;
+  for (nsIFrame* frame = aFrame; frame && frame->GetContent() && behavior;
        frame = frame->GetInFlowParent()) {
-    UpdateAllowedBehavior(nsLayoutUtils::GetTouchActionFromFrame(frame),
-                          considerPanning, behavior);
+    UpdateAllowedBehavior(frame->UsedTouchAction(), considerPanning, behavior);
 
     if (frame == nearestScrollableFrame) {
       // We met the scrollable element, after it we shouldn't consider
@@ -102,5 +128,4 @@ TouchBehaviorFlags TouchActionHelper::GetAllowedTouchBehavior(
   return behavior;
 }
 
-}  // namespace layers
-}  // namespace mozilla
+}  // namespace mozilla::layers

@@ -2162,14 +2162,14 @@ void nsCellMap::Dump(bool aIsBorderCollapse) const {
   printf("\n  ***** START GROUP CELL MAP DUMP ***** %p\n", (void*)this);
   nsTableRowGroupFrame* rg = GetRowGroup();
   const nsStyleDisplay* display = rg->StyleDisplay();
-  switch (display->mDisplay) {
-    case StyleDisplay::TableHeaderGroup:
+  switch (display->DisplayInside()) {
+    case StyleDisplayInside::TableHeaderGroup:
       printf("  thead ");
       break;
-    case StyleDisplay::TableFooterGroup:
+    case StyleDisplayInside::TableFooterGroup:
       printf("  tfoot ");
       break;
-    case StyleDisplay::TableRowGroup:
+    case StyleDisplayInside::TableRowGroup:
       printf("  tbody ");
       break;
     default:
@@ -2233,7 +2233,6 @@ void nsCellMap::Dump(bool aIsBorderCollapse) const {
   }
 
   // output info mapping Ci,j to cell address
-  uint32_t cellCount = 0;
   for (uint32_t rIndex = 0; rIndex < mapRowCount; rIndex++) {
     const CellDataArray& row = mRows[rIndex];
     uint32_t colCount = row.Length();
@@ -2246,7 +2245,6 @@ void nsCellMap::Dump(bool aIsBorderCollapse) const {
           uint32_t cellFrameColIndex = cellFrame->ColIndex();
           printf("C%d,%d=%p(%u)  ", rIndex, colIndex, (void*)cellFrame,
                  cellFrameColIndex);
-          cellCount++;
         }
       }
     }

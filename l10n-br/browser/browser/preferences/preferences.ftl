@@ -32,7 +32,7 @@ category-home =
 pane-search-title = Klask
 category-search =
     .tooltiptext = { pane-search-title }
-pane-privacy-title = Buhez prevez ha diogelroez
+pane-privacy-title = Buhez prevez & Diogelroez
 category-privacy =
     .tooltiptext = { pane-privacy-title }
 pane-sync-title3 = Goubredañ
@@ -71,20 +71,14 @@ restart-later = Adloc'hañ diwezhatoc'h
 ## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
 ##
 ## Variables:
-##   $name (String): name of the extension
+##   $name (string) - Name of the extension
 
+# This string is shown to notify the user that the password manager setting
+# is being controlled by an extension
+extension-controlling-password-saving = <img data-l10n-name="icon"/><strong>{ $name }</strong> reoliañ an arventenn-mañ.
 # This string is shown to notify the user that their notifications permission
 # is being controlled by an extension.
-extension-controlled-web-notifications = Un askouezh, <img data-l10n-name="icon"/> { $name } ec'h anv, a reol an arventenn-mañ.
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = Un askouezh, <img data-l10n-name="icon"/> { $name }, a azgoulenn ivinelloù endalc'her.
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = Un askouezh, <img data-l10n-name="icon"/> { $name }, a zo o reoliañ an arventenn-mañ.
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = Un askouezh, <img data-l10n-name="icon"/> { $name }, a zo o reoliñ an doare da gennaskañ ouzh ar genrouedad implijet gant { -brand-short-name }.
+extension-controlling-web-notifications = <img data-l10n-name="icon"/><strong>{ $name }</strong> a reol an arventenn-mañ.
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
 #
@@ -110,9 +104,9 @@ is-not-default = N'eo ket { -brand-short-name } ho merdeer dre ziouer
 set-as-my-default-browser =
     .label = Lakaat dre ziouer…
     .accesskey = L
-startup-restore-previous-session =
-    .label = Assav an estez kent
-    .accesskey = A
+startup-restore-windows-and-tabs =
+    .label = Digeriñ ar prenestroù hag an ivinelloù kent
+    .accesskey = D
 startup-restore-warn-on-quit =
     .label = Kelaouiñ pa kuitait ar merdeer
 disable-extension =
@@ -124,12 +118,23 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Digeriñ an ereoù e ivinelloù kentoc'h eget e prenestroù nevez
     .accesskey = w
-warn-on-close-multiple-tabs =
-    .label = Kas keloù din pa vez serret meur a ivinell war un taol
+confirm-on-close-multiple-tabs =
+    .label = Kadarnaat a-raok serriñ meur a ivinell
+    .accesskey = K
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+confirm-on-quit-with-key =
+    .label = Kadarnaat a-raok serriñ gant { $quitKey }
     .accesskey = K
 warn-on-open-many-tabs =
     .label = Kas keloù din ma vez gorrekaet { -brand-short-name } gant digoradur meur a ivinell
     .accesskey = m
+switch-to-new-tabs =
+    .label = Pa tigorit un ere, skeudenn pe media en un ivinell nevez, mont warni ent emgefreek
+    .accesskey = P
 show-tabs-in-taskbar =
     .label = Diskouez alberzioù an ivinelloù e-barzh barrenn an trevelloù
     .accesskey = i
@@ -141,6 +146,10 @@ browser-containers-settings =
     .label = Arventennoù…
     .accesskey = v
 containers-disable-alert-title = Serriñ an holl ivinelloù endalc'her?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Ma ziweredekait an ivinelloù endalc'her bremañ e vo serret { $tabCount } ivinell endalc'her. Sur oc'h e fell deoc'h diweredekaat an ivinelloù endalc'her?
@@ -157,10 +166,13 @@ containers-disable-alert-ok-button =
         [many] Serriñ { $tabCount } a ivinelloù endalc'her
        *[other] Serriñ { $tabCount } ivinell endalc'her
     }
+
+##
+
 containers-disable-alert-cancel-button = Leuskel gweredekaet
 containers-remove-alert-title = Lemel an endalc'had kuit?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] Ma tilamit an endalc'her bremañ e vo serret { $count } ivinell endalc'her. Sur oc'h e fell deoc'h dilemel an endalc'her?
@@ -175,7 +187,14 @@ containers-remove-cancel-button = Chom hep dilemel an Endalc'her-mañ
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Yezh ha neuz
-fonts-and-colors-header = Nodrezhoù ha Livioù
+preferences-web-appearance-choice-light = Sklaer
+preferences-web-appearance-choice-dark = Teñval
+preferences-web-appearance-choice-input-auto =
+    .aria-description = { preferences-web-appearance-choice-tooltip-auto.title }
+preferences-web-appearance-choice-input-light =
+    .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
+preferences-web-appearance-choice-input-dark =
+    .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
 default-font = Nodrezh dre ziouer
     .accesskey = N
 default-font-size = Ment
@@ -183,17 +202,16 @@ default-font-size = Ment
 advanced-fonts =
     .label = Kempleshoc'h…
     .accesskey = p
-colors-settings =
-    .label = Livioù…
-    .accesskey = L
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Zoum
 preferences-default-zoom = Zoum dre ziouer
     .accesskey = Z
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
-    .label = Zoumañ war an destenn hepken
+    .label = Brasaat an destenn hepken
     .accesskey = d
 language-header = Yezh
 choose-language-description = Dibabit ho yezh muiañ plijet evit skrammañ ar pajennadoù
@@ -209,12 +227,17 @@ confirm-browser-language-change-button = Arloañ hag adloc'hañ
 translate-web-pages =
     .label = Treiñ an endalc'had web
     .accesskey = T
+fx-translate-web-pages = { -translations-brand-name }
 # The <img> element is replaced by the logo of the provider
 # used to provide machine translations for web pages.
 translate-attribution = Troidigezhioù gant <img data-l10n-name="logo"/>
 translate-exceptions =
     .label = Nemedennoù…
     .accesskey = N
+# Variables:
+#    $localeName (string) - Localized name of the locale to be used.
+use-system-locale =
+    .label = Ober gant arventennoù ho reizhiad korvoiñ evit “{ $localeName }” evit mentrezhañ an deiziadoù, an amzer, an niveroù pe ar mentoù.
 check-user-spelling =
     .label = Gwiriañ ar reizhskrivañ pa skrivan
     .accesskey = G
@@ -223,8 +246,7 @@ check-user-spelling =
 
 files-and-applications-title = Restroù hag arloadoù
 download-header = Pellgargadurioù
-download-save-to =
-    .label = Enrollañ restroù e-barzh
+download-save-where = Enrollañ restroù e-barzh
     .accesskey = o
 download-choose-folder =
     .label =
@@ -263,6 +285,13 @@ applications-use-app =
 #   $app-name (String) - Name of an application (e.g Adobe Acrobat)
 applications-use-app-default =
     .label = Arverañ { $app-name } (dre ziouer)
+applications-use-os-default =
+    .label =
+        { PLATFORM() ->
+            [macos] Ober gant arload macOS dre ziouer
+            [windows] Ober gant arload Windows dre ziouer
+           *[other] Ober gant arload ar reizhiad dre ziouer
+        }
 applications-use-other =
     .label = Arverañ re all…
 applications-select-helper = Diuzañ an arload skoazellañ
@@ -271,15 +300,15 @@ applications-manage-app =
 applications-always-ask =
     .label = Goulenn bewech
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Arverañ { $plugin-name } (e { -brand-short-name })
 applications-open-inapp =
@@ -308,6 +337,9 @@ applications-use-os-default-label =
 
 ##
 
+applications-save-for-new-types =
+    .label = Enrollañ ar restroù
+    .accesskey = S
 drm-content-header = Endalc'had Digital Rights Management (DRM)
 play-drm-content =
     .label = Lenn un endalc'had reoliet gant DRM
@@ -315,6 +347,8 @@ play-drm-content =
 play-drm-content-learn-more = Gouzout hiroc'h
 update-application-title = Hizivadurioù evit { -brand-short-name }:
 update-application-description = Derc'hel { -brand-short-name } hizivaet evit an digonusted, stabilded ha diogelroez gwellañ.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Handelv { $version } <a data-l10n-name="learn-more">Petra nevez</a>
 update-history =
     .label = Diskouez roll istor an hizivadurioù…
@@ -329,13 +363,16 @@ update-application-check-choose =
 update-application-manual =
     .label = Na wiriañ biken mard ez eus hizivadurioù (n'eo ket erbedet)
     .accesskey = N
+update-application-background-enabled =
+    .label = Pa n'eo ket lañset { -brand-short-name }
+    .accesskey = P
 update-application-warning-cross-user-setting = An arventenn-mañ a vo arloet d'an holl gontoù Windows hag an aeladoù { -brand-short-name } a arver ar staliadur { -brand-short-name }-mañ.
 update-application-use-service =
     .label = Arverañ ur gwazerezh e drekleur evit staliañ an hizivadurioù
     .accesskey = v
 update-setting-write-failure-title2 = Fazi en ur enrollañ an arventennoù hizivaat
 # Variables:
-#   $path (String) - Path to the configuration file
+#   $path (string) - Path to the configuration file
 # The newlines between the main text and the line containing the path is
 # intentional so the path is easier to identify.
 update-setting-write-failure-message2 =
@@ -365,7 +402,7 @@ performance-limit-content-process-option = Bevenn endalc'had an araezad
 performance-limit-content-process-enabled-desc = Endalc'had araezad ouzhpenn a c'hall gwellaat an digonusted gent meur a ivinell, met arverañ a raio muioc'h a vemor.
 performance-limit-content-process-blocked-desc = Evit kemmañ an niver a araezad endalc'had eo ret ober gant { -brand-short-name }. <a data-l10n-name="learn-more">Deskit penaos gwiriekaat statud al lies araezad</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (dre ziouer)
 
@@ -391,6 +428,9 @@ browsing-picture-in-picture-toggle-enabled =
     .label = Gweredekaat ar reoliadurioù video skeudenn-war-skeudenn
     .accesskey = G
 browsing-picture-in-picture-learn-more = Gouzout hiroc'h
+browsing-media-control =
+    .label = Reoliañ ar media dre ar c'hlavier, an tokarn pe ur c'hetal hewel
+    .accesskey = R
 browsing-media-control-learn-more = Gouzout hiroc'h
 browsing-cfr-recommendations =
     .label = Erbediñ askouezhioù p’emaoc'h o verdeiñ
@@ -421,10 +461,8 @@ home-newtabs-mode-label = Ivinelloù nevez
 home-restore-defaults =
     .label = Assav an arventennoù dre ziouer
     .accesskey = A
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Pennbajenn Firefox (Dre ziouer)
+home-mode-choice-default-fx =
+    .label = { -firefox-home-brand-name } (Dre ziouer)
 home-mode-choice-custom =
     .label = URLoù personelaet...
 home-mode-choice-blank =
@@ -448,34 +486,26 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Endalc'had Degemer Firefox
-home-prefs-content-description = Dibabit peseurt endalc'had a fell deoc'h kaout war ho skramm Firefox Degemer.
 home-prefs-search-header =
     .label = Klask web
-home-prefs-topsites-header =
-    .label = Lec'hiennoù gwellañ
-home-prefs-topsites-description = Al lec'hiennoù a weladennit ar muiañ
-home-prefs-topsites-by-option-sponsored =
-    .label = Lec'hiennoù gwellañ paeroniet
 home-prefs-shortcuts-header =
     .label = Berradennoù
+home-prefs-shortcuts-description = Lec’hiennoù a enrollit pe a weladennit
 home-prefs-shortcuts-by-option-sponsored =
     .label = Berradennoù paeroniet
 
 ## Variables:
-##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 home-prefs-recommended-by-header =
     .label = Erbedet gant { $provider }
+home-prefs-recommended-by-description-new = Danvezioù dibar dibabet gant { $provider }, ezel familh { -brand-product-name }
 
 ##
 
 home-prefs-recommended-by-learn-more = Penaos ez a en-dro
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Istorioù paeroniet
-home-prefs-highlights-header =
-    .label = Mareoù pouezus
-home-prefs-highlights-description = Un dibab a lec'hiennoù ho peus enrollet pe gweladennet
 home-prefs-highlights-option-visited-pages =
     .label = Pajennoù gweladennet
 home-prefs-highlights-options-bookmarks =
@@ -486,13 +516,16 @@ home-prefs-highlights-option-saved-to-pocket =
     .label = Pajennoù enrollet e { -pocket-brand-name }
 home-prefs-recent-activity-header =
     .label = Oberiantiz a-nevez
+home-prefs-recent-activity-description = Un dibab a lec’hiennoù ha danvez nevez
 # For the "Snippets" feature traditionally on about:home.
 # Alternative translation options: "Small Note" or something that
 # expresses the idea of "a small message, shortened from something else,
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Notennigoù
-home-prefs-snippets-description = Keleier eus { -vendor-short-name } ha { -brand-product-name }
+home-prefs-snippets-description-new = Tunioù ha nevezinti gant { -vendor-short-name } ha { -brand-product-name }
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -533,6 +566,7 @@ search-show-suggestions-above-history-option =
     .label = Diskouez an alioù klask a-us d'ar roll istor e disoc'hoù ar varrenn chomlec'h
 search-show-suggestions-private-windows =
     .label = Diskouez ar c'hinnigoù enklask er prenestroù prevez
+suggestions-addressbar-settings-generic2 = Kemmañ an arventennoù evit ar c’hinnigoù barenn chomlec’h all
 search-suggestions-cant-show = Ne vo ket skrammet ar c'hinnigoù enklask e disoc'hoù ar varrenn chomlec'hioù dre m’ho peus kefluniet { -brand-short-name }  evit ma ne zalc'hfe ket soñj eus ho roll istor.
 search-one-click-header2 = Berradennoù enklask
 search-one-click-desc = Dibabit al luskerioù enklask all diskouezet dindan ar varrenn chomlec'hioù hag ar varrenn glask pa grogit da skrivañ ur ger.
@@ -554,7 +588,7 @@ search-find-more-link = Klask luskerioù klask all
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Arredaoliñ ur ger alc'hwez
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Dibabet hoc'h eus ur ger alc'hwez war arver evit bremañ gant "{ $name }". Mar plij, diuzit unan all.
 search-keyword-warning-bookmark = Dibabet hoc'h eus ur ger alc'hwez war arver evit bremañ gant ur sined. Mar plij, diuzit unan all.
 
@@ -574,7 +608,7 @@ containers-settings-button =
 containers-remove-button =
     .label = Lemel kuit
 
-## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = Kemerit ho web ganeoc'h
@@ -592,7 +626,7 @@ sync-signedout-account-signin3 =
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Pellgargañ Firefox evit <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> pe <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a> evit goubredañ gant ho trevnad hezoug.
 
-## Firefox Account - Signed in
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = Kemmañ ar skeudenn aelad
@@ -601,8 +635,15 @@ sync-sign-out =
     .accesskey = g
 sync-manage-account = Ardeiñ ar gont
     .accesskey = A
+
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } n'eo ket gwiriet.
 sync-signedin-login-failure = En em zilesait evit adkennaskañ { $email }
+
+##
+
 sync-resend-verification =
     .label = Adkas ar gwiriadur
     .accesskey = g
@@ -625,10 +666,14 @@ prefs-sync-now =
     .labelnotsyncing = Goubredañ bremañ
     .accesskeynotsyncing = G
     .labelsyncing = O c'houbredañ...
+prefs-sync-now-button =
+    .label = Goubredañ bremañ
+    .accesskey = G
+prefs-syncing-button =
+    .label = O c'houbredañ...
 
 ## The list of things currently syncing.
 
-sync-currently-syncing-heading = Emaoc'h o c'houbredañ an elfennoù-mañ:
 sync-currently-syncing-bookmarks = Sinedoù
 sync-currently-syncing-history = Roll istor
 sync-currently-syncing-tabs = Ivinelloù digor
@@ -636,15 +681,16 @@ sync-currently-syncing-logins-passwords = Titouroù kennaskañ
 sync-currently-syncing-addresses = Chomlec'hioù
 sync-currently-syncing-creditcards = Kartennoù kred
 sync-currently-syncing-addons = Askouezhioù
+sync-currently-syncing-settings = Arventennoù
 sync-change-options =
     .label = Kemmañ…
     .accesskey = K
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog =
+sync-choose-what-to-sync-dialog3 =
     .title = Dibabit petra goubredañ
-    .style = width: 36em; min-height: 35em;
+    .style = min-width: 36em;
     .buttonlabelaccept = Enrollañ ar c'hemmoù
     .buttonaccesskeyaccept = E
     .buttonlabelextra2 = Digennaskañ...
@@ -675,6 +721,10 @@ sync-engine-addons =
     .label = Askouezhioù
     .tooltiptext = Askouezhioù ha neuzioù evit Firefox war burev
     .accesskey = A
+sync-engine-settings =
+    .label = Arventennoù
+    .tooltiptext = Arventennoù hollek, buhez prevez ha diogelroez kemmet ganeoc’h
+    .accesskey = A
 
 ## The device name controls.
 
@@ -689,6 +739,16 @@ sync-device-name-save =
     .label = Enrollañ
     .accesskey = E
 sync-connect-another-device = Kennaskit un trevnad all
+
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Kaset eo bet ar gemennadenn gwiriañ
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Kaset ez eus bet un ere gwiriañ da { $email }
+sync-verification-not-sent-title = Dic'houest da gas ar gemennadenn gwiriañ
+sync-verification-not-sent-body = N'haller ket kas ur postel gwiriañ evit ar mare, klaskit en-dro diwezhatoc'h.
 
 ## Privacy Section
 
@@ -739,6 +799,10 @@ forms-primary-pw-change =
 forms-primary-pw-former-name = Anvet "ger-tremen mestr" a-raok
 forms-primary-pw-fips-title = E mod FIPS emaoc'h. FIPS a c'houlenn ur ger-tremen mestr ha n'eo ket goulo.
 forms-master-pw-fips-desc = Fazi en ur gemmañ ar ger-tremen
+forms-windows-sso =
+    .label = Aotren dilesa eeun Windows evit ar c'hontoù Microsoft, al labour hag ar c'hontoù skol.
+forms-windows-sso-learn-more-link = Gouzout hiroc'h
+forms-windows-sso-desc = Merañ ar c'hontoù e arventennoù ho trevnad
 
 ## OS Authentication dialog
 
@@ -797,8 +861,8 @@ history-clear-button =
 sitedata-header = Toupinoù ha roadennoù lec'hienn
 sitedata-total-size-calculating = O jediñ ment roadennoù ha krubuilh al lec'hienn…
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = Ho toupinoù, roadennoù lec'hienn ha krubuilh kadavet a zo oc'h arverañ { $value } { $unit } war ho kantenn.
 sitedata-learn-more = Gouzout hiroc'h
 sitedata-delete-on-close =
@@ -817,14 +881,12 @@ sitedata-block-desc = Rizh stanket
     .accesskey = R
 sitedata-option-block-cross-site-trackers =
     .label = Heulierien etre-lec'hienn
-sitedata-option-block-cross-site-and-social-media-trackers =
-    .label = Heulierien etre-lec'hienn ha kevredadel
-sitedata-option-block-cross-site-and-social-media-trackers-plus-isolate =
-    .label = Heulierien etre lec'hiennoù ha media kevredadel, ha strollañ an toupinoù a chom
+sitedata-option-block-cross-site-tracking-cookies =
+    .label = Toupinoù heuliañ etre-lec'hienn
+sitedata-option-block-cross-site-cookies =
+    .label = Toupinoù heuliañ etrelec’hienn, ha difuiñ an toupinoù etrelec'hienn all
 sitedata-option-block-unvisited =
     .label = Toupinoù al lec'hiennoù n'int ket bet gweladennet
-sitedata-option-block-all-third-party =
-    .label = Holl doupinoù an tredeoù (gallout a ra mirout lec'hiennoù ’zo da vont en-dro en un doare dereat)
 sitedata-option-block-all =
     .label = An holl doupinoù (terriñ a raio mont-en-dro lec'hiennoù ’zo)
 sitedata-clear =
@@ -836,6 +898,9 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Merañ an nemedennoù…
     .accesskey = M
+
+## Privacy Section - Cookie Banner Handling
+
 
 ## Privacy Section - Address Bar
 
@@ -857,6 +922,9 @@ addressbar-locbar-shortcuts-option =
 addressbar-locbar-topsites-option =
     .label = Lec'hiennoù gwellañ
     .accesskey = L
+addressbar-locbar-engines-option =
+    .label = Luskerioù enklask
+    .accesskey = L
 addressbar-suggestions-settings = Kemmañ ar gwellvezioù evit ar c'hinnigoù luskerioù enklask
 
 ## Privacy Section - Content Blocking
@@ -864,6 +932,7 @@ addressbar-suggestions-settings = Kemmañ ar gwellvezioù evit ar c'hinnigoù lu
 content-blocking-enhanced-tracking-protection = Gwarez heuliañ araoket
 content-blocking-section-top-level-description = An heulierien a heuilh ac'hanoc'h enlinenn evit tapout titouroù diwar-benn ho poazioù merdeiñ hag ho kreizennoù dedenn. { -brand-short-name } a stank lodenn vrasañ anezho.
 content-blocking-learn-more = Gouzout hiroc'h
+content-blocking-fpi-incompatibility-warning = Ober a rit gant an Difuadur an Domani Kentañ (DDK), ar pezh a flastr lod eus arventennoù toupinoù { -brand-short-name }.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -884,17 +953,25 @@ enhanced-tracking-protection-setting-custom =
 content-blocking-etp-standard-desc = Kempouez etre gwarez ha digonusted. Ar pajennoù a gargo en un doare ordinal.
 content-blocking-etp-strict-desc = Gwarez kreñvoc'h, met gallout a ra lakaat lec'hiennoù ’zo da derriñ.
 content-blocking-etp-custom-desc = Dibabit pe heulier pe skript herzel.
+content-blocking-etp-blocking-desc = { -brand-short-name } a stank an toupinoù dindan:
 content-blocking-private-windows = Heulierien er prenestroù prevez
 content-blocking-cross-site-tracking-cookies = Toupinoù heuliañ etre-lec'hienn
+content-blocking-all-cross-site-cookies-private-windows = Toupinoù etrelec’hienn er prenestroù prevez
+content-blocking-cross-site-tracking-cookies-plus-isolate = Toupinoù heuliañ etrelec’hienn, ha difuiñ an toupinoù a chom
 content-blocking-social-media-trackers = Heulierien media kevredadel
 content-blocking-all-cookies = An holl doupinoù
 content-blocking-unvisited-cookies = Toupinoù al lec'hiennoù n'int ket bet gweladennet
 content-blocking-all-windows-tracking-content = Endalc'had heuliañ en holl brenestroù
-content-blocking-all-third-party-cookies = Holl doupinoù an tredeoù
 content-blocking-cryptominers = Kriptogleuzerien
 content-blocking-fingerprinters = Dinoerien roudoù niverel
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
+
+# "Contains" here means "isolates", "limits".
+content-blocking-etp-standard-tcp-rollout-description = Ar gwarez toupinoù klok a endalc'h toupinoù al lec'hienn m'emaoc'h warni, evel-se n’hall ket an heulierien ober ganto evit heuliañ ac'hanoc'h etre al lec'hiennoù.
+content-blocking-etp-standard-tcp-rollout-learn-more = Gouzout hiroc'h
 content-blocking-warning-title = Diwallit!
-content-blocking-and-isolating-etp-warning-description = Stankañ an heulierien ha difuiñ an toupinoù a c'hallfe kaout un efed war implij lec'hiennoù ’zo. Adkargit ur bajenn gant an heulierien evit kargañ pep tra.
+content-blocking-and-isolating-etp-warning-description-2 = An arventenn-mañ a c'hall lakaat lec'hiennoù 'zo da vont a-dreuz. Ma seblant bezañ torret ul lec'hienn e c'hallit diweredekaat ar gwarez heuliañ evit al lec'hienn-mañ ha kargañ pep tra.
 content-blocking-warning-learn-how = Deskit penaos
 content-blocking-reload-description = Ezhomm ho po da adkargañ hoc'h ivinelloù evit arloañ ar c'hemmoù.
 content-blocking-reload-tabs-button =
@@ -950,6 +1027,9 @@ permissions-microphone = Klevell
 permissions-microphone-settings =
     .label = Arventennoù…
     .accesskey = r
+permissions-speaker-settings =
+    .label = Arventennoù…
+    .accesskey = t
 permissions-notification = Rebuzadurioù
 permissions-notification-settings =
     .label = Arventennoù…
@@ -965,9 +1045,12 @@ permissions-autoplay-settings =
 permissions-block-popups =
     .label = Herzel an diflugelloù
     .accesskey = H
-permissions-block-popups-exceptions =
-    .label = Nemedennoù
+# "popup" is a misspelling that is more popular than the correct spelling of
+# "pop-up" so it's included as a search keyword, not displayed in the UI.
+permissions-block-popups-exceptions-button =
+    .label = Nemedennoù…
     .accesskey = N
+    .searchkeywords = diflugelloù
 permissions-addon-install-warning =
     .label = Ho kelaouiñ pa glask ul lec'hienn staliañ askouezhioù
     .accesskey = H
@@ -995,6 +1078,8 @@ addon-recommendations-link = Gouzout hiroc'h
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Diweredekaet eo an danevelliñ roadennoù evit kefluniadur ar c'hempunadur-mañ
+collection-backlogged-crash-reports-with-link = Aotren { -brand-short-name } da gas danevelloù sac'hadennoù en ho plas. <a data-l10n-name="crash-reports-link">Gouzout hiroc'h</a>
+    .accesskey = g
 
 ## Privacy Section - Security
 ##
@@ -1026,18 +1111,32 @@ certs-view =
 certs-devices =
     .label = Trevnadoù diogelroez…
     .accesskey = T
+space-alert-over-5gb-settings-button =
+    .label = Digeriñ an arventennoù
+    .accesskey = D
+space-alert-over-5gb-message2 = <strong>{ -brand-short-name } n'eus ket kalz a blas ken war ar gantenn.</strong> Gallout a ra al lec'hienn bezañ skrammet a-dreuz. Gallout a rit skarzhañ ar roadennoù kadavet e Arventennoù > Buhez prevez ha diogelroez > Toupinoù ha roadennoù lec'hienn.
+space-alert-under-5gb-message2 = <strong>Ne chom ket kalz a blas war ar gantenn evit { -brand-short-name }.</strong> Gallout a ra al lec'hiennoù skrammañ en un doare dizereat. Gweladennit "Gouzout hiroc'h" evit gwellekaat hoc'h arver kantenn ha kaout un arnod merdeiñ gwelloc'h.
 
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Mod HTTPS hepken
+httpsonly-description = HTTPS a ginnig ur c'hennask diogel hag enrineget etre { -brand-short-name } hag al lec'hiennoù a weladennit. Lodenn vrasañ al lec'hiennoù a skor HTTPS, ha mard eo gweredekaet ar mod HTTPS-hepken e vo lakaet { -brand-short-name } da dremen ar c'hennask dre HTTPS.
 httpsonly-learn-more = Gouzout hiroc'h
+httpsonly-radio-enabled =
+    .label = Gweredekaat HTTPS-hepken en holl brenestroù
+httpsonly-radio-enabled-pbm =
+    .label = Gweredekaat HTTPS-hepken er prenestroù prevez hepken
+httpsonly-radio-disabled =
+    .label = Na weredekaat ar mod HTTPS-hepken
+
+## DoH Section
+
+# Variables:
+#   $status (string) - The status of the DoH connection
+preferences-doh-status = Statud: { $status }
 
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Burev
 downloads-folder-name = Pellgargadurioù
 choose-download-folder-title = Dibab un teuliad pellgargañ
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Enrollañ ar restroù e-barzh { $service-name }

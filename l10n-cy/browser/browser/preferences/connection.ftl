@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Gosodiadau Cysylltu
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -35,7 +35,6 @@ connection-proxy-http = Dirprwy yr HTTP
     .accesskey = H
 connection-proxy-http-port = Porth
     .accesskey = P
-
 connection-proxy-https-sharing =
     .label = Defnyddio'r dirprwy yma hefyd ar gyfer HTTPS
     .accesskey = D
@@ -77,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = d
     .tooltip = Mae'r dewis hwn yn eich dilysu'n dawel i ddirprwyon rydych wedi eu cadw eu manylion ar eu cyfer. Byddwn yn gofyn os bydd y dilysiad yn methu.
 
+connection-proxy-autologin-checkbox =
+    .label = Peidio gofyn am ddilysiad os yw'r cyfrinair wedi ei gadw
+    .accesskey = d
+    .tooltiptext = Mae'r dewis hwn yn eich dilysu'n dawel i ddirprwyon rydych wedi eu cadw eu manylion ar eu cyfer. Byddwn yn gofyn os bydd y dilysiad yn methu.
+
 connection-proxy-socks-remote-dns =
     .label = DNS dirprwyol wrth ddefnyddio SOCKS v5
     .accesskey = d
-
-connection-dns-over-https =
-    .label = Galluogi DNS dros HTTPS
-    .accesskey = D
-
-connection-dns-over-https-url-resolver = Defnyddio'r Darparwr
-    .accesskey = D
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider
@@ -95,8 +92,8 @@ connection-dns-over-https-url-item-default =
     .tooltiptext = Defnyddiwch yr URL rhagosodedig i ddatrys DNS dros HTTPS
 
 connection-dns-over-https-url-custom =
-    .label = Cyfaddasu
+    .label = Cyfaddas
     .accesskey = C
     .tooltiptext = Rhowch eich hoff URL ar gyfer datrys DNS dros HTTPS
 
-connection-dns-over-https-custom-label = Cyfaddasu
+connection-dns-over-https-custom-label = Cyfaddas

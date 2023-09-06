@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = माहिती पुसा
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = सर्व कुकीज आणि { -brand-short-name } द्वारे संचयित केलेली साइट डेटा पुसल्याने आपण संकेतस्थळातून साइन आउट होऊ शकता आणि वेब वरील मजकूर काढला जाऊ शकतो . कॅशे पुसल्याने आपल्या लॉगिन वर काहीही परिणाम होणार नाही.
 

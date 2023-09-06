@@ -14,3 +14,17 @@ styleeditor-save-button = သိမ်းဆည်းပါ
 styleeditor-editor-textbox =
     .data-placeholder = ဒီနေရာမှာ CSS ကုဒ်များကိုရိုက်ပါ။
 styleeditor-no-stylesheet = ဒီစာမျက်နှာမှာ CSS ဖိုင် မရှိပါ။
+styleeditor-find =
+    .label = ရှာဖွေပါ
+    .accesskey = F
+styleeditor-find-again =
+    .label = ထပ် ရှာပါ
+    .accesskey = g
+styleeditor-go-to-line =
+    .label = လိုင်း .... သို့သွားပါ
+    .accesskey = လ
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count = စည်းမျဥ်း { $ruleCount } ခု

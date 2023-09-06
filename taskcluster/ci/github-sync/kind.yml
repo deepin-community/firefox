@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 ---
-loader: taskgraph.loader.transform:loader
+loader: gecko_taskgraph.loader.transform:loader
 
 kind-dependencies:
     - toolchain
     - build
 
 transforms:
-    - taskgraph.transforms.github_sync:transforms
-    - taskgraph.transforms.job:transforms
-    - taskgraph.transforms.task:transforms
+    - gecko_taskgraph.transforms.github_sync:transforms
+    - gecko_taskgraph.transforms.job:transforms
+    - gecko_taskgraph.transforms.task:transforms
 
 job-defaults:
     attributes:
         retrigger: true
-    run-on-projects: ['mozilla-central']
-    worker-type: b-linux
+    run-on-projects: ['mozilla-central-only']
+    worker-type: b-linux-gcp
     treeherder:
         platform: other/opt
         tier: 2

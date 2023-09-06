@@ -7,13 +7,15 @@
 const {
   FrontClassWithSpec,
   registerFront,
-} = require("devtools/shared/protocol");
-const { styleRuleSpec } = require("devtools/shared/specs/style-rule");
+} = require("resource://devtools/shared/protocol.js");
+const {
+  styleRuleSpec,
+} = require("resource://devtools/shared/specs/style-rule.js");
 
 loader.lazyRequireGetter(
   this,
   "RuleRewriter",
-  "devtools/client/fronts/inspector/rule-rewriter"
+  "resource://devtools/client/fronts/inspector/rule-rewriter.js"
 );
 
 /**
@@ -30,16 +32,12 @@ class StyleRuleFront extends FrontClassWithSpec(styleRuleSpec) {
     this.actorID = form.actor;
     this._form = form;
     this.traits = form.traits || {};
-    if (this._mediaText) {
-      this._mediaText = null;
-    }
   }
 
   /**
    * Ensure _form is updated when location-changed is emitted.
    */
   _locationChangedPre(line, column) {
-    this._clearOriginalLocation();
     this._form.line = line;
     this._form.column = column;
   }
@@ -90,38 +88,34 @@ class StyleRuleFront extends FrontClassWithSpec(styleRuleSpec) {
   get selectors() {
     return this._form.selectors;
   }
-  get media() {
-    return this._form.media;
-  }
-  get mediaText() {
-    if (!this._form.media) {
-      return null;
-    }
-    if (this._mediaText) {
-      return this._mediaText;
-    }
-    this._mediaText = this.media.join(", ");
-    return this._mediaText;
-  }
 
-  get parentRule() {
-    return this.conn.getFrontByID(this._form.parentRule);
+  /**
+   * When a rule is nested in another non-at-rule (aka CSS Nesting), this will return
+   * the "full" selectors, which includes ancestor rules selectors.
+   * To compute it, the parent selector (&) is recursively replaced by the parent
+   * rule selector wrapped in `:is()`.
+   * For example, with the following nested rule: `body { & > main {} }`,
+   * the desugared selectors will be [`:is(body) > main`],
+   * while the "regular" selectors will only be [`main`].
+   *
+   * See https://www.w3.org/TR/css-nesting-1/#nest-selector for more information.
+   *
+   * @returns {Array<String>} An array of the desugared selectors for this rule.
+   *                          This falls back to the regular list of selectors
+   *                          when desugared selectors are not sent by the server.
+   */
+  get desugaredSelectors() {
+    // We don't send the desugaredSelectors for top-level selectors, so fall back to
+    // the regular selectors in that case.
+    return this._form.desugaredSelectors || this._form.selectors;
   }
 
   get parentStyleSheet() {
-    const resourceCommand = this.targetFront.resourceCommand;
-    if (
-      resourceCommand?.hasResourceCommandSupport(
-        resourceCommand.TYPES.STYLESHEET
-      )
-    ) {
-      return resourceCommand.getResourceById(
-        resourceCommand.TYPES.STYLESHEET,
-        this._form.parentStyleSheet
-      );
-    }
-
-    return this.conn.getFrontByID(this._form.parentStyleSheet);
+    const resourceCommand = this.targetFront.commands.resourceCommand;
+    return resourceCommand.getResourceById(
+      resourceCommand.TYPES.STYLESHEET,
+      this._form.parentStyleSheet
+    );
   }
 
   get element() {
@@ -154,38 +148,8 @@ class StyleRuleFront extends FrontClassWithSpec(styleRuleSpec) {
     };
   }
 
-  _clearOriginalLocation() {
-    this._originalLocation = null;
-  }
-
-  getOriginalLocation() {
-    if (this._originalLocation) {
-      return Promise.resolve(this._originalLocation);
-    }
-    const parentSheet = this.parentStyleSheet;
-    if (!parentSheet) {
-      // This rule doesn't belong to a stylesheet so it is an inline style.
-      // Inline styles do not have any mediaText so we can return early.
-      return Promise.resolve(this.location);
-    }
-    return parentSheet
-      .getOriginalLocation(this.line, this.column)
-      .then(({ fromSourceMap, source, line, column }) => {
-        const location = {
-          href: source,
-          line: line,
-          column: column,
-          mediaText: this.mediaText,
-        };
-        if (fromSourceMap === false) {
-          location.source = this.parentStyleSheet;
-        }
-        if (!source) {
-          location.href = this.href;
-        }
-        this._originalLocation = location;
-        return location;
-      });
+  get ancestorData() {
+    return this._form.ancestorData;
   }
 
   async modifySelector(node, value) {

@@ -89,7 +89,7 @@ void BaseCompiler::loadMemRef(const Stk& src, RegRef dest) {
 }
 
 void BaseCompiler::loadLocalRef(const Stk& src, RegRef dest) {
-  fr.loadLocalRef(localFromSlot(src.slot(), MIRType::RefOrNull), dest);
+  fr.loadLocalRef(localFromSlot(src.slot(), MIRType::WasmAnyRef), dest);
 }
 
 void BaseCompiler::loadRegisterRef(const Stk& src, RegRef dest) {
@@ -566,6 +566,14 @@ void BaseCompiler::pushI32(int32_t v) { push(Stk(v)); }
 void BaseCompiler::pushI64(int64_t v) { push(Stk(v)); }
 
 void BaseCompiler::pushRef(intptr_t v) { pushConstRef(v); }
+
+void BaseCompiler::pushPtr(intptr_t v) {
+#ifdef JS_64BIT
+  pushI64(v);
+#else
+  pushI32(v);
+#endif
+}
 
 void BaseCompiler::pushF64(double v) { push(Stk(v)); }
 
@@ -1052,6 +1060,23 @@ RegF32 BaseCompiler::popF32(RegF32 specific) {
   return specific;
 }
 
+bool BaseCompiler::hasConst() const {
+  const Stk& v = stk_.back();
+  switch (v.kind()) {
+    case Stk::ConstI32:
+    case Stk::ConstI64:
+    case Stk::ConstF32:
+    case Stk::ConstF64:
+#ifdef ENABLE_WASM_SIMD
+    case Stk::ConstV128:
+#endif
+    case Stk::ConstRef:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool BaseCompiler::popConst(int32_t* c) {
   Stk& v = stk_.back();
   if (v.kind() != Stk::ConstI32) {
@@ -1175,6 +1200,22 @@ RegI64 BaseCompiler::popI64ToSpecific(RegI64 specific) {
   return popI64(specific);
 }
 
+RegI64 BaseCompiler::popIndexToInt64(IndexType indexType) {
+  if (indexType == IndexType::I64) {
+    return popI64();
+  }
+
+  MOZ_ASSERT(indexType == IndexType::I32);
+#ifdef JS_64BIT
+  return RegI64(Register64(popI32()));
+#else
+  RegI32 lowPart = popI32();
+  RegI32 highPart = needI32();
+  masm.xor32(highPart, highPart);
+  return RegI64(Register64(lowPart, highPart));
+#endif
+}
+
 #ifdef JS_CODEGEN_ARM
 // Pop an I64 as a valid register pair.
 RegI64 BaseCompiler::popI64Pair() {
@@ -1196,9 +1237,10 @@ RegI32 BaseCompiler::popI64ToSpecificI32(RegI32 specific) {
   return narrowI64(rd);
 }
 
-bool BaseCompiler::peekLocalI32(uint32_t* local) {
+bool BaseCompiler::peekLocal(uint32_t* local) {
   Stk& v = stk_.back();
-  if (v.kind() != Stk::LocalI32) {
+  // See hasLocal() for documentation of this logic.
+  if (v.kind() <= Stk::MemLast || v.kind() > Stk::LocalLast) {
     return false;
   }
   *local = v.slot();

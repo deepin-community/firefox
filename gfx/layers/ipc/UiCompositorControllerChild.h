@@ -14,6 +14,10 @@
 #include "mozilla/layers/UiCompositorControllerParent.h"
 #include "mozilla/RefPtr.h"
 #include "nsThread.h"
+#ifdef MOZ_WIDGET_ANDROID
+#  include "SurfaceTexture.h"
+#  include "mozilla/java/CompositorSurfaceManagerWrappers.h"
+#endif
 
 class nsBaseWidget;
 
@@ -25,13 +29,14 @@ class UiCompositorControllerChild final
   friend class PUiCompositorControllerChild;
 
  public:
-  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(UiCompositorControllerChild)
+  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(UiCompositorControllerChild, final)
 
   static RefPtr<UiCompositorControllerChild> CreateForSameProcess(
-      const LayersId& aRootLayerTreeId);
+      const LayersId& aRootLayerTreeId, nsBaseWidget* aWidget);
   static RefPtr<UiCompositorControllerChild> CreateForGPUProcess(
       const uint64_t& aProcessToken,
-      Endpoint<PUiCompositorControllerChild>&& aEndpoint);
+      Endpoint<PUiCompositorControllerChild>&& aEndpoint,
+      nsBaseWidget* aWidget);
 
   bool Pause();
   bool Resume();
@@ -47,14 +52,32 @@ class UiCompositorControllerChild final
 
   void Destroy();
 
-  void SetBaseWidget(nsBaseWidget* aWidget);
   bool DeallocPixelBuffer(Shmem& aMem);
+
+#ifdef MOZ_WIDGET_ANDROID
+  // Set mCompositorSurfaceManager. Must be called straight after initialization
+  // for GPU process controllers. Do not call for in-process controllers. This
+  // is separate from CreateForGPUProcess to avoid cluttering its declaration
+  // with JNI types.
+  void SetCompositorSurfaceManager(
+      java::CompositorSurfaceManager::Param aCompositorSurfaceManager);
+
+  // Send a Surface to the GPU process that a given widget ID should be
+  // composited in to. If not using a GPU process this function does nothing, as
+  // the InProcessCompositorWidget can read the Surface directly from the
+  // widget.
+  //
+  // Note that this function does not actually use the PUiCompositorController
+  // IPDL protocol, and instead uses Android's binder IPC mechanism via
+  // mCompositorSurfaceManager. It can be called from any thread.
+  void OnCompositorSurfaceChanged(int32_t aWidgetId,
+                                  java::sdk::Surface::Param aSurface);
+#endif
 
  protected:
   void ActorDestroy(ActorDestroyReason aWhy) override;
-  void ActorDealloc() override;
   void ProcessingError(Result aCode, const char* aReason) override;
-  void HandleFatalError(const char* aMsg) const override;
+  void HandleFatalError(const char* aMsg) override;
   mozilla::ipc::IPCResult RecvToolbarAnimatorMessageFromCompositor(
       const int32_t& aMessage);
   mozilla::ipc::IPCResult RecvRootFrameMetrics(const ScreenPoint& aScrollOffset,
@@ -64,7 +87,8 @@ class UiCompositorControllerChild final
                                            bool aNeedsYFlip);
 
  private:
-  explicit UiCompositorControllerChild(const uint64_t& aProcessToken);
+  explicit UiCompositorControllerChild(const uint64_t& aProcessToken,
+                                       nsBaseWidget* aWidget);
   virtual ~UiCompositorControllerChild();
   void OpenForSameProcess();
   void OpenForGPUProcess(Endpoint<PUiCompositorControllerChild>&& aEndpoint);
@@ -79,6 +103,15 @@ class UiCompositorControllerChild final
   RefPtr<nsBaseWidget> mWidget;
   // Should only be set when compositor is in process.
   RefPtr<UiCompositorControllerParent> mParent;
+
+#ifdef MOZ_WIDGET_ANDROID
+  // Android interface to send Surfaces to the GPU process. This uses Android
+  // binder rather than IPDL because Surfaces cannot be sent via IPDL. It lives
+  // here regardless because it is a conceptually logical location, even if the
+  // underlying IPC mechanism is different.
+  // This will be null if there is no GPU process.
+  mozilla::java::CompositorSurfaceManager::GlobalRef mCompositorSurfaceManager;
+#endif
 };
 
 }  // namespace layers

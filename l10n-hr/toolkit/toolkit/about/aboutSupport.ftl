@@ -55,6 +55,7 @@ app-basics-enabled-plugins = Aktivirani priključci
 app-basics-build-config = Konfiguracija gradnje
 app-basics-user-agent = Korisnički agent
 app-basics-os = OS
+app-basics-os-theme = Tema OS-a
 # Rosetta is Apple's translation process to run apps containing x86_64
 # instructions on Apple Silicon. This should remain in English.
 app-basics-rosetta = Prevedeno Rosettom
@@ -70,6 +71,7 @@ app-basics-location-service-key-google = Google ključ za usluge lokacije
 app-basics-safebrowsing-key-google = Google ključ za sigurno pregledavanje
 app-basics-key-mozilla = Mozilla ključ za usluge lokacije
 app-basics-safe-mode = Siguran način rada
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Prikaži u Finderu
@@ -123,7 +125,6 @@ sandbox-sys-call-tid = TID
 sandbox-sys-call-proc-type = Vrsta procesa
 sandbox-sys-call-number = Poziv sustava
 sandbox-sys-call-args = Argumenti
-
 troubleshoot-mode-title = Dijagnosticiranje problema
 restart-in-troubleshoot-mode-label = Način rada za rješavanje problema…
 clear-startup-cache-title = Pokušaj poništiti predmemoriju pokretanja
@@ -152,6 +153,8 @@ media-device-latency = Kašnjenje
 media-capabilities-title = Mogućnosti medija
 # List all the entries of the database.
 media-capabilities-enumerate = Popis unosa baze podataka
+
+## Codec support table
 
 ##
 
@@ -329,13 +332,11 @@ launcher-process-status-unknown = Nepoznato stanje
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
 fission-status-experiment-control = Onemogućio eksperiment
 fission-status-experiment-treatment = Omogućio eksperiment
 fission-status-disabled-by-e10s-env = Onemogućilo okruženje
 fission-status-enabled-by-env = Omogućilo okruženje
-fission-status-disabled-by-safe-mode = Onemogućio sigurnosni način rada
-fission-status-enabled-by-default = Omogućeno prema zadanim postavkama
+fission-status-enabled-by-default = Standardno aktivirano
 fission-status-disabled-by-default = Onemogućeno prema zadanim postavkama
 fission-status-enabled-by-user-pref = Omogućio korisnik
 fission-status-disabled-by-user-pref = Onemogućio korisnik

@@ -179,6 +179,7 @@ pub use crate::repeatn::repeat_n;
 #[allow(deprecated)]
 pub use crate::sources::{repeat_call, unfold, iterate};
 pub use crate::with_position::Position;
+pub use crate::unziptuple::{multiunzip, MultiUnzip};
 pub use crate::ziptuple::multizip;
 mod adaptors;
 mod either_or_both;
@@ -196,6 +197,8 @@ mod combinations_with_replacement;
 mod exactly_one_err;
 mod diff;
 mod flatten_ok;
+#[cfg(feature = "use_std")]
+mod extrema_set;
 mod format;
 #[cfg(feature = "use_std")]
 mod grouping_map;
@@ -237,6 +240,7 @@ mod tuple_impl;
 mod duplicates_impl;
 #[cfg(feature = "use_std")]
 mod unique_impl;
+mod unziptuple;
 mod with_position;
 mod zip_eq_impl;
 mod zip_longest;
@@ -385,7 +389,7 @@ macro_rules! izip {
 /// let with_macro:  Chain<Chain<Once<_>, Take<Repeat<_>>>, slice::Iter<_>> =
 ///     chain![once(&0), repeat(&1).take(2), &[2, 3, 5],];
 ///
-/// // ...is equivalant to this:
+/// // ...is equivalent to this:
 /// let with_method: Chain<Chain<Once<_>, Take<Repeat<_>>>, slice::Iter<_>> =
 ///     once(&0)
 ///         .chain(repeat(&1).take(2))
@@ -660,7 +664,7 @@ pub trait Itertools : Iterator {
     }
 
     /// Return an iterator over all contiguous windows producing tuples of
-    /// a specific size (up to 4).
+    /// a specific size (up to 12).
     ///
     /// `tuple_windows` clones the iterator elements so that they can be
     /// part of successive windows, this makes it most suited for iterators
@@ -702,7 +706,7 @@ pub trait Itertools : Iterator {
 
     /// Return an iterator over all windows, wrapping back to the first
     /// elements when the window would otherwise exceed the length of the
-    /// iterator, producing tuples of a specific size (up to 4).
+    /// iterator, producing tuples of a specific size (up to 12).
     ///
     /// `circular_tuple_windows` clones the iterator elements so that they can be
     /// part of successive windows, this makes it most suited for iterators
@@ -735,7 +739,7 @@ pub trait Itertools : Iterator {
         tuple_impl::circular_tuple_windows(self)
     }
     /// Return an iterator that groups the items in tuples of a specific size
-    /// (up to 4).
+    /// (up to 12).
     ///
     /// See also the method [`.next_tuple()`](Itertools::next_tuple).
     ///
@@ -776,7 +780,7 @@ pub trait Itertools : Iterator {
     /// the original iterator.
     ///
     /// **Note:** If the iterator is clonable, prefer using that instead
-    /// of using this method. It is likely to be more efficient.
+    /// of using this method. Cloning is likely to be more efficient.
     ///
     /// Iterator element type is `Self::Item`.
     ///
@@ -902,7 +906,7 @@ pub trait Itertools : Iterator {
     /// a series of `Result::Ok` values. `Result::Err` values are unchanged.
     /// 
     /// This is useful when you have some common error type for your crate and
-    /// need to propogate it upwards, but the `Result::Ok` case needs to be flattened.
+    /// need to propagate it upwards, but the `Result::Ok` case needs to be flattened.
     ///
     /// ```
     /// use itertools::Itertools;
@@ -911,7 +915,7 @@ pub trait Itertools : Iterator {
     /// let it = input.iter().cloned().flatten_ok();
     /// itertools::assert_equal(it.clone(), vec![Ok(0), Ok(1), Err(false), Ok(2), Ok(3)]);
     /// 
-    /// // This can also be used to propogate errors when collecting.
+    /// // This can also be used to propagate errors when collecting.
     /// let output_result: Result<Vec<i32>, bool> = it.collect();
     /// assert_eq!(output_result, Err(false));
     /// ```
@@ -1107,7 +1111,7 @@ pub trait Itertools : Iterator {
     /// ```
     #[cfg(feature = "use_alloc")]
     fn multi_cartesian_product(self) -> MultiProduct<<Self::Item as IntoIterator>::IntoIter>
-        where Self: Iterator + Sized,
+        where Self: Sized,
               Self::Item: IntoIterator,
               <Self::Item as IntoIterator>::IntoIter: Clone,
               <Self::Item as IntoIterator>::Item: Clone
@@ -1744,12 +1748,10 @@ pub trait Itertools : Iterator {
     fn find_position<P>(&mut self, mut pred: P) -> Option<(usize, Self::Item)>
         where P: FnMut(&Self::Item) -> bool
     {
-        let mut index = 0usize;
-        for elt in self {
+        for (index, elt) in self.enumerate() {
             if pred(&elt) {
                 return Some((index, elt));
             }
-            index += 1;
         }
         None
     }
@@ -1793,7 +1795,7 @@ pub trait Itertools : Iterator {
         Some(if predicate(&first) {
             first
         } else {
-            self.find(|x| predicate(&x)).unwrap_or(first)
+            self.find(|x| predicate(x)).unwrap_or(first)
         })
     }
     /// Returns `true` if the given item is present in this iterator.
@@ -1951,7 +1953,7 @@ pub trait Itertools : Iterator {
         where F: FnMut(Self::Item),
               Self: Sized,
     {
-        self.for_each(f)
+        self.for_each(f);
     }
 
     /// Combine all an iterator's elements into one element by using [`Extend`].
@@ -2241,6 +2243,7 @@ pub trait Itertools : Iterator {
     /// assert_eq!((0..10).fold1(|x, y| x + y).unwrap_or(0), 45);
     /// assert_eq!((0..0).fold1(|x, y| x * y), None);
     /// ```
+    #[deprecated(since = "0.10.2", note = "Use `Iterator::reduce` instead")]
     fn fold1<F>(mut self, f: F) -> Option<Self::Item>
         where F: FnMut(Self::Item, Self::Item) -> Self::Item,
               Self: Sized,
@@ -2268,7 +2271,7 @@ pub trait Itertools : Iterator {
     /// ```
     ///
     /// Which, for non-associative functions, will typically produce a different
-    /// result than the linear call tree used by `fold1`:
+    /// result than the linear call tree used by [`Iterator::reduce`]:
     ///
     /// ```text
     /// 1 2 3 4 5 6 7
@@ -2276,7 +2279,7 @@ pub trait Itertools : Iterator {
     /// └─f─f─f─f─f─f
     /// ```
     ///
-    /// If `f` is associative, prefer the normal `fold1` instead.
+    /// If `f` is associative, prefer the normal [`Iterator::reduce`] instead.
     ///
     /// ```
     /// use itertools::Itertools;
@@ -2665,6 +2668,42 @@ pub trait Itertools : Iterator {
         v.into_iter()
     }
 
+    /// Sort all iterator elements into a new iterator in ascending order. The key function is
+    /// called exactly once per key.
+    ///
+    /// **Note:** This consumes the entire iterator, uses the
+    /// [`slice::sort_by_cached_key`] method and returns the result as a new
+    /// iterator that owns its elements.
+    ///
+    /// The sorted iterator, if directly collected to a `Vec`, is converted
+    /// without any extra copying or allocation cost.
+    ///
+    /// ```
+    /// use itertools::Itertools;
+    ///
+    /// // sort people in descending order by age
+    /// let people = vec![("Jane", 20), ("John", 18), ("Jill", 30), ("Jack", 27)];
+    ///
+    /// let oldest_people_first = people
+    ///     .into_iter()
+    ///     .sorted_by_cached_key(|x| -x.1)
+    ///     .map(|(person, _age)| person);
+    ///
+    /// itertools::assert_equal(oldest_people_first,
+    ///                         vec!["Jill", "Jack", "Jane", "John"]);
+    /// ```
+    #[cfg(feature = "use_alloc")]
+    fn sorted_by_cached_key<K, F>(self, f: F) -> VecIntoIter<Self::Item>
+    where
+        Self: Sized,
+        K: Ord,
+        F: FnMut(&Self::Item) -> K,
+    {
+        let mut v = Vec::from_iter(self);
+        v.sort_by_cached_key(f);
+        v.into_iter()
+    }
+
     /// Sort the k smallest elements into a new iterator, in ascending order.
     ///
     /// **Note:** This consumes the entire iterator, and returns the result
@@ -2770,6 +2809,8 @@ pub trait Itertools : Iterator {
     /// Return a `HashMap` of keys mapped to `Vec`s of values. Keys and values
     /// are taken from `(Key, Value)` tuple pairs yielded by the input iterator.
     ///
+    /// Essentially a shorthand for `.into_grouping_map().collect::<Vec<_>>()`.
+    ///
     /// ```
     /// use itertools::Itertools;
     ///
@@ -2791,8 +2832,8 @@ pub trait Itertools : Iterator {
 
     /// Return an `Iterator` on a `HashMap`. Keys mapped to `Vec`s of values. The key is specified
     /// in the closure.
-    /// Different to `into_group_map_by` because the key is still present. It is also more general.
-    /// You can also fold the `group_map`.
+    ///
+    /// Essentially a shorthand for `.into_grouping_map_by(f).collect::<Vec<_>>()`.
     ///
     /// ```
     /// use itertools::Itertools;
@@ -2858,6 +2899,194 @@ pub trait Itertools : Iterator {
               F: FnMut(&V) -> K
     {
         grouping_map::new(grouping_map::MapForGrouping::new(self, key_mapper))
+    }
+
+    /// Return all minimum elements of an iterator.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use itertools::Itertools;
+    ///
+    /// let a: [i32; 0] = [];
+    /// assert_eq!(a.iter().min_set(), Vec::<&i32>::new());
+    ///
+    /// let a = [1];
+    /// assert_eq!(a.iter().min_set(), vec![&1]);
+    ///
+    /// let a = [1, 2, 3, 4, 5];
+    /// assert_eq!(a.iter().min_set(), vec![&1]);
+    ///
+    /// let a = [1, 1, 1, 1];
+    /// assert_eq!(a.iter().min_set(), vec![&1, &1, &1, &1]);
+    /// ```
+    ///
+    /// The elements can be floats but no particular result is guaranteed
+    /// if an element is NaN.
+    #[cfg(feature = "use_std")]
+    fn min_set(self) -> Vec<Self::Item>
+        where Self: Sized, Self::Item: Ord
+    {
+        extrema_set::min_set_impl(self, |_| (), |x, y, _, _| x.cmp(y))
+    }
+
+    /// Return all minimum elements of an iterator, as determined by
+    /// the specified function.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::cmp::Ordering;
+    /// use itertools::Itertools;
+    ///
+    /// let a: [(i32, i32); 0] = [];
+    /// assert_eq!(a.iter().min_set_by(|_, _| Ordering::Equal), Vec::<&(i32, i32)>::new());
+    ///
+    /// let a = [(1, 2)];
+    /// assert_eq!(a.iter().min_set_by(|&&(k1,_), &&(k2, _)| k1.cmp(&k2)), vec![&(1, 2)]);
+    ///
+    /// let a = [(1, 2), (2, 2), (3, 9), (4, 8), (5, 9)];
+    /// assert_eq!(a.iter().min_set_by(|&&(_,k1), &&(_,k2)| k1.cmp(&k2)), vec![&(1, 2), &(2, 2)]);
+    ///
+    /// let a = [(1, 2), (1, 3), (1, 4), (1, 5)];
+    /// assert_eq!(a.iter().min_set_by(|&&(k1,_), &&(k2, _)| k1.cmp(&k2)), vec![&(1, 2), &(1, 3), &(1, 4), &(1, 5)]);
+    /// ```
+    ///
+    /// The elements can be floats but no particular result is guaranteed
+    /// if an element is NaN.
+    #[cfg(feature = "use_std")]
+    fn min_set_by<F>(self, mut compare: F) -> Vec<Self::Item>
+        where Self: Sized, F: FnMut(&Self::Item, &Self::Item) -> Ordering
+    {
+        extrema_set::min_set_impl(
+            self,
+            |_| (),
+            |x, y, _, _| compare(x, y)
+        )
+    }
+
+    /// Return all minimum elements of an iterator, as determined by
+    /// the specified function.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use itertools::Itertools;
+    ///
+    /// let a: [(i32, i32); 0] = [];
+    /// assert_eq!(a.iter().min_set_by_key(|_| ()), Vec::<&(i32, i32)>::new());
+    ///
+    /// let a = [(1, 2)];
+    /// assert_eq!(a.iter().min_set_by_key(|&&(k,_)| k), vec![&(1, 2)]);
+    ///
+    /// let a = [(1, 2), (2, 2), (3, 9), (4, 8), (5, 9)];
+    /// assert_eq!(a.iter().min_set_by_key(|&&(_, k)| k), vec![&(1, 2), &(2, 2)]);
+    ///
+    /// let a = [(1, 2), (1, 3), (1, 4), (1, 5)];
+    /// assert_eq!(a.iter().min_set_by_key(|&&(k, _)| k), vec![&(1, 2), &(1, 3), &(1, 4), &(1, 5)]);
+    /// ```
+    ///
+    /// The elements can be floats but no particular result is guaranteed
+    /// if an element is NaN.
+    #[cfg(feature = "use_std")]
+    fn min_set_by_key<K, F>(self, key: F) -> Vec<Self::Item>
+        where Self: Sized, K: Ord, F: FnMut(&Self::Item) -> K
+    {
+        extrema_set::min_set_impl(self, key, |_, _, kx, ky| kx.cmp(ky))
+    }
+
+    /// Return all maximum elements of an iterator.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use itertools::Itertools;
+    ///
+    /// let a: [i32; 0] = [];
+    /// assert_eq!(a.iter().max_set(), Vec::<&i32>::new());
+    ///
+    /// let a = [1];
+    /// assert_eq!(a.iter().max_set(), vec![&1]);
+    ///
+    /// let a = [1, 2, 3, 4, 5];
+    /// assert_eq!(a.iter().max_set(), vec![&5]);
+    ///
+    /// let a = [1, 1, 1, 1];
+    /// assert_eq!(a.iter().max_set(), vec![&1, &1, &1, &1]);
+    /// ```
+    ///
+    /// The elements can be floats but no particular result is guaranteed
+    /// if an element is NaN.
+    #[cfg(feature = "use_std")]
+    fn max_set(self) -> Vec<Self::Item>
+        where Self: Sized, Self::Item: Ord
+    {
+        extrema_set::max_set_impl(self, |_| (), |x, y, _, _| x.cmp(y))
+    }
+
+    /// Return all maximum elements of an iterator, as determined by
+    /// the specified function.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use std::cmp::Ordering;
+    /// use itertools::Itertools;
+    ///
+    /// let a: [(i32, i32); 0] = [];
+    /// assert_eq!(a.iter().max_set_by(|_, _| Ordering::Equal), Vec::<&(i32, i32)>::new());
+    ///
+    /// let a = [(1, 2)];
+    /// assert_eq!(a.iter().max_set_by(|&&(k1,_), &&(k2, _)| k1.cmp(&k2)), vec![&(1, 2)]);
+    ///
+    /// let a = [(1, 2), (2, 2), (3, 9), (4, 8), (5, 9)];
+    /// assert_eq!(a.iter().max_set_by(|&&(_,k1), &&(_,k2)| k1.cmp(&k2)), vec![&(3, 9), &(5, 9)]);
+    ///
+    /// let a = [(1, 2), (1, 3), (1, 4), (1, 5)];
+    /// assert_eq!(a.iter().max_set_by(|&&(k1,_), &&(k2, _)| k1.cmp(&k2)), vec![&(1, 2), &(1, 3), &(1, 4), &(1, 5)]);
+    /// ```
+    ///
+    /// The elements can be floats but no particular result is guaranteed
+    /// if an element is NaN.
+    #[cfg(feature = "use_std")]
+    fn max_set_by<F>(self, mut compare: F) -> Vec<Self::Item>
+        where Self: Sized, F: FnMut(&Self::Item, &Self::Item) -> Ordering
+    {
+        extrema_set::max_set_impl(
+            self,
+            |_| (),
+            |x, y, _, _| compare(x, y)
+        )
+    }
+
+    /// Return all minimum elements of an iterator, as determined by
+    /// the specified function.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use itertools::Itertools;
+    ///
+    /// let a: [(i32, i32); 0] = [];
+    /// assert_eq!(a.iter().max_set_by_key(|_| ()), Vec::<&(i32, i32)>::new());
+    ///
+    /// let a = [(1, 2)];
+    /// assert_eq!(a.iter().max_set_by_key(|&&(k,_)| k), vec![&(1, 2)]);
+    ///
+    /// let a = [(1, 2), (2, 2), (3, 9), (4, 8), (5, 9)];
+    /// assert_eq!(a.iter().max_set_by_key(|&&(_, k)| k), vec![&(3, 9), &(5, 9)]);
+    ///
+    /// let a = [(1, 2), (1, 3), (1, 4), (1, 5)];
+    /// assert_eq!(a.iter().max_set_by_key(|&&(k, _)| k), vec![&(1, 2), &(1, 3), &(1, 4), &(1, 5)]);
+    /// ```
+    ///
+    /// The elements can be floats but no particular result is guaranteed
+    /// if an element is NaN.
+    #[cfg(feature = "use_std")]
+    fn max_set_by_key<K, F>(self, key: F) -> Vec<Self::Item>
+        where Self: Sized, K: Ord, F: FnMut(&Self::Item) -> K
+    {
+        extrema_set::max_set_impl(self, key, |_, _, kx, ky| kx.cmp(ky))
     }
 
     /// Return the minimum and maximum elements in the iterator.
@@ -3115,7 +3344,7 @@ pub trait Itertools : Iterator {
     ///    be equal to `ypos`.
     ///
     /// On an iterator of length `n`, `position_minmax` does `1.5 * n`
-    /// comparisons, and so is faster than calling `positon_min` and
+    /// comparisons, and so is faster than calling `position_min` and
     /// `position_max` separately which does `2 * n` comparisons.
     ///
     /// For the minimum, if several elements are equally minimum, the
@@ -3401,6 +3630,33 @@ pub trait Itertools : Iterator {
     {
         self.map(f).counts()
     }
+
+    /// Converts an iterator of tuples into a tuple of containers.
+    ///
+    /// `unzip()` consumes an entire iterator of n-ary tuples, producing `n` collections, one for each
+    /// column.
+    ///
+    /// This function is, in some sense, the opposite of [`multizip`].
+    /// 
+    /// ```
+    /// use itertools::Itertools;
+    ///
+    /// let inputs = vec![(1, 2, 3), (4, 5, 6), (7, 8, 9)];
+    ///
+    /// let (a, b, c): (Vec<_>, Vec<_>, Vec<_>) = inputs
+    ///     .into_iter()
+    ///     .multiunzip();
+    ///
+    /// assert_eq!(a, vec![1, 4, 7]);
+    /// assert_eq!(b, vec![2, 5, 8]);
+    /// assert_eq!(c, vec![3, 6, 9]);
+    /// ```
+    fn multiunzip<FromI>(self) -> FromI
+    where
+        Self: Sized + MultiUnzip<FromI>,
+    {
+        MultiUnzip::multiunzip(self)
+    }
 }
 
 impl<T: ?Sized> Itertools for T where T: Iterator { }
@@ -3409,8 +3665,7 @@ impl<T: ?Sized> Itertools for T where T: Iterator { }
 /// (elements pairwise equal and sequences of the same length),
 /// `false` otherwise.
 ///
-/// This is an [`IntoIterator`] enabled function that is similar to the standard
-/// library method [`Iterator::eq`].
+/// [`IntoIterator`] enabled version of [`Iterator::eq`].
 ///
 /// ```
 /// assert!(itertools::equal(vec![1, 2, 3], 1..4));
@@ -3421,17 +3676,7 @@ pub fn equal<I, J>(a: I, b: J) -> bool
           J: IntoIterator,
           I::Item: PartialEq<J::Item>
 {
-    let mut ia = a.into_iter();
-    let mut ib = b.into_iter();
-    loop {
-        match ia.next() {
-            Some(x) => match ib.next() {
-                Some(y) => if x != y { return false; },
-                None => return false,
-            },
-            None => return ib.next().is_none()
-        }
-    }
+    a.into_iter().eq(b)
 }
 
 /// Assert that two iterables produce equal sequences, with the same

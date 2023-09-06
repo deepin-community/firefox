@@ -144,28 +144,28 @@ EXPORTS.mozilla += [
     "ReflowInput.h",
     "ReflowOutput.h",
     "ScrollbarPreferences.h",
+    "ScrollGeneration.h",
     "ScrollOrigin.h",
     "ScrollPositionUpdate.h",
+    "ScrollSnapTargetId.h",
     "ViewportFrame.h",
     "WritingModes.h",
 ]
 
 EXPORTS.mozilla.layout += [
-    "FrameChildList.h",
     "ScrollAnchorContainer.h",
 ]
 
 UNIFIED_SOURCES += [
     "AspectRatio.cpp",
-    "BlockReflowInput.cpp",
+    "BlockReflowState.cpp",
     "BRFrame.cpp",
     "ColumnSetWrapperFrame.cpp",
     "ColumnUtils.cpp",
     "CSSAlignUtils.cpp",
     "CSSOrderAwareFrameIterator.cpp",
-    "DetailsFrame.cpp",
-    "FrameChildList.cpp",
     "MathMLTextRunFactory.cpp",
+    "MiddleCroppingBlockFrame.cpp",
     "nsAbsoluteContainingBlock.cpp",
     "nsBackdropFrame.cpp",
     "nsBlockFrame.cpp",
@@ -185,6 +185,7 @@ UNIFIED_SOURCES += [
     "nsGridContainerFrame.cpp",
     "nsHTMLCanvasFrame.cpp",
     "nsIFrame.cpp",
+    "nsILineIterator.cpp",
     "nsImageFrame.cpp",
     "nsImageMap.cpp",
     "nsInlineFrame.cpp",
@@ -206,6 +207,7 @@ UNIFIED_SOURCES += [
     "nsSubDocumentFrame.cpp",
     "nsTextFrame.cpp",
     "nsTextFrameUtils.cpp",
+    "nsTextPaintStyle.cpp",
     "nsTextRunTransformations.cpp",
     "nsVideoFrame.cpp",
     "PrintedSheetFrame.cpp",
@@ -220,9 +222,26 @@ UNIFIED_SOURCES += [
     "ScrollSnap.cpp",
     "ScrollVelocityQueue.cpp",
     "StickyScrollContainer.cpp",
-    "TextOverflow.cpp",
     "ViewportFrame.cpp",
     "WBRFrame.cpp",
+]
+
+# on win32 if we add these files to UNIFIED_SOURCES then the compiler generates
+# larger stack frames for some recursive functions that cause us to hit stack
+# overflows (see bug 1827428)
+if CONFIG["OS_ARCH"] == "WINNT" and CONFIG["CPU_ARCH"] == "x86":
+    SOURCES += [
+        "TextOverflow.cpp",
+    ]
+else:
+    UNIFIED_SOURCES += [
+        "TextOverflow.cpp",
+    ]
+
+SOURCES += [
+    # If this file gets compiled with ScrollPositionUpdate.cpp, the specialized
+    # `operator<<` for ScrollGeneration<> won't be visible
+    "ScrollGeneration.cpp",
 ]
 
 GeneratedFile(
@@ -266,7 +285,4 @@ MOCHITEST_MANIFESTS += ["test/mochitest.ini"]
 MOCHITEST_CHROME_MANIFESTS += ["test/chrome.ini"]
 
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
-    CXXFLAGS += CONFIG["TK_CFLAGS"]
-
-if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-    CXXFLAGS += ["-Wno-error=shadow"]
+    CXXFLAGS += CONFIG["MOZ_GTK3_CFLAGS"]

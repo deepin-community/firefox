@@ -8,9 +8,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "LookAndFeel.h"
-#include "nsCocoaFeatures.h"
 #include "SDKDeclarations.h"
+#include "mozilla/ColorScheme.h"
 
 enum ColorName {
   toolbarTopBorderGrey,
@@ -49,31 +48,10 @@ inline void DrawNativeGreyColorInRect(CGContextRef context, ColorName name, CGRe
   CGContextFillRect(context, rect);
 }
 
-#if !defined(MAC_OS_X_VERSION_10_14) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_14
-@interface NSColor (NSColorControlAccentColor)
-@property(class, strong, readonly) NSColor* controlAccentColor NS_AVAILABLE_MAC(10_14);
-@end
-#endif
-
-inline NSColor* ControlAccentColor() {
-  if (@available(macOS 10.14, *)) {
-    return [NSColor controlAccentColor];
-  }
-
-  // Pre-10.14, use hardcoded colors.
-  return [NSColor currentControlTint] == NSGraphiteControlTint
-             ? [NSColor colorWithSRGBRed:0.635 green:0.635 blue:0.655 alpha:1.0]
-             : [NSColor colorWithSRGBRed:0.247 green:0.584 blue:0.965 alpha:1.0];
-}
-
-inline NSAppearance* NSAppearanceForColorScheme(mozilla::LookAndFeel::ColorScheme aScheme) {
-  using ColorScheme = mozilla::LookAndFeel::ColorScheme;
-  if (@available(macOS 10.14, *)) {
-    NSAppearanceName appearanceName =
-        aScheme == ColorScheme::Light ? NSAppearanceNameAqua : NSAppearanceNameDarkAqua;
-    return [NSAppearance appearanceNamed:appearanceName];
-  }
-  return [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+inline NSAppearance* NSAppearanceForColorScheme(mozilla::ColorScheme aScheme) {
+  NSAppearanceName appearanceName =
+      aScheme == mozilla::ColorScheme::Light ? NSAppearanceNameAqua : NSAppearanceNameDarkAqua;
+  return [NSAppearance appearanceNamed:appearanceName];
 }
 
 #endif  // nsNativeThemeColors_h_

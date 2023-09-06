@@ -6,6 +6,7 @@
 ## These messages are used as headings in the recommendation doorhanger
 
 cfr-doorhanger-extension-heading = Estenscioin consegiæ
+cfr-doorhanger-feature-heading = Fonçion consegiâ
 
 ##
 
@@ -55,9 +56,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } utenti
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Sincronizza i teu segnalibbri dapertùtto.
@@ -79,63 +77,91 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Lezi e nòtte de version
 
-## Search Bar
-
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 cfr-doorhanger-milestone-ok-button = Amia tutto
     .accesskey = A
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-
-## Vulnerable Passwords message
-
-
-## Picture-in-Picture fullscreen message
-
-
-## Protections Dashboard message
-
-
-## Better PDF message
-
-
 cfr-doorhanger-milestone-close-button = Særa
     .accesskey = S
 
 ## DOH Message
 
-## What's new: Cookies message
+cfr-doorhanger-doh-primary-button-2 = Va ben
+    .accesskey = V
+cfr-doorhanger-doh-secondary-button = Dizativa
+    .accesskey = D
 
 ## Fission Experiment Message
 
 ## Full Video Support CFR message
+
+cfr-doorhanger-video-support-primary-button = Agiorna òua
+    .accesskey = u
+
+## Spotlight modal shared strings
+
 
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
+
+spotlight-public-wifi-vpn-link = Oua No
+    .accesskey = N
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Preuvilo
+    .accesskey = P
+firefoxview-cfr-secondarybutton = Oua no
+    .accesskey = n
+
+## Firefox View Spotlight
+
+
+## Colorways expiry reminder CFR
+
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-dismiss-button = Oua no
+    .accesskey = n
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+fox-doodle-pin-headline = Benvegnuo torna
+
+fox-doodle-pin-secondary = Oua no
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+
+## FxA sync CFR
+
+fxa-sync-cfr-primary = Atre informaçioin
+    .accesskey = A
+fxa-sync-cfr-secondary = Ricordimelo dòppo
+    .accesskey = R
+
+## Device Migration FxA Spotlight
 

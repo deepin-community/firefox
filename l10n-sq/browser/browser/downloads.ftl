@@ -16,8 +16,8 @@ downloads-panel =
 # The style attribute has the width of the Downloads Panel expressed using
 # a CSS unit. The longest labels that should fit are usually those of
 # in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
+downloads-panel-items =
+    .style = width: 35em
 
 downloads-cmd-pause =
     .label = Ndale
@@ -30,42 +30,65 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Anuloje
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Hap Dosjen Përkatëse
-    .accesskey = D
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] Shfaqe në Finder
+           *[other] Shfaqe në Dosje
+        }
+    .accesskey = F
 
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Shfaqe Në Finder
-    .accesskey = S
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = Hape Në Parës Sistemi
     .accesskey = H
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-use-system-default-named =
+    .label = Hape Në { $handler }
+    .accesskey = H
 
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
     .label = Hape Përherë Në Parës Sistemi
     .accesskey = P
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-always-use-system-default-named =
+    .label = Hape Përherë Në { $handler }
+    .accesskey = H
 
-downloads-cmd-show-button =
+##
+
+# We can use the same accesskey as downloads-cmd-always-use-system-default.
+# Both should not be visible in the downloads context menu at the same time.
+downloads-cmd-always-open-similar-files =
+    .label = Kartela të Ngjashme Hapi Përherë
+    .accesskey = a
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
-            [macos] Shfaqe Në Finder
-           *[other] Hap Dosjen Përkatëse
+            [macos] Shfaqe në Finder
+           *[other] Shfaqe Në Dosje
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
-            [macos] Shfaqe Në Finder
-           *[other] Hap Dosjen Përkatëse
+            [macos] Shfaqe në Finder
+           *[other] Shfaqe Në Dosje
         }
-downloads-cmd-show-description =
+downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
-            [macos] Shfaqe Në Finder
-           *[other] Hap Dosjen Përkatëse
+            [macos] Shfaqe në Finder
+           *[other] Shfaqe Në Dosje
         }
 
 downloads-cmd-show-downloads =
@@ -89,6 +112,9 @@ downloads-cmd-clear-list =
 downloads-cmd-clear-downloads =
     .label = Spastroji Shkarkimet
     .accesskey = a
+downloads-cmd-delete-file =
+    .label = Fshije
+    .accesskey = F
 
 # This command is shown in the context menu when downloads are blocked.
 downloads-cmd-unblock =
@@ -138,6 +164,19 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = Hapje pas { $hours }h { $minutes }m…
+downloading-file-opens-in-minutes-2 =
+    .value = Hapje pas { $minutes }m…
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = Hapje pas { $minutes }m { $seconds }s…
+downloading-file-opens-in-seconds-2 =
+    .value = Hapje pas { $seconds }s…
+downloading-file-opens-in-some-time-2 =
+    .value = Hapje kur të jetë plotësuar…
+downloading-file-click-to-open =
+    .value = Hape kur të jetë plotësuar
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -162,6 +201,21 @@ downloads-history =
 downloads-details =
     .title = Hollësi Shkarkimi
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+downloads-files-not-downloaded =
+    { $num ->
+        [one] Kartela s’u shkarkua.
+       *[other] { $num } files not downloaded.
+    }
+downloads-blocked-from-url = Shkarkimet u bllokuan nga { $url }.
+downloads-blocked-download-detailed-info = { $url } provoi të shkarkojë automatikisht një numër kartelash. Sajti mund të jetë dëmtuar, ose po provon të depozitojë në pajisjen tuaj kartela të padëshiruara.
+
+##
+
 downloads-clear-downloads-button =
     .label = Spastroji Shkarkimet
     .tooltiptext = Spastron shkarkime të plotësuara, të anuluara ose të dështuara
@@ -174,3 +228,27 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Nuk ka shkarkime për këtë sesion.
+
+# This is displayed in an item at the bottom of the Downloads Panel when there
+# are more downloads than can fit in the list in the panel.
+#   $count (number) - number of files being downloaded that are not shown in the
+#                     panel list.
+downloads-more-downloading =
+    { $count ->
+        [one] Po shkarkohet { $count } kartelë më tepër
+       *[other] Po shkarkohen { $count } kartela më tepër
+    }
+
+## Download errors
+
+downloads-error-alert-title = Gabim Shkarkimi
+# Variables:
+#   $extension (String): the name of the blocking extension.
+downloads-error-blocked-by = Shkarkimi s’mund të ruhet, ngaqë është bllokuar nga një { $extension }.
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = Shkarkimi s’mund të ruhet, ngaqë është bllokuar nga një zgjerim.
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Shkarkimi nuk ruhet dot, ngaqë ndodhi një gabim i panjohur.
+    
+     Ju lutemi, riprovoni.

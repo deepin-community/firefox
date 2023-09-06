@@ -5,7 +5,6 @@
 
 ## App Menu
 
-appmenuitem-protection-dashboard-title = အကာအကွယ်ဆိုင်ရာ ဒိုင်ခွက်
 appmenuitem-new-window =
     .label = ဝင်းဒိုးအသစ်
 appmenuitem-new-private-window =
@@ -32,16 +31,30 @@ appmenuitem-fullscreen =
 
 ## Firefox Account toolbar button and Sync panel in App menu.
 
+appmenu-remote-tabs-sign-into-sync =
+    .label = တစ်ပြေးညီဖြစ်စေရန် ဝင်ရောက်ပါ…
+appmenu-remote-tabs-turn-on-sync =
+    .label = တစ်ပြေးညီဖြစ်စေရန် ဖွင့်ပါ…
+
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = ဖွင့်ထားသည့်တပ်ဗ်များ မရှိပါ
+
 # This is shown when Sync is configured but syncing tabs is disabled.
 appmenu-remote-tabs-tabsnotsyncing = သင့်အခြား ကိရိယာများမှ တပ်ဗ်စာရင်းကို ကြည့်ရန် တပ်ဗ်ထပ်တူပြုအသုံးပြုခြင်းကို ဖွင့်ပါ။
+
+appmenu-remote-tabs-opensettings =
+    .label = အပြင်အဆင်များ
+
 # This is shown when Sync is configured but this appears to be the only device attached to
 # the account. We also show links to download Firefox for android/ios.
 appmenu-remote-tabs-noclients = အခြားကိရိယာများမှ တပ်ဗ်များကို ဒီမှာ ကြည့်ရှုချင်ပါသလား။
+
 appmenu-remote-tabs-connectdevice =
     .label = အခြားကိရိယာကို ချိတ်ဆက်ရန်
 appmenu-remote-tabs-unverified = အကောင့်ကို အတည်ပြုရန် လိုအပ်သည်။
+
+appmenuitem-fxa-toolbar-sync-now2 = ယခုချိတ်ပါ
+
 appmenuitem-save-page =
     .label = စာမျက်နှာကို သိမ်းမည်…
 
@@ -49,10 +62,29 @@ appmenuitem-save-page =
 
 whatsnew-panel-header = ဘာတွေ အသစ် ပါလဲ
 
+# Checkbox displayed at the bottom of the What's New panel, allowing users to
+# enable/disable What's New notifications.
+whatsnew-panel-footer-checkbox =
+    .label = လုပ်ဆောင်ချက် အသစ် အကြောင်း အသိပေးရန်
+    .accesskey = f
+
 ## The Firefox Profiler – The popup is the UI to turn on the profiler, and record
 ## performance profiles. To enable it go to profiler.firefox.com and click
 ## "Enable Profiler Menu Button".
 
+
+## Profiler presets
+## They are shown in the popup's select box.
+
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/popup/background.jsm.js
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# Please take care that the same values are also defined in devtools' perftools.ftl.
 
 ## History panel
 
@@ -62,9 +94,6 @@ whatsnew-panel-header = ဘာတွေ အသစ် ပါလဲ
 appmenu-about =
     .label = { -brand-shorter-name } အကြောင်း
     .accesskey = A
-appmenu-help-feedback-page =
-    .label = အကြုံပြုချက်ကို ပေးပို့ရန်…
-    .accesskey = S
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.

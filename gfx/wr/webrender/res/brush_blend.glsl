@@ -8,33 +8,36 @@
 #include shared,prim_shared,brush,blend
 
 // Interpolated UV coordinates to sample.
-varying vec2 v_uv;
+varying highp vec2 v_uv;
 
 // Normalized bounds of the source image in the texture, adjusted to avoid
 // sampling artifacts.
-flat varying vec4 v_uv_sample_bounds;
+flat varying highp vec4 v_uv_sample_bounds;
 
 // x: Flag to allow perspective interpolation of UV.
 // y: Filter-dependent "amount" parameter.
 // Packed in to a vector to work around bug 1630356.
-flat varying vec2 v_perspective_amount;
+flat varying mediump vec2 v_perspective_amount;
 #define v_perspective v_perspective_amount.x
 #define v_amount v_perspective_amount.y
 
 // x: Blend op, y: Lookup table GPU cache address.
 // Packed in to a vector to work around bug 1630356.
-flat varying ivec2 v_op_table_address_vec;
+// Must be explicitly marked as highp, as the default integer precision in
+// fragment shaders is mediump which may only be 16 bits in ESSL 3, and GPU
+// cache address can exceed that maximum representable value.
+flat varying highp ivec2 v_op_table_address_vec;
 #define v_op v_op_table_address_vec.x
 #define v_table_address v_op_table_address_vec.y
 
-flat varying mat4 v_color_mat;
+// We must keep this as highp as we encoutered shader compilation crashes on
+// Mali-T devices when mediump.
+flat varying highp mat4 v_color_mat;
 // The function to use for each component of a component transfer filter. Using a int[4]
-// or vec4 (with each element or component containing the function for each component) has
-// ran in to bugs 1695912 and 1731758, so instead we pack each value in to 4 bits of an
-// integer. However, due to bug 1630356 we cannot simply use an int, so instead use the
-// x component of an ivec2.
-flat varying ivec2 v_funcs;
-flat varying vec4 v_color_offset;
+// or ivec4 (with each element or component containing the function for each component) has
+// ran in to bugs 1695912 and 1731758, so instead use a vec4 and cast the values to/from floats.
+flat varying mediump vec4 v_funcs;
+flat varying mediump vec4 v_color_offset;
 
 #ifdef WR_VERTEX_SHADER
 void brush_vs(
@@ -67,8 +70,12 @@ void brush_vs(
     float amount = float(prim_user_data.z) / 65536.0;
 
     v_op = prim_user_data.y & 0xffff;
-    v_funcs.x = (prim_user_data.y >> 16) & 0xffff;
     v_amount = amount;
+
+    v_funcs.r = float((prim_user_data.y >> 28) & 0xf);
+    v_funcs.g = float((prim_user_data.y >> 24) & 0xf);
+    v_funcs.b = float((prim_user_data.y >> 20) & 0xf);
+    v_funcs.a = float((prim_user_data.y >> 16) & 0xf);
 
     SetupFilterParams(
         v_op,
@@ -99,7 +106,7 @@ Fragment brush_fs() {
         v_table_address,
         v_color_offset,
         v_color_mat,
-        v_funcs.x,
+        v_funcs,
         color,
         alpha
     );

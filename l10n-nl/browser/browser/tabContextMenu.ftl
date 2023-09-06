@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Alle tabbladen selecteren
     .accesskey = b
+tab-context-play-tab =
+    .label = Tabblad afspelen
+    .accesskey = s
+tab-context-play-tabs =
+    .label = Tabbladen afspelen
+    .accesskey = f
 duplicate-tab =
     .label = Tabblad dupliceren
     .accesskey = u
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Bladwijzer voor tabbladen maken…
     .accesskey = t
-bookmark-tab =
-    .label = Bladwijzer voor tabblad maken
-    .accesskey = t
+tab-context-bookmark-tab =
+    .label = Bladwijzer voor tabblad maken…
+    .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = Openen in nieuw containertabblad
     .accesskey = e
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Delen
     .accesskey = e
-tab-context-share-more =
-    .label = Meer…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -83,14 +87,6 @@ tab-context-reopen-closed-tabs =
            *[other] Gesloten tabbladen opnieuw openen
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Tabblad sluiten
-            [one] Tabblad sluiten
-           *[other] Tabbladen sluiten
-        }
-    .accesskey = T
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

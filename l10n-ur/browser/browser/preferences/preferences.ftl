@@ -67,9 +67,17 @@ restart-later = بعد میں دوباره شروع کریں
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = ایک ایکسٹینشن , <img data-l10n-name="icon"/> { $name }, کو کنٹینر ٹیب کی ضرورت ہے۔
+
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
+
 
 ## Preferences UI Search Results
 
@@ -92,8 +100,8 @@ set-as-my-default-browser =
     .label = طے شدہ بنائیں…
     .accesskey = D
 
-startup-restore-previous-session =
-    .label = پچھلا سیشن بحال کریں
+startup-restore-windows-and-tabs =
+    .label = پچھلی ونڈوز اور ٹیبز کھولیں۔
     .accesskey = s
 
 startup-restore-warn-on-quit =
@@ -112,8 +120,8 @@ open-new-link-as-tabs =
     .label = ربط ونڈوز کے بجائے ٹیبس میں کھولیں
     .accesskey = w
 
-warn-on-close-multiple-tabs =
-    .label = متعدد ٹیب ایک ساتھ بند کرنے پر مجھے تنبیح کیجیئے
+confirm-on-close-multiple-tabs =
+    .label = mمتعدد ٹیبز کو بند کرنے سے پہلے تصدیق کریں۔
     .accesskey = m
 
 warn-on-open-many-tabs =
@@ -136,11 +144,17 @@ browser-containers-settings =
 
 containers-disable-alert-title = تمام  حامل ٹیبس بند کریں
 
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-ok-button =
     { $tabCount ->
         [one] { $tabCount } کنٹینر ٹیب بند کریں
        *[other] { $tabCount } کنٹینر ٹیبس بند کریں
     }
+
+##
+
 containers-disable-alert-cancel-button = اہل بنایا رکھیں
 
 containers-remove-alert-title = اس حامل کو ہٹائیں؟
@@ -160,8 +174,6 @@ containers-remove-cancel-button = اس حامل کو مت ہٹائیں
 
 language-and-appearance-header = زبان اور ظاہری شکل
 
-fonts-and-colors-header = فانٹ اور رنگ
-
 default-font = طےشدہ فانٹ
     .accesskey = D
 default-font-size = ماپ
@@ -170,10 +182,6 @@ default-font-size = ماپ
 advanced-fonts =
     .label = اعلٰی…
     .accesskey = A
-
-colors-settings =
-    .label = رنگ…
-    .accesskey = C
 
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = زوم
@@ -224,8 +232,7 @@ files-and-applications-title = فلیں اور ایپلی کیشن
 
 download-header = ڈاؤن لوڈ
 
-download-save-to =
-    .label = مسل محفوظ کریں بر
+download-save-where = مسل محفوظ کریں بر
     .accesskey = v
 
 download-choose-folder =
@@ -463,11 +470,6 @@ home-restore-defaults =
     .label = طےشدہ بحال کریں
     .accesskey = R
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Firefox کا ابتائی صفحہ
-
 home-mode-choice-custom =
     .label = مخصوص …URLs
 
@@ -495,20 +497,18 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Firefox ابتائی مواد
-home-prefs-content-description = اپنی Firefox کی ابتدائی اسکرین پر آپ کون سا مواد چاہتے پیں اسکا انتخاب کریں۔
-
 home-prefs-search-header =
     .label = وءب تلاش
-home-prefs-topsites-header =
-    .label = بہترین سائٹیں
-home-prefs-topsites-description = سائٹس جو آُپ سب سے زیادہ ملاحظہ کرتے ہیں
 home-prefs-shortcuts-header =
     .label = تیز راہ
 home-prefs-shortcuts-description = وہ سائٹس جو آپ محفوظ کرتے ہیں یا ملاحظہ کرتے ہیں۔
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 home-prefs-recommended-by-header =
     .label = { $provider } کی جانب سے تجویز کردہ
@@ -519,9 +519,6 @@ home-prefs-recommended-by-learn-more = یہ کیسے کام کرتا ہے
 home-prefs-recommended-by-option-sponsored-stories =
     .label = سرپرست شدہ کہاناں
 
-home-prefs-highlights-header =
-    .label = شہ سرخياں
-home-prefs-highlights-description = ان سائٹس کا ایک انتخاب جو آپ نے محفوظ کیا ہے یا ملاحظہ کیا ہے
 home-prefs-highlights-option-visited-pages =
     .label = دورہ کردہ صفحہات
 home-prefs-highlights-options-bookmarks =
@@ -540,7 +537,6 @@ home-prefs-recent-activity-header =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = سنپیٹ
-home-prefs-snippets-description = { -vendor-short-name } اور{ -brand-product-name } کی جانب سے تازہ کاریاں
 
 home-prefs-sections-rows-option =
     .label =
@@ -574,6 +570,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = ایڈریس بار کے نتائج میں تلاش کی تجاویز دکھائیں
     .accesskey = I
+
 
 search-show-suggestions-private-windows =
     .label = نجی ونڈوز میں تلاش کی تجاویز دکھائیں
@@ -625,6 +622,10 @@ containers-remove-button =
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
 sync-signedout-caption = اپنی ویب اپنے ساتھ رکھیں
 
 sync-signedout-account-signin3 =
@@ -643,6 +644,9 @@ sync-mobile-promo = Firefox ڈاؤن لوڈ کریں <img data-l10n-name="androi
 
 ## Firefox Account - Signed in
 
+
+## Firefox account - Signed in
+
 sync-profile-picture =
     .tooltiptext = پروفائل کی تصویر تبدیل کریں
 
@@ -653,8 +657,13 @@ sync-sign-out =
 sync-manage-account = اکاؤنٹ کا منظم کریں
     .accesskey = o
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } توثیق شدہ نہیں ہے۔
 sync-signedin-login-failure = پھر جڑنے کے لیے سائن ان کریں { $email }
+
+##
 
 sync-resend-verification =
     .label = توژیق کاری دوبارہ ارسال کریں
@@ -683,9 +692,14 @@ prefs-sync-now =
     .accesskeynotsyncing = ن
     .labelsyncing = ہمہ وقت سازی کر رہا ہے…
 
-## The list of things currently syncing.
+prefs-sync-now-button =
+    .label = ابھی ہمہ وقت سازی کریں
+    .accesskey = ن
 
-sync-currently-syncing-heading = آپ فی الحال ان اشیاء کو سنک کر رہے ہیں:
+prefs-syncing-button =
+    .label = ہمہ وقت سازی کر رہا ہے…
+
+## The list of things currently syncing.
 
 sync-currently-syncing-bookmarks = بک مارک
 sync-currently-syncing-history = سابقات
@@ -702,9 +716,9 @@ sync-change-options =
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog =
+sync-choose-what-to-sync-dialog3 =
     .title = سنک کرنے کا طریقہ منتخب کریں
-    .style = width: 36em; min-height: 35em;
+    .style = min-width: 36em;
     .buttonlabelaccept = تبدیلیاں  محفوظ  کریں
     .buttonaccesskeyaccept = S
     .buttonlabelextra2 = منقطع کریں…
@@ -755,6 +769,16 @@ sync-device-name-save =
     .accesskey = v
 
 sync-connect-another-device = ایک اور آلہ جوڑیں
+
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = توثیق مرسلہ
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = ایک تصدیقی لنک { $email } پر بھیج دی گی ہے۔
+sync-verification-not-sent-title = توثیق کاری نہیں بھیج سکا
+sync-verification-not-sent-body = ہم اس وقت توثیق کاری ای میل بھیج نہیں سک رہے ہیں، آپ بعد میں پھر کوشش کریں۔
 
 ## Privacy Section
 
@@ -891,12 +915,8 @@ sitedata-block-desc = بلاک کی ہوئی مواد
 
 sitedata-option-block-cross-site-trackers =
     .label = کراس-سائٹ ٹریکر
-sitedata-option-block-cross-site-and-social-media-trackers =
-    .label = کراس سائٹ اور سماجی میڈیا ٹریکرز
 sitedata-option-block-unvisited =
     .label = نا دیکھی گئی ویب سائٹس کی کوکیز
-sitedata-option-block-all-third-party =
-    .label = تمام تیسری تنظیم کے کوکیز (ویب سائٹس کے ٹوٹنے کا سبب بن سکتی ہے)
 sitedata-option-block-all =
     .label = تمام کوکیز (ویب سائٹس کے ٹوٹنے کا سبب بن سکتی ہے)
 
@@ -911,6 +931,9 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = مستثنیات کو منظم کریں…
     .accesskey = x
+
+## Privacy Section - Cookie Banner Handling
+
 
 ## Privacy Section - Address Bar
 
@@ -968,9 +991,10 @@ content-blocking-social-media-trackers = سوشل میڈیا ٹریکرز
 content-blocking-all-cookies = تمام کوکیز
 content-blocking-unvisited-cookies = نا دیکھی گئی سائٹس کی کوکیز
 content-blocking-all-windows-tracking-content = تمام ونڈوز میں مواد کی  ٹریکنگ
-content-blocking-all-third-party-cookies = تمام تیسری تنظیم کے کوکیز
 content-blocking-cryptominers = کریپٹومینر
 content-blocking-fingerprinters = فنگر پرنٹرز
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
 content-blocking-warning-title = دھیان دیں!
 content-blocking-warning-learn-how = کیسے سیکھیں
@@ -1055,10 +1079,6 @@ permissions-block-popups =
     .label = پوپ اپ دریچے بلاک کیجیے
     .accesskey = B
 
-permissions-block-popups-exceptions =
-    .label = استثنیات…
-    .accesskey = E
-
 permissions-addon-install-warning =
     .label = متنبہ کریں  جب ویب سائٹس اظافہ جات تنصیب کرنے کی کوشش کریں
     .accesskey = W
@@ -1123,13 +1143,11 @@ space-alert-over-5gb-settings-button =
 
 httpsonly-learn-more = اورجانیے
 
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = ڈیسک ٹاپ
 downloads-folder-name = ڈاؤن لوڈ
 choose-download-folder-title = ڈاؤن لوڈ پوشہ انتخاب کریں:
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = { $service-name } میں فائلیں محفوظ کریںِ

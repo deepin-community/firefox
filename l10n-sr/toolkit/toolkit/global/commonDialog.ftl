@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Корисничко име
 common-dialog-password =
     .value = Лозинка
+
+common-dialog-copy-cmd =
+    .label = Копирај
+    .accesskey = К
+common-dialog-select-all-cmd =
+    .label = Изабери све
+    .accesskey = с

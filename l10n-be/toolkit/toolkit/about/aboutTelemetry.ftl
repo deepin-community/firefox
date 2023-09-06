@@ -5,7 +5,7 @@
 about-telemetry-ping-data-source = Крыніца дадзеных пінга:
 about-telemetry-show-current-data = Бягучыя дадзеныя
 about-telemetry-show-archived-ping-data = Дадзеныя архіўнага пінга
-about-telemetry-show-subsession-data = Адлюстроўваць дадзеныя падсесіі
+about-telemetry-show-subsession-data = Адлюстроўваць дадзеныя падсеанса
 about-telemetry-choose-ping = Выберыце пінг:
 about-telemetry-archive-ping-type = Тып пінгу
 about-telemetry-archive-ping-header = Пінг
@@ -25,7 +25,7 @@ about-telemetry-show-in-Firefox-json-viewer = Адкрыць у прагляда
 about-telemetry-home-section = Хатняя старонка
 about-telemetry-general-data-section = Агульныя дадзеныя
 about-telemetry-environment-data-section = Дадзеныя асяроддзя
-about-telemetry-session-info-section = Інфармацыя сесіі
+about-telemetry-session-info-section = Інфармацыя аб сеансе
 about-telemetry-scalar-section = Скаляры
 about-telemetry-keyed-scalar-section = Ключавыя скаляры
 about-telemetry-histograms-section = Гістаграмы
@@ -34,7 +34,6 @@ about-telemetry-events-section = Падзеі
 about-telemetry-simple-measurements-section = Простыя вымярэнні
 about-telemetry-slow-sql-section = Паказ чыннікаў SQL
 about-telemetry-addon-details-section = Падрабязнасці дадатка
-about-telemetry-captured-stacks-section = Захопленыя стэкі
 about-telemetry-late-writes-section = Апошнія запісы
 about-telemetry-raw-payload-section = Неапрацаваная нагрузка
 about-telemetry-raw = Неапрацаваны JSON
@@ -123,10 +122,6 @@ about-telemetry-keys-header = Уласцівасць
 about-telemetry-names-header = Імя
 about-telemetry-values-header = Значэнне
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (колькасць захопленых: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Апошні запіс #{ $lateWriteCount }
 about-telemetry-stack-title = Стос:
@@ -137,12 +132,6 @@ about-telemetry-category-header = катэгорыя
 about-telemetry-method-header = метад
 about-telemetry-object-header = аб'ект
 about-telemetry-extra-header = дадаткова
-about-telemetry-origin-section = Тэлеметрыя крыніц
-about-telemetry-origin-origin = крыніца
-about-telemetry-origin-count = колькасць
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Тэлеметрыя крыніц Firefox</a> кадуе звесткі перад перадачай, таму { $telemetryServerOwner } можа палічыць рэчы, не ведаючы, ці зрабіў пэўны { -brand-product-name } унёсак у гэту лічбу. (<a data-l10n-name="prio-blog-link">даведацца больш</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = Працэс { $process }

@@ -38,7 +38,7 @@ etp-card-title-always = Enhanced Tracking Protection: Always On
 etp-card-title-custom-not-blocking = Enhanced Tracking Protection: OFF
 etp-card-content-description = { -brand-short-name } automatically stops companies from secretly following you around the web.
 protection-report-etp-card-content-custom-not-blocking = All protections are currently turned off. Choose which trackers to block by managing your { -brand-short-name } protections settings.
-protection-report-manage-protections = Manage Settings
+protection-report-manage-protections = Manage settings
 
 # This string is used to label the X axis of a graph. Other days of the week are generated via Intl.DateTimeFormat,
 # capitalization for this string should match the output for your locale.
@@ -71,16 +71,14 @@ mobile-app-card-content = Use the mobile browser with built-in protection agains
 mobile-app-links = { -brand-product-name } Browser for <a data-l10n-name="android-mobile-inline-link">Android</a> and <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Never forget a password again
-lockwise-title-logged-in2 = Password Management
-lockwise-header-content = { -lockwise-brand-name } securely stores your passwords in your browser.
+passwords-title-logged-in = Manage your passwords
+passwords-header-content = { -brand-product-name } securely stores your passwords in your browser.
 lockwise-header-content-logged-in = Securely store and sync your passwords to all your devices.
-protection-report-save-passwords-button = Save Passwords
-  .title = Save Passwords on { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Manage Passwords
-  .title = Manage Passwords on { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Take your passwords everywhere
-lockwise-no-logins-card-content = Use passwords saved in { -brand-short-name } on any device.
-lockwise-app-links = { -lockwise-brand-name } for <a data-l10n-name="lockwise-android-inline-link">Android</a> and <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Save passwords
+  .title = Save passwords
+protection-report-passwords-manage-passwords-button = Manage passwords
+  .title = Manage passwords
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -105,7 +103,7 @@ monitor-title = Look out for data breaches
 monitor-link = How it works
 monitor-header-content-no-account = Check { -monitor-brand-name } to see if you’ve been part of a known data breach, and get alerts about new breaches.
 monitor-header-content-signed-in = { -monitor-brand-name } warns you if your info has appeared in a known data breach.
-monitor-sign-up-link = Sign Up for Breach Alerts
+monitor-sign-up-link = Sign up for breach alerts
   .title = Sign up for breach alerts on { -monitor-brand-name }
 auto-scan = Automatically scanned today
 
@@ -163,11 +161,11 @@ info-exposed-passwords-resolved =
 
 monitor-no-breaches-title = Good news!
 monitor-no-breaches-description = You have no known breaches. If that changes, we will let you know.
-monitor-view-report-link = View Report
+monitor-view-report-link = View report
   .title = Resolve breaches on { -monitor-brand-short-name }
 monitor-breaches-unresolved-title = Resolve your breaches
 monitor-breaches-unresolved-description = After reviewing breach details and taking steps to protect your info, you can mark breaches as resolved.
-monitor-manage-breaches-link = Manage Breaches
+monitor-manage-breaches-link = Manage breaches
   .title = Manage breaches on { -monitor-brand-short-name }
 monitor-breaches-resolved-title = Nice! You’ve resolved all known breaches.
 monitor-breaches-resolved-description = If your email appears in any new breaches, we will let you know.
@@ -188,7 +186,7 @@ monitor-partial-breaches-motivation-title-start = Great start!
 monitor-partial-breaches-motivation-title-middle = Keep it up!
 monitor-partial-breaches-motivation-title-end = Almost done! Keep it up.
 monitor-partial-breaches-motivation-description = Resolve the rest of your breaches on { -monitor-brand-short-name }.
-monitor-resolve-breaches-link = Resolve Breaches
+monitor-resolve-breaches-link = Resolve breaches
   .title = Resolve breaches on { -monitor-brand-short-name }
 
 ## The title attribute is used to display the type of protection.

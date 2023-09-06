@@ -1,13 +1,13 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import sys
 import unittest
+from pathlib import Path
 
 from mozfile.mozfile import NamedTemporaryFile
+from mozunit import main
+from six import string_types
 
 from mach.config import (
     BooleanType,
@@ -19,9 +19,6 @@ from mach.config import (
     StringType,
 )
 from mach.decorators import SettingsProvider
-from mozunit import main
-from six import string_types
-
 
 CONFIG1 = r"""
 [foo]
@@ -243,7 +240,7 @@ class TestConfigSettings(unittest.TestCase):
         s = ConfigSettings()
         s.register_provider(Provider1)
 
-        s.load_file(temp.name)
+        s.load_file(Path(temp.name))
 
         self.assertEqual(s.foo.bar, "bar_value")
 
@@ -260,7 +257,7 @@ class TestConfigSettings(unittest.TestCase):
         s = ConfigSettings()
         s.register_provider(Provider1)
 
-        s.load_files([temp1.name, temp2.name])
+        s.load_files([Path(temp1.name), Path(temp2.name)])
 
         self.assertEqual(s.foo.bar, "value2")
 

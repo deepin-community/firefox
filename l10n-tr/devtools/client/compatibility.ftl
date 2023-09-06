@@ -14,7 +14,6 @@ compatibility-issue-deprecated = (kullanımdan kaldırıldı)
 compatibility-issue-experimental = (deneysel)
 compatibility-issue-prefixneeded = (ön ek gerekli)
 compatibility-issue-deprecated-experimental = (kullanımdan kaldırıldı, deneysel)
-
 compatibility-issue-deprecated-prefixneeded = (kullanımdan kaldırıldı, ön ek gerekli)
 compatibility-issue-experimental-prefixneeded = (deneysel, ön ek gerekli)
 compatibility-issue-deprecated-experimental-prefixneeded = (kullanımdan kaldırıldı, deneysel, ön ek gerekli)
@@ -24,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (kullanımdan kaldır
 compatibility-settings-button-label = Ayarlar
 compatibility-settings-button-title =
     .title = Ayarlar
-compatibility-feedback-button-label = Geri bildirim
-compatibility-feedback-button-title =
-    .title = Geri bildirim
 
 ## Messages used as headers in settings pane
 
@@ -47,3 +43,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Uyumluluk sorunu bulunamadı.
 compatibility-close-settings-button =
     .title = Ayarları kapat
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Uyumluluk sorunları:
+        { $browsers }

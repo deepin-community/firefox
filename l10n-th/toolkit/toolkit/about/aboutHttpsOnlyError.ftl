@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 about-httpsonly-title-alert = การแจ้งเตือนโหมด HTTPS-Only
-about-httpsonly-title-connection-not-available = การเชื่อมต่อปลอดภัยไม่พร้อมใช้งาน
+about-httpsonly-title-site-not-available = ไซต์ที่ปลอดภัยไม่พร้อมใช้งาน
 
 # Variables:
 #   $websiteUrl (String) - Url of the website that failed to load. Example: www.example.com
@@ -20,6 +20,10 @@ about-httpsonly-link-learn-more = เรียนรู้เพิ่มเต�
 ## Suggestion Box that only shows up if a secure connection to www can be established
 ## Variables:
 ##   $websiteUrl (String) - Url of the website that can be securely loded with these alternatives. Example: example.com
+
+## Suggestion Box that only shows up if a secure connection to www can be established
+## Variables:
+##   $websiteUrl (String) - Url of the website that can be securely loaded with these alternatives. Example: example.com
 
 about-httpsonly-suggestion-box-header = ทางเลือกอื่นที่เป็นไปได้
 about-httpsonly-suggestion-box-www-text = มีรุ่นที่ปลอดภัยของ <em>www.{ $websiteUrl }</em> คุณสามารถเยี่ยมชมหน้านั้นแทน <em>{ $websiteUrl }</em> ได้

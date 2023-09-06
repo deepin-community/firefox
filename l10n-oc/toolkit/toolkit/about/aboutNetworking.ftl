@@ -8,6 +8,7 @@ about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Escafar escondedor DNS
 about-networking-dns-trr-url = URL DoH
+about-networking-dns-trr-mode = Mòde DoH
 about-networking-dns-suffix = Sufix DNS
 about-networking-websockets = WebSockets
 about-networking-refresh = Refrescar
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Actiu
 about-networking-idle = Inactiu
 about-networking-host = Òste
-about-networking-tcp = TCP
 about-networking-type = Tipe
 about-networking-sent = Mandat
 about-networking-received = Recebut
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Adreças
 about-networking-expires = Expiracion (segondas)
 about-networking-originAttributesSuffix = Clau d’isolacion
+about-networking-flags = Flags suplementaris
 about-networking-messages-sent = Messatges mandats
 about-networking-messages-received = Messatges recebuts
 about-networking-bytes-sent = Octets mandats
 about-networking-bytes-received = Octets recebuts
 about-networking-logging = Jornal
-about-networking-log-tutorial = Veire <a data-l10n-name="logging">HTTP Logging</a> per saber cossí utilizar aquesta aisina.
-about-networking-current-log-file = Fichièr de jornalizacion actual :
-about-networking-current-log-modules = Moduls de jornalizacion actuals :
-about-networking-set-log-file = Definir un fichièr pel jornal
-about-networking-set-log-modules = Definir de modul d'enregistrament pel jornal
-about-networking-start-logging = Començar la jornalizacion
-about-networking-stop-logging = Arrestar la jornalizacion
 about-networking-dns-lookup = Recèrca DNS
 about-networking-dns-lookup-button = Resolucion
 about-networking-dns-domain = Domeni:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Comptador d'escondedor lent
 about-networking-rcwn-cache-not-slow = Comptador d'escondedor non lent
 about-networking-networkid = ID de la ret
 about-networking-networkid-id = ID de la ret
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Aquesta pagina fogut desplaçada dins <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

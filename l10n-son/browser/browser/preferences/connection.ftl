@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Ciyari kayandiyaney
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -40,6 +40,11 @@ connection-proxy-autologin =
     .label = Ma ši hãa y'ay boŋ bayrandi nda šennikufaloo gaabundi
     .accesskey = i
     .tooltip = Suubaroo ka monno ka war šilbay feršikaw tokorey kaŋyaŋ se war na tammaasayaŋ gaabu se. War ga duu alhabar nd'a mana tabatandi.
+
+connection-proxy-autologin-checkbox =
+    .label = Ma ši hãa y'ay boŋ bayrandi nda šennikufaloo gaabundi
+    .accesskey = i
+    .tooltiptext = Suubaroo ka monno ka war šilbay feršikaw tokorey kaŋyaŋ se war na tammaasayaŋ gaabu se. War ga duu alhabar nd'a mana tabatandi.
 
 connection-proxy-socks-remote-dns =
     .label = DNS tokore SOCKS v5 goyyan waate

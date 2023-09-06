@@ -8,6 +8,7 @@ about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Tøm DNS-snøggglager
 about-networking-dns-trr-url = DoH-adresse
+about-networking-dns-trr-mode = DoH-modus
 about-networking-dns-suffix = DNS-suffiks
 about-networking-websockets = WebSockets
 about-networking-refresh = Oppdater
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Aktiv
 about-networking-idle = Uverksam
 about-networking-host = Vert
-about-networking-tcp = TCP
 about-networking-type = Type
 about-networking-sent = Sendt
 about-networking-received = Mottatt
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Adresser
 about-networking-expires = Går ut (Sekund)
 about-networking-originAttributesSuffix = Isolasjonsnøkkel
+about-networking-flags = Ekstra flagg
 about-networking-messages-sent = Meldingar sendt
 about-networking-messages-received = Meldingar mottatt
 about-networking-bytes-sent = Byte sendt
 about-networking-bytes-received = Byte motteke
 about-networking-logging = Loggar
-about-networking-log-tutorial = See <a data-l10n-name="logging">HTTP Logging</a> for instructions on how to use this tool.
-about-networking-current-log-file = Gjeldande loggfil
-about-networking-current-log-modules = Gjeldande loggmodular:
-about-networking-set-log-file = Vel loggfil
-about-networking-set-log-modules = Vel loggmodular
-about-networking-start-logging = Start loggføring
-about-networking-stop-logging = Stopp loggføring
 about-networking-dns-lookup = DNS-oppslag
 about-networking-dns-lookup-button = Slå opp
 about-networking-dns-domain = Domene:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Tal på langsam cache
 about-networking-rcwn-cache-not-slow = Tal på ikkje-langsam cache
 about-networking-networkid = Nettverks-ID
 about-networking-networkid-id = Nettverks-ID
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Denne sida er flytta til <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

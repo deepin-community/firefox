@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Daty lašowaś
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Pśez lašowanje wšych cookiejow a datow sedła pśez { -brand-short-name } móžo k wótzjawjanjeju z websedłow a wótwńoźowanjeju webwopśimjesa offline dojś. Lašowanje datow z cacha waše pśizjewjanja njewobwliwujo.
 

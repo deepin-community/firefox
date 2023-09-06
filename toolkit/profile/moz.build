@@ -36,7 +36,12 @@ LOCAL_INCLUDES += [
 
 FINAL_LIBRARY = "xul"
 
-DEFINES["MOZ_APP_NAME"] = '"%s"' % CONFIG["MOZ_APP_NAME"]
+for var in ("MOZ_APP_NAME", "MOZ_APP_BASENAME"):
+    DEFINES[var] = '"%s"' % CONFIG[var]
+
+for var in ("MOZ_CREATE_LEGACY_PROFILE",):
+    if CONFIG[var]:
+        DEFINES[var] = True
 
 JAR_MANIFESTS += ["jar.mn"]
 

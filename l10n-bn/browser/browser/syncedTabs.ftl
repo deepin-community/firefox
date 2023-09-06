@@ -11,21 +11,19 @@ synced-tabs-sidebar-tabsnotsyncing = আপনার অন্যান্য �
 synced-tabs-sidebar-connect-another-device = অন্য ডিভাইস সংযুক্ত করুন
 synced-tabs-sidebar-search =
     .placeholder = সিঙ্ক ট্যাবের খোঁজ করুন
+
+## Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
+## and/or devices in the list. The "Open" strings below should be translated
+## consistently with the equivalent strings for the bookmarks manager's context
+## menu. That menu is activated by right-clicking a bookmark in the Library
+## window. The bookmarks manager context's strings are located in places.ftl.
+
 synced-tabs-context-open =
     .label = খুলুন O
     .accesskey = O
-synced-tabs-context-open-in-new-tab =
-    .label = নতুন ট্যাবে খুলুন
-    .accesskey = w
-synced-tabs-context-open-in-new-window =
-    .label = নতুন উইন্ডোতে খুলুন
-    .accesskey = N
-synced-tabs-context-open-in-new-private-window =
-    .label = নতুন ব্যক্তিগত উইন্ডোতে লিঙ্ক খুলুন
-    .accesskey = P
-synced-tabs-context-bookmark-single-tab =
-    .label = ট্যাবটি বুকমার্ক করুন…
-    .accesskey = B
+
+##
+
 synced-tabs-context-copy =
     .label = অনুলিপি
     .accesskey = C
@@ -38,3 +36,4 @@ synced-tabs-context-manage-devices =
 synced-tabs-context-sync-now =
     .label = এখন সিঙ্ক
     .accesskey = S
+synced-tabs-fxa-sign-in = সিঙ্ক করতে সাইন ইন করুন

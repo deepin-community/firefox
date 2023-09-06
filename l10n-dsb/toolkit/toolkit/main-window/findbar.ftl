@@ -36,3 +36,45 @@ findbar-entire-word =
     .label = Cełe słowa
     .accesskey = C
     .tooltiptext = Jano cełe słowa pytaś
+
+findbar-not-found = Pytański wuraz njejo se namakał
+
+findbar-wrapped-to-top = Kóńc boka dostany, pókšacujo se ze zachopjeńkom
+findbar-wrapped-to-bottom = Zachopjeńk boka dostany, pókšacujo se z kóńcom
+
+findbar-normal-find =
+    .placeholder = Na boku pytaś
+findbar-fast-find =
+    .placeholder = Spěšne pytanje
+findbar-fast-find-links =
+    .placeholder = Spěšne pytanje (jano wótkaze)
+
+findbar-case-sensitive-status =
+    .value = (Na wjelikopisanje źiwaś)
+findbar-match-diacritics-status =
+    .value = (źiwa na diakritikiske znamuška)
+findbar-entire-word-status =
+    .value = (Jano cełe słowa)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $current } z { $total } wótpowědnika
+            [two] { $current } z { $total } wótpowědnikowu
+            [few] { $current } z { $total } wótpowědnikow
+           *[other] { $current } z { $total } wótpowědnikow
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Wušej { $limit } wótpowědnika
+            [two] Wušej { $limit } wótpowědnikowu
+            [few] Wušej { $limit } wótpowědnikow
+           *[other] Wušej { $limit } wótpowědnikow
+        }

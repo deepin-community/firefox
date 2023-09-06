@@ -9,6 +9,7 @@
 #include "xpcprivate.h"
 #include "js/Object.h"  // JS::SetReservedSlot
 #include "pratom.h"
+#include "XPCMaps.h"
 
 using namespace mozilla;
 
@@ -64,7 +65,7 @@ bool XPCWrappedNativeProto::Init(JSContext* cx, nsIXPCScriptable* scriptable) {
   return success;
 }
 
-void XPCWrappedNativeProto::JSProtoObjectFinalized(JSFreeOp* fop,
+void XPCWrappedNativeProto::JSProtoObjectFinalized(JS::GCContext* gcx,
                                                    JSObject* obj) {
   MOZ_ASSERT(obj == mJSProtoObject, "huh?");
 
@@ -74,7 +75,7 @@ void XPCWrappedNativeProto::JSProtoObjectFinalized(JSFreeOp* fop,
   MOZ_ASSERT(map->Find(mClassInfo) != this);
 #endif
 
-  GetRuntime()->GetDyingWrappedNativeProtoMap()->Add(this);
+  MOZ_ALWAYS_TRUE(GetRuntime()->GetDyingWrappedNativeProtos().append(this));
   mJSProtoObject = nullptr;
 }
 

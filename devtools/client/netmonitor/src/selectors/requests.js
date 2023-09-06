@@ -4,14 +4,16 @@
 
 "use strict";
 
-const { createSelector } = require("devtools/client/shared/vendor/reselect");
+const {
+  createSelector,
+} = require("resource://devtools/client/shared/vendor/reselect.js");
 const {
   Filters,
   isFreetextMatch,
-} = require("devtools/client/netmonitor/src/utils/filter-predicates");
+} = require("resource://devtools/client/netmonitor/src/utils/filter-predicates.js");
 const {
   Sorters,
-} = require("devtools/client/netmonitor/src/utils/sort-predicates");
+} = require("resource://devtools/client/netmonitor/src/utils/sort-predicates.js");
 
 /**
  * Take clones into account when sorting.
@@ -175,7 +177,14 @@ function getRecordingState(state) {
   return state.requests.recording;
 }
 
+const getClickedRequest = createSelector(
+  state => state.requests,
+  ({ requests, clickedRequestId }) =>
+    requests.find(request => request.id == clickedRequestId)
+);
+
 module.exports = {
+  getClickedRequest,
   getDisplayedRequestById,
   getDisplayedRequests,
   getDisplayedRequestsSummary,

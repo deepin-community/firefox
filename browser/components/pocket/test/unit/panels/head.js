@@ -1,4 +1,6 @@
-const { sinon } = ChromeUtils.import("resource://testing-common/Sinon.jsm");
+const { sinon } = ChromeUtils.importESModule(
+  "resource://testing-common/Sinon.sys.mjs"
+);
 
 const testGlobal = {
   PKT_PANEL_OVERLAY: class {
@@ -8,13 +10,15 @@ const testGlobal = {
   RPMAddMessageListener: () => {},
   RPMSendAsyncMessage: () => {},
   window: {},
+  self: {},
 };
 
 Services.scriptloader.loadSubScript(
-  "chrome://pocket/content/panels/js/messages.js",
+  "chrome://pocket/content/panels/js/vendor.bundle.js",
   testGlobal
 );
+
 Services.scriptloader.loadSubScript(
-  "chrome://pocket/content/panels/js/main.js",
+  "chrome://pocket/content/panels/js/main.bundle.js",
   testGlobal
 );

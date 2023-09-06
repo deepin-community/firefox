@@ -22,7 +22,9 @@
 
 "use strict";
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
 var server = new HttpServer();
 server.start(-1);
@@ -57,10 +59,10 @@ function serverStopListener() {
   server.stop();
 }
 
-function createHttpRequest(browsingContextId, requestId) {
+function createHttpRequest(browserId, requestId) {
   let uri = baseURL;
   var chan = make_channel(uri);
-  chan.topBrowsingContextId = browsingContextId;
+  chan.browserId = browserId;
   var listner = new HttpResponseListener(requestId);
   chan.setRequestHeader("X-ID", requestId, false);
   chan.setRequestHeader("Cache-control", "no-store", false);
@@ -118,10 +120,7 @@ function check_response_id(responses, maxWindowId) {
 var responseQueue = [];
 function setup_http_server() {
   log("setup_http_server");
-  var prefs = Cc["@mozilla.org/preferences-service;1"].getService(
-    Ci.nsIPrefBranch
-  );
-  maxConnections = prefs.getIntPref(
+  maxConnections = Services.prefs.getIntPref(
     "network.http.max-persistent-connections-per-server"
   );
   FOCUSED_WINDOW_REQUEST_COUNT = Math.floor(maxConnections * 0.8);
@@ -131,7 +130,7 @@ function setup_http_server() {
 
   var allDummyHttpRequestReceived = false;
   // Start server; will be stopped at test cleanup time.
-  server.registerPathHandler("/", function(metadata, response) {
+  server.registerPathHandler("/", function (metadata, response) {
     var id = metadata.getHeader("X-ID");
     log("Server recived the response id=" + id);
 
@@ -169,7 +168,7 @@ function setup_http_server() {
     }
   });
 
-  registerCleanupFunction(function() {
+  registerCleanupFunction(function () {
     server.stop(serverStopListener);
   });
 }
@@ -184,10 +183,7 @@ function processResponses() {
 function run_test() {
   // Make sure "network.http.active_tab_priority" is true, so we can expect to
   // receive http requests with focused window id before others.
-  var prefs = Cc["@mozilla.org/preferences-service;1"].getService(
-    Ci.nsIPrefBranch
-  );
-  prefs.setBoolPref("network.http.active_tab_priority", true);
+  Services.prefs.setBoolPref("network.http.active_tab_priority", true);
 
   setup_http_server();
   setup_dummyHttpRequests();
@@ -196,8 +192,6 @@ function run_test() {
     Ci.nsISupportsPRUint64
   );
   windowIdWrapper.data = FOCUSED_WINDOW_ID;
-  var obsvc = Cc["@mozilla.org/observer-service;1"].getService(
-    Ci.nsIObserverService
-  );
-  obsvc.notifyObservers(windowIdWrapper, "net:current-top-browsing-context-id");
+  var obsvc = Services.obs;
+  obsvc.notifyObservers(windowIdWrapper, "net:current-browser-id");
 }

@@ -8,6 +8,9 @@ places-open =
 places-open-in-tab =
     .label = 新しいタブで開く
     .accesskey = w
+places-open-in-container-tab =
+    .label = 新しいコンテナータブで開く
+    .accesskey = i
 places-open-all-bookmarks =
     .label = ブックマークをすべて開く
     .accesskey = O
@@ -20,6 +23,8 @@ places-open-in-window =
 places-open-in-private-window =
     .label = 新しいプライベートウィンドウで開く
     .accesskey = P
+places-empty-bookmarks-folder =
+    .label = (なし)
 places-add-bookmark =
     .label = ブックマークを追加...
     .accesskey = B
@@ -65,21 +70,26 @@ places-sortby-name =
 # places-edit-bookmark and places-edit-generic will show one or the other and can have the same access key.
 places-edit-bookmark =
     .label = ブックマークを編集...
-    .accesskey = i
+    .accesskey = E
 places-edit-generic =
     .label = 編集...
-    .accesskey = i
-places-edit-folder =
-    .label = フォルダー名を変更...
-    .accesskey = e
-places-remove-folder =
-    .label = フォルダーを削除
-    .accesskey = m
+    .accesskey = E
 places-edit-folder2 =
     .label = フォルダーを編集...
-    .accesskey = i
+    .accesskey = E
+# Variables
+#   $count (number) - Number of folders to delete
 places-delete-folder =
     .label = フォルダーを削除
+    .accesskey = D
+# Variables:
+#   $count (number) - The number of pages selected for removal.
+places-delete-page =
+    .label =
+        { $count ->
+            [1] ページを削除
+           *[other] ページを削除
+        }
     .accesskey = D
 # Managed bookmarks are created by an administrator and cannot be changed by the user.
 managed-bookmarks =
@@ -90,32 +100,36 @@ managed-bookmarks-subfolder =
 # This label is used for the "Other Bookmarks" folder that appears in the bookmarks toolbar.
 other-bookmarks-folder =
     .label = 他のブックマーク
-# Variables:
-# $count (number) - The number of elements being selected for removal.
-places-remove-bookmark =
-    .label = ブックマークを削除
-    .accesskey = e
-
 places-show-in-folder =
-  .label = フォルダーで表示
-  .accesskey = F
-
+    .label = フォルダーで表示
+    .accesskey = F
 # Variables:
 # $count (number) - The number of elements being selected for removal.
 places-delete-bookmark =
     .label = ブックマークを削除
     .accesskey = D
+# Variables:
+#   $count (number) - The number of bookmarks being added.
+places-create-bookmark =
+    .label =
+        { $count ->
+            [1] ページをブックマークに追加...
+           *[other] ページをブックマークに追加...
+        }
+    .accesskey = B
+places-untag-bookmark =
+    .label = タグを消去
+    .accesskey = R
 places-manage-bookmarks =
     .label = ブックマークを管理
     .accesskey = M
 places-forget-about-this-site-confirmation-title = このサイトのデータの消去について
 # Variables:
 # $hostOrBaseDomain (string) - The base domain (or host in case there is no base domain) for which data is being removed
-places-forget-about-this-site-confirmation-message = この操作は { $hostOrBaseDomain } に関連する履歴、パスワード、Cookie、キャッシュ、コンテンツの設定を含むすべてのデータを消去します。本当に消去してもよろしいですか？
+places-forget-about-this-site-confirmation-msg = この操作は { $hostOrBaseDomain } に関連する履歴、Cookie、キャッシュ、コンテンツの設定を含むデータを削除します。関連するブックマークとパスワードは削除されません。本当に削除してもよろしいですか？
 places-forget-about-this-site-forget = 消去
-places-library =
+places-library3 =
     .title = ブラウジングライブラリー
-    .style = width:750px; height:500px;
 places-organize-button =
     .label = 管理
     .tooltiptext = 履歴とブックマークを管理します
@@ -189,6 +203,27 @@ places-view-sort-col-date-added =
     .label = 追加日時
 places-view-sort-col-last-modified =
     .label = 変更日時
+places-view-sortby-name =
+    .label = 名前順で表示
+    .accesskey = N
+places-view-sortby-url =
+    .label = URL 順で表示
+    .accesskey = L
+places-view-sortby-date =
+    .label = 最後に表示した日時順で表示
+    .accesskey = V
+places-view-sortby-visit-count =
+    .label = 表示回数順で表示
+    .accesskey = C
+places-view-sortby-date-added =
+    .label = 追加日時順で表示
+    .accesskey = e
+places-view-sortby-last-modified =
+    .label = 変更日時順で表示
+    .accesskey = M
+places-view-sortby-tags =
+    .label = タグ順で表示
+    .accesskey = T
 places-cmd-find-key =
     .key = f
 places-back-button =
@@ -196,3 +231,23 @@ places-back-button =
 places-forward-button =
     .tooltiptext = フォルダー表示履歴を次に進みます
 places-details-pane-select-an-item-description = 各項目を選択すると、名前や詳細情報の表示や編集ができます
+places-details-pane-no-items =
+    .value = 項目がありません
+# Variables:
+#   $count (Number): number of items
+places-details-pane-items-count =
+    .value = 項目の数: { $count } 個
+
+## Strings used as a placeholder in the Library search field. For example,
+## "Search History" stands for "Search through the browser's history".
+
+places-search-bookmarks =
+    .placeholder = ブックマークの検索
+places-search-history =
+    .placeholder = 履歴の検索
+places-search-downloads =
+    .placeholder = ダウンロードの検索
+
+##
+
+places-locked-prompt = { -brand-short-name } のファイルを他のアプリケーションが使用しているため、ブックマークと履歴のシステムが無効化されます。この問題はセキュリティソフトが原因で生じることがあります。

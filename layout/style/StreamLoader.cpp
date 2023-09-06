@@ -7,16 +7,18 @@
 #include "mozilla/css/StreamLoader.h"
 
 #include "mozilla/Encoding.h"
+#include "mozilla/TaskQueue.h"
 #include "nsContentUtils.h"
 #include "nsIChannel.h"
 #include "nsIInputStream.h"
+#include "nsIThreadRetargetableRequest.h"
+#include "nsIStreamTransportService.h"
+#include "nsNetCID.h"
+#include "nsServiceManagerUtils.h"
 
 #include <limits>
 
-using namespace mozilla;
-
-namespace mozilla {
-namespace css {
+namespace mozilla::css {
 
 StreamLoader::StreamLoader(SheetLoadData& aSheetLoadData)
     : mSheetLoadData(&aSheetLoadData), mStatus(NS_OK) {}
@@ -27,7 +29,8 @@ StreamLoader::~StreamLoader() {
 #endif
 }
 
-NS_IMPL_ISUPPORTS(StreamLoader, nsIStreamListener)
+NS_IMPL_ISUPPORTS(StreamLoader, nsIStreamListener,
+                  nsIThreadRetargetableStreamListener)
 
 /* nsIRequestObserver implementation */
 NS_IMETHODIMP
@@ -43,16 +46,40 @@ StreamLoader::OnStartRequest(nsIRequest* aRequest) {
     int64_t length;
     nsresult rv = channel->GetContentLength(&length);
     if (NS_SUCCEEDED(rv) && length > 0) {
-      if (length > std::numeric_limits<nsACString::size_type>::max()) {
+      CheckedInt<nsACString::size_type> checkedLength(length);
+      if (!checkedLength.isValid()) {
         return (mStatus = NS_ERROR_OUT_OF_MEMORY);
       }
-      if (!mBytes.SetCapacity(length, fallible)) {
+      if (!mBytes.SetCapacity(checkedLength.value(), fallible)) {
         return (mStatus = NS_ERROR_OUT_OF_MEMORY);
       }
     }
   }
+  if (nsCOMPtr<nsIThreadRetargetableRequest> rr = do_QueryInterface(aRequest)) {
+    nsCOMPtr<nsIEventTarget> sts =
+        do_GetService(NS_STREAMTRANSPORTSERVICE_CONTRACTID);
+    RefPtr queue =
+        TaskQueue::Create(sts.forget(), "css::StreamLoader Delivery Queue");
+    rr->RetargetDeliveryTo(queue);
+  }
+
+  mSheetLoadData->mExpirationTime = [&] {
+    auto info = nsContentUtils::GetSubresourceCacheValidationInfo(
+        aRequest, mSheetLoadData->mURI);
+
+    // For now, we never cache entries that we have to revalidate, or whose
+    // channel don't support caching.
+    if (info.mMustRevalidate || !info.mExpirationTime) {
+      return nsContentUtils::SecondsFromPRTime(PR_Now()) - 1;
+    }
+    return *info.mExpirationTime;
+  }();
+
   return NS_OK;
 }
+
+NS_IMETHODIMP
+StreamLoader::CheckListenerChain() { return NS_OK; }
 
 NS_IMETHODIMP
 StreamLoader::OnStopRequest(nsIRequest* aRequest, nsresult aStatus) {
@@ -67,8 +94,7 @@ StreamLoader::OnStopRequest(nsIRequest* aRequest, nsresult aStatus) {
   {
     // Hold the nsStringBuffer for the bytes from the stack to ensure release
     // no matter which return branch is taken.
-    nsCString bytes(mBytes);
-    mBytes.Truncate();
+    nsCString bytes = std::move(mBytes);
 
     nsCOMPtr<nsIChannel> channel = do_QueryInterface(aRequest);
 
@@ -105,26 +131,15 @@ StreamLoader::OnStopRequest(nsIRequest* aRequest, nsresult aStatus) {
     }
 
     if (validated == bytes.Length()) {
-      // Either this is UTF-8 and all valid, or it's not UTF-8 but is an
-      // empty string. This assumes that an empty string in any encoding
-      // decodes to empty string, which seems like a plausible assumption.
-      utf8String.Assign(bytes);
+      // Either this is UTF-8 and all valid, or it's not UTF-8 but is an empty
+      // string. This assumes that an empty string in any encoding decodes to
+      // empty string, which seems like a plausible assumption.
+      utf8String = std::move(bytes);
     } else {
       rv = encoding->DecodeWithoutBOMHandling(bytes, utf8String, validated);
       NS_ENSURE_SUCCESS(rv, rv);
     }
   }  // run destructor for `bytes`
-
-  auto info = nsContentUtils::GetSubresourceCacheValidationInfo(
-      aRequest, mSheetLoadData->mURI);
-
-  // For now, we never cache entries that we have to revalidate, or whose
-  // channel don't support caching.
-  if (!info.mExpirationTime || info.mMustRevalidate) {
-    info.mExpirationTime =
-        Some(nsContentUtils::SecondsFromPRTime(PR_Now()) - 1);
-  }
-  mSheetLoadData->mExpirationTime = *info.mExpirationTime;
 
   // For reasons I don't understand, factoring the below lines into
   // a method on SheetLoadData resulted in a linker error. Hence,
@@ -150,9 +165,7 @@ void StreamLoader::HandleBOM() {
   MOZ_ASSERT(mEncodingFromBOM.isNothing());
   MOZ_ASSERT(mBytes.IsEmpty());
 
-  const Encoding* encoding;
-  size_t bomLength;
-  Tie(encoding, bomLength) = Encoding::ForBOM(mBOMBytes);
+  auto [encoding, bomLength] = Encoding::ForBOM(mBOMBytes);
   mEncodingFromBOM.emplace(encoding);  // Null means no BOM.
 
   // BOMs are three bytes at most, but may be fewer. Copy over anything
@@ -173,7 +186,7 @@ nsresult StreamLoader::WriteSegmentFun(nsIInputStream*, void* aClosure,
 
   // If we haven't done BOM detection yet, divert bytes into the special buffer.
   if (self->mEncodingFromBOM.isNothing()) {
-    size_t bytesToCopy = std::min(3 - self->mBOMBytes.Length(), aCount);
+    size_t bytesToCopy = std::min<size_t>(3 - self->mBOMBytes.Length(), aCount);
     self->mBOMBytes.Append(aSegment, bytesToCopy);
     aSegment += bytesToCopy;
     *aWriteCount += bytesToCopy;
@@ -195,5 +208,4 @@ nsresult StreamLoader::WriteSegmentFun(nsIInputStream*, void* aClosure,
   return NS_OK;
 }
 
-}  // namespace css
-}  // namespace mozilla
+}  // namespace mozilla::css

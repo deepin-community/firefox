@@ -21,10 +21,10 @@ profile-selection-conflict-message = Ambue { -brand-product-name } mbokuatiapyre
 
 ## Messages used in the profile manager
 
-profile-manager-description = { -brand-short-name } oñongatu marandu ñembohekopyahu rehegua, jerororyvéva ha ambue mba’epuru puruhára imba’eteépe.
+profile-manager-description = { -brand-short-name } oñongatu marandu ñembohekopyahu rehegua, jerororyvéva ha ambue mba’epuru poruhára imba’eteépe.
 profile-manager-work-offline =
     .label = Jeikekatu’ỹme mba’apo
     .accesskey = o
 profile-manager-use-selected =
-    .label = Eipuru mba’ete poravopyre ejerure’ỹre ñepyrũha
+    .label = Eiporu mba’ete poravopyre ejerure’ỹre ñepyrũha
     .accesskey = s

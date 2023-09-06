@@ -38,20 +38,9 @@ menu-quit =
             [windows] G
            *[other] G
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Gadael { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Gadael { -brand-shorter-name }
-
 menu-about =
     .label = Ynghylch { -brand-shorter-name }
     .accesskey = n
@@ -81,8 +70,19 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Agor Ffeil…
     .accesskey = F
-menu-file-close =
-    .label = Cau
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Cau Tab
+            [zero] Cau { $tabCount } Tabiau
+            [one] Cau { $tabCount } Tab
+            [two] Cau { $tabCount } Dab
+            [few] Cau { $tabCount } Tab
+            [many] Cau { $tabCount } Thab
+           *[other] Cau { $tabCount } Tab
+        }
     .accesskey = C
 menu-file-close-window =
     .label = Cau Ffenestr
@@ -99,9 +99,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Gosodiad Tudalen…
     .accesskey = o
-menu-file-print-preview =
-    .label = Rhagolwg Argraffu
-    .accesskey = R
 menu-file-print =
     .label = Argraffu…
     .accesskey = A
@@ -182,11 +179,22 @@ menu-view-enter-full-screen =
     .label = Mynd i Sgrin Lawn
     .accesskey = S
 menu-view-exit-full-screen =
-    .label = Gadael Sgrin Lawn
+    .label = Gadael y Sgrin Lawn
     .accesskey = L
 menu-view-full-screen =
     .label = Sgrin Lawn
     .accesskey = S
+
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Mynd i'r Golwg Darllen
+    .accesskey = D
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Cau'r Golwg Darllen
+    .accesskey = D
 
 ##
 
@@ -213,11 +221,12 @@ menu-history-restore-last-session =
 menu-history-hidden-tabs =
     .label = Tabiau Cudd
 menu-history-undo-menu =
-    .label = Tabiau Wedi eu Cau'n Ddiweddar
+    .label = Tabiau Wedi'u Cau'n Ddiweddar
 menu-history-undo-window-menu =
     .label = Ffenestri wedi eu Cau yn Ddiweddar
-menu-history-reopen-all-tabs = Ailagor Pob Tab
-menu-history-reopen-all-windows = Ailagor Pob Ffenestr
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Hanes Chwilio
 
 ## Bookmarks Menu
 
@@ -226,10 +235,13 @@ menu-bookmarks-menu =
     .accesskey = T
 menu-bookmarks-manage =
     .label = Rheoli Nodau Tudalen
-menu-bookmark-current-tab =
-    .label = Gosod Nod Tudalen i'r Tab Cyfredol
-menu-bookmark-edit =
-    .label = Golygu'r Nod Tudalen
+menu-bookmark-tab =
+    .label = Gosod Nod Tudalen i'r Tab Cyfredol…
+menu-edit-bookmark =
+    .label = Golygu'r Nod Tudalen…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Chwilio'r Nodau Tudalen
 menu-bookmarks-all-tabs =
     .label = Nod Tudalen i Bob Tab…
 menu-bookmarks-toolbar =
@@ -245,7 +257,7 @@ menu-tools =
     .label = Offer
     .accesskey = f
 menu-tools-downloads =
-    .label = Llwytho i Lawr
+    .label = Llwythi i lawr
     .accesskey = L
 menu-tools-addons-and-themes =
     .label = Ychwanegion a Themâu
@@ -314,15 +326,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = R
 menu-help-report-site-issue =
     .label = Adrodd ar Fater Gwefan…
-menu-help-feedback-page =
-    .label = Cyflwyno Adborth…
-    .accesskey = A
+menu-help-share-ideas =
+    .label = Rhannwch Syniadau ac Adborth…
+    .accesskey = R
 menu-help-enter-troubleshoot-mode2 =
     .label = Y Modd Datrys Problemau…
     .accesskey = M
 menu-help-exit-troubleshoot-mode =
     .label = Diffodd y Modd Dartrys Problemau
     .accesskey = D
+menu-help-switch-device =
+    .label = Newid i Ddyfais Newydd
+    .accesskey = N
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

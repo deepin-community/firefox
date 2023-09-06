@@ -54,9 +54,9 @@ mouse to interact with the UI:
     it's a good sign. ![Jank markers appearing in the Perf.html profile analysis tool.](img/PerfDotHTMLRedLines.png)
 3.  The data will open in a new tab. Wait until the \"Symbolicating call
     stacks\" notification disappears before sharing the profile.
-4.  There will be a button in the top right labeled **Publish** which
+4.  There will be a button in the top right labeled **Upload Local Profile** which
     will allow you to upload this profile and once completed will write
-    out a link. Before uploading, the publish button asks you what data
+    out a link. Before uploading, the Upload button asks you what data
     you'd like to publish to our servers.
 5.  Note that while it's possible to strip profiles of potentially
     privacy sensitive information, the less information a profile
@@ -67,7 +67,7 @@ mouse to interact with the UI:
     for your performance problem and/or send it to the appropriate
     person. Try to give some context about what you were doing when the
     performance problem arose such as the URL you were viewing and what
-    actions were you doing (ex. scrolling on gmail.com). 
+    actions were you doing (ex. scrolling on gmail.com).
 
 ![image3](img/reportingperf3.png)
 

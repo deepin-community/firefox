@@ -65,22 +65,20 @@ cryptominer-tab-content = A kriptobányászok az Ön rendszerének erőforrásai
 protections-close-button2 =
     .aria-label = Bezárás
     .title = Bezárás
-  
+
 mobile-app-title = Blokkolja a hirdetéskövetőket több eszközön
 mobile-app-card-content = Használja a beépített hirdetéskövetés elleni védelemmel ellátott mobilböngészőt.
 mobile-app-links = { -brand-product-name } Böngésző <a data-l10n-name="android-mobile-inline-link">Androidra</a> és <a data-l10n-name="ios-mobile-inline-link">iOS-re</a>
 
 lockwise-title = Ne felejtsen el egyetlen jelszót sem
-lockwise-title-logged-in2 = Jelszókezelés
-lockwise-header-content = A { -lockwise-brand-name } biztonságosan tárolja a jelszavait a böngészőjében.
+passwords-title-logged-in = Jelszavak kezelése
+passwords-header-content = A { -brand-product-name } biztonságosan tárolja a jelszavait a böngészőjében.
 lockwise-header-content-logged-in = Tárolja biztonságosan, és szinkronizálja a jelszavait az összes eszközén.
-protection-report-save-passwords-button = Jelszavak mentése
-    .title = Jelszavak mentése ezzel: { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Jelszavak kezelése
-    .title = Jelszavak kezelése ezzel: { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Vigye magával a jelszavait bárhová
-lockwise-no-logins-card-content = Használja a { -brand-short-name }ban mentett jelszavait bármely eszközön.
-lockwise-app-links = { -lockwise-brand-name } <a data-l10n-name="lockwise-android-inline-link">Androidra</a> és <a data-l10n-name="lockwise-ios-inline-link">iOS-re</a>
+protection-report-passwords-save-passwords-button = Jelszavak mentése
+    .title = Jelszavak mentése
+protection-report-passwords-manage-passwords-button = Jelszavak kezelése
+    .title = Jelszavak kezelése
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -110,7 +108,7 @@ monitor-sign-up-link = Iratkozzon fel az adatsértési figyelmeztetésekre
 auto-scan = Automatikusan ellenőrizve ma
 
 monitor-emails-tooltip =
-    .title = Megfigyelt e-mail címek megtekintése a { -monitor-brand-short-name }on
+    .title = Megfigyelt e-mail-címek megtekintése a { -monitor-brand-short-name }on
 monitor-breaches-tooltip =
     .title = Ismert adatsértések megtekintése a { -monitor-brand-short-name }on
 monitor-passwords-tooltip =
@@ -121,8 +119,8 @@ monitor-passwords-tooltip =
 # your localization, because it would result in the number showing twice.
 info-monitored-emails =
     { $count ->
-        [one] Figyelt e-mail cím
-       *[other] Figyelt e-mail címek
+        [one] Figyelt e-mail-cím
+       *[other] Figyelt e-mail-cím
     }
 
 # This string is displayed after a large numeral that indicates the total number
@@ -140,7 +138,7 @@ info-known-breaches-found =
 info-known-breaches-resolved =
     { $count ->
         [one] Megoldottként megjelölt adatsértés
-       *[other] Megoldottként megjelölt adatsértések
+       *[other] Megoldottként megjelölt adatsértés
     }
 
 # This string is displayed after a large numeral that indicates the total number
@@ -149,7 +147,7 @@ info-known-breaches-resolved =
 info-exposed-passwords-found =
     { $count ->
         [one] Adatsértés során kikerült jelszó
-       *[other] Adatsértések során kikerült jelszavak
+       *[other] Adatsértések során kikerült jelszó
     }
 
 # This string is displayed after a large numeral that indicates the total number
@@ -158,7 +156,7 @@ info-exposed-passwords-found =
 info-exposed-passwords-resolved =
     { $count ->
         [one] Megoldatlan adatsértésekben kikerült jelszó
-       *[other] Megoldatlan adatsértésekben kikerült jelszavak
+       *[other] Megoldatlan adatsértésekben kikerült jelszó
     }
 
 monitor-no-breaches-title = Jó hírek!

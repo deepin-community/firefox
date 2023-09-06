@@ -5,9 +5,9 @@
 
 ## Strings used for device manager
 
-devmgr =
+devmgr-window =
     .title = Amsefrak n ibenkan
-    .style = width: 67em; height: 32em;
+    .style = min-width: 67em; min-height: 32em;
 
 devmgr-devlist =
     .label = Izegrar d ibenkan n tɣellist
@@ -35,7 +35,7 @@ devmgr-button-load =
     .accesskey = S
 
 devmgr-button-unload =
-    .label = Sers
+    .label = Sefsex asali
     .accesskey = S
 
 devmgr-button-enable-fips =

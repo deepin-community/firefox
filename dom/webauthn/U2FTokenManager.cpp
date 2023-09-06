@@ -3,11 +3,9 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
-
+#include "json/json.h"
 #include "mozilla/dom/U2FTokenManager.h"
 #include "mozilla/dom/U2FTokenTransport.h"
-#include "mozilla/dom/U2FHIDTokenManager.h"
-#include "mozilla/dom/U2FSoftTokenManager.h"
 #include "mozilla/dom/PWebAuthnTransactionParent.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/dom/WebAuthnUtil.h"
@@ -16,30 +14,25 @@
 #include "mozilla/Preferences.h"
 #include "mozilla/Services.h"
 #include "mozilla/Unused.h"
+#include "nsEscape.h"
 #include "nsIObserver.h"
 #include "nsIObserverService.h"
 #include "nsIThread.h"
 #include "nsTextFormatter.h"
 #include "mozilla/Telemetry.h"
+#include "WebAuthnEnumStrings.h"
 
 #ifdef MOZ_WIDGET_ANDROID
 #  include "mozilla/dom/AndroidWebAuthnTokenManager.h"
 #endif
 
-// Not named "security.webauth.u2f_softtoken_counter" because setting that
-// name causes the window.u2f object to disappear until preferences get
-// reloaded, as its pref is a substring!
-#define PREF_U2F_NSSTOKEN_COUNTER "security.webauth.softtoken_counter"
-#define PREF_WEBAUTHN_SOFTTOKEN_ENABLED \
-  "security.webauth.webauthn_enable_softtoken"
 #define PREF_WEBAUTHN_USBTOKEN_ENABLED \
   "security.webauth.webauthn_enable_usbtoken"
 #define PREF_WEBAUTHN_ALLOW_DIRECT_ATTESTATION \
   "security.webauth.webauthn_testing_allow_direct_attestation"
 #define PREF_WEBAUTHN_ANDROID_FIDO2_ENABLED \
   "security.webauth.webauthn_enable_android_fido2"
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 /***********************************************************************
  * Statics
@@ -55,18 +48,14 @@ static nsIThread* gBackgroundThread;
 }  // namespace
 
 // Data for WebAuthn UI prompt notifications.
-static const char16_t kRegisterPromptNotifcation[] =
-    u"{\"action\":\"register\",\"tid\":%llu,\"origin\":\"%s\","
-    u"\"browsingContextId\":%llu}";
-static const char16_t kRegisterDirectPromptNotifcation[] =
-    u"{\"action\":\"register-direct\",\"tid\":%llu,\"origin\":\"%s\","
-    u"\"browsingContextId\":%llu}";
-static const char16_t kSignPromptNotifcation[] =
-    u"{\"action\":\"sign\",\"tid\":%llu,\"origin\":\"%s\","
-    u"\"browsingContextId\":%"
-    u"llu}";
-static const char16_t kCancelPromptNotifcation[] =
-    u"{\"action\":\"cancel\",\"tid\":%llu}";
+static const char16_t kPresencePromptNotificationU2F[] =
+    u"{\"is_ctap2\":false,\"action\":\"presence\",\"tid\":%llu,"
+    u"\"origin\":\"%s\",\"browsingContextId\":%llu}";
+static const char16_t kRegisterDirectPromptNotificationU2F[] =
+    u"{\"is_ctap2\":false,\"action\":\"register-direct\",\"tid\":%llu,"
+    u"\"origin\":\"%s\",\"browsingContextId\":%llu}";
+static const char16_t kCancelPromptNotificationU2F[] =
+    u"{\"is_ctap2\":false,\"action\":\"cancel\",\"tid\":%llu}";
 
 class U2FPrefManager final : public nsIObserver {
  private:
@@ -81,9 +70,6 @@ class U2FPrefManager final : public nsIObserver {
     if (!gPrefManager) {
       gPrefManager = new U2FPrefManager();
       Preferences::AddStrongObserver(gPrefManager,
-                                     PREF_WEBAUTHN_SOFTTOKEN_ENABLED);
-      Preferences::AddStrongObserver(gPrefManager, PREF_U2F_NSSTOKEN_COUNTER);
-      Preferences::AddStrongObserver(gPrefManager,
                                      PREF_WEBAUTHN_USBTOKEN_ENABLED);
       Preferences::AddStrongObserver(gPrefManager,
                                      PREF_WEBAUTHN_ANDROID_FIDO2_ENABLED);
@@ -95,21 +81,6 @@ class U2FPrefManager final : public nsIObserver {
   }
 
   static U2FPrefManager* Get() { return gPrefManager; }
-
-  bool GetSoftTokenEnabled() {
-    MutexAutoLock lock(mPrefMutex);
-    return mSoftTokenEnabled;
-  }
-
-  int GetSoftTokenCounter() {
-    MutexAutoLock lock(mPrefMutex);
-    return mSoftTokenCounter;
-  }
-
-  bool GetUsbTokenEnabled() {
-    MutexAutoLock lock(mPrefMutex);
-    return mUsbTokenEnabled;
-  }
 
   bool GetAndroidFido2Enabled() {
     MutexAutoLock lock(mPrefMutex);
@@ -132,8 +103,6 @@ class U2FPrefManager final : public nsIObserver {
   void UpdateValues() {
     MOZ_ASSERT(NS_IsMainThread());
     MutexAutoLock lock(mPrefMutex);
-    mSoftTokenEnabled = Preferences::GetBool(PREF_WEBAUTHN_SOFTTOKEN_ENABLED);
-    mSoftTokenCounter = Preferences::GetUint(PREF_U2F_NSSTOKEN_COUNTER);
     mUsbTokenEnabled = Preferences::GetBool(PREF_WEBAUTHN_USBTOKEN_ENABLED);
     mAndroidFido2Enabled =
         Preferences::GetBool(PREF_WEBAUTHN_ANDROID_FIDO2_ENABLED);
@@ -141,9 +110,7 @@ class U2FPrefManager final : public nsIObserver {
         Preferences::GetBool(PREF_WEBAUTHN_ALLOW_DIRECT_ATTESTATION);
   }
 
-  Mutex mPrefMutex;
-  bool mSoftTokenEnabled;
-  int mSoftTokenCounter;
+  Mutex mPrefMutex MOZ_UNANNOTATED;
   bool mUsbTokenEnabled;
   bool mAndroidFido2Enabled;
   bool mAllowDirectAttestation;
@@ -186,9 +153,10 @@ U2FTokenManager* U2FTokenManager::Get() {
 }
 
 void U2FTokenManager::AbortTransaction(const uint64_t& aTransactionId,
-                                       const nsresult& aError) {
+                                       const nsresult& aError,
+                                       bool shouldCancelActiveDialog) {
   Unused << mTransactionParent->SendAbort(aTransactionId, aError);
-  ClearTransaction();
+  ClearTransaction(shouldCancelActiveDialog);
 }
 
 void U2FTokenManager::AbortOngoingTransaction() {
@@ -197,7 +165,7 @@ void U2FTokenManager::AbortOngoingTransaction() {
     Unused << mTransactionParent->SendAbort(mLastTransactionId,
                                             NS_ERROR_DOM_ABORT_ERR);
   }
-  ClearTransaction();
+  ClearTransaction(true);
 }
 
 void U2FTokenManager::MaybeClearTransaction(
@@ -205,16 +173,15 @@ void U2FTokenManager::MaybeClearTransaction(
   // Only clear if we've been requested to do so by our current transaction
   // parent.
   if (mTransactionParent == aParent) {
-    ClearTransaction();
+    ClearTransaction(true);
   }
 }
 
-void U2FTokenManager::ClearTransaction() {
-  if (mLastTransactionId) {
+void U2FTokenManager::ClearTransaction(bool send_cancel) {
+  if (mLastTransactionId && send_cancel) {
     // Remove any prompts we might be showing for the current transaction.
-    SendPromptNotification(kCancelPromptNotifcation, mLastTransactionId);
+    SendPromptNotification(kCancelPromptNotificationU2F, mLastTransactionId);
   }
-
   mTransactionParent = nullptr;
 
   // Drop managers at the end of all transactions
@@ -232,6 +199,8 @@ void U2FTokenManager::ClearTransaction() {
 
   // Forget any pending registration.
   mPendingRegisterInfo.reset();
+  mPendingSignInfo.reset();
+  mPendingSignResults.Clear();
 }
 
 template <typename... T>
@@ -246,11 +215,11 @@ void U2FTokenManager::SendPromptNotification(const char16_t* aFormat,
       "U2FTokenManager::RunSendPromptNotification", this,
       &U2FTokenManager::RunSendPromptNotification, json));
 
-  MOZ_ALWAYS_SUCCEEDS(
-      GetMainThreadEventTarget()->Dispatch(r.forget(), NS_DISPATCH_NORMAL));
+  MOZ_ALWAYS_SUCCEEDS(GetMainThreadSerialEventTarget()->Dispatch(
+      r.forget(), NS_DISPATCH_NORMAL));
 }
 
-void U2FTokenManager::RunSendPromptNotification(nsString aJSON) {
+void U2FTokenManager::RunSendPromptNotification(const nsString& aJSON) {
   MOZ_ASSERT(NS_IsMainThread());
 
   nsCOMPtr<nsIObserverService> os = services::GetObserverService();
@@ -276,29 +245,12 @@ RefPtr<U2FTokenTransport> U2FTokenManager::GetTokenManagerImpl() {
     MOZ_ASSERT(gBackgroundThread, "This should never be null!");
   }
 
-  auto pm = U2FPrefManager::Get();
-
 #ifdef MOZ_WIDGET_ANDROID
   // On Android, prefer the platform support if enabled.
-  if (pm->GetAndroidFido2Enabled()) {
+  if (U2FPrefManager::Get()->GetAndroidFido2Enabled()) {
     return AndroidWebAuthnTokenManager::GetInstance();
   }
 #endif
-
-  // Prefer the HW token, even if the softtoken is enabled too.
-  // We currently don't support soft and USB tokens enabled at the
-  // same time as the softtoken would always win the race to register.
-  // We could support it for signing though...
-  if (pm->GetUsbTokenEnabled()) {
-    return new U2FHIDTokenManager();
-  }
-
-  if (pm->GetSoftTokenEnabled()) {
-    return new U2FSoftTokenManager(pm->GetSoftTokenCounter());
-  }
-
-  // TODO Use WebAuthnRequest to aggregate results from all transports,
-  //      once we have multiple HW transport types.
 
   return nullptr;
 }
@@ -314,42 +266,49 @@ void U2FTokenManager::Register(
   mTokenManagerImpl = GetTokenManagerImpl();
 
   if (!mTokenManagerImpl) {
-    AbortTransaction(aTransactionId, NS_ERROR_DOM_NOT_ALLOWED_ERR);
+    AbortTransaction(aTransactionId, NS_ERROR_DOM_NOT_ALLOWED_ERR, true);
     return;
   }
 
   mLastTransactionId = aTransactionId;
 
   // Determine whether direct attestation was requested.
-  bool directAttestationRequested = false;
+  bool noneAttestationRequested = true;
 
 // On Android, let's always reject direct attestations until we have a
 // mechanism to solicit user consent, from Bug 1550164
 #ifndef MOZ_WIDGET_ANDROID
-  if (aTransactionInfo.Extra().isSome()) {
-    const auto& extra = aTransactionInfo.Extra().ref();
-
-    AttestationConveyancePreference attestation =
-        extra.attestationConveyancePreference();
-
-    directAttestationRequested =
-        attestation == AttestationConveyancePreference::Direct;
+  // The default attestation type is "none", so set
+  // noneAttestationRequested=false only if the RP's preference matches one of
+  // the other known types. This needs to be reviewed if values are added to
+  // the AttestationConveyancePreference enum.
+  const nsString& attestation =
+      aTransactionInfo.attestationConveyancePreference();
+  static_assert(MOZ_WEBAUTHN_ENUM_STRINGS_VERSION == 2);
+  if (attestation.EqualsLiteral(
+          MOZ_WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT) ||
+      attestation.EqualsLiteral(
+          MOZ_WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_INDIRECT) ||
+      attestation.EqualsLiteral(
+          MOZ_WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_ENTERPRISE)) {
+    noneAttestationRequested = false;
   }
 #endif  // not MOZ_WIDGET_ANDROID
 
   // Start a register request immediately if direct attestation
   // wasn't requested or the test pref is set.
-  if (!directAttestationRequested ||
+  if (noneAttestationRequested ||
       U2FPrefManager::Get()->GetAllowDirectAttestationForTesting()) {
-    // Force "none" attestation when "direct" attestation wasn't requested.
-    DoRegister(aTransactionInfo, !directAttestationRequested);
+    MOZ_ASSERT(mPendingRegisterInfo.isNothing());
+    mPendingRegisterInfo = Some(aTransactionInfo);
+    DoRegister(aTransactionInfo, noneAttestationRequested);
     return;
   }
 
   // If the RP request direct attestation, ask the user for permission and
   // store the transaction info until the user proceeds or cancels.
   NS_ConvertUTF16toUTF8 origin(aTransactionInfo.Origin());
-  SendPromptNotification(kRegisterDirectPromptNotifcation, aTransactionId,
+  SendPromptNotification(kRegisterDirectPromptNotificationU2F, aTransactionId,
                          origin.get(), aTransactionInfo.BrowsingContextId());
 
   MOZ_ASSERT(mPendingRegisterInfo.isNothing());
@@ -363,29 +322,31 @@ void U2FTokenManager::DoRegister(const WebAuthnMakeCredentialInfo& aInfo,
 
   // Show a prompt that lets the user cancel the ongoing transaction.
   NS_ConvertUTF16toUTF8 origin(aInfo.Origin());
-  SendPromptNotification(kRegisterPromptNotifcation, mLastTransactionId,
-                         origin.get(), aInfo.BrowsingContextId());
+  SendPromptNotification(kPresencePromptNotificationU2F, mLastTransactionId,
+                         origin.get(), aInfo.BrowsingContextId(), "false");
 
   uint64_t tid = mLastTransactionId;
-  mozilla::TimeStamp startTime = mozilla::TimeStamp::Now();
 
   mTokenManagerImpl->Register(aInfo, aForceNoneAttestation)
       ->Then(
           GetCurrentSerialEventTarget(), __func__,
-          [tid, startTime](WebAuthnMakeCredentialResult&& aResult) {
-            U2FTokenManager* mgr = U2FTokenManager::Get();
-            mgr->MaybeConfirmRegister(tid, aResult);
+          [tid](WebAuthnMakeCredentialResult&& aResult) {
             Telemetry::ScalarAdd(Telemetry::ScalarID::SECURITY_WEBAUTHN_USED,
                                  u"U2FRegisterFinish"_ns, 1);
-            Telemetry::AccumulateTimeDelta(
-                Telemetry::WEBAUTHN_CREATE_CREDENTIAL_MS, startTime);
+            U2FTokenManager* mgr = U2FTokenManager::Get();
+            mgr->MaybeConfirmRegister(tid, aResult);
           },
           [tid](nsresult rv) {
             MOZ_ASSERT(NS_FAILED(rv));
             U2FTokenManager* mgr = U2FTokenManager::Get();
-            mgr->MaybeAbortRegister(tid, rv);
+            bool shouldCancelActiveDialog = true;
+            if (rv == NS_ERROR_DOM_OPERATION_ERR) {
+              // PIN-related errors. Let the dialog show to inform the user
+              shouldCancelActiveDialog = false;
+            }
             Telemetry::ScalarAdd(Telemetry::ScalarID::SECURITY_WEBAUTHN_USED,
                                  u"U2FRegisterAbort"_ns, 1);
+            mgr->MaybeAbortRegister(tid, rv, shouldCancelActiveDialog);
           })
       ->Track(mRegisterPromise);
 }
@@ -397,14 +358,15 @@ void U2FTokenManager::MaybeConfirmRegister(
   mRegisterPromise.Complete();
 
   Unused << mTransactionParent->SendConfirmRegister(aTransactionId, aResult);
-  ClearTransaction();
+  ClearTransaction(true);
 }
 
 void U2FTokenManager::MaybeAbortRegister(const uint64_t& aTransactionId,
-                                         const nsresult& aError) {
+                                         const nsresult& aError,
+                                         bool shouldCancelActiveDialog) {
   MOZ_ASSERT(mLastTransactionId == aTransactionId);
   mRegisterPromise.Complete();
-  AbortTransaction(aTransactionId, aError);
+  AbortTransaction(aTransactionId, aError, shouldCancelActiveDialog);
 }
 
 void U2FTokenManager::Sign(PWebAuthnTransactionParent* aTransactionParent,
@@ -417,35 +379,50 @@ void U2FTokenManager::Sign(PWebAuthnTransactionParent* aTransactionParent,
   mTokenManagerImpl = GetTokenManagerImpl();
 
   if (!mTokenManagerImpl) {
-    AbortTransaction(aTransactionId, NS_ERROR_DOM_NOT_ALLOWED_ERR);
+    AbortTransaction(aTransactionId, NS_ERROR_DOM_NOT_ALLOWED_ERR, true);
     return;
   }
 
-  // Show a prompt that lets the user cancel the ongoing transaction.
-  NS_ConvertUTF16toUTF8 origin(aTransactionInfo.Origin());
-  SendPromptNotification(kSignPromptNotifcation, aTransactionId, origin.get(),
-                         aTransactionInfo.BrowsingContextId());
+  mLastTransactionId = aTransactionId;
+  mPendingSignInfo = Some(aTransactionInfo);
+  DoSign(aTransactionInfo);
+}
 
-  uint64_t tid = mLastTransactionId = aTransactionId;
-  mozilla::TimeStamp startTime = mozilla::TimeStamp::Now();
+void U2FTokenManager::DoSign(const WebAuthnGetAssertionInfo& aTransactionInfo) {
+  mozilla::ipc::AssertIsOnBackgroundThread();
+  MOZ_ASSERT(mLastTransactionId > 0);
+  uint64_t tid = mLastTransactionId;
+
+  NS_ConvertUTF16toUTF8 origin(aTransactionInfo.Origin());
+  uint64_t browserCtxId = aTransactionInfo.BrowsingContextId();
+
+  // Show a prompt that lets the user cancel the ongoing transaction.
+  SendPromptNotification(kPresencePromptNotificationU2F, tid, origin.get(),
+                         browserCtxId, "false");
 
   mTokenManagerImpl->Sign(aTransactionInfo)
       ->Then(
           GetCurrentSerialEventTarget(), __func__,
-          [tid, startTime](WebAuthnGetAssertionResult&& aResult) {
+          [tid, origin](nsTArray<WebAuthnGetAssertionResultWrapper>&& aResult) {
             U2FTokenManager* mgr = U2FTokenManager::Get();
-            mgr->MaybeConfirmSign(tid, aResult);
             Telemetry::ScalarAdd(Telemetry::ScalarID::SECURITY_WEBAUTHN_USED,
                                  u"U2FSignFinish"_ns, 1);
-            Telemetry::AccumulateTimeDelta(Telemetry::WEBAUTHN_GET_ASSERTION_MS,
-                                           startTime);
+            if (aResult.Length() == 1) {
+              WebAuthnGetAssertionResult result = aResult[0].assertion;
+              mgr->MaybeConfirmSign(tid, result);
+            }
           },
           [tid](nsresult rv) {
             MOZ_ASSERT(NS_FAILED(rv));
             U2FTokenManager* mgr = U2FTokenManager::Get();
-            mgr->MaybeAbortSign(tid, rv);
+            bool shouldCancelActiveDialog = true;
+            if (rv == NS_ERROR_DOM_OPERATION_ERR) {
+              // PIN-related errors. Let the dialog show to inform the user
+              shouldCancelActiveDialog = false;
+            }
             Telemetry::ScalarAdd(Telemetry::ScalarID::SECURITY_WEBAUTHN_USED,
                                  u"U2FSignAbort"_ns, 1);
+            mgr->MaybeAbortSign(tid, rv, shouldCancelActiveDialog);
           })
       ->Track(mSignPromise);
 }
@@ -456,14 +433,15 @@ void U2FTokenManager::MaybeConfirmSign(
   mSignPromise.Complete();
 
   Unused << mTransactionParent->SendConfirmSign(aTransactionId, aResult);
-  ClearTransaction();
+  ClearTransaction(true);
 }
 
 void U2FTokenManager::MaybeAbortSign(const uint64_t& aTransactionId,
-                                     const nsresult& aError) {
+                                     const nsresult& aError,
+                                     bool shouldCancelActiveDialog) {
   MOZ_ASSERT(mLastTransactionId == aTransactionId);
   mSignPromise.Complete();
-  AbortTransaction(aTransactionId, aError);
+  AbortTransaction(aTransactionId, aError, shouldCancelActiveDialog);
 }
 
 void U2FTokenManager::Cancel(PWebAuthnTransactionParent* aParent,
@@ -477,7 +455,7 @@ void U2FTokenManager::Cancel(PWebAuthnTransactionParent* aParent,
   }
 
   mTokenManagerImpl->Cancel();
-  ClearTransaction();
+  ClearTransaction(true);
 }
 
 // nsIU2FTokenManager
@@ -514,7 +492,21 @@ void U2FTokenManager::RunResumeRegister(uint64_t aTransactionId,
 
   // Resume registration and cleanup.
   DoRegister(mPendingRegisterInfo.ref(), aForceNoneAttestation);
-  mPendingRegisterInfo.reset();
+}
+
+void U2FTokenManager::RunResumeSign(uint64_t aTransactionId) {
+  mozilla::ipc::AssertIsOnBackgroundThread();
+
+  if (NS_WARN_IF(mPendingSignInfo.isNothing())) {
+    return;
+  }
+
+  if (mLastTransactionId != aTransactionId) {
+    return;
+  }
+
+  // Resume sign and cleanup.
+  DoSign(mPendingSignInfo.ref());
 }
 
 NS_IMETHODIMP
@@ -544,8 +536,7 @@ void U2FTokenManager::RunCancel(uint64_t aTransactionId) {
   mTokenManagerImpl->Cancel();
 
   // Reject the promise.
-  AbortTransaction(aTransactionId, NS_ERROR_DOM_ABORT_ERR);
+  AbortTransaction(aTransactionId, NS_ERROR_DOM_NOT_ALLOWED_ERR, true);
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

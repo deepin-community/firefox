@@ -6,47 +6,85 @@ package org.mozilla.geckoview.test
 
 import android.graphics.SurfaceTexture
 import android.net.Uri
-import org.mozilla.geckoview.GeckoSession.NavigationDelegate.LoadRequest
-import org.mozilla.geckoview.GeckoSession.ProgressDelegate
-import org.mozilla.geckoview.GeckoSession.ContentDelegate
-import org.mozilla.geckoview.GeckoSession.NavigationDelegate
-import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.AssertCalled
-import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.IgnoreCrash
-import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.WithDisplay
-
-import androidx.annotation.AnyThread
-import androidx.test.filters.MediumTest
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.view.PointerIcon
 import android.view.Surface
-import org.hamcrest.Matchers.*
+import androidx.annotation.AnyThread
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.MediumTest
+import junit.framework.TestCase.assertTrue
+import org.hamcrest.Matchers.* // ktlint-disable no-wildcard-imports
 import org.json.JSONObject
 import org.junit.Assume.assumeThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mozilla.geckoview.*
+import org.mozilla.geckoview.* // ktlint-disable no-wildcard-imports
+import org.mozilla.geckoview.ContentBlocking.CookieBannerMode
+import org.mozilla.geckoview.GeckoDisplay.SurfaceInfo
+import org.mozilla.geckoview.GeckoSession.ContentDelegate
+import org.mozilla.geckoview.GeckoSession.NavigationDelegate
+import org.mozilla.geckoview.GeckoSession.NavigationDelegate.LoadRequest
+import org.mozilla.geckoview.GeckoSession.ProgressDelegate
+import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.AssertCalled
+import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.IgnoreCrash
 import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.NullDelegate
-
+import org.mozilla.geckoview.test.rule.GeckoSessionTestRule.WithDisplay
+import java.io.ByteArrayInputStream
 
 @RunWith(AndroidJUnit4::class)
 @MediumTest
 class ContentDelegateTest : BaseSessionTest() {
     @Test fun titleChange() {
-        sessionRule.session.loadTestPath(TITLE_CHANGE_HTML_PATH)
+        mainSession.loadTestPath(TITLE_CHANGE_HTML_PATH)
 
         sessionRule.waitUntilCalled(object : ContentDelegate {
             @AssertCalled(count = 2)
             override fun onTitleChange(session: GeckoSession, title: String?) {
-                assertThat("Title should match", title,
-                           equalTo(forEachCall("Title1", "Title2")))
+                assertThat(
+                    "Title should match",
+                    title,
+                    equalTo(forEachCall("Title1", "Title2")),
+                )
             }
         })
+    }
+
+    @Test fun openInAppRequest() {
+        // Testing WebResponse behavior
+        val data = "Hello, World.".toByteArray()
+        val fileHeader = "attachment; filename=\"hello-world.txt\""
+        val requestExternal = true
+        val skipConfirmation = true
+        var response = WebResponse.Builder(HELLO_HTML_PATH)
+            .statusCode(200)
+            .body(ByteArrayInputStream(data))
+            .addHeader("Content-Type", "application/txt")
+            .addHeader("Content-Length", data.size.toString())
+            .addHeader("Content-Disposition", fileHeader)
+            .requestExternalApp(requestExternal)
+            .skipConfirmation(skipConfirmation)
+            .build()
+        assertThat(
+            "Filename matches as expected",
+            response.headers["Content-Disposition"],
+            equalTo(fileHeader),
+        )
+        assertThat(
+            "Request external response matches as expected.",
+            requestExternal,
+            equalTo(response.requestExternalApp),
+        )
+        assertThat(
+            "Skipping the confirmation matches as expected.",
+            skipConfirmation,
+            equalTo(response.skipConfirmation),
+        )
     }
 
     @Test fun downloadOneRequest() {
         // disable test on pgo for frequently failing Bug 1543355
         assumeThat(sessionRule.env.isDebugBuild, equalTo(true))
 
-        sessionRule.session.loadTestPath(DOWNLOAD_HTML_PATH)
+        mainSession.loadTestPath(DOWNLOAD_HTML_PATH)
 
         sessionRule.waitUntilCalled(object : NavigationDelegate, ContentDelegate {
 
@@ -69,12 +107,15 @@ class ContentDelegateTest : BaseSessionTest() {
                 assertThat("Content type should match", response.headers.get("content-type"), equalTo("text/plain"))
                 assertThat("Content length should be non-zero", response.headers.get("Content-Length")!!.toLong(), greaterThan(0L))
                 assertThat("Filename should match", response.headers.get("cONTent-diSPOsiTion"), equalTo("attachment; filename=\"download.txt\""))
+                assertThat("Request external response should not be set.", response.requestExternalApp, equalTo(false))
+                assertThat("Should not skip the confirmation on a regular download.", response.skipConfirmation, equalTo(false))
             }
         })
     }
 
     @IgnoreCrash
-    @Test fun crashContent() {
+    @Test
+    fun crashContent() {
         // TODO: bug 1710940
         assumeThat(sessionRule.env.isIsolatedProcess, equalTo(false))
 
@@ -82,15 +123,18 @@ class ContentDelegateTest : BaseSessionTest() {
         mainSession.waitUntilCalled(object : ContentDelegate {
             @AssertCalled(count = 1)
             override fun onCrash(session: GeckoSession) {
-                assertThat("Session should be closed after a crash",
-                           session.isOpen, equalTo(false))
+                assertThat(
+                    "Session should be closed after a crash",
+                    session.isOpen,
+                    equalTo(false),
+                )
             }
         })
 
         // Recover immediately
         mainSession.open()
         mainSession.loadTestPath(HELLO_HTML_PATH)
-        mainSession.waitUntilCalled(object: ProgressDelegate {
+        mainSession.waitUntilCalled(object : ProgressDelegate {
             @AssertCalled(count = 1)
             override fun onPageStop(session: GeckoSession, success: Boolean) {
                 assertThat("Page should load successfully", success, equalTo(true))
@@ -100,7 +144,8 @@ class ContentDelegateTest : BaseSessionTest() {
 
     @IgnoreCrash
     @WithDisplay(width = 10, height = 10)
-    @Test fun crashContent_tapAfterCrash() {
+    @Test
+    fun crashContent_tapAfterCrash() {
         // TODO: bug 1710940
         assumeThat(sessionRule.env.isIsolatedProcess, equalTo(false))
 
@@ -129,13 +174,17 @@ class ContentDelegateTest : BaseSessionTest() {
     }
 
     @IgnoreCrash
-    @Test fun killContent() {
+    @Test
+    fun killContent() {
         killAllContentProcesses()
         mainSession.waitUntilCalled(object : ContentDelegate {
             @AssertCalled(count = 1)
             override fun onKill(session: GeckoSession) {
-                assertThat("Session should be closed after being killed",
-                        session.isOpen, equalTo(false))
+                assertThat(
+                    "Session should be closed after being killed",
+                    session.isOpen,
+                    equalTo(false),
+                )
             }
         })
 
@@ -156,7 +205,7 @@ class ContentDelegateTest : BaseSessionTest() {
         val promise = mainSession.evaluatePromiseJS("document.querySelector('#fullscreen').requestFullscreen()")
         sessionRule.waitUntilCalled(object : ContentDelegate {
             @AssertCalled(count = 1)
-            override  fun onFullScreen(session: GeckoSession, fullScreen: Boolean) {
+            override fun onFullScreen(session: GeckoSession, fullScreen: Boolean) {
                 assertThat("Div went fullscreen", fullScreen, equalTo(true))
             }
         })
@@ -166,7 +215,7 @@ class ContentDelegateTest : BaseSessionTest() {
     private fun waitForFullscreenExit() {
         sessionRule.waitUntilCalled(object : ContentDelegate {
             @AssertCalled(count = 1)
-            override  fun onFullScreen(session: GeckoSession, fullScreen: Boolean) {
+            override fun onFullScreen(session: GeckoSession, fullScreen: Boolean) {
                 assertThat("Div left fullscreen", fullScreen, equalTo(false))
             }
         })
@@ -190,7 +239,7 @@ class ContentDelegateTest : BaseSessionTest() {
         val texture = SurfaceTexture(0)
         texture.setDefaultBufferSize(100, 100)
         val surface = Surface(texture)
-        display.surfaceChanged(surface, 100, 100)
+        display.surfaceChanged(SurfaceInfo.Builder(surface).size(100, 100).build())
         mainSession.loadTestPath(HELLO_HTML_PATH)
         sessionRule.waitUntilCalled(object : ContentDelegate {
             @AssertCalled(count = 1)
@@ -198,7 +247,7 @@ class ContentDelegateTest : BaseSessionTest() {
             }
         })
         display.surfaceDestroyed()
-        display.surfaceChanged(surface, 100, 100)
+        display.surfaceChanged(SurfaceInfo.Builder(surface).size(100, 100).build())
         sessionRule.waitUntilCalled(object : ContentDelegate {
             @AssertCalled(count = 1)
             override fun onFirstComposite(session: GeckoSession) {
@@ -209,7 +258,8 @@ class ContentDelegateTest : BaseSessionTest() {
     }
 
     @WithDisplay(width = 10, height = 10)
-    @Test fun firstContentfulPaint() {
+    @Test
+    fun firstContentfulPaint() {
         mainSession.loadTestPath(HELLO_HTML_PATH)
         sessionRule.waitUntilCalled(object : ContentDelegate {
             @AssertCalled(count = 1)
@@ -262,13 +312,23 @@ class ContentDelegateTest : BaseSessionTest() {
                 assertThat("background_color should match", manifest.getString("background_color"), equalTo("#eec0ffee"))
                 assertThat("start_url should match", manifest.getString("start_url"), endsWith("/assets/www/start/index.html"))
 
-                val icon = manifest.getJSONArray("icons").getJSONObject(0);
+                val icon = manifest.getJSONArray("icons").getJSONObject(0)
 
                 val iconSrc = Uri.parse(icon.getString("src"))
                 assertThat("icon should have a valid src", iconSrc, notNullValue())
                 assertThat("icon src should be absolute", iconSrc.isAbsolute, equalTo(true))
-                assertThat("icon should have sizes", icon.getString("sizes"),  not(isEmptyOrNullString()))
+                assertThat("icon should have sizes", icon.getString("sizes"), not(isEmptyOrNullString()))
                 assertThat("icon type should match", icon.getString("type"), equalTo("image/gif"))
+            }
+        })
+    }
+
+    @Test fun previewImage() {
+        mainSession.loadTestPath(METATAGS_PATH)
+        mainSession.waitUntilCalled(object : ContentDelegate, ProgressDelegate {
+            @AssertCalled(count = 1)
+            override fun onPreviewImage(session: GeckoSession, previewImageUrl: String) {
+                assertThat("Preview image should match", previewImageUrl, equalTo("https://test.com/og-image-url"))
             }
         })
     }
@@ -344,32 +404,110 @@ class ContentDelegateTest : BaseSessionTest() {
         })
     }
 
+    @Test fun cookieBannerDetectedEvent() {
+        sessionRule.setPrefsUntilTestEnd(
+            mapOf(
+                "cookiebanners.service.mode" to CookieBannerMode.COOKIE_BANNER_MODE_REJECT,
+            ),
+        )
+
+        val detectHandled = GeckoResult<Void>()
+        mainSession.delegateUntilTestEnd(object : GeckoSession.ContentDelegate {
+            override fun onCookieBannerDetected(
+                session: GeckoSession,
+            ) {
+                detectHandled.complete(null)
+            }
+        })
+
+        mainSession.loadTestPath(HELLO_HTML_PATH)
+        mainSession.waitForPageStop()
+        mainSession.triggerCookieBannerDetected()
+
+        sessionRule.waitForResult(detectHandled)
+    }
+
+    @Test fun cookieBannerHandledEvent() {
+        sessionRule.setPrefsUntilTestEnd(
+            mapOf(
+                "cookiebanners.service.mode" to CookieBannerMode.COOKIE_BANNER_MODE_REJECT,
+            ),
+        )
+
+        val handleHandled = GeckoResult<Void>()
+        mainSession.delegateUntilTestEnd(object : GeckoSession.ContentDelegate {
+            override fun onCookieBannerHandled(
+                session: GeckoSession,
+            ) {
+                handleHandled.complete(null)
+            }
+        })
+
+        mainSession.loadTestPath(HELLO_HTML_PATH)
+        mainSession.waitForPageStop()
+        mainSession.triggerCookieBannerHandled()
+
+        sessionRule.waitForResult(handleHandled)
+    }
+
+    @WithDisplay(width = 100, height = 100)
+    @Test
+    fun setCursor() {
+        mainSession.loadTestPath(HELLO_HTML_PATH)
+        mainSession.waitForPageStop()
+
+        mainSession.evaluateJS("document.body.style.cursor = 'wait'")
+        mainSession.synthesizeMouseMove(50, 50)
+
+        mainSession.waitUntilCalled(object : ContentDelegate {
+            @AssertCalled(count = 1)
+            override fun onPointerIconChange(session: GeckoSession, icon: PointerIcon) {
+                // PointerIcon has no compare method.
+            }
+        })
+
+        val delegate = mainSession.contentDelegate
+        mainSession.contentDelegate = null
+        mainSession.evaluateJS("document.body.style.cursor = 'text'")
+        for (i in 51..70) {
+            mainSession.synthesizeMouseMove(i, 50)
+            // No wait function since we remove content delegate.
+            mainSession.waitForJS("new Promise(resolve => window.setTimeout(resolve, 100))")
+        }
+        mainSession.contentDelegate = delegate
+    }
+
     /**
      * Preferences to induce wanted behaviour.
      */
     private fun setHangReportTestPrefs(timeout: Int = 20000) {
-        sessionRule.setPrefsUntilTestEnd(mapOf(
+        sessionRule.setPrefsUntilTestEnd(
+            mapOf(
                 "dom.max_script_run_time" to 1,
                 "dom.max_chrome_script_run_time" to 1,
                 "dom.max_ext_content_script_run_time" to 1,
                 "dom.ipc.cpow.timeout" to 100,
-                "browser.hangNotification.waitPeriod" to timeout
-        ))
+                "browser.hangNotification.waitPeriod" to timeout,
+            ),
+        )
     }
 
     /**
      * With no delegate set, the default behaviour is to stop hung scripts.
      */
     @NullDelegate(ContentDelegate::class)
-    @Test fun stopHungProcessDefault() {
+    @Test
+    fun stopHungProcessDefault() {
         setHangReportTestPrefs()
         mainSession.loadTestPath(HUNG_SCRIPT)
         sessionRule.delegateUntilTestEnd(object : ProgressDelegate {
             @AssertCalled(count = 1)
             override fun onPageStop(session: GeckoSession, success: Boolean) {
-                assertThat("The script did not complete.",
-                        sessionRule.session.evaluateJS("document.getElementById(\"content\").innerHTML") as String,
-                        equalTo("Started"))
+                assertThat(
+                    "The script did not complete.",
+                    mainSession.evaluateJS("document.getElementById(\"content\").innerHTML") as String,
+                    equalTo("Started"),
+                )
             }
         })
         sessionRule.waitForPageStop(mainSession)
@@ -385,9 +523,11 @@ class ContentDelegateTest : BaseSessionTest() {
             // default onSlowScript returns null
             @AssertCalled(count = 1)
             override fun onPageStop(session: GeckoSession, success: Boolean) {
-                assertThat("The script did not complete.",
-                        sessionRule.session.evaluateJS("document.getElementById(\"content\").innerHTML") as String,
-                        equalTo("Started"))
+                assertThat(
+                    "The script did not complete.",
+                    mainSession.evaluateJS("document.getElementById(\"content\").innerHTML") as String,
+                    equalTo("Started"),
+                )
             }
         })
         mainSession.loadTestPath(HUNG_SCRIPT)
@@ -403,15 +543,18 @@ class ContentDelegateTest : BaseSessionTest() {
         sessionRule.delegateUntilTestEnd(object : ContentDelegate, ProgressDelegate {
             @AssertCalled()
             override fun onSlowScript(geckoSession: GeckoSession, scriptFileName: String): GeckoResult<SlowScriptResponse> {
-                scriptHungReportCount += 1;
+                scriptHungReportCount += 1
                 return GeckoResult.fromValue(null)
             }
+
             @AssertCalled(count = 1)
             override fun onPageStop(session: GeckoSession, success: Boolean) {
                 assertThat("The delegate was informed of the hang repeatedly", scriptHungReportCount, greaterThan(1))
-                assertThat("The script did complete.",
-                        sessionRule.session.evaluateJS("document.getElementById(\"content\").innerHTML") as String,
-                        equalTo("Finished"))
+                assertThat(
+                    "The script did complete.",
+                    mainSession.evaluateJS("document.getElementById(\"content\").innerHTML") as String,
+                    equalTo("Finished"),
+                )
             }
         })
         mainSession.loadTestPath(HUNG_SCRIPT)
@@ -428,11 +571,14 @@ class ContentDelegateTest : BaseSessionTest() {
             override fun onSlowScript(geckoSession: GeckoSession, scriptFileName: String): GeckoResult<SlowScriptResponse> {
                 return GeckoResult.fromValue(SlowScriptResponse.STOP)
             }
+
             @AssertCalled(count = 1, order = [2])
             override fun onPageStop(session: GeckoSession, success: Boolean) {
-                assertThat("The script did not complete.",
-                        sessionRule.session.evaluateJS("document.getElementById(\"content\").innerHTML") as String,
-                        equalTo("Started"))
+                assertThat(
+                    "The script did not complete.",
+                    mainSession.evaluateJS("document.getElementById(\"content\").innerHTML") as String,
+                    equalTo("Started"),
+                )
             }
         })
         mainSession.loadTestPath(HUNG_SCRIPT)
@@ -449,11 +595,14 @@ class ContentDelegateTest : BaseSessionTest() {
             override fun onSlowScript(geckoSession: GeckoSession, scriptFileName: String): GeckoResult<SlowScriptResponse> {
                 return GeckoResult.fromValue(SlowScriptResponse.CONTINUE)
             }
+
             @AssertCalled(count = 1, order = [2])
             override fun onPageStop(session: GeckoSession, success: Boolean) {
-                assertThat("The script did complete.",
-                        sessionRule.session.evaluateJS("document.getElementById(\"content\").innerHTML") as String,
-                        equalTo("Finished"))
+                assertThat(
+                    "The script did complete.",
+                    mainSession.evaluateJS("document.getElementById(\"content\").innerHTML") as String,
+                    equalTo("Finished"),
+                )
             }
         })
         mainSession.loadTestPath(HUNG_SCRIPT)
@@ -470,20 +619,118 @@ class ContentDelegateTest : BaseSessionTest() {
             @AssertCalled(count = 2, order = [1, 2])
             override fun onSlowScript(geckoSession: GeckoSession, scriptFileName: String): GeckoResult<SlowScriptResponse> {
                 return if (!scriptWaited) {
-                    scriptWaited = true;
+                    scriptWaited = true
                     GeckoResult.fromValue(SlowScriptResponse.CONTINUE)
                 } else {
                     GeckoResult.fromValue(SlowScriptResponse.STOP)
                 }
             }
+
             @AssertCalled(count = 1, order = [3])
             override fun onPageStop(session: GeckoSession, success: Boolean) {
-                assertThat("The script did not complete.",
-                        sessionRule.session.evaluateJS("document.getElementById(\"content\").innerHTML") as String,
-                        equalTo("Started"))
+                assertThat(
+                    "The script did not complete.",
+                    mainSession.evaluateJS("document.getElementById(\"content\").innerHTML") as String,
+                    equalTo("Started"),
+                )
             }
         })
         mainSession.loadTestPath(HUNG_SCRIPT)
         sessionRule.waitForPageStop(mainSession)
+    }
+
+    /**
+     * Test that the display mode is applied to CSS media query
+     */
+    @Test fun displayMode() {
+        val pwaSession = sessionRule.createOpenSession(
+            GeckoSessionSettings.Builder(mainSession.settings)
+                .displayMode(GeckoSessionSettings.DISPLAY_MODE_FULLSCREEN)
+                .build(),
+        )
+        pwaSession.loadTestPath(HELLO_HTML_PATH)
+        pwaSession.waitForPageStop()
+
+        val matches = pwaSession.evaluateJS("window.matchMedia('(display-mode: fullscreen)').matches") as Boolean
+        assertThat(
+            "display-mode should be fullscreen",
+            matches,
+            equalTo(true),
+        )
+    }
+
+    @Test
+    fun onProductUrl() {
+        mainSession.loadUri("https://example.com")
+        sessionRule.waitForPageStop()
+
+        mainSession.forCallbacksDuringWait(object : ContentDelegate {
+            @AssertCalled(count = 0)
+            override fun onProductUrl(session: GeckoSession) {}
+        })
+
+        // TODO: bug1845760 when toolkit example.com product page is available, verify onProductUrl is called
+    }
+
+    @Test
+    fun requestAnalysis() {
+        // TODO: bug1845760 replace with static example.com product page and enable in automation
+        if (!sessionRule.env.isAutomation) {
+            // verify a non product page
+            val nonProductPageResult = mainSession.requestAnalysis("https://www.amazon.com/").accept {
+                assertTrue("Should not return analysis", false)
+            }
+            try {
+                sessionRule.waitForResult(nonProductPageResult)
+            } catch (e: Exception) {
+                assertTrue("Should have an exception", true)
+            }
+
+            // verify product with no analysis data
+            val noAnalysisResult = mainSession.requestAnalysis("https://www.amazon.com/Travel-Self-Inflatable-Sleeping-Airplane-Adjustable/dp/B0B8NVW9YX")
+            sessionRule.waitForResult(noAnalysisResult).let {
+                assertThat("Product grade should match", it.grade, equalTo(null))
+                assertThat("Product id should match", it.productId, equalTo(null))
+                assertThat("Product adjusted rating should match", it.adjustedRating, equalTo(0.0))
+                assertThat("Product highlights should match", it.highlights, equalTo(null))
+            }
+
+            val result = mainSession.requestAnalysis("https://www.amazon.com/Furmax-Electric-Adjustable-Standing-Computer/dp/B09TJGHL5F/")
+            sessionRule.waitForResult(result).let {
+                assertThat("Product grade should match", it.grade, equalTo("A"))
+                assertThat("Product id should match", it.productId, equalTo("B09TJGHL5F"))
+                assertThat("Product adjusted rating should match", it.adjustedRating, equalTo(4.4))
+                assertThat("Product should not be reported that it was deleted", it.deletedProductReported, equalTo(false))
+                assertThat("Not a deleted product", it.deletedProduct, equalTo(false))
+            }
+        }
+    }
+
+    @Test
+    fun requestRecommendations() {
+        // TODO: bug1845760 replace with static example.com product page
+        if (!sessionRule.env.isAutomation) {
+            // verify a non product page
+            val nonProductPageResult = mainSession.requestRecommendations("https://www.amazon.com/").accept {
+                assertTrue("Should not return recommendation", false)
+            }
+            try {
+                sessionRule.waitForResult(nonProductPageResult)
+            } catch (e: Exception) {
+                assertTrue("Should have an exception", true)
+            }
+
+            // verify product with no recommendations
+            val noRecResult = mainSession.requestRecommendations("https://www.amazon.com/Travel-Self-Inflatable-Sleeping-Airplane-Adjustable/dp/B0B8NVW9YX")
+            assertThat("Product recommendations should be empty", sessionRule.waitForResult(noRecResult).size, equalTo(0))
+
+            val result = mainSession.requestRecommendations("https://www.amazon.com/Furmax-Electric-Adjustable-Standing-Computer/dp/B09TJGHL5F/")
+            sessionRule.waitForResult(result)
+                .let {
+                    assertThat("First recommendation adjusted rating should match", it[0].adjustedRating, equalTo(4.6))
+                    assertThat("Another recommendation adjusted rating should match", it[2].adjustedRating, equalTo(4.5))
+                    assertThat("First recommendation sponsored field should match", it[0].sponsored, equalTo(true))
+                }
+        }
     }
 }

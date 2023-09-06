@@ -4,23 +4,24 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use super::super::State;
 use super::{
-    assert_error, connect, connect_force_idle, default_client, default_server, maybe_authenticate,
-    new_client, new_server, send_something, DEFAULT_STREAM_DATA,
+    super::State, assert_error, connect, connect_force_idle, default_client, default_server,
+    maybe_authenticate, new_client, new_server, send_something, DEFAULT_STREAM_DATA,
 };
-use crate::events::ConnectionEvent;
-use crate::recv_stream::RECV_BUFFER_SIZE;
-use crate::send_stream::{SendStreamState, SEND_BUFFER_SIZE};
-use crate::tparams::{self, TransportParameter};
-use crate::tracking::DEFAULT_ACK_PACKET_TOLERANCE;
-use crate::{Connection, ConnectionError, ConnectionParameters};
-use crate::{Error, StreamId, StreamType};
+use crate::{
+    events::ConnectionEvent,
+    recv_stream::RECV_BUFFER_SIZE,
+    send_stream::OrderGroup,
+    send_stream::{SendStreamState, SEND_BUFFER_SIZE},
+    streams::{SendOrder, StreamOrder},
+    tparams::{self, TransportParameter},
+    tracking::DEFAULT_ACK_PACKET_TOLERANCE,
+    Connection, ConnectionError, ConnectionParameters, Error, StreamId, StreamType,
+};
+use std::collections::HashMap;
 
 use neqo_common::{event::Provider, qdebug};
-use std::cmp::max;
-use std::convert::TryFrom;
-use std::mem;
+use std::{cmp::max, convert::TryFrom, mem};
 use test_fixture::now;
 
 #[test]
@@ -101,18 +102,211 @@ fn transfer() {
         .next()
         .expect("should have a second new stream event");
     assert!(stream_ids.next().is_none());
-    let (received1, fin1) = server.stream_recv(first_stream.as_u64(), &mut buf).unwrap();
+    let (received1, fin1) = server.stream_recv(first_stream, &mut buf).unwrap();
     assert_eq!(received1, 4000);
     assert!(!fin1);
-    let (received2, fin2) = server.stream_recv(first_stream.as_u64(), &mut buf).unwrap();
+    let (received2, fin2) = server.stream_recv(first_stream, &mut buf).unwrap();
     assert_eq!(received2, 140);
     assert!(!fin2);
 
-    let (received3, fin3) = server
-        .stream_recv(second_stream.as_u64(), &mut buf)
-        .unwrap();
+    let (received3, fin3) = server.stream_recv(second_stream, &mut buf).unwrap();
     assert_eq!(received3, 60);
     assert!(fin3);
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+struct IdEntry {
+    sendorder: StreamOrder,
+    stream_id: StreamId,
+}
+
+// tests stream sendorder priorization
+fn sendorder_test(order_of_sendorder: &[Option<SendOrder>]) {
+    let mut client = default_client();
+    let mut server = default_server();
+    connect_force_idle(&mut client, &mut server);
+
+    qdebug!("---- client sends");
+    // open all streams and set the sendorders
+    let mut ordered = Vec::new();
+    let mut streams = Vec::<StreamId>::new();
+    for sendorder in order_of_sendorder {
+        let id = client.stream_create(StreamType::UniDi).unwrap();
+        streams.push(id);
+        ordered.push((id, *sendorder));
+        // must be set before sendorder
+        client.streams.set_fairness(id, true).ok();
+        client.streams.set_sendorder(id, *sendorder).ok();
+    }
+    // Write some data to all the streams
+    for stream_id in streams {
+        client.stream_send(stream_id, &[6; 100]).unwrap();
+    }
+
+    // Sending this much takes a few datagrams.
+    // Note: this test uses an RTT of 0 which simplifies things (no pacing)
+    let mut datagrams = Vec::new();
+    let mut out = client.process_output(now());
+    while let Some(d) = out.dgram() {
+        datagrams.push(d);
+        out = client.process_output(now());
+    }
+    assert_eq!(*client.state(), State::Confirmed);
+
+    qdebug!("---- server receives");
+    for (_, d) in datagrams.into_iter().enumerate() {
+        let out = server.process(Some(d), now());
+        qdebug!("Output={:0x?}", out.as_dgram_ref());
+    }
+    assert_eq!(*server.state(), State::Confirmed);
+
+    let stream_ids = server
+        .events()
+        .filter_map(|evt| match evt {
+            ConnectionEvent::RecvStreamReadable { stream_id, .. } => Some(stream_id),
+            _ => None,
+        })
+        .enumerate()
+        .map(|(a, b)| (b, a))
+        .collect::<HashMap<_, _>>();
+
+    // streams should arrive in priority order, not order of creation, if sendorder prioritization
+    // is working correctly
+
+    // 'ordered' has the send order currently.  Re-sort it by sendorder, but
+    // if two items from the same sendorder exist, secondarily sort by the ordering in
+    // the stream_ids vector (HashMap<StreamId, index: usize>)
+    ordered.sort_unstable_by_key(|(stream_id, sendorder)| {
+        (
+            StreamOrder {
+                sendorder: *sendorder,
+            },
+            stream_ids[stream_id],
+        )
+    });
+    // make sure everything now is in the same order, since we modified the order of
+    // same-sendorder items to match the ordering of those we saw in reception
+    for (i, (stream_id, _sendorder)) in ordered.iter().enumerate() {
+        assert_eq!(i, stream_ids[stream_id]);
+    }
+}
+
+#[test]
+fn sendorder_0() {
+    sendorder_test(&[None, Some(1), Some(2), Some(3)]);
+}
+#[test]
+fn sendorder_1() {
+    sendorder_test(&[Some(3), Some(2), Some(1), None]);
+}
+#[test]
+fn sendorder_2() {
+    sendorder_test(&[Some(3), None, Some(2), Some(1)]);
+}
+#[test]
+fn sendorder_3() {
+    sendorder_test(&[Some(1), Some(2), None, Some(3)]);
+}
+#[test]
+fn sendorder_4() {
+    sendorder_test(&[
+        Some(1),
+        Some(2),
+        Some(1),
+        None,
+        Some(3),
+        Some(1),
+        Some(3),
+        None,
+    ]);
+}
+
+// Tests stream sendorder priorization
+// Converts Vecs of u64's into StreamIds
+fn fairness_test<S, R>(source: S, number_iterates: usize, truncate_to: usize, result_array: &R)
+where
+    S: IntoIterator,
+    S::Item: Into<StreamId>,
+    R: IntoIterator + std::fmt::Debug,
+    R::Item: Into<StreamId>,
+    Vec<u64>: PartialEq<R>,
+{
+    // test the OrderGroup code used for fairness
+    let mut group: OrderGroup = OrderGroup::default();
+    for stream_id in source {
+        group.insert(stream_id.into());
+    }
+    {
+        let mut iterator1 = group.iter();
+        // advance_by() would help here
+        let mut n = number_iterates;
+        while n > 0 {
+            iterator1.next();
+            n -= 1;
+        }
+        // let iterator1 go out of scope
+    }
+    group.truncate(truncate_to);
+
+    let iterator2 = group.iter();
+    let result: Vec<u64> = iterator2.map(StreamId::as_u64).collect();
+    assert_eq!(result, *result_array);
+}
+
+#[test]
+fn ordergroup_0() {
+    let source: [u64; 0] = [];
+    let result: [u64; 0] = [];
+    fairness_test(source, 1, usize::MAX, &result);
+}
+
+#[test]
+fn ordergroup_1() {
+    let source: [u64; 6] = [0, 1, 2, 3, 4, 5];
+    let result: [u64; 6] = [1, 2, 3, 4, 5, 0];
+    fairness_test(source, 1, usize::MAX, &result);
+}
+
+#[test]
+fn ordergroup_2() {
+    let source: [u64; 6] = [0, 1, 2, 3, 4, 5];
+    let result: [u64; 6] = [2, 3, 4, 5, 0, 1];
+    fairness_test(source, 2, usize::MAX, &result);
+}
+
+#[test]
+fn ordergroup_3() {
+    let source: [u64; 6] = [0, 1, 2, 3, 4, 5];
+    let result: [u64; 6] = [0, 1, 2, 3, 4, 5];
+    fairness_test(source, 10, usize::MAX, &result);
+}
+
+#[test]
+fn ordergroup_4() {
+    let source: [u64; 6] = [0, 1, 2, 3, 4, 5];
+    let result: [u64; 6] = [0, 1, 2, 3, 4, 5];
+    fairness_test(source, 0, usize::MAX, &result);
+}
+
+#[test]
+fn ordergroup_5() {
+    let source: [u64; 1] = [0];
+    let result: [u64; 1] = [0];
+    fairness_test(source, 1, usize::MAX, &result);
+}
+
+#[test]
+fn ordergroup_6() {
+    let source: [u64; 6] = [0, 1, 2, 3, 4, 5];
+    let result: [u64; 6] = [5, 0, 1, 2, 3, 4];
+    fairness_test(source, 5, usize::MAX, &result);
+}
+
+#[test]
+fn ordergroup_7() {
+    let source: [u64; 6] = [0, 1, 2, 3, 4, 5];
+    let result: [u64; 3] = [0, 1, 2];
+    fairness_test(source, 5, 3, &result);
 }
 
 #[test]
@@ -228,13 +422,13 @@ fn max_data() {
     assert_eq!(client.stream_send(stream_id, b"hello").unwrap(), 0);
     client
         .streams
-        .get_send_stream_mut(stream_id.into())
+        .get_send_stream_mut(stream_id)
         .unwrap()
         .mark_as_sent(0, 4096, false);
     assert_eq!(client.events().count(), 0);
     client
         .streams
-        .get_send_stream_mut(stream_id.into())
+        .get_send_stream_mut(stream_id)
         .unwrap()
         .mark_as_acked(0, 4096, false);
     assert_eq!(client.events().count(), 0);
@@ -253,7 +447,7 @@ fn max_data() {
     // Increase max stream data. Avail space now limited by tx buffer
     client
         .streams
-        .get_send_stream_mut(stream_id.into())
+        .get_send_stream_mut(stream_id)
         .unwrap()
         .set_max_stream_data(100_000_000);
     assert_eq!(
@@ -494,7 +688,7 @@ fn stream_data_blocked_generates_max_stream_data() {
 
     // Send some data and consume some flow control.
     let stream_id = server.stream_create(StreamType::UniDi).unwrap();
-    let _ = server.stream_send(stream_id, DEFAULT_STREAM_DATA).unwrap();
+    _ = server.stream_send(stream_id, DEFAULT_STREAM_DATA).unwrap();
     let dgram = server.process(None, now).dgram();
     assert!(dgram.is_some());
 
@@ -506,10 +700,7 @@ fn stream_data_blocked_generates_max_stream_data() {
     assert!(!end);
 
     // Now send `STREAM_DATA_BLOCKED`.
-    let internal_stream = server
-        .streams
-        .get_send_stream_mut(StreamId::from(stream_id))
-        .unwrap();
+    let internal_stream = server.streams.get_send_stream_mut(stream_id).unwrap();
     if let SendStreamState::Send { fc, .. } = internal_stream.state() {
         fc.blocked();
     } else {
@@ -556,7 +747,7 @@ fn max_streams_after_bidi_closed() {
         // Exhaust the stream limit.
     }
     // Write on the one stream and send that out.
-    let _ = client.stream_send(stream_id, REQUEST).unwrap();
+    _ = client.stream_send(stream_id, REQUEST).unwrap();
     client.stream_close_send(stream_id).unwrap();
     let dgram = client.process(None, now()).dgram();
 
@@ -679,7 +870,7 @@ fn change_flow_control(stream_type: StreamType, new_fc: u64) {
     // server should receive a MAX_SREAM_DATA frame if the flow control window is updated.
     let out2 = client.process(None, now());
     let out3 = server.process(out2.dgram(), now());
-    let expected = if RECV_BUFFER_START < new_fc { 1 } else { 0 };
+    let expected = usize::from(RECV_BUFFER_START < new_fc);
     assert_eq!(server.stats().frame_rx.max_stream_data, expected);
 
     // If the flow control window has been increased, server can write more data.
@@ -920,4 +1111,50 @@ fn session_flow_control_affects_all_streams() {
         client.stream_avail_send_space(stream_id2).unwrap(),
         SMALL_MAX_DATA
     );
+}
+
+fn connect_w_different_limit(bidi_limit: u64, unidi_limit: u64) {
+    let mut client = default_client();
+    let out = client.process(None, now());
+    let mut server = new_server(
+        ConnectionParameters::default()
+            .max_streams(StreamType::BiDi, bidi_limit)
+            .max_streams(StreamType::UniDi, unidi_limit),
+    );
+    let out = server.process(out.dgram(), now());
+
+    let out = client.process(out.dgram(), now());
+    mem::drop(server.process(out.dgram(), now()));
+
+    assert!(maybe_authenticate(&mut client));
+
+    let mut bidi_events = 0;
+    let mut unidi_events = 0;
+    let mut connected_events = 0;
+    for e in client.events() {
+        match e {
+            ConnectionEvent::SendStreamCreatable { stream_type } => {
+                if stream_type == StreamType::BiDi {
+                    bidi_events += 1;
+                } else {
+                    unidi_events += 1;
+                }
+            }
+            ConnectionEvent::StateChange(state) if state == State::Connected => {
+                connected_events += 1;
+            }
+            _ => {}
+        }
+    }
+    assert_eq!(bidi_events, usize::from(bidi_limit > 0));
+    assert_eq!(unidi_events, usize::from(unidi_limit > 0));
+    assert_eq!(connected_events, 1);
+}
+
+#[test]
+fn client_stream_creatable_event() {
+    connect_w_different_limit(0, 0);
+    connect_w_different_limit(0, 1);
+    connect_w_different_limit(1, 0);
+    connect_w_different_limit(1, 1);
 }

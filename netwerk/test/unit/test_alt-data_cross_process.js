@@ -11,9 +11,11 @@
 
 "use strict";
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
-XPCOMUtils.defineLazyGetter(this, "URL", function() {
+ChromeUtils.defineLazyGetter(this, "URL", function () {
   return "http://localhost:" + httpServer.identity.primaryPort + "/content";
 });
 
@@ -24,10 +26,7 @@ function make_channel(url, callback, ctx) {
 }
 
 function inChildProcess() {
-  return (
-    Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime)
-      .processType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT
-  );
+  return Services.appinfo.processType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT;
 }
 
 const responseContent = "response body";
@@ -45,10 +44,11 @@ function contentHandler(metadata, response) {
   response.setHeader("Cache-Control", "no-cache");
   response.setHeader("ETag", "test-etag1");
 
+  let etag;
   try {
-    var etag = metadata.getHeader("If-None-Match");
+    etag = metadata.getHeader("If-None-Match");
   } catch (ex) {
-    var etag = "";
+    etag = "";
   }
 
   if (etag == "test-etag1" && shouldPassRevalidation) {
@@ -74,6 +74,8 @@ function check_has_alt_data_in_index(aHasAltData, callback) {
   }, true);
 }
 
+// This file is loaded as part of test_alt-data_cross_process_wrap.js.
+// eslint-disable-next-line no-unused-vars
 function run_test() {
   httpServer = new HttpServer();
   httpServer.registerPathHandler("/content", contentHandler);
@@ -87,7 +89,11 @@ function asyncOpen() {
   var chan = make_channel(URL);
 
   var cc = chan.QueryInterface(Ci.nsICacheInfoChannel);
-  cc.preferAlternativeDataType(altContentType, "", true);
+  cc.preferAlternativeDataType(
+    altContentType,
+    "",
+    Ci.nsICacheInfoChannel.ASYNC
+  );
 
   chan.asyncOpen(new ChannelListener(readServerContent, null));
 }
@@ -123,7 +129,11 @@ function flushAndOpenAltChannel() {
 function openAltChannel() {
   var chan = make_channel(URL);
   var cc = chan.QueryInterface(Ci.nsICacheInfoChannel);
-  cc.preferAlternativeDataType(altContentType, "", true);
+  cc.preferAlternativeDataType(
+    altContentType,
+    "",
+    Ci.nsICacheInfoChannel.ASYNC
+  );
 
   chan.asyncOpen(new ChannelListener(readAltContent, null));
 }

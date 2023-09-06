@@ -2,14 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import
-
 import os
-from datetime import datetime, timedelta
 import tarfile
+from datetime import datetime, timedelta
+
+import mozversioncontrol
 import requests
 import six
-import mozversioncontrol
 
 try:
     from cStringIO import StringIO as BytesIO
@@ -89,7 +88,12 @@ def should_download(logger, manifest_paths, rebuild_time=timedelta(days=5)):
 def taskcluster_url(logger, commits):
     artifact_path = "/artifacts/public/manifests.tar.gz"
 
-    repos = {"mozilla-central": "mozilla-central", "integration/autoland": "autoland"}
+    repos = {
+        "mozilla-central": "mozilla-central",
+        "integration/autoland": "autoland",
+        "releases/mozilla-esr102": "mozilla-esr102",
+        "releases/mozilla-esr115": "mozilla-esr115",
+    }
     cset_url = (
         "https://hg.mozilla.org/{repo}/json-pushes?"
         "changeset={changeset}&version=2&tipsonly=1"

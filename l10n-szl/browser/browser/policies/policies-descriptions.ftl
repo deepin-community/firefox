@@ -69,7 +69,7 @@ policy-DisablePrimaryPasswordCreation = Jak to je aktywne, to niy idzie zrychtow
 
 policy-DisablePasswordReveal = Zakazowanie pokazowanio haseł we spamiyntanych danych logowanio.
 
-policy-DisablePocket = Zastawianie funkcyje spamiyntowanio strōn w usudze Pocket.
+policy-DisablePocket2 = Zastawianie funkcyje spamiyntowanio strōn w usudze { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Zastawianie prywatnego przeglōndanio.
 
@@ -111,10 +111,6 @@ policy-Extensions = Instalacyjo, ôdinstalacyjo abo szperowanie rozszyrzyń. Ôp
 policy-ExtensionSettings = Regiyruj wszyskimi aspektami instalacyje rozszyrzyń.
 
 policy-ExtensionUpdate = Załōnczynie abo wyłōnczynie autōmatycznych aktualizacyji rozszyrzyń.
-
-policy-FirefoxHome = Nastawianie Firefox Home.
-
-policy-FlashPlugin = Zgoda abo zakoz używanio rozszyrzynio Flash.
 
 policy-Handlers = Nastawianie bazowych aplikacyji do ôbsugi typōw zbiorōw.
 
@@ -159,6 +155,8 @@ policy-OverridePostUpdatePage = Nadpisowanie strōny "Co je nowego", co pokazuje
 
 policy-PasswordManagerEnabled = Załōnczanie spamiyntowanio haseł do mynedżera haseł.
 
+policy-PasswordManagerExceptions = Niy dej aplikacyji { -brand-short-name } spamiyntować haseł na niykerych serwerach.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = Zastawianie abo sztalowanie PDF.js (wbudowanyj przeglōndarki PDFōw we aplikacyji { -brand-short-name }).
 
@@ -184,9 +182,6 @@ policy-SearchEngines = Sztalowanie wyszukowarki. Te prawidło je dostympne ino d
 
 policy-SearchSuggestEnabled = Załōnczanie abo zastawianie doradōw szukanio.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instalacyjo modułōw PKCS #11.
-
 policy-ShowHomeButton = Pokoż dōmowy knefel na posku z noczyniami.
 
 policy-SSLVersionMax = Nastawianie maksymalnyj wersyje SSL.
@@ -200,3 +195,4 @@ policy-UserMessaging = Wyłōnczanie pokazowanio używoczowi niykerych wiadōmo�
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Szperowanie nawiydzanio strōn. Wejrzij do dokumyntacyje za detajlami ô tym formacie.
 
+policy-Windows10SSO = Przizwolej na pojedyncze logowanie do kōnt Microsoft, roboczych i szkolnych.

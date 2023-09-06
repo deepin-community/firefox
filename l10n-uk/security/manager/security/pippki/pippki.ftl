@@ -24,9 +24,9 @@ pippki-pw-change2empty-in-fips-mode = Зараз ви в режимі FIPS. Дл
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Скинути головний пароль
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Скинути
 reset-primary-password-text = Якщо ви скинете свій головний пароль, усі збережені паролі для мережі та електронної пошти, особисті сертифікати та приватні ключі буде втрачено. Ви справді хочете скинути свій головний пароль?
@@ -35,9 +35,9 @@ pippki-reset-password-confirmation-message = Ваш головний парол�
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Завантаження сертифіката
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Вас просять довіряти новому центру сертифікації (CA).
 download-cert-trust-ssl =
     .label = Довіряти при ідентифікації вебсайтів.
@@ -50,11 +50,43 @@ download-cert-view-text = Перевірити сертифікат центру
 
 ## Client Authorization Ask dialog
 
+
+## Client Authentication Ask dialog
+
 client-auth-window =
     .title = Запит ідентифікації користувача
 client-auth-site-description = Сайт питає, з яким сертифікатом вас асоціювати:
 client-auth-choose-cert = Виберіть сертифікат для ідентифікації:
+client-auth-send-no-certificate =
+    .label = Не надсилати сертифікат
+# Variables:
+# $hostname (String) - The domain name of the site requesting the client authentication certificate
+client-auth-site-identification = “{ $hostname }” вимагає особисту ідентифікацію за допомогою сертифіката:
 client-auth-cert-details = Подробиці про вибраний сертифікат:
+# Variables:
+# $issuedTo (String) - The subject common name of the currently-selected client authentication certificate
+client-auth-cert-details-issued-to = Виданий для: { $issuedTo }
+# Variables:
+# $serialNumber (String) - The serial number of the certificate (hexadecimal of the form "AA:BB:...")
+client-auth-cert-details-serial-number = Серійний номер: { $serialNumber }
+# Variables:
+# $notBefore (String) - The date before which the certificate is not valid (e.g. Apr 21, 2023, 1:47:53 PM UTC)
+# $notAfter (String) - The date after which the certificate is not valid
+client-auth-cert-details-validity-period = Дійсний з { $notBefore } по { $notAfter }
+# Variables:
+# $keyUsages (String) - A list of already-localized key usages for which the certificate may be used
+client-auth-cert-details-key-usages = Використання ключів: { $keyUsages }
+# Variables:
+# $emailAddresses (String) - A list of email addresses present in the certificate
+client-auth-cert-details-email-addresses = Електронні адреси: { $emailAddresses }
+# Variables:
+# $issuedBy (String) - The issuer common name of the certificate
+client-auth-cert-details-issued-by = Випущено: { $issuedBy }
+# Variables:
+# $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
+client-auth-cert-details-stored-on = Зберігається в: { $storedOn }
+client-auth-cert-remember-box =
+    .label = Запам'ятати це рішення
 
 ## Set password (p12) dialog
 
@@ -67,9 +99,8 @@ set-password-repeat-backup-pw =
     .value = Пароль резервної копії (ще раз):
 set-password-reminder = Увага: якщо ви забудете ваш пароль резервної копії сертифіката, ви не зможете відновити цю резервну копію пізніше. Цю інформацію треба зберігати в безпечному місці.
 
-## Protected Auth dialog
+## Protected authentication alert
 
-protected-auth-window =
-    .title = Захищена автентифікація з використанням токена
-protected-auth-msg = Виконайте автентифікацію з використанням токена. Метод автентифікації залежить від типу вашого токена.
-protected-auth-token = Жетон:
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Будь ласка, автентифікуйте токен “{ $tokenName }”. Як це зробити, залежить від токена (наприклад, використання засобу зчитування відбитка пальця або введення коду на клавіатурі).

@@ -41,6 +41,11 @@ options-collapse-attrs-label = Gzem imyerren DOM
 options-collapse-attrs-tooltip =
     .title = Gzem imyerren iɣezfanen ɣef umaswaḍ
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Sit syen zuɣer i wwakken ad tbeddleḍ azalen n teɣzi
+options-inspector-draggable-properties-tooltip =
+    .title = Sit syen zuɣer i wwakken ad tbeddleḍ azalen n teɣzi deg teskant n yilugan n umaswaḍ.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Aferdis amezwer i teɣma
@@ -48,6 +53,7 @@ options-default-color-unit-authored = Yura
 options-default-color-unit-hex = asedamrawan
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Ismawen initen
 
 ## Style Editor section
@@ -118,6 +124,11 @@ options-enable-remote-label = Rmed taseɣtit tanmeggagt
 options-enable-remote-tooltip2 =
     .title = Armad n uɣewwar-a ad k-yeǧǧ ad tseɣtiḍ tummant-a n yiminig s wudem anmeggay.
 
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Rmed imselɣuyen udmawanen
+options-enable-custom-formatters-tooltip =
+    .title = Armad n textiṛt-a ad issireg ismal ara isbadun imselɣuyen udmawanen i tɣawsiwin DOM
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Rmed tanaka Workers s HTTP (ticki tanaka n ifecka teldi)
 options-enable-service-workers-http-tooltip =
@@ -131,8 +142,3 @@ options-source-maps-tooltip =
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Tiɣimit-agi, ad isali tikelt nniḍen asebter
 
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Sken isefka n telɣubliṭ Gecko
-options-show-platform-data-tooltip =
-    .title = Ma tremdeḍ asefren-agi, ineqqisen n umaɣnay JavaScript ad seddun izamulen n telɣubliṭ Gecko

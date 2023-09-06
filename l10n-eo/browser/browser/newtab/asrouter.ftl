@@ -35,12 +35,14 @@ cfr-doorhanger-extension-author = de { $name }
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Rekomendo
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-extension-notification2 = Rekomendo
     .tooltiptext = Rekomendo pri etendaĵo
     .a11y-announcement = Havebla rekomendo pri etendaĵo
 
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-feature-notification = Rekomendo
     .tooltiptext = Rekomendo pri trajto
     .a11y-announcement = Havebla rekomendo pri trajto
@@ -64,9 +66,6 @@ cfr-doorhanger-extension-total-users =
         [one] { $total } uzanto
        *[other] { $total } uzantoj
     }
-
-## These messages are steps on how to use the feature and are shown together.
-
 
 ## Firefox Accounts Message
 
@@ -95,26 +94,6 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Legi la notojn pri liverado
 
-## Search Bar
-
-## Search bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 # Variables:
@@ -126,25 +105,8 @@ cfr-doorhanger-milestone-heading2 =
     }
 cfr-doorhanger-milestone-ok-button = Vidi ĉiujn
     .accesskey = V
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = Fermi
     .accesskey = F
-
-## What’s New Panel Content for Firefox 76
-## Protections Dashboard message
 
 ## DOH Message
 
@@ -157,25 +119,6 @@ cfr-doorhanger-doh-secondary-button = Malaktivigi
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Via privateco gravas. { -brand-short-name } nun izolas retejejojn tiel ke ili ne povas komuniki inter si. Tio igas pli malfacila la taskon ŝteli pasvortojn, kreditkartajn numerojn, kaj aliajn informojn.
-cfr-doorhanger-fission-header = Izolado de retejoj
-cfr-doorhanger-fission-primary-button = En ordo, mi komprenis
-    .accesskey = E
-cfr-doorhanger-fission-secondary-button = Pli da informo
-    .accesskey = P
-
-## What's new: Cookies message
-
-## What's new: Media controls message
-
-## What's new: Search shortcuts
-
-## What's new: Cookies protection
-
-## What's new: Better bookmarking
-
-## What's new: Cross-site cookie tracking
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Filmetoj en tiu ĉi retejo povus ne bone videbli en tiu ĉi versio de { -brand-short-name }. Por havi tutampleksan videan subtenon, ĝisdatigu { -brand-short-name } nun.
@@ -183,9 +126,134 @@ cfr-doorhanger-video-support-header = Ĝisdatigu { -brand-short-name } por ludi 
 cfr-doorhanger-video-support-primary-button = Ĝisdatigi nun
     .accesskey = n
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
+spotlight-public-wifi-vpn-header = Vi ŝajnas uzi publikan sendratan reton
+spotlight-public-wifi-vpn-body = Por kaŝi vian lokon kaj retumon, konsideru uzi virtualan privatan reton (VPN). Ĝi helpos vin resti protektita dum retumo en publikaj ejoj kiel flughavenoj kaj kafejoj.
+spotlight-public-wifi-vpn-primary-button = Protektu vian privatecon per { -mozilla-vpn-brand-name }
+    .accesskey = P
+spotlight-public-wifi-vpn-link = Ne nun
+    .accesskey = N
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Pli bona interreto komenciĝas kun vi
+spotlight-better-internet-body = Kiam vi uzas { -brand-short-name }, vi esprimas vian subtenon de malfermita kaj alirebla interreto, kiu estas pli bona por ĉiuj.
+spotlight-peace-mind-header = Ni protektas vin
+spotlight-peace-mind-body = Ĉiumonate { -brand-short-name } blokas mezume po pli ol 3,000 spurilojn por ĉiu uzanto, pro tio ke nenio, ĉefe ne privatecaj ĝenoj kiel spuriloj, devus malhelpi vian aliron al la bona interreto.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Alpingli al Dock
+       *[other] Alpingli al la taska ilaro
+    }
+spotlight-pin-secondary-button = Ne nun
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+mr2022-background-update-toast-title = Nova { -brand-short-name }. Pli privata. Malpli da spuriloj. Sen kompromisoj.
+mr2022-background-update-toast-text = Provu nun la lastan { -brand-short-name }, plibonigita de nia ĝisnune plej forta kontraŭ spurila protekto.
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it
+# using a variable font like Arial): the button can only fit 1-2
+# additional characters, exceeding characters will be truncated.
+mr2022-background-update-toast-primary-button-label = Malfermi nun { -brand-shorter-name }
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = Rememorigi poste
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Provi
+    .accesskey = P
+firefoxview-cfr-secondarybutton = Ne nun
+    .accesskey = N
+firefoxview-cfr-header-v2 = Rapide rekomencu kie vi haltis
+firefoxview-cfr-body-v2 = Per { -firefoxview-brand-name } reprenu ĵuse fermitajn langetojn kaj senĝene iru tien kaj reen inter aparatoj.
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = Ni prezentas { -firefoxview-brand-name }
+
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = Ĉu vi volas havi tiun malfermitan langeton en via telefono? Ĝi estas ĉemane. Ĉu vi bezonas retejon, kiun vi ĵus vizitis? Jen! ĝi estas tie denove per { -firefoxview-brand-name }.
+firefoxview-spotlight-promo-primarybutton = Vidi kiel tio ĉi funkcias
+firefoxview-spotlight-promo-secondarybutton = Ignori
+
+## Colorways expiry reminder CFR
+
+colorways-cfr-primarybutton = Elekti koloraron
+    .accesskey = E
+
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = Kolorigu vian retumilon per ekskluzivaj tonoj de { -brand-short-name }, inspiritaj de voĉoj kiuj ŝanĝis kulturojn.
+colorways-cfr-header-28days = La koloraroj de sendependaj voĉoj senvalidiĝos la 16-an de januaro
+colorways-cfr-header-14days = La koloraroj de sendependaj voĉoj senvalidiĝos post du semajnoj
+colorways-cfr-header-7days = La koloraroj de sendependaj voĉoj senvalidiĝos ĉi semajne
+colorways-cfr-header-today = La koloraroj de sendependaj voĉoj senvalidiĝos hodiaŭ
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-header = Ĉu permesi al { -brand-short-name } rifuzi kuketajn anoncojn?
+cfr-cbh-body = { -brand-short-name } povas aŭtomate rifuzi plurajn petojn de kuketaj anoncoj.
+cfr-cbh-confirm-button = Rifuzi kuketajn anoncojn
+    .accesskey = R
+cfr-cbh-dismiss-button = Ne nun
+    .accesskey = N
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+july-jam-headline = Ni protektas vin
+july-jam-body = Ĉiumonate { -brand-short-name } blokas mezume po 3,000+ spurilojn por ĉiu uzanto, proponante al vi sekuran kaj rapidan aliron al la bona interreto.
+july-jam-set-default-primary = Malfermi miajn ligilojn per { -brand-short-name }
+fox-doodle-pin-headline = Bonvenon denove
+
+# “indie” is short for the term “independent”.
+# In this instance, free from outside influence or control.
+fox-doodle-pin-body = Jen rapida memorigo, pri tio ke vi povas havi vian preferatan sendependan retumilon atingebla je unu alklako.
+fox-doodle-pin-primary = Malfermi miajn ligilojn per { -brand-short-name }
+fox-doodle-pin-secondary = Ne nun
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+set-default-pdf-handler-headline = <strong>Viaj dosieroj PDFs malfermiĝas en { -brand-short-name }.</strong> Redakti aŭ subskribi formularojn rekte el via retesplorilo. Por ŝanĝi tion, serĉu “PDF” en la agordoj.
+set-default-pdf-handler-primary = Mi komprenis
+
+## FxA sync CFR
+
+fxa-sync-cfr-header = Ĉu vi planas akiri novan aparaton?
+fxa-sync-cfr-body = Estu certa havi ĉiam kun vi viajn aktualajn legosignojn,  pasvortojn kaj langetojn, kiam vi malfermas novan retumilon de { -brand-product-name }.
+fxa-sync-cfr-primary = Pli da informo
+    .accesskey = P
+fxa-sync-cfr-secondary = Rememorigi poste
+    .accesskey = R
+
+## Device Migration FxA Spotlight
+
+device-migration-fxa-spotlight-header = Ĉu vi uzas malnovan aparaton?
+device-migration-fxa-spotlight-body = Faru sekurkopion de viaj datumoj por certi ne perdi iun gravan informon, kiel legosignojn kaj pasvortojn — ĉefe se vi iras al nova aparato.
+device-migration-fxa-spotlight-primary-button = Kiel fari sekurkopion de miaj datumoj
+device-migration-fxa-spotlight-link = Rememorigi poste

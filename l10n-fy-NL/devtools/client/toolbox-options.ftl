@@ -24,7 +24,7 @@ options-select-additional-tools-label = Untwikkelark ynstallearre troch add-ons
 options-select-enabled-toolbox-buttons-label = Beskikbere arkknoppen
 
 # The label for the heading of the radiobox corresponding to the theme
-options-select-dev-tools-theme-label = Tema's
+options-select-dev-tools-theme-label = Tema’s
 
 ## Inspector section
 
@@ -34,12 +34,23 @@ options-context-inspector = Inspector
 # The label for the checkbox option to show user agent styles
 options-show-user-agent-styles-label = Browserstilen toane
 options-show-user-agent-styles-tooltip =
-    .title = As jo dit ynskeakelje sille standert stilen toand wurde dy't laden binne troch de browser.
+    .title = As jo dit ynskeakelje sille standert stilen toand wurde dy’t laden binne troch de browser.
 
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = DOM-attributen ôfkappe
 options-collapse-attrs-tooltip =
     .title = Lange attributen yn de ynspektor ôfkappe
+
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Klik en sleep om ôfmjittingswearden te bewurkjen
+options-inspector-draggable-properties-tooltip =
+    .title = Klik en sleep om de ôfmjittingswearden te bewurkjen yn de ynspektorrigelwerjefte.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Brûk ienfâldigere aksintuearring mei prefers-reduced-motion
+options-inspector-simplified-highlighters-tooltip =
+    .title = Skeakelet ienfâldiger aksintuearringen yn as prefers-reduced-motion ynskeakele is. Trekt linen yn stee fan opfolle rjochthoeken rûn aksintuearre eleminten om knippereffekten foar te kommen.
 
 ## "Default Color Unit" options for the Inspector
 
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Lykas opsteld
 options-default-color-unit-hex = Hex
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Kleurmammen
 
 ## Style Editor section
@@ -101,7 +113,7 @@ options-context-advanced-settings = Avansearre ynstellingen
 # The label for the checkbox that toggles the HTTP cache on or off
 options-disable-http-cache-label = HTTP-buffer útskeakelje (as wurkset iepene is)
 options-disable-http-cache-tooltip =
-    .title = Troch dizze opsje oan te setten, wurdt de HTTP-buffer foar alle ljepblêden dy't de wurkset iepene hawwe útskeakele. Service Workers wurde net troch dizze opsje beynfloede.
+    .title = Troch dizze opsje oan te setten, wurdt de HTTP-buffer foar alle ljepblêden dy’t de wurkset iepene hawwe útskeakele. Service Workers wurde net troch dizze opsje beynfloede.
 
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = JavaScript útskeakelje *
@@ -118,10 +130,20 @@ options-enable-remote-label = Remote debugging ynskeakelje
 options-enable-remote-tooltip2 =
     .title = Troch dizze opsje yn te skeakeljen kinne jo dizze browserynstallaasje op ôfstân debugge
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Brûk de F12-toets om DevTools te iepenjen of te sluten
+options-enable-f12-tooltip =
+    .title = As jo dizze opsje ynskeakelje, wurdt de F12-toets keppele om it DevTools-ark te iepenjen of te sluten
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Oanpaste opmaakeleminten ynskeakelje
+options-enable-custom-formatters-tooltip =
+    .title = As jo dizze opsje ynskeakelje, kinne websites oanpaste opmaakeleminten foar DOM-objekten definiearje
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Service Workers oer HTTP ynskeakelje (as wurkset iepene is)
 options-enable-service-workers-http-tooltip =
-    .title = Troch dizze opsje oan te setten, wurde de service workers oer HTTP foar alle ljepblêden dy't de wurkset iepene hawwe ynskeakele.
+    .title = Troch dizze opsje oan te setten, wurde de service workers oer HTTP foar alle ljepblêden dy’t de wurkset iepene hawwe ynskeakele.
 
 # The label for the checkbox that toggles source maps in all tools.
 options-source-maps-label = Boarneferwizingen ynskeakelje
@@ -130,9 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Allinnich aktuele sesje, fernijt de side
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Gecko-platfoarmgegevens toane
-options-show-platform-data-tooltip =
-    .title = As jo dizze opsje ynskeakelje sil de JavaScript Profiler rapportearje ynklusyf Gecko-platformsymboalen

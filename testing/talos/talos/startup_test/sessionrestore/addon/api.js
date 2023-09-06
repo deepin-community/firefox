@@ -8,21 +8,31 @@
 
 /* globals Services, XPCOMUtils */
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.jsm",
-  SessionStartup: "resource:///modules/sessionstore/SessionStartup.jsm",
-  setTimeout: "resource://gre/modules/Timer.jsm",
-  StartupPerformance: "resource:///modules/sessionstore/StartupPerformance.jsm",
+ChromeUtils.defineESModuleGetters(this, {
+  BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
+  PromiseUtils: "resource://gre/modules/PromiseUtils.sys.mjs",
+  SessionStartup: "resource:///modules/sessionstore/SessionStartup.sys.mjs",
+  StartupPerformance:
+    "resource:///modules/sessionstore/StartupPerformance.sys.mjs",
+  setTimeout: "resource://gre/modules/Timer.sys.mjs",
 });
 
 /* globals ExtensionAPI */
 
 this.sessionrestore = class extends ExtensionAPI {
   onStartup() {
+    this.promiseIdleFinished = PromiseUtils.defer();
+    Services.obs.addObserver(this, "browser-idle-startup-tasks-finished");
     // run() is async but we don't want to await or return it here,
     // since the extension should be considered started even before
     // run() has finished all its work.
     this.run();
+  }
+
+  observe(subject, topic, data) {
+    if (topic == "browser-idle-startup-tasks-finished") {
+      this.promiseIdleFinished.resolve();
+    }
   }
 
   async ensureTalosParentProfiler() {
@@ -33,8 +43,8 @@ this.sessionrestore = class extends ExtensionAPI {
     // the profile to disk.
     async function getTalosParentProfiler() {
       try {
-        var { TalosParentProfiler } = ChromeUtils.import(
-          "resource://talos-powers/TalosParentProfiler.jsm"
+        var { TalosParentProfiler } = ChromeUtils.importESModule(
+          "resource://talos-powers/TalosParentProfiler.sys.mjs"
         );
         return TalosParentProfiler;
       } catch (err) {
@@ -148,6 +158,10 @@ this.sessionrestore = class extends ExtensionAPI {
       dump(ex.stack);
       dump("\n");
     }
+
+    // Ensure we wait for idle to finish so that we can have a clean shutdown
+    // that isn't happening in the middle of start-up.
+    await this.promiseIdleFinished.promise;
 
     Services.startup.quit(Services.startup.eForceQuit);
   }

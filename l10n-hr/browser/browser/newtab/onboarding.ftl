@@ -3,54 +3,17 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-### UI strings for the simplified onboarding modal / about:welcome
-### Various strings use a non-breaking space to avoid a single dangling /
-### widowed word, so test on various window sizes if you also want this.
-
-
-## These button action text can be split onto multiple lines, so use explicit
-## newlines in translations to control where the line break appears (e.g., to
-## avoid breaking quoted text).
-
-## Welcome modal dialog strings
-
-
-### UI strings for the simplified onboarding / multistage about:welcome
-### Various strings use a non-breaking space to avoid a single dangling /
-### widowed word, so test on various window sizes if you also want this.
-
-
 ### UI strings for the MR1 onboarding / multistage about:welcome
 ### Various strings use a non-breaking space to avoid a single dangling /
 ### widowed word, so test on various window sizes if you also want this.
 
+
 ## Welcome page strings
 
 onboarding-welcome-header = Dobro došli u { -brand-short-name }
-
 onboarding-start-browsing-button-label = Započni pregledavanje
-
-## Welcome full page string
-
-## Firefox Sync modal dialog strings.
-
-## This is part of the line "Enter your email to continue to Firefox Sync"
-
-
-## These are individual benefit messages shown with an image, title and
-## description.
-
-
-## These strings belong to the individual onboarding messages.
-
-
-## Each message has a title and a description of what the browser feature is.
-## Each message also has an associated button for the user to try the feature.
-## The string for the button is found above, in the UI strings section
-
-## Message strings belonging to the Return to AMO flow
-
 onboarding-not-now-button-label = Ne sada
+mr1-onboarding-get-started-primary-button-label = Započni
 
 ## Custom Return To AMO onboarding strings
 
@@ -61,44 +24,12 @@ return-to-amo-subtitle = Super, koristite { -brand-short-name }
 #   $addon-name (String) - Name of the add-on
 return-to-amo-addon-title = Dohvatimo ti sada <img data-l10n-name="icon"/> <b>{ $addon-name }</b>.
 return-to-amo-add-extension-label = Dodaj proširenje
+return-to-amo-add-theme-label = Dodaj temu
 
-## Multistage 3-screen onboarding flow strings (about:welcome pages)
+##  Variables: $addon-name (String) - Name of the add-on to be installed
 
-# The <span data-l10n-name="zap"></span> in this string allows a "zap" underline style to be
-# automatically added to the text inside it. { -brand-short-name } should stay inside the span.
-onboarding-multistage-welcome-header = Dobro došli u <span data-l10n-name="zap">{ -brand-short-name }</span>
-onboarding-multistage-welcome-subtitle = Brzi, sigurni i privatni preglednik iza kojeg stoji neprofitna organizacija.
-onboarding-multistage-welcome-primary-button-label = Započni postavljanje
-onboarding-multistage-welcome-secondary-button-label = Prijavi se
-onboarding-multistage-welcome-secondary-button-text = Imaš račun?
-
-# The <span data-l10n-name="zap"></span> in this string allows a "zap" underline style to be
-# automatically added to the text inside it. "default" should stay inside the span.
-onboarding-multistage-set-default-header = Postavi { -brand-short-name } kao <span data-l10n-name="zap">zadani</span>
-onboarding-multistage-set-default-subtitle = Brzina, sigurnost i privatnost svaki put kada surfaš.
-onboarding-multistage-set-default-primary-button-label = Postavi kao zadani
-onboarding-multistage-set-default-secondary-button-label = Ne sada
-
-# The <span data-l10n-name="zap"></span> in this string allows a "zap" underline style to be
-# automatically added to the text inside it. { -brand-short-name } should stay inside the span.
-onboarding-multistage-pin-default-header = Za početak, neka <span data-l10n-name="zap">{ -brand-short-name }</span> bude udaljen samo jedan klik mišem
-onboarding-multistage-pin-default-subtitle = Brzo, sigurno i privatno pregledavanje svaki put kada koristiš web.
-# The "settings" here refers to "Windows 10 Settings App" and not the browser's
-onboarding-multistage-pin-default-waiting-subtitle = Odaberi { -brand-short-name } pod "Web-preglednik" kada se otvore tvoje postavke
-# The "settings" here refers to "Windows 10 Settings App" and not the browser's
-onboarding-multistage-pin-default-help-text = Ovo će prikvačiti { -brand-short-name } na programsku traku i otvoriti postavke
-onboarding-multistage-pin-default-primary-button-label = Postavi { -brand-short-name } kao moj primarni preglednik
-
-# The <span data-l10n-name="zap"></span> in this string allows a "zap" underline style to be
-# automatically added to the text inside it. "more" should stay inside the span.
-onboarding-multistage-import-header = Uvezi svoje lozinke, <br/>zabilješke i <span data-l10n-name="zap">više</span>
-onboarding-multistage-import-subtitle = Dolaziš iz drugog preglednika? Lako je ponijeti sve u { -brand-short-name }.
-onboarding-multistage-import-primary-button-label = Započni uvoz
-onboarding-multistage-import-secondary-button-label = Ne sada
-
-# Info displayed in the footer of import settings screen during onboarding flow.
-# This supports welcome screen showing top sites imported from the user's default browser.
-onboarding-import-sites-disclaimer = Stranice s ovog popisa su pronađene na ovom uređaju. { -brand-short-name } ne sprema ili sinkronizira podatke s drugim preglednicima osim ako ne odaberete uvoz iz drugog preglednika.
+mr1-return-to-amo-subtitle = Upoznaj { -brand-short-name }
+mr1-return-to-amo-add-extension-label = Dodaj { $addon-name }
 
 ## Multistage onboarding strings (about:welcome pages)
 
@@ -106,38 +37,9 @@ onboarding-import-sites-disclaimer = Stranice s ovog popisa su pronađene na ovo
 # Variables:
 #   $current (Int) - Number of the current page
 #   $total (Int) - Total number of pages
-onboarding-welcome-steps-indicator =
-    .aria-label = Kako započeti: ekran { $current } od { $total }
 
-# The <span data-l10n-name="zap"></span> in this string allows a "zap" underline style to be
-# automatically added to the text inside it. "look" should stay inside the span.
-onboarding-multistage-theme-header = Odaberi <span data-l10n-name="zap">izgled</span>
-onboarding-multistage-theme-subtitle = Prilagodi { -brand-short-name } s temom.
-onboarding-multistage-theme-primary-button-label2 = Gotovo
-onboarding-multistage-theme-secondary-button-label = Ne sada
-
-# Automatic theme uses operating system color settings
-onboarding-multistage-theme-label-automatic = Automatski
-
-onboarding-multistage-theme-label-light = Svijetlo
-onboarding-multistage-theme-label-dark = Tamno
-# "Firefox Alpenglow" here is the name of the theme, and should be kept in English.
-onboarding-multistage-theme-label-alpenglow = Firefox Alpenglow
-
-# "Hero Text" displayed on left side of welcome screen.
-# The "Fire" in "Fire starts here" plays on the "Fire" in "Firefox".
-# It also signals the passion users bring to Firefox, how they use
-# Firefox to pursue those passions, as well as the boldness in their
-# choice to use Firefox over a larger competitor browser.
-# An alternative title for localization is: "It starts here".
-# This text can be formatted to span multiple lines as needed.
-mr1-welcome-screen-hero-text = Vatra počinje ovdje
-
-# Caption for background image in about:welcome. "Soraya Osorio" is the name
-# of the person and shouldn't be translated.
-# In case your language needs to adapt the nouns to a gender, Soraya is a female name (she/her).
-# You can see the picture in about:welcome in Nightly 90.
-mr1-onboarding-welcome-image-caption = Soraya Osorio — dizajnerica namještaja, obožavateljica Firefoxa
+onboarding-welcome-steps-indicator-label =
+    .aria-label = Napredak: korak { $current } od { $total }
 
 # This button will open system settings to turn on prefers-reduced-motion
 mr1-onboarding-reduce-motion-button-label = Isključi animacije
@@ -146,59 +48,23 @@ mr1-onboarding-reduce-motion-button-label = Isključi animacije
 ## match the OS' application context menu item action where Windows uses "pin"
 ## and "taskbar" while macOS "keep" and "Dock" (proper noun).
 
-# Title used on welcome page when Firefox is not pinned
-mr1-onboarding-pin-header =
-    { PLATFORM() ->
-        [macos] Dodaj { -brand-short-name } u svoj Dock za brzi pristup
-       *[other] Prikvači { -brand-short-name } na svoju programsku traku za brzi pristup
-    }
-# Primary button string used on welcome page when Firefox is not pinned.
-mr1-onboarding-pin-primary-button-label =
-    { PLATFORM() ->
-        [macos] Dodaj u Dock
-       *[other] Prikvači na programsku traku
-    }
-
 ## Multistage MR1 onboarding strings (about:welcome pages)
 
-# This string will be used on welcome page primary button label
-# when Firefox is both pinned and default
-mr1-onboarding-get-started-primary-button-label = Započni
-
-mr1-onboarding-welcome-header = Dobro došli u { -brand-short-name }
-mr1-onboarding-set-default-pin-primary-button-label = Postavi { -brand-short-name } kao primarni preglednik
-    .title = Postavlja { -brand-short-name } kao zadani preglednik i prikvači ga na programsku traku
-
-# This string will be used on welcome page primary button label
-# when Firefox is not default but already pinned
-mr1-onboarding-set-default-only-primary-button-label = Postavi { -brand-short-name } kao zadani preglednik
-mr1-onboarding-set-default-secondary-button-label = Ne sada
+# String for the Firefox Accounts button
 mr1-onboarding-sign-in-button-label = Prijavi se
 
 ## Title, subtitle and primary button string used on set default onboarding screen
 ## when Firefox is not default browser
 
-mr1-onboarding-default-header = Postavi { -brand-short-name } kao zadani preglednik
-mr1-onboarding-default-subtitle = Stavi brzinu, sigurnost i privatnost na autopilot.
-mr1-onboarding-default-primary-button-label = Postavi kao zadani preglednik
-
 ## Multistage MR1 onboarding strings (about:welcome pages)
-
-mr1-onboarding-import-header = Ponesi sve sa sobom
-mr1-onboarding-import-subtitle = Uvezi svoje lozinke, <br/>zabilješke i više toga.
 
 # The primary import button label will depend on whether we can detect which browser was used to download Firefox.
 # Variables:
 #   $previous (Str) - Previous browser name, such as Edge, Chrome
 mr1-onboarding-import-primary-button-label-attribution = Uvezi iz { $previous }
 
-# This string will be used in cases where we can't detect the previous browser name.
-mr1-onboarding-import-primary-button-label-no-attribution = Uvezi iz prethodnog preglednika
-mr1-onboarding-import-secondary-button-label = Ne sada
-
 mr1-onboarding-theme-header = Učini ga svojim
 mr1-onboarding-theme-subtitle = Personaliziraj { -brand-short-name } temom.
-mr1-onboarding-theme-primary-button-label = Spremi temu
 mr1-onboarding-theme-secondary-button-label = Ne sada
 
 # System theme uses operating system color settings
@@ -209,65 +75,12 @@ mr1-onboarding-theme-label-dark = Tamna
 # "Alpenglow" here is the name of the theme, and should be kept in English.
 mr1-onboarding-theme-label-alpenglow = Alpenglow
 
-## Please make sure to split the content of the title attribute into lines whose
-## width corresponds to about 40 Latin characters, to ensure that the tooltip
-## doesn't become too long. Line breaks will be preserved when displaying the
-## tooltip.
+onboarding-theme-primary-button-label = Gotovo
 
 ## Please make sure to split the content of the title attribute into lines whose
 ## width corresponds to about 40 Latin characters, to ensure that the tooltip
 ## doesn't become too long. Line breaks will be preserved when displaying the
 ## tooltip.
-
-# Tooltip displayed on hover of automatic theme
-onboarding-multistage-theme-tooltip-automatic-2 =
-    .title =
-        Naslijedite izgled svog operativnog
-        sustava za tipke, izbornike i prozore.
-
-# Input description for automatic theme
-onboarding-multistage-theme-description-automatic-2 =
-    .aria-description =
-        Naslijedite izgled svog operativnog
-        sustava za tipke, izbornike i prozore.
-
-# Tooltip displayed on hover of light theme
-onboarding-multistage-theme-tooltip-light-2 =
-    .title =
-        Koristite svijetli izgled za tipke,
-        izbornike i prozore.
-
-# Input description for light theme
-onboarding-multistage-theme-description-light =
-    .aria-description =
-        Koristite svijetli izgled za tipke,
-        izbornike i prozore.
-
-# Tooltip displayed on hover of dark theme
-onboarding-multistage-theme-tooltip-dark-2 =
-    .title =
-        Koristite tamni izgled za tipke,
-        izbornike i prozore.
-
-# Input description for dark theme
-onboarding-multistage-theme-description-dark =
-    .aria-description =
-        Koristite tamni izgled za tipke,
-        izbornike i prozore.
-
-# Tooltip displayed on hover of Alpenglow theme
-onboarding-multistage-theme-tooltip-alpenglow-2 =
-    .title =
-        Koristi šareni izgled tipki,
-        izbornika i prozora.
-
-# Input description for Alpenglow theme
-onboarding-multistage-theme-description-alpenglow =
-    .aria-description =
-        Koristi šareni izgled tipki,
-        izbornika i prozora.
-
-## Multistage MR1 onboarding strings (MR1 about:welcome pages)
 
 # Tooltip displayed on hover of system theme
 mr1-onboarding-theme-tooltip-system =
@@ -316,3 +129,174 @@ mr1-onboarding-theme-description-alpenglow =
     .aria-description =
         Koristi dinamičnu, šarenu temu za tipke,
         izbornike i prozore.
+
+# Selector description for default themes
+mr2-onboarding-default-theme-label = Istraži zadane teme.
+
+## Strings for Thank You page
+
+mr2-onboarding-thank-you-header = Hvala što smo tvoj odabir
+mr2-onboarding-thank-you-text = { -brand-short-name } je neovisan preglednik iza kojeg stoji neprofitna organizacija. Zajedno činimo web sigurnijim, zdravijim i privatnijim.
+mr2-onboarding-start-browsing-button-label = Započnite surfati
+
+## Multistage live language reloading onboarding strings (about:welcome pages)
+##
+## The following language names are generated by the browser's Intl.DisplayNames API.
+##
+## Variables:
+##   $negotiatedLanguage (String) - The name of the langpack's language, e.g. "Español (ES)"
+
+
+## Multistage live language reloading onboarding strings (about:welcome pages)
+##
+## The following language names are generated by the browser's Intl.DisplayNames API.
+##
+## Variables:
+##   $negotiatedLanguage (String) - The name of the langpack's language, e.g. "Español (ES)"
+##   $systemLanguage (String) - The name of the system language, e.g "Español (ES)"
+##   $appLanguage (String) - The name of the language shipping in the browser build, e.g. "English (EN)"
+
+onboarding-live-language-header = Odaberi jezik
+
+mr2022-onboarding-live-language-text = { -brand-short-name } govori tvojim jezikom
+
+mr2022-language-mismatch-subtitle = Zahvaljujući našoj zajednici, { -brand-short-name } je preveden na više od 90 jezika. Čini se da tvoj sustav koristi { $systemLanguage }, a { -brand-short-name } koristi { $appLanguage }.
+
+onboarding-live-language-button-label-downloading = Preuzimanje jezičnog paketa za { $negotiatedLanguage } …
+onboarding-live-language-waiting-button = Dohvaćanje dostupnih jezika …
+onboarding-live-language-installing = Instaliranje jezičnog paketa za { $negotiatedLanguage } …
+
+mr2022-onboarding-live-language-switch-to = Promijeni na { $negotiatedLanguage }
+mr2022-onboarding-live-language-continue-in = Nastavi na { $appLanguage }
+
+onboarding-live-language-secondary-cancel-download = Odustani
+onboarding-live-language-skip-button-label = Preskoči
+
+## Firefox 100 Thank You screens
+
+# "Hero Text" displayed on left side of welcome screen. This text can be
+# formatted to span multiple lines as needed. The <span data-l10n-name="zap">
+# </span> in this string allows a "zap" underline style to be automatically
+# added to the text inside it. "Yous" should stay inside the zap span, but
+# "Thank" can be put inside instead if there's no "you" in the translation.
+# The English text would normally be "100 Thank-Yous" i.e., plural noun, but for
+# aesthetics of splitting it across multiple lines, the hyphen is omitted.
+fx100-thank-you-hero-text =
+    100
+    puta
+    <span data-l10n-name="zap">hvala</span>
+fx100-thank-you-subtitle = To je naše 100. izdanje! Hvala što nam pomažeš izgraditi bolji i zdraviji internet.
+fx100-thank-you-pin-primary-button-label =
+    { PLATFORM() ->
+        [macos] Ostavi { -brand-short-name } u Docku
+       *[other] Prikvači { -brand-short-name } na programsku traku
+    }
+
+fx100-upgrade-thanks-header = 100 puta hvala
+# Message shown with a start-browsing button. Emphasis <em> should be for "you"
+# but "Thank" can be used instead if there's no "you" in the translation.
+fx100-upgrade-thank-you-body = To je naše 100. { -brand-short-name } izdanje. Hvala <em>ti</em> što nam pomažeš izgraditi bolji i zdraviji internet.
+# Message shown with either a pin-to-taskbar or set-default button.
+fx100-upgrade-thanks-keep-body = To je naše 100. izdanje! Hvala što si dio naše zajednice. Koristi { -brand-short-name } i u sljedećih 100 izdanja.
+
+mr2022-onboarding-secondary-skip-button-label = Preskoči ovaj korak
+
+## MR2022 New User Easy Setup screen strings
+
+
+## MR2022 New User Pin Firefox screen strings
+
+# Title used on about:welcome for new users when Firefox is not pinned.
+# In this context, open up is synonymous with "Discover".
+# The metaphor is that when they open their Firefox browser, it helps them discover an amazing internet.
+# If this translation does not make sense in your language, feel free to use the word "discover."
+mr2022-onboarding-welcome-pin-header = Otkrij nevjerojatan internet
+# Primary button string used on welcome page for when Firefox is not pinned.
+mr2022-onboarding-pin-primary-button-label =
+    { PLATFORM() ->
+        [macos] Ostavi { -brand-short-name } u Docku
+       *[other] Prikvači { -brand-short-name } na programsku traku
+    }
+
+## MR2022 Existing User Pin Firefox Screen Strings
+
+
+## MR2022 New User Set Default screen strings
+
+mr2022-onboarding-set-default-primary-button-label = Postavi { -brand-short-name } kao standardni preglednik
+
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
+
+
+## MR2022 Import Settings screen strings
+
+mr2022-onboarding-import-primary-button-label-no-attribution = Uvezi iz prethodnog preglednika
+
+## If your language uses grammatical genders, in the description for the
+## colorway feel free to switch from "You are a X. You…" (e.g. "You are a
+## Playmaker. You create…") to "X: you…" ("Playmaker: You create…"). This might
+## help creating a more inclusive translation.
+
+mr2022-onboarding-colorway-title = Odaberi boju koja te inspirira
+mr2022-onboarding-colorway-subtitle = Neovisni glasovi mogu promijeniti kulturu.
+mr2022-onboarding-colorway-primary-button-label-continue = Postavi i nastavi
+
+mr2022-onboarding-colorway-label-default = Standardno
+mr2022-onboarding-colorway-tooltip-default2 =
+    .title = Aktualne { -brand-short-name } boje
+mr2022-onboarding-colorway-description-default = <b>Koristi moje aktualne { -brand-short-name } boje.</b>
+
+mr2022-onboarding-colorway-label-playmaker = Playmaker
+mr2022-onboarding-colorway-tooltip-playmaker2 =
+    .title = Playmaker (crvena)
+
+mr2022-onboarding-colorway-label-expressionist = Ekspresionist
+mr2022-onboarding-colorway-tooltip-expressionist2 =
+    .title = Ekspresionist (žuta)
+
+mr2022-onboarding-colorway-label-visionary = Vizionar
+mr2022-onboarding-colorway-tooltip-visionary2 =
+    .title = Vizionar (zelena)
+
+mr2022-onboarding-colorway-label-activist = Aktivist
+mr2022-onboarding-colorway-tooltip-activist2 =
+    .title = Aktivist (plava)
+
+mr2022-onboarding-colorway-label-dreamer = Sanjar
+mr2022-onboarding-colorway-tooltip-dreamer2 =
+    .title = Sanjar (ljubičasta)
+
+mr2022-onboarding-colorway-label-innovator = Inovator
+mr2022-onboarding-colorway-tooltip-innovator2 =
+    .title = Inovator (narančasta)
+
+## MR2022 Multistage Mobile Download screen strings
+
+
+## MR2022 Upgrade Dialog screens
+## Pin private window screen shown only for users who don't have Firefox private pinned
+
+
+## MR2022 Privacy Segmentation screen strings
+
+mr2022-onboarding-privacy-segmentation-button-primary-label = Koristi { -brand-product-name } preporuke
+mr2022-onboarding-privacy-segmentation-button-secondary-label = Prikaži detaljne informacije
+
+## MR2022 Multistage Gratitude screen strings
+
+mr2022-onboarding-gratitude-primary-button-label = Pogledaj novosti
+mr2022-onboarding-gratitude-secondary-button-label = Počni pregledavati
+
+## Onboarding spotlight for infrequent users
+
+onboarding-infrequent-import-primary-button = Uvezi u { -brand-short-name }
+
+## MR2022 Illustration alt tags
+## Descriptive tags for illustrations used by screen readers and other assistive tech
+
+
+## Device migration onboarding
+
+onboarding-device-migration-primary-button-label = Prijava

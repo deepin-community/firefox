@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Verileri Temizle
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = { -brand-short-name } tarafından saklanan çerezleri ve site verilerini temizlemeniz web sitelerindeki oturumlarınızın kapanmasına ve çevrimdışı web içeriklerinin silinmesine yol açabilir. Önbelleği temizlemeniz oturumlarınızı etkilemez.
 

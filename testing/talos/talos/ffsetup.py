@@ -5,8 +5,6 @@
 """
 Set up a browser environment before running a test.
 """
-from __future__ import absolute_import, print_function
-
 import json
 import os
 import shutil
@@ -15,13 +13,13 @@ import tempfile
 import mozfile
 import mozinfo
 import mozrunner
+import six
 from mozlog import get_proxy_logger
 from mozprofile.profile import Profile
-from talos import utils
+
+from talos import heavy, utils
 from talos.gecko_profile import GeckoProfile
 from talos.utils import TalosError, run_in_debug_mode
-from talos import heavy
-import six
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -333,16 +331,14 @@ class FFSetup(object):
         self._init_env()
         self._init_profile()
         try:
-            if not self.debug_mode and self.test_config["name"] != "damp":
+            if not self.debug_mode and not self.test_config["name"].startswith("damp"):
                 self._run_profile()
         except BaseException:
             self.clean()
             raise
         self._init_gecko_profile()
         LOG.info("Browser initialized.")
-        LOG.info(
-            "Fission enabled: %s" % self.browser_config.get("enable_fission", False)
-        )
+        LOG.info("Fission enabled: %s" % self.browser_config.get("fission", True))
         # remove ccov files before actual tests start
         if self.browser_config.get("code_coverage", False):
             # if the Firefox build was instrumented for ccov, initializing the browser

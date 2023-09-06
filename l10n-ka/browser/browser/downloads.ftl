@@ -16,8 +16,8 @@ downloads-panel =
 # The style attribute has the width of the Downloads Panel expressed using
 # a CSS unit. The longest labels that should fit are usually those of
 # in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
+downloads-panel-items =
+    .style = width: 35em
 
 downloads-cmd-pause =
     .label = შეჩერება
@@ -30,42 +30,65 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = გაუქმება
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = შემცველი საქაღალდის გახსნა
-    .accesskey = ს
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] ჩვენება საქაღალდეში
+           *[other] ჩვენება საქაღალდეში
+        }
+    .accesskey = ქ
 
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Finder-ში ჩვენება
-    .accesskey = ჩ
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = გახსნა სისტემური მნახველით
     .accesskey = ვ
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-use-system-default-named =
+    .label = გახსნის { $handler }
+    .accesskey = ი
 
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
     .label = ყოველთვის გაიხსნას სისტემური მნახველით
     .accesskey = ლ
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-always-use-system-default-named =
+    .label = ყოველთვის გახსნის { $handler }
+    .accesskey = ყ
 
-downloads-cmd-show-button =
+##
+
+# We can use the same accesskey as downloads-cmd-always-use-system-default.
+# Both should not be visible in the downloads context menu at the same time.
+downloads-cmd-always-open-similar-files =
+    .label = ყოველთვის გაიხსნას მსგავსი ფაილები
+    .accesskey = ვ
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
-            [macos] Finder-ში ჩვენება
-           *[other] შემცველი საქაღალდის გახსნა
+            [macos] ჩვენება საქაღალდეში
+           *[other] ჩვენება საქაღალდეში
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
-            [macos] Finder-ში ჩვენება
-           *[other] შემცველი საქაღალდის გახსნა
+            [macos] ჩვენება საქაღალდეში
+           *[other] ჩვენება საქაღალდეში
         }
-downloads-cmd-show-description =
+downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
-            [macos] Finder-ში ჩვენება
-           *[other] შემცველი საქაღალდის გახსნა
+            [macos] ჩვენება საქაღალდეში
+           *[other] ჩვენება საქაღალდეში
         }
 
 downloads-cmd-show-downloads =
@@ -89,6 +112,9 @@ downloads-cmd-clear-list =
 downloads-cmd-clear-downloads =
     .label = ჩამოტვირთვების გასუფთავება
     .accesskey = ჩ
+downloads-cmd-delete-file =
+    .label = წაშლა
+    .accesskey = წ
 
 # This command is shown in the context menu when downloads are blocked.
 downloads-cmd-unblock =
@@ -138,11 +164,18 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
-downloading-file-opens-in-hours-and-minutes = გახსნამდე დარჩა { $hours }სთ { $minutes }წთ…
-downloading-file-opens-in-minutes = გახსნამდე დარჩა { $minutes }წთ…
-downloading-file-opens-in-minutes-and-seconds = გახსნამდე დარჩა { $minutes }წთ { $seconds }წმ…
-downloading-file-opens-in-seconds = გახსნამდე დარჩა { $seconds }წმ…
-downloading-file-opens-in-some-time = გაიხსნება დასრულებისას…
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = გახსნამდე დარჩა { $hours }სთ { $minutes }წთ…
+downloading-file-opens-in-minutes-2 =
+    .value = გახსნამდე დარჩა { $minutes }წთ…
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = გახსნამდე დარჩა { $minutes }წთ { $seconds }წმ…
+downloading-file-opens-in-seconds-2 =
+    .value = გახსნამდე დარჩა { $seconds }წმ…
+downloading-file-opens-in-some-time-2 =
+    .value = გაიხსნება დასრულებისას…
+downloading-file-click-to-open =
+    .value = გახსნა დასრულებისას
 
 ##
 
@@ -168,6 +201,21 @@ downloads-history =
 downloads-details =
     .title = ჩამოტვირთვის აღწერილობა
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+downloads-files-not-downloaded =
+    { $num ->
+        [one] ფაილი ვერ ჩამოიტვირთა.
+       *[other] { $num } ფაილი ვერ ჩამოიტვირთა.
+    }
+downloads-blocked-from-url = ჩამოტვირთები შეიზღუდა მისამართიდან { $url }.
+downloads-blocked-download-detailed-info = { $url } ცდილობდა რამდენიმე ფაილის ჩამოტვირთვას. ეს საიტი ან დაზიანებულია, ან თქვენს მოწყობილობაზე მავნე ფაილების განთავსებას აპირებს.
+
+##
+
 downloads-clear-downloads-button =
     .label = ჩამოტვირთვების გასუფთავება
     .tooltiptext = ასუფთავებს დასრულებულ, გაუქმებულ და ჩაშლილ ჩამოტვირთვებს
@@ -180,3 +228,27 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = ჩამოტვირთვები არ ყოფილა.
+
+# This is displayed in an item at the bottom of the Downloads Panel when there
+# are more downloads than can fit in the list in the panel.
+#   $count (number) - number of files being downloaded that are not shown in the
+#                     panel list.
+downloads-more-downloading =
+    { $count ->
+        [one] { $count }-ზე მეტი ფაილი ჩამოიტვირთება
+       *[other] { $count }-ზე მეტი ფაილი ჩამოიტვირთება
+    }
+
+## Download errors
+
+downloads-error-alert-title = ჩამოტვირთვის შეცდომა
+# Variables:
+#   $extension (String): the name of the blocking extension.
+downloads-error-blocked-by = ჩამოტვირთვა ვერ შეინახა, ვინაიდან ზღუდავს { $extension }.
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = ჩამოტვირთვა ვერ შეინახა, ვინაიდან ზღუდავს გაფართოება.
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    ჩამოტვირთვა ვერ შეინახება უცნობი შეცდომის გამო.
+    
+    გთხოვთ კვლავ სცადოთ.

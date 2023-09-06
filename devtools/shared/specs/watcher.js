@@ -3,7 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const { generateActorSpec, Arg, RetVal } = require("devtools/shared/protocol");
+const {
+  generateActorSpec,
+  Arg,
+  RetVal,
+} = require("resource://devtools/shared/protocol.js");
 
 const watcherSpecPrototype = {
   typeName: "watcher",
@@ -19,6 +23,7 @@ const watcherSpecPrototype = {
     unwatchTargets: {
       request: {
         targetType: Arg(0, "string"),
+        options: Arg(1, "nullable:json"),
       },
       oneway: true,
     },
@@ -46,10 +51,24 @@ const watcherSpecPrototype = {
       oneway: true,
     },
 
+    clearResources: {
+      request: {
+        resourceTypes: Arg(0, "array:string"),
+      },
+      oneway: true,
+    },
+
     getNetworkParentActor: {
       request: {},
       response: {
         network: RetVal("networkParent"),
+      },
+    },
+
+    getBlackboxingActor: {
+      request: {},
+      response: {
+        blackboxing: RetVal("blackboxing"),
       },
     },
 
@@ -83,6 +102,7 @@ const watcherSpecPrototype = {
     "target-destroyed-form": {
       type: "target-destroyed-form",
       target: Arg(0, "json"),
+      options: Arg(1, "nullable:json"),
     },
 
     "resource-available-form": {

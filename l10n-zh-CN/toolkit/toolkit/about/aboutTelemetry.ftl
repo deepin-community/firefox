@@ -21,7 +21,7 @@ about-telemetry-firefox-data-doc = <a data-l10n-name="data-doc-link">Firefox 数
 about-telemetry-telemetry-client-doc = <a data-l10n-name="client-doc-link">Firefox 遥测客户端文档</a>涵盖了数据收集的概念、API 文档以及数据格式的定义。
 about-telemetry-telemetry-dashboard = <a data-l10n-name="dashboard-link">遥测面板</a>用图形化展示了 Mozilla 通过遥测服务收集的数据。
 about-telemetry-telemetry-probe-dictionary = <a data-l10n-name="probe-dictionary-link">Probe Dictionary</a> 中提供遥测服务收集所探测资料的详细信息与说明。
-about-telemetry-show-in-Firefox-json-viewer = 在 JSON 查看器中打开
+about-telemetry-show-in-Firefox-json-viewer = 用 JSON 查看器打开
 about-telemetry-home-section = 主页
 about-telemetry-general-data-section = 常规数据
 about-telemetry-environment-data-section = 环境数据
@@ -34,7 +34,6 @@ about-telemetry-events-section = 事件
 about-telemetry-simple-measurements-section = 简单指标
 about-telemetry-slow-sql-section = 慢 SQL 语句
 about-telemetry-addon-details-section = 附加组件详情
-about-telemetry-captured-stacks-section = 捕获到的堆栈
 about-telemetry-late-writes-section = 过慢写入
 about-telemetry-raw-payload-section = 原始载荷
 about-telemetry-raw = 原始 JSON
@@ -121,10 +120,6 @@ about-telemetry-keys-header = 属性
 about-telemetry-names-header = 名称
 about-telemetry-values-header = 值
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (捕获次数：{ $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = 过慢写入 #{ $lateWriteCount }
 about-telemetry-stack-title = 堆栈:
@@ -135,12 +130,6 @@ about-telemetry-category-header = 分类
 about-telemetry-method-header = 方法
 about-telemetry-object-header = 对象
 about-telemetry-extra-header = 额外
-about-telemetry-origin-section = 起点遥测
-about-telemetry-origin-origin = 起点
-about-telemetry-origin-count = 数量
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Firefox 起点遥测技术</a>会在数据发送之前对其进行编码，确保 { $telemetryServerOwner } 能统计数量的同时，无须知道是由谁的 { -brand-product-name } 上传了数据。（<a data-l10n-name="prio-blog-link">详细了解</a>）
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = { $process } 进程

@@ -22,6 +22,7 @@ usr/lib/@browser@/libsmime3.so
 usr/lib/@browser@/libsoftokn3.so
 usr/lib/@browser@/libssl3.so
 %endif
+usr/lib/@browser@/libipcclientcerts.so
 
 %if SHORT_SOURCE_CHANNEL == central
 usr/lib/@browser@/libreplace_jemalloc.so
@@ -37,6 +38,7 @@ usr/lib/@browser@/libmozavutil.so
 %if DEB_HOST_ARCH == i386 || DEB_HOST_ARCH == amd64 || DEB_HOST_ARCH == arm64 || DEB_HOST_ARCH == armhf || DEB_HOST_ARCH == armel
 usr/lib/@browser@/libmozsandbox.so
 %endif
+usr/lib/@browser@/libgkcodecs.so
 
 usr/lib/@browser@/defaults/pref/channel-prefs.js
 
@@ -74,5 +76,12 @@ usr/lib/@browser@/browser/crashreporter-override.ini
 
 usr/lib/@browser@/fonts/TwemojiMozilla.ttf
 usr/lib/@browser@/pingsender
+usr/lib/@browser@/glxtest
+%if MOZ_ENABLE_V4L2
+usr/lib/@browser@/v4l2test
+%endif
+%if MOZ_ENABLE_VAAPI
+usr/lib/@browser@/vaapitest
+%endif
 
 debian/@browser@-symbolic.svg usr/share/icons/hicolor/symbolic/apps

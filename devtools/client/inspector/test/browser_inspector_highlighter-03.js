@@ -32,12 +32,9 @@ const DOCUMENT_SRC = `<style>
 
 const TEST_URI = "data:text/html;charset=utf-8," + DOCUMENT_SRC;
 
-add_task(async function() {
-  const {
-    inspector,
-    toolbox,
-    highlighterTestFront,
-  } = await openInspectorForURL(TEST_URI);
+add_task(async function () {
+  const { inspector, toolbox, highlighterTestFront } =
+    await openInspectorForURL(TEST_URI);
 
   info("Waiting for box mode to show.");
   const topLevelBodyNodeFront = await getNodeFront("body", inspector);
@@ -124,5 +121,5 @@ add_task(async function() {
   );
 
   info("Stop the element picker.");
-  await toolbox.nodePicker.stop();
+  await toolbox.nodePicker.stop({ canceled: true });
 });

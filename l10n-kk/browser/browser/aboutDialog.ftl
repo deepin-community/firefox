@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = р
 
 update-checkingForUpdates = Жаңартуларды тексеру…
-update-downloading = <img data-l10n-name="icon"/>Жаңартуды жүктеп алу — <label data-l10n-name="download-status"/>
-update-downloading-message = Жаңартуды жүктеп алу — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Жаңартуды жүктеп алу — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Жаңартуды жүктеп алу — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Жаңартуды іске асыру…
 
 update-failed = Жаңарту сәтсіз. <label data-l10n-name="failed-link">Соңғы нұсқасын жүктеп алу</label>
@@ -25,15 +32,26 @@ update-failed-main = Жаңарту сәтсіз. <a data-l10n-name="failed-link
 
 update-adminDisabled = Жаңарту мүмкіндігін жүйелік администраторыңыз сөндірген
 update-noUpdatesFound = { -brand-short-name } ескірмеді
+aboutdialog-update-checking-failed = Жаңартуларды тексеру сәтсіз аяқталды.
 update-otherInstanceHandlingUpdates = { -brand-short-name } басқа экземплярмен жаңартылуда
 
-update-manual = Жаңартулар қолжетімді жері: <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Жаңартулар қолжетімді жері: <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Жаңартулар қолжетімді жері: <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Бұл жүйе үшін болашақ жаңартуларды орната алмайсыз. <label data-l10n-name="unsupported-link">Көбірек білу</label>
 
 update-restarting = Қайта қосылуда…
 
-channel-description = Сіз <label data-l10n-name="current-channel"></label> жаңарту арнасындасыз.{ " " }
+update-internal-error2 = Ішкі қатеге байланысты жаңартуларды тексеру мүмкін емес. Жаңартулар <label data-l10n-name="manual-link">{ $displayUrl }</label> адресі бойынша қолжетімді
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Сіз <label data-l10n-name="current-channel">{ $channel }</label> жаңарту арнасындасыз.
 
 warningDesc-version = { -brand-short-name } сынама түрі және тұрақсыз болуы мүмкін.
 

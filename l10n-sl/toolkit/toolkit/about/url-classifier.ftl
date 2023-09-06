@@ -30,7 +30,7 @@ url-classifier-cache-show-entries = Prikaži vnose
 url-classifier-cache-entries = Vnosi v predpomnilnik
 url-classifier-cache-prefix = Predpona
 url-classifier-cache-ncache-expiry = Rok trajanja negativnega predpomnilnika
-url-classifier-cache-fullhash = Polna razpršena vrednost
+url-classifier-cache-fullhash = Polna zgoščena vrednost
 url-classifier-cache-pcache-expiry = Rok trajanja pozitivnega predpomnilnika
 url-classifier-debug-title = Razhroščevanje
 url-classifier-debug-module-btn = Nastavi dnevniške module
@@ -50,5 +50,9 @@ url-classifier-disabled = Onemogočeno
 url-classifier-updating = posodabljanje
 url-classifier-cannot-update = ni mogoče posodobiti
 url-classifier-success = uspeh
+
+## Variables
+##   $error (string) - Error message
+
 url-classifier-update-error = napaka pri posodobitvi ({ $error })
 url-classifier-download-error = napaka pri prenosu ({ $error })

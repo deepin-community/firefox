@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = Արգելացուցակներ
-    .style = width: 55em
+    .style = min-width: 55em
 
 blocklist-description = Ընտրեք { -brand-short-name } ցուցակը, որը օգտագործվում է առցանց վտանգներից խուսափելու համար: Ցուցակները տրված են <a data-l10n-name="disconnect-link" title="Disconnect"> Անջատել </a>:
 blocklist-close-key =

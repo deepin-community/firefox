@@ -2,15 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import
-
 from subprocess import CalledProcessError
 
 import mozunit
 import pytest
 
 from mozversioncontrol import get_repository_object
-
 
 STEPS = {
     "hg": [
@@ -37,11 +34,11 @@ STEPS = {
 }
 
 
-def test_commit(repo):
-    vcs = get_repository_object(repo.strpath)
+def test_update(repo):
+    vcs = get_repository_object(repo.dir)
     rev0 = vcs.head_ref
 
-    next(repo.step)
+    repo.execute_next_step()
     rev1 = vcs.head_ref
     assert rev0 != rev1
 
@@ -55,7 +52,7 @@ def test_commit(repo):
     assert vcs.head_ref == rev1
 
     # Update should fail with dirty working directory.
-    next(repo.step)
+    repo.execute_next_step()
     with pytest.raises(CalledProcessError):
         vcs.update(rev0)
 

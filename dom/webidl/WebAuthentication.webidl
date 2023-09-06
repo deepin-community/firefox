@@ -12,40 +12,40 @@
 [SecureContext, Pref="security.webauth.webauthn",
  Exposed=Window]
 interface PublicKeyCredential : Credential {
-    [SameObject] readonly attribute ArrayBuffer              rawId;
+    [SameObject, Throws] readonly attribute ArrayBuffer      rawId;
     [SameObject] readonly attribute AuthenticatorResponse    response;
     AuthenticationExtensionsClientOutputs getClientExtensionResults();
 };
 
 [SecureContext]
 partial interface PublicKeyCredential {
-    static Promise<boolean> isUserVerifyingPlatformAuthenticatorAvailable();
+    [NewObject] static Promise<boolean> isUserVerifyingPlatformAuthenticatorAvailable();
     // isExternalCTAP2SecurityKeySupported is non-standard; see Bug 1526023
-    static Promise<boolean> isExternalCTAP2SecurityKeySupported();
+    [NewObject] static Promise<boolean> isExternalCTAP2SecurityKeySupported();
 };
 
 [SecureContext, Pref="security.webauth.webauthn",
  Exposed=Window]
 interface AuthenticatorResponse {
-    [SameObject] readonly attribute ArrayBuffer clientDataJSON;
+    [SameObject, Throws] readonly attribute ArrayBuffer clientDataJSON;
 };
 
 [SecureContext, Pref="security.webauth.webauthn",
  Exposed=Window]
 interface AuthenticatorAttestationResponse : AuthenticatorResponse {
-    [SameObject] readonly attribute ArrayBuffer attestationObject;
+    [SameObject, Throws] readonly attribute ArrayBuffer attestationObject;
 };
 
 [SecureContext, Pref="security.webauth.webauthn",
  Exposed=Window]
 interface AuthenticatorAssertionResponse : AuthenticatorResponse {
-    [SameObject] readonly attribute ArrayBuffer      authenticatorData;
-    [SameObject] readonly attribute ArrayBuffer      signature;
-    [SameObject] readonly attribute ArrayBuffer?     userHandle;
+    [SameObject, Throws] readonly attribute ArrayBuffer      authenticatorData;
+    [SameObject, Throws] readonly attribute ArrayBuffer      signature;
+    [SameObject, Throws] readonly attribute ArrayBuffer?     userHandle;
 };
 
 dictionary PublicKeyCredentialParameters {
-    required PublicKeyCredentialType  type;
+    required DOMString                type;
     required COSEAlgorithmIdentifier  alg;
 };
 
@@ -60,7 +60,7 @@ dictionary PublicKeyCredentialCreationOptions {
     sequence<PublicKeyCredentialDescriptor>      excludeCredentials = [];
     // FIXME: bug 1493860: should this "= {}" be here?
     AuthenticatorSelectionCriteria               authenticatorSelection = {};
-    AttestationConveyancePreference              attestation = "none";
+    DOMString                                    attestation = "none";
     // FIXME: bug 1493860: should this "= {}" be here?
     AuthenticationExtensionsClientInputs         extensions = {};
 };
@@ -80,26 +80,10 @@ dictionary PublicKeyCredentialUserEntity : PublicKeyCredentialEntity {
 };
 
 dictionary AuthenticatorSelectionCriteria {
-    AuthenticatorAttachment      authenticatorAttachment;
+    DOMString                    authenticatorAttachment;
+    DOMString                    residentKey;
     boolean                      requireResidentKey = false;
-    UserVerificationRequirement  userVerification = "preferred";
-};
-
-enum AuthenticatorAttachment {
-    "platform",       // Platform attachment
-    "cross-platform"  // Cross-platform attachment
-};
-
-enum AttestationConveyancePreference {
-    "none",
-    "indirect",
-    "direct"
-};
-
-enum UserVerificationRequirement {
-    "required",
-    "preferred",
-    "discouraged"
+    DOMString                    userVerification = "preferred";
 };
 
 dictionary PublicKeyCredentialRequestOptions {
@@ -107,7 +91,7 @@ dictionary PublicKeyCredentialRequestOptions {
     unsigned long                        timeout;
     USVString                            rpId;
     sequence<PublicKeyCredentialDescriptor> allowCredentials = [];
-    UserVerificationRequirement          userVerification = "preferred";
+    DOMString                            userVerification = "preferred";
     // FIXME: bug 1493860: should this "= {}" be here?
     AuthenticationExtensionsClientInputs extensions = {};
 };
@@ -140,30 +124,20 @@ dictionary CollectedClientData {
     required DOMString           type;
     required DOMString           challenge;
     required DOMString           origin;
-    required DOMString           hashAlgorithm;
-    DOMString                    tokenBindingId;
-    // FIXME: bug 1493860: should this "= {}" be here?
-    AuthenticationExtensionsClientInputs clientExtensions = {};
-    AuthenticationExtensionsAuthenticatorInputs authenticatorExtensions;
+    TokenBinding                 tokenBinding;
 };
 
-enum PublicKeyCredentialType {
-    "public-key"
+dictionary TokenBinding {
+    required DOMString status;
+    DOMString id;
 };
 
 dictionary PublicKeyCredentialDescriptor {
-    required PublicKeyCredentialType      type;
+    required DOMString                    type;
     required BufferSource                 id;
     // Transports is a string that is matched against the AuthenticatorTransport
     // enumeration so that we have forward-compatibility for new transports.
     sequence<DOMString>                   transports;
-};
-
-enum AuthenticatorTransport {
-    "usb",
-    "nfc",
-    "ble",
-    "internal"
 };
 
 typedef long COSEAlgorithmIdentifier;

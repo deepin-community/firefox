@@ -16,8 +16,6 @@
  * have to change a little at the edges as well.
  */
 
-gThreadManager = Cc["@mozilla.org/thread-manager;1"].createInstance();
-
 function run_test() {
   do_test_pending();
   tests.push(function testsComplete(_) {
@@ -66,11 +64,9 @@ const SEGMENT_AND_HALF = [1, 2, 3, 4, 5, 6];
 const QUARTER_SEGMENT = [1];
 const HALF_SEGMENT = [1, 2];
 const SECOND_HALF_SEGMENT = [3, 4];
-const THREE_QUARTER_SEGMENT = [1, 2, 3];
 const EXTRA_HALF_SEGMENT = [5, 6];
 const MIDDLE_HALF_SEGMENT = [2, 3];
 const LAST_QUARTER_SEGMENT = [4];
-const FOURTH_HALF_SEGMENT = [7, 8];
 const HALF_THIRD_SEGMENT = [9, 10];
 const LATTER_HALF_THIRD_SEGMENT = [11, 12];
 
@@ -388,13 +384,20 @@ function note(m) {
  * PUBLIC API!  If you use any of these I will knowingly break your code by
  * changing the names of variables and properties.
  */
-var BinaryInputStream = function BIS(stream) {
+// These are used in head.js.
+BinaryInputStream = function BIS(stream) {
   return stream;
 };
-var BinaryOutputStream = function BOS(stream) {
+BinaryOutputStream = function BOS(stream) {
   return stream;
 };
 Response.SEGMENT_SIZE = SEGMENT.length;
+// This overrides in httpd.js.
+overrideBinaryStreamsForTests(
+  BinaryInputStream,
+  BinaryOutputStream,
+  SEGMENT.length
+);
 
 /**
  * Roughly mocks an nsIPipe, presenting non-blocking input and output streams
@@ -654,7 +657,7 @@ function CustomPipe(name) {
 
       Assert.ok(this._waiter !== null, "must be waiting now");
 
-      if (self._data.length > 0) {
+      if (self._data.length) {
         dumpn(
           "*** data still pending, normal notifications will signal " +
             "completion"
@@ -701,11 +704,6 @@ function CustomPipe(name) {
         waiter.eventTarget.dispatch(event, Ci.nsIThread.DISPATCH_NORMAL);
       }
     },
-
-    QueryInterface: ChromeUtils.generateQI([
-      "nsIAsyncInputStream",
-      "nsIInputStream",
-    ]),
   });
 
   /** The output end of this pipe. */
@@ -929,7 +927,7 @@ function CustomPipe(name) {
       var bytes = str
         .substring(0, actualWritten)
         .split("")
-        .map(function(v) {
+        .map(function (v) {
           return v.charCodeAt(0);
         });
 
@@ -1003,7 +1001,7 @@ function CustomPipe(name) {
 
       Assert.greater(increments.length, 0, "bad increments");
       Assert.ok(
-        increments.every(function(v) {
+        increments.every(function (v) {
           return v > 0;
         }),
         "zero increment?"
@@ -1050,11 +1048,6 @@ function CustomPipe(name) {
         waiter.eventTarget.dispatch(event, Ci.nsIThread.DISPATCH_NORMAL);
       }
     },
-
-    QueryInterface: ChromeUtils.generateQI([
-      "nsIAsyncOutputStream",
-      "nsIOutputStream",
-    ]),
   });
 }
 
@@ -1197,7 +1190,7 @@ CopyTest.prototype = {
 
     Assert.equal(
       bytes,
-      dataQuantums.reduce(function(partial, current) {
+      dataQuantums.reduce(function (partial, current) {
         return partial + current.length;
       }, 0),
       "bytes/quantums mismatch"
@@ -1226,28 +1219,26 @@ CopyTest.prototype = {
    * @param dataQuantums : [[uint]]
    *   array of byte arrays to expect to be written in sequence to the sink
    */
-  makeSinkWritableByIncrementsAndWaitFor: function makeSinkWritableByIncrementsAndWaitFor(
-    bytes,
-    dataQuantums
-  ) {
-    var self = this;
+  makeSinkWritableByIncrementsAndWaitFor:
+    function makeSinkWritableByIncrementsAndWaitFor(bytes, dataQuantums) {
+      var self = this;
 
-    var desiredAmounts = dataQuantums.map(function(v) {
-      return v.length;
-    });
-    Assert.equal(bytes, sum(desiredAmounts), "bytes/quantums mismatch");
+      var desiredAmounts = dataQuantums.map(function (v) {
+        return v.length;
+      });
+      Assert.equal(bytes, sum(desiredAmounts), "bytes/quantums mismatch");
 
-    function increaseSinkSpaceByIncrementsTask() {
-      /* Now do the actual work to trigger the interceptor incrementally. */
-      self._sink.makeWritableByIncrements(desiredAmounts);
-    }
+      function increaseSinkSpaceByIncrementsTask() {
+        /* Now do the actual work to trigger the interceptor incrementally. */
+        self._sink.makeWritableByIncrements(desiredAmounts);
+      }
 
-    this._waitForHelper(
-      "increaseSinkSpaceByIncrementsTask",
-      dataQuantums,
-      increaseSinkSpaceByIncrementsTask
-    );
-  },
+      this._waitForHelper(
+        "increaseSinkSpaceByIncrementsTask",
+        dataQuantums,
+        increaseSinkSpaceByIncrementsTask
+      );
+    },
 
   /**
    * Close the copier's source stream, then asynchronously continue to the next
@@ -1289,7 +1280,7 @@ CopyTest.prototype = {
     Assert.equal(
       bytes,
       sum(
-        dataQuantums.map(function(v) {
+        dataQuantums.map(function (v) {
           return v.length;
         })
       ),
@@ -1547,7 +1538,7 @@ CopyTest.prototype = {
       outputWrittenWatcher,
       0,
       1,
-      gThreadManager.currentThread
+      Services.tm.currentThread
     );
     this._waitingForData = true;
   },
@@ -1610,7 +1601,7 @@ CopyTest.prototype = {
         }
       },
     };
-    gThreadManager.dispatchToMainThread(event);
+    Services.tm.dispatchToMainThread(event);
   },
 
   /**

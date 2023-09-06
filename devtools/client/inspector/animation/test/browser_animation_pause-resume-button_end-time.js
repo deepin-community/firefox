@@ -6,7 +6,7 @@
 // Test whether the animation can rewind if the current time is over end time when
 // the resume button clicked.
 
-add_task(async function() {
+add_task(async function () {
   await addTab(URL_ROOT + "doc_simple_animation.html");
   await removeAnimatedElementsExcept([
     ".animated",
@@ -40,7 +40,7 @@ add_task(async function() {
   info("Make the current time of animation to be over its end time");
   clickOnCurrentTimeScrubberController(animationInspector, panel, 1.1);
   await waitUntilAnimationsPlayState(animationInspector, "paused");
-  clickOnPlaybackRateSelector(animationInspector, panel, 0.1);
+  await changePlaybackRateSelector(animationInspector, panel, 0.1);
   info("Resume animations");
   clickOnPauseResumeButton(animationInspector, panel);
   await waitUntilAnimationsPlayState(animationInspector, "running");

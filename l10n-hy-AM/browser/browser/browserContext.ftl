@@ -84,6 +84,9 @@ toolbar-button-stop-reload =
 
 ## Firefox Account Button
 
+toolbar-button-fxaccount =
+    .label = { -fxaccount-brand-name }
+    .tooltiptext = { -fxaccount-brand-name }
 
 ## Save Page
 
@@ -92,44 +95,6 @@ main-context-menu-page-save =
     .accesskey = P
 
 ## Simple menu items
-
-main-context-menu-bookmark-add =
-    .aria-label = Էջանշել այս Էջը
-    .accesskey = m
-    .tooltiptext = Էջանշել այս էջը
-
-# This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
-# so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = Էջանշել էջը
-    .accesskey = m
-
-# This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-add-mac,
-# so should probably have the same access key if possible.
-main-context-menu-bookmark-edit-mac =
-    .label = Խմբագրել Էջանիշը
-    .accesskey = m
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Էջանշել այս Էջը
-    .accesskey = m
-    .tooltiptext = Էջանշել այս էջը ({ $shortcut })
-
-main-context-menu-bookmark-change =
-    .aria-label = Խմբագրել այս էջանիշը
-    .accesskey = m
-    .tooltiptext = Խմբագրել այս էջանիշը
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Խմբագրել այս էջանիշը
-    .accesskey = m
-    .tooltiptext = Խմբագրել այս էջանիշը ({ $shortcut })
 
 main-context-menu-open-link =
     .label = Բացել Հղումը
@@ -151,8 +116,8 @@ main-context-menu-open-link-new-private-window =
     .label = Բացել հղումը Գաղտնի Դիտարկմամբ
     .accesskey = Դ
 
-main-context-menu-bookmark-link =
-    .label = Էջանշել հղումը
+main-context-menu-bookmark-link-2 =
+    .label = Էջանշել հղումը…
     .accesskey = B
 
 main-context-menu-save-link =
@@ -163,11 +128,6 @@ main-context-menu-save-link-to-pocket =
     .label = Պահպանել հղումը { -pocket-brand-name }-ում
     .accesskey = o
 
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
-
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
 ## are mutually exclusive.
@@ -175,6 +135,10 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = Պատճենել Էլ. փոստի հասցեն
     .accesskey = Է
+
+main-context-menu-copy-phone =
+    .label = Պատճենել հեռախոսի համարը
+    .accesskey = o
 
 main-context-menu-copy-link-simple =
     .label = Պատճենել հղումը
@@ -256,12 +220,24 @@ main-context-menu-image-view-new-tab =
     .label = Բացել պատկերը նոր ներդիրում
     .accesskey = I
 
+main-context-menu-video-view-new-tab =
+    .label = Բացել Տեսանյութը նոր ներդիրում
+    .accesskey = i
+
 main-context-menu-image-copy =
     .label = Կրկնօրինակել Նկարը
     .accesskey = ր
 
 main-context-menu-image-copy-link =
     .label = Պատճենել պատկերի հղումը
+    .accesskey = o
+
+main-context-menu-video-copy-link =
+    .label = Պատճենել տեսանյութի հղումը
+    .accesskey = o
+
+main-context-menu-audio-copy-link =
+    .label = Պատճենել ձայնանյութի հղումը
     .accesskey = o
 
 main-context-menu-image-save-as =
@@ -304,14 +280,6 @@ main-context-menu-audio-email =
     .label = Ուղարկել էլ. փոստով...
     .accesskey = ր
 
-main-context-menu-plugin-play =
-    .label = Ակտիվացնել բաղադրիչը
-    .accesskey = կ
-
-main-context-menu-plugin-hide =
-    .label = Թաքցնել այս բաղադրիչը
-    .accesskey = Թ
-
 main-context-menu-save-to-pocket =
     .label = Պահպանել էջը { -pocket-brand-name }-ում
     .accesskey = k
@@ -324,8 +292,19 @@ main-context-menu-send-to-device =
 ## should be the same if possible; the two context menu items
 ## are mutually exclusive.
 
+main-context-menu-use-saved-password =
+    .label = Օգտագործեք պահված գաղտնաբառը
+    .accesskey = o
 
 ##
+
+main-context-menu-suggest-strong-password =
+    .label = Առաջարկել ուժեղ գաղտնաբառ…
+    .accesskey = S
+
+main-context-menu-manage-logins2 =
+    .label = Կառավարել մուտքագրումները
+    .accesskey = M
 
 main-context-menu-keyword =
     .label = Ավելացնել Բանալի այս Որոնմանը…
@@ -355,10 +334,6 @@ main-context-menu-frame-reload =
     .label = Կրկին բեռնել շրջանակը
     .accesskey = Կ
 
-main-context-menu-frame-bookmark =
-    .label = Էջանշել Այս շրջանակը
-    .accesskey = շ
-
 main-context-menu-frame-save-as =
     .label = Պահպանել շրջանակը որպես…
     .accesskey = Պ
@@ -375,8 +350,8 @@ main-context-menu-frame-view-info =
     .label = Տեղեկություն շրջանակի մասին
     .accesskey = Տ
 
-main-context-menu-print-selection =
-    .label = Տպել ընտրությունը
+main-context-menu-print-selection-2 =
+    .label = Տպել ընտրությունը…
     .accesskey = r
 
 main-context-menu-view-selection-source =
@@ -386,6 +361,10 @@ main-context-menu-view-selection-source =
 main-context-menu-take-screenshot =
     .label = Ստանալ էկրանի հանույթը
     .accesskey = T
+
+main-context-menu-take-frame-screenshot =
+    .label = Ստանալ էկրանի հանույթը
+    .accesskey = o
 
 main-context-menu-view-page-source =
     .label = Դիտել Էջի Կոդը

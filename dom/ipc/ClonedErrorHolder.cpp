@@ -56,7 +56,7 @@ void ClonedErrorHolder::Init(JSContext* aCx, JS::Handle<JSObject*> aError,
       mMessage = err->message().c_str();
     }
     if (err->filename) {
-      mFilename = err->filename;
+      mFilename = err->filename.c_str();
     }
     if (err->linebuf()) {
       AppendUTF16toUTF8(
@@ -120,7 +120,7 @@ void ClonedErrorHolder::Init(JSContext* aCx, JS::Handle<JSObject*> aError,
   if (stack) {
     ar.emplace(aCx, stack);
   }
-  JS::RootedValue stackValue(aCx, JS::ObjectOrNullValue(stack));
+  JS::Rooted<JS::Value> stackValue(aCx, JS::ObjectOrNullValue(stack));
   mStack.Write(aCx, stackValue, aRv);
 }
 
@@ -135,13 +135,14 @@ static constexpr uint32_t kVoidStringLength = ~0;
 static bool WriteStringPair(JSStructuredCloneWriter* aWriter,
                             const nsACString& aString1,
                             const nsACString& aString2) {
-  auto StringLength = [](const nsACString& aStr) {
-    MOZ_DIAGNOSTIC_ASSERT(uint32_t(aStr.Length()) != kVoidStringLength,
+  auto StringLength = [](const nsACString& aStr) -> uint32_t {
+    auto length = uint32_t(aStr.Length());
+    MOZ_DIAGNOSTIC_ASSERT(length != kVoidStringLength,
                           "We should not be serializing a 4GiB string");
     if (aStr.IsVoid()) {
       return kVoidStringLength;
     }
-    return aStr.Length();
+    return length;
   };
 
   return JS_WriteUint32Pair(aWriter, StringLength(aString1),
@@ -177,7 +178,8 @@ bool ClonedErrorHolder::WriteStructuredClone(JSContext* aCx,
   return JS_WriteUint32Pair(aWriter, SCTAG_DOM_CLONED_ERROR_OBJECT, 0) &&
          WriteStringPair(aWriter, mName, mMessage) &&
          WriteStringPair(aWriter, mFilename, mSourceLine) &&
-         JS_WriteUint32Pair(aWriter, mLineNumber, mColumn) &&
+         JS_WriteUint32Pair(aWriter, mLineNumber,
+                            *mColumn.addressOfValueForTranscode()) &&
          JS_WriteUint32Pair(aWriter, mTokenOffset, mErrorNumber) &&
          JS_WriteUint32Pair(aWriter, uint32_t(mType), uint32_t(mExnType)) &&
          JS_WriteUint32Pair(aWriter, mCode, uint32_t(mResult)) &&
@@ -192,7 +194,8 @@ bool ClonedErrorHolder::Init(JSContext* aCx, JSStructuredCloneReader* aReader) {
   uint32_t type, exnType, result, code;
   if (!(ReadStringPair(aReader, mName, mMessage) &&
         ReadStringPair(aReader, mFilename, mSourceLine) &&
-        JS_ReadUint32Pair(aReader, &mLineNumber, &mColumn) &&
+        JS_ReadUint32Pair(aReader, &mLineNumber,
+                          mColumn.addressOfValueForTranscode()) &&
         JS_ReadUint32Pair(aReader, &mTokenOffset, &mErrorNumber) &&
         JS_ReadUint32Pair(aReader, &type, &exnType) &&
         JS_ReadUint32Pair(aReader, &code, &result) &&
@@ -255,7 +258,7 @@ static bool ToJSString(JSContext* aCx, const nsACString& aStr,
 }
 
 bool ClonedErrorHolder::ToErrorValue(JSContext* aCx,
-                                     JS::MutableHandleValue aResult) {
+                                     JS::MutableHandle<JS::Value> aResult) {
   JS::Rooted<JS::Value> stackVal(aCx);
   JS::Rooted<JSObject*> stack(aCx);
 
@@ -289,12 +292,18 @@ bool ClonedErrorHolder::ToErrorValue(JSContext* aCx,
       mFilename.Assign(""_ns);
     }
 
+    // When fuzzing, we can also end up with the message to be null,
+    // so we should handle that case as well.
+    if (mMessage.IsVoid()) {
+      mMessage.Assign(""_ns);
+    }
+
     if (!ToJSString(aCx, mFilename, &filename) ||
         !ToJSString(aCx, mMessage, &message)) {
       return false;
     }
     if (!JS::CreateError(aCx, mExnType, stack, filename, mLineNumber, mColumn,
-                         nullptr, message, aResult)) {
+                         nullptr, message, JS::NothingHandleValue, aResult)) {
       return false;
     }
 
@@ -307,8 +316,10 @@ bool ClonedErrorHolder::ToErrorValue(JSContext* aCx,
         // terminated string.
         //
         // See Bug 1699569.
-        if (JS::UniqueTwoByteChars buffer =
-                ToNullTerminatedJSStringBuffer(aCx, sourceLine)) {
+        if (mTokenOffset >= sourceLine.Length()) {
+          // Corrupt data, leave linebuf unset.
+        } else if (JS::UniqueTwoByteChars buffer =
+                       ToNullTerminatedJSStringBuffer(aCx, sourceLine)) {
           err->initOwnedLinebuf(buffer.release(), sourceLine.Length(),
                                 mTokenOffset);
         } else {
@@ -339,6 +350,9 @@ bool ClonedErrorHolder::Holder::ReadStructuredCloneInternal(
   uint32_t length;
   uint32_t version;
   if (!JS_ReadUint32Pair(aReader, &length, &version)) {
+    return false;
+  }
+  if (length % 8 != 0) {
     return false;
   }
 

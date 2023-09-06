@@ -17,19 +17,15 @@ var oStr;
 function run_test() {
   do_get_profile();
 
-  var prefBranch = Cc["@mozilla.org/preferences-service;1"].getService(
-    Ci.nsIPrefBranch
-  );
-
   // set max chunks memory so that only one full chunk fits within the limit
-  prefBranch.setIntPref("browser.cache.disk.max_chunks_memory_usage", 300);
+  Services.prefs.setIntPref("browser.cache.disk.max_chunks_memory_usage", 300);
 
   asyncOpenCacheEntry(
     "http://a/",
     "disk",
     Ci.nsICacheStorage.OPEN_NORMALLY,
     null,
-    function(status, entry) {
+    function (status, entry) {
       Assert.equal(status, Cr.NS_OK);
       var data = gen_200k();
       oStr = entry.openOutputStream(0, data.length);
@@ -40,7 +36,7 @@ function run_test() {
         "disk",
         Ci.nsICacheStorage.OPEN_NORMALLY,
         null,
-        function(status, entry) {
+        function (status, entry) {
           Assert.equal(status, Cr.NS_OK);
           var oStr2 = entry.openOutputStream(0, data.length);
           do_check_throws_nsIException(

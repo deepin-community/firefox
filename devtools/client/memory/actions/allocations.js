@@ -6,18 +6,14 @@
 const {
   actions,
   ALLOCATION_RECORDING_OPTIONS,
-} = require("devtools/client/memory/constants");
+} = require("resource://devtools/client/memory/constants.js");
 
-exports.toggleRecordingAllocationStacks = function(commands) {
-  return async function({ dispatch, getState }) {
+exports.toggleRecordingAllocationStacks = function (commands) {
+  return async function ({ dispatch, getState }) {
     dispatch({ type: actions.TOGGLE_RECORD_ALLOCATION_STACKS_START });
 
-    const { targetConfigurationCommand } = commands;
-    // @backward-compat { version 94 } Starts supporting "recordAllocations" configuration in order to better support SSTS
-    // Could only be dropped once we support targetConfiguration for all toolboxes (either we drop the Browser content toolbox, or support the content process in watcher actor)
-    // Once Fx93 support is removed, we can replace this check with `commands.targetCommand.hasTargetWatcherSupport()` to check if the watcher is supported.
-    if (targetConfigurationCommand.supports("recordAllocations")) {
-      await targetConfigurationCommand.updateConfiguration({
+    if (commands.targetCommand.hasTargetWatcherSupport()) {
+      await commands.targetConfigurationCommand.updateConfiguration({
         recordAllocations: getState().recordingAllocationStacks
           ? null
           : ALLOCATION_RECORDING_OPTIONS,

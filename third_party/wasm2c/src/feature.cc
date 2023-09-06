@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "src/feature.h"
+#include "wabt/feature.h"
 
-#include "src/option-parser.h"
+#include "wabt/option-parser.h"
 
 namespace wabt {
 
@@ -30,7 +30,7 @@ void Features::AddOptions(OptionParser* parser) {
                       [this]() { enable_##variable(); });  \
   }
 
-#include "src/feature.def"
+#include "wabt/feature.def"
 #undef WABT_FEATURE
   parser->AddOption("enable-all", "Enable all features",
                     [this]() { EnableAll(); });
@@ -41,9 +41,15 @@ void Features::UpdateDependencies() {
   if (exceptions_enabled_) {
     reference_types_enabled_ = true;
   }
+
+  // Function references require reference types.
+  if (function_references_enabled_) {
+    reference_types_enabled_ = true;
+  }
+
   // Reference types requires bulk memory.
-  if (reference_types_enabled_) {
-    bulk_memory_enabled_ = true;
+  if (!bulk_memory_enabled_) {
+    reference_types_enabled_ = false;
   }
 }
 

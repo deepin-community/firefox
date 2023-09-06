@@ -12,12 +12,19 @@
 #include "nsIClassOfService.h"
 #include "nsIDNSRecord.h"
 #include "nsIInterfaceRequestorUtils.h"
+#include "nsIHttpActivityObserver.h"
+#include "nsSocketTransportService2.h"
 #include "nsDNSService2.h"
 #include "nsQueryObject.h"
 #include "nsURLHelper.h"
 #include "mozilla/Components.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "mozilla/SyncRunnable.h"
+#include "nsHttpHandler.h"
+#include "ConnectionEntry.h"
+#include "HttpConnectionUDP.h"
+#include "nsServiceManagerUtils.h"
+#include "mozilla/net/NeckoChannelParams.h"  // For HttpActivityArgs.
 
 // Log on level :5, instead of default :4.
 #undef LOG
@@ -43,18 +50,25 @@ NS_INTERFACE_MAP_BEGIN(DnsAndConnectSocket)
   NS_INTERFACE_MAP_ENTRY_CONCRETE(DnsAndConnectSocket)
 NS_INTERFACE_MAP_END
 
+static void NotifyActivity(nsHttpConnectionInfo* aConnInfo, uint32_t aSubtype) {
+  HttpConnectionActivity activity(
+      aConnInfo->HashKey(), aConnInfo->GetOrigin(), aConnInfo->OriginPort(),
+      aConnInfo->EndToEndSSL(), !aConnInfo->GetEchConfig().IsEmpty(),
+      aConnInfo->IsHttp3());
+  gHttpHandler->ObserveHttpActivityWithArgs(
+      activity, NS_ACTIVITY_TYPE_HTTP_CONNECTION, aSubtype, PR_Now(), 0, ""_ns);
+}
+
 DnsAndConnectSocket::DnsAndConnectSocket(nsHttpConnectionInfo* ci,
                                          nsAHttpTransaction* trans,
                                          uint32_t caps, bool speculative,
                                          bool isFromPredictor, bool urgentStart)
     : mTransaction(trans),
-      mPrimaryTransport(false),
       mCaps(caps),
       mSpeculative(speculative),
       mUrgentStart(urgentStart),
       mIsFromPredictor(isFromPredictor),
-      mConnInfo(ci),
-      mBackupTransport(true) {
+      mConnInfo(ci) {
   MOZ_ASSERT(ci && trans, "constructor with null arguments");
   LOG(("Creating DnsAndConnectSocket [this=%p trans=%p ent=%s key=%s]\n", this,
        trans, mConnInfo->Origin(), mConnInfo->HashKey().get()));
@@ -73,6 +87,10 @@ DnsAndConnectSocket::DnsAndConnectSocket(nsHttpConnectionInfo* ci,
   }
 
   MOZ_ASSERT(mConnInfo);
+  NotifyActivity(mConnInfo,
+                 mSpeculative
+                     ? NS_HTTP_ACTIVITY_SUBTYPE_SPECULATIVE_DNSANDSOCKET_CREATED
+                     : NS_HTTP_ACTIVITY_SUBTYPE_DNSANDSOCKET_CREATED);
 }
 
 void DnsAndConnectSocket::CheckIsDone() {
@@ -163,7 +181,7 @@ void DnsAndConnectSocket::CheckProxyConfig() {
 nsresult DnsAndConnectSocket::SetupDnsFlags(ConnectionEntry* ent) {
   LOG(("DnsAndConnectSocket::SetupDnsFlags [this=%p] ", this));
 
-  uint32_t dnsFlags = 0;
+  nsIDNSService::DNSFlags dnsFlags = nsIDNSService::RESOLVE_DEFAULT_FLAGS;
   bool disableIpv6ForBackup = false;
   if (mCaps & NS_HTTP_REFRESH_DNS) {
     dnsFlags = nsIDNSService::RESOLVE_BYPASS_CACHE;
@@ -399,8 +417,20 @@ DnsAndConnectSocket::GetName(nsACString& aName) {
 NS_IMETHODIMP
 DnsAndConnectSocket::OnLookupComplete(nsICancelable* request, nsIDNSRecord* rec,
                                       nsresult status) {
-  LOG(("DnsAndConnectSocket::OnLookupComplete: this=%p status %" PRIx32 ".",
-       this, static_cast<uint32_t>(status)));
+  LOG((
+      "DnsAndConnectSocket::OnLookupComplete: this=%p mState=%d status %" PRIx32
+      ".",
+      this, mState, static_cast<uint32_t>(status)));
+
+  if (nsCOMPtr<nsIDNSAddrRecord> addrRecord = do_QueryInterface((rec))) {
+    nsIRequest::TRRMode effectivemode = nsIRequest::TRR_DEFAULT_MODE;
+    addrRecord->GetEffectiveTRRMode(&effectivemode);
+    nsITRRSkipReason::value skipReason = nsITRRSkipReason::TRR_UNSET;
+    addrRecord->GetTrrSkipReason(&skipReason);
+    if (mTransaction) {
+      mTransaction->SetTRRInfo(effectivemode, skipReason);
+    }
+  }
 
   MOZ_DIAGNOSTIC_ASSERT(request);
   RefPtr<DnsAndConnectSocket> deleteProtector(this);
@@ -437,6 +467,13 @@ DnsAndConnectSocket::OnLookupComplete(nsICancelable* request, nsIDNSRecord* rec,
   }
 
   if (NS_FAILED(rv) || mIsHttp3) {
+    // If we are retrying DNS, we should not setup the connection.
+    if (mIsHttp3 && mPrimaryTransport.mState ==
+                        TransportSetup::TransportSetupState::RETRY_RESOLVING) {
+      LOG(("Retry DNS for Http3"));
+      return NS_OK;
+    }
+
     // Before calling SetupConn we need to hold reference to this, i.e. a
     // delete protector, because the corresponding ConnectionEntry may be
     // abandoned and that will abandon this DnsAndConnectSocket.
@@ -558,8 +595,8 @@ nsresult DnsAndConnectSocket::SetupConn(bool isPrimary, nsresult status) {
          conn.get(), static_cast<uint32_t>(rv)));
 
     if (nsHttpTransaction* trans = mTransaction->QueryHttpTransaction()) {
-      if (mIsHttp3) {
-        trans->DisableHttp3();
+      if (mIsHttp3 && !mConnInfo->GetWebTransport()) {
+        trans->DisableHttp3(true);
         gHttpHandler->ExcludeHttp3(mConnInfo);
       }
       // The transaction's connection info is changed after DisableHttp3(), so
@@ -730,8 +767,9 @@ DnsAndConnectSocket::OnTransportStatus(nsITransport* trans, nsresult status,
 
   nsCOMPtr<nsIDNSAddrRecord> dnsRecord(
       do_GetInterface(mPrimaryTransport.mSocketTransport));
-  if (status == NS_NET_STATUS_CONNECTING_TO && gHttpHandler->IsSpdyEnabled() &&
-      gHttpHandler->CoalesceSpdy()) {
+  if (status == NS_NET_STATUS_CONNECTING_TO &&
+      StaticPrefs::network_http_http2_enabled() &&
+      StaticPrefs::network_http_http2_coalesce_hostnames()) {
     RefPtr<ConnectionEntry> ent =
         gHttpHandler->ConnMgr()->FindConnectionEntry(mConnInfo);
     MOZ_DIAGNOSTIC_ASSERT(ent);
@@ -792,13 +830,18 @@ bool DnsAndConnectSocket::Claim() {
   if (mSpeculative) {
     mSpeculative = false;
     mAllow1918 = true;
-    uint32_t flags;
-    if (mPrimaryTransport.mSocketTransport &&
-        NS_SUCCEEDED(
-            mPrimaryTransport.mSocketTransport->GetConnectionFlags(&flags))) {
-      flags &= ~nsISocketTransport::DISABLE_RFC1918;
-      mPrimaryTransport.mSocketTransport->SetConnectionFlags(flags);
-    }
+    auto resetFlag = [](TransportSetup& transport) {
+      uint32_t flags;
+      if (transport.mSocketTransport &&
+          NS_SUCCEEDED(
+              transport.mSocketTransport->GetConnectionFlags(&flags))) {
+        flags &= ~nsISocketTransport::DISABLE_RFC1918;
+        flags &= ~nsISocketTransport::IS_SPECULATIVE_CONNECTION;
+        transport.mSocketTransport->SetConnectionFlags(flags);
+      }
+    };
+    resetFlag(mPrimaryTransport);
+    resetFlag(mBackupTransport);
 
     Telemetry::AutoCounter<Telemetry::HTTPCONNMGR_USED_SPECULATIVE_CONN>
         usedSpeculativeConn;
@@ -820,8 +863,19 @@ bool DnsAndConnectSocket::Claim() {
 
   if (mFreeToUse) {
     mFreeToUse = false;
+
+    if (mPrimaryTransport.mSocketTransport) {
+      nsCOMPtr<nsITLSSocketControl> tlsSocketControl;
+      if (NS_SUCCEEDED(mPrimaryTransport.mSocketTransport->GetTlsSocketControl(
+              getter_AddRefs(tlsSocketControl))) &&
+          tlsSocketControl) {
+        Unused << tlsSocketControl->Claim();
+      }
+    }
+
     return true;
   }
+
   return false;
 }
 
@@ -946,10 +1000,10 @@ nsresult DnsAndConnectSocket::TransportSetup::CheckConnectedResult(
     bool trrEnabled;
     mDNSRecord->IsTRR(&trrEnabled);
     if (trrEnabled) {
-      uint32_t trrMode = 0;
+      nsIRequest::TRRMode trrMode = nsIRequest::TRR_DEFAULT_MODE;
       mDNSRecord->GetEffectiveTRRMode(&trrMode);
       // If current trr mode is trr only, we should not retry.
-      if (trrMode != 3) {
+      if (trrMode != nsIRequest::TRR_ONLY_MODE) {
         // Drop state to closed.  This will trigger a new round of
         // DNS resolving. Bypass the cache this time since the
         // cached data came from TRR and failed already!
@@ -986,6 +1040,8 @@ nsresult DnsAndConnectSocket::TransportSetup::SetupConn(
     conn = new HttpConnectionUDP();
   }
 
+  NotifyActivity(ent->mConnInfo, NS_HTTP_ACTIVITY_SUBTYPE_CONNECTION_CREATED);
+
   LOG(
       ("DnsAndConnectSocket::SocketTransport::SetupConn "
        "Created new nshttpconnection %p %s\n",
@@ -1016,7 +1072,8 @@ nsresult DnsAndConnectSocket::TransportSetup::SetupConn(
     RefPtr<HttpConnectionUDP> connUDP = do_QueryObject(conn);
     rv = connUDP->Init(ent->mConnInfo, mDNSRecord, status, callbacks, cap);
     if (NS_SUCCEEDED(rv)) {
-      if (gHttpHandler->IsHttp3Enabled() && gHttpHandler->CoalesceSpdy()) {
+      if (nsHttpHandler::IsHttp3Enabled() &&
+          StaticPrefs::network_http_http2_coalesce_hostnames()) {
         if (ent->MaybeProcessCoalescingKeys(mDNSRecord, true)) {
           gHttpHandler->ConnMgr()->ProcessSpdyPendingQ(ent);
         }
@@ -1133,8 +1190,12 @@ nsresult DnsAndConnectSocket::TransportSetup::SetupStreams(
 
   Unused << socketTransport->SetIsPrivate(ci->GetPrivate());
 
-  if (ci->GetLessThanTls13()) {
+  if (dnsAndSock->mCaps & NS_HTTP_DISALLOW_ECH) {
     tmpFlags |= nsISocketTransport::DONT_TRY_ECH;
+  }
+
+  if (dnsAndSock->mCaps & NS_HTTP_IS_RETRY) {
+    tmpFlags |= nsISocketTransport::IS_RETRY;
   }
 
   if (((dnsAndSock->mCaps & NS_HTTP_BE_CONSERVATIVE) ||
@@ -1177,6 +1238,10 @@ nsresult DnsAndConnectSocket::TransportSetup::SetupStreams(
     tmpFlags |= nsISocketTransport::DISABLE_RFC1918;
   }
 
+  if (dnsAndSock->mSpeculative) {
+    tmpFlags |= nsISocketTransport::IS_SPECULATIVE_CONNECTION;
+  }
+
   socketTransport->SetConnectionFlags(tmpFlags);
   socketTransport->SetTlsFlags(ci->GetTlsFlags());
 
@@ -1194,10 +1259,13 @@ nsresult DnsAndConnectSocket::TransportSetup::SetupStreams(
   rv = socketTransport->SetSecurityCallbacks(dnsAndSock);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  if (gHttpHandler->EchConfigEnabled()) {
+  if (gHttpHandler->EchConfigEnabled() && !ci->GetEchConfig().IsEmpty()) {
     MOZ_ASSERT(!ci->IsHttp3());
+    LOG(("Setting ECH"));
     rv = socketTransport->SetEchConfig(ci->GetEchConfig());
     NS_ENSURE_SUCCESS(rv, rv);
+
+    NotifyActivity(dnsAndSock->mConnInfo, NS_HTTP_ACTIVITY_SUBTYPE_ECH_SET);
   }
 
   RefPtr<ConnectionEntry> ent =
@@ -1252,11 +1320,12 @@ nsresult DnsAndConnectSocket::TransportSetup::ResolveHost(
 
   nsresult rv = NS_OK;
   do {
-    rv = dns->AsyncResolveNative(mHost, nsIDNSService::RESOLVE_TYPE_DEFAULT,
-                                 mDnsFlags, nullptr, dnsAndSock,
-                                 gSocketTransportService,
-                                 dnsAndSock->mConnInfo->GetOriginAttributes(),
-                                 getter_AddRefs(mDNSRequest));
+    rv = dns->AsyncResolveNative(
+        mHost, nsIDNSService::RESOLVE_TYPE_DEFAULT,
+        mDnsFlags | nsIDNSService::RESOLVE_WANT_RECORD_ON_ERROR, nullptr,
+        dnsAndSock, gSocketTransportService,
+        dnsAndSock->mConnInfo->GetOriginAttributes(),
+        getter_AddRefs(mDNSRequest));
   } while (NS_FAILED(rv) && ShouldRetryDNS());
 
   if (NS_FAILED(rv)) {

@@ -12,19 +12,39 @@ about-webrtc-document-title = Властивості WebRTC
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = зберегти about:webrtc як
 
+## These labels are for a disclosure which contains the information for closed PeerConnection sections
+
+about-webrtc-closed-peerconnection-disclosure-show-msg = Показати закриті однорангові підключення
+about-webrtc-closed-peerconnection-disclosure-hide-msg = Приховати закриті однорангові підключення
+
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = Журнал AEC
 about-webrtc-aec-logging-off-state-label = Почати журнал AEC
 about-webrtc-aec-logging-on-state-label = Припинити журнал AEC
 about-webrtc-aec-logging-on-state-msg = Журнал AEC активний (поговоріть з абонентом кілька хвилин, потім зупиніть захоплення)
+about-webrtc-aec-logging-toggled-on-state-msg = Журнал AEC активний (поговоріть з абонентом кілька хвилин, потім зупиніть захоплення)
+about-webrtc-aec-logging-unavailable-sandbox = Для експорту журналів AEC потрібна змінна середовища MOZ_DISABLE_CONTENT_SANDBOX=1. Встановлюйте цю змінну, лише якщо ви розумієте можливі ризики.
+# Variables:
+#  $path (String) - The path to which the aec log file is saved.
+about-webrtc-aec-logging-toggled-off-state-msg = Захоплені файли журналу можна знайти в: { $path }
 
 ##
 
+# The autorefresh checkbox causes a stats section to autorefresh its content when checked
+about-webrtc-auto-refresh-label = Автооновлення
+# Determines the default state of the Auto Refresh check boxes
+about-webrtc-auto-refresh-default-label = Типове автооновлення
+# A button which forces a refresh of displayed statistics
+about-webrtc-force-refresh-button = Оновити
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
 # and is used as a data label.
 about-webrtc-peerconnection-id-label = PeerConnection ID:
+# The number of DataChannels that a PeerConnection has opened
+about-webrtc-data-channels-opened-label = Відкрито канали даних:
+# The number of once open DataChannels that a PeerConnection has closed
+about-webrtc-data-channels-closed-label = Закрито канали даних:
 
 ## "SDP" is an abbreviation for Session Description Protocol, an IETF standard.
 ## See http://wikipedia.org/wiki/Session_Description_Protocol
@@ -58,11 +78,6 @@ about-webrtc-ice-pair-bytes-sent = Байтів відправлено:
 about-webrtc-ice-pair-bytes-received = Байтів отримано:
 about-webrtc-ice-component-id = ID компонента
 
-## "Avg." is an abbreviation for Average. These are used as data labels.
-
-about-webrtc-avg-bitrate-label = Сер. швидкість потоку:
-about-webrtc-avg-framerate-label = Сер. частота кадрів:
-
 ## These adjectives are used to label a line of statistics collected for a peer
 ## connection. The data represents either the local or remote end of the
 ## connection.
@@ -80,17 +95,24 @@ about-webrtc-nominated = Номіновано
 # This represents an attribute of an ICE candidate.
 about-webrtc-selected = Вибрано
 about-webrtc-save-page-label = Зберегти сторінку
-about-webrtc-debug-mode-msg-label = Режим зневадження
-about-webrtc-debug-mode-off-state-label = Почати режим зневадження
-about-webrtc-debug-mode-on-state-label = Припинити режим зневадження
+about-webrtc-debug-mode-msg-label = Режим налагодження
+about-webrtc-debug-mode-off-state-label = Запустити режим налагодження
+about-webrtc-debug-mode-on-state-label = Зупинити режим налагодження
+about-webrtc-enable-logging-label = Увімкнути попередні налаштування журналу WebRTC
 about-webrtc-stats-heading = Статистика сеансу
 about-webrtc-stats-clear = Стерти історію
-about-webrtc-log-heading = Журнал з’єднання
+about-webrtc-log-heading = Журнал з'єднання
 about-webrtc-log-clear = Очистити журнал
 about-webrtc-log-show-msg = показати журнал
     .title = натисніть, щоб розгорнути цю секцію
 about-webrtc-log-hide-msg = сховати журнал
     .title = натисніть, щоб згорнути цей розділ
+about-webrtc-log-section-show-msg = Показати журнал
+    .title = Натисніть, щоб розгорнути цю секцію
+about-webrtc-log-section-hide-msg = Сховати журнал
+    .title = Натисніть, щоб згорнути цей розділ
+about-webrtc-copy-report-button = Копіювати звіт
+about-webrtc-copy-report-history-button = Копіювати історію звітів
 
 ## These are used to display a header for a PeerConnection.
 ## Variables:
@@ -101,6 +123,14 @@ about-webrtc-log-hide-msg = сховати журнал
 
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (закрито) { $now }
+
+## These are used to indicate what direction media is flowing.
+## Variables:
+##  $codecs - a list of media codecs
+
+about-webrtc-short-send-receive-direction = Надіслати/отримати: { $codecs }
+about-webrtc-short-send-direction = Надіслати: { $codecs }
+about-webrtc-short-receive-direction = Отримати: { $codecs }
 
 ##
 
@@ -113,16 +143,25 @@ about-webrtc-raw-cand-show-msg = показати необроблені кан�
     .title = натисніть, щоб розгорнути цю секцію
 about-webrtc-raw-cand-hide-msg = сховати необроблені кандидати
     .title = натисніть, щоб згорнути цей розділ
+about-webrtc-raw-cand-section-show-msg = Показати необроблені кандидати
+    .title = Натисніть, щоб розгорнути цю секцію
+about-webrtc-raw-cand-section-hide-msg = Сховати необроблені кандидати
+    .title = Натисніть, щоб згорнути цей розділ
 about-webrtc-priority = Пріоритет
 about-webrtc-fold-show-msg = показати деталі
     .title = натисніть, щоб розгорнути цю секцію
 about-webrtc-fold-hide-msg = сховати
     .title = натисніть, щоб згорнути цей розділ
+about-webrtc-fold-default-show-msg = Показати деталі
+    .title = Натисніть, щоб розгорнути цю секцію
+about-webrtc-fold-default-hide-msg = Сховати
+    .title = Натисніть, щоб згорнути цей розділ
 about-webrtc-dropped-frames-label = Пропущені кадри:
 about-webrtc-discarded-packets-label = Відхилені пакети:
 about-webrtc-decoder-label = Декодер
 about-webrtc-encoder-label = Енкодер
 about-webrtc-show-tab-label = Показати вкладку
+about-webrtc-current-framerate-label = Частота кадрів
 about-webrtc-width-px = Ширина (px)
 about-webrtc-height-px = Висота (px)
 about-webrtc-consecutive-frames = Послідовні кадри
@@ -138,6 +177,12 @@ about-webrtc-last-frame-timestamp = Остання відмітка часу п�
 about-webrtc-local-receive-ssrc = Локальне отримання SSRC
 # This is an SSRC on the remote side of the connection that is sending RTP
 about-webrtc-remote-send-ssrc = Віддалене надсилання SSRC
+
+## These are displayed on the button that shows or hides the
+## PeerConnection configuration disclosure
+
+about-webrtc-pc-configuration-show-msg = Показати конфігурацію
+about-webrtc-pc-configuration-hide-msg = Приховати конфігурацію
 
 ##
 
@@ -177,11 +222,33 @@ about-webrtc-frame-stats-heading = Статистика відеокадру - M
 
 about-webrtc-save-page-msg = сторінку збережено до: { $path }
 about-webrtc-debug-mode-off-state-msg = журнал відстеження можна знайти в: { $path }
-about-webrtc-debug-mode-on-state-msg = режим зневадження активний, журнал відстеження в: { $path }
+about-webrtc-debug-mode-on-state-msg = режим налагодження активний, журнал відстеження: { $path }
 about-webrtc-aec-logging-off-state-msg = захоплені файли журналу можна знайти в: { $path }
-
-##
-
+# This path is used for saving the about:webrtc page so it can be attached to
+# bug reports.
+# Variables:
+#  $path (String) - The path to which the file is saved.
+about-webrtc-save-page-complete-msg = Сторінку збережено до: { $path }
+about-webrtc-debug-mode-toggled-off-state-msg = Журнал відстеження можна знайти в: { $path }
+about-webrtc-debug-mode-toggled-on-state-msg = Режим налагодження активний, журнал відстеження: { $path }
+# This is the total number of frames encoded or decoded over an RTP stream.
+# Variables:
+#  $frames (Number) - The number of frames encoded or decoded.
+about-webrtc-frames =
+    { $frames ->
+        [one] { $frames } кадр
+        [few] { $frames } кадри
+       *[many] { $frames } кадрів
+    }
+# This is the number of audio channels encoded or decoded over an RTP stream.
+# Variables:
+#  $channels (Number) - The number of channels encoded or decoded.
+about-webrtc-channels =
+    { $channels ->
+        [one] { $channels } канал
+        [few] { $channels } канали
+       *[many] { $channels } каналів
+    }
 # This is the total number of packets received on the PeerConnection.
 # Variables:
 #  $packets (Number) - The number of packets received.
@@ -235,6 +302,22 @@ about-webrtc-sdp-set-at-timestamp-remote = Встановити для Відд�
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 #  $relative-timestamp (Number) - The timestamp relative to the timestamp of the earliest received SDP.
 about-webrtc-sdp-set-timestamp = Часова позначка { NUMBER($timestamp, useGrouping: "false") } (+ { $relative-timestamp } мс)
+
+## These are displayed on the button that shows or hides the SDP information disclosure
+
+about-webrtc-show-msg-sdp = Показати SDP
+about-webrtc-hide-msg-sdp = Приховати SDP
+
+## These are displayed on the button that shows or hides the Media Context information disclosure.
+## The Media Context is the set of preferences and detected capabilities that informs
+## the negotiated CODEC settings.
+
+about-webrtc-media-context-show-msg = Показати медіаконтекст
+about-webrtc-media-context-hide-msg = Приховати медіаконтекст
+about-webrtc-media-context-heading = Медіаконтекст
+
+##
+
 
 ##
 

@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = Kicholajem taq q'atoj
-    .style = width: 55em
+    .style = min-width: 55em
 
 blocklist-description = Tacha' ri rucholb'al { -brand-short-name } richin ye'aq'ät ri ojqanela' pa k'amab'ey. Cholb'äl eya'on ruma  <a data-l10n-name="disconnect-link" title="Disconnect">Disconnect</a>.
 blocklist-close-key =

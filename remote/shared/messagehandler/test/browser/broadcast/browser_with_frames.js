@@ -8,7 +8,8 @@ add_task(async function test_broadcasting_with_frames() {
   const tab = gBrowser.selectedTab;
   await loadURL(tab.linkedBrowser, createTestMarkupWithFrames());
 
-  const contexts = tab.linkedBrowser.browsingContext.getAllBrowsingContextsInSubtree();
+  const contexts =
+    tab.linkedBrowser.browsingContext.getAllBrowsingContextsInSubtree();
   is(contexts.length, 4, "Test tab has 3 children contexts (4 in total)");
 
   const rootMessageHandler = createRootMessageHandler(
@@ -18,6 +19,7 @@ add_task(async function test_broadcasting_with_frames() {
     "commandwindowglobalonly",
     "testBroadcast",
     {},
+    contextDescriptorAll,
     rootMessageHandler
   );
 

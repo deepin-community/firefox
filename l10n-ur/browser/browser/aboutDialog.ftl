@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = R
 
 update-checkingForUpdates = اپڈیٹ کے لیے دیکھ رہا ہے…
-update-downloading = <img data-l10n-name="icon"/>تازہ کاری ڈاؤن لوڈ کر رہا ہے—<label data-l10n-name="download-status"/>
-update-downloading-message = اپ ڈیٹ ڈاؤن لوڈ ہو رہا ہے—<label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>تازہ کاری ڈاؤن لوڈ کر رہا ہے—<label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = اپ ڈیٹ ڈاؤن لوڈ ہو رہا ہے—<label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = اپڈیٹ کرتے ہوئے ...
 
 update-failed = اپڈیٹ نہیں ہوسکا۔<label data-l10n-name="failed-link">تازہ ترین ورژن ڈاؤن لوڈ کریں</label>
@@ -27,13 +34,21 @@ update-adminDisabled = آپ کے سسٹم ایڈمن نے اپڈیٹ کو بند
 update-noUpdatesFound = { -brand-short-name } اپڈیٹ ہے
 update-otherInstanceHandlingUpdates = { -brand-short-name } دوسری جگہ سے اپڈیٹ ہو رہا ہے
 
-update-manual = اپڈیٹ یہاں دستیاب ہیں  <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = اپڈیٹ یہاں دستیاب ہیں  <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = اپڈیٹ یہاں دستیاب ہیں  <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = آپ اس سسٹم پر مزید اپڈیٹ نہیں کر سکتے۔<label data-l10n-name="unsupported-link">مزید سیکھیں</label>
 
 update-restarting = دوباره شروع ہو رہا ہے…
 
-channel-description = آپ اس وقت <label data-l10n-name="current-channel"></label> کی اپڈیٹ چینل میں ہو۔
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = آپ اس وقت <label data-l10n-name="current-channel">{ $channel }</label> کی اپڈیٹ چینل میں ہو۔
 
 warningDesc-version = { -brand-short-name } تجرباتی ہونے کی وجہ سے درست کام نہ کرسکے۔
 

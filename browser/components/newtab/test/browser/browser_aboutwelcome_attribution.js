@@ -3,11 +3,11 @@
 const { ASRouter } = ChromeUtils.import(
   "resource://activity-stream/lib/ASRouter.jsm"
 );
-const { AttributionCode } = ChromeUtils.import(
-  "resource:///modules/AttributionCode.jsm"
+const { AttributionCode } = ChromeUtils.importESModule(
+  "resource:///modules/AttributionCode.sys.mjs"
 );
-const { AddonRepository } = ChromeUtils.import(
-  "resource://gre/modules/addons/AddonRepository.jsm"
+const { AddonRepository } = ChromeUtils.importESModule(
+  "resource://gre/modules/addons/AddonRepository.sys.mjs"
 );
 
 const TEST_ATTRIBUTION_DATA = {
@@ -23,6 +23,7 @@ const TEST_ADDON_INFO = [
     name: "Test Add-on",
     sourceURI: { scheme: "https", spec: "https://test.xpi" },
     icons: { 32: "test.png", 64: "test.png" },
+    type: "extension",
   },
 ];
 
@@ -33,7 +34,6 @@ const TEST_UA_ATTRIBUTION_DATA = {
 const TEST_PROTON_CONTENT = [
   {
     id: "AW_STEP1",
-    order: 0,
     content: {
       title: "Step 1",
       primary_button: {
@@ -42,11 +42,11 @@ const TEST_PROTON_CONTENT = [
           navigate: true,
         },
       },
+      has_noodles: true,
     },
   },
   {
     id: "AW_STEP2",
-    order: 1,
     content: {
       title: "Step 2",
       primary_button: {
@@ -58,6 +58,7 @@ const TEST_PROTON_CONTENT = [
           data: {},
         },
       },
+      has_noodles: true,
     },
   },
 ];
@@ -133,9 +134,8 @@ add_task(async function test_rtamo_attribution() {
     // Expected selectors:
     [
       "div.onboardingContainer",
-      "div.brand-logo",
-      "h2[data-l10n-id='return-to-amo-addon-title']",
-      "img[data-l10n-name='icon']",
+      "h2[data-l10n-id='mr1-return-to-amo-addon-title']",
+      "div.rtamo-icon",
       "button.primary",
       "button.secondary",
     ],

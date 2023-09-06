@@ -3,31 +3,27 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-var Services = require("Services");
-const asyncStoreHelper = require("devtools/client/shared/async-store-helper");
-const {
-  validateBreakpointLocation,
-} = require("devtools/shared/validate-breakpoint.jsm");
+const asyncStoreHelper = require("resource://devtools/client/shared/async-store-helper.js");
+const { validateBreakpointLocation } = ChromeUtils.import(
+  "resource://devtools/shared/validate-breakpoint.jsm"
+);
 
 const asyncStore = asyncStoreHelper("debugger", {
   pendingBreakpoints: ["pending-breakpoints", {}],
   tabs: ["tabs", []],
   xhrBreakpoints: ["xhr-breakpoints", []],
   eventListenerBreakpoints: ["event-listener-breakpoints", undefined],
-  tabsBlackBoxed: ["tabsBlackBoxed", []],
+  blackboxedRanges: ["blackboxedRanges", {}],
 });
 exports.asyncStore = asyncStore;
 
-exports.getThreadOptions = async function() {
+exports.getThreadOptions = async function () {
   return {
     pauseOnExceptions: Services.prefs.getBoolPref(
       "devtools.debugger.pause-on-exceptions"
     ),
     ignoreCaughtExceptions: Services.prefs.getBoolPref(
       "devtools.debugger.ignore-caught-exceptions"
-    ),
-    shouldShowOverlay: Services.prefs.getBoolPref(
-      "devtools.debugger.features.overlay"
     ),
     shouldIncludeSavedFrames: Services.prefs.getBoolPref(
       "devtools.debugger.features.async-captured-stacks"

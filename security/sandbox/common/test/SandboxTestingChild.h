@@ -8,8 +8,11 @@
 #define mozilla_SandboxTestingChild_h
 
 #include "mozilla/PSandboxTestingChild.h"
+#include "mozilla/Maybe.h"
 #include "mozilla/Monitor.h"
+#include "mozilla/StaticPtr.h"
 #include "mozilla/UniquePtr.h"
+#include "nsISupports.h"
 
 #ifdef XP_UNIX
 #  include "nsString.h"
@@ -33,21 +36,26 @@ class SandboxTestingChild : public PSandboxTestingChild {
   static SandboxTestingChild* GetInstance();
   static void Destroy();
 
+  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(SandboxTestingChild, override)
+
   bool IsTestThread();
   void PostToTestThread(already_AddRefed<nsIRunnable>&& runnable);
 
   void ActorDestroy(ActorDestroyReason aWhy) override;
 
-  virtual bool RecvShutDown();
+  virtual ipc::IPCResult RecvShutDown();
 
   // Helper to return that no test have been executed. Tests should make sure
   // they have some fallback through that otherwise the framework will consider
   // absence of test report as a failure.
   inline void ReportNoTests();
 
-#ifdef XP_UNIX
-  // For test cases that return an error number or 0, like newer POSIX APIs.
-  void PosixTest(const nsCString& aName, bool aExpectSuccess, int aStatus);
+  // For test cases that return an error number or 0, like newer POSIX
+  // APIs.  If `aExpectSuccess` is true, the test passes if the status is
+  // 0; otherwise, the test requires a specific error if `aExpectedError`
+  // is `Some(n)` or any nonzero status if it's `Nothing()`.
+  void PosixTest(const nsCString& aName, bool aExpectSuccess, int aStatus,
+                 Maybe<int> aExpectedError = Nothing());
 
   // For test cases that return a negative number and set `errno` to
   // indicate error, like classical Unix APIs; takes a callable, which
@@ -56,21 +64,21 @@ class SandboxTestingChild : public PSandboxTestingChild {
   void ErrnoTest(const nsCString& aName, bool aExpectSuccess, F&& aFunction);
 
   // Similar to ErrnoTest, except that we want to compare a specific `errno`
-  // being returned (or not).
+  // being returned.
   template <typename F>
-  void ErrnoValueTest(const nsCString& aName, bool aExpectEquals,
-                      int aExpectedErrno, F&& aFunction);
-#endif
+  void ErrnoValueTest(const nsCString& aName, int aExpectedErrno,
+                      F&& aFunction);
 
  private:
   explicit SandboxTestingChild(SandboxTestingThread* aThread,
                                Endpoint<PSandboxTestingChild>&& aEndpoint);
+  ~SandboxTestingChild();
 
   void Bind(Endpoint<PSandboxTestingChild>&& aEndpoint);
 
   UniquePtr<SandboxTestingThread> mThread;
 
-  static SandboxTestingChild* sInstance;
+  static StaticRefPtr<SandboxTestingChild> sInstance;
 };
 
 }  // namespace mozilla

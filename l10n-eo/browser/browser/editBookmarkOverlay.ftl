@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Kaŝi
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Montri ĉiujn dosierujojn de legosignoj
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Kaŝi
+
 bookmark-overlay-new-folder-button =
     .label = Nova dosierujo
     .accesskey = o
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Montri ĉiujn etikedojn
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Kaŝi
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Montri ĉiujn etikedojn
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Kaŝi
 
 bookmark-overlay-keyword-2 =
     .value = Ŝlosilvorto

@@ -34,6 +34,10 @@ options-show-user-agent-styles-tooltip =
 options-collapse-attrs-label = Moztu DOM atributuak
 options-collapse-attrs-tooltip =
     .title = Moztu ikuskatzaileko atributu luzeak
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Egin klik eta arrastatu tamainaren balioak editatzeko
+options-inspector-draggable-properties-tooltip =
+    .title = Egin klik eta arrastatu ikuskatzailearen arauen ikuspegiko tamainaren balioak editatzeko.
 
 ## "Default Color Unit" options for the Inspector
 
@@ -42,6 +46,7 @@ options-default-color-unit-authored = Sortu bezala
 options-default-color-unit-hex = Hamaseitarra
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Koloreen izenak
 
 ## Style Editor section
@@ -103,6 +108,12 @@ options-enable-chrome-tooltip =
 options-enable-remote-label = Gaitu urruneko arazketa
 options-enable-remote-tooltip2 =
     .title = Aukera hau aktibatuz gero, nabigatzaile-instantzia hau urrunetik araztu ahal izango da
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Erabili F12 tekla garatzaile-tresnak ireki edo ixteko
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Gaitu formateatzaile pertsonalizatuak
+options-enable-custom-formatters-tooltip =
+    .title = Aukera hau gaituz gero, DOM objektuen formateatzaile pertsonalizatuak zehaztu ahal izango dituzte guneek
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Gaitu zerbitzu-langileak HTTP bidez (tresna-kutxa irekita dagoenean)
 options-enable-service-workers-http-tooltip =
@@ -113,8 +124,3 @@ options-source-maps-tooltip =
     .title = Aukera hau gaituz gero, iturburuak mapeatu egingo dira tresnetan.
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Uneko saioa soilik, orria berritzen du
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Erakutsi Gecko plataformaren datuak
-options-show-platform-data-tooltip =
-    .title = Aukera hau gaituz gero, JavaScript analizatzailearen txostenek Gecko plataformaren sinboloak izango dituzte

@@ -1,8 +1,6 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from __future__ import absolute_import
-
 import json
 import os
 import signal
@@ -13,26 +11,19 @@ import time
 import mozinfo
 import six
 from mozprocess import ProcessHandler
+
 from mozproxy.backends.base import Playback
 from mozproxy.recordings import RecordingFile
 from mozproxy.utils import (
-    download_file_from_url,
-    transform_platform,
-    tooltool_download,
-    get_available_port,
     LOG,
+    download_file_from_url,
+    get_available_port,
+    tooltool_download,
+    transform_platform,
 )
 
 here = os.path.dirname(__file__)
 mitm_folder = os.path.dirname(os.path.realpath(__file__))
-
-
-def normalize_path(path):
-    path = os.path.normpath(path)
-    if mozinfo.os == "win":
-        return path.replace("\\", "\\\\\\")
-    return path
-
 
 # maximal allowed runtime of a mitmproxy command
 MITMDUMP_COMMAND_TIMEOUT = 30
@@ -282,61 +273,88 @@ class Mitmproxy(Playback):
         if self.record_mode:
 
             # generate recording script paths
-            inject_deterministic = os.path.join(
-                mitm_folder,
-                "scripts",
-                "inject-deterministic.py",
-            )
-            http_protocol_extractor = os.path.join(
-                mitm_folder,
-                "scripts",
-                "http_protocol_extractor.py",
-            )
 
-            args = [
-                "--save-stream-file",
-                normalize_path(self.recording.recording_path),
-                "--set",
-                "websocket=false",
-                "--scripts",
-                inject_deterministic,
-                "--scripts",
-                http_protocol_extractor,
-            ]
-            command.extend(args)
+            command.extend(
+                [
+                    "--save-stream-file",
+                    os.path.normpath(self.recording.recording_path),
+                    "--set",
+                    "websocket=false",
+                ]
+            )
+            if "inject_deterministic" in self.config.keys():
+                command.extend(
+                    [
+                        "--scripts",
+                        os.path.join(mitm_folder, "scripts", "inject-deterministic.py"),
+                    ]
+                )
             self.recording.set_metadata(
                 "proxy_version", self.config["playback_version"]
             )
         else:
             # playback mode
             if len(self.playback_files) > 0:
-                script = os.path.join(
-                    mitm_folder,
-                    "scripts",
-                    "alternate-server-replay.py",
-                )
-
-                if self.config["playback_version"] in ["4.0.4", "5.1.1", "6.0.2"]:
-                    args = [
-                        "--set",
-                        "upstream_cert=false",
-                        "--set",
-                        "upload_dir=" + normalize_path(self.upload_dir),
-                        "--set",
-                        "websocket=false",
-                        "--set",
-                        "server_replay_files={}".format(
-                            ",".join(
-                                [
-                                    normalize_path(playback_file.recording_path)
-                                    for playback_file in self.playback_files
-                                ]
-                            )
-                        ),
-                        "--scripts",
-                        normalize_path(script),
-                    ]
-                    command.extend(args)
+                if self.config["playback_version"] == "8.1.1":
+                    command.extend(
+                        [
+                            "--set",
+                            "websocket=false",
+                            "--set",
+                            "connection_strategy=lazy",
+                            "--set",
+                            "alt_server_replay_nopop=true",
+                            "--set",
+                            "alt_server_replay_kill_extra=true",
+                            "--set",
+                            "alt_server_replay_order_reversed=true",
+                            "--set",
+                            "alt_server_replay={}".format(
+                                ",".join(
+                                    [
+                                        os.path.normpath(playback_file.recording_path)
+                                        for playback_file in self.playback_files
+                                    ]
+                                )
+                            ),
+                            "--scripts",
+                            os.path.normpath(
+                                os.path.join(
+                                    mitm_folder, "scripts", "alt-serverplayback.py"
+                                )
+                            ),
+                        ]
+                    )
+                elif self.config["playback_version"] in [
+                    "4.0.4",
+                    "5.1.1",
+                    "6.0.2",
+                ]:
+                    command.extend(
+                        [
+                            "--set",
+                            "upstream_cert=false",
+                            "--set",
+                            "upload_dir=" + os.path.normpath(self.upload_dir),
+                            "--set",
+                            "websocket=false",
+                            "--set",
+                            "server_replay_files={}".format(
+                                ",".join(
+                                    [
+                                        os.path.normpath(playback_file.recording_path)
+                                        for playback_file in self.playback_files
+                                    ]
+                                )
+                            ),
+                            "--scripts",
+                            os.path.normpath(
+                                os.path.join(
+                                    mitm_folder, "scripts", "alternate-server-replay.py"
+                                )
+                            ),
+                        ]
+                    )
                 else:
                     raise Exception("Mitmproxy version is unknown!")
 
@@ -358,7 +376,6 @@ class Mitmproxy(Playback):
             command,
             logfile=os.path.join(self.upload_dir, "mitmproxy.log"),
             env=env,
-            processStderrLine=LOG.error,
             storeOutput=False,
         )
         self.mitmproxy_proc.run()
@@ -405,9 +422,12 @@ class Mitmproxy(Playback):
                 return
 
             if mozinfo.os == "win":
-                from mozprocess.winprocess import ERROR_CONTROL_C_EXIT  # noqa
+                from mozprocess.winprocess import (  # noqa
+                    ERROR_CONTROL_C_EXIT,
+                    ERROR_CONTROL_C_EXIT_DECIMAL,
+                )
 
-                if exit_code == ERROR_CONTROL_C_EXIT:
+                if exit_code in [ERROR_CONTROL_C_EXIT, ERROR_CONTROL_C_EXIT_DECIMAL]:
                     LOG.info(
                         "Successfully killed the mitmproxy playback process"
                         " with exit code %d" % exit_code

@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Definir os domínios com permissão para aceder a
 
 policy-AppAutoUpdate = Ativar ou desativar atualizações automáticas de aplicações.
 
+policy-AppUpdatePin = Impedir que { -brand-short-name } seja atualizado além da versão especificada.
+
 policy-AppUpdateURL = Definir um URL personalizado de atualização da aplicação.
 
 policy-Authentication = Configurar autenticação integrada para os sites que a suportem.
@@ -39,6 +41,9 @@ policy-CaptivePortal = Ativar ou desativar o suporte ao portal cativo.
 policy-CertificatesDescription = Adicionar certificados ou utilizar certificados integrados.
 
 policy-Cookies = Permitir ou negar que os sites definam cookies.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Definir políticas relacionadas com os contentores.
 
 policy-DisabledCiphers = Desativar cifras.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Se verdadeiro, não poderá ser criada u
 
 policy-DisablePasswordReveal = Impedir que as palavras-passe sejam reveladas nas credenciais guardadas.
 
-policy-DisablePocket = Desativar a funcionalidade de guardar páginas web no Pocket.
+policy-DisablePocket2 = Desativar a funcionalidade de guardar páginas web no { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Desativar a Navegação privada.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Impedir o navegador de instalar e atualizar ex
 
 policy-DisableTelemetry = Desligar a Telemetria.
 
+policy-DisableThirdPartyModuleBlocking = Evita que o utilizador bloqueie módulos de terceiros que são injetados no processo do { -brand-short-name }.
+
 policy-DisplayBookmarksToolbar = Mostrar a Barra ferramentas de marcadores por predefinição.
 
 policy-DisplayMenuBar = Mostrar a Barra de menu por predefinição.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Ativar ou desativar o Bloqueio de conteúdo e 
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Ativar ou desativar as Extensões de multimédia encriptada e, opcionalmente, bloquear esta definição.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Desative os avisos com base na extensão de ficheiro para tipos de ficheiro específicos em domínios.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Gerir todos os aspetos de instalação de extensões.
 
 policy-ExtensionUpdate = Ativar ou desativar atualizações automáticas de extensões.
 
-policy-FirefoxHome = Configurar o Firefox Home.
+policy-FirefoxHome2 = Configurar o { -firefox-home-brand-name }.
 
-policy-FlashPlugin = Permitir ou negar a utilização do plugin Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Força a navegação direta no site da intranet em vez de pesquisar ao digitar entradas de uma única palavra na barra de endereço.
 
 policy-Handlers = Configurar as aplicações operadoras predefinidas.
 
@@ -159,6 +168,8 @@ policy-OverridePostUpdatePage = Sobrepor a página "Novidades" pós-atualizaçã
 
 policy-PasswordManagerEnabled = Ativar a opção de guardar as palavras-passe no gestor de palavras-passe.
 
+policy-PasswordManagerExceptions = Impedir o { -brand-short-name } de guardar palavras-passe para sites específicos.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = Desativar ou configurar o PDF.js, o visualizador integrado de PDF do { -brand-short-name }.
 
@@ -184,8 +195,8 @@ policy-SearchEngines = Configurar as definições de motor de pesquisa. Esta pol
 
 policy-SearchSuggestEnabled = Ativar ou desativar sugestões de pesquisa.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instalar módulos PKCS #11.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Adicionar ou eliminar os módulos PKCS #11.
 
 policy-ShowHomeButton = Mostrar o botão início na barra de ferramentas.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = Definir a versão máxima de SSL.
 
 policy-SSLVersionMin = Definir a versão mínima de SSL.
 
+policy-StartDownloadsInTempDirectory = Forçar transferências a iniciarem num local temporário local em vez do diretório de transferências padrão.
+
 policy-SupportMenu = Adicionar um item de menu de suporte personalizado ao menu de ajuda.
 
 policy-UserMessaging = Não mostrar determinadas mensagens ao utilizador.
+
+policy-UseSystemPrintDialog = Imprimir utilizando a janela de impressão do sistema.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Impedir que sites sejam visitados. Consulte a documentação para mais detalhes sobre o formato.

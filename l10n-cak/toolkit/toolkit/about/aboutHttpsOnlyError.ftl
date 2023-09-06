@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 about-httpsonly-title-alert = Rutzijol K'ayewal pa HTTPS-Only B'anikil
-about-httpsonly-title-connection-not-available = Man Okel ta ri Jikïl Okem
+about-httpsonly-title-site-not-available = Majun jikïl ruxaq
 
 # Variables:
 #   $websiteUrl (String) - Url of the website that failed to load. Example: www.example.com
@@ -20,6 +20,11 @@ about-httpsonly-link-learn-more = Tetamäx ch'aqa' chik…
 ## Suggestion Box that only shows up if a secure connection to www can be established
 ## Variables:
 ##   $websiteUrl (String) - Url of the website that can be securely loded with these alternatives. Example: example.com
+
+
+## Suggestion Box that only shows up if a secure connection to www can be established
+## Variables:
+##   $websiteUrl (String) - Url of the website that can be securely loaded with these alternatives. Example: example.com
 
 about-httpsonly-suggestion-box-header = Taq Cha'oj
 about-httpsonly-suggestion-box-www-text = K'o jun ütz ruwäch <em>www.{ $websiteUrl }</em>. Yatikïr natz'ët re ruxaq chuwäch ri <em>{ $websiteUrl }</em>.

@@ -11,18 +11,17 @@ add_task(
     );
     await checkFramesLength(threadFront, 5);
 
-    threadFront.resume();
-    await waitForPause(threadFront);
+    await resumeAndWaitForPause(threadFront);
     await checkFramesLength(threadFront, 2);
 
-    threadFront.resume();
+    await threadFront.resume();
   })
 );
 
 function evalCode(debuggee) {
   debuggee.eval(
     "(" +
-      function() {
+      function () {
         function depth3() {
           debugger;
         }

@@ -21,6 +21,7 @@ perftools-heading-features-default = Functiones (es recommendate mantener los ac
 perftools-heading-features-disabled = Functiones disactivate
 perftools-heading-features-experimental = Experimental
 perftools-heading-threads = Filos
+perftools-heading-threads-jvm = Argumentos JVM
 perftools-heading-local-build = Compilation local
 
 ##
@@ -42,16 +43,15 @@ perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Dimension del buffer:
+
 perftools-custom-threads-label = Adder filos personalisate per nomine:
+
 perftools-devtools-interval-label = Intervallo:
 perftools-devtools-threads-label = Filos:
 perftools-devtools-settings-label = Parametros
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice =
-    Le profilator es disactivate quando le navigation private es active.
-    Claude tote le fenestras private pro reactivar le profilator.
 perftools-status-recording-stopped-by-another-tool = Le registration ha essite interrumpite per un altere instrumento.
 perftools-status-restart-required = Le navigator debe esser reinitiate pro activar iste function.
 
@@ -83,8 +83,8 @@ perftools-thread-renderer =
     .title = Quando WebRender es activate, le filo que executa le appellos a OpenGL
 perftools-thread-render-backend =
     .title = Le filo WebRender RenderBackend
-perftools-thread-paint-worker =
-    .title = Quando es activate le pictura foras del filo principal, le filo sur le qual le pictura eveni
+perftools-thread-timer =
+    .title = Le argumento gere le temporisatores (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
     .title = Le computation de stilos es dividite in plure filos
 pref-thread-stream-trans =
@@ -97,20 +97,31 @@ perftools-thread-dns-resolver =
     .title = Le resolution de DNS eveni sur iste filo
 perftools-thread-task-controller =
     .title = Filos del fundo commun de TaskController
+perftools-thread-jvm-gecko =
+    .title = Le argumento principal de Gecko JVM argumento
+perftools-thread-jvm-nimbus =
+    .title = Le principal argumentos pro le experimentos SDK de Nimbus
+perftools-thread-jvm-default-dispatcher =
+    .title = Le expeditor predefinite pro le bibliotheca de co-routines Kotlin
+perftools-thread-jvm-glean =
+    .title = Le principal argumentos pro le telemetria SDK de Glean
+perftools-thread-jvm-arch-disk-io =
+    .title = Le expeditor de IO pro le bibliotheca de co-routines Kotlin
+perftools-thread-jvm-pool =
+    .title = Argumentos create in un gruppo de sub-processos sin nomine
 
 ##
 
 perftools-record-all-registered-threads = Ignorar selectiones supra e memorar tote le filos registrate
+
 perftools-tools-threads-input-label =
     .title = Iste nomines de filo forma un lista separate per commas que es usate pro activar le profilation del filos in le profilator. Es sufficiente un correspondentia partial con le nomine del filo a includer. Le spatios es significative.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>Nove</b>: { -profiler-brand-name } es ora integrate in Utensiles de disveloppator. <a>Saper plus</a> re iste potente nove instrumento.
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (Pro un tempore limitate, tu pote acceder al quadro original Prestation via <a>{ options-context-advanced-settings }</a>)
+
 perftools-onboarding-close-button =
     .aria-label = Clauder le message introductive
 
@@ -121,16 +132,29 @@ perftools-onboarding-close-button =
 # devtools/client/performance-new/popup/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
 perftools-presets-web-developer-label = Disveloppamento web
-perftools-presets-web-developer-description = Pre-configuration recommendate, con basse supercarga, pro le major parte del depuration de app web.
-perftools-presets-firefox-platform-label = Platteforma Firefox
-perftools-presets-firefox-platform-description = Pre-configuration recommendate pro le depuration del platteforma interne Firefox.
-perftools-presets-firefox-front-end-label = Interfacie anterior Firefox
-perftools-presets-firefox-front-end-description = Pre-configuration recommendate pro depuration de interfacie anterior interne Firefox.
-perftools-presets-firefox-graphics-label = Graphica de Firefox
-perftools-presets-firefox-graphics-description = Pre-configuration recommendate pro le investigation del prestation graphic de Firefox.
-perftools-presets-media-label = Medios
-perftools-presets-media-description = Pre-configuration recommendate pro diagnosticar problemas audio e video.
+perftools-presets-web-developer-description = Pre-configuration recommendate pro le depuration del major parte de applicationes web, con poc supercarga.
+
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = Pre-configuration recommendate pro profilar { -brand-shorter-name }.
+
+perftools-presets-graphics-label = Graphica
+perftools-presets-graphics-description = Pre-configuration pro investigar errores de graphica in { -brand-shorter-name }.
+
+perftools-presets-media-label = Multimedia
+perftools-presets-media-description2 = Pre-configuration pro investigar errores audio e video in { -brand-shorter-name }.
+
+perftools-presets-networking-label = Rete
+perftools-presets-networking-description = Pre-configuration pro investigar errores de rete in { -brand-shorter-name }.
+
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = Energia
+perftools-presets-power-description = Pre-configuration pro investigar errores in le uso del energia in { -brand-shorter-name }, con basse supercarga.
+
 perftools-presets-custom-label = Personalisate
 
 ##

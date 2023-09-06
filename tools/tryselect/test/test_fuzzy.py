@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
 import os
 
 import mozunit
@@ -17,8 +15,8 @@ def test_query_paths(run_mach, capfd):
         "fuzzy",
         "--no-push",
         "-q",
-        "^test-linux '64-qr/debug-xpcshell-e10s-",
-        "caps/tests/unit/test_origin.js",
+        "^test-linux '64-qr/debug-mochitest-chrome-1proc-",
+        "caps/tests/mochitest/test_addonMayLoad.html",
     ]
     assert run_mach(cmd) == 0
 
@@ -29,7 +27,7 @@ def test_query_paths(run_mach, capfd):
     # with the path filtering.
     expected = """
     "tasks": [
-        "test-linux1804-64-qr/debug-xpcshell-e10s-1"
+        "test-linux1804-64-qr/debug-mochitest-chrome-1proc-1"
     ]""".lstrip()
 
     assert expected in output

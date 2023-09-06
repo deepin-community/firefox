@@ -5,14 +5,14 @@
 
 about-logins-page-title = 我的密码
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = 搜索登录信息
+    .key = F
 
-create-login-button = 新建登录信息
+create-new-login-button =
+    .title = 新建登录信息
 
-fxaccounts-sign-in-text = 取得您其他设备上的密码
+fxaccounts-sign-in-text = 跨设备使用已保存的密码
 fxaccounts-sign-in-sync-button = 登录同步服务
 fxaccounts-avatar-button =
     .title = 管理账户
@@ -37,10 +37,16 @@ about-logins-menu-menuitem-help = 帮助
 
 login-list =
     .aria-label = 匹配搜索词的登录信息
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
        *[other] { $count } 条登录信息
     }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count = { $count } 次/共 { $total } 次登录
 login-list-sort-label-text = 顺序：
 login-list-name-option = 名称（A-Z）
 login-list-name-reverse-option = 名称（Z-A）
@@ -60,7 +66,6 @@ about-logins-list-item-breach-icon =
     .title = 发生数据外泄的网站
 about-logins-list-item-vulnerable-password-icon =
     .title = 弱密码
-
 about-logins-list-section-breach = 发生数据外泄的网站
 about-logins-list-section-vulnerable = 弱密码
 about-logins-list-section-nothing = 暂无警报
@@ -75,8 +80,8 @@ about-logins-login-intro-heading-logged-in = 未找到同步的登录信息。
 login-intro-description = 若您曾在其他设备上将登录信息保存到 { -brand-product-name }，请按以下步骤操作：
 login-intro-instructions-fxa = 在您保存登录信息的设备，注册或登录 { -fxaccount-brand-name }
 login-intro-instructions-fxa-settings = 前往“设置”>“同步”>“开启同步…”，勾选“登录名和密码”复选框。
-login-intro-instructions-fxa-help = 若需帮助，请访问 <a data-l10n-name="help-link">{ -lockwise-brand-short-name } 用户支持</a>。
-about-logins-intro-import = 若登录信息保存在其他浏览器，您可以<a data-l10n-name="import-link">导入到 { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = 若需更多帮助，请访问<a data-l10n-name="passwords-help-link">密码支持</a>页面。
+about-logins-intro-browser-only-import = 若登录信息保存在其他浏览器，您可以<a data-l10n-name="import-link">导入到 { -brand-product-name }</a>
 about-logins-intro-import2 = 若您的登录信息并未存储在 { -brand-product-name }，可以<a data-l10n-name="import-browser-link">从另一浏览器</a>或<a data-l10n-name="import-file-link">文件</a>导入
 
 ## Login
@@ -101,9 +106,17 @@ login-item-copied-password-button-text = 已复制！
 login-item-save-changes-button = 保存更改
 login-item-save-new-button = 保存
 login-item-cancel-button = 取消
-login-item-time-changed = 最后修改：{ DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = 创建时间：{ DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = 上次使用：{ DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = 创建
+login-item-timeline-action-updated = 更新
+login-item-timeline-action-used = 用于登录
 
 ## OS Authentication dialog
 
@@ -117,27 +130,25 @@ about-logins-os-auth-dialog-caption = { -brand-full-name }
 about-logins-edit-login-os-auth-dialog-message-win = 请输入 Windows 登录凭据，以继续编辑登录信息。这有助于保护您的账户安全。
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-edit-login-os-auth-dialog-message-macosx = 编辑存放的登录信息
+about-logins-edit-login-os-auth-dialog-message-macosx = 编辑保存的登录信息
 
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = 请输入 Windows 登录凭据，以查看密码。这有助于保护您的账户安全。
 # This message can be seen when attempting to reveal a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-reveal-password-os-auth-dialog-message-macosx = 显示存放的密码
+about-logins-reveal-password-os-auth-dialog-message-macosx = 显示保存的密码
 
 # This message can be seen when attempting to copy a password in about:logins on Windows.
 about-logins-copy-password-os-auth-dialog-message-win = 请输入 Windows 登录凭据，以复制密码。这有助于保护您的账户安全。
 # This message can be seen when attempting to copy a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-copy-password-os-auth-dialog-message-macosx = 复制存放的密码
-
-## Master Password notification
+about-logins-copy-password-os-auth-dialog-message-macosx = 复制保存的密码
 
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = 请输入 Windows 登录凭据，以继续导出登录信息。这有助于保护您的账户安全。
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-export-password-os-auth-dialog-message-macosx = 导出存放的登录名和密码
+about-logins-export-password-os-auth-dialog-message-macosx = 导出保存的登录名和密码
 
 ## Primary Password notification
 
@@ -145,8 +156,6 @@ about-logins-primary-password-notification-message = 请输入主密码以查看
 master-password-reload-button =
     .label = 登录
     .accesskey = L
-
-## Password Sync notification
 
 ## Dialogs
 
@@ -157,6 +166,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = 要移除此登录信息吗？
 confirm-delete-dialog-message = 此操作不可撤销。
 about-logins-confirm-remove-dialog-confirm-button = 移除
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -177,7 +189,7 @@ about-logins-confirm-remove-all-dialog-title =
     }
 about-logins-confirm-remove-all-dialog-message =
     { $count ->
-       *[other] 将移除您存放在 { -brand-short-name } 的登录信息，以及在此显示的任何数据外泄警报。此操作不可撤销。
+       *[other] 将移除您保存在 { -brand-short-name } 的登录信息，以及在此显示的任何数据外泄警报。此操作不可撤销。
     }
 
 about-logins-confirm-remove-all-sync-dialog-title =
@@ -186,11 +198,13 @@ about-logins-confirm-remove-all-sync-dialog-title =
     }
 about-logins-confirm-remove-all-sync-dialog-message =
     { $count ->
-       *[other] 将在您所有与 { -fxaccount-brand-name }同步的设备上，移除存放在 { -brand-short-name } 的登录信息，以及在此显示的任何数据外泄警报。此操作不可撤销。
+       *[other] 将在您所有与 { -fxaccount-brand-name }同步的设备上，移除保存在 { -brand-short-name } 的登录信息，以及在此显示的任何数据外泄警报。此操作不可撤销。
     }
 
+##
+
 about-logins-confirm-export-dialog-title = 导出登录名和密码
-about-logins-confirm-export-dialog-message = 您的密码将存为可读文本（如 BadP@ssw0rd），因此任何可以打开导出文件的人都可以进行查看。
+about-logins-confirm-export-dialog-message = 您的密码将存为可读文本（如 BadP@ssw0rd），因此任何可以打开导出文件的人都可以看到密码。
 about-logins-confirm-export-dialog-confirm-button = 导出…
 
 about-logins-alert-import-title = 导入完成
@@ -208,7 +222,6 @@ about-logins-breach-alert-date = 此外泄事件发生于：{ DATETIME($date, da
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = 前往 { $hostname }
-about-logins-breach-alert-learn-more-link = 详细了解
 
 ## Vulnerable Password notification
 

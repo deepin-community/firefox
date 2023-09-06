@@ -98,6 +98,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Raportează un site nefuncțional
 protections-panel-content-blocking-breakage-report-view-description = Blocarea anumitor elemente de urmărire poate produce probleme pe unele site-uri web. Raportarea acestor problemele ajută la îmbunătățirea { -brand-short-name } pentru toți. Trimițând la Mozilla acest raport vei trimite un URL și informații despre setările browserului. <label data-l10n-name="learn-more">Află mai multe</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Blocarea anumitor elemente de urmărire poate produce probleme pe unele site-uri web. Raportarea acestor problemele ajută la îmbunătățirea { -brand-short-name } pentru toți. Trimițând la { -vendor-short-name } acest raport vei trimite un URL și informații despre setările browserului.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL-ul
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL-ul
@@ -108,3 +109,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Renunță
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Trimite raportul
+
+# Cookie Banner Handling
+

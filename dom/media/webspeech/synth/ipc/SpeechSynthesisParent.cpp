@@ -25,11 +25,11 @@ bool SpeechSynthesisParent::SendInit() {
 
 PSpeechSynthesisRequestParent*
 SpeechSynthesisParent::AllocPSpeechSynthesisRequestParent(
-    const nsString& aText, const nsString& aLang, const nsString& aUri,
+    const nsAString& aText, const nsAString& aLang, const nsAString& aUri,
     const float& aVolume, const float& aRate, const float& aPitch,
-    const bool& aIsChrome) {
+    const bool& aShouldResistFingerprinting) {
   RefPtr<SpeechTaskParent> task =
-      new SpeechTaskParent(aVolume, aText, aIsChrome);
+      new SpeechTaskParent(aVolume, aText, aShouldResistFingerprinting);
   SpeechSynthesisRequestParent* actor = new SpeechSynthesisRequestParent(task);
   return actor;
 }
@@ -42,9 +42,10 @@ bool SpeechSynthesisParent::DeallocPSpeechSynthesisRequestParent(
 
 mozilla::ipc::IPCResult
 SpeechSynthesisParent::RecvPSpeechSynthesisRequestConstructor(
-    PSpeechSynthesisRequestParent* aActor, const nsString& aText,
-    const nsString& aLang, const nsString& aUri, const float& aVolume,
-    const float& aRate, const float& aPitch, const bool& aIsChrome) {
+    PSpeechSynthesisRequestParent* aActor, const nsAString& aText,
+    const nsAString& aLang, const nsAString& aUri, const float& aVolume,
+    const float& aRate, const float& aPitch,
+    const bool& aShouldResistFingerprinting) {
   MOZ_ASSERT(aActor);
   SpeechSynthesisRequestParent* actor =
       static_cast<SpeechSynthesisRequestParent*>(aActor);
@@ -116,8 +117,12 @@ mozilla::ipc::IPCResult SpeechSynthesisRequestParent::RecvSetAudioOutputVolume(
 // SpeechTaskParent
 
 nsresult SpeechTaskParent::DispatchStartImpl(const nsAString& aUri) {
-  MOZ_ASSERT(mActor);
-  if (NS_WARN_IF(!(mActor->SendOnStart(nsString(aUri))))) {
+  if (!mActor) {
+    // Child is already gone.
+    return NS_OK;
+  }
+
+  if (NS_WARN_IF(!(mActor->SendOnStart(aUri)))) {
     return NS_ERROR_FAILURE;
   }
 
@@ -140,7 +145,11 @@ nsresult SpeechTaskParent::DispatchEndImpl(float aElapsedTime,
 
 nsresult SpeechTaskParent::DispatchPauseImpl(float aElapsedTime,
                                              uint32_t aCharIndex) {
-  MOZ_ASSERT(mActor);
+  if (!mActor) {
+    // Child is already gone.
+    return NS_OK;
+  }
+
   if (NS_WARN_IF(!(mActor->SendOnPause(aElapsedTime, aCharIndex)))) {
     return NS_ERROR_FAILURE;
   }
@@ -150,7 +159,11 @@ nsresult SpeechTaskParent::DispatchPauseImpl(float aElapsedTime,
 
 nsresult SpeechTaskParent::DispatchResumeImpl(float aElapsedTime,
                                               uint32_t aCharIndex) {
-  MOZ_ASSERT(mActor);
+  if (!mActor) {
+    // Child is already gone.
+    return NS_OK;
+  }
+
   if (NS_WARN_IF(!(mActor->SendOnResume(aElapsedTime, aCharIndex)))) {
     return NS_ERROR_FAILURE;
   }
@@ -160,7 +173,11 @@ nsresult SpeechTaskParent::DispatchResumeImpl(float aElapsedTime,
 
 nsresult SpeechTaskParent::DispatchErrorImpl(float aElapsedTime,
                                              uint32_t aCharIndex) {
-  MOZ_ASSERT(mActor);
+  if (!mActor) {
+    // Child is already gone.
+    return NS_OK;
+  }
+
   if (NS_WARN_IF(!(mActor->SendOnEnd(true, aElapsedTime, aCharIndex)))) {
     return NS_ERROR_FAILURE;
   }
@@ -173,9 +190,13 @@ nsresult SpeechTaskParent::DispatchBoundaryImpl(const nsAString& aName,
                                                 uint32_t aCharIndex,
                                                 uint32_t aCharLength,
                                                 uint8_t argc) {
-  MOZ_ASSERT(mActor);
-  if (NS_WARN_IF(!(mActor->SendOnBoundary(nsString(aName), aElapsedTime,
-                                          aCharIndex, aCharLength, argc)))) {
+  if (!mActor) {
+    // Child is already gone.
+    return NS_OK;
+  }
+
+  if (NS_WARN_IF(!(mActor->SendOnBoundary(aName, aElapsedTime, aCharIndex,
+                                          aCharLength, argc)))) {
     return NS_ERROR_FAILURE;
   }
 
@@ -185,9 +206,12 @@ nsresult SpeechTaskParent::DispatchBoundaryImpl(const nsAString& aName,
 nsresult SpeechTaskParent::DispatchMarkImpl(const nsAString& aName,
                                             float aElapsedTime,
                                             uint32_t aCharIndex) {
-  MOZ_ASSERT(mActor);
-  if (NS_WARN_IF(
-          !(mActor->SendOnMark(nsString(aName), aElapsedTime, aCharIndex)))) {
+  if (!mActor) {
+    // Child is already gone.
+    return NS_OK;
+  }
+
+  if (NS_WARN_IF(!(mActor->SendOnMark(aName, aElapsedTime, aCharIndex)))) {
     return NS_ERROR_FAILURE;
   }
 

@@ -14,9 +14,9 @@ process-type-extension = הרחבה
 # process used to open file:// URLs
 process-type-file = קובץ מקומי
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = הקצאה גדולה
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = ‏Service Worker מבודד
 
 ##
 ## Localization for Gecko process types defined in GeckoProcessTypes.h

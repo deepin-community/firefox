@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = Rhestrau Rhwystro
-    .style = width: 55em
+    .style = min-width: 55em
 
 blocklist-description = Dewis y rhestr mae { -brand-short-name } yn ei defnyddio i atal tracio ar-lein. Rhestrau'n cael eu darparu gan <a data-l10n-name="disconnect-link" title="Disconnect"> Datgysylltu</a>.
 blocklist-close-key =

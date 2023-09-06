@@ -49,7 +49,7 @@ policy-DisableForgetButton = Unut düyməsini işlətmənin qarşısını al.
 
 policy-DisableFormHistory = Axtarış və form keçmişini yadda saxlama.
 
-policy-DisablePocket = Səhifələri Pocket-ə saxlamaq üçün özəlliyi söndürün.
+policy-DisablePocket2 = Səhifələri { -pocket-brand-name }-ə saxlamaq üçün özəlliyi söndürün.
 
 policy-DisablePrivateBrowsing = Məxfi Səyahəti söndür.
 
@@ -85,8 +85,6 @@ policy-EnableTrackingProtection = Məzmun Əngəlləməni aktiv et və ya sönd�
 # English or translate them as verbs.
 policy-Extensions = Uzantıları qur, sil və ya kilitlə. Qurma seçimi Ünvan və ya fayl yolu parametrlərini alır. Silmə və Kilitləmə seçimləri uzantı ID-lərini alır.
 
-policy-FlashPlugin = Flash qoşmasının istifadəsinə icazə ver və ya əngəllə.
-
 policy-HardwareAcceleration = Əgər false-dursa, avadanlıq sürətləndirməsini söndür.
 
 # “lock” means that the user won’t be able to change this setting
@@ -118,9 +116,6 @@ policy-RequestedLocales = Tətbiq üçün istənilən lokalları (dilləri) niza
 policy-SearchBar = İlkin hal olaraq axtarış sətrinin yerini seç. İstifadəçi bunu yenə də fərdiləşdirə biləcək.
 
 policy-SearchEngines = Axtarış mühərriyi tənzimləmələrini konfiqurasiya et. Bu siyasət ancaq Uzadılmış Dəstək Buraxılışı (ESR) versiyasında mümkündür.
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = PKCS #11 modullarını qur.
 
 policy-SSLVersionMax = Maksimum SSL versiyasını qurun.
 

@@ -25,9 +25,9 @@ certmgr-remembered = Այս վկայագրերն օգտագործվում են �
 certmgr-people = Դուք ունեք պահպանված արտոնաթղթեր, որոնք այս անձանց նույնացնում են։
 certmgr-ca = Դուք ունեք պահպանված վկայագրեր, որոնք այս հեղինակությունները նույնացնում են։
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Խմբագրել CA Վկայագրի վստահության դրույթները
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Խմբագրել վստահության դրույթները
 
@@ -37,9 +37,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Այս Վկայագիրը կարող է էլ-փոստ օգտվ. նույնացնել:
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Հեռացնել Վկայագիրը
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Հանգույց
@@ -49,9 +49,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Սպասարկիչ
-
-certmgr-override-lifetime =
-    .label = Տևողություն
 
 certmgr-token-name =
     .label = Անվտանգության Սարք
@@ -180,9 +177,8 @@ delete-email-cert-impact = Եթե Դուք ջնջեք անձի էլ. փոստի 
 cert-with-serial =
     .value = Վկայագրել հաջորդական համարով՝ { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

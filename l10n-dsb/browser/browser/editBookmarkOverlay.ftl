@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Schowaś
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Wšykne zarědniki cytańskich znamjenjow pokazaś
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Schowaś
+
 bookmark-overlay-new-folder-button =
     .label = Nowy zarědnik
     .accesskey = o
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Wšykne wobznamjenja pokazaś
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Schowaś
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Wšykne wobznamjenja pokazaś
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Schowaś
 
 bookmark-overlay-keyword-2 =
     .value = Klucowe słowo

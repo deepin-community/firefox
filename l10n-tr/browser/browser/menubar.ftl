@@ -38,20 +38,9 @@ menu-quit =
             [windows] k
            *[other] k
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = { -brand-shorter-name } uygulamasından çık
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = { -brand-shorter-name } tarayıcısından çık
-
 menu-about =
     .label = { -brand-shorter-name } hakkında
     .accesskey = h
@@ -81,9 +70,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Dosya aç…
     .accesskey = a
-menu-file-close =
-    .label = Kapat
-    .accesskey = K
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Sekmeyi kapat
+            [one] { $tabCount } sekmeyi kapat
+           *[other] { $tabCount } sekmeyi kapat
+        }
+    .accesskey = e
 menu-file-close-window =
     .label = Pencereyi kapat
     .accesskey = P
@@ -99,9 +95,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Sayfa düzeni…
     .accesskey = ü
-menu-file-print-preview =
-    .label = Yazdırma ön izleme
-    .accesskey = ö
 menu-file-print =
     .label = Yazdır…
     .accesskey = z
@@ -188,6 +181,17 @@ menu-view-full-screen =
     .label = Tam ekran
     .accesskey = T
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Okuyucu Görünümü'ne geç
+    .accesskey = O
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Okuyucu Görünümü'nü kapat
+    .accesskey = O
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +220,9 @@ menu-history-undo-menu =
     .label = Son kapatılan sekmeler
 menu-history-undo-window-menu =
     .label = Son kapatılan pencereler
-menu-history-reopen-all-tabs = Tüm sekmeleri yeniden aç
-menu-history-reopen-all-windows = Tüm pencereleri yeniden aç
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Geçmişte ara
 
 ## Bookmarks Menu
 
@@ -226,10 +231,13 @@ menu-bookmarks-menu =
     .accesskey = Y
 menu-bookmarks-manage =
     .label = Yer imlerini yönet
-menu-bookmark-current-tab =
-    .label = Bu sekmeyi yer imlerine ekle
-menu-bookmark-edit =
-    .label = Bu yer imini düzenle
+menu-bookmark-tab =
+    .label = Bu sekmeyi yer imlerine ekle…
+menu-edit-bookmark =
+    .label = Bu yer imini düzenle…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Yer imlerinde ara
 menu-bookmarks-all-tabs =
     .label = Tüm sekmeleri yer imlerine ekle…
 menu-bookmarks-toolbar =
@@ -314,15 +322,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = S
 menu-help-report-site-issue =
     .label = Siteyle ilgili sorun bildir…
-menu-help-feedback-page =
-    .label = Geri bildirim gönder…
-    .accesskey = G
+menu-help-share-ideas =
+    .label = Fikir ve görüş paylaş…
+    .accesskey = F
 menu-help-enter-troubleshoot-mode2 =
     .label = Sorun giderme modu…
     .accesskey = o
 menu-help-exit-troubleshoot-mode =
     .label = Sorun giderme modunu kapat
     .accesskey = m
+menu-help-switch-device =
+    .label = Yeni bir cihaza geçiş
+    .accesskey = c
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

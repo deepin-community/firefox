@@ -7,6 +7,7 @@
 #include "WindowSurfaceProvider.h"
 
 #include "gfxPlatformGtk.h"
+#include "GtkCompositorWidget.h"
 #include "mozilla/gfx/Logging.h"
 #include "mozilla/layers/LayersTypes.h"
 #include "nsWindow.h"
@@ -38,11 +39,9 @@ namespace widget {
 using namespace mozilla::layers;
 
 WindowSurfaceProvider::WindowSurfaceProvider()
-    : mWindowSurface(nullptr)
-#ifdef MOZ_WAYLAND
-      ,
-      mWidget(nullptr)
-#endif
+    : mWindowSurface(nullptr),
+      mMutex("WindowSurfaceProvider"),
+      mWindowSurfaceValid(false)
 #ifdef MOZ_X11
       ,
       mIsShaped(false),
@@ -55,12 +54,19 @@ WindowSurfaceProvider::WindowSurfaceProvider()
 
 #ifdef MOZ_WAYLAND
 void WindowSurfaceProvider::Initialize(RefPtr<nsWindow> aWidget) {
+  mWindowSurfaceValid = false;
   mWidget = std::move(aWidget);
+}
+void WindowSurfaceProvider::Initialize(GtkCompositorWidget* aCompositorWidget) {
+  mWindowSurfaceValid = false;
+  mCompositorWidget = aCompositorWidget;
+  mWidget = static_cast<nsWindow*>(aCompositorWidget->RealWidget());
 }
 #endif
 #ifdef MOZ_X11
 void WindowSurfaceProvider::Initialize(Window aWindow, Visual* aVisual,
                                        int aDepth, bool aIsShaped) {
+  mWindowSurfaceValid = false;
   mXWindow = aWindow;
   mXVisual = aVisual;
   mXDepth = aDepth;
@@ -68,16 +74,36 @@ void WindowSurfaceProvider::Initialize(Window aWindow, Visual* aVisual,
 }
 #endif
 
-void WindowSurfaceProvider::CleanupResources() { mWindowSurface = nullptr; }
+void WindowSurfaceProvider::CleanupResources() {
+  MutexAutoLock lock(mMutex);
+  mWindowSurfaceValid = false;
+#ifdef MOZ_WAYLAND
+  mWidget = nullptr;
+#endif
+#ifdef MOZ_X11
+  mXWindow = 0;
+  mXVisual = 0;
+  mXDepth = 0;
+  mIsShaped = false;
+#endif
+}
 
 RefPtr<WindowSurface> WindowSurfaceProvider::CreateWindowSurface() {
 #ifdef MOZ_WAYLAND
   if (GdkIsWaylandDisplay()) {
-    return MakeRefPtr<WindowSurfaceWaylandMB>(mWidget);
+    // We're called too early or we're unmapped.
+    if (!mWidget) {
+      return nullptr;
+    }
+    return MakeRefPtr<WindowSurfaceWaylandMB>(mWidget, mCompositorWidget);
   }
 #endif
 #ifdef MOZ_X11
   if (GdkIsX11Display()) {
+    // We're called too early or we're unmapped.
+    if (!mXWindow) {
+      return nullptr;
+    }
     // Blit to the window with the following priority:
     // 1. MIT-SHM
     // 2. XPutImage
@@ -101,11 +127,22 @@ already_AddRefed<gfx::DrawTarget>
 WindowSurfaceProvider::StartRemoteDrawingInRegion(
     const LayoutDeviceIntRegion& aInvalidRegion,
     layers::BufferMode* aBufferMode) {
-  if (aInvalidRegion.IsEmpty()) return nullptr;
+  if (aInvalidRegion.IsEmpty()) {
+    return nullptr;
+  }
+
+  MutexAutoLock lock(mMutex);
+
+  if (!mWindowSurfaceValid) {
+    mWindowSurface = nullptr;
+    mWindowSurfaceValid = true;
+  }
 
   if (!mWindowSurface) {
     mWindowSurface = CreateWindowSurface();
-    if (!mWindowSurface) return nullptr;
+    if (!mWindowSurface) {
+      return nullptr;
+    }
   }
 
   *aBufferMode = BufferMode::BUFFER_NONE;
@@ -126,7 +163,39 @@ WindowSurfaceProvider::StartRemoteDrawingInRegion(
 
 void WindowSurfaceProvider::EndRemoteDrawingInRegion(
     gfx::DrawTarget* aDrawTarget, const LayoutDeviceIntRegion& aInvalidRegion) {
-  if (mWindowSurface) mWindowSurface->Commit(aInvalidRegion);
+  MutexAutoLock lock(mMutex);
+  // Commit to mWindowSurface only if we have a valid one.
+  if (!mWindowSurface || !mWindowSurfaceValid) {
+    return;
+  }
+#if defined(MOZ_WAYLAND)
+  if (GdkIsWaylandDisplay()) {
+    // We're called too early or we're unmapped.
+    // Don't draw anything.
+    if (!mWidget || !mWidget->IsMapped()) {
+      return;
+    }
+    if (moz_container_wayland_is_commiting_to_parent(
+            mWidget->GetMozContainer())) {
+      // If we're drawing directly to wl_surface owned by Gtk we need to use it
+      // in main thread to sync with Gtk access to it.
+      NS_DispatchToMainThread(NS_NewRunnableFunction(
+          "WindowSurfaceProvider::EndRemoteDrawingInRegion",
+          [widget = RefPtr{mWidget}, this, aInvalidRegion]() {
+            if (!widget->IsMapped()) {
+              return;
+            }
+            MutexAutoLock lock(mMutex);
+            // Commit to mWindowSurface only when we have a valid one.
+            if (mWindowSurface && mWindowSurfaceValid) {
+              mWindowSurface->Commit(aInvalidRegion);
+            }
+          }));
+      return;
+    }
+  }
+#endif
+  mWindowSurface->Commit(aInvalidRegion);
 }
 
 }  // namespace widget

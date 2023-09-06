@@ -46,6 +46,7 @@ CSS_PSEUDO_ELEMENT(firstLetter, ":first-letter",
 CSS_PSEUDO_ELEMENT(firstLine, ":first-line",
                    CSS_PSEUDO_ELEMENT_IS_CSS2 |
                    CSS_PSEUDO_ELEMENT_CONTAINS_ELEMENTS)
+CSS_PSEUDO_ELEMENT(highlight, ":highlight", 0)
 
 CSS_PSEUDO_ELEMENT(selection, ":selection",
                    CSS_PSEUDO_ELEMENT_CONTAINS_ELEMENTS)
@@ -87,6 +88,9 @@ CSS_PSEUDO_ELEMENT(mozTextControlEditingRoot, ":-moz-text-control-editing-root",
                    CSS_PSEUDO_ELEMENT_ENABLED_IN_UA_SHEETS)
 // The element that shows the autofill value.
 CSS_PSEUDO_ELEMENT(mozTextControlPreview, ":-moz-text-control-preview",
+                   CSS_PSEUDO_ELEMENT_ENABLED_IN_UA_SHEETS)
+// The Reveal Password button for <input type=password>.
+CSS_PSEUDO_ELEMENT(mozReveal, ":-moz-reveal",
                    CSS_PSEUDO_ELEMENT_ENABLED_IN_UA_SHEETS)
 
 CSS_PSEUDO_ELEMENT(fileSelectorButton, ":file-selector-button",

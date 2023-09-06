@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = ਓਹਲੇ
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = ਸਭ ਬੁੱਕਮਾਰਕ ਫੋਲਡਰ ਵੇਖੋ
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = ਓਹਲੇ
+
 bookmark-overlay-new-folder-button =
     .label = ਨਵਾਂ ਫੋਲਡਰ
     .accesskey = o
@@ -41,6 +47,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = ਸਭ ਟੈਗ ਵੇਖੋ
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = ਓਹਲੇ
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = ਸਭ ਟੈਗ ਵੇਖੋ
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = ਓਹਲੇ
 
 bookmark-overlay-keyword-2 =
     .value = ਸ਼ਬਦ

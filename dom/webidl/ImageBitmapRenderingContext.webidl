@@ -17,6 +17,8 @@
 // to getContext) is "bitmaprenderer".
 [Exposed=(Window,Worker)]
 interface ImageBitmapRenderingContext {
+  readonly attribute CanvasSource? canvas;
+
   // Displays the given ImageBitmap in the canvas associated with this
   // rendering context. Ownership of the ImageBitmap is transferred to
   // the canvas. The caller may not use its reference to the ImageBitmap
@@ -32,9 +34,10 @@ interface ImageBitmapRenderingContext {
   // would be covered by the canvas's bitmap which are not covered by
   // the supplied ImageBitmap are rendered transparent black. Any CSS
   // styles affecting the display of the canvas are applied as usual.
-  void transferFromImageBitmap(ImageBitmap bitmap);
+  [Throws]
+  undefined transferFromImageBitmap(ImageBitmap? bitmap);
 
   // Deprecated version of transferFromImageBitmap
-  [Deprecated="ImageBitmapRenderingContext_TransferImageBitmap"]
-  void transferImageBitmap(ImageBitmap bitmap);
+  [Deprecated="ImageBitmapRenderingContext_TransferImageBitmap", Throws]
+  undefined transferImageBitmap(ImageBitmap bitmap);
 };

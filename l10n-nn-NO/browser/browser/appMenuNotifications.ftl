@@ -41,11 +41,11 @@ appmenu-update-other-instance-message = Ei ny { -brand-shorter-name }-oppdaterin
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = OK
     .buttonaccesskey = O
-appmenu-addon-post-install-message3 = Handter utvidingar og tema via applikasjonsmenyen.
+appmenu-addon-post-install-message3 = Handsam utvidingar og tema via applikasjonsmenyen.
 appmenu-addon-post-install-incognito-checkbox =
-    .label = Tillat denne utvidinga å kløyre i private vindauge
+    .label = Tillat denne utvidinga å køyre i private vindauge
     .accesskey = T
-    
+
 appmenu-new-tab-controlled-changes =
     .label = Ny fane-side er endra.
     .buttonlabel = Behald endringane

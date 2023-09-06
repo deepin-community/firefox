@@ -4,16 +4,12 @@
 
 "use strict";
 
-// Pass an empty scope object to the import to prevent "leaked window property"
-// errors in tests.
-var Preferences = ChromeUtils.import(
-  "resource://gre/modules/Preferences.jsm",
-  {}
-).Preferences;
-var TelemetryReportingPolicy = ChromeUtils.import(
-  "resource://gre/modules/TelemetryReportingPolicy.jsm",
-  {}
-).TelemetryReportingPolicy;
+var { Preferences } = ChromeUtils.importESModule(
+  "resource://gre/modules/Preferences.sys.mjs"
+);
+var { TelemetryReportingPolicy } = ChromeUtils.importESModule(
+  "resource://gre/modules/TelemetryReportingPolicy.sys.mjs"
+);
 
 const PREF_BRANCH = "datareporting.policy.";
 const PREF_FIRST_RUN = "toolkit.telemetry.reportingpolicy.firstRun";
@@ -30,20 +26,19 @@ const PREF_TELEMETRY_LOG_LEVEL = "toolkit.telemetry.log.level";
 const TEST_POLICY_VERSION = 37;
 
 function fakeShowPolicyTimeout(set, clear) {
-  let reportingPolicy = ChromeUtils.import(
-    "resource://gre/modules/TelemetryReportingPolicy.jsm",
-    null
+  let reportingPolicy = ChromeUtils.importESModule(
+    "resource://gre/modules/TelemetryReportingPolicy.sys.mjs"
   ).Policy;
   reportingPolicy.setShowInfobarTimeout = set;
   reportingPolicy.clearShowInfobarTimeout = clear;
 }
 
 function sendSessionRestoredNotification() {
-  let reportingPolicyImpl = ChromeUtils.import(
-    "resource://gre/modules/TelemetryReportingPolicy.jsm",
-    null
-  ).TelemetryReportingPolicyImpl;
-  reportingPolicyImpl.observe(null, "sessionstore-windows-restored", null);
+  let reportingPolicy = ChromeUtils.importESModule(
+    "resource://gre/modules/TelemetryReportingPolicy.sys.mjs"
+  ).Policy;
+
+  reportingPolicy.fakeSessionRestoreNotification();
 }
 
 /**
@@ -62,7 +57,7 @@ function promiseWaitForAlertActive(aNotificationBox) {
   let deferred = PromiseUtils.defer();
   aNotificationBox.stack.addEventListener(
     "AlertActive",
-    function() {
+    function () {
       deferred.resolve();
     },
     { once: true }
@@ -99,7 +94,7 @@ function triggerInfoBar(expectedTimeoutMs) {
   showInfobarCallback();
 }
 
-var checkInfobarButton = async function(aNotification) {
+var checkInfobarButton = async function (aNotification) {
   // Check that the button on the data choices infobar does the right thing.
   let buttons = aNotification.buttonContainer.getElementsByTagName("button");
   Assert.equal(
@@ -116,7 +111,7 @@ var checkInfobarButton = async function(aNotification) {
   await promiseNextTick();
 };
 
-add_task(async function setup() {
+add_setup(async function () {
   const isFirstRun = Preferences.get(PREF_FIRST_RUN, true);
   const bypassNotification = Preferences.get(PREF_BYPASS_NOTIFICATION, true);
   const currentPolicyVersion = Preferences.get(PREF_CURRENT_POLICY_VERSION, 1);

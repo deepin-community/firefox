@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-webpage-languages-window =
+webpage-languages-window2 =
     .title = Parameters da lingua per las paginas d'internet
-    .style = width: 70em
+    .style = min-width: 70em
 
 languages-close-key =
     .key = w
@@ -49,9 +49,9 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
-browser-languages-window =
+browser-languages-window2 =
     .title = Parameters da lingua da { -brand-short-name }
-    .style = width: 50em
+    .style = min-width: 50em
 
 browser-languages-description = { -brand-short-name } vegn a duvrar l'emprima lingua sco standard e sche necessari las linguas suandantas tenor lur successiun en la glista.
 

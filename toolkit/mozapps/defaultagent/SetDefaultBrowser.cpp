@@ -16,6 +16,28 @@
 #include "EventLog.h"
 #include "SetDefaultBrowser.h"
 
+/*
+ * The implementation for setting extension handlers by writing UserChoice.
+ *
+ * This is used by both SetDefaultBrowserUserChoice and
+ * SetDefaultExtensionHandlersUserChoice.
+ *
+ * @param aAumi The AUMI of the installation to set as default.
+ *
+ * @param aSid Current user's string SID
+ *
+ * @param aFileExtensions Optional null-terminated list of file association
+ * pairs to set as default, like `{ L".pdf", "FirefoxPDF", nullptr }`.
+ *
+ * @returns S_OK           All associations set and checked successfully.
+ *          MOZ_E_REJECTED UserChoice was set, but checking the default did not
+ *                         return our ProgID.
+ *          E_FAIL         Failed to set at least one association.
+ */
+static HRESULT SetDefaultExtensionHandlersUserChoiceImpl(
+    const wchar_t* aAumi, const wchar_t* const aSid,
+    const wchar_t* const* aFileExtensions);
+
 static bool AddMillisecondsToSystemTime(SYSTEMTIME& aSystemTime,
                                         ULONGLONG aIncrementMS) {
   FILETIME fileTime;
@@ -200,7 +222,8 @@ static bool VerifyUserDefault(const wchar_t* aExt, const wchar_t* aProgID) {
   return true;
 }
 
-HRESULT SetDefaultBrowserUserChoice(const wchar_t* aAumi) {
+HRESULT SetDefaultBrowserUserChoice(
+    const wchar_t* aAumi, const wchar_t* const* aExtraFileExtensions) {
   auto urlProgID = FormatProgID(L"FirefoxURL", aAumi);
   if (!CheckProgIDExists(urlProgID.get())) {
     LOG_ERROR_MESSAGE(L"ProgID %s not found", urlProgID.get());
@@ -210,6 +233,12 @@ HRESULT SetDefaultBrowserUserChoice(const wchar_t* aAumi) {
   auto htmlProgID = FormatProgID(L"FirefoxHTML", aAumi);
   if (!CheckProgIDExists(htmlProgID.get())) {
     LOG_ERROR_MESSAGE(L"ProgID %s not found", htmlProgID.get());
+    return MOZ_E_NO_PROGID;
+  }
+
+  auto pdfProgID = FormatProgID(L"FirefoxPDF", aAumi);
+  if (!CheckProgIDExists(pdfProgID.get())) {
+    LOG_ERROR_MESSAGE(L"ProgID %s not found", pdfProgID.get());
     return MOZ_E_NO_PROGID;
   }
 
@@ -238,7 +267,7 @@ HRESULT SetDefaultBrowserUserChoice(const wchar_t* aAumi) {
                       {L"http", urlProgID.get()},
                       {L".html", htmlProgID.get()},
                       {L".htm", htmlProgID.get()}};
-  for (int i = 0; i < mozilla::ArrayLength(associations); ++i) {
+  for (size_t i = 0; i < mozilla::ArrayLength(associations); ++i) {
     if (!SetUserChoice(associations[i].ext, sid.get(),
                        associations[i].progID)) {
       ok = false;
@@ -251,6 +280,17 @@ HRESULT SetDefaultBrowserUserChoice(const wchar_t* aAumi) {
     }
   }
 
+  if (ok) {
+    HRESULT hr = SetDefaultExtensionHandlersUserChoiceImpl(
+        aAumi, sid.get(), aExtraFileExtensions);
+    if (hr == MOZ_E_REJECTED) {
+      ok = false;
+      defaultRejected = true;
+    } else if (hr == E_FAIL) {
+      ok = false;
+    }
+  }
+
   // Notify shell to refresh icons
   ::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
 
@@ -260,7 +300,66 @@ HRESULT SetDefaultBrowserUserChoice(const wchar_t* aAumi) {
       return MOZ_E_REJECTED;
     }
     return E_FAIL;
-  } else {
-    return S_OK;
   }
+
+  return S_OK;
+}
+
+HRESULT SetDefaultExtensionHandlersUserChoice(
+    const wchar_t* aAumi, const wchar_t* const* aFileExtensions) {
+  auto sid = GetCurrentUserStringSid();
+  if (!sid) {
+    return E_FAIL;
+  }
+
+  bool ok = true;
+  bool defaultRejected = false;
+
+  HRESULT hr = SetDefaultExtensionHandlersUserChoiceImpl(aAumi, sid.get(),
+                                                         aFileExtensions);
+  if (hr == MOZ_E_REJECTED) {
+    ok = false;
+    defaultRejected = true;
+  } else if (hr == E_FAIL) {
+    ok = false;
+  }
+
+  // Notify shell to refresh icons
+  ::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
+
+  if (!ok) {
+    LOG_ERROR_MESSAGE(L"Failed setting default with %s", aAumi);
+    if (defaultRejected) {
+      return MOZ_E_REJECTED;
+    }
+    return E_FAIL;
+  }
+
+  return S_OK;
+}
+
+HRESULT SetDefaultExtensionHandlersUserChoiceImpl(
+    const wchar_t* aAumi, const wchar_t* const aSid,
+    const wchar_t* const* aFileExtensions) {
+  const wchar_t* const* extraFileExtension = aFileExtensions;
+  const wchar_t* const* extraProgIDRoot = aFileExtensions + 1;
+  while (extraFileExtension && *extraFileExtension && extraProgIDRoot &&
+         *extraProgIDRoot) {
+    // Formatting the ProgID here prevents using this helper to target arbitrary
+    // ProgIDs.
+    auto extraProgID = FormatProgID(*extraProgIDRoot, aAumi);
+
+    if (!SetUserChoice(*extraFileExtension, aSid, extraProgID.get())) {
+      return E_FAIL;
+    }
+
+    if (!VerifyUserDefault(*extraFileExtension, extraProgID.get())) {
+      return MOZ_E_REJECTED;
+    }
+
+    extraFileExtension += 2;
+    extraProgIDRoot += 2;
+  }
+
+  return S_OK;
 }

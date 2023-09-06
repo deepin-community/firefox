@@ -7,6 +7,9 @@
 
 use crate::computed_value_flags::ComputedValueFlags;
 use crate::dom::TElement;
+use crate::properties::longhands::contain::computed_value::T as Contain;
+use crate::properties::longhands::container_type::computed_value::T as ContainerType;
+use crate::properties::longhands::content_visibility::computed_value::T as ContentVisibility;
 use crate::properties::longhands::display::computed_value::T as Display;
 use crate::properties::longhands::float::computed_value::T as Float;
 use crate::properties::longhands::overflow_x::computed_value::T as Overflow;
@@ -137,9 +140,46 @@ impl<'a, 'b: 'a> StyleAdjuster<'a, 'b> {
     ///    computed to 'absolute' if the element is in a top layer.
     ///
     fn adjust_for_top_layer(&mut self) {
-        if !self.style.is_absolutely_positioned() && self.style.in_top_layer() {
+        if !self.style.in_top_layer() {
+            return;
+        }
+        if !self.style.is_absolutely_positioned() {
             self.style.mutate_box().set_position(Position::Absolute);
         }
+        if self.style.get_box().clone_display().is_contents() {
+            self.style.mutate_box().set_display(Display::Block);
+        }
+    }
+
+    /// -webkit-box with line-clamp and vertical orientation gets turned into
+    /// flow-root at computed-value time.
+    ///
+    /// This makes the element not be a flex container, with all that it
+    /// implies, but it should be safe. It matches blink, see
+    /// https://bugzilla.mozilla.org/show_bug.cgi?id=1786147#c10
+    fn adjust_for_webkit_line_clamp(&mut self) {
+        use crate::properties::longhands::_moz_box_orient::computed_value::T as BoxOrient;
+        use crate::values::specified::box_::{DisplayInside, DisplayOutside};
+        let box_style = self.style.get_box();
+        if box_style.clone__webkit_line_clamp().is_none() {
+            return;
+        }
+        let disp = box_style.clone_display();
+        if disp.inside() != DisplayInside::WebkitBox {
+            return;
+        }
+        if self.style.get_xul().clone__moz_box_orient() != BoxOrient::Vertical {
+            return;
+        }
+        let new_display = if disp.outside() == DisplayOutside::Block {
+            Display::FlowRoot
+        } else {
+            debug_assert_eq!(disp.outside(), DisplayOutside::Inline);
+            Display::InlineBlock
+        };
+        self.style
+            .mutate_box()
+            .set_adjusted_display(new_display, false);
     }
 
     /// CSS 2.1 section 9.7:
@@ -150,62 +190,6 @@ impl<'a, 'b: 'a> StyleAdjuster<'a, 'b> {
     fn adjust_for_position(&mut self) {
         if self.style.is_absolutely_positioned() && self.style.is_floating() {
             self.style.mutate_box().set_float(Float::None);
-        }
-    }
-
-    /// https://html.spec.whatwg.org/multipage/#inert-subtrees
-    ///
-    ///    If -moz-inert is applied then add:
-    ///        -moz-user-focus: none;
-    ///        -moz-user-input: none;
-    ///        -moz-user-modify: read-only;
-    ///        user-select: none;
-    ///        pointer-events: none;
-    ///        cursor: default;
-    ///
-    /// NOTE: dialog:-moz-topmost-modal-dialog is used to override above
-    /// rules to remove the inertness for the topmost modal dialog.
-    ///
-    /// NOTE: If this or the pointer-events tweak is removed, then
-    /// minimal-xul.css and the scrollbar style caching need to be tweaked.
-    fn adjust_for_inert(&mut self) {
-        use crate::values::specified::ui::CursorKind;
-        use crate::values::specified::ui::UserSelect;
-        use properties::longhands::_moz_inert::computed_value::T as Inert;
-        use properties::longhands::_moz_user_focus::computed_value::T as UserFocus;
-        use properties::longhands::_moz_user_input::computed_value::T as UserInput;
-        use properties::longhands::_moz_user_modify::computed_value::T as UserModify;
-        use properties::longhands::cursor::computed_value::T as Cursor;
-        use properties::longhands::pointer_events::computed_value::T as PointerEvents;
-
-        let needs_update = {
-            let ui = self.style.get_inherited_ui();
-            if ui.clone__moz_inert() == Inert::None {
-                return;
-            }
-
-            ui.clone__moz_user_focus() != UserFocus::None ||
-                ui.clone__moz_user_input() != UserInput::None ||
-                ui.clone__moz_user_modify() != UserModify::ReadOnly ||
-                ui.clone_pointer_events() != PointerEvents::None ||
-                ui.clone_cursor().keyword != CursorKind::Default ||
-                ui.clone_cursor().images != Default::default()
-        };
-
-        if needs_update {
-            let ui = self.style.mutate_inherited_ui();
-            ui.set__moz_user_focus(UserFocus::None);
-            ui.set__moz_user_input(UserInput::None);
-            ui.set__moz_user_modify(UserModify::ReadOnly);
-            ui.set_pointer_events(PointerEvents::None);
-            ui.set_cursor(Cursor {
-                images: Default::default(),
-                keyword: CursorKind::Default,
-            });
-        }
-
-        if self.style.get_ui().clone_user_select() != UserSelect::None {
-            self.style.mutate_ui().set_user_select(UserSelect::None);
         }
     }
 
@@ -267,7 +251,8 @@ impl<'a, 'b: 'a> StyleAdjuster<'a, 'b> {
 
     /// Compute a few common flags for both text and element's style.
     fn set_bits(&mut self) {
-        let display = self.style.get_box().clone_display();
+        let box_style = self.style.get_box();
+        let display = box_style.clone_display();
 
         if !display.is_contents() {
             if !self
@@ -294,6 +279,19 @@ impl<'a, 'b: 'a> StyleAdjuster<'a, 'b> {
         if self.style.is_root_element {
             self.style
                 .add_flags(ComputedValueFlags::IS_ROOT_ELEMENT_STYLE);
+        }
+
+        if box_style
+            .clone_effective_containment()
+            .contains(Contain::STYLE)
+        {
+            self.style
+                .add_flags(ComputedValueFlags::SELF_OR_ANCESTOR_HAS_CONTAIN_STYLE);
+        }
+
+        if box_style.clone_container_type().is_size_container_type() {
+            self.style
+                .add_flags(ComputedValueFlags::SELF_OR_ANCESTOR_HAS_SIZE_CONTAINER_TYPE);
         }
 
         #[cfg(feature = "servo-layout-2013")]
@@ -402,20 +400,6 @@ impl<'a, 'b: 'a> StyleAdjuster<'a, 'b> {
         }
     }
 
-    /// When mathvariant is not "none", font-weight and font-style are
-    /// both forced to "normal".
-    #[cfg(feature = "gecko")]
-    fn adjust_for_mathvariant(&mut self) {
-        use crate::properties::longhands::_moz_math_variant::computed_value::T as MozMathVariant;
-        use crate::properties::longhands::font_weight::computed_value::T as FontWeight;
-        use crate::values::generics::font::FontStyle;
-        if self.style.get_font().clone__moz_math_variant() != MozMathVariant::None {
-            let font_style = self.style.mutate_font();
-            font_style.set_font_weight(FontWeight::normal());
-            font_style.set_font_style(FontStyle::Normal);
-        }
-    }
-
     /// This implements an out-of-date spec. The new spec moves the handling of
     /// this to layout, which Gecko implements but Servo doesn't.
     ///
@@ -447,19 +431,34 @@ impl<'a, 'b: 'a> StyleAdjuster<'a, 'b> {
         properties::adjust_border_width(self.style);
     }
 
-    /// The initial value of outline-width may be changed at computed value time.
-    fn adjust_for_outline(&mut self) {
-        if self
-            .style
-            .get_outline()
-            .clone_outline_style()
-            .none_or_hidden() &&
-            self.style.get_outline().outline_has_nonzero_width()
-        {
-            self.style
-                .mutate_outline()
-                .set_outline_width(crate::Zero::zero());
+    /// column-rule-style: none causes a computed column-rule-width of zero
+    /// at computed value time.
+    fn adjust_for_column_rule_width(&mut self) {
+        let column_style = self.style.get_column();
+        if !column_style.clone_column_rule_style().none_or_hidden() {
+            return;
         }
+        if !column_style.column_rule_has_nonzero_width() {
+            return;
+        }
+        self.style
+            .mutate_column()
+            .set_column_rule_width(crate::Zero::zero());
+    }
+
+    /// outline-style: none causes a computed outline-width of zero at computed
+    /// value time.
+    fn adjust_for_outline_width(&mut self) {
+        let outline = self.style.get_outline();
+        if !outline.clone_outline_style().none_or_hidden() {
+            return;
+        }
+        if !outline.outline_has_nonzero_width() {
+            return;
+        }
+        self.style
+            .mutate_outline()
+            .set_outline_width(crate::Zero::zero());
     }
 
     /// CSS overflow-x and overflow-y require some fixup as well in some cases.
@@ -478,6 +477,85 @@ impl<'a, 'b: 'a> StyleAdjuster<'a, 'b> {
             let box_style = self.style.mutate_box();
             box_style.set_overflow_x(overflow_x.to_scrollable());
             box_style.set_overflow_y(overflow_y.to_scrollable());
+        }
+    }
+
+    fn adjust_for_contain(&mut self) {
+        let box_style = self.style.get_box();
+        let container_type = box_style.clone_container_type();
+        let content_visibility = box_style.clone_content_visibility();
+        if container_type == ContainerType::Normal &&
+            content_visibility == ContentVisibility::Visible
+        {
+            debug_assert_eq!(
+                box_style.clone_contain(),
+                box_style.clone_effective_containment()
+            );
+            return;
+        }
+        let old_contain = box_style.clone_contain();
+        let mut new_contain = old_contain;
+        match content_visibility {
+            ContentVisibility::Visible => {},
+            // `content-visibility:auto` also applies size containment when content
+            // is not relevant (and therefore skipped). This is checked in
+            // nsIFrame::GetContainSizeAxes.
+            ContentVisibility::Auto => {
+                new_contain.insert(Contain::LAYOUT | Contain::PAINT | Contain::STYLE)
+            },
+            ContentVisibility::Hidden => new_contain
+                .insert(Contain::LAYOUT | Contain::PAINT | Contain::SIZE | Contain::STYLE),
+        }
+        match container_type {
+            ContainerType::Normal => {},
+            // https://drafts.csswg.org/css-contain-3/#valdef-container-type-inline-size:
+            //     Applies layout containment, style containment, and inline-size
+            //     containment to the principal box.
+            ContainerType::InlineSize => {
+                new_contain.insert(Contain::LAYOUT | Contain::STYLE | Contain::INLINE_SIZE)
+            },
+            // https://drafts.csswg.org/css-contain-3/#valdef-container-type-size:
+            //     Applies layout containment, style containment, and size
+            //     containment to the principal box.
+            ContainerType::Size => {
+                new_contain.insert(Contain::LAYOUT | Contain::STYLE | Contain::SIZE)
+            },
+        }
+        if new_contain == old_contain {
+            debug_assert_eq!(
+                box_style.clone_contain(),
+                box_style.clone_effective_containment()
+            );
+            return;
+        }
+        self.style
+            .mutate_box()
+            .set_effective_containment(new_contain);
+    }
+
+    /// content-visibility: auto should force contain-intrinsic-size to gain
+    /// an auto value
+    ///
+    /// <https://github.com/w3c/csswg-drafts/issues/8407>
+    fn adjust_for_contain_intrinsic_size(&mut self) {
+        let content_visibility = self.style.get_box().clone_content_visibility();
+        if content_visibility != ContentVisibility::Auto {
+            return;
+        }
+
+        let pos = self.style.get_position();
+        let new_width = pos.clone_contain_intrinsic_width().add_auto_if_needed();
+        let new_height = pos.clone_contain_intrinsic_height().add_auto_if_needed();
+        if new_width.is_none() && new_height.is_none() {
+            return;
+        }
+
+        let pos = self.style.mutate_position();
+        if let Some(width) = new_width {
+            pos.set_contain_intrinsic_width(width);
+        }
+        if let Some(height) = new_height {
+            pos.set_contain_intrinsic_height(height);
         }
     }
 
@@ -816,9 +894,9 @@ impl<'a, 'b: 'a> StyleAdjuster<'a, 'b> {
     /// the same font as its fallback ('list-style-type') in case it fails to load.
     #[cfg(feature = "gecko")]
     fn adjust_for_marker_pseudo(&mut self) {
+        use crate::values::computed::counters::Content;
         use crate::values::computed::font::{FontFamily, FontSynthesis};
         use crate::values::computed::text::{LetterSpacing, WordSpacing};
-        use crate::values::computed::counters::{Content};
 
         let is_legacy_marker = self.style.pseudo.map_or(false, |p| p.is_marker()) &&
             self.style.get_list().clone_list_style_type().is_bullet() &&
@@ -826,21 +904,35 @@ impl<'a, 'b: 'a> StyleAdjuster<'a, 'b> {
         if !is_legacy_marker {
             return;
         }
-        if !self.style.flags.get().contains(ComputedValueFlags::HAS_AUTHOR_SPECIFIED_FONT_FAMILY) {
-            self.style.mutate_font().set_font_family(FontFamily::moz_bullet().clone());
+        let flags = self.style.flags.get();
+        if !flags.contains(ComputedValueFlags::HAS_AUTHOR_SPECIFIED_FONT_FAMILY) {
+            self.style
+                .mutate_font()
+                .set_font_family(FontFamily::moz_bullet().clone());
 
             // FIXME(mats): We can remove this if support for font-synthesis is added to @font-face rules.
             // Then we can add it to the @font-face rule in html.css instead.
             // https://github.com/w3c/csswg-drafts/issues/6081
-            if !self.style.flags.get().contains(ComputedValueFlags::HAS_AUTHOR_SPECIFIED_FONT_SYNTHESIS) {
-                self.style.mutate_font().set_font_synthesis(FontSynthesis::none());
+            if !flags.contains(ComputedValueFlags::HAS_AUTHOR_SPECIFIED_FONT_SYNTHESIS_WEIGHT) {
+                self.style
+                    .mutate_font()
+                    .set_font_synthesis_weight(FontSynthesis::None);
+            }
+            if !flags.contains(ComputedValueFlags::HAS_AUTHOR_SPECIFIED_FONT_SYNTHESIS_STYLE) {
+                self.style
+                    .mutate_font()
+                    .set_font_synthesis_style(FontSynthesis::None);
             }
         }
-        if !self.style.flags.get().contains(ComputedValueFlags::HAS_AUTHOR_SPECIFIED_LETTER_SPACING) {
-            self.style.mutate_inherited_text().set_letter_spacing(LetterSpacing::normal());
+        if !flags.contains(ComputedValueFlags::HAS_AUTHOR_SPECIFIED_LETTER_SPACING) {
+            self.style
+                .mutate_inherited_text()
+                .set_letter_spacing(LetterSpacing::normal());
         }
-        if !self.style.flags.get().contains(ComputedValueFlags::HAS_AUTHOR_SPECIFIED_WORD_SPACING) {
-            self.style.mutate_inherited_text().set_word_spacing(WordSpacing::normal());
+        if !flags.contains(ComputedValueFlags::HAS_AUTHOR_SPECIFIED_WORD_SPACING) {
+            self.style
+                .mutate_inherited_text()
+                .set_word_spacing(WordSpacing::normal());
         }
     }
 
@@ -882,12 +974,14 @@ impl<'a, 'b: 'a> StyleAdjuster<'a, 'b> {
         }
         self.adjust_for_top_layer();
         self.blockify_if_necessary(layout_parent_style, element);
+        self.adjust_for_webkit_line_clamp();
         self.adjust_for_position();
         self.adjust_for_overflow();
+        self.adjust_for_contain();
+        self.adjust_for_contain_intrinsic_size();
         #[cfg(feature = "gecko")]
         {
             self.adjust_for_table_text_align();
-            self.adjust_for_mathvariant();
             self.adjust_for_justify_items();
         }
         #[cfg(feature = "servo")]
@@ -895,7 +989,8 @@ impl<'a, 'b: 'a> StyleAdjuster<'a, 'b> {
             self.adjust_for_alignment(layout_parent_style);
         }
         self.adjust_for_border_width();
-        self.adjust_for_outline();
+        self.adjust_for_column_rule_width();
+        self.adjust_for_outline_width();
         self.adjust_for_writing_mode(layout_parent_style);
         #[cfg(feature = "gecko")]
         {
@@ -908,7 +1003,6 @@ impl<'a, 'b: 'a> StyleAdjuster<'a, 'b> {
         #[cfg(feature = "gecko")]
         {
             self.adjust_for_appearance(element);
-            self.adjust_for_inert();
             self.adjust_for_marker_pseudo();
         }
         self.set_bits();

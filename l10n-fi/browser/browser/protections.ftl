@@ -65,22 +65,20 @@ cryptominer-tab-content = Kryptolouhijat käyttävät tietokoneesi laskentatehoa
 protections-close-button2 =
     .aria-label = Sulje
     .title = Sulje
-  
+
 mobile-app-title = Estä mainosseuraimia useammilla laitteilla
 mobile-app-card-content = Käytä mobiiliselainta, jossa on sisäänrakennettu suojaus mainosseurantaa vastaan.
 mobile-app-links = { -brand-product-name }-selain <a data-l10n-name="android-mobile-inline-link">Androidille</a> ja <a data-l10n-name="ios-mobile-inline-link">iOS:lle</a>
 
 lockwise-title = Lopeta salasanojen unohtaminen
-lockwise-title-logged-in2 = Salasanojen hallinta
-lockwise-header-content = { -lockwise-brand-name } tallentaa salasanasi turvallisesti selaimeesi.
+passwords-title-logged-in = Hallinnoi salasanojasi
+passwords-header-content = { -brand-product-name } tallentaa salasanasi turvallisesti selaimeesi.
 lockwise-header-content-logged-in = Tallenna salasanasi turvallisesti ja synkronoi ne eri laitteiden välillä.
-protection-report-save-passwords-button = Tallenna salasanat
-    .title = Tallenna salasanat { -lockwise-brand-short-name }en
-protection-report-manage-passwords-button = Hallitse salasanoja
-    .title = Hallitse salasanoja { -lockwise-brand-short-name }ssa
-lockwise-mobile-app-title = Ota salasanasi mukaan kaikkialle
-lockwise-no-logins-card-content = Käytä { -brand-short-name }-selaimeen tallennettuja salasanoja missä tahansa laitteessa.
-lockwise-app-links = { -lockwise-brand-name } <a data-l10n-name="lockwise-android-inline-link">Androidille</a> ja <a data-l10n-name="lockwise-ios-inline-link">iOS:lle</a>
+protection-report-passwords-save-passwords-button = Tallenna salasanat
+    .title = Tallenna salasanat
+protection-report-passwords-manage-passwords-button = Hallitse salasanoja
+    .title = Hallitse salasanoja
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

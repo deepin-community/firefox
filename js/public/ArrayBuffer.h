@@ -8,11 +8,14 @@
 #ifndef js_ArrayBuffer_h
 #define js_ArrayBuffer_h
 
+#include "mozilla/UniquePtr.h"
+
 #include <stddef.h>  // size_t
 #include <stdint.h>  // uint32_t
 
 #include "jstypes.h"  // JS_PUBLIC_API
 #include "js/TypeDecls.h"
+#include "js/Utility.h"
 
 struct JS_PUBLIC_API JSContext;
 class JS_PUBLIC_API JSObject;
@@ -33,18 +36,77 @@ extern JS_PUBLIC_API JSObject* NewArrayBuffer(JSContext* cx, size_t nbytes);
  * if |nbytes == 0|.  |contents| must be allocated compatible with deallocation
  * by |JS_free|.
  *
- * If and only if an ArrayBuffer is successfully created and returned,
- * ownership of |contents| is transferred to the new ArrayBuffer.
- *
- * Care must be taken that |nbytes| bytes of |content| remain valid for the
+ * Care must be taken that |nbytes| bytes of |contents| remain valid for the
  * duration of this call.  In particular, passing the length/pointer of existing
  * typed array or ArrayBuffer data is generally unsafe: if a GC occurs during a
  * call to this function, it could move those contents to a different location
  * and invalidate the provided pointer.
  */
-extern JS_PUBLIC_API JSObject* NewArrayBufferWithContents(JSContext* cx,
-                                                          size_t nbytes,
-                                                          void* contents);
+extern JS_PUBLIC_API JSObject* NewArrayBufferWithContents(
+    JSContext* cx, size_t nbytes,
+    mozilla::UniquePtr<void, JS::FreePolicy> contents);
+
+/**
+ * Create a new ArrayBuffer with the given |contents|, which may be null only
+ * if |nbytes == 0|.  |contents| must be allocated compatible with deallocation
+ * by |JS_free|.
+ *
+ * Care must be taken that |nbytes| bytes of |contents| remain valid for the
+ * duration of this call.  In particular, passing the length/pointer of existing
+ * typed array or ArrayBuffer data is generally unsafe: if a GC occurs during a
+ * call to this function, it could move those contents to a different location
+ * and invalidate the provided pointer.
+ */
+inline JS_PUBLIC_API JSObject* NewArrayBufferWithContents(
+    JSContext* cx, size_t nbytes,
+    mozilla::UniquePtr<char[], JS::FreePolicy> contents) {
+  // As a convenience, provide an overload for UniquePtr<char[]>.
+  mozilla::UniquePtr<void, JS::FreePolicy> ptr{contents.release()};
+  return NewArrayBufferWithContents(cx, nbytes, std::move(ptr));
+}
+
+/**
+ * Create a new ArrayBuffer with the given |contents|, which may be null only
+ * if |nbytes == 0|.  |contents| must be allocated compatible with deallocation
+ * by |JS_free|.
+ *
+ * Care must be taken that |nbytes| bytes of |contents| remain valid for the
+ * duration of this call.  In particular, passing the length/pointer of existing
+ * typed array or ArrayBuffer data is generally unsafe: if a GC occurs during a
+ * call to this function, it could move those contents to a different location
+ * and invalidate the provided pointer.
+ */
+inline JS_PUBLIC_API JSObject* NewArrayBufferWithContents(
+    JSContext* cx, size_t nbytes,
+    mozilla::UniquePtr<uint8_t[], JS::FreePolicy> contents) {
+  // As a convenience, provide an overload for UniquePtr<uint8_t[]>.
+  mozilla::UniquePtr<void, JS::FreePolicy> ptr{contents.release()};
+  return NewArrayBufferWithContents(cx, nbytes, std::move(ptr));
+}
+
+/**
+ * Marker enum to notify callers that the buffer contents must be freed manually
+ * when the ArrayBuffer allocation failed.
+ */
+enum class NewArrayBufferOutOfMemory { CallerMustFreeMemory };
+
+/**
+ * Create a new ArrayBuffer with the given |contents|, which may be null only
+ * if |nbytes == 0|.  |contents| must be allocated compatible with deallocation
+ * by |JS_free|.
+ *
+ * !!! IMPORTANT !!!
+ * If and only if an ArrayBuffer is successfully created and returned,
+ * ownership of |contents| is transferred to the new ArrayBuffer.
+ *
+ * Care must be taken that |nbytes| bytes of |contents| remain valid for the
+ * duration of this call.  In particular, passing the length/pointer of existing
+ * typed array or ArrayBuffer data is generally unsafe: if a GC occurs during a
+ * call to this function, it could move those contents to a different location
+ * and invalidate the provided pointer.
+ */
+extern JS_PUBLIC_API JSObject* NewArrayBufferWithContents(
+    JSContext* cx, size_t nbytes, void* contents, NewArrayBufferOutOfMemory);
 
 /**
  * Create a new ArrayBuffer, whose bytes are set to the values of the bytes in
@@ -68,6 +130,24 @@ extern JS_PUBLIC_API JSObject* CopyArrayBuffer(
     JSContext* cx, JS::Handle<JSObject*> maybeArrayBuffer);
 
 using BufferContentsFreeFunc = void (*)(void* contents, void* userData);
+
+/**
+ * UniquePtr deleter for external buffer contents.
+ */
+class JS_PUBLIC_API BufferContentsDeleter {
+  BufferContentsFreeFunc freeFunc_ = nullptr;
+  void* userData_ = nullptr;
+
+ public:
+  MOZ_IMPLICIT BufferContentsDeleter(BufferContentsFreeFunc freeFunc,
+                                     void* userData = nullptr)
+      : freeFunc_(freeFunc), userData_(userData) {}
+
+  void operator()(void* contents) const { freeFunc_(contents, userData_); }
+
+  BufferContentsFreeFunc freeFunc() const { return freeFunc_; }
+  void* userData() const { return userData_; }
+};
 
 /**
  * Create a new ArrayBuffer with the given contents. The contents must not be
@@ -96,8 +176,8 @@ using BufferContentsFreeFunc = void (*)(void* contents, void* userData);
  * freed with some function other than free().
  */
 extern JS_PUBLIC_API JSObject* NewExternalArrayBuffer(
-    JSContext* cx, size_t nbytes, void* contents,
-    BufferContentsFreeFunc freeFunc, void* freeUserData = nullptr);
+    JSContext* cx, size_t nbytes,
+    mozilla::UniquePtr<void, BufferContentsDeleter> contents);
 
 /**
  * Create a new ArrayBuffer with the given non-null |contents|.
@@ -250,6 +330,12 @@ extern JS_PUBLIC_API uint8_t* GetArrayBufferData(JSObject* obj,
 extern JS_PUBLIC_API bool DetachArrayBuffer(JSContext* cx,
                                             Handle<JSObject*> obj);
 
+// Indicates if an object has a defined [[ArrayBufferDetachKey]] internal slot,
+// which indicates an ArrayBuffer cannot be detached
+extern JS_PUBLIC_API bool HasDefinedArrayBufferDetachKey(JSContext* cx,
+                                                         Handle<JSObject*> obj,
+                                                         bool* isDefined);
+
 /**
  * Steal the contents of the given ArrayBuffer. The ArrayBuffer has its length
  * set to 0 and its contents array cleared. The caller takes ownership of the
@@ -260,10 +346,34 @@ extern JS_PUBLIC_API void* StealArrayBufferContents(JSContext* cx,
                                                     Handle<JSObject*> obj);
 
 /**
- * Enable or disable support for large (>= 2 GB) ArrayBuffers on 64-bit builds.
- * Has no effect on 32-bit builds.
+ * Copy data from one array buffer to another.
+ *
+ * Both fromBuffer and toBuffer must be (possibly wrapped)
+ * ArrayBufferObjectMaybeShared.
+ *
+ * This method may throw if the sizes don't match, or if unwrapping fails.
+ *
+ * The API for this is modelled on CopyDataBlockBytes from the spec:
+ * https://tc39.es/ecma262/#sec-copydatablockbytes
  */
-extern JS_PUBLIC_API void SetLargeArrayBuffersEnabled(bool enable);
+[[nodiscard]] extern JS_PUBLIC_API bool ArrayBufferCopyData(
+    JSContext* cx, Handle<JSObject*> toBlock, size_t toIndex,
+    Handle<JSObject*> fromBlock, size_t fromIndex, size_t count);
+
+/**
+ * Copy data from one array buffer to another.
+ *
+ * srcBuffer must be a (possibly wrapped) ArrayBufferObjectMaybeShared.
+ *
+ * This method may throw if unwrapping or allocation fails.
+ *
+ * The API for this is modelled on CloneArrayBuffer from the spec:
+ * https://tc39.es/ecma262/#sec-clonearraybuffer
+ */
+extern JS_PUBLIC_API JSObject* ArrayBufferClone(JSContext* cx,
+                                                Handle<JSObject*> srcBuffer,
+                                                size_t srcByteOffset,
+                                                size_t srcLength);
 
 }  // namespace JS
 

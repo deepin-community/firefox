@@ -8,6 +8,7 @@
 #ifndef _ACCESSIBLE_TEXT_H
 #define _ACCESSIBLE_TEXT_H
 
+#include <utility>
 #include "AccessibleText.h"
 #include "nsIAccessibleText.h"
 
@@ -18,7 +19,7 @@ template <class T>
 class StaticRefPtr;
 
 namespace a11y {
-class HyperTextAccessibleWrap;
+class HyperTextAccessibleBase;
 
 class ia2AccessibleText : public IAccessibleText {
  public:
@@ -117,12 +118,16 @@ class ia2AccessibleText : public IAccessibleText {
       /* [retval][out] */ IA2TextSegment* oldText);
 
   static void InitTextChangeData();
-  static void UpdateTextChangeData(HyperTextAccessibleWrap* aAcc, bool aInsert,
-                                   const nsString& aStr, int32_t aStart,
+  static void UpdateTextChangeData(HyperTextAccessibleBase* aAcc, bool aInsert,
+                                   const nsAString& aStr, int32_t aStart,
                                    uint32_t aLen);
 
  protected:
-  static StaticRefPtr<HyperTextAccessibleWrap> sLastTextChangeAcc;
+  // This can't be a RefPtr because RemoteAccessibles aren't ref counted. It
+  // can't be an id because this is global and ids are only unique within the
+  // document. Since this is only used for comparison, we use a raw pointer.
+  // This should *never* be dereferenced, only used for comparison!
+  static HyperTextAccessibleBase* sLastTextChangeAcc;
   static StaticAutoPtr<nsString> sLastTextChangeString;
   static bool sLastTextChangeWasInsert;
   static uint32_t sLastTextChangeStart;
@@ -132,7 +137,7 @@ class ia2AccessibleText : public IAccessibleText {
   HRESULT GetModifiedText(bool aGetInsertedText, IA2TextSegment* aNewText);
   AccessibleTextBoundary GetGeckoTextBoundary(
       enum IA2TextBoundaryType coordinateType);
-  HyperTextAccessibleWrap* TextAcc();
+  HyperTextAccessibleBase* TextAcc();
 };
 
 }  // namespace a11y

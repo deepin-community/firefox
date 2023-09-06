@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = veiviser for ny profil
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Introduksjon
-       *[other] Velkommen til { create-profile-window.title }
+       *[other] Velkommen til { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } lagrer innstillinger og annen brukerdata i din personlige profil.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Konklusjon
-       *[other] Fullfører { create-profile-window.title }
+       *[other] Fullfører { create-profile-window2.title }
     }
 
 profile-creation-intro = Dersom du oppretter flere profiler, kan du skille dem fra hverandre med profilnavnet. Du kan bruke navnet foreslått her, eller du kan bruke et annet.

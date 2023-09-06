@@ -50,6 +50,12 @@ class OptimizationInfo {
   // Toggles whether redundant checks get removed.
   bool eliminateRedundantChecks_;
 
+  // Toggles whether redundant shape guards get removed.
+  bool eliminateRedundantShapeGuards_;
+
+  // Toggles whether redundant GC barriers get removed.
+  bool eliminateRedundantGCBarriers_;
+
   // Toggles whether interpreted scripts get inlined.
   bool inlineInterpreted_;
 
@@ -92,6 +98,8 @@ class OptimizationInfo {
         ama_(false),
         edgeCaseAnalysis_(false),
         eliminateRedundantChecks_(false),
+        eliminateRedundantShapeGuards_(false),
+        eliminateRedundantGCBarriers_(false),
         inlineInterpreted_(false),
         inlineNative_(false),
         gvn_(false),
@@ -116,10 +124,11 @@ class OptimizationInfo {
     return inlineNative_ && !JitOptions.disableInlining;
   }
 
-  uint32_t compilerWarmUpThreshold(JSScript* script,
+  uint32_t compilerWarmUpThreshold(JSContext* cx, JSScript* script,
                                    jsbytecode* pc = nullptr) const;
 
-  uint32_t recompileWarmUpThreshold(JSScript* script, jsbytecode* pc) const;
+  uint32_t recompileWarmUpThreshold(JSContext* cx, JSScript* script,
+                                    jsbytecode* pc) const;
 
   bool gvnEnabled() const { return gvn_ && !JitOptions.disableGvn; }
 
@@ -151,6 +160,16 @@ class OptimizationInfo {
     return eliminateRedundantChecks_;
   }
 
+  bool eliminateRedundantShapeGuardsEnabled() const {
+    return eliminateRedundantShapeGuards_ &&
+           !JitOptions.disableRedundantShapeGuards;
+  }
+
+  bool eliminateRedundantGCBarriersEnabled() const {
+    return eliminateRedundantGCBarriers_ &&
+           !JitOptions.disableRedundantGCBarriers;
+  }
+
   IonRegisterAllocator registerAllocator() const {
     return JitOptions.forcedRegisterAllocator.valueOr(registerAllocator_);
   }
@@ -173,7 +192,7 @@ class OptimizationLevelInfo {
     return &infos_[level];
   }
 
-  OptimizationLevel levelForScript(JSScript* script,
+  OptimizationLevel levelForScript(JSContext* cx, JSScript* script,
                                    jsbytecode* pc = nullptr) const;
 };
 

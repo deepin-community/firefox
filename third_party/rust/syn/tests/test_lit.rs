@@ -1,9 +1,14 @@
+#![allow(
+    clippy::float_cmp,
+    clippy::non_ascii_literal,
+    clippy::uninlined_format_args
+)]
+
 #[macro_use]
 mod macros;
 
 use proc_macro2::{Delimiter, Group, Literal, Span, TokenStream, TokenTree};
 use quote::ToTokens;
-use std::iter::FromIterator;
 use std::str::FromStr;
 use syn::{Lit, LitFloat, LitInt, LitStr};
 
@@ -47,6 +52,10 @@ fn strings() {
     test_string(
         "\"contains\nnewlines\\\nescaped newlines\"",
         "contains\nnewlinesescaped newlines",
+    );
+    test_string(
+        "\"escaped newline\\\n \x0C unsupported whitespace\"",
+        "escaped newline\x0C unsupported whitespace",
     );
     test_string("r\"raw\nstring\\\nhere\"", "raw\nstring\\\nhere");
     test_string("\"...\"q", "...");
@@ -176,7 +185,6 @@ fn ints() {
 
 #[test]
 fn floats() {
-    #[cfg_attr(feature = "cargo-clippy", allow(float_cmp))]
     fn test_float(s: &str, value: f64, suffix: &str) {
         match lit(s) {
             Lit::Float(lit) => {
@@ -212,12 +220,6 @@ fn negative() {
     assert_eq!("-1.5", LitFloat::new("-1.5", span).to_string());
     assert_eq!("-1.5f32", LitFloat::new("-1.5f32", span).to_string());
     assert_eq!("-1.5f64", LitFloat::new("-1.5f64", span).to_string());
-}
-
-#[test]
-fn negative_overflow() {
-    assert!(syn::parse_str::<LitFloat>("-1.0e99f64").is_ok());
-    assert!(syn::parse_str::<LitFloat>("-1.0e999f64").is_err());
 }
 
 #[test]

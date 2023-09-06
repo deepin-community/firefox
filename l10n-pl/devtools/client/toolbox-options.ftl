@@ -41,6 +41,17 @@ options-collapse-attrs-label = Skracanie atrybutów DOM
 options-collapse-attrs-tooltip =
     .title = Skraca długie nazwy atrybutów DOM w inspektorze
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Kliknięcie i przeciągnięcie, aby zmienić rozmiar
+options-inspector-draggable-properties-tooltip =
+    .title = Umożliwia zmianę rozmiaru przez kliknięcie i przeciągnięcie w widoku reguł inspektora.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Prostsze wyróżnianie przy włączonej opcji preferowania zmniejszonego ruchu
+options-inspector-simplified-highlighters-tooltip =
+    .title = Włącza uproszczone wyróżnianie, kiedy włączona jest opcja preferowania zmniejszonego ruchu. Wyświetla linie zamiast wypełnionych prostokątów wokół wyróżnionych elementów, aby uniknąć migania.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Domyślny model przestrzeni barw
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Jak w oryginale
 options-default-color-unit-hex = Hex
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Nazwy kolorów
 
 ## Style Editor section
@@ -111,12 +123,22 @@ options-disable-javascript-tooltip =
 # The label for checkbox that toggles chrome debugging, i.e. the devtools.chrome.enabled preference
 options-enable-chrome-label = Narzędzia debugowania chrome przeglądarki i dodatków
 options-enable-chrome-tooltip =
-    .title = Włączenie tej opcji pozwoli na używanie wielu narzędzi dla programistów w kontekście przeglądarki (poprzez Narzędzia → Dla twórców witryn → Narzędzia przeglądarki) i debugowanie dodatków z menedżera dodatków
+    .title = Włączenie tej opcji umożliwi używanie wielu narzędzi dla programistów w kontekście przeglądarki (poprzez Narzędzia → Dla twórców witryn → Narzędzia przeglądarki) i debugowanie dodatków z menedżera dodatków
 
 # The label for checkbox that toggles remote debugging, i.e. the devtools.debugger.remote-enabled preference
 options-enable-remote-label = Debugowanie zdalne
 options-enable-remote-tooltip2 =
-    .title = Włączenie tej opcji pozwoli na zdalne debugowanie tej instancji przeglądarki
+    .title = Włączenie tej opcji umożliwi zdalne debugowanie tej instancji przeglądarki
+
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Otwieranie i zamykanie narzędzi dla programistów klawiszem F12
+options-enable-f12-tooltip =
+    .title = Włączenie tej opcji umożliwi otwieranie i zamykanie narzędzi dla programistów klawiszem F12
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Niestandardowe formatery
+options-enable-custom-formatters-tooltip =
+    .title = Włączenie tej opcji umożliwi witrynom określanie niestandardowych formaterów dla obiektów DOM
 
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Wątki usługowe przez HTTP (gdy narzędzia są otwarte)
@@ -130,9 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Tylko bieżąca sesja, przeładowuje stronę
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Informacje platformy Gecko
-options-show-platform-data-tooltip =
-    .title = Po włączeniu tej opcji Profiler JavaScript będzie raportował symbole platformy Gecko

@@ -22,7 +22,7 @@ menu-application-hide-other =
 menu-application-show-all =
     .label = Ipakita ang Lahat
 menu-application-touch-bar =
-    .label = I-customize ang Touch Bar…
+    .label = i-Customize ang Touch Bar…
 
 ##
 
@@ -38,16 +38,11 @@ menu-quit =
             [windows] x
            *[other] Q
         }
+
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Isara ang { -brand-shorter-name }
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Lumabas { -brand-shorter-name }
+
 menu-about =
     .label = Tungkol sa { -brand-shorter-name }
     .accesskey = A
@@ -77,9 +72,6 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Magbukas ng File...
     .accesskey = O
-menu-file-close =
-    .label = Isara
-    .accesskey = C
 menu-file-close-window =
     .label = Isara ang Window
     .accesskey = d
@@ -95,9 +87,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Page Setup...
     .accesskey = u
-menu-file-print-preview =
-    .label = Print Preview
-    .accesskey = v
 menu-file-print =
     .label = Print
     .accesskey = P
@@ -167,6 +156,9 @@ menu-view-page-style-no-style =
 menu-view-page-basic-style =
     .label = Basic na Estilo ng Pahina
     .accesskey = b
+menu-view-repair-text-encoding =
+    .label = Ayusin ang Pag-encode ng Teksto
+    .accesskey = c
 
 ## These should match what Safari and other Apple applications
 ## use on macOS.
@@ -180,6 +172,17 @@ menu-view-exit-full-screen =
 menu-view-full-screen =
     .label = Buong Screen
     .accesskey = B
+
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Ipasok ang Reader View
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Isara ang Reader View
+    .accesskey = R
 
 ##
 
@@ -209,18 +212,14 @@ menu-history-undo-menu =
     .label = Mga Naisarang Tab
 menu-history-undo-window-menu =
     .label = Mga Isinarang Window Kamakailan
-menu-history-reopen-all-tabs = Muling Buksan ang Lahat ng mga Tab
-menu-history-reopen-all-windows = Muling buksan ang Lahat ng mga Window
 
 ## Bookmarks Menu
 
 menu-bookmarks-menu =
     .label = Mga Bookmark
     .accesskey = B
-menu-bookmark-current-tab =
-    .label = I-bookmark ang Kasalukuyang Tab
-menu-bookmark-edit =
-    .label = i-Edit ang bookmark na ito
+menu-bookmarks-manage =
+    .label = Pamahalaan ang mga Bookmark
 menu-bookmarks-all-tabs =
     .label = i-Bookmark ang Lahat ng mga Tab…
 menu-bookmarks-toolbar =
@@ -300,11 +299,11 @@ menu-help =
 menu-get-help =
     .label = Humingi ng Tulong
     .accesskey = T
+menu-help-more-troubleshooting-info =
+    .label = Karagdagang Impormasyon sa Pag-troubleshoot
+    .accesskey = t
 menu-help-report-site-issue =
     .label = Mag-report ng Site Issue…
-menu-help-feedback-page =
-    .label = Magbigay ng Katugunan...
-    .accesskey = s
 menu-help-enter-troubleshoot-mode2 =
     .label = Troubleshoot Mode…
     .accesskey = M

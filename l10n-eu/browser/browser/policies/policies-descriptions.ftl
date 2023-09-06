@@ -13,6 +13,7 @@
 policy-3rdparty = Ezarri politikak WebExtension gehigarriek chrome.storage.managed bidez sarbidea izan dezaten.
 policy-AllowedDomainsForApps = Definitu Google Workspace-rako sarbidea izango duten domeinuak.
 policy-AppAutoUpdate = Gaitu edo desgaitu aplikazioaren eguneraketa automatikoa.
+policy-AppUpdatePin = Eragotzi { -brand-short-name } eguneratzea bertsio zehatz batetik aurrera.
 policy-AppUpdateURL = Ezarri aplikazioa-eguneraketen URL pertsonalizatua
 policy-Authentication = Konfiguratu onartzen duten webguneentzat integratutako autentifikazioa.
 policy-AutoLaunchProtocolsFromOrigins = Definitu erabiltzaileari galdetu gabe jatorri zehatzetatik erabil daitezkeen kanpoko protokoloen zerrenda.
@@ -25,6 +26,8 @@ policy-Bookmarks = Sortu laster-markak laster-marken tresna-barran, menuan edo h
 policy-CaptivePortal = Gaitu edo desgaitu atari gatibuen euskarria.
 policy-CertificatesDescription = Ziurtagiriak gehitzea edo integratutako ziurtagiriak erabiltzea.
 policy-Cookies = Baimendu edo ukatu webguneei cookieak ezartzea.
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Ezarri edukiontziei lotutako politikak.
 policy-DisabledCiphers = Desgaitu zifratzeak.
 policy-DefaultDownloadDirectory = Ezarri deskarga-direktorio lehenetsia.
 policy-DisableAppUpdate = Eragotzi nabigatzailea eguneratzea.
@@ -37,10 +40,10 @@ policy-DisableFirefoxAccounts = Desgaitu { -fxaccount-brand-name(kasua: "n") } o
 policy-DisableFirefoxScreenshots = Desgaitu Firefoxen pantaila-argazkien eginbidea.
 policy-DisableFirefoxStudies = Eragotzi { -brand-short-name }(r)i esperimentuak exekutatzea.
 policy-DisableForgetButton = Eragotzi 'Ahaztu' botoirako sarbidea.
-policy-DisableFormHistory = Ez gogoratu bilaketa- eta inprimaki-historia.
+policy-DisableFormHistory = Ez gogoratu bilaketen eta inprimakien historia.
 policy-DisablePrimaryPasswordCreation = Ezarrita badago, ezingo da pasahitz nagusia sortu.
 policy-DisablePasswordReveal = Ez baimendu gordetako saio-hasieretan pasahitzak agerraraztea.
-policy-DisablePocket = Desgaitu webguneak Pocket zerbitzura gordetzeko eginbidea.
+policy-DisablePocket2 = Desgaitu webguneak { -pocket-brand-name } zerbitzura gordetzeko eginbidea.
 policy-DisablePrivateBrowsing = Desgaitu nabigatze pribatua.
 policy-DisableProfileImport = Desgaitu beste nabigatzaile batetik datuak inportatzeko menu-komandoa.
 policy-DisableProfileRefresh = Desgaitu 'Biziberritu { -brand-short-name }' botoia about:support orrian.
@@ -49,6 +52,7 @@ policy-DisableSecurityBypass = Eragotzi erabiltzaileak zenbait segurtasun-abisu 
 policy-DisableSetAsDesktopBackground = Desgaitu irudientzat 'Jarri idazmahaiaren atzeko planoan' menu-komandoa.
 policy-DisableSystemAddonUpdate = Eragotzi nabigatzaileak sistemaren gehigarriak instalatzea eta eguneratzea.
 policy-DisableTelemetry = Desgaitu Telemetry.
+policy-DisableThirdPartyModuleBlocking = Eragotzi erabiltzaileak { -brand-short-name } prozesuan txertatzen diren hirugarrenen moduluak blokeatzea.
 policy-DisplayBookmarksToolbar = Bistaratu lehenespenez laster-marken tresna-barra.
 policy-DisplayMenuBar = Bistaratu lehenespenez menu-barra.
 policy-DNSOverHTTPS = Konfiguratu HTTPS gaineko DNSa.
@@ -58,14 +62,15 @@ policy-DownloadDirectory = Ezarri eta blokeatu deskarga-direktorioa.
 policy-EnableTrackingProtection = Gaitu edo desgaitu edukia blokeatzea eta blokeatu ezarpen hau.
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Gaitu edo desgaitu Encrypted Media Extensions eta aukeran blokeatu ezarpen hau.
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Desgaitu fitxategi-luzapenetan oinarritutako abisuak domeinuetako fitxategi-mota zehatzetarako.
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
 policy-Extensions = Instalatu, desinstalatu edo blokeatu hedapenak. Instalatzeko aukerak URLak edo bide-izenak hartzen ditu parametro gisa. Desinstalatzeko eta blokeatzeko aukerek, berriz, hedapen-IDak.
 policy-ExtensionSettings = Kudeatu hedapenen instalazioko arlo guztiak.
 policy-ExtensionUpdate = Gaitu edo desgaitu hedapenen eguneraketa automatikoa.
-policy-FirefoxHome = Konfiguratu Firefox Home.
-policy-FlashPlugin = Baimendu edo ukatu Flash plugina erabiltzea.
+policy-FirefoxHome2 = Konfiguratu { -firefox-home-brand-name }.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Hitz bakarreko sarrerak helbide-barran idaztean, behartu intranet gunerako nabigazio zuzena bilaketa egin ordez.
 policy-Handlers = Konfiguratu aplikazio-maneiatzaile lehenetsiak.
 policy-HardwareAcceleration = Ez badago ezarrita, hardware-azelerazioa desgaituko da.
 # “lock” means that the user won’t be able to change this setting
@@ -92,6 +97,7 @@ policy-OfferToSaveLoginsDefault = Ezarri balio lehenetsia { -brand-short-name }(
 policy-OverrideFirstRunPage = Gainidatzi lehen abioko orria. Utzi zurian politika hau lehen abioko orria desgaitu nahi baduzu.
 policy-OverridePostUpdatePage = Gainidatzi eguneraketen ondoko "Nobedadeak" orria. Utzi politika hau zurian eguneraketen ondoko orria desgaitu nahi baduzu.
 policy-PasswordManagerEnabled = Gaitu pasahitzak pasahitz-kudeatzailean gordetzea.
+policy-PasswordManagerExceptions = Eragotzi { -brand-short-name }(r)i gune jakinetako pasahitzak gordetzea.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Desgaitu edo konfiguratu PDF.js, { -brand-short-name }(r)en integratutako PDF ikustailea.
 policy-Permissions2 = Konfiguratu kamera, mikrofonoa, kokapena, jakinarazpenak eta erreprodukzio automatikoa erabiltzeko baimenak.
@@ -105,13 +111,15 @@ policy-SanitizeOnShutdown2 = Ixtean, garbitu nabigazio-datuak.
 policy-SearchBar = Ezarri bilaketa-barraren kokaleku lehenetsia. Erabiltzaileek oraindik ere pertsonalizatu ahal izango dute.
 policy-SearchEngines = Konfiguratu bilaketa-motorren ezarpenak. Politika hau Extended Support Release (ESR) bertsiorako dago erabilgarri soilik.
 policy-SearchSuggestEnabled = Gaitu edo desgaitu bilaketa-iradokizunak.
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instalatu PKCS #11 moduluak.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Gehitu edo ezabatu PKCS #11 moduluak.
 policy-ShowHomeButton = Erakutsi hasiera-orriko botoia tresna-barran.
 policy-SSLVersionMax = Ezarri SSL bertsio maximoa.
 policy-SSLVersionMin = Ezarri SSL bertsio minimoa.
+policy-StartDownloadsInTempDirectory = Behartu deskargak aldi baterako kokaleku lokalean hastea deskarga-direktorio lehenetsiaren ordez.
 policy-SupportMenu = Gehitu euskarrirako menu-elementu pertsonalizatua laguntzaren menuan.
 policy-UserMessaging = Ez erakutsi zenbait mezu erabiltzaileari.
+policy-UseSystemPrintDialog = Inprimatu sistemaren inprimatzeko elkarrizketa-koadroa erabiliz…
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Blokeatu zenbait webgune bisitatzea. Irakurri dokumentazioa formatuaren gaineko xehetasun gehiagorako.
 policy-Windows10SSO = Baimendu Windows saio-hasiera bakarra (SSO) Microsoft-, laneko eta eskolako kontuentzat.

@@ -41,6 +41,17 @@ options-collapse-attrs-label = DOM özniteliklerini kısalt
 options-collapse-attrs-tooltip =
     .title = Denetçideki uzun öznitelikleri kısaltır
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Boyut değerlerini düzenlemek için tıklayıp sürükleyin
+options-inspector-draggable-properties-tooltip =
+    .title = Denetçi kuralları görünümünde boyut değerlerini düzenlemek için tıklayıp sürükleyin.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = prefers-reduced-motion ile daha basit vurgular kullan
+options-inspector-simplified-highlighters-tooltip =
+    .title = prefers-reduced-motion etkinse basitleştirilmiş vurgulayıcıları etkinleştirir. Yanıp sönme efektlerini önlemek için, vurgulanan öğelerin etrafına dolgulu dikdörtgen yerine çizgi çizer.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Varsayılan renk birimi
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Yazıldığı gibi
 options-default-color-unit-hex = On altılık
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Renk adları
 
 ## Style Editor section
@@ -118,6 +130,16 @@ options-enable-remote-label = Uzaktan hata ayıklamayı etkinleştir
 options-enable-remote-tooltip2 =
     .title = Bu seçeneği açarsanız bu tarayıcıda uzaktan hata ayıklamaya izin verilir
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Geliştirici araçlarını açıp kapatmak için F12 tuşunu kullan
+options-enable-f12-tooltip =
+    .title = Bu seçeneği etkinleştirirseniz F12 tuşunu kullanarak geliştirici araçlarını açıp kapatabilirsiniz
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Özel biçimlendiricileri etkinleştir
+options-enable-custom-formatters-tooltip =
+    .title = Bu seçeneği açmak, sitelerin DOM nesneleri için özel biçimlendiriciler tanımlamasına olanak tanır
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = HTTP üzerinden Service Worker’ları etkinleştir (araç kutusu açıkken)
 options-enable-service-workers-http-tooltip =
@@ -126,13 +148,7 @@ options-enable-service-workers-http-tooltip =
 # The label for the checkbox that toggles source maps in all tools.
 options-source-maps-label = Kaynak haritalarını etkinleştir
 options-source-maps-tooltip =
-    .title = Bu seçeneği etkinleştirirseniz kaynaklar araçlarda haritalanacaktır.
+    .title = Bu seçeneği etkinleştirirseniz kaynaklar araçlarda eşlenecektir.
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Yalnızca bu oturumda geçerli, sayfayı yeniden yükler
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Gecko platform verilerini göster
-options-show-platform-data-tooltip =
-    .title = Bu seçeneği etkinleştirirseniz JavaScript Profilleyici raporlarına Gecko platform simgeleri eklenecektir

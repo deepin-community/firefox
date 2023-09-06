@@ -6,25 +6,16 @@
  * <https://w3c.github.io/webappsec-secure-contexts/#is-origin-trustworthy>.
  */
 
-const { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
-);
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-
-XPCOMUtils.defineLazyServiceGetter(
-  this,
-  "gContentSecurityManager",
-  "@mozilla.org/contentsecuritymanager;1",
-  "nsIContentSecurityManager"
+const { NetUtil } = ChromeUtils.importESModule(
+  "resource://gre/modules/NetUtil.sys.mjs"
 );
 
 Services.prefs.setCharPref(
-  "dom.securecontext.whitelist",
+  "dom.securecontext.allowlist",
   "example.net,example.org"
 );
 
-Services.prefs.setBoolPref("dom.securecontext.whitelist_onions", false);
+Services.prefs.setBoolPref("dom.securecontext.allowlist_onions", false);
 
 add_task(async function test_isOriginPotentiallyTrustworthy() {
   for (let [uriSpec, expectedResult] of [
@@ -52,7 +43,7 @@ add_task(async function test_isOriginPotentiallyTrustworthy() {
   }
   // And now let's test whether .onion sites are properly treated when
   // allowlisted, see bug 1382359.
-  Services.prefs.setBoolPref("dom.securecontext.whitelist_onions", true);
+  Services.prefs.setBoolPref("dom.securecontext.allowlist_onions", true);
   let uri = NetUtil.newURI("http://1234567890abcdef.onion/");
   let principal = Services.scriptSecurityManager.createContentPrincipal(
     uri,

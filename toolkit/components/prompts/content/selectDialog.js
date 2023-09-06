@@ -20,7 +20,7 @@ function onDCL() {
 
   let promptType = propBag.getProperty("promptType");
   if (promptType != "select") {
-    Cu.reportError("selectDialog opened for unknown type: " + promptType);
+    console.error("selectDialog opened for unknown type: ", promptType);
     window.close();
   }
 
@@ -61,12 +61,11 @@ function onLoad() {
   try {
     if (!args.openedWithTabDialog) {
       Cc["@mozilla.org/sound;1"]
-        .createInstance(Ci.nsISound)
+        .getService(Ci.nsISound)
         .playEventSound(Ci.nsISound.EVENT_SELECT_DIALOG_OPEN);
     }
   } catch (e) {}
 
-  let { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
   Services.obs.notifyObservers(window, "select-dialog-loaded");
 }
 

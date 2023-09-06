@@ -6,6 +6,33 @@
 
 const TEST_URL = "https://example.com/";
 
+add_task(async function test_setup_usbtoken() {
+  return SpecialPowers.pushPrefEnv({
+    set: [
+      ["security.webauth.webauthn_enable_softtoken", false],
+      ["security.webauth.webauthn_enable_usbtoken", true],
+    ],
+  });
+});
+add_task(test_register);
+add_task(test_register_escape);
+add_task(test_sign);
+add_task(test_sign_escape);
+add_task(test_register_direct_cancel);
+add_task(test_tab_switching);
+add_task(test_window_switching);
+add_task(async function test_setup_softtoken() {
+  add_virtual_authenticator();
+  return SpecialPowers.pushPrefEnv({
+    set: [
+      ["security.webauth.webauthn_enable_softtoken", true],
+      ["security.webauth.webauthn_enable_usbtoken", false],
+    ],
+  });
+});
+add_task(test_register_direct_proceed);
+add_task(test_register_direct_proceed_anon);
+
 function promiseNotification(id) {
   return new Promise(resolve => {
     PopupNotifications.panel.addEventListener("popupshown", function shown() {
@@ -22,68 +49,86 @@ function promiseNotification(id) {
 function triggerMainPopupCommand(popup) {
   info("triggering main command");
   let notifications = popup.childNodes;
-  ok(notifications.length > 0, "at least one notification displayed");
+  ok(notifications.length, "at least one notification displayed");
   let notification = notifications[0];
   info("triggering command: " + notification.getAttribute("buttonlabel"));
 
   return EventUtils.synthesizeMouseAtCenter(notification.button, {});
 }
 
-let expectAbortError = expectError("Abort");
+let expectNotAllowedError = expectError("NotAllowed");
 
-function verifyAnonymizedCertificate(result) {
-  let { attObj, rawId } = result;
-  return webAuthnDecodeCBORAttestation(attObj).then(({ fmt, attStmt }) => {
-    is("none", fmt, "Is a None Attestation");
-    is("object", typeof attStmt, "attStmt is a map");
-    is(0, Object.keys(attStmt).length, "attStmt is empty");
-  });
+function verifyAnonymizedCertificate(aResult) {
+  return webAuthnDecodeCBORAttestation(aResult.attObj).then(
+    ({ fmt, attStmt }) => {
+      is(fmt, "none", "Is a None Attestation");
+      is(typeof attStmt, "object", "attStmt is a map");
+      is(Object.keys(attStmt).length, 0, "attStmt is empty");
+    }
+  );
 }
 
-function verifyDirectCertificate(result) {
-  let { attObj, rawId } = result;
-  return webAuthnDecodeCBORAttestation(attObj).then(({ fmt, attStmt }) => {
-    is("fido-u2f", fmt, "Is a FIDO U2F Attestation");
-    is("object", typeof attStmt, "attStmt is a map");
-    ok(attStmt.hasOwnProperty("x5c"), "attStmt.x5c exists");
-    ok(attStmt.hasOwnProperty("sig"), "attStmt.sig exists");
-  });
+async function verifyDirectCertificate(aResult) {
+  let clientDataHash = await crypto.subtle
+    .digest("SHA-256", aResult.clientDataJSON)
+    .then(digest => new Uint8Array(digest));
+  let { fmt, attStmt, authData, authDataObj } =
+    await webAuthnDecodeCBORAttestation(aResult.attObj);
+  is(fmt, "packed", "Is a Packed Attestation");
+  let signedData = new Uint8Array(authData.length + clientDataHash.length);
+  signedData.set(authData);
+  signedData.set(clientDataHash, authData.length);
+  let valid = await verifySignature(
+    authDataObj.publicKeyHandle,
+    signedData,
+    new Uint8Array(attStmt.sig)
+  );
+  ok(valid, "Signature is valid.");
 }
 
-add_task(async function test_setup_usbtoken() {
-  await SpecialPowers.pushPrefEnv({
-    set: [
-      ["security.webauth.u2f", false],
-      ["security.webauth.webauthn", true],
-      ["security.webauth.webauthn_enable_softtoken", false],
-      ["security.webauth.webauthn_enable_android_fido2", false],
-      ["security.webauth.webauthn_enable_usbtoken", true],
-    ],
-  });
-});
-
-add_task(async function test_register() {
+async function test_register() {
   // Open a new tab.
   let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, TEST_URL);
 
   // Request a new credential and wait for the prompt.
   let active = true;
-  let request = promiseWebAuthnMakeCredential(tab, "indirect", {})
+  let request = promiseWebAuthnMakeCredential(tab, "none", {})
     .then(arrivingHereIsBad)
-    .catch(expectAbortError)
+    .catch(expectNotAllowedError)
     .then(() => (active = false));
-  await promiseNotification("webauthn-prompt-register");
+  await promiseNotification("webauthn-prompt-presence");
 
-  // Cancel the request.
+  // Cancel the request with the button.
   ok(active, "request should still be active");
   PopupNotifications.panel.firstElementChild.button.click();
   await request;
 
   // Close tab.
   await BrowserTestUtils.removeTab(tab);
-});
+}
 
-add_task(async function test_sign() {
+async function test_register_escape() {
+  // Open a new tab.
+  let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, TEST_URL);
+
+  // Request a new credential and wait for the prompt.
+  let active = true;
+  let request = promiseWebAuthnMakeCredential(tab, "none", {})
+    .then(arrivingHereIsBad)
+    .catch(expectNotAllowedError)
+    .then(() => (active = false));
+  await promiseNotification("webauthn-prompt-presence");
+
+  // Cancel the request by hitting escape.
+  ok(active, "request should still be active");
+  EventUtils.synthesizeKey("KEY_Escape");
+  await request;
+
+  // Close tab.
+  await BrowserTestUtils.removeTab(tab);
+}
+
+async function test_sign() {
   // Open a new tab.
   let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, TEST_URL);
 
@@ -91,20 +136,41 @@ add_task(async function test_sign() {
   let active = true;
   let request = promiseWebAuthnGetAssertion(tab)
     .then(arrivingHereIsBad)
-    .catch(expectAbortError)
+    .catch(expectNotAllowedError)
     .then(() => (active = false));
-  await promiseNotification("webauthn-prompt-sign");
+  await promiseNotification("webauthn-prompt-presence");
 
-  // Cancel the request.
+  // Cancel the request with the button.
   ok(active, "request should still be active");
   PopupNotifications.panel.firstElementChild.button.click();
   await request;
 
   // Close tab.
   await BrowserTestUtils.removeTab(tab);
-});
+}
 
-add_task(async function test_register_direct_cancel() {
+async function test_sign_escape() {
+  // Open a new tab.
+  let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, TEST_URL);
+
+  // Request a new assertion and wait for the prompt.
+  let active = true;
+  let request = promiseWebAuthnGetAssertion(tab)
+    .then(arrivingHereIsBad)
+    .catch(expectNotAllowedError)
+    .then(() => (active = false));
+  await promiseNotification("webauthn-prompt-presence");
+
+  // Cancel the request by hitting escape.
+  ok(active, "request should still be active");
+  EventUtils.synthesizeKey("KEY_Escape");
+  await request;
+
+  // Close tab.
+  await BrowserTestUtils.removeTab(tab);
+}
+
+async function test_register_direct_cancel() {
   // Open a new tab.
   let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, TEST_URL);
 
@@ -112,7 +178,7 @@ add_task(async function test_register_direct_cancel() {
   let active = true;
   let promise = promiseWebAuthnMakeCredential(tab, "direct", {})
     .then(arrivingHereIsBad)
-    .catch(expectAbortError)
+    .catch(expectNotAllowedError)
     .then(() => (active = false));
   await promiseNotification("webauthn-prompt-register-direct");
 
@@ -123,21 +189,21 @@ add_task(async function test_register_direct_cancel() {
 
   // Close tab.
   await BrowserTestUtils.removeTab(tab);
-});
+}
 
 // Add two tabs, open WebAuthn in the first, switch, assert the prompt is
 // not visible, switch back, assert the prompt is there and cancel it.
-add_task(async function test_tab_switching() {
+async function test_tab_switching() {
   // Open a new tab.
   let tab_one = await BrowserTestUtils.openNewForegroundTab(gBrowser, TEST_URL);
 
   // Request a new credential and wait for the prompt.
   let active = true;
-  let request = promiseWebAuthnMakeCredential(tab_one, "indirect", {})
+  let request = promiseWebAuthnMakeCredential(tab_one, "none", {})
     .then(arrivingHereIsBad)
-    .catch(expectAbortError)
+    .catch(expectNotAllowedError)
     .then(() => (active = false));
-  await promiseNotification("webauthn-prompt-register");
+  await promiseNotification("webauthn-prompt-presence");
   is(PopupNotifications.panel.state, "open", "Doorhanger is visible");
 
   // Open and switch to a second tab.
@@ -154,7 +220,7 @@ add_task(async function test_tab_switching() {
   // Go back to the first tab
   await BrowserTestUtils.removeTab(tab_two);
 
-  await promiseNotification("webauthn-prompt-register");
+  await promiseNotification("webauthn-prompt-presence");
 
   await TestUtils.waitForCondition(
     () => PopupNotifications.panel.state == "open"
@@ -169,21 +235,21 @@ add_task(async function test_tab_switching() {
 
   // Close tab.
   await BrowserTestUtils.removeTab(tab_one);
-});
+}
 
 // Add two tabs, open WebAuthn in the first, switch, assert the prompt is
 // not visible, switch back, assert the prompt is there and cancel it.
-add_task(async function test_window_switching() {
+async function test_window_switching() {
   // Open a new tab.
   let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, TEST_URL);
 
   // Request a new credential and wait for the prompt.
   let active = true;
-  let request = promiseWebAuthnMakeCredential(tab, "indirect", {})
+  let request = promiseWebAuthnMakeCredential(tab, "none", {})
     .then(arrivingHereIsBad)
-    .catch(expectAbortError)
+    .catch(expectNotAllowedError)
     .then(() => (active = false));
-  await promiseNotification("webauthn-prompt-register");
+  await promiseNotification("webauthn-prompt-presence");
 
   await TestUtils.waitForCondition(
     () => PopupNotifications.panel.state == "open"
@@ -220,20 +286,9 @@ add_task(async function test_window_switching() {
 
   // Close tab.
   await BrowserTestUtils.removeTab(tab);
-});
+}
 
-add_task(async function test_setup_softtoken() {
-  await SpecialPowers.pushPrefEnv({
-    set: [
-      ["security.webauth.u2f", false],
-      ["security.webauth.webauthn", true],
-      ["security.webauth.webauthn_enable_softtoken", true],
-      ["security.webauth.webauthn_enable_usbtoken", false],
-    ],
-  });
-});
-
-add_task(async function test_register_direct_proceed() {
+async function test_register_direct_proceed() {
   // Open a new tab.
   let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, TEST_URL);
 
@@ -249,9 +304,9 @@ add_task(async function test_register_direct_proceed() {
 
   // Close tab.
   await BrowserTestUtils.removeTab(tab);
-});
+}
 
-add_task(async function test_register_direct_proceed_anon() {
+async function test_register_direct_proceed_anon() {
   // Open a new tab.
   let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser, TEST_URL);
 
@@ -268,4 +323,4 @@ add_task(async function test_register_direct_proceed_anon() {
 
   // Close tab.
   await BrowserTestUtils.removeTab(tab);
-});
+}

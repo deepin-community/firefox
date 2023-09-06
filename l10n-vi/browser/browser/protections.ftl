@@ -63,22 +63,20 @@ cryptominer-tab-content = Tiền điện tử sử dụng sức mạnh tính to�
 protections-close-button2 =
     .aria-label = Đóng
     .title = Đóng
-  
+
 mobile-app-title = Chặn trình theo dõi quảng cáo trên nhiều thiết bị hơn
 mobile-app-card-content = Sử dụng trình duyệt di động có bảo vệ tích hợp chống theo dõi quảng cáo.
 mobile-app-links = Trình duyệt { -brand-product-name } dành cho <a data-l10n-name="android-mobile-inline-link">Android</a> và <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Không bao giờ quên mật khẩu lần nữa
-lockwise-title-logged-in2 = Quản lý mật khẩu
-lockwise-header-content = { -lockwise-brand-name } lưu trữ an toàn mật khẩu của bạn trong trình duyệt của bạn.
+passwords-title-logged-in = Quản lý mật khẩu của bạn
+passwords-header-content = { -brand-product-name } lưu trữ mật khẩu của bạn an toàn trong trình duyệt của bạn.
 lockwise-header-content-logged-in = Lưu trữ an toàn và đồng bộ hóa mật khẩu của bạn với tất cả các thiết bị của bạn.
-protection-report-save-passwords-button = Lưu mật khẩu
-    .title = Lưu mật khẩu trên { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Quản lý mật khẩu
-    .title = Quản lý mật khẩu trên { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Mang mật khẩu của bạn đi khắp mọi nơi
-lockwise-no-logins-card-content = Sử dụng mật khẩu được lưu trong { -brand-short-name } trên bất kỳ thiết bị nào.
-lockwise-app-links = { -lockwise-brand-name } dành cho <a data-l10n-name="lockwise-android-inline-link">Android</a> và <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Lưu mật khẩu
+    .title = Lưu mật khẩu
+protection-report-passwords-manage-passwords-button = Quản lý mật khẩu
+    .title = Quản lý mật khẩu
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

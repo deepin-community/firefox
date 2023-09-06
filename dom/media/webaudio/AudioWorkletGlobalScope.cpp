@@ -12,12 +12,12 @@
 #include "jsapi.h"
 #include "js/ForOfIterator.h"
 #include "js/PropertyAndElement.h"  // JS_GetProperty
+#include "mozilla/BasePrincipal.h"
 #include "mozilla/dom/AudioWorkletGlobalScopeBinding.h"
 #include "mozilla/dom/AudioWorkletProcessor.h"
 #include "mozilla/dom/BindingCallContext.h"
 #include "mozilla/dom/MessagePort.h"
 #include "mozilla/dom/StructuredCloneHolder.h"
-#include "mozilla/dom/WorkletPrincipals.h"
 #include "mozilla/dom/AudioParamDescriptorBinding.h"
 #include "nsPrintfCString.h"
 #include "nsTHashSet.h"
@@ -35,17 +35,24 @@ NS_IMPL_ADDREF_INHERITED(AudioWorkletGlobalScope, WorkletGlobalScope)
 NS_IMPL_RELEASE_INHERITED(AudioWorkletGlobalScope, WorkletGlobalScope)
 
 AudioWorkletGlobalScope::AudioWorkletGlobalScope(AudioWorkletImpl* aImpl)
-    : WorkletGlobalScope(aImpl->GetAgentClusterId(),
-                         aImpl->IsSharedMemoryAllowed()),
-      mImpl(aImpl) {}
+    : WorkletGlobalScope(aImpl) {}
+
+AudioWorkletImpl* AudioWorkletGlobalScope::Impl() const {
+  return static_cast<AudioWorkletImpl*>(mImpl.get());
+}
 
 bool AudioWorkletGlobalScope::WrapGlobalObject(
     JSContext* aCx, JS::MutableHandle<JSObject*> aReflector) {
   // |this| is being exposed to JS and content script will soon be running.
   // The graph needs a handle on the JSContext so it can interrupt JS.
-  mImpl->DestinationTrack()->Graph()->NotifyJSContext(aCx);
+  Impl()->DestinationTrack()->Graph()->NotifyJSContext(aCx);
 
   JS::RealmOptions options;
+
+  options.creationOptions().setForceUTC(
+      ShouldResistFingerprinting(RFPTarget::JSDateTimeUTC));
+  options.creationOptions().setAlwaysUseFdlibm(
+      ShouldResistFingerprinting(RFPTarget::JSMathFdlibm));
 
   // The SharedArrayBuffer global constructor property should not be present in
   // a fresh global object when shared memory objects aren't allowed (because
@@ -54,9 +61,9 @@ bool AudioWorkletGlobalScope::WrapGlobalObject(
   options.creationOptions().setDefineSharedArrayBufferConstructor(
       IsSharedMemoryAllowed());
 
-  JS::AutoHoldPrincipals principals(aCx, new WorkletPrincipals(mImpl));
   return AudioWorkletGlobalScope_Binding::Wrap(
-      aCx, this, this, options, principals.get(), true, aReflector);
+      aCx, this, this, options, BasePrincipal::Cast(mImpl->Principal()), true,
+      aReflector);
 }
 
 void AudioWorkletGlobalScope::RegisterProcessor(
@@ -159,8 +166,8 @@ void AudioWorkletGlobalScope::RegisterProcessor(
       return;
     }
     if (!iter.valueIsIterable()) {
-      aRv.ThrowTypeError<MSG_NOT_SEQUENCE>(
-          "AudioWorkletProcessor.parameterDescriptors");
+      aRv.ThrowTypeError<MSG_CONVERSION_ERROR>(
+          "AudioWorkletProcessor.parameterDescriptors", "sequence");
       return;
     }
     /*
@@ -189,7 +196,8 @@ void AudioWorkletGlobalScope::RegisterProcessor(
    */
   NS_DispatchToMainThread(NS_NewRunnableFunction(
       "AudioWorkletGlobalScope: parameter descriptors",
-      [impl = mImpl, name = nsString(aName), map = std::move(map)]() mutable {
+      [impl = RefPtr{Impl()}, name = nsString(aName),
+       map = std::move(map)]() mutable {
         AudioNode* destinationNode =
             impl->DestinationTrack()->Engine()->NodeMainThread();
         if (!destinationNode) {
@@ -199,10 +207,8 @@ void AudioWorkletGlobalScope::RegisterProcessor(
       }));
 }
 
-WorkletImpl* AudioWorkletGlobalScope::Impl() const { return mImpl; }
-
 uint64_t AudioWorkletGlobalScope::CurrentFrame() const {
-  AudioNodeTrack* destinationTrack = mImpl->DestinationTrack();
+  AudioNodeTrack* destinationTrack = Impl()->DestinationTrack();
   GraphTime processedTime = destinationTrack->Graph()->ProcessedTime();
   return destinationTrack->GraphTimeToTrackTime(processedTime);
 }
@@ -212,7 +218,7 @@ double AudioWorkletGlobalScope::CurrentTime() const {
 }
 
 float AudioWorkletGlobalScope::SampleRate() const {
-  return static_cast<float>(mImpl->DestinationTrack()->mSampleRate);
+  return static_cast<float>(Impl()->DestinationTrack()->mSampleRate);
 }
 
 AudioParamDescriptorMap AudioWorkletGlobalScope::DescriptorsFromJS(

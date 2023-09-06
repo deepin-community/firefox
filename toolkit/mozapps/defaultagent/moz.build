@@ -16,6 +16,7 @@ UNIFIED_SOURCES += [
     "Cache.cpp",
     "common.cpp",
     "DefaultBrowser.cpp",
+    "DefaultPDF.cpp",
     "EventLog.cpp",
     "main.cpp",
     "Notification.cpp",
@@ -25,6 +26,7 @@ UNIFIED_SOURCES += [
     "ScheduledTask.cpp",
     "SetDefaultBrowser.cpp",
     "Telemetry.cpp",
+    "UtfConvert.cpp",
 ]
 
 SOURCES += [
@@ -34,6 +36,9 @@ SOURCES += [
     "/third_party/WinToast/wintoastlib.cpp",
     "/toolkit/mozapps/update/common/readstrings.cpp",
 ]
+
+# Suppress warnings from third-party code.
+SOURCES["/third_party/WinToast/wintoastlib.cpp"].flags += ["-Wno-implicit-fallthrough"]
 
 USE_LIBS += [
     "defaultagent-static",
@@ -66,6 +71,7 @@ OS_LIBS += [
     "userenv",
     "wininet",
     "ws2_32",
+    "ntdll",
 ]
 
 DEFINES["NS_NO_XPCOM"] = True
@@ -104,6 +110,4 @@ if CONFIG["ENABLE_TESTS"]:
     DIRS += ["tests/gtest"]
 
 with Files("**"):
-    BUG_COMPONENT = ("Firefox", "Installer")
-
-REQUIRES_UNIFIED_BUILD = True
+    BUG_COMPONENT = ("Toolkit", "Default Browser Agent")

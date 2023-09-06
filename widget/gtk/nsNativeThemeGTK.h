@@ -9,14 +9,14 @@
 #include "nsITheme.h"
 #include "nsCOMPtr.h"
 #include "nsAtom.h"
-#include "nsNativeTheme.h"
-#include "nsStyleConsts.h"
-#include "nsNativeBasicThemeGTK.h"
+#include "Theme.h"
 
 #include <gtk/gtk.h>
 #include "gtkdrawing.h"
 
-class nsNativeThemeGTK final : public nsNativeBasicThemeGTK {
+class nsNativeThemeGTK final : public mozilla::widget::Theme {
+  using Theme = mozilla::widget::Theme;
+
  public:
   // The nsITheme interface.
   NS_IMETHOD DrawWidgetBackground(gfxContext* aContext, nsIFrame* aFrame,
@@ -59,10 +59,9 @@ class nsNativeThemeGTK final : public nsNativeBasicThemeGTK {
   enum class NonNative { No, Always, BecauseColorMismatch };
   NonNative IsWidgetNonNative(nsIFrame*, StyleAppearance);
 
-  NS_IMETHOD GetMinimumWidgetSize(nsPresContext* aPresContext, nsIFrame* aFrame,
-                                  StyleAppearance aAppearance,
-                                  mozilla::LayoutDeviceIntSize* aResult,
-                                  bool* aIsOverridable) override;
+  mozilla::LayoutDeviceIntSize GetMinimumWidgetSize(
+      nsPresContext* aPresContext, nsIFrame* aFrame,
+      StyleAppearance aAppearance) override;
 
   NS_IMETHOD WidgetStateChanged(nsIFrame* aFrame, StyleAppearance aAppearance,
                                 nsAtom* aAttribute, bool* aShouldRepaint,
@@ -76,15 +75,10 @@ class nsNativeThemeGTK final : public nsNativeBasicThemeGTK {
 
   NS_IMETHOD_(bool) WidgetIsContainer(StyleAppearance aAppearance) override;
 
-  NS_IMETHOD_(bool)
-  ThemeDrawsFocusForWidget(StyleAppearance aAppearance) override;
+  bool ThemeDrawsFocusForWidget(nsIFrame*, StyleAppearance) override;
 
   bool ThemeNeedsComboboxDropmarker() override;
   Transparency GetWidgetTransparency(nsIFrame*, StyleAppearance) override;
-  ScrollbarSizes GetScrollbarSizes(nsPresContext*, StyleScrollbarWidth,
-                                   Overlay) override;
-
-  bool ThemeSupportsScrollbarButtons() override;
 
   nsNativeThemeGTK();
 
@@ -97,8 +91,7 @@ class nsNativeThemeGTK final : public nsNativeBasicThemeGTK {
   bool GetGtkWidgetAndState(StyleAppearance aAppearance, nsIFrame* aFrame,
                             WidgetNodeType& aGtkWidgetType,
                             GtkWidgetState* aState, gint* aWidgetFlags);
-  bool GetExtraSizeForWidget(nsIFrame* aFrame, StyleAppearance aAppearance,
-                             nsIntMargin* aExtra);
+  mozilla::CSSIntMargin GetExtraSizeForWidget(nsIFrame*, StyleAppearance);
   bool IsWidgetVisible(StyleAppearance aAppearance);
 
   void RefreshWidgetWindow(nsIFrame* aFrame);
@@ -115,11 +108,11 @@ class nsNativeThemeGTK final : public nsNativeBasicThemeGTK {
   // Because moz_gtk_get_widget_border can be slow, we cache its results
   // by widget type.  Each bit in mBorderCacheValid says whether the
   // corresponding entry in mBorderCache is valid.
-  void GetCachedWidgetBorder(nsIFrame* aFrame, StyleAppearance aAppearance,
-                             GtkTextDirection aDirection,
-                             LayoutDeviceIntMargin* aResult);
+  mozilla::CSSIntMargin GetCachedWidgetBorder(nsIFrame* aFrame,
+                                              StyleAppearance aAppearance,
+                                              GtkTextDirection aDirection);
   uint8_t mBorderCacheValid[(MOZ_GTK_WIDGET_NODE_COUNT + 7) / 8];
-  LayoutDeviceIntMargin mBorderCache[MOZ_GTK_WIDGET_NODE_COUNT];
+  mozilla::CSSIntMargin mBorderCache[MOZ_GTK_WIDGET_NODE_COUNT];
 };
 
 #endif

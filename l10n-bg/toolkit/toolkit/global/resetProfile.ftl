@@ -6,3 +6,8 @@ refresh-profile-dialog-button =
     .label = Освежаване на { -brand-short-name }
 refresh-profile = Летящ старт за { -brand-short-name }
 refresh-profile-button = Освежаване на { -brand-short-name }…
+refresh-profile-learn-more = Научете повече
+
+refresh-profile-progress =
+    .title = Освежаване на { -brand-short-name }
+refresh-profile-progress-description = Почти е готово…

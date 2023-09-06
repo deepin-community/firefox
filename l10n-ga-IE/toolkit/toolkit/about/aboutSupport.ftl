@@ -40,6 +40,7 @@ app-basics-profiles = Próifílí
 app-basics-multi-process-support = Fuinneoga Ilphróisis
 app-basics-key-mozilla = Eochair Sheirbhís Geoshuite Mozilla
 app-basics-safe-mode = Mód Slán
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Taispeáin san Aimsitheoir
@@ -86,6 +87,8 @@ sandbox-sys-call-args = Argóintí
 ## Media titles
 
 audio-backend = Inneall Fuaime
+
+## Codec support table
 
 ##
 

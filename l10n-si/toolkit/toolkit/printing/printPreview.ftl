@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+printpreview-simplify-page-checkbox-enabled =
+    .label = { printpreview-simplify-page-checkbox.label }
+    .accesskey = { printpreview-simplify-page-checkbox.accesskey }
+    .tooltiptext = කියවීමේ පහසුවට පිරිසැලසුම සකසන්න
 printpreview-close =
     .label = වසන්න
     .accesskey = C
@@ -15,25 +19,31 @@ printpreview-scale =
     .value = පරිමාණය:
     .accesskey = S
 printpreview-shrink-to-fit =
-    .label = සරිලන ලෙසට අඩු කරන්න
+    .label = යෝග්‍ය ලෙස අකුළන්න
 printpreview-custom =
-    .label = රිසිකරණය...
+    .label = අභිරුචි…
 printpreview-print =
     .label = මුද්‍රණය...
     .accesskey = P
-printpreview-of =
-    .value = of
+printpreview-custom-scale-prompt-title = අභිරුචි පරිමාණනය
 printpreview-page-setup =
-    .label = පිටු සකසන්න...
+    .label = පිටුව පිහිටුවීම...
     .accesskey = u
 printpreview-page =
     .value = පිටුව:
     .accesskey = a
 
+# Variables
+# $sheetNum (integer) - The current sheet number
+# $sheetCount (integer) - The total number of sheets to print
+printpreview-sheet-of-sheets = { $sheetCount } න් { $sheetNum }
+
 ## Variables
 ## $percent (integer) - menuitem percent label
 ## $arrow (String) - UTF-8 arrow character for navigation buttons
 
+printpreview-percentage-value =
+    .label = { $percent }%
 printpreview-homearrow =
     .label = { $arrow }
     .tooltiptext = පළමු පිටුව
@@ -46,4 +56,11 @@ printpreview-nextarrow =
 printpreview-endarrow =
     .label = { $arrow }
     .tooltiptext = අවසාන පිටුව
-
+printpreview-homearrow-button =
+    .title = පළමු පිටුව
+printpreview-previousarrow-button =
+    .title = කලින් පිටුව
+printpreview-nextarrow-button =
+    .title = ඊළඟ පිටුව
+printpreview-endarrow-button =
+    .title = අවසාන පිටුව

@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = R
 
 update-checkingForUpdates = Yangilanishlar uchun tekshirish...
-update-downloading = <img data-l10n-name="icon"/>Yangilanish yuklab olinmoqda —<label data-l10n-name="download-status"/>
-update-downloading-message = Yangilanish yuklab olinmoqda — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Yangilanish yuklab olinmoqda —<label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Yangilanish yuklab olinmoqda — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Yangilanish qoʻllanilmoqda…
 
 update-failed = Yangilab bo‘lmadi.<label data-l10n-name="failed-link">So‘nggi versiyani yuklab olish</label>
@@ -27,13 +34,21 @@ update-adminDisabled = Yangilanishlar tizimingiz administratori tomonidan oʻchi
 update-noUpdatesFound = { -brand-short-name } yangilangan
 update-otherInstanceHandlingUpdates = { -brand-short-name } boshqa manbadan yangilanadi
 
-update-manual = Yangilanishlar mavjud:<label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Yangilanishlar mavjud:<label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Yangilanishlar mavjud:<a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Siz keyingi yangilanishlarni ushbu tizimda bajara olmaysiz. <label data-l10n-name="unsupported-link">Batafsil</label>
 
 update-restarting = Qayta ishga tushirilmoqda…
 
-channel-description = Siz hozirda <label data-l10n-name="current-channel"></label> yangilash kanalidasiz.
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Siz hozirda <label data-l10n-name="current-channel">{ $channel }</label> yangilash kanalidasiz.
 
 warningDesc-version = { -brand-short-name } sinovdagi versiya, shuning uchun yaxshi ishlamasligi mumkin.
 

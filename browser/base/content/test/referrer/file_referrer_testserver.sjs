@@ -2,8 +2,7 @@
  * Renders the HTTP Referer header up to the second path slash.
  * Used in browser_referrer_*.js, bug 1113431.
  */
-function handleRequest(request, response)
-{
+function handleRequest(request, response) {
   let referrer = "";
   try {
     referrer = request.getHeader("referer");

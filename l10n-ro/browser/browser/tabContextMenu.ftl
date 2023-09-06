@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Selectează toate filele
     .accesskey = S
+tab-context-play-tab =
+    .label = Redă fila
+    .accesskey = l
+tab-context-play-tabs =
+    .label = Redă filele
+    .accesskey = y
 duplicate-tab =
     .label = Duplică fila
     .accesskey = D
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Marchează filele…
     .accesskey = k
-bookmark-tab =
-    .label = Marchează fila
+tab-context-bookmark-tab =
+    .label = Marchează fila…
     .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = Deschide într-o filă container nouă
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Partajează
     .accesskey = h
-tab-context-share-more =
-    .label = Mai multe…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -84,15 +88,6 @@ tab-context-reopen-closed-tabs =
            *[other] Redeschide filele închise
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Închide filele
-            [one] Închide fila
-            [few] Închide filele
-           *[other] Închide filele
-        }
-    .accesskey = C
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

@@ -1,10 +1,10 @@
 use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::{self, Ident};
+use syn::Ident;
 
-use codegen::FromFieldImpl;
-use options::{OuterFrom, ParseAttribute, ParseData};
-use Result;
+use crate::codegen::FromFieldImpl;
+use crate::options::{OuterFrom, ParseAttribute, ParseData};
+use crate::Result;
 
 #[derive(Debug)]
 pub struct FromFieldOptions {
@@ -16,7 +16,7 @@ pub struct FromFieldOptions {
 impl FromFieldOptions {
     pub fn new(di: &syn::DeriveInput) -> Result<Self> {
         (FromFieldOptions {
-            base: OuterFrom::start(di),
+            base: OuterFrom::start(di)?,
             vis: Default::default(),
             ty: Default::default(),
         })
@@ -37,13 +37,7 @@ impl ParseData for FromFieldOptions {
     }
 
     fn parse_field(&mut self, field: &syn::Field) -> Result<()> {
-        match field
-            .ident
-            .as_ref()
-            .map(|v| v.to_string())
-            .as_ref()
-            .map(|v| v.as_str())
-        {
+        match field.ident.as_ref().map(|v| v.to_string()).as_deref() {
             Some("vis") => {
                 self.vis = field.ident.clone();
                 Ok(())

@@ -8,6 +8,7 @@ about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = DNS-buffer wiskje
 about-networking-dns-trr-url = DoH-URL
+about-networking-dns-trr-mode = DoH-modus
 about-networking-dns-suffix = DNS-efterfoegsel
 about-networking-websockets = WebSockets
 about-networking-refresh = Opnij lade
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Aktyf
 about-networking-idle = Wachtet
 about-networking-host = Host
-about-networking-tcp = TCP
 about-networking-type = Type
 about-networking-sent = Ferstjoerd
 about-networking-received = Untfongen
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Adressen
 about-networking-expires = Ferrint (sekonden)
 about-networking-originAttributesSuffix = Isolaasjekaai
+about-networking-flags = Ekstra labels
 about-networking-messages-sent = Berjochten ferstjoerd
 about-networking-messages-received = Berjochten ûntfongen
 about-networking-bytes-sent = Bytes ferstjoerd
 about-networking-bytes-received = Bytes ûntfongen
 about-networking-logging = Logboekregistraasje
-about-networking-log-tutorial = Sjoch op <a data-l10n-name="logging">HTTP-Logging</a> foar ynstruksjes oer hoe dit ark te brûken.
-about-networking-current-log-file = Aktuele lochbestân:
-about-networking-current-log-modules = Aktuele lochmodules:
-about-networking-set-log-file = Lochbestân ynstelle
-about-networking-set-log-modules = Lochodules ynstelle
-about-networking-start-logging = Loggen starte
-about-networking-stop-logging = Loggen stopje
 about-networking-dns-lookup = DNS-sykaksje
 about-networking-dns-lookup-button = Omsette
 about-networking-dns-domain = Domein:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Oantal trage buffers
 about-networking-rcwn-cache-not-slow = Oantal net-trage buffers
 about-networking-networkid = Netwurk-ID
 about-networking-networkid-id = Netwurk-ID
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Dizze side is ferpleatst nei <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

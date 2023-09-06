@@ -1,4 +1,5 @@
-/* -*- Mode: c++; tab-width: 2; indent-tabs-mode: nil; -*- */
+/* -*- tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,6 +10,8 @@
  */
 
 #import <Cocoa/Cocoa.h>
+
+#include <dlfcn.h>
 
 #include "mozilla/AvailableMemoryWatcher.h"
 #include "CustomCocoaEvents.h"
@@ -26,13 +29,15 @@
 #include "nsServiceManagerUtils.h"
 #include "nsObjCExceptions.h"
 #include "nsCocoaUtils.h"
+#include "nsCocoaFeatures.h"
 #include "nsChildView.h"
 #include "nsToolkit.h"
 #include "TextInputHandler.h"
 #include "mozilla/BackgroundHangMonitor.h"
-#include "GeckoProfiler.h"
 #include "ScreenHelperCocoa.h"
 #include "mozilla/Hal.h"
+#include "mozilla/ProfilerLabels.h"
+#include "mozilla/ProfilerThreadSleep.h"
 #include "mozilla/widget/ScreenManager.h"
 #include "HeadlessScreenHelper.h"
 #include "MOZMenuOpeningCoordinator.h"
@@ -194,6 +199,8 @@ void OnUncaughtException(NSException* aException) {
 
 - (id)initWithAppShell:(nsAppShell*)aAppShell;
 - (void)applicationWillTerminate:(NSNotification*)aNotification;
+- (BOOL)shouldSaveApplicationState:(NSCoder*)coder;
+- (BOOL)shouldRestoreApplicationState:(NSCoder*)coder;
 @end
 
 // nsAppShell implementation
@@ -313,11 +320,13 @@ void nsAppShell::OnRunLoopActivityChanged(CFRunLoopActivity aActivity) {
       uint8_t variableOnStack = 0;
       profilingStack.pushLabelFrame("Native event loop idle", nullptr, &variableOnStack,
                                     JS::ProfilingCategoryPair::IDLE, 0);
+      profiler_thread_sleep();
     });
   } else {
     if (mProfilingStackWhileWaiting) {
       mProfilingStackWhileWaiting->pop();
       mProfilingStackWhileWaiting = nullptr;
+      profiler_thread_wake();
     }
   }
 }
@@ -334,6 +343,11 @@ nsresult nsAppShell::Init() {
   // No event loop is running yet (unless an embedding app that uses
   // NSApplicationMain() is running).
   NSAutoreleasePool* localPool = [[NSAutoreleasePool alloc] init];
+
+  char* mozAppNoDock = PR_GetEnv("MOZ_APP_NO_DOCK");
+  if (mozAppNoDock && strcmp(mozAppNoDock, "") != 0) {
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+  }
 
   // mAutoreleasePools is used as a stack of NSAutoreleasePool objects created
   // by |this|.  CFArray is used instead of NSArray because NSArray wants to
@@ -493,7 +507,6 @@ void nsAppShell::ProcessGeckoEvents(void* aInfo) {
                                            data1:0
                                            data2:0]
              atStart:NO];
-
   }
 
   if (self->mSuspendNativeCount <= 0) {
@@ -504,18 +517,19 @@ void nsAppShell::ProcessGeckoEvents(void* aInfo) {
     self->mSkippedNativeCallback = true;
   }
 
-  // Still needed to avoid crashes on quit in most Mochitests.
-  [NSApp postEvent:[NSEvent otherEventWithType:NSEventTypeApplicationDefined
-                                      location:NSMakePoint(0, 0)
-                                 modifierFlags:0
-                                     timestamp:0
-                                  windowNumber:0
-                                       context:NULL
-                                       subtype:kEventSubtypeNone
-                                         data1:0
-                                         data2:0]
-           atStart:NO];
-
+  if (self->mTerminated) {
+    // Still needed to avoid crashes on quit in most Mochitests.
+    [NSApp postEvent:[NSEvent otherEventWithType:NSEventTypeApplicationDefined
+                                        location:NSMakePoint(0, 0)
+                                   modifierFlags:0
+                                       timestamp:0
+                                    windowNumber:0
+                                         context:NULL
+                                         subtype:kEventSubtypeNone
+                                           data1:0
+                                           data2:0]
+             atStart:NO];
+  }
   // Normally every call to ScheduleNativeEventCallback() results in
   // exactly one call to ProcessGeckoEvents().  So each Release() here
   // normally balances exactly one AddRef() in ScheduleNativeEventCallback().
@@ -653,7 +667,6 @@ bool nsAppShell::ProcessNextNativeEvent(bool aMayWait) {
   NSRunLoop* currentRunLoop = [NSRunLoop currentRunLoop];
 
   EventQueueRef currentEventQueue = GetCurrentEventQueue();
-  EventTargetRef eventDispatcherTarget = GetEventDispatcherTarget();
 
   if (aMayWait) {
     mozilla::BackgroundHangMonitor().NotifyWait();
@@ -686,6 +699,23 @@ bool nsAppShell::ProcessNextNativeEvent(bool aMayWait) {
         eventProcessed = true;
       }
     } else {
+      // In at least 10.15, AcquireFirstMatchingEventInQueue will move 1
+      // CGEvent from the CGEvent queue into the Carbon event queue. Unfortunately,
+      // once an event has been moved to the Carbon event queue it's no longer a
+      // candidate for coalescing. This means that even if we don't remove the
+      // event from the queue, just calling AcquireFirstMatchingEventInQueue can
+      // cause behaviour change. Prior to bug 1690687 landing, the event that we got
+      // from AcquireFirstMatchingEventInQueue was often our own ApplicationDefined
+      // event. However, once we stopped posting that event on every Gecko
+      // event we're much more likely to get a CGEvent. When we have a high
+      // amount of load on the main thread, we end up alternating between Gecko
+      // events and native events.  Without CGEvent coalescing, the native
+      // event events can accumulate in the Carbon event queue which will
+      // manifest as laggy scrolling.
+#if 1
+      eventProcessed = false;
+      break;
+#else
       // AcquireFirstMatchingEventInQueue() doesn't spin the (native) event
       // loop, though it does queue up any newly available events from the
       // window server.
@@ -720,11 +750,13 @@ bool nsAppShell::ProcessNextNativeEvent(bool aMayWait) {
       // RemoveEventFromQueue() below.
       RetainEvent(currentEvent);
       RemoveEventFromQueue(currentEventQueue, currentEvent);
+      EventTargetRef eventDispatcherTarget = GetEventDispatcherTarget();
       SendEventToEventTarget(currentEvent, eventDispatcherTarget);
       // This call to ReleaseEvent() matches a call to RetainEvent() in
       // AcquireFirstMatchingEventInQueue() above.
       ReleaseEvent(currentEvent);
       eventProcessed = true;
+#endif
     }
   } while (mRunningEventLoop);
 
@@ -742,6 +774,35 @@ bool nsAppShell::ProcessNextNativeEvent(bool aMayWait) {
   }
 
   return moreEvents;
+}
+
+// Attempt to work around bug 1801419 by loading and initializing the
+// SidecarCore private framework as the app shell starts up. This normally
+// happens on demand, the first time any Cmd-key combination is pressed, and
+// sometimes triggers crashes, caused by an Apple bug. We hope that doing it
+// now, and somewhat more simply, will avoid the crashes. They happen
+// (intermittently) when SidecarCore code tries to access C strings in special
+// sections of its own __TEXT segment, and triggers fatal page faults (which
+// is Apple's bug). Many of the C strings are part of the Objective-C class
+// hierarchy (class names and so forth). We hope that adding them to this
+// hierarchy will "pin" them in place -- so they'll rarely, if ever, be paged
+// out again. Bug 1801419's crashes happen much more often on macOS 13
+// (Ventura) than on other versions of macOS. So we only use this hack on
+// macOS 13 and up.
+static void PinSidecarCoreTextCStringSections() {
+  if (!dlopen("/System/Library/PrivateFrameworks/SidecarCore.framework/SidecarCore", RTLD_LAZY)) {
+    return;
+  }
+
+  // Explicitly run the most basic part of the initialization code that
+  // normally runs automatically on the first Cmd-key combination.
+  Class displayManagerClass = NSClassFromString(@"SidecarDisplayManager");
+  if ([displayManagerClass respondsToSelector:@selector(sharedManager)]) {
+    id sharedManager = [displayManagerClass performSelector:@selector(sharedManager)];
+    if ([sharedManager respondsToSelector:@selector(devices)]) {
+      [sharedManager performSelector:@selector(devices)];
+    }
+  }
 }
 
 // Run
@@ -764,6 +825,9 @@ nsAppShell::Run(void) {
   mStarted = true;
 
   if (XRE_IsParentProcess()) {
+    if (nsCocoaFeatures::OnVenturaOrLater()) {
+      PinSidecarCoreTextCStringSections();
+    }
     AddScreenWakeLockListener();
   }
 
@@ -792,9 +856,7 @@ nsAppShell::Exit(void) {
   // mento) an nsAppExitEvent dispatched by nsAppStartup::Quit() and from an
   // XPCOM shutdown notification that nsBaseAppShell has registered to
   // receive.  So we need to ensure that multiple calls won't break anything.
-  // But we should also complain about it (since it isn't quite kosher).
   if (mTerminated) {
-    NS_WARNING("nsAppShell::Exit() called redundantly");
     return NS_OK;
   }
 
@@ -954,6 +1016,10 @@ void nsAppShell::OnMemoryPressureChanged(dispatch_source_memorypressure_flags_t 
                                              selector:@selector(applicationDidBecomeActive:)
                                                  name:NSApplicationDidBecomeActiveNotification
                                                object:NSApp];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(timezoneChanged:)
+                                                 name:NSSystemTimeZoneDidChangeNotification
+                                               object:nil];
   }
 
   return self;
@@ -1004,6 +1070,22 @@ void nsAppShell::OnMemoryPressureChanged(dispatch_source_memorypressure_flags_t 
   }
 
   NS_OBJC_END_TRY_IGNORE_BLOCK;
+}
+
+- (void)timezoneChanged:(NSNotification*)aNotification {
+  NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
+
+  nsBaseAppShell::OnSystemTimezoneChange();
+
+  NS_OBJC_END_TRY_IGNORE_BLOCK;
+}
+
+- (BOOL)shouldSaveApplicationState:(NSCoder*)coder {
+  return YES;
+}
+
+- (BOOL)shouldRestoreApplicationState:(NSCoder*)coder {
+  return YES;
 }
 
 @end

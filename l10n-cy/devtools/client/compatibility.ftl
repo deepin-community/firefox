@@ -6,7 +6,7 @@
 ## Messages used as headers in the main pane
 
 compatibility-selected-element-header = Elfennau Dewiswyd
-compatibility-all-elements-header = Pob Cyhoeddiad
+compatibility-all-elements-header = Pob Mater
 
 ## Message used as labels for the type of issue
 
@@ -14,7 +14,6 @@ compatibility-issue-deprecated = (anghymeradwy)
 compatibility-issue-experimental = (arbrofol)
 compatibility-issue-prefixneeded = (angen rhagddodiad)
 compatibility-issue-deprecated-experimental = (anghymeradwy, arbrofol)
-
 compatibility-issue-deprecated-prefixneeded = (anghymeradwy, angen rhagddodiad)
 compatibility-issue-experimental-prefixneeded = (arbrofol, angen rhagddodiad)
 compatibility-issue-deprecated-experimental-prefixneeded = anghymeradwy, arbrofol, angen rhagddodiad)
@@ -24,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = anghymeradwy, arbrofo
 compatibility-settings-button-label = Gosodiadau
 compatibility-settings-button-title =
     .title = Gosodiadau
-compatibility-feedback-button-label = Adborth
-compatibility-feedback-button-title =
-    .title = Adborth
 
 ## Messages used as headers in settings pane
 
@@ -51,3 +47,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Dim materion cydnawsedd. wedi'u canfod.
 compatibility-close-settings-button =
     .title = Cau'r gosodiadau
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Materion cydnawsedd yn:
+        { $browsers }

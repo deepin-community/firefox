@@ -4,15 +4,17 @@
 
 // Tests that after clicking a function in edtior, outline focuses that function
 
-add_task(async function() {
-  const dbg = await initDebugger("doc-sources.html", "long");
+"use strict";
 
-  await selectSource(dbg, "long", 1);
+add_task(async function () {
+  const dbg = await initDebugger("doc-sources.html", "long.js");
+
+  await selectSource(dbg, "long.js", 1);
   findElementWithSelector(dbg, ".outline-tab").click();
   is(getItems(dbg).length, 9, "9 items in the outline list");
 
   info("Clicking inside a function in editor should focus the outline");
-  clickAtPos(dbg, { line: 15, ch: 2 });
+  await clickAtPos(dbg, { line: 15, column: 3 });
   await waitForElementWithSelector(dbg, ".outline-list__element.focused");
   ok(
     getFocusedFunction(dbg).includes("addTodo"),
@@ -20,7 +22,7 @@ add_task(async function() {
   );
 
   info("Clicking an empty line in the editor should unfocus the outline");
-  await clickAtPos(dbg, { line: 13, ch: 2 });
+  await clickAtPos(dbg, { line: 13, column: 3 });
   is(getFocusedNode(dbg), null, "should not exist");
 });
 

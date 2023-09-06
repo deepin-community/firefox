@@ -12,6 +12,6 @@ documentation-tab = ডকুমেন্টেশন
 no-specified-policies-message = এন্টারপ্রাইজ পলিসি পরিষেবা সক্রিয় তবে কোনও নীতি সক্রিয় নেই।
 inactive-message = এন্টারপ্রাইজ নীতি পরিষেবা নিষ্ক্রিয়।
 
-policy-name = পলিসি নাম
+policy-name = নীতির নাম
 policy-value = নীতির মূল্য
 policy-errors = নীতির ত্রুটি

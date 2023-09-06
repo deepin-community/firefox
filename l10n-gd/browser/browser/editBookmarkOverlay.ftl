@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Cuir am falach
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Seall gach pasgan nan comharra-lìn
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Cuir am falach
+
 bookmark-overlay-new-folder-button =
     .label = Pasgan ùr
     .accesskey = s
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Seall a h-uile taga
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Cuir am falach
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Seall a h-uile taga
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Cuir am falach
 
 bookmark-overlay-keyword-2 =
     .value = Facal-luirg

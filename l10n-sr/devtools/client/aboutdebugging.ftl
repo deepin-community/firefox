@@ -30,7 +30,7 @@ about-debugging-sidebar-setup =
     .name = Setup
 
 # Text displayed in the about:debugging sidebar when USB devices discovery is enabled.
-about-debugging-sidebar-usb-enabled = USB омогућен
+about-debugging-sidebar-usb-enabled = USB enabled
 
 # Text displayed in the about:debugging sidebar when USB devices discovery is disabled
 # (for instance because the mandatory ADB extension is not installed).
@@ -64,7 +64,7 @@ about-debugging-sidebar-item-connect-button-connection-timeout = Connection time
 # Text displayed in sidebar items for remote devices where a compatible browser (eg
 # Firefox) has not been detected yet. Typically, Android phones connected via USB with
 # USB debugging enabled, but where Firefox is not started.
-about-debugging-sidebar-runtime-item-waiting-for-browser = Чекам прегледача...
+about-debugging-sidebar-runtime-item-waiting-for-browser = Waiting for browser…
 
 # Text displayed in sidebar items for remote devices that have been disconnected from the
 # computer.
@@ -79,7 +79,7 @@ about-debugging-sidebar-runtime-item-name-no-device =
     .title = { $displayName }
 
 # Text to show in the footer of the sidebar that links to a help page
-# (currently: https://developer.mozilla.org/docs/Tools/about:debugging)
+# (currently: https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/)
 about-debugging-sidebar-support = Debugging Support
 
 # Text to show as the ALT attribute of a help icon that accompanies the help about
@@ -116,15 +116,15 @@ about-debugging-setup-usb-disabled = Enabling this will download and add the req
 about-debugging-setup-usb-enable-button = Enable USB Devices
 
 # Text of the button displayed in the USB section of the setup page when USB debugging is enabled.
-about-debugging-setup-usb-disable-button = Онемогућите USB уређаје
+about-debugging-setup-usb-disable-button = Disable USB Devices
 
 # Text of the button displayed in the USB section of the setup page while USB debugging
 # components are downloaded and installed.
 about-debugging-setup-usb-updating-button = Updating…
 
 # USB section of the Setup page (USB status)
-about-debugging-setup-usb-status-enabled = Омогућено
-about-debugging-setup-usb-status-disabled = Онемогућено
+about-debugging-setup-usb-status-enabled = Enabled
+about-debugging-setup-usb-status-disabled = Disabled
 about-debugging-setup-usb-status-updating = Updating…
 
 # USB section step by step guide
@@ -140,7 +140,7 @@ about-debugging-setup-usb-step-enable-debug-firefox2 = Enable USB Debugging in F
 about-debugging-setup-usb-step-plug-device = Connect the Android device to your computer.
 
 # Text shown in the USB section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/docs/Tools/Remote_Debugging/Debugging_over_USB
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-to-a-remote-device
 about-debugging-setup-usb-troubleshoot = Problems connecting to the USB device? <a>Troubleshoot</a>
 
 # Network section of the Setup page
@@ -148,7 +148,7 @@ about-debugging-setup-network =
     .title = Network Location
 
 # Text shown in the Network section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/en-US/docs/Tools/Remote_Debugging/Debugging_over_a_network
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-over-the-network
 about-debugging-setup-network-troubleshoot = Problems connecting via network location? <a>Troubleshoot</a>
 
 # Text of a button displayed after the network locations "Host" input.
@@ -189,10 +189,10 @@ about-debugging-runtime-extensions =
     .name = Extensions
 # Title of the tabs category.
 about-debugging-runtime-tabs =
-    .name = Картице
+    .name = Tabs
 # Title of the service workers category.
 about-debugging-runtime-service-workers =
-    .name = Сервис воркери
+    .name = Service Workers
 # Title of the shared workers category.
 about-debugging-runtime-shared-workers =
     .name = Shared Workers
@@ -208,22 +208,22 @@ about-debugging-runtime-processes =
 about-debugging-runtime-profile-button2 = Profile performance
 
 # This string is displayed in the runtime page if the current configuration of the
-# target runtime is incompatible with service workers. "Learn more" points to MDN.
-# https://developer.mozilla.org/en-US/docs/Tools/about%3Adebugging#Service_workers_not_compatible
+# target runtime is incompatible with service workers. "Learn more" points to:
+# https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#service-workers-not-compatible
 about-debugging-runtime-service-workers-not-compatible = Your browser configuration is not compatible with Service Workers. <a>Learn more</a>
 
 # This string is displayed in the runtime page if the remote browser version is too old.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
 # { $minVersion } is the minimum version that is compatible with the current Firefox instance (same format)
-about-debugging-browser-version-too-old = Повезани прегледач има стару верзију ({ $runtimeVersion }). Минимална подржана верзија је ({ $minVersion }). Ово је неподржана конфигурација која може изазвати проблеме у раду DevTools-а. Ажурирајте повезани прегледач. <a>Отклањање проблема</a>
+about-debugging-browser-version-too-old = The connected browser has an old version ({ $runtimeVersion }). The minimum supported version is ({ $minVersion }). This is an unsupported setup and may cause DevTools to fail. Please update the connected browser. <a>Troubleshooting</a>
 
 # Dedicated message for a backward compatibility issue that occurs when connecting:
 # from Fx 70+ to the old Firefox for Android (aka Fennec) which uses Fx 68.
-about-debugging-browser-version-too-old-fennec = Ова Firefox верзија не може да уклања грешке за Firefox за Android (68). Препоручујемо вам да на телефон инсталирате Firefox за Android Nightly за тестирање. <a>Више детаља</a>
+about-debugging-browser-version-too-old-fennec = This version of Firefox cannot debug Firefox for Android (68). We recommend installing Firefox for Android Nightly on your phone for testing. <a>More details</a>
 
 # This string is displayed in the runtime page if the remote browser version is too recent.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeID } is the build ID of the remote browser (for instance "20181231", format is yyyyMMdd)
 # { $localID } is the build ID of the current Firefox instance (same format)
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
@@ -281,6 +281,12 @@ about-debugging-tmp-extension-reload-button = Reload
 # Clicking on the button will uninstall the extension and remove it from the page.
 about-debugging-tmp-extension-remove-button = Remove
 
+# Text of a button displayed for a temporary extension loaded in the "This Firefox" page.
+# Clicking on the button will forcefully terminate the extension background script (button
+# only visible in extensions that includes a non-persistent background script, either an
+# event page or a background service worker).
+about-debugging-tmp-extension-terminate-bgscript-button = Terminate background script
+
 # Message displayed in the file picker that opens to select a temporary extension to load
 # (triggered by the button using "about-debugging-tmp-extension-install-button")
 # manifest.json .xpi and .zip should not be localized.
@@ -310,6 +316,18 @@ about-debugging-extension-location =
 about-debugging-extension-id =
     .label = Extension ID
 
+# Text displayed for extensions in "runtime" pages, before displaying the status of the
+# extension background script.
+about-debugging-extension-backgroundscript =
+    .label = Background script
+
+# Displayed for extension using a non-persistent background page (either an event page or
+# background service worker) when the background script is currently running.
+about-debugging-extension-backgroundscript-status-running = Running
+
+# Displayed for extension using a non-persistent background page when is currently stopped.
+about-debugging-extension-backgroundscript-status-stopped = Stopped
+
 # This string is displayed as a label of the button that pushes a test payload
 # to a service worker.
 # Note this relates to the "Push" API, which is normally not localized so it is
@@ -322,7 +340,7 @@ about-debugging-worker-action-start2 = Start
     .disabledTitle = Service Worker start is currently disabled for multiprocess { -brand-shorter-name }
 
 # This string is displayed as a label of the button that unregisters a service worker.
-about-debugging-worker-action-unregister = Опозови регистрацију
+about-debugging-worker-action-unregister = Unregister
 
 # Displayed for service workers in runtime pages that listen to Fetch events.
 about-debugging-worker-fetch-listening =
@@ -359,22 +377,14 @@ about-debugging-worker-inspect-action-disabled =
 
 # Displayed as title of the inspect button for zombie tabs (e.g. tabs loaded via a session restore).
 about-debugging-zombie-tab-inspect-action-disabled =
-    .title = Картица није у потпуности учитана и не може се прегледати
-
-# Displayed as name for the Main Process debug target in the Processes category. Only for
-# remote runtimes, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-name = Main Process
-
-# Displayed as description for the Main Process debug target in the Processes category.
-# Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-description2 = Main Process for the target browser
+    .title = Tab is not fully loaded and cannot be inspected
 
 # Displayed instead of the Main Process debug target when the preference
 # `devtools.browsertoolbox.fission` is true.
-about-debugging-multiprocess-toolbox-name = Вишепроцесне алатке
+about-debugging-multiprocess-toolbox-name = Multiprocess Toolbox
 
 # Description for the Multiprocess Toolbox target.
-about-debugging-multiprocess-toolbox-description = Главни процес и процеси садржаја за циљани прегледач
+about-debugging-multiprocess-toolbox-description = Main Process and Content Processes for the target browser
 
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =
@@ -387,4 +397,4 @@ about-debugging-message-details-label-error = Error details
 about-debugging-message-details-label-warning = Warning details
 
 # Label text used for default state of details of message component.
-about-debugging-message-details-label = Детаљи
+about-debugging-message-details-label = Details

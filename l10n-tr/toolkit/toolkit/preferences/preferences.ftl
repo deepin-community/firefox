@@ -9,9 +9,8 @@ failed-pp-change = Ana parola değiştirilemedi.
 incorrect-pp = Ana parolanızı doğru şekilde girmediniz. Lütfen tekrar deneyin.
 pp-change-ok = Ana parola başarıyla değiştirildi.
 
-pp-empty-warning = Kayıtlı parolalarınız ve özel anahtarlarınız korunmayacak.
-pp-erased-ok = Ana parolanızı sildiniz. { pp-empty-warning }
-pp-not-wanted = Uyarı! Ana parola kullanmamaya karar verdiniz. { pp-empty-warning }
+settings-pp-erased-ok = Ana parolanızı sildiniz. { -brand-short-name } tarayıcınızda depolanan parolalar ve sertifika özel anahtarları artık korunmayacak.
+settings-pp-not-wanted = Uyarı! Ana parola kullanmamaya karar verdiniz. { -brand-short-name } tarayıcınızda depolanan parolalar ve sertifika özel anahtarları korunmayacak.
 
 pp-change2empty-in-fips-mode = Şu anda FIPS kipindesiniz. FIPS için boş olmayan bir ana parola gereklidir.
 pw-change-success-title = Parola değiştirme başarılı
@@ -26,7 +25,6 @@ set-password-new-password = Yeni parola:
 set-password-reenter-password = Yeni parola (tekrar):
 set-password-meter = Parola kalite ölçümü
 set-password-meter-loading = Yükleniyor
-
 primary-password-admin = Yöneticiniz, kullanıcı adlarını ve parolaları kaydetmek için bir ana parola belirlemenizi şart koşuyor.
 primary-password-description = Ana parola; bu cihazdaki kullanıcı adları ve parolalarınız gibi hassas bilgileri korumak için kullanılır. Ana parola oluşturduktan sonra kayıtlı bilgilere ulaşmak istediğinizde { -brand-short-name } her oturumda bir kereliğine size ana parolayı soracaktır.
 primary-password-warning = Lütfen ana parolanızı unutmayacağınızdan emin olun. Ana parolanızı unutursanız, bu cihazda ana parolayla korunan hiçbir bilgiye erişemezsiniz.

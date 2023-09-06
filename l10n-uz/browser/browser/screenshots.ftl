@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+screenshot-toolbarbutton =
+    .label = Skrinshot
+    .tooltiptext = Skrinshot olish
+
 screenshots-instructions = Hududni belgilash uchun kerakli hududni tanlang va bosing. Chiqish uchun “ESC” tugmasidan foydalaning.
 screenshots-cancel-button = Bekor qilish
 screenshots-save-visible-button = Ko‘rinadiganini saqlash
@@ -24,17 +28,18 @@ screenshots-request-error-title = Xizmat hozircha ishlamayapti.
 screenshots-request-error-details = Uzr! Rasmni saqlay olmaymiz. Keyinroq urinib ko‘ring.
 
 screenshots-connection-error-title = Skrinshotlaringiz sahifasiga ulana olmadik.
-screenshots-connection-error-details = Internetga ulanishni tekshiring. Ulana olsangiz, demak Firefox Screenshot xizmatida vaqtinchalik muammo bo‘lishi mumkin.
+screenshots-connection-error-details = Internetga ulanishni tekshiring. Ulana olsangiz, demak { -screenshots-brand-name } xizmatida vaqtinchalik muammo bo‘lishi mumkin.
 
-screenshots-login-error-details = Olingan rasmni saqlay olmaymiz, chunki Firefox Screenshot xizmatida muammo mavjud. Keyinroq urinib ko‘ring.
+screenshots-login-error-details = Olingan rasmni saqlay olmaymiz, chunki { -screenshots-brand-name } xizmatida muammo mavjud. Keyinroq urinib ko‘ring.
 
 screenshots-unshootable-page-error-title = Bu sahifani rasmga tushira olmaymiz.
 screenshots-unshootable-page-error-details = Bu sahifa standart sahifa emas, shuning uchun uni rasmga tushira olmaymiz.
 
 screenshots-empty-selection-error-title = Tanlangan hudud juda kichik
 
-screenshots-private-window-error-title = Maxfiy ko‘rish rejimida rasmga olib bo‘lmaydi
+screenshots-private-window-error-title = { -screenshots-brand-name } Maxfiy koʻrish rejmida oʻchirilgan
 screenshots-private-window-error-details = Noqulaylik uchun uzr. Biz keyingi versiyalar uchun bu funksiya ustida ishlayapmiz.
 
 screenshots-generic-error-title = Obbo! { -screenshots-brand-name } ishdan chiqdi.
 screenshots-generic-error-details = Nima yuz berganiga tushunmadik. Yana urinib ko‘ring yoki boshqa sahifada skrinshot olib ko‘ring.
+

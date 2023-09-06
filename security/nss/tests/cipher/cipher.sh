@@ -52,6 +52,32 @@ cipher_init()
   fi
 }
 
+############################## cipher_ecdsa #############################
+# local shell function to test NSS ciphers
+# it is a modified version of the cipher_main function
+# the function does not use the -1 -2 offsets
+# because ./bltest -T -m ecdsa -S -d returns the self-test of all test vectors provided
+########################################################################
+cipher_ecdsa()
+{
+  echo "bltest -T -m $PARAM -d $CIPHERTESTDIR"
+  ${PROFTOOL} ${BINDIR}/bltest${PROG_SUFFIX} -T -m $PARAM -d $CIPHERTESTDIR
+  if [ $? -ne 0 ]; then
+      html_msg 1 $EXP_RET "$TESTNAME"
+      echo "$failedStr"
+  fi
+}    
+
+cipher_sha3()
+{
+  echo "bltest -T -m $PARAM -d $CIPHERTESTDIR"
+  ${PROFTOOL} ${BINDIR}/bltest${PROG_SUFFIX} -T -m $PARAM -d $CIPHERTESTDIR
+  if [ $? -ne 0 ]; then
+      html_msg 1 $EXP_RET "$TESTNAME"
+      echo "$failedStr"
+  fi
+}  
+
 ############################## cipher_main #############################
 # local shell function to test NSS ciphers
 ########################################################################
@@ -64,27 +90,33 @@ cipher_main()
           TESTNAME=`echo $TESTNAME | sed -e "s/_/ /g"`
           echo "$SCRIPTNAME: $TESTNAME --------------------------------"
           failedStr=""
-          inOff=0
           res=0
-          while [ $inOff -lt 8 ]
-          do
-             outOff=0
-             while [ $outOff -lt 8 ]
-             do
-                 echo "bltest -T -m $PARAM -d $CIPHERTESTDIR -1 $inOff -2 $outOff"
-                 ${PROFTOOL} ${BINDIR}/bltest${PROG_SUFFIX} -T -m $PARAM -d $CIPHERTESTDIR -1 $inOff -2 $outOff
-                 if [ $? -ne 0 ]; then
-                     failedStr="$failedStr[$inOff:$outOff]"
-                 fi
-                 outOff=`expr $outOff + 1`
-             done
-             inOff=`expr $inOff + 1`
-          done
-          if [ -n "$failedStr" ]; then
-              html_msg 1 $EXP_RET "$TESTNAME (Failed in/out offset pairs:" \
-                        " $failedStr)"
-          else
-              html_msg $res $EXP_RET "$TESTNAME"
+          if [[ "$TESTNAME" == "ECDSA Sign"  || "$TESTNAME" == "ECDSA Verify" ]] ; then
+              cipher_ecdsa
+	  elif [[ "$TESTNAME" == "SHA3 224 Hash" || "$TESTNAME" == "SHA3 256 Hash" || "$TESTNAME" == "SHA3 384 Hash" || "$TESTNAME" == "SHA3 512 Hash" ]] ; then
+              cipher_sha3
+	  else
+              inOff=0
+              while [ $inOff -lt 8 ]
+              do
+                 outOff=0
+                 while [ $outOff -lt 8 ]
+                 do
+                     echo "bltest -T -m $PARAM -d $CIPHERTESTDIR -1 $inOff -2 $outOff"
+                     ${PROFTOOL} ${BINDIR}/bltest${PROG_SUFFIX} -T -m $PARAM -d $CIPHERTESTDIR -1 $inOff -2 $outOff
+                     if [ $? -ne 0 ]; then
+                         failedStr="$failedStr[$inOff:$outOff]"
+                     fi
+                     outOff=`expr $outOff + 1`
+                 done
+                 inOff=`expr $inOff + 1`
+              done
+              if [ -n "$failedStr" ]; then
+                  html_msg 1 $EXP_RET "$TESTNAME (Failed in/out offset pairs:" \
+                            " $failedStr)"
+              else
+                  html_msg $res $EXP_RET "$TESTNAME"
+              fi
           fi
       fi
   done < ${CIPHER_TXT}
@@ -121,6 +153,7 @@ cipher_rsa_populate()
   ${PROFTOOL} ${BINDIR}/rsapoptst -t e_n_p,d_n_q,d_p_q,e_d_n -r 10
   html_msg $? 0 "$TESTNAME"
 }
+
 
 ############################## cipher_cleanup ############################
 # local shell function to finish this script (no exit since it might be

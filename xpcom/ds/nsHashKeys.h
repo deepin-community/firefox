@@ -53,9 +53,7 @@ inline uint32_t HashString(const nsACString& aStr) {
  * nsFloatHashKey
  * IntPtrHashKey
  * nsPtrHashKey
- * nsClearingPtrHashKey
  * nsVoidPtrHashKey
- * nsClearingVoidPtrHashKey
  * nsISupportsHashKey
  * nsIDHashKey
  * nsDepCharHashKey
@@ -103,37 +101,72 @@ class nsStringHashKey : public PLDHashEntryHdr {
 
 #ifdef MOZILLA_INTERNAL_API
 
+namespace mozilla::detail {
+
+template <class CharT, bool Unicode = true>
+struct comparatorTraits {};
+
+template <>
+struct comparatorTraits<char, false> {
+  static int caseInsensitiveCompare(const char* aLhs, const char* aRhs,
+                                    size_t aLhsLength, size_t aRhsLength) {
+    return nsCaseInsensitiveCStringComparator(aLhs, aRhs, aLhsLength,
+                                              aRhsLength);
+  };
+};
+
+template <>
+struct comparatorTraits<char, true> {
+  static int caseInsensitiveCompare(const char* aLhs, const char* aRhs,
+                                    size_t aLhsLength, size_t aRhsLength) {
+    return nsCaseInsensitiveUTF8StringComparator(aLhs, aRhs, aLhsLength,
+                                                 aRhsLength);
+  };
+};
+
+template <>
+struct comparatorTraits<char16_t, true> {
+  static int caseInsensitiveCompare(const char16_t* aLhs, const char16_t* aRhs,
+                                    size_t aLhsLength, size_t aRhsLength) {
+    return nsCaseInsensitiveStringComparator(aLhs, aRhs, aLhsLength,
+                                             aRhsLength);
+  };
+};
+
+}  // namespace mozilla::detail
+
 /**
- * hashkey wrapper using nsAString KeyType
- *
- * This is internal-API only because nsCaseInsensitiveStringComparator is
+ * This is internal-API only because nsCaseInsensitive{C}StringComparator is
  * internal-only.
  *
  * @see nsTHashtable::EntryType for specification
  */
-class nsStringCaseInsensitiveHashKey : public PLDHashEntryHdr {
- public:
-  typedef const nsAString& KeyType;
-  typedef const nsAString* KeyTypePointer;
 
-  explicit nsStringCaseInsensitiveHashKey(KeyTypePointer aStr) : mStr(*aStr) {
+template <typename T, bool Unicode>
+class nsTStringCaseInsensitiveHashKey : public PLDHashEntryHdr {
+ public:
+  typedef const nsTSubstring<T>& KeyType;
+  typedef const nsTSubstring<T>* KeyTypePointer;
+
+  explicit nsTStringCaseInsensitiveHashKey(KeyTypePointer aStr) : mStr(*aStr) {
     // take it easy just deal HashKey
   }
 
-  nsStringCaseInsensitiveHashKey(const nsStringCaseInsensitiveHashKey&) =
+  nsTStringCaseInsensitiveHashKey(const nsTStringCaseInsensitiveHashKey&) =
       delete;
-  nsStringCaseInsensitiveHashKey(nsStringCaseInsensitiveHashKey&& aToMove)
+  nsTStringCaseInsensitiveHashKey(nsTStringCaseInsensitiveHashKey&& aToMove)
       : PLDHashEntryHdr(std::move(aToMove)), mStr(std::move(aToMove.mStr)) {}
-  ~nsStringCaseInsensitiveHashKey() = default;
+  ~nsTStringCaseInsensitiveHashKey() = default;
 
   KeyType GetKey() const { return mStr; }
   bool KeyEquals(const KeyTypePointer aKey) const {
-    return mStr.Equals(*aKey, nsCaseInsensitiveStringComparator);
+    using comparator = typename mozilla::detail::comparatorTraits<T, Unicode>;
+    return mStr.Equals(*aKey, comparator::caseInsensitiveCompare);
   }
 
   static KeyTypePointer KeyToPointer(KeyType aKey) { return &aKey; }
   static PLDHashNumber HashKey(const KeyTypePointer aKey) {
-    nsAutoString tmKey(*aKey);
+    nsTAutoString<T> tmKey(*aKey);
     ToLowerCase(tmKey);
     return mozilla::HashString(tmKey);
   }
@@ -145,10 +178,17 @@ class nsStringCaseInsensitiveHashKey : public PLDHashEntryHdr {
   }
 
  private:
-  const nsString mStr;
+  const nsTString<T> mStr;
 };
 
-#endif
+using nsStringCaseInsensitiveHashKey =
+    nsTStringCaseInsensitiveHashKey<char16_t, true>;
+using nsCStringASCIICaseInsensitiveHashKey =
+    nsTStringCaseInsensitiveHashKey<char, false>;
+using nsCStringUTF8CaseInsensitiveHashKey =
+    nsTStringCaseInsensitiveHashKey<char, true>;
+
+#endif  // MOZILLA_INTERNAL_API
 
 /**
  * hashkey wrapper using nsACString KeyType
@@ -272,14 +312,12 @@ using IntPtrHashKey = nsIntegralHashKey<intptr_t>;
  */
 class nsISupportsHashKey : public PLDHashEntryHdr {
  public:
-  typedef nsISupports* KeyType;
-  typedef const nsISupports* KeyTypePointer;
+  using KeyType = nsISupports*;
+  using KeyTypePointer = const nsISupports*;
 
   explicit nsISupportsHashKey(const nsISupports* aKey)
       : mSupports(const_cast<nsISupports*>(aKey)) {}
-  nsISupportsHashKey(nsISupportsHashKey&& aOther)
-      : PLDHashEntryHdr(std::move(aOther)),
-        mSupports(std::move(aOther.mSupports)) {}
+  nsISupportsHashKey(nsISupportsHashKey&& aOther) = default;
   ~nsISupportsHashKey() = default;
 
   KeyType GetKey() const { return mSupports; }
@@ -287,7 +325,7 @@ class nsISupportsHashKey : public PLDHashEntryHdr {
 
   static KeyTypePointer KeyToPointer(KeyType aKey) { return aKey; }
   static PLDHashNumber HashKey(KeyTypePointer aKey) {
-    return NS_PTR_TO_UINT32(aKey) >> 2;
+    return mozilla::HashGeneric(aKey);
   }
   enum { ALLOW_MEMMOVE = true };
 
@@ -303,12 +341,11 @@ class nsISupportsHashKey : public PLDHashEntryHdr {
 template <class T>
 class nsRefPtrHashKey : public PLDHashEntryHdr {
  public:
-  typedef T* KeyType;
-  typedef const T* KeyTypePointer;
+  using KeyType = T*;
+  using KeyTypePointer = const T*;
 
   explicit nsRefPtrHashKey(const T* aKey) : mKey(const_cast<T*>(aKey)) {}
-  nsRefPtrHashKey(nsRefPtrHashKey&& aOther)
-      : PLDHashEntryHdr(std::move(aOther)), mKey(std::move(aOther.mKey)) {}
+  nsRefPtrHashKey(nsRefPtrHashKey&& aOther) = default;
   ~nsRefPtrHashKey() = default;
 
   KeyType GetKey() const { return mKey; }
@@ -316,7 +353,7 @@ class nsRefPtrHashKey : public PLDHashEntryHdr {
 
   static KeyTypePointer KeyToPointer(KeyType aKey) { return aKey; }
   static PLDHashNumber HashKey(KeyTypePointer aKey) {
-    return NS_PTR_TO_UINT32(aKey) >> 2;
+    return mozilla::HashGeneric(aKey);
   }
   enum { ALLOW_MEMMOVE = true };
 
@@ -330,25 +367,6 @@ inline void ImplCycleCollectionTraverse(
     const char* aName, uint32_t aFlags = 0) {
   CycleCollectionNoteChild(aCallback, aField.GetKey(), aName, aFlags);
 }
-
-/**
- * hashkey wrapper using T* KeyType that sets key to nullptr upon
- * destruction. Relevant only in cases where a memory pointer-scanner
- * like valgrind might get confused about stale references.
- *
- * @see nsTHashtable::EntryType for specification
- */
-
-template <class T>
-class nsClearingPtrHashKey : public nsPtrHashKey<T> {
- public:
-  explicit nsClearingPtrHashKey(const T* aKey) : nsPtrHashKey<T>(aKey) {}
-  nsClearingPtrHashKey(nsClearingPtrHashKey&& aToMove)
-      : nsPtrHashKey<T>(std::move(aToMove)) {}
-  ~nsClearingPtrHashKey() { nsPtrHashKey<T>::mKey = nullptr; }
-};
-
-typedef nsClearingPtrHashKey<const void> nsClearingVoidPtrHashKey;
 
 /**
  * hashkey wrapper using a function pointer KeyType
@@ -370,7 +388,7 @@ class nsFuncPtrHashKey : public PLDHashEntryHdr {
 
   static KeyTypePointer KeyToPointer(KeyType aKey) { return &aKey; }
   static PLDHashNumber HashKey(KeyTypePointer aKey) {
-    return NS_PTR_TO_UINT32(*aKey) >> 2;
+    return mozilla::HashGeneric(*aKey);
   }
   enum { ALLOW_MEMMOVE = true };
 

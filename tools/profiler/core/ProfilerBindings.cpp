@@ -10,6 +10,7 @@
 
 #include "GeckoProfiler.h"
 
+#include <set>
 #include <type_traits>
 
 void gecko_profiler_register_thread(const char* aName) {
@@ -38,8 +39,27 @@ void gecko_profiler_construct_timestamp_now(mozilla::TimeStamp* aTimeStamp) {
   new (aTimeStamp) mozilla::TimeStamp(mozilla::TimeStamp::Now());
 }
 
+void gecko_profiler_clone_timestamp(const mozilla::TimeStamp* aSrcTimeStamp,
+                                    mozilla::TimeStamp* aDestTimeStamp) {
+  new (aDestTimeStamp) mozilla::TimeStamp(*aSrcTimeStamp);
+}
+
 void gecko_profiler_destruct_timestamp(mozilla::TimeStamp* aTimeStamp) {
   aTimeStamp->~TimeStamp();
+}
+
+void gecko_profiler_add_timestamp(const mozilla::TimeStamp* aTimeStamp,
+                                  mozilla::TimeStamp* aDestTimeStamp,
+                                  double aMicroseconds) {
+  new (aDestTimeStamp) mozilla::TimeStamp(
+      *aTimeStamp + mozilla::TimeDuration::FromMicroseconds(aMicroseconds));
+}
+
+void gecko_profiler_subtract_timestamp(const mozilla::TimeStamp* aTimeStamp,
+                                       mozilla::TimeStamp* aDestTimeStamp,
+                                       double aMicroseconds) {
+  new (aDestTimeStamp) mozilla::TimeStamp(
+      *aTimeStamp - mozilla::TimeDuration::FromMicroseconds(aMicroseconds));
 }
 
 void gecko_profiler_construct_marker_timing_instant_at(
@@ -214,9 +234,18 @@ void gecko_profiler_marker_schema_add_static_label_value(
 
 void gecko_profiler_marker_schema_stream(
     mozilla::baseprofiler::SpliceableJSONWriter* aWriter, const char* aName,
-    size_t aNameLength, mozilla::MarkerSchema* aMarkerSchema) {
+    size_t aNameLength, mozilla::MarkerSchema* aMarkerSchema,
+    void* aStreamedNamesSet) {
 #ifdef MOZ_GECKO_PROFILER
-  std::move(*aMarkerSchema).Stream(*aWriter, mozilla::Span(aName, aNameLength));
+  auto* streamedNames = static_cast<std::set<std::string>*>(aStreamedNamesSet);
+  // std::set.insert(T&&) returns a pair, its `second` is true if the element
+  // was actually inserted (i.e., it was not there yet.).
+  const bool didInsert =
+      streamedNames->insert(std::string(aName, aNameLength)).second;
+  if (didInsert) {
+    std::move(*aMarkerSchema)
+        .Stream(*aWriter, mozilla::Span(aName, aNameLength));
+  }
 #endif
 }
 
@@ -249,6 +278,15 @@ void gecko_profiler_json_writer_string_property(
 #ifdef MOZ_GECKO_PROFILER
   aWriter->StringProperty(mozilla::Span(aName, aNameLength),
                           mozilla::Span(aValue, aValueLength));
+#endif
+}
+
+void gecko_profiler_json_writer_unique_string_property(
+    mozilla::baseprofiler::SpliceableJSONWriter* aWriter, const char* aName,
+    size_t aNameLength, const char* aValue, size_t aValueLength) {
+#ifdef MOZ_GECKO_PROFILER
+  aWriter->UniqueStringProperty(mozilla::Span(aName, aNameLength),
+                                mozilla::Span(aValue, aValueLength));
 #endif
 }
 
@@ -312,12 +350,14 @@ void gecko_profiler_add_marker(
     markerOptions.Set(mozilla::MarkerThreadId::CurrentThread());
   }
 
-  auto& buffer = profiler_markers_detail::CachedCoreBuffer();
+  auto& buffer = profiler_get_core_buffer();
   mozilla::Span payload(aPayload, aPayloadSize);
 
   mozilla::StackCaptureOptions captureOptions =
       markerOptions.Stack().CaptureOptions();
-  if (captureOptions != mozilla::StackCaptureOptions::NoStack) {
+  if (captureOptions != mozilla::StackCaptureOptions::NoStack &&
+      // Do not capture a stack if the NoMarkerStacks feature is set.
+      profiler_active_without_feature(ProfilerFeature::NoMarkerStacks)) {
     // A capture was requested, let's attempt to do it here&now. This avoids a
     // lot of allocations that would be necessary if capturing a backtrace
     // separately.

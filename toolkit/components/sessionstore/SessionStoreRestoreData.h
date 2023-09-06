@@ -7,13 +7,11 @@
 #ifndef mozilla_dom_SessionStoreRestoreData_h
 #define mozilla_dom_SessionStoreRestoreData_h
 
-#include "mozilla/Tuple.h"
 #include "mozilla/dom/sessionstore/SessionStoreTypes.h"
 #include "mozilla/dom/SessionStoreData.h"
 #include "nsISessionStoreRestoreData.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 #define NS_SESSIONSTORERESTOREDATA_IID               \
   {                                                  \
@@ -28,7 +26,7 @@ class SessionStoreRestoreData final : public nsISessionStoreRestoreData {
   bool IsEmpty();
   SessionStoreRestoreData* FindDataForChild(BrowsingContext* aContext);
   bool CanRestoreInto(nsIURI* aDocumentURI);
-  bool RestoreInto(RefPtr<BrowsingContext> aContext);
+  MOZ_CAN_RUN_SCRIPT bool RestoreInto(RefPtr<BrowsingContext> aContext);
 
   NS_DECL_ISUPPORTS
   NS_DECL_NSISESSIONSTORERESTOREDATA
@@ -56,7 +54,6 @@ class SessionStoreRestoreData final : public nsISessionStoreRestoreData {
 NS_DEFINE_STATIC_IID_ACCESSOR(SessionStoreRestoreData,
                               NS_SESSIONSTORERESTOREDATA_IID)
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 #endif

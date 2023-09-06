@@ -19,4 +19,7 @@ interface Crypto {
 
   [Throws]
   ArrayBufferView getRandomValues(ArrayBufferView array);
+
+  [SecureContext]
+  UTF8String randomUUID();
 };

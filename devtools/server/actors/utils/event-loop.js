@@ -5,7 +5,6 @@
 "use strict";
 
 const xpcInspector = require("xpcInspector");
-const { Cu } = require("chrome");
 
 /**
  * An object that represents a nested event loop. It is used as the nest
@@ -165,6 +164,12 @@ class EventLoop {
         if (Cu.isRemoteProxy(window.parent) && !Cu.isRemoteProxy(window)) {
           return true;
         }
+
+        // If EFT is enabled, accept any same process document (top-level or iframe).
+        if (this.thread.getParent().ignoreSubFrames) {
+          return true;
+        }
+
         try {
           // Ignore iframes running in the same process as their parent document,
           // as they will be paused automatically when pausing their owner top level document

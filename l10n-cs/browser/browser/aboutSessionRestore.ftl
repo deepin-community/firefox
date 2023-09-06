@@ -53,5 +53,4 @@ welcome-back-restore-button =
 welcome-back-restore-all-label = Obnovit všechna okna a panely
 welcome-back-restore-some-label = Obnovit pouze ty, které chcete
 
-welcome-back-page-info-link = Vaše přizpůsobení a doplňky byly odstraněny a prohlížeč obnoven do výchozího nastavení. Pokud to nevyřeší váš problém, <a data-l10n-name="link-more">přečtěte si více o tom, co můžete dělat.</a>
-
+welcome-back-page-info-link = Vaše přizpůsobení a doplňky byly odstraněny a prohlížeč byl obnoven do výchozího nastavení. Pokud to nevyřeší váš problém, <a data-l10n-name="link-more">přečtěte si, co můžete dále dělat.</a>

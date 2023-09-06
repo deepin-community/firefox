@@ -2,26 +2,15 @@
 // notifying http-on-modify-request and http-on-before-connect observers.
 "use strict";
 
-var CC = Components.Constructor;
-
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
-
-// Turn off the authentication dialog blocking for this test.
-var prefs = Cc["@mozilla.org/preferences-service;1"].getService(
-  Ci.nsIPrefBranch
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
 );
 
-XPCOMUtils.defineLazyGetter(this, "URL", function() {
+ChromeUtils.defineLazyGetter(this, "URL", function () {
   return "http://localhost:" + httpserv.identity.primaryPort;
 });
 
-XPCOMUtils.defineLazyGetter(this, "PORT", function() {
-  return httpserv.identity.primaryPort;
-});
-
-var obs = Cc["@mozilla.org/observer-service;1"].getService(
-  Ci.nsIObserverService
-);
+var obs = Services.obs;
 
 var requestObserver = null;
 
@@ -81,7 +70,7 @@ requestListenerObserver.prototype = {
       subject instanceof Ci.nsIHttpChannel
     ) {
       if (this.suspendOnBeforeConnect) {
-        var chan = subject.QueryInterface(Ci.nsIHttpChannel);
+        let chan = subject.QueryInterface(Ci.nsIHttpChannel);
         executeSoon(() => {
           this.resumeOnBeforeConnect = true;
           chan.resume();
@@ -94,7 +83,7 @@ requestListenerObserver.prototype = {
       subject instanceof Ci.nsIHttpChannel
     ) {
       if (this.suspendOnModifyRequest) {
-        var chan = subject.QueryInterface(Ci.nsIHttpChannel);
+        let chan = subject.QueryInterface(Ci.nsIHttpChannel);
         executeSoon(() => {
           this.resumeOnModifyRequest = true;
           chan.resume();
@@ -173,11 +162,10 @@ var listener = {
 };
 
 function makeChan(url, loadingUrl) {
-  var ios = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-  var ssm = Cc["@mozilla.org/scriptsecuritymanager;1"].getService(
-    Ci.nsIScriptSecurityManager
+  var principal = Services.scriptSecurityManager.createContentPrincipal(
+    Services.io.newURI(loadingUrl),
+    {}
   );
-  var principal = ssm.createContentPrincipal(ios.newURI(loadingUrl), {});
   return NetUtil.newChannel({
     uri: url,
     loadingPrincipal: principal,

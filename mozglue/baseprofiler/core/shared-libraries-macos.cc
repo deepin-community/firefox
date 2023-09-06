@@ -142,16 +142,21 @@ static void addSharedLibrary(const platform_mach_header* header,
   }
 
   std::string uuid;
+  std::string breakpadId;
   if (uuid_bytes != nullptr) {
     static constexpr char digits[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
                                         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-    for (int i = 0; i < 15; ++i) {
+    for (int i = 0; i < 16; ++i) {
       uint8_t byte = uuid_bytes[i];
       uuid += digits[byte >> 4];
       uuid += digits[byte & 0xFu];
     }
+
+    // Breakpad id is the same as the uuid but with the additional trailing 0
+    // for the breakpad id age.
+    breakpadId = uuid;
     // breakpad id age.
-    uuid += '0';
+    breakpadId += '0';
   }
 
   std::string pathStr = path;
@@ -163,9 +168,9 @@ static void addSharedLibrary(const platform_mach_header* header,
   const NXArchInfo* archInfo =
       NXGetArchInfoFromCpuType(header->cputype, header->cpusubtype);
 
-  info.AddSharedLibrary(SharedLibrary(start, start + size, 0, uuid, nameStr,
-                                      pathStr, nameStr, pathStr, std::string{},
-                                      archInfo ? archInfo->name : ""));
+  info.AddSharedLibrary(SharedLibrary(
+      start, start + size, 0, breakpadId, uuid, nameStr, pathStr, nameStr,
+      pathStr, std::string{}, archInfo ? archInfo->name : ""));
 }
 
 // Translate the statically stored sSharedLibrariesList information into a
@@ -176,6 +181,25 @@ SharedLibraryInfo SharedLibraryInfo::GetInfoForSelf() {
 
   for (auto& info : *sSharedLibrariesList) {
     addSharedLibrary(info.header, info.path.c_str(), sharedLibraryInfo);
+  }
+
+  // Add the entry for dyld itself.
+  // We only support macOS 10.12+, which corresponds to dyld version 15+.
+  // dyld version 15 added the dyldPath property.
+  task_dyld_info_data_t task_dyld_info;
+  mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
+  if (task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&task_dyld_info,
+                &count) != KERN_SUCCESS) {
+    return sharedLibraryInfo;
+  }
+
+  struct dyld_all_image_infos* aii =
+      (struct dyld_all_image_infos*)task_dyld_info.all_image_info_addr;
+  if (aii->version >= 15) {
+    const platform_mach_header* header =
+        reinterpret_cast<const platform_mach_header*>(
+            aii->dyldImageLoadAddress);
+    addSharedLibrary(header, aii->dyldPath, sharedLibraryInfo);
   }
 
   return sharedLibraryInfo;

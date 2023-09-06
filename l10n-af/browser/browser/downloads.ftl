@@ -24,35 +24,13 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Kanselleer
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Open houervouer
-    .accesskey = v
-  
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Wys in 'Finder'
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
-downloads-cmd-show-button =
-    .tooltiptext =
-        { PLATFORM() ->
-            [macos] Wys in 'Finder'
-           *[other] Open houervouer
-        }
 
-downloads-cmd-show-panel =
-    .aria-label =
-        { PLATFORM() ->
-            [macos] Wys in 'Finder'
-           *[other] Open houervouer
-        }
-downloads-cmd-show-description =
-    .value =
-        { PLATFORM() ->
-            [macos] Wys in 'Finder'
-           *[other] Open houervouer
-        }
+##
 
 downloads-cmd-retry =
     .tooltiptext = Probeer weer
@@ -122,6 +100,7 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -141,6 +120,14 @@ downloads-history =
     .label = Wys alle aflaaie
     .accesskey = s
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
+
 downloads-clear-downloads-button =
     .label = Maak aflaailys skoon
     .tooltiptext = Verwyder voltooide, gekanselleerde en mislukte aflaaie
@@ -153,3 +140,12 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Niks afgelaai in hierdie sessie nie.
+
+## Download errors
+
+downloads-error-alert-title = Aflaaifout
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Die afgelaaide lêer kan nie gestoor word nie, aangesien 'n onbekende fout plaasgevind het.
+    
+    Probeer gerus weer.

@@ -22,13 +22,13 @@ process-type-extension = Rozšyrjenje
 # process used to open file:// URLs
 process-type-file = Lokalna dataja
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Wjelike pśirědowanje składa
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Izolěrowane webwopśimjeśe
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Izolěrowany service worker
 
 # process preallocated; may change to other types
 process-type-prealloc = Pśedwobsajźone
@@ -49,6 +49,9 @@ process-type-socket = Soket
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = IPC-aktor w pěskowem kašćiku
 
 ##
 ## Other

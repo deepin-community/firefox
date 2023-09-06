@@ -3,15 +3,14 @@
  */
 "use strict";
 
-const { TelemetryEnvironment } = ChromeUtils.import(
-  "resource://gre/modules/TelemetryEnvironment.jsm"
+const { TelemetryEnvironment } = ChromeUtils.importESModule(
+  "resource://gre/modules/TelemetryEnvironment.sys.mjs"
 );
 
 // Regression test for bug 1665568: verifies that AddonManager unblocks shutdown
 // when startup is interrupted very early.
 add_task(async function test_shutdown_immediately_after_startup() {
   // Set as migrated to prevent sync DB load at startup.
-  Services.prefs.setBoolPref("extensions.incognito.migrated", true);
   Services.prefs.setCharPref("extensions.lastAppVersion", "42");
   createAppInfo("xpcshell@tests.mozilla.org", "XPCShell", "42");
 

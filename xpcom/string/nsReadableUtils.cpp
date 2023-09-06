@@ -12,7 +12,6 @@
 #include "mozilla/Utf8.h"
 
 #include "nscore.h"
-#include "nsMemory.h"
 #include "nsString.h"
 #include "nsTArray.h"
 #include "nsUTF8Utils.h"
@@ -452,7 +451,7 @@ bool RFindInReadable(const nsACString& aPattern,
 
 bool FindCharInReadable(char16_t aChar, nsAString::const_iterator& aSearchStart,
                         const nsAString::const_iterator& aSearchEnd) {
-  int32_t fragmentLength = aSearchEnd.get() - aSearchStart.get();
+  ptrdiff_t fragmentLength = aSearchEnd.get() - aSearchStart.get();
 
   const char16_t* charFoundAt =
       nsCharTraits<char16_t>::find(aSearchStart.get(), fragmentLength, aChar);
@@ -467,7 +466,7 @@ bool FindCharInReadable(char16_t aChar, nsAString::const_iterator& aSearchStart,
 
 bool FindCharInReadable(char aChar, nsACString::const_iterator& aSearchStart,
                         const nsACString::const_iterator& aSearchEnd) {
-  int32_t fragmentLength = aSearchEnd.get() - aSearchStart.get();
+  ptrdiff_t fragmentLength = aSearchEnd.get() - aSearchStart.get();
 
   const char* charFoundAt =
       nsCharTraits<char>::find(aSearchStart.get(), fragmentLength, aChar);

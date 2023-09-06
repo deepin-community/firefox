@@ -59,7 +59,6 @@
 #include "nsHtml5AttributeName.h"
 #include "nsHtml5ElementName.h"
 #include "nsHtml5Tokenizer.h"
-#include "nsHtml5MetaScanner.h"
 #include "nsHtml5StackNode.h"
 #include "nsHtml5UTF16Buffer.h"
 #include "nsHtml5StateSnapshot.h"
@@ -1166,7 +1165,7 @@ starttagloop:
             case P:
             case DIV_OR_BLOCKQUOTE_OR_CENTER_OR_MENU:
             case UL_OR_OL_OR_DL:
-            case ADDRESS_OR_ARTICLE_OR_ASIDE_OR_DETAILS_OR_DIALOG_OR_DIR_OR_FIGCAPTION_OR_FIGURE_OR_FOOTER_OR_HEADER_OR_HGROUP_OR_MAIN_OR_NAV_OR_SECTION_OR_SUMMARY: {
+            case ADDRESS_OR_ARTICLE_OR_ASIDE_OR_DETAILS_OR_DIALOG_OR_DIR_OR_FIGCAPTION_OR_FIGURE_OR_FOOTER_OR_HEADER_OR_HGROUP_OR_MAIN_OR_NAV_OR_SEARCH_OR_SECTION_OR_SUMMARY: {
               implicitlyCloseP();
               appendToCurrentNodeAndPushElementMayFoster(elementName,
                                                          attributes);
@@ -1348,9 +1347,6 @@ starttagloop:
               reconstructTheActiveFormattingElements();
               [[fallthrough]];
             }
-#ifdef ENABLE_VOID_MENUITEM
-            case MENUITEM:
-#endif
             case PARAM_OR_SOURCE_OR_TRACK: {
               appendVoidElementToCurrentMayFoster(elementName, attributes);
               selfClosing = false;
@@ -2684,7 +2680,7 @@ void nsHtml5TreeBuilder::endTag(nsHtml5ElementName* elementName) {
           case PRE_OR_LISTING:
           case FIELDSET:
           case BUTTON:
-          case ADDRESS_OR_ARTICLE_OR_ASIDE_OR_DETAILS_OR_DIALOG_OR_DIR_OR_FIGCAPTION_OR_FIGURE_OR_FOOTER_OR_HEADER_OR_HGROUP_OR_MAIN_OR_NAV_OR_SECTION_OR_SUMMARY: {
+          case ADDRESS_OR_ARTICLE_OR_ASIDE_OR_DETAILS_OR_DIALOG_OR_DIR_OR_FIGCAPTION_OR_FIGURE_OR_FOOTER_OR_HEADER_OR_HGROUP_OR_MAIN_OR_NAV_OR_SEARCH_OR_SECTION_OR_SUMMARY: {
             eltPos = findLastInScope(name);
             if (eltPos == nsHtml5TreeBuilder::NOT_FOUND_ON_STACK) {
               errStrayEndTag(name);
@@ -2839,9 +2835,6 @@ void nsHtml5TreeBuilder::endTag(nsHtml5ElementName* elementName) {
           }
           case AREA_OR_WBR:
           case KEYGEN:
-#ifdef ENABLE_VOID_MENUITEM
-          case MENUITEM:
-#endif
           case PARAM_OR_SOURCE_OR_TRACK:
           case EMBED:
           case IMG:

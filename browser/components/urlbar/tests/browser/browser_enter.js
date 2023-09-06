@@ -6,18 +6,15 @@
 const TEST_VALUE = "example.com/\xF7?\xF7";
 const START_VALUE = "example.com/%C3%B7?%C3%B7";
 
-add_task(async function setup() {
-  const engine = await SearchTestUtils.promiseNewSearchEngine(
-    getRootDirectory(gTestPath) + "searchSuggestionEngine.xml"
-  );
-  engine.alias = "@default";
-
-  const defaultEngine = Services.search.defaultEngine;
-  Services.search.defaultEngine = engine;
-
-  registerCleanupFunction(async function() {
-    Services.search.defaultEngine = defaultEngine;
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.suggest.quickactions", false]],
   });
+  const engine = await SearchTestUtils.promiseNewSearchEngine({
+    url: getRootDirectory(gTestPath) + "searchSuggestionEngine.xml",
+    setAsDefault: true,
+  });
+  engine.alias = "@default";
 });
 
 add_task(async function returnKeypress() {
@@ -96,6 +93,12 @@ add_task(async function altGrReturnKeypress() {
 
 add_task(async function searchOnEnterNoPick() {
   info("Search on Enter without picking a urlbar result");
+  await SpecialPowers.pushPrefEnv({
+    // The test checks that the untrimmed value is equal to the spec.
+    // When using showSearchTerms, the untrimmed value becomes
+    // the search terms.
+    set: [["browser.urlbar.showSearchTerms.featureGate", false]],
+  });
 
   // Why is BrowserTestUtils.openNewForegroundTab not causing the bug?
   let promiseTabOpened = BrowserTestUtils.waitForEvent(
@@ -129,6 +132,7 @@ add_task(async function searchOnEnterNoPick() {
 
   // Cleanup.
   BrowserTestUtils.removeTab(tab);
+  await SpecialPowers.popPrefEnv();
 });
 
 add_task(async function searchOnEnterSoon() {
@@ -139,17 +143,13 @@ add_task(async function searchOnEnterSoon() {
   );
 
   const onLoad = BrowserTestUtils.browserLoaded(gBrowser.selectedBrowser);
-  const onBeforeUnload = SpecialPowers.spawn(
-    gBrowser.selectedBrowser,
-    [],
-    () => {
-      return new Promise(resolve => {
-        content.window.addEventListener("beforeunload", () => {
-          resolve();
-        });
+  const onPageHide = SpecialPowers.spawn(gBrowser.selectedBrowser, [], () => {
+    return new Promise(resolve => {
+      content.window.addEventListener("pagehide", () => {
+        resolve();
       });
-    }
-  );
+    });
+  });
   const onResult = SpecialPowers.spawn(gBrowser.selectedBrowser, [], () => {
     return new Promise(resolve => {
       content.window.addEventListener("keyup", () => {
@@ -174,8 +174,8 @@ add_task(async function searchOnEnterSoon() {
   EventUtils.synthesizeKey("x", { type: "keydown" });
   EventUtils.synthesizeKey("KEY_Enter", { type: "keydown" });
 
-  // Wait for beforeUnload event in the content.
-  await onBeforeUnload;
+  // Wait for pagehide event in the content.
+  await onPageHide;
   is(
     ownerDocument.activeElement,
     gURLBar.inputField,
@@ -194,7 +194,7 @@ add_task(async function searchOnEnterSoon() {
     "The selectionEnd indicates at ending of the value"
   );
 
-  // Keyup both key as soon as beforeUnload event happens.
+  // Keyup both key as soon as pagehide event happens.
   EventUtils.synthesizeKey("x", { type: "keyup" });
   EventUtils.synthesizeKey("KEY_Enter", { type: "keyup" });
 
@@ -262,6 +262,65 @@ add_task(async function searchByMultipleEnters() {
     gBrowser.selectedBrowser,
     "The focus is moved to the browser"
   );
+
+  // Cleanup.
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function typeCharWhileProcessingEnter() {
+  info("Typing a char while processing enter key");
+  const tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    START_VALUE
+  );
+
+  const onLoad = BrowserTestUtils.browserLoaded(
+    gBrowser.selectedBrowser,
+    false,
+    `http://${START_VALUE}`
+  );
+  gURLBar.focus();
+
+  info("Keydown Enter");
+  EventUtils.synthesizeKey("KEY_Enter", { type: "keydown" });
+  await TestUtils.waitForCondition(
+    () => gURLBar._keyDownEnterDeferred,
+    "Wait for starting process for the enter key"
+  );
+
+  info("Keydown a char");
+  EventUtils.synthesizeKey("x", { type: "keydown" });
+
+  info("Keyup both");
+  EventUtils.synthesizeKey("x", { type: "keyup" });
+  EventUtils.synthesizeKey("KEY_Enter", { type: "keyup" });
+
+  Assert.equal(gURLBar.value, TEST_VALUE, "The value of urlbar is correct");
+
+  await onLoad;
+  Assert.ok("Browser loaded the correct url");
+
+  // Cleanup.
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function keyupEnterWhilePressingMeta() {
+  const tab = await BrowserTestUtils.openNewForegroundTab(gBrowser);
+
+  info("Keydown Meta+Enter");
+  gURLBar.focus();
+  gURLBar.value = "";
+  EventUtils.synthesizeKey("KEY_Enter", { type: "keydown", metaKey: true });
+
+  // Pressing Enter key while pressing Meta key, and next, even when releasing
+  // Enter key before releasing Meta key, the keyup event is not fired.
+  // Therefor, we fire Meta keyup event only.
+  info("Keyup Meta");
+  EventUtils.synthesizeKey("KEY_Meta", { type: "keyup" });
+
+  // Check whether we can input on URL bar.
+  EventUtils.synthesizeKey("a");
+  is(gURLBar.value, "a", "Can input a char");
 
   // Cleanup.
   BrowserTestUtils.removeTab(tab);

@@ -39,6 +39,7 @@ class GeckoEditableSupport;
 class GeckoViewSupport;
 class LayerViewSupport;
 class NPZCSupport;
+class PlatformCompositorWidgetDelegate;
 }  // namespace widget
 
 namespace ipc {
@@ -62,15 +63,18 @@ class nsWindow final : public nsBaseWidget {
   NS_INLINE_DECL_REFCOUNTING_INHERITED(nsWindow, nsBaseWidget)
 
   static void InitNatives();
-  void SetScreenId(uint32_t aScreenId) { mScreenId = aScreenId; }
   void OnGeckoViewReady();
   RefPtr<mozilla::MozPromise<bool, bool, false>> OnLoadRequest(
       nsIURI* aUri, int32_t aWindowType, int32_t aFlags,
       nsIPrincipal* aTriggeringPrincipal, bool aHasUserGesture,
       bool aIsTopLevel);
 
+  void OnUpdateSessionStore(mozilla::jni::Object::Param aBundle);
+
  private:
-  uint32_t mScreenId;
+  // Unique ID given to each widget, used to map Surfaces to widgets
+  // in the CompositorSurfaceManager.
+  int32_t mWidgetId;
 
  private:
   RefPtr<mozilla::widget::AndroidView> mAndroidView;
@@ -111,8 +115,6 @@ class nsWindow final : public nsBaseWidget {
   static mozilla::Modifiers GetModifiers(int32_t aMetaState);
   static mozilla::TimeStamp GetEventTimeStamp(int64_t aEventTime);
 
-  void OnSizeChanged(const mozilla::gfx::IntSize& aSize);
-
   void InitEvent(mozilla::WidgetGUIEvent& event,
                  LayoutDeviceIntPoint* aPoint = 0);
 
@@ -123,11 +125,11 @@ class nsWindow final : public nsBaseWidget {
 
   void PassExternalResponse(mozilla::java::WebResponse::Param aResponse);
 
-  void NotifyDisablingWebRender();
-
   void ShowDynamicToolbar();
 
   void DetachNatives();
+
+  mozilla::Mutex& GetDestroyMutex() { return mDestroyMutex; }
 
   //
   // nsIWidget
@@ -137,23 +139,21 @@ class nsWindow final : public nsBaseWidget {
   [[nodiscard]] virtual nsresult Create(nsIWidget* aParent,
                                         nsNativeWidget aNativeParent,
                                         const LayoutDeviceIntRect& aRect,
-                                        nsWidgetInitData* aInitData) override;
+                                        InitData* aInitData) override;
   virtual void Destroy() override;
-  virtual nsresult ConfigureChildren(
-      const nsTArray<nsIWidget::Configuration>&) override;
   virtual void SetParent(nsIWidget* aNewParent) override;
   virtual nsIWidget* GetParent(void) override;
   virtual float GetDPI() override;
   virtual double GetDefaultScaleInternal() override;
   virtual void Show(bool aState) override;
   virtual bool IsVisible() const override;
-  virtual void ConstrainPosition(bool aAllowSlop, int32_t* aX,
-                                 int32_t* aY) override;
+  virtual void ConstrainPosition(DesktopIntPoint&) override;
   virtual void Move(double aX, double aY) override;
   virtual void Resize(double aWidth, double aHeight, bool aRepaint) override;
   virtual void Resize(double aX, double aY, double aWidth, double aHeight,
                       bool aRepaint) override;
   void SetZIndex(int32_t aZIndex) override;
+  virtual nsSizeMode SizeMode() override { return mSizeMode; }
   virtual void SetSizeMode(nsSizeMode aMode) override;
   virtual void Enable(bool aState) override;
   virtual bool IsEnabled() const override;
@@ -164,12 +164,9 @@ class nsWindow final : public nsBaseWidget {
   virtual nsresult DispatchEvent(mozilla::WidgetGUIEvent* aEvent,
                                  nsEventStatus& aStatus) override;
   nsEventStatus DispatchEvent(mozilla::WidgetGUIEvent* aEvent);
-  virtual already_AddRefed<nsIScreen> GetWidgetScreen() override;
-  virtual nsresult MakeFullScreen(bool aFullScreen,
-                                  nsIScreen* aTargetScreen = nullptr) override;
-  void SetCursor(const Cursor&) override {}
+  virtual nsresult MakeFullScreen(bool aFullScreen) override;
+  void SetCursor(const Cursor& aDefaultCursor) override;
   void* GetNativeData(uint32_t aDataType) override;
-  void SetNativeData(uint32_t aDataType, uintptr_t aVal) override;
   virtual nsresult SetTitle(const nsAString& aTitle) override { return NS_OK; }
   [[nodiscard]] virtual nsresult GetAttention(int32_t aCycleCount) override {
     return NS_ERROR_NOT_IMPLEMENTED;
@@ -181,6 +178,9 @@ class nsWindow final : public nsBaseWidget {
   virtual InputContext GetInputContext() override;
 
   WindowRenderer* GetWindowRenderer() override;
+
+  void NotifyCompositorSessionLost(
+      mozilla::layers::CompositorSession* aSession) override;
 
   virtual bool NeedsPaint() override;
 
@@ -205,6 +205,11 @@ class nsWindow final : public nsBaseWidget {
                                       nsIObserver* aObserver) override;
   nsresult SynthesizeNativeMouseMove(LayoutDeviceIntPoint aPoint,
                                      nsIObserver* aObserver) override;
+
+  void SetCompositorWidgetDelegate(CompositorWidgetDelegate* delegate) override;
+
+  virtual void GetCompositorWidgetInitData(
+      mozilla::widget::CompositorWidgetInitData* aInitData) override;
 
   mozilla::layers::CompositorBridgeChild* GetCompositorBridgeChild() const;
 
@@ -234,6 +239,9 @@ class nsWindow final : public nsBaseWidget {
   virtual mozilla::ScreenIntMargin GetSafeAreaInsets() const override;
   void UpdateSafeAreaInsets(const mozilla::ScreenIntMargin& aSafeAreaInsets);
 
+  mozilla::jni::NativeWeakPtr<mozilla::widget::NPZCSupport>
+  GetNPZCSupportWeakPtr();
+
  protected:
   void BringToFront();
   nsWindow* FindTopLevel();
@@ -253,8 +261,8 @@ class nsWindow final : public nsBaseWidget {
   mozilla::ScreenIntCoord mDynamicToolbarMaxHeight;
   mozilla::ScreenIntMargin mSafeAreaInsets;
 
+  nsSizeMode mSizeMode;
   bool mIsFullScreen;
-  bool mIsDisablingWebRender;
 
   bool UseExternalCompositingSurface() const override { return true; }
 
@@ -266,9 +274,15 @@ class nsWindow final : public nsBaseWidget {
   void CreateLayerManager();
   void RedrawAll();
 
+  void OnSizeChanged(const mozilla::gfx::IntSize& aSize);
+
   mozilla::layers::LayersId GetRootLayerId() const;
   RefPtr<mozilla::layers::UiCompositorControllerChild>
   GetUiCompositorControllerChild();
+
+  mozilla::widget::PlatformCompositorWidgetDelegate* mCompositorWidgetDelegate;
+
+  mozilla::Mutex mDestroyMutex;
 
   friend class mozilla::widget::GeckoViewSupport;
   friend class mozilla::widget::LayerViewSupport;

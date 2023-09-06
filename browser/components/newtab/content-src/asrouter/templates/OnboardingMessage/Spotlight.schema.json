@@ -1,140 +1,66 @@
 {
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "file:///Spotlight.schema.json",
   "title": "Spotlight",
   "description": "A template with an image, title, content and two buttons.",
-  "version": "1.0.0",
+  "allOf": [{ "$ref": "file:///FxMSCommon.schema.json#/$defs/Message" }],
   "type": "object",
   "properties": {
-    "template": {
-      "type": "string",
-      "description": "Specify the layout template for the Spotlight",
-      "enum": ["logo-and-content"]
-    },
-    "logoImageURL": {
-      "type": "string",
-      "description": "URL for image to use with the content"
-    },
-    "body": {
+    "content": {
+      "type": "object",
       "properties": {
-        "title": {
-          "type": "object",
-          "properties": {
-            "label": {
-              "description": "The title shown in the Spotlight message",
-              "oneOf": [
-                {
-                  "type": "string",
-                  "description": "Message shown in the header element"
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "string_id": {
-                      "type": "string",
-                      "description": "Id of localized string for the header element"
-                    }
-                  },
-                  "required": ["string_id"]
-                }
-              ]
-            }
-          },
-          "required": ["label"]
+        "template": {
+          "type": "string",
+          "description": "Specify the layout template for the Spotlight",
+          "const": "multistage"
         },
-        "text": {
-          "type": "object",
-          "properties": {
-            "label": {
-              "description": "The content shown in the Spotlight message",
-              "oneOf": [
-                {
-                  "type": "string",
-                  "description": "Message shown in the paragraph element"
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "string_id": {
-                      "type": "string",
-                      "description": "Id of localized string for the paragraph element"
-                    }
-                  },
-                  "required": ["string_id"]
-                }
-              ]
-            }
-          },
-          "required": ["label"]
+        "backdrop": {
+          "type": "string",
+          "description": "Background css behind modal content"
         },
-        "primary": {
+        "logo": {
           "type": "object",
           "properties": {
-            "label": {
-              "description": "The label for the primary button",
-              "oneOf": [
-                {
-                  "type": "string",
-                  "description": "Message shown in the button element"
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "string_id": {
-                      "type": "string",
-                      "description": "Id of localized string for the button element"
-                    }
-                  },
-                  "required": ["string_id"]
-                }
-              ]
+            "imageURL": {
+              "type": "string",
+              "description": "URL for image to use with the content"
             },
-            "action": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "description": "Action dispatched by the button."
-                },
-                "data": {
-                  "type": "object"
-                }
-              },
-              "required": ["type"],
-              "additionalProperties": false
+            "imageId": {
+              "type": "string",
+              "description": "The ID for a remotely hosted image"
+            },
+            "size": {
+              "type": "string",
+              "description": "The logo size."
             }
           },
-          "required": ["label", "action"]
+          "additionalProperties": true
         },
-        "secondary": {
-          "type": "object",
-          "properties": {
-            "label": {
-              "description": "The label for the secondary button",
-              "oneOf": [
-                {
-                  "type": "string",
-                  "description": "Message shown in the button element"
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "string_id": {
-                      "type": "string",
-                      "description": "Id of localized string for the button element"
-                    }
-                  },
-                  "required": ["string_id"]
-                }
-              ]
-            }
-          },
-          "required": ["label", "action"]
+        "screens": {
+          "type": "array",
+          "description": "Collection of individual screen content"
+        },
+        "transitions": {
+          "type": "boolean",
+          "description": "Show transitions within and between screens"
+        },
+        "disableHistoryUpdates": {
+          "type": "boolean",
+          "description": "Don't alter the browser session's history stack - used with messaging surfaces like Feature Callouts"
+        },
+        "startScreen": {
+          "type": "integer",
+          "description": "Index of first screen to show from message, defaulting to 0"
         }
       },
-      "additionalProperties": false,
-      "required": ["title", "text", "primary", "secondary"]
+      "additionalProperties": true
+    },
+    "template": {
+      "type": "string",
+      "description": "Specify whether the surface is shown as a Spotlight modal or an in-surface Feature Callout dialog",
+      "enum": ["spotlight", "feature_callout"]
     }
   },
-  "additionalProperties": false,
-  "required": ["body", "template"]
+  "additionalProperties": true,
+  "required": ["targeting"]
 }
-

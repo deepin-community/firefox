@@ -47,8 +47,10 @@
 #include "mozilla/dom/ScriptSettings.h"
 #include "mozilla/dom/indexedDB/IDBResult.h"
 #include "mozilla/dom/indexedDB/Key.h"
+#include "mozilla/dom/quota/Assertions.h"
 #include "mozilla/dom/quota/PersistenceType.h"
 #include "mozilla/dom/quota/QuotaCommon.h"
+#include "mozilla/dom/quota/ResultExtensions.h"
 #include "mozilla/fallible.h"
 #include "mozilla/ipc/BackgroundParent.h"
 #include "mozilla/mozalloc.h"
@@ -109,7 +111,7 @@ nsresult UpgradeSchemaFrom4To5(mozIStorageConnection& aConnection) {
     mozStorageStatementScoper scoper(stmt);
 
     QM_TRY_INSPECT(const bool& hasResults,
-                   MOZ_TO_RESULT_INVOKE(stmt, ExecuteStep));
+                   MOZ_TO_RESULT_INVOKE_MEMBER(stmt, ExecuteStep));
 
     if (NS_WARN_IF(!hasResults)) {
       return NS_ERROR_FAILURE;
@@ -1044,7 +1046,7 @@ class EncodeKeysFunction final : public mozIStorageFunction {
               aArguments->GetInt64(0, &intKey);
 
               Key key;
-              key.SetFromInteger(intKey);
+              QM_TRY(key.SetFromInteger(intKey));
 
               return key;
             }
@@ -2309,7 +2311,7 @@ nsresult UpgradeSchemaFrom19_0To20_0(nsIFile* aFMDirectory,
     mozStorageStatementScoper scoper(stmt);
 
     QM_TRY_INSPECT(const bool& hasResult,
-                   MOZ_TO_RESULT_INVOKE(stmt, ExecuteStep));
+                   MOZ_TO_RESULT_INVOKE_MEMBER(stmt, ExecuteStep));
 
     if (NS_WARN_IF(!hasResult)) {
       MOZ_ASSERT(false, "This should never be possible!");
@@ -2841,7 +2843,7 @@ class DeserializeUpgradeValueHelper final : public Runnable {
     lock.Notify();
   }
 
-  Monitor mMonitor;
+  Monitor mMonitor MOZ_UNANNOTATED;
   StructuredCloneReadInfoParent& mCloneReadInfo;
   nsresult mStatus;
 };
@@ -2861,7 +2863,8 @@ nsresult UpgradeFileIdsFunction::Init(nsIFile* aFMDirectory,
   // purpose is to store file ids without adding more complexity or code
   // duplication.
   auto fileManager = MakeSafeRefPtr<DatabaseFileManager>(
-      PERSISTENCE_TYPE_INVALID, quota::OriginMetadata{}, u""_ns, false);
+      PERSISTENCE_TYPE_INVALID, quota::OriginMetadata{}, u""_ns, ""_ns, false,
+      false);
 
   nsresult rv = fileManager->Init(aFMDirectory, aConnection);
   if (NS_WARN_IF(NS_FAILED(rv))) {
@@ -2894,9 +2897,8 @@ UpgradeFileIdsFunction::OnFunctionCall(mozIStorageValueArray* aArguments,
     return NS_ERROR_UNEXPECTED;
   }
 
-  QM_TRY_UNWRAP(auto cloneInfo,
-                GetStructuredCloneReadInfoFromValueArray(
-                    aArguments, 1, 0, *mFileManager, Nothing{}));
+  QM_TRY_UNWRAP(auto cloneInfo, GetStructuredCloneReadInfoFromValueArray(
+                                    aArguments, 1, 0, *mFileManager));
 
   nsAutoString fileIds;
   // XXX does this really need non-const cloneInfo?
@@ -3007,7 +3009,7 @@ Result<bool, nsresult> MaybeUpgradeSchema(mozIStorageConnection& aConnection,
     }
 
     QM_TRY_UNWRAP(schemaVersion,
-                  MOZ_TO_RESULT_INVOKE(aConnection, GetSchemaVersion));
+                  MOZ_TO_RESULT_INVOKE_MEMBER(aConnection, GetSchemaVersion));
   }
 
   MOZ_ASSERT(schemaVersion == kSQLiteSchemaVersion);

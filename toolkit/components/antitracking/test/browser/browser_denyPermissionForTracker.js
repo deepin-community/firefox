@@ -1,8 +1,6 @@
 // This test works by setting up an exception for the tracker domain, which
 // disables all the anti-tracking tests.
 
-/* import-globals-from antitracking_head.js */
-
 add_task(async _ => {
   PermissionTestUtils.add(
     "https://tracking.example.org",
@@ -37,8 +35,7 @@ AntiTracking._createTask({
     ok(document.cookie == "", "All is blocked");
 
     // requestStorageAccess should reject
-    let dwu = SpecialPowers.getDOMWindowUtils(window);
-    let helper = dwu.setHandlingUserInput(true);
+    SpecialPowers.wrap(document).notifyUserGestureActivation();
     await document
       .requestStorageAccess()
       .then(() => {
@@ -47,7 +44,7 @@ AntiTracking._createTask({
       .catch(() => {
         ok(true, "Should not grant storage access");
       });
-    helper.destruct();
+    SpecialPowers.wrap(document).clearUserGestureActivation();
   },
   extraPrefs: null,
   expectedBlockingNotifications:

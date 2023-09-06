@@ -43,6 +43,10 @@ static constexpr FloatRegister xmm6 =
 static constexpr FloatRegister xmm7 =
     FloatRegister(X86Encoding::xmm7, FloatRegisters::Double);
 
+// Vector registers fixed for use with some instructions, e.g. PBLENDVB.
+static constexpr FloatRegister vmm0 =
+    FloatRegister(X86Encoding::xmm0, FloatRegisters::Simd128);
+
 static constexpr Register InvalidReg{X86Encoding::invalid_reg};
 static constexpr FloatRegister InvalidFloatReg = FloatRegister();
 
@@ -121,21 +125,26 @@ static constexpr Register ABINonVolatileReg = ebx;
 // and non-volatile registers.
 static constexpr Register ABINonArgReturnVolatileReg = ecx;
 
-// TLS pointer argument register for WebAssembly functions. This must not alias
-// any other register used for passing function arguments or return values.
-// Preserved by WebAssembly functions.
-static constexpr Register WasmTlsReg = esi;
+// Instance pointer argument register for WebAssembly functions. This must not
+// alias any other register used for passing function arguments or return
+// values. Preserved by WebAssembly functions.
+static constexpr Register InstanceReg = esi;
 
 // Registers used for asm.js/wasm table calls. These registers must be disjoint
-// from the ABI argument registers, WasmTlsReg and each other.
+// from the ABI argument registers, InstanceReg and each other.
 static constexpr Register WasmTableCallScratchReg0 = ABINonArgReg0;
 static constexpr Register WasmTableCallScratchReg1 = ABINonArgReg1;
 static constexpr Register WasmTableCallSigReg = ABINonArgReg2;
 static constexpr Register WasmTableCallIndexReg = ABINonArgReg3;
 
+// Registers used for ref calls.
+static constexpr Register WasmCallRefCallScratchReg0 = ABINonArgReg0;
+static constexpr Register WasmCallRefCallScratchReg1 = ABINonArgReg1;
+static constexpr Register WasmCallRefReg = ABINonArgReg3;
+
 // Register used as a scratch along the return path in the fast js -> wasm stub
-// code.  This must not overlap ReturnReg, JSReturnOperand, or WasmTlsReg. It
-// must be a volatile register.
+// code.  This must not overlap ReturnReg, JSReturnOperand, or InstanceReg.
+// It must be a volatile register.
 static constexpr Register WasmJitEntryReturnScratch = ebx;
 
 static constexpr Register OsrFrameReg = edx;
@@ -144,15 +153,20 @@ static constexpr Register PreBarrierReg = edx;
 // Not enough registers for a PC register (R0-R2 use 2 registers each).
 static constexpr Register InterpreterPCReg = InvalidReg;
 
-// Registerd used in RegExpMatcher instruction (do not use JSReturnOperand).
+// Registers used by RegExpMatcher and RegExpExecMatch stubs (do not use
+// JSReturnOperand).
 static constexpr Register RegExpMatcherRegExpReg = CallTempReg0;
 static constexpr Register RegExpMatcherStringReg = CallTempReg1;
 static constexpr Register RegExpMatcherLastIndexReg = CallTempReg2;
 
-// Registerd used in RegExpTester instruction (do not use ReturnReg).
-static constexpr Register RegExpTesterRegExpReg = CallTempReg0;
-static constexpr Register RegExpTesterStringReg = CallTempReg2;
-static constexpr Register RegExpTesterLastIndexReg = CallTempReg3;
+// Registers used by RegExpExecTest stub (do not use ReturnReg).
+static constexpr Register RegExpExecTestRegExpReg = CallTempReg0;
+static constexpr Register RegExpExecTestStringReg = CallTempReg2;
+
+// Registers used by RegExpSearcher stub (do not use ReturnReg).
+static constexpr Register RegExpSearcherRegExpReg = CallTempReg0;
+static constexpr Register RegExpSearcherStringReg = CallTempReg2;
+static constexpr Register RegExpSearcherLastIndexReg = CallTempReg3;
 
 // GCC stack is aligned on 16 bytes. Ion does not maintain this for internal
 // calls. wasm code does.
@@ -193,7 +207,6 @@ static constexpr uint32_t WasmTrapInstructionLength = 2;
 // the tail offset 3, but I have opted for 4 as that results in a better-aligned
 // branch target.)
 static constexpr uint32_t WasmCheckedCallEntryOffset = 0u;
-static constexpr uint32_t WasmCheckedTailEntryOffset = 4u;
 
 struct ImmTag : public Imm32 {
   explicit ImmTag(JSValueTag mask) : Imm32(int32_t(mask)) {}
@@ -469,11 +482,11 @@ class Assembler : public AssemblerX86Shared {
     masm.shrdl_irr(imm.value, src.encoding(), dest.encoding());
   }
 
-  void vhaddpd(FloatRegister src, FloatRegister dest) {
+  void vhaddpd(FloatRegister rhs, FloatRegister lhsDest) {
     MOZ_ASSERT(HasSSE3());
-    MOZ_ASSERT(src.size() == 16);
-    MOZ_ASSERT(dest.size() == 16);
-    masm.vhaddpd_rr(src.encoding(), dest.encoding());
+    MOZ_ASSERT(rhs.size() == 16);
+    MOZ_ASSERT(lhsDest.size() == 16);
+    masm.vhaddpd_rr(rhs.encoding(), lhsDest.encoding(), lhsDest.encoding());
   }
 
   void fild(const Operand& src) {

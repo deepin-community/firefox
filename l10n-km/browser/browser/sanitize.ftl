@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = ការ​កំណត់​សម្រាប់​ជម្រះ​ប្រវត្តិ
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = សម្អាត​​ប្រវត្តិ​ថ្មីៗ
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = សម្អាត​ប្រវត្តិ​ទាំង​អស់
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = ពេល​បិទ { -brand-short-name } ​គួរ​តែ​សម្អាត​ទាំងអស់​ដោយ​ស្វ័យ​ប្រវត្តិ
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = F
 
 data-section-label = ទិន្នន័យ
-
-item-site-preferences =
-    .label = ចំណូល​ចិត្ត​តំបន់​បណ្ដាញ
-    .accesskey = ច
 
 item-offline-apps =
     .label = ទិន្នន័យ​តំបន់​បណ្ដាញ​ក្រៅ​បណ្ដាញ

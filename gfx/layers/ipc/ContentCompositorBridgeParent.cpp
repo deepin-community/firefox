@@ -14,8 +14,6 @@
 #  include "mozilla/gfx/DeviceManagerDx.h"  // for DeviceManagerDx
 #  include "mozilla/layers/ImageDataSerializer.h"
 #endif
-#include "mozilla/dom/WebGLParent.h"
-#include "mozilla/ipc/Transport.h"           // for Transport
 #include "mozilla/layers/AnimationHelper.h"  // for CompositorAnimationStorage
 #include "mozilla/layers/APZCTreeManagerParent.h"  // for APZCTreeManagerParent
 #include "mozilla/layers/APZUpdater.h"             // for APZUpdater
@@ -25,7 +23,6 @@
 #include "mozilla/layers/RemoteContentController.h"
 #include "mozilla/layers/WebRenderBridgeParent.h"
 #include "mozilla/layers/AsyncImagePipelineManager.h"
-#include "mozilla/webgpu/WebGPUParent.h"
 #include "mozilla/mozalloc.h"  // for operator new, etc
 #include "nsDebug.h"           // for NS_ASSERTION, etc
 #include "nsTArray.h"          // for nsTArray
@@ -37,16 +34,12 @@
 #include "mozilla/BaseProfilerMarkerTypes.h"
 #include "GeckoProfiler.h"
 
-namespace mozilla {
-
-namespace layers {
+namespace mozilla::layers {
 
 // defined in CompositorBridgeParent.cpp
-typedef std::map<LayersId, CompositorBridgeParent::LayerTreeState> LayerTreeMap;
+using LayerTreeMap = std::map<LayersId, CompositorBridgeParent::LayerTreeState>;
 extern LayerTreeMap sIndirectLayerTrees;
 extern StaticAutoPtr<mozilla::Monitor> sIndirectLayerTreesLock;
-void UpdateIndirectTree(LayersId aId, Layer* aRoot,
-                        const TargetConfig& aTargetConfig);
 void EraseLayerState(LayersId aId);
 
 void ContentCompositorBridgeParent::ActorDestroy(ActorDestroyReason aWhy) {
@@ -81,16 +74,22 @@ ContentCompositorBridgeParent::AllocPAPZCTreeManagerParent(
     // Note: we immediately call ClearTree since otherwise the APZCTM will
     // retain a reference to itself, through the checkerboard observer.
     LayersId dummyId{0};
-    const bool useWebRender = false;
-    RefPtr<APZCTreeManager> temp = new APZCTreeManager(dummyId);
-    RefPtr<APZUpdater> tempUpdater = new APZUpdater(temp, useWebRender);
+    const bool connectedToWebRender = false;
+    RefPtr<APZCTreeManager> temp = APZCTreeManager::Create(dummyId);
+    RefPtr<APZUpdater> tempUpdater = new APZUpdater(temp, connectedToWebRender);
     tempUpdater->ClearTree(dummyId);
     return new APZCTreeManagerParent(aLayersId, temp, tempUpdater);
+  }
+
+  // If we do not have APZ enabled, we should gracefully fail.
+  if (!state.mParent->GetOptions().UseAPZ()) {
+    return nullptr;
   }
 
   state.mParent->AllocateAPZCTreeManagerParent(lock, aLayersId, state);
   return state.mApzcTreeManagerParent;
 }
+
 bool ContentCompositorBridgeParent::DeallocPAPZCTreeManagerParent(
     PAPZCTreeManagerParent* aActor) {
   APZCTreeManagerParent* parent = static_cast<APZCTreeManagerParent*>(aActor);
@@ -208,28 +207,14 @@ bool ContentCompositorBridgeParent::DeallocPWebRenderBridgeParent(
   return true;
 }
 
-webgpu::PWebGPUParent* ContentCompositorBridgeParent::AllocPWebGPUParent() {
-  webgpu::WebGPUParent* parent = new webgpu::WebGPUParent();
-  parent->AddRef();  // IPDL reference
-  return parent;
-}
-
-bool ContentCompositorBridgeParent::DeallocPWebGPUParent(
-    webgpu::PWebGPUParent* aActor) {
-  webgpu::WebGPUParent* parent = static_cast<webgpu::WebGPUParent*>(aActor);
-  parent->Release();  // IPDL reference
-  return true;
-}
-
 mozilla::ipc::IPCResult ContentCompositorBridgeParent::RecvNotifyChildCreated(
     const LayersId& child, CompositorOptions* aOptions) {
   MonitorAutoLock lock(*sIndirectLayerTreesLock);
-  for (LayerTreeMap::iterator it = sIndirectLayerTrees.begin();
-       it != sIndirectLayerTrees.end(); it++) {
-    CompositorBridgeParent::LayerTreeState* lts = &it->second;
-    if (lts->mParent && lts->mContentCompositorBridgeParent == this) {
-      lts->mParent->NotifyChildCreated(child);
-      *aOptions = lts->mParent->GetOptions();
+  for (auto& entry : sIndirectLayerTrees) {
+    CompositorBridgeParent::LayerTreeState& lts = entry.second;
+    if (lts.mParent && lts.mContentCompositorBridgeParent == this) {
+      lts.mParent->NotifyChildCreated(child);
+      *aOptions = lts.mParent->GetOptions();
       return IPC_OK();
     }
   }
@@ -245,6 +230,12 @@ ContentCompositorBridgeParent::RecvMapAndNotifyChildCreated(
   return IPC_FAIL_NO_REASON(this);
 }
 
+mozilla::ipc::IPCResult
+ContentCompositorBridgeParent::RecvNotifyMemoryPressure() {
+  // This can only be called from the browser process.
+  return IPC_FAIL_NO_REASON(this);
+}
+
 mozilla::ipc::IPCResult ContentCompositorBridgeParent::RecvCheckContentOnlyTDR(
     const uint32_t& sequenceNum, bool* isContentOnlyTDR) {
   *isContentOnlyTDR = false;
@@ -257,7 +248,8 @@ mozilla::ipc::IPCResult ContentCompositorBridgeParent::RecvCheckContentOnlyTDR(
   gfx::D3D11DeviceStatus status;
   dm->ExportDeviceInfo(&status);
 
-  if (sequenceNum == status.sequenceNumber() && !dm->HasDeviceReset()) {
+  if (sequenceNum == static_cast<uint32_t>(status.sequenceNumber()) &&
+      !dm->HasDeviceReset()) {
     *isContentOnlyTDR = true;
   }
 
@@ -384,7 +376,7 @@ ContentCompositorBridgeParent::~ContentCompositorBridgeParent() {
 }
 
 PTextureParent* ContentCompositorBridgeParent::AllocPTextureParent(
-    const SurfaceDescriptor& aSharedData, const ReadLockDescriptor& aReadLock,
+    const SurfaceDescriptor& aSharedData, ReadLockDescriptor& aReadLock,
     const LayersBackend& aLayersBackend, const TextureFlags& aFlags,
     const LayersId& aId, const uint64_t& aSerial,
     const wr::MaybeExternalImageId& aExternalImageId) {
@@ -411,7 +403,7 @@ PTextureParent* ContentCompositorBridgeParent::AllocPTextureParent(
         << "Texture backend is wrong";
   }
 
-  return TextureHost::CreateIPDLActor(this, aSharedData, aReadLock,
+  return TextureHost::CreateIPDLActor(this, aSharedData, std::move(aReadLock),
                                       aLayersBackend, aFlags, aSerial,
                                       aExternalImageId);
 }
@@ -442,6 +434,9 @@ ContentCompositorBridgeParent::RecvReleasePCanvasParent() {
 UniquePtr<SurfaceDescriptor>
 ContentCompositorBridgeParent::LookupSurfaceDescriptorForClientTexture(
     const int64_t aTextureId) {
+  MOZ_RELEASE_ASSERT(mCanvasTranslator,
+                     "mCanvasTranslator hasn't been created.");
+
   return mCanvasTranslator->WaitForSurfaceDescriptor(aTextureId);
 }
 
@@ -462,11 +457,4 @@ void ContentCompositorBridgeParent::ObserveLayersUpdate(
   Unused << state->mParent->SendObserveLayersUpdate(aLayersId, aEpoch, aActive);
 }
 
-already_AddRefed<dom::PWebGLParent>
-ContentCompositorBridgeParent::AllocPWebGLParent() {
-  RefPtr<dom::PWebGLParent> parent = new dom::WebGLParent();
-  return parent.forget();
-}
-
-}  // namespace layers
-}  // namespace mozilla
+}  // namespace mozilla::layers

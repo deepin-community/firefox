@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Assistent da profil
-    .style = width: 45em; height: 36em;
+    .style = min-width: 45em; min-height: 36em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Entschatta
-       *[other] { create-profile-window.title } - Bainvegni
+       *[other] { create-profile-window2.title } - Bainvegni
     }
 
 profile-creation-explanation-1 = { -brand-short-name } memorisescha parameters e datas en tes profil persunal.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Finiziun
-       *[other] { create-profile-window.title } - Terminar
+       *[other] { create-profile-window2.title } - Terminar
     }
 
 profile-creation-intro = Differents profils pon vegnir distinguids cun agid da lur num. Ti pos utilisar il num inditgà u in agen num.

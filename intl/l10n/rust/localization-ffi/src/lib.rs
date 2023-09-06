@@ -6,21 +6,24 @@ use fluent::FluentValue;
 use fluent_fallback::{
     types::{
         L10nAttribute as FluentL10nAttribute, L10nKey as FluentL10nKey,
-        L10nMessage as FluentL10nMessage,
+        L10nMessage as FluentL10nMessage, ResourceId,
     },
     Localization,
 };
 use fluent_ffi::{convert_args, FluentArgs, FluentArgument, L10nArg};
 use l10nregistry_ffi::{
     env::GeckoEnvironment,
-    registry::{get_l10n_registry, GeckoL10nRegistry},
+    registry::{get_l10n_registry, GeckoL10nRegistry, GeckoResourceId},
 };
 use nsstring::{nsACString, nsCString};
 use std::os::raw::c_void;
 use std::{borrow::Cow, cell::RefCell};
 use thin_vec::ThinVec;
 use unic_langid::LanguageIdentifier;
-use xpcom::{interfaces::nsrefcnt, RefCounted, RefPtr, Refcnt};
+use xpcom::{
+    interfaces::{nsIRunnablePriority},
+    RefCounted, RefPtr, Refcnt,
+};
 
 #[derive(Debug)]
 #[repr(C)]
@@ -49,7 +52,7 @@ pub fn convert_args_to_owned(args: &[L10nArg]) -> Option<FluentArgs<'static>> {
     for arg in args {
         let val = match arg.value {
             FluentArgument::Double_(d) => FluentValue::from(d),
-            // We need this to be owned because we pass the result into `spawn_current_thread`.
+            // We need this to be owned because we pass the result into `spawn_local`.
             FluentArgument::String(s) => FluentValue::from(Cow::Owned(s.to_utf8().to_string())),
         };
         result.set(arg.id.to_string(), val);
@@ -129,7 +132,7 @@ unsafe impl RefCounted for LocalizationRc {
 
 impl LocalizationRc {
     pub fn new(
-        res_ids: Vec<String>,
+        res_ids: Vec<ResourceId>,
         is_sync: bool,
         registry: Option<&GeckoL10nRegistry>,
         locales: Option<Vec<LanguageIdentifier>>,
@@ -153,19 +156,19 @@ impl LocalizationRc {
         }
     }
 
-    pub fn add_resource_id(&self, res_id: String) {
+    pub fn add_resource_id(&self, res_id: ResourceId) {
         self.inner.borrow_mut().add_resource_id(res_id);
     }
 
-    pub fn add_resource_ids(&self, res_ids: Vec<String>) {
+    pub fn add_resource_ids(&self, res_ids: Vec<ResourceId>) {
         self.inner.borrow_mut().add_resource_ids(res_ids);
     }
 
-    pub fn remove_resource_id(&self, res_id: String) -> usize {
+    pub fn remove_resource_id(&self, res_id: ResourceId) -> usize {
         self.inner.borrow_mut().remove_resource_id(res_id)
     }
 
-    pub fn remove_resource_ids(&self, res_ids: Vec<String>) -> usize {
+    pub fn remove_resource_ids(&self, res_ids: Vec<ResourceId>) -> usize {
         self.inner.borrow_mut().remove_resource_ids(res_ids)
     }
 
@@ -202,6 +205,8 @@ impl LocalizationRc {
             } else {
                 ret_val.set_is_void(true);
             }
+            #[cfg(debug_assertions)]
+            debug_assert_variables_exist(&errors, &[id], |id| id.to_string());
             ret_err.extend(errors.into_iter().map(|err| err.to_string().into()));
             true
         } else {
@@ -233,6 +238,8 @@ impl LocalizationRc {
                     ret_val.push(void_string);
                 }
             }
+            #[cfg(debug_assertions)]
+            debug_assert_variables_exist(&errors, &keys, |key| key.id.to_string());
             ret_err.extend(errors.into_iter().map(|err| err.to_string().into()));
             true
         } else {
@@ -269,6 +276,8 @@ impl LocalizationRc {
                 });
             }
             assert_eq!(keys.len(), ret_val.len());
+            #[cfg(debug_assertions)]
+            debug_assert_variables_exist(&errors, &keys, |key| key.id.to_string());
             ret_err.extend(errors.into_iter().map(|err| err.to_string().into()));
             true
         } else {
@@ -290,7 +299,7 @@ impl LocalizationRc {
         let id = nsCString::from(id);
         let strong_promise = RefPtr::new(promise);
 
-        moz_task::spawn_current_thread(async move {
+        moz_task::TaskBuilder::new("LocalizationRc::format_value", async move {
             let mut errors = vec![];
             let value = if let Some(value) = bundles
                 .format_value(&id.to_utf8(), args.as_ref(), &mut errors)
@@ -303,13 +312,17 @@ impl LocalizationRc {
                 v.set_is_void(true);
                 v
             };
+            #[cfg(debug_assertions)]
+            debug_assert_variables_exist(&errors, &[id], |id| id.to_string());
             let errors = errors
                 .into_iter()
                 .map(|err| err.to_string().into())
                 .collect();
             callback(&strong_promise, &value, &errors);
         })
-        .expect("Failed to spawn future");
+        .priority(nsIRunnablePriority::PRIORITY_RENDER_BLOCKING as u32)
+        .spawn_local()
+        .detach();
     }
 
     pub fn format_values(
@@ -324,7 +337,7 @@ impl LocalizationRc {
 
         let strong_promise = RefPtr::new(promise);
 
-        moz_task::spawn_current_thread(async move {
+        moz_task::TaskBuilder::new("LocalizationRc::format_values", async move {
             let mut errors = vec![];
             let ret_val = bundles
                 .format_values(&keys, &mut errors)
@@ -343,6 +356,8 @@ impl LocalizationRc {
 
             assert_eq!(keys.len(), ret_val.len());
 
+            #[cfg(debug_assertions)]
+            debug_assert_variables_exist(&errors, &keys, |key| key.id.to_string());
             let errors = errors
                 .into_iter()
                 .map(|err| err.to_string().into())
@@ -350,7 +365,9 @@ impl LocalizationRc {
 
             callback(&strong_promise, &ret_val, &errors);
         })
-        .expect("Failed to spawn future");
+        .priority(nsIRunnablePriority::PRIORITY_RENDER_BLOCKING as u32)
+        .spawn_local()
+        .detach();
     }
 
     pub fn format_messages(
@@ -369,7 +386,7 @@ impl LocalizationRc {
 
         let strong_promise = RefPtr::new(promise);
 
-        moz_task::spawn_current_thread(async move {
+        moz_task::TaskBuilder::new("LocalizationRc::format_messages", async move {
             let mut errors = vec![];
             let ret_val = bundles
                 .format_messages(&keys, &mut errors)
@@ -392,6 +409,9 @@ impl LocalizationRc {
 
             assert_eq!(keys.len(), ret_val.len());
 
+            #[cfg(debug_assertions)]
+            debug_assert_variables_exist(&errors, &keys, |key| key.id.to_string());
+
             let errors = errors
                 .into_iter()
                 .map(|err| err.to_string().into())
@@ -399,7 +419,9 @@ impl LocalizationRc {
 
             callback(&strong_promise, &ret_val, &errors);
         })
-        .expect("Failed to spawn future");
+        .priority(nsIRunnablePriority::PRIORITY_RENDER_BLOCKING as u32)
+        .spawn_local()
+        .detach();
     }
 }
 
@@ -411,28 +433,26 @@ pub extern "C" fn localization_parse_locale(input: &nsCString) -> *const c_void 
 
 #[no_mangle]
 pub extern "C" fn localization_new(
-    res_ids: &ThinVec<nsCString>,
+    res_ids: &ThinVec<GeckoResourceId>,
     is_sync: bool,
     reg: Option<&GeckoL10nRegistry>,
     result: &mut *const LocalizationRc,
 ) {
     *result = std::ptr::null();
-
-    let res_ids: Vec<String> = res_ids.iter().map(|res| res.to_string()).collect();
+    let res_ids: Vec<ResourceId> = res_ids.iter().map(ResourceId::from).collect();
     *result = RefPtr::forget_into_raw(LocalizationRc::new(res_ids, is_sync, reg, None));
 }
 
 #[no_mangle]
 pub extern "C" fn localization_new_with_locales(
-    res_ids: &ThinVec<nsCString>,
+    res_ids: &ThinVec<GeckoResourceId>,
     is_sync: bool,
     reg: Option<&GeckoL10nRegistry>,
     locales: Option<&ThinVec<nsCString>>,
     result: &mut *const LocalizationRc,
 ) -> bool {
     *result = std::ptr::null();
-
-    let res_ids: Vec<String> = res_ids.iter().map(|res| res.to_string()).collect();
+    let res_ids: Vec<ResourceId> = res_ids.iter().map(ResourceId::from).collect();
     let locales: Result<Option<Vec<LanguageIdentifier>>, _> = locales
         .map(|locales| {
             locales
@@ -451,43 +471,40 @@ pub extern "C" fn localization_new_with_locales(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn localization_addref(loc: &LocalizationRc) -> nsrefcnt {
-    loc.refcnt.inc()
+pub unsafe extern "C" fn localization_addref(loc: &LocalizationRc) {
+    loc.refcnt.inc();
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn localization_release(loc: *const LocalizationRc) -> nsrefcnt {
+pub unsafe extern "C" fn localization_release(loc: *const LocalizationRc) {
     let rc = (*loc).refcnt.dec();
     if rc == 0 {
-        Box::from_raw(loc as *const _ as *mut LocalizationRc);
+        std::mem::drop(Box::from_raw(loc as *const _ as *mut LocalizationRc));
     }
-    rc
 }
 
 #[no_mangle]
-pub extern "C" fn localization_add_res_id(loc: &LocalizationRc, res_id: &nsACString) {
-    let res_id = res_id.to_string();
-    loc.add_resource_id(res_id);
+pub extern "C" fn localization_add_res_id(loc: &LocalizationRc, res_id: &GeckoResourceId) {
+    loc.add_resource_id(res_id.into());
 }
 
 #[no_mangle]
-pub extern "C" fn localization_add_res_ids(loc: &LocalizationRc, res_ids: &ThinVec<nsCString>) {
-    let res_ids = res_ids.iter().map(|s| s.to_string()).collect();
+pub extern "C" fn localization_add_res_ids(loc: &LocalizationRc, res_ids: &ThinVec<GeckoResourceId>) {
+    let res_ids = res_ids.iter().map(ResourceId::from).collect();
     loc.add_resource_ids(res_ids);
 }
 
 #[no_mangle]
-pub extern "C" fn localization_remove_res_id(loc: &LocalizationRc, res_id: &nsACString) -> usize {
-    let res_id = res_id.to_string();
-    loc.remove_resource_id(res_id)
+pub extern "C" fn localization_remove_res_id(loc: &LocalizationRc, res_id: &GeckoResourceId) -> usize {
+    loc.remove_resource_id(res_id.into())
 }
 
 #[no_mangle]
 pub extern "C" fn localization_remove_res_ids(
     loc: &LocalizationRc,
-    res_ids: &ThinVec<nsCString>,
+    res_ids: &ThinVec<GeckoResourceId>,
 ) -> usize {
-    let res_ids = res_ids.iter().map(|s| s.to_string()).collect();
+    let res_ids = res_ids.iter().map(ResourceId::from).collect();
     loc.remove_resource_ids(res_ids)
 }
 
@@ -566,4 +583,43 @@ pub extern "C" fn localization_is_sync(loc: &LocalizationRc) -> bool {
 #[no_mangle]
 pub extern "C" fn localization_on_change(loc: &LocalizationRc) {
     loc.on_change();
+}
+
+#[cfg(debug_assertions)]
+fn debug_assert_variables_exist<K, F>(
+    errors: &[fluent_fallback::LocalizationError],
+    keys: &[K],
+    to_string: F,
+) where
+    F: Fn(&K) -> String,
+{
+    for error in errors {
+        if let fluent_fallback::LocalizationError::Resolver { errors, .. } = error {
+            use fluent::{
+                resolver::{errors::ReferenceKind, ResolverError},
+                FluentError,
+            };
+            for error in errors {
+                if let FluentError::ResolverError(ResolverError::Reference(
+                    ReferenceKind::Variable { id },
+                )) = error
+                {
+                    // This error needs to be actionable for Firefox engineers to fix
+                    // their Fluent issues. It might be nicer to share the specific
+                    // message, but at this point we don't have that information.
+                    eprintln!(
+                        "Fluent error, the argument \"${}\" was not provided a value.",
+                        id
+                    );
+                    eprintln!("This error happened while formatting the following messages:");
+                    for key in keys {
+                        eprintln!("  {:?}", to_string(key))
+                    }
+
+                    // Panic with the slightly more cryptic ResolverError.
+                    panic!("{}", error.to_string());
+                }
+            }
+        }
+    }
 }

@@ -11,16 +11,15 @@ defined version) for a given platform. It then uploads the build,
 with the revision of the build stored in a REVISION file.
 """
 
-from __future__ import absolute_import, print_function
-
 import argparse
 import errno
 import os
 import shutil
 import subprocess
-import requests
 import tempfile
 
+import requests
+from redo import retriable
 
 LAST_CHANGE_URL = (
     # formatted with platform
@@ -67,6 +66,7 @@ def log(msg):
     print("build-chromium: %s" % msg)
 
 
+@retriable(attempts=7, sleeptime=5, sleepscale=2)
 def fetch_file(url, filepath):
     """Download a file from the given url to a given file."""
     size = 4096
@@ -85,8 +85,9 @@ def unzip(zippath, target):
     subprocess.check_call(unzip_command)
 
 
+@retriable(attempts=7, sleeptime=5, sleepscale=2)
 def fetch_chromium_revision(platform):
-    """Get the revision of the latest chromium build. """
+    """Get the revision of the latest chromium build."""
     chromium_platform = CHROMIUM_INFO[platform]["platform"]
     revision_url = LAST_CHANGE_URL.format(chromium_platform)
 
@@ -102,7 +103,7 @@ def fetch_chromium_revision(platform):
 
 
 def fetch_chromium_build(platform, revision, zippath):
-    """Download a chromium build for a given revision, or the latest. """
+    """Download a chromium build for a given revision, or the latest."""
     if not revision:
         revision = fetch_chromium_revision(platform)
 
@@ -112,7 +113,7 @@ def fetch_chromium_build(platform, revision, zippath):
     )
 
     log("Downloading %s chromium build revision %s..." % (download_platform, revision))
-
+    log(download_url)
     fetch_file(download_url, zippath)
     return revision
 

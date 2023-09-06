@@ -418,15 +418,22 @@ function pushPrefs(...p) {
   return SpecialPowers.pushPrefEnv({ set: p });
 }
 
+async function withPrefs(prefs, func) {
+  await SpecialPowers.pushPrefEnv({ set: prefs });
+  try {
+    return await func();
+  } finally {
+    await SpecialPowers.popPrefEnv();
+  }
+}
+
 function setupEnvironment() {
   var defaultMochitestPrefs = {
     set: [
       ["media.peerconnection.enabled", true],
-      ["media.peerconnection.identity.enabled", true],
       ["media.peerconnection.identity.timeout", 120000],
       ["media.peerconnection.ice.stun_client_maximum_transmits", 14],
       ["media.peerconnection.ice.trickle_grace_period", 30000],
-      ["media.peerconnection.rtpsourcesapi.enabled", true],
       ["media.navigator.permission.disabled", true],
       // If either fake audio or video is desired we enable fake streams.
       // If loopback devices are set they will be chosen instead of fakes in gecko.
@@ -478,6 +485,7 @@ function setupEnvironment() {
 async function matchPlatformH264CodecPrefs() {
   const hasHW264 =
     SpecialPowers.getBoolPref("media.webrtc.platformencoder") &&
+    !SpecialPowers.getBoolPref("media.webrtc.platformencoder.sw_only") &&
     (navigator.userAgent.includes("Android") ||
       navigator.userAgent.includes("Mac OS X"));
 
@@ -983,6 +991,68 @@ const getTurnHostname = turnUrl => {
   return hostAndMaybePort.split(":")[0];
 };
 
+// Yo dawg I heard you like yo dawg I heard you like Proxies
+// Example: let value = await GleanTest.category.metric.testGetValue();
+// For labeled metrics:
+//    let value = await GleanTest.category.metric["label"].testGetValue();
+// Please don't try to use the string "testGetValue" as a label.
+const GleanTest = new Proxy(
+  {},
+  {
+    get(target, categoryName, receiver) {
+      return new Proxy(
+        {},
+        {
+          get(target, metricName, receiver) {
+            return new Proxy(
+              {
+                async testGetValue() {
+                  return SpecialPowers.spawnChrome(
+                    [categoryName, metricName],
+                    async (categoryName, metricName) => {
+                      await Services.fog.testFlushAllChildren();
+                      const window = this.browsingContext.topChromeWindow;
+                      return window.Glean[categoryName][
+                        metricName
+                      ].testGetValue();
+                    }
+                  );
+                },
+              },
+              {
+                get(target, prop, receiver) {
+                  // The only prop that will be there is testGetValue, but we
+                  // might add more later.
+                  if (prop in target) {
+                    return target[prop];
+                  }
+
+                  // |prop| must be a label?
+                  const label = prop;
+                  return {
+                    async testGetValue() {
+                      return SpecialPowers.spawnChrome(
+                        [categoryName, metricName, label],
+                        async (categoryName, metricName, label) => {
+                          await Services.fog.testFlushAllChildren();
+                          const window = this.browsingContext.topChromeWindow;
+                          return window.Glean[categoryName][metricName][
+                            label
+                          ].testGetValue();
+                        }
+                      );
+                    },
+                  };
+                },
+              }
+            );
+          },
+        }
+      );
+    },
+  }
+);
+
 /**
  * This class executes a series of functions in a continuous sequence.
  * Promise-bearing functions are executed after the previous promise completes.
@@ -1365,7 +1435,7 @@ class VideoStreamHelper {
   }
 }
 
-(function() {
+(function () {
   var el = document.createElement("link");
   el.rel = "stylesheet";
   el.type = "text/css";

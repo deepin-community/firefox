@@ -13,7 +13,7 @@ options-select-default-tools-label = Прадвызначаныя прылады
 
 # The label for the explanation of the * marker on a tool which is currently not supported
 # for the target of the toolbox.
-options-tool-not-supported-label = * Не падтрымліваецца скрынкай прыладаў для цяперашняй адзінкі
+options-tool-not-supported-label = * Не падтрымліваецца для цяперашняй мэты інструмента
 
 # The label for the heading of group of checkboxes corresponding to the developer tools
 # added by add-ons. This heading is hidden when there is no developer tool installed by add-ons.
@@ -41,6 +41,17 @@ options-collapse-attrs-label = Абсякаць атрыбуты DOM
 options-collapse-attrs-tooltip =
     .title = Абсякаць доўгія атрыбуты ў інспектары
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Націснуць і перацягнуць, каб змяніць значэнні памеру
+options-inspector-draggable-properties-tooltip =
+    .title = Націснуць і перацягваць для змянення значэнняў памеру ў праглядзе правілаў інспектара.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Выкарыстоўваць спрошчанае падсвятленне з prefers-reduced-motion
+options-inspector-simplified-highlighters-tooltip =
+    .title = Уключае спрошчанае падсвятленне, калі ўключана prefers-reduced-motion. Малюе лініі замест залітых прамавугольнікаў вакол падсветленых элементаў, каб пазбегнуць эфектаў мігцення.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Прадвызначаная адзінка колеру
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Як падпісана
 options-default-color-unit-hex = Hex
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Назвы колераў
 
 ## Style Editor section
@@ -106,7 +118,7 @@ options-disable-http-cache-tooltip =
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Забараніць JavaScript *
 options-disable-javascript-tooltip =
-    .title = Уключэнне гэтага параметра забароніць JavaScript у гэтачасовай устаўцы. Параметр забудзецца пасля закрыцця ўстаўкі або скрынкі прыладаў.
+    .title = Уключэнне гэтага параметра адключыць JavaScript у дзейнай картцы. Параметр забудзецца пасля закрыцця карткі або прылад распрацоўкі.
 
 # The label for checkbox that toggles chrome debugging, i.e. the devtools.chrome.enabled preference
 options-enable-chrome-label = Уключыць панэлі прылад для адладкі выгляду і дадаткаў браўзера
@@ -117,6 +129,16 @@ options-enable-chrome-tooltip =
 options-enable-remote-label = Уключыць аддаленую адладку
 options-enable-remote-tooltip2 =
     .title = Уключэнне гэтага параметра дазволіць аддаленую адладку гэтага экзэмпляра браўзера
+
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Выкарыстоўваць клавішу F12, каб адкрыць або закрыць прылады распрацоўшчыка
+options-enable-f12-tooltip =
+    .title = Уключэнне гэтай налады прывязвае клавішу F12 да адкрыцця або закрыцця панэлі прылад распрацоўшчыка.
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Уключыць карыстальніцкія сродкі фарматавання
+options-enable-custom-formatters-tooltip =
+    .title = Уключэнне гэтага параметра дазволіць сайтам вызначаць карыстальніцкія сродкі фарматавання для аб'ектаў DOM
 
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Уключыць воркеры сэрвісу праз HTTP (калі панэль прылад адкрыта)
@@ -130,9 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Толькі для бягучага сеанса, перазагружае старонку
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Паказаць звесткі платформы Gecko
-options-show-platform-data-tooltip =
-    .title = Калі вы дазволіце гэтае наладжванне, справаздачы прафіляўніка JavaScript будуць уключаць сімвалы платформы Gecko

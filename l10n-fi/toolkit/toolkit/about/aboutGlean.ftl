@@ -3,13 +3,20 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-### "Glean" and "Glean SDK" should remain in English.
+### "FOG", "Glean", and "Glean SDK" should remain in English.
 
-about-glean-page-title = About Glean
-about-glean-description = The <a data-l10n-name="glean-sdk-doc-link">Glean SDK</a> is a data collection library used in Mozilla products. This page is for developers and testers who need to <a data-l10n-name="fog-debug-doc-link">configure debugging and logging state in the Glean SDK</a>.
-about-glean-warning = Misusing this interface may crash { -brand-short-name }.
-
-tag-pings-label = Tag all sent pings with this tag
-log-pings-label = Log ping payload before sending?
-send-pings-label = Send the named ping
-controls-button-label = Submit Settings
+-glean-brand-name = Glean
+glean-sdk-brand-name = { -glean-brand-name } SDK
+# Variables:
+#   $local-port-pref-value (Integer): the value of the telemetry.fog.test.localhost_port pref. Typically 0. Can be negative.
+# Do not translate strings between <code> </code> tags.
+about-glean-local-port = <code>telemetry.fog.test.localhost_port</code>: { $local-port-pref-value }
+# Variables:
+#   $glean-android-define-value (Boolean): the value of the MOZ_GLEAN_ANDROID define. Typically "false", sometimes "true".
+# Do not translate strings between <code> </code> tags.
+about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-define-value }
+# Variables:
+#   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
+# Do not translate strings between <code> </code> tags.
+about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+controls-button-label-verbose = Ota asetukset käyttöön ja lähetä ping

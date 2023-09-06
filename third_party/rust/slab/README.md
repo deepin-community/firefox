@@ -7,10 +7,10 @@ Pre-allocated storage for a uniform data type.
 
 [crates-badge]: https://img.shields.io/crates/v/slab
 [crates-url]: https://crates.io/crates/slab
-[ci-badge]: https://img.shields.io/github/workflow/status/tokio-rs/slab/CI/master
+[ci-badge]: https://img.shields.io/github/actions/workflow/status/tokio-rs/slab/ci.yml?branch=master
 [ci-url]: https://github.com/tokio-rs/slab/actions
 
-[Documentation](https://docs.rs/slab/0.4.3/slab/)
+[Documentation](https://docs.rs/slab)
 
 ## Usage
 
@@ -18,14 +18,12 @@ To use `slab`, first add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-slab = "0.4.3"
+slab = "0.4"
 ```
 
 Next, add this to your crate:
 
 ```rust
-extern crate slab;
-
 use slab::Slab;
 
 let mut slab = Slab::new();

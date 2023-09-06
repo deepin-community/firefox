@@ -2,9 +2,8 @@
 /* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
-let { Management } = ChromeUtils.import(
-  "resource://gre/modules/Extension.jsm",
-  null
+const { Management } = ChromeUtils.importESModule(
+  "resource://gre/modules/Extension.sys.mjs"
 );
 function getNextContext() {
   return new Promise(resolve => {

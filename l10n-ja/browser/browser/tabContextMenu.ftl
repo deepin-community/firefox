@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = すべてのタブを選択
     .accesskey = S
+tab-context-play-tab =
+    .label = タブのメディアを再生
+    .accesskey = l
+tab-context-play-tabs =
+    .label = タブのメディアを再生
+    .accesskey = y
 duplicate-tab =
     .label = タブを複製
     .accesskey = D
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = タブをブックマーク...
     .accesskey = B
-bookmark-tab =
-    .label = タブをブックマーク
+tab-context-bookmark-tab =
+    .label = タブをブックマーク...
     .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = 新しいコンテナータブで開く
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = 共有
     .accesskey = h
-tab-context-share-more =
-    .label = その他...
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -78,9 +82,6 @@ tab-context-share-more =
 tab-context-reopen-closed-tabs =
     .label = 閉じたタブを開きなおす
     .accesskey = o
-tab-context-close-tabs =
-    .label = タブを閉じる
-    .accesskey = C
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->
@@ -92,5 +93,9 @@ tab-context-move-tabs =
     .label = タブを移動
     .accesskey = v
 tab-context-send-tabs-to-device =
-    .label = { $tabCount } 個のタブを端末へ送信
+    .label =
+        { $tabCount ->
+            [1] タブを端末へ送信
+           *[other] { $tabCount } 個のタブを端末へ送信
+        }
     .accesskey = n

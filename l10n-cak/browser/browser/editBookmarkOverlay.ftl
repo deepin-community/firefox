@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Tewäx
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Kek'ut pe konojel ri taq kiyakwuj  yaketal
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Tewäx
+
 bookmark-overlay-new-folder-button =
     .label = K'ak'a' yakwuj
     .accesskey = w
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Kek'ut ronojel ri taq etal
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Tewäx
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Kek'ut ronojel ri taq etal
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Tewäx
 
 bookmark-overlay-keyword-2 =
     .value = Ruk'u'x tzij

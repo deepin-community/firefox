@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Mìnich cò na h-àrainnean a dh’fhaodas Google
 
 policy-AppAutoUpdate = Cuir an comas no à comas ùrachaidhean fèin-obrachail air aplacaidean.
 
+policy-AppUpdatePin = Na leig le { -brand-short-name } ùrachadh seachad air an tionndadh sònraichte.
+
 policy-AppUpdateURL = Suidhich URL gnàthaichte airson ùrachadh aplacaidean.
 
 policy-Authentication = Rèitich dearbhadh amalaichte airson làraichean-lìn a chuireas taic ris.
@@ -39,6 +41,9 @@ policy-CaptivePortal = Cuir an comas no à comas taic airson Captive Portal.
 policy-CertificatesDescription = Cuir teisteanasan ris no cleachd teisteanasan a tha ’na bhroinn o thùs.
 
 policy-Cookies = Thoir cead do làraichean-lìn briosgaidean a shuidheachadh no bac iad.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Suidhich poileasaidhean co-cheangailte ri soithichean.
 
 policy-DisabledCiphers = Cuir na sifirean à comas.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Ma thagh thu true, cha ghabh prìomh fha
 
 policy-DisablePasswordReveal = Na ceadaich nochdadh nam faclan-faire ann an clàraidhean a-steach air an sàbhaladh.
 
-policy-DisablePocket = Cuir à comas an gleus a shàbhaileas duilleagan-lìn ann am Pocket.
+policy-DisablePocket2 = Cuir à comas an gleus a shàbhaileas duilleagan-lìn ann am { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Cuir am brabhsadh prìobhaideach à comas.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Na leig leis a’ bhrabhsair tuilleadan an t-s
 
 policy-DisableTelemetry = Cuir an telemeatraidh dheth.
 
+policy-DisableThirdPartyModuleBlocking = Na leig leis a’ chleachdaiche mòidealan le treas-phàrtaidhean a bhacadh a rachadh an stealladh a-steach do phròiseas { -brand-short-name }.
+
 policy-DisplayBookmarksToolbar = Seall bàr-inneal nan comharran-lìn a ghnàth.
 
 policy-DisplayMenuBar = Seall bàr a’ chlàir-thaice a ghnàth.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Cuir bacadh susbaint an comas no à comas no g
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Cuir leudachain mheadhanan crioptaichte an comas no à comas agus glais e ma thogras tu.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Cuir à comas na rabhaidhean stèidhichte air leudachan an fhaidhle airson seòrsaichean àraidh de dh’fhaidhlichean air àrainnean.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Stiùirich a h-uile càil mu stàladh leudachain.
 
 policy-ExtensionUpdate = Cuir an comas no à comas ùrachaidhean leudachan fèin-obrachail.
 
-policy-FirefoxHome = Rèitich dachaigh Firefox.
+policy-FirefoxHome2 = Rèitich { -firefox-home-brand-name }.
 
-policy-FlashPlugin = Ceadaich no diùlt cleachdadh a’ phlugain Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Spàrr seòladaireachd làrach eadra-lìn dhìreach air an luchd-chleachdadh nuair a chuirear dìreach facal ann am bàr an t-seòlaidh.
 
 policy-Handlers = Rèitich làimhsichearan bunaiteach nan aplacaidean.
 
@@ -159,6 +168,8 @@ policy-OverridePostUpdatePage = Tar-àithn an duilleag “Na tha ùr” a nochda
 
 policy-PasswordManagerEnabled = Ceadaich gun dèid faclan-faire a shàbhaladh ann am manaidsear nam faclan-faire.
 
+policy-PasswordManagerExceptions = Na leig le { -brand-short-name } faclan-faire a shàbhaladh air làraichean àraidh.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = Rèitich no cuir PDF.js à comas, an sealladair PDF a tha am broinn { -brand-short-name } o thùs.
 
@@ -184,8 +195,8 @@ policy-SearchEngines = Rèitich roghainnean an einnsein-luirg. Chan eil am poile
 
 policy-SearchSuggestEnabled = Cuir an comas no à comas molaidhean luirg.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Stàlaich mòidealan PKCS #11.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Cuir ris no sguab às mòidealan PKCS #11.
 
 policy-ShowHomeButton = Seall putan na dachaigh air a’ bhàr-inneal.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = Suidhich an tionndadh SSL as motha.
 
 policy-SSLVersionMin = Suidhich an tionndadh SSL as lugha.
 
+policy-StartDownloadsInTempDirectory = Spàrr air an luchd-chleachdaidh rudan a luchdadh a-nuas gu pasgan ionadail sealach, seach am pasgan bunaiteach airson luchdadh a-nuas.
+
 policy-SupportMenu = Cuir ball gnàthaichte ri clàr-taice na taice ri clàr-taice na cobharach.
 
 policy-UserMessaging = Na seall teachdaireachdan sònraichte dhan luchd-chleachdaidh.
+
+policy-UseSystemPrintDialog = Clò-bhuail le còmhradh clò-bhualadh an t-siostaim.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Bac làraichean-lìn àraidh. Faic an docamaideadh airson barrachd fiosrachaidh mun fhòrmat.

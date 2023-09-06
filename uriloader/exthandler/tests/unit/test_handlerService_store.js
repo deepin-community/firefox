@@ -23,7 +23,7 @@ let localHandlerApp = Cc[
   "@mozilla.org/uriloader/local-handler-app;1"
 ].createInstance(Ci.nsILocalHandlerApp);
 localHandlerApp.name = "Local Handler";
-localHandlerApp.executable = FileUtils.getFile("TmpD", []);
+localHandlerApp.executable = new FileUtils.File(PathUtils.tempDir);
 let expectedLocalHandlerApp = {
   name: localHandlerApp.name,
   executable: localHandlerApp.executable,
@@ -243,11 +243,7 @@ add_task(async function test_store_preferredAction() {
   const actions = [
     {
       preferred: Ci.nsIHandlerInfo.alwaysAsk,
-      expected: Services.prefs.getBoolPref(
-        "browser.download.improvements_to_download_panel"
-      )
-        ? Ci.nsIHandlerInfo.alwaysAsk
-        : Ci.nsIHandlerInfo.useHelperApp,
+      expected: Ci.nsIHandlerInfo.alwaysAsk,
     },
     {
       preferred: Ci.nsIHandlerInfo.handleInternally,
@@ -279,7 +275,9 @@ add_task(async function test_store_localHandlerApp_missing() {
     "@mozilla.org/uriloader/local-handler-app;1"
   ].createInstance(Ci.nsILocalHandlerApp);
   missingHandlerApp.name = "Non-existing Handler";
-  missingHandlerApp.executable = FileUtils.getFile("TmpD", ["nonexisting"]);
+  missingHandlerApp.executable = new FileUtils.File(
+    PathUtils.join(PathUtils.tempDir, "nonexisting")
+  );
 
   await deleteHandlerStore();
 
@@ -360,9 +358,8 @@ add_task(
 
     await unloadHandlerStore();
 
-    let actualHandlerInfo = HandlerServiceTestUtils.getHandlerInfo(
-      "example/new"
-    );
+    let actualHandlerInfo =
+      HandlerServiceTestUtils.getHandlerInfo("example/new");
     HandlerServiceTestUtils.assertHandlerInfoMatches(actualHandlerInfo, {
       type: "example/new",
       preferredAction: Ci.nsIHandlerInfo.saveToDisk,
@@ -392,9 +389,8 @@ add_task(
 
     await unloadHandlerStore();
 
-    let actualHandlerInfo = HandlerServiceTestUtils.getHandlerInfo(
-      "example/new"
-    );
+    let actualHandlerInfo =
+      HandlerServiceTestUtils.getHandlerInfo("example/new");
     HandlerServiceTestUtils.assertHandlerInfoMatches(actualHandlerInfo, {
       type: "example/new",
       preferredAction: Ci.nsIHandlerInfo.saveToDisk,
@@ -578,27 +574,10 @@ add_task(async function test_getTypeFromExtension() {
 function assertAllHandlerInfosMatchDefaultHandlers() {
   let handlerInfos = HandlerServiceTestUtils.getAllHandlerInfos();
 
-  for (let type of ["irc", "ircs"]) {
-    HandlerServiceTestUtils.assertHandlerInfoMatches(handlerInfos.shift(), {
-      type,
-      preferredActionOSDependent: true,
-      possibleApplicationHandlers: [
-        {
-          name: "Mibbit",
-          uriTemplate: "https://www.mibbit.com/?url=%s",
-        },
-      ],
-    });
-  }
-
   HandlerServiceTestUtils.assertHandlerInfoMatches(handlerInfos.shift(), {
     type: "mailto",
     preferredActionOSDependent: true,
     possibleApplicationHandlers: [
-      {
-        name: "Yahoo! Mail",
-        uriTemplate: "https://compose.mail.yahoo.com/?To=%s",
-      },
       {
         name: "Gmail",
         uriTemplate: "https://mail.google.com/mail/?extsrc=mailto&url=%s",
@@ -612,63 +591,49 @@ function assertAllHandlerInfosMatchDefaultHandlers() {
 /**
  * Tests the default protocol handlers imported from the locale-specific data.
  */
-add_task(async function test_default_protocol_handlers() {
-  if (
-    !Services.prefs.getPrefType("gecko.handlerService.defaultHandlersVersion")
-  ) {
-    info("This platform or locale does not have default handlers.");
-    return;
+add_task(
+  { skip_if: () => AppConstants.MOZ_APP_NAME == "thunderbird" },
+  async function test_default_protocol_handlers() {
+    if (
+      !Services.prefs.getPrefType("gecko.handlerService.defaultHandlersVersion")
+    ) {
+      info("This platform or locale does not have default handlers.");
+      return;
+    }
+
+    // This will inject the default protocol handlers for the current locale.
+    await deleteHandlerStore();
+
+    await assertAllHandlerInfosMatchDefaultHandlers();
   }
-
-  // This will inject the default protocol handlers for the current locale.
-  await deleteHandlerStore();
-
-  await assertAllHandlerInfosMatchDefaultHandlers();
-});
+);
 
 /**
  * Tests that the default protocol handlers are not imported again from the
  * locale-specific data if they already exist.
  */
-add_task(async function test_default_protocol_handlers_no_duplicates() {
-  if (
-    !Services.prefs.getPrefType("gecko.handlerService.defaultHandlersVersion")
-  ) {
-    info("This platform or locale does not have default handlers.");
-    return;
+add_task(
+  { skip_if: () => AppConstants.MOZ_APP_NAME == "thunderbird" },
+  async function test_default_protocol_handlers_no_duplicates() {
+    if (
+      !Services.prefs.getPrefType("gecko.handlerService.defaultHandlersVersion")
+    ) {
+      info("This platform or locale does not have default handlers.");
+      return;
+    }
+
+    // This will inject the default protocol handlers for the current locale.
+    await deleteHandlerStore();
+
+    // Clear the preference to force injecting again.
+    Services.prefs.clearUserPref("gecko.handlerService.defaultHandlersVersion");
+
+    await unloadHandlerStore();
+
+    // There should be no duplicate handlers in the protocols.
+    assertAllHandlerInfosMatchDefaultHandlers();
   }
-
-  // This will inject the default protocol handlers for the current locale.
-  await deleteHandlerStore();
-
-  // Remove the "irc" handler so we can verify that the injection is repeated.
-  let ircHandlerInfo = HandlerServiceTestUtils.getHandlerInfo("irc");
-  gHandlerService.remove(ircHandlerInfo);
-
-  let originalDefaultHandlersVersion = Services.prefs.getComplexValue(
-    "gecko.handlerService.defaultHandlersVersion",
-    Ci.nsIPrefLocalizedString
-  );
-
-  // Set the preference to an arbitrarily high number to force injecting again.
-  Services.prefs.setStringPref(
-    "gecko.handlerService.defaultHandlersVersion",
-    "999"
-  );
-
-  await unloadHandlerStore();
-
-  // Check that "irc" exists to make sure that the injection was repeated.
-  Assert.ok(gHandlerService.exists(ircHandlerInfo));
-
-  // There should be no duplicate handlers in the protocols.
-  await assertAllHandlerInfosMatchDefaultHandlers();
-
-  Services.prefs.setStringPref(
-    "gecko.handlerService.defaultHandlersVersion",
-    originalDefaultHandlersVersion
-  );
-});
+);
 
 /**
  * Ensures forward compatibility by checking that the "store" method preserves
@@ -685,7 +650,7 @@ add_task(async function test_store_keeps_unknown_properties() {
   gHandlerService.store(handlerInfo);
 
   await unloadHandlerStore();
-  let data = JSON.parse(new TextDecoder().decode(await OS.File.read(jsonPath)));
+  let data = await IOUtils.readJSON(jsonPath);
   Assert.equal(
     data.mimeTypes["example/type.handleinternally"].unknownProperty,
     "preserved"
@@ -740,7 +705,10 @@ add_task(async function test_store_gioHandlerApp() {
   }
 
   // Create dummy exec file that following won't fail because file not found error
-  let dummyHandlerFile = FileUtils.getFile("TmpD", ["dummyHandler"]);
+  let dummyHandlerFile = await IOUtils.getFile(
+    PathUtils.tempDir,
+    "dummyHandler"
+  );
   dummyHandlerFile.createUnique(
     Ci.nsIFile.NORMAL_FILE_TYPE,
     parseInt("777", 8)
@@ -774,7 +742,7 @@ add_task(async function test_store_gioHandlerApp() {
     possibleApplicationHandlers: [expectedGIOMimeHandlerApp, webHandlerApp],
   });
 
-  await OS.File.remove(dummyHandlerFile.path);
+  await IOUtils.remove(dummyHandlerFile.path);
 
   // After removing dummyHandlerFile, the handler should disappear from the
   // list of possibleApplicationHandlers and preferredAppHandler should be null.

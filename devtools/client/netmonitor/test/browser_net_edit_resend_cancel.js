@@ -7,8 +7,23 @@
  * Tests if original request's header panel is visible when custom request is cancelled.
  */
 
-add_task(async function() {
-  const { monitor } = await initNetMonitor(SIMPLE_URL, { requestCount: 1 });
+add_task(async function () {
+  if (
+    Services.prefs.getBoolPref(
+      "devtools.netmonitor.features.newEditAndResend",
+      true
+    )
+  ) {
+    ok(
+      true,
+      "Skip this test when pref is true, because this panel won't be default when that is the case."
+    );
+    return;
+  }
+
+  const { monitor } = await initNetMonitor(HTTPS_SIMPLE_URL, {
+    requestCount: 1,
+  });
   info("Starting test... ");
 
   const { document, store, windowRequire } = monitor.panelWin;
@@ -20,7 +35,7 @@ add_task(async function() {
 
   // Reload to have one request in the list
   const waitForEvents = waitForNetworkEvents(monitor, 1);
-  await navigateTo(SIMPLE_URL);
+  await navigateTo(HTTPS_SIMPLE_URL);
   await waitForEvents;
 
   // Context Menu > "Edit & Resend"
@@ -32,11 +47,7 @@ add_task(async function() {
   await waitForHeaders;
   EventUtils.sendMouseEvent({ type: "contextmenu" }, firstRequest);
   const firstRequestState = getSelectedRequest(store.getState());
-  const contextResend = getContextMenuItem(
-    monitor,
-    "request-list-context-resend"
-  );
-  contextResend.click();
+  await selectContextMenuItem(monitor, "request-list-context-edit-resend");
 
   // Waits for "Edit & Resend" panel to appear > New request "Cancel"
   await waitUntil(() => document.querySelector(".custom-request-panel"));
@@ -53,5 +64,5 @@ add_task(async function() {
     "Request is selected and headers panel is visible"
   );
 
-  return teardown(monitor);
+  await teardown(monitor);
 });

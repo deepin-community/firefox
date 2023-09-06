@@ -3,8 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 restart-required-title = Необходимо е рестартиране
-restart-required-header = Извинете. За да продължим работа е необходимо да свършим нещо дребно.
-restart-required-intro-brand = { -brand-short-name } е обновен във фонов режим. Изберете Рестартиране на { -brand-short-name }, за да бъде завършено обновяването.
-restart-required-description = След това всички страници, прозорци и раздели ще бъдат възстановени и ще може да продължите работа.
+restart-required-heading = Рестартирайте и продължете да използвате { -brand-short-name }
+restart-required-intro = Във фонов режим е започнало обновяване на { -brand-short-name }. За да завърши ще трябва да рестартирате.
+window-restoration-info = Прозорците и разделите бързо ще бъдат възстановени, но поверителните не.
 
 restart-button-label = Рестартиране на { -brand-short-name }

@@ -11,15 +11,10 @@
 #include "mozilla/layers/CompositorBridgeChild.h"
 #include "mozilla/layers/CompositorBridgeParent.h"
 
-#if defined(MOZ_WIDGET_ANDROID)
-#  include "mozilla/widget/nsWindow.h"
-#endif  // defined(MOZ_WIDGET_ANDROID)
-
 namespace mozilla {
 namespace layers {
 
 using namespace gfx;
-using namespace widget;
 
 CompositorSession::CompositorSession(nsBaseWidget* aWidget,
                                      CompositorWidgetDelegate* aDelegate,
@@ -35,16 +30,6 @@ CompositorSession::~CompositorSession() = default;
 CompositorBridgeChild* CompositorSession::GetCompositorBridgeChild() {
   return mCompositorBridgeChild;
 }
-
-#if defined(MOZ_WIDGET_ANDROID)
-void CompositorSession::NotifyDisablingWebRender() {
-  if (!mWidget) {
-    return;
-  }
-  nsWindow* window = static_cast<nsWindow*>(mWidget);
-  window->NotifyDisablingWebRender();
-}
-#endif  // defined(MOZ_WIDGET_ANDROID)
 
 }  // namespace layers
 }  // namespace mozilla

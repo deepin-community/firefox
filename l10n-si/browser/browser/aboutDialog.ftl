@@ -3,58 +3,63 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 aboutDialog-title =
-    .title = { -brand-full-name } පිළිබඳ
-
-releaseNotes-link = නවතම දේ
-
+    .title = { -brand-full-name } පිළිබඳව
+releaseNotes-link = අළුත් දෑ
 update-checkForUpdatesButton =
-    .label = යාවත්කාලීන සඳහා පිරික්සන්න
+    .label = යාවත්කාල පරීක්‍ෂා කරන්න
     .accesskey = C
-
 update-updateButton =
-    .label = { -brand-shorter-name } යාවත් කිරීමට යළි අරබන්න
+    .label = { -brand-shorter-name } යාවත්කාලයට යළි අරඹන්න
     .accesskey = R
+update-checkingForUpdates = යාවත්කාල පරීක්‍ෂා කෙරෙමින්...
 
-update-checkingForUpdates = යාවත්කාලීන සඳහා පරීක්ෂා කරයි…
-update-downloading = <img data-l10n-name="icon"/>යාවත්කාලීන බාගත කරයි— <label data-l10n-name="download-status"/>
-update-applying = යාවත්කාලීන යොදමින්…
+## Variables:
+##   $transfer (string) - Transfer progress.
 
-update-failed = යාවත්කාලීන කිරීම අසාර්ථක විය. <label data-l10n-name="failed-link">නවතම අනුවාදය බාගන්න</label>
-update-failed-main = යාවත්කාලීන කිරීම අසාර්ථක විය. <a data-l10n-name="failed-link-main">නවතම අනුවාදය බාගන්න</a>
+settings-update-downloading = <img data-l10n-name="icon"/>යාවත්කාල බාගැනෙමින් — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = යාවත්කාලය බාගැනෙමින් — <label data-l10n-name="download-status">{ $transfer }</label>
 
-update-adminDisabled = පද්ධති පරිපාලක විසින් යාවත්කාලීන කිරීම අබල (disable) කර ඇත
+##
+
+update-applying = යාවත්කාලය යොදමින්…
+update-failed = යාවත්කාල කිරීමට අසමත් විය. <label data-l10n-name="failed-link">නවතම අනුවාදය බාගන්න</label>
+update-failed-main = යාවත්කාල කිරීමට අසමත් විය. <a data-l10n-name="failed-link-main">නවතම අනුවාදය බාගන්න</a>
+update-adminDisabled = පද්ධති පරිපාලක විසින් යාවත්කාල කිරීම අබල කර ඇත
 update-noUpdatesFound = { -brand-short-name } යාවත්කාලීනයි
-update-otherInstanceHandlingUpdates = බාහිරව ක්‍රියාකාරිත්වයක් මඟින් { -brand-short-name } යාවත් වී ඇත.
+aboutdialog-update-checking-failed = යාවත්කාල පරීක්‍ෂාවට අසමත් විය.
+update-otherInstanceHandlingUpdates = { -brand-short-name } දැනටමත් යාවත්කාලීන වෙමින් පවතී
 
-update-manual = මෙහි යාවත්කාලීන තිබේ <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
 
-update-unsupported = ඔබට මෙම පද්ධතිය මත තවත් යාවත් කිරීම් සිදු කළ නොහැක. <label data-l10n-name="unsupported-link">තවත් දැනගන්න</label>
-
+aboutdialog-update-manual-with-link = මෙහි යාවත්කාල තිබේ <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = මෙහි යාවත්කාල තිබේ <a data-l10n-name="manual-link">{ $displayUrl }</a>
+update-unsupported = ඔබට මෙම පද්ධතිය මත තවදුරටත් යාවත්කාල කිරීමට නොහැකිය. <label data-l10n-name="unsupported-link">තව දැනගන්න</label>
 update-restarting = නැවත අරඹමින්…
+update-internal-error2 = අභ්‍යන්තර දෝෂයක් හේතුවෙන් යාවත්කාල පරීක්‍ෂා කිරීමට නොහැකිය. <label data-l10n-name="manual-link">{ $displayUrl }</label> හි යාවත්කාල තිබේ
 
-channel-description = You are currently on the <label data-l10n-name="current-channel"></label> update channel.
+##
 
-warningDesc-version = { -brand-short-name } පරීක්ෂාත්මක සහ ඇතැම් විට අස්ථායි තත්වයෙන් පවතී.
-
-community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> යනු <label data-l10n-name="community-exp-creditsLink">ගෝලීය ප්‍රජාවකි</label> එය අන්තර්ජාලය විවෘත, පොදු, සහ සියල්ලන්ටම ප්‍රවේශ වීමට හැකි ලෙස පවත්වා ගැනීමට එක්ව වැඩ කරයි.
-
-community-2 = { -brand-short-name } නිර්මාණය කරන ලද්දේ <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, a <label data-l10n-name="community-creditsLink">ගෝලීය ප්‍රජාව</label>අන්තර්ජාලය විවෘත, පොදු, සහ සියල්ලන්ටම ප්‍රවේශ වීමට හැකි ලෙස පවත්වා ගැනීමට එක්ව වැඩ කරන්නෙමු.
-
-helpus = උදව් දීමට කැමති ද? <label data-l10n-name="helpus-donateLink">පරිත්‍යාග කරන්න</label> හෝ <label data-l10n-name="helpus-getInvolvedLink">සම්බන්ධ වන්න!</label>
-
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = ඔබ දැනට සිටින්නේ <label data-l10n-name="current-channel">{ $channel }</label> යාවත්කාල නාලිකාවේය.
+warningDesc-version = { -brand-short-name } පරීක්‍ෂාත්මක හා අස්ථායි විය හැකිය.
+aboutdialog-help-user = { -brand-product-name } උදව්
+aboutdialog-submit-feedback = ප්‍රතිපෝෂණය යොමන්න
+community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> යනු <label data-l10n-name="community-exp-creditsLink">ගෝලීය ප්‍රජාවකි</label> විවෘත, පොදු, සහ සැමට ප්‍රවේශ වීමට හැකි ලෙස අන්තර්ජාලය පවත්‍වා ගැනීමට එක්ව වැඩ කරයි.
+community-2 = <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label> විසින් { -brand-short-name } නිර්මාණය කර ඇත, විවෘත, පොදු සහ සැමට ප්‍රවේශ වීමට හැකි ලෙස අන්තර්ජාලය පවත්‍වා ගැනීමට එක්ව වැඩ කරන <label data-l10n-name="community-creditsLink">ගෝලීය ප්‍රජාවකි</label>.
+helpus = උදව් කිරීමට අවශ්‍යද? <label data-l10n-name="helpus-donateLink">පරිත්‍යාගයක් කරන්න</label> හෝ <label data-l10n-name="helpus-getInvolvedLink">සම්බන්ධ වන්න!</label>
 bottomLinks-license = බලපත්‍ර තොරතුරු
 bottomLinks-rights = පරිශීලක අයිතීන්
-bottomLinks-privacy = පෞද්ගලිකත්ව ප්‍රතිපත්තිය
-
+bottomLinks-privacy = පෞද්ගලිකත්‍ව ප්‍රතිපත්තිය
 # Example of resulting string: 66.0.1 (64-bit)
 # Variables:
 #   $version (String): version of Firefox, e.g. 66.0.1
 #   $bits (Number): bits of the architecture (32 or 64)
-aboutDialog-version = { $version } ({ $bits }-bit)
-
+aboutDialog-version = { $version } (බිටු-{ $bits })
 # Example of resulting string: 66.0a1 (2019-01-16) (64-bit)
 # Variables:
 #   $version (String): version of Firefox for Nightly builds, e.g. 66.0a1
 #   $isodate (String): date in ISO format, e.g. 2019-01-16
 #   $bits (Number): bits of the architecture (32 or 64)
-aboutDialog-version-nightly = { $version } ({ $isodate }) ({ $bits }-bit)
+aboutDialog-version-nightly = { $version } ({ $isodate }) (බිටු-{ $bits })

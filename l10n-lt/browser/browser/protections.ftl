@@ -67,22 +67,20 @@ cryptominer-tab-content = Kriptovaliutų kasėjai naudoja jūsų kompiuterio res
 protections-close-button2 =
     .aria-label = Užverti
     .title = Užverti
-  
+
 mobile-app-title = Blokuokite reklaminius elementus ir kituose įrenginiuose
 mobile-app-card-content = Naudokite mobiliąją naršyklę su integruota apsauga nuo reklaminių stebėjimo elementų.
 mobile-app-links = „{ -brand-product-name }“ naršyklė, skirta <a data-l10n-name="android-mobile-inline-link">„Android“</a> ir <a data-l10n-name="ios-mobile-inline-link">„iOS“</a>
 
 lockwise-title = Daugiau nepamirškite nė vieno slaptažodžio
-lockwise-title-logged-in2 = Slaptažodžių tvarkymas
-lockwise-header-content = „{ -lockwise-brand-name }“ saugiai įrašo slaptažodžius į jūsų naršyklę.
+passwords-title-logged-in = Tvarkyti slaptažodžius
+passwords-header-content = „{ -brand-product-name }“ saugiai įrašo slaptažodžius į jūsų naršyklę.
 lockwise-header-content-logged-in = Saugiai laikykite ir sinchronizuokite slaptažodžius tarp visų savo įrenginių.
-protection-report-save-passwords-button = Laikyti slaptažodžius
-    .title = Laikyti slaptažodžius su „{ -lockwise-brand-short-name }“
-protection-report-manage-passwords-button = Tvarkyti slaptažodžius
-    .title = Tvarkyti slaptažodžius su „{ -lockwise-brand-short-name }“
-lockwise-mobile-app-title = Turėkite savo slaptažodžius visur
-lockwise-no-logins-card-content = Slaptažodžius, esančius „{ -brand-short-name }“, galite naudoti bet kuriame įrenginyje.
-lockwise-app-links = „{ -lockwise-brand-name }“, skirta „<a data-l10n-name="lockwise-android-inline-link">„Android“</a> ir <a data-l10n-name="lockwise-ios-inline-link">„iOS“</a>
+protection-report-passwords-save-passwords-button = Įrašyti slaptažodžius
+    .title = Įrašyti slaptažodžius
+protection-report-passwords-manage-passwords-button = Tvarkyti slaptažodžius
+    .title = Tvarkyti slaptažodžius
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

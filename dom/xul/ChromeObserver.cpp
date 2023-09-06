@@ -19,8 +19,7 @@
 #include "mozilla/dom/MutationEventBinding.h"
 #include "nsXULElement.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 NS_IMPL_ISUPPORTS(ChromeObserver, nsIMutationObserver)
 
@@ -130,17 +129,10 @@ void ChromeObserver::SetChromeMargins(const nsAttrValue* aValue) {
   if (!mainWidget) return;
 
   // top, right, bottom, left - see nsAttrValue
+  nsAutoString tmp;
+  aValue->ToString(tmp);
   nsIntMargin margins;
-  bool gotMargins = false;
-
-  if (aValue->Type() == nsAttrValue::eIntMarginValue) {
-    gotMargins = aValue->GetIntMarginValue(margins);
-  } else {
-    nsAutoString tmp;
-    aValue->ToString(tmp);
-    gotMargins = nsContentUtils::ParseIntMarginValue(tmp, margins);
-  }
-  if (gotMargins) {
+  if (nsContentUtils::ParseIntMarginValue(tmp, margins)) {
     nsContentUtils::AddScriptRunner(new MarginSetter(
         mainWidget, LayoutDeviceIntMargin::FromUnknownMargin(margins)));
   }
@@ -175,8 +167,7 @@ void ChromeObserver::AttributeChanged(dom::Element* aElement,
       // if the localedir changed on the root element, reset the document
       // direction
       mDocument->ResetDocumentDirection();
-    } else if (aName == nsGkAtoms::lwtheme ||
-               aName == nsGkAtoms::lwthemetextcolor) {
+    } else if (aName == nsGkAtoms::lwtheme) {
       // if the lwtheme changed, make sure to reset the document lwtheme
       // cache
       mDocument->ResetDocumentLWTheme();
@@ -190,8 +181,7 @@ void ChromeObserver::AttributeChanged(dom::Element* aElement,
       // if the localedir changed on the root element, reset the document
       // direction
       mDocument->ResetDocumentDirection();
-    } else if ((aName == nsGkAtoms::lwtheme ||
-                aName == nsGkAtoms::lwthemetextcolor)) {
+    } else if (aName == nsGkAtoms::lwtheme) {
       // if the lwtheme changed, make sure to restyle appropriately
       mDocument->ResetDocumentLWTheme();
     } else if (aName == nsGkAtoms::drawintitlebar) {
@@ -202,7 +192,7 @@ void ChromeObserver::AttributeChanged(dom::Element* aElement,
   }
 }
 
-void ChromeObserver::NodeWillBeDestroyed(const nsINode* aNode) {
+void ChromeObserver::NodeWillBeDestroyed(nsINode* aNode) {
   mDocument = nullptr;
 }
 
@@ -236,5 +226,4 @@ nsresult ChromeObserver::HideWindowChrome(bool aShouldHide) {
   return NS_OK;
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

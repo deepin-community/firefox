@@ -7,24 +7,25 @@
 with Files("**"):
     BUG_COMPONENT = ("Core", "Networking: DNS")
 
-DIRS += ["mdns", "tests"]
+DIRS += ["tests"]
 
 XPIDL_SOURCES += [
+    "nsIDNSAdditionalInfo.idl",
     "nsIDNSByTypeRecord.idl",
     "nsIDNSListener.idl",
     "nsIDNSRecord.idl",
-    "nsIDNSResolverInfo.idl",
     "nsIDNSService.idl",
     "nsIEffectiveTLDService.idl",
     "nsIIDNService.idl",
     "nsINativeDNSResolverOverride.idl",
+    "nsITRRSkipReason.idl",
     "nsPIDNSService.idl",
 ]
 
 XPIDL_MODULE = "necko_dns"
 
 EXTRA_JS_MODULES["netwerk-dns"] += [
-    "PublicSuffixList.jsm",
+    "PublicSuffixList.sys.mjs",
 ]
 
 XPCSHELL_TESTS_MANIFESTS += ["tests/unit/xpcshell.ini"]
@@ -38,9 +39,11 @@ EXPORTS.mozilla.net += [
     "DNS.h",
     "DNSByTypeRecord.h",
     "DNSListenerProxy.h",
+    "DNSPacket.h",
     "DNSRequestBase.h",
     "DNSRequestChild.h",
     "DNSRequestParent.h",
+    "DNSServiceBase.h",
     "HTTPSSVC.h",
     "IDNBlocklistUtils.h",
     "NativeDNSResolverOverrideChild.h",
@@ -59,11 +62,12 @@ SOURCES += [
 UNIFIED_SOURCES += [
     "ChildDNSService.cpp",
     "DNS.cpp",
+    "DNSAdditionalInfo.cpp",
     "DNSListenerProxy.cpp",
     "DNSPacket.cpp",
     "DNSRequestChild.cpp",
     "DNSRequestParent.cpp",
-    "DNSResolverInfo.cpp",
+    "DNSServiceBase.cpp",
     "DNSUtils.cpp",
     "HostRecordQueue.cpp",
     "HTTPSSVC.cpp",
@@ -74,8 +78,6 @@ UNIFIED_SOURCES += [
     "nsHostRecord.cpp",
     "nsHostResolver.cpp",
     "nsIDNService.cpp",
-    "ODoH.cpp",
-    "ODoHService.cpp",
     "punycode.c",
     "TRR.cpp",
     "TRRQuery.cpp",
@@ -103,12 +105,8 @@ GeneratedFile(
 # need to include etld_data.inc
 LOCAL_INCLUDES += [
     "/netwerk/base",
+    "/netwerk/ipc",
     "/netwerk/protocol/http",
 ]
 
 USE_LIBS += ["icu"]
-
-if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-    CXXFLAGS += ["-Wno-error=shadow"]
-
-REQUIRES_UNIFIED_BUILD = True

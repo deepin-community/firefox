@@ -1,3 +1,5 @@
+# mypy: allow-untyped-defs
+
 import json
 import select
 
@@ -51,14 +53,13 @@ class ResponseHeaders(Mapping[str, str]):
                 raise
 
     def __iter__(self):
-        for item in self.headers_dict:
-            yield item
+        yield from self.headers_dict
 
     def __len__(self):
         return len(self.headers_dict)
 
 
-class Response(object):
+class Response:
     """
     Describes an HTTP response received from a remote end whose
     body has been read and parsed as appropriate.
@@ -72,8 +73,8 @@ class Response(object):
     def __repr__(self):
         cls_name = self.__class__.__name__
         if self.error:
-            return "<%s status=%s error=%s>" % (cls_name, self.status, repr(self.error))
-        return "<% status=%s body=%s>" % (cls_name, self.status, json.dumps(self.body))
+            return f"<{cls_name} status={self.status} error={repr(self.error)}>"
+        return f"<{cls_name}: status={self.status} body={json.dumps(self.body)}>"
 
     def __str__(self):
         return json.dumps(self.body, indent=2)
@@ -91,12 +92,12 @@ class Response(object):
             headers = ResponseHeaders(http_response.getheaders())
         except ValueError:
             raise ValueError("Failed to decode response body as JSON:\n" +
-                http_response.read())
+                             http_response.read())
 
         return cls(http_response.status, body, headers)
 
 
-class HTTPWireProtocol(object):
+class HTTPWireProtocol:
     """
     Transports messages (commands and responses) over the WebDriver
     wire protocol.
@@ -221,7 +222,7 @@ class HTTPWireProtocol(object):
                 payload = json.dumps(body, cls=encoder, **codec_kwargs)
             except ValueError:
                 raise ValueError("Failed to encode request body as JSON:\n"
-                    "%s" % json.dumps(body, indent=2))
+                                 "%s" % json.dumps(body, indent=2))
 
         # When the timeout triggers, the TestRunnerManager thread will reuse
         # this connection to check if the WebDriver its alive and we may end

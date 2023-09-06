@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = అనుసంధాన అమరికలు
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -70,13 +70,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = మీ ప్రాక్సీ ప్రవేశ వివరాలు భద్రపరచివుంటే ఈ ఎంపిక మిమ్మల్ని నిశ్శబ్దంగా ప్రాక్సీలకు అధీకరిస్తుంది. అధీకరణ విఫలమైనప్పుడు మిమ్మల్ని అడుగుతుంది.
 
+connection-proxy-autologin-checkbox =
+    .label = సంకేతపదం భద్రమైవుంటే అధీకరణకై అడుగకు
+    .accesskey = i
+    .tooltiptext = మీ ప్రాక్సీ ప్రవేశ వివరాలు భద్రపరచివుంటే ఈ ఎంపిక మిమ్మల్ని నిశ్శబ్దంగా ప్రాక్సీలకు అధీకరిస్తుంది. అధీకరణ విఫలమైనప్పుడు మిమ్మల్ని అడుగుతుంది.
+
 connection-proxy-socks-remote-dns =
     .label = SOCKS v5 వాడేటప్పుడు ప్రాక్సీ DNS
     .accesskey = D
-
-connection-dns-over-https =
-    .label = HTTPS పై DNSను చేతనించు
-    .accesskey = b
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

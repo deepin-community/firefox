@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = ყველა
+printui-page-range-current = მიმდინარე
+printui-page-range-odd = კენტი
+printui-page-range-even = ლუწი
 printui-page-range-custom = მითითებული
 printui-page-range-label = გვერდები
 printui-page-range-picker =

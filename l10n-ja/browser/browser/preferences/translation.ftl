@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-translation-window =
+translation-window2 =
     .title = 例外 - 翻訳
-    .style = width: 36em
+    .style = min-width: 36em
 translation-close-key =
     .key = w
 translation-languages-disabled-desc = 以下の言語は翻訳しない

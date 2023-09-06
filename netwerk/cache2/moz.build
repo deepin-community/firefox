@@ -11,6 +11,7 @@ XPIDL_SOURCES += [
     "nsICacheEntry.idl",
     "nsICacheEntryDoomCallback.idl",
     "nsICacheEntryOpenCallback.idl",
+    "nsICachePurgeLock.idl",
     "nsICacheStorage.idl",
     "nsICacheStorageService.idl",
     "nsICacheStorageVisitor.idl",
@@ -23,6 +24,8 @@ EXPORTS += [
     "CacheObserver.h",
     "CacheStorageService.h",
 ]
+
+EXPORTS.mozilla.net += ["CachePurgeLock.h"]
 
 SOURCES += [
     "CacheStorage.cpp",
@@ -49,12 +52,15 @@ UNIFIED_SOURCES += [
     "CacheStorageService.cpp",
 ]
 
+if CONFIG["MOZ_WIDGET_TOOLKIT"] != "android":
+    UNIFIED_SOURCES += [
+        "CachePurgeLock.cpp",
+    ]
+
 LOCAL_INCLUDES += [
     "/netwerk/base",
-    "/netwerk/cache",
 ]
 
-FINAL_LIBRARY = "xul"
+include("/ipc/chromium/chromium-config.mozbuild")
 
-if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-    CXXFLAGS += ["-Wno-error=shadow"]
+FINAL_LIBRARY = "xul"

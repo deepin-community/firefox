@@ -19,8 +19,7 @@
 #define NSMEDIADOCUMENT_PROPERTIES_URI_en_US \
   "resource://gre/res/locale/layout/MediaDocument.properties"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 class MediaDocument : public nsHTMLDocument {
  public:
@@ -30,14 +29,14 @@ class MediaDocument : public nsHTMLDocument {
   // Subclasses need to override this.
   enum MediaDocumentKind MediaDocumentKind() const override = 0;
 
-  virtual nsresult Init() override;
+  virtual nsresult Init(nsIPrincipal* aPrincipal,
+                        nsIPrincipal* aPartitionedPrincipal) override;
 
   virtual nsresult StartDocumentLoad(const char* aCommand, nsIChannel* aChannel,
                                      nsILoadGroup* aLoadGroup,
                                      nsISupports* aContainer,
                                      nsIStreamListener** aDocListener,
-                                     bool aReset = true,
-                                     nsIContentSink* aSink = nullptr) override;
+                                     bool aReset = true) override;
 
   virtual bool WillIgnoreCharsetOverride() override { return true; }
 
@@ -103,7 +102,6 @@ class MediaDocumentStreamListener : public nsIStreamListener,
 
  public:
   explicit MediaDocumentStreamListener(MediaDocument* aDocument);
-  void SetStreamListener(nsIStreamListener* aListener);
 
   NS_DECL_THREADSAFE_ISUPPORTS
 
@@ -119,7 +117,6 @@ class MediaDocumentStreamListener : public nsIStreamListener,
   nsCOMPtr<nsIStreamListener> mNextStream;
 };
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 #endif /* mozilla_dom_MediaDocument_h */

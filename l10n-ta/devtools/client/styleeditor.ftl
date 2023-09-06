@@ -16,10 +16,27 @@ styleeditor-save-button = சேமி
     .accesskey = S
 styleeditor-options-button =
     .tooltiptext = பாணி தொகு தேர்வுகள்
-styleeditor-media-rules = @ஊடக விதிகள்
 styleeditor-editor-textbox =
     .data-placeholder = இங்கு CSS ஐத் தட்டச்சு செய்யவும்.
 styleeditor-no-stylesheet = பக்கத்தில் ஸ்டைல் ஷீட் இல்லை.
 styleeditor-no-stylesheet-tip = நீங்கள் இதை விரும்புகிறீர்களா <a data-l10n-name="append-new-stylesheet">புதிய ஸ்டைல் ஷீட்டை இணைத்தல்</a>?
 styleeditor-open-link-new-tab =
     .label = இணைப்பைப் புதிய கீற்றில் திற
+styleeditor-find =
+    .label = கண்டுபிடி
+    .accesskey = F
+styleeditor-find-again =
+    .label = மீண்டும் கண்டுபிடி
+    .accesskey = g
+styleeditor-go-to-line =
+    .label = வரிக்குத் செல்…
+    .accesskey = வ
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } விதி.
+       *[other] { $ruleCount } விதிகள்.
+    }

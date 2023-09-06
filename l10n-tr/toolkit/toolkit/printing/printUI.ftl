@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Tümü
+printui-page-range-current = Geçerli sayfa
+printui-page-range-odd = Tek
+printui-page-range-even = Çift
 printui-page-range-custom = Özel
 printui-page-range-label = Sayfalar
 printui-page-range-picker =

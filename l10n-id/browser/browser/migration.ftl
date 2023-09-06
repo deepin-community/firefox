@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = O
 
 no-migration-sources = Tidak ada program yang berisi markah, riwayat atau sandi yang bisa ditemukan.
 
@@ -60,9 +72,6 @@ import-items-page-title = Pilih yang akan diimpor
 import-items-description = Pilih yang akan diimpor:
 
 import-permissions-page-title = Mohon beri izin kepada { -brand-short-name }
-
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS memerlukan izin Anda secara eksplisit agar { -brand-short-name } dapat mengakses markah Safari. Klik "Lanjutkan" dan pilih berkas “Bookmarks.plist” pada panel Buka Berkas yang muncul.
 
 import-migrating-page-title = Mengimpor…
 
@@ -78,23 +87,9 @@ import-done-description = Item berikut sukses diimpor:
 
 import-close-source-browser = Pastikan peramban terpilih telah ditutup sebelum melanjutkan.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Dari { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Daftar Bacaan (Dari Safari)
 imported-edge-reading-list = Daftar Bacaan (Dari Edge)
@@ -169,3 +164,4 @@ browser-data-session-checkbox =
     .label = Jendela dan Tab
 browser-data-session-label =
     .value = Jendela dan Tab
+

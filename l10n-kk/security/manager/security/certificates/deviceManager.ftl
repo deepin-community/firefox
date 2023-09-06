@@ -5,9 +5,9 @@
 
 ## Strings used for device manager
 
-devmgr =
+devmgr-window =
     .title = Құрылғылар менеджері
-    .style = width: 67em; height: 32em;
+    .style = min-width: 67em; min-height: 32em;
 
 devmgr-devlist =
     .label = Қауіпсіздік модульдері мен құрылғылар
@@ -35,8 +35,8 @@ devmgr-button-load =
     .accesskey = к
 
 devmgr-button-unload =
-    .label = Жүктелуден босату
-    .accesskey = б
+    .label = Жадыдан түсіру
+    .accesskey = с
 
 devmgr-button-enable-fips =
     .label = FIPS қолдану

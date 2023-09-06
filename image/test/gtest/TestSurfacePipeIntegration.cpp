@@ -48,8 +48,8 @@ void CheckSurfacePipeMethodResults(SurfacePipe* aPipe, image::Decoder* aDecoder,
   EXPECT_TRUE(aPipe->IsSurfaceFinished());
   Maybe<SurfaceInvalidRect> invalidRect = aPipe->TakeInvalidRect();
   EXPECT_TRUE(invalidRect.isSome());
-  EXPECT_EQ(IntRect(0, 0, 100, 100), invalidRect->mInputSpaceRect);
-  EXPECT_EQ(IntRect(0, 0, 100, 100), invalidRect->mOutputSpaceRect);
+  EXPECT_EQ(OrientedIntRect(0, 0, 100, 100), invalidRect->mInputSpaceRect);
+  EXPECT_EQ(OrientedIntRect(0, 0, 100, 100), invalidRect->mOutputSpaceRect);
 
   // Check the generated image.
   CheckGeneratedImage(aDecoder, aRect);
@@ -71,8 +71,8 @@ void CheckSurfacePipeMethodResults(SurfacePipe* aPipe, image::Decoder* aDecoder,
   EXPECT_TRUE(aPipe->IsSurfaceFinished());
   invalidRect = aPipe->TakeInvalidRect();
   EXPECT_TRUE(invalidRect.isSome());
-  EXPECT_EQ(IntRect(0, 0, 100, 100), invalidRect->mInputSpaceRect);
-  EXPECT_EQ(IntRect(0, 0, 100, 100), invalidRect->mOutputSpaceRect);
+  EXPECT_EQ(OrientedIntRect(0, 0, 100, 100), invalidRect->mInputSpaceRect);
+  EXPECT_EQ(OrientedIntRect(0, 0, 100, 100), invalidRect->mOutputSpaceRect);
 
   aPipe->ResetToFirstRow();
   EXPECT_FALSE(aPipe->IsSurfaceFinished());
@@ -99,7 +99,7 @@ TEST_F(ImageSurfacePipeIntegration, SurfacePipe) {
   auto sink = MakeUnique<SurfaceSink>();
   nsresult rv = sink->Configure(
       SurfaceConfig{decoder, IntSize(100, 100), SurfaceFormat::OS_RGBA, false});
-  ASSERT_TRUE(NS_SUCCEEDED(rv));
+  ASSERT_NS_SUCCEEDED(rv);
 
   pipe = TestSurfacePipeFactory::SurfacePipeFromPipeline(sink);
 
@@ -158,7 +158,7 @@ TEST_F(ImageSurfacePipeIntegration, SurfacePipe) {
           ++count;
           EXPECT_EQ(int32_t(100), aLength);
           memcpy(aBlockStart, buffer, 100 * sizeof(uint32_t));
-          return MakeTuple(int32_t(100), Maybe<WriteState>());
+          return std::make_tuple(int32_t(100), Maybe<WriteState>());
         });
 
     EXPECT_EQ(WriteState::FINISHED, result);

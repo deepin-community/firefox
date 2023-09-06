@@ -8,18 +8,23 @@ places-open =
 places-open-in-tab =
     .label = Agor mewn Tab Newydd
     .accesskey = A
+places-open-in-container-tab =
+    .label = Agor mewn Tab Cynhwysydd Newydd
+    .accesskey = A
 places-open-all-bookmarks =
     .label = Agor Pob Nod Tudalen
     .accesskey = A
 places-open-all-in-tabs =
-    .label = Agor pob Tab
-    .accesskey = T
+    .label = Agor Popeth mewn Tabiau
+    .accesskey = P
 places-open-in-window =
     .label = Agor mewn Ffenestr Newydd
     .accesskey = N
 places-open-in-private-window =
     .label = Agor mewn Ffenestr Breifat Newydd
     .accesskey = B
+places-empty-bookmarks-folder =
+    .label = (Gwag)
 places-add-bookmark =
     .label = Ychwanegu Nod Tudalen…
     .accesskey = N
@@ -69,24 +74,11 @@ places-edit-bookmark =
 places-edit-generic =
     .label = Golygu…
     .accesskey = o
-places-edit-folder =
-    .label = Ailenwi Ffolder…
-    .accesskey = A
-places-remove-folder =
-    .label =
-        { $count ->
-            [1] Tynnu Ffolder
-            [zero] Tynnu Ffolderi
-            [one] Tynnu Ffolder
-            [two] Tynnu Ffolderi
-            [few] Tynnu Ffolderi
-            [many] Tynnu Ffolderi
-           *[other] Tynnu Ffolderi
-        }
-    .accesskey = F
 places-edit-folder2 =
     .label = Golygu Ffolder …
     .accesskey = G
+# Variables
+#   $count (number) - Number of folders to delete
 places-delete-folder =
     .label =
         { $count ->
@@ -99,6 +91,15 @@ places-delete-folder =
            *[other] Dileu Ffolder
         }
     .accesskey = D
+# Variables:
+#   $count (number) - The number of pages selected for removal.
+places-delete-page =
+    .label =
+        { $count ->
+            [1] Dileu Tudalen
+           *[other] Dileu Tudalennau
+        }
+    .accesskey = D
 # Managed bookmarks are created by an administrator and cannot be changed by the user.
 managed-bookmarks =
     .label = Nodau Tudalen wedi'u rheoli
@@ -108,20 +109,6 @@ managed-bookmarks-subfolder =
 # This label is used for the "Other Bookmarks" folder that appears in the bookmarks toolbar.
 other-bookmarks-folder =
     .label = Nodau Tudalen Eraill
-# Variables:
-# $count (number) - The number of elements being selected for removal.
-places-remove-bookmark =
-    .label =
-        { $count ->
-            [1] Tynnu Nod Tudalen
-            [zero] Tynnu Nodau Tudalen
-            [one] Tynnu Nod Tudalen
-            [two] Tynnu Nodau Tudalen
-            [few] Tynnu Nodau Tudalen
-            [many] Tynnu Nodau Tudalen
-           *[other] Tynnu Nodau Tudalen
-        }
-    .accesskey = T
 places-show-in-folder =
     .label = Dangos mewn Ffolder
     .accesskey = F
@@ -139,17 +126,28 @@ places-delete-bookmark =
            *[other] Dileu Nod Tudalen
         }
     .accesskey = D
+# Variables:
+#   $count (number) - The number of bookmarks being added.
+places-create-bookmark =
+    .label =
+        { $count ->
+            [1] Gosod Nod i Dudalen…
+           *[other] Gosod Nod i Dudalennau…
+        }
+    .accesskey = N
+places-untag-bookmark =
+    .label = Tynnu Tag
+    .accesskey = T
 places-manage-bookmarks =
     .label = Rheoli Nodau Tudalen
     .accesskey = R
 places-forget-about-this-site-confirmation-title = Anghofio'r wefan hon
 # Variables:
 # $hostOrBaseDomain (string) - The base domain (or host in case there is no base domain) for which data is being removed
-places-forget-about-this-site-confirmation-message = Bydd y weithred hon yn dileu'r holl ddata sy'n gysylltiedig â { $hostOrBaseDomain } gan gynnwys hanes, cyfrineiriau, cwcis, storfa a dewisiadau cynnwys. Ydych chi'n siŵr eich bod chi am barhau?
+places-forget-about-this-site-confirmation-msg = Bydd y weithred hon yn dileu data sy'n gysylltiedig â { $hostOrBaseDomain } gan gynnwys hanes, cwcis, storfa a dewisiadau cynnwys. Ni fydd nodau tudalen a chyfrineiriau cysylltiedig yn cael eu dileu. Ydych chi'n siŵr eich bod am barhau?
 places-forget-about-this-site-forget = Anghofio
-places-library =
+places-library3 =
     .title = Llyfrgell
-    .style = width:700px; height:500px;
 places-organize-button =
     .label = Trefnu
     .tooltiptext = Trefnu eich nodau tudalen
@@ -185,11 +183,11 @@ places-view-sort-descending =
     .label = Trefnu Z > A
     .accesskey = Z
 places-maintenance-button =
-    .label = Mewnforio ac Allforio
+    .label = Mewnforio a Chadw
     .tooltiptext = Mewnforio a chadw eich nodau tudalen wrth gefn
     .accesskey = M
 places-maintenance-button-mac =
-    .label = Mewnforio ac Allforio
+    .label = Mewnforio a Chadw
     .tooltiptext = Mewnforio a chadw eich nodau tudalen wrth gefn
 places-cmd-backup =
     .label = Wrth Gefn…
@@ -222,7 +220,28 @@ places-view-sort-col-visit-count =
 places-view-sort-col-date-added =
     .label = Ychwanegwyd
 places-view-sort-col-last-modified =
-    .label = Newidwyd Ddiwethaf
+    .label = Newidiwyd Diwethaf
+places-view-sortby-name =
+    .label = Trefnu yn ôl Enw
+    .accesskey = E
+places-view-sortby-url =
+    .label = Trefnu yn ôl Lleoliad
+    .accesskey = L
+places-view-sortby-date =
+    .label = Trefnu yn ôl yr Ymweliad Diweddaraf
+    .accesskey = Y
+places-view-sortby-visit-count =
+    .label = Trefnu yn ôl Cyfrif Ymweliadau
+    .accesskey = C
+places-view-sortby-date-added =
+    .label = Trefnu yn ôl Ychwanegwyd
+    .accesskey = Y
+places-view-sortby-last-modified =
+    .label = Trefnu yn ôl Newid Diwethaf
+    .accesskey = N
+places-view-sortby-tags =
+    .label = Trefnu yn ôl Tagiau
+    .accesskey = T
 places-cmd-find-key =
     .key = f
 places-back-button =
@@ -230,3 +249,31 @@ places-back-button =
 places-forward-button =
     .tooltiptext = Mynd ymlaen
 places-details-pane-select-an-item-description = Dewis eitem i'w gweld a golygu ei phriodweddau
+places-details-pane-no-items =
+    .value = Dim eitemau
+# Variables:
+#   $count (Number): number of items
+places-details-pane-items-count =
+    .value =
+        { $count ->
+            [zero] Dim eitemau
+            [one] { $count }eitem
+            [two] { $count }eitem
+            [few] { $count }eitem
+            [many] { $count }eitem
+           *[other] { $count }eitem
+        }
+
+## Strings used as a placeholder in the Library search field. For example,
+## "Search History" stands for "Search through the browser's history".
+
+places-search-bookmarks =
+    .placeholder = Chwilio'r Nodau Tudalen
+places-search-history =
+    .placeholder = Hanes Chwilio
+places-search-downloads =
+    .placeholder = Chwilio'r Llwytho i Lawr
+
+##
+
+places-locked-prompt = Ni fydd y system nodau tudalen a hanes yn weithredol gan fod un o ffeiliau { -brand-short-name } yn cael ei defnyddio gan raglen arall. Mae rhai meddalwedd diogelwch yn gallu achosi'r broblem yma.

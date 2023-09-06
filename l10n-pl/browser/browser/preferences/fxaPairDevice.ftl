@@ -2,17 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-fxa-pair-device-dialog =
-    .title = Połącz inne urządzenie
-    .style = width: 26em; min-height: 35em;
+fxa-pair-device-dialog-sync2 =
+    .style = min-width: 32em;
 
-fxa-qrcode-heading-step1 = 1. Jeśli jeszcze go nie masz, zainstaluj <a data-l10n-name="connect-another-device">Firefoksa na telefonie</a>.
+fxa-qrcode-pair-title = Synchronizuj przeglądarkę { -brand-product-name } na telefonie lub tablecie
+fxa-qrcode-pair-step1 = 1. Otwórz przeglądarkę { -brand-product-name } na telefonie.
 
-fxa-qrcode-heading-step2 = 2. Otwórz Firefoksa na telefonie.
+fxa-qrcode-pair-step2-signin = 2. Przejdź do menu (<img data-l10n-name="ios-menu-icon"/> w systemie iOS lub <img data-l10n-name="android-menu-icon"/> na Androidzie) i stuknij <strong>Synchronizuj i zachowuj dane</strong>
 
-fxa-qrcode-heading-step3 = 3. Otwórz <b>menu</b> (<img data-l10n-name="ios-menu-icon"/> lub <img data-l10n-name="android-menu-icon"/>), stuknij <img data-l10n-name="settings-icon"/> <b>Ustawienia</b> i wybierz <b>Włącz synchronizację</b>.
-
-fxa-qrcode-heading-step4 = 4. Zeskanuj ten kod:
+fxa-qrcode-pair-step3 = 3. Stuknij <strong>Gotowy do skanowania</strong> i przyłóż telefon do tego kodu.
 
 fxa-qrcode-error-title = Powiązanie się nie powiodło.
 

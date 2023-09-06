@@ -4,19 +4,32 @@
 
 pictureinpicture-player-title = Vaizdas-vaizde
 
-pictureinpicture-pause =
-    .aria-label = Pristabdyti
-pictureinpicture-play =
-    .aria-label = Groti
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
 
-pictureinpicture-mute =
-    .aria-label = Išjungti garsą
-pictureinpicture-unmute =
-    .aria-label = Įjungti garsą
+## Note that this uses .tooltip rather than the standard '.title'
+## or '.tooltiptext' -  but it has the same effect. Code in the
+## picture-in-picture window will read and copy this to an in-document
+## DOM node that then shows the tooltip.
+##
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
 
-pictureinpicture-unpip =
-    .aria-label = Siųsti atgal į kortelę
+##
 
-pictureinpicture-close =
-    .aria-label = Užverti
+## Note that this uses .tooltip rather than the standard '.title'
+## or '.tooltiptext' -  but it has the same effect. Code in the
+## picture-in-picture window will read and copy this to an in-document
+## DOM node that then shows the tooltip.
 
+##
+
+pictureinpicture-subtitles-label = Subtitrai
+
+pictureinpicture-font-size-label = Šrifto dydis
+
+pictureinpicture-font-size-small = Mažas
+
+pictureinpicture-font-size-medium = Vidutinis
+
+pictureinpicture-font-size-large = Didelis

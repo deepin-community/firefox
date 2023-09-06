@@ -22,7 +22,6 @@
 #include "nsCRT.h"
 #include "nsAppDirectoryServiceDefs.h"
 #include "nsDirectoryServiceUtils.h"
-#include "nsMemory.h"
 #include "nsXULAppAPI.h"
 
 using namespace mozilla;
@@ -352,7 +351,7 @@ void nsHyphenationManager::ShareHyphDictToProcess(
     return;
   }
 
-  hyph->ShareToProcess(aPid, aOutHandle, aOutSize);
+  hyph->CloneHandle(aOutHandle, aOutSize);
 }
 
 size_t nsHyphenationManager::SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) {

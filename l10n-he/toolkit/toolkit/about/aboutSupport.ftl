@@ -18,6 +18,9 @@ support-addons-type = סוג
 support-addons-enabled = מופעלת
 support-addons-version = גרסה
 support-addons-id = מזהה
+legacy-user-stylesheets-enabled = פעיל
+legacy-user-stylesheets-stylesheet-types = גיליונות סגנונות
+legacy-user-stylesheets-no-stylesheets-found = לא נמצאו גליונות סגנונות
 security-software-title = תוכנת אבטחה
 security-software-type = סוג
 security-software-name = שם
@@ -68,6 +71,13 @@ app-basics-location-service-key-google = מפתח עבור שירותי המיק
 app-basics-safebrowsing-key-google = Google Safebrowsing Key
 app-basics-key-mozilla = מפתח עבור שירותי המיקום של Mozilla
 app-basics-safe-mode = מצב בטוח
+app-basics-memory-size = גודל זיכרון (RAM)
+app-basics-disk-available = שטח דיסק זמין
+app-basics-pointing-devices = התקני הצבעה
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] הצגה ב־Finder
@@ -102,6 +112,14 @@ graphics-window-protocol = פרוטוקול חלון
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = סביבת שולחן עבודה
 place-database-title = מסד נתוני מיקום
+place-database-stats = נתונים סטטיסטיים
+place-database-stats-show = הצגת נתונים סטטיסטיים
+place-database-stats-hide = הסתרת נתונים סטטיסטיים
+place-database-stats-count = כמות
+place-database-stats-size-kib = גודל (KiB)
+place-database-stats-size-perc = גודל (%)
+place-database-stats-efficiency-perc = יעילות (%)
+place-database-stats-sequentiality-perc = רצף (%)
 place-database-integrity = תקינות
 place-database-verify-integrity = וידוא תקינות
 a11y-title = נגישות
@@ -144,6 +162,16 @@ media-device-format = תצורה
 media-device-channels = ערוצים
 media-device-rate = קצב
 media-device-latency = עיכוב
+media-codec-support-info = מידע על תמיכה במקודדים
+
+## Codec support table
+
+media-codec-support-sw-decoding = קידוד תוכנה
+media-codec-support-hw-decoding = קידוד חומרה
+media-codec-support-codec-name = שם קודק
+media-codec-support-supported = נתמך
+media-codec-support-unsupported = לא נתמך
+media-codec-support-error = מידע תמיכה במקודדים אינו זמין. יש לנסות שוב לאחר הפעלת קובץ מדיה.
 
 ##
 
@@ -294,7 +322,7 @@ fission-status-experiment-control = מושבת על־ידי ניסוי
 fission-status-experiment-treatment = מופעל על־ידי ניסוי
 fission-status-disabled-by-e10s-env = מושבת על־ידי הסביבה
 fission-status-enabled-by-env = מופעל על־ידי הסביבה
-fission-status-disabled-by-safe-mode = מושבת על־ידי מצב בטוח
+fission-status-disabled-by-env = מושבת על־ידי הסביבה
 fission-status-enabled-by-default = מופעל כברירת מחדל
 fission-status-disabled-by-default = מושבת כברירת מחדל
 fission-status-enabled-by-user-pref = מופעל על־ידי המשתמש
@@ -336,3 +364,10 @@ support-remote-experiments-see-about-studies = ניתן להיכנס ל־<a data
 support-remote-features-title = תכונות מרוחקות
 support-remote-features-name = שם
 support-remote-features-status = מצב
+
+## Pointing devices
+
+pointing-device-mouse = עכבר
+pointing-device-touchscreen = מסך מגע
+pointing-device-pen-digitizer = לוח כתיבה אלקטרוני
+pointing-device-none = אין התקני הצבעה

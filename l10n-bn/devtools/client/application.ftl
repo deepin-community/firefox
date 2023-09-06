@@ -42,6 +42,9 @@ serviceworker-worker-status-running = চলছে
 # Service Worker status. A stopped service worker is registered but not currently active.
 serviceworker-worker-status-stopped = থেমে গেছে
 
+# Link will open https://developer.mozilla.org/docs/Web/API/Service_Worker_API/Using_Service_Workers
+serviceworker-empty-intro-link = আরও জানুন
+
 # Header for the Manifest page when we have an actual manifest
 manifest-view-header = অ্যাপ ম্যানিফেস্ট
 
@@ -90,16 +93,21 @@ manifest-icon-img =
 # Text displayed as the title attribute for <img> tags showing the icons in the
 # manifest. `$sizes` is a user-dependent string that has been parsed as a
 # space-separated list of `<width>x<height>` sizes or the keyword `any`.
-manifest-icon-img-title = মাপ সহ আইকন: { $sizes }
+manifest-icon-img-title = আকার সহ আইকন: { $sizes }
 
 # Text displayed as the title attribute for <img> tags showing the icons in the
 # manifest, in case there's no icon size specified by the user
-manifest-icon-img-title-no-sizes = আইকনের মাপ ঠিক নেই
+manifest-icon-img-title-no-sizes = অনির্ধারিত আকারের আইকন
 
 # Sidebar navigation item for Manifest sidebar item section
 sidebar-item-manifest = ম্যানিফেস্ট
     .alt = ম্যানিফেস্ট আইকন
     .title = ম্যানিফেস্ট
+
+# Sidebar navigation item for Service Workers sidebar item section
+sidebar-item-service-workers = সেবা কর্মীরা
+    .alt = সেবা কর্মীদের আইকন
+    .title = সেবা কর্মীরা
 
 # Text for the ALT and TITLE attributes of the warning icon
 icon-warning =
@@ -110,4 +118,3 @@ icon-warning =
 icon-error =
     .alt = ত্রুটি আইকন
     .title = ত্রুটি
-

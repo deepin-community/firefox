@@ -14,6 +14,12 @@ screenshots-download-button = نزّل
 screenshots-download-button-tooltip = تنزيل لقطة الشاشة
 screenshots-copy-button = انسخ
 screenshots-copy-button-tooltip = انسخ اللقطة إلى الحافظة
+screenshots-download-button-title =
+    .title = نزّل لقطة الشاشة
+screenshots-copy-button-title =
+    .title = انسخ اللقطة إلى الحافظة
+screenshots-cancel-button-title =
+    .title = ألغِ
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -44,3 +50,4 @@ screenshots-private-window-error-details = نأسف على الإزعاج. نع�
 
 screenshots-generic-error-title = هناك عطل في { -screenshots-brand-name }.
 screenshots-generic-error-details = لسنا متأكدين ما المشكلة. أتمانع إعادة المحاولة أو أخذ لقطة لصفحة أخرى؟
+

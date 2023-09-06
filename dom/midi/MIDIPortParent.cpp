@@ -31,7 +31,8 @@ mozilla::ipc::IPCResult MIDIPortParent::RecvSend(
 }
 
 mozilla::ipc::IPCResult MIDIPortParent::RecvOpen() {
-  if (MIDIPlatformService::IsRunning()) {
+  if (MIDIPlatformService::IsRunning() &&
+      mConnectionState == MIDIPortConnectionState::Closed) {
     MIDIPlatformService::Get()->Open(this);
   }
   return IPC_OK();
@@ -57,20 +58,17 @@ mozilla::ipc::IPCResult MIDIPortParent::RecvShutdown() {
   if (mShuttingDown) {
     return IPC_OK();
   }
-  Teardown();
-  Unused << Send__delete__(this);
+  Close();
   return IPC_OK();
 }
 
-void MIDIPortParent::Teardown() {
+void MIDIPortParent::ActorDestroy(ActorDestroyReason) {
   mMessageQueue.Clear();
   MIDIPortInterface::Shutdown();
   if (MIDIPlatformService::IsRunning()) {
     MIDIPlatformService::Get()->RemovePort(this);
   }
 }
-
-void MIDIPortParent::ActorDestroy(ActorDestroyReason) {}
 
 bool MIDIPortParent::SendUpdateStatus(
     const MIDIPortDeviceState& aDeviceState,

@@ -26,9 +26,9 @@ certmgr-people = Mae gennych dystysgrifau ar ffeil sy'n adnabod y bobl hyn
 certmgr-server = Mae'r cofnodion hyn yn nodi eithriadau gwall tystysgrif gweinydd
 certmgr-ca = Mae gennych dystysgrifau ar ffeil sy'n adnabod yr awdurdodau tystysgrif
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Golygu gosodiadau ymddiried tystysgrif CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Golygu gosodiadau ymddiried:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Mae'r dystysgrif yn medru adnabod defnyddwyr e-bost.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Dileu Tystysgrif
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Gwesteiwr
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Gweinydd
-
-certmgr-override-lifetime =
-    .label = Hyd Oes
 
 certmgr-token-name =
     .label = Dyfais Diogelwch
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Rhif Cyfresol
+
+certmgr-fingerprint-sha-256 =
+    .label = Bysbrint SHA-256
 
 certmgr-view =
     .label = Golwg…
@@ -185,8 +185,6 @@ delete-email-cert-impact = Os fyddwch yn dileu tystysgrif e-bost y person, ni fy
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Tystysgrif gyda rhif cyfresol : { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Anfonwyd dim tystysgrif cleient

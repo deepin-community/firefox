@@ -16,23 +16,6 @@
 #include "mozilla/dom/HTMLSlotElement.h"
 #include "mozilla/dom/ShadowRoot.h"
 
-inline bool nsINode::IsUAWidget() const {
-  auto* shadow = mozilla::dom::ShadowRoot::FromNode(this);
-  return shadow && shadow->IsUAWidget();
-}
-
-inline bool nsINode::IsInUAWidget() const {
-  if (!IsInShadowTree()) {
-    return false;
-  }
-  mozilla::dom::ShadowRoot* shadow = AsContent()->GetContainingShadow();
-  return shadow && shadow->IsUAWidget();
-}
-
-inline bool nsINode::IsRootOfChromeAccessOnlySubtree() const {
-  return IsRootOfNativeAnonymousSubtree() || IsUAWidget();
-}
-
 inline bool nsIContent::IsInHTMLDocument() const {
   return OwnerDoc()->IsHTMLDocument();
 }
@@ -44,9 +27,10 @@ inline bool nsIContent::IsInChromeDocument() const {
 inline void nsIContent::SetPrimaryFrame(nsIFrame* aFrame) {
   MOZ_ASSERT(IsInUncomposedDoc() || IsInShadowTree(), "This will end badly!");
 
-  // FIXME bug 749326
-  NS_ASSERTION(!aFrame || !mPrimaryFrame || aFrame == mPrimaryFrame,
-               "Losing track of existing primary frame");
+  // <area> is known to trigger this, see bug 749326 and bug 135040.
+  MOZ_ASSERT(IsHTMLElement(nsGkAtoms::area) || !aFrame || !mPrimaryFrame ||
+                 aFrame == mPrimaryFrame,
+             "Losing track of existing primary frame");
 
   if (aFrame) {
     MOZ_ASSERT(!aFrame->IsPlaceholderFrame());
@@ -160,11 +144,51 @@ inline bool nsINode::IsEditable() const {
   }
 
   // Check if the node is in a document and the document is in designMode.
-  //
+  return IsInDesignMode();
+}
+
+inline bool nsINode::IsInDesignMode() const {
+  if (!OwnerDoc()->HasFlag(NODE_IS_EDITABLE)) {
+    return false;
+  }
+
+  if (IsDocument()) {
+    return HasFlag(NODE_IS_EDITABLE);
+  }
+
   // NOTE(emilio): If you change this to be the composed doc you also need to
   // change NotifyEditableStateChange() in Document.cpp.
-  Document* doc = GetUncomposedDoc();
-  return doc && doc->HasFlag(NODE_IS_EDITABLE);
+  // NOTE(masayuki): Perhaps, we should keep this behavior because of
+  // web-compat.
+  if (IsInUncomposedDoc() && GetUncomposedDoc()->HasFlag(NODE_IS_EDITABLE)) {
+    return true;
+  }
+
+  // FYI: In design mode, form controls don't work as usual.  For example,
+  //      <input type=text> isn't focusable but can be deleted and replaced
+  //      with typed text. <select> is also not focusable but always selected
+  //      all to be deleted or replaced.  On the other hand, newer controls
+  //      don't behave as the traditional controls.  For example, data/time
+  //      picker can be opened and change the value from the picker.  And also
+  //      the buttons of <video controls> work as usual.  On the other hand,
+  //      their UI (i.e., nodes in their shadow tree) are not editable.
+  //      Therefore, we need special handling for nodes in anonymous subtree
+  //      unless we fix <https://bugzilla.mozilla.org/show_bug.cgi?id=1734512>.
+
+  // If the shadow host is not in design mode, this can never be in design
+  // mode.  Otherwise, the content is never editable by design mode of
+  // composed document. If we're in a native anonymous subtree, we should
+  // consider it with the host.
+  if (IsInNativeAnonymousSubtree()) {
+    nsIContent* host = GetClosestNativeAnonymousSubtreeRootParentOrHost();
+    MOZ_DIAGNOSTIC_ASSERT(host != this);
+    return host && host->IsInDesignMode();
+  }
+
+  // Otherwise, i.e., when it's in a shadow tree which is not created by us,
+  // the node is not editable by design mode (but it's possible that it may be
+  // editable if this node is in `contenteditable` element in the shadow tree).
+  return false;
 }
 
 inline void nsIContent::HandleInsertionToOrRemovalFromSlot() {

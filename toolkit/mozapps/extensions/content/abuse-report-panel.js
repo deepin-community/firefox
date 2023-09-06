@@ -5,11 +5,9 @@
 
 "use strict";
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "Services",
-  "resource://gre/modules/Services.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  AbuseReporter: "resource://gre/modules/AbuseReporter.sys.mjs",
+});
 
 const IS_DIALOG_WINDOW = window.arguments && window.arguments.length;
 
@@ -23,7 +21,9 @@ let openWebLink = IS_DIALOG_WINDOW
 
 const showOnAnyType = () => false;
 const hideOnAnyType = () => true;
-const hideOnThemeType = addonType => addonType === "theme";
+const hideOnAddonTypes = hideForTypes => {
+  return addonType => hideForTypes.includes(addonType);
+};
 
 // The reasons string used as a key in this Map is expected to stay in sync
 // with the reasons string used in the "abuseReports.ftl" locale file and
@@ -31,37 +31,37 @@ const hideOnThemeType = addonType => addonType === "theme";
 const ABUSE_REASONS = (window.ABUSE_REPORT_REASONS = {
   damage: {
     isExampleHidden: showOnAnyType,
-    isReasonHidden: hideOnThemeType,
+    isReasonHidden: hideOnAddonTypes(["theme"]),
   },
   spam: {
     isExampleHidden: showOnAnyType,
-    isReasonHidden: showOnAnyType,
+    isReasonHidden: hideOnAddonTypes(["sitepermission"]),
   },
   settings: {
     hasSuggestions: true,
     isExampleHidden: hideOnAnyType,
-    isReasonHidden: hideOnThemeType,
+    isReasonHidden: hideOnAddonTypes(["theme", "sitepermission"]),
   },
   deceptive: {
     isExampleHidden: showOnAnyType,
-    isReasonHidden: showOnAnyType,
+    isReasonHidden: hideOnAddonTypes(["sitepermission"]),
   },
   broken: {
     hasAddonTypeL10nId: true,
     hasAddonTypeSuggestionTemplate: true,
     hasSuggestions: true,
-    isExampleHidden: hideOnThemeType,
+    isExampleHidden: hideOnAddonTypes(["theme"]),
     isReasonHidden: showOnAnyType,
     requiresSupportURL: true,
   },
   policy: {
     hasSuggestions: true,
     isExampleHidden: hideOnAnyType,
-    isReasonHidden: showOnAnyType,
+    isReasonHidden: hideOnAddonTypes(["sitepermission"]),
   },
   unwanted: {
     isExampleHidden: showOnAnyType,
-    isReasonHidden: hideOnThemeType,
+    isReasonHidden: hideOnAddonTypes(["theme"]),
   },
   other: {
     isExampleHidden: hideOnAnyType,
@@ -79,6 +79,8 @@ const REASON_L10N_STRING_MAPPING = {
   "abuse-report-deceptive-reason": "abuse-report-deceptive-reason-v2",
   "abuse-report-broken-reason-extension":
     "abuse-report-broken-reason-extension-v2",
+  "abuse-report-broken-reason-sitepermission":
+    "abuse-report-broken-reason-sitepermission-v2",
   "abuse-report-broken-reason-theme": "abuse-report-broken-reason-theme-v2",
   "abuse-report-policy-reason": "abuse-report-policy-reason-v2",
   "abuse-report-unwanted-reason": "abuse-report-unwanted-reason-v2",
@@ -119,15 +121,6 @@ function getSuggestionsTemplate({ addonType, reason, supportURL }) {
 
 // Map of the learnmore links metadata, keyed by link element class.
 const LEARNMORE_LINKS = {
-  ".abuse-report-learnmore": {
-    path: "reporting-extensions-and-themes-abuse",
-  },
-  ".abuse-settings-search-learnmore": {
-    path: "prefs-search",
-  },
-  ".abuse-settings-homepage-learnmore": {
-    path: "prefs-homepage",
-  },
   ".abuse-policy-learnmore": {
     baseURL: "https://www.mozilla.org/%LOCALE%/",
     path: "about/legal/report-infringement/",
@@ -139,9 +132,7 @@ const LEARNMORE_LINKS = {
 function formatLearnMoreURLs(containerEl) {
   for (const [linkClass, linkInfo] of Object.entries(LEARNMORE_LINKS)) {
     for (const element of containerEl.querySelectorAll(linkClass)) {
-      const baseURL = linkInfo.baseURL
-        ? Services.urlFormatter.formatURL(linkInfo.baseURL)
-        : Services.urlFormatter.formatURLPref("app.support.baseURL");
+      const baseURL = Services.urlFormatter.formatURL(linkInfo.baseURL);
 
       element.href = baseURL + linkInfo.path;
     }
@@ -367,10 +358,6 @@ class AbuseReasonSuggestions extends HTMLElement {
       this.hidden = true;
     }
   }
-
-  get LEARNMORE_LINKS() {
-    return Object.keys(LEARNMORE_LINKS);
-  }
 }
 
 // This WebComponents implements the last step of the abuse report submission.
@@ -548,7 +535,7 @@ class AbuseReport extends HTMLElement {
       Services.focus.moveFocus(
         chromeWin,
         null,
-        Services.MOVEFOCUS_BACKWARD,
+        Services.focus.MOVEFOCUS_BACKWARD,
         Services.focus.FLAG_BYKEY
       );
     }
@@ -582,6 +569,7 @@ class AbuseReport extends HTMLElement {
 
     const {
       addonId,
+      addonType,
       _addonAuthorContainer,
       _addonIconElement,
       _addonNameElement,
@@ -595,7 +583,12 @@ class AbuseReport extends HTMLElement {
     this.switchToListMode();
 
     // Cancel the abuse report if the addon is not an extension or theme.
-    if (!["extension", "theme"].includes(this.addonType)) {
+    if (!AbuseReporter.isSupportedAddonType(addonType)) {
+      Cu.reportError(
+        new Error(
+          `Closing abuse report panel on unexpected addon type: ${addonType}`
+        )
+      );
       this.cancel();
       return;
     }
@@ -729,6 +722,11 @@ class AbuseReport extends HTMLElement {
   }
 
   get addonType() {
+    // TODO(Bug 1789718): Remove after the deprecated XPIProvider-based
+    // implementation is also removed.
+    if (this.addon?.type === "sitepermission-deprecated") {
+      return "sitepermission";
+    }
     return this.addon?.type;
   }
 
@@ -751,6 +749,9 @@ class AbuseReport extends HTMLElement {
   }
 
   get iconURL() {
+    if (this.addonType === "sitepermission") {
+      return "chrome://mozapps/skin/extensions/category-sitepermission.svg";
+    }
     return (
       this.addon?.iconURL ||
       // Some extensions (e.g. static theme addons) may not have an icon,
@@ -760,7 +761,11 @@ class AbuseReport extends HTMLElement {
   }
 
   get supportURL() {
-    return this.addon?.supportURL || this.homepageURL || "";
+    let url = this.addon?.supportURL || this.homepageURL || "";
+    if (!url && this.addonType === "sitepermission" && this.addon?.siteOrigin) {
+      return this.addon.siteOrigin;
+    }
+    return url;
   }
 
   get message() {
@@ -797,11 +802,8 @@ if (IS_DIALOG_WINDOW) {
   // (vs. being an about:addons subframe).
   document.documentElement.className = "dialog-window";
 
-  const {
-    report,
-    deferredReport,
-    deferredReportPanel,
-  } = window.arguments[0].wrappedJSObject;
+  const { report, deferredReport, deferredReportPanel } =
+    window.arguments[0].wrappedJSObject;
 
   window.addEventListener(
     "unload",
@@ -850,17 +852,19 @@ if (IS_DIALOG_WINDOW) {
     async () => {
       const form = document.querySelector("form");
       await document.l10n.translateFragment(form);
-      const { clientWidth, clientHeight } = await window.promiseDocumentFlushed(
+      const { scrollWidth, scrollHeight } = await window.promiseDocumentFlushed(
         () => form
       );
       // Resolve promiseReportPanel once the panel completed the initial render
       // (used in tests).
       deferredReportPanel.resolve(el);
       if (
-        window.innerWidth !== clientWidth ||
-        window.innerheight !== clientHeight
+        window.innerWidth !== scrollWidth ||
+        window.innerHeight !== scrollHeight
       ) {
-        window.resizeTo(clientWidth, clientHeight);
+        const width = window.outerWidth - window.innerWidth + scrollWidth;
+        const height = window.outerHeight - window.innerHeight + scrollHeight;
+        window.resizeTo(width, height);
       }
     },
     { once: true }

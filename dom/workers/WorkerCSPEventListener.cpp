@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WorkerCSPEventListener.h"
-#include "WorkerPrivate.h"
 #include "WorkerRef.h"
 #include "WorkerRunnable.h"
+#include "WorkerScope.h"
 #include "mozilla/dom/SecurityPolicyViolationEvent.h"
 #include "mozilla/dom/SecurityPolicyViolationEventBinding.h"
 #include "mozilla/dom/WorkerRunnable.h"
@@ -53,6 +53,7 @@ already_AddRefed<WorkerCSPEventListener> WorkerCSPEventListener::Create(
 
   RefPtr<WorkerCSPEventListener> listener = new WorkerCSPEventListener();
 
+  MutexAutoLock lock(listener->mMutex);
   listener->mWorkerRef = WeakWorkerRef::Create(aWorkerPrivate, [listener]() {
     MutexAutoLock lock(listener->mMutex);
     listener->mWorkerRef = nullptr;
@@ -70,8 +71,6 @@ WorkerCSPEventListener::WorkerCSPEventListener()
 
 NS_IMETHODIMP
 WorkerCSPEventListener::OnCSPViolationEvent(const nsAString& aJSON) {
-  MOZ_ASSERT(NS_IsMainThread());
-
   MutexAutoLock lock(mMutex);
   if (!mWorkerRef) {
     return NS_OK;
@@ -80,9 +79,26 @@ WorkerCSPEventListener::OnCSPViolationEvent(const nsAString& aJSON) {
   WorkerPrivate* workerPrivate = mWorkerRef->GetUnsafePrivate();
   MOZ_ASSERT(workerPrivate);
 
-  RefPtr<WorkerCSPEventRunnable> runnable =
-      new WorkerCSPEventRunnable(workerPrivate, aJSON);
-  runnable->Dispatch();
+  if (NS_IsMainThread()) {
+    RefPtr<WorkerCSPEventRunnable> runnable =
+        new WorkerCSPEventRunnable(workerPrivate, aJSON);
+    runnable->Dispatch();
+
+    return NS_OK;
+  }
+
+  SecurityPolicyViolationEventInit violationEventInit;
+  if (NS_WARN_IF(!violationEventInit.Init(aJSON))) {
+    return NS_ERROR_UNEXPECTED;
+  }
+
+  RefPtr<mozilla::dom::Event> event =
+      mozilla::dom::SecurityPolicyViolationEvent::Constructor(
+          workerPrivate->GlobalScope(), u"securitypolicyviolation"_ns,
+          violationEventInit);
+  event->SetTrusted(true);
+
+  workerPrivate->GlobalScope()->DispatchEvent(*event);
 
   return NS_OK;
 }

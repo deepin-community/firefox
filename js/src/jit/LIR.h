@@ -61,7 +61,7 @@ static const uint32_t INT64_PIECES = sizeof(int64_t) / sizeof(uintptr_t);
 
 // Represents storage for an operand. For constants, the pointer is tagged
 // with a single bit, and the untagged pointer is a pointer to a Value.
-class LAllocation : public TempObject {
+class LAllocation {
   uintptr_t bits_;
 
   // 3 bits gives us enough for an interesting set of Kinds and also fits
@@ -72,7 +72,11 @@ class LAllocation : public TempObject {
   static const uintptr_t KIND_MASK = (1 << KIND_BITS) - 1;
 
  protected:
+#ifdef JS_64BIT
+  static const uintptr_t DATA_BITS = sizeof(uint32_t) * 8;
+#else
   static const uintptr_t DATA_BITS = (sizeof(uint32_t) * 8) - KIND_BITS;
+#endif
   static const uintptr_t DATA_SHIFT = KIND_SHIFT + KIND_BITS;
 
  public:
@@ -87,7 +91,7 @@ class LAllocation : public TempObject {
     ARGUMENT_SLOT  // Argument slot.
   };
 
-  static const uintptr_t DATA_MASK = (1 << DATA_BITS) - 1;
+  static const uintptr_t DATA_MASK = (uintptr_t(1) << DATA_BITS) - 1;
 
  protected:
   uint32_t data() const {
@@ -419,7 +423,7 @@ class LStackArea : public LAllocation {
     inline bool done() const;
     inline void next();
     inline LAllocation alloc() const;
-    inline bool isGcPointer() const;
+    inline bool isWasmAnyRef() const;
 
     explicit operator bool() const { return !done(); }
   };
@@ -498,9 +502,10 @@ class LDefinition {
     INT32,    // int32 data (GPR).
     OBJECT,   // Pointer that may be collected as garbage (GPR).
     SLOTS,    // Slots/elements pointer that may be moved by minor GCs (GPR).
-    FLOAT32,  // 32-bit floating-point value (FPU).
-    DOUBLE,   // 64-bit floating-point value (FPU).
-    SIMD128,  // 128-bit SIMD vector (FPU).
+    WASM_ANYREF,   // Tagged pointer that may be collected as garbage (GPR).
+    FLOAT32,       // 32-bit floating-point value (FPU).
+    DOUBLE,        // 64-bit floating-point value (FPU).
+    SIMD128,       // 128-bit SIMD vector (FPU).
     STACKRESULTS,  // A variable-size stack allocation that may contain objects.
 #ifdef JS_NUNBOX32
     // A type virtual register must be followed by a payload virtual
@@ -546,18 +551,27 @@ class LDefinition {
     return (Policy)((bits_ >> POLICY_SHIFT) & POLICY_MASK);
   }
   Type type() const { return (Type)((bits_ >> TYPE_SHIFT) & TYPE_MASK); }
+
+  static bool isFloatRegCompatible(Type type, FloatRegister reg) {
+#ifdef JS_CODEGEN_RISCV64
+    if (type == FLOAT32 || type == DOUBLE) {
+      return reg.isSingle() || reg.isDouble();
+    }
+#else
+    if (type == FLOAT32) {
+      return reg.isSingle();
+    }
+    if (type == DOUBLE) {
+      return reg.isDouble();
+    }
+#endif
+    MOZ_ASSERT(type == SIMD128);
+    return reg.isSimd128();
+  }
+
   bool isCompatibleReg(const AnyRegister& r) const {
     if (isFloatReg() && r.isFloat()) {
-      if (type() == FLOAT32) {
-        return r.fpu().isSingle();
-      }
-      if (type() == DOUBLE) {
-        return r.fpu().isDouble();
-      }
-      if (type() == SIMD128) {
-        return r.fpu().isSimd128();
-      }
-      MOZ_CRASH("Unexpected MDefinition type");
+      return isFloatRegCompatible(type(), r.fpu());
     }
     return !isFloatReg() && !r.isFloat();
   }
@@ -572,9 +586,11 @@ class LDefinition {
 #endif
   }
 
-  bool isFloatReg() const {
-    return type() == FLOAT32 || type() == DOUBLE || type() == SIMD128;
+  static bool isFloatReg(Type type) {
+    return type == FLOAT32 || type == DOUBLE || type == SIMD128;
   }
+  bool isFloatReg() const { return isFloatReg(type()); }
+
   uint32_t virtualRegister() const {
     uint32_t index = (bits_ >> VREG_SHIFT) & VREG_MASK;
     // MOZ_ASSERT(index != 0);
@@ -617,7 +633,6 @@ class LDefinition {
       case MIRType::Symbol:
       case MIRType::BigInt:
       case MIRType::Object:
-      case MIRType::RefOrNull:
         return LDefinition::OBJECT;
       case MIRType::Double:
         return LDefinition::DOUBLE;
@@ -630,6 +645,8 @@ class LDefinition {
       case MIRType::Slots:
       case MIRType::Elements:
         return LDefinition::SLOTS;
+      case MIRType::WasmAnyRef:
+        return LDefinition::WASM_ANYREF;
       case MIRType::Pointer:
       case MIRType::IntPtr:
         return LDefinition::GENERAL;
@@ -811,6 +828,11 @@ class LNode {
 #define LIR_HEADER(opcode) \
   static constexpr LNode::Opcode classOpcode = LNode::Opcode::opcode;
 };
+
+extern const char* const LIROpNames[];
+inline const char* LIRCodeName(LNode::Opcode op) {
+  return LIROpNames[static_cast<size_t>(op)];
+}
 
 class LInstruction : public LNode,
                      public TempObject,
@@ -1215,6 +1237,9 @@ class LRecoverInfo : public TempObject {
   // Cached offset where this resume point is encoded.
   RecoverOffset recoverOffset_;
 
+  // Whether this LRecoverInfo has any side-effect associated with it.
+  bool hasSideEffects_ = false;
+
   explicit LRecoverInfo(TempAllocator& alloc);
   [[nodiscard]] bool init(MResumePoint* mir);
 
@@ -1239,6 +1264,7 @@ class LRecoverInfo : public TempObject {
   MNode** begin() { return instructions_.begin(); }
   MNode** end() { return instructions_.end(); }
   size_t numInstructions() const { return instructions_.length(); }
+  bool hasSideEffects() { return hasSideEffects_; }
 
   class OperandIter {
    private:
@@ -1319,7 +1345,6 @@ class LSnapshot : public TempObject {
   LRecoverInfo* recoverInfo_;
   SnapshotOffset snapshotOffset_;
   uint32_t numSlots_;
-  BailoutId bailoutId_;
   BailoutKind bailoutKind_;
 
   LSnapshot(LRecoverInfo* recover, BailoutKind kind);
@@ -1354,14 +1379,9 @@ class LSnapshot : public TempObject {
   LRecoverInfo* recoverInfo() const { return recoverInfo_; }
   MResumePoint* mir() const { return recoverInfo()->mir(); }
   SnapshotOffset snapshotOffset() const { return snapshotOffset_; }
-  BailoutId bailoutId() const { return bailoutId_; }
   void setSnapshotOffset(SnapshotOffset offset) {
     MOZ_ASSERT(snapshotOffset_ == INVALID_SNAPSHOT_OFFSET);
     snapshotOffset_ = offset;
-  }
-  void setBailoutId(BailoutId id) {
-    MOZ_ASSERT(bailoutId_ == INVALID_BAILOUT_ID);
-    bailoutId_ = id;
   }
   BailoutKind bailoutKind() const { return bailoutKind_; }
   void rewriteRecoveredInput(LUse input);
@@ -1410,7 +1430,7 @@ class LSafepoint : public TempObject {
   // For call instructions, the live regs are empty. Call instructions may
   // have register inputs or temporaries, which will *not* be in the live
   // registers: if passed to the call, the values passed will be marked via
-  // MarkJitExitFrame, and no registers can be live after the instruction
+  // TraceJitExitFrame, and no registers can be live after the instruction
   // except its outputs.
   LiveRegisterSet liveRegs_;
 
@@ -1450,6 +1470,11 @@ class LSafepoint : public TempObject {
   // List of slots which have slots/elements pointers.
   SlotList slotsOrElementsSlots_;
 
+  // The subset of liveRegs which contains wasm::AnyRef's.
+  LiveGeneralRegisterSet wasmAnyRefRegs_;
+  // List of slots which have wasm::AnyRef's.
+  SlotList wasmAnyRefSlots_;
+
   // Wasm only: with what kind of instruction is this LSafepoint associated?
   // true => wasm trap, false => wasm call.
   bool isWasmTrap_;
@@ -1476,6 +1501,7 @@ class LSafepoint : public TempObject {
     MOZ_ASSERT((valueRegs().bits() & ~liveRegs().gprs().bits()) == 0);
 #endif
     MOZ_ASSERT((gcRegs().bits() & ~liveRegs().gprs().bits()) == 0);
+    MOZ_ASSERT((wasmAnyRefRegs().bits() & ~liveRegs().gprs().bits()) == 0);
   }
 
   explicit LSafepoint(TempAllocator& alloc)
@@ -1488,6 +1514,7 @@ class LSafepoint : public TempObject {
         valueSlots_(alloc),
 #endif
         slotsOrElementsSlots_(alloc),
+        wasmAnyRefSlots_(alloc),
         isWasmTrap_(false),
         framePushedAtStackMapBase_(0) {
     assertInvariants();
@@ -1581,12 +1608,51 @@ class LSafepoint : public TempObject {
     return false;
   }
 
+  void addWasmAnyRefReg(Register reg) {
+    wasmAnyRefRegs_.addUnchecked(reg);
+    assertInvariants();
+  }
+  LiveGeneralRegisterSet wasmAnyRefRegs() const { return wasmAnyRefRegs_; }
+
+  [[nodiscard]] bool addWasmAnyRefSlot(bool stack, uint32_t slot) {
+    bool result = wasmAnyRefSlots_.append(SlotEntry(stack, slot));
+    if (result) {
+      assertInvariants();
+    }
+    return result;
+  }
+  SlotList& wasmAnyRefSlots() { return wasmAnyRefSlots_; }
+
+  [[nodiscard]] bool addWasmAnyRef(LAllocation alloc) {
+    if (alloc.isMemory()) {
+      return addWasmAnyRefSlot(alloc.isStackSlot(), alloc.memorySlot());
+    }
+    if (alloc.isRegister()) {
+      addWasmAnyRefReg(alloc.toRegister().gpr());
+    }
+    assertInvariants();
+    return true;
+  }
+  bool hasWasmAnyRef(LAllocation alloc) const {
+    if (alloc.isRegister()) {
+      return wasmAnyRefRegs().has(alloc.toRegister().gpr());
+    }
+    MOZ_ASSERT(alloc.isMemory());
+    for (size_t i = 0; i < wasmAnyRefSlots_.length(); i++) {
+      if (wasmAnyRefSlots_[i].stack == alloc.isStackSlot() &&
+          wasmAnyRefSlots_[i].slot == alloc.memorySlot()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   // Return true if all GC-managed pointers from `alloc` are recorded in this
   // safepoint.
-  bool hasAllGcPointersFromStackArea(LAllocation alloc) const {
+  bool hasAllWasmAnyRefsFromStackArea(LAllocation alloc) const {
     for (LStackArea::ResultIterator iter = alloc.toStackArea()->results(); iter;
          iter.next()) {
-      if (iter.isGcPointer() && !hasGcPointer(iter.alloc())) {
+      if (iter.isWasmAnyRef() && !hasWasmAnyRef(iter.alloc())) {
         return false;
       }
     }
@@ -1831,9 +1897,9 @@ class LIRGraph {
   uint32_t numVirtualRegisters_;
   uint32_t numInstructions_;
 
-  // Number of stack slots needed for local spills.
-  uint32_t localSlotCount_;
-  // Number of stack slots needed for argument construction for calls.
+  // Size of stack slots needed for local spills.
+  uint32_t localSlotsSize_;
+  // Number of JS::Value stack slots needed for argument construction for calls.
   uint32_t argumentSlotCount_;
 
   MIRGraph& mir_;
@@ -1864,30 +1930,14 @@ class LIRGraph {
   }
   uint32_t getInstructionId() { return numInstructions_++; }
   uint32_t numInstructions() const { return numInstructions_; }
-  void setLocalSlotCount(uint32_t localSlotCount) {
-    localSlotCount_ = localSlotCount;
+  void setLocalSlotsSize(uint32_t localSlotsSize) {
+    localSlotsSize_ = localSlotsSize;
   }
-  uint32_t localSlotCount() const { return localSlotCount_; }
-  // Return the localSlotCount() value rounded up so that it satisfies the
-  // platform stack alignment requirement, and so that it's a multiple of
-  // the number of slots per Value.
-  uint32_t paddedLocalSlotCount() const {
-    // Round to JitStackAlignment, and implicitly to sizeof(Value) as
-    // JitStackAlignment is a multiple of sizeof(Value). These alignments
-    // are needed for spilling SIMD registers properly, and for
-    // StackOffsetOfPassedArg which rounds argument slots to 8-byte
-    // boundaries.
-    return AlignBytes(localSlotCount(), JitStackAlignment);
-  }
-  size_t paddedLocalSlotsSize() const { return paddedLocalSlotCount(); }
+  uint32_t localSlotsSize() const { return localSlotsSize_; }
   void setArgumentSlotCount(uint32_t argumentSlotCount) {
     argumentSlotCount_ = argumentSlotCount;
   }
   uint32_t argumentSlotCount() const { return argumentSlotCount_; }
-  size_t argumentsSize() const { return argumentSlotCount() * sizeof(Value); }
-  uint32_t totalSlotCount() const {
-    return paddedLocalSlotCount() + argumentsSize();
-  }
   [[nodiscard]] bool addConstantToPool(const Value& v, uint32_t* index);
   size_t numConstants() const { return constantPool_.length(); }
   Value* constantPool() { return &constantPool_[0]; }
@@ -1937,6 +1987,10 @@ AnyRegister LAllocation::toRegister() const {
 #  include "jit/arm/LIR-arm.h"
 #elif defined(JS_CODEGEN_ARM64)
 #  include "jit/arm64/LIR-arm64.h"
+#elif defined(JS_CODEGEN_LOONG64)
+#  include "jit/loong64/LIR-loong64.h"
+#elif defined(JS_CODEGEN_RISCV64)
+#  include "jit/riscv64/LIR-riscv64.h"
 #elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
 #  if defined(JS_CODEGEN_MIPS32)
 #    include "jit/mips32/LIR-mips32.h"
@@ -1944,6 +1998,8 @@ AnyRegister LAllocation::toRegister() const {
 #    include "jit/mips64/LIR-mips64.h"
 #  endif
 #  include "jit/mips-shared/LIR-mips-shared.h"
+#elif defined(JS_CODEGEN_WASM32)
+#  include "jit/wasm32/LIR-wasm32.h"
 #elif defined(JS_CODEGEN_NONE)
 #  include "jit/none/LIR-none.h"
 #else

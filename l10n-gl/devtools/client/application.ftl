@@ -38,6 +38,8 @@ serviceworker-worker-start3 = Iniciar
 
 # Text displayed for the updated time of the service worker. The <time> element will
 # display the last update time of the service worker script.
+# Variables:
+#   $date (date) - Update date
 serviceworker-worker-updated = Actualizado o <time>{ DATETIME($date, month: "long", year: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric") }</time>
 
 ## Service Worker status strings: all serviceworker-worker-status-* strings are also
@@ -109,6 +111,8 @@ manifest-json-link-data-url = O manifesto está incrustado nun URL de datos.
 
 # Text displayed at manifest icons to label their purpose, as declared
 # in the manifest.
+# Variables:
+#   $purpose (string) - Manifest purpose
 manifest-icon-purpose = Propósito: <code>{ $purpose }</code>
 
 # Text displayed as the alt attribute for <img> tags showing the icons in the
@@ -117,8 +121,11 @@ manifest-icon-img =
     .alt = Icona
 
 # Text displayed as the title attribute for <img> tags showing the icons in the
-# manifest. `$sizes` is a user-dependent string that has been parsed as a
-# space-separated list of `<width>x<height>` sizes or the keyword `any`.
+# manifest.
+# Variables:
+#   $sizes (string) - User-dependent string that has been parsed as a
+#                     space-separated list of `<width>x<height>` sizes or
+#                     the keyword `any`.
 manifest-icon-img-title = Icona con tamaños: { $sizes }
 
 # Text displayed as the title attribute for <img> tags showing the icons in the
@@ -144,4 +151,3 @@ icon-warning =
 icon-error =
     .alt = Icona de erro
     .title = Erro
-
