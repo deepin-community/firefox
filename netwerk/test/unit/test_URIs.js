@@ -5,10 +5,6 @@
 
 "use strict";
 
-var gIoService = Cc["@mozilla.org/network/io-service;1"].getService(
-  Ci.nsIIOService
-);
-
 // Run by: cd objdir;  make -C netwerk/test/ xpcshell-tests
 // or: cd objdir; make SOLO_FILE="test_URIs.js" -C netwerk/test/ check-one
 
@@ -434,7 +430,7 @@ function do_test_uri_basic(aTest) {
     var relURI;
 
     try {
-      relURI = gIoService.newURI(aTest.relativeURI, null, URI);
+      relURI = Services.io.newURI(aTest.relativeURI, null, URI);
     } catch (e) {
       do_info(
         "Caught error on Relative parse of " +
@@ -463,12 +459,7 @@ function do_test_uri_basic(aTest) {
   // Sanity-check
   do_info("testing " + aTest.spec + " equals a clone of itself");
   do_check_uri_eq(URI, URI.mutate().finalize());
-  do_check_uri_eqExceptRef(
-    URI,
-    URI.mutate()
-      .setRef("")
-      .finalize()
-  );
+  do_check_uri_eqExceptRef(URI, URI.mutate().setRef("").finalize());
   do_info("testing " + aTest.spec + " instanceof nsIURL");
   Assert.equal(URI instanceof Ci.nsIURL, aTest.nsIURL);
   do_info("testing " + aTest.spec + " instanceof nsINestedURI");
@@ -518,7 +509,7 @@ function do_test_uri_with_hash_suffix(aTest, aSuffix) {
 
   if (aTest.relativeURI) {
     try {
-      origURI = gIoService.newURI(aTest.relativeURI, null, origURI);
+      origURI = Services.io.newURI(aTest.relativeURI, null, origURI);
     } catch (e) {
       do_info(
         "Caught error on Relative parse of " +
@@ -531,7 +522,7 @@ function do_test_uri_with_hash_suffix(aTest, aSuffix) {
       return;
     }
     try {
-      testURI = gIoService.newURI(aSuffix, null, origURI);
+      testURI = Services.io.newURI(aSuffix, null, origURI);
     } catch (e) {
       do_info(
         "Caught error adding suffix to " +
@@ -587,10 +578,7 @@ function do_test_uri_with_hash_suffix(aTest, aSuffix) {
         testURI.spec +
         " is equal to no-ref version but not equal to ref version"
     );
-    var cloneNoRef = testURI
-      .mutate()
-      .setRef("")
-      .finalize(); // we used to clone here.
+    var cloneNoRef = testURI.mutate().setRef("").finalize(); // we used to clone here.
     do_info("cloneNoRef: " + cloneNoRef.spec + " hasRef: " + cloneNoRef.hasRef);
     do_info("testURI: " + testURI.spec + " hasRef: " + testURI.hasRef);
     do_check_uri_eq(cloneNoRef, origURI);
@@ -601,10 +589,7 @@ function do_test_uri_with_hash_suffix(aTest, aSuffix) {
         testURI.spec +
         " with an empty ref is equal to no-ref version but not equal to ref version"
     );
-    var cloneNewRef = testURI
-      .mutate()
-      .setRef("")
-      .finalize();
+    var cloneNewRef = testURI.mutate().setRef("").finalize();
     do_check_uri_eq(cloneNewRef, origURI);
     do_check_uri_eq(cloneNewRef, cloneNoRef);
     Assert.ok(!cloneNewRef.equals(testURI));
@@ -614,10 +599,7 @@ function do_test_uri_with_hash_suffix(aTest, aSuffix) {
         origURI.spec +
         " with the same new ref is equal to ref version and not equal to no-ref version"
     );
-    cloneNewRef = origURI
-      .mutate()
-      .setRef(aSuffix)
-      .finalize();
+    cloneNewRef = origURI.mutate().setRef(aSuffix).finalize();
     do_check_uri_eq(cloneNewRef, testURI);
     Assert.ok(cloneNewRef.equals(testURI));
   }
@@ -626,10 +608,10 @@ function do_test_uri_with_hash_suffix(aTest, aSuffix) {
   do_check_property(aTest, testURI, "prePath");
   if (!origURI.ref) {
     // These don't work if it's a ref already because '+' doesn't give the right result
-    do_check_property(aTest, testURI, "pathQueryRef", function(aStr) {
+    do_check_property(aTest, testURI, "pathQueryRef", function (aStr) {
       return aStr + aSuffix;
     });
-    do_check_property(aTest, testURI, "ref", function(aStr) {
+    do_check_property(aTest, testURI, "ref", function (aStr) {
       return aSuffix.substr(1);
     });
   }
@@ -653,10 +635,7 @@ function do_test_mutate_ref(aTest, aSuffix) {
       aSuffix +
       "' does what we expect"
   );
-  testURI = testURI
-    .mutate()
-    .setRef(aSuffix)
-    .finalize();
+  testURI = testURI.mutate().setRef(aSuffix).finalize();
   do_check_uri_eq(testURI, refURIWithSuffix);
   do_check_uri_eqExceptRef(testURI, refURIWithoutSuffix);
 
@@ -671,10 +650,7 @@ function do_test_mutate_ref(aTest, aSuffix) {
         suffixLackingHash +
         "' does what we expect"
     );
-    testURI = testURI
-      .mutate()
-      .setRef(suffixLackingHash)
-      .finalize();
+    testURI = testURI.mutate().setRef(suffixLackingHash).finalize();
     do_check_uri_eq(testURI, refURIWithSuffix);
     do_check_uri_eqExceptRef(testURI, refURIWithoutSuffix);
   }
@@ -683,10 +659,7 @@ function do_test_mutate_ref(aTest, aSuffix) {
   do_info(
     "testing that clearing .ref on " + testURI.spec + " does what we expect"
   );
-  testURI = testURI
-    .mutate()
-    .setRef("")
-    .finalize();
+  testURI = testURI.mutate().setRef("").finalize();
   do_check_uri_eq(testURI, refURIWithoutSuffix);
   do_check_uri_eqExceptRef(testURI, refURIWithSuffix);
 
@@ -701,11 +674,7 @@ function do_test_mutate_ref(aTest, aSuffix) {
         " and then clearing ref does what we expect"
     );
 
-    testURI = testURI
-      .mutate()
-      .setSpec(specWithSuffix)
-      .setRef("")
-      .finalize();
+    testURI = testURI.mutate().setSpec(specWithSuffix).setRef("").finalize();
     do_check_uri_eq(testURI, refURIWithoutSuffix);
     do_check_uri_eqExceptRef(testURI, refURIWithSuffix);
 
@@ -730,19 +699,13 @@ function do_test_mutate_ref(aTest, aSuffix) {
       do_check_uri_eqExceptRef(testURI, refURIWithSuffix);
 
       // Also: make sure that clearing .pathQueryRef also clears .ref
-      testURI = testURI
-        .mutate()
-        .setPathQueryRef(pathWithSuffix)
-        .finalize();
+      testURI = testURI.mutate().setPathQueryRef(pathWithSuffix).finalize();
       do_info(
         "testing that clearing path from " +
           pathWithSuffix +
           " also clears .ref"
       );
-      testURI = testURI
-        .mutate()
-        .setPathQueryRef("")
-        .finalize();
+      testURI = testURI.mutate().setPathQueryRef("").finalize();
       Assert.equal(testURI.ref, "");
     }
   }
@@ -751,154 +714,100 @@ function do_test_mutate_ref(aTest, aSuffix) {
 // Check that changing nested/about URIs works correctly.
 add_task(function check_nested_mutations() {
   // nsNestedAboutURI
-  let uri1 = gIoService.newURI("about:blank#");
-  let uri2 = gIoService.newURI("about:blank");
-  let uri3 = uri1
-    .mutate()
-    .setRef("")
-    .finalize();
+  let uri1 = Services.io.newURI("about:blank#");
+  let uri2 = Services.io.newURI("about:blank");
+  let uri3 = uri1.mutate().setRef("").finalize();
   do_check_uri_eq(uri3, uri2);
-  uri3 = uri2
-    .mutate()
-    .setRef("#")
-    .finalize();
+  uri3 = uri2.mutate().setRef("#").finalize();
   do_check_uri_eq(uri3, uri1);
 
-  uri1 = gIoService.newURI("about:blank?something");
-  uri2 = gIoService.newURI("about:blank");
-  uri3 = uri1
-    .mutate()
-    .setQuery("")
-    .finalize();
+  uri1 = Services.io.newURI("about:blank?something");
+  uri2 = Services.io.newURI("about:blank");
+  uri3 = uri1.mutate().setQuery("").finalize();
   do_check_uri_eq(uri3, uri2);
-  uri3 = uri2
-    .mutate()
-    .setQuery("something")
-    .finalize();
+  uri3 = uri2.mutate().setQuery("something").finalize();
   do_check_uri_eq(uri3, uri1);
 
-  uri1 = gIoService.newURI("about:blank?query#ref");
-  uri2 = gIoService.newURI("about:blank");
-  uri3 = uri1
-    .mutate()
-    .setPathQueryRef("blank")
-    .finalize();
+  uri1 = Services.io.newURI("about:blank?query#ref");
+  uri2 = Services.io.newURI("about:blank");
+  uri3 = uri1.mutate().setPathQueryRef("blank").finalize();
   do_check_uri_eq(uri3, uri2);
-  uri3 = uri2
-    .mutate()
-    .setPathQueryRef("blank?query#ref")
-    .finalize();
+  uri3 = uri2.mutate().setPathQueryRef("blank?query#ref").finalize();
   do_check_uri_eq(uri3, uri1);
 
   // nsSimpleNestedURI
-  uri1 = gIoService.newURI("view-source:http://example.com/path#");
-  uri2 = gIoService.newURI("view-source:http://example.com/path");
-  uri3 = uri1
-    .mutate()
-    .setRef("")
-    .finalize();
+  uri1 = Services.io.newURI("view-source:http://example.com/path#");
+  uri2 = Services.io.newURI("view-source:http://example.com/path");
+  uri3 = uri1.mutate().setRef("").finalize();
   do_check_uri_eq(uri3, uri2);
-  uri3 = uri2
-    .mutate()
-    .setRef("#")
-    .finalize();
+  uri3 = uri2.mutate().setRef("#").finalize();
   do_check_uri_eq(uri3, uri1);
 
-  uri1 = gIoService.newURI("view-source:http://example.com/path?something");
-  uri2 = gIoService.newURI("view-source:http://example.com/path");
-  uri3 = uri1
-    .mutate()
-    .setQuery("")
-    .finalize();
+  uri1 = Services.io.newURI("view-source:http://example.com/path?something");
+  uri2 = Services.io.newURI("view-source:http://example.com/path");
+  uri3 = uri1.mutate().setQuery("").finalize();
   do_check_uri_eq(uri3, uri2);
-  uri3 = uri2
-    .mutate()
-    .setQuery("something")
-    .finalize();
+  uri3 = uri2.mutate().setQuery("something").finalize();
   do_check_uri_eq(uri3, uri1);
 
-  uri1 = gIoService.newURI("view-source:http://example.com/path?query#ref");
-  uri2 = gIoService.newURI("view-source:http://example.com/path");
-  uri3 = uri1
-    .mutate()
-    .setPathQueryRef("path")
-    .finalize();
+  uri1 = Services.io.newURI("view-source:http://example.com/path?query#ref");
+  uri2 = Services.io.newURI("view-source:http://example.com/path");
+  uri3 = uri1.mutate().setPathQueryRef("path").finalize();
   do_check_uri_eq(uri3, uri2);
-  uri3 = uri2
-    .mutate()
-    .setPathQueryRef("path?query#ref")
-    .finalize();
+  uri3 = uri2.mutate().setPathQueryRef("path?query#ref").finalize();
   do_check_uri_eq(uri3, uri1);
 
-  uri1 = gIoService.newURI("view-source:about:blank#");
-  uri2 = gIoService.newURI("view-source:about:blank");
-  uri3 = uri1
-    .mutate()
-    .setRef("")
-    .finalize();
+  uri1 = Services.io.newURI("view-source:about:blank#");
+  uri2 = Services.io.newURI("view-source:about:blank");
+  uri3 = uri1.mutate().setRef("").finalize();
   do_check_uri_eq(uri3, uri2);
-  uri3 = uri2
-    .mutate()
-    .setRef("#")
-    .finalize();
+  uri3 = uri2.mutate().setRef("#").finalize();
   do_check_uri_eq(uri3, uri1);
 
-  uri1 = gIoService.newURI("view-source:about:blank?something");
-  uri2 = gIoService.newURI("view-source:about:blank");
-  uri3 = uri1
-    .mutate()
-    .setQuery("")
-    .finalize();
+  uri1 = Services.io.newURI("view-source:about:blank?something");
+  uri2 = Services.io.newURI("view-source:about:blank");
+  uri3 = uri1.mutate().setQuery("").finalize();
   do_check_uri_eq(uri3, uri2);
-  uri3 = uri2
-    .mutate()
-    .setQuery("something")
-    .finalize();
+  uri3 = uri2.mutate().setQuery("something").finalize();
   do_check_uri_eq(uri3, uri1);
 
-  uri1 = gIoService.newURI("view-source:about:blank?query#ref");
-  uri2 = gIoService.newURI("view-source:about:blank");
-  uri3 = uri1
-    .mutate()
-    .setPathQueryRef("blank")
-    .finalize();
+  uri1 = Services.io.newURI("view-source:about:blank?query#ref");
+  uri2 = Services.io.newURI("view-source:about:blank");
+  uri3 = uri1.mutate().setPathQueryRef("blank").finalize();
   do_check_uri_eq(uri3, uri2);
-  uri3 = uri2
-    .mutate()
-    .setPathQueryRef("blank?query#ref")
-    .finalize();
+  uri3 = uri2.mutate().setPathQueryRef("blank?query#ref").finalize();
   do_check_uri_eq(uri3, uri1);
 });
 
 add_task(function check_space_escaping() {
-  let uri = gIoService.newURI("data:text/plain,hello%20world#space hash");
+  let uri = Services.io.newURI("data:text/plain,hello%20world#space hash");
   Assert.equal(uri.spec, "data:text/plain,hello%20world#space%20hash");
-  uri = gIoService.newURI("data:text/plain,hello%20world#space%20hash");
+  uri = Services.io.newURI("data:text/plain,hello%20world#space%20hash");
   Assert.equal(uri.spec, "data:text/plain,hello%20world#space%20hash");
-  uri = gIoService.newURI("data:text/plain,hello world#space%20hash");
+  uri = Services.io.newURI("data:text/plain,hello world#space%20hash");
   Assert.equal(uri.spec, "data:text/plain,hello world#space%20hash");
-  uri = gIoService.newURI("data:text/plain,hello world#space hash");
+  uri = Services.io.newURI("data:text/plain,hello world#space hash");
   Assert.equal(uri.spec, "data:text/plain,hello world#space%20hash");
-  uri = gIoService.newURI("http://example.com/test path#test path");
-  uri = gIoService.newURI("http://example.com/test%20path#test%20path");
+  uri = Services.io.newURI("http://example.com/test path#test path");
+  uri = Services.io.newURI("http://example.com/test%20path#test%20path");
 });
 
 add_task(function check_schemeIsNull() {
-  let uri = gIoService.newURI("data:text/plain,aaa");
+  let uri = Services.io.newURI("data:text/plain,aaa");
   Assert.ok(!uri.schemeIs(null));
-  uri = gIoService.newURI("http://example.com");
+  uri = Services.io.newURI("http://example.com");
   Assert.ok(!uri.schemeIs(null));
-  uri = gIoService.newURI("dummyscheme://example.com");
+  uri = Services.io.newURI("dummyscheme://example.com");
   Assert.ok(!uri.schemeIs(null));
-  uri = gIoService.newURI("jar:resource://gre/chrome.toolkit.jar!/");
+  uri = Services.io.newURI("jar:resource://gre/chrome.toolkit.jar!/");
   Assert.ok(!uri.schemeIs(null));
-  uri = gIoService.newURI("moz-icon://.unknown?size=32");
+  uri = Services.io.newURI("moz-icon://.unknown?size=32");
   Assert.ok(!uri.schemeIs(null));
 });
 
 // Check that characters in the query of moz-extension aren't improperly unescaped (Bug 1547882)
 add_task(function check_mozextension_query() {
-  let uri = gIoService.newURI(
+  let uri = Services.io.newURI(
     "moz-extension://a7d1572e-3beb-4d93-a920-c408fa09e8ea/_source/holding.html"
   );
   uri = uri
@@ -906,7 +815,7 @@ add_task(function check_mozextension_query() {
     .setQuery("u=https%3A%2F%2Fnews.ycombinator.com%2F")
     .finalize();
   Assert.equal(uri.query, "u=https%3A%2F%2Fnews.ycombinator.com%2F");
-  uri = gIoService.newURI(
+  uri = Services.io.newURI(
     "moz-extension://a7d1572e-3beb-4d93-a920-c408fa09e8ea/_source/holding.html?u=https%3A%2F%2Fnews.ycombinator.com%2F"
   );
   Assert.equal(
@@ -917,29 +826,29 @@ add_task(function check_mozextension_query() {
 });
 
 add_task(function check_resolve() {
-  let base = gIoService.newURI("http://example.com");
-  let uri = gIoService.newURI("tel::+371 27028456", "utf-8", base);
+  let base = Services.io.newURI("http://example.com");
+  let uri = Services.io.newURI("tel::+371 27028456", "utf-8", base);
   Assert.equal(uri.spec, "tel::+371 27028456");
 });
 
 add_task(function test_extra_protocols() {
   // dweb://
-  let url = gIoService.newURI("dweb://example.com/test");
+  let url = Services.io.newURI("dweb://example.com/test");
   Assert.equal(url.host, "example.com");
 
   // dat://
-  url = gIoService.newURI(
+  url = Services.io.newURI(
     "dat://41f8a987cfeba80a037e51cc8357d513b62514de36f2f9b3d3eeec7a8fb3b5a5/"
   );
   Assert.equal(
     url.host,
     "41f8a987cfeba80a037e51cc8357d513b62514de36f2f9b3d3eeec7a8fb3b5a5"
   );
-  url = gIoService.newURI("dat://example.com/test");
+  url = Services.io.newURI("dat://example.com/test");
   Assert.equal(url.host, "example.com");
 
   // ipfs://
-  url = gIoService.newURI(
+  url = Services.io.newURI(
     "ipfs://bafybeiccfclkdtucu6y4yc5cpr6y3yuinr67svmii46v5cfcrkp47ihehy/frontend/license.txt"
   );
   Assert.equal(url.scheme, "ipfs");
@@ -950,19 +859,19 @@ add_task(function test_extra_protocols() {
   Assert.equal(url.filePath, "/frontend/license.txt");
 
   // ipns://
-  url = gIoService.newURI("ipns://peerdium.gozala.io/index.html");
+  url = Services.io.newURI("ipns://peerdium.gozala.io/index.html");
   Assert.equal(url.scheme, "ipns");
   Assert.equal(url.host, "peerdium.gozala.io");
   Assert.equal(url.filePath, "/index.html");
 
   // ssb://
-  url = gIoService.newURI("ssb://scuttlebutt.nz/index.html");
+  url = Services.io.newURI("ssb://scuttlebutt.nz/index.html");
   Assert.equal(url.scheme, "ssb");
   Assert.equal(url.host, "scuttlebutt.nz");
   Assert.equal(url.filePath, "/index.html");
 
   // wtp://
-  url = gIoService.newURI(
+  url = Services.io.newURI(
     "wtp://951ead31d09e4049fc1f21f137e233dd0589fcbd/blog/vim-tips/"
   );
   Assert.equal(url.scheme, "wtp");
@@ -975,9 +884,9 @@ add_task(function test_extra_protocols() {
 add_task(function mainTest() {
   // UTF-8 check - From bug 622981
   // ASCII
-  let base = gIoService.newURI("http://example.org/xenia?");
-  let resolved = gIoService.newURI("?x", null, base);
-  let expected = gIoService.newURI("http://example.org/xenia?x");
+  let base = Services.io.newURI("http://example.org/xenia?");
+  let resolved = Services.io.newURI("?x", null, base);
+  let expected = Services.io.newURI("http://example.org/xenia?x");
   do_info(
     "Bug 662981: ACSII - comparing " + resolved.spec + " and " + expected.spec
   );
@@ -985,21 +894,21 @@ add_task(function mainTest() {
 
   // UTF-8 character "è"
   // Bug 622981 was triggered by an empty query string
-  base = gIoService.newURI("http://example.org/xènia?");
-  resolved = gIoService.newURI("?x", null, base);
-  expected = gIoService.newURI("http://example.org/xènia?x");
+  base = Services.io.newURI("http://example.org/xènia?");
+  resolved = Services.io.newURI("?x", null, base);
+  expected = Services.io.newURI("http://example.org/xènia?x");
   do_info(
     "Bug 662981: UTF8 - comparing " + resolved.spec + " and " + expected.spec
   );
   Assert.ok(resolved.equals(expected));
 
-  gTests.forEach(function(aTest) {
+  gTests.forEach(function (aTest) {
     // Check basic URI functionality
     do_test_uri_basic(aTest);
 
     if (!aTest.fail) {
       // Try adding various #-prefixed strings to the ends of the URIs
-      gHashSuffixes.forEach(function(aSuffix) {
+      gHashSuffixes.forEach(function (aSuffix) {
         do_test_uri_with_hash_suffix(aTest, aSuffix);
         if (!aTest.immutable) {
           do_test_mutate_ref(aTest, aSuffix);
@@ -1017,7 +926,7 @@ add_task(function mainTest() {
 
 function check_round_trip_serialization(spec) {
   dump(`checking ${spec}\n`);
-  let uri = gIoService.newURI(spec);
+  let uri = Services.io.newURI(spec);
   let str = serialize_to_escaped_string(uri);
   let other = deserialize_from_escaped_string(str).QueryInterface(Ci.nsIURI);
   equal(other.spec, uri.spec);
@@ -1039,4 +948,13 @@ add_task(function test_iconURI_serialization() {
 
 add_task(function test_jarURI_serialization() {
   check_round_trip_serialization("jar:http://example.com/bar.jar!/");
+});
+
+add_task(async function round_trip_invalid_ace_label() {
+  let uri = Services.io.newURI("http://xn--xn--d--fg4n-5y45d/");
+  Assert.equal(uri.spec, "http://xn--xn--d--fg4n-5y45d/");
+
+  Assert.throws(() => {
+    uri = Services.io.newURI("http://a.b.c.XN--pokxncvks");
+  }, /NS_ERROR_MALFORMED_URI/);
 });

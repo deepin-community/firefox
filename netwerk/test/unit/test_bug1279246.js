@@ -1,6 +1,8 @@
 "use strict";
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
 var httpserver = new HttpServer();
 var pass = 0;
@@ -63,7 +65,7 @@ var cePref;
 function run_test() {
   do_get_profile();
 
-  prefs = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
+  prefs = Services.prefs;
   cePref = prefs.getCharPref("network.http.accept-encoding");
   prefs.setCharPref("network.http.accept-encoding", "gzip, deflate, br");
 

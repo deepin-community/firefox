@@ -3,7 +3,8 @@
 
 "use strict";
 
-const TEST_URI = "data:text/html;charset=utf-8,<p>test for bug 642615</p>";
+const TEST_URI =
+  "data:text/html;charset=utf-8,<!DOCTYPE html><p>test for bug 642615</p>";
 
 XPCOMUtils.defineLazyServiceGetter(
   this,
@@ -13,7 +14,7 @@ XPCOMUtils.defineLazyServiceGetter(
 );
 const stringToCopy = "foobazbarBug642615";
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
   const { jsterm } = hud;
   await clearOutput(hud);

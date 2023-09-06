@@ -11,6 +11,7 @@
 #include "mozilla/ipc/CrossProcessSemaphore.h"
 #include "mozilla/layers/PCanvasChild.h"
 #include "mozilla/layers/SourceSurfaceSharedData.h"
+#include "mozilla/WeakPtr.h"
 #include "nsRefPtrHashtable.h"
 #include "nsTArray.h"
 
@@ -23,7 +24,7 @@ class SourceSurface;
 namespace layers {
 class CanvasDrawEventRecorder;
 
-class CanvasChild final : public PCanvasChild {
+class CanvasChild final : public PCanvasChild, public SupportsWeakPtr {
  public:
   NS_INLINE_DECL_REFCOUNTING(CanvasChild)
 
@@ -141,6 +142,7 @@ class CanvasChild final : public PCanvasChild {
   uint32_t mLastWriteLockCheckpoint = 0;
   uint32_t mTransactionsSinceGetDataSurface = kCacheDataSurfaceThreshold;
   TimeStamp mLastNonEmptyTransaction = TimeStamp::NowLoRes();
+  std::vector<RefPtr<gfx::SourceSurface>> mLastTransactionExternalSurfaces;
   bool mIsInTransaction = false;
   bool mHasOutstandingWriteLock = false;
 };

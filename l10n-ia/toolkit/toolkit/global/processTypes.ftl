@@ -22,13 +22,13 @@ process-type-extension = Extension
 # process used to open file:// URLs
 process-type-file = File local
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Allocation de grande dimensiones
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Contento web isolate
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Service worker isolate
 
 # process preallocated; may change to other types
 process-type-prealloc = Pre-allocate
@@ -49,6 +49,9 @@ process-type-socket = Socket
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Actor IPC in alveo de arena
 
 ##
 ## Other

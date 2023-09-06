@@ -5,13 +5,6 @@
 
 about-logins-page-title = لاگ ان اور پاس ورڈ
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
-    .placeholder = لاگ ان تلاش کریں
-
-create-login-button = نیا لاگ ان بنائیں
-
 fxaccounts-sign-in-text = اپنے پاسورڈ  دوسرے آلات پر حاصل کریں
 fxaccounts-sign-in-sync-button = سنک کرنے کے لئے سائن ان کریں
 fxaccounts-avatar-button =
@@ -60,7 +53,6 @@ about-logins-list-item-breach-icon =
     .title = بریچڈ ویب سائٹیں
 about-logins-list-item-vulnerable-password-icon =
     .title = کمزور پاسورڈ
-
 about-logins-list-section-breach = خلاف ورزی کرنے والی ویب سائٹیں
 about-logins-list-section-vulnerable = کمزور پاسورڈ
 about-logins-list-section-nothing = کوئی انتباہ نہیں۔
@@ -72,7 +64,6 @@ about-logins-list-section-week = پچھلے 7 دن
 
 about-logins-login-intro-heading-logged-in = کوئی سینکڈ لاگ ان نہیں ملا۔
 login-intro-description = اگر آپ نے اپنے لاگ انز { -brand-product-name } کو کسی دوسرے آلے پر محفوظ کیاہوا ہے تو، انہیں یہاں حاصل کرنے کا طریقہ یوں ہے:
-about-logins-intro-import = اگر آپ کے لاگ انز کسی دوسرے براؤزر میں محفوظ ہیں تو ، آپ <a data-l10n-name="import-link"> ان کو { -lockwise-brand-short-name }</a> میں درآمد کرسکتے ہیں
 
 ## Login
 
@@ -95,9 +86,10 @@ login-item-copied-password-button-text = نقل شدہ!
 login-item-save-changes-button = تبدیلیاں محفوظ کریں
 login-item-save-new-button = محفوظ کریں
 login-item-cancel-button = منسوخ کریں
-login-item-time-changed = { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") } :آخری بار ترمیم کردہ
-login-item-time-created = { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") } :تشکیل دیا گیا
-login-item-time-used = آخری استعمال شدہ:{ DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
 
 ## OS Authentication dialog
 
@@ -119,8 +111,6 @@ about-logins-reveal-password-os-auth-dialog-message-macosx = محفوظ شدہ �
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = محفوظ شدہ پاس ورڈ کو نقل کریں
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = محفوظ شدہ لاگ ان اور پاس ورڈ برآمد کریں
@@ -131,8 +121,6 @@ master-password-reload-button =
     .label = لاگ ان
     .accesskey = L
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = منسوخ کریں
@@ -142,6 +130,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = اس لاگ ان کو ہٹائیں؟
 confirm-delete-dialog-message = یہ عمل کلعدم نہیں ہو سکتا۔
 about-logins-confirm-remove-dialog-confirm-button = ہٹائیں
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -156,6 +147,14 @@ about-logins-confirm-remove-all-dialog-checkbox-label =
         [one] ہاں ، یہ لاگ ان ہٹائیں
        *[other] ہاں ، ان لاگ ان کو ہٹائیں
     }
+
+about-logins-confirm-remove-all-dialog-title =
+    { $count ->
+        [one] { $count } لاگ ان ہٹائیں؟
+       *[other] تمام { $count } لاگ ان ہٹائیں؟
+    }
+
+##
 
 about-logins-confirm-export-dialog-title = لاگ ان اور پاس ورڈ برآمد کریں
 about-logins-confirm-export-dialog-confirm-button = برآمد کریں…
@@ -175,7 +174,6 @@ about-logins-breach-alert-date = یہخلافورزی { DATETIME($date, day: "nu
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = { $hostname } پر جائیں
-about-logins-breach-alert-learn-more-link = مزید سیکھیں
 
 ## Vulnerable Password notification
 

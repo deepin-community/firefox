@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = રુપરેખા વિઝાર્ડ બનાવો
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] પરિચય
-       *[other] { create-profile-window.title } માં સ્વાગત છે
+       *[other] { create-profile-window2.title } માં સ્વાગત છે
     }
 
 profile-creation-explanation-1 = { -brand-short-name } તમારી ગોઠવણી અને પસંદગીઓને તમારી અંગત રુપરેખામાં સંગ્રહ કરે છે.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] તારણ
-       *[other] { create-profile-window.title } સમાપ્ત કરી રહ્યા છીએ
+       *[other] { create-profile-window2.title } સમાપ્ત કરી રહ્યા છીએ
     }
 
 profile-creation-intro = જો તમે ઘણી બધી રુપરેખા બનાવશો તો તેને તમે નામથી અલગ પાડી શકશો. તમે અહીં આપેલ નામ અથવા તમારા પોતાના નામ પસંદ કરી શકશો.

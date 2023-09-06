@@ -35,14 +35,18 @@ appmenuitem-fullscreen =
 
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Açıq vərəq yoxdur
+
 # This is shown when Sync is configured but syncing tabs is disabled.
 appmenu-remote-tabs-tabsnotsyncing = Digər cihazlarınızdakı vərəqlərin siyahısını görmək üçün vərəq sinxronizasiyasını aktivləşdirin.
+
 # This is shown when Sync is configured but this appears to be the only device attached to
 # the account. We also show links to download Firefox for android/ios.
 appmenu-remote-tabs-noclients = Digər cihazlarınızda olan vərəqləri burada görmək istərdiniz?
+
 appmenu-remote-tabs-connectdevice =
     .label = Başqa Cihazı Qoş
 appmenu-remote-tabs-unverified = Hesabınız təsdiqlənməlidir.
+
 appmenuitem-save-page =
     .label = Fərqli saxla…
 
@@ -66,6 +70,10 @@ profiler-popup-button-idle =
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
 
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
 ## History panel
 
 appmenu-restore-session =
@@ -85,9 +93,6 @@ appmenu-about =
     .accesskey = H
 appmenu-help-report-site-issue =
     .label = Sayt Problemini Bildir…
-appmenu-help-feedback-page =
-    .label = Əks əlaqə göndər…
-    .accesskey = g
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -105,5 +110,3 @@ appmenu-help-not-deceptive =
 
 ## More Tools
 
-appmenu-taskmanager =
-    .label = Tapşırıq idarə edicisi

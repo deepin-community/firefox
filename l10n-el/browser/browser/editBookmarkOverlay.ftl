@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Απόκρυψη
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Εμφάνιση όλων των φακέλων σελιδοδεικτών
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Απόκρυψη
+
 bookmark-overlay-new-folder-button =
     .label = Νέος φάκελος
     .accesskey = ο
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Εμφάνιση όλων των ετικετών
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Απόκρυψη
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Εμφάνιση όλων των ετικετών
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Απόκρυψη
 
 bookmark-overlay-keyword-2 =
     .value = Λέξη-κλειδί

@@ -2,33 +2,23 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
-import hashlib
 import os
 import re
 import subprocess
 import sys
+from pathlib import Path
 
-from distutils.version import LooseVersion
+from mach.util import to_optional_path, win_to_msys_path
+from mozbuild.bootstrap import bootstrap_all_toolchains_for, bootstrap_toolchain
+from mozfile import which
+from packaging.version import Version
+
 from mozboot import rust
 from mozboot.util import (
-    get_mach_virtualenv_binary,
-    locate_java_bin_path,
     MINIMUM_RUST_VERSION,
+    get_mach_virtualenv_binary,
+    http_download_and_save,
 )
-from mozfile import which
-
-# NOTE: This script is intended to be run with a vanilla Python install.  We
-# have to rely on the standard library instead of Python 2+3 helpers like
-# the six module.
-if sys.version_info < (3,):
-    from urllib2 import urlopen
-
-    input = raw_input  # noqa
-else:
-    from urllib.request import urlopen
-
 
 NO_MERCURIAL = """
 Could not find Mercurial (hg) in the current shell's path. Try starting a new
@@ -57,6 +47,22 @@ path for this shell. Try creating a new shell and run this bootstrapper again.
 If it continues to fail, consider installing Mercurial by following the
 instructions at http://mercurial.selenic.com/.
 """
+
+MERCURIAL_INSTALL_PROMPT = """
+Mercurial releases a new version every 3 months and your distro's package
+may become out of date. This may cause incompatibility with some
+Mercurial extensions that rely on new Mercurial features. As a result,
+you may not have an optimal version control experience.
+
+To have the best Mercurial experience possible, we recommend installing
+Mercurial via the "pip" Python packaging utility. This will likely result
+in files being placed in /usr/local/bin and /usr/local/lib.
+
+How would you like to continue?
+  1. Install a modern Mercurial via pip [default]
+  2. Install a legacy Mercurial via the distro package manager
+  3. Do not install Mercurial
+Your choice: """
 
 PYTHON_UNABLE_UPGRADE = """
 You are currently running Python %s. Running %s or newer (but
@@ -135,19 +141,16 @@ ac_add_options --enable-artifact-builds
 
 JS_MOZCONFIG_TEMPLATE = """\
 # Build only the SpiderMonkey JS test shell
-ac_add_options --enable-application=js
+ac_add_options --enable-project=js
 """
 
 # Upgrade Mercurial older than this.
 # This should match the OLDEST_NON_LEGACY_VERSION in
 # version-control-tools/hgext/configwizard/__init__.py.
-MODERN_MERCURIAL_VERSION = LooseVersion("4.9")
+MODERN_MERCURIAL_VERSION = Version("4.9")
 
 # Upgrade rust older than this.
-MODERN_RUST_VERSION = LooseVersion(MINIMUM_RUST_VERSION)
-
-# Upgrade nasm older than this.
-MODERN_NASM_VERSION = LooseVersion("2.14")
+MODERN_RUST_VERSION = Version(MINIMUM_RUST_VERSION)
 
 
 class BaseBootstrapper(object):
@@ -158,8 +161,9 @@ class BaseBootstrapper(object):
         self.no_interactive = no_interactive
         self.no_system_changes = no_system_changes
         self.state_dir = None
+        self.srcdir = None
 
-    def validate_environment(self, srcdir):
+    def validate_environment(self):
         """
         Called once the current firefox checkout has been detected.
         Platform-specific implementations should check the environment and offer advice/warnings
@@ -199,7 +203,7 @@ class BaseBootstrapper(object):
             "%s does not yet implement install_browser_packages()" % __name__
         )
 
-    def ensure_browser_packages(self, state_dir, checkout_root):
+    def ensure_browser_packages(self):
         """
         Install pre-built packages needed to build Firefox for Desktop (application 'browser')
 
@@ -207,7 +211,7 @@ class BaseBootstrapper(object):
         """
         pass
 
-    def ensure_js_packages(self, state_dir, checkout_root):
+    def ensure_js_packages(self):
         """
         Install pre-built packages needed to build SpiderMonkey JavaScript Engine
 
@@ -215,7 +219,7 @@ class BaseBootstrapper(object):
         """
         pass
 
-    def ensure_browser_artifact_mode_packages(self, state_dir, checkout_root):
+    def ensure_browser_artifact_mode_packages(self):
         """
         Install pre-built packages needed to build Firefox for Desktop (application 'browser')
 
@@ -277,7 +281,7 @@ class BaseBootstrapper(object):
             "%s does not yet implement install_mobile_android_packages()" % __name__
         )
 
-    def ensure_mobile_android_packages(self, state_dir, checkout_root):
+    def ensure_mobile_android_packages(self):
         """
         Install pre-built packages required to run GeckoView (application 'mobile/android')
         """
@@ -286,12 +290,12 @@ class BaseBootstrapper(object):
             "%s does not yet implement ensure_mobile_android_packages()" % __name__
         )
 
-    def ensure_mobile_android_artifact_mode_packages(self, state_dir, checkout_root):
+    def ensure_mobile_android_artifact_mode_packages(self):
         """
         Install pre-built packages required to run GeckoView Artifact Build
         (application 'mobile/android')
         """
-        self.ensure_mobile_android_packages(state_dir, checkout_root)
+        self.ensure_mobile_android_packages()
 
     def generate_mobile_android_mozconfig(self):
         """
@@ -329,92 +333,40 @@ class BaseBootstrapper(object):
             % __name__
         )
 
-    def ensure_mach_environment(self, checkout_root):
-        mach_binary = os.path.abspath(os.path.join(checkout_root, "mach"))
-        if not os.path.exists(mach_binary):
-            raise ValueError("mach not found at %s" % mach_binary)
-        cmd = [sys.executable, mach_binary, "create-mach-environment"]
-        subprocess.check_call(cmd, cwd=checkout_root)
-
-    def ensure_clang_static_analysis_package(self, state_dir, checkout_root):
-        """
-        Install the clang static analysis package
-        """
-        raise NotImplementedError(
-            "%s does not yet implement ensure_clang_static_analysis_package()"
-            % __name__
-        )
-
-    def ensure_stylo_packages(self, state_dir, checkout_root):
-        """
-        Install any necessary packages needed for Stylo development.
-        """
-        raise NotImplementedError(
-            "%s does not yet implement ensure_stylo_packages()" % __name__
-        )
-
-    def ensure_nasm_packages(self, state_dir, checkout_root):
-        """
-        Install nasm.
-        """
-        raise NotImplementedError(
-            "%s does not yet implement ensure_nasm_packages()" % __name__
-        )
-
-    def ensure_sccache_packages(self, state_dir, checkout_root):
+    def ensure_sccache_packages(self):
         """
         Install sccache.
         """
         pass
 
-    def ensure_node_packages(self, state_dir, checkout_root):
-        """
-        Install any necessary packages needed to supply NodeJS"""
-        raise NotImplementedError(
-            "%s does not yet implement ensure_node_packages()" % __name__
-        )
+    def install_toolchain_artifact(self, toolchain_job, no_unpack=False):
+        if no_unpack:
+            return self.install_toolchain_artifact_impl(
+                self.state_dir, toolchain_job, no_unpack
+            )
+        bootstrap_toolchain(toolchain_job)
 
-    def ensure_fix_stacks_packages(self, state_dir, checkout_root):
-        """
-        Install fix-stacks.
-        """
-        pass
-
-    def ensure_minidump_stackwalk_packages(self, state_dir, checkout_root):
-        """
-        Install minidump_stackwalk.
-        """
-        pass
-
-    def install_toolchain_static_analysis(
-        self, state_dir, checkout_root, toolchain_job
+    def install_toolchain_artifact_impl(
+        self, install_dir: Path, toolchain_job, no_unpack=False
     ):
-        clang_tools_path = os.path.join(state_dir, "clang-tools")
-        if not os.path.exists(clang_tools_path):
-            os.mkdir(clang_tools_path)
-        self.install_toolchain_artifact(clang_tools_path, checkout_root, toolchain_job)
+        if type(self.srcdir) is str:
+            mach_binary = Path(self.srcdir) / "mach"
+        else:
+            mach_binary = (self.srcdir / "mach").resolve()
+        if not mach_binary.exists():
+            raise ValueError(f"mach not found at {mach_binary}")
 
-    def install_toolchain_artifact(
-        self, state_dir, checkout_root, toolchain_job, no_unpack=False
-    ):
-        mach_binary = os.path.join(checkout_root, "mach")
-        mach_binary = os.path.abspath(mach_binary)
-        if not os.path.exists(mach_binary):
-            raise ValueError("mach not found at %s" % mach_binary)
-
-        # NOTE: Use self.state_dir over the passed-in state_dir, which might be
-        # a subdirectory of the actual state directory.
         if not self.state_dir:
             raise ValueError(
                 "Need a state directory (e.g. ~/.mozbuild) to download " "artifacts"
             )
-        python_location = get_mach_virtualenv_binary(state_dir=self.state_dir)
-        if not os.path.exists(python_location):
-            raise ValueError("python not found at %s" % python_location)
+        python_location = get_mach_virtualenv_binary()
+        if not python_location.exists():
+            raise ValueError(f"python not found at {python_location}")
 
         cmd = [
-            python_location,
-            mach_binary,
+            str(python_location),
+            str(mach_binary),
             "artifact",
             "toolchain",
             "--bootstrap",
@@ -425,11 +377,23 @@ class BaseBootstrapper(object):
         if no_unpack:
             cmd += ["--no-unpack"]
 
-        subprocess.check_call(cmd, cwd=state_dir)
+        subprocess.check_call(cmd, cwd=str(install_dir))
 
-    def run_as_root(self, command):
+    def auto_bootstrap(self, application, exclude=[]):
+        args = ["--with-ccache=sccache"]
+        if application.endswith("_artifact_mode"):
+            args.append("--enable-artifact-builds")
+            application = application[: -len("_artifact_mode")]
+        args.append("--enable-project={}".format(application.replace("_", "/")))
+        if exclude:
+            args.append(
+                "--enable-bootstrap={}".format(",".join(f"-{x}" for x in exclude))
+            )
+        bootstrap_all_toolchains_for(args)
+
+    def run_as_root(self, command, may_use_sudo=True):
         if os.geteuid() != 0:
-            if which("sudo"):
+            if may_use_sudo and which("sudo"):
                 command.insert(0, "sudo")
             else:
                 command = ["su", "root", "-c", " ".join(command)]
@@ -437,63 +401,6 @@ class BaseBootstrapper(object):
         print("Executing as root:", subprocess.list2cmdline(command))
 
         subprocess.check_call(command, stdin=sys.stdin)
-
-    def dnf_install(self, *packages):
-        if which("dnf"):
-            command = ["dnf", "install"]
-        else:
-            command = ["yum", "install"]
-
-        if self.no_interactive:
-            command.append("-y")
-        command.extend(packages)
-
-        self.run_as_root(command)
-
-    def dnf_groupinstall(self, *packages):
-        if which("dnf"):
-            command = ["dnf", "groupinstall"]
-        else:
-            command = ["yum", "groupinstall"]
-
-        if self.no_interactive:
-            command.append("-y")
-        command.extend(packages)
-
-        self.run_as_root(command)
-
-    def dnf_update(self, *packages):
-        if which("dnf"):
-            command = ["dnf", "update"]
-        else:
-            command = ["yum", "update"]
-
-        if self.no_interactive:
-            command.append("-y")
-        command.extend(packages)
-
-        self.run_as_root(command)
-
-    def apt_install(self, *packages):
-        command = ["apt-get", "install"]
-        if self.no_interactive:
-            command.append("-y")
-        command.extend(packages)
-
-        self.run_as_root(command)
-
-    def apt_update(self):
-        command = ["apt-get", "update"]
-        if self.no_interactive:
-            command.append("-y")
-
-        self.run_as_root(command)
-
-    def apt_add_architecture(self, arch):
-        command = ["dpkg", "--add-architecture"]
-        command.extend(arch)
-
-        self.run_as_root(command)
 
     def prompt_int(self, prompt, low, high, default=None):
         """Prompts the user with prompt and requires an integer between low and high.
@@ -526,7 +433,7 @@ class BaseBootstrapper(object):
             print("ERROR! Please enter a valid option!")
 
     def prompt_yesno(self, prompt):
-        """ Prompts the user with prompt and requires a yes/no answer."""
+        """Prompts the user with prompt and requires a yes/no answer."""
         if self.no_interactive:
             print(prompt)
             print('Selecting "Y" because context is not interactive.')
@@ -554,11 +461,11 @@ class BaseBootstrapper(object):
         This should be defined in child classes.
         """
 
-    def _parse_version_impl(self, path, name, env, version_param):
+    def _parse_version_impl(self, path: Path, name, env, version_param):
         """Execute the given path, returning the version.
 
         Invokes the path argument with the --version switch
-        and returns a LooseVersion representing the output
+        and returns a Version representing the output
         if successful. If not, returns None.
 
         An optional name argument gives the expected program
@@ -570,12 +477,12 @@ class BaseBootstrapper(object):
         etc.
         """
         if not name:
-            name = os.path.basename(path)
+            name = path.name
         if name.lower().endswith(".exe"):
             name = name[:-4]
 
         process = subprocess.run(
-            [path, version_param],
+            [str(path), version_param],
             env=env,
             universal_newlines=True,
             stdout=subprocess.PIPE,
@@ -592,13 +499,10 @@ class BaseBootstrapper(object):
             print("ERROR! Unable to identify %s version." % name)
             return None
 
-        return LooseVersion(match.group(1))
+        return Version(match.group(1))
 
-    def _parse_version(self, path, name=None, env=None):
+    def _parse_version(self, path: Path, name=None, env=None):
         return self._parse_version_impl(path, name, env, "--version")
-
-    def _parse_version_short(self, path, name=None, env=None):
-        return self._parse_version_impl(path, name, env, "-v")
 
     def _hg_cleanenv(self, load_hgrc=False):
         """Returns a copy of the current environment updated with the HGPLAIN
@@ -618,7 +522,7 @@ class BaseBootstrapper(object):
         return env
 
     def is_mercurial_modern(self):
-        hg = which("hg")
+        hg = to_optional_path(which("hg"))
         if not hg:
             print(NO_MERCURIAL)
             return False, False, None
@@ -676,19 +580,8 @@ class BaseBootstrapper(object):
                 "issues with mach. It is recommended to unset this variable."
             )
 
-    def is_nasm_modern(self):
-        nasm = which("nasm")
-        if not nasm:
-            return False
-
-        our = self._parse_version_short(nasm, "version")
-        if not our:
-            return False
-
-        return our >= MODERN_NASM_VERSION
-
-    def is_rust_modern(self, cargo_bin):
-        rustc = which("rustc", extra_search_dirs=[cargo_bin])
+    def is_rust_modern(self, cargo_bin: Path):
+        rustc = to_optional_path(which("rustc", extra_search_dirs=[str(cargo_bin)]))
         if not rustc:
             print("Could not find a Rust compiler.")
             return False, None
@@ -700,51 +593,36 @@ class BaseBootstrapper(object):
         return our >= MODERN_RUST_VERSION, our
 
     def cargo_home(self):
-        cargo_home = os.environ.get(
-            "CARGO_HOME", os.path.expanduser(os.path.join("~", ".cargo"))
-        )
-        cargo_bin = os.path.join(cargo_home, "bin")
+        cargo_home = Path(os.environ.get("CARGO_HOME", Path("~/.cargo").expanduser()))
+        cargo_bin = cargo_home / "bin"
         return cargo_home, cargo_bin
 
-    def win_to_msys_path(self, path):
-        """Convert a windows-style path to msys style."""
-        drive, path = os.path.splitdrive(path)
-        path = "/".join(path.split("\\"))
-        if drive:
-            if path[0] == "/":
-                path = path[1:]
-            path = "/%s/%s" % (drive[:-1], path)
-        return path
-
-    def print_rust_path_advice(self, template, cargo_home, cargo_bin):
+    def print_rust_path_advice(self, template, cargo_home: Path, cargo_bin: Path):
         # Suggest ~/.cargo/env if it exists.
-        if os.path.exists(os.path.join(cargo_home, "env")):
-            cmd = "source %s/env" % cargo_home
+        if (cargo_home / "env").exists():
+            cmd = f"source {cargo_home}/env"
         else:
             # On Windows rustup doesn't write out ~/.cargo/env
             # so fall back to a manual PATH update. Bootstrap
             # only runs under msys, so a unix-style shell command
             # is appropriate there.
-            cargo_bin = self.win_to_msys_path(cargo_bin)
-            cmd = "export PATH=%s:$PATH" % cargo_bin
+            cargo_bin = win_to_msys_path(cargo_bin)
+            cmd = f"export PATH={cargo_bin}:$PATH"
         print(template % {"cargo_bin": cargo_bin, "cmd": cmd})
 
     def ensure_rust_modern(self):
         cargo_home, cargo_bin = self.cargo_home()
         modern, version = self.is_rust_modern(cargo_bin)
 
+        rustup = to_optional_path(which("rustup", extra_search_dirs=[str(cargo_bin)]))
+
         if modern:
             print("Your version of Rust (%s) is new enough." % version)
-            rustup = which("rustup", extra_search_dirs=[cargo_bin])
-            if rustup:
-                self.ensure_rust_targets(rustup, version)
-            return
 
-        if version:
+        elif version:
             print("Your version of Rust (%s) is too old." % version)
 
-        rustup = which("rustup", extra_search_dirs=[cargo_bin])
-        if rustup:
+        if rustup and not modern:
             rustup_version = self._parse_version(rustup)
             if not rustup_version:
                 print(RUSTUP_OLD)
@@ -756,15 +634,21 @@ class BaseBootstrapper(object):
             if not modern:
                 print(RUST_UPGRADE_FAILED % (MODERN_RUST_VERSION, after))
                 sys.exit(1)
-        else:
+        elif not rustup:
             # No rustup. Download and run the installer.
             print("Will try to install Rust.")
             self.install_rust()
+            modern, version = self.is_rust_modern(cargo_bin)
+            rustup = to_optional_path(
+                which("rustup", extra_search_dirs=[str(cargo_bin)])
+            )
 
-    def ensure_rust_targets(self, rustup, rust_version):
+        self.ensure_rust_targets(rustup, version)
+
+    def ensure_rust_targets(self, rustup: Path, rust_version):
         """Make sure appropriate cross target libraries are installed."""
         target_list = subprocess.check_output(
-            [rustup, "target", "list"], universal_newlines=True
+            [str(rustup), "target", "list"], universal_newlines=True
         )
         targets = [
             line.split()[0]
@@ -777,11 +661,11 @@ class BaseBootstrapper(object):
         win32 = "i686-pc-windows-msvc"
         win64 = "x86_64-pc-windows-msvc"
         if rust.platform() == win64 and win32 not in targets:
-            subprocess.check_call([rustup, "target", "add", win32])
+            subprocess.check_call([str(rustup), "target", "add", win32])
 
         if "mobile_android" in self.application:
             # Let's add the most common targets.
-            if rust_version < LooseVersion("1.33"):
+            if rust_version < Version("1.33"):
                 arm_target = "armv7-linux-androideabi"
             else:
                 arm_target = "thumbv7neon-linux-androideabi"
@@ -793,17 +677,17 @@ class BaseBootstrapper(object):
             )
             for target in android_targets:
                 if target not in targets:
-                    subprocess.check_call([rustup, "target", "add", target])
+                    subprocess.check_call([str(rustup), "target", "add", target])
 
-    def upgrade_rust(self, rustup):
+    def upgrade_rust(self, rustup: Path):
         """Upgrade Rust.
 
         Invoke rustup from the given path to update the rust install."""
-        subprocess.check_call([rustup, "update"])
+        subprocess.check_call([str(rustup), "update"])
         # This installs rustfmt when not already installed, or nothing
         # otherwise, while the update above would have taken care of upgrading
         # it.
-        subprocess.check_call([rustup, "component", "add", "rustfmt"])
+        subprocess.check_call([str(rustup), "component", "add", "rustfmt"])
 
     def install_rust(self):
         """Download and run the rustup installer."""
@@ -818,17 +702,18 @@ class BaseBootstrapper(object):
             print("ERROR: Could not download installer.")
             sys.exit(1)
         print("Downloading rustup-init... ", end="")
-        fd, rustup_init = tempfile.mkstemp(prefix=os.path.basename(url))
+        fd, rustup_init = tempfile.mkstemp(prefix=Path(url).name)
+        rustup_init = Path(rustup_init)
         os.close(fd)
         try:
-            self.http_download_and_save(url, rustup_init, checksum)
-            mode = os.stat(rustup_init).st_mode
-            os.chmod(rustup_init, mode | stat.S_IRWXU)
+            http_download_and_save(url, rustup_init, checksum)
+            mode = rustup_init.stat().st_mode
+            rustup_init.chmod(mode | stat.S_IRWXU)
             print("Ok")
             print("Running rustup-init...")
             subprocess.check_call(
                 [
-                    rustup_init,
+                    str(rustup_init),
                     "-y",
                     "--default-toolchain",
                     "stable",
@@ -842,47 +727,7 @@ class BaseBootstrapper(object):
             self.print_rust_path_advice(RUST_INSTALL_COMPLETE, cargo_home, cargo_bin)
         finally:
             try:
-                os.remove(rustup_init)
+                rustup_init.unlink()
             except OSError as e:
                 if e.errno != errno.ENOENT:
                     raise
-
-    def http_download_and_save(self, url, dest, hexhash, digest="sha256"):
-        """Download the given url and save it to dest.  hexhash is a checksum
-        that will be used to validate the downloaded file using the given
-        digest algorithm.  The value of digest can be any value accepted by
-        hashlib.new.  The default digest used is 'sha256'."""
-        f = urlopen(url)
-        h = hashlib.new(digest)
-        with open(dest, "wb") as out:
-            while True:
-                data = f.read(4096)
-                if data:
-                    out.write(data)
-                    h.update(data)
-                else:
-                    break
-        if h.hexdigest() != hexhash:
-            os.remove(dest)
-            raise ValueError("Hash of downloaded file does not match expected hash")
-
-    def ensure_java(self, mozconfig_builder):
-        """Verify the presence of java.
-
-        Finds a valid Java (throwing an error if not possible) and encodes it to the mozconfig.
-        """
-
-        bin_dir = locate_java_bin_path()
-        mozconfig_builder.append(
-            """
-        # Use the same Java binary that was specified in bootstrap. This way, if the default system
-        # Java is different than what Firefox needs, users should just need to override it (with
-        # $JAVA_HOME) when running bootstrap, rather than when interacting with the build.
-        ac_add_options --with-java-bin-path={}
-        """.format(
-                bin_dir
-            )
-        )
-
-        print("Your version of Java ({}) is 1.8.".format(bin_dir))
-        return bin_dir

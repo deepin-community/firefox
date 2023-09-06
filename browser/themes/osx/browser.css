@@ -2,20 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-@namespace html url("http://www.w3.org/1999/xhtml");
+@import url("chrome://browser/skin/browser-shared.css");
+@import url("chrome://browser/skin/browser-custom-colors.css");
 
-%include ../shared/browser.inc.css
-%include ../shared/browser-custom-colors.inc.css
+@namespace html url("http://www.w3.org/1999/xhtml");
 
 :root {
   --toolbar-non-lwt-bgcolor: -moz-dialog;
   --toolbar-non-lwt-textcolor: -moz-dialogtext;
-  --toolbar-non-lwt-bgimage: none;
-
-  --toolbarbutton-vertical-text-padding: calc(var(--toolbarbutton-inner-padding) + 1px);
-  --toolbarbutton-border-radius: 4px;
-
-  --panel-separator-color: hsla(210,4%,10%,.14);
 
   --arrowpanel-field-background: rgba(249,249,250,.3);
 
@@ -27,12 +21,18 @@
 }
 
 :root[lwt-popup-brighttext] {
-  --panel-separator-color: rgba(249,249,250,.1);
   --arrowpanel-field-background: rgba(12,12,13,.3);
+}
+
+#browser {
+  /* #browser and #navigator-toolbox must have relative positions so that the
+     latter can slide over the former in fullscreen mode. */
+  position: relative;
 }
 
 #navigator-toolbox {
   appearance: none;
+  position: relative;
 }
 
 #navigator-toolbox:not(:-moz-lwtheme) {
@@ -54,7 +54,7 @@
 */
 #navigator-toolbox::after {
   content: "";
-  display: -moz-box;
+  display: flex;
   appearance: auto;
   -moz-default-appearance: toolbox;
   height: 1px;
@@ -66,7 +66,7 @@
 
 #titlebar {
   /* Centrally align content items vertically */
-  -moz-box-pack: center;
+  justify-content: center;
 }
 
 .titlebar-button {
@@ -74,7 +74,12 @@
 }
 
 .titlebar-buttonbox-container {
-  -moz-box-align: center;
+  align-items: center;
+}
+
+/* Hide window controls in fullscreen */
+:root[inFullscreen] .titlebar-buttonbox-container {
+  display: none;
 }
 
 .titlebar-buttonbox:-moz-locale-dir(ltr) {
@@ -117,7 +122,7 @@
 /* Draw the bottom border of the tabs toolbar when titlebar isn't using vibrancy */
 :root:not([inFullscreen], [tabsintitlebar]) #nav-bar:not([tabs-hidden="true"]),
 #nav-bar:not([tabs-hidden="true"]):-moz-lwtheme {
-  box-shadow: 0 calc(-1 * var(--tabs-navbar-shadow-size)) 0 var(--tabs-border-color);
+  box-shadow: 0 calc(-1 * var(--tabs-navbar-shadow-size)) 0 var(--lwt-tabs-border-color, rgba(0,0,0,.3));
 }
 
 #nav-bar:not([tabs-hidden="true"]) {
@@ -130,7 +135,7 @@
 
 #nav-bar-customization-target > #wrapper-personal-bookmarks > #personal-bookmarks {
   min-height: 32px;
-  -moz-box-align: center;
+  align-items: center;
 }
 
 /* Workaround for native menubar inheritance */
@@ -161,23 +166,6 @@
   list-style-image: url("chrome://browser/skin/places/bookmarksToolbar.svg");
 }
 
-#PlacesToolbar menupopup[placespopup=true]::part(content) {
-  border: 1px solid var(--arrowpanel-border-color) !important;
-}
-
-#PlacesToolbar menupopup > menu .menu-iconic-icon,
-#PlacesToolbar menupopup > menuitem .menu-iconic-icon {
-  margin-inline-end: 0;
-}
-
-#PlacesToolbar menu menupopup {
-  margin-top: -8px;
-}
-
-%include ../shared/toolbarbuttons.inc.css
-%include ../shared/toolbarbutton-icons.inc.css
-%include ../shared/menupanel.inc.css
-
 /* Inactive elements are faded out on OSX */
 .toolbarbutton-1:not(:hover):-moz-window-inactive,
 .bookmark-item:not(:hover):-moz-window-inactive,
@@ -185,17 +173,7 @@
   opacity: 0.5;
 }
 
-/* ----- FULLSCREEN WINDOW CONTROLS ----- */
-
-#minimize-button,
-#close-button,
-#fullscreen-button ~ #window-controls > #restore-button {
-  display: none;
-}
-
 /* Address bar */
-
-%include ../shared/urlbar-searchbar.inc.css
 
 @media not (prefers-contrast) {
   :root:not(:-moz-lwtheme) #urlbar {
@@ -228,12 +206,6 @@
   }
 }
 
-/* Ensure diacritics and other edge-of-font-box glyphs do not get clipped,
- * even in non-Latin scripts. */
-#urlbar-input {
-  line-height: 1.745em;
-}
-
 /* Move the margin to the parent element to properly position the ::after badge */
 moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left > .menu-iconic-icon {
   margin-inline: 0;
@@ -242,83 +214,18 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
   margin-inline: 0 5px;
 }
 
-%include ../shared/identity-block/identity-block.inc.css
-%include ../shared/notification-icons.inc.css
-%include ../shared/addon-notification.inc.css
-
-/* Address bar results view */
-
-%include ../shared/urlbarView.inc.css
-
 /* ----- AUTOCOMPLETE ----- */
-
-%include ../shared/autocomplete.inc.css
 
 #PopupAutoComplete > richlistbox > richlistitem[originaltype~="datalist-first"] {
   border-top: 1px solid #C7C7C7;
 }
 
-#BMB_bookmarksPopup[side="top"],
-#BMB_bookmarksPopup[side="bottom"] {
-  margin-inline: -17px;
-}
-
-#BMB_bookmarksPopup[side="left"],
-#BMB_bookmarksPopup[side="right"] {
-  margin-block: -17px;
-}
-
 /* Bookmarking panel */
-
-%include ../shared/places/editBookmarkPanel.inc.css
 
 /* The following elements come from editBookmarkPanel.inc.xhtml. Styling that's
    specific to the editBookmarkPanel should be in browser.css. Styling that
    should be shared by all editBookmarkPanel.inc.xhtml consumers should be in
    editBookmark.css. */
-
-#editBMPanel_newFolderBox {
-  background-color: var(--arrowpanel-field-background);
-  color: inherit;
-  border: 1px solid var(--panel-separator-color);
-  border-radius: 0 0 2px 2px;
-  margin: 0;
-  padding: 0;
-  height: 24px;
-}
-
-#editBMPanel_newFolderButton {
-  appearance: none;
-  -moz-box-flex: 1;
-  -moz-context-properties: fill, fill-opacity;
-  fill: currentColor;
-  fill-opacity: 0.8;
-  border: none;
-  border-radius: 0;
-  padding: 0 9px;
-  margin: 0;
-  min-height: 24px;
-  height: 24px;
-  color: inherit;
-  list-style-image: url("chrome://global/skin/icons/plus.svg");
-}
-
-#editBMPanel_newFolderButton:hover {
-  background-color: var(--arrowpanel-dimmed);
-}
-
-#editBMPanel_newFolderButton:hover:active {
-  background-color: var(--arrowpanel-dimmed-further);
-}
-
-#editBMPanel_newFolderButton:-moz-focusring {
-  box-shadow: var(--focus-ring-box-shadow);
-}
-
-#editBMPanel_newFolderButton .button-text {
-  -moz-box-flex: 1; /* push the button icon to the start side */
-  text-align: start;
-}
 
 /**** folder tree and tag selector ****/
 
@@ -330,12 +237,6 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
   border-radius: 2px;
   border: 1px solid var(--panel-separator-color);
   margin: 0;
-}
-
-#editBMPanel_folderTree:-moz-focusring,
-#editBMPanel_tagsSelector:-moz-focusring {
-  border-color: -moz-mac-focusring;
-  box-shadow: var(--focus-ring-box-shadow);
 }
 
 #editBMPanel_folderTree > treechildren::-moz-tree-row(blur,selected),
@@ -361,8 +262,6 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
 }
 
 /* ----- SIDEBAR ELEMENTS ----- */
-
-%include ../shared/sidebar.inc.css
 
 #browser {
   --sidebar-border-color: hsla(240, 5%, 5%, .1);
@@ -395,8 +294,6 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
 #tabbrowser-tabbox {
   margin: 0;
 }
-
-%include ../shared/tabs.inc.css
 
 .tab-label {
   margin-block: 1px 0;
@@ -435,10 +332,11 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
 }
 
 #tabbrowser-tabs {
-  -moz-box-align: stretch;
-  padding-inline: 0;
+  /* overriding tabbox.css */
+  align-items: stretch;
   margin-bottom: 0;
   position: static;
+  z-index: auto;
 }
 
 /* Bookmark drag and drop styles */
@@ -447,10 +345,6 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
   background: SelectedItem !important;
   color: SelectedItemText !important;
 }
-
-/* Translation */
-
-%include ../shared/translation/infobar.inc.css
 
 /* Status panel */
 
@@ -464,7 +358,7 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
   text-shadow: none;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (-moz-content-prefers-color-scheme: dark) {
   #statuspanel-label {
     background-color: hsl(240, 1%, 20%);
     border-color: hsl(240, 1%, 40%);
@@ -472,38 +366,19 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
   }
 }
 
-#statuspanel:not([mirror]) > #statuspanel-inner > #statuspanel-label:-moz-locale-dir(ltr),
-#statuspanel[mirror] > #statuspanel-inner > #statuspanel-label:-moz-locale-dir(rtl) {
+#statuspanel:not([mirror]) > #statuspanel-label:-moz-locale-dir(ltr),
+#statuspanel[mirror] > #statuspanel-label:-moz-locale-dir(rtl) {
   border-right-style: solid;
   border-top-right-radius: .3em;
   margin-right: 1em;
 }
 
-#statuspanel:not([mirror]) > #statuspanel-inner > #statuspanel-label:-moz-locale-dir(rtl),
-#statuspanel[mirror] > #statuspanel-inner > #statuspanel-label:-moz-locale-dir(ltr) {
+#statuspanel:not([mirror]) > #statuspanel-label:-moz-locale-dir(rtl),
+#statuspanel[mirror] > #statuspanel-label:-moz-locale-dir(ltr) {
   border-left-style: solid;
   border-top-left-radius: .3em;
   margin-left: 1em;
 }
-
-%include ../shared/fullscreen/warning.inc.css
-%include ../shared/ctrlTab.inc.css
-
-/* On mac, the popup notification contents are indented by default and so
-  the default closebutton margins from notification.css require adjustment */
-
-.click-to-play-plugins-notification-description-box > .popup-notification-closebutton {
-  margin-inline-end: -6px;
-  margin-top: -7px;
-}
-
-/* Customization mode */
-
-%include ../shared/customizableui/customizeMode.inc.css
-
-/* End customization mode */
-
-%include ../shared/UITour.inc.css
 
 #UITourTooltipDescription {
   font-size: 1.18rem;
@@ -513,13 +388,4 @@ moz-input-box > menupopup .context-menu-add-engine > .menu-iconic-left {
 #UITourTooltipClose {
   margin-inline-end: -10px;
   margin-top: -14px;
-}
-
-.cui-widget-panelview[id^=PanelUI-webext-] {
-  border-radius: var(--arrowpanel-border-radius);
-}
-
-.webextension-popup-browser,
-.webextension-popup-stack {
-  border-radius: inherit;
 }

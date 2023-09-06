@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Asistent pentru crearea profilului
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Introducere
-       *[other] Bine ai venit la { create-profile-window.title }
+       *[other] Bine ai venit la { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } stochează informații despre setări și preferințe în profilul tău personal.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Încheiere
-       *[other] Încheiere { create-profile-window.title }
+       *[other] Încheiere { create-profile-window2.title }
     }
 
 profile-creation-intro = Dacă creezi mai multe profiluri, le poți deosebi după denumirile profilurilor. Poți folosi denumirea sugerată aici sau denumirea pe care o dorești tu.

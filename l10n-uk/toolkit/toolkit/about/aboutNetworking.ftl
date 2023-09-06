@@ -8,18 +8,18 @@ about-networking-sockets = Сокети
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Очистити кеш DNS
 about-networking-dns-trr-url = URL-адреса DoH
+about-networking-dns-trr-mode = Режим DoH
 about-networking-dns-suffix = Суфікс DNS
 about-networking-websockets = Вебсокети
 about-networking-refresh = Оновити
 about-networking-auto-refresh = Автооновлювати кожні 3 секунди
-about-networking-hostname = Ім’я хоста
+about-networking-hostname = Ім'я хосту
 about-networking-port = Порт
 about-networking-http-version = Версія HTTP
 about-networking-ssl = SSL
 about-networking-active = Активний
 about-networking-idle = Очікування
 about-networking-host = Хост
-about-networking-tcp = TCP
 about-networking-type = Тип
 about-networking-sent = Надіслано
 about-networking-received = Отримано
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Адреси
 about-networking-expires = Дійсний до (секунди)
 about-networking-originAttributesSuffix = Ключ ізоляції
+about-networking-flags = Додаткові прапори
 about-networking-messages-sent = Повідомлень надіслано
 about-networking-messages-received = Повідомлень отримано
 about-networking-bytes-sent = Байтів надіслано
 about-networking-bytes-received = Байтів отримано
 about-networking-logging = Журналювання
-about-networking-log-tutorial = Перегляньте <a data-l10n-name="logging">HTTP журналювання</a> для інструкцій з використання цього засобу.
-about-networking-current-log-file = Поточний файл журналу:
-about-networking-current-log-modules = Поточні модулі журналу:
-about-networking-set-log-file = Встановити файл журналу
-about-networking-set-log-modules = Встановити модулі журналу
-about-networking-start-logging = Почати журналювання
-about-networking-stop-logging = Зупинити журналювання
 about-networking-dns-lookup = DNS пошук
 about-networking-dns-lookup-button = Вирішити
 about-networking-dns-domain = Домен:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Лічильник повільного ке�
 about-networking-rcwn-cache-not-slow = Лічильник не повільного кешу
 about-networking-networkid = ID мережі
 about-networking-networkid-id = ID мережі
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Цю сторінку було переміщено до <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

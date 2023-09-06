@@ -58,9 +58,13 @@ if CONFIG["MOZ_CRASHREPORTER"]:
         if CONFIG["MOZ_OXIDIZED_BREAKPAD"]:
             DIRS += ["rust_minidump_writer_linux"]
 
+    if CONFIG["OS_TARGET"] != "Android":
+        DIRS += ["minidump-analyzer"]
+
     DIRS += [
         "client",
-        "minidump-analyzer",
+        "mozannotation_client",
+        "mozannotation_server",
     ]
 
     if CONFIG["MOZ_CRASHREPORTER_INJECTOR"]:
@@ -70,14 +74,10 @@ if CONFIG["MOZ_CRASHREPORTER"]:
             "LoadLibraryRemote.cpp",
         ]
 
-    if CONFIG["ENABLE_TESTS"]:
-        DIRS += ["test/gtest"]
-
     TEST_DIRS += ["test"]
 
     UNIFIED_SOURCES += [
         "nsExceptionHandler.cpp",
-        "ThreadAnnotation.cpp",
     ]
 
     if CONFIG["OS_ARCH"] == "Darwin":
@@ -86,8 +86,8 @@ if CONFIG["MOZ_CRASHREPORTER"]:
         ]
 
     EXTRA_JS_MODULES += [
-        "CrashReports.jsm",
-        "CrashSubmit.jsm",
+        "CrashReports.sys.mjs",
+        "CrashSubmit.sys.mjs",
     ]
 
     include("/ipc/chromium/chromium-config.mozbuild")
@@ -120,7 +120,7 @@ if CONFIG["MOZ_CRASHREPORTER"]:
     include("/toolkit/crashreporter/crashreporter.mozbuild")
 
     if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-        CXXFLAGS += ["-Wno-shadow", "-Wno-error=stack-protector"]
+        CXXFLAGS += ["-Wno-error=stack-protector"]
 else:
     UNIFIED_SOURCES += [
         "nsDummyExceptionHandler.cpp",
@@ -139,5 +139,3 @@ GeneratedFile(
 
 with Files("**"):
     BUG_COMPONENT = ("Toolkit", "Crash Reporting")
-
-REQUIRES_UNIFIED_BUILD = True

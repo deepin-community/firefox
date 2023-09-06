@@ -14,6 +14,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Барлығы
+printui-page-range-current = Ағымдағы
+printui-page-range-odd = Тақ
+printui-page-range-even = Жұп
 printui-page-range-custom = Таңдауыңызша
 printui-page-range-label = Парақтар
 printui-page-range-picker =

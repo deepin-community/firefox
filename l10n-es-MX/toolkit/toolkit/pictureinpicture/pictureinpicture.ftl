@@ -4,19 +4,71 @@
 
 pictureinpicture-player-title = Picture-in-Picture
 
-pictureinpicture-pause =
-    .aria-label = Pausar
-pictureinpicture-play =
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
+
+## Note that this uses .tooltip rather than the standard '.title'
+## or '.tooltiptext' -  but it has the same effect. Code in the
+## picture-in-picture window will read and copy this to an in-document
+## DOM node that then shows the tooltip.
+##
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
+
+pictureinpicture-pause-btn =
+    .aria-label = Pausa
+    .tooltip = Pausa (barra espaciadora)
+pictureinpicture-play-btn =
     .aria-label = Reproducir
+    .tooltip = Reproducir (barra espaciadora)
 
-pictureinpicture-mute =
+pictureinpicture-mute-btn =
     .aria-label = Silenciar
-pictureinpicture-unmute =
-    .aria-label = Escuchar
+    .tooltip = Silenciar ({ $shortcut })
+pictureinpicture-unmute-btn =
+    .aria-label = Activar sonido
+    .tooltip = Activar sonido ({ $shortcut })
 
-pictureinpicture-unpip =
+pictureinpicture-unpip-btn =
     .aria-label = Enviar de vuelta a la pestaña
+    .tooltip = Volver a la pestaña
 
-pictureinpicture-close =
+pictureinpicture-close-btn =
     .aria-label = Cerrar
+    .tooltip = Cerrar ({ $shortcut })
 
+pictureinpicture-subtitles-btn =
+    .aria-label = Subtítulos
+    .tooltip = Subtítulos
+
+##
+
+## Note that this uses .tooltip rather than the standard '.title'
+## or '.tooltiptext' -  but it has the same effect. Code in the
+## picture-in-picture window will read and copy this to an in-document
+## DOM node that then shows the tooltip.
+
+pictureinpicture-seekbackward-btn =
+    .aria-label = Ir atrás
+    .tooltip = Ir atrás (←)
+
+pictureinpicture-seekforward-btn =
+    .aria-label = Ir adelante
+    .tooltip = Ir adelante (→)
+
+##
+
+# This string is never displayed on the window. Is intended to be announced by
+# a screen reader whenever a user opens the subtitles settings panel
+# after selecting the subtitles button.
+pictureinpicture-subtitles-panel-accessible = Configuración de subtítulos
+
+pictureinpicture-subtitles-label = Subtítulos
+
+pictureinpicture-font-size-label = Tamaño de fuente
+
+pictureinpicture-font-size-small = Pequeño
+
+pictureinpicture-font-size-medium = Mediano
+
+pictureinpicture-font-size-large = Grande

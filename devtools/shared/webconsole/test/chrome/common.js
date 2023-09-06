@@ -6,38 +6,22 @@
 
 /* exported attachConsole, attachConsoleToTab, attachConsoleToWorker,
    closeDebugger, checkConsoleAPICalls, checkRawHeaders, runTests, nextTest, Ci, Cc,
-   withActiveServiceWorker, Services, consoleAPICall, createCommandsForTab */
+   withActiveServiceWorker, Services, consoleAPICall, createCommandsForTab, FRACTIONAL_NUMBER_REGEX, DevToolsServer */
 
-const { require } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
-const { DevToolsServer } = require("devtools/server/devtools-server");
-// eslint-disable-next-line mozilla/reject-some-requires
-const { DevToolsClient } = require("devtools/client/devtools-client");
+const { require } = ChromeUtils.importESModule(
+  "resource://devtools/shared/loader/Loader.sys.mjs"
+);
+const {
+  DevToolsServer,
+} = require("resource://devtools/server/devtools-server.js");
 const {
   CommandsFactory,
-} = require("devtools/shared/commands/commands-factory");
+} = require("resource://devtools/shared/commands/commands-factory.js");
 
-const Services = require("Services");
-
-function initCommon() {
-  // Services.prefs.setBoolPref("devtools.debugger.log", true);
-}
-
-function initDevToolsServer() {
-  DevToolsServer.init();
-  DevToolsServer.registerAllActors();
-  DevToolsServer.allowChromeProcess = true;
-}
-
-async function connectToDebugger() {
-  initCommon();
-  initDevToolsServer();
-
-  const transport = DevToolsServer.connectPipe();
-  const client = new DevToolsClient(transport);
-
-  await client.connect();
-  return client;
-}
+// timeStamp are the result of a number in microsecond divided by 1000.
+// so we can't expect a precise number of decimals, or even if there would
+// be decimals at all.
+const FRACTIONAL_NUMBER_REGEX = /^\d+(\.\d{1,3})?$/;
 
 function attachConsole(listeners) {
   return _attachConsole(listeners);
@@ -49,10 +33,8 @@ function attachConsoleToWorker(listeners) {
   return _attachConsole(listeners, true, true);
 }
 
-var _attachConsole = async function(listeners, attachToTab, attachToWorker) {
+var _attachConsole = async function (listeners, attachToTab, attachToWorker) {
   try {
-    const client = await connectToDebugger();
-
     function waitForMessage(target) {
       return new Promise(resolve => {
         target.addEventListener("message", resolve, { once: true });
@@ -61,20 +43,20 @@ var _attachConsole = async function(listeners, attachToTab, attachToWorker) {
 
     // Fetch the console actor out of the expected target
     // ParentProcessTarget / WorkerTarget / FrameTarget
-    let target, worker;
+    let commands, target, worker;
     if (!attachToTab) {
-      const targetDescriptor = await client.mainRoot.getMainProcess();
-      target = await targetDescriptor.getTarget();
+      commands = await CommandsFactory.forMainProcess();
+      target = await commands.descriptorFront.getTarget();
     } else {
-      const targetDescriptor = await client.mainRoot.getTab();
-      target = await targetDescriptor.getTarget();
+      commands = await CommandsFactory.forCurrentTabInChromeMochitest();
+      // Descriptor's getTarget will only work if the TargetCommand watches for the first top target
+      await commands.targetCommand.startListening();
+      target = await commands.descriptorFront.getTarget();
       if (attachToWorker) {
         const workerName = "console-test-worker.js#" + new Date().getTime();
         worker = new Worker(workerName);
         await waitForMessage(worker);
 
-        // listWorkers only works if the browsing context target actor is attached
-        await target.attach();
         const { workers } = await target.listWorkers();
         target = workers.filter(w => w.url == workerName)[0];
         if (!target) {
@@ -83,11 +65,13 @@ var _attachConsole = async function(listeners, attachToTab, attachToWorker) {
           );
           return null;
         }
+        // This is still important to attach workers as target is still a descriptor front
+        // which "becomes" a target when calling this method:
+        await target.morphWorkerDescriptorIntoWorkerTarget();
       }
     }
 
     // Attach the Target and the target thread in order to instantiate the console client.
-    await target.attach();
     await target.attachThread();
 
     const webConsoleFront = await target.getFront("console");
@@ -97,7 +81,7 @@ var _attachConsole = async function(listeners, attachToTab, attachToWorker) {
     const response = await webConsoleFront.startListeners(listeners);
     return {
       state: {
-        dbgClient: client,
+        dbgClient: commands.client,
         webConsoleFront,
         actor: webConsoleFront.actor,
         // Keep a strong reference to the Worker to avoid it being
@@ -139,7 +123,7 @@ function checkConsoleAPICalls(consoleCalls, expectedConsoleCalls) {
     expectedConsoleCalls.length,
     "received correct number of console calls"
   );
-  expectedConsoleCalls.forEach(function(message, index) {
+  expectedConsoleCalls.forEach(function (message, index) {
     info("checking received console call #" + index);
     checkConsoleAPICall(consoleCalls[index], expectedConsoleCalls[index]);
   });

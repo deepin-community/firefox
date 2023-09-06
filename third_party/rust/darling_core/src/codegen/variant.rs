@@ -1,16 +1,16 @@
 use std::borrow::Cow;
 
 use proc_macro2::TokenStream;
-use quote::{ToTokens, TokenStreamExt};
+use quote::{quote, ToTokens, TokenStreamExt};
 use syn::Ident;
 
-use ast::Fields;
-use codegen::error::{ErrorCheck, ErrorDeclaration};
-use codegen::{Field, FieldsGen};
-use usage::{self, IdentRefSet, IdentSet, UsesTypeParams};
+use crate::ast::Fields;
+use crate::codegen::error::{ErrorCheck, ErrorDeclaration};
+use crate::codegen::{Field, FieldsGen};
+use crate::usage::{self, IdentRefSet, IdentSet, UsesTypeParams};
 
 /// A variant of the enum which is deriving `FromMeta`.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct Variant<'a> {
     /// The name which will appear in code passed to the `FromMeta` input.
     pub name_in_attr: Cow<'a, String>,
@@ -112,7 +112,7 @@ impl<'a> ToTokens for DataMatchArm<'a> {
 
         if val.data.is_struct() {
             let declare_errors = ErrorDeclaration::default();
-            let check_errors = ErrorCheck::with_location(&name_in_attr);
+            let check_errors = ErrorCheck::with_location(name_in_attr);
             let require_fields = vdg.require_fields();
             let decls = vdg.declarations();
             let core_loop = vdg.core_loop();
@@ -120,8 +120,9 @@ impl<'a> ToTokens for DataMatchArm<'a> {
 
             tokens.append_all(quote!(
                 #name_in_attr => {
-                    if let ::syn::Meta::List(ref __data) = *__nested {
-                        let __items = &__data.nested;
+                    if let ::darling::export::syn::Meta::List(ref __data) = *__nested {
+                        let __items = ::darling::export::NestedMeta::parse_meta_list(__data.tokens.clone())?;
+                        let __items = &__items;
 
                         #declare_errors
 

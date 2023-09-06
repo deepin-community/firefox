@@ -16,6 +16,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Wszystkie
+printui-page-range-current = Bieżąca
+printui-page-range-odd = Nieparzyste
+printui-page-range-even = Parzyste
 printui-page-range-custom = Wybrane
 printui-page-range-label = Strony
 printui-page-range-picker =

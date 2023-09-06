@@ -12,19 +12,12 @@ async function createTab() {
 }
 
 function getTelemetryMaxPipCount(resetMax = false) {
-  const scalarData = Services.telemetry.getSnapshotForScalars("main", resetMax)
-    .parent;
+  const scalarData = Services.telemetry.getSnapshotForScalars(
+    "main",
+    resetMax
+  ).parent;
   return scalarData["pictureinpicture.most_concurrent_players"];
 }
-
-/**
- * Set pref for multiple PiP support first
- */
-add_task(async () => {
-  return SpecialPowers.pushPrefEnv({
-    set: [["media.videocontrols.picture-in-picture.allow-multiple", true]],
-  });
-});
 
 /**
  * Tests that multiple PiPs can be opened and closed in a single tab
@@ -119,7 +112,7 @@ add_task(async () => {
   await firstClosed;
   info("First PiP closed after closing the first tab");
 
-  await assertVideoIsBeingCloned(secondTab.linkedBrowser, "with-controls");
+  await assertVideoIsBeingCloned(secondTab.linkedBrowser, "#with-controls");
   info("Second PiP is still open after first tab close");
 
   let secondClosed = BrowserTestUtils.domWindowClosed(secondPip);

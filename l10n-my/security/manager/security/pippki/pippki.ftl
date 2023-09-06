@@ -13,8 +13,6 @@ change-password-old = လက်ရှိ စကားဝှက် -
 change-password-new = စကားဝှက် အသစ် -
 change-password-reenter = စကားဝှက် အသစ် (ပြန်ရေးပါ) -
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = လက်မှတ် ဆွဲချနေတယ်
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = လက်မှတ် အာဏာပိုင် (CA) သစ်တခုကို စိတ်ချဖို့ သင့်ကို တောင်းဆိုခဲ့တယ်။
 download-cert-trust-ssl =
     .label = ဝဘ်ဆိုက်များကို ခွဲခြားသိရှိနိုင်ရန် ယခု CA ကို သုံးမည်။
@@ -56,7 +54,5 @@ set-password-reminder = Important: If you forget your certificate backup passwor
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = ကာကွယ်ထားတဲ့ အမှတ်အသား အတည်ပြုမှု
-protected-auth-msg = အမှတ်အသားကို အတည်ပြုပါ။ အတည်ပြုမှု နည်းလမ်းဟာ သင့်ရဲ့ အမှတ်အသား အမျိုးအစားပေါ်မှာ မူတည်တယ်။
-protected-auth-token = အမှတ်အသား -
+## Protected authentication alert
+

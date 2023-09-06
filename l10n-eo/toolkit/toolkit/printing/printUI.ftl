@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Ĉiuj
+printui-page-range-current = Nuna
+printui-page-range-odd = Malpara
+printui-page-range-even = Para
 printui-page-range-custom = Personecigite
 printui-page-range-label = Paĝoj
 printui-page-range-picker =

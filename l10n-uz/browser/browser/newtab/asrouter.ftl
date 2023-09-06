@@ -35,7 +35,6 @@ cfr-doorhanger-extension-author = { $name } boʻyicha
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Tavsiya
-
 cfr-doorhanger-extension-notification2 = Tavsiya
     .tooltiptext = Kengaytma taklifi
     .a11y-announcement = Kengaytma taklifi mavjud
@@ -66,9 +65,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } ta foydalanuvchi
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Xatchoʻplardan har qanday joyda foydalanishingiz mumkin
@@ -96,53 +92,70 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Reliz qaydlarini oʻqish
 
-## Search Bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 cfr-doorhanger-milestone-ok-button = Barchasini koʻrish
     .accesskey = k
 
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 ## DOH Message
 
-## What's new: Cookies message
 
 ## Fission Experiment Message
 
+
 ## Full Video Support CFR message
+
+cfr-doorhanger-video-support-body = Bu saytdagi videolar { -brand-short-name }ning bu versiyasida koʻrsatilmasligi mumkin. Bu videolarni tomosha qilish uchun { -brand-short-name }ni hoziroq yangilang.
+cfr-doorhanger-video-support-header = Videolarni tomosha qilish uchun { -brand-short-name }ni yangilang
+cfr-doorhanger-video-support-primary-button = Hozir yangilash
+    .accesskey = H
+
+## Spotlight modal shared strings
+
 
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
+
+# This header text can be explicitly wrapped.
+spotlight-public-wifi-vpn-header = Siz umumiy Wi-Fi tarmogʻidan foydalanayotganga oʻxshaysiz
+spotlight-public-wifi-vpn-primary-button = { -mozilla-vpn-brand-name } bilan maxfiy qoling
+    .accesskey = m
+spotlight-public-wifi-vpn-link = Hozir emas
+    .accesskey = H
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+## Firefox View CFR
+
+## Firefox View Spotlight
+
+## Colorways expiry reminder CFR
+
+## Cookie Banner Handling CFR
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
 

@@ -17,9 +17,9 @@ certmgr-tab-servers =
 certmgr-tab-ca =
     .label = Hiney
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Tabatiyan-tiira hini naanay kayandiyaney fasal
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Naanay kayandiyaney fasal:
 
@@ -29,18 +29,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Tabatiyan-tiiraa woo ka hin ka bataga goykey tammaasa.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Tabatiyan-tiiraa woo tuusu
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = Tabatiyan-tiira maa
 
 certmgr-cert-server =
     .label = Feršikaw
-
-certmgr-override-lifetime =
-    .label = Hundimee
 
 certmgr-token-name =
     .label = Saajaw jinay
@@ -169,9 +166,8 @@ delete-email-cert-impact = Nda war na boro foo bataga tabatiyan-tiiraa tuusu, wa
 cert-with-serial =
     .value = Tabatiyan-tiira nda fannu lanba: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

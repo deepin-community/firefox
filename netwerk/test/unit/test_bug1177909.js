@@ -1,7 +1,7 @@
 "use strict";
 
-const { MockRegistrar } = ChromeUtils.import(
-  "resource://testing-common/MockRegistrar.jsm"
+const { MockRegistrar } = ChromeUtils.importESModule(
+  "resource://testing-common/MockRegistrar.sys.mjs"
 );
 
 XPCOMUtils.defineLazyServiceGetter(
@@ -11,7 +11,7 @@ XPCOMUtils.defineLazyServiceGetter(
   "nsIProtocolProxyService"
 );
 
-XPCOMUtils.defineLazyGetter(this, "systemSettings", function() {
+XPCOMUtils.defineLazyGetter(this, "systemSettings", function () {
   return {
     QueryInterface: ChromeUtils.generateQI(["nsISystemProxySettings"]),
 
@@ -50,10 +50,7 @@ function makeChannel(uri) {
 }
 
 async function TestProxyType(chan, flags) {
-  const prefs = Cc["@mozilla.org/preferences-service;1"].getService(
-    Ci.nsIPrefBranch
-  );
-  prefs.setIntPref(
+  Services.prefs.setIntPref(
     "network.proxy.type",
     Ci.nsIProtocolProxyService.PROXYCONFIG_SYSTEM
   );
@@ -98,15 +95,9 @@ add_task(async function testDirectProxy() {
     .createInstance(Ci.nsIURIMutator)
     .setSpec("wss://ws.mozilla.org/")
     .finalize();
-  let uri = proxyURI
-    .mutate()
-    .setScheme("https")
-    .finalize();
+  let uri = proxyURI.mutate().setScheme("https").finalize();
 
-  let ioService = Cc["@mozilla.org/network/io-service;1"].getService(
-    Ci.nsIIOService
-  );
-  let chan = ioService.newChannelFromURIWithProxyFlags(
+  let chan = Services.io.newChannelFromURIWithProxyFlags(
     uri,
     proxyURI,
     0,
@@ -127,20 +118,14 @@ add_task(async function testWebSocketProxy() {
     .createInstance(Ci.nsIURIMutator)
     .setSpec("wss://ws.mozilla.org/")
     .finalize();
-  let uri = proxyURI
-    .mutate()
-    .setScheme("https")
-    .finalize();
+  let uri = proxyURI.mutate().setScheme("https").finalize();
 
   let proxyFlags =
     Ci.nsIProtocolProxyService.RESOLVE_PREFER_SOCKS_PROXY |
     Ci.nsIProtocolProxyService.RESOLVE_PREFER_HTTPS_PROXY |
     Ci.nsIProtocolProxyService.RESOLVE_ALWAYS_TUNNEL;
 
-  let ioService = Cc["@mozilla.org/network/io-service;1"].getService(
-    Ci.nsIIOService
-  );
-  let chan = ioService.newChannelFromURIWithProxyFlags(
+  let chan = Services.io.newChannelFromURIWithProxyFlags(
     uri,
     proxyURI,
     proxyFlags,
@@ -164,10 +149,7 @@ add_task(async function testPreferHttpsProxy() {
     .finalize();
   let proxyFlags = Ci.nsIProtocolProxyService.RESOLVE_PREFER_HTTPS_PROXY;
 
-  let ioService = Cc["@mozilla.org/network/io-service;1"].getService(
-    Ci.nsIIOService
-  );
-  let chan = ioService.newChannelFromURIWithProxyFlags(
+  let chan = Services.io.newChannelFromURIWithProxyFlags(
     uri,
     null,
     proxyFlags,
@@ -191,9 +173,10 @@ add_task(async function testProxyHttpsToHttpIsBlocked() {
     Ci.nsIProtocolProxyService.RESOLVE_PREFER_HTTPS_PROXY |
     Ci.nsIProtocolProxyService.RESOLVE_ALWAYS_TUNNEL;
 
-  const fakeContentPrincipal = Services.scriptSecurityManager.createContentPrincipalFromOrigin(
-    "https://example.com"
-  );
+  const fakeContentPrincipal =
+    Services.scriptSecurityManager.createContentPrincipalFromOrigin(
+      "https://example.com"
+    );
 
   const chan = Services.io.newChannelFromURIWithProxyFlags(
     turnUri,
@@ -237,9 +220,10 @@ add_task(async function testProxyHttpsToTurnTcpWorks() {
     Ci.nsIProtocolProxyService.RESOLVE_PREFER_HTTPS_PROXY |
     Ci.nsIProtocolProxyService.RESOLVE_ALWAYS_TUNNEL;
 
-  const fakeContentPrincipal = Services.scriptSecurityManager.createContentPrincipalFromOrigin(
-    "https://example.com"
-  );
+  const fakeContentPrincipal =
+    Services.scriptSecurityManager.createContentPrincipalFromOrigin(
+      "https://example.com"
+    );
 
   const chan = Services.io.newChannelFromURIWithProxyFlags(
     turnUri,

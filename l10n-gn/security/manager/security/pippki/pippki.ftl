@@ -16,8 +16,6 @@ change-password-old = Ñe’ẽñemi ag̃agua:
 change-password-new = Ñe’ẽñemi pyahu:
 change-password-reenter = Ñe’ẽñemi pyahu: (ñemoneĩ):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Ndaikatúi emoambue ne’ẽñemi.
 pippki-incorrect-pw = Neremoingeporãi ne’ẽñemi ha’etéva ag̃aguáva. Eha’ãjey upe rire.
 pippki-pw-change-ok = Emoambuéma ñe’ẽñemi hekopete.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Ko’ag̃aite oĩhína FIPS rekópe. FIPS 
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Eguerujey Ñe’ẽñemi Ha’etéva
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Mbojevyjey
-
 reset-primary-password-text = Eguerujeýramo ne ñe’ẽñemi ha’etéva, opaite ñanduti ñe’ẽñemi ha ñandutiveve, mboajepyre nemba’éva, ha pe’aha ñemigua mbyatypyre ojehejareíta. ¿Añetehápe reguerusejey ne Ñe’ẽñemi Ha’etéva?
 
 pippki-reset-password-confirmation-title = Eguerujey Ñe’ẽñemi Ñepyrũgua
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Ojeguerujeýma ne ñe’ẽñemi ha
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Mboajepyréva ñemboguejy
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Ojejerure ndéve ejerovia hag̃ua pe Myakãha Mboajeha (MM) pyahu rehe.
 download-cert-trust-ssl =
     .label = Ejerovia ko CA rehe ehechakuaa hag̃ua ñanduti renda.
@@ -77,7 +74,8 @@ set-password-reminder = Mba’eguasúva: nderesaráiramo ñe’ẽñemi pytyvõr
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Jehechaukaha omo’ãva token
-protected-auth-msg = Ejehechaukáke pe token ndive. Pe jehechauka ra’ãha oñondive pe token mba’echaguaitépa.
-protected-auth-token = Hecharãnte:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Ejekuaauka eipurúvo token “{ $tokenName }”. Mba’éicha ejapóta odepende pe token rehe (techapyrã, eipurúvo kuãhũ moñe’ẽha térã emoingévo ayvu tairenda ndive).

@@ -40,7 +40,7 @@ appmenu-update-other-instance-message = Una nueva actualización de { -brand-sho
 
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Aceptar
-    .buttonaccesskey = O
+    .buttonaccesskey = A
 appmenu-addon-post-install-message3 = Administre los complementos y temas desde el menú de la aplicación.
 appmenu-addon-post-install-incognito-checkbox =
     .label = Permitir que esta extensión se ejecute en pestañas privadas

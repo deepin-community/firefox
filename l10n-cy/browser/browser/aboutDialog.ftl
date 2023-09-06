@@ -15,25 +15,43 @@ update-updateButton =
     .label = Ailgychwyn i ddiweddaru { -brand-shorter-name }
     .accesskey = A
 
-update-checkingForUpdates = Gwirio am ddiweddariadau…
-update-downloading = <img data-l10n-name="icon"/>Llwytho'r diweddariad i lawr — <label data-l10n-name="download-status"/>
-update-downloading-message = Yn llwytho i lawr y diweddariad — <label data-l10n-name="download-status"/>
-update-applying = Gosod y diweddariad…
+update-checkingForUpdates = Wrthi'n gwirio am ddiweddariadau…
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Wrthi'n llwytho'r diweddariad i lawr — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Wrthi'n llwytho'r diweddariad i lawr — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
+update-applying = Wrthi'n gosod y diweddariad…
 
 update-failed = Methodd y diweddaru. <label data-l10n-name="failed-link">Llwythwch y fersiwn diweddaraf i lawr</label>
 update-failed-main = Methodd y diweddaru. <a data-l10n-name="failed-link-main">Llwythwch y fersiwn diweddaraf i lawr</a>
 
 update-adminDisabled = Mae'r diweddariad wedi ei analluogi gan eich gweinyddwr
 update-noUpdatesFound = Mae { -brand-short-name } yn gyfredol
+aboutdialog-update-checking-failed = Wedi methu â gwirio am ddiweddariadau.
 update-otherInstanceHandlingUpdates = Mae { -brand-short-name } yn cael ei ddiweddaru gan enghraifft arall
 
-update-manual = Diweddariadau ar gael yn <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Mae diweddariadau ar gael yn <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Mae diweddariadau ar gael yn <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Nid oes modd i chi ddiweddaru'r system hon ymhellach. <label data-l10n-name="unsupported-link">Dysgu rhagor</label>
 
 update-restarting = Ailgychwyn…
 
-channel-description = Rydych ar sianel diweddaru <label data-l10n-name="current-channel"></label>.
+update-internal-error2 = Methu gwirio am ddiweddariadau oherwydd gwall mewnol. Mae diweddariadau ar gael yn <label data-l10n-name="manual-link">{ $displayUrl }</label>
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Rydych ar sianel diweddaru <label data-l10n-name="current-channel">{ $channel }</label>.
 
 warningDesc-version = Mae { -brand-short-name } yn arbrofol a gall fod yn ansad.
 

@@ -13,13 +13,11 @@ change-password-old = Текуща парола:
 change-password-new = Нова парола:
 change-password-reenter = Нова парола (отново):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Нулиране на главна парола
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Нулиране
 
@@ -28,9 +26,9 @@ pippki-reset-password-confirmation-message = Главната парола е н
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Изтегляне на сертификат
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Поискано е да се доверите на нов удостоверител на сертификати (CA).
 download-cert-trust-ssl =
     .label = Доверяване на този CA за идентифициране на страници.
@@ -62,7 +60,5 @@ set-password-reminder = Важно: Ако забравите паролата �
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Защитен удостоверяващ токен
-protected-auth-msg = Моля, удостоверете токена. Начинът на удостоверяване зависи от токена.
-protected-auth-token = Токен:
+## Protected authentication alert
+

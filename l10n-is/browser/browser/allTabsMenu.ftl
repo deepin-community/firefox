@@ -7,11 +7,11 @@ all-tabs-menu-search-tabs =
     .label = Leita í flipum
 
 all-tabs-menu-new-user-context =
-    .label = Nýr hópaflipi
+    .label = Nýr sérefnisflipi
 
 all-tabs-menu-hidden-tabs =
     .label = Faldir flipar
 
 all-tabs-menu-manage-user-context =
-    .label = Stjórna hópafllipum
-    .accesskey = O
+    .label = Stjórna sérefnisfllipum
+    .accesskey = f

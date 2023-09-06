@@ -9,12 +9,12 @@ license = "MPL-2.0"
 
 [dependencies]
 log = { version = "0.4", features = ["std"] }
-mozilla-central-workspace-hack = { path = "../../../../build/workspace-hack" }
+mozilla-central-workspace-hack = { version = "0.1", features = ["defaultagent-static"], optional = true }
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 url = "2.1"
-viaduct = { git = "https://github.com/mozilla/application-services", rev = "8a576fbe79199fa8664f64285524017f74ebcc5f"}
+viaduct = "0.1"
 wineventlog = { path = "wineventlog"}
 wio = "0.2"
 winapi = { version = "0.3", features = ["errhandlingapi", "handleapi", "minwindef", "winerror", "wininet", "winuser"] }

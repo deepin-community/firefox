@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Alle
+printui-page-range-current = Aktueel
+printui-page-range-odd = Uneven
+printui-page-range-even = Even
 printui-page-range-custom = Oanpast
 printui-page-range-label = Siden
 printui-page-range-picker =

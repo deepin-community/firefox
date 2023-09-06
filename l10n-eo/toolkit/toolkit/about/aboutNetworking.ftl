@@ -8,6 +8,7 @@ about-networking-sockets = Konektingo
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Viŝi staplon DNS
 about-networking-dns-trr-url = URL de DoH
+about-networking-dns-trr-mode = Reĝimo DoH
 about-networking-dns-suffix = Sufikso DNS
 about-networking-websockets = Teksaĵaj konektingoj
 about-networking-refresh = Refreŝigi
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Aktiva
 about-networking-idle = Senokupa
 about-networking-host = Servilo
-about-networking-tcp = TCP
 about-networking-type = Tipo
 about-networking-sent = Sendita
 about-networking-received = Ricevita
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Adresoj
 about-networking-expires = Senvalidiĝo (sekundoj)
 about-networking-originAttributesSuffix = Izola ŝlosilo
+about-networking-flags = Aldonaj parametroj
 about-networking-messages-sent = Senditaj mesaĝoj
 about-networking-messages-received = Ricevitaj mesaĝoj
 about-networking-bytes-sent = Oktetoj senditaj
 about-networking-bytes-received = Oktetoj ricevitaj
 about-networking-logging = Registrado
-about-networking-log-tutorial = Instrukcioj pri la uzo de tiu ĉi ilo troveblas en <a data-l10n-name="logging">Registrado de HTTP</a>.
-about-networking-current-log-file = Nuna registra dosiero:
-about-networking-current-log-modules = Nunaj registraj moduloj:
-about-networking-set-log-file = Elekti registran dosieron
-about-networking-set-log-modules = Elekti registrajn modulojn
-about-networking-start-logging = Komenci registri
-about-networking-stop-logging = Fini registri
 about-networking-dns-lookup = Serĉo en DNS
 about-networking-dns-lookup-button = Trovi adreson
 about-networking-dns-domain = Nomregno:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Nombro de malrapida staplaj aliroj
 about-networking-rcwn-cache-not-slow = Nombro de ne malrapidaj staplaj aliroj
 about-networking-networkid = Identigilo reta
 about-networking-networkid-id = Identigilo reta
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Tiu ĉi paĝo estis movita al <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

@@ -5,13 +5,21 @@
 
 ## App Menu
 
-appmenuitem-update-banner3 =
-    .label-update-downloading = Preuzimanje nadogradnje za { -brand-shorter-name }
-    .label-update-available = Dostupna nadogradnja — preuzmi sada
-    .label-update-manual = Dostupna nadogradnja — preuzmi sada
-    .label-update-unsupported = Nije moguće nadograditi — sustav nije kompatibilan
-    .label-update-restart = Dostupna nadogradnja — ponovno pokreni sada
-appmenuitem-protection-dashboard-title = Nadzorna ploča zaštite
+appmenuitem-banner-update-downloading =
+    .label = Preuzimanje nadogradnje za { -brand-shorter-name }
+
+appmenuitem-banner-update-available =
+    .label = Dostupna nadogradnja — preuzmi sada
+
+appmenuitem-banner-update-manual =
+    .label = Dostupna nadogradnja — preuzmi sada
+
+appmenuitem-banner-update-unsupported =
+    .label = Nije moguće nadograditi — sustav nije kompatibilan
+
+appmenuitem-banner-update-restart =
+    .label = Dostupna nadogradnja — ponovno pokreni sada
+
 appmenuitem-new-tab =
     .label = Nova kartica
 appmenuitem-new-window =
@@ -48,6 +56,7 @@ appmenu-menu-button-closed2 =
 appmenu-menu-button-opened2 =
     .tooltiptext = Zatvori izbornik aplikacije
     .label = { -brand-short-name }
+
 # Settings is now used to access the browser settings across all platforms,
 # instead of Options or Preferences.
 appmenuitem-settings =
@@ -68,23 +77,30 @@ appmenu-remote-tabs-sign-into-sync =
     .label = Prijavi se za sinkronizaciju…
 appmenu-remote-tabs-turn-on-sync =
     .label = Uključi sinkronizaciju…
+
 # This is shown after the tabs list if we can display more tabs by clicking on the button
 appmenu-remote-tabs-showmore =
     .label = Prikaži više kartica
     .tooltiptext = Prikaz više kartica s ovoga uređaja
+
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Nema otvorenih kartica
+
 # This is shown when Sync is configured but syncing tabs is disabled.
 appmenu-remote-tabs-tabsnotsyncing = Uključi sinkronizaciju kartica za prikaz kartica s tvojih ostalih uređaja.
+
 appmenu-remote-tabs-opensettings =
     .label = Postavke
+
 # This is shown when Sync is configured but this appears to be the only device attached to
 # the account. We also show links to download Firefox for android/ios.
 appmenu-remote-tabs-noclients = Želiš li ovdje vidjeti tvoje kartice s drugih uređaja?
+
 appmenu-remote-tabs-connectdevice =
     .label = Poveži dodatni uređaj
 appmenu-remote-tabs-welcome = Pogledaj popis kartica s tvojih ostalih uređaja.
 appmenu-remote-tabs-unverified = Tvoj račun mora biti potvrđen.
+
 appmenuitem-fxa-toolbar-sync-now2 = Sinkroniziraj sada
 appmenuitem-fxa-sign-in = Prijavi se u { -brand-product-name }
 appmenuitem-fxa-manage-account = Upravljaj računom
@@ -98,13 +114,14 @@ appmenu-fxa-sync-and-save-data2 = Sinkroniziraj i spremi podatke
 appmenu-fxa-signed-in-label = Prijavi se
 appmenu-fxa-setup-sync =
     .label = Uključi sinkronizaciju…
-appmenu-fxa-show-more-tabs = Prikaži više kartica
+
 appmenuitem-save-page =
     .label = Spremi stranicu kao …
 
 ## What's New panel in App menu.
 
 whatsnew-panel-header = Što je novo
+
 # Checkbox displayed at the bottom of the What's New panel, allowing users to
 # enable/disable What's New notifications.
 whatsnew-panel-footer-checkbox =
@@ -118,40 +135,52 @@ whatsnew-panel-footer-checkbox =
 profiler-popup-button-idle =
     .label = Alat za profiliranje
     .tooltiptext = Snimi profil performanse
-profiler-popup-title =
-    .value = { -profiler-brand-name }
+
+profiler-popup-button-recording =
+    .label = Alat za profiliranje
+    .tooltiptext = Alat za profiliranje zapisuje profil
+
+profiler-popup-button-capturing =
+    .label = Alat za profiliranje
+    .tooltiptext = Alat za profiliranje snima profil
+
+profiler-popup-header-text = { -profiler-brand-name }
+
 profiler-popup-reveal-description-button =
     .aria-label = Otkrij više informacija
+
 profiler-popup-description-title =
     .value = Snimi, analiziraj, dijeli
+
 profiler-popup-description = Surađuj na problemima izvedbe objavljivanjem profila koje ćeš podijeliti sa svojim timom.
-profiler-popup-learn-more = Saznaj više
+
 profiler-popup-learn-more-button =
     .label = Saznaj više
+
 profiler-popup-settings =
     .value = Postavke
-# This link takes the user to about:profiling, and is only visible with the Custom preset.
-profiler-popup-edit-settings = Uredi postavke …
+
 # This link takes the user to about:profiling, and is only visible with the Custom preset.
 profiler-popup-edit-settings-button =
     .label = Uredi postavke …
-profiler-popup-disabled = Profiler je trenutačno deaktiviran, najvjerojatnije zbog otvorenog prozora privatnog pregledavanja.
+
 profiler-popup-recording-screen = Snimanje…
-# The profiler presets list is generated elsewhere, but the custom preset is defined
-# here only.
-profiler-popup-presets-custom =
-    .label = Prilagođeno
+
 profiler-popup-start-recording-button =
     .label = Počni snimati
+
 profiler-popup-discard-button =
     .label = Odbaci
+
 profiler-popup-capture-button =
     .label = Snimi
+
 profiler-popup-start-shortcut =
     { PLATFORM() ->
         [macos] ⌃⇧1
        *[other] Ctrl+Shift+1
     }
+
 profiler-popup-capture-shortcut =
     { PLATFORM() ->
         [macos] ⌃⇧2
@@ -166,13 +195,41 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/popup/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
+profiler-popup-presets-web-developer-label =
+    .label = Web programer
+
+profiler-popup-presets-firefox-description = Preporučena zadana postavka za profiliranje { -brand-shorter-name }a.
+profiler-popup-presets-firefox-label =
+    .label = { -brand-shorter-name }
+
+profiler-popup-presets-graphics-description = Zadana postavka za istraživanje slikovnih grešaka u { -brand-shorter-name }u.
+profiler-popup-presets-graphics-label =
+    .label = Slike
+
+profiler-popup-presets-media-description2 = Zadana postavka za istraživanje audio i video grešaka u { -brand-shorter-name }u.
+profiler-popup-presets-media-label =
+    .label = Mediji
+
+profiler-popup-presets-networking-description = Zadana postavka za istraživanje grešaka mrežnog povezivanja u { -brand-shorter-name }u.
+profiler-popup-presets-networking-label =
+    .label = Mrežno povezivanje
+
+profiler-popup-presets-power-description = Zadana postavka za istraživanje grešaka struje u { -brand-shorter-name }u.
+# "Power" is used in the sense of energy (electricity used by the computer).
+profiler-popup-presets-power-label =
+    .label = Struja
+
+profiler-popup-presets-custom-label =
+    .label = Prilagođeno
 
 ## History panel
 
 appmenu-manage-history =
     .label = Upravljanje poviješću
-appmenu-reopen-all-tabs = Ponovno otvori sve kartice
-appmenu-reopen-all-windows = Ponovno otvori sve prozore
 appmenu-restore-session =
     .label = Vrati prethodnu sesiju
 appmenu-clear-history =
@@ -198,9 +255,9 @@ appmenu-help-more-troubleshooting-info =
     .accesskey = v
 appmenu-help-report-site-issue =
     .label = Prijavi problem sa stranicom …
-appmenu-help-feedback-page =
-    .label = Pošalji povratne informacije …
-    .accesskey = e
+appmenu-help-share-ideas =
+    .label = Dijeli ideje i povratne informacije …
+    .accesskey = D
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -226,8 +283,7 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Prilagodi alatnu traku…
-appmenu-taskmanager =
-    .label = Upravljač zadataka
+
 appmenu-developer-tools-subheader = Alati preglednika
 appmenu-developer-tools-extensions =
     .label = Proširenja za razvijatelje

@@ -2,12 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, unicode_literals
-
 import os
 import sys
-
-from recommonmark.transform import AutoStructify
 
 # Set up Python environment to load build system packages.
 OUR_DIR = os.path.dirname(__file__)
@@ -25,8 +21,11 @@ EXTRA_PATHS = (
     "testing/mozbase/manifestparser",
     "testing/mozbase/mozfile",
     "testing/mozbase/mozprocess",
+    "testing/mozbase/moznetwork/moznetwork",
     "third_party/python/jsmin",
     "third_party/python/which",
+    "docs/_addons",
+    "taskcluster/gecko_taskgraph/test",
 )
 
 sys.path[:0] = [os.path.join(topsrcdir, p) for p in EXTRA_PATHS]
@@ -34,6 +33,7 @@ sys.path[:0] = [os.path.join(topsrcdir, p) for p in EXTRA_PATHS]
 sys.path.insert(0, OUR_DIR)
 
 extensions = [
+    "myst_parser",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.doctest",
@@ -43,18 +43,29 @@ extensions = [
     "mozbuild.sphinx",
     "sphinx_js",
     "sphinxcontrib.mermaid",
-    "recommonmark",
     "sphinx_copybutton",
     "sphinx_markdown_tables",
-    "sphinx_panels",
+    "sphinx_design",
+    "bzlink",
 ]
 
 # JSDoc must run successfully for dirs specified, so running
 # tree-wide (the default) will not work currently.
+# When adding more paths to this list, please ensure that they are not
+# excluded from valid-jsdoc in the top-level .eslintrc.js.
 js_source_path = [
     "../browser/components/extensions",
+    "../browser/components/migration",
+    "../browser/components/migration/content",
     "../browser/components/uitour",
+    "../browser/components/urlbar",
     "../remote/marionette",
+    "../testing/mochitest/BrowserTestUtils",
+    "../testing/mochitest/tests/SimpleTest/SimpleTest.js",
+    "../testing/mochitest/tests/SimpleTest/EventUtils.js",
+    "../testing/modules/Assert.sys.mjs",
+    "../testing/modules/TestUtils.sys.mjs",
+    "../toolkit/actors",
     "../toolkit/components/extensions",
     "../toolkit/components/extensions/parent",
     "../toolkit/components/featuregates",
@@ -62,6 +73,7 @@ js_source_path = [
     "../toolkit/components/prompts/src",
     "../toolkit/components/pictureinpicture",
     "../toolkit/components/pictureinpicture/content",
+    "../toolkit/components/search",
 ]
 root_for_relative_js_paths = ".."
 jsdoc_config_path = "jsdoc.json"
@@ -70,14 +82,30 @@ templates_path = ["_templates"]
 source_suffix = [".rst", ".md"]
 master_doc = "index"
 project = "Firefox Source Docs"
+
+# Override the search box to use Google instead of
+# sphinx search on firefox-source-docs.mozilla.org
+if (
+    os.environ.get("MOZ_SOURCE_DOCS_USE_GOOGLE") == "1"
+    and os.environ.get("MOZ_SCM_LEVEL") == "3"
+):
+    templates_path.append("_search_template")
+
+html_sidebars = {
+    "**": [
+        "searchbox.html",
+    ]
+}
 html_logo = os.path.join(
     topsrcdir, "browser/branding/nightly/content/firefox-wordmark.svg"
 )
 html_favicon = os.path.join(topsrcdir, "browser/branding/nightly/firefox.ico")
-html_js_files = ["https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.9.1/mermaid.js"]
 
-exclude_patterns = ["_build", "_staging", "_venv"]
+exclude_patterns = ["_build", "_staging", "_venv", "**security/nss/legacy/**"]
 pygments_style = "sphinx"
+# generate label “slugs” for header anchors so that
+# we can reference them from markdown links.
+myst_heading_anchors = 5
 
 # We need to perform some adjustment of the settings and environment
 # when running on Read The Docs.
@@ -99,7 +127,7 @@ else:
 
 
 html_static_path = ["_static"]
-htmlhelp_basename = "MozillaTreeDocs"
+htmlhelp_basename = "FirefoxTreeDocs"
 
 moz_project_name = "main"
 
@@ -113,23 +141,12 @@ html_show_copyright = False
 autosectionlabel_maxdepth = 1
 
 
-def install_sphinx_panels(app, pagename, templatename, context, doctree):
-    if "raptor" in pagename:
-        app.add_js_file("sphinx_panels.js")
-        app.add_css_file("sphinx_panels.css")
+def install_sphinx_design(app, pagename, templatename, context, doctree):
+    if "perfdocs" in pagename:
+        app.add_js_file("sphinx_design.js")
+        app.add_css_file("sphinx_design.css")
 
 
 def setup(app):
-    app.add_config_value(
-        "recommonmark_config",
-        {
-            # Crashes with sphinx
-            "enable_inline_math": False,
-            # We use it for testing/web-platform/tests
-            "enable_eval_rst": True,
-        },
-        True,
-    )
     app.add_css_file("custom_theme.css")
-    app.add_transform(AutoStructify)
-    app.connect("html-page-context", install_sphinx_panels)
+    app.connect("html-page-context", install_sphinx_design)

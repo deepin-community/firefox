@@ -16,10 +16,8 @@ change-password-old = Gjeldande passord:
 change-password-new = Nytt passord:
 change-password-reenter = Nytt passord (igjen):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Klarte ikkje å endre passord.
-pippki-incorrect-pw = Du skreiv ikkje inn rett gjeldande passord. Prøv igjen.
+pippki-incorrect-pw = Du skreiv ikkje inn rett gjeldande passord. Prøv på nytt.
 pippki-pw-change-ok = Passordet er endra.
 
 pippki-pw-empty-warning = Lagra passord og private nøklar vil ikkje bli verna.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Du er i FIPS-modus. FIPS krev at du brukar
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Tilbakestill hovudpassordet
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Still tilbake
-
 reset-primary-password-text = Dersom du stiller tilbake hovudpassordet vil alle lagra nettside- og e-postpassord, personlege sertifikat og private nøklar gå tapt. Er du sikker på at du vil tilbakestille hovudpassordet?
 
 pippki-reset-password-confirmation-title = Tilbakestill hovudpassordet
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Hovudpassordet ditt er tilbakestilt
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Lastar ned sertifikat
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Du har vorte beden om å stola på ei ny sertifikat-fullmakt (CA)
 download-cert-trust-ssl =
     .label = Stol på denne CA-en til å identifisere nettsider.
@@ -77,7 +74,8 @@ set-password-reminder = Viktig: Dersom du gløymer passordet til tryggingskopien
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Godkjenning med verna symbol
-protected-auth-msg = Gjer vel og godkjenn symbolet. Godkjenningsmetoden er avhengig av type signeringseining
-protected-auth-token = Symbol:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Godkjenn i samsvar med tryggingsmetoden «{ $tokenName }». Korleis du gjer det, er avhengig av metoden (til dømes ved bruk av fingeravtrykklesar eller ved å taste inn ein kode med eit tastatur).

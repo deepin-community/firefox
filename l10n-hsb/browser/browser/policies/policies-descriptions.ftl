@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Definujće domeny, kotrež smědźa přistup k Go
 
 policy-AppAutoUpdate = Awtomatiske aktualizacije nałoženjow zmóžnić abo znjemóžnić.
 
+policy-AppUpdatePin = Zadźěwać tomu, zo so { -brand-short-name } wyše podateje wersije aktualizuje.
+
 policy-AppUpdateURL = Swójski aktualizowanski URL za nałoženje nastajić.
 
 policy-Authentication = Integrowanu awtentifikaciju za websydła konfigurować, kotrež ju podpěruja.
@@ -24,13 +26,13 @@ policy-AutoLaunchProtocolsFromOrigins = Definujće lisćinu protokolow, kotrež 
 
 policy-BackgroundAppUpdate2 = Pozadkowe aktualizowanje zmóžnić abo znjemóžnić.
 
-policy-BlockAboutAddons = Přistup na zrjadowak přidatkow (about:addons) blokować.
+policy-BlockAboutAddons = Přistup k zrjadowakej přidatkow (about:addons) blokować.
 
-policy-BlockAboutConfig = Přistup na stronu about:config blokować.
+policy-BlockAboutConfig = Přistup k stronje about:config blokować.
 
-policy-BlockAboutProfiles = Přistup na stronu about:profiles blokować.
+policy-BlockAboutProfiles = Přistup k stronje about:profiles blokować.
 
-policy-BlockAboutSupport = Přistup na stronu about:support blokować.
+policy-BlockAboutSupport = Přistup k stronje about:support blokować.
 
 policy-Bookmarks = Zapołožki w symbolowej lajsće zapołožkow, w meniju zapołožkow abo w podatym rjadowaku znutřka njeju wutworić.
 
@@ -39,6 +41,9 @@ policy-CaptivePortal = Kaptiwny portal zmóžnić abo znjemóžnić
 policy-CertificatesDescription = Certifikaty přidać abo zatwarjene certifikaty wužiwać.
 
 policy-Cookies = Websydłam dowolić abo zakazać, placki składować.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Prawidła nastupajo kontejnery postajić
 
 policy-DisabledCiphers = Šifry znjemóžnić.
 
@@ -50,7 +55,7 @@ policy-DisableBuiltinPDFViewer = PDF.js znjemóžnić, zatwarjeny PDF-wobhladowa
 
 policy-DisableDefaultBrowserAgent = Haćće standardny agent wobhladowaka při wuwjedźenju akcijow. To je jenoz za Windows k dispoziciji; druhe platformy agent nimaja.
 
-policy-DisableDeveloperTools = Přistup na wuwiwarske nastroje blokować.
+policy-DisableDeveloperTools = Přistup k wuwiwarskim nastrojam blokować.
 
 policy-DisableFeedbackCommands = Přikazy znjemóžnić, kotrež komentary z menija Pomoc sćelu (Posudk pósłać a Wobšudne sydło zdźělić)
 
@@ -61,7 +66,7 @@ policy-DisableFirefoxScreenshots = Funkciju Firefox Screenshots znjemóžnić.
 
 policy-DisableFirefoxStudies = { -brand-short-name } zakazać, studije wuwjesć.
 
-policy-DisableForgetButton = Přistup na tłóčatko Zabyć zakazać.
+policy-DisableForgetButton = Přistup k tłóčatku Zabyć zakazać.
 
 policy-DisableFormHistory = Pytansku a formularnu historiju sej njespomjatkować
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Jeli to trjechi, njeda so hłowne hesło
 
 policy-DisablePasswordReveal = Njedowolić, zo so hesła w składowanych přizjewjenjach pokazuja
 
-policy-DisablePocket = Funkciju składowanja webstronow do Pocket znjemóžnić.
+policy-DisablePocket2 = Funkciju składowanja webstronow do { -pocket-brand-name } znjemóžnić.
 
 policy-DisablePrivateBrowsing = Priwatny modus znjemóžnić.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Wobhladowak při instalowanju a aktualizowanju
 
 policy-DisableTelemetry = Telemetriju znjemóžnić.
 
+policy-DisableThirdPartyModuleBlocking = Zadźěwajće tomu, zo wužiwar module třećich poskićowarjow blokuje, kotrež so do procesa { -brand-short-name } injicěruja.
+
 policy-DisplayBookmarksToolbar = Lajstu zapołožkow po standardźe pokazać.
 
 policy-DisplayMenuBar = Menijowu lajstu po standardźe pokazać.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Blokowanje wobsaha zmóžnić abo znjemóžni�
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Encrypted Media Extensions zmóžnić abo znjemóžnić a je na přeće zawrěć.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Warnowanja na zakładźe datajoweje kóncowki za wěste datajowe typy w domenach znjemóžnić.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Wšě aspekty instalacije rozšěrjenjow rjadować.
 
 policy-ExtensionUpdate = Awtomatiske aktualizacije rozšěrjenjow zmóžnić abo znjemóžnić.
 
-policy-FirefoxHome = Firefox Home konfigurować.
+policy-FirefoxHome2 = { -firefox-home-brand-name } konfigurować.
 
-policy-FlashPlugin = Wužiwanje tykača Flash dowolić abo zakazać.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Wunuzujće direktnu nawigaciju do intranetneho sydła, město toho zo byšće pytał, hdyž jednotliwe słowne zapiski do adresoweho pola zapodawaće.
 
 policy-Handlers = Standardne nałoženske předźěłaki konfigurować
 
@@ -159,6 +168,8 @@ policy-OverridePostUpdatePage = Stronu Nowe funkcije a změny po aktualizaciji p
 
 policy-PasswordManagerEnabled = Składowanje hesłow do zrjadowaka hesłow zmóžnić.
 
+policy-PasswordManagerExceptions = { -brand-short-name } zakazać, hesła za wěste sydła składować.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = PDF.js znjemóžnić abo konfigurować, zatwarjeny PDF-wobhladowak w { -brand-short-name }.
 
@@ -184,8 +195,8 @@ policy-SearchEngines = Nastajenja pytawow konfigurować. Tute prawidło je jeno�
 
 policy-SearchSuggestEnabled = Pytanske namjety zmóžnić abo znjemóžnić.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Module PKCS #11 instalować.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Přidajće abo zhašejće module PKCS #11.
 
 policy-ShowHomeButton = Tłóčatko startoweje strony na symbolowej lajsće pokazać.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = Nastajće maksimalnu SSL-wersiju.
 
 policy-SSLVersionMin = Nastajće minimalnu SSL-wersiju.
 
+policy-StartDownloadsInTempDirectory = Sćehnjenja nućić, zo bychu w lokalnym, nachwilnym městnje město w standardnym zapisu sćehnjenjow započeli.
+
 policy-SupportMenu = Swójski menijowy zapisk pomocy menijej pomocy přidać.
 
 policy-UserMessaging = Wužiwarjej wěste powěsće njepokazać
+
+policy-UseSystemPrintDialog = Z pomocu systemoweho ćišćerskeho dialoga ćišćeć.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Wopytowanju websydłow zadźěwać. Hlejće dokumentaciju za dalše podrobnosće wo formaće.

@@ -8,10 +8,16 @@ search-header =
     .placeholder = Tikanöx addons.mozilla.org
     .searchbuttonlabel = Tikanöx
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
 list-empty-get-extensions-message = Kek'ul taq k'amal chuqa' taq wachinel pa <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-dictionaries-message = Kek'ul taq soltzij pa <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-language-packs-message = Kek'ul molch'ab'äl pa <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
 
 list-empty-installed =
     .value = Man ayakon ta re ruwäch tz'aqat re'
@@ -47,6 +53,9 @@ detail-version =
 
 detail-last-updated =
     .label = Ruk'isib'äl K'exoj
+
+addon-detail-description-expand = Kek'ut ch'aqa' chik
+addon-detail-description-collapse = Tik'ut jub'a'
 
 detail-contributions-description = Ri runuk'unel re tz'aqat re', nuk'utuj chawe chi tato' rik'in rub'anik, rik'in naya' jun ko'öl ato'ik.
 
@@ -178,6 +187,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = K'ak'a' taq K'exoj
 addon-category-recent-updates-title =
     .title = K'ak'a' taq K'exoj
+addon-category-sitepermission = Taq ruya'oj q'ij ruxaq
+addon-category-sitepermission-title =
+    .title = Taq ruya'oj q'ij ruxaq
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Ruya'oj q'ij ruxaq richin { $host }
 
 ## These are global warnings
 
@@ -188,7 +204,6 @@ extensions-warning-check-compatibility-button = Titzij
 extensions-warning-update-security = Chupül ri runik'oxik chajinïk richin kik'exoj taq tz'aqat. Rik'in jub'a' k'o pa k'ayewal ri awokik'amaya'l kuma ri taq k'exoj.
 extensions-warning-update-security-button = Titzij
     .title = Titzij ri ya'öl retal chajinïk richin nik'ex ri tz'aqat
-
 
 ## Strings connected to add-on updates
 
@@ -264,6 +279,8 @@ shortcuts-duplicate-warning-message = { $shortcut } man xa xe ta pa jun chojokem
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Okisan chik ruma { $addon }
 
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Tik'ut { $numberToShow } Ch'aqa' Chik
@@ -306,6 +323,7 @@ install-theme-button = Tiyak Wachinel
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Tinuk'samajïx
 find-more-addons = Kekanöx ch'aqa' chik taq tz'aqat
+find-more-themes = Ke'ilitäj ch'aqa' chik taq wachinel
 
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
@@ -337,7 +355,7 @@ extension-enabled-heading = Tzijon
 extension-disabled-heading = Chupun
 
 theme-enabled-heading = Tzijon
-theme-disabled-heading = Chupun
+theme-disabled-heading2 = Xyak Wachinel
 
 plugin-enabled-heading = Tzijon
 plugin-disabled-heading = Chupun
@@ -347,6 +365,9 @@ dictionary-disabled-heading = Chupun
 
 locale-enabled-heading = Tzijon
 locale-disabled-heading = Chupun
+
+sitepermission-enabled-heading = Tzijon
+sitepermission-disabled-heading = Chupun
 
 always-activate-button = Junelïk Tzijïl
 never-activate-button = Majub'ey Titzij
@@ -404,13 +425,15 @@ addon-detail-private-browsing-help = Toq tzij, ri k'amal pa ronojel samaj xtok w
 addon-detail-private-browsing-allow = Tiya' q'ij
 addon-detail-private-browsing-disallow = Man Tiya' Q'ij
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 addon-badge-recommended2 =
     .title = { -brand-product-name } xa xe yeruchilab'ej taq k'amal kojqan rub'eyal qajikomal chuqa' rub'eyal qasamaj
     .aria-label = { addon-badge-recommended2.title }
-
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
 addon-badge-line3 =
@@ -429,7 +452,6 @@ release-notes-loading = Nisamäj…
 release-notes-error = Takuyu' qamak, xa xk'ulwachitäj jun sachoj toq nok pa ch'utaq rutzijol ri ko'öl wuj.
 
 addon-permissions-empty = Majun ya'oj q'ij nrajo re k'amal re'
-
 addon-permissions-required = Ajowanel taq ya'oj q'ij richin ri qitzij rusamaj:
 addon-permissions-optional = Cha'el taq ya'oj q'ij richin ri tz'aqat taq rusamaj:
 addon-permissions-learnmore = Tetamäx ch'aqa' chik chi kij ri taq ya'oj q'ij
@@ -458,3 +480,31 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Taq kisamajib'al konojel ri taq tz'aqat
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } man nuk'äm ta ri' rik'in { -brand-short-name } { $version }.
+details-notification-incompatible-link = Ch'aqa' chik rutzijol
+
+details-notification-unsigned-and-disabled = Man xtikïr ta xnik'öx ri { $name } ruma ri rokisaxik pa { -brand-short-name }, ruma ri' toq xchup.
+details-notification-unsigned-and-disabled-link = Ch'aqa' chik rutzijol
+
+details-notification-unsigned = { $name } man xtikïr ta xnik'öx rokisaxik pa { -brand-short-name }. Tachajij awi'.
+details-notification-unsigned-link = Ch'aqa' chik rutzijol
+
+details-notification-blocked = { $name } xkichüp ruma k'ayewal pa ruwi' chajinïk o k'ojlemal.
+details-notification-blocked-link = Ch'aqa' chik rutzijol
+
+details-notification-softblocked = { $name } etaman chi itzel taq k'ayewal nub'än pa chajinïk o ak'ojlemal.
+details-notification-softblocked-link = Ch'aqa' chik rutzijol
+
+details-notification-gmp-pending = { $name } ja xtiyake' qa.

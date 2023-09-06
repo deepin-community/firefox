@@ -235,6 +235,9 @@ about-debugging-runtime-name = ‏{ $name } ‏({ $version })
 # Clicking on the button will close the connection to the runtime.
 about-debugging-runtime-disconnect-button = اقطع الاتصال
 
+# Title of a modal dialog displayed on remote runtime pages after clicking on the Profile Runtime button.
+about-debugging-profiler-dialog-title2 = محلّل الأداء
+
 # Clicking on the header of a debug target category will expand or collapse the debug
 # target items in the category. This text is used as ’title’ attribute of the header,
 # to describe this feature.
@@ -302,10 +305,6 @@ about-debugging-worker-status-registering = يُسجّل
 # Displayed as title of the inspect button for zombie tabs (e.g. tabs loaded via a session restore).
 about-debugging-zombie-tab-inspect-action-disabled =
     .title = لم يُحمّل اللسان تمامًا ولا يمكن فحصه
-
-# Displayed as name for the Main Process debug target in the Processes category. Only for
-# remote runtimes, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-name = السيرورة الأساسية
 
 # Displayed instead of the Main Process debug target when the preference
 # `devtools.browsertoolbox.fission` is true.

@@ -2,19 +2,21 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = जडान सेटिङहरू
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
     .key = w
 
 connection-disable-extension =
-    .label = एक्सटेन्सन अक्षम गर्नुहोस्
+    .label = एक्सटेन्सन असक्षम गर्नुहोस्
+
+connection-proxy-configure = इन्टरनेटमा पहुँचको लागि प्रोक्सी कन्फिगर गर्नुहोस्
 
 connection-proxy-option-no =
     .label = प्रोक्सी प्रयोग नगर्नु
@@ -65,6 +67,11 @@ connection-proxy-autologin =
     .label = यदि गोप्यशब्द सङ्ग्रह गरिएको छ भने गोप्यशब्द प्रमाणीकरणको लागि झक्झक्याउने नगर्नुहोस्
     .accesskey = i
     .tooltip = यो विकल्पले तपाईँलाई सुचना नदिई प्रोक्सीहरू सामु तपाईँको पहिचान स्थापना गराउँछ यदि ती प्रोक्सीहरूका प्रमाणपत्र सङ्ग्रह गर्नुभएको खण्डमा। पहिचान स्थापना गराउन असफल भएमा तपाईँलाई सुचना दिइनेछ।
+
+connection-proxy-autologin-checkbox =
+    .label = यदि गोप्यशब्द सङ्ग्रह गरिएको छ भने गोप्यशब्द प्रमाणीकरणको लागि झक्झक्याउने नगर्नुहोस्
+    .accesskey = i
+    .tooltiptext = यो विकल्पले तपाईँलाई सुचना नदिई प्रोक्सीहरू सामु तपाईँको पहिचान स्थापना गराउँछ यदि ती प्रोक्सीहरूका प्रमाणपत्र सङ्ग्रह गर्नुभएको खण्डमा। पहिचान स्थापना गराउन असफल भएमा तपाईँलाई सुचना दिइनेछ।
 
 connection-proxy-socks-remote-dns =
     .label = SOCKS v5 प्रयोग गर्दा DNS प्रोक्सी गर्नुहोस्

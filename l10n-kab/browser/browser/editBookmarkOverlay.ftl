@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Ffer
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Sken akk ikaramen n tecraḍ n isebtar
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Ffer
+
 bookmark-overlay-new-folder-button =
     .label = Rnu Akaram
     .accesskey = k
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Sken akk tibzimin
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Ffer
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Sken akk tibzimin
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Ffer
 
 bookmark-overlay-keyword-2 =
     .value = Awal n tasarut

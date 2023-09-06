@@ -4,20 +4,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import glob
 import itertools
 import json
 import os
 import re
-import six
 import subprocess
 import sys
-
 import xml.etree.ElementTree as ET
 
-from mozpack.files import FileFinder
 import mozpack.path as mozpath
+import six
 from mozlint import result
-
+from mozpack.files import FileFinder
 
 # The Gradle target invocations are serialized with a simple locking file scheme.  It's fine for
 # them to take a while, since the first will compile all the Java, etc, and then perform
@@ -83,6 +82,76 @@ def gradle(log, topsrcdir=None, topobjdir=None, tasks=[], extra_args=[], verbose
             proc.kill()
             raise
 
+        return proc.returncode
+
+
+def format(config, fix=None, **lintargs):
+    topsrcdir = lintargs["root"]
+    topobjdir = lintargs["topobjdir"]
+
+    if fix:
+        tasks = lintargs["substs"]["GRADLE_ANDROID_FORMAT_LINT_FIX_TASKS"]
+    else:
+        tasks = lintargs["substs"]["GRADLE_ANDROID_FORMAT_LINT_CHECK_TASKS"]
+
+    ret = gradle(
+        lintargs["log"],
+        topsrcdir=topsrcdir,
+        topobjdir=topobjdir,
+        tasks=tasks,
+        extra_args=lintargs.get("extra_args") or [],
+    )
+
+    results = []
+    for path in lintargs["substs"]["GRADLE_ANDROID_FORMAT_LINT_FOLDERS"]:
+        folder = os.path.join(
+            topobjdir, "gradle", "build", path, "spotless", "spotlessJava"
+        )
+        for filename in glob.iglob(folder + "/**/*.java", recursive=True):
+            err = {
+                "rule": "spotless-java",
+                "path": os.path.join(
+                    topsrcdir, path, mozpath.relpath(filename, folder)
+                ),
+                "lineno": 0,
+                "column": 0,
+                "message": "Formatting error, please run ./mach lint -l android-format --fix",
+                "level": "error",
+            }
+            results.append(result.from_config(config, **err))
+        folder = os.path.join(
+            topobjdir, "gradle", "build", path, "spotless", "spotlessKotlin"
+        )
+        for filename in glob.iglob(folder + "/**/*.kt", recursive=True):
+            err = {
+                "rule": "spotless-kt",
+                "path": os.path.join(
+                    topsrcdir, path, mozpath.relpath(filename, folder)
+                ),
+                "lineno": 0,
+                "column": 0,
+                "message": "Formatting error, please run ./mach lint -l android-format --fix",
+                "level": "error",
+            }
+            results.append(result.from_config(config, **err))
+
+    if len(results) == 0 and ret != 0:
+        # spotless seems to hit unfixed error.
+        err = {
+            "rule": "spotless",
+            "path": "",
+            "lineno": 0,
+            "column": 0,
+            "message": "Unexpected error",
+            "level": "error",
+        }
+        results.append(result.from_config(config, **err))
+
+    # If --fix was passed, we just report the number of files that were changed
+    if fix:
+        return {"results": [], "fixed": len(results)}
+    return results
+
 
 def api_lint(config, **lintargs):
     topsrcdir = lintargs["root"]
@@ -107,7 +176,7 @@ def api_lint(config, **lintargs):
             for r in issues[rule]:
                 err = {
                     "rule": r["rule"] if rule == "failures" else "compat_failures",
-                    "path": mozpath.relpath(r["file"], topsrcdir),
+                    "path": r["file"],
                     "lineno": int(r["line"]),
                     "column": int(r.get("column") or 0),
                     "message": r["msg"],
@@ -118,10 +187,10 @@ def api_lint(config, **lintargs):
         for r in issues["api_changes"]:
             err = {
                 "rule": "api_changes",
-                "path": mozpath.relpath(r["file"], topsrcdir),
+                "path": r["file"],
                 "lineno": int(r["line"]),
                 "column": int(r.get("column") or 0),
-                "message": "Unexpected api change. Please run ./gradlew {} for more "
+                "message": "Unexpected api change. Please run ./mach gradle {} for more "
                 "information".format(
                     " ".join(lintargs["substs"]["GRADLE_ANDROID_API_LINT_TASKS"])
                 ),
@@ -153,9 +222,11 @@ def javadoc(config, **lintargs):
             issues = json.load(f)
 
             for issue in issues:
-                issue["path"] = issue["path"].replace(lintargs["root"], "")
                 # We want warnings to be errors for linting purposes.
-                issue["level"] = "error"
+                # TODO: Bug 1316188 - resolve missing javadoc comments
+                issue["level"] = (
+                    "error" if issue["message"] != ": no comment" else "warning"
+                )
                 results.append(result.from_config(config, **issue))
 
     return results
@@ -190,11 +261,15 @@ def lint(config, **lintargs):
 
     for issue in root.findall("issue"):
         location = issue[0]
+        if "third_party" in location.get("file") or "thirdparty" in location.get(
+            "file"
+        ):
+            continue
         err = {
             "level": issue.get("severity").lower(),
             "rule": issue.get("id"),
             "message": issue.get("message"),
-            "path": location.get("file").replace(lintargs["root"], ""),
+            "path": location.get("file"),
             "lineno": int(location.get("line") or 0),
         }
         results.append(result.from_config(config, **err))
@@ -207,7 +282,6 @@ def _parse_checkstyle_output(config, topsrcdir=None, report_path=None):
     root = tree.getroot()
 
     for file in root.findall("file"):
-        sourcepath = file.get("name").replace(topsrcdir + "/", "")
 
         for error in file.findall("error"):
             # Like <error column="42" line="22" message="Name 'mPorts' must match pattern 'xm[A-Z][A-Za-z]*$'." severity="error" source="com.puppycrawl.tools.checkstyle.checks.naming.MemberNameCheck" />.  # NOQA: E501
@@ -215,7 +289,7 @@ def _parse_checkstyle_output(config, topsrcdir=None, report_path=None):
                 "level": "error",
                 "rule": error.get("source"),
                 "message": error.get("message"),
-                "path": sourcepath,
+                "path": file.get("name"),
                 "lineno": int(error.get("line") or 0),
                 "column": int(error.get("column") or 0),
             }
@@ -304,7 +378,9 @@ def _parse_android_test_results(config, topsrcdir=None, report_dir=None):
                         "level": "error",
                         "rule": unexpected.get("type"),
                         "message": message,
-                        "path": os.path.join("mobile", "android", sourcepath),
+                        "path": os.path.join(
+                            topsrcdir, "mobile", "android", sourcepath
+                        ),
                         "lineno": lineno,
                     }
                     yield result.from_config(config, **err)

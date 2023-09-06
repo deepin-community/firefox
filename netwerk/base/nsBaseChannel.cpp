@@ -12,6 +12,7 @@
 #include "nsUnknownDecoder.h"
 #include "nsIScriptSecurityManager.h"
 #include "nsMimeTypes.h"
+#include "nsICancelable.h"
 #include "nsIChannelEventSink.h"
 #include "nsIStreamConverterService.h"
 #include "nsChannelClassifier.h"
@@ -78,19 +79,11 @@ nsresult nsBaseChannel::Redirect(nsIChannel* newChannel, uint32_t redirectFlags,
       static_cast<net::LoadInfo*>(mLoadInfo.get())
           ->CloneWithNewSecFlags(secFlags);
 
-  nsCOMPtr<nsIPrincipal> uriPrincipal;
-  nsIScriptSecurityManager* sm = nsContentUtils::GetSecurityManager();
-  sm->GetChannelURIPrincipal(this, getter_AddRefs(uriPrincipal));
   bool isInternalRedirect =
       (redirectFlags & (nsIChannelEventSink::REDIRECT_INTERNAL |
                         nsIChannelEventSink::REDIRECT_STS_UPGRADE));
 
-  // nsBaseChannel hst no thing to do with HttpBaseChannel, we would not care
-  // about referrer and remote address in this case
-  nsCOMPtr<nsIRedirectHistoryEntry> entry =
-      new net::nsRedirectHistoryEntry(uriPrincipal, nullptr, ""_ns);
-
-  newLoadInfo->AppendRedirectHistoryEntry(entry, isInternalRedirect);
+  newLoadInfo->AppendRedirectHistoryEntry(this, isInternalRedirect);
 
   // Ensure the channel's loadInfo's result principal URI so that it's
   // either non-null or updated to the redirect target URI.
@@ -175,36 +168,14 @@ bool nsBaseChannel::HasContentTypeHint() const {
   return !mContentType.EqualsLiteral(UNKNOWN_CONTENT_TYPE);
 }
 
-nsresult nsBaseChannel::PushStreamConverter(const char* fromType,
-                                            const char* toType,
-                                            bool invalidatesContentLength,
-                                            nsIStreamListener** result) {
-  NS_ASSERTION(mListener, "no listener");
-
-  nsresult rv;
-  nsCOMPtr<nsIStreamConverterService> scs =
-      do_GetService(NS_STREAMCONVERTERSERVICE_CONTRACTID, &rv);
-  if (NS_FAILED(rv)) return rv;
-
-  nsCOMPtr<nsIStreamListener> converter;
-  rv = scs->AsyncConvertData(fromType, toType, mListener, nullptr,
-                             getter_AddRefs(converter));
-  if (NS_SUCCEEDED(rv)) {
-    mListener = converter;
-    if (invalidatesContentLength) mContentLength = -1;
-    if (result) {
-      *result = nullptr;
-      converter.swap(*result);
-    }
-  }
-  return rv;
-}
-
 nsresult nsBaseChannel::BeginPumpingData() {
   nsresult rv;
 
-  rv = BeginAsyncRead(this, getter_AddRefs(mRequest));
+  rv = BeginAsyncRead(this, getter_AddRefs(mRequest),
+                      getter_AddRefs(mCancelableAsyncRequest));
   if (NS_SUCCEEDED(rv)) {
+    MOZ_ASSERT(mRequest || mCancelableAsyncRequest,
+               "should have got a request or cancelable");
     mPumpingData = true;
     return NS_OK;
   }
@@ -232,7 +203,7 @@ nsresult nsBaseChannel::BeginPumpingData() {
   // and especially when we call into the loadgroup.  Our caller takes care to
   // release mPump if we return an error.
 
-  nsCOMPtr<nsIEventTarget> target = GetNeckoTarget();
+  nsCOMPtr<nsISerialEventTarget> target = GetNeckoTarget();
   rv = nsInputStreamPump::Create(getter_AddRefs(mPump), stream, 0, 0, true,
                                  target);
   if (NS_FAILED(rv)) {
@@ -256,11 +227,9 @@ nsresult nsBaseChannel::BeginPumpingData() {
     mPump->Suspend();
 
     RefPtr<nsBaseChannel> self(this);
-    nsCOMPtr<nsISerialEventTarget> serialTarget(do_QueryInterface(target));
-    MOZ_ASSERT(serialTarget);
 
     promise->Then(
-        serialTarget, __func__,
+        target, __func__,
         [self, this](nsresult rv) {
           MOZ_ASSERT(mPump);
           MOZ_ASSERT(NS_SUCCEEDED(rv));
@@ -371,6 +340,19 @@ nsBaseChannel::GetStatus(nsresult* status) {
   return NS_OK;
 }
 
+NS_IMETHODIMP nsBaseChannel::SetCanceledReason(const nsACString& aReason) {
+  return SetCanceledReasonImpl(aReason);
+}
+
+NS_IMETHODIMP nsBaseChannel::GetCanceledReason(nsACString& aReason) {
+  return GetCanceledReasonImpl(aReason);
+}
+
+NS_IMETHODIMP nsBaseChannel::CancelWithReason(nsresult aStatus,
+                                              const nsACString& aReason) {
+  return CancelWithReasonImpl(aStatus, aReason);
+}
+
 NS_IMETHODIMP
 nsBaseChannel::Cancel(nsresult status) {
   // Ignore redundant cancelation
@@ -380,6 +362,10 @@ nsBaseChannel::Cancel(nsresult status) {
 
   mCanceled = true;
   mStatus = status;
+
+  if (mCancelableAsyncRequest) {
+    mCancelableAsyncRequest->Cancel(status);
+  }
 
   if (mRequest) {
     mRequest->Cancel(status);
@@ -522,9 +508,8 @@ nsBaseChannel::SetNotificationCallbacks(nsIInterfaceRequestor* aCallbacks) {
 }
 
 NS_IMETHODIMP
-nsBaseChannel::GetSecurityInfo(nsISupports** aSecurityInfo) {
-  nsCOMPtr<nsISupports> securityInfo(mSecurityInfo);
-  securityInfo.forget(aSecurityInfo);
+nsBaseChannel::GetSecurityInfo(nsITransportSecurityInfo** aSecurityInfo) {
+  *aSecurityInfo = do_AddRef(mSecurityInfo).take();
   return NS_OK;
 }
 
@@ -689,7 +674,7 @@ nsBaseChannel::AsyncOpen(nsIStreamListener* aListener) {
 
   // Store the listener and context early so that OpenContentStream and the
   // stream's AsyncWait method (called by AsyncRead) can have access to them
-  // via PushStreamConverter and the StreamListener methods.  However, since
+  // via the StreamListener methods.  However, since
   // this typically introduces a reference cycle between this and the listener,
   // we need to be sure to break the reference if this method does not succeed.
   mListener = listener;
@@ -796,6 +781,7 @@ static void CallUnknownTypeSniffer(void* aClosure, const uint8_t* aData,
 NS_IMETHODIMP
 nsBaseChannel::OnStartRequest(nsIRequest* request) {
   MOZ_ASSERT_IF(mRequest, request == mRequest);
+  MOZ_ASSERT_IF(mCancelableAsyncRequest, !mRequest);
 
   nsAutoCString scheme;
   mURI->GetScheme(scheme);
@@ -832,6 +818,7 @@ nsBaseChannel::OnStopRequest(nsIRequest* request, nsresult status) {
   // Cause Pending to return false.
   mPump = nullptr;
   mRequest = nullptr;
+  mCancelableAsyncRequest = nullptr;
   mPumpingData = false;
 
   if (mListener) {  // null in case of redirect
@@ -908,7 +895,7 @@ nsBaseChannel::OnRedirectVerifyCallback(nsresult result) {
 }
 
 NS_IMETHODIMP
-nsBaseChannel::RetargetDeliveryTo(nsIEventTarget* aEventTarget) {
+nsBaseChannel::RetargetDeliveryTo(nsISerialEventTarget* aEventTarget) {
   MOZ_ASSERT(NS_IsMainThread());
 
   NS_ENSURE_TRUE(mRequest, NS_ERROR_NOT_INITIALIZED);
@@ -924,7 +911,7 @@ nsBaseChannel::RetargetDeliveryTo(nsIEventTarget* aEventTarget) {
 }
 
 NS_IMETHODIMP
-nsBaseChannel::GetDeliveryTarget(nsIEventTarget** aEventTarget) {
+nsBaseChannel::GetDeliveryTarget(nsISerialEventTarget** aEventTarget) {
   MOZ_ASSERT(NS_IsMainThread());
 
   NS_ENSURE_TRUE(mRequest, NS_ERROR_NOT_INITIALIZED);

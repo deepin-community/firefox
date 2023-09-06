@@ -17,8 +17,7 @@
 #include "VideoUtils.h"
 #include "GMPCrashHelperHolder.h"
 
-namespace mozilla {
-namespace gmp {
+namespace mozilla::gmp {
 
 class GMPContentParent;
 
@@ -51,16 +50,12 @@ class GMPVideoDecoderParent final : public PGMPVideoDecoderParent,
   nsresult Reset() override;
   nsresult Drain() override;
   uint32_t GetPluginId() const override { return mPluginId; }
-  const nsCString& GetDisplayName() const override;
+  GMPPluginType GetPluginType() const override { return mPluginType; }
+  nsCString GetDisplayName() const override;
 
   // GMPSharedMemManager
-  bool Alloc(size_t aSize, Shmem::SharedMemory::SharedMemoryType aType,
-             Shmem* aMem) override {
-#ifdef GMP_SAFE_SHMEM
-    return AllocShmem(aSize, aType, aMem);
-#else
-    return AllocUnsafeShmem(aSize, aType, aMem);
-#endif
+  bool Alloc(size_t aSize, Shmem* aMem) override {
+    return AllocShmem(aSize, aMem);
   }
   void Dealloc(Shmem&& aMem) override { DeallocShmem(aMem); }
 
@@ -82,8 +77,8 @@ class GMPVideoDecoderParent final : public PGMPVideoDecoderParent,
   mozilla::ipc::IPCResult RecvShutdown() override;
   mozilla::ipc::IPCResult RecvParentShmemForPool(
       Shmem&& aEncodedBuffer) override;
-  mozilla::ipc::IPCResult AnswerNeedShmem(const uint32_t& aFrameBufferSize,
-                                          Shmem* aMem) override;
+  mozilla::ipc::IPCResult RecvNeedShmem(const uint32_t& aFrameBufferSize,
+                                        Shmem* aMem) override;
   mozilla::ipc::IPCResult Recv__delete__() override;
 
   void UnblockResetAndDrain();
@@ -95,14 +90,14 @@ class GMPVideoDecoderParent final : public PGMPVideoDecoderParent,
   bool mIsAwaitingResetComplete;
   bool mIsAwaitingDrainComplete;
   RefPtr<GMPContentParent> mPlugin;
-  GMPVideoDecoderCallbackProxy* mCallback;
+  RefPtr<GMPVideoDecoderCallbackProxy> mCallback;
   GMPVideoHostImpl mVideoHost;
   const uint32_t mPluginId;
+  GMPPluginType mPluginType = GMPPluginType::Unknown;
   int32_t mFrameCount;
   RefPtr<SimpleTimer> mResetCompleteTimeout;
 };
 
-}  // namespace gmp
-}  // namespace mozilla
+}  // namespace mozilla::gmp
 
 #endif  // GMPVideoDecoderParent_h_

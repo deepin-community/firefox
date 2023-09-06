@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Treun
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = Brabhsair a tha gu tur sàbhailte
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Cha deach prògram a lorg sa bheil comharran-lìn, eachdraidh no faclan-faire.
 
@@ -61,8 +73,8 @@ import-items-description = Tagh na rudan a thèid ion-phortadh:
 
 import-permissions-page-title = Thoir ceadan dha { -brand-short-name }
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = Tha macOS ag iarraidh ort gun doir thu cead dha { -brand-short-name } gu sònraichte airson na comharran-lìn aig Safari inntrigeadh. Briog air “Lean air adhart” agus tagh am faidhle “Bookmarks.plist” air a’ phanail fosgladh faidhle a nochdas.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = Tha macOS a’ sparradh ort gun toir thu cead dha { -brand-short-name } gu follaiseach airson cead-inntrigidh do dhàta Safarai. Briog air “Lean air adhart”, tagh am pasgan “Safari” sa chòmhradh aig Finder a nochdas is briog air “Fosgail” an uair sin.
 
 import-migrating-page-title = Ag ion-phortadh…
 
@@ -78,23 +90,9 @@ import-done-description = Chaidh na rudan a leanas ion-phortadh gu soirbheachail
 
 import-close-source-browser = Dèan cinnteach gu bheil am brabhsair a thagh thu dùinte mus lean thu air adhart.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = O { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = Brabhsair a tha gu tur sàbhailte
 
 imported-safari-reading-list = Liosta leughaidh (o Safari)
 imported-edge-reading-list = Liosta leughaidh (o Edge)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = Uinneagan is tabaichean
 browser-data-session-label =
     .value = Uinneagan is tabaichean
+
+browser-data-payment-methods-checkbox =
+    .label = Dòighean pàighidh
+browser-data-payment-methods-label =
+    .value = Dòighean pàighidh

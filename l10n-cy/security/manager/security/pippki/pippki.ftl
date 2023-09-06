@@ -16,8 +16,6 @@ change-password-old = Cyfrinair cyfredol:
 change-password-new = Cyfrinair newydd:
 change-password-reenter = Y cyfrinair newydd (eto):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Methu newid cyfrinair.
 pippki-incorrect-pw = Wedi rhoi cyfrinair anghywir. Ceisiwch eto.
 pippki-pw-change-ok = Mae'r cyfrinair wedi ei newid yn llwyddiannus.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Rydych ym modd FIPS. Mae FIPS angen gyfrin
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Ailosod Prif Gyfrinair
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Ailosod
-
 reset-primary-password-text = Os byddwch yn ailosod eich Prif Gyfrinair, bydd eich cyfrineiriau gwe ac e-bost, data ffurflen, tystysgrifau personol ac allweddi preifat sydd wedi eu cadw'n cael eu colli. Ydych chi'n siŵr eich bod eisiau ailosod eich Prif Gyfrinair?
 
 pippki-reset-password-confirmation-title = Ailosod Prif Gyfrinair
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Mae eich Prif Gyfrinair wedi cael e
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Llwytho Tystysgrifau i Lawr
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Rydych wedi cael cais i ymddiried mewn Awdurdod Tystysgrifo (CA) newydd.
 download-cert-trust-ssl =
     .label = Ymddiried yn yr Awdurdod Tystysgrifo i adnabod gwefannau.
@@ -77,7 +74,8 @@ set-password-reminder = Pwysig: Os byddwch yn anghofio eich cyfrinair diogelwch 
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Dilysu Tocyn Diogel
-protected-auth-msg = Dilyswch i'r tocyn. Mae dulliau dilysu'n dibynnu ar y math o docyn.
-protected-auth-token = Tocyn:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Dilyswch i'r tocyn “{ $tokenName }”. Mae sut i wneud hynny yn dibynnu ar y tocyn (er enghraifft, defnyddio darllenydd bysbrint neu roi cod gyda bysellbad).

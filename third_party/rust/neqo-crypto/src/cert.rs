@@ -5,9 +5,7 @@
 // except according to those terms.
 
 use crate::err::secstatus_to_res;
-use crate::p11::{
-    CERTCertListNode, CERT_GetCertificateDer, CertList, Item, PRCList, SECItem, SECItemArray,
-};
+use crate::p11::{CERTCertListNode, CERT_GetCertificateDer, CertList, Item, SECItem, SECItemArray};
 use crate::ssl::{
     PRFileDesc, SSL_PeerCertificateChain, SSL_PeerSignedCertTimestamps,
     SSL_PeerStapledOCSPResponses,
@@ -15,7 +13,7 @@ use crate::ssl::{
 use neqo_common::qerror;
 
 use std::convert::TryFrom;
-use std::ptr::NonNull;
+use std::ptr::{addr_of, NonNull};
 
 use std::slice;
 
@@ -65,10 +63,14 @@ fn signed_cert_timestamp(fd: *mut PRFileDesc) -> Option<Vec<u8>> {
     let sct_nss = unsafe { SSL_PeerSignedCertTimestamps(fd) };
     match NonNull::new(sct_nss as *mut SECItem) {
         Some(sct_ptr) => {
-            let sct_slice = unsafe {
-                slice::from_raw_parts(sct_ptr.as_ref().data, sct_ptr.as_ref().len as usize)
-            };
-            Some(sct_slice.to_owned())
+            if unsafe { sct_ptr.as_ref().len == 0 || sct_ptr.as_ref().data.is_null() } {
+                Some(Vec::new())
+            } else {
+                let sct_slice = unsafe {
+                    slice::from_raw_parts(sct_ptr.as_ref().data, sct_ptr.as_ref().len as usize)
+                };
+                Some(sct_slice.to_owned())
+            }
         }
         None => None,
     }
@@ -86,7 +88,7 @@ impl CertificateInfo {
 
     fn head(certs: &CertList) -> *const CERTCertListNode {
         // Three stars: one for the reference, one for the wrapper, one to deference the pointer.
-        unsafe { (&(***certs).list as *const PRCList).cast() }
+        unsafe { addr_of!((***certs).list).cast() }
     }
 }
 

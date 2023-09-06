@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Definieer domeinen die toegang hebben tot Google 
 
 policy-AppAutoUpdate = Automatische applicatie-update in- of uitschakelen.
 
+policy-AppUpdatePin = Voorkomen dat { -brand-short-name } wordt geüpdatet voorbij de opgegeven versie.
+
 policy-AppUpdateURL = Aangepaste app-update-URL instellen.
 
 policy-Authentication = Geïntegreerde authenticatie configureren voor websites die dit ondersteunen.
@@ -39,6 +41,9 @@ policy-CaptivePortal = Ondersteuning voor hotspot-aanmeldingspagina inschakelen 
 policy-CertificatesDescription = Certificaten toevoegen of ingebouwde certificaten gebruiken.
 
 policy-Cookies = Toestaan of weigeren dat websites cookies instellen.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Beleid met betrekking tot containers instellen.
 
 policy-DisabledCiphers = Coderingssuites uitschakelen.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Wanneer true, kan geen hoofdwachtwoord w
 
 policy-DisablePasswordReveal = Niet toestaan dat wachtwoorden worden onthuld in opgeslagen aanmeldingen.
 
-policy-DisablePocket = De functie voor het opslaan van webpagina’s naar Pocket uitschakelen.
+policy-DisablePocket2 = De functie voor het opslaan van webpagina’s naar { -pocket-brand-name } uitschakelen.
 
 policy-DisablePrivateBrowsing = Privénavigatie uitschakelen.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Voorkomen dat de browser systeemadd-ons instal
 
 policy-DisableTelemetry = Telemetry uitschakelen.
 
+policy-DisableThirdPartyModuleBlocking = Voorkomen dat de gebruiker modules van derden die in het { -brand-short-name }-proces worden geïnjecteerd blokkeert
+
 policy-DisplayBookmarksToolbar = Standaard de Bladwijzerwerkbalk weergeven.
 
 policy-DisplayMenuBar = Standaard de Menubalk weergeven.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Inhoudsblokkering inschakelen of uitschakelen 
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Versleutelde media-extensies in- of uitschakelen en optioneel vergrendelen.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Waarschuwingen uitschakelen op basis van bestandsextensies voor specifieke bestandstypen op domeinen.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Alle aspecten van installatie van extensies beheren.
 
 policy-ExtensionUpdate = Automatische extensie-updates inschakelen of uitschakelen.
 
-policy-FirefoxHome = De startpagina van Firefox instellen.
+policy-FirefoxHome2 = { -firefox-home-brand-name } configureren.
 
-policy-FlashPlugin = Gebruik van de Flash-plug-in toestaan of weigeren.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Directe navigatie op intranetsites forceren in plaats van zoeken bij het typen van enkele woorden in de adresbalk.
 
 policy-Handlers = Standaard toepassinghandlers configureren
 
@@ -159,12 +168,14 @@ policy-OverridePostUpdatePage = De pagina ‘Wat is er nieuw’ na een update ve
 
 policy-PasswordManagerEnabled = Opslaan van wachtwoorden in de wachtwoordenbeheerder inschakelen.
 
+policy-PasswordManagerExceptions = Voorkomen dat { -brand-short-name } wachtwoorden voor specifieke websites opslaat.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = PDF.js, de in { -brand-short-name } ingebouwde PDF-lezer, uitschakelen of instellen.
 
 policy-Permissions2 = Toestemmingen voor camera, microfoon, locatie, notificaties en automatisch afspelen configureren.
 
-policy-PictureInPicture = Picture-in-Picture in- of uitschakelen.
+policy-PictureInPicture = Picture-in-picture in- of uitschakelen.
 
 policy-PopupBlocking = Toestaan dat bepaalde websites standaard pop-ups weergeven.
 
@@ -184,8 +195,8 @@ policy-SearchEngines = Instellingen voor zoekmachines configureren. Deze beleids
 
 policy-SearchSuggestEnabled = Zoeksuggesties inschakelen of uitschakelen.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = PKCS #11-modules installeren.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = PKCS #11-modules toevoegen of verwijderen.
 
 policy-ShowHomeButton = De startpaginaknop op de werkbalk tonen.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = De maximale SSL-versie instellen.
 
 policy-SSLVersionMin = De minimale SSL-versie instellen.
 
+policy-StartDownloadsInTempDirectory = Afdwingen dat downloads starten in een lokale, tijdelijke locatie in plaats van de standaard downloadmap.
+
 policy-SupportMenu = Een aangepast menu-item voor ondersteuning aan het menu Help toevoegen.
 
 policy-UserMessaging = Bepaalde berichten niet aan de gebruiker tonen.
+
+policy-UseSystemPrintDialog = Afdrukken via het afdrukdialoogvenster van het systeem.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Het bezoeken van websites blokkeren. Zie de documentatie voor meer informatie over de notatie.

@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "XPCSelfHostedShmem.h"
+#include "xpcprivate.h"
 
 // static
 mozilla::StaticRefPtr<xpc::SelfHostedShmem>
@@ -71,7 +72,7 @@ bool xpc::SelfHostedShmem::InitFromChild(::base::SharedMemoryHandle aHandle,
   MOZ_ASSERT(!mLen, "Shouldn't call this more than once");
 
   auto shm = mozilla::MakeUnique<base::SharedMemory>();
-  if (NS_WARN_IF(!shm->SetHandle(aHandle, /* read_only */ true))) {
+  if (NS_WARN_IF(!shm->SetHandle(std::move(aHandle), /* read_only */ true))) {
     return false;
   }
 

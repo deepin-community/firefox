@@ -31,7 +31,6 @@
 #include "nsIInputStream.h"
 #include "nsIProtocolHandler.h"
 #include "mozilla/Monitor.h"
-#include "plstr.h"
 #include "prtime.h"
 #include <gio/gio.h>
 #include <algorithm>
@@ -164,18 +163,7 @@ class nsGIOInputStream final : public nsIInputStream {
   NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSIINPUTSTREAM
 
-  explicit nsGIOInputStream(const nsCString& uriSpec)
-      : mSpec(uriSpec),
-        mChannel(nullptr),
-        mHandle(nullptr),
-        mStream(nullptr),
-        mBytesRemaining(UINT64_MAX),
-        mStatus(NS_OK),
-        mDirList(nullptr),
-        mDirListPtr(nullptr),
-        mDirBufCursor(0),
-        mDirOpen(false),
-        mMonitorMountInProgress("GIOInputStream::MountFinished") {}
+  explicit nsGIOInputStream(const nsCString& uriSpec) : mSpec(uriSpec) {}
 
   void SetChannel(nsIChannel* channel) {
     // We need to hold an owning reference to our channel.  This is done
@@ -191,7 +179,7 @@ class nsGIOInputStream final : public nsIInputStream {
     // cycle since the channel likely owns this stream.  This reference
     // cycle is broken in our Close method.
 
-    NS_ADDREF(mChannel = channel);
+    mChannel = do_AddRef(channel).take();
   }
   void SetMountResult(MountOperationResult result, gint error_code);
 
@@ -204,19 +192,20 @@ class nsGIOInputStream final : public nsIInputStream {
   nsresult DoOpenDirectory();
   nsresult DoOpenFile(GFileInfo* info);
   nsCString mSpec;
-  nsIChannel* mChannel;  // manually refcounted
-  GFile* mHandle;
-  GFileInputStream* mStream;
-  uint64_t mBytesRemaining;
-  nsresult mStatus;
-  GList* mDirList;
-  GList* mDirListPtr;
+  nsIChannel* mChannel{nullptr};  // manually refcounted
+  GFile* mHandle{nullptr};
+  GFileInputStream* mStream{nullptr};
+  uint64_t mBytesRemaining{UINT64_MAX};
+  nsresult mStatus{NS_OK};
+  GList* mDirList{nullptr};
+  GList* mDirListPtr{nullptr};
   nsCString mDirBuf;
-  uint32_t mDirBufCursor;
-  bool mDirOpen;
+  uint32_t mDirBufCursor{0};
+  bool mDirOpen{false};
   MountOperationResult mMountRes =
       MountOperationResult::MOUNT_OPERATION_SUCCESS;
-  mozilla::Monitor mMonitorMountInProgress;
+  mozilla::Monitor mMonitorMountInProgress MOZ_UNANNOTATED{
+      "GIOInputStream::MountFinished"};
   gint mMountErrorCode{};
 };
 
@@ -631,6 +620,12 @@ nsGIOInputStream::Available(uint64_t* aResult) {
 }
 
 /**
+ * Return the status of the input stream
+ */
+NS_IMETHODIMP
+nsGIOInputStream::StreamStatus() { return mStatus; }
+
+/**
  * Trying to read from stream. When location is not available it tries to mount
  * it.
  * @param aBuf buffer to put read data
@@ -878,18 +873,24 @@ nsresult nsGIOProtocolHandler::Init() {
 }
 
 void nsGIOProtocolHandler::InitSupportedProtocolsPref(nsIPrefBranch* prefs) {
+  nsCOMPtr<nsIIOService> ioService = components::IO::Service();
+  if (NS_WARN_IF(!ioService)) {
+    LOG(("gio: ioservice not available\n"));
+    return;
+  }
+
   // Get user preferences to determine which protocol is supported.
   // Gvfs/GIO has a set of supported protocols like obex, network, archive,
   // computer, dav, cdda, gphoto2, trash, etc. Some of these seems to be
-  // irrelevant to process by browser. By default accept only smb and sftp
-  // protocols so far.
-  nsresult rv =
-      prefs->GetCharPref(MOZ_GIO_SUPPORTED_PROTOCOLS, mSupportedProtocols);
+  // irrelevant to process by browser. By default accept only sftp protocol so
+  // far.
+  nsAutoCString prefValue;
+  nsresult rv = prefs->GetCharPref(MOZ_GIO_SUPPORTED_PROTOCOLS, prefValue);
   if (NS_SUCCEEDED(rv)) {
-    mSupportedProtocols.StripWhitespace();
-    ToLowerCase(mSupportedProtocols);
+    prefValue.StripWhitespace();
+    ToLowerCase(prefValue);
   } else {
-    mSupportedProtocols.AssignLiteral(
+    prefValue.AssignLiteral(
 #ifdef MOZ_PROXY_BYPASS_PROTECTION
         ""  // use none
 #else
@@ -897,13 +898,39 @@ void nsGIOProtocolHandler::InitSupportedProtocolsPref(nsIPrefBranch* prefs) {
 #endif
     );
   }
-  LOG(("gio: supported protocols \"%s\"\n", mSupportedProtocols.get()));
+  LOG(("gio: supported protocols \"%s\"\n", prefValue.get()));
+
+  // Unregister any previously registered dynamic protocols.
+  for (const nsCString& scheme : mSupportedProtocols) {
+    LOG(("gio: unregistering handler for \"%s\"", scheme.get()));
+    ioService->UnregisterProtocolHandler(scheme);
+  }
+  mSupportedProtocols.Clear();
+
+  // Register each protocol from the pref branch to reference
+  // nsGIOProtocolHandler.
+  for (const nsDependentCSubstring& protocol : prefValue.Split(',')) {
+    if (NS_WARN_IF(!StringEndsWith(protocol, ":"_ns))) {
+      continue;  // each protocol must end with a `:` character to be recognized
+    }
+
+    nsCString scheme(Substring(protocol, 0, protocol.Length() - 1));
+    if (NS_SUCCEEDED(ioService->RegisterProtocolHandler(
+            scheme, this,
+            nsIProtocolHandler::URI_STD |
+                nsIProtocolHandler::URI_DANGEROUS_TO_LOAD,
+            /* aDefaultPort */ -1))) {
+      LOG(("gio: successfully registered handler for \"%s\"", scheme.get()));
+      mSupportedProtocols.AppendElement(scheme);
+    } else {
+      LOG(("gio: failed to register handler for \"%s\"", scheme.get()));
+    }
+  }
 }
 
 bool nsGIOProtocolHandler::IsSupportedProtocol(const nsCString& aScheme) {
-  nsAutoCString schemeWithColon = aScheme + ":"_ns;
-  for (const auto& protocol : mSupportedProtocols.Split(',')) {
-    if (schemeWithColon.Equals(protocol, nsCaseInsensitiveCStringComparator)) {
+  for (const auto& protocol : mSupportedProtocols) {
+    if (aScheme.EqualsIgnoreCase(protocol)) {
       return true;
     }
   }
@@ -913,19 +940,6 @@ bool nsGIOProtocolHandler::IsSupportedProtocol(const nsCString& aScheme) {
 NS_IMETHODIMP
 nsGIOProtocolHandler::GetScheme(nsACString& aScheme) {
   aScheme.AssignLiteral(MOZ_GIO_SCHEME);
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-nsGIOProtocolHandler::GetDefaultPort(int32_t* aDefaultPort) {
-  *aDefaultPort = -1;
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-nsGIOProtocolHandler::GetProtocolFlags(uint32_t* aProtocolFlags) {
-  // Is URI_STD true of all GnomeVFS URI types?
-  *aProtocolFlags = URI_STD | URI_DANGEROUS_TO_LOAD;
   return NS_OK;
 }
 

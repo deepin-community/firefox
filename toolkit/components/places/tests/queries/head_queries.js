@@ -4,8 +4,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-
 // Import common head.
 {
   /* import-globals-from ../head_common.js */
@@ -51,35 +49,22 @@ async function task_populateDB(aArray) {
         if (qdata.visitCount && !qdata.isDetails) {
           // Set a fake visit_count, this is not a real count but can be used
           // to test sorting by visit_count.
-          let stmt = DBConn().createAsyncStatement(
-            "UPDATE moz_places SET visit_count = :vc WHERE url_hash = hash(:url) AND url = :url"
+          await PlacesTestUtils.updateDatabaseValues(
+            "moz_places",
+            { visit_count: qdata.visitCount },
+            { url: qdata.uri }
           );
-          stmt.params.vc = qdata.visitCount;
-          stmt.params.url = qdata.uri;
-          try {
-            stmt.executeAsync();
-          } catch (ex) {
-            print("Error while setting visit_count.");
-          } finally {
-            stmt.finalize();
-          }
         }
       }
 
       if (qdata.isRedirect) {
         // This must be async to properly enqueue after the updateFrecency call
         // done by the visit addition.
-        let stmt = DBConn().createAsyncStatement(
-          "UPDATE moz_places SET hidden = 1 WHERE url_hash = hash(:url) AND url = :url"
+        await PlacesTestUtils.updateDatabaseValues(
+          "moz_places",
+          { hidden: 1 },
+          { url: qdata.uri }
         );
-        stmt.params.url = qdata.uri;
-        try {
-          stmt.executeAsync();
-        } catch (ex) {
-          print("Error while setting hidden.");
-        } finally {
-          stmt.finalize();
-        }
       }
 
       if (qdata.isDetails) {
@@ -224,7 +209,7 @@ function compareArrayToResult(aArray, aRoot) {
   }
 
   // check expected number of results against actual
-  var expectedResultCount = aArray.filter(function(aEl) {
+  var expectedResultCount = aArray.filter(function (aEl) {
     return aEl.isInQuery;
   }).length;
   if (expectedResultCount != aRoot.childCount) {

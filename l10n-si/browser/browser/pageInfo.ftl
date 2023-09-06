@@ -8,7 +8,7 @@ page-info-window =
 copy =
     .key = C
 menu-copy =
-    .label = පිටපත් කරන්න
+    .label = පිටපතක්
     .accesskey = C
 
 select-all =
@@ -17,25 +17,24 @@ menu-select-all =
     .label = සියල්ල තෝරන්න
     .accesskey = A
 
+close-dialog =
+    .key = w
+
 general-tab =
     .label = සාමාන්‍ය
     .accesskey = G
 general-title =
-    .value = මාතෘකාව:
+    .value = සිරැසිය:
 general-url =
     .value = ලිපිනය:
 general-type =
-    .value = වර්‍ගය:
-general-mode =
-    .value = ජනන ප්‍රකාරය:
+    .value = වර්ගය
 general-size =
-    .value = විශාලත්වය:
-general-referrer =
-    .value = යොමු URL:
+    .value = ප්‍රමාණය:
 general-modified =
-    .value = වෙනස්කළ:
+    .value = සංශෝධිත:
 general-encoding =
-    .value = පෙළ සංකේතනය:
+    .value = පෙළ ආකේතනය:
 general-meta-name =
     .label = නම
 general-meta-content =
@@ -45,66 +44,72 @@ media-tab =
     .label = මාධ්‍ය
     .accesskey = M
 media-location =
-    .value = පිහිටීම:
-media-text =
-    .value = අදාල පෙළ:
+    .value = ස්ථානය:
 media-alt-header =
-    .label = අමතර පෙළ
+    .label = විකල්ප පෙළ
 media-address =
     .label = ලිපිනය
 media-type =
-    .label = වර්‍ගය
+    .label = වර්ගය
 media-size =
-    .label = විශාලත්වය
+    .label = ප්‍රමාණය
 media-count =
     .label = ගණන
 media-dimension =
     .value = මාන:
 media-long-desc =
-    .value = දිගු විස්තරය:
+    .value = දිගු සවිස්තරය:
+media-select-all =
+    .label = සියල්ල තෝරන්න
+    .accesskey = e
 media-save-as =
-    .label = සුරකින අයුර…
+    .label = මෙලෙස සුරකින්න
     .accesskey = A
 media-save-image-as =
-    .label = සුරකින අයුර…
+    .label = මෙලෙස සුරකින්න
     .accesskey = e
 
 perm-tab =
-    .label = බලතල
+    .label = අවසර
     .accesskey = P
 permissions-for =
     .value = අවසර ලැබෙන්නේ:
 
 security-tab =
-    .label = ආරක්ෂාව
+    .label = ආරක්‍ෂාව
     .accesskey = S
 security-view =
-    .label = සහතිකය දක්වන්න
+    .label = සහතිකය බලන්න
     .accesskey = V
 security-view-unknown = නොදන්නා
     .value = නොදන්නා
 security-view-identity =
-    .value = ජාල අඩවියේ අනන්‍යතාව
+    .value = අඩවියේ අනන්‍යතාව
 security-view-identity-owner =
     .value = හිමිකරු:
 security-view-identity-domain =
-    .value = ජාල අඩවිය:
+    .value = අඩවිය:
 security-view-identity-verifier =
-    .value = ස්ථිර කළේ:
+    .value = සත්‍යාපනය:
 security-view-identity-validity =
-    .value = කල් ඉකුත් වන්නේ:
+    .value = කල් ඉකුත් වීම:
 security-view-privacy =
-    .value = පුද්ගලිකත්වය හා ඉතිහාසය
+    .value = පෞද්ගලිකත්‍වය හා ඉතිහාසය
 
-security-view-privacy-history-value = අද දිනට පෙර මා මෙම අඩවියට පිවිස ඇතිද?
+security-view-privacy-history-value = මම අදට කලින් මෙම අඩවියට ගොඩවැදී තිබේද?
+security-view-privacy-sitedata-value = මෙම අඩවිය මාගේ පරිගණකයේ තොරතුරු ගබඩා කරන්නේද?
 
-security-view-privacy-passwords-value = මෙම අඩවිය සඳහා මවිසින් කිසිඳු මුරපදයක් සුරැක ඇතිද?
+security-view-privacy-clearsitedata =
+    .label = දත්තකඩ හා අඩවි දත්ත මකන්න
+    .accesskey = C
+
+security-view-privacy-passwords-value = මෙම අඩවිය සඳහා මවිසින් සුරකින ලද මුරපද තිබේද?
 
 security-view-privacy-viewpasswords =
-    .label = සුරැකූ රහස්පද බලන්න
+    .label = සුරකින ලද මුරපද බලන්න
     .accesskey = w
 security-view-technical =
-    .value = තාක්ෂණික දත්ත
+    .value = තාක්‍ෂණික දත්ත
 
 help-button =
     .label = උදව්
@@ -115,43 +120,76 @@ help-button =
 ##   $value (number) - Amount of data being stored
 ##   $unit (string) - The unit of data being stored (Usually KB)
 
-security-site-data-no = නැත
+security-site-data-cookies = ඔව්, දත්තකඩ සහ අඩවියේ දත්ත { $unit } { $value }
+security-site-data-only = ඔව්, අඩවියේ දත්ත { $unit } { $value }
+
+security-site-data-cookies-only = ඔව්, දත්තකඩ
+security-site-data-no = නැහැ
 
 ##
 
 image-size-unknown = නොදන්නා
 page-info-not-specified =
-    .value = විශේෂිතව දක්වා නැත
-not-set-alternative-text = විශේෂිතව දක්වා නැත
-not-set-date = විශේෂිතව දක්වා නැත
+    .value = දක්වා නැත
+not-set-alternative-text = දක්වා නැත
+not-set-date = දක්වා නැත
 media-img = රූපය
-media-bg-img = පසුතලය
+media-bg-img = පසුබිම
 media-border-img = දාරය
-media-list-img = බුලටය
-media-cursor = කර්සරය
+media-list-img = ගුලිය
+media-cursor = ඊතලය
 media-object = වස්තුව
 media-embed = කාවැද්දූ
-media-link = අයිකනය
-media-input = ප්‍රධානය
+media-link = නිරූපකය
+media-input = ආදානය
 media-video = දෘශ්‍ය
 media-audio = ශ්‍රව්‍ය
 saved-passwords-yes = ඔව්
-saved-passwords-no = නැත
+saved-passwords-no = නැහැ
 
 no-page-title =
-    .value = නිර්ණාමික පිටුව:
-general-quirks-mode =
-    .value = Quirks ආකාරය
-general-strict-mode =
-    .value = සම්මත අනුකූල ආකාරය
+    .value = නම් නොකළ පිටුව:
 page-info-security-no-owner =
-    .value = මෙම වෙබ් අඩවිය අයිතිය පිළිබඳ තොරතුරු සපයන්නේ නැත..
-media-select-folder = රූපය සුරකීමට බහලුමක් තෝරන්න
+    .value = මෙම අඩවිය අයිතිය පිළිබඳව තොරතුරු සපයන්නේ නැත..
+media-select-folder = රූපය සුරැකීමට බහාලුමක් තෝරන්න
 media-unknown-not-cached =
-    .value = නොදන්නා (කැච් නොවූ)
+    .value = නොදන්නා (නිහිතගත නොවූ)
 permissions-use-default =
-    .label = පෙරනිමිය භාවිත කරන්න
-security-no-visits = නැත
+    .label = පෙරනිමිය භාවිතය
+security-no-visits = නැහැ
+
+# This string is used to display the number of meta tags
+# in the General Tab
+# Variables:
+#   $tags (number) - The number of meta tags
+general-meta-tags =
+    .value =
+        { $tags ->
+            [one] පාර (අනන්‍යන 1)
+           *[other] පාර (අනන්‍යන { $tags })
+        }
+
+# This string is used to display the number of times
+# the user has visited the website prior
+# Variables:
+#   $visits (number) - The number of previous visits
+security-visits-number =
+    { $visits ->
+        [0] නැහැ
+        [one] ඔව්, වරක්
+       *[other] ඔව්, { $visits } වරක්
+    }
+
+# This string is used to display the size of a media file
+# Variables:
+#   $kb (number) - The size of an image in Kilobytes
+#   $bytes (number) - The size of an image in Bytes
+properties-general-size =
+    .value =
+        { $bytes ->
+            [one] කි.බ. { $kb } (බයිට { $bytes })
+           *[other] කි.බ. { $kb } (බයිට { $bytes })
+        }
 
 # This string is used to display the type of
 # an image
@@ -181,21 +219,20 @@ media-dimensions =
 # file in kilobytes
 # Variables:
 #   $size (number) - The size of the media file in kilobytes
-media-file-size = { $size } KB
+media-file-size = කි.බ. { $size }
+
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
 
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab
-# Variables:
-#   $website (string) - The website name
 media-block-image =
-    .label = { $website } වෙතින් රූපය අවහිර කරන්න
+    .label = { $website } න් රූප අවහිර කරන්න
     .accesskey = B
 
 # This string is used to display the URL of the website on top of the
 # pageInfo dialog box
-# Variables:
-#   $website (string) - The url of the website pageInfo is getting info for
 page-info-page =
-    .title = පිටු තොරතුරු - { $website }
+    .title = පිටුවේ තොරතුරු - { $website }
 page-info-frame =
-    .title = රාමු තොරතුරු - { $website }
+    .title = රාමුවේ තොරතුරු - { $website }

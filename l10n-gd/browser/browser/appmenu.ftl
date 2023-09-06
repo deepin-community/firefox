@@ -5,13 +5,21 @@
 
 ## App Menu
 
-appmenuitem-update-banner3 =
-    .label-update-downloading = A’ luchdadh a-nuas ùrachadh { -brand-shorter-name }
-    .label-update-available = Tha ùrachadh ri fhaighinn – luchdaich a-nuas e an-dràsta
-    .label-update-manual = Tha ùrachadh ri fhaighinn – luchdaich a-nuas e an-dràsta
-    .label-update-unsupported = Chan urrainn dhuinn ùrachadh – chan eil an siostam co-chòrdail
-    .label-update-restart = Tha ùrachadh ri fhaighinn – ath-thòisich an-dràsta
-appmenuitem-protection-dashboard-title = Deas-bhòrd an dìona
+appmenuitem-banner-update-downloading =
+    .label = A’ luchdadh a-nuas ùrachadh { -brand-shorter-name }
+
+appmenuitem-banner-update-available =
+    .label = Tha ùrachadh ri fhaighinn – luchdaich a-nuas e an-dràsta
+
+appmenuitem-banner-update-manual =
+    .label = Tha ùrachadh ri fhaighinn – luchdaich a-nuas e an-dràsta
+
+appmenuitem-banner-update-unsupported =
+    .label = Chan urrainn dhuinn ùrachadh – chan eil an siostam co-chòrdail
+
+appmenuitem-banner-update-restart =
+    .label = Tha ùrachadh ri fhaighinn – ath-thòisich an-dràsta
+
 appmenuitem-new-tab =
     .label = Taba ùr
 appmenuitem-new-window =
@@ -48,6 +56,7 @@ appmenu-menu-button-closed2 =
 appmenu-menu-button-opened2 =
     .tooltiptext = Dùin clàr-taice na h-aplacaid
     .label = { -brand-short-name }
+
 # Settings is now used to access the browser settings across all platforms,
 # instead of Options or Preferences.
 appmenuitem-settings =
@@ -68,21 +77,30 @@ appmenu-remote-tabs-sign-into-sync =
     .label = Clàraich a-steach a shioncronachadh…
 appmenu-remote-tabs-turn-on-sync =
     .label = Cuir an sioncronachadh air…
+
 # This is shown after the tabs list if we can display more tabs by clicking on the button
 appmenu-remote-tabs-showmore =
     .label = Seall barrachd tabaichean
     .tooltiptext = Seall barrachd thabaichean on uidheam seo
+
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = Chan eil taba fosgailte
+
 # This is shown when Sync is configured but syncing tabs is disabled.
 appmenu-remote-tabs-tabsnotsyncing = Cuir air sioncronachadh nan tabaichean airson cothrom fhaighinn air na tabaichean agad o uidheaman eile.
+
+appmenu-remote-tabs-opensettings =
+    .label = Roghainnean
+
 # This is shown when Sync is configured but this appears to be the only device attached to
 # the account. We also show links to download Firefox for android/ios.
 appmenu-remote-tabs-noclients = A bheil thu airson na tabaichean a tha agad air uidheaman eile fhaicinn an-seo?
+
 appmenu-remote-tabs-connectdevice =
     .label = Ceangail uidheam eile ris
 appmenu-remote-tabs-welcome = Seall liosta nan tabaichean a tha agad air uidheaman eile.
 appmenu-remote-tabs-unverified = Tha an cunntas agad feumach air dearbhadh.
+
 appmenuitem-fxa-toolbar-sync-now2 = Sioncronaich an-dràsta
 appmenuitem-fxa-sign-in = Clàraich a-steach gu { -brand-product-name }
 appmenuitem-fxa-manage-account = Stiùirich an cunntas
@@ -96,13 +114,14 @@ appmenu-fxa-sync-and-save-data2 = Sioncronaich is sàbhail an dàta
 appmenu-fxa-signed-in-label = Clàraich a-steach
 appmenu-fxa-setup-sync =
     .label = Cuir an sioncronachadh air…
-appmenu-fxa-show-more-tabs = Seall barrachd tabaichean
+
 appmenuitem-save-page =
     .label = Sàbhail an duilleag mar…
 
 ## What's New panel in App menu.
 
 whatsnew-panel-header = Na tha ùr
+
 # Checkbox displayed at the bottom of the What's New panel, allowing users to
 # enable/disable What's New notifications.
 whatsnew-panel-footer-checkbox =
@@ -116,40 +135,52 @@ whatsnew-panel-footer-checkbox =
 profiler-popup-button-idle =
     .label = Pròifilear
     .tooltiptext = Clàraich pròifil deanadais
-profiler-popup-title =
-    .value = { -profiler-brand-name }
+
+profiler-popup-button-recording =
+    .label = Pròifilear
+    .tooltiptext = Tha am pròifilear a’ clàradh pròifil
+
+profiler-popup-button-capturing =
+    .label = Pròifilear
+    .tooltiptext = Tha am pròifilear ri glacadh pròifil
+
+profiler-popup-header-text = { -profiler-brand-name }
+
 profiler-popup-reveal-description-button =
     .aria-label = Nochd barrachd fiosrachaidh
+
 profiler-popup-description-title =
     .value = Clàraich, sgrùd, co-roinn
+
 profiler-popup-description = Obraich còmhla air duilgheadasan leis an dèanadas a dh’fhoillseachadh pròifilean a cho-roinneas tu leis an sgioba agad.
-profiler-popup-learn-more = Barrachd fiosrachaidh
+
 profiler-popup-learn-more-button =
     .label = Barrachd fiosrachaidh
+
 profiler-popup-settings =
     .value = Roghainnean
-# This link takes the user to about:profiling, and is only visible with the Custom preset.
-profiler-popup-edit-settings = Deasaich na roghainnean…
+
 # This link takes the user to about:profiling, and is only visible with the Custom preset.
 profiler-popup-edit-settings-button =
     .label = Deasaich na roghainnean…
-profiler-popup-disabled = Tha a pròifilear à comas an-dràsta, dh’fhaoidte gu bheil uinneag a’ bhrabhsaidh phrìobhaidich fosgailte.
+
 profiler-popup-recording-screen = ’Ga chlàradh…
-# The profiler presets list is generated elsewhere, but the custom preset is defined
-# here only.
-profiler-popup-presets-custom =
-    .label = Gnàthaichte
+
 profiler-popup-start-recording-button =
     .label = Tòisich air clàradh
+
 profiler-popup-discard-button =
     .label = Tilg air falbh
+
 profiler-popup-capture-button =
     .label = Glac
+
 profiler-popup-start-shortcut =
     { PLATFORM() ->
         [macos] ⌃⇧1
        *[other] Ctrl+Shift+1
     }
+
 profiler-popup-capture-shortcut =
     { PLATFORM() ->
         [macos] ⌃⇧2
@@ -165,12 +196,42 @@ profiler-popup-capture-shortcut =
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
 
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# Please take care that the same values are also defined in devtools' perftools.ftl.
+
+profiler-popup-presets-web-developer-description = Recommended preset for most web app debugging, with low overhead.
+profiler-popup-presets-web-developer-label =
+    .label = Web Developer
+
+profiler-popup-presets-firefox-description = An ro-sheata a mholamaid airson pròifileadh { -brand-shorter-name }.
+profiler-popup-presets-firefox-label =
+    .label = { -brand-shorter-name }
+
+profiler-popup-presets-graphics-description = Preset for investigating graphics bugs in { -brand-shorter-name }.
+profiler-popup-presets-graphics-label =
+    .label = Graphics
+
+profiler-popup-presets-media-description2 = Preset for investigating audio and video bugs in { -brand-shorter-name }.
+profiler-popup-presets-media-label =
+    .label = Media
+
+profiler-popup-presets-networking-description = Preset for investigating networking bugs in { -brand-shorter-name }.
+profiler-popup-presets-networking-label =
+    .label = Networking
+
+profiler-popup-presets-power-description = Preset for investigating power use bugs in { -brand-shorter-name }, with low overhead.
+# "Power" is used in the sense of energy (electricity used by the computer).
+profiler-popup-presets-power-label =
+    .label = Cumhachd
+
+profiler-popup-presets-custom-label =
+    .label = Custom
+
 ## History panel
 
 appmenu-manage-history =
     .label = Stiùirich an eachdraidh
-appmenu-reopen-all-tabs = Ath-fhosgail gach taba
-appmenu-reopen-all-windows = Ath-fhosgail gach uinneag
 appmenu-restore-session =
     .label = Aisig an seisean roimhe seo
 appmenu-clear-history =
@@ -180,6 +241,9 @@ appmenu-recently-closed-tabs =
     .label = Tabaichean a dhùin thu o chionn goirid
 appmenu-recently-closed-windows =
     .label = Uinneagan a dhùin thu o chionn goirid
+# This allows to search through the browser's history.
+appmenu-search-history =
+    .label = Lorg san eachdraidh
 
 ## Help panel
 
@@ -196,18 +260,20 @@ appmenu-help-more-troubleshooting-info =
     .accesskey = f
 appmenu-help-report-site-issue =
     .label = Dèan aithris air duilgheadas leis an làrach...
-appmenu-help-feedback-page =
-    .label = Cuir thugainn do bheachdan…
-    .accesskey = C
+appmenu-help-share-ideas =
+    .label = Co-roinn do bheachdan…
+    .accesskey = b
+appmenu-help-switch-device =
+    .label = A’ leum gu uidheam ùr
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
 
 appmenu-help-enter-troubleshoot-mode2 =
-    .label = Modh fuasglaidh air duilgheadasan…
-    .accesskey = M
+    .label = Am modh fuasgladh dhuilgheadasan…
+    .accesskey = m
 appmenu-help-exit-troubleshoot-mode =
-    .label = Cuir am modh fuasglaidh air duilgheadasan dheth
+    .label = Cuir am modh fuasgladh dhuilgheadasan dheth
     .accesskey = m
 
 ## appmenu-help-report-deceptive-site and appmenu-help-not-deceptive
@@ -224,8 +290,7 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Gnàthaich am bàr-inneal...
-appmenu-taskmanager =
-    .label = Manaidsear nan saothair
+
 appmenu-developer-tools-subheader = Innealan a’ bhrabhsair
 appmenu-developer-tools-extensions =
     .label = Leudachain do luchd-leasachaidh

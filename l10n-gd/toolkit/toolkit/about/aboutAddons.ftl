@@ -8,10 +8,16 @@ search-header =
     .placeholder = Lorg air addons.mozilla.org
     .searchbuttonlabel = Lorg
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
 list-empty-get-extensions-message = Faigh leudachain is ùrlaran air <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-dictionaries-message = Faigh faclairean air <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-language-packs-message = Faigh pacaidean cànain air <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
 
 list-empty-installed =
     .value = Chan eil tuilleadan dhen t-seòrsa seo air a stàladh agad
@@ -47,6 +53,9 @@ detail-version =
 
 detail-last-updated =
     .label = Ùrachadh mu dheireadh
+
+addon-detail-description-expand = Seall barrachd
+addon-detail-description-collapse = Seall nas lugha
 
 detail-contributions-description = Dh'iarr leasaichear an tuilleadain seo gun cuir thu taic ri shìor-leasachadh tro thabhartas beag.
 
@@ -175,6 +184,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Na chaidh ùrachadh o chionn goirid
 addon-category-recent-updates-title =
     .title = Na chaidh ùrachadh o chionn goirid
+addon-category-sitepermission = Ceadan na làraich
+addon-category-sitepermission-title =
+    .title = Ceadan na làraich
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Ceadan na làraich airson { $host }
 
 ## These are global warnings
 
@@ -260,6 +276,8 @@ shortcuts-duplicate-warning-message = Tha { $shortcut } ’ga chleachdadh ’na 
 #   $addon (string) - Name of the add-on
 shortcuts-exists = ’Ga chleachdadh le { $addon } mu thràth
 
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Seall { $numberToShow } a bharrachd
@@ -307,6 +325,7 @@ install-theme-button = Stàlaich an t-ùrlar
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Stiùirich
 find-more-addons = Lorg barrachd leudachain
+find-more-themes = Lorg barrachd ùrlaran
 
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
@@ -338,7 +357,7 @@ extension-enabled-heading = An comas
 extension-disabled-heading = À comas
 
 theme-enabled-heading = An comas
-theme-disabled-heading = À comas
+theme-disabled-heading2 = Ùrlaran a shàbhail thu
 
 plugin-enabled-heading = An comas
 plugin-disabled-heading = À comas
@@ -348,6 +367,9 @@ dictionary-disabled-heading = À comas
 
 locale-enabled-heading = An comas
 locale-disabled-heading = À comas
+
+sitepermission-enabled-heading = An comas
+sitepermission-disabled-heading = À comas
 
 always-activate-button = Cuir an gnìomh an-còmhnaidh
 never-activate-button = Na cuir an gnìomh idir
@@ -407,6 +429,9 @@ addon-detail-private-browsing-help = Ma fhuair e cead, gheibh an leudachan cothr
 addon-detail-private-browsing-allow = Ceadaich
 addon-detail-private-browsing-disallow = Na ceadaich
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
@@ -438,6 +463,10 @@ addon-permissions-learnmore = Barrachd fiosrachaidh mu cheadan
 recommended-extensions-heading = Leudachain a mholamaid
 recommended-themes-heading = Ùrlaran a mholamaid
 
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Bheir seo na comasan a leanas dha <span data-l10n-name="hostname">{ $hostname }</span>:
+
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Am bu mhiann leat cruthachadh? <a data-l10n-name="link">Tog an t-ùrlar agad fhèin le Firefox Color.</a>
@@ -450,6 +479,7 @@ plugin-heading = Stiùirich na plugain agad
 dictionary-heading = Stiùirich na faclairean agad
 locale-heading = Stiùirich na cànain agad
 updates-heading = Stiùirich na h-ùrachaidhean agad
+sitepermission-heading = Stiùirich ceadan na làraich agad
 discover-heading = Cuir dreach pearsanta air { -brand-short-name }
 shortcuts-heading = Stiùirich ath-ghoiridean an leudachain
 
@@ -459,3 +489,31 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Innealan airson a h-uile tuilleadan
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = Chan eil { $name } co-chòrdail le { -brand-short-name } { $version }.
+details-notification-incompatible-link = Barrachd fiosrachaidh
+
+details-notification-unsigned-and-disabled = Cha b’ urrainn dhuinn { $name } a dhearbhadh a chum cleachdaidh ann an { -brand-short-name } agus chaidh a chur à comas.
+details-notification-unsigned-and-disabled-link = Barrachd fiosrachaidh
+
+details-notification-unsigned = Cha b’ urrainn dhuinn { $name } a dhearbhadh a chum cleachdaidh ann an { -brand-short-name }. Bi faiceallach.
+details-notification-unsigned-link = Barrachd fiosrachaidh
+
+details-notification-blocked = Chaidh { $name } a chur à comas air sgàth adhbharan tèarainteachd no seasmhachd.
+details-notification-blocked-link = Barrachd fiosrachaidh
+
+details-notification-softblocked = Tha fhios gun adhbharaich { $name } duilgheadasan tèarainteachd is seasmhachd.
+details-notification-softblocked-link = Barrachd fiosrachaidh
+
+details-notification-gmp-pending = Thèid { $name } stàladh a dh'aithghearr.

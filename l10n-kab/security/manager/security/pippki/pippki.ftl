@@ -16,8 +16,6 @@ change-password-old = Awal uffir aqbuṛ:
 change-password-new = Awal uffir amaynut
 change-password-reenter = Sentem Awal uffir
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Ur yezmir ara ad isnifel awal uffir.
 pippki-incorrect-pw = Ur t-sekcemḍ ara awal uffir amiran ameɣtu. Ma ulac aɣilif, ɛreḍ tikelt nniḍen.
 pippki-pw-change-ok = Awal uffir ibeddel akken iwata.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Aql-ak·akem akka tura deg uskar FIPS . FI
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Wennez awal uffir agejdan
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Sfeḍ
-
 reset-primary-password-text = Ma tsefḍeḍ awal-ik·im uffir agejdan, akk awallen uffiren n web d wid n yimaylen, iselkinen udmawanen d tsura tusligin ad ttwattun. Tebɣiḍ s tidet ad twennzeḍ awal-ik·im uffir agejdan?
 
 pippki-reset-password-confirmation-title = Wennez awal uffir agejdan
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Awla-inek·inem uffir agejdan yettu
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Asader n uselkin
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Sutren-ak-d asentem n udabu n uselken amaynut (CA).
 download-cert-trust-ssl =
     .label = Sentem abadu-yagi n uselken akken ad suluḍ ismal web.
@@ -77,7 +74,5 @@ set-password-reminder = Ɣuṛ-k: Ma yella tettuḍ awal uffir n uḥraz n uselk
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Asesteb iţummesten s ujiṭnu
-protected-auth-msg = Ma ulac aɣilif, sesteb s ujitun. Tarrayt n usesteb tcudd ɣeṛ tewsit n ujiṭun-inek.
-protected-auth-token = Ajiṭun:
+## Protected authentication alert
+

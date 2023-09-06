@@ -5,13 +5,16 @@
 
 ## App Menu
 
-appmenuitem-update-banner3 =
-    .label-update-downloading = S'està baixant l'actualització del { -brand-shorter-name }
-    .label-update-available = Hi ha una actualització — baixa-la ara
-    .label-update-manual = Hi ha una actualització — baixa-la ara
-    .label-update-unsupported = No s'ha pogut actualitzar — sistema incompatible
-    .label-update-restart = Hi ha una actualització — reinicia ara
-appmenuitem-protection-dashboard-title = Tauler de proteccions
+appmenuitem-banner-update-downloading =
+    .label = S'està baixant l'actualització del { -brand-shorter-name }
+appmenuitem-banner-update-available =
+    .label = Hi ha una actualització — baixa-la ara
+appmenuitem-banner-update-manual =
+    .label = Hi ha una actualització — baixa-la ara
+appmenuitem-banner-update-unsupported =
+    .label = No s'ha pogut actualitzar — sistema incompatible
+appmenuitem-banner-update-restart =
+    .label = Hi ha una actualització — reinicia ara
 appmenuitem-new-tab =
     .label = Pestanya nova
 appmenuitem-new-window =
@@ -30,6 +33,8 @@ appmenuitem-print =
     .label = Imprimeix…
 appmenuitem-find-in-page =
     .label = Cerca a la pàgina…
+appmenuitem-translate =
+    .label = Tradueix la pàgina…
 appmenuitem-zoom =
     .value = Mida de la pàgina
 appmenuitem-more-tools =
@@ -98,7 +103,6 @@ appmenu-fxa-sync-and-save-data2 = Sincronitza i desa les dades
 appmenu-fxa-signed-in-label = Inicia la sessió
 appmenu-fxa-setup-sync =
     .label = Activa la sincronització…
-appmenu-fxa-show-more-tabs = Mostra més pestanyes
 appmenuitem-save-page =
     .label = Anomena i desa la pàgina…
 
@@ -118,29 +122,26 @@ whatsnew-panel-footer-checkbox =
 profiler-popup-button-idle =
     .label = Analitzador de rendiment
     .tooltiptext = Enregistra un perfil de rendiment
-profiler-popup-title =
-    .value = { -profiler-brand-name }
+profiler-popup-button-recording =
+    .label = Analitzador de rendiment
+    .tooltiptext = L'analitzador de rendiment està enregistrant un perfil
+profiler-popup-button-capturing =
+    .label = Analitzador de rendiment
+    .tooltiptext = L'analitzador de rendiment està capturant un perfil
+profiler-popup-header-text = { -profiler-brand-name }
 profiler-popup-reveal-description-button =
     .aria-label = Mostra més informació
 profiler-popup-description-title =
     .value = Enregistreu, analitzeu i compartiu
 profiler-popup-description = Col·laboreu en la resolució de problemes de rendiment publicant perfils per compartir-los amb el vostre equip.
-profiler-popup-learn-more = Més informació
 profiler-popup-learn-more-button =
     .label = Més informació
 profiler-popup-settings =
     .value = Paràmetres
 # This link takes the user to about:profiling, and is only visible with the Custom preset.
-profiler-popup-edit-settings = Edita els paràmetres…
-# This link takes the user to about:profiling, and is only visible with the Custom preset.
 profiler-popup-edit-settings-button =
     .label = Edita els paràmetres…
-profiler-popup-disabled = Actualment l'analitzador de rendiment està desactivat, probablement perquè hi ha una finestra privada oberta.
 profiler-popup-recording-screen = S'està enregistrant…
-# The profiler presets list is generated elsewhere, but the custom preset is defined
-# here only.
-profiler-popup-presets-custom =
-    .label = Personalitzat
 profiler-popup-start-recording-button =
     .label = Inicia l'enregistrament
 profiler-popup-discard-button =
@@ -163,25 +164,47 @@ profiler-popup-capture-shortcut =
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
+# devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+profiler-popup-presets-web-developer-description = Preconfiguració recomanada per a depuració de la majoria d'aplicacions web, amb poca sobrecàrrega.
+profiler-popup-presets-web-developer-label =
+    .label = Desenvolupador web
+profiler-popup-presets-firefox-description = Preconfiguració recomanada per a fer anàlisis de rendiment del { -brand-shorter-name }.
+profiler-popup-presets-firefox-label =
+    .label = { -brand-shorter-name }
+profiler-popup-presets-graphics-description = Preconfiguració recomanada per a investigar errors de gràfics del { -brand-shorter-name }.
+profiler-popup-presets-graphics-label =
+    .label = Gràfics
+profiler-popup-presets-media-description2 = Preconfiguració recomanada per a investigar errors d'àudio i vídeo del { -brand-shorter-name }.
+profiler-popup-presets-media-label =
+    .label = Elements multimèdia
+profiler-popup-presets-networking-description = Preconfiguració recomanada per a investigar errors de xarxa del { -brand-shorter-name }.
+profiler-popup-presets-networking-label =
+    .label = Xarxa
+profiler-popup-presets-power-description = Preconfiguració recomanada per a investigar errors de consum d'energia del { -brand-shorter-name }, amb poca sobrecàrrega.
+# "Power" is used in the sense of energy (electricity used by the computer).
+profiler-popup-presets-power-label =
+    .label = Energia
+profiler-popup-presets-custom-label =
+    .label = Personalitzat
 
 ## History panel
 
 appmenu-manage-history =
     .label = Gestiona l'historial
-appmenu-reopen-all-tabs = Torna a obrir totes les pestanyes
-appmenu-reopen-all-windows = Torna a obrir totes les finestres
 appmenu-restore-session =
     .label = Restaura la sessió anterior
 appmenu-clear-history =
-    .label = Neteja l'historial recent…
+    .label = Esborra l'historial recent…
 appmenu-recent-history-subheader = Historial recent
 appmenu-recently-closed-tabs =
     .label = Pestanyes tancades recentment
 appmenu-recently-closed-windows =
     .label = Finestres tancades recentment
+# This allows to search through the browser's history.
+appmenu-search-history =
+    .label = Cerca en l'historial
 
 ## Help panel
 
@@ -198,9 +221,11 @@ appmenu-help-more-troubleshooting-info =
     .accesskey = n
 appmenu-help-report-site-issue =
     .label = Informa d'un problema amb el lloc…
-appmenu-help-feedback-page =
-    .label = Envia comentaris…
-    .accesskey = E
+appmenu-help-share-ideas =
+    .label = Compartiu idees i comentaris…
+    .accesskey = s
+appmenu-help-switch-device =
+    .label = Canvi a un dispositiu nou
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -226,8 +251,6 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Personalitza la barra d'eines…
-appmenu-taskmanager =
-    .label = Gestor de tasques
 appmenu-developer-tools-subheader = Eines del navegador
 appmenu-developer-tools-extensions =
     .label = Extensions per a desenvolupadors

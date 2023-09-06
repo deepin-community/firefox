@@ -3,7 +3,9 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import React from "react";
-import classnames from "classnames";
+import PropTypes from "prop-types";
+
+const classnames = require("devtools/client/shared/classnames.js");
 
 import "./AccessibleImage.css";
 
@@ -13,6 +15,10 @@ const AccessibleImage = props => {
     className: classnames("img", props.className),
   };
   return <span {...props} />;
+};
+
+AccessibleImage.propTypes = {
+  className: PropTypes.string.isRequired,
 };
 
 export default AccessibleImage;

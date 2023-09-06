@@ -8,46 +8,64 @@ aboutDialog-title =
 releaseNotes-link = ਨਵਾਂ ਕੀ ਹੈ
 
 update-checkForUpdatesButton =
-    .label = ਅੱਪਡੇਟ ਲਈ ਜਾਂਚ ਕਰੋ
+    .label = ਅੱਪਡੇਟ ਲਈ ਜਾਂਚੋ
     .accesskey = C
 
 update-updateButton =
     .label = { -brand-shorter-name } ਨੂੰ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਮੁੜ ਚਾਲੂ ਕਰੋ
     .accesskey = R
 
-update-checkingForUpdates = ਅੱਪਡੇਟ ਲਈ ਚੈੱਕ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…
-update-downloading = <img data-l10n-name="icon"/>ਅੱਪਡੇਟ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ — <label data-l10n-name="download-status"/>
-update-downloading-message = ਅੱਪਡੇਟ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ — <label data-l10n-name="download-status"/>
-update-applying = …ਅੱਪਡੇਟ ਲਾਗੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ
+update-checkingForUpdates = ਅੱਪਡੇਟ ਲਈ ਜਾਂਚਿਆ ਜਾ ਰਿਹਾ ਹੈ…
 
-update-failed = ਅੱਪਡੇਟ ਫੇਲ੍ਹ ਹੋਇਆ। <label data-l10n-name="failed-link">ਨਵਾਂ ਵਰਜ਼ਨ ਡਾਊਨਲੋਡ ਕਰੋ</label>
-update-failed-main = ਅੱਪਡੇਟ ਫੇਲ੍ਹ ਹੈ। <a data-l10n-name="failed-link-main">ਤਾਜ਼ਾ ਵਰਜ਼ਨ ਡਾਊਨਲੋਡ ਕਰੋ</a>
+## Variables:
+##   $transfer (string) - Transfer progress.
 
-update-adminDisabled = ਤੁਹਾਡੇ ਸਿਸਟਮ ਪਰਸ਼ਾਸ਼ਕ ਵਲੋਂ ਅੱਪਡੇਟ ਅਸਮਰੱਥ ਕੀਤੇ ਹਨ।
+settings-update-downloading = <img data-l10n-name="icon"/>ਅੱਪਡੇਟ ਡਾਊਨਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = ਅੱਪਡੇਟ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
+update-applying = ਅੱਪਡੇਟ ਨੂੰ ਲਾਗੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...
+
+update-failed = ਅੱਪਡੇਟ ਅਸਫਲ ਹੋਈ। <label data-l10n-name="failed-link">ਨਵੀਂ ਵੰਨਗੀ ਡਾਊਨਲੋਡ ਕਰੋ</label>
+update-failed-main = ਅੱਪਡੇਟ ਨਾਕਾਮਯਾਬ ਹੋਈ। <a data-l10n-name="failed-link-main">ਸੱਜਰੀ ਵੰਨਗੀ ਡਾਊਨਲੋਡ ਕਰੋ</a>
+
+update-adminDisabled = ਤੁਹਾਡੇ ਢਾਂਚਾ ਪਰਸ਼ਾਸ਼ਕ ਵਲੋਂ ਅੱਪਡੇਟਾਂ ਤੇ ਪਾਬੰਦੀ ਲੱਗੀ ਹੋਈ ਹੈ।
 update-noUpdatesFound = { -brand-short-name } ਅੱਪ-ਟੂ-ਡੇਟ ਹੈ
+aboutdialog-update-checking-failed = ਅੱਪਡੇਟਾਂ ਭਾਲਣ ਵਿੱਚ ਨਾਕਾਮਯਾਬੀ ਮਿਲੀ।
 update-otherInstanceHandlingUpdates = { -brand-short-name } ਨੂੰ ਕਿਸੇ ਹੋਰ ਮੌਕੇ ਰਾਹੀਂ ਅੱਪਡੇਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ
 
-update-manual = <label data-l10n-name="manual-link"/> ‘ਤੇ ਅੱਪਡੇਟ ਮੌਜੂਦ ਹੈ
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
 
-update-unsupported = ਤੁਸੀਂ ਇਸ ਸਿਸਟਮ ਲਈ ਹੋਰ ਅੱਪਡੇਟ ਨਹੀਂ ਕਰ ਸਕਦੇ ਹੋ। <label data-l10n-name="unsupported-link">ਹੋਰ ਜਾਣੋ</label>
+aboutdialog-update-manual-with-link = <label data-l10n-name="manual-link">{ $displayUrl }</label> ‘ਤੇ ਅੱਪਡੇਟ ਮੌਜੂਦ ਹੈ
+settings-update-manual-with-link = <a data-l10n-name="manual-link">{ $displayUrl }</a> ‘ਤੇ ਅੱਪਡੇਟ ਮੌਜੂਦ ਹੈ
+
+update-unsupported = ਤੁਸੀਂ ਇਸ ਸਿਸਟਮ ਨੂੰ ਹੋਰ ਅੱਪਡੇਟ ਨਹੀਂ ਕਰ ਸਕਦੇ ਹੋ। <label data-l10n-name="unsupported-link">ਹੋਰ ਜਾਣੋ</label>
 
 update-restarting = …ਮੁੜ-ਚਾਲੂ ਹੋ ਰਿਹਾ ਹੈ
 
-channel-description = ਇਸ ਸਮੇਂ ਤੁਸੀਂ <label data-l10n-name="current-channel"></label> ਅੱਪਡੇਟ ਚੈਨਲ ਵਰਤ ਰਹੇ ਹੋ।
+update-internal-error2 = ਅੰਦਰੂਨੀ ਗ਼ਲਤੀ ਕਰਕੇ ਅੱਪਡੇਟਾਂ ਭਾਲਣ ਤੋੰ ਅਸਮਰੱਥ। ਅੱਪਡੇਟਾਂ <label data-l10n-name="manual-link">{ $displayUrl }</label> ਉੱਤੇ ਮੌਜੂਦ ਹਨ।
 
-warningDesc-version = { -brand-short-name } ਤਜਰਬੇ ਅਧੀਨ ਹੈ ਅਤੇ ਅਸਥਿਰ ਹੋ ਸਕਦਾ ਹੈ।
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = ਇਸ ਵੇਲੇ ਤੁਸੀਂ <label data-l10n-name="current-channel">{ $channel }</label> ਅੱਪਡੇਟ ਚੈਨਲ ਵਰਤ ਰਹੇ ਹੋ।
+
+warningDesc-version = { -brand-short-name } ਅਜੇ ਤਜਰਬੇ ਅਧੀਨ ਹੈ ਅਤੇ ਢਿੱਲਾ ਮੱਠਾ ਹੋ ਸਕਦਾ ਹੈ।
 
 aboutdialog-help-user = { -brand-product-name } ਮਦਦ
 aboutdialog-submit-feedback = ਸੁਝਾਅ ਭੇਜੋ
 
-community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> ਮਿਲ ਕੇ ਵੈੱਬ ਨੂੰ ਸਭ ਲਈ ਆਜ਼ਾਦ, ਪਬਲਿਕ ਅਤੇ ਪਹੁੰਚ ਵਿੱਚ ਰੱਖਣ ਲਈ ਮਿਲ ਕੇ ਕੰਮ ਕਰਨ ਵਾਲੀ <label data-l10n-name="community-exp-creditsLink">ਗਲੋਬਲ ਕਮਿਊਨਟੀ</label> ਹੈ।
+community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> ਭਾਈਚਾਰਾ ਵੈੱਬ ਨੂੰ ਸਭ ਲਈ ਆਜ਼ਾਦ, ਜਨਤਕ ਅਤੇ ਹਰੇਕ ਦੀ ਪਹੁੰਚ ਵਿੱਚ ਰੱਖਣ ਲਈ ਰਲ ਮਿਲ ਕੇ ਕੰਮ ਕਰਨ ਵਾਲਾ ਇੱਕ <label data-l10n-name="community-exp-creditsLink">ਆਲਮੀ ਭਾਈਚਾਰਾ</label> ਹੈ।
 
-community-2 = { -brand-short-name } ਨੂੰ  <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label> ਨੇ ਡਿਜ਼ਾਇਨ ਕੀਤਾ ਹੈ, ਜੋ ਮਿਲ ਕੇ ਵੈੱਬ ਨੂੰ ਸਭ ਲਈ ਆਜ਼ਾਦ, ਪਬਲਿਕ ਅਤੇ ਪਹੁੰਚ ਵਿੱਚ ਰੱਖਣ ਲਈ ਮਿਲ ਕੇ ਕੰਮ ਕਰਨ ਵਾਲੀ <label data-l10n-name="community-creditsLink">ਗਲੋਬਲ ਕਮਿਊਨਟੀ ਹੈ</label>।
+community-2 = { -brand-short-name } ਨੂੰ  <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label> ਨੇ ਬਣਾਇਆ ਹੈ, ਜੋ ਕਿ ਵੈੱਬ ਨੂੰ ਸਭ ਲਈ ਆਜ਼ਾਦ, ਜਨਤਕ ਅਤੇ ਹਰੇਕ ਦੀ ਪਹੁੰਚ ਵਿੱਚ ਰੱਖਣ ਲਈ ਰਲ ਮਿਲ ਕੇ ਕੰਮ ਕਰਨ ਵਾਲਾ ਇੱਕ <label data-l10n-name="community-creditsLink">ਆਲਮੀ ਭਾਈਚਾਰਾ</label> ਹੈ।
 
-helpus = ਮਦਦ ਚਾਹੀਦੀ ਹੈ? <label data-l10n-name="helpus-donateLink">ਦਾਨ ਦਿਓ</label> ਜਾਂ <label data-l10n-name="helpus-getInvolvedLink">ਭਾਗ ਲਵੋ!</label>
+helpus = ਮਦਦ ਚਾਹੀਦੀ ਹੈ? <label data-l10n-name="helpus-donateLink">ਦਾਨ ਦਿਓ</label> ਜਾਂ <label data-l10n-name="helpus-getInvolvedLink">ਹਿੱਸਾ ਲਵੋ!</label>
 
-bottomLinks-license = ਕਾਨੂੰਨੀ ਜਾਣਕਾਰੀ
-bottomLinks-rights = ਵਰਤੋਂਕਾਰ ਦੇ ਹੱਕ
+bottomLinks-license = ਲਸੰਸ ਬਾਰੇ ਜਾਣਕਾਰੀ
+bottomLinks-rights = ਛੇਕੜਲੇ ਵਰਤੋਂਕਾਰ ਦੇ ਹੱਕ
 bottomLinks-privacy = ਪਰਦੇਦਾਰੀ ਨੀਤੀ
 
 # Example of resulting string: 66.0.1 (64-bit)

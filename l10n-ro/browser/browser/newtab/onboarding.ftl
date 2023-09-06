@@ -3,11 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-### UI strings for the simplified onboarding / multistage about:welcome
-### Various strings use a non-breaking space to avoid a single dangling /
-### widowed word, so test on various window sizes if you also want this.
-
-
 ### UI strings for the MR1 onboarding / multistage about:welcome
 ### Various strings use a non-breaking space to avoid a single dangling /
 ### widowed word, so test on various window sizes if you also want this.
@@ -15,36 +10,25 @@
 
 ## Welcome page strings
 
-onboarding-welcome-header = Bine ai venit la { -brand-short-name }
+onboarding-welcome-header = Bun venit în { -brand-short-name }
 onboarding-start-browsing-button-label = Începe să navighezi
 onboarding-not-now-button-label = Nu acum
+mr1-onboarding-get-started-primary-button-label = Începe
 
 ## Custom Return To AMO onboarding strings
 
+return-to-amo-subtitle = Nemaipomenit, ai { -brand-short-name }
+# <img data-l10n-name="icon"/> will be replaced with the icon belonging to the extension
+#
+# Variables:
+#   $addon-name (String) - Name of the add-on
+return-to-amo-addon-title = Acum hai să-ți obținem <img data-l10n-name="icon"/> <b>{ $addon-name }</b>.
+return-to-amo-add-extension-label = Adaugă extensia
+return-to-amo-add-theme-label = Adaugă tema
 
-## Multistage 3-screen onboarding flow strings (about:welcome pages)
+##  Variables: $addon-name (String) - Name of the add-on to be installed
 
-# The <span data-l10n-name="zap"></span> in this string allows a "zap" underline style to be
-# automatically added to the text inside it. { -brand-short-name } should stay inside the span.
-onboarding-multistage-welcome-header = Bine ai venit la <span data-l10n-name="zap">{ -brand-short-name }</span>
-onboarding-multistage-welcome-subtitle = Browserul rapid, sigur și privat susținut de o organizație nonprofit.
-onboarding-multistage-welcome-primary-button-label = Începe configurarea
-onboarding-multistage-welcome-secondary-button-label = Autentifică-te
-onboarding-multistage-welcome-secondary-button-text = Ai un cont?
-# The <span data-l10n-name="zap"></span> in this string allows a "zap" underline style to be
-# automatically added to the text inside it. "default" should stay inside the span.
-onboarding-multistage-set-default-header = Desemnează { -brand-short-name } ca browser <span data-l10n-name="zap">implicit</span>
-onboarding-multistage-set-default-secondary-button-label = Nu acum
-onboarding-multistage-pin-default-primary-button-label = Desemnează { -brand-short-name } ca browserul meu principal
-# The <span data-l10n-name="zap"></span> in this string allows a "zap" underline style to be
-# automatically added to the text inside it. "more" should stay inside the span.
-onboarding-multistage-import-header = Importă-ți parolele, <br/>marcajele și <span data-l10n-name="zap">altele</span>
-onboarding-multistage-import-subtitle = Foloseai alt browser? Poți aduce toate datele de acolo în { -brand-short-name }.
-onboarding-multistage-import-primary-button-label = Începe importul
-onboarding-multistage-import-secondary-button-label = Nu acum
-# Info displayed in the footer of import settings screen during onboarding flow.
-# This supports welcome screen showing top sites imported from the user's default browser.
-onboarding-import-sites-disclaimer = Site-urile enumerate aici au fost găsite pe acest dispozitiv. { -brand-short-name } nu salvează sau nu sincronizează date de pe alte browsere decât dacă tu alegi să le imporți.
+mr1-return-to-amo-subtitle = Salută { -brand-short-name }
 
 ## Multistage onboarding strings (about:welcome pages)
 
@@ -52,19 +36,7 @@ onboarding-import-sites-disclaimer = Site-urile enumerate aici au fost găsite p
 # Variables:
 #   $current (Int) - Number of the current page
 #   $total (Int) - Total number of pages
-onboarding-welcome-steps-indicator =
-    .aria-label = Pentru început: ecran { $current } din { $total }
-# The <span data-l10n-name="zap"></span> in this string allows a "zap" underline style to be
-# automatically added to the text inside it. "look" should stay inside the span.
-onboarding-multistage-theme-header = Alege un <span data-l10n-name="zap">aspect</span>
-onboarding-multistage-theme-subtitle = Personalizează { -brand-short-name } cu o temă.
-onboarding-multistage-theme-secondary-button-label = Nu acum
-# Automatic theme uses operating system color settings
-onboarding-multistage-theme-label-automatic = Automat
-onboarding-multistage-theme-label-light = Luminoasă
-onboarding-multistage-theme-label-dark = Întunecată
-# "Firefox Alpenglow" here is the name of the theme, and should be kept in English.
-onboarding-multistage-theme-label-alpenglow = Firefox Alpenglow
+
 # This button will open system settings to turn on prefers-reduced-motion
 mr1-onboarding-reduce-motion-button-label = Dezactivează animațiile
 
@@ -72,43 +44,25 @@ mr1-onboarding-reduce-motion-button-label = Dezactivează animațiile
 ## match the OS' application context menu item action where Windows uses "pin"
 ## and "taskbar" while macOS "keep" and "Dock" (proper noun).
 
-# Title used on welcome page when Firefox is not pinned
-mr1-onboarding-pin-header =
-    { PLATFORM() ->
-        [macos] Păstrează { -brand-short-name } în Dock pentru acces facil
-       *[other] Fixează { -brand-short-name } în bara de activități pentru acces facil
-    }
-# Primary button string used on welcome page when Firefox is not pinned.
-mr1-onboarding-pin-primary-button-label =
-    { PLATFORM() ->
-        [macos] Păstrează în Dock
-       *[other] Fixează în bara de activități
-    }
-
 ## Multistage MR1 onboarding strings (about:welcome pages)
 
-mr1-onboarding-set-default-pin-primary-button-label = Desemnează { -brand-short-name } ca browserul meu principal
-    .title = Setează { -brand-short-name } drept browser implict și fixează în bara de activități
-# This string will be used on welcome page primary button label
-# when Firefox is not default but already pinned
-mr1-onboarding-set-default-only-primary-button-label = Desemnează { -brand-short-name } ca browserul meu implicit
-mr1-onboarding-set-default-secondary-button-label = Nu acum
 
 ## Title, subtitle and primary button string used on set default onboarding screen
 ## when Firefox is not default browser
 
-mr1-onboarding-default-header = Desemnează { -brand-short-name } ca browser implicit
-mr1-onboarding-default-subtitle = Pune viteza, siguranța și confidențialitatea pe pilot automat.
-mr1-onboarding-default-primary-button-label = Desemnează ca browser implicit
-
 ## Multistage MR1 onboarding strings (about:welcome pages)
 
-mr1-onboarding-import-secondary-button-label = Nu acum
+# The primary import button label will depend on whether we can detect which browser was used to download Firefox.
+# Variables:
+#   $previous (Str) - Previous browser name, such as Edge, Chrome
+mr1-onboarding-import-primary-button-label-attribution = Importă din { $previous }{ $previous }
+
 mr1-onboarding-theme-subtitle = Personalizează { -brand-short-name } cu o temă.
-mr1-onboarding-theme-primary-button-label = Salvează tema
 mr1-onboarding-theme-secondary-button-label = Nu acum
+
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Tema sistemului
+
 # "Alpenglow" here is the name of the theme, and should be kept in English.
 mr1-onboarding-theme-label-alpenglow = Alpenglow
 
@@ -117,62 +71,151 @@ mr1-onboarding-theme-label-alpenglow = Alpenglow
 ## doesn't become too long. Line breaks will be preserved when displaying the
 ## tooltip.
 
-
-## Please make sure to split the content of the title attribute into lines whose
-## width corresponds to about 40 Latin characters, to ensure that the tooltip
-## doesn't become too long. Line breaks will be preserved when displaying the
-## tooltip.
-
-# Tooltip displayed on hover of automatic theme
-onboarding-multistage-theme-tooltip-automatic-2 =
-    .title =
-        Preia aspectul butoanelor, meniurilor și
-        ferestrelor din sistemul de operare.
-# Input description for automatic theme
-onboarding-multistage-theme-description-automatic-2 =
-    .aria-description =
-        Preia aspectul butoanelor, meniurilor și
-        ferestrelor din sistemul de operare.
-# Tooltip displayed on hover of light theme
-onboarding-multistage-theme-tooltip-light-2 =
-    .title =
-        Folosește un aspect luminos pentru
-        butoane, meniuri și ferestre.
-# Input description for light theme
-onboarding-multistage-theme-description-light =
-    .aria-description =
-        Folosește un aspect luminos pentru
-        butoane, meniuri și ferestre.
-# Tooltip displayed on hover of dark theme
-onboarding-multistage-theme-tooltip-dark-2 =
-    .title =
-        Folosește un aspect întunecat pentru
-        butoane, meniuri și ferestre.
-# Input description for dark theme
-onboarding-multistage-theme-description-dark =
-    .aria-description =
-        Folosește un aspect întunecat pentru
-        butoane, meniuri și ferestre.
-# Tooltip displayed on hover of Alpenglow theme
-onboarding-multistage-theme-tooltip-alpenglow-2 =
-    .title =
-        Folosește un aspect colorat
-        pentru butoane, meniuri și ferestre.
-# Input description for Alpenglow theme
-onboarding-multistage-theme-description-alpenglow =
-    .aria-description =
-        Folosește un aspect colorat
-        pentru butoane, meniuri și ferestre.
-
-## Multistage MR1 onboarding strings (MR1 about:welcome pages)
-
 # Tooltip displayed on hover of system theme
 mr1-onboarding-theme-tooltip-system =
     .title =
         Urmează tema sistemului de operare
         pentru butoane, meniuri și ferestre.
+
 # Input description for system theme
 mr1-onboarding-theme-description-system =
     .aria-description =
         Urmează tema sistemului de operare
         pentru butoane, meniuri și ferestre.
+
+## Strings for Thank You page
+
+mr2-onboarding-start-browsing-button-label = Începe să navighezi
+
+## Multistage live language reloading onboarding strings (about:welcome pages)
+##
+## The following language names are generated by the browser's Intl.DisplayNames API.
+##
+## Variables:
+##   $negotiatedLanguage (String) - The name of the langpack's language, e.g. "Español (ES)"
+
+
+## Multistage live language reloading onboarding strings (about:welcome pages)
+##
+## The following language names are generated by the browser's Intl.DisplayNames API.
+##
+## Variables:
+##   $negotiatedLanguage (String) - The name of the langpack's language, e.g. "Español (ES)"
+##   $systemLanguage (String) - The name of the system language, e.g "Español (ES)"
+##   $appLanguage (String) - The name of the language shipping in the browser build, e.g. "English (EN)"
+
+onboarding-live-language-header = Alege-ți limba
+
+mr2022-onboarding-live-language-text = { -brand-short-name } vorbește pe limba ta
+
+mr2022-language-mismatch-subtitle = Mulțumită comunității noastre, { -brand-short-name } este tradus în peste 90 de limbi. Se pare că sistemul folosește { $systemLanguage }, iar { -brand-short-name } folosește { $appLanguage }.
+
+onboarding-live-language-button-label-downloading = Se descarcă pachetul lingvistic pentru { $negotiatedLanguage }…
+onboarding-live-language-waiting-button = Se obțin limbile disponibile…
+onboarding-live-language-installing = Se instalează pachetul lingvistic pentru { $negotiatedLanguage }…
+
+mr2022-onboarding-live-language-switch-to = Comută pe { $negotiatedLanguage }
+mr2022-onboarding-live-language-continue-in = Continuă în { $appLanguage }
+
+onboarding-live-language-secondary-cancel-download = Renunță
+onboarding-live-language-skip-button-label = Omite
+
+## Firefox 100 Thank You screens
+
+fx100-thank-you-subtitle = Este versiunea noastră cu numărul 100! Îți mulțumim că ne ajuți să construim un internet mai bun și mai sănătos.
+fx100-thank-you-pin-primary-button-label =
+    { PLATFORM() ->
+        [macos] Păstrează { -brand-short-name } în Dock
+       *[other] Fixează { -brand-short-name } în bara de activități
+    }
+
+# Message shown with a start-browsing button. Emphasis <em> should be for "you"
+# but "Thank" can be used instead if there's no "you" in the translation.
+fx100-upgrade-thank-you-body = Este versiunea noastră cu numărul 100 a { -brand-short-name }. <em>Îți mulțumim</em> că ne ajuți să construim un internet mai bun și mai sănătos.
+# Message shown with either a pin-to-taskbar or set-default button.
+fx100-upgrade-thanks-keep-body = Este versiunea noastră cu numărul 100! Îți mulțumim că faci parte din comunitatea noastră. Păstrează { -brand-short-name } la un clic distanță pentru următoarele 100.
+
+mr2022-onboarding-secondary-skip-button-label = Omite acest pas
+
+## MR2022 New User Easy Setup screen strings
+
+# Primary button string used on new user onboarding first screen showing multiple actions such as Set Default, Import from previous browser.
+mr2022-onboarding-easy-setup-primary-button-label = Salvează și continuă
+# Set Default action checkbox label used on new user onboarding first screen
+mr2022-onboarding-easy-setup-set-default-checkbox-label = Setează { -brand-short-name } ca browser implicit
+# Import action checkbox label used on new user onboarding first screen
+mr2022-onboarding-easy-setup-import-checkbox-label = Importă dintr-un browser anterior
+
+## MR2022 New User Pin Firefox screen strings
+
+# Primary button string used on welcome page for when Firefox is not pinned.
+mr2022-onboarding-pin-primary-button-label =
+    { PLATFORM() ->
+        [macos] Păstrează { -brand-short-name } în Dock
+       *[other] Fixează { -brand-short-name } în bara de activități
+    }
+
+## MR2022 Existing User Pin Firefox Screen Strings
+
+
+## MR2022 New User Set Default screen strings
+
+# This string is the title used when the user already has pinned the browser, but has not set default.
+mr2022-onboarding-set-default-title = Desemnează { -brand-short-name } drept browserul implicit
+# When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
+# and makes sense in the context of navigating the web.
+mr2022-onboarding-set-default-subtitle = Folosește un browser susținut de o organizație non-profit. Îți apărăm confidențialitatea în timp ce navighezi pe web.
+
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
+
+
+## MR2022 Import Settings screen strings
+
+mr2022-onboarding-import-primary-button-label-no-attribution = Importă dintr-un browser anterior
+
+## If your language uses grammatical genders, in the description for the
+## colorway feel free to switch from "You are a X. You…" (e.g. "You are a
+## Playmaker. You create…") to "X: you…" ("Playmaker: You create…"). This might
+## help creating a more inclusive translation.
+
+mr2022-onboarding-colorway-primary-button-label-continue = Setează și continuă
+mr2022-onboarding-existing-colorway-checkbox-label = Fă din pagina de { -firefox-home-brand-name } pagina ta de start colorată
+
+## MR2022 Multistage Mobile Download screen strings
+
+mr2022-onboarding-mobile-download-title = Sari de pe laptop pe telefon și viceversa
+mr2022-onboarding-mobile-download-subtitle = Ia filele de pe un dispozitiv și continuă de unde ai rămas pe celălalt. În plus, sincronzează-ți marcajele și parolele oriunde folosești { -brand-product-name }.
+mr2022-onboarding-mobile-download-cta-text = Scanează codul QR pentru a obține { -brand-product-name } pentru mobil sau <a data-l10n-name="download-label">trimite-ți un link de descărcare.</a>
+mr2022-onboarding-no-mobile-download-cta-text = Scanează codul QR pentru a obține { -brand-product-name } pentru mobil.
+
+## MR2022 Upgrade Dialog screens
+## Pin private window screen shown only for users who don't have Firefox private pinned
+
+mr2022-upgrade-onboarding-pin-private-window-header = Obține libertate de navigare privată cu un singur clic
+mr2022-upgrade-onboarding-pin-private-window-subtitle = Fără cookie-uri sau istoric salvate, chiar de pe desktop. Răsfoiește ca și cum nimeni nu te privește.
+mr2022-upgrade-onboarding-pin-private-window-primary-button-label =
+    { PLATFORM() ->
+        [macos] Păstrează navigarea privată { -brand-short-name } în Dock
+       *[other] Fixează navigarea privată { -brand-short-name } în bara de activități
+    }
+
+## MR2022 Privacy Segmentation screen strings
+
+
+## MR2022 Multistage Gratitude screen strings
+
+mr2022-onboarding-gratitude-title = Ne ajuți să construin un web mai bun
+mr2022-onboarding-gratitude-subtitle = Îți mulțumim că folosești { -brand-short-name }, susținut de Mozilla Foundation. Cu sprijinul tău, ne străduim să facem internetul mai deschis, mai accesibil și mai bun pentru toată lumea.
+mr2022-onboarding-gratitude-secondary-button-label = Începe să navighezi
+
+## Onboarding spotlight for infrequent users
+
+
+## MR2022 Illustration alt tags
+## Descriptive tags for illustrations used by screen readers and other assistive tech
+
+
+## Device migration onboarding
+

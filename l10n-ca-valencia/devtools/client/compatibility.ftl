@@ -23,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (obsolet, experimenta
 compatibility-settings-button-label = Paràmetres
 compatibility-settings-button-title =
     .title = Paràmetres
-compatibility-feedback-button-label = Comentaris
-compatibility-feedback-button-title =
-    .title = Comentaris
 
 ## Messages used as headers in settings pane
 
@@ -43,3 +40,6 @@ compatibility-issue-occurrences =
     }
 
 compatibility-no-issues-found = No s'ha trobat cap problema de compatibilitat.
+compatibility-close-settings-button =
+    .title = Tanca els paràmetres
+

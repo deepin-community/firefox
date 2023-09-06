@@ -2,11 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = Listas de bloqueyo
-    .style = width: 55em
+    .style = min-width: 55em
 
-blocklist-description = Tría la lista que { -brand-short-name } fa servir pa blocar los elementos que tos fan seguimiento. Estas listas son proporcionadas per <a data-l10n-name="disconnect-link" title="Disconnectar">Desconnectar</a>.
+blocklist-description = Tría la lista que { -brand-short-name } fa servir pa blocar los elementos que tos fan seguimiento. Estas listas son proporcionadas per <a data-l10n-name="disconnect-link" title="Disconnect">Disconnect</a>.
 blocklist-close-key =
     .key = w
 

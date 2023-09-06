@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Embogue mba’ekuaarã
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Emopotĩ kookie ha tenda mba’ekuaarã ombyatýva { -brand-short-name } ikatu omboty ne rembiapo ijurujáva ha ombogue ñanduti retepy ñanduti’ỹre. Emopotĩ kache mba’ekuaarã nombyaimo’ãi ne rembiapo ijurujáva.
 

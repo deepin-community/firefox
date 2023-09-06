@@ -7,8 +7,6 @@
 #include "CompositableTransactionParent.h"
 #include "CompositableHost.h"        // for CompositableParent, etc
 #include "CompositorBridgeParent.h"  // for CompositorBridgeParent
-#include "GLContext.h"               // for GLContext
-#include "Layers.h"                  // for Layer
 #include "mozilla/Assertions.h"      // for MOZ_ASSERT, etc
 #include "mozilla/RefPtr.h"          // for RefPtr
 #include "mozilla/layers/CompositorTypes.h"
@@ -16,45 +14,14 @@
 #include "mozilla/layers/LayersSurfaces.h"     // for SurfaceDescriptor
 #include "mozilla/layers/LayersTypes.h"        // for MOZ_LAYERS_LOG
 #include "mozilla/layers/TextureHost.h"        // for TextureHost
-#include "mozilla/layers/TextureHostOGL.h"     // for TextureHostOGL
-#include "mozilla/mozalloc.h"                  // for operator delete
+#include "mozilla/layers/WebRenderImageHost.h"
+#include "mozilla/mozalloc.h"  // for operator delete
 #include "mozilla/Unused.h"
 #include "nsDebug.h"   // for NS_WARNING, NS_ASSERTION
 #include "nsRegion.h"  // for nsIntRegion
 
-#ifdef MOZ_WIDGET_ANDROID
-#  include "mozilla/layers/AndroidHardwareBuffer.h"
-#endif
-
 namespace mozilla {
 namespace layers {
-
-class Compositor;
-
-// This function can in some cases fail and return false without it being a bug.
-// This can theoretically happen if the ImageBridge sends frames before
-// we created the layer tree. Since we can't enforce that the layer
-// tree is already created before ImageBridge operates, there isn't much
-// we can do about it, but in practice it is very rare.
-// Typically when a tab with a video is dragged from a window to another,
-// there can be a short time when the video is still sending frames
-// asynchonously while the layer tree is not reconstructed. It's not a
-// big deal.
-// Note that Layers transactions do not need to call this because they always
-// schedule the composition, in LayerManagerComposite::EndTransaction.
-static bool ScheduleComposition(CompositableHost* aCompositable) {
-  uint64_t id = aCompositable->GetCompositorBridgeID();
-  if (!id) {
-    return false;
-  }
-  CompositorBridgeParent* cp =
-      CompositorBridgeParent::GetCompositorBridgeParent(id);
-  if (!cp) {
-    return false;
-  }
-  cp->ScheduleComposition();
-  return true;
-}
 
 bool CompositableParentManager::ReceiveCompositableUpdate(
     const CompositableOperation& aEdit) {
@@ -65,24 +32,20 @@ bool CompositableParentManager::ReceiveCompositableUpdate(
   if (!compositable) {
     return false;
   }
-  return ReceiveCompositableUpdate(aEdit.detail(), WrapNotNull(compositable));
+  return ReceiveCompositableUpdate(aEdit.detail(), WrapNotNull(compositable),
+                                   aEdit.compositable());
 }
 
 bool CompositableParentManager::ReceiveCompositableUpdate(
     const CompositableOperationDetail& aDetail,
-    NotNull<CompositableHost*> aCompositable) {
-  if (TextureSourceProvider* provider =
-          aCompositable->GetTextureSourceProvider()) {
-    if (!provider->IsValid()) {
-      return false;
-    }
-  }
-
+    NotNull<CompositableHost*> aCompositable,
+    const CompositableHandle& aHandle) {
   switch (aDetail.type()) {
     case CompositableOperationDetail::TOpRemoveTexture: {
       const OpRemoveTexture& op = aDetail.get_OpRemoveTexture();
 
-      RefPtr<TextureHost> tex = TextureHost::AsTextureHost(op.textureParent());
+      RefPtr<TextureHost> tex =
+          TextureHost::AsTextureHost(op.texture().AsParent());
 
       MOZ_ASSERT(tex.get());
       aCompositable->RemoveTextureHost(tex);
@@ -94,7 +57,8 @@ bool CompositableParentManager::ReceiveCompositableUpdate(
       AutoTArray<CompositableHost::TimedTexture, 4> textures;
       for (auto& timedTexture : op.textures()) {
         CompositableHost::TimedTexture* t = textures.AppendElement();
-        t->mTexture = TextureHost::AsTextureHost(timedTexture.textureParent());
+        t->mTexture =
+            TextureHost::AsTextureHost(timedTexture.texture().AsParent());
         MOZ_ASSERT(t->mTexture);
         t->mTimeStamp = timedTexture.timeStamp();
         t->mPictureRect = timedTexture.picture();
@@ -109,7 +73,7 @@ bool CompositableParentManager::ReceiveCompositableUpdate(
 
         for (auto& timedTexture : op.textures()) {
           RefPtr<TextureHost> texture =
-              TextureHost::AsTextureHost(timedTexture.textureParent());
+              TextureHost::AsTextureHost(timedTexture.texture().AsParent());
           if (texture) {
             texture->SetLastFwdTransactionId(mFwdTransactionId);
             // Make sure that each texture was handled by the compositable
@@ -118,20 +82,27 @@ bool CompositableParentManager::ReceiveCompositableUpdate(
           }
         }
       }
-
-      if (UsesImageBridge() && aCompositable->GetLayer()) {
-        ScheduleComposition(aCompositable);
-      }
       break;
     }
-    case CompositableOperationDetail::TOpDeliverAcquireFence: {
-      const OpDeliverAcquireFence& op = aDetail.get_OpDeliverAcquireFence();
-      RefPtr<TextureHost> tex = TextureHost::AsTextureHost(op.textureParent());
-      MOZ_ASSERT(tex.get());
-      MOZ_ASSERT(tex->AsAndroidHardwareBufferTextureHost());
+    case CompositableOperationDetail::TOpUseRemoteTexture: {
+      const OpUseRemoteTexture& op = aDetail.get_OpUseRemoteTexture();
+      auto* host = aCompositable->AsWebRenderImageHost();
+      MOZ_ASSERT(host);
 
-      auto fenceFd = op.fenceFd();
-      tex->SetAcquireFence(std::move(fenceFd));
+      host->PushPendingRemoteTexture(op.textureId(), op.ownerId(),
+                                     GetChildProcessId(), op.size(),
+                                     op.textureFlags());
+      host->UseRemoteTexture();
+      break;
+    }
+    case CompositableOperationDetail::TOpEnableRemoteTexturePushCallback: {
+      const OpEnableRemoteTexturePushCallback& op =
+          aDetail.get_OpEnableRemoteTexturePushCallback();
+
+      aCompositable->SetAsyncRef(
+          AsyncCompositableRef(GetChildProcessId(), aHandle));
+      aCompositable->EnableRemoteTexturePushCallback(
+          op.ownerId(), GetChildProcessId(), op.size(), op.textureFlags());
       break;
     }
     default: {
@@ -144,8 +115,8 @@ bool CompositableParentManager::ReceiveCompositableUpdate(
 
 void CompositableParentManager::DestroyActor(const OpDestroy& aOp) {
   switch (aOp.type()) {
-    case OpDestroy::TPTextureParent: {
-      auto actor = aOp.get_PTextureParent();
+    case OpDestroy::TPTexture: {
+      auto actor = aOp.get_PTexture().AsParent();
       TextureHost::ReceivedDestroy(actor);
       break;
     }
@@ -195,11 +166,8 @@ void CompositableParentManager::ReleaseCompositable(
   if (iter == mCompositables.end()) {
     return;
   }
-
-  RefPtr<CompositableHost> host = iter->second;
+  iter->second->OnReleased();
   mCompositables.erase(iter);
-
-  host->Detach(nullptr, CompositableHost::FORCE_DETACH);
 }
 
 }  // namespace layers

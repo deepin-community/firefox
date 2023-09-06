@@ -5,12 +5,14 @@
 // except according to those terms.
 
 use crate::connection::{ConnectionIdManager, Role, LOCAL_ACTIVE_CID_LIMIT};
+pub use crate::recovery::FAST_PTO_SCALE;
 use crate::recv_stream::RECV_BUFFER_SIZE;
 use crate::rtt::GRANULARITY;
 use crate::stream_id::StreamType;
 use crate::tparams::{self, PreferredAddress, TransportParameter, TransportParametersHandler};
 use crate::tracking::DEFAULT_ACK_DELAY;
-use crate::{CongestionControlAlgorithm, QuicVersion, Res};
+use crate::version::{Version, VersionConfig};
+use crate::{CongestionControlAlgorithm, Res};
 use std::cmp::max;
 use std::convert::TryFrom;
 use std::time::Duration;
@@ -28,7 +30,7 @@ const DEFAULT_IDLE_TIMEOUT: Duration = Duration::from_secs(30);
 const MAX_QUEUED_DATAGRAMS_DEFAULT: usize = 10;
 
 /// What to do with preferred addresses.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum PreferredAddressConfig {
     /// Disabled, whether for client or server.
     Disabled,
@@ -43,7 +45,7 @@ pub enum PreferredAddressConfig {
 /// congestion control algorithm.
 #[derive(Debug, Clone)]
 pub struct ConnectionParameters {
-    quic_version: QuicVersion,
+    versions: VersionConfig,
     cc_algorithm: CongestionControlAlgorithm,
     /// Initial connection-level flow control limit.
     max_data: u64,
@@ -70,12 +72,13 @@ pub struct ConnectionParameters {
     datagram_size: u64,
     outgoing_datagram_queue: usize,
     incoming_datagram_queue: usize,
+    fast_pto: u8,
 }
 
 impl Default for ConnectionParameters {
     fn default() -> Self {
         Self {
-            quic_version: QuicVersion::default(),
+            versions: VersionConfig::default(),
             cc_algorithm: CongestionControlAlgorithm::NewReno,
             max_data: LOCAL_MAX_DATA,
             max_stream_data_bidi_remote: u64::try_from(RECV_BUFFER_SIZE).unwrap(),
@@ -89,17 +92,26 @@ impl Default for ConnectionParameters {
             datagram_size: 0,
             outgoing_datagram_queue: MAX_QUEUED_DATAGRAMS_DEFAULT,
             incoming_datagram_queue: MAX_QUEUED_DATAGRAMS_DEFAULT,
+            fast_pto: FAST_PTO_SCALE,
         }
     }
 }
 
 impl ConnectionParameters {
-    pub fn get_quic_version(&self) -> QuicVersion {
-        self.quic_version
+    pub fn get_versions(&self) -> &VersionConfig {
+        &self.versions
     }
 
-    pub fn quic_version(mut self, v: QuicVersion) -> Self {
-        self.quic_version = v;
+    pub(crate) fn get_versions_mut(&mut self) -> &mut VersionConfig {
+        &mut self.versions
+    }
+
+    /// Describe the initial version that should be attempted and all the
+    /// versions that should be enabled.  This list should contain the initial
+    /// version and be in order of preference, with more preferred versions
+    /// before less preferred.
+    pub fn versions(mut self, initial: Version, all: Vec<Version>) -> Self {
+        self.versions = VersionConfig::new(initial, all);
         self
     }
 
@@ -246,12 +258,36 @@ impl ConnectionParameters {
         self
     }
 
+    pub fn get_fast_pto(&self) -> u8 {
+        self.fast_pto
+    }
+
+    /// Scale the PTO timer.  A value of `FAST_PTO_SCALE` follows the spec, a smaller
+    /// value does not, but produces more probes with the intent of ensuring lower
+    /// latency in the event of tail loss. A value of `FAST_PTO_SCALE/4` is quite
+    /// aggressive. Smaller values (other than zero) are not rejected, but could be
+    /// very wasteful. Values greater than `FAST_PTO_SCALE` delay probes and could
+    /// reduce performance. It should not be possible to increase the PTO timer by
+    /// too much based on the range of valid values, but a maximum value of 255 will
+    /// result in very poor performance.
+    /// Scaling PTO this way does not affect when persistent congestion is declared,
+    /// but may change how many retransmissions are sent before declaring persistent
+    /// congestion.
+    ///
+    /// # Panics
+    /// A value of 0 is invalid and will cause a panic.
+    pub fn fast_pto(mut self, scale: u8) -> Self {
+        assert_ne!(scale, 0);
+        self.fast_pto = scale;
+        self
+    }
+
     pub fn create_transport_parameter(
         &self,
         role: Role,
         cid_manager: &mut ConnectionIdManager,
     ) -> Res<TransportParametersHandler> {
-        let mut tps = TransportParametersHandler::default();
+        let mut tps = TransportParametersHandler::new(role, self.versions.clone());
         // default parameters
         tps.local.set_integer(
             tparams::ACTIVE_CONNECTION_ID_LIMIT,

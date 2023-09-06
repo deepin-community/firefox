@@ -26,9 +26,8 @@ add_task(async function test_contentscript_reload_and_unload() {
 
   let events = [];
   {
-    let { Management } = ChromeUtils.import(
-      "resource://gre/modules/Extension.jsm",
-      null
+    const { Management } = ChromeUtils.importESModule(
+      "resource://gre/modules/Extension.sys.mjs"
     );
     let record = (type, extensionContext) => {
       let eventType = type == "proxy-context-load" ? "load" : "unload";
@@ -63,7 +62,7 @@ add_task(async function test_contentscript_reload_and_unload() {
   );
   equal(contextEvents[0].url, tabUrl, "ExtensionContext URL = page");
 
-  await contentPage.spawn(null, () => {
+  await contentPage.spawn([], () => {
     this.content.location.reload();
   });
   await extension.awaitMessage("contentscript-run");

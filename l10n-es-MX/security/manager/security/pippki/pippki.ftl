@@ -16,8 +16,6 @@ change-password-old = Contraseña actual:
 change-password-new = Nueva contraseña:
 change-password-reenter = Nueva contraseña (confirmar):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = No fue posible cambiar la contraseña
 pippki-incorrect-pw = No ingresaste correctamente la contraseña principal. Por favor, vuelve a intentarlo.
 pippki-pw-change-ok = Contraseña cambiada correctamente.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Actualmente estás en modo FIPS. FIPS requ
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Restablecer contraseña primaria
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Restablecer
-
 reset-primary-password-text = Si restableces tu contraseña primaria, se olvidarán todas las contraseñas de webs, correo electrónico, certificados personales y llaves privadas almacenadas. ¿Estás seguro de que quieres restablecer tu contraseña primaria?
 
 pippki-reset-password-confirmation-title = Restablecer la contraseña primaria
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Tu contraseña primaria ha sido res
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Descargando certificado
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Se le ha pedido que confíe en una nueva Autoridad Certificadora (CA).
 download-cert-trust-ssl =
     .label = Confiar en esta CA para identificar sitios web.
@@ -77,7 +74,8 @@ set-password-reminder = Importante: Si olvidas la contraseña de respaldo de tu 
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Identificación protegida por token
-protected-auth-msg = Identifícate con el token. El método de identificación dependerá de su tipo.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Autentifícate con el token "{ $tokenName }". Cómo hacerlo depende del token (por ejemplo, usando un lector de huellas dactilares o ingresando un código con un teclado).

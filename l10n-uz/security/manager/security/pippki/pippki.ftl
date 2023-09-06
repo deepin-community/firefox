@@ -13,8 +13,6 @@ change-password-old = Joriy parol:
 change-password-new = Yangi parol:
 change-password-reenter = Yangi parol (yana):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Sertifikat yuklab olinmoqda
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Sizdan yangi sertifikat tasdig‘i (CA)ga ishonishingiz so‘ralgan edi.
 download-cert-trust-ssl =
     .label = Ushbu CA tasdiqli vebsaytlarga ishonish.
@@ -55,7 +53,5 @@ set-password-reminder = Muhim: agar siz sertifikat zahira parolini unutsangiz, u
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Himoyalangan ulam tasdig‘i
-protected-auth-msg = Ulamga tasdiqdan o‘tkazing. Tasdiqdan o‘tkazish uslubi ulamingiz turiga bog‘liq.
-protected-auth-token = Ulam:
+## Protected authentication alert
+

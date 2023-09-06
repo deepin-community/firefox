@@ -5,6 +5,8 @@
 password-not-set =
     .value = (নির্ধারিত হয়নি)
 
+incorrect-pp = আপনি বর্তমান প্রাথমিক পাসওয়ার্ডটি সঠিকভাবে প্রবেশ করান নি। অনুগ্রহ করে আবার চেষ্টা করুন।
+
 pw-change-success-title = পাসওয়ার্ড পরিবর্তন সফল
 pw-change-failed-title = পাসওয়ার্ড পরিবর্তন ব্যর্থ
 pw-remove-button =

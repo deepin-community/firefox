@@ -45,6 +45,7 @@
 #include "mozilla/dom/ScriptSettings.h"
 #include "mozilla/dom/Text.h"
 #include "mozilla/MathAlgorithms.h"
+#include "mozilla/StaticPrefs_layout.h"
 #include "nsFrameSelection.h"
 
 #define DEFAULT_COLUMN_WIDTH 20
@@ -114,17 +115,7 @@ class nsTextControlFrame::nsAnonDivObserver final
 nsTextControlFrame::nsTextControlFrame(ComputedStyle* aStyle,
                                        nsPresContext* aPresContext,
                                        nsIFrame::ClassID aClassID)
-    : nsContainerFrame(aStyle, aPresContext, aClassID),
-      mFirstBaseline(NS_INTRINSIC_ISIZE_UNKNOWN),
-      mEditorHasBeenInitialized(false),
-      mIsProcessing(false)
-#ifdef DEBUG
-      ,
-      mInEditorInitialization(false)
-#endif
-{
-  ClearCachedValue();
-}
+    : nsContainerFrame(aStyle, aPresContext, aClassID) {}
 
 nsTextControlFrame::~nsTextControlFrame() = default;
 
@@ -141,12 +132,10 @@ void nsTextControlFrame::DestroyFrom(nsIFrame* aDestructRoot,
 
   // Unbind the text editor state object from the frame.  The editor will live
   // on, but things like controllers will be released.
-  RefPtr<TextControlElement> textControlElement =
-      TextControlElement::FromNode(GetContent());
+  RefPtr textControlElement = TextControlElement::FromNode(GetContent());
   MOZ_ASSERT(textControlElement);
-  textControlElement->UnbindFromFrame(this);
-
   if (mMutationObserver) {
+    textControlElement->UnbindFromFrame(this);
     mRootNode->RemoveMutationObserver(mMutationObserver);
     mMutationObserver = nullptr;
   }
@@ -180,6 +169,7 @@ void nsTextControlFrame::DestroyFrom(nsIFrame* aDestructRoot,
   aPostDestroyData.AddAnonymousContent(mRootNode.forget());
   aPostDestroyData.AddAnonymousContent(mPlaceholderDiv.forget());
   aPostDestroyData.AddAnonymousContent(mPreviewDiv.forget());
+  aPostDestroyData.AddAnonymousContent(mRevealButton.forget());
 
   nsContainerFrame::DestroyFrom(aDestructRoot, aPostDestroyData);
 }
@@ -188,40 +178,32 @@ LogicalSize nsTextControlFrame::CalcIntrinsicSize(
     gfxContext* aRenderingContext, WritingMode aWM,
     float aFontSizeInflation) const {
   LogicalSize intrinsicSize(aWM);
-  // Get leading and the Average/MaxAdvance char width
-  nscoord lineHeight = 0;
-  nscoord charWidth = 0;
-  nscoord charMaxAdvance = 0;
-
   RefPtr<nsFontMetrics> fontMet =
       nsLayoutUtils::GetFontMetricsForFrame(this, aFontSizeInflation);
-
-  lineHeight =
-      ReflowInput::CalcLineHeight(GetContent(), Style(), PresContext(),
+  const nscoord lineHeight =
+      ReflowInput::CalcLineHeight(*Style(), PresContext(), GetContent(),
                                   NS_UNCONSTRAINEDSIZE, aFontSizeInflation);
-  charWidth = fontMet->AveCharWidth();
-  charMaxAdvance = fontMet->MaxAdvance();
+  // Use the larger of the font's "average" char width or the width of the
+  // zero glyph (if present) as the basis for resolving the size attribute.
+  const nscoord charWidth =
+      std::max(fontMet->ZeroOrAveCharWidth(), fontMet->AveCharWidth());
+  const nscoord charMaxAdvance = fontMet->MaxAdvance();
 
-  // Set the width equal to the width in characters
-  int32_t cols = GetCols();
+  // Initialize based on the width in characters.
+  const int32_t cols = GetCols();
   intrinsicSize.ISize(aWM) = cols * charWidth;
 
-  // To better match IE, take the maximum character width(in twips) and remove
-  // 4 pixels add this on as additional padding(internalPadding). But only do
-  // this if we think we have a fixed-width font.
-  if (mozilla::Abs(charWidth - charMaxAdvance) >
-      (unsigned)nsPresContext::CSSPixelsToAppUnits(1)) {
+  // If we do not have what appears to be a fixed-width font, add a "slop"
+  // amount based on the max advance of the font (clamped to twice charWidth,
+  // because some fonts have a few extremely-wide outliers that would result
+  // in excessive width here; e.g. the triple-emdash ligature in SFNS Text),
+  // minus 4px. This helps avoid input fields becoming unusably narrow with
+  // small size values.
+  if (charMaxAdvance - charWidth > AppUnitsPerCSSPixel()) {
     nscoord internalPadding =
-        std::max(0, charMaxAdvance - nsPresContext::CSSPixelsToAppUnits(4));
-    nscoord t = nsPresContext::CSSPixelsToAppUnits(1);
-    // Round to a multiple of t
-    nscoord rest = internalPadding % t;
-    if (rest < t - rest) {
-      internalPadding -= rest;
-    } else {
-      internalPadding += t - rest;
-    }
-    // Now add the extra padding on (so that small input sizes work well)
+        std::max(0, std::min(charMaxAdvance, charWidth * 2) -
+                        nsPresContext::CSSPixelsToAppUnits(4));
+    internalPadding = RoundToMultiple(internalPadding, AppUnitsPerCSSPixel());
     intrinsicSize.ISize(aWM) += internalPadding;
   } else {
     // This is to account for the anonymous <br> having a 1 twip width
@@ -247,12 +229,9 @@ LogicalSize nsTextControlFrame::CalcIntrinsicSize(
   if (IsTextArea()) {
     nsIScrollableFrame* scrollableFrame = GetScrollTargetFrame();
     NS_ASSERTION(scrollableFrame, "Child must be scrollable");
-
     if (scrollableFrame) {
-      LogicalMargin scrollbarSizes(
-          aWM, scrollableFrame->GetDesiredScrollbarSizes(PresContext(),
-                                                         aRenderingContext));
-
+      LogicalMargin scrollbarSizes(aWM,
+                                   scrollableFrame->GetDesiredScrollbarSizes());
       intrinsicSize.ISize(aWM) += scrollbarSizes.IStartEnd(aWM);
       intrinsicSize.BSize(aWM) += scrollbarSizes.BStartEnd(aWM);
     }
@@ -343,7 +322,7 @@ nsresult nsTextControlFrame::EnsureEditorInitialized() {
       // but only if the contents has changed (bug 1337392).
       if (textControlElement->ValueChanged()) {
         nsAutoString val;
-        textControlElement->GetTextEditorValue(val, true);
+        textControlElement->GetTextEditorValue(val);
         position = val.Length();
       }
 
@@ -443,6 +422,17 @@ nsresult nsTextControlFrame::CreateAnonymousContent(
   // NOTE(emilio): We want the root node always after the placeholder so that
   // background on the placeholder doesn't obscure the caret.
   aElements.AppendElement(mRootNode);
+
+  if (StaticPrefs::layout_forms_reveal_password_button_enabled() &&
+      IsPasswordTextControl()) {
+    mRevealButton =
+        MakeAnonElement(PseudoStyleType::mozReveal, nullptr, nsGkAtoms::button);
+    mRevealButton->SetAttr(kNameSpaceID_None, nsGkAtoms::aria_hidden,
+                           u"true"_ns, false);
+    mRevealButton->SetAttr(kNameSpaceID_None, nsGkAtoms::tabindex, u"-1"_ns,
+                           false);
+    aElements.AppendElement(mRevealButton);
+  }
 
   rv = UpdateValueDisplay(false);
   NS_ENSURE_SUCCESS(rv, rv);
@@ -567,6 +557,10 @@ void nsTextControlFrame::AppendAnonymousContentTo(
     aElements.AppendElement(mPreviewDiv);
   }
 
+  if (mRevealButton) {
+    aElements.AppendElement(mRevealButton);
+  }
+
   aElements.AppendElement(mRootNode);
 }
 
@@ -616,7 +610,6 @@ LogicalSize nsTextControlFrame::ComputeAutoSize(
       LogicalSize ancestorAutoSize = nsContainerFrame::ComputeAutoSize(
           aRenderingContext, aWM, aCBSize, aAvailableISize, aMargin,
           aBorderPadding, aSizeOverrides, aFlags);
-      // Disabled when there's inflation; see comment in GetXULPrefSize.
       MOZ_ASSERT(inflation != 1.0f ||
                      ancestorAutoSize.ISize(aWM) == autoSize.ISize(aWM),
                  "Incorrect size computed by ComputeAutoSize?");
@@ -635,16 +628,14 @@ Maybe<nscoord> nsTextControlFrame::ComputeBaseline(
   }
   WritingMode wm = aReflowInput.GetWritingMode();
 
-  // Calculate the baseline and store it in mFirstBaseline.
   nscoord lineHeight = aReflowInput.ComputedBSize();
-  float inflation = nsLayoutUtils::FontSizeInflationFor(aFrame);
   if (!aForSingleLineControl || lineHeight == NS_UNCONSTRAINEDSIZE) {
-    lineHeight = ReflowInput::CalcLineHeight(
-        aFrame->GetContent(), aFrame->Style(), aFrame->PresContext(),
-        NS_UNCONSTRAINEDSIZE, inflation);
+    lineHeight = NS_CSS_MINMAX(aReflowInput.GetLineHeight(),
+                               aReflowInput.ComputedMinBSize(),
+                               aReflowInput.ComputedMaxBSize());
   }
   RefPtr<nsFontMetrics> fontMet =
-      nsLayoutUtils::GetFontMetricsForFrame(aFrame, inflation);
+      nsLayoutUtils::GetInflatedFontMetricsForFrame(aFrame);
   return Some(nsLayoutUtils::GetCenteredFontBaseline(fontMet, lineHeight,
                                                      wm.IsLineInverted()) +
               aReflowInput.ComputedLogicalBorderPadding(wm).BStart(wm));
@@ -653,7 +644,8 @@ Maybe<nscoord> nsTextControlFrame::ComputeBaseline(
 static bool IsButtonBox(const nsIFrame* aFrame) {
   auto pseudoType = aFrame->Style()->GetPseudoType();
   return pseudoType == PseudoStyleType::mozNumberSpinBox ||
-         pseudoType == PseudoStyleType::mozSearchClearButton;
+         pseudoType == PseudoStyleType::mozSearchClearButton ||
+         pseudoType == PseudoStyleType::mozReveal;
 }
 
 void nsTextControlFrame::Reflow(nsPresContext* aPresContext,
@@ -670,6 +662,7 @@ void nsTextControlFrame::Reflow(nsPresContext* aPresContext,
   aDesiredSize.SetSize(wm, aReflowInput.ComputedSizeWithBorderPadding(wm));
 
   {
+    // Calculate the baseline and store it in mFirstBaseline.
     auto baseline =
         ComputeBaseline(this, aReflowInput, IsSingleLineTextControl());
     mFirstBaseline = baseline.valueOr(NS_INTRINSIC_ISIZE_UNKNOWN);
@@ -713,7 +706,6 @@ void nsTextControlFrame::Reflow(nsPresContext* aPresContext,
   FinishAndStoreOverflow(&aDesiredSize);
 
   aStatus.Reset();  // This type of frame can't be split.
-  NS_FRAME_SET_TRUNCATION(aStatus, aReflowInput, aDesiredSize);
 }
 
 void nsTextControlFrame::ReflowTextControlChild(
@@ -735,6 +727,11 @@ void nsTextControlFrame::ReflowTextControlChild(
   // or percentage, if we're not the button box.
   auto overridePadding =
       isButtonBox ? Nothing() : Some(aReflowInput.ComputedLogicalPadding(wm));
+  if (!isButtonBox && aButtonBoxISize) {
+    // Button box respects inline-end-padding, so we don't need to.
+    overridePadding->IEnd(outerWM) = 0;
+  }
+
   // We want to let our button box fill the frame in the block axis, up to the
   // edge of the control's border. So, we use the control's padding-box as the
   // containing block size for our button box.
@@ -743,8 +740,6 @@ void nsTextControlFrame::ReflowTextControlChild(
   kidReflowInput.Init(aPresContext, overrideCBSize, Nothing(), overridePadding);
 
   LogicalPoint position(wm);
-  const auto& bp = aReflowInput.ComputedLogicalBorderPadding(outerWM);
-
   if (!isButtonBox) {
     MOZ_ASSERT(wm == outerWM,
                "Shouldn't have to care about orthogonal "
@@ -752,10 +747,13 @@ void nsTextControlFrame::ReflowTextControlChild(
                "except for the number spin-box which forces "
                "horizontal-tb");
 
-    // Offset the frame by the size of the parent's border
-    const auto& padding = aReflowInput.ComputedLogicalPadding(wm);
-    position.B(wm) = bp.BStart(wm) - padding.BStart(wm);
-    position.I(wm) = bp.IStart(wm) - padding.IStart(wm);
+    const auto& border = aReflowInput.ComputedLogicalBorder(wm);
+
+    // Offset the frame by the size of the parent's border. Note that we don't
+    // have to account for the parent's padding here, because this child
+    // actually "inherits" that padding and manages it on behalf of the parent.
+    position.B(wm) = border.BStart(wm);
+    position.I(wm) = border.IStart(wm);
 
     // Set computed width and computed height for the child (the button box is
     // the only exception, which has an auto size).
@@ -773,17 +771,21 @@ void nsTextControlFrame::ReflowTextControlChild(
               containerSize, ReflowChildFlags::Default, aStatus);
 
   if (isButtonBox) {
+    const auto& bp = aReflowInput.ComputedLogicalBorderPadding(outerWM);
     auto size = desiredSize.Size(outerWM);
     // Center button in the block axis of our content box. We do this
     // computation in terms of outerWM for simplicity.
-    position = LogicalPoint(outerWM);
-    position.B(outerWM) =
+    LogicalRect buttonRect(outerWM);
+    buttonRect.BSize(outerWM) = size.BSize(outerWM);
+    buttonRect.ISize(outerWM) = size.ISize(outerWM);
+    buttonRect.BStart(outerWM) =
         bp.BStart(outerWM) +
         (aReflowInput.ComputedBSize() - size.BSize(outerWM)) / 2;
     // Align to the inline-end of the content box.
-    position.I(outerWM) =
+    buttonRect.IStart(outerWM) =
         bp.IStart(outerWM) + aReflowInput.ComputedISize() - size.ISize(outerWM);
-    position = position.ConvertTo(wm, outerWM, containerSize);
+    buttonRect = buttonRect.ConvertTo(wm, outerWM, containerSize);
+    position = buttonRect.Origin(wm);
     aButtonBoxISize = size.ISize(outerWM);
   }
 
@@ -793,16 +795,6 @@ void nsTextControlFrame::ReflowTextControlChild(
 
   // consider the overflow
   aParentDesiredSize.mOverflowAreas.UnionWith(desiredSize.mOverflowAreas);
-}
-
-nsSize nsTextControlFrame::GetXULMinSize(nsBoxLayoutState& aState) {
-  // XXXbz why?  Why not the nsBoxFrame sizes?
-  return nsIFrame::GetUncachedXULMinSize(aState);
-}
-
-bool nsTextControlFrame::IsXULCollapsed() {
-  // We're never collapsed in the box sense.
-  return false;
 }
 
 // IMPLEMENTING NS_IFORMCONTROLFRAME
@@ -896,7 +888,7 @@ already_AddRefed<TextEditor> nsTextControlFrame::GetTextEditor() {
 
 nsresult nsTextControlFrame::SetSelectionInternal(
     nsINode* aStartNode, uint32_t aStartOffset, nsINode* aEndNode,
-    uint32_t aEndOffset, nsITextControlFrame::SelectionDirection aDirection) {
+    uint32_t aEndOffset, SelectionDirection aDirection) {
   // Get the selection, clear it and add the new range to it!
   TextControlElement* textControlElement =
       TextControlElement::FromNode(GetContent());
@@ -909,11 +901,12 @@ nsresult nsTextControlFrame::SetSelectionInternal(
   NS_ENSURE_TRUE(selection, NS_ERROR_FAILURE);
 
   nsDirection direction;
-  if (aDirection == eNone) {
+  if (aDirection == SelectionDirection::None) {
     // Preserve the direction
     direction = selection->GetDirection();
   } else {
-    direction = (aDirection == eBackward) ? eDirPrevious : eDirNext;
+    direction =
+        (aDirection == SelectionDirection::Backward) ? eDirPrevious : eDirNext;
   }
 
   MOZ_TRY(selection->SetStartAndEndInLimiter(*aStartNode, aStartOffset,
@@ -1107,46 +1100,6 @@ nsresult nsTextControlFrame::AttributeChanged(int32_t aNameSpaceID,
   return nsContainerFrame::AttributeChanged(aNameSpaceID, aAttribute, aModType);
 }
 
-void nsTextControlFrame::GetText(nsString& aText) {
-  if (HTMLInputElement* inputElement = HTMLInputElement::FromNode(mContent)) {
-    if (IsSingleLineTextControl()) {
-      // There will be no line breaks so we can ignore the wrap property.
-      inputElement->GetTextEditorValue(aText, true);
-      return;
-    }
-    aText.Truncate();
-    return;
-  }
-
-  MOZ_ASSERT(!IsSingleLineTextControl());
-  if (HTMLTextAreaElement* textAreaElement =
-          HTMLTextAreaElement::FromNode(mContent)) {
-    textAreaElement->GetValue(aText);
-    return;
-  }
-
-  MOZ_ASSERT(aText.IsEmpty());
-  aText.Truncate();
-}
-
-bool nsTextControlFrame::TextEquals(const nsAString& aText) const {
-  if (HTMLInputElement* inputElement = HTMLInputElement::FromNode(mContent)) {
-    if (IsSingleLineTextControl()) {
-      // There will be no line breaks so we can ignore the wrap property.
-      return inputElement->TextEditorValueEquals(aText);
-    }
-    return aText.IsEmpty();
-  }
-
-  MOZ_ASSERT(!IsSingleLineTextControl());
-  if (HTMLTextAreaElement* textAreaElement =
-          HTMLTextAreaElement::FromNode(mContent)) {
-    return textAreaElement->ValueEquals(aText);
-  }
-
-  return aText.IsEmpty();
-}
-
 /// END NSIFRAME OVERLOADS
 
 // NOTE(emilio): This is needed because the root->primary frame map is not set
@@ -1165,9 +1118,9 @@ static nsIFrame* FindRootNodeFrame(const nsFrameList& aChildList,
 }
 
 void nsTextControlFrame::SetInitialChildList(ChildListID aListID,
-                                             nsFrameList& aChildList) {
-  nsContainerFrame::SetInitialChildList(aListID, aChildList);
-  if (aListID != kPrincipalList) {
+                                             nsFrameList&& aChildList) {
+  nsContainerFrame::SetInitialChildList(aListID, std::move(aChildList));
+  if (aListID != FrameChildListID::Principal) {
     return;
   }
 
@@ -1219,7 +1172,6 @@ nsresult nsTextControlFrame::UpdateValueDisplay(bool aNotify,
     if (IsPasswordTextControl()) {
       textNode->MarkAsMaybeMasked();
     }
-
     mRootNode->AppendChildTo(textNode, aNotify, IgnoreErrors());
     textContent = textNode;
   } else {
@@ -1237,7 +1189,7 @@ nsresult nsTextControlFrame::UpdateValueDisplay(bool aNotify,
   if (aValue) {
     value = *aValue;
   } else {
-    textControlElement->GetTextEditorValue(value, true);
+    textControlElement->GetTextEditorValue(value);
   }
 
   return textContent->SetText(value, aNotify);
@@ -1290,7 +1242,7 @@ nsTextControlFrame::RestoreState(PresState* aState) {
   return NS_OK;
 }
 
-nsresult nsTextControlFrame::PeekOffset(nsPeekOffsetStruct* aPos) {
+nsresult nsTextControlFrame::PeekOffset(PeekOffsetStruct* aPos) {
   return NS_ERROR_FAILURE;
 }
 

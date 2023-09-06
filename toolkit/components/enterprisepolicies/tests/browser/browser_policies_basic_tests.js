@@ -4,8 +4,8 @@
 "use strict";
 
 add_task(async function test_simple_policies() {
-  let { Policies } = ChromeUtils.import(
-    "resource:///modules/policies/Policies.jsm"
+  let { Policies } = ChromeUtils.importESModule(
+    "resource:///modules/policies/Policies.sys.mjs"
   );
 
   let policy0Ran = false,
@@ -102,7 +102,7 @@ add_task(async function test_simple_policies() {
   ok(policy2Ran, "Policy 2 ran correctly through onBeforeUIStartup");
   ok(policy3Ran, "Policy 3 ran correctly through onAllWindowsRestored");
 
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function() {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function () {
     if (Services.appinfo.processType == Services.appinfo.PROCESS_TYPE_CONTENT) {
       is(
         Services.policies.isAllowed("feature1"),
@@ -123,4 +123,18 @@ add_task(async function test_simple_policies() {
   delete Policies.simple_policy1;
   delete Policies.simple_policy2;
   delete Policies.simple_policy3;
+});
+
+add_task(async function test_policy_cleanup() {
+  await EnterprisePolicyTesting.setupPolicyEngineWithJson("");
+  is(
+    Services.policies.getActivePolicies(),
+    undefined,
+    "No policies should be defined"
+  );
+  is(
+    Services.policies.status,
+    Ci.nsIEnterprisePolicies.INACTIVE,
+    "Engine is inactive at the end of the test"
+  );
 });

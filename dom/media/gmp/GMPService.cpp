@@ -17,6 +17,7 @@
 #include "mozilla/EventDispatcher.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/PluginCrashedEvent.h"
+#include "nsThreadUtils.h"
 #if defined(XP_LINUX) && defined(MOZ_SANDBOX)
 #  include "mozilla/SandboxInfo.h"
 #endif
@@ -41,6 +42,29 @@ namespace mozilla {
 LogModule* GetGMPLog() {
   static LazyLogModule sLog("GMP");
   return sLog;
+}
+
+LogModule* GetGMPLibraryLog() {
+  static LazyLogModule sLog("GMPLibrary");
+  return sLog;
+}
+
+GMPLogLevel GetGMPLibraryLogLevel() {
+  switch (GetGMPLibraryLog()->Level()) {
+    case LogLevel::Disabled:
+      return kGMPLogQuiet;
+    case LogLevel::Error:
+      return kGMPLogError;
+    case LogLevel::Warning:
+      return kGMPLogWarning;
+    case LogLevel::Info:
+      return kGMPLogInfo;
+    case LogLevel::Debug:
+      return kGMPLogDebug;
+    case LogLevel::Verbose:
+      return kGMPLogDetail;
+  }
+  return kGMPLogInvalid;
 }
 
 #ifdef __CLASS__
@@ -210,7 +234,7 @@ nsresult GeckoMediaPluginService::Init() {
 RefPtr<GetCDMParentPromise> GeckoMediaPluginService::GetCDM(
     const NodeIdParts& aNodeIdParts, const nsACString& aKeySystem,
     GMPCrashHelper* aHelper) {
-  MOZ_ASSERT(mGMPThread->IsOnCurrentThread());
+  AssertOnGMPThread();
 
   if (mShuttingDownOnGMPThread || aKeySystem.IsEmpty()) {
     nsPrintfCString reason(
@@ -269,7 +293,7 @@ RefPtr<GetCDMParentPromise> GeckoMediaPluginService::GetCDM(
 #if defined(MOZ_SANDBOX) && defined(MOZ_DEBUG) && defined(ENABLE_TESTS)
 RefPtr<GetGMPContentParentPromise>
 GeckoMediaPluginService::GetContentParentForTest() {
-  MOZ_ASSERT(mGMPThread->IsOnCurrentThread());
+  AssertOnGMPThread();
 
   nsTArray<nsCString> tags;
   tags.AppendElement("fake"_ns);
@@ -354,7 +378,7 @@ nsCOMPtr<nsIAsyncShutdownClient> GeckoMediaPluginService::GetShutdownBarrier() {
 nsresult GeckoMediaPluginService::GMPDispatch(nsIRunnable* event,
                                               uint32_t flags) {
   nsCOMPtr<nsIRunnable> r(event);
-  return GMPDispatch(r.forget());
+  return GMPDispatch(r.forget(), flags);
 }
 
 nsresult GeckoMediaPluginService::GMPDispatch(
@@ -375,6 +399,15 @@ GeckoMediaPluginService::GetThread(nsIThread** aThread) {
 
   // This can be called from any thread.
   MutexAutoLock lock(mMutex);
+
+  return GetThreadLocked(aThread);
+}
+
+// always call with getter_AddRefs, because it does
+nsresult GeckoMediaPluginService::GetThreadLocked(nsIThread** aThread) {
+  MOZ_ASSERT(aThread);
+
+  mMutex.AssertCurrentThreadOwns();
 
   if (!mGMPThread) {
     // Don't allow the thread to be created after shutdown has started.
@@ -411,7 +444,7 @@ GeckoMediaPluginService::GetGMPVideoDecoder(
     GMPCrashHelper* aHelper, nsTArray<nsCString>* aTags,
     const nsACString& aNodeId,
     UniquePtr<GetGMPVideoDecoderCallback>&& aCallback) {
-  MOZ_ASSERT(mGMPThread->IsOnCurrentThread());
+  AssertOnGMPThread();
   NS_ENSURE_ARG(aTags && aTags->Length() > 0);
   NS_ENSURE_ARG(aCallback);
 
@@ -451,7 +484,7 @@ GeckoMediaPluginService::GetGMPVideoEncoder(
     GMPCrashHelper* aHelper, nsTArray<nsCString>* aTags,
     const nsACString& aNodeId,
     UniquePtr<GetGMPVideoEncoderCallback>&& aCallback) {
-  MOZ_ASSERT(mGMPThread->IsOnCurrentThread());
+  AssertOnGMPThread();
   NS_ENSURE_ARG(aTags && aTags->Length() > 0);
   NS_ENSURE_ARG(aCallback);
 

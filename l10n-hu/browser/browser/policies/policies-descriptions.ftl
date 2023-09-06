@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Adja meg azokat a domaineket, amelyek hozzáférh
 
 policy-AppAutoUpdate = Az automatikus alkalmazásfrissítés engedélyezése vagy letiltása.
 
+policy-AppUpdatePin = A { -brand-short-name } megakadályozása abban, hogy a megadott verzión túl frissüljön.
+
 policy-AppUpdateURL = Egyéni alkalmazás-frissítési URL megadása.
 
 policy-Authentication = Integrált hitelesítés beállítása azokhoz a weboldalakhoz, melyek támogatják.
@@ -39,6 +41,9 @@ policy-CaptivePortal = Beléptető oldal támogatás engedélyezése vagy letilt
 policy-CertificatesDescription = Tanúsítványok hozzáadása vagy beépített tanúsítványok használata.
 
 policy-Cookies = A weboldalak süti elhelyezésének engedélyezése vagy letiltása.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = A konténerekhez kapcsolódó házirendek beállítása.
 
 policy-DisabledCiphers = Titkosítási módok letiltása.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Ha igaz, akkor nem hozható létre első
 
 policy-DisablePasswordReveal = Ne engedje, hogy a mentet bejelentkezésekben szereplő jelszavak megjelenítésre kerüljenek.
 
-policy-DisablePocket = A weboldalak Pocketbe mentését biztosító funkció letiltása.
+policy-DisablePocket2 = A weboldalak { -pocket-brand-name }be mentését biztosító funkció letiltása.
 
 policy-DisablePrivateBrowsing = Privát böngészés letiltása.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Annak a megakadályozása, hogy a böngésző 
 
 policy-DisableTelemetry = Telemetria kikapcsolása.
 
+policy-DisableThirdPartyModuleBlocking = A felhasználó megakadályozása abban, hogy blokkolja a harmadik féltől származó modulok betöltését a { -brand-short-name } folyamatba.
+
 policy-DisplayBookmarksToolbar = A Könyvjelző eszköztár megjelenítése alapértelmezetten.
 
 policy-DisplayMenuBar = A Menüsáv megjelenítése alapértelmezetten.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = A Tartalomblokkolás engedélyezése vagy leti
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = A Titkosított médiakiterjesztések engedélyezése vagy letiltása, és válaszható módon, annak zárolása.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = A fájlok kiterjesztésén alapuló figyelmeztetések letiltása bizonyos fájltípusok és domainek esetén.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Kezelje a kiegészítők telepítésének összes von
 
 policy-ExtensionUpdate = Az automatikus kiegészítőfrissítések engedélyezése vagy letiltása.
 
-policy-FirefoxHome = A Firefox kezdőlap beállítása.
+policy-FirefoxHome2 = A { -firefox-home-brand-name } beállítása.
 
-policy-FlashPlugin = A Flash bővítmény használatának engedélyezése vagy tiltása.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = A közvetlen intranetes navigáció kényszerítése a keresés helyett, amikor egyetlen szót ír be a címsorba.
 
 policy-Handlers = Alapértelmezett alkalmazáskezelők beállítása
 
@@ -147,7 +156,7 @@ policy-NetworkPrediction = Hálózati előrejelzés engedélyezése vagy letilt�
 
 policy-NewTabPage = Az Új lap oldal engedélyezése vagy letiltása.
 
-policy-NoDefaultBookmarks = A { -brand-short-name }szal szállított alapértelmezett könyvjelzők és okos könyvjelzők (Legtöbbet látogatott, Friss címkék) létrehozásának letiltása. Megjegyzés: ez a házirend csak a profil első futtatása előtt van érvényben.
+policy-NoDefaultBookmarks = A { -brand-short-name(case: "instrumental") } szállított alapértelmezett könyvjelzők és okos könyvjelzők (Legtöbbet látogatott, Friss címkék) létrehozásának letiltása. Megjegyzés: ez a házirend csak a profil első futtatása előtt van érvényben.
 
 policy-OfferToSaveLogins = A beállítás erőltetése, miszerint a { -brand-short-name } felajánlja a mentett bejelentkezések és jelszavak megjegyzését. Mind az igaz, mind a hamis érték elfogadott.
 
@@ -158,6 +167,8 @@ policy-OverrideFirstRunPage = Az első indítás oldal felülbírálása. Állí
 policy-OverridePostUpdatePage = A frissítés utáni „Újdonságok” oldal felülbírálása. Állítsa üres ezt a házirendet, ha azt szeretné, hogy ne legyen frissítés utáni oldal.
 
 policy-PasswordManagerEnabled = A jelszavak jelszókezelőbe történő mentésének engedélyezése.
+
+policy-PasswordManagerExceptions = A { -brand-short-name } megakadályozása abban, hogy egyes weboldalaknál mentse a jelszavakat.
 
 # PDF.js and PDF should not be translated
 policy-PDFjs = A PDF.js-nek, a { -brand-short-name } beépített PDF-megjelenítőjének, letiltása vagy beállítása.
@@ -184,8 +195,8 @@ policy-SearchEngines = Keresőszolgáltatások beállításainak konfigurálása
 
 policy-SearchSuggestEnabled = A keresési javaslatok engedélyezése vagy letiltása.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = PKCS #11 modulok telepítése.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = PKCS #11 modulok hozzáadása vagy törlése.
 
 policy-ShowHomeButton = A kezdőoldal gomb megjelenítése az eszköztáron.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = A legmagasabb SSL verzió beállítása.
 
 policy-SSLVersionMin = A legkisebb SSL verzió beállítása.
 
+policy-StartDownloadsInTempDirectory = A letöltések arra kényszerítése, hogy az alapértelmezett letöltési könyvtár helyett egy helyi, ideiglenes helyen induljanak el.
+
 policy-SupportMenu = Egyéni támogatási menüpont hozzáadása a súgó menühöz.
 
 policy-UserMessaging = Ne mutasson bizonyos üzeneteket a felhasználónak.
+
+policy-UseSystemPrintDialog = Nyomtatás a rendszer nyomtatási párbeszédablakával.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Weboldalak felkeresésének blokkolása. Lásd a dokumentációt a formátum részleteiért.

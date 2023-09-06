@@ -13,8 +13,6 @@ change-password-old = Hazırkı parol:
 change-password-new = Yeni parol:
 change-password-reenter = Yeni parol (təkrar):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Təsdiq sənədi yüklənir
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Yeni bir təsdiqləmə sertifikatı (CA) təhlükəsizliyi istədiniz.
 download-cert-trust-ssl =
     .label = Saytları təyin etmək üçün bu təsdiqləmə sertifikatına etibar et.
@@ -56,7 +54,5 @@ set-password-reminder = Vacib: Əgər təsdiq sənədi yedəyi parolunuzu unutsa
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Qorunmuş işarənin kimlik Təsdiqləməsi
-protected-auth-msg = Lütfən işarəyə kimliyinizi təsdiqləyin. Kimlik təsdiqləmə üsulu işarətinizin növünə görə dəyişir.
-protected-auth-token = İşarə:
+## Protected authentication alert
+

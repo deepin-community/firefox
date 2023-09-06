@@ -14,11 +14,11 @@ fonts-langgroup-header = Letur fyrir
     .accesskey = f
 
 fonts-langgroup-arabic =
-    .label = Arabíska
+    .label = Arabískt
 fonts-langgroup-armenian =
-    .label = Armensíska
+    .label = Armenskt
 fonts-langgroup-bengali =
-    .label = Bengalska
+    .label = Bengalskt
 fonts-langgroup-simpl-chinese =
     .label = Einfölduð kínverska
 fonts-langgroup-trad-chinese-hk =
@@ -32,26 +32,26 @@ fonts-langgroup-devanagari =
 fonts-langgroup-ethiopic =
     .label = Eþíópískt
 fonts-langgroup-georgian =
-    .label = Georgíska
+    .label = Georgískt
 fonts-langgroup-el =
-    .label = Gríska
+    .label = Grískt
 fonts-langgroup-gujarati =
     .label = Gujarati
 fonts-langgroup-gurmukhi =
     .label = Gurmukhi
 fonts-langgroup-japanese =
-    .label = Japanska
+    .label = Japanskt
 fonts-langgroup-hebrew =
-    .label = Hebreska
+    .label = Hebreskt
 fonts-langgroup-kannada =
     .label = Kannadískt
 fonts-langgroup-khmer =
     .label = Kmer
 fonts-langgroup-korean =
-    .label = Kóreska
+    .label = Kóreskt
 # Translate "Latin" as the name of Latin (Roman) script, not as the name of the Latin language.
 fonts-langgroup-latin =
-    .label = Latneska
+    .label = Latneskt stafróf
 fonts-langgroup-malayalam =
     .label = Malayanskt
 fonts-langgroup-math =
@@ -63,13 +63,13 @@ fonts-langgroup-sinhala =
 fonts-langgroup-tamil =
     .label = Tamíl
 fonts-langgroup-telugu =
-    .label = Indverska (Telugu)
+    .label = Telúgú
 fonts-langgroup-thai =
-    .label = Tælenska
+    .label = Taílenskt
 fonts-langgroup-tibetan =
-    .label = Tíbetska
+    .label = Tíbetskt
 fonts-langgroup-canadian =
-    .label = Unified Canadian Syllabary
+    .label = Samræmd Kanadísk atkvæðatákn
 fonts-langgroup-other =
     .label = Önnur ritunarkerfi
 
@@ -92,7 +92,7 @@ fonts-serif = Serif
 fonts-sans-serif = Sans-serif
     .accesskey = n
 
-fonts-monospace = Jafnstórt
+fonts-monospace = Jafnbreitt
     .accesskey = J
 
 fonts-monospace-size = Stærð
@@ -107,11 +107,6 @@ fonts-minsize-none =
 fonts-allow-own =
     .label = Leyfa vefsíðum að velja sínar eigin leturgerðir, í staðinn fyrir mitt val hér fyrir ofan
     .accesskey = a
-
-## Text Encodings
-##
-## Translate the encoding names as adjectives for an encoding, not as the name
-## of the language.
 
 # Variables:
 #   $name {string, "Arial"} - Name of the default font

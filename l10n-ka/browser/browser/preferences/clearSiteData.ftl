@@ -2,11 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = მონაცემების გასუფთავება
-    .style = width: 35em
+    .style = min-width: 35em
 
-clear-site-data-description = ყველა ფუნთუშისა და საიტის მონაცემის გასუფთავების შედეგად, რომელთაც { -brand-short-name } ინახავს, შესაძლოა ვებსაიტებზე შესული ანგარიშებიდან გამოხვიდეთ. დროებითი კეშის გასუფთავება კი არ იმოქმედებს თქვენს ანგარიშებზე.
+clear-site-data-description = თუ გაასუფთავებთ ყველა ფუნთუშასა და საიტის მონაცემს, რომელთაც { -brand-short-name } ინახავს, შესაძლოა, ვებსაიტებზე შესული ანგარიშებიდან გამოხვიდეთ. მომარაგებული დროებითი ფაილების წაშლა არ იმოქმედებს ანგარიშებზე.
 
 clear-site-data-close-key =
     .key = w
@@ -29,7 +29,7 @@ clear-site-data-cookies-empty =
     .label = ფუნთუშები და საიტის მონაცემები
     .accesskey = ს
 
-clear-site-data-cookies-info = გასუფთავების შედეგად, შესაძლოა საიტებზე შესული ანგარიშებიდან გამოხვიდეთ
+clear-site-data-cookies-info = გასუფთავების შედეგად შესაძლოა, საიტებზე შესული ანგარიშებიდან გამოხვიდეთ
 
 # The parameters in parentheses in this string describe disk usage
 # in the format ($amount $unit), e.g. "Cached Web Content (24 KB)"
@@ -37,7 +37,7 @@ clear-site-data-cookies-info = გასუფთავების შედე
 #   $amount (Number) - Amount of cache currently stored on disk
 #   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
 clear-site-data-cache-with-data =
-    .label = დროებითი ვებშიგთავსი ({ $amount } { $unit })
+    .label = მომარაგებული ვებშიგთავსი ({ $amount } { $unit })
     .accesskey = ვ
 
 # This string is a placeholder for while the data used to fill
@@ -46,10 +46,10 @@ clear-site-data-cache-with-data =
 # or the same as clear-site-data-cache-with-data (except the amount and unit),
 # to avoid flickering.
 clear-site-data-cache-empty =
-    .label = დროებითი ვებშიგთავსი
+    .label = მომარაგებული ვებშიგთავსი
     .accesskey = ვ
 
-clear-site-data-cache-info = ვებსაიტები საჭიროებს სურათების და მონაცემების განსაახლებლად
+clear-site-data-cache-info = ვებსაიტებს სჭირდება სურათებისა და სხვა მასალების ჩასატვირთად
 
 clear-site-data-dialog =
     .buttonlabelaccept = გასუფთავება

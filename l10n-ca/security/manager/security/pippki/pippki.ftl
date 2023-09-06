@@ -16,8 +16,6 @@ change-password-old = Contrasenya actual:
 change-password-new = Contrasenya nova:
 change-password-reenter = Contrasenya nova (un altre cop):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = No s'ha pogut canviar la contrasenya.
 pippki-incorrect-pw = No heu introduït la contrasenya actual correcta. Torneu-ho a provar.
 pippki-pw-change-ok = La contrasenya s'ha canviat correctament.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Us trobeu en mode FIPS. El FIPS requereix 
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Reinicia la contrasenya principal
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Reinicia
-
 reset-primary-password-text = Si reinicieu la vostra contrasenya principal, totes les vostres contrasenyes de web i de correu electrònic, els certificats personals i les claus privades emmagatzemades es perdran. Esteu segur que voleu reiniciar la vostra contrasenya principal?
 
 pippki-reset-password-confirmation-title = Reinicia la contrasenya principal
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = S'ha reiniciat la vostra contraseny
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Baixada de certificats
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Se us ha demanat que confieu en una entitat certificadora (CA) nova.
 download-cert-trust-ssl =
     .label = Confia en aquesta CA per identificar llocs web.
@@ -73,11 +70,9 @@ set-password-backup-pw =
     .value = Contrasenya de la còpia de seguretat del certificat:
 set-password-repeat-backup-pw =
     .value = Contrasenya de la còpia de seguretat del certificat (un altre cop):
-set-password-reminder = Important: si oblideu la contrasenya de la còpia de seguretat del certificat no podreu recuperar-la més endavant. Deseu-la en un lloc segur.
+set-password-reminder = Important: si oblideu la contrasenya de la còpia de seguretat del certificat, no podreu recuperar-la més endavant. Deseu-la en un lloc segur.
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Autenticació de testimoni protegit
-protected-auth-msg = Autentiqueu al testimoni. El mètode d'autenticació depèn del tipus del vostre testimoni.
-protected-auth-token = Testimoni:
+## Protected authentication alert
+

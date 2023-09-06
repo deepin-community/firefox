@@ -10,7 +10,7 @@ all-tabs-menu-new-user-context =
     .label = ਨਵੀਂ ਕਨਟੇਨਰ ਟੈਬ
 
 all-tabs-menu-hidden-tabs =
-    .label = ਟੈਬਾਂ ਲੁਕਾਓ
+    .label = ਲੁਕਵੀਆਂ ਟੈਬਾਂ
 
 all-tabs-menu-manage-user-context =
     .label = ਕਨਟੇਨਰਾਂ ਦਾ ਬੰਦੋਬਸਤ

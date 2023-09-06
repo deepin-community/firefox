@@ -34,7 +34,6 @@ about-telemetry-events-section = Իրադարձություններ
 about-telemetry-simple-measurements-section = Պարզ չափումներ
 about-telemetry-slow-sql-section = Ցուցադրել SQL-ի առաջարկությունը
 about-telemetry-addon-details-section = Հավելման մանրամասները
-about-telemetry-captured-stacks-section = Կորզված շեղջեր
 about-telemetry-late-writes-section = Հետագա գրումներ
 about-telemetry-raw-payload-section = Անմշակ բեռ
 about-telemetry-raw = JSON տող
@@ -122,10 +121,6 @@ about-telemetry-keys-header = Հատկությունը
 about-telemetry-names-header = Անուն
 about-telemetry-values-header = Արժեքը
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (քանակը. { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Ուշ գրառում #{ $lateWriteCount }
 about-telemetry-stack-title = Շեղջ.
@@ -136,12 +131,6 @@ about-telemetry-category-header = անվանակարգ
 about-telemetry-method-header = եղանակ
 about-telemetry-object-header = օբյեկտ
 about-telemetry-extra-header = հավելյալ
-about-telemetry-origin-section = Հեռուստաչափության սկզաղբյուր
-about-telemetry-origin-origin = Ծագում
-about-telemetry-origin-count = Քանակ
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link"> Firefox-ի աղբյուրի հեռաչափությունը </a> կոդավորում է տվյալները ուղարկելուց առաջ, այնպես որ { $telemetryServerOwner } կարող է հաշվել իրերը, առանց իմանալու որևէ { -brand-product-name } մուտքագրման համար: Ավելին իմանալու համար <a data-l10n-name="prio-blog-link"> </a>)։
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = { $process } գործնթաց

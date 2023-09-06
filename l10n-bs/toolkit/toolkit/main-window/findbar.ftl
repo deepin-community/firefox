@@ -36,3 +36,21 @@ findbar-entire-word =
     .label = Cijele riječi
     .accesskey = C
     .tooltiptext = Pretražuj samo cijele riječi
+
+findbar-not-found = Fraza nije pronađena
+
+findbar-wrapped-to-top = Dosegnut je kraj stranice, nastavlja se sa vrha
+findbar-wrapped-to-bottom = Dosegnut je vrh stranice, nastavlja se sa dna
+
+findbar-normal-find =
+    .placeholder = Pronađi na stranici
+findbar-fast-find =
+    .placeholder = Brza pretraga
+findbar-fast-find-links =
+    .placeholder = Brza pretraga (samo linkovi)
+
+findbar-case-sensitive-status =
+    .value = (Osjetljivo na mala i velika slova)
+findbar-entire-word-status =
+    .value = (Samo cijele riječi)
+

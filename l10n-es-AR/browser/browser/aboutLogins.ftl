@@ -5,15 +5,15 @@
 
 about-logins-page-title = Inicios de sesión y contraseñas
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Buscar inicios de sesión
+    .key = F
 
-create-login-button = Crear nuevo inicio de sesión
+create-new-login-button =
+    .title = Crear nuevo inicio de sesión
 
 fxaccounts-sign-in-text = Obtenga sus contraseñas en sus otros dispositivos
-fxaccounts-sign-in-sync-button = Ingresar para sincronizar
+fxaccounts-sign-in-sync-button = Iniciar sesión para sincronizar
 fxaccounts-avatar-button =
     .title = Administrar cuenta
 
@@ -37,10 +37,21 @@ about-logins-menu-menuitem-help = Ayuda
 
 login-list =
     .aria-label = Inicios de sesión que coinciden con la consulta de búsqueda
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } inicio de sesión
        *[other] { $count } inicios de sesión
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } de { $total } ingreso
+        [many] { $count } de { $total } ingresos
+       *[other] { $count } de { $total } ingresos
     }
 login-list-sort-label-text = Ordenar por:
 login-list-name-option = Nombre (A-Z)
@@ -58,11 +69,10 @@ login-list-item-title-new-login = Nuevo inicio de sesión
 login-list-item-subtitle-new-login = Ingrese sus credenciales de inicio de sesión
 login-list-item-subtitle-missing-username = (sin nombre de usuario)
 about-logins-list-item-breach-icon =
-    .title = Sitio web violado
+    .title = Sitio web filtrado
 about-logins-list-item-vulnerable-password-icon =
     .title = Contraseña vulnerable
-
-about-logins-list-section-breach = Sitios web violados
+about-logins-list-section-breach = Sitios web filtrados
 about-logins-list-section-vulnerable = Contraseñas vulnerables
 about-logins-list-section-nothing = Sin alerta
 about-logins-list-section-today = Hoy
@@ -76,8 +86,8 @@ about-logins-login-intro-heading-logged-in = No se encontraron inicios de sesió
 login-intro-description = Si guardó sus inicios de sesión en { -brand-product-name } en un dispositivo diferente, estos son los pasos a seguir para tenerlos aquí también:
 login-intro-instructions-fxa = Cree o inicie sesión en su { -fxaccount-brand-name } en el dispositivo donde guardó sus inicios de sesión.
 login-intro-instructions-fxa-settings = Ir a Ajustes > Sync > Activar la sincronización… Seleccionar la casilla Inicios de sesión y contraseñas.
-login-intro-instructions-fxa-help = Visite <a data-l10n-name="help-link">Soporte de { -lockwise-brand-short-name }</a> para más ayuda.
-about-logins-intro-import = Si sus inicios de sesión están guardados en otro navegador, puede <a data-l10n-name="import-link">importarlos a { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = Visite la página de <a data-l10n-name="passwords-help-link">asistencia para contraseñas</a> para obtener más ayuda.
+about-logins-intro-browser-only-import = Si sus inicios de sesión están guardados en otro navegador, puede <a data-l10n-name="import-link">importarlos a { -brand-product-name }</a>
 about-logins-intro-import2 = Si sus inicios de sesión están guardados fuera de { -brand-product-name }, puede <a data-l10n-name="import-browser-link">importarlos desde otro navegador</a> o <a data-l10n-name="import-file-link">desde un archivo</a>
 
 ## Login
@@ -102,9 +112,17 @@ login-item-copied-password-button-text = ¡Copiada!
 login-item-save-changes-button = Guardar cambios
 login-item-save-new-button = Guardar
 login-item-cancel-button = Cancelar
-login-item-time-changed = Última modificación: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Creado: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Último uso: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Creado
+login-item-timeline-action-updated = Actualizado
+login-item-timeline-action-used = Usado
 
 ## OS Authentication dialog
 
@@ -132,8 +150,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Para copiar su contrase�
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = copie la contraseña guardada
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Para exportar los inicios de sesión, ingrese las credenciales de inicio de Windows. Esto ayuda a proteger la seguridad de las cuentas.
 # This message can be seen when attempting to export a password in about:logins
@@ -144,10 +160,8 @@ about-logins-export-password-os-auth-dialog-message-macosx = exportar inicios de
 
 about-logins-primary-password-notification-message = Ingrese su contraseña maestra para ver los inicios de sesión y contraseñas guardados
 master-password-reload-button =
-    .label = Ingresar
+    .label = Iniciar sesión
     .accesskey = I
-
-## Password Sync notification
 
 ## Dialogs
 
@@ -158,6 +172,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = ¿Eliminar este inicio de sesión?
 confirm-delete-dialog-message = Esta acción no puede deshacerse.
 about-logins-confirm-remove-dialog-confirm-button = Eliminar
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -175,27 +192,29 @@ about-logins-confirm-remove-all-dialog-checkbox-label =
 
 about-logins-confirm-remove-all-dialog-title =
     { $count ->
-        [one] ¿Eliminar inicio de sesión de { $count }?
-       *[other] ¿Eliminar todos los inicios de sesión de { $count }?
+        [one] ¿Eliminar { $count } inicio de sesión?
+       *[other] ¿Eliminar todos los { $count } inicios de sesión?
     }
 about-logins-confirm-remove-all-dialog-message =
     { $count ->
-        [1] Esto eliminará el inicio de sesión que guardó con { -brand-short-name } y cualquier alerta de violación que aparezca aquí. No podrá deshacer esta acción.
-        [one] Esto eliminará los inicios de sesión  que guardó con { -brand-short-name } y cualquier alerta de violaciones que aparezcan aquí. No podrá deshacer esta acción.
-       *[other] Esto eliminará los inicios de sesión que guardó con { -brand-short-name } y cualquier alerta de violaciones que aparezcan aquí. No podrá deshacer esta acción.
+        [1] Esto eliminará el inicio de sesión que guardó con { -brand-short-name } y cualquier alerta de filtraciones que aparezca aquí. No podrá deshacer esta acción.
+        [one] Esto eliminará los inicios de sesión  que guardó con { -brand-short-name } y cualquier alerta de filtraciones que aparezcan aquí. No podrá deshacer esta acción.
+       *[other] Esto eliminará los inicios de sesión que guardó con { -brand-short-name } y cualquier alerta de filtraciones que aparezcan aquí. No podrá deshacer esta acción.
     }
 
 about-logins-confirm-remove-all-sync-dialog-title =
     { $count ->
-        [one] ¿Eliminar inicio de sesión de { $count } de todos los dispositivos?
-       *[other] ¿Eliminar todos los inicios de sesión de { $count } de todos los dispositivos?
+        [one] ¿Eliminar { $count } inicio de sesión de todos los dispositivos?
+       *[other] ¿Eliminar todos los { $count } inicios de sesión de todos los dispositivos?
     }
 about-logins-confirm-remove-all-sync-dialog-message =
     { $count ->
-        [1] Esto eliminará el inicio de sesión que guardó en { -brand-short-name } en todos los dispositivos sincronizados con su { -fxaccount-brand-name }. Esto también eliminará las alertas de violaciones que aparecen aquí. No podrá deshacer esta acción.
-        [one] Esto eliminará todos los  inicios de sesión que guardó en { -brand-short-name } en todos los dispositivos sincronizados con su { -fxaccount-brand-name }. Esto también eliminará las alertas de violaciones que aparecen aquí. No podrá deshacer esta acción.
-       *[other] Esto eliminará todos los inicios de sesión que guardó en { -brand-short-name } en todos los dispositivos sincronizados con su { -fxaccount-brand-name }. Esto también eliminará las alertas de violaciones que aparecen aquí. No podrá deshacer esta acción.
+        [1] Esto eliminará el inicio de sesión que guardó en { -brand-short-name } en todos los dispositivos sincronizados con su { -fxaccount-brand-name }. Esto también eliminará las alertas de filtraciones que aparecen aquí. No podrá deshacer esta acción.
+        [one] Esto eliminará todos los  inicios de sesión que guardó en { -brand-short-name } en todos los dispositivos sincronizados con su { -fxaccount-brand-name }. Esto también eliminará las alertas de filtraciones que aparecen aquí. No podrá deshacer esta acción.
+       *[other] Esto eliminará todos los inicios de sesión que guardó en { -brand-short-name } en todos los dispositivos sincronizados con su { -fxaccount-brand-name }. Esto también eliminará las alertas de filtraciones que aparecen aquí. No podrá deshacer esta acción.
     }
+
+##
 
 about-logins-confirm-export-dialog-title = Exportar inicios de sesión y contraseñas
 about-logins-confirm-export-dialog-message = Sus contraseñas se guardarán como texto legible (por ejemplo, BadP@ssw0rd) para que cualquiera que pueda abrir el archivo exportado pueda verlas.
@@ -210,18 +229,17 @@ confirm-discard-changes-dialog-confirm-button = Descartar
 
 ## Breach Alert notification
 
-about-logins-breach-alert-title = Violación del sitio web
+about-logins-breach-alert-title = Filtración del sitio web
 breach-alert-text = Las contraseñas fueron filtradas o robadas de este sitio web desde la última vez que actualizó sus datos de inicio de sesión. Cambie su contraseña para proteger su cuenta.
-about-logins-breach-alert-date = Esta violación se produjo el { DATETIME($date, day: "numeric", month: "long", year: "numeric") }{ DATETIME($date, day: "numeric", month: "long", year: "numeric") }{ DATETIME($date, day: "numeric", month: "long", year: "numeric") }
+about-logins-breach-alert-date = Está filtración se produjo el { DATETIME($date, day: "numeric", month: "long", year: "numeric") }
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Vaya a { $hostname }
-about-logins-breach-alert-learn-more-link = Conocer más
 
 ## Vulnerable Password notification
 
 about-logins-vulnerable-alert-title = Contraseña vulnerable
-about-logins-vulnerable-alert-text2 = Esta contraseña se usó para otra cuenta que probablemente sufrió una violación de datos. Reutilizar credenciales pone en riesgo todas sus cuentas. Cambie esta contraseña.
+about-logins-vulnerable-alert-text2 = Esta contraseña se usó para otra cuenta que probablemente sufrió una filtración de datos. Reutilizar credenciales pone en riesgo todas sus cuentas. Cambie esta contraseña.
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-vulnerable-alert-link = Vaya a { $hostname }
@@ -244,7 +262,7 @@ about-logins-error-message-default = Se produjo un error al intentar guardar est
 about-logins-export-file-picker-title = Exportar archivo de inicios de sesión
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
-about-logins-export-file-picker-default-filename = inicios-de-sesión.csv
+about-logins-export-file-picker-default-filename = inicios-de-sesion.csv
 about-logins-export-file-picker-export-button = Exportar
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

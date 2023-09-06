@@ -17,7 +17,7 @@ about-telemetry-next-ping = >>
 about-telemetry-page-title = Nej sa ma Telemetry
 about-telemetry-current-store = Tiendâ nakàa:
 about-telemetry-more-information = Hua nuguan' nana'uî't doj aj.
-about-telemetry-firefox-data-doc = Sa <a data-l10n-name="data-doc-link"> nagi'iaj chre' si nuguà' Firefox <a> gu'nàj </a> nikaj chrej ganikò' da' nachrun' daran' si nuguàn'anj.
+about-telemetry-firefox-data-doc = Sa <a data-l10n-name="data-doc-link">nagi'iaj chre' si nuguà' Firefox</a> gu'nàj nikaj chrej ganikò' da' nachrun' daran' si nuguàn'anj.
 about-telemetry-telemetry-client-doc = Si <a data-l10n-name="client-doc-link"> Firefox Telemetrîa riña nachra chrej nuguan'an</a> nika daj gataj go'ngo nuguan'an ruhuaj, si nuguàn API ni ñanj màn chre' guendâ nej dâto.
 about-telemetry-telemetry-dashboard = Si <a data-l10n-name="dashboard-link">Panel Telemetrîa</a> ni a'nïn ni'io' daran' chre ne nuguan' nahuin ra'a Mozilla narikî Telemetrîa.
 about-telemetry-telemetry-probe-dictionary = Si <a data-l10n-name="probe-dictionary-link">Diksionariô Probe</a> nataj ndà niñun chre nej sa naran' Telemetrîa.
@@ -34,7 +34,6 @@ about-telemetry-events-section = Sùun
 about-telemetry-simple-measurements-section = Sa dodò' riñuun
 about-telemetry-slow-sql-section = Sa 'iaj naj SQL
 about-telemetry-addon-details-section = Daj hua sa nuto'
-about-telemetry-captured-stacks-section = Sa nahui Ñadu'ua
 about-telemetry-late-writes-section = Sa gachrûn rùn'
 about-telemetry-raw-payload-section = Sa nachra ma'an
 about-telemetry-raw = JSON nitaj si 'iaj sun
@@ -121,10 +120,6 @@ about-telemetry-keys-header = Sa nikaj ñu'un ma
 about-telemetry-names-header = Si yugui
 about-telemetry-values-header = Dàj du'ue man
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (Dàj nari ñadu'ua: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Sa gachrûn ràan #{ $lateWriteCount }
 about-telemetry-stack-title = Nagi'iaj chre'
@@ -135,12 +130,6 @@ about-telemetry-category-header = da' yi'ni'in
 about-telemetry-method-header = daj ganiko'
 about-telemetry-object-header = rasuun
 about-telemetry-extra-header = sa tàj a
-about-telemetry-origin-section = Telemetriâ gurugui' sinïin
-about-telemetry-origin-origin = danè' gahuij
-about-telemetry-origin-count = Guânda
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link"> Dàj gurugui' si Telemetria Firefox</a>Nagi'iaj chre' dâto hìaj gàchin ga'nïnjt{ $telemetryServerOwner } Ga'ue nataj rasuun { -brand-product-name } ruguñu'un guendâ nan. (<a data-l10n-name="prio-blog-link">gahuin chrun doj</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = Chrej ganikò' { $process }

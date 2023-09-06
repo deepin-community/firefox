@@ -6,7 +6,7 @@
 let httpsUri;
 
 registerCleanupFunction(async () => {
-  Services.prefs.clearUserPref("network.http.http3.enabled");
+  Services.prefs.clearUserPref("network.http.http3.enable");
   Services.prefs.clearUserPref("network.dns.localDomains");
   Services.prefs.clearUserPref("network.dns.disableIPv6");
   Services.prefs.clearUserPref(
@@ -15,16 +15,6 @@ registerCleanupFunction(async () => {
   Services.prefs.clearUserPref("network.http.http3.backup_timer_delay");
   dump("cleanup done\n");
 });
-
-function chanPromise(chan, listener) {
-  return new Promise(resolve => {
-    function finish() {
-      resolve();
-    }
-    listener.finish = finish;
-    chan.asyncOpen(listener);
-  });
-}
 
 function makeChan() {
   let chan = NetUtil.newChannel({
@@ -46,14 +36,10 @@ function altsvcSetupPromise(chan, listener) {
 }
 
 add_task(async function test_fatal_error() {
-  let env = Cc["@mozilla.org/process/environment;1"].getService(
-    Ci.nsIEnvironment
-  );
-
-  let h2Port = env.get("MOZHTTP2_PORT");
+  let h2Port = Services.env.get("MOZHTTP2_PORT");
   Assert.notEqual(h2Port, null);
 
-  Services.prefs.setBoolPref("network.http.http3.enabled", true);
+  Services.prefs.setBoolPref("network.http.http3.enable", true);
   Services.prefs.setCharPref("network.dns.localDomains", "foo.example.com");
   Services.prefs.setBoolPref("network.dns.disableIPv6", true);
   // Set AltSvc to point to not existing HTTP3 server on port 443
@@ -88,7 +74,7 @@ add_task(async function test_fatal_stream_error() {
   } while (result < 5);
 });
 
-let CheckOnlyHttp2Listener = function() {};
+let CheckOnlyHttp2Listener = function () {};
 
 CheckOnlyHttp2Listener.prototype = {
   onStartRequest: function testOnStartRequest(request) {},

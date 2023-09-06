@@ -35,8 +35,7 @@
 #include "nsStringStream.h"
 #include "nsURLHelper.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(URLSearchParams, mParent, mObserver)
 NS_IMPL_CYCLE_COLLECTING_ADDREF(URLSearchParams)
@@ -103,6 +102,8 @@ void URLSearchParams::ParseInput(const nsACString& aInput) {
   mParams->ParseInput(aInput);
 }
 
+uint32_t URLSearchParams::Size() const { return mParams->Length(); }
+
 void URLSearchParams::Get(const nsAString& aName, nsString& aRetval) {
   return mParams->Get(aName, aRetval);
 }
@@ -122,19 +123,29 @@ void URLSearchParams::Append(const nsAString& aName, const nsAString& aValue) {
   NotifyObserver();
 }
 
-bool URLSearchParams::Has(const nsAString& aName) {
-  return mParams->Has(aName);
+bool URLSearchParams::Has(const nsAString& aName,
+                          const Optional<nsAString>& aValue) {
+  if (!aValue.WasPassed()) {
+    return mParams->Has(aName);
+  }
+  return mParams->Has(aName, aValue.Value());
 }
 
-void URLSearchParams::Delete(const nsAString& aName) {
-  mParams->Delete(aName);
+void URLSearchParams::Delete(const nsAString& aName,
+                             const Optional<nsAString>& aValue) {
+  if (!aValue.WasPassed()) {
+    mParams->Delete(aName);
+    NotifyObserver();
+    return;
+  }
+  mParams->Delete(aName, aValue.Value());
   NotifyObserver();
 }
 
 void URLSearchParams::DeleteAll() { mParams->DeleteAll(); }
 
 void URLSearchParams::Serialize(nsAString& aValue) const {
-  mParams->Serialize(aValue);
+  mParams->Serialize(aValue, true);
 }
 
 void URLSearchParams::NotifyObserver() {
@@ -184,10 +195,10 @@ bool URLSearchParams::ReadStructuredClone(JSStructuredCloneReader* aReader) {
 
   uint32_t nParams, zero;
   nsAutoString key, value;
-  if (!JS_ReadUint32Pair(aReader, &nParams, &zero)) {
+  if (!JS_ReadUint32Pair(aReader, &nParams, &zero) || zero != 0) {
     return false;
   }
-  MOZ_ASSERT(zero == 0);
+
   for (uint32_t i = 0; i < nParams; ++i) {
     if (!StructuredCloneHolder::ReadString(aReader, key) ||
         !StructuredCloneHolder::ReadString(aReader, value)) {
@@ -232,5 +243,4 @@ nsresult URLSearchParams::GetSendInfo(nsIInputStream** aBody,
   return NS_NewCStringInputStream(aBody, std::move(converted));
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

@@ -2,22 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, unicode_literals
-
 import subprocess
 
 import mozunit
 import pytest
 
-from mozversioncontrol import (
-    get_repository_object,
-    MissingVCSExtension,
-)
+from mozversioncontrol import MissingVCSExtension, get_repository_object
 
 
 def test_push_to_try(repo, monkeypatch):
     commit_message = "commit message"
-    vcs = get_repository_object(repo.strpath)
+    vcs = get_repository_object(repo.dir)
 
     captured_commands = []
 
@@ -32,14 +27,14 @@ def test_push_to_try(repo, monkeypatch):
 
     if repo.vcs == "hg":
         expected = [
-            (tool, "push-to-try", "-m", commit_message),
-            (tool, "revert", "-a"),
+            (str(tool), "push-to-try", "-m", commit_message),
+            (str(tool), "revert", "-a"),
         ]
     else:
         expected = [
-            (tool, "cinnabar", "--version"),
+            (str(tool), "cinnabar", "--version"),
             (
-                tool,
+                str(tool),
                 "-c",
                 "commit.gpgSign=false",
                 "commit",
@@ -48,12 +43,12 @@ def test_push_to_try(repo, monkeypatch):
                 commit_message,
             ),
             (
-                tool,
+                str(tool),
                 "push",
                 "hg::ssh://hg.mozilla.org/try",
                 "+HEAD:refs/heads/branches/default/tip",
             ),
-            (tool, "reset", "HEAD~"),
+            (str(tool), "reset", "HEAD~"),
         ]
 
     for i, value in enumerate(captured_commands):
@@ -66,7 +61,7 @@ def test_push_to_try_missing_extensions(repo, monkeypatch):
     if repo.vcs != "git":
         return
 
-    vcs = get_repository_object(repo.strpath)
+    vcs = get_repository_object(repo.dir)
 
     orig = vcs._run
 

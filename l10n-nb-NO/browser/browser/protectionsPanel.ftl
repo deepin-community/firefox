@@ -63,7 +63,6 @@ protections-panel-not-found-label = Ingen oppdaget
 ##
 
 protections-panel-settings-label = Innstillinger for beskyttelse
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Sikkerhetsoversikt
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -78,6 +77,7 @@ protections-panel-site-not-working-view-issue-list-forms = Skjemaer
 protections-panel-site-not-working-view-issue-list-payments = Betalinger
 protections-panel-site-not-working-view-issue-list-comments = Kommentarer
 protections-panel-site-not-working-view-issue-list-videos = Videoer
+protections-panel-site-not-working-view-issue-list-fonts = Skrifttyper
 
 protections-panel-site-not-working-view-send-report = Send inn en rapport
 
@@ -101,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Rapporter problem med et nettsted
 protections-panel-content-blocking-breakage-report-view-description = Blokkering av visse sporere kan føre til problemer med enkelte nettsteder. Rapportering av disse problemene er med på å gjøre { -brand-short-name } bedre for alle. Ved sending av denne rapporten vil du sende en URL og informasjon om nettleserinnstillingene dine, til Mozilla. <label data-l10n-name="learn-more">Les mer</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Blokkering av visse sporere kan føre til problemer med enkelte nettsteder. Rapportering av disse problemene er med på å gjøre { -brand-short-name } bedre for alle. Ved sending av denne rapporten vil du sende en URL og informasjon om nettleserinnstillingene dine, til { -vendor-short-name }.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL-adresse
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL-adresse
@@ -111,3 +112,22 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Avbryt
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Send rapport
+
+# Cookie Banner Handling
+
+protections-panel-cookie-banner-handling-header = Redusering av infokapselbanner
+protections-panel-cookie-banner-handling-enabled = På for dette nettstedet
+protections-panel-cookie-banner-handling-disabled = Av for dette nettstedet
+protections-panel-cookie-banner-handling-undetected = Nettstedet støttes for øyeblikket ikke
+
+protections-panel-cookie-banner-view-title =
+    .title = Redusering av infokapselbanner
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = Vil du slå av reduksjon av infokapselbannere for { $host }?
+protections-panel-cookie-banner-view-turn-on-for-site = Vil du slå på reduksjon av infokapselbannere for dette nettstedet?
+protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } vill slette infokapsler og oppdatere siden. Sletting av alle infokapsler kan føre til at du blir logget ut eller at handlekurver blir tømt.
+protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } prøver å automatisk avvise alle infokapselforespørsler på støttede nettsteder.
+protections-panel-cookie-banner-view-cancel = Avbryt
+protections-panel-cookie-banner-view-turn-off = Slå av
+protections-panel-cookie-banner-view-turn-on = Slå på

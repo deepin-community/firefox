@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Байланыс баптаулары
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -76,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = и
     .tooltip = Бұл баптау тіркелгі ақпараты сақталған прокси серверлерде тыныш аутентификацияны жасайды. Аутентификация сәтсіз болса, тіркелгі ақпараты сізден сұралады.
 
+connection-proxy-autologin-checkbox =
+    .label = Пароль сақталып тұрса, аутентификацияны сұрамау
+    .accesskey = и
+    .tooltiptext = Бұл баптау тіркелгі ақпараты сақталған прокси серверлерде тыныш аутентификацияны жасайды. Аутентификация сәтсіз болса, тіркелгі ақпараты сізден сұралады.
+
 connection-proxy-socks-remote-dns =
     .label = SOCKS v5 қолдану кезінде DNS сұранымдарын прокси арқылы жіберу
     .accesskey = д
-
-connection-dns-over-https =
-    .label = HTTPS арқылы DNS іске қосу
-    .accesskey = ы
-
-connection-dns-over-https-url-resolver = Провайдерді қолдану
-    .accesskey = п
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

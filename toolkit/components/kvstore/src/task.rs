@@ -44,9 +44,9 @@ type SingleStore = rkv::SingleStore<SafeModeDatabase>;
 macro_rules! task_done {
     (value) => {
         fn done(&self) -> Result<(), nsresult> {
-            // If TaskRunnable.run() calls Task.done() to return a result
-            // on the main thread before TaskRunnable.run() returns on the database
-            // thread, then the Task will get dropped on the database thread.
+            // If TaskRunnable calls Task.done() to return a result on the
+            // main thread before TaskRunnable returns on the database thread,
+            // then the Task will get dropped on the database thread.
             //
             // But the callback is an nsXPCWrappedJS that isn't safe to release
             // on the database thread.  So we move it out of the Task here to ensure
@@ -65,9 +65,9 @@ macro_rules! task_done {
 
     (void) => {
         fn done(&self) -> Result<(), nsresult> {
-            // If TaskRunnable.run() calls Task.done() to return a result
-            // on the main thread before TaskRunnable.run() returns on the database
-            // thread, then the Task will get dropped on the database thread.
+            // If TaskRunnable calls Task.done() to return a result on the
+            // main thread before TaskRunnable returns on the database thread,
+            // then the Task will get dropped on the database thread.
             //
             // But the callback is an nsXPCWrappedJS that isn't safe to release
             // on the database thread.  So we move it out of the Task here to ensure
@@ -278,7 +278,15 @@ impl Task for PutTask {
                     Err(err) => return Err(KeyValueError::StoreError(err)),
                 }
 
-                writer.commit()?;
+                // Ignore errors caused by simultaneous access.
+                // We intend to investigate/revert this in bug 1810212.
+                match writer.commit() {
+                    Err(StoreError::IoError(e)) if e.kind() == std::io::ErrorKind::NotFound => {
+                        // Explicitly ignore errors from simultaneous access.
+                    }
+                    Err(e) => return Err(From::from(e)),
+                    _ => (),
+                };
                 break;
             }
 
@@ -383,7 +391,15 @@ impl Task for WriteManyTask {
                     }
                 }
 
-                writer.commit()?;
+                // Ignore errors caused by simultaneous access.
+                // We intend to investigate/revert this in bug 1810212.
+                match writer.commit() {
+                    Err(StoreError::IoError(e)) if e.kind() == std::io::ErrorKind::NotFound => {
+                        // Explicitly ignore errors from simultaneous access.
+                    }
+                    Err(e) => return Err(From::from(e)),
+                    _ => (),
+                };
                 break; // 'outer: loop
             }
 
@@ -543,7 +559,15 @@ impl Task for DeleteTask {
                 Err(err) => return Err(KeyValueError::StoreError(err)),
             };
 
-            writer.commit()?;
+            // Ignore errors caused by simultaneous access.
+            // We intend to investigate/revert this in bug 1810212.
+            match writer.commit() {
+                Err(StoreError::IoError(e)) if e.kind() == std::io::ErrorKind::NotFound => {
+                    // Explicitly ignore errors from simultaneous access.
+                }
+                Err(e) => return Err(From::from(e)),
+                _ => (),
+            };
 
             Ok(())
         }()));
@@ -582,7 +606,15 @@ impl Task for ClearTask {
             let env = self.rkv.read()?;
             let mut writer = env.write()?;
             self.store.clear(&mut writer)?;
-            writer.commit()?;
+            // Ignore errors caused by simultaneous access.
+            // We intend to investigate/revert this in bug 1810212.
+            match writer.commit() {
+                Err(StoreError::IoError(e)) if e.kind() == std::io::ErrorKind::NotFound => {
+                    // Explicitly ignore errors from simultaneous access.
+                }
+                Err(e) => return Err(From::from(e)),
+                _ => (),
+            };
 
             Ok(())
         }()));

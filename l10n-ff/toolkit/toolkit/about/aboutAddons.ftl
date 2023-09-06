@@ -4,8 +4,11 @@
 
 addons-page-title = Topitorde Ɓeyditte
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
+
 
 list-empty-installed =
     .value = A alaa hay ɓeydital gootal aafaangal e oo fannu
@@ -141,7 +144,6 @@ extensions-warning-update-security = Ƴeewtagol kisnal ɓeyditte koko daaƴaa. A
 extensions-warning-update-security-button = Daaƴtu
     .title = Daaƴtu ƴeewtagol kisnal ɓeyditte
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = Yuurno kesɗitine
@@ -194,8 +196,12 @@ addon-open-about-debugging = Buggito Ɓeyditte
 ## Pending uninstall message bar
 
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
+
 
 ##
 
@@ -203,3 +209,29 @@ addon-open-about-debugging = Buggito Ɓeyditte
 
 addon-page-options-button =
     .title = Kuutorɗe ɓeyditte fof
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } jaaɓdaani e { -brand-short-name } { $version }.
+
+details-notification-unsigned-and-disabled = { $name } horiima ƴeewteede ngam huutoraade e { -brand-short-name } tee daaƴaama kisa.
+details-notification-unsigned-and-disabled-link = Ɓeydu Humpito
+
+details-notification-unsigned = { $name } horiima ƴeewteede ngam huutoraade e { -brand-short-name }. Waɗtu heen hakkille.
+details-notification-unsigned-link = Ɓeydu Humpito
+
+details-notification-blocked = { $name } daaƴaama sabu caɗe kisal walla jamɗugol.
+details-notification-blocked-link = Ɓeydu Humpito
+
+details-notification-softblocked = { $name } ena anndiraa addude caɗe kisal walla jamɗugol.
+details-notification-softblocked-link = Ɓeydu Humpito
+
+details-notification-gmp-pending = { $name } maa aafe ko leelaani.

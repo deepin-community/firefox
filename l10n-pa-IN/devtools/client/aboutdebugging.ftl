@@ -54,6 +54,10 @@ about-debugging-sidebar-item-connect-button-connecting = …ਕਨੈਕਟ ਕ�
 # Text displayed in buttons found in sidebar items when the connection failed.
 about-debugging-sidebar-item-connect-button-connection-failed = ਕਨੈਕਸ਼ਨ ਅਸਫ਼ਲ ਹੈ
 
+# Text displayed in connection warning on sidebar item of the runtime when connecting to
+# the runtime is taking too much time.
+about-debugging-sidebar-item-connect-button-connection-not-responding = ਕਨੈਕਸ਼ਨ ਹਾਲੇ ਵੀ ਬਕਾਇਆ ਹੈ, ਟਾਗਰੇਟ ਬਰਾਊਜ਼ਰ ਉੱਤੇ ਸੁਨੇਹਿਆਂ ਦੀ ਜਾਂਚ ਕਰੋ।
+
 # Text displayed as connection error in sidebar item when the connection has timed out.
 about-debugging-sidebar-item-connect-button-connection-timeout = ਕਨੈਕਸ਼ਨ ਲਈ ਸਮਾਂ ਸਮਾਪਤ
 
@@ -75,7 +79,7 @@ about-debugging-sidebar-runtime-item-name-no-device =
     .title = { $displayName }
 
 # Text to show in the footer of the sidebar that links to a help page
-# (currently: https://developer.mozilla.org/docs/Tools/about:debugging)
+# (currently: https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/)
 about-debugging-sidebar-support = ਡੀਬੱਗਿੰਗ ਸਹਿਯੋਗ
 
 # Text to show as the ALT attribute of a help icon that accompanies the help about
@@ -127,7 +131,7 @@ about-debugging-setup-usb-step-enable-debug-firefox2 = ਐਂਡਰਾਇਡ ਡ
 about-debugging-setup-usb-step-plug-device = ਐਂਡਰਾਈਡ ਡਿਵਾਈਸ ਨੂੰ ਆਪਣੇ ਕੰਪਿਊਟਰ ਨਾਲ ਕਨੈਕਟ ਕਰੋ।
 
 # Text shown in the USB section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/docs/Tools/Remote_Debugging/Debugging_over_USB
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-to-a-remote-device
 about-debugging-setup-usb-troubleshoot = ਕੀ USB ਡਿਵਾਈਸ ਨਾਲ ਕਨੈਕਟ ਕਰਨ ਸਮੱਸਿਆਵਾਂ ਹਨ? <a>ਹੱਲ਼ ਲੱਭੋ</a>
 
 # Network section of the Setup page
@@ -135,7 +139,7 @@ about-debugging-setup-network =
     .title = ਨੈੱਟਵਰਕ ਟਿਕਾਣਾ
 
 # Text shown in the Network section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/en-US/docs/Tools/Remote_Debugging/Debugging_over_a_network
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-over-the-network
 about-debugging-setup-network-troubleshoot = ਨੈਟਵਰਕ ਟਿਕਾਣਾ ਰਾਹੀਂ ਕਨੈਕਟ ਕਰਨ ਦੌਰਾਨ ਸਮੱਸਿਆਵਾਂ ਹਨ? <a>ਸਮੱਸਿਆ ਨਾਲ ਨਿਪਟੋ</a>
 
 # Text of a button displayed after the network locations "Host" input.
@@ -153,6 +157,11 @@ about-debugging-network-locations-host-input-label = ਹੋਸਟ
 # Text of a button displayed next to existing network locations in the Connect page.
 # Clicking on it removes the network location from the list.
 about-debugging-network-locations-remove-button = ਹਟਾਓ
+
+# Text used as error message if the input value was already registered in the network locations form of the Setup page.
+# Variables:
+#   $host-value (string) - The input value submitted by the user in the network locations form
+about-debugging-network-location-form-duplicate = “{ $host-value }” ਹੋਸਟ ਪਹਿਲਾਂ ਹੀ ਰਜਿਸਟਰ ਹੈ
 
 # Runtime Page strings
 
@@ -235,6 +244,12 @@ about-debugging-tmp-extension-reload-button = ਮੁੜ-ਲੋਡ ਕਰੋ
 # Clicking on the button will uninstall the extension and remove it from the page.
 about-debugging-tmp-extension-remove-button = ਹਟਾਓ
 
+# Text of a button displayed for a temporary extension loaded in the "This Firefox" page.
+# Clicking on the button will forcefully terminate the extension background script (button
+# only visible in extensions that includes a non-persistent background script, either an
+# event page or a background service worker).
+about-debugging-tmp-extension-terminate-bgscript-button = ਬੈਕਗਰਾਊਂਡ ਸਕ੍ਰਿਪਟ ਨੂੰ ਖਤਮ ਕਰੋ
+
 # Message displayed in the file picker that opens to select a temporary extension to load
 # (triggered by the button using "about-debugging-tmp-extension-install-button")
 # manifest.json .xpi and .zip should not be localized.
@@ -263,6 +278,22 @@ about-debugging-extension-location =
 # For instance "geckoprofiler@mozilla.com" or "{ed26ddcb-5611-4512-a89a-51b8db81cfb2}".
 about-debugging-extension-id =
     .label = ਇਕਸਟੈਂਸ਼ਨ ਆਈਡੀ
+
+# Text displayed for extensions in "runtime" pages, before displaying the status of the
+# extension background script.
+about-debugging-extension-backgroundscript =
+    .label = ਬੈਕਗਰਾਊਂਡ ਸਕ੍ਰਿਪਟ
+
+# Displayed for extension using a non-persistent background page (either an event page or
+# background service worker) when the background script is currently running.
+about-debugging-extension-backgroundscript-status-running = ਚੱਲ-ਰਹੇ
+
+# Displayed for extension using a non-persistent background page when is currently stopped.
+about-debugging-extension-backgroundscript-status-stopped = ਰੁਕੇ
+
+# This string is displayed as a label of the button that starts a service worker.
+about-debugging-worker-action-start2 = ਸ਼ੁਰੂ ਕਰੋ
+    .disabledTitle = ਇਸ ਵੇਲੇ { -brand-shorter-name } ਦੀਆਂ ਬਹੁਤੀਆਂ ਕਾਰਵਾਈਆਂ ਲਈ ਸੇਵਾਵਾਂ ਵਾਲੇ ਕਾਮੇ ਦੀ ਸ਼ੁਰੂਆਤ ਕਰਨ ਨੂੰ ਬੰਦ ਕੀਤਾ ਹੋਇਆ ਹੈ
 
 # This string is displayed as a label of the button that unregisters a service worker.
 about-debugging-worker-action-unregister = ਅਣ-ਰਜਿਸਟਰ ਕਰੋ
@@ -295,14 +326,6 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = ਪੁਸ਼ ਸੇਵਾ
-
-# Displayed as name for the Main Process debug target in the Processes category. Only for
-# remote runtimes, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-name = ਮੁੱਖ ਕਿਰਿਆ
-
-# Displayed as description for the Main Process debug target in the Processes category.
-# Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-description2 = ਨਿਸ਼ਾਨਾ ਬ੍ਰਾਊਜ਼ਰ ਲਈ ਮੁੱਖ ਪ੍ਰਕਿਰਿਆ
 
 # Alt text used for the close icon of message component (warnings, errors and notifications).
 about-debugging-message-close-icon =

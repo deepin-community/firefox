@@ -2,54 +2,48 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
 import itertools
 import json
-from operator import itemgetter
 import os
-import six
-
 from collections import defaultdict
+from operator import itemgetter
 
 import mozpack.path as mozpath
+import six
+from mozpack.chrome.manifest import parse_manifest_line
 
 from mozbuild.backend.base import BuildBackend
-
 from mozbuild.frontend.context import (
+    VARIABLES,
     Context,
     ObjDirPath,
     Path,
     RenamedSourcePath,
-    VARIABLES,
 )
 from mozbuild.frontend.data import (
     BaseProgram,
     ChromeManifestEntry,
     ConfigFileSubstitution,
     Exports,
-    FinalTargetPreprocessedFiles,
     FinalTargetFiles,
+    FinalTargetPreprocessedFiles,
     GeneratedFile,
-    GeneratedSources,
-    GnProjectData,
     HostLibrary,
-    HostGeneratedSources,
+    HostSources,
     IPDLCollection,
-    LocalizedPreprocessedFiles,
     LocalizedFiles,
+    LocalizedPreprocessedFiles,
     SandboxedWasmLibrary,
     SharedLibrary,
+    Sources,
     StaticLibrary,
     UnifiedSources,
-    XPIDLModule,
-    XPCOMComponentManifests,
     WebIDLCollection,
+    XPCOMComponentManifests,
+    XPIDLModule,
 )
 from mozbuild.jar import DeprecatedJarManifest, JarManifestParser
 from mozbuild.preprocessor import Preprocessor
-from mozpack.chrome.manifest import parse_manifest_line
-
 from mozbuild.util import mkdir
 
 
@@ -137,24 +131,20 @@ class CommonBackend(BuildBackend):
             self._handle_webidl_collection(obj)
 
         elif isinstance(obj, IPDLCollection):
-            self._handle_generated_sources(
-                mozpath.join(obj.objdir, f) for f in obj.all_generated_sources()
-            )
-            self._write_unified_files(
-                obj.unified_source_mapping, obj.objdir, poison_windows_h=False
-            )
             self._handle_ipdl_sources(
                 obj.objdir,
                 list(sorted(obj.all_sources())),
                 list(sorted(obj.all_preprocessed_sources())),
                 list(sorted(obj.all_regular_sources())),
-                obj.unified_source_mapping,
             )
 
         elif isinstance(obj, XPCOMComponentManifests):
             self._handle_xpcom_collection(obj)
 
         elif isinstance(obj, UnifiedSources):
+            if obj.generated_files:
+                self._handle_generated_sources(obj.generated_files)
+
             # Unified sources aren't relevant to artifact builds.
             if self.environment.is_artifact_build:
                 return True
@@ -174,16 +164,13 @@ class CommonBackend(BuildBackend):
 
         elif isinstance(obj, SandboxedWasmLibrary):
             self._handle_generated_sources(
-                [
-                    mozpath.join(
-                        obj.relobjdir, f"{obj.lib_name}.{obj._obj_suffix()}.c"
-                    ),
-                ]
+                [mozpath.join(obj.relobjdir, f"{obj.basename}.h")]
             )
             return False
 
-        elif isinstance(obj, (GeneratedSources, HostGeneratedSources)):
-            self._handle_generated_sources(obj.files)
+        elif isinstance(obj, (Sources, HostSources)):
+            if obj.generated_files:
+                self._handle_generated_sources(obj.generated_files)
             return False
 
         elif isinstance(obj, GeneratedFile):
@@ -205,11 +192,6 @@ class CommonBackend(BuildBackend):
             if objdir_files:
                 self._handle_generated_sources(objdir_files)
             return False
-
-        elif isinstance(obj, GnProjectData):
-            # These are only handled by special purpose build backends,
-            # ignore them here.
-            return True
 
         else:
             return False
@@ -597,9 +579,7 @@ class CommonBackend(BuildBackend):
         """Write out a rust file which includes the generated xpcom rust modules"""
         topobjdir = self.environment.topobjdir
 
-        include_tmpl = (
-            'include!(concat!(env!("MOZ_TOPOBJDIR"), "/dist/xpcrs/%s/%s.rs"))'
-        )
+        include_tmpl = 'include!(mozbuild::objdir_path!("dist/xpcrs/%s/%s.rs"))'
 
         # Ensure deterministic output files.
         stems = sorted(manager.idl_stems())

@@ -8,7 +8,7 @@ def _assign_slots(obj, args):
 
 
 class Longhand(object):
-    __slots__ = ["name", "method", "id", "rules", "flags", "pref"]
+    __slots__ = ["name", "method", "id", "rules", "flags", "pref", "aliases"]
 
     def __init__(self, *args):
         _assign_slots(self, args)
@@ -19,7 +19,7 @@ class Longhand(object):
 
 
 class Shorthand(object):
-    __slots__ = ["name", "method", "id", "rules", "flags", "pref", "subprops"]
+    __slots__ = ["name", "method", "id", "rules", "flags", "pref", "subprops", "aliases"]
 
     def __init__(self, *args):
         _assign_slots(self, args)
@@ -58,9 +58,6 @@ LONGHANDS_NOT_SERIALIZED_WITH_SERVO = [
     # Servo serializes one value when both are the same, a few tests expect two.
     "border-spacing",
 
-    # Resolved value should be zero when the column-rule-style is none.
-    "column-rule-width",
-
     # These resolve auto to zero in a few cases, but not all.
     "max-height",
     "max-width",
@@ -73,7 +70,6 @@ LONGHANDS_NOT_SERIALIZED_WITH_SERVO = [
     # Layout dependent.
     "width",
     "height",
-    "line-height",
     "grid-template-rows",
     "grid-template-columns",
     "perspective-origin",
@@ -98,11 +94,8 @@ LONGHANDS_NOT_SERIALIZED_WITH_SERVO = [
 ]
 
 def serialized_by_servo(prop):
-    if prop.type() == "shorthand":
-        # FIXME: Need to serialize a value interpolated with currentcolor
-        # properly to be able to use text-decoration, and figure out what to do
-        # with relative mask urls.
-        return prop.name != "text-decoration" and prop.name != "mask"
+    if prop.type() == "shorthand" or prop.type() == "alias":
+        return True
     # Keywords are all fine, except -moz-osx-font-smoothing, which does
     # resistfingerprinting stuff.
     if prop.keyword and prop.name != "-moz-osx-font-smoothing":
@@ -112,11 +105,9 @@ def serialized_by_servo(prop):
 def exposed_on_getcs(prop):
     if "Style" not in prop.rule_types_allowed_names():
         return False
-    if prop.type() == "longhand":
-        return not is_internal(prop)
-    # TODO: bug 137688 / https://github.com/w3c/csswg-drafts/issues/2529
-    if prop.type() == "shorthand":
-        return "SHORTHAND_IN_GETCS" in prop.flags
+    if is_internal(prop):
+        return False
+    return True
 
 def rules(prop):
     return ", ".join('"{}"'.format(rule) for rule in prop.rule_types_allowed_names())
@@ -135,6 +126,8 @@ def flags(prop):
         result.append("CanAnimateOnCompositor")
     if exposed_on_getcs(prop):
         result.append("ExposedOnGetCS")
+        if prop.type() == "shorthand" and "SHORTHAND_IN_GETCS" in prop.flags:
+            result.append("ShorthandUnconditionallyExposedOnGetCS")
         if serialized_by_servo(prop):
             result.append("SerializedByServo")
     if prop.type() == "longhand" and prop.logical:
@@ -148,19 +141,21 @@ def pref(prop):
 
 def sub_properties(prop):
     return ", ".join('"{}"'.format(p.ident) for p in prop.sub_properties)
+
+def aliases(prop):
+    return ", ".join('"{}"'.format(p.ident) for p in prop.aliases)
 %>
 
-data = [
-    % for prop in data.longhands:
-    Longhand("${prop.name}", "${method(prop)}", "${prop.ident}", [${rules(prop)}], [${flags(prop)}], ${pref(prop)}),
-    % endfor
+data = {
+% for prop in data.longhands:
+    "${prop.ident}": Longhand("${prop.name}", "${method(prop)}", "${prop.ident}", [${rules(prop)}], [${flags(prop)}], ${pref(prop)}, [${aliases(prop)}]),
+% endfor
 
-    % for prop in data.shorthands:
-    Shorthand("${prop.name}", "${prop.camel_case}", "${prop.ident}", [${rules(prop)}], [${flags(prop)}], ${pref(prop)},
-              [${sub_properties(prop)}]),
-    % endfor
+% for prop in data.shorthands:
+    "${prop.ident}": Shorthand("${prop.name}", "${prop.camel_case}", "${prop.ident}", [${rules(prop)}], [${flags(prop)}], ${pref(prop)}, [${sub_properties(prop)}], [${aliases(prop)}]),
+% endfor
 
-    % for prop in data.all_aliases():
-    Alias("${prop.name}", "${prop.camel_case}", "${prop.ident}", "${prop.original.ident}", [${rules(prop)}], [], ${pref(prop)}),
-    % endfor
-]
+% for prop in data.all_aliases():
+    "${prop.ident}": Alias("${prop.name}", "${prop.camel_case}", "${prop.ident}", "${prop.original.ident}", [${rules(prop)}], [${flags(prop)}], ${pref(prop)}),
+% endfor
+}

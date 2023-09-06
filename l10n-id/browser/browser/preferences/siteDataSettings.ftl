@@ -59,5 +59,8 @@ site-data-removing-dialog =
 site-data-removing-header = Menghapus Kuki dan Data Situs
 
 site-data-removing-desc = Menghapus kuki dan data situs mungkin mengeluarkan Anda dari situs web. Yakin ingin melakukannya?
+# Variables:
+#   $baseDomain (String) - The single domain for which data is being removed
+site-data-removing-single-desc = Menghapus kuki dan data situs mungkin mengeluarkan Anda dari situs web. Yakin ingin menghapus kuki dan data situs untuk <strong>{ $baseDomain }</strong>?
 
 site-data-removing-table = Kuki dan data situs untuk situs web berikut ini akan dihapus

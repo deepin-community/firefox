@@ -7,9 +7,35 @@
 
 #include "nsGNOMEShellSearchProvider.h"
 
-#include "nsPrintfCString.h"
 #include "RemoteUtils.h"
+#include "nsIStringBundle.h"
 #include "nsServiceManagerUtils.h"
+#include "nsPrintfCString.h"
+#include "mozilla/XREAppData.h"
+#include "nsAppRunner.h"
+
+#define DBUS_BUS_NAME_TEMPLATE "org.mozilla.%s.SearchProvider"
+#define DBUS_OBJECT_PATH_TEMPLATE "/org/mozilla/%s/SearchProvider"
+
+const char* GetDBusBusName() {
+  static const char* name = []() {
+    nsAutoCString appName;
+    gAppData->GetDBusAppName(appName);
+    return ToNewCString(nsPrintfCString(DBUS_BUS_NAME_TEMPLATE,
+                                        appName.get()));  // Intentionally leak
+  }();
+  return name;
+}
+
+const char* GetDBusObjectPath() {
+  static const char* path = []() {
+    nsAutoCString appName;
+    gAppData->GetDBusAppName(appName);
+    return ToNewCString(nsPrintfCString(DBUS_OBJECT_PATH_TEMPLATE,
+                                        appName.get()));  // Intentionally leak
+  }();
+  return path;
+}
 
 static bool GetGnomeSearchTitle(const char* aSearchedTerm,
                                 nsAutoCString& aGnomeSearchTitle) {
@@ -32,7 +58,7 @@ static bool GetGnomeSearchTitle(const char* aSearchedTerm,
   CopyUTF8toUTF16(nsCString(aSearchedTerm), *formatStrings.AppendElement());
 
   nsAutoString gnomeSearchTitle;
-  bundle->FormatStringFromName("gnomeSearchProviderSearch", formatStrings,
+  bundle->FormatStringFromName("gnomeSearchProviderSearchWeb", formatStrings,
                                gnomeSearchTitle);
   AppendUTF16toUTF8(gnomeSearchTitle, aGnomeSearchTitle);
   return true;
@@ -99,6 +125,15 @@ int DBusGetIndexFromIDKey(const char* aIDKey) {
   return atoi(tmp);
 }
 
+static void ConcatArray(nsACString& aOutputStr, const char** aStringArray) {
+  for (const char** term = aStringArray; *term; term++) {
+    aOutputStr.Append(*term);
+    if (*(term + 1)) {
+      aOutputStr.Append(" ");
+    }
+  }
+}
+
 DBusHandlerResult DBusHandleInitialResultSet(
     RefPtr<nsGNOMEShellHistorySearchResult> aSearchResult, DBusMessage* aMsg) {
   DBusMessage* reply;
@@ -108,12 +143,14 @@ DBusHandlerResult DBusHandleInitialResultSet(
   if (!dbus_message_get_args(aMsg, nullptr, DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
                              &stringArray, &elements, DBUS_TYPE_INVALID) ||
       elements == 0) {
-    reply = dbus_message_new_error(aMsg, DBUS_BUS_NAME, "Wrong argument");
+    reply = dbus_message_new_error(aMsg, GetDBusBusName(), "Wrong argument");
     dbus_connection_send(aSearchResult->GetDBusConnection(), reply, nullptr);
     dbus_message_unref(reply);
   } else {
     aSearchResult->SetReply(dbus_message_new_method_return(aMsg));
-    aSearchResult->SetSearchTerm(stringArray[0]);
+    nsAutoCString searchTerm;
+    ConcatArray(searchTerm, const_cast<const char**>(stringArray));
+    aSearchResult->SetSearchTerm(searchTerm.get());
     GetGNOMEShellHistoryService()->QueryHistory(aSearchResult);
     // DBus reply will be send asynchronously by
     // nsGNOMEShellHistorySearchResult::SendDBusSearchResultReply()
@@ -139,12 +176,14 @@ DBusHandlerResult DBusHandleSubsearchResultSet(
                              DBUS_TYPE_STRING, &stringArray, &elements,
                              DBUS_TYPE_INVALID) ||
       elements == 0) {
-    reply = dbus_message_new_error(aMsg, DBUS_BUS_NAME, "Wrong argument");
+    reply = dbus_message_new_error(aMsg, GetDBusBusName(), "Wrong argument");
     dbus_connection_send(aSearchResult->GetDBusConnection(), reply, nullptr);
     dbus_message_unref(reply);
   } else {
     aSearchResult->SetReply(dbus_message_new_method_return(aMsg));
-    aSearchResult->SetSearchTerm(stringArray[0]);
+    nsAutoCString searchTerm;
+    ConcatArray(searchTerm, const_cast<const char**>(stringArray));
+    aSearchResult->SetSearchTerm(searchTerm.get());
     GetGNOMEShellHistoryService()->QueryHistory(aSearchResult);
     // DBus reply will be send asynchronously by
     // nsGNOMEShellHistorySearchResult::SendDBusSearchResultReply()
@@ -300,7 +339,7 @@ DBusHandlerResult DBusHandleResultMetas(
   if (!dbus_message_get_args(aMsg, nullptr, DBUS_TYPE_ARRAY, DBUS_TYPE_STRING,
                              &stringArray, &elements, DBUS_TYPE_INVALID) ||
       elements == 0) {
-    reply = dbus_message_new_error(aMsg, DBUS_BUS_NAME, "Wrong argument");
+    reply = dbus_message_new_error(aMsg, GetDBusBusName(), "Wrong argument");
   } else {
     reply = dbus_message_new_method_return(aMsg);
 
@@ -343,7 +382,8 @@ static void ActivateResultID(
       0) {
     const char* urlList[3] = {"unused", "--search",
                               aSearchResult->GetSearchTerm().get()};
-    commandLine = ConstructCommandLine(3, (char**)urlList, nullptr, &tmp);
+    commandLine = ConstructCommandLine(std::size(urlList), (char**)urlList,
+                                       nullptr, &tmp);
   } else {
     int keyIndex = atoi(aResultID);
     nsCOMPtr<nsINavHistoryResultNode> child;
@@ -360,7 +400,8 @@ static void ActivateResultID(
     }
 
     const char* urlList[2] = {"unused", uri.get()};
-    commandLine = ConstructCommandLine(2, (char**)urlList, nullptr, &tmp);
+    commandLine = ConstructCommandLine(std::size(urlList), (char**)urlList,
+                                       nullptr, &tmp);
   }
 
   if (commandLine) {
@@ -440,7 +481,7 @@ DBusHandlerResult DBusActivateResult(
                              &elements, DBUS_TYPE_UINT32, &timestamp,
                              DBUS_TYPE_INVALID) ||
       resultID == nullptr) {
-    reply = dbus_message_new_error(aMsg, DBUS_BUS_NAME, "Wrong argument");
+    reply = dbus_message_new_error(aMsg, GetDBusBusName(), "Wrong argument");
   } else {
     reply = dbus_message_new_method_return(aMsg);
     ActivateResultID(aSearchResult, resultID, timestamp);
@@ -464,7 +505,7 @@ DBusHandlerResult DBusLaunchSearch(
                              &stringArray, &elements, DBUS_TYPE_UINT32,
                              &timestamp, DBUS_TYPE_INVALID) ||
       elements == 0) {
-    reply = dbus_message_new_error(aMsg, DBUS_BUS_NAME, "Wrong argument");
+    reply = dbus_message_new_error(aMsg, GetDBusBusName(), "Wrong argument");
   } else {
     reply = dbus_message_new_method_return(aMsg);
     DBusLaunchWithAllResults(aSearchResult, timestamp);

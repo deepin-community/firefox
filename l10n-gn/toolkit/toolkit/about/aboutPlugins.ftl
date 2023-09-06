@@ -33,3 +33,14 @@ state-dd-Disabled-block-list-state = <span data-l10n-name="state">Tekotee:</span
 mime-type-label = MIME peteĩchagua:
 description-label = Moha’ãnga
 suffixes-label = Ñe’ẽpehẽ mboyvegua
+
+## Gecko Media Plugins (GMPs)
+
+plugins-gmp-license-info = Marandu ñe’ẽme’ẽgua
+plugins-gmp-privacy-info = Marandu ñemigua
+
+plugins-openh264-name = Openh264 Video Codec ome’ẽva Cisco Systems, Inc.
+plugins-openh264-description = Ko mba’ejoajurã Mozilla oñemohendáta ijeheguiete ojapo hag̃ua WebRTC ojeruréva ha omoneĩta WebRTC ohenói mba’e’oka ndive oikotevẽva ta’ãngamýi H.264 codec. Eike http://www.openh264.org/ ehecha codec ayvu reñoiha ha eikuaave hag̃ua ko tembipuru’i rehegua.
+
+plugins-widevine-name = Widevine Content Decryption Module ome’ẽva Google Inc.
+plugins-widevine-description = Ko mboguejyrã’i omoneĩta ipapapy kañýva ñemboheta Encrypted Media Extensions oipotaháicha. Umi tenda oipuru jepi ipapapy kañýva oñemo’ã hag̃ua tetepy hekoetáva monguatia iporãvévagui. Eike https://www.w3.org/TR/encrypted-media/ eikuaave hag̃ua Encrypted Media Extensions rehegua.

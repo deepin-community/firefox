@@ -88,14 +88,15 @@ static void RunDecodeToSurface(const ImageTestCase& aTestCase,
   nsCOMPtr<nsIThread> thread;
   nsresult rv =
       NS_NewNamedThread("DecodeToSurface", getter_AddRefs(thread), nullptr);
-  ASSERT_TRUE(NS_SUCCEEDED(rv));
+  ASSERT_NS_SUCCEEDED(rv);
 
   // We run the DecodeToSurface tests off-main-thread to ensure that
   // DecodeToSurface doesn't require any main-thread-only code.
   RefPtr<SourceSurface> surface;
   nsCOMPtr<nsIRunnable> runnable = new DecodeToSurfaceRunnable(
       surface, inputStream, aImageBuffer, aTestCase);
-  thread->Dispatch(runnable, nsIThread::DISPATCH_SYNC);
+  NS_DispatchAndSpinEventLoopUntilComplete("RunDecodeToSurface"_ns, thread,
+                                           do_AddRef(runnable));
 
   thread->Shutdown();
 
@@ -149,23 +150,24 @@ TEST_F(ImageDecodeToSurface, ICOMultipleSizes) {
   ImageMetadata metadata;
   nsresult rv = ImageOps::DecodeMetadata(
       buffer, nsDependentCString(testCase.mMimeType), metadata);
-  EXPECT_TRUE(NS_SUCCEEDED(rv));
+  EXPECT_NS_SUCCEEDED(rv);
   ASSERT_TRUE(metadata.HasSize());
-  EXPECT_EQ(testCase.mSize, metadata.GetSize());
+  EXPECT_EQ(testCase.mSize, metadata.GetSize().ToUnknownSize());
 
-  const nsTArray<IntSize>& nativeSizes = metadata.GetNativeSizes();
+  const nsTArray<OrientedIntSize>& nativeSizes = metadata.GetNativeSizes();
   ASSERT_EQ(6u, nativeSizes.Length());
 
-  IntSize expectedSizes[] = {
-      IntSize(16, 16),   IntSize(32, 32),   IntSize(64, 64),
-      IntSize(128, 128), IntSize(256, 256), IntSize(256, 128),
+  OrientedIntSize expectedSizes[] = {
+      OrientedIntSize(16, 16),   OrientedIntSize(32, 32),
+      OrientedIntSize(64, 64),   OrientedIntSize(128, 128),
+      OrientedIntSize(256, 256), OrientedIntSize(256, 128),
   };
 
   for (int i = 0; i < 6; ++i) {
     EXPECT_EQ(expectedSizes[i], nativeSizes[i]);
 
     // Request decoding at native size
-    testCase.mOutputSize = nativeSizes[i];
+    testCase.mOutputSize = nativeSizes[i].ToUnknownSize();
     RunDecodeToSurface(testCase, buffer);
   }
 }

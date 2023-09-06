@@ -33,3 +33,14 @@ state-dd-Disabled-block-list-state = <span data-l10n-name="state">Fylki:</span> 
 mime-type-label = MIME gerð
 description-label = Lýsing
 suffixes-label = Skráarendingar
+
+## Gecko Media Plugins (GMPs)
+
+plugins-gmp-license-info = Notkunarskilmálar
+plugins-gmp-privacy-info = Persónuupplýsingar
+
+plugins-openh264-name = OpenH264 Video Codec gert af Cisco Systems, Inc.
+plugins-openh264-description = Þetta tengiforrit er sett inn sjálfkrafa frá Mozilla til að fara eftir WebRTC staðlinum og til að leyfa WebRTC köll á tæki sem þarfnast H.264 mynd kóðara. Kíktu á http://www.openh264.org/ til að skoða frumkóðann og fræðast meira um útfærsluna.
+
+plugins-widevine-name = Widevine Content Decryption Module frá Google Inc.
+plugins-widevine-description = Þetta tengiforrit býður upp á afspilun dulkóðaðra miðla í samræmi við forskrift Encrypted Media Extensions. Dulkóðaðir miðlar eru venjulega notaðir á síðum til þess að verja þær fyrir afritun gæðainnihalds. Heimsækið https://www.w3.org/TR/encrypted-media/ fyrir frekari upplýsingar um Encrypted Media Extensions.

@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-profiledowngrade-window =
+profiledowngrade-window2 =
     .title = { -brand-product-name } 이전 버전을 사용 중입니다
-    .style = width: 490px;
+    .style = min-width: 490px;
 
 profiledowngrade-window-create =
     .label = 새 프로필 만들기

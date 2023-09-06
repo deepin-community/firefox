@@ -16,8 +16,7 @@
 #include "mozilla/dom/ServiceWorkerOpArgs.h"
 #include "mozilla/dom/ServiceWorkerOpPromise.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 /* Here's a graph about this remote workers are spawned.
  *
@@ -102,6 +101,10 @@ class RemoteWorkerObserver {
 
   virtual void ErrorReceived(const ErrorValue& aValue) = 0;
 
+  virtual void LockNotified(bool aCreated) = 0;
+
+  virtual void WebTransportNotified(bool aCreated) = 0;
+
   virtual void Terminated() = 0;
 };
 
@@ -149,12 +152,14 @@ class RemoteWorkerController final {
       ServiceWorkerOpArgs&& aArgs);
 
   RefPtr<ServiceWorkerFetchEventOpPromise> ExecServiceWorkerFetchEventOp(
-      const ServiceWorkerFetchEventOpArgs& aArgs,
+      const ParentToParentServiceWorkerFetchEventOpArgs& aArgs,
       RefPtr<FetchEventOpParent> aReal);
 
   RefPtr<GenericPromise> SetServiceWorkerSkipWaitingFlag() const;
 
   bool IsTerminated() const;
+
+  void NotifyWebTransport(bool aCreated);
 
  private:
   RemoteWorkerController(const RemoteWorkerData& aData,
@@ -167,6 +172,8 @@ class RemoteWorkerController final {
   void NoteDeadWorkerActor();
 
   void ErrorPropagation(const ErrorValue& aValue);
+
+  void NotifyLock(bool aCreated);
 
   void WorkerTerminated();
 
@@ -291,7 +298,7 @@ class RemoteWorkerController final {
   class PendingSWFetchEventOp final : public PendingOp {
    public:
     PendingSWFetchEventOp(
-        const ServiceWorkerFetchEventOpArgs& aArgs,
+        const ParentToParentServiceWorkerFetchEventOpArgs& aArgs,
         RefPtr<ServiceWorkerFetchEventOpPromise::Private> aPromise,
         RefPtr<FetchEventOpParent>&& aReal);
 
@@ -302,7 +309,7 @@ class RemoteWorkerController final {
     void Cancel() override;
 
    private:
-    ServiceWorkerFetchEventOpArgs mArgs;
+    ParentToParentServiceWorkerFetchEventOpArgs mArgs;
     RefPtr<ServiceWorkerFetchEventOpPromise::Private> mPromise;
     RefPtr<FetchEventOpParent> mReal;
     nsCOMPtr<nsIInputStream> mBodyStream;
@@ -311,7 +318,6 @@ class RemoteWorkerController final {
   nsTArray<UniquePtr<PendingOp>> mPendingOps;
 };
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 #endif  // mozilla_dom_RemoteWorkerController_h

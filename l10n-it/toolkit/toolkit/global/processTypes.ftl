@@ -16,9 +16,9 @@ process-type-extension = Estensione
 
 process-type-file = File locale
 
-process-type-weblargeallocation = Allocazione di grandi dimensioni
-
 process-type-webisolated = Contenuti web isolati
+
+process-type-webserviceworker = Service worker isolato
 
 # process preallocated; may change to other types
 process-type-prealloc = Preallocato
@@ -36,6 +36,9 @@ process-type-socket = Socket
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Attore IPC in sandbox
 
 ##
 ## Other

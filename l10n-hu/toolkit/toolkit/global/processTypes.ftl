@@ -22,13 +22,13 @@ process-type-extension = Kiegészítő
 # process used to open file:// URLs
 process-type-file = Helyi fájl
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Nagy lefoglalás
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Elkülönített webtartalom
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Izolált Service Worker
 
 # process preallocated; may change to other types
 process-type-prealloc = Előre lefoglalt
@@ -49,6 +49,9 @@ process-type-socket = Foglalat
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Homokozóba zárt IPC aktor
 
 ##
 ## Other

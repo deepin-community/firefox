@@ -7,15 +7,14 @@
 
 const {
   CSSFilterEditorWidget,
-} = require("devtools/client/shared/widgets/FilterWidget");
+} = require("resource://devtools/client/shared/widgets/FilterWidget.js");
 
-const { LocalizationHelper } = require("devtools/shared/l10n");
 const STRINGS_URI = "devtools/client/locales/filterwidget.properties";
 const L10N = new LocalizationHelper(STRINGS_URI);
 
 const TEST_URI = CHROME_URL_ROOT + "doc_filter-editor-01.html";
 
-add_task(async function() {
+add_task(async function () {
   const { doc } = await createHost("bottom", TEST_URI);
 
   const TEST_DATA = [
@@ -94,6 +93,7 @@ add_task(async function() {
     const filters = container.querySelectorAll(".filter");
     testRenderedFilters(filters, expected);
   }
+  widget.destroy();
 });
 
 function testRenderedFilters(filters, expected) {

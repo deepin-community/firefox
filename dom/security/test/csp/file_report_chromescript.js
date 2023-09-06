@@ -1,5 +1,8 @@
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
+/* eslint-env mozilla/chrome-script */
+
+const { NetUtil } = ChromeUtils.importESModule(
+  "resource://gre/modules/NetUtil.sys.mjs"
+);
 
 Cu.importGlobalProperties(["TextDecoder"]);
 
@@ -26,8 +29,9 @@ var openingObserver = {
         // We'll parse the report text as JSON and verify that the properties
         // have expected values.
         var reportText = "{}";
-        var uploadStream = subject.QueryInterface(Ci.nsIUploadChannel)
-          .uploadStream;
+        var uploadStream = subject.QueryInterface(
+          Ci.nsIUploadChannel
+        ).uploadStream;
 
         if (uploadStream) {
           // get the bytes from the request body
@@ -58,6 +62,6 @@ var openingObserver = {
 };
 
 Services.obs.addObserver(openingObserver, "http-on-opening-request");
-addMessageListener("finish", function() {
+addMessageListener("finish", function () {
   Services.obs.removeObserver(openingObserver, "http-on-opening-request");
 });

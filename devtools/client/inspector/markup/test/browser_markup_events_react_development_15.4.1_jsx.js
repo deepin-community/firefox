@@ -8,11 +8,12 @@ requestLongerTimeout(4);
 // Test that markup view event bubbles show the correct event info for React
 // events (React development version 15.4.1) using JSX.
 
-const TEST_LIB = URL_ROOT + "lib_react_dom_15.4.1.js";
-const TEST_LIB_BABEL = URL_ROOT + "lib_babel_6.21.0_min.js";
-const TEST_EXTERNAL_LISTENERS = URL_ROOT + "react_external_listeners.js";
+const TEST_LIB = URL_ROOT_SSL + "lib_react_dom_15.4.1.js";
+const TEST_LIB_BABEL = URL_ROOT_SSL + "lib_babel_6.21.0_min.js";
+const TEST_EXTERNAL_LISTENERS = URL_ROOT_SSL + "react_external_listeners.js";
 const TEST_URL =
-  URL_ROOT + "doc_markup_events_react_development_15.4.1_jsx.html";
+  URL_ROOT_SSL + "doc_markup_events_react_development_15.4.1_jsx.html";
+const TEST_INLINE_BABEL_ORIGINAL = URL_ROOT_SSL + "Inline%20Babel%20script:9";
 
 loadHelperScript("helper_events_test_runner.js");
 
@@ -20,29 +21,24 @@ loadHelperScript("helper_events_test_runner.js");
 const TEST_DATA = [
   {
     selector: "#inlinejsx",
+    isSourceMapped: true,
     expected: [
       {
         type: "click",
         filename: TEST_LIB + ":17530:42",
-        attributes: [
-          "Bubbling",
-          "DOM2"
-        ],
-        handler: `function emptyFunction() {}`
+        attributes: ["Bubbling"],
+        handler: `function emptyFunction() {}`,
       },
       {
         type: "onClick",
-        filename: TEST_LIB_BABEL + ":10:41",
-        attributes: [
-          "Bubbling",
-          "React"
-        ],
+        filename: TEST_INLINE_BABEL_ORIGINAL,
+        attributes: ["React", "Bubbling"],
         handler: `
           function inlineFunction() {
             alert("inlineFunction");
-          }`
-      }
-    ]
+          }`,
+      },
+    ],
   },
   {
     selector: "#externaljsx",
@@ -50,25 +46,19 @@ const TEST_DATA = [
       {
         type: "click",
         filename: TEST_LIB + ":17530:42",
-        attributes: [
-          "Bubbling",
-          "DOM2"
-        ],
-        handler: `function emptyFunction() {}`
+        attributes: ["Bubbling"],
+        handler: `function emptyFunction() {}`,
       },
       {
         type: "onClick",
         filename: TEST_EXTERNAL_LISTENERS + ":4:25",
-        attributes: [
-          "Bubbling",
-          "React"
-        ],
+        attributes: ["React", "Bubbling"],
         handler: `
           function externalFunction() {
             alert("externalFunction");
-          }`
-      }
-    ]
+          }`,
+      },
+    ],
   },
   {
     selector: "#externalinlinejsx",
@@ -76,37 +66,28 @@ const TEST_DATA = [
       {
         type: "click",
         filename: TEST_LIB + ":17530:42",
-        attributes: [
-          "Bubbling",
-          "DOM2"
-        ],
-        handler: `function emptyFunction() {}`
+        attributes: ["Bubbling"],
+        handler: `function emptyFunction() {}`,
       },
       {
         type: "onClick",
         filename: TEST_EXTERNAL_LISTENERS + ":4:25",
-        attributes: [
-          "Bubbling",
-          "React"
-        ],
+        attributes: ["React", "Bubbling"],
         handler: `
           function externalFunction() {
             alert("externalFunction");
-          }`
+          }`,
       },
       {
         type: "onMouseUp",
-        filename: TEST_LIB_BABEL + ":10:41",
-        attributes: [
-          "Bubbling",
-          "React"
-        ],
+        filename: TEST_LIB_BABEL + ":11:41",
+        attributes: ["React", "Bubbling"],
         handler: `
           function inlineFunction() {
             alert("inlineFunction");
-          }`
-      }
-    ]
+          }`,
+      },
+    ],
   },
   {
     selector: "#externalcapturingjsx",
@@ -114,21 +95,18 @@ const TEST_DATA = [
       {
         type: "onClickCapture",
         filename: TEST_EXTERNAL_LISTENERS + ":8:34",
-        attributes: [
-          "Capturing",
-          "React"
-        ],
+        attributes: ["React", "Capturing"],
         handler: `
           function externalCapturingFunction() {
             alert("externalCapturingFunction");
-          }`
-      }
-    ]
-  }
+          }`,
+      },
+    ],
+  },
 ];
 /* eslint-enable */
 
-add_task(async function() {
+add_task(async function () {
   info(
     "Switch to 2 pane inspector to avoid sidebar width issues with opening events"
   );

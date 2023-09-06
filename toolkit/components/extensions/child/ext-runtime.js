@@ -3,6 +3,11 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
+ChromeUtils.defineESModuleGetters(this, {
+  WebNavigationFrames: "resource://gre/modules/WebNavigationFrames.sys.mjs",
+});
+
+/* eslint-disable jsdoc/check-param-names */
 /**
  * With optional arguments on both ends, this case is ambiguous:
  *     runtime.sendMessage("string", {} or nullish)
@@ -13,9 +18,10 @@
  * @param {string?}  [extensionId]
  * @param {any}      message
  * @param {object?}  [options]
- * @param {function} [callback]
- * @returns {{extensionId: string?, message: any, callback: function?}}
+ * @param {Function} [callback]
+ * @returns {{extensionId: string?, message: any, callback: Function?}}
  */
+/* eslint-enable jsdoc/check-param-names */
 function parseBonkersArgs(...args) {
   let Error = ExtensionUtils.ExtensionError;
   let callback = typeof args[args.length - 1] === "function" && args.pop();
@@ -88,7 +94,50 @@ this.runtime = class extends ExtensionAPI {
         getURL(url) {
           return extension.baseURI.resolve(url);
         },
+
+        getFrameId(target) {
+          let frameId = WebNavigationFrames.getFromWindow(target);
+          if (frameId >= 0) {
+            return frameId;
+          }
+          // Not a WindowProxy, perhaps an embedder element?
+
+          let type;
+          try {
+            type = Cu.getClassName(target, true);
+          } catch (e) {
+            // Not a valid object, will throw below.
+          }
+
+          const embedderTypes = [
+            "HTMLIFrameElement",
+            "HTMLFrameElement",
+            "HTMLEmbedElement",
+            "HTMLObjectElement",
+          ];
+
+          if (embedderTypes.includes(type)) {
+            if (!target.browsingContext) {
+              return -1;
+            }
+            return WebNavigationFrames.getFrameId(target.browsingContext);
+          }
+
+          throw new ExtensionUtils.ExtensionError("Invalid argument");
+        },
       },
     };
+  }
+
+  getAPIObjectForRequest(context, request) {
+    if (request.apiObjectType === "Port") {
+      const port = context.messenger.getPortById(request.apiObjectId);
+      if (!port) {
+        throw new Error(`Port API object not found: ${request}`);
+      }
+      return port.api;
+    }
+
+    throw new Error(`Unexpected apiObjectType: ${request}`);
   }
 };

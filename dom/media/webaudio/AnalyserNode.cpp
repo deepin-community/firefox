@@ -11,6 +11,7 @@
 #include "mozilla/Mutex.h"
 #include "mozilla/PodOperations.h"
 #include "nsMathUtils.h"
+#include "Tracing.h"
 
 namespace mozilla {
 
@@ -53,6 +54,7 @@ class AnalyserNodeEngine final : public AudioNodeEngine {
   virtual void ProcessBlock(AudioNodeTrack* aTrack, GraphTime aFrom,
                             const AudioBlock& aInput, AudioBlock* aOutput,
                             bool* aFinished) override {
+    TRACE("AnalyserNodeEngine::ProcessBlock");
     *aOutput = aInput;
 
     if (aInput.IsNull()) {
@@ -242,8 +244,8 @@ void AnalyserNode::GetByteFrequencyData(const Uint8Array& aArray) {
         WebAudioUtils::ConvertLinearToDecibels(mOutputBuffer[i], mMinDecibels);
     // scale down the value to the range of [0, UCHAR_MAX]
     const double scaled = std::max(
-        0.0, std::min(double(UCHAR_MAX),
-                      UCHAR_MAX*(decibels - mMinDecibels) * rangeScaleFactor));
+        0.0, std::min(double(UCHAR_MAX), UCHAR_MAX * (decibels - mMinDecibels) *
+                                             rangeScaleFactor));
     buffer[i] = static_cast<unsigned char>(scaled);
   }
 }

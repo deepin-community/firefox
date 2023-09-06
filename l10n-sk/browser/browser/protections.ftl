@@ -6,9 +6,9 @@
 #   $count (Number) - Number of tracking events blocked.
 graph-week-summary =
     { $count ->
-        [one] Aplikácia { -brand-short-name } zablokovala v priebehu minulého týždňa { $count } sledovací prvok
-        [few] Aplikácia { -brand-short-name } zablokovala v priebehu minulého týždňa { $count } sledovacie prvky
-       *[other] Aplikácia { -brand-short-name } zablokovala v priebehu minulého týždňa { $count } sledovacích prvkov
+        [one] Prehliadač { -brand-short-name } zablokoval v priebehu minulého týždňa { $count } sledovací prvok
+        [few] Prehliadač { -brand-short-name } zablokoval v priebehu minulého týždňa { $count } sledovacie prvky
+       *[other] Prehliadač { -brand-short-name } zablokoval v priebehu minulého týždňa { $count } sledovacích prvkov
     }
 
 # Variables:
@@ -52,7 +52,7 @@ graph-legend-description = Graf s celkovým počtom všetkých typov sledovacíc
 social-tab-title = Sledovacie prvky sociálnych sietí
 social-tab-contant = Sociálne siete umiestňujú na webové stránky sledovacie prvky, ktoré sledujú, čo na internete robíte. Toto umožňuje spoločnostiam, ktoré tieto sociálne médiá vlastnia dozvedieť sa o vás viac ako to, čo zdieľate na svojich profiloch. <a data-l10n-name="learn-more-link">Ďalšie informácie</a>
 
-cookie-tab-title = Sledovacie cookies
+cookie-tab-title = Sledovacie cookies tretích strán
 cookie-tab-content = Tieto cookies slúžia na vaše sledovanie naprieč webovými stránkami a zber údajov o tom, čo na internete robíte. Používajú ich tretie strany, ako sú reklamné systémy alebo analytické spoločnosti. Blokovanie sledovacích cookies tretích strán obmedzuje množstvo reklám, ktoré vás sledujú. <a data-l10n-name="learn-more-link">Ďalšie informácie</a>
 
 tracker-tab-title = Sledovací obsah
@@ -67,22 +67,20 @@ cryptominer-tab-content = Ťažba kryptomien používa výpočtový výkon váš
 protections-close-button2 =
     .aria-label = Zavrieť
     .title = Zavrieť
-  
+
 mobile-app-title = Blokovanie sledujúcich reklám naprieč zariadeniami
 mobile-app-card-content = Používajte mobilný prehliadač so vstavanou ochranou pred sledujúcimi reklamami.
 mobile-app-links = Prehliadač { -brand-product-name } pre <a data-l10n-name="android-mobile-inline-link">Android</a> a <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Už žiadne zabudnuté heslá
-lockwise-title-logged-in2 = Správa hesiel
-lockwise-header-content = { -lockwise-brand-name } bezpečne uchováva vaše heslá vo vašom prehliadači.
+passwords-title-logged-in = Spravovať heslá
+passwords-header-content = { -brand-product-name } bezpečne uchováva vaše heslá v prehliadači.
 lockwise-header-content-logged-in = Ukladajte a synchronizujte heslá bezpečne naprieč svojimi zariadeniami.
-protection-report-save-passwords-button = Uložiť heslá
-    .title = Uložiť heslá do { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Spravovať heslá
-    .title = Spravovať heslá v { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Vezmite si svoje heslá so sebou
-lockwise-no-logins-card-content = Používajte heslá uložené v { -brand-short-name } na akomkoľvek zariadení.
-lockwise-app-links = { -lockwise-brand-name } pre <a data-l10n-name="lockwise-android-inline-link">Android</a> a <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Uložiť heslá
+    .title = Uložiť heslá
+protection-report-passwords-manage-passwords-button = Spravovať heslá
+    .title = Spravovať heslá
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -191,7 +189,7 @@ monitor-partial-breaches-title =
 
 # Variables:
 # $percentageResolved (Number) - Percentage of breaches marked as resolved by a user on Monitor.
-monitor-partial-breaches-percentage = { $percentageResolved }% hotovo
+monitor-partial-breaches-percentage = Dokončené na { $percentageResolved } %
 
 monitor-partial-breaches-motivation-title-start = Skvelý začiatok
 monitor-partial-breaches-motivation-title-middle = Len tak ďalej
@@ -216,7 +214,7 @@ bar-tooltip-social =
            *[other] { $count } sledovacích prvkov sociálnych sietí ({ $percentage } %)
         }
 bar-tooltip-cookie =
-    .title = Sledovacie cookies
+    .title = Sledovacie cookies tretích strán
     .aria-label =
         { $count ->
             [one] { $count } sledovacia cookie ({ $percentage } %)

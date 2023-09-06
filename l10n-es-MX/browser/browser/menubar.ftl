@@ -43,15 +43,6 @@ menu-quit =
 menu-quit-mac =
     .label = Salir de { -brand-shorter-name }
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Salir de { -brand-shorter-name }
-
 menu-about =
     .label = Acerca de { -brand-shorter-name }
     .accesskey = A
@@ -81,8 +72,15 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Abrir archivo…
     .accesskey = A
-menu-file-close =
-    .label = Cerrar
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Cerrar pestaña
+            [one] Cerrar { $tabCount } pestaña
+           *[other] Cerrar { $tabCount } pestañas
+        }
     .accesskey = C
 menu-file-close-window =
     .label = Cerrar ventana
@@ -99,9 +97,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Configurar página…
     .accesskey = p
-menu-file-print-preview =
-    .label = Vista previa
-    .accesskey = l
 menu-file-print =
     .label = Imprimir…
     .accesskey = I
@@ -188,6 +183,17 @@ menu-view-full-screen =
     .label = Pantalla completa
     .accesskey = P
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Iniciar la vista de lectura
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Cerrar la vista de lectura
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +222,6 @@ menu-history-undo-menu =
     .label = Pestañas cerradas recientemente
 menu-history-undo-window-menu =
     .label = Ventanas cerradas recientemente
-menu-history-reopen-all-tabs = Reabrir todas las pestañas
-menu-history-reopen-all-windows = Reabrir todas las ventanas
 
 ## Bookmarks Menu
 
@@ -226,10 +230,10 @@ menu-bookmarks-menu =
     .accesskey = M
 menu-bookmarks-manage =
     .label = Administrar marcadores
-menu-bookmark-current-tab =
-    .label = Marcar pestaña actual
-menu-bookmark-edit =
-    .label = Modificar este marcador
+menu-bookmark-tab =
+    .label = Agregar pestaña actual a marcadores…
+menu-edit-bookmark =
+    .label = Editar este marcador…
 menu-bookmarks-all-tabs =
     .label = Agregar las pestañas abiertas…
 menu-bookmarks-toolbar =
@@ -314,8 +318,8 @@ menu-help-more-troubleshooting-info =
     .accesskey = T
 menu-help-report-site-issue =
     .label = Reportar problema con el sitio…
-menu-help-feedback-page =
-    .label = Enviar comentarios...
+menu-help-share-ideas =
+    .label = Compartir ideas y comentarios…
     .accesskey = S
 menu-help-enter-troubleshoot-mode2 =
     .label = Modo de resolución de problemas…
@@ -323,6 +327,9 @@ menu-help-enter-troubleshoot-mode2 =
 menu-help-exit-troubleshoot-mode =
     .label = Desactivar modo de resolución de problemas
     .accesskey = M
+menu-help-switch-device =
+    .label = Cambiar a un nuevo dispositivo
+    .accesskey = n
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

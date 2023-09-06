@@ -7,7 +7,6 @@
 #include "mozilla/dom/HTMLOutputElement.h"
 
 #include "mozAutoDocUpdate.h"
-#include "mozilla/EventStates.h"
 #include "mozilla/dom/HTMLFormElement.h"
 #include "mozilla/dom/HTMLOutputElementBinding.h"
 #include "nsContentUtils.h"
@@ -20,29 +19,32 @@ namespace mozilla::dom {
 HTMLOutputElement::HTMLOutputElement(
     already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo,
     FromParser aFromParser)
-    : nsGenericHTMLFormElement(std::move(aNodeInfo), FormControlType::Output),
+    : nsGenericHTMLFormControlElement(std::move(aNodeInfo),
+                                      FormControlType::Output),
       mValueModeFlag(eModeDefault),
       mIsDoneAddingChildren(!aFromParser) {
   AddMutationObserver(this);
 
-  // We start out valid and ui-valid (since we have no form).
-  AddStatesSilently(NS_EVENT_STATE_VALID | NS_EVENT_STATE_MOZ_UI_VALID);
+  // <output> is always barred from constraint validation since it is not a
+  // submittable element.
+  SetBarredFromConstraintValidation(true);
 }
 
 HTMLOutputElement::~HTMLOutputElement() = default;
 
-NS_IMPL_CYCLE_COLLECTION_INHERITED(HTMLOutputElement, nsGenericHTMLFormElement,
-                                   mValidity, mTokenList)
+NS_IMPL_CYCLE_COLLECTION_INHERITED(HTMLOutputElement,
+                                   nsGenericHTMLFormControlElement, mValidity,
+                                   mTokenList)
 
 NS_IMPL_ISUPPORTS_CYCLE_COLLECTION_INHERITED(HTMLOutputElement,
-                                             nsGenericHTMLFormElement,
+                                             nsGenericHTMLFormControlElement,
                                              nsIMutationObserver,
                                              nsIConstraintValidation)
 
 NS_IMPL_ELEMENT_CLONE(HTMLOutputElement)
 
 void HTMLOutputElement::SetCustomValidity(const nsAString& aError) {
-  nsIConstraintValidation::SetCustomValidity(aError);
+  ConstraintValidation::SetCustomValidity(aError);
 
   UpdateState(true);
 }
@@ -50,7 +52,10 @@ void HTMLOutputElement::SetCustomValidity(const nsAString& aError) {
 NS_IMETHODIMP
 HTMLOutputElement::Reset() {
   mValueModeFlag = eModeDefault;
-  return nsContentUtils::SetNodeTextContent(this, mDefaultValue, true);
+  // We can't pass mDefaultValue, because it'll be truncated when
+  // the element's descendants are changed, so pass a copy instead.
+  const nsAutoString currentDefaultValue(mDefaultValue);
+  return nsContentUtils::SetNodeTextContent(this, currentDefaultValue, true);
 }
 
 bool HTMLOutputElement::ParseAttribute(int32_t aNamespaceID, nsAtom* aAttribute,
@@ -64,7 +69,7 @@ bool HTMLOutputElement::ParseAttribute(int32_t aNamespaceID, nsAtom* aAttribute,
     }
   }
 
-  return nsGenericHTMLFormElement::ParseAttribute(
+  return nsGenericHTMLFormControlElement::ParseAttribute(
       aNamespaceID, aAttribute, aValue, aMaybeScriptedPrincipal, aResult);
 }
 
@@ -74,23 +79,9 @@ void HTMLOutputElement::DoneAddingChildren(bool aHaveNotified) {
   DescendantsChanged();
 }
 
-EventStates HTMLOutputElement::IntrinsicState() const {
-  EventStates states = nsGenericHTMLFormElement::IntrinsicState();
-
-  // We don't have to call IsCandidateForConstraintValidation()
-  // because <output> can't be barred from constraint validation.
-  if (IsValid()) {
-    states |= NS_EVENT_STATE_VALID | NS_EVENT_STATE_MOZ_UI_VALID;
-  } else {
-    states |= NS_EVENT_STATE_INVALID | NS_EVENT_STATE_MOZ_UI_INVALID;
-  }
-
-  return states;
-}
-
 nsresult HTMLOutputElement::BindToTree(BindContext& aContext,
                                        nsINode& aParent) {
-  nsresult rv = nsGenericHTMLFormElement::BindToTree(aContext, aParent);
+  nsresult rv = nsGenericHTMLFormControlElement::BindToTree(aContext, aParent);
   NS_ENSURE_SUCCESS(rv, rv);
 
   // Unfortunately, we can actually end up having to change our state
@@ -103,7 +94,7 @@ nsresult HTMLOutputElement::BindToTree(BindContext& aContext,
   return rv;
 }
 
-void HTMLOutputElement::GetValue(nsAString& aValue) {
+void HTMLOutputElement::GetValue(nsAString& aValue) const {
   nsContentUtils::GetNodeTextContent(this, true, aValue);
 }
 

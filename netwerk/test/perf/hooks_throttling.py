@@ -5,16 +5,15 @@
 Drives the throttling feature when the test calls our
 controlled server.
 """
-import time
 import http.client
-import os
 import json
-from urllib.parse import urlparse
+import os
 import sys
+import time
+from urllib.parse import urlparse
 
 from mozperftest.test.browsertime import add_option
 from mozperftest.utils import get_tc_secret
-
 
 ENDPOINTS = {
     "linux": "h3.dev.mozaws.net",
@@ -175,7 +174,7 @@ def before_cycle(metadata, env, cycle, script):
 
     # enabling http if needed
     if proto == "h3":
-        add_option(env, "firefox.preference", "network.http.http3.enabled:true")
+        add_option(env, "firefox.preference", "network.http.http3.enable:true")
 
     # prefix used to differenciate metrics
     name = throttler_settings["name"]

@@ -65,6 +65,9 @@ media-dimension =
     .value = Mentoù:
 media-long-desc =
     .value = Deskrivadenn gemplezh:
+media-select-all =
+    .label = Diuzañ pep tra
+    .accesskey = D
 media-save-as =
     .label = Enrollañ evel…
     .accesskey = a
@@ -252,18 +255,17 @@ media-dimensions =
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } Ke
 
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
+
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab
-# Variables:
-#   $website (string) - The website name
 media-block-image =
     .label = Herzel ar skeudennoù eus { $website }
     .accesskey = H
 
 # This string is used to display the URL of the website on top of the
 # pageInfo dialog box
-# Variables:
-#   $website (string) — The url of the website pageInfo is getting info for
 page-info-page =
     .title = Stlennoù ar bajennad - { $website }
 page-info-frame =

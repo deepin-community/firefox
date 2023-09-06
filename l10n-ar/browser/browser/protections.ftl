@@ -73,22 +73,16 @@ cryptominer-tab-content = تستعمل المُعدّنات المعمّاة ط�
 protections-close-button2 =
     .aria-label = أغلِق
     .title = أغلِق
-  
+
 mobile-app-title = احجب الإعلانات المتعقّبة على أجهزتك الأخرى
 mobile-app-card-content = استعمل متصفح المحمول ذا الحماية المدمجة ضد تعقّب الإعلانات.
 mobile-app-links = متصفّح { -brand-product-name } لنظامي <a data-l10n-name="android-mobile-inline-link">أندرويد</a> و<a data-l10n-name="ios-mobile-inline-link">آي‌أوإس</a>
 
 lockwise-title = بعد الآن، ”نسيت كلمة السر“ فعل ماض
-lockwise-title-logged-in2 = إدارة كلمات السر
-lockwise-header-content = يخزّن { -lockwise-brand-name } كلمات السرّ لديك في متصفّحك بأمان تام.
+passwords-title-logged-in = أدِر كلمات السر
+passwords-header-content = يخزّن { -brand-product-name } كلمات السرّ لديك في متصفّحك بأمان تام.
 lockwise-header-content-logged-in = خزّن كلمات السر وزامنها على مختلف الأجهزة لديك.
-protection-report-save-passwords-button = احفظ كلمات السر
-    .title = احفظ كلمات السر في { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = أدِر كلمات السر
-    .title = أدِر كلمات السر في { -lockwise-brand-short-name }
-lockwise-mobile-app-title = خُذ معك كلمات السر أينما ذهبت
-lockwise-no-logins-card-content = استعمل كلمات السر المحفوظة في { -brand-short-name } على أي جهاز.
-lockwise-app-links = { -lockwise-brand-name } لنظامي <a data-l10n-name="lockwise-android-inline-link">أندرويد</a> و<a data-l10n-name="lockwise-ios-inline-link">آي‌أو‌إس</a>
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

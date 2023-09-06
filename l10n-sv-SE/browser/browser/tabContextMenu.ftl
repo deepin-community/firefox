@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Välj alla flikar
     .accesskey = V
+tab-context-play-tab =
+    .label = Spela flik
+    .accesskey = S
+tab-context-play-tabs =
+    .label = Spela flikar
+    .accesskey = p
 duplicate-tab =
     .label = Duplicera flik
     .accesskey = D
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Bokmärk flikar…
     .accesskey = k
-bookmark-tab =
-    .label = Bokmärk flik
+tab-context-bookmark-tab =
+    .label = Bokmärk flik…
     .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = Öppna i ny innehållsflik
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Dela
     .accesskey = D
-tab-context-share-more =
-    .label = Mer…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,14 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] Öppna stängda flikar igen
         }
     .accesskey = p
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Stäng flik
-            [one] Stäng flik
-           *[other] Stäng flikar
-        }
-    .accesskey = S
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

@@ -39,15 +39,6 @@ menu-quit =
 menu-quit-mac =
     .label = Keluar { -brand-shorter-name }
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Keluar { -brand-shorter-name }
-
 menu-about =
     .label = Perihal { -brand-shorter-name }
     .accesskey = P
@@ -77,9 +68,6 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Buka Fail…
     .accesskey = B
-menu-file-close =
-    .label = Tutup
-    .accesskey = T
 menu-file-close-window =
     .label = Tutup Tetingkap
     .accesskey = u
@@ -92,9 +80,6 @@ menu-file-email-link =
 menu-file-print-setup =
     .label = Penetapan Halaman…
     .accesskey = t
-menu-file-print-preview =
-    .label = Previu Cetakan
-    .accesskey = v
 menu-file-print =
     .label = Cetak…
     .accesskey = C
@@ -166,6 +151,17 @@ menu-view-full-screen =
     .label = Skrin Penuh
     .accesskey = S
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Masuk Reader View
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Tutup Reader View
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -200,8 +196,6 @@ menu-history-undo-window-menu =
 menu-bookmarks-menu =
     .label = Tandabuku
     .accesskey = B
-menu-bookmark-edit =
-    .label = Edit Tandabuku Ini
 menu-bookmarks-all-tabs =
     .label = Tandabuku Semua Tab…
 menu-bookmarks-toolbar =
@@ -245,15 +239,6 @@ menu-window-bring-all-to-front =
 # NOTE: For Engineers, any additions or changes to Help menu strings should
 # also be reflected in the related strings in appmenu.ftl. Those strings, by
 # convention, will have the same ID as these, but prefixed with "app".
-# Example: appmenu-help-product
-#
-# These strings are duplicated to allow for different casing depending on
-# where the strings appear.
-
-
-# NOTE: For Engineers, any additions or changes to Help menu strings should
-# also be reflected in the related strings in appmenu.ftl. Those strings, by
-# convention, will have the same ID as these, but prefixed with "app".
 # Example: appmenu-get-help
 #
 # These strings are duplicated to allow for different casing depending on
@@ -264,9 +249,6 @@ menu-help =
     .accesskey = B
 menu-help-report-site-issue =
     .label = Laporkan Isu Laman…
-menu-help-feedback-page =
-    .label = Hantar Maklum balas…
-    .accesskey = H
 # Label of the Help menu item. Either this or
 # safeb.palm.notdeceptive.label from
 # phishing-afterload-warning-message.dtd is shown.

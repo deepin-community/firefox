@@ -6,20 +6,18 @@
 //! ones used for ShadowRoot.
 
 use crate::dom::TElement;
-#[cfg(feature = "gecko")]
-use crate::gecko_bindings::sugar::ownership::{HasBoxFFI, HasFFI, HasSimpleFFI};
 use crate::invalidation::media_queries::ToMediaListKey;
 use crate::shared_lock::SharedRwLockReadGuard;
-use crate::stylist::Stylist;
 use crate::stylesheet_set::AuthorStylesheetSet;
 use crate::stylesheets::StylesheetInDocument;
 use crate::stylist::CascadeData;
+use crate::stylist::Stylist;
 use servo_arc::Arc;
 
 /// A set of author stylesheets and their computed representation, such as the
 /// ones used for ShadowRoot.
 #[derive(MallocSizeOf)]
-pub struct AuthorStyles<S>
+pub struct GenericAuthorStyles<S>
 where
     S: StylesheetInDocument + PartialEq + 'static,
 {
@@ -31,13 +29,13 @@ where
     pub data: Arc<CascadeData>,
 }
 
+pub use self::GenericAuthorStyles as AuthorStyles;
+
 lazy_static! {
-    static ref EMPTY_CASCADE_DATA: Arc<CascadeData> = {
-        Arc::new_leaked(CascadeData::new())
-    };
+    static ref EMPTY_CASCADE_DATA: Arc<CascadeData> = Arc::new_leaked(CascadeData::new());
 }
 
-impl<S> AuthorStyles<S>
+impl<S> GenericAuthorStyles<S>
 where
     S: StylesheetInDocument + PartialEq + 'static,
 {
@@ -55,11 +53,8 @@ where
     /// TODO(emilio): Need a host element and a snapshot map to do invalidation
     /// properly.
     #[inline]
-    pub fn flush<E>(
-        &mut self,
-        stylist: &mut Stylist,
-        guard: &SharedRwLockReadGuard,
-    ) where
+    pub fn flush<E>(&mut self, stylist: &mut Stylist, guard: &SharedRwLockReadGuard)
+    where
         E: TElement,
         S: ToMediaListKey,
     {
@@ -73,12 +68,3 @@ where
         }
     }
 }
-
-#[cfg(feature = "gecko")]
-unsafe impl HasFFI for AuthorStyles<crate::gecko::data::GeckoStyleSheet> {
-    type FFIType = crate::gecko_bindings::structs::RawServoAuthorStyles;
-}
-#[cfg(feature = "gecko")]
-unsafe impl HasSimpleFFI for AuthorStyles<crate::gecko::data::GeckoStyleSheet> {}
-#[cfg(feature = "gecko")]
-unsafe impl HasBoxFFI for AuthorStyles<crate::gecko::data::GeckoStyleSheet> {}

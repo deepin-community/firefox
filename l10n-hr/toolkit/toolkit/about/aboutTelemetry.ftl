@@ -31,7 +31,6 @@ about-telemetry-events-section = događaji
 about-telemetry-simple-measurements-section = Jednostavna mjerenja
 about-telemetry-slow-sql-section = Spore SQL izjave
 about-telemetry-addon-details-section = Detalji dodatka
-about-telemetry-captured-stacks-section = uhvaćeni stogovi
 about-telemetry-late-writes-section = Zakašnjela zapisivanja
 about-telemetry-raw = Neobrađeni JSON
 about-telemetry-full-sql-warning = NAPOMENA: Detaljno praćenje sporih SQL upita je uključeno. Potpuni SQL upiti mogu biti prikazani ispod, međutim oni neće biti poslali Telemetriji.
@@ -118,10 +117,6 @@ about-telemetry-keys-header = Svojstvo
 about-telemetry-names-header = Naziv
 about-telemetry-values-header = Vrijednost
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (broj uhvaćenih: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Zakašnjelo zapisivanje #{ $lateWriteCount }
 about-telemetry-stack-title = Stack:
@@ -132,9 +127,6 @@ about-telemetry-category-header = kategorija
 about-telemetry-method-header = način
 about-telemetry-object-header = objekt
 about-telemetry-extra-header = dodatno
-about-telemetry-origin-section = Telemetrija porijekla
-about-telemetry-origin-origin = porijeklo
-about-telemetry-origin-count = broj
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = { $process } proces

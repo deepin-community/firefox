@@ -26,9 +26,9 @@ certmgr-people = Teniu certificats al fitxer que identifiquen esta gent
 certmgr-server = Estes entrades identifiquen les excepcions d'error de certificats de servidor
 certmgr-ca = Teniu certificats al fitxer que identifiquen estes entitats certificadores
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Edita els paràmetres de confiança del certificat de la CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Edita els paràmetres de confiança:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Este certificat pot identificar usuaris de correu.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Suprimeix el certificat
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Amfitrió
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Servidor
-
-certmgr-override-lifetime =
-    .label = Temps de vida
 
 certmgr-token-name =
     .label = Dispositiu de seguretat
@@ -185,8 +182,6 @@ delete-email-cert-impact = Si suprimiu un certificat de correu electrònic d'alg
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Certificat amb número de sèrie: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = No envies cap certificat de client

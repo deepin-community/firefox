@@ -3,7 +3,10 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 // Ensures the input is displayed and focused when "+" is clicked
-add_task(async function() {
+
+"use strict";
+
+add_task(async function () {
   const dbg = await initDebugger("doc-script-switching.html");
 
   info(">> Close the panel");

@@ -73,6 +73,14 @@ app-basics-location-service-key-google = Tasarutt n umeẓlu n wadi Google
 app-basics-safebrowsing-key-google = Tasarut Google Safebrowsing
 app-basics-key-mozilla = Tasarutt n umeẓlu n wadi Mozilla
 app-basics-safe-mode = Askar aɣelsan
+app-basics-memory-size = Teɣzi n takatut (RAM)
+app-basics-disk-available = Tallunt n uḍebsi yellan
+
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Ldi di Finder
@@ -102,11 +110,18 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Aɣmis n ugemmen
 graphics-crash-guards-title = Timhalin ur nermid ara n uɛessas n uɣelluy
 graphics-workarounds-title = Tifrat n usellek
+graphics-device-pixel-ratios = Ifmiḍiyen n yipiksilen n yibenk n yisfuyla
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Aneggaf n usfaylu
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Tawennaḍt n tnarit
 place-database-title = Taffa n isefka n idigen
+place-database-stats = Tidaddanin
+place-database-stats-show = Sken tiddadanin
+place-database-stats-hide = Ffer tidaddanin
+place-database-stats-count = Amḍan
+place-database-stats-size-kib = Teɣzi (KiB)
+place-database-stats-size-perc = Teɣzi (%)
 place-database-integrity = Timmad
 place-database-verify-integrity = Senqed timmad
 a11y-title = Tuffart
@@ -153,8 +168,11 @@ media-device-channels = Ibuda
 media-device-rate = Afmiḍi
 media-device-latency = Akud n ugani
 media-capabilities-title = Tazmert n umidya
+media-codec-support-info = Talɣut n tallalt kudak
 # List all the entries of the database.
 media-capabilities-enumerate = Snirem taffa n yisefka
+
+## Codec support table
 
 ##
 
@@ -312,6 +330,7 @@ can-sandbox-media = Amsersu i yizegrar aget-allalen n telɣut
 content-sandbox-level = Aswir n usersu n ukala n ugbur
 effective-content-sandbox-level = Aswir n usersu n ukala n ugbur
 content-win32k-lockdown-state = Addad n usekkeṛ Win32k i ukala n ugbur
+support-sandbox-gpu-level = Aswir n usersu n ukala n GPU
 sandbox-proc-type-content = agbur
 sandbox-proc-type-file = agbur n ufaylu
 sandbox-proc-type-media-plugin = asiɣzef n wallen n teywalt
@@ -340,12 +359,13 @@ fission-status-experiment-control = Yettwasens s termit
 fission-status-experiment-treatment = Yermed n termit
 fission-status-disabled-by-e10s-env = Yettwasens s twennaḍt
 fission-status-enabled-by-env = yetturmed s twennaḍt
-fission-status-disabled-by-safe-mode = Yettwasens s uskar aɣellsan
+fission-status-disabled-by-env = Yensa s twennaḍt
 fission-status-enabled-by-default = Yetturmed s umezwer
 fission-status-disabled-by-default = Yensa s wudem amezwer
 fission-status-enabled-by-user-pref = Yetturmed sɣur useqdac
 fission-status-disabled-by-user-pref = Yensa sɣur useqdac
 fission-status-disabled-by-e10s-other = E10s yettwasens
+fission-status-enabled-by-rollout = Rmed asenqqes s cwiṭ cwiṭ
 
 async-pan-zoom = Asemɣeṛ/Asemẓi aramtawa
 apz-none = ulac
@@ -382,7 +402,7 @@ support-printing-prefs-value = Azal
 support-remote-experiments-title = Tirmitin tinmeggagin
 support-remote-experiments-name = Isem
 support-remote-experiments-branch = Anfal armitan
-support-remote-experiments-see-about-studies = Wali <a data-l10n-name="support-about-studies-link">about:studies</a> i wugar n telɣut, akked ɣef wamek </a>ad tsenseḍ ikayaden udmawanen neɣ amek ad tsenseḍ { -brand-short-name } seg uselkem n wanaw-a n tirmit sya ɣer sadt.
+support-remote-experiments-see-about-studies = Wali <a data-l10n-name="support-about-studies-link">about:studies</a> i wugar n telɣut, akked ɣef wamek ad tsenseḍ ikayaden udmawanen neɣ amek ad tsenseḍ { -brand-short-name } seg uselkem n wanaw-a n tirmit sya ɣer sadt.
 
 support-remote-features-title = Timahilin tinmeggayin
 support-remote-features-name = Isem

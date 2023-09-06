@@ -4,12 +4,10 @@
 
 "use strict";
 
-const Services = require("Services");
-
 loader.lazyRequireGetter(
   this,
   "HTMLTooltip",
-  "devtools/client/shared/widgets/tooltip/HTMLTooltip",
+  "resource://devtools/client/shared/widgets/tooltip/HTMLTooltip.js",
   true
 );
 
@@ -21,24 +19,9 @@ const PREFERENCES = [
       "hosted from another domain, it will run in another process",
   ],
   [
-    "devtools.browsertoolbox.fission",
-    "Enable the Multiprocess Browser Toolbox and Multiprocess Browser " +
-      "Console, so that it can see and debug resources from the content " +
-      "processes at the same time as resources from the parent process",
-  ],
-  [
-    "devtools.target-switching.server.enabled",
-    "Enable experimental server side target switching",
-  ],
-  [
     "devtools.every-frame-target.enabled",
     "When enabled, targets will be created for all iframes, no matter if " +
       "they are remote or not, independently of Fission being enabled or not",
-  ],
-  [
-    "devtools.testing.enableServerWatcherSupport",
-    "Enable experimental server-side resources (see watcher actor to get the " +
-      "list of impacted resources",
   ],
   [
     "fission.bfcacheInParent",

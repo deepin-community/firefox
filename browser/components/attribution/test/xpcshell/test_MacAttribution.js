@@ -4,8 +4,8 @@
 
 "use strict";
 
-const { MacAttribution } = ChromeUtils.import(
-  "resource:///modules/MacAttribution.jsm"
+const { MacAttribution } = ChromeUtils.importESModule(
+  "resource:///modules/MacAttribution.sys.mjs"
 );
 
 add_task(async () => {
@@ -19,6 +19,10 @@ add_task(async function testValidAttrCodes() {
   );
 
   for (let entry of validAttrCodes) {
+    if (entry.platforms && !entry.platforms.includes("mac")) {
+      continue;
+    }
+
     // Set a url referrer.  In the macOS quarantine database, the
     // referrer URL has components that areURI-encoded.  Our test data
     // URI-encodes the components and also the separators (?, &, =).

@@ -8,7 +8,10 @@
  * state.
  */
 
-add_task(async function() {
+add_task(async function () {
+  // This test explicitly asserts some insecure domains.
+  await pushPref("dom.security.https_first", false);
+
   const EXPECTED_SECURITY_STATES = {
     "test1.example.com": "security-state-insecure",
     "example.com": "security-state-secure",
@@ -64,7 +67,7 @@ add_task(async function() {
       return SpecialPowers.spawn(
         tab.linkedBrowser,
         [{ count, url }],
-        async function(args) {
+        async function (args) {
           content.wrappedJSObject.performRequests(args.count, args.url);
         }
       );

@@ -2,12 +2,21 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+tab-context-new-tab =
+    .label = لسان جديد
+    .accesskey = س
 reload-tab =
     .label = أعِد تحميل اللسان
     .accesskey = ح
 select-all-tabs =
     .label = اختر كل الألسنة
     .accesskey = خ
+tab-context-play-tab =
+    .label = شغّل اللسان
+    .accesskey = ش
+tab-context-play-tabs =
+    .label = شغّل الألسنة
+    .accesskey = ش
 duplicate-tab =
     .label = كرّر اللسان
     .accesskey = ك
@@ -45,9 +54,6 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = علّم الألسنة…
     .accesskey = ن
-bookmark-tab =
-    .label = علّم اللسان
-    .accesskey = ع
 tab-context-open-in-new-container-tab =
     .label = افتح في لسانٍ حاوٍ جديد
     .accesskey = س
@@ -66,8 +72,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = شارِك
     .accesskey = ش
-tab-context-share-more =
-    .label = أكثر
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -84,18 +88,6 @@ tab-context-reopen-closed-tabs =
            *[other] أعِد فتح الألسنة المغلقة
         }
     .accesskey = ع
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] أغلِق اللسان
-            [zero] أغلِق اللسان
-            [one] أغلِق اللسان
-            [two] أغلِق اللسانين
-            [few] أغلِق الألسنة
-            [many] أغلِق الألسنة
-           *[other] أغلِق الألسنة
-        }
-    .accesskey = غ
 tab-context-move-tabs =
     .label =
         { $tabCount ->

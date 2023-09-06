@@ -21,13 +21,11 @@ web-platform-tests:
     - web-platform-tests-print-reftest
     - web-platform-tests-reftest
     - web-platform-tests-wdspec
+    - web-platform-tests-webgpu
 
 web-platform-tests-backlog:
     - web-platform-tests-backlog
     - web-platform-tests-reftest-backlog
-
-web-platform-tests-wdspec-headless:
-    - web-platform-tests-wdspec-headless
 
 mochitest-devtools-chrome:
     - mochitest-devtools-chrome
@@ -38,7 +36,9 @@ mochitest-webgpu:
 talos:
     - talos-bcv
     - talos-chrome
-    - talos-damp
+    - talos-damp-inspector
+    - talos-damp-webconsole
+    - talos-damp-other
     - talos-dromaeojs
     - talos-g1
     - talos-g3
@@ -61,7 +61,6 @@ talos-profiling:
     - talos-chrome-profiling
     # - talos-damp-profiling - Disabled b/c of Bug 1597734
     - talos-dromaeojs-profiling
-    # - talos-flex-profiling - Disabled b/c of Bug 1597736
     - talos-g1-profiling
     - talos-g3-profiling
     - talos-g4-profiling
@@ -83,13 +82,29 @@ talos-ref-hw:
 browsertime:
     - browsertime-tp6
     - browsertime-tp6-essential
+    - browsertime-tp6-bytecode
     - browsertime-tp6-live
     - browsertime-tp6-live-sheriffed
     - browsertime-benchmark
     - browsertime-benchmark-wasm
     - browsertime-youtube-playback
+    - browsertime-youtube-playback-power
     - browsertime-custom
     - browsertime-first-install
+    - browsertime-responsiveness
+    - browsertime-regression-tests
+    - browsertime-upload
+    - browsertime-speculative
+
+browsertime-clang:
+    - browsertime-tp6
+    - browsertime-tp6-essential
+    - browsertime-tp6-bytecode
+    - browsertime-tp6-live
+    - browsertime-tp6-live-sheriffed
+    - browsertime-benchmark
+    - browsertime-benchmark-wasm
+    - browsertime-youtube-playback
     - browsertime-responsiveness
 
 browsertime-profiling:
@@ -98,12 +113,6 @@ browsertime-profiling:
 browsertime-high-priority:
     - browsertime-benchmark
     - browsertime-tp6
-
-# Raptor desktop power tests
-# (requires Intel Power Gadget to be pre-installed)
-raptor-firefox-power:
-    - raptor-youtube-playback-v9-power-firefox
-    - raptor-youtube-playback-h264-power-firefox
 
 awsy:
     - awsy
@@ -116,14 +125,8 @@ ccov-code-coverage-tests:
     - test-coverage
     - test-coverage-wpt
 
-mochitest-headless:
-    - mochitest-plain-headless
-
 mochitest-valgrind:
     - mochitest-valgrind
-
-marionette-headless:
-    - marionette-headless
 
 desktop-screenshot-capture:
     - browser-screenshots
@@ -140,14 +143,15 @@ linux32-tests:
 linux1804-tests:
     - cppunit
     - crashtest
-    - firefox-ui-functional-local
-    - firefox-ui-functional-remote
+    - firefox-ui-functional
     - gtest
     # - jittest  # See comment in linux1804-ccov-tests set.
     - jsreftest
     - marionette
     - mochitest-a11y
+    - mochitest-browser-a11y
     - mochitest-browser-chrome
+    - mochitest-browser-media
     - mochitest-chrome
     - mochitest-chrome-gpu
     - mochitest-devtools-chrome
@@ -174,53 +178,92 @@ linux1804-ccov-tests:
     # on ccov builds.
     - jittest
 
-linux-talos-flex:
-    - talos-flex
-
-# Windows
-
-windows-7-tests:
-    - mochitest-browser-chrome
-    - mochitest-webgpu
-    - reftest
-    - xpcshell
-
-windows32-2004-tests:
+linux2204-wayland-tests:
+    - mochitest-plain
     - cppunit
     - crashtest
+    - firefox-ui-functional
     - gtest
-    - firefox-ui-functional-local
-    - firefox-ui-functional-remote
     - jsreftest
     - marionette
     - mochitest-a11y
+    - mochitest-browser-a11y
+    - mochitest-browser-chrome
+    - mochitest-browser-media
+    - mochitest-chrome
+    - mochitest-chrome-gpu
+    - mochitest-devtools-chrome
+    - mochitest-media
+    - mochitest-plain
+    - mochitest-plain-gpu
+    - mochitest-remote
+    - mochitest-webgl1-core
+    - mochitest-webgl1-ext
+    - mochitest-webgl2-core
+    - mochitest-webgl2-ext
+    - reftest
+    - reftest-snapshot
+    - telemetry-tests-client
+    - test-verify
+    - test-verify-gpu
+    - test-verify-wpt
+    - xpcshell
+
+# Windows
+windows32-2009-tests:
+    - cppunit
+    - crashtest
+    - gtest
+    - firefox-ui-functional
+    - jsreftest
+    - marionette
+    - mochitest-a11y
+    - mochitest-browser-a11y
+    - mochitest-browser-chrome
+    - mochitest-browser-media
     - mochitest-chrome
     - mochitest-chrome-gpu
     - mochitest-media
     - mochitest-plain
     - mochitest-plain-gpu
     - mochitest-remote
+    - mochitest-webgpu
+    - reftest
     - telemetry-tests-client
     - test-verify
     - test-verify-gpu
     - test-verify-wpt
+    - xpcshell
 
-windows-ccov-tests:
-    # jittest run on regular windows builds is redundant with SM(p), so we omit
-    # it from the windows-tests set. But, we still want to run it on ccov builds,
-    # so we have this set that has it and which runs on ccov builds.
+windows10-2009-tests:
+    - cppunit
+    - gtest
+    - mochitest-chrome
+    - mochitest-chrome-gpu
+    - mochitest-plain
+    - mochitest-plain-gpu
+    - xpcshell
+
+windows11-64-2009-ccov-tests:
     - jittest
+    - test-coverage
+    - web-platform-tests
+    - web-platform-tests-crashtest
+    - web-platform-tests-print-reftest
+    - web-platform-tests-reftest
+    - web-platform-tests-wdspec
 
-windows10-2004-tests:
+windows11-2009-tests:
     - cppunit
     - crashtest
-    - firefox-ui-functional-local
-    - firefox-ui-functional-remote
+    - firefox-ui-functional
     - gtest
     - jsreftest
     - marionette
     - mochitest-a11y
+    - mochitest-browser-a11y
     - mochitest-browser-chrome
+    - mochitest-browser-media
     - mochitest-chrome
     - mochitest-chrome-gpu
     - mochitest-devtools-chrome
@@ -240,37 +283,9 @@ windows10-2004-tests:
     - test-verify-wpt
     - xpcshell
 
-windows10-64-2004-ccov-tests:
-    - crashtest
-    - reftest
-    - mochitest-browser-chrome
-    - mochitest-devtools-chrome
-    - mochitest-plain
-    - gtest
-    - marionette
-    - test-coverage
-    - test-verify
-    - test-verify-gpu
-    - cppunit
-    - jsreftest
-    - web-platform-tests
-    - web-platform-tests-crashtest
-    - web-platform-tests-reftest
-    - web-platform-tests-print-reftest
-    - web-platform-tests-wdspec
-    # - jittest  # Bug 1733505
-    # - xpcshell  # Bug 1733505
-
-windows10-64-2004-failure-tests:
-    - mochitest-browser-chrome-failures
-
-windows10-32-2004-failure-tests:
-    - xpcshell-failures
-
 mingwclang-tests-debug:
     - cppunit
-    - firefox-ui-functional-local
-    - firefox-ui-functional-remote
+    - firefox-ui-functional
     - mochitest-a11y
     - mochitest-chrome-gpu
     - mochitest-plain-gpu
@@ -287,8 +302,7 @@ mingwclang-tests-debug:
 # for re-enabling.
 mingwclang-win32-tests-debug:
     - cppunit
-    - firefox-ui-functional-local
-    - firefox-ui-functional-remote
+    - firefox-ui-functional
     - mochitest-a11y
     - mochitest-chrome-gpu
     - mochitest-plain-gpu
@@ -305,13 +319,12 @@ mingwclang-tests-opt:
     - mochitest-chrome-gpu
     - mochitest-plain-gpu
 
-windows-aarch64-tests:
-    - mochitest-media
-
 windows-talos:
     - talos-bcv
     - talos-chrome
-    - talos-damp
+    - talos-damp-inspector
+    - talos-damp-webconsole
+    - talos-damp-other
     - talos-dromaeojs
     - talos-g1
     - talos-g4
@@ -322,26 +335,24 @@ windows-talos:
     - talos-perf-reftest-singletons
     - talos-svgr
     - talos-tp5o
-    - talos-xperf
     - talos-tabswitch
     - talos-realworld-webextensions
     - talos-webgl
     # - talos-h1 Bug 1487031 - Disabled for not finding actionable regressions
 
+talos-xperf:
+    - talos-xperf
+
 # macOS
-
-macosx1100-64-qr-failure-tests:
-    - xpcshell-failures
-    - mochitest-media-failures
-    - mochitest-browser-chrome-failures
-
 macosx1100-64-jittests:
     - jittest
 
 macosx1100-64-qr-tests:
     - crashtest
     - jsreftest
+    - mochitest-browser-a11y
     - mochitest-browser-chrome
+    - mochitest-browser-media
     - mochitest-chrome-gpu
     - mochitest-media
     - mochitest-webgpu
@@ -352,21 +363,18 @@ macosx1100-64-qr-tests:
     - reftest
     - xpcshell
 
-macosx1015-64-qr-failure-tests:
-    - mochitest-media-failures
-    - mochitest-browser-chrome-failures
-
 macosx1015-64-qr-tests:
     - cppunit
     - crashtest
-    - firefox-ui-functional-local
-    - firefox-ui-functional-remote
+    - firefox-ui-functional
     - gtest
     - jittest
     - jsreftest
     - marionette
     - mochitest-a11y
+    - mochitest-browser-a11y
     - mochitest-browser-chrome
+    - mochitest-browser-media
     - mochitest-chrome
     - mochitest-chrome-gpu
     - mochitest-devtools-chrome
@@ -389,7 +397,9 @@ macosx1015-64-qr-tests:
 macosx64-talos:
     - talos-bcv
     - talos-chrome
-    - talos-damp
+    - talos-damp-inspector
+    - talos-damp-webconsole
+    - talos-damp-other
     - talos-dromaeojs
     - talos-g1
     - talos-g4
@@ -424,6 +434,7 @@ android-x86_64-tests:
     - web-platform-tests
     - web-platform-tests-crashtest
     - web-platform-tests-reftest
+    - web-platform-tests-wdspec
     - xpcshell
 
 android-hw-aarch64-opt-unittests:
@@ -449,55 +460,14 @@ android-hw-aarch64:
     - mochitest-webgl1-ext
     - mochitest-webgl2-core
 
-android-hw-arm7-raptor-cpu-memory:
-    - raptor-speedometer-geckoview-cpu-memory
-    - raptor-scn-cpu-memory-idle-geckoview
-    - raptor-scn-cpu-memory-idle-refbrow
-    - raptor-scn-cpu-memory-idle-bg-geckoview
-    - raptor-scn-cpu-memory-idle-bg-refbrow
-
-android-hw-arm7-raptor-cpu-memory-power:
-    - raptor-speedometer-geckoview-cpu-memory-power
-    - raptor-scn-cpu-memory-power-idle-geckoview
-    - raptor-scn-cpu-memory-power-idle-refbrow
-    - raptor-scn-cpu-memory-power-idle-bg-geckoview
-    - raptor-scn-cpu-memory-power-idle-bg-refbrow
-
-android-hw-aarch64-raptor-cpu-memory:
-    - raptor-speedometer-geckoview-cpu-memory
-    - raptor-scn-cpu-memory-idle-geckoview
-    - raptor-scn-cpu-memory-idle-refbrow
-    - raptor-scn-cpu-memory-idle-bg-geckoview
-    - raptor-scn-cpu-memory-idle-bg-refbrow
-
-android-hw-aarch64-raptor-cpu-memory-power:
-    - raptor-speedometer-geckoview-cpu-memory-power
-    - raptor-scn-cpu-memory-power-idle-geckoview
-    - raptor-scn-cpu-memory-power-idle-refbrow
-    - raptor-scn-cpu-memory-power-idle-bg-geckoview
-    - raptor-scn-cpu-memory-power-idle-bg-refbrow
-
-android-hw-browsertime-power:
-    - browsertime-power
-
 android-hw-browsertime:
     - browsertime-tp6m
     - browsertime-tp6m-essential
     - browsertime-tp6m-live
-    - browsertime-speedometer-mobile
+    - browsertime-benchmark-speedometer-mobile
+    - browsertime-benchmark-speedometer3-mobile
     - browsertime-youtube-playback-mobile
-    - browsertime-unity-webgl-mobile
+    - browsertime-benchmark-unity-webgl-mobile
 
 android-hw-browsertime-profiling:
     - browsertime-tp6m-profiling
-
-linux-tsan-tests:
-    - crashtest
-    - mochitest-a11y
-    - mochitest-browser-chrome
-    - mochitest-media
-    - mochitest-plain
-    - reftest
-    - web-platform-tests
-    - web-platform-tests-reftest
-    - xpcshell

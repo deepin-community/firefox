@@ -63,7 +63,7 @@ policy-DisablePrimaryPasswordCreation = Եթե ճիշտ է՝ Հիմնական գ
 
 policy-DisablePasswordReveal = Թույլ մի տվեք, որ գաղտնաբառերը բացահայտվեն պահված մուտքերում։
 
-policy-DisablePocket = Վեբ կայքերը Pocket-ում պահպանելու համար անջատեք գործառույթը։
+policy-DisablePocket2 = Վեբ կայքերը { -pocket-brand-name }-ում պահպանելու համար անջատեք գործառույթը։
 
 policy-DisablePrivateBrowsing = Անջատել անհատական զննումը։
 
@@ -105,10 +105,6 @@ policy-Extensions = Տեղադրել, ապատեղադրել կամ կողպել
 policy-ExtensionSettings = Կառավարել ընդլայնման տեղակադրան բոլոր կողմերը։
 
 policy-ExtensionUpdate = Միացնել կամ անջատել ընդլայումների ինքնաթարմացումները։
-
-policy-FirefoxHome = Կազմաձևել Firefox-ի տնէջը:
-
-policy-FlashPlugin = Ընդունել կամ մերժել Flash բաղադրիչի գործածումը։
 
 policy-Handlers = Կարգավորել սկզբնադիր հավելվածների մշակիչները:
 
@@ -174,9 +170,6 @@ policy-SearchEngines = Կարգավորե՛ք որոնիչի շարժիչ կար
 
 policy-SearchSuggestEnabled = Միացնել կամ անջատել որոնման առաջարկները:
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Տեղադրել PKCS #11 մոդուլները:
-
 policy-SSLVersionMax = Սահմանել SSL-֊ի առավելագույն տարբերակը:
 
 policy-SSLVersionMin = Սահմանել SSL-ի նվազագույն տարբերակը:
@@ -188,3 +181,4 @@ policy-UserMessaging = Մի ցուցադրեք օգտագործողին որոշ
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Այցելելուց արգելափակել կայքերը: Տեսեք փաստաթղթերը` ձևաչափում մանրամասների համար:
 
+policy-Windows10SSO = Թույլատրել Windows եզակի գրանցում Microsoft-ում, աշխատանքային և դպրոցական հաշիվներում:

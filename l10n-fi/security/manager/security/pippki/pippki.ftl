@@ -16,8 +16,6 @@ change-password-old = Nykyinen salasana:
 change-password-new = Uusi salasana:
 change-password-reenter = Uusi salasana (uudestaan):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Salasanaa ei voitu vaihtaa.
 pippki-incorrect-pw = Väärä salasana. Yritä uudestaan.
 pippki-pw-change-ok = Salasana vaihdettiin onnistuneesti.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Olet parhaillaan FIPS-tilassa. FIPS edelly
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Nollaa pääsalasana
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Poista
-
 reset-primary-password-text = Jos pääsalasana poistetaan, kaikki tallennetut sivusto- ja sähköpostisalasanat, henkilökohtaiset varmenteet ja salaiset avaimet unohdetaan. Poistetaanko pääsalasana?
 
 pippki-reset-password-confirmation-title = Nollaa pääsalasana
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Pääsalasanasi on nollattu.
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Ladataan varmennetta
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Aseta uuden varmentajan luotettavuus.
 download-cert-trust-ssl =
     .label = Sivustojen todentajana.
@@ -77,7 +74,5 @@ set-password-reminder = Tärkeää: Jos varmenteen varmuuskopion salasana unohtu
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Suojattu polettitodennus
-protected-auth-msg = Todenna poletille. Todennustapa riippuu poletin tyypistä.
-protected-auth-token = Poletti:
+## Protected authentication alert
+

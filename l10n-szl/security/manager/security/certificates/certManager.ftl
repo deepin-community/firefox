@@ -26,9 +26,9 @@ certmgr-people = Mosz certyfikaty, co idyntyfikujōm te ôsoby
 certmgr-server = Te wkludzynia idyntyfikujōm wyjōntki felerōw certyfikatōw serwera
 certmgr-ca = Mosz certyfikaty, co idyntyfikujōm te regiyrōnki
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Edytuj sztalōnki wierzynio certyfikatu CA
-    .style = width: 40em;
+    .style = min-width: 40em;
 
 certmgr-edit-cert-edit-trust = Edytuj sztalōnki wierzynio:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Tyn certyfikat poradzi idyntyfikować używoczy emaili.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Skasuj certyfikat
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Host
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Serwer
-
-certmgr-override-lifetime =
-    .label = Czas życio
 
 certmgr-token-name =
     .label = Maszina bezpieczyństwa
@@ -90,11 +87,11 @@ certmgr-delete-builtin =
     .accesskey = S
 
 certmgr-backup =
-    .label = Zrōb ibryczno kopia…
+    .label = Zrōb ibryczno kopijo…
     .accesskey = I
 
 certmgr-backup-all =
-    .label = Zrōb ibryczno kopia wszyskigo…
+    .label = Zrōb ibryczno kopijo wszyskigo…
     .accesskey = k
 
 certmgr-restore =
@@ -185,8 +182,6 @@ delete-email-cert-impact = Jak skasujesz emailowy certyfikat ôd tyj ôsoby, to 
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Certyfikat z nōmerym seryje: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Niy posyłej żodnego certyfikatu klijynta

@@ -13,8 +13,6 @@ change-password-old = Clau actual:
 change-password-new = Clau nueva:
 change-password-reenter = Clau nueva (unatra vegada):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Descargando o certificau
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Se l'ha demandau que confíe en una entidat certificadera (CA) nueva.
 download-cert-trust-ssl =
     .label = Confiar en ista CA ta identificar puestos web.
@@ -56,7 +54,5 @@ set-password-reminder = Important: si ixuplida a clau d'a copia de seguranza d'o
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Autentificación de teste protechida
-protected-auth-msg = Autentifique a o teste. O metodo d'autentificación pende en o tipo d'o suyo teste.
-protected-auth-token = Teste:
+## Protected authentication alert
+

@@ -65,8 +65,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } käyttäjää
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Synkronoi kirjanmerkkisi kaikkialla.
@@ -94,24 +92,6 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Lue julkaisutiedote
 
-## Search Bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 # Variables:
@@ -123,20 +103,6 @@ cfr-doorhanger-milestone-heading2 =
     }
 cfr-doorhanger-milestone-ok-button = Näytä kaikki
     .accesskey = N
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = Sulje
     .accesskey = S
 
@@ -151,13 +117,6 @@ cfr-doorhanger-doh-secondary-button = Poista käytöstä
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Yksityisyydelläsi on merkitystä. { -brand-short-name } eristää, tai asettaa ”hiekkalaatikkoon”, sivustot toisistaan. Eristämisen myötä salasanojen, luottokorttitietojen ja muun arkaluonteisen tiedon varastaminen on aiempaa vaikeampaa.
-cfr-doorhanger-fission-header = Sivustojen eristäminen
-cfr-doorhanger-fission-primary-button = Selvä
-    .accesskey = S
-cfr-doorhanger-fission-secondary-button = Lue lisää
-    .accesskey = L
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Videot tällä sivustolla eivät välttämättä toimi kunnolla tällä { -brand-short-name }in versiolla. Päivitä { -brand-short-name } nyt saadaksesi täyden videotuen.
@@ -165,14 +124,134 @@ cfr-doorhanger-video-support-header = Päivitä { -brand-short-name } toistaakse
 cfr-doorhanger-video-support-primary-button = Päivitä nyt
     .accesskey = P
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
 spotlight-public-wifi-vpn-header = Vaikuttaa siltä, että käytät julkista Wi-Fi-yhteyttä
+spotlight-public-wifi-vpn-body = Harkitse VPN-erillisverkon käyttöä piilottaaksesi sijaintisi ja selailutoimintasi. Erillisverkko suojaa yhteytesi julkisissa tiloissa kuten lentokentillä ja kahviloissa.
 spotlight-public-wifi-vpn-primary-button = Pysy yksityisenä { -mozilla-vpn-brand-name }:n avulla
     .accesskey = S
 spotlight-public-wifi-vpn-link = Ei nyt
     .accesskey = E
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Parempi internet alkaa sinusta
+spotlight-better-internet-body = Kun käytät { -brand-short-name }ia, äänestät avoimen ja saavutettavan internetin puolesta, joka on parempi kaikille.
+spotlight-peace-mind-header = Pidämme huolen sinusta
+spotlight-peace-mind-body = Joka kuukausi { -brand-short-name } estää keskimäärin yli 3 000 seurainta käyttäjää kohden. Koska minkään, etenkään yksityisyyteen liittyvien haittojen, kuten seurainten, ei pitäisi olla sinun ja hyvän internetin välissä.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Pidä Dockissa
+       *[other] Kiinnitä tehtäväpalkkiin
+    }
+spotlight-pin-secondary-button = Ei nyt
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+mr2022-background-update-toast-title = Uusi { -brand-short-name }. Entistä yksityisempi. Vähemmän seuraimia. Ei kompromisseja.
+mr2022-background-update-toast-text = Kokeile uusinta { -brand-short-name }ia nyt. Päivitetty tähän mennessä vahvimmalla seurantasuojauksella.
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it
+# using a variable font like Arial): the button can only fit 1-2
+# additional characters, exceeding characters will be truncated.
+mr2022-background-update-toast-primary-button-label = Avaa { -brand-shorter-name } nyt
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = Muistuta minua myöhemmin
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Kokeile
+    .accesskey = o
+firefoxview-cfr-secondarybutton = Ei nyt
+    .accesskey = n
+firefoxview-cfr-header-v2 = Jatka siitä mihin jäit
+firefoxview-cfr-body-v2 = Hanki äskettäin suljetut välilehdet takaisin ja siirry saumattomasti laitteiden välillä { -firefoxview-brand-name }llä.
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = Tervehdi { -firefoxview-brand-name }ä
+
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = Haluatko avoimen välilehden puhelimeltasi? Nappaa se. Tarvitsetko sivuston, jolla juuri vierailit? Hokkuspokkus, se on palannut { -firefoxview-brand-name }llä.
+firefoxview-spotlight-promo-primarybutton = Katso miten se toimii
+firefoxview-spotlight-promo-secondarybutton = Ohita
+
+## Colorways expiry reminder CFR
+
+colorways-cfr-primarybutton = Valitse väriteema
+    .accesskey = ä
+
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = Väritä selaimesi { -brand-short-name }in erityisillä sävyillä, jotka ovat saaneet vaikutteita kulttuuria muuttaneista äänistä.
+colorways-cfr-header-28days = Itsenäiset äänet -väriteemat vanhenevat 16. tammikuuta
+colorways-cfr-header-14days = Itsenäiset äänet -väriteemat vanhenevat kahden viikon kuluttua
+colorways-cfr-header-7days = Itsenäiset äänet -väriteemat vanhenevat tällä viikolla
+colorways-cfr-header-today = Itsenäiset äänet -väriteemat vanhenevat tänään
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-header = Sallitko { -brand-short-name }in vastata evästekyselyihin kielteisesti?
+cfr-cbh-body = { -brand-short-name } voi automattisesti vastata moniin evästekyselyihin kielteisesti.
+cfr-cbh-confirm-button = Vastaa evästepyyntöihin kieltävästi
+    .accesskey = V
+cfr-cbh-dismiss-button = Ei nyt
+    .accesskey = N
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+july-jam-headline = Pidämme sinusta huolen
+july-jam-body = Joka kuukausi { -brand-short-name } estää keskimäärin 3 000+ seurainta käyttäjää kohden, jonka ansiosta sinulla on turvallinen ja nopea pääsy hyvään internetiin.
+july-jam-set-default-primary = Avaa linkit { -brand-short-name }illa
+fox-doodle-pin-headline = Tervetuloa takaisin
+
+# “indie” is short for the term “independent”.
+# In this instance, free from outside influence or control.
+fox-doodle-pin-body = Tässä on pieni muistutus siitä, että voit pitää suosikkiselaimesi vain yhden napsautuksen päässä.
+fox-doodle-pin-primary = Avaa linkit { -brand-short-name }illa
+fox-doodle-pin-secondary = Ei nyt
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+set-default-pdf-handler-headline = <strong>PDF-tiedostot avataan nyt { -brand-short-name }issa.</strong> Muokkaa tai allekirjoita lomakkeita suoraan selaimessa. Muuttaksesi toimintaa, etsi asetuksista “PDF”.
+set-default-pdf-handler-primary = Selvä
+
+## FxA sync CFR
+
+fxa-sync-cfr-header = Uusi laite tulevaisuudessa?
+fxa-sync-cfr-body = Varmista, että uusimmat kirjanmerkkisi, salasanasi ja välilehdet tulevat mukanasi aina, kun avaat uuden { -brand-product-name }-selaimen.
+fxa-sync-cfr-primary = Lue lisää
+    .accesskey = L
+fxa-sync-cfr-secondary = Muistuta myöhemmin
+    .accesskey = y
+
+## Device Migration FxA Spotlight
+
+device-migration-fxa-spotlight-header = Käytätkö vanhempaa laitetta?
+device-migration-fxa-spotlight-body = Varmuuskopioi tietosi varmistaaksesi, ettet menetä tärkeitä tietoja, kuten kirjanmerkkejä ja salasanoja – varsinkin jos vaihdat uuteen laitteeseen.
+device-migration-fxa-spotlight-primary-button = Kuinka varmuuskopioida omat tiedot
+device-migration-fxa-spotlight-link = Muistuta myöhemmin

@@ -12,7 +12,6 @@
 #include "nscore.h"
 #include "nsCRT.h"
 #include "nsString.h"
-#include "plstr.h"
 #include "nsURLHelper.h"
 #include "nsNetCID.h"
 #include "nsIObjectInputStream.h"
@@ -25,6 +24,7 @@
 #include "nsIClassInfoImpl.h"
 #include "nsIURIMutator.h"
 #include "mozilla/net/MozURL.h"
+#include "mozilla/StaticPrefs_network.h"
 
 using namespace mozilla::ipc;
 
@@ -266,6 +266,11 @@ nsSimpleURI::GetHasRef(bool* result) {
 
 nsresult nsSimpleURI::SetSpecInternal(const nsACString& aSpec,
                                       bool aStripWhitespace) {
+  if (StaticPrefs::network_url_max_length() &&
+      aSpec.Length() > StaticPrefs::network_url_max_length()) {
+    return NS_ERROR_MALFORMED_URI;
+  }
+
   nsresult rv = net_ExtractURLScheme(aSpec, mScheme);
   if (NS_FAILED(rv)) {
     return rv;
@@ -292,9 +297,12 @@ nsSimpleURI::GetScheme(nsACString& result) {
   return NS_OK;
 }
 
-nsresult nsSimpleURI::SetScheme(const nsACString& scheme) {
-  const nsPromiseFlatCString& flat = PromiseFlatCString(scheme);
-  if (!net_IsValidScheme(flat)) {
+nsresult nsSimpleURI::SetScheme(const nsACString& input) {
+  // Strip tabs, newlines, carriage returns from input
+  nsAutoCString scheme(input);
+  scheme.StripTaggedASCII(ASCIIMask::MaskCRLFTab());
+
+  if (!net_IsValidScheme(scheme)) {
     NS_WARNING("the given url scheme contains invalid characters");
     return NS_ERROR_MALFORMED_URI;
   }
@@ -377,6 +385,11 @@ nsSimpleURI::GetPathQueryRef(nsACString& result) {
 }
 
 nsresult nsSimpleURI::SetPathQueryRef(const nsACString& aPath) {
+  if (StaticPrefs::network_url_max_length() &&
+      aPath.Length() > StaticPrefs::network_url_max_length()) {
+    return NS_ERROR_MALFORMED_URI;
+  }
+
   nsAutoCString path;
   nsresult rv = NS_EscapeURL(aPath, esc_OnlyNonASCII, path, fallible);
   if (NS_FAILED(rv)) {
@@ -439,6 +452,11 @@ nsSimpleURI::GetRef(nsACString& result) {
 // NOTE: SetRef("") removes our ref, whereas SetRef("#") sets it to the empty
 // string (and will result in .spec and .path having a terminal #).
 nsresult nsSimpleURI::SetRef(const nsACString& aRef) {
+  if (StaticPrefs::network_url_max_length() &&
+      aRef.Length() > StaticPrefs::network_url_max_length()) {
+    return NS_ERROR_MALFORMED_URI;
+  }
+
   nsAutoCString ref;
   nsresult rv =
       NS_EscapeURL(aRef, esc_OnlyNonASCII | esc_Spaces, ref, fallible);
@@ -450,6 +468,12 @@ nsresult nsSimpleURI::SetRef(const nsACString& aRef) {
     // Empty string means to remove ref completely.
     mIsRefValid = false;
     mRef.Truncate();  // invariant: mRef should be empty when it's not valid
+
+    // Trim trailing invalid chars when ref and query are removed
+    if (mScheme != "javascript" && mRef.IsEmpty() && mQuery.IsEmpty()) {
+      TrimTrailingCharactersFromPath();
+    }
+
     return NS_OK;
   }
 
@@ -682,6 +706,10 @@ nsSimpleURI::GetQuery(nsACString& aQuery) {
 }
 
 nsresult nsSimpleURI::SetQuery(const nsACString& aQuery) {
+  if (StaticPrefs::network_url_max_length() &&
+      aQuery.Length() > StaticPrefs::network_url_max_length()) {
+    return NS_ERROR_MALFORMED_URI;
+  }
   nsAutoCString query;
   nsresult rv = NS_EscapeURL(aQuery, esc_OnlyNonASCII, query, fallible);
   if (NS_FAILED(rv)) {
@@ -692,6 +720,12 @@ nsresult nsSimpleURI::SetQuery(const nsACString& aQuery) {
     // Empty string means to remove query completely.
     mIsQueryValid = false;
     mQuery.Truncate();  // invariant: mQuery should be empty when it's not valid
+
+    // Trim trailing invalid chars when ref and query are removed
+    if (mScheme != "javascript" && mRef.IsEmpty() && mQuery.IsEmpty()) {
+      TrimTrailingCharactersFromPath();
+    }
+
     return NS_OK;
   }
 
@@ -710,6 +744,22 @@ nsresult nsSimpleURI::SetQuery(const nsACString& aQuery) {
 nsresult nsSimpleURI::SetQueryWithEncoding(const nsACString& aQuery,
                                            const Encoding* aEncoding) {
   return SetQuery(aQuery);
+}
+
+void nsSimpleURI::TrimTrailingCharactersFromPath() {
+  const auto* start = mPath.BeginReading();
+  const auto* end = mPath.EndReading();
+
+  auto charFilter = [](char c) { return static_cast<uint8_t>(c) > 0x20; };
+  const auto* newEnd =
+      std::find_if(std::reverse_iterator<decltype(end)>(end),
+                   std::reverse_iterator<decltype(start)>(start), charFilter)
+          .base();
+
+  auto trailCount = std::distance(newEnd, end);
+  if (trailCount) {
+    mPath.Truncate(mPath.Length() - trailCount);
+  }
 }
 
 // Queries this list of interfaces. If none match, it queries mURI.

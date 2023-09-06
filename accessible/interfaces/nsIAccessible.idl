@@ -13,12 +13,17 @@ interface nsIAccessibleRelation;
 webidl Node;
 
 %{C++
+#define NS_ACCESSIBLE_CACHE_TOPIC "accessible-cache"
 namespace mozilla {
 namespace a11y {
+class Accessible;
 class LocalAccessible;
 }
 }
 %}
+
+[ptr] native InternalAccessible(mozilla::a11y::Accessible);
+[ptr] native InternalLocalAccessible(mozilla::a11y::LocalAccessible);
 
 /**
  * A cross-platform interface that supports platform-specific
@@ -163,13 +168,6 @@ interface nsIAccessible : nsISupports
   void getState(out unsigned long aState, out unsigned long aExtraState);
 
   /**
-   * Help text associated with node
-   *
-   * @note As of now, this just returns empty string.
-   */
-  readonly attribute AString help;
-
-  /**
    * Focused accessible child of node
    */
   readonly attribute nsIAccessible focusedChild;
@@ -178,6 +176,11 @@ interface nsIAccessible : nsISupports
    * Attributes of accessible
    */
   readonly attribute nsIPersistentProperties attributes;
+
+  /**
+   * Cached fields from a remote accessible
+   */
+  readonly attribute nsIPersistentProperties cache;
 
   /**
    * Platform specific interface for accessible
@@ -335,9 +338,14 @@ interface nsIAccessible : nsISupports
    */
   void announce(in AString announcement, in unsigned short priority);
 
-  %{C++
-  virtual mozilla::a11y::LocalAccessible* ToInternalAccessible() const = 0;
-  %}
+  /**
+   * Get the role of this Accessible as an ARIA role token. This might have been
+   * set explicitly (e.g. role="button") or it might be implicit in native
+   * markup (e.g. <button> returns "button").
+   */
+  readonly attribute AString computedARIARole;
+
+  [notxpcom, nostdcall] InternalLocalAccessible toInternalAccessible();
+  [notxpcom, nostdcall] InternalAccessible toInternalGeneric();
 
 };
-

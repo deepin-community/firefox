@@ -87,25 +87,16 @@ restart-later = I-restart Mamaya
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that the password manager setting
-# is being controlled by an extension
-extension-controlled-password-saving = May isang extension, <img data-l10n-name="icon"/> { $name }, na nagkokontrol sa setting na ito.
 
-# This string is shown to notify the user that their notifications permission
-# is being controlled by an extension.
-extension-controlled-web-notifications = An extension, <img data-l10n-name="icon"/> { $name }, is controlling this setting.
-
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = Ang extension, <img data-l10n-name="icon"/> { $name }, ay nangangailangan ng Container Tabs.
-
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = An extension, <img data-l10n-name="icon"/> { $name }, is controlling this setting.
-
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = Ang extension, <img data-l10n-name="icon"/> { $name }, ay nagkokontrol kung pano nagcoconnect ang { -brand-short-name } sa internet.
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -138,10 +129,6 @@ set-as-my-default-browser =
     .label = Gawing Default…
     .accesskey = D
 
-startup-restore-previous-session =
-    .label = Ibalik ang Nakaraang Session
-    .accesskey = S
-
 startup-restore-warn-on-quit =
     .label = Balaan ka kapag isinara ang browser
 
@@ -157,10 +144,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Buksan ang mga link sa mga tab sa halip na mga bagong window
     .accesskey = w
-
-warn-on-close-multiple-tabs =
-    .label = Balaan ka kapag magsasara ng maraming tab
-    .accesskey = m
 
 warn-on-open-many-tabs =
     .label = Balaan ka kapag ang pagbukas ng maraming mga tab ay maaaring makapagpabagal sa { -brand-short-name }
@@ -185,6 +168,10 @@ browser-containers-settings =
     .accesskey = i
 
 containers-disable-alert-title = Isara Lahat ng Mga Container Tab?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Kapag dinisable mo ngayon ang Container Tabs, may { $tabCount } container tab na isasara. Sigurado ka bang gusto mo i-disable ang Container Tabs?
@@ -196,6 +183,9 @@ containers-disable-alert-ok-button =
         [one] Isara ang { $tabCount } Container Tab
        *[other] Isara ang { $tabCount } Container Tab
     }
+
+##
+
 containers-disable-alert-cancel-button = Patuloy na pinagana
 
 containers-remove-alert-title = Alisin ang Container na Ito?
@@ -215,7 +205,11 @@ containers-remove-cancel-button = Huwag alisin ang Container na ito
 
 language-and-appearance-header = Wika at Hitsura
 
-fonts-and-colors-header = Mga Font at Kulay
+preferences-web-appearance-choice-input-light =
+    .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
+
+preferences-web-appearance-choice-input-dark =
+    .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
 
 default-font = Default na font
     .accesskey = D
@@ -225,10 +219,6 @@ default-font-size = Laki
 advanced-fonts =
     .label = Advanced…
     .accesskey = A
-
-colors-settings =
-    .label = Mga Kulay…
-    .accesskey = M
 
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Zoom
@@ -262,6 +252,8 @@ translate-web-pages =
     .label = Isalin ang nilalaman ng web
     .accesskey = T
 
+fx-translate-web-pages = { -translations-brand-name }
+
 # The <img> element is replaced by the logo of the provider
 # used to provide machine translations for web pages.
 translate-attribution = Mga pagsasalin sa pamamagitan ng <img data-l10n-name="logo"/>
@@ -285,8 +277,7 @@ files-and-applications-title = Mga File at Application
 
 download-header = Mga Download
 
-download-save-to =
-    .label = i-Save ang mga file sa
+download-save-where = i-Save ang mga file sa
     .accesskey = S
 
 download-choose-folder =
@@ -492,6 +483,10 @@ browsing-use-smooth-scrolling =
     .label = Gumamit ng smooth scrolling
     .accesskey = m
 
+browsing-gtk-use-non-overlay-scrollbars =
+    .label = Laging ipakita ang mga scrollbar
+    .accesskey = o
+
 browsing-use-onscreen-keyboard =
     .label = Ipakita ang touch keyboard kung kinakailangan
     .accesskey = k
@@ -549,11 +544,6 @@ home-restore-defaults =
     .label = Ibalik sa dating ayos
     .accesskey = I
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Firefox Home (Default)
-
 home-mode-choice-custom =
     .label = Custom URLs...
 
@@ -581,23 +571,18 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Makikita sa Home ng Firefox
-home-prefs-content-description = Piliin kung anu-ano ang makikita mong nilalaman sa iyong Firefox Home.
-
 home-prefs-search-header =
     .label = Paghahanap sa Web
-home-prefs-topsites-header =
-    .label = Mga Pangunahing Site
-home-prefs-topsites-description = Ang mga site na iyong pinakamadalas puntahan
-home-prefs-topsites-by-option-sponsored =
-    .label = Mga Pangunahing Site ng mga Sponsor
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+
 home-prefs-recommended-by-header =
     .label = Inirekomenda ni { $provider }
-home-prefs-recommended-by-description-update = Bukod-tanging content sa web, kinolekta ng { $provider }
 
 ##
 
@@ -605,9 +590,6 @@ home-prefs-recommended-by-learn-more = Paano ito gumagana
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Mga Na-sponsor na Kwento
 
-home-prefs-highlights-header =
-    .label = Mga tampok
-home-prefs-highlights-description = Isang seleksyon ng mga site na iyong nai-save o nabisita
 home-prefs-highlights-option-visited-pages =
     .label = Mga Binisitang Pahina
 home-prefs-highlights-options-bookmarks =
@@ -627,7 +609,6 @@ home-prefs-recent-activity-description = Isang pagpipilian ng mga kamakailang si
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Mga snippet
-home-prefs-snippets-description = Mga Update mula sa { -vendor-short-name } at { -brand-product-name }
 
 home-prefs-snippets-description-new = Mga tip at balita mula sa { -vendor-short-name } at { -brand-product-name }
 
@@ -663,6 +644,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Ipakita ang mga mungkahi sa paghahanap sa mga resulta sa address bar
     .accesskey = l
+
 
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
@@ -730,6 +712,10 @@ containers-remove-button =
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
 sync-signedout-caption = Dalhin Mo Ang Web Kahit Saan
 sync-signedout-description2 = I-synchronize ang iyong mga bookmark, kasaysayan, mga tab, password, add-on, at mga setting sa lahat ng iyong mga device.
 
@@ -749,6 +735,9 @@ sync-mobile-promo = Mag-download ng Firefox para sa <img data-l10n-name="android
 
 ## Firefox Account - Signed in
 
+
+## Firefox account - Signed in
+
 sync-profile-picture =
     .tooltiptext = Baguhin ang larawan ng profile
 
@@ -759,8 +748,13 @@ sync-sign-out =
 sync-manage-account = Pamahalaan ang account
     .accesskey = o
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = Hindi pa verified ang { $email }.
 sync-signedin-login-failure = Mangyaring mag-sign in upang maikonekta uli ang { $email }
+
+##
 
 sync-resend-verification =
     .label = Ipadala muli ang Beripikasyon
@@ -781,7 +775,7 @@ prefs-syncing-on = Pag-sync: NAKABUKAS
 prefs-syncing-off = Pag-sync: NAKASARA
 
 prefs-sync-turn-on-syncing =
-    .label = Buksan ang pag-sync…
+    .label = Buksan ang pagsisync…
     .accesskey = s
 
 prefs-sync-offer-setup-label2 = I-synchronize ang iyong mga bookmark, kasaysayan, mga tab, password, add-on, at mga setting sa lahat ng iyong mga device.
@@ -791,9 +785,14 @@ prefs-sync-now =
     .accesskeynotsyncing = N
     .labelsyncing = Nagsi-sync...
 
-## The list of things currently syncing.
+prefs-sync-now-button =
+    .label = Mag-Sync Na
+    .accesskey = N
 
-sync-currently-syncing-heading = Kasalukuyan kang nagsi-sync ng mga sumusunod:
+prefs-syncing-button =
+    .label = Nagsi-sync...
+
+## The list of things currently syncing.
 
 sync-currently-syncing-bookmarks = Mga Bookmark
 sync-currently-syncing-history = Kasaysayan
@@ -810,9 +809,9 @@ sync-change-options =
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog =
+sync-choose-what-to-sync-dialog3 =
     .title = Piliin Kung Alin Ang Isi-Sync
-    .style = width: 36em; min-height: 35em;
+    .style = min-width: 36em;
     .buttonlabelaccept = I-Save ang mga Pagbabago
     .buttonaccesskeyaccept = S
     .buttonlabelextra2 = Mag-disconnect...
@@ -873,6 +872,16 @@ sync-device-name-save =
     .accesskey = v
 
 sync-connect-another-device = Magkonekta ng Isa Pang Device
+
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Napadala na ang beripikasyon
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Ang beripikasyon na link ay naipadala na sa { $email }.
+sync-verification-not-sent-title = Hindi maipadala ang beripikasyon
+sync-verification-not-sent-body = Hindi kami makapagpadala ng verification mail sa ngayon, pakisubukan mamaya.
 
 ## Privacy Section
 
@@ -1023,18 +1032,8 @@ sitedata-block-desc = Uri ng content na hinaharang
 
 sitedata-option-block-cross-site-trackers =
     .label = Mga cross-site tracker
-sitedata-option-block-cross-site-and-social-media-trackers =
-    .label = Mga cross-site at social media tracker
-sitedata-option-block-cross-site-tracking-cookies-including-social-media =
-    .label = Mga cross-site tracking cookie — kasama ang mga social media cookie
-sitedata-option-block-cross-site-cookies-including-social-media =
-    .label = Mga cross-site cookie — kasama ang mga social media cookie
-sitedata-option-block-cross-site-and-social-media-trackers-plus-isolate =
-    .label = Mga cross-site at social media tracker, at ihiwalay ang mga natitirang cookie
 sitedata-option-block-unvisited =
     .label = Mga cookie na galing sa mga hindi pa nabisitang website
-sitedata-option-block-all-third-party =
-    .label = Lahat ng third-party na mga cookie (maaaring maging sanhi upang masira ang mga website)
 sitedata-option-block-all =
     .label = Lahat ng mga cookie (maaaring makasira ng mga website)
 
@@ -1049,6 +1048,9 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = I-manage ang mga Exception…
     .accesskey = x
+
+## Privacy Section - Cookie Banner Handling
+
 
 ## Privacy Section - Address Bar
 
@@ -1110,7 +1112,6 @@ content-blocking-etp-custom-desc = Piliin kung aling mga tracker at scripts ang 
 content-blocking-etp-blocking-desc = Hinaharang ng { -brand-short-name } ang sumusunod:
 
 content-blocking-private-windows = Tracking content sa mga Private Window
-content-blocking-cross-site-cookies-in-all-windows = Mga cross-site cookie sa lahat ng mga window (kasama ang mga tracking cookie)
 content-blocking-cross-site-tracking-cookies = Mga cross-site tracking cookie
 content-blocking-all-cross-site-cookies-private-windows = Mga cross-site cookie sa mga Pribadong Window
 content-blocking-cross-site-tracking-cookies-plus-isolate = Mga cross-site tracking cookie, at ihiwalay ang mga natitirang cookie
@@ -1118,12 +1119,12 @@ content-blocking-social-media-trackers = Mga social media tracker
 content-blocking-all-cookies = Lahat ng mga cookie
 content-blocking-unvisited-cookies = Mga cookie mula sa mga hindi binibisitang site
 content-blocking-all-windows-tracking-content = Tracking content sa lahat ng mga window
-content-blocking-all-third-party-cookies = Lahat ng mga third-party na mga cookie
 content-blocking-cryptominers = Mga Cryptominer
 content-blocking-fingerprinters = Mga Fingerprinter
 
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
+
 content-blocking-warning-title = Mag-ingat!
-content-blocking-and-isolating-etp-warning-description = Ang pagharang sa mga tracker at paghiwalay sa mga cookie ay maaaring makaapekto sa functionality ng ilang mga site. Mag-reload ng pahina na may mga tracker para maiload lahat ng content.
 content-blocking-and-isolating-etp-warning-description-2 = Ang setting na ito ay maaaring maging sanhi ng ilang mga website na hindi ipakita ang nilalaman o gumana nang tama. Kung tila nasira ang isang site, baka gusto mong patayin ang tracking protection para sa site na iyon upang mai-load ang lahat ng nilalaman.
 content-blocking-warning-learn-how = Alamin kung paano
 
@@ -1210,10 +1211,6 @@ permissions-autoplay-settings =
 permissions-block-popups =
     .label = Harangin ang mga pop-up window
     .accesskey = B
-
-permissions-block-popups-exceptions =
-    .label = Mga Exception...
-    .accesskey = E
 
 permissions-addon-install-warning =
     .label = Balaan ka kapag sinusubukan ng mga website na magkabit ng mga add-on
@@ -1305,13 +1302,11 @@ httpsonly-radio-enabled-pbm =
 httpsonly-radio-disabled =
     .label = Huwag i-enable ang HTTPS-Only Mode
 
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Desktop
 downloads-folder-name = Mga Download
 choose-download-folder-title = Pumili ng Download Folder:
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Mag-save ng mga file sa { $service-name }

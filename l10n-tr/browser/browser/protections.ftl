@@ -6,8 +6,8 @@
 #   $count (Number) - Number of tracking events blocked.
 graph-week-summary =
     { $count ->
-        [one] { -brand-short-name } geçen hafta { $count } takipçiyi engelledi
-       *[other] { -brand-short-name } geçen hafta { $count } takipçiyi engelledi
+        [one] { -brand-short-name } geçen hafta { $count } takip kodunu engelledi
+       *[other] { -brand-short-name } geçen hafta { $count } takip kodunu engelledi
     }
 
 # Variables:
@@ -16,14 +16,14 @@ graph-week-summary =
 # earliest date recorded in the database.
 graph-total-tracker-summary =
     { $count ->
-        [one] { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") } tarihinden beri <b>{ $count }</b> takipçi engellendi
-       *[other] { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") } tarihinden beri <b>{ $count }</b> takipçi engellendi
+        [one] { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") } tarihinden beri <b>{ $count }</b> takip kodu engellendi
+       *[other] { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") } tarihinden beri <b>{ $count }</b> takip kodu engellendi
     }
 
 # Text displayed instead of the graph when in Private Mode
-graph-private-window = { -brand-short-name } gizli pencelerde takipçileri engellemeye devam eder ama neleri engellediğinin kaydını tutmaz.
+graph-private-window = { -brand-short-name } gizli pencelerde takip kodlarını engellemeye devam eder ama neleri engellediğinin kaydını tutmaz.
 # Weekly summary of the graph when the graph is empty in Private Mode
-graph-week-summary-private-window = Bu hafta { -brand-short-name } tarafından engellenen takipçiler
+graph-week-summary-private-window = Bu hafta { -brand-short-name } tarafından engellenen takip kodları
 
 protection-report-webpage-title = Korumalar Panosu
 protection-report-page-content-title = Korumalar Panosu
@@ -37,7 +37,7 @@ protection-report-settings-link = Gizlilik ve güvenlik ayarlarınızı yönetin
 etp-card-title-always = Gelişmiş izlenme koruması: Her zaman açık
 etp-card-title-custom-not-blocking = Gelişmiş izlenme koruması: KAPALI
 etp-card-content-description = { -brand-short-name }, şirketlerin sizi web’de gizlice takip etmesini otomatik olarak engeller.
-protection-report-etp-card-content-custom-not-blocking = Şu anda tüm korumalar kapalı. { -brand-short-name } koruma ayarlarınızı yöneterek hangi takipçilerin engelleneceğini seçebilirsiniz.
+protection-report-etp-card-content-custom-not-blocking = Şu anda tüm korumalar kapalı. { -brand-short-name } koruma ayarlarınızı yöneterek hangi takip kodlarının engelleneceğini seçebilirsiniz.
 protection-report-manage-protections = Ayarları yönet
 
 # This string is used to label the X axis of a graph. Other days of the week are generated via Intl.DateTimeFormat,
@@ -45,10 +45,10 @@ protection-report-manage-protections = Ayarları yönet
 graph-today = Bugün
 
 # This string is used to describe the graph for screenreader users.
-graph-legend-description = Bu hafta engellenen her takipçi türünün toplam sayısını gösteren bir grafik.
+graph-legend-description = Bu hafta engellenen her takip kodu türünün toplam sayısını gösteren bir grafik.
 
-social-tab-title = Sosyal medya takipçileri
-social-tab-contant = Sosyal ağlar, internette yaptıklarınızı, gördüklerinizi ve izlediklerinizi takip etmek için diğer web sitelerine takipçiler yerleştirirler. Bu sayede sosyal medya şirketleri, sosyal medya profillerinizde paylaştıklarınızdan çok daha fazla şey öğrenebilir. <a data-l10n-name="learn-more-link">Daha fazla bilgi alın</a>
+social-tab-title = Sosyal medya takip kodları
+social-tab-contant = Sosyal ağlar, internette yaptıklarınızı, gördüklerinizi ve izlediklerinizi takip etmek için diğer web sitelerine takip kodları yerleştirir. Bu sayede sosyal medya şirketleri, sosyal medya profillerinizde paylaştıklarınızdan çok daha fazla şey öğrenebilir. <a data-l10n-name="learn-more-link">Daha fazla bilgi alın</a>
 
 cookie-tab-title = Siteler arası takip çerezleri
 cookie-tab-content = Bu çerezler gezdiğiniz siteleri takip ederek internette yaptıklarınız hakkında veri toplar. Bu çerezleri reklamcılar ve analitik şirketleri gibi üçüncü taraflar kullanır. Siteler arası takip çerezlerinin engellenmesi, sizi takip eden reklamların sayısını azaltır. <a data-l10n-name="learn-more-link">Daha fazla bilgi alın</a>
@@ -65,22 +65,20 @@ cryptominer-tab-content = Kripto madencileri sayısal para madenciliğinde bulun
 protections-close-button2 =
     .aria-label = Kapat
     .title = Kapat
-  
-mobile-app-title = Reklam takipçilerini tüm cihazlarda engelleyin
-mobile-app-card-content = Reklam takipçilerine karşı dahili korumaya sahip mobil tarayıcıyı kullanın.
+
+mobile-app-title = Reklam takip kodlarını tüm cihazlarda engelleyin
+mobile-app-card-content = Reklam takip kodlarına karşı dahili korumaya sahip mobil tarayıcıyı kullanın.
 mobile-app-links = <a data-l10n-name="android-mobile-inline-link">Android</a> ve <a data-l10n-name="ios-mobile-inline-link">iOS</a> için { -brand-product-name } Browser
 
 lockwise-title = Bir daha hiçbir parolayı unutmayın
-lockwise-title-logged-in2 = Parola yönetimi
-lockwise-header-content = { -lockwise-brand-name } parolalarınızı tarayınızda güvenle saklar.
+passwords-title-logged-in = Parolalarınızı yönetin
+passwords-header-content = { -brand-product-name } parolalarınızı tarayıcınızda güvenle saklar.
 lockwise-header-content-logged-in = Parolalarınızı güvenle saklayıp tüm cihazlarınızla senkronize edebilirsiniz.
-protection-report-save-passwords-button = Parolaları kaydet
-    .title = Parolaları { -lockwise-brand-short-name } ile kaydet
-protection-report-manage-passwords-button = Parolaları yönet
-    .title = Parolaları { -lockwise-brand-short-name } ile yönet
-lockwise-mobile-app-title = Parolalarınızı yanınızda taşıyın
-lockwise-no-logins-card-content = { -brand-short-name } tarayıcınızda kaydettiğiniz parolaları tüm cihazlarınızda kullanın.
-lockwise-app-links = <a data-l10n-name="lockwise-android-inline-link">Android</a> ve <a data-l10n-name="lockwise-ios-inline-link">iOS</a> için { -lockwise-brand-name }
+protection-report-passwords-save-passwords-button = Parolaları kaydet
+    .title = Parolaları kaydet
+protection-report-passwords-manage-passwords-button = Parolaları yönet
+    .title = Parolaları yönet
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -200,11 +198,11 @@ monitor-resolve-breaches-link = İhlalleri çöz
 ##   $percentage (Number) - Percentage this type of tracker contributes to the whole graph
 
 bar-tooltip-social =
-    .title = Sosyal medya takipçileri
+    .title = Sosyal medya takip kodları
     .aria-label =
         { $count ->
-            [one] { $count } sosyal medya takipçisi (%{ $percentage })
-           *[other] { $count } sosyal medya takipçisi (%{ $percentage })
+            [one] { $count } sosyal medya takip kodu (%{ $percentage })
+           *[other] { $count } sosyal medya takip kodu (%{ $percentage })
         }
 bar-tooltip-cookie =
     .title = Siteler arası takip çerezleri

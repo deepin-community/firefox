@@ -21,7 +21,7 @@ add_task(async function setup() {
   await setupPlacesDatabase("noRoot.sqlite");
 
   // Check database contents to be migrated.
-  let path = OS.Path.join(OS.Constants.Path.profileDir, DB_FILENAME);
+  let path = PathUtils.join(PathUtils.profileDir, DB_FILENAME);
   let db = await Sqlite.openConnection({ path });
 
   let rows = await db.execute(
@@ -77,12 +77,12 @@ add_task(async function test_database_recreates_roots() {
 
   let id = rows[0].getResultByName("id");
   Assert.equal(
-    await PlacesUtils.promiseItemId(PlacesUtils.bookmarks.rootGuid),
+    await PlacesTestUtils.promiseItemId(PlacesUtils.bookmarks.rootGuid),
     id,
     "Should return the correct id from promiseItemId"
   );
   Assert.equal(
-    await PlacesUtils.promiseItemGuid(id),
+    await PlacesTestUtils.promiseItemGuid(id),
     PlacesUtils.bookmarks.rootGuid,
     "Should return the correct guid from promiseItemGuid"
   );

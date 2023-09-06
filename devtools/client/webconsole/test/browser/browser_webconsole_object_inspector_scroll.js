@@ -4,19 +4,20 @@
 "use strict";
 
 // Check that expanding an objectInspector node doesn't alter the output scroll position.
-const TEST_URI = "data:text/html;charset=utf8,test Object Inspector";
+const TEST_URI =
+  "data:text/html;charset=utf8,<!DOCTYPE html>test Object Inspector";
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
 
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function() {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     content.wrappedJSObject.console.log(
       "oi-test",
       content.wrappedJSObject.Math
     );
   });
 
-  const node = await waitFor(() => findMessage(hud, "oi-test"));
+  const node = await waitFor(() => findConsoleAPIMessage(hud, "oi-test"));
   const objectInspector = node.querySelector(".tree");
 
   let onOiMutation = waitForNodeMutation(objectInspector, {

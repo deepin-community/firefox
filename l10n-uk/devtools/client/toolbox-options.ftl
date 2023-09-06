@@ -41,6 +41,17 @@ options-collapse-attrs-label = Скорочувати атрибути DOM
 options-collapse-attrs-tooltip =
     .title = Скорочувати довгі атрибути в інспекторі
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Клацніть і потягніть для редагування значень розмірів
+options-inspector-draggable-properties-tooltip =
+    .title = Клацніть і потягніть для редагування значень розмірів у огляді правил інспектора.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Використовувати спрощене підсвічування з prefers-reduced-motion
+options-inspector-simplified-highlighters-tooltip =
+    .title = Використання спрощеного підсвічування, якщо увімкнено prefers-reduced-motion. Підкреслення лініями замість заповнених прямокутників навколо підсвічених елементів для уникнення ефекту миготіння.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Типова одиниця кольору
@@ -48,6 +59,7 @@ options-default-color-unit-authored = As Authored
 options-default-color-unit-hex = Hex
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Назви кольорів
 
 ## Style Editor section
@@ -109,14 +121,24 @@ options-disable-javascript-tooltip =
     .title = Увімкнення цього параметра вимкне JavaScript для поточної вкладки. Якщо вкладку чи інструменти закрито, то ці налаштування не збережуться.
 
 # The label for checkbox that toggles chrome debugging, i.e. the devtools.chrome.enabled preference
-options-enable-chrome-label = Увімкнути інструменти зневадження browser chrome та додатків
+options-enable-chrome-label = Увімкнути інструменти налагодження browser chrome і додатків
 options-enable-chrome-tooltip =
-    .title = Увімкнення цього параметра дозволить вам використовувати різні інструменти розробника в контексті браузера (Меню > Розробник > Інструменти браузера) та зневаджувати додатки в менеджері додатків
+    .title = Увімкнення цього параметра дозволить вам використовувати різні інструменти розробника в контексті браузера (Меню > Інші інструменти > Інструменти браузера) та налагоджувати додатки в менеджері додатків
 
 # The label for checkbox that toggles remote debugging, i.e. the devtools.debugger.remote-enabled preference
-options-enable-remote-label = Увімкнути віддалене зневадження
+options-enable-remote-label = Увімкнути віддалене налагодження
 options-enable-remote-tooltip2 =
-    .title = Увімкнення цього параметра дозволить віддалене зневадження цього екземпляру браузера
+    .title = Увімкнення цього параметра дозволить віддалене налагодження цього екземпляра браузера
+
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Використовуйте клавішу F12, щоб відкрити або закрити інструменти розробника
+options-enable-f12-tooltip =
+    .title = Якщо ввімкнути цей параметр, клавіша F12 відкриватиме чи закриватиме панель інструментів розробника
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Увімкнути спеціальні форматувальники
+options-enable-custom-formatters-tooltip =
+    .title = Увімкнення цього параметра дозволить сайтам визначати спеціальні форматувальники для об'єктів DOM
 
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Увімкнути Service Workers поверх HTTP (коли відкрита панель інструментів)
@@ -130,11 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * тільки поточний сеанс, перезавантажити сторінку
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Показати дані платформи Gecko
-options-show-platform-data-tooltip =
-    .title =
-        Якщо увімкнено цей параметр, звіти профілятора JavaScript враховуватимуть символи
-        платформи Gecko

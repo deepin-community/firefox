@@ -1,7 +1,7 @@
 "use strict";
 
-const { AppMenuNotifications } = ChromeUtils.import(
-  "resource://gre/modules/AppMenuNotifications.jsm"
+const { AppMenuNotifications } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppMenuNotifications.sys.mjs"
 );
 
 /**
@@ -14,7 +14,7 @@ add_task(async function testMainActionCalled() {
     url: "about:blank",
   };
 
-  await BrowserTestUtils.withNewTab(options, function(browser) {
+  await BrowserTestUtils.withNewTab(options, function (browser) {
     is(
       PanelUI.notificationPanel.state,
       "closed",
@@ -77,7 +77,7 @@ add_task(async function testSecondaryActionWorkflow() {
     url: "about:blank",
   };
 
-  await BrowserTestUtils.withNewTab(options, async function(browser) {
+  await BrowserTestUtils.withNewTab(options, async function (browser) {
     is(
       PanelUI.notificationPanel.state,
       "closed",
@@ -135,8 +135,8 @@ add_task(async function testSecondaryActionWorkflow() {
     );
     let menuItem = PanelUI.mainView.querySelector(".panel-banner-item");
     is(
-      menuItem.label,
-      menuItem.getAttribute("label-update-manual"),
+      menuItem.getAttribute("data-l10n-id"),
+      "appmenuitem-banner-update-manual",
       "Showing correct label"
     );
     is(menuItem.hidden, false, "update-manual menu item is showing.");
@@ -167,7 +167,7 @@ add_task(async function testDownloadingBadge() {
     url: "about:blank",
   };
 
-  await BrowserTestUtils.withNewTab(options, async function(browser) {
+  await BrowserTestUtils.withNewTab(options, async function (browser) {
     let mainActionCalled = false;
     let mainAction = {
       callback: () => {
@@ -197,8 +197,8 @@ add_task(async function testDownloadingBadge() {
     );
     let menuItem = PanelUI.mainView.querySelector(".panel-banner-item");
     is(
-      menuItem.label,
-      menuItem.getAttribute("label-update-downloading"),
+      menuItem.getAttribute("data-l10n-id"),
+      "appmenuitem-banner-update-downloading",
       "Showing correct label (downloading)"
     );
     is(menuItem.hidden, false, "update-downloading menu item is showing.");
@@ -225,11 +225,11 @@ add_task(async function testDownloadingBadge() {
  *   then we display any other badges that are remaining.
  */
 add_task(async function testInteractionWithBadges() {
-  await BrowserTestUtils.withNewTab("about:blank", async function(browser) {
+  await BrowserTestUtils.withNewTab("about:blank", async function (browser) {
     // Remove the fxa toolbar button from the navbar to ensure the notification
     // is displayed on the app menu button.
-    let { CustomizableUI } = ChromeUtils.import(
-      "resource:///modules/CustomizableUI.jsm"
+    let { CustomizableUI } = ChromeUtils.importESModule(
+      "resource:///modules/CustomizableUI.sys.mjs"
     );
     CustomizableUI.removeWidgetFromArea("fxa-toolbar-menu-button");
 
@@ -301,8 +301,8 @@ add_task(async function testInteractionWithBadges() {
     );
     let menuItem = PanelUI.mainView.querySelector(".panel-banner-item");
     is(
-      menuItem.label,
-      menuItem.getAttribute("label-update-manual"),
+      menuItem.getAttribute("data-l10n-id"),
+      "appmenuitem-banner-update-manual",
       "Showing correct label"
     );
     is(menuItem.hidden, false, "update-manual menu item is showing.");
@@ -328,7 +328,7 @@ add_task(async function testInteractionWithBadges() {
  * This tests that adding a badge will not dismiss any existing doorhangers.
  */
 add_task(async function testAddingBadgeWhileDoorhangerIsShowing() {
-  await BrowserTestUtils.withNewTab("about:blank", function(browser) {
+  await BrowserTestUtils.withNewTab("about:blank", function (browser) {
     is(
       PanelUI.notificationPanel.state,
       "closed",
@@ -395,7 +395,7 @@ add_task(async function testAddingBadgeWhileDoorhangerIsShowing() {
  * Tests that badges operate like a stack.
  */
 add_task(async function testMultipleBadges() {
-  await BrowserTestUtils.withNewTab("about:blank", async function(browser) {
+  await BrowserTestUtils.withNewTab("about:blank", async function (browser) {
     let doc = browser.ownerDocument;
     let menuButton = doc.getElementById("PanelUI-menu-button");
 
@@ -468,7 +468,7 @@ add_task(async function testMultipleBadges() {
  * Tests that non-badges also operate like a stack.
  */
 add_task(async function testMultipleNonBadges() {
-  await BrowserTestUtils.withNewTab("about:blank", async function(browser) {
+  await BrowserTestUtils.withNewTab("about:blank", async function (browser) {
     is(
       PanelUI.notificationPanel.state,
       "closed",
@@ -552,8 +552,8 @@ add_task(async function testMultipleNonBadges() {
     );
     let menuItem = PanelUI.mainView.querySelector(".panel-banner-item");
     is(
-      menuItem.label,
-      menuItem.getAttribute("label-update-restart"),
+      menuItem.getAttribute("data-l10n-id"),
+      "appmenuitem-banner-update-restart",
       "Showing correct label"
     );
     is(menuItem.hidden, false, "update-restart menu item is showing.");
@@ -582,8 +582,8 @@ add_task(async function testMultipleNonBadges() {
       "update-manual badge is displaying on PanelUI button."
     );
     is(
-      menuItem.label,
-      menuItem.getAttribute("label-update-manual"),
+      menuItem.getAttribute("data-l10n-id"),
+      "appmenuitem-banner-update-manual",
       "Showing correct label"
     );
     is(menuItem.hidden, false, "update-manual menu item is showing.");

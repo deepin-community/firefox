@@ -16,8 +16,6 @@ change-password-old = 当前密码:
 change-password-new = 新密码:
 change-password-reenter = 新密码(重复):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = 无法更改密码。
 pippki-incorrect-pw = 您未输入正确的主密码，请重试。
 pippki-pw-change-ok = 密码更改成功。
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = 您正处于 FIPS 模式。该模式需要
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = 重置主密码
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = 重置
-
 reset-primary-password-text = 如果您重置您的主密码，您存储的所有网站和电子邮箱密码、表单数据、个人证书以及私钥，都将被丢弃。您确实要重置主密码吗？
 
 pippki-reset-password-confirmation-title = 重置主密码
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = 您的主密码已重置。
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = 下载证书
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = 您被要求信任一个新的数字证书认证机构（CA）。
 download-cert-trust-ssl =
     .label = 信任由此证书颁发机构来标识网站。
@@ -77,7 +74,8 @@ set-password-reminder = 重要：如果您忘记了您的证书备份密码，�
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = 受保护的令牌身份验证
-protected-auth-msg = 请验证该令牌。认证方式取决于您的令牌的类型。
-protected-auth-token = 令牌：
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = 请对令牌“{ $tokenName }”进行身份验证。如何操作取决于令牌（例如，按压指纹识别器或键入代码）。

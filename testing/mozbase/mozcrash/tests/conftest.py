@@ -1,13 +1,10 @@
 # coding=UTF-8
 
-from __future__ import absolute_import
-
 import uuid
 
+import mozcrash
 import pytest
 from py._path.common import fspath
-
-import mozcrash
 
 
 @pytest.fixture(scope="session")
@@ -50,7 +47,6 @@ def check_for_java_exception():
     return wrapper
 
 
-@pytest.fixture
 def minidump_files(request, tmpdir):
     files = []
 
@@ -88,7 +84,6 @@ def minidump_files(request, tmpdir):
   "Add-ons":"",
   "CrashTime":"1494582646",
   "UptimeTS":"14.9179586",
-  "ThreadIdNameMapping":"",
   "ContentSandboxEnabled":"1",
   "ProcessType":"content",
   "StartupTime":"1000000000",
@@ -102,6 +97,11 @@ def minidump_files(request, tmpdir):
         files.append({"dmp": dmp, "extra": extra})
 
     return files
+
+
+@pytest.fixture(name="minidump_files")
+def minidump_files_fixture(request, tmpdir):
+    return minidump_files(request, tmpdir)
 
 
 @pytest.fixture(autouse=True)

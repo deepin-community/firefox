@@ -2,24 +2,47 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
+"use strict";
+
 const { MultiLocalizationHelper } = require("devtools/shared/l10n");
+const {
+  FluentL10n,
+} = require("devtools/client/shared/fluent-l10n/fluent-l10n");
 
 loader.lazyRequireGetter(
   this,
   "openContentLink",
-  "devtools/client/shared/link",
+  "resource://devtools/client/shared/link.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "features",
-  "devtools/client/debugger/src/utils/prefs",
+  "resource://devtools/client/debugger/src/utils/prefs.js",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "getOriginalLocation",
+  "resource://devtools/client/debugger/src/utils/source-maps.js",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "createLocation",
+  "resource://devtools/client/debugger/src/utils/location.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "registerStoreObserver",
-  "devtools/client/shared/redux/subscriber",
+  "resource://devtools/client/shared/redux/subscriber.js",
+  true
+);
+loader.lazyRequireGetter(
+  this,
+  "getMappedExpression",
+  "resource://devtools/client/debugger/src/actions/expressions.js",
   true
 );
 
@@ -45,25 +68,27 @@ class DebuggerPanel {
   constructor(iframeWindow, toolbox, commands) {
     this.panelWin = iframeWindow;
     this.panelWin.L10N = L10N;
+
     this.toolbox = toolbox;
     this.commands = commands;
   }
 
   async open() {
-    const {
-      actions,
-      store,
-      selectors,
-      client,
-    } = await this.panelWin.Debugger.bootstrap({
-      commands: this.commands,
-      resourceCommand: this.toolbox.resourceCommand,
-      workers: {
-        sourceMaps: this.toolbox.sourceMapService,
-        evaluationsParser: this.toolbox.parserService,
-      },
-      panel: this,
-    });
+    // whypaused-* strings are in devtools/shared as they're used in the PausedDebuggerOverlay as well
+    const fluentL10n = new FluentL10n();
+    await fluentL10n.init(["devtools/shared/debugger-paused-reasons.ftl"]);
+
+    const { actions, store, selectors, client } =
+      await this.panelWin.Debugger.bootstrap({
+        commands: this.commands,
+        fluentBundles: fluentL10n.getBundles(),
+        resourceCommand: this.toolbox.resourceCommand,
+        workers: {
+          sourceMapLoader: this.toolbox.sourceMapLoader,
+          parserWorker: this.toolbox.parserWorker,
+        },
+        panel: this,
+      });
 
     this._actions = actions;
     this._store = store;
@@ -83,9 +108,8 @@ class DebuggerPanel {
       currentThreadActorID &&
       currentThreadActorID !== getCurrentThread(oldState)
     ) {
-      const threadFront = this.commands.client.getFrontByID(
-        currentThreadActorID
-      );
+      const threadFront =
+        this.commands.client.getFrontByID(currentThreadActorID);
       this.toolbox.selectTarget(threadFront?.targetFront.actorID);
     }
   }
@@ -149,40 +173,47 @@ class DebuggerPanel {
 
   unHighlightDomElement() {
     if (!this._unhighlight) {
-      return;
+      return Promise.resolve();
     }
 
     return this._unhighlight();
   }
 
-  getFrames() {
+  /**
+   * Return the Frame Actor ID of the currently selected frame,
+   * or null if the debugger isn't paused.
+   */
+  getSelectedFrameActorID() {
     const thread = this._selectors.getCurrentThread(this._getState());
-    const frames = this._selectors.getFrames(this._getState(), thread);
-
-    // Frames is null when the debugger is not paused.
-    if (!frames) {
-      return {
-        frames: [],
-        selected: -1,
-      };
-    }
-
     const selectedFrame = this._selectors.getSelectedFrame(
       this._getState(),
       thread
     );
-    const selected = frames.findIndex(frame => frame.id == selectedFrame.id);
-
-    frames.forEach(frame => {
-      frame.actor = frame.id;
-    });
-    const target = this._client.lookupTarget(thread);
-
-    return { frames, selected, target };
+    if (selectedFrame) {
+      return selectedFrame.id;
+    }
+    return null;
   }
 
   getMappedExpression(expression) {
-    return this._actions.getMappedExpression(expression);
+    const thread = this._selectors.getCurrentThread(this._getState());
+    return getMappedExpression(expression, thread, {
+      getState: this._store.getState,
+      parserWorker: this.toolbox.parserWorker,
+    });
+  }
+
+  /**
+   * Return the source-mapped variables for the current scope.
+   * @returns {{[String]: String} | null} A dictionary mapping original variable names to generated
+   * variable names if map scopes is enabled, otherwise null.
+   */
+  getMappedVariables() {
+    if (!this._selectors.isMapScopesEnabled(this._getState())) {
+      return null;
+    }
+    const thread = this._selectors.getCurrentThread(this._getState());
+    return this._selectors.getSelectedScopeMappings(this._getState(), thread);
   }
 
   isPaused() {
@@ -191,8 +222,82 @@ class DebuggerPanel {
   }
 
   selectSourceURL(url, line, column) {
-    const cx = this._selectors.getContext(this._getState());
-    return this._actions.selectSourceURL(cx, url, { line, column });
+    return this._actions.selectSourceURL(url, { line, column });
+  }
+
+  /**
+   * This is called when some other panels wants to open a given source
+   * in the debugger at a precise line/column.
+   *
+   * @param {String} generatedURL
+   * @param {Number} generatedLine
+   * @param {Number} generatedColumn
+   * @param {String} sourceActorId (optional)
+   *        If the callsite knows about a particular sourceActorId,
+   *        or if the source doesn't have a URL, you have to pass a sourceActorId.
+   * @param {String} reason
+   *        A telemetry identifier to record when opening the debugger.
+   *        This help differentiate why we opened the debugger.
+   *
+   * @return {Boolean}
+   *         Returns true if the location is known by the debugger
+   *         and the debugger opens it.
+   */
+  async openSourceInDebugger({
+    generatedURL,
+    generatedLine,
+    generatedColumn,
+    sourceActorId,
+    reason,
+  }) {
+    const generatedSource = sourceActorId
+      ? this._selectors.getSourceByActorId(this._getState(), sourceActorId)
+      : this._selectors.getSourceByURL(this._getState(), generatedURL);
+    // We won't try opening source in the debugger when we can't find the related source actor in the reducer,
+    // or, when it doesn't have any related source actor registered.
+    if (
+      !generatedSource ||
+      // Note: We're not entirely sure when this can happen,
+      // so we may want to revisit that at some point.
+      !this._selectors.getSourceActorsForSource(
+        this._getState(),
+        generatedSource.id
+      ).length
+    ) {
+      return false;
+    }
+
+    const generatedLocation = createLocation({
+      source: generatedSource,
+      line: generatedLine,
+      column: generatedColumn,
+    });
+
+    // Note that getOriginalLocation can easily return generatedLocation
+    // if the location can't be mapped to any original source.
+    // So that we may open either regular source or original sources here.
+    const originalLocation = await getOriginalLocation(generatedLocation, {
+      // Reproduce a minimal thunkArgs for getOriginalLocation.
+      sourceMapLoader: this.toolbox.sourceMapLoader,
+      getState: this._store.getState,
+    });
+
+    // view-source module only forced the load of debugger in the background.
+    // Now that we know we want to show a source, force displaying it in foreground.
+    //
+    // Note that browser_markup_view-source.js doesn't wait for the debugger
+    // to be fully loaded with the source and requires the debugger to be loaded late.
+    // But we might try to load display it early to improve user perception.
+    await this.toolbox.selectTool("jsdebugger", reason);
+
+    await this._actions.selectSpecificLocation(originalLocation);
+
+    // XXX: should this be moved to selectSpecificLocation??
+    if (this._selectors.hasLogpoint(this._getState(), originalLocation)) {
+      this._actions.openConditionalPanel(originalLocation, true);
+    }
+
+    return true;
   }
 
   async selectWorker(workerDescriptorFront) {
@@ -218,47 +323,26 @@ class DebuggerPanel {
     this.selectThread(threadActorID);
 
     // select worker's source
-    const source = this.getSourceByURL(workerDescriptorFront._url);
-    await this.selectSource(source.id, 1, 1);
+    const source = this._selectors.getSourceByURL(
+      this._getState(),
+      workerDescriptorFront._url
+    );
+    const sourceActor = this._selectors.getFirstSourceActorForGeneratedSource(
+      this._getState(),
+      source.id,
+      threadActorID
+    );
+    await this._actions.selectSource(source, sourceActor);
   }
 
   selectThread(threadActorID) {
-    const cx = this._selectors.getContext(this._getState());
-    this._actions.selectThread(cx, threadActorID);
+    this._actions.selectThread(threadActorID);
   }
 
-  previewPausedLocation(location) {
-    return this._actions.previewPausedLocation(location);
-  }
-
-  clearPreviewPausedLocation() {
-    return this._actions.clearPreviewPausedLocation();
-  }
-
-  async selectSource(sourceId, line, column) {
-    const cx = this._selectors.getContext(this._getState());
-    const location = { sourceId, line, column };
-
-    await this._actions.selectSource(cx, sourceId, location);
-    if (this._selectors.hasLogpoint(this._getState(), location)) {
-      this._actions.openConditionalPanel(location, true);
-    }
-  }
-
-  getSourceActorsForSource(sourceId) {
-    return this._selectors.getSourceActorsForSource(this._getState(), sourceId);
-  }
-
-  getSourceByActorId(sourceId) {
-    return this._selectors.getSourceByActorId(this._getState(), sourceId);
-  }
-
-  getSourceByURL(sourceURL) {
-    return this._selectors.getSourceByURL(this._getState(), sourceURL);
-  }
-
-  getSource(sourceId) {
-    return this._selectors.getSource(this._getState(), sourceId);
+  toggleJavascriptTracing() {
+    this._actions.toggleTracing(
+      this._selectors.getJavascriptTracingLogMethod(this._getState())
+    );
   }
 
   destroy() {

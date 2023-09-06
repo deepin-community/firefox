@@ -91,7 +91,7 @@ certificate-viewer-download = 다운로드
 certificate-viewer-boolean =
     { $boolean ->
         [true] 예
-       *[false] 아니오
+       *[false] 아니요
     }
 
 ## Variables:

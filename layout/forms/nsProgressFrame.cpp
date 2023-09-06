@@ -109,8 +109,6 @@ void nsProgressFrame::Reflow(nsPresContext* aPresContext,
   FinishAndStoreOverflow(&aDesiredSize);
 
   aStatus.Reset();  // This type of frame can't be split.
-
-  NS_FRAME_SET_TRUNCATION(aStatus, aReflowInput, aDesiredSize);
 }
 
 void nsProgressFrame::ReflowChildFrame(nsIFrame* aChild,
@@ -187,7 +185,7 @@ nsresult nsProgressFrame::AttributeChanged(int32_t aNameSpaceID,
       (aAttribute == nsGkAtoms::value || aAttribute == nsGkAtoms::max)) {
     auto presShell = PresShell();
     for (auto childFrame : PrincipalChildList()) {
-      presShell->FrameNeedsReflow(childFrame, IntrinsicDirty::Resize,
+      presShell->FrameNeedsReflow(childFrame, IntrinsicDirty::None,
                                   NS_FRAME_IS_DIRTY);
     }
     InvalidateFrame();
@@ -244,8 +242,7 @@ bool nsProgressFrame::ShouldUseNativeStyle() const {
   //   background.
   return StyleDisplay()->EffectiveAppearance() ==
              StyleAppearance::ProgressBar &&
-         !Style()->HasAuthorSpecifiedBorderOrBackground() &&
-         barFrame &&
+         !Style()->HasAuthorSpecifiedBorderOrBackground() && barFrame &&
          barFrame->StyleDisplay()->EffectiveAppearance() ==
              StyleAppearance::Progresschunk &&
          !barFrame->Style()->HasAuthorSpecifiedBorderOrBackground();

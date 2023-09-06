@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Wužywarske mě
 common-dialog-password =
     .value = Gronidło
+
+common-dialog-copy-cmd =
+    .label = Kopěrowaś
+    .accesskey = K
+common-dialog-select-all-cmd =
+    .label = Wšykno wubraś
+    .accesskey = W

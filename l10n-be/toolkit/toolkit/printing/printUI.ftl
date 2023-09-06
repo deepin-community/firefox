@@ -16,6 +16,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Усе
+printui-page-range-current = Бягучая
+printui-page-range-odd = Няцотныя
+printui-page-range-even = Цотныя
 printui-page-range-custom = Адмыслова
 printui-page-range-label = Старонкі
 printui-page-range-picker =
@@ -101,7 +104,7 @@ printui-system-dialog-link = Друк з дапамогай сістэмнага
 
 printui-primary-button = Друкаваць
 printui-primary-button-save = Захаваць
-printui-cancel-button = Адмена
+printui-cancel-button = Скасаваць
 printui-close-button = Закрыць
 
 printui-loading = Рыхтуецца папярэдні прагляд

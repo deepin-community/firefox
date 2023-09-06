@@ -8,6 +8,7 @@
 #include "nsBaseChannel.h"
 #include "nsIChannel.h"
 #include "nsIChildChannel.h"
+#include "nsICancelable.h"
 #include "nsIInputStream.h"
 #include "nsIRequest.h"
 #include "nsISupportsImpl.h"
@@ -43,15 +44,32 @@ nsresult SimpleChannel::OpenContentStream(bool async,
 }
 
 nsresult SimpleChannel::BeginAsyncRead(nsIStreamListener* listener,
-                                       nsIRequest** request) {
+                                       nsIRequest** request,
+                                       nsICancelable** cancelableRequest) {
   NS_ENSURE_TRUE(mCallbacks, NS_ERROR_UNEXPECTED);
 
-  nsCOMPtr<nsIRequest> req;
-  MOZ_TRY_VAR(req, mCallbacks->StartAsyncRead(listener, this));
+  RequestOrReason res = mCallbacks->StartAsyncRead(listener, this);
+
+  if (res.isErr()) {
+    return res.propagateErr();
+  }
 
   mCallbacks = nullptr;
 
-  req.forget(request);
+  RequestOrCancelable value = res.unwrap();
+
+  if (value.is<NotNullRequest>()) {
+    nsCOMPtr<nsIRequest> req = value.as<NotNullRequest>().get();
+    req.forget(request);
+  } else if (value.is<NotNullCancelable>()) {
+    nsCOMPtr<nsICancelable> cancelable = value.as<NotNullCancelable>().get();
+    cancelable.forget(cancelableRequest);
+  } else {
+    MOZ_ASSERT_UNREACHABLE(
+        "StartAsyncRead didn't return a NotNull nsIRequest or nsICancelable.");
+    return NS_ERROR_UNEXPECTED;
+  }
+
   return NS_OK;
 }
 

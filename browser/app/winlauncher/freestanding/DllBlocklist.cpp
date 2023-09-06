@@ -11,22 +11,13 @@
 #include "mozilla/Types.h"
 #include "mozilla/WindowsDllBlocklist.h"
 
+#include "CrashAnnotations.h"
 #include "DllBlocklist.h"
 #include "LoaderPrivateAPI.h"
 #include "ModuleLoadFrame.h"
 #include "SharedSection.h"
 
-// clang-format off
-#define MOZ_LITERAL_UNICODE_STRING(s)                                        \
-  {                                                                          \
-    /* Length of the string in bytes, less the null terminator */            \
-    sizeof(s) - sizeof(wchar_t),                                             \
-    /* Length of the string in bytes, including the null terminator */       \
-    sizeof(s),                                                               \
-    /* Pointer to the buffer */                                              \
-    const_cast<wchar_t*>(s)                                                  \
-  }
-// clang-format on
+using mozilla::DllBlockInfoFlags;
 
 #define DLL_BLOCKLIST_ENTRY(name, ...) \
   {MOZ_LITERAL_UNICODE_STRING(L##name), __VA_ARGS__},
@@ -39,6 +30,8 @@
 DLL_BLOCKLIST_DEFINITIONS_BEGIN
 DLL_BLOCKLIST_DEFINITIONS_END
 #endif
+
+using WritableBuffer = mozilla::glue::detail::WritableBuffer<1024>;
 
 class MOZ_STATIC_CLASS MOZ_TRIVIAL_CTOR_DTOR NativeNtBlockSet final {
   struct NativeNtBlockSetEntry {
@@ -58,7 +51,7 @@ class MOZ_STATIC_CLASS MOZ_TRIVIAL_CTOR_DTOR NativeNtBlockSet final {
   ~NativeNtBlockSet() = default;
 
   void Add(const UNICODE_STRING& aName, uint64_t aVersion);
-  void Write(HANDLE aFile);
+  void Write(WritableBuffer& buffer);
 
  private:
   static NativeNtBlockSetEntry* NewEntry(const UNICODE_STRING& aName,
@@ -95,10 +88,9 @@ void NativeNtBlockSet::Add(const UNICODE_STRING& aName, uint64_t aVersion) {
   }
 }
 
-void NativeNtBlockSet::Write(HANDLE aFile) {
+void NativeNtBlockSet::Write(WritableBuffer& aBuffer) {
   // NB: If this function is called, it is long after kernel32 is initialized,
   // so it is safe to use Win32 calls here.
-  DWORD nBytes;
   char buf[MAX_PATH];
 
   // It would be nicer to use RAII here. However, its destructor
@@ -117,26 +109,24 @@ void NativeNtBlockSet::Write(HANDLE aFile) {
       }
 
       // write name[,v.v.v.v];
-      if (!WriteFile(aFile, buf, convOk, &nBytes, nullptr)) {
-        continue;
-      }
+      aBuffer.Write(buf, convOk);
 
       if (entry->mVersion != DllBlockInfo::ALL_VERSIONS) {
-        WriteFile(aFile, ",", 1, &nBytes, nullptr);
+        aBuffer.Write(",", 1);
         uint16_t parts[4];
         parts[0] = entry->mVersion >> 48;
         parts[1] = (entry->mVersion >> 32) & 0xFFFF;
         parts[2] = (entry->mVersion >> 16) & 0xFFFF;
         parts[3] = entry->mVersion & 0xFFFF;
         for (size_t p = 0; p < mozilla::ArrayLength(parts); ++p) {
-          ltoa(parts[p], buf, 10);
-          WriteFile(aFile, buf, strlen(buf), &nBytes, nullptr);
+          _ltoa_s(parts[p], buf, sizeof(buf), 10);
+          aBuffer.Write(buf, strlen(buf));
           if (p != mozilla::ArrayLength(parts) - 1) {
-            WriteFile(aFile, ".", 1, &nBytes, nullptr);
+            aBuffer.Write(".", 1);
           }
         }
       }
-      WriteFile(aFile, ";", 1, &nBytes, nullptr);
+      aBuffer.Write(";", 1);
     }
   }
   MOZ_SEH_EXCEPT(EXCEPTION_EXECUTE_HANDLER) {}
@@ -146,15 +136,32 @@ void NativeNtBlockSet::Write(HANDLE aFile) {
 
 static NativeNtBlockSet gBlockSet;
 
-extern "C" void MOZ_EXPORT NativeNtBlockSet_Write(HANDLE aHandle) {
-  gBlockSet.Write(aHandle);
+extern "C" void MOZ_EXPORT
+NativeNtBlockSet_Write(CrashReporter::AnnotationWriter& aWriter) {
+  WritableBuffer buffer;
+  gBlockSet.Write(buffer);
+  aWriter.Write(CrashReporter::Annotation::BlockedDllList, buffer.Data(),
+                buffer.Length());
 }
 
 enum class BlockAction {
+  // Allow the DLL to be loaded.
   Allow,
+  // Substitute in a different DLL to be loaded instead of this one?
+  // This is intended to be used for Layered Service Providers, which
+  // cannot be blocked in the normal way. Note that this doesn't seem
+  // to be actually implemented right now, and no entries in the blocklist
+  // use it.
   SubstituteLSP,
+  // There was an error in determining whether we should block this DLL.
+  // It will be blocked.
   Error,
+  // Block the DLL from loading.
   Deny,
+  // Effectively block the DLL from loading by redirecting its DllMain
+  // to a stub version. This is needed for DLLs that add themselves to
+  // the executable's Import Table, since failing to load would mean the
+  // executable would fail to launch.
   NoOpEntryPoint,
 };
 
@@ -163,34 +170,33 @@ static BlockAction CheckBlockInfo(const DllBlockInfo* aInfo,
                                   uint64_t& aVersion) {
   aVersion = DllBlockInfo::ALL_VERSIONS;
 
-  if (aInfo->mFlags & (DllBlockInfo::BLOCK_WIN8_AND_OLDER |
-                       DllBlockInfo::BLOCK_WIN7_AND_OLDER)) {
-    RTL_OSVERSIONINFOW osv = {sizeof(osv)};
-    NTSTATUS ntStatus = ::RtlGetVersion(&osv);
-    if (!NT_SUCCESS(ntStatus)) {
-      return BlockAction::Error;
-    }
-
-    if ((aInfo->mFlags & DllBlockInfo::BLOCK_WIN8_AND_OLDER) &&
-        (osv.dwMajorVersion > 6 ||
-         (osv.dwMajorVersion == 6 && osv.dwMinorVersion > 2))) {
-      return BlockAction::Allow;
-    }
-
-    if ((aInfo->mFlags & DllBlockInfo::BLOCK_WIN7_AND_OLDER) &&
-        (osv.dwMajorVersion > 6 ||
-         (osv.dwMajorVersion == 6 && osv.dwMinorVersion > 1))) {
-      return BlockAction::Allow;
-    }
-  }
-
-  if ((aInfo->mFlags & DllBlockInfo::CHILD_PROCESSES_ONLY) &&
+  if ((aInfo->mFlags & DllBlockInfoFlags::CHILD_PROCESSES_ONLY) &&
       !(gBlocklistInitFlags & eDllBlocklistInitFlagIsChildProcess)) {
     return BlockAction::Allow;
   }
 
-  if ((aInfo->mFlags & DllBlockInfo::BROWSER_PROCESS_ONLY) &&
+  if ((aInfo->mFlags & DllBlockInfoFlags::UTILITY_PROCESSES_ONLY) &&
+      !(gBlocklistInitFlags & eDllBlocklistInitFlagIsUtilityProcess)) {
+    return BlockAction::Allow;
+  }
+
+  if ((aInfo->mFlags & DllBlockInfoFlags::SOCKET_PROCESSES_ONLY) &&
+      !(gBlocklistInitFlags & eDllBlocklistInitFlagIsSocketProcess)) {
+    return BlockAction::Allow;
+  }
+
+  if ((aInfo->mFlags & DllBlockInfoFlags::GPU_PROCESSES_ONLY) &&
+      !(gBlocklistInitFlags & eDllBlocklistInitFlagIsGPUProcess)) {
+    return BlockAction::Allow;
+  }
+
+  if ((aInfo->mFlags & DllBlockInfoFlags::BROWSER_PROCESS_ONLY) &&
       (gBlocklistInitFlags & eDllBlocklistInitFlagIsChildProcess)) {
+    return BlockAction::Allow;
+  }
+
+  if ((aInfo->mFlags & DllBlockInfoFlags::GMPLUGIN_PROCESSES_ONLY) &&
+      !(gBlocklistInitFlags & eDllBlocklistInitFlagIsGMPluginProcess)) {
     return BlockAction::Allow;
   }
 
@@ -202,7 +208,7 @@ static BlockAction CheckBlockInfo(const DllBlockInfo* aInfo,
     return BlockAction::Error;
   }
 
-  if (aInfo->mFlags & DllBlockInfo::USE_TIMESTAMP) {
+  if (aInfo->mFlags & DllBlockInfoFlags::USE_TIMESTAMP) {
     DWORD timestamp;
     if (!aHeaders.GetTimeStamp(timestamp)) {
       return BlockAction::Error;
@@ -228,35 +234,15 @@ static BlockAction CheckBlockInfo(const DllBlockInfo* aInfo,
   return BlockAction::Allow;
 }
 
-struct DllBlockInfoComparator {
-  explicit DllBlockInfoComparator(const UNICODE_STRING& aTarget)
-      : mTarget(&aTarget) {}
-
-  int operator()(const DllBlockInfo& aVal) const {
-    return static_cast<int>(
-        ::RtlCompareUnicodeString(mTarget, &aVal.mName, TRUE));
-  }
-
-  PCUNICODE_STRING mTarget;
-};
-
 static BOOL WINAPI NoOp_DllMain(HINSTANCE, DWORD, LPVOID) { return TRUE; }
 
 // This helper function checks whether a given module is included
 // in the executable's Import Table.  Because an injected module's
 // DllMain may revert the Import Table to the original state, we parse
 // the Import Table every time a module is loaded without creating a cache.
-static bool IsDependentModule(
+static bool IsInjectedDependentModule(
     const UNICODE_STRING& aModuleLeafName,
     mozilla::freestanding::Kernel32ExportsSolver& aK32Exports) {
-  // We enable automatic DLL blocking only in early Beta or earlier for now
-  // because it caused a compat issue (bug 1682304 and 1704373).
-#if defined(EARLY_BETA_OR_EARLIER)
-  aK32Exports.Resolve(mozilla::freestanding::gK32ExportsResolveOnce);
-  if (!aK32Exports.IsResolved()) {
-    return false;
-  }
-
   mozilla::nt::PEHeaders exeHeaders(aK32Exports.mGetModuleHandleW(nullptr));
   if (!exeHeaders || !exeHeaders.IsImportDirectoryTampered()) {
     // If no tampering is detected, no need to enumerate the Import Table.
@@ -279,9 +265,6 @@ static bool IsDependentModule(
                            &aModuleLeafName, &depModuleLeafName, TRUE) == 0);
       });
   return isDependent;
-#else
-  return false;
-#endif
 }
 
 // Allowing a module to be loaded but detour the entrypoint to NoOp_DllMain
@@ -291,11 +274,6 @@ static bool IsDependentModule(
 static bool RedirectToNoOpEntryPoint(
     const mozilla::nt::PEHeaders& aModule,
     mozilla::freestanding::Kernel32ExportsSolver& aK32Exports) {
-  aK32Exports.Resolve(mozilla::freestanding::gK32ExportsResolveOnce);
-  if (!aK32Exports.IsResolved()) {
-    return false;
-  }
-
   mozilla::interceptor::WindowsDllEntryPointInterceptor interceptor(
       aK32Exports);
   if (!interceptor.Set(aModule, NoOp_DllMain)) {
@@ -313,29 +291,95 @@ static BlockAction DetermineBlockAction(
     return BlockAction::Deny;
   }
 
+  mozilla::nt::PEHeaders headers(aBaseAddress);
+  DWORD checksum = 0;
+  DWORD timestamp = 0;
+  DWORD imageSize = 0;
+  uint64_t version = 0;
+
+  // Block some malicious DLLs known for crashing our process (bug 1841751),
+  // based on matching the combination of version number + timestamp + image
+  // size. We further reduce the chances of collision with legit DLLs by
+  // checking for a checksum of 0 and the absence of debug information, both of
+  // which are unusual for production-ready DLLs.
+  if (headers.GetCheckSum(checksum) && checksum == 0 && !headers.GetPdbInfo() &&
+      headers.GetTimeStamp(timestamp)) {
+    struct KnownMaliciousCombination {
+      uint64_t mVersion;
+      uint32_t mTimestamp;
+      uint32_t mImageSize;
+    };
+    const KnownMaliciousCombination instances[]{
+        // 1.0.0.26638
+        {0x000100000000680e, 0x570B8A90, 0x62000},
+        // 1.0.0.26793
+        {0x00010000000068a9, 0x572B4CE4, 0x62000},
+        // 1.0.0.27567
+        {0x0001000000006baf, 0x57A725AC, 0x61000},
+        // 1.0.0.29915
+        {0x00010000000074db, 0x5A115D81, 0x5D000},
+        // 1.0.0.31122
+        {0x0001000000007992, 0x5CFF88B8, 0x5D000}};
+
+    // We iterate over timestamps, because they are unique and it is a quick
+    // field to fetch
+    for (const auto& instance : instances) {
+      if (instance.mTimestamp == timestamp) {
+        // Only fetch other fields in case we have a match. Then, we can exit
+        // the loop.
+        if (headers.GetImageSize(imageSize) &&
+            instance.mImageSize == imageSize &&
+            headers.GetVersionInfo(version) && instance.mVersion == version) {
+          return BlockAction::Deny;
+        }
+        break;
+      }
+    }
+  }
+
   DECLARE_POINTER_TO_FIRST_DLL_BLOCKLIST_ENTRY(info);
   DECLARE_DLL_BLOCKLIST_NUM_ENTRIES(infoNumEntries);
 
-  DllBlockInfoComparator comp(aLeafName);
+  mozilla::freestanding::DllBlockInfoComparator comp(aLeafName);
 
-  size_t match;
-  if (!BinarySearchIf(info, 0, infoNumEntries, comp, &match)) {
+  size_t match = LowerBound(info, 0, infoNumEntries, comp);
+  bool builtinListHasLowerBound = match != infoNumEntries;
+  const DllBlockInfo* entry = nullptr;
+  BlockAction checkResult = BlockAction::Allow;
+  if (builtinListHasLowerBound) {
+    // There may be multiple entries on the list. Since LowerBound() returns
+    // the first entry that matches (if there are any matches),
+    // search forward from there.
+    while (match < infoNumEntries && (comp(info[match]) == 0)) {
+      entry = &info[match];
+      checkResult = CheckBlockInfo(entry, headers, version);
+      if (checkResult != BlockAction::Allow) {
+        break;
+      }
+      ++match;
+    }
+  }
+  mozilla::DebugOnly<bool> blockedByDynamicBlocklist = false;
+  // Make sure we handle a case that older versions are blocked by the static
+  // list, but the dynamic list blocks all versions.
+  if (checkResult == BlockAction::Allow) {
+    if (!mozilla::freestanding::gSharedSection.IsDisabled()) {
+      entry = mozilla::freestanding::gSharedSection.SearchBlocklist(aLeafName);
+      if (entry) {
+        checkResult = CheckBlockInfo(entry, headers, version);
+        blockedByDynamicBlocklist = checkResult != BlockAction::Allow;
+      }
+    }
+  }
+  if (checkResult == BlockAction::Allow) {
     return BlockAction::Allow;
   }
 
-  const DllBlockInfo& entry = info[match];
+  gBlockSet.Add(entry->mName, version);
 
-  mozilla::nt::PEHeaders headers(aBaseAddress);
-  uint64_t version;
-  BlockAction checkResult = CheckBlockInfo(&entry, headers, version);
-  if (checkResult == BlockAction::Allow) {
-    return checkResult;
-  }
-
-  gBlockSet.Add(entry.mName, version);
-
-  if ((entry.mFlags & DllBlockInfo::REDIRECT_TO_NOOP_ENTRYPOINT) &&
+  if ((entry->mFlags & DllBlockInfoFlags::REDIRECT_TO_NOOP_ENTRYPOINT) &&
       aK32Exports && RedirectToNoOpEntryPoint(headers, *aK32Exports)) {
+    MOZ_ASSERT(!blockedByDynamicBlocklist, "dynamic blocklist has redirect?");
     return BlockAction::NoOpEntryPoint;
   }
 
@@ -346,7 +390,6 @@ namespace mozilla {
 namespace freestanding {
 
 CrossProcessDllInterceptor::FuncHookType<LdrLoadDllPtr> stub_LdrLoadDll;
-RTL_RUN_ONCE gK32ExportsResolveOnce = RTL_RUN_ONCE_INIT;
 
 NTSTATUS NTAPI patched_LdrLoadDll(PWCHAR aDllPath, PULONG aFlags,
                                   PUNICODE_STRING aDllName,
@@ -361,25 +404,12 @@ NTSTATUS NTAPI patched_LdrLoadDll(PWCHAR aDllPath, PULONG aFlags,
 CrossProcessDllInterceptor::FuncHookType<NtMapViewOfSectionPtr>
     stub_NtMapViewOfSection;
 
-NTSTATUS NTAPI patched_NtMapViewOfSection(
-    HANDLE aSection, HANDLE aProcess, PVOID* aBaseAddress, ULONG_PTR aZeroBits,
-    SIZE_T aCommitSize, PLARGE_INTEGER aSectionOffset, PSIZE_T aViewSize,
-    SECTION_INHERIT aInheritDisposition, ULONG aAllocationType,
-    ULONG aProtectionFlags) {
-  // We always map first, then we check for additional info after.
-  NTSTATUS stubStatus = stub_NtMapViewOfSection(
-      aSection, aProcess, aBaseAddress, aZeroBits, aCommitSize, aSectionOffset,
-      aViewSize, aInheritDisposition, aAllocationType, aProtectionFlags);
-  if (!NT_SUCCESS(stubStatus)) {
-    return stubStatus;
-  }
-
-  if (aProcess != nt::kCurrentProcess) {
-    // We're only interested in mapping for the current process.
-    return stubStatus;
-  }
-
-  // Do a query to see if the memory is MEM_IMAGE. If not, continue
+// All the code for patched_NtMapViewOfSection that relies on checked stack
+// buffers (e.g. mbi, sectionFileName) should be put in this helper function
+// (see bug 1733532).
+MOZ_NEVER_INLINE NTSTATUS AfterMapViewOfExecutableSection(
+    HANDLE aProcess, PVOID* aBaseAddress, NTSTATUS aStubStatus) {
+  // We don't care about mappings that aren't MEM_IMAGE.
   MEMORY_BASIC_INFORMATION mbi;
   NTSTATUS ntStatus =
       ::NtQueryVirtualMemory(aProcess, *aBaseAddress, MemoryBasicInformation,
@@ -388,16 +418,8 @@ NTSTATUS NTAPI patched_NtMapViewOfSection(
     ::NtUnmapViewOfSection(aProcess, *aBaseAddress);
     return STATUS_ACCESS_DENIED;
   }
-
-  // We don't care about mappings that aren't MEM_IMAGE or executable.
-  // We check for the AllocationProtect, not the Protect field because
-  // the first section of a mapped image is always PAGE_READONLY even
-  // when it's mapped as an executable.
-  constexpr DWORD kPageExecutable = PAGE_EXECUTE | PAGE_EXECUTE_READ |
-                                    PAGE_EXECUTE_READWRITE |
-                                    PAGE_EXECUTE_WRITECOPY;
-  if (!(mbi.Type & MEM_IMAGE) || !(mbi.AllocationProtect & kPageExecutable)) {
-    return stubStatus;
+  if (!(mbi.Type & MEM_IMAGE)) {
+    return aStubStatus;
   }
 
   // Get the section name
@@ -412,35 +434,70 @@ NTSTATUS NTAPI patched_NtMapViewOfSection(
   UNICODE_STRING leafOnStack;
   nt::GetLeafName(&leafOnStack, sectionFileName);
 
-  bool isDependent = false;
-  auto resultView = freestanding::gSharedSection.GetView();
-  // Small optimization: Since loading a dependent module does not involve
-  // LdrLoadDll, we know isDependent is false if we hold a top frame.
-  if (resultView.isOk() && !ModuleLoadFrame::ExistsTopFrame()) {
-    isDependent =
-        IsDependentModule(leafOnStack, resultView.inspect()->mK32Exports);
-  }
-
+  bool isInjectedDependent = false;
+  const UNICODE_STRING k32Name = MOZ_LITERAL_UNICODE_STRING(L"kernel32.dll");
+  Kernel32ExportsSolver* k32Exports = nullptr;
   BlockAction blockAction;
-  if (isDependent) {
-    // Add an NT dv\path to the shared section so that a sandbox process can
-    // use it to bypass CIG.  In a sandbox process, this addition fails
-    // because we cannot map the section to a writable region, but it's
-    // ignorable because the paths have been added by the browser process.
-    Unused << freestanding::gSharedSection.AddDepenentModule(sectionFileName);
-
-    // For a dependent module, try redirection instead of blocking it.
-    // If we fail, we reluctantly allow the module for free.
-    mozilla::nt::PEHeaders headers(*aBaseAddress);
-    blockAction =
-        RedirectToNoOpEntryPoint(headers, resultView.inspect()->mK32Exports)
-            ? BlockAction::NoOpEntryPoint
-            : BlockAction::Allow;
+  // Trying to get the Kernel32Exports while loading kernel32.dll causes Firefox
+  // to crash. (but only during a profile-guided optimization run, oddly) We
+  // know we're never going to block kernel32.dll, so skip all this
+  if (::RtlCompareUnicodeString(&k32Name, &leafOnStack, TRUE) == 0) {
+    blockAction = BlockAction::Allow;
   } else {
-    // Check blocklist
-    blockAction = DetermineBlockAction(
-        leafOnStack, *aBaseAddress,
-        resultView.isOk() ? &resultView.inspect()->mK32Exports : nullptr);
+    k32Exports = gSharedSection.GetKernel32Exports();
+    // Small optimization: Since loading a dependent module does not involve
+    // LdrLoadDll, we know isInjectedDependent is false if we hold a top frame.
+    if (k32Exports && !ModuleLoadFrame::ExistsTopFrame()) {
+      // Note that if a module is dependent but not injected, this means that
+      // the executable built against it, and it should be signed by Mozilla
+      // or Microsoft, so we don't need to worry about adding it to the list
+      // for CIG. (and users won't be able to block it) So the only special
+      // case here is a dependent module that has been injected.
+      isInjectedDependent = IsInjectedDependentModule(leafOnStack, *k32Exports);
+    }
+
+    if (isInjectedDependent) {
+      // Add an NT dv\path to the shared section so that a sandbox process can
+      // use it to bypass CIG.  In a sandbox process, this addition fails
+      // because we cannot map the section to a writable region, but it's
+      // ignorable because the paths have been added by the browser process.
+      Unused << SharedSection::AddDependentModule(sectionFileName);
+
+      bool attemptToBlockViaRedirect;
+#if defined(NIGHTLY_BUILD)
+      // We enable automatic DLL blocking only in Nightly for now
+      // because it caused a compat issue (bug 1682304 and 1704373).
+      attemptToBlockViaRedirect = true;
+      // We will set blockAction below in the if (attemptToBlockViaRedirect)
+      // block, but I guess the compiler isn't smart enough to figure
+      // that out and complains about an uninitialized variable :-(
+      blockAction = BlockAction::NoOpEntryPoint;
+#else
+      // Check blocklist
+      blockAction =
+          DetermineBlockAction(leafOnStack, *aBaseAddress, k32Exports);
+      // If we were going to block this dependent module, try redirection
+      // instead of blocking it, since blocking it would cause the .exe not to
+      // launch.
+      // Note tht Deny and Error both end up blocking the module in a
+      // straightforward way, so those are the cases in which we need
+      // to redirect instead.
+      attemptToBlockViaRedirect =
+          blockAction == BlockAction::Deny || blockAction == BlockAction::Error;
+#endif
+      if (attemptToBlockViaRedirect) {
+        // For a dependent module, try redirection instead of blocking it.
+        // If we fail, we reluctantly allow the module for free.
+        mozilla::nt::PEHeaders headers(*aBaseAddress);
+        blockAction = RedirectToNoOpEntryPoint(headers, *k32Exports)
+                          ? BlockAction::NoOpEntryPoint
+                          : BlockAction::Allow;
+      }
+    } else {
+      // Check blocklist
+      blockAction =
+          DetermineBlockAction(leafOnStack, *aBaseAddress, k32Exports);
+    }
   }
 
   ModuleLoadInfo::Status loadStatus = ModuleLoadInfo::Status::Blocked;
@@ -472,17 +529,66 @@ NTSTATUS NTAPI patched_NtMapViewOfSection(
 
   if (nt::RtlGetProcessHeap()) {
     ModuleLoadFrame::NotifySectionMap(
-        nt::AllocatedUnicodeString(sectionFileName), *aBaseAddress, stubStatus,
-        loadStatus, isDependent);
+        nt::AllocatedUnicodeString(sectionFileName), *aBaseAddress, aStubStatus,
+        loadStatus, isInjectedDependent);
   }
 
   if (loadStatus == ModuleLoadInfo::Status::Loaded ||
       loadStatus == ModuleLoadInfo::Status::Redirected) {
-    return stubStatus;
+    return aStubStatus;
   }
 
   ::NtUnmapViewOfSection(aProcess, *aBaseAddress);
   return STATUS_ACCESS_DENIED;
+}
+
+// To preserve compatibility with third-parties, calling into this function
+// must not use checked stack buffers when reached through Thread32Next (see
+// bug 1733532). Hence this function is declared as MOZ_NO_STACK_PROTECTOR.
+// Ideally, all code relying on stack buffers should be put in the dedicated
+// helper function AfterMapViewOfExecutableImageSection, which does not have
+// the MOZ_NO_STACK_PROTECTOR attribute. The obi variable below is an
+// exception to this rule, as it is required to collect the information that
+// lets us decide whether we really need to go through the helper function.
+NTSTATUS NTAPI patched_NtMapViewOfSection(
+    HANDLE aSection, HANDLE aProcess, PVOID* aBaseAddress, ULONG_PTR aZeroBits,
+    SIZE_T aCommitSize, PLARGE_INTEGER aSectionOffset, PSIZE_T aViewSize,
+    SECTION_INHERIT aInheritDisposition, ULONG aAllocationType,
+    ULONG aProtectionFlags) {
+  // We always map first, then we check for additional info after.
+  NTSTATUS stubStatus = stub_NtMapViewOfSection(
+      aSection, aProcess, aBaseAddress, aZeroBits, aCommitSize, aSectionOffset,
+      aViewSize, aInheritDisposition, aAllocationType, aProtectionFlags);
+  if (!NT_SUCCESS(stubStatus)) {
+    return stubStatus;
+  }
+
+  if (aProcess != nt::kCurrentProcess) {
+    // We're only interested in mapping for the current process.
+    return stubStatus;
+  }
+
+  PUBLIC_OBJECT_BASIC_INFORMATION obi;
+  NTSTATUS ntStatus = ::NtQueryObject(aSection, ObjectBasicInformation, &obi,
+                                      sizeof(obi), nullptr);
+  if (!NT_SUCCESS(ntStatus)) {
+    ::NtUnmapViewOfSection(aProcess, *aBaseAddress);
+    return STATUS_ACCESS_DENIED;
+  }
+
+  // We don't care about sections for which the permission to map executable
+  // views was not asked at creation time. This early exit path is notably
+  // taken for:
+  //  - calls to LoadLibraryExW using LOAD_LIBRARY_AS_DATAFILE or
+  //    LOAD_LIBRARY_AS_IMAGE_RESOURCE (bug 1842088), thus allowing us to load
+  //    blocked DLLs for analysis without executing them;
+  //  - calls to Thread32Next (bug 1733532), thus avoiding the helper function
+  //    with stack cookie checks.
+  if (!(obi.GrantedAccess & SECTION_MAP_EXECUTE)) {
+    return stubStatus;
+  }
+
+  return AfterMapViewOfExecutableSection(aProcess, aBaseAddress, stubStatus);
 }
 
 }  // namespace freestanding

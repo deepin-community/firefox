@@ -290,7 +290,7 @@ add_task(async function test_userScripts_no_webext_apis() {
     url,
     ExtensionTestUtils.remoteContentScripts ? { remote: true } : undefined
   );
-  let result = await contentPage.spawn(undefined, async () => {
+  let result = await contentPage.spawn([], async () => {
     return {
       textContent: this.content.document.body.textContent,
       url: this.content.location.href,
@@ -325,7 +325,7 @@ add_task(async function test_userScripts_no_webext_apis() {
     let contentPage2 = await ExtensionTestUtils.loadContentPage(url2, {
       remote: true,
     });
-    let result2 = await contentPage2.spawn(undefined, async () => {
+    let result2 = await contentPage2.spawn([], async () => {
       return {
         textContent: this.content.document.body.textContent,
         url: this.content.location.href,
@@ -444,8 +444,7 @@ add_task(async function test_userScripts_pref_disabled() {
         await browser.userScripts.register({
           js: [
             {
-              code:
-                "throw new Error('This userScripts should not be registered')",
+              code: "throw new Error('This userScripts should not be registered')",
             },
           ],
           runAt: "document_start",
@@ -527,7 +526,7 @@ add_task(async function test_user_script_api_script_required() {
       user_scripts: {},
     },
     files: {
-      "content_script.js": function() {
+      "content_script.js": function () {
         browser.test.assertEq(
           undefined,
           browser.userScripts && browser.userScripts.onBeforeScript,
@@ -573,20 +572,16 @@ add_task(async function test_scriptMetaData() {
     ];
   }
 
-  async function background(pageUrl) {
+  async function background() {
     for (let scriptMetadata of getTestCases(true)) {
       await browser.userScripts.register({
         js: [{ file: "userscript.js" }],
         runAt: "document_end",
-        allFrames: true,
         matches: ["http://localhost/*/file_sample.html"],
         scriptMetadata,
       });
     }
 
-    let f = document.createElement("iframe");
-    f.src = pageUrl;
-    document.body.append(f);
     browser.test.sendMessage("background-page:done");
   }
 
@@ -620,7 +615,7 @@ add_task(async function test_scriptMetaData() {
   }
 
   let extension = ExtensionTestUtils.loadExtension({
-    background: `${getTestCases};(${background})("${BASE_URL}/file_sample.html")`,
+    background: `${getTestCases};(${background})()`,
     manifest: {
       permissions: ["http://*/*/file_sample.html"],
       user_scripts: {
@@ -636,7 +631,14 @@ add_task(async function test_scriptMetaData() {
   await extension.startup();
 
   await extension.awaitMessage("background-page:done");
+
+  const pageUrl = `${BASE_URL}/file_sample.html`;
+  info(`Load content page: ${pageUrl}`);
+  const page = await ExtensionTestUtils.loadContentPage(pageUrl);
+
   await extension.awaitMessage("apiscript:done");
+
+  await page.close();
 
   await extension.unload();
 });
@@ -667,5 +669,61 @@ add_task(async function test_userScriptOptions_js_property_required() {
 
   await extension.startup();
   await extension.awaitMessage("done");
+  await extension.unload();
+});
+
+add_task(async function test_userScripts_are_unregistered_on_unload() {
+  let extension = ExtensionTestUtils.loadExtension({
+    manifest: {
+      permissions: ["http://*/*/file_sample.html"],
+      user_scripts: {
+        api_script: "api_script.js",
+      },
+    },
+    files: {
+      "userscript.js": "",
+      "extpage.html": `<!DOCTYPE html><script src="extpage.js"></script>`,
+      "extpage.js": async function extPage() {
+        await browser.userScripts.register({
+          js: [{ file: "userscript.js" }],
+          matches: ["http://localhost/*/file_sample.html"],
+        });
+
+        browser.test.sendMessage("user-script-registered");
+      },
+    },
+  });
+
+  await extension.startup();
+
+  equal(
+    // In order to read the `registeredContentScripts` map, we need to access
+    // the extension embedded in the `ExtensionWrapper` first.
+    extension.extension.registeredContentScripts.size,
+    0,
+    "no user scripts registered yet"
+  );
+
+  const url = `moz-extension://${extension.uuid}/extpage.html`;
+  info(`loading extension page: ${url}`);
+  const page = await ExtensionTestUtils.loadContentPage(url);
+
+  info("waiting for the user script to be registered");
+  await extension.awaitMessage("user-script-registered");
+
+  equal(
+    extension.extension.registeredContentScripts.size,
+    1,
+    "got registered user scripts in the extension content scripts map"
+  );
+
+  await page.close();
+
+  equal(
+    extension.extension.registeredContentScripts.size,
+    0,
+    "user scripts unregistered from the extension content scripts map"
+  );
+
   await extension.unload();
 });

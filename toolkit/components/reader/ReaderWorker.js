@@ -10,6 +10,9 @@
  * A worker dedicated to handle parsing documents for reader view.
  */
 
+/* import-globals-from /toolkit/components/workerloader/require.js */
+/* global JSDOMParser */
+/* import-globals-from /toolkit/components/reader/Readability.js */
 importScripts(
   "resource://gre/modules/workers/require.js",
   "resource://gre/modules/reader/JSDOMParser.js",
@@ -21,23 +24,23 @@ var PromiseWorker = require("resource://gre/modules/workers/PromiseWorker.js");
 const DEBUG = false;
 
 var worker = new PromiseWorker.AbstractWorker();
-worker.dispatch = function(method, args = []) {
+worker.dispatch = function (method, args = []) {
   return Agent[method](...args);
 };
-worker.postMessage = function(result, ...transfers) {
+worker.postMessage = function (result, ...transfers) {
   self.postMessage(result, ...transfers);
 };
-worker.close = function() {
+worker.close = function () {
   self.close();
 };
-worker.log = function(...args) {
+worker.log = function (...args) {
   if (DEBUG) {
     dump("ReaderWorker: " + args.join(" ") + "\n");
   }
 };
 
 self.addEventListener("message", msg => worker.handleMessage(msg));
-self.addEventListener("unhandledrejection", function(error) {
+self.addEventListener("unhandledrejection", function (error) {
   throw error.reason;
 });
 

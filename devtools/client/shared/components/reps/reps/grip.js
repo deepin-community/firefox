@@ -5,7 +5,7 @@
 "use strict";
 
 // Make this available to both AMD and CJS environments
-define(function(require, exports, module) {
+define(function (require, exports, module) {
   // ReactJS
   const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
   const { span } = require("devtools/client/shared/vendor/react-dom-factories");
@@ -13,7 +13,6 @@ define(function(require, exports, module) {
   // Dependencies
   const {
     interleave,
-    isGrip,
     wrapRender,
   } = require("devtools/client/shared/components/reps/reps/rep-utils");
   const PropRep = require("devtools/client/shared/components/reps/reps/prop-rep");
@@ -29,8 +28,7 @@ define(function(require, exports, module) {
 
   GripRep.propTypes = {
     object: PropTypes.object.isRequired,
-    // @TODO Change this to Object.values when supported in Node's version of V8
-    mode: PropTypes.oneOf(Object.keys(MODE).map(key => MODE[key])),
+    mode: PropTypes.oneOf(Object.values(MODE)),
     isInterestingProp: PropTypes.func,
     title: PropTypes.string,
     onDOMNodeMouseOver: PropTypes.func,
@@ -179,7 +177,7 @@ define(function(require, exports, module) {
         return (
           type == "boolean" ||
           type == "number" ||
-          (type == "string" && value.length != 0)
+          (type == "string" && !!value.length)
         );
       });
 
@@ -295,7 +293,7 @@ define(function(require, exports, module) {
    */
   function getProps(componentProps, properties, indexes, suppressQuotes) {
     // Make indexes ordered by ascending.
-    indexes.sort(function(a, b) {
+    indexes.sort(function (a, b) {
       return a - b;
     });
 
@@ -373,17 +371,13 @@ define(function(require, exports, module) {
 
   // Registration
   function supportsObject(object, noGrip = false) {
-    if (noGrip === true || !isGrip(object)) {
-      return false;
-    }
-
-    if (object.class === "DeadObject") {
+    if (object?.class === "DeadObject") {
       return true;
     }
 
-    return object.preview
+    return object?.preview
       ? typeof object.preview.ownProperties !== "undefined"
-      : typeof object.ownPropertyLength !== "undefined";
+      : typeof object?.ownPropertyLength !== "undefined";
   }
 
   const maxLengthMap = new Map();

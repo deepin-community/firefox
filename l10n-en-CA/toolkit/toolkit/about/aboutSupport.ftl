@@ -76,6 +76,14 @@ app-basics-location-service-key-google = Google Location Service Key
 app-basics-safebrowsing-key-google = Google Safebrowsing Key
 app-basics-key-mozilla = Mozilla Location Service Key
 app-basics-safe-mode = Safe Mode
+app-basics-memory-size = Memory Size (RAM)
+app-basics-disk-available = Disk Space Available
+
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Show in Finder
@@ -105,11 +113,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Decision Log
 graphics-crash-guards-title = Crash Guard Disabled Features
 graphics-workarounds-title = Workarounds
+graphics-device-pixel-ratios = Window Device Pixel Ratios
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Window Protocol
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Desktop Environment
 place-database-title = Places Database
+place-database-stats = Statistics
+place-database-stats-show = Show Statistics
+place-database-stats-hide = Hide Statistics
+place-database-stats-entity = Entity
+place-database-stats-count = Count
+place-database-stats-size-kib = Size (KiB)
+place-database-stats-size-perc = Size (%)
+place-database-stats-efficiency-perc = Efficiency (%)
+place-database-stats-sequentiality-perc = Sequentiality (%)
 place-database-integrity = Integrity
 place-database-verify-integrity = Verify Integrity
 a11y-title = Accessibility
@@ -156,8 +174,11 @@ media-device-channels = Channels
 media-device-rate = Rate
 media-device-latency = Latency
 media-capabilities-title = Media Capabilities
+media-codec-support-info = Codec Support Information
 # List all the entries of the database.
 media-capabilities-enumerate = Enumerate database
+
+## Codec support table
 
 ##
 
@@ -280,6 +301,8 @@ webgl2-renderer = WebGL 2 Driver Renderer
 webgl2-version = WebGL 2 Driver Version
 webgl2-driver-extensions = WebGL 2 Driver Extensions
 webgl2-extensions = WebGL 2 Extensions
+webgpu-default-adapter = WebGPU Default Adapter
+webgpu-fallback-adapter = WebGPU Fallback Adapter
 
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
@@ -315,6 +338,7 @@ can-sandbox-media = Media Plugin Sandboxing
 content-sandbox-level = Content Process Sandbox Level
 effective-content-sandbox-level = Effective Content Process Sandbox Level
 content-win32k-lockdown-state = Win32k Lockdown State for Content Process
+support-sandbox-gpu-level = GPU Process Sandbox Level
 sandbox-proc-type-content = content
 sandbox-proc-type-file = file content
 sandbox-proc-type-media-plugin = media plugin
@@ -343,7 +367,7 @@ fission-status-experiment-control = Disabled by experiment
 fission-status-experiment-treatment = Enabled by experiment
 fission-status-disabled-by-e10s-env = Disabled by environment
 fission-status-enabled-by-env = Enabled by environment
-fission-status-disabled-by-safe-mode = Disabled by safe mode
+fission-status-disabled-by-env = Disabled by environment
 fission-status-enabled-by-default = Enabled by default
 fission-status-disabled-by-default = Disabled by default
 fission-status-enabled-by-user-pref = Enabled by user

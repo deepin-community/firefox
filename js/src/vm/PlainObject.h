@@ -9,7 +9,6 @@
 
 #include "gc/AllocKind.h"     // js::gc::AllocKind
 #include "js/Class.h"         // JSClass
-#include "js/Result.h"        // JS::OOM, JS::Result
 #include "js/RootingAPI.h"    // JS::Handle
 #include "vm/JSObject.h"      // js::NewObjectKind
 #include "vm/NativeObject.h"  // js::NativeObject
@@ -35,12 +34,12 @@ class PlainObject : public NativeObject {
 
  public:
   static inline js::PlainObject* createWithShape(JSContext* cx,
-                                                 JS::Handle<Shape*> shape,
+                                                 JS::Handle<SharedShape*> shape,
                                                  gc::AllocKind kind,
                                                  NewObjectKind newKind);
 
   static inline js::PlainObject* createWithShape(
-      JSContext* cx, JS::Handle<Shape*> shape,
+      JSContext* cx, JS::Handle<SharedShape*> shape,
       NewObjectKind newKind = GenericObject);
 
   static inline PlainObject* createWithTemplate(
@@ -70,11 +69,11 @@ extern bool CopyDataPropertiesNative(JSContext* cx,
                                      JS::Handle<PlainObject*> excludedItems,
                                      bool* optimized);
 
-// Specialized call for constructing |this| with a known function callee.
-extern PlainObject* CreateThisForFunction(JSContext* cx,
-                                          JS::Handle<JSFunction*> callee,
-                                          JS::Handle<JSObject*> newTarget,
-                                          NewObjectKind newKind);
+// Specialized call to get the shape to use when creating |this| for a known
+// function callee.
+extern SharedShape* ThisShapeForFunction(JSContext* cx,
+                                         JS::Handle<JSFunction*> callee,
+                                         JS::Handle<JSObject*> newTarget);
 
 // Create a new PlainObject with %Object.prototype% as prototype.
 extern PlainObject* NewPlainObject(JSContext* cx,
@@ -96,10 +95,16 @@ extern PlainObject* NewPlainObjectWithProtoAndAllocKind(
     JSContext* cx, HandleObject proto, gc::AllocKind allocKind,
     NewObjectKind newKind = GenericObject);
 
-extern PlainObject* NewPlainObjectWithProperties(JSContext* cx,
-                                                 IdValuePair* properties,
-                                                 size_t nproperties,
-                                                 NewObjectKind newKind);
+// Create a plain object with the given properties. The list must not contain
+// duplicate keys or integer keys.
+extern PlainObject* NewPlainObjectWithUniqueNames(JSContext* cx,
+                                                  IdValuePair* properties,
+                                                  size_t nproperties);
+
+// Create a plain object with the given properties. The list may contain integer
+// keys or duplicate keys.
+extern PlainObject* NewPlainObjectWithMaybeDuplicateKeys(
+    JSContext* cx, IdValuePair* properties, size_t nproperties);
 
 }  // namespace js
 

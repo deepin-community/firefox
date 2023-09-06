@@ -65,6 +65,9 @@ media-dimension =
     .value = Dimensiun:
 media-long-desc =
     .value = Descripziun detagliada:
+media-select-all =
+    .label = Selecziunar tut
+    .accesskey = e
 media-save-as =
     .label = Memorisar sut…
     .accesskey = s
@@ -239,6 +242,9 @@ media-dimensions =
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } KB
 
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
+
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab
 # Variables:
@@ -250,7 +256,7 @@ media-block-image =
 # This string is used to display the URL of the website on top of the
 # pageInfo dialog box
 # Variables:
-#   $website (string) - The url of the website pageInfo is getting info for
+#   $website (string) — The url of the website pageInfo is getting info for
 page-info-page =
     .title = Infurmaziun davart la pagina - { $website }
 page-info-frame =

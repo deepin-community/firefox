@@ -16,8 +16,6 @@ change-password-old = Passwird the noo:
 change-password-new = New passwird:
 change-password-reenter = New passwird (again):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = No able tae chynge passwird.
 pippki-incorrect-pw = Ye didnae inpit whit's the richt passwird the noo. Gie it anither shot.
 pippki-pw-change-ok = Passwird chynged wioot onie problems.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Ye're in FIPS mode jist noo. FIPS needs a 
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Reset Primary Passwird
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Reset
-
 reset-primary-password-text = If ye reset yer Primary Passwird, aw yer stored wab and e-mail passwirds,personal certificates, and private keys will be forgotten. Are ye shair ye're wantin tae reset yer Primary Passwird?
 
 pippki-reset-password-confirmation-title = Reset Primary Passwird
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Yer Primary Passwird has been reset
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Doonloadin Certificate
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Ye've been speirt tae trust a new Certificate Authority (CA).
 download-cert-trust-ssl =
     .label = Trust this CA tae identify wabsites.
@@ -77,7 +74,5 @@ set-password-reminder = Important: If you forget yer certificate backup passwird
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Bieldit Token Uphaudin
-protected-auth-msg = Gonnae uphaud tae the token. Uphaudin method depends on the type o yer token.
-protected-auth-token = Token:
+## Protected authentication alert
+

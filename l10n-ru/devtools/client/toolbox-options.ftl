@@ -41,6 +41,17 @@ options-collapse-attrs-label = Обрезать атрибуты DOM
 options-collapse-attrs-tooltip =
     .title = Обрезать в инспекторе длинные атрибуты
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Щёлкните и перетащите, чтобы изменить значения размера
+options-inspector-draggable-properties-tooltip =
+    .title = Щёлкните и перетащите, чтобы изменить значения размера в представлении правил инспектора.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Использовать более простые маркеры с prefers-reduced-motion
+options-inspector-simplified-highlighters-tooltip =
+    .title = Включает упрощенные маркеры, когда включена функция prefers-reduced-motion. Рисует линии вместо закрашенных прямоугольников вокруг выделенных элементов, чтобы избежать эффекта мерцания.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Единицы задания цвета по умолчанию
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Как в оригинале
 options-default-color-unit-hex = 16-ричные числа
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Названия цветов
 
 ## Style Editor section
@@ -73,7 +85,7 @@ options-screenshot-clipboard-tooltip2 =
 # Label for the checkbox that toggles the camera shutter audio for screenshot tool
 options-screenshot-audio-label = Проигрывать звук затвора камеры
 options-screenshot-audio-tooltip =
-    .title = Проигрывать звук щелчка затвора камеры при снятии скриншота
+    .title = Проигрывать звук щелчка затвора камеры при снятии снимка экрана
 
 ## Editor section
 
@@ -99,9 +111,9 @@ options-sourceeditor-keybinding-default-label = По умолчанию
 options-context-advanced-settings = Дополнительные параметры
 
 # The label for the checkbox that toggles the HTTP cache on or off
-options-disable-http-cache-label = Отключить HTTP-кэш (когда открыта панель инструментов)
+options-disable-http-cache-label = Отключить HTTP-кеш (когда открыта панель инструментов)
 options-disable-http-cache-tooltip =
-    .title = Включение этой опции отключит HTTP-кэш для всех вкладок, в которых открыта панель инструментов. Эта опция не влияет на Service Worker'ы.
+    .title = Включение этой опции отключит HTTP-кеш для всех вкладок, в которых открыта панель инструментов. Эта опция не влияет на Service Worker'ы.
 
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Отключить JavaScript *
@@ -118,6 +130,16 @@ options-enable-remote-label = Включить удалённую отладку
 options-enable-remote-tooltip2 =
     .title = Включение этой опции позволит удалённо отлаживать этот экземпляр браузера
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Использовать клавишу F12, чтобы открыть или закрыть DevTools.
+options-enable-f12-tooltip =
+    .title = Включение этой фукнции привязывает клавишу F12 к открытию или закрытию панели инструментов DevTools.
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Включить собственные средства форматирования
+options-enable-custom-formatters-tooltip =
+    .title = Включение этой настройки позволит сайтам определять собственные средства форматирования для объектов DOM
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Включить Service Worker'ы поверх HTTP (когда открыта панель инструментов)
 options-enable-service-workers-http-tooltip =
@@ -130,9 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Только текущая сессия, перезагружает страницу
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Отображать данные платформы Gecko
-options-show-platform-data-tooltip =
-    .title = Если вы включите эту настройку, то отчеты Профайлера JavaScript будут включать символы платформы Gecko

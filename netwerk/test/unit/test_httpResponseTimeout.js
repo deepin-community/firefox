@@ -6,7 +6,9 @@
 
 "use strict";
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
 var baseURL;
 const kResponseTimeoutPref = "network.http.response.timeout";
@@ -16,9 +18,7 @@ const kShortLivedKeepalivePref =
 const kLongLivedKeepalivePref =
   "network.http.tcp_keepalive.long_lived_connections";
 
-const prefService = Cc["@mozilla.org/preferences-service;1"].getService(
-  Ci.nsIPrefBranch
-);
+const prefService = Services.prefs;
 
 var server = new HttpServer();
 
@@ -104,13 +104,13 @@ function setup_tests() {
   // Reset pref in cleanup.
   if (prefService.getBoolPref(kShortLivedKeepalivePref)) {
     prefService.setBoolPref(kShortLivedKeepalivePref, false);
-    registerCleanupFunction(function() {
+    registerCleanupFunction(function () {
       prefService.setBoolPref(kShortLivedKeepalivePref, true);
     });
   }
   if (prefService.getBoolPref(kLongLivedKeepalivePref)) {
     prefService.setBoolPref(kLongLivedKeepalivePref, false);
-    registerCleanupFunction(function() {
+    registerCleanupFunction(function () {
       prefService.setBoolPref(kLongLivedKeepalivePref, true);
     });
   }
@@ -138,17 +138,17 @@ function setup_http_server() {
   server.start(-1);
   baseURL = "http://localhost:" + server.identity.primaryPort + "/";
   info("Using baseURL: " + baseURL);
-  server.registerPathHandler("/", function(metadata, response) {
+  server.registerPathHandler("/", function (metadata, response) {
     // Wait until the timeout should have passed, then respond.
     response.processAsync();
 
-    do_timeout((kResponseTimeout + 1) * 1000 /* ms */, function() {
+    do_timeout((kResponseTimeout + 1) * 1000 /* ms */, function () {
       response.setStatusLine(metadata.httpVersion, 200, "OK");
       response.write("Hello world");
       response.finish();
     });
   });
-  registerCleanupFunction(function() {
+  registerCleanupFunction(function () {
     server.stop(serverStopListener);
   });
 }

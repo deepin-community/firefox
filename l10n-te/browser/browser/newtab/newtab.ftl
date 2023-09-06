@@ -8,6 +8,11 @@
 newtab-page-title = కొత్త ట్యాబు
 newtab-settings-button =
     .title = మీ కొత్త ట్యాబు పేజీని మలచుకోండి
+newtab-personalize-icon-label =
+    .title = కొత్త ట్యాబును వ్యక్తిగతీకరించుకోండి
+    .aria-label = కొత్త ట్యాబును వ్యక్తిగతీకరించుకోండి
+newtab-personalize-dialog-label =
+    .aria-label = వ్యక్తిగతీకరించు
 
 ## Search box component.
 
@@ -31,11 +36,7 @@ newtab-search-box-handoff-input-no-engine =
     .title = వెతకండి లేదా చిరునామాను ఇవ్వండి
     .aria-label = వెతకండి లేదా చిరునామాను ఇవ్వండి
 
-newtab-search-box-search-the-web-input =
-    .placeholder = జాలంలో వెతకండి
-    .title = జాలంలో వెతకండి
-    .aria-label = జాలంలో వెతకండి
-
+newtab-search-box-text = జాలంలో వెతకండి
 newtab-search-box-input =
     .placeholder = జాలంలో వెతకండి
     .aria-label = జాలంలో వెతకండి
@@ -43,7 +44,6 @@ newtab-search-box-input =
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = శోధన యంత్రాన్ని జోడించండి
-newtab-topsites-add-topsites-header = కొత్త మేటి సైటు
 newtab-topsites-edit-topsites-header = టాప్ సైట్ను సవరించండి
 newtab-topsites-title-label = శీర్షిక
 newtab-topsites-title-input =
@@ -166,6 +166,12 @@ newtab-label-sponsored = { $sponsorOrSource } · ప్రాయోజితం
 #  $sponsor (String): This is the name of a sponsor
 newtab-label-sponsored-by = { $sponsor }చే ప్రాయోజితం
 
+# This string is used under the image of story cards to indicate source and time to read
+# Variables:
+#  $source (String): This is the name of a company or their domain
+#  $timeToRead (Number): This is the estimated number of minutes to read this story
+newtab-label-source-read-time = { $source } · { $timeToRead } నిమి
+
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
 
@@ -190,7 +196,6 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = మేటి సైట్లు
-newtab-section-header-highlights = విశేషాలు
 newtab-section-header-recent-activity = ఇటీవలి కార్యకలాపం
 # Variables:
 #  $provider (String): Name of the corresponding content provider.
@@ -204,7 +209,6 @@ newtab-empty-section-highlights = విహారించడం మొదలు
 # Variables:
 #  $provider (String): Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = మీరు పట్టుబడ్డారు. { $provider } నుండి మరింత అగ్ర కథనాల కోసం తరువాత తనిఖీ చేయండి. వేచి ఉండలేరా? జాలములోని అంతటి నుండి మరింత గొప్ప కథనాలను కనుగొనడానికి ప్రసిద్ధ అంశం ఎంచుకోండి.
-
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -220,6 +224,14 @@ newtab-pocket-read-more = ప్రముఖ అంశాలు:
 newtab-pocket-more-recommendations = మరిన్ని సిఫారసులు
 newtab-pocket-learn-more = ఇంకా తెలుసుకోండి
 newtab-pocket-cta-button = { -pocket-brand-name } పొందండి
+
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+# A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-save = భద్రపరుచు
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -238,4 +250,3 @@ newtab-custom-row-selector =
 newtab-custom-pocket-sponsored = ప్రాయోజిక కథనాలు
 newtab-custom-recent-title = ఇటీవలి కార్యకలాపం
 newtab-custom-close-button = మూసివేయి
-

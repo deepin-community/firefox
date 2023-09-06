@@ -16,8 +16,6 @@ change-password-old = Jelenlegi jelszó:
 change-password-new = Új jelszó:
 change-password-reenter = Új jelszó (ismét):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Nem sikerült megváltoztatni a jelszót.
 pippki-incorrect-pw = Nem helyesen adta meg a jelenlegi jelszót. Próbálja újra.
 pippki-pw-change-ok = A jelszó megváltoztatása sikeres.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Jelenleg FIPS-módban van. A FIPS-hez köt
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Elsődleges jelszó visszaállítása
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Alaphelyzet
-
 reset-primary-password-text = Ha visszaállítja az elsődleges jelszót, akkor minden tárolt webes és e-mail-jelszó, űrlapadat, valamint személyes tanúsítvány és privát kulcs elvész. Biztos, hogy visszaállítja az elsődleges jelszót?
 
 pippki-reset-password-confirmation-title = Elsődleges jelszó visszaállítása
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Az elsődleges jelszó vissza lett 
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Tanúsítvány letöltése
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Arra kérik, hogy bízzon meg egy új hitelesítésszolgáltatóban (CA-ban).
 download-cert-trust-ssl =
     .label = Megbízás webhelyek azonosítására
@@ -77,7 +74,8 @@ set-password-reminder = Fontos: Ha elfelejti a tanúsítványokról készült bi
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Hitelesítés védett tokennel
-protected-auth-msg = Hitelesítse magát a tokennél. A hitelesítési módszer a token típusától függ.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Hitelesítsen a(z) „{ $tokenName }” tokennel. Ennek módja a tokentől függ (például ujjlenyomat-olvasó használata vagy kód beírása billentyűzettel).

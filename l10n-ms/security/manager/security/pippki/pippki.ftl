@@ -13,8 +13,6 @@ change-password-old = Kata laluan semasa:
 change-password-new = Katalalan baru:
 change-password-reenter = Kata laluan baru (lagi):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Memuat turun Sijil
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Anda telah diminta untuk mempercayai Autoriti Sijil (CA) yang baru.
 download-cert-trust-ssl =
     .label = Percayai CA ini untuk mengenal pasti laman web.
@@ -56,7 +54,5 @@ set-password-reminder = Penting: Jika anda lupa kata laluan sandaran sijil anda,
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Token pengesahan dilindungi
-protected-auth-msg = Sila buat pengesahan kepada token. Kaedah pengesahan adalah bergantung kepada jenis token anda.
-protected-auth-token = Token:
+## Protected authentication alert
+

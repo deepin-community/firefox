@@ -13,12 +13,6 @@ downloads-panel =
 
 ##
 
-# The style attribute has the width of the Downloads Panel expressed using
-# a CSS unit. The longest labels that should fit are usually those of 
-# in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
-
 downloads-cmd-pause =
     .label = Cung
     .accesskey = C
@@ -30,35 +24,13 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Juki
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Yab boc matye
-    .accesskey = b
-  
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Nyut iye Lanong
-    .accesskey = L
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
-downloads-cmd-show-button =
-    .tooltiptext =
-        { PLATFORM() ->
-            [macos] Nyut iye Lanong
-           *[other] Yab boc matye
-        }
 
-downloads-cmd-show-panel =
-    .aria-label =
-        { PLATFORM() ->
-            [macos] Nyut iye Lanong
-           *[other] Yab boc matye
-        }
-downloads-cmd-show-description =
-    .value =
-        { PLATFORM() ->
-            [macos] Nyut iye Lanong
-           *[other] Yab boc matye
-        }
+##
 
 downloads-cmd-show-downloads =
     .label = Nyut boc me gam
@@ -130,6 +102,7 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -154,6 +127,14 @@ downloads-history =
 downloads-details =
     .title = Matut ikom gam
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
+
 downloads-clear-downloads-button =
     .label = Jwa Gam
     .tooltiptext = Jwa gam ma otum, ma ki juko kacel ki ma opoto
@@ -166,3 +147,12 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Gam pe tye pi kare man.
+
+## Download errors
+
+downloads-error-alert-title = Bal me Gamo
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Gam man pe romo gwoke pien bal ma pe ngene otime woko.
+    
+    Tim ber i tem doki.

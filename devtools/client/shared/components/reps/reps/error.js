@@ -5,7 +5,7 @@
 "use strict";
 
 // Make this available to both AMD and CJS environments
-define(function(require, exports, module) {
+define(function (require, exports, module) {
   // ReactJS
   const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
   const {
@@ -15,7 +15,6 @@ define(function(require, exports, module) {
 
   // Utils
   const {
-    isGrip,
     wrapRender,
   } = require("devtools/client/shared/components/reps/reps/rep-utils");
   const {
@@ -35,8 +34,7 @@ define(function(require, exports, module) {
    */
   ErrorRep.propTypes = {
     object: PropTypes.object.isRequired,
-    // @TODO Change this to Object.values when supported in Node's version of V8
-    mode: PropTypes.oneOf(Object.keys(MODE).map(key => MODE[key])),
+    mode: PropTypes.oneOf(Object.values(MODE)),
     // An optional function that will be used to render the Error stacktrace.
     renderStacktrace: PropTypes.func,
     shouldRenderTooltip: PropTypes.bool,
@@ -157,13 +155,8 @@ define(function(require, exports, module) {
 
     parseStackString(preview.stack).forEach((frame, index, frames) => {
       let onLocationClick;
-      const {
-        filename,
-        lineNumber,
-        columnNumber,
-        functionName,
-        location,
-      } = frame;
+      const { filename, lineNumber, columnNumber, functionName, location } =
+        frame;
 
       if (
         props.onViewSourceInDebugger &&
@@ -288,8 +281,8 @@ define(function(require, exports, module) {
       }
 
       if (location && location.includes(" -> ")) {
-        // If the resource was loaded by base-loader.js, the location looks like:
-        // resource://devtools/shared/base-loader.js -> resource://path/to/file.js .
+        // If the resource was loaded by base-loader.sys.mjs, the location looks like:
+        // resource://devtools/shared/base-loader.sys.mjs -> resource://path/to/file.js .
         // What's needed is only the last part after " -> ".
         location = location.split(" -> ").pop();
       }
@@ -321,12 +314,12 @@ define(function(require, exports, module) {
   }
 
   // Registration
-  function supportsObject(object, noGrip = false) {
-    if (noGrip === true || !isGrip(object)) {
-      return false;
-    }
-
-    return object.isError || object.class === "DOMException";
+  function supportsObject(object) {
+    return (
+      object?.isError ||
+      object?.class === "DOMException" ||
+      object?.class === "Exception"
+    );
   }
 
   // Exports from this module

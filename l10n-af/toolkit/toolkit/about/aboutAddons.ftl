@@ -4,8 +4,11 @@
 
 addons-page-title = Byvoegingbestuurder
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
+
 
 list-empty-installed =
     .value = Daar is geen byvoegings van hierdie tipe geïnstalleer nie
@@ -138,7 +141,6 @@ extensions-warning-update-security = Kontrolering vir bywerkings vir byvoegings 
 extensions-warning-update-security-button = Aktiveer
     .title = Aktiveer byvoegingsbywerking-beveiliging-kontrole
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = Kontroleer vir bywerkings
@@ -191,8 +193,12 @@ addon-open-about-debugging = Ontfout byvoegings
 ## Pending uninstall message bar
 
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
+
 
 ##
 
@@ -200,3 +206,29 @@ addon-open-about-debugging = Ontfout byvoegings
 
 addon-page-options-button =
     .title = Nutsgoed vir alle byvoegings
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } is onversoenbaar met { -brand-short-name } { $version }.
+
+details-notification-unsigned-and-disabled = { $name } kon nie vir gebruik in { -brand-short-name } geverifieer word nie en is gedeaktiveer.
+details-notification-unsigned-and-disabled-link = Meer inligting
+
+details-notification-unsigned = { $name } kon nie vir gebruik in { -brand-short-name } geverifieer word nie. Wees versigtig.
+details-notification-unsigned-link = Meer inligting
+
+details-notification-blocked = { $name } is gedeaktiveer weens sekuriteit- of stabiliteitprobleme.
+details-notification-blocked-link = Meer inligting
+
+details-notification-softblocked = { $name } is bekend daarvoor dat dit sekuriteit- of stabiliteitprobleme oplewer.
+details-notification-softblocked-link = Meer inligting
+
+details-notification-gmp-pending = { $name } sal binnekort geïnstalleer word.

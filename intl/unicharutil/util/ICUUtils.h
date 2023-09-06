@@ -12,6 +12,7 @@
 
 #  include "nsString.h"
 #  include "unicode/unum.h"  // for UNumberFormat
+#  include "mozilla/intl/ICUError.h"
 
 class nsIContent;
 
@@ -62,16 +63,16 @@ class ICUUtils {
    * Parses the localized number that is serialized in aValue using aLangTags
    * and returns the result as a double. Returns NaN on failure.
    */
-  static double ParseNumber(nsAString& aValue,
+  static double ParseNumber(const nsAString& aValue,
                             LanguageTagIterForContent& aLangTags);
 
   static void AssignUCharArrayToString(UChar* aICUString, int32_t aLength,
                                        nsAString& aMozString);
 
   /**
-   * Map ICU UErrorCode to nsresult
+   * Map ICUError to nsresult
    */
-  static nsresult UErrorToNsResult(const UErrorCode aErrorCode);
+  static nsresult ICUErrorToNsResult(const mozilla::intl::ICUError aError);
 
 #  if 0
   // Currently disabled because using C++ API doesn't play nicely with enabling

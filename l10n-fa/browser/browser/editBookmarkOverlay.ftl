@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = مخفی کردن
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = نمایش تمام پوشه‌های نشانک‌ها
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = مخفی کردن
+
 bookmark-overlay-new-folder-button =
     .label = پوشهٔ جدید
     .accesskey = پ
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = نمایش تمام برچسب‌ها
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = مخفی کردن
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = نمایش تمام برچسب‌ها
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = مخفی کردن
 
 bookmark-overlay-keyword-2 =
     .value = کلیدواژه

@@ -6,10 +6,10 @@ const BinaryInputStream = Components.Constructor(
   "setInputStream"
 );
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 var httpserver = new HttpServer();
-
-var ios;
 
 // Test the handling of a cache revalidation with mismatching last-modified
 // headers. If we get such a revalidation the cache entry should be purged.
@@ -45,7 +45,7 @@ var listener_3 = {
   },
 };
 
-XPCOMUtils.defineLazyGetter(this, "listener_2", function() {
+XPCOMUtils.defineLazyGetter(this, "listener_2", function () {
   return {
     // this listener is used to process the revalidation of the
     // corrupted cache entry. its revalidation prompts it to be cleaned
@@ -77,7 +77,7 @@ XPCOMUtils.defineLazyGetter(this, "listener_2", function() {
   };
 });
 
-XPCOMUtils.defineLazyGetter(this, "listener_1", function() {
+XPCOMUtils.defineLazyGetter(this, "listener_1", function () {
   return {
     // this listener processes the initial request from a empty cache.
     // the server responds with the wrong data ('A')
@@ -107,7 +107,6 @@ XPCOMUtils.defineLazyGetter(this, "listener_1", function() {
 
 function run_test() {
   do_get_profile();
-  ios = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
 
   evict_cache_entries();
 

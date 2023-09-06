@@ -9,12 +9,10 @@
 #include "mozilla/dom/Blob.h"
 #include "mozilla/dom/BlobImpl.h"
 #include "mozilla/dom/BlobURLProtocolHandler.h"
-#include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/dom/WorkerRunnable.h"
 #include "mozilla/dom/WorkerScope.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 // This class creates an URL from a DOM Blob on the main thread.
 class CreateURLRunnable : public WorkerMainThreadRunnable {
@@ -143,8 +141,8 @@ void URLWorker::RevokeObjectURL(const GlobalObject& aGlobal,
 }
 
 /* static */
-bool URLWorker::IsValidURL(const GlobalObject& aGlobal, const nsAString& aUrl,
-                           ErrorResult& aRv) {
+bool URLWorker::IsValidObjectURL(const GlobalObject& aGlobal,
+                                 const nsAString& aUrl, ErrorResult& aRv) {
   JSContext* cx = aGlobal.Context();
   WorkerPrivate* workerPrivate = GetWorkerPrivateFromContext(cx);
 
@@ -159,5 +157,4 @@ bool URLWorker::IsValidURL(const GlobalObject& aGlobal, const nsAString& aUrl,
   return runnable->IsValidURL();
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

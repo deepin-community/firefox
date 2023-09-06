@@ -10,6 +10,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Suuɗ
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Hollu dunnge maantore ɗee fof
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Suuɗ
+
 bookmark-overlay-new-folder-button =
     .label = Runngere Hesere
     .accesskey = R
@@ -21,4 +27,10 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Hollu tage fof
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Suuɗ
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Hollu tage fof
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Suuɗ
 

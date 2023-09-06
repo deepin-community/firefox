@@ -306,6 +306,39 @@ class RecordedStrokeLine : public RecordedDrawingEvent<RecordedStrokeLine> {
   DrawOptions mOptions;
 };
 
+class RecordedStrokeCircle : public RecordedDrawingEvent<RecordedStrokeCircle> {
+ public:
+  RecordedStrokeCircle(DrawTarget* aDT, Circle aCircle, const Pattern& aPattern,
+                       const StrokeOptions& aStrokeOptions,
+                       const DrawOptions& aOptions)
+      : RecordedDrawingEvent(STROKECIRCLE, aDT),
+        mCircle(aCircle),
+        mPattern(),
+        mStrokeOptions(aStrokeOptions),
+        mOptions(aOptions) {
+    StorePattern(mPattern, aPattern);
+  }
+
+  bool PlayEvent(Translator* aTranslator) const override;
+
+  template <class S>
+  void Record(S& aStream) const;
+  void OutputSimpleEventInfo(std::stringstream& aStringStream) const override;
+
+  std::string GetName() const override { return "StrokeCircle"; }
+
+ private:
+  friend class RecordedEvent;
+
+  template <class S>
+  MOZ_IMPLICIT RecordedStrokeCircle(S& aStream);
+
+  Circle mCircle;
+  PatternStorage mPattern;
+  StrokeOptions mStrokeOptions;
+  DrawOptions mOptions;
+};
+
 class RecordedFill : public RecordedDrawingEvent<RecordedFill> {
  public:
   RecordedFill(DrawTarget* aDT, ReferencePtr aPath, const Pattern& aPattern,
@@ -332,6 +365,36 @@ class RecordedFill : public RecordedDrawingEvent<RecordedFill> {
   MOZ_IMPLICIT RecordedFill(S& aStream);
 
   ReferencePtr mPath;
+  PatternStorage mPattern;
+  DrawOptions mOptions;
+};
+
+class RecordedFillCircle : public RecordedDrawingEvent<RecordedFillCircle> {
+ public:
+  RecordedFillCircle(DrawTarget* aDT, Circle aCircle, const Pattern& aPattern,
+                     const DrawOptions& aOptions)
+      : RecordedDrawingEvent(FILLCIRCLE, aDT),
+        mCircle(aCircle),
+        mPattern(),
+        mOptions(aOptions) {
+    StorePattern(mPattern, aPattern);
+  }
+
+  bool PlayEvent(Translator* aTranslator) const override;
+
+  template <class S>
+  void Record(S& aStream) const;
+  void OutputSimpleEventInfo(std::stringstream& aStringStream) const override;
+
+  std::string GetName() const override { return "FillCircle"; }
+
+ private:
+  friend class RecordedEvent;
+
+  template <class S>
+  MOZ_IMPLICIT RecordedFillCircle(S& aStream);
+
+  Circle mCircle;
   PatternStorage mPattern;
   DrawOptions mOptions;
 };
@@ -370,7 +433,7 @@ class RecordedFillGlyphs : public RecordedDrawingEvent<RecordedFillGlyphs> {
   PatternStorage mPattern;
   DrawOptions mOptions;
   Glyph* mGlyphs = nullptr;
-  uint32_t mNumGlyphs;
+  uint32_t mNumGlyphs = 0;
 };
 
 class RecordedMask : public RecordedDrawingEvent<RecordedMask> {
@@ -733,15 +796,12 @@ class RecordedDrawSurfaceWithShadow
     : public RecordedDrawingEvent<RecordedDrawSurfaceWithShadow> {
  public:
   RecordedDrawSurfaceWithShadow(DrawTarget* aDT, ReferencePtr aRefSource,
-                                const Point& aDest, const DeviceColor& aColor,
-                                const Point& aOffset, Float aSigma,
-                                CompositionOp aOp)
+                                const Point& aDest,
+                                const ShadowOptions& aShadow, CompositionOp aOp)
       : RecordedDrawingEvent(DRAWSURFACEWITHSHADOW, aDT),
         mRefSource(aRefSource),
         mDest(aDest),
-        mColor(aColor),
-        mOffset(aOffset),
-        mSigma(aSigma),
+        mShadow(aShadow),
         mOp(aOp) {}
 
   bool PlayEvent(Translator* aTranslator) const override;
@@ -760,9 +820,7 @@ class RecordedDrawSurfaceWithShadow
 
   ReferencePtr mRefSource;
   Point mDest;
-  DeviceColor mColor;
-  Point mOffset;
-  Float mSigma;
+  ShadowOptions mShadow;
   CompositionOp mOp;
 };
 
@@ -1042,7 +1100,7 @@ class RecordedGradientStopsCreation
 
   ReferencePtr mRefPtr;
   GradientStop* mStops = nullptr;
-  uint32_t mNumStops;
+  uint32_t mNumStops = 0;
   ExtendMode mExtendMode;
   bool mDataOwned;
 
@@ -1741,7 +1799,6 @@ void RecordedEvent::RecordStrokeOptions(
   CapStyle capStyle = aStrokeOptions.mLineCap;
 
   WriteElement(aStream, uint64_t(aStrokeOptions.mDashLength));
-  WriteElement(aStream, aStrokeOptions.mDashOffset);
   WriteElement(aStream, aStrokeOptions.mLineWidth);
   WriteElement(aStream, aStrokeOptions.mMiterLimit);
   WriteElement(aStream, joinStyle);
@@ -1751,6 +1808,7 @@ void RecordedEvent::RecordStrokeOptions(
     return;
   }
 
+  WriteElement(aStream, aStrokeOptions.mDashOffset);
   aStream.write((char*)aStrokeOptions.mDashPattern,
                 sizeof(Float) * aStrokeOptions.mDashLength);
 }
@@ -1763,7 +1821,6 @@ void RecordedEvent::ReadStrokeOptions(S& aStream,
   CapStyle capStyle;
 
   ReadElement(aStream, dashLength);
-  ReadElement(aStream, aStrokeOptions.mDashOffset);
   ReadElement(aStream, aStrokeOptions.mLineWidth);
   ReadElement(aStream, aStrokeOptions.mMiterLimit);
   ReadElementConstrained(aStream, joinStyle, JoinStyle::BEVEL,
@@ -1778,6 +1835,8 @@ void RecordedEvent::ReadStrokeOptions(S& aStream,
   if (!aStrokeOptions.mDashLength || !aStream.good()) {
     return;
   }
+
+  ReadElement(aStream, aStrokeOptions.mDashOffset);
 
   mDashPatternStorage.resize(aStrokeOptions.mDashLength);
   aStrokeOptions.mDashPattern = &mDashPatternStorage.front();
@@ -1794,7 +1853,7 @@ static void ReadDrawOptions(S& aStream, DrawOptions& aDrawOptions) {
     return;
   }
 
-  if (aDrawOptions.mCompositionOp < CompositionOp::OP_OVER ||
+  if (aDrawOptions.mCompositionOp < CompositionOp::OP_CLEAR ||
       aDrawOptions.mCompositionOp > CompositionOp::OP_COUNT) {
     aStream.SetIsBad();
   }
@@ -2349,6 +2408,44 @@ inline void RecordedStrokeLine::OutputSimpleEventInfo(
   OutputSimplePatternInfo(mPattern, aStringStream);
 }
 
+inline bool RecordedStrokeCircle::PlayEvent(Translator* aTranslator) const {
+  DrawTarget* dt = aTranslator->LookupDrawTarget(mDT);
+  if (!dt) {
+    return false;
+  }
+
+  dt->StrokeCircle(mCircle.origin, mCircle.radius,
+                   *GenericPattern(mPattern, aTranslator), mStrokeOptions,
+                   mOptions);
+  return true;
+}
+
+template <class S>
+void RecordedStrokeCircle::Record(S& aStream) const {
+  RecordedDrawingEvent::Record(aStream);
+  WriteElement(aStream, mCircle);
+  WriteElement(aStream, mOptions);
+  RecordPatternData(aStream, mPattern);
+  RecordStrokeOptions(aStream, mStrokeOptions);
+}
+
+template <class S>
+RecordedStrokeCircle::RecordedStrokeCircle(S& aStream)
+    : RecordedDrawingEvent(STROKECIRCLE, aStream) {
+  ReadElement(aStream, mCircle);
+  ReadDrawOptions(aStream, mOptions);
+  ReadPatternData(aStream, mPattern);
+  ReadStrokeOptions(aStream, mStrokeOptions);
+}
+
+inline void RecordedStrokeCircle::OutputSimpleEventInfo(
+    std::stringstream& aStringStream) const {
+  aStringStream << "[" << mDT << "] StrokeCircle (" << mCircle.origin.x << ", "
+                << mCircle.origin.y << " - " << mCircle.radius
+                << ") LineWidth: " << mStrokeOptions.mLineWidth << "px ";
+  OutputSimplePatternInfo(mPattern, aStringStream);
+}
+
 inline bool RecordedFill::PlayEvent(Translator* aTranslator) const {
   DrawTarget* dt = aTranslator->LookupDrawTarget(mDT);
   if (!dt) {
@@ -2381,9 +2478,48 @@ inline void RecordedFill::OutputSimpleEventInfo(
   OutputSimplePatternInfo(mPattern, aStringStream);
 }
 
+inline bool RecordedFillCircle::PlayEvent(Translator* aTranslator) const {
+  DrawTarget* dt = aTranslator->LookupDrawTarget(mDT);
+  if (!dt) {
+    return false;
+  }
+
+  dt->FillCircle(mCircle.origin, mCircle.radius,
+                 *GenericPattern(mPattern, aTranslator), mOptions);
+  return true;
+}
+
+template <class S>
+void RecordedFillCircle::Record(S& aStream) const {
+  RecordedDrawingEvent::Record(aStream);
+  WriteElement(aStream, mCircle);
+  WriteElement(aStream, mOptions);
+  RecordPatternData(aStream, mPattern);
+}
+
+template <class S>
+RecordedFillCircle::RecordedFillCircle(S& aStream)
+    : RecordedDrawingEvent(FILLCIRCLE, aStream) {
+  ReadElement(aStream, mCircle);
+  ReadDrawOptions(aStream, mOptions);
+  ReadPatternData(aStream, mPattern);
+}
+
+inline void RecordedFillCircle::OutputSimpleEventInfo(
+    std::stringstream& aStringStream) const {
+  aStringStream << "[" << mDT << "] StrokeCircle (" << mCircle.origin.x << ", "
+                << mCircle.origin.y << " - " << mCircle.radius << ")";
+  OutputSimplePatternInfo(mPattern, aStringStream);
+}
+
 inline RecordedFillGlyphs::~RecordedFillGlyphs() { delete[] mGlyphs; }
 
 inline bool RecordedFillGlyphs::PlayEvent(Translator* aTranslator) const {
+  if (mNumGlyphs > 0 && !mGlyphs) {
+    // Glyph allocation failed
+    return false;
+  }
+
   DrawTarget* dt = aTranslator->LookupDrawTarget(mDT);
   if (!dt) {
     return false;
@@ -2409,12 +2545,18 @@ RecordedFillGlyphs::RecordedFillGlyphs(S& aStream)
   ReadDrawOptions(aStream, mOptions);
   ReadPatternData(aStream, mPattern);
   ReadElement(aStream, mNumGlyphs);
-  if (!aStream.good()) {
+  if (!aStream.good() || mNumGlyphs <= 0) {
     return;
   }
 
-  mGlyphs = new Glyph[mNumGlyphs];
-  aStream.read((char*)mGlyphs, sizeof(Glyph) * mNumGlyphs);
+  mGlyphs = new (fallible) Glyph[mNumGlyphs];
+  if (!mGlyphs) {
+    gfxCriticalNote << "RecordedFillGlyphs failed to allocate glyphs of size "
+                    << mNumGlyphs;
+    aStream.SetIsBad();
+  } else {
+    aStream.read((char*)mGlyphs, sizeof(Glyph) * mNumGlyphs);
+  }
 }
 
 template <class S>
@@ -2922,7 +3064,7 @@ inline bool RecordedDrawSurfaceWithShadow::PlayEvent(
     return false;
   }
 
-  dt->DrawSurfaceWithShadow(surface, mDest, mColor, mOffset, mSigma, mOp);
+  dt->DrawSurfaceWithShadow(surface, mDest, mShadow, mOp);
   return true;
 }
 
@@ -2931,9 +3073,7 @@ void RecordedDrawSurfaceWithShadow::Record(S& aStream) const {
   RecordedDrawingEvent::Record(aStream);
   WriteElement(aStream, mRefSource);
   WriteElement(aStream, mDest);
-  WriteElement(aStream, mColor);
-  WriteElement(aStream, mOffset);
-  WriteElement(aStream, mSigma);
+  WriteElement(aStream, mShadow);
   WriteElement(aStream, mOp);
 }
 
@@ -2942,9 +3082,7 @@ RecordedDrawSurfaceWithShadow::RecordedDrawSurfaceWithShadow(S& aStream)
     : RecordedDrawingEvent(DRAWSURFACEWITHSHADOW, aStream) {
   ReadElement(aStream, mRefSource);
   ReadElement(aStream, mDest);
-  ReadElement(aStream, mColor);
-  ReadElement(aStream, mOffset);
-  ReadElement(aStream, mSigma);
+  ReadElement(aStream, mShadow);
   ReadElementConstrained(aStream, mOp, CompositionOp::OP_OVER,
                          CompositionOp::OP_COUNT);
 }
@@ -2952,8 +3090,9 @@ RecordedDrawSurfaceWithShadow::RecordedDrawSurfaceWithShadow(S& aStream)
 inline void RecordedDrawSurfaceWithShadow::OutputSimpleEventInfo(
     std::stringstream& aStringStream) const {
   aStringStream << "[" << mDT << "] DrawSurfaceWithShadow (" << mRefSource
-                << ") DeviceColor: (" << mColor.r << ", " << mColor.g << ", "
-                << mColor.b << ", " << mColor.a << ")";
+                << ") DeviceColor: (" << mShadow.mColor.r << ", "
+                << mShadow.mColor.g << ", " << mShadow.mColor.b << ", "
+                << mShadow.mColor.a << ")";
 }
 
 inline RecordedPathCreation::RecordedPathCreation(PathRecording* aPath)
@@ -3067,12 +3206,22 @@ RecordedSourceSurfaceCreation::RecordedSourceSurfaceCreation(S& aStream)
   ReadElement(aStream, mSize);
   ReadElementConstrained(aStream, mFormat, SurfaceFormat::A8R8G8B8_UINT32,
                          SurfaceFormat::UNKNOWN);
+
+  if (!Factory::AllowedSurfaceSize(mSize)) {
+    gfxCriticalNote << "RecordedSourceSurfaceCreation read invalid size "
+                    << mSize;
+    aStream.SetIsBad();
+  }
+
   if (!aStream.good()) {
     return;
   }
 
-  size_t size = mSize.width * mSize.height * BytesPerPixel(mFormat);
-  mData = new (fallible) uint8_t[size];
+  size_t size = 0;
+  if (mSize.width >= 0 && mSize.height >= 0) {
+    size = size_t(mSize.width) * size_t(mSize.height) * BytesPerPixel(mFormat);
+    mData = new (fallible) uint8_t[size];
+  }
   if (!mData) {
     gfxCriticalNote
         << "RecordedSourceSurfaceCreation failed to allocate data of size "
@@ -3245,6 +3394,10 @@ inline RecordedGradientStopsCreation::~RecordedGradientStopsCreation() {
 
 inline bool RecordedGradientStopsCreation::PlayEvent(
     Translator* aTranslator) const {
+  if (mNumStops > 0 && !mStops) {
+    // Stops allocation failed
+    return false;
+  }
   RefPtr<GradientStops> src =
       aTranslator->GetOrCreateGradientStops(mStops, mNumStops, mExtendMode);
   aTranslator->AddGradientStops(mRefPtr, src);
@@ -3266,13 +3419,19 @@ RecordedGradientStopsCreation::RecordedGradientStopsCreation(S& aStream)
   ReadElementConstrained(aStream, mExtendMode, ExtendMode::CLAMP,
                          ExtendMode::REFLECT);
   ReadElement(aStream, mNumStops);
-  if (!aStream.good()) {
+  if (!aStream.good() || mNumStops <= 0) {
     return;
   }
 
-  mStops = new GradientStop[mNumStops];
-
-  aStream.read((char*)mStops, mNumStops * sizeof(GradientStop));
+  mStops = new (fallible) GradientStop[mNumStops];
+  if (!mStops) {
+    gfxCriticalNote
+        << "RecordedGradientStopsCreation failed to allocate stops of size "
+        << mNumStops;
+    aStream.SetIsBad();
+  } else {
+    aStream.read((char*)mStops, mNumStops * sizeof(GradientStop));
+  }
 }
 
 inline void RecordedGradientStopsCreation::OutputSimpleEventInfo(
@@ -3977,6 +4136,7 @@ inline void RecordedDestination::OutputSimpleEventInfo(
   f(FILLRECT, RecordedFillRect);                                   \
   f(STROKERECT, RecordedStrokeRect);                               \
   f(STROKELINE, RecordedStrokeLine);                               \
+  f(STROKECIRCLE, RecordedStrokeCircle);                           \
   f(CLEARRECT, RecordedClearRect);                                 \
   f(COPYSURFACE, RecordedCopySurface);                             \
   f(SETTRANSFORM, RecordedSetTransform);                           \
@@ -3984,6 +4144,7 @@ inline void RecordedDestination::OutputSimpleEventInfo(
   f(PUSHCLIP, RecordedPushClip);                                   \
   f(POPCLIP, RecordedPopClip);                                     \
   f(FILL, RecordedFill);                                           \
+  f(FILLCIRCLE, RecordedFillCircle);                               \
   f(FILLGLYPHS, RecordedFillGlyphs);                               \
   f(MASK, RecordedMask);                                           \
   f(STROKE, RecordedStroke);                                       \

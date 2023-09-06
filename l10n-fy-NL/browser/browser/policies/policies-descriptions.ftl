@@ -10,17 +10,19 @@
 ## These are short descriptions for individual policies, to be displayed
 ## in the documentation section in about:policies.
 
-policy-3rdparty = Beliedsrigels ynstelle dy't troch WebExtensions benadere wurde kinne fia chrome.storage.managed.
+policy-3rdparty = Beliedsrigels ynstelle dy’t troch WebExtensions benadere wurde kinne fia chrome.storage.managed.
 
-policy-AllowedDomainsForApps = Definiearje domeinen dy't tagong hawwe ta Google Workspace.
+policy-AllowedDomainsForApps = Definiearje domeinen dy’t tagong hawwe ta Google Workspace.
 
 policy-AppAutoUpdate = Automatyske applikaasjefernijing yn- of útskeakelje.
 
+policy-AppUpdatePin = Foarkomme dat { -brand-short-name } fernijd wurdt foarby de opjûne ferzje.
+
 policy-AppUpdateURL = Oanpaste app-fernijings-URL ynstelle.
 
-policy-Authentication = Yntegrearre autentikaasje konfigurearje foar websites dy't dit stypje.
+policy-Authentication = Yntegrearre autentikaasje konfigurearje foar websites dy’t dit stypje.
 
-policy-AutoLaunchProtocolsFromOrigins = Definiearje in list mei eksterne protokollen dy't fan fermelde boarnen út brûkt wurde kinne sûnder de brûker te freegjen.
+policy-AutoLaunchProtocolsFromOrigins = Definiearje in list mei eksterne protokollen dy’t fan fermelde boarnen út brûkt wurde kinne sûnder de brûker te freegjen.
 
 policy-BackgroundAppUpdate2 = Eftergrûnfernijingen yn- of útskeakelje.
 
@@ -39,6 +41,9 @@ policy-CaptivePortal = Stipe foar hotspot-oanmeldingsside ynskeakelje of útskea
 policy-CertificatesDescription = Sertifikaten tafoegje of ynboude sertifikaten brûke.
 
 policy-Cookies = Tastean of wegerje dat websites cookies ynstelle.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Belied oangeande konteners ynstelle.
 
 policy-DisabledCiphers = Kodearringssuites útskeakelje.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Wannear true, kin gjin haadwachtwurd oan
 
 policy-DisablePasswordReveal = Net tastean dat wachtwurden te sjen binne yn bewarre oanmeldingen.
 
-policy-DisablePocket = De funksje foar it bewarjen fan websiden nei Pocket útskeakelje.
+policy-DisablePocket2 = De funksje foar it bewarjen fan websiden nei { -pocket-brand-name } útskeakelje.
 
 policy-DisablePrivateBrowsing = Priveenavigaasje útskeakelje.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Foarkomme dat de browser systeemadd-ons ynstal
 
 policy-DisableTelemetry = Telemetry útskeakelje.
 
+policy-DisableThirdPartyModuleBlocking = Foarkomme dat de brûker modulen fan tredden dy’t yn it { -brand-short-name }-proses ynjektearre wurde blokkearret
+
 policy-DisplayBookmarksToolbar = Standert de Blêdwizerarkbalke werjaan.
 
 policy-DisplayMenuBar = Standert de Menubalke werjaan.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Ynhâldsblokkearring ynskeakelje of útskeakel
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Fersifere media-útwreidingen yn- of útskeakelje en opsjoneel beskoattelje.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Warskôgingen útskeakelje op basis fan bestânsútwreidingen foar spesifike bestânstypen op domeinen.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Alle aspekten fan ynstallaasje fan útwreidingen behe
 
 policy-ExtensionUpdate = Automatyske útwreiding-fernijingen ynskeakelje of útskeakelje.
 
-policy-FirefoxHome = De startside fan Firefox ynstelle.
+policy-FirefoxHome2 = { -firefox-home-brand-name } konfigurearje.
 
-policy-FlashPlugin = Gebrûk fan de Flash-ynstekker tastean of wegerje.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Direkte navigaasje op yntranetsites forsearje yn stee fan sykje by it typen fan inkelde wurden yn de adresbalke.
 
 policy-Handlers = Standert tapassinghandlers konfigurearje
 
@@ -137,7 +146,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Op spesifike websites 
 
 policy-LocalFileLinks = Spesifike websites tastean te keppeljen nei lokale bestannen.
 
-policy-ManagedBookmarks = Konfigurearret in list mei blêdwizers dy't beheard wurde troch in behearder en dy't net troch de brûker wizige wurde kin.
+policy-ManagedBookmarks = Konfigurearret in list mei blêdwizers dy’t beheard wurde troch in behearder en dy’t net troch de brûker wizige wurde kin.
 
 policy-ManualAppUpdateOnly = Allinnich hânmjittige fernijingen tastean en de brûker net oer fernijingen ynformearje.
 
@@ -147,17 +156,19 @@ policy-NetworkPrediction = ‘Network prediction’ (DNS prefetching) ynskeakelj
 
 policy-NewTabPage = De nije-ljepblêdside ynskeakelje of útskeakelje.
 
-policy-NoDefaultBookmarks = Oanmeitsjen fan de standertblêdwizers dy't mei { -brand-short-name } mei levere wurde útskeakelje, krekt as de Tûke blêdwizers (Meast besocht, Resinte labels). Noat: dizze beliedsregel is allinnich fan krêft by gebrûk derfan eardat it profyl foar it earst útfierd wurdt.
+policy-NoDefaultBookmarks = Oanmeitsjen fan de standertblêdwizers dy’t mei { -brand-short-name } mei levere wurde útskeakelje, krekt as de Tûke blêdwizers (Meast besocht, Resinte labels). Noat: dizze beliedsregel is allinnich fan krêft by gebrûk derfan eardat it profyl foar it earst útfierd wurdt.
 
 policy-OfferToSaveLogins = De ynstelling foar it tastean dat { -brand-short-name } mei oanbiede bewarre oanmeldingen en wachtwurden te ûnthâlde ôftwinge. Sawol de wearde true as false wurdt akseptearre.
 
 policy-OfferToSaveLoginsDefault = De standertwearde ynstelle foar it tastean dat { -brand-short-name } oanbiede mei bewarre oanmeldingen en wachtwurden te ûnthâlden ôftwingje. Sawol de wearde true as false wurdt akseptearre.
 
-policy-OverrideFirstRunPage = De side dy't foar it earst iepene wurdt ferfange. Stel dizze beliedsregel yn op leech as jo de oanbelangjende side útskeakelje wolle.
+policy-OverrideFirstRunPage = De side dy’t foar it earst iepene wurdt ferfange. Stel dizze beliedsregel yn op leech as jo de oanbelangjende side útskeakelje wolle.
 
 policy-OverridePostUpdatePage = De side ‘Wat is der nij’ nei in fernijing ferfange. Stel dizze beliedsregel yn op leech as jo de oanbelangjende side útskeakelje wolle.
 
 policy-PasswordManagerEnabled = Bewarjen fan wachtwurden yn de wachtwurdbehearder ynskeakelje.
+
+policy-PasswordManagerExceptions = Foarkomme dat { -brand-short-name } wachtwurden foar spesifike websites bewarret.
 
 # PDF.js and PDF should not be translated
 policy-PDFjs = PDF.js, de yn { -brand-short-name } ynboude PDF-lêzer, útskeakelje of ynstelle.
@@ -170,7 +181,7 @@ policy-PopupBlocking = Tastean dat bepaalde websites standert pop-ups werjaan.
 
 policy-Preferences = De wearde foar in subset fan foarkarren ynstelle en beskoattelje.
 
-policy-PromptForDownloadLocation = Freegje wêr't downloade bestannen bewarre moatte wurde.
+policy-PromptForDownloadLocation = Freegje wêr’t downloade bestannen bewarre moatte wurde.
 
 policy-Proxy = Proxyynstellingen konfigurearje.
 
@@ -184,8 +195,8 @@ policy-SearchEngines = Ynstellingen foar sykmasinen konfigurearje. Dizze belieds
 
 policy-SearchSuggestEnabled = Syksuggestjes ynskeakelje of útskeakelje.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = PKCS #11-modules ynstallearje.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = PKCS #11-modules tafoegje of fuortsmite.
 
 policy-ShowHomeButton = De startsideknop op de arkbalke toane.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = De maksimale SSL-ferzje ynstelle.
 
 policy-SSLVersionMin = De minimale SSL-ferzje ynstelle.
 
+policy-StartDownloadsInTempDirectory = Oftwinge dat downloads starte yn in lokale, tydlike lokaasje yn stee fan de standert downloadmap.
+
 policy-SupportMenu = In oanpast menu-item foar stipe oan it menu Help tafoegje.
 
 policy-UserMessaging = Bepaalde berjochten net oan de brûker toane.
+
+policy-UseSystemPrintDialog = Ofdrukke fia it systeemdialoochfienster fan it systeem.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = It besykjen fan websites blokkearje. Sjoch de dokumintaasje foar mear ynformaasje oer de notaasje.

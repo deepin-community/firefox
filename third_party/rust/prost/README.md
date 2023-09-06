@@ -1,8 +1,8 @@
-[![Build Status](https://travis-ci.org/danburkert/prost.svg?branch=master)](https://travis-ci.org/danburkert/prost)
-[![Windows Build Status](https://ci.appveyor.com/api/projects/status/24rpba3x2vqe8lje/branch/master?svg=true)](https://ci.appveyor.com/project/danburkert/prost/branch/master)
+![continuous integration](https://github.com/tokio-rs/prost/workflows/continuous%20integration/badge.svg)
 [![Documentation](https://docs.rs/prost/badge.svg)](https://docs.rs/prost/)
 [![Crate](https://img.shields.io/crates/v/prost.svg)](https://crates.io/crates/prost)
-[![Dependency Status](https://deps.rs/repo/github/danburkert/prost/status.svg)](https://deps.rs/repo/github/danburkert/prost)
+[![Dependency Status](https://deps.rs/repo/github/tokio-rs/prost/status.svg)](https://deps.rs/repo/github/tokio-rs/prost)
+[![Discord](https://img.shields.io/discord/500028886025895936)](https://discord.gg/tokio)
 
 # *PROST!*
 
@@ -28,16 +28,26 @@ Compared to other Protocol Buffers implementations, `prost`
 
 First, add `prost` and its public dependencies to your `Cargo.toml`:
 
-```
+```ignore
 [dependencies]
-prost = "0.6"
+prost = "0.11"
 # Only necessary if using Protobuf well-known types:
-prost-types = "0.6"
+prost-types = "0.11"
 ```
 
 The recommended way to add `.proto` compilation to a Cargo project is to use the
 `prost-build` library. See the [`prost-build` documentation](prost-build) for
 more details and examples.
+
+See the [snazzy repository](https://github.com/danburkert/snazzy) for a simple
+start-to-finish example.
+
+### MSRV
+
+`prost` follows the `tokio-rs` projects MSRV model and supports 1.60. For more
+information on the tokio msrv policy you can check it out [here][tokio msrv]
+
+[tokio msrv]: https://github.com/tokio-rs/tokio/#supported-rust-versions
 
 ## Generated Code
 
@@ -45,15 +55,25 @@ more details and examples.
 `proto3` syntax. `prost`'s goal is to make the generated code as simple as
 possible.
 
+### `protoc`
+
+With `prost-build` v0.11 release, `protoc` will be required to invoke
+`compile_protos` (unless `skip_protoc` is enabled). Prost will no longer provide
+bundled a `protoc` or attempt to compile `protoc` for users. For install
+instructions for `protoc` please check out the [protobuf install] instructions.
+
+[protobuf install]: https://github.com/protocolbuffers/protobuf#protocol-compiler-installation
+
+
 ### Packages
 
-All `.proto` files used with `prost` must contain a
-[`package` specifier][package]. `prost` will translate the Protobuf package into
+Prost can now generate code for `.proto` files that don't have a package spec.
+`prost` will translate the Protobuf package into
 a Rust module. For example, given the `package` specifier:
 
 [package]: https://developers.google.com/protocol-buffers/docs/proto#packages
 
-```proto
+```protobuf,ignore
 package foo.bar;
 ```
 
@@ -63,7 +83,7 @@ All Rust types generated from the file will be in the `foo::bar` module.
 
 Given a simple message declaration:
 
-```proto
+```protobuf,ignore
 // Sample message.
 message Foo {
 }
@@ -71,7 +91,7 @@ message Foo {
 
 `prost` will generate the following Rust struct:
 
-```rust
+```rust,ignore
 /// Sample message.
 #[derive(Clone, Debug, PartialEq, Message)]
 pub struct Foo {
@@ -108,10 +128,93 @@ Scalar value types are converted as follows:
 #### Enumerations
 
 All `.proto` enumeration types convert to the Rust `i32` type. Additionally,
-each enumeration type gets a corresponding Rust `enum` type, with helper methods
-to convert `i32` values to the enum type. The `enum` type isn't used directly as
-a field, because the Protobuf spec mandates that enumerations values are 'open',
-and decoding unrecognized enumeration values must be possible.
+each enumeration type gets a corresponding Rust `enum` type. For example, this
+`proto` enum:
+
+```protobuf,ignore
+enum PhoneType {
+  MOBILE = 0;
+  HOME = 1;
+  WORK = 2;
+}
+```
+
+gets this corresponding Rust enum [^1]:
+
+```rust,ignore
+pub enum PhoneType {
+    Mobile = 0,
+    Home = 1,
+    Work = 2,
+}
+```
+
+[^1]: Annotations have been elided for clarity. See below for a full example.
+
+You can convert a `PhoneType` value to an `i32` by doing:
+
+```rust,ignore
+PhoneType::Mobile as i32
+```
+
+The `#[derive(::prost::Enumeration)]` annotation added to the generated
+`PhoneType` adds these associated functions to the type:
+
+```rust,ignore
+impl PhoneType {
+    pub fn is_valid(value: i32) -> bool { ... }
+    pub fn from_i32(value: i32) -> Option<PhoneType> { ... }
+}
+```
+
+so you can convert an `i32` to its corresponding `PhoneType` value by doing,
+for example:
+
+```rust,ignore
+let phone_type = 2i32;
+
+match PhoneType::from_i32(phone_type) {
+    Some(PhoneType::Mobile) => ...,
+    Some(PhoneType::Home) => ...,
+    Some(PhoneType::Work) => ...,
+    None => ...,
+}
+```
+
+Additionally, wherever a `proto` enum is used as a field in a `Message`, the
+message will have 'accessor' methods to get/set the value of the field as the
+Rust enum type. For instance, this proto `PhoneNumber` message that has a field
+named `type` of type `PhoneType`:
+
+```protobuf,ignore
+message PhoneNumber {
+  string number = 1;
+  PhoneType type = 2;
+}
+```
+
+will become the following Rust type [^2] with methods `type` and `set_type`:
+
+```rust,ignore
+pub struct PhoneNumber {
+    pub number: String,
+    pub r#type: i32, // the `r#` is needed because `type` is a Rust keyword
+}
+
+impl PhoneNumber {
+    pub fn r#type(&self) -> PhoneType { ... }
+    pub fn set_type(&mut self, value: PhoneType) { ... }
+}
+```
+
+Note that the getter methods will return the Rust enum's default value if the
+field has an invalid `i32` value.
+
+The `enum` type isn't used directly as a field, because the Protobuf spec
+mandates that enumerations values are 'open', and decoding unrecognized
+enumeration values must be possible.
+
+[^2]: Annotations have been elided for clarity. See below for a full example.
 
 #### Field Modifiers
 
@@ -123,8 +226,15 @@ the Rust field:
 | --- | --- | --- |
 | `proto2` | `optional` | `Option<T>` |
 | `proto2` | `required` | `T` |
-| `proto3` | default | `T` |
-| `proto2`/`proto3` | repeated | `Vec<T>` |
+| `proto3` | default | `T` for scalar types, `Option<T>` otherwise |
+| `proto3` | `optional` | `Option<T>` |
+| `proto2`/`proto3` | `repeated` | `Vec<T>` |
+
+Note that in `proto3` the default representation for all user-defined message
+types is `Option<T>`, and for scalar types just `T` (during decoding, a missing
+value is populated by `T::default()`). If you need a witness of the presence of
+a scalar type `T`, use the `optional` modifier to enforce an `Option<T>`
+representation in the generated Rust struct.
 
 #### Map Fields
 
@@ -147,7 +257,7 @@ Oneof fields convert to a Rust enum. Protobuf `oneof`s types are not named, so
 defines the enum in a module under the struct. For example, a `proto3` message
 such as:
 
-```proto
+```protobuf,ignore
 message Foo {
   oneof widget {
     int32 quux = 1;
@@ -156,9 +266,9 @@ message Foo {
 }
 ```
 
-generates the following Rust[1]:
+generates the following Rust[^3]:
 
-```rust
+```rust,ignore
 pub struct Foo {
     pub widget: Option<foo::Widget>,
 }
@@ -172,7 +282,7 @@ pub mod foo {
 
 `oneof` fields are always wrapped in an `Option`.
 
-[1] Annotations have been elided for clarity. See below for a full example.
+[^3]: Annotations have been elided for clarity. See below for a full example.
 
 ### Services
 
@@ -184,7 +294,7 @@ application's specific needs.
 
 Example `.proto` file:
 
-```proto
+```protobuf,ignore
 syntax = "proto3";
 package tutorial;
 
@@ -215,28 +325,30 @@ message AddressBook {
 
 and the generated Rust code (`tutorial.rs`):
 
-```rust
-#[derive(Clone, Debug, PartialEq, Message)]
+```rust,ignore
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Person {
     #[prost(string, tag="1")]
-    pub name: String,
+    pub name: ::prost::alloc::string::String,
     /// Unique ID number for this person.
     #[prost(int32, tag="2")]
     pub id: i32,
     #[prost(string, tag="3")]
-    pub email: String,
+    pub email: ::prost::alloc::string::String,
     #[prost(message, repeated, tag="4")]
-    pub phones: Vec<person::PhoneNumber>,
+    pub phones: ::prost::alloc::vec::Vec<person::PhoneNumber>,
 }
+/// Nested message and enum types in `Person`.
 pub mod person {
-    #[derive(Clone, Debug, PartialEq, Message)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct PhoneNumber {
         #[prost(string, tag="1")]
-        pub number: String,
+        pub number: ::prost::alloc::string::String,
         #[prost(enumeration="PhoneType", tag="2")]
-        pub type_: i32,
+        pub r#type: i32,
     }
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Enumeration)]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[repr(i32)]
     pub enum PhoneType {
         Mobile = 0,
         Home = 1,
@@ -244,12 +356,42 @@ pub mod person {
     }
 }
 /// Our address book file is just one of these.
-#[derive(Clone, Debug, PartialEq, Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct AddressBook {
     #[prost(message, repeated, tag="1")]
-    pub people: Vec<Person>,
+    pub people: ::prost::alloc::vec::Vec<Person>,
 }
 ```
+
+## Accessing the `protoc` `FileDescriptorSet`
+
+The `prost_build::Config::file_descriptor_set_path` option can be used to emit a file descriptor set
+during the build & code generation step. When used in conjunction with the `std::include_bytes`
+macro and the `prost_types::FileDescriptorSet` type, applications and libraries using Prost can
+implement introspection capabilities requiring details from the original `.proto` files.
+
+## Using `prost` in a `no_std` Crate
+
+`prost` is compatible with `no_std` crates. To enable `no_std` support, disable
+the `std` features in `prost` and `prost-types`:
+
+```ignore
+[dependencies]
+prost = { version = "0.6", default-features = false, features = ["prost-derive"] }
+# Only necessary if using Protobuf well-known types:
+prost-types = { version = "0.6", default-features = false }
+```
+
+Additionally, configure `prost-build` to output `BTreeMap`s instead of `HashMap`s
+for all Protobuf `map` fields in your `build.rs`:
+
+```rust,ignore
+let mut config = prost_build::Config::new();
+config.btree_map(&["."]);
+```
+
+When using edition 2015, it may be necessary to add an `extern crate core;`
+directive to the crate which includes `prost`-generated code.
 
 ## Serializing Existing Types
 
@@ -273,39 +415,51 @@ sequentially occurring tag values by specifying the tag number to skip to with
 the `tag` attribute on the first field after the gap. The following fields will
 be tagged sequentially starting from the next number.
 
-```rust
-#[derive(Clone, Debug, PartialEq, Message)]
+```rust,ignore
+use prost;
+use prost::{Enumeration, Message};
+
+#[derive(Clone, PartialEq, Message)]
 struct Person {
-  pub id: String, // tag=1
-
-  // NOTE: Old "name" field has been removed
-  // pub name: String, // tag=2 (Removed)
-
-  #[prost(tag="6")]
-  pub given_name: String, // tag=6
-  pub family_name: String, // tag=7
-  pub formatted_name: String, // tag=8
-
-  #[prost(tag="3")]
-  pub age: u32, // tag=3
-  pub height: u32, // tag=4
-  #[prost(enumeration="Gender")]
-  pub gender: i32, // tag=5
-
-  // NOTE: Skip to less commonly occurring fields
-  #[prost(tag="16")]
-  pub name_prefix: String, // tag=16  (eg. mr/mrs/ms)
-  pub name_suffix: String, // tag=17  (eg. jr/esq)
-  pub maiden_name: String, // tag=18
+    #[prost(string, tag = "1")]
+    pub id: String, // tag=1
+    // NOTE: Old "name" field has been removed
+    // pub name: String, // tag=2 (Removed)
+    #[prost(string, tag = "6")]
+    pub given_name: String, // tag=6
+    #[prost(string)]
+    pub family_name: String, // tag=7
+    #[prost(string)]
+    pub formatted_name: String, // tag=8
+    #[prost(uint32, tag = "3")]
+    pub age: u32, // tag=3
+    #[prost(uint32)]
+    pub height: u32, // tag=4
+    #[prost(enumeration = "Gender")]
+    pub gender: i32, // tag=5
+    // NOTE: Skip to less commonly occurring fields
+    #[prost(string, tag = "16")]
+    pub name_prefix: String, // tag=16  (eg. mr/mrs/ms)
+    #[prost(string)]
+    pub name_suffix: String, // tag=17  (eg. jr/esq)
+    #[prost(string)]
+    pub maiden_name: String, // tag=18
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Enumeration)]
 pub enum Gender {
-  Unknown = 0,
-  Female = 1,
-  Male = 2,
+    Unknown = 0,
+    Female = 1,
+    Male = 2,
 }
 ```
+
+## Nix
+
+The prost project maintains flakes support for local development. Once you have
+nix and nix flakes setup you can just run `nix develop` to get a shell
+configured with the required dependencies to compile the whole project.
+
 
 ## FAQ
 
@@ -315,7 +469,7 @@ pub enum Gender {
   There are two complications with trying to serialize Protobuf messages with
   Serde:
 
-  - Protobuf fields require a numbered tag, and curently there appears to be no
+  - Protobuf fields require a numbered tag, and currently there appears to be no
     mechanism suitable for this in `serde`.
   - The mapping of Protobuf type to Rust type is not 1-to-1. As a result,
     trait-based approaches to dispatching don't work very well. Example: six
@@ -331,7 +485,7 @@ pub enum Gender {
   If the errors are about missing `autoreconf` or similar, you can probably fix
   them by running
 
-  ```
+  ```ignore
   brew install automake
   brew install libtool
   ```
@@ -340,6 +494,6 @@ pub enum Gender {
 
 `prost` is distributed under the terms of the Apache License (Version 2.0).
 
-See [LICENSE](LICENSE) for details.
+See [LICENSE](https://github.com/tokio-rs/prost/blob/master/LICENSE) for details.
 
-Copyright 2017 Dan Burkert
+Copyright 2022 Dan Burkert & Tokio Contributors

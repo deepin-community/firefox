@@ -14,8 +14,7 @@
 #include "nsNetUtil.h"
 #include "nsThreadUtils.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 /* static */
 void URLMainThread::CreateObjectURL(const GlobalObject& aGlobal, Blob& aBlob,
@@ -93,12 +92,11 @@ void URLMainThread::RevokeObjectURL(const GlobalObject& aGlobal,
 }
 
 /* static */
-bool URLMainThread::IsValidURL(const GlobalObject& aGlobal,
-                               const nsAString& aURL, ErrorResult& aRv) {
+bool URLMainThread::IsValidObjectURL(const GlobalObject& aGlobal,
+                                     const nsAString& aURL, ErrorResult& aRv) {
   MOZ_ASSERT(NS_IsMainThread());
   NS_LossyConvertUTF16toASCII asciiurl(aURL);
   return BlobURLProtocolHandler::HasDataEntry(asciiurl);
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

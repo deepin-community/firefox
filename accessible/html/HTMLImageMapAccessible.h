@@ -7,7 +7,7 @@
 #define mozilla_a11y_HTMLImageMapAccessible_h__
 
 #include "HTMLLinkAccessible.h"
-#include "ImageAccessibleWrap.h"
+#include "ImageAccessible.h"
 
 namespace mozilla {
 namespace a11y {
@@ -15,22 +15,15 @@ namespace a11y {
 /**
  * Used for HTML image maps.
  */
-class HTMLImageMapAccessible final : public ImageAccessibleWrap {
+class HTMLImageMapAccessible final : public ImageAccessible {
  public:
   HTMLImageMapAccessible(nsIContent* aContent, DocAccessible* aDoc);
 
   // nsISupports and cycle collector
-  NS_INLINE_DECL_REFCOUNTING_INHERITED(HTMLImageMapAccessible,
-                                       ImageAccessibleWrap)
+  NS_INLINE_DECL_REFCOUNTING_INHERITED(HTMLImageMapAccessible, ImageAccessible)
 
   // LocalAccessible
   virtual a11y::role NativeRole() const override;
-
-  // HyperLinkAccessible
-  virtual uint32_t AnchorCount() override;
-  virtual LocalAccessible* AnchorAt(uint32_t aAnchorIndex) override;
-  virtual already_AddRefed<nsIURI> AnchorURIAt(
-      uint32_t aAnchorIndex) const override;
 
   /**
    * Update area children of the image map.
@@ -58,6 +51,7 @@ class HTMLAreaAccessible final : public HTMLLinkAccessible {
   virtual LocalAccessible* LocalChildAtPoint(
       int32_t aX, int32_t aY, EWhichChildAtPoint aWhichChild) override;
   virtual nsRect RelativeBounds(nsIFrame** aBoundingFrame) const override;
+  virtual nsRect ParentRelativeBounds() override;
 
   // HyperLinkAccessible
   virtual uint32_t StartOffset() override;
@@ -66,6 +60,9 @@ class HTMLAreaAccessible final : public HTMLLinkAccessible {
   virtual bool IsAcceptableChild(nsIContent* aEl) const override {
     return false;
   }
+
+  // LocalAccessible
+  virtual role NativeRole() const override;
 
  protected:
   // LocalAccessible

@@ -2,8 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Localized string used as the dialog window title (a new behavior locked
-# behind the "extensions.abuseReport.openDialog" preference).
+# Localized string used as the dialog window title.
 # "Report" is a noun in this case, "Report for AddonName".
 #
 # Variables:
@@ -33,19 +32,12 @@ abuse-report-goback-button = پیچھے جائیں
 abuse-report-submit-button = ‏‏جمع کریں
 
 ## Message bars descriptions.
-
-
-## Variables:
-##   $addon-name (string) - Name of the add-on
-
-## Message bars descriptions.
 ##
 ## Variables:
 ##   $addon-name (string) - Name of the add-on
 
 abuse-report-messagebar-aborted = <span data-l10n-name = "addon-name"> { $addon-name } </span> کی رپورٹ منسوخ کردی گئی۔
 abuse-report-messagebar-submitting = <span data-l10n-name = "addon-name"> { $addon-name } </span> کیلئے رپورٹ بھیجنا۔
-abuse-report-messagebar-submitted = رپورٹ چمع کرانے کا  شکریہ۔ کیا آپ  <span data-l10n-name="addon-name">{ $addon-name } کو ہٹانا  چاہتے ہیں؟
 abuse-report-messagebar-submitted-noremove = رپورٹ جمع کرنے کا شکریہ۔
 abuse-report-messagebar-removed-extension = رپورٹ جمع کرنے کا شکریہ۔ آپنے ایکسٹینشن { $addon-name }</span><span data-l10n-name="addon-name"> کو ہٹا دیا ہے۔
 abuse-report-messagebar-removed-theme = رپورٹ جمع کرنے کا شکریہ۔ آپنے تھیم{ $addon-name }</span><span data-l10n-name="addon-name"> کو ہٹا دیا ہے۔
@@ -90,4 +82,3 @@ abuse-report-unwanted-reason-v2 = میں یہ کبھی نہیں چاہتا تھ�
 abuse-report-unwanted-example = مثال: کسی ایپلیکیشن نے اسے میری اجازت کے بغیر انسٹال کیا  ہے
 
 abuse-report-other-reason = اس کے علاوہ کچھ اور
-

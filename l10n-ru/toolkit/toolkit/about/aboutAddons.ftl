@@ -6,9 +6,16 @@ addons-page-title = Управление дополнениями
 search-header =
     .placeholder = Поиск на addons.mozilla.org
     .searchbuttonlabel = Поиск
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Загрузите расширения и темы на <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Загрузите словари на <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Загрузите языковые пакеты на <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = У вас не установлено ни одного дополнения данного типа
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Версия
 detail-last-updated =
     .label = Последнее обновление
+addon-detail-description-expand = Показать больше
+addon-detail-description-collapse = Показать меньше
 detail-contributions-description = Разработчик этого дополнения просит вас помочь поддержать его дальнейшее развитие, внеся небольшое пожертвование.
 detail-contributions-button = Поддержать
     .title = Внести вклад в разработку этого дополнения
@@ -135,6 +144,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Недавние обновления
 addon-category-recent-updates-title =
     .title = Недавние обновления
+addon-category-sitepermission = Разрешения для сайтов
+addon-category-sitepermission-title =
+    .title = Разрешения для сайтов
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Разрешения сайта для { $host }
 
 ## These are global warnings
 
@@ -145,6 +161,8 @@ extensions-warning-check-compatibility-button = Включить
 extensions-warning-update-security = Проверка безопасного обновления дополнений отключена. Обновления могут поставить вас под угрозу.
 extensions-warning-update-security-button = Включить
     .title = Включить проверку безопасного обновления дополнений
+extensions-warning-imported-addons = Пожалуйста, завершите установку расширений, которые были импортированы в { -brand-short-name }.
+extensions-warning-imported-addons-button = Установка расширений
 
 ## Strings connected to add-on updates
 
@@ -213,6 +231,8 @@ shortcuts-duplicate-warning-message = { $shortcut } используется б�
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Уже используется { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Показать ещё { $numberToShow }
@@ -281,16 +301,16 @@ release-notes-addon-button = Примечания к выпуску
 permissions-addon-button = Разрешения
 extension-enabled-heading = Включены
 extension-disabled-heading = Отключены
-theme-enabled-heading = Включены
-theme-disabled-heading = Отключены
-theme-monochromatic-heading = Расцветки
-theme-monochromatic-subheading = Яркие новые расцветки от { -brand-product-name }. Доступны в течение ограниченного времени.
+theme-enabled-heading = Включена
+theme-disabled-heading2 = Сохранённые темы
 plugin-enabled-heading = Включены
 plugin-disabled-heading = Отключены
 dictionary-enabled-heading = Включены
 dictionary-disabled-heading = Отключены
 locale-enabled-heading = Включены
 locale-disabled-heading = Отключены
+sitepermission-enabled-heading = Включены
+sitepermission-disabled-heading = Отключены
 always-activate-button = Всегда включать
 never-activate-button = Никогда не включать
 addon-detail-author-label = Автор
@@ -332,6 +352,10 @@ addon-detail-updates-radio-on = Включено
 addon-detail-updates-radio-off = Отключено
 addon-detail-update-check-label = Проверить наличие обновлений
 install-update-button = Обновить
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -340,6 +364,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Когда разрешено, расширение будет иметь доступ к вашей активности в Интернете в приватном режиме. <a data-l10n-name="learn-more">Подробнее</a>
 addon-detail-private-browsing-allow = Разрешить
 addon-detail-private-browsing-disallow = Не разрешать
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Запуск на сайтах с ограничениями
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Если это разрешено, расширение будет иметь доступ к сайтам, ограниченным { -vendor-short-name }. Разрешайте, только если вы доверяете этому расширению.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Разрешить
+addon-detail-quarantined-domains-disallow = Не разрешать
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -368,18 +410,22 @@ addon-permissions-optional = Необязательные разрешения �
 addon-permissions-learnmore = Узнать больше о разрешениях
 recommended-extensions-heading = Рекомендуемые расширения
 recommended-themes-heading = Рекомендуемые темы
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Предоставляет следующие возможности <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
-recommended-theme-1 = Чувствуете прилив вдохновения? <a data-l10n-name="link">Создайте свою собственную тему с помощью Firefox Color.</a>
+recommended-theme-1 = Чувствуете прилив вдохновения? <a data-l10n-name="link">Создайте свою тему с помощью Firefox Color.</a>
 
 ## Page headings
 
-extension-heading = Управление моими расширениями
-theme-heading = Управление моими темами
-plugin-heading = Управление моими плагинами
+extension-heading = Управление расширениями
+theme-heading = Управление темами
+plugin-heading = Управление плагинами
 dictionary-heading = Управление моими словарями
 locale-heading = Управление моими языками
 updates-heading = Управление моими обновлениями
+sitepermission-heading = Управление моими разрешениями для сайтов
 discover-heading = Сделайте { -brand-short-name } своим
 shortcuts-heading = Управление горячими клавишами расширений
 default-heading-search-label = Найти больше дополнений
@@ -387,3 +433,21 @@ addons-heading-search-input =
     .placeholder = Поиск на addons.mozilla.org
 addon-page-options-button =
     .title = Инструменты для всех дополнений
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } несовместимо с { -brand-short-name } { $version }.
+details-notification-incompatible-link = Больше информации
+details-notification-unsigned-and-disabled = Работа { $name } в { -brand-short-name } не была проверена, поэтому оно было отключено.
+details-notification-unsigned-and-disabled-link = Подробная информация
+details-notification-unsigned = Работа { $name } в { -brand-short-name } не была проверена. Действуйте с осторожностью.
+details-notification-unsigned-link = Подробная информация
+details-notification-blocked = { $name } было отключено из-за проблем со стабильностью или безопасностью.
+details-notification-blocked-link = Подробная информация
+details-notification-softblocked = { $name } вызывает проблемы со стабильностью или безопасностью.
+details-notification-softblocked-link = Подробная информация
+details-notification-gmp-pending = { $name } будет скоро установлено.

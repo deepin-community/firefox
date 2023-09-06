@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Ascunde
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Afișează toate dosarele cu marcaje
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Ascunde
+
 bookmark-overlay-new-folder-button =
     .label = Dosar nou
     .accesskey = o
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Afișează toate etichetele
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Ascunde
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Afișează toate etichetele
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Ascunde
 
 bookmark-overlay-keyword-2 =
     .value = Cuvânt cheie

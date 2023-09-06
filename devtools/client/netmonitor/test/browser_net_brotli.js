@@ -10,8 +10,10 @@ const BROTLI_REQUESTS = 1;
  * Test brotli encoded response is handled correctly on HTTPS.
  */
 
-add_task(async function() {
-  const { L10N } = require("devtools/client/netmonitor/src/utils/l10n");
+add_task(async function () {
+  const {
+    L10N,
+  } = require("resource://devtools/client/netmonitor/src/utils/l10n.js");
 
   const { tab, monitor } = await initNetMonitor(BROTLI_URL, {
     requestCount: 1,
@@ -44,10 +46,10 @@ add_task(async function() {
     HTTPS_CONTENT_TYPE_SJS + "?fmt=br",
     {
       status: 200,
-      statusText: "Connected",
-      type: "plain",
-      fullMimeType: "text/plain",
-      transferred: L10N.getFormatStrWithNumbers("networkMenu.sizeB", 60),
+      statusText: "OK",
+      type: "json",
+      fullMimeType: "text/json",
+      transferred: L10N.getFormatStrWithNumbers("networkMenu.sizeB", 252),
       size: L10N.getFormatStrWithNumbers("networkMenu.sizeB", 64),
       time: true,
     }

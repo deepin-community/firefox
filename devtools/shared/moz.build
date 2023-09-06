@@ -12,12 +12,14 @@ DIRS += [
     "compatibility",
     "discovery",
     "heapsnapshot",
+    "images",
     "inspector",
     "jsbeautify",
     "layout",
+    "loader",
     "locales",
+    "network-observer",
     "node-properties",
-    "performance",
     "performance-new",
     "platform",
     "protocol",
@@ -36,6 +38,7 @@ if CONFIG["MOZ_BUILD_APP"] != "mobile/android":
     BROWSER_CHROME_MANIFESTS += ["tests/browser/browser.ini"]
 
 BROWSER_CHROME_MANIFESTS += ["test-helpers/browser.ini"]
+XPCSHELL_TESTS_MANIFESTS += ["test-helpers/xpcshell.ini"]
 
 MOCHITEST_CHROME_MANIFESTS += ["tests/chrome/chrome.ini"]
 XPCSHELL_TESTS_MANIFESTS += ["tests/xpcshell/xpcshell.ini"]
@@ -46,12 +49,11 @@ DevToolsModules(
     "accessibility.js",
     "async-storage.js",
     "async-utils.js",
-    "base-loader.js",
-    "builtin-modules.js",
     "constants.js",
     "content-observer.js",
     "debounce.js",
     "defer.js",
+    "DevToolsInfaillibleUtils.sys.mjs",
     "DevToolsUtils.js",
     "dom-helpers.js",
     "dom-node-constants.js",
@@ -63,8 +65,6 @@ DevToolsModules(
     "indentation.js",
     "indexed-db.js",
     "l10n.js",
-    "loader-plugin-raw.jsm",
-    "Loader.jsm",
     "natural-sort.js",
     "path.js",
     "picker-constants.js",

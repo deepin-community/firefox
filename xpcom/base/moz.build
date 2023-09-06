@@ -11,11 +11,8 @@ XPIDL_SOURCES += [
     "nsIConsoleService.idl",
     "nsICycleCollectorListener.idl",
     "nsIDebug2.idl",
-    "nsIErrorService.idl",
     "nsIException.idl",
-    "nsIGZFileWriter.idl",
     "nsIInterfaceRequestor.idl",
-    "nsIMemory.idl",
     "nsIMemoryInfoDumper.idl",
     "nsIMemoryReporter.idl",
     "nsIMessageLoop.idl",
@@ -30,7 +27,6 @@ XPIDL_SOURCES += [
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "cocoa":
     XPIDL_SOURCES += [
         "nsIMacPreferencesReader.idl",
-        "nsIMacUtils.idl",
     ]
     EXPORTS += [
         "nsObjCExceptions.h",
@@ -72,7 +68,6 @@ EXPORTS += [
     "nsDebugImpl.h",
     "nsDumpUtils.h",
     "nsError.h",
-    "nsErrorService.h",
     "nsGZFileWriter.h",
     "nsIClassInfoImpl.h",
     "nsID.h",
@@ -81,7 +76,6 @@ EXPORTS += [
     "nsINIParser.h",
     "nsInterfaceRequestorAgg.h",
     "nsISizeOf.h",
-    "nsISupportsBase.h",
     "nsISupportsImpl.h",
     "nsISupportsUtils.h",
     "nsIWeakReferenceUtils.h",
@@ -122,6 +116,7 @@ EXPORTS.mozilla += [
     "HoldDropJSObjects.h",
     "IntentionalCrash.h",
     "JSObjectHolder.h",
+    "JSONStringWriteFuncs.h",
     "Logging.h",
     "MemoryInfo.h",
     "MemoryMapping.h",
@@ -130,13 +125,14 @@ EXPORTS.mozilla += [
     "nsMemoryInfoDumper.h",
     "NSPRLogModulesParser.h",
     "OwningNonNull.h",
+    "RLBoxSandboxPool.h",
+    "RLBoxUtils.h",
     "ShutdownPhase.h",
     "SizeOfState.h",
     "StaticLocalPtr.h",
     "StaticMonitor.h",
     "StaticMutex.h",
     "StaticPtr.h",
-    "TupleCycleCollection.h",
 ]
 
 SOURCES += [
@@ -176,14 +172,12 @@ UNIFIED_SOURCES += [
     "nsCycleCollectionParticipant.cpp",
     "nsCycleCollector.cpp",
     "nsCycleCollectorTraceJSHelpers.cpp",
-    "nsErrorService.cpp",
     "nsGZFileWriter.cpp",
     "nsID.cpp",
     "nsIInterfaceRequestorUtils.cpp",
     "nsINIParser.cpp",
     "nsInterfaceRequestorAgg.cpp",
     "nsISupportsImpl.cpp",
-    "nsMemory.cpp",
     "nsMemoryImpl.cpp",
     "nsMemoryInfoDumper.cpp",
     "nsMemoryReporterManager.cpp",
@@ -196,6 +190,7 @@ UNIFIED_SOURCES += [
     "nsVersionComparator.cpp",
     "nsVersionComparatorImpl.cpp",
     "nsWeakReference.cpp",
+    "RLBoxSandboxPool.cpp",
 ]
 
 if CONFIG["OS_TARGET"] in ("Linux", "Android"):
@@ -217,6 +212,16 @@ if CONFIG["OS_TARGET"] == "Darwin":
         "MemoryPressureLevelMac.h",
     ]
 
+if CONFIG["OS_TARGET"] == "Linux":
+    UNIFIED_SOURCES += [
+        "AvailableMemoryWatcherLinux.cpp",
+    ]
+    EXPORTS.mozilla += [
+        "AvailableMemoryWatcherUtils.h",
+    ]
+
+if CONFIG["MOZ_PHC"]:
+    DEFINES["MOZ_PHC"] = True
 
 GeneratedFile("ErrorList.h", script="ErrorList.py", entry_point="error_list_h")
 GeneratedFile(
@@ -253,7 +258,4 @@ LOCAL_INCLUDES += [
 ]
 
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
-    CXXFLAGS += CONFIG["TK_CFLAGS"]
-
-if CONFIG["MOZ_BACKGROUNDTASKS"]:
-    DEFINES["MOZ_BACKGROUNDTASKS"] = True
+    CXXFLAGS += CONFIG["MOZ_GTK3_CFLAGS"]

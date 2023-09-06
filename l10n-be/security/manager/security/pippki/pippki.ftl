@@ -16,8 +16,6 @@ change-password-old = Цяперашні пароль:
 change-password-new = Новы пароль:
 change-password-reenter = Новы пароль (ізноў):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Не ўдалося змяніць пароль.
 pippki-incorrect-pw = Вы няправільна ўвялі галоўны пароль. Паспрабуйце, калі ласка, ізноў.
 pippki-pw-change-ok = Пароль паспяхова зменены.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Зараз вы ў рэжыме FIPS. Дл
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Скінуць галоўны пароль
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Скінуць
-
 reset-primary-password-text = Калі вы скінеце свой галоўны пароль, згубяцца ўсе захаваныя паролі для сайтаў і электроннай пошты, асабістыя сертыфікаты і прыватныя ключы. Ці сапраўды хочаце скінуць свой галоўны пароль?
 
 pippki-reset-password-confirmation-title = Скінуць галоўны пароль
@@ -43,18 +40,18 @@ pippki-reset-password-confirmation-message = Ваш галоўны пароль 
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Сцягванне сертыфіката
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Вас запыталі аб даверу да новага Цэнтра Сертыфікацыі (ЦС).
 download-cert-trust-ssl =
     .label = Давяраць гэтаму ЦС ідэнтыфікаваць вэб-сайты.
 download-cert-trust-email =
     .label = Давяраць гэтаму ЦС апазнаваць э-паштовых карыстальнікаў.
-download-cert-message-desc = Перад тым, як даверыцца гэтаму ЦС з нейкай мэтай, вы мусіце даследаваць яго сертыфікат, яго палітыку і працэдуры (калі даступны).
+download-cert-message-desc = Перад тым, як даверыцца гэтаму ЦС з нейкай мэтай, вы мусіце праверыць яго сертыфікат, яго палітыку і працэдуры (калі даступны).
 download-cert-view-cert =
     .label = Прагляд
-download-cert-view-text = Даследаваць сертыфікат ЦС
+download-cert-view-text = Праверыць сертыфікат ЦС
 
 ## Client Authorization Ask dialog
 
@@ -77,7 +74,8 @@ set-password-reminder = Увага: Калі вы забудзеце ваш па
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Аўтарызацыя з абароненай лексемай
-protected-auth-msg = Аўтарызуйцеся, калі ласка, да лексемы. Метад аўтарызацыі залежыць ад тыпу вашай сістэмы.
-protected-auth-token = Лексема:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Аўтэнтыфікуйце токен “{ $tokenName }”. Як гэта зрабіць, залежыць ад токена (напрыклад, з дапамогай сканера адбіткаў пальцаў або ўводу кода з клавіятуры).

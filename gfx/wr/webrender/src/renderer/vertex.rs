@@ -609,6 +609,26 @@ pub mod desc {
         ],
     };
 
+    pub const MASK: VertexDescriptor = VertexDescriptor {
+        vertex_attributes: &[VertexAttribute {
+            name: "aPosition",
+            count: 2,
+            kind: VertexAttributeKind::U8Norm,
+        }],
+        instance_attributes: &[
+            VertexAttribute {
+                name: "aData",
+                count: 4,
+                kind: VertexAttributeKind::I32,
+            },
+            VertexAttribute {
+                name: "aClipData",
+                count: 4,
+                kind: VertexAttributeKind::I32,
+            },
+        ],
+    };
+
     pub const VECTOR_STENCIL: VertexDescriptor = VertexDescriptor {
         vertex_attributes: &[VertexAttribute {
             name: "aPosition",
@@ -758,6 +778,31 @@ pub mod desc {
             },
         ],
     };
+
+    pub const COPY: VertexDescriptor = VertexDescriptor {
+        vertex_attributes: &[VertexAttribute {
+            name: "aPosition",
+            count: 2,
+            kind: VertexAttributeKind::U8Norm,
+        }],
+        instance_attributes: &[
+            VertexAttribute {
+                name: "a_src_rect",
+                count: 4,
+                kind: VertexAttributeKind::F32,
+            },
+            VertexAttribute {
+                name: "a_dst_rect",
+                count: 4,
+                kind: VertexAttributeKind::F32,
+            },
+            VertexAttribute {
+                name: "a_dst_texture_size",
+                count: 2,
+                kind: VertexAttributeKind::F32,
+            },
+        ],
+    };
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -780,6 +825,8 @@ pub enum VertexArrayKind {
     SvgFilter,
     Composite,
     Clear,
+    Copy,
+    Mask,
 }
 
 pub struct VertexDataTexture<T> {
@@ -1003,6 +1050,8 @@ pub struct RendererVAOs {
     svg_filter_vao: VAO,
     composite_vao: VAO,
     clear_vao: VAO,
+    copy_vao: VAO,
+    mask_vao: VAO,
 }
 
 impl RendererVAOs {
@@ -1049,6 +1098,8 @@ impl RendererVAOs {
             svg_filter_vao: device.create_vao_with_new_instances(&desc::SVG_FILTER, &prim_vao),
             composite_vao: device.create_vao_with_new_instances(&desc::COMPOSITE, &prim_vao),
             clear_vao: device.create_vao_with_new_instances(&desc::CLEAR, &prim_vao),
+            copy_vao: device.create_vao_with_new_instances(&desc::COPY, &prim_vao),
+            mask_vao: device.create_vao_with_new_instances(&desc::MASK, &prim_vao),
             prim_vao,
         }
     }
@@ -1070,6 +1121,8 @@ impl RendererVAOs {
         device.delete_vao(self.svg_filter_vao);
         device.delete_vao(self.composite_vao);
         device.delete_vao(self.clear_vao);
+        device.delete_vao(self.copy_vao);
+        device.delete_vao(self.mask_vao);
     }
 }
 
@@ -1094,6 +1147,8 @@ impl ops::Index<VertexArrayKind> for RendererVAOs {
             VertexArrayKind::SvgFilter => &self.svg_filter_vao,
             VertexArrayKind::Composite => &self.composite_vao,
             VertexArrayKind::Clear => &self.clear_vao,
+            VertexArrayKind::Copy => &self.copy_vao,
+            VertexArrayKind::Mask => &self.mask_vao,
         }
     }
 }

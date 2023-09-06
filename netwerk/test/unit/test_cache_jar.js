@@ -1,8 +1,10 @@
 "use strict";
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
-XPCOMUtils.defineLazyGetter(this, "URL", function() {
+XPCOMUtils.defineLazyGetter(this, "URL", function () {
   return "http://localhost:" + httpserv.identity.primaryPort + "/cached";
 });
 
@@ -49,8 +51,7 @@ async function run_all_tests() {
 
   // We can't easily cause webapp data to be cleared from the child process, so skip
   // the rest of these tests.
-  let procType = Cc["@mozilla.org/xre/runtime;1"].getService(Ci.nsIXULRuntime)
-    .processType;
+  let procType = Services.appinfo.processType;
   if (procType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT) {
     return;
   }

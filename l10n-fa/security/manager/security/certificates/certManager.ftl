@@ -21,30 +21,27 @@ certmgr-mine = شما گواهینامه‌ هایی از شرکت هایی دا
 certmgr-people = شما گواهینامه ای روی این پرونده دارید که این افراد را می شناسد
 certmgr-ca = شما گواهینامه هایی روی این پرونده دارید که مسئولین این گواهینامه‌ها را میشناسد
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = ویرایش تنظیمات اعتماد به مرجع صدور گواهی
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = ویرایش تنظیمات اعتماد:
 
 certmgr-edit-cert-trust-ssl =
-    .label = این گواهی می‌تواند هویت وب‌گاه‌ها را تأیید کند.
+    .label = این گواهی می‌تواند هویت وبگاه‌ها را تأیید کند.
 
 certmgr-edit-cert-trust-email =
     .label = این گواهی می‌تواند هویت فرستندگان نامه را تأیید کند.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = حذف گواهی
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = نام گواهی
 
 certmgr-cert-server =
     .label = کارگزار
-
-certmgr-override-lifetime =
-    .label = مدت زمان
 
 certmgr-token-name =
     .label = دستگاه امنیتی
@@ -173,9 +170,8 @@ delete-email-cert-impact = اگر گواهی پست الکترونیکی شخص�
 cert-with-serial =
     .value = گواهینامه با شماره سریال: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

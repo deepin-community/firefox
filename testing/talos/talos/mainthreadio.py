@@ -3,15 +3,11 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from __future__ import absolute_import, print_function
-
 import os
 import re
-from talos import utils
-from talos import allowlist
-
 from collections import OrderedDict
-import six
+
+from talos import allowlist
 
 SCRIPT_DIR = os.path.abspath(os.path.realpath(os.path.dirname(__file__)))
 
@@ -121,7 +117,7 @@ def write_output(outfilename, data):
     try:
         with open(outfilename, "w") as outfile:
             outfile.write("[\n")
-            for idx, (key, value) in utils.indexed_items(six.iteritems(data)):
+            for idx, (key, value) in enumerate(data.items()):
                 output = '    ["%s", "%s", "%s", "%s", %d, %d, %f]' % (
                     key[0],
                     key[1],

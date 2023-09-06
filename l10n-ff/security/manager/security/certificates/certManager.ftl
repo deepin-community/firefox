@@ -21,9 +21,9 @@ certmgr-mine = Aɗa jogii seedamfaaji ɗee pelle kebtinooji ma
 certmgr-people = Aɗa jogii seedamfaaji e fiilde kebtinooji ɓee yimɓe
 certmgr-ca = Aɗa jogii seedamfaaji e fiilde kebtinooji ɗee pelle kalfinaaɗe seedamfaaji
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Taƴto teelte koolnol seedamfaagu CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Taƴto teelte koolnol:
 
@@ -33,18 +33,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Seedamfaagu nguu ena waawi heftinde joom iimeel en.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Momtu Seedamfaagu
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = Innde Seedamfaagu
 
 certmgr-cert-server =
     .label = Sarworde
-
-certmgr-override-lifetime =
-    .label = Nguurndam
 
 certmgr-token-name =
     .label = Kaɓirgol Kisal
@@ -173,9 +170,8 @@ delete-email-cert-impact = So a momtii seedamfaagu iimel neɗɗo, a waawataa ha�
 cert-with-serial =
     .value = Seedamfaagu kame tonngoode looso: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

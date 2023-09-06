@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Bestari Mencipta Profil
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Pengenalan
-       *[other] Selamat Datang ke { create-profile-window.title }
+       *[other] Selamat Datang ke { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } menyimpan maklumat perihal tetapan dan keutamaan anda dalam profil peribadi anda.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Rumusan
-       *[other] Menyelesaikan { create-profile-window.title }
+       *[other] Menyelesaikan { create-profile-window2.title }
     }
 
 profile-creation-intro = Jika anda mencipta beberapa profil anda boleh panggilnya dengan nama profil. Anda boleh gunakan nama yang disediakan atau gunakan nama yang anda pilih.

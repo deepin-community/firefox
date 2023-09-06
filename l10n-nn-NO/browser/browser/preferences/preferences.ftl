@@ -71,23 +71,23 @@ restart-later = Start på nytt seinare
 ## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
 ##
 ## Variables:
-##   $name (String): name of the extension
+##   $name (string) - Name of the extension
 
 # This string is shown to notify the user that the password manager setting
 # is being controlled by an extension
-extension-controlled-password-saving = Ei utviding, <img data-l10n-name="icon"/> { $name }, styrer denne innstillinga.
+extension-controlling-password-saving = <img data-l10n-name="icon"/> <strong>{ $name }</strong> kontrollerer denne innstillinga.
 # This string is shown to notify the user that their notifications permission
 # is being controlled by an extension.
-extension-controlled-web-notifications = Eit tillegg, <img data-l10n-name="icon"/> { $name }, kontrollerer denne innstillinga.
+extension-controlling-web-notifications = <img data-l10n-name="icon"/> <strong>{ $name }</strong> kontrollerer denne innstillinga.
 # This string is shown to notify the user that Container Tabs
 # are being enabled by an extension.
-extension-controlled-privacy-containers = Ei utviding, <img data-l10n-name="icon"/> { $name }, krev innhaldsfaner.
+extension-controlling-privacy-containers = <img data-l10n-name="icon"/> <strong>{ $name }</strong> krev innhaldsfaner.
 # This string is shown to notify the user that their content blocking "All Detected Trackers"
 # preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = Eit tillegg, <img data-l10n-name="icon"/> { $name }, styrer denne innstillinga.
+extension-controlling-websites-content-blocking-all-trackers = <img data-l10n-name="icon"/> <strong>{ $name }</strong> kontrollerer denne innstillinga.
 # This string is shown to notify the user that their proxy configuration preferences
 # are being controlled by an extension.
-extension-controlled-proxy-config = Ei utviding, <img data-l10n-name="icon"/> { $name }, styrer korleis { -brand-short-name } koplar seg til internett.
+extension-controlling-proxy-config = <img data-l10n-name ="icon"/> <strong>{ $name }</strong> kontrollerer korleis { -brand-short-name } koplar til internett.
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
 #
@@ -113,9 +113,6 @@ is-not-default = { -brand-short-name } er ikkje standard nettlesar
 set-as-my-default-browser =
     .label = Bruk som standard…
     .accesskey = S
-startup-restore-previous-session =
-    .label = Bygg oppatt siste programøkt
-    .accesskey = B
 startup-restore-windows-and-tabs =
     .label = Opne tidlegare vindauge og faner
     .accesskey = p
@@ -123,6 +120,11 @@ startup-restore-warn-on-quit =
     .label = Åtvar meg når eg avsluttar nettlesaren
 disable-extension =
     .label = Slå av utviding
+preferences-data-migration-header = Importer nettlesardata
+preferences-data-migration-description = Importer bokmerke, passord, historikk og autofylldata til { -brand-short-name }.
+preferences-data-migration-button =
+    .label = Importer data
+    .accesskey = m
 tabs-group-header = Faner
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab vekslar mellom faner i nyleg brukt-rekkjefølgje
@@ -130,15 +132,12 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Opne lenker i faner i staden for nye vindauge
     .accesskey = l
-warn-on-close-multiple-tabs =
-    .label = Åtvar meg når eg vil late att fleire faner
-    .accesskey = Å
 confirm-on-close-multiple-tabs =
     .label = Stadfest før attlating av fleire faner
     .accesskey = S
 # This string is used for the confirm before quitting preference.
 # Variables:
-#   $quitKey (String) - the quit keyboard shortcut, and formatted
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
 #                       in the same manner as it would appear,
 #                       for example, in the File menu.
 confirm-on-quit-with-key =
@@ -161,6 +160,10 @@ browser-containers-settings =
     .label = Innstillingar…
     .accesskey = I
 containers-disable-alert-title = Late att alle innhaldsfaner?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Dersom du deaktiverer innhaldsfaner no, vil { $tabCount } innhaldsfane bli stengt. Er du sikker på at du vil deaktivere innhaldsfaner?
@@ -171,10 +174,13 @@ containers-disable-alert-ok-button =
         [one] Lat att { $tabCount } innhaldsfane
        *[other] Lat att { $tabCount } innhaldsfaner
     }
+
+##
+
 containers-disable-alert-cancel-button = Behald aktivert
 containers-remove-alert-title = Fjerne denne behaldaren?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] Om du fjernar denne behaldaren no, vil { $count } behaldarfane latast att. Er du sikker på at du vil fjerne denne behaldaren?
@@ -186,7 +192,35 @@ containers-remove-cancel-button = Ikkje fjern denne behaldaren
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Språk og utsjånad
-fonts-and-colors-header = Skrifttypar og fargar
+preferences-web-appearance-header = Utsjånaden på nettstaden
+preferences-web-appearance-description = Nokre nettstadar tilpassar fargeskjemaet basert på innstillingane dine. Vel kva for fargeskjema du vil bruke for desse nettstadane.
+preferences-web-appearance-choice-auto = Automatisk
+preferences-web-appearance-choice-light = Lyst
+preferences-web-appearance-choice-dark = Mørkt
+preferences-web-appearance-choice-tooltip-auto =
+    .title = Endre nettsidebakgrunn og innhald automatisk basert på systeminnstillingane og { -brand-short-name }-temaet.
+preferences-web-appearance-choice-tooltip-light =
+    .title = Bruk ein lys utsjånad for nettsidebakgrunn og innhald.
+preferences-web-appearance-choice-tooltip-dark =
+    .title = Bruk ein mørk utsjånad for nettsidebakgrunn og innhald.
+preferences-web-appearance-choice-input-auto =
+    .aria-description = { preferences-web-appearance-choice-tooltip-auto.title }
+preferences-web-appearance-choice-input-light =
+    .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
+preferences-web-appearance-choice-input-dark =
+    .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning = Fargevala dine overstyrer utsjånaden til nettstaden. <a data-l10n-name="colors-link">Handsam fargar</a>
+# This message contains one link. It can be moved within the sentence as needed
+# to adapt to your language, but should not be changed.
+preferences-web-appearance-footer = Handsam { -brand-short-name }-tema i <a data-l10n-name="themes-link">Utvidingar og tema</a>
+preferences-colors-header = Fargar
+preferences-colors-description = Overstyr { -brand-short-name } sine standardfargar for tekst, nettsidebakgrunnar og lenker.
+preferences-colors-manage-button =
+    .label = Handsam fargar…
+    .accesskey = H
+preferences-fonts-header = Skrifttypar
 default-font = Standardskrift
     .accesskey = t
 default-font-size = Storleik
@@ -194,13 +228,12 @@ default-font-size = Storleik
 advanced-fonts =
     .label = Avansert…
     .accesskey = A
-colors-settings =
-    .label = Fargar…
-    .accesskey = F
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Skalering
 preferences-default-zoom = Standardskalering
     .accesskey = s
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
@@ -215,7 +248,7 @@ choose-browser-language-description = Vel språka som som skal brukast til å vi
 manage-browser-languages-button =
     .label = Vel alternativ…
     .accesskey = l
-confirm-browser-language-change-description = Start om { -brand-short-name } for å bruke disse endringene
+confirm-browser-language-change-description = Start om { -brand-short-name } for å bruke desse endringane
 confirm-browser-language-change-button = Bruk og start på nytt
 translate-web-pages =
     .label = Omset webinnhald
@@ -239,8 +272,7 @@ check-user-spelling =
 
 files-and-applications-title = Filer og program
 download-header = Nedlastingar
-download-save-to =
-    .label = Lagre filer i
+download-save-where = Lagre filer i
     .accesskey = L
 download-choose-folder =
     .label =
@@ -257,7 +289,7 @@ download-always-ask-where =
     .label = Spør alltid om kvar eg vil lagre filer
     .accesskey = a
 applications-header = Program
-applications-description = Vel korleis { -brand-short-name } handterer filer du hentar frå nettet eller programma du brukar når du surfar.
+applications-description = Vel korleis { -brand-short-name } handsame filer du hentar frå nettet eller programma du brukar når du surfar.
 applications-filter =
     .placeholder = Søk filtypar eller program
 applications-type-column =
@@ -294,15 +326,15 @@ applications-manage-app =
 applications-always-ask =
     .label = Spør alltid
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Bruk { $plugin-name } (i { -brand-short-name })
 applications-open-inapp =
@@ -331,6 +363,13 @@ applications-use-os-default-label =
 
 ##
 
+applications-handle-new-file-types-description = Kva skal { -brand-short-name } gjere med andre filer?
+applications-save-for-new-types =
+    .label = Lagre filer
+    .accesskey = L
+applications-ask-before-handling =
+    .label = Spør om du vil opne eller lagre filer
+    .accesskey = S
 drm-content-header = Digital Rights Management (DRM) innhald
 play-drm-content =
     .label = Spel DRM-kontrollert innhald
@@ -338,6 +377,8 @@ play-drm-content =
 play-drm-content-learn-more = Les meir
 update-application-title = { -brand-short-name }-oppdateringar
 update-application-description = Hald { -brand-short-name } oppdatert for beste yting, stabilitet og sikkerheit.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Versjon { $version } <a data-l10n-name="learn-more">Kva er nytt</a>
 update-history =
     .label = Vis oppdateringshistorikk…
@@ -359,9 +400,12 @@ update-application-warning-cross-user-setting = Denne innstillinga gjeld for all
 update-application-use-service =
     .label = Bruk ei bakgrunnsteneste for å installere oppdateringar
     .accesskey = B
+update-application-suppress-prompts =
+    .label = Vis færre oppdateringsvarsel
+    .accesskey = n
 update-setting-write-failure-title2 = Klarte ikkje å lagre oppdateringsinnstillingar
 # Variables:
-#   $path (String) - Path to the configuration file
+#   $path (string) - Path to the configuration file
 # The newlines between the main text and the line containing the path is
 # intentional so the path is easier to identify.
 update-setting-write-failure-message2 =
@@ -391,7 +435,7 @@ performance-limit-content-process-option = Grense for innhaldsprosessar
 performance-limit-content-process-enabled-desc = Ytterlegere innhaldsprosessar kan forbetre ytinga når du brukar fleire faner, men vil også bruke meir minne.
 performance-limit-content-process-blocked-desc = Endring av talet på innhaldsprosessar kan berre gjerast med multiprosess { -brand-short-name }. <a data-l10n-name="learn-more">Lær deg korleis du kontrollerer om multiprosess er slått på</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (standard)
 
@@ -404,12 +448,18 @@ browsing-use-autoscroll =
 browsing-use-smooth-scrolling =
     .label = Bruk jamn rulling
     .accesskey = u
+browsing-gtk-use-non-overlay-scrollbars =
+    .label = Vis alltid rullefelt
+    .accesskey = V
 browsing-use-onscreen-keyboard =
     .label = Vis eit tøtsj-tastatur når nødvendig
     .accesskey = t
 browsing-use-cursor-navigation =
     .label = Bruk alltid piltastane for å navigere innanfor nettsider
     .accesskey = A
+browsing-use-full-keyboard-navigation =
+    .label = Bruk Tab-tasten for å flytte fokus mellom skjemakontrollar og lenker
+    .accesskey = t
 browsing-search-on-start-typing =
     .label = Søk etter tekst når eg byrjar å skrive
     .accesskey = k
@@ -422,7 +472,7 @@ browsing-media-control =
     .accesskey = o
 browsing-media-control-learn-more = Les meir
 browsing-cfr-recommendations =
-    .label = Tilrå utvidingar når du surfar
+    .label = Tilrå utvidingar medan du surfar
     .accesskey = T
 browsing-cfr-features =
     .label = Tilrå funksjonar medan du surfar
@@ -450,10 +500,8 @@ home-newtabs-mode-label = Nye faner
 home-restore-defaults =
     .label = Bruk standardinnstillingar
     .accesskey = r
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Firefox startside (standard)
+home-mode-choice-default-fx =
+    .label = { -firefox-home-brand-name } (Standard)
 home-mode-choice-custom =
     .label = Tilpassa nettadresser…
 home-mode-choice-blank =
@@ -477,15 +525,10 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Innhald på: Firefox-startside
-home-prefs-content-description = Vel kva for innhald du vil ha på Firefox-startsida di.
+home-prefs-content-header2 = { -firefox-home-brand-name } Innhald
+home-prefs-content-description2 = Velg kva for innhald som du vil ha på { -firefox-home-brand-name }-skjermen din.
 home-prefs-search-header =
     .label = Nettsøk
-home-prefs-topsites-header =
-    .label = Mest besøkte
-home-prefs-topsites-description = Sidene du besøkjer mest
-home-prefs-topsites-by-option-sponsored =
-    .label = Sponsa toppsider
 home-prefs-shortcuts-header =
     .label = Snarvegar
 home-prefs-shortcuts-description = Nettstadar du lagrar eller besøkjer
@@ -493,11 +536,10 @@ home-prefs-shortcuts-by-option-sponsored =
     .label = Sponsa snarvegar
 
 ## Variables:
-##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 home-prefs-recommended-by-header =
     .label = Tilrådd av { $provider }
-home-prefs-recommended-by-description-update = Eineståande innhald frå heile nettet sett saman av { $provider }
 home-prefs-recommended-by-description-new = Eksepsjonelt innhald sett saman av { $provider }, ein del av { -brand-product-name }-familien
 
 ##
@@ -505,9 +547,8 @@ home-prefs-recommended-by-description-new = Eksepsjonelt innhald sett saman av {
 home-prefs-recommended-by-learn-more = Korleis det fungerar
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Sponsa historiar
-home-prefs-highlights-header =
-    .label = Høgdepunkt
-home-prefs-highlights-description = Eit utval av nettsider som du har lagra eller besøkt
+home-prefs-recommended-by-option-recent-saves =
+    .label = Vis nylege lagringar
 home-prefs-highlights-option-visited-pages =
     .label = Besøkte sider
 home-prefs-highlights-options-bookmarks =
@@ -525,8 +566,9 @@ home-prefs-recent-activity-description = Eit utval av nylige nettstadar og innha
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Snuttar
-home-prefs-snippets-description = Oppdateringar frå { -vendor-short-name } og { -brand-product-name }
 home-prefs-snippets-description-new = Tips og nyheiter frå { -vendor-short-name } og { -brand-product-name }
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -555,6 +597,11 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Vis søkjeforslag i adresselinja
     .accesskey = l
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar
+# when using the current default search engine.
+search-show-search-term-option =
+    .label = Vis søkjeord i staden for adresse på resultatsida til standardsøkjemotoren
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -586,7 +633,7 @@ search-find-more-link = Finn fleire søkjemotorar
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Kopiere stikkord
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Du har valt eit nøkkelord som allereie er i bruk av «{ $name }». Vel eit anna nøkkelord.
 search-keyword-warning-bookmark = Du har valt eit nøkkelord som allereie vert brukt av eit bokmerke. Vel eit anna nøkkelord.
 
@@ -606,7 +653,7 @@ containers-settings-button =
 containers-remove-button =
     .label = Fjern
 
-## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = Ta med deg nettet
@@ -624,17 +671,24 @@ sync-signedout-account-signin3 =
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Last ned Firefox for <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> eller  <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a> for å synkronisere med mobileininga di.
 
-## Firefox Account - Signed in
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = Endre profilbilde
 sync-sign-out =
     .label = Logg ut…
     .accesskey = g
-sync-manage-account = Handter kontoen
+sync-manage-account = Handsam kontoen
     .accesskey = k
+
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } er ikkje stadfesta.
 sync-signedin-login-failure = Logg inn for å kople til på nytt { $email }
+
+##
+
 sync-resend-verification =
     .label = Send stadfesting på nytt
     .accesskey = S
@@ -657,10 +711,15 @@ prefs-sync-now =
     .labelnotsyncing = Synkroniser no
     .accesskeynotsyncing = n
     .labelsyncing = Synkroniserer…
+prefs-sync-now-button =
+    .label = Synkroniser no
+    .accesskey = n
+prefs-syncing-button =
+    .label = Synkroniserer…
 
 ## The list of things currently syncing.
 
-sync-currently-syncing-heading = Du synkroniserer for tida desse elementa:
+sync-syncing-across-devices-heading = Du synkroniserer desse elementa mellom alle dei tilkopla einingane dine:
 sync-currently-syncing-bookmarks = Bokmerke
 sync-currently-syncing-history = Historikk
 sync-currently-syncing-tabs = Opne faner
@@ -675,13 +734,14 @@ sync-change-options =
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog =
+sync-choose-what-to-sync-dialog3 =
     .title = Vel kva som skal synkroniserast
-    .style = width: 36em; min-height: 35em;
+    .style = min-width: 36em;
     .buttonlabelaccept = Lagre endringar
     .buttonaccesskeyaccept = L
     .buttonlabelextra2 = Kople frå
     .buttonaccesskeyextra2 = K
+sync-choose-dialog-subtitle = Endringar i lista over element som skal synkroniserat vert spegla av på alle tilkopla einingar.
 sync-engine-bookmarks =
     .label = Bokmerke
     .accesskey = B
@@ -706,7 +766,7 @@ sync-engine-creditcards =
     .accesskey = K
 sync-engine-addons =
     .label = Tillegg
-    .tooltiptext = Tillegg og tema for Firefox desktop
+    .tooltiptext = Utvidingar og tema for Firefox desktop
     .accesskey = T
 sync-engine-settings =
     .label = Innstillingar
@@ -726,6 +786,16 @@ sync-device-name-save =
     .label = Lagre
     .accesskey = L
 sync-connect-another-device = Kople til ei anna eining
+
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Stadfesting sendt
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Ei stadfestingslenke er sendt til { $email }.
+sync-verification-not-sent-title = Klarte ikkje å sende stadfesting
+sync-verification-not-sent-body = Vi klarte ikkje å sende ei stadfesting på e-post no, prøv på nytt seinare.
 
 ## Privacy Section
 
@@ -750,6 +820,9 @@ forms-breach-alerts =
     .label = Vis varsel om passord for datalekkasjar på nettstadar
     .accesskey = p
 forms-breach-alerts-learn-more-link = Les meir
+preferences-relay-integration-checkbox =
+    .label = Foreslå { -relay-brand-name } e-postalias for å beskytte e-postadressa di
+relay-integration-learn-more-link = Les meir
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
     .label = Autoutfyll innloggingar og passord
@@ -779,7 +852,7 @@ forms-master-pw-fips-desc = Mislykka passordendring
 forms-windows-sso =
     .label = Tillat Windows enkel innlogging for Microsoft-, arbeids- og skulekontoar.
 forms-windows-sso-learn-more-link = Les meir
-forms-windows-sso-desc = Handter konton i einingsinnstillingane dine
+forms-windows-sso-desc = Handsam konton i einingsinnstillingane dine
 
 ## OS Authentication dialog
 
@@ -838,8 +911,8 @@ history-clear-button =
 sitedata-header = Infokapslar og sidedata
 sitedata-total-size-calculating = Reknar ut storleik på nettstad-data og snøgglager…
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = Dei lagra infokapslane dine, nettstaddata og hurtiglager brukar for tida { $value } { $unit } diskplass.
 sitedata-learn-more = Les meir
 sitedata-delete-on-close =
@@ -858,29 +931,33 @@ sitedata-block-desc = Type blokkert
     .accesskey = T
 sitedata-option-block-cross-site-trackers =
     .label = Sporing på tvers av nettstadar
-sitedata-option-block-cross-site-and-social-media-trackers =
-    .label = Sporing på tvers av nettstadar og sosiale media-sporarar
-sitedata-option-block-cross-site-tracking-cookies-including-social-media =
-    .label = Sporingsinfokapslar på tvers av nettstadar — inkluderer informasjonskapslar for sosiale medium
-sitedata-option-block-cross-site-cookies-including-social-media =
-    .label = Infokapslar på tvers av nettstadar — inkluderer informasjonskapslar for sosiale medium
-sitedata-option-block-cross-site-and-social-media-trackers-plus-isolate =
-    .label = Sporarar på tvers av nettstadar og sosiale medium, og isolering av attståande infokapslar
+sitedata-option-block-cross-site-tracking-cookies =
+    .label = Sporingsinfokapslar på tvers av nettstadar
+sitedata-option-block-cross-site-cookies =
+    .label = Sporingsinfokapslear på tvers av nettstadar, isolering av andre infokapslar på tvers av nettstadar
 sitedata-option-block-unvisited =
     .label = Infokapslar frå ubesøkte nettsider
-sitedata-option-block-all-third-party =
-    .label = Alle tredjeparts infokapslar (kan føre til feil på nettsider)
+sitedata-option-block-all-cross-site-cookies =
+    .label = Alle infokapslar på tvers av nettstadar (kan føre til at nettstadar ikkje fungerer)
 sitedata-option-block-all =
     .label = Alle infokapslar (vil føre til feil på nettsider)
 sitedata-clear =
     .label = Tøm data…
     .accesskey = T
 sitedata-settings =
-    .label = Handter data…
+    .label = Handsam data…
     .accesskey = H
 sitedata-cookies-exceptions =
-    .label = Handter unntak…
+    .label = Handsam unntak…
     .accesskey = H
+
+## Privacy Section - Cookie Banner Handling
+
+cookie-banner-handling-header = Redusering av infokapselbanner
+cookie-banner-handling-description = { -brand-short-name } prøver automatisk å avvise infokapselførespurnadar på infokapselbanner på støtta nettstadar.
+cookie-banner-learn-more = Les meir
+forms-handle-cookie-banners =
+    .label = Reduser infokapselbanner
 
 ## Privacy Section - Address Bar
 
@@ -905,7 +982,11 @@ addressbar-locbar-topsites-option =
 addressbar-locbar-engines-option =
     .label = Søkjemotorar
     .accesskey = k
+addressbar-locbar-quickactions-option =
+    .label = Snøgghandlingar
+    .accesskey = S
 addressbar-suggestions-settings = Endre innstillingar for søkjeforslag
+addressbar-quickactions-learn-more = Les meir
 
 ## Privacy Section - Content Blocking
 
@@ -935,7 +1016,7 @@ content-blocking-etp-strict-desc = Sterkare vern, men kan føre til at nokre net
 content-blocking-etp-custom-desc = Vel kva for sporarar og skript som skal blokkerast.
 content-blocking-etp-blocking-desc = { -brand-short-name } blokkerer følgjande:
 content-blocking-private-windows = Sporingsinnhald i private vindauge
-content-blocking-cross-site-cookies-in-all-windows = Infokapslar på tvers av nettstadar i alle vindauge (inkluderer infokapslar for sporing)
+content-blocking-cross-site-cookies-in-all-windows2 = Infokapslar på tvers av nettstadar i alle vindauge
 content-blocking-cross-site-tracking-cookies = Sporingsinfokapslar på tvers av nettstadar
 content-blocking-all-cross-site-cookies-private-windows = Infokapslar på tvers av nettstadar i private vindauge
 content-blocking-cross-site-tracking-cookies-plus-isolate = Sporingsinfokapsler på tvers av nettstadar, isolering av attståande infokapslar
@@ -943,11 +1024,17 @@ content-blocking-social-media-trackers = Sporing via sosiale medium
 content-blocking-all-cookies = Alle infokapslar
 content-blocking-unvisited-cookies = Infokapslar frå ikkje-besøkte nettsider
 content-blocking-all-windows-tracking-content = Sporingsinnhald i alle vindauge
-content-blocking-all-third-party-cookies = Alle tredjeparts infokapslar
+content-blocking-all-cross-site-cookies = Alle infokapslar på tvers av nettstadar
 content-blocking-cryptominers = Kryptoutvinnarar
 content-blocking-fingerprinters = Fingerprinters
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
+
+# "Contains" here means "isolates", "limits".
+content-blocking-etp-standard-tcp-rollout-description = Totalt vern mot infokapslar isolerer infokapslar til nettstaden du er på, så sporarar ikkje kan bruke dei til å følgje deg mellom nettstadar.
+content-blocking-etp-standard-tcp-rollout-learn-more = Les meir
+content-blocking-etp-standard-tcp-title = Inkluderer totalt vern mot infokapslar, den kraftigaste personvernfunksjonen vår nokon gong
 content-blocking-warning-title = Viktig!
-content-blocking-and-isolating-etp-warning-description = Blokkering av sporarar og isolering av infokapslar kan påverke funksjonaliteten på nokre nettstadar. Last nettsida inn på nytt med sporarar for å laste alt innhald.
 content-blocking-and-isolating-etp-warning-description-2 = Denne innstillinga kan føre til at enkelte nettstadar ikkje viser innhald eller fungerer rett. Dersom ein nettstad verkar øydelagd, kan det vere lurt å slå av sporingsvernet for nettsaden for å få laste inn alt innhaldet.
 content-blocking-warning-learn-how = Les korleis
 content-blocking-reload-description = Du må oppdatere fanene dine for å kunne bruke desse endringane.
@@ -982,7 +1069,7 @@ content-blocking-fingerprinters-label =
 ## Privacy Section - Tracking
 
 tracking-manage-exceptions =
-    .label = Handter unntak…
+    .label = Handsam unntak…
     .accesskey = H
 
 ## Privacy Section - Permissions
@@ -1004,6 +1091,11 @@ permissions-microphone = Mikrofon
 permissions-microphone-settings =
     .label = Innstillingar…
     .accesskey = t
+# Short form for "the act of choosing sound output devices and redirecting audio to the chosen devices".
+permissions-speaker = Høgtalarval
+permissions-speaker-settings =
+    .label = Innstillingar
+    .accesskey = s
 permissions-notification = Varsel
 permissions-notification-settings =
     .label = Innstillingar…
@@ -1019,9 +1111,6 @@ permissions-autoplay-settings =
 permissions-block-popups =
     .label = Blokker sprettoppvindauge
     .accesskey = B
-permissions-block-popups-exceptions =
-    .label = Unntak…
-    .accesskey = U
 # "popup" is a misspelling that is more popular than the correct spelling of
 # "pop-up" so it's included as a search keyword, not displayed in the UI.
 permissions-block-popups-exceptions-button =
@@ -1057,6 +1146,12 @@ addon-recommendations-link = Les meir
 collection-health-report-disabled = Datarapportering er deaktivert for denne byggekonfigurasjonen
 collection-backlogged-crash-reports-with-link = Tillat { -brand-short-name } å sende etterslepne krasjrapportar på dine vegne <a data-l10n-name="crash-reports-link">Les meir</a>
     .accesskey = T
+privacy-segmentation-section-header = Nye funksjonar som forbetrar surfinga di
+privacy-segmentation-section-description = Når vi tilbyr funksjonar som brukar dine data for å gi deg ei meir personleg oppleving:
+privacy-segmentation-radio-off =
+    .label = Bruk { -brand-product-name }-tilrådingar
+privacy-segmentation-radio-on =
+    .label = Vis detaljert informasjon
 
 ## Privacy Section - Security
 ##
@@ -1106,12 +1201,65 @@ httpsonly-radio-enabled-pbm =
 httpsonly-radio-disabled =
     .label = Ikkje slå på berre HTTPS-modus
 
+## DoH Section
+
+preferences-doh-header = DNS over HTTPS
+preferences-doh-description = Domain Name System (DNS) over HTTPS sender førespurnaden din om eit domennamn via ei kryptert tilkopling, lagar ein sikker DNS og gjer det venskelegare for andre å sjå kva for nettstad du er i ferd med å besøkje.
+# Variables:
+#   $status (string) - The status of the DoH connection
+preferences-doh-status = Status: { $status }
+# Variables:
+#   $name (string) - The name of the DNS over HTTPS resolver. If a custom resolver is used, the name will be the domain of the URL.
+preferences-doh-resolver = Leverandør: { $name }
+# This is displayed instead of $name in preferences-doh-resolver
+# when the DoH URL is not a valid URL
+preferences-doh-bad-url = Ugyldig nettadresse
+preferences-doh-steering-status = Brukar lokal leverandør
+preferences-doh-status-active = Aktiv
+preferences-doh-status-disabled = Av
+# Variables:
+#   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
+preferences-doh-status-not-active = Ikkje aktiv ({ $reason })
+preferences-doh-group-message = Slå på sikker DNS med:
+preferences-doh-expand-section =
+    .tooltiptext = Meir informasjon
+preferences-doh-setting-default =
+    .label = Standard vern
+    .accesskey = S
+preferences-doh-default-desc = { -brand-short-name } avgjer når sikker DNS skal brukast for å ta vare på personvernet ditt.
+preferences-doh-default-detailed-desc-1 = Bruk sikker DNS i regionar der det er tilgjengeleg
+preferences-doh-default-detailed-desc-2 = Bruk standard DNS-resolver om det oppstår eit problem med den sikre DNS-leverandøren
+preferences-doh-default-detailed-desc-3 = Bruk ein lokal tilbydar, om muleg
+preferences-doh-default-detailed-desc-4 = Slå av når VPN, foreldrekontroll eller bedriftspolicyar er aktive
+preferences-doh-default-detailed-desc-5 = Slå av når eit nettverk seier til { -brand-short-name } at det ikkje skal bruke sikker DNS
+preferences-doh-setting-enabled =
+    .label = Auka vern
+    .accesskey = A
+preferences-doh-enabled-desc = Du bestemmer når du skal bruke sikker DNS, og vel sjølv nettleverandør.
+preferences-doh-enabled-detailed-desc-1 = Bruk leverandøren du valde
+preferences-doh-enabled-detailed-desc-2 = Bruk berre standard DNS-resolver om det er problem med sikker DNS
+preferences-doh-setting-strict =
+    .label = Maksimalt vern
+    .accesskey = M
+preferences-doh-strict-desc = { -brand-short-name } vil alltid bruke sikker DNS. Du vil sjå ei sikkerheitsåtvaring før du brukar system DNS-et ditt.
+preferences-doh-strict-detailed-desc-1 = Bruk berre tilbydaren du har valt
+preferences-doh-strict-detailed-desc-2 = Åtvar alltid om sikker DNS ikkje er tilgjengeleg
+preferences-doh-strict-detailed-desc-3 = Om sikker DNS ikkje er tilgjengeleg vil nettstaden ikkje lastast eller fungere skikkeleg
+preferences-doh-setting-off =
+    .label = Av
+    .accesskey = A
+preferences-doh-off-desc = Bruk standard DNS-resolver
+preferences-doh-checkbox-warn =
+    .label = Åtvar om ein tredjepart aktivt hindrar DNS
+    .accesskey = Å
+preferences-doh-select-resolver = Vel leverandør:
+preferences-doh-exceptions-description = { -brand-short-name } vil ikkje bruke sikker DNS på desse nettstadane
+preferences-doh-manage-exceptions =
+    .label = Handsam unntak
+    .accesskey = H
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Skrivebord
 downloads-folder-name = Nedlastingar
 choose-download-folder-title = Vel nedlastingsmappe:
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Lagre filer til { $service-name }

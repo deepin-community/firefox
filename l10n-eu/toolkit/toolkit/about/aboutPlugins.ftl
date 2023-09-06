@@ -33,3 +33,14 @@ state-dd-Disabled-block-list-state = <span data-l10n-name="state">Egoera:</span>
 mime-type-label = MIME Mota
 description-label = Azalpena
 suffixes-label = Atzizkiak
+
+## Gecko Media Plugins (GMPs)
+
+plugins-gmp-license-info = Lizentziaren informazioa
+plugins-gmp-privacy-info = Pribatutasun-informazioa
+
+plugins-openh264-name = OpenH264 bideo kodeka, Cisco Systems, Inc.-ek hornitua
+plugins-openh264-description = Plugin hau Mozillak automatikoki installatu du WebRTC espezifikazioa bete eta H.264 bideo-kodeka behar duten gailuekin WebRTC deiak egin ahal izateko. Bisitatu http://www.openh264.org/ helbidea kodekaren iturburu-kodea ikusi eta inplementazioari buruzko argibide gehiago jakiteko.
+
+plugins-widevine-name = Widevine edukiaren deszifratze-modulua (CDM) Google Inc.-ek eskainia
+plugins-widevine-description = Plugin honek zifratutako multimediaren erreprodukzioa gaitzen du, horrela Encrypted Media Extensions espezifikazioa betez. Ordainpeko multimedia-edukia kopiatzetik babesteko erabiltzen da oro har zifratutako multimedia. Bisitatu https://www.w3.org/TR/encrypted-media/ Encrypted Media Extensions-en gaineko informazio gehiago jasotzeko.

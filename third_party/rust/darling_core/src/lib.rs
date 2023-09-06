@@ -1,17 +1,8 @@
 #![recursion_limit = "256"]
 #![cfg_attr(feature = "diagnostics", feature(proc_macro_diagnostic))]
 
-#[macro_use]
-extern crate quote;
-#[macro_use]
-extern crate syn;
-extern crate fnv;
-extern crate ident_case;
 #[cfg(feature = "diagnostics")]
 extern crate proc_macro;
-extern crate proc_macro2;
-#[cfg(feature = "suggestions")]
-extern crate strsim;
 
 #[macro_use]
 mod macros_private;
@@ -22,6 +13,7 @@ pub mod ast;
 pub(crate) mod codegen;
 pub mod derive;
 pub mod error;
+mod from_attributes;
 mod from_derive_input;
 mod from_field;
 mod from_generic_param;
@@ -33,15 +25,18 @@ pub(crate) mod options;
 pub mod usage;
 pub mod util;
 
-pub use error::{Error, Result};
-pub use from_derive_input::FromDeriveInput;
-pub use from_field::FromField;
-pub use from_generic_param::FromGenericParam;
-pub use from_generics::FromGenerics;
-pub use from_meta::FromMeta;
-pub use from_type_param::FromTypeParam;
-pub use from_variant::FromVariant;
+pub use self::error::{Error, Result};
+pub use self::from_attributes::FromAttributes;
+pub use self::from_derive_input::FromDeriveInput;
+pub use self::from_field::FromField;
+pub use self::from_generic_param::FromGenericParam;
+pub use self::from_generics::FromGenerics;
+pub use self::from_meta::FromMeta;
+pub use self::from_type_param::FromTypeParam;
+pub use self::from_variant::FromVariant;
 
-// Re-export tokenizer
+// Re-exports
 #[doc(hidden)]
 pub use quote::ToTokens;
+#[doc(hidden)]
+pub use syn;

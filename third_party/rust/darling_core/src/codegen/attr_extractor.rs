@@ -1,17 +1,13 @@
 use proc_macro2::TokenStream;
+use quote::quote;
 
-use options::ForwardAttrs;
-use util::PathList;
+use crate::options::ForwardAttrs;
+use crate::util::PathList;
 
 /// Infrastructure for generating an attribute extractor.
 pub trait ExtractAttribute {
     /// A set of mutable declarations for all members of the implementing type.
     fn local_declarations(&self) -> TokenStream;
-
-    /// A set of immutable declarations for all members of the implementing type.
-    /// This is used in the case where a deriving struct handles no attributes and therefore can
-    /// never change its default state.
-    fn immutable_declarations(&self) -> TokenStream;
 
     /// Gets the list of attribute names that should be parsed by the extractor.
     fn attr_names(&self) -> &PathList;
@@ -21,20 +17,20 @@ pub trait ExtractAttribute {
     /// Gets the name used by the generated impl to return to the `syn` item passed as input.
     fn param_name(&self) -> TokenStream;
 
+    /// Get the tokens to access a borrowed list of attributes where extraction will take place.
+    ///
+    /// By default, this will be `&#input.attrs` where `#input` is `self.param_name()`.
+    fn attrs_accessor(&self) -> TokenStream {
+        let input = self.param_name();
+        quote!(&#input.attrs)
+    }
+
     /// Gets the core from-meta-item loop that should be used on matching attributes.
     fn core_loop(&self) -> TokenStream;
 
-    fn declarations(&self) -> TokenStream {
-        if !self.attr_names().is_empty() {
-            self.local_declarations()
-        } else {
-            self.immutable_declarations()
-        }
-    }
-
     /// Generates the main extraction loop.
     fn extractor(&self) -> TokenStream {
-        let declarations = self.declarations();
+        let declarations = self.local_declarations();
 
         let will_parse_any = !self.attr_names().is_empty();
         let will_fwd_any = self
@@ -48,7 +44,7 @@ pub trait ExtractAttribute {
             };
         }
 
-        let input = self.param_name();
+        let attrs_accessor = self.attrs_accessor();
 
         // The block for parsing attributes whose names have been claimed by the target
         // struct. If no attributes were claimed, this is a pass-through.
@@ -57,13 +53,28 @@ pub trait ExtractAttribute {
             let core_loop = self.core_loop();
             quote!(
                 #(#attr_names)|* => {
-                    if let ::darling::export::Ok(::syn::Meta::List(ref __data)) = __attr.parse_meta() {
-                        let __items = &__data.nested;
+                    match ::darling::util::parse_attribute_to_meta_list(__attr) {
+                        ::darling::export::Ok(__data) => {
+                            match ::darling::export::NestedMeta::parse_meta_list(__data.tokens) {
+                                ::darling::export::Ok(ref __items) => {
+                                    if __items.is_empty() {
+                                        continue;
+                                    }
 
-                        #core_loop
-                    } else {
-                        // darling currently only supports list-style
-                        continue
+                                    #core_loop
+                                }
+                                ::darling::export::Err(__err) => {
+                                    __errors.push(__err.into());
+                                }
+                            }
+                        }
+                        // darling was asked to handle this attribute name, but the actual attribute
+                        // isn't one that darling can work with. This either indicates a typing error
+                        // or some misunderstanding of the meta attribute syntax; in either case, the
+                        // caller should get a useful error.
+                        ::darling::export::Err(__err) => {
+                            __errors.push(__err);
+                        }
                     }
                 }
             )
@@ -82,11 +93,11 @@ pub trait ExtractAttribute {
         quote!(
             #declarations
             use ::darling::ToTokens;
-            let mut __fwd_attrs: ::darling::export::Vec<::syn::Attribute> = vec![];
+            let mut __fwd_attrs: ::darling::export::Vec<::darling::export::syn::Attribute> = vec![];
 
-            for __attr in &#input.attrs {
+            for __attr in #attrs_accessor {
                 // Filter attributes based on name
-                match  ::darling::export::ToString::to_string(&__attr.path.clone().into_token_stream()).as_str() {
+                match ::darling::export::ToString::to_string(&__attr.path().clone().into_token_stream()).as_str() {
                     #parse_handled
                     #forward_unhandled
                 }

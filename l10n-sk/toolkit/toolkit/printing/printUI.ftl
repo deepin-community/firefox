@@ -16,6 +16,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Všetky
+printui-page-range-current = Aktuálna
+printui-page-range-odd = Nepárne
+printui-page-range-even = Párne
 printui-page-range-custom = Vlastné
 printui-page-range-label = Strany
 printui-page-range-picker =

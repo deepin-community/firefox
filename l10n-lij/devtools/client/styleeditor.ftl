@@ -16,7 +16,6 @@ styleeditor-save-button = Sarva
     .accesskey = S
 styleeditor-options-button =
     .tooltiptext = Editô do stile
-styleeditor-media-rules = Regole @media
 styleeditor-editor-textbox =
     .data-placeholder = Scrivi o CSS chi.
 styleeditor-no-stylesheet = Sta pagina a no l'à feuggio de stile.
@@ -25,3 +24,21 @@ styleeditor-open-link-new-tab =
     .label = Arvi colegamento in neuvo feuggio
 styleeditor-copy-url =
     .label = Còpia URL
+styleeditor-find =
+    .label = Treuva
+    .accesskey = T
+styleeditor-find-again =
+    .label = Treuva pròscimo
+    .accesskey = T
+styleeditor-go-to-line =
+    .label = Sata a-a linia…
+    .accesskey = S
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount }regola.
+       *[other] { $ruleCount } regole.
+    }

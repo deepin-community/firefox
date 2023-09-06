@@ -58,10 +58,9 @@ site-data-removing-dialog =
 
 site-data-removing-header = Eliminando cookies y datos de sitio
 
-site-data-removing-desc = Eliminar cookies y datos de sitio puede desconectarte de los sitios web. ¿Estás seguro de que quieres realizar los cambios?
-
+site-data-removing-desc = Eliminar cookies y datos de sitio puede desconectarte de los sitios web. ¿De verdad quieres realizar los cambios?
 # Variables:
 #   $baseDomain (String) - The single domain for which data is being removed
-site-data-removing-single-desc = Eliminar las cookies y los datos del sitio puede cerrar la sesión de los sitios web. ¿Estás seguro de que deseas eliminar las cookies y los datos del sitio de <strong>{ $baseDomain }</strong>?
+site-data-removing-single-desc = Eliminar las cookies y los datos del sitio puede cerrar la sesión de los sitios web. ¿De verdad quieres eliminar las cookies y los datos del sitio de <strong>{ $baseDomain }</strong>?
 
 site-data-removing-table = Se eliminarán las cookies y los datos de sitio para los siguientes sitios web

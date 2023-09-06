@@ -5,44 +5,52 @@
 
 ## The main browser window's title
 
-# These are the default window titles everywhere except macOS. The first two
-# attributes are used when the web content opened has no title:
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
 #
 # default - "Mozilla Firefox"
 # private - "Mozilla Firefox (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
 # Variables:
 #  $content-title (String): the title of the web content.
-browser-main-window =
+browser-main-window-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } (Прыватнае агляданне)
-    .data-content-title-default = { $content-title } - { -brand-full-name }
-    .data-content-title-private = { $content-title } - { -brand-full-name } (Прыватнае агляданне)
-# These are the default window titles on macOS. The first two are for use when
-# there is no content title:
+    .data-title-private = Прыватнае агляданне { -brand-full-name }
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — Прыватнае агляданне { -brand-full-name }
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
 #
 # "default" - "Mozilla Firefox"
 # "private" - "Mozilla Firefox — (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
-# Do not use the brand name in the last two attributes, as we do on non-macOS.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
 #
 # Also note the other subtle difference here: we use a `-` to separate the
 # brand name from `(Private Browsing)`, which does not happen on other OSes.
 #
 # Variables:
 #  $content-title (String): the title of the web content.
-browser-main-window-mac =
+browser-main-window-mac-window-titles =
     .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } - (Прыватнае агляданне)
+    .data-title-private = { -brand-full-name } — Прыватнае агляданне
     .data-content-title-default = { $content-title }
-    .data-content-title-private = { $content-title } - (Прыватнае агляданне)
+    .data-content-title-private = { $content-title } — Прыватнае агляданне
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+# The non-variable portion of this MUST match the translation of
+# "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
+private-browsing-shortcut-text-2 = Прыватнае агляданне { -brand-shortcut-name }
 
 ##
 
@@ -73,16 +81,12 @@ urlbar-xr-notification-anchor =
     .tooltiptext = Адкрыць панэль дазволаў віртуальнай рэальнасці
 urlbar-storage-access-anchor =
     .tooltiptext = Адкрыць панэль дазволу дзеянняў аглядання
-urlbar-translate-notification-anchor =
-    .tooltiptext = Перакласці гэту старонку
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = Кіраваць дазволам на прагляд сайтам экрану ці вакон
 urlbar-indexed-db-notification-anchor =
     .tooltiptext = Адкрыць панэль паведамленняў пазасеткавага сховішча
 urlbar-password-notification-anchor =
     .tooltiptext = Адкрыць панэль паведамленняў аб захаванні пароля
-urlbar-translated-notification-anchor =
-    .tooltiptext = Кіраваць перакладам старонкі
 urlbar-plugins-notification-anchor =
     .tooltiptext = Кіраваць выкарыстаннем плагіна
 urlbar-web-rtc-share-devices-notification-anchor =
@@ -100,11 +104,25 @@ urlbar-addons-notification-anchor =
 urlbar-tip-help-icon =
     .title = Дапамога
 urlbar-search-tips-confirm = Добра, зразумела
+urlbar-search-tips-confirm-short = Зразумела
 # Read out before Urlbar Tip text content so screenreader users know the
 # subsequent text is a tip offered by the browser. It should end in a colon or
 # localized equivalent.
 urlbar-tip-icon-description =
     .alt = Парада:
+urlbar-result-menu-button =
+    .title = Адкрыць меню
+urlbar-result-menu-button-feedback = Водгук
+    .title = Адкрыць меню
+urlbar-result-menu-learn-more =
+    .label = Падрабязней
+    .accesskey = д
+urlbar-result-menu-remove-from-history =
+    .label = Выдаліць з гісторыі
+    .accesskey = В
+urlbar-result-menu-tip-get-help =
+    .label = Атрымаць дапамогу
+    .accesskey = р
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -113,6 +131,8 @@ urlbar-tip-icon-description =
 
 urlbar-search-tips-onboard = Уводзьце менш, знаходзьце больш: Пошук { $engineName } наўпрост у адрасным радку.
 urlbar-search-tips-redirect-2 = Пачніце свой пошук у адрасным радку, каб пабачыць прапановы ад { $engineName } і з вашай гісторыі аглядання.
+# Make sure to match the name of the Search panel in settings.
+urlbar-search-tips-persist = Пошук стаў прасцейшым. Паспрабуйце ўдакладніць свой пошукавы запыт тут, у адрасным радку. Каб паказваць URL-адрас замест гэтага, наведайце раздзел «Пошук» у наладах.
 # Prompts users to use the Urlbar when they are typing in the domain of a
 # search engine, e.g. google.com or amazon.com.
 urlbar-tabtosearch-onboard = Выберыце гэты ярлык, каб хутчэй знайсці патрэбнае.
@@ -122,33 +142,34 @@ urlbar-tabtosearch-onboard = Выберыце гэты ярлык, каб хут
 urlbar-search-mode-bookmarks = Закладкі
 urlbar-search-mode-tabs = Карткі
 urlbar-search-mode-history = Гісторыя
+urlbar-search-mode-actions = Дзеянні
 
 ##
 
 urlbar-geolocation-blocked =
-    .tooltiptext = Вы заблакавалі звесткі аб месцазнаходжанні для гэтага вэб-сайта.
+    .tooltiptext = Вы заблакавалі звесткі аб месцазнаходжанні для гэтага сайта.
 urlbar-xr-blocked =
-    .tooltiptext = Вы заблакавалі доступ да прылад віртуальнай рэальнасці для гэтага вэб-сайта.
+    .tooltiptext = Вы заблакавалі доступ да прылад віртуальнай рэальнасці для гэтага сайта.
 urlbar-web-notifications-blocked =
-    .tooltiptext = Вы заблакавалі абвесткі з гэтага вэб-сайта.
+    .tooltiptext = Вы заблакавалі абвесткі з гэтага сайта.
 urlbar-camera-blocked =
-    .tooltiptext = Вы заблакавалі сваю камеру на гэтым вэб-сайце.
+    .tooltiptext = Вы заблакавалі доступ да сваёй камеры для гэтага сайта.
 urlbar-microphone-blocked =
-    .tooltiptext = Вы заблакавалі свой мікрафон на гэтым вэб-сайце.
+    .tooltiptext = Вы заблакавалі свой мікрафон на гэтым сайце.
 urlbar-screen-blocked =
-    .tooltiptext = Вы заблакавалі гэтаму вэб-сайту магчымасць бачыць ваш экран.
+    .tooltiptext = Вы заблакавалі гэтаму сайту магчымасць бачыць ваш экран.
 urlbar-persistent-storage-blocked =
-    .tooltiptext = Вы заблакавалі захоўванне звестак для гэтага вэб-сайта.
+    .tooltiptext = Вы заблакавалі захоўванне звестак для гэтага сайта.
 urlbar-popup-blocked =
-    .tooltiptext = Вы заблакавалі выплыўныя вокны для гэтага вэб-сайта.
+    .tooltiptext = Вы заблакавалі выплыўныя вокны для гэтага сайта.
 urlbar-autoplay-media-blocked =
-    .tooltiptext = Вы заблакавалі аўтапрайграванне медый з гукам на гэтым вэб-сайце.
+    .tooltiptext = Вы заблакавалі аўтапрайграванне медый з гукам на гэтым сайце.
 urlbar-canvas-blocked =
-    .tooltiptext = Вы заблакавалі выманне дадзеных canvas для гэтага вэб-сайта.
+    .tooltiptext = Вы заблакавалі выманне дадзеных canvas для гэтага сайта.
 urlbar-midi-blocked =
-    .tooltiptext = Вы заблакавалі MIDI доступ для гэтага вэб-сайта.
+    .tooltiptext = Вы заблакавалі доступ да MIDI для гэтага сайта.
 urlbar-install-blocked =
-    .tooltiptext = Вы заблакавалі ўсталяванне дадаткаў з гэтага вэб-сайта.
+    .tooltiptext = Вы заблакавалі ўсталяванне дадаткаў з гэтага сайта.
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
 urlbar-star-edit-bookmark =
@@ -156,14 +177,16 @@ urlbar-star-edit-bookmark =
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
-    .tooltiptext = Дадаць старонку ў закладкі ({ $shortcut })
+    .tooltiptext = Зрабіць закладку на старонку ({ $shortcut })
 
 ## Page Action Context Menu
 
-page-action-manage-extension =
-    .label = Кіраваць пашырэннямі…
-page-action-remove-extension =
+page-action-manage-extension2 =
+    .label = Кіраваць пашырэннем…
+    .accesskey = К
+page-action-remove-extension2 =
     .label = Выдаліць пашырэнне
+    .accesskey = В
 
 ## Auto-hide Context Menu
 
@@ -222,6 +245,67 @@ search-one-offs-tabs =
     .tooltiptext = Карткі ({ $restrict })
 search-one-offs-history =
     .tooltiptext = Гісторыя ({ $restrict })
+search-one-offs-actions =
+    .tooltiptext = Дзеянні ({ $restrict })
+
+## QuickActions are shown in the urlbar as the user types a matching string
+## The -cmd- strings are comma separated list of keywords that will match
+## the action.
+
+# Opens the about:addons page in the home / recommendations section
+quickactions-addons = Паглядзець дадаткі
+quickactions-cmd-addons2 = дадаткі
+# Opens the bookmarks library window
+quickactions-bookmarks2 = Кіраванне закладкамі
+quickactions-cmd-bookmarks = закладкі
+# Opens a SUMO article explaining how to clear history
+quickactions-clearhistory = Ачысціць гісторыю
+quickactions-cmd-clearhistory = ачысціць гісторыю
+# Opens about:downloads page
+quickactions-downloads2 = Паглядзець сцягванні
+quickactions-cmd-downloads = сцягванні
+# Opens about:addons page in the extensions section
+quickactions-extensions = Кіраваць пашырэннямі
+quickactions-cmd-extensions = пашырэнні
+# Opens the devtools web inspector
+quickactions-inspector2 = Адкрыць Інструменты распрацоўшчыка
+quickactions-cmd-inspector = інспектар, прылады распрацоўшчыка
+# Opens about:logins
+quickactions-logins2 = Кіраванне паролямі
+quickactions-cmd-logins = лагіны, паролі
+# Opens about:addons page in the plugins section
+quickactions-plugins = Кіраваць плагінамі
+quickactions-cmd-plugins = плагіны
+# Opens the print dialog
+quickactions-print2 = Друкаваць старонку
+quickactions-cmd-print = друк
+# Opens a new private browsing window
+quickactions-private2 = Адкрыць прыватнае акно
+quickactions-cmd-private = прыватнае агляданне
+# Opens a SUMO article explaining how to refresh
+quickactions-refresh = Ачысціць { -brand-short-name }
+quickactions-cmd-refresh = абнавіць
+# Restarts the browser
+quickactions-restart = Перазапусціць { -brand-short-name }
+quickactions-cmd-restart = перазапусціць
+# Opens the screenshot tool
+quickactions-screenshot3 = Зрабіць здымак экрана
+quickactions-cmd-screenshot = здымак экрана
+# Opens about:preferences
+quickactions-settings2 = Кіраваць наладамі
+quickactions-cmd-settings = налады, перавагі, параметры
+# Opens about:addons page in the themes section
+quickactions-themes = Кіраваць тэмамі
+quickactions-cmd-themes = тэмы
+# Opens a SUMO article explaining how to update the browser
+quickactions-update = Абнавіць { -brand-short-name }
+quickactions-cmd-update = абнавіць
+# Opens the view-source UI with current pages source
+quickactions-viewsource2 = Паглядзець зыходнік старонкі
+quickactions-cmd-viewsource = прагляд зыходнага тэксту, код
+# Tooltip text for the help button shown in the result.
+quickactions-learn-more =
+    .title = Даведацца больш пра хуткія дзеянні
 
 ## Bookmark Panel
 
@@ -267,13 +351,14 @@ identity-connection-internal = Гэта бяспечная { -brand-short-name }
 identity-connection-file = Гэта старонка захоўваецца на вашым камп'ютары.
 identity-extension-page = Гэтая старонка загружана з пашырэння.
 identity-active-blocked = { -brand-short-name } заблакаваў небяспечныя часткі старонкі.
-identity-custom-root = Падключэнне пацверджана сертыфікатам эмітэнта, які не прызнаны Mozilla.
+identity-custom-root = Злучэнне пацверджана сертыфікатам эмітэнта, які не прызнаны Mozilla.
 identity-passive-loaded = Некаторыя часткі гэтай старонкі небяспечныя (напрыклад, выявы).
 identity-active-loaded = Вы адключылі ахову на гэтай старонцы.
 identity-weak-encryption = Гэта старонка ўжывае слабы тып шыфравання.
 identity-insecure-login-forms = Лагіны, уведзеныя на гэтай старонцы, могуць быць скампраметаваны.
 identity-https-only-connection-upgraded = (абноўлена да HTTPS)
 identity-https-only-label = Рэжым «Толькі HTTPS»
+identity-https-only-label2 = Аўтаматычна абнаўляць гэты сайт на бяспечнае злучэнне
 identity-https-only-dropdown-on =
     .label = Укл.
 identity-https-only-dropdown-off =
@@ -282,6 +367,8 @@ identity-https-only-dropdown-off-temporarily =
     .label = Часова выкл.
 identity-https-only-info-turn-on2 = Уключыце рэжым "толькі HTTPS", калі хочаце, каб { -brand-short-name } па магчымасці абнаўляў злучэння.
 identity-https-only-info-turn-off2 = Калі старонка выглядае няспраўнай, магчыма, вы захочаце адключыць рэжым "Толькі HTTPS" для гэтага сайта, каб перазагрузіць праз небяспечны HTTP.
+identity-https-only-info-turn-on3 = Уключыце абнаўленне да HTTPS для гэтага сайта, калі хочаце, каб { -brand-short-name } па магчымасці абнаўляў злучэнне.
+identity-https-only-info-turn-off3 = Калі старонка выглядае няспраўнай, магчыма, вы захочаце адключыць абнаўленне на HTTPS для гэтага сайта, каб перазагрузіць праз небяспечны HTTP.
 identity-https-only-info-no-upgrade = Не ўдалося абнавіць злучэнне з HTTP.
 identity-permissions-storage-access-header = Міжсайтавыя кукі
 identity-permissions-storage-access-hint = Гэтыя ўдзельнікі могуць выкарыстоўваць міжсайтавыя кукі і дадзеныя сайта, пакуль вы знаходзіцеся на гэтым сайце.
@@ -292,22 +379,20 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = Вы не злучаны бяспечна з гэтым сайтам.
 identity-connection-verified = Вы бяспечна злучаны з гэтым сайтам.
 identity-ev-owner-label = Сертыфікат выдадзены:
-identity-description-custom-root = Mozilla не прызнае гэтага выдаўца сертыфікатаў. Магчыма, ён дададзены з вашай аперацыйнай сістэмы ці адміністратарам. <label data-l10n-name="link">Даведацца больш</label>
+identity-description-custom-root2 = Mozilla не прызнае гэтага выдаўца сертыфікатаў. Магчыма, ён дададзены з вашай аперацыйнай сістэмы ці адміністратарам.
 identity-remove-cert-exception =
     .label = Выдаліць выключэнне
     .accesskey = В
 identity-description-insecure = Ваша злучэнне з гэтым сайтам не з'яўляецца прыватным. Інфармацыя, якую вы ўводзіце, можа быць бачная для іншых (напрыклад, паролі, паведамленні, нумары крэдытных карт і г.д.).
 identity-description-insecure-login-forms = Ідэнтыфікацыйная інфармацыя, уведзеная на гэтай старонцы, можа быць скампраметавана.
 identity-description-weak-cipher-intro = Вашае злучэнне з гэтым сайтам ўжывае слабы тып шыфравання і не з'яўляецца прыватным.
-identity-description-weak-cipher-risk = Іншыя людзі могуць праглядаць вашу асабістую інфармацыю або змяніць паводзіны вэб-сайта.
-identity-description-active-blocked = { -brand-short-name } заблакаваў небяспечныя часткі старонкі. <label data-l10n-name="link">Даведацца больш</label>
+identity-description-weak-cipher-risk = Іншыя людзі могуць праглядаць вашу асабістую інфармацыю або змяніць паводзіны сайта.
+identity-description-active-blocked2 = { -brand-short-name } заблакаваў небяспечныя часткі старонкі.
 identity-description-passive-loaded = Ваша злучэнне не з'яўляецца прыватным і інфармацыя, якую вы ўводзіце, можа быць бачная для іншых.
-identity-description-passive-loaded-insecure = Гэты сайт мае небяспечны змест (напрыклад, выявы). <label data-l10n-name="link">Даведацца больш</label>
-identity-description-passive-loaded-mixed = { -brand-short-name } заблакаваў некаторае змесціва, але яно яшчэ застаецца на гэтай старонцы (напрыклад, выявы). <label data-l10n-name="link">Даведацца больш</label>
-identity-description-active-loaded = Гэты вэб-сайт змяшчае неабароненае змесціва (такое, як сцэнары) і ваша злучэнне з ім не з'яўляецца прыватным.
+identity-description-passive-loaded-insecure2 = Гэты сайт мае небяспечны змест (напрыклад, выявы).
+identity-description-passive-loaded-mixed2 = { -brand-short-name } заблакаваў некаторае змесціва, але яно яшчэ застаецца на гэтай старонцы (напрыклад, выявы).
+identity-description-active-loaded = Гэты сайт змяшчае неабароненае змесціва (такое, як сцэнарыі) і ваша злучэнне з ім не з'яўляецца прыватным.
 identity-description-active-loaded-insecure = Інфармацыя, якую вы ўводзіце на гэтым сайце, можа быць бачная для іншых (напрыклад, паролі, паведамленні, нумары крэдытных карт і г.д.).
-identity-learn-more =
-    .value = Даведацца больш
 identity-disable-mixed-content-blocking =
     .label = Часова адключыць ахову
     .accesskey = А
@@ -386,14 +471,10 @@ popup-select-microphone-icon =
     .tooltiptext = Мікрафон
 popup-select-speaker-icon =
     .tooltiptext = Дынамікі
+popup-select-window-or-screen =
+    .label = Акно цi экран:
+    .accesskey = А
 popup-all-windows-shared = Усе бачныя вокны на вашым экране будуць абагулены.
-popup-screen-sharing-block =
-    .label = Блакаваць
-    .accesskey = Б
-popup-screen-sharing-always-block =
-    .label = Заўсёды блакаваць
-    .accesskey = З
-popup-mute-notifications-checkbox = Адключыць абвесткі сайтаў у час абагульвання
 
 ## WebRTC window or screen share tab switch warning
 
@@ -406,7 +487,7 @@ sharing-warning-disable-for-session =
 
 ## DevTools F12 popup
 
-enable-devtools-popup-description = Каб выкарыстаць клавішу F12, спачатку адкрыйце інструменты праз меню распрацоўшчыкаў сеціва.
+enable-devtools-popup-description2 = Каб выкарыстоўваць клавішу F12, спачатку адкрыйце прылады распрацоўшчыка праз меню інструментаў браўзера.
 
 ## URL Bar
 
@@ -442,6 +523,10 @@ urlbar-placeholder-search-mode-other-history =
 urlbar-placeholder-search-mode-other-tabs =
     .placeholder = Увядзіце пошукавыя тэрміны
     .aria-label = Шукаць карткі
+# This placeholder is used when searching quick actions.
+urlbar-placeholder-search-mode-other-actions =
+    .placeholder = Увядзіце пошукавыя тэрміны
+    .aria-label = Дзеянні пошуку
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
@@ -452,7 +537,7 @@ urlbar-placeholder-with-name =
 urlbar-remote-control-notification-anchor2 =
     .tooltiptext = Браўзер пад дыстанцыйным кіраваннем (прычына: { $component })
 urlbar-permissions-granted =
-    .tooltiptext = Вы далі гэтаму вэб-сайту дадатковыя дазволы.
+    .tooltiptext = Вы далі гэтаму сайту дадатковыя дазволы.
 urlbar-switch-to-tab =
     .value = Пераключыцца ў картку:
 # Used to indicate that a selected autocomplete entry is provided by an extension.
@@ -482,6 +567,8 @@ urlbar-result-action-search-w-engine = Пошук з дапамогай { $engin
 urlbar-result-action-sponsored = Спонсарскі
 urlbar-result-action-switch-tab = Пераключыцца ў картку
 urlbar-result-action-visit = Наведаць
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-your-clipboard = Наведаць з буфера абмену
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -503,7 +590,7 @@ urlbar-result-action-tabtosearch-web = Шукайце з дапамогай { $e
 #  (e.g. Amazon).
 urlbar-result-action-tabtosearch-other-engine = Шукайце ў { $engine } наўпрост з адраснага радка
 # Action text for copying to clipboard.
-urlbar-result-action-copy-to-clipboard = Капіраваць
+urlbar-result-action-copy-to-clipboard = Капіяваць
 # Shows the result of a formula expression being calculated, the last = sign will be shown
 # as part of the result (e.g. "= 2").
 # Variables
@@ -517,6 +604,7 @@ urlbar-result-action-calculator-result = = { $result }
 urlbar-result-action-search-bookmarks = Шукаць у закладках
 urlbar-result-action-search-history = Шукаць у гісторыі
 urlbar-result-action-search-tabs = Шукаць у картках
+urlbar-result-action-search-actions = Пошукавыя дзеянні
 
 ## Labels shown above groups of urlbar results
 
@@ -525,11 +613,37 @@ urlbar-result-action-search-tabs = Шукаць у картках
 urlbar-group-firefox-suggest =
     .label = { -firefox-suggest-brand-name }
 # A label shown above the search suggestions group in the urlbar results. It
-# should use title case.
+# should use sentence case.
 # Variables
 #  $engine (String): the name of the search engine providing the suggestions
 urlbar-group-search-suggestions =
     .label = Прапановы { $engine }
+# A label shown above Quick Actions in the urlbar results.
+urlbar-group-quickactions =
+    .label = Хуткія дзеянні
+
+## Reader View toolbar buttons
+
+# This should match menu-view-enter-readerview in menubar.ftl
+reader-view-enter-button =
+    .aria-label = Увайсці ў Рэжым чытання
+# This should match menu-view-close-readerview in menubar.ftl
+reader-view-close-button =
+    .aria-label = Закрыць Рэжым чытання
+
+## Picture-in-Picture urlbar button
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
+
+picture-in-picture-urlbar-button-open =
+    .tooltiptext = Адкрыць "выяву ў выяве" ({ $shortcut })
+picture-in-picture-urlbar-button-close =
+    .tooltiptext = Закрыць "выяву ў выяве" ({ $shortcut })
+picture-in-picture-panel-header = Выява ў выяве
+picture-in-picture-panel-headline = Гэты сайт не рэкамендуе функцыю «Выява ў выяве».
+picture-in-picture-panel-body = Відэа можа адлюстроўвацца не так, як меркаваў распрацоўшчык, калі ўключана функцыя «Выява ў выяве».
+picture-in-picture-enable-toggle =
+    .label = Усё роўна ўключыць
 
 ## Full Screen and Pointer Lock UI
 
@@ -547,19 +661,6 @@ fullscreen-exit-mac-button = Выйсці з поўнаэкраннага рэж
 pointerlock-warning-domain = <span data-l10n-name="domain">{ $domain }</span> кіруе вашым указальнікам. Націсніце Esc, каб узяць кіраванне.
 pointerlock-warning-no-domain = Гэты дакумент кіруе вашым указальнікам. Націсніце Esc, каб узяць кіраванне.
 
-## Subframe crash notification
-
-crashed-subframe-message = <strong>Частка гэтай старонкі пацярпела крах.</strong> Каб паведаміць { -brand-product-name } пра гэту праблему і паскорыць выпраўленне, адпраўце справаздачу.
-# The string for crashed-subframe-title.title should match crashed-subframe-message,
-# but without any markup.
-crashed-subframe-title =
-    .title = Частка гэтай старонкі пацярпела крах. Каб паведаміць { -brand-product-name } пра гэту праблему і паскорыць выпраўленне, адпраўце справаздачу.
-crashed-subframe-learnmore-link =
-    .value = Даведацца больш
-crashed-subframe-submit =
-    .label = Адправіць справаздачу
-    .accesskey = А
-
 ## Bookmarks panels, menus and toolbar
 
 bookmarks-manage-bookmarks =
@@ -575,6 +676,11 @@ bookmarks-other-bookmarks-menu =
     .label = Іншыя закладкі
 bookmarks-mobile-bookmarks-menu =
     .label = Мабільныя закладкі
+
+## Variables:
+##   $isVisible (boolean): if the specific element (e.g. bookmarks sidebar,
+##                         bookmarks toolbar, etc.) is visible or not.
+
 bookmarks-tools-sidebar-visibility =
     .label =
         { $isVisible ->
@@ -599,12 +705,15 @@ bookmarks-tools-menu-button-visibility =
             [true] Прыбраць меню закладак з паліцы прылад
            *[other] Дадаць меню закладак на паліцу прылад
         }
+
+##
+
 bookmarks-search =
     .label = Шукаць у закладках
 bookmarks-tools =
     .label = Прылады закладак
-bookmarks-bookmark-edit-panel =
-    .label = Правіць гэтую закладку
+bookmarks-subview-edit-bookmark =
+    .label = Правіць гэтую закладку…
 # The aria-label is a spoken label that should not include the word "toolbar" or
 # such, because screen readers already know that this container is a toolbar.
 # This avoids double-speaking.
@@ -619,8 +728,8 @@ bookmarks-toolbar-placeholder =
 bookmarks-toolbar-placeholder-button =
     .label = Элементы паліцы закладак
 # "Bookmark" is a verb, as in "Add current tab to bookmarks".
-bookmarks-current-tab =
-    .label = Зрабіць закладку на гэту картку
+bookmarks-subview-bookmark-tab =
+    .label = Зрабіць закладку на дзейную картку…
 
 ## Library Panel items
 
@@ -644,11 +753,6 @@ repair-text-encoding-button =
 ## Customize Toolbar Buttons
 
 # Variables:
-#  $shortcut (String): keyboard shortcut to open the add-ons manager
-toolbar-addons-themes-button =
-    .label = Дадаткі і тэмы
-    .tooltiptext = Кіруйце сваімі дадаткамі і тэмамі ({ $shortcut })
-# Variables:
 #  $shortcut (String): keyboard shortcut to open settings (only on macOS)
 toolbar-settings-button =
     .label = Налады
@@ -657,18 +761,15 @@ toolbar-settings-button =
             [macos] Адкрыць налады ({ $shortcut })
            *[other] Адкрыць налады
         }
-
-## More items
-
-more-menu-go-offline =
-    .label = Праца па-за сеткаю
-    .accesskey = з
 toolbar-overflow-customize-button =
     .label = Уладкаванне паліцы прылад…
     .accesskey = У
 toolbar-button-email-link =
-    .label = Даслаць спасылку эл.поштай
-    .tooltiptext = Даслаць спасылку на гэту старонку эл.поштай
+    .label = Даслаць спасылку поштай
+    .tooltiptext = Даслаць спасылку на гэту старонку электроннай поштай
+toolbar-button-logins =
+    .label = Паролі
+    .tooltiptext = Прагляд і кіраванне вашымі захаванымі паролямі
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -701,24 +802,11 @@ eme-notifications-drm-content-playing-dismiss-accesskey = А
 panel-save-update-username = Імя карыстальніка
 panel-save-update-password = Пароль
 
-## Add-on removal warning
-
-# Variables:
-#  $name (String): The name of the addon that will be removed.
-addon-removal-title = Выдаліць { $name }?
-addon-removal-abuse-report-checkbox = Паведаміць пра гэта пашырэнне ў { -vendor-short-name }
-
-## Remote / Synced tabs
-
-remote-tabs-manage-account =
-    .label = Кіраванне ўліковым запісам
-remote-tabs-sync-now = Сінхранізаваць зараз
-
 ##
 
 # "More" item in macOS share menu
 menu-share-more =
-    .label = Больш...
+    .label = Больш…
 ui-tour-info-panel-close =
     .tooltiptext = Закрыць
 
@@ -735,7 +823,7 @@ popups-infobar-block =
 ##
 
 popups-infobar-dont-show-message =
-    .label = Не паказваць гэта паведамленне, калі выплыўныя вокны затрымліваюцца
+    .label = Не паказваць паведамленне, калі выплыўныя вокны заблакаваны
     .accesskey = Н
 edit-popup-settings =
     .label = Кіраваць наладамі ўсплыўных вокнаў…
@@ -743,6 +831,19 @@ edit-popup-settings =
 picture-in-picture-hide-toggle =
     .label = Схаваць пераключальнік Выява ў выяве
     .accesskey = р
+
+## Since the default position for PiP controls does not change for RTL layout,
+## right-to-left languages should use "Left" and "Right" as in the English strings,
+
+picture-in-picture-move-toggle-right =
+    .label = Перанесці пераключальнік «Выява ў выяве» на правы бок
+    .accesskey = п
+picture-in-picture-move-toggle-left =
+    .label = Перанесці пераключальнік «Выява ў выяве» на левы бок
+    .accesskey = л
+
+##
+
 
 # Navigator Toolbox
 
@@ -754,15 +855,12 @@ navbar-accessible =
 navbar-downloads =
     .label = Сцягванні
 navbar-overflow =
-    .tooltiptext = Іншыя прылады…
+    .tooltiptext = Іншыя інструменты…
 # Variables:
 #   $shortcut (String): keyboard shortcut to print the page
 navbar-print =
     .label = Друкаваць
     .tooltiptext = Друкаваць старонку… ({ $shortcut })
-navbar-print-tab-modal-disabled =
-    .label = Друкаваць
-    .tooltiptext = Друкаваць гэтую старонку
 navbar-home =
     .label = Дадому
     .tooltiptext = Хатняя старонка { -brand-short-name }
@@ -771,8 +869,6 @@ navbar-library =
     .tooltiptext = Паказаць гісторыю, захаваныя закладкі і іншае
 navbar-search =
     .title = Пошук
-navbar-accessibility-indicator =
-    .tooltiptext = Магчымасці даступнасці ўключаны
 # Name for the tabs toolbar as spoken by screen readers. The word
 # "toolbar" is appended automatically and should not be included in
 # in the string
@@ -789,3 +885,93 @@ tabs-toolbar-list-all-tabs =
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>Адкрыць папярэднія карткі?</strong> Вы можаце аднавіць папярэдні сеанс з меню <img data-l10n-name="icon"/> праграмы { -brand-short-name }, у раздзеле "Гісторыя".
 restore-session-startup-suggestion-button = Паказаць мне як
+
+## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
+
+data-reporting-notification-message = { -brand-short-name } аўтаматычна дасылае асобныя дадзеныя ў { -vendor-short-name }, каб мы маглі палепшыць ваш досвед.
+data-reporting-notification-button =
+    .label = Выбраць, чым дзяліцца
+    .accesskey = В
+# Label for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-label = Прыватнае агляданне
+
+## Unified extensions (toolbar) button
+
+unified-extensions-button =
+    .label = Пашырэнні
+    .tooltiptext = Пашырэнні
+
+## Unified extensions button when permission(s) are needed.
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-permissions-needed =
+    .label = Пашырэнні
+    .tooltiptext =
+        Пашырэнні
+        Неабходны дазвол
+
+## Unified extensions button when some extensions are quarantined.
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-quarantined =
+    .label = Пашырэнні
+    .tooltiptext =
+        Пашырэнні
+        Некаторыя пашырэнні не дазволены
+
+## Autorefresh blocker
+
+refresh-blocked-refresh-label = { -brand-short-name } прадухіліў самастойнае абнаўленне старонкі.
+refresh-blocked-redirect-label = { -brand-short-name } прадухіліў аўтаматычнае перанакіраванне з гэтай старонкі на іншую.
+refresh-blocked-allow =
+    .label = Дазволіць
+    .accesskey = Д
+
+## Firefox Relay integration
+
+firefox-relay-offer-why-to-use-relay = Нашы бяспечныя, простыя ў выкарыстанні маскі абараняюць вашу асобу і прадухіляюць спам, хаваючы ваш адрас электроннай пошты.
+# Variables:
+#  $useremail (String): user email that will receive messages
+firefox-relay-offer-what-relay-provides = Усе электронныя лісты, адпраўленыя на вашы электронныя маскі, будуць перанакіраваны на <strong>{ $useremail }</strong> (калі вы не вырашыце іх заблакаваць).
+firefox-relay-offer-legal-notice = Націскаючы «Выкарыстоўваць маску электроннай пошты», вы згаджаецеся з <label data-l10n-name="tos-url">Умовамі абслугоўвання</label> і <label data-l10n-name="privacy-url">Паведамленнем аб прыватнасці</label>.
+
+## Add-on Pop-up Notifications
+
+popup-notification-addon-install-unsigned =
+    .value = (Неправерана)
+popup-notification-xpinstall-prompt-learn-more = Даведацца больш пра бяспечнае ўсталяванне дадаткаў
+
+## Pop-up warning
+
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-message =
+    { $popupCount ->
+        [one] { -brand-short-name } прадухіліў адкрыццё выплыўнога акна з гэтага сайта.
+        [few] { -brand-short-name } прадухіліў адкрыццё { $popupCount } выплыўных вокнаў з гэтага сайта.
+       *[many] { -brand-short-name } прадухіліў адкрыццё { $popupCount } выплыўных вокнаў з гэтага сайта.
+    }
+# The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-message =
+    { $popupCount ->
+        [one] { -brand-short-name } прадухіліў адкрыццё гэтага сайта ў выплыўным акне.
+        [few] { -brand-short-name } прадухіліў больш за { $popupCount } выплыўныя акны з гэтага сайта.
+       *[many] { -brand-short-name } прадухіліў больш за { $popupCount } выплыўных акон з гэтага сайта.
+    }
+popup-warning-button =
+    .label =
+        { PLATFORM() ->
+            [windows] Налады
+           *[other] Налады
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [windows] Н
+           *[other] Н
+        }
+# Variables:
+#   $popupURI (String): the URI for the pop-up window
+popup-show-popup-menuitem =
+    .label = Паказаць '{ $popupURI }'

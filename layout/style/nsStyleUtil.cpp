@@ -7,8 +7,10 @@
 #include "nsStyleUtil.h"
 #include "nsStyleConsts.h"
 
+#include "mozilla/dom/Document.h"
 #include "mozilla/ExpandedPrincipal.h"
-#include "mozilla/FontPropertyTypes.h"
+#include "mozilla/intl/MozLocaleBindings.h"
+#include "mozilla/TextUtils.h"
 #include "nsIContent.h"
 #include "nsCSSProps.h"
 #include "nsContentUtils.h"
@@ -49,6 +51,63 @@ bool nsStyleUtil::DashMatchCompare(const nsAString& aAttributeValue,
     }
   }
   return result;
+}
+
+bool nsStyleUtil::LangTagCompare(const nsACString& aAttributeValue,
+                                 const nsACString& aSelectorValue) {
+  class AutoLangId {
+   public:
+    AutoLangId() = delete;
+    AutoLangId(const AutoLangId& aOther) = delete;
+    explicit AutoLangId(const nsACString& aLangTag) : mIsValid(false) {
+      mLangId = intl::ffi::unic_langid_new(&aLangTag, &mIsValid);
+    }
+
+    ~AutoLangId() { intl::ffi::unic_langid_destroy(mLangId); }
+
+    operator intl::ffi::LanguageIdentifier*() const { return mLangId; }
+    bool IsValid() const { return mIsValid; }
+
+    void Reset(const nsACString& aLangTag) {
+      intl::ffi::unic_langid_destroy(mLangId);
+      mLangId = intl::ffi::unic_langid_new(&aLangTag, &mIsValid);
+    }
+
+   private:
+    intl::ffi::LanguageIdentifier* mLangId;
+    bool mIsValid;
+  };
+
+  if (aAttributeValue.IsEmpty() || aSelectorValue.IsEmpty()) {
+    return false;
+  }
+
+  AutoLangId attrLangId(aAttributeValue);
+  if (!attrLangId.IsValid()) {
+    return false;
+  }
+
+  AutoLangId selectorId(aSelectorValue);
+  if (!selectorId.IsValid()) {
+    // If it was "invalid" because of a wildcard language subtag, replace that
+    // with 'und' and try again.
+    // XXX Should unic_langid_new handle the wildcard internally?
+    if (aSelectorValue[0] == '*') {
+      nsAutoCString temp(aSelectorValue);
+      temp.Replace(0, 1, "und");
+      selectorId.Reset(temp);
+      if (!selectorId.IsValid()) {
+        return false;
+      }
+      intl::ffi::unic_langid_clear_language(selectorId);
+    } else {
+      return false;
+    }
+  }
+
+  return intl::ffi::unic_langid_matches(attrLangId, selectorId,
+                                        /* match addrLangId as range */ false,
+                                        /* match selectorId as range */ true);
 }
 
 bool nsStyleUtil::ValueIncludes(const nsAString& aValueList,
@@ -306,9 +365,11 @@ bool nsStyleUtil::CSPAllowsInlineStyle(
     return true;
   }
 
+  bool isStyleElement = false;
   // query the nonce
   nsAutoString nonce;
   if (aElement && aElement->NodeInfo()->NameAtom() == nsGkAtoms::style) {
+    isStyleElement = true;
     nsString* cspNonce =
         static_cast<nsString*>(aElement->GetProperty(nsGkAtoms::nonce));
     if (cspNonce) {
@@ -318,28 +379,13 @@ bool nsStyleUtil::CSPAllowsInlineStyle(
 
   bool allowInlineStyle = true;
   rv = csp->GetAllowsInline(
-      nsIContentSecurityPolicy::STYLE_SRC_DIRECTIVE, nonce,
+      isStyleElement ? nsIContentSecurityPolicy::STYLE_SRC_ELEM_DIRECTIVE
+                     : nsIContentSecurityPolicy::STYLE_SRC_ATTR_DIRECTIVE,
+      !isStyleElement /* aHasUnsafeHash */, nonce,
       false,              // aParserCreated only applies to scripts
       aElement, nullptr,  // nsICSPEventListener
       aStyleText, aLineNumber, aColumnNumber, &allowInlineStyle);
   NS_ENSURE_SUCCESS(rv, false);
 
   return allowInlineStyle;
-}
-
-void nsStyleUtil::AppendFontSlantStyle(const FontSlantStyle& aStyle,
-                                       nsAString& aOut) {
-  if (aStyle.IsNormal()) {
-    aOut.AppendLiteral("normal");
-  } else if (aStyle.IsItalic()) {
-    aOut.AppendLiteral("italic");
-  } else {
-    aOut.AppendLiteral("oblique");
-    auto angle = aStyle.ObliqueAngle();
-    if (angle != FontSlantStyle::kDefaultAngle) {
-      aOut.AppendLiteral(" ");
-      AppendCSSNumber(angle, aOut);
-      aOut.AppendLiteral("deg");
-    }
-  }
 }

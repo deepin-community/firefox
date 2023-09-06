@@ -21,10 +21,6 @@
 
 "use strict";
 
-const { AddonManager } = ChromeUtils.import(
-  "resource://gre/modules/AddonManager.jsm"
-);
-
 /* Set this to true only for debugging purpose; it makes the output noisy. */
 const kDumpAllStacks = false;
 
@@ -46,9 +42,6 @@ const kSharedFontList = SpecialPowers.getBoolPref("gfx.e10s.font-list.shared");
  *    It's possible to have only a prefix, in thise case the directory will
  *    still be resolved, eg. "UAppData:"
  *  - use * at the begining and/or end as a wildcard
- *  - For Windows specific entries that require resolving the path to its
- *    canonical form, ie. the old DOS 8.3 format, use canonicalize: true.
- *    This is needed for stat calls to non-existent files.
  * The folder separator is '/' even for Windows paths, where it'll be
  * automatically converted to '\'.
  *
@@ -221,12 +214,14 @@ const startupPhases = {
       // bug 1541226
       path: "ProfD:",
       condition: WIN,
+      ignoreIfUnused: true, // Sometimes happens in the next phase
       stat: 1,
     },
     {
       // bug 1534745
       path: "ProfD:cookies.sqlite-journal",
       condition: !LINUX,
+      ignoreIfUnused: true, // Sometimes happens in the next phase
       stat: 3,
       write: 4,
     },
@@ -234,6 +229,7 @@ const startupPhases = {
       // bug 1534745
       path: "ProfD:cookies.sqlite",
       condition: !LINUX,
+      ignoreIfUnused: true, // Sometimes happens in the next phase
       stat: 2,
       read: 3,
       write: 1,
@@ -241,6 +237,7 @@ const startupPhases = {
     {
       // bug 1534745
       path: "ProfD:cookies.sqlite-wal",
+      ignoreIfUnused: true, // Sometimes happens in the next phase
       condition: WIN,
       stat: 2,
     },
@@ -274,6 +271,15 @@ const startupPhases = {
       condition: WIN,
       stat: 1,
     },
+    {
+      // bug 1833104 has context - this is artifact-only so doesn't affect
+      // any real users, will just show up for developer builds and
+      // artifact trypushes so we include it here.
+      path: "GreD:jogfile.json",
+      condition:
+        WIN && Services.prefs.getBoolPref("telemetry.fog.artifact_build"),
+      stat: 1,
+    },
   ],
 
   // We reach this phase right after showing the first browser window.
@@ -298,10 +304,24 @@ const startupPhases = {
       close: 1,
     },
     {
+      path: "XREAppFeat:webcompat@mozilla.org.xpi",
+      condition: LINUX,
+      ignoreIfUnused: true, // Sometimes happens in the previous phase
+      close: 1,
+    },
+    {
       // We only hit this for new profiles.
       path: "XREAppDist:distribution.ini",
-      condition: WIN,
+      // check we're not msix to disambiguate from the next entry...
+      condition: WIN && !Services.sysinfo.getProperty("hasWinPackageId"),
       stat: 1,
+    },
+    {
+      // On MSIX, we actually read this file - bug 1833341.
+      path: "XREAppDist:distribution.ini",
+      condition: WIN && Services.sysinfo.getProperty("hasWinPackageId"),
+      stat: 1,
+      read: 1,
     },
     {
       // bug 1545139
@@ -343,6 +363,37 @@ const startupPhases = {
       condition: WIN && !AppConstants.MOZILLA_OFFICIAL,
       stat: 1,
     },
+    {
+      // bug 1541226
+      path: "ProfD:",
+      condition: WIN,
+      ignoreIfUnused: true, // Usually happens in the previous phase
+      stat: 1,
+    },
+    {
+      // bug 1534745
+      path: "ProfD:cookies.sqlite-journal",
+      condition: WIN,
+      ignoreIfUnused: true, // Usually happens in the previous phase
+      stat: 3,
+      write: 4,
+    },
+    {
+      // bug 1534745
+      path: "ProfD:cookies.sqlite",
+      condition: WIN,
+      ignoreIfUnused: true, // Usually happens in the previous phase
+      stat: 2,
+      read: 3,
+      write: 1,
+    },
+    {
+      // bug 1534745
+      path: "ProfD:cookies.sqlite-wal",
+      condition: WIN,
+      ignoreIfUnused: true, // Usually happens in the previous phase
+      stat: 2,
+    },
   ],
 
   // We are at this phase once we are ready to handle user events.
@@ -354,70 +405,6 @@ const startupPhases = {
       ignoreIfUnused: true,
       condition: LINUX,
       close: 1,
-    },
-    {
-      // bug 1370516 - NSS should be initialized off main thread.
-      path: "ProfD:cert9.db",
-      condition: WIN,
-      read: 5,
-      stat: 4,
-    },
-    {
-      // bug 1370516 - NSS should be initialized off main thread.
-      path: "ProfD:cert9.db",
-      condition: WIN,
-      ignoreIfUnused: true, // if canonicalize(ProfD) == ProfD, we'll use the previous entry.
-      canonicalize: true,
-      stat: 4,
-    },
-    {
-      // bug 1370516 - NSS should be initialized off main thread.
-      path: "ProfD:cert9.db-journal",
-      condition: WIN,
-      canonicalize: true,
-      stat: 3,
-    },
-    {
-      // bug 1370516 - NSS should be initialized off main thread.
-      path: "ProfD:cert9.db-wal",
-      condition: WIN,
-      canonicalize: true,
-      stat: 3,
-    },
-    {
-      // bug 1370516 - NSS should be initialized off main thread.
-      path: "ProfD:pkcs11.txt",
-      condition: WIN,
-      read: 2,
-    },
-    {
-      // bug 1370516 - NSS should be initialized off main thread.
-      path: "ProfD:key4.db",
-      condition: WIN,
-      read: 8,
-      stat: 4,
-    },
-    {
-      // bug 1370516 - NSS should be initialized off main thread.
-      path: "ProfD:key4.db",
-      condition: WIN,
-      ignoreIfUnused: true, // if canonicalize(ProfD) == ProfD, we'll use the previous entry.
-      canonicalize: true,
-      stat: 4,
-    },
-    {
-      // bug 1370516 - NSS should be initialized off main thread.
-      path: "ProfD:key4.db-journal",
-      condition: WIN,
-      canonicalize: true,
-      stat: 5,
-    },
-    {
-      // bug 1370516 - NSS should be initialized off main thread.
-      path: "ProfD:key4.db-wal",
-      condition: WIN,
-      canonicalize: true,
-      stat: 5,
     },
     {
       path: "XREAppFeat:webcompat-reporter@mozilla.org.xpi",
@@ -448,6 +435,50 @@ const startupPhases = {
   // be listed here.
   "before becoming idle": [
     {
+      // bug 1370516 - NSS should be initialized off main thread.
+      path: `ProfD:cert9.db`,
+      condition: WIN,
+      read: 5,
+      stat: AppConstants.NIGHTLY_BUILD ? 5 : 4,
+    },
+    {
+      // bug 1370516 - NSS should be initialized off main thread.
+      path: `ProfD:cert9.db-journal`,
+      condition: WIN,
+      stat: 3,
+    },
+    {
+      // bug 1370516 - NSS should be initialized off main thread.
+      path: `ProfD:cert9.db-wal`,
+      condition: WIN,
+      stat: 3,
+    },
+    {
+      // bug 1370516 - NSS should be initialized off main thread.
+      path: "ProfD:pkcs11.txt",
+      condition: WIN,
+      read: 2,
+    },
+    {
+      // bug 1370516 - NSS should be initialized off main thread.
+      path: `ProfD:key4.db`,
+      condition: WIN,
+      read: 10,
+      stat: AppConstants.NIGHTLY_BUILD ? 5 : 4,
+    },
+    {
+      // bug 1370516 - NSS should be initialized off main thread.
+      path: `ProfD:key4.db-journal`,
+      condition: WIN,
+      stat: 7,
+    },
+    {
+      // bug 1370516 - NSS should be initialized off main thread.
+      path: `ProfD:key4.db-wal`,
+      condition: WIN,
+      stat: 7,
+    },
+    {
       path: "XREAppFeat:screenshots@mozilla.org.xpi",
       ignoreIfUnused: true,
       close: 1,
@@ -473,8 +504,8 @@ const startupPhases = {
       ignoreIfUnused: true,
       stat: 4,
       fsync: 3,
-      read: 47,
-      write: 170,
+      read: 51,
+      write: 178,
     },
     {
       // bug 1391590
@@ -490,7 +521,7 @@ const startupPhases = {
       fsync: 2,
       read: 4,
       stat: 3,
-      write: 1320,
+      write: 1324,
     },
     {
       // bug 1391590
@@ -527,18 +558,6 @@ const startupPhases = {
       write: 1300,
     },
     {
-      path: "ProfD:key4.db-journal",
-      condition: WIN,
-      canonicalize: true,
-      stat: 2,
-    },
-    {
-      path: "ProfD:key4.db-wal",
-      condition: WIN,
-      canonicalize: true,
-      stat: 2,
-    },
-    {
       path: "ProfD:",
       condition: WIN,
       ignoreIfUnused: true,
@@ -555,7 +574,7 @@ for (let name of ["d3d11layers", "glcontext", "wmfvpxvideo"]) {
   });
 }
 
-function expandPathWithDirServiceKey(path, canonicalize = false) {
+function expandPathWithDirServiceKey(path) {
   if (path.includes(":")) {
     let [prefix, suffix] = path.split(":");
     let [key, property] = prefix.split(".");
@@ -564,20 +583,16 @@ function expandPathWithDirServiceKey(path, canonicalize = false) {
       dir = dir[property];
     }
 
-    if (canonicalize) {
-      path = dir.QueryInterface(Ci.nsILocalFileWin).canonicalPath;
-    } else {
-      // Resolve symLinks.
-      let dirPath = dir.path;
-      while (dir && !dir.isSymlink()) {
-        dir = dir.parent;
-      }
-      if (dir) {
-        dirPath = dirPath.replace(dir.path, dir.target);
-      }
-
-      path = dirPath;
+    // Resolve symLinks.
+    let dirPath = dir.path;
+    while (dir && !dir.isSymlink()) {
+      dir = dir.parent;
     }
+    if (dir) {
+      dirPath = dirPath.replace(dir.path, dir.target);
+    }
+
+    path = dirPath;
 
     if (suffix) {
       path += "/" + suffix;
@@ -622,7 +637,7 @@ function pathMatches(path, filename) {
   );
 }
 
-add_task(async function() {
+add_task(async function () {
   if (
     !AppConstants.NIGHTLY_BUILD &&
     !AppConstants.MOZ_DEV_EDITION &&
@@ -636,21 +651,10 @@ add_task(async function() {
     return;
   }
 
-  {
-    let omniJa = Services.dirsvc.get("XCurProcD", Ci.nsIFile);
-    omniJa.append("omni.ja");
-    if (!omniJa.exists()) {
-      ok(
-        false,
-        "This test requires a packaged build, " +
-          "run 'mach package' and then use --appname=dist"
-      );
-      return;
-    }
-  }
+  TestUtils.assertPackagedBuild();
 
-  let startupRecorder = Cc["@mozilla.org/test/startuprecorder;1"].getService()
-    .wrappedJSObject;
+  let startupRecorder =
+    Cc["@mozilla.org/test/startuprecorder;1"].getService().wrappedJSObject;
   await startupRecorder.done;
 
   // Add system add-ons to the list of known IO dynamically.
@@ -687,9 +691,8 @@ add_task(async function() {
     for (let m of profile.markers.data) {
       let markerName = profile.stringTable[m[nameCol]];
       if (markerName.startsWith("startupRecorder:")) {
-        phases[
-          markerName.split("startupRecorder:")[1]
-        ] = markersForCurrentPhase;
+        phases[markerName.split("startupRecorder:")[1]] =
+          markersForCurrentPhase;
         markersForCurrentPhase = [];
         continue;
       }
@@ -736,7 +739,7 @@ add_task(async function() {
     );
     startupPhases[phase].forEach(entry => {
       entry.listedPath = entry.path;
-      entry.path = expandPathWithDirServiceKey(entry.path, entry.canonicalize);
+      entry.path = expandPathWithDirServiceKey(entry.path);
     });
   }
 
@@ -836,7 +839,6 @@ add_task(async function() {
             "listedPath",
             "path",
             "condition",
-            "canonicalize",
             "ignoreIfUnused",
             "_used",
           ].includes(op)
@@ -867,15 +869,9 @@ add_task(async function() {
     ok(shouldPass, "No unexpected main thread I/O during startup");
   } else {
     const filename = "profile_startup_mainthreadio.json";
-    let path = Cc["@mozilla.org/process/environment;1"]
-      .getService(Ci.nsIEnvironment)
-      .get("MOZ_UPLOAD_DIR");
-    let encoder = new TextEncoder();
-    let profilePath = OS.Path.join(path, filename);
-    await OS.File.writeAtomic(
-      profilePath,
-      encoder.encode(JSON.stringify(startupRecorder.data.profile))
-    );
+    let path = Services.env.get("MOZ_UPLOAD_DIR");
+    let profilePath = PathUtils.join(path, filename);
+    await IOUtils.writeJSON(profilePath, startupRecorder.data.profile);
     ok(
       false,
       "Unexpected main thread I/O behavior during startup; open the " +

@@ -2,14 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 ---
-loader: taskgraph.loader.multi_dep:loader
+loader: gecko_taskgraph.loader.multi_dep:loader
 
 group-by: platform
 
 transforms:
-    - taskgraph.transforms.l10n:transforms
-    - taskgraph.transforms.job:transforms
-    - taskgraph.transforms.task:transforms
+    - gecko_taskgraph.transforms.l10n:transforms
+    - gecko_taskgraph.transforms.job:transforms
+    - gecko_taskgraph.transforms.task:transforms
 
 kind-dependencies:
     - build
@@ -49,7 +49,6 @@ job-template:
                     - linux64-hfsplus
                 win.*:
                     - linux64-wine
-                    - linux64-liblowercase
                     - nsis
         fetch:
             by-build-platform:
@@ -74,8 +73,7 @@ job-template:
         by-build-platform:
             linux-shippable.*: ['release']  # Do not run on autoland - Bug 1599197
             default: ['all']
-    worker-type: b-linux
-    docker-image: {in-tree: debian11-amd64-build}
+    worker-type: b-linux-gcp
     treeherder:
         symbol: L10n
         tier: 1

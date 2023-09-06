@@ -36,7 +36,7 @@ protection-report-settings-link = Behandle personvern- og sikkerhetsinnstillinge
 
 etp-card-title-always = Utvidet sporingsbeskyttelse: alltid på
 etp-card-title-custom-not-blocking = Utvidet sporingsbeskyttelse: AV
-etp-card-content-description = { -brand-short-name } stopper selskaper automatisk fra å spore aktivitetene dine på nettet det skjulte.
+etp-card-content-description = { -brand-short-name } stopper selskaper automatisk fra å spore aktivitetene dine på nettet i det skjulte.
 protection-report-etp-card-content-custom-not-blocking = All beskyttelse er for tiden slått av. Velg hvilke sporere du vil blokkere ved å behandle innstillingene for beskyttelse i { -brand-short-name }.
 protection-report-manage-protections = Behandle innstillinger
 
@@ -65,22 +65,20 @@ cryptominer-tab-content = Kryptoutvinnere bruker systemets datakraft for å utvi
 protections-close-button2 =
     .aria-label = Lukk
     .title = Lukk
-  
+
 mobile-app-title = Blokker annonsesporere på flere enheter
 mobile-app-card-content = Bruk mobilnettleseren med innebygd beskyttelse mot annonsesporing.
 mobile-app-links = { -brand-product-name } Nettleser for <a data-l10n-name="android-mobile-inline-link">Android</a> og <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Glem aldri et passord igjen
-lockwise-title-logged-in2 = Passordbehandling
-lockwise-header-content = { -lockwise-brand-name } lagrer passordene dine sikkert i nettleseren din.
+passwords-title-logged-in = Behandle dine passord
+passwords-header-content = { -brand-product-name } lagrer passordene dine sikkert i nettleseren din.
 lockwise-header-content-logged-in = Lagre passordene dine sikkert og synkroniser dem med alle enhetene dine.
-protection-report-save-passwords-button = Lagre passord
-    .title = Lagre passord i { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Behandle passord
-    .title = Behandle passord i { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Ta med deg passordene dine overalt
-lockwise-no-logins-card-content = Bruk passord som er lagret i { -brand-short-name } på hvilken som helst enhet.
-lockwise-app-links = { -lockwise-brand-name } for <a data-l10n-name="lockwise-android-inline-link">Android</a> og <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Lagre passord
+    .title = Lagre passord
+protection-report-passwords-manage-passwords-button = Behandle passord
+    .title = Behandle passord
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

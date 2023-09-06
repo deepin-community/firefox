@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Maintainers of Mozilla-related packages <team+pkg-mozilla@tracker.debian.org>
 Uploaders: Mike Hommey <glandium@debian.org>
 Build-Depends: autotools-dev,
-               debhelper (>= 9.20160114),
+               debhelper-compat (= 12),
                libx11-dev,
                libx11-xcb-dev,
                libxt-dev,
@@ -18,8 +18,8 @@ Build-Depends: autotools-dev,
                python3 (>= 3.6),
                dpkg-dev,
                libnspr4-dev (>= 2:4.32~),
-               libnss3-dev (>= 2:3.71~),
-               libvpx-dev (>= 1.8.0),
+               libnss3-dev (>= 2:3.91~),
+               libvpx-dev (>= 1.10.0),
                libdbus-glib-1-dev,
                libffi-dev,
                libevent-dev,
@@ -27,13 +27,16 @@ Build-Depends: autotools-dev,
                libasound2-dev,
                yasm,
                nasm (>= 2.14) [amd64 i386],
-               rustc (>= 1.53),
-               cargo (>= 0.54),
+               rustc (>= 1.66),
+               cargo (>= 0.66),
                llvm-dev,
                libclang-dev,
                clang,
-               cbindgen (>= 0.19.0),
-               nodejs (>= 10),
+               libc++-dev-wasm32,
+               libclang-rt-dev-wasm32,
+               lld,
+               cbindgen (>= 0.24.3),
+               nodejs (>= 12.22.1),
                zip,
                unzip,
                locales,
@@ -60,8 +63,8 @@ Depends: ${shlibs:Depends},
          procps,
          debianutils (>= 1.16),
          libnspr4 (>= 2:4.32~),
-         libnss3 (>= 2:3.71~)
-Recommends: libavcodec58 | libavcodec-extra58 | libavcodec57 | libavcodec-extra57 | libavcodec56 | libavcodec-extra56 | libavcodec55 | libavcodec-extra55 | libavcodec54 | libavcodec-extra54 | libavcodec53 | libavcodec-extra53
+         libnss3 (>= 2:3.91~)
+Recommends: libavcodec60 | libavcodec-extra60 | libavcodec59 | libavcodec-extra59 | libavcodec58 | libavcodec-extra58 | libavcodec57 | libavcodec-extra57 | libavcodec56 | libavcodec-extra56 | libavcodec55 | libavcodec-extra55 | libavcodec54 | libavcodec-extra54 | libavcodec53 | libavcodec-extra53
 Suggests: fonts-stix | otf-stix,
           fonts-lmodern,
           libgssapi-krb5-2 | libkrb53,
@@ -77,7 +80,7 @@ Description: Mozilla Firefox web browser
 Package: firefox-l10n-all
 Architecture: all
 Section: metapackages
-Depends: ${misc:Depends}, firefox-l10n-ach, firefox-l10n-af, firefox-l10n-an, firefox-l10n-ar, firefox-l10n-ast, firefox-l10n-az, firefox-l10n-be, firefox-l10n-bg, firefox-l10n-bn, firefox-l10n-br, firefox-l10n-bs, firefox-l10n-ca, firefox-l10n-ca-valencia, firefox-l10n-cak, firefox-l10n-cs, firefox-l10n-cy, firefox-l10n-da, firefox-l10n-de, firefox-l10n-dsb, firefox-l10n-el, firefox-l10n-en-ca, firefox-l10n-en-gb, firefox-l10n-eo, firefox-l10n-es-ar, firefox-l10n-es-cl, firefox-l10n-es-es, firefox-l10n-es-mx, firefox-l10n-et, firefox-l10n-eu, firefox-l10n-fa, firefox-l10n-ff, firefox-l10n-fi, firefox-l10n-fr, firefox-l10n-fy-nl, firefox-l10n-ga-ie, firefox-l10n-gd, firefox-l10n-gl, firefox-l10n-gn, firefox-l10n-gu-in, firefox-l10n-he, firefox-l10n-hi-in, firefox-l10n-hr, firefox-l10n-hsb, firefox-l10n-hu, firefox-l10n-hy-am, firefox-l10n-ia, firefox-l10n-id, firefox-l10n-is, firefox-l10n-it, firefox-l10n-ja, firefox-l10n-ka, firefox-l10n-kab, firefox-l10n-kk, firefox-l10n-km, firefox-l10n-kn, firefox-l10n-ko, firefox-l10n-lij, firefox-l10n-lt, firefox-l10n-lv, firefox-l10n-mk, firefox-l10n-mr, firefox-l10n-ms, firefox-l10n-my, firefox-l10n-nb-no, firefox-l10n-ne-np, firefox-l10n-nl, firefox-l10n-nn-no, firefox-l10n-oc, firefox-l10n-pa-in, firefox-l10n-pl, firefox-l10n-pt-br, firefox-l10n-pt-pt, firefox-l10n-rm, firefox-l10n-ro, firefox-l10n-ru, firefox-l10n-sco, firefox-l10n-si, firefox-l10n-sk, firefox-l10n-sl, firefox-l10n-son, firefox-l10n-sq, firefox-l10n-sr, firefox-l10n-sv-se, firefox-l10n-szl, firefox-l10n-ta, firefox-l10n-te, firefox-l10n-th, firefox-l10n-tl, firefox-l10n-tr, firefox-l10n-trs, firefox-l10n-uk, firefox-l10n-ur, firefox-l10n-uz, firefox-l10n-vi, firefox-l10n-xh, firefox-l10n-zh-cn, firefox-l10n-zh-tw
+Depends: ${misc:Depends}, firefox-l10n-ach, firefox-l10n-af, firefox-l10n-an, firefox-l10n-ar, firefox-l10n-ast, firefox-l10n-az, firefox-l10n-be, firefox-l10n-bg, firefox-l10n-bn, firefox-l10n-br, firefox-l10n-bs, firefox-l10n-ca, firefox-l10n-ca-valencia, firefox-l10n-cak, firefox-l10n-cs, firefox-l10n-cy, firefox-l10n-da, firefox-l10n-de, firefox-l10n-dsb, firefox-l10n-el, firefox-l10n-en-ca, firefox-l10n-en-gb, firefox-l10n-eo, firefox-l10n-es-ar, firefox-l10n-es-cl, firefox-l10n-es-es, firefox-l10n-es-mx, firefox-l10n-et, firefox-l10n-eu, firefox-l10n-fa, firefox-l10n-ff, firefox-l10n-fi, firefox-l10n-fr, firefox-l10n-fur, firefox-l10n-fy-nl, firefox-l10n-ga-ie, firefox-l10n-gd, firefox-l10n-gl, firefox-l10n-gn, firefox-l10n-gu-in, firefox-l10n-he, firefox-l10n-hi-in, firefox-l10n-hr, firefox-l10n-hsb, firefox-l10n-hu, firefox-l10n-hy-am, firefox-l10n-ia, firefox-l10n-id, firefox-l10n-is, firefox-l10n-it, firefox-l10n-ja, firefox-l10n-ka, firefox-l10n-kab, firefox-l10n-kk, firefox-l10n-km, firefox-l10n-kn, firefox-l10n-ko, firefox-l10n-lij, firefox-l10n-lt, firefox-l10n-lv, firefox-l10n-mk, firefox-l10n-mr, firefox-l10n-ms, firefox-l10n-my, firefox-l10n-nb-no, firefox-l10n-ne-np, firefox-l10n-nl, firefox-l10n-nn-no, firefox-l10n-oc, firefox-l10n-pa-in, firefox-l10n-pl, firefox-l10n-pt-br, firefox-l10n-pt-pt, firefox-l10n-rm, firefox-l10n-ro, firefox-l10n-ru, firefox-l10n-sc, firefox-l10n-sco, firefox-l10n-si, firefox-l10n-sk, firefox-l10n-sl, firefox-l10n-son, firefox-l10n-sq, firefox-l10n-sr, firefox-l10n-sv-se, firefox-l10n-szl, firefox-l10n-ta, firefox-l10n-te, firefox-l10n-tg, firefox-l10n-th, firefox-l10n-tl, firefox-l10n-tr, firefox-l10n-trs, firefox-l10n-uk, firefox-l10n-ur, firefox-l10n-uz, firefox-l10n-vi, firefox-l10n-xh, firefox-l10n-zh-cn, firefox-l10n-zh-tw
 Description: All language packages for Firefox (meta)
  Firefox is a powerful, extensible web browser with support for modern
  web application technologies.
@@ -474,6 +477,17 @@ Description: French language package for Firefox
  .
  This package contains the localization of Firefox in French.
 
+Package: firefox-l10n-fur
+Architecture: all
+Section: localization
+Depends: ${misc:Depends},
+         firefox (>= ${source:Version}), firefox (<< ${source:Version}.1~)
+Description: Friulian language package for Firefox
+ Firefox is a powerful, extensible web browser with support for modern
+ web application technologies.
+ .
+ This package contains the localization of Firefox in Friulian.
+
 Package: firefox-l10n-fy-nl
 Architecture: all
 Section: localization
@@ -712,11 +726,11 @@ Architecture: all
 Section: localization
 Depends: ${misc:Depends},
          firefox (>= ${source:Version}), firefox (<< ${source:Version}.1~)
-Description: Central Khmer language package for Firefox
+Description: Khmer language package for Firefox
  Firefox is a powerful, extensible web browser with support for modern
  web application technologies.
  .
- This package contains the localization of Firefox in Central Khmer.
+ This package contains the localization of Firefox in Khmer.
 
 Package: firefox-l10n-kn
 Architecture: all
@@ -962,6 +976,17 @@ Description: Russian language package for Firefox
  .
  This package contains the localization of Firefox in Russian.
 
+Package: firefox-l10n-sc
+Architecture: all
+Section: localization
+Depends: ${misc:Depends},
+         firefox (>= ${source:Version}), firefox (<< ${source:Version}.1~)
+Description: Sardinian language package for Firefox
+ Firefox is a powerful, extensible web browser with support for modern
+ web application technologies.
+ .
+ This package contains the localization of Firefox in Sardinian.
+
 Package: firefox-l10n-sco
 Architecture: all
 Section: localization
@@ -1089,6 +1114,17 @@ Description: Telugu language package for Firefox
  web application technologies.
  .
  This package contains the localization of Firefox in Telugu.
+
+Package: firefox-l10n-tg
+Architecture: all
+Section: localization
+Depends: ${misc:Depends},
+         firefox (>= ${source:Version}), firefox (<< ${source:Version}.1~)
+Description: Tajik language package for Firefox
+ Firefox is a powerful, extensible web browser with support for modern
+ web application technologies.
+ .
+ This package contains the localization of Firefox in Tajik.
 
 Package: firefox-l10n-th
 Architecture: all

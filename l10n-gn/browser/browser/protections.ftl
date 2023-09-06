@@ -65,22 +65,20 @@ cryptominer-tab-content = Umi criptominero oipurúva nde apopyvusu rembipurupyah
 protections-close-button2 =
     .aria-label = Mboty
     .title = Mboty
-  
+
 mobile-app-title = Ejoko ñemurã rapykuehoha hetave mba’e’okápe
 mobile-app-card-content = Eipuru kundahára oku’éva ñemo’ã ijeheguáva ndive ñemurã rapykuehoha rovake.
 mobile-app-links = Pe kundahára { -brand-product-name } <a data-l10n-name="android-mobile-inline-link">Android</a> peg̃uarã ha <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Anivéke nderesarái ne ñe’ẽñemígui
-lockwise-title-logged-in2 = Ñe’ẽñemi ñeñangareko
-lockwise-header-content = { -lockwise-brand-name } ombyaty iñe’ẽñemi ikundahápe tekorosãme.
+passwords-title-logged-in = Eñangareko ne ñe’ẽñemíre
+passwords-header-content = { -brand-product-name } ombyaty iñe’ẽñemi kundahára hekorosãvape.
 lockwise-header-content-logged-in = Embyaty ha embojuehe ne ñe’ẽñemi opaite ne mba’e’okápe tekorosãme.
-protection-report-save-passwords-button = Eñongatu Ñe’ẽñemi
-    .title = Eñongatu Ñe’ẽñemi { -lockwise-brand-short-name }-pe
-protection-report-manage-passwords-button = Eñangareko Ñe’ẽñemíre
-    .title = Eñangareko Ñe’ẽñemíre { -lockwise-brand-short-name }-pe
-lockwise-mobile-app-title = Egueraha ne ñe’ẽñemi opa hendápe
-lockwise-no-logins-card-content = Eipuru ñe’ẽñemi eñongatupyre { -brand-short-name } oimeraẽva mba’e’okápe.
-lockwise-app-links = { -lockwise-brand-name } <a data-l10n-name="lockwise-android-inline-link">Android</a> peg̃uarã ha <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Eñongatu Ñe’ẽñemi
+    .title = Eñongatu Ñe’ẽñemi
+protection-report-passwords-manage-passwords-button = Eñangareko Ñe’ẽñemíre
+    .title = Eñangareko Ñe’ẽñemíre
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -189,8 +187,8 @@ monitor-partial-breaches-motivation-title-start = ¡Ñepyrũ guasu!
 monitor-partial-breaches-motivation-title-middle = ¡Eku’e péicha!
 monitor-partial-breaches-motivation-title-end = ¡Opapotáma! Eho hese péicha.
 monitor-partial-breaches-motivation-description = Emoĩporã hembýva ñembogua { -monitor-brand-short-name } rupive.
-monitor-resolve-breaches-link = Emoĩpórã ñembogua
-    .title = Emoĩpórã ñembogua { -monitor-brand-short-name }-pe
+monitor-resolve-breaches-link = Emoĩporã ñembogua
+    .title = Emoĩporã ñembogua { -monitor-brand-short-name }-pe
 
 ## The title attribute is used to display the type of protection.
 ## The aria-label is spoken by screen readers to make the visual graph accessible to blind users.

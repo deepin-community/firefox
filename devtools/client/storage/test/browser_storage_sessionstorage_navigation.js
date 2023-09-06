@@ -2,22 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* import-globals-from head.js */
-
 "use strict";
 
-// test without target switching
-add_task(async function() {
-  await testNavigation();
-});
-
-// test with target switching enabled
-add_task(async function() {
-  enableTargetSwitching();
-  await testNavigation();
-});
-
-async function testNavigation() {
+add_task(async function () {
   const URL1 = buildURLWithContent(
     "example.com",
     `<h1>example.com</h1>` +
@@ -35,14 +22,14 @@ async function testNavigation() {
 
   // Check first domain
   // check that both host appear in the storage tree
-  checkTree(doc, ["sessionStorage", "http://example.com"]);
+  checkTree(doc, ["sessionStorage", "https://example.com"]);
   // check the table for values
-  await selectTreeItem(["sessionStorage", "http://example.com"]);
+  await selectTreeItem(["sessionStorage", "https://example.com"]);
   checkStorageData("lorem", "ipsum");
 
   // clear up session storage data before navigating
   info("Cleaning up sessionStorage…");
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function() {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function () {
     const win = content.wrappedJSObject;
     await win.sessionStorage.clear();
   });
@@ -52,16 +39,16 @@ async function testNavigation() {
   // wait for storage tree refresh, and check host
   info("Waiting for storage tree to refresh and show correct host…");
   await waitUntil(() =>
-    isInTree(doc, ["sessionStorage", "http://example.net"])
+    isInTree(doc, ["sessionStorage", "https://example.net"])
   );
 
   ok(
-    !isInTree(doc, ["sessionStorage", "http://example.com"]),
+    !isInTree(doc, ["sessionStorage", "https://example.com"]),
     "example.com item is not in the tree anymore"
   );
 
   // check the table for values
-  await selectTreeItem(["sessionStorage", "http://example.net"]);
+  await selectTreeItem(["sessionStorage", "https://example.net"]);
   checkStorageData("foo", "bar");
 
   info("Check that the sessionStorage node still has the expected label");
@@ -70,4 +57,4 @@ async function testNavigation() {
     "Session Storage",
     "sessionStorage item is properly displayed"
   );
-}
+});

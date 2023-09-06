@@ -9,12 +9,8 @@
 #include "mozilla/Assertions.h"
 
 #include "gc/Statistics.h"
-#include "vm/ArgumentsObject.h"
-#include "vm/JSContext.h"
 #include "vm/MutexIDs.h"
 #include "vm/Runtime.h"
-
-#include "gc/GC-inl.h"
 
 using namespace js;
 using namespace js::gc;
@@ -28,6 +24,20 @@ JS_PUBLIC_API void js::gc::UnlockStoreBuffer(StoreBuffer* sb) {
   MOZ_ASSERT(sb);
   sb->unlock();
 }
+
+#ifdef DEBUG
+void StoreBuffer::checkAccess() const {
+  // The GC runs tasks that may access the storebuffer in parallel and so must
+  // take a lock. The mutator may only access the storebuffer from the main
+  // thread.
+  if (runtime_->heapState() != JS::HeapState::Idle) {
+    MOZ_ASSERT(!CurrentThreadIsGCMarking());
+    lock_.assertOwnedByCurrentThread();
+  } else {
+    MOZ_ASSERT(CurrentThreadCanAccessRuntime(runtime_));
+  }
+}
+#endif
 
 bool StoreBuffer::WholeCellBuffer::init() {
   MOZ_ASSERT(!stringHead_);
@@ -67,7 +77,7 @@ void StoreBuffer::GenericBuffer::trace(JSTracer* trc) {
   }
 }
 
-StoreBuffer::StoreBuffer(JSRuntime* rt, const Nursery& nursery)
+StoreBuffer::StoreBuffer(JSRuntime* rt, Nursery& nursery)
     : lock_(mutexid::StoreBuffer),
       bufferVal(this, JS::GCReason::FULL_VALUE_BUFFER),
       bufStrCell(this, JS::GCReason::FULL_CELL_PTR_STR_BUFFER),
@@ -192,7 +202,7 @@ ArenaCellSet* StoreBuffer::WholeCellBuffer::allocateCellSet(Arena* arena) {
 
   AutoEnterOOMUnsafeRegion oomUnsafe;
   ArenaCellSet*& head = isString ? stringHead_ : nonStringHead_;
-  auto cells = storage_->new_<ArenaCellSet>(arena, head);
+  auto* cells = storage_->new_<ArenaCellSet>(arena, head);
   if (!cells) {
     oomUnsafe.crash("Failed to allocate ArenaCellSet");
   }
@@ -224,6 +234,8 @@ void StoreBuffer::WholeCellBuffer::clear() {
   if (storage_) {
     storage_->used() ? storage_->releaseAll() : storage_->freeAll();
   }
+
+  last_ = nullptr;
 }
 
 template struct StoreBuffer::MonoTypeBuffer<StoreBuffer::ValueEdge>;

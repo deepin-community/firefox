@@ -7,15 +7,15 @@
 const {
   createFactory,
   PureComponent,
-} = require("devtools/client/shared/vendor/react");
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
+} = require("resource://devtools/client/shared/vendor/react.js");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
 
 const UnsupportedBrowserItem = createFactory(
-  require("devtools/client/inspector/compatibility/components/UnsupportedBrowserItem")
+  require("resource://devtools/client/inspector/compatibility/components/UnsupportedBrowserItem.js")
 );
 
-const Types = require("devtools/client/inspector/compatibility/types");
+const Types = require("resource://devtools/client/inspector/compatibility/types.js");
 
 class UnsupportedBrowserList extends PureComponent {
   static get propTypes() {
@@ -27,36 +27,48 @@ class UnsupportedBrowserList extends PureComponent {
   render() {
     const { browsers } = this.props;
 
-    // Aggregate the browser version and the aliase by the browser id.
-    // Convert from
-    // [{id, name, status, version}, ...]
-    // to
-    // {
-    //   id: {
-    //         name,
-    //         versions: [{alias <- status, version}, ...],
-    //       },
-    //   ...
-    // }
-    const browsersMap = browsers.reduce(
-      (map, { id, name, status: alias, version }) => {
-        if (!map.has(id)) {
-          map.set(id, { name, versions: [] });
+    const unsupportedBrowserItems = {};
+
+    const unsupportedVersionsListByBrowser = new Map();
+
+    for (const { name, version, status } of browsers) {
+      if (!unsupportedVersionsListByBrowser.has(name)) {
+        unsupportedVersionsListByBrowser.set(name, []);
+      }
+      unsupportedVersionsListByBrowser.get(name).push({ version, status });
+    }
+
+    for (const { id, name, version, status } of browsers) {
+      // Only display one icon per browser
+      if (!unsupportedBrowserItems[id]) {
+        if (status === "esr") {
+          // The data is ordered by version number, so we'll show the first unsupported
+          // browser version. This might be confusing for Firefox as we'll show ESR
+          // version first, and so the user wouldn't be able to tell if there's an issue
+          // only on ESR, or also on release.
+          // So only show ESR if there's no newer unsupported version
+          const newerVersionIsUnsupported = browsers.find(
+            browser => browser.id == id && browser.status !== status
+          );
+          if (newerVersionIsUnsupported) {
+            continue;
+          }
         }
-        map.get(id).versions.push({ alias, version });
 
-        return map;
-      },
-      new Map()
-    );
-
+        unsupportedBrowserItems[id] = UnsupportedBrowserItem({
+          key: id,
+          id,
+          name,
+          version,
+          unsupportedVersions: unsupportedVersionsListByBrowser.get(name),
+        });
+      }
+    }
     return dom.ul(
       {
         className: "compatibility-unsupported-browser-list",
       },
-      [...browsersMap.entries()].map(([id, { name, versions }]) =>
-        UnsupportedBrowserItem({ key: id, id, name, versions })
-      )
+      Object.values(unsupportedBrowserItems)
     );
   }
 }

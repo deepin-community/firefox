@@ -49,6 +49,7 @@ app-basics-multi-process-support = మల్టీప్రోసెస్ వ�
 app-basics-enterprise-policies = ఎంటర్‌ప్రైజ్ విధానాలు
 app-basics-key-mozilla = మొజిల్లా స్థాన సేవ కీ
 app-basics-safe-mode = సురక్షిత రీతి
+
 show-dir-label =
     { PLATFORM() ->
         [macos] ఫైండర్ నందు తెరువు
@@ -112,6 +113,8 @@ media-device-format = రూపం
 media-device-channels = వాహికలు
 media-device-rate = రేటు
 media-device-latency = Latency
+
+## Codec support table
 
 ##
 

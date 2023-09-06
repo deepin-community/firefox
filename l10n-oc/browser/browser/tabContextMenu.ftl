@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Seleccionar totes los onglets
     .accesskey = S
+tab-context-play-tab =
+    .label = Legir l'onglet
+    .accesskey = l
+tab-context-play-tabs =
+    .label = Lançar la lectura
+    .accesskey = l
 duplicate-tab =
     .label = Duplicar l'onglet
     .accesskey = D
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Marcar aquestes onglets…
     .accesskey = c
-bookmark-tab =
-    .label = Apondre l’onglet als marcapaginas
-    .accesskey = m
+tab-context-bookmark-tab =
+    .label = Apondre als marcapaginas…
+    .accesskey = A
 tab-context-open-in-new-container-tab =
     .label = Dobrir dins un onglet isolat
     .accesskey = D
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Partejar
     .accesskey = P
-tab-context-share-more =
-    .label = Mai…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -83,14 +87,6 @@ tab-context-reopen-closed-tabs =
            *[other] Tornar dobrir los onglets tampats
         }
     .accesskey = t
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Tampar l’onglet
-            [one] Tampar l’onglet
-           *[other] Tampar los onglets
-        }
-    .accesskey = T
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

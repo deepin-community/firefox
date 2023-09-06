@@ -2,12 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* import-globals-from ../../shared/test/shared-head.js */
-
 "use strict";
 
-/* global gToolbox */
-/* import-globals-from ../../framework/browser-toolbox/test/helpers-browser-toolbox.js */
 Services.scriptloader.loadSubScript(
   "chrome://mochitests/content/browser/devtools/client/framework/browser-toolbox/test/helpers-browser-toolbox.js",
   this
@@ -15,15 +11,17 @@ Services.scriptloader.loadSubScript(
 
 // Test that internal DBs are hidden in the regular toolbox,but visible in the
 // Browser Toolbox
-add_task(async function() {
-  await openTabAndSetupStorage(MAIN_DOMAIN + "storage-empty-objectstores.html");
+add_task(async function () {
+  await openTabAndSetupStorage(
+    MAIN_DOMAIN_SECURED + "storage-empty-objectstores.html"
+  );
   const doc = gPanelWindow.document;
 
   // check regular toolbox
   info("Check indexedDB tree in toolbox");
   const hosts = getDBHostsInTree(doc);
   is(hosts.length, 1, "There is only one host for indexedDB storage");
-  is(hosts[0], "http://test1.example.org", "Host is test1.example.org");
+  is(hosts[0], "https://test1.example.org", "Host is test1.example.org");
 
   // check browser toolbox
   info("awaiting to open browser toolbox");

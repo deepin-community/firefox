@@ -16,8 +16,6 @@ change-password-old = Contraseña actual:
 change-password-new = Nueva contraseña:
 change-password-reenter = Nueva contraseña (otra vez):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = No se pudo cambiar la contraseña primaria.
 pippki-incorrect-pw = No ingresaste correctamente la contraseña primaria. Por favor, vuelve a intentarlo.
 pippki-pw-change-ok = La contraseña ha sido cambiada exitosamente.
@@ -30,22 +28,21 @@ pippki-pw-change2empty-in-fips-mode = Actualmente estás en modo FIPS. FIPS requ
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Restablecer la contraseña primaria
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Restablecer
-
-reset-primary-password-text = Si restableces tu contraseña primaria, todas las contraseñas de webs y de correo electrónico, certificados personales y llaves privadas almacenados serán olvidados. ¿Estás seguro de que quieres restablecer tu contraseña primaria?
+reset-primary-password-text = Si restableces tu contraseña primaria, todas las contraseñas de webs y de correo electrónico, certificados personales y llaves privadas almacenados serán olvidados. ¿De verdad quieres restablecer tu contraseña primaria?
 
 pippki-reset-password-confirmation-title = Restablecer la contraseña primaria
 pippki-reset-password-confirmation-message = Tu contraseña primaria ha sido restablecida.
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Bajando certificado
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Se te ha pedido que confíes en una nueva autoridad de certificación (CA).
 download-cert-trust-ssl =
     .label = Confiar en esta CA para identificar sitios web.
@@ -67,7 +64,7 @@ client-auth-cert-details = Detalles del certificado seleccionado:
 ## Set password (p12) dialog
 
 set-password-window =
-    .title = Seleccione una Contraseña de Respaldo del Certificado
+    .title = Selecciona una Contraseña de Respaldo del Certificado
 set-password-message = La contraseña de respaldo del certificado que establezca aquí protege el archivo de respaldo que está por crear.  Debe ingresar una contraseña para proceder con el respaldo.
 set-password-backup-pw =
     .value = Contraseña de respaldo de certificado:
@@ -77,7 +74,8 @@ set-password-reminder = Importante: Si olvida su contraseña de respaldo del cer
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Identificación protegida por token
-protected-auth-msg = Por favor, identifíquese con el token. El método de identificación depende del tipo de su token.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Autentifícate con el token "{ $tokenName }". Cómo hacerlo depende del token (por ejemplo, usando un lector de huellas dactilares o ingresando un código con un teclado).

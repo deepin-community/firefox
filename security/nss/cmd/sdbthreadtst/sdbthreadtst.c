@@ -154,11 +154,11 @@ main(int argc, char **argv)
                     usage(prog, NULL);
                     break;
                 default:
-                    sprintf(buf, "unknown option %c", arg[1]);
+                    snprintf(buf, sizeof(buf), "unknown option %c", arg[1]);
                     usage(prog, buf);
             }
         } else {
-            sprintf(buf, "unknown argument %s", arg);
+            snprintf(buf, sizeof(buf), "unknown argument %s", arg);
             usage(prog, buf);
         }
     }
@@ -196,13 +196,17 @@ main(int argc, char **argv)
         if (status != PR_SUCCESS) {
             ERROR++;
             fprintf(stderr,
-                    "PR_CreateThread filed iteration %d, %s]n", i,
+                    "PR_CreateThread filed iteration %d, %s\n", i,
                     PORT_ErrorToString(PORT_GetError()));
         }
     }
+    if (NSS_Shutdown() != SECSuccess) {
+        ERROR++;
+        fprintf(stderr, "NSS_Shutdown failed: %s\n",
+                PORT_ErrorToString(PORT_GetError()));
+    }
     printf("%d failures and %d errors found\n", FAILED, ERROR);
     /* clean up */
-    NSS_Shutdown();
     if (FAILED) {
         exit(1);
     }

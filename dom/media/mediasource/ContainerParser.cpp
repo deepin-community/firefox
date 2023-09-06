@@ -19,9 +19,9 @@
 #ifdef MOZ_FMP4
 #  include "AtomType.h"
 #  include "BufferReader.h"
-#  include "Index.h"
-#  include "MP4Interval.h"
 #  include "ByteStream.h"
+#  include "MP4Interval.h"
+#  include "SampleIterator.h"
 #endif
 #include "SourceBufferResource.h"
 #include <algorithm>
@@ -65,8 +65,8 @@ MediaResult ContainerParser::IsMediaSegmentPresent(const MediaSpan& aData) {
 }
 
 MediaResult ContainerParser::ParseStartAndEndTimestamps(const MediaSpan& aData,
-                                                        int64_t& aStart,
-                                                        int64_t& aEnd) {
+                                                        media::TimeUnit& aStart,
+                                                        media::TimeUnit& aEnd) {
   return NS_ERROR_NOT_AVAILABLE;
 }
 
@@ -116,12 +116,9 @@ class WebMContainerParser
 
     WebMBufferedParser parser(0);
     nsTArray<WebMTimeDataOffset> mapping;
-    ReentrantMonitor dummy("dummy");
-    bool result =
-        parser.Append(aData.Elements(), aData.Length(), mapping, dummy);
-    if (!result) {
-      return MediaResult(NS_ERROR_FAILURE,
-                         RESULT_DETAIL("Invalid webm content"));
+    if (auto result = parser.Append(aData.Elements(), aData.Length(), mapping);
+        NS_FAILED(result)) {
+      return result;
     }
     return parser.mInitEndOffset > 0 ? NS_OK : NS_ERROR_NOT_AVAILABLE;
   }
@@ -134,20 +131,17 @@ class WebMContainerParser
 
     WebMBufferedParser parser(0);
     nsTArray<WebMTimeDataOffset> mapping;
-    ReentrantMonitor dummy("dummy");
     parser.AppendMediaSegmentOnly();
-    bool result =
-        parser.Append(aData.Elements(), aData.Length(), mapping, dummy);
-    if (!result) {
-      return MediaResult(NS_ERROR_FAILURE,
-                         RESULT_DETAIL("Invalid webm content"));
+    if (auto result = parser.Append(aData.Elements(), aData.Length(), mapping);
+        NS_FAILED(result)) {
+      return result;
     }
     return parser.GetClusterOffset() >= 0 ? NS_OK : NS_ERROR_NOT_AVAILABLE;
   }
 
   MediaResult ParseStartAndEndTimestamps(const MediaSpan& aData,
-                                         int64_t& aStart,
-                                         int64_t& aEnd) override {
+                                         media::TimeUnit& aStart,
+                                         media::TimeUnit& aEnd) override {
     bool initSegment = NS_SUCCEEDED(IsInitSegmentPresent(aData));
 
     if (mLastMapping &&
@@ -182,8 +176,10 @@ class WebMContainerParser
     nsTArray<WebMTimeDataOffset> mapping;
     mapping.AppendElements(mOverlappedMapping);
     mOverlappedMapping.Clear();
-    ReentrantMonitor dummy("dummy");
-    mParser.Append(aData.Elements(), aData.Length(), mapping, dummy);
+    if (auto result = mParser.Append(aData.Elements(), aData.Length(), mapping);
+        NS_FAILED(result)) {
+      return result;
+    }
     if (mResource) {
       mResource->AppendData(aData);
     }
@@ -288,14 +284,16 @@ class WebMContainerParser
             ? mapping[completeIdx + 1].mTimecode -
                   mapping[completeIdx].mTimecode
             : mapping[completeIdx].mTimecode - previousMapping.ref().mTimecode;
-    aStart = mapping[0].mTimecode / NS_PER_USEC;
-    aEnd = (mapping[completeIdx].mTimecode + frameDuration) / NS_PER_USEC;
+    aStart = media::TimeUnit::FromNanoseconds(
+        AssertedCast<int64_t>(mapping[0].mTimecode));
+    aEnd = media::TimeUnit::FromNanoseconds(
+        AssertedCast<int64_t>(mapping[completeIdx].mTimecode + frameDuration));
 
     MSE_DEBUG("[%" PRId64 ", %" PRId64 "] [fso=%" PRId64 ", leo=%" PRId64
               ", l=%zu processedIdx=%u fs=%" PRId64 "]",
-              aStart, aEnd, mapping[0].mSyncOffset,
-              mapping[completeIdx].mEndOffset, mapping.Length(), completeIdx,
-              mCompleteMediaSegmentRange.mEnd);
+              aStart.ToMicroseconds(), aEnd.ToMicroseconds(),
+              mapping[0].mSyncOffset, mapping[completeIdx].mEndOffset,
+              mapping.Length(), completeIdx, mCompleteMediaSegmentRange.mEnd);
 
     return NS_OK;
   }
@@ -516,8 +514,8 @@ class MP4ContainerParser : public ContainerParser,
 
  public:
   MediaResult ParseStartAndEndTimestamps(const MediaSpan& aData,
-                                         int64_t& aStart,
-                                         int64_t& aEnd) override {
+                                         media::TimeUnit& aStart,
+                                         media::TimeUnit& aEnd) override {
     bool initSegment = NS_SUCCEEDED(IsInitSegmentPresent(aData));
     if (initSegment) {
       mResource = new SourceBufferResource();
@@ -567,7 +565,7 @@ class MP4ContainerParser : public ContainerParser,
     }
     mTotalParsed += aData.Length();
 
-    MP4Interval<Microseconds> compositionRange =
+    MP4Interval<media::TimeUnit> compositionRange =
         mParser->GetCompositionRange(byteRanges);
 
     mCompleteMediaHeaderRange =
@@ -584,7 +582,8 @@ class MP4ContainerParser : public ContainerParser,
     }
     aStart = compositionRange.start;
     aEnd = compositionRange.end;
-    MSE_DEBUG("[%" PRId64 ", %" PRId64 "]", aStart, aEnd);
+    MSE_DEBUG("[%" PRId64 ", %" PRId64 "]", aStart.ToMicroseconds(),
+              aEnd.ToMicroseconds());
     return NS_OK;
   }
 
@@ -697,8 +696,8 @@ class ADTSContainerParser
   }
 
   MediaResult ParseStartAndEndTimestamps(const MediaSpan& aData,
-                                         int64_t& aStart,
-                                         int64_t& aEnd) override {
+                                         media::TimeUnit& aStart,
+                                         media::TimeUnit& aEnd) override {
     // ADTS header.
     Header header;
     if (!Parse(aData, header)) {
@@ -728,7 +727,8 @@ class ADTSContainerParser
     // media segment.
     mCompleteMediaHeaderRange = mCompleteMediaSegmentRange;
 
-    MSE_DEBUG("[%" PRId64 ", %" PRId64 "]", aStart, aEnd);
+    MSE_DEBUG("[%" PRId64 ", %" PRId64 "]", aStart.ToMicroseconds(),
+              aEnd.ToMicroseconds());
     // We don't update timestamps, regardless.
     return NS_ERROR_NOT_AVAILABLE;
   }

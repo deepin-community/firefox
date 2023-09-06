@@ -2,13 +2,20 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-addons-page-title = Handter tillegg
+addons-page-title = Tilleggshandsamar
 search-header =
     .placeholder = Søk på addons.mozilla.org
     .searchbuttonlabel = Søk
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Last ned utvidingar og tema på <<a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Last ned ordbøker på <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Last ned språkpakkar på <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Du har ingen tillegg av denne typen installerte
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Version
 detail-last-updated =
     .label = Sist oppdatert
+addon-detail-description-expand = Vis meir
+addon-detail-description-collapse = Vis mindre
 detail-contributions-description = Utviklaren av dette tillegget ber om at du hjelper til med å støtte vidare utvikling ved å gje eit lite bidrag.
 detail-contributions-button = Bidra
     .title = Bidra til utviklinga av dette tillegget
@@ -135,6 +144,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Nyleg oppdatert
 addon-category-recent-updates-title =
     .title = Nyleg oppdatert
+addon-category-sitepermission = Nettstadløyve
+addon-category-sitepermission-title =
+    .title = Nettstadløyve
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Nettstadløyve for { $host }
 
 ## These are global warnings
 
@@ -145,6 +161,8 @@ extensions-warning-check-compatibility-button = Slå på
 extensions-warning-update-security = Tryggingskontroll av tilleggsoppdateringar er slått av. Du er sårbar for skadelege oppdateringar.
 extensions-warning-update-security-button = Slå på
     .title = Slå på tryggingskontroll av tilleggsoppdateringar
+extensions-warning-imported-addons = Fullfør installasjonen av utvidingar som vart importerte til { -brand-short-name }.
+extensions-warning-imported-addons-button = Installer utvidingar
 
 ## Strings connected to add-on updates
 
@@ -189,7 +207,7 @@ addon-open-about-debugging = Feilsøk tillegg
 ## Extension shortcut management
 
 # This is displayed in the page options menu
-addon-manage-extensions-shortcuts = Handter snarvegar for tillegg
+addon-manage-extensions-shortcuts = Handsam snarvegar for utvidingar
     .accesskey = H
 shortcuts-no-addons = Du har ingen utvidinga aktiverte.
 shortcuts-no-commands = Følgjande utvidingar har ikkje snarvegar:
@@ -213,6 +231,8 @@ shortcuts-duplicate-warning-message = { $shortcut } blir brukt som ein hurtigtas
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Allereie i bruk av { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
        *[other] Vis { $numberToShow } fleire
@@ -250,7 +270,7 @@ install-extension-button = Legg til i { -brand-product-name }
 install-theme-button = Installer tema
 # The label of the button that appears after installing an add-on. Upon click,
 # the detailed add-on view is opened, from where the add-on can be managed.
-manage-addon-button = Handter
+manage-addon-button = Handsam
 find-more-addons = Finn fleire tillegg
 find-more-themes = Finn fleire tema
 # This is a label for the button to open the "more options" menu, it is only
@@ -281,15 +301,15 @@ permissions-addon-button = Løyve
 extension-enabled-heading = Slått på
 extension-disabled-heading = Slått av
 theme-enabled-heading = Slått på
-theme-disabled-heading = Slått av
-theme-monochromatic-heading = Fargesamansetjingar
-theme-monochromatic-subheading = Levande nye fargesamansetjingar frå { -brand-product-name }. Tilgjengeleg for ein avgrensa periode.
+theme-disabled-heading2 = Lagra tema
 plugin-enabled-heading = Slått på
 plugin-disabled-heading = Slått av
 dictionary-enabled-heading = Slått på
 dictionary-disabled-heading = Slått av
 locale-enabled-heading = Slått på
 locale-disabled-heading = Slått av
+sitepermission-enabled-heading = Aktivert
+sitepermission-disabled-heading = Deaktivert
 always-activate-button = Alttid aktiver
 never-activate-button = Aldri aktiver
 addon-detail-author-label = Utviklar
@@ -330,6 +350,10 @@ addon-detail-updates-radio-on = På
 addon-detail-updates-radio-off = Av
 addon-detail-update-check-label = Sjå etter oppdateringar
 install-update-button = Oppdater
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -338,6 +362,22 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Når det er tillate, vil utvidinga få tilgang til aktivitetane dine på nettet medan du brukar privat nettlesing. <a data-l10n-name="learn-more">Les meir</a>
 addon-detail-private-browsing-allow = Tillat
 addon-detail-private-browsing-disallow = Ikkje tillat
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Køyr på nettstadar med restriksjonar
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Tillat
+addon-detail-quarantined-domains-disallow = Ikkje tillat
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -366,22 +406,44 @@ addon-permissions-optional = Valfrie løyve for ekstra funksjonalitet:
 addon-permissions-learnmore = Les meir om løyve
 recommended-extensions-heading = Tilrådde utvidingar
 recommended-themes-heading = Tilrådde tema
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Gir følgjande funksjonar til <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Er du i det kreative hjørnet? <a data-l10n-name="link">Bygg ditt eige tema med Firefox Color.</a>
 
 ## Page headings
 
-extension-heading = Handter utvidingane dine
-theme-heading = Handter temaa dine
-plugin-heading = Handter programtillegga dine
-dictionary-heading = Handter ordbøkene dine
-locale-heading = Handter språka dine
-updates-heading = Handter oppdateringar
+extension-heading = Handsam utvidingane dine
+theme-heading = Handsam temaa dine
+plugin-heading = Handsam programtillegga dine
+dictionary-heading = Handsam ordbøkene dine
+locale-heading = Handsam språka dine
+updates-heading = Handsam oppdateringar
+sitepermission-heading = Handsam nettstadløyva dine
 discover-heading = Tilpass { -brand-short-name }
-shortcuts-heading = Handter snarvegar for utvidingar
+shortcuts-heading = Handsam snarvegar for utvidingar
 default-heading-search-label = Finn fleire tillegg
 addons-heading-search-input =
     .placeholder = Søk på addons.mozilla.org
 addon-page-options-button =
     .title = Verktøy for alle tillegg
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } er ikkje kompatibel med { -brand-short-name } { $version }.
+details-notification-incompatible-link = Meir informasjon
+details-notification-unsigned-and-disabled = { $name } har ikkje blitt stadfesta for bruk i { -brand-short-name } og er slått av.
+details-notification-unsigned-and-disabled-link = Meir informasjon
+details-notification-unsigned = { $name } kunne ikkje stadfestast for bruk i { -brand-short-name }. Fortset med varsemd.
+details-notification-unsigned-link = Meir informasjon
+details-notification-blocked = { $name } er slått av grunna tryggings- eller stabilitetsomsyn.
+details-notification-blocked-link = Meir informasjon
+details-notification-softblocked = { $name } har kjende tryggings- eller stabilitetsproblem.
+details-notification-softblocked-link = Meir informasjon
+details-notification-gmp-pending = { $name } vert installert snart.

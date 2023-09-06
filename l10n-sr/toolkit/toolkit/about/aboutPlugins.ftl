@@ -33,3 +33,14 @@ state-dd-Disabled-block-list-state = <span data-l10n-name="state">Статус:<
 mime-type-label = MIME тип
 description-label = Опис
 suffixes-label = Суфикси
+
+## Gecko Media Plugins (GMPs)
+
+plugins-gmp-license-info = Информације о лиценци
+plugins-gmp-privacy-info = Информације о приватности
+
+plugins-openh264-name = Видео-кодек OpenH264 који пружа Cisco Systems, Inc.
+plugins-openh264-description = Mozilla испоручује ову додатну компоненту како би се ускладила са спецификацијом WebRTC и омогућила WebRTC позиве са уређајима којима је потребан кодек H.264. Погледајте изворни кôд кодека и сазнајте више о примени на адреси http://www.openh264.org.
+
+plugins-widevine-name = Модул за дешифровање садржаја Widevine који пружа Google Inc.
+plugins-widevine-description = Ова додатна компонента омогућава репродукцију шифрованих медија спецификацијом Encrypted Media Extensions. Сајтови користе шифровање ради заштите од неовлашћеног копирања медијског садржаја. За више информација о овој спецификацији посетите https://www.w3.org/TR/encrypted-media.

@@ -4,8 +4,6 @@
 
 "use strict";
 
-const Services = require("Services");
-
 const variableFileContents = require("raw!chrome://devtools/skin/variables.css");
 
 const THEME_SELECTOR_STRINGS = {
@@ -37,11 +35,22 @@ function getThemeFile(name) {
 }
 
 /**
+ * Returns the "auto" theme.
+ */
+const getAutoTheme = (exports.getAutoTheme = () => {
+  return Services.appinfo.chromeColorSchemeIsDark ? "dark" : "light";
+});
+
+/**
  * Returns the string value of the current theme,
  * like "dark" or "light".
  */
 const getTheme = (exports.getTheme = () => {
-  return Services.prefs.getCharPref(THEME_PREF);
+  const theme = Services.prefs.getCharPref(THEME_PREF);
+  if (theme == "auto") {
+    return getAutoTheme();
+  }
+  return theme;
 });
 
 /**
@@ -79,6 +88,7 @@ const setTheme = (exports.setTheme = newTheme => {
  * Add an observer for theme changes.
  */
 const addThemeObserver = (exports.addThemeObserver = observer => {
+  Services.obs.addObserver(observer, "look-and-feel-changed");
   Services.prefs.addObserver(THEME_PREF, observer);
 });
 
@@ -86,6 +96,7 @@ const addThemeObserver = (exports.addThemeObserver = observer => {
  * Remove an observer for theme changes.
  */
 const removeThemeObserver = (exports.removeThemeObserver = observer => {
+  Services.obs.removeObserver(observer, "look-and-feel-changed");
   Services.prefs.removeObserver(THEME_PREF, observer);
 });
 /* eslint-enable */

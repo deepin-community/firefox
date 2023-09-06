@@ -3,22 +3,26 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from __future__ import absolute_import
+
 import argparse
 import hashlib
 import json
 import logging
 import os
 import shutil
-import six
-
 from collections import OrderedDict
 
-from mach.decorators import CommandArgument, Command, SubCommand
+# As a result of the selective module loading changes, this import has to be
+# done here. It is not explicitly used, but it has an implicit side-effect
+# (bringing in TASKCLUSTER_ROOT_URL) which is necessary.
+import gecko_taskgraph.main  # noqa: F401
+import mozversioncontrol
+import six
+from mach.decorators import Command, CommandArgument, SubCommand
+
 from mozbuild.artifact_builds import JOB_CHOICES
 from mozbuild.base import MachCommandConditions as conditions
 from mozbuild.util import ensureParentDir
-import mozversioncontrol
-
 
 _COULD_NOT_FIND_ARTIFACTS_TEMPLATE = (
     "ERROR!!!!!! Could not find artifacts for a toolchain build named "
@@ -66,10 +70,10 @@ class ArtifactSubCommand(SubCommand):
 def artifact(command_context):
     """Download, cache, and install pre-built binary artifacts to build Firefox.
 
-    Use |mach build| as normal to freshen your installed binary libraries:
+    Use ``mach build`` as normal to freshen your installed binary libraries:
     artifact builds automatically download, cache, and install binary
     artifacts from Mozilla automation, replacing whatever may be in your
-    object directory.  Use |mach artifact last| to see what binary artifacts
+    object directory.  Use ``mach artifact last`` to see what binary artifacts
     were last used.
 
     Never build libxul again!
@@ -85,7 +89,6 @@ def _make_artifacts(
     skip_cache=False,
     download_tests=True,
     download_symbols=False,
-    download_host_bins=False,
     download_maven_zip=False,
     no_process=False,
 ):
@@ -108,8 +111,6 @@ def _make_artifacts(
             raise ValueError("--maven-zip requires --no-tests")
         if download_symbols:
             raise ValueError("--maven-zip requires no --symbols")
-        if download_host_bins:
-            raise ValueError("--maven-zip requires no --host-bins")
         if not no_process:
             raise ValueError("--maven-zip requires --no-process")
 
@@ -128,7 +129,6 @@ def _make_artifacts(
         topsrcdir=topsrcdir,
         download_tests=download_tests,
         download_symbols=download_symbols,
-        download_host_bins=download_host_bins,
         download_maven_zip=download_maven_zip,
         no_process=no_process,
         mozbuild=command_context,
@@ -136,7 +136,11 @@ def _make_artifacts(
     return artifacts
 
 
-@ArtifactSubCommand("artifact", "install", "Install a good pre-built artifact.")
+@ArtifactSubCommand(
+    "artifact",
+    "install",
+    "Install a good pre-built artifact.",
+)
 @CommandArgument(
     "source",
     metavar="SRC",
@@ -155,7 +159,6 @@ def _make_artifacts(
 )
 @CommandArgument("--no-tests", action="store_true", help="Don't install tests.")
 @CommandArgument("--symbols", nargs="?", action=SymbolsAction, help="Download symbols.")
-@CommandArgument("--host-bins", action="store_true", help="Download host binaries.")
 @CommandArgument("--distdir", help="Where to install artifacts to.")
 @CommandArgument(
     "--no-process",
@@ -174,7 +177,6 @@ def artifact_install(
     verbose=False,
     no_tests=False,
     symbols=False,
-    host_bins=False,
     distdir=None,
     no_process=False,
     maven_zip=False,
@@ -187,7 +189,6 @@ def artifact_install(
         skip_cache=skip_cache,
         download_tests=not no_tests,
         download_symbols=symbols,
-        download_host_bins=host_bins,
         download_maven_zip=maven_zip,
         no_process=no_process,
     )
@@ -207,7 +208,10 @@ def artifact_clear_cache(command_context, tree=None, job=None, verbose=False):
     return 0
 
 
-@SubCommand("artifact", "toolchain")
+@SubCommand(
+    "artifact",
+    "toolchain",
+)
 @CommandArgument("--verbose", "-v", action="store_true", help="Print verbose output.")
 @CommandArgument(
     "--cache-dir",
@@ -226,6 +230,12 @@ def artifact_clear_cache(command_context, tree=None, job=None, verbose=False):
     nargs="+",
     help="Download toolchains resulting from the given build(s); "
     "BUILD is a name of a toolchain task, e.g. linux64-clang",
+)
+@CommandArgument(
+    "--from-task",
+    metavar="TASK_ID:ARTIFACT",
+    nargs="+",
+    help="Download toolchain artifact from a given task.",
 )
 @CommandArgument(
     "--tooltool-manifest",
@@ -255,6 +265,7 @@ def artifact_toolchain(
     cache_dir=None,
     skip_cache=False,
     from_build=(),
+    from_task=(),
     tooltool_manifest=None,
     no_unpack=False,
     retry=0,
@@ -262,15 +273,16 @@ def artifact_toolchain(
     artifact_manifest=None,
 ):
     """Download, cache and install pre-built toolchains."""
-    from mozbuild.artifacts import ArtifactCache
-    from mozbuild.action.tooltool import FileRecord, open_manifest, unpack_file
-    import redo
-    import requests
     import time
 
+    import redo
+    import requests
     from taskgraph.util.taskcluster import get_artifact_url
 
-    start = time.time()
+    from mozbuild.action.tooltool import FileRecord, open_manifest, unpack_file
+    from mozbuild.artifacts import ArtifactCache
+
+    start = time.monotonic()
     command_context._set_log_level(verbose)
     # Normally, we'd use command_context.log_manager.enable_unstructured(),
     # but that enables all logging, while we only really want tooltool's
@@ -374,7 +386,8 @@ def artifact_toolchain(
                 "should be determined in the decision task.",
             )
             return 1
-        from taskgraph.optimize.strategies import IndexSearch
+        from gecko_taskgraph.optimize.strategies import IndexSearch
+
         from mozbuild.toolchains import toolchain_task_definitions
 
         tasks = toolchain_task_definitions()
@@ -433,17 +446,18 @@ def artifact_toolchain(
                 repo = mozversioncontrol.get_repository_object(
                     command_context.topsrcdir
                 )
-                changed_files = set(repo.get_outgoing_files()) | set(
-                    repo.get_changed_files()
-                )
-                if changed_files:
-                    command_context.log(
-                        logging.ERROR,
-                        "artifact",
-                        {},
-                        "Hint: consider reverting your local changes "
-                        "to the following files: %s" % sorted(changed_files),
+                if not isinstance(repo, mozversioncontrol.SrcRepository):
+                    changed_files = set(repo.get_outgoing_files()) | set(
+                        repo.get_changed_files()
                     )
+                    if changed_files:
+                        command_context.log(
+                            logging.ERROR,
+                            "artifact",
+                            {},
+                            "Hint: consider reverting your local changes "
+                            "to the following files: %s" % sorted(changed_files),
+                        )
                 if "TASKCLUSTER_ROOT_URL" in os.environ:
                     command_context.log(
                         logging.ERROR,
@@ -467,6 +481,20 @@ def artifact_toolchain(
 
             record = ArtifactRecord(task_id, artifact_name)
             records[record.filename] = record
+
+    # Handle the list of files of the form task_id:path from --from-task.
+    for f in from_task or ():
+        task_id, colon, name = f.partition(":")
+        if not colon:
+            command_context.log(
+                logging.ERROR,
+                "artifact",
+                {},
+                "Expected an argument of the form task_id:path",
+            )
+            return 1
+        record = ArtifactRecord(task_id, name)
+        records[record.filename] = record
 
     for record in six.itervalues(records):
         command_context.log(
@@ -565,6 +593,8 @@ def artifact_toolchain(
 
     if not downloaded:
         command_context.log(logging.ERROR, "artifact", {}, "Nothing to download")
+        if from_task:
+            return 1
 
     if artifacts:
         ensureParentDir(artifact_manifest)
@@ -572,7 +602,7 @@ def artifact_toolchain(
             json.dump(artifacts, fh, indent=4, sort_keys=True)
 
     if "MOZ_AUTOMATION" in os.environ:
-        end = time.time()
+        end = time.monotonic()
 
         perfherder_data = {
             "framework": {"name": "build_metrics"},

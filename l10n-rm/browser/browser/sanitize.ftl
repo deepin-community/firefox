@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Parameters per stizzar la cronologia
-    .style = width: 38em
+    .style = min-width: 38em
 
 sanitize-prefs-style =
     .style = width: 19em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Stizzar la cronologia pli nova
-    .style = width: 38em
+    .style = min-width: 38em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Stizzar l'entira cronologia
-    .style = width: 38em
+    .style = min-width: 38em
 
 clear-data-settings-label = Stizzar automaticamain las suandantas datas cura { -brand-short-name } vegn terminà
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = f
 
 data-section-label = Datas
-
-item-site-preferences =
-    .label = Preferenzas per websites
-    .accesskey = s
 
 item-site-settings =
     .label = Parameters da la website

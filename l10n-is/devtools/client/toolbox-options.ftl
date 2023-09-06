@@ -24,7 +24,7 @@ options-select-additional-tools-label = Developer Tools installed by add-ons
 options-select-enabled-toolbox-buttons-label = Available Toolbox Buttons
 
 # The label for the heading of the radiobox corresponding to the theme
-options-select-dev-tools-theme-label = Þema
+options-select-dev-tools-theme-label = Þemu
 
 ## Inspector section
 
@@ -34,7 +34,7 @@ options-context-inspector = Inspector
 # The label for the checkbox option to show user agent styles
 options-show-user-agent-styles-label = Show Browser Styles
 options-show-user-agent-styles-tooltip =
-    .title = Turning this on will show default styles that are loaded by the browser.
+    .title = Að kveikja á þessu mun birta sjálfgefna stíla sem vafrinn hleður inn.
 
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Truncate DOM attributes
@@ -63,12 +63,17 @@ options-stylesheet-autocompletion-tooltip =
 ## Screenshot section
 
 # The heading
-options-screenshot-label = Screenshot Behavior
+options-screenshot-label = Hegðun skjámynda
+
+# Label for the checkbox that toggles screenshot to clipboard feature
+options-screenshot-clipboard-only-label = Skjáskot eingöngu á klippispjald
+options-screenshot-clipboard-tooltip2 =
+    .title = Vistar skjámyndina beint á klippispjaldið
 
 # Label for the checkbox that toggles the camera shutter audio for screenshot tool
-options-screenshot-audio-label = Play camera shutter sound
+options-screenshot-audio-label = Spila lokarahljóð myndavélar
 options-screenshot-audio-tooltip =
-    .title = Enables the camera audio sound when taking screenshot
+    .title = Virkjar myndavélarhljóð þegar skjámynd er tekin
 
 ## Editor section
 
@@ -90,7 +95,7 @@ options-sourceeditor-keybinding-default-label = Default
 
 ## Advanced section
 
-# The heading
+# The heading (this item is also used in perftools.ftl)
 options-context-advanced-settings = Advanced settings
 
 # The label for the checkbox that toggles the HTTP cache on or off
@@ -122,12 +127,4 @@ options-source-maps-tooltip =
     .title = If you enable this option sources will be mapped in the tools.
 
 # The message shown for settings that trigger page reload
-options-context-triggers-page-refresh = * Current session only, reloads the page
-
-##
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Show Gecko platform data
-options-show-platform-data-tooltip =
-    .title = If you enable this option the JavaScript Profiler reports will include Gecko platform symbols
+options-context-triggers-page-refresh = * Aðeins núverandi lota, endurhleður síðuna

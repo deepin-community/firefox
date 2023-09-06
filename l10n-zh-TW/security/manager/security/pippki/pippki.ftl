@@ -16,8 +16,6 @@ change-password-old = 目前密碼:
 change-password-new = 新密碼:
 change-password-reenter = 新密碼 (再輸入一次):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = 無法更改密碼。
 pippki-incorrect-pw = 您輸入的目前密碼錯誤，請再試一次。
 pippki-pw-change-ok = 成功變更密碼。
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = 您目前使用 FIPS 模式。FIPS 模式�
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = 重設主控密碼
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = 重設
-
 reset-primary-password-text = 如果要重設主控密碼，您所有的網頁與電子郵件密碼、個人憑證、私密金鑰等資訊都會被清除。確定要重設主控密碼嗎？
 
 pippki-reset-password-confirmation-title = 重設主控密碼
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = 成功重設您的主控密碼。
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = 下載憑證
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = 您被要求信任一個新憑證機構 (CA)。
 download-cert-trust-ssl =
     .label = 信任此憑證機構以識別網站。
@@ -77,7 +74,8 @@ set-password-reminder = 重要: 如果您忘了憑證備份密碼，將會無法
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = 被保護的 Token 鑑別
-protected-auth-msg = 請鑑別此 Token，鑑別方法會隨 Token 類型而不同。
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = 請驗證 token「{ $tokenName }」。驗證方式須依裝置而定（例如進行指紋辨識或輸入密碼）。

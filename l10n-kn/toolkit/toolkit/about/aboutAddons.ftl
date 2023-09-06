@@ -4,8 +4,11 @@
 
 addons-page-title = ಆಡ್‌-ಆನ್‌ಗಳ ವ್ಯವಸ್ಥಾಪಕ
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
+
 
 list-empty-installed =
     .value = ಈ ಬಗೆಯ ಆಡ್‌-ಆನ್‌ಗಳು ನಿಮ್ಮಲ್ಲಿ ಅನುಸ್ಥಾಪಿತಗೊಂಡಿಲ್ಲ
@@ -132,7 +135,6 @@ extensions-warning-update-security = ಆಡ್-ಆನ್ ಅಪ್‌ಡೇಟ�
 extensions-warning-update-security-button = ಶಕ್ತಗೊಳಿಸು
     .title = ಆಡ್-ಆನ್ ಅಪ್‌ಡೇಟ್ ಸುರಕ್ಷತಾ ಪರಿಶೀಲನೆಯನ್ನು ಶಕ್ತಗೊಳಿಸು
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = ಅಪ್‌ಡೇಟ್‌ಗಳಿಗಾಗಿ Check
@@ -185,8 +187,12 @@ addon-open-about-debugging = ಆಡ್-ಆನ್‍ಗಳನ್ನು ಪರೀ�
 ## Pending uninstall message bar
 
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
+
 
 ##
 
@@ -194,3 +200,29 @@ addon-open-about-debugging = ಆಡ್-ಆನ್‍ಗಳನ್ನು ಪರೀ�
 
 addon-page-options-button =
     .title = ಎಲ್ಲಾ ಆಡ್‌-ಆನ್‌ಗಳಿಗಾಗಿನ ಉಪಕರಣಗಳು
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } ಎನ್ನುವುದು { -brand-short-name } { $version } ನೊಂದಿಗೆ ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ.
+
+details-notification-unsigned-and-disabled = { $name } ಅನ್ನು { -brand-short-name } ನಲ್ಲಿ ಬಳಕೆಗೆ ದೃಢಪಡಿಸಲಾಗಿಲ್ಲ ಮತ್ತು ಅದನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.
+details-notification-unsigned-and-disabled-link = ಹೆಚ್ಚಿನ ಮಾಹಿತಿ
+
+details-notification-unsigned = { $name } ಅನ್ನು { -brand-short-name } ನಲ್ಲಿ ಬಳಕೆಗೆ ದೃಢಪಡಿಸಲಾಗಿಲ್ಲ. ಎಚ್ಚರಿಕೆಯಿಂದ ಮುಂದುವರೆಯಿರಿ.
+details-notification-unsigned-link = ಹೆಚ್ಚಿನ ಮಾಹಿತಿ
+
+details-notification-blocked = ಸುರಕ್ಷತೆ ಅಥವ ಸ್ಥಿರತೆಯ ಸಮಸ್ಯೆಗಳಿಂದಾಗಿ { $name } ಅನ್ನು ಅಶಕ್ತಗೊಳಿಸಲಾಗಿದೆ.
+details-notification-blocked-link = ಹೆಚ್ಚಿನ ಮಾಹಿತಿ
+
+details-notification-softblocked = { $name } ಎನ್ನುವುದು ಸುರಕ್ಷತೆ ಅಥವ ಸ್ಥಿರತೆಯ ಸಮಸ್ಯೆಗಳಿಗೆ ಕಾರಣವಾಗುತ್ತದೆ ಎಂದು ತಿಳಿದು ಬಂದಿದೆ.
+details-notification-softblocked-link = ಹೆಚ್ಚಿನ ಮಾಹಿತಿ
+
+details-notification-gmp-pending = { $name } ಸದ್ಯದಲ್ಲಿಯೆ ಅನುಸ್ಥಾಪಿಸಲಾಗುತ್ತದೆ.

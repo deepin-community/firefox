@@ -40,6 +40,7 @@ app-basics-profiles = Keftinirɗe
 app-basics-multi-process-support = Kenorɗe Cili Keewɗi
 app-basics-key-mozilla = Nokkuje Coktirɗe Mozilla
 app-basics-safe-mode = Mbayka Hoolno
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Hollir e Yiytirde
@@ -101,6 +102,8 @@ media-device-format = Formaa
 media-device-channels = Ceenuuji
 media-device-rate = Battal
 media-device-latency = Deeƴtal
+
+## Codec support table
 
 ##
 

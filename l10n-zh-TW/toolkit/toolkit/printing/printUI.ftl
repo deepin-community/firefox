@@ -14,6 +14,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = 全部
+printui-page-range-current = 目前
+printui-page-range-odd = 單數頁
+printui-page-range-even = 雙數頁
 printui-page-range-custom = 自訂
 printui-page-range-label = 頁面
 printui-page-range-picker =

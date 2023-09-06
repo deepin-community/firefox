@@ -412,6 +412,7 @@ nsresult CacheFileChunk::Write(CacheFileHandle* aHandle,
 
 void CacheFileChunk::WaitForUpdate(CacheFileChunkListener* aCallback) {
   AssertOwnsLock();
+  mFile->AssertOwnsLock();  // For thread-safety analysis
 
   LOG(("CacheFileChunk::WaitForUpdate() [this=%p, listener=%p]", this,
        aCallback));
@@ -431,7 +432,7 @@ void CacheFileChunk::WaitForUpdate(CacheFileChunkListener* aCallback) {
     LOG(
         ("CacheFileChunk::WaitForUpdate() - Cannot get Cache I/O thread! Using "
          "main thread for callback."));
-    item->mTarget = GetMainThreadEventTarget();
+    item->mTarget = GetMainThreadSerialEventTarget();
   }
   item->mCallback = aCallback;
   MOZ_ASSERT(item->mTarget);
@@ -507,6 +508,7 @@ uint32_t CacheFileChunk::DataSize() const { return mBuf->DataSize(); }
 
 void CacheFileChunk::UpdateDataSize(uint32_t aOffset, uint32_t aLen) {
   AssertOwnsLock();
+  mFile->AssertOwnsLock();  // For thread-safety analysis
 
   // UpdateDataSize() is called only when we've written some data to the chunk
   // and we never write data anymore once some error occurs.

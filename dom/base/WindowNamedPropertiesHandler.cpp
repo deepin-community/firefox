@@ -6,6 +6,7 @@
 
 #include "WindowNamedPropertiesHandler.h"
 #include "mozilla/dom/EventTargetBinding.h"
+#include "mozilla/dom/ProxyHandlerUtils.h"
 #include "mozilla/dom/WindowBinding.h"
 #include "mozilla/dom/WindowProxyHolder.h"
 #include "nsContentUtils.h"
@@ -206,8 +207,8 @@ bool WindowNamedPropertiesHandler::ownPropNames(
   if (!doc || !doc->IsHTMLOrXHTML()) {
     // Define to @@toStringTag on this object to keep Object.prototype.toString
     // backwards compatible.
-    JS::Rooted<jsid> toStringTagId(aCx, SYMBOL_TO_JSID(JS::GetWellKnownSymbol(
-                                            aCx, JS::SymbolCode::toStringTag)));
+    JS::Rooted<jsid> toStringTagId(
+        aCx, JS::GetWellKnownSymbolKey(aCx, JS::SymbolCode::toStringTag));
     return aProps.append(toStringTagId);
   }
 
@@ -221,8 +222,8 @@ bool WindowNamedPropertiesHandler::ownPropNames(
     return false;
   }
 
-  JS::Rooted<jsid> toStringTagId(aCx, SYMBOL_TO_JSID(JS::GetWellKnownSymbol(
-                                          aCx, JS::SymbolCode::toStringTag)));
+  JS::Rooted<jsid> toStringTagId(
+      aCx, JS::GetWellKnownSymbolKey(aCx, JS::SymbolCode::toStringTag));
   if (!docProps.append(toStringTagId)) {
     return false;
   }
@@ -243,11 +244,9 @@ static const DOMIfaceAndProtoJSClass WindowNamedPropertiesClass = {
     PROXY_CLASS_DEF("WindowProperties", JSCLASS_IS_DOMIFACEANDPROTOJSCLASS |
                                             JSCLASS_HAS_RESERVED_SLOTS(1)),
     eNamedPropertiesObject,
-    false,
     prototypes::id::_ID_Count,
     0,
     &sEmptyNativePropertyHooks,
-    "[object WindowProperties]",
     EventTarget_Binding::GetProtoObject};
 
 // static

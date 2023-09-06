@@ -4,12 +4,12 @@
 
 "use strict";
 
-// eslint-disable-next-line mozilla/reject-some-requires
-const { WorkersListener } = require("devtools/client/shared/workers-listener");
-
 const {
-  LegacyWorkersWatcher,
-} = require("devtools/shared/commands/target/legacy-target-watchers/legacy-workers-watcher");
+  WorkersListener,
+  // eslint-disable-next-line mozilla/reject-some-requires
+} = require("resource://devtools/client/shared/workers-listener.js");
+
+const LegacyWorkersWatcher = require("resource://devtools/shared/commands/target/legacy-target-watchers/legacy-workers-watcher.js");
 
 class LegacyServiceWorkersWatcher extends LegacyWorkersWatcher {
   // Holds the current target URL object
@@ -43,9 +43,8 @@ class LegacyServiceWorkersWatcher extends LegacyWorkersWatcher {
     // about registrations. And if we need to also update the
     // "debuggerServiceWorkerStatus" from here, then we would have to
     // also listen to "registration-changed" one each registration.
-    this._onRegistrationListChanged = this._onRegistrationListChanged.bind(
-      this
-    );
+    this._onRegistrationListChanged =
+      this._onRegistrationListChanged.bind(this);
     this._onDocumentEvent = this._onDocumentEvent.bind(this);
 
     // Flag used from the parent class to listen to process targets.
@@ -79,7 +78,7 @@ class LegacyServiceWorkersWatcher extends LegacyWorkersWatcher {
     // Listen to the current target front.
     this.target = this.targetCommand.targetFront;
 
-    if (this.targetCommand.descriptorFront.isLocalTab) {
+    if (this.targetCommand.descriptorFront.isTabDescriptor) {
       this.#currentTargetURL = new URL(this.targetCommand.targetFront.url);
     }
 
@@ -90,7 +89,7 @@ class LegacyServiceWorkersWatcher extends LegacyWorkersWatcher {
     // registrations.
     await this._onRegistrationListChanged();
 
-    if (this.targetCommand.descriptorFront.isLocalTab) {
+    if (this.targetCommand.descriptorFront.isTabDescriptor) {
       await this.commands.resourceCommand.watchResources(
         [this.commands.resourceCommand.TYPES.DOCUMENT_EVENT],
         {
@@ -107,7 +106,7 @@ class LegacyServiceWorkersWatcher extends LegacyWorkersWatcher {
   unlisten(...args) {
     this._workersListener.removeListener(this._onRegistrationListChanged);
 
-    if (this.targetCommand.descriptorFront.isLocalTab) {
+    if (this.targetCommand.descriptorFront.isTabDescriptor) {
       this.commands.resourceCommand.unwatchResources(
         [this.commands.resourceCommand.TYPES.DOCUMENT_EVENT],
         {
@@ -121,7 +120,7 @@ class LegacyServiceWorkersWatcher extends LegacyWorkersWatcher {
 
   // Override from LegacyWorkersWatcher.
   async _onProcessAvailable({ targetFront }) {
-    if (this.targetCommand.descriptorFront.isLocalTab) {
+    if (this.targetCommand.descriptorFront.isTabDescriptor) {
       // XXX: This has been ported straight from the current debugger
       // implementation. Since pauseMatchingServiceWorkers expects an origin
       // to filter matching workers, it only makes sense when we are debugging
@@ -187,9 +186,8 @@ class LegacyServiceWorkersWatcher extends LegacyWorkersWatcher {
         const shouldDestroy = this._shouldDestroyTargetsOnNavigation();
 
         for (const target of allServiceWorkerTargets) {
-          const isRegisteredBefore = this.targetCommand.isTargetRegistered(
-            target
-          );
+          const isRegisteredBefore =
+            this.targetCommand.isTargetRegistered(target);
           if (shouldDestroy && isRegisteredBefore) {
             // Instruct the target command to notify about the worker target destruction
             // but do not destroy the front as we want to keep using it.
@@ -199,9 +197,8 @@ class LegacyServiceWorkersWatcher extends LegacyWorkersWatcher {
 
           // Note: we call isTargetRegistered again because calls to
           // onTargetDestroyed might have modified the list of registered targets.
-          const isRegisteredAfter = this.targetCommand.isTargetRegistered(
-            target
-          );
+          const isRegisteredAfter =
+            this.targetCommand.isTargetRegistered(target);
           const isValidTarget = this._supportWorkerTarget(target);
           if (isValidTarget && !isRegisteredAfter) {
             // If the target is still valid for the current top target, call
@@ -255,9 +252,8 @@ class LegacyServiceWorkersWatcher extends LegacyWorkersWatcher {
   }
 
   async _updateRegistrations() {
-    const {
-      registrations,
-    } = await this.rootFront.listServiceWorkerRegistrations();
+    const { registrations } =
+      await this.rootFront.listServiceWorkerRegistrations();
 
     this._registrations = registrations;
   }
@@ -293,13 +289,13 @@ class LegacyServiceWorkersWatcher extends LegacyWorkersWatcher {
   // Check if the registration is relevant for the current target, ie
   // corresponds to the same domain.
   _isRegistrationValidForTarget(registration) {
-    if (this.targetCommand.descriptorFront.isParentProcessDescriptor) {
+    if (this.targetCommand.descriptorFront.isBrowserProcessDescriptor) {
       // All registrations are valid for main process debugging.
       return true;
     }
 
-    if (!this.targetCommand.descriptorFront.isLocalTab) {
-      // No support for service worker targets outside of main process & local
+    if (!this.targetCommand.descriptorFront.isTabDescriptor) {
+      // No support for service worker targets outside of main process &
       // tab debugging.
       return false;
     }
@@ -317,4 +313,4 @@ class LegacyServiceWorkersWatcher extends LegacyWorkersWatcher {
   }
 }
 
-module.exports = { LegacyServiceWorkersWatcher };
+module.exports = LegacyServiceWorkersWatcher;

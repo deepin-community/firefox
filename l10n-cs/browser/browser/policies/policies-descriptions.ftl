@@ -16,6 +16,12 @@ policy-AllowedDomainsForApps = Nastavení domén, které mají povolený příst
 
 policy-AppAutoUpdate = Vypnutí nebo zapnutí automatických aktualizací aplikace.
 
+policy-AppUpdatePin =
+    { -brand-short-name.case-status ->
+        [with-cases] Zabrání aktualizaci { -brand-short-name(case: "gen") } nad uvedenou verzi.
+       *[no-cases] Zabrání aktualizaci aplikace { -brand-short-name } nad uvedenou verzi.
+    }
+
 policy-AppUpdateURL = Nastavení vlastní URL pro aktualizace aplikace.
 
 policy-Authentication = Konfigurace integrované autentizace webových stránek, které ji podporují.
@@ -40,6 +46,9 @@ policy-CertificatesDescription = Přidat certifikáty nebo použít vestavěné 
 
 policy-Cookies = Pravidla pro ukládání nebo blokování cookies.
 
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Nastavení pravidel souvisejících s kontejnery.
+
 policy-DisabledCiphers = Zakázané metody šifrování.
 
 policy-DefaultDownloadDirectory = Nastavení výchozího adresáře pro stahování souborů.
@@ -47,12 +56,10 @@ policy-DefaultDownloadDirectory = Nastavení výchozího adresáře pro stahová
 policy-DisableAppUpdate = Blokování aktualizací prohlížeče.
 
 policy-DisableBuiltinPDFViewer =
-    Zablokování PDF prohlížeče PDF.js vestavěného { -brand-short-name.gender ->
-        [masculine] ve { -brand-short-name(case: "loc") }
-        [feminine] v { -brand-short-name(case: "loc") }
-        [neuter] v { -brand-short-name(case: "loc") }
-       *[other] v aplikaci { -brand-short-name }
-    }.
+    { -brand-short-name.case-status ->
+        [with-cases] Zablokování PDF prohlížeče PDF.js vestavěného ve { -brand-short-name(case: "loc") }.
+       *[no-cases] Zablokování PDF prohlížeče PDF.js vestavěného v aplikaci { -brand-short-name }.
+    }
 
 policy-DisableDefaultBrowserAgent = Zabraňuje „výchozímu agentovi prohlížeče“ provádět jakékoliv akce. Dostupné pouze pro Windows, ostatní platformy agenty nemají.
 
@@ -66,12 +73,10 @@ policy-DisableFirefoxAccounts = Vypnutí služeb používajících { -fxaccount-
 policy-DisableFirefoxScreenshots = Vypnutí funkce Firefox Screenshots.
 
 policy-DisableFirefoxStudies =
-    Zablokování spouštění studií { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "gen") }
-        [feminine] { -brand-short-name(case: "gen") }
-        [neuter] { -brand-short-name(case: "gen") }
-       *[other] aplikace { -brand-short-name }
-    }.
+    { -brand-short-name.case-status ->
+        [with-cases] Zablokování spouštění studií { -brand-short-name(case: "gen") }.
+       *[no-cases] Zablokování spouštění studií aplikace { -brand-short-name }.
+    }
 
 policy-DisableForgetButton = Zablokování tlačítka Zapomenout.
 
@@ -81,19 +86,17 @@ policy-DisablePrimaryPasswordCreation = Hodnota true znemožní nastavení hlavn
 
 policy-DisablePasswordReveal = Zakázání možnosti zobrazit hesla ve správci přihlašovacích údajů.
 
-policy-DisablePocket = Vypnutí funkce pro ukládání stránek do služby Pocket.
+policy-DisablePocket2 = Vypnutí funkce pro ukládání stránek do služby { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Zablokování anonymního prohlížení.
 
 policy-DisableProfileImport = Blokování importu dat z jiných prohlížečů.
 
 policy-DisableProfileRefresh =
-    Blokování tlačítka pro obnovu { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "gen") }
-        [feminine] { -brand-short-name(case: "gen") }
-        [neuter] { -brand-short-name(case: "gen") }
-       *[other] aplikace { -brand-short-name }
-    } na stránce about:support.
+    { -brand-short-name.case-status ->
+        [with-cases] Blokování tlačítka pro obnovu { -brand-short-name(case: "gen") } na stránce about:support.
+       *[no-cases] Blokování tlačítka pro obnovu aplikace { -brand-short-name } na stránce about:support.
+    }
 
 policy-DisableSafeMode = Zablokování možnosti restartovat se zakázanými doplňky. Poznámka: přechod do nouzového režimu podržením klávesy Shift lze zablokovat jen na systému Windows pomocí zásad skupin.
 
@@ -104,6 +107,12 @@ policy-DisableSetAsDesktopBackground = Zablokování kontextové nabídky obráz
 policy-DisableSystemAddonUpdate = Zablokování instalace a aktualizací systémových doplňků prohlížeče.
 
 policy-DisableTelemetry = Vypnutí telemetrie.
+
+policy-DisableThirdPartyModuleBlocking =
+    { -brand-short-name.case-status ->
+        [with-cases] Zabrání uživateli blokovat moduly třetích stran, které se vkládají do procesu { -brand-short-name(case: "gen") }.
+       *[no-cases] Zabrání uživateli blokovat moduly třetích stran, které se vkládají do procesu aplikace { -brand-short-name }.
+    }
 
 policy-DisplayBookmarksToolbar = Zobrazení lišty záložek ve výchozím nastavení.
 
@@ -121,6 +130,8 @@ policy-EnableTrackingProtection = Zapnutí nebo vypnutí blokování obsahu a p�
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Zapnutí nebo vypnutí Encrypted Media Extensions a případně uzamčení tohoto nastavení.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Zakáže varování na základě přípony souborů pro konkrétní typy souborů v doménách.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -130,9 +141,9 @@ policy-ExtensionSettings = Správa všech aspektů instalace rozšíření.
 
 policy-ExtensionUpdate = Vypnutí nebo zapnutí automatických aktualizací rozšíření.
 
-policy-FirefoxHome = Nastavení domovské stránky prohlížeče.
+policy-FirefoxHome2 = Nakonfiguruje { -firefox-home-brand-name(case: "acc", capitalization: "lower") }.
 
-policy-FlashPlugin = Povolení nebo zablokování zásuvného modulu Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Vynutí přímou navigaci v intranetu namísto vyhledávání při zadání jednotlivých slov do adresního řádku.
 
 policy-Handlers = Nastavení výchozích aplikací pro odkazy a typy souborů.
 
@@ -166,20 +177,16 @@ policy-NetworkPrediction = Povolení nebo zakázání přednačítání DNS.
 policy-NewTabPage = Povolení nebo zákaz stránky nového panelu.
 
 policy-NoDefaultBookmarks =
-    Vypnutí vytváření výchozích záložek a chytrých záložek { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "gen") }
-        [feminine] { -brand-short-name(case: "gen") }
-        [neuter] { -brand-short-name(case: "gen") }
-       *[other] aplikace { -brand-short-name }
-    } (Nejnavštěvovanější, Poslední štítky). Poznámka: toto pravidlo se uplatní jen pokud bude nastaveno před prvním spuštěním.
+    { -brand-short-name.case-status ->
+        [with-cases] Vypnutí vytváření výchozích záložek a chytrých záložek { -brand-short-name(case: "gen") } (Nejnavštěvovanější, Poslední štítky). Poznámka: toto pravidlo se uplatní jen pokud bude nastaveno před prvním spuštěním.
+       *[no-cases] Vypnutí vytváření výchozích záložek a chytrých záložek aplikace { -brand-short-name } (Nejnavštěvovanější, Poslední štítky). Poznámka: toto pravidlo se uplatní jen pokud bude nastaveno před prvním spuštěním.
+    }
 
 policy-OfferToSaveLogins =
-    Nastavení dotazu na uložení přihlašovacích údajů { -brand-short-name.gender ->
-        [masculine] ve { -brand-short-name(case: "loc") }
-        [feminine] v { -brand-short-name(case: "loc") }
-        [neuter] v { -brand-short-name(case: "loc") }
-       *[other] v aplikaci { -brand-short-name }
-    }. Lze použít hodnoty true i false.
+    { -brand-short-name.case-status ->
+        [with-cases] Nastavení dotazu na uložení přihlašovacích údajů ve { -brand-short-name(case: "loc") }. Lze použít hodnoty true i false.
+       *[no-cases] Nastavení dotazu na uložení přihlašovacích údajů v aplikaci { -brand-short-name }. Lze použít hodnoty true i false.
+    }
 
 policy-OfferToSaveLoginsDefault = Nastavení výchozí hodnoty pro to, zda má { -brand-short-name } nabízet ukládání přihlašovacích údajů. Platné hodnoty jsou true a false.
 
@@ -189,14 +196,14 @@ policy-OverridePostUpdatePage = Nastavení vlastní stránky po aktualizaci. Pok
 
 policy-PasswordManagerEnabled = Povolení ukládat přihlašovací údaje do správce hesel.
 
+policy-PasswordManagerExceptions = Zabrání { -brand-short-name(case: "dat") } ukládat heslo pro vybrané servery.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs =
-    Zablokování nebo nastavení PDF prohlížeče PDF.js vestavěného { -brand-short-name.gender ->
-        [masculine] ve { -brand-short-name(case: "loc") }
-        [feminine] v { -brand-short-name(case: "loc") }
-        [neuter] v { -brand-short-name(case: "loc") }
-       *[other] v aplikaci { -brand-short-name }
-    }.
+    { -brand-short-name.case-status ->
+        [with-cases] Zablokování nebo nastavení PDF prohlížeče PDF.js vestavěného ve { -brand-short-name(case: "loc") }.
+       *[no-cases] Zablokování nebo nastavení PDF prohlížeče PDF.js vestavěného v aplikaci { -brand-short-name }.
+    }
 
 policy-Permissions2 = Nastavení oprávnění pro kameru, mikrofon, zjišťování polohy, oznámení a automatické přehrávání.
 
@@ -220,8 +227,8 @@ policy-SearchEngines = Nastavení vyhledávačů. Toto pravidlo je dostupné jen
 
 policy-SearchSuggestEnabled = Povolení nebo zákaz našeptávání dotazů pro vyhledávač.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instalace modulů PKCS #11.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Přidání nebo odebrání modulů PKCS #11.
 
 policy-ShowHomeButton = Zobrazení domovského tlačítka na liště.
 
@@ -229,9 +236,13 @@ policy-SSLVersionMax = Nastavení maximální verze SSL.
 
 policy-SSLVersionMin = Nastavení minimální verze SSL.
 
+policy-StartDownloadsInTempDirectory = Vynutí spuštění stahování v místním dočasném umístění místo výchozího adresáře pro stažené soubory.
+
 policy-SupportMenu = Přidání vlastní položky nabídky s nápovědou.
 
 policy-UserMessaging = Nezobrazovat uživateli určité zprávy.
+
+policy-UseSystemPrintDialog = Vytisknout pomocí systémového dialogu.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Blokování návštěvy webových stránek. Více informací o formátu najdete v dokumentaci.

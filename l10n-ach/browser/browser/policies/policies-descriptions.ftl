@@ -30,7 +30,7 @@ policy-DisableFeedbackCommands = Juk twero me cwalo adwogi ki ii gin ayera me Ko
 
 policy-DisableFormHistory = Pe ipoo ikom gin mukato me yeny ki pwom
 
-policy-DisablePocket = Juk jami me gwoko potbuk me kakube i Pocket.
+policy-DisablePocket2 = Juk jami me gwoko potbuk me kakube i { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Juk Yeny i mung
 
@@ -38,11 +38,10 @@ policy-DisableProfileImport = Juk twero me gin ayera me kelo data ki ii layeny m
 
 policy-DisableSecurityBypass = Geng latic kwede pe me kalo ciko mogo me ber bedo.
 
-policy-FlashPlugin = Yee onyo juk tic ki larwak me Flash
-
 policy-InstallAddonsPermission = Yee ki kakube mogo me keto med-ikome.
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
+
 
 ##
 

@@ -26,6 +26,8 @@ url-classifier-cache-ncache-entries = Broj negativnih unosa u predmemoriju
 url-classifier-cache-pcache-entries = Broj pozitivnih unosa u predmemoriju
 url-classifier-cache-show-entries = Prikaži unose
 url-classifier-cache-entries = Zapisi predmemorije
+url-classifier-cache-prefix = Prefiks
+url-classifier-debug-title = Otklanjanje grešaka
 url-classifier-debug-modules = Trenutačni log moduli
 url-classifier-debug-file = Trenutačna log datoteka
 
@@ -38,5 +40,9 @@ url-classifier-disabled = Onemogućeno
 url-classifier-updating = aktualiziranje
 url-classifier-cannot-update = nije moguće aktualizirati
 url-classifier-success = uspjeh
+
+## Variables
+##   $error (string) - Error message
+
 url-classifier-update-error = greška prilikom aktualiziranja ({ $error })
 url-classifier-download-error = greška prilikom preuzimanja ({ $error })

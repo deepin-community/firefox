@@ -31,19 +31,14 @@ nsIFrame* NS_NewHTMLCanvasFrame(mozilla::PresShell* aPresShell,
 class nsHTMLCanvasFrame final : public nsContainerFrame {
  public:
   typedef mozilla::layers::CanvasRenderer CanvasRenderer;
-  typedef mozilla::layers::Layer Layer;
   typedef mozilla::layers::LayerManager LayerManager;
   typedef mozilla::layers::WebRenderCanvasData WebRenderCanvasData;
 
   NS_DECL_QUERYFRAME
   NS_DECL_FRAMEARENA_HELPERS(nsHTMLCanvasFrame)
 
-  explicit nsHTMLCanvasFrame(ComputedStyle* aStyle, nsPresContext* aPresContext)
-      : nsContainerFrame(aStyle, aPresContext, kClassID),
-        mBorderPadding(GetWritingMode()) {}
-
-  virtual void Init(nsIContent* aContent, nsContainerFrame* aParent,
-                    nsIFrame* aPrevInFlow) override;
+  nsHTMLCanvasFrame(ComputedStyle* aStyle, nsPresContext* aPresContext)
+      : nsContainerFrame(aStyle, aPresContext, kClassID) {}
 
   virtual void BuildDisplayList(nsDisplayListBuilder* aBuilder,
                                 const nsDisplayListSet& aLists) override;
@@ -61,6 +56,8 @@ class nsHTMLCanvasFrame final : public nsContainerFrame {
   virtual mozilla::IntrinsicSize GetIntrinsicSize() override;
   mozilla::AspectRatio GetIntrinsicRatio() const override;
 
+  void UnionChildOverflow(mozilla::OverflowAreas& aOverflowAreas) override;
+
   SizeComputationResult ComputeSize(
       gfxContext* aRenderingContext, mozilla::WritingMode aWM,
       const mozilla::LogicalSize& aCBSize, nscoord aAvailableISize,
@@ -72,8 +69,6 @@ class nsHTMLCanvasFrame final : public nsContainerFrame {
   virtual void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,
                       const ReflowInput& aReflowInput,
                       nsReflowStatus& aStatus) override;
-
-  nsRect GetInnerArea() const;
 
 #ifdef ACCESSIBILITY
   virtual mozilla::a11y::AccType AccessibleType() override;
@@ -98,10 +93,6 @@ class nsHTMLCanvasFrame final : public nsContainerFrame {
 
  protected:
   virtual ~nsHTMLCanvasFrame();
-
-  nscoord GetContinuationOffset(nscoord* aWidth = 0) const;
-
-  mozilla::LogicalMargin mBorderPadding;
 };
 
 #endif /* nsHTMLCanvasFrame_h___ */

@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Sembunyikan
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Tampilkan semua folder markah
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Sembunyikan
+
 bookmark-overlay-new-folder-button =
     .label = Folder baru
     .accesskey = b
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Tampilkan semua Tag
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Sembunyikan
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Tampilkan semua Tag
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Sembunyikan
 
 bookmark-overlay-keyword-2 =
     .value = Kata Kunci

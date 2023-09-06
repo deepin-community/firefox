@@ -61,9 +61,6 @@ import-items-description = Seleccioneu quins elements voleu importar:
 
 import-permissions-page-title = Doneu permisos al { -brand-short-name }
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = El macOS requereix que permeteu explícitament al { -brand-short-name } accedir a les adreces d'interés del Safari. Feu clic a «Continuar» i seleccioneu el fitxer «Bookmarks.plist» al menú d'obrir el fitxer que apareixerà.
-
 import-migrating-page-title = S'està important…
 
 import-migrating-description = Els elements següents s'estan important en estos moments…
@@ -78,23 +75,9 @@ import-done-description = Els elements següents s'han importat correctament:
 
 import-close-source-browser = Abans de continuar, assegureu-vos que el navegador seleccionat estiga tancat.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = De { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Llista de lectura (del Safari)
 imported-edge-reading-list = Llista de lectura (de l'Edge)
@@ -169,3 +152,4 @@ browser-data-session-checkbox =
     .label = Finestres i pestanyes
 browser-data-session-label =
     .value = Finestres i pestanyes
+

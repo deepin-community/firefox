@@ -3,27 +3,23 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const Services = require("Services");
-
-const EventEmitter = require("devtools/shared/event-emitter");
-
-const Telemetry = require("devtools/client/shared/telemetry");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
 
 loader.lazyRequireGetter(
   this,
   "AccessibilityProxy",
-  "devtools/client/accessibility/accessibility-proxy",
+  "resource://devtools/client/accessibility/accessibility-proxy.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "Picker",
-  "devtools/client/accessibility/picker",
+  "resource://devtools/client/accessibility/picker.js",
   true
 );
 const {
   A11Y_SERVICE_DURATION,
-} = require("devtools/client/accessibility/constants");
+} = require("resource://devtools/client/accessibility/constants.js");
 
 // The panel's window global is an EventEmitter firing the following events:
 const EVENTS = {
@@ -55,15 +51,12 @@ function AccessibilityPanel(iframeWindow, toolbox, commands) {
   this._commands = commands;
 
   this.onPanelVisibilityChange = this.onPanelVisibilityChange.bind(this);
-  this.onNewAccessibleFrontSelected = this.onNewAccessibleFrontSelected.bind(
-    this
-  );
-  this.onAccessibilityInspectorUpdated = this.onAccessibilityInspectorUpdated.bind(
-    this
-  );
-  this.updateA11YServiceDurationTimer = this.updateA11YServiceDurationTimer.bind(
-    this
-  );
+  this.onNewAccessibleFrontSelected =
+    this.onNewAccessibleFrontSelected.bind(this);
+  this.onAccessibilityInspectorUpdated =
+    this.onAccessibilityInspectorUpdated.bind(this);
+  this.updateA11YServiceDurationTimer =
+    this.updateA11YServiceDurationTimer.bind(this);
   this.forceUpdatePickerButton = this.forceUpdatePickerButton.bind(this);
   this.onLifecycleEvent = this.onLifecycleEvent.bind(this);
 
@@ -85,7 +78,7 @@ AccessibilityPanel.prototype = {
       resolver = resolve;
     });
 
-    this._telemetry = new Telemetry();
+    this._telemetry = this._toolbox.telemetry;
     this.panelWin.gTelemetry = this._telemetry;
 
     this._toolbox.on("select", this.onPanelVisibilityChange);
@@ -101,7 +94,7 @@ AccessibilityPanel.prototype = {
       this.onAccessibilityInspectorUpdated
     );
 
-    this.accessibilityProxy = new AccessibilityProxy(this._commands);
+    this.accessibilityProxy = new AccessibilityProxy(this._commands, this);
     await this.accessibilityProxy.initialize();
 
     // Enable accessibility service if necessary.
@@ -111,14 +104,6 @@ AccessibilityPanel.prototype = {
     ) {
       await this.accessibilityProxy.enableAccessibility();
     }
-
-    this.onResourceAvailable = this.onResourceAvailable.bind(this);
-    await this._commands.resourceCommand.watchResources(
-      [this._commands.resourceCommand.TYPES.DOCUMENT_EVENT],
-      {
-        onAvailable: this.onResourceAvailable,
-      }
-    );
 
     this.picker = new Picker(this);
     this.fluentBundles = await this.createFluentBundles();
@@ -177,7 +162,7 @@ AccessibilityPanel.prototype = {
    * refreshed immediatelly if it's currently selected or lazily when the user
    * actually selects it.
    */
-  async onTabNavigated() {
+  async forceRefresh() {
     this.shouldRefresh = true;
     await this._opening;
 
@@ -187,20 +172,6 @@ AccessibilityPanel.prototype = {
     await onUpdated;
 
     this.emit("reloaded");
-  },
-
-  onResourceAvailable: function(resources) {
-    for (const resource of resources) {
-      // Only consider top level document, and ignore remote iframes top document
-      if (
-        resource.resourceType ===
-          this._commands.resourceCommand.TYPES.DOCUMENT_EVENT &&
-        resource.name === "dom-complete" &&
-        resource.targetFront.isTopLevel
-      ) {
-        this.onTabNavigated();
-      }
-    }
   },
 
   /**
@@ -343,10 +314,6 @@ AccessibilityPanel.prototype = {
     this.postContentMessage("destroy");
 
     if (this.accessibilityProxy) {
-      this._commands.resourceCommand.unwatchResources(
-        [this._commands.resourceCommand.TYPES.DOCUMENT_EVENT],
-        { onAvailable: this.onResourceAvailable }
-      );
       this.accessibilityProxy.stopListeningForLifecycleEvents({
         init: this.onLifecycleEvent,
         shutdown: this.onLifecycleEvent,

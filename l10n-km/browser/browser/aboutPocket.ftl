@@ -17,16 +17,21 @@ pocket-panel-saved-error-tag-length = ស្លាក​ត្រូវ​បា
 pocket-panel-saved-error-only-links = អាច​រក្សាទុក​បាន​តែ​តំណភ្ជាប់​ប៉ុណ្ណោះ
 pocket-panel-saved-error-not-saved = ទំព័រ​មិន​ត្រូវបាន​រក្សាទុក
 pocket-panel-saved-error-no-internet = អ្នកត្រូវតែ​ភ្ជាប់​ទៅ​អ៊ីនធឺណិត ដើម្បី​រក្សាទុក​ទៅ​កាន់ { -pocket-brand-name }។ សូមភ្ជាប់​ទៅ​អ៊ីនធឺណិត រួចព្យាយាម​ម្ដងទៀត។
+pocket-panel-saved-error-remove = មានបញ្ហា​នៅពេល​ព្យាយាម​លុប​ទំព័រ​នេះ។
 pocket-panel-saved-page-removed = ទំព័រ​ត្រូវ​បាន​លុបចោល
 pocket-panel-saved-page-saved = បាន​រក្សាទុក​ទៅ { -pocket-brand-name }
+pocket-panel-saved-page-saved-b = បានរក្សាទុក​ទៅ { -pocket-brand-name }!
 pocket-panel-saved-processing-remove = កំពុង​លុប​ទំព័រ…
+pocket-panel-saved-removed-updated = បានលុបទំព័រចេញពី​ការរក្សាទុក
 pocket-panel-saved-processing-tags = កំពុង​បន្ថែម​ស្លាក...
 pocket-panel-saved-remove-page = លុប​ទំព័រ
 pocket-panel-saved-save-tags = រក្សាទុក​
 pocket-panel-saved-saving-tags = កំពុង​រក្សាទុក…
 pocket-panel-saved-suggested-tags = ស្លាកដែល​បាន​ណែនាំ
 pocket-panel-saved-tags-saved = បាន​បន្ថែម​ស្លាក
-pocket-panel-signup-view-list = មើលបញ្ជី
+
+# This is displayed above a field where the user can add tags
+pocket-panel-signup-add-tags = បញ្ចូល​ស្លាក៖
 
 ## about:pocket-signup panel
 
@@ -40,11 +45,30 @@ pocket-panel-signup-tagline = រក្សាទុក​អត្ថបទ​ �
 pocket-panel-signup-tagline-story-one = ចុច​​ប៊ូតុង { -pocket-brand-name } ដើម្បីរក្សា​ទុក​អត្ថបទ វីដេអូ ឬ​ទំព័រ​ពី { -brand-product-name }។
 pocket-panel-signup-tagline-story-two = មើល​ក្នុង { -pocket-brand-name } សម្រាប់​គ្រប់ឧបករណ៍ និង​គ្រប់ពេល។​
 
+pocket-panel-signup-cta-a-fix = ប៊ូតុង​រក្សាទុក​របស់អ្នក​សម្រាប់​អ៊ីនធឺណិត
+pocket-panel-signup-cta-b-updated = ចុចប៊ូតុង { -pocket-brand-name } ដើម្បីរក្សាទុកអត្ថបទ វីដេអូ និងតំណ។ មើលការរក្សាទុករបស់អ្នកនៅលើឧបករណ៍ណាមួយ គ្រប់ពេល។
+pocket-panel-signup-cta-b-short = ចុចប៊ូតុង { -pocket-brand-name } ដើម្បីរក្សាទុកអត្ថបទ វីដេអូ និងតំណ។
+pocket-panel-signup-cta-c-updated = មើលការរក្សាទុករបស់អ្នកនៅលើឧបករណ៍ណាមួយ គ្រប់ពេល។
+
 ## about:pocket-home panel
 
-pocket-panel-home-my-list = បញ្ជីរបស់ខ្ញុំ
 pocket-panel-home-welcome-back = ស្វាគមន៍ការត្រឡប់មកវិញម្ដងទៀត
 pocket-panel-home-paragraph = អ្នក​អាច​ប្រើប្រាស់ { -pocket-brand-name } ដើម្បីរុករក និង​រក្សាទុក​ទំព័រ​បណ្ដាញ អត្ថបទ វីដេអូ ការផ្សាយ ឬ​ត្រឡប់​ទៅ​កន្លែង​ណាដែល​អ្នក​បានកំពុង​អាន។
 pocket-panel-home-explore-popular-topics = ស្វែងរកប្រធានបទពេញនិយម
 pocket-panel-home-discover-more = ស្វែងយល់បន្ថែម
 pocket-panel-home-explore-more = រុករក
+
+pocket-panel-home-most-recent-saves = នេះជាការរក្សាទុកថ្មីៗបំផុតរបស់អ្នក៖
+pocket-panel-home-most-recent-saves-loading = ការរក្សាទុកថ្មីៗកំពុងផ្ទុក...
+pocket-panel-home-new-user-cta = ចុចប៊ូតុង { -pocket-brand-name } ដើម្បីរក្សាទុកអត្ថបទ វីដេអូ និងតំណ។
+pocket-panel-home-new-user-message = មើលការរក្សាទុកថ្មីៗរបស់អ្នកនៅទីនេះ។
+
+## Pocket panel header component
+
+pocket-panel-header-my-saves = មើលការរក្សាទុករបស់ខ្ញុំ
+pocket-panel-header-sign-in = ចូល
+
+## Pocket panel buttons
+
+pocket-panel-button-show-all = បង្ហាញ​ទាំងអស់
+pocket-panel-button-activate = បើកដំណើរការ { -pocket-brand-name } នៅក្នុង { -brand-product-name }

@@ -293,7 +293,7 @@ fn zero_rtt() {
         .enable_0rtt(
             anti_replay.as_ref().unwrap(),
             0xffff_ffff,
-            Box::new(PermissiveZeroRttChecker::default()),
+            Box::<PermissiveZeroRttChecker>::default(),
         )
         .expect("should enable 0-RTT");
 
@@ -320,7 +320,7 @@ fn zero_rtt_no_eoed() {
         .enable_0rtt(
             anti_replay.as_ref().unwrap(),
             0xffff_ffff,
-            Box::new(PermissiveZeroRttChecker::default()),
+            Box::<PermissiveZeroRttChecker>::default(),
         )
         .expect("should enable 0-RTT");
     server
@@ -421,7 +421,7 @@ fn ech_retry() {
     let mut cfg = Vec::from(server.ech_config());
     // Ensure that the version and config_id is correct.
     assert_eq!(cfg[2], 0xfe);
-    assert_eq!(cfg[3], 0x0a);
+    assert_eq!(cfg[3], 0x0d);
     assert_eq!(cfg[6], CONFIG_ID);
     // Change the config_id so that the server doesn't recognize this.
     cfg[6] ^= 0x94;

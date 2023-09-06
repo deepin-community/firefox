@@ -1,14 +1,9 @@
 "use strict";
 
-const {
-  ExperimentAPI,
-  _ExperimentFeature: ExperimentFeature,
-} = ChromeUtils.import("resource://nimbus/ExperimentAPI.jsm");
-const { TestUtils } = ChromeUtils.import(
-  "resource://testing-common/TestUtils.jsm"
-);
-const { AppConstants } = ChromeUtils.import(
-  "resource://gre/modules/AppConstants.jsm"
+const { ExperimentAPI, _ExperimentFeature: ExperimentFeature } =
+  ChromeUtils.importESModule("resource://nimbus/ExperimentAPI.sys.mjs");
+const { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
 );
 
 async function setupForExperimentFeature() {
@@ -49,11 +44,11 @@ function createInstanceWithVariables(variables) {
   });
 }
 
-add_task(async function test_ExperimentFeature_getPreferenceName() {
+add_task(async function test_ExperimentFeature_getFallbackPrefName() {
   const instance = createInstanceWithVariables(TEST_VARIABLES);
 
   Assert.equal(
-    instance.getPreferenceName("enabled"),
+    instance.getFallbackPrefName("enabled"),
     "testfeature1.enabled",
     "should return the fallback preference name"
   );
@@ -67,7 +62,7 @@ add_task(async function test_ExperimentFeature_getVariable_notRegistered() {
       () => {
         instance.getVariable("non_existant_variable");
       },
-      /Nimbus: Warning - variable "non_existant_variable" is not defined in FeatureManifest\.js/,
+      /Nimbus: Warning - variable "non_existant_variable" is not defined in FeatureManifest\.yaml/,
       "should throw in automation for variables not defined in the manifest"
     );
   } else {
@@ -92,6 +87,17 @@ add_task(async function test_ExperimentFeature_getVariable_precedence() {
 
   const instance = createInstanceWithVariables(TEST_VARIABLES);
   const prefName = TEST_VARIABLES.items.fallbackPref;
+  const rollout = ExperimentFakes.rollout(`${FEATURE_ID}-rollout`, {
+    branch: {
+      slug: "slug",
+      features: [
+        {
+          featureId: FEATURE_ID,
+          value: { items: [4, 5, 6] },
+        },
+      ],
+    },
+  });
 
   Services.prefs.clearUserPref(prefName);
 
@@ -102,9 +108,7 @@ add_task(async function test_ExperimentFeature_getVariable_precedence() {
   );
 
   // Default pref values
-  Services.prefs
-    .getDefaultBranch("")
-    .setStringPref(prefName, JSON.stringify([1, 2, 3]));
+  Services.prefs.setStringPref(prefName, JSON.stringify([1, 2, 3]));
 
   Assert.deepEqual(
     instance.getVariable("items"),
@@ -113,9 +117,7 @@ add_task(async function test_ExperimentFeature_getVariable_precedence() {
   );
 
   // Remote default values
-  manager.store.updateRemoteConfigs(FEATURE_ID, {
-    variables: { items: [4, 5, 6] },
-  });
+  await manager.store.addEnrollment(rollout);
 
   Assert.deepEqual(
     instance.getVariable("items"),
@@ -140,16 +142,7 @@ add_task(async function test_ExperimentFeature_getVariable_precedence() {
     "should return the experiment value over the remote value"
   );
 
-  // User pref values
-  Services.prefs.setStringPref(prefName, JSON.stringify([10, 11, 12]));
-  Assert.deepEqual(
-    instance.getVariable("items"),
-    [10, 11, 12],
-    "should return the user branch pref value over any other value"
-  );
-
   // Cleanup
-  Services.prefs.getDefaultBranch("").deleteBranch(TEST_PREF_BRANCH);
   Services.prefs.deleteBranch(TEST_PREF_BRANCH);
   await doExperimentCleanup();
   sandbox.restore();
@@ -157,16 +150,24 @@ add_task(async function test_ExperimentFeature_getVariable_precedence() {
 
 add_task(async function test_ExperimentFeature_getVariable_partial_values() {
   const { sandbox, manager } = await setupForExperimentFeature();
-
   const instance = createInstanceWithVariables(TEST_VARIABLES);
+  const rollout = ExperimentFakes.rollout(`${FEATURE_ID}-rollout`, {
+    branch: {
+      slug: "slug",
+      features: [
+        {
+          featureId: FEATURE_ID,
+          value: { name: "abc" },
+        },
+      ],
+    },
+  });
 
   // Set up a pref value for .enabled,
   // a remote value for .name,
   // an experiment value for .items
   Services.prefs.setBoolPref(TEST_VARIABLES.enabled.fallbackPref, true);
-  manager.store.updateRemoteConfigs(FEATURE_ID, {
-    variables: { name: "abc" },
-  });
+  await manager.store.addEnrollment(rollout);
   const doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig(
     {
       featureId: FEATURE_ID,

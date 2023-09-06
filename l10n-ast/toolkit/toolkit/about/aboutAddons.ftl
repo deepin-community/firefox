@@ -4,7 +4,12 @@
 
 addons-page-title = Xestor de complementos
 
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Consigui estensiones y estilos en <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
 
 list-empty-installed =
     .value = Nun tienes nengún complementu instaláu d'esti tipu
@@ -114,7 +119,6 @@ addon-category-recent-updates-title =
 ## These are global warnings
 
 extensions-warning-safe-mode = Desactiváronse tolos complementos pol mou seguru
-
 
 ## Strings connected to add-on updates
 
@@ -227,7 +231,6 @@ extension-enabled-heading = Activóse
 extension-disabled-heading = Desactivóse
 
 theme-enabled-heading = Activóse
-theme-disabled-heading = Desactivóse
 
 plugin-enabled-heading = Activóse
 plugin-disabled-heading = Desactivóse
@@ -283,13 +286,15 @@ addon-detail-private-browsing-help = Al permitilo, la estensión va tener accesu
 addon-detail-private-browsing-allow = Permitir
 addon-detail-private-browsing-disallow = Nun permitir
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 addon-badge-recommended2 =
     .title = { -brand-product-name } aconseya namás les estensiones que cumplan colos nuesos estándares de seguranza y rindimientu
     .aria-label = { addon-badge-recommended2.title }
-
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
 addon-badge-line3 =
@@ -307,7 +312,6 @@ recent-updates-heading = Anovamientos de recién
 release-notes-loading = Cargando…
 
 addon-permissions-empty = Esta estensión nun rique nengún permisu
-
 addon-permissions-required = Los permisos riquíos pa les funciones principales:
 addon-permissions-learnmore = Lleer más tocante a los permisos
 
@@ -335,3 +339,29 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Ferramientes pa tolos complementos
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = «{ $name }» ye incompatible con { -brand-short-name } { $version }.
+
+details-notification-unsigned-and-disabled = Nun pudo verificase «{ $name }» pal so usu en { -brand-short-name } y desactivóse.
+details-notification-unsigned-and-disabled-link = Más información
+
+details-notification-unsigned = Nun pudo verificase «{ $name }» pal so usu en { -brand-short-name }. Sigui con curiáu.
+details-notification-unsigned-link = Más información
+
+details-notification-blocked = Desactivóse «{ $name }» pola mor de problemes de seguranza o estabilidá.
+details-notification-blocked-link = Más información
+
+details-notification-softblocked = Sábese que «{ $name }» causa problemes de seguranza o estabilidá.
+details-notification-softblocked-link = Más información
+
+details-notification-gmp-pending = «{ $name }» va instalase de secute.

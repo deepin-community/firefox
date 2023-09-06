@@ -19,14 +19,13 @@ class gfxConfigManager {
  public:
   gfxConfigManager()
       : mFeatureWr(nullptr),
-        mFeatureWrQualified(nullptr),
         mFeatureWrCompositor(nullptr),
         mFeatureWrAngle(nullptr),
         mFeatureWrDComp(nullptr),
         mFeatureWrPartial(nullptr),
         mFeatureWrShaderCache(nullptr),
         mFeatureWrOptimizedShaders(nullptr),
-        mFeatureWrSoftware(nullptr),
+        mFeatureWrScissoredCacheClears(nullptr),
         mFeatureHwCompositing(nullptr),
         mFeatureD3D11HwAngle(nullptr),
         mFeatureD3D11Compositing(nullptr),
@@ -38,8 +37,11 @@ class gfxConfigManager {
         mWrForceAngleNoGPUProcess(false),
         mWrDCompWinEnabled(false),
         mWrCompositorDCompRequired(false),
+        mWrForcePartialPresent(false),
         mWrPartialPresent(false),
         mWrOptimizedShaders(false),
+        mWrScissoredCacheClearsEnabled(false),
+        mWrScissoredCacheClearsForceEnabled(false),
         mGPUProcessAllowSoftware(false),
         mWrEnvForceEnabled(false),
         mScaledResolution(false),
@@ -61,14 +63,13 @@ class gfxConfigManager {
   nsCOMPtr<nsIGfxInfo> mGfxInfo;
 
   FeatureState* mFeatureWr;
-  FeatureState* mFeatureWrQualified;
   FeatureState* mFeatureWrCompositor;
   FeatureState* mFeatureWrAngle;
   FeatureState* mFeatureWrDComp;
   FeatureState* mFeatureWrPartial;
   FeatureState* mFeatureWrShaderCache;
   FeatureState* mFeatureWrOptimizedShaders;
-  FeatureState* mFeatureWrSoftware;
+  FeatureState* mFeatureWrScissoredCacheClears;
 
   FeatureState* mFeatureHwCompositing;
   FeatureState* mFeatureD3D11HwAngle;
@@ -86,9 +87,12 @@ class gfxConfigManager {
   bool mWrForceAngleNoGPUProcess;
   bool mWrDCompWinEnabled;
   bool mWrCompositorDCompRequired;
+  bool mWrForcePartialPresent;
   bool mWrPartialPresent;
   Maybe<bool> mWrShaderCache;
   bool mWrOptimizedShaders;
+  bool mWrScissoredCacheClearsEnabled;
+  bool mWrScissoredCacheClearsForceEnabled;
   bool mGPUProcessAllowSoftware;
 
   /**
@@ -106,6 +110,7 @@ class gfxConfigManager {
   bool mIsEarlyBetaOrEarlier;
   bool mSafeMode;
   bool mIsWin10OrLater;
+  bool mIsWin11OrLater;
 };
 
 }  // namespace gfx

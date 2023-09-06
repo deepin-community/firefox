@@ -4,7 +4,9 @@ use futures::future::{self, poll_fn, FutureExt};
 use futures::sink::SinkExt;
 use futures::stream::StreamExt;
 use futures::task::{Context, Poll};
-use futures::{join, pending, pin_mut, poll, select, select_biased, try_join};
+use futures::{
+    join, pending, pin_mut, poll, select, select_biased, stream, stream_select, try_join,
+};
 use std::mem;
 
 #[test]
@@ -158,6 +160,7 @@ fn select_nested() {
     assert_eq!(res, 3);
 }
 
+#[cfg_attr(not(target_pointer_width = "64"), ignore)]
 #[test]
 fn select_size() {
     let fut = async {
@@ -212,6 +215,7 @@ fn select_on_non_unpin_expressions_with_default() {
     assert_eq!(res, 5);
 }
 
+#[cfg_attr(not(target_pointer_width = "64"), ignore)]
 #[test]
 fn select_on_non_unpin_size() {
     // The returned Future is !Unpin
@@ -307,42 +311,82 @@ fn select_on_mutable_borrowing_future_with_same_borrow_in_block_and_default() {
 }
 
 #[test]
+#[allow(unused_assignments)]
+fn stream_select() {
+    // stream_select! macro
+    block_on(async {
+        let endless_ints = |i| stream::iter(vec![i].into_iter().cycle());
+
+        let mut endless_ones = stream_select!(endless_ints(1i32), stream::pending());
+        assert_eq!(endless_ones.next().await, Some(1));
+        assert_eq!(endless_ones.next().await, Some(1));
+
+        let mut finite_list =
+            stream_select!(stream::iter(vec![1].into_iter()), stream::iter(vec![1].into_iter()));
+        assert_eq!(finite_list.next().await, Some(1));
+        assert_eq!(finite_list.next().await, Some(1));
+        assert_eq!(finite_list.next().await, None);
+
+        let endless_mixed = stream_select!(endless_ints(1i32), endless_ints(2), endless_ints(3));
+        // Take 1000, and assert a somewhat even distribution of values.
+        // The fairness is randomized, but over 1000 samples we should be pretty close to even.
+        // This test may be a bit flaky. Feel free to adjust the margins as you see fit.
+        let mut count = 0;
+        let results = endless_mixed
+            .take_while(move |_| {
+                count += 1;
+                let ret = count < 1000;
+                async move { ret }
+            })
+            .collect::<Vec<_>>()
+            .await;
+        assert!(results.iter().filter(|x| **x == 1).count() >= 299);
+        assert!(results.iter().filter(|x| **x == 2).count() >= 299);
+        assert!(results.iter().filter(|x| **x == 3).count() >= 299);
+    });
+}
+
+#[cfg_attr(not(target_pointer_width = "64"), ignore)]
+#[test]
 fn join_size() {
     let fut = async {
         let ready = future::ready(0i32);
         join!(ready)
     };
-    assert_eq!(mem::size_of_val(&fut), 16);
+    assert_eq!(mem::size_of_val(&fut), 24);
 
     let fut = async {
         let ready1 = future::ready(0i32);
         let ready2 = future::ready(0i32);
         join!(ready1, ready2)
     };
-    assert_eq!(mem::size_of_val(&fut), 28);
+    assert_eq!(mem::size_of_val(&fut), 40);
 }
 
+#[cfg_attr(not(target_pointer_width = "64"), ignore)]
 #[test]
 fn try_join_size() {
     let fut = async {
         let ready = future::ready(Ok::<i32, i32>(0));
         try_join!(ready)
     };
-    assert_eq!(mem::size_of_val(&fut), 16);
+    assert_eq!(mem::size_of_val(&fut), 24);
 
     let fut = async {
         let ready1 = future::ready(Ok::<i32, i32>(0));
         let ready2 = future::ready(Ok::<i32, i32>(0));
         try_join!(ready1, ready2)
     };
-    assert_eq!(mem::size_of_val(&fut), 28);
+    assert_eq!(mem::size_of_val(&fut), 48);
 }
 
+#[allow(clippy::let_underscore_future)]
 #[test]
 fn join_doesnt_require_unpin() {
     let _ = async { join!(async {}, async {}) };
 }
 
+#[allow(clippy::let_underscore_future)]
 #[test]
 fn try_join_doesnt_require_unpin() {
     let _ = async { try_join!(async { Ok::<(), ()>(()) }, async { Ok::<(), ()>(()) },) };

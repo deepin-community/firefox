@@ -3,7 +3,7 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import React, { Component } from "react";
-import classnames from "classnames";
+import PropTypes from "prop-types";
 import { connect } from "../../../utils/connect";
 
 import ExceptionOption from "./ExceptionOption";
@@ -15,16 +15,25 @@ import actions from "../../../actions";
 import { getSelectedLocation } from "../../../utils/selected-location";
 import { createHeadlessEditor } from "../../../utils/editor/create-editor";
 
-import {
-  makeBreakpointId,
-  sortSelectedBreakpoints,
-} from "../../../utils/breakpoint";
+import { makeBreakpointId } from "../../../utils/breakpoint";
 
 import { getSelectedSource, getBreakpointSources } from "../../../selectors";
+
+const classnames = require("devtools/client/shared/classnames.js");
 
 import "./Breakpoints.css";
 
 class Breakpoints extends Component {
+  static get propTypes() {
+    return {
+      breakpointSources: PropTypes.array.isRequired,
+      pauseOnExceptions: PropTypes.func.isRequired,
+      selectedSource: PropTypes.object,
+      shouldPauseOnCaughtExceptions: PropTypes.bool.isRequired,
+      shouldPauseOnExceptions: PropTypes.bool.isRequired,
+    };
+  }
+
   componentWillUnmount() {
     this.removeEditor();
   }
@@ -44,15 +53,25 @@ class Breakpoints extends Component {
     this.headlessEditor = null;
   }
 
+  togglePauseOnException = () => {
+    this.props.pauseOnExceptions(!this.props.shouldPauseOnExceptions, false);
+  };
+
+  togglePauseOnCaughtException = () => {
+    this.props.pauseOnExceptions(
+      true,
+      !this.props.shouldPauseOnCaughtExceptions
+    );
+  };
+
   renderExceptionsOptions() {
     const {
       breakpointSources,
       shouldPauseOnExceptions,
       shouldPauseOnCaughtExceptions,
-      pauseOnExceptions,
     } = this.props;
 
-    const isEmpty = breakpointSources.length == 0;
+    const isEmpty = !breakpointSources.length;
 
     return (
       <div
@@ -64,7 +83,7 @@ class Breakpoints extends Component {
           className="breakpoints-exceptions"
           label={L10N.getStr("pauseOnExceptionsItem2")}
           isChecked={shouldPauseOnExceptions}
-          onChange={() => pauseOnExceptions(!shouldPauseOnExceptions, false)}
+          onChange={this.togglePauseOnException}
         />
 
         {shouldPauseOnExceptions && (
@@ -72,9 +91,7 @@ class Breakpoints extends Component {
             className="breakpoints-exceptions-caught"
             label={L10N.getStr("pauseOnCaughtExceptionsItem")}
             isChecked={shouldPauseOnCaughtExceptions}
-            onChange={() =>
-              pauseOnExceptions(true, !shouldPauseOnCaughtExceptions)
-            }
+            onChange={this.togglePauseOnCaughtException}
           />
         )}
       </div>
@@ -88,27 +105,21 @@ class Breakpoints extends Component {
     }
 
     const editor = this.getEditor();
-    const sources = [...breakpointSources.map(({ source }) => source)];
+    const sources = breakpointSources.map(({ source }) => source);
 
     return (
       <div className="pane breakpoints-list">
         {breakpointSources.map(({ source, breakpoints }) => {
-          const sortedBreakpoints = sortSelectedBreakpoints(
-            breakpoints,
-            selectedSource
-          );
-
           return [
             <BreakpointHeading
               key={source.id}
               source={source}
               sources={sources}
             />,
-            ...sortedBreakpoints.map(breakpoint => (
+            breakpoints.map(breakpoint => (
               <Breakpoint
                 breakpoint={breakpoint}
                 source={source}
-                selectedSource={selectedSource}
                 editor={editor}
                 key={makeBreakpointId(
                   getSelectedLocation(breakpoint, selectedSource)

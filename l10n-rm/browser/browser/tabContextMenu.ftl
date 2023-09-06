@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Tscherner tut ils tabs
     .accesskey = T
+tab-context-play-tab =
+    .label = Far ir il tab
+    .accesskey = I
+tab-context-play-tabs =
+    .label = Far ir ils tabs
+    .accesskey = r
 duplicate-tab =
     .label = Duplitgar il tab
     .accesskey = D
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Crear segnapaginas per ils tabs…
     .accesskey = p
-bookmark-tab =
-    .label = Agiuntar in segnapagina per il tab
-    .accesskey = A
+tab-context-bookmark-tab =
+    .label = Agiuntar in segnapagina per il tab…
+    .accesskey = b
 tab-context-open-in-new-container-tab =
     .label = Avrir en in nov tab da container
     .accesskey = e
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Cundivider
     .accesskey = u
-tab-context-share-more =
-    .label = Dapli…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,14 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] Reavrir ils tabs serrads
         }
     .accesskey = a
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Serrar il tab
-            [one] Serrar il tab
-           *[other] Serrar ils tabs
-        }
-    .accesskey = S
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

@@ -59,5 +59,8 @@ site-data-removing-dialog =
 site-data-removing-header = Küpsiste ja saitide andmete kustutamine
 
 site-data-removing-desc = Küpsiste ja saitide andmete kustutamine võib põhjustada saitidest väljalogimist. Kas oled kindel, et soovid need muudatused teha?
+# Variables:
+#   $baseDomain (String) - The single domain for which data is being removed
+site-data-removing-single-desc = Küpsiste ja saitide andmete kustutamine võib põhjustada saitidest väljalogimise. Kas oled kindel, et soovid kustutada saidi <strong>{ $baseDomain }</strong> küpsised ja andmed?
 
 site-data-removing-table = Järgmiste saitide küpsised ja andmed kustutatakse

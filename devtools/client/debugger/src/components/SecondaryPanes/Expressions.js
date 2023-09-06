@@ -3,8 +3,8 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { connect } from "../../utils/connect";
-import classnames from "classnames";
 import { features } from "../../utils/prefs";
 
 import { objectInspector } from "devtools/client/shared/components/reps/index";
@@ -14,15 +14,15 @@ import {
   getExpressions,
   getExpressionError,
   getAutocompleteMatchset,
-  getThreadContext,
 } from "../../selectors";
-import { getValue } from "../../utils/expressions";
-import { getGrip, getFront } from "../../utils/evaluation-result";
+import { getExpressionResultGripAndFront } from "../../utils/expressions";
 
 import { CloseButton } from "../shared/Button";
-import { debounce } from "lodash";
 
 import "./Expressions.css";
+
+const { debounce } = require("devtools/shared/debounce");
+const classnames = require("devtools/client/shared/classnames.js");
 
 const { ObjectInspector } = objectInspector;
 
@@ -35,6 +35,26 @@ class Expressions extends Component {
       editIndex: -1,
       inputValue: "",
       focused: false,
+    };
+  }
+
+  static get propTypes() {
+    return {
+      addExpression: PropTypes.func.isRequired,
+      autocomplete: PropTypes.func.isRequired,
+      autocompleteMatches: PropTypes.array,
+      clearAutocomplete: PropTypes.func.isRequired,
+      clearExpressionError: PropTypes.func.isRequired,
+      deleteExpression: PropTypes.func.isRequired,
+      expressionError: PropTypes.bool.isRequired,
+      expressions: PropTypes.array.isRequired,
+      highlightDomElement: PropTypes.func.isRequired,
+      onExpressionAdded: PropTypes.func.isRequired,
+      openElementInInspector: PropTypes.func.isRequired,
+      openLink: PropTypes.any.isRequired,
+      showInput: PropTypes.bool.isRequired,
+      unHighlightDomElement: PropTypes.func.isRequired,
+      updateExpression: PropTypes.func.isRequired,
     };
   }
 
@@ -55,7 +75,8 @@ class Expressions extends Component {
     });
   };
 
-  componentWillReceiveProps(nextProps) {
+  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.state.editing && !nextProps.expressionError) {
       this.clear();
     }
@@ -69,12 +90,8 @@ class Expressions extends Component {
 
   shouldComponentUpdate(nextProps, nextState) {
     const { editing, inputValue, focused } = this.state;
-    const {
-      expressions,
-      expressionError,
-      showInput,
-      autocompleteMatches,
-    } = this.props;
+    const { expressions, expressionError, showInput, autocompleteMatches } =
+      this.props;
 
     return (
       autocompleteMatches !== nextProps.autocompleteMatches ||
@@ -126,7 +143,7 @@ class Expressions extends Component {
 
   findAutocompleteMatches = debounce((value, selectionStart) => {
     const { autocomplete } = this.props;
-    autocomplete(this.props.cx, value, selectionStart);
+    autocomplete(value, selectionStart);
   }, 250);
 
   handleKeyDown = e => {
@@ -139,6 +156,10 @@ class Expressions extends Component {
     this.setState({ focused: false });
     this.props.onExpressionAdded();
     this.props.clearExpressionError();
+  };
+
+  createElement = element => {
+    return document.createElement(element);
   };
 
   onFocus = () => {
@@ -154,11 +175,7 @@ class Expressions extends Component {
     e.preventDefault();
     e.stopPropagation();
 
-    this.props.updateExpression(
-      this.props.cx,
-      this.state.inputValue,
-      expression
-    );
+    this.props.updateExpression(this.state.inputValue, expression);
   };
 
   handleNewSubmit = async e => {
@@ -167,7 +184,7 @@ class Expressions extends Component {
     e.stopPropagation();
 
     this.props.clearExpressionError();
-    await this.props.addExpression(this.props.cx, this.state.inputValue);
+    await this.props.addExpression(this.state.inputValue);
     this.setState({
       editing: false,
       editIndex: -1,
@@ -194,22 +211,18 @@ class Expressions extends Component {
     }
 
     if (updating) {
-      return;
+      return null;
     }
 
-    let value = getValue(expression);
-    let front = null;
-    if (value && value.unavailable !== true) {
-      value = getGrip(value);
-      front = getFront(value);
-    }
+    const { expressionResultGrip, expressionResultFront } =
+      getExpressionResultGripAndFront(expression);
 
     const root = {
       name: expression.input,
       path: input,
       contents: {
-        value,
-        front,
+        value: expressionResultGrip,
+        front: expressionResultFront,
       },
     };
 
@@ -221,6 +234,7 @@ class Expressions extends Component {
             autoExpandDepth={0}
             disableWrap={true}
             openLink={openLink}
+            createElement={this.createElement}
             onDoubleClick={(items, { depth }) => {
               if (depth === 0) {
                 this.editExpression(expression, index);
@@ -231,6 +245,7 @@ class Expressions extends Component {
             onDOMNodeMouseOver={grip => highlightDomElement(grip)}
             onDOMNodeMouseOut={grip => unHighlightDomElement(grip)}
             shouldRenderTooltip={true}
+            mayUseCustomFormatter={true}
           />
           <div className="expression-container__close-btn">
             <CloseButton
@@ -354,7 +369,6 @@ class Expressions extends Component {
 }
 
 const mapStateToProps = state => ({
-  cx: getThreadContext(state),
   autocompleteMatches: getAutocompleteMatchset(state),
   expressions: getExpressions(state),
   expressionError: getExpressionError(state),

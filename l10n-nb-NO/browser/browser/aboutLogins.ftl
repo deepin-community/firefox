@@ -5,12 +5,12 @@
 
 about-logins-page-title = Innlogginger og passord
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Søk innlogginger
+    .key = F
 
-create-login-button = Lag ny innlogging
+create-new-login-button =
+    .title = Opprett ny innlogging
 
 fxaccounts-sign-in-text = Få passordene dine på de andre enheter dine
 fxaccounts-sign-in-sync-button = Logg inn for å synkronisere
@@ -37,10 +37,20 @@ about-logins-menu-menuitem-help = Hjelp
 
 login-list =
     .aria-label = Innlogginger som samsvarer med søket
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } innlogging
        *[other] { $count } innlogginger
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } av { $total } innlogging
+       *[other] { $count } av { $total } innlogginger
     }
 login-list-sort-label-text = Sorter etter:
 login-list-name-option = Navn (A-Å)
@@ -61,7 +71,6 @@ about-logins-list-item-breach-icon =
     .title = Nettsted med datalekkasje
 about-logins-list-item-vulnerable-password-icon =
     .title = Sårbart passord
-
 about-logins-list-section-breach = Nettsteder med datalekkasjer
 about-logins-list-section-vulnerable = Sårbare passord
 about-logins-list-section-nothing = Ingen varsel
@@ -76,8 +85,8 @@ about-logins-login-intro-heading-logged-in = Ingen synkroniserte innlogginger fu
 login-intro-description = Slik kan du få dine { -brand-product-name } innlogginger hit, om du har lagret de på en annen enhet
 login-intro-instructions-fxa = Lag eller logg inn på din { -fxaccount-brand-name } på enheten der dine innlogginger er lagret
 login-intro-instructions-fxa-settings = Gå til Innstillinger > Synkronisering > Slå på synkronisering … Merk av for innlogginger og passord.
-login-intro-instructions-fxa-help = Gå til <a data-l10n-name="help-link">{ -lockwise-brand-short-name }-brukerstøtte</a> for mer hjelp.
-about-logins-intro-import = Hvis innloggingene dine er lagret i en annen nettleser, kan du <a data-l10n-name="import-link">importere dem til { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = Besøk <a data-l10n-name="passwords-help-link">passordstøtte</a> for mer hjelp.
+about-logins-intro-browser-only-import = Hvis innloggingene dine er lagret i en annen nettleser, kan du <a data-l10n-name="import-link">importere dem til { -brand-product-name }</a>
 about-logins-intro-import2 = Hvis innloggingene dine er lagret utenfor { -brand-product-name }, kan du <a data-l10n-name="import-browser-link">importere dem fra en annen nettleser</a> eller <a data-l10n-name="import-file-link">fra en fil</a>
 
 ## Login
@@ -102,9 +111,17 @@ login-item-copied-password-button-text = Kopiert!
 login-item-save-changes-button = Lagre endringer
 login-item-save-new-button = Lagre
 login-item-cancel-button = Avbryt
-login-item-time-changed = Sist endret: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Opprettet: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Sist brukt: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Opprettet
+login-item-timeline-action-updated = Oppdatert
+login-item-timeline-action-used = Brukt
 
 ## OS Authentication dialog
 
@@ -132,8 +149,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Skriv inn innloggingsinf
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = kopier det lagrede passordet
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Skriv inn innloggingsinformasjonen for Windows for å eksportere innloggingene dine. Dette vil gjøre kontoene dine tryggere.
 # This message can be seen when attempting to export a password in about:logins
@@ -147,8 +162,6 @@ master-password-reload-button =
     .label = Logg inn
     .accesskey = L
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Avbryt
@@ -158,6 +171,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Fjerne denne innloggingen?
 confirm-delete-dialog-message = Denne handlingen kan ikke angres.
 about-logins-confirm-remove-dialog-confirm-button = Fjern
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -193,6 +209,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Dette fjerner alle innlogginger du har lagret i { -brand-short-name } på alle enheter som er synkronisert med { -fxaccount-brand-name }. Dette vil også fjerne varsler om datalekkasjer som vises her. Du kan ikke angre denne handlingen.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Eksporter innlogginger og passord
 about-logins-confirm-export-dialog-message = Passordene dine blir lagret som lesbar tekst (f.eks. DårligP@ss0rd), slik at alle som kan åpne den eksporterte filen kan se dem.
 about-logins-confirm-export-dialog-confirm-button = Eksporter…
@@ -212,7 +230,6 @@ about-logins-breach-alert-date = Denne datalekkasjen skjedde den { DATETIME($dat
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Gå til { $hostname }
-about-logins-breach-alert-learn-more-link = Les mer
 
 ## Vulnerable Password notification
 

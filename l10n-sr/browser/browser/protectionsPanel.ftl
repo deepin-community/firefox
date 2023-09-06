@@ -14,8 +14,8 @@ protections-popup-footer-protection-label-strict = Строга
     .label = Строга
 protections-popup-footer-protection-label-custom = Прилагођена
     .label = Прилагођена
-protections-popup-footer-protection-label-standard = Стандардно
-    .label = Стандардно
+protections-popup-footer-protection-label-standard = Стандардна
+    .label = Стандардна
 
 ##
 
@@ -69,7 +69,6 @@ protections-panel-not-found-label = Нису уочени
 ##
 
 protections-panel-settings-label = Подешавања заштите
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Контролна табла заштите
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -84,6 +83,7 @@ protections-panel-site-not-working-view-issue-list-forms = Обрасци
 protections-panel-site-not-working-view-issue-list-payments = Плаћања
 protections-panel-site-not-working-view-issue-list-comments = Коментари
 protections-panel-site-not-working-view-issue-list-videos = Видео записи
+protections-panel-site-not-working-view-issue-list-fonts = Фонтови
 
 protections-panel-site-not-working-view-send-report = Пошаљите извештај
 
@@ -107,6 +107,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Пријавите неисправан сајт
 protections-panel-content-blocking-breakage-report-view-description = Блокирање неких елемената за праћење може проузроковати проблеме са појединим веб-сајтовима. Пријавите овакве проблеме како бисте побољшали { -brand-short-name } (организацији Mozilla ће се послати URL сајта и подаци о подешавањима прегледача). <label data-l10n-name="learn-more">Сазнајте више</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Блокирање неких елемената за праћење може проузроковати проблеме са појединим веб-сајтовима. Пријавите овакве проблеме како бисте побољшали { -brand-short-name } (организацији { -vendor-short-name } ће се послати URL сајта и подаци о подешавањима прегледача).
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -117,3 +118,22 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Откажи
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Пошаљи извештај
+
+# Cookie Banner Handling
+
+protections-panel-cookie-banner-handling-header = Смањење банера колачића
+protections-panel-cookie-banner-handling-enabled = Укључено за овај сајт
+protections-panel-cookie-banner-handling-disabled = Искључено за овај сајт
+protections-panel-cookie-banner-handling-undetected = Сајт тренутно није подржан
+
+protections-panel-cookie-banner-view-title =
+    .title = Смањење банера колачића
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = Искључити смањење банера колачића за { $host }?
+protections-panel-cookie-banner-view-turn-on-for-site = Укључити смањење банера колачића за овај сајт?
+protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } ће обрисати колачиће и освежити страницу. Брисање колачића може да вас одјави са сајта или да испразни вашу корпу за куповину.
+protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } покушава аутоматски да одбије све захтеве за колачиће на подржаним сајтовима.
+protections-panel-cookie-banner-view-cancel = Откажи
+protections-panel-cookie-banner-view-turn-off = Искључи
+protections-panel-cookie-banner-view-turn-on = Укључи

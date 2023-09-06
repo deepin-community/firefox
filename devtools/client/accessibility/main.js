@@ -3,9 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-const { utils: Cu } = Components;
-const { BrowserLoader } = Cu.import(
-  "resource://devtools/client/shared/browser-loader.js"
+const { BrowserLoader } = ChromeUtils.import(
+  "resource://devtools/shared/loader/browser-loader.js"
 );
 
 // Module Loader
@@ -15,4 +14,4 @@ const require = BrowserLoader({
 }).require;
 
 // Load accessibility panel content
-require("devtools/client/accessibility/accessibility-view.js");
+require("resource://devtools/client/accessibility/accessibility-view.js");

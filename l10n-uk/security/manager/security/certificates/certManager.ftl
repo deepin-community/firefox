@@ -26,9 +26,9 @@ certmgr-people = У вас є сертифікати, що ідентифіку�
 certmgr-server = Ці записи визначають винятки для помилок сертифікатів серверів
 certmgr-ca = У вас є сертифікати, що ідентифікують ці центри сертифікації
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Змінити налаштування довіри CA сертифіката
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Змінити рівень довіри:
 
@@ -38,21 +38,18 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Цей сертифікат може ідентифікувати користувачів ел. пошти.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Вилучення сертифіката
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
-    .label = Вузол
+    .label = Хост
 
 certmgr-cert-name =
     .label = Назва сертифіката
 
 certmgr-cert-server =
     .label = Сервер
-
-certmgr-override-lifetime =
-    .label = Термін дії
 
 certmgr-token-name =
     .label = Пристрій захисту
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Серійний номер
+
+certmgr-fingerprint-sha-256 =
+    .label = Відбиток SHA-256
 
 certmgr-view =
     .label = Переглянути…
@@ -139,7 +139,7 @@ pkcs12-dup-data = Сертифікат і закритий ключ вже іс�
 
 ## PKCS#12 file dialogs
 
-choose-p12-backup-file-dialog = Ім’я файлу для резервного копіювання
+choose-p12-backup-file-dialog = Назва файлу резервної копії
 file-browse-pkcs12-spec = Файли PKCS12
 choose-p12-restore-file-dialog = Файл сертифіката для імпорту
 
@@ -185,8 +185,6 @@ delete-email-cert-impact = Якщо ви вилучите поштовий се�
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Сертифікат з серійним номером: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Не надсилати сертифікат клієнта

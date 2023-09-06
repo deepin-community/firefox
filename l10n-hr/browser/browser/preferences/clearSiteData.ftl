@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Izbriši podatke
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Brisanje svih kolačića i podataka stranice koje je { -brand-short-name } spremio, može prouzročiti odjavljivanje s web stranica i brisanje izvanmrežnog web sadržaja. Brisanje sadržaja iz priručne memorije neće utjecati na tvoje prijave.
 

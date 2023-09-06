@@ -8,7 +8,6 @@
 newtab-page-title = Skedë e Re
 newtab-settings-button =
     .title = Personalizoni faqen tuaj Skedë e Re
-
 newtab-personalize-icon-label =
     .title = Personalizoni skedën e re
     .aria-label = Personalizoni skedën e re
@@ -25,7 +24,7 @@ newtab-search-box-search-button =
 # Variables
 #  $engine (String): the name of the user's default search engine
 newtab-search-box-handoff-text = Kërkoni me { $engine } ose jepni adresë
-newtab-search-box-handoff-text-no-engine = Bëni kërkim ose jepni adresë
+newtab-search-box-handoff-text-no-engine = Bëni kërkim, ose jepni adresë
 # Variables
 #  $engine (String): the name of the user's default search engine
 newtab-search-box-handoff-input =
@@ -33,23 +32,18 @@ newtab-search-box-handoff-input =
     .title = Kërkoni me { $engine } ose jepni adresë
     .aria-label = Kërkoni me { $engine } ose jepni adresë
 newtab-search-box-handoff-input-no-engine =
-    .placeholder = Bëni kërkim ose jepni adresë
-    .title = Bëni kërkim ose jepni adresë
-    .aria-label = Bëni kërkim ose jepni adresë
+    .placeholder = Bëni kërkim, ose jepni adresë
+    .title = Bëni kërkim, ose jepni adresë
+    .aria-label = Bëni kërkim, ose jepni adresë
 
-newtab-search-box-search-the-web-input =
-    .placeholder = Kërkoni në Web
-    .title = Kërkoni në Web
-    .aria-label = Kërkoni në Web
-
+newtab-search-box-text = Kërkoni në Web
 newtab-search-box-input =
-    .placeholder = Kërkoni në web
-    .aria-label = Kërkoni në web
+    .placeholder = Kërkoni në Web
+    .aria-label = Kërkoni në Web
 
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Shtoni Motor Kërkimesh
-newtab-topsites-add-topsites-header = Sajt i Ri Kryesues
 newtab-topsites-add-shortcut-header = Shkurtore e Re
 newtab-topsites-edit-topsites-header = Përpunoni Sajtin Kryesues
 newtab-topsites-edit-shortcut-header = Përpunoni Shkurtore
@@ -162,7 +156,7 @@ newtab-label-visited = Të vizituara
 newtab-label-bookmarked = Të faqeruajtura
 newtab-label-removed-bookmark = Faqerojtësi u hoq
 newtab-label-recommended = Në modë
-newtab-label-saved = Ruajtur te { -pocket-brand-name }
+newtab-label-saved = U ruajt te { -pocket-brand-name }
 newtab-label-download = Të shkarkuara
 
 # This string is used in the story cards to indicate sponsored content
@@ -174,6 +168,12 @@ newtab-label-sponsored = { $sponsorOrSource } · E sponsorizuar
 # Variables:
 #  $sponsor (String): This is the name of a sponsor
 newtab-label-sponsored-by = Sponsorizuar nga { $sponsor }
+
+# This string is used under the image of story cards to indicate source and time to read
+# Variables:
+#  $source (String): This is the name of a company or their domain
+#  $timeToRead (Number): This is the estimated number of minutes to read this story
+newtab-label-source-read-time = { $source } · { $timeToRead } minuta
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -199,7 +199,6 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = Sajte Kryesues
-newtab-section-header-highlights = Në Pah
 newtab-section-header-recent-activity = Veprimtari së fundi
 # Variables:
 #  $provider (String): Name of the corresponding content provider.
@@ -207,13 +206,12 @@ newtab-section-header-pocket = Rekomanduar nga { $provider }
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
-newtab-empty-section-highlights = Filloni shfletimin, dhe do t'ju shfaqim disa nga artikujt, videot dhe të tjera faqe interesante që keni vizituar apo faqerojtur këtu kohët e fundit.
+newtab-empty-section-highlights = Filloni shfletimin dhe do t'ju shfaqim disa nga artikujt, videot dhe të tjera faqe interesante që keni vizituar apo faqeruajtur këtu kohët e fundit.
 
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
 #  $provider (String): Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Gjithë ç’kish, e dini. Rikontrolloni më vonë për më tepër histori nga { $provider }. S’pritni dot? Përzgjidhni një temë popullore që të gjenden në internet më tepër histori të goditura.
-
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -228,10 +226,21 @@ newtab-discovery-empty-section-topstories-timed-out = Hëm! Thuajse e ngarkuam k
 
 # This is shown at the bottom of the trending stories section and precedes a list of links to popular topics.
 newtab-pocket-read-more = Tema Popullore:
+newtab-pocket-new-topics-title = Doni më tepër gjëra? Shihni këto tema popullore prej { -pocket-brand-name }
 newtab-pocket-more-recommendations = Më Tepër Rekomandime
 newtab-pocket-learn-more = Mësoni më tepër
 newtab-pocket-cta-button = Merreni { -pocket-brand-name }-in
-newtab-pocket-cta-text = Ruajini në { -pocket-brand-name } shkrimet që doni, dhe ushqejeni mendjen me lexime të mahnitshme.
+newtab-pocket-cta-text = Ruajini në { -pocket-brand-name } shkrimet që doni dhe ushqejeni mendjen me lexime të mahnitshme.
+newtab-pocket-pocket-firefox-family = { -pocket-brand-name } është pjesë e familjes { -brand-product-name }
+
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+# A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-save = Ruaje
+newtab-pocket-saved = U ruajt
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -252,8 +261,8 @@ newtab-custom-sponsored-sites = Shkurtore të sponsorizuara
 newtab-custom-pocket-title = Rekomanduar nga { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Lëndë e jashtëzakonshme, në kujdesin e { -pocket-brand-name }, pjesë e familjes { -brand-product-name }
 newtab-custom-pocket-sponsored = Histori të sponsorizuara
+newtab-custom-pocket-show-recent-saves = Shfaq të ruajturat së fundi
 newtab-custom-recent-title = Veprimtari së fundi
 newtab-custom-recent-subtitle = Një përzgjedhje sajtesh dhe lënde së fundi
 newtab-custom-close-button = Mbylle
-
 newtab-custom-settings = Administroni më tepër rregullime

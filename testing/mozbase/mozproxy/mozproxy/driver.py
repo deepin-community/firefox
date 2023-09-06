@@ -1,8 +1,6 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from __future__ import absolute_import
-
 import argparse
 import os
 import signal
@@ -48,7 +46,7 @@ def main():
     )
     parser.add_argument(
         "--tool-version",
-        default="6.0.2",
+        default="8.1.1",
         help="The playback tool version to use (default: %(default)s)",
     )
     parser.add_argument(
@@ -80,6 +78,12 @@ def main():
         action="store_true",
         default=False,
         help="Run this locally (i.e. not in production).",
+    )
+    parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        default=False,
+        help="Enable or disable inject_deterministic script when recording.",
     )
 
     mozlog.commandline.add_logging_group(parser)
@@ -144,6 +148,7 @@ def main():
                     "app": args.app,
                     "local_profile_dir": args.profiledir,
                     "verbose": args.verbose,
+                    "inject_deterministic": args.deterministic,
                 }
             )
         LOG.info("Proxy settings %s" % proxy_service)

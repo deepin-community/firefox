@@ -16,8 +16,6 @@ change-password-old = Nuværende adgangskode:
 change-password-new = Ny adgangskode:
 change-password-reenter = Ny adgangskode (igen):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Kan ikke ændre adgangskode.
 pippki-incorrect-pw = Du indtastede ikke den nuværende adgangskode. Prøv igen.
 pippki-pw-change-ok = Adgangskoden blev ændret.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Du befinder dig for øjeblikket i FIPS-til
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Nulstil hovedadgangskode
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Nulstil
-
 reset-primary-password-text = Hvis du nulstiller din hovedadgangskode, vil alle dine gemte websteds- og mail-adgangskoder, personlige certifikater og private nøgler blive glemt. Er du sikker på, at du vil nulstille din hovedadgangskode?
 
 pippki-reset-password-confirmation-title = Nulstil hovedadgangskode
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Din hovedadgangskode er blevet nuls
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Henter certifikat
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Du er blevet bedt om at stole på en ny certifikatautoritet (CA).
 download-cert-trust-ssl =
     .label = Stol på denne CA til at identificere websteder.
@@ -77,7 +74,8 @@ set-password-reminder = Vigtigt: Hvis du glemmer din adgangskode, vil du ikke ku
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Beskyttet token-godkendelse
-protected-auth-msg = Identificer dig selv over for denne token. Godkendelsesmetoden afhænger af typen af dit token.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Udfør autentificering til token "{ $tokenName }". Det afhænger af token, hvordan det skal gøres (fx ved at bruge en fingeraftrykslæser eller indtaste en kode med et tastatur).

@@ -8,6 +8,7 @@
 #define mozilla_RejectForeignAllowList_h
 
 #include "nsIUrlClassifierExceptionListService.h"
+#include "nsIPrincipal.h"
 
 class nsIHttpChannel;
 class nsIURI;
@@ -26,6 +27,8 @@ class RejectForeignAllowList final
 
   static bool Check(dom::Document* aDocument);
   static bool Check(nsIHttpChannel* aChannel);
+  static bool Check(nsIPrincipal* aPrincipal);
+  static bool Check(nsIURI* aURI);
 
  private:
   static RejectForeignAllowList* GetOrCreate();
@@ -34,6 +37,7 @@ class RejectForeignAllowList final
   ~RejectForeignAllowList();
 
   bool CheckInternal(nsIURI* aURI);
+  bool CheckInternal(nsIPrincipal* aPrincipal);
 
   nsCString mList;
 };

@@ -65,22 +65,20 @@ cryptominer-tab-content = Cryptominers bruger din computers ressourcer til at ud
 protections-close-button2 =
     .aria-label = Luk
     .title = Luk
-  
+
 mobile-app-title = Bloker sporing fra reklamer på alle enheder
 mobile-app-card-content = Brug mobil-browseren med indbygget beskyttelse mod sporing fra reklamer.
 mobile-app-links = { -brand-product-name }-browser til <a data-l10n-name="android-mobile-inline-link">Android</a> og <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Glem aldrig en adgangskode igen
-lockwise-title-logged-in2 = Håndtering af adgangskoder
-lockwise-header-content = { -lockwise-brand-name } gemmer dine adgangskoder i din browser på en sikker måde.
+passwords-title-logged-in = Håndter dine adgangskoder
+passwords-header-content = { -brand-product-name } gemmer dine adgangskoder i din browser på en sikker måde.
 lockwise-header-content-logged-in = Gem og synkroniser dine adgangskoder på alle dine enheder.
-protection-report-save-passwords-button = Gem adgangskoder
-    .title = Gem adgangskoder i { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Håndter adgangskoder
-    .title = Håndter adgangskoder i { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Tag dine adgangskoder med overalt
-lockwise-no-logins-card-content = Brug adgangskoder gemt i { -brand-short-name } på enhver enhed.
-lockwise-app-links = { -lockwise-brand-name } til <a data-l10n-name="lockwise-android-inline-link">Android</a> og <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Gem adgangskoder
+    .title = Gem adgangskoder
+protection-report-passwords-manage-passwords-button = Håndter adgangskoder
+    .title = Håndter adgangskoder
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

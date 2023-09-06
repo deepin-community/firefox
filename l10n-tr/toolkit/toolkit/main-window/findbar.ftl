@@ -36,3 +36,41 @@ findbar-entire-word =
     .label = Tam sözcükler
     .accesskey = s
     .tooltiptext = Yalnızca tam sözcükleri ara
+
+findbar-not-found = Eşleşme bulunamadı
+
+findbar-wrapped-to-top = Sayfanın sonuna gelindi, baştan devam edildi
+findbar-wrapped-to-bottom = Sayfa başına gelindi, sondan devam edildi
+
+findbar-normal-find =
+    .placeholder = Sayfada bul
+findbar-fast-find =
+    .placeholder = Çabuk bul
+findbar-fast-find-links =
+    .placeholder = Çabuk bul (sadece bağlantılar)
+
+findbar-case-sensitive-status =
+    .value = (Büyük-küçük harfe duyarlı)
+findbar-match-diacritics-status =
+    .value = (Fonetik işaretler eşleştiriliyor)
+findbar-entire-word-status =
+    .value = (Yalnızca tam sözcükler)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $total } eşleşmeden { $current }. eşleşme
+           *[other] { $total } eşleşmeden { $current }. eşleşme
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] { $limit } eşleşmeden fazla
+           *[other] { $limit } eşleşmeden fazla
+        }

@@ -33,3 +33,13 @@ state-dd-Disabled-block-list-state = <span data-l10n-name="state">Състоян
 mime-type-label = MIME тип
 description-label = Описание
 suffixes-label = Наставки
+
+## Gecko Media Plugins (GMPs)
+
+plugins-gmp-license-info = Лицензна информация
+plugins-gmp-privacy-info = Информация за личните данни
+
+plugins-openh264-name = Видео кодек OpenH264, доставен от Cisco Systems, Inc.
+plugins-openh264-description = Тази приставка се инсталира автоматично от Mozilla за съвместимост със спецификацията на WebRTC, и за да направи възможни обаждания към устройства изискващи видео кодек H.264. Посетете http://www.openh264.org/, за да разгледате изходния код и да научите повече за реализацията.
+
+plugins-widevine-name = Дешифриращият модул на съдържание Widevine е предоставен от Google Inc.

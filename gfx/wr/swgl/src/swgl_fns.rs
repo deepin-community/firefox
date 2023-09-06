@@ -284,7 +284,8 @@ extern "C" {
         dst_width: GLsizei,
         dst_height: GLsizei,
         opaque: GLboolean,
-        flip: GLboolean,
+        flip_x: GLboolean,
+        flip_y: GLboolean,
         filter: GLenum,
         clip_x: GLint,
         clip_y: GLint,
@@ -306,7 +307,8 @@ extern "C" {
         dst_y: GLint,
         dst_width: GLsizei,
         dst_height: GLsizei,
-        flip: GLboolean,
+        flip_x: GLboolean,
+        flip_y: GLboolean,
         clip_x: GLint,
         clip_y: GLint,
         clip_width: GLsizei,
@@ -962,6 +964,16 @@ impl Gl for Context {
         }
     }
 
+    fn bind_vertex_buffer(
+        &self,
+        binding_index: GLuint,
+        buffer: GLuint,
+        offset: GLintptr,
+        stride: GLint,
+    ) {
+        unimplemented!("Not supported by SWGL");
+    }
+
     fn bind_texture(&self, target: GLenum, texture: GLuint) {
         //panic!();
         unsafe {
@@ -1403,6 +1415,10 @@ impl Gl for Context {
         panic!();
     }
 
+    fn vertex_attrib_binding(&self, attrib_index: GLuint, binding_index: GLuint) {
+        unimplemented!("Not supported by SWGL");
+    }
+
     fn vertex_attrib_pointer_f32(
         &self,
         index: GLuint,
@@ -1465,6 +1481,31 @@ impl Gl for Context {
         unsafe {
             VertexAttribDivisor(index, divisor);
         }
+    }
+
+    fn vertex_attrib_format(
+        &self,
+        attrib_index: GLuint,
+        size: GLint,
+        type_: GLenum,
+        normalized: bool,
+        relative_offset: GLuint,
+    ) {
+        unimplemented!("Not supported by SWGL");
+    }
+
+    fn vertex_attrib_i_format(
+        &self,
+        attrib_index: GLuint,
+        size: GLint,
+        type_: GLenum,
+        relative_offset: GLuint,
+    ) {
+        unimplemented!("Not supported by SWGL");
+    }
+
+    fn vertex_binding_divisor(&self, binding_index: GLuint, divisor: GLuint) {
+        unimplemented!("Not supported by SWGL");
     }
 
     fn viewport(&self, x: GLint, y: GLint, width: GLsizei, height: GLsizei) {
@@ -2283,6 +2324,21 @@ impl Gl for Context {
     fn flush_mapped_buffer_range(&self, target: GLenum, offset: GLintptr, length: GLsizeiptr) {
         unimplemented!("Not supported by SWGL");
     }
+
+    fn start_tiling_qcom(
+        &self,
+        x: GLuint,
+        y: GLuint,
+        width: GLuint,
+        height: GLuint,
+        preserve_mask: GLbitfield,
+    ) {
+        unimplemented!("Not supported by SWGL");
+    }
+
+    fn end_tiling_qcom(&self, preserve_mask: GLbitfield) {
+        unimplemented!("Not supported by SWGL");
+    }
 }
 
 /// A resource that is intended for sharing between threads.
@@ -2322,7 +2378,8 @@ impl LockedResource {
         dst_width: GLsizei,
         dst_height: GLsizei,
         opaque: bool,
-        flip: bool,
+        flip_x: bool,
+        flip_y: bool,
         filter: GLenum,
         clip_x: GLint,
         clip_y: GLint,
@@ -2342,7 +2399,8 @@ impl LockedResource {
                 dst_width,
                 dst_height,
                 opaque as GLboolean,
-                flip as GLboolean,
+                flip_x as GLboolean,
+                flip_y as GLboolean,
                 filter,
                 clip_x,
                 clip_y,
@@ -2368,7 +2426,8 @@ impl LockedResource {
         dst_y: GLint,
         dst_width: GLsizei,
         dst_height: GLsizei,
-        flip: bool,
+        flip_x: bool,
+        flip_y: bool,
         clip_x: GLint,
         clip_y: GLint,
         clip_width: GLsizei,
@@ -2390,7 +2449,8 @@ impl LockedResource {
                 dst_y,
                 dst_width,
                 dst_height,
-                flip as GLboolean,
+                flip_x as GLboolean,
+                flip_y as GLboolean,
                 clip_x,
                 clip_y,
                 clip_width,

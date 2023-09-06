@@ -14,7 +14,6 @@ compatibility-issue-deprecated = (사용되지 않음)
 compatibility-issue-experimental = (실험적)
 compatibility-issue-prefixneeded = (접두사 필요)
 compatibility-issue-deprecated-experimental = (사용되지 않음, 실험적)
-
 compatibility-issue-deprecated-prefixneeded = (사용되지 않음, 접두사 필요)
 compatibility-issue-experimental-prefixneeded = (실험적, 접두사 필요)
 compatibility-issue-deprecated-experimental-prefixneeded = (사용되지 않음, 실험적, 접두사 필요)
@@ -24,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (사용되지 않음,
 compatibility-settings-button-label = 설정
 compatibility-settings-button-title =
     .title = 설정
-compatibility-feedback-button-label = 사용자 의견
-compatibility-feedback-button-title =
-    .title = 사용자 의견
 
 ## Messages used as headers in settings pane
 
@@ -46,3 +42,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = 호환성 문제 없음.
 compatibility-close-settings-button =
     .title = 설정 닫기
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        호환성 문제:
+        { $browsers }

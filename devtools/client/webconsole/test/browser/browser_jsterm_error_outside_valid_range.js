@@ -6,19 +6,18 @@
 // Ensure that dom errors, with error numbers outside of the range
 // of valid js.msg errors, don't cause crashes (See Bug 1270721).
 
-const TEST_URI = "data:text/html,Test error documentation";
+const TEST_URI = "data:text/html,<!DOCTYPE html>Test error documentation";
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
 
   const text =
     "TypeError: Request constructor: 'foo' (value of 'redirect' member of RequestInit) is not a valid value " +
     "for enumeration RequestRedirect";
-  await executeAndWaitForMessage(
+  await executeAndWaitForErrorMessage(
     hud,
     "new Request('',{redirect:'foo'})",
-    text,
-    ".message.error"
+    text
   );
   ok(
     true,

@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 ##
 ## Localization for remote types defined in RemoteType.h
 ##
@@ -21,13 +22,13 @@ process-type-extension = Extensió
 # process used to open file:// URLs
 process-type-file = Fitxer local
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Assignació gran
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Contingut web aïllat
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Procés de treball de servei aïllat
 
 # process preallocated; may change to other types
 process-type-prealloc = Preassignat
@@ -36,6 +37,9 @@ process-type-prealloc = Preassignat
 ## Localization for Gecko process types defined in GeckoProcessTypes.h
 ##
 
+process-type-default = Principal
+process-type-tab = Pestanya
+
 # process used to communicate with the GPU for
 # graphics acceleration
 process-type-gpu = GPU
@@ -43,7 +47,12 @@ process-type-gpu = GPU
 # process used to perform network operations
 process-type-socket = Sòcol
 
+# process used to decode media
+process-type-rdd = RDD
+
 ##
 ## Other
 ##
 
+# fallback
+process-type-unknown = Desconegut

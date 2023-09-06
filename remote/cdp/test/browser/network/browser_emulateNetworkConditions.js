@@ -4,7 +4,7 @@
 "use strict";
 
 const pageEmptyURL =
-  "http://example.com/browser/remote/cdp/test/browser/page/doc_empty.html";
+  "https://example.com/browser/remote/cdp/test/browser/page/doc_empty.html";
 
 /*
  * Set the optional preference to disallow access to localhost when offline. This is
@@ -20,7 +20,8 @@ registerCleanupFunction(() => {
 
 /**
  * Acts just as `add_task`, but does cleanup afterwards
- * @param taskFn
+ *
+ * @param {Function} taskFn
  */
 function add_networking_task(taskFn) {
   add_task(async client => {
@@ -199,7 +200,7 @@ async function assertOfflineNavigationFails() {
   const browser = gBrowser.selectedTab.linkedBrowser;
   let netErrorLoaded = BrowserTestUtils.waitForErrorPage(browser);
 
-  BrowserTestUtils.loadURI(browser, pageEmptyURL);
+  BrowserTestUtils.loadURIString(browser, pageEmptyURL);
   await netErrorLoaded;
 }
 

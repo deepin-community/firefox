@@ -22,18 +22,7 @@
 class nsPIDOMWindowInner;
 class nsContentPermissionRequestProxy;
 
-// Forward declare IPC::Principal here which is defined in
-// PermissionMessageUtils.h. Include this file will transitively includes
-// "windows.h" and it defines
-//   #define CreateEvent CreateEventW
-//   #define LoadImage LoadImageW
-// That will mess up windows build.
-namespace IPC {
-class Principal;
-}  // namespace IPC
-
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 class Element;
 class PermissionRequest;
@@ -76,7 +65,7 @@ class nsContentPermissionUtils {
   static PContentPermissionRequestParent* CreateContentPermissionRequestParent(
       const nsTArray<PermissionRequest>& aRequests, Element* aElement,
       nsIPrincipal* aPrincipal, nsIPrincipal* aTopLevelPrincipal,
-      const bool aIsHandlingUserInput,
+      const bool aHasValidTransientUserGestureActivation,
       const bool aIsRequestDelegatedToUnsafeThirdParty, const TabId& aTabId);
 
   static nsresult AskPermission(nsIContentPermissionRequest* aRequest,
@@ -96,7 +85,7 @@ class nsContentPermissionUtils {
 };
 
 nsresult TranslateChoices(
-    JS::HandleValue aChoices,
+    JS::Handle<JS::Value> aChoices,
     const nsTArray<PermissionRequest>& aPermissionRequests,
     nsTArray<PermissionChoice>& aTranslatedChoices);
 
@@ -112,7 +101,8 @@ class ContentPermissionRequestBase : public nsIContentPermissionRequest {
   NS_IMETHOD GetTopLevelPrincipal(nsIPrincipal** aTopLevelPrincipal) override;
   NS_IMETHOD GetWindow(mozIDOMWindow** aWindow) override;
   NS_IMETHOD GetElement(mozilla::dom::Element** aElement) override;
-  NS_IMETHOD GetIsHandlingUserInput(bool* aIsHandlingUserInput) override;
+  NS_IMETHOD GetHasValidTransientUserGestureActivation(
+      bool* aHasValidTransientUserGestureActivation) override;
   NS_IMETHOD GetIsRequestDelegatedToUnsafeThirdParty(
       bool* aIsRequestDelegatedToUnsafeThirdParty) override;
   // Overrides for Allow() and Cancel() aren't provided by this class.
@@ -162,14 +152,13 @@ class ContentPermissionRequestBase : public nsIContentPermissionRequest {
   // The type of the request, such as "autoplay-media-audible".
   const nsCString mType;
 
-  bool mIsHandlingUserInput;
+  bool mHasValidTransientUserGestureActivation;
 
   // See nsIPermissionDelegateHandler.maybeUnsafePermissionDelegate`.
   bool mIsRequestDelegatedToUnsafeThirdParty;
 };
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 using mozilla::dom::ContentPermissionRequestParent;
 
@@ -230,7 +219,7 @@ class RemotePermissionRequest final
   virtual ~RemotePermissionRequest();
 
   MOZ_CAN_RUN_SCRIPT
-  void DoAllow(JS::HandleValue aChoices);
+  void DoAllow(JS::Handle<JS::Value> aChoices);
   MOZ_CAN_RUN_SCRIPT
   void DoCancel();
 

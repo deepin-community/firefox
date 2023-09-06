@@ -3,8 +3,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function
-
 from twisted.internet import protocol, reactor
 from twisted.internet.task import LoopingCall
 from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
@@ -98,7 +96,7 @@ parent_process = psutil.Process(os.getpid()).parent()
 
 
 def check_parent():
-    """ Checks if parent process is still alive, and exits if not """
+    """Checks if parent process is still alive, and exits if not"""
     if not parent_process.is_running():
         print("websocket/process bridge exiting because parent process is gone")
         reactor.stop()

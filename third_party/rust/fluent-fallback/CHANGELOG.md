@@ -4,8 +4,15 @@
 
   - …
 
+## fluent-fallback 0.7.0 (Nov 9, 2022)
+  - The `ResourceId`s are now stored as a `HashSet` rather than as a Vec. Adding a
+    duplicate `ResourceId` is now a noop.
+
+## fluent-fallback 0.6.0 (Dec 17, 2021)
+  - Add `ResourceId` struct which allows fluent resources to be optional.
+
 ## fluent-fallback 0.5.0 (Jul 8, 2021)
-  - Separate out `Bundles` for iterator state management.
+  - Separate out `Bundles` for state management.
 
 ## fluent-fallback 0.4.4 (May 3, 2021)
   - Fix waiting from multiple tasks. (#224)

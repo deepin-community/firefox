@@ -2,6 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+toolbar-context-menu-new-tab =
+    .label = Ivinell nevez
+    .accesskey = w
 toolbar-context-menu-reload-selected-tab =
     .label = Adkargañ an ivinell diuzet
     .accesskey = A
@@ -17,6 +20,19 @@ toolbar-context-menu-bookmark-selected-tabs =
 toolbar-context-menu-select-all-tabs =
     .label = Diuzañ an holl ivinelloù
     .accesskey = h
+# Variables
+#   $tabCount (number) - Number of tabs
+toolbar-context-menu-reopen-closed-tabs =
+    .label =
+        { $tabCount ->
+            [1] Addigeriñ an ivinell serret
+            [one] Addigeriñ an ivinelloù serret
+            [two] Addigeriñ an ivinelloù serret
+            [few] Addigeriñ an ivinelloù serret
+            [many] Addigeriñ an ivinelloù serret
+           *[other] Addigeriñ an ivinelloù serret
+        }
+    .accesskey = o
 toolbar-context-menu-manage-extension =
     .label = Merañ an askouezh
     .accesskey = M
@@ -29,9 +45,9 @@ toolbar-context-menu-remove-extension =
 toolbar-context-menu-report-extension =
     .label = Danevelliñ an askouezh
     .accesskey = D
-# Can appear on the same context menu as menubarCmd ("Menu Bar") and
-# personalbarCmd ("Bookmarks Toolbar"), so they should have different
-# access keys.
+# Can appear on the same context menu as toolbar-context-menu-menu-bar-cmd
+# ("Menu Bar") and personalbarCmd ("Bookmarks Toolbar"), so they should
+# have different access keys.
 toolbar-context-menu-pin-to-overflow-menu =
     .label = Spilhennañ d'al lañser dic'hlann
     .accesskey = S

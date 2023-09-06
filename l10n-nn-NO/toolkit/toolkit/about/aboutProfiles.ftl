@@ -4,7 +4,7 @@
 
 
 profiles-title = Om profilar
-profiles-subtitle = Denne sida hjelper deg med å handtere profilane dine. Kvar profil er ei separat verd som inneheld separat historikk, separate bokmerke, innstillingar og tillegg.
+profiles-subtitle = Denne sida hjelper deg med å handsame profilane dine. Kvar profil er ei separat verd som inneheld separat historikk, separate bokmerke, innstillingar og tillegg.
 profiles-create = Lag ein ny profil
 profiles-restart-title = Start på nytt
 profiles-restart-in-safe-mode = Start på nytt med utvidingar avslått…

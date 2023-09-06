@@ -6,6 +6,9 @@ screenshot-toolbarbutton =
     .label = Chapoj ruwäch
     .tooltiptext = Tichap jun chapoj ruwäch
 
+screenshot-shortcut =
+    .key = S
+
 screenshots-instructions = Taqirirej o tapitz'a' ri ruxaq richin nacha' ri k'ojlem. Tapitz'a' ESC richin niq'at.
 screenshots-cancel-button = Tiq'at
 screenshots-save-visible-button = Tiyak wachel
@@ -14,6 +17,14 @@ screenshots-download-button = Tiqasäx
 screenshots-download-button-tooltip = Tiqasäx chapoj wachib'äl
 screenshots-copy-button = Tiwachib'ëx
 screenshots-copy-button-tooltip = Tiwachib'ëx ri chapoj wachib'äl pa molwuj
+screenshots-download-button-title =
+    .title = Tiqasäx chapoj wachib'äl
+screenshots-copy-button-title =
+    .title = Tiwachib'ëx ri chapoj wachib'äl pa molwuj
+screenshots-cancel-button-title =
+    .title = Tiq'at
+screenshots-retry-button-title =
+    .title = Titojtob'ëx chik chapoj ruwachib'al
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -44,3 +55,5 @@ screenshots-private-window-error-details = Takuyu' chi qe ruma ri k'ayewal. Taji
 
 screenshots-generic-error-title = ¡Itz! Itzel xe'el ri { -screenshots-brand-name }.
 screenshots-generic-error-details = Man öj jikïl chi rij ri xk'ulwachitäj. ¿La nawajo' natojtob'ej chik o nachäp ruwachib'al jun chik ruxaq?
+
+screenshots-too-large-error-title = Ri chapoj ruwäch xqupïx ruma yalan nïm

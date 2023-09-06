@@ -21,6 +21,7 @@ perftools-heading-features-default = Funkcije (pó standarźe dopórucone)
 perftools-heading-features-disabled = Znjemóžnjone funkcije
 perftools-heading-features-experimental = Eksperimentelne
 perftools-heading-threads = Nitki
+perftools-heading-threads-jvm = JVM-nitki
 perftools-heading-local-build = Lokalna wersija
 
 ##
@@ -41,16 +42,15 @@ perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Wjelikosć pufrowaka:
+
 perftools-custom-threads-label = Pśidajśo swójske nitki pó mjenju:
+
 perftools-devtools-interval-label = Interwal:
 perftools-devtools-threads-label = Nitki:
 perftools-devtools-settings-label = Nastajenja
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice =
-    Profilowak jo znjemóžnjony, gaž jo priwatny modus zmóžnjony.
-    Zacyńśo wšykne priwatne wokna, aby profilowak zasej zmóžnił
 perftools-status-recording-stopped-by-another-tool = Nagraśe jo se zastajiło pśez drugi rěd.
 perftools-status-restart-required = Wobglědowak musy se znowego startowaś, aby se toś ta funkcija zmóžniła.
 
@@ -82,8 +82,8 @@ perftools-thread-renderer =
     .title = Gaž jo WebRender zmóžnjony, nitka, kótaraž OpenGL-wołanja wuwjedujo
 perftools-thread-render-backend =
     .title = Nitka WebRender RenderBackend
-perftools-thread-paint-worker =
-    .title = Gaž jo kreslenje zwenka głowneje nitki zmóžnjone, nitka, w kótarejž se kresli
+perftools-thread-timer =
+    .title = Casowe měritka, kótarež z nitku wobchadaju (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
     .title = Stilowe woblicenje jo do někotarych nitkow rozdźělone
 pref-thread-stream-trans =
@@ -96,20 +96,31 @@ perftools-thread-dns-resolver =
     .title = Na toś tej nitce se DNS-rozeznaśe stawa
 perftools-thread-task-controller =
     .title = Nitki nitkowego poola TaskController
+perftools-thread-jvm-gecko =
+    .title = Głowna nitka Gecko JVM
+perftools-thread-jvm-nimbus =
+    .title = Głowne nitki za SDK eksperimentow Nimbus
+perftools-thread-jvm-default-dispatcher =
+    .title = Standardny dispatcher za biblioteku korutinow  Kotlin
+perftools-thread-jvm-glean =
+    .title = Głowne nitki za SDK telemetrije Glean
+perftools-thread-jvm-arch-disk-io =
+    .title = Dispatcher IO za biblioteku korutinow  Kotlin
+perftools-thread-jvm-pool =
+    .title = Nitki napórane w kupce nitkow bźez mjenja
 
 ##
 
 perftools-record-all-registered-threads = Wuběrki górjejce wobejś a wšě zregistrěrowane nitki nagraś
+
 perftools-tools-threads-input-label =
     .title = Toś te nitkowe mjenja su pśez komu źělona lisćina, kótaraž se wužywa, aby pśepytowanje nitkow w profilowaku zmóžnił. Mě trjeba se jano pó źělach z mjenim nitki makaś, kótarež se ma zapśimjeś. Na prozne znamjenja se źiwa.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>Nowy</b>: { -profiler-brand-name } jo něnto we wuwijaŕskich rědach integrěrowany. <a>Dalšne informacije</a> wó toś tom mócnem nowem rěźe.
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (Za wobgranicowany cas móžośo pśez <a>{ options-context-advanced-settings }</a> pśistup k woknoju Wugbaśe měś.
+
 perftools-onboarding-close-button =
     .aria-label = Zapokazowańsku powěsć zacyniś
 
@@ -120,11 +131,29 @@ perftools-onboarding-close-button =
 # devtools/client/performance-new/popup/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
 perftools-presets-web-developer-label = Webwuwijaŕ
-perftools-presets-firefox-platform-label = Platforma Firefox
-perftools-presets-firefox-front-end-label = Frontend Firefox
-perftools-presets-firefox-graphics-label = Grafika Firefox
+perftools-presets-web-developer-description = Dopórucone pśednastajenje za pytanje zmólkow za nejwecej webnałoženjow z mało zastojańskimi datami.
+
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = Dopórucone pśednastajenje za profilěrowanje { -brand-shorter-name }
+
+perftools-presets-graphics-label = Grafika
+perftools-presets-graphics-description = Pśednastajenje za wuslěźenje zmólkow grafiki w { -brand-shorter-name }.
+
 perftools-presets-media-label = Medije
+perftools-presets-media-description2 = Pśednastajenje za wuslěźenje zmólkow awdio a wideo w { -brand-shorter-name }.
+
+perftools-presets-networking-label = Seś
+perftools-presets-networking-description = Pśednastajenje za wuslěźenje seśowych zmólkow w { -brand-shorter-name }.
+
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = Energija
+perftools-presets-power-description = Pśednastajenje za wuslěźenje zmólkow wužywanja energije w { -brand-shorter-name }, z niskeju pótrjebu.
+
 perftools-presets-custom-label = Swójski
 
 ##

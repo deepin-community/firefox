@@ -322,6 +322,7 @@ void SpeechDispatcherService::Setup() {
 
   if (!speechdLib) {
     NS_WARNING("Failed to load speechd library");
+    NotifyError(u"lib-missing"_ns);
     return;
   }
 
@@ -329,6 +330,7 @@ void SpeechDispatcherService::Setup() {
     // There is no version getter function, so we rely on a symbol that was
     // introduced in release 0.8.2 in order to check for ABI compatibility.
     NS_WARNING("Unsupported version of speechd detected");
+    NotifyError(u"lib-too-old"_ns);
     return;
   }
 
@@ -340,6 +342,7 @@ void SpeechDispatcherService::Setup() {
       NS_WARNING(nsPrintfCString("Failed to find speechd symbol for'%s'",
                                  kSpeechDispatcherSymbols[i].functionName)
                      .get());
+      NotifyError(u"missing-symbol"_ns);
       return;
     }
   }
@@ -348,6 +351,7 @@ void SpeechDispatcherService::Setup() {
       spd_open("firefox", "web speech api", "who", SPD_MODE_THREADED);
   if (!mSpeechdClient) {
     NS_WARNING("Failed to call spd_open");
+    NotifyError(u"open-fail"_ns);
     return;
   }
 
@@ -373,28 +377,10 @@ void SpeechDispatcherService::Setup() {
       NS_EscapeURL(list[i]->name, -1,
                    esc_OnlyNonASCII | esc_Spaces | esc_AlwaysCopy, name);
       uri.Append(NS_ConvertUTF8toUTF16(name));
-      ;
+
       uri.AppendLiteral("?");
 
       nsAutoCString lang(list[i]->language);
-
-      if (strcmp(list[i]->variant, "none") != 0) {
-        // In speech dispatcher, the variant will usually be the locale subtag
-        // with another, non-standard suptag after it. We keep the first one
-        // and convert it to uppercase.
-        const char* v = list[i]->variant;
-        const char* hyphen = strchr(v, '-');
-        nsDependentCSubstring variant(v, hyphen ? hyphen - v : strlen(v));
-        ToUpperCase(variant);
-
-        // eSpeak uses UK which is not a valid region subtag in BCP47.
-        if (variant.EqualsLiteral("UK")) {
-          variant.AssignLiteral("GB");
-        }
-
-        lang.AppendLiteral("-");
-        lang.Append(variant);
-      }
 
       uri.Append(NS_ConvertUTF8toUTF16(lang));
 
@@ -402,6 +388,10 @@ void SpeechDispatcherService::Setup() {
                                       NS_ConvertUTF8toUTF16(list[i]->name),
                                       NS_ConvertUTF8toUTF16(lang)));
     }
+  }
+
+  if (mVoices.Count() == 0) {
+    NotifyError(u"no-voices"_ns);
   }
 
   NS_DispatchToMainThread(
@@ -412,6 +402,18 @@ void SpeechDispatcherService::Setup() {
 }
 
 // private methods
+
+void SpeechDispatcherService::NotifyError(const nsString& aError) {
+  if (!NS_IsMainThread()) {
+    NS_DispatchToMainThread(NewRunnableMethod<const nsString>(
+        "dom::SpeechDispatcherService::NotifyError", this,
+        &SpeechDispatcherService::NotifyError, aError));
+    return;
+  }
+
+  RefPtr<nsSynthVoiceRegistry> registry = nsSynthVoiceRegistry::GetInstance();
+  DebugOnly<nsresult> rv = registry->NotifyVoicesError(aError);
+}
 
 void SpeechDispatcherService::RegisterVoices() {
   RefPtr<nsSynthVoiceRegistry> registry = nsSynthVoiceRegistry::GetInstance();

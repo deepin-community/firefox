@@ -23,9 +23,10 @@
 #include "js/GCPolicyAPI.h"
 #include "js/GCTypeMacros.h"  // JS_FOR_EACH_PUBLIC_{,TAGGED_}GC_POINTER_TYPE
 #include "js/HashTable.h"
-#include "js/HeapAPI.h"
+#include "js/HeapAPI.h"  // StackKindCount
 #include "js/ProfilingStack.h"
 #include "js/Realm.h"
+#include "js/Stack.h"  // JS::NativeStackLimit
 #include "js/TypeDecls.h"
 #include "js/UniquePtr.h"
 
@@ -114,10 +115,14 @@
 
 namespace js {
 
-template <typename T>
+class Nursery;
+
+// The defaulted Enable parameter for the following two types is for restricting
+// specializations with std::enable_if.
+template <typename T, typename Enable = void>
 struct BarrierMethods {};
 
-template <typename Element, typename Wrapper>
+template <typename Element, typename Wrapper, typename Enable = void>
 class WrappedPtrOperations {};
 
 template <typename Element, typename Wrapper>
@@ -139,18 +144,20 @@ class HeapOperations : public MutableWrappedPtrOperations<T, Wrapper> {};
 
 // Cannot use FOR_EACH_HEAP_ABLE_GC_POINTER_TYPE, as this would import too many
 // macros into scope
-template <typename T>
-struct IsHeapConstructibleType {
-  static constexpr bool value = false;
-};
-#define DECLARE_IS_HEAP_CONSTRUCTIBLE_TYPE(T) \
-  template <>                                 \
-  struct IsHeapConstructibleType<T> {         \
-    static constexpr bool value = true;       \
-  };
-JS_FOR_EACH_PUBLIC_GC_POINTER_TYPE(DECLARE_IS_HEAP_CONSTRUCTIBLE_TYPE)
-JS_FOR_EACH_PUBLIC_TAGGED_GC_POINTER_TYPE(DECLARE_IS_HEAP_CONSTRUCTIBLE_TYPE)
-#undef DECLARE_IS_HEAP_CONSTRUCTIBLE_TYPE
+
+// Add a 2nd template parameter to allow conditionally enabling partial
+// specializations via std::enable_if.
+template <typename T, typename Enable = void>
+struct IsHeapConstructibleType : public std::false_type {};
+
+#define JS_DECLARE_IS_HEAP_CONSTRUCTIBLE_TYPE(T) \
+  template <>                                    \
+  struct IsHeapConstructibleType<T> : public std::true_type {};
+JS_FOR_EACH_PUBLIC_GC_POINTER_TYPE(JS_DECLARE_IS_HEAP_CONSTRUCTIBLE_TYPE)
+JS_FOR_EACH_PUBLIC_TAGGED_GC_POINTER_TYPE(JS_DECLARE_IS_HEAP_CONSTRUCTIBLE_TYPE)
+// Note that JS_DECLARE_IS_HEAP_CONSTRUCTIBLE_TYPE is left defined, to allow
+// declaring other types (eg from js/public/experimental/TypedData.h) to
+// be used with Heap<>.
 
 namespace gc {
 struct Cell;
@@ -213,37 +220,41 @@ JS_PUBLIC_API void HeapScriptWriteBarriers(JSScript** objp, JSScript* prev,
                                            JSScript* next);
 
 /**
- * Create a safely-initialized |T|, suitable for use as a default value in
- * situations requiring a safe but arbitrary |T| value.
+ * SafelyInitialized<T>::create() creates a safely-initialized |T|, suitable for
+ * use as a default value in situations requiring a safe but arbitrary |T|
+ * value. Implemented as a static method of a struct to allow partial
+ * specialization for subclasses via the Enable template parameter.
  */
-template <typename T>
-inline T SafelyInitialized() {
-  // This function wants to presume that |T()| -- which value-initializes a
-  // |T| per C++11 [expr.type.conv]p2 -- will produce a safely-initialized,
-  // safely-usable T that it can return.
+template <typename T, typename Enable = void>
+struct SafelyInitialized {
+  static T create() {
+    // This function wants to presume that |T()| -- which value-initializes a
+    // |T| per C++11 [expr.type.conv]p2 -- will produce a safely-initialized,
+    // safely-usable T that it can return.
 
 #if defined(XP_WIN) || defined(XP_MACOSX) || \
     (defined(XP_UNIX) && !defined(__clang__))
 
-  // That presumption holds for pointers, where value initialization produces
-  // a null pointer.
-  constexpr bool IsPointer = std::is_pointer_v<T>;
+    // That presumption holds for pointers, where value initialization produces
+    // a null pointer.
+    constexpr bool IsPointer = std::is_pointer_v<T>;
 
-  // For classes and unions we *assume* that if |T|'s default constructor is
-  // non-trivial it'll initialize correctly. (This is unideal, but C++
-  // doesn't offer a type trait indicating whether a class's constructor is
-  // user-defined, which better approximates our desired semantics.)
-  constexpr bool IsNonTriviallyDefaultConstructibleClassOrUnion =
-      (std::is_class_v<T> ||
-       std::is_union_v<T>)&&!std::is_trivially_default_constructible_v<T>;
+    // For classes and unions we *assume* that if |T|'s default constructor is
+    // non-trivial it'll initialize correctly. (This is unideal, but C++
+    // doesn't offer a type trait indicating whether a class's constructor is
+    // user-defined, which better approximates our desired semantics.)
+    constexpr bool IsNonTriviallyDefaultConstructibleClassOrUnion =
+        (std::is_class_v<T> ||
+         std::is_union_v<T>)&&!std::is_trivially_default_constructible_v<T>;
 
-  static_assert(IsPointer || IsNonTriviallyDefaultConstructibleClassOrUnion,
-                "T() must evaluate to a safely-initialized T");
+    static_assert(IsPointer || IsNonTriviallyDefaultConstructibleClassOrUnion,
+                  "T() must evaluate to a safely-initialized T");
 
 #endif
 
-  return T();
-}
+    return T();
+  }
+};
 
 #ifdef JS_DEBUG
 /**
@@ -299,12 +310,14 @@ class MOZ_NON_MEMMOVABLE Heap : public js::HeapOperations<T, Heap<T>> {
  public:
   using ElementType = T;
 
-  Heap() : ptr(SafelyInitialized<T>()) {
+  Heap() : ptr(SafelyInitialized<T>::create()) {
     // No barriers are required for initialization to the default value.
     static_assert(sizeof(T) == sizeof(Heap<T>),
                   "Heap<T> must be binary compatible with T.");
   }
-  explicit Heap(const T& p) { init(p); }
+  explicit Heap(const T& p) : ptr(p) {
+    postWriteBarrier(SafelyInitialized<T>::create(), ptr);
+  }
 
   /*
    * For Heap, move semantics are equivalent to copy semantics. However, we want
@@ -312,16 +325,20 @@ class MOZ_NON_MEMMOVABLE Heap : public js::HeapOperations<T, Heap<T>> {
    * breaks common usage of move semantics, so we need to define both, even
    * though they are equivalent.
    */
-  explicit Heap(const Heap<T>& other) { init(other.ptr); }
-  Heap(Heap<T>&& other) { init(other.ptr); }
+  explicit Heap(const Heap<T>& other) : ptr(other.getWithoutExpose()) {
+    postWriteBarrier(SafelyInitialized<T>::create(), ptr);
+  }
+  Heap(Heap<T>&& other) : ptr(other.getWithoutExpose()) {
+    postWriteBarrier(SafelyInitialized<T>::create(), ptr);
+  }
 
   Heap& operator=(Heap<T>&& other) {
-    set(other.unbarrieredGet());
-    other.set(SafelyInitialized<T>());
+    set(other.getWithoutExpose());
+    other.set(SafelyInitialized<T>::create());
     return *this;
   }
 
-  ~Heap() { postWriteBarrier(ptr, SafelyInitialized<T>()); }
+  ~Heap() { postWriteBarrier(ptr, SafelyInitialized<T>::create()); }
 
   DECLARE_POINTER_CONSTREF_OPS(T);
   DECLARE_POINTER_ASSIGN_OPS(Heap, T);
@@ -329,8 +346,13 @@ class MOZ_NON_MEMMOVABLE Heap : public js::HeapOperations<T, Heap<T>> {
   const T* address() const { return &ptr; }
 
   void exposeToActiveJS() const { js::BarrierMethods<T>::exposeToJS(ptr); }
+
   const T& get() const {
     exposeToActiveJS();
+    return ptr;
+  }
+  const T& getWithoutExpose() const {
+    js::BarrierMethods<T>::readBarrier(ptr);
     return ptr;
   }
   const T& unbarrieredGet() const { return ptr; }
@@ -353,11 +375,6 @@ class MOZ_NON_MEMMOVABLE Heap : public js::HeapOperations<T, Heap<T>> {
   }
 
  private:
-  void init(const T& newPtr) {
-    ptr = newPtr;
-    postWriteBarrier(SafelyInitialized<T>(), ptr);
-  }
-
   void postWriteBarrier(const T& prev, const T& next) {
     js::BarrierMethods<T>::postWriteBarrier(&ptr, prev, next);
   }
@@ -384,7 +401,12 @@ static MOZ_ALWAYS_INLINE bool ObjectIsTenured(const Heap<JSObject*>& obj) {
 
 static MOZ_ALWAYS_INLINE bool ObjectIsMarkedGray(JSObject* obj) {
   auto cell = reinterpret_cast<js::gc::Cell*>(obj);
-  return js::gc::detail::CellIsMarkedGrayIfKnown(cell);
+  if (js::gc::IsInsideNursery(cell)) {
+    return false;
+  }
+
+  auto tenuredCell = reinterpret_cast<js::gc::TenuredCell*>(cell);
+  return js::gc::detail::CellIsMarkedGrayIfKnown(tenuredCell);
 }
 
 static MOZ_ALWAYS_INLINE bool ObjectIsMarkedGray(
@@ -750,6 +772,11 @@ struct PtrBarrierMethodsBase {
       js::gc::ExposeGCThingToActiveJS(JS::GCCellPtr(t));
     }
   }
+  static void readBarrier(T* t) {
+    if (t) {
+      js::gc::IncrementalReadBarrier(JS::GCCellPtr(t));
+    }
+  }
 };
 
 }  // namespace detail
@@ -822,12 +849,12 @@ struct BarrierMethods<JS::BigInt*>
 // aggregate Lookup kinds embed a JSObject* that is frequently null and do not
 // null test before dispatching to the hasher.
 template <typename T>
-struct JS_PUBLIC_API MovableCellHasher {
+struct JS_PUBLIC_API StableCellHasher {
   using Key = T;
   using Lookup = T;
 
-  static bool hasHash(const Lookup& l);
-  static bool ensureHash(const Lookup& l);
+  static bool maybeGetHash(const Lookup& l, mozilla::HashNumber* hashOut);
+  static bool ensureHash(const Lookup& l, HashNumber* hashOut);
   static HashNumber hash(const Lookup& l);
   static bool match(const Key& k, const Lookup& l);
   // The rekey hash policy method is not provided since you dont't need to
@@ -835,21 +862,21 @@ struct JS_PUBLIC_API MovableCellHasher {
 };
 
 template <typename T>
-struct JS_PUBLIC_API MovableCellHasher<JS::Heap<T>> {
+struct JS_PUBLIC_API StableCellHasher<JS::Heap<T>> {
   using Key = JS::Heap<T>;
   using Lookup = T;
 
-  static bool hasHash(const Lookup& l) {
-    return MovableCellHasher<T>::hasHash(l);
+  static bool maybeGetHash(const Lookup& l, HashNumber* hashOut) {
+    return StableCellHasher<T>::maybeGetHash(l, hashOut);
   }
-  static bool ensureHash(const Lookup& l) {
-    return MovableCellHasher<T>::ensureHash(l);
+  static bool ensureHash(const Lookup& l, HashNumber* hashOut) {
+    return StableCellHasher<T>::ensureHash(l, hashOut);
   }
   static HashNumber hash(const Lookup& l) {
-    return MovableCellHasher<T>::hash(l);
+    return StableCellHasher<T>::hash(l);
   }
   static bool match(const Key& k, const Lookup& l) {
-    return MovableCellHasher<T>::match(k.unbarrieredGet(), l);
+    return StableCellHasher<T>::match(k.unbarrieredGet(), l);
   }
 };
 
@@ -858,14 +885,16 @@ struct JS_PUBLIC_API MovableCellHasher<JS::Heap<T>> {
 namespace mozilla {
 
 template <typename T>
-struct FallibleHashMethods<js::MovableCellHasher<T>> {
+struct FallibleHashMethods<js::StableCellHasher<T>> {
   template <typename Lookup>
-  static bool hasHash(Lookup&& l) {
-    return js::MovableCellHasher<T>::hasHash(std::forward<Lookup>(l));
+  static bool maybeGetHash(Lookup&& l, HashNumber* hashOut) {
+    return js::StableCellHasher<T>::maybeGetHash(std::forward<Lookup>(l),
+                                                 hashOut);
   }
   template <typename Lookup>
-  static bool ensureHash(Lookup&& l) {
-    return js::MovableCellHasher<T>::ensureHash(std::forward<Lookup>(l));
+  static bool ensureHash(Lookup&& l, HashNumber* hashOut) {
+    return js::StableCellHasher<T>::ensureHash(std::forward<Lookup>(l),
+                                               hashOut);
   }
 };
 
@@ -978,7 +1007,7 @@ class RootingContext {
   js::GeckoProfilerThread geckoProfiler_;
 
  public:
-  RootingContext();
+  explicit RootingContext(js::Nursery* nursery);
 
   void traceStackRoots(JSTracer* trc);
 
@@ -991,27 +1020,37 @@ class RootingContext {
 
   js::GeckoProfilerThread& geckoProfiler() { return geckoProfiler_; }
 
+  JS::Zone* zoneUnchecked() const { return zone_; }
+
+  js::Nursery& nursery() const {
+    MOZ_ASSERT(nursery_);
+    return *nursery_;
+  }
+
  protected:
   // The remaining members in this class should only be accessed through
   // JSContext pointers. They are unrelated to rooting and are in place so
   // that inlined API functions can directly access the data.
 
-  /* The current realm. */
-  Realm* realm_;
+  /* The nursery. Null for non-main-thread contexts. */
+  js::Nursery* nursery_;
 
   /* The current zone. */
   Zone* zone_;
 
+  /* The current realm. */
+  Realm* realm_;
+
  public:
   /* Limit pointer for checking native stack consumption. */
-  uintptr_t nativeStackLimit[StackKindCount];
+  JS::NativeStackLimit nativeStackLimit[StackKindCount];
 
 #ifdef __wasi__
   // For WASI we can't catch call-stack overflows with stack-pointer checks, so
   // we count recursion depth with RAII based AutoCheckRecursionLimit.
   uint32_t wasiRecursionDepth = 0u;
 
-  static constexpr uint32_t wasiRecursionDepthLimit = 100u;
+  static constexpr uint32_t wasiRecursionDepthLimit = 350u;
 #endif  // __wasi__
 
   static const RootingContext* get(const JSContext* cx) {
@@ -1133,7 +1172,8 @@ class MOZ_RAII Rooted : public detail::RootedTraits<T>::StackBase,
   template <typename RootingContext,
             typename = std::enable_if_t<std::is_copy_constructible_v<T>,
                                         RootingContext>>
-  explicit Rooted(const RootingContext& cx) : ptr(SafelyInitialized<T>()) {
+  explicit Rooted(const RootingContext& cx)
+      : ptr(SafelyInitialized<T>::create()) {
     registerWithRootLists(rootLists(cx));
   }
 
@@ -1381,13 +1421,13 @@ class PersistentRooted : public detail::RootedTraits<T>::PersistentBase,
  public:
   using ElementType = T;
 
-  PersistentRooted() : ptr(SafelyInitialized<T>()) {}
+  PersistentRooted() : ptr(SafelyInitialized<T>::create()) {}
 
   template <
       typename RootHolder,
       typename = std::enable_if_t<std::is_copy_constructible_v<T>, RootHolder>>
   explicit PersistentRooted(const RootHolder& cx)
-      : ptr(SafelyInitialized<T>()) {
+      : ptr(SafelyInitialized<T>::create()) {
     registerWithRootLists(cx);
   }
 
@@ -1420,7 +1460,7 @@ class PersistentRooted : public detail::RootedTraits<T>::PersistentBase,
 
   bool initialized() const { return this->isInList(); }
 
-  void init(RootingContext* cx) { init(cx, SafelyInitialized<T>()); }
+  void init(RootingContext* cx) { init(cx, SafelyInitialized<T>::create()); }
   void init(JSContext* cx) { init(RootingContext::get(cx)); }
 
   template <typename U>
@@ -1436,7 +1476,7 @@ class PersistentRooted : public detail::RootedTraits<T>::PersistentBase,
 
   void reset() {
     if (initialized()) {
-      set(SafelyInitialized<T>());
+      set(SafelyInitialized<T>::create());
       this->remove();
     }
   }
@@ -1544,6 +1584,27 @@ void CallTraceCallbackOnNonHeap(T* v, const TraceCallbacks& aCallbacks,
 }
 
 } /* namespace gc */
+
+template <typename Wrapper, typename T1, typename T2>
+class WrappedPtrOperations<std::pair<T1, T2>, Wrapper> {
+  const std::pair<T1, T2>& pair() const {
+    return static_cast<const Wrapper*>(this)->get();
+  }
+
+ public:
+  const T1& first() const { return pair().first; }
+  const T2& second() const { return pair().second; }
+};
+
+template <typename Wrapper, typename T1, typename T2>
+class MutableWrappedPtrOperations<std::pair<T1, T2>, Wrapper>
+    : public WrappedPtrOperations<std::pair<T1, T2>, Wrapper> {
+  std::pair<T1, T2>& pair() { return static_cast<Wrapper*>(this)->get(); }
+
+ public:
+  T1& first() { return pair().first; }
+  T2& second() { return pair().second; }
+};
 
 } /* namespace js */
 

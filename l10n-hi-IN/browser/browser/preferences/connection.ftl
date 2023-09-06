@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = कनेक्शन सेटिंग
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -70,16 +70,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = यह विकल्प आपको धीमे से प्रॉक्सी के लिए सत्यापित करता है जब आप उसके लिए प्रमाण सहेजते हैं. आपको प्रांप्ट किया जाएगा यदि सत्यापन विफल रहता है.
 
+connection-proxy-autologin-checkbox =
+    .label = अगर शब्दकूट सहेजा जाता है तो प्रमाणीकरण के लिए संकेत न करें
+    .accesskey = i
+    .tooltiptext = यह विकल्प आपको धीमे से प्रॉक्सी के लिए सत्यापित करता है जब आप उसके लिए प्रमाण सहेजते हैं. आपको प्रांप्ट किया जाएगा यदि सत्यापन विफल रहता है.
+
 connection-proxy-socks-remote-dns =
     .label = SOCKS v5 उपयोग करने पर स्थानापन्न डीएनएस
     .accesskey = d
-
-connection-dns-over-https =
-    .label = HTTPS पर DNS सक्षम करें
-    .accesskey = H
-
-connection-dns-over-https-url-resolver = प्रदाता का उपयोग करें
-    .accesskey = P
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "mozilla/Hal.h"
+#include "gfxConfig.h"
 #include "nsExceptionHandler.h"
 #include "nsIScreen.h"
 #include "nsWindow.h"
@@ -35,10 +36,12 @@
 #include "mozilla/intl/OSPreferences.h"
 #include "mozilla/ipc/GeckoChildProcessHost.h"
 #include "mozilla/java/GeckoAppShellNatives.h"
+#include "mozilla/java/GeckoResultWrappers.h"
 #include "mozilla/java/GeckoThreadNatives.h"
 #include "mozilla/java/XPCOMEventTargetNatives.h"
 #include "mozilla/widget/ScreenManager.h"
 #include "prenv.h"
+#include "prtime.h"
 
 #include "AndroidBridge.h"
 #include "AndroidBridgeUtilities.h"
@@ -63,16 +66,15 @@
 #include "GeckoEditableSupport.h"
 #include "GeckoNetworkManager.h"
 #include "GeckoProcessManager.h"
-#include "GeckoScreenOrientation.h"
 #include "GeckoSystemStateListener.h"
 #include "GeckoTelemetryDelegate.h"
 #include "GeckoVRManager.h"
 #include "ImageDecoderSupport.h"
+#include "JavaBuiltins.h"
 #include "ScreenHelperAndroid.h"
 #include "Telemetry.h"
 #include "WebExecutorSupport.h"
 #include "Base64UtilsSupport.h"
-#include "WebAuthnTokenManager.h"
 
 #ifdef DEBUG_ANDROID_EVENTS
 #  define EVLOG(args...) ALOG(args)
@@ -139,7 +141,7 @@ class GeckoThreadSupport final
     OriginAttributes attrs;
     nsCOMPtr<nsIPrincipal> principal =
         BasePrincipal::CreateContentPrincipal(uri, attrs);
-    specConn->SpeculativeConnect(uri, principal, nullptr);
+    specConn->SpeculativeConnect(uri, principal, nullptr, false);
   }
 
   static void OnPause() {
@@ -298,14 +300,20 @@ class GeckoAppShellSupport final
   static void OnLocationChanged(double aLatitude, double aLongitude,
                                 double aAltitude, float aAccuracy,
                                 float aAltitudeAccuracy, float aHeading,
-                                float aSpeed, int64_t aTime) {
+                                float aSpeed) {
     if (!gLocationCallback) {
       return;
     }
 
-    RefPtr<nsIDOMGeoPosition> geoPosition(
-        new nsGeoPosition(aLatitude, aLongitude, aAltitude, aAccuracy,
-                          aAltitudeAccuracy, aHeading, aSpeed, aTime));
+    static constexpr float kEpsilon = 0.0001f;
+    double heading = (aHeading >= kEpsilon && aHeading < (360.0f - kEpsilon) &&
+                      aSpeed > kEpsilon)
+                         ? aHeading
+                         : UnspecifiedNaN<double>();
+
+    RefPtr<nsIDOMGeoPosition> geoPosition(new nsGeoPosition(
+        aLatitude, aLongitude, aAltitude, aAccuracy, aAltitudeAccuracy, heading,
+        aSpeed, PR_Now() / PR_USEC_PER_MSEC));
     gLocationCallback->Update(geoPosition);
   }
 
@@ -319,6 +327,21 @@ class GeckoAppShellSupport final
     widget::AndroidAlerts::NotifyListener(aName->ToString(),
                                           aTopic->ToCString().get(),
                                           aCookie->ToString().get());
+  }
+
+  static bool IsParentProcess() { return XRE_IsParentProcess(); }
+
+  static jni::Object::LocalRef IsGpuProcessEnabled() {
+    java::GeckoResult::GlobalRef result = java::GeckoResult::New();
+
+    NS_DispatchToMainThread(NS_NewRunnableFunction(
+        "GeckoAppShellSupport::IsGpuProcessEnabled", [result]() {
+          result->Complete(gfx::gfxConfig::IsEnabled(gfx::Feature::GPU_PROCESS)
+                               ? java::sdk::Boolean::TRUE()
+                               : java::sdk::Boolean::FALSE());
+        }));
+
+    return jni::Object::Ref::From(result);
   }
 };
 
@@ -389,6 +412,10 @@ nsAppShell::nsAppShell()
       mozilla::widget::Telemetry::Init();
       mozilla::widget::GeckoTelemetryDelegate::Init();
 
+      if (XRE_IsGPUProcess()) {
+        mozilla::gl::AndroidSurfaceTexture::Init();
+      }
+
       // Set the corresponding state in GeckoThread.
       java::GeckoThread::SetState(java::GeckoThread::State::RUNNING());
     }
@@ -407,7 +434,6 @@ nsAppShell::nsAppShell()
     mozilla::GeckoBatteryManager::Init();
     mozilla::GeckoNetworkManager::Init();
     mozilla::GeckoProcessManager::Init();
-    mozilla::GeckoScreenOrientation::Init();
     mozilla::GeckoSystemStateListener::Init();
     mozilla::widget::Telemetry::Init();
     mozilla::widget::ImageDecoderSupport::Init();
@@ -415,7 +441,6 @@ nsAppShell::nsAppShell()
     mozilla::widget::Base64UtilsSupport::Init();
     nsWindow::InitNatives();
     mozilla::gl::AndroidSurfaceTexture::Init();
-    mozilla::WebAuthnTokenManager::Init();
     mozilla::widget::GeckoTelemetryDelegate::Init();
 
     java::GeckoThread::SetState(java::GeckoThread::State::JNI_READY());

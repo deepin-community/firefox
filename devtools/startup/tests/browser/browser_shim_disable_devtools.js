@@ -5,11 +5,10 @@
 
 /* eslint-env browser */
 
-const { require } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
-const { CustomizableUI } = ChromeUtils.import(
-  "resource:///modules/CustomizableUI.jsm"
+const { require } = ChromeUtils.importESModule(
+  "resource://devtools/shared/loader/Loader.sys.mjs"
 );
-const { AppConstants } = require("resource://gre/modules/AppConstants.jsm");
+
 const { gDevTools } = require("devtools/client/framework/devtools");
 
 async function simulateMenuOpen(menu) {
@@ -31,7 +30,7 @@ async function simulateMenuClosed(menu) {
 /**
  * Test that the preference devtools.policy.disabled disables entry points for devtools.
  */
-add_task(async function() {
+add_task(async function () {
   info(
     "Disable DevTools entry points (does not apply to the already created window"
   );
@@ -72,14 +71,7 @@ add_task(async function() {
   /* eslint-disable mozilla/no-arbitrary-setTimeout */
   await new Promise(r => setTimeout(r, 1000));
 
-  is(gDevTools._toolboxes.size, 0, "No toolbox has been opened");
-
-  const browser = gBrowser.selectedTab.linkedBrowser;
-  const location = browser.documentURI.spec;
-  ok(
-    !location.startsWith("about:devtools"),
-    "The current tab is not about:devtools"
-  );
+  is(gDevTools._toolboxesPerCommands.size, 0, "No toolbox has been opened");
 
   info("Open the context menu for the content page.");
   const contextMenu = win.document.getElementById("contentAreaContextMenu");
@@ -110,12 +102,10 @@ add_task(async function() {
 
   info("Open the menubar Tools menu");
   const toolsMenuPopup = win.document.getElementById("menu_ToolsPopup");
-  // The "Browser Tools" menu still uses the id `webDeveloperMenu` even though it
-  // is no longer DevTools-specific.
-  const browserToolsMenu = win.document.getElementById("webDeveloperMenu");
+  const browserToolsMenu = win.document.getElementById("browserToolsMenu");
   ok(
     !browserToolsMenu.hidden,
-    "The Web Developer item of the tools menu is visible"
+    "The Browser Tools item of the tools menu is visible"
   );
 
   await simulateMenuOpen(toolsMenuPopup);

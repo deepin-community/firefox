@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Puruhára réra
 common-dialog-password =
     .value = Ñe’ẽñemi
+
+common-dialog-copy-cmd =
+    .label = Emomokõi
+    .accesskey = E
+common-dialog-select-all-cmd =
+    .label = Mbosa’ypa
+    .accesskey = M

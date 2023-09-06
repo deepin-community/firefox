@@ -18,6 +18,8 @@
 #include <pango/pango-fontmap.h>
 #include <fontconfig/fontconfig.h>
 
+#include "GRefPtr.h"
+#include "GUniquePtr.h"
 #include "nsGtkUtils.h"
 #include "gfxPlatformGtk.h"
 #include "mozilla/FontPropertyTypes.h"
@@ -31,9 +33,10 @@
 #include "mozilla/ScopeExit.h"
 #include "mozilla/WidgetUtilsGtk.h"
 #include "ScreenHelperGTK.h"
-#include "nsNativeBasicThemeGTK.h"
+#include "ScrollbarDrawing.h"
 
 #include "gtkdrawing.h"
+#include "nsString.h"
 #include "nsStyleConsts.h"
 #include "gfxFontConstants.h"
 #include "WidgetUtils.h"
@@ -42,11 +45,14 @@
 #include "mozilla/gfx/2D.h"
 
 #include <cairo-gobject.h>
+#include <dlfcn.h>
 #include "WidgetStyleCache.h"
 #include "prenv.h"
 #include "nsCSSColorUtils.h"
+#include "mozilla/Preferences.h"
 
 using namespace mozilla;
+using namespace mozilla::widget;
 
 #ifdef MOZ_LOGGING
 #  include "mozilla/Logging.h"
@@ -67,7 +73,8 @@ static LazyLogModule gLnfLog("LookAndFeel");
                     (int)((c).blue * 255), (int)((c).alpha * 255)))
 
 static bool sIgnoreChangedSettings = false;
-static void settings_changed_cb(GtkSettings*, GParamSpec*, void*) {
+
+static void OnSettingsChange() {
   if (sIgnoreChangedSettings) {
     return;
   }
@@ -75,6 +82,56 @@ static void settings_changed_cb(GtkSettings*, GParamSpec*, void*) {
   // changed.
   LookAndFeel::NotifyChangedAllWindows(widget::ThemeChangeKind::StyleAndLayout);
   widget::IMContextWrapper::OnThemeChanged();
+}
+
+static void settings_changed_cb(GtkSettings*, GParamSpec*, void*) {
+  OnSettingsChange();
+}
+
+static bool sCSDAvailable;
+
+static nsCString GVariantToString(GVariant* aVariant) {
+  nsCString ret;
+  gchar* s = g_variant_print(aVariant, TRUE);
+  if (s) {
+    ret.Assign(s);
+    g_free(s);
+  }
+  return ret;
+}
+
+static nsDependentCString GVariantGetString(GVariant* aVariant) {
+  gsize len = 0;
+  const gchar* v = g_variant_get_string(aVariant, &len);
+  return nsDependentCString(v, len);
+}
+
+static void settings_changed_signal_cb(GDBusProxy* proxy, gchar* sender_name,
+                                       gchar* signal_name, GVariant* parameters,
+                                       gpointer user_data) {
+  LOGLNF("Settings Change sender=%s signal=%s params=%s\n", sender_name,
+         signal_name, GVariantToString(parameters).get());
+  if (strcmp(signal_name, "SettingChanged")) {
+    NS_WARNING("Unknown change signal for settings");
+    return;
+  }
+  RefPtr<GVariant> ns = dont_AddRef(g_variant_get_child_value(parameters, 0));
+  RefPtr<GVariant> key = dont_AddRef(g_variant_get_child_value(parameters, 1));
+  // Third parameter is the value, but we don't care about it.
+  if (!ns || !key || !g_variant_is_of_type(ns, G_VARIANT_TYPE_STRING) ||
+      !g_variant_is_of_type(key, G_VARIANT_TYPE_STRING)) {
+    MOZ_ASSERT(false, "Unexpected setting change signal parameters");
+    return;
+  }
+
+  auto* lnf = static_cast<nsLookAndFeel*>(user_data);
+
+  auto nsStr = GVariantGetString(ns);
+  auto keyStr = GVariantGetString(key);
+  if (nsStr.Equals("org.freedesktop.appearance"_ns) &&
+      keyStr.Equals("color-scheme"_ns)) {
+    lnf->OnColorSchemeSettingChanged();
+  }
 }
 
 nsLookAndFeel::nsLookAndFeel() {
@@ -111,22 +168,47 @@ nsLookAndFeel::nsLookAndFeel() {
                            G_CALLBACK(settings_changed_cb), nullptr);
   }
 
-  Preferences::RegisterCallback(
-      FirefoxThemeChanged,
-      nsDependentCString(
-          StaticPrefs::GetPrefName_widget_gtk_follow_firefox_theme()),
-      this);
+  sCSDAvailable =
+      nsWindow::GetSystemGtkWindowDecoration() != nsWindow::GTK_DECORATION_NONE;
+
+  if (ShouldUsePortal(PortalKind::Settings)) {
+    GUniquePtr<GError> error;
+    mDBusSettingsProxy = dont_AddRef(g_dbus_proxy_new_for_bus_sync(
+        G_BUS_TYPE_SESSION, G_DBUS_PROXY_FLAGS_NONE, nullptr,
+        "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop",
+        "org.freedesktop.portal.Settings", nullptr, getter_Transfers(error)));
+    if (mDBusSettingsProxy) {
+      g_signal_connect(mDBusSettingsProxy, "g-signal",
+                       G_CALLBACK(settings_changed_signal_cb), this);
+    } else {
+      LOGLNF("Can't create DBus proxy for settings: %s\n", error->message);
+    }
+  }
 }
 
 nsLookAndFeel::~nsLookAndFeel() {
+  if (mDBusSettingsProxy) {
+    g_signal_handlers_disconnect_by_func(
+        mDBusSettingsProxy, FuncToGpointer(settings_changed_signal_cb), this);
+    mDBusSettingsProxy = nullptr;
+  }
   g_signal_handlers_disconnect_by_func(
       gtk_settings_get_default(), FuncToGpointer(settings_changed_cb), nullptr);
-  Preferences::UnregisterCallback(
-      FirefoxThemeChanged,
-      nsDependentCString(
-          StaticPrefs::GetPrefName_widget_gtk_follow_firefox_theme()),
-      this);
 }
+
+#if 0
+static void DumpStyleContext(GtkStyleContext* aStyle) {
+  static auto sGtkStyleContextToString =
+      reinterpret_cast<char* (*)(GtkStyleContext*, gint)>(
+          dlsym(RTLD_DEFAULT, "gtk_style_context_to_string"));
+  char* str = sGtkStyleContextToString(aStyle, ~0);
+  printf("%s\n", str);
+  g_free(str);
+  str = gtk_widget_path_to_string(gtk_style_context_get_path(aStyle));
+  printf("%s\n", str);
+  g_free(str);
+}
+#endif
 
 // Modifies color |*aDest| as if a pattern of color |aSource| was painted with
 // CAIRO_OPERATOR_OVER to a surface with color |*aDest|.
@@ -329,19 +411,17 @@ static bool GetBorderColors(GtkStyleContext* aContext, nscolor* aLightColor,
 void nsLookAndFeel::PerThemeData::InitCellHighlightColors() {
   int32_t minLuminosityDifference = NS_SUFFICIENT_LUMINOSITY_DIFFERENCE_BG;
   int32_t backLuminosityDifference =
-      NS_LUMINOSITY_DIFFERENCE(mMozWindowBackground, mFieldBackground);
+      NS_LUMINOSITY_DIFFERENCE(mWindow.mBg, mField.mBg);
   if (backLuminosityDifference >= minLuminosityDifference) {
-    mMozCellHighlightBackground = mMozWindowBackground;
-    mMozCellHighlightText = mMozWindowText;
+    mCellHighlight = mWindow;
     return;
   }
 
   uint16_t hue, sat, luminance;
   uint8_t alpha;
-  mMozCellHighlightBackground = mFieldBackground;
-  mMozCellHighlightText = mFieldText;
+  mCellHighlight = mField;
 
-  NS_RGB2HSV(mMozCellHighlightBackground, hue, sat, luminance, alpha);
+  NS_RGB2HSV(mCellHighlight.mBg, hue, sat, luminance, alpha);
 
   uint16_t step = 30;
   // Lighten the color if the color is very dark
@@ -356,8 +436,7 @@ void nsLookAndFeel::PerThemeData::InitCellHighlightColors() {
   else {
     uint16_t textHue, textSat, textLuminance;
     uint8_t textAlpha;
-    NS_RGB2HSV(mMozCellHighlightText, textHue, textSat, textLuminance,
-               textAlpha);
+    NS_RGB2HSV(mCellHighlight.mFg, textHue, textSat, textLuminance, textAlpha);
     // Text is darker than background, use a lighter shade
     if (textLuminance < luminance) {
       luminance += step;
@@ -367,24 +446,45 @@ void nsLookAndFeel::PerThemeData::InitCellHighlightColors() {
       luminance -= step;
     }
   }
-  NS_HSV2RGB(mMozCellHighlightBackground, hue, sat, luminance, alpha);
+  NS_HSV2RGB(mCellHighlight.mBg, hue, sat, luminance, alpha);
 }
 
 void nsLookAndFeel::NativeInit() { EnsureInit(); }
 
 void nsLookAndFeel::RefreshImpl() {
-  nsXPLookAndFeel::RefreshImpl();
+  mInitialized = false;
   moz_gtk_refresh();
 
-  mInitialized = false;
+  nsXPLookAndFeel::RefreshImpl();
 }
 
 nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
                                        nscolor& aColor) {
   EnsureInit();
 
-  auto& theme = aScheme == ColorScheme::Light ? LightTheme() : DarkTheme();
+  const auto& theme =
+      aScheme == ColorScheme::Light ? LightTheme() : DarkTheme();
   return theme.GetColor(aID, aColor);
+}
+
+static bool ShouldUseColorForActiveDarkScrollbarThumb(nscolor aColor) {
+  auto IsDifferentEnough = [](int32_t aChannel, int32_t aOtherChannel) {
+    return std::abs(aChannel - aOtherChannel) > 10;
+  };
+  return IsDifferentEnough(NS_GET_R(aColor), NS_GET_G(aColor)) ||
+         IsDifferentEnough(NS_GET_R(aColor), NS_GET_B(aColor));
+}
+
+static bool ShouldUseThemedScrollbarColor(StyleSystemColor aID, nscolor aColor,
+                                          bool aIsDark) {
+  if (!aIsDark) {
+    return true;
+  }
+  if (StaticPrefs::widget_non_native_theme_scrollbar_dark_themed()) {
+    return true;
+  }
+  return aID == StyleSystemColor::ThemedScrollbarThumbActive &&
+         StaticPrefs::widget_non_native_theme_scrollbar_active_always_themed();
 }
 
 nsresult nsLookAndFeel::PerThemeData::GetColor(ColorID aID,
@@ -394,64 +494,50 @@ nsresult nsLookAndFeel::PerThemeData::GetColor(ColorID aID,
   switch (aID) {
       // These colors don't seem to be used for anything anymore in Mozilla
       // The CSS2 colors below are used.
-    case ColorID::WindowBackground:
-    case ColorID::WidgetBackground:
-    case ColorID::TextBackground:
-    case ColorID::Activecaption:  // active window caption background
-    case ColorID::Appworkspace:   // MDI background color
-    case ColorID::Background:     // desktop background
+    case ColorID::Appworkspace:  // MDI background color
+    case ColorID::Background:    // desktop background
     case ColorID::Window:
     case ColorID::Windowframe:
     case ColorID::MozDialog:
     case ColorID::MozCombobox:
-      aColor = mMozWindowBackground;
+      aColor = mWindow.mBg;
       break;
-    case ColorID::WindowForeground:
-    case ColorID::WidgetForeground:
-    case ColorID::TextForeground:
-    case ColorID::Captiontext:  // text in active window caption, size box, and
-                                // scrollbar arrow box (!)
     case ColorID::Windowtext:
     case ColorID::MozDialogtext:
-      aColor = mMozWindowText;
+      aColor = mWindow.mFg;
       break;
-    case ColorID::WidgetSelectBackground:
     case ColorID::IMESelectedRawTextBackground:
     case ColorID::IMESelectedConvertedTextBackground:
-    case ColorID::MozDragtargetzone:
     case ColorID::Highlight:  // preference selected item,
-      aColor = mTextSelectedBackground;
+      aColor = mSelectedText.mBg;
       break;
     case ColorID::Highlighttext:
-      if (NS_GET_A(mTextSelectedBackground) < 155) {
+      if (NS_GET_A(mSelectedText.mBg) < 155) {
         aColor = NS_SAME_AS_FOREGROUND_COLOR;
         break;
       }
       [[fallthrough]];
-    case ColorID::WidgetSelectForeground:
     case ColorID::IMESelectedRawTextForeground:
     case ColorID::IMESelectedConvertedTextForeground:
-      aColor = mTextSelectedText;
+      aColor = mSelectedText.mFg;
       break;
     case ColorID::Selecteditem:
-    case ColorID::MozAccentColor:
-      aColor = mAccentColor;
+      aColor = mSelectedItem.mBg;
       break;
     case ColorID::Selecteditemtext:
-    case ColorID::MozAccentColorForeground:
-      aColor = mAccentColorForeground;
+      aColor = mSelectedItem.mFg;
+      break;
+    case ColorID::Accentcolor:
+      aColor = mAccent.mBg;
+      break;
+    case ColorID::Accentcolortext:
+      aColor = mAccent.mFg;
       break;
     case ColorID::MozCellhighlight:
-      aColor = mMozCellHighlightBackground;
+      aColor = mCellHighlight.mBg;
       break;
     case ColorID::MozCellhighlighttext:
-      aColor = mMozCellHighlightText;
-      break;
-    case ColorID::Widget3DHighlight:
-      aColor = NS_RGB(0xa0, 0xa0, 0xa0);
-      break;
-    case ColorID::Widget3DShadow:
-      aColor = NS_RGB(0x40, 0x40, 0x40);
+      aColor = mCellHighlight.mFg;
       break;
     case ColorID::IMERawInputBackground:
     case ColorID::IMEConvertedTextBackground:
@@ -469,26 +555,44 @@ nsresult nsLookAndFeel::PerThemeData::GetColor(ColorID aID,
     case ColorID::IMESelectedConvertedTextUnderline:
       aColor = NS_TRANSPARENT;
       break;
-    case ColorID::SpellCheckerUnderline:
-      aColor = NS_RGB(0xff, 0, 0);
+    case ColorID::Scrollbar:
+      aColor = mThemedScrollbar;
       break;
     case ColorID::ThemedScrollbar:
       aColor = mThemedScrollbar;
+      if (!ShouldUseThemedScrollbarColor(aID, aColor, mIsDark)) {
+        return NS_ERROR_FAILURE;
+      }
       break;
     case ColorID::ThemedScrollbarInactive:
       aColor = mThemedScrollbarInactive;
+      if (!ShouldUseThemedScrollbarColor(aID, aColor, mIsDark)) {
+        return NS_ERROR_FAILURE;
+      }
       break;
     case ColorID::ThemedScrollbarThumb:
       aColor = mThemedScrollbarThumb;
+      if (!ShouldUseThemedScrollbarColor(aID, aColor, mIsDark)) {
+        return NS_ERROR_FAILURE;
+      }
       break;
     case ColorID::ThemedScrollbarThumbHover:
       aColor = mThemedScrollbarThumbHover;
+      if (!ShouldUseThemedScrollbarColor(aID, aColor, mIsDark)) {
+        return NS_ERROR_FAILURE;
+      }
       break;
     case ColorID::ThemedScrollbarThumbActive:
       aColor = mThemedScrollbarThumbActive;
+      if (!ShouldUseThemedScrollbarColor(aID, aColor, mIsDark)) {
+        return NS_ERROR_FAILURE;
+      }
       break;
     case ColorID::ThemedScrollbarThumbInactive:
       aColor = mThemedScrollbarThumbInactive;
+      if (!ShouldUseThemedScrollbarColor(aID, aColor, mIsDark)) {
+        return NS_ERROR_FAILURE;
+      }
       break;
 
       // css2  http://www.w3.org/TR/REC-CSS2/ui.html#system-colors
@@ -500,51 +604,56 @@ nsresult nsLookAndFeel::PerThemeData::GetColor(ColorID aID,
       // inactive window border
       aColor = mMozWindowInactiveBorder;
       break;
-    case ColorID::MozGtkTitlebarText:
-      aColor = mTitlebarText;
+    case ColorID::Graytext:  // disabled text in windows, menus, etc.
+      aColor = mGrayText;
       break;
-    case ColorID::MozGtkTitlebarInactiveText:
-      aColor = mTitlebarInactiveText;
+    case ColorID::Activecaption:
+      aColor = mTitlebar.mBg;
       break;
-    case ColorID::Graytext:             // disabled text in windows, menus, etc.
-    case ColorID::Inactivecaptiontext:  // text in inactive window caption
-      aColor = mMenuTextInactive;
+    case ColorID::Captiontext:  // text in active window caption (titlebar)
+      aColor = mTitlebar.mFg;
       break;
     case ColorID::Inactivecaption:
       // inactive window caption
-      aColor = mMozWindowInactiveCaption;
+      aColor = mTitlebarInactive.mBg;
+      break;
+    case ColorID::Inactivecaptiontext:
+      aColor = mTitlebarInactive.mFg;
       break;
     case ColorID::Infobackground:
-      // tooltip background color
-      aColor = mInfoBackground;
+      aColor = mInfo.mBg;
       break;
     case ColorID::Infotext:
-      // tooltip text color
-      aColor = mInfoText;
+      aColor = mInfo.mFg;
       break;
     case ColorID::Menu:
-      // menu background
-      aColor = mMenuBackground;
+      aColor = mMenu.mBg;
       break;
     case ColorID::Menutext:
-      // menu text
-      aColor = mMenuText;
+      aColor = mMenu.mFg;
       break;
-    case ColorID::Scrollbar:
-      // scrollbar gray area
-      aColor = mMozScrollbar;
+    case ColorID::MozHeaderbar:
+      aColor = mHeaderBar.mBg;
       break;
-
+    case ColorID::MozHeaderbartext:
+      aColor = mHeaderBar.mFg;
+      break;
+    case ColorID::MozHeaderbarinactive:
+      aColor = mHeaderBarInactive.mBg;
+      break;
+    case ColorID::MozHeaderbarinactivetext:
+      aColor = mHeaderBarInactive.mFg;
+      break;
     case ColorID::Threedface:
     case ColorID::Buttonface:
     case ColorID::MozButtondisabledface:
       // 3-D face color
-      aColor = mMozWindowBackground;
+      aColor = mWindow.mBg;
       break;
 
     case ColorID::Buttontext:
       // text on push buttons
-      aColor = mButtonText;
+      aColor = mButton.mFg;
       break;
 
     case ColorID::Buttonhighlight:
@@ -562,39 +671,39 @@ nsresult nsLookAndFeel::PerThemeData::GetColor(ColorID aID,
       break;
 
     case ColorID::Threedlightshadow:
+    case ColorID::Buttonborder:
     case ColorID::MozDisabledfield:
-      aColor = NS_RGB(0xE0, 0xE0, 0xE0);
+      aColor = mIsDark ? *GenericDarkColor(aID) : NS_RGB(0xE0, 0xE0, 0xE0);
       break;
     case ColorID::Threeddarkshadow:
-      aColor = NS_RGB(0xDC, 0xDC, 0xDC);
+      aColor = mIsDark ? *GenericDarkColor(aID) : NS_RGB(0xDC, 0xDC, 0xDC);
       break;
 
     case ColorID::MozEventreerow:
     case ColorID::Field:
-      aColor = mFieldBackground;
+      aColor = mField.mBg;
       break;
     case ColorID::Fieldtext:
-      aColor = mFieldText;
-      break;
-    case ColorID::MozButtondefault:
-      // default button border color
-      aColor = mButtonDefault;
+      aColor = mField.mFg;
       break;
     case ColorID::MozButtonhoverface:
     case ColorID::MozButtonactiveface:
-      aColor = mButtonHoverFace;
+      aColor = mButtonHover.mBg;
       break;
     case ColorID::MozButtonhovertext:
-      aColor = mButtonHoverText;
+      aColor = mButtonHover.mFg;
       break;
     case ColorID::MozButtonactivetext:
       aColor = mButtonActiveText;
       break;
     case ColorID::MozMenuhover:
-      aColor = mMenuHover;
+      aColor = mMenuHover.mBg;
       break;
     case ColorID::MozMenuhovertext:
-      aColor = mMenuHoverText;
+      aColor = mMenuHover.mFg;
+      break;
+    case ColorID::MozMenuhoverdisabled:
+      aColor = NS_TRANSPARENT;
       break;
     case ColorID::MozOddtreerow:
       aColor = mOddCellBackground;
@@ -602,20 +711,23 @@ nsresult nsLookAndFeel::PerThemeData::GetColor(ColorID aID,
     case ColorID::MozNativehyperlinktext:
       aColor = mNativeHyperLinkText;
       break;
+    case ColorID::MozNativevisitedhyperlinktext:
+      aColor = mNativeVisitedHyperLinkText;
+      break;
     case ColorID::MozComboboxtext:
       aColor = mComboBoxText;
-      break;
-    case ColorID::MozMenubartext:
-      aColor = mMenuBarText;
-      break;
-    case ColorID::MozMenubarhovertext:
-      aColor = mMenuBarHoverText;
       break;
     case ColorID::MozColheadertext:
       aColor = mMozColHeaderText;
       break;
     case ColorID::MozColheaderhovertext:
       aColor = mMozColHeaderHoverText;
+      break;
+    case ColorID::SpellCheckerUnderline:
+    case ColorID::Mark:
+    case ColorID::Marktext:
+      aColor = GetStandinForNativeColor(
+          aID, mIsDark ? ColorScheme::Dark : ColorScheme::Light);
       break;
     default:
       /* default color is BLACK */
@@ -739,13 +851,10 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = threshold;
     } break;
     case IntID::ScrollArrowStyle: {
-      GtkWidget* scrollbar = GetWidget(MOZ_GTK_SCROLLBAR_HORIZONTAL);
+      GtkWidget* scrollbar = GetWidget(MOZ_GTK_SCROLLBAR_VERTICAL);
       aResult = ConvertGTKStepperStyleToMozillaScrollArrowStyle(scrollbar);
       break;
     }
-    case IntID::ScrollSliderStyle:
-      aResult = eScrollThumbStyle_Proportional;
-      break;
     case IntID::TreeOpenDelay:
       aResult = 1000;
       break;
@@ -761,27 +870,19 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     case IntID::TreeScrollLinesMax:
       aResult = 3;
       break;
-    case IntID::DWMCompositor:
-    case IntID::WindowsClassic:
-    case IntID::WindowsDefaultTheme:
-    case IntID::WindowsThemeIdentifier:
-    case IntID::OperatingSystemVersionIdentifier:
-      aResult = 0;
-      res = NS_ERROR_NOT_IMPLEMENTED;
-      break;
     case IntID::AlertNotificationOrigin:
       aResult = NS_ALERT_TOP;
       break;
     case IntID::IMERawInputUnderlineStyle:
     case IntID::IMEConvertedTextUnderlineStyle:
-      aResult = NS_STYLE_TEXT_DECORATION_STYLE_SOLID;
+      aResult = static_cast<int32_t>(StyleTextDecorationStyle::Solid);
       break;
     case IntID::IMESelectedRawTextUnderlineStyle:
     case IntID::IMESelectedConvertedTextUnderline:
-      aResult = NS_STYLE_TEXT_DECORATION_STYLE_NONE;
+      aResult = static_cast<int32_t>(StyleTextDecorationStyle::None);
       break;
     case IntID::SpellCheckerUnderlineStyle:
-      aResult = NS_STYLE_TEXT_DECORATION_STYLE_WAVY;
+      aResult = static_cast<int32_t>(StyleTextDecorationStyle::Wavy);
       break;
     case IntID::MenuBarDrag:
       EnsureInit();
@@ -791,19 +892,14 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = 1;
       break;
     case IntID::SwipeAnimationEnabled:
-      aResult = 0;
+      aResult = 1;
       break;
     case IntID::ContextMenuOffsetVertical:
     case IntID::ContextMenuOffsetHorizontal:
       aResult = 2;
       break;
     case IntID::GTKCSDAvailable:
-      EnsureInit();
-      aResult = mCSDAvailable;
-      break;
-    case IntID::GTKCSDHideTitlebarByDefault:
-      EnsureInit();
-      aResult = mCSDHideTitlebarByDefault;
+      aResult = sCSDAvailable;
       break;
     case IntID::GTKCSDMaximizeButton:
       EnsureInit();
@@ -817,15 +913,6 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       EnsureInit();
       aResult = mCSDCloseButton;
       break;
-    case IntID::GTKCSDTransparentBackground: {
-      // Enable transparent titlebar corners for titlebar mode.
-      GdkScreen* screen = gdk_screen_get_default();
-      aResult = gdk_screen_is_composited(screen)
-                    ? (nsWindow::GtkWindowDecoration() !=
-                       nsWindow::GTK_DECORATION_NONE)
-                    : false;
-      break;
-    }
     case IntID::GTKCSDReversedPlacement:
       EnsureInit();
       aResult = mCSDReversedPlacement;
@@ -836,7 +923,11 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     }
     case IntID::SystemUsesDarkTheme: {
       EnsureInit();
-      aResult = mSystemTheme.mIsDark;
+      if (mColorSchemePreference) {
+        aResult = *mColorSchemePreference == ColorScheme::Dark;
+      } else {
+        aResult = mSystemTheme.mIsDark;
+      }
       break;
     }
     case IntID::GTKCSDMaximizeButtonPosition:
@@ -848,9 +939,20 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     case IntID::GTKCSDCloseButtonPosition:
       aResult = mCSDCloseButtonPosition;
       break;
-    case IntID::UseAccessibilityTheme: {
+    case IntID::UseAccessibilityTheme:
+    // If high contrast is enabled, enable prefers-reduced-transparency media
+    // query as well as there is no dedicated option.
+    case IntID::PrefersReducedTransparency:
       EnsureInit();
       aResult = mSystemTheme.mHighContrast;
+      break;
+    case IntID::InvertedColors:
+      // No GTK API for checking if inverted colors is enabled
+      aResult = 0;
+      break;
+    case IntID::TitlebarRadius: {
+      EnsureInit();
+      aResult = EffectiveTheme().mTitlebarRadius;
       break;
     }
     case IntID::AllowOverlayScrollbarsOverlap: {
@@ -867,6 +969,27 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     }
     case IntID::ScrollbarDisplayOnMouseMove: {
       aResult = 1;
+      break;
+    }
+    case IntID::PanelAnimations:
+      aResult = [&]() -> bool {
+        if (!sCSDAvailable) {
+          // Disabled on systems without CSD, see bug 1385079.
+          return false;
+        }
+        if (GdkIsWaylandDisplay()) {
+          // Disabled on wayland, see bug 1800442 and bug 1800368.
+          return false;
+        }
+        if (IsKdeDesktopEnvironment()) {
+          // Disabled on KDE, see bug 1813070.
+          return false;
+        }
+        return true;
+      }();
+      break;
+    case IntID::UseOverlayScrollbars: {
+      aResult = StaticPrefs::widget_gtk_overlay_scrollbars_enabled();
       break;
     }
     case IntID::TouchDeviceSupportPresent:
@@ -905,7 +1028,7 @@ nsresult nsLookAndFeel::NativeGetFloat(FloatID aID, float& aResult) {
 
 static void GetSystemFontInfo(GtkStyleContext* aStyle, nsString* aFontName,
                               gfxFontStyle* aFontStyle) {
-  aFontStyle->style = FontSlantStyle::Normal();
+  aFontStyle->style = FontSlantStyle::NORMAL;
 
   // As in
   // https://git.gnome.org/browse/gtk+/tree/gtk/gtkwidget.c?h=3.22.19#n10333
@@ -919,10 +1042,11 @@ static void GetSystemFontInfo(GtkStyleContext* aStyle, nsString* aFontName,
   NS_ConvertUTF8toUTF16 family(pango_font_description_get_family(desc));
   *aFontName = quote + family + quote;
 
-  aFontStyle->weight = FontWeight(pango_font_description_get_weight(desc));
+  aFontStyle->weight =
+      FontWeight::FromInt(pango_font_description_get_weight(desc));
 
   // FIXME: Set aFontStyle->stretch correctly!
-  aFontStyle->stretch = FontStretch::Normal();
+  aFontStyle->stretch = FontStretch::NORMAL;
 
   float size = float(pango_font_description_get_size(desc)) / PANGO_SCALE;
 
@@ -969,28 +1093,17 @@ bool nsLookAndFeel::PerThemeData::GetFont(FontID aID, nsString& aFontName,
     case FontID::MessageBox:    // css2
     case FontID::SmallCaption:  // css2
     case FontID::StatusBar:     // css2
-    case FontID::MozWindow:     // css3
-    case FontID::MozDocument:   // css3
-    case FontID::MozWorkspace:  // css3
-    case FontID::MozDesktop:    // css3
-    case FontID::MozInfo:       // css3
-    case FontID::MozDialog:     // css3
     default:
       aFontName = mDefaultFontName;
       aFontStyle = mDefaultFontStyle;
       break;
   }
 
-  // Scale the font for the current monitor
-  double scaleFactor = StaticPrefs::layout_css_devPixelsPerPx();
-  if (scaleFactor > 0) {
-    aFontStyle.size *=
-        widget::ScreenHelperGTK::GetGTKMonitorScaleFactor() / scaleFactor;
-  } else {
-    // Convert gdk pixels to CSS pixels.
-    aFontStyle.size /= gfxPlatformGtk::GetFontScaleFactor();
-  }
-
+  // Convert GDK pixels to CSS pixels.
+  // When "layout.css.devPixelsPerPx" > 0, this is not a direct conversion.
+  // The difference produces a scaling of system fonts in proportion with
+  // other scaling from the change in CSS pixel sizes.
+  aFontStyle.size /= LookAndFeel::GetTextScaleFactor();
   return true;
 }
 
@@ -1075,17 +1188,13 @@ static bool GetThemeIsDark() {
          RelativeLuminanceUtils::Compute(GDK_RGBA_TO_NS_RGBA(fg));
 }
 
-void nsLookAndFeel::ConfigureTheme(const LookAndFeelTheme& aTheme) {
-  MOZ_ASSERT(XRE_IsContentProcess());
-  GtkSettings* settings = gtk_settings_get_default();
-  g_object_set(settings, "gtk-theme-name", aTheme.themeName().get(),
-               "gtk-application-prefer-dark-theme",
-               aTheme.preferDarkTheme() ? TRUE : FALSE, nullptr);
-}
-
 void nsLookAndFeel::RestoreSystemTheme() {
-  LOGLNF("RestoreSystemTheme(%s, %d)\n", mSystemTheme.mName.get(),
-         mSystemTheme.mPreferDarkTheme);
+  LOGLNF("RestoreSystemTheme(%s, %d, %d)\n", mSystemTheme.mName.get(),
+         mSystemTheme.mPreferDarkTheme, mSystemThemeOverridden);
+
+  if (!mSystemThemeOverridden) {
+    return;
+  }
 
   // Available on Gtk 3.20+.
   static auto sGtkSettingsResetProperty =
@@ -1102,10 +1211,15 @@ void nsLookAndFeel::RestoreSystemTheme() {
                  mSystemTheme.mPreferDarkTheme, nullptr);
   }
   moz_gtk_refresh();
+  mSystemThemeOverridden = false;
 }
 
-template <typename Callback>
-void nsLookAndFeel::WithAltThemeConfigured(const Callback& aFn) {
+static bool AnyColorChannelIsDifferent(nscolor aColor) {
+  return NS_GET_R(aColor) != NS_GET_G(aColor) ||
+         NS_GET_R(aColor) != NS_GET_B(aColor);
+}
+
+void nsLookAndFeel::ConfigureAndInitializeAltTheme() {
   GtkSettings* settings = gtk_settings_get_default();
 
   bool fellBackToDefaultTheme = false;
@@ -1147,91 +1261,167 @@ void nsLookAndFeel::WithAltThemeConfigured(const Callback& aFn) {
   }
 
   if (mSystemTheme.mIsDark == GetThemeIsDark()) {
-    // If the theme still didn't change enough, fall back to either Adwaita or
-    // Adwaita-dark.
-    g_object_set(settings, "gtk-theme-name",
-                 mSystemTheme.mIsDark ? "Adwaita" : "Adwaita-dark", nullptr);
+    // If the theme still didn't change enough, fall back to Adwaita with the
+    // appropriate color preference.
+    g_object_set(settings, "gtk-theme-name", "Adwaita",
+                 "gtk-application-prefer-dark-theme", !mSystemTheme.mIsDark,
+                 nullptr);
     moz_gtk_refresh();
+
+    // If it _still_ didn't change enough, and we're dark, try to set
+    // Adwaita-dark as a theme name. This might be needed in older GTK versions.
+    if (!mSystemTheme.mIsDark && !GetThemeIsDark()) {
+      g_object_set(settings, "gtk-theme-name", "Adwaita-dark", nullptr);
+      moz_gtk_refresh();
+    }
+
     fellBackToDefaultTheme = true;
   }
 
-  aFn(fellBackToDefaultTheme);
+  mAltTheme.Init();
 
-  // Restore the system theme.
-  RestoreSystemTheme();
-}
-
-static bool AnyColorChannelIsDifferent(nscolor aColor) {
-  return NS_GET_R(aColor) != NS_GET_G(aColor) ||
-         NS_GET_R(aColor) != NS_GET_B(aColor);
-}
-
-void nsLookAndFeel::InitializeAltTheme() {
-  WithAltThemeConfigured([&](bool aFellBackToDefaultTheme) {
-    mAltTheme.Init();
-    // Some of the alt theme colors we can grab from the system theme, if we
-    // fell back to the default light / dark themes.
-    if (aFellBackToDefaultTheme) {
-      if (StaticPrefs::widget_gtk_alt_theme_selection()) {
-        mAltTheme.mTextSelectedText = mSystemTheme.mTextSelectedText;
-        mAltTheme.mTextSelectedBackground =
-            mSystemTheme.mTextSelectedBackground;
-      }
-
-      if (StaticPrefs::widget_gtk_alt_theme_scrollbar()) {
-        mAltTheme.mThemedScrollbar = mSystemTheme.mThemedScrollbar;
-        mAltTheme.mThemedScrollbarInactive =
-            mSystemTheme.mThemedScrollbarInactive;
-        mAltTheme.mThemedScrollbarThumb = mSystemTheme.mThemedScrollbarThumb;
-        mAltTheme.mThemedScrollbarThumbHover =
-            mSystemTheme.mThemedScrollbarThumbHover;
-        mAltTheme.mThemedScrollbarThumbInactive =
-            mSystemTheme.mThemedScrollbarThumbInactive;
-      }
-
-      if (StaticPrefs::widget_gtk_alt_theme_scrollbar_active()) {
-        mAltTheme.mThemedScrollbarThumbActive =
-            mSystemTheme.mThemedScrollbarThumbActive;
-      }
-
-      if (StaticPrefs::widget_gtk_alt_theme_selection()) {
-        mAltTheme.mAccentColor = mSystemTheme.mAccentColor;
-        mAltTheme.mAccentColorForeground = mSystemTheme.mAccentColorForeground;
-      }
+  // Some of the alt theme colors we can grab from the system theme, if we fell
+  // back to the default light / dark themes.
+  if (fellBackToDefaultTheme) {
+    if (StaticPrefs::widget_gtk_alt_theme_selection()) {
+      mAltTheme.mSelectedText = mSystemTheme.mSelectedText;
     }
-  });
-}
 
-void nsLookAndFeel::EnsureInit() {
-  if (mInitialized) {
-    return;
+    if (StaticPrefs::widget_gtk_alt_theme_scrollbar_active() &&
+        (!mAltTheme.mIsDark || ShouldUseColorForActiveDarkScrollbarThumb(
+                                   mSystemTheme.mThemedScrollbarThumbActive))) {
+      mAltTheme.mThemedScrollbarThumbActive =
+          mSystemTheme.mThemedScrollbarThumbActive;
+    }
+
+    if (StaticPrefs::widget_gtk_alt_theme_accent()) {
+      mAltTheme.mAccent = mSystemTheme.mAccent;
+    }
   }
 
-  LOGLNF("nsLookAndFeel::EnsureInit");
+  // Special case for Adwaita: In GTK3 we don't have more proper accent colors,
+  // so we use the selected background colors. Those colors, however, don't have
+  // much contrast in dark mode (see bug 1741293). We know, however, that GTK4
+  // uses the light accent color for the dark theme, see:
+  //
+  //   https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html#accent-colors
+  //
+  // So we manually do that.
+  if (mSystemTheme.mFamily == ThemeFamily::Adwaita) {
+    auto& dark = mSystemTheme.mIsDark ? mSystemTheme : mAltTheme;
+    auto& light = mSystemTheme.mIsDark ? mAltTheme : mSystemTheme;
+    dark.mAccent = light.mAccent;
+  }
 
-  AutoRestore<bool> restoreIgnoreSettings(sIgnoreChangedSettings);
-  sIgnoreChangedSettings = true;
+  // Right now we're using the opposite color-scheme theme, make sure to record
+  // it.
+  mSystemThemeOverridden = true;
+}
 
-  // Gtk manages a screen's CSS in the settings object so we
-  // ask Gtk to create it explicitly. Otherwise we may end up
-  // with wrong color theme, see Bug 972382
+Maybe<ColorScheme> nsLookAndFeel::ComputeColorSchemeSetting() {
+  {
+    // Check the pref explicitly here. Usually this shouldn't be needed, but
+    // since we can only load one GTK theme at a time, and the pref will
+    // override the effective value that the rest of gecko assumes for the
+    // "system" color scheme, we need to factor it in our GTK theme decisions.
+    int32_t pref = 0;
+    if (NS_SUCCEEDED(Preferences::GetInt("ui.systemUsesDarkTheme", &pref))) {
+      return Some(pref ? ColorScheme::Dark : ColorScheme::Light);
+    }
+  }
+
+  if (!mDBusSettingsProxy) {
+    return Nothing();
+  }
+  GUniquePtr<GError> error;
+  RefPtr<GVariant> variant = dont_AddRef(g_dbus_proxy_call_sync(
+      mDBusSettingsProxy, "Read",
+      g_variant_new("(ss)", "org.freedesktop.appearance", "color-scheme"),
+      G_DBUS_CALL_FLAGS_NONE,
+      StaticPrefs::widget_gtk_settings_portal_timeout_ms(), nullptr,
+      getter_Transfers(error)));
+  if (!variant) {
+    LOGLNF("color-scheme query error: %s\n", error->message);
+    return Nothing();
+  }
+  LOGLNF("color-scheme query result: %s\n", GVariantToString(variant).get());
+  variant = dont_AddRef(g_variant_get_child_value(variant, 0));
+  while (variant && g_variant_is_of_type(variant, G_VARIANT_TYPE_VARIANT)) {
+    // Unbox the return value.
+    variant = dont_AddRef(g_variant_get_variant(variant));
+  }
+  if (!variant || !g_variant_is_of_type(variant, G_VARIANT_TYPE_UINT32)) {
+    MOZ_ASSERT(false, "Unexpected color-scheme query return value");
+    return Nothing();
+  }
+  switch (g_variant_get_uint32(variant)) {
+    default:
+      MOZ_FALLTHROUGH_ASSERT("Unexpected color-scheme query return value");
+    case 0:
+      break;
+    case 1:
+      return Some(ColorScheme::Dark);
+    case 2:
+      return Some(ColorScheme::Light);
+  }
+  return Nothing();
+}
+
+void nsLookAndFeel::Initialize() {
+  LOGLNF("nsLookAndFeel::Initialize");
+  MOZ_DIAGNOSTIC_ASSERT(!mInitialized);
+  MOZ_DIAGNOSTIC_ASSERT(NS_IsMainThread(),
+                        "LookAndFeel init should be done on the main thread");
+
+  mInitialized = true;
+
   GtkSettings* settings = gtk_settings_get_default();
   if (MOZ_UNLIKELY(!settings)) {
     NS_WARNING("EnsureInit: No settings");
     return;
   }
 
-  mInitialized = true;
-  if (mSystemThemeOverridden) {
-    // Our current theme may be different from the system theme if we're
-    // matching the firefox theme. Make sure to restore the original system
-    // theme.
-    RestoreSystemTheme();
-    mSystemThemeOverridden = false;
-  }
+  AutoRestore<bool> restoreIgnoreSettings(sIgnoreChangedSettings);
+  sIgnoreChangedSettings = true;
 
-  // gtk does non threadsafe refcounting
-  MOZ_ASSERT(NS_IsMainThread());
+  // Our current theme may be different from the system theme if we're matching
+  // the Firefox theme or using the alt theme intentionally due to the
+  // color-scheme preference. Make sure to restore the original system theme.
+  RestoreSystemTheme();
+
+  // First initialize global settings.
+  InitializeGlobalSettings();
+
+  // Record our system theme settings now.
+  mSystemTheme.Init();
+
+  // Find the alternative-scheme theme (light if the system theme is dark, or
+  // vice versa), configure it and initialize it.
+  ConfigureAndInitializeAltTheme();
+
+  LOGLNF("System Theme: %s. Alt Theme: %s\n", mSystemTheme.mName.get(),
+         mAltTheme.mName.get());
+
+  // Go back to the system theme or keep the alt theme configured, depending on
+  // Firefox theme or user color-scheme preference.
+  ConfigureFinalEffectiveTheme();
+
+  RecordTelemetry();
+}
+
+void nsLookAndFeel::OnColorSchemeSettingChanged() {
+  if (NS_WARN_IF(mColorSchemePreference == ComputeColorSchemeSetting())) {
+    // We sometimes get duplicate color-scheme changes from dbus, avoid doing
+    // extra work if not needed.
+    return;
+  }
+  OnSettingsChange();
+}
+
+void nsLookAndFeel::InitializeGlobalSettings() {
+  GtkSettings* settings = gtk_settings_get_default();
+
+  mColorSchemePreference = ComputeColorSchemeSetting();
 
   gboolean enableAnimations = false;
   g_object_get(settings, "gtk-enable-animations", &enableAnimations, nullptr);
@@ -1259,12 +1449,6 @@ void nsLookAndFeel::EnsureInit() {
   } else {
     mCaretBlinkCount = -1;
   }
-
-  mCSDAvailable =
-      nsWindow::GtkWindowDecoration() != nsWindow::GTK_DECORATION_NONE;
-  mCSDHideTitlebarByDefault = nsWindow::HideTitlebarByDefault();
-
-  mSystemTheme.Init();
 
   mCSDCloseButton = false;
   mCSDMinimizeButton = false;
@@ -1304,51 +1488,39 @@ void nsLookAndFeel::EnsureInit() {
 
     if (pos) {
       *pos = i;
-      if (layout.mAtRight) {
-        *pos += TOOLBAR_BUTTONS;
-      }
     }
   }
-
-  // Switching themes on startup has some performance cost, so until we use the
-  // dark colors, keep it pref'd off.
-  if (mSystemTheme.mIsDark || StaticPrefs::widget_gtk_alt_theme_dark()) {
-    InitializeAltTheme();
-  } else {
-    mAltTheme = mSystemTheme;
-  }
-
-  LOGLNF("System Theme: %s. Alt Theme: %s\n", mSystemTheme.mName.get(),
-         mAltTheme.mName.get());
-
-  MatchFirefoxThemeIfNeeded();
-
-  RecordTelemetry();
 }
 
-bool nsLookAndFeel::MatchFirefoxThemeIfNeeded() {
-  AutoRestore<bool> restoreIgnoreSettings(sIgnoreChangedSettings);
-  sIgnoreChangedSettings = true;
+void nsLookAndFeel::ConfigureFinalEffectiveTheme() {
+  MOZ_ASSERT(mSystemThemeOverridden,
+             "By this point, the alt theme should be configured");
 
-  if (!StaticPrefs::widget_gtk_follow_firefox_theme()) {
-    return false;
-  }
+  const bool shouldUseSystemTheme = [&] {
+    // NOTE: We can't call ColorSchemeForChrome directly because this might run
+    // while we're computing it.
+    switch (ColorSchemeSettingForChrome()) {
+      case ChromeColorSchemeSetting::Light:
+        return !mSystemTheme.mIsDark;
+      case ChromeColorSchemeSetting::Dark:
+        return mSystemTheme.mIsDark;
+      case ChromeColorSchemeSetting::System:
+        break;
+    };
+    if (!mColorSchemePreference) {
+      return true;
+    }
+    bool preferenceIsDark = *mColorSchemePreference == ColorScheme::Dark;
+    return preferenceIsDark == mSystemTheme.mIsDark;
+  }();
 
-  const bool matchesSystem =
-      (ColorSchemeForChrome() == ColorScheme::Dark) == mSystemTheme.mIsDark;
   const bool usingSystem = !mSystemThemeOverridden;
+  LOGLNF("OverrideSystemThemeIfNeeded(matchesSystem=%d, usingSystem=%d)\n",
+         shouldUseSystemTheme, usingSystem);
 
-  LOGLNF("MatchFirefoxThemeIfNeeded(matchesSystem=%d, usingSystem=%d)\n",
-         matchesSystem, usingSystem);
-
-  if (usingSystem == matchesSystem) {
-    return false;
-  }
-
-  mSystemThemeOverridden = !matchesSystem;
-  if (matchesSystem) {
+  if (shouldUseSystemTheme) {
     RestoreSystemTheme();
-  } else {
+  } else if (usingSystem) {
     LOGLNF("Setting theme %s, %d\n", mAltTheme.mName.get(),
            mAltTheme.mPreferDarkTheme);
 
@@ -1364,39 +1536,21 @@ bool nsLookAndFeel::MatchFirefoxThemeIfNeeded() {
                    mAltTheme.mPreferDarkTheme, nullptr);
     }
     moz_gtk_refresh();
+    mSystemThemeOverridden = true;
   }
-  return true;
-}
-
-void nsLookAndFeel::FirefoxThemeChanged(const char*, void* aInstance) {
-  auto* lnf = static_cast<nsLookAndFeel*>(aInstance);
-  if (lnf->MatchFirefoxThemeIfNeeded()) {
-    LookAndFeel::NotifyChangedAllWindows(
-        widget::ThemeChangeKind::StyleAndLayout);
-  }
-}
-
-void nsLookAndFeel::GetGtkContentTheme(LookAndFeelTheme& aTheme) {
-  if (NS_SUCCEEDED(Preferences::GetCString("widget.content.gtk-theme-override",
-                                           aTheme.themeName()))) {
-    return;
-  }
-
-  auto& theme = StaticPrefs::widget_content_allow_gtk_dark_theme()
-                    ? mSystemTheme
-                    : LightTheme();
-  aTheme.preferDarkTheme() = theme.mPreferDarkTheme;
-  aTheme.themeName() = theme.mName;
 }
 
 static nscolor GetBackgroundColor(
     GtkStyleContext* aStyle, nscolor aForForegroundColor,
-    GtkStateFlags aState = GTK_STATE_FLAG_NORMAL) {
+    GtkStateFlags aState = GTK_STATE_FLAG_NORMAL,
+    nscolor aOverBackgroundColor = NS_TRANSPARENT) {
   GdkRGBA gdkColor;
   gtk_style_context_get_background_color(aStyle, aState, &gdkColor);
   nscolor color = GDK_RGBA_TO_NS_RGBA(gdkColor);
   if (NS_GET_A(color)) {
-    return color;
+    if (color != aOverBackgroundColor) {
+      return color;
+    }
   }
 
   // Try to synthesize a color from a background-image.
@@ -1426,8 +1580,85 @@ static nscolor GetBackgroundColor(
   return NS_TRANSPARENT;
 }
 
+static nscolor GetTextColor(GtkStyleContext* aStyle,
+                            GtkStateFlags aState = GTK_STATE_FLAG_NORMAL) {
+  GdkRGBA color;
+  gtk_style_context_get_color(aStyle, aState, &color);
+  return GDK_RGBA_TO_NS_RGBA(color);
+}
+
+using ColorPair = nsLookAndFeel::ColorPair;
+static ColorPair GetColorPair(GtkStyleContext* aStyle,
+                              GtkStateFlags aState = GTK_STATE_FLAG_NORMAL) {
+  ColorPair result;
+  result.mFg = GetTextColor(aStyle, aState);
+  result.mBg = GetBackgroundColor(aStyle, result.mFg, aState);
+  return result;
+}
+
+static bool GetNamedColorPair(GtkStyleContext* aStyle, const char* aBgName,
+                              const char* aFgName, ColorPair* aPair) {
+  GdkRGBA bg, fg;
+  if (!gtk_style_context_lookup_color(aStyle, aBgName, &bg) ||
+      !gtk_style_context_lookup_color(aStyle, aFgName, &fg)) {
+    return false;
+  }
+
+  aPair->mBg = GDK_RGBA_TO_NS_RGBA(bg);
+  aPair->mFg = GDK_RGBA_TO_NS_RGBA(fg);
+
+  // If the colors are semi-transparent and the theme provides a
+  // background color, blend with them to get the "final" color, see
+  // bug 1717077.
+  if (NS_GET_A(aPair->mBg) != 255 &&
+      (gtk_style_context_lookup_color(aStyle, "bg_color", &bg) ||
+       gtk_style_context_lookup_color(aStyle, "theme_bg_color", &bg))) {
+    aPair->mBg = NS_ComposeColors(GDK_RGBA_TO_NS_RGBA(bg), aPair->mBg);
+  }
+
+  // A semi-transparent foreground color would be kinda silly, but is done
+  // for symmetry.
+  if (NS_GET_A(aPair->mFg) != 255) {
+    aPair->mFg = NS_ComposeColors(aPair->mBg, aPair->mFg);
+  }
+
+  return true;
+}
+
+static void EnsureColorPairIsOpaque(ColorPair& aPair) {
+  // Blend with white, ensuring the color is opaque, so that the UI doesn't have
+  // to care about alpha.
+  aPair.mBg = NS_ComposeColors(NS_RGB(0xff, 0xff, 0xff), aPair.mBg);
+  aPair.mFg = NS_ComposeColors(aPair.mBg, aPair.mFg);
+}
+
+static void PreferDarkerBackground(ColorPair& aPair) {
+  // We use the darker one unless the foreground isn't really a color (is all
+  // white / black / gray) and the background is, in which case we stick to what
+  // we have.
+  if (RelativeLuminanceUtils::Compute(aPair.mBg) >
+          RelativeLuminanceUtils::Compute(aPair.mFg) &&
+      (AnyColorChannelIsDifferent(aPair.mFg) ||
+       !AnyColorChannelIsDifferent(aPair.mBg))) {
+    std::swap(aPair.mBg, aPair.mFg);
+  }
+}
+
 void nsLookAndFeel::PerThemeData::Init() {
   mName = GetGtkTheme();
+
+  mFamily = [&] {
+    if (mName.EqualsLiteral("Adwaita") || mName.EqualsLiteral("Adwaita-dark")) {
+      return ThemeFamily::Adwaita;
+    }
+    if (mName.EqualsLiteral("Breeze") || mName.EqualsLiteral("Breeze-Dark")) {
+      return ThemeFamily::Breeze;
+    }
+    if (StringBeginsWith(mName, "Yaru"_ns)) {
+      return ThemeFamily::Yaru;
+    }
+    return ThemeFamily::Other;
+  }();
 
   GtkStyleContext* style;
 
@@ -1460,8 +1691,6 @@ void nsLookAndFeel::PerThemeData::Init() {
   mThemedScrollbarInactive =
       NS_ComposeColors(mThemedScrollbarInactive, GDK_RGBA_TO_NS_RGBA(color));
 
-  mMozScrollbar = mThemedScrollbar;
-
   style = GetStyleContext(MOZ_GTK_SCROLLBAR_THUMB_VERTICAL);
   gtk_style_context_get_background_color(style, GTK_STATE_FLAG_NORMAL, &color);
   mThemedScrollbarThumb = GDK_RGBA_TO_NS_RGBA(color);
@@ -1477,21 +1706,50 @@ void nsLookAndFeel::PerThemeData::Init() {
   mThemedScrollbarThumbInactive = GDK_RGBA_TO_NS_RGBA(color);
 
   // Make sure that the thumb is visible, at least.
-  const bool fallbackToUnthemedColors = !ShouldHonorThemeScrollbarColors() ||
-                                        !NS_GET_A(mThemedScrollbarThumb) ||
-                                        !NS_GET_A(mThemedScrollbarThumbHover) ||
-                                        !NS_GET_A(mThemedScrollbarThumbActive);
+  const bool fallbackToUnthemedColors = [&] {
+    if (!StaticPrefs::widget_gtk_theme_scrollbar_colors_enabled()) {
+      return true;
+    }
+
+    if (!ShouldHonorThemeScrollbarColors()) {
+      return true;
+    }
+    // If any of the scrollbar thumb colors are fully transparent, fall back to
+    // non-native ones.
+    if (!NS_GET_A(mThemedScrollbarThumb) ||
+        !NS_GET_A(mThemedScrollbarThumbHover) ||
+        !NS_GET_A(mThemedScrollbarThumbActive)) {
+      return true;
+    }
+    // If the thumb and track are the same color and opaque, fall back to
+    // non-native colors as well.
+    if (mThemedScrollbar == mThemedScrollbarThumb &&
+        NS_GET_A(mThemedScrollbar) == 0xff) {
+      return true;
+    }
+    return false;
+  }();
+
   if (fallbackToUnthemedColors) {
-    mMozScrollbar = mThemedScrollbar = widget::sScrollbarColor.ToABGR();
-    mThemedScrollbarInactive = widget::sScrollbarColor.ToABGR();
-    mThemedScrollbarThumb = widget::sScrollbarThumbColor.ToABGR();
-    mThemedScrollbarThumbHover =
-        nsNativeBasicTheme::AdjustUnthemedScrollbarThumbColor(
-            mThemedScrollbarThumb, NS_EVENT_STATE_HOVER);
+    if (mIsDark) {
+      // Taken from Adwaita-dark.
+      mThemedScrollbar = NS_RGB(0x31, 0x31, 0x31);
+      mThemedScrollbarInactive = NS_RGB(0x2d, 0x2d, 0x2d);
+      mThemedScrollbarThumb = NS_RGB(0xa3, 0xa4, 0xa4);
+      mThemedScrollbarThumbInactive = NS_RGB(0x59, 0x5a, 0x5a);
+    } else {
+      // Taken from Adwaita.
+      mThemedScrollbar = NS_RGB(0xce, 0xce, 0xce);
+      mThemedScrollbarInactive = NS_RGB(0xec, 0xed, 0xef);
+      mThemedScrollbarThumb = NS_RGB(0x82, 0x81, 0x7e);
+      mThemedScrollbarThumbInactive = NS_RGB(0xce, 0xcf, 0xce);
+    }
+
+    mThemedScrollbarThumbHover = ThemeColors::AdjustUnthemedScrollbarThumbColor(
+        mThemedScrollbarThumb, dom::ElementState::HOVER);
     mThemedScrollbarThumbActive =
-        nsNativeBasicTheme::AdjustUnthemedScrollbarThumbColor(
-            mThemedScrollbarThumb, NS_EVENT_STATE_ACTIVE);
-    mThemedScrollbarThumbInactive = mThemedScrollbarThumb;
+        ThemeColors::AdjustUnthemedScrollbarThumbColor(
+            mThemedScrollbarThumb, dom::ElementState::ACTIVE);
   }
 
   // The label is not added to a parent widget, but shared for constructing
@@ -1503,19 +1761,14 @@ void nsLookAndFeel::PerThemeData::Init() {
   // Window colors
   style = GetStyleContext(MOZ_GTK_WINDOW);
 
-  gtk_style_context_get_color(style, GTK_STATE_FLAG_NORMAL, &color);
-  mMozWindowText = GDK_RGBA_TO_NS_RGBA(color);
-
-  mMozWindowBackground = GetBackgroundColor(style, mMozWindowText);
+  mWindow.mFg = GetTextColor(style);
+  mWindow.mBg = GetBackgroundColor(style, mWindow.mFg);
 
   gtk_style_context_get_border_color(style, GTK_STATE_FLAG_NORMAL, &color);
   mMozWindowActiveBorder = GDK_RGBA_TO_NS_RGBA(color);
 
   gtk_style_context_get_border_color(style, GTK_STATE_FLAG_INSENSITIVE, &color);
   mMozWindowInactiveBorder = GDK_RGBA_TO_NS_RGBA(color);
-
-  mMozWindowInactiveCaption =
-      GetBackgroundColor(style, mMozWindowText, GTK_STATE_FLAG_INSENSITIVE);
 
   style = GetStyleContext(MOZ_GTK_WINDOW_CONTAINER);
   {
@@ -1526,11 +1779,9 @@ void nsLookAndFeel::PerThemeData::Init() {
 
   // tooltip foreground and background
   style = GetStyleContext(MOZ_GTK_TOOLTIP_BOX_LABEL);
-  gtk_style_context_get_color(style, GTK_STATE_FLAG_NORMAL, &color);
-  mInfoText = GDK_RGBA_TO_NS_RGBA(color);
-
+  mInfo.mFg = GetTextColor(style);
   style = GetStyleContext(MOZ_GTK_TOOLTIP);
-  mInfoBackground = GetBackgroundColor(style, mInfoText);
+  mInfo.mBg = GetBackgroundColor(style, mInfo.mFg);
 
   style = GetStyleContext(MOZ_GTK_MENUITEM);
   {
@@ -1540,31 +1791,59 @@ void nsLookAndFeel::PerThemeData::Init() {
     GetSystemFontInfo(accelStyle, &mMenuFontName, &mMenuFontStyle);
 
     gtk_style_context_get_color(accelStyle, GTK_STATE_FLAG_NORMAL, &color);
-    mMenuText = GDK_RGBA_TO_NS_RGBA(color);
-    gtk_style_context_get_color(accelStyle, GTK_STATE_FLAG_INSENSITIVE, &color);
-    mMenuTextInactive = GDK_RGBA_TO_NS_RGBA(color);
+    mMenu.mFg = GetTextColor(accelStyle);
+    mGrayText = GetTextColor(accelStyle, GTK_STATE_FLAG_INSENSITIVE);
     g_object_unref(accelStyle);
   }
 
-  style = GetStyleContext(MOZ_GTK_HEADER_BAR);
+  const auto effectiveTitlebarStyle =
+      HeaderBarShouldDrawContainer(MOZ_GTK_HEADER_BAR) ? MOZ_GTK_HEADERBAR_FIXED
+                                                       : MOZ_GTK_HEADER_BAR;
+  style = GetStyleContext(effectiveTitlebarStyle);
   {
-    gtk_style_context_get_color(style, GTK_STATE_FLAG_NORMAL, &color);
-    mTitlebarText = GDK_RGBA_TO_NS_RGBA(color);
+    mTitlebar = GetColorPair(style, GTK_STATE_FLAG_NORMAL);
+    mTitlebarInactive = GetColorPair(style, GTK_STATE_FLAG_BACKDROP);
+    mTitlebarRadius = IsSolidCSDStyleUsed() ? 0 : GetBorderRadius(style);
+  }
 
-    gtk_style_context_get_color(style, GTK_STATE_FLAG_BACKDROP, &color);
-    mTitlebarInactiveText = GDK_RGBA_TO_NS_RGBA(color);
+  // We special-case the header bar color in Adwaita, Yaru and Breeze to be the
+  // titlebar color, because it looks better and matches what apps do by
+  // default, see bug 1838460.
+  // For breeze we read the KDE colors directly, if available.
+  // For most other themes, we use the menubar.
+  // FIXME(emilio): Can we do something a bit less special-case-y?
+  if (mFamily == ThemeFamily::Adwaita || mFamily == ThemeFamily::Yaru ||
+      mFamily == ThemeFamily::Breeze) {
+    mHeaderBar = mTitlebar;
+    mHeaderBarInactive = mTitlebarInactive;
+    if (mFamily == ThemeFamily::Breeze) {
+      GetNamedColorPair(style, "theme_header_background_breeze",
+                        "theme_header_foreground_breeze", &mHeaderBar);
+      GetNamedColorPair(style, "theme_header_background_backdrop_breeze",
+                        "theme_header_foreground_backdrop_breeze",
+                        &mHeaderBarInactive);
+    }
+  } else {
+    style = GetStyleContext(MOZ_GTK_MENUBARITEM);
+    mHeaderBar.mFg = GetTextColor(style);
+    mHeaderBarInactive.mFg = GetTextColor(style, GTK_STATE_FLAG_BACKDROP);
+
+    style = GetStyleContext(MOZ_GTK_MENUBAR);
+    mHeaderBar.mBg = GetBackgroundColor(style, mHeaderBar.mFg);
+    mHeaderBarInactive.mBg = GetBackgroundColor(style, mHeaderBarInactive.mFg,
+                                                GTK_STATE_FLAG_BACKDROP);
   }
 
   style = GetStyleContext(MOZ_GTK_MENUPOPUP);
-  mMenuBackground = [&] {
-    nscolor color = GetBackgroundColor(style, mMenuText);
+  mMenu.mBg = [&] {
+    nscolor color = GetBackgroundColor(style, mMenu.mFg);
     if (NS_GET_A(color)) {
       return color;
     }
     // Some themes only style menupopups with the backdrop pseudo-class. Since a
     // context / popup menu always seems to match that, try that before giving
     // up.
-    color = GetBackgroundColor(style, mMenuText, GTK_STATE_FLAG_BACKDROP);
+    color = GetBackgroundColor(style, mMenu.mFg, GTK_STATE_FLAG_BACKDROP);
     if (NS_GET_A(color)) {
       return color;
     }
@@ -1573,14 +1852,15 @@ void nsLookAndFeel::PerThemeData::Init() {
     NS_WARNING(
         "Couldn't find menu background color, falling back to window "
         "background");
-    return mMozWindowBackground;
+    return mWindow.mBg;
   }();
 
   style = GetStyleContext(MOZ_GTK_MENUITEM);
   gtk_style_context_get_color(style, GTK_STATE_FLAG_PRELIGHT, &color);
-  mMenuHoverText = GDK_RGBA_TO_NS_RGBA(color);
-  mMenuHover =
-      GetBackgroundColor(style, mMenuHoverText, GTK_STATE_FLAG_PRELIGHT);
+  mMenuHover.mFg = GDK_RGBA_TO_NS_RGBA(color);
+  mMenuHover.mBg = NS_ComposeColors(
+      mMenu.mBg,
+      GetBackgroundColor(style, mMenu.mFg, GTK_STATE_FLAG_PRELIGHT, mMenu.mBg));
 
   GtkWidget* parent = gtk_fixed_new();
   GtkWidget* window = gtk_window_new(GTK_WINDOW_POPUP);
@@ -1610,9 +1890,9 @@ void nsLookAndFeel::PerThemeData::Init() {
   style = GetStyleContext(MOZ_GTK_TEXT_VIEW_TEXT);
   gtk_style_context_get_background_color(style, GTK_STATE_FLAG_NORMAL, &color);
   ApplyColorOver(color, &bgColor);
-  mFieldBackground = GDK_RGBA_TO_NS_RGBA(bgColor);
+  mField.mBg = GDK_RGBA_TO_NS_RGBA(bgColor);
   gtk_style_context_get_color(style, GTK_STATE_FLAG_NORMAL, &color);
-  mFieldText = GDK_RGBA_TO_NS_RGBA(color);
+  mField.mFg = GDK_RGBA_TO_NS_RGBA(color);
 
   // Selected text and background
   {
@@ -1624,80 +1904,51 @@ void nsLookAndFeel::PerThemeData::Init() {
           static_cast<GtkStateFlags>(GTK_STATE_FLAG_FOCUSED |
                                      GTK_STATE_FLAG_SELECTED),
           &color);
-      mTextSelectedBackground = GDK_RGBA_TO_NS_RGBA(color);
+      mSelectedText.mBg = GDK_RGBA_TO_NS_RGBA(color);
       gtk_style_context_get_color(
           style,
           static_cast<GtkStateFlags>(GTK_STATE_FLAG_FOCUSED |
                                      GTK_STATE_FLAG_SELECTED),
           &color);
-      mTextSelectedText = GDK_RGBA_TO_NS_RGBA(color);
+      mSelectedText.mFg = GDK_RGBA_TO_NS_RGBA(color);
     };
     GrabSelectionColors(selectionStyle);
-    if (mTextSelectedBackground == mTextSelectedText) {
+    if (mSelectedText.mBg == mSelectedText.mFg) {
       // Some old distros/themes don't properly use the .selection style, so
       // fall back to the regular text view style.
       GrabSelectionColors(style);
     }
 
-    // Default accent color is the selection background / foreground colors.
-    mAccentColor = mTextSelectedBackground;
-    mAccentColorForeground = mTextSelectedText;
-
-    // But prefer named colors, as those are more general purpose than the
-    // actual selection style, which might e.g. be too-transparent.
+    // Default selected item color is the selection background / foreground
+    // colors, but we prefer named colors, as those are more general purpose
+    // than the actual selection style, which might e.g. be too-transparent.
     //
     // NOTE(emilio): It's unclear which one of the theme_selected_* or the
     // selected_* pairs should we prefer, in all themes that define both that
     // I've found, they're always the same.
-    {
-      GdkRGBA bg, fg;
-      const bool found =
-          (gtk_style_context_lookup_color(style, "selected_bg_color", &bg) &&
-           gtk_style_context_lookup_color(style, "selected_fg_color", &fg)) ||
-          (gtk_style_context_lookup_color(style, "theme_selected_bg_color",
-                                          &bg) &&
-           gtk_style_context_lookup_color(style, "theme_selected_fg_color",
-                                          &fg));
-      if (found) {
-        mAccentColor = GDK_RGBA_TO_NS_RGBA(bg);
-        mAccentColorForeground = GDK_RGBA_TO_NS_RGBA(fg);
-
-        // If the accent colors are semi-transparent and the theme provides a
-        // background color, blend with them to get the "final" color, see
-        // bug 1717077.
-        if (NS_GET_A(mAccentColor) != 255 &&
-            (gtk_style_context_lookup_color(style, "bg_color", &bg) ||
-             gtk_style_context_lookup_color(style, "theme_bg_color", &bg))) {
-          mAccentColor =
-              NS_ComposeColors(GDK_RGBA_TO_NS_RGBA(bg), mAccentColor);
-        }
-
-        // A semi-transparent foreground color would be kinda silly, but is done
-        // for symmetry.
-        if (NS_GET_A(mAccentColorForeground) != 255 &&
-            (gtk_style_context_lookup_color(style, "fg_color", &fg) ||
-             gtk_style_context_lookup_color(style, "theme_fg_color", &fg))) {
-          mAccentColorForeground =
-              NS_ComposeColors(GDK_RGBA_TO_NS_RGBA(fg), mAccentColorForeground);
-        }
-      }
+    if (!GetNamedColorPair(style, "selected_bg_color", "selected_fg_color",
+                           &mSelectedItem) &&
+        !GetNamedColorPair(style, "theme_selected_bg_color",
+                           "theme_selected_fg_color", &mSelectedItem)) {
+      mSelectedItem = mSelectedText;
     }
 
-    // Accent is the darker one, unless the foreground isn't really a color (is
-    // all white / black / gray) and the background is, in which case we stick
-    // to what we have.
-    if (RelativeLuminanceUtils::Compute(mAccentColor) >
-            RelativeLuminanceUtils::Compute(mAccentColorForeground) &&
-        (AnyColorChannelIsDifferent(mAccentColorForeground) ||
-         !AnyColorChannelIsDifferent(mAccentColor))) {
-      std::swap(mAccentColor, mAccentColorForeground);
+    EnsureColorPairIsOpaque(mSelectedItem);
+
+    // In a similar fashion, default accent color is the selected item/text
+    // pair, but we also prefer named colors, if available.
+    //
+    // accent_{bg,fg}_color is not _really_ a gtk3 thing (it's a gtk4 thing),
+    // but if gtk 3 themes want to specify these we let them, see:
+    //
+    //   https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/named-colors.html#accent-colors
+    if (!GetNamedColorPair(style, "accent_bg_color", "accent_fg_color",
+                           &mAccent)) {
+      mAccent = mSelectedItem;
     }
 
-    // Blend with white, ensuring the color is opaque, so that the UI doesn't
-    // have to care about alpha.
-    mAccentColorForeground =
-        NS_ComposeColors(NS_RGB(0xff, 0xff, 0xff), mAccentColorForeground);
-    mAccentColor = NS_ComposeColors(NS_RGB(0xff, 0xff, 0xff), mAccentColor);
+    EnsureColorPairIsOpaque(mAccent);
+    PreferDarkerBackground(mAccent);
   }
 
   // Button text color
@@ -1709,31 +1960,24 @@ void nsLookAndFeel::PerThemeData::Init() {
   }
 
   gtk_style_context_get_border_color(style, GTK_STATE_FLAG_NORMAL, &color);
-  mButtonDefault = GDK_RGBA_TO_NS_RGBA(color);
+  mButton.mBg = GDK_RGBA_TO_NS_RGBA(color);
   gtk_style_context_get_color(style, GTK_STATE_FLAG_NORMAL, &color);
-  mButtonText = GDK_RGBA_TO_NS_RGBA(color);
+  mButton.mFg = GDK_RGBA_TO_NS_RGBA(color);
   gtk_style_context_get_color(style, GTK_STATE_FLAG_PRELIGHT, &color);
-  mButtonHoverText = GDK_RGBA_TO_NS_RGBA(color);
+  mButtonHover.mFg = GDK_RGBA_TO_NS_RGBA(color);
   gtk_style_context_get_color(style, GTK_STATE_FLAG_ACTIVE, &color);
   mButtonActiveText = GDK_RGBA_TO_NS_RGBA(color);
   gtk_style_context_get_background_color(style, GTK_STATE_FLAG_PRELIGHT,
                                          &color);
-  mButtonHoverFace = GDK_RGBA_TO_NS_RGBA(color);
-  if (!NS_GET_A(mButtonHoverFace)) {
-    mButtonHoverFace = mMozWindowBackground;
+  mButtonHover.mBg = GDK_RGBA_TO_NS_RGBA(color);
+  if (!NS_GET_A(mButtonHover.mBg)) {
+    mButtonHover.mBg = mWindow.mBg;
   }
 
   // Combobox text color
   style = GetStyleContext(MOZ_GTK_COMBOBOX_ENTRY_TEXTAREA);
   gtk_style_context_get_color(style, GTK_STATE_FLAG_NORMAL, &color);
   mComboBoxText = GDK_RGBA_TO_NS_RGBA(color);
-
-  // Menubar text and hover text colors
-  style = GetStyleContext(MOZ_GTK_MENUBARITEM);
-  gtk_style_context_get_color(style, GTK_STATE_FLAG_NORMAL, &color);
-  mMenuBarText = GDK_RGBA_TO_NS_RGBA(color);
-  gtk_style_context_get_color(style, GTK_STATE_FLAG_PRELIGHT, &color);
-  mMenuBarHoverText = GDK_RGBA_TO_NS_RGBA(color);
 
   // GTK's guide to fancy odd row background colors:
   // 1) Check if a theme explicitly defines an odd row color
@@ -1791,6 +2035,9 @@ void nsLookAndFeel::PerThemeData::Init() {
   gtk_style_context_get_color(style, GTK_STATE_FLAG_LINK, &color);
   mNativeHyperLinkText = GDK_RGBA_TO_NS_RGBA(color);
 
+  gtk_style_context_get_color(style, GTK_STATE_FLAG_VISITED, &color);
+  mNativeVisitedHyperLinkText = GDK_RGBA_TO_NS_RGBA(color);
+
   // invisible character styles
   guint value;
   g_object_get(entry, "invisible-char", &value, nullptr);
@@ -1814,6 +2061,7 @@ void nsLookAndFeel::PerThemeData::Init() {
              GetColorPrefName(id), NS_SUCCEEDED(rv),
              NS_SUCCEEDED(rv) ? color : 0);
     }
+    LOGLNF(" * titlebar-radius: %d\n", mTitlebarRadius);
   }
 }
 
@@ -1824,6 +2072,8 @@ char16_t nsLookAndFeel::GetPasswordCharacterImpl() {
 }
 
 bool nsLookAndFeel::GetEchoPasswordImpl() { return false; }
+
+bool nsLookAndFeel::GetDefaultDrawInTitlebar() { return sCSDAvailable; }
 
 void nsLookAndFeel::GetThemeInfo(nsACString& aInfo) {
   aInfo.Append(mSystemTheme.mName);

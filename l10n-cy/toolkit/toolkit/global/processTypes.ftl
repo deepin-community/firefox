@@ -22,13 +22,13 @@ process-type-extension = Estyniad
 # process used to open file:// URLs
 process-type-file = Ffeil Leol
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Dyraniad Mawr
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Cynnwys Gwe Ynysig
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Gweithiwr Gwasanaeth Ynysig
 
 # process preallocated; may change to other types
 process-type-prealloc = Rhagddyranwyd
@@ -49,6 +49,9 @@ process-type-socket = Soced
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Actor IPC mewn blwch tywod
 
 ##
 ## Other

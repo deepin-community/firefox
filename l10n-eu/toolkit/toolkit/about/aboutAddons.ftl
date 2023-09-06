@@ -6,9 +6,16 @@ addons-page-title = Gehigarrien kudeatzailea
 search-header =
     .placeholder = Bilatu addons.mozilla.org gunean
     .searchbuttonlabel = Bilaketa
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Eskuratu hedapen eta itxurak <a data-l10n-name="get-extensions">{ $domain }</a> gunean.
+list-empty-get-dictionaries-message = Eskuratu hiztegiak <a data-l10n-name="get-extensions">{ $domain }</a> gunean.
+list-empty-get-language-packs-message = Eskuratu hizkuntza-paketeak <a data-l10n-name="get-extensions">{ $domain }</a> gunean.
+
+##
+
 list-empty-installed =
     .value = Ez daukazu mota honetako gehigarririk instalatuta
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Bertsioa
 detail-last-updated =
     .label = Azken eguneraketa
+addon-detail-description-expand = Erakutsi gehiago
+addon-detail-description-collapse = Erakutsi gutxiago
 detail-contributions-description = Ekarpen txiki bat eginda garapenerako laguntza eskatzen dizu gehigarri honen garatzaileak.
 detail-contributions-button = Lagundu
     .title = Lagundu gehigarri honen garapenean
@@ -130,6 +139,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Azken eguneraketak
 addon-category-recent-updates-title =
     .title = Azken eguneraketak
+addon-category-sitepermission = Gunearen baimenak
+addon-category-sitepermission-title =
+    .title = Gunearen baimenak
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = { $host } ostalarirako baimenak
 
 ## These are global warnings
 
@@ -140,6 +156,8 @@ extensions-warning-check-compatibility-button = Gaitu
 extensions-warning-update-security = Gehigarrien eguneraketa-segurtasuna egiaztatzea desgaituta dago. Eguneraketek arriskuan jar zaitzakete.
 extensions-warning-update-security-button = Gaitu
     .title = Gaitu gehigarrien eguneraketa-segurtasuna egiaztatzea
+extensions-warning-imported-addons = Mesedez amaitu { -brand-short-name }(e)ra inportatu ziren hedapenen instalazioa.
+extensions-warning-imported-addons-button = Instalatu hedapenak
 
 ## Strings connected to add-on updates
 
@@ -208,6 +226,8 @@ shortcuts-duplicate-warning-message = { $shortcut } behin baino gehiagotan ari d
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Dagoeneko honek erabilia: { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Erakutsi bat gehiago
@@ -269,15 +289,15 @@ permissions-addon-button = Baimenak
 extension-enabled-heading = Gaituta
 extension-disabled-heading = Desgaituta
 theme-enabled-heading = Gaituta
-theme-disabled-heading = Desgaituta
-theme-monochromatic-heading = Kolore-konbinazioak
-theme-monochromatic-subheading = { -brand-product-name }(k) egindako kolore-konbinazio bizi berriak. Denbora mugatuz erabilgarri.
+theme-disabled-heading2 = Gordetako itxurak
 plugin-enabled-heading = Gaituta
 plugin-disabled-heading = Desgaituta
 dictionary-enabled-heading = Gaituta
 dictionary-disabled-heading = Desgaituta
 locale-enabled-heading = Gaituta
 locale-disabled-heading = Desgaituta
+sitepermission-enabled-heading = Gaituta
+sitepermission-disabled-heading = Desgaituta
 always-activate-button = Aktibatu beti
 never-activate-button = Ez aktibatu inoiz
 addon-detail-author-label = Egilea
@@ -318,6 +338,10 @@ addon-detail-updates-radio-on = Aktibatuta
 addon-detail-updates-radio-off = Desaktibatuta
 addon-detail-update-check-label = Bilatu eguneraketak
 install-update-button = Eguneratu
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -326,6 +350,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Baimenduta dagoenean, hedapenak zure lineako jardueretarako sarbidea izango du nabigatze pribatuko moduan. <a data-l10n-name="learn-more">Argibide gehiago</a>
 addon-detail-private-browsing-allow = Baimendu
 addon-detail-private-browsing-disallow = Ez baimendu
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Exekutatu mugak dituzten guneetan
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Baimenduta dagoenean, { -vendor-short-name }(e)k mugatzen dituen guneetarako sarbidea izango du hedapenak.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Baimendu
+addon-detail-quarantined-domains-disallow = Ez baimendu
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -354,6 +396,9 @@ addon-permissions-optional = Funtzionaltasun gehigarrirako aukerazko baimenak:
 addon-permissions-learnmore = Baimenei buruzko argibide gehiago
 recommended-extensions-heading = Gomendatutako hedapenak
 recommended-themes-heading = Gomendatutako itxurak
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Ondorengo gaitasunak baimentzen dizkio <span data-l10n-name="hostname">{ $hostname }</span> guneari:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Sortzaile izan nahi? <a data-l10n-name="link">Egizu zure itxura propioa Firefox Color erabiliz.</a>
@@ -366,6 +411,7 @@ plugin-heading = Kudeatu zure pluginak
 dictionary-heading = Kudeatu zure hiztegiak
 locale-heading = Kudeatu zure hizkuntzak
 updates-heading = Kudeatu zure eguneraketak
+sitepermission-heading = Kudeatu zure gunearen baimenak
 discover-heading = Pertsonalizatu zure { -brand-short-name }
 shortcuts-heading = Kudeatu hedapenen lasterbideak
 default-heading-search-label = Bilatu gehigarri gehiago
@@ -373,3 +419,21 @@ addons-heading-search-input =
     .placeholder = Bilatu addons.mozilla.org gunean
 addon-page-options-button =
     .title = Tresnak gehigarri guztientzat
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } bateraezina da { -brand-short-name } { $version } bertsioarekin.
+details-notification-incompatible-link = Informazio gehiago
+details-notification-unsigned-and-disabled = Ezin da { $name } gehigarria { -brand-short-name }(r)en erabiltzeko egiaztatu eta desgaitu egin da.
+details-notification-unsigned-and-disabled-link = Informazio gehiago
+details-notification-unsigned = Ezin da { $name } gehigarria { -brand-short-name }(r)en erabiltzeko egiaztatu. Kontuz jarraitu.
+details-notification-unsigned-link = Informazio gehiago
+details-notification-blocked = { $name } desgaitu egin da segurtasun- edo egonkortasun-arazoengatik.
+details-notification-blocked-link = Informazio gehiago
+details-notification-softblocked = { $name } gehigarriak segurtasun- edo egonkortasun-arazoak eragiten dituela jakina da.
+details-notification-softblocked-link = Informazio gehiago
+details-notification-gmp-pending = { $name } laster instalatuko da.

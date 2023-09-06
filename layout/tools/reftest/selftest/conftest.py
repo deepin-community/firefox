@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function
-
 import json
 import os
 from argparse import Namespace
@@ -18,7 +16,7 @@ except ImportError:
 import mozinfo
 import pytest
 from manifestparser import expression
-from moztest.selftest.fixtures import binary, setup_test_harness  # noqa
+from moztest.selftest.fixtures import binary_fixture, setup_test_harness  # noqa
 
 here = os.path.abspath(os.path.dirname(__file__))
 setup_args = [False, "reftest", "reftest"]
@@ -142,7 +140,7 @@ def skip_using_mozinfo(request, setup_test_harness):
     runreftest = pytest.importorskip("runreftest")
     runreftest.update_mozinfo()
 
-    skip_mozinfo = request.node.get_marker("skip_mozinfo")
+    skip_mozinfo = request.node.get_closest_marker("skip_mozinfo")
     if skip_mozinfo:
         value = skip_mozinfo.args[0]
         if expression.parse(value, **mozinfo.info):

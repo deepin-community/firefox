@@ -6,9 +6,16 @@ addons-page-title = Add-onbeheerder
 search-header =
     .placeholder = addons.mozilla.org doorzoeken
     .searchbuttonlabel = Zoeken
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Download extensies en thema’s op <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Download woordenboeken op <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Download taalpakketten op <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = U hebt geen add-ons van dit type geïnstalleerd
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Versie
 detail-last-updated =
     .label = Laatst bijgewerkt
+addon-detail-description-expand = Meer tonen
+addon-detail-description-collapse = Minder tonen
 detail-contributions-description = De ontwikkelaar van deze add-on vraagt uw steun voor verdere ontwikkeling door middel van een kleine bijdrage.
 detail-contributions-button = Bijdragen
     .title = Bijdragen aan de ontwikkeling van deze add-on
@@ -139,6 +148,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Recente updates
 addon-category-recent-updates-title =
     .title = Recente updates
+addon-category-sitepermission = Websitemachtigingen
+addon-category-sitepermission-title =
+    .title = Websitemachtigingen
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Websitemachtigingen voor { $host }
 
 ## These are global warnings
 
@@ -149,6 +165,8 @@ extensions-warning-check-compatibility-button = Inschakelen
 extensions-warning-update-security = Beveiligingscontrole voor add-on-updates is uitgeschakeld. Mogelijk loopt u een beveiligingsrisico door updates.
 extensions-warning-update-security-button = Inschakelen
     .title = Beveiligingscontrole voor add-on-updates inschakelen
+extensions-warning-imported-addons = Voltooi de installatie van extensies die zijn geïmporteerd naar { -brand-short-name }.
+extensions-warning-imported-addons-button = Extensies installeren
 
 ## Strings connected to add-on updates
 
@@ -217,6 +235,8 @@ shortcuts-duplicate-warning-message = { $shortcut } wordt in meer dan een geval 
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Al in gebruik door { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
        *[other] Nog { $numberToShow } tonen
@@ -230,9 +250,9 @@ header-back-button =
 # Explanatory introduction to the list of recommended add-ons. The action word
 # ("recommends") in the final sentence is a link to external documentation.
 discopane-intro =
-    Extensies en thema's zijn als apps voor uw browser en zij laten u wachtwoorden
+    Extensies en thema’s zijn als apps voor uw browser en zij laten u wachtwoorden
     beschermen, video’s downloaden, koopjes vinden, vervelende advertenties blokkeren, wijzigen
-    hoe uw browser eruit ziet, en nog veel meer. Deze kleine softwareprogramma's zijn
+    hoe uw browser eruit ziet, en nog veel meer. Deze kleine softwareprogramma’s zijn
     vaak ontwikkeld door een derde partij. Hier is een selectie die { -brand-product-name }
     <a data-l10n-name="learn-more-trigger">aanbeveelt</a> voor uitstekende
     beveiliging, prestaties en functionaliteit.
@@ -285,15 +305,15 @@ permissions-addon-button = Toestemmingen
 extension-enabled-heading = Ingeschakeld
 extension-disabled-heading = Uitgeschakeld
 theme-enabled-heading = Ingeschakeld
-theme-disabled-heading = Uitgeschakeld
-theme-monochromatic-heading = Kleurstellingen
-theme-monochromatic-subheading = Levendige nieuwe kleurstellingen van { -brand-product-name }. Beschikbaar gedurende een beperkte tijd.
+theme-disabled-heading2 = Opgeslagen thema’s
 plugin-enabled-heading = Ingeschakeld
 plugin-disabled-heading = Uitgeschakeld
 dictionary-enabled-heading = Ingeschakeld
 dictionary-disabled-heading = Uitgeschakeld
 locale-enabled-heading = Ingeschakeld
 locale-disabled-heading = Uitgeschakeld
+sitepermission-enabled-heading = Ingeschakeld
+sitepermission-disabled-heading = Uitgeschakeld
 always-activate-button = Altijd activeren
 never-activate-button = Nooit activeren
 addon-detail-author-label = Schrijver
@@ -334,6 +354,10 @@ addon-detail-updates-radio-on = Aan
 addon-detail-updates-radio-off = Uit
 addon-detail-update-check-label = Controleren op updates
 install-update-button = Bijwerken
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -342,6 +366,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Wanneer toegestaan, heeft de extensie toegang tot uw online-activiteiten tijdens privénavigatie. <a data-l10n-name="learn-more">Meer info</a>
 addon-detail-private-browsing-allow = Toestaan
 addon-detail-private-browsing-disallow = Niet toestaan
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Uitvoeren op websites met beperkingen
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Indien toegestaan, heeft de extensie toegang tot websites die zijn beperkt door { -vendor-short-name }. Sta dit alleen toe als u deze extensie vertrouwt.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Toestaan
+addon-detail-quarantined-domains-disallow = Niet toestaan
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -370,6 +412,9 @@ addon-permissions-optional = Optionele toestemmingen voor extra functionaliteit:
 addon-permissions-learnmore = Meer info over toestemmingen
 recommended-extensions-heading = Aanbevolen extensies
 recommended-themes-heading = Aanbevolen thema’s
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Geeft <span data-l10n-name="hostname">{ $hostname }</span> de volgende mogelijkheden:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Voelt u zich creatief? <a data-l10n-name="link"> Bouw uw eigen thema met Firefox Color.</a>
@@ -382,6 +427,7 @@ plugin-heading = Uw plug-ins beheren
 dictionary-heading = Uw woordenboeken beheren
 locale-heading = Uw talen beheren
 updates-heading = Uw updates beheren
+sitepermission-heading = Uw websitemachtigingen beheren
 discover-heading = Uw { -brand-short-name } personaliseren
 shortcuts-heading = Extensiesneltoetsen beheren
 default-heading-search-label = Meer add-ons zoeken
@@ -389,3 +435,21 @@ addons-heading-search-input =
     .placeholder = addons.mozilla.org doorzoeken
 addon-page-options-button =
     .title = Hulpmiddelen voor alle add-ons
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } is niet compatibel met { -brand-short-name } { $version }.
+details-notification-incompatible-link = Meer informatie
+details-notification-unsigned-and-disabled = { $name } kon niet worden geverifieerd voor gebruik in { -brand-short-name } en is uitgeschakeld.
+details-notification-unsigned-and-disabled-link = Meer informatie
+details-notification-unsigned = { $name } kon niet worden geverifieerd voor gebruik in { -brand-short-name }. Wees voorzichtig als u verdergaat.
+details-notification-unsigned-link = Meer informatie
+details-notification-blocked = { $name } is uitgeschakeld vanwege beveiligings- of stabiliteitsproblemen.
+details-notification-blocked-link = Meer informatie
+details-notification-softblocked = { $name } staat bekend als veroorzaker van beveiligings- of stabiliteitsproblemen.
+details-notification-softblocked-link = Meer informatie
+details-notification-gmp-pending = { $name } zal straks worden geïnstalleerd.

@@ -29,16 +29,6 @@ const POLICIES_TESTS = [
    * },
    */
 
-  // POLICY: RememberPasswords
-  {
-    policies: { OfferToSaveLogins: false },
-    lockedPrefs: { "signon.rememberSignons": false },
-  },
-  {
-    policies: { OfferToSaveLogins: true },
-    lockedPrefs: { "signon.rememberSignons": true },
-  },
-
   // POLICY: DisableSecurityBypass
   {
     policies: {
@@ -95,12 +85,25 @@ const POLICIES_TESTS = [
       EnableTrackingProtection: {
         Cryptomining: true,
         Fingerprinting: true,
+        EmailTracking: true,
         Locked: true,
       },
     },
     lockedPrefs: {
       "privacy.trackingprotection.cryptomining.enabled": true,
       "privacy.trackingprotection.fingerprinting.enabled": true,
+      "privacy.trackingprotection.emailtracking.enabled": true,
+      "privacy.trackingprotection.emailtracking.pbmode.enabled": true,
+    },
+  },
+
+  // POLICY: GoToIntranetSiteForSingleWordEntryInAddressBar
+  {
+    policies: {
+      GoToIntranetSiteForSingleWordEntryInAddressBar: true,
+    },
+    lockedPrefs: {
+      "browser.fixup.dns_first_for_single_words": true,
     },
   },
 
@@ -442,6 +445,22 @@ const POLICIES_TESTS = [
     },
   },
 
+  // POLICY: DNSOverHTTPS Unlocked
+  {
+    policies: {
+      DNSOverHTTPS: {
+        Enabled: false,
+        ProviderURL: "https://example.com/provider",
+        ExcludedDomains: ["example.com", "example.org"],
+      },
+    },
+    unlockedPrefs: {
+      "network.trr.mode": 5,
+      "network.trr.uri": "https://example.com/provider",
+      "network.trr.excluded-domains": "example.com,example.org",
+    },
+  },
+
   // POLICY: DNSOverHTTPS Locked
   {
     policies: {
@@ -454,22 +473,6 @@ const POLICIES_TESTS = [
     },
     lockedPrefs: {
       "network.trr.mode": 2,
-      "network.trr.uri": "https://example.com/provider",
-      "network.trr.excluded-domains": "example.com,example.org",
-    },
-  },
-
-  // POLICY: DNSOverHTTPS Unlocked
-  {
-    policies: {
-      DNSOverHTTPS: {
-        Enabled: false,
-        ProviderURL: "https://example.com/provider",
-        ExcludedDomains: ["example.com", "example.org"],
-      },
-    },
-    unlockedPrefs: {
-      "network.trr.mode": 5,
       "network.trr.uri": "https://example.com/provider",
       "network.trr.excluded-domains": "example.com,example.org",
     },
@@ -587,6 +590,16 @@ const POLICIES_TESTS = [
     },
   },
 
+  // POLICY: RememberPasswords
+  {
+    policies: { OfferToSaveLogins: false },
+    lockedPrefs: { "signon.rememberSignons": false },
+  },
+  {
+    policies: { OfferToSaveLogins: true },
+    lockedPrefs: { "signon.rememberSignons": true },
+  },
+
   // POLICY: UserMessaging
   {
     policies: {
@@ -607,6 +620,7 @@ const POLICIES_TESTS = [
     policies: {
       UserMessaging: {
         SkipOnboarding: false,
+        Locked: false,
       },
     },
     unlockedPrefs: {
@@ -618,6 +632,7 @@ const POLICIES_TESTS = [
     policies: {
       UserMessaging: {
         ExtensionRecommendations: false,
+        Locked: false,
       },
     },
     unlockedPrefs: {
@@ -629,6 +644,7 @@ const POLICIES_TESTS = [
     policies: {
       UserMessaging: {
         FeatureRecommendations: false,
+        Locked: false,
       },
     },
     unlockedPrefs: {
@@ -637,6 +653,19 @@ const POLICIES_TESTS = [
   },
 
   // POLICY: Permissions->Autoplay
+  {
+    policies: {
+      Permissions: {
+        Autoplay: {
+          Default: "block-audio-video",
+        },
+      },
+    },
+    unlockedPrefs: {
+      "media.autoplay.default": 5,
+    },
+  },
+
   {
     policies: {
       Permissions: {
@@ -656,24 +685,12 @@ const POLICIES_TESTS = [
       Permissions: {
         Autoplay: {
           Default: "block-audio",
+          Locked: false,
         },
       },
     },
     unlockedPrefs: {
       "media.autoplay.default": 1,
-    },
-  },
-
-  {
-    policies: {
-      Permissions: {
-        Autoplay: {
-          Default: "block-audio-video",
-        },
-      },
-    },
-    unlockedPrefs: {
-      "media.autoplay.default": 5,
     },
   },
 
@@ -723,12 +740,36 @@ const POLICIES_TESTS = [
     policies: {
       PDFjs: {
         Enabled: false,
-        EnablePermissions: true,
       },
     },
     lockedPrefs: {
       "pdfjs.disabled": true,
+    },
+  },
+
+  {
+    policies: {
+      PDFjs: {
+        Enabled: true,
+        EnablePermissions: true,
+      },
+    },
+    lockedPrefs: {
+      "pdfjs.disabled": false,
       "pdfjs.enablePermissions": true,
+    },
+  },
+
+  {
+    policies: {
+      PDFjs: {
+        Enabled: true,
+        EnablePermissions: false,
+      },
+    },
+    lockedPrefs: {
+      "pdfjs.disabled": false,
+      "pdfjs.enablePermissions": false,
     },
   },
 
@@ -750,62 +791,86 @@ const POLICIES_TESTS = [
   {
     policies: {
       DisabledCiphers: {
-        TLS_DHE_RSA_WITH_AES_128_CBC_SHA: false,
-        TLS_DHE_RSA_WITH_AES_256_CBC_SHA: false,
-        TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA: false,
-        TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA: false,
         TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256: false,
         TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256: false,
+        TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256: false,
+        TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256: false,
+        TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384: false,
+        TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384: false,
+        TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA: false,
+        TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA: false,
+        TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA: false,
+        TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA: false,
+        TLS_DHE_RSA_WITH_AES_128_CBC_SHA: false,
+        TLS_DHE_RSA_WITH_AES_256_CBC_SHA: false,
+        TLS_RSA_WITH_AES_128_GCM_SHA256: false,
+        TLS_RSA_WITH_AES_256_GCM_SHA384: false,
         TLS_RSA_WITH_AES_128_CBC_SHA: false,
         TLS_RSA_WITH_AES_256_CBC_SHA: false,
         TLS_RSA_WITH_3DES_EDE_CBC_SHA: false,
-        TLS_RSA_WITH_AES_128_GCM_SHA256: false,
-        TLS_RSA_WITH_AES_256_GCM_SHA384: false,
       },
     },
     lockedPrefs: {
-      "security.ssl3.dhe_rsa_aes_128_sha": true,
-      "security.ssl3.dhe_rsa_aes_256_sha": true,
-      "security.ssl3.ecdhe_rsa_aes_128_sha": true,
-      "security.ssl3.ecdhe_rsa_aes_256_sha": true,
       "security.ssl3.ecdhe_rsa_aes_128_gcm_sha256": true,
       "security.ssl3.ecdhe_ecdsa_aes_128_gcm_sha256": true,
+      "security.ssl3.ecdhe_ecdsa_chacha20_poly1305_sha256": true,
+      "security.ssl3.ecdhe_rsa_chacha20_poly1305_sha256": true,
+      "security.ssl3.ecdhe_ecdsa_aes_256_gcm_sha384": true,
+      "security.ssl3.ecdhe_rsa_aes_256_gcm_sha384": true,
+      "security.ssl3.ecdhe_rsa_aes_128_sha": true,
+      "security.ssl3.ecdhe_ecdsa_aes_128_sha": true,
+      "security.ssl3.ecdhe_rsa_aes_256_sha": true,
+      "security.ssl3.ecdhe_ecdsa_aes_256_sha": true,
+      "security.ssl3.dhe_rsa_aes_128_sha": true,
+      "security.ssl3.dhe_rsa_aes_256_sha": true,
+      "security.ssl3.rsa_aes_128_gcm_sha256": true,
+      "security.ssl3.rsa_aes_256_gcm_sha384": true,
       "security.ssl3.rsa_aes_128_sha": true,
       "security.ssl3.rsa_aes_256_sha": true,
       "security.ssl3.deprecated.rsa_des_ede3_sha": true,
-      "security.ssl3.rsa_aes_128_gcm_sha256": true,
-      "security.ssl3.rsa_aes_256_gcm_sha384": true,
     },
   },
 
   {
     policies: {
       DisabledCiphers: {
-        TLS_DHE_RSA_WITH_AES_128_CBC_SHA: true,
-        TLS_DHE_RSA_WITH_AES_256_CBC_SHA: true,
-        TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA: true,
-        TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA: true,
         TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256: true,
         TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256: true,
+        TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256: true,
+        TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256: true,
+        TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384: true,
+        TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384: true,
+        TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA: true,
+        TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA: true,
+        TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA: true,
+        TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA: true,
+        TLS_DHE_RSA_WITH_AES_128_CBC_SHA: true,
+        TLS_DHE_RSA_WITH_AES_256_CBC_SHA: true,
+        TLS_RSA_WITH_AES_128_GCM_SHA256: true,
+        TLS_RSA_WITH_AES_256_GCM_SHA384: true,
         TLS_RSA_WITH_AES_128_CBC_SHA: true,
         TLS_RSA_WITH_AES_256_CBC_SHA: true,
         TLS_RSA_WITH_3DES_EDE_CBC_SHA: true,
-        TLS_RSA_WITH_AES_128_GCM_SHA256: true,
-        TLS_RSA_WITH_AES_256_GCM_SHA384: true,
       },
     },
     lockedPrefs: {
-      "security.ssl3.dhe_rsa_aes_128_sha": false,
-      "security.ssl3.dhe_rsa_aes_256_sha": false,
-      "security.ssl3.ecdhe_rsa_aes_128_sha": false,
-      "security.ssl3.ecdhe_rsa_aes_256_sha": false,
       "security.ssl3.ecdhe_rsa_aes_128_gcm_sha256": false,
       "security.ssl3.ecdhe_ecdsa_aes_128_gcm_sha256": false,
+      "security.ssl3.ecdhe_ecdsa_chacha20_poly1305_sha256": false,
+      "security.ssl3.ecdhe_rsa_chacha20_poly1305_sha256": false,
+      "security.ssl3.ecdhe_ecdsa_aes_256_gcm_sha384": false,
+      "security.ssl3.ecdhe_rsa_aes_256_gcm_sha384": false,
+      "security.ssl3.ecdhe_rsa_aes_128_sha": false,
+      "security.ssl3.ecdhe_ecdsa_aes_128_sha": false,
+      "security.ssl3.ecdhe_rsa_aes_256_sha": false,
+      "security.ssl3.ecdhe_ecdsa_aes_256_sha": false,
+      "security.ssl3.dhe_rsa_aes_128_sha": false,
+      "security.ssl3.dhe_rsa_aes_256_sha": false,
+      "security.ssl3.rsa_aes_128_gcm_sha256": false,
+      "security.ssl3.rsa_aes_256_gcm_sha384": false,
       "security.ssl3.rsa_aes_128_sha": false,
       "security.ssl3.rsa_aes_256_sha": false,
       "security.ssl3.deprecated.rsa_des_ede3_sha": false,
-      "security.ssl3.rsa_aes_128_gcm_sha256": false,
-      "security.ssl3.rsa_aes_256_gcm_sha384": false,
     },
   },
 
@@ -815,6 +880,145 @@ const POLICIES_TESTS = [
     },
     lockedPrefs: {
       "network.http.windows-sso.enabled": true,
+    },
+  },
+
+  {
+    policies: {
+      Cookies: {
+        Behavior: "accept",
+        BehaviorPrivateBrowsing: "reject-foreign",
+        Locked: true,
+      },
+    },
+    lockedPrefs: {
+      "network.cookie.cookieBehavior": 0,
+      "network.cookie.cookieBehavior.pbmode": 1,
+    },
+  },
+
+  {
+    policies: {
+      Cookies: {
+        Behavior: "reject-foreign",
+        BehaviorPrivateBrowsing: "reject",
+        Locked: true,
+      },
+    },
+    lockedPrefs: {
+      "network.cookie.cookieBehavior": 1,
+      "network.cookie.cookieBehavior.pbmode": 2,
+    },
+  },
+
+  {
+    policies: {
+      Cookies: {
+        Behavior: "reject",
+        BehaviorPrivateBrowsing: "limit-foreign",
+        Locked: true,
+      },
+    },
+    lockedPrefs: {
+      "network.cookie.cookieBehavior": 2,
+      "network.cookie.cookieBehavior.pbmode": 3,
+    },
+  },
+
+  {
+    policies: {
+      Cookies: {
+        Behavior: "limit-foreign",
+        BehaviorPrivateBrowsing: "reject-tracker",
+        Locked: true,
+      },
+    },
+    lockedPrefs: {
+      "network.cookie.cookieBehavior": 3,
+      "network.cookie.cookieBehavior.pbmode": 4,
+    },
+  },
+
+  {
+    policies: {
+      Cookies: {
+        Behavior: "reject-tracker",
+        BehaviorPrivateBrowsing: "reject-tracker-and-partition-foreign",
+        Locked: true,
+      },
+    },
+    lockedPrefs: {
+      "network.cookie.cookieBehavior": 4,
+      "network.cookie.cookieBehavior.pbmode": 5,
+    },
+  },
+  {
+    policies: {
+      Cookies: {
+        Behavior: "reject-tracker-and-partition-foreign",
+        BehaviorPrivateBrowsing: "accept",
+        Locked: true,
+      },
+    },
+    lockedPrefs: {
+      "network.cookie.cookieBehavior": 5,
+      "network.cookie.cookieBehavior.pbmode": 0,
+    },
+  },
+
+  {
+    policies: {
+      UseSystemPrintDialog: true,
+    },
+    lockedPrefs: {
+      "print.prefer_system_dialog": true,
+    },
+  },
+
+  // Bug 1820195
+  {
+    policies: {
+      Preferences: {
+        "pdfjs.cursorToolOnLoad": {
+          Value: 1,
+          Status: "default",
+        },
+        "pdfjs.sidebarViewOnLoad": {
+          Value: 0,
+          Status: "default",
+        },
+      },
+    },
+    unlockedPrefs: {
+      "pdfjs.cursorToolOnLoad": 1,
+      "pdfjs.sidebarViewOnLoad": 0,
+    },
+  },
+
+  // Bug 1772503
+  {
+    policies: {
+      DisableFirefoxStudies: true,
+    },
+    lockedPrefs: {
+      "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons": false,
+      "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features": false,
+    },
+  },
+  {
+    policies: {
+      Preferences: {
+        "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons": {
+          Value: true,
+        },
+        "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features": {
+          Value: true,
+        },
+      },
+    },
+    lockedPrefs: {
+      "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons": true,
+      "browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features": true,
     },
   },
 ];

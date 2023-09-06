@@ -22,13 +22,13 @@ process-type-extension = ਇਕਸਟੈਨਸ਼ਨ
 # process used to open file:// URLs
 process-type-file = ਲੋਕਲ ਫਾਈਲ
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = ਵੱਡੀ ਵੰਡ
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = ਨਿਖੇੜੀ ਵੈੱਬ ਸਮੱਗਰੀ
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = ਅਲਹਿਦਾ ਕੀਤਾ ਸਰਵਿਸ ਵਰਕਰ
 
 # process preallocated; may change to other types
 process-type-prealloc = ਪਹਿਲਾਂ ਜਾਰੀ ਕੀਤਾ
@@ -49,6 +49,9 @@ process-type-socket = ਸਾਕਟ
 
 # process used to decode media
 process-type-rdd = ਰੈਡ
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = ਸੈਂਡਬਾਕਸ ਕੀਤਾ IPC ਐਕਟਰ
 
 ##
 ## Other

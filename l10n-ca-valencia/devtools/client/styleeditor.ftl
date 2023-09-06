@@ -10,13 +10,12 @@ styleeditor-import-button =
     .accesskey = I
 styleeditor-visibility-toggle =
     .tooltiptext = Commuta la visibilitat del full d'estil
-    .accesskey = d
+    .accesskey = C
 styleeditor-save-button = Guarda
     .tooltiptext = Guarda este full d'estil en un fitxer
-    .accesskey = d
+    .accesskey = G
 styleeditor-options-button =
     .tooltiptext = Opcions de l'editor d'estils
-styleeditor-media-rules = Regles @media
 styleeditor-editor-textbox =
     .data-placeholder = Escriviu el CSS ací.
 styleeditor-no-stylesheet = Esta pàgina no té cap full d'estil.
@@ -25,3 +24,21 @@ styleeditor-open-link-new-tab =
     .label = Obri l'enllaç en una pestanya nova
 styleeditor-copy-url =
     .label = Copia l'URL
+styleeditor-find =
+    .label = Cerca
+    .accesskey = r
+styleeditor-find-again =
+    .label = Torna a cercar
+    .accesskey = o
+styleeditor-go-to-line =
+    .label = Salta a la línia…
+    .accesskey = S
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } regla.
+       *[other] { $ruleCount } regles.
+    }

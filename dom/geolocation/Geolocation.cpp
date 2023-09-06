@@ -43,13 +43,18 @@ class nsIPrincipal;
 #  include "GpsdLocationProvider.h"
 #endif
 
+#ifdef MOZ_ENABLE_DBUS
+#  include "mozilla/WidgetUtilsGtk.h"
+#  include "GeoclueLocationProvider.h"
+#  include "PortalLocationProvider.h"
+#endif
+
 #ifdef MOZ_WIDGET_COCOA
 #  include "CoreLocationLocationProvider.h"
 #endif
 
 #ifdef XP_WIN
 #  include "WindowsLocationProvider.h"
-#  include "mozilla/WindowsVersion.h"
 #endif
 
 // Some limit to the number of get or watch geolocation requests
@@ -83,7 +88,7 @@ class nsGeolocationRequest final : public ContentPermissionRequestBase,
 
   // nsIContentPermissionRequest
   MOZ_CAN_RUN_SCRIPT NS_IMETHOD Cancel(void) override;
-  MOZ_CAN_RUN_SCRIPT NS_IMETHOD Allow(JS::HandleValue choices) override;
+  MOZ_CAN_RUN_SCRIPT NS_IMETHOD Allow(JS::Handle<JS::Value> choices) override;
 
   void Shutdown();
 
@@ -247,7 +252,7 @@ nsGeolocationRequest::Cancel() {
 }
 
 NS_IMETHODIMP
-nsGeolocationRequest::Allow(JS::HandleValue aChoices) {
+nsGeolocationRequest::Allow(JS::Handle<JS::Value> aChoices) {
   MOZ_ASSERT(aChoices.isUndefined());
 
   if (mLocator->ClearPendingRequest(this)) {
@@ -260,7 +265,7 @@ nsGeolocationRequest::Allow(JS::HandleValue aChoices) {
   bool canUseCache = false;
   CachedPositionAndAccuracy lastPosition = gs->GetCachedPosition();
   if (lastPosition.position) {
-    DOMTimeStamp cachedPositionTime_ms;
+    EpochTimeStamp cachedPositionTime_ms;
     lastPosition.position->GetTimestamp(&cachedPositionTime_ms);
     // check to see if we can use a cached value
     // if the user has specified a maximumAge, return a cached value.
@@ -269,7 +274,7 @@ nsGeolocationRequest::Allow(JS::HandleValue aChoices) {
       bool isCachedWithinRequestedAccuracy =
           WantsHighAccuracy() <= lastPosition.isHighAccuracy;
       bool isCachedWithinRequestedTime =
-          DOMTimeStamp(PR_Now() / PR_USEC_PER_MSEC - maximumAge_ms) <=
+          EpochTimeStamp(PR_Now() / PR_USEC_PER_MSEC - maximumAge_ms) <=
           cachedPositionTime_ms;
       canUseCache =
           isCachedWithinRequestedAccuracy && isCachedWithinRequestedTime;
@@ -297,20 +302,24 @@ nsGeolocationRequest::Allow(JS::HandleValue aChoices) {
     }
   }
 
-  // Kick off the geo device, if it isn't already running
-  nsCOMPtr<nsIPrincipal> principal = GetPrincipal();
-  nsresult rv = gs->StartDevice(principal);
-
-  if (NS_FAILED(rv)) {
-    // Location provider error
-    NotifyError(GeolocationPositionError_Binding::POSITION_UNAVAILABLE);
-    return NS_OK;
-  }
-
-  if (mIsWatchPositionRequest || !canUseCache) {
+  // Non-cached location request
+  bool allowedRequest = mIsWatchPositionRequest || !canUseCache;
+  if (allowedRequest) {
     // let the locator know we're pending
     // we will now be owned by the locator
     mLocator->NotifyAllowedRequest(this);
+  }
+
+  // Kick off the geo device, if it isn't already running
+  nsresult rv = gs->StartDevice();
+
+  if (NS_FAILED(rv)) {
+    if (allowedRequest) {
+      mLocator->RemoveRequest(this);
+    }
+    // Location provider error
+    NotifyError(GeolocationPositionError_Binding::POSITION_UNAVAILABLE);
+    return NS_OK;
   }
 
   SetTimeoutTimer();
@@ -344,11 +353,11 @@ void nsGeolocationRequest::SendLocation(nsIDOMGeoPosition* aPosition) {
   }
 
   if (mOptions && mOptions->mMaximumAge > 0) {
-    DOMTimeStamp positionTime_ms;
+    EpochTimeStamp positionTime_ms;
     aPosition->GetTimestamp(&positionTime_ms);
     const uint32_t maximumAge_ms = mOptions->mMaximumAge;
-    const bool isTooOld = DOMTimeStamp(PR_Now() / PR_USEC_PER_MSEC -
-                                       maximumAge_ms) > positionTime_ms;
+    const bool isTooOld = EpochTimeStamp(PR_Now() / PR_USEC_PER_MSEC -
+                                         maximumAge_ms) > positionTime_ms;
     if (isTooOld) {
       return;
     }
@@ -490,10 +499,24 @@ nsresult nsGeolocationService::Init() {
 #endif
 
 #ifdef MOZ_WIDGET_GTK
-#  ifdef MOZ_GPSD
-  if (Preferences::GetBool("geo.provider.use_gpsd", false)) {
+#  ifdef MOZ_ENABLE_DBUS
+  if (!mProvider && widget::ShouldUsePortal(widget::PortalKind::Location)) {
+    mProvider = new PortalLocationProvider();
+  }
+  // Geoclue includes GPS data so it has higher priority than raw GPSD
+  if (!mProvider && StaticPrefs::geo_provider_use_geoclue()) {
+    nsCOMPtr<nsIGeolocationProvider> gcProvider = new GeoclueLocationProvider();
+    // The Startup() method will only succeed if Geoclue is available on D-Bus
+    if (NS_SUCCEEDED(gcProvider->Startup())) {
+      gcProvider->Shutdown();
+      mProvider = std::move(gcProvider);
+    }
+  }
+#    ifdef MOZ_GPSD
+  if (!mProvider && Preferences::GetBool("geo.provider.use_gpsd", false)) {
     mProvider = new GpsdLocationProvider();
   }
+#    endif
 #  endif
 #endif
 
@@ -504,8 +527,7 @@ nsresult nsGeolocationService::Init() {
 #endif
 
 #ifdef XP_WIN
-  if (Preferences::GetBool("geo.provider.ms-windows-location", false) &&
-      IsWin8OrLater()) {
+  if (Preferences::GetBool("geo.provider.ms-windows-location", false)) {
     mProvider = new WindowsLocationProvider();
   }
 #endif
@@ -601,7 +623,7 @@ CachedPositionAndAccuracy nsGeolocationService::GetCachedPosition() {
   return mLastPosition;
 }
 
-nsresult nsGeolocationService::StartDevice(nsIPrincipal* aPrincipal) {
+nsresult nsGeolocationService::StartDevice() {
   if (!StaticPrefs::geo_enabled()) {
     return NS_ERROR_NOT_AVAILABLE;
   }
@@ -993,7 +1015,7 @@ void Geolocation::GetCurrentPosition(PositionCallback& aCallback,
 static nsIEventTarget* MainThreadTarget(Geolocation* geo) {
   nsCOMPtr<nsPIDOMWindowInner> window = do_QueryReferent(geo->GetOwner());
   if (!window) {
-    return GetMainThreadEventTarget();
+    return GetMainThreadSerialEventTarget();
   }
   return nsGlobalWindowInner::Cast(window)->EventTargetFor(
       mozilla::TaskCategory::Other);

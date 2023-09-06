@@ -15,10 +15,12 @@
 #include "prmon.h"
 #include "prthread.h"
 #include "mozilla/Attributes.h"
+#include "mozilla/gtest/MozAssertions.h"
 #include "mozilla/Services.h"
 
 #include "mozilla/Monitor.h"
 #include "mozilla/ReentrantMonitor.h"
+#include "mozilla/SpinEventLoopUntil.h"
 #include "mozilla/StaticPrefs_timer.h"
 
 #include <list>
@@ -161,18 +163,18 @@ class TimerHelper {
   }
 
   void Cancel() {
-    mTarget->Dispatch(NS_NewRunnableFunction("~TimerHelper timer cancel",
-                                             [this] {
-                                               MonitorAutoLock lock(mMonitor);
-                                               mTimer->Cancel();
-                                             }),
-                      NS_DISPATCH_SYNC);
+    NS_DispatchAndSpinEventLoopUntilComplete(
+        "~TimerHelper timer cancel"_ns, mTarget,
+        NS_NewRunnableFunction("~TimerHelper timer cancel", [this] {
+          MonitorAutoLock lock(mMonitor);
+          mTimer->Cancel();
+        }));
   }
 
  private:
   TimeStamp mStart;
   RefPtr<nsITimer> mTimer;
-  mutable Monitor mMonitor;
+  mutable Monitor mMonitor MOZ_UNANNOTATED;
   uint32_t mBlockTime = 0;
   Maybe<uint32_t> mLastDelay;
   RefPtr<nsIEventTarget> mTarget;
@@ -882,11 +884,41 @@ TEST(Timers, ClosureCallback)
         mon.Notify();
       },
       50, nsITimer::TYPE_ONE_SHOT, "(test) Timers.ClosureCallback", testThread);
-  ASSERT_TRUE(NS_SUCCEEDED(rv));
+  ASSERT_NS_SUCCEEDED(rv);
 
   ReentrantMonitorAutoEnter mon(*newMon);
   while (!notifiedThread) {
     mon.Wait();
   }
   ASSERT_EQ(notifiedThread, testThread);
+}
+
+static void SetTime(nsITimer* aTimer, void* aClosure) {
+  *static_cast<TimeStamp*>(aClosure) = TimeStamp::Now();
+}
+
+TEST(Timers, HighResFuncCallback)
+{
+  TimeStamp first;
+  TimeStamp second;
+  TimeStamp third;
+  nsCOMPtr<nsITimer> t1 = NS_NewTimer(GetCurrentSerialEventTarget());
+  nsCOMPtr<nsITimer> t2 = NS_NewTimer(GetCurrentSerialEventTarget());
+  nsCOMPtr<nsITimer> t3 = NS_NewTimer(GetCurrentSerialEventTarget());
+
+  // Reverse order, since if the timers are not high-res we'd end up
+  // out-of-order.
+  MOZ_ALWAYS_SUCCEEDS(t3->InitHighResolutionWithNamedFuncCallback(
+      &SetTime, &third, TimeDuration::FromMicroseconds(300),
+      nsITimer::TYPE_ONE_SHOT, "TestTimers::HighResFuncCallback::third"));
+  MOZ_ALWAYS_SUCCEEDS(t2->InitHighResolutionWithNamedFuncCallback(
+      &SetTime, &second, TimeDuration::FromMicroseconds(200),
+      nsITimer::TYPE_ONE_SHOT, "TestTimers::HighResFuncCallback::second"));
+  MOZ_ALWAYS_SUCCEEDS(t1->InitHighResolutionWithNamedFuncCallback(
+      &SetTime, &first, TimeDuration::FromMicroseconds(100),
+      nsITimer::TYPE_ONE_SHOT, "TestTimers::HighResFuncCallback::first"));
+
+  SpinEventLoopUntil<ProcessFailureBehavior::IgnoreAndContinue>(
+      "TestTimers::HighResFuncCallback"_ns,
+      [&] { return !first.IsNull() && !second.IsNull() && !third.IsNull(); });
 }

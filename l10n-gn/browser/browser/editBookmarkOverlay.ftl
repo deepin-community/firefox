@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Moñemi
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Opavave ñongatuha techaukaha rehegua jehechauka
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Moñemi
+
 bookmark-overlay-new-folder-button =
     .label = Ñongatuha pyahu
     .accesskey = o
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Teramoĩ jehechaukapaite
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Moñemi
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Teramoĩ jehechaukapaite
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Moñemi
 
 bookmark-overlay-keyword-2 =
     .value = Ñe’ẽ ñemi

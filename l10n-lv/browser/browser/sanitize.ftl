@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Privāto datu dzēšanas iestatījumi
-    .style = width: 40em
+    .style = min-width: 40em
 
 sanitize-prefs-style =
     .style = width: 19em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Dzēst pārlūkošanas vēsturi
-    .style = width: 40em
+    .style = min-width: 40em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Dzēst visu vēsturi
-    .style = width: 40em
+    .style = min-width: 40em
 
 clear-data-settings-label = Kad es aizveru { -brand-short-name } dzēst šo
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = F
 
 data-section-label = Dati
-
-item-site-preferences =
-    .label = Lapas iestatījumus
-    .accesskey = s
 
 item-offline-apps =
     .label = Lapu nesaistes datus

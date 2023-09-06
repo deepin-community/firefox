@@ -4,8 +4,11 @@
 
 addons-page-title = Papildinājumu pārvaldnieks
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
+
 
 list-empty-installed =
     .value = Jums nav uzinstalēts neviens šī tipa atjauninājums
@@ -141,7 +144,6 @@ extensions-warning-update-security = Papildinājumu drošības pārbaude ir deak
 extensions-warning-update-security-button = Aktivēt
     .title = Aktivēt papildinājumu drošības pārbaudi
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = Meklēt atjauninājumus
@@ -194,8 +196,12 @@ addon-open-about-debugging = Atkļūdot papildinājumus
 ## Pending uninstall message bar
 
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
+
 
 ##
 
@@ -203,3 +209,29 @@ addon-open-about-debugging = Atkļūdot papildinājumus
 
 addon-page-options-button =
     .title = Visu papildinājumu rīki
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } nav savietojams ar { -brand-short-name } { $version }.
+
+details-notification-unsigned-and-disabled = { $name } nevar pārbaudīt izmantošanai ar { -brand-short-name } un ir deaktivēts.
+details-notification-unsigned-and-disabled-link = Vairāk informācijas
+
+details-notification-unsigned = { $name } nevar pārbaudīt izmantošanai ar { -brand-short-name }. Esiet piesardzīgi.
+details-notification-unsigned-link = Vairāk informācijas
+
+details-notification-blocked = { $name } ir bloķēts drošības un stabilitātes nolūkos.
+details-notification-blocked-link = Vairāk informācijas
+
+details-notification-softblocked = Ir zināms, ka { $name } rada drošības vai stabilitātes problēmas.
+details-notification-softblocked-link = Vairāk informācijas
+
+details-notification-gmp-pending = { $name } pēc mirkļa tiks instalēts.

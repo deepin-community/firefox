@@ -20,18 +20,12 @@
 #define AVCODEC_VAAPI_DECODE_H
 
 #include <va/va.h>
-#include <va/va_dec_vp9.h>
 
 #include "libavutil/frame.h"
 #include "libavutil/hwcontext.h"
 #include "libavutil/hwcontext_vaapi.h"
 
 #include "avcodec.h"
-
-#include "version.h"
-#if FF_API_STRUCT_VAAPI_CONTEXT
-#include "vaapi.h"
-#endif
 
 static inline VASurfaceID ff_vaapi_get_surface_id(AVFrame *pic)
 {
@@ -56,14 +50,6 @@ typedef struct VAAPIDecodePicture {
 typedef struct VAAPIDecodeContext {
     VAConfigID            va_config;
     VAContextID           va_context;
-
-#if FF_API_STRUCT_VAAPI_CONTEXT
-FF_DISABLE_DEPRECATION_WARNINGS
-    int                   have_old_context;
-    struct vaapi_context *old_context;
-    AVBufferRef          *device_ref;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
 
     AVHWDeviceContext    *device;
     AVVAAPIDeviceContext *hwctx;

@@ -5,12 +5,12 @@
 
 about-logins-page-title = Infurmaziuns d'annunzia & pleds-clav
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Tschertgar datas d'annunzia
+    .key = F
 
-create-login-button = Crear datas d'annunzia
+create-new-login-button =
+    .title = Crear novas datas d'annunzia
 
 fxaccounts-sign-in-text = Acceda a tes pleds-clav cun tut tes apparats
 fxaccounts-sign-in-sync-button = S'annunziar per sincronisar
@@ -37,10 +37,20 @@ about-logins-menu-menuitem-help = Agid
 
 login-list =
     .aria-label = Infurmaziuns d'annunzia tenor la tschertga
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } infurmaziun d'annunzia
        *[other] { $count } infurmaziuns d'annunzia
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } data d'annunzia dad { $total }
+       *[other] { $count } datas d'annunzia da { $total }
     }
 login-list-sort-label-text = Zavrar tenor:
 login-list-name-option = Num (A-Z)
@@ -61,7 +71,6 @@ about-logins-list-item-breach-icon =
     .title = Website che ha pers datas
 about-logins-list-item-vulnerable-password-icon =
     .title = Pled-clav periclità
-
 about-logins-list-section-breach = Websites che han pers datas
 about-logins-list-section-vulnerable = Pleds-clav periclitads
 about-logins-list-section-nothing = Nagin avertiment
@@ -76,8 +85,8 @@ about-logins-login-intro-heading-logged-in = Chattà naginas infurmaziuns d'annu
 login-intro-description = Sche ti has memorisà tias infurmaziuns d'annunzia en { -brand-product-name } sin in auter apparat, vegns ti a savair qua co acceder ad ellas:
 login-intro-instructions-fxa = Acceda al u creescha in { -fxaccount-brand-name(capitalization: "sentence") } cun l'apparat nua che las infurmaziuns d'annunzia èn memorisadas
 login-intro-instructions-fxa-settings = Acceder a Parameters > Sync > Activar la sincronisaziun… Activar la chaschetta da controlla Infurmaziuns d'annunzia e pleds-clav.
-login-intro-instructions-fxa-help = Per agid, visitar <a data-l10n-name="help-link">il support da { -lockwise-brand-short-name }</a>.
-about-logins-intro-import = En cas che las infurmaziuns d'annunzia èn memorisadas en in auter navigatur èsi pussaivel da las <a data-l10n-name="import-link">importar en { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = Visita il <a data-l10n-name="passwords-help-link">support per pleds-clav</a> per ulteriur agid.
+about-logins-intro-browser-only-import = En cas che las infurmaziuns d'annunzia èn memorisadas en in auter navigatur, èsi pussaivel da las <a data-l10n-name="import-link">importar en { -brand-product-name }</a>
 about-logins-intro-import2 = Sche tias infurmaziuns d'annunzia èn memorisadas ordaifer { -brand-product-name }, pos ti <a data-l10n-name="import-browser-link">las importar dad in auter navigatur</a> u <a data-l10n-name="import-file-link">dad ina datoteca</a>
 
 ## Login
@@ -102,9 +111,17 @@ login-item-copied-password-button-text = Copià!
 login-item-save-changes-button = Memorisar las midadas
 login-item-save-new-button = Memorisar
 login-item-cancel-button = Interrumper
-login-item-time-changed = Ultima midada: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Creà: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Ultima utilisaziun: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Creà
+login-item-timeline-action-updated = Actualisà
+login-item-timeline-action-used = Utilisà
 
 ## OS Authentication dialog
 
@@ -132,8 +149,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Per copiar tes pled-clav
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = copiar il pled-clav memorisà
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Per exportar tias infurmaziuns d'annunzia, endatescha tias datas d'annunzia per Windows. Quai gida a garantir la segirezza da tes contos.
 # This message can be seen when attempting to export a password in about:logins
@@ -147,8 +162,6 @@ master-password-reload-button =
     .label = Annunzia
     .accesskey = A
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Interrumper
@@ -158,6 +171,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Allontanar questas infurmaziuns d'annunzia?
 confirm-delete-dialog-message = Questa acziun na po betg vegnir revocada.
 about-logins-confirm-remove-dialog-confirm-button = Allontanar
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -194,6 +210,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Uschia vegnan allontanadas tut las datas d'annunzia che ti has memorisà en { -brand-short-name } sin tut ils apparats sincronisads cun il { -fxaccount-brand-name }. Era avertiments da sperditas da datas che cumparan qua vegnan allontanadas. Ti na vegns betg a pudair revocar questa acziun.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Exportar infurmaziuns d'annunzia e pleds-clav
 about-logins-confirm-export-dialog-message = Tes pleds-clav vegnan memorisads sco text legibel (p.ex. «M@lPledc1av»), uschia che mintgin che po avrir la datoteca exportada als po vesair.
 about-logins-confirm-export-dialog-confirm-button = Exportar…
@@ -213,7 +231,6 @@ about-logins-breach-alert-date = Questa perdita da datas è capitada ils { DATET
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Acceder a { $hostname }
-about-logins-breach-alert-learn-more-link = Ulteriuras infurmaziuns
 
 ## Vulnerable Password notification
 

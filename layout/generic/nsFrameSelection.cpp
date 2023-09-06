@@ -10,11 +10,12 @@
 
 #include "nsFrameSelection.h"
 
+#include "mozilla/intl/BidiEmbeddingLevel.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/AutoRestore.h"
 #include "mozilla/BasePrincipal.h"
-#include "mozilla/EventStates.h"
 #include "mozilla/HTMLEditor.h"
+#include "mozilla/IntegerRange.h"
 #include "mozilla/Logging.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/ScrollTypes.h"
@@ -72,6 +73,7 @@ static NS_DEFINE_CID(kFrameTraversalCID, NS_FRAMETRAVERSAL_CID);
 #include "nsError.h"
 #include "mozilla/AutoCopyListener.h"
 #include "mozilla/dom/Element.h"
+#include "mozilla/dom/Highlight.h"
 #include "mozilla/dom/Selection.h"
 #include "mozilla/dom/ShadowRoot.h"
 #include "mozilla/dom/StaticRange.h"
@@ -89,7 +91,7 @@ using namespace mozilla::dom;
 
 static LazyLogModule sFrameSelectionLog("FrameSelection");
 
-//#define DEBUG_TABLE 1
+// #define DEBUG_TABLE 1
 
 /**
  * Add cells to the selection inside of the given cells range.
@@ -127,36 +129,33 @@ static void printRange(nsRange* aDomRange);
 #endif  // PRINT_RANGE
 
 /******************************************************************************
- * nsPeekOffsetStruct
+ * mozilla::PeekOffsetStruct
  ******************************************************************************/
 
-//#define DEBUG_SELECTION // uncomment for printf describing every collapse and
-// extend. #define DEBUG_NAVIGATION
+// #define DEBUG_SELECTION // uncomment for printf describing every collapse and
+//  extend. #define DEBUG_NAVIGATION
 
-//#define DEBUG_TABLE_SELECTION 1
+// #define DEBUG_TABLE_SELECTION 1
 
-nsPeekOffsetStruct::nsPeekOffsetStruct(
-    nsSelectionAmount aAmount, nsDirection aDirection, int32_t aStartOffset,
-    nsPoint aDesiredCaretPos, bool aJumpLines, bool aScrollViewStop,
-    bool aIsKeyboardSelect, bool aVisual, bool aExtend,
-    ForceEditableRegion aForceEditableRegion,
-    EWordMovementType aWordMovementType, bool aTrimSpaces)
+namespace mozilla {
+
+PeekOffsetStruct::PeekOffsetStruct(nsSelectionAmount aAmount,
+                                   nsDirection aDirection, int32_t aStartOffset,
+                                   nsPoint aDesiredCaretPos,
+                                   const PeekOffsetOptions aOptions,
+                                   EWordMovementType aWordMovementType)
     : mAmount(aAmount),
       mDirection(aDirection),
       mStartOffset(aStartOffset),
       mDesiredCaretPos(aDesiredCaretPos),
       mWordMovementType(aWordMovementType),
-      mJumpLines(aJumpLines),
-      mTrimSpaces(aTrimSpaces),
-      mScrollViewStop(aScrollViewStop),
-      mIsKeyboardSelect(aIsKeyboardSelect),
-      mVisual(aVisual),
-      mExtend(aExtend),
-      mForceEditableRegion(aForceEditableRegion == ForceEditableRegion::Yes),
+      mOptions(aOptions),
       mResultContent(),
       mResultFrame(nullptr),
       mContentOffset(0),
       mAttach(CARET_ASSOCIATE_BEFORE) {}
+
+}  // namespace mozilla
 
 // Array which contains index of each SelecionType in Selection::mDOMSelections.
 // For avoiding using if nor switch to retrieve the index, this needs to have
@@ -174,6 +173,7 @@ static const int8_t kIndexOfSelections[] = {
     7,   // SelectionType::eFind
     8,   // SelectionType::eURLSecondary
     9,   // SelectionType::eURLStrikeout
+    -1,  // SelectionType::eHighlight
 };
 
 inline int8_t GetIndexFromSelectionType(SelectionType aSelectionType) {
@@ -232,7 +232,8 @@ struct MOZ_RAII AutoPrepareFocusRange {
       // Scripted command or the user is starting a new explicit multi-range
       // selection.
       for (StyledRange& entry : ranges) {
-        entry.mRange->SetIsGenerated(false);
+        MOZ_ASSERT(entry.mRange->IsDynamicRange());
+        entry.mRange->AsDynamicRange()->SetIsGenerated(false);
       }
       return;
     }
@@ -277,16 +278,19 @@ struct MOZ_RAII AutoPrepareFocusRange {
     nsRange* result{nullptr};
     if (aSelection.GetDirection() == eDirNext) {
       for (size_t i = 0; i < len; ++i) {
-        if (ranges[i].mRange->IsGenerated()) {
-          result = ranges[i].mRange;
+        // This function is only called for selections with type == eNormal.
+        // (see MOZ_ASSERT in constructor).
+        // Therefore, all ranges must be dynamic.
+        if (ranges[i].mRange->AsDynamicRange()->IsGenerated()) {
+          result = ranges[i].mRange->AsDynamicRange();
           break;
         }
       }
     } else {
       size_t i = len;
       while (i--) {
-        if (ranges[i].mRange->IsGenerated()) {
-          result = ranges[i].mRange;
+        if (ranges[i].mRange->AsDynamicRange()->IsGenerated()) {
+          result = ranges[i].mRange->AsDynamicRange();
           break;
         }
       }
@@ -300,10 +304,16 @@ struct MOZ_RAII AutoPrepareFocusRange {
     nsTArray<StyledRange>& ranges = aSelection.mStyledRanges.mRanges;
     size_t i = ranges.Length();
     while (i--) {
-      nsRange* range = ranges[i].mRange;
+      // This function is only called for selections with type == eNormal.
+      // (see MOZ_ASSERT in constructor).
+      // Therefore, all ranges must be dynamic.
+      if (!ranges[i].mRange->IsDynamicRange()) {
+        continue;
+      }
+      nsRange* range = ranges[i].mRange->AsDynamicRange();
       if (range->IsGenerated()) {
-        range->UnregisterSelection();
-        aSelection.SelectFrames(presContext, range, false);
+        range->UnregisterSelection(aSelection);
+        aSelection.SelectFrames(presContext, *range, false);
         ranges.RemoveElementAt(i);
       }
     }
@@ -390,6 +400,7 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(nsFrameSelection)
   for (size_t i = 0; i < ArrayLength(tmp->mDomSelections); ++i) {
     tmp->mDomSelections[i] = nullptr;
   }
+  tmp->mHighlightSelections.Clear();
 
   NS_IMPL_CYCLE_COLLECTION_UNLINK(
       mTableSelection.mClosestInclusiveTableCellAncestor)
@@ -413,6 +424,11 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(nsFrameSelection)
     NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mDomSelections[i])
   }
 
+  for (const auto& value : tmp->mHighlightSelections) {
+    CycleCollectionNoteChild(cb, value.second().get(),
+                             "mHighlightSelections[]");
+  }
+
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(
       mTableSelection.mClosestInclusiveTableCellAncestor)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mTableSelection.mStartSelectedCell)
@@ -423,9 +439,6 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(nsFrameSelection)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mLimiters.mLimiter)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mLimiters.mAncestorLimiter)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
-
-NS_IMPL_CYCLE_COLLECTION_ROOT_NATIVE(nsFrameSelection, AddRef)
-NS_IMPL_CYCLE_COLLECTION_UNROOT_NATIVE(nsFrameSelection, Release)
 
 bool nsFrameSelection::Caret::IsVisualMovement(
     bool aContinueSelection, CaretMovementStyle aMovementStyle) const {
@@ -599,7 +612,7 @@ nsresult nsFrameSelection::ConstrainFrameAndPointToAnchorSubtree(
 }
 
 void nsFrameSelection::SetCaretBidiLevelAndMaybeSchedulePaint(
-    nsBidiLevel aLevel) {
+    mozilla::intl::BidiEmbeddingLevel aLevel) {
   // If the current level is undefined, we have just inserted new text.
   // In this case, we don't want to reset the keyboard language
   mCaret.mBidiLevel = aLevel;
@@ -610,12 +623,13 @@ void nsFrameSelection::SetCaretBidiLevelAndMaybeSchedulePaint(
   }
 }
 
-nsBidiLevel nsFrameSelection::GetCaretBidiLevel() const {
+mozilla::intl::BidiEmbeddingLevel nsFrameSelection::GetCaretBidiLevel() const {
   return mCaret.mBidiLevel;
 }
 
 void nsFrameSelection::UndefineCaretBidiLevel() {
-  mCaret.mBidiLevel |= BIDI_LEVEL_UNDEFINED;
+  mCaret.mBidiLevel = mozilla::intl::BidiEmbeddingLevel(mCaret.mBidiLevel |
+                                                        BIDI_LEVEL_UNDEFINED);
 }
 
 #ifdef PRINT_RANGE
@@ -662,9 +676,10 @@ static nsINode* GetClosestInclusiveTableCellAncestor(nsINode* aDomNode) {
 static nsDirection GetCaretDirection(const nsIFrame& aFrame,
                                      nsDirection aDirection,
                                      bool aVisualMovement) {
-  const nsBidiDirection paragraphDirection =
+  const mozilla::intl::BidiDirection paragraphDirection =
       nsBidiPresUtils::ParagraphDirection(&aFrame);
-  return (aVisualMovement && paragraphDirection == NSBIDI_RTL)
+  return (aVisualMovement &&
+          paragraphDirection == mozilla::intl::BidiDirection::RTL)
              ? nsDirection(1 - aDirection)
              : aDirection;
 }
@@ -701,18 +716,17 @@ nsresult nsFrameSelection::MoveCaret(nsDirection aDirection,
     scrollFlags |= Selection::SCROLL_OVERFLOW_HIDDEN;
   }
 
-  int32_t caretStyle = StaticPrefs::layout_selection_caret_style();
-  if (caretStyle == 0
-#ifdef XP_WIN
-      && aAmount != eSelectLine
-#endif
-  ) {
-    // Put caret at the selection edge in the |aDirection| direction.
-    caretStyle = 2;
-  }
+  const bool doCollapse = [&] {
+    if (sel->IsCollapsed() || aContinueSelection) {
+      return false;
+    }
+    if (aAmount > eSelectLine) {
+      return false;
+    }
+    int32_t caretStyle = StaticPrefs::layout_selection_caret_style();
+    return caretStyle == 2 || (caretStyle == 0 && aAmount != eSelectLine);
+  }();
 
-  const bool doCollapse = !sel->IsCollapsed() && !aContinueSelection &&
-                          caretStyle == 2 && aAmount <= eSelectLine;
   if (doCollapse) {
     if (aDirection == eDirPrevious) {
       SetChangeReasons(nsISelectionListener::COLLAPSETOSTART_REASON);
@@ -724,6 +738,8 @@ nsresult nsFrameSelection::MoveCaret(nsDirection aDirection,
   } else {
     SetChangeReasons(nsISelectionListener::KEYPRESS_REASON);
   }
+
+  mCaretMoveAmount = aAmount;
 
   AutoPrepareFocusRange prep(sel, false);
 
@@ -782,11 +798,11 @@ nsresult nsFrameSelection::MoveCaret(nsDirection aDirection,
   CaretAssociateHint tHint(mCaret.mHint);  // temporary variable so we dont set
                                            // mCaret.mHint until it is necessary
 
-  Result<nsPeekOffsetStruct, nsresult> result = PeekOffsetForCaretMove(
+  Result<PeekOffsetStruct, nsresult> result = PeekOffsetForCaretMove(
       direction, aContinueSelection, aAmount, aMovementStyle, desiredPos);
   nsresult rv;
   if (result.isOk() && result.inspect().mResultContent) {
-    const nsPeekOffsetStruct& pos = result.inspect();
+    const PeekOffsetStruct& pos = result.inspect();
     nsIFrame* theFrame;
     int32_t currentOffset, frameStart, frameEnd;
 
@@ -875,7 +891,7 @@ nsresult nsFrameSelection::MoveCaret(nsDirection aDirection,
   return rv;
 }
 
-Result<nsPeekOffsetStruct, nsresult> nsFrameSelection::PeekOffsetForCaretMove(
+Result<PeekOffsetStruct, nsresult> nsFrameSelection::PeekOffsetForCaretMove(
     nsDirection aDirection, bool aContinueSelection,
     const nsSelectionAmount aAmount, CaretMovementStyle aMovementStyle,
     const nsPoint& aDesiredCaretPos) const {
@@ -895,17 +911,25 @@ Result<nsPeekOffsetStruct, nsresult> nsFrameSelection::PeekOffsetForCaretMove(
     return Err(NS_ERROR_FAILURE);
   }
 
-  const auto kForceEditableRegion =
-      selection->IsEditorSelection()
-          ? nsPeekOffsetStruct::ForceEditableRegion::Yes
-          : nsPeekOffsetStruct::ForceEditableRegion::No;
-
   // set data using mLimiters.mLimiter to stop on scroll views.  If we have a
   // limiter then we stop peeking when we hit scrollable views.  If no limiter
   // then just let it go ahead
-  nsPeekOffsetStruct pos(aAmount, aDirection, offsetused, aDesiredCaretPos,
-                         true, !!mLimiters.mLimiter, true, visualMovement,
-                         aContinueSelection, kForceEditableRegion);
+  PeekOffsetOptions options{PeekOffsetOption::JumpLines,
+                            PeekOffsetOption::IsKeyboardSelect};
+  if (mLimiters.mLimiter) {
+    options += PeekOffsetOption::ScrollViewStop;
+  }
+  if (visualMovement) {
+    options += PeekOffsetOption::Visual;
+  }
+  if (aContinueSelection) {
+    options += PeekOffsetOption::Extend;
+  }
+  if (selection->IsEditorSelection()) {
+    options += PeekOffsetOption::ForceEditableRegion;
+  }
+  PeekOffsetStruct pos(aAmount, aDirection, offsetused, aDesiredCaretPos,
+                       options);
   nsresult rv = frame->PeekOffset(&pos);
   if (NS_FAILED(rv)) {
     return Err(rv);
@@ -928,7 +952,8 @@ nsPrevNextBidiLevels nsFrameSelection::GetPrevNextBidiLevels(
   nsDirection direction;
 
   nsPrevNextBidiLevels levels{};
-  levels.SetData(nullptr, nullptr, 0, 0);
+  levels.SetData(nullptr, nullptr, mozilla::intl::BidiEmbeddingLevel::LTR(),
+                 mozilla::intl::BidiEmbeddingLevel::LTR());
 
   currentFrame = GetFrameForNodeOffset(
       aNode, static_cast<int32_t>(aContentOffset), aHint, &currentOffset);
@@ -947,19 +972,22 @@ nsPrevNextBidiLevels nsFrameSelection::GetPrevNextBidiLevels(
   } else {
     // we are neither at the beginning nor at the end of the frame, so we have
     // no worries
-    nsBidiLevel currentLevel = currentFrame->GetEmbeddingLevel();
+    mozilla::intl::BidiEmbeddingLevel currentLevel =
+        currentFrame->GetEmbeddingLevel();
     levels.SetData(currentFrame, currentFrame, currentLevel, currentLevel);
     return levels;
   }
 
+  PeekOffsetOptions peekOffsetOptions{PeekOffsetOption::ScrollViewStop};
+  if (aJumpLines) {
+    peekOffsetOptions += PeekOffsetOption::JumpLines;
+  }
   nsIFrame* newFrame =
-      currentFrame
-          ->GetFrameFromDirection(direction, false, aJumpLines, true, false)
-          .mFrame;
+      currentFrame->GetFrameFromDirection(direction, peekOffsetOptions).mFrame;
 
   FrameBidiData currentBidi = currentFrame->GetBidiData();
-  nsBidiLevel currentLevel = currentBidi.embeddingLevel;
-  nsBidiLevel newLevel =
+  mozilla::intl::BidiEmbeddingLevel currentLevel = currentBidi.embeddingLevel;
+  mozilla::intl::BidiEmbeddingLevel newLevel =
       newFrame ? newFrame->GetEmbeddingLevel() : currentBidi.baseLevel;
 
   // If not jumping lines, disregard br frames, since they might be positioned
@@ -984,12 +1012,12 @@ nsPrevNextBidiLevels nsFrameSelection::GetPrevNextBidiLevels(
   return levels;
 }
 
-nsresult nsFrameSelection::GetFrameFromLevel(nsIFrame* aFrameIn,
-                                             nsDirection aDirection,
-                                             nsBidiLevel aBidiLevel,
-                                             nsIFrame** aFrameOut) const {
+nsresult nsFrameSelection::GetFrameFromLevel(
+    nsIFrame* aFrameIn, nsDirection aDirection,
+    mozilla::intl::BidiEmbeddingLevel aBidiLevel, nsIFrame** aFrameOut) const {
   NS_ENSURE_STATE(mPresShell);
-  nsBidiLevel foundLevel = 0;
+  mozilla::intl::BidiEmbeddingLevel foundLevel =
+      mozilla::intl::BidiEmbeddingLevel::LTR();
   nsIFrame* foundFrame = aFrameIn;
 
   nsCOMPtr<nsIFrameEnumerator> frameTraversal;
@@ -1090,11 +1118,13 @@ void nsFrameSelection::MaintainedRange::AdjustNormalSelection(
 
   nsINode* rangeStartNode = mRange->GetStartContainer();
   nsINode* rangeEndNode = mRange->GetEndContainer();
-  int32_t rangeStartOffset = mRange->StartOffset();
-  int32_t rangeEndOffset = mRange->EndOffset();
+  const uint32_t rangeStartOffset = mRange->StartOffset();
+  const uint32_t rangeEndOffset = mRange->EndOffset();
 
-  const Maybe<int32_t> relToStart = nsContentUtils::ComparePoints(
-      rangeStartNode, rangeStartOffset, aContent, aOffset);
+  NS_ASSERTION(aOffset >= 0, "aOffset should not be negative");
+  const Maybe<int32_t> relToStart =
+      nsContentUtils::ComparePoints_AllowNegativeOffsets(
+          rangeStartNode, rangeStartOffset, aContent, aOffset);
   if (NS_WARN_IF(!relToStart)) {
     // Potentially handle this properly when Selection across Shadow DOM
     // boundary is implemented
@@ -1102,8 +1132,9 @@ void nsFrameSelection::MaintainedRange::AdjustNormalSelection(
     return;
   }
 
-  const Maybe<int32_t> relToEnd = nsContentUtils::ComparePoints(
-      rangeEndNode, rangeEndOffset, aContent, aOffset);
+  const Maybe<int32_t> relToEnd =
+      nsContentUtils::ComparePoints_AllowNegativeOffsets(
+          rangeEndNode, rangeEndOffset, aContent, aOffset);
   if (NS_WARN_IF(!relToEnd)) {
     // Potentially handle this properly when Selection across Shadow DOM
     // boundary is implemented
@@ -1150,21 +1181,23 @@ void nsFrameSelection::MaintainedRange::AdjustContentOffsets(
     nsIFrame* frame = GetFrameForNodeOffset(aOffsets.content, aOffsets.offset,
                                             CARET_ASSOCIATE_AFTER, &offset);
 
+    PeekOffsetOptions peekOffsetOptions{};
+    if (aScrollViewStop) {
+      peekOffsetOptions += PeekOffsetOption::ScrollViewStop;
+    }
     if (frame && amount == eSelectWord && direction == eDirPrevious) {
       // To avoid selecting the previous word when at start of word,
       // first move one character forward.
-      nsPeekOffsetStruct charPos(eSelectCharacter, eDirNext, offset,
-                                 nsPoint(0, 0), false, aScrollViewStop, false,
-                                 false, false);
+      PeekOffsetStruct charPos(eSelectCharacter, eDirNext, offset,
+                               nsPoint(0, 0), peekOffsetOptions);
       if (NS_SUCCEEDED(frame->PeekOffset(&charPos))) {
         frame = charPos.mResultFrame;
         offset = charPos.mContentOffset;
       }
     }
 
-    nsPeekOffsetStruct pos(amount, direction, offset, nsPoint(0, 0), false,
-                           aScrollViewStop, false, false, false);
-
+    PeekOffsetStruct pos(amount, direction, offset, nsPoint(0, 0),
+                         peekOffsetOptions);
     if (frame && NS_SUCCEEDED(frame->PeekOffset(&pos)) && pos.mResultContent) {
       aOffsets.content = pos.mResultContent;
       aOffsets.offset = pos.mContentOffset;
@@ -1311,13 +1344,13 @@ nsINode* nsFrameSelection::TableSelection::IsContentInActivelyEditableTableCell(
     return nullptr;
   }
 
-  const Element* editorHostNode = htmlEditor->GetActiveEditingHost();
-  if (!editorHostNode) {
+  const Element* editingHost = htmlEditor->ComputeEditingHost();
+  if (!editingHost) {
     return nullptr;
   }
 
   const bool editableCell =
-      inclusiveTableCellAncestor->IsInclusiveDescendantOf(editorHostNode);
+      inclusiveTableCellAncestor->IsInclusiveDescendantOf(editingHost);
   return editableCell ? inclusiveTableCellAncestor : nullptr;
 }
 
@@ -1325,7 +1358,7 @@ namespace {
 struct ParentAndOffset {
   explicit ParentAndOffset(const nsINode& aNode)
       : mParent{aNode.GetParent()},
-        mOffset{mParent ? mParent->ComputeIndexOf(&aNode) : 0} {}
+        mOffset{mParent ? mParent->ComputeIndexOf_Deprecated(&aNode) : 0} {}
 
   nsINode* mParent;
 
@@ -1509,14 +1542,37 @@ UniquePtr<SelectionDetails> nsFrameSelection::LookUpSelection(
     return nullptr;
   }
 
+  // TODO: Layout should use `uint32_t` for handling offset in DOM nodes
+  //       (for example: bug 1735262)
+  MOZ_ASSERT(aContentOffset >= 0);
+  MOZ_ASSERT(aContentLength >= 0);
+  if (MOZ_UNLIKELY(aContentOffset < 0) || MOZ_UNLIKELY(aContentLength < 0)) {
+    return nullptr;
+  }
+
   UniquePtr<SelectionDetails> details;
 
   for (size_t j = 0; j < ArrayLength(mDomSelections); j++) {
     if (mDomSelections[j]) {
       details = mDomSelections[j]->LookUpSelection(
-          aContent, aContentOffset, aContentLength, std::move(details),
+          aContent, static_cast<uint32_t>(aContentOffset),
+          static_cast<uint32_t>(aContentLength), std::move(details),
           kPresentSelectionTypes[j], aSlowCheck);
     }
+  }
+
+  // This may seem counter intuitive at first. Highlight selections need to be
+  // iterated from back to front:
+  //
+  //  - `mHighlightSelections` is ordered by insertion, i.e. if two or more
+  //  highlights overlap, the latest must take precedence.
+  //  - however, the `LookupSelection()` algorithm reverses the order by setting
+  //    the current `details` as `mNext`.
+  for (const auto& iter : Reversed(mHighlightSelections)) {
+    details = iter.second()->LookUpSelection(
+        aContent, static_cast<uint32_t>(aContentOffset),
+        static_cast<uint32_t>(aContentLength), std::move(details),
+        SelectionType::eHighlight, aSlowCheck);
   }
 
   return details;
@@ -1531,6 +1587,12 @@ void nsFrameSelection::SetDragState(bool aState) {
     mTableSelection.mDragSelectingCells = false;
     // Notify that reason is mouse up.
     SetChangeReasons(nsISelectionListener::MOUSEUP_REASON);
+
+    // flag is set to false in `NotifySelectionListeners`.
+    // since this function call is part of click event, this would immediately
+    // reset the flag, rendering it useless.
+    AutoRestore<bool> restoreIsDoubleClickSelectionFlag(
+        mIsDoubleClickSelection);
     // Be aware, the Selection instance may be destroyed after this call.
     NotifySelectionListeners(SelectionType::eNormal);
   }
@@ -1541,6 +1603,73 @@ Selection* nsFrameSelection::GetSelection(SelectionType aSelectionType) const {
   if (index < 0) return nullptr;
 
   return mDomSelections[index];
+}
+
+void nsFrameSelection::AddHighlightSelection(
+    const nsAtom* aHighlightName, mozilla::dom::Highlight& aHighlight) {
+  RefPtr<Selection> selection =
+      aHighlight.CreateHighlightSelection(aHighlightName, this);
+  if (auto iter =
+          std::find_if(mHighlightSelections.begin(), mHighlightSelections.end(),
+                       [&aHighlightName](auto const& aElm) {
+                         return aElm.first() == aHighlightName;
+                       });
+      iter != mHighlightSelections.end()) {
+    iter->second() = std::move(selection);
+  } else {
+    mHighlightSelections.AppendElement(
+        CompactPair<RefPtr<const nsAtom>, RefPtr<Selection>>(
+            aHighlightName, std::move(selection)));
+  }
+}
+
+void nsFrameSelection::RemoveHighlightSelection(const nsAtom* aHighlightName) {
+  if (auto iter =
+          std::find_if(mHighlightSelections.begin(), mHighlightSelections.end(),
+                       [&aHighlightName](auto const& aElm) {
+                         return aElm.first() == aHighlightName;
+                       });
+      iter != mHighlightSelections.end()) {
+    RefPtr<Selection> selection = iter->second();
+    selection->RemoveAllRanges(IgnoreErrors());
+    mHighlightSelections.RemoveElementAt(iter);
+  }
+}
+
+void nsFrameSelection::AddHighlightSelectionRange(
+    const nsAtom* aHighlightName, mozilla::dom::Highlight& aHighlight,
+    mozilla::dom::AbstractRange& aRange) {
+  if (auto iter =
+          std::find_if(mHighlightSelections.begin(), mHighlightSelections.end(),
+                       [&aHighlightName](auto const& aElm) {
+                         return aElm.first() == aHighlightName;
+                       });
+      iter != mHighlightSelections.end()) {
+    RefPtr<Selection> selection = iter->second();
+    selection->AddHighlightRangeAndSelectFramesAndNotifyListeners(aRange);
+  } else {
+    // if the selection does not exist yet, add all of its ranges and exit.
+    RefPtr<Selection> selection =
+        aHighlight.CreateHighlightSelection(aHighlightName, this);
+    mHighlightSelections.AppendElement(
+        CompactPair<RefPtr<const nsAtom>, RefPtr<Selection>>(
+            aHighlightName, std::move(selection)));
+  }
+}
+
+void nsFrameSelection::RemoveHighlightSelectionRange(
+    const nsAtom* aHighlightName, mozilla::dom::AbstractRange& aRange) {
+  if (auto iter =
+          std::find_if(mHighlightSelections.begin(), mHighlightSelections.end(),
+                       [&aHighlightName](auto const& aElm) {
+                         return aElm.first() == aHighlightName;
+                       });
+      iter != mHighlightSelections.end()) {
+    // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+    RefPtr<Selection> selection = iter->second();
+    selection->RemoveRangeAndUnselectFramesAndNotifyListeners(aRange,
+                                                              IgnoreErrors());
+  }
 }
 
 nsresult nsFrameSelection::ScrollSelectionIntoView(SelectionType aSelectionType,
@@ -1563,7 +1692,7 @@ nsresult nsFrameSelection::ScrollSelectionIntoView(SelectionType aSelectionType,
   }
   if (aFlags & nsISelectionController::SCROLL_CENTER_VERTICALLY) {
     verticalScroll =
-        ScrollAxis(kScrollToCenter, WhenToScroll::IfNotFullyVisible);
+        ScrollAxis(WhereToScroll::Center, WhenToScroll::IfNotFullyVisible);
   }
   if (aFlags & nsISelectionController::SCROLL_FOR_CARET_MOVE) {
     flags |= Selection::SCROLL_FOR_CARET_MOVE;
@@ -1908,7 +2037,8 @@ nsresult nsFrameSelection::PageMove(bool aForward, bool aExtend,
   {
     // We don't want any script to run until we check whether selection is
     // modified by HandleClick.
-    SelectionBatcher ensureNoSelectionChangeNotifications(selection);
+    SelectionBatcher ensureNoSelectionChangeNotifications(selection,
+                                                          __FUNCTION__);
 
     RangeBoundary oldAnchor = selection->AnchorRef();
     RangeBoundary oldFocus = selection->FocusRef();
@@ -2105,12 +2235,12 @@ nsFrameSelection::CreateRangeExtendedToSomewhere(
   if (!firstRange || !firstRange->IsPositioned()) {
     return Err(NS_ERROR_FAILURE);
   }
-  Result<nsPeekOffsetStruct, nsresult> result = PeekOffsetForCaretMove(
+  Result<PeekOffsetStruct, nsresult> result = PeekOffsetForCaretMove(
       aDirection, true, aAmount, aMovementStyle, nsPoint(0, 0));
   if (result.isErr()) {
     return Err(NS_ERROR_FAILURE);
   }
-  const nsPeekOffsetStruct& pos = result.inspect();
+  const PeekOffsetStruct& pos = result.inspect();
   RefPtr<RangeType> range;
   if (NS_WARN_IF(!pos.mResultContent)) {
     return range;
@@ -2130,14 +2260,28 @@ nsFrameSelection::CreateRangeExtendedToSomewhere(
 
 //////////END FRAMESELECTION
 
-void nsFrameSelection::StartBatchChanges() { mBatching.mCounter++; }
+LazyLogModule gBatchLog("SelectionBatch");
 
-void nsFrameSelection::EndBatchChanges(int16_t aReasons) {
+void nsFrameSelection::StartBatchChanges(const char* aRequesterFuncName) {
+  MOZ_LOG(gBatchLog, LogLevel::Info,
+          ("%p%snsFrameSelection::StartBatchChanges(%s)", this,
+           std::string((mBatching.mCounter + 1) * 2, ' ').c_str(),
+           aRequesterFuncName));
+  mBatching.mCounter++;
+}
+
+void nsFrameSelection::EndBatchChanges(const char* aRequesterFuncName,
+                                       int16_t aReasons) {
+  MOZ_LOG(gBatchLog, LogLevel::Info,
+          ("%p%snsFrameSelection::EndBatchChanges  (%s, %s)", this,
+           std::string(mBatching.mCounter * 2, ' ').c_str(), aRequesterFuncName,
+           SelectionChangeReasonsToCString(aReasons).get()));
   MOZ_ASSERT(mBatching.mCounter > 0, "Bad mBatching.mCounter");
   mBatching.mCounter--;
 
   if (mBatching.mCounter == 0 && mBatching.mChangesDuringBatching) {
     AddChangeReasons(aReasons);
+    mCaretMoveAmount = eSelectNoAmount;
     mBatching.mChangesDuringBatching = false;
     // Be aware, the Selection instance may be destroyed after this call.
     NotifySelectionListeners(SelectionType::eNormal);
@@ -2150,6 +2294,7 @@ nsresult nsFrameSelection::NotifySelectionListeners(
   if (index >= 0 && mDomSelections[index]) {
     RefPtr<Selection> selection = mDomSelections[index];
     selection->NotifySelectionListeners();
+    mCaretMoveAmount = eSelectNoAmount;
     return NS_OK;
   }
   return NS_ERROR_FAILURE;
@@ -2236,7 +2381,7 @@ nsresult nsFrameSelection::TableSelection::HandleSelection(
 
   // Stack-class to wrap all table selection changes in
   //  BeginBatchChanges() / EndBatchChanges()
-  SelectionBatcher selectionBatcher(&aNormalSelection);
+  SelectionBatcher selectionBatcher(&aNormalSelection, __FUNCTION__);
 
   if (aDragState && mDragSelectingCells) {
     return HandleDragSelecting(aTarget, childContent, aMouseEvent,
@@ -2474,7 +2619,7 @@ nsresult nsFrameSelection::TableSelection::HandleMouseUpOrDown(
         mDragSelectingCells, mStartSelectedCell.get());
 #endif
     // First check if we are extending a block selection
-    uint32_t rangeCount = aNormalSelection.RangeCount();
+    const uint32_t rangeCount = aNormalSelection.RangeCount();
 
     if (rangeCount > 0 && aMouseEvent->IsShift() && mAppendStartSelectedCell &&
         mAppendStartSelectedCell != aChildContent) {
@@ -2525,11 +2670,12 @@ nsresult nsFrameSelection::TableSelection::HandleMouseUpOrDown(
           "rangeCount=%d\n",
           rangeCount);
 #endif
-      for (uint32_t i = 0; i < rangeCount; i++) {
+      for (const uint32_t i : IntegerRange(rangeCount)) {
+        MOZ_ASSERT(aNormalSelection.RangeCount() == rangeCount);
         // Strong reference, because sometimes we want to remove
         // this range, and then we might be the only owner.
         RefPtr<nsRange> range = aNormalSelection.GetRangeAt(i);
-        if (!range) {
+        if (MOZ_UNLIKELY(!range)) {
           return NS_ERROR_NULL_POINTER;
         }
 
@@ -2707,7 +2853,7 @@ nsresult SelectCellElement(nsIContent* aCellElement,
   nsIContent* parent = aCellElement->GetParent();
 
   // Get child offset
-  int32_t offset = parent->ComputeIndexOf(aCellElement);
+  const int32_t offset = parent->ComputeIndexOf_Deprecated(aCellElement);
 
   return CreateAndAddRange(parent, offset, aNormalSelection);
 }
@@ -2970,7 +3116,8 @@ nsRange* nsFrameSelection::TableSelection::GetNextCellRange(
     const mozilla::dom::Selection& aNormalSelection) {
   MOZ_ASSERT(aNormalSelection.Type() == SelectionType::eNormal);
 
-  nsRange* range = aNormalSelection.GetRangeAt(mSelectedCellIndex);
+  nsRange* range =
+      aNormalSelection.GetRangeAt(AssertedCast<uint32_t>(mSelectedCellIndex));
 
   // Get first node in next range of selection - test if it's a cell
   if (!GetFirstCellNodeInRange(range)) {

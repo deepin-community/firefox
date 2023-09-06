@@ -57,7 +57,7 @@ const KEY_STATES = [
   ["VK_RETURN", "p1", false], // .c1P
 ];
 
-add_task(async function() {
+add_task(async function () {
   const { inspector } = await openInspectorForURL(TEST_URL);
   const { searchBox } = inspector;
 
@@ -78,7 +78,7 @@ add_task(async function() {
     }
 
     info("Waiting for search query to complete");
-    promises.push(inspector.searchSuggestions._lastQuery);
+    promises.push(inspector.searchSuggestions.once("processing-done"));
 
     EventUtils.synthesizeKey(key, {}, inspector.panelWin);
 

@@ -4,8 +4,11 @@
 
 addons-page-title = Upravnik add-onima
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
+
 
 list-empty-installed =
     .value = Vi nemate instaliranih add-ona ovog tipa
@@ -141,7 +144,6 @@ extensions-warning-update-security = Sigurnosna provjera nadogradnje za add-one 
 extensions-warning-update-security-button = Omogući
     .title = Omogući provjeravanje sigurnosti nadogradnje add-ona
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = Provjeri za nadogradnje
@@ -194,12 +196,14 @@ addon-open-about-debugging = Debagiranje add-ona
 ## Pending uninstall message bar
 
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 
 ##
-
 
 ## Page headings
 
@@ -207,3 +211,29 @@ extension-heading = Upravljanje vašim ekstenzijama
 
 addon-page-options-button =
     .title = Alati za sve add-one
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } je nekompatibilan sa { -brand-short-name } { $version }.
+
+details-notification-unsigned-and-disabled = { $name } nije mogao biti verifikovan za rad u { -brand-short-name } te je onemogućen.
+details-notification-unsigned-and-disabled-link = Više informacija
+
+details-notification-unsigned = { $name } nije mogao biti verifikovan za rad u { -brand-short-name }. Nastavite s oprezom.
+details-notification-unsigned-link = Više informacija
+
+details-notification-blocked = { $name } je onemogućen pošto uzrokuje probleme vezane za sigurnost i stabilnost.
+details-notification-blocked-link = Više informacija
+
+details-notification-softblocked = { $name } je poznat po tome što uzrokuje probleme vezane za stabilnost ili sigurnost.
+details-notification-softblocked-link = Više informacija
+
+details-notification-gmp-pending = { $name } će ubrzo biti instaliran.

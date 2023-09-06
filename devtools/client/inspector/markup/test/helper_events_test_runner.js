@@ -6,7 +6,7 @@
 /* import-globals-from helper_diff.js */
 "use strict";
 
-const beautify = require("devtools/shared/jsbeautify/beautify");
+const beautify = require("resource://devtools/shared/jsbeautify/beautify.js");
 
 loadHelperScript("helper_diff.js");
 
@@ -77,7 +77,11 @@ async function checkEventsForNode(test, inspector) {
 
   // Click button to show tooltip
   info("Clicking evHolder");
-  evHolder.scrollIntoView();
+  evHolder.scrollIntoView({
+    block: "center",
+    inline: "end",
+    behavior: "instant",
+  });
   EventUtils.synthesizeMouseAtCenter(
     evHolder,
     {},
@@ -167,6 +171,19 @@ async function checkEventsForNode(test, inspector) {
       tidiedHandler,
       "handler matches for " + cssSelector,
       ok
+    );
+
+    const checkbox = header.querySelector("input[type=checkbox]");
+    ok(checkbox, "The event toggling checkbox is displayed");
+    const disabled = checkbox.hasAttribute("disabled");
+    // We can't disable React/jQuery events at the moment, so ensure that for those,
+    // the checkbox is disabled.
+    const shouldBeDisabled =
+      expected[i].attributes?.includes("React") ||
+      expected[i].attributes?.includes("jQuery");
+    ok(
+      disabled === shouldBeDisabled,
+      `The checkbox is ${shouldBeDisabled ? "disabled" : "enabled"}\n`
     );
 
     info(`${label} END`);

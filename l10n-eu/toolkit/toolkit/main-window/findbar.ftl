@@ -36,3 +36,41 @@ findbar-entire-word =
     .label = Hitz osoak
     .accesskey = o
     .tooltiptext = Bilatu hitz osoak soilik
+
+findbar-not-found = Ez da esaldia aurkitu
+
+findbar-wrapped-to-top = Orriaren bukaera heldu da, hasieratik jarraitzen
+findbar-wrapped-to-bottom = Orriaren hasiera heldu da, bukaeratik jarraitzen
+
+findbar-normal-find =
+    .placeholder = Bilatu orrian
+findbar-fast-find =
+    .placeholder = Bilaketa azkarra
+findbar-fast-find-links =
+    .placeholder = Bilaketa azkarra (loturak soilik)
+
+findbar-case-sensitive-status =
+    .value = (Maiuskula/minuskula errespetatuz)
+findbar-match-diacritics-status =
+    .value = (Diakritikoak bereizten)
+findbar-entire-word-status =
+    .value = (Hitz osoak soilik)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $total }/{ $current }. bat-etortzea
+           *[other] { $total }/{ $current }. bat-etortzea
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Bat datorren bat baino gehiago
+           *[other] Bat datozen { $limit } baino gehiago
+        }

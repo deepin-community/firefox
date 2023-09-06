@@ -5,12 +5,12 @@
 
 about-logins-page-title = 로그인과 비밀번호
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = 로그인 검색
+    .key = F
 
-create-login-button = 새 로그인 만들기
+create-new-login-button =
+    .title = 새 로그인 만들기
 
 fxaccounts-sign-in-text = 다른 기기에서 비밀번호 받기
 fxaccounts-sign-in-sync-button = Sync에 로그인
@@ -37,10 +37,16 @@ about-logins-menu-menuitem-help = 도움말
 
 login-list =
     .aria-label = 검색어와 일치하는 로그인
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
-       *[other] { $count }회 로그인
+       *[other] 로그인 { $count }개
     }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count = { $count } / { $total } 로그인
 login-list-sort-label-text = 정렬 기준:
 login-list-name-option = 이름 (A-Z)
 login-list-name-reverse-option = 이름 (Z-A)
@@ -60,7 +66,6 @@ about-logins-list-item-breach-icon =
     .title = 유출된 웹 사이트
 about-logins-list-item-vulnerable-password-icon =
     .title = 취약한 비밀번호
-
 about-logins-list-section-breach = 유출된 웹 사이트
 about-logins-list-section-vulnerable = 취약한 비밀번호
 about-logins-list-section-nothing = 알림 없음
@@ -75,8 +80,8 @@ about-logins-login-intro-heading-logged-in = 동기화된 로그인을 찾을 �
 login-intro-description = 다른 기기에 { -brand-product-name }의 로그인을 저장한 경우, 다음 방법을 참조하세요:
 login-intro-instructions-fxa = 로그인이 저장된 기기에서 { -fxaccount-brand-name }을 만들거나 로그인하세요.
 login-intro-instructions-fxa-settings = 설정> Sync> 동기화 켜기…로 이동해서, 로그인 및 비밀번호 확인란을 선택하세요.
-login-intro-instructions-fxa-help = 더 많은 도움이 필요하면 <a data-l10n-name="help-link">{ -lockwise-brand-short-name } 지원</a>을 방문하세요.
-about-logins-intro-import = 로그인이 다른 브라우저에 저장된 경우, <a data-l10n-name="import-link">{ -lockwise-brand-short-name }로 가져올 수 있습니다</a>
+login-intro-instructions-fxa-passwords-help = 더 많은 도움이 필요하면 <a data-l10n-name="passwords-help-link">비밀번호 지원</a>을 방문하세요.
+about-logins-intro-browser-only-import = 로그인이 다른 브라우저에 저장된 경우, <a data-l10n-name="import-link">{ -brand-product-name }로 가져올 수 있습니다</a>
 about-logins-intro-import2 = 로그인이 { -brand-product-name }의 외부에 저장된 경우, <a data-l10n-name="import-browser-link">다른 브라우저</a> 또는 <a data-l10n-name="import-file-link">파일</a>에서 가져올 수 있습니다
 
 ## Login
@@ -101,9 +106,17 @@ login-item-copied-password-button-text = 복사됨!
 login-item-save-changes-button = 변경 내용 저장
 login-item-save-new-button = 저장
 login-item-cancel-button = 취소
-login-item-time-changed = 마지막 수정: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = 생성: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = 마지막 사용: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = 생성
+login-item-timeline-action-updated = 업데이트됨
+login-item-timeline-action-used = 사용
 
 ## OS Authentication dialog
 
@@ -131,8 +144,6 @@ about-logins-copy-password-os-auth-dialog-message-win = 비밀번호를 복사�
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = 저장된 비밀번호 복사
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = 로그인을 내보내려면, Windows 로그인 자격 증명을 입력하세요. 이는 계정의 보안을 보호하는데 도움이 됩니다.
 # This message can be seen when attempting to export a password in about:logins
@@ -146,8 +157,6 @@ master-password-reload-button =
     .label = 로그인
     .accesskey = L
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = 취소
@@ -157,6 +166,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = 이 로그인을 삭제하시겠습니까?
 confirm-delete-dialog-message = 이 작업은 취소할 수 없습니다.
 about-logins-confirm-remove-dialog-confirm-button = 삭제
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -190,6 +202,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] { -fxaccount-brand-name }에 동기화된 모든 기기에서 { -brand-short-name }에 저장한 모든 로그인들이 삭제됩니다. 또한, 여기에 표시되는 유출 알림도 삭제됩니다. 이 작업은 취소할 수 없습니다.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = 로그인과 비밀번호 내보내기
 about-logins-confirm-export-dialog-message = 비밀번호는 읽을 수 있는 텍스트 (예: BadP@ssw0rd)로 저장되므로, 내보낸 파일을 열 수 있는 사람은 누구나 볼 수 있습니다.
 about-logins-confirm-export-dialog-confirm-button = 내보내기…
@@ -209,7 +223,6 @@ about-logins-breach-alert-date = 이 유출은 { DATETIME($date, day: "numeric",
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = { $hostname }(으)로 이동
-about-logins-breach-alert-learn-more-link = 더 알아보기
 
 ## Vulnerable Password notification
 

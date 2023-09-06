@@ -2,31 +2,60 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 ## Permission Dialog
 ## Variables:
 ##  $host - the hostname that is initiating the request
 ##  $scheme - the type of link that's being opened.
 ##  $appName - Name of the application that will be opened.
 
-permission-dialog-description = La dette nettstedet åpne { $scheme }-lenken?
+
+## Permission Dialog
+## Variables:
+##  $host - the hostname that is initiating the request
+##  $scheme - the type of link that's being opened.
+##  $appName - Name of the application that will be opened.
+##  $extension - Name of extension that initiated the request
+
+## Permission Dialog
+## Variables:
+##  $host (string) - The hostname that is initiating the request
+##  $scheme (string) - The type of link that's being opened.
+##  $appName (string) - Name of the application that will be opened.
+##  $extension (string) - Name of extension that initiated the request
+
+permission-dialog-description = Tillatte dette nettstedet å åpne { $scheme }-lenken?
 
 permission-dialog-description-file = La denne filen åpne { $scheme }-lenken?
 
-permission-dialog-description-host = La { $host } åpne { $scheme }-lenken?
+permission-dialog-description-host = Tillate { $host } å åpne { $scheme }-lenken?
 
-permission-dialog-description-app = La dette nettstedet åpne { $scheme }-lenken med { $appName }?
+permission-dialog-description-extension = Tillate utvidelsen { $extension } å åpne { $scheme }-lenken?
 
-permission-dialog-description-host-app = La { $host } åpne { $scheme }-lenken med { $appName }?
+permission-dialog-description-app = Tillate dette nettstedet å åpne { $scheme }-lenken med { $appName }?
 
-permission-dialog-description-file-app = La denne filen åpne { $scheme }-lenken med { $appName }?
+permission-dialog-description-host-app = Tillate { $host } å åpne { $scheme }-lenken med { $appName }?
+
+permission-dialog-description-file-app = Tillate denne filen å åpne { $scheme }-lenken med { $appName }?
+
+permission-dialog-description-extension-app = Tillate utvidelsen { $extension } å åpne { $scheme }-lenken med { $appName }?
 
 ## Please keep the emphasis around the hostname and scheme (ie the
 ## `<strong>` HTML tags). Please also keep the hostname as close to the start
 ## of the sentence as your language's grammar allows.
 
+## Please keep the emphasis around the hostname and scheme (ie the
+## `<strong>` HTML tags). Please also keep the hostname as close to the start
+## of the sentence as your language's grammar allows.
+## Variables:
+##  $host (string) - The hostname that is initiating the request
+##  $scheme (string) - The type of link that's being opened.
+
 permission-dialog-remember = Tillat alltid <strong>{ $host }</strong> å åpne <strong>{ $scheme }</strong>-lenker
 
 permission-dialog-remember-file = Tillat alltid denne filen å åpne <strong>{ $scheme }</strong>-lenker
+
+permission-dialog-remember-extension = Tillat alltid denne utivdelsen å åpne <strong>{ $scheme }</strong>-lenker
 
 ##
 
@@ -45,6 +74,10 @@ permission-dialog-set-change-app-link = Velg et annet program.
 ## Chooser dialog
 ## Variables:
 ##  $scheme - the type of link that's being opened.
+
+## Chooser dialog
+## Variables:
+##  $scheme (string) - The type of link that's being opened.
 
 chooser-window =
     .title = Velg program

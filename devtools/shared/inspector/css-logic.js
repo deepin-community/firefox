@@ -4,8 +4,6 @@
 
 "use strict";
 
-const InspectorUtils = require("InspectorUtils");
-
 const MAX_DATA_URL_LENGTH = 40;
 /**
  * Provide access to the style information in a page.
@@ -17,21 +15,19 @@ const MAX_DATA_URL_LENGTH = 40;
  * @constructor
  */
 
-const Services = require("Services");
-
 loader.lazyRequireGetter(
   this,
   "getCSSLexer",
-  "devtools/shared/css/lexer",
+  "resource://devtools/shared/css/lexer.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "getTabPrefs",
-  "devtools/shared/indentation",
+  "resource://devtools/shared/indentation.js",
   true
 );
-const { LocalizationHelper } = require("devtools/shared/l10n");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 const styleInspectorL10N = new LocalizationHelper(
   "devtools/shared/locales/styleinspector.properties"
 );
@@ -63,23 +59,38 @@ exports.STATUS = {
 };
 
 /**
- * Mapping of CSSRule type value to CSSRule type name.
- * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSRule
+ * Mapping of CSS at-Rule className to CSSRule type name.
  */
-exports.CSSRuleTypeName = {
-  1: "", // Regular CSS style rule has no name
-  3: "@import",
-  4: "@media",
-  5: "@font-face",
-  6: "@page",
-  7: "@keyframes",
-  8: "@keyframe",
-  10: "@namespace",
-  11: "@counter-style",
-  12: "@supports",
-  13: "@document",
-  14: "@font-feature-values",
-  15: "@viewport",
+exports.CSSAtRuleClassNameType = {
+  CSSContainerRule: "container",
+  CSSCounterStyleRule: "counter-style",
+  CSSDocumentRule: "document",
+  CSSFontFaceRule: "font-face",
+  CSSFontFeatureValuesRule: "font-feature-values",
+  CSSImportRule: "import",
+  CSSKeyframeRule: "keyframe",
+  CSSKeyframesRule: "keyframes",
+  CSSLayerBlockRule: "layer",
+  CSSMediaRule: "media",
+  CSSNamespaceRule: "namespace",
+  CSSPageRule: "page",
+  CSSSupportsRule: "supports",
+};
+
+/**
+ * Get Rule type as human-readable string (ex: "@media", "@container", …)
+ *
+ * @param {CSSRule} cssRule
+ * @returns {String}
+ */
+exports.getCSSAtRuleTypeName = function (cssRule) {
+  const ruleClassName = ChromeUtils.getClassName(cssRule);
+  const atRuleTypeName = exports.CSSAtRuleClassNameType[ruleClassName];
+  if (atRuleTypeName) {
+    return "@" + atRuleTypeName;
+  }
+
+  return "";
 };
 
 /**
@@ -98,7 +109,7 @@ exports.l10n = name => styleInspectorL10N.getStr(name);
  * @return {boolean} true if the given stylesheet is an author stylesheet,
  * false otherwise.
  */
-exports.isAuthorStylesheet = function(sheet) {
+exports.isAuthorStylesheet = function (sheet) {
   return sheet.parsingMode === "author";
 };
 
@@ -109,7 +120,7 @@ exports.isAuthorStylesheet = function(sheet) {
  * @return {boolean} true if the given stylesheet is a user stylesheet,
  * false otherwise.
  */
-exports.isUserStylesheet = function(sheet) {
+exports.isUserStylesheet = function (sheet) {
   return sheet.parsingMode === "user";
 };
 
@@ -120,7 +131,7 @@ exports.isUserStylesheet = function(sheet) {
  * @return {boolean} true if the given stylesheet is a agent stylesheet,
  * false otherwise.
  */
-exports.isAgentStylesheet = function(sheet) {
+exports.isAgentStylesheet = function (sheet) {
   return sheet.parsingMode === "agent";
 };
 
@@ -129,10 +140,15 @@ exports.isAgentStylesheet = function(sheet) {
  *
  * @param {CSSStyleSheet} sheet the DOM object for the style sheet.
  */
-exports.shortSource = function(sheet) {
-  // Use a string like "inline" if there is no source href
-  if (!sheet || !sheet.href) {
+exports.shortSource = function (sheet) {
+  if (!sheet) {
     return exports.l10n("rule.sourceInline");
+  }
+
+  if (!sheet.href) {
+    return exports.l10n(
+      sheet.constructed ? "rule.sourceConstructed" : "rule.sourceInline"
+    );
   }
 
   // If the sheet is a data URL, return a trimmed version of it.
@@ -161,6 +177,25 @@ exports.shortSource = function(sheet) {
 
   if (url.query) {
     return url.query;
+  }
+
+  return sheet.href;
+};
+
+/**
+ * Return the style sheet's source, handling element, inline and constructed stylesheets.
+ *
+ * @param {CSSStyleSheet} sheet the DOM object for the style sheet.
+ */
+exports.longSource = function (sheet) {
+  if (!sheet) {
+    return exports.l10n("rule.sourceInline");
+  }
+
+  if (!sheet.href) {
+    return exports.l10n(
+      sheet.constructed ? "rule.sourceConstructed" : "rule.sourceInline"
+    );
   }
 
   return sheet.href;
@@ -217,10 +252,7 @@ function prettifyCSS(text, ruleCount) {
   // before and after). Remove those first. Don't do anything there aren't any.
   const trimmed = text.trim();
   if (trimmed.startsWith("<!--")) {
-    text = trimmed
-      .replace(/^<!--/, "")
-      .replace(/-->$/, "")
-      .trim();
+    text = trimmed.replace(/^<!--/, "").replace(/-->$/, "").trim();
   }
 
   const originalText = text;
@@ -380,6 +412,13 @@ function prettifyCSS(text, ruleCount) {
     return token;
   };
 
+  // Get preference of the user regarding what to use for indentation,
+  // spaces or tabs.
+  const tabPrefs = getTabPrefs();
+  const baseIndentString = tabPrefs.indentWithTabs
+    ? TAB_CHARS
+    : SPACE_CHARS.repeat(tabPrefs.indentUnit);
+
   while (true) {
     // Set the initial state.
     startIndex = undefined;
@@ -405,20 +444,16 @@ function prettifyCSS(text, ruleCount) {
       }
     }
 
-    // Get preference of the user regarding what to use for indentation,
-    // spaces or tabs.
-    const tabPrefs = getTabPrefs();
-
     if (isCloseBrace) {
       // Even if the stylesheet contains extra closing braces, the indent level should
       // remain > 0.
       indentLevel = Math.max(0, indentLevel - 1);
+      indent = baseIndentString.repeat(indentLevel);
 
+      // FIXME: This is incorrect and should be fixed in Bug 1839297
       if (tabPrefs.indentWithTabs) {
-        indent = TAB_CHARS.repeat(indentLevel);
         indentOffset = 4 * indentLevel;
       } else {
-        indent = SPACE_CHARS.repeat(indentLevel);
         indentOffset = 1 * indentLevel;
       }
       result = result + indent + "}";
@@ -434,11 +469,14 @@ function prettifyCSS(text, ruleCount) {
         columnOffset++;
       }
       result += "{";
+      indentLevel++;
+      indent = baseIndentString.repeat(indentLevel);
+      indentOffset = indent.length;
+
+      // FIXME: This is incorrect and should be fixed in Bug 1839297
       if (tabPrefs.indentWithTabs) {
-        indent = TAB_CHARS.repeat(++indentLevel);
         indentOffset = 4 * indentLevel;
       } else {
-        indent = SPACE_CHARS.repeat(++indentLevel);
         indentOffset = 1 * indentLevel;
       }
     }
@@ -501,8 +539,8 @@ function getBindingElementAndPseudo(node) {
     pseudo = "::after";
   }
   return {
-    bindingElement: bindingElement,
-    pseudo: pseudo,
+    bindingElement,
+    pseudo,
   };
 }
 exports.getBindingElementAndPseudo = getBindingElementAndPseudo;
@@ -527,10 +565,10 @@ function hasVisitedState(node) {
     return false;
   }
 
-  const NS_EVENT_STATE_VISITED = 1 << 19;
+  const ELEMENT_STATE_VISITED = 1 << 19;
 
   return (
-    !!(InspectorUtils.getContentState(node) & NS_EVENT_STATE_VISITED) ||
+    !!(InspectorUtils.getContentState(node) & ELEMENT_STATE_VISITED) ||
     InspectorUtils.hasPseudoClassLock(node, ":visited")
   );
 }
@@ -583,7 +621,7 @@ function findNodeAndContainer(node) {
  *   - ele.containingDocOrShadow.querySelector(reply) === ele
  *   - ele.containingDocOrShadow.querySelectorAll(reply).length === 1
  */
-const findCssSelector = function(ele) {
+const findCssSelector = function (ele) {
   const { node, containingDocOrShadow } = findNodeAndContainer(ele);
   ele = node;
 
@@ -647,51 +685,6 @@ const findCssSelector = function(ele) {
   return selector;
 };
 exports.findCssSelector = findCssSelector;
-
-/**
- * If the element is in a frame or under a shadowRoot, return the corresponding
- * element.
- */
-function getSelectorParent(node) {
-  const shadowRoot = node.containingShadowRoot;
-  if (shadowRoot) {
-    // The element is in a shadowRoot, return the host component.
-    return shadowRoot.host;
-  }
-
-  // Otherwise return the parent frameElement.
-  return node.ownerGlobal.frameElement;
-}
-
-/**
- * Retrieve the array of CSS selectors corresponding to the provided node.
- *
- * The selectors are ordered starting with the root document and ending with the deepest
- * nested frame. Additional items are used if the node is inside a frame or a shadow root,
- * each representing the CSS selector for finding the frame or root element in its parent
- * document.
- *
- * This format is expected by DevTools in order to handle the Inspect Node context menu
- * item.
- *
- * @param  {node}
- *         The node for which the CSS selectors should be computed
- * @return {Array}
- *         An array of CSS selectors to find the target node. Several selectors can be
- *         needed if the element is nested in frames and not directly in the root
- *         document. The selectors are ordered starting with the root document and
- *         ending with the deepest nested frame or shadow root.
- */
-const findAllCssSelectors = function(node) {
-  const selectors = [];
-  while (node) {
-    selectors.unshift(findCssSelector(node));
-    node = getSelectorParent(node);
-  }
-
-  return selectors;
-};
-exports.findAllCssSelectors = findAllCssSelectors;
 
 /**
  * Get the full CSS path for a given element.

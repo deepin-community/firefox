@@ -8,7 +8,7 @@ const TEST_PATH =
   "https://example.com/browser/devtools/client/webconsole/test/browser/";
 const TEST_URI = TEST_PATH + TEST_FILE;
 
-registerCleanupFunction(async function() {
+registerCleanupFunction(async function () {
   await new Promise(resolve => {
     Services.clearData.deleteData(Ci.nsIClearDataService.CLEAR_ALL, value =>
       resolve()
@@ -24,10 +24,10 @@ add_task(async function task() {
   const toolbox = await gDevTools.getToolboxForTab(currentTab);
 
   const xhrUrl = TEST_PATH + "test-data.json";
-  const onMessage = waitForMessage(hud, xhrUrl);
+  const onMessage = waitForMessageByType(hud, xhrUrl, ".network");
 
   // Fire an XHR POST request.
-  SpecialPowers.spawn(gBrowser.selectedBrowser, [], function() {
+  SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     content.wrappedJSObject.testXhrGet();
   });
 

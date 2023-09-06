@@ -6,9 +6,16 @@ addons-page-title = Lisäosien hallinta
 search-header =
     .placeholder = Etsi addons.mozilla.orgista
     .searchbuttonlabel = Etsi
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Hanki laajennukset ja teemat osoitteesta <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Hanki sanastot osoitteesta <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Hanki kielipaketit osoitteesta <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Tämäntyyppisiä lisäosia ei ole asennettuna
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Versio
 detail-last-updated =
     .label = Päivitetty viimeksi
+addon-detail-description-expand = Näytä lisää
+addon-detail-description-collapse = Näytä vähemmän
 detail-contributions-description = Tämän lisäosan kehittäjä toivoo, että tukisit lisäosan kehitystyötä pienellä summalla.
 detail-contributions-button = Auta
     .title = Auta lisäosan kehitystyössä
@@ -132,6 +141,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Tuoreet päivitykset
 addon-category-recent-updates-title =
     .title = Tuoreet päivitykset
+addon-category-sitepermission = Sivuston käyttöoikeudet
+addon-category-sitepermission-title =
+    .title = Sivuston käyttöoikeudet
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Sivuston { $host } oikeudet
 
 ## These are global warnings
 
@@ -142,6 +158,8 @@ extensions-warning-check-compatibility-button = Ota käyttöön
 extensions-warning-update-security = Lisäosien päivitysten turvallisuustarkistus ei ole käytössä. Päivitykset voivat saastuttaa koneesi.
 extensions-warning-update-security-button = Ota käyttöön
     .title = Ota lisäosien päivitysten turvallisuustarkistus käyttöön
+extensions-warning-imported-addons = Viimeistele { -brand-short-name }iin tuotujen laajennusten asennus.
+extensions-warning-imported-addons-button = Asenna laajennukset
 
 ## Strings connected to add-on updates
 
@@ -188,7 +206,7 @@ addon-open-about-debugging = Jäljitä lisäosien virheitä
 # This is displayed in the page options menu
 addon-manage-extensions-shortcuts = Hallitse laajennusten pikanäppäimiä
     .accesskey = t
-shortcuts-no-addons = Yhtäkään lisäosaa ei ole otettu käyttöön.
+shortcuts-no-addons = Yhtäkään laajennusta ei ole otettu käyttöön.
 shortcuts-no-commands = Seuraavilla laajennuksilla ei ole pikanäppäimiä:
 shortcuts-input =
     .placeholder = Kirjoita näppäinyhdistelmä
@@ -210,6 +228,8 @@ shortcuts-duplicate-warning-message = { $shortcut } on käytössä pikanäppäim
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = { $addon } käyttää tätä jo
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Näytä { $numberToShow } lisää
@@ -275,15 +295,15 @@ permissions-addon-button = Oikeudet
 extension-enabled-heading = Käytössä
 extension-disabled-heading = Ei käytössä
 theme-enabled-heading = Käytössä
-theme-disabled-heading = Ei käytössä
-theme-monochromatic-heading = Väriteemat
-theme-monochromatic-subheading = Eloisat uudet väriteemat { -brand-product-name }ilta. Saatavilla rajoitetun ajan.
+theme-disabled-heading2 = Tallennetut teemat
 plugin-enabled-heading = Käytössä
 plugin-disabled-heading = Ei käytössä
 dictionary-enabled-heading = Käytössä
 dictionary-disabled-heading = Ei käytössä
 locale-enabled-heading = Käytössä
 locale-disabled-heading = Ei käytössä
+sitepermission-enabled-heading = Käytössä
+sitepermission-disabled-heading = Pois käytöstä
 always-activate-button = Aktivoi aina
 never-activate-button = Älä koskaan aktivoi
 addon-detail-author-label = Tekijä
@@ -324,6 +344,10 @@ addon-detail-updates-radio-on = Käytössä
 addon-detail-updates-radio-off = Ei käytössä
 addon-detail-update-check-label = Tarkista päivitykset
 install-update-button = Päivitä
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -332,6 +356,20 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Kun sallittu, laajennus voi seurata, mitä teet verkossa yksityisen selauksen tilassa. <a data-l10n-name="learn-more">Lue lisää</a>
 addon-detail-private-browsing-allow = Salli
 addon-detail-private-browsing-disallow = Älä salli
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Salli
+addon-detail-quarantined-domains-disallow = Älä salli
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -360,6 +398,9 @@ addon-permissions-optional = Valinnaiset käyttöoikeudet lisätoiminnoille:
 addon-permissions-learnmore = Lue lisää käyttöoikeuksista
 recommended-extensions-heading = Suositellut laajennukset
 recommended-themes-heading = Suositellut teemat
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Antaa seuraavat ominaisuudet sivustolle <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Haluatko kokeilla itse? <a data-l10n-name="link">Voit luoda oman teeman Firefox Color -ohjelmalla.</a>
@@ -372,10 +413,29 @@ plugin-heading = Liitännäisten hallinta
 dictionary-heading = Sanastojen hallinta
 locale-heading = Kielten hallinta
 updates-heading = Päivitysten hallinta
+sitepermission-heading = Hallitse sivustojen oikeuksia
 discover-heading = Tee { -brand-short-name }ista mieleisesi
 shortcuts-heading = Laajennusten pikanäppäinten hallinta
 default-heading-search-label = Etsi lisää lisäosia
 addons-heading-search-input =
-    .placeholder = Etsi addons.mozilla.orgista
+    .placeholder = Etsi addons.mozilla.org-sivustolta
 addon-page-options-button =
     .title = Työkaluja kaikille lisäosille
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = Lisäosa { $name } on epäyhteensopiva { -brand-short-name }in version { $version } kanssa.
+details-notification-incompatible-link = Lisätietoja
+details-notification-unsigned-and-disabled = Lisäosaa { $name } ei ole varmennettu käytettäväksi { -brand-short-name }issa ja on otettu pois päältä.
+details-notification-unsigned-and-disabled-link = Lisätietoja
+details-notification-unsigned = Lisäosaa { $name } ei ole varmennettu käytettäväksi { -brand-short-name }issa. Ole varovainen.
+details-notification-unsigned-link = Lisätietoja
+details-notification-blocked = Lisäosa { $name } poistettiin käytöstä turvallisuus- tai vakausongelmien takia.
+details-notification-blocked-link = Lisätietoja
+details-notification-softblocked = Lisäosa { $name } aiheuttaa tunnetusti turvallisuus- tai vakausongelmia.
+details-notification-softblocked-link = Lisätietoja
+details-notification-gmp-pending = { $name } asennetaan kohta.

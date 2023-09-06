@@ -3,13 +3,23 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import Modal from "./shared/Modal";
-import classnames from "classnames";
 import { formatKeyShortcut } from "../utils/text";
+const classnames = require("devtools/client/shared/classnames.js");
 
 import "./ShortcutsModal.css";
 
+const isMacOS = Services.appinfo.OS === "Darwin";
+
 export class ShortcutsModal extends Component {
+  static get propTypes() {
+    return {
+      enabled: PropTypes.bool.isRequired,
+      handleClose: PropTypes.func.isRequired,
+    };
+  }
+
   renderPrettyCombos(combo) {
     return combo
       .split(" ")
@@ -71,10 +81,6 @@ export class ShortcutsModal extends Component {
           formatKeyShortcut(L10N.getStr("sources.search.key2"))
         )}
         {this.renderShorcutItem(
-          L10N.getStr("shortcuts.searchAgain2"),
-          formatKeyShortcut(L10N.getStr("sourceSearch.search.again.key3"))
-        )}
-        {this.renderShorcutItem(
           L10N.getStr("shortcuts.projectSearch2"),
           formatKeyShortcut(L10N.getStr("projectTextSearch.key"))
         )}
@@ -92,9 +98,7 @@ export class ShortcutsModal extends Component {
 
   renderShortcutsContent() {
     return (
-      <div
-        className={classnames("shortcuts-content", this.props.additionalClass)}
-      >
+      <div className={classnames("shortcuts-content", isMacOS ? "mac" : "")}>
         <div className="shortcuts-section">
           <h2>{L10N.getStr("shortcuts.header.editor")}</h2>
           {this.renderEditorShortcuts()}

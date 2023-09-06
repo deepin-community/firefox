@@ -50,6 +50,7 @@ app-basics-multi-process-support = Tetingkap Multiproses
 app-basics-enterprise-policies = Polisi Syarikat
 app-basics-key-mozilla = Mozilla Location Service Key
 app-basics-safe-mode = Mod Selamat
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Papar dalam Finder
@@ -111,6 +112,8 @@ media-device-format = Format
 media-device-channels = Saluran
 media-device-rate = Kadar
 media-device-latency = Kependaman
+
+## Codec support table
 
 ##
 

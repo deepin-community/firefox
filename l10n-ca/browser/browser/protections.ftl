@@ -65,22 +65,20 @@ cryptominer-tab-content = Els miners de criptomonedes utilitzen la potència de 
 protections-close-button2 =
     .aria-label = Tanca
     .title = Tanca
-  
+
 mobile-app-title = Bloqueu els elements de seguiment de publicitat en més dispositius
 mobile-app-card-content = Utilitzeu el navegador mòbil amb protecció integrada contra els anuncis que us fan seguiment.
 mobile-app-links = Navegador { -brand-product-name } per a l'<a data-l10n-name="android-mobile-inline-link">Android</a> i l'<a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = No oblideu mai més cap contrasenya
-lockwise-title-logged-in2 = Gestió de contrasenyes
-lockwise-header-content = { -lockwise-brand-name } emmagatzema les contrasenyes de forma segura en el vostre navegador.
+passwords-title-logged-in = Gestiona les contrasenyes
+passwords-header-content = El { -brand-product-name } emmagatzema les contrasenyes de forma segura en el vostre navegador.
 lockwise-header-content-logged-in = Deseu i sincronitzeu les contrasenyes de forma segura en tots els vostres dispositius.
-protection-report-save-passwords-button = Desa les contrasenyes
-    .title = Desa les contrasenyes en el { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Gestiona les contrasenyes
-    .title = Gestiona les contrasenyes en el { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Accediu a les vostres contrasenyes des de qualsevol lloc
-lockwise-no-logins-card-content = Utilitzeu en qualsevol dispositiu les contrasenyes desades en el { -brand-short-name }.
-lockwise-app-links = { -lockwise-brand-name } per a l'<a data-l10n-name="lockwise-android-inline-link">Android</a> i l'<a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Desa les contrasenyes
+    .title = Desa les contrasenyes
+protection-report-passwords-manage-passwords-button = Gestiona les contrasenyes
+    .title = Gestiona les contrasenyes
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

@@ -30,7 +30,7 @@ url-classifier-cache-show-entries = Afichar las dintradas
 url-classifier-cache-entries = Dintradas de l'escondedor
 url-classifier-cache-prefix = Prefixe
 url-classifier-cache-ncache-expiry = Expiracion d'escondedor negativa
-url-classifier-cache-fullhash = Emprenta completa
+url-classifier-cache-fullhash = Emprenta complèta
 url-classifier-cache-pcache-expiry = Expiracion d'escondedor positiva
 url-classifier-debug-title = Desbugatge
 url-classifier-debug-module-btn = Activar los moduls de jornalizacion
@@ -50,5 +50,9 @@ url-classifier-disabled = Desactivat
 url-classifier-updating = mesa a jorn en cors
 url-classifier-cannot-update = mesa a jorn impossibla
 url-classifier-success = succès
+
+## Variables
+##   $error (string) - Error message
+
 url-classifier-update-error = error de mesa a jorn ({ $error })
 url-classifier-download-error = error de telecargament ({ $error })

@@ -25,14 +25,24 @@ class AndroidDecoderModule : public PlatformDecoderModule {
   already_AddRefed<MediaDataDecoder> CreateAudioDecoder(
       const CreateDecoderParams& aParams) override;
 
-  bool SupportsMimeType(const nsACString& aMimeType,
-                        DecoderDoctorDiagnostics* aDiagnostics) const override;
+  media::DecodeSupportSet SupportsMimeType(
+      const nsACString& aMimeType,
+      DecoderDoctorDiagnostics* aDiagnostics) const override;
 
-  static bool SupportsMimeType(const nsACString& aMimeType);
+  static media::DecodeSupportSet SupportsMimeType(const nsACString& aMimeType);
 
   static nsTArray<nsCString> GetSupportedMimeTypes();
 
   static void SetSupportedMimeTypes(nsTArray<nsCString>&& aSupportedTypes);
+
+  media::DecodeSupportSet Supports(
+      const SupportDecoderParams& aParams,
+      DecoderDoctorDiagnostics* aDiagnostics) const override;
+
+ protected:
+  bool SupportsColorDepth(
+      gfx::ColorDepth aColorDepth,
+      DecoderDoctorDiagnostics* aDiagnostics) const override;
 
  private:
   explicit AndroidDecoderModule(CDMProxy* aProxy = nullptr);
@@ -43,7 +53,7 @@ class AndroidDecoderModule : public PlatformDecoderModule {
 
 extern LazyLogModule sAndroidDecoderModuleLog;
 
-const nsCString TranslateMimeType(const nsACString& aMimeType);
+nsCString TranslateMimeType(const nsACString& aMimeType);
 
 }  // namespace mozilla
 

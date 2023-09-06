@@ -63,8 +63,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } 使用者
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = 將您的書籤同步帶著走。
@@ -92,24 +90,6 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = 閱讀發行公告
 
-## Search Bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 # Variables:
@@ -121,20 +101,6 @@ cfr-doorhanger-milestone-heading2 =
     }
 cfr-doorhanger-milestone-ok-button = 檢視全部
     .accesskey = S
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = 關閉
     .accesskey = C
 
@@ -149,13 +115,6 @@ cfr-doorhanger-doh-secondary-button = 停用
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = 您的隱私權相當重要。{ -brand-short-name } 現在起會將您開啟的各個網站分別隔離於沙盒中，讓駭客更難偷到您的密碼、信用卡號、或其他敏感資訊。
-cfr-doorhanger-fission-header = 網站隔離
-cfr-doorhanger-fission-primary-button = 好，知道了
-    .accesskey = O
-cfr-doorhanger-fission-secondary-button = 了解更多
-    .accesskey = L
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = 此網站上的影片可能無法於這個版本的 { -brand-short-name } 正常播放。若需完整支援影片播放，請更新 { -brand-short-name }。
@@ -163,15 +122,134 @@ cfr-doorhanger-video-support-header = 更新 { -brand-short-name } 來播放影�
 cfr-doorhanger-video-support-primary-button = 立即更新
     .accesskey = U
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
 spotlight-public-wifi-vpn-header = 看來您正使用的是公共 Wi-Fi
 spotlight-public-wifi-vpn-body = VPN 可幫助您在公共場所（例如機場、咖啡廳等）上網時，隱藏您的實際所在位置與上網行為紀錄，請考慮使用。
 spotlight-public-wifi-vpn-primary-button = 使用 { -mozilla-vpn-brand-name } 保持隱私
     .accesskey = S
 spotlight-public-wifi-vpn-link = 現在不要
     .accesskey = N
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = 更好的網路環境，從您開始
+spotlight-better-internet-body = 當您使用 { -brand-short-name } 就代表您對更好、更開放、任何人都可以使用的網路環境投下贊成票。
+spotlight-peace-mind-header = 讓我們保護您
+spotlight-peace-mind-body = 每個月，{ -brand-short-name } 平均能幫每位使用者封鎖超過 3,000 組追蹤器。為什麼要封鎖？這是因為沒有任何東西（尤其是像追蹤器這樣影響隱私權的東西）應該擋在您跟一個好的網路環境之間。
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] 固定在 Dock
+       *[other] 釘選到工作列
+    }
+spotlight-pin-secondary-button = 現在不要
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+mr2022-background-update-toast-title = 全新 { -brand-short-name }。更有隱私、更少追蹤器，一切毫不妥協。
+mr2022-background-update-toast-text = 立即試用最新版 { -brand-short-name }，升級使用我們最強大的反追蹤保護功能。
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it
+# using a variable font like Arial): the button can only fit 1-2
+# additional characters, exceeding characters will be truncated.
+mr2022-background-update-toast-primary-button-label = 立即開啟 { -brand-shorter-name }
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = 待會提醒我
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = 試試看
+    .accesskey = T
+firefoxview-cfr-secondarybutton = 現在不要
+    .accesskey = N
+firefoxview-cfr-header-v2 = 快速從結束的地方繼續
+firefoxview-cfr-body-v2 = 透過 { -firefoxview-brand-name } 快速取回最近關閉的分頁，另外還可以在裝置間無縫切換。
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = 跟 { -firefoxview-brand-name } 說嗨
+
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = 想要在手機上看到開啟的那個分頁嗎？可以直接開啟。需要再打開剛關閉的分頁嗎？點一下 { -firefoxview-brand-name } 馬上就回來。
+firefoxview-spotlight-promo-primarybutton = 看看原理是什麼
+firefoxview-spotlight-promo-secondarybutton = 略過
+
+## Colorways expiry reminder CFR
+
+colorways-cfr-primarybutton = 選擇配色
+    .accesskey = C
+
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = 使用受改變了文化的聲音所啟發的 { -brand-short-name } 獨家配色來妝點您的瀏覽器。
+colorways-cfr-header-28days = 獨立之聲配色將於 1 月 16 日失效
+colorways-cfr-header-14days = 獨立之聲配色將於兩週後失效
+colorways-cfr-header-7days = 獨立之聲配色將於本週失效
+colorways-cfr-header-today = 獨立之聲配色將於今日失效
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-header = 要允許 { -brand-short-name } 拒絕 Cookie 橫幅嗎？
+cfr-cbh-body = { -brand-short-name } 可以盡量自動拒絕 Cookie 橫幅。
+cfr-cbh-confirm-button = 拒絕 Cookie 橫幅
+    .accesskey = R
+cfr-cbh-dismiss-button = 現在不要
+    .accesskey = N
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+july-jam-headline = 讓我們保護您
+july-jam-body = 每個月，{ -brand-short-name } 平均都會為每位使用者封鎖超過 3,000 組追蹤器，讓您上網更快、更安全。
+july-jam-set-default-primary = 用 { -brand-short-name } 開啟我的鏈結
+fox-doodle-pin-headline = 歡迎回來
+
+# “indie” is short for the term “independent”.
+# In this instance, free from outside influence or control.
+fox-doodle-pin-body = 小提醒：您可以把最愛的獨立瀏覽器釘選起來，點一下即可開啟。
+fox-doodle-pin-primary = 用 { -brand-short-name } 開啟我的鏈結
+fox-doodle-pin-secondary = 現在不要
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+set-default-pdf-handler-headline = <strong>現在起，可使用 { -brand-short-name } 開啟 PDF 檔案了。</strong>可直接在瀏覽器中編輯或簽署表格內容。若要變更此行為，請到設定當中搜尋「PDF」。
+set-default-pdf-handler-primary = 知道了！
+
+## FxA sync CFR
+
+fxa-sync-cfr-header = 打算要換新裝置？
+fxa-sync-cfr-body = 確保您最新的書籤、密碼、分頁能在開啟新的 { -brand-product-name } 瀏覽器時隨身帶著走。
+fxa-sync-cfr-primary = 更多資訊
+    .accesskey = L
+fxa-sync-cfr-secondary = 待會提醒我
+    .accesskey = R
+
+## Device Migration FxA Spotlight
+
+device-migration-fxa-spotlight-header = 使用的是舊裝置？
+device-migration-fxa-spotlight-body = 備份您的資料，以確保不會遺失書籤、密碼等重要資訊。尤其是換新裝置轉移資料時更要小心。
+device-migration-fxa-spotlight-primary-button = 如何備份我的資料
+device-migration-fxa-spotlight-link = 待會提醒我

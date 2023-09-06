@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Profil Oluşturma Sihirbazı
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Giriş
-       *[other] { create-profile-window.title } bölümüne hoş geldiniz
+       *[other] { create-profile-window2.title } bölümüne hoş geldiniz
     }
 
 profile-creation-explanation-1 = { -brand-short-name }, ayarlarınız ve tercihlerinizle ilgili bilgileri kişisel profilinizde saklar.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Bitiş
-       *[other] { create-profile-window.title } tamamlanıyor
+       *[other] { create-profile-window2.title } tamamlanıyor
     }
 
 profile-creation-intro = Birden fazla profil oluşturursanız bunları profil adlarıyla ayırabilirsiniz. Burada sunulan adı veya kendi seçtiğiniz bir adı kullanabilirsiniz.

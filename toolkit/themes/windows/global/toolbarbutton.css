@@ -11,56 +11,32 @@
 toolbarbutton {
   appearance: auto;
   -moz-default-appearance: toolbarbutton;
-  -moz-box-align: center;
-  -moz-box-pack: center;
   margin: 0;
   padding: 3px;
 }
 
 .toolbarbutton-text {
   margin: 0;
-  text-align: center;
-}
-
-toolbarbutton.tabbable {
-  -moz-user-focus: normal !important;
 }
 
 toolbarbutton:-moz-focusring {
-  outline: 1px dotted;
-  outline-offset: -2px;
+  outline: var(--default-focusring);
+  outline-offset: calc(-1 * var(--default-focusring-width) - 1px);
 }
 
-toolbarbutton[disabled="true"] {
+toolbarbutton:where([disabled="true"]) {
   color: GrayText;
   text-shadow: none;
 }
 
-@media (-moz-windows-classic) {
-  @media not (prefers-contrast) {
-    toolbarbutton[disabled="true"] {
-      text-shadow: 1px 1px ThreeDHighlight;
-    }
-  }
-  toolbarbutton[disabled="true"] {
-    color: ThreeDShadow;
-  }
-}
-
-@media (-moz-windows-default-theme) {
+@media not (prefers-contrast) {
   :root[lwtheme-image] toolbarbutton {
     text-shadow: none;
   }
-
-  :root[lwtheme-image] toolbarbutton:not([disabled="true"]) {
-    text-shadow: inherit;
-  }
 }
 
-@media (-moz-windows-default-theme: 0) {
-  :root[lwtheme-image] toolbarbutton:not([disabled="true"]) {
-    text-shadow: inherit;
-  }
+:root[lwtheme-image] toolbarbutton:not([disabled="true"]) {
+  text-shadow: inherit;
 }
 
 /* ::::: toolbarbutton menu ::::: */

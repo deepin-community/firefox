@@ -32,7 +32,7 @@ inactive-css-not-inline-or-tablecell = Bu eleman bir inline veya table-cell öğ
 
 inactive-css-property-because-of-display = Bu eleman <strong>{ $display }</strong> olarak görüntülendiği için <strong>{ $property }</strong> özelliğinin bu eleman üzerinde etkisi yoktur.
 
-inactive-css-not-display-block-on-floated = Bu eleman <strong>floated<strong> olduğu için <strong>display</strong> değeri motor tarafından <strong>block</strong> olarak değiştirildi.
+inactive-css-not-display-block-on-floated = Bu eleman <strong>floated</strong> olduğu için <strong>display</strong> değeri motor tarafından <strong>block</strong> olarak değiştirildi.
 
 inactive-css-property-is-impossible-to-override-in-visited = <strong>:visited</strong> kısıtlaması nedeniyle <strong>{ $property }</strong> geçersiz kılanamaz.
 
@@ -48,6 +48,10 @@ inactive-css-not-table = Bu eleman bir tablo olmadığı için <strong>{ $proper
 
 inactive-scroll-padding-when-not-scroll-container = Bu eleman scroll edilemediği için <strong>{ $property }</strong> özelliğinin bu eleman üzerinde etkisi yoktur.
 
+inactive-css-border-image = <strong>border-collapse</strong> özelliğinin ana tablo elemanında <strong>collapse</strong> olarak ayarlandığı dahili tablo elemanlarına <strong>{ $property }</strong> özelliği uygulanamayacağı için bu özellik bu eleman üzerinde hiçbir etkiye sahip değildir.
+
+inactive-css-ruby-element = <strong>{ $property }</strong> bir ruby elemanı olduğundan bu eleman üzerinde hiçbir etkisi yoktur. Boyutu ruby metninin yazı tipi boyutuna göre belirlenir.
+
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain how
 ## the problem can be solved.
@@ -55,8 +59,6 @@ inactive-scroll-padding-when-not-scroll-container = Bu eleman scroll edilemediğ
 inactive-css-not-grid-or-flex-container-fix = <strong>display:grid</strong> veya <strong>display:flex</strong> eklemeyi deneyin. { learn-more }
 
 inactive-css-not-grid-or-flex-container-or-multicol-container-fix = <strong>display:grid</strong>, <strong>display:flex</strong> veya <strong>columns:2</strong> eklemeyi deneyin. { learn-more }
-
-inactive-css-not-grid-or-flex-item-fix-2 = <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong> veya <strong>display:inline-flex</strong> eklemeyi deneyin. { learn-more }
 
 inactive-css-not-grid-or-flex-item-fix-3 = Bu elemanın üst elemanına <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong> veya <strong>display:inline-flex</strong> eklemeyi deneyin. { learn-more }
 
@@ -87,6 +89,10 @@ inactive-css-not-for-internal-table-elements-except-table-cells-fix = <strong>di
 inactive-css-not-table-fix = <strong>display:table</strong> veya <strong>display:inline-table</strong> eklemeyi deneyin. { learn-more }
 
 inactive-scroll-padding-when-not-scroll-container-fix = <strong>overflow:auto</strong>, <strong>overflow:scroll</strong> veya <strong>overflow:hidden</strong> eklemeyi deneyin. { learn-more }
+
+inactive-css-border-image-fix = Üst tablo elemanında özelliği kaldırın veya <strong>border-collapse</strong> değerini <strong>collapse</strong> dışında bir değerle değiştirin. { learn-more }
+
+inactive-css-ruby-element-fix = Ruby metninin <strong>font-size</strong> değerini değiştirmeyi deneyin. { learn-more }
 
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why

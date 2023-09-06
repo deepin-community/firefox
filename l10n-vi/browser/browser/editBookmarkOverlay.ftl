@@ -20,9 +20,15 @@ bookmark-overlay-choose =
     .label = Chọn…
 
 bookmark-overlay-folders-expander =
-    .tooltiptext = Hiện tất cả các thư mục chứa dấu trang
+    .tooltiptext = Hiển thị tất cả các thư mục chứa dấu trang
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Ẩn
+
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Hiển thị tất cả các thư mục chứa dấu trang
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Ẩn
 
 bookmark-overlay-new-folder-button =
     .label = Thư mục mới
@@ -36,9 +42,15 @@ bookmark-overlay-tags-empty-description =
     .placeholder = Ngăn cách nhãn bằng dấu phẩy
 
 bookmark-overlay-tags-expander =
-    .tooltiptext = Hiện tất cả các nhãn
+    .tooltiptext = Hiển thị tất cả các nhãn
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Ẩn
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Hiển thị tất cả các nhãn
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Ẩn
 
 bookmark-overlay-keyword-2 =
     .value = Từ khóa

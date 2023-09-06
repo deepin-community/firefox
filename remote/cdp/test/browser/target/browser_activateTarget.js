@@ -27,15 +27,11 @@ add_task(async function raisesWithUnknownTargetId({ client, tab }) {
 
 add_task(async function selectTabInOtherWindow({ client, tab }) {
   const { Target, target } = client;
-  is(
-    target.browsingContextId,
-    tab.linkedBrowser.browsingContext.id,
-    "Current target has expected browsing context id"
-  );
+
   const currentTargetId = target.id;
   const targets = await getDiscoveredTargets(Target);
   const filtered_targets = targets.filter(target => {
-    return target.targetInfo.targetId == currentTargetId;
+    return target.targetId == currentTargetId;
   });
   is(filtered_targets.length, 1, "The current target has been found");
   const initialTarget = filtered_targets[0];
@@ -64,7 +60,7 @@ add_task(async function selectTabInOtherWindow({ client, tab }) {
   try {
     is(newWindow, getFocusedNavigator(), "The new window is focused");
     await Target.activateTarget({
-      targetId: initialTarget.targetInfo.targetId,
+      targetId: initialTarget.targetId,
     });
     is(
       tab.ownerGlobal,

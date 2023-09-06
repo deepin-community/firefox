@@ -16,8 +16,6 @@ change-password-old = Am facal-faire làithreach:
 change-password-new = Am facal-faire ùr:
 change-password-reenter = Am faca-faire ùr (a-rithist):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Cha b’ urrainn dhuinn am facal-faire atharrachadh.
 pippki-incorrect-pw = Cha do chuir thu a-steach am facal-faire làithreach ceart. Feuch ris a-rithist.
 pippki-pw-change-ok = Chaidh am facal-faire atharrachadh.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Tha thu ann am modh FIPS an-dràsta. Feuma
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Ath-shuidhich am prìomh fhacal-faire
-    .style = width: 44em
+    .style = min-width: 44em
 reset-password-button-label =
     .label = Ath-shuidhich
-
 reset-primary-password-text = Ma dh’fhalamhaicheas tu am prìomh fhacal-faire, thèid gach facal-faire airson làraichean-lìn is puist-dhealain, teisteanasan pearsanta is iuchraichean prìobhaideach air chall. A bheil thu cinnteach gu bheil thu airson am prìomh fhacal-faire agad ath-shuidheachadh?
 
 pippki-reset-password-confirmation-title = Ath-shuidhich am prìomh fhacal-faire
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Chaidh am prìomh fhacal-faire agad
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = A' luchdadh a-nuas teisteanas
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Chaidh iarraidh ort earbsa a chur ann an ùghdarras teisteanachaidh (ÙT) ùr.
 download-cert-trust-ssl =
     .label = Cuir earbsa san ùghdarras teisteanachaidh seo gus làraichean-lìn aithneachadh.
@@ -77,7 +74,8 @@ set-password-reminder = Cudromach: ma dhìochuimhnicheas tu facal-faire lethbhre
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Dearbhadh le tòcan dìonta
-protected-auth-msg = Dearbhaich an tòcan. Tha an dòigh dearbhachaidh a' crochadh air seòrsan an tòcain agad.
-protected-auth-token = Tòcan:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Please authenticate to the token “{ $tokenName }”. How to do so depends on the token (for example, using a fingerprint reader or entering a code with a keypad).

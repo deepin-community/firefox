@@ -13,6 +13,26 @@ accessibility-keyboard-header = Keyboard
 
 ## Text entries that are used as text alternative for icons that depict accessibility isses.
 
+
+## These strings are used in the overlay displayed when running an audit in the accessibility panel
+
+accessibility-progress-initializing = Nag-uumpisa…
+    .aria-valuetext = Nag-uumpisa…
+
+# This string is displayed in the audit progress bar in the accessibility panel.
+# Variables:
+#   $nodeCount (Integer) - The number of nodes for which the audit was run so far.
+accessibility-progress-progressbar =
+    { $nodeCount ->
+        [one] Nagche-check ng { $nodeCount } node
+       *[other] Nagche-check ng { $nodeCount } node
+    }
+
+accessibility-progress-finishing = Tinatapos na…
+    .aria-valuetext = Tinatapos na…
+
+## Text entries that are used as text alternative for icons that depict accessibility issues.
+
 accessibility-warning =
     .alt = Babala
 

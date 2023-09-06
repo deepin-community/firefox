@@ -5,13 +5,10 @@
 
 // Test adjusting the created time with different playback rate of animation.
 
-add_task(async function() {
+add_task(async function () {
   await addTab(URL_ROOT + "doc_custom_playback_rate.html");
-  const {
-    animationInspector,
-    inspector,
-    panel,
-  } = await openAnimationInspector();
+  const { animationInspector, inspector, panel } =
+    await openAnimationInspector();
 
   info(
     "Pause the all animation and set current time to middle in order to check " +
@@ -30,7 +27,7 @@ add_task(async function() {
   info("Change the playback rate to x10 after selecting '.div2'");
   await selectNode(".div2", inspector);
   await waitUntil(() => panel.querySelectorAll(".animation-item").length === 1);
-  clickOnPlaybackRateSelector(animationInspector, panel, 10);
+  await changePlaybackRateSelector(animationInspector, panel, 10);
 
   info("Check each adjusted result of animations after selecting 'body' again");
   await selectNode("body", inspector);

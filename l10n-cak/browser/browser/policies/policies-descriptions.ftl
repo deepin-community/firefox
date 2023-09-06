@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Kejikib'äx taq ominyos ya'on q'ij chi ke richin 
 
 policy-AppAutoUpdate = Ketzij o kechup ri ruyonil kik'exoj taq chokoy.
 
+policy-AppUpdatePin = Tiq'at chi ri { -brand-short-name } tik'ex rik'in man tik'o chuwäch ri ruwäch k'o.
+
 policy-AppUpdateURL = Tiya' jun ichinan URL richin nik'ex ri chokoy.
 
 policy-Authentication = Tib'an runuk'ulem ri chijun jikib'an pa taq ajk'amaya'l ruxaq nikiya' q'ij.
@@ -39,6 +41,9 @@ policy-CaptivePortal = Titz'ij o tichup ri rutob'al ri chapon portal.
 policy-CertificatesDescription = Ketz'aqatisäx taq iqitzijib'äl o ke'okisäx tz'aqatisan taq iqitzijib'äl.
 
 policy-Cookies = Niya' o man niya' ta q'ij chi ke ri ajk'amaya'l taq ruxaq richin nikijikib'a' taq kaxlanwäy.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Kejikib'äx taq na'oj kiximon kik'in ri taq k'wayöl.
 
 policy-DisabledCiphers = Kechup ewan rusik'ixik.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = We qitzij, man nitikïr ta nitz'uk jun a
 
 policy-DisablePasswordReveal = Man tiya' q'ij chi kek'ut ri ewan taq tzij pa yakon taq tikirib'äl molojri'ïl.
 
-policy-DisablePocket = Tichup ri samaj richin yeyak taq ajk'amaya'l ruxaq pa Pocket.
+policy-DisablePocket2 = Tichup ri samaj richin yeyak taq ajk'amaya'l ruxaq pa { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Tichup  ri Ichinan Okem pa K'amaya'l.
 
@@ -112,9 +117,7 @@ policy-ExtensionSettings = Kenuk'samajiïx ronojel ri taq rub'anikil kiyakik taq
 
 policy-ExtensionUpdate = Ketzij o kechup ri ruyonil kik'exoj taq k'amal.
 
-policy-FirefoxHome = Tib'an runuk'ulem Rutikirib'al Firefox.
-
-policy-FlashPlugin = Niya' q'ij o man niya' ta q'ij nokisäx ri Flash nak'ab'äl.
+policy-FirefoxHome2 = Tib'an runuk'ulem { -firefox-home-brand-name }.
 
 policy-Handlers = Tinuk'samajïx rajchajinela' chokoy k'o wi.
 
@@ -184,9 +187,6 @@ policy-SearchEngines = Tib'an runuk'ulem ri kanob'äl. Re na'ojil re' xa xe okel
 
 policy-SearchSuggestEnabled = Titzij o tichup ri kichilab'exik kanoxïk.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Keyak PKCS #11 taq juperaj.
-
 policy-ShowHomeButton = Tik'ut ri rupitz'b'al tikirib'al pa ri rukajtz'ik samajib'äl.
 
 policy-SSLVersionMax = Tijikib'äx ri nïm ruwäch SSL.
@@ -196,6 +196,8 @@ policy-SSLVersionMin = Tijikib'äx ri ko'öl ruwäch SSL
 policy-SupportMenu = Titz'aqatisäx jun ruch'akulal ruk'utsamaj ichinan tob'äl pa ruk'utsamaj tob'äl.
 
 policy-UserMessaging = Man tik'ut jujun taq rutzijol chuwa ri winäq.
+
+policy-UseSystemPrintDialog = Titz'jb'äl rik'in ri rutzijonem rutz'ajb'axik q'inoj.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Tiq'at ri tz'etoj rik'in ajk'amaya'l ruxaq. Tatz'eta' ri ruwujil richin nawetamaj ch'aqa' chik rutzijoxik rub'anikil.

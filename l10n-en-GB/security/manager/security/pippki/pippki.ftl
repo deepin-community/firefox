@@ -16,8 +16,6 @@ change-password-old = Current password:
 change-password-new = New password:
 change-password-reenter = New password (again):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Unable to change password.
 pippki-incorrect-pw = You did not enter the correct current password. Please try again.
 pippki-pw-change-ok = Password successfully changed.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = You are currently in FIPS mode. FIPS requi
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Reset Primary Password
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Reset
-
 reset-primary-password-text = If you reset your Primary Password, all your stored web and e-mail passwords, personal certificates, and private keys will be forgotten. Are you sure you want to reset your Primary Password?
 
 pippki-reset-password-confirmation-title = Reset Primary Password
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Your Primary Password has been rese
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Downloading Certificate
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = You have been asked to trust a new Certificate Authority (CA).
 download-cert-trust-ssl =
     .label = Trust this CA to identify web sites.
@@ -77,7 +74,8 @@ set-password-reminder = Important: If you forget your certificate backup passwor
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Protected Token Authentication
-protected-auth-msg = Please authenticate to the token. Authentication method depends on the type of your token.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Please authenticate to the token “{ $tokenName }”. How to do so depends on the token (for example, using a fingerprint reader or entering a code with a keypad).

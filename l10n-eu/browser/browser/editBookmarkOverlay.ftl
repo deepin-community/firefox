@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Ezkutatu
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Ikusi laster-marka karpeta guztiak
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Ezkutatu
+
 bookmark-overlay-new-folder-button =
     .label = Karpeta berria
     .accesskey = b
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Ikusi etiketa guztiak
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Ezkutatu
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Ikusi etiketa guztiak
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Ezkutatu
 
 bookmark-overlay-keyword-2 =
     .value = Gako-hitza

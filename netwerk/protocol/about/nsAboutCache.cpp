@@ -49,12 +49,11 @@ nsresult nsAboutCache::Channel::Init(nsIURI* aURI, nsILoadInfo* aLoadInfo) {
   mCancel = false;
 
   nsCOMPtr<nsIInputStream> inputStream;
-  rv = NS_NewPipe(getter_AddRefs(inputStream), getter_AddRefs(mStream), 16384,
-                  (uint32_t)-1,
-                  true,  // non-blocking input
-                  false  // blocking output
+  NS_NewPipe(getter_AddRefs(inputStream), getter_AddRefs(mStream), 16384,
+             (uint32_t)-1,
+             true,  // non-blocking input
+             false  // blocking output
   );
-  if (NS_FAILED(rv)) return rv;
 
   nsAutoCString storageName;
   rv = ParseURI(aURI, storageName);
@@ -84,9 +83,11 @@ nsresult nsAboutCache::Channel::Init(nsIURI* aURI, nsILoadInfo* aLoadInfo) {
       "<head>\n"
       "  <title>Network Cache Storage Information</title>\n"
       "  <meta charset=\"utf-8\">\n"
+      "  <meta name=\"color-scheme\" content=\"light dark\">\n"
       "  <meta http-equiv=\"Content-Security-Policy\" content=\"default-src "
       "chrome:; object-src 'none'\"/>\n"
-      "  <link rel=\"stylesheet\" href=\"chrome://global/skin/about.css\"/>\n"
+      "  <link rel=\"stylesheet\" "
+      "href=\"chrome://global/skin/in-content/info-pages.css\"/>\n"
       "  <link rel=\"stylesheet\" "
       "href=\"chrome://global/skin/aboutCache.css\"/>\n"
       "</head>\n"
@@ -117,7 +118,7 @@ NS_IMETHODIMP nsAboutCache::Channel::AsyncOpen(nsIStreamListener* aListener) {
   rv = VisitNextStorage();
   if (NS_FAILED(rv)) return rv;
 
-  rv = NS_MaybeOpenChannelUsingAsyncOpen(mChannel, aListener);
+  rv = mChannel->AsyncOpen(aListener);
   if (NS_FAILED(rv)) return rv;
 
   return NS_OK;
@@ -295,10 +296,10 @@ nsAboutCache::Channel::OnCacheStorageInfo(uint32_t aEntryCount,
     if (aEntryCount != 0) {  // Add the "List Cache Entries" link
       mBuffer.AppendLiteral(
           "  <tr>\n"
-          "    <th><a href=\"about:cache?storage=");
+          "    <td colspan=\"2\"><a href=\"about:cache?storage=");
       nsAppendEscapedHTML(mStorageName, mBuffer);
       mBuffer.AppendLiteral(
-          "\">List Cache Entries</a></th>\n"
+          "\">List Cache Entries</a></td>\n"
           "  </tr>\n");
     }
   }
@@ -324,12 +325,10 @@ nsAboutCache::Channel::OnCacheStorageInfo(uint32_t aEntryCount,
 }
 
 NS_IMETHODIMP
-nsAboutCache::Channel::OnCacheEntryInfo(nsIURI* aURI,
-                                        const nsACString& aIdEnhance,
-                                        int64_t aDataSize, int32_t aFetchCount,
-                                        uint32_t aLastModified,
-                                        uint32_t aExpirationTime, bool aPinned,
-                                        nsILoadContextInfo* aInfo) {
+nsAboutCache::Channel::OnCacheEntryInfo(
+    nsIURI* aURI, const nsACString& aIdEnhance, int64_t aDataSize,
+    int64_t aAltDataSize, uint32_t aFetchCount, uint32_t aLastModified,
+    uint32_t aExpirationTime, bool aPinned, nsILoadContextInfo* aInfo) {
   // We need mStream for this
   if (!mStream || mCancel) {
     // Returning a failure from this callback stops the iteration
@@ -343,6 +342,7 @@ nsAboutCache::Channel::OnCacheEntryInfo(nsIURI* aURI,
         "  <colgroup>\n"
         "   <col id=\"col-key\">\n"
         "   <col id=\"col-dataSize\">\n"
+        "   <col id=\"col-altDataSize\">\n"
         "   <col id=\"col-fetchCount\">\n"
         "   <col id=\"col-lastModified\">\n"
         "   <col id=\"col-expires\">\n"
@@ -352,6 +352,7 @@ nsAboutCache::Channel::OnCacheEntryInfo(nsIURI* aURI,
         "    <tr>\n"
         "      <th>Key</th>\n"
         "      <th>Data size</th>\n"
+        "      <th>Alternative Data size</th>\n"
         "      <th>Fetch count</th>\n"
         "      <th>Last Modifed</th>\n"
         "      <th>Expires</th>\n"
@@ -409,6 +410,11 @@ nsAboutCache::Channel::OnCacheEntryInfo(nsIURI* aURI,
   // Content length
   mBuffer.AppendLiteral("    <td>");
   mBuffer.AppendInt(aDataSize);
+  mBuffer.AppendLiteral(" bytes</td>\n");
+
+  // Length of alternative content
+  mBuffer.AppendLiteral("    <td>");
+  mBuffer.AppendInt(aAltDataSize);
   mBuffer.AppendLiteral(" bytes</td>\n");
 
   // Number of accesses
@@ -508,13 +514,13 @@ nsresult nsAboutCache::Channel::FlushBuffer() {
 
 NS_IMETHODIMP
 nsAboutCache::GetURIFlags(nsIURI* aURI, uint32_t* result) {
-  *result = nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT;
+  *result = nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
+            nsIAboutModule::IS_SECURE_CHROME_UI;
   return NS_OK;
 }
 
 // static
-nsresult nsAboutCache::Create(nsISupports* aOuter, REFNSIID aIID,
-                              void** aResult) {
+nsresult nsAboutCache::Create(REFNSIID aIID, void** aResult) {
   RefPtr<nsAboutCache> about = new nsAboutCache();
   return about->QueryInterface(aIID, aResult);
 }

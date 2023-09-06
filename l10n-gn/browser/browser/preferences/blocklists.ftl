@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = Tysýi jejoko
-    .style = width: 55em
+    .style = min-width: 55em
 
 blocklist-description = Eiporavo tysýi { -brand-short-name } oipurúva ojoko hag̃ua umi tapykuehoha ñandutípe. Tysyikuéra ome’ẽva <a data-l10n-name="disconnect-link" title="Disconnect">Pe’a</a>.
 blocklist-close-key =

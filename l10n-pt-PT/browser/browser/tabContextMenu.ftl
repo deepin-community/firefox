@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Selecionar todos os separadores
     .accesskey = S
+tab-context-play-tab =
+    .label = Reproduzir separador
+    .accesskey = e
+tab-context-play-tabs =
+    .label = Reproduzir separadores
+    .accesskey = z
 duplicate-tab =
     .label = Duplicar separador
     .accesskey = D
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Adicionar separadores aos marcadores…
     .accesskey = m
-bookmark-tab =
-    .label = Adicionar separador aos marcadores
-    .accesskey = m
+tab-context-bookmark-tab =
+    .label = Adicionar separador aos marcadores…
+    .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = Abrir num novo separador contentor
     .accesskey = e
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Partilhar
     .accesskey = h
-tab-context-share-more =
-    .label = Mais…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -83,14 +87,6 @@ tab-context-reopen-closed-tabs =
            *[other] Reabrir separadores fechados
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Fechar separador
-            [one] Fechar separador
-           *[other] Fechar separadores
-        }
-    .accesskey = c
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

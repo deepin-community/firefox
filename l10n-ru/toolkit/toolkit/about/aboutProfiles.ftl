@@ -70,5 +70,5 @@ profiles-opendir =
     { PLATFORM() ->
         [macos] Показать в Finder
         [windows] Открыть папку
-       *[other] Открыть каталог
+       *[other] Открыть папку
     }

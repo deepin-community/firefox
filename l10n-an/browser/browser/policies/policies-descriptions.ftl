@@ -63,7 +63,7 @@ policy-DisablePrimaryPasswordCreation = Si ye activau, no se podrá crear una cl
 
 policy-DisablePasswordReveal = No permitir de revelar claus en inicios de sesión alzaus.
 
-policy-DisablePocket = Desactivar la función d'alzar pachinas web en Pocket.
+policy-DisablePocket2 = Desactivar la función d'alzar pachinas web en { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Desactivar la navegación privada.
 
@@ -105,10 +105,6 @@ policy-Extensions = Instalar, desinstalar u blocar extensions. La opción d'inst
 policy-ExtensionSettings = Chestionar totz los aspectos de la instalación d'extensions.
 
 policy-ExtensionUpdate = Activar u desactivar las actualizacións automaticas
-
-policy-FirefoxHome = Configurar la pachina d'inicio de Firefox.
-
-policy-FlashPlugin = Permitir u no l'uso d'a extensión de Flash.
 
 policy-Handlers = Configurar los chestors d'as aplicacions per defecto.
 
@@ -173,9 +169,6 @@ policy-SearchBar = Configura la localización por defecto en a barra de busqueda
 policy-SearchEngines = Configurar las opcions de motors de busqueda. Esta politica nomás ye accesible en a versión de soporte extendido (ESR).
 
 policy-SearchSuggestEnabled = Activar u desactivar las sucherencias de busqueda.
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instalar los módulos PKCS #11.
 
 policy-SSLVersionMax = Configurar la versión maxima de SSL.
 

@@ -9,8 +9,14 @@ reload-tab =
     .label = Абнавіць картку
     .accesskey = А
 select-all-tabs =
-    .label = Выбраць усе карткі
+    .label = Вылучыць усе карткі
     .accesskey = ы
+tab-context-play-tab =
+    .label = Прайграць картку
+    .accesskey = П
+tab-context-play-tabs =
+    .label = Прайграць карткі
+    .accesskey = р
 duplicate-tab =
     .label = Дубляваць картку
     .accesskey = Д
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Закладкі на карткі…
     .accesskey = л
-bookmark-tab =
-    .label = Дадаць закладку на картку
-    .accesskey = ь
+tab-context-bookmark-tab =
+    .label = Зрабіць закладку на картку…
+    .accesskey = і
 tab-context-open-in-new-container-tab =
     .label = Адкрыць у новай картцы ў кантэйнеры
     .accesskey = у
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Падзяліцца
     .accesskey = П
-tab-context-share-more =
-    .label = Больш…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -78,21 +82,12 @@ tab-context-share-more =
 tab-context-reopen-closed-tabs =
     .label =
         { $tabCount ->
-            [1] Перааадкрыць закрытыя карткі
-            [one] Перааадкрыць закрытую картку
-            [few] Перааадкрыць закрытыя карткі
-           *[many] Перааадкрыць закрытыя карткі
+            [1] Пераадкрыць закрытую картку
+            [one] Пераадкрыць закрытую картку
+            [few] Пераадкрыць закрытыя карткі
+           *[many] Пераадкрыць закрытыя карткі
         }
     .accesskey = з
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Закрыць картку
-            [one] Закрыць картку
-            [few] Закрыць карткі
-           *[many] Закрыць карткі
-        }
-    .accesskey = З
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

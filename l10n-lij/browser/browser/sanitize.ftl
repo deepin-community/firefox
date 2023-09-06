@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Preferense da scancelaçion da Stöia
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Scancella a stöia ciù neuva
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Scancelâ tutta a stöia
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = Quande sciòrto da { -brand-short-name }, o dove netezâ tutto in aotomatico
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = S
 
 data-section-label = Dæta
-
-item-site-preferences =
-    .label = Preferense di sciti
-    .accesskey = s
 
 item-offline-apps =
     .label = Dæti feua linia do scito

@@ -16,8 +16,8 @@ downloads-panel =
 # The style attribute has the width of the Downloads Panel expressed using
 # a CSS unit. The longest labels that should fit are usually those of
 # in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 74ch
+downloads-panel-items =
+    .style = width: 35em
 
 downloads-cmd-pause =
     .label = Паузирај
@@ -30,31 +30,66 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Откажи
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Прикажи у фасцикли
-    .accesskey = П
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] Прикажи у фасцикли
+           *[other] Прикажи у фасцикли
+        }
+    .accesskey = ф
 
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Прикажи у Finder-у
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = Отвори у системском прегледачу
     .accesskey = О
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-use-system-default-named =
+    .label = Отвори у { $handler }
+    .accesskey = у
 
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
     .label = Увек отварај у системском прегледачу
     .accesskey = У
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-always-use-system-default-named =
+    .label = Увек отвори у { $handler }
+    .accesskey = в
 
-downloads-cmd-show-button =
-    .tooltiptext = Прикажи у фасцикли
+##
 
-downloads-cmd-show-panel =
-    .aria-label = Прикажи у фасцикли
-downloads-cmd-show-description =
-    .value = Прикажи у фасцикли
+# We can use the same accesskey as downloads-cmd-always-use-system-default.
+# Both should not be visible in the downloads context menu at the same time.
+downloads-cmd-always-open-similar-files =
+    .label = Увек отвори сличне датотеке
+    .accesskey = в
+
+downloads-cmd-show-button-2 =
+    .tooltiptext =
+        { PLATFORM() ->
+            [macos] Прикажи у фасцикли
+           *[other] Прикажи у фасцикли
+        }
+
+downloads-cmd-show-panel-2 =
+    .aria-label =
+        { PLATFORM() ->
+            [macos] Прикажи у фасцикли
+           *[other] Прикажи у фасцикли
+        }
+downloads-cmd-show-description-2 =
+    .value =
+        { PLATFORM() ->
+            [macos] Прикажи у фасцикли
+           *[other] Прикажи у фасцикли
+        }
 
 downloads-cmd-show-downloads =
     .label = Отвори фасциклу са преузимањима
@@ -76,6 +111,9 @@ downloads-cmd-clear-list =
     .accesskey = б
 downloads-cmd-clear-downloads =
     .label = Обриши листу
+    .accesskey = О
+downloads-cmd-delete-file =
+    .label = Обриши
     .accesskey = О
 
 # This command is shown in the context menu when downloads are blocked.
@@ -126,11 +164,18 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
-downloading-file-opens-in-hours-and-minutes = Отварање за { $hours } ч. и { $minutes } мин…
-downloading-file-opens-in-minutes = Отварање за { $minutes } мин…
-downloading-file-opens-in-minutes-and-seconds = Отварање за { $minutes } мин. и { $seconds } сек…
-downloading-file-opens-in-seconds = Отварање за { $seconds } сек…
-downloading-file-opens-in-some-time = Отварање по завршетку…
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = Отварање за { $hours } ч. и { $minutes } мин…
+downloading-file-opens-in-minutes-2 =
+    .value = Отварање за { $minutes } мин…
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = Отварање за { $minutes } мин. и { $seconds } сек…
+downloading-file-opens-in-seconds-2 =
+    .value = Отварање за { $seconds } сек…
+downloading-file-opens-in-some-time-2 =
+    .value = Отварање по завршетку…
+downloading-file-click-to-open =
+    .value = Отвори када се заврши
 
 ##
 
@@ -156,6 +201,22 @@ downloads-history =
 downloads-details =
     .title = Детаљи о преузимању
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+downloads-files-not-downloaded =
+    { $num ->
+        [one] Датотека није преузета.
+        [few] { $num } датотеке нису преузете.
+       *[other] { $num } датотека није преузето.
+    }
+downloads-blocked-from-url = Преузимања са { $url } су блокирана.
+downloads-blocked-download-detailed-info = Страница { $url } покушала је да аутоматски преузме неколико датотека. Ово може бити грешка на страници, а можда жели да складишти нежељене датотеке на вашем уређају.
+
+##
+
 downloads-clear-downloads-button =
     .label = Обриши листу
     .tooltiptext = Брише завршена, отказана и неуспешна преузимања
@@ -168,3 +229,28 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Нема преузимања у овој сесији.
+
+# This is displayed in an item at the bottom of the Downloads Panel when there
+# are more downloads than can fit in the list in the panel.
+#   $count (number) - number of files being downloaded that are not shown in the
+#                     panel list.
+downloads-more-downloading =
+    { $count ->
+        [one] Још { $count } датотека се преузима
+        [few] Још { $count } датотеке се преузимају
+       *[other] Још { $count } датотека се преузима
+    }
+
+## Download errors
+
+downloads-error-alert-title = Грешка при преузимању
+# Variables:
+#   $extension (String): the name of the blocking extension.
+downloads-error-blocked-by = Преузимање није могуће сачувати јер га блокира { $extension }.
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = Није могуће сачувати преузету датотеку јер је блокира додатак.
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Не могу да сачувам преузимање јер је дошло до непознате грешке.
+    
+    Покушајте поново.

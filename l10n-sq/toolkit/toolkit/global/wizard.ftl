@@ -23,7 +23,7 @@ wizard-win-button-next =
     .accesskey = P
 
 wizard-macos-button-finish =
-    .label = U krye
+    .label = U bë
 wizard-linux-button-finish =
     .label = Përfundoje
 wizard-win-button-finish =

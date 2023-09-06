@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 ---
-loader: taskgraph.loader.transform:loader
+loader: gecko_taskgraph.loader.transform:loader
 
 transforms:
-    - taskgraph.transforms.release_deps:transforms
-    - taskgraph.transforms.release_mark_as_shipped:transforms
-    - taskgraph.transforms.task:transforms
+    - gecko_taskgraph.transforms.release_deps:transforms
+    - gecko_taskgraph.transforms.release_mark_as_shipped:transforms
+    - gecko_taskgraph.transforms.task:transforms
 
 kind-dependencies:
     - release-balrog-scheduling
@@ -16,10 +16,7 @@ kind-dependencies:
 
 job-defaults:
     description: mark release as shipped in Ship-It
-    worker-type:
-        by-release-level:
-            production: scriptworker-k8s/gecko-3-shipit
-            staging: scriptworker-k8s/gecko-1-shipit
+    worker-type: shipit
     worker:
         implementation: shipit-shipped
     scopes:

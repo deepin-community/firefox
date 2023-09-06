@@ -40,6 +40,7 @@ app-basics-profiles = Alhaaley
 app-basics-multi-process-support = Goyboobo zanfuney
 app-basics-key-mozilla = Mozilla gorodoo goy kufal
 app-basics-safe-mode = Saajaw alhaali
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Cebe ceecikoy ra
@@ -81,6 +82,8 @@ sandbox-sys-call-tid = TID
 ## Media titles
 
 audio-backend = Jinde bendoo
+
+## Codec support table
 
 ##
 

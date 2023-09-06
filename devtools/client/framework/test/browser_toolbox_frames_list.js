@@ -13,7 +13,7 @@ const TEST_ORG_URL =
   `<iframe src="https://example.org/document-builder.sjs?html=example.org iframe"></iframe>` +
   `<iframe src="https://example.com/document-builder.sjs?html=example.com iframe"></iframe>`;
 
-add_task(async function() {
+add_task(async function () {
   // Enable the frames button.
   await pushPref("devtools.command-button-frames.enabled", true);
 
@@ -30,7 +30,7 @@ add_task(async function() {
   await checkFramesList(toolbox, []);
 
   info("Create a same origin (example.com) iframe");
-  await SpecialPowers.spawn(tab.linkedBrowser, [], async function() {
+  await SpecialPowers.spawn(tab.linkedBrowser, [], async function () {
     const comIframe = content.document.createElement("iframe");
     comIframe.src =
       "https://example.com/document-builder.sjs?html=example.com iframe";
@@ -47,7 +47,7 @@ add_task(async function() {
   ]);
 
   info("Create a cross-process origin (example.org) iframe");
-  await SpecialPowers.spawn(tab.linkedBrowser, [], async function() {
+  await SpecialPowers.spawn(tab.linkedBrowser, [], async function () {
     const orgIframe = content.document.createElement("iframe");
     orgIframe.src =
       "https://example.org/document-builder.sjs?html=example.org iframe";
@@ -55,11 +55,26 @@ add_task(async function() {
   });
 
   info("Check that the content of the frames list was updated");
-  await checkFramesList(toolbox, [
-    TEST_COM_URL,
-    "https://example.com/document-builder.sjs?html=example.com iframe",
-    "https://example.org/document-builder.sjs?html=example.org iframe",
-  ]);
+  try {
+    await checkFramesList(toolbox, [
+      TEST_COM_URL,
+      "https://example.com/document-builder.sjs?html=example.com iframe",
+      "https://example.org/document-builder.sjs?html=example.org iframe",
+    ]);
+
+    // If Fission is enabled and EFT is not, we shouldn't hit this line as `checkFramesList`
+    // should throw (as remote frames are only displayed when EFT is enabled).
+    ok(
+      !isFissionEnabled() || isEveryFrameTargetEnabled(),
+      "iframe picker should only display remote frames when EFT is enabled"
+    );
+  } catch (e) {
+    ok(
+      isFissionEnabled() && !isEveryFrameTargetEnabled(),
+      "iframe picker displays remote frames only when EFT is enabled"
+    );
+    return;
+  }
 
   info("Reload and check that the frames list is cleared");
   await reloadBrowser();
@@ -79,7 +94,7 @@ add_task(async function() {
   ]);
 
   info("Check that frames list is updated when removing same-origin iframe");
-  await SpecialPowers.spawn(tab.linkedBrowser, [], async function() {
+  await SpecialPowers.spawn(tab.linkedBrowser, [], async function () {
     content.document.querySelector("iframe").remove();
   });
   await checkFramesList(toolbox, [
@@ -88,7 +103,7 @@ add_task(async function() {
   ]);
 
   info("Check that frames list is updated when removing cross-origin iframe");
-  await SpecialPowers.spawn(tab.linkedBrowser, [], async function() {
+  await SpecialPowers.spawn(tab.linkedBrowser, [], async function () {
     content.document.querySelector("iframe").remove();
   });
   await waitFor(() => !getFramesButton(toolbox));
@@ -112,7 +127,8 @@ function getFramesButton(toolbox) {
 
 async function checkFramesList(toolbox, expectedFrames) {
   const frames = await waitFor(() => {
-    const f = getFramesLabels(toolbox);
+    // items might be added in the list before their url is known, so exclude empty items.
+    const f = getFramesLabels(toolbox).filter(t => t !== "");
     if (f.length !== expectedFrames.length) {
       return false;
     }

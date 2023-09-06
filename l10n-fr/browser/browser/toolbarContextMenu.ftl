@@ -28,27 +28,33 @@ toolbar-context-menu-reopen-closed-tabs =
            *[other] Rouvrir les onglets fermés
         }
     .accesskey = o
+
 toolbar-context-menu-manage-extension =
     .label = Gérer l’extension
     .accesskey = G
 toolbar-context-menu-remove-extension =
     .label = Supprimer l’extension
     .accesskey = S
+
 # This label is used in the extensions toolbar buttons context menus,
 # a user can use this command to submit to Mozilla an abuse report
 # related to that extension. "Report" is a verb.
 toolbar-context-menu-report-extension =
     .label = Signaler l’extension
     .accesskey = n
-# Can appear on the same context menu as menubarCmd ("Menu Bar") and
-# personalbarCmd ("Bookmarks Toolbar"), so they should have different
-# access keys.
+
+# Can appear on the same context menu as toolbar-context-menu-menu-bar-cmd
+# ("Menu Bar") and personalbarCmd ("Bookmarks Toolbar"), so they should
+# have different access keys.
 toolbar-context-menu-pin-to-overflow-menu =
     .label = Épingler au menu de dépassement
     .accesskey = n
 toolbar-context-menu-auto-hide-downloads-button-2 =
     .label = Masquer le bouton lorsque la liste est vide
     .accesskey = v
+toolbar-context-menu-always-open-downloads-panel =
+    .label = Afficher le panneau quand le téléchargement commence
+    .accesskey = A
 toolbar-context-menu-remove-from-toolbar =
     .label = Retirer de la barre d’outils
     .accesskey = R
@@ -58,6 +64,12 @@ toolbar-context-menu-view-customize-toolbar =
 toolbar-context-menu-view-customize-toolbar-2 =
     .label = Personnaliser la barre d’outils…
     .accesskey = P
+# This is only ever shown when toolbar-context-menu-pin-to-overflow-menu
+# is hidden, so they can share access keys.
+toolbar-context-menu-pin-to-toolbar =
+    .label = Épingler à la barre d’outils
+    .accesskey = p
+
 toolbar-context-menu-bookmarks-toolbar-always-show-2 =
     .label = Toujours afficher
     .accesskey = T
@@ -67,9 +79,11 @@ toolbar-context-menu-bookmarks-toolbar-never-show-2 =
 toolbar-context-menu-bookmarks-toolbar-on-new-tab-2 =
     .label = Afficher seulement sur la page de nouvel onglet
     .accesskey = A
+
 toolbar-context-menu-bookmarks-show-other-bookmarks =
     .label = Afficher les autres marque-pages
     .accesskey = m
+
 toolbar-context-menu-menu-bar-cmd =
     .toolbarname = Barre de menus
     .accesskey = m

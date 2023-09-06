@@ -16,8 +16,6 @@ change-password-old = Parola actuală:
 change-password-new = Parola nouă:
 change-password-reenter = Parola nouă (din nou):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Parola nu a putut fi modificată.
 pippki-incorrect-pw = Nu ai introdus corect parola curentă. Te rugăm să încerci din nou.
 pippki-pw-change-ok = Parola a fost schimbată cu succes.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Acum ești în modul FIPS. FIPS necesită 
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Resetează parola primară
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Resetează
-
 reset-primary-password-text = Dacă îți resetezi parola primară, toate parolele tale salvate de web și de e-mail, certificatele personale și cheile private vor fi uitate. Sigur vrei să îți resetezi parola primară?
 
 pippki-reset-password-confirmation-title = Resetează parola primară
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Parola primară a fost resetată.
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Descărcare certificat
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Vi se cere să acreditați o autoritate nouă de certificare (AC).
 download-cert-trust-ssl =
     .label = Acreditează această AC pentru identificarea site-urilor web.
@@ -77,7 +74,5 @@ set-password-reminder = Important: Dacă uiți parola de siguranță pentru cert
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Autentificare prin jeton protejat
-protected-auth-msg = Te rugăm te autentifici cu cod. Metoda de autentificare depinde de tipul codului tău.
-protected-auth-token = Cod:
+## Protected authentication alert
+

@@ -3,16 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## Firefox Brand
-##
-## Firefox must be treated as a brand, and kept in English.
-## It cannot be:
-## - Declined to adapt to grammatical case.
-## - Transliterated.
-## - Translated.
-##
-## Reference: https://www.mozilla.org/styleguide/communications/translation/
-
 ## Firefox and Mozilla Brand
 ##
 ## Firefox and Mozilla must be treated as a brand.
@@ -47,6 +37,16 @@
         [inessive] Firefoxissa
     }
     .case-status = with-cases
+-brand-shortcut-name =
+    { $case ->
+       *[nominative] Firefox
+        [ablative] Firefoxilta
+        [elative] Firefoxista
+        [genitive] Firefoxin
+        [illative] Firefoxiin
+        [inessive] Firefoxissa
+    }
+    .case-status = with-cases
 -brand-full-name =
     { $case ->
        *[nominative] Mozilla Firefox
@@ -72,6 +72,7 @@
 -vendor-short-name =
     { $case ->
        *[nominative] Mozilla
+        [ablative] Mozillalta
         [allative] Mozillalle
         [elative] Mozillasta
         [genitive] Mozillan

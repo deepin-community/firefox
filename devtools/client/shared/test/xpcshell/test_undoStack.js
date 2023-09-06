@@ -3,19 +3,7 @@
 
 "use strict";
 
-const { Loader, Require } = ChromeUtils.import(
-  "resource://devtools/shared/base-loader.js"
-);
-
-const loader = new Loader({
-  paths: {
-    devtools: "resource://devtools",
-  },
-  globals: {},
-});
-const require = Require(loader, { id: "undo-test" });
-
-const { UndoStack } = require("devtools/client/shared/undo");
+const { UndoStack } = require("resource://devtools/client/shared/undo.js");
 
 const MAX_SIZE = 5;
 
@@ -25,10 +13,10 @@ function run_test() {
 
   function add(ch) {
     stack.do(
-      function() {
+      function () {
         str += ch;
       },
-      function() {
+      function () {
         str = str.slice(0, -1);
       }
     );

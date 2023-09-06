@@ -380,6 +380,9 @@ if <code>Object.getOwnPropertyNames(<i>referent</i>)</code> had been
 called in the debuggee, and the result copied in the scope of the
 debugger's global object.
 
+### `getOwnPropertyNamesLength()`
+Return the number of the referent's own properties.
+
 ### `getOwnPropertySymbols()`
 Return an array of strings naming all the referent's own symbols, as
 if <code>Object.getOwnPropertySymbols(<i>referent</i>)</code> had been
@@ -473,6 +476,9 @@ compartment wrapper.
 If <i>value</i> is a native function in the debugger's compartment, return
 whether the referent is a native function for the same C++ native.
 
+### `isNativeGetterWithJitInfo()`
+Return whether the referent is a native getter function with JSJitInfo.
+
 ### `decompile([pretty])`
 If the referent is a function that is debuggee code, return the
 JavaScript source code for a function definition equivalent to the
@@ -492,6 +498,10 @@ handler methods, breakpoints, and so on remain active
 during the call. If the referent is not callable, throw a `TypeError`.
 This function follows the [invocation function conventions][inv fr].
 
+Note: If this method is called on an object whose owner
+[Debugger object][debugger-object] has an onNativeCall handler, only hooks
+on objects associated with that debugger will be called during the evaluation.
+
 ### `apply(this, arguments)`
 If the referent is callable, call it with the given <i>this</i> value
 and the argument values in <i>arguments</i>, and return a
@@ -504,6 +514,10 @@ which are treated as an empty array. All extant handler methods,
 breakpoints, and so on remain active during the call. If
 the referent is not callable, throw a `TypeError`. This function
 follows the [invocation function conventions][inv fr].
+
+Note: If this method is called on an object whose owner
+[Debugger object][debugger-object] has an onNativeCall handler, only hooks
+on objects associated with that debugger will be called during the evaluation.
 
 ### `executeInGlobal(code, [options])`
 If the referent is a global object, evaluate <i>code</i> in that global
@@ -564,6 +578,7 @@ exception.  The `options` object can have the following properties:
   * `text`: String contents of the JavaScript in the source.
   * `url`: URL the resulting source should be associated with.
   * `startLine`: Starting line of the source.
+  * `startColumn`: Starting column of the source.
   * `sourceMapURL`: Optional URL specifying the source's source map URL.
     If not specified, the source map URL can be filled in if specified by
     the source's text.
@@ -654,8 +669,8 @@ promise. There are several different sorts of reaction records:
 [promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 [saved-frame]: ../SavedFrame/index
 
-[tracking-allocs]: Debugger.Memory.html#trackingallocationsites
-[inv fr]: Debugger.Frame.html#invocation-functions-and-debugger-frames
-[wouldrun]: Conventions.html#the-debugger-debuggeewouldrun-exception
-[cv]: Conventions.html#completion-values
-[fr eval]: Debugger.Frame.html#eval-code-options
+[tracking-allocs]: Debugger.Memory.md#trackingallocationsites
+[inv fr]: Debugger.Frame.md#invocation-functions-and-debugger-frames
+[wouldrun]: Conventions.md#the-debugger-debuggeewouldrun-exception
+[cv]: Conventions.md#completion-values
+[fr eval]: Debugger.Frame.md#eval-code-options

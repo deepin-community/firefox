@@ -4,8 +4,6 @@
 
 'Mozilla l10n compare locales tool'
 
-from __future__ import absolute_import
-from __future__ import print_function
 import codecs
 import os
 import shutil
@@ -34,8 +32,7 @@ class ContentComparer:
 
     def create_merge_dir(self, merge_file):
         outdir = mozpath.dirname(merge_file)
-        if not os.path.isdir(outdir):
-            os.makedirs(outdir)
+        os.makedirs(outdir, exist_ok=True)
 
     def merge(self, ref_entities, ref_file, l10n_file, merge_file,
               missing, skips, ctx, capabilities, encoding):
@@ -233,7 +230,7 @@ class ContentComparer:
                             skips.append(l10nent)
                         self.observers.notify(
                             tp, l10n,
-                            u"%s at line %d, column %d for %s" %
+                            "%s at line %d, column %d for %s" %
                             (msg, line, col, refent.key)
                         )
                 pass

@@ -9,15 +9,8 @@
 // Test that the markup view is correctly updated to show those items if the custom
 // element definition happens after opening the inspector.
 
-/* import-globals-from ../../../debugger/test/mochitest/helpers.js */
 Services.scriptloader.loadSubScript(
-  "chrome://mochitests/content/browser/devtools/client/debugger/test/mochitest/helpers.js",
-  this
-);
-
-/* import-globals-from ../../../debugger/test/mochitest/helpers/context.js */
-Services.scriptloader.loadSubScript(
-  "chrome://mochitests/content/browser/devtools/client/debugger/test/mochitest/helpers/context.js",
+  "chrome://mochitests/content/browser/devtools/client/debugger/test/mochitest/shared-head.js",
   this
 );
 
@@ -50,7 +43,7 @@ const TEST_URL =
   }
 </script>`);
 
-add_task(async function() {
+add_task(async function () {
   const { inspector, toolbox } = await openInspectorForURL(TEST_URL);
 
   // Test with an element to which we attach a shadow.
@@ -82,11 +75,13 @@ async function runTest(inspector, toolbox, selector, contentMethod) {
     "Call the content method that should attach a custom element definition"
   );
   const mutated = waitForMutation(inspector, "customElementDefined");
-  SpecialPowers.spawn(gBrowser.selectedBrowser, [{ contentMethod }], function(
-    args
-  ) {
-    content.wrappedJSObject[args.contentMethod]();
-  });
+  SpecialPowers.spawn(
+    gBrowser.selectedBrowser,
+    [{ contentMethod }],
+    function (args) {
+      content.wrappedJSObject[args.contentMethod]();
+    }
+  );
   await mutated;
 
   // Test element should now have a custom element definition.
@@ -134,5 +129,5 @@ async function waitUntilDebuggerReady(debuggerContext) {
 
   // We have to wait until the debugger has fully loaded the source otherwise
   // we will get unhandled promise rejections.
-  await waitForLoadedSource(debuggerContext, "data:");
+  await waitForLoadedSource(debuggerContext, TEST_URL);
 }

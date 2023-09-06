@@ -4,10 +4,10 @@
 "use strict";
 
 const TEST_URI =
-  "data:text/html;charset=utf-8,<p>Web Console test for close button of " +
+  "data:text/html;charset=utf-8,<!DOCTYPE html><p>Web Console test for close button of " +
   "split console";
 
-add_task(async function() {
+add_task(async function () {
   const toolbox = await openNewTabAndToolbox(TEST_URI, "inspector");
 
   info("Check the split console toolbar has a close button.");

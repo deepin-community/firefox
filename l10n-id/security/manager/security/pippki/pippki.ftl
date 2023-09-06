@@ -16,8 +16,6 @@ change-password-old = Sandi lama:
 change-password-new = Sandi baru:
 change-password-reenter = Sandi baru (ulangi):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Gagal mengubah sandi.
 pippki-incorrect-pw = Anda tidak memasukkan sandi dengan benar. Silakan coba lagi.
 pippki-pw-change-ok = Sandi berhasil diubah.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Saat ini Anda berada pada mode FIPS. FIPS 
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Setel Ulang Sandi Utama
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Setel Ulang
-
 reset-primary-password-text = Jika Anda menyetel ulang sandi utama, semua sandi web dan email, data form, sertifikat pribadi, dan kunci pribadi akan hilang. Yakin akan menyetel ulang Sandi Utama?
 
 pippki-reset-password-confirmation-title = Setel Ulang Sandi Utama
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Sandi Utama telah disetel ulang.
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Mengunduh Sertifikat
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Anda diminta untuk mempercayai Otoritas Sertifikat (CA) yang baru.
 download-cert-trust-ssl =
     .label = Percayai CA ini untuk mengidentifikasi situs web.
@@ -77,7 +74,8 @@ set-password-reminder = Penting: Jika Anda lupa sandi cadangan sertifikat, Anda 
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Autentikasi Token Terproteksi
-protected-auth-msg = Silakan token berikut diautentikasi. Metode autentikasi bergantung pada tipe token Anda.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Autentikasikan dengan token “{ $tokenName }”. Cara melakukannya bergantung pada jenis token (misalnya, menggunakan pembaca sidik jari atau memasukkan kode dengan papan tombol).

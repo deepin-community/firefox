@@ -16,8 +16,6 @@ change-password-old = Τρέχων κωδικός πρόσβασης:
 change-password-new = Νέος κωδικός πρόσβασης:
 change-password-reenter = Εισάγετε τον κωδικό ξανά
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Αδυναμία αλλαγής κωδικού πρόσβασης.
 pippki-incorrect-pw = Δεν εισήγατε το σωστό κωδικό πρόσβασης. Παρακαλούμε δοκιμάστε ξανά.
 pippki-pw-change-ok = Επιτυχής αλλαγή κωδικού πρόσβασης.
@@ -30,9 +28,9 @@ pippki-pw-change2empty-in-fips-mode = Βρίσκεστε σε λειτουργί
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Επαναφορά κύριου κωδικού πρόσβασης
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Επαναφορά
 reset-primary-password-text = Εάν επαναφέρετε τον κύριο κωδικό πρόσβασής σας, θα διαγραφούν από την μνήμη όλοι οι αποθηκευμένοι κωδικοί πρόσβασης ιστοτόπων και email, προσωπικών πιστοποιητικών και ιδιωτικών κλειδιών. Θέλετε σίγουρα να επαναφέρετε τον κύριο κωδικό πρόσβασης;
@@ -42,15 +40,15 @@ pippki-reset-password-confirmation-message = Έγινε επαναφορά το�
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Λήψη πιστοποιητικού
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Σας ζητήθηκε να εμπιστευθείτε μια νέα Αρχή Πιστοποίησης (CA).
 download-cert-trust-ssl =
     .label = Να θεωρείται αξιόπιστη αυτή η ΑΠ για την αναγνώριση ιστοτόπων.
 download-cert-trust-email =
     .label = Να είναι έμπιστη αυτή η CA για την πιστοποίηση χρηστών email
-download-cert-message-desc = Πριν να εμπιστευθείτε αυτήν την Αρχή Πιστοποίησης για οποιοδήποτε σκοπό, θα πρέπει να εξετάσετε το πιστοποιητικό και τις διαδικασίες και τις πολιτικές του (αν  είναι διαθέσιμες).
+download-cert-message-desc = Πριν εμπιστευθείτε αυτήν την Αρχή Πιστοποίησης για οποιονδήποτε σκοπό, θα πρέπει να εξετάσετε το πιστοποιητικό, καθώς και τις διαδικασίες και τις πολιτικές του (αν είναι διαθέσιμες).
 download-cert-view-cert =
     .label = Προβολή
 download-cert-view-text = Εξέταση CA πιστοποιητικού
@@ -76,7 +74,8 @@ set-password-reminder = Προειδοποίηση: Αν ξεχάσετε τον
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Προστατευμένη πιστοποίηση με διακριτικό
-protected-auth-msg = Παρακαλώ πιστοποιήστε το διακριτικό. Η μέθοδος πιστοποίησης εξαρτάται από το είδος του διακριτικού.
-protected-auth-token = Διακριτικό:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Πραγματοποιήστε έλεγχο ταυτότητας στο διακριτικό «{ $tokenName }». Ο τρόπος ταυτοποίησης εξαρτάται από το διακριτικό (για παράδειγμα, με συσκευή ανάγνωσης δακτυλικών αποτυπωμάτων ή εισαγωγή κωδικού με πληκτρολόγιο).

@@ -6,7 +6,6 @@
 #define intl_components_PluralRules_h_
 
 #include <string_view>
-#include <type_traits>
 #include <utility>
 
 #include "mozilla/intl/ICUError.h"
@@ -20,13 +19,6 @@
 #include "unicode/utypes.h"
 
 namespace mozilla::intl {
-
-#ifndef U_HIDE_DRAFT_API
-// SelectRange() requires ICU draft API. And because we try to reduce direct
-// access to ICU definitions, add a separate pre-processor definition to guard
-// the access to SelectRange() instead of directly using U_HIDE_DRAFT_API.
-#  define MOZ_INTL_PLURAL_RULES_HAS_SELECT_RANGE
-#endif
 
 class PluralRules final {
  public:
@@ -71,7 +63,6 @@ class PluralRules final {
    */
   Result<PluralRules::Keyword, ICUError> Select(double aNumber) const;
 
-#ifdef MOZ_INTL_PLURAL_RULES_HAS_SELECT_RANGE
   /**
    * Returns the PluralRules keyword that corresponds to the range from |aStart|
    * to |aEnd|.
@@ -80,7 +71,6 @@ class PluralRules final {
    */
   Result<PluralRules::Keyword, ICUError> SelectRange(double aStart,
                                                      double aEnd) const;
-#endif
 
   /**
    * Returns an EnumSet with the plural-rules categories that are supported by
@@ -137,6 +127,12 @@ struct MOZ_STACK_CLASS PluralRulesOptions {
       options.mSignificantDigits.emplace(mSignificantDigits.ref());
     }
 
+    options.mStripTrailingZero = mStripTrailingZero;
+
+    options.mRoundingIncrement = mRoundingIncrement;
+
+    options.mRoundingMode = NumberFormatOptions::RoundingMode(mRoundingMode);
+
     options.mRoundingPriority =
         NumberFormatOptions::RoundingPriority(mRoundingPriority);
 
@@ -163,6 +159,12 @@ struct MOZ_STACK_CLASS PluralRulesOptions {
     if (mSignificantDigits.isSome()) {
       options.mSignificantDigits.emplace(mSignificantDigits.ref());
     }
+
+    options.mStripTrailingZero = mStripTrailingZero;
+
+    options.mRoundingIncrement = mRoundingIncrement;
+
+    options.mRoundingMode = NumberFormatOptions::RoundingMode(mRoundingMode);
 
     options.mRoundingPriority =
         NumberFormatOptions::RoundingPriority(mRoundingPriority);
@@ -202,27 +204,28 @@ struct MOZ_STACK_CLASS PluralRulesOptions {
   Maybe<std::pair<uint32_t, uint32_t>> mSignificantDigits;
 
   /**
+   * Set to true to strip trailing zeros after the decimal point for integer
+   * values.
+   */
+  bool mStripTrailingZero = false;
+
+  /**
+   * Set the rounding increment, which must be a non-zero number.
+   */
+  uint32_t mRoundingIncrement = 1;
+
+  /**
+   * Set the rounding mode.
+   */
+  using RoundingMode = NumberFormatOptions::RoundingMode;
+  RoundingMode mRoundingMode = RoundingMode::HalfExpand;
+
+  /**
    * Set the rounding priority. |mFractionDigits| and |mSignificantDigits| must
    * both be set if the rounding priority isn't equal to "auto".
    */
-  enum class RoundingPriority {
-    Auto,
-    MorePrecision,
-    LessPrecision,
-  } mRoundingPriority = RoundingPriority::Auto;
-
-  // Must be compatible with NumberFormatOptions::RoundingPriority.
-  static_assert(std::is_same_v<
-                std::underlying_type_t<RoundingPriority>,
-                std::underlying_type_t<NumberFormatOptions::RoundingPriority>>);
-  static_assert(RoundingPriority::Auto ==
-                RoundingPriority(NumberFormatOptions::RoundingPriority::Auto));
-  static_assert(
-      RoundingPriority::LessPrecision ==
-      RoundingPriority(NumberFormatOptions::RoundingPriority::LessPrecision));
-  static_assert(
-      RoundingPriority::MorePrecision ==
-      RoundingPriority(NumberFormatOptions::RoundingPriority::MorePrecision));
+  using RoundingPriority = NumberFormatOptions::RoundingPriority;
+  RoundingPriority mRoundingPriority = RoundingPriority::Auto;
 };
 
 }  // namespace mozilla::intl

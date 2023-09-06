@@ -13,8 +13,6 @@ change-password-old = Pašreizējā parole:
 change-password-new = Jaunā parole:
 change-password-reenter = Jaunā parole (vēlreiz):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Lejupielādē sertifikātus
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Jums tiek vaicāts uzticēties jaunai Sertifikātu Autoritātei (CA).
 download-cert-trust-ssl =
     .label = Uzticēties šai CA tīmekļa vietņu identificēšanai.
@@ -56,7 +54,5 @@ set-password-reminder = Svarīgi: Ja aizmirsīsiet šo paroli, nevarēsiet atjau
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Aizsargātas marķierierīces autentificēšana
-protected-auth-msg = Lūdzu autentificējiet marķierierīci. Autentificēšanas metode atkarīga no ierīces tipa.
-protected-auth-token = Marķierieīce:
+## Protected authentication alert
+

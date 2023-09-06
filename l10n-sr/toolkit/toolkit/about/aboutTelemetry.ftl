@@ -34,7 +34,6 @@ about-telemetry-events-section = Догађаји
 about-telemetry-simple-measurements-section = Једноставна мерења
 about-telemetry-slow-sql-section = Прикажи SQL упите
 about-telemetry-addon-details-section = Детаљи о додатку
-about-telemetry-captured-stacks-section = Ухваћени стекови
 about-telemetry-late-writes-section = Касна писања
 about-telemetry-raw-payload-section = Raw Payload
 about-telemetry-raw = Необрађен JSON
@@ -123,10 +122,6 @@ about-telemetry-keys-header = Својство
 about-telemetry-names-header = Назив
 about-telemetry-values-header = Вредност
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (број хватања: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Касно писање #{ $lateWriteCount }
 about-telemetry-stack-title = Стек:
@@ -137,12 +132,6 @@ about-telemetry-category-header = категорија
 about-telemetry-method-header = метода
 about-telemetry-object-header = објекат
 about-telemetry-extra-header = додатно
-about-telemetry-origin-section = Origin Telemetry
-about-telemetry-origin-origin = извор
-about-telemetry-origin-count = број
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Firefox Origin Telemetry</a> кодира податке пре слања тако да { $telemetryServerOwner } може пребројати ствари, али не може знати да ли неки { -brand-product-name } доприноси том броју. (<a data-l10n-name="prio-blog-link">сазнајте више</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = { $process } процес

@@ -13,29 +13,14 @@ import { selectSource } from "./sources";
 import {
   getSourceByURL,
   getSourceTabs,
-  getNewSelectedSourceId,
+  getNewSelectedSource,
 } from "../selectors";
 
-export function updateTab(source, framework) {
-  const { url, id: sourceId, isOriginal } = source;
-
-  return {
-    type: "UPDATE_TAB",
-    url,
-    framework,
-    isOriginal,
-    sourceId,
-  };
-}
-
-export function addTab(source) {
-  const { url, id: sourceId, isOriginal } = source;
-
+export function addTab(source, sourceActor) {
   return {
     type: "ADD_TAB",
-    url,
-    isOriginal,
-    sourceId,
+    source,
+    sourceActor,
   };
 }
 
@@ -59,15 +44,15 @@ export function moveTabBySourceId(sourceId, tabIndex) {
  * @memberof actions/tabs
  * @static
  */
-export function closeTab(cx, source, reason = "click") {
+export function closeTab(source, reason = "click") {
   return ({ dispatch, getState, client }) => {
     removeDocument(source.id);
 
     const tabs = getSourceTabs(getState());
     dispatch({ type: "CLOSE_TAB", source });
 
-    const sourceId = getNewSelectedSourceId(getState(), tabs);
-    dispatch(selectSource(cx, sourceId));
+    const newSource = getNewSelectedSource(getState(), tabs);
+    dispatch(selectSource(newSource));
   };
 }
 
@@ -75,7 +60,7 @@ export function closeTab(cx, source, reason = "click") {
  * @memberof actions/tabs
  * @static
  */
-export function closeTabs(cx, urls) {
+export function closeTabs(urls) {
   return ({ dispatch, getState, client }) => {
     const sources = urls
       .map(url => getSourceByURL(getState(), url))
@@ -85,7 +70,7 @@ export function closeTabs(cx, urls) {
     sources.map(source => removeDocument(source.id));
     dispatch({ type: "CLOSE_TABS", sources });
 
-    const sourceId = getNewSelectedSourceId(getState(), tabs);
-    dispatch(selectSource(cx, sourceId));
+    const source = getNewSelectedSource(getState(), tabs);
+    dispatch(selectSource(source));
   };
 }

@@ -22,11 +22,11 @@
 #include "nsMargin.h"
 #include "nsStringFwd.h"
 #include "nsTArrayForwardDeclare.h"
+#include "nsAtom.h"
 #include "mozilla/AtomArray.h"
 #include "mozilla/EnumTypeTraits.h"
 #include "mozilla/MemoryReporting.h"
 
-class nsAtom;
 class nsIPrincipal;
 class nsIURI;
 class nsStyledElement;
@@ -47,6 +47,29 @@ class SVGPathData;
 class SVGPointList;
 class SVGStringList;
 class SVGTransformList;
+
+struct AttrAtomArray {
+  AtomArray mArray;
+  bool mMayContainDuplicates = false;
+  void RemoveDuplicates() {
+    if (mMayContainDuplicates) {
+      DoRemoveDuplicates();
+    }
+  }
+  AttrAtomArray Clone() const {
+    return {mArray.Clone(), mMayContainDuplicates};
+  }
+  void Clear() {
+    mArray.Clear();
+    mMayContainDuplicates = false;
+  }
+  bool operator==(const AttrAtomArray& aOther) const {
+    return mArray == aOther.mArray;
+  }
+
+ private:
+  void DoRemoveDuplicates();
+};
 
 namespace dom {
 class DOMString;
@@ -115,7 +138,6 @@ class nsAttrValue {
     eImage,
     eAtomArray,
     eDoubleValue,
-    eIntMarginValue,
     // eShadowParts is refcounted in the misc container, as we do copy attribute
     // values quite a bit (for example to process style invalidation), and the
     // underlying value could get expensive to copy.
@@ -142,7 +164,6 @@ class nsAttrValue {
   explicit nsAttrValue(nsAtom* aValue);
   nsAttrValue(already_AddRefed<mozilla::DeclarationBlock> aValue,
               const nsAString* aSerialized);
-  explicit nsAttrValue(const nsIntMargin& aValue);
   ~nsAttrValue();
 
   inline const nsAttrValue& operator=(const nsAttrValue& aOther);
@@ -169,7 +190,6 @@ class nsAttrValue {
   void SetTo(already_AddRefed<mozilla::DeclarationBlock> aValue,
              const nsAString* aSerialized);
   void SetTo(nsIURI* aValue, const nsAString* aSerialized);
-  void SetTo(const nsIntMargin& aValue);
   void SetTo(const mozilla::SVGAnimatedIntegerPair& aValue,
              const nsAString* aSerialized);
   void SetTo(const mozilla::SVGAnimatedLength& aValue,
@@ -222,11 +242,10 @@ class nsAttrValue {
   bool GetColorValue(nscolor& aColor) const;
   inline int16_t GetEnumValue() const;
   inline double GetPercentValue() const;
-  inline mozilla::AtomArray* GetAtomArrayValue() const;
+  inline mozilla::AttrAtomArray* GetAtomArrayValue() const;
   inline mozilla::DeclarationBlock* GetCSSDeclarationValue() const;
   inline nsIURI* GetURLValue() const;
   inline double GetDoubleValue() const;
-  bool GetIntMarginValue(nsIntMargin& aMargin) const;
   inline const mozilla::ShadowParts& GetShadowPartsValue() const;
 
   /**
@@ -310,6 +329,8 @@ class nsAttrValue {
         : tag(aTag), value(static_cast<int16_t>(aValue)) {
       static_assert(mozilla::EnumTypeFitsWithin<T, int16_t>::value,
                     "aValue must be an enum that fits within int16_t");
+      // TODO: statically assert there are no duplicate values, otherwise
+      // `GetEnumString()` above will return wrong values.
     }
 
     /** The string the value maps to */
@@ -451,15 +472,6 @@ class nsAttrValue {
   bool ParseDoubleValue(const nsAString& aString);
 
   /**
-   * Parse a margin string of format 'top, right, bottom, left' into
-   * an nsIntMargin.
-   *
-   * @param aString the string to parse
-   * @return whether the value could be parsed
-   */
-  bool ParseIntMarginValue(const nsAString& aString);
-
-  /**
    * Parse a string into a CSS style rule.
    *
    * @param aString the style attribute value to be parsed.
@@ -473,6 +485,9 @@ class nsAttrValue {
                            nsStyledElement* aElement);
 
   size_t SizeOfExcludingThis(mozilla::MallocSizeOf aMallocSizeOf) const;
+
+  nsAtom* GetStoredAtom() const;
+  nsStringBuffer* GetStoredStringBuffer() const;
 
  private:
   // These have to be the same as in ValueType
@@ -534,7 +549,6 @@ class nsAttrValue {
   static void DeallocMiscContainer(MiscContainer* aCont);
 
   static nsTArray<const EnumTable*>* sEnumTableArray;
-  static MiscContainer* sMiscContainerCache;
 
   /**
    * Helper for ParseHTMLDimension and ParseNonzeroHTMLDimension.

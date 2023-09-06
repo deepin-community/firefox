@@ -65,6 +65,9 @@ media-dimension =
     .value = Памеры:
 media-long-desc =
     .value = Пашыранае апісанне:
+media-select-all =
+    .label = Вылучыць усё
+    .accesskey = у
 media-save-as =
     .label = Захаваць як…
     .accesskey = З
@@ -87,26 +90,26 @@ security-view =
 security-view-unknown = Невядомы
     .value = Невядомы
 security-view-identity =
-    .value = Сапраўднасць вэб-сайта
+    .value = Сапраўднасць сайта
 security-view-identity-owner =
     .value = Уладальнік:
 security-view-identity-domain =
-    .value = Веб-сайт:
+    .value = Вэб-сайт:
 security-view-identity-verifier =
     .value = Пацверджана:
 security-view-identity-validity =
     .value = Канчаецца:
 security-view-privacy =
-    .value = Прыватнасць і бяспека
+    .value = Прыватнасць і гісторыя
 
-security-view-privacy-history-value = Ці я наведваў гэты вэб-сайт раней?
-security-view-privacy-sitedata-value = Ці захоўвае гэты вэб-сайт звесткі на маім камп'ютары?
+security-view-privacy-history-value = Ці я наведваў гэты сайт раней?
+security-view-privacy-sitedata-value = Ці захоўвае гэты сайт звесткі на маім камп'ютары?
 
 security-view-privacy-clearsitedata =
     .label = Выдаліць кукі і дадзеныя сайтаў
     .accesskey = В
 
-security-view-privacy-passwords-value = Ці я захаваў які-небудзь пароль для гэтага вэб-сайта?
+security-view-privacy-passwords-value = Ці я захаваў які-небудзь пароль для гэтага сайта?
 
 security-view-privacy-viewpasswords =
     .label = Прагледзець захаваныя паролі
@@ -151,13 +154,13 @@ saved-passwords-yes = Так
 saved-passwords-no = Не
 
 no-page-title =
-    .value = Старонка без загалоўку:
+    .value = Старонка без назвы:
 general-quirks-mode =
     .value = Рэжым сумяшчальнасці
 general-strict-mode =
     .value = Рэжым адпаведнасці стандартам
 page-info-security-no-owner =
-    .value = Гэты вэб-сайт не прадстаўляе звестак пра яго ўладальнікаў.
+    .value = Гэты сайт не прадстаўляе звестак пра яго ўладальнікаў.
 media-select-folder = Выберыце папку для захавання выяваў
 media-unknown-not-cached =
     .value = Невядома (не ў кэшы)
@@ -243,6 +246,9 @@ media-dimensions =
 # Variables:
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } КБ
+
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
 
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab

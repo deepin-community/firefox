@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = הכול
+printui-page-range-current = נוכחי
+printui-page-range-odd = אי־זוגיים
+printui-page-range-even = זוגיים
 printui-page-range-custom = התאמה אישית
 printui-page-range-label = עמודים
 printui-page-range-picker =
@@ -48,6 +51,10 @@ printui-scale-pcent = קנה מידה
 # Section title (noun) for the two-sided print options
 printui-two-sided-printing = הדפסה דו־צדדית
 printui-two-sided-printing-off = כבויה
+# Flip the sheet as if it were bound along its long edge.
+printui-two-sided-printing-long-edge = להפוך על הקצה הארוך
+# Flip the sheet as if it were bound along its short edge.
+printui-two-sided-printing-short-edge = להפוך על הקצה הקצר
 
 # Section title for miscellaneous print options
 printui-options = אפשרויות

@@ -32,15 +32,18 @@ class FuzzingWebSocketListener final : public nsIWebSocketListener {
   FuzzingWebSocketListener() = default;
 
   void waitUntilDoneOrStarted() {
-    SpinEventLoopUntil([&]() { return mChannelDone || mChannelStarted; });
+    SpinEventLoopUntil("FuzzingWebSocketListener::waitUntilDoneOrStarted"_ns,
+                       [&]() { return mChannelDone || mChannelStarted; });
   }
 
   void waitUntilDone() {
-    SpinEventLoopUntil([&]() { return mChannelDone; });
+    SpinEventLoopUntil("FuzzingWebSocketListener::waitUntilDone"_ns,
+                       [&]() { return mChannelDone; });
   }
 
   void waitUntilDoneOrAck() {
-    SpinEventLoopUntil([&]() { return mChannelDone || mChannelAck; });
+    SpinEventLoopUntil("FuzzingWebSocketListener::waitUntilDoneOrAck"_ns,
+                       [&]() { return mChannelDone || mChannelAck; });
   }
 
   bool isStarted() { return mChannelStarted; }
@@ -107,6 +110,7 @@ static int FuzzingInitNetworkWebsocket(int* argc, char*** argv) {
   Preferences::SetBool("fuzzing.necko.enabled", true);
   Preferences::SetBool("network.websocket.delay-failed-reconnects", false);
   Preferences::SetInt("network.http.speculative-parallel-limit", 0);
+  Preferences::SetInt("network.proxy.type", 0);  // PROXYCONFIG_DIRECT
   return 0;
 }
 
@@ -200,15 +204,17 @@ static int FuzzingRunNetworkWebsocket(const uint8_t* data, size_t size) {
   }
 
   // Wait for the channel to be destroyed
-  SpinEventLoopUntil([&]() -> bool {
-    nsCycleCollector_collect(nullptr);
-    nsCOMPtr<nsIWebSocketChannel> channel = do_QueryReferent(channelRef);
-    return channel == nullptr;
-  });
+  SpinEventLoopUntil(
+      "FuzzingRunNetworkWebsocket(channel == nullptr)"_ns, [&]() -> bool {
+        nsCycleCollector_collect(CCReason::API, nullptr);
+        nsCOMPtr<nsIWebSocketChannel> channel = do_QueryReferent(channelRef);
+        return channel == nullptr;
+      });
 
   if (!signalNetworkFuzzingDone()) {
     // Wait for the connection to indicate closed
-    SpinEventLoopUntil([&]() -> bool { return gFuzzingConnClosed; });
+    SpinEventLoopUntil("FuzzingRunNetworkWebsocket(gFuzzingConnClosed)"_ns,
+                       [&]() -> bool { return gFuzzingConnClosed; });
   }
 
   return 0;

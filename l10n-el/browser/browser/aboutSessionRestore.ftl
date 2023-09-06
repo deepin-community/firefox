@@ -44,7 +44,7 @@ welcome-back-restore-button =
     .label = Φύγαμε!
     .accesskey = Φ
 
-welcome-back-restore-all-label = Επαναφορά όλων των παραθύρων & των καρτελών
+welcome-back-restore-all-label = Επαναφορά όλων των παραθύρων και των καρτελών
 welcome-back-restore-some-label = Επαναφορά μόνο συγκεκριμένων
 
 welcome-back-page-info-link = Τα πρόσθετα και οι προσαρμογές σας έχουν αφαιρεθεί και έχει γίνει επαναφορά στις προεπιλεγμένες ρυθμίσεις του προγράμματος περιήγησής σας. Αν αυτό δεν διόρθωσε το πρόβλημα, <a data-l10n-name="link-more">μάθετε περισσότερα σχετικά με τις διαθέσιμες επιλογές σας.</a>

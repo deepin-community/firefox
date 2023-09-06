@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = R
 
 update-checkingForUpdates = Provjeravam za nadogradnju…
-update-downloading = <img data-l10n-name="icon"/>Preuzimam nadogradnju — <label data-l10n-name="download-status"/>
-update-downloading-message = Preuzimanje nadogradnje — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Preuzimam nadogradnju — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Preuzimanje nadogradnje — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Primjenjujem nadogradnju…
 
 update-failed = Neuspješna nadogradnja. <label data-l10n-name="failed-link">Preuzmi posljednju verziju</label>
@@ -27,13 +34,21 @@ update-adminDisabled = Nadogradnje koje je onemogućio vaš sistemski administra
 update-noUpdatesFound = Koristite posljednju verziju { -brand-short-name }a
 update-otherInstanceHandlingUpdates = { -brand-short-name } biva nadograđen od strane druge instance
 
-update-manual = Nadogradnje dostupne na <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Nadogradnje dostupne na <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Nadogradnje dostupne na <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Ne možete vršiti dodatne nadogradnje na ovom sistemu. <label data-l10n-name="unsupported-link">Saznajte više</label>
 
 update-restarting = Restartujem…
 
-channel-description = Vi ste trenutno na <label data-l10n-name="current-channel"></label> kanalu nadogradnje.
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Vi ste trenutno na <label data-l10n-name="current-channel">{ $channel }</label> kanalu nadogradnje.
 
 warningDesc-version = { -brand-short-name } je eksperimentalna verzija i može biti nestabilna.
 

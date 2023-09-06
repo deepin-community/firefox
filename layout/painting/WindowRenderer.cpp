@@ -6,8 +6,15 @@
 
 #include "WindowRenderer.h"
 
+#include "gfxPlatform.h"
 #include "mozilla/dom/Animation.h"  // for Animation
+#include "mozilla/dom/AnimationEffect.h"
+#include "mozilla/EffectSet.h"
 #include "mozilla/layers/PersistentBufferProvider.h"  // for PersistentBufferProviderBasic, PersistentBufferProvider (ptr only)
+#include "nsDisplayList.h"
+
+using namespace mozilla::gfx;
+using namespace mozilla::layers;
 
 namespace mozilla {
 
@@ -147,10 +154,9 @@ void WindowRenderer::RemovePartialPrerenderedAnimation(
       // nulled out via Animation::SetEffect() so ignore such cases.
       aAnimation->GetEffect() && aAnimation->GetEffect()->AsKeyframeEffect() &&
       animation->GetEffect() && animation->GetEffect()->AsKeyframeEffect()) {
-    MOZ_ASSERT(EffectSet::GetEffectSetForEffect(
-                   aAnimation->GetEffect()->AsKeyframeEffect()) ==
-               EffectSet::GetEffectSetForEffect(
-                   animation->GetEffect()->AsKeyframeEffect()));
+    MOZ_ASSERT(
+        EffectSet::GetForEffect(aAnimation->GetEffect()->AsKeyframeEffect()) ==
+        EffectSet::GetForEffect(animation->GetEffect()->AsKeyframeEffect()));
   }
 #else
   mPartialPrerenderedAnimations.Remove(aCompositorAnimationId);
@@ -198,23 +204,25 @@ void FallbackRenderer::EndTransactionWithList(nsDisplayListBuilder* aBuilder,
   DrawTarget* dt = mTarget->GetDrawTarget();
 
   BackendType backend = gfxPlatform::GetPlatform()->GetContentBackendFor(
-      LayersBackend::LAYERS_BASIC);
+      LayersBackend::LAYERS_NONE);
   RefPtr<DrawTarget> dest =
       gfxPlatform::GetPlatform()->CreateDrawTargetForBackend(
           backend, dt->GetSize(), dt->GetFormat());
-  RefPtr<gfxContext> ctx = gfxContext::CreatePreservingTransformOrNull(dest);
+  if (dest) {
+    gfxContext ctx(dest, /* aPreserveTransform */ true);
 
-  nsRegion opaque = aList->GetOpaqueRegion(aBuilder);
-  if (opaque.Contains(aList->GetComponentAlphaBounds(aBuilder))) {
-    dest->SetPermitSubpixelAA(true);
+    nsRegion opaque = aList->GetOpaqueRegion(aBuilder);
+    if (opaque.Contains(aList->GetComponentAlphaBounds(aBuilder))) {
+      dest->SetPermitSubpixelAA(true);
+    }
+
+    aList->Paint(aBuilder, &ctx, aAppUnitsPerDevPixel);
+
+    RefPtr<SourceSurface> snapshot = dest->Snapshot();
+    dt->DrawSurface(snapshot, Rect(dest->GetRect()), Rect(dest->GetRect()),
+                    DrawSurfaceOptions(),
+                    DrawOptions(1.0f, CompositionOp::OP_SOURCE));
   }
-
-  aList->Paint(aBuilder, ctx, aAppUnitsPerDevPixel);
-
-  RefPtr<SourceSurface> snapshot = dest->Snapshot();
-  dt->DrawSurface(snapshot, Rect(dest->GetRect()), Rect(dest->GetRect()),
-                  DrawSurfaceOptions(),
-                  DrawOptions(1.0f, CompositionOp::OP_SOURCE));
   mAnimationReadyTime = TimeStamp::Now();
 }
 

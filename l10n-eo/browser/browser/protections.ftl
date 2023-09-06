@@ -65,22 +65,20 @@ cryptominer-tab-content = La miniloj de ĉifromono uzas la kalkulpovon de via ko
 protections-close-button2 =
     .aria-label = Fermi
     .title = Fermi
-  
+
 mobile-app-title = Bloki reklamajn spurilojn en pli da aparatoj
 mobile-app-card-content = Uzi la poŝaparatan retumilon kun integrita protekto kontraŭ reklamaj spuriloj.
 mobile-app-links = { -brand-product-name } Retumilo por <a data-l10n-name="android-mobile-inline-link">Android</a> kaj <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Neniam denove forgesu pasvorton
-lockwise-title-logged-in2 = Administranto de pasvortoj
-lockwise-header-content = { -lockwise-brand-name } sekure konservas viajn pasvortojn en via retumilo.
+passwords-title-logged-in = Administri viajn pasvortojn
+passwords-header-content = { -brand-product-name } sekure konservas viajn pasvortojn en via retumilo.
 lockwise-header-content-logged-in = Sekure konservu kaj spegulu viajn pasvortojn en ĉiuj viaj aparatoj.
-protection-report-save-passwords-button = Konservi pasvortojn
-    .title = Konservi pasvortojn per { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Administri pasvortojn
-    .title = Administri pasvortojn per { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Kunportu viajn pasvortojn ĉien
-lockwise-no-logins-card-content = Uzu en iu ajn aparato la pasvortojn konservitaj en { -brand-short-name }.
-lockwise-app-links = { -lockwise-brand-name } por <a data-l10n-name="lockwise-android-inline-link">Android</a> kaj <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Konservi pasvortojn
+    .title = Konservi pasvortojn
+protection-report-passwords-manage-passwords-button = Administri pasvortojn
+    .title = Administri pasvortojn
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

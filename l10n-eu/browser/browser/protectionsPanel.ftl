@@ -63,7 +63,6 @@ protections-panel-not-found-label = Ez da bat ere antzeman
 ##
 
 protections-panel-settings-label = Babesaren ezarpenak
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Babesen arbela
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -78,6 +77,7 @@ protections-panel-site-not-working-view-issue-list-forms = Inprimakiak
 protections-panel-site-not-working-view-issue-list-payments = Ordainketak
 protections-panel-site-not-working-view-issue-list-comments = Iruzkinak
 protections-panel-site-not-working-view-issue-list-videos = Bideoak
+protections-panel-site-not-working-view-issue-list-fonts = Letra-tipoak
 
 protections-panel-site-not-working-view-send-report = Bidali txostena
 
@@ -101,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Eman hondatutako gunearen berri
 protections-panel-content-blocking-breakage-report-view-description = Edukia blokeatzeak arazoak sor ditzake zenbait webgunerekin. Arazoen berri ematen duzunean, { -brand-short-name } guztiontzat hobetzen laguntzen duzu. Honekin batera URL bat eta zure nabigatzaile-ezarpenei buruzko informazioa bidaliko da Mozillara. <label data-l10n-name="learn-more">Argibide gehiago</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Edukia blokeatzeak arazoak sor ditzake zenbait webgunerekin. Arazoen berri ematen duzunean, { -brand-short-name } guztiontzat hobetzen laguntzen duzu. Honekin batera URL bat eta zure nabigatzaile-ezarpenei buruzko informazioa bidaliko da { -vendor-short-name }ra.
 protections-panel-content-blocking-breakage-report-view-collection-url = URLa
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URLa
@@ -111,3 +112,22 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Utzi
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Bidali txostena
+
+# Cookie Banner Handling
+
+protections-panel-cookie-banner-handling-header = Cookie iragarki-banden murrizpena
+protections-panel-cookie-banner-handling-enabled = Aktibatuta gune honetarako
+protections-panel-cookie-banner-handling-disabled = Desaktibatuta gune honetarako
+protections-panel-cookie-banner-handling-undetected = Une honetan gune honetarako euskarririk ez
+
+protections-panel-cookie-banner-view-title =
+    .title = Cookie iragarki-banden murrizpena
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = Desaktibatu cookie iragarki-banden murrizpena { $host } gunerako?
+protections-panel-cookie-banner-view-turn-on-for-site = Aktibatu cookie iragarki-banden murrizpena gune honetarako?
+protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name }(e)k gune honetako cookieak garbitu eta orria berrituko du. Cookie guztiak garbitzean, saioak amaitu edo erosketa-orgak hustu litezke.
+protections-panel-cookie-banner-view-turn-on-description = Cookie eskaerak automatikoki ukatzen saiatzen da { -brand-short-name }.
+protections-panel-cookie-banner-view-cancel = Utzi
+protections-panel-cookie-banner-view-turn-off = Desaktibatu
+protections-panel-cookie-banner-view-turn-on = Aktibatu

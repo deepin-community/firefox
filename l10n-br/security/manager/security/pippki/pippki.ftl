@@ -16,8 +16,6 @@ change-password-old = Ger-tremen war arver:
 change-password-new = Ger-tremen nevez:
 change-password-reenter = Ger-tremen nevez (c'hoazh):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = N’haller ket kemmañ ar ger-tremen.
 pippki-incorrect-pw = N’ho peus ket enanket ar ger-tremen reizh. Klaskit en-dro mar plij.
 pippki-pw-change-ok = Ger-tremen kemmet gant berzh.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = E mod FIPS emaoc’h bremañ. Azgoulenn a 
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Adderaouekaat ar ger-tremen pennañ
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Adderaouekaat
-
 reset-primary-password-text = Mar adderaouekait ho ker-tremen pennañ e vo ankouaet ho kerioù-tremen evit internet, ho posteloù, ho testenioù personel hag hoc’h alc’hwezioù prevez. Fellout a ra deoc’h dilemel ho ker-tremen pennañ?
 
 pippki-reset-password-confirmation-title = Adderaouekaat ar ger-tremen pennañ
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Diweredekaet eo bet ho ker-tremen p
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = O pellgargañ an testeni
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Goulennet ez eus bet diganeoc'h kaout fiziañs en un aotrouniezh testeniañ nevez.
 download-cert-trust-ssl =
     .label = Kaout fiziañ en aotrouniezh testeniañ-mañ evit anaout al lec'hiennoù web.
@@ -77,7 +74,5 @@ set-password-reminder = Pouezus: Mar bez ankouaet ger-tremen ho testeni atoriñ 
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Dilesa ar reveziadenn gwarezet
-protected-auth-msg = Mar plij, dilesait ouzh ar reveziadenn. Hentenn dilesa a vo hervez rizh ho reveziadenn.
-protected-auth-token = Reveziadenn:
+## Protected authentication alert
+

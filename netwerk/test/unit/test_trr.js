@@ -8,7 +8,6 @@ SetParentalControlEnabled(false);
 
 function setup() {
   h2Port = trr_test_setup();
-  runningODoHTests = false;
 }
 
 setup();
@@ -26,7 +25,7 @@ async function waitForConfirmation(expectedResponseIP, confirmationShouldFail) {
       // because of the increased delay between the emulator and host.
       await new Promise(resolve => do_timeout(100 * (100 / count), resolve));
     }
-    let [, inRecord] = await new TRRDNSListener(
+    let { inRecord } = await new TRRDNSListener(
       `ip${count}.example.org`,
       undefined,
       false
@@ -98,7 +97,7 @@ add_task(async function test_trr_flags() {
       Ci.nsIRequest.TRR_FIRST_MODE,
       Ci.nsIRequest.TRR_ONLY_MODE,
     ]) {
-      dns.clearCache(true);
+      Services.dns.clearCache(true);
       let chan = makeChan(URL, flag);
       let expectTRR =
         ([2, 3].includes(mode) && flag != Ci.nsIRequest.TRR_DISABLED_MODE) ||
@@ -127,7 +126,7 @@ add_task(test_A_record);
 
 add_task(async function test_push() {
   info("Verify DOH push");
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   info("Asking server to push us a record");
   setModeAndURI(3, "doh?responseIP=5.5.5.5&push=true");
 
@@ -148,6 +147,8 @@ add_task(test_RFC1918);
 add_task(test_GET_ECS);
 
 add_task(test_timeout_mode3);
+
+add_task(test_trr_retry);
 
 add_task(test_strict_native_fallback);
 
@@ -186,7 +187,7 @@ add_task(test_connection_closed);
 
 add_task(async function test_clearCacheOnURIChange() {
   info("Check that the TRR cache should be cleared by a pref change.");
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   Services.prefs.setBoolPref("network.trr.clear-cache-on-pref-change", true);
   setModeAndURI(2, "doh?responseIP=7.7.7.7");
 
@@ -205,7 +206,7 @@ add_task(async function test_clearCacheOnURIChange() {
 add_task(async function test_dnsSuffix() {
   info("Checking that domains matching dns suffix list use Do53");
   async function checkDnsSuffixInMode(mode) {
-    dns.clearCache(true);
+    Services.dns.clearCache(true);
     setModeAndURI(mode, "doh?responseIP=1.2.3.4&push=true");
     await new TRRDNSListener("example.org", "1.2.3.4");
     await new TRRDNSListener("push.example.org", "2018::2018");
@@ -251,7 +252,7 @@ add_task(async function test_dnsSuffix() {
 
 add_task(async function test_async_resolve_with_trr_server() {
   info("Checking asyncResolveWithTrrServer");
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   Services.prefs.setIntPref("network.trr.mode", 0); // TRR-disabled
 
   await new TRRDNSListener(
@@ -266,7 +267,7 @@ add_task(async function test_async_resolve_with_trr_server() {
   await new TRRDNSListener("bar_with_trr1.example.com", "127.0.0.1");
 
   // Mode 2
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   setModeAndURI(2, "doh?responseIP=2.2.2.2");
 
   await new TRRDNSListener(
@@ -281,7 +282,7 @@ add_task(async function test_async_resolve_with_trr_server() {
   await new TRRDNSListener("bar_with_trr2.example.com", "2.2.2.2");
 
   // Mode 3
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   setModeAndURI(3, "doh?responseIP=2.2.2.2");
 
   await new TRRDNSListener(
@@ -296,7 +297,7 @@ add_task(async function test_async_resolve_with_trr_server() {
   await new TRRDNSListener("bar_with_trr3.example.com", "2.2.2.2");
 
   // Mode 5
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   setModeAndURI(5, "doh?responseIP=2.2.2.2");
 
   // When dns is resolved in socket process, we can't set |expectEarlyFail| to true.
@@ -314,7 +315,7 @@ add_task(async function test_async_resolve_with_trr_server() {
   await new TRRDNSListener("bar_with_trr3.example.com", "127.0.0.1");
 
   // Check that cache is ignored when server is different
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   setModeAndURI(3, "doh?responseIP=2.2.2.2");
 
   await new TRRDNSListener("bar_with_trr4.example.com", "2.2.2.2", true);
@@ -338,10 +339,10 @@ add_task(async function test_async_resolve_with_trr_server() {
   );
 
   // Check no fallback and no blocklisting upon failure
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   setModeAndURI(2, "doh?responseIP=2.2.2.2");
 
-  let [, , inStatus] = await new TRRDNSListener(
+  let { inStatus } = await new TRRDNSListener(
     "bar_with_trr6.example.com",
     undefined,
     false,
@@ -356,7 +357,7 @@ add_task(async function test_async_resolve_with_trr_server() {
   await new TRRDNSListener("bar_with_trr6.example.com", "2.2.2.2", true);
 
   // Check that DoH push doesn't work
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   setModeAndURI(2, "doh?responseIP=2.2.2.2");
 
   await new TRRDNSListener(
@@ -382,7 +383,7 @@ add_task(async function test_async_resolve_with_trr_server() {
   await new TRRDNSListener("push.example.org", "127.0.0.1");
 
   // Check confirmation is ignored
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   setModeAndURI(2, "doh?responseIP=1::ffff");
   Services.prefs.clearUserPref("network.trr.useGET");
   Services.prefs.clearUserPref("network.trr.disable-ECS");
@@ -403,16 +404,16 @@ add_task(async function test_async_resolve_with_trr_server() {
   Services.prefs.setCharPref("network.trr.confirmationNS", "skip");
 
   // Bad port
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   setModeAndURI(2, "doh?responseIP=2.2.2.2");
 
-  [, , inStatus] = await new TRRDNSListener(
+  ({ inStatus } = await new TRRDNSListener(
     "only_once.example.com",
     undefined,
     false,
     undefined,
     `https://target.example.com:666/404`
-  );
+  ));
   Assert.ok(
     !Components.isSuccessCode(inStatus),
     `${inStatus} should be an error code`
@@ -427,7 +428,7 @@ add_task(test_fetch_time);
 
 add_task(async function test_content_encoding_gzip() {
   info("Checking gzip content encoding");
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   Services.prefs.setBoolPref(
     "network.trr.send_empty_accept-encoding_headers",
     false
@@ -444,7 +445,7 @@ add_task(async function test_redirect() {
   info("Check handling of redirect");
 
   // GET
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   setModeAndURI(3, "doh?redirect=4.4.4.4{&dns}");
   Services.prefs.setBoolPref("network.trr.useGET", true);
   Services.prefs.setBoolPref("network.trr.disable-ECS", true);
@@ -452,7 +453,7 @@ add_task(async function test_redirect() {
   await new TRRDNSListener("ecs.example.com", "4.4.4.4");
 
   // POST
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   Services.prefs.setBoolPref("network.trr.useGET", false);
   setModeAndURI(3, "doh?redirect=4.4.4.4");
 
@@ -467,7 +468,7 @@ add_task(async function test_redirect() {
 // and wait-for-confirmation pref is true
 add_task(async function test_confirmation() {
   info("Checking that we fall back correctly when confirmation is pending");
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   Services.prefs.setBoolPref("network.trr.wait-for-confirmation", true);
   setModeAndURI(2, "doh?responseIP=7.7.7.7&slowConfirm=true");
   Services.prefs.setCharPref(
@@ -485,7 +486,7 @@ add_task(async function test_confirmation() {
   info("Check that confirmation is skipped in mode 3");
   // This is just a smoke test to make sure lookups succeed immediately
   // in mode 3 without waiting for confirmation.
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   setModeAndURI(3, "doh?responseIP=1::ffff&slowConfirm=true");
   Services.prefs.setCharPref(
     "network.trr.confirmationNS",
@@ -497,7 +498,7 @@ add_task(async function test_confirmation() {
   // Reset between each test to force re-confirm
   Services.prefs.setCharPref("network.trr.confirmationNS", "skip");
 
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   Services.prefs.setBoolPref("network.trr.wait-for-confirmation", false);
   setModeAndURI(2, "doh?responseIP=7.7.7.7&slowConfirm=true");
   Services.prefs.setCharPref(
@@ -512,7 +513,7 @@ add_task(async function test_confirmation() {
   Services.prefs.setCharPref("network.trr.confirmationNS", "skip");
 
   // Fallback when confirmation fails
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   Services.prefs.setBoolPref("network.trr.wait-for-confirmation", true);
   setModeAndURI(2, "404");
   Services.prefs.setCharPref(
@@ -533,7 +534,7 @@ add_task(test_fqdn);
 
 add_task(async function test_detected_uri() {
   info("Test setDetectedTrrURI");
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   Services.prefs.setIntPref("network.trr.mode", 3);
   Services.prefs.clearUserPref("network.trr.uri");
   let defaultURI = gDefaultPref.getCharPref("network.trr.default_provider_uri");
@@ -542,25 +543,25 @@ add_task(async function test_detected_uri() {
     `https://foo.example.com:${h2Port}/doh?responseIP=3.4.5.6`
   );
   await new TRRDNSListener("domainA.example.org.", "3.4.5.6");
-  dns.setDetectedTrrURI(
+  Services.dns.setDetectedTrrURI(
     `https://foo.example.com:${h2Port}/doh?responseIP=1.2.3.4`
   );
   await new TRRDNSListener("domainB.example.org.", "1.2.3.4");
   gDefaultPref.setCharPref("network.trr.default_provider_uri", defaultURI);
 
   // With a user-set doh uri this time.
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   setModeAndURI(2, "doh?responseIP=4.5.6.7");
   await new TRRDNSListener("domainA.example.org.", "4.5.6.7");
 
   // This should be a no-op, since we have a user-set URI
-  dns.setDetectedTrrURI(
+  Services.dns.setDetectedTrrURI(
     `https://foo.example.com:${h2Port}/doh?responseIP=1.2.3.4`
   );
   await new TRRDNSListener("domainB.example.org.", "4.5.6.7");
 
   // Test network link status change
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   Services.prefs.setIntPref("network.trr.mode", 3);
   Services.prefs.clearUserPref("network.trr.uri");
   gDefaultPref.setCharPref(
@@ -568,7 +569,7 @@ add_task(async function test_detected_uri() {
     `https://foo.example.com:${h2Port}/doh?responseIP=3.4.5.6`
   );
   await new TRRDNSListener("domainA.example.org.", "3.4.5.6");
-  dns.setDetectedTrrURI(
+  Services.dns.setDetectedTrrURI(
     `https://foo.example.com:${h2Port}/doh?responseIP=1.2.3.4`
   );
   await new TRRDNSListener("domainB.example.org.", "1.2.3.4");
@@ -603,7 +604,7 @@ add_task(async function test_pref_changes() {
     if (expectChange) {
       await uriChanged;
     }
-    equal(dns.currentTrrURI, expectedURI);
+    equal(Services.dns.currentTrrURI, expectedURI);
   }
 
   // setting the default value of the pref should be reflected in the URI
@@ -641,7 +642,9 @@ add_task(async function test_pref_changes() {
 
   // When the URI is set by the rollout addon, detection is allowed
   await doThenCheckURI(() => {
-    dns.setDetectedTrrURI(`https://foo.example.com:${h2Port}/doh?detected`);
+    Services.dns.setDetectedTrrURI(
+      `https://foo.example.com:${h2Port}/doh?detected`
+    );
   }, `https://foo.example.com:${h2Port}/doh?detected`);
 
   // Should switch back to the default provided by the rollout addon
@@ -668,7 +671,9 @@ add_task(async function test_pref_changes() {
   // Detection should not work with a user set pref
   await doThenCheckURI(
     () => {
-      dns.setDetectedTrrURI(`https://foo.example.com:${h2Port}/doh?detected`);
+      Services.dns.setDetectedTrrURI(
+        `https://foo.example.com:${h2Port}/doh?detected`
+      );
     },
     `https://foo.example.com:${h2Port}/doh?user`,
     false
@@ -700,11 +705,11 @@ add_task(async function test_dohrollout_mode() {
   Services.prefs.clearUserPref("network.trr.mode");
   Services.prefs.clearUserPref("doh-rollout.mode");
 
-  equal(dns.currentTrrMode, 0);
+  equal(Services.dns.currentTrrMode, 0);
 
   async function doThenCheckMode(trrMode, rolloutMode, expectedMode, message) {
     let modeChanged;
-    if (dns.currentTrrMode != expectedMode) {
+    if (Services.dns.currentTrrMode != expectedMode) {
       modeChanged = topicObserved("network:trr-mode-changed");
     }
 
@@ -719,7 +724,7 @@ add_task(async function test_dohrollout_mode() {
     if (modeChanged) {
       await modeChanged;
     }
-    equal(dns.currentTrrMode, expectedMode, message);
+    equal(Services.dns.currentTrrMode, expectedMode, message);
   }
 
   await doThenCheckMode(2, undefined, 2);
@@ -753,12 +758,14 @@ add_task(async function test_dohrollout_mode() {
   await doThenCheckMode(3, undefined, 3);
 
   Services.prefs.clearUserPref("network.trr.mode");
-  equal(dns.currentTrrMode, 2);
+  equal(Services.dns.currentTrrMode, 2);
   Services.prefs.clearUserPref("doh-rollout.mode");
-  equal(dns.currentTrrMode, 0);
+  equal(Services.dns.currentTrrMode, 0);
 });
 
 add_task(test_ipv6_trr_fallback);
+
+add_task(test_ipv4_trr_fallback);
 
 add_task(test_no_retry_without_doh);
 
@@ -786,7 +793,7 @@ add_task(async function test_purge_trr_cache_on_mode_change() {
 });
 
 add_task(async function test_old_bootstrap_pref() {
-  dns.clearCache(true);
+  Services.dns.clearCache(true);
   // Note this is a remote address. Setting this pref should have no effect,
   // as this is the old name for the bootstrap pref.
   // If this were to be used, the test would crash when accessing a non-local
@@ -795,3 +802,101 @@ add_task(async function test_old_bootstrap_pref() {
   setModeAndURI(Ci.nsIDNSService.MODE_TRRONLY, `doh?responseIP=4.4.4.4`);
   await new TRRDNSListener("testytest.com", "4.4.4.4");
 });
+
+add_task(async function test_padding() {
+  setModeAndURI(Ci.nsIDNSService.MODE_TRRONLY, `doh`);
+  async function CheckPadding(
+    pad_length,
+    request,
+    none,
+    ecs,
+    padding,
+    ecsPadding
+  ) {
+    Services.prefs.setIntPref("network.trr.padding.length", pad_length);
+    Services.dns.clearCache(true);
+    Services.prefs.setBoolPref("network.trr.padding", false);
+    Services.prefs.setBoolPref("network.trr.disable-ECS", false);
+    await new TRRDNSListener(request, none);
+
+    Services.dns.clearCache(true);
+    Services.prefs.setBoolPref("network.trr.padding", false);
+    Services.prefs.setBoolPref("network.trr.disable-ECS", true);
+    await new TRRDNSListener(request, ecs);
+
+    Services.dns.clearCache(true);
+    Services.prefs.setBoolPref("network.trr.padding", true);
+    Services.prefs.setBoolPref("network.trr.disable-ECS", false);
+    await new TRRDNSListener(request, padding);
+
+    Services.dns.clearCache(true);
+    Services.prefs.setBoolPref("network.trr.padding", true);
+    Services.prefs.setBoolPref("network.trr.disable-ECS", true);
+    await new TRRDNSListener(request, ecsPadding);
+  }
+
+  // short domain name
+  await CheckPadding(
+    16,
+    "a.pd",
+    "2.2.0.22",
+    "2.2.0.41",
+    "1.1.0.48",
+    "1.1.0.48"
+  );
+  await CheckPadding(256, "a.pd", "2.2.0.22", "2.2.0.41", "1.1.1.0", "1.1.1.0");
+
+  // medium domain name
+  await CheckPadding(
+    16,
+    "has-padding.pd",
+    "2.2.0.32",
+    "2.2.0.51",
+    "1.1.0.48",
+    "1.1.0.64"
+  );
+  await CheckPadding(
+    128,
+    "has-padding.pd",
+    "2.2.0.32",
+    "2.2.0.51",
+    "1.1.0.128",
+    "1.1.0.128"
+  );
+  await CheckPadding(
+    80,
+    "has-padding.pd",
+    "2.2.0.32",
+    "2.2.0.51",
+    "1.1.0.80",
+    "1.1.0.80"
+  );
+
+  // long domain name
+  await CheckPadding(
+    16,
+    "abcdefghijklmnopqrstuvwxyz0123456789.abcdefghijklmnopqrstuvwxyz0123456789.abcdefghijklmnopqrstuvwxyz0123456789.pd",
+    "2.2.0.131",
+    "2.2.0.150",
+    "1.1.0.160",
+    "1.1.0.160"
+  );
+  await CheckPadding(
+    128,
+    "abcdefghijklmnopqrstuvwxyz0123456789.abcdefghijklmnopqrstuvwxyz0123456789.abcdefghijklmnopqrstuvwxyz0123456789.pd",
+    "2.2.0.131",
+    "2.2.0.150",
+    "1.1.1.0",
+    "1.1.1.0"
+  );
+  await CheckPadding(
+    80,
+    "abcdefghijklmnopqrstuvwxyz0123456789.abcdefghijklmnopqrstuvwxyz0123456789.abcdefghijklmnopqrstuvwxyz0123456789.pd",
+    "2.2.0.131",
+    "2.2.0.150",
+    "1.1.0.160",
+    "1.1.0.160"
+  );
+});
+
+add_task(test_connection_reuse_and_cycling);

@@ -4,14 +4,13 @@
 // Simple test page which writes the value of the cache-control header.
 const TEST_URL = URL_ROOT + "sjs_cache_controle_header.sjs";
 
-const { LocalizationHelper } = require("devtools/shared/l10n");
 const L10N = new LocalizationHelper(
   "devtools/client/locales/toolbox.properties"
 );
 
 // Test that "forceReload" shorcuts send requests with the correct cache-control
 // header value: no-cache.
-add_task(async function() {
+add_task(async function () {
   await addTab(TEST_URL);
   const tab = gBrowser.selectedTab;
 
@@ -20,8 +19,16 @@ add_task(async function() {
     toolId: "inspector",
   });
 
-  await testReload("toolbox.reload.key", toolbox, "max-age=0");
-  await testReload("toolbox.reload2.key", toolbox, "max-age=0");
+  // The VALIDATE_ALWAYS flag isn’t going to be applied when we only revalidate
+  // the top level document, thus the expectedHeader is empty.
+  const expectedHeader = Services.prefs.getBoolPref(
+    "browser.soft_reload.only_force_validate_top_level_document",
+    false
+  )
+    ? ""
+    : "max-age=0";
+  await testReload("toolbox.reload.key", toolbox, expectedHeader);
+  await testReload("toolbox.reload2.key", toolbox, expectedHeader);
   await testReload("toolbox.forceReload.key", toolbox, "no-cache");
   await testReload("toolbox.forceReload2.key", toolbox, "no-cache");
 });
@@ -34,7 +41,7 @@ async function testReload(shortcut, toolbox, expectedHeader) {
   const textContent = await SpecialPowers.spawn(
     gBrowser.selectedBrowser,
     [],
-    function() {
+    function () {
       return content.document.body.textContent;
     }
   );

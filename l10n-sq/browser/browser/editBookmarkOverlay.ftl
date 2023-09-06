@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Fshihini
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Shfaqni tërë dosjet e faqerojtësve
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Fshihini
+
 bookmark-overlay-new-folder-button =
     .label = Dosje e Re
     .accesskey = D
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Shfaqni tërë etiketat
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Fshihini
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Shfaqni tërë etiketat
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Fshihini
 
 bookmark-overlay-keyword-2 =
     .value = Fjalëkyç

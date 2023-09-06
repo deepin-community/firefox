@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 ## These strings appear on the warning you see when first visiting about:config.
 
 about-config-intro-warning-title = Pozōr!
@@ -19,6 +20,8 @@ about-config-page-title = Zaawansowano kōnfiguracyjo
 about-config-search-input1 =
     .placeholder = Szukej po mianie kōnfiguracyje
 about-config-show-all = Pokoż wszyske
+
+about-config-show-only-modified = Pokoż ino pozmiyniane preferyncyje
 
 about-config-pref-add-button =
     .title = Przidej

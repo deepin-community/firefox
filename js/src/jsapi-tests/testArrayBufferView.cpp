@@ -63,19 +63,6 @@ BEGIN_TEST(testArrayBufferView_type) {
   CHECK((TestViewType<JS::TypedArray<Scalar::Float64>, 9, 72>(cx)));
   CHECK((TestViewType<JS::DataView, 8, 8>(cx)));
 
-  JS::Rooted<JS::Value> hasTypedObject(cx);
-  EVAL("typeof TypedObject !== 'undefined'", &hasTypedObject);
-  if (hasTypedObject.isTrue()) {
-    JS::Rooted<JS::Value> tval(cx);
-    EVAL(
-        "var T = new TypedObject.StructType({ x: TypedObject.uint32 });\n"
-        "new T(new ArrayBuffer(4));",
-        &tval);
-
-    JS::Rooted<JSObject*> tobj(cx, &tval.toObject());
-    CHECK(!JS_IsArrayBufferViewObject(tobj));
-  }
-
   return true;
 }
 
@@ -120,6 +107,17 @@ bool TestViewType(JSContext* cx) {
     CHECK(data1 == data2);
     CHECK(shared1 == shared2);
     CHECK(len == ExpectedLength);
+
+    JS::Heap<ViewType> hv(view);
+
+    bool shared3;
+    size_t len3;
+    uint8_t* data3 =
+        reinterpret_cast<uint8_t*>(hv.getLengthAndData(&len3, &shared3, nogc));
+    CHECK(obj == hv.asObject());
+    CHECK(data1 == data3);
+    CHECK(shared1 == shared3);
+    CHECK(len3 == ExpectedLength);
   }
 
   JS::RealmOptions options;

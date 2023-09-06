@@ -3,9 +3,11 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import React, { Component } from "react";
-import classnames from "classnames";
+import PropTypes from "prop-types";
 
 import AccessibleImage from "./AccessibleImage";
+
+const classnames = require("devtools/client/shared/classnames.js");
 
 import "./ResultList.css";
 
@@ -14,6 +16,16 @@ export default class ResultList extends Component {
     size: "small",
     role: "listbox",
   };
+
+  static get propTypes() {
+    return {
+      items: PropTypes.array.isRequired,
+      role: PropTypes.oneOf(["listbox"]),
+      selectItem: PropTypes.func.isRequired,
+      selected: PropTypes.number.isRequired,
+      size: PropTypes.oneOf(["big", "small"]),
+    };
+  }
 
   renderListItem = (item, index) => {
     if (item.value === "/" && item.title === "") {

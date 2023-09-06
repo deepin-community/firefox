@@ -8,6 +8,7 @@ about-networking-sockets = Υποδοχές
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Απαλοιφή κρυφής μνήμης DNS
 about-networking-dns-trr-url = DoH URL
+about-networking-dns-trr-mode = Λειτουργία DoH
 about-networking-dns-suffix = Κατάληξη DNS
 about-networking-websockets = WebSockets
 about-networking-refresh = Ανανέωση
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Ενεργό
 about-networking-idle = Αδρανές
 about-networking-host = Διακομιστής
-about-networking-tcp = TCP
 about-networking-type = Τύπος
 about-networking-sent = Απεσταλμένα
 about-networking-received = Ληφθέντα
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Διευθύνσεις
 about-networking-expires = Λήξη (δευτερόλεπτα)
 about-networking-originAttributesSuffix = Κλειδί απομόνωσης
+about-networking-flags = Επιπλέον επισημάνσεις
 about-networking-messages-sent = Απεσταλμένα μηνύματα
 about-networking-messages-received = Ληφθέντα μηνύματα
 about-networking-bytes-sent = Απεσταλμένα byte
 about-networking-bytes-received = Ληφθέντα byte
 about-networking-logging = Καταγραφή
-about-networking-log-tutorial = Δείτε την <a data-l10n-name="logging">Καταγραφή HTTP</a> για οδηγίες σχετικά με τη χρήση αυτού του εργαλείου.
-about-networking-current-log-file = Τρέχον αρχείο καταγραφής:
-about-networking-current-log-modules = Τρέχουσες μονάδες καταγραφής:
-about-networking-set-log-file = Ορισμός αρχείου καταγραφής
-about-networking-set-log-modules = Ορισμός μονάδων καταγραφής
-about-networking-start-logging = Έναρξη καταγραφής
-about-networking-stop-logging = Τερματισμός καταγραφής
 about-networking-dns-lookup = Αναζήτηση DNS
 about-networking-dns-lookup-button = Επίλυση
 about-networking-dns-domain = Τομέας:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Αργή μέτρηση κρυφής μνήμ
 about-networking-rcwn-cache-not-slow = Μη αργή μέτρηση κρυφής μνήμης
 about-networking-networkid = ID δικτύου
 about-networking-networkid-id = ID δικτύου
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Αυτή η σελίδα έχει μετακινηθεί στο <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

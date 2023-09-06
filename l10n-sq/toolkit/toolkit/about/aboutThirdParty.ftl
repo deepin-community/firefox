@@ -34,21 +34,42 @@ third-party-tag-background = Sfond
     .title =
         Ky modul s’e bllokoi aplikacionin, ngaqë qe ngarkuar
         në prapaskenë.
-third-party-unsigned-icon =
+third-party-icon-unsigned =
     .title = Ky modul s’është i nënshkruar
-third-party-warning-icon =
-    .title = { -brand-short-name } vithisi kod nga ky modul
+    .alt = Ky modul s’është i nënshkruar
+third-party-icon-warning =
+    .title = { -brand-short-name } u vithis nga kod prej këtij moduli
+    .alt = { -brand-short-name } u vithis nga kod prej këtij moduli
 
 third-party-status-loaded = I ngarkuar
 third-party-status-blocked = I bllokuar
 third-party-status-redirected = I ridrejtuar
 
-third-party-button-copy-to-clipboard = Kopjo të dhëna të papërpunuara te e papastra
+third-party-button-copy-to-clipboard = Kopjo te e papastra të dhëna të papërpunuara
 third-party-button-reload = Ringarkoje me hollësi sistemi
     .title = Ringarkoje me hollësi sistemi
 third-party-button-open =
     .title = Hapni vendndodhje kartele…
+third-party-button-to-block =
+    .title = Bllokoje këtë modul
+    .aria-label = Bllokoje këtë modul
+third-party-button-to-unblock =
+    .title = Aktualisht i bllokuar. Klikoni që të zhbllokohet.
+    .aria-label = Aktualisht i bllokuar. Klikoni që të zhbllokohet.
+third-party-button-to-unblock-disabled =
+    .title =
+        Aktualisht me shenjë si i bllokuar, edhe pse, për këtë xhirim të { -brand-short-name }-it,
+        lista e bllokimeve është e çaktivizuar. Klikoni që të zhbllokohet.
+    .aria-label =
+        Aktualisht me shenjë si i bllokuar, edhe pse, për këtë xhirim të { -brand-short-name }-it,
+        lista e bllokimeve është e çaktivizuar. Klikoni që të zhbllokohet.
 third-party-button-expand =
     .title = Shfaq të dhëna të hollësishme
 third-party-button-collapse =
     .title = Tkurri të dhënat e hollësishme
+third-party-should-restart-title = Riniseni { -brand-short-name }-in
+third-party-restart-later = Riniseni më vonë
+
+third-party-blocked-by-builtin =
+    .title = Bllokuar nga { -brand-short-name }-i
+    .alt = Bllokuar nga { -brand-short-name }-i

@@ -58,7 +58,6 @@ protections-panel-not-found-label = ఇవేమీ కనబడలేదు
 ##
 
 protections-panel-settings-label = సంరక్షణ అమరికలు
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = సంరక్షణల డాష్‌బోర్డ్
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -72,6 +71,8 @@ protections-panel-site-not-working-view-issue-list-videos = వీడియో�
 protections-panel-site-not-working-view-send-report = నివేదికను పంపించు
 
 ##
+
+protections-panel-description-shim-allowed-learn-more = ఇంకా తెలుసుకోండి
 
 protections-panel-content-blocking-manage-settings =
     .label = సంరక్షణ అమరికలను నిర్వహించుకోండి
@@ -87,3 +88,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = రద్దుచేయి
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = నివేదికను పంపించు
+
+# Cookie Banner Handling
+

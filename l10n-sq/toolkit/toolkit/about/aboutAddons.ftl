@@ -8,10 +8,16 @@ search-header =
     .placeholder = Kërkoni te addons.mozilla.org
     .searchbuttonlabel = Kërko
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
 list-empty-get-extensions-message = Merrni zgjerime dhe tema te <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-dictionaries-message = Merrni fjalorë te <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-language-packs-message = Merrni paketa gjuhësore te <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
 
 list-empty-installed =
     .value = Nuk keni të instaluar ndonjë shtesë të këtij lloji
@@ -32,9 +38,9 @@ help-button = Asistencë Shtesash
 sidebar-help-button-title =
     .title = Asistencë Shtesash
 
-addons-settings-button = Rregullime { -brand-short-name }
+addons-settings-button = Rregullime { -brand-short-name }-i
 sidebar-settings-button-title =
-    .title = Rregullime { -brand-short-name }
+    .title = Rregullime { -brand-short-name }-i
 
 show-unsigned-extensions-button =
     .label = Disa nga shtesat nuk u verifikuan dot
@@ -47,6 +53,9 @@ detail-version =
 
 detail-last-updated =
     .label = Përditësuar Së Fundi Më
+
+addon-detail-description-expand = Shfaq më tepër
+addon-detail-description-collapse = Shfaq më pak
 
 detail-contributions-description = Zhvilluesi i kësaj shtese do të dëshironte që përmes një kontributi të vogël të ndihmonit zhvillimin e saj në vazhdimësi.
 
@@ -75,7 +84,7 @@ detail-private-browsing-label = Xhiroje në Dritare Private
 # Some add-ons may elect to not run in private windows by setting incognito: not_allowed in the manifest.  This
 # cannot be overridden by the user.
 detail-private-disallowed-label = Nuk Lejohet në Dritare Private
-detail-private-disallowed-description2 = Ky zgjerim nuk punon nën shfletim privat. <a data-l10n-name="learn-more">Mësoni më tepër</label>
+detail-private-disallowed-description2 = Ky zgjerim nuk punon nën shfletim privat. <a data-l10n-name="learn-more">Mësoni më tepër</a>
 
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
 detail-private-required-label = Lyp Hyrje në Dritare Private
@@ -149,7 +158,7 @@ legacy-extensions-description = Këto zgjerime nuk i plotësojnë standardet e t
 
 private-browsing-description2 =
     Në { -brand-short-name } po ndryshon mënyra se si funksionojnë zgjerimet nën shfletim privat. Çfarëdo zgjerimi i ri që shtoni te
-    { -brand-short-name } s’do të xhirohet në Dritare Private, si parazgjedhje. Veç në e lejofshi te rregullimet, zgjerimi s’do të funksionojë, teksa gjendeni nën shfletim privat, dhe s’do të mund të përdorë veprimtaritë tuaja internetore të atyshme. Këtë ndryshim e kemi bërë për ta mbajtur privat shfletimin tuaj privat.
+    { -brand-short-name } s’do të xhirohet në Dritare Private, si parazgjedhje. Veç në e lejofshi te rregullimet, zgjerimi s’do të funksionojë, teksa gjendeni nën shfletim privat dhe s’do të mund të përdorë veprimtaritë tuaja internetore të atyshme. Këtë ndryshim e kemi bërë për ta mbajtur privat shfletimin tuaj privat.
     <label data-l10n-name="private-browsing-learn-more">Mësoni si të administroni rregullime zgjerimi.</label>
 
 addon-category-discover = Rekomandime
@@ -176,17 +185,23 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Përditësime Së Fundi
 addon-category-recent-updates-title =
     .title = Përditësime Së Fundi
+addon-category-sitepermission = Leje Sajti
+addon-category-sitepermission-title =
+    .title = Leje Sajti
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string): DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Leje Sajti për { $host }
 
 ## These are global warnings
 
 extensions-warning-safe-mode = Mënyra e Parrezik ka çaktivizuar krejt shtesat.
-extensions-warning-check-compatibility = Kontrolli i përputhshmërisë së shtesave është i çaktivizuar. Keni shtesa të papërputhshme.
+extensions-warning-check-compatibility = Kontrolli i përputhjes së shtesave është i çaktivizuar. Keni shtesa të papërputhshme.
 extensions-warning-check-compatibility-button = Aktivizoje
-    .title = Aktivizoni kontrollin e përputhshmërisë së shtesave
+    .title = Aktivizoni kontrollin e përputhjesë së shtesave
 extensions-warning-update-security = Kontrolli i përditësimit të shtesave është i çaktivizuar. Përditësimet mund t'ju hapin punë.
 extensions-warning-update-security-button = Aktivizoje
     .title = Aktivizoni kontrollin e përditësimit të shtesave
-
 
 ## Strings connected to add-on updates
 
@@ -278,7 +293,7 @@ header-back-button =
 # Explanatory introduction to the list of recommended add-ons. The action word
 # ("recommends") in the final sentence is a link to external documentation.
 discopane-intro =
-    Zgjerimet dhe temat janë si aplikacione për shfletuesin tuaj, dhe ju lejojnë
+    Zgjerimet dhe temat janë si aplikacione për shfletuesin tuaj dhe ju lejojnë
     të mbroni fjalëkalimet, të shkarkoni video, të gjeni pazare me leverdi,
     të bllokoni reklama bezdisëse, të ndryshoni pamjen e shfletuesit tuaj, etj.
     Këta programe të vegjël software shpesh krijohen nga një palë e tretë.
@@ -306,6 +321,7 @@ install-theme-button = Instaloni Temë
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Administroni
 find-more-addons = Gjeni më tepër shtesa
+find-more-themes = Shihni më tepër tema
 
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
@@ -333,11 +349,11 @@ details-addon-button = Hollësi
 release-notes-addon-button = Shënime Versioni
 permissions-addon-button = Leje
 
-extension-enabled-heading = E aktivizuar
+extension-enabled-heading = I aktivizuar
 extension-disabled-heading = E çaktivizuar
 
 theme-enabled-heading = E aktivizuar
-theme-disabled-heading = E çaktivizuar
+theme-disabled-heading2 = Tema të Ruajtura
 
 plugin-enabled-heading = E aktivizuar
 plugin-disabled-heading = E çaktivizuar
@@ -347,6 +363,9 @@ dictionary-disabled-heading = I çaktivizuar
 
 locale-enabled-heading = E aktivizuar
 locale-disabled-heading = E çaktivizuar
+
+sitepermission-enabled-heading = E aktivizuar
+sitepermission-disabled-heading = E çaktivizuar
 
 always-activate-button = Aktivizoje Përherë
 never-activate-button = Mos e Aktivizo Kurrë
@@ -404,13 +423,15 @@ addon-detail-private-browsing-help = Nën lejim, zgjerimi do të mund të shohë
 addon-detail-private-browsing-allow = Lejoje
 addon-detail-private-browsing-disallow = Mos e Lejo
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 addon-badge-recommended2 =
     .title = { -brand-product-name } rekomandon vetëm zgjerime që pajohen me standadet tona mbi sigurinë dhe funksionimin
     .aria-label = { addon-badge-recommended2.title }
-
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
 addon-badge-line3 =
@@ -429,13 +450,14 @@ release-notes-loading = Po ngarkohet…
 release-notes-error = Na ndjeni, por pati një gabim gjatë ngarkimit të shënimeve të versionit.
 
 addon-permissions-empty = Ky zgjerim nuk lyp ndonjë leje
-
 addon-permissions-required = Leje të domosdoshme për funksione bazë:
 addon-permissions-optional = Leje opsionale për më tepër funksione:
 addon-permissions-learnmore = Mësoni më tepër rreth lejesh
 
 recommended-extensions-heading = Zgjerime të Këshilluara
 recommended-themes-heading = Tema të Këshilluara
+
+addon-sitepermissions-required = I akordon <span data-l10n-name="hostname">{ $hostname }</span> aftësitë vijuese:
 
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
@@ -449,6 +471,7 @@ plugin-heading = Administroni shtojcat tuaja
 dictionary-heading = Administroni fjalorët tuaj
 locale-heading = Administroni gjuhët tuaja
 updates-heading = Administroni Përditësimet Tuaja
+sitepermission-heading = Administroni Lejet Tuaja për Sajte
 discover-heading = Personalizoni { -brand-short-name }-in Tuaj
 shortcuts-heading = Administroni Shkurtore Zgjerimesh
 
@@ -458,3 +481,30 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Mjete për krejt shtesat
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } është e papërputhshme me { -brand-short-name } { $version }.
+details-notification-incompatible-link = Më Tepër Hollësi
+
+details-notification-unsigned-and-disabled = { $name } s’u verifikua dot për përdorim te { -brand-short-name } dhe u çaktivizua.
+details-notification-unsigned-and-disabled-link = Më Tepër Hollësi
+
+details-notification-unsigned = { $name } s’u verifikua dot për përdorim te { -brand-short-name }. Vazhdoni, por me kujdes.
+details-notification-unsigned-link = Më Tepër Hollësi
+
+details-notification-blocked = { $name } është çaktivizuar për shkak problemesh sigurie ose qëndrueshmërie.
+details-notification-blocked-link = Më Tepër Hollësi
+
+details-notification-softblocked = { $name } njihet si shkaktare problemesh sigurie ose qëndrueshmërie.
+details-notification-softblocked-link = Më Tepër Hollësi
+
+details-notification-gmp-pending = { $name } do të instalohet pas pak.

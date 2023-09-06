@@ -21,6 +21,10 @@ APZChild::APZChild(RefPtr<GeckoContentController> aController)
 }
 
 APZChild::~APZChild() {
+  if (mAPZTaskRunnable) {
+    mAPZTaskRunnable->Revoke();
+    mAPZTaskRunnable = nullptr;
+  }
   if (mController) {
     mController->Destroy();
     mController = nullptr;
@@ -37,7 +41,9 @@ mozilla::ipc::IPCResult APZChild::RecvRequestContentRepaint(
     const RepaintRequest& aRequest) {
   MOZ_ASSERT(mController->IsRepaintThread());
 
-  mController->RequestContentRepaint(aRequest);
+  EnsureAPZTaskRunnable();
+
+  mAPZTaskRunnable->QueueRequest(aRequest);
   return IPC_OK();
 }
 
@@ -63,15 +69,17 @@ mozilla::ipc::IPCResult APZChild::RecvNotifyMozMouseScrollEvent(
 
 mozilla::ipc::IPCResult APZChild::RecvNotifyAPZStateChange(
     const ScrollableLayerGuid& aGuid, const APZStateChange& aChange,
-    const int& aArg) {
-  mController->NotifyAPZStateChange(aGuid, aChange, aArg);
+    const int& aArg, Maybe<uint64_t> aInputBlockId) {
+  mController->NotifyAPZStateChange(aGuid, aChange, aArg, aInputBlockId);
   return IPC_OK();
 }
 
 mozilla::ipc::IPCResult APZChild::RecvNotifyFlushComplete() {
   MOZ_ASSERT(mController->IsRepaintThread());
+  EnsureAPZTaskRunnable();
 
-  mController->NotifyFlushComplete();
+  mAPZTaskRunnable->QueueFlushCompleteNotification();
+
   return IPC_OK();
 }
 

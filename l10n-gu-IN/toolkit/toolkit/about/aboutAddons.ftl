@@ -8,8 +8,11 @@ search-header =
     .placeholder = addons.mozilla.org શોધો
     .searchbuttonlabel = શોધો
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
+
 
 list-empty-installed =
     .value = તમારી પાસે આ પ્રકારનાં સ્થાપિત થયેલ કોઇપણ ઍડ-ઓન નથી
@@ -27,7 +30,6 @@ list-empty-button =
     .label = ઍડ-ઓન વિશે વધુ શીખો
 
 help-button = ઍડ-ઓન્સ આધાર
-
 sidebar-help-button-title =
     .title = ઍડ-ઓન્સ આધાર
 
@@ -161,7 +163,6 @@ extensions-warning-update-security = ઍડ-ઓન સુધારા સુર�
 extensions-warning-update-security-button = સક્રિય
     .title = ઍડ-ઓન સુધારા સુરક્ષા ચકાસણીને સક્રિય કરો
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = સુધારાઓ માટે ચકાસો
@@ -245,8 +246,12 @@ enable-addon-button = સક્રિય
 ## Pending uninstall message bar
 
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
+
 
 ##
 
@@ -264,3 +269,29 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = બધા ઍડ-ઓન માટે સાધનો
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } એ { -brand-short-name } { $version } સાથે અસુસંગત છે.
+
+details-notification-unsigned-and-disabled = { -brand-short-name } માં { $name } ઉપયોગ માટે ચકાસણી કરી શકાઈ નથી અને તે અક્ષમ કરવામાં આવ્યું છે.
+details-notification-unsigned-and-disabled-link = વધુ મહિતી
+
+details-notification-unsigned = { -brand-short-name } માં ઉપયોગ માટે { $name } ચકાસવામાં આવી શક્યું નથી. સાવધાની સાથે આગળ વધો.
+details-notification-unsigned-link = વધુ મહિતી
+
+details-notification-blocked = સુરક્ષા અથવા સ્થિરતા સમસ્યાઓ દરમ્યાન { $name } ને નિષ્ક્રિય કરી દેવામાં આવ્યો છે.
+details-notification-blocked-link = વધારે જાણકારી
+
+details-notification-softblocked = સુરક્ષા અથવા સ્થિરતાની સમસ્યાઓને કારણે { $name } જાણીતો છે.
+details-notification-softblocked-link = વધારે જાણકારી
+
+details-notification-gmp-pending = { $name } ટૂંક સમયમાં જ ઇન્સ્ટોલ થશે.

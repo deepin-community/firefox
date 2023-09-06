@@ -13,7 +13,7 @@
 #include "nsComponentManagerUtils.h"
 
 #define TCP_LOG(...)
-//#define TCP_LOG(...) printf_stderr(__VA_ARGS__);
+// #define TCP_LOG(...) printf_stderr(__VA_ARGS__);
 
 namespace mozilla {
 namespace layers {
@@ -129,12 +129,6 @@ void TextureClientPool::AllocateTextureClient() {
           mOutstandingClients);
 
   TextureAllocationFlags allocFlags = ALLOC_DEFAULT;
-
-  if (mKnowsCompositor->SupportsTextureDirectMapping() &&
-      std::max(mSize.width, mSize.height) <= GetMaxTextureSize()) {
-    allocFlags =
-        TextureAllocationFlags(allocFlags | ALLOC_ALLOW_DIRECT_MAPPING);
-  }
 
   RefPtr<TextureClient> newClient;
   if (StaticPrefs::layers_force_shmem_tiles_AtStartup()) {

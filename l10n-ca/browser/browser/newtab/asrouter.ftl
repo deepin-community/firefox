@@ -12,25 +12,33 @@ cfr-doorhanger-feature-heading = Funció recomanada
 
 cfr-doorhanger-extension-sumo-link =
     .tooltiptext = Per què veig això?
+
 cfr-doorhanger-extension-cancel-button = Ara no
     .accesskey = n
+
 cfr-doorhanger-extension-ok-button = Afegeix-la ara
     .accesskey = A
+
 cfr-doorhanger-extension-manage-settings-button = Gestiona els paràmetres de recomanacions
     .accesskey = G
+
 cfr-doorhanger-extension-never-show-recommendation = No em mostris aquesta recomanació
     .accesskey = m
+
 cfr-doorhanger-extension-learn-more-link = Més informació
+
 # This string is used on a new line below the add-on name
 # Variables:
 #   $name (String) - Add-on author name
 cfr-doorhanger-extension-author = per { $name }
+
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Recomanació
 cfr-doorhanger-extension-notification2 = Recomanació
     .tooltiptext = Recomanació d'extensió
     .a11y-announcement = Recomanació d'extensió disponible
+
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-feature-notification = Recomanació
@@ -77,9 +85,11 @@ cfr-protections-panel-link-text = Més informació
 # This string is used by screen readers to offer a text based alternative for
 # the notification icon
 cfr-badge-reader-label-newfeature = Novetat:
+
 cfr-whatsnew-button =
     .label = Novetats
     .tooltiptext = Novetats
+
 cfr-whatsnew-release-notes-link-text = Llegiu les notes de la versió
 
 ## Enhanced Tracking Protection Milestones
@@ -107,13 +117,6 @@ cfr-doorhanger-doh-secondary-button = Inhabilita
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = La vostra privadesa és important. Ara el { -brand-short-name } aïlla els llocs web els uns dels altres, perquè sigui més difícil per als furoners robar contrasenyes, números de targetes de crèdit i altra informació confidencial.
-cfr-doorhanger-fission-header = Aïllament de llocs
-cfr-doorhanger-fission-primary-button = Entesos
-    .accesskey = E
-cfr-doorhanger-fission-secondary-button = Més informació
-    .accesskey = M
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = És possible que els vídeos d'aquest lloc no es reprodueixin correctament en aquesta versió del { -brand-short-name }. Per reproduir els vídeos correctament, actualitzeu el { -brand-short-name } ara.
@@ -121,15 +124,123 @@ cfr-doorhanger-video-support-header = Actualitzeu el { -brand-short-name } per r
 cfr-doorhanger-video-support-primary-button = Actualitza ara
     .accesskey = A
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
 spotlight-public-wifi-vpn-header = Sembla que utilitzeu una connexió Wi-Fi pública
 spotlight-public-wifi-vpn-body = Per amagar la vostra ubicació i activitat de navegació, considereu utilitzar una xarxa privada virtual. Us ajudarà a mantenir-vos protegit quan navegueu per llocs públics, com ara aeroports i cafeteries.
 spotlight-public-wifi-vpn-primary-button = Protegiu la vostra privadesa amb el { -mozilla-vpn-brand-name }
     .accesskey = P
 spotlight-public-wifi-vpn-link = Ara no
     .accesskey = n
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Fer una Internet millor és responsabilitat de tots nosaltres
+spotlight-better-internet-body = Utilitzant el { -brand-short-name } doneu suport a una Internet oberta, accessible i millor per a tothom.
+spotlight-peace-mind-header = Teniu les espatlles ben cobertes
+spotlight-peace-mind-body = Cada mes, el { -brand-short-name } bloca una mitjana de 3000 elements de seguiment per usuari. Creiem que no s'hauria d'interposar res entre l'usuari i el bon contingut d'Internet, i menys els atacs a la privadesa provocats per aquests elements de seguiment.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Fixa'l al Dock
+       *[other] Fixa'l a la barra de tasques
+    }
+spotlight-pin-secondary-button = Ara no
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+mr2022-background-update-toast-title = Nou { -brand-short-name }. Més privat. Menys seguiment. Sense compromisos.
+mr2022-background-update-toast-text = Proveu el nou { -brand-short-name }, actualitzat amb la protecció contra el seguiment més potent fins ara.
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it
+# using a variable font like Arial): the button can only fit 1-2
+# additional characters, exceeding characters will be truncated.
+mr2022-background-update-toast-primary-button-label = Obre el { -brand-shorter-name } ara
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = Recorda-m'ho més tard
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Prova-ho
+    .accesskey = P
+firefoxview-cfr-secondarybutton = Ara no
+    .accesskey = A
+firefoxview-cfr-header-v2 = Continueu des d’on ho deixeu
+firefoxview-cfr-body-v2 = Recupereu les pestanyes tancades recentment i salteu d'un dispositiu a l'altre de forma transparent amb la { -firefoxview-brand-name }.
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = Us presentem la { -firefoxview-brand-name }
+
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = Voleu aquella pestanya que teniu oberta en el telèfon? Recupereu-la a l'instant. Necessiteu un lloc que tot just heu visitat ara mateix? Amb el { -firefoxview-brand-name } és dit i fet.
+firefoxview-spotlight-promo-primarybutton = Com funciona?
+firefoxview-spotlight-promo-secondarybutton = Omet
+
+## Colorways expiry reminder CFR
+
+colorways-cfr-primarybutton = Tria la combinació de colors
+    .accesskey = c
+
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = Acoloriu el navegador amb aquests tons exclusius del { -brand-short-name } inspirats en veus que han canviat la cultura.
+colorways-cfr-header-28days = Les combinacions de colors de Veus independents caduquen el 16 de gener
+colorways-cfr-header-14days = Les combinacions de colors de Veus independents caduquen d'aquí a dues setmanes
+colorways-cfr-header-7days = Les combinacions de colors de Veus independents caduquen aquesta setmana
+colorways-cfr-header-today = Les combinacions de colors de Veus independents caduquen avui
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-header = Voleu que el { -brand-short-name } rebutgi els bàners de galetes?
+cfr-cbh-body = El { -brand-short-name } pot rebutjar automàticament moltes sol·licituds de bàners de galetes.
+cfr-cbh-confirm-button = Rebutja els bàners de galetes
+    .accesskey = R
+cfr-cbh-dismiss-button = Ara no
+    .accesskey = n
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+july-jam-headline = Teniu les espatlles ben cobertes
+july-jam-body = Cada mes, el { -brand-short-name } bloca una mitjana de 3.000 elements de seguiment per usuari, per tal d'oferir-vos un accés segur i ràpid al bon contingut d'Internet.
+july-jam-set-default-primary = Obre els enllaços amb el { -brand-short-name }
+fox-doodle-pin-headline = Ben tornat
+
+# “indie” is short for the term “independent”.
+# In this instance, free from outside influence or control.
+fox-doodle-pin-body = Us volem recordar que podeu tenir el vostre navegador independent preferit a un sol clic.
+fox-doodle-pin-primary = Obre els enllaços amb el { -brand-short-name }
+fox-doodle-pin-secondary = Ara no
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+set-default-pdf-handler-headline = <strong>Ara podeu obrir els fitxers PDF en el { -brand-short-name }.</strong> Editeu o signeu formularis directament en el navegador. Per a canviar, cerqueu «PDF» en els paràmetres.
+set-default-pdf-handler-primary = Entesos
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
+

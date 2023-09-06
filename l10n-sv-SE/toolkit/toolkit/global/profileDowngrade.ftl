@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-profiledowngrade-window =
+profiledowngrade-window2 =
     .title = Du har startat en äldre version av { -brand-product-name }
-    .style = width: 490px;
+    .style = min-width: 490px;
 
 profiledowngrade-window-create =
     .label = Skapa ny profil

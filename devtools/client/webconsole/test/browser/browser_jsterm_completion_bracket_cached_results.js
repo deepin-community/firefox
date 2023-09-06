@@ -5,7 +5,7 @@
 
 "use strict";
 
-const TEST_URI = `data:text/html;charset=utf8,<p>test [ completion cached results.
+const TEST_URI = `data:text/html;charset=utf8,<!DOCTYPE html><p>test [ completion cached results.
   <script>
     window.testObject = Object.create(null, Object.getOwnPropertyDescriptors({
       bar: 0,
@@ -18,7 +18,7 @@ const TEST_URI = `data:text/html;charset=utf8,<p>test [ completion cached result
     }));
   </script>`;
 
-add_task(async function() {
+add_task(async function () {
   await pushPref("devtools.editor.autoclosebrackets", false);
   const hud = await openNewTabAndConsole(TEST_URI);
   const { jsterm } = hud;

@@ -41,6 +41,17 @@ options-collapse-attrs-label = 截斷 DOM 屬性
 options-collapse-attrs-tooltip =
     .title = 截斷檢測器中的長屬性
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = 點擊並拖曳，即可編輯大小值
+options-inspector-draggable-properties-tooltip =
+    .title = 點擊並拖曳，即可在檢測器的規則畫面編輯大小值。
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = 透過 prefers-reduced-motion 使用較簡單的強調器
+options-inspector-simplified-highlighters-tooltip =
+    .title = 開啟 prefers-reduced-motion 時會使用較簡單的強調器。會對要強調的元素畫線強調，而不填入實心長方形來避免閃爍效果。
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = 預設色彩單位
@@ -48,6 +59,7 @@ options-default-color-unit-authored = 如同原始單位
 options-default-color-unit-hex = Hex
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = 色彩名稱
 
 ## Style Editor section
@@ -118,21 +130,25 @@ options-enable-remote-label = 啟用遠端除錯
 options-enable-remote-tooltip2 =
     .title = 開啟此選項後，將允許從遠端對此瀏覽器除錯
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = 使用 F12 鍵開啟或關閉開發者工具
+options-enable-f12-tooltip =
+    .title = 開啟此選項後，將綁定 F12 鍵來開關開發者工具箱
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = 啟用自訂格式化套件
+options-enable-custom-formatters-tooltip =
+    .title = 開啟此選項，將允許網站自行定義 DOM 物件的格式化套件
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = 啟用 Service Workers over HTTP（當工具箱開啟時）
 options-enable-service-workers-http-tooltip =
     .title = 開啟此選項後，將會允許在開啟工具箱的所有分頁中透過 HTTP 使用 service workers。
 
 # The label for the checkbox that toggles source maps in all tools.
-options-source-maps-label = 開啟原始碼對應
+options-source-maps-label = 開啟原始碼對應表
 options-source-maps-tooltip =
     .title = 若您開啟此選項，將會在開發者工具中進行原始碼對應。
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * 僅在目前瀏覽階段有效，將會重新載入頁面
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = 顯示 Gecko 平台資料
-options-show-platform-data-tooltip =
-    .title = 若您啟用此選項，JavaScript 效能檢測報告將會包含 Gecko 平台符號

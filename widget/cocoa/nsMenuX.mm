@@ -29,7 +29,6 @@
 #include "nsString.h"
 #include "nsReadableUtils.h"
 #include "nsUnicharUtils.h"
-#include "plstr.h"
 #include "nsGkAtoms.h"
 #include "nsCRT.h"
 #include "nsBaseWidget.h"
@@ -68,6 +67,11 @@ static void SwizzleDynamicIndexingMethods() {
   nsToolkit::SwizzleMethods(SCTGRLIndexClass, @selector(indexMenuBarDynamically),
                             @selector(nsMenuX_SCTGRLIndex_indexMenuBarDynamically));
 
+  Class NSServicesMenuUpdaterClass = ::NSClassFromString(@"_NSServicesMenuUpdater");
+  nsToolkit::SwizzleMethods(NSServicesMenuUpdaterClass,
+                            @selector(populateMenu:withServiceEntries:forDisplay:),
+                            @selector(nsMenuX_populateMenu:withServiceEntries:forDisplay:));
+
   gMenuMethodsSwizzled = true;
 }
 
@@ -91,7 +95,7 @@ nsMenuX::nsMenuX(nsMenuParentX* aParent, nsMenuGroupOwnerX* aMenuGroupOwner, nsI
   }
 
   if (mContent->IsElement()) {
-    mContent->AsElement()->GetAttr(kNameSpaceID_None, nsGkAtoms::label, mLabel);
+    mContent->AsElement()->GetAttr(nsGkAtoms::label, mLabel);
   }
   mNativeMenu = CreateMenuWithGeckoString(mLabel);
 
@@ -116,6 +120,11 @@ nsMenuX::nsMenuX(nsMenuParentX* aParent, nsMenuGroupOwnerX* aMenuGroupOwner, nsI
   // is actually selected, then we can't access keyboard commands until the
   // menu gets selected, which is bad.
   RebuildMenu();
+
+  if (IsXULWindowMenu(mContent)) {
+    // Let the OS know that this is our Window menu.
+    NSApp.windowsMenu = mNativeMenu;
+  }
 
   mIcon = MakeUnique<nsMenuItemIconX>(this);
 
@@ -426,9 +435,9 @@ void nsMenuX::MenuOpened() {
     explicit MenuOpenedAsyncRunnable(nsMenuX* aMenu)
         : CancelableRunnable("MenuOpenedAsyncRunnable"), mMenu(aMenu) {}
 
-    nsresult Run() override {
-      if (mMenu) {
-        RefPtr<nsMenuX> menu = mMenu;
+    // TODO: Convert this to MOZ_CAN_RUN_SCRIPT (bug 1415230, bug 1535398)
+    MOZ_CAN_RUN_SCRIPT_BOUNDARY nsresult Run() override {
+      if (RefPtr<nsMenuX> menu = mMenu) {
         menu->MenuOpenedAsync();
         mMenu = nullptr;
       }
@@ -465,7 +474,7 @@ void nsMenuX::MenuOpenedAsync() {
     mContent->AsElement()->SetAttr(kNameSpaceID_None, nsGkAtoms::open, u"true"_ns, true);
   }
 
-  nsCOMPtr<nsIContent> popupContent = GetMenuPopupContent();
+  RefPtr<nsIContent> popupContent = GetMenuPopupContent();
 
   // Notify our observer.
   if (mObserver && popupContent) {
@@ -475,11 +484,11 @@ void nsMenuX::MenuOpenedAsync() {
   // Fire popupshown.
   nsEventStatus status = nsEventStatus_eIgnore;
   WidgetMouseEvent event(true, eXULPopupShown, nullptr, WidgetMouseEvent::eReal);
-  nsIContent* dispatchTo = popupContent ? popupContent : mContent;
+  RefPtr<nsIContent> dispatchTo = popupContent ? popupContent : mContent;
   EventDispatcher::Dispatch(dispatchTo, nullptr, &event, nullptr, &status);
 }
 
-void nsMenuX::MenuClosed(bool aEntireMenuClosingDueToActivateItem) {
+void nsMenuX::MenuClosed() {
   if (!mIsOpen) {
     return;
   }
@@ -490,7 +499,7 @@ void nsMenuX::MenuClosed(bool aEntireMenuClosingDueToActivateItem) {
   // If any of our submenus were opened programmatically, make sure they get closed first.
   for (auto& child : mMenuChildren) {
     if (child.is<RefPtr<nsMenuX>>()) {
-      child.as<RefPtr<nsMenuX>>()->MenuClosed(aEntireMenuClosingDueToActivateItem);
+      child.as<RefPtr<nsMenuX>>()->MenuClosed();
     }
   }
 
@@ -507,9 +516,9 @@ void nsMenuX::MenuClosed(bool aEntireMenuClosingDueToActivateItem) {
     explicit MenuClosedAsyncRunnable(nsMenuX* aMenu)
         : CancelableRunnable("MenuClosedAsyncRunnable"), mMenu(aMenu) {}
 
-    nsresult Run() override {
-      if (mMenu) {
-        RefPtr<nsMenuX> menu = mMenu;
+    // TODO: Convert this to MOZ_CAN_RUN_SCRIPT (bug 1415230, bug 1535398)
+    MOZ_CAN_RUN_SCRIPT_BOUNDARY nsresult Run() override {
+      if (RefPtr<nsMenuX> menu = mMenu) {
         menu->MenuClosedAsync();
         mMenu = nullptr;
       }
@@ -526,20 +535,7 @@ void nsMenuX::MenuClosed(bool aEntireMenuClosingDueToActivateItem) {
 
   mPendingAsyncMenuCloseRunnable = new MenuClosedAsyncRunnable(this);
 
-  if (aEntireMenuClosingDueToActivateItem) {
-    // Delay the call to MenuClosedAsync until after the menu's event loop has been exited, by using
-    // -[MOZMenuOpeningCoordinator runAfterMenuClosed:]. Otherwise, the runnable might potentially
-    // run before the event loop has been exited, and MenuClosedAsync() would flush the pending
-    // command runnable for the menu activation, and then the command event would run inside the
-    // menu's event loop which is what we're trying to avoid.
-    [MOZMenuOpeningCoordinator.sharedInstance runAfterMenuClosed:mPendingAsyncMenuCloseRunnable];
-  } else {
-    // Just dispatch to the Gecko event queue.
-    // One way to get here is if a submenu is closed but the rest of the menu stays open; in that
-    // case, we really can't use runAfterMenuClosed because the submenu's MenuClosedAsync method
-    // would run way too late.
-    NS_DispatchToCurrentThread(mPendingAsyncMenuCloseRunnable);
-  }
+  NS_DispatchToCurrentThread(mPendingAsyncMenuCloseRunnable);
 }
 
 void nsMenuX::FlushMenuClosedRunnable() {
@@ -562,9 +558,9 @@ void nsMenuX::MenuClosedAsync() {
   }
 
   // If we have pending command events, run those first.
-  nsTArray<RefPtr<Runnable>> runnables = std::move(mPendingCommandRunnables);
-  for (auto& runnable : runnables) {
-    runnable->Run();
+  nsTArray<PendingCommandEvent> events = std::move(mPendingCommandEvents);
+  for (auto& event : events) {
+    event.mMenuItem->DoCommand(event.mModifiers, event.mButton);
   }
 
   // Make sure no item is highlighted.
@@ -594,41 +590,21 @@ void nsMenuX::MenuClosedAsync() {
 
 void nsMenuX::ActivateItemAfterClosing(RefPtr<nsMenuItemX>&& aItem, NSEventModifierFlags aModifiers,
                                        int16_t aButton) {
-  NS_OBJC_BEGIN_TRY_ABORT_BLOCK;
-
-  class DoCommandRunnable final : public mozilla::Runnable {
-   public:
-    explicit DoCommandRunnable(RefPtr<nsMenuItemX>&& aItem, NSEventModifierFlags aModifiers,
-                               int16_t aButton)
-        : Runnable("DoCommandRunnable"),
-          mMenuItem(aItem),
-          mModifiers(aModifiers),
-          mButton(aButton) {}
-
-    nsresult Run() override {
-      if (mMenuItem) {
-        RefPtr<nsMenuItemX> menuItem = std::move(mMenuItem);
-        menuItem->DoCommand(mModifiers, mButton);
-      }
-      return NS_OK;
-    }
-
-   private:
-    RefPtr<nsMenuItemX> mMenuItem;  // cleared by Run()
-    NSEventModifierFlags mModifiers;
-    int16_t mButton;
-  };
-  RefPtr<Runnable> doCommandAsync = new DoCommandRunnable(std::move(aItem), aModifiers, aButton);
-  mPendingCommandRunnables.AppendElement(doCommandAsync);
-
-  // Delay the command event until after the menu's event loop has been exited, by using
-  // -[MOZMenuOpeningCoordinator runAfterMenuClosed:]. Otherwise, the runnable might potentially
-  // run inside the menu's nested event loop, and command event handlers can do arbitrary things
-  // like opening modal windows which spawn more nested event loops. This repeated nesting of event
-  // loops is something we'd like to avoid.
-  [MOZMenuOpeningCoordinator.sharedInstance runAfterMenuClosed:std::move(doCommandAsync)];
-
-  NS_OBJC_END_TRY_ABORT_BLOCK;
+  if (mIsOpenForGecko) {
+    // Queue the event into mPendingCommandEvents. We will call aItem->DoCommand in
+    // MenuClosedAsync(). We rely on the assumption that MenuClosedAsync will run soon.
+    mPendingCommandEvents.AppendElement(PendingCommandEvent{std::move(aItem), aModifiers, aButton});
+  } else {
+    // The menu item was activated outside of a regular open / activate / close sequence.
+    // This happens in multiple cases:
+    //  - When a menu item is activated by a keyboard shortcut while all windows are closed
+    //    (otherwise those shortcuts go through Gecko's manual keyboard handling)
+    //  - When a menu item in the Dock menu is clicked
+    //  - During native menu tests
+    //
+    // Run the command synchronously.
+    aItem->DoCommand(aModifiers, aButton);
+  }
 }
 
 bool nsMenuX::Close() {
@@ -711,7 +687,7 @@ void nsMenuX::OnWillActivateItem(NSMenuItem* aItem) {
 static NSUserInterfaceLayoutDirection DirectionForElement(dom::Element* aElement) {
   // Get the direction from the computed style so that inheritance into submenus is respected.
   // aElement may not have a frame.
-  RefPtr<ComputedStyle> sc = nsComputedDOMStyle::GetComputedStyle(aElement);
+  RefPtr<const ComputedStyle> sc = nsComputedDOMStyle::GetComputedStyle(aElement);
   if (!sc) {
     return NSApp.userInterfaceLayoutDirection;
   }
@@ -814,9 +790,6 @@ GeckoNSMenu* nsMenuX::CreateMenuWithGeckoString(nsString& aMenuTitle) {
   // overrides our decisions and things get incorrectly enabled/disabled.
   myMenu.autoenablesItems = NO;
 
-  // Disable the Services item for now. Bug 660452 tracks turning this on for the appropriate menus.
-  myMenu.allowsContextMenuPlugIns = NO;
-
   // we used to install Carbon event handlers here, but since NSMenu* doesn't
   // create its underlying MenuRef until just before display, we delay until
   // that happens. Now we install the event handlers when Cocoa notifies
@@ -842,7 +815,7 @@ RefPtr<nsMenuItemX> nsMenuX::CreateMenuItem(nsIContent* aMenuItemContent) {
 
   nsAutoString menuitemName;
   if (aMenuItemContent->IsElement()) {
-    aMenuItemContent->AsElement()->GetAttr(kNameSpaceID_None, nsGkAtoms::label, menuitemName);
+    aMenuItemContent->AsElement()->GetAttr(nsGkAtoms::label, menuitemName);
   }
 
   EMenuItemType itemType = eRegularMenuItemType;
@@ -875,7 +848,7 @@ bool nsMenuX::OnOpen() {
                "seems odd.");
   }
 
-  nsCOMPtr<nsIContent> popupContent = GetMenuPopupContent();
+  RefPtr<nsIContent> popupContent = GetMenuPopupContent();
 
   if (mObserver && popupContent) {
     mObserver->OnMenuWillOpen(popupContent->AsElement());
@@ -885,7 +858,7 @@ bool nsMenuX::OnOpen() {
   WidgetMouseEvent event(true, eXULPopupShowing, nullptr, WidgetMouseEvent::eReal);
 
   nsresult rv = NS_OK;
-  nsIContent* dispatchTo = popupContent ? popupContent : mContent;
+  RefPtr<nsIContent> dispatchTo = popupContent ? popupContent : mContent;
   rv = EventDispatcher::Dispatch(dispatchTo, nullptr, &event, nullptr, &status);
   if (NS_FAILED(rv) || status == nsEventStatus_eConsumeNoDefault) {
     return false;
@@ -910,7 +883,7 @@ void nsMenuX::DidFirePopupShowing() {
 
   nsXULPopupManager* pm = nsXULPopupManager::GetInstance();
   if (pm) {
-    pm->UpdateMenuItems(popupContent);
+    pm->UpdateMenuItems(popupContent->AsElement());
   }
 }
 
@@ -939,8 +912,20 @@ bool nsMenuX::IsXULHelpMenu(nsIContent* aMenuContent) {
   bool retval = false;
   if (aMenuContent && aMenuContent->IsElement()) {
     nsAutoString id;
-    aMenuContent->AsElement()->GetAttr(kNameSpaceID_None, nsGkAtoms::id, id);
+    aMenuContent->AsElement()->GetAttr(nsGkAtoms::id, id);
     if (id.Equals(u"helpMenu"_ns)) {
+      retval = true;
+    }
+  }
+  return retval;
+}
+
+bool nsMenuX::IsXULWindowMenu(nsIContent* aMenuContent) {
+  bool retval = false;
+  if (aMenuContent && aMenuContent->IsElement()) {
+    nsAutoString id;
+    aMenuContent->AsElement()->GetAttr(nsGkAtoms::id, id);
+    if (id.Equals(u"windowMenu"_ns)) {
       retval = true;
     }
   }
@@ -964,7 +949,7 @@ void nsMenuX::ObserveAttributeChanged(dom::Document* aDocument, nsIContent* aCon
     SetEnabled(!mContent->AsElement()->AttrValueIs(kNameSpaceID_None, nsGkAtoms::disabled,
                                                    nsGkAtoms::_true, eCaseMatters));
   } else if (aAttribute == nsGkAtoms::label) {
-    mContent->AsElement()->GetAttr(kNameSpaceID_None, nsGkAtoms::label, mLabel);
+    mContent->AsElement()->GetAttr(nsGkAtoms::label, mLabel);
     NSString* newCocoaLabelString = nsMenuUtilsX::GetTruncatedCocoaLabel(mLabel);
     mNativeMenu.title = newCocoaLabelString;
     mNativeMenuItem.title = newCocoaLabelString;
@@ -1175,7 +1160,7 @@ void nsMenuX::Dump(uint32_t aIndent) const {
     if (rollupListener) {
       nsCOMPtr<nsIWidget> rollupWidget = rollupListener->GetRollupWidget();
       if (rollupWidget) {
-        rollupListener->Rollup(0, true, nullptr, nullptr);
+        rollupListener->Rollup({0, nsIRollupListener::FlushViews::Yes});
         [menu cancelTracking];
         return;
       }
@@ -1376,6 +1361,43 @@ static NSMutableDictionary* gShadowKeyEquivDB = nil;
   ++nsMenuX::sIndexingMenuLevel;
   [self nsMenuX_SCTGRLIndex_indexMenuBarDynamically];
   --nsMenuX::sIndexingMenuLevel;
+}
+
+@end
+
+@interface NSObject (NSServicesMenuUpdaterSwizzling)
+- (void)nsMenuX_populateMenu:(NSMenu*)aMenu
+          withServiceEntries:(NSArray*)aServices
+                  forDisplay:(BOOL)aForDisplay;
+@end
+
+@interface _NSServiceEntry : NSObject
+- (NSString*)bundleIdentifier;
+@end
+
+@implementation NSObject (NSServicesMenuUpdaterSwizzling)
+
+- (void)nsMenuX_populateMenu:(NSMenu*)aMenu
+          withServiceEntries:(NSArray*)aServices
+                  forDisplay:(BOOL)aForDisplay {
+  NSMutableArray* filteredServices = [NSMutableArray array];
+
+  // We need to filter some services, such as "Search with Google", since this
+  // service is duplicating functionality already exposed by our "Search Google
+  // for..." context menu entry and because it opens in Safari, which can cause
+  // confusion for users.
+  for (_NSServiceEntry* service in aServices) {
+    NSString* bundleId = [service bundleIdentifier];
+    NSString* msg = [service valueForKey:@"message"];
+    bool shouldSkip = ([bundleId isEqualToString:@"com.apple.Safari"]) ||
+                      ([bundleId isEqualToString:@"com.apple.systemuiserver"] &&
+                       [msg isEqualToString:@"openURL"]);
+    if (!shouldSkip) {
+      [filteredServices addObject:service];
+    }
+  }
+
+  [self nsMenuX_populateMenu:aMenu withServiceEntries:filteredServices forDisplay:aForDisplay];
 }
 
 @end

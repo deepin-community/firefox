@@ -2,13 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-colors-window =
-    .title = Màu sắc
-    .style =
-        { PLATFORM() ->
-            [macos] width: 41em
-           *[other] width: 38em
-        }
+colors-dialog2 =
+    .title = Màu
+    .style = min-width: 41em;
 
 colors-close-key =
     .key = w
@@ -23,7 +19,7 @@ colors-page-override-option-auto =
 colors-page-override-option-never =
     .label = Không bao giờ
 
-colors-text-and-background = Văn bản và Nền
+colors-text-and-background = Văn bản và nền
 
 colors-text-header = Chữ
     .accesskey = T
@@ -39,7 +35,7 @@ colors-underline-links =
     .label = Gạch chân các liên kết
     .accesskey = G
 
-colors-links-header = Màu sắc của Liên kết
+colors-links-header = Màu của liên kết
 
 colors-unvisited-links = Liên kết chưa truy cập
     .accesskey = L

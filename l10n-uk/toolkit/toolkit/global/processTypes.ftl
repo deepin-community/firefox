@@ -22,13 +22,13 @@ process-type-extension = Розширення
 # process used to open file:// URLs
 process-type-file = Локальний файл
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Велике розміщення
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Ізольований вебвміст
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Ізольований Service Worker
 
 # process preallocated; may change to other types
 process-type-prealloc = Попередньо зарезервовано
@@ -49,6 +49,9 @@ process-type-socket = Сокет
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = IPC Actor в пісочниці
 
 ##
 ## Other

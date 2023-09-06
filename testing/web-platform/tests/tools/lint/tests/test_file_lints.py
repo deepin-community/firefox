@@ -1,3 +1,5 @@
+# mypy: allow-untyped-defs
+
 from ..lint import check_file_contents
 from .base import check_errors
 import io
@@ -540,16 +542,16 @@ def test_testdriver_vendor_path():
         check_errors(errors)
 
         if kind == "python":
-            expected = set([("PARSE-FAILED", "Unable to parse file", filename, 1)])
+            expected = {("PARSE-FAILED", "Unable to parse file", filename, 1)}
         elif kind in ["web-lax", "web-strict"]:
-            expected = set([
+            expected = {
                 ("MISSING-TESTDRIVER-VENDOR", "Missing `<script src='/resources/testdriver-vendor.js'>`", filename, None),
                 ("TESTDRIVER-VENDOR-PATH", "testdriver-vendor.js script seen with incorrect path", filename, None),
                 ("TESTDRIVER-VENDOR-PATH", "testdriver-vendor.js script seen with incorrect path", filename, None),
                 ("TESTDRIVER-VENDOR-PATH", "testdriver-vendor.js script seen with incorrect path", filename, None),
                 ("TESTDRIVER-VENDOR-PATH", "testdriver-vendor.js script seen with incorrect path", filename, None),
                 ("TESTDRIVER-VENDOR-PATH", "testdriver-vendor.js script seen with incorrect path", filename, None)
-            ])
+            }
         else:
             expected = set()
 
@@ -609,8 +611,8 @@ def test_variant_missing():
 # SourceFile implementation raises a runtime exception for the condition this
 # linting rule describes
 @pytest.mark.parametrize("content", ["",
-                                     "?"
-                                     "#"])
+                                     "?foo"
+                                     "#bar"])
 def test_variant_malformed_negative(content):
     code = """\
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -746,27 +748,6 @@ def test_open_mode():
             ("OPEN-NO-MODE", message, "test.py", 3),
             ("OPEN-NO-MODE", message, "test.py", 12),
         ]
-
-
-@pytest.mark.parametrize(
-    "filename,expect_error",
-    [
-        ("foo/bar.html", False),
-        ("css/bar.html", True),
-    ])
-def test_css_support_file(filename, expect_error):
-    errors = check_file_contents("", filename, io.BytesIO(b""))
-    check_errors(errors)
-
-    if expect_error:
-        assert errors == [
-            ('SUPPORT-WRONG-DIR',
-             'Support file not in support directory',
-             filename,
-             None),
-        ]
-    else:
-        assert errors == []
 
 
 def test_css_missing_file_in_css():

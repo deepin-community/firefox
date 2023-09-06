@@ -8,7 +8,7 @@
 const ALIAS = "@enginealias";
 let aliasEngine;
 
-add_task(async function init() {
+add_setup(async function () {
   // Run this in a new tab, to ensure all the locationchange notifications have
   // fired.
   let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser);
@@ -18,7 +18,7 @@ add_task(async function init() {
   });
   aliasEngine = Services.search.getEngineByName("Example");
 
-  registerCleanupFunction(async function() {
+  registerCleanupFunction(async function () {
     BrowserTestUtils.removeTab(tab);
     gURLBar.handleRevert();
   });
@@ -202,6 +202,28 @@ add_task(async function searchWithAlias() {
   });
   await assertUrlbarValue("test");
   assertOneOffButtonsVisible(true);
+  await UrlbarTestUtils.exitSearchMode(window);
+  await UrlbarTestUtils.promisePopupClose(window);
+});
+
+// Calls search() and passes in a search engine without including a restriction
+// token or engine alias in the search string. Simulates pasting into the newtab
+// handoff field with search suggestions disabled.
+add_task(async function searchEngineWithNoToken() {
+  await UrlbarTestUtils.promisePopupOpen(window, async () =>
+    gURLBar.search("no-alias", {
+      searchEngine: aliasEngine,
+      searchModeEntry: "handoff",
+    })
+  );
+
+  Assert.ok(gURLBar.hasAttribute("focused"), "Urlbar is focused");
+
+  await UrlbarTestUtils.assertSearchMode(window, {
+    engineName: aliasEngine.name,
+    entry: "handoff",
+  });
+  await assertUrlbarValue("no-alias");
   await UrlbarTestUtils.exitSearchMode(window);
   await UrlbarTestUtils.promisePopupClose(window);
 });

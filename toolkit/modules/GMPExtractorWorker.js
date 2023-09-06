@@ -6,11 +6,9 @@
 
 "use strict";
 
-importScripts("resource://gre/modules/osfile.jsm");
-
 const FILE_ENTRY = "201: ";
 
-onmessage = async function(msg) {
+onmessage = async function (msg) {
   try {
     let extractedPaths = [];
     // Construct a jar URI from the file URI so we can use the JAR URI scheme
@@ -38,36 +36,31 @@ onmessage = async function(msg) {
       let filePathResponse = await fetch(filePath);
       let fileContents = await filePathResponse.blob();
       let fileData = await new Promise(resolve => {
-        reader.onloadend = function() {
+        reader.onloadend = function () {
           resolve(reader.result);
         };
         reader.readAsArrayBuffer(fileContents);
       });
-      let profileDirPath = OS.Constants.Path.profileDir;
-      let installToDirPath = OS.Path.join(
-        profileDirPath,
-        msg.data.relativeInstallPath
+      let installToDirPath = PathUtils.join(
+        await PathUtils.getProfileDir(),
+        ...msg.data.relativeInstallPath
       );
-      await OS.File.makeDir(installToDirPath, {
-        ignoreExisting: true,
-        unixMode: 0o755,
-        from: profileDirPath,
-      });
+      await IOUtils.makeDirectory(installToDirPath);
       // Do not extract into directories. Extract all files to the same
       // directory.
-      let destPath = OS.Path.join(installToDirPath, fileName);
-      await OS.File.writeAtomic(destPath, new Uint8Array(fileData), {
+      let destPath = PathUtils.join(installToDirPath, fileName);
+      await IOUtils.write(destPath, new Uint8Array(fileData), {
         tmpPath: destPath + ".tmp",
       });
       // Ensure files are writable and executable. Otherwise, we may be
       // unable to execute or uninstall them.
-      await OS.File.setPermissions(destPath, { unixMode: 0o700 });
-      if (OS.Constants.Sys.Name == "Darwin") {
+      await IOUtils.setPermissions(destPath, 0o700);
+      if (IOUtils.delMacXAttr) {
         // If we're on MacOS Firefox will add the quarantine xattr to files it
         // downloads. In this case we want to clear that xattr so we can load
         // the CDM.
         try {
-          await OS.File.macRemoveXAttr(destPath, "com.apple.quarantine");
+          await IOUtils.delMacXAttr(destPath, "com.apple.quarantine");
         } catch (e) {
           // Failed to remove the attribute. This could be because the profile
           // exists on a file system without xattr support.

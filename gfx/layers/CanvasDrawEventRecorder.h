@@ -82,9 +82,9 @@ class CanvasEventRingBuffer final : public gfx::EventRingBuffer {
    * @param aReaderServices provides functions required by the reader
    * @returns true if initialization succeeds
    */
-  bool InitReader(const ipc::SharedMemoryBasic::Handle& aReadHandle,
-                  const CrossProcessSemaphoreHandle& aReaderSem,
-                  const CrossProcessSemaphoreHandle& aWriterSem,
+  bool InitReader(ipc::SharedMemoryBasic::Handle aReadHandle,
+                  CrossProcessSemaphoreHandle aReaderSem,
+                  CrossProcessSemaphoreHandle aWriterSem,
                   UniquePtr<ReaderServices> aReaderServices);
 
   bool good() const final { return mGood; }
@@ -121,7 +121,7 @@ class CanvasEventRingBuffer final : public gfx::EventRingBuffer {
    */
   bool WaitForDataToRead(TimeDuration aTimeout, int32_t aRetryCount);
 
-  int32_t ReadNextEvent();
+  uint8_t ReadNextEvent();
 
   void read(char* const aOut, const size_t aSize) final;
 
@@ -253,7 +253,8 @@ class CanvasDrawEventRecorder final : public gfx::DrawEventRecorderPrivate {
     aEvent.RecordToStream(mOutputStream);
   }
 
-  void RecordSourceSurfaceDestruction(void* aSurface) final;
+  void StoreSourceSurfaceRecording(gfx::SourceSurface* aSurface,
+                                   const char* aReason) final;
 
   void Flush() final {}
 

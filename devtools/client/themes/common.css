@@ -22,7 +22,13 @@
   --searchbox-no-match-stroke-color: var(--red-60);
 }
 
+:root.theme-light {
+  color-scheme: light;
+}
+
 :root.theme-dark {
+  color-scheme: dark;
+
   --tab-line-hover-color: rgba(255,255,255,.2);
   --toggle-thumb-color: var(--grey-40);
   --toggle-track-color: var(--grey-60);
@@ -232,37 +238,6 @@ button::selection {
   list-style-type: none;
 }
 
-/* links to source code, like displaying `myfile.js:45` */
-
-.devtools-source-link {
-  font-family: var(--monospace-font-family);
-  color: var(--theme-highlight-blue);
-  cursor: pointer;
-  white-space: nowrap;
-  display: flex;
-  text-decoration: none;
-  font-size: 11px;
-  width: 12em; /* probably should be changed for each tool */
-}
-
-.devtools-source-link:hover {
-  text-decoration: underline;
-}
-
-.devtools-source-link > .filename {
-  text-overflow: ellipsis;
-  text-align: end;
-  overflow: hidden;
-  margin: 2px 0px;
-  cursor: pointer;
-}
-
-.devtools-source-link > .line-number {
-  flex: none;
-  margin: 2px 0px;
-  cursor: pointer;
-}
-
 /* Keyboard focus highlight styles */
 
 :-moz-focusring {
@@ -305,7 +280,7 @@ checkbox:-moz-focusring {
   border-radius: 2px;
   color: var(--theme-body-color);
   transition: background-color 0.05s ease-in-out;
-  -moz-box-align: center;
+  align-items: center;
   text-shadow: none;
   padding: 2px;
   margin: 1px;
@@ -454,7 +429,7 @@ checkbox:-moz-focusring {
 }
 
 .devtools-button.devtools-feature-callout::after {
-  content: url("chrome://browser/skin/badge-blue.svg");
+  content: url("chrome://global/skin/icons/badge-blue.svg");
   width: 14px;
   height: 14px;
   display: block;

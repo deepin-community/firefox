@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
 import time
+from cProfile import Profile
+from pathlib import Path
 
 import six
 
@@ -85,7 +85,15 @@ class MachRegistrar(object):
 
         return fail_conditions
 
-    def _run_command_handler(self, handler, context, debug_command=False, **kwargs):
+    def _run_command_handler(
+        self,
+        handler,
+        context,
+        command_site_manager=None,
+        debug_command=False,
+        profile_command=False,
+        **kwargs,
+    ):
         instance = MachRegistrar._instance(handler, context, **kwargs)
         fail_conditions = MachRegistrar._fail_conditions(handler, instance)
         if fail_conditions:
@@ -96,8 +104,18 @@ class MachRegistrar(object):
 
         self.command_depth += 1
         fn = handler.func
+        if handler.virtualenv_name:
+            if command_site_manager:
+                instance.virtualenv_manager = command_site_manager
+            else:
+                instance.activate_virtualenv()
 
-        start_time = time.time()
+        profile = None
+        if profile_command:
+            profile = Profile()
+            profile.enable()
+
+        start_time = time.monotonic()
 
         if debug_command:
             import pdb
@@ -106,7 +124,20 @@ class MachRegistrar(object):
         else:
             result = fn(instance, **kwargs)
 
-        end_time = time.time()
+        end_time = time.monotonic()
+
+        if profile_command:
+            profile.disable()
+            profile_file = (
+                Path(context.topdir) / f"mach_profile_{handler.name}.cProfile"
+            )
+            profile.dump_stats(profile_file)
+            print(
+                f'Mach command profile created at "{profile_file}". To visualize, use '
+                f"snakeviz:"
+            )
+            print("python3 -m pip install snakeviz")
+            print(f"python3 -m snakeviz {profile_file.name}")
 
         result = result or 0
         assert isinstance(result, six.integer_types)
@@ -133,7 +164,17 @@ class MachRegistrar(object):
 
         Commands can use this to call other commands.
         """
-        handler = self.command_handlers[name]
+        from mach.command_util import load_command_module_from_command_name
+
+        handler = self.command_handlers.get(name)
+
+        if not handler:
+            load_command_module_from_command_name(name, context.topdir)
+            handler = self.command_handlers.get(name)
+            if not handler:
+                raise MachError(
+                    f"Mach was not able to load the module for the '{name}' command."
+                )
 
         if subcommand:
             handler = handler.subcommand_handlers[subcommand]

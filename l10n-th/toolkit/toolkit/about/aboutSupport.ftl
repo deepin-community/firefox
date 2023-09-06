@@ -54,7 +54,7 @@ app-basics-enabled-plugins = ปลั๊กอินที่เปิดใช
 app-basics-build-config = การกำหนดค่าการสร้าง
 app-basics-user-agent = ตัวแทนผู้ใช้
 app-basics-os = ระบบปฏิบัติการ
-app-basics-os-theme = ชุดตกแต่งของระบบปฏิบัติการ
+app-basics-os-theme = ชุดรูปแบบของระบบปฏิบัติการ
 # Rosetta is Apple's translation process to run apps containing x86_64
 # instructions on Apple Silicon. This should remain in English.
 app-basics-rosetta = แปลด้วย Rosetta
@@ -72,6 +72,12 @@ app-basics-location-service-key-google = คีย์ Google Location Service
 app-basics-safebrowsing-key-google = คีย์ Google Safebrowsing
 app-basics-key-mozilla = คีย์ Mozilla Location Service
 app-basics-safe-mode = โหมดปลอดภัย
+app-basics-memory-size = ขนาดหน่วยความจำ (RAM)
+app-basics-disk-available = พื้นที่ที่เหลือในดิสก์:
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] แสดงใน Finder
@@ -87,7 +93,7 @@ experimental-features-value = ค่า
 modified-key-prefs-title = ค่ากำหนดสำคัญที่ถูกเปลี่ยนแปลง
 modified-prefs-name = ชื่อ
 modified-prefs-value = ค่า
-user-js-title = ค่ากำหนด user.js
+user-js-title = การกำหนดลักษณะ user.js
 user-js-description = โฟลเดอร์โปรไฟล์ของคุณมี <a data-l10n-name="user-js-link">ไฟล์ user.js</a> ซึ่งมีค่ากำหนดที่ไม่ได้ถูกสร้างโดย { -brand-short-name }
 locked-key-prefs-title = ค่ากำหนดสำคัญที่ถูกล็อค
 locked-prefs-name = ชื่อ
@@ -101,11 +107,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = รายการบันทึกการตัดสินใจ
 graphics-crash-guards-title = คุณสมบัติที่ถูกปิดใช้งานโดย Crash Guard
 graphics-workarounds-title = วิธีการแก้ไข
+graphics-device-pixel-ratios = อัตราส่วนพิกเซลของอุปกรณ์ในหน้าต่าง
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = โปรโตคอลหน้าต่าง
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = สภาพแวดล้อมเดสก์ท็อป
 place-database-title = ฐานข้อมูลสถานที่
+place-database-stats = สถิติ
+place-database-stats-show = แสดงสถิติ
+place-database-stats-hide = ซ่อนสถิติ
+place-database-stats-entity = เอนทิตี
+place-database-stats-count = จำนวน
+place-database-stats-size-kib = ขนาด (KiB)
+place-database-stats-size-perc = ขนาด (%)
+place-database-stats-efficiency-perc = ประสิทธิภาพ (%)
+place-database-stats-sequentiality-perc = ความเป็นลำดับ (%)
 place-database-integrity = ความสมบูรณ์
 place-database-verify-integrity = ยืนยันความสมบูรณ์
 a11y-title = การช่วยการเข้าถึง
@@ -152,8 +168,18 @@ media-device-channels = ช่อง
 media-device-rate = อัตรา
 media-device-latency = เวลาแฝง
 media-capabilities-title = ความสามารถของสื่อ
+media-codec-support-info = ข้อมูลการสนับสนุนตัวแปลงสัญญาณ
 # List all the entries of the database.
 media-capabilities-enumerate = แจงนับฐานข้อมูล
+
+## Codec support table
+
+media-codec-support-sw-decoding = การถอดรหัสด้วยซอฟต์แวร์
+media-codec-support-hw-decoding = การถอดรหัสด้วยฮาร์ดแวร์
+media-codec-support-codec-name = ชื่อตัวแปลงสัญญาณ
+media-codec-support-supported = รองรับ
+media-codec-support-unsupported = ไม่รองรับ
+media-codec-support-error = ข้อมูลการรองรับโคเดกไม่พร้อมใช้ โปรดลองอีกครั้งหลังจากเล่นไฟล์สื่อแล้ว
 
 ##
 
@@ -165,7 +191,7 @@ intl-locales-supported = ภาษาของแอป
 intl-locales-default = ภาษาเริ่มต้น
 intl-os-title = ระบบปฏิบัติการ
 intl-os-prefs-system-locales = ภาษาของระบบ
-intl-regional-prefs = ค่ากำหนดภูมิภาค
+intl-regional-prefs = การกำหนดลักษณะภูมิภาค
 
 ## Remote Debugging
 ##
@@ -248,6 +274,8 @@ webgl2-renderer = ตัวเรนเดอร์ไดรเวอร์ WebG
 webgl2-version = รุ่นไดรเวอร์ WebGL 2
 webgl2-driver-extensions = ส่วนขยายไดรเวอร์ WebGL 2
 webgl2-extensions = ส่วนขยาย WebGL 2
+webgpu-default-adapter = อะแดปเตอร์เริ่มต้นของ WebGPU
+webgpu-fallback-adapter = อะแดปเตอร์สำรองของ WebGPU
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = ถูกเพิ่มในรายการปิดกั้นเนื่องจากมีปัญหาที่ทราบสาเหตุ: <a data-l10n-name="bug-link">bug { $bugNumber }</a>
@@ -277,6 +305,7 @@ can-sandbox-media = Media Plugin Sandboxing
 content-sandbox-level = ระดับ Sandbox ของโปรเซสเนื้อหา
 effective-content-sandbox-level = ระดับ Sandbox ของโปรเซสเนื้อหาที่มีประสิทธิภาพ
 content-win32k-lockdown-state = สถานะล็อกดาวน์ของ Win32k สำหรับการประมวลผลเนื้อหา
+support-sandbox-gpu-level = ระดับ Sandbox ของโปรเซส GPU
 sandbox-proc-type-content = เนื้อหา
 sandbox-proc-type-file = เนื้อหาไฟล์
 sandbox-proc-type-media-plugin = ปลั๊กอินสื่อ
@@ -302,7 +331,7 @@ fission-status-experiment-control = ถูกปิดใช้งานโด�
 fission-status-experiment-treatment = ถูกเปิดใช้งานโดยการทดสอบ
 fission-status-disabled-by-e10s-env = ถูกปิดใช้งานโดยสภาพแวดล้อม
 fission-status-enabled-by-env = ถูกเปิดใช้งานโดยสภาพแวดล้อม
-fission-status-disabled-by-safe-mode = ถูกปิดใช้งานโดยโหมดปลอดภัย
+fission-status-disabled-by-env = ถูกปิดใช้งานโดยสภาพแวดล้อม
 fission-status-enabled-by-default = ถูกเปิดใช้งานตามค่าเริ่มต้น
 fission-status-disabled-by-default = ถูกปิดใช้งานตามค่าเริ่มต้น
 fission-status-enabled-by-user-pref = ถูกเปิดใช้งานโดยผู้ใช้
@@ -348,3 +377,10 @@ support-remote-experiments-see-about-studies = ดูที่ <a data-l10n-name
 support-remote-features-title = คุณลักษณะระยะไกล
 support-remote-features-name = ชื่อ
 support-remote-features-status = สถานะ
+
+## Pointing devices
+
+pointing-device-mouse = เมาส์
+pointing-device-touchscreen = หน้าจอสัมผัส
+pointing-device-pen-digitizer = ปากกาดิจิตอล
+pointing-device-none = ไม่มีอุปกรณ์ชี้ตำแหน่ง

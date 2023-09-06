@@ -8,7 +8,7 @@
 site-data-settings-window =
     .title = Administroni Cookies dhe të Dhëna Sajtesh
 
-site-data-settings-description = Sajtet vijuese depozitojnë cookies dhe të dhëna sajtesh në kompjuterin tuaj. { -brand-short-name }-i mban nën depozitim të përhershëm të dhëna nga sajte, deri sa t’i fshini, dhe fshin të dhëna nga sajte me depozitim jo të përhershëm dora-dorës që lypset hapësirë.
+site-data-settings-description = Sajtet vijuese depozitojnë cookies dhe të dhëna sajtesh në kompjuterin tuaj. { -brand-short-name }-i mban nën depozitim të përhershëm të dhëna nga sajte, deri sa t’i fshini dhe fshin të dhëna nga sajte me depozitim jo të përhershëm dora-dorës që lypset hapësirë.
 
 site-data-search-textbox =
     .placeholder = Kërko në sajte
@@ -59,5 +59,8 @@ site-data-removing-dialog =
 site-data-removing-header = Heqje Cookies dhe të Dhëna Sajtesh
 
 site-data-removing-desc = Heqja e cookie-eve dhe të dhënave të sajteve mund të sjellë daljen tuaj nga llogaritë në sajte. Jeni i sigurt se doni të bëhen këto ndryshime?
+# Variables:
+#   $baseDomain (String) - The single domain for which data is being removed
+site-data-removing-single-desc = Heqja e cookie-ve dhe të dhënave të sajtit mund të sjellë daljen tuaj nga sajte. Jeni i sigurt se doni të hiqen cookies dhe të dhëna sajtesh për <strong>{ $baseDomain }</strong>?
 
 site-data-removing-table = Cookie-t dhe të dhënat e sajteve për sajtet vijues do të hiqen

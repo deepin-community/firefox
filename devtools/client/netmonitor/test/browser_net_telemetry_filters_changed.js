@@ -8,8 +8,10 @@ const ALL_CHANNELS = Ci.nsITelemetry.DATASET_ALL_CHANNELS;
 /**
  * Test the filters_changed telemetry event.
  */
-add_task(async function() {
-  const { monitor } = await initNetMonitor(SIMPLE_URL, { requestCount: 1 });
+add_task(async function () {
+  const { monitor } = await initNetMonitor(HTTPS_SIMPLE_URL, {
+    requestCount: 1,
+  });
   info("Starting test... ");
 
   const { document, store, windowRequire } = monitor.panelWin;
@@ -20,6 +22,7 @@ add_task(async function() {
 
   store.dispatch(Actions.batchEnable(false));
 
+  await waitForAllNetworkUpdateEvents();
   // Remove all telemetry events (you can check about:telemetry).
   Services.telemetry.clearEvents();
 
@@ -29,7 +32,8 @@ add_task(async function() {
 
   // Reload to have one request in the list.
   const wait = waitForNetworkEvents(monitor, 1);
-  await navigateTo(SIMPLE_URL);
+  await waitForAllNetworkUpdateEvents();
+  await navigateTo(HTTPS_SIMPLE_URL);
   await wait;
 
   info("Click on the 'HTML' filter");
@@ -70,7 +74,7 @@ add_task(async function() {
   setFreetextFilter(monitor, "nomatch");
 
   // Wait till the text filter is applied.
-  await waitUntil(() => getDisplayedRequests(store.getState()).length == 0);
+  await waitUntil(() => !getDisplayedRequests(store.getState()).length);
 
   checkTelemetryEvent(
     {
@@ -92,8 +96,5 @@ function setFreetextFilter(monitor, value) {
   const filterBox = document.querySelector(".devtools-filterinput");
   filterBox.focus();
   filterBox.value = "";
-
-  for (const ch of value) {
-    EventUtils.synthesizeKey(ch, {}, monitor.panelWin);
-  }
+  typeInNetmonitor(value, monitor);
 }

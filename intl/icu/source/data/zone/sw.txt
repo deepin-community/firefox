@@ -258,6 +258,9 @@ sw{
         "America:Chihuahua"{
             ec{"Chihuahua"}
         }
+        "America:Ciudad_Juarez"{
+            ec{"Ciudad Juarez"}
+        }
         "America:Coral_Harbour"{
             ec{"Atikokan"}
         }
@@ -1897,6 +1900,9 @@ sw{
             ld{"Saa za Majira ya joto za Yekaterinburg"}
             lg{"Saa za Yekaterinburg"}
             ls{"Saa za Wastani za Yekaterinburg"}
+        }
+        "meta:Yukon"{
+            ls{"Saa za Yukon"}
         }
         fallbackFormat{"{1} ({0})"}
         gmtFormat{"GMT {0}"}

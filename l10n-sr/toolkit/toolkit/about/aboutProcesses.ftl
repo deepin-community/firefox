@@ -16,6 +16,18 @@ about-processes-shutdown-process =
 about-processes-shutdown-tab =
     .title = Затвори картицу
 
+# Profiler icons
+# Variables:
+#    $duration (Number) The time in seconds during which the profiler will be running.
+#                       The value will be an integer, typically less than 10.
+about-processes-profile-process =
+    .title =
+        { $duration ->
+            [one] Профилирајте све нити овог процеса за { $duration } секунд
+            [few] Профилирајте све нити овог процеса за { $duration } секунде
+           *[other] Профилирајте све нити овог процеса за { $duration } секунди
+        }
+
 ## Column headers
 
 about-processes-column-name = Назив
@@ -41,6 +53,7 @@ about-processes-socket-process = Мрежа ({ $pid })
 about-processes-remote-sandbox-broker-process = Даљински Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Fork Server ({ $pid })
 about-processes-preallocated-process = Унапред додељено ({ $pid })
+about-processes-utility-process = Помоћни програм ({ $pid })
 
 # Unknown process names
 # Variables:
@@ -54,10 +67,9 @@ about-processes-unknown-process = Друго: { $type } ({ $pid })
 ##    $origin (String) The domain name for this process.
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
-about-processes-web-large-allocation-process = { $origin } ({ $pid }, велики)
+about-processes-web-serviceworker = { $origin } ({ $pid }, serviceworker)
 about-processes-with-coop-coep-process = { $origin } ({ $pid }, изолован са других извора)
 about-processes-web-isolated-process-private = { $origin } – приватни ({ $pid })
-about-processes-web-large-allocation-process-private = { $origin } – приватни ({ $pid }, велики)
 about-processes-with-coop-coep-process-private = { $origin } – приватни ({ $pid }, изолован са других извора)
 
 ## Details within processes
@@ -116,6 +128,16 @@ about-processes-frame-name-one = Подоквир: { $url }
 #   $shortUrl (String) The shared prefix for the subframes in the group.
 about-processes-frame-name-many = Подоквири ({ $number }): { $shortUrl }
 
+## Utility process actor names
+
+about-processes-utility-actor-unknown = Непознати програм
+about-processes-utility-actor-audio-decoder-generic = Обични аудио декодер
+about-processes-utility-actor-audio-decoder-applemedia = Apple Media аудио декодер
+about-processes-utility-actor-audio-decoder-wmf = Windows Media Framework аудио декодер
+about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media Engine CDM
+# "Oracle" refers to an internal Firefox process and should be kept in English
+about-processes-utility-actor-js-oracle = JavaScript Oracle
+
 ## Displaying CPU (percentage and total)
 ## Variables:
 ##    $percent (Number) The percentage of CPU used by the process or thread.
@@ -132,9 +154,14 @@ about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "pe
 # Special case: data is not available yet.
 about-processes-cpu-user-and-kernel-not-ready = (мерење)
 
+# Special case: process or thread is almost idle (using less than 0.1% of a CPU core).
+# This case only occurs on Windows where the precision of the CPU times is low.
+about-processes-cpu-almost-idle = < 0.1%
+    .title = Укупно CPU време: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+
 # Special case: process or thread is currently idle.
-about-processes-cpu-idle = неактиван
-    .title = Укупно процесорско време: { NUMBER($total, maximumFractionDigits: 2) }{ $unit }
+about-processes-cpu-fully-idle = чекање
+    .title = Укупно CPU време: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:

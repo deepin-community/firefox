@@ -48,6 +48,10 @@ inactive-css-not-table = <strong>{ $property }</strong> ur d-igellu s kra ɣef u
 
 inactive-scroll-padding-when-not-scroll-container = <strong>{ $property }</strong> ur d-igellu s kra ɣef uferdis-a imi ur yezmir ara ad yedrurem.
 
+inactive-css-border-image = <strong>{ $property }</strong> ur ittḥaz ara akk aferdis-a imi ur yezmir ara ad yettwasnas ɣef yiferdisen igensanen n tfelwit ma yili <strong>border-collapse</strong> yettusbadu i <strong>collapse</strong> ɣef uferdis amaraw n tfelwit.
+
+inactive-css-ruby-element = <strong>{ $property }</strong> ur yettḥaz ara akk aferdis-a, acku d aferdis ruby. Teɣzi-ines tebna ɣef teɣzi n tsefsit n uḍris ruby.
+
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain how
 ## the problem can be solved.
@@ -56,7 +60,7 @@ inactive-css-not-grid-or-flex-container-fix = Aɛraḍ n tmerna n <strong>displa
 
 inactive-css-not-grid-or-flex-container-or-multicol-container-fix = Ɛreḍ timerna n <strong>display:grid</strong>, <strong>display:flex</strong>, neɣ <strong>columns:2</strong>. { learn-more }
 
-inactive-css-not-grid-or-flex-item-fix-2 = Ɛreḍ timerna n <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong> neɣ <strong>display:inline-flex</strong>. { learn-more }
+inactive-css-not-grid-or-flex-item-fix-3 = Ɛreḍ timerna n <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong> neɣ <strong>display:inline-flex</strong> ɣer uferdis ammaraw. { learn-more }
 
 inactive-css-not-grid-item-fix-2 = Ɛreḍ timerna n <strong>display:grid</strong> neɣ <strong>display:inline-grid</strong> ɣer ubabat n uferdis . { learn-more }
 
@@ -85,6 +89,10 @@ inactive-css-not-for-internal-table-elements-except-table-cells-fix = Ɛreḍ as
 inactive-css-not-table-fix = Ɛreḍ timerna n <strong>display:table</strong> neɣ <strong>display:inline-table</strong>. { learn-more }
 
 inactive-scroll-padding-when-not-scroll-container-fix = Ɛreḍ ad ternuḍ <strong>overflow:auto</strong>, <strong>overflow:scroll</strong> neɣ <strong>overflow:hidden</strong>. { learn-more }
+
+inactive-css-border-image-fix = Ɣef uferdis amaraw n tfelwit, kkes timeẓlit neɣ senfel azal n <strong>border-collapse</strong> s wazal-nniḍen ur nelli d <strong>collapse</strong>. { learn-more }
+
+inactive-css-ruby-element-fix = Ɛreḍ ad tbeddleḍ <strong>font-size</strong> n uḍris "ruby". { learn-more }
 
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why

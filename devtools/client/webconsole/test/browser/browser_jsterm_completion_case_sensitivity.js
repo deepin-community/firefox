@@ -5,7 +5,7 @@
 
 "use strict";
 
-const TEST_URI = `data:text/html;charset=utf8,<p>test case-sensitivity completion.
+const TEST_URI = `data:text/html;charset=utf8,<!DOCTYPE html><p>test case-sensitivity completion.
   <script>
     fooBar = Object.create(null, Object.getOwnPropertyDescriptors({
       Foo: 1,
@@ -16,7 +16,7 @@ const TEST_URI = `data:text/html;charset=utf8,<p>test case-sensitivity completio
     FooBar = true;
   </script>`;
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
   const { jsterm } = hud;
   const { autocompletePopup } = jsterm;

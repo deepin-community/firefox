@@ -3,8 +3,8 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { connect } from "../../utils/connect";
-import classnames from "classnames";
 import actions from "../../actions";
 
 import { CloseButton } from "../shared/Button";
@@ -12,6 +12,8 @@ import { CloseButton } from "../shared/Button";
 import "./XHRBreakpoints.css";
 import { getXHRBreakpoints, shouldPauseOnAnyXHR } from "../../selectors";
 import ExceptionOption from "./Breakpoints/ExceptionOption";
+
+const classnames = require("devtools/client/shared/classnames.js");
 
 // At present, the "Pause on any URL" checkbox creates an xhrBreakpoint
 // of "ANY" with no path, so we can remove that before creating the list
@@ -44,6 +46,21 @@ class XHRBreakpoints extends Component {
     };
   }
 
+  static get propTypes() {
+    return {
+      disableXHRBreakpoint: PropTypes.func.isRequired,
+      enableXHRBreakpoint: PropTypes.func.isRequired,
+      onXHRAdded: PropTypes.func.isRequired,
+      removeXHRBreakpoint: PropTypes.func.isRequired,
+      setXHRBreakpoint: PropTypes.func.isRequired,
+      shouldPauseOnAny: PropTypes.bool.isRequired,
+      showInput: PropTypes.bool.isRequired,
+      togglePauseOnAny: PropTypes.func.isRequired,
+      updateXHRBreakpoint: PropTypes.func.isRequired,
+      xhrBreakpoints: PropTypes.array.isRequired,
+    };
+  }
+
   componentDidMount() {
     const { showInput } = this.props;
 
@@ -73,7 +90,7 @@ class XHRBreakpoints extends Component {
     e.preventDefault();
     e.stopPropagation();
 
-    const setXHRBreakpoint = function() {
+    const setXHRBreakpoint = function () {
       this.props.setXHRBreakpoint(
         this.state.inputValue,
         this.state.inputMethod
@@ -200,11 +217,8 @@ class XHRBreakpoints extends Component {
   }
 
   handleCheckbox = index => {
-    const {
-      xhrBreakpoints,
-      enableXHRBreakpoint,
-      disableXHRBreakpoint,
-    } = this.props;
+    const { xhrBreakpoints, enableXHRBreakpoint, disableXHRBreakpoint } =
+      this.props;
     const breakpoint = xhrBreakpoints[index];
     if (breakpoint.disabled) {
       enableXHRBreakpoint(index);
@@ -220,7 +234,7 @@ class XHRBreakpoints extends Component {
 
     // The "pause on any" checkbox
     if (!path) {
-      return;
+      return null;
     }
 
     // Finds the xhrbreakpoint so as to not make assumptions about position

@@ -21,6 +21,7 @@ perftools-heading-features-default = Функции (рекомендованн�
 perftools-heading-features-disabled = Отключённые функции
 perftools-heading-features-experimental = Экспериментальные
 perftools-heading-threads = Потоки
+perftools-heading-threads-jvm = Потоки JVM
 perftools-heading-local-build = Локальная сборка
 
 ##
@@ -42,16 +43,15 @@ perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Размер буфера:
+
 perftools-custom-threads-label = Добавить собственные потоки по имени:
+
 perftools-devtools-interval-label = Интервал:
 perftools-devtools-threads-label = Потоки:
 perftools-devtools-settings-label = Настройки
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice =
-    Профайлер отключается, когда включён приватный режим.
-    Закройте все приватные окна, чтобы заново включить профайлер
 perftools-status-recording-stopped-by-another-tool = Запись была остановлена другим инструментом.
 perftools-status-restart-required = Для включения этой функции необходимо перезапустить браузер.
 
@@ -83,8 +83,8 @@ perftools-thread-renderer =
     .title = Когда WebRender включён, этот поток выполняет вызовы OpenGL
 perftools-thread-render-backend =
     .title = Поток WebRender RenderBackend
-perftools-thread-paint-worker =
-    .title = Поток, в котором происходит отрисовка, когда включена отрисовка вне основного потока
+perftools-thread-timer =
+    .title = Таймеры обработки потока (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
     .title = Вычисление стилей разбито на несколько потоков
 pref-thread-stream-trans =
@@ -94,23 +94,34 @@ perftools-thread-socket-thread =
 perftools-thread-img-decoder =
     .title = Потоки декодирования изображений
 perftools-thread-dns-resolver =
-    .title = В этом потоке происходит разрешение DNS
+    .title = В этом потоке происходит поиск в DNS
 perftools-thread-task-controller =
     .title = Потоки пула потоков TaskController
+perftools-thread-jvm-gecko =
+    .title = Основной поток Gecko JVM
+perftools-thread-jvm-nimbus =
+    .title = Основные потоки для SDK экспериментов Nimbus
+perftools-thread-jvm-default-dispatcher =
+    .title = Диспетчер по умолчанию для библиотеки сопрограмм Kotlin
+perftools-thread-jvm-glean =
+    .title = Основные потоки для SDK телеметрии Glean
+perftools-thread-jvm-arch-disk-io =
+    .title = Диспетчер ввода-вывода для библиотеки сопрограмм Kotlin
+perftools-thread-jvm-pool =
+    .title = Потоки, созданные в безымянном пуле потоков
 
 ##
 
 perftools-record-all-registered-threads = Игнорировать выбор выше и записывать все регистрируемые потоки
+
 perftools-tools-threads-input-label =
     .title = Эти имена потоков представляют собой список разделенный запятыми, который используется для включения профилирования потоков в профайлере. Имя может быть только частичным совпадением с именем потока, который будет включён. Это поле чувствительно к пробелам.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>Новое</b>:  В Инструменты разработчика теперь интегрирован { -profiler-brand-name }. <a>Узнайте больше</a> об этом новом, мощном инструменте.
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (В течение ограниченного периода времени вы сможете использовать старую панель Производительности, используя <a>{ options-context-advanced-settings }</a>)
+
 perftools-onboarding-close-button =
     .aria-label = Закрыть приветственное сообщение
 
@@ -121,16 +132,30 @@ perftools-onboarding-close-button =
 # devtools/client/performance-new/popup/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
 perftools-presets-web-developer-label = Веб-разработка
 perftools-presets-web-developer-description = Рекомендуемые настройки для отладки большинства веб-приложений с низкими накладными расходами.
-perftools-presets-firefox-platform-label = Платформа Firefox
-perftools-presets-firefox-platform-description = Рекомендуемые настройки для внутренней отладки платформы Firefox.
-perftools-presets-firefox-front-end-label = Клиентская часть Firefox
-perftools-presets-firefox-front-end-description = Рекомендуемые настройки для внутренней отладки клиентской части Firefox.
-perftools-presets-firefox-graphics-label = Графика Firefox
-perftools-presets-firefox-graphics-description = Рекомендуемые настройки для исследования производительности графики Firefox.
+
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = Рекомендуемые настройки для профилирования { -brand-shorter-name }.
+
+perftools-presets-graphics-label = Графика
+perftools-presets-graphics-description = Настройки для выявления ошибок графики в { -brand-shorter-name }.
+
 perftools-presets-media-label = Медиа
-perftools-presets-media-description = Рекомендуемые настройки для диагностики проблем со звуком и видео.
+perftools-presets-media-description2 = Настройки для выявления ошибок аудио и видео в { -brand-shorter-name }.
+
+perftools-presets-networking-label = Сеть
+perftools-presets-networking-description = Настройки для выявления сетевых ошибок в { -brand-shorter-name }.
+
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = Электропитание
+perftools-presets-power-description = Настройки для выявления ошибок потребления энергии в { -brand-shorter-name }, с небольшими накладными расходами.
+
 perftools-presets-custom-label = Персональный
 
 ##

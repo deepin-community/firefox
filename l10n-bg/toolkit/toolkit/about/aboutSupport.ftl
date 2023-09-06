@@ -60,6 +60,7 @@ app-basics-remote-processes-count = Отдалечени процеси
 app-basics-enterprise-policies = Ведомствени ограничения
 app-basics-key-mozilla = Mozilla Location Service Key
 app-basics-safe-mode = Надежден режим
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Показване във Finder
@@ -103,6 +104,7 @@ sandbox-sys-call-tid = TID
 sandbox-sys-call-proc-type = Вид процес
 sandbox-sys-call-number = Syscall
 sandbox-sys-call-args = Аргументи
+clear-startup-cache-title = Опитайте да изчистите междинната памет за стартиране
 
 ## Media titles
 
@@ -121,6 +123,8 @@ media-device-format = Формат
 media-device-channels = Канали
 media-device-rate = Честота
 media-device-latency = Закъснение
+
+## Codec support table
 
 ##
 

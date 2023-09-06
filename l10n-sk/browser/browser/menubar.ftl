@@ -35,23 +35,12 @@ menu-quit =
         }
     .accesskey =
         { PLATFORM() ->
-            [windows] k
-           *[other] k
+            [windows] U
+           *[other] U
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Ukončiť { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Ukončiť prehliadač { -brand-shorter-name }
-
 menu-about =
     .label = O aplikácii { -brand-shorter-name }
     .accesskey = O
@@ -81,8 +70,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Otvoriť súbor…
     .accesskey = s
-menu-file-close =
-    .label = Zavrieť
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Zavrieť kartu
+            [one] Zavrieť kartu
+            [few] Zavrieť { $tabCount } karty
+           *[other] Zavrieť { $tabCount } kariet
+        }
     .accesskey = Z
 menu-file-close-window =
     .label = Zavrieť okno
@@ -99,9 +96,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Nastavenie tlače…
     .accesskey = N
-menu-file-print-preview =
-    .label = Ukážka pred tlačou
-    .accesskey = e
 menu-file-print =
     .label = Tlačiť…
     .accesskey = T
@@ -158,7 +152,7 @@ menu-view-full-zoom-reduce =
     .accesskey = V
 menu-view-full-zoom-actual-size =
     .label = Skutočná veľkosť
-    .accesskey = v
+    .accesskey = S
 menu-view-full-zoom-toggle =
     .label = Meniť iba veľkosť textu
     .accesskey = M
@@ -188,6 +182,17 @@ menu-view-full-screen =
     .label = Na celú obrazovku
     .accesskey = c
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Zapnúť zobrazenie Čítačka
+    .accesskey = Z
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Zavrieť zobrazenie Čítačka
+    .accesskey = Z
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +221,9 @@ menu-history-undo-menu =
     .label = Nedávno zatvorené karty
 menu-history-undo-window-menu =
     .label = Nedávno zatvorené okná
-menu-history-reopen-all-tabs = Obnoviť všetky karty
-menu-history-reopen-all-windows = Obnoviť všetky okná
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Hľadať v histórii
 
 ## Bookmarks Menu
 
@@ -226,10 +232,13 @@ menu-bookmarks-menu =
     .accesskey = o
 menu-bookmarks-manage =
     .label = Spravovať záložky
-menu-bookmark-current-tab =
+menu-bookmark-tab =
     .label = Pridať túto kartu medzi záložky
-menu-bookmark-edit =
-    .label = Upraviť túto záložku
+menu-edit-bookmark =
+    .label = Upraviť túto záložku…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Hľadať v záložkách
 menu-bookmarks-all-tabs =
     .label = Pridať všetky karty medzi záložky…
 menu-bookmarks-toolbar =
@@ -314,8 +323,8 @@ menu-help-more-troubleshooting-info =
     .accesskey = a
 menu-help-report-site-issue =
     .label = Nahlásiť problém so stránkou…
-menu-help-feedback-page =
-    .label = Odoslať spätnú väzbu…
+menu-help-share-ideas =
+    .label = Zdieľať nápady a spätnú väzbu…
     .accesskey = d
 menu-help-enter-troubleshoot-mode2 =
     .label = Režim riešenia problémov…
@@ -323,6 +332,9 @@ menu-help-enter-troubleshoot-mode2 =
 menu-help-exit-troubleshoot-mode =
     .label = Vypnúť režim riešenia problémov
     .accesskey = r
+menu-help-switch-device =
+    .label = Prechod na nové zariadenie
+    .accesskey = P
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

@@ -20,23 +20,25 @@ namespace PathUtils {
   DOMString filename(DOMString path);
 
   /**
-   * Return the parent directory name of the given path.
+   * Return an ancestor directory of the given path.
    *
    * @param path An absolute path.
+   * @param depth The number of ancestors to remove, defaulting to 1 (i.e., the
+   *              parent).
    *
-   * @return The parent directory.
+   * @return The ancestor directory.
    *
    *         If the path provided is a root path (e.g., `C:` on Windows or `/`
    *         on *NIX), then null is returned.
    */
   [Throws]
-  DOMString? parent(DOMString path);
+  DOMString? parent(DOMString path, optional long depth = 1);
 
   /**
    * Join the given components into a full path.
    *
    * @param components The path components. The first component must be an
-   *                   absolute path.
+   *                   absolute path. There must be at least one component.
    */
   [Throws]
   DOMString join(DOMString... components);
@@ -49,14 +51,6 @@ namespace PathUtils {
    */
   [Throws]
   DOMString joinRelative(DOMString base, DOMString relativePath);
-
-  /**
-   * Creates a unique path from the provided path.
-   *
-   * @param path An absolute path.
-   */
-  [Throws]
-  DOMString createUniquePath(DOMString path);
 
   /**
    * Creates an adjusted path using a path whose length is already close
@@ -88,6 +82,14 @@ namespace PathUtils {
   sequence<DOMString> split(DOMString path);
 
   /**
+   * Split a relative path into its components.
+   *
+   * @param path A relative path.
+   */
+  [Throws]
+  sequence<DOMString> splitRelative(DOMString path, optional SplitRelativeOptions options = {});
+
+  /**
    * Transform a file path into a file: URI
    *
    * @param path An absolute path.
@@ -98,20 +100,76 @@ namespace PathUtils {
   UTF8String toFileURI(DOMString path);
 
   /**
+   * Determine if the given path is an absolute or relative path.
+   *
+   * @param path A file path that is either relative or absolute.
+   *
+   * @return Whether or not the path is absolute.
+   */
+  boolean isAbsolute(DOMString path);
+};
+
+[Exposed=Window]
+partial namespace PathUtils {
+  /**
    * The profile directory.
    */
-  [Throws]
+  [Throws, BinaryName="ProfileDirSync"]
+  readonly attribute DOMString profileDir;
+
+  /**
+   * The local-specific profile directory.
+   */
+  [Throws, BinaryName="LocalProfileDirSync"]
+  readonly attribute DOMString localProfileDir;
+
+  /**
+   * The OS temporary directory.
+   */
+  [Throws, BinaryName="TempDirSync"]
+  readonly attribute DOMString tempDir;
+
+  /**
+   * The libxul path.
+   */
+  [Throws, BinaryName="XulLibraryPathSync"]
+  readonly attribute DOMString xulLibraryPath;
+};
+
+[Exposed=Worker]
+partial namespace PathUtils {
+  /**
+   * The profile directory.
+   */
+  [NewObject, BinaryName="GetProfileDirAsync"]
   Promise<DOMString> getProfileDir();
 
   /**
    * The local-specific profile directory.
    */
-  [Throws]
+  [NewObject, BinaryName="GetLocalProfileDirAsync"]
   Promise<DOMString> getLocalProfileDir();
 
   /**
-   * The temporary directory for the process.
+   * The OS temporary directory.
    */
-  [Throws]
+  [NewObject, BinaryName="GetTempDirAsync"]
   Promise<DOMString> getTempDir();
+
+  /**
+   * The libxul path.
+   */
+  [NewObject, BinaryName="GetXulLibraryPathAsync"]
+  Promise<DOMString> getXulLibraryPath();
+};
+
+dictionary SplitRelativeOptions {
+  /** Allow for a path that contains empty components. */
+  boolean allowEmpty = false;
+
+  /** Allow for a path that contains ".." components. */
+  boolean allowParentDir = false;
+
+  /** Allow for a path that contains "." components. */
+  boolean allowCurrentDir = false;
 };

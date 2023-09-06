@@ -28,7 +28,7 @@
 //  - CacheFile is still waiting for the handle
 //  - the chunk is preloaded
 
-//#define CACHE_CHUNKS
+// #define CACHE_CHUNKS
 
 namespace mozilla::net {
 
@@ -178,7 +178,8 @@ CacheFile::~CacheFile() {
 
 nsresult CacheFile::Init(const nsACString& aKey, bool aCreateNew,
                          bool aMemoryOnly, bool aSkipSizeCheck, bool aPriority,
-                         bool aPinned, CacheFileListener* aCallback) {
+                         bool aPinned, CacheFileListener* aCallback)
+    MOZ_NO_THREAD_SAFETY_ANALYSIS {
   MOZ_ASSERT(!mListener);
   MOZ_ASSERT(!mHandle);
 
@@ -287,6 +288,16 @@ nsresult CacheFile::Init(const nsACString& aKey, bool aCreateNew,
   }
 
   return NS_OK;
+}
+
+void CacheFile::Key(nsACString& aKey) {
+  CacheFileAutoLock lock(this);
+  aKey = mKey;
+}
+
+bool CacheFile::IsPinned() {
+  CacheFileAutoLock lock(this);
+  return mPinned;
 }
 
 nsresult CacheFile::OnChunkRead(nsresult aResult, CacheFileChunk* aChunk) {
@@ -452,6 +463,7 @@ nsresult CacheFile::OnFileOpened(CacheFileHandle* aHandle, nsresult aResult) {
     bool mAlreadyDoomed;
   } autoDoom(aHandle);
 
+  RefPtr<CacheFileMetadata> metadata;
   nsCOMPtr<CacheFileListener> listener;
   bool isNew = false;
   nsresult retval = NS_OK;
@@ -559,19 +571,23 @@ nsresult CacheFile::OnFileOpened(CacheFileHandle* aHandle, nsresult aResult) {
         return NS_OK;
       }
     }
+    if (listener) {
+      lock.Unlock();
+      listener->OnFileReady(retval, isNew);
+      return NS_OK;
+    }
+
+    MOZ_ASSERT(NS_SUCCEEDED(aResult));
+    MOZ_ASSERT(!mMetadata);
+    MOZ_ASSERT(mListener);
+
+    // mMetaData is protected by a lock, but ReadMetaData has to be called
+    // without the lock.  Alternatively we could make a
+    // "ReadMetaDataLocked", and temporarily unlock to call OnFileReady
+    metadata = mMetadata =
+        new CacheFileMetadata(mHandle, mKey, WrapNotNull(mLock));
   }
-
-  if (listener) {
-    listener->OnFileReady(retval, isNew);
-    return NS_OK;
-  }
-
-  MOZ_ASSERT(NS_SUCCEEDED(aResult));
-  MOZ_ASSERT(!mMetadata);
-  MOZ_ASSERT(mListener);
-
-  mMetadata = new CacheFileMetadata(mHandle, mKey, WrapNotNull(mLock));
-  mMetadata->ReadMetadata(this);
+  metadata->ReadMetadata(this);
   return NS_OK;
 }
 
@@ -588,41 +604,44 @@ nsresult CacheFile::OnDataRead(CacheFileHandle* aHandle, char* aBuf,
 }
 
 nsresult CacheFile::OnMetadataRead(nsresult aResult) {
-  MOZ_ASSERT(mListener);
-
-  LOG(("CacheFile::OnMetadataRead() [this=%p, rv=0x%08" PRIx32 "]", this,
-       static_cast<uint32_t>(aResult)));
-
+  nsCOMPtr<CacheFileListener> listener;
   bool isNew = false;
-  if (NS_SUCCEEDED(aResult)) {
-    mPinned = mMetadata->Pinned();
-    mReady = true;
-    mDataSize = mMetadata->Offset();
-    if (mDataSize == 0 && mMetadata->ElementsSize() == 0) {
-      isNew = true;
-      mMetadata->MarkDirty();
-    } else {
-      const char* altData = mMetadata->GetElement(CacheFileUtils::kAltDataKey);
-      if (altData && (NS_FAILED(CacheFileUtils::ParseAlternativeDataInfo(
-                          altData, &mAltDataOffset, &mAltDataType)) ||
-                      (mAltDataOffset > mDataSize))) {
-        // alt-metadata cannot be parsed or alt-data offset is invalid
-        mMetadata->InitEmptyMetadata();
+  {
+    CacheFileAutoLock lock(this);
+    MOZ_ASSERT(mListener);
+
+    LOG(("CacheFile::OnMetadataRead() [this=%p, rv=0x%08" PRIx32 "]", this,
+         static_cast<uint32_t>(aResult)));
+
+    if (NS_SUCCEEDED(aResult)) {
+      mPinned = mMetadata->Pinned();
+      mReady = true;
+      mDataSize = mMetadata->Offset();
+      if (mDataSize == 0 && mMetadata->ElementsSize() == 0) {
         isNew = true;
-        mAltDataOffset = -1;
-        mAltDataType.Truncate();
-        mDataSize = 0;
+        mMetadata->MarkDirty();
       } else {
-        CacheFileAutoLock lock(this);
-        PreloadChunks(0);
+        const char* altData =
+            mMetadata->GetElement(CacheFileUtils::kAltDataKey);
+        if (altData && (NS_FAILED(CacheFileUtils::ParseAlternativeDataInfo(
+                            altData, &mAltDataOffset, &mAltDataType)) ||
+                        (mAltDataOffset > mDataSize))) {
+          // alt-metadata cannot be parsed or alt-data offset is invalid
+          mMetadata->InitEmptyMetadata();
+          isNew = true;
+          mAltDataOffset = -1;
+          mAltDataType.Truncate();
+          mDataSize = 0;
+        } else {
+          PreloadChunks(0);
+        }
       }
+
+      InitIndexEntry();
     }
 
-    InitIndexEntry();
+    mListener.swap(listener);
   }
-
-  nsCOMPtr<CacheFileListener> listener;
-  mListener.swap(listener);
   listener->OnFileReady(aResult, isNew);
   return NS_OK;
 }
@@ -1011,6 +1030,7 @@ nsresult CacheFile::Doom(CacheFileListener* aCallback) {
 }
 
 nsresult CacheFile::DoomLocked(CacheFileListener* aCallback) {
+  AssertOwnsLock();
   MOZ_ASSERT(mHandle || mMemoryOnly || mOpeningFile);
 
   LOG(("CacheFile::DoomLocked() [this=%p, listener=%p]", this, aCallback));
@@ -1329,6 +1349,7 @@ nsresult CacheFile::GetFetchCount(uint32_t* _retval) {
 }
 
 nsresult CacheFile::GetDiskStorageSizeInKB(uint32_t* aDiskStorageSize) {
+  CacheFileAutoLock lock(this);
   if (!mHandle) {
     return NS_ERROR_NOT_AVAILABLE;
   }
@@ -1349,20 +1370,6 @@ nsresult CacheFile::OnFetched() {
 
   mMetadata->OnFetched();
   return NS_OK;
-}
-
-void CacheFile::Lock() { mLock->Lock().Lock(); }
-
-void CacheFile::Unlock() {
-  // move the elements out of mObjsToRelease
-  // so that they can be released after we unlock
-  nsTArray<RefPtr<nsISupports>> objs = std::move(mObjsToRelease);
-
-  mLock->Lock().Unlock();
-}
-
-void CacheFile::AssertOwnsLock() const {
-  mLock->Lock().AssertCurrentThreadOwns();
 }
 
 void CacheFile::ReleaseOutsideLock(RefPtr<nsISupports> aObject) {
@@ -2182,7 +2189,7 @@ void CacheFile::QueueChunkListener(uint32_t aIndex,
     LOG(
         ("CacheFile::QueueChunkListener() - Cannot get Cache I/O thread! Using "
          "main thread for callback."));
-    item->mTarget = GetMainThreadEventTarget();
+    item->mTarget = GetMainThreadSerialEventTarget();
   }
   item->mCallback = aCallback;
 
@@ -2219,6 +2226,7 @@ nsresult CacheFile::NotifyChunkListeners(uint32_t aIndex, nsresult aResult,
 }
 
 bool CacheFile::HaveChunkListeners(uint32_t aIndex) {
+  AssertOwnsLock();
   ChunkListeners* listeners;
   mChunkListeners.Get(aIndex, &listeners);
   return !!listeners;
@@ -2412,7 +2420,6 @@ void CacheFile::WriteMetadataIfNeededLocked(bool aFireAndForget) {
 
 void CacheFile::PostWriteTimer() {
   if (mMemoryOnly) return;
-
   LOG(("CacheFile::PostWriteTimer() [this=%p]", this));
 
   CacheFileIOManager::ScheduleMetadataWrite(this);
@@ -2481,6 +2488,7 @@ void CacheFile::SetError(nsresult aStatus) {
 }
 
 nsresult CacheFile::InitIndexEntry() {
+  AssertOwnsLock();
   MOZ_ASSERT(mHandle);
 
   if (mHandle->IsDoomed()) return NS_OK;

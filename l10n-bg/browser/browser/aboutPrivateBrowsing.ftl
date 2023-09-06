@@ -6,7 +6,8 @@ privatebrowsingpage-open-private-window-label = Отваряне на повер
     .accesskey = О
 about-private-browsing-search-placeholder = Търсене в интернет
 about-private-browsing-info-title = Вие сте в поверителен прозорец
-about-private-browsing-info-myths = Разпространени легенди относно поверителното разглеждане
+about-private-browsing-search-btn =
+    .title = Търсене в интернет
 # Variables
 #  $engine (String): the name of the user's default search engine
 about-private-browsing-handoff =
@@ -18,10 +19,25 @@ about-private-browsing-handoff-no-engine =
 about-private-browsing-handoff-text = Търсете с { $engine } или въведете адрес
 about-private-browsing-handoff-text-no-engine = Търсете или въведете адрес
 about-private-browsing-not-private = В момента не сте в поверителен прозорец.
-about-private-browsing-info-description = { -brand-short-name } изчиства историята на търсенето и разглеждането, когато излезете от приложението или затворите всички раздели и прозорци в поверително разглеждане. Въпреки че това не ви прави анонимни за уеб сайтовете или доставчиците на интернет услуги, това улеснява запазването анонимността на вашите действия онлайн, от останалите ползващи същия компютър.
+about-private-browsing-info-description-private-window = Поверителен прозорец: { -brand-short-name } изчиства търсенето и историята на разглеждане, когато затворите всички поверителни прозорци. Това не ви прави анонимни.
+about-private-browsing-info-description-simplified = { -brand-short-name } изчиства търсенето и историята на разглеждане, когато затворите всички поверителни прозорци, но това не ви прави анонимни.
+about-private-browsing-learn-more-link = Научете повече
 
-about-private-browsing-need-more-privacy = Имате нужда от повече поверителност?
-about-private-browsing-turn-on-vpn = Опитайте { -mozilla-vpn-brand-name }
+about-private-browsing-hide-activity = Скрийте активността и местоположението си навсякъде, където разглеждате
+about-private-browsing-get-privacy = Получавайте защита на поверителността навсякъде, където разглеждате
+about-private-browsing-hide-activity-1 = Скрийте какво разглеждате и местоположението си с { -mozilla-vpn-brand-name }. С едно щракване създавате сигурна връзка, дори в обществени мрежи.
+about-private-browsing-prominent-cta = Останете скрити с { -mozilla-vpn-brand-name }
+
+about-private-browsing-focus-promo-cta = Изтеглете { -focus-brand-name }
+about-private-browsing-focus-promo-header = { -focus-brand-name }: Поверително разглеждане в движение
+about-private-browsing-focus-promo-text = Мобилното ни приложение специалното за поверително разглеждане изчиства историята и бисквитките всеки път.
+
+## The following strings will be used for experiments in Fx99 and Fx100
+
+about-private-browsing-focus-promo-header-b = Вземете поверителното разглеждане на телефона си
+about-private-browsing-focus-promo-text-b = Използвайте { -focus-brand-name } за онова търсене, което не искате да правите с основния си мобилен четец.
+about-private-browsing-focus-promo-header-c = Следващо ниво поверителност за мобилни устройства
+about-private-browsing-focus-promo-text-c = { -focus-brand-name } изчиства историята всеки път, а също спира реклами и проследяване.
 
 # This string is the title for the banner for search engine selection
 # in a private window.
@@ -35,3 +51,23 @@ about-private-browsing-search-banner-description =
     }
 about-private-browsing-search-banner-close-button =
     .aria-label = Затваряне
+
+about-private-browsing-promo-close-button =
+    .title = Затваряне
+
+## Strings used in a “pin promotion” message, which prompts users to pin a private window
+
+about-private-browsing-pin-promo-link-text =
+    { PLATFORM() ->
+        [macos] Запазване в док-а
+       *[other] Закачане към лентата със задачи
+    }
+about-private-browsing-pin-promo-title = Без запазени бисквитки или история, направо от работния плот. Разглеждайте свободно!
+
+## Strings used in a promotion message for cookie banner reduction
+
+# Simplified version of the headline if the original text doesn't work
+# in your language: `See fewer cookie requests`.
+about-private-browsing-cookie-banners-promo-header = Банерите за бисквитките изчезнаха!
+about-private-browsing-cookie-banners-promo-button = Намаляване на банерите за бисквитки
+about-private-browsing-cookie-banners-promo-message = Нека { -brand-short-name } автоматично отговаря на изскачащите прозорци на бисквитките вместо вас, за да можете да се върнете към разглеждането без разсейване. { -brand-short-name } ще отхвърли всички заявки, ако е възможно.

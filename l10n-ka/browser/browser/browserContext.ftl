@@ -86,37 +86,37 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
-main-context-menu-bookmark-add =
-    .aria-label = გვერდის ჩანიშვნა
-    .accesskey = გ
-    .tooltiptext = გვერდის ჩანიშვნა
+main-context-menu-bookmark-page =
+    .aria-label = გვერდის ჩანიშვნა…
+    .accesskey = ნ
+    .tooltiptext = სანიშნის დამატება
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
+# Cannot be shown at the same time as main-context-menu-edit-bookmark-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = გვერდის ჩანიშვნა
+main-context-menu-bookmark-page-mac =
+    .label = გვერდის ჩანიშვნა…
     .accesskey = ნ
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-add-mac,
+# Cannot be shown at the same time as main-context-menu-bookmark-page-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-edit-mac =
-    .label = სანიშნის ჩასწორება
+main-context-menu-edit-bookmark-mac =
+    .label = სანიშნის ჩასწორება…
     .accesskey = წ
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = გვერდის ჩანიშვნა
-    .accesskey = გ
-    .tooltiptext = გვერდის ჩანიშვნა ({ $shortcut })
-main-context-menu-bookmark-change =
-    .aria-label = სანიშნის ჩასწორება
-    .accesskey = გ
+main-context-menu-bookmark-page-with-shortcut =
+    .aria-label = გვერდის ჩანიშვნა…
+    .accesskey = ნ
+    .tooltiptext = სანიშნის დამატება ({ $shortcut })
+main-context-menu-edit-bookmark =
+    .aria-label = სანიშნის ჩასწორება…
+    .accesskey = წ
     .tooltiptext = სანიშნის ჩასწორება
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = სანიშნის ჩასწორება
-    .accesskey = გ
+main-context-menu-edit-bookmark-with-shortcut =
+    .aria-label = სანიშნის ჩასწორება…
+    .accesskey = წ
     .tooltiptext = სანიშნის ჩასწორება ({ $shortcut })
 main-context-menu-open-link =
     .label = ბმულის გახსნა
@@ -131,11 +131,11 @@ main-context-menu-open-link-new-window =
     .label = ბმულის გახსნა ახალ ფანჯარაში
     .accesskey = ფ
 main-context-menu-open-link-new-private-window =
-    .label = ბმულის ახალ პირად ფანჯარაში გახსნა
+    .label = ბმულის გახსნა ახალ პირად ფანჯარაში
     .accesskey = პ
-main-context-menu-bookmark-link =
-    .label = ბმულის ჩანიშვნა
-    .accesskey = ლ
+main-context-menu-bookmark-link-2 =
+    .label = ბმულის ჩანიშვნა…
+    .accesskey = ბ
 main-context-menu-save-link =
     .label = ბმულის შენახვა როგორც…
     .accesskey = მ
@@ -150,9 +150,17 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = ელფოსტის მისამართის ასლი
     .accesskey = ე
+main-context-menu-copy-phone =
+    .label = ტელეფონის ნომრის ასლი
+    .accesskey = ო
 main-context-menu-copy-link-simple =
     .label = ბმულის ასლი
     .accesskey = ბ
+# This command copies the link, removing additional
+# query parameters used to track users across sites.
+main-context-menu-strip-on-share-link =
+    .label = ბმულის ასლი თვალის დევნების არიდებით
+    .accesskey = უ
 
 ## Media (video/audio) controls
 ##
@@ -189,7 +197,7 @@ main-context-menu-media-play-speed-faster-2 =
 main-context-menu-media-play-speed-fastest-2 =
     .label = 2×
 main-context-menu-media-loop =
-    .label = გამეორება დაუსრულებლად
+    .label = გამეორება უსასრულოდ
     .accesskey = ო
 
 ## The access keys for "Show Controls" and "Hide Controls" are the same
@@ -245,6 +253,9 @@ main-context-menu-image-email =
 main-context-menu-image-set-image-as-background =
     .label = სამუშაო ეკრანის ფონად გამოყენება…
     .accesskey = ე
+main-context-menu-image-copy-text =
+    .label = ტექსტის ამოღება სურათიდან
+    .accesskey = ტ
 main-context-menu-image-info =
     .label = სურათის მონაცემები
     .accesskey = მ
@@ -266,12 +277,6 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = ხმოვანი ფაილის გაგზავნა ელფოსტით…
     .accesskey = ე
-main-context-menu-plugin-play =
-    .label = ამ მოდულის ჩართვა
-    .accesskey = ჩ
-main-context-menu-plugin-hide =
-    .label = ამ მოდულის დამალვა
-    .accesskey = დ
 main-context-menu-save-to-pocket =
     .label = გვერდის შენახვა { -pocket-brand-name }-ში
     .accesskey = k
@@ -292,6 +297,9 @@ main-context-menu-use-saved-password =
 
 ##
 
+main-context-menu-use-relay-mask =
+    .label = გამოიყენეთ { -relay-brand-short-name } ელფოსტის შესანიღბად
+    .accesskey = ე
 main-context-menu-suggest-strong-password =
     .label = მძლავრი პაროლის შემოთავაზება…
     .accesskey = შ
@@ -319,9 +327,9 @@ main-context-menu-frame-open-window =
 main-context-menu-frame-reload =
     .label = ჩარჩოს განახლება
     .accesskey = ხ
-main-context-menu-frame-bookmark =
-    .label = ჩარჩოს ჩანიშვნა
-    .accesskey = ჩ
+main-context-menu-frame-add-bookmark =
+    .label = ჩარჩოს ჩანიშვნა…
+    .accesskey = ო
 main-context-menu-frame-save-as =
     .label = ჩარჩოს შენახვა როგორც…
     .accesskey = შ
@@ -334,9 +342,9 @@ main-context-menu-frame-view-source =
 main-context-menu-frame-view-info =
     .label = ჩარჩოს მონაცემების ჩვენება
     .accesskey = მ
-main-context-menu-print-selection =
-    .label = მონიშნულის ამობეჭდვა
-    .accesskey = უ
+main-context-menu-print-selection-2 =
+    .label = მონიშნულის ამობეჭდვა…
+    .accesskey = ბ
 main-context-menu-view-selection-source =
     .label = მონიშნულის წყაროს ჩვენება
     .accesskey = ო
@@ -356,15 +364,18 @@ main-context-menu-bidi-switch-page =
     .label = გვერდის მიმართულების შეცვლა
     .accesskey = მ
 main-context-menu-inspect =
-    .label = დაკვირვება
+    .label = გამოკვლევა
     .accesskey = ვ
 main-context-menu-inspect-a11y-properties =
-    .label = დამხმარე საშუალებებზე დაკვირვება
+    .label = დამხმარე საშუალებების გამოკვლევა
 main-context-menu-eme-learn-more =
-    .label = ვრცლად, DRM-ის შესახებ…
+    .label = ვრცლად, რა არის DRM…
     .accesskey = D
 # Variables
 #   $containerName (String): The name of the current container
 main-context-menu-open-link-in-container-tab =
     .label = ბმულის გახსნა ახალ { $containerName } ჩანართში
     .accesskey = რ
+main-context-menu-reveal-password =
+    .label = პაროლის გამოჩენა
+    .accesskey = მ

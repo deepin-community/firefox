@@ -6,17 +6,11 @@
 
 "use strict";
 
-const { Integration } = ChromeUtils.import(
-  "resource://gre/modules/Integration.jsm"
+const { PermissionUI } = ChromeUtils.importESModule(
+  "resource:///modules/PermissionUI.sys.mjs"
 );
-const { PermissionUI } = ChromeUtils.import(
-  "resource:///modules/PermissionUI.jsm"
-);
-const { SitePermissions } = ChromeUtils.import(
-  "resource:///modules/SitePermissions.jsm"
-);
-const { PermissionTestUtils } = ChromeUtils.import(
-  "resource://testing-common/PermissionTestUtils.jsm"
+const { SITEPERMS_ADDON_PROVIDER_PREF } = ChromeUtils.importESModule(
+  "resource://gre/modules/addons/siteperms-addon-utils.sys.mjs"
 );
 
 // Tests that GeolocationPermissionPrompt works as expected
@@ -24,9 +18,19 @@ add_task(async function test_geo_permission_prompt() {
   await testPrompt(PermissionUI.GeolocationPermissionPrompt);
 });
 
+// Tests that GeolocationPermissionPrompt works as expected with local files
+add_task(async function test_geo_permission_prompt_local_file() {
+  await testPrompt(PermissionUI.GeolocationPermissionPrompt, true);
+});
+
 // Tests that XRPermissionPrompt works as expected
 add_task(async function test_xr_permission_prompt() {
   await testPrompt(PermissionUI.XRPermissionPrompt);
+});
+
+// Tests that XRPermissionPrompt works as expected with local files
+add_task(async function test_xr_permission_prompt_local_file() {
+  await testPrompt(PermissionUI.XRPermissionPrompt, true);
 });
 
 // Tests that DesktopNotificationPermissionPrompt works as expected
@@ -53,7 +57,26 @@ add_task(async function test_persistent_storage_permission_prompt() {
 
 // Tests that MidiPrompt works as expected
 add_task(async function test_midi_permission_prompt() {
+  if (Services.prefs.getBoolPref(SITEPERMS_ADDON_PROVIDER_PREF, false)) {
+    ok(
+      true,
+      "PermissionUI.MIDIPermissionPrompt uses SitePermsAddon install flow"
+    );
+    return;
+  }
   await testPrompt(PermissionUI.MIDIPermissionPrompt);
+});
+
+// Tests that MidiPrompt works as expected with local files
+add_task(async function test_midi_permission_prompt_local_file() {
+  if (Services.prefs.getBoolPref(SITEPERMS_ADDON_PROVIDER_PREF, false)) {
+    ok(
+      true,
+      "PermissionUI.MIDIPermissionPrompt uses SitePermsAddon install flow"
+    );
+    return;
+  }
+  await testPrompt(PermissionUI.MIDIPermissionPrompt, true);
 });
 
 // Tests that StoragePermissionPrompt works as expected
@@ -63,22 +86,25 @@ add_task(async function test_storage_access_permission_prompt() {
   Services.prefs.clearUserPref("dom.storage_access.auto_grants");
 });
 
-async function testPrompt(Prompt) {
+async function testPrompt(Prompt, useLocalFile = false) {
   await BrowserTestUtils.withNewTab(
     {
       gBrowser,
-      url: "http://example.com",
+      url: useLocalFile ? `file://${PathUtils.tempDir}` : "http://example.com",
     },
-    async function(browser) {
+    async function (browser) {
       let mockRequest = makeMockPermissionRequest(browser);
       let principal = mockRequest.principal;
       let TestPrompt = new Prompt(mockRequest);
-      let permissionKey =
-        TestPrompt.usePermissionManager && TestPrompt.permissionKey;
+      let { usePermissionManager, permissionKey } = TestPrompt;
 
-      registerCleanupFunction(function() {
+      registerCleanupFunction(function () {
         if (permissionKey) {
-          PermissionTestUtils.remove(principal.URI, permissionKey);
+          SitePermissions.removeFromPrincipal(
+            principal,
+            permissionKey,
+            browser
+          );
         }
       });
 
@@ -183,16 +209,26 @@ async function testPrompt(Prompt) {
       );
       await clickSecondaryAction(secondaryActionToClickIndex);
       if (permissionKey) {
-        curPerm = PermissionTestUtils.getPermissionObject(
-          principal.URI,
-          permissionKey
+        curPerm = SitePermissions.getForPrincipal(
+          principal,
+          permissionKey,
+          browser
         );
         Assert.equal(
-          curPerm.capability,
-          Services.perms.DENY_ACTION,
+          curPerm.state,
+          SitePermissions.BLOCK,
           "Should have denied the action"
         );
-        Assert.equal(curPerm.expireTime, 0, "Deny should be permanent");
+
+        let expectedScope = usePermissionManager
+          ? SitePermissions.SCOPE_PERSISTENT
+          : SitePermissions.SCOPE_TEMPORARY;
+        Assert.equal(
+          curPerm.scope,
+          expectedScope,
+          `Deny should be ${usePermissionManager ? "persistent" : "temporary"}`
+        );
+
         Assert.ok(
           mockRequest._cancelled,
           "The request should have been cancelled"
@@ -203,11 +239,7 @@ async function testPrompt(Prompt) {
         );
       }
 
-      SitePermissions.removeFromPrincipal(
-        principal,
-        TestPrompt.permissionKey,
-        browser
-      );
+      SitePermissions.removeFromPrincipal(principal, permissionKey, browser);
       mockRequest._cancelled = false;
 
       // Bring the PopupNotification back up now...
@@ -223,17 +255,24 @@ async function testPrompt(Prompt) {
       popupNotification.checkbox.checked = true;
 
       await clickMainAction();
-      if (permissionKey) {
-        curPerm = PermissionTestUtils.getPermissionObject(
-          principal.URI,
-          permissionKey
+      // If the prompt does not use the permission manager, it can not set a
+      // persistent allow. Temporary allow is not supported.
+      if (usePermissionManager && permissionKey) {
+        curPerm = SitePermissions.getForPrincipal(
+          principal,
+          permissionKey,
+          browser
         );
         Assert.equal(
-          curPerm.capability,
-          Services.perms.ALLOW_ACTION,
+          curPerm.state,
+          SitePermissions.ALLOW,
           "Should have allowed the action"
         );
-        Assert.equal(curPerm.expireTime, 0, "Allow should be permanent");
+        Assert.equal(
+          curPerm.scope,
+          SitePermissions.SCOPE_PERSISTENT,
+          "Allow should be permanent"
+        );
         Assert.ok(
           !mockRequest._cancelled,
           "The request should not have been cancelled"

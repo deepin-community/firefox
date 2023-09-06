@@ -5,39 +5,6 @@
 
 ## The main browser window's title
 
-# These are the default window titles everywhere except macOS. The first two
-# attributes are used when the web content opened has no title:
-#
-# default - "Mozilla Firefox"
-# private - "Mozilla Firefox (Private Browsing)"
-#
-# The last two are for use when there *is* a content title.
-# Variables:
-#  $content-title (String): the title of the web content.
-browser-main-window =
-    .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } (निजी ब्राउज़िंग)
-    .data-content-title-default = { $content-title } - { -brand-full-name }
-    .data-content-title-private = { $content-title } - { -brand-full-name } (निजी ब्राउज़िंग)
-# These are the default window titles on macOS. The first two are for use when
-# there is no content title:
-#
-# "default" - "Mozilla Firefox"
-# "private" - "Mozilla Firefox — (Private Browsing)"
-#
-# The last two are for use when there *is* a content title.
-# Do not use the brand name in the last two attributes, as we do on non-macOS.
-#
-# Also note the other subtle difference here: we use a `-` to separate the
-# brand name from `(Private Browsing)`, which does not happen on other OSes.
-#
-# Variables:
-#  $content-title (String): the title of the web content.
-browser-main-window-mac =
-    .data-title-default = { -brand-full-name }
-    .data-title-private = { -brand-full-name } - (निजी ब्राउज़िंग)
-    .data-content-title-default = { $content-title }
-    .data-content-title-private = { $content-title } - (निजी ब्राउज़िंग)
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
@@ -73,16 +40,12 @@ urlbar-xr-notification-anchor =
     .tooltiptext = वर्चुअल रियलिटी अनुमति पैनल खोलें
 urlbar-storage-access-anchor =
     .tooltiptext = ब्राउज़िंग गतिविधि अनुमति पैनल खोलें
-urlbar-translate-notification-anchor =
-    .tooltiptext = इस पृष्ठ का अनुवाद करें
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = साइट के साथ अपनी विंडोज या स्क्रीन साझा प्रबंधित करें
 urlbar-indexed-db-notification-anchor =
     .tooltiptext = ऑफलाइन संग्रह संदेश पटल खोलें
 urlbar-password-notification-anchor =
     .tooltiptext = सहेजा हुआ कुष्टशब्द संदेश पटल खोलें
-urlbar-translated-notification-anchor =
-    .tooltiptext = पृष्ठ अनुवाद प्रंबंधित करें
 urlbar-plugins-notification-anchor =
     .tooltiptext = प्लग-इन उपयोग को प्रबंधित करें
 urlbar-web-rtc-share-devices-notification-anchor =
@@ -101,6 +64,17 @@ urlbar-search-tips-confirm = ठीक है, समझ गया
 # localized equivalent.
 urlbar-tip-icon-description =
     .alt = सुझाव:
+urlbar-result-menu-button =
+    .title = मेन्यू खोलें
+urlbar-result-menu-learn-more =
+    .label = अधिक जानें
+    .accesskey = L
+urlbar-result-menu-remove-from-history =
+    .label = इतिहास से हटाएं
+    .accesskey = R
+urlbar-result-menu-tip-get-help =
+    .label = मदद लें
+    .accesskey = h
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -153,10 +127,9 @@ urlbar-star-add-bookmark =
 
 ## Page Action Context Menu
 
-page-action-manage-extension =
-    .label = एक्सटेंशन प्रबंधित करें …
-page-action-remove-extension =
+page-action-remove-extension2 =
     .label = एक्सटेंशन हटाएं
+    .accesskey = v
 
 ## Auto-hide Context Menu
 
@@ -207,6 +180,22 @@ search-one-offs-tabs =
     .tooltiptext = टैब ({ $restrict })
 search-one-offs-history =
     .tooltiptext = इतिहास ({ $restrict })
+
+## QuickActions are shown in the urlbar as the user types a matching string
+## The -cmd- strings are comma separated list of keywords that will match
+## the action.
+
+quickactions-cmd-addons2 = ऐड-ऑन
+quickactions-cmd-bookmarks = बुकमार्क
+quickactions-cmd-print = प्रिंट करें
+# Opens the screenshot tool
+quickactions-screenshot3 = स्क्रीनशॉट लें
+quickactions-cmd-screenshot = स्क्रीनशॉट
+# Opens about:preferences
+quickactions-settings2 = सेटिंग प्रबंधित करें
+# Opens a SUMO article explaining how to update the browser
+quickactions-update = { -brand-short-name } अपडेट करें
+quickactions-cmd-update = अपडेट करें
 
 ## Bookmark Panel
 
@@ -268,7 +257,7 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = आप इस साइट से सुरक्षित रूप से नहीं जुड़े हैं।
 identity-connection-verified = आप इस साइट से सुरक्षित रूप से जुड़े हैं।
 identity-ev-owner-label = इसे प्रमाणपत्र जारी किया गया:
-identity-description-custom-root = Mozilla इस प्रमाणपत्र जारीकर्ता को नहीं पहचानता है। यह आपके ऑपरेटिंग सिस्टम से या किसी ऐडमिनिस्ट्रेटर द्वारा जोड़ा जा सकता है। <label data-l10n-name="link">अधिक जानें</label>
+identity-description-custom-root2 = Mozilla इस प्रमाणपत्र जारीकर्ता को नहीं पहचानता है। यह आपके ऑपरेटिंग सिस्टम से या किसी ऐडमिनिस्ट्रेटर द्वारा जोड़ा जा सकता है।
 identity-remove-cert-exception =
     .label = अपवाद मिटाएँ
     .accesskey = R
@@ -276,14 +265,12 @@ identity-description-insecure = इस साइट पे आपका कन�
 identity-description-insecure-login-forms = आपके द्वारा इस पृष्ट में दी गयी जानकारी सुरक्षित नहीं है तथा उसका गलत इस्तेमाल किया जा सकता है
 identity-description-weak-cipher-intro = इस वेबसाइट से आपका कनेक्शन कमज़ोर गोपन का उपयोग करता है और निजी नहीं है.
 identity-description-weak-cipher-risk = अन्य लोग आपकी जानकारी को देख सकते हैं या वेबसाइट के व्यवहार को बदल सकते हैं.
-identity-description-active-blocked = { -brand-short-name } इस पृष्ठ के कुछ हिस्सों को अवरुद्ध कर दिया है जो सुरक्षित नहीं हैं. <label data-l10n-name="link">अधिक सीखे</label>
+identity-description-active-blocked2 = { -brand-short-name } इस पृष्ठ के कुछ हिस्सों को अवरुद्ध कर दिया है जो सुरक्षित नहीं हैं.
 identity-description-passive-loaded = आपका कनेक्शन निजी नही हैं और सुचना जो आप इस साइट के साथ साझा करते है दुसरो के द्वारा देखा जा सकता.
-identity-description-passive-loaded-insecure = यह वेबसाइट वह सामग्री शामिल करता है जो सुरक्षित नहीं हैं(जैसा की छवि). <label data-l10n-name="link">अधिक सीखे</label>
-identity-description-passive-loaded-mixed = हालांकि { -brand-short-name } ने कुछ सामग्री को रोक दिया है, इस पृष्ठ पर कुछ ऐसी सामग्री है जो असुरक्षित है (जैसे कि छवियाँ). <label data-l10n-name="link">अधिक सीखे</label>
+identity-description-passive-loaded-insecure2 = यह वेबसाइट वह सामग्री शामिल करता है जो सुरक्षित नहीं हैं(जैसा की छवि).
+identity-description-passive-loaded-mixed2 = हालांकि { -brand-short-name } ने कुछ सामग्री को रोक दिया है, इस पृष्ठ पर कुछ ऐसी सामग्री है जो असुरक्षित है (जैसे कि छवियाँ).
 identity-description-active-loaded = यह वेबसाइट उस सामग्री को सम्मिलित करता है जो सुरक्षित नही हैं(जैसा की स्क्रिप्ट) और कनेक्शन भी निजी नही हैं.
 identity-description-active-loaded-insecure = सुचना जो आप इस साइट के साथ साझा करते हैं दुसरो के द्वारा देखा जा सकता (जैसे पासवर्ड,संदेश, क्रेडिट कार्ड, इत्यादि.).
-identity-learn-more =
-    .value = अधिक सीखे
 identity-disable-mixed-content-blocking =
     .label = अब सुरक्षा निष्क्रिय करें
     .accesskey = D
@@ -306,6 +293,8 @@ browser-window-close-button =
 
 ## Tab actions
 
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-blocked = ब्लॉक किया गया
 
 ## These labels should be written in all capital letters if your locale supports them.
 ## Variables:
@@ -389,8 +378,27 @@ urlbar-result-action-calculator-result = = { $result }
 
 urlbar-result-action-search-bookmarks = बुकमार्क खोजें
 urlbar-result-action-search-history = खोज इतिहास
+urlbar-result-action-search-tabs = खोज टैब
 
 ## Labels shown above groups of urlbar results
+
+# A label shown above the "Firefox Suggest" (bookmarks/history) group in the
+# urlbar results.
+urlbar-group-firefox-suggest =
+    .label = { -firefox-suggest-brand-name }
+
+## Reader View toolbar buttons
+
+# This should match menu-view-enter-readerview in menubar.ftl
+reader-view-enter-button =
+    .aria-label = रीडर दृश्य दर्ज करे
+# This should match menu-view-close-readerview in menubar.ftl
+reader-view-close-button =
+    .aria-label = रीडर दृश्य बंद करे|
+
+## Picture-in-Picture urlbar button
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
 
 
 ## Full Screen and Pointer Lock UI
@@ -409,14 +417,6 @@ fullscreen-exit-mac-button = पूर्ण स्क्रीन से नि
 pointerlock-warning-domain = <span data-l10n-name="domain">{ $domain }</span> अपने सूचक पर नियंत्रण हैं. नियंत्रण फिर से वापस लेने के लिए Esc बटन दबाएँ.
 pointerlock-warning-no-domain = इस दस्तेवाज को आपके सूचक पर नियंत्रण हैं. नियंत्रण फिर से वापस लेने के लिए Esc बटन दबाएँ.
 
-## Subframe crash notification
-
-crashed-subframe-learnmore-link =
-    .value = अधिक जानें
-crashed-subframe-submit =
-    .label = रिपोर्ट जमा करें
-    .accesskey = S
-
 ## Bookmarks panels, menus and toolbar
 
 bookmarks-toolbar-chevron =
@@ -429,6 +429,11 @@ bookmarks-other-bookmarks-menu =
     .label = अन्य बुकमार्क
 bookmarks-mobile-bookmarks-menu =
     .label = मोबाइल बुकमार्क
+
+## Variables:
+##   $isVisible (boolean): if the specific element (e.g. bookmarks sidebar,
+##                         bookmarks toolbar, etc.) is visible or not.
+
 bookmarks-tools-sidebar-visibility =
     .label =
         { $isVisible ->
@@ -447,12 +452,13 @@ bookmarks-tools-menu-button-visibility =
             [true] टूलबार से बुकमार्क मेनू हटायें
            *[other] टूलबार पर बुकमार्क मेनू डालें
         }
+
+##
+
 bookmarks-search =
     .label = बुकमार्क खोजें
 bookmarks-tools =
     .label = बुकमार्क के उपकरण
-bookmarks-bookmark-edit-panel =
-    .label = यह बुकमार्क संपादित करें
 # The aria-label is a spoken label that should not include the word "toolbar" or
 # such, because screen readers already know that this container is a toolbar.
 # This avoids double-speaking.
@@ -483,12 +489,6 @@ save-to-pocket-button =
 
 ## Customize Toolbar Buttons
 
-
-## More items
-
-more-menu-go-offline =
-    .label = ऑफ़लाइन काम करें
-    .accesskey = k
 toolbar-overflow-customize-button =
     .label = औज़ारपट्टी अनुकूलित करें...
     .accesskey = C
@@ -524,13 +524,6 @@ eme-notifications-drm-content-playing-dismiss-accesskey = D
 
 panel-save-update-password = पासवर्ड
 
-## Add-on removal warning
-
-
-## Remote / Synced tabs
-
-remote-tabs-sync-now = अभी सिंक करें
-
 ##
 
 ui-tour-info-panel-close =
@@ -552,6 +545,13 @@ popups-infobar-dont-show-message =
     .label = इस संदेश को मत दिखाएँ जब पॉप-अप रोके जाते हैं
     .accesskey = डी
 
+## Since the default position for PiP controls does not change for RTL layout,
+## right-to-left languages should use "Left" and "Right" as in the English strings,
+
+
+##
+
+
 # Navigator Toolbox
 
 # This string is a spoken label that should not include
@@ -568,19 +568,14 @@ navbar-overflow =
 navbar-print =
     .label = छापें
     .tooltiptext = यह पृष्ठ छापें… ({ $shortcut })
-navbar-print-tab-modal-disabled =
-    .label = छापें
-    .tooltiptext = यह पृष्ठ छापें
 navbar-home =
-    .label = घर
+    .label = मुख्य पृष्ठ
     .tooltiptext = { -brand-short-name } होम पेज
 navbar-library =
     .label = लाइब्रे‌री
     .tooltiptext = इतिहास, सहेजे गए बुकमार्क, और अधिक देखें
 navbar-search =
     .title = खोज
-navbar-accessibility-indicator =
-    .tooltiptext = अभिगम्यता सुविधाएँ सक्षम
 # Name for the tabs toolbar as spoken by screen readers. The word
 # "toolbar" is appended automatically and should not be included in
 # in the string
@@ -591,3 +586,66 @@ tabs-toolbar-new-tab =
 tabs-toolbar-list-all-tabs =
     .label = सभी टैब सूचीबद्ध करें
     .tooltiptext = सभी टैब सूचीबद्ध करें
+
+## Infobar shown at startup to suggest session-restore
+
+
+## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
+
+data-reporting-notification-message = { -brand-short-name } स्वतः कुछ आँकड़ों को { -vendor-short-name } में भेजता है ताकि हम आपके अनुभव को बढ़ा सकें.
+data-reporting-notification-button =
+    .label = चुनें जिसे मैंने साझा किया
+    .accesskey = C
+
+## Unified extensions (toolbar) button
+
+
+## Unified extensions button when permission(s) are needed.
+## Note that the new line is intentionally part of the tooltip.
+
+
+## Unified extensions button when some extensions are quarantined.
+## Note that the new line is intentionally part of the tooltip.
+
+
+## Autorefresh blocker
+
+refresh-blocked-refresh-label = { -brand-short-name } ने इस पृष्ठ को स्वतः लोड होने से रोका है.
+refresh-blocked-redirect-label = { -brand-short-name } ने इस पृष्ठ को दूसरे पृष्ठ में स्वतः पुनर्निर्देशित होने से रोका है.
+refresh-blocked-allow =
+    .label = अनुमति दें
+    .accesskey = A
+
+## Firefox Relay integration
+
+
+## Add-on Pop-up Notifications
+
+popup-notification-addon-install-unsigned =
+    .value = (असत्यापित)
+popup-notification-xpinstall-prompt-learn-more = ऐड-ऑन को सुरक्षित रूप से स्थापित करने के बारे में अधिक जानें
+
+## Pop-up warning
+
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-message =
+    { $popupCount ->
+        [one] { -brand-short-name } ने इस साइट को पॉप अप विंडो खोलने से रोका है.
+       *[other] { -brand-short-name } इस साइट को { $popupCount } पॉप अप विंडो को खोलने से रोका है.
+    }
+popup-warning-button =
+    .label =
+        { PLATFORM() ->
+            [windows] विकल्प
+           *[other] वरीयता
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [windows] O
+           *[other] P
+        }
+# Variables:
+#   $popupURI (String): the URI for the pop-up window
+popup-show-popup-menuitem =
+    .label = '{ $popupURI }' दिखाएँ

@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = အချက်အလက်ကို ရှင်းပါ
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = { -brand-short-name } တွင် ယာယီသိမ်းထားသည့် ကွတ်ကီးများနှင့် ဆိုက်အချက်အလက်များကို ရှင်းလင်းခြင်းသည် သင့်ကို ဝဘ်ဆိုက်တွင် ဝင်ရောက်ထားခြင်းမှ ထွက်စေနိုင်သည့်အပြင် အင်တာနက်မဲ့ဝဘ်အချက်အလက်ကိုလည်း ဖယ်ရှားသည်။ ယာယီအချက်အလက် cache ကို ရှင်းလင်းခြင်းသည် ဝဘ်ဆိုက်တွင် ဝင်ရောက်ထားခြင်းကို ထိခိုက်မှု မရှိစေပါ။
 

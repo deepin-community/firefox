@@ -13,6 +13,9 @@ about-webrtc-document-title = WebRTC Internals
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = save about:webrtc as
 
+## These labels are for a disclosure which contains the information for closed PeerConnection sections
+
+
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = AEC Logging
@@ -20,7 +23,16 @@ about-webrtc-aec-logging-off-state-label = Start AEC Logging
 about-webrtc-aec-logging-on-state-label = Stop AEC Logging
 about-webrtc-aec-logging-on-state-msg = AEC logging active (speak with the caller for a few minutes and then stop the capture)
 
+about-webrtc-aec-logging-toggled-on-state-msg = AEC logging active (speak with the caller for a few minutes and then stop the capture)
+# Variables:
+#  $path (String) - The path to which the aec log file is saved.
+about-webrtc-aec-logging-toggled-off-state-msg = Captured log files can be found in: { $path }
+
 ##
+
+# The autorefresh checkbox causes a stats section to autorefresh its content when checked
+about-webrtc-auto-refresh-label = Auto Refresh
+
 
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
@@ -59,11 +71,6 @@ about-webrtc-ice-pair-bytes-sent = Bytes sent:
 about-webrtc-ice-pair-bytes-received = Bytes received:
 about-webrtc-ice-component-id = Component ID
 
-## "Avg." is an abbreviation for Average. These are used as data labels.
-
-about-webrtc-avg-bitrate-label = Avg. bitrate:
-about-webrtc-avg-framerate-label = Avg. framerate:
-
 ## These adjectives are used to label a line of statistics collected for a peer
 ## connection. The data represents either the local or remote end of the
 ## connection.
@@ -72,7 +79,6 @@ about-webrtc-type-local = Local
 about-webrtc-type-remote = Remote
 
 ##
-
 
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
@@ -96,6 +102,11 @@ about-webrtc-log-show-msg = show log
 about-webrtc-log-hide-msg = hide log
     .title = click to collapse this section
 
+about-webrtc-log-section-show-msg = Show Log
+    .title = Click to expand this section
+about-webrtc-log-section-hide-msg = Hide Log
+    .title = Click to collapse this section
+
 ## These are used to display a header for a PeerConnection.
 ## Variables:
 ##  $browser-id (Number) - A numeric id identifying the browser tab for the PeerConnection.
@@ -106,8 +117,12 @@ about-webrtc-log-hide-msg = hide log
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (closed) { $now }
 
-##
+## These are used to indicate what direction media is flowing.
+## Variables:
+##  $codecs - a list of media codecs
 
+
+##
 
 about-webrtc-local-candidate = Local Candidate
 about-webrtc-remote-candidate = Remote Candidate
@@ -118,16 +133,25 @@ about-webrtc-raw-cand-show-msg = show raw candidates
     .title = click to expand this section
 about-webrtc-raw-cand-hide-msg = hide raw candidates
     .title = click to collapse this section
+about-webrtc-raw-cand-section-show-msg = Show Raw Candidates
+    .title = Click to expand this section
+about-webrtc-raw-cand-section-hide-msg = Hide Raw Candidates
+    .title = Click to collapse this section
 about-webrtc-priority = Priority
 about-webrtc-fold-show-msg = show details
     .title = click to expand this section
 about-webrtc-fold-hide-msg = hide details
     .title = click to collapse this section
+about-webrtc-fold-default-show-msg = Show Details
+    .title = Click to expand this section
+about-webrtc-fold-default-hide-msg = Hide Details
+    .title = Click to collapse this section
 about-webrtc-dropped-frames-label = Dropped frames:
 about-webrtc-discarded-packets-label = Discarded packets:
 about-webrtc-decoder-label = Decoder
 about-webrtc-encoder-label = Encoder
 about-webrtc-show-tab-label = Show tab
+about-webrtc-current-framerate-label = Framerate
 about-webrtc-width-px = Width (px)
 about-webrtc-height-px = Height (px)
 about-webrtc-consecutive-frames = Consecutive Frames
@@ -143,6 +167,12 @@ about-webrtc-last-frame-timestamp = Last Frame Reception Timestamp
 about-webrtc-local-receive-ssrc = Local Receiving SSRC
 # This is an SSRC on the remote side of the connection that is sending RTP
 about-webrtc-remote-send-ssrc = Remote Sending SSRC
+
+## These are displayed on the button that shows or hides the
+## PeerConnection configuration disclosure
+
+about-webrtc-pc-configuration-show-msg = Show Configuration
+about-webrtc-pc-configuration-hide-msg = Hide Configuration
 
 ##
 
@@ -195,7 +225,29 @@ about-webrtc-debug-mode-off-state-msg = trace log can be found at: { $path }
 about-webrtc-debug-mode-on-state-msg = debug mode active, trace log at: { $path }
 about-webrtc-aec-logging-off-state-msg = captured log files can be found in: { $path }
 
+about-webrtc-save-page-complete-msg = Page saved to: { $path }
+about-webrtc-debug-mode-toggled-off-state-msg = Trace log can be found at: { $path }
+about-webrtc-debug-mode-toggled-on-state-msg = Debug mode active, trace log at: { $path }
+
 ##
+
+# This is the total number of frames encoded or decoded over an RTP stream.
+# Variables:
+#  $frames (Number) - The number of frames encoded or decoded.
+about-webrtc-frames =
+    { $frames ->
+        [one] { $frames } frame
+       *[other] { $frames } frames
+    }
+
+# This is the number of audio channels encoded or decoded over an RTP stream.
+# Variables:
+#  $channels (Number) - The number of channels encoded or decoded.
+about-webrtc-channels =
+    { $channels ->
+        [one] { $channels } channel
+       *[other] { $channels } channels
+    }
 
 # This is the total number of packets received on the PeerConnection.
 # Variables:
@@ -254,9 +306,15 @@ about-webrtc-sdp-set-at-timestamp-remote = Set Remote SDP at timestamp { NUMBER(
 #  $relative-timestamp (Number) - The timestamp relative to the timestamp of the earliest received SDP.
 about-webrtc-sdp-set-timestamp = Timestamp { NUMBER($timestamp, useGrouping: "false") } (+ { $relative-timestamp } ms)
 
-##
+## These are displayed on the button that shows or hides the SDP information disclosure
 
-##
+about-webrtc-show-msg-sdp = Show SDP
+about-webrtc-hide-msg-sdp = Hide SDP
+
+## These are displayed on the button that shows or hides the Media Context information disclosure.
+## The Media Context is the set of preferences and detected capabilities that informs
+## the negotiated CODEC settings.
+
 
 ##
 

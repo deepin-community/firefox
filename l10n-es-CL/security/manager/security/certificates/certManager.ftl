@@ -26,9 +26,9 @@ certmgr-people = Tienes certificados en archivo que identifican a estas personas
 certmgr-server = Estas entradas identifican las excepciones de error de certificados del servidor
 certmgr-ca = Tienes certificados en archivo que identifican estas autoridades de certificados
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Modificar opciones de confianza en el certificado de CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Editar configuraciones de confianza:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Este certificado puede identificar usuarios de email.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Eliminar Certificado
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Servidor
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Servidor
-
-certmgr-override-lifetime =
-    .label = Tiempo de vida
 
 certmgr-token-name =
     .label = Dispositivo de seguridad
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Número de serie
+
+certmgr-fingerprint-sha-256 =
+    .label = Huella digital SHA-256
 
 certmgr-view =
     .label = Ver…
@@ -146,7 +146,7 @@ choose-p12-restore-file-dialog = Archivo de certificado a importar
 ## Import certificate(s) file dialog
 
 file-browse-certificate-spec = Archivos de certificados
-import-ca-certs-prompt = Seleccione el archivo que contiene el/los certificado(s) CA a importar
+import-ca-certs-prompt = Selecciona el archivo que contiene el/los certificado(s) CA a importar
 import-email-cert-prompt = Selecciona el archivo que contiene el certificado de email de otra persona a importar
 
 ## For editing certificates trust
@@ -159,24 +159,24 @@ edit-trust-ca = El certificado "{ $certName }" representa a una Autoridad de Cer
 
 delete-user-cert-title =
     .title = Eliminar tus certificados
-delete-user-cert-confirm = ¿Está seguro que desea eliminar estos certificados?
+delete-user-cert-confirm = ¿De verdad quieres eliminar estos certificados?
 delete-user-cert-impact = Si eliminas uno de tus propios certificados, no podrás utilizarlo para identificarte a ti mismo.
 
 
 delete-ssl-override-title =
     .title = Eliminar excepción de certificado de servidor
-delete-ssl-override-confirm = ¿Está seguro que desea eliminar esta excepción de servidor?
+delete-ssl-override-confirm = ¿De verdad quieres eliminar esta excepción de servidor?
 delete-ssl-override-impact = Si elimina una excepción de servidor, restaurará los controles de seguridad habituales para ese servidor y se requerirá que use un certificado válido.
 
 delete-ca-cert-title =
     .title = Eliminar o desconfiar de certificados de CA
-delete-ca-cert-confirm = Ha solicitado eliminar estos certificados de CA. Para los certificados incorporados se eliminará toda la confianza, lo que tiene el mismo efecto. ¿Está seguro de querer eliminar o quitar la confianza?
+delete-ca-cert-confirm = Ha solicitado eliminar estos certificados de CA. Para los certificados incorporados se eliminará toda la confianza, lo que tiene el mismo efecto. ¿De verdad quieres eliminar o quitar la confianza?
 delete-ca-cert-impact = Si elimina o desconfía de un certifcado de una Autoridad de Certificación (CA), esta aplicación ya no confiará en ningún certificado expedido por esa CA.
 
 
 delete-email-cert-title =
     .title = Eliminar certificados de email
-delete-email-cert-confirm = ¿Estás seguro de que quieres eliminar los certificados de email de estas personas?
+delete-email-cert-confirm = ¿De verdad quieres eliminar los certificados de email de estas personas?
 delete-email-cert-impact = Si eliminas el certificado de email de una persona, ya no podrás enviar mensajes cifrados a esa persona.
 
 # Used for semi-uniquely representing a cert.
@@ -185,8 +185,6 @@ delete-email-cert-impact = Si eliminas el certificado de email de una persona, y
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Certificado con número de serie: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = No se envió certificado de cliente

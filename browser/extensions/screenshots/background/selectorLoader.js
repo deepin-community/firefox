@@ -9,7 +9,7 @@
 // eslint-disable-next-line no-var
 var global = this;
 
-this.selectorLoader = (function() {
+this.selectorLoader = (function () {
   const exports = {};
 
   // These modules are loaded in order, first standardScripts and then selectorScripts
@@ -27,7 +27,6 @@ this.selectorLoader = (function() {
 
   const selectorScripts = [
     "clipboard.js",
-    "makeUuid.js",
     "build/selection.js",
     "build/shot.js",
     "randomString.js",
@@ -39,7 +38,7 @@ this.selectorLoader = (function() {
     "selector/uicontrol.js",
   ];
 
-  exports.unloadIfLoaded = function(tabId) {
+  exports.unloadIfLoaded = function (tabId) {
     return browser.tabs
       .executeScript(tabId, {
         code: "this.selectorLoader && this.selectorLoader.unloadModules()",
@@ -50,7 +49,7 @@ this.selectorLoader = (function() {
       });
   };
 
-  exports.testIfLoaded = function(tabId) {
+  exports.testIfLoaded = function (tabId) {
     if (loadingTabs.has(tabId)) {
       return true;
     }
@@ -66,7 +65,7 @@ this.selectorLoader = (function() {
 
   const loadingTabs = new Set();
 
-  exports.loadModules = function(tabId) {
+  exports.loadModules = function (tabId) {
     loadingTabs.add(tabId);
     catcher.watchPromise(
       executeModules(tabId, standardScripts.concat(selectorScripts)).then(
@@ -105,7 +104,7 @@ this.selectorLoader = (function() {
     );
   }
 
-  exports.unloadModules = function() {
+  exports.unloadModules = function () {
     const watchFunction = catcher.watchFunction;
     const allScripts = standardScripts.concat(selectorScripts);
     const moduleNames = allScripts.map(filename =>
@@ -126,7 +125,7 @@ this.selectorLoader = (function() {
     return true;
   };
 
-  exports.toggle = function(tabId) {
+  exports.toggle = function (tabId) {
     return exports.unloadIfLoaded(tabId).then(wasLoaded => {
       if (!wasLoaded) {
         exports.loadModules(tabId);

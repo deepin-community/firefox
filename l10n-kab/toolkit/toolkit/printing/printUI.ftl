@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Meṛṛa
+printui-page-range-current = Amiran
+printui-page-range-odd = Aryugan
+printui-page-range-even = Ayugan
 printui-page-range-custom = Udmawan
 printui-page-range-label = Isebtar
 printui-page-range-picker =

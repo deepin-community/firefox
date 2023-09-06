@@ -65,6 +65,9 @@ media-dimension =
     .value = Өлшемдер:
 media-long-desc =
     .value = Толық сипаттамасы:
+media-select-all =
+    .label = Барлығын таңдау
+    .accesskey = ы
 media-save-as =
     .label = Қалайша сақтау…
     .accesskey = с
@@ -235,6 +238,9 @@ media-dimensions =
 # Variables:
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } Кб
+
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
 
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab

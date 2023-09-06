@@ -53,13 +53,10 @@ struct CatchInfo {
   uint32_t tagIndex;        // Index for the associated exception.
   NonAssertingLabel label;  // The entry label for the handler.
 
-  static const uint32_t CATCH_ALL_INDEX = UINT32_MAX;
-  static_assert(CATCH_ALL_INDEX > MaxTags);
-
   explicit CatchInfo(uint32_t tagIndex_) : tagIndex(tagIndex_) {}
 };
 
-using CatchInfoVector = Vector<CatchInfo, 0, SystemAllocPolicy>;
+using CatchInfoVector = Vector<CatchInfo, 1, SystemAllocPolicy>;
 
 // Control node, representing labels and stack heights at join points.
 struct Control {
@@ -93,6 +90,8 @@ class BaseNothingVector {
   bool resize(size_t length) { return true; }
   Nothing& operator[](size_t) { return unused_; }
   Nothing& back() { return unused_; }
+  size_t length() const { return 0; }
+  bool append(Nothing& nothing) { return true; }
 };
 
 // The baseline compiler tracks values on a stack of its own -- it needs to scan
@@ -131,9 +130,8 @@ struct AccessCheck {
 
 // Encapsulate all the information about a function call.
 struct FunctionCall {
-  explicit FunctionCall(uint32_t lineOrBytecode)
-      : lineOrBytecode(lineOrBytecode),
-        isInterModule(false),
+  FunctionCall()
+      : restoreRegisterStateAndRealm(false),
         usesSystemAbi(false),
 #ifdef JS_CODEGEN_ARM
         hardFP(true),
@@ -142,15 +140,32 @@ struct FunctionCall {
         stackArgAreaSize(0) {
   }
 
-  uint32_t lineOrBytecode;
   WasmABIArgGenerator abi;
-  bool isInterModule;
+  bool restoreRegisterStateAndRealm;
   bool usesSystemAbi;
 #ifdef JS_CODEGEN_ARM
   bool hardFP;
 #endif
   size_t frameAlignAdjustment;
   size_t stackArgAreaSize;
+};
+
+enum class PreBarrierKind {
+  // No pre-write barrier is required because the previous value is undefined.
+  None,
+  // Perform a pre-write barrier to mark the previous value if an incremental
+  // GC is underway.
+  Normal,
+};
+
+enum class PostBarrierKind {
+  // Remove an existing store buffer entry if the new value does not require
+  // one. This is required to preserve invariants with HeapPtr when used for
+  // movable storage.
+  Precise,
+  // Add a store buffer entry if the new value requires it, but do not attempt
+  // to remove a pre-existing entry.
+  Imprecise,
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -200,6 +215,11 @@ struct BaseCompiler final {
   // Prologue and epilogue offsets, initialized during prologue and epilogue
   // generation and only used by the caller.
   FuncOffsets offsets_;
+
+  // We call this address from the breakable point when the breakpoint handler
+  // is not null.
+  NonAssertingLabel debugTrapStub_;
+  uint32_t previousBreakablePoint_;
 
   // BaselineCompileFunctions() "lends" us the StkVector to use in this
   // BaseCompiler object, and that is installed in |stk_| in our constructor.
@@ -265,10 +285,6 @@ struct BaseCompiler final {
   // Flag indicating that the compiler is currently in a dead code region.
   bool deadCode_;
 
-  // Running count of call sites, used only to assert that the compiler is in a
-  // sensible state once compilation has completed.
-  size_t lastReadCallSite_;
-
   ///////////////////////////////////////////////////////////////////////////
   //
   // State for bounds check elimination.
@@ -302,7 +318,7 @@ struct BaseCompiler final {
   BaseCompiler(const ModuleEnvironment& moduleEnv,
                const CompilerEnvironment& compilerEnv,
                const FuncCompileInput& func, const ValTypeVector& locals,
-               const MachineState& trapExitLayout,
+               const RegisterOffsets& trapExitLayout,
                size_t trapExitLayoutNumWords, Decoder& decoder,
                StkVector& stkSource, TempAllocator* alloc, MacroAssembler* masm,
                StackMaps* stackMaps);
@@ -319,8 +335,13 @@ struct BaseCompiler final {
   // WasmBaselineObject-inl.h.
 
   inline const FuncType& funcType() const;
-  inline const TypeIdDesc& funcTypeId() const;
-  inline bool usesSharedMemory() const;
+  inline bool usesMemory() const;
+  inline bool usesSharedMemory(uint32_t memoryIndex) const;
+  inline bool isMem32(uint32_t memoryIndex) const;
+  inline bool isMem64(uint32_t memoryIndex) const;
+  inline bool hugeMemoryEnabled(uint32_t memoryIndex) const;
+  inline uint32_t instanceOffsetOfMemoryBase(uint32_t memoryIndex) const;
+  inline uint32_t instanceOffsetOfBoundsCheckLimit(uint32_t memoryIndex) const;
 
   // The casts are used by some of the ScratchRegister implementations.
   operator MacroAssembler&() const { return masm; }
@@ -455,15 +476,20 @@ struct BaseCompiler final {
   // Return the 32-bit low part of the 64-bit register, do not free anything.
   inline RegI32 fromI64(RegI64 r);
 
+  // If r is valid, return fromI64(r), otherwise an invalid RegI32.
+  inline RegI32 maybeFromI64(RegI64 r);
+
 #ifdef JS_PUNBOX64
   // On 64-bit systems, reinterpret r as 64-bit.
   inline RegI64 fromI32(RegI32 r);
 #endif
 
   // Widen r to 64 bits; this may allocate another register to form a pair.
+  // Note this does not generate code for sign/zero extension.
   inline RegI64 widenI32(RegI32 r);
 
-  // Narrow r to 32 bits; this may free part of a pair.
+  // Narrow r to 32 bits; this may free part of a pair.  Note this does not
+  // generate code to canonicalize the value on 64-bit systems.
   inline RegI32 narrowI64(RegI64 r);
   inline RegI32 narrowRef(RegRef r);
 
@@ -571,6 +597,9 @@ struct BaseCompiler final {
 
   // Count the number of memory references on the value stack.
   inline size_t countMemRefsOnStk();
+
+  // Print the stack to stderr.
+  void showStack(const char* who) const;
 #endif
 
   //////////////////////////////////////////////////////////////////////
@@ -600,6 +629,7 @@ struct BaseCompiler final {
   inline void pushI32(int32_t v);
   inline void pushI64(int64_t v);
   inline void pushRef(intptr_t v);
+  inline void pushPtr(intptr_t v);
   inline void pushF64(double v);
   inline void pushF32(float v);
 #ifdef ENABLE_WASM_SIMD
@@ -687,6 +717,7 @@ struct BaseCompiler final {
 
   // Constant poppers will return true and pop the value if the stack top is a
   // constant of the appropriate type; otherwise pop nothing and return false.
+  [[nodiscard]] inline bool hasConst() const;
   [[nodiscard]] inline bool popConst(int32_t* c);
   [[nodiscard]] inline bool popConst(int64_t* c);
   [[nodiscard]] inline bool peekConst(int32_t* c);
@@ -722,6 +753,9 @@ struct BaseCompiler final {
   inline RegI32 popI64ToI32();
   inline RegI32 popI64ToSpecificI32(RegI32 specific);
 
+  // Pop an I32 or I64 as an I64. The value is zero extended out to 64-bits.
+  inline RegI64 popIndexToInt64(IndexType indexType);
+
   // Pop the stack until it has the desired size, but do not move the physical
   // stack pointer.
   inline void popValueStackTo(uint32_t stackSize);
@@ -737,8 +771,9 @@ struct BaseCompiler final {
   // register.
   inline void peekRefAt(uint32_t depth, RegRef dest);
 
-  // DOCUMENTME
-  [[nodiscard]] inline bool peekLocalI32(uint32_t* local);
+  // Peek at the value on the top of the stack and return true if it is a Local
+  // of any type.
+  [[nodiscard]] inline bool peekLocal(uint32_t* local);
 
   ////////////////////////////////////////////////////////////////////////////
   //
@@ -784,8 +819,8 @@ struct BaseCompiler final {
   // hot enough to warrant inlining at the outermost level.
 
   inline void needResultRegisters(ResultType type, ResultRegKind which);
-#ifdef JS_CODEGEN_X64
-  inline void maskResultRegisters(ResultType type);
+#ifdef JS_64BIT
+  inline void widenInt32ResultRegisters(ResultType type);
 #endif
   inline void freeResultRegisters(ResultType type, ResultRegKind which);
   inline void needIntegerResultRegisters(ResultType type);
@@ -802,12 +837,10 @@ struct BaseCompiler final {
   void popBlockResults(ResultType type, StackHeight stackBase,
                        ContinuationKind kind);
 
-#ifdef ENABLE_WASM_EXCEPTIONS
   // This function is similar to popBlockResults, but additionally handles the
   // implicit exception pointer that is pushed to the value stack on entry to
   // a catch handler by dropping it appropriately.
   void popCatchResults(ResultType type, StackHeight stackBase);
-#endif
 
   Stk captureStackResult(const ABIResult& result, StackHeight resultsBase,
                          uint32_t stackResultBytes);
@@ -884,7 +917,10 @@ struct BaseCompiler final {
 
   // Insert a breakpoint almost anywhere.  This will create a call, with all the
   // overhead that entails.
-  inline void insertBreakablePoint(CallSiteDesc::Kind kind);
+  void insertBreakablePoint(CallSiteDesc::Kind kind);
+
+  // Insert code at the end of a function for breakpoint filtering.
+  void insertBreakpointStub();
 
   // Debugger API used at the return point: shuffle register return values off
   // to memory for the debugger to see; and get them back again.
@@ -906,7 +942,8 @@ struct BaseCompiler final {
   //
   // Calls.
 
-  void beginCall(FunctionCall& call, UseABI useABI, InterModule interModule);
+  void beginCall(FunctionCall& call, UseABI useABI,
+                 RestoreRegisterStateAndRealm restoreRegisterStateAndRealm);
   void endCall(FunctionCall& call, size_t stackSpace);
   void startCallArgs(size_t stackArgAreaSizeUnaligned, FunctionCall* call);
   ABIArg reservePointerArgument(FunctionCall* call);
@@ -916,9 +953,14 @@ struct BaseCompiler final {
 
   // Precondition for the call*() methods: sync()
 
-  CodeOffset callIndirect(uint32_t funcTypeIndex, uint32_t tableIndex,
-                          const Stk& indexVal, const FunctionCall& call);
-  CodeOffset callImport(unsigned globalDataOffset, const FunctionCall& call);
+  bool callIndirect(uint32_t funcTypeIndex, uint32_t tableIndex,
+                    const Stk& indexVal, const FunctionCall& call,
+                    CodeOffset* fastCallOffset, CodeOffset* slowCallOffset);
+  CodeOffset callImport(unsigned instanceDataOffset, const FunctionCall& call);
+#ifdef ENABLE_WASM_FUNCTION_REFERENCES
+  void callRef(const Stk& calleeRef, const FunctionCall& call,
+               CodeOffset* fastCallOffset, CodeOffset* slowCallOffset);
+#endif
   CodeOffset builtinCall(SymbolicAddress builtin, const FunctionCall& call);
   CodeOffset builtinInstanceMethodCall(const SymbolicAddressSignature& builtin,
                                        const ABIArg& instanceArg,
@@ -958,9 +1000,9 @@ struct BaseCompiler final {
   // Immediate-to-register moves.
   //
   // The compiler depends on moveImm32() clearing the high bits of a 64-bit
-  // register on 64-bit systems except MIPS64 where high bits are sign extended
-  // from lower bits, see doc block "64-bit GPRs carrying 32-bit values" in
-  // MacroAssembler.h.
+  // register on 64-bit systems except MIPS64 And LoongArch64 where high bits
+  // are sign extended from lower bits, see doc block "64-bit GPRs carrying
+  // 32-bit values" in MacroAssembler.h.
 
   inline void moveImm32(int32_t v, RegI32 dest);
   inline void moveImm64(int64_t v, RegI64 dest);
@@ -1015,6 +1057,18 @@ struct BaseCompiler final {
   inline void branchTo(Assembler::Condition c, RegRef lhs, ImmWord rhs,
                        Label* l);
 
+#ifdef JS_CODEGEN_X86
+  // Store r in instance scratch storage after first loading the instance from
+  // the frame into the regForInstance.  regForInstance must be neither of the
+  // registers in r.
+  void stashI64(RegPtr regForInstance, RegI64 r);
+
+  // Load r from the instance scratch storage after first loading the instance
+  // from the frame into the regForInstance.  regForInstance can be one of the
+  // registers in r.
+  void unstashI64(RegPtr regForInstance, RegI64 r);
+#endif
+
   //////////////////////////////////////////////////////////////////////
   //
   // Code generators for actual operations.
@@ -1049,7 +1103,16 @@ struct BaseCompiler final {
   //
   // Global variable access.
 
-  Address addressOfGlobalVar(const GlobalDesc& global, RegI32 tmp);
+  Address addressOfGlobalVar(const GlobalDesc& global, RegPtr tmp);
+
+  //////////////////////////////////////////////////////////////////////
+  //
+  // Table access.
+
+  Address addressOfTableField(uint32_t tableIndex, uint32_t fieldOffset,
+                              RegPtr instance);
+  void loadTableLength(uint32_t tableIndex, RegPtr instance, RegI32 length);
+  void loadTableElements(uint32_t tableIndex, RegPtr instance, RegPtr elements);
 
   //////////////////////////////////////////////////////////////////////
   //
@@ -1058,50 +1121,108 @@ struct BaseCompiler final {
   void bceCheckLocal(MemoryAccessDesc* access, AccessCheck* check,
                      uint32_t local);
   void bceLocalIsUpdated(uint32_t local);
-  void prepareMemoryAccess(MemoryAccessDesc* access, AccessCheck* check,
-                           RegPtr tls, RegI32 ptr);
 
-#if defined(RABALDR_HAS_HEAPREG)
-  BaseIndex prepareAtomicMemoryAccess(MemoryAccessDesc* access,
-                                      AccessCheck* check, RegPtr tls,
-                                      RegI32 ptr);
-#else
-  // Some consumers depend on the returned Address not incorporating tls, as tls
-  // may be the scratch register.
+  // Fold offsets into ptr and bounds check as necessary.  The instance will be
+  // valid in cases where it's needed.
+  template <typename RegIndexType>
+  void prepareMemoryAccess(MemoryAccessDesc* access, AccessCheck* check,
+                           RegPtr instance, RegIndexType ptr);
+
+  void branchAddNoOverflow(uint64_t offset, RegI32 ptr, Label* ok);
+  void branchTestLowZero(RegI32 ptr, Imm32 mask, Label* ok);
+  void boundsCheck4GBOrLargerAccess(uint32_t memoryIndex, RegPtr instance,
+                                    RegI32 ptr, Label* ok);
+  void boundsCheckBelow4GBAccess(uint32_t memoryIndex, RegPtr instance,
+                                 RegI32 ptr, Label* ok);
+
+  void branchAddNoOverflow(uint64_t offset, RegI64 ptr, Label* ok);
+  void branchTestLowZero(RegI64 ptr, Imm32 mask, Label* ok);
+  void boundsCheck4GBOrLargerAccess(uint32_t memoryIndex, RegPtr instance,
+                                    RegI64 ptr, Label* ok);
+  void boundsCheckBelow4GBAccess(uint32_t memoryIndex, RegPtr instance,
+                                 RegI64 ptr, Label* ok);
+
+  // Some consumers depend on the returned Address not incorporating instance,
+  // as instance may be the scratch register.
+  template <typename RegIndexType>
   Address prepareAtomicMemoryAccess(MemoryAccessDesc* access,
-                                    AccessCheck* check, RegPtr tls, RegI32 ptr);
-#endif
+                                    AccessCheck* check, RegPtr instance,
+                                    RegIndexType ptr);
+
+  template <typename RegIndexType>
   void computeEffectiveAddress(MemoryAccessDesc* access);
-  [[nodiscard]] bool needTlsForAccess(const AccessCheck& check);
+
+  [[nodiscard]] bool needInstanceForAccess(const MemoryAccessDesc* access,
+                                           const AccessCheck& check);
 
   // ptr and dest may be the same iff dest is I32.
   // This may destroy ptr even if ptr and dest are not the same.
-  void load(MemoryAccessDesc* access, AccessCheck* check, RegPtr tls,
-            RegI32 ptr, AnyReg dest, RegI32 temp);
+  void executeLoad(MemoryAccessDesc* access, AccessCheck* check,
+                   RegPtr instance, RegPtr memoryBase, RegI32 ptr, AnyReg dest,
+                   RegI32 temp);
+  void load(MemoryAccessDesc* access, AccessCheck* check, RegPtr instance,
+            RegPtr memoryBase, RegI32 ptr, AnyReg dest, RegI32 temp);
+#ifdef ENABLE_WASM_MEMORY64
+  void load(MemoryAccessDesc* access, AccessCheck* check, RegPtr instance,
+            RegPtr memoryBase, RegI64 ptr, AnyReg dest, RegI64 temp);
+#endif
+
+  template <typename RegType>
+  void doLoadCommon(MemoryAccessDesc* access, AccessCheck check, ValType type);
+
+  void loadCommon(MemoryAccessDesc* access, AccessCheck check, ValType type);
 
   // ptr and src must not be the same register.
   // This may destroy ptr and src.
-  void store(MemoryAccessDesc* access, AccessCheck* check, RegPtr tls,
-             RegI32 ptr, AnyReg src, RegI32 temp);
+  void executeStore(MemoryAccessDesc* access, AccessCheck* check,
+                    RegPtr instance, RegPtr memoryBase, RegI32 ptr, AnyReg src,
+                    RegI32 temp);
+  void store(MemoryAccessDesc* access, AccessCheck* check, RegPtr instance,
+             RegPtr memoryBase, RegI32 ptr, AnyReg src, RegI32 temp);
+#ifdef ENABLE_WASM_MEMORY64
+  void store(MemoryAccessDesc* access, AccessCheck* check, RegPtr instance,
+             RegPtr memoryBase, RegI64 ptr, AnyReg src, RegI64 temp);
+#endif
 
-  void loadCommon(MemoryAccessDesc* access, AccessCheck check, ValType type);
+  template <typename RegType>
+  void doStoreCommon(MemoryAccessDesc* access, AccessCheck check,
+                     ValType resultType);
+
   void storeCommon(MemoryAccessDesc* access, AccessCheck check,
                    ValType resultType);
 
   void atomicLoad(MemoryAccessDesc* access, ValType type);
+#if !defined(JS_64BIT)
+  template <typename RegIndexType>
+  void atomicLoad64(MemoryAccessDesc* desc);
+#endif
+
   void atomicStore(MemoryAccessDesc* access, ValType type);
+
   void atomicRMW(MemoryAccessDesc* access, ValType type, AtomicOp op);
+  template <typename RegIndexType>
   void atomicRMW32(MemoryAccessDesc* access, ValType type, AtomicOp op);
+  template <typename RegIndexType>
   void atomicRMW64(MemoryAccessDesc* access, ValType type, AtomicOp op);
-  void atomicXchg(MemoryAccessDesc* desc, ValType type);
+
+  void atomicXchg(MemoryAccessDesc* access, ValType type);
+  template <typename RegIndexType>
   void atomicXchg64(MemoryAccessDesc* access, WantResult wantResult);
+  template <typename RegIndexType>
   void atomicXchg32(MemoryAccessDesc* access, ValType type);
+
   void atomicCmpXchg(MemoryAccessDesc* access, ValType type);
+  template <typename RegIndexType>
   void atomicCmpXchg32(MemoryAccessDesc* access, ValType type);
+  template <typename RegIndexType>
   void atomicCmpXchg64(MemoryAccessDesc* access, ValType type);
 
-  RegI32 popMemory32Access(MemoryAccessDesc* access, AccessCheck* check);
-  void pushHeapBase();
+  template <typename RegType>
+  RegType popConstMemoryAccess(MemoryAccessDesc* access, AccessCheck* check);
+  template <typename RegType>
+  RegType popMemoryAccess(MemoryAccessDesc* access, AccessCheck* check);
+
+  void pushHeapBase(uint32_t memoryIndex);
 
   ////////////////////////////////////////////////////////////////////////////
   //
@@ -1131,27 +1252,28 @@ struct BaseCompiler final {
   //
   // Sundry helpers.
 
-  // Get the line number or bytecode offset, depending on what's available.
-  inline uint32_t readCallSiteLineOrBytecode();
-
-  // Retrieve the current bytecodeOffset
+  // Retrieve the current bytecodeOffset.
   inline BytecodeOffset bytecodeOffset() const;
 
   // Generate a trap instruction for the current bytecodeOffset.
   inline void trap(Trap t) const;
 
-#ifdef ENABLE_WASM_EXCEPTIONS
   // Abstracted helper for throwing, used for throw, rethrow, and rethrowing
   // at the end of a series of catch blocks (if none matched the exception).
-  [[nodiscard]] bool throwFrom(RegRef exn, uint32_t lineOrBytecode);
+  [[nodiscard]] bool throwFrom(RegRef exn);
 
-  // Load a pending exception object from the TlsData.
-  void loadPendingException(Register dest);
-#endif
+  // Load the specified tag object from the Instance.
+  void loadTag(RegPtr instanceData, uint32_t tagIndex, RegRef tagDst);
+
+  // Load the pending exception state from the Instance and then reset it.
+  void consumePendingException(RegRef* exnDst, RegRef* tagDst);
+
+  [[nodiscard]] bool startTryNote(size_t* tryNoteIndex);
+  void finishTryNote(size_t tryNoteIndex);
 
   ////////////////////////////////////////////////////////////
   //
-  // Object support.
+  // Barriers support.
 
   // This emits a GC pre-write barrier.  The pre-barrier is needed when we
   // replace a member field with a new value, and the previous field value
@@ -1166,13 +1288,43 @@ struct BaseCompiler final {
   // update.  This function preserves that register.
   void emitPreBarrier(RegPtr valueAddr);
 
-  // This frees the register `valueAddr`.
-  [[nodiscard]] bool emitPostBarrierCall(RegPtr valueAddr);
+  // This emits a GC post-write barrier. The post-barrier is needed when we
+  // replace a member field with a new value, the new value is in the nursery,
+  // and the containing object is a tenured object. The field must then be
+  // added to the store buffer so that the nursery can be correctly collected.
+  // The field might belong to an object or be a stack slot or a register or a
+  // heap allocated value.
+  //
+  // For the difference between 'precise' and 'imprecise', look at the
+  // documentation on PostBarrierKind.
+  //
+  // `object` is a pointer to the object that contains the field. It is used, if
+  // present, to skip adding a store buffer entry when the containing object is
+  // in the nursery. This register is preserved by this function.
+  // `valueAddr` is the address of the location that we are writing to. This
+  // register is consumed by this function.
+  // `prevValue` is the value that existed in the field before `value` was
+  // stored. This register is consumed by this function.
+  // `value` is the value that was stored in the field. This register is
+  // preserved by this function.
+  [[nodiscard]] bool emitPostBarrierImprecise(const Maybe<RegRef>& object,
+                                              RegPtr valueAddr, RegRef value);
+  [[nodiscard]] bool emitPostBarrierPrecise(const Maybe<RegRef>& object,
+                                            RegPtr valueAddr, RegRef prevValue,
+                                            RegRef value);
 
-  // Emits a store to a JS object pointer at the address valueAddr, which is
-  // inside the GC cell `object`. Preserves `object` and `value`.
+  // Emits a store to a JS object pointer at the address `valueAddr`, which is
+  // inside the GC cell `object`.
+  //
+  // Preserves `object` and `value`. Consumes `valueAddr`.
   [[nodiscard]] bool emitBarrieredStore(const Maybe<RegRef>& object,
-                                        RegPtr valueAddr, RegRef value);
+                                        RegPtr valueAddr, RegRef value,
+                                        PreBarrierKind preBarrierKind,
+                                        PostBarrierKind postBarrierKind);
+
+  // Emits a store of nullptr to a JS object pointer at the address valueAddr.
+  // Preserves `valueAddr`.
+  void emitBarrieredClear(RegPtr valueAddr);
 
   ////////////////////////////////////////////////////////////
   //
@@ -1185,9 +1337,19 @@ struct BaseCompiler final {
   void setLatentEqz(ValType operandType);
   bool hasLatentOp() const;
   void resetLatentOp();
+  // Jump to the given branch, passing results, if the condition, `cond`
+  // matches between `lhs` and `rhs.
   template <typename Cond, typename Lhs, typename Rhs>
   [[nodiscard]] bool jumpConditionalWithResults(BranchState* b, Cond cond,
                                                 Lhs lhs, Rhs rhs);
+#ifdef ENABLE_WASM_GC
+  // Jump to the given branch, passing results, if the WasmGcObject, `object`,
+  // is a subtype of `destType`.
+  [[nodiscard]] bool jumpConditionalWithResults(BranchState* b, RegRef object,
+                                                RefType sourceType,
+                                                RefType destType,
+                                                bool onSuccess);
+#endif
   template <typename Cond>
   [[nodiscard]] bool sniffConditionalControlCmp(Cond compareOp,
                                                 ValType operandType);
@@ -1202,7 +1364,6 @@ struct BaseCompiler final {
   [[nodiscard]] bool emitLoop();
   [[nodiscard]] bool emitIf();
   [[nodiscard]] bool emitElse();
-#ifdef ENABLE_WASM_EXCEPTIONS
   // Used for common setup for catch and catch_all.
   void emitCatchSetup(LabelKind kind, Control& tryCatch,
                       const ResultType& resultType);
@@ -1216,7 +1377,6 @@ struct BaseCompiler final {
   [[nodiscard]] bool emitDelegate();
   [[nodiscard]] bool emitThrow();
   [[nodiscard]] bool emitRethrow();
-#endif
   [[nodiscard]] bool emitEnd();
   [[nodiscard]] bool emitBr();
   [[nodiscard]] bool emitBrIf();
@@ -1250,9 +1410,13 @@ struct BaseCompiler final {
   [[nodiscard]] bool emitTeeLocal();
   [[nodiscard]] bool emitGetGlobal();
   [[nodiscard]] bool emitSetGlobal();
-  [[nodiscard]] RegPtr maybeLoadTlsForAccess(const AccessCheck& check);
-  [[nodiscard]] RegPtr maybeLoadTlsForAccess(const AccessCheck& check,
-                                             RegPtr specific);
+  [[nodiscard]] RegPtr maybeLoadMemoryBaseForAccess(
+      RegPtr instance, const MemoryAccessDesc* access);
+  [[nodiscard]] RegPtr maybeLoadInstanceForAccess(
+      const MemoryAccessDesc* access, const AccessCheck& check);
+  [[nodiscard]] RegPtr maybeLoadInstanceForAccess(
+      const MemoryAccessDesc* access, const AccessCheck& check,
+      RegPtr specific);
   [[nodiscard]] bool emitLoad(ValType type, Scalar::Type viewType);
   [[nodiscard]] bool emitStore(ValType resultType, Scalar::Type viewType);
   [[nodiscard]] bool emitSelect(bool typed);
@@ -1263,9 +1427,7 @@ struct BaseCompiler final {
   [[nodiscard]] bool endBlock(ResultType type);
   [[nodiscard]] bool endIfThen(ResultType type);
   [[nodiscard]] bool endIfThenElse(ResultType type);
-#ifdef ENABLE_WASM_EXCEPTIONS
   [[nodiscard]] bool endTryCatch(ResultType type);
-#endif
 
   void doReturn(ContinuationKind kind);
   void pushReturnValueOfCall(const FunctionCall& call, MIRType type);
@@ -1350,6 +1512,10 @@ struct BaseCompiler final {
   inline void emitTernary(void (*op)(CompilerType&, ValType src0, ValType src1,
                                      ValType srcDest, ValType temp));
 
+  template <typename CompilerType, typename ValType>
+  inline void emitTernaryResultLast(void (*op)(CompilerType&, ValType src0,
+                                               ValType src1, ValType srcDest));
+
   template <typename R>
   [[nodiscard]] inline bool emitInstanceCallOp(
       const SymbolicAddressSignature& fn, R reader);
@@ -1408,8 +1574,29 @@ struct BaseCompiler final {
   void emitConvertU64ToF64();
 #endif
   void emitRound(RoundingMode roundingMode, ValType operandType);
-  [[nodiscard]] bool emitInstanceCall(uint32_t lineOrBytecode,
-                                      const SymbolicAddressSignature& builtin);
+
+  // Generate a call to the instance function denoted by `builtin`, passing as
+  // args the top elements of the compiler's value stack and optionally an
+  // Instance* too.  The relationship between the top of stack and arg
+  // ordering is as follows.  If the value stack looks like this:
+  //
+  //   A  <- least recently pushed
+  //   B
+  //   C  <- most recently pushed
+  //
+  // then the called function is expected to have signature [if an Instance*
+  // is also to be passed]:
+  //
+  //   static Instance::foo(Instance*, A, B, C)
+  //
+  // and the SymbolicAddressSignature::argTypes array will be
+  //
+  //   {_PTR, _A, _B, _C, _END}  // _PTR is for the Instance*
+  //
+  // (see WasmBuiltins.cpp).  In short, the most recently pushed value is the
+  // rightmost argument to the function.
+  [[nodiscard]] bool emitInstanceCall(const SymbolicAddressSignature& builtin);
+
   [[nodiscard]] bool emitMemoryGrow();
   [[nodiscard]] bool emitMemorySize();
 
@@ -1419,6 +1606,8 @@ struct BaseCompiler final {
 #ifdef ENABLE_WASM_FUNCTION_REFERENCES
   [[nodiscard]] bool emitRefAsNonNull();
   [[nodiscard]] bool emitBrOnNull();
+  [[nodiscard]] bool emitBrOnNonNull();
+  [[nodiscard]] bool emitCallRef();
 #endif
 
   [[nodiscard]] bool emitAtomicCmpXchg(ValType type, Scalar::Type viewType);
@@ -1427,62 +1616,118 @@ struct BaseCompiler final {
                                    AtomicOp op);
   [[nodiscard]] bool emitAtomicStore(ValType type, Scalar::Type viewType);
   [[nodiscard]] bool emitWait(ValType type, uint32_t byteSize);
-  [[nodiscard]] bool atomicWait(ValType type, MemoryAccessDesc* access,
-                                uint32_t lineOrBytecode);
+  [[nodiscard]] bool atomicWait(ValType type, MemoryAccessDesc* access);
   [[nodiscard]] bool emitWake();
-  [[nodiscard]] bool atomicWake(MemoryAccessDesc* access,
-                                uint32_t lineOrBytecode);
+  [[nodiscard]] bool atomicWake(MemoryAccessDesc* access);
   [[nodiscard]] bool emitFence();
   [[nodiscard]] bool emitAtomicXchg(ValType type, Scalar::Type viewType);
   [[nodiscard]] bool emitMemInit();
   [[nodiscard]] bool emitMemCopy();
-  [[nodiscard]] bool emitMemCopyCall(uint32_t lineOrBytecode);
-  void emitMemCopyInline();
+  [[nodiscard]] bool memCopyCall(uint32_t dstMemIndex, uint32_t srcMemIndex);
+  void memCopyInlineM32();
   [[nodiscard]] bool emitTableCopy();
   [[nodiscard]] bool emitDataOrElemDrop(bool isData);
   [[nodiscard]] bool emitMemFill();
-  [[nodiscard]] bool emitMemFillCall(uint32_t lineOrBytecode);
-  void emitMemFillInline();
+  [[nodiscard]] bool memFillCall(uint32_t memoryIndex);
+  void memFillInlineM32();
   [[nodiscard]] bool emitTableInit();
   [[nodiscard]] bool emitTableFill();
+  [[nodiscard]] bool emitMemDiscard();
   [[nodiscard]] bool emitTableGet();
   [[nodiscard]] bool emitTableGrow();
   [[nodiscard]] bool emitTableSet();
   [[nodiscard]] bool emitTableSize();
 
-#ifdef ENABLE_WASM_GC
-  [[nodiscard]] bool emitStructNewWithRtt();
-  [[nodiscard]] bool emitStructNewDefaultWithRtt();
-  [[nodiscard]] bool emitStructGet(FieldExtension extension);
-  [[nodiscard]] bool emitStructSet();
-  [[nodiscard]] bool emitArrayNewWithRtt();
-  [[nodiscard]] bool emitArrayNewDefaultWithRtt();
-  [[nodiscard]] bool emitArrayGet(FieldExtension extension);
-  [[nodiscard]] bool emitArraySet();
-  [[nodiscard]] bool emitArrayLen();
-  [[nodiscard]] bool emitRttCanon();
-  [[nodiscard]] bool emitRttSub();
-  [[nodiscard]] bool emitRefTest();
-  [[nodiscard]] bool emitRefCast();
-  [[nodiscard]] bool emitBrOnCast();
+  void emitTableBoundsCheck(uint32_t tableIndex, RegI32 index, RegPtr instance);
+  [[nodiscard]] bool emitTableGetAnyRef(uint32_t tableIndex);
+  [[nodiscard]] bool emitTableSetAnyRef(uint32_t tableIndex);
 
-  void emitGcCanon(uint32_t typeIndex);
-  void emitGcNullCheck(RegRef rp);
+#ifdef ENABLE_WASM_GC
+  [[nodiscard]] bool emitStructNew();
+  [[nodiscard]] bool emitStructNewDefault();
+  [[nodiscard]] bool emitStructGet(FieldWideningOp wideningOp);
+  [[nodiscard]] bool emitStructSet();
+  [[nodiscard]] bool emitArrayNew();
+  [[nodiscard]] bool emitArrayNewFixed();
+  [[nodiscard]] bool emitArrayNewDefault();
+  [[nodiscard]] bool emitArrayNewData();
+  [[nodiscard]] bool emitArrayNewElem();
+  [[nodiscard]] bool emitArrayGet(FieldWideningOp wideningOp);
+  [[nodiscard]] bool emitArraySet();
+  [[nodiscard]] bool emitArrayLen(bool decodeIgnoredTypeIndex);
+  [[nodiscard]] bool emitArrayCopy();
+  [[nodiscard]] bool emitRefTestV5();
+  [[nodiscard]] bool emitRefCastV5();
+  [[nodiscard]] bool emitBrOnCastV5(bool onSuccess);
+  [[nodiscard]] bool emitBrOnCastHeapV5(bool onSuccess, bool nullable);
+  [[nodiscard]] bool emitRefAsStructV5();
+  [[nodiscard]] bool emitBrOnNonStructV5();
+  [[nodiscard]] bool emitRefTest(bool nullable);
+  [[nodiscard]] bool emitRefCast(bool nullable);
+  [[nodiscard]] bool emitBrOnCastCommon(bool onSuccess,
+                                        uint32_t labelRelativeDepth,
+                                        const ResultType& labelType,
+                                        RefType sourceType, RefType destType);
+  [[nodiscard]] bool emitBrOnCast(bool onSuccess);
+  [[nodiscard]] bool emitExternInternalize();
+  [[nodiscard]] bool emitExternExternalize();
+
+  // Utility classes/methods to add trap information related to
+  // null pointer derefences/accesses.
+  struct NoNullCheck {
+    static void emitNullCheck(BaseCompiler*, RegRef) {}
+    static void emitTrapSite(BaseCompiler*) {}
+  };
+  struct SignalNullCheck {
+    static void emitNullCheck(BaseCompiler* bc, RegRef rp);
+    static void emitTrapSite(BaseCompiler* bc);
+  };
+
+  // Load a pointer to the TypeDefInstanceData for a given type index
+  RegPtr loadTypeDefInstanceData(uint32_t typeIndex);
+  // Load a pointer to the SuperTypeVector for a given type index
+  RegPtr loadSuperTypeVector(uint32_t typeIndex);
+
   RegPtr emitGcArrayGetData(RegRef rp);
-  RegI32 emitGcArrayGetLength(RegPtr rdata, bool adjustDataPointer);
-  void emitGcArrayBoundsCheck(RegI32 index, RegI32 length);
-  template <typename T>
-  void emitGcGet(FieldType type, FieldExtension extension, const T& src);
-  template <typename T>
+  template <typename NullCheckPolicy>
+  RegI32 emitGcArrayGetNumElements(RegRef rp);
+  void emitGcArrayBoundsCheck(RegI32 index, RegI32 numElements);
+  template <typename T, typename NullCheckPolicy>
+  void emitGcGet(FieldType type, FieldWideningOp wideningOp, const T& src);
+  template <typename T, typename NullCheckPolicy>
   void emitGcSetScalar(const T& dst, FieldType type, AnyReg value);
-  [[nodiscard]] bool emitGcStructSet(RegRef object, RegPtr data,
-                                     const StructField& field, AnyReg value);
+
+  // Common code for both old and new ref.test instructions.
+  void emitRefTestCommon(RefType sourceType, RefType destType);
+  // Common code for both old and new ref.cast instructions.
+  void emitRefCastCommon(RefType sourceType, RefType destType);
+
+  // Allocate registers and branch if the given wasm ref is a subtype of the
+  // given heap type.
+  void branchIfRefSubtype(RegRef ref, RefType sourceType, RefType destType,
+                          Label* label, bool onSuccess);
+
+  // Write `value` to wasm struct `object`, at `areaBase + areaOffset`.  The
+  // caller must decide on the in- vs out-of-lineness before the call and set
+  // the latter two accordingly; this routine does not take that into account.
+  // The value in `object` is unmodified, but `areaBase` and `value` may get
+  // trashed.
+  template <typename NullCheckPolicy>
+  [[nodiscard]] bool emitGcStructSet(RegRef object, RegPtr areaBase,
+                                     uint32_t areaOffset, FieldType fieldType,
+                                     AnyReg value,
+                                     PreBarrierKind preBarrierKind);
+
   [[nodiscard]] bool emitGcArraySet(RegRef object, RegPtr data, RegI32 index,
-                                    const ArrayType& array, AnyReg value);
+                                    const ArrayType& array, AnyReg value,
+                                    PreBarrierKind preBarrierKind);
 #endif  // ENABLE_WASM_GC
 
 #ifdef ENABLE_WASM_SIMD
   void emitVectorAndNot();
+#  ifdef ENABLE_WASM_RELAXED_SIMD
+  void emitDotI8x16I7x16AddS();
+#  endif
 
   void loadSplat(MemoryAccessDesc* access);
   void loadZero(MemoryAccessDesc* access);
@@ -1496,12 +1741,12 @@ struct BaseCompiler final {
   [[nodiscard]] bool emitLoadLane(uint32_t laneSize);
   [[nodiscard]] bool emitStoreLane(uint32_t laneSize);
   [[nodiscard]] bool emitVectorShuffle();
+  [[nodiscard]] bool emitVectorLaneSelect();
 #  if defined(JS_CODEGEN_X86) || defined(JS_CODEGEN_X64)
   [[nodiscard]] bool emitVectorShiftRightI64x2();
 #  endif
 #endif
-
-  [[nodiscard]] bool emitIntrinsic(IntrinsicOp op);
+  [[nodiscard]] bool emitIntrinsic();
 };
 
 }  // namespace wasm

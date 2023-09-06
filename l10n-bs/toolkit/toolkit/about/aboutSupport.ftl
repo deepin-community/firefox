@@ -63,6 +63,7 @@ app-basics-location-service-key-google = Google Location Service Key
 app-basics-safebrowsing-key-google = Google Safebrowsing Key
 app-basics-key-mozilla = Mozilla Location Service Key
 app-basics-safe-mode = Sigurni režim
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Prikaži u Finderu
@@ -129,6 +130,8 @@ media-device-latency = Kašnjenje
 media-capabilities-title = Mogućnosti medija
 # List all the entries of the database.
 media-capabilities-enumerate = Enumeriraj bazu podataka
+
+## Codec support table
 
 ##
 

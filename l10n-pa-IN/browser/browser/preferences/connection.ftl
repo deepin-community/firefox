@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = ਕੁਨੈਕਸ਼ਨ ਸੈਟਿੰਗ
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -35,7 +35,6 @@ connection-proxy-http = HTTP ਪਰਾਕਸੀ
     .accesskey = x
 connection-proxy-http-port = ਪੋਰਟ
     .accesskey = p
-
 connection-proxy-https-sharing =
     .label = ਇਹੀ ਪਰਾਕਸੀ HTTPS ਲਈ ਵੀ ਵਰਤੋਂ
     .accesskey = s
@@ -73,20 +72,18 @@ connection-proxy-reload =
     .accesskey = l
 
 connection-proxy-autologin =
-    .label = ਜੇ ਪਛਾਣ-ਸ਼ਬਦ ਸੰਭਾਲਿਆ ਹੈ ਤਾਂ ਪਰਮਾਣਿਤ ਕਰਨ ਲਈ ਨਾ ਪੁੱਛੋ
+    .label = ਜੇ ਪਾਸਵਰਡ ਸੰਭਾਲਿਆ ਹੈ ਤਾਂ ਪਰਮਾਣਿਤ ਕਰਨ ਲਈ ਨਾ ਪੁੱਛੋ
     .accesskey = i
-    .tooltip = ਇਹ ਚੋਣ ਚੁੱਪਚਾਪ ਢੰਗ ਨਾਲ ਤੁਹਾਨੂੰ ਪਰਾਕਸੀਆਂ ਲਈ ਪਰਮਾਣਿਤ ਕਰਦੀ ਹੈ, ਜਦੋਂ ਤੁਸੀਂ ਉਹਨਾਂ ਲਈ ਪਰਮਾਣਕਿਤਾ ਸੰਭਾਲਦੇ ਹੋ। ਤੁਹਾਨੂੰ ਪੁੱਛਿਆ ਜਾਵੇਗਾ, ਜੇ ਪ੍ਰਮਾਣਕਿਤਾ ਫੇਲ੍ਹ ਹੋਈ।
+    .tooltip = ਇਹ ਚੋਣ ਚੁੱਪਚਾਪ ਢੰਗ ਨਾਲ ਤੁਹਾਨੂੰ ਪਰਾਕਸੀਆਂ ਲਈ ਪਰਮਾਣਿਤ ਕਰਦੀ ਹੈ, ਜਦੋਂ ਤੁਸੀਂ ਉਹਨਾਂ ਲਈ ਪਰਮਾਣਕਿਤਾ ਸੰਭਾਲਦੇ ਹੋ। ਤੁਹਾਨੂੰ ਪੁੱਛਿਆ ਜਾਵੇਗਾ, ਜੇ ਪਰਮਾਣਕਿਤਾ ਫੇਲ੍ਹ ਹੋਈ।
+
+connection-proxy-autologin-checkbox =
+    .label = ਜੇ ਪਾਸਵਰਡ ਸੰਭਾਲਿਆ ਹੈ ਤਾਂ ਪਰਮਾਣਿਤ ਕਰਨ ਲਈ ਨਾ ਪੁੱਛੋ
+    .accesskey = i
+    .tooltiptext = ਇਹ ਚੋਣ ਚੁੱਪਚਾਪ ਢੰਗ ਨਾਲ ਤੁਹਾਨੂੰ ਪਰਾਕਸੀਆਂ ਲਈ ਪਰਮਾਣਿਤ ਕਰਦੀ ਹੈ, ਜਦੋਂ ਤੁਸੀਂ ਉਹਨਾਂ ਲਈ ਪਰਮਾਣਕਿਤਾ ਸੰਭਾਲਦੇ ਹੋ। ਤੁਹਾਨੂੰ ਪੁੱਛਿਆ ਜਾਵੇਗਾ, ਜੇ ਪਰਮਾਣਕਿਤਾ ਫੇਲ੍ਹ ਹੋਈ।
 
 connection-proxy-socks-remote-dns =
     .label = ਪਰਾਕਸੀ DNS, ਜਦੋਂ SOCKS v5 ਦੀ ਵਰਤੋਂ ਹੋਵੇ
     .accesskey = d
-
-connection-dns-over-https =
-    .label = HTTPS ‘ਤੇ DNS ਸਮਰੱਥ ਕਰੋ
-    .accesskey = b
-
-connection-dns-over-https-url-resolver = ਪੂਰਕ ਵਰਤੋ
-    .accesskey = P
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

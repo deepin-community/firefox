@@ -11,8 +11,7 @@
 
 using namespace mozilla::gfx;
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 //----------------------------------------------------------------------
 // Implementation
@@ -33,17 +32,6 @@ already_AddRefed<DOMSVGPointList> SVGPolyElement::AnimatedPoints() {
   RefPtr<DOMSVGPointList> points =
       DOMSVGPointList::GetDOMWrapper(key, this, true);
   return points.forget();
-}
-
-//----------------------------------------------------------------------
-// nsIContent methods
-
-NS_IMETHODIMP_(bool)
-SVGPolyElement::IsAttributeMapped(const nsAtom* name) const {
-  static const MappedAttributeEntry* const map[] = {sMarkersMap};
-
-  return FindAttributeDependence(name, map) ||
-         SVGPolyElementBase::IsAttributeMapped(name);
 }
 
 //----------------------------------------------------------------------
@@ -127,5 +115,4 @@ bool SVGPolyElement::GetGeometryBounds(Rect* aBounds,
   }
   return true;
 }
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

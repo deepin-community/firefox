@@ -5,9 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsISerialEventTarget.idl"
+#include "nsIThreadShutdown.idl"
 
 %{C++
 #include "mozilla/AlreadyAddRefed.h"
+
 namespace mozilla {
 class TimeStamp;
 class TimeDurationValueCalculator;
@@ -34,7 +36,7 @@ native TimeDuration(mozilla::TimeDuration);
  *
  * See nsIThreadManager for the API used to create and locate threads.
  */
-[builtinclass, scriptable, uuid(5801d193-29d1-4964-a6b7-70eb697ddf2b)]
+[builtinclass, scriptable, rust_sync, uuid(5801d193-29d1-4964-a6b7-70eb697ddf2b)]
 interface nsIThread : nsISerialEventTarget
 {
   /**
@@ -50,6 +52,14 @@ interface nsIThread : nsISerialEventTarget
    */
   [noscript] attribute boolean CanInvokeJS;
 
+  /**
+   * Thread QoS priorities. Currently only supported on MacOS.
+   */
+
+  cenum QoSPriority : 32 {
+    QOS_PRIORITY_NORMAL,
+    QOS_PRIORITY_LOW
+  };
 
   /**
    * Shutdown the thread.  This method prevents further dispatch of events to
@@ -130,10 +140,16 @@ interface nsIThread : nsISerialEventTarget
    * @throws NS_ERROR_UNEXPECTED
    *   Indicates that this method was erroneously called when this thread was
    *   the current thread, that this thread was not created with a call to
-   *   nsIThreadManager::NewThread, or if this method was called more than once
-   *   on the thread object.
+   *   nsIThreadManager::NewNamedThread, or that this method was called more
+   *   than once on the thread object.
    */
   void asyncShutdown();
+
+  /**
+   * Like `asyncShutdown`, but also returns a nsIThreadShutdown instance to
+   * allow observing and controlling the thread's async shutdown progress.
+   */
+  nsIThreadShutdown beginShutdown();
 
   /**
    * Dispatch an event to a specified queue for the thread.  This function
@@ -155,24 +171,6 @@ interface nsIThread : nsISerialEventTarget
    */
   [noscript] void dispatchToQueue(in alreadyAddRefed_nsIRunnable event,
                                   in EventQueuePriority queue);
-
-  /**
-   * Use this attribute to dispatch runnables to the thread. Eventually, the
-   * eventTarget attribute will be the only way to dispatch events to a
-   * thread--nsIThread will no longer inherit from nsIEventTarget.
-   */
-  readonly attribute nsIEventTarget eventTarget;
-
-  /**
-   * A fast C++ getter for the eventTarget.
-   */
-  [noscript,notxpcom] nsIEventTargetPtr EventTarget();
-
-  /**
-   * A fast C++ getter for the eventTarget. It asserts that the thread's event
-   * target is an nsISerialEventTarget and then returns it.
-   */
-  [noscript,notxpcom] nsISerialEventTargetPtr SerialEventTarget();
 
   /**
    * This is set to the end of the last 50+ms event that was executed on
@@ -210,4 +208,15 @@ interface nsIThread : nsISerialEventTarget
   [noscript] void setRunningEventDelay(in TimeDuration delay, in TimeStamp start);
 
   [noscript] void setNameForWakeupTelemetry(in ACString name);
+
+  /**
+   * Set the QoS priority of threads where this may be available. Currently
+   * restricted to MacOS. Must be on the thread to call this method.
+   *
+   * @param aPriority
+   *   The specified priority we will adjust to. Can be low (background) or
+   *   normal (default / user-interactive)
+   */
+  [noscript] void setThreadQoS(in nsIThread_QoSPriority aPriority);
+
 };

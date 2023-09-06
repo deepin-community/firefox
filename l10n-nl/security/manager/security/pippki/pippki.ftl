@@ -16,8 +16,6 @@ change-password-old = Huidige wachtwoord:
 change-password-new = Nieuw wachtwoord:
 change-password-reenter = Nieuw wachtwoord (nogmaals):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Kan hoofdwachtwoord niet wijzigen.
 pippki-incorrect-pw = U hebt niet het juiste huidige hoofdwachtwoord ingevoerd. Probeer het opnieuw.
 pippki-pw-change-ok = Wachtwoord met succes gewijzigd.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = U bent momenteel in FIPS-modus. FIPS verei
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Hoofdwachtwoord opnieuw instellen
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Herinitialiseren
-
 reset-primary-password-text = Als u uw hoofdwachtwoord opnieuw instelt, zullen al uw opgeslagen web- en e-mailwachtwoorden, persoonlijke certificaten en privésleutels worden vergeten. Weet u zeker dat u uw hoofdwachtwoord wilt herinitialiseren?
 
 pippki-reset-password-confirmation-title = Hoofdwachtwoord opnieuw instellen
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Uw hoofdwachtwoord is opnieuw inges
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Certificaat downloaden
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = U wordt gevraagd een nieuwe certificaatautoriteit (CA) te vertrouwen.
 download-cert-trust-ssl =
     .label = Deze CA vertrouwen voor het identificeren van websites.
@@ -77,7 +74,8 @@ set-password-reminder = Belangrijk: als u uw wachtwoord voor de reservekopie van
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Beschermde tokenauthenticatie
-protected-auth-msg = Authenticeer bij het token. Authenticatiemethode hangt af van het type van uw token.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Authenticeer bij het token ‘{ $tokenName }’. Hoe u dit doet, hangt af van het token (bijvoorbeeld met behulp van een vingerafdruklezer of het invoeren van een code met een toetsenbord).

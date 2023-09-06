@@ -15,9 +15,9 @@ appmenu-update-manual2 =
     .buttonaccesskey = P
     .secondarybuttonlabel = Odbaci
     .secondarybuttonaccesskey = O
-appmenu-update-manual-message2 = { -brand-shorter-name } nije ažuriran automatski. Preuzmi novu verziju — nećeš izgubiti spremljene podatke ni prilagodbe.
+appmenu-update-manual-message2 = { -brand-shorter-name } se nije mogao automatski aktualizirati. Preuzmi novu verziju – nećeš izgubiti spremljene podatke niti prilagodbe.
 appmenu-update-unsupported2 =
-    .label = Ažuriranje nije moguće
+    .label = Neuspjelo aktualiziranje
     .buttonlabel = Saznaj više
     .buttonaccesskey = S
     .secondarybuttonlabel = Odbaci
@@ -45,7 +45,7 @@ appmenu-addon-post-install-message3 = Upravljaj svojim dodacima i temama iz izbo
 appmenu-addon-post-install-incognito-checkbox =
     .label = Dozvoli ovom dodatku da radi u privatnom prozoru
     .accesskey = a
-    
+
 appmenu-new-tab-controlled-changes =
     .label = Tvoja nova kartica je promijenjena.
     .buttonlabel = Zadrži promjene

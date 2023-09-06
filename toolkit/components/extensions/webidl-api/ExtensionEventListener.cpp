@@ -4,14 +4,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ExtensionEventListener.h"
+#include "ExtensionAPIRequestForwarder.h"
 #include "ExtensionPort.h"
 
+#include "mozilla/dom/ClonedErrorHolder.h"
 #include "mozilla/dom/FunctionBinding.h"
-#include "nsJSPrincipals.h"   // nsJSPrincipals::AutoSetActiveWorkerPrincipal
+#include "mozilla/dom/Promise.h"
+#include "mozilla/dom/Promise-inl.h"
 #include "nsThreadManager.h"  // NS_IsMainThread
 
-namespace mozilla {
-namespace extensions {
+namespace mozilla::extensions {
 
 namespace {
 
@@ -28,10 +30,19 @@ class SendResponseCallback final : public nsISupports {
     RefPtr<SendResponseCallback> responseCallback =
         new SendResponseCallback(aPromise, aValue);
 
+    // Create a promise monitor that invalidates the sendResponse
+    // callback if the promise has been already resolved or rejected.
+    aPromise->AddCallbacksWithCycleCollectedArgs(
+        [](JSContext* aCx, JS::Handle<JS::Value> aValue, ErrorResult& aRv,
+           SendResponseCallback* aCallback) { aCallback->Cleanup(); },
+        [](JSContext* aCx, JS::Handle<JS::Value> aValue, ErrorResult& aRv,
+           SendResponseCallback* aCallback) { aCallback->Cleanup(); },
+        responseCallback);
+
     auto cleanupCb = [responseCallback]() { responseCallback->Cleanup(); };
 
     // Create a StrongWorkerRef to the worker thread, the cleanup callback
-    // associated to the StongerWorkerRef will release the reference and resolve
+    // associated to the StrongWorkerRef will release the reference and resolve
     // the promise returned to the ExtensionEventListener caller with undefined
     // if the worker global is being destroyed.
     auto* workerPrivate = dom::GetCurrentThreadWorkerPrivate();
@@ -55,32 +66,17 @@ class SendResponseCallback final : public nsISupports {
       : mPromise(aPromise), mValue(aValue) {
     MOZ_ASSERT(mPromise);
     mozilla::HoldJSObjects(this);
-
-    // Create a promise monitor that invalidates the sendResponse
-    // callback if the promise has been already resolved or rejected.
-    mPromiseListener = new dom::DomPromiseListener(
-        [self = RefPtr{this}](JSContext* aCx, JS::Handle<JS::Value> aValue) {
-          self->Cleanup();
-        },
-        [self = RefPtr{this}](nsresult aError) { self->Cleanup(); });
-    mPromise->AppendNativeHandler(mPromiseListener);
   }
 
   void Cleanup(bool aIsDestroying = false) {
-    // Return earlier if the instance was already been cleaned up.
-    if (!mPromiseListener) {
+    // Return earlier if the instance has already been cleaned up.
+    if (!mPromise) {
       return;
     }
 
     NS_WARNING("SendResponseCallback::Cleanup");
-    // Clear the promise listener's resolvers to release the
-    // RefPtr captured by the ones initially set.
-    mPromiseListener->Clear();
-    mPromiseListener = nullptr;
 
-    if (mPromise) {
-      mPromise->MaybeResolveWithUndefined();
-    }
+    mPromise->MaybeResolveWithUndefined();
     mPromise = nullptr;
 
     // Skipped if called from the destructor.
@@ -124,7 +120,6 @@ class SendResponseCallback final : public nsISupports {
   };
 
   RefPtr<dom::Promise> mPromise;
-  RefPtr<dom::DomPromiseListener> mPromiseListener;
   JS::Heap<JS::Value> mValue;
   RefPtr<dom::StrongWorkerRef> mWorkerRef;
 };
@@ -147,7 +142,6 @@ NS_IMPL_CYCLE_COLLECTION_TRACE_BEGIN(SendResponseCallback)
 NS_IMPL_CYCLE_COLLECTION_TRACE_END
 
 NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(SendResponseCallback)
-  NS_IMPL_CYCLE_COLLECTION_UNLINK(mPromiseListener);
   tmp->mValue.setUndefined();
   // Resolve the promise with undefined (as "unhandled") before unlinking it.
   if (tmp->mPromise) {
@@ -164,11 +158,12 @@ NS_IMPL_ISUPPORTS(ExtensionEventListener, mozIExtensionEventListener)
 
 // static
 already_AddRefed<ExtensionEventListener> ExtensionEventListener::Create(
-    nsIGlobalObject* aGlobal, dom::Function* aCallback,
-    CleanupCallback&& aCleanupCallback, ErrorResult& aRv) {
+    nsIGlobalObject* aGlobal, ExtensionBrowser* aExtensionBrowser,
+    dom::Function* aCallback, CleanupCallback&& aCleanupCallback,
+    ErrorResult& aRv) {
   MOZ_ASSERT(dom::IsCurrentThreadRunningWorker());
   RefPtr<ExtensionEventListener> extCb =
-      new ExtensionEventListener(aGlobal, aCallback);
+      new ExtensionEventListener(aGlobal, aExtensionBrowser, aCallback);
 
   auto* workerPrivate = dom::GetCurrentThreadWorkerPrivate();
   MOZ_ASSERT(workerPrivate);
@@ -279,11 +274,19 @@ NS_IMETHODIMP ExtensionEventListener::CallListener(
   }
 
   if (apiObjectType != APIObjectType::NONE) {
-    // Prepend the apiObjectDescriptor data to the call arguments,
+    bool prependArgument = false;
+    aCallOptions->GetApiObjectPrepended(&prependArgument);
+    // Prepend or append the apiObjectDescriptor data to the call arguments,
     // the worker runnable will convert that into an API object
     // instance on the worker thread.
-    if (!args.InsertElementAt(0, std::move(apiObjectDescriptor), fallible)) {
-      return NS_ERROR_OUT_OF_MEMORY;
+    if (prependArgument) {
+      if (!args.InsertElementAt(0, std::move(apiObjectDescriptor), fallible)) {
+        return NS_ERROR_OUT_OF_MEMORY;
+      }
+    } else {
+      if (!args.AppendElement(std::move(apiObjectDescriptor), fallible)) {
+        return NS_ERROR_OUT_OF_MEMORY;
+      }
     }
   }
 
@@ -332,6 +335,11 @@ bool ExtensionListenerCallWorkerRunnable::WorkerRun(
   MOZ_ASSERT(aWorkerPrivate == mWorkerPrivate);
   auto global = mListener->GetGlobalObject();
   if (NS_WARN_IF(!global)) {
+    return true;
+  }
+
+  RefPtr<ExtensionBrowser> extensionBrowser = mListener->GetExtensionBrowser();
+  if (NS_WARN_IF(!extensionBrowser)) {
     return true;
   }
 
@@ -390,7 +398,9 @@ bool ExtensionListenerCallWorkerRunnable::WorkerRun(
     // one element.
     MOZ_ASSERT(!argsSequence.IsEmpty());
 
-    JS::Rooted<JS::Value> apiObjectDescriptor(aCx, argsSequence.ElementAt(0));
+    uint32_t apiObjectIdx = mAPIObjectPrepended ? 0 : argsSequence.Length() - 1;
+    JS::Rooted<JS::Value> apiObjectDescriptor(
+        aCx, argsSequence.ElementAt(apiObjectIdx));
     JS::Rooted<JS::Value> apiObjectValue(aCx);
 
     // We only expect the object type to be RUNTIME_PORT at the moment,
@@ -398,7 +408,7 @@ bool ExtensionListenerCallWorkerRunnable::WorkerRun(
     // some specific API may need.
     MOZ_ASSERT(mAPIObjectType == APIObjectType::RUNTIME_PORT);
     RefPtr<ExtensionPort> port =
-        ExtensionPort::Create(global, apiObjectDescriptor, rv);
+        extensionBrowser->GetPort(apiObjectDescriptor, rv);
     if (NS_WARN_IF(rv.Failed())) {
       retPromise->MaybeReject(rv.StealNSResult());
       return true;
@@ -409,7 +419,7 @@ bool ExtensionListenerCallWorkerRunnable::WorkerRun(
       return true;
     }
 
-    argsSequence.ReplaceElementAt(0, apiObjectValue);
+    argsSequence.ReplaceElementAt(apiObjectIdx, apiObjectValue);
   }
 
   // Create callback argument and append it to the call arguments.
@@ -423,7 +433,8 @@ bool ExtensionListenerCallWorkerRunnable::WorkerRun(
           aCx, js::NewFunctionWithReserved(aCx, SendResponseCallback::Call,
                                            /* nargs */ 1, 0, "sendResponse"));
       sendResponseObj = JS_GetFunctionObject(sendResponseFn);
-      JS::RootedValue sendResponseValue(aCx, JS::ObjectValue(*sendResponseObj));
+      JS::Rooted<JS::Value> sendResponseValue(
+          aCx, JS::ObjectValue(*sendResponseObj));
 
       // Create a SendResponseCallback instance that keeps a reference
       // to the promise to resolve when the static SendReponseCallback::Call
@@ -475,6 +486,13 @@ bool ExtensionListenerCallWorkerRunnable::WorkerRun(
   erv.WouldReportJSException();
 
   if (erv.Failed()) {
+    if (erv.IsUncatchableException()) {
+      // TODO: include some more info? (e.g. api path).
+      retPromise->MaybeRejectWithTimeoutError(
+          "WebExtensions API Event listener threw uncatchable exception");
+      return true;
+    }
+
     retPromise->MaybeReject(std::move(erv));
     return true;
   }
@@ -570,7 +588,7 @@ void ExtensionListenerCallPromiseResultHandler::WorkerRunCallback(
     return;
   }
 
-  JS::RootedValue retval(aCx, aValue);
+  JS::Rooted<JS::Value> retval(aCx, aValue);
 
   if (retval.isObject()) {
     // Try to serialize the result as an ClonedErrorHolder,
@@ -580,7 +598,7 @@ void ExtensionListenerCallPromiseResultHandler::WorkerRunCallback(
     RefPtr<dom::ClonedErrorHolder> ceh =
         dom::ClonedErrorHolder::Create(aCx, errObj, rv);
     if (!rv.Failed() && ceh) {
-      JS::RootedObject obj(aCx);
+      JS::Rooted<JSObject*> obj(aCx);
       // Note: `ToJSValue` cannot be used because ClonedErrorHolder isn't
       // wrapped cached.
       Unused << NS_WARN_IF(!ceh->WrapObject(aCx, nullptr, &obj));
@@ -628,18 +646,7 @@ void ExtensionListenerCallPromiseResultHandler::WorkerRunCallback(
     JS::Rooted<JS::Value> jsvalue(cx);
     IgnoredErrorResult rv;
 
-    {
-      // Set the active worker principal while reading the result,
-      // needed to be sure to be able to successfully deserialize the
-      // SavedFrame part of a ClonedErrorHolder (in case that was the
-      // result stored in the StructuredCloneHolder).
-      Maybe<nsJSPrincipals::AutoSetActiveWorkerPrincipal> set;
-      if (workerRef) {
-        set.emplace(workerRef->Private()->GetPrincipal());
-      }
-
-      resHolder->Read(global, cx, &jsvalue, rv);
-    }
+    resHolder->Read(global, cx, &jsvalue, rv);
 
     if (NS_WARN_IF(rv.Failed())) {
       promiseResult->MaybeReject(rv.StealNSResult());
@@ -662,14 +669,13 @@ void ExtensionListenerCallPromiseResultHandler::WorkerRunCallback(
 }
 
 void ExtensionListenerCallPromiseResultHandler::ResolvedCallback(
-    JSContext* aCx, JS::Handle<JS::Value> aValue) {
+    JSContext* aCx, JS::Handle<JS::Value> aValue, ErrorResult& aRv) {
   WorkerRunCallback(aCx, aValue, PromiseCallbackType::Resolve);
 }
 
 void ExtensionListenerCallPromiseResultHandler::RejectedCallback(
-    JSContext* aCx, JS::Handle<JS::Value> aValue) {
+    JSContext* aCx, JS::Handle<JS::Value> aValue, ErrorResult& aRv) {
   WorkerRunCallback(aCx, aValue, PromiseCallbackType::Reject);
 }
 
-}  // namespace extensions
-}  // namespace mozilla
+}  // namespace mozilla::extensions

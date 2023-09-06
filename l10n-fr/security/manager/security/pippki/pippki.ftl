@@ -16,8 +16,6 @@ change-password-old = Ancien mot de passe
 change-password-new = Saisissez le nouveau mot de passe
 change-password-reenter = Saisissez-le à nouveau
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Impossible de changer le mot de passe.
 pippki-incorrect-pw = Vous n’avez pas saisi correctement le mot de passe actuel. Veuillez réessayer.
 pippki-pw-change-ok = Le mot de passe a été changé.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Vous êtes actuellement en mode FIPS. Ce m
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Effacer le mot de passe principal
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Effacer
-
 reset-primary-password-text = Si vous effacez votre mot de passe principal, tous vos mots de passe web et courrier, vos certificats personnels et vos clés privées seront oubliés. Voulez-vous vraiment supprimer le mot de passe principal ?
 
 pippki-reset-password-confirmation-title = Effacer le mot de passe principal
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Votre mot de passe principal a ét�
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Téléchargement du certificat
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = On vous a demandé de confirmer une nouvelle autorité de certification (AC).
 download-cert-trust-ssl =
     .label = Confirmer cette AC pour identifier des sites web.
@@ -77,7 +74,8 @@ set-password-reminder = Important : si vous avez oublié votre mot de passe de 
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Authentification protégée par jeton
-protected-auth-msg = Veuillez vous authentifier au jeton. La méthode d’authentification dépend du type de votre jeton.
-protected-auth-token = Jeton :
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Veuillez vous authentifier auprès du token « { $tokenName } ». La manière de procéder dépend du jeton (par exemple, en utilisant un lecteur d’empreintes digitales ou en saisissant un code avec un clavier).

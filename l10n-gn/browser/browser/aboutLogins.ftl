@@ -5,12 +5,12 @@
 
 about-logins-page-title = Tembiapo ñepyrũ ha ñe’ẽñemi
 
-# "Google Play" and "App Store" are both branding and should not be translated
+about-logins-login-filter =
+    .placeholder = Eheka tembiapo ñepyrũ
+    .key = F
 
-login-filter =
-    .placeholder = Tembiapo ñepyrũ jeheka
-
-create-login-button = Tembiapo ñepyrũ moheñói
+create-new-login-button =
+    .title = Tembiapo ñepyrũ pyahu moheñói
 
 fxaccounts-sign-in-text = Egueru umi ne ñe’ẽñemi ne ambue mba’e’okágui
 fxaccounts-sign-in-sync-button = Eike embojuehe hag̃ua
@@ -37,10 +37,21 @@ about-logins-menu-menuitem-help = Pytyvõ
 
 login-list =
     .aria-label = Emoñepyrũ tembiapo jehekaha ndive
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } tembiapo ñepyrũ
        *[other] { $count } Tembiapo ñepyrũ
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } { $total } rembiapo ñepyrũ
+        [many] { $count } { $total } rembiapo ñepyrũ
+       *[other] { $count } { $total } rembiapokuéra ñepyrũ
     }
 login-list-sort-label-text = Omoĩporã:
 login-list-name-option = Téra  (A-Z)
@@ -61,7 +72,6 @@ about-logins-list-item-breach-icon =
     .title = Ñanduti renda imarãva
 about-logins-list-item-vulnerable-password-icon =
     .title = Ñe’ẽñemi ivaikuaáva
-
 about-logins-list-section-breach = Ñanduti renda imarãva
 about-logins-list-section-vulnerable = Ñe’ẽñemi ivaikuaáva
 about-logins-list-section-nothing = Kyhyjerã’ỹre
@@ -76,8 +86,8 @@ about-logins-login-intro-heading-logged-in = Ndaipóri tembiapo ñepyrũ mbojueh
 login-intro-description = Eñongatúvo nde jeike { -brand-product-name }-pe ambue mba’e’okápe.
 login-intro-instructions-fxa = Emoheñói térã eike nde { -fxaccount-brand-name }-pe mba’e’oka eñongatuhápe ne rembiapo ñepyrũ.
 login-intro-instructions-fxa-settings = Eho Ñemoĩporãme > Sync > Emyandy ñembojuehe… Eiporavo Tembiapo ñepyrũ kora ha ñe’ẽñemi.
-login-intro-instructions-fxa-help = Eike <a data-l10n-name="help-link">-pe { -lockwise-brand-short-name } Pytyvõ</a> ejeykekove hag̃ua.
-about-logins-intro-import = Ne rembiapo ñepyrũ oñeñongatúramo ambue kundahárape, ikatu <a data-l10n-name="import-link">ogueru { -lockwise-brand-short-name }pe</a>
+login-intro-instructions-fxa-passwords-help = Eike <a data-l10n-name="passwords-help-link">ñe’ẽñemi pytyvõrã</a> kuatiaroguépe ejeykeko hag̃ua.
+about-logins-intro-browser-only-import = Ne rembiapo ñepyrũ oñeñongatúramo ambue kundahárape, ikatu <a data-l10n-name="import-link">ogueru { -brand-product-name }-pe</a>
 about-logins-intro-import2 = Ne rembiapo ñepyrũ oñeñongatu { -brand-product-name }-gui okápe, ikatu <a data-l10n-name="import-browser-link">egueru ambue kundaháragui</a> térã <a data-l10n-name="import-file-link">maranduredágui</a>
 
 ## Login
@@ -102,9 +112,17 @@ login-item-copied-password-button-text = Monguatiapyre!
 login-item-save-changes-button = Moambue ñongatu
 login-item-save-new-button = Ñongatu
 login-item-cancel-button = Heja
-login-item-time-changed = Moambue ipyahuvéva: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Moheñoimbyre: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Ojepuru ramovéva: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Moheñoipyre
+login-item-timeline-action-updated = Mbohekopyahupyre
+login-item-timeline-action-used = Purupyre
 
 ## OS Authentication dialog
 
@@ -132,8 +150,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Emonguatia hag̃ua ñe�
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = embokuatia ñe’ẽñemi ñongatupyre
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Eguerahaukávo ne rembiapo ñepyrũ, emoĩ nde reraite Windows rembiapópe. Oipytyvõta emo’ãvo ne mba’ete rekorosã.
 # This message can be seen when attempting to export a password in about:logins
@@ -147,8 +163,6 @@ master-password-reload-button =
     .label = Tembiapo ñepyrũ
     .accesskey = L
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Heja
@@ -158,6 +172,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = ¿Emboguete ko tembiapo ñepyrũ?
 confirm-delete-dialog-message = Ko tembiapoite ndaikatúi emboguevi.
 about-logins-confirm-remove-dialog-confirm-button = Mboguete
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -197,6 +214,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Kóva omboguéta tembiapo ñepyrũ eñongatúva { -brand-short-name }-pe opaite mba’e’oka oñondivéva { -fxaccount-brand-name } rehe. Kóva avei omboguéta umi ñembogua kyhyjerã asẽva ko’ápe. Ndaikatumo’ãi emboguevi ko tembiapo.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Emba’egueraha tembiapo ñepyrũ ha ñe’ẽñemi
 about-logins-confirm-export-dialog-message = Ñe’ẽñemi oñeñongatúta moñe’ẽrãrõ (techapyrã, BadP@ssw0rd) oimeraẽva ombojurujakuaáva marandurenda guerahaukapyre ikatu ohecha.
 about-logins-confirm-export-dialog-confirm-button = Emba’egueraha…
@@ -216,7 +235,6 @@ about-logins-breach-alert-date = Ko jejapo’ỹ oiko { DATETIME($date, day: "nu
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Eho { $hostname }
-about-logins-breach-alert-learn-more-link = Kuaave
 
 ## Vulnerable Password notification
 

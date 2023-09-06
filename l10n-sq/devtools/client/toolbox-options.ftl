@@ -29,7 +29,7 @@ options-select-dev-tools-theme-label = Tema
 ## Inspector section
 
 # The heading
-options-context-inspector = Mbikëqyrës
+options-context-inspector = Inspektor
 
 # The label for the checkbox option to show user agent styles
 options-show-user-agent-styles-label = Shfaqni Stile Shfletuesi
@@ -39,7 +39,12 @@ options-show-user-agent-styles-tooltip =
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Cungo atribute DOM
 options-collapse-attrs-tooltip =
-    .title = Cungo te mbikëqyrësi atribute të gjatë
+    .title = Cungo te inspektori atribute të gjatë
+
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Klikoni dhe tërhiqeni që të përpunoni vlera madhësie
+options-inspector-draggable-properties-tooltip =
+    .title = Klikoni dhe tërhiqeni që të përpunoni vlera madhësie te pamja rregulla mbikëqyrësi.
 
 ## "Default Color Unit" options for the Inspector
 
@@ -65,10 +70,15 @@ options-stylesheet-autocompletion-tooltip =
 # The heading
 options-screenshot-label = Sjellje e Fotove të Ekranit
 
+# Label for the checkbox that toggles screenshot to clipboard feature
+options-screenshot-clipboard-only-label = Foto ekrani vetëm në të papastër
+options-screenshot-clipboard-tooltip2 =
+    .title = E ruan foton e ekranit drejt e në të papastër
+
 # Label for the checkbox that toggles the camera shutter audio for screenshot tool
 options-screenshot-audio-label = Prodho tingull shkrepjeje të kamerës
 options-screenshot-audio-tooltip =
-    .title = Aktivizon tingullin e kamerës kur bëhen foto ekrani
+    .title = Aktivizon tingullin e kamerës, kur bëhen foto ekrani
 
 ## Editor section
 
@@ -90,7 +100,7 @@ options-sourceeditor-keybinding-default-label = Parazgjedhje
 
 ## Advanced section
 
-# The heading
+# The heading (this item is also used in perftools.ftl)
 options-context-advanced-settings = Rregullime të mëtejshme
 
 # The label for the checkbox that toggles the HTTP cache on or off
@@ -113,6 +123,11 @@ options-enable-remote-label = Aktivizoni diagnostikim të largët
 options-enable-remote-tooltip2 =
     .title = Aktivizimi i kësaj mundësie do të lejojë diagnostikimin së largëti të kësaj instance shfletuesi
 
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Aktivizo formatues vetjakë
+options-enable-custom-formatters-tooltip =
+    .title = Aktivizimi i kësaj mundësie do t’u lejojë sajteve të përcaktojnë formatues të tyret për objekte DOM
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Aktivizoni Service Workers përmes HTTP-je (kur grupi i mjeteve është hapur)
 options-enable-service-workers-http-tooltip =
@@ -125,9 +140,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Vetëm për sesionin e tanishëm, ringarkon faqen
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Shfaqni të dhëna paltforme Gecko
-options-show-platform-data-tooltip =
-    .title = Nëse e aktivizoni këtë mundësi raportet e Profilizuesit JavaScript do të përfshijnë symbole të platformës Gecko

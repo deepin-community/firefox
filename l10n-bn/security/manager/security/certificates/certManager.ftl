@@ -20,9 +20,9 @@ certmgr-tab-ca =
 certmgr-mine = উল্লেখিত প্রতিষ্ঠানগুলি থেকে সনাক্তকারী সার্টিফিকেট বিদ্যমান
 certmgr-people = উল্লেখিত ব্যক্তিদের সনাক্ত করতে ব্যবহৃত সার্টিফিকেট আপনার ফাইলে বিদ্যমান
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = CA সার্টিফিকেটের বিশ্বস্ততা সংক্রান্ত বৈশিষ্ট্য সম্পাদনা
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = বিশ্বস্ততা সংক্রান্ত বৈশিষ্ট্য সম্পাদনা:
 
@@ -32,18 +32,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = এই সার্টিফিকেটের সাহায্যে মেইল ব্যবহারকারীদের সনাক্ত করা সম্ভব।
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = সার্টিফিকেট অপসারণ
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = সার্টিফিকেটের নাম
 
 certmgr-cert-server =
     .label = সার্ভার
-
-certmgr-override-lifetime =
-    .label = মেয়াদ
 
 certmgr-token-name =
     .label = নিরাপত্তা ডিভাইস
@@ -89,7 +86,7 @@ certmgr-backup-all =
     .accesskey = k
 
 certmgr-restore =
-    .label = ইমপোর্ট…(m)
+    .label = আমদানি করুন…
     .accesskey = m
 
 certmgr-add-exception =
@@ -172,9 +169,8 @@ delete-email-cert-impact = কোনো ইমেইল সার্টিফি
 cert-with-serial =
     .value = সিরিয়াল নম্বর সহ সার্টিফিকেট: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

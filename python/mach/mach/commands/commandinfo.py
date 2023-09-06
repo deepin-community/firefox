@@ -2,22 +2,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
 import argparse
-import os
 import re
 import subprocess
 import sys
 from itertools import chain
+from pathlib import Path
 
 import attr
-
-from mach.decorators import Command, CommandArgument, SubCommand
 from mozbuild.util import memoize
 
-here = os.path.abspath(os.path.dirname(__file__))
-COMPLETION_TEMPLATES_DIR = os.path.join(here, "completion_templates")
+from mach.decorators import Command, CommandArgument, SubCommand
+
+COMPLETION_TEMPLATES_DIR = Path(__file__).resolve().parent / "completion_templates"
 
 
 @attr.s
@@ -31,7 +28,7 @@ class CommandInfo(object):
 
 def render_template(shell, context):
     filename = "{}.template".format(shell)
-    with open(os.path.join(COMPLETION_TEMPLATES_DIR, filename)) as fh:
+    with open(COMPLETION_TEMPLATES_DIR / filename) as fh:
         template = fh.read()
     return template % context
 

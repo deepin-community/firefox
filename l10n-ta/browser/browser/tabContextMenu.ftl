@@ -5,6 +5,12 @@
 reload-tab =
     .label = கீற்றை மீளேற்று
     .accesskey = R
+tab-context-play-tab =
+    .label = கீற்றை இயக்கு
+    .accesskey = l
+tab-context-play-tabs =
+    .label = கீற்றுகளை இயக்கு
+    .accesskey = y
 duplicate-tab =
     .label = நகல் கீற்று
     .accesskey = D

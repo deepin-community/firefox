@@ -35,6 +35,9 @@
 #define CREATE_IDX_MOZ_PLACES_ORIGIN_ID \
   CREATE_PLACES_IDX("originidindex", "moz_places", "origin_id", "")
 
+#define CREATE_IDX_MOZ_PLACES_ALT_FRECENCY \
+  CREATE_PLACES_IDX("altfrecencyindex", "moz_places", "alt_frecency", "")
+
 /**
  * moz_historyvisits
  */
@@ -107,5 +110,9 @@
 #define CREATE_IDX_MOZ_PLACES_METADATA_PLACECREATED                    \
   CREATE_PLACES_IDX("placecreated_uniqueindex", "moz_places_metadata", \
                     "place_id, created_at", "UNIQUE")
+
+#define CREATE_IDX_MOZ_PLACES_METADATA_REFERRER             \
+  CREATE_PLACES_IDX("referrerindex", "moz_places_metadata", \
+                    "referrer_place_id", "")
 
 #endif  // nsPlacesIndexes_h__

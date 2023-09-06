@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Rensa data
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Rensning av alla kakor och webbplatsdata lagrade av { -brand-short-name } kan logga ut dig från webbplatser och ta bort offline-webbinnehåll. Rensning av cache påverkar inte dina inloggningar.
 

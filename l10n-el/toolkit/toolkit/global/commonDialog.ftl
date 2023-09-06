@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Όνομα χρήστη
 common-dialog-password =
     .value = Κωδικός πρόσβασης
+
+common-dialog-copy-cmd =
+    .label = Αντιγραφή
+    .accesskey = Α
+common-dialog-select-all-cmd =
+    .label = Επιλογή όλων
+    .accesskey = λ

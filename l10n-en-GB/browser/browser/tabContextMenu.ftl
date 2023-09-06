@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Select All Tabs
     .accesskey = S
+tab-context-play-tab =
+    .label = Play Tab
+    .accesskey = l
+tab-context-play-tabs =
+    .label = Play Tabs
+    .accesskey = y
 duplicate-tab =
     .label = Duplicate Tab
     .accesskey = D
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Bookmark Tabs…
     .accesskey = B
-bookmark-tab =
-    .label = Bookmark Tab
+tab-context-bookmark-tab =
+    .label = Bookmark Tab…
     .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = Open in New Container Tab
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Share
     .accesskey = h
-tab-context-share-more =
-    .label = More…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,13 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] Reopen Closed Tabs
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Close Tab
-           *[other] Close Tabs
-        }
-    .accesskey = C
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

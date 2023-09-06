@@ -2,54 +2,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { ExperimentFakes } = ChromeUtils.import(
-  "resource://testing-common/NimbusTestUtils.jsm"
-);
-const { ExperimentAPI } = ChromeUtils.import(
-  "resource://nimbus/ExperimentAPI.jsm"
-);
-
-/**
- * These tests ensure that the experiment and remote default capabilities
- * for the "privatebrowsing" feature are working as expected.
- */
-
-async function openTabAndWaitForRender() {
-  let { win, tab } = await openAboutPrivateBrowsing();
-  await SpecialPowers.spawn(tab, [], async function() {
-    // Wait for render to complete
-    await ContentTaskUtils.waitForCondition(() =>
-      content.document.documentElement.hasAttribute(
-        "PrivateBrowsingRenderComplete"
-      )
-    );
-  });
-  return { win, tab };
-}
-
-function waitForTelemetryEvent(category) {
-  info("waiting for telemetry event");
-  return TestUtils.waitForCondition(() => {
-    let events = Services.telemetry.snapshotEvents(
-      Ci.nsITelemetry.DATASET_PRERELEASE_CHANNELS,
-      false
-    ).content;
-    if (!events) {
-      return null;
-    }
-    events = events.filter(e => e[1] == category);
-    if (events.length) {
-      return events[0];
-    }
-    return null;
-  }, "waiting for telemetry event");
-}
+requestLongerTimeout(2);
 
 add_task(async function test_experiment_plain_text() {
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
-    featureId: "privatebrowsing",
-    enabled: true,
-    value: {
+  const defaultMessageContent = (await PanelTestProvider.getMessages()).find(
+    m => m.template === "pb_newtab"
+  ).content;
+  let doExperimentCleanup = await setupMSExperimentWithMessage({
+    id: "PB_NEWTAB_MESSAGING_SYSTEM",
+    template: "pb_newtab",
+    content: {
+      ...defaultMessageContent,
       infoTitle: "Hello world",
       infoTitleEnabled: true,
       infoBody: "This is some text",
@@ -57,25 +20,39 @@ add_task(async function test_experiment_plain_text() {
       infoIcon: "chrome://branding/content/about-logo.png",
       promoTitle: "Promo title",
       promoLinkText: "Promo link",
+      promoLinkType: "link",
+      promoButton: {
+        action: {
+          type: "OPEN_URL",
+          data: {
+            args: "https://example.com",
+            where: "tabshifted",
+          },
+        },
+      },
     },
+    // Priority ensures this message is picked over the one in
+    // OnboardingMessageProvider
+    priority: 5,
+    targeting: "true",
   });
 
   let { win, tab } = await openTabAndWaitForRender();
 
-  await SpecialPowers.spawn(tab, [], async function() {
+  await SpecialPowers.spawn(tab, [], async function () {
     const infoContainer = content.document.querySelector(".info");
     const infoTitle = content.document.getElementById("info-title");
     const infoBody = content.document.getElementById("info-body");
     const infoLink = content.document.getElementById("private-browsing-myths");
     const promoText = content.document.getElementById(
-      "private-browsing-vpn-text"
+      "private-browsing-promo-text"
     );
     const promoLink = content.document.getElementById(
-      "private-browsing-vpn-link"
+      "private-browsing-promo-link"
     );
 
     // Check experiment values are rendered
-    ok(infoContainer, ".info container should exist");
+    ok(!infoContainer.hidden, ".info container should be visible");
     ok(
       infoContainer.style.backgroundImage.includes(
         "chrome://branding/content/about-logo.png"
@@ -93,57 +70,25 @@ add_task(async function test_experiment_plain_text() {
   await doExperimentCleanup();
 });
 
-add_task(async function test_experiment_fluent() {
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
-    featureId: "privatebrowsing",
-    enabled: true,
-    value: {
-      infoBody: "fluent:about-private-browsing-info-title",
-      promoLinkText: "fluent:about-private-browsing-prominent-cta",
-    },
-  });
-
-  let { win, tab } = await openTabAndWaitForRender();
-
-  await SpecialPowers.spawn(tab, [], async function() {
-    const infoBody = content.document.getElementById("info-body");
-    const promoLink = content.document.getElementById(
-      "private-browsing-vpn-link"
-    );
-
-    // Check experiment values are rendered
-    is(
-      infoBody.textContent,
-      "You’re in a Private Window",
-      "should render infoBody with fluent"
-    );
-    is(
-      promoLink.textContent,
-      "Stay private with Mozilla VPN",
-      "should render promoLinkText with fluent"
-    );
-  });
-
-  await BrowserTestUtils.closeWindow(win);
-  await doExperimentCleanup();
-});
-
 add_task(async function test_experiment_info_disabled() {
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
-    featureId: "privatebrowsing",
-    enabled: true,
-    value: {
+  let doExperimentCleanup = await setupMSExperimentWithMessage({
+    id: "PB_NEWTAB_MESSAGING_SYSTEM",
+    template: "pb_newtab",
+    content: {
       infoEnabled: false,
     },
+    // Priority ensures this message is picked over the one in
+    // OnboardingMessageProvider
+    priority: 5,
+    targeting: "true",
   });
 
   let { win, tab } = await openTabAndWaitForRender();
 
-  await SpecialPowers.spawn(tab, [], async function() {
-    is(
-      content.document.querySelector(".info"),
-      undefined,
-      "should remove .info element"
+  await SpecialPowers.spawn(tab, [], async function () {
+    ok(
+      content.document.querySelector(".info").hidden,
+      "should hide .info element"
     );
   });
 
@@ -152,17 +97,21 @@ add_task(async function test_experiment_info_disabled() {
 });
 
 add_task(async function test_experiment_promo_disabled() {
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
-    featureId: "privatebrowsing",
-    enabled: true,
-    value: {
+  let doExperimentCleanup = await setupMSExperimentWithMessage({
+    id: "PB_NEWTAB_MESSAGING_SYSTEM",
+    template: "pb_newtab",
+    content: {
       promoEnabled: false,
     },
+    // Priority ensures this message is picked over the one in
+    // OnboardingMessageProvider
+    priority: 5,
+    targeting: "true",
   });
 
   let { win, tab } = await openTabAndWaitForRender();
 
-  await SpecialPowers.spawn(tab, [], async function() {
+  await SpecialPowers.spawn(tab, [], async function () {
     is(
       content.document.querySelector(".promo"),
       undefined,
@@ -176,27 +125,41 @@ add_task(async function test_experiment_promo_disabled() {
 
 add_task(async function test_experiment_format_urls() {
   const LOCALE = Services.locale.appLocaleAsBCP47;
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
-    featureId: "privatebrowsing",
-    enabled: true,
-    value: {
+  let doExperimentCleanup = await setupMSExperimentWithMessage({
+    id: "PB_NEWTAB_MESSAGING_SYSTEM",
+    template: "pb_newtab",
+    content: {
+      infoEnabled: true,
+      promoEnabled: true,
       infoLinkUrl: "http://foo.mozilla.com/%LOCALE%",
-      promoLinkUrl: "http://bar.mozilla.com/%LOCALE%",
+      promoButton: {
+        action: {
+          data: {
+            args: "http://bar.mozilla.com/%LOCALE%",
+            where: "tabshifted",
+          },
+          type: "OPEN_URL",
+        },
+      },
     },
+    // Priority ensures this message is picked over the one in
+    // OnboardingMessageProvider
+    priority: 5,
+    targeting: "true",
   });
 
   let { win, tab } = await openTabAndWaitForRender();
 
-  await SpecialPowers.spawn(tab, [LOCALE], async function(locale) {
+  await SpecialPowers.spawn(tab, [LOCALE], async function (locale) {
     is(
       content.document.querySelector(".info a").getAttribute("href"),
       "http://foo.mozilla.com/" + locale,
       "should format the infoLinkUrl url"
     );
-    is(
-      content.document.querySelector(".promo a").getAttribute("href"),
-      "http://bar.mozilla.com/" + locale,
-      "should format the promoLinkUrl url"
+
+    ok(
+      content.document.querySelector(".promo button"),
+      "should render promo button"
     );
   });
 
@@ -205,17 +168,23 @@ add_task(async function test_experiment_format_urls() {
 });
 
 add_task(async function test_experiment_click_info_telemetry() {
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
-    featureId: "privatebrowsing",
-    enabled: true,
-    value: {
+  let doExperimentCleanup = await setupMSExperimentWithMessage({
+    id: "PB_NEWTAB_MESSAGING_SYSTEM_CLICK_INFO_TELEM",
+    template: "pb_newtab",
+    content: {
+      infoEnabled: true,
       infoLinkUrl: "http://example.com",
     },
+    // Priority ensures this message is picked over the one in
+    // OnboardingMessageProvider
+    priority: 5,
+    targeting: "true",
   });
 
-  let { win, tab } = await openTabAndWaitForRender();
-
+  // Required for `mach test --verify`
   Services.telemetry.clearEvents();
+
+  let { win, tab } = await openTabAndWaitForRender();
 
   await SpecialPowers.spawn(tab, [], () => {
     const el = content.document.querySelector(".info a");
@@ -234,12 +203,26 @@ add_task(async function test_experiment_click_info_telemetry() {
 });
 
 add_task(async function test_experiment_click_promo_telemetry() {
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
-    featureId: "privatebrowsing",
-    enabled: true,
-    value: {
-      promoLinkUrl: "http://example.com",
+  let doExperimentCleanup = await setupMSExperimentWithMessage({
+    id: `PB_NEWTAB_MESSAGING_SYSTEM_PROMO_TELEM_${Math.random()}`,
+    template: "pb_newtab",
+    content: {
+      promoEnabled: true,
+      promoLinkType: "link",
+      promoButton: {
+        action: {
+          type: "OPEN_URL",
+          data: {
+            args: "https://example.com",
+            where: "tabshifted",
+          },
+        },
+      },
     },
+    // Priority ensures this message is picked over the one in
+    // OnboardingMessageProvider
+    priority: 5,
+    targeting: "true",
   });
 
   let { win, tab } = await openTabAndWaitForRender();
@@ -247,7 +230,15 @@ add_task(async function test_experiment_click_promo_telemetry() {
   Services.telemetry.clearEvents();
 
   await SpecialPowers.spawn(tab, [], () => {
-    const el = content.document.querySelector(".promo a");
+    is(
+      content.document
+        .querySelector(".promo-cta button")
+        .classList.contains("promo-link"),
+      true,
+      "Should have a button styled as a link"
+    );
+
+    const el = content.document.querySelector(".promo button");
     el.click();
   });
 
@@ -263,10 +254,16 @@ add_task(async function test_experiment_click_promo_telemetry() {
 });
 
 add_task(async function test_experiment_bottom_promo() {
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
-    featureId: "privatebrowsing",
-    value: {
-      enabled: true,
+  const defaultMessageContent = (await PanelTestProvider.getMessages()).find(
+    m => m.template === "pb_newtab"
+  ).content;
+
+  let doExperimentCleanup = await setupMSExperimentWithMessage({
+    id: "PB_NEWTAB_MESSAGING_SYSTEM",
+    template: "pb_newtab",
+    content: {
+      ...defaultMessageContent,
+      promoEnabled: true,
       promoLinkType: "button",
       promoSectionStyle: "bottom",
       promoHeader: "Need more privacy?",
@@ -274,16 +271,29 @@ add_task(async function test_experiment_bottom_promo() {
       promoTitleEnabled: false,
       promoImageLarge: "",
       promoImageSmall: "chrome://browser/content/assets/vpn-logo.svg",
+      promoButton: {
+        action: {
+          data: {
+            args: "http://bar.example.com/%LOCALE%",
+            where: "tabshifted",
+          },
+          type: "OPEN_URL",
+        },
+      },
     },
+    // Priority ensures this message is picked over the one in
+    // OnboardingMessageProvider
+    priority: 5,
+    targeting: "true",
   });
 
   let { win, tab } = await openTabAndWaitForRender();
 
-  await SpecialPowers.spawn(tab, [], async function() {
+  await SpecialPowers.spawn(tab, [], async function () {
     is(
       content.document
-        .querySelector(".promo-cta .button")
-        .classList.contains("button"),
+        .querySelector(".promo-cta button")
+        .classList.contains("primary"),
       true,
       "Should have a button CTA"
     );
@@ -296,48 +306,62 @@ add_task(async function test_experiment_bottom_promo() {
       content.document.querySelector(".promo.bottom"),
       "Should have .bottom for the promo section"
     );
+    const infoTitle = content.document.getElementById("info-title");
     ok(
-      !content.document.querySelector("#private-browsing-vpn-text"),
-      "Should not render promo title if promoTitleEnabled is true"
-    );
-    ok(
-      content.document.querySelector("#info-title"),
+      infoTitle && !infoTitle.hidden,
       "Should render info title if infoTitleEnabled is true"
     );
     ok(
-      !content.document.querySelector("#private-browsing-vpn-text"),
+      !content.document.querySelector("#private-browsing-promo-text"),
       "Should not render promo title if promoTitleEnabled is false"
     );
   });
 
   await BrowserTestUtils.closeWindow(win);
-
   await doExperimentCleanup();
 });
 
 add_task(async function test_experiment_below_search_promo() {
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
-    featureId: "privatebrowsing",
-    value: {
-      enabled: true,
+  const defaultMessageContent = (await PanelTestProvider.getMessages()).find(
+    m => m.template === "pb_newtab"
+  ).content;
+  let doExperimentCleanup = await setupMSExperimentWithMessage({
+    id: "PB_NEWTAB_MESSAGING_SYSTEM",
+    template: "pb_newtab",
+    content: {
+      ...defaultMessageContent,
+      promoEnabled: true,
       promoLinkType: "button",
       promoSectionStyle: "below-search",
       promoHeader: "Need more privacy?",
       promoTitle:
-        "Mozilla VPN. Security, reliability and speed — on every device,  anywhere you go.",
+        "Mozilla VPN. Security, reliability and speed — on every device, anywhere you go.",
       promoImageLarge: "chrome://browser/content/assets/moz-vpn.svg",
       promoImageSmall: "chrome://browser/content/assets/vpn-logo.svg",
       infoTitleEnabled: false,
+      promoButton: {
+        action: {
+          data: {
+            args: "https://foo.example.com",
+            where: "tabshifted",
+          },
+          type: "OPEN_URL",
+        },
+      },
     },
+    // Priority ensures this message is picked over the one in
+    // OnboardingMessageProvider
+    priority: 5,
+    targeting: "true",
   });
 
   let { win, tab } = await openTabAndWaitForRender();
 
-  await SpecialPowers.spawn(tab, [], async function() {
+  await SpecialPowers.spawn(tab, [], async function () {
     is(
       content.document
-        .querySelector(".promo-cta .button")
-        .classList.contains("button"),
+        .querySelector(".promo-cta button")
+        .classList.contains("primary"),
       true,
       "Should have a button CTA"
     );
@@ -356,43 +380,56 @@ add_task(async function test_experiment_below_search_promo() {
       "Should have .below-search for the promo section"
     );
     ok(
-      !content.document.querySelector("#info-title"),
+      content.document.getElementById("info-title").hidden,
       "Should not render info title if infoTitleEnabled is false"
     );
     ok(
-      content.document.querySelector("#private-browsing-vpn-text"),
+      content.document.querySelector("#private-browsing-promo-text"),
       "Should render promo title if promoTitleEnabled is true"
     );
   });
 
   await BrowserTestUtils.closeWindow(win);
-
   await doExperimentCleanup();
 });
 
 add_task(async function test_experiment_top_promo() {
-  let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
-    featureId: "privatebrowsing",
-    value: {
-      enabled: true,
+  const defaultMessageContent = (await PanelTestProvider.getMessages()).find(
+    m => m.template === "pb_newtab"
+  ).content;
+  let doExperimentCleanup = await setupMSExperimentWithMessage({
+    id: `PB_NEWTAB_MESSAGING_SYSTEM_DISMISS_${Math.random()}`,
+    template: "pb_newtab",
+    content: {
+      ...defaultMessageContent,
+      promoEnabled: true,
       promoLinkType: "button",
       promoSectionStyle: "top",
       promoHeader: "Need more privacy?",
       promoTitle:
-        "Mozilla VPN. Security, reliability and speed — on every device, anywhere you go.",
+        "Mozilla VPN. Security, reliability and speed — on every device, anywhere you go.",
       promoImageLarge: "chrome://browser/content/assets/moz-vpn.svg",
       promoImageSmall: "chrome://browser/content/assets/vpn-logo.svg",
       infoTitleEnabled: false,
+      promoButton: {
+        action: {
+          data: {
+            args: "https://foo.example.com",
+            where: "tabshifted",
+          },
+          type: "OPEN_URL",
+        },
+      },
     },
+    // Priority ensures this message is picked over the one in
+    // OnboardingMessageProvider
+    priority: 5,
+    targeting: "true",
   });
 
   let { win, tab } = await openTabAndWaitForRender();
 
-  await SpecialPowers.spawn(tab, [], async function() {
-    ok(
-      !content.document.querySelector("#info-title"),
-      "Should remove the infoTitle element"
-    );
+  await SpecialPowers.spawn(tab, [], async function () {
     is(
       content.document.querySelector(".promo-image-small img").src,
       "chrome://browser/content/assets/vpn-logo.svg",
@@ -408,16 +445,15 @@ add_task(async function test_experiment_top_promo() {
       "Should have .below-search for the promo section"
     );
     ok(
-      !content.document.querySelector("#info-title"),
-      "Should not render info title if infoTitleEnabled is false"
+      content.document.getElementById("info-title").hidden,
+      "Should hide info title if infoTitleEnabled is false"
     );
     ok(
-      content.document.querySelector("#private-browsing-vpn-text"),
+      content.document.querySelector("#private-browsing-promo-text"),
       "Should render promo title if promoTitleEnabled is true"
     );
   });
 
   await BrowserTestUtils.closeWindow(win);
-
   await doExperimentCleanup();
 });

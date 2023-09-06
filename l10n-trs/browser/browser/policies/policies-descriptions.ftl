@@ -53,7 +53,7 @@ policy-DisableForgetButton = Si ga'nïnjt gi'iaj sun butûn Gini'ñun'.
 
 policy-DisableFormHistory = Nu nigi'ijt sa nana'uî't ni sa gahuin riña formulârio.
 
-policy-DisablePocket = Duyichin' sun guendâ na'nínj sà't nej pâjina riña Pocket.
+policy-DisablePocket2 = Duyichin' sun guendâ na'nínj sà't nej pâjina riña { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Duyichin' si sun nabegadôr huìi.
 
@@ -93,10 +93,6 @@ policy-ExtensionSettings = Gachinj daran' nej sa hua da' ga'nïn' nej ekstensiû
 
 policy-ExtensionUpdate = Nachrun asi duna'àj sa nagi'iaj nakà man'an nej ekstensiûn.
 
-policy-FirefoxHome = Gi'iaj konfigurandô Firefox Home.
-
-policy-FlashPlugin = Ga'nïn asi si ga'nïnjt gi'iaj sun sa nata' riña Flash.
-
 policy-HardwareAcceleration = Si sê sa yangà'a huin, duyichin' sa nagi'iaj hìo hardware.
 
 # “lock” means that the user won’t be able to change this setting
@@ -105,6 +101,7 @@ policy-Homepage = Nachrun asi narrán akuan' riña pajinâ gayi'ìt.
 policy-InstallAddonsPermission = Ga'nïn riña da'aj pâjina gà'nïn sa nata'a.
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
+
 
 ##
 
@@ -141,9 +138,6 @@ policy-SearchBar = Nachrun sa ruhuât ga yitïnj riña dukuán na'na'uî' sa nan
 policy-SearchEngines = Nagi'iaj dàj hua riña sa rugûñu'unj nana'uî'. Màn riña Extended Support Release (ESR) ga'ue naduno' sa ruhuô' nan.
 
 policy-SearchSuggestEnabled = Nachrun asi duna'àjt nej sa ataj na'anj nù huin si nanà'uì't.
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Ga'nïnj nej modulô PKCS #11.
 
 policy-SSLVersionMax = Dunâj ginun versiûn sà' doj SSL.
 

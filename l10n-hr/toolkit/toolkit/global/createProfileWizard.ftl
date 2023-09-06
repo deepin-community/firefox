@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Čarobnjak za stvaranje profila
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Uvod
-       *[other] Dobrodošli u { create-profile-window.title }
+       *[other] Dobrodošli u { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } sprema informacije o tvojim postavkama i osobitostima u tvoj osobni profil.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Zaključak
-       *[other] Dovršavanje { create-profile-window.title }
+       *[other] Dovršavanje { create-profile-window2.title }
     }
 
 profile-creation-intro = Ako stvoriš nekoliko profila, možeš ih razlikovati po njihovim imenima. Možeš koristiti imena koja su ovdje zadana ili stvoriti svoja vlastita.
@@ -45,8 +45,8 @@ profile-default-name =
 profile-directory-explanation = Tvoje korisničke postavke, osobitosti i ostali korisnički podaci bit će spremljeni u:
 
 create-profile-choose-folder =
-    .label = Odaberi mapu...
-    .accesskey = m
+    .label = Odaberi mapu …
+    .accesskey = O
 
 create-profile-use-default =
     .label = Koristi standardnu mapu

@@ -13,7 +13,6 @@ except ImportError:
     JSONDecodeError = ValueError
 
 from mozfile import which
-
 from mozlint import result
 from mozlint.util.implementation import LintProcess
 
@@ -55,13 +54,14 @@ class CodespellProcess(LintProcess):
                 print("Unable to match regex against output: {}".format(line))
             return
 
+        if CodespellProcess._fix:
+            CodespellProcess.fixed += 1
+
         # Ignore false positive like aParent (which would be fixed to apparent)
         # See https://github.com/lucasdemarchi/codespell/issues/314
         m = re.match(r"^[a-z][A-Z][a-z]*", typo)
         if m:
             return
-        if CodespellProcess._fix:
-            CodespellProcess.fixed += 1
         res = {
             "path": abspath,
             "message": typo.strip() + " ==> " + correct,
@@ -111,6 +111,11 @@ def get_codespell_version(binary):
     )
 
 
+def get_ignored_words_file(config):
+    config_root = os.path.dirname(config["path"])
+    return os.path.join(config_root, "spell", "exclude-list.txt")
+
+
 def lint(paths, config, fix=None, **lintargs):
     log = lintargs["log"]
     binary = get_codespell_binary()
@@ -122,7 +127,7 @@ def lint(paths, config, fix=None, **lintargs):
 
     config["root"] = lintargs["root"]
 
-    exclude_list = os.path.join(here, "exclude-list.txt")
+    exclude_list = get_ignored_words_file(config)
     cmd_args = [
         which("python"),
         binary,

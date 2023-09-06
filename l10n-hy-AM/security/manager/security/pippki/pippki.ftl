@@ -13,16 +13,13 @@ change-password-old = Առկա գաղտնաբառը.
 change-password-new = Նոր Գաղտնաբառը.
 change-password-reenter = Նոր գաղտնաբառ (կրկին) ՝
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Վերակայել Հիմնական գաղտնաբառը
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Վերադարձնել
-
 reset-primary-password-text = Եթե մաքրեք Ձեր Հիմնական գաղտնաբառը, ապա բոլոր պահպանված Վեբ և Էլ. Փոստ գաղտնաբառերը, անհատական հավատարմագրերը, անձնական բանալիները կմոռացվեն: Համոզվա՞ծ եք, որ ցանկանում եք վերակայել Հիմնական գաղտնաբառը:
 
 pippki-reset-password-confirmation-title = Վերակայել Հիմնական գաղտնաբառը
@@ -30,9 +27,9 @@ pippki-reset-password-confirmation-message = Ձեր հիմնական գաղտն�
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Բեռնավորում եմ Վկայագիրը
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Դուք հայց եք ստացել մի նոր Վկայագրի լիազորման (CA) համար:
 download-cert-trust-ssl =
     .label = Վստահել այս CA-ին՝ վեբ հանգույցների նույնացման համար:
@@ -64,7 +61,5 @@ set-password-reminder = Կարևոր է. Եթե մոռանաք ձեր Վկայա
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Պահպանված Նույնականացման Նշան
-protected-auth-msg = Խնդրում ենք նույնականացնել թոկենի հետ.Նույնականացման մեթոդը կախված է Ձեր թոկենի տեսակից.
-protected-auth-token = Թոկեն`
+## Protected authentication alert
+

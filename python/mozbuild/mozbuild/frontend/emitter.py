@@ -2,24 +2,25 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
-import itertools
 import logging
 import os
-import six
 import sys
 import time
 import traceback
+from collections import OrderedDict, defaultdict
 
-from collections import defaultdict, OrderedDict
-from mach.mixin.logging import LoggingMixin
-from mozbuild.util import memoize, OrderedDefaultDict
-
-import mozpack.path as mozpath
 import mozinfo
-import pytoml
+import mozpack.path as mozpath
+import six
+import toml
+from mach.mixin.logging import LoggingMixin
+from mozpack.chrome.manifest import Manifest
 
+from mozbuild.base import ExecutionSummary
+from mozbuild.util import OrderedDefaultDict, memoize
+
+from ..testing import REFTEST_FLAVORS, TEST_MANIFESTS, SupportFilesConverter
+from .context import Context, ObjDirPath, Path, SourcePath, SubContext
 from .data import (
     BaseRustProgram,
     ChromeManifestEntry,
@@ -28,17 +29,15 @@ from .data import (
     Defines,
     DirectoryTraversal,
     Exports,
+    ExternalSharedLibrary,
+    ExternalStaticLibrary,
     FinalTargetFiles,
     FinalTargetPreprocessedFiles,
     GeneratedFile,
-    GeneratedSources,
-    GnProjectData,
-    ExternalStaticLibrary,
-    ExternalSharedLibrary,
     HostDefines,
-    HostGeneratedSources,
     HostLibrary,
     HostProgram,
+    HostRustLibrary,
     HostRustProgram,
     HostSharedLibrary,
     HostSimpleProgram,
@@ -54,10 +53,8 @@ from .data import (
     ObjdirFiles,
     ObjdirPreprocessedFiles,
     PerSourceFlag,
-    WebIDLCollection,
     Program,
     RustLibrary,
-    HostRustLibrary,
     RustProgram,
     RustTests,
     SandboxedWasmLibrary,
@@ -70,20 +67,12 @@ from .data import (
     UnifiedSources,
     VariablePassthru,
     WasmDefines,
-    WasmGeneratedSources,
     WasmSources,
+    WebIDLCollection,
     XPCOMComponentManifests,
     XPIDLModule,
 )
-from mozpack.chrome.manifest import Manifest
-
 from .reader import SandboxValidationError
-
-from ..testing import TEST_MANIFESTS, REFTEST_FLAVORS, SupportFilesConverter
-
-from .context import Context, SourcePath, ObjDirPath, Path, SubContext
-
-from mozbuild.base import ExecutionSummary
 
 
 class TreeMetadataEmitter(LoggingMixin):
@@ -162,10 +151,10 @@ class TreeMetadataEmitter(LoggingMixin):
                 # Keep all contexts around, we will need them later.
                 contexts[os.path.normcase(out.objdir)] = out
 
-                start = time.time()
+                start = time.monotonic()
                 # We need to expand the generator for the timings to work.
                 objs = list(emitfn(out))
-                self._emitter_time += time.time() - start
+                self._emitter_time += time.monotonic() - start
 
                 for o in emit_objs(objs):
                     yield o
@@ -175,9 +164,9 @@ class TreeMetadataEmitter(LoggingMixin):
 
         # Don't emit Linkable objects when COMPILE_ENVIRONMENT is not set
         if self.config.substs.get("COMPILE_ENVIRONMENT"):
-            start = time.time()
+            start = time.monotonic()
             objs = list(self._emit_libs_derived(contexts))
-            self._emitter_time += time.time() - start
+            self._emitter_time += time.monotonic() - start
 
             for o in emit_objs(objs):
                 yield o
@@ -518,7 +507,7 @@ class TreeMetadataEmitter(LoggingMixin):
         else:
             return ExternalSharedLibrary(context, name)
 
-    def _parse_cargo_file(self, context):
+    def _parse_and_check_cargo_file(self, context):
         """Parse the Cargo.toml file in context and return a Python object
         representation of it.  Raise a SandboxValidationError if the Cargo.toml
         file does not exist.  Return a tuple of (config, cargo_file)."""
@@ -528,7 +517,38 @@ class TreeMetadataEmitter(LoggingMixin):
                 "No Cargo.toml file found in %s" % cargo_file, context
             )
         with open(cargo_file, "r") as f:
-            return pytoml.load(f), cargo_file
+            content = toml.load(f)
+
+        crate_name = content.get("package", {}).get("name")
+        if not crate_name:
+            raise SandboxValidationError(
+                f"{cargo_file} doesn't contain a crate name?!?", context
+            )
+
+        hack_name = "mozilla-central-workspace-hack"
+        dep = f'{hack_name} = {{ version = "0.1", features = ["{crate_name}"], optional = true }}'
+        dep_dict = toml.loads(dep)[hack_name]
+        hint = (
+            "\n\nYou may also need to adjust the build/workspace-hack/Cargo.toml"
+            f" file to add the {crate_name} feature."
+        )
+
+        workspace_hack = content.get("dependencies", {}).get(hack_name)
+        if not workspace_hack:
+            raise SandboxValidationError(
+                f"{cargo_file} doesn't contain the workspace hack.\n\n"
+                f"Add the following to dependencies:\n{dep}{hint}",
+                context,
+            )
+
+        if workspace_hack != dep_dict:
+            raise SandboxValidationError(
+                f"{cargo_file} needs an update to its {hack_name} dependency.\n\n"
+                f"Adjust the dependency to:\n{dep}{hint}",
+                context,
+            )
+
+        return content, cargo_file
 
     def _verify_deps(
         self, context, crate_dir, crate_name, dependencies, description="Dependency"
@@ -573,7 +593,7 @@ class TreeMetadataEmitter(LoggingMixin):
         self, context, libname, static_args, is_gkrust=False, cls=RustLibrary
     ):
         # We need to note any Rust library for linking purposes.
-        config, cargo_file = self._parse_cargo_file(context)
+        config, cargo_file = self._parse_and_check_cargo_file(context)
         crate_name = config["package"]["name"]
 
         if crate_name != libname:
@@ -624,32 +644,10 @@ class TreeMetadataEmitter(LoggingMixin):
             **static_args,
         )
 
-    def _handle_gn_dirs(self, context):
-        for target_dir in context.get("GN_DIRS", []):
-            context["DIRS"] += [target_dir]
-            gn_dir = context["GN_DIRS"][target_dir]
-            for v in ("variables",):
-                if not getattr(gn_dir, "variables"):
-                    raise SandboxValidationError(
-                        "Missing value for " 'GN_DIRS["%s"].%s' % (target_dir, v),
-                        context,
-                    )
-
-            non_unified_sources = set()
-            for s in gn_dir.non_unified_sources:
-                source = SourcePath(context, s)
-                if not os.path.exists(source.full_path):
-                    raise SandboxValidationError("Cannot find %s." % source, context)
-                non_unified_sources.add(mozpath.join(context.relsrcdir, s))
-
-            yield GnProjectData(context, target_dir, gn_dir, non_unified_sources)
-
     def _handle_linkables(self, context, passthru, generated_files):
         linkables = []
         host_linkables = []
         wasm_linkables = []
-
-        unified_build = context.config.substs.get("ENABLE_UNIFIED_BUILD", False)
 
         def add_program(prog, var):
             if var.startswith("HOST_"):
@@ -693,7 +691,7 @@ class TreeMetadataEmitter(LoggingMixin):
 
         # Verify Rust program definitions.
         if all_rust_programs:
-            config, cargo_file = self._parse_cargo_file(context)
+            config, cargo_file = self._parse_and_check_cargo_file(context)
             bin_section = config.get("bin", None)
             if not bin_section:
                 raise SandboxValidationError(
@@ -983,9 +981,8 @@ class TreeMetadataEmitter(LoggingMixin):
                     "different value.",
                     context,
                 )
-            lib = SandboxedWasmLibrary(context, libname, real_name=wasm_lib)
+            lib = SandboxedWasmLibrary(context, wasm_lib)
             self._libs[libname].append(lib)
-            self._linkage.append((context, lib, "USE_LIBS"))
             wasm_linkables.append(lib)
             self._wasm_compile_dirs.add(context.objdir)
 
@@ -1011,17 +1008,16 @@ class TreeMetadataEmitter(LoggingMixin):
         if not (linkables or host_linkables or wasm_linkables):
             return
 
+        # TODO: objdirs with only host things in them shouldn't need target
+        # flags, but there's at least one Makefile.in (in
+        # build/unix/elfhack) that relies on the value of LDFLAGS being
+        # passed to one-off rules.
         self._compile_dirs.add(context.objdir)
 
-        if host_linkables and not all(
-            isinstance(l, HostRustLibrary) for l in host_linkables
+        if host_linkables or any(
+            isinstance(l, (RustLibrary, RustProgram)) for l in linkables
         ):
             self._host_compile_dirs.add(context.objdir)
-            # TODO: objdirs with only host things in them shouldn't need target
-            # flags, but there's at least one Makefile.in (in
-            # build/unix/elfhack) that relies on the value of LDFLAGS being
-            # passed to one-off rules.
-            self._compile_dirs.add(context.objdir)
 
         sources = defaultdict(list)
         gen_sources = defaultdict(list)
@@ -1057,9 +1053,26 @@ class TreeMetadataEmitter(LoggingMixin):
                         context,
                     )
 
-        # UNIFIED_SOURCES only take SourcePaths, so there should be no
-        # generated source in here
-        assert not gen_sources["UNIFIED_SOURCES"]
+        # Process the .cpp files generated by IPDL as generated sources within
+        # the context which declared the IPDL_SOURCES attribute.
+        ipdl_root = self.config.substs.get("IPDL_ROOT")
+        for symbol in ("IPDL_SOURCES", "PREPROCESSED_IPDL_SOURCES"):
+            context_srcs = context.get(symbol, [])
+            for f in context_srcs:
+                root, ext = mozpath.splitext(mozpath.basename(f))
+
+                suffix_map = {
+                    ".ipdlh": [".cpp"],
+                    ".ipdl": [".cpp", "Child.cpp", "Parent.cpp"],
+                }
+                if ext not in suffix_map:
+                    raise SandboxValidationError(
+                        "Unexpected extension for IPDL source %s" % ext
+                    )
+
+                gen_sources["UNIFIED_SOURCES"].extend(
+                    mozpath.join(ipdl_root, root + suffix) for suffix in suffix_map[ext]
+                )
 
         no_pgo = context.get("NO_PGO")
         no_pgo_sources = [f for f, flags in six.iteritems(all_flags) if flags.no_pgo]
@@ -1095,23 +1108,20 @@ class TreeMetadataEmitter(LoggingMixin):
             for a in alternatives:
                 canonicalized_suffix_map[a] = suffix
 
-        def canonical_suffix_for_file(f):
-            return canonicalized_suffix_map[mozpath.splitext(f)[1]]
-
         # A map from moz.build variables to the canonical suffixes of file
         # kinds that can be listed therein.
         all_suffixes = list(suffix_map.keys())
         varmap = dict(
-            SOURCES=(Sources, GeneratedSources, all_suffixes),
-            HOST_SOURCES=(HostSources, HostGeneratedSources, [".c", ".mm", ".cpp"]),
-            UNIFIED_SOURCES=(UnifiedSources, None, [".c", ".mm", ".cpp"]),
+            SOURCES=(Sources, all_suffixes),
+            HOST_SOURCES=(HostSources, [".c", ".mm", ".cpp"]),
+            UNIFIED_SOURCES=(UnifiedSources, [".c", ".mm", ".m", ".cpp"]),
         )
-        # Only include a WasmSources or WasmGeneratedSources context if there
-        # are any WASM_SOURCES. (This is going to matter later because we inject
-        # an extra .c file to compile with the wasm compiler if, and only if,
-        # there are any WASM sources.)
+        # Only include a WasmSources context if there are any WASM_SOURCES.
+        # (This is going to matter later because we inject an extra .c file to
+        # compile with the wasm compiler if, and only if, there are any WASM
+        # sources.)
         if sources["WASM_SOURCES"] or gen_sources["WASM_SOURCES"]:
-            varmap["WASM_SOURCES"] = (WasmSources, WasmGeneratedSources, [".c", ".cpp"])
+            varmap["WASM_SOURCES"] = (WasmSources, [".c", ".cpp"])
         # Track whether there are any C++ source files.
         # Technically this won't do the right thing for SIMPLE_PROGRAMS in
         # a directory with mixed C and C++ source, but it's not that important.
@@ -1120,46 +1130,43 @@ class TreeMetadataEmitter(LoggingMixin):
         # Source files to track for linkables associated with this context.
         ctxt_sources = defaultdict(lambda: defaultdict(list))
 
-        for variable, (klass, gen_klass, suffixes) in varmap.items():
-            allowed_suffixes = set().union(*[suffix_map[s] for s in suffixes])
-
-            # First ensure that we haven't been given filetypes that we don't
-            # recognize.
-            for f in itertools.chain(sources[variable], gen_sources[variable]):
-                ext = mozpath.splitext(f)[1]
-                if ext not in allowed_suffixes:
-                    raise SandboxValidationError(
-                        "%s has an unknown file type." % f, context
-                    )
-
-            for srcs, cls in (
-                (sources[variable], klass),
-                (gen_sources[variable], gen_klass),
+        for variable, (klass, suffixes) in varmap.items():
+            # Group static and generated files by their canonical suffixes, and
+            # ensure we haven't been given filetypes that we don't recognize.
+            by_canonical_suffix = defaultdict(lambda: {"static": [], "generated": []})
+            for srcs, key in (
+                (sources[variable], "static"),
+                (gen_sources[variable], "generated"),
             ):
-                # Now sort the files to let groupby work.
-                sorted_files = sorted(srcs, key=canonical_suffix_for_file)
-                for canonical_suffix, files in itertools.groupby(
-                    sorted_files, canonical_suffix_for_file
-                ):
-                    if canonical_suffix in (".cpp", ".mm"):
-                        cxx_sources[variable] = True
-                    elif canonical_suffix in (".s", ".S"):
-                        self._asm_compile_dirs.add(context.objdir)
-                    arglist = [context, list(files), canonical_suffix]
-                    if variable.startswith("UNIFIED_"):
-                        if (
-                            unified_build is False
-                            and context.get("REQUIRES_UNIFIED_BUILD", False) is False
-                        ):
-                            arglist.append(1)
-                        else:
-                            arglist.append(context.get("FILES_PER_UNIFIED_FILE", 16))
-                    obj = cls(*arglist)
-                    srcs = list(obj.files)
-                    if isinstance(obj, UnifiedSources) and obj.have_unified_mapping:
-                        srcs = dict(obj.unified_source_mapping).keys()
-                    ctxt_sources[variable][canonical_suffix] += sorted(srcs)
-                    yield obj
+                for f in srcs:
+                    canonical_suffix = canonicalized_suffix_map.get(
+                        mozpath.splitext(f)[1]
+                    )
+                    if canonical_suffix not in suffixes:
+                        raise SandboxValidationError(
+                            "%s has an unknown file type." % f, context
+                        )
+                    by_canonical_suffix[canonical_suffix][key].append(f)
+
+            # Yield an object for each canonical suffix, grouping generated and
+            # static sources together to allow them to be unified together.
+            for canonical_suffix in sorted(by_canonical_suffix.keys()):
+                if canonical_suffix in (".cpp", ".mm"):
+                    cxx_sources[variable] = True
+                elif canonical_suffix in (".s", ".S"):
+                    self._asm_compile_dirs.add(context.objdir)
+                src_group = by_canonical_suffix[canonical_suffix]
+                obj = klass(
+                    context,
+                    src_group["static"],
+                    src_group["generated"],
+                    canonical_suffix,
+                )
+                srcs = list(obj.files)
+                if isinstance(obj, UnifiedSources) and obj.have_unified_mapping:
+                    srcs = sorted(dict(obj.unified_source_mapping).keys())
+                ctxt_sources[variable][canonical_suffix] += srcs
+                yield obj
 
         if ctxt_sources:
             for linkable in linkables:
@@ -1202,9 +1209,6 @@ class TreeMetadataEmitter(LoggingMixin):
         # early.
         if any(k in context for k in ("FINAL_TARGET", "XPI_NAME", "DIST_SUBDIR")):
             yield InstallationTarget(context)
-
-        for obj in self._handle_gn_dirs(context):
-            yield obj
 
         # We always emit a directory traversal descriptor. This is needed by
         # the recursive make backend.

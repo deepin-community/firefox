@@ -4,35 +4,39 @@
 
 "use strict";
 
-const { Cu } = require("chrome");
-const Services = require("Services");
-const InspectorUtils = require("InspectorUtils");
-const protocol = require("devtools/shared/protocol");
-const { PSEUDO_CLASSES } = require("devtools/shared/css/constants");
-const { nodeSpec, nodeListSpec } = require("devtools/shared/specs/node");
+const { Actor } = require("resource://devtools/shared/protocol.js");
+const {
+  nodeSpec,
+  nodeListSpec,
+} = require("resource://devtools/shared/specs/node.js");
+
+const {
+  PSEUDO_CLASSES,
+} = require("resource://devtools/shared/css/constants.js");
 
 loader.lazyRequireGetter(
   this,
-  ["getCssPath", "getXPath", "findCssSelector", "findAllCssSelectors"],
-  "devtools/shared/inspector/css-logic",
+  ["getCssPath", "getXPath", "findCssSelector"],
+  "resource://devtools/shared/inspector/css-logic.js",
   true
 );
 
 loader.lazyRequireGetter(
   this,
   [
+    "getShadowRootMode",
     "isAfterPseudoElement",
     "isAnonymous",
     "isBeforePseudoElement",
     "isDirectShadowHostChild",
+    "isFrameBlockedByCSP",
+    "isFrameWithChildTarget",
     "isMarkerPseudoElement",
     "isNativeAnonymous",
     "isShadowHost",
     "isShadowRoot",
-    "getShadowRootMode",
-    "isFrameWithChildTarget",
   ],
-  "devtools/shared/layout/utils",
+  "resource://devtools/shared/layout/utils.js",
   true
 );
 
@@ -45,42 +49,38 @@ loader.lazyRequireGetter(
     "imageToImageData",
     "isNodeDead",
   ],
-  "devtools/server/actors/inspector/utils",
+  "resource://devtools/server/actors/inspector/utils.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "LongStringActor",
-  "devtools/server/actors/string",
+  "resource://devtools/server/actors/string.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "getFontPreviewData",
-  "devtools/server/actors/utils/style-utils",
+  "resource://devtools/server/actors/utils/style-utils.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "CssLogic",
-  "devtools/server/actors/inspector/css-logic",
+  "resource://devtools/server/actors/inspector/css-logic.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "EventCollector",
-  "devtools/server/actors/inspector/event-collector",
+  "resource://devtools/server/actors/inspector/event-collector.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "DOMHelpers",
-  "devtools/shared/dom-helpers",
+  "resource://devtools/shared/dom-helpers.js",
   true
-);
-
-const SUBGRID_ENABLED = Services.prefs.getBoolPref(
-  "layout.css.grid-template-subgrid-value.enabled"
 );
 
 const FONT_FAMILY_PREVIEW_TEXT = "The quick brown fox jumps over the lazy dog";
@@ -89,12 +89,15 @@ const FONT_FAMILY_PREVIEW_TEXT_SIZE = 20;
 /**
  * Server side of the node actor.
  */
-const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
-  initialize: function(walker, node) {
-    protocol.Actor.prototype.initialize.call(this, null);
+class NodeActor extends Actor {
+  constructor(walker, node) {
+    super(walker.conn, nodeSpec);
     this.walker = walker;
     this.rawNode = node;
     this._eventCollector = new EventCollector(this.walker.targetActor);
+    // Map<id -> nsIEventListenerInfo> that we maintain to be able to disable/re-enable event listeners
+    // The id is generated from getEventListenerInfo
+    this._nsIEventListenersInfo = new Map();
 
     // Store the original display type and scrollable state and whether or not the node is
     // displayed to track changes when reflows occur.
@@ -103,6 +106,7 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
     this.currentDisplayType = this.displayType;
     this.wasDisplayed = this.isDisplayed;
     this.wasScrollable = wasScrollable;
+    this.currentContainerType = this.containerType;
 
     if (wasScrollable) {
       this.walker.updateOverflowCausingElements(
@@ -110,31 +114,23 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
         this.walker.overflowCausingElementsMap
       );
     }
-  },
+  }
 
-  toString: function() {
+  toString() {
     return (
       "[NodeActor " + this.actorID + " for " + this.rawNode.toString() + "]"
     );
-  },
+  }
 
-  /**
-   * Instead of storing a connection object, the NodeActor gets its connection
-   * from its associated walker.
-   */
-  get conn() {
-    return this.walker.conn;
-  },
-
-  isDocumentElement: function() {
+  isDocumentElement() {
     return (
       this.rawNode.ownerDocument &&
       this.rawNode.ownerDocument.documentElement === this.rawNode
     );
-  },
+  }
 
-  destroy: function() {
-    protocol.Actor.prototype.destroy.call(this);
+  destroy() {
+    super.destroy();
 
     if (this.mutationObserver) {
       if (!Cu.isDeadWrapper(this.mutationObserver)) {
@@ -150,14 +146,39 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
       this.slotchangeListener = null;
     }
 
+    if (this._waitForFrameLoadAbortController) {
+      this._waitForFrameLoadAbortController.abort();
+      this._waitForFrameLoadAbortController = null;
+    }
+    if (this._waitForFrameLoadIntervalId) {
+      clearInterval(this._waitForFrameLoadIntervalId);
+      this._waitForFrameLoadIntervalId = null;
+    }
+
+    if (this._nsIEventListenersInfo) {
+      // Re-enable all event listeners that we might have disabled
+      for (const nsIEventListenerInfo of this._nsIEventListenersInfo.values()) {
+        // If event listeners/node don't exist anymore, accessing nsIEventListenerInfo.enabled
+        // will throw.
+        try {
+          if (!nsIEventListenerInfo.enabled) {
+            nsIEventListenerInfo.enabled = true;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      this._nsIEventListenersInfo = null;
+    }
+
     this._eventCollector.destroy();
     this._eventCollector = null;
     this.rawNode = null;
     this.walker = null;
-  },
+  }
 
   // Returns the JSON representation of this object over the wire.
-  form: function() {
+  form() {
     const parentNode = this.walker.parentNode(this);
     const inlineTextChild = this.walker.inlineTextChild(this);
     const shadowRoot = isShadowRoot(this.rawNode);
@@ -181,6 +202,7 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
       isScrollable: this.isScrollable,
       isTopLevelDocument: this.isTopLevelDocument,
       causesOverflow: this.walker.overflowCausingElementsMap.has(this.rawNode),
+      containerType: this.containerType,
 
       // doctype attributes
       name: this.rawNode.name,
@@ -213,6 +235,10 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
       form.isDocumentElement = true;
     }
 
+    if (isFrameBlockedByCSP(this.rawNode)) {
+      form.numChildren = 0;
+    }
+
     // Flag the node if a different walker is needed to retrieve its children (i.e. if
     // this is a remote frame, or if it's an iframe and we're creating targets for every iframes)
     if (this.useChildTargetToFetchChildren) {
@@ -220,40 +246,44 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
       // Declare at least one child (the #document element) so
       // that they can be expanded.
       form.numChildren = 1;
-      form.browsingContextID = this.rawNode.browsingContext.id;
     }
+    form.browsingContextID = this.rawNode.browsingContext?.id;
 
     return form;
-  },
+  }
 
   /**
    * Watch the given document node for mutations using the DOM observer
    * API.
    */
-  watchDocument: function(doc, callback) {
+  watchDocument(doc, callback) {
+    if (!doc.defaultView) {
+      return;
+    }
+
     const node = this.rawNode;
     // Create the observer on the node's actor.  The node will make sure
     // the observer is cleaned up when the actor is released.
     const observer = new doc.defaultView.MutationObserver(callback);
     observer.mergeAttributeRecords = true;
     observer.observe(node, {
-      nativeAnonymousChildList: true,
       attributes: true,
       characterData: true,
       characterDataOldValue: true,
       childList: true,
       subtree: true,
+      chromeOnlyNodes: true,
     });
     this.mutationObserver = observer;
-  },
+  }
 
   /**
    * Watch for all "slotchange" events on the node.
    */
-  watchSlotchange: function(callback) {
+  watchSlotchange(callback) {
     this.slotchangeListener = callback;
     this.rawNode.addEventListener("slotchange", this.slotchangeListener);
-  },
+  }
 
   /**
    * Check if the current node represents an element (e.g. an iframe) which has a dedicated
@@ -263,11 +293,11 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
    */
   get useChildTargetToFetchChildren() {
     return isFrameWithChildTarget(this.walker.targetActor, this.rawNode);
-  },
+  }
 
   get isTopLevelDocument() {
     return this.rawNode === this.walker.rootDoc;
-  },
+  }
 
   // Estimate the number of children that the walker will return without making
   // a call to children() if possible.
@@ -305,14 +335,14 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
     }
 
     return numChildren;
-  },
+  }
 
   get computedStyle() {
     if (!this._computedStyle) {
       this._computedStyle = CssLogic.getComputedStyle(this.rawNode);
     }
     return this._computedStyle;
-  },
+  }
 
   /**
    * Returns the computed display style property value of the node.
@@ -336,7 +366,6 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
     }
 
     if (
-      SUBGRID_ENABLED &&
       (display === "grid" || display === "inline-grid") &&
       (style.gridTemplateRows.startsWith("subgrid") ||
         style.gridTemplateColumns.startsWith("subgrid"))
@@ -345,7 +374,23 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
     }
 
     return display;
-  },
+  }
+
+  /**
+   * Returns the computed containerType style property value of the node.
+   */
+  get containerType() {
+    // non-element nodes can't be containers
+    if (
+      isNodeDead(this) ||
+      this.rawNode.nodeType !== Node.ELEMENT_NODE ||
+      !this.computedStyle
+    ) {
+      return null;
+    }
+
+    return this.computedStyle.containerType;
+  }
 
   /**
    * Check whether the node currently has scrollbars and is scrollable.
@@ -355,7 +400,7 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
       this.rawNode.nodeType === Node.ELEMENT_NODE &&
       this.rawNode.hasVisibleScrollbars
     );
-  },
+  }
 
   /**
    * Is the node currently displayed?
@@ -371,7 +416,7 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
     // Otherwise consider elements to be displayed only if their display-types is other
     // than "none"".
     return type !== "none";
-  },
+  }
 
   /**
    * Are there event listeners that are listening on this node? This method
@@ -383,14 +428,14 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
     // otherwise we can't make use of it inside the event-collector module.
     const dbg = this.getParent().targetActor.makeDebugger();
     return this._eventCollector.hasEventListeners(this.rawNode, dbg);
-  },
+  }
 
-  writeAttrs: function() {
+  writeAttrs() {
     // If the node has no attributes or this.rawNode is the document node and a
     // node with `name="attributes"` exists in the DOM we need to bail.
     if (
       !this.rawNode.attributes ||
-      !(this.rawNode.attributes instanceof NamedNodeMap)
+      !NamedNodeMap.isInstance(this.rawNode.attributes)
     ) {
       return undefined;
     }
@@ -398,9 +443,9 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
     return [...this.rawNode.attributes].map(attr => {
       return { namespace: attr.namespace, name: attr.name, value: attr.value };
     });
-  },
+  }
 
-  writePseudoClassLocks: function() {
+  writePseudoClassLocks() {
     if (this.rawNode.nodeType !== Node.ELEMENT_NODE) {
       return undefined;
     }
@@ -412,23 +457,13 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
       }
     }
     return ret;
-  },
-
-  /**
-   * Gets event listeners and adds their information to the events array.
-   *
-   * @param  {Node} node
-   *         Node for which we are to get listeners.
-   */
-  getEventListeners: function(node) {
-    return this._eventCollector.getEventListeners(node);
-  },
+  }
 
   /**
    * Retrieve the script location of the custom element definition for this node, when
    * relevant. To be linked to a custom element definition
    */
-  getCustomElementLocation: function() {
+  getCustomElementLocation() {
     // Get a reference to the custom element definition function.
     const name = this.rawNode.localName;
 
@@ -476,73 +511,62 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
       line: customElementDO.script.startLine,
       column: customElementDO.script.startColumn,
     };
-  },
+  }
 
   /**
    * Returns a LongStringActor with the node's value.
    */
-  getNodeValue: function() {
+  getNodeValue() {
     return new LongStringActor(this.conn, this.rawNode.nodeValue || "");
-  },
+  }
 
   /**
    * Set the node's value to a given string.
    */
-  setNodeValue: function(value) {
+  setNodeValue(value) {
     this.rawNode.nodeValue = value;
-  },
+  }
 
   /**
    * Get a unique selector string for this node.
    */
-  getUniqueSelector: function() {
-    if (Cu.isDeadWrapper(this.rawNode)) {
-      return [];
-    }
-    return findCssSelector(this.rawNode);
-  },
-
-  /**
-   * Get the full array of selectors from the topmost document, going through
-   * iframes.
-   */
-  getAllSelectors: function() {
+  getUniqueSelector() {
     if (Cu.isDeadWrapper(this.rawNode)) {
       return "";
     }
-    return findAllCssSelectors(this.rawNode);
-  },
+    return findCssSelector(this.rawNode);
+  }
 
   /**
    * Get the full CSS path for this node.
    *
    * @return {String} A CSS selector with a part for the node and each of its ancestors.
    */
-  getCssPath: function() {
+  getCssPath() {
     if (Cu.isDeadWrapper(this.rawNode)) {
       return "";
     }
     return getCssPath(this.rawNode);
-  },
+  }
 
   /**
    * Get the XPath for this node.
    *
    * @return {String} The XPath for finding this node on the page.
    */
-  getXPath: function() {
+  getXPath() {
     if (Cu.isDeadWrapper(this.rawNode)) {
       return "";
     }
     return getXPath(this.rawNode);
-  },
+  }
 
   /**
    * Scroll the selected node into view.
    */
-  scrollIntoView: function() {
+  scrollIntoView() {
     this.rawNode.scrollIntoView(true);
-  },
+  }
 
   /**
    * Get the node's image data if any (for canvas and img nodes).
@@ -555,21 +579,68 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
    * is important as the resizing occurs server-side so that image-data being
    * transfered in the longstring back to the client will be that much smaller
    */
-  getImageData: function(maxDim) {
+  getImageData(maxDim) {
     return imageToImageData(this.rawNode, maxDim).then(imageData => {
       return {
-        data: LongStringActor(this.conn, imageData.data),
+        data: new LongStringActor(this.conn, imageData.data),
         size: imageData.size,
       };
     });
-  },
+  }
 
   /**
    * Get all event listeners that are listening on this node.
    */
-  getEventListenerInfo: function() {
-    return this.getEventListeners(this.rawNode);
-  },
+  getEventListenerInfo() {
+    this._nsIEventListenersInfo.clear();
+
+    const eventListenersData = this._eventCollector.getEventListeners(
+      this.rawNode
+    );
+    let counter = 0;
+    for (const eventListenerData of eventListenersData) {
+      if (eventListenerData.nsIEventListenerInfo) {
+        const id = `event-listener-info-${++counter}`;
+        this._nsIEventListenersInfo.set(
+          id,
+          eventListenerData.nsIEventListenerInfo
+        );
+
+        eventListenerData.eventListenerInfoId = id;
+        // remove the nsIEventListenerInfo since we don't want to send it to the client.
+        delete eventListenerData.nsIEventListenerInfo;
+      }
+    }
+    return eventListenersData;
+  }
+
+  /**
+   * Disable a specific event listener given its associated id
+   *
+   * @param {String} eventListenerInfoId
+   */
+  disableEventListener(eventListenerInfoId) {
+    const nsEventListenerInfo =
+      this._nsIEventListenersInfo.get(eventListenerInfoId);
+    if (!nsEventListenerInfo) {
+      throw new Error("Unkown nsEventListenerInfo");
+    }
+    nsEventListenerInfo.enabled = false;
+  }
+
+  /**
+   * (Re-)enable a specific event listener given its associated id
+   *
+   * @param {String} eventListenerInfoId
+   */
+  enableEventListener(eventListenerInfoId) {
+    const nsEventListenerInfo =
+      this._nsIEventListenersInfo.get(eventListenerInfoId);
+    if (!nsEventListenerInfo) {
+      throw new Error("Unkown nsEventListenerInfo");
+    }
+    nsEventListenerInfo.enabled = true;
+  }
 
   /**
    * Modify a node's attributes.  Passed an array of modifications
@@ -584,7 +655,7 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
    * Returns when the modifications have been made.  Mutations will
    * be queued for any changes made.
    */
-  modifyAttributes: function(modifications) {
+  modifyAttributes(modifications) {
     const rawNode = this.rawNode;
     for (const change of modifications) {
       if (change.newValue == null) {
@@ -606,7 +677,7 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
         rawNode.setAttributeDevtools(change.attributeName, change.newValue);
       }
     }
-  },
+  }
 
   /**
    * Given the font and fill style, get the image data of a canvas with the
@@ -615,17 +686,17 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
    * and the width of the text as a string.
    * The image data is transmitted as a base64 encoded png data-uri.
    */
-  getFontFamilyDataURL: function(font, fillStyle = "black") {
+  getFontFamilyDataURL(font, fillStyle = "black") {
     const doc = this.rawNode.ownerDocument;
     const options = {
       previewText: FONT_FAMILY_PREVIEW_TEXT,
       previewFontSize: FONT_FAMILY_PREVIEW_TEXT_SIZE,
-      fillStyle: fillStyle,
+      fillStyle,
     };
     const { dataURL, size } = getFontPreviewData(font, doc, options);
 
-    return { data: LongStringActor(this.conn, dataURL), size: size };
-  },
+    return { data: new LongStringActor(this.conn, dataURL), size };
+  }
 
   /**
    * Finds the computed background color of the closest parent with a set background
@@ -635,9 +706,9 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
    *         String with the background color of the form rgba(r, g, b, a). Defaults to
    *         rgba(255, 255, 255, 1) if no background color is found.
    */
-  getClosestBackgroundColor: function() {
+  getClosestBackgroundColor() {
     return getClosestBackgroundColor(this.rawNode);
-  },
+  }
 
   /**
    * Finds the background color range for the parent of a single text node
@@ -648,96 +719,138 @@ const NodeActor = protocol.ActorClassWithSpec(nodeSpec, {
    * @return {Object}
    *         Object with one or more of the following properties: value, min, max
    */
-  getBackgroundColor: function() {
+  getBackgroundColor() {
     return getBackgroundColor(this);
-  },
+  }
 
   /**
    * Returns an object with the width and height of the node's owner window.
    *
    * @return {Object}
    */
-  getOwnerGlobalDimensions: function() {
+  getOwnerGlobalDimensions() {
     const win = this.rawNode.ownerGlobal;
     return {
       innerWidth: win.innerWidth,
       innerHeight: win.innerHeight,
     };
-  },
+  }
 
   /**
    * If the current node is an iframe, wait for the content window to be loaded.
    */
   async waitForFrameLoad() {
-    if (Cu.isDeadWrapper(this.rawNode)) {
-      return;
+    if (this.useChildTargetToFetchChildren) {
+      // If the document is handled by a dedicated target, we'll wait for a DOCUMENT_EVENT
+      // on the created target.
+      throw new Error(
+        "iframe content document has its own target, use that one instead"
+      );
     }
 
-    const { contentDocument, contentWindow } = this.rawNode;
-    if (contentDocument && contentDocument.readyState !== "complete") {
-      await new Promise(resolve => {
-        DOMHelpers.onceDOMReady(contentWindow, resolve);
+    if (Cu.isDeadWrapper(this.rawNode)) {
+      throw new Error("Node is dead");
+    }
+
+    const { contentDocument } = this.rawNode;
+    if (!contentDocument) {
+      throw new Error("Can't access contentDocument");
+    }
+
+    if (contentDocument.readyState === "uninitialized") {
+      // If the readyState is "uninitialized", the document is probably an about:blank
+      // transient document. In such case, we want to wait until the "final" document
+      // is inserted.
+
+      const { chromeEventHandler } = this.rawNode.ownerGlobal.docShell;
+      const browsingContextID = this.rawNode.browsingContext.id;
+      await new Promise((resolve, reject) => {
+        this._waitForFrameLoadAbortController = new AbortController();
+
+        chromeEventHandler.addEventListener(
+          "DOMDocElementInserted",
+          e => {
+            const { browsingContext } = e.target.defaultView;
+            // Check that the document we're notified about is the iframe one.
+            if (browsingContext.id == browsingContextID) {
+              resolve();
+              this._waitForFrameLoadAbortController.abort();
+            }
+          },
+          { signal: this._waitForFrameLoadAbortController.signal }
+        );
+
+        // It might happen that the "final" document will be a remote one, living in a
+        // different process, which means we won't get the DOMDocElementInserted event
+        // here, and will wait forever. To prevent this Promise to hang forever, we use
+        // a setInterval to check if the final document can be reached, so we can reject
+        // if it's not.
+        // This is definitely not a perfect solution, but I wasn't able to find something
+        // better for this feature. I think it's _fine_ as this method will be removed
+        // when EFT is  enabled everywhere in release.
+        this._waitForFrameLoadIntervalId = setInterval(() => {
+          if (Cu.isDeadWrapper(this.rawNode) || !this.rawNode.contentDocument) {
+            reject("Can't access the iframe content document");
+            clearInterval(this._waitForFrameLoadIntervalId);
+            this._waitForFrameLoadIntervalId = null;
+            this._waitForFrameLoadAbortController.abort();
+          }
+        }, 50);
       });
     }
-  },
-});
+
+    if (this.rawNode.contentDocument.readyState === "loading") {
+      await new Promise(resolve => {
+        DOMHelpers.onceDOMReady(this.rawNode.contentWindow, resolve);
+      });
+    }
+  }
+}
 
 /**
  * Server side of a node list as returned by querySelectorAll()
  */
-const NodeListActor = protocol.ActorClassWithSpec(nodeListSpec, {
-  initialize: function(walker, nodeList) {
-    protocol.Actor.prototype.initialize.call(this);
+class NodeListActor extends Actor {
+  constructor(walker, nodeList) {
+    super(walker.conn, nodeListSpec);
     this.walker = walker;
     this.nodeList = nodeList || [];
-  },
-
-  destroy: function() {
-    protocol.Actor.prototype.destroy.call(this);
-  },
-
-  /**
-   * Instead of storing a connection object, the NodeActor gets its connection
-   * from its associated walker.
-   */
-  get conn() {
-    return this.walker.conn;
-  },
+  }
 
   /**
    * Items returned by this actor should belong to the parent walker.
    */
-  marshallPool: function() {
+  marshallPool() {
     return this.walker;
-  },
+  }
 
   // Returns the JSON representation of this object over the wire.
-  form: function() {
+  form() {
     return {
       actor: this.actorID,
       length: this.nodeList ? this.nodeList.length : 0,
     };
-  },
+  }
 
   /**
    * Get a single node from the node list.
    */
-  item: function(index) {
+  item(index) {
     return this.walker.attachElement(this.nodeList[index]);
-  },
+  }
 
   /**
    * Get a range of the items from the node list.
    */
-  items: function(start = 0, end = this.nodeList.length) {
+  items(start = 0, end = this.nodeList.length) {
     const items = Array.prototype.slice
       .call(this.nodeList, start, end)
       .map(item => this.walker._getOrCreateNodeActor(item));
     return this.walker.attachElements(items);
-  },
+  }
 
-  release: function() {},
-});
+  release() {}
+}
 
 exports.NodeActor = NodeActor;
 exports.NodeListActor = NodeListActor;

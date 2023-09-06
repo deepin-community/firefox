@@ -16,8 +16,6 @@ change-password-old = Pled-clav actual:
 change-password-new = Pled-clav nov:
 change-password-reenter = Pled-clav nov (repeter):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Impussibel da midar il pled-clav.
 pippki-incorrect-pw = Ti n'has betg endatà il dretg pled-clav actual. Emprova anc ina giada.
 pippki-pw-change-ok = Midà cun success il pled-clav.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Ti es actualmain en il modus FIPS. FIPS pr
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Redefinir il pled-clav universal
-    .style = width: 50em
+    .style = min-width: 50em
 reset-password-button-label =
     .label = Redefinir
-
 reset-primary-password-text = Sche tes pled-clav universal vegn redefinì, perdas ti tut tes pleds-clav memorisads da web e dad e-mail, tes certificats persunals e tias clavs privatas. Vuls ti propi redefinir tes pled-clav universal?
 
 pippki-reset-password-confirmation-title = Redefinir il pled-clav universal
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Tes pled-clav universal è vegnì r
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Telechargiar il certificat
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Ti es vegnì dumandà da fidar ad in nov post da certificaziun (CA).
 download-cert-trust-ssl =
     .label = Fidar a questa CA per identifitgar websites.
@@ -77,7 +74,8 @@ set-password-reminder = Impurtant: sche ti emblidas tes pled-clav da segirezza d
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Autentificaziun da token protegida
-protected-auth-msg = T'autentifitgescha per plaschair tar il token. La metoda d'autentificaziun dependa dal tip da tes token.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = T'autentifitgescha per plaschair tar il token «{ $tokenName }». Co quai funcziuna dependa dal token (per exempel cun agid dad in lectur d'improntas dal det u cun endatar in code cun agid dad ina tastatura).

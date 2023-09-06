@@ -41,13 +41,6 @@ menu-quit =
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Irten { -brand-shorter-name }(e)tik
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Irten { -brand-shorter-name }(e)tik
 menu-about =
     .label = { -brand-shorter-name }(r)i buruz
     .accesskey = b
@@ -77,8 +70,14 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Ireki fitxategia…
     .accesskey = f
-menu-file-close =
-    .label = Itxi
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Itxi fitxa
+           *[other] Itxi { $tabCount } fitxa
+        }
     .accesskey = x
 menu-file-close-window =
     .label = Itxi leihoa
@@ -95,9 +94,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Prestatu orria…
     .accesskey = u
-menu-file-print-preview =
-    .label = Inprimatzeko aurrebista
-    .accesskey = n
 menu-file-print =
     .label = Inprimatu…
     .accesskey = p
@@ -184,6 +180,17 @@ menu-view-full-screen =
     .label = Pantaila osoa
     .accesskey = P
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Sartu irakurtzeko ikuspegian
+    .accesskey = i
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Irten irakurtzeko ikuspegitik
+    .accesskey = I
+
 ##
 
 menu-view-show-all-tabs =
@@ -212,8 +219,9 @@ menu-history-undo-menu =
     .label = Itxitako azken fitxak
 menu-history-undo-window-menu =
     .label = Itxitako azken leihoak
-menu-history-reopen-all-tabs = Ireki berriro fitxa guztiak
-menu-history-reopen-all-windows = Ireki berriro leiho guztiak
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Bilatu historia
 
 ## Bookmarks Menu
 
@@ -222,10 +230,13 @@ menu-bookmarks-menu =
     .accesskey = m
 menu-bookmarks-manage =
     .label = Kudeatu laster-markak
-menu-bookmark-current-tab =
-    .label = Egin uneko fitxaren laster-marka
-menu-bookmark-edit =
-    .label = Editatu laster-marka
+menu-bookmark-tab =
+    .label = Egin uneko fitxaren laster-marka…
+menu-edit-bookmark =
+    .label = Editatu laster-marka…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Bilatu laster-markak
 menu-bookmarks-all-tabs =
     .label = Egin fitxa guztien laster-marka…
 menu-bookmarks-toolbar =
@@ -310,15 +321,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = f
 menu-help-report-site-issue =
     .label = Eman gunearen arazoaren berri…
-menu-help-feedback-page =
-    .label = Bidali iritzia…
-    .accesskey = d
+menu-help-share-ideas =
+    .label = Partekatu ideiak eta iritzia…
+    .accesskey = P
 menu-help-enter-troubleshoot-mode2 =
     .label = Arazoak konpontzeko modua…
     .accesskey = m
 menu-help-exit-troubleshoot-mode =
     .label = Desaktibatu arazoak konpontzeko modua
     .accesskey = s
+menu-help-switch-device =
+    .label = Gailu berri batera aldatzea
+    .accesskey = d
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

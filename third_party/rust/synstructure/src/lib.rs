@@ -149,6 +149,14 @@
 //! For more example usage, consider investigating the `abomonation_derive` crate,
 //! which makes use of this crate, and is fairly simple.
 
+#![allow(
+    clippy::default_trait_access,
+    clippy::missing_errors_doc,
+    clippy::missing_panics_doc,
+    clippy::must_use_candidate,
+    clippy::needless_pass_by_value
+)]
+
 #[cfg(all(
     not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "wasi"))),
     feature = "proc-macro"
@@ -182,6 +190,7 @@ use proc_macro2::{Span, TokenStream, TokenTree};
 pub mod macros;
 
 /// Changes how bounds are added
+#[allow(clippy::manual_non_exhaustive)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum AddBounds {
     /// Add for fields and generics
@@ -238,7 +247,7 @@ fn fetch_generics<'a>(set: &[bool], generics: &'a Generics) -> Vec<&'a Ident> {
     for (&seen, param) in set.iter().zip(generics.params.iter()) {
         if seen {
             if let GenericParam::Type(tparam) = param {
-                tys.push(&tparam.ident)
+                tys.push(&tparam.ident);
             }
         }
     }
@@ -250,7 +259,7 @@ fn sanitize_ident(s: &str) -> Ident {
     let mut res = String::with_capacity(s.len());
     for mut c in s.chars() {
         if !UnicodeXID::is_xid_continue(c) {
-            c = '_'
+            c = '_';
         }
         // Deduplicate consecutive _ characters.
         if res.ends_with('_') && c == '_' {
@@ -346,6 +355,9 @@ pub struct BindingInfo<'a> {
     // These are used to determine which type parameters are avaliable.
     generics: &'a Generics,
     seen_generics: Vec<bool>,
+    // The original index of the binding
+    // this will not change when .filter() is called
+    index: usize,
 }
 
 impl<'a> ToTokens for BindingInfo<'a> {
@@ -434,12 +446,13 @@ pub struct VariantAst<'a> {
 pub struct VariantInfo<'a> {
     pub prefix: Option<&'a Ident>,
     bindings: Vec<BindingInfo<'a>>,
-    omitted_fields: bool,
     ast: VariantAst<'a>,
     generics: &'a Generics,
+    // The original length of `bindings` before any `.filter()` calls
+    original_length: usize,
 }
 
-/// Helper function used by the VariantInfo constructor. Walks all of the types
+/// Helper function used by the `VariantInfo` constructor. Walks all of the types
 /// in `field` and returns a list of the type parameters from `ty_params` which
 /// are referenced in the field.
 fn get_ty_params(field: &Field, generics: &Generics) -> Vec<bool> {
@@ -469,7 +482,7 @@ fn get_ty_params(field: &Field, generics: &Generics) -> Vec<bool> {
             for r in &mut self.result {
                 *r = true;
             }
-            visit::visit_type_macro(self, x)
+            visit::visit_type_macro(self, x);
         }
     }
 
@@ -503,18 +516,20 @@ impl<'a> VariantInfo<'a> {
                             field,
                             generics,
                             seen_generics: get_ty_params(field, generics),
+                            index: i,
                         }
                     })
                     .collect::<Vec<_>>()
             }
         };
 
+        let original_length = bindings.len();
         VariantInfo {
             prefix,
             bindings,
-            omitted_fields: false,
             ast,
             generics,
+            original_length,
         }
     }
 
@@ -536,7 +551,7 @@ impl<'a> VariantInfo<'a> {
 
     /// True if any bindings were omitted due to a `filter` call.
     pub fn omitted_bindings(&self) -> bool {
-        self.omitted_fields
+        self.original_length != self.bindings.len()
     }
 
     /// Generates the match-arm pattern which could be used to match against this Variant.
@@ -571,11 +586,17 @@ impl<'a> VariantInfo<'a> {
                 assert!(self.bindings.is_empty());
             }
             Fields::Unnamed(..) => token::Paren(Span::call_site()).surround(&mut t, |t| {
+                let mut expected_index = 0;
                 for binding in &self.bindings {
+                    while expected_index < binding.index {
+                        quote!(_,).to_tokens(t);
+                        expected_index += 1;
+                    }
                     binding.pat().to_tokens(t);
                     quote!(,).to_tokens(t);
+                    expected_index += 1;
                 }
-                if self.omitted_fields {
+                if expected_index != self.original_length {
                     quote!(..).to_tokens(t);
                 }
             }),
@@ -586,7 +607,7 @@ impl<'a> VariantInfo<'a> {
                     binding.pat().to_tokens(t);
                     quote!(,).to_tokens(t);
                 }
-                if self.omitted_fields {
+                if self.omitted_bindings() {
                     quote!(..).to_tokens(t);
                 }
             }),
@@ -645,7 +666,7 @@ impl<'a> VariantInfo<'a> {
                         func(field, i).to_tokens(t);
                         quote!(,).to_tokens(t);
                     }
-                })
+                });
             }
             Fields::Named(FieldsNamed { named, .. }) => {
                 token::Brace::default().surround(&mut t, |t| {
@@ -655,7 +676,7 @@ impl<'a> VariantInfo<'a> {
                         func(field, i).to_tokens(t);
                         quote!(,).to_tokens(t);
                     }
-                })
+                });
             }
         }
         t
@@ -787,12 +808,73 @@ impl<'a> VariantInfo<'a> {
     where
         F: FnMut(&BindingInfo<'_>) -> bool,
     {
-        let before_len = self.bindings.len();
         self.bindings.retain(f);
-        if self.bindings.len() != before_len {
-            self.omitted_fields = true;
-        }
         self
+    }
+
+    /// Iterates all the bindings of this `Variant` object and uses a closure to determine if a
+    /// binding should be removed. If the closure returns `true` the binding is removed from the
+    /// variant. If the closure returns `false`, the binding remains in the variant.
+    ///
+    /// All the removed bindings are moved to a new `Variant` object which is otherwise identical
+    /// to the current one. To understand the effects of removing a binding from a variant check
+    /// the [`VariantInfo::filter`] documentation.
+    ///
+    /// # Example
+    /// ```
+    /// # use synstructure::*;
+    /// let di: syn::DeriveInput = syn::parse_quote! {
+    ///     enum A {
+    ///         B{ a: i32, b: i32 },
+    ///         C{ a: u32 },
+    ///     }
+    /// };
+    /// let mut s = Structure::new(&di);
+    ///
+    /// let mut with_b = &mut s.variants_mut()[0];
+    ///
+    /// let with_a = with_b.drain_filter(|bi| {
+    ///     bi.ast().ident == Some(quote::format_ident!("a"))
+    /// });
+    ///
+    /// assert_eq!(
+    ///     with_a.each(|bi| quote!(println!("{:?}", #bi))).to_string(),
+    ///
+    ///     quote!{
+    ///         A::B{ a: ref __binding_0, .. } => {
+    ///             { println!("{:?}", __binding_0) }
+    ///         }
+    ///     }.to_string()
+    /// );
+    ///
+    /// assert_eq!(
+    ///     with_b.each(|bi| quote!(println!("{:?}", #bi))).to_string(),
+    ///
+    ///     quote!{
+    ///         A::B{ b: ref __binding_1, .. } => {
+    ///             { println!("{:?}", __binding_1) }
+    ///         }
+    ///     }.to_string()
+    /// );
+    /// ```
+    #[allow(clippy::return_self_not_must_use)]
+    pub fn drain_filter<F>(&mut self, mut f: F) -> Self
+    where
+        F: FnMut(&BindingInfo<'_>) -> bool,
+    {
+        let mut other = VariantInfo {
+            prefix: self.prefix,
+            bindings: vec![],
+            ast: self.ast,
+            generics: self.generics,
+            original_length: self.original_length,
+        };
+
+        let (other_bindings, self_bindings) = self.bindings.drain(..).partition(&mut f);
+        other.bindings = other_bindings;
+        self.bindings = self_bindings;
+
+        other
     }
 
     /// Remove the binding at the given index.
@@ -802,7 +884,6 @@ impl<'a> VariantInfo<'a> {
     /// Panics if the index is out of range.
     pub fn remove_binding(&mut self, idx: usize) -> &mut Self {
         self.bindings.remove(idx);
-        self.omitted_fields = true;
         self
     }
 
@@ -841,7 +922,7 @@ impl<'a> VariantInfo<'a> {
         F: FnMut(&BindingInfo<'_>) -> BindStyle,
     {
         for binding in &mut self.bindings {
-            binding.style = f(&binding);
+            binding.style = f(binding);
         }
         self
     }
@@ -974,21 +1055,12 @@ impl<'a> Structure<'a> {
                 })
                 .collect::<Vec<_>>(),
             Data::Struct(data) => {
-                // SAFETY NOTE: Normally putting an `Expr` in static storage
-                // wouldn't be safe, because it could contain `Term` objects
-                // which use thread-local interning. However, this static always
-                // contains the value `None`. Thus, it will never contain any
-                // unsafe values.
-                struct UnsafeMakeSync(Option<(token::Eq, Expr)>);
-                unsafe impl Sync for UnsafeMakeSync {}
-                static NONE_DISCRIMINANT: UnsafeMakeSync = UnsafeMakeSync(None);
-
                 vec![VariantInfo::new(
                     VariantAst {
                         attrs: &ast.attrs,
                         ident: &ast.ident,
                         fields: &data.fields,
-                        discriminant: &NONE_DISCRIMINANT.0,
+                        discriminant: &None,
                     },
                     None,
                     &ast.generics,
@@ -1227,6 +1299,75 @@ impl<'a> Structure<'a> {
         self
     }
 
+    /// Iterates all the bindings of this `Structure` object and uses a closure to determine if a
+    /// binding should be removed. If the closure returns `true` the binding is removed from the
+    /// structure. If the closure returns `false`, the binding remains in the structure.
+    ///
+    /// All the removed bindings are moved to a new `Structure` object which is otherwise identical
+    /// to the current one. To understand the effects of removing a binding from a structure check
+    /// the [`Structure::filter`] documentation.
+    ///
+    /// # Example
+    /// ```
+    /// # use synstructure::*;
+    /// let di: syn::DeriveInput = syn::parse_quote! {
+    ///     enum A {
+    ///         B{ a: i32, b: i32 },
+    ///         C{ a: u32 },
+    ///     }
+    /// };
+    /// let mut with_b = Structure::new(&di);
+    ///
+    /// let with_a = with_b.drain_filter(|bi| {
+    ///     bi.ast().ident == Some(quote::format_ident!("a"))
+    /// });
+    ///
+    /// assert_eq!(
+    ///     with_a.each(|bi| quote!(println!("{:?}", #bi))).to_string(),
+    ///
+    ///     quote!{
+    ///         A::B{ a: ref __binding_0, .. } => {
+    ///             { println!("{:?}", __binding_0) }
+    ///         }
+    ///         A::C{ a: ref __binding_0, } => {
+    ///             { println!("{:?}", __binding_0) }
+    ///         }
+    ///     }.to_string()
+    /// );
+    ///
+    /// assert_eq!(
+    ///     with_b.each(|bi| quote!(println!("{:?}", #bi))).to_string(),
+    ///
+    ///     quote!{
+    ///         A::B{ b: ref __binding_1, .. } => {
+    ///             { println!("{:?}", __binding_1) }
+    ///         }
+    ///         A::C{ .. } => {
+    ///
+    ///         }
+    ///     }.to_string()
+    /// );
+    /// ```
+    #[allow(clippy::return_self_not_must_use)]
+    pub fn drain_filter<F>(&mut self, mut f: F) -> Self
+    where
+        F: FnMut(&BindingInfo<'_>) -> bool,
+    {
+        Self {
+            variants: self
+                .variants
+                .iter_mut()
+                .map(|variant| variant.drain_filter(&mut f))
+                .collect(),
+            omitted_variants: self.omitted_variants,
+            underscore_const: self.underscore_const,
+            ast: self.ast,
+            extra_impl: self.extra_impl.clone(),
+            extra_predicates: self.extra_predicates.clone(),
+            add_bounds: self.add_bounds,
+        }
+    }
+
     /// Specify additional where predicate bounds which should be generated by
     /// impl-generating functions such as `gen_impl`, `bound_impl`, and
     /// `unsafe_bound_impl`.
@@ -1359,6 +1500,69 @@ impl<'a> Structure<'a> {
             self.omitted_variants = true;
         }
         self
+    }
+    /// Iterates all the variants of this `Structure` object and uses a closure to determine if a
+    /// variant should be removed. If the closure returns `true` the variant is removed from the
+    /// structure. If the closure returns `false`, the variant remains in the structure.
+    ///
+    /// All the removed variants are moved to a new `Structure` object which is otherwise identical
+    /// to the current one. To understand the effects of removing a variant from a structure check
+    /// the [`Structure::filter_variants`] documentation.
+    ///
+    /// # Example
+    /// ```
+    /// # use synstructure::*;
+    /// let di: syn::DeriveInput = syn::parse_quote! {
+    ///     enum A {
+    ///         B(i32, i32),
+    ///         C(u32),
+    ///     }
+    /// };
+    ///
+    /// let mut with_c = Structure::new(&di);
+    ///
+    /// let with_b = with_c.drain_filter_variants(|v| v.ast().ident == "B");
+    ///
+    /// assert_eq!(
+    ///     with_c.each(|bi| quote!(println!("{:?}", #bi))).to_string(),
+    ///
+    ///     quote!{
+    ///         A::C(ref __binding_0,) => {
+    ///             { println!("{:?}", __binding_0) }
+    ///         }
+    ///     }.to_string()
+    /// );
+    ///
+    /// assert_eq!(
+    ///     with_b.each(|bi| quote!(println!("{:?}", #bi))).to_string(),
+    ///
+    ///     quote!{
+    ///         A::B(ref __binding_0, ref __binding_1,) => {
+    ///             { println!("{:?}", __binding_0) }
+    ///             { println!("{:?}", __binding_1) }
+    ///         }
+    ///     }.to_string()
+    /// );
+    #[allow(clippy::return_self_not_must_use)]
+    pub fn drain_filter_variants<F>(&mut self, mut f: F) -> Self
+    where
+        F: FnMut(&VariantInfo<'_>) -> bool,
+    {
+        let mut other = Self {
+            variants: vec![],
+            omitted_variants: self.omitted_variants,
+            underscore_const: self.underscore_const,
+            ast: self.ast,
+            extra_impl: self.extra_impl.clone(),
+            extra_predicates: self.extra_predicates.clone(),
+            add_bounds: self.add_bounds,
+        };
+
+        let (other_variants, self_variants) = self.variants.drain(..).partition(&mut f);
+        other.variants = other_variants;
+        self.variants = self_variants;
+
+        other
     }
 
     /// Remove the variant at the given index.
@@ -1961,7 +2165,7 @@ impl<'a> Structure<'a> {
 
         if self.underscore_const {
             quote! {
-                const _: () = { #generated }
+                const _: () = { #generated };
             }
         } else {
             let dummy_const: Ident = sanitize_ident(&format!(
@@ -2042,8 +2246,8 @@ impl<'a> Structure<'a> {
     /// };
     /// ```
     ///
-    /// The `Structure` may also be confired with the [`underscore_const`] method
-    /// to generate `const _` instead.
+    /// The `Structure` may also be configured with the
+    /// [`Structure::underscore_const`] method to generate `const _` instead.
     ///
     /// ```ignore
     /// const _: () = {
@@ -2335,7 +2539,7 @@ impl<'a> Structure<'a> {
 ///     }),
 ///     "# [
 ///     allow (
-///         non_upper_case_globals )
+///         non_upper_case_globals)
 ///     ]
 /// const _DERIVE_krate_Trait_FOR_A : (
 ///     )
@@ -2438,5 +2642,44 @@ impl<T: MacroResult> MacroResult for Result<T> {
             Ok(v) => v.into_result(),
             Err(err) => Err(err),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Regression test for #48
+    #[test]
+    fn test_each_enum() {
+        let di: syn::DeriveInput = syn::parse_quote! {
+         enum A {
+             Foo(usize, bool),
+             Bar(bool, usize),
+             Baz(usize, bool, usize),
+             Quux(bool, usize, bool)
+         }
+        };
+        let mut s = Structure::new(&di);
+
+        s.filter(|bi| bi.ast().ty.to_token_stream().to_string() == "bool");
+
+        assert_eq!(
+            s.each(|bi| quote!(do_something(#bi))).to_string(),
+            quote! {
+                A::Foo(_, ref __binding_1,) => { { do_something(__binding_1) } }
+                A::Bar(ref __binding_0, ..) => { { do_something(__binding_0) } }
+                A::Baz(_, ref __binding_1, ..) => { { do_something(__binding_1) } }
+                A::Quux(ref __binding_0, _, ref __binding_2,) => {
+                    {
+                        do_something(__binding_0)
+                    }
+                    {
+                        do_something(__binding_2)
+                    }
+                }
+            }
+            .to_string()
+        );
     }
 }

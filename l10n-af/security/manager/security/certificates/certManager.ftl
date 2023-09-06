@@ -17,9 +17,9 @@ certmgr-tab-servers =
 certmgr-tab-ca =
     .label = Owerhede
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Redigeer SO-sertifikaatvertroueopstelling
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Redigeer vertroueopstelling:
 
@@ -29,18 +29,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Hierdie sertifikaat kan e-posgebruikers identifiseer.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Skrap sertifikaat
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = Naam van sertifikaat
 
 certmgr-cert-server =
     .label = Bediener
-
-certmgr-override-lifetime =
-    .label = Lewensduur
 
 certmgr-token-name =
     .label = Sekuriteitstoestel
@@ -169,9 +166,8 @@ delete-email-cert-impact = Indien u 'n persoon e-possertifikaat skrap, sal u nie
 cert-with-serial =
     .value = Sertifikaat met reeksnommer: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

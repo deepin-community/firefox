@@ -1202,13 +1202,11 @@ vi{
         KYD{"$"}
         MXN{"$"}
         NIO{"C$"}
+        RUR{"RUR"}
         TTD{"$"}
         TWD{"NT$"}
         USD{"$"}
         XCD{"$"}
-    }
-    Currencies%variant{
-        GEL{"₾"}
     }
     CurrencyPlurals{
         AED{
@@ -1459,6 +1457,9 @@ vi{
         }
         LRD{
             other{"Đô la Liberia"}
+        }
+        LSL{
+            other{"Loti Lesotho"}
         }
         LTL{
             other{"litas Lít-va"}

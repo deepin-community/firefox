@@ -38,7 +38,7 @@ general-referrer =
 general-modified =
     .value = পরিবর্তিত:
 general-encoding =
-    .value = টেক্সট এনকোডিংঃ
+    .value = টেক্সট এনকোডিং:
 general-meta-name =
     .label = নাম
 general-meta-content =
@@ -50,9 +50,9 @@ media-tab =
 media-location =
     .value = অবস্থান:
 media-text =
-    .value = সংশ্লিষ্ট টেক্সট:
+    .value = সংশ্লিষ্ট পাঠ্য:
 media-alt-header =
-    .label = বিকল্প টেক্সট:
+    .label = বিকল্প পাঠ্য:
 media-address =
     .label = ঠিকানা
 media-type =
@@ -194,8 +194,8 @@ security-visits-number =
 properties-general-size =
     .value =
         { $bytes ->
-            [one] { $kb } KB ({ $bytes } byte)
-           *[other] { $kb } KB ({ $bytes } bytes)
+            [one] { $kb } কেবি ({ $bytes } বাইট)
+           *[other] { $kb } কেবি ({ $bytes } বাইট)
         }
 
 # This string is used to display the type and number
@@ -240,6 +240,9 @@ media-dimensions =
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } KB
 
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
+
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab
 # Variables:
@@ -251,7 +254,7 @@ media-block-image =
 # This string is used to display the URL of the website on top of the
 # pageInfo dialog box
 # Variables:
-#   $website (string) - The url of the website pageInfo is getting info for
+#   $website (string) — The url of the website pageInfo is getting info for
 page-info-page =
     .title = পাতার তথ্য - { $website }
 page-info-frame =

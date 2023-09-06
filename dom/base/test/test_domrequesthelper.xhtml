@@ -14,7 +14,9 @@
 
   <script type="application/javascript">
   <![CDATA[
-    const {DOMRequestIpcHelper} = ChromeUtils.import("resource://gre/modules/DOMRequestHelper.jsm");
+    const {DOMRequestIpcHelper} = ChromeUtils.importESModule(
+      "resource://gre/modules/DOMRequestHelper.sys.mjs"
+    );
     let obs = Cc["@mozilla.org/observer-service;1"].
               getService(Ci.nsIObserverService);
     let ppmm = Cc["@mozilla.org/parentprocessmessagemanager;1"].getService();
@@ -379,7 +381,7 @@
         info("== Test createRequest()");
         ok(DOMRequest, "DOMRequest object exists");
         var req = dummy.createRequest();
-        ok(req instanceof DOMRequest, "Returned a DOMRequest");
+        ok(DOMRequest.isInstance(req), "Returned a DOMRequest");
         next();
       },
       function() {

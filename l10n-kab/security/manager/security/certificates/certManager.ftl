@@ -26,9 +26,9 @@ certmgr-people = Ɣur-k iselkinen ɣef ufaylu  yessuluyen imdanen-agi
 certmgr-server = Inekcumen-a sbadun-d tisuraf n tuccḍa n uselkn n uqeddac
 certmgr-ca = Ɣur-k iselkinen ɣef ufaylu yessuluyen iduba-agi n iselkinen
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Ẓreg iɣewwaṛen n teflest n udabu n uselken
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Ẓreg iɣewwaṛen n teflest:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Aselkin-agi yezmer ad isulu imaylen n iseqdacen.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Kkes aselkin
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Asenneftaɣ
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Aqeddac
-
-certmgr-override-lifetime =
-    .label = Tangazt n tudert
 
 certmgr-token-name =
     .label = Ibenk n tɣellist
@@ -185,8 +182,6 @@ delete-email-cert-impact = Ma tekkseḍ aselkin n yimayl n umdan, ur tettizmire�
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Aselkin s wuṭṭun n umazrar: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Ur ttazen ula d yiwen n uselkin n umsaɣ

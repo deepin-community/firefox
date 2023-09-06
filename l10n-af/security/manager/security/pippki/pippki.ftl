@@ -13,8 +13,6 @@ change-password-old = Huidige wagwoord:
 change-password-new = Nuwe wagwoord:
 change-password-reenter = Nuwe wagwoord (weer):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Laai tans sertifikaat af
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = U is gevra om 'n nuwe sertifikaatowerheid (SO) te vertrou.
 download-cert-trust-ssl =
     .label = Vertrou hierdie SO om webwerwe te identifiseer.
@@ -56,7 +54,5 @@ set-password-reminder = Belangrik: Indien u u sertifikaat-rugsteunwagwoord verge
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Beskermde tekenmagtiging
-protected-auth-msg = Verkry magtiging met die teken. Magtigingmetode hang af van die soort teken.
-protected-auth-token = Teken:
+## Protected authentication alert
+

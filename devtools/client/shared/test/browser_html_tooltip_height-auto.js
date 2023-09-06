@@ -14,12 +14,12 @@ const TEST_URI = CHROME_URL_ROOT + "doc_html_tooltip.xhtml";
 
 const {
   HTMLTooltip,
-} = require("devtools/client/shared/widgets/tooltip/HTMLTooltip");
+} = require("resource://devtools/client/shared/widgets/tooltip/HTMLTooltip.js");
 loadHelperScript("helper_html_tooltip.js");
 
 let useXulWrapper;
 
-add_task(async function() {
+add_task(async function () {
   await addTab("about:blank");
   const { doc } = await createHost("bottom", TEST_URI);
 
@@ -75,6 +75,32 @@ async function runTests(doc) {
     "Tooltip container has the expected updated height."
   );
 
+  await hideTooltip(tooltip);
+
+  info(
+    "Check that refreshing the tooltip when it overflows does keep scroll position"
+  );
+  // Set the tooltip panel to overflow. Some consumers of the HTMLTooltip are doing that
+  // via CSS (e.g. the iframe dropdown, the context selector, …).
+  tooltip.panel.style.overflowY = "auto";
+  tooltipContent.style.cssText =
+    "width: auto; height: 3000px; background: tomato;";
+  await showTooltip(tooltip, doc.getElementById("box1"));
+
+  ok(
+    tooltip.panel.scrollHeight > tooltip.panel.clientHeight,
+    "Tooltip overflows"
+  );
+
+  const scrollPosition = 500;
+  tooltip.panel.scrollTop = scrollPosition;
+
+  await showTooltip(tooltip, doc.getElementById("box1"));
+  is(
+    tooltip.panel.scrollTop,
+    scrollPosition,
+    "scroll position was kept during the update"
+  );
   await hideTooltip(tooltip);
 
   tooltip.destroy();

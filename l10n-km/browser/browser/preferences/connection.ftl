@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = ការ​កំណត់​ការ​តភ្ជាប់
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -68,13 +68,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = ជម្រើស​នេះ​ធ្វើ​ការ​ផ្ទៀងផ្ទាត់​ប្រូកស៊ី នៅ​ពេល​ដែល​អ្នក​បាន​រក្សាទុក​ព័ត៌មាន​សម្ងាត់​។ អ្នក​នឹង​បញ្ចូល ប្រសិនបើ​ការ​ផ្ទៀងផ្ទាត់​បរាជ័យ។
 
+connection-proxy-autologin-checkbox =
+    .label = កុំ​ធ្វើ​ការ​ផ្ទៀងផ្ទាត់​​ប្រសិនបើ​ពាក្យ​សម្ងាត់​ត្រូវ​បាន​រក្សាទុក
+    .accesskey = i
+    .tooltiptext = ជម្រើស​នេះ​ធ្វើ​ការ​ផ្ទៀងផ្ទាត់​ប្រូកស៊ី នៅ​ពេល​ដែល​អ្នក​បាន​រក្សាទុក​ព័ត៌មាន​សម្ងាត់​។ អ្នក​នឹង​បញ្ចូល ប្រសិនបើ​ការ​ផ្ទៀងផ្ទាត់​បរាជ័យ។
+
 connection-proxy-socks-remote-dns =
     .label = DNS ប្រូស៊ី​នៅ​ពេល​ប្រើប្រាស់ SOCKS v5
     .accesskey = d
-
-connection-dns-over-https =
-    .label = បើកដំណើរការ DNS លើ HTTPS
-    .accesskey = b
 
 connection-dns-over-https-url-custom =
     .label = ផ្ទាល់ខ្លួន

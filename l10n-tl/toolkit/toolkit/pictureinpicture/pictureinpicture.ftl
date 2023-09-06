@@ -4,19 +4,23 @@
 
 pictureinpicture-player-title = Picture-in-Picture
 
-pictureinpicture-pause =
-    .aria-label = I-pause
-pictureinpicture-play =
-    .aria-label = I-play
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
 
-pictureinpicture-mute =
-    .aria-label = i-Mute
-pictureinpicture-unmute =
-    .aria-label = I-unmute
+## Note that this uses .tooltip rather than the standard '.title'
+## or '.tooltiptext' -  but it has the same effect. Code in the
+## picture-in-picture window will read and copy this to an in-document
+## DOM node that then shows the tooltip.
+##
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
 
-pictureinpicture-unpip =
-    .aria-label = Ipadalang muli sa tab
+##
 
-pictureinpicture-close =
-    .aria-label = Isara
+## Note that this uses .tooltip rather than the standard '.title'
+## or '.tooltiptext' -  but it has the same effect. Code in the
+## picture-in-picture window will read and copy this to an in-document
+## DOM node that then shows the tooltip.
+
+##
 

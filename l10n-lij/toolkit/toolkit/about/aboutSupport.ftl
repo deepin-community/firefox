@@ -49,6 +49,7 @@ app-basics-enterprise-policies = Critei aziendali
 app-basics-location-service-key-google = Ciave do serviçio de localizaçion de Google
 app-basics-key-mozilla = Ciave do Serviçio de Localizaçion de Mozilla
 app-basics-safe-mode = Mòddo seguo
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Fanni vedde into Finder
@@ -110,6 +111,8 @@ media-device-format = Formou
 media-device-channels = Canâ
 media-device-rate = Indice
 media-device-latency = Ritardo
+
+## Codec support table
 
 ##
 

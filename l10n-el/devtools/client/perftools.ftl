@@ -21,6 +21,7 @@ perftools-heading-features-default = Λειτουργίες (Προτείνετ�
 perftools-heading-features-disabled = Ανενεργές λειτουργίες
 perftools-heading-features-experimental = Πειραματικό
 perftools-heading-threads = Νήματα
+perftools-heading-threads-jvm = Νήματα JVM
 perftools-heading-local-build = Τοπική έκδοση δομής
 
 ##
@@ -42,28 +43,27 @@ perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Μέγεθος buffer:
+
 perftools-custom-threads-label = Προσθήκη προσαρμοσμένων νημάτων ανά όνομα:
+
 perftools-devtools-interval-label = Διάστημα:
 perftools-devtools-threads-label = Νήματα:
 perftools-devtools-settings-label = Ρυθμίσεις
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice =
-    Το εργαλείο προφίλ απενεργοποιείται όταν είναι ενεργή η Ιδιωτική περιήγηση.
-    Κλείστε όλα τα Ιδιωτικά παράθυρα για εκ νέου ενεργοποίησή του
-perftools-status-recording-stopped-by-another-tool = Η εγγραφή τερματίστηκε από άλλο εργαλείο.
+perftools-status-recording-stopped-by-another-tool = Η καταγραφή τερματίστηκε από άλλο εργαλείο.
 perftools-status-restart-required = Θα πρέπει να επανεκκινήστε το πρόγραμμα περιήγησης για να ενεργοποιήσετε αυτή τη λειτουργία.
 
 ## These are shown briefly when the user is waiting for the profiler to respond.
 
-perftools-request-to-stop-profiler = Διακοπή εγγραφής
+perftools-request-to-stop-profiler = Διακοπή καταγραφής
 perftools-request-to-get-profile-and-stop-profiler = Καταγραφή προφίλ
 
 ##
 
-perftools-button-start-recording = Έναρξη εγγραφής
-perftools-button-capture-recording = Αποθήκευση εγγραφής
+perftools-button-start-recording = Έναρξη καταγραφής
+perftools-button-capture-recording = Αποθήκευση καταγραφής
 perftools-button-cancel-recording = Ακύρωση εγγραφής
 perftools-button-save-settings = Αποθήκευση ρυθμίσεων και επιστροφή
 perftools-button-restart = Επανεκκίνηση
@@ -83,8 +83,8 @@ perftools-thread-renderer =
     .title = Το νήμα που εκτελεί κλήσεις OpenGL όταν είναι ενεργοποιημένο το WebRender
 perftools-thread-render-backend =
     .title = Το νήμα WebRender RenderBackend
-perftools-thread-paint-worker =
-    .title = Το νήμα στο οποίο γίνεται ο χρωματισμός όταν είναι ενεργός ο χρωματισμός εκτός κύριου νήματος
+perftools-thread-timer =
+    .title = Τα χρονόμετρα χειρισμού νημάτων (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
     .title = Ο υπολογισμός στυλ διαχωρίζεται σε πολλά νήματα
 pref-thread-stream-trans =
@@ -97,20 +97,31 @@ perftools-thread-dns-resolver =
     .title = Η ανάλυση DNS συμβαίνει σε αυτό το thread
 perftools-thread-task-controller =
     .title = Νήματα του TaskController pool
+perftools-thread-jvm-gecko =
+    .title = Το κύριο νήμα Gecko JVM
+perftools-thread-jvm-nimbus =
+    .title = Τα κύρια νήματα για το SDK πειραμάτων Nimbus
+perftools-thread-jvm-default-dispatcher =
+    .title = Ο προεπιλεγμένος αποστολέας για τη βιβλιοθήκη «coroutines» της Kotlin
+perftools-thread-jvm-glean =
+    .title = Τα κύρια νήματα για το SDK τηλεμετρίας Glean
+perftools-thread-jvm-arch-disk-io =
+    .title = Ο αποστολέας IO για τη βιβλιοθήκη «coroutines» της Kotlin
+perftools-thread-jvm-pool =
+    .title = Νήματα που δημιουργήθηκαν σε μια ανώνυμη ομάδα νημάτων
 
 ##
 
 perftools-record-all-registered-threads = Παράκαμψη των παραπάνω επιλογών και εγγραφή όλων των καταχωρημένων νημάτων
+
 perftools-tools-threads-input-label =
     .title = Αυτά τα ονόματα νημάτων είναι σε λίστα με διαχωρισμό με κόμματα όπου χρησιμοποιείται για την ενεργοποίηση της δημιουργίας προφίλ για νήματα στο εργαλείο προφίλ. Το όνομα θα πρέπει να περιέχει ένα μέρος του ονόματος του νήματος για αντιστοίχιση. Γίνεται διάκριση στο κενό διάστημα.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>Νέο</b>: Το { -profiler-brand-name } έχει ενσωματωθεί στα Εργαλεία προγραμματιστών. <a>Μάθετε περισσότερα</a> σχετικά με αυτό το νέο ισχυρό εργαλείο.
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (Για περιορισμένο χρονικό διάστημα, μπορείτε να ανοίξετε το αρχικό παράθυρο "Επιδόσεις" από τις <a>{ options-context-advanced-settings }</a>)
+
 perftools-onboarding-close-button =
     .aria-label = Κλείσιμο μηνύματος υποδοχής
 
@@ -121,16 +132,29 @@ perftools-onboarding-close-button =
 # devtools/client/performance-new/popup/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
 perftools-presets-web-developer-label = Ανάπτυξη web
 perftools-presets-web-developer-description = Προτεινόμενη προεπιλογή για τον έλεγχο σφαλμάτων των περισσότερων εφαρμογών ιστού με χαμηλό κόστος.
-perftools-presets-firefox-platform-label = Πλατφόρμα Firefox
-perftools-presets-firefox-platform-description = Προτεινόμενη προεπιλογή για τον εσωτερικό έλεγχο σφαλμάτων της πλατφόρμας του Firefox.
-perftools-presets-firefox-front-end-label = Περιβάλλον Firefox
-perftools-presets-firefox-front-end-description = Προτεινόμενη προεπιλογή για τον εσωτερικό έλεγχο σφαλμάτων του περιβάλλοντος του Firefox.
-perftools-presets-firefox-graphics-label = Γραφικά Firefox
-perftools-presets-firefox-graphics-description = Προτεινόμενη προεπιλογή για τη διερεύνηση επιδόσεων γραφικών του Firefox.
+
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = Προτεινόμενη προεπιλογή για την καταγραφή προφίλ στο { -brand-shorter-name }.
+
+perftools-presets-graphics-label = Γραφικά
+perftools-presets-graphics-description = Προτεινόμενη προεπιλογή για τη διερεύνηση σφαλμάτων γραφικών στο { -brand-shorter-name }.
+
 perftools-presets-media-label = Πολυμέσα
-perftools-presets-media-description = Προτεινόμενη προεπιλογή για τη διάγνωση προβλημάτων ήχου και βίντεο.
+perftools-presets-media-description2 = Προτεινόμενη προεπιλογή για τη διερεύνηση σφαλμάτων ήχου και βίντεο στο { -brand-shorter-name }.
+
+perftools-presets-networking-label = Δικτύωση
+perftools-presets-networking-description = Προτεινόμενη προεπιλογή για τη διερεύνηση σφαλμάτων δικτύωσης στο { -brand-shorter-name }.
+
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = Ενέργεια
+perftools-presets-power-description = Προκαθορισμένη ρύθμιση για τη διερεύνηση σφαλμάτων χρήσης ενέργειας στο { -brand-shorter-name }, με μικρή επιβάρυνση.
+
 perftools-presets-custom-label = Προσαρμογή
 
 ##

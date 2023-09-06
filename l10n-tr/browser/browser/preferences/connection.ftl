@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Bağlantı Ayarları
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -35,7 +35,6 @@ connection-proxy-http = HTTP vekil sunucusu
     .accesskey = p
 connection-proxy-http-port = Port
     .accesskey = P
-
 connection-proxy-https-sharing =
     .label = HTTPS için de bu vekil sunucusunu kullan
     .accesskey = S
@@ -77,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = Bu seçenek, hesap bilgilerini kaydettiğiniz vekil sunucularda kimliğinizi sessizce doğrular. Kimlik doğrulama başarısız olursa bilgileriniz sorulur.
 
+connection-proxy-autologin-checkbox =
+    .label = Parola kayıtlıysa kimlik doğrulama isteme
+    .accesskey = i
+    .tooltiptext = Bu seçenek, hesap bilgilerini kaydettiğiniz vekil sunucularda kimliğinizi sessizce doğrular. Kimlik doğrulama başarısız olursa bilgileriniz sorulur.
+
 connection-proxy-socks-remote-dns =
     .label = SOCKS v5 kullanırken vekil sunucu DNS’i
     .accesskey = d
-
-connection-dns-over-https =
-    .label = HTTPS üzerinden DNS’i etkinleştir
-    .accesskey = H
-
-connection-dns-over-https-url-resolver = Sağlayıcı
-    .accesskey = S
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

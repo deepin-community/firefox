@@ -3,76 +3,40 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-### UI strings for the simplified onboarding modal / about:welcome
-### Various strings use a non-breaking space to avoid a single dangling /
-### widowed word, so test on various window sizes if you also want this.
-
-
-## These button action text can be split onto multiple lines, so use explicit
-## newlines in translations to control where the line break appears (e.g., to
-## avoid breaking quoted text).
-
-## Welcome modal dialog strings
-
-
-### UI strings for the simplified onboarding / multistage about:welcome
-### Various strings use a non-breaking space to avoid a single dangling /
-### widowed word, so test on various window sizes if you also want this.
-
-
 ### UI strings for the MR1 onboarding / multistage about:welcome
 ### Various strings use a non-breaking space to avoid a single dangling /
 ### widowed word, so test on various window sizes if you also want this.
+
 
 ## Welcome page strings
 
 onboarding-welcome-header = { -brand-short-name }కు స్వాగతం
 onboarding-start-browsing-button-label = విహరించడం మొదలుపెట్టండి
-
-## Welcome full page string
-
-## Firefox Sync modal dialog strings.
-
-## This is part of the line "Enter your email to continue to Firefox Sync"
-
-## These are individual benefit messages shown with an image, title and
-## description.
-
-## These strings belong to the individual onboarding messages.
-
-
-## Each message has a title and a description of what the browser feature is.
-## Each message also has an associated button for the user to try the feature.
-## The string for the button is found above, in the UI strings section
-
-## Message strings belonging to the Return to AMO flow
-
 onboarding-not-now-button-label = ఇప్పుడు కాదు
+
+# This string will be used on welcome page primary button label
+# when Firefox is both pinned and default
+mr1-onboarding-get-started-primary-button-label = మొదలుపెట్టండి
+
+## Title, subtitle and primary button string used on set default onboarding screen
+## when Firefox is not default browser
+
+
+## Multistage MR1 onboarding strings (about:welcome pages)
 
 ## Custom Return To AMO onboarding strings
 
+return-to-amo-subtitle = అద్భుతం, మీరు { -brand-short-name }‌ను తెచ్చుకున్నారు
+# <img data-l10n-name="icon"/> will be replaced with the icon belonging to the extension
+#
+# Variables:
+#   $addon-name (String) - Name of the add-on
+return-to-amo-addon-title = ఇప్పుడు <img data-l10n-name="icon"/> <b>{ $addon-name }</b> తెచ్చుకుందాం.
+return-to-amo-add-extension-label = పొడగింతను చేర్చు
+return-to-amo-add-theme-label = అలంకారాన్ని చేర్చు
 
-## Multistage 3-screen onboarding flow strings (about:welcome pages)
+##  Variables: $addon-name (String) - Name of the add-on to be installed
 
-# The <span data-l10n-name="zap"></span> in this string allows a "zap" underline style to be
-# automatically added to the text inside it. { -brand-short-name } should stay inside the span.
-onboarding-multistage-welcome-header = <span data-l10n-name="zap">{ -brand-short-name }</span>కి స్వాగతం
-onboarding-multistage-welcome-primary-button-label = అమర్పు మొదలుపెట్టు
-onboarding-multistage-welcome-secondary-button-label = ప్రవేశించు
-onboarding-multistage-welcome-secondary-button-text = ఖాతా ఉందా?
-
-onboarding-multistage-set-default-subtitle = వేగం, భద్రత, అంతరంగికత మీరు విహరిస్తూన్న ప్రతిసారీ.
-onboarding-multistage-set-default-primary-button-label = అప్రమేయం చేయి
-onboarding-multistage-set-default-secondary-button-label = ఇప్పుడు కాదు
-
-onboarding-multistage-pin-default-subtitle = మీరు జాలాన్ని వాడిన ప్రతిసారీ వేగవంతమైన, సురక్షితమైన, అంతరంగికమైన విహారణ.
-
-# The <span data-l10n-name="zap"></span> in this string allows a "zap" underline style to be
-# automatically added to the text inside it. "more" should stay inside the span.
-onboarding-multistage-import-header = మీ సంకేతపదాలను, ఇష్టాంశాలను <br/>, ఇంకా <span data-l10n-name="zap">మరెన్నిటినో</span> దిగుమతి చేసుకోండి
-onboarding-multistage-import-subtitle = మరో విహారిణి నుండి వస్తున్నారా? కావలసిన వాటన్నింటినీ { -brand-short-name }‌కి తెచ్చుకోవడం చాలా తేలిక.
-onboarding-multistage-import-primary-button-label = దిగుమతిని మొదలుపెట్టు
-onboarding-multistage-import-secondary-button-label = ఇప్పుడు కాదు
 
 ## Multistage onboarding strings (about:welcome pages)
 
@@ -80,23 +44,7 @@ onboarding-multistage-import-secondary-button-label = ఇప్పుడు క�
 # Variables:
 #   $current (Int) - Number of the current page
 #   $total (Int) - Total number of pages
-onboarding-welcome-steps-indicator =
-    .aria-label = మొదలుపెట్టండి: { $total } తెరలలో { $current }
 
-# The <span data-l10n-name="zap"></span> in this string allows a "zap" underline style to be
-# automatically added to the text inside it. "look" should stay inside the span.
-onboarding-multistage-theme-header = ఒక <span data-l10n-name="zap">రూపం</span> ఎంచుకోండి
-onboarding-multistage-theme-subtitle = ఒక అలంకారంతో { -brand-short-name }‌ని వ్యక్తిగతీకరించుకోండి.
-onboarding-multistage-theme-primary-button-label2 = పూర్తయింది
-onboarding-multistage-theme-secondary-button-label = ఇప్పుడు కాదు
-
-# Automatic theme uses operating system color settings
-onboarding-multistage-theme-label-automatic = స్వయంచాలకం
-
-onboarding-multistage-theme-label-light = తెల్లని
-onboarding-multistage-theme-label-dark = నల్లని
-# "Firefox Alpenglow" here is the name of the theme, and should be kept in English.
-onboarding-multistage-theme-label-alpenglow = Firefox Alpenglow
 
 ## Title and primary button strings differ between platforms as they
 ## match the OS' application context menu item action where Windows uses "pin"
@@ -105,39 +53,99 @@ onboarding-multistage-theme-label-alpenglow = Firefox Alpenglow
 
 ## Multistage MR1 onboarding strings (about:welcome pages)
 
-# This string will be used on welcome page primary button label
-# when Firefox is both pinned and default
-mr1-onboarding-get-started-primary-button-label = మొదలుపెట్టండి
-
-mr1-onboarding-welcome-header = { -brand-short-name }కు స్వాగతం
-
-mr1-onboarding-set-default-secondary-button-label = ఇప్పుడు కాదు
-
-## Title, subtitle and primary button string used on set default onboarding screen
-## when Firefox is not default browser
-
-
-## Multistage MR1 onboarding strings (about:welcome pages)
-
-mr1-onboarding-import-secondary-button-label = ఇప్పడు కాదు
-
-mr1-onboarding-theme-primary-button-label = అలంకారాన్ని భద్రపరుచు
+mr1-onboarding-theme-header = దీన్ని మీ స్వంతం చేసుకోండి
+mr1-onboarding-theme-subtitle = ఒక అలంకారంతో { -brand-short-name }‌ని వ్యక్తిగతీకరించుకోండి.
 mr1-onboarding-theme-secondary-button-label = ఇప్పుడు కాదు
 
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = వ్యవస్థ అలంకారం
 
-## Please make sure to split the content of the title attribute into lines whose
-## width corresponds to about 40 Latin characters, to ensure that the tooltip
-## doesn't become too long. Line breaks will be preserved when displaying the
-## tooltip.
-
+onboarding-theme-primary-button-label = పూర్తయింది
 
 ## Please make sure to split the content of the title attribute into lines whose
 ## width corresponds to about 40 Latin characters, to ensure that the tooltip
 ## doesn't become too long. Line breaks will be preserved when displaying the
 ## tooltip.
 
-## Multistage MR1 onboarding strings (MR1 about:welcome pages)
 
+## Strings for Thank You page
+
+
+## Multistage live language reloading onboarding strings (about:welcome pages)
+##
+## The following language names are generated by the browser's Intl.DisplayNames API.
+##
+## Variables:
+##   $negotiatedLanguage (String) - The name of the langpack's language, e.g. "Español (ES)"
+
+
+## Multistage live language reloading onboarding strings (about:welcome pages)
+##
+## The following language names are generated by the browser's Intl.DisplayNames API.
+##
+## Variables:
+##   $negotiatedLanguage (String) - The name of the langpack's language, e.g. "Español (ES)"
+##   $systemLanguage (String) - The name of the system language, e.g "Español (ES)"
+##   $appLanguage (String) - The name of the language shipping in the browser build, e.g. "English (EN)"
+
+onboarding-live-language-header = మీ భాషను ఎంచుకోండి
+
+mr2022-onboarding-live-language-text = { -brand-short-name } మీ భాష మాట్లాడుతుంది
+
+onboarding-live-language-secondary-cancel-download = రద్దుచేయి
+onboarding-live-language-skip-button-label = దాటవేయి
+
+## Firefox 100 Thank You screens
+
+mr2022-onboarding-secondary-skip-button-label = ఈ అంచెను దాటవేయి
+
+## MR2022 New User Easy Setup screen strings
+
+## MR2022 New User Pin Firefox screen strings
+
+
+## MR2022 Existing User Pin Firefox Screen Strings
+
+
+## MR2022 New User Set Default screen strings
+
+
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
+
+
+## MR2022 Import Settings screen strings
+
+
+## If your language uses grammatical genders, in the description for the
+## colorway feel free to switch from "You are a X. You…" (e.g. "You are a
+## Playmaker. You create…") to "X: you…" ("Playmaker: You create…"). This might
+## help creating a more inclusive translation.
+
+mr2022-onboarding-colorway-label-default = అప్రమేయం
+mr2022-onboarding-colorway-description-default = <b>నా ప్రస్తుత { -brand-short-name } రంగులను వాడు.</b>
+
+## MR2022 Multistage Mobile Download screen strings
+
+
+## MR2022 Upgrade Dialog screens
+## Pin private window screen shown only for users who don't have Firefox private pinned
+
+
+## MR2022 Privacy Segmentation screen strings
+
+
+## MR2022 Multistage Gratitude screen strings
+
+mr2022-onboarding-gratitude-primary-button-label = కొత్తవేమిటో చూడండి
+mr2022-onboarding-gratitude-secondary-button-label = విహరించడం మొదలుపెట్టండి
+
+## Onboarding spotlight for infrequent users
+
+
+## MR2022 Illustration alt tags
+## Descriptive tags for illustrations used by screen readers and other assistive tech
+
+## Device migration onboarding
 

@@ -3,7 +3,9 @@
 
 "use strict";
 
-const { loader } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
+const { loader } = ChromeUtils.importESModule(
+  "resource://devtools/shared/loader/Loader.sys.mjs"
+);
 // Test devtools.lazyRequireGetter
 
 function run_test() {
@@ -23,7 +25,7 @@ function run_test() {
 
   // We have to init the loader by loading any module before
   // lazyRequireGetter is available
-  loader2.require("devtools/shared/DevToolsUtils");
+  loader2.require("resource://devtools/shared/DevToolsUtils.js");
 
   loader2.lazyRequireGetter(o2, name, path);
   Assert.ok(o2.asyncUtils !== asyncUtils);

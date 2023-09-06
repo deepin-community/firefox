@@ -1,9 +1,11 @@
 // Appease eslint.
 /* import-globals-from ../head_addons.js */
 
-const { ComponentUtils } = ChromeUtils.import(
-  "resource://gre/modules/ComponentUtils.jsm"
+var { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
 );
+
+const IS_ANDROID_BUILD = AppConstants.platform === "android";
 
 const MLBF_RECORD = {
   id: "A blocklist entry that refers to a MLBF file",
@@ -22,8 +24,12 @@ function enable_blocklist_v2_instead_of_useMLBF() {
   Blocklist.allowDeprecatedBlocklistV2 = true;
   Services.prefs.setBoolPref("extensions.blocklist.useMLBF", false);
   // Sanity check: blocklist v2 has been enabled.
-  Assert.ok(
-    !!Blocklist.ExtensionBlocklist._updateEntries,
+  const { BlocklistPrivate } = ChromeUtils.importESModule(
+    "resource://gre/modules/Blocklist.sys.mjs"
+  );
+  Assert.equal(
+    Blocklist.ExtensionBlocklist,
+    BlocklistPrivate.ExtensionBlocklistRS,
     "ExtensionBlocklistRS should have been enabled"
   );
 }
@@ -39,14 +45,14 @@ async function load_mlbf_record_as_blob() {
 function getExtensionBlocklistMLBF() {
   // ExtensionBlocklist.Blocklist is an ExtensionBlocklistMLBF if the useMLBF
   // pref is set to true.
-  // An alternative way to obtain ExtensionBlocklistMLBF is by importing the
-  // global of Blocklist.jsm and reading ExtensionBlocklistMLBF off it, but
-  // to avoid using the deprecated ChromeUtils.import(.., null), bug 1524027
-  // needs to be fixed first. So let's use Blocklist.ExtensionBlocklist.
-  const ExtensionBlocklistMLBF = Blocklist.ExtensionBlocklist;
-  Assert.ok(
-    Services.prefs.getBoolPref("extensions.blocklist.useMLBF", false),
-    "blocklist.useMLBF should be true"
-  );
+  const {
+    BlocklistPrivate: { ExtensionBlocklistMLBF },
+  } = ChromeUtils.importESModule("resource://gre/modules/Blocklist.sys.mjs");
+  if (Blocklist.allowDeprecatedBlocklistV2) {
+    Assert.ok(
+      Services.prefs.getBoolPref("extensions.blocklist.useMLBF", false),
+      "blocklist.useMLBF should be true"
+    );
+  }
   return ExtensionBlocklistMLBF;
 }

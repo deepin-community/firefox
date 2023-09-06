@@ -9,22 +9,16 @@
 #include "AccEvent.h"
 #include "Compatibility.h"
 #include "HyperTextAccessibleWrap.h"
-#include "nsIWindowsRegKey.h"
 #include "nsWinUtils.h"
 #include "mozilla/a11y/DocAccessibleParent.h"
 #include "mozilla/a11y/RemoteAccessible.h"
-#include "mozilla/mscom/ActivationContext.h"
-#include "mozilla/mscom/InterceptorLog.h"
-#include "mozilla/mscom/Registration.h"
-#include "mozilla/mscom/Utils.h"
-#include "mozilla/StaticPrefs_accessibility.h"
 #include "mozilla/StaticPtr.h"
 #include "mozilla/WindowsVersion.h"
 #include "mozilla/WinHeaderOnlyUtils.h"
-#include "nsAccessibilityService.h"
-#include "nsComponentManagerUtils.h"
-#include "nsDirectoryServiceDefs.h"
-#include "nsDirectoryServiceUtils.h"
+#include "WinUtils.h"
+#include "ia2AccessibleText.h"
+
+#include <tuple>
 
 #if defined(MOZ_TELEMETRY_REPORTING)
 #  include "mozilla/Telemetry.h"
@@ -34,37 +28,17 @@ using namespace mozilla;
 using namespace mozilla::a11y;
 using namespace mozilla::mscom;
 
-static StaticAutoPtr<RegisteredProxy> gRegCustomProxy;
-static StaticAutoPtr<RegisteredProxy> gRegProxy;
-static StaticAutoPtr<RegisteredProxy> gRegAccTlb;
-static StaticAutoPtr<RegisteredProxy> gRegMiscTlb;
 static StaticRefPtr<nsIFile> gInstantiator;
 
 void a11y::PlatformInit() {
   nsWinUtils::MaybeStartWindowEmulation();
   ia2AccessibleText::InitTextChangeData();
-
-  mscom::InterceptorLog::Init();
-  UniquePtr<RegisteredProxy> regCustomProxy(mscom::RegisterProxy());
-  gRegCustomProxy = regCustomProxy.release();
-  UniquePtr<RegisteredProxy> regProxy(mscom::RegisterProxy(L"ia2marshal.dll"));
-  gRegProxy = regProxy.release();
-  UniquePtr<RegisteredProxy> regAccTlb(mscom::RegisterTypelib(
-      L"oleacc.dll", RegistrationFlags::eUseSystemDirectory));
-  gRegAccTlb = regAccTlb.release();
-  UniquePtr<RegisteredProxy> regMiscTlb(
-      mscom::RegisterTypelib(L"Accessible.tlb"));
-  gRegMiscTlb = regMiscTlb.release();
 }
 
 void a11y::PlatformShutdown() {
   ::DestroyCaret();
 
   nsWinUtils::ShutdownWindowEmulation();
-  gRegCustomProxy = nullptr;
-  gRegProxy = nullptr;
-  gRegAccTlb = nullptr;
-  gRegMiscTlb = nullptr;
 
   if (gInstantiator) {
     gInstantiator = nullptr;
@@ -92,18 +66,18 @@ void a11y::ProxyDestroyed(RemoteAccessible* aProxy) {
   }
 }
 
-void a11y::ProxyEvent(RemoteAccessible* aTarget, uint32_t aEventType) {
+void a11y::PlatformEvent(Accessible* aTarget, uint32_t aEventType) {
   MsaaAccessible::FireWinEvent(aTarget, aEventType);
 }
 
-void a11y::ProxyStateChangeEvent(RemoteAccessible* aTarget, uint64_t, bool) {
+void a11y::PlatformStateChangeEvent(Accessible* aTarget, uint64_t, bool) {
   MsaaAccessible::FireWinEvent(aTarget, nsIAccessibleEvent::EVENT_STATE_CHANGE);
 }
 
-void a11y::ProxyFocusEvent(RemoteAccessible* aTarget,
-                           const LayoutDeviceIntRect& aCaretRect) {
-  FocusManager* focusMgr = FocusMgr();
-  if (focusMgr && focusMgr->FocusedAccessible()) {
+void a11y::PlatformFocusEvent(Accessible* aTarget,
+                              const LayoutDeviceIntRect& aCaretRect) {
+  if (aTarget->IsRemote() && FocusMgr() &&
+      FocusMgr()->FocusedLocalAccessible()) {
     // This is a focus event from a remote document, but focus has moved out
     // of that document into the chrome since that event was sent. For example,
     // this can happen when choosing File menu -> New Tab. See bug 1471466.
@@ -118,93 +92,36 @@ void a11y::ProxyFocusEvent(RemoteAccessible* aTarget,
   MsaaAccessible::FireWinEvent(aTarget, nsIAccessibleEvent::EVENT_FOCUS);
 }
 
-void a11y::ProxyCaretMoveEvent(RemoteAccessible* aTarget,
-                               const LayoutDeviceIntRect& aCaretRect) {
+void a11y::PlatformCaretMoveEvent(Accessible* aTarget, int32_t aOffset,
+                                  bool aIsSelectionCollapsed,
+                                  int32_t aGranularity,
+                                  const LayoutDeviceIntRect& aCaretRect) {
   AccessibleWrap::UpdateSystemCaretFor(aTarget, aCaretRect);
   MsaaAccessible::FireWinEvent(aTarget,
                                nsIAccessibleEvent::EVENT_TEXT_CARET_MOVED);
 }
 
-void a11y::ProxyTextChangeEvent(RemoteAccessible* aText, const nsString& aStr,
-                                int32_t aStart, uint32_t aLen, bool aInsert,
-                                bool) {
+void a11y::PlatformTextChangeEvent(Accessible* aText, const nsAString& aStr,
+                                   int32_t aStart, uint32_t aLen, bool aInsert,
+                                   bool) {
   uint32_t eventType = aInsert ? nsIAccessibleEvent::EVENT_TEXT_INSERTED
                                : nsIAccessibleEvent::EVENT_TEXT_REMOVED;
-  static const bool useHandler =
-      !StaticPrefs::accessibility_cache_enabled_AtStartup() &&
-      Preferences::GetBool("accessibility.handler.enabled", false) &&
-      IsHandlerRegistered();
-  if (useHandler) {
-    AccessibleWrap::DispatchTextChangeToHandler(aText, aInsert, aStr, aStart,
-                                                aLen);
-    return;
-  }
-
-  // XXX Call ia2AccessibleText::UpdateTextChangeData once that works for
-  // RemoteAccessible.
+  MOZ_ASSERT(aText->IsHyperText());
+  ia2AccessibleText::UpdateTextChangeData(aText->AsHyperTextBase(), aInsert,
+                                          aStr, aStart, aLen);
   MsaaAccessible::FireWinEvent(aText, eventType);
 }
 
-void a11y::ProxyShowHideEvent(RemoteAccessible* aTarget, RemoteAccessible*,
-                              bool aInsert, bool) {
+void a11y::PlatformShowHideEvent(Accessible* aTarget, Accessible*, bool aInsert,
+                                 bool) {
   uint32_t event =
       aInsert ? nsIAccessibleEvent::EVENT_SHOW : nsIAccessibleEvent::EVENT_HIDE;
   MsaaAccessible::FireWinEvent(aTarget, event);
 }
 
-void a11y::ProxySelectionEvent(RemoteAccessible* aTarget, RemoteAccessible*,
-                               uint32_t aType) {
+void a11y::PlatformSelectionEvent(Accessible* aTarget, Accessible*,
+                                  uint32_t aType) {
   MsaaAccessible::FireWinEvent(aTarget, aType);
-}
-
-bool a11y::IsHandlerRegistered() {
-  nsresult rv;
-  nsCOMPtr<nsIWindowsRegKey> regKey =
-      do_CreateInstance("@mozilla.org/windows-registry-key;1", &rv);
-  if (NS_FAILED(rv)) {
-    return false;
-  }
-
-  nsAutoString clsid;
-  GUIDToString(CLSID_AccessibleHandler, clsid);
-
-  nsAutoString subKey;
-  subKey.AppendLiteral(u"SOFTWARE\\Classes\\CLSID\\");
-  subKey.Append(clsid);
-  subKey.AppendLiteral(u"\\InprocHandler32");
-
-  rv = regKey->Open(nsIWindowsRegKey::ROOT_KEY_LOCAL_MACHINE, subKey,
-                    nsIWindowsRegKey::ACCESS_READ);
-  if (NS_FAILED(rv)) {
-    return false;
-  }
-
-  nsAutoString handlerPath;
-  rv = regKey->ReadStringValue(nsAutoString(), handlerPath);
-  if (NS_FAILED(rv)) {
-    return false;
-  }
-
-  nsCOMPtr<nsIFile> actualHandler;
-  rv = NS_NewLocalFile(handlerPath, false, getter_AddRefs(actualHandler));
-  if (NS_FAILED(rv)) {
-    return false;
-  }
-
-  nsCOMPtr<nsIFile> expectedHandler;
-  rv = NS_GetSpecialDirectory(NS_GRE_DIR, getter_AddRefs(expectedHandler));
-  if (NS_FAILED(rv)) {
-    return false;
-  }
-
-  rv = expectedHandler->Append(u"AccessibleHandler.dll"_ns);
-  if (NS_FAILED(rv)) {
-    return false;
-  }
-
-  bool equal;
-  rv = expectedHandler->Equals(actualHandler, &equal);
-  return NS_SUCCEEDED(rv) && equal;
 }
 
 static bool GetInstantiatorExecutable(const DWORD aPid,
@@ -256,8 +173,7 @@ static void AppendVersionInfo(nsIFile* aClientExe, nsAString& aStrToAppend) {
     return;
   }
 
-  uint16_t major, minor, patch, build;
-  Tie(major, minor, patch, build) = version.unwrap().AsTuple();
+  auto [major, minor, patch, build] = version.unwrap().AsTuple();
 
   aStrToAppend.AppendLiteral(u"|");
 

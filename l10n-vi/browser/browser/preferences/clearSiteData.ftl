@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Xóa dữ liệu
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Xóa tất cả cookie và dữ liệu trang được lưu bởi { -brand-short-name } có thể khiến bạn đăng xuất khỏi trang web và xóa các nội dung ngoại tuyến. Xóa dữ liệu cache sẽ không ảnh hưởng đến đăng nhập của bạn.
 
@@ -37,7 +37,7 @@ clear-site-data-cookies-info = Bạn có thể bị đăng xuất khỏi trang w
 #   $amount (Number) - Amount of cache currently stored on disk
 #   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
 clear-site-data-cache-with-data =
-    .label = Nội dung web lưu vào cache ({ $amount } { $unit })
+    .label = Nội dung web lưu vào bộ nhớ đệm ({ $amount } { $unit })
     .accesskey = W
 
 # This string is a placeholder for while the data used to fill

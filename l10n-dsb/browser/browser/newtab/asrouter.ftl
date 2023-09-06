@@ -69,8 +69,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } wužywarjow
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Synchronizěrujśo swóje cytańske znamjenja wšuźi.
@@ -98,24 +96,6 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Wersijowe informacije cytaś
 
-## Search Bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 # Variables:
@@ -130,20 +110,6 @@ cfr-doorhanger-milestone-heading2 =
     }
 cfr-doorhanger-milestone-ok-button = Wšykne pokazaś
     .accesskey = k
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = Zacyniś
     .accesskey = Z
 
@@ -158,13 +124,6 @@ cfr-doorhanger-doh-secondary-button = Znjemóžniś
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Waša priwatnosć jo wažna. { -brand-short-name } něnto websedła jadno wót drugego izolěrujo, což hackeram póśězujo, gronidła, numery kreditowych kórtow a druge sensibelne informacije kšadnuś.
-cfr-doorhanger-fission-header = Sedłowa izolacija
-cfr-doorhanger-fission-primary-button = W pórěźe, som zrozměł
-    .accesskey = z
-cfr-doorhanger-fission-secondary-button = Dalšne informacije
-    .accesskey = D
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Wideo na toś tom sedle se snaź w toś tej wersiji { -brand-short-name } pšawje njewótgrawaju. Aktualizěrujśo něnto { -brand-short-name } za połnu wideopódpěru.
@@ -172,15 +131,134 @@ cfr-doorhanger-video-support-header = { -brand-short-name } aktualizěrowaś, ab
 cfr-doorhanger-video-support-primary-button = Něnto aktualizěrowaś
     .accesskey = N
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
 spotlight-public-wifi-vpn-header = Zda se, až zjawny WLAN wužywaśo
 spotlight-public-wifi-vpn-body = Aby swóje stojnišćo a pśeglědowańsku aktiwitu schował a, rozwažćo wirtuelnu priwatnu seś (VPN). Buźo wam pomagaś, was šćitaś, gaž na zjawnych městnach ako na pśikład na lětanišćach a w kafejownjach pśeglědujośo.
 spotlight-public-wifi-vpn-primary-button = Šćitajśo swóju priwatnosć z { -mozilla-vpn-brand-name }
     .accesskey = t
 spotlight-public-wifi-vpn-link = Nic něnto
     .accesskey = N
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Lěpšy internet z wami startujo
+spotlight-better-internet-body = Gaž { -brand-short-name } wužywaśo, głosujośo za wótwórjony a pśistupny internet, kótaryž jo lěpšy za wše.
+spotlight-peace-mind-header = Smy was zapśimjeli
+spotlight-peace-mind-body = Kuždy mjasec { -brand-short-name } pśerěznje pśez 3.000 pśeslědowakow na wužywarja blokěrujo. Dokulaž nic, pśedewšym wobuze priwatnosći ako pśeslědowaki, njeměło mjazy wami a dobrym internetom byś.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Na doku wobchowaś
+       *[other] K nadawkowej rědce pśipěś
+    }
+spotlight-pin-secondary-button = Nic něnto
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+mr2022-background-update-toast-title = Nowy { -brand-short-name }. Priwatnjejšy. Mjenjej pśeslědowakow. Žedne kompromisy.
+mr2022-background-update-toast-text = Wopytajśo něnto nejnowšy { -brand-short-name }, něnto z našym doychměst nejmócnjejšym šćitom pśeśiwo slědowanjeju.
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it
+# using a variable font like Arial): the button can only fit 1-2
+# additional characters, exceeding characters will be truncated.
+mr2022-background-update-toast-primary-button-label = { -brand-shorter-name } něnto wócyniś
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = Pózdźej dopomnjeś
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Wopytajśo jen
+    .accesskey = o
+firefoxview-cfr-secondarybutton = Nic něnto
+    .accesskey = N
+firefoxview-cfr-header-v2 = Cyńśo tam malsnje dalej, źož sćo pśestał
+firefoxview-cfr-body-v2 = Wobstarajśo se zacynjone rejtariki slědk a pśejźćo mjazy rědami z { -firefoxview-brand-name }.
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = Witajśo k { -firefoxview-brand-name }
+
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = Cośo ten wócynjony rejtark na swójom telefonje měś? Wobstarajśo se jen. Trjebaśo sedło, ku kótaremuž sćo rowno woglědał? Simsalabim, jo z { -firefoxview-brand-name } slědk.
+firefoxview-spotlight-promo-primarybutton = Glědajśo, kak to funkcioněrujo
+firefoxview-spotlight-promo-secondarybutton = Pśeskócyś
+
+## Colorways expiry reminder CFR
+
+colorways-cfr-primarybutton = Barwowu kombinaciju wubraś
+    .accesskey = B
+
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = Zabarwiśo swój wobglědowak z ekskluziwnymi barwowymi wósnjami { -brand-short-name }, kótarež su wót głosow inspirěrowane, kótarež su změnili kulturu.
+colorways-cfr-header-28days = Barwowe kombinacije „Njewótwisne głose“  16. januara spadnu
+colorways-cfr-header-14days = Barwowe kombinacije „Njewótwisne głose“  za dwa tyźenja spadnu
+colorways-cfr-header-7days = Barwowe kombinacije „Njewótwisne głose“  w toś tom tyźenju spadnu
+colorways-cfr-header-today = Barwowe kombinacije „Njewótwisne głose“ źinsa spadnu
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-header = { -brand-short-name } dowóliś cookiejowe chórgoji wótpokazaś?
+cfr-cbh-body = { -brand-short-name } móžo awtomatiski wjele napšašowanjow cookiejowych chórgojow wótpokazaś.
+cfr-cbh-confirm-button = Cookiejowe chórgoji reducěrowaś
+    .accesskey = C
+cfr-cbh-dismiss-button = Nic něnto
+    .accesskey = N
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+july-jam-headline = Smy was zapśimjeli
+july-jam-body = Kuždy mjasec { -brand-short-name } w pśerězku wěcej ako 3000 pśeslědowakow na wužywarja blokěrujo a dawa wam wěsty, malsny pśistup k dobremu internetoju.
+july-jam-set-default-primary = Móje wótkaze z { -brand-short-name } wócyniś
+fox-doodle-pin-headline = Witajśo slědk
+
+# “indie” is short for the term “independent”.
+# In this instance, free from outside influence or control.
+fox-doodle-pin-body = How jo krotke dopomnjeśe, až móžośo swój nejlubšy njewótwisny wobglědowak jano kliknjenje pśec měś.
+fox-doodle-pin-primary = Móje wótkaze z { -brand-short-name } wócyniś
+fox-doodle-pin-secondary = Nic něnto
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+set-default-pdf-handler-headline = <strong>Waše PDF se něnto w { -brand-short-name } wócynjaju.</strong> Wobźěłajśo abo signěrujćśoformulary direktnje w swójom wobglědowaku. Aby to změnił, pytajśo za „PDF“ w swójich nastajenjach.
+set-default-pdf-handler-primary = Som zrozměł
+
+## FxA sync CFR
+
+fxa-sync-cfr-header = Nowy rěd we wašom pśichoźe?
+fxa-sync-cfr-body = Zawěsććo, až maśo swóje nejnowše cytańske znamjenja, gronidła a rejtariki kuždy raz ze sobu, gaž nowy wobglědowak { -brand-product-name } wócynjaśo.
+fxa-sync-cfr-primary = Dalšne informacije
+    .accesskey = D
+fxa-sync-cfr-secondary = Pózdźej dopomnjeś
+    .accesskey = o
+
+## Device Migration FxA Spotlight
+
+device-migration-fxa-spotlight-header = Staršy rěd wužywaś?
+device-migration-fxa-spotlight-body = Zawěsććo swóje daty, až njeby wy wažne informacije ako cytańske znamjenja a groidła zgubił — pśedewšym, jolic k nowemu rědoju pśejźośo.
+device-migration-fxa-spotlight-primary-button = Kak mógu swóje daty zawěsćiś
+device-migration-fxa-spotlight-link = Pózdźej dopomnjeś

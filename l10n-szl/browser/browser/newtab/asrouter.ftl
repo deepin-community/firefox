@@ -67,9 +67,6 @@ cfr-doorhanger-extension-total-users =
        *[many] { $total } użytkownikōw
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Miyj swoje zokłodki wszyńdzie zsynchrōnizowane.
@@ -97,26 +94,6 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Poczytej informacyje ô wydaniu
 
-## Search Bar
-
-## Search bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 # Variables:
@@ -130,25 +107,8 @@ cfr-doorhanger-milestone-heading2 =
     }
 cfr-doorhanger-milestone-ok-button = Pokoż wszyskie
     .accesskey = P
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = Zawrzij
     .accesskey = Z
-
-## What’s New Panel Content for Firefox 76
-## Protections Dashboard message
 
 ## DOH Message
 
@@ -161,25 +121,6 @@ cfr-doorhanger-doh-secondary-button = Zastow
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Twoja prywatność je ważno. { -brand-short-name } terozki izoluje strōny, skuli czego ciynżyj je hakrōm kraść hasła, numery kredytowych kart i inksze ôsobiste informacyje.
-cfr-doorhanger-fission-header = Izolacyjo strōn
-cfr-doorhanger-fission-primary-button = OK, rozumia
-    .accesskey = O
-cfr-doorhanger-fission-secondary-button = Przewiydz sie wiyncyj
-    .accesskey = P
-
-## What's new: Cookies message
-
-## What's new: Media controls message
-
-## What's new: Search shortcuts
-
-## What's new: Cookies protection
-
-## What's new: Better bookmarking
-
-## What's new: Cross-site cookie tracking
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Przi tyj wersyji aplikacyje { -brand-short-name } filmy na tyj strōnie mogōm sie niy puszczać dobrze. Zaktualizuj aplikacyjo { -brand-short-name }, coby mieć pōłno ôbsuga filmōw.
@@ -187,9 +128,63 @@ cfr-doorhanger-video-support-header = Zaktualizuj aplikacyjo { -brand-short-name
 cfr-doorhanger-video-support-primary-button = Aktualizuj teroz
     .accesskey = A
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
+
+# This header text can be explicitly wrapped.
+spotlight-public-wifi-vpn-header = Zdo sie, iże używosz publicznego necu Wi-Fi
+spotlight-public-wifi-vpn-body = Coby skryć informacyje ô swojim placu i przeglōndaniu, rozwoż wirtualny prywatny nec. Pōmoże ci ôstać pod ôchrōnōm, jak przeglōndosz w publicznych placach: lotniskach abo kafyjach.
+spotlight-public-wifi-vpn-primary-button = Chrōń przywatność z usugōm { -mozilla-vpn-brand-name }
+    .accesskey = C
+spotlight-public-wifi-vpn-link = Niy teroz
+    .accesskey = N
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Lepszy internet zaczyno sie ôd ciebie
+spotlight-better-internet-body = Jak używosz aplikacyje { -brand-short-name }, to welujesz ôtwarty, dostympniyjszy internet, co je lepszy do wszyskich.
+spotlight-peace-mind-header = Dowōmy na ciebie pozōr
+spotlight-peace-mind-body = Kożdy miesiōnc { -brand-short-name } szperuje kole 3,000 śledzōncych elymyntōw na użytkownika. Bo nic, a ôsobliwie niy takie detajle jak sledzōnce elymynty, niy śmiōm stoć miyndzy tobōm a dobrym internetym.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Trzimej w Docku
+       *[other] Przipnij do poska ze zadaniami
+    }
+spotlight-pin-secondary-button = Niy teroz
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+## Firefox View CFR
+
+## Firefox View Spotlight
+
+## Colorways expiry reminder CFR
+
+## Cookie Banner Handling CFR
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
 

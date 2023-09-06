@@ -3,8 +3,8 @@
 "use strict";
 
 add_task(async function testExecuteScript() {
-  let { MessageChannel } = ChromeUtils.import(
-    "resource://testing-common/MessageChannel.jsm"
+  let { MessageChannel } = ChromeUtils.importESModule(
+    "resource://testing-common/MessageChannel.sys.mjs"
   );
 
   function countMM(messageManagerMap) {
@@ -262,7 +262,8 @@ add_task(async function testExecuteScript() {
               );
             },
             error => {
-              const expected = /Script '.*script3.js' result is non-structured-clonable data/;
+              const expected =
+                /Script '.*script3.js' result is non-structured-clonable data/;
               browser.test.assertTrue(
                 expected.test(error.message),
                 "Got expected error"
@@ -287,7 +288,7 @@ add_task(async function testExecuteScript() {
             },
             error => {
               browser.test.assertEq(
-                `Frame not found, or missing host permission`,
+                `Invalid frame IDs: [${Number.MAX_SAFE_INTEGER}].`,
                 error.message,
                 "Got expected error"
               );
@@ -423,7 +424,7 @@ add_task(async function testExecuteScript() {
     background,
 
     files: {
-      "script.js": function() {
+      "script.js": function () {
         browser.runtime.sendMessage("script ran");
       },
 

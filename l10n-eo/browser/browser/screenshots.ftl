@@ -6,6 +6,9 @@ screenshot-toolbarbutton =
     .label = Ekrankopio
     .tooltiptext = Fari ekrankopion
 
+screenshot-shortcut =
+    .key = S
+
 screenshots-instructions = Trenu aŭ alklaku sur la paĝo por elekti areon. Premu ESK por nuligi.
 screenshots-cancel-button = Nuligi
 screenshots-save-visible-button = Konservi tion, kio videblas
@@ -14,6 +17,14 @@ screenshots-download-button = Elŝuti
 screenshots-download-button-tooltip = Elŝuti ekrankopion
 screenshots-copy-button = Kopii
 screenshots-copy-button-tooltip = Kopii ekrankopion al tondujo
+screenshots-download-button-title =
+    .title = Elŝuti ekrankopion
+screenshots-copy-button-title =
+    .title = Kopii ekrankopion al tondujo
+screenshots-cancel-button-title =
+    .title = Nuligi
+screenshots-retry-button-title =
+    .title = Denove klopodi fari ekrankopion
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -44,3 +55,6 @@ screenshots-private-window-error-details = Bonvolu pardoni la ĝenon. Ni prilabo
 
 screenshots-generic-error-title = Ŭoo! { -screenshots-brand-name } tute frenezis.
 screenshots-generic-error-details = Ni ne tro certas, kio ĵus okazis. Ĉu vi povus klopodi denove aŭ fari ekrankopion de alia paĝo?
+
+screenshots-too-large-error-title = Via ekrankopio estis pritondita ĉar ĝi estis tro granda
+screenshots-too-large-error-details = Provu elekti areon pli etan ol 32,700 en ĝia pli longa flanko aŭ kun malpli ol 124,900,000 bilderoj entute.

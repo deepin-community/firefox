@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
-import isEmpty from "lodash/isEmpty";
 import * as t from "@babel/types";
 
 import getFunctionName from "../utils/getFunctionName";
@@ -38,7 +37,7 @@ function isGeneratedId(id) {
 
 export function parseSourceScopes(sourceId) {
   const ast = getAst(sourceId);
-  if (isEmpty(ast)) {
+  if (!ast || !Object.keys(ast).length) {
     return null;
   }
 
@@ -393,7 +392,7 @@ const scopeCollectionVisitor = {
         // piece. To achieve that, we estimate the location of the declaration
         // instead.
         let declStart = node.loc.start;
-        if (node.decorators && node.decorators.length > 0) {
+        if (node.decorators && node.decorators.length) {
           // Estimate the location of the "class" keyword since it
           // is unlikely to be a different line than the class name.
           declStart = {
@@ -822,7 +821,7 @@ function buildMetaBindings(
   }
   if (
     t.isCallExpression(parent, { callee: node }) &&
-    parent.arguments.length == 0
+    !parent.arguments.length
   ) {
     return {
       type: "call",
@@ -837,7 +836,7 @@ function buildMetaBindings(
 
 function looksLikeCommonJS(rootScope) {
   const hasRefs = name =>
-    rootScope.bindings[name] && rootScope.bindings[name].refs.length > 0;
+    rootScope.bindings[name] && !!rootScope.bindings[name].refs.length;
 
   return (
     hasRefs("__dirname") ||

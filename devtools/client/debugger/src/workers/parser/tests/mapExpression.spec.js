@@ -39,7 +39,7 @@ describe("mapExpression", () => {
     {
       name: "await",
       expression: "await a()",
-      newExpression: formatAwait("return await a()"),
+      newExpression: formatAwait("return a()"),
       bindings: [],
       mappings: {},
       shouldMapBindings: true,
@@ -78,7 +78,7 @@ describe("mapExpression", () => {
     {
       name: "await (multiple awaits)",
       expression: "const x = await a(); await b(x)",
-      newExpression: formatAwait("self.x = await a(); return await b(x);"),
+      newExpression: formatAwait("self.x = await a(); return b(x);"),
       bindings: [],
       mappings: {},
       shouldMapBindings: true,
@@ -404,8 +404,7 @@ describe("mapExpression", () => {
       },
     },
     {
-      name:
-        "await (no bindings, object destructuring with renaming and default)",
+      name: "await (no bindings, object destructuring with renaming and default)",
       expression: "let {a: hello, b, c: world, d: $ = 4} = await x;",
       newExpression: `let hello, b, world, $;
 
@@ -420,8 +419,7 @@ describe("mapExpression", () => {
       },
     },
     {
-      name:
-        "await (no bindings, nested object destructuring + renaming + default)",
+      name: "await (no bindings, nested object destructuring + renaming + default)",
       expression: `let {
           a: hello, c: { y: { z = 10, b: bill, d: [e, f = 20] }}
         } = await x; z;`,
@@ -561,13 +559,66 @@ describe("mapExpression", () => {
       },
     },
     {
-      name:
-        "await (async function declaration with optional chaining operator)",
+      name: "await (async function declaration with optional chaining operator)",
       expression: "async function chain(x) { await x; return x?.y?.z; }",
       newExpression: "async function chain(x) { await x; return x?.y?.z; }",
       shouldMapBindings: false,
       expectedMapped: {
         await: false,
+        bindings: false,
+        originalExpression: false,
+      },
+    },
+    {
+      // check that variable declaration in for loop is not put outside of the async iife
+      name: "await (for loop)",
+      expression: "for (let i=0;i<2;i++) {}; var b = await 1;",
+      newExpression: `var b;
+
+        (async () => {
+          for (let i=0;i<2;i++) {}
+
+          return (b = await 1);
+        })()`,
+      shouldMapBindings: false,
+      expectedMapped: {
+        await: true,
+        bindings: false,
+        originalExpression: false,
+      },
+    },
+    {
+      // check that variable declaration in for-in loop is not put outside of the async iife
+      name: "await (for..in loop)",
+      expression: "for (let i in {}) {}; var b = await 1;",
+      newExpression: `var b;
+
+        (async () => {
+          for (let i in {}) {}
+
+          return (b = await 1);
+        })()`,
+      shouldMapBindings: false,
+      expectedMapped: {
+        await: true,
+        bindings: false,
+        originalExpression: false,
+      },
+    },
+    {
+      // check that variable declaration in for-of loop is not put outside of the async iife
+      name: "await (for..of loop)",
+      expression: "for (let i of []) {}; var b = await 1;",
+      newExpression: `var b;
+
+        (async () => {
+          for (let i of []) {}
+
+          return (b = await 1);
+        })()`,
+      shouldMapBindings: false,
+      expectedMapped: {
+        await: true,
         bindings: false,
         originalExpression: false,
       },

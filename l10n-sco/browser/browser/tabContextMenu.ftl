@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Wale Aw Tabs
     .accesskey = S
+tab-context-play-tab =
+    .label = Pley Tab
+    .accesskey = P
+tab-context-play-tabs =
+    .label = Pley Tabs
+    .accesskey = y
 duplicate-tab =
     .label = Duplicate Tab
     .accesskey = D
@@ -48,9 +54,6 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Buikmerk Tabs…
     .accesskey = B
-bookmark-tab =
-    .label = Buikmerk Tab
-    .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = Open in New Conteener Tab
     .accesskey = e
@@ -69,8 +72,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Share
     .accesskey = h
-tab-context-share-more =
-    .label = Mair…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,13 +83,6 @@ tab-context-reopen-closed-tabs =
            *[other] Reopen Sneckit Tabs
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Sneck Tab
-           *[other] Sneck Tabs
-        }
-    .accesskey = C
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

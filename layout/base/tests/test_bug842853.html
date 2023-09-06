@@ -14,10 +14,12 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=842853
 
 SimpleTest.waitForExplicitFinish();
 
-function runTest() {
+async function runTest() {
   var win = e.contentWindow;
   if (win.location.hash != '') {
-    is(win.scrollY,500);
+    // Allow a half pixel difference because the scroll position is aligned with
+    // screen pixels instead of CSS pixels (bug 1774315).
+    isfuzzy(win.scrollY, 500, 0.5);
     SimpleTest.finish();
     return;
   }

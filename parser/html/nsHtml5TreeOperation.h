@@ -10,6 +10,7 @@
 #include "mozilla/dom/FromParser.h"
 #include "mozilla/NotNull.h"
 #include "mozilla/Variant.h"
+#include "nsCharsetSource.h"
 
 class nsIContent;
 class nsHtml5TreeOpExecutor;
@@ -328,13 +329,11 @@ struct opDoneCreatingElement {
   };
 };
 
-struct opSetDocumentCharset {
-  const mozilla::Encoding* mEncoding;
-  int32_t mCharsetSource;
+struct opUpdateCharsetSource {
+  nsCharsetSource mCharsetSource;
 
-  explicit opSetDocumentCharset(const mozilla::Encoding* aEncoding,
-                                int32_t aCharsetSource)
-      : mEncoding(aEncoding), mCharsetSource(aCharsetSource){};
+  explicit opUpdateCharsetSource(nsCharsetSource aCharsetSource)
+      : mCharsetSource(aCharsetSource){};
 };
 
 struct opCharsetSwitchTo {
@@ -383,13 +382,15 @@ struct opSetStyleLineNumber {
   };
 };
 
-struct opSetScriptLineNumberAndFreeze {
+struct opSetScriptLineAndColumnNumberAndFreeze {
   nsIContent** mContent;
   int32_t mLineNumber;
+  int32_t mColumnNumber;
 
-  explicit opSetScriptLineNumberAndFreeze(nsIContentHandle* aContent,
-                                          int32_t aLineNumber)
-      : mLineNumber(aLineNumber) {
+  explicit opSetScriptLineAndColumnNumberAndFreeze(nsIContentHandle* aContent,
+                                                   int32_t aLineNumber,
+                                                   int32_t aColumnNumber)
+      : mLineNumber(aLineNumber), mColumnNumber(aColumnNumber) {
     mContent = static_cast<nsIContent**>(aContent);
   };
 };
@@ -494,9 +495,9 @@ typedef mozilla::Variant<
     // Gecko-specific on-pop ops
     opMarkAsBroken, opRunScript, opRunScriptAsyncDefer,
     opPreventScriptExecution, opDoneAddingChildren, opDoneCreatingElement,
-    opSetDocumentCharset, opCharsetSwitchTo, opUpdateStyleSheet,
+    opUpdateCharsetSource, opCharsetSwitchTo, opUpdateStyleSheet,
     opProcessOfflineManifest, opMarkMalformedIfScript, opStreamEnded,
-    opSetStyleLineNumber, opSetScriptLineNumberAndFreeze, opSvgLoad,
+    opSetStyleLineNumber, opSetScriptLineAndColumnNumberAndFreeze, opSvgLoad,
     opMaybeComplainAboutCharset, opMaybeComplainAboutDeepTree, opAddClass,
     opAddViewSourceHref, opAddViewSourceBase, opAddErrorType, opAddLineNumberId,
     opStartLayout, opEnableEncodingMenu>

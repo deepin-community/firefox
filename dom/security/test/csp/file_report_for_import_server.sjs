@@ -2,12 +2,13 @@
 // Bug 1048048 - CSP violation report not sent for @import
 
 const CC = Components.Constructor;
-const BinaryInputStream = CC("@mozilla.org/binaryinputstream;1",
-                             "nsIBinaryInputStream",
-                             "setInputStream");
+const BinaryInputStream = CC(
+  "@mozilla.org/binaryinputstream;1",
+  "nsIBinaryInputStream",
+  "setInputStream"
+);
 
-function handleRequest(request, response)
-{
+function handleRequest(request, response) {
   // avoid confusing cache behaviors
   response.setHeader("Cache-Control", "no-cache", false);
   response.setHeader("Content-Type", "text/html", false);
@@ -24,7 +25,7 @@ function handleRequest(request, response)
   // (2) handle the csp-report and return the JSON back to
   // the testfile using the afore stored xml request in (1).
   if (queryString === "report") {
-    getObjectState("queryResult", function(queryResponse) {
+    getObjectState("queryResult", function (queryResponse) {
       if (!queryResponse) {
         return;
       }

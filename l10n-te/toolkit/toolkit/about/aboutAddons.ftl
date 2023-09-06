@@ -8,8 +8,10 @@ search-header =
     .placeholder = addons.mozilla.orgలో వెతకండి
     .searchbuttonlabel = వెతుకు
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
 
 list-empty-installed =
     .value = మీ వద్ద ఈ రకమైన పొడిగింతలేమీ స్థాపించి లేవు
@@ -54,6 +56,9 @@ detail-update-automatic =
 detail-update-manual =
     .label = ఆఫ్ చేయి
     .tooltiptext = తాజాకరణలను స్వయంచాలకంగా స్థాపించవద్దు
+
+# Used as a description for the option to allow or block an add-on in private windows.
+detail-private-browsing-label = అంతరంగిక కిటికీలలో నడుపు
 
 detail-private-browsing-on =
     .label = అనుమతించు
@@ -156,7 +161,6 @@ extensions-warning-update-security = పొడిగింత నవీకరణ
 extensions-warning-update-security-button = చేతనపరచు
     .title = పొడిగింత నవీకరణ రక్షణ పరిశీలనను చేతనముచేయి
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = నవీకరణల కొరకు పరిశీలించు
@@ -242,7 +246,6 @@ extension-enabled-heading = చేతనం
 extension-disabled-heading = అచేతనం
 
 theme-enabled-heading = చేతనం
-theme-disabled-heading = అచేతనం
 
 plugin-enabled-heading = చేతనం
 plugin-disabled-heading = అచేతనం
@@ -279,8 +282,12 @@ addon-detail-update-check-label = తాజాకరణలకై చూడు
 addon-detail-private-browsing-allow = అనుమతించు
 addon-detail-private-browsing-disallow = అనుమతించ వద్దు
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
+
 
 ##
 
@@ -300,3 +307,29 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = అన్ని పొడిగింతలు కొరకు సాధనములు
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } అనునది { -brand-short-name } { $version } తో సారూప్యంగా లేదు.
+
+details-notification-unsigned-and-disabled = { -brand-short-name }‌లో వాడుకకు { $name }‌ను తనిఖీ చేయలేకున్నాం కనుక అచేతనం చేసాం.
+details-notification-unsigned-and-disabled-link = మరింత సమాచారం
+
+details-notification-unsigned = { -brand-short-name }‌లో వాడుకకు { $name }‌ను తనిఖీ చేయబడలేదు. జాగ్రత్తతో కొనసాగండి.
+details-notification-unsigned-link = మరింత సమాచారం
+
+details-notification-blocked = రక్షణ లేదా స్థిరత్వ సమస్యల కారణంగా { $name } అచేతనపరచబడింది.
+details-notification-blocked-link = మరింత సమాచారం
+
+details-notification-softblocked = { $name } రక్షణ లేదా స్థిరత్వ సమస్యలకు కారణం.
+details-notification-softblocked-link = మరింత సమాచారం
+
+details-notification-gmp-pending = { $name } త్వరలో స్థాపించబడుతుంది.

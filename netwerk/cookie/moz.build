@@ -20,6 +20,7 @@ XPIDL_MODULE = "necko_cookie"
 
 
 EXPORTS.mozilla.net = [
+    "Cookie.h",
     "CookieJarSettings.h",
     "CookieKey.h",
     "CookiePersistentStorage.h",
@@ -65,14 +66,9 @@ LOCAL_INCLUDES += [
 ]
 
 TESTING_JS_MODULES += [
-    "CookieXPCShellUtils.jsm",
+    "CookieXPCShellUtils.sys.mjs",
 ]
 
 include("/ipc/chromium/chromium-config.mozbuild")
 
 FINAL_LIBRARY = "xul"
-
-if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-    CXXFLAGS += ["-Wno-error=shadow"]
-
-REQUIRES_UNIFIED_BUILD = True

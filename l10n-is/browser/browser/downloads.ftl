@@ -14,10 +14,10 @@ downloads-panel =
 ##
 
 # The style attribute has the width of the Downloads Panel expressed using
-# a CSS unit. The longest labels that should fit are usually those of 
+# a CSS unit. The longest labels that should fit are usually those of
 # in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
+downloads-panel-items =
+    .style = width: 35em
 
 downloads-cmd-pause =
     .label = Í bið
@@ -30,34 +30,65 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Hætta við
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Opna möppu
-    .accesskey = m
-  
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Sýna í Finder
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] Sýna í Finder
+           *[other] Sýna í möppu
+        }
     .accesskey = F
 
-downloads-cmd-show-button =
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
+
+downloads-cmd-use-system-default =
+    .label = Opna í skoðara kerfisins
+    .accesskey = k
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-use-system-default-named =
+    .label = Opna í { $handler }
+    .accesskey = p
+
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
+downloads-cmd-always-use-system-default =
+    .label = Alltaf opna í skoðara kerfisins
+    .accesskey = A
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-always-use-system-default-named =
+    .label = Alltaf opna í { $handler }
+    .accesskey = f
+
+##
+
+# We can use the same accesskey as downloads-cmd-always-use-system-default.
+# Both should not be visible in the downloads context menu at the same time.
+downloads-cmd-always-open-similar-files =
+    .label = Opna alltaf svipaðar skrár
+    .accesskey = f
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
             [macos] Sýna í Finder
-           *[other] Opna möppu
+           *[other] Sýna í möppu
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
             [macos] Sýna í Finder
-           *[other] Opna möppu
+           *[other] Sýna í möppu
         }
-downloads-cmd-show-description =
+downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
             [macos] Sýna í Finder
-           *[other] Opna möppu
+           *[other] Sýna í möppu
         }
 
 downloads-cmd-show-downloads =
@@ -76,11 +107,14 @@ downloads-cmd-remove-from-history =
     .label = Fjarlægja úr feril
     .accesskey = e
 downloads-cmd-clear-list =
-    .label = Hreinsa forskoðunarrúðu
+    .label = Hreinsa forskoðunarspjald
     .accesskey = a
 downloads-cmd-clear-downloads =
     .label = Hreinsa niðurhal
     .accesskey = n
+downloads-cmd-delete-file =
+    .label = Eyða
+    .accesskey = E
 
 # This command is shown in the context menu when downloads are blocked.
 downloads-cmd-unblock =
@@ -130,6 +164,19 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = Opnar eftir { $hours }klst { $minutes }m...
+downloading-file-opens-in-minutes-2 =
+    .value = Opnast eftir { $minutes }mín...
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = Opnast eftir { $minutes }mín { $seconds }sek…
+downloading-file-opens-in-seconds-2 =
+    .value = Opnast eftir { $seconds }sek...
+downloading-file-opens-in-some-time-2 =
+    .value = Opnast þegar niðurhali er lokið…
+downloading-file-click-to-open =
+    .value = Opnast þegar niðurhali er lokið
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -154,6 +201,21 @@ downloads-history =
 downloads-details =
     .title = Upplýsingar um niðurhal
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+downloads-files-not-downloaded =
+    { $num ->
+        [one] Skrá ekki sótt.
+       *[other] { $num } skrár ekki sóttar.
+    }
+downloads-blocked-from-url = Lokað fyrir niðurhal frá { $url }.
+downloads-blocked-download-detailed-info = { $url } reyndi sjálfvirkt að sækja margar skrár. Vefsvæðið gæti verið bilað eða verið að reyna að geyma ruslskrár í tækinu þínu.
+
+##
+
 downloads-clear-downloads-button =
     .label = Hreinsa niðurhöl
     .tooltiptext = Hreinsa niðurhöl sem er lokið, hætt við eða sem mistókust
@@ -166,3 +228,27 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Engin niðurhöl í þessari lotu.
+
+# This is displayed in an item at the bottom of the Downloads Panel when there
+# are more downloads than can fit in the list in the panel.
+#   $count (number) - number of files being downloaded that are not shown in the
+#                     panel list.
+downloads-more-downloading =
+    { $count ->
+        [one] { $count } skrá í viðbót að hlaðast inn
+       *[other] { $count } skrár í viðbót að hlaðast inn
+    }
+
+## Download errors
+
+downloads-error-alert-title = Villa í niðurhali
+# Variables:
+#   $extension (String): the name of the blocking extension.
+downloads-error-blocked-by = Ekki er hægt að vista niðurhalið vegna þess að { $extension } hindrar það.
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = Ekki er hægt að vista niðurhalið vegna þess að viðbót hindrar það.
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Ekki hægt að vista niðurhalið því óþekkt villa kom upp.
+    
+    Reyndu aftur.

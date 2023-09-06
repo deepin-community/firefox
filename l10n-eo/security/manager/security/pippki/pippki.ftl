@@ -16,8 +16,6 @@ change-password-old = Nuna pasvorto:
 change-password-new = Nova pasvorto:
 change-password-reenter = Nova pasvorto (denove):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Ne eblas ŝanĝi la ĉefan pasvorton.
 pippki-incorrect-pw = Vi ne tajpis la ĝustan (nunan) ĉefan pasvorton. Bonvolu klopodi denove.
 pippki-pw-change-ok = Ĉefa pasvorto sukcese ŝanĝita.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Vi estas nun en FIPSa reĝimo. FIPS postul
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Remeti ĉefan pasvorton
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Rekomenci
-
 reset-primary-password-text = Se vi nuligas vian ĉefan pasvorton ĉiuj viaj konservitaj TTTaj kaj retpoŝtaj pasvortoj estos forgesitaj, kune kun via formulara informo, personaj atestiloj kaj privataj ŝlosiloj. Ĉu vi certe volas nuligi vian ĉefan pasvorton?
 
 pippki-reset-password-confirmation-title = Remeti ĉefan pasvorton
@@ -43,15 +40,15 @@ pippki-reset-password-confirmation-message = Via ĉefa pasvorto estis forigita.
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Elŝutanta atestilon
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Fido je nova atestila aŭtoritato (CA) estis petita al vi.
 download-cert-trust-ssl =
     .label = Fidi tiun ĉi atestilan aŭtoritaton por identigi retejojn.
 download-cert-trust-email =
     .label = Fidi tiun ĉi CAn por identigi retpoŝtajn uzantojn.
-download-cert-message-desc = Antaŭ ol fidi je tiu ĉi CA por ĉiuj celoj vi devus ekzameni ĝian atestilon kaj ĝiajn politikojn kaj procedurojn (se tio disponeblas).
+download-cert-message-desc = Antaŭ ol fidi tiun ĉi CA por ĉiuj celoj vi devus ekzameni ĝian atestilon kaj ĝiajn politikojn kaj procedurojn (se tio disponeblas).
 download-cert-view-cert =
     .label = Vidi
 download-cert-view-text = Ekzameni atestilon de CA
@@ -77,7 +74,8 @@ set-password-reminder = Grava rimarko: Se vi forgesas la pasvorton  de via atest
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Protektita aŭtentiga ĵetono
-protected-auth-msg = Bonvolu aŭtentigi vin laŭ la ĵetono. La maniero aŭtentigi dependas de la tipo de via ĵetono.
-protected-auth-token = Ĵetono:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Bonvolu aŭtentigi vin en la ĵetono “{ $tokenName }”. La maniero tion fari dependas de la ĵetono (ekzemple, per fingrospura legilo aŭ per kodo tajpita en cifera klavaro).

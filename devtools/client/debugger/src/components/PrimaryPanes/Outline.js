@@ -3,27 +3,26 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import React, { Component } from "react";
-import { showMenu } from "../../context-menu/menu";
+import PropTypes from "prop-types";
 import { connect } from "../../utils/connect";
 import { score as fuzzaldrinScore } from "fuzzaldrin-plus";
-const classnames = require("classnames");
 
 import { containsPosition, positionAfter } from "../../utils/ast";
-import { copyToTheClipboard } from "../../utils/clipboard";
-import { findFunctionText } from "../../utils/function";
+import { createLocation } from "../../utils/location";
 
 import actions from "../../actions";
 import {
-  getSelectedSourceWithContent,
+  getSelectedLocation,
+  getSelectedSource,
   getSymbols,
   getCursorPosition,
-  getContext,
 } from "../../selectors";
 
 import OutlineFilter from "./OutlineFilter";
 import "./Outline.css";
 import PreviewFunction from "../shared/PreviewFunction";
-import { uniq, sortBy } from "lodash";
+
+const classnames = require("devtools/client/shared/classnames.js");
 
 // Set higher to make the fuzzaldrin filter more specific
 const FUZZALDRIN_FILTER_THRESHOLD = 15000;
@@ -63,6 +62,18 @@ export class Outline extends Component {
     this.state = { filter: "", focusedItem: null };
   }
 
+  static get propTypes() {
+    return {
+      alphabetizeOutline: PropTypes.bool.isRequired,
+      cursorPosition: PropTypes.object,
+      flashLineRange: PropTypes.func.isRequired,
+      onAlphabetizeClick: PropTypes.func.isRequired,
+      selectLocation: PropTypes.func.isRequired,
+      selectedSource: PropTypes.object.isRequired,
+      symbols: PropTypes.object.isRequired,
+    };
+  }
+
   componentDidUpdate(prevProps) {
     const { cursorPosition, symbols } = this.props;
     if (
@@ -86,7 +97,7 @@ export class Outline extends Component {
     let classes = [];
     let functions = [];
 
-    if (symbols && !symbols.loading) {
+    if (symbols) {
       ({ classes, functions } = symbols);
     }
 
@@ -96,8 +107,9 @@ export class Outline extends Component {
         name != "anonymous" && containsPosition(location, cursorPosition)
     );
 
-    if (enclosedItems.length == 0) {
-      return this.setState({ focusedItem: null });
+    if (!enclosedItems.length) {
+      this.setState({ focusedItem: null });
+      return;
     }
 
     // Find the closest item to the selected location to focus
@@ -109,16 +121,18 @@ export class Outline extends Component {
   }
 
   selectItem(selectedItem) {
-    const { cx, selectedSource, selectLocation } = this.props;
+    const { selectedSource, selectLocation } = this.props;
     if (!selectedSource || !selectedItem) {
       return;
     }
 
-    selectLocation(cx, {
-      sourceId: selectedSource.id,
-      line: selectedItem.location.start.line,
-      column: selectedItem.location.start.column,
-    });
+    selectLocation(
+      createLocation({
+        source: selectedSource,
+        line: selectedItem.location.start.line,
+        column: selectedItem.location.start.column,
+      })
+    );
 
     this.setState({ focusedItem: selectedItem });
   }
@@ -127,31 +141,7 @@ export class Outline extends Component {
     event.stopPropagation();
     event.preventDefault();
 
-    const { selectedSource, flashLineRange, getFunctionText } = this.props;
-
-    if (!selectedSource) {
-      return;
-    }
-
-    const sourceLine = func.location.start.line;
-    const functionText = getFunctionText(sourceLine);
-
-    const copyFunctionItem = {
-      id: "node-menu-copy-function",
-      label: L10N.getStr("copyFunction.label"),
-      accesskey: L10N.getStr("copyFunction.accesskey"),
-      disabled: !functionText,
-      click: () => {
-        flashLineRange({
-          start: sourceLine,
-          end: func.location.end.line,
-          sourceId: selectedSource.id,
-        });
-        return copyToTheClipboard(functionText);
-      },
-    };
-    const menuOptions = [copyFunctionItem];
-    showMenu(event, menuOptions);
+    this.props.showOutlineContextMenu(event, func);
   }
 
   updateFilter = filter => {
@@ -206,7 +196,7 @@ export class Outline extends Component {
   renderClassFunctions(klass, functions) {
     const { symbols } = this.props;
 
-    if (!symbols || symbols.loading || klass == null || functions.length == 0) {
+    if (!symbols || klass == null || !functions.length) {
       return null;
     }
 
@@ -245,20 +235,21 @@ export class Outline extends Component {
 
   renderFunctions(functions) {
     const { filter } = this.state;
-    let classes = uniq(functions.map(({ klass }) => klass));
-    let namedFunctions = functions.filter(
+    let classes = [...new Set(functions.map(({ klass }) => klass))];
+    const namedFunctions = functions.filter(
       ({ name, klass }) =>
         filterOutlineItem(name, filter) && !klass && !classes.includes(name)
     );
 
-    let classFunctions = functions.filter(
+    const classFunctions = functions.filter(
       ({ name, klass }) => filterOutlineItem(name, filter) && !!klass
     );
 
     if (this.props.alphabetizeOutline) {
-      namedFunctions = sortBy(namedFunctions, "name");
+      const sortByName = (a, b) => (a.name < b.name ? -1 : 1);
+      namedFunctions.sort(sortByName);
       classes = classes.sort();
-      classFunctions = sortBy(classFunctions, "name");
+      classFunctions.sort(sortByName);
     }
 
     return (
@@ -294,7 +285,7 @@ export class Outline extends Component {
       return this.renderPlaceholder();
     }
 
-    if (!symbols || symbols.loading) {
+    if (!symbols) {
       return this.renderLoading();
     }
 
@@ -319,25 +310,17 @@ export class Outline extends Component {
 }
 
 const mapStateToProps = state => {
-  const selectedSource = getSelectedSourceWithContent(state);
-  const symbols = selectedSource ? getSymbols(state, selectedSource) : null;
+  const selectedSource = getSelectedSource(state);
+  const symbols = getSymbols(state, getSelectedLocation(state));
 
   return {
-    cx: getContext(state),
     symbols,
-    selectedSource: selectedSource,
+    selectedSource,
     cursorPosition: getCursorPosition(state),
-    getFunctionText: line => {
-      if (selectedSource) {
-        return findFunctionText(line, selectedSource, symbols);
-      }
-
-      return null;
-    },
   };
 };
 
 export default connect(mapStateToProps, {
   selectLocation: actions.selectLocation,
-  flashLineRange: actions.flashLineRange,
+  showOutlineContextMenu: actions.showOutlineContextMenu,
 })(Outline);

@@ -1,21 +1,15 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import imp
-import os
 import sys
-
-from mach.base import MachError
-from mach.test.conftest import TestBase
+from pathlib import Path
 from unittest.mock import patch
 
 from mozunit import main
 
-
-here = os.path.abspath(os.path.dirname(__file__))
+from mach.base import MachError
+from mach.test.conftest import TestBase
 
 
 class Entry:
@@ -34,7 +28,7 @@ class Entry:
 class TestEntryPoints(TestBase):
     """Test integrating with setuptools entry points"""
 
-    provider_dir = os.path.join(here, "providers")
+    provider_dir = Path(__file__).parent.resolve() / "providers"
 
     def _run_help(self):
         return self._run_mach(["help"], entry_point="mach.providers")
@@ -54,7 +48,7 @@ class TestEntryPoints(TestBase):
 
     @patch("pkg_resources.iter_entry_points")
     def test_load_entry_point_from_file(self, mock):
-        mock.return_value = [Entry([os.path.join(self.provider_dir, "basic.py")])]
+        mock.return_value = [Entry([self.provider_dir / "basic.py"])]
 
         result, stdout, stderr = self._run_help()
         self.assertIsNone(result)

@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Mak Profile Helpender
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Introduction
-       *[other] Walcome tae the { create-profile-window.title }
+       *[other] Walcome tae the { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } stores information aboot yer settins and preferences in yer personal profile.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Feenish
-       *[other] Feenishin the { create-profile-window.title }
+       *[other] Feenishin the { create-profile-window2.title }
     }
 
 profile-creation-intro = If ye mak a wheen o profiles ye can tell them apairt by the profile nemmes. Ye micht yaise the nemme providit here or yaise ane o yer ain.

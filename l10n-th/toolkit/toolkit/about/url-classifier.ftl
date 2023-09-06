@@ -40,6 +40,7 @@ url-classifier-debug-sb-modules = โมดูลรายการบันท�
 url-classifier-debug-modules = โมดูลรายการบันทึกปัจจุบัน
 url-classifier-debug-sbjs-modules = รายการบันทึก JS การเรียกดูแบบปลอดภัย
 url-classifier-debug-file = ไฟล์รายการบันทึกปัจจุบัน
+
 url-classifier-trigger-update = กระตุ้นการอัปเดต
 url-classifier-not-available = ไม่มี
 url-classifier-disable-sbjs-log = ปิดใช้งานรายการบันทึก JS การเรียกดูแบบปลอดภัย
@@ -49,5 +50,9 @@ url-classifier-disabled = ปิดใช้งานอยู่
 url-classifier-updating = กำลังอัปเดต
 url-classifier-cannot-update = ไม่สามารถอัปเดต
 url-classifier-success = สำเร็จ
+
+## Variables
+##   $error (string) - Error message
+
 url-classifier-update-error = ข้อผิดพลาดการอัปเดต ({ $error })
 url-classifier-download-error = ข้อผิดพลาดการดาวน์โหลด ({ $error })

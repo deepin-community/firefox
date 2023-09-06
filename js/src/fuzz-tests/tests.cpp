@@ -33,7 +33,7 @@ static const JSClass* getGlobalClass() {
 static JSObject* jsfuzz_createGlobal(JSContext* cx, JSPrincipals* principals) {
   /* Create the global object. */
   JS::RealmOptions options;
-  options.creationOptions().setStreamsEnabled(true).setWeakRefsEnabled(
+  options.creationOptions().setWeakRefsEnabled(
       JS::WeakRefSpecifier::EnabledWithCleanupSome);
   return JS_NewGlobalObject(cx, getGlobalClass(), principals,
                             JS::FireOnNewGlobalHook, options);
@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
 
 #ifdef LIBFUZZER
   fuzzer::FuzzerDriver(&argc, &argv, testingFunc);
-#elif __AFL_COMPILER
+#elif AFLFUZZ
   testingFunc(nullptr, 0);
 #endif
 

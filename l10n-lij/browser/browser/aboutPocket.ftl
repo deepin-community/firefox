@@ -26,7 +26,9 @@ pocket-panel-saved-save-tags = Sarva
 pocket-panel-saved-saving-tags = Son apreuvo a sarvâ…
 pocket-panel-saved-suggested-tags = Etichete consigiæ
 pocket-panel-saved-tags-saved = Azonte etichette
-pocket-panel-signup-view-list = Veddi elenco
+
+# This is displayed above a field where the user can add tags
+pocket-panel-signup-add-tags = Azonzi etichette:
 
 ## about:pocket-signup panel
 
@@ -42,8 +44,16 @@ pocket-panel-signup-tagline-story-two = Amialo in { -pocket-brand-name } da qual
 
 ## about:pocket-home panel
 
-pocket-panel-home-my-list = A mæ lista
 pocket-panel-home-welcome-back = Benveguo torna
 pocket-panel-home-explore-popular-topics = Esplòra argomenti ciù popolâ
 pocket-panel-home-discover-more = Descòvri de ciù
 pocket-panel-home-explore-more = Esplòra
+
+## Pocket panel header component
+
+pocket-panel-header-sign-in = Intra
+
+## Pocket panel buttons
+
+pocket-panel-button-show-all = Fanni vedde tutto
+pocket-panel-button-remove = Scancella

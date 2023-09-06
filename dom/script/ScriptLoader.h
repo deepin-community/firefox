@@ -8,23 +8,27 @@
 #define mozilla_dom_ScriptLoader_h
 
 #include "js/TypeDecls.h"
+#include "js/Utility.h"  // JS::FreePolicy
+#include "js/loader/LoadedScript.h"
+#include "js/loader/ScriptKind.h"
+#include "js/loader/ScriptLoadRequest.h"
+#include "mozilla/dom/ScriptLoadContext.h"
 #include "nsCOMPtr.h"
 #include "nsRefPtrHashtable.h"
 #include "nsIScriptElement.h"
 #include "nsCOMArray.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsTArray.h"
+#include "nsILoadInfo.h"  // nsSecurityFlags
 #include "nsINode.h"
 #include "nsIObserver.h"
 #include "nsIScriptLoaderObserver.h"
 #include "nsURIHashKey.h"
 #include "mozilla/CORSMode.h"
-#include "mozilla/dom/LoadedScript.h"
-#include "mozilla/dom/ScriptLoadRequest.h"
+#include "mozilla/dom/JSExecutionContext.h"  // JSExecutionContext
+#include "ModuleLoader.h"
 #include "mozilla/MaybeOneOf.h"
 #include "mozilla/MozPromise.h"
-#include "ScriptKind.h"
-#include "ModuleMapKey.h"
 
 class nsCycleCollectionTraversalCallback;
 class nsIChannel;
@@ -42,6 +46,18 @@ class CompileOptions;
 template <typename UnitT>
 class SourceText;
 
+namespace loader {
+
+class LoadedScript;
+class ScriptLoaderInterface;
+class ModuleLoadRequest;
+class ModuleScript;
+class ScriptLoadRequest;
+class ScriptLoadRequestList;
+
+enum class ParserMetadata;
+
+}  // namespace loader
 }  // namespace JS
 
 namespace mozilla {
@@ -54,12 +70,11 @@ namespace dom {
 class AutoJSAPI;
 class DocGroup;
 class Document;
-class LoadedScript;
-class ModuleLoadRequest;
-class ModuleScript;
+class ModuleLoader;
 class SRICheckDataVerifier;
 class SRIMetadata;
 class ScriptLoadHandler;
+class ScriptLoadContext;
 class ScriptLoader;
 class ScriptRequestProcessor;
 
@@ -88,7 +103,7 @@ class AsyncCompileShutdownObserver final : public nsIObserver {
 // Script loader implementation
 //////////////////////////////////////////////////////////////
 
-class ScriptLoader final : public nsISupports {
+class ScriptLoader final : public JS::loader::ScriptLoaderInterface {
   class MOZ_STACK_CLASS AutoCurrentScriptUpdater {
    public:
     AutoCurrentScriptUpdater(ScriptLoader* aScriptLoader,
@@ -109,8 +124,9 @@ class ScriptLoader final : public nsISupports {
     ScriptLoader* mScriptLoader;
   };
 
-  friend class ModuleLoadRequest;
+  friend class JS::loader::ModuleLoadRequest;
   friend class ScriptRequestProcessor;
+  friend class ModuleLoader;
   friend class ScriptLoadHandler;
   friend class AutoCurrentScriptUpdater;
 
@@ -119,6 +135,12 @@ class ScriptLoader final : public nsISupports {
 
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_CLASS(ScriptLoader)
+
+  /**
+   * Called when the document that owns this script loader changes global. The
+   * argument is null when the document is detached from a window.
+   */
+  void SetGlobalObject(nsIGlobalObject* aGlobalObject);
 
   /**
    * The loader maintains a weak reference to the document with
@@ -161,7 +183,8 @@ class ScriptLoader final : public nsISupports {
    * @param aElement The element representing the script to be loaded and
    *        evaluated.
    */
-  bool ProcessScriptElement(nsIScriptElement* aElement);
+  bool ProcessScriptElement(nsIScriptElement* aElement,
+                            const nsAutoString& aTypeAttr);
 
   /**
    * Gets the currently executing script. This is useful if you want to
@@ -187,6 +210,11 @@ class ScriptLoader final : public nsISupports {
     }
     mEnabled = aEnabled;
   }
+
+  ModuleLoader* GetModuleLoader() { return mModuleLoader; }
+
+  void RegisterContentScriptModuleLoader(ModuleLoader* aLoader);
+  void RegisterShadowRealmModuleLoader(ModuleLoader* aLoader);
 
   /**
    *  Check whether to speculatively OMT parse scripts as soon as
@@ -241,31 +269,16 @@ class ScriptLoader final : public nsISupports {
    * @param aHintCharset Character set hint (e.g., from a charset attribute).
    * @param aDocument    Document which the data is loaded for. May be null.
    * @param aBufOut      [out] fresh char16_t array containing data converted to
-   *                     Unicode.  Caller must js_free() this data when finished
-   *                     with it.
+   *                     Unicode.
    * @param aLengthOut   [out] Length of array returned in aBufOut in number
    *                     of char16_t code units.
    */
   static nsresult ConvertToUTF16(nsIChannel* aChannel, const uint8_t* aData,
                                  uint32_t aLength,
                                  const nsAString& aHintCharset,
-                                 Document* aDocument, char16_t*& aBufOut,
+                                 Document* aDocument,
+                                 UniquePtr<char16_t[], JS::FreePolicy>& aBufOut,
                                  size_t& aLengthOut);
-
-  static inline nsresult ConvertToUTF16(nsIChannel* aChannel,
-                                        const uint8_t* aData, uint32_t aLength,
-                                        const nsAString& aHintCharset,
-                                        Document* aDocument,
-                                        JS::UniqueTwoByteChars& aBufOut,
-                                        size_t& aLengthOut) {
-    char16_t* bufOut;
-    nsresult rv = ConvertToUTF16(aChannel, aData, aLength, aHintCharset,
-                                 aDocument, bufOut, aLengthOut);
-    if (NS_SUCCEEDED(rv)) {
-      aBufOut.reset(bufOut);
-    }
-    return rv;
-  };
 
   /**
    * Convert the given buffer to a UTF-8 string.  If the buffer begins with a
@@ -282,14 +295,14 @@ class ScriptLoader final : public nsISupports {
    * @param aHintCharset Character set hint (e.g., from a charset attribute).
    * @param aDocument    Document which the data is loaded for. May be null.
    * @param aBufOut      [out] fresh Utf8Unit array containing data converted to
-   *                     Unicode.  Caller must js_free() this data when finished
-   *                     with it.
+   *                     Unicode.
    * @param aLengthOut   [out] Length of array returned in aBufOut in UTF-8 code
    *                     units (i.e. in bytes).
    */
   static nsresult ConvertToUTF8(nsIChannel* aChannel, const uint8_t* aData,
                                 uint32_t aLength, const nsAString& aHintCharset,
-                                Document* aDocument, Utf8Unit*& aBufOut,
+                                Document* aDocument,
+                                UniquePtr<Utf8Unit[], JS::FreePolicy>& aBufOut,
                                 size_t& aLengthOut);
 
   /**
@@ -306,7 +319,12 @@ class ScriptLoader final : public nsISupports {
   /**
    * Returns wether any request is queued, and not executed yet.
    */
-  bool HasPendingRequests();
+  bool HasPendingRequests() const;
+
+  /**
+   * Returns wether there are any dynamic module import requests pending.
+   */
+  bool HasPendingDynamicImports() const;
 
   /**
    * Processes any pending requests that are ready for processing.
@@ -360,10 +378,11 @@ class ScriptLoader final : public nsISupports {
    */
   virtual void PreloadURI(nsIURI* aURI, const nsAString& aCharset,
                           const nsAString& aType, const nsAString& aCrossOrigin,
-                          const nsAString& aIntegrity, bool aScriptFromHead,
-                          bool aAsync, bool aDefer, bool aNoModule,
-                          bool aLinkPreload,
-                          const ReferrerPolicy aReferrerPolicy);
+                          const nsAString& aNonce, const nsAString& aIntegrity,
+                          bool aScriptFromHead, bool aAsync, bool aDefer,
+                          bool aNoModule, bool aLinkPreload,
+                          const ReferrerPolicy aReferrerPolicy,
+                          uint64_t aEarlyHintPreloaderId);
 
   /**
    * Process a request that was deferred so that the script could be compiled
@@ -394,81 +413,25 @@ class ScriptLoader final : public nsISupports {
    */
   void Destroy();
 
-  /**
-   * Implement the HostResolveImportedModule abstract operation.
-   *
-   * Resolve a module specifier string and look this up in the module
-   * map, returning the result. This is only called for previously
-   * loaded modules and always succeeds.
-   *
-   * @param aReferencingPrivate A JS::Value which is either undefined
-   *                            or contains a LoadedScript private pointer.
-   * @param aModuleRequest A module request object.
-   * @param aModuleOut This is set to the module found.
-   */
-  static void ResolveImportedModule(JSContext* aCx,
-                                    JS::Handle<JS::Value> aReferencingPrivate,
-                                    JS::Handle<JSObject*> aModuleRequest,
-                                    JS::MutableHandle<JSObject*> aModuleOut);
-
-  void StartDynamicImport(ModuleLoadRequest* aRequest);
-
-  /**
-   * Shorthand Wrapper for JSAPI FinishDynamicImport function for the reject
-   * case where we do not have `aEvaluationPromise`. As there is no evaluation
-   * Promise, JS::FinishDynamicImport will always reject.
-   *
-   * @param aRequest
-   *        The module load request for the dynamic module.
-   * @param aResult
-   *        The result of running ModuleEvaluate -- If this is successful, then
-   *        we can await the associated EvaluationPromise.
-   */
-  void FinishDynamicImportAndReject(ModuleLoadRequest* aRequest,
-                                    nsresult aResult);
-
-  /**
-   * Wrapper for JSAPI FinishDynamicImport function. Takes an optional argument
-   * `aEvaluationPromise` which, if null, exits early.
-   *
-   * This is the Top Level Await version, which works with modules which return
-   * promises.
-   *
-   * @param aCX
-   *        The JSContext for the module.
-   * @param aRequest
-   *        The module load request for the dynamic module.
-   * @param aResult
-   *        The result of running ModuleEvaluate -- If this is successful, then
-   *        we can await the associated EvaluationPromise.
-   * @param aEvaluationPromise
-   *        The evaluation promise returned from evaluating the module. If this
-   *        is null, JS::FinishDynamicImport will reject the dynamic import
-   *        module promise.
-   */
-  void FinishDynamicImport(JSContext* aCx, ModuleLoadRequest* aRequest,
-                           nsresult aResult,
-                           JS::Handle<JSObject*> aEvaluationPromise);
-
   /*
    * Get the currently active script. This is used as the initiating script when
    * executing timeout handler scripts.
    */
-  static LoadedScript* GetActiveScript(JSContext* aCx);
+  static JS::loader::LoadedScript* GetActiveScript(JSContext* aCx);
 
   Document* GetDocument() const { return mDocument; }
 
+  nsIURI* GetBaseURI() const override;
+
  private:
-  virtual ~ScriptLoader();
+  ~ScriptLoader();
 
-  void EnsureModuleHooksInitialized();
-
-  ScriptLoadRequest* CreateLoadRequest(ScriptKind aKind, nsIURI* aURI,
-                                       nsIScriptElement* aElement,
-                                       nsIPrincipal* aTriggeringPrincipal,
-                                       mozilla::CORSMode aCORSMode,
-                                       const SRIMetadata& aIntegrity,
-                                       ReferrerPolicy aReferrerPolicy);
+  already_AddRefed<ScriptLoadRequest> CreateLoadRequest(
+      ScriptKind aKind, nsIURI* aURI, nsIScriptElement* aElement,
+      nsIPrincipal* aTriggeringPrincipal, mozilla::CORSMode aCORSMode,
+      const nsAString& aNonce, const SRIMetadata& aIntegrity,
+      ReferrerPolicy aReferrerPolicy,
+      JS::loader::ParserMetadata aParserMetadata);
 
   /**
    * Unblocks the creator parser of the parser-blocking scripts.
@@ -481,14 +444,14 @@ class ScriptLoader final : public nsISupports {
   void ContinueParserAsync(ScriptLoadRequest* aParserBlockingRequest);
 
   bool ProcessExternalScript(nsIScriptElement* aElement, ScriptKind aScriptKind,
-                             nsAutoString aTypeAttr,
+                             const nsAutoString& aTypeAttr,
                              nsIContent* aScriptContent);
 
   bool ProcessInlineScript(nsIScriptElement* aElement, ScriptKind aScriptKind);
 
-  ScriptLoadRequest* LookupPreloadRequest(nsIScriptElement* aElement,
-                                          ScriptKind aScriptKind,
-                                          const SRIMetadata& aSRIMetadata);
+  JS::loader::ScriptLoadRequest* LookupPreloadRequest(
+      nsIScriptElement* aElement, ScriptKind aScriptKind,
+      const SRIMetadata& aSRIMetadata);
 
   void GetSRIMetadata(const nsAString& aIntegrityAttr,
                       SRIMetadata* aMetadataOut);
@@ -502,8 +465,10 @@ class ScriptLoader final : public nsISupports {
   /**
    * Helper function to check the content policy for a given request.
    */
-  static nsresult CheckContentPolicy(Document* aDocument, nsISupports* aContext,
+  static nsresult CheckContentPolicy(Document* aDocument,
+                                     nsIScriptElement* aElement,
                                      const nsAString& aType,
+                                     const nsAString& aNonce,
                                      ScriptLoadRequest* aRequest);
 
   /**
@@ -519,7 +484,25 @@ class ScriptLoader final : public nsISupports {
   /**
    * Start a load for aRequest's URI.
    */
-  nsresult StartLoad(ScriptLoadRequest* aRequest);
+  nsresult StartLoad(ScriptLoadRequest* aRequest,
+                     const Maybe<nsAutoString>& aCharsetForPreload);
+  /**
+   * Start a load for a classic script URI.
+   * Sets up the necessary security flags before calling StartLoadInternal.
+   */
+  nsresult StartClassicLoad(ScriptLoadRequest* aRequest,
+                            const Maybe<nsAutoString>& aCharsetForPreload);
+
+  /**
+   * Start a load for a module script URI.
+   *
+   * aCharsetForPreload is only needed when this load is a preload (via
+   * ScriptLoader::PreloadURI), because ScriptLoadRequest doesn't
+   * have this information.
+   */
+  nsresult StartLoadInternal(ScriptLoadRequest* aRequest,
+                             nsSecurityFlags securityFlags,
+                             const Maybe<nsAutoString>& aCharsetForPreload);
 
   /**
    * Abort the current stream, and re-start with a new load request from scratch
@@ -569,17 +552,72 @@ class ScriptLoader final : public nsISupports {
                        uint32_t* sriLength) const;
 
   void ReportErrorToConsole(ScriptLoadRequest* aRequest,
-                            nsresult aResult) const;
+                            nsresult aResult) const override;
+
+  void ReportWarningToConsole(
+      ScriptLoadRequest* aRequest, const char* aMessageName,
+      const nsTArray<nsString>& aParams = nsTArray<nsString>()) const override;
+
   void ReportPreloadErrorsToConsole(ScriptLoadRequest* aRequest);
 
-  nsresult AttemptAsyncScriptCompile(ScriptLoadRequest* aRequest,
-                                     bool* aCouldCompileOut);
+  nsresult AttemptOffThreadScriptCompile(ScriptLoadRequest* aRequest,
+                                         bool* aCouldCompileOut);
+
+  nsresult StartOffThreadCompilation(JSContext* aCx,
+                                     ScriptLoadRequest* aRequest,
+                                     JS::CompileOptions& aOptions,
+                                     Runnable* aRunnable,
+                                     JS::OffThreadToken** aTokenOut);
+
+  static void OffThreadCompilationCompleteCallback(JS::OffThreadToken* aToken,
+                                                   void* aCallbackData);
+
   nsresult ProcessRequest(ScriptLoadRequest* aRequest);
-  void ProcessDynamicImport(ModuleLoadRequest* aRequest);
   nsresult CompileOffThreadOrProcessRequest(ScriptLoadRequest* aRequest);
   void FireScriptAvailable(nsresult aResult, ScriptLoadRequest* aRequest);
-  void FireScriptEvaluated(nsresult aResult, ScriptLoadRequest* aRequest);
-  nsresult EvaluateScript(ScriptLoadRequest* aRequest);
+  // TODO: Convert this to MOZ_CAN_RUN_SCRIPT (bug 1415230)
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY void FireScriptEvaluated(
+      nsresult aResult, ScriptLoadRequest* aRequest);
+
+  // Implements https://html.spec.whatwg.org/#execute-the-script-block
+  nsresult EvaluateScriptElement(ScriptLoadRequest* aRequest);
+
+  // Handles both bytecode and text source scripts; populates exec with a
+  // compiled script
+  nsresult CompileOrDecodeClassicScript(JSContext* aCx,
+                                        JSExecutionContext& aExec,
+                                        ScriptLoadRequest* aRequest);
+
+  static nsCString& BytecodeMimeTypeFor(ScriptLoadRequest* aRequest);
+
+  // Decide whether to encode bytecode for given script load request,
+  // and store the script into the request if necessary.
+  //
+  // This method must be called before executing the script.
+  void MaybePrepareForBytecodeEncodingBeforeExecute(
+      ScriptLoadRequest* aRequest, JS::Handle<JSScript*> aScript);
+
+  // Queue the script load request for bytecode encoding if we decided to
+  // encode, or cleanup the script load request fields otherwise.
+  //
+  // This method must be called after executing the script.
+  nsresult MaybePrepareForBytecodeEncodingAfterExecute(
+      ScriptLoadRequest* aRequest, nsresult aRv);
+
+  // Returns true if MaybePrepareForBytecodeEncodingAfterExecute is called
+  // for given script load request.
+  bool IsAlreadyHandledForBytecodeEncodingPreparation(
+      ScriptLoadRequest* aRequest);
+
+  void MaybePrepareModuleForBytecodeEncodingBeforeExecute(
+      JSContext* aCx, ModuleLoadRequest* aRequest) override;
+
+  nsresult MaybePrepareModuleForBytecodeEncodingAfterExecute(
+      ModuleLoadRequest* aRequest, nsresult aRv) override;
+
+  // Implements https://html.spec.whatwg.org/#run-a-classic-script
+  nsresult EvaluateScript(nsIGlobalObject* aGlobalObject,
+                          ScriptLoadRequest* aRequest);
 
   /**
    * Queue the current script load request to be saved, when the page
@@ -594,7 +632,7 @@ class ScriptLoader final : public nsISupports {
    * no more script have to be processed.  If all conditions are met, queue an
    * event to encode all the bytecode and save them on the cache.
    */
-  void MaybeTriggerBytecodeEncoding();
+  void MaybeTriggerBytecodeEncoding() override;
 
   /**
    * Iterate over all script load request and save the bytecode of executed
@@ -608,21 +646,17 @@ class ScriptLoader final : public nsISupports {
   already_AddRefed<nsIGlobalObject> GetGlobalForRequest(
       ScriptLoadRequest* aRequest);
 
-  // This is a marker class to ensure proper handling of requests with a
-  // WebExtGlobal.
-  enum class WebExtGlobal { Ignore, Handled };
-
-  already_AddRefed<nsIScriptGlobalObject> GetScriptGlobalObject(
-      WebExtGlobal aWebExtGlobal);
+  already_AddRefed<nsIScriptGlobalObject> GetScriptGlobalObject();
 
   // Fill in CompileOptions, as well as produce the introducer script for
   // subsequent calls to UpdateDebuggerMetadata
   nsresult FillCompileOptionsForRequest(
-      const mozilla::dom::AutoJSAPI& jsapi, ScriptLoadRequest* aRequest,
-      JS::Handle<JSObject*> aScopeChain, JS::CompileOptions* aOptions,
-      JS::MutableHandle<JSScript*> aIntroductionScript);
+      JSContext* aCx, ScriptLoadRequest* aRequest, JS::CompileOptions* aOptions,
+      JS::MutableHandle<JSScript*> aIntroductionScript) override;
 
   uint32_t NumberOfProcessors();
+  int32_t PhysicalSizeOfMemoryInGB();
+
   nsresult PrepareLoadedRequest(ScriptLoadRequest* aRequest,
                                 nsIIncrementalStreamLoader* aLoader,
                                 nsresult aStatus);
@@ -631,6 +665,9 @@ class ScriptLoader final : public nsISupports {
   void AddAsyncRequest(ScriptLoadRequest* aRequest);
   bool MaybeRemovedDeferRequests();
 
+  bool ShouldApplyDelazifyStrategy(ScriptLoadRequest* aRequest);
+  void ApplyDelazifyStrategy(JS::CompileOptions* aOptions);
+
   bool ShouldCompileOffThread(ScriptLoadRequest* aRequest);
 
   void MaybeMoveToLoadedList(ScriptLoadRequest* aRequest);
@@ -638,50 +675,17 @@ class ScriptLoader final : public nsISupports {
   using MaybeSourceText =
       mozilla::MaybeOneOf<JS::SourceText<char16_t>, JS::SourceText<Utf8Unit>>;
 
-  // Get source text.  On success |aMaybeSource| will contain either UTF-8 or
-  // UTF-16 source; on failure it will remain in its initial state.
-  [[nodiscard]] nsresult GetScriptSource(JSContext* aCx,
-                                         ScriptLoadRequest* aRequest,
-                                         MaybeSourceText* aMaybeSource);
-
-  void SetModuleFetchStarted(ModuleLoadRequest* aRequest);
-  void SetModuleFetchFinishedAndResumeWaitingRequests(
-      ModuleLoadRequest* aRequest, nsresult aResult);
-
-  bool ModuleMapContainsURL(nsIURI* aURL, nsIGlobalObject* aGlobal) const;
-  RefPtr<mozilla::GenericNonExclusivePromise> WaitForModuleFetch(
-      nsIURI* aURL, nsIGlobalObject* aGlobal);
-  ModuleScript* GetFetchedModule(nsIURI* aURL, nsIGlobalObject* aGlobal) const;
-
-  friend JSObject* HostResolveImportedModule(
-      JSContext* aCx, JS::Handle<JS::Value> aReferencingPrivate,
-      JS::Handle<JSString*> aSpecifier);
-
   // Returns wether we should save the bytecode of this script after the
   // execution of the script.
   static bool ShouldCacheBytecode(ScriptLoadRequest* aRequest);
 
-  nsresult CreateModuleScript(ModuleLoadRequest* aRequest);
-  nsresult ProcessFetchedModuleSource(ModuleLoadRequest* aRequest);
-  void CheckModuleDependenciesLoaded(ModuleLoadRequest* aRequest);
-  void ProcessLoadedModuleTree(ModuleLoadRequest* aRequest);
-  bool InstantiateModuleTree(ModuleLoadRequest* aRequest);
-  JS::Value FindFirstParseError(ModuleLoadRequest* aRequest);
-  void StartFetchingModuleDependencies(ModuleLoadRequest* aRequest);
-
-  RefPtr<mozilla::GenericPromise> StartFetchingModuleAndDependencies(
-      ModuleLoadRequest* aParent, nsIURI* aURI);
-
-  nsresult InitDebuggerDataForModuleTree(JSContext* aCx,
-                                         ModuleLoadRequest* aRequest);
-
   void RunScriptWhenSafe(ScriptLoadRequest* aRequest);
 
   /**
-   *  Wait for any unused off thread compilations to finish and then
-   *  cancel them.
+   * Cancel and remove all outstanding load requests, including waiting for any
+   * off thread compilations to finish.
    */
-  void CancelScriptLoadRequests();
+  void CancelAndClearScriptLoadRequests();
 
   Document* mDocument;  // [WEAK]
   nsCOMArray<nsIScriptLoaderObserver> mObservers;
@@ -689,10 +693,11 @@ class ScriptLoader final : public nsISupports {
   // mLoadingAsyncRequests holds async requests while they're loading; when they
   // have been loaded they are moved to mLoadedAsyncRequests.
   ScriptLoadRequestList mLoadingAsyncRequests;
+  // mLoadedAsyncRequests holds async script requests and dynamic module import
+  // requests, which are processed in the same way.
   ScriptLoadRequestList mLoadedAsyncRequests;
   ScriptLoadRequestList mDeferRequests;
   ScriptLoadRequestList mXSLTRequests;
-  ScriptLoadRequestList mDynamicImportRequests;
   RefPtr<ScriptLoadRequest> mParserBlockingRequest;
   ScriptLoadRequestList mOffThreadCompilingRequests;
 
@@ -730,6 +735,8 @@ class ScriptLoader final : public nsISupports {
   uint32_t mParserBlockingBlockerCount;
   uint32_t mBlockerCount;
   uint32_t mNumberOfProcessors;
+  uint32_t mTotalFullParseSize;
+  int32_t mPhysicalSizeOfMemory;
   bool mEnabled;
   bool mDeferEnabled;
   bool mSpeculativeOMTParsingEnabled;
@@ -740,15 +747,14 @@ class ScriptLoader final : public nsISupports {
 
   TimeDuration mMainThreadParseTime;
 
-  // Module map
-  nsRefPtrHashtable<ModuleMapKey, mozilla::GenericNonExclusivePromise::Private>
-      mFetchingModules;
-  nsRefPtrHashtable<ModuleMapKey, ModuleScript> mFetchedModules;
-
   nsCOMPtr<nsIConsoleReportCollector> mReporter;
 
   // ShutdownObserver for off thread compilations
   RefPtr<AsyncCompileShutdownObserver> mShutdownObserver;
+
+  RefPtr<ModuleLoader> mModuleLoader;
+  nsTArray<RefPtr<ModuleLoader>> mWebExtModuleLoaders;
+  nsTArray<RefPtr<ModuleLoader>> mShadowRealmModuleLoaders;
 
   // Logging
  public:

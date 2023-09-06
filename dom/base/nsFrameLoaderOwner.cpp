@@ -196,6 +196,8 @@ void nsFrameLoaderOwner::ChangeRemotenessCommon(
   }
 
   ChangeFrameLoaderCommon(owner, retainPaint);
+
+  UpdateFocusAndMouseEnterStateAfterFrameLoaderChange(owner);
 }
 
 void nsFrameLoaderOwner::ChangeFrameLoaderCommon(Element* aOwner,
@@ -208,6 +210,31 @@ void nsFrameLoaderOwner::ChangeFrameLoaderCommon(Element* aOwner,
     ourFrame->ResetFrameLoader(retain);
   }
 
+  if (aOwner->IsXULElement()) {
+    // Assuming this element is a XULFrameElement, once we've reset our
+    // FrameLoader, fire an event to act like we've recreated ourselves, similar
+    // to what XULFrameElement does after rebinding to the tree.
+    // ChromeOnlyDispatch is turns on to make sure this isn't fired into
+    // content.
+    mozilla::AsyncEventDispatcher::RunDOMEventWhenSafe(
+        *aOwner, u"XULFrameLoaderCreated"_ns, mozilla::CanBubble::eYes,
+        mozilla::ChromeOnlyDispatch::eYes);
+  }
+
+  if (mFrameLoader) {
+    mFrameLoader->PropagateIsUnderHiddenEmbedderElement(
+        !aOwner->GetPrimaryFrame() ||
+        !aOwner->GetPrimaryFrame()->StyleVisibility()->IsVisible());
+  }
+}
+
+void nsFrameLoaderOwner::UpdateFocusAndMouseEnterStateAfterFrameLoaderChange() {
+  RefPtr<Element> owner = do_QueryObject(this);
+  UpdateFocusAndMouseEnterStateAfterFrameLoaderChange(owner);
+}
+
+void nsFrameLoaderOwner::UpdateFocusAndMouseEnterStateAfterFrameLoaderChange(
+    Element* aOwner) {
   // If the element is focused, or the current mouse over target then
   // we need to update that state for the new BrowserParent too.
   if (nsFocusManager* fm = nsFocusManager::GetFocusManager()) {
@@ -222,22 +249,6 @@ void nsFrameLoaderOwner::ChangeFrameLoaderCommon(Element* aOwner,
         aOwner->GetPrimaryFrame()->PresContext()->EventStateManager();
     eventManager->RecomputeMouseEnterStateForRemoteFrame(*aOwner);
   }
-
-  if (aOwner->IsXULElement()) {
-    // Assuming this element is a XULFrameElement, once we've reset our
-    // FrameLoader, fire an event to act like we've recreated ourselves, similar
-    // to what XULFrameElement does after rebinding to the tree.
-    // ChromeOnlyDispatch is turns on to make sure this isn't fired into
-    // content.
-    (new mozilla::AsyncEventDispatcher(aOwner, u"XULFrameLoaderCreated"_ns,
-                                       mozilla::CanBubble::eYes,
-                                       mozilla::ChromeOnlyDispatch::eYes))
-        ->RunDOMEventWhenSafe();
-  }
-
-  mFrameLoader->PropagateIsUnderHiddenEmbedderElement(
-      !aOwner->GetPrimaryFrame() ||
-      !aOwner->GetPrimaryFrame()->StyleVisibility()->IsVisible());
 }
 
 void nsFrameLoaderOwner::ChangeRemoteness(
@@ -338,14 +349,26 @@ void nsFrameLoaderOwner::SubframeCrashed() {
                          /* group */ nullptr, frameLoaderInit, IgnoreErrors());
 }
 
-void nsFrameLoaderOwner::ReplaceFrameLoader(nsFrameLoader* aNewFrameLoader) {
+void nsFrameLoaderOwner::RestoreFrameLoaderFromBFCache(
+    nsFrameLoader* aNewFrameLoader) {
   MOZ_LOG(gSHIPBFCacheLog, LogLevel::Debug,
-          ("nsFrameLoaderOwner::ReplaceFrameLoader: Replace frameloader"));
+          ("nsFrameLoaderOwner::RestoreFrameLoaderFromBFCache: Replace "
+           "frameloader"));
+
+  Maybe<bool> renderLayers;
+  if (mFrameLoader) {
+    if (auto* oldParent = mFrameLoader->GetBrowserParent()) {
+      renderLayers.emplace(oldParent->GetRenderLayers());
+    }
+  }
 
   mFrameLoader = aNewFrameLoader;
 
   if (auto* browserParent = mFrameLoader->GetBrowserParent()) {
     browserParent->AddWindowListeners();
+    if (renderLayers.isSome()) {
+      browserParent->SetRenderLayers(renderLayers.value());
+    }
   }
 
   RefPtr<Element> owner = do_QueryObject(this);

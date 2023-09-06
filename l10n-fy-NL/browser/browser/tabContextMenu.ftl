@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Alle ljepblêden selektearje
     .accesskey = b
+tab-context-play-tab =
+    .label = Ljepblêd ôfspylje
+    .accesskey = L
+tab-context-play-tabs =
+    .label = Ljepblêden ôfspylje
+    .accesskey = s
 duplicate-tab =
     .label = Ljepblêd duplisearje
     .accesskey = e
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Blêdwizer foar ljepblêden meitsje…
     .accesskey = w
-bookmark-tab =
-    .label = Blêdwizer foar ljepblêd meitjse
-    .accesskey = l
+tab-context-bookmark-tab =
+    .label = Blêdwizer foar ljepblêd meitsje…
+    .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = Iepenje yn nij kontenerljepblêd
     .accesskey = e
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Diele
     .accesskey = e
-tab-context-share-more =
-    .label = Mear…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -83,14 +87,6 @@ tab-context-reopen-closed-tabs =
            *[other] Sluten ljepblêden opnij iepenje
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Ljepblêd slute
-            [one] Ljepblêd slute
-           *[other] Ljepblêden slute
-        }
-    .accesskey = L
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

@@ -34,7 +34,6 @@ about-telemetry-events-section = Eveniments
 about-telemetry-simple-measurements-section = Mesiraziuns simplas
 about-telemetry-slow-sql-section = Statements da SQL plauns
 about-telemetry-addon-details-section = Detagls dal supplement
-about-telemetry-captured-stacks-section = Stacks Registrads
 about-telemetry-late-writes-section = Inscripziuns retardadas
 about-telemetry-raw-payload-section = Cuntegn betg elavurà
 about-telemetry-raw = JSON brut
@@ -122,10 +121,6 @@ about-telemetry-keys-header = Caracteristica
 about-telemetry-names-header = Num
 about-telemetry-values-header = Valur
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (dumber da captures: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Inscripziun retardada #{ $lateWriteCount }
 about-telemetry-stack-title = Stack:
@@ -136,12 +131,6 @@ about-telemetry-category-header = categoria
 about-telemetry-method-header = metoda
 about-telemetry-object-header = object
 about-telemetry-extra-header = extra
-about-telemetry-origin-section = Telemetria da origin
-about-telemetry-origin-origin = origin
-about-telemetry-origin-count = dumber
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">La telemetria da origin da Firefox</a> codescha las datas avant da las trametter per che { $telemetryServerOwner } possia calcular summas senza savair sche ina instanza specifica da { -brand-product-name } haja contribuì u betg contribuì a questa summa. (<a data-l10n-name="prio-blog-link">Ulteriuras infurmaziuns</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = Process «{ $process }»

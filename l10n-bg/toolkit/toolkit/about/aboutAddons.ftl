@@ -8,10 +8,16 @@ search-header =
     .placeholder = търсене в addons.mozilla.org
     .searchbuttonlabel = Търсене
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
 list-empty-get-extensions-message = Изтеглете разширения и теми от <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-dictionaries-message = Изтеглете речници от <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-language-packs-message = Изтеглете езикови пакети от <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
 
 list-empty-installed =
     .value = Няма инсталирани добавки от този вид
@@ -47,6 +53,9 @@ detail-version =
 
 detail-last-updated =
     .label = Последно обновяване
+
+addon-detail-description-expand = Повече
+addon-detail-description-collapse = По-малко
 
 detail-contributions-description = Разработчикът на добавката ви приканва да допринесете за бъдещото ѝ развитие, като направите скромно дарение.
 
@@ -175,6 +184,9 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Скорошни обновявания
 addon-category-recent-updates-title =
     .title = Скорошни обновявания
+addon-category-sitepermission = Права на страницата
+addon-category-sitepermission-title =
+    .title = Права на страницата
 
 ## These are global warnings
 
@@ -185,7 +197,6 @@ extensions-warning-check-compatibility-button = Включване
 extensions-warning-update-security = Проверката за безопасност на обновяването на добавки е изключена. Възможно е системата да се компрометира от добавки.
 extensions-warning-update-security-button = Включване
     .title = Включване на проверка за безопасност на обновяването на добавки
-
 
 ## Strings connected to add-on updates
 
@@ -306,7 +317,8 @@ install-theme-button = Инсталиране на тема
 # The label of the button that appears after installing an add-on. Upon click,
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Управление
-find-more-addons = Повече добавки
+find-more-addons = Още добавки
+find-more-themes = Още теми
 
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
@@ -338,7 +350,7 @@ extension-enabled-heading = Включени
 extension-disabled-heading = Изключени
 
 theme-enabled-heading = Включени
-theme-disabled-heading = Изключени
+theme-disabled-heading2 = Запазени теми
 
 plugin-enabled-heading = Включени
 plugin-disabled-heading = Изключени
@@ -348,6 +360,9 @@ dictionary-disabled-heading = Изключени
 
 locale-enabled-heading = Включени
 locale-disabled-heading = Изключени
+
+sitepermission-enabled-heading = Включено
+sitepermission-disabled-heading = Изключено
 
 always-activate-button = Винаги включено
 never-activate-button = Винаги изключено
@@ -405,13 +420,15 @@ addon-detail-private-browsing-help = Когато е разрешено, раз�
 addon-detail-private-browsing-allow = Разрешаване
 addon-detail-private-browsing-disallow = Забраняване
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 addon-badge-recommended2 =
     .title = { -brand-product-name } препоръчва само разширения, които отговарят на нашите стандарти за сигурност и производителност
     .aria-label = { addon-badge-recommended2.title }
-
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
 addon-badge-line3 =
@@ -430,13 +447,14 @@ release-notes-loading = Зареждане…
 release-notes-error = За съжаление, зареждането на бележките към изданието е неуспешно.
 
 addon-permissions-empty = Разширението не изисква никакви права
-
 addon-permissions-required = Необходими права за основни възможности:
 addon-permissions-optional = Незадължителни права за допълнителни възможности:
 addon-permissions-learnmore = Научете повече за правата
 
 recommended-extensions-heading = Препоръчани разширения
 recommended-themes-heading = Препоръчани теми
+
+addon-sitepermissions-required = Предоставя следните възможности на <span data-l10n-name="hostname">{ $hostname }</span>:
 
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
@@ -450,6 +468,7 @@ plugin-heading = Управление на приставки
 dictionary-heading = Управление на речници
 locale-heading = Управление на езици
 updates-heading = Управление на обновявания
+sitepermission-heading = Управление на правата на страница
 discover-heading = Персонализирайте вашия { -brand-short-name }
 shortcuts-heading = Управление на клавишни комбинации на разширения
 
@@ -459,3 +478,31 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Инструменти за всички добавки
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = Добавката { $name } е несъвместима с { -brand-short-name } { $version }.
+
+details-notification-incompatible-link = Повече информация
+
+details-notification-unsigned-and-disabled = Добавката { $name } не може да бъде проверена, за да бъде използвана от { -brand-short-name }, и беше изключена.
+details-notification-unsigned-and-disabled-link = Повече информация
+
+details-notification-unsigned = Добавката { $name } не може да бъде проверена, за да бъде използвана от { -brand-short-name }. Бъдете внимателни.
+details-notification-unsigned-link = Повече информация
+
+details-notification-blocked = Добавката { $name } беше изключена поради съображения за сигурност или стабилност.
+details-notification-blocked-link = Повече информация
+
+details-notification-softblocked = Добавката { $name } може да причини проблеми със сигурността или стабилността.
+details-notification-softblocked-link = Повече информация
+
+details-notification-gmp-pending = Добавката { $name } ще бъде инсталирана след малко.

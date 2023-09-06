@@ -2,13 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { DownloadUtils } = ChromeUtils.import(
-  "resource://gre/modules/DownloadUtils.jsm"
+const { DownloadUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/DownloadUtils.sys.mjs"
 );
 
-const gDecimalSymbol = Number(5.4)
-  .toLocaleString()
-  .match(/\D/);
+const gDecimalSymbol = Number(5.4).toLocaleString().match(/\D/);
 function _(str) {
   return str.replace(/\./g, gDecimalSymbol);
 }
@@ -76,6 +74,15 @@ function testStatus(aFunc, aCurr, aMore, aRate, aTest) {
   }
 }
 
+function testFormattedTimeStatus(aSec, aExpected) {
+  dump("Formatted Time Status Test: [" + aSec + "]\n");
+
+  let status = DownloadUtils.getFormattedTimeStatus(aSec);
+  dump("Formatted Time Status Test Returns: (" + status.l10n.id + ")\n");
+
+  Assert.equal(status.l10n.id, aExpected);
+}
+
 function testURI(aURI, aDisp, aHost) {
   dump("URI Test: " + [aURI, aDisp, aHost] + "\n");
 
@@ -129,10 +136,7 @@ function testAllGetReadableDates() {
     sevendaysago,
     sevendaysago.toLocaleDateString(undefined, { month: "long" }) +
       " " +
-      sevendaysago
-        .getDate()
-        .toString()
-        .padStart(2, "0")
+      sevendaysago.getDate().toString().padStart(2, "0")
   );
 
   let [, dateTimeFull] = DownloadUtils.getReadableDates(today_11_30);
@@ -362,6 +366,12 @@ function run_test() {
     "Unknown time left -- 9.2 of 9.3 GB",
     Infinity,
   ]);
+
+  testFormattedTimeStatus(-1, "downloading-file-opens-in-some-time-2");
+  // Passing in null will return a status of file-opens-in-seconds, as Math.floor(null) = 0
+  testFormattedTimeStatus(null, "downloading-file-opens-in-seconds-2");
+  testFormattedTimeStatus(0, "downloading-file-opens-in-seconds-2");
+  testFormattedTimeStatus(30, "downloading-file-opens-in-seconds-2");
 
   testURI("http://www.mozilla.org/", "mozilla.org", "www.mozilla.org");
   testURI(

@@ -16,6 +16,17 @@ about-processes-shutdown-process =
 about-processes-shutdown-tab =
     .title = Mdel iccer
 
+# Profiler icons
+# Variables:
+#    $duration (Number) The time in seconds during which the profiler will be running.
+#                       The value will be an integer, typically less than 10.
+about-processes-profile-process =
+    .title =
+        { $duration ->
+            [one] Eg amaɣnu i meṛṛa isqerdcen n usesfer-a i { $duration } tasint
+           *[other] Eg amaɣnu i meṛṛa isqerdcen n usesfer-a i { $duration } tsinin
+        }
+
 ## Column headers
 
 about-processes-column-name = Isem
@@ -41,6 +52,7 @@ about-processes-socket-process = Azeṭṭa ({ $pid })
 about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Anɣal n uqeddac ({ $pid })
 about-processes-preallocated-process = Adeg uzwir ({ $pid })
+about-processes-utility-process = Tixxuteṛt ({ $pid })
 
 # Unknown process names
 # Variables:
@@ -54,10 +66,9 @@ about-processes-unknown-process = Wayeḍ { $type } ({ $pid })
 ##    $origin (String) The domain name for this process.
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
-about-processes-web-large-allocation-process = { $origin } ({ $pid }, meqqer)
+about-processes-web-serviceworker = { $origin } ({ $pid }, serviceworker)
 about-processes-with-coop-coep-process = { $origin } ({ $pid }, cross-origin yettuneɛzel)
 about-processes-web-isolated-process-private = { $origin } — Uslig ({ $pid })
-about-processes-web-large-allocation-process-private = { $origin } — Uslig ({ $pid }, meqqer)
 about-processes-with-coop-coep-process-private = { $origin } — Uslig ({ $pid }, cross-origin yettuneɛzel)
 
 ## Details within processes
@@ -114,6 +125,15 @@ about-processes-frame-name-one = Akatar n ddaw: { $url }
 #   $shortUrl (String) The shared prefix for the subframes in the group.
 about-processes-frame-name-many = Ikataren n ddaw ({ $number }): { $shortUrl }
 
+## Utility process actor names
+
+about-processes-utility-actor-unknown = Amigaw arussin
+
+about-processes-utility-actor-audio-decoder-generic = Akestengal n umeslaw imcettel
+about-processes-utility-actor-audio-decoder-applemedia = Akestengal n umeslaw n umidyat Apple
+about-processes-utility-actor-audio-decoder-wmf = Akestengal n umeslaw Windows Media Framework
+about-processes-utility-actor-mf-media-engine = CDM n umsedday n unadi n umidyat n Windows Media Foundation
+
 ## Displaying CPU (percentage and total)
 ## Variables:
 ##    $percent (Number) The percentage of CPU used by the process or thread.
@@ -130,9 +150,14 @@ about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "pe
 # Special case: data is not available yet.
 about-processes-cpu-user-and-kernel-not-ready = (askazel)
 
+# Special case: process or thread is almost idle (using less than 0.1% of a CPU core).
+# This case only occurs on Windows where the precision of the CPU times is low.
+about-processes-cpu-almost-idle = < 0.1%
+    .title = Akud asemday n CPU: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+
 # Special case: process or thread is currently idle.
-about-processes-cpu-idle = idle
-    .title = Akud asemday CPU: { NUMBER($total, maximumFractionDigits: 2) }{ $unit }
+about-processes-cpu-fully-idle = idle
+    .title = Akud asemday n CPU: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:

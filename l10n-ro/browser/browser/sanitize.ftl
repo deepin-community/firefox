@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Setări pentru ștergerea istoricului
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Șterge istoricul recent
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Șterge tot istoricul
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = Când este închis, { -brand-short-name } ar trebui să șteargă automat totul
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = F
 
 data-section-label = Date
-
-item-site-preferences =
-    .label = Preferințele pentru site-uri
-    .accesskey = S
 
 item-site-settings =
     .label = Setările site-urilor

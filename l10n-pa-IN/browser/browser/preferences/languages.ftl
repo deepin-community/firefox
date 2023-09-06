@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-webpage-languages-window =
-    .title = ਵੈੱਬਪੇਜ ਭਾਸ਼ਾ ਸੈਟਿੰਗਜ਼
-    .style = width: 40em
+webpage-languages-window2 =
+    .title = ਵੈੱਬਪੇਜ ਭਾਸ਼ਾ ਸੈਟਿੰਗਾਂ
+    .style = min-width: 40em
 
 languages-close-key =
     .key = w
@@ -23,7 +23,7 @@ languages-customize-movedown =
     .accesskey = D
 
 languages-customize-remove =
-    .label = ਹਟਾਉ
+    .label = ਹਟਾਓ
     .accesskey = R
 
 languages-customize-select-language =
@@ -49,9 +49,9 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
-browser-languages-window =
-    .title = { -brand-short-name } ਭਾਸ਼ਾ ਸੈਟਿੰਗਜ਼
-    .style = width: 40em
+browser-languages-window2 =
+    .title = { -brand-short-name } ਭਾਸ਼ਾ ਸੈਟਿੰਗਾਂ
+    .style = min-width: 40em
 
 browser-languages-description = { -brand-short-name } ਤੁਹਾਡੀ ਡਿਫਾਲਟ ਵਾਂਗ ਪਹਿਲੀ ਭਾਸ਼ਾ ਨੂੰ ਪ੍ਰਦਰਸ਼ਿਤ ਕਰੇਗਾ ਅਤੇ ਜੇਕਰ ਲੋੜ ਹੋਈ ਤਾਂ ਕ੍ਰਮ ਵਿੱਚ ਬਦਲਵੀਂਆਂ ਭਾਸ਼ਾਵਾਂ ਪ੍ਰਦਰਸ਼ਿਤ ਕਰਨਗੇ।
 

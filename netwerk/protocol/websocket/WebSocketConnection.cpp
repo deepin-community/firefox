@@ -4,12 +4,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "nsIInterfaceRequestor.h"
 #include "WebSocketConnection.h"
 
 #include "WebSocketLog.h"
 #include "mozilla/net/WebSocketConnectionListener.h"
 #include "nsIOService.h"
+#include "nsITLSSocketControl.h"
 #include "nsISocketTransport.h"
+#include "nsITransportSecurityInfo.h"
+#include "nsSocketTransportService2.h"
+
+namespace mozilla::net {
 
 NS_IMPL_ISUPPORTS(WebSocketConnection, nsIInputStreamCallback,
                   nsIOutputStreamCallback)
@@ -136,13 +142,23 @@ void WebSocketConnection::DrainSocketData() {
   } while (NS_SUCCEEDED(rv) && count > 0 && total < 32000);
 }
 
-nsresult WebSocketConnection::GetSecurityInfo(nsISupports** aSecurityInfo) {
+nsresult WebSocketConnection::GetSecurityInfo(
+    nsITransportSecurityInfo** aSecurityInfo) {
   LOG(("WebSocketConnection::GetSecurityInfo() %p\n", this));
   MOZ_ASSERT(OnSocketThread());
+  *aSecurityInfo = nullptr;
 
   if (mTransport) {
-    if (NS_FAILED(mTransport->GetSecurityInfo(aSecurityInfo))) {
-      *aSecurityInfo = nullptr;
+    nsCOMPtr<nsITLSSocketControl> tlsSocketControl;
+    nsresult rv =
+        mTransport->GetTlsSocketControl(getter_AddRefs(tlsSocketControl));
+    if (NS_FAILED(rv)) {
+      return rv;
+    }
+    nsCOMPtr<nsITransportSecurityInfo> securityInfo(
+        do_QueryInterface(tlsSocketControl));
+    if (securityInfo) {
+      securityInfo.forget(aSecurityInfo);
     }
   }
   return NS_OK;
@@ -241,3 +257,5 @@ WebSocketConnection::OnOutputStreamReady(nsIAsyncOutputStream* aStream) {
 
   return NS_OK;
 }
+
+}  // namespace mozilla::net

@@ -6,9 +6,16 @@ addons-page-title = Менеджар дадаткаў
 search-header =
     .placeholder = Пошук на addons.mozilla.org
     .searchbuttonlabel = Пошук
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Атрымлівайце пашырэнні і тэмы з <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Атрымлівайце слоўнікі з <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Атрымлівайце моўныя пакункі з <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = У вас няма ніводнага ўсталяванага дадатку гэтага тыпу
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Версія
 detail-last-updated =
     .label = Апошняе абнаўленне
+addon-detail-description-expand = Паказаць больш
+addon-detail-description-collapse = Паказаць менш
 detail-contributions-description = Распрацоўца гэтага дадатка просіць падтрымаць яго распрацоўку невялікім ахвяраваннем.
 detail-contributions-button = Зрабіць унёсак
     .title = Зрабіць унёсак у распрацоўку гэтага дадатку
@@ -53,10 +62,10 @@ detail-private-browsing-label = Задзейнічаць у прыватных �
 # Some add-ons may elect to not run in private windows by setting incognito: not_allowed in the manifest.  This
 # cannot be overridden by the user.
 detail-private-disallowed-label = Не дазволена ў прыватных вокнах
-detail-private-disallowed-description2 = Гэта пашырэнне не працуе ў час прыватнага аглядання. <a data-l10n-name="learn-more">Падрабязней</a>
+detail-private-disallowed-description2 = Гэта пашырэнне не працуе ў часе прыватнага аглядання. <a data-l10n-name="learn-more">Падрабязней</a>
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
 detail-private-required-label = Патрабуе доступ да прыватных акон
-detail-private-required-description2 = Гэта пашырэнне мае доступ да вашай дзейнасці ў сеціве ў час прыватнага аглядання. <a data-l10n-name="learn-more">Падрабязней</a>
+detail-private-required-description2 = Гэта пашырэнне мае доступ да вашай дзейнасці ў сеціве ў часе прыватнага аглядання. <a data-l10n-name="learn-more">Падрабязней</a>
 detail-private-browsing-on =
     .label = Дазволіць
     .tooltiptext = Уключаць у рэжыме прыватнага аглядання
@@ -106,10 +115,10 @@ legacy-extensions =
     .value = Састарэлыя пашырэнні
 legacy-extensions-description = Гэтыя пашырэнні не адпавядаюць бягучым стандартам { -brand-short-name }, таму яны былі выключаны. <label data-l10n-name="legacy-learn-more">Даведацца аб зменах у дадатках</label>
 private-browsing-description2 =
-    { -brand-short-name } змяняе парадак працы пашырэнняў у прыватным агляданні. Усе новыя пашырэнні, якія вы дадаяце да
-    { -brand-short-name }, тыпова не будуць дзейнічаць у прыватных вокнах. Пакуль вы не выставіце дазвол у наладах,
-    пашырэнне не будзе працаваць у час прыватнага аглядання, і не будзе мець доступу да вашай сеціўнай
-    актыўнасці ў гэтым рэжыме. Мы зрабілі гэта для аховы вашай прыватнасці.
+    { -brand-short-name } змяняе парадак працы пашырэнняў у прыватным агляданні. Усе новыя пашырэнні, якія вы дадаяце да
+    { -brand-short-name }, тыпова не будуць дзейнічаць у прыватных вокнах. Пакуль вы не выставіце дазвол у наладах,
+    пашырэнне не будзе працаваць у часе прыватнага аглядання і не будзе мець доступу да вашай сеціўнай
+    актыўнасці ў гэтым рэжыме. Мы зрабілі гэта для аховы вашай прыватнасці.
     <label data-l10n-name="private-browsing-learn-more">Даведайцеся, як кіраваць наладамі пашырэння.</label>
 addon-category-discover = Рэкамендацыі
 addon-category-discover-title =
@@ -135,6 +144,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Нядаўнія абнаўленні
 addon-category-recent-updates-title =
     .title = Нядаўнія абнаўленні
+addon-category-sitepermission = Дазволы для сайтаў
+addon-category-sitepermission-title =
+    .title = Дазволы для сайтаў
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Дазволы сайта для { $host }
 
 ## These are global warnings
 
@@ -145,6 +161,8 @@ extensions-warning-check-compatibility-button = Уключыць
 extensions-warning-update-security = Праверка бяспечнасці дадаткаў адключана. Вы можаце быць падведзены пад рызыку абнаўленнямі.
 extensions-warning-update-security-button = Уключыць
     .title = Уключыць праверку бяспечнасці абнаўленняў дадаткаў
+extensions-warning-imported-addons = Калі ласка, завяршыце ўсталяванне пашырэнняў, якія былі імпартаваны ў { -brand-short-name }.
+extensions-warning-imported-addons-button = Усталяваць пашырэнні
 
 ## Strings connected to add-on updates
 
@@ -213,6 +231,8 @@ shortcuts-duplicate-warning-message = { $shortcut } выкарыстоўваец
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Ужо выкарыстоўваецца дадаткам { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Паказаць яшчэ { $numberToShow }
@@ -280,18 +300,18 @@ preferences-addon-button =
 details-addon-button = Падрабязнасці
 release-notes-addon-button = Заўвагі да выпуску
 permissions-addon-button = Правы доступу
-extension-enabled-heading = Уключана
-extension-disabled-heading = Адключана
+extension-enabled-heading = Уключаны
+extension-disabled-heading = Адключаны
 theme-enabled-heading = Уключана
-theme-disabled-heading = Выключана
-theme-monochromatic-heading = Расфарбоўкі
-theme-monochromatic-subheading = Яркія новыя колеры ад { -brand-product-name }. Даступныя абмежаваны час.
-plugin-enabled-heading = Уключана
-plugin-disabled-heading = Адключана
-dictionary-enabled-heading = Уключана
-dictionary-disabled-heading = Адключана
+theme-disabled-heading2 = Захаваныя тэмы
+plugin-enabled-heading = Уключаны
+plugin-disabled-heading = Адключаны
+dictionary-enabled-heading = Уключаны
+dictionary-disabled-heading = Адключаны
 locale-enabled-heading = Уключана
 locale-disabled-heading = Выключана
+sitepermission-enabled-heading = Уключаны
+sitepermission-disabled-heading = Адключаны
 always-activate-button = Заўсёды задейнічаць
 never-activate-button = Ніколі не задзейнічаць
 addon-detail-author-label = Аўтар
@@ -333,14 +353,36 @@ addon-detail-updates-radio-on = Укл.
 addon-detail-updates-radio-off = Выкл.
 addon-detail-update-check-label = Праверыць наяўнасць абнаўленняў
 install-update-button = Абнавіць
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Дазволена ў прыватных вокнах
     .aria-label = { addon-badge-private-browsing-allowed2.title }
-addon-detail-private-browsing-help = Калі дазволена, пашырэнне будзе мець доступ да вашай дзейнасці ў сеціве ў час прыватнага аглядання. <a data-l10n-name="learn-more">Даведацца больш</a>
+addon-detail-private-browsing-help = Калі дазволена, пашырэнне будзе мець доступ да вашай дзейнасці ў сеціве ў часе прыватнага аглядання. <a data-l10n-name="learn-more">Даведацца больш</a>
 addon-detail-private-browsing-allow = Дазволіць
 addon-detail-private-browsing-disallow = Не дазваляць
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Запускаць на сайтах з абмежаваннямі
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Калі дазволена, пашырэнне будзе мець доступ да сайтаў, абмежаваных { -vendor-short-name }. Дазваляйце, толькі калі вы давяраеце гэтаму пашырэнню.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Дазволіць
+addon-detail-quarantined-domains-disallow = Не дазваляць
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -369,6 +411,9 @@ addon-permissions-optional = Неабавязковыя дазволы для д
 addon-permissions-learnmore = Даведацца больш пра дазволы
 recommended-extensions-heading = Рэкамендаваныя пашырэнні
 recommended-themes-heading = Рэкамендаваныя тэмы
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Дае <span data-l10n-name="hostname">{ $hostname }</span> наступныя магчымасці:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Адчуваеце натхненне? <a data-l10n-name="link">Стварыце ўласную тэму з дапамогай Firefox Color.</a>
@@ -381,6 +426,7 @@ plugin-heading = Кіруйце сваімі плагінамі
 dictionary-heading = Кіруйце сваімі слоўнікамі
 locale-heading = Кіруйце сваімі мовамі
 updates-heading = Кіруйце сваімі абнаўленнямі
+sitepermission-heading = Кіраваць дазволамі для сайтаў
 discover-heading = Персаналізуйце свой { -brand-short-name }
 shortcuts-heading = Кіраваць спалучэннямі клавіш пашырэнняў
 default-heading-search-label = Знайсці больш дадаткаў
@@ -388,3 +434,21 @@ addons-heading-search-input =
     .placeholder = Пошук на addons.mozilla.org
 addon-page-options-button =
     .title = Прылады для ўсіх дадаткаў
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } несумяшчальна з { -brand-short-name } { $version }.
+details-notification-incompatible-link = Больш звестак
+details-notification-unsigned-and-disabled = Праца { $name } у { -brand-short-name } не была праверана, таму яно было адключана.
+details-notification-unsigned-and-disabled-link = Больш звестак
+details-notification-unsigned = Праца { $name } у { -brand-short-name } не была праверана. Працягвайце з асцярогай.
+details-notification-unsigned-link = Больш звестак
+details-notification-blocked = { $name } забаронены, бо маюцца праблемы сумяшчальнасці або ўстойлівасці.
+details-notification-blocked-link = Падрабязней
+details-notification-softblocked = Вядома, што { $name } мае праблемы сумяшчальнасці або ўстойлівасці.
+details-notification-softblocked-link = Падрабязней
+details-notification-gmp-pending = { $name } будзе хутка усталявана.

@@ -22,3 +22,39 @@ findbar-entire-word =
     .label = ಸಂಪೂರ್ಣ ಪದಗಳು
     .accesskey = W
     .tooltiptext = ಸಂಪೂರ್ಣ ಪದಗಳನ್ನು ಮಾತ್ರ ಹುಡುಕು
+
+findbar-not-found = ವಾಕ್ಯವು ಕಂಡು ಬಂದಿಲ್ಲ
+
+findbar-wrapped-to-top = ಪುಟದ ಕೊನೆಯನ್ನು ತಲುಪಿದೆ, ಮೇಲಿನಿಂದ ಆರಂಭಿಸು
+findbar-wrapped-to-bottom = ಪುಟದ ಮೇಲ್ಭಾಗವನ್ನು ತಲುಪಿದೆ, ಕೆಳಗಿನಿಂದ ಆರಂಭಿಸು
+
+findbar-normal-find =
+    .placeholder = ಪುಟದಲ್ಲಿ ಹುಡುಕು
+findbar-fast-find =
+    .placeholder = ಕ್ಷಿಪ್ರ ಹುಡುಕಾಟ
+findbar-fast-find-links =
+    .placeholder = ಕ್ಷಿಪ್ರ ಹುಡುಕಾಟ (ಕೊಂಡಿಗಳು ಮಾತ್ರ)
+
+findbar-case-sensitive-status =
+    .value = (ಕೇಸ್ ಸಂವೇದಿ)
+findbar-entire-word-status =
+    .value = (ಸಂಪೂರ್ಣ ಪದಗಳನ್ನು ಮಾತ್ರ)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $total } ರಲ್ಲಿ { $current } ಹೊಂದುತ್ತದೆ
+           *[other] { $total } ರಲ್ಲಿ { $current } ಹೊಂದುತ್ತವೆ
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] { $limit } ಕ್ಕಿಂತಲೂ ಹೆಚ್ಚು ಹೊಂದುತ್ತದೆ
+           *[other] { $limit } ಕ್ಕಿಂತಲೂ ಹೆಚ್ಚು ಹೊಂದುತ್ತವೆ
+        }

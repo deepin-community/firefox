@@ -6,10 +6,12 @@
 #define NetworkConnectivityService_h_
 
 #include "nsINetworkConnectivityService.h"
+#include "nsCOMPtr.h"
 #include "nsIObserver.h"
 #include "nsIDNSListener.h"
 #include "nsIStreamListener.h"
 #include "mozilla/net/DNS.h"
+#include "mozilla/Mutex.h"
 
 namespace mozilla {
 namespace net {
@@ -40,6 +42,8 @@ class NetworkConnectivityService : public nsINetworkConnectivityService,
 
   void SaveNAT64Prefixes(nsIDNSRecord* aRecord);
 
+  already_AddRefed<nsIChannel> SetupIPCheckChannel(bool ipv4);
+
   // Will be set to OK if the DNS request returned in IP of this type,
   //                NOT_AVAILABLE if that type of resolution is not available
   //                UNKNOWN if the check wasn't performed
@@ -63,7 +67,7 @@ class NetworkConnectivityService : public nsINetworkConnectivityService,
   bool mCheckedNetworkId = false;
   bool mHasNetworkId = false;
 
-  Mutex mLock;
+  Mutex mLock MOZ_UNANNOTATED;
 };
 
 }  // namespace net

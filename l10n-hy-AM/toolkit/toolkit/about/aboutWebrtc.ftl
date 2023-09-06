@@ -13,6 +13,9 @@ about-webrtc-document-title = WebRTC ներքին
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = պահել about:webrtc-ը որպես
 
+## These labels are for a disclosure which contains the information for closed PeerConnection sections
+
+
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = AEC արձանագրում
@@ -20,7 +23,13 @@ about-webrtc-aec-logging-off-state-label = Սկսել AEC արձանագրում
 about-webrtc-aec-logging-on-state-label = Կանգնեցնել AEC արձանագրումը
 about-webrtc-aec-logging-on-state-msg = AEC արձանագրումը ակտիվ է
 
+about-webrtc-aec-logging-toggled-on-state-msg = AEC արձանագրումը ակտիվ է
+# Variables:
+#  $path (String) - The path to which the aec log file is saved.
+about-webrtc-aec-logging-toggled-off-state-msg = Մատյանի կորզված ֆայլերը այստեղ են՝ { $path }
+
 ##
+
 
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
@@ -58,9 +67,6 @@ about-webrtc-ice-pair-bytes-sent = Բայթ է ուղարկվել:
 about-webrtc-ice-pair-bytes-received = Բայթ է ստացվել:
 about-webrtc-ice-component-id = Բաղադրիչի ID
 
-## "Avg." is an abbreviation for Average. These are used as data labels.
-
-
 ## These adjectives are used to label a line of statistics collected for a peer
 ## connection. The data represents either the local or remote end of the
 ## connection.
@@ -69,7 +75,6 @@ about-webrtc-type-local = Տեղային
 about-webrtc-type-remote = Հեռակա
 
 ##
-
 
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
@@ -93,6 +98,11 @@ about-webrtc-log-show-msg = ցուցադրել մատյանը
 about-webrtc-log-hide-msg = թաքցնել մատյանը
     .title = սեղմեք՝ ա/շրջանը կոծկելու համար
 
+about-webrtc-log-section-show-msg = Ցուցադրել մատյանը
+    .title = Սեղմեք՝ ա/շրջանը ընդարձակելու համար
+about-webrtc-log-section-hide-msg = Թաքցնել մատյանը
+    .title = Սեղմեք՝ ա/շրջանը կոծկելու համար
+
 ## These are used to display a header for a PeerConnection.
 ## Variables:
 ##  $browser-id (Number) - A numeric id identifying the browser tab for the PeerConnection.
@@ -103,8 +113,12 @@ about-webrtc-log-hide-msg = թաքցնել մատյանը
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (փակված) { $now }
 
-##
+## These are used to indicate what direction media is flowing.
+## Variables:
+##  $codecs - a list of media codecs
 
+
+##
 
 about-webrtc-local-candidate = Տեղային թեկնածու
 about-webrtc-remote-candidate = Հեռակա թեկնածու
@@ -115,11 +129,19 @@ about-webrtc-raw-cand-show-msg = ցուցդրել անմշակ թեկնածու�
     .title = սեղմեք՝ ա/շրջանը ընդարձակելու համար
 about-webrtc-raw-cand-hide-msg = թաքցնել անմշակ թեկնածուներին
     .title = սեղմեք՝ ա/շրջանը կոծկելու համար
+about-webrtc-raw-cand-section-show-msg = Ցուցդրել անմշակ թեկնածուներին
+    .title = Սեղմեք՝ ա/շրջանը ընդարձակելու համար
+about-webrtc-raw-cand-section-hide-msg = Թաքցնել անմշակ թեկնածուներին
+    .title = Սեղմեք՝ ա/շրջանը կոծկելու համար
 about-webrtc-priority = Առաջնահերթ-ը
 about-webrtc-fold-show-msg = մանրամասն
     .title = սեղմեք՝ ա/շրջանը ընդարձակելու համար
 about-webrtc-fold-hide-msg = թաքցնել մանրամասները
     .title = սեղմեք՝ ա/շրջանը կոծկելու համար
+about-webrtc-fold-default-show-msg = Մանրամասն
+    .title = Սեղմեք՝ ա/շրջանը ընդարձակելու համար
+about-webrtc-fold-default-hide-msg = Թաքցնել մանրամասները
+    .title = Սեղմեք՝ ա/շրջանը կոծկելու համար
 about-webrtc-decoder-label = Ապայլագրիչ
 about-webrtc-encoder-label = Այլագրիչ
 about-webrtc-width-px = Լայնությունը (px)
@@ -138,7 +160,12 @@ about-webrtc-local-receive-ssrc = Տեղային ստացող SSRC
 # This is an SSRC on the remote side of the connection that is sending RTP
 about-webrtc-remote-send-ssrc = Հեռակա ուղարկվող SSRC
 
+## These are displayed on the button that shows or hides the
+## PeerConnection configuration disclosure
+
+
 ##
+
 
 ## These are paths used for saving the about:webrtc page or log files so
 ## they can be attached to bug reports.
@@ -149,6 +176,10 @@ about-webrtc-save-page-msg = էջը պահպանվել է՝ { $path }
 about-webrtc-debug-mode-off-state-msg = հետևելու մատյանը կարող է գտնվել՝ { $path }
 about-webrtc-debug-mode-on-state-msg = վրիպազերծման կերպը ակտիվ է, հետևելու մատյանը՝ { $path }
 about-webrtc-aec-logging-off-state-msg = մատյանի կորզված ֆայլերը այստեղ են՝ { $path }
+
+about-webrtc-save-page-complete-msg = Էջը պահպանվել է՝ { $path }
+about-webrtc-debug-mode-toggled-off-state-msg = Հետևելու մատյանը կարող է գտնվել՝ { $path }
+about-webrtc-debug-mode-toggled-on-state-msg = Վրիպազերծման կերպը ակտիվ է, հետևելու մատյանը՝ { $path }
 
 ##
 
@@ -176,9 +207,12 @@ about-webrtc-sdp-set-at-timestamp-local = Կայել Տեղային SDP-ը { NUM
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 about-webrtc-sdp-set-at-timestamp-remote = Կայել Հեռակա SDP-ը { NUMBER($timestamp, useGrouping: "false") } ժամադրոշմում
 
-##
+## These are displayed on the button that shows or hides the SDP information disclosure
 
-##
+
+## These are displayed on the button that shows or hides the Media Context information disclosure.
+## The Media Context is the set of preferences and detected capabilities that informs
+## the negotiated CODEC settings.
 
 
 ##

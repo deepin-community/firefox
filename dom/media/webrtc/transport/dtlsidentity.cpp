@@ -12,22 +12,111 @@
 #include "nsError.h"
 #include "pk11pub.h"
 #include "sechash.h"
-#include "ssl.h"
 #include "mozpkix/nss_scoped_ptrs.h"
 #include "secerr.h"
+#include "sslerr.h"
 
 #include "mozilla/Sprintf.h"
-#include "mozilla/dom/CryptoBuffer.h"
-#include "mozilla/dom/CryptoKey.h"
-#include "mozilla/psm/PSMIPCCommon.h"
-#include "ipc/IPCMessageUtils.h"
 
 namespace mozilla {
 
+SECItem* WrapPrivateKeyInfoWithEmptyPassword(
+    SECKEYPrivateKey* pk) /* encrypt this private key */
+{
+  if (!pk) {
+    PR_SetError(SEC_ERROR_INVALID_ARGS, 0);
+    return nullptr;
+  }
+
+  UniquePK11SlotInfo slot(PK11_GetInternalSlot());
+  if (!slot) {
+    return nullptr;
+  }
+
+  // For private keys, NSS cannot export anything other than RSA, but we need EC
+  // also. So, we use the private key encryption function to serialize instead,
+  // using a hard-coded dummy password; this is not intended to provide any
+  // additional security, it just works around a limitation in NSS.
+  SECItem dummyPassword = {siBuffer, nullptr, 0};
+  UniqueSECKEYEncryptedPrivateKeyInfo epki(PK11_ExportEncryptedPrivKeyInfo(
+      slot.get(), SEC_OID_AES_128_CBC, &dummyPassword, pk, 1, nullptr));
+
+  if (!epki) {
+    return nullptr;
+  }
+
+  return SEC_ASN1EncodeItem(
+      nullptr, nullptr, epki.get(),
+      NSS_Get_SECKEY_EncryptedPrivateKeyInfoTemplate(nullptr, false));
+}
+
+SECStatus UnwrapPrivateKeyInfoWithEmptyPassword(
+    SECItem* derPKI, const UniqueCERTCertificate& aCert,
+    SECKEYPrivateKey** privk) {
+  if (!derPKI || !aCert || !privk) {
+    PR_SetError(SEC_ERROR_INVALID_ARGS, 0);
+    return SECFailure;
+  }
+
+  UniqueSECKEYPublicKey publicKey(CERT_ExtractPublicKey(aCert.get()));
+  // This is a pointer to data inside publicKey
+  SECItem* publicValue = nullptr;
+  switch (publicKey->keyType) {
+    case dsaKey:
+      publicValue = &publicKey->u.dsa.publicValue;
+      break;
+    case dhKey:
+      publicValue = &publicKey->u.dh.publicValue;
+      break;
+    case rsaKey:
+      publicValue = &publicKey->u.rsa.modulus;
+      break;
+    case ecKey:
+      publicValue = &publicKey->u.ec.publicValue;
+      break;
+    default:
+      MOZ_ASSERT(false);
+      PR_SetError(SSL_ERROR_BAD_CERTIFICATE, 0);
+      return SECFailure;
+  }
+
+  UniquePK11SlotInfo slot(PK11_GetInternalSlot());
+  if (!slot) {
+    return SECFailure;
+  }
+
+  UniquePLArenaPool temparena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
+  if (!temparena) {
+    return SECFailure;
+  }
+
+  SECKEYEncryptedPrivateKeyInfo* epki =
+      PORT_ArenaZNew(temparena.get(), SECKEYEncryptedPrivateKeyInfo);
+  if (!epki) {
+    return SECFailure;
+  }
+
+  SECStatus rv = SEC_ASN1DecodeItem(
+      temparena.get(), epki,
+      NSS_Get_SECKEY_EncryptedPrivateKeyInfoTemplate(nullptr, false), derPKI);
+  if (rv != SECSuccess) {
+    // If SEC_ASN1DecodeItem fails, we cannot assume anything about the
+    // validity of the data in epki. The best we can do is free the arena
+    // and return.
+    return rv;
+  }
+
+  // See comment in WrapPrivateKeyInfoWithEmptyPassword about this
+  // dummy password stuff.
+  SECItem dummyPassword = {siBuffer, nullptr, 0};
+  return PK11_ImportEncryptedPrivateKeyInfoAndReturnKey(
+      slot.get(), epki, &dummyPassword, nullptr, publicValue, false, false,
+      publicKey->keyType, KU_ALL, privk, nullptr);
+}
+
 nsresult DtlsIdentity::Serialize(nsTArray<uint8_t>* aKeyDer,
                                  nsTArray<uint8_t>* aCertDer) {
-  ScopedSECItem derPki(
-      psm::WrapPrivateKeyInfoWithEmptyPassword(private_key_.get()));
+  ScopedSECItem derPki(WrapPrivateKeyInfoWithEmptyPassword(private_key_.get()));
   if (!derPki) {
     return NS_ERROR_FAILURE;
   }
@@ -50,7 +139,7 @@ RefPtr<DtlsIdentity> DtlsIdentity::Deserialize(
                     static_cast<unsigned int>(aKeyDer.Length())};
 
   SECKEYPrivateKey* privateKey;
-  if (psm::UnwrapPrivateKeyInfoWithEmptyPassword(&derPKI, cert, &privateKey) !=
+  if (UnwrapPrivateKeyInfoWithEmptyPassword(&derPKI, cert, &privateKey) !=
       SECSuccess) {
     MOZ_ASSERT(false);
     return nullptr;
@@ -143,43 +232,50 @@ RefPtr<DtlsIdentity> DtlsIdentity::Generate() {
     return nullptr;
   }
 
-  UniqueCERTCertificate certificate(CERT_CreateCertificate(
+  // NB: CERTCertificates created with CERT_CreateCertificate are not safe to
+  // use with other NSS functions like CERT_DupCertificate.
+  // The strategy here is to create a tbsCertificate ("to-be-signed
+  // certificate"), encode it, and sign it, resulting in a signed DER
+  // certificate that can be decoded into a CERTCertificate.
+  UniqueCERTCertificate tbsCertificate(CERT_CreateCertificate(
       serial, subject_name.get(), validity.get(), certreq.get()));
-  if (!certificate) {
+  if (!tbsCertificate) {
     return nullptr;
   }
 
-  PLArenaPool* arena = certificate->arena;
+  PLArenaPool* arena = tbsCertificate->arena;
 
-  rv = SECOID_SetAlgorithmID(arena, &certificate->signature,
+  rv = SECOID_SetAlgorithmID(arena, &tbsCertificate->signature,
                              SEC_OID_ANSIX962_ECDSA_SHA256_SIGNATURE, nullptr);
   if (rv != SECSuccess) return nullptr;
 
   // Set version to X509v3.
-  *(certificate->version.data) = SEC_CERTIFICATE_VERSION_3;
-  certificate->version.len = 1;
+  *(tbsCertificate->version.data) = SEC_CERTIFICATE_VERSION_3;
+  tbsCertificate->version.len = 1;
 
   SECItem innerDER;
   innerDER.len = 0;
   innerDER.data = nullptr;
 
-  if (!SEC_ASN1EncodeItem(arena, &innerDER, certificate.get(),
+  if (!SEC_ASN1EncodeItem(arena, &innerDER, tbsCertificate.get(),
                           SEC_ASN1_GET(CERT_CertificateTemplate))) {
     return nullptr;
   }
 
-  SECItem* signedCert = PORT_ArenaZNew(arena, SECItem);
-  if (!signedCert) {
+  SECItem* certDer = PORT_ArenaZNew(arena, SECItem);
+  if (!certDer) {
     return nullptr;
   }
 
-  rv = SEC_DerSignData(arena, signedCert, innerDER.data, innerDER.len,
+  rv = SEC_DerSignData(arena, certDer, innerDER.data, innerDER.len,
                        private_key.get(),
                        SEC_OID_ANSIX962_ECDSA_SHA256_SIGNATURE);
   if (rv != SECSuccess) {
     return nullptr;
   }
-  certificate->derCert = *signedCert;
+
+  UniqueCERTCertificate certificate(CERT_NewTempCertificate(
+      CERT_GetDefaultCertDB(), certDer, nullptr, false, true));
 
   return new DtlsIdentity(std::move(private_key), std::move(certificate),
                           ssl_kea_ecdh);

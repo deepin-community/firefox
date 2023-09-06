@@ -18,7 +18,7 @@ portrait =
     .label = Portread
     .accesskey = P
 landscape =
-    .label = Tirwedd
+    .label = Tirlun
     .accesskey = T
 scale =
     .label = Graddfa:
@@ -100,7 +100,7 @@ print-preparing =
 print-progress =
     .value = Cynnydd:
 print-window =
-    .title = Argraffu
+    .title = Yn argraffu
 print-complete =
     .value = Argraffu wedi ei Gwblhau.
 

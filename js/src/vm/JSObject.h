@@ -7,23 +7,15 @@
 #ifndef vm_JSObject_h
 #define vm_JSObject_h
 
-#include "mozilla/Maybe.h"
 #include "mozilla/MemoryReporting.h"
 
 #include "jsfriendapi.h"
 
-#include "gc/Barrier.h"
-#include "js/Conversions.h"
 #include "js/friend/ErrorMessages.h"  // JSErrNum
 #include "js/GCVector.h"
-#include "js/HeapAPI.h"
 #include "js/shadow/Zone.h"  // JS::shadow::Zone
 #include "js/Wrapper.h"
-#include "vm/BytecodeUtil.h"
-#include "vm/Printer.h"
-#include "vm/PropertyResult.h"
 #include "vm/Shape.h"
-#include "vm/StringType.h"
 
 namespace JS {
 struct ClassInfo;
@@ -44,7 +36,6 @@ class RelocationOverlay;
 
 class GlobalObject;
 class NativeObject;
-class NewObjectCache;
 
 enum class IntegrityLevel { Sealed, Frozen };
 
@@ -99,6 +90,9 @@ class JSObject
   // The Shape is stored in the cell header.
   js::Shape* shape() const { return headerPtr(); }
 
+  // Like shape(), but uses getAtomic to read the header word.
+  js::Shape* shapeMaybeForwarded() const { return headerPtrAtomic(); }
+
 #ifndef JS_64BIT
   // Ensure fixed slots have 8-byte alignment on 32-bit platforms.
   uint32_t padding_;
@@ -107,7 +101,6 @@ class JSObject
  private:
   friend class js::GCMarker;
   friend class js::GlobalObject;
-  friend class js::NewObjectCache;
   friend class js::Nursery;
   friend class js::gc::RelocationOverlay;
   friend bool js::PreventExtensions(JSContext* cx, JS::HandleObject obj,
@@ -161,20 +154,20 @@ class JSObject
     setHeaderPtr(shape);
   }
 
-  static JSObject* fromShapeFieldPointer(uintptr_t p) {
-    return reinterpret_cast<JSObject*>(p - JSObject::offsetOfShape());
-  }
-
   static bool setFlag(JSContext* cx, JS::HandleObject obj, js::ObjectFlag flag);
 
   bool hasFlag(js::ObjectFlag flag) const {
     return shape()->hasObjectFlag(flag);
   }
 
+  bool hasAnyFlag(js::ObjectFlags flags) const {
+    return shape()->objectFlags().hasAnyFlag(flags);
+  }
+
   // Change this object's shape for a prototype mutation.
   //
-  // Note: this does not reshape the proto chain to invalidate shape
-  // teleporting, check for an immutable proto, etc.
+  // Note: the caller must ensure the object has a mutable proto, is extensible,
+  // etc.
   static bool setProtoUnchecked(JSContext* cx, JS::HandleObject obj,
                                 js::Handle<js::TaggedProto> proto);
 
@@ -196,7 +189,19 @@ class JSObject
     return setFlag(cx, obj, js::ObjectFlag::IsUsedAsPrototype);
   }
 
-  inline bool isBoundFunction() const;
+  bool useWatchtowerTestingLog() const {
+    return hasFlag(js::ObjectFlag::UseWatchtowerTestingLog);
+  }
+  static bool setUseWatchtowerTestingLog(JSContext* cx, JS::HandleObject obj) {
+    return setFlag(cx, obj, js::ObjectFlag::UseWatchtowerTestingLog);
+  }
+
+  bool isGenerationCountedGlobal() const {
+    return hasFlag(js::ObjectFlag::GenerationCountedGlobal);
+  }
+  static bool setGenerationCountedGlobal(JSContext* cx, JS::HandleObject obj) {
+    return setFlag(cx, obj, js::ObjectFlag::GenerationCountedGlobal);
+  }
 
   // A "qualified" varobj is the object on which "qualified" variable
   // declarations (i.e., those defined with "var") are kept.
@@ -269,6 +274,8 @@ class JSObject
 
   static const JS::TraceKind TraceKind = JS::TraceKind::Object;
 
+  static constexpr size_t thingSize(js::gc::AllocKind kind);
+
   MOZ_ALWAYS_INLINE JS::Zone* zone() const {
     MOZ_ASSERT_IF(!isTenured(), nurseryZone() == shape()->zone());
     return shape()->zone();
@@ -292,6 +299,8 @@ class JSObject
   /* Return the allocKind we would use if we were to tenure this object. */
   js::gc::AllocKind allocKindForTenure(const js::Nursery& nursery) const;
 
+  bool canHaveFixedElements() const;
+
   size_t tenuredSizeOfThis() const {
     MOZ_ASSERT(isTenured());
     return js::gc::Arena::thingSize(asTenured().getAllocKind());
@@ -309,10 +318,10 @@ class JSObject
 
 #ifdef DEBUG
   static void debugCheckNewObject(js::Shape* shape, js::gc::AllocKind allocKind,
-                                  js::gc::InitialHeap heap);
+                                  js::gc::Heap heap);
 #else
   static void debugCheckNewObject(js::Shape* shape, js::gc::AllocKind allocKind,
-                                  js::gc::InitialHeap heap) {}
+                                  js::gc::Heap heap) {}
 #endif
 
   /*
@@ -427,7 +436,9 @@ class JSObject
   MOZ_ALWAYS_INLINE JSNative callHook() const;
   MOZ_ALWAYS_INLINE JSNative constructHook() const;
 
-  MOZ_ALWAYS_INLINE void finalize(JSFreeOp* fop);
+  bool isBackgroundFinalized() const;
+
+  MOZ_ALWAYS_INLINE void finalize(JS::GCContext* gcx);
 
  public:
   static bool nonNativeSetProperty(JSContext* cx, js::HandleObject obj,
@@ -551,9 +562,13 @@ class JSObject
   static constexpr size_t offsetOfShape() { return offsetOfHeaderPtr(); }
 
  private:
-  JSObject() = delete;
   JSObject(const JSObject& other) = delete;
   void operator=(const JSObject& other) = delete;
+
+ protected:
+  // For the allocator only, to be used with placement new.
+  friend class js::gc::GCRuntime;
+  JSObject() = default;
 };
 
 template <>
@@ -689,11 +704,11 @@ struct JSObject_Slots4 : JSObject {
   void* data[2];
   js::Value fslots[4];
 };
-struct JSObject_Slots6 : JSObject {
-  // Only used for extended functions which are required to have exactly six
+struct JSObject_Slots7 : JSObject {
+  // Only used for extended functions which are required to have exactly seven
   // fixed slots due to JIT assumptions.
   void* data[2];
-  js::Value fslots[6];
+  js::Value fslots[7];
 };
 struct JSObject_Slots8 : JSObject {
   void* data[2];
@@ -708,6 +723,15 @@ struct JSObject_Slots16 : JSObject {
   js::Value fslots[16];
 };
 
+/* static */
+constexpr size_t JSObject::thingSize(js::gc::AllocKind kind) {
+  MOZ_ASSERT(IsObjectAllocKind(kind));
+  constexpr uint8_t objectSizes[] = {
+#define EXPAND_OJBECT_SIZE(_1, _2, _3, sizedType, _4, _5, _6) sizeof(sizedType),
+      FOR_EACH_OBJECT_ALLOCKIND(EXPAND_OJBECT_SIZE)};
+  return objectSizes[size_t(kind)];
+}
+
 namespace js {
 
 // Returns true if object may possibly use JSObject::swap. The JITs may better
@@ -718,15 +742,8 @@ namespace js {
 // JSFunction will not change. Note: the object can still be moved by GC.
 extern bool ObjectMayBeSwapped(const JSObject* obj);
 
-/**
- * This enum is used to select whether the defined functions should be marked as
- * builtin native instrinsics for self-hosted code.
- */
-enum DefineAsIntrinsic { NotIntrinsic, AsIntrinsic };
-
 extern bool DefineFunctions(JSContext* cx, HandleObject obj,
-                            const JSFunctionSpec* fs,
-                            DefineAsIntrinsic intrinsic);
+                            const JSFunctionSpec* fs);
 
 /* ES6 draft rev 36 (2015 March 17) 7.1.1 ToPrimitive(vp[, preferredType]) */
 extern bool ToPrimitiveSlow(JSContext* cx, JSType hint, MutableHandleValue vp);
@@ -813,10 +830,6 @@ MOZ_ALWAYS_INLINE bool GetPrototypeFromBuiltinConstructor(
                                      proto);
 }
 
-// Generic call for constructing |this|.
-extern JSObject* CreateThis(JSContext* cx, const JSClass* clasp,
-                            js::HandleObject callee);
-
 /* ES6 draft rev 32 (2015 Feb 2) 6.2.4.5 ToPropertyDescriptor(Obj) */
 bool ToPropertyDescriptor(JSContext* cx, HandleValue descval,
                           bool checkAccessors,
@@ -841,7 +854,7 @@ extern bool ReadPropertyDescriptors(
     MutableHandleIdVector ids, MutableHandle<PropertyDescriptorVector> descs);
 
 /* Read the name using a dynamic lookup on the scopeChain. */
-extern bool LookupName(JSContext* cx, HandlePropertyName name,
+extern bool LookupName(JSContext* cx, Handle<PropertyName*> name,
                        HandleObject scopeChain, MutableHandleObject objp,
                        MutableHandleObject pobjp, PropertyResult* propp);
 
@@ -856,7 +869,8 @@ extern bool LookupNameNoGC(JSContext* cx, PropertyName* name,
  * Additionally, pobjp and propp are not needed by callers so they are not
  * returned.
  */
-extern bool LookupNameWithGlobalDefault(JSContext* cx, HandlePropertyName name,
+extern bool LookupNameWithGlobalDefault(JSContext* cx,
+                                        Handle<PropertyName*> name,
                                         HandleObject scopeChain,
                                         MutableHandleObject objp);
 
@@ -868,13 +882,21 @@ extern bool LookupNameWithGlobalDefault(JSContext* cx, HandlePropertyName name,
  *
  * Additionally, pobjp is not needed by callers so it is not returned.
  */
-extern bool LookupNameUnqualified(JSContext* cx, HandlePropertyName name,
+extern bool LookupNameUnqualified(JSContext* cx, Handle<PropertyName*> name,
                                   HandleObject scopeChain,
                                   MutableHandleObject objp);
 
 }  // namespace js
 
 namespace js {
+
+/*
+ * Family of Pure property lookup functions. The bool return does NOT have the
+ * standard SpiderMonkey semantics. The return value means "can this operation
+ * be performed and produce a valid result without any side effects?". If any of
+ * these return true, then the outparam can be inspected to determine the
+ * result.
+ */
 
 bool LookupPropertyPure(JSContext* cx, JSObject* obj, jsid id,
                         NativeObject** objp, PropertyResult* propp);
@@ -926,7 +948,8 @@ namespace js {
 JSObject* ToObjectSlowForPropertyAccess(JSContext* cx, JS::HandleValue val,
                                         int valIndex, HandleId key);
 JSObject* ToObjectSlowForPropertyAccess(JSContext* cx, JS::HandleValue val,
-                                        int valIndex, HandlePropertyName key);
+                                        int valIndex,
+                                        Handle<PropertyName*> key);
 JSObject* ToObjectSlowForPropertyAccess(JSContext* cx, JS::HandleValue val,
                                         int valIndex, HandleValue keyValue);
 
@@ -940,7 +963,7 @@ MOZ_ALWAYS_INLINE JSObject* ToObjectFromStackForPropertyAccess(JSContext* cx,
   return js::ToObjectSlowForPropertyAccess(cx, vp, vpIndex, key);
 }
 MOZ_ALWAYS_INLINE JSObject* ToObjectFromStackForPropertyAccess(
-    JSContext* cx, HandleValue vp, int vpIndex, HandlePropertyName key) {
+    JSContext* cx, HandleValue vp, int vpIndex, Handle<PropertyName*> key) {
   if (vp.isObject()) {
     return &vp.toObject();
   }
@@ -1084,6 +1107,10 @@ extern size_t SizeOfDataIfCDataObject(mozilla::MallocSizeOf mallocSizeOf,
 
 }  // namespace ctypes
 
+#endif
+
+#ifdef DEBUG
+void AssertJSClassInvariants(const JSClass* clasp);
 #endif
 
 } /* namespace js */

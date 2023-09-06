@@ -96,44 +96,6 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
-main-context-menu-bookmark-add =
-    .aria-label = Przidej ta strōna do zokłodek
-    .accesskey = z
-    .tooltiptext = Przidej ta strōna do zokłodek
-
-# This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
-# so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = Przidej strōna do zokłodek
-    .accesskey = p
-
-# This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-add-mac,
-# so should probably have the same access key if possible.
-main-context-menu-bookmark-edit-mac =
-    .label = Edytuj zokłodka
-    .accesskey = p
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Przidej ta strōna do zokłodek
-    .accesskey = z
-    .tooltiptext = Przidej ta strōna do zokłodek ({ $shortcut })
-
-main-context-menu-bookmark-change =
-    .aria-label = Edytuj ta zokłodka
-    .accesskey = z
-    .tooltiptext = Edytuj ta zokłodka
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Edytuj ta zokłodka
-    .accesskey = z
-    .tooltiptext = Edytuj ta zokłodka ({ $shortcut })
-
 main-context-menu-open-link =
     .label = Ôtwōrz link
     .accesskey = O
@@ -154,10 +116,6 @@ main-context-menu-open-link-new-private-window =
     .label = Ôtwōrz link we nowym prywatnym ôknie
     .accesskey = P
 
-main-context-menu-bookmark-link =
-    .label = Link do zokłodek
-    .accesskey = L
-
 main-context-menu-save-link =
     .label = Spamiyntej link za…
     .accesskey = s
@@ -166,11 +124,6 @@ main-context-menu-save-link-to-pocket =
     .label = Spamiyntej link do { -pocket-brand-name }
     .accesskey = i
 
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
-
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
 ## are mutually exclusive.
@@ -178,6 +131,10 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = Kopiuj adresa email
     .accesskey = A
+
+main-context-menu-copy-phone =
+    .label = Kopiuj nōmer telefonu
+    .accesskey = o
 
 main-context-menu-copy-link-simple =
     .label = Kopiuj link
@@ -325,14 +282,6 @@ main-context-menu-audio-email =
     .label = poślij emaila z audio…
     .accesskey = a
 
-main-context-menu-plugin-play =
-    .label = Aktywuj te rozszyrzynie
-    .accesskey = y
-
-main-context-menu-plugin-hide =
-    .label = Skryj te rozszyrzynie
-    .accesskey = r
-
 main-context-menu-save-to-pocket =
     .label = Chrōń strōna we { -pocket-brand-name }
     .accesskey = c
@@ -391,10 +340,6 @@ main-context-menu-frame-reload =
     .label = Przeladuj rōma
     .accesskey = P
 
-main-context-menu-frame-bookmark =
-    .label = Przidej rōma do zokłodek
-    .accesskey = m
-
 main-context-menu-frame-save-as =
     .label = Spamiyntej rōma za…
     .accesskey = R
@@ -410,10 +355,6 @@ main-context-menu-frame-view-source =
 main-context-menu-frame-view-info =
     .label = Pokoż informacyje ô rōmie
     .accesskey = I
-
-main-context-menu-print-selection =
-    .label = Durkuj ôbrane
-    .accesskey = D
 
 main-context-menu-view-selection-source =
     .label = Pokoż zdrzōdło wyboru
@@ -450,3 +391,12 @@ main-context-menu-eme-learn-more =
     .label = Dowiydz sie wiyncyj ô DRM…
     .accesskey = D
 
+# Variables
+#   $containerName (String): The name of the current container
+main-context-menu-open-link-in-container-tab =
+    .label = Ôdewrzij link w nowyj karcie { $containerName }
+    .accesskey = K
+
+main-context-menu-reveal-password =
+    .label = Pokoż hasło
+    .accesskey = v

@@ -11,7 +11,7 @@ set-desktop-background-accept =
 open-desktop-prefs =
     .label = Abrir preferências da área de trabalho
 
-set-background-preview-unavailable = Visualização não disponível
+set-background-preview-unavailable = Exibição não disponível
 
 # This refers to the wallpaper "spanning" multiple monitors when the
 # user has more than one. Only some of the entire image will be on

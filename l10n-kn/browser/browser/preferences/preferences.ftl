@@ -51,6 +51,17 @@ restart-later = ಆಮೇಲೆ ಮರು ಆರಂಭಿಸು
 ##   $name (String): name of the extension
 
 
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
+
+
 ## Preferences UI Search Results
 
 search-results-header = ಹುಡುಕು ಫಲಿತಾಂಶಗಳು
@@ -72,10 +83,6 @@ set-as-my-default-browser =
     .label = ಪೂರ್ವನಿಯೋಜಿತವನ್ನಾಗಿ ಮಾಡು…
     .accesskey = D
 
-startup-restore-previous-session =
-    .label = ಹಿಂದಿನ ಅಧಿವೇಶನವನ್ನು ಮರಳಿ ಸ್ಥಾಪಿಸು
-    .accesskey = s
-
 disable-extension =
     .label = ಎಕ್ಸ್‌ಟೆನ್ಶನ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸು
 
@@ -88,10 +95,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = ಕೊಂಡಿಗಳನ್ನು ಹೊಸ ಕಿಟಕಿಯಲ್ಲಿ ತೆರೆಯುವ ಬದಲು ಹಾಳಯಗಳಲ್ಲಿ ತೆರೆಯಿರಿ
     .accesskey = w
-
-warn-on-close-multiple-tabs =
-    .label = ಅನೇಕ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚುವಾಗ ನನ್ನನ್ನು ಎಚ್ಚರಿಸು‍
-    .accesskey = m
 
 warn-on-open-many-tabs =
     .label = ಅನೇಕ ಹಾಳೆಗಳನ್ನು ತೆರೆಯುವುದಾಗ { -brand-short-name }ವನ್ನು ನಿಧಾನಗೊಂಡರೆ ನನ್ನನ್ನು ಎಚ್ಚರಿಸು
@@ -111,6 +114,12 @@ browser-containers-settings =
     .label = ಸಿದ್ಧತೆಗಳು…‍
     .accesskey = i
 
+## Variables:
+##   $tabCount (number) - Number of tabs
+
+
+##
+
 containers-disable-alert-cancel-button = ಸಕ್ರಿಯವಾಗಿಯೇ ಇರಿಸಿ
 
 containers-remove-alert-title = ಈ ಕಂಟೇನರ್ ತೆಗೆದುಹಾಕುವುದೇ?
@@ -118,12 +127,9 @@ containers-remove-alert-title = ಈ ಕಂಟೇನರ್ ತೆಗೆದುಹ�
 containers-remove-ok-button = ಈ ಕಂಟೇನರ್ ತೆಗೆದುಹಾಕು
 containers-remove-cancel-button = ಈ ಕಂಟೇನರ್ ತೆಗೆದುಹಾಕಬೇಡ
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = ಭಾಷೆ ಮತ್ತು ನೋಟ
-
-fonts-and-colors-header = ಅಕ್ಷರಶೈಲಿಗಳು ಮತ್ತು ಬಣ್ಣಗಳು
 
 default-font = ಪೂರ್ವನಿಯೋಜಿತ ಅಕ್ಷರಶೈಲಿ
     .accesskey = D
@@ -133,10 +139,6 @@ default-font-size = ಗಾತ್ರ
 advanced-fonts =
     .label = ಮುಂದುವರೆದ...
     .accesskey = A
-
-colors-settings =
-    .label = ಬಣ್ಣಗಳು...
-    .accesskey = C
 
 language-header = ಭಾಷೆ
 
@@ -168,8 +170,7 @@ files-and-applications-title = ಕಡತಗಳು ಮತ್ತು ಅನ್ವ�
 
 download-header = ಡೌನ್‍ಲೋಡ್‍ಗಳು
 
-download-save-to =
-    .label = ಕಡತಗಳನ್ನು ಇಲ್ಲಿ ಉಳಿಸು
+download-save-where = ಕಡತಗಳನ್ನು ಇಲ್ಲಿ ಉಳಿಸು
     .accesskey = v
 
 download-choose-folder =
@@ -361,15 +362,15 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = ಫೈರ್ಫಾಕ್ಸ್ ಮುಖಪುಟದ ವಿಷಯ
-
 home-prefs-search-header =
     .label = ಜಾಲದ ಹುಡುಕಾಟ
-home-prefs-topsites-header =
-    .label = ಪ್ರಮುಖ ತಾಣಗಳು
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 # Variables:
 #  $provider (String): Name of the corresponding content provider, e.g "Pocket".
@@ -378,11 +379,8 @@ home-prefs-recommended-by-header =
 
 ##
 
-
 home-prefs-recommended-by-learn-more = ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ
 
-home-prefs-highlights-header =
-    .label = ಮುಖ್ಯಾಂಶಗಳು
 home-prefs-highlights-option-visited-pages =
     .label = ಭೇಟಿಕೊಟ್ಟ ಪುಟಗಳು
 home-prefs-highlights-options-bookmarks =
@@ -410,6 +408,7 @@ search-engine-default-header = ಪೂರ್ವನಿಯೋಜಿತ ಹುಡು
 search-suggestions-option =
     .label = search ಸಲಹೆಗಳನ್ನು ತೋರಿಸು
     .accesskey = s
+
 
 search-suggestions-cant-show = ಎಂದಿಗೂ ಸಹ ಇತಿಹಾಸವನ್ನು ನೆನಪಿಟ್ಟುಕೊಳ್ಳಬೇಡ ಎಂದು ನೀವು { -brand-short-name } ಅನ್ನು ಸಂರಚಿಸಿರುವುದರಿಂದ ಹುಡುಕುವಾಗ ಸ್ಥಳದ ಪಟ್ಟಿಯ ಫಲಿತಾಂಶಗಳಲ್ಲಿ ಯಾವುದೆ ಸಲಹೆಗಳನ್ನು ತೋರಿಸಲಾಗುವುದಿಲ್ಲ.
 
@@ -446,10 +445,11 @@ containers-add-button =
 containers-remove-button =
     .label = ತೆಗೆದುಹಾಕು
 
-## Sync Section - Signed out
-
-
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = ಜಾಲವನ್ನು ನಿಮ್ಮೊಂದಿಗೆ ಒಯ್ಯಿರಿ
@@ -464,10 +464,10 @@ sync-signedout-caption = ಜಾಲವನ್ನು ನಿಮ್ಮೊಂದಿಗ
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Firefox ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ<img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> ಅಥವ <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a> ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಾಧನದ ಜೊತೆ ಸಿಂಕ್ ಮಾಡಲು.
 
-## Sync Section - Signed in
-
-
 ## Firefox Account - Signed in
+
+
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = ಪ್ರೊಫೈಲ್ ಚಿತ್ರವನ್ನು ಬದಲಾಯಿಸು
@@ -475,8 +475,13 @@ sync-profile-picture =
 sync-manage-account = ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸು
     .accesskey = o
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } ಪರಿಶೀಲಿಸಲಾಗಿಲ್ಲ.
 sync-signedin-login-failure = ಮರಳಿ ಸಂಪರ್ಕಿತಗೊಳ್ಳಲು ದಯವಿಟ್ಟು ಸೈನ್‌ ಇನ್ ಆಗಿ { $email }
+
+##
 
 sync-remove-account =
     .label = ಖಾತೆಯನ್ನು ತೆಗೆದುಹಾಕು
@@ -523,12 +528,19 @@ sync-device-name-save =
     .label = ಉಳಿಸು‍
     .accesskey = v
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = ಪರಿಶೀಲನೆಯನ್ನು ಕಳುಹಿಸಲಾಗಿದೆ
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = ಒಂದು ಪರಿಶೀಲನಾ ಕೊಂಡಿಯನ್ನು { $email } ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.
+sync-verification-not-sent-title = ಧೃಡೀಕರಣವನ್ನು ಕಳಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ
+sync-verification-not-sent-body = ನಾವು ಈ ಸಮಯದಲ್ಲಿ ಒಂದು ದೃಢೀಕರಣ ಮೇಲ್ ಅನ್ನು ಕಳುಹಿಸಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ, ದಯವಿಟ್ಟು ಇನ್ನೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.
+
 ## Privacy Section
 
 privacy-header = ವೀಕ್ಷಕದ ಗೌಪ್ಯತೆ
-
-## Privacy Section - Forms
-
 
 ## Privacy Section - Logins and Passwords
 
@@ -546,6 +558,7 @@ forms-master-pw-change =
 forms-master-pw-fips-desc = ಗುಪ್ತಪದವನ್ನು ಬದಲಾಯಿಸುವಲ್ಲಿ ವಿಫಲಗೊಂಡಿದೆ
 
 ## OS Authentication dialog
+
 
 ## Privacy Section - History
 
@@ -602,6 +615,9 @@ sitedata-settings =
     .label = ದತ್ತಾಂಶವನ್ನು ನಿರ್ವಹಿಸು…
     .accesskey = M
 
+## Privacy Section - Cookie Banner Handling
+
+
 ## Privacy Section - Address Bar
 
 addressbar-header = ವಿಳಾಸ ಪಟ್ಟಿ
@@ -629,6 +645,10 @@ content-blocking-learn-more = ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ
 
 
 ##
+
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
+
 
 ## Privacy Section - Tracking
 
@@ -661,10 +681,6 @@ permissions-notification-link = ಇನ್ನಷ್ಟು ತಿಳಿಯಿರ�
 permissions-block-popups =
     .label = ಪುಟಿಕೆ (ಪಾಪ್-ಅಪ್) ಕಿಟಕಿಗಳನ್ನು ತಡೆ ಹಿಡಿ
     .accesskey = B
-
-permissions-block-popups-exceptions =
-    .label = ಹೊರತಾದವುಗಳು...
-    .accesskey = E
 
 permissions-addon-exceptions =
     .label = ವಿನಾಯಿತಿಗಳು...
@@ -716,9 +732,12 @@ certs-devices =
 
 ## Privacy Section - HTTPS-Only
 
+
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = ಗಣಕತೆರೆ
 downloads-folder-name = ಡೌನ್‌ಲೋಡ್‌ಗಳು
 choose-download-folder-title = ಡೌನ್‌ಲೋಡ್‌ ಕಡತಕೋಶವನ್ನು ಆರಿಸು:
-

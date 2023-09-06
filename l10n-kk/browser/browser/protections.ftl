@@ -63,22 +63,20 @@ cryptominer-tab-content = Криптомайнерлер жүйеңіздің е
 protections-close-button2 =
     .aria-label = Жабу
     .title = Жабу
-  
+
 mobile-app-title = Көбірек құрылғылар арасында жарнама трекерлерін бұғаттаңыз
 mobile-app-card-content = Құрамында жарнамалық трекерлерден қорғанысы бар мобильді браузерді қолданыңыз.
 mobile-app-links = <a data-l10n-name="android-mobile-inline-link">Android</a> және <a data-l10n-name="ios-mobile-inline-link">iOS</a> үшін { -brand-product-name } браузері.
 
 lockwise-title = Парольдерді енді ешқашан ұмытпаңыз
-lockwise-title-logged-in2 = Парольдерді басқару
-lockwise-header-content = { -lockwise-brand-name } парольдеріңізді браузерде қауіпсіз түрде сақтайды.
+passwords-title-logged-in = Парольдеріңізді басқару
+passwords-header-content = { -brand-product-name } парольдеріңізді браузерде қауіпсіз түрде сақтайды.
 lockwise-header-content-logged-in = Парольдеріңізді барлық құрылғыларыңызда қауіпсіз түрде сақтау және синхрондау.
-protection-report-save-passwords-button = Парольдерді сақтау
-    .title = Парольдерді { -lockwise-brand-short-name } ішінде сақтау
-protection-report-manage-passwords-button = Парольдерді басқару
-    .title = Парольдерді { -lockwise-brand-short-name } ішінде басқару
-lockwise-mobile-app-title = Парольдеріңізді өзіңізбен бірге алып жүріңіз
-lockwise-no-logins-card-content = { -brand-short-name } ішінде сақталған парольдерді кез келген құрылғыда қолданыңыз.
-lockwise-app-links = <a data-l10n-name="lockwise-android-inline-link">Android</a> және <a data-l10n-name="lockwise-ios-inline-link">iOS</a> үшін { -lockwise-brand-name }
+protection-report-passwords-save-passwords-button = Парольдерді сақтау
+    .title = Парольдерді сақтау
+protection-report-passwords-manage-passwords-button = Парольдерді басқару
+    .title = Парольдерді басқару
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

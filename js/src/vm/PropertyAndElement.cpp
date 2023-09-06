@@ -25,17 +25,16 @@
 #include "js/Value.h"               // JS::Value, JS::*Value
 #include "vm/FunctionPrefixKind.h"  // js::FunctionPrefixKind
 #include "vm/GlobalObject.h"        // js::GlobalObject
-#include "vm/JSAtom.h"              // JSAtom, js::Atomize, js::AtomizeChars
+#include "vm/JSAtomUtils.h"         // js::Atomize, js::AtomizeChars
 #include "vm/JSContext.h"           // JSContext, CHECK_THREAD
 #include "vm/JSFunction.h"          // js::IdToFunctionName, js::DefineFunction
 #include "vm/JSObject.h"            // JSObject, js::DefineFunctions
 #include "vm/ObjectOperations.h"  // js::DefineProperty, js::DefineDataProperty, js::HasOwnProperty
 #include "vm/PropertyResult.h"  // js::PropertyResult
-#include "vm/StringType.h"      // js::PropertyName
+#include "vm/StringType.h"      // JSAtom, js::PropertyName
 
-#include "vm/JSAtom-inl.h"            // js::AtomToId, js::IndexToId
+#include "vm/JSAtomUtils-inl.h"       // js::AtomToId, js::IndexToId
 #include "vm/JSContext-inl.h"         // JSContext::check
-#include "vm/JSFunction-inl.h"        // js::NewNativeFunction
 #include "vm/JSObject-inl.h"          // js::NewBuiltinClassInstance
 #include "vm/NativeObject-inl.h"      // js::NativeLookupOwnPropertyNoResolve
 #include "vm/ObjectOperations-inl.h"  // js::GetProperty, js::GetElement, js::SetProperty, js::HasProperty, js::DeleteProperty, js::DeleteElement
@@ -405,8 +404,7 @@ JS_PUBLIC_API bool JS_DefineUCProperty(JSContext* cx, JS::Handle<JSObject*> obj,
 }
 
 extern bool PropertySpecNameToId(JSContext* cx, JSPropertySpec::Name name,
-                                 MutableHandleId id,
-                                 js::PinningBehavior pin = js::DoNotPinAtom);
+                                 MutableHandleId id);
 
 static bool DefineSelfHostedProperty(JSContext* cx, JS::Handle<JSObject*> obj,
                                      JS::Handle<jsid> id,
@@ -857,6 +855,10 @@ JS_PUBLIC_API bool JS_DefineProperties(JSContext* cx, JS::Handle<JSObject*> obj,
       return false;
     }
 
+    if (ShouldIgnorePropertyDefinition(cx, StandardProtoKeyOrNull(obj), id)) {
+      continue;
+    }
+
     if (ps->isAccessor()) {
       if (ps->isSelfHosted()) {
         if (!::DefineSelfHostedProperty(
@@ -948,7 +950,7 @@ JS_PUBLIC_API bool JS_DefineFunctions(JSContext* cx, JS::Handle<JSObject*> obj,
   CHECK_THREAD(cx);
   cx->check(obj);
 
-  return js::DefineFunctions(cx, obj, fs, NotIntrinsic);
+  return js::DefineFunctions(cx, obj, fs);
 }
 
 JS_PUBLIC_API JSFunction* JS_DefineFunction(JSContext* cx,

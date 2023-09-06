@@ -1,59 +1,46 @@
 "use strict";
 
-const {
-  ExperimentAPI,
-  NimbusFeatures,
-  _ExperimentFeature: ExperimentFeature,
-} = ChromeUtils.import("resource://nimbus/ExperimentAPI.jsm");
-const { TestUtils } = ChromeUtils.import(
-  "resource://testing-common/TestUtils.jsm"
+const { ExperimentAPI, _ExperimentFeature: ExperimentFeature } =
+  ChromeUtils.importESModule("resource://nimbus/ExperimentAPI.sys.mjs");
+
+const { JsonSchema } = ChromeUtils.importESModule(
+  "resource://gre/modules/JsonSchema.sys.mjs"
 );
-const { Ajv } = ChromeUtils.import("resource://testing-common/ajv-4.1.1.js");
 
 Cu.importGlobalProperties(["fetch"]);
 
-XPCOMUtils.defineLazyGetter(this, "fetchSchema", async () => {
-  const response = await fetch(
-    "resource://testing-common/ExperimentFeatureRemote.schema.json"
-  );
-  const schema = await response.json();
-  if (!schema) {
-    throw new Error("Failed to load ExperimentFeatureRemote schema");
-  }
-  return schema.definitions.RemoteFeatureConfigurations;
+XPCOMUtils.defineLazyGetter(this, "fetchSchema", () => {
+  return fetch("resource://nimbus/schemas/NimbusEnrollment.schema.json", {
+    credentials: "omit",
+  }).then(rsp => rsp.json());
 });
 
-const REMOTE_CONFIGURATION = Object.freeze({
-  id: "aboutwelcome",
-  configurations: [
-    {
-      slug: "non-matching-configuration",
-      description: "This configuration does not match because of targeting.",
-      variables: { skipFocus: false, enabled: false },
-      targeting: "false",
-      bucketConfig: {
-        namespace: "nimbus-test-utils",
-        randomizationUnit: "normandy_id",
-        start: 0,
-        count: 1000,
-        total: 1000,
-      },
+const NON_MATCHING_ROLLOUT = Object.freeze(
+  ExperimentFakes.rollout("non-matching-rollout", {
+    branch: {
+      slug: "slug",
+      features: [
+        {
+          featureId: "aboutwelcome",
+          value: { enabled: false },
+        },
+      ],
     },
-    {
-      slug: "matching-configuration",
-      description: "This configuration will match targeting.",
-      variables: { skipFocus: true, enabled: true },
-      targeting: "true",
-      bucketConfig: {
-        namespace: "nimbus-test-utils",
-        randomizationUnit: "normandy_id",
-        start: 0,
-        count: 1000,
-        total: 1000,
-      },
+  })
+);
+const MATCHING_ROLLOUT = Object.freeze(
+  ExperimentFakes.rollout("matching-rollout", {
+    branch: {
+      slug: "slug",
+      features: [
+        {
+          featureId: "aboutwelcome",
+          value: { enabled: false },
+        },
+      ],
     },
-  ],
-});
+  })
+);
 
 const AW_FAKE_MANIFEST = {
   description: "Different manifest with a special test variable",
@@ -67,9 +54,6 @@ const AW_FAKE_MANIFEST = {
       type: "boolean",
     },
     enabled: {
-      type: "boolean",
-    },
-    skipFocus: {
       type: "boolean",
     },
   },
@@ -87,30 +71,29 @@ async function setupForExperimentFeature() {
 }
 
 add_task(async function validSchema() {
-  const ajv = new Ajv({ allErrors: true });
-  const validate = ajv.compile(await fetchSchema);
+  const validator = new JsonSchema.Validator(await fetchSchema, {
+    shortCircuit: false,
+  });
 
-  Assert.ok(
-    validate(REMOTE_CONFIGURATION),
-    JSON.stringify(validate.errors, null, 2)
-  );
+  {
+    const result = validator.validate(NON_MATCHING_ROLLOUT);
+    Assert.ok(result.valid, JSON.stringify(result.errors, undefined, 2));
+  }
+  {
+    const result = validator.validate(MATCHING_ROLLOUT);
+    Assert.ok(result.valid, JSON.stringify(result.errors, undefined, 2));
+  }
 });
 
 add_task(async function readyCallAfterStore_with_remote_value() {
   let { sandbox, manager } = await setupForExperimentFeature();
   let feature = new ExperimentFeature("aboutwelcome");
 
-  Assert.ok(feature.getVariable("skipFocus"), "Feature is true by default");
+  Assert.ok(feature.getVariable("enabled"), "Feature is true by default");
 
-  manager.store.updateRemoteConfigs(
-    "aboutwelcome",
-    REMOTE_CONFIGURATION.configurations[0]
-  );
+  await manager.store.addEnrollment(MATCHING_ROLLOUT);
 
-  // Should resolve because the store will return a dummy remote value
-  await feature.ready();
-
-  Assert.ok(!feature.getVariable("skipFocus"), "Loads value from store");
+  Assert.ok(!feature.getVariable("enabled"), "Loads value from store");
   manager.store._deleteForTests("aboutwelcome");
   sandbox.restore();
 });
@@ -127,7 +110,10 @@ add_task(async function has_sync_value_before_ready() {
 
   Services.prefs.setStringPref(
     "nimbus.syncdefaultsstore.aboutwelcome",
-    JSON.stringify(REMOTE_CONFIGURATION.configurations[0])
+    JSON.stringify({
+      ...MATCHING_ROLLOUT,
+      branch: { feature: MATCHING_ROLLOUT.branch.features[0] },
+    })
   );
 
   Services.prefs.setBoolPref(
@@ -147,20 +133,65 @@ add_task(async function update_remote_defaults_onUpdate() {
 
   feature.onUpdate(stub);
 
-  manager.store.updateRemoteConfigs(
-    "aboutwelcome",
-    REMOTE_CONFIGURATION.configurations[0]
-  );
+  await manager.store.addEnrollment(MATCHING_ROLLOUT);
 
   Assert.ok(stub.called, "update event called");
   Assert.equal(stub.callCount, 1, "Called once for remote configs");
-  Assert.equal(
-    stub.firstCall.args[1],
-    "remote-defaults-update",
-    "Correct reason"
+  Assert.equal(stub.firstCall.args[1], "rollout-updated", "Correct reason");
+
+  manager.store._deleteForTests("aboutwelcome");
+  sandbox.restore();
+});
+
+add_task(async function test_features_over_feature() {
+  let { sandbox, manager } = await setupForExperimentFeature();
+  let feature = new ExperimentFeature("aboutwelcome");
+  const rollout_features_and_feature = Object.freeze(
+    ExperimentFakes.rollout("matching-rollout", {
+      branch: {
+        slug: "slug",
+        feature: {
+          featureId: "aboutwelcome",
+          value: { enabled: false },
+        },
+        features: [
+          {
+            featureId: "aboutwelcome",
+            value: { enabled: true },
+          },
+        ],
+      },
+    })
+  );
+  const rollout_just_feature = Object.freeze(
+    ExperimentFakes.rollout("matching-rollout", {
+      branch: {
+        slug: "slug",
+        feature: {
+          featureId: "aboutwelcome",
+          value: { enabled: false },
+        },
+      },
+    })
+  );
+
+  await manager.store.addEnrollment(rollout_features_and_feature);
+  Assert.ok(
+    feature.getVariable("enabled"),
+    "Should read from the features property over feature"
   );
 
   manager.store._deleteForTests("aboutwelcome");
+  manager.store._deleteForTests("matching-rollout");
+
+  await manager.store.addEnrollment(rollout_just_feature);
+  Assert.ok(
+    !feature.getVariable("enabled"),
+    "Should read from the feature property when features doesn't exist"
+  );
+
+  manager.store._deleteForTests("aboutwelcome");
+  manager.store._deleteForTests("matching-rollout");
   sandbox.restore();
 });
 
@@ -168,16 +199,16 @@ add_task(async function update_remote_defaults_readyPromise() {
   let { sandbox, manager } = await setupForExperimentFeature();
   let feature = new ExperimentFeature("aboutwelcome");
   let stub = sandbox.stub();
-  let promise = feature.ready();
 
   feature.onUpdate(stub);
 
-  manager.store.updateRemoteConfigs(
-    "aboutwelcome",
-    REMOTE_CONFIGURATION.configurations[1]
-  );
+  await manager.store.addEnrollment(MATCHING_ROLLOUT);
 
-  await promise;
+  Assert.ok(stub.calledOnce, "Update called after enrollment processed.");
+  Assert.ok(
+    stub.calledWith("featureUpdate:aboutwelcome", "rollout-updated"),
+    "Update called after enrollment processed."
+  );
 
   manager.store._deleteForTests("aboutwelcome");
   sandbox.restore();
@@ -186,23 +217,17 @@ add_task(async function update_remote_defaults_readyPromise() {
 add_task(async function update_remote_defaults_enabled() {
   let { sandbox, manager } = await setupForExperimentFeature();
   let feature = new ExperimentFeature("aboutwelcome");
-  let promise = feature.ready();
 
   Assert.equal(
-    feature.isEnabled(),
+    feature.getVariable("enabled"),
     true,
     "Feature is enabled by manifest.variables.enabled"
   );
 
-  manager.store.updateRemoteConfigs(
-    "aboutwelcome",
-    REMOTE_CONFIGURATION.configurations[0]
-  );
-
-  await promise;
+  await manager.store.addEnrollment(NON_MATCHING_ROLLOUT);
 
   Assert.ok(
-    !feature.isEnabled(),
+    !feature.getVariable("enabled"),
     "Feature is disabled by remote configuration"
   );
 
@@ -234,16 +259,22 @@ add_task(async function test_getVariable_no_mutation() {
 
 add_task(async function remote_isEarlyStartup_config() {
   let { manager } = await setupForExperimentFeature();
-  let feature = new ExperimentFeature("password-autocomplete");
-
-  manager.store.updateRemoteConfigs("password-autocomplete", {
-    slug: "remote-config-isEarlyStartup",
-    description: "This feature normally is not marked isEarlyStartup",
-    variables: { remote: true },
-    isEarlyStartup: true,
+  let rollout = ExperimentFakes.rollout("password-autocomplete", {
+    branch: {
+      slug: "remote-config-isEarlyStartup",
+      features: [
+        {
+          featureId: "password-autocomplete",
+          enabled: true,
+          value: { remote: true },
+          isEarlyStartup: true,
+        },
+      ],
+    },
   });
 
-  await feature.ready();
+  await manager.onStartup();
+  await manager.store.addEnrollment(rollout);
 
   Assert.ok(
     Services.prefs.prefHasUserValue(

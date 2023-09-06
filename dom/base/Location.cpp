@@ -25,6 +25,7 @@
 #include "nsGlobalWindow.h"
 #include "mozilla/Likely.h"
 #include "nsCycleCollectionParticipant.h"
+#include "mozilla/BasePrincipal.h"
 #include "mozilla/Components.h"
 #include "mozilla/NullPrincipal.h"
 #include "mozilla/ServoStyleConsts.h"
@@ -80,14 +81,10 @@ nsresult Location::GetURI(nsIURI** aURI, bool aGetInnermostURI) {
     return NS_OK;
   }
 
-  nsresult rv;
-  nsCOMPtr<nsIWebNavigation> webNav(do_QueryInterface(docShell, &rv));
-  if (NS_FAILED(rv)) {
-    return rv;
-  }
+  nsIWebNavigation* webNav = nsDocShell::Cast(docShell);
 
   nsCOMPtr<nsIURI> uri;
-  rv = webNav->GetCurrentURI(getter_AddRefs(uri));
+  nsresult rv = webNav->GetCurrentURI(getter_AddRefs(uri));
   NS_ENSURE_SUCCESS(rv, rv);
 
   // It is valid for docshell to return a null URI. Don't try to fixup
@@ -294,7 +291,7 @@ void Location::GetOrigin(nsAString& aOrigin, nsIPrincipal& aSubjectPrincipal,
   }
 
   nsAutoString origin;
-  aRv = nsContentUtils::GetUTFOrigin(uri, origin);
+  aRv = nsContentUtils::GetWebExposedOriginSerialization(uri, origin);
   if (NS_WARN_IF(aRv.Failed())) {
     return;
   }
@@ -531,16 +528,8 @@ void Location::SetSearch(const nsAString& aSearch,
     return;
   }
 
-  if (Document* doc = GetEntryDocument()) {
-    aRv = NS_MutateURI(uri)
-              .SetQueryWithEncoding(NS_ConvertUTF16toUTF8(aSearch),
-                                    doc->GetDocumentCharacterSet())
-              .Finalize(uri);
-  } else {
-    aRv = NS_MutateURI(uri)
-              .SetQuery(NS_ConvertUTF16toUTF8(aSearch))
-              .Finalize(uri);
-  }
+  aRv =
+      NS_MutateURI(uri).SetQuery(NS_ConvertUTF16toUTF8(aSearch)).Finalize(uri);
   if (NS_WARN_IF(aRv.Failed())) {
     return;
   }
@@ -548,8 +537,14 @@ void Location::SetSearch(const nsAString& aSearch,
   SetURI(uri, aSubjectPrincipal, aRv);
 }
 
-void Location::Reload(bool aForceget, ErrorResult& aRv) {
-  nsCOMPtr<nsIDocShell> docShell(GetDocShell());
+void Location::Reload(bool aForceget, nsIPrincipal& aSubjectPrincipal,
+                      ErrorResult& aRv) {
+  if (!CallerSubsumes(&aSubjectPrincipal)) {
+    aRv.Throw(NS_ERROR_DOM_SECURITY_ERR);
+    return;
+  }
+
+  RefPtr<nsDocShell> docShell(GetDocShell().downcast<nsDocShell>());
   if (!docShell) {
     return aRv.Throw(NS_ERROR_FAILURE);
   }
@@ -574,6 +569,21 @@ void Location::Reload(bool aForceget, ErrorResult& aRv) {
     }
   }
 
+  RefPtr<BrowsingContext> bc = GetBrowsingContext();
+  if (!bc || bc->IsDiscarded()) {
+    return;
+  }
+
+  CallerType callerType = aSubjectPrincipal.IsSystemPrincipal()
+                              ? CallerType::System
+                              : CallerType::NonSystem;
+
+  nsresult rv = bc->CheckLocationChangeRateLimit(callerType);
+  if (NS_FAILED(rv)) {
+    aRv.Throw(rv);
+    return;
+  }
+
   uint32_t reloadFlags = nsIWebNavigation::LOAD_FLAGS_NONE;
 
   if (aForceget) {
@@ -581,7 +591,7 @@ void Location::Reload(bool aForceget, ErrorResult& aRv) {
                   nsIWebNavigation::LOAD_FLAGS_BYPASS_PROXY;
   }
 
-  nsresult rv = nsDocShell::Cast(docShell)->Reload(reloadFlags);
+  rv = docShell->Reload(reloadFlags);
   if (NS_FAILED(rv) && rv != NS_BINDING_ABORTED) {
     // NS_BINDING_ABORTED is returned when we attempt to reload a POST result
     // and the user says no at the "do you want to reload?" prompt.  Don't
@@ -619,11 +629,11 @@ bool Location::CallerSubsumes(nsIPrincipal* aSubjectPrincipal) {
   // principal of the Location object itself.  This is why we need this check
   // even though we only allow limited cross-origin access to Location objects
   // in general.
-  nsCOMPtr<nsPIDOMWindowOuter> outer = bc->GetDOMWindow();
+  nsPIDOMWindowOuter* outer = bc->GetDOMWindow();
   MOZ_DIAGNOSTIC_ASSERT(outer);
   if (MOZ_UNLIKELY(!outer)) return false;
 
-  nsCOMPtr<nsIScriptObjectPrincipal> sop = do_QueryInterface(outer);
+  nsIScriptObjectPrincipal* sop = nsGlobalWindowOuter::Cast(outer);
   bool subsumes = false;
   nsresult rv = aSubjectPrincipal->SubsumesConsideringDomain(
       sop->GetPrincipal(), &subsumes);

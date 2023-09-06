@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = 定义允许访问 Google Workspace 的域。
 
 policy-AppAutoUpdate = 启用或禁用应用程序自动更新。
 
+policy-AppUpdatePin = 阻止 { -brand-short-name } 更新超过特定版本。
+
 policy-AppUpdateURL = 设置自定义的应用程序更新网址。
 
 policy-Authentication = 为支持的网站配置集成身份验证。
@@ -39,6 +41,9 @@ policy-CaptivePortal = 启用或禁用强制门户支持。
 policy-CertificatesDescription = 添加证书或使用内置的证书。
 
 policy-Cookies = 允许或拒绝网站设置 Cookie。
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = 设置身份标签页相关策略。
 
 policy-DisabledCiphers = 禁用加密算法。
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = 若为 true，将无法创建主密码�
 
 policy-DisablePasswordReveal = 阻止密码在列表中明文显示
 
-policy-DisablePocket = 禁用保存网页到 Pocket 的功能。
+policy-DisablePocket2 = 禁用保存网页到 { -pocket-brand-name } 的功能。
 
 policy-DisablePrivateBrowsing = 禁用隐私浏览功能。
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = 阻止浏览器安装或更新“系统附加�
 
 policy-DisableTelemetry = 关闭“遥测”组件。
 
+policy-DisableThirdPartyModuleBlocking = 防止用户屏蔽注入 { -brand-short-name } 进程的第三方模块。
+
 policy-DisplayBookmarksToolbar = 默认显示书签工具栏。
 
 policy-DisplayMenuBar = 默认显示菜单栏。
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = 启用或禁用内容拦截，并可选择锁�
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = 启用或禁用“加密媒体扩展（EME）”，并可选择锁定该功能。
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = 针对指定域名的特定文件类型，禁用文件扩展名警告。
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = 管理扩展的各种安装设置。
 
 policy-ExtensionUpdate = 启用或禁用扩展自动更新。
 
-policy-FirefoxHome = 配置 Firefox 主页。
+policy-FirefoxHome2 = 配置 { -firefox-home-brand-name }。
 
-policy-FlashPlugin = 允许或拒绝使用 Flash 插件。
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = 在地址栏输入单个词条时，强制导航至内部网站，而非进行网上搜索。
 
 policy-Handlers = 配置默认应用程序处理方式。
 
@@ -159,6 +168,8 @@ policy-OverridePostUpdatePage = 覆盖更新后的“新版变化”页面。如
 
 policy-PasswordManagerEnabled = 启用密码管理器的密码保存功能。
 
+policy-PasswordManagerExceptions = 阻止 { -brand-short-name } 保存特定网站的密码。
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = 禁用或配置 { -brand-short-name } 内置的 PDF 阅读器 PDF.js。
 
@@ -184,8 +195,8 @@ policy-SearchEngines = 配置搜索引擎设置。此策略仅适用于延长支
 
 policy-SearchSuggestEnabled = 启用或禁用搜索建议。
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = 安装 PKCS #11 模块。
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = 添加或删除 PKCS #11 模块。
 
 policy-ShowHomeButton = 在工具栏显示“主页”按钮
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = 设置最高 SSL 版本。
 
 policy-SSLVersionMin = 设置最低 SSL 版本。
 
+policy-StartDownloadsInTempDirectory = 强制下载至本地临时文件夹，而非默认下载路径。
+
 policy-SupportMenu = 向帮助菜单自选添加技术支持项目。
 
 policy-UserMessaging = 不向用户显示某些消息。
+
+policy-UseSystemPrintDialog = 使用系统打印对话框打印。
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = 阻止访问某些网站。参阅文档了解该格式的更多详情。

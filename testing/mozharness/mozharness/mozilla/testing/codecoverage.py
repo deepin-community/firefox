@@ -3,8 +3,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import
-
 import errno
 import json
 import os
@@ -12,16 +10,13 @@ import posixpath
 import shutil
 import sys
 import tempfile
-import zipfile
 import uuid
+import zipfile
 
 import mozinfo
-from mozharness.base.script import (
-    PreScriptAction,
-    PostScriptAction,
-)
-from mozharness.mozilla.testing.per_test_base import SingleTestMixin
 
+from mozharness.base.script import PostScriptAction, PreScriptAction
+from mozharness.mozilla.testing.per_test_base import SingleTestMixin
 
 code_coverage_config_options = [
     [
@@ -122,14 +117,11 @@ class CodeCoverageMixin(SingleTestMixin):
             return False
 
     def _setup_cpp_js_coverage_tools(self):
-        if mozinfo.os == "linux" or mozinfo.os == "mac":
-            self.prefix = "/builds/worker/checkouts/gecko"
-        elif mozinfo.os == "win":
-            # obj folder is z:/build/workspace/obj-build
-            # same strip count as prefix
-            self.prefix = "z:/build/build/src/"
-        else:
-            raise Exception("Unexpected OS: {}".format(mozinfo.os))
+        fetches_dir = os.environ["MOZ_FETCHES_DIR"]
+        with open(os.path.join(fetches_dir, "target.mozinfo.json"), "r") as f:
+            build_mozinfo = json.load(f)
+
+        self.prefix = build_mozinfo["topsrcdir"]
 
         strip_count = len(list(filter(None, self.prefix.split("/"))))
         os.environ["GCOV_PREFIX_STRIP"] = str(strip_count)
@@ -166,7 +158,7 @@ class CodeCoverageMixin(SingleTestMixin):
         if not self.code_coverage_enabled and not self.java_code_coverage_enabled:
             return
 
-        self.grcov_dir = os.environ["MOZ_FETCHES_DIR"]
+        self.grcov_dir = os.path.join(os.environ["MOZ_FETCHES_DIR"], "grcov")
         if not os.path.isfile(os.path.join(self.grcov_dir, self.grcov_bin)):
             raise Exception(
                 "File not found: {}".format(
@@ -337,6 +329,13 @@ class CodeCoverageMixin(SingleTestMixin):
         if filter_covered:
             grcov_command += ["--filter", "covered"]
 
+        def skip_cannot_normalize(output_to_filter):
+            return "\n".join(
+                line
+                for line in output_to_filter.rstrip().splitlines()
+                if "cannot be normalized because" not in line
+            )
+
         # 'grcov_output' will be a tuple, the first variable is the path to the lcov output,
         # the other is the path to the standard error output.
         tmp_output_file, _ = self.get_output_from_command(
@@ -345,6 +344,7 @@ class CodeCoverageMixin(SingleTestMixin):
             save_tmpfiles=True,
             return_type="files",
             throw_exception=True,
+            output_filter=skip_cannot_normalize,
         )
         shutil.move(tmp_output_file, grcov_output_file)
 
@@ -393,8 +393,15 @@ class CodeCoverageMixin(SingleTestMixin):
             assert "JSVM_RESULTS_DIR" in env
             # In this case, parse_coverage_artifacts has removed GCOV_RESULTS_DIR and
             # JSVM_RESULTS_DIR so we need to remove GCOV_PREFIX and JS_CODE_COVERAGE_OUTPUT_DIR.
-            shutil.rmtree(self.gcov_dir)
-            shutil.rmtree(self.jsvm_dir)
+            try:
+                shutil.rmtree(self.gcov_dir)
+            except FileNotFoundError:
+                pass
+
+            try:
+                shutil.rmtree(self.jsvm_dir)
+            except FileNotFoundError:
+                pass
 
     def is_covered(self, sf):
         # For C/C++ source files, we can consider a file as being uncovered

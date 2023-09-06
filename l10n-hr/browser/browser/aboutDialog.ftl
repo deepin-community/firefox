@@ -15,9 +15,16 @@ update-updateButton =
     .label = Ponovo pokreni za aktualiziranje { -brand-shorter-name(case: "gen") }
     .accesskey = R
 
-update-checkingForUpdates = Provjera dopuna…
-update-downloading = <img data-l10n-name="icon"/>Preuzimanje dopune — <label data-l10n-name="download-status"/>
-update-downloading-message = Preuzimanje dopune — <label data-l10n-name="download-status"/>
+update-checkingForUpdates = Traženje novih verzija …
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Preuzimanje dopune — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Preuzimanje dopune — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Primjena dopune…
 
 update-failed = Aktualiziranje nije uspjelo. <label data-l10n-name="failed-link">Preuzmi najnoviju verziju</label>
@@ -25,15 +32,26 @@ update-failed-main = Aktualiziranje nije uspjelo. <a data-l10n-name="failed-link
 
 update-adminDisabled = Dopune je deaktivirao tvoj administrator sustava
 update-noUpdatesFound = Koristiš najnoviji { -brand-short-name }
+aboutdialog-update-checking-failed = Neuspjelo traženje novih verzija.
 update-otherInstanceHandlingUpdates = { -brand-short-name } nadograđuje jedna druga instanca
 
-update-manual = Nove verzije su dostupne na <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Nove verzije su dostupne na <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Nove verzije su dostupne na <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Na ovom sustavu više ne možeš nadograđivati. <label data-l10n-name="unsupported-link">Saznaj više</label>
 
 update-restarting = Ponovno pokretanje…
 
-channel-description = Trenutačno se nalaziš na <label data-l10n-name="current-channel"></label> kanalu za aktualiziranje.
+update-internal-error2 = Neuspjelo traženje novih verzija zbog interne greške. Nove verzije su dostupne na <label data-l10n-name="manual-link">{ $displayUrl }</label>
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Trenutačno se nalaziš na <label data-l10n-name="current-channel">{ $channel }</label> kanalu za aktualiziranje.
 
 warningDesc-version = { -brand-short-name } je eksperimentalna verzija i može biti nestabilna.
 

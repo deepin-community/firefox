@@ -2,6 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+screenshot-toolbarbutton =
+    .label = Ekraanipilt
+    .tooltiptext = Tee ekraanipilt
+
+screenshot-shortcut =
+    .key = S
+
 screenshots-instructions = Ala valimiseks klõpsa või lohista lehel. Tühistamiseks vajuta ESC.
 screenshots-cancel-button = Tühista
 screenshots-save-visible-button = Salvesta nähtav
@@ -10,6 +17,14 @@ screenshots-download-button = Laadi alla
 screenshots-download-button-tooltip = Ekraanipildi allalaadimine
 screenshots-copy-button = Kopeeri
 screenshots-copy-button-tooltip = Ekraanipildi vahemällu kopeerimine
+screenshots-download-button-title =
+    .title = Laadi ekraanipilt alla
+screenshots-copy-button-title =
+    .title = Kopeeri ekraanipilt vahemällu
+screenshots-cancel-button-title =
+    .title = Loobu
+screenshots-retry-button-title =
+    .title = Proovi ekraanipilti uuesti teha
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -40,3 +55,4 @@ screenshots-private-window-error-details = Vabandame tüli tekitamise pärast. T
 
 screenshots-generic-error-title = Oi-oi! { -screenshots-brand-name } läks sassi.
 screenshots-generic-error-details = Me pole kindlad, mis just juhtus. Proovid ehk uuesti või teed ekraanipildi mõnest teisest lehest?
+

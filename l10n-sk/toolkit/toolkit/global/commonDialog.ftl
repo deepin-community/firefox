@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Používateľské meno
 common-dialog-password =
     .value = Heslo
+
+common-dialog-copy-cmd =
+    .label = Kopírovať
+    .accesskey = K
+common-dialog-select-all-cmd =
+    .label = Vybrať všetko
+    .accesskey = a

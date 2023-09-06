@@ -6,6 +6,9 @@
 
 SPHINX_TREES["/uriloader/exthandler"] = "docs"
 
+with Files("**"):
+    BUG_COMPONENT = ("Firefox", "File Handling")
+
 TEST_DIRS += ["tests"]
 
 XPIDL_SOURCES += [
@@ -80,8 +83,6 @@ else:
     SOURCES += [
         osdir + "/nsOSHelperAppService.cpp",
     ]
-    if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-        CXXFLAGS += ["-Wno-error=shadow"]
 
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
     UNIFIED_SOURCES += [
@@ -105,13 +106,13 @@ if CONFIG["MOZ_ENABLE_DBUS"]:
         "DBusHelpers.h",
     ]
 
-EXTRA_COMPONENTS += [
-    "HandlerService.js",
-    "HandlerService.manifest",
+EXTRA_JS_MODULES += [
+    "ExtHandlerService.sys.mjs",
+    "WebHandlerApp.sys.mjs",
 ]
 
-EXTRA_JS_MODULES += [
-    "WebHandlerApp.jsm",
+EXTRA_JS_MODULES.handlers += [
+    "HandlerList.sys.mjs",
 ]
 
 XPCOM_MANIFESTS += [
@@ -136,11 +137,8 @@ LOCAL_INCLUDES += [
 ]
 
 if CONFIG["MOZ_ENABLE_DBUS"]:
-    CXXFLAGS += CONFIG["TK_CFLAGS"]
     CXXFLAGS += CONFIG["MOZ_DBUS_CFLAGS"]
 
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
-    CXXFLAGS += CONFIG["TK_CFLAGS"]
+    CXXFLAGS += CONFIG["MOZ_GTK3_CFLAGS"]
     CXXFLAGS += CONFIG["MOZ_DBUS_GLIB_CFLAGS"]
-
-REQUIRES_UNIFIED_BUILD = True

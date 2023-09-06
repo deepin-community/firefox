@@ -11,9 +11,13 @@
 #include "mozilla/dom/BrowserChild.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/HTMLCanvasElement.h"
+#include "mozilla/dom/OffscreenCanvas.h"
 #include "mozilla/dom/UserActivation.h"
+#include "mozilla/dom/WorkerCommon.h"
+#include "mozilla/dom/WorkerPrivate.h"
+#include "mozilla/gfx/gfxVars.h"
 #include "mozilla/BasePrincipal.h"
-#include "mozilla/StaticPrefs_dom.h"
+#include "mozilla/StaticPrefs_gfx.h"
 #include "mozilla/StaticPrefs_privacy.h"
 #include "mozilla/StaticPrefs_webgl.h"
 #include "nsIPrincipal.h"
@@ -48,13 +52,54 @@ namespace mozilla::CanvasUtils {
 
 bool IsImageExtractionAllowed(dom::Document* aDocument, JSContext* aCx,
                               nsIPrincipal& aPrincipal) {
-  // Do the rest of the checks only if privacy.resistFingerprinting is on.
-  if (!nsContentUtils::ShouldResistFingerprinting(aDocument)) {
+  if (NS_WARN_IF(!aDocument)) {
+    return false;
+  }
+
+  /*
+   * There are three RFPTargets that change the behavior here, and they can be
+   * in any combination
+   * - CanvasImageExtractionPrompt - whether or not to prompt the user for
+   * canvas extraction. If enabled, before canvas is extracted we will ensure
+   * the user has granted permission.
+   * - CanvasExtractionBeforeUserInputIsBlocked - if enabled, canvas extraction
+   * before user input has occurred is always blocked, regardless of any other
+   * Target behavior
+   * - CanvasExtractionFromThirdPartiesIsBlocked - if enabled, canvas extraction
+   * by third parties is always blocked, regardless of any other Target behavior
+   *
+   * There are two odd cases:
+   * 1) When CanvasImageExtractionPrompt=false but
+   *    CanvasExtractionBeforeUserInputIsBlocked=true Conceptually this is
+   *    "Always allow canvas extraction in response to user input, and never
+   *     allow it otherwise"
+   *
+   *    That's fine as a concept, but it might be a little confusing, so we
+   *    still want to show the permission icon in the address bar, but never
+   *    the permission doorhanger.
+   * 2) When CanvasExtractionFromThirdPartiesIsBlocked=false - we will prompt
+   *    the user for permission _for the frame_ (maybe with the doorhanger,
+   *    maybe not).  The prompt shows the frame's origin, but it's easy to
+   *    mistake that for the origin of the top-level page and grant it when you
+   *    don't mean to.  This combination isn't likely to be used by anyone
+   *    except those opting in, so that's alright.
+   */
+
+  // We can improve this mechanism when we have this implemented as a bitset
+  if (!aDocument->ShouldResistFingerprinting(
+          RFPTarget::CanvasImageExtractionPrompt) &&
+      !aDocument->ShouldResistFingerprinting(
+          RFPTarget::CanvasExtractionBeforeUserInputIsBlocked) &&
+      !aDocument->ShouldResistFingerprinting(
+          RFPTarget::CanvasExtractionFromThirdPartiesIsBlocked)) {
     return true;
   }
 
+  // -------------------------------------------------------------------
+  // General Exemptions
+
   // Don't proceed if we don't have a document or JavaScript context.
-  if (!aDocument || !aCx) {
+  if (!aCx) {
     return false;
   }
 
@@ -64,7 +109,7 @@ bool IsImageExtractionAllowed(dom::Document* aDocument, JSContext* aCx,
   }
 
   // Allow extension principals.
-  auto principal = BasePrincipal::Cast(&aPrincipal);
+  auto* principal = BasePrincipal::Cast(&aPrincipal);
   if (principal->AddonPolicy() || principal->ContentScriptAddonPolicy()) {
     return true;
   }
@@ -86,35 +131,43 @@ bool IsImageExtractionAllowed(dom::Document* aDocument, JSContext* aCx,
     return true;
   }
 
-  dom::Document* topLevelDocument =
-      aDocument->GetTopLevelContentDocumentIfSameProcess();
-  nsIURI* topLevelDocURI =
-      topLevelDocument ? topLevelDocument->GetDocumentURI() : nullptr;
-  nsCString topLevelDocURISpec;
-  if (topLevelDocURI) {
-    topLevelDocURI->GetSpec(topLevelDocURISpec);
+  // -------------------------------------------------------------------
+  // Possibly block third parties
+
+  if (aDocument->ShouldResistFingerprinting(
+          RFPTarget::CanvasExtractionFromThirdPartiesIsBlocked)) {
+    MOZ_ASSERT(aDocument->GetWindowContext());
+    bool isThirdParty =
+        aDocument->GetWindowContext()
+            ? aDocument->GetWindowContext()->GetIsThirdPartyWindow()
+            : false;
+    if (isThirdParty) {
+      nsAutoString message;
+      message.AppendPrintf(
+          "Blocked third party %s from extracting canvas data.",
+          docURISpec.get());
+      nsContentUtils::ReportToConsoleNonLocalized(
+          message, nsIScriptError::warningFlag, "Security"_ns, aDocument);
+      return false;
+    }
   }
 
-  // Load Third Party Util service.
+  // -------------------------------------------------------------------
+  // Check if we will do any further blocking
+
+  if (!aDocument->ShouldResistFingerprinting(
+          RFPTarget::CanvasImageExtractionPrompt) &&
+      !aDocument->ShouldResistFingerprinting(
+          RFPTarget::CanvasExtractionBeforeUserInputIsBlocked)) {
+    return true;
+  }
+
+  // -------------------------------------------------------------------
+  // Check a site's permission
+
+  // If the user has previously granted or not granted permission, we can return
+  // immediately. Load Permission Manager service.
   nsresult rv;
-  nsCOMPtr<mozIThirdPartyUtil> thirdPartyUtil =
-      do_GetService(THIRDPARTYUTIL_CONTRACTID, &rv);
-  NS_ENSURE_SUCCESS(rv, false);
-
-  // Block all third-party attempts to extract canvas.
-  bool isThirdParty = true;
-  rv = thirdPartyUtil->IsThirdPartyURI(topLevelDocURI, docURI, &isThirdParty);
-  NS_ENSURE_SUCCESS(rv, false);
-  if (isThirdParty) {
-    nsAutoString message;
-    message.AppendPrintf("Blocked third party %s from extracting canvas data.",
-                         docURISpec.get());
-    nsContentUtils::ReportToConsoleNonLocalized(
-        message, nsIScriptError::warningFlag, "Security"_ns, aDocument);
-    return false;
-  }
-
-  // Load Permission Manager service.
   nsCOMPtr<nsIPermissionManager> permissionManager =
       do_GetService(NS_PERMISSIONMANAGER_CONTRACTID, &rv);
   NS_ENSURE_SUCCESS(rv, false);
@@ -134,16 +187,36 @@ bool IsImageExtractionAllowed(dom::Document* aDocument, JSContext* aCx,
       break;
   }
 
-  // At this point, permission is unknown
-  // (nsIPermissionManager::UNKNOWN_ACTION).
-
-  // Check if the request is in response to user input
-  bool isAutoBlockCanvas =
+  // -------------------------------------------------------------------
+  // At this point, there's only one way to return true: if we are always
+  // allowing canvas in response to user input, and not prompting
+  bool hidePermissionDoorhanger = false;
+  if (!aDocument->ShouldResistFingerprinting(
+          RFPTarget::CanvasImageExtractionPrompt) &&
       StaticPrefs::
           privacy_resistFingerprinting_autoDeclineNoUserInputCanvasPrompts() &&
+      aDocument->ShouldResistFingerprinting(
+          RFPTarget::CanvasExtractionBeforeUserInputIsBlocked)) {
+    // If so, see if this is in response to user input.
+    if (dom::UserActivation::IsHandlingUserInput()) {
+      return true;
+    }
+
+    hidePermissionDoorhanger = true;
+  }
+
+  // -------------------------------------------------------------------
+  // Now we know we're going to block it, and log something to the console,
+  // and show some sort of prompt maybe with the doorhanger, maybe not
+
+  hidePermissionDoorhanger |=
+      StaticPrefs::
+          privacy_resistFingerprinting_autoDeclineNoUserInputCanvasPrompts() &&
+      aDocument->ShouldResistFingerprinting(
+          RFPTarget::CanvasExtractionBeforeUserInputIsBlocked) &&
       !dom::UserActivation::IsHandlingUserInput();
 
-  if (isAutoBlockCanvas) {
+  if (hidePermissionDoorhanger) {
     nsAutoString message;
     message.AppendPrintf(
         "Blocked %s from extracting canvas data because no user input was "
@@ -161,7 +234,8 @@ bool IsImageExtractionAllowed(dom::Document* aDocument, JSContext* aCx,
         message, nsIScriptError::warningFlag, "Security"_ns, aDocument);
   }
 
-  // Prompt the user (asynchronous).
+  // Show the prompt to the user (asynchronous) - maybe with the doorhanger,
+  // maybe not
   nsPIDOMWindowOuter* win = aDocument->GetWindow();
   nsAutoCString origin;
   rv = principal->GetOrigin(origin);
@@ -170,13 +244,14 @@ bool IsImageExtractionAllowed(dom::Document* aDocument, JSContext* aCx,
   if (XRE_IsContentProcess()) {
     dom::BrowserChild* browserChild = dom::BrowserChild::GetFrom(win);
     if (browserChild) {
-      browserChild->SendShowCanvasPermissionPrompt(origin, isAutoBlockCanvas);
+      browserChild->SendShowCanvasPermissionPrompt(origin,
+                                                   hidePermissionDoorhanger);
     }
   } else {
     nsCOMPtr<nsIObserverService> obs = mozilla::services::GetObserverService();
     if (obs) {
       obs->NotifyObservers(win,
-                           isAutoBlockCanvas
+                           hidePermissionDoorhanger
                                ? TOPIC_CANVAS_PERMISSIONS_PROMPT_HIDE_DOORHANGER
                                : TOPIC_CANVAS_PERMISSIONS_PROMPT,
                            NS_ConvertUTF8toUTF16(origin).get());
@@ -206,7 +281,7 @@ bool GetCanvasContextType(const nsAString& str,
     }
   }
 
-  if (StaticPrefs::dom_webgpu_enabled()) {
+  if (gfxVars::AllowWebGPU()) {
     if (str.EqualsLiteral("webgpu")) {
       *out_type = dom::CanvasContextType::WebGPU;
       return true;
@@ -250,7 +325,11 @@ void DoDrawImageSecurityCheck(dom::HTMLCanvasElement* aCanvasElement,
   // No need to do a security check if the image used CORS for the load
   if (CORSUsed) return;
 
-  MOZ_ASSERT(aPrincipal, "Must have a principal here");
+  if (NS_WARN_IF(!aPrincipal)) {
+    MOZ_ASSERT_UNREACHABLE("Must have a principal here");
+    aCanvasElement->SetWriteOnly();
+    return;
+  }
 
   if (aCanvasElement->NodePrincipal()->Subsumes(aPrincipal)) {
     // This canvas has access to that image anyway
@@ -277,6 +356,71 @@ void DoDrawImageSecurityCheck(dom::HTMLCanvasElement* aCanvasElement,
   }
 
   aCanvasElement->SetWriteOnly();
+}
+
+/**
+ * This security check utility might be called from an source that never taints
+ * others. For example, while painting a CanvasPattern, which is created from an
+ * ImageBitmap, onto a canvas. In this case, the caller could set the aCORSUsed
+ * true in order to pass this check and leave the aPrincipal to be a nullptr
+ * since the aPrincipal is not going to be used.
+ */
+void DoDrawImageSecurityCheck(dom::OffscreenCanvas* aOffscreenCanvas,
+                              nsIPrincipal* aPrincipal, bool aForceWriteOnly,
+                              bool aCORSUsed) {
+  // Callers should ensure that mCanvasElement is non-null before calling this
+  if (NS_WARN_IF(!aOffscreenCanvas)) {
+    return;
+  }
+
+  nsIPrincipal* expandedReader = aOffscreenCanvas->GetExpandedReader();
+  if (aOffscreenCanvas->IsWriteOnly() && !expandedReader) {
+    return;
+  }
+
+  // If we explicitly set WriteOnly just do it and get out
+  if (aForceWriteOnly) {
+    aOffscreenCanvas->SetWriteOnly();
+    return;
+  }
+
+  // No need to do a security check if the image used CORS for the load
+  if (aCORSUsed) {
+    return;
+  }
+
+  // If we are on a worker thread, we might not have any principals at all.
+  nsIGlobalObject* global = aOffscreenCanvas->GetOwnerGlobal();
+  nsIPrincipal* canvasPrincipal = global ? global->PrincipalOrNull() : nullptr;
+  if (!aPrincipal || !canvasPrincipal) {
+    aOffscreenCanvas->SetWriteOnly();
+    return;
+  }
+
+  if (canvasPrincipal->Subsumes(aPrincipal)) {
+    // This canvas has access to that image anyway
+    return;
+  }
+
+  if (BasePrincipal::Cast(aPrincipal)->AddonPolicy()) {
+    // This is a resource from an extension content script principal.
+
+    if (expandedReader && expandedReader->Subsumes(aPrincipal)) {
+      // This canvas already allows reading from this principal.
+      return;
+    }
+
+    if (!expandedReader) {
+      // Allow future reads from this same princial only.
+      aOffscreenCanvas->SetWriteOnly(aPrincipal);
+      return;
+    }
+
+    // If we got here, this must be the *second* extension tainting
+    // the canvas.  Fall through to mark it WriteOnly for everyone.
+  }
+
+  aOffscreenCanvas->SetWriteOnly();
 }
 
 bool CoerceDouble(const JS::Value& v, double* d) {

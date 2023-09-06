@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Definěrujśo domeny, kótarež směju pśistup k
 
 policy-AppAutoUpdate = Awtomatiske aktualizacije nałoženjow zmóžniś abo znjemóžniś.
 
+policy-AppUpdatePin = Zajźowaś tomu, až se { -brand-short-name } wušej pódaneje wersije aktualizěrujo.
+
 policy-AppUpdateURL = Swójski aktualizěrowański URL za nałoženje nastajiś.
 
 policy-Authentication = Integrěrowanu awtentifikaciju za websedła konfigurěrowaś, kótarež ju pódpěraju.
@@ -39,6 +41,9 @@ policy-CaptivePortal = Kaptiwny portal zmóžniś abo znjemóžniś
 policy-CertificatesDescription = Certifikaty pśidaś abo zatwarjone certifikaty wužywaś.
 
 policy-Cookies = Websedłam dowóliś abo zakazaś, cookieje składowaś.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Pšawidła nastupajucy kontejnery póstajiś
 
 policy-DisabledCiphers = Šyfry znjemóžniś.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Jolic to trjefijo, njedajo se głowne gr
 
 policy-DisablePasswordReveal = Njedowóliś, až se gronidła w skłaźonych pśizjawjenjach pokazuju
 
-policy-DisablePocket = Funkciju składowanja webbokow do Pocket znjemóžniś.
+policy-DisablePocket2 = Funkciju składowanja webbokow do { -pocket-brand-name } znjemóžniś.
 
 policy-DisablePrivateBrowsing = Priwatny modus znjemóžniś.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Wobglědowakoju instalěrowanje a aktualizěro
 
 policy-DisableTelemetry = Telemetriju znjemóžniś.
 
+policy-DisableThirdPartyModuleBlocking = Zawoborajśo wužywarjeju module tśeśich póbitowarjow blokěrowaś, kótarež se do procesa { -brand-short-name } injicěruju.
+
 policy-DisplayBookmarksToolbar = Rědku cytańskich znamjenjow pó standarźe pokazaś.
 
 policy-DisplayMenuBar = Menijowu rědku pó standarźe pokazaś.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Blokěrowanje wopśimjeśa zmóžniś abo znje
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Encrypted Media Extension zmóžniś abo znjemóžniś a jo na žycenje zastajiś.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Warnowanja na zakłaźe datajoweje kóńcowki za wěste datajowe typy w domenach znjemóžniś.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Wšykne aspekty instalacije rozšyrjenjow zastojaś.
 
 policy-ExtensionUpdate = Awtomatiske aktualizacije rozšyrjenjow zmóžniś abo znjemóžniś.
 
-policy-FirefoxHome = Firefox Home konfigurěrowaś.
+policy-FirefoxHome2 = { -firefox-home-brand-name } konfigurěrowaś.
 
-policy-FlashPlugin = Wužywanje tykaca Flash dowóliś abo zakazaś.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Wunuźćo direktnu nawigaciju do intranetnego sedła, město togo aby wy pytał, gaž jadnotliwe słowne zapiski do adresoweho póla zapódawaśo.
 
 policy-Handlers = Standardne nałožeńske pśeźěłaki konfigurěrowaś
 
@@ -159,6 +168,8 @@ policy-OverridePostUpdatePage = Bok Nowe funkcije a změny pó aktualizaciji pś
 
 policy-PasswordManagerEnabled = Składowanje gronidłow do zastojnika gronidłow zmóžniś.
 
+policy-PasswordManagerExceptions = { -brand-short-name } zakazaś, gronidła za wěste sedła składowaś.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = PDF.js znjemóžniś abo konfigurěrowaś, zatwarjony PDF-wobglědowak w { -brand-short-name }.
 
@@ -184,8 +195,8 @@ policy-SearchEngines = Nastajenja pytnicow konfigurěrowaś. Toś to pšawidło 
 
 policy-SearchSuggestEnabled = Pytańske naraźenja zmóžniś abo znjemóžniś.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Module PKCS #11 instalěrowaś.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Pśidajśo abo wulašujśo module PKCS #11.
 
 policy-ShowHomeButton = Tłocašk startoweho boka na symbolowej rědce pokazaś.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = Nastajśo maksimalnu SSL-wersiju.
 
 policy-SSLVersionMin = Nastajśo minimalnu SSL-wersiju.
 
+policy-StartDownloadsInTempDirectory = Ześěgnjenja nuźiś, aby w lokalnem, nachylnem městnje město w standardnem zapisu ześěgnjenjow zachopili.
+
 policy-SupportMenu = Swójski menijowy zapisk pomocy menijoju pomocy pśidaś.
 
 policy-UserMessaging = Wužywarjeju wěste powěsći njepokazaś
+
+policy-UseSystemPrintDialog = Z pomocu systemowego śišćaŕskego dialoga śišćaś.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Woglědowanju k websydłam zajźowaś. Glejśo dokumentaciju za dalšne drobnostki wó formaśe.

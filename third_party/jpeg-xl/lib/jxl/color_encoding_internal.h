@@ -8,6 +8,8 @@
 
 // Metadata for color space conversions.
 
+#include <jxl/cms_interface.h>
+#include <jxl/color_encoding.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -17,7 +19,6 @@
 #include <string>
 #include <vector>
 
-#include "jxl/color_encoding.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/padded_bytes.h"
 #include "lib/jxl/base/status.h"
@@ -88,7 +89,7 @@ static inline constexpr uint64_t EnumBits(Primaries /*unused*/) {
 }
 
 // Values from CICP TransferCharacteristics
-enum TransferFunction : uint32_t {
+enum class TransferFunction : uint32_t {
   k709 = 1,
   kUnknown = 2,
   kLinear = 8,
@@ -251,11 +252,17 @@ struct ColorEncoding : public Fields {
   // Returns true if `icc` is assigned and decoded successfully. If so,
   // subsequent WantICC() will return true until DecideIfWantICC() changes it.
   // Returning false indicates data has been lost.
-  Status SetICC(PaddedBytes&& icc) {
+  Status SetICC(PaddedBytes&& icc, const JxlCmsInterface* cms) {
     if (icc.empty()) return false;
     icc_ = std::move(icc);
 
-    if (!SetFieldsFromICC()) {
+    if (cms == nullptr) {
+      want_icc_ = true;
+      have_fields_ = false;
+      return true;
+    }
+
+    if (!SetFieldsFromICC(*cms)) {
       InternalRemoveICC();
       return false;
     }
@@ -286,10 +293,10 @@ struct ColorEncoding : public Fields {
   bool HaveFields() const { return have_fields_; }
 
   // Causes WantICC() to return false if ICC() can be reconstructed from fields.
-  // Defined in color_management.cc.
-  void DecideIfWantICC();
+  void DecideIfWantICC(const JxlCmsInterface& cms);
 
   bool IsGray() const { return color_space_ == ColorSpace::kGray; }
+  bool IsCMYK() const { return cmyk_; }
   size_t Channels() const { return IsGray() ? 1 : 3; }
 
   // Returns false if the field is invalid and unusable.
@@ -399,8 +406,7 @@ struct ColorEncoding : public Fields {
  private:
   // Returns true if all fields have been initialized (possibly to kUnknown).
   // Returns false if the ICC profile is invalid or decoding it fails.
-  // Defined in color_management.cc.
-  Status SetFieldsFromICC();
+  Status SetFieldsFromICC(const JxlCmsInterface& cms);
 
   // If true, the codestream contains an ICC profile and we do not serialize
   // fields. Otherwise, fields are serialized and we create an ICC profile.
@@ -414,6 +420,7 @@ struct ColorEncoding : public Fields {
   PaddedBytes icc_;  // Valid ICC profile
 
   ColorSpace color_space_;  // Can be kUnknown
+  bool cmyk_ = false;
 
   // Only used if white_point == kCustom.
   Customxy white_;
@@ -426,11 +433,7 @@ struct ColorEncoding : public Fields {
 
 // Returns whether the two inputs are approximately equal.
 static inline bool ApproxEq(const double a, const double b,
-#if JPEGXL_ENABLE_SKCMS
                             double max_l1 = 1E-3) {
-#else
-                            double max_l1 = 8E-5) {
-#endif
   // Threshold should be sufficient for ICC's 15-bit fixed-point numbers.
   // We have seen differences of 7.1E-5 with lcms2 and 1E-3 with skcms.
   return std::abs(a - b) <= max_l1;
@@ -450,6 +453,8 @@ void ConvertInternalToExternalColorEncoding(const jxl::ColorEncoding& internal,
 Status ConvertExternalToInternalColorEncoding(const JxlColorEncoding& external,
                                               jxl::ColorEncoding* internal);
 
+Status PrimariesToXYZ(float rx, float ry, float gx, float gy, float bx,
+                      float by, float wx, float wy, float matrix[9]);
 Status PrimariesToXYZD50(float rx, float ry, float gx, float gy, float bx,
                          float by, float wx, float wy, float matrix[9]);
 Status AdaptToXYZD50(float wx, float wy, float matrix[9]);

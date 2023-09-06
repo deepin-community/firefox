@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Google Workspace에 액세스할 수 있는 도�
 
 policy-AppAutoUpdate = 애플리케이션 자동 업데이트를 사용하거나 사용하지 않게 합니다.
 
+policy-AppUpdatePin = { -brand-short-name }가 지정된 버전 이상으로 업데이트되지 않도록 합니다.
+
 policy-AppUpdateURL = 사용자 지정 앱 업데이트 URL을 설정합니다.
 
 policy-Authentication = 통합 인증을 지원하는 웹 사이트를 위한 설정을 합니다.
@@ -40,11 +42,14 @@ policy-CertificatesDescription = 인증서를 추가하거나 기본 제공 인�
 
 policy-Cookies = 웹 사이트의 쿠키 설정을 허용하거나 거부합니다.
 
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = 컨테이너와 관련된 정책을 설정합니다.
+
 policy-DisabledCiphers = 암호화를 사용 안 합니다.
 
 policy-DefaultDownloadDirectory = 기본 다운로드 디렉터리를 설정합니다.
 
-policy-DisableAppUpdate = 브라우저가 업데이트 되지 않게 합니다.
+policy-DisableAppUpdate = 브라우저가 업데이트 되지 않도록 합니다.
 
 policy-DisableBuiltinPDFViewer = { -brand-short-name }에 내장된 PDF 뷰어인 PDF.js를 사용 안 합니다.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = True 값이면 기본 비밀번호를 �
 
 policy-DisablePasswordReveal = 저장된 로그인에 비밀번호 보기 기능을 허용하지 않습니다.
 
-policy-DisablePocket = Pocket에 웹 사이트 저장하는 기능을 사용 안 합니다.
+policy-DisablePocket2 = { -pocket-brand-name }에 웹 사이트 저장하는 기능을 사용 안 합니다.
 
 policy-DisablePrivateBrowsing = 사생활 보호 모드를 사용 안 합니다.
 
@@ -83,9 +88,11 @@ policy-DisableSecurityBypass = 사용자가 특정 보안 경고를 무시할 �
 
 policy-DisableSetAsDesktopBackground = 이미지를 바탕 화면 배경으로 설정하는 메뉴 명령을 사용 안 합니다.
 
-policy-DisableSystemAddonUpdate = 브라우저가 시스템 부가 기능의 설치 및 업데이트를 못하게 합니다.
+policy-DisableSystemAddonUpdate = 브라우저가 시스템 부가 기능의 설치 및 업데이트를 못하도록 합니다.
 
-policy-DisableTelemetry = 데이터 수집 끄기
+policy-DisableTelemetry = 원격 분석 끄기
+
+policy-DisableThirdPartyModuleBlocking = 사용자가 { -brand-short-name } 프로세스에 삽입되는 제3자 모듈을 차단하지 못하도록 합니다.
 
 policy-DisplayBookmarksToolbar = 기본으로 북마크 도구 모음을 표시합니다.
 
@@ -103,18 +110,20 @@ policy-EnableTrackingProtection = 콘텐츠 차단을 사용하거나 사용하�
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = 암호화된 미디어 확장 기능을 사용하거나 사용하지 않게 하고 선택적으로 잠급니다.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = 도메인의 특정 파일 형식에 대해 파일 확장자를 기반으로 한 경고를 사용 안 합니다.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
-policy-Extensions = 확장 기능을 설치하거나 제거, 잠급니다. 설치 옵션은 URL이나 경로를 파라미터로 받습니다. 설치 제거와 잠금 옵션은 확장 기능의 ID를 받습니다.
+policy-Extensions = 확장 기능을 설치, 제거 또는 잠급니다. 설치 옵션은 URL 또는 경로를 매개 변수로 사용합니다. 제거 및 잠금 옵션은 확장 기능의 ID를 사용합니다.
 
 policy-ExtensionSettings = 확장 기능 설치의 모든 측면을 관리합니다.
 
 policy-ExtensionUpdate = 확장 기능 자동 업데이트를 사용하거나 사용하지 않게 합니다.
 
-policy-FirefoxHome = Firefox 홈을 구성합니다.
+policy-FirefoxHome2 = { -firefox-home-brand-name }을 구성합니다.
 
-policy-FlashPlugin = 플래시 플러그인의 사용을 허용하거나 거부합니다.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = 주소 표시줄에 단일 단어 항목을 입력할 때 검색하는 대신 인트라넷 사이트를 직접 탐색합니다.
 
 policy-Handlers = 기본 애플리케이션 핸들러를 구성합니다.
 
@@ -159,6 +168,8 @@ policy-OverridePostUpdatePage = 업데이트 후 "새 기능" 페이지를 재�
 
 policy-PasswordManagerEnabled = 비밀번호 관리자에 비밀번호 저장을 사용합니다.
 
+policy-PasswordManagerExceptions = { -brand-short-name }가 특정 사이트의 비밀번호를 저장하지 못하도록 합니다.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = { -brand-short-name }에 내장된 PDF 뷰어인 PDF.js를 사용 안하거나 구성합니다.
 
@@ -184,8 +195,8 @@ policy-SearchEngines = 검색 엔진 설정을 구성합니다. 이 정책은 �
 
 policy-SearchSuggestEnabled = 검색 제안을 사용하거나 사용하지 않게 합니다.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = PKCS #11 모듈을 설치합니다.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = PKCS #11 모듈을 추가하거나 삭제합니다.
 
 policy-ShowHomeButton = 도구 모음에 홈 버튼을 표시합니다.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = 최대 SSL 버전을 설정합니다.
 
 policy-SSLVersionMin = 최소 SSL 버전을 설정합니다.
 
+policy-StartDownloadsInTempDirectory = 기본 다운로드 디렉터리가 아닌 로컬 임시 위치에서 강제로 다운로드를 시작합니다.
+
 policy-SupportMenu = 도움말 메뉴에 사용자 지정 지원 메뉴 항목을 추가합니다.
 
 policy-UserMessaging = 사용자에게 특정 메시지를 표시하지 않습니다.
+
+policy-UseSystemPrintDialog = 시스템 인쇄 대화 상자를 사용하여 인쇄합니다.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = 특정 웹 사이트 방문을 차단합니다. 자세한 형식에 대해서는 문서를 참고하세요.

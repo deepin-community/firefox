@@ -121,20 +121,16 @@ const testcases = [
 ];
 
 function run_test() {
-  var pbi = Cc["@mozilla.org/preferences-service;1"].getService(
-    Ci.nsIPrefBranch
-  );
+  var pbi = Services.prefs;
   var oldProfile = pbi.getCharPref(
     "network.IDN.restriction_profile",
     "moderate"
   );
-  var oldWhitelistCom = pbi.getBoolPref("network.IDN.whitelist.com", false);
   var idnService = Cc["@mozilla.org/network/idn-service;1"].getService(
     Ci.nsIIDNService
   );
 
   pbi.setCharPref("network.IDN.restriction_profile", "moderate");
-  pbi.setBoolPref("network.IDN.whitelist.com", false);
 
   for (var j = 0; j < testcases.length; ++j) {
     var test = testcases[j];
@@ -168,6 +164,5 @@ function run_test() {
       }
     }
   }
-  pbi.setBoolPref("network.IDN.whitelist.com", oldWhitelistCom);
   pbi.setCharPref("network.IDN.restriction_profile", oldProfile);
 }

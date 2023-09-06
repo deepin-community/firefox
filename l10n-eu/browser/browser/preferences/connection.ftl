@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Konexio-ezarpenak
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -76,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = Aukera honek proxy-etarako autentifikazioa isilean burutzen du hauentzat kredentzialak gorde dituzunean. Autentifikazioak huts egiten badu, eskatu egingo zaizu.
 
+connection-proxy-autologin-checkbox =
+    .label = Ez eskatu autentifikaziorik pasahitza gordeta badago
+    .accesskey = i
+    .tooltiptext = Aukera honek proxy-etarako autentifikazioa isilean burutzen du hauentzat kredentzialak gorde dituzunean. Autentifikazioak huts egiten badu, eskatu egingo zaizu.
+
 connection-proxy-socks-remote-dns =
     .label = Bideratu DNSa proxy bidez SOCKS v5 erabiltzean
     .accesskey = d
-
-connection-dns-over-https =
-    .label = Gaitu HTTPS gaineko DNSa
-    .accesskey = G
-
-connection-dns-over-https-url-resolver = Erabili hornitzailea
-    .accesskey = h
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

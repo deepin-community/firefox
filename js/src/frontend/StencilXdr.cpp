@@ -6,24 +6,25 @@
 
 #include "frontend/StencilXdr.h"  // StencilXDR
 
+#include "mozilla/ArrayUtils.h"             // mozilla::ArrayEqual
 #include "mozilla/OperatorNewExtensions.h"  // mozilla::KnownNotNull
-#include "mozilla/Variant.h"                // mozilla::AsVariant
+#include "mozilla/ScopeExit.h"              // mozilla::MakeScopeExit
 
 #include <stddef.h>     // size_t
 #include <stdint.h>     // uint8_t, uint16_t, uint32_t
 #include <type_traits>  // std::has_unique_object_representations
 #include <utility>      // std::forward
 
-#include "ds/LifoAlloc.h"                  // LifoAlloc
-#include "frontend/BytecodeCompilation.h"  // CanLazilyParse
+#include "ds/LifoAlloc.h"                 // LifoAlloc
 #include "frontend/CompilationStencil.h"  // CompilationStencil, ExtensibleCompilationStencil
 #include "frontend/ScriptIndex.h"  // ScriptIndex
-#include "vm/ErrorReporting.h"     // ErrorMetadata, ReportCompileErrorUTF8
 #include "vm/Scope.h"              // SizeOfParserScopeData
 #include "vm/StencilEnums.h"       // js::ImmutableScriptFlagsEnum
 
 using namespace js;
 using namespace js::frontend;
+
+using mozilla::Utf8Unit;
 
 template <typename NameType>
 struct CanEncodeNameType {
@@ -49,7 +50,7 @@ static XDRResult XDRVectorUninitialized(XDRState<mode>* xdr,
   if (mode == XDR_DECODE) {
     MOZ_ASSERT(vec.empty());
     if (!vec.resizeUninitialized(length)) {
-      js::ReportOutOfMemory(xdr->cx());
+      js::ReportOutOfMemory(xdr->fc());
       return xdr->fail(JS::TranscodeResult::Throw);
     }
   }
@@ -65,7 +66,7 @@ static XDRResult XDRVectorInitialized(XDRState<mode>* xdr,
   if (mode == XDR_DECODE) {
     MOZ_ASSERT(vec.empty());
     if (!vec.resize(length)) {
-      js::ReportOutOfMemory(xdr->cx());
+      js::ReportOutOfMemory(xdr->fc());
       return xdr->fail(JS::TranscodeResult::Throw);
     }
   }
@@ -109,7 +110,7 @@ static XDRResult XDRSpanInitialized(XDRState<mode>* xdr, LifoAlloc& alloc,
     if (size > 0) {
       auto* p = alloc.template newArrayUninitialized<T>(size);
       if (!p) {
-        js::ReportOutOfMemory(xdr->cx());
+        js::ReportOutOfMemory(xdr->fc());
         return xdr->fail(JS::TranscodeResult::Throw);
       }
       span = mozilla::Span(p, size);
@@ -144,7 +145,7 @@ static XDRResult XDRSpanContent(XDRState<mode>* xdr, LifoAlloc& alloc,
       } else {
         data = alloc.template newArrayUninitialized<T>(size);
         if (!data) {
-          js::ReportOutOfMemory(xdr->cx());
+          js::ReportOutOfMemory(xdr->fc());
           return xdr->fail(JS::TranscodeResult::Throw);
         }
         MOZ_TRY(xdr->codeBytes(data, sizeof(T) * size));
@@ -261,7 +262,7 @@ template <XDRMode mode>
       baseScopeData =
           reinterpret_cast<BaseParserScopeData*>(alloc.alloc(totalLength));
       if (!baseScopeData) {
-        js::ReportOutOfMemory(xdr->cx());
+        js::ReportOutOfMemory(xdr->fc());
         return xdr->fail(JS::TranscodeResult::Throw);
       }
       MOZ_TRY(xdr->codeBytes(baseScopeData, totalLength));
@@ -286,14 +287,15 @@ XDRResult StencilXDR::codeSharedData(XDRState<mode>* xdr,
   static_assert(frontend::CanCopyDataToDisk<TryNote>::value,
                 "TryNote cannot be bulk-copied to disk");
 
-  JSContext* cx = xdr->cx();
-
   uint32_t size;
+  uint32_t hash;
   if (mode == XDR_ENCODE) {
     if (sisd) {
       size = sisd->immutableDataLength();
+      hash = sisd->hash();
     } else {
       size = 0;
+      hash = 0;
     }
   }
   MOZ_TRY(xdr->codeUint32(&size));
@@ -309,13 +311,15 @@ XDRResult StencilXDR::codeSharedData(XDRState<mode>* xdr,
   MOZ_TRY(xdr->align32());
   static_assert(alignof(ImmutableScriptData) <= alignof(uint32_t));
 
+  MOZ_TRY(xdr->codeUint32(&hash));
+
   if constexpr (mode == XDR_ENCODE) {
     uint8_t* data = const_cast<uint8_t*>(sisd->get()->immutableData().data());
     MOZ_ASSERT(data == reinterpret_cast<const uint8_t*>(sisd->get()),
                "Decode below relies on the data placement");
     MOZ_TRY(xdr->codeBytes(data, size));
   } else {
-    sisd = SharedImmutableScriptData::create(cx);
+    sisd = SharedImmutableScriptData::create(xdr->fc());
     if (!sisd) {
       return xdr->fail(JS::TranscodeResult::Throw);
     }
@@ -325,15 +329,15 @@ XDRResult StencilXDR::codeSharedData(XDRState<mode>* xdr,
       MOZ_ASSERT(options.borrowBuffer);
       ImmutableScriptData* isd;
       MOZ_TRY(xdr->borrowedData(&isd, size));
-      sisd->setExternal(isd);
+      sisd->setExternal(isd, hash);
     } else {
-      auto isd = ImmutableScriptData::new_(xdr->cx(), size);
+      auto isd = ImmutableScriptData::new_(xdr->fc(), size);
       if (!isd) {
         return xdr->fail(JS::TranscodeResult::Throw);
       }
       uint8_t* data = reinterpret_cast<uint8_t*>(isd.get());
       MOZ_TRY(xdr->codeBytes(data, size));
-      sisd->setOwn(std::move(isd));
+      sisd->setOwn(std::move(isd), hash);
     }
 
     if (!sisd->get()->validateLayout(size)) {
@@ -343,7 +347,7 @@ XDRResult StencilXDR::codeSharedData(XDRState<mode>* xdr,
   }
 
   if (mode == XDR_DECODE) {
-    if (!SharedImmutableScriptData::shareScriptData(cx, sisd)) {
+    if (!SharedImmutableScriptData::shareScriptData(xdr->fc(), sisd)) {
       return xdr->fail(JS::TranscodeResult::Throw);
     }
   }
@@ -400,7 +404,7 @@ template <XDRMode mode>
 
     case Kind::Vector: {
       if (mode == XDR_DECODE) {
-        if (!sharedData.initVector(xdr->cx())) {
+        if (!sharedData.initVector(xdr->fc())) {
           return xdr->fail(JS::TranscodeResult::Throw);
         }
       }
@@ -416,7 +420,7 @@ template <XDRMode mode>
 
     case Kind::Map: {
       if (mode == XDR_DECODE) {
-        if (!sharedData.initMap(xdr->cx())) {
+        if (!sharedData.initMap(xdr->fc())) {
           return xdr->fail(JS::TranscodeResult::Throw);
         }
       }
@@ -428,7 +432,7 @@ template <XDRMode mode>
       MOZ_TRY(xdr->codeUint32(&count));
       if (mode == XDR_DECODE) {
         if (!map.reserve(count)) {
-          js::ReportOutOfMemory(xdr->cx());
+          js::ReportOutOfMemory(xdr->fc());
           return xdr->fail(JS::TranscodeResult::Throw);
         }
       }
@@ -449,7 +453,7 @@ template <XDRMode mode>
           MOZ_TRY(codeSharedData<mode>(xdr, data));
 
           if (!map.putNew(index, data)) {
-            js::ReportOutOfMemory(xdr->cx());
+            js::ReportOutOfMemory(xdr->fc());
             return xdr->fail(JS::TranscodeResult::Throw);
           }
         }
@@ -494,7 +498,7 @@ template <XDRMode mode>
     } else {
       *atomp = reinterpret_cast<ParserAtom*>(alloc.alloc(totalLength));
       if (!*atomp) {
-        js::ReportOutOfMemory(xdr->cx());
+        js::ReportOutOfMemory(xdr->fc());
         return xdr->fail(JS::TranscodeResult::Throw);
       }
       MOZ_TRY(xdr->codeBytes(*atomp, totalLength));
@@ -545,7 +549,7 @@ template <XDRMode mode>
   MOZ_TRY(XDRAtomCount(xdr, &atomVectorLength));
 
   frontend::ParserAtomSpanBuilder builder(parserAtomData);
-  if (!builder.allocate(xdr->cx(), alloc, atomVectorLength)) {
+  if (!builder.allocate(xdr->fc(), alloc, atomVectorLength)) {
     return xdr->fail(JS::TranscodeResult::Throw);
   }
 
@@ -569,13 +573,60 @@ template <XDRMode mode>
 }
 
 template <XDRMode mode>
+/* static */ XDRResult StencilXDR::codeModuleRequest(
+    XDRState<mode>* xdr, StencilModuleRequest& stencil) {
+  MOZ_TRY(xdr->codeUint32(stencil.specifier.rawDataRef()));
+  MOZ_TRY(XDRVectorContent(xdr, stencil.assertions));
+
+  return Ok();
+}
+
+template <XDRMode mode>
+/* static */ XDRResult StencilXDR::codeModuleRequestVector(
+    XDRState<mode>* xdr, StencilModuleMetadata::RequestVector& vector) {
+  MOZ_TRY(XDRVectorInitialized(xdr, vector));
+
+  for (auto& entry : vector) {
+    MOZ_TRY(codeModuleRequest<mode>(xdr, entry));
+  }
+
+  return Ok();
+}
+
+template <XDRMode mode>
+/* static */ XDRResult StencilXDR::codeModuleEntry(
+    XDRState<mode>* xdr, StencilModuleEntry& stencil) {
+  MOZ_TRY(xdr->codeUint32(&stencil.moduleRequest));
+  MOZ_TRY(xdr->codeUint32(stencil.localName.rawDataRef()));
+  MOZ_TRY(xdr->codeUint32(stencil.importName.rawDataRef()));
+  MOZ_TRY(xdr->codeUint32(stencil.exportName.rawDataRef()));
+  MOZ_TRY(xdr->codeUint32(&stencil.lineno));
+  MOZ_TRY(xdr->codeUint32(&stencil.column));
+
+  return Ok();
+}
+
+template <XDRMode mode>
+/* static */ XDRResult StencilXDR::codeModuleEntryVector(
+    XDRState<mode>* xdr, StencilModuleMetadata::EntryVector& vector) {
+  MOZ_TRY(XDRVectorInitialized(xdr, vector));
+
+  for (auto& entry : vector) {
+    MOZ_TRY(codeModuleEntry<mode>(xdr, entry));
+  }
+
+  return Ok();
+}
+
+template <XDRMode mode>
 /* static */ XDRResult StencilXDR::codeModuleMetadata(
     XDRState<mode>* xdr, StencilModuleMetadata& stencil) {
-  MOZ_TRY(XDRVectorContent(xdr, stencil.requestedModules));
-  MOZ_TRY(XDRVectorContent(xdr, stencil.importEntries));
-  MOZ_TRY(XDRVectorContent(xdr, stencil.localExportEntries));
-  MOZ_TRY(XDRVectorContent(xdr, stencil.indirectExportEntries));
-  MOZ_TRY(XDRVectorContent(xdr, stencil.starExportEntries));
+  MOZ_TRY(codeModuleRequestVector(xdr, stencil.moduleRequests));
+  MOZ_TRY(codeModuleEntryVector(xdr, stencil.requestedModules));
+  MOZ_TRY(codeModuleEntryVector(xdr, stencil.importEntries));
+  MOZ_TRY(codeModuleEntryVector(xdr, stencil.localExportEntries));
+  MOZ_TRY(codeModuleEntryVector(xdr, stencil.indirectExportEntries));
+  MOZ_TRY(codeModuleEntryVector(xdr, stencil.starExportEntries));
   MOZ_TRY(XDRVectorContent(xdr, stencil.functionDecls));
 
   uint8_t isAsync = 0;
@@ -708,8 +759,13 @@ template <XDRMode mode>
     XDRState<mode>* xdr, CompilationStencil& stencil) {
   MOZ_ASSERT(!stencil.asmJS);
 
-  if (mode == XDR_DECODE) {
-    stencil.hasExternalDependency = true;
+  if constexpr (mode == XDR_DECODE) {
+    const auto& options = static_cast<XDRStencilDecoder*>(xdr)->options();
+    if (options.borrowBuffer) {
+      stencil.storageType = CompilationStencil::StorageType::Borrowed;
+    } else {
+      stencil.storageType = CompilationStencil::StorageType::Owned;
+    }
   }
 
   MOZ_TRY(CodeMarker(xdr, SectionMarker::ParserAtomData));
@@ -723,9 +779,6 @@ template <XDRMode mode>
   MOZ_TRY(xdr->codeUint8(&canLazilyParse));
   if (mode == XDR_DECODE) {
     stencil.canLazilyParse = canLazilyParse;
-    // NOTE: stencil.canLazilyParse can be different than
-    //       CanLazilyParse(static_cast<XDRStencilDecoder*>(xdr)->options()).
-    //       See bug 1726498 for removing the redundancy.
   }
 
   MOZ_TRY(xdr->codeUint32(&stencil.functionKey));
@@ -800,7 +853,7 @@ template <XDRMode mode>
   if (stencil.scriptExtra[CompilationStencil::TopLevelIndex].isModule()) {
     if (mode == XDR_DECODE) {
       stencil.moduleMetadata =
-          xdr->cx()->template new_<StencilModuleMetadata>();
+          xdr->fc()->getAllocator()->template new_<StencilModuleMetadata>();
       if (!stencil.moduleMetadata) {
         return xdr->fail(JS::TranscodeResult::Throw);
       }
@@ -808,9 +861,649 @@ template <XDRMode mode>
 
     MOZ_TRY(CodeMarker(xdr, SectionMarker::ModuleMetadata));
     MOZ_TRY(codeModuleMetadata(xdr, *stencil.moduleMetadata));
+
+    // codeModuleMetadata doesn't guarantee alignment.
+    MOZ_TRY(xdr->align32());
   }
 
   MOZ_TRY(CodeMarker(xdr, SectionMarker::End));
+
+  // The result should be aligned.
+  //
+  // NOTE:
+  // If the top-level isn't a module, ScriptData/ScriptExtra sections
+  // guarantee the alignment because there should be at least 1 item,
+  // and XDRSpanContent adds alignment before span content, and the struct size
+  // should also be aligned.
+  static_assert(sizeof(ScriptStencil) % 4 == 0,
+                "size of ScriptStencil should be aligned");
+  static_assert(sizeof(ScriptStencilExtra) % 4 == 0,
+                "size of ScriptStencilExtra should be aligned");
+  MOZ_RELEASE_ASSERT(xdr->isAligned32());
+
+  return Ok();
+}
+
+template <typename Unit>
+struct UnretrievableSourceDecoder {
+  XDRState<XDR_DECODE>* const xdr_;
+  ScriptSource* const scriptSource_;
+  const uint32_t uncompressedLength_;
+
+ public:
+  UnretrievableSourceDecoder(XDRState<XDR_DECODE>* xdr,
+                             ScriptSource* scriptSource,
+                             uint32_t uncompressedLength)
+      : xdr_(xdr),
+        scriptSource_(scriptSource),
+        uncompressedLength_(uncompressedLength) {}
+
+  XDRResult decode() {
+    auto sourceUnits = xdr_->fc()->getAllocator()->make_pod_array<Unit>(
+        std::max<size_t>(uncompressedLength_, 1));
+    if (!sourceUnits) {
+      return xdr_->fail(JS::TranscodeResult::Throw);
+    }
+
+    MOZ_TRY(xdr_->codeChars(sourceUnits.get(), uncompressedLength_));
+
+    if (!scriptSource_->initializeUnretrievableUncompressedSource(
+            xdr_->fc(), std::move(sourceUnits), uncompressedLength_)) {
+      return xdr_->fail(JS::TranscodeResult::Throw);
+    }
+
+    return Ok();
+  }
+};
+
+template <>
+XDRResult StencilXDR::codeSourceUnretrievableUncompressed<XDR_DECODE>(
+    XDRState<XDR_DECODE>* xdr, ScriptSource* ss, uint8_t sourceCharSize,
+    uint32_t uncompressedLength) {
+  MOZ_ASSERT(sourceCharSize == 1 || sourceCharSize == 2);
+
+  if (sourceCharSize == 1) {
+    UnretrievableSourceDecoder<Utf8Unit> decoder(xdr, ss, uncompressedLength);
+    return decoder.decode();
+  }
+
+  UnretrievableSourceDecoder<char16_t> decoder(xdr, ss, uncompressedLength);
+  return decoder.decode();
+}
+
+template <typename Unit>
+struct UnretrievableSourceEncoder {
+  XDRState<XDR_ENCODE>* const xdr_;
+  ScriptSource* const source_;
+  const uint32_t uncompressedLength_;
+
+  UnretrievableSourceEncoder(XDRState<XDR_ENCODE>* xdr, ScriptSource* source,
+                             uint32_t uncompressedLength)
+      : xdr_(xdr), source_(source), uncompressedLength_(uncompressedLength) {}
+
+  XDRResult encode() {
+    Unit* sourceUnits =
+        const_cast<Unit*>(source_->uncompressedData<Unit>()->units());
+
+    return xdr_->codeChars(sourceUnits, uncompressedLength_);
+  }
+};
+
+template <>
+/* static */
+XDRResult StencilXDR::codeSourceUnretrievableUncompressed<XDR_ENCODE>(
+    XDRState<XDR_ENCODE>* xdr, ScriptSource* ss, uint8_t sourceCharSize,
+    uint32_t uncompressedLength) {
+  MOZ_ASSERT(sourceCharSize == 1 || sourceCharSize == 2);
+
+  if (sourceCharSize == 1) {
+    UnretrievableSourceEncoder<Utf8Unit> encoder(xdr, ss, uncompressedLength);
+    return encoder.encode();
+  }
+
+  UnretrievableSourceEncoder<char16_t> encoder(xdr, ss, uncompressedLength);
+  return encoder.encode();
+}
+
+template <typename Unit, XDRMode mode>
+/* static */
+XDRResult StencilXDR::codeSourceUncompressedData(XDRState<mode>* const xdr,
+                                                 ScriptSource* const ss) {
+  static_assert(
+      std::is_same_v<Unit, Utf8Unit> || std::is_same_v<Unit, char16_t>,
+      "should handle UTF-8 and UTF-16");
+
+  if (mode == XDR_ENCODE) {
+    MOZ_ASSERT(ss->isUncompressed<Unit>());
+  } else {
+    MOZ_ASSERT(ss->data.is<ScriptSource::Missing>());
+  }
+
+  uint32_t uncompressedLength;
+  if (mode == XDR_ENCODE) {
+    uncompressedLength = ss->uncompressedData<Unit>()->length();
+  }
+  MOZ_TRY(xdr->codeUint32(&uncompressedLength));
+
+  return codeSourceUnretrievableUncompressed(xdr, ss, sizeof(Unit),
+                                             uncompressedLength);
+}
+
+template <typename Unit, XDRMode mode>
+/* static */
+XDRResult StencilXDR::codeSourceCompressedData(XDRState<mode>* const xdr,
+                                               ScriptSource* const ss) {
+  static_assert(
+      std::is_same_v<Unit, Utf8Unit> || std::is_same_v<Unit, char16_t>,
+      "should handle UTF-8 and UTF-16");
+
+  if (mode == XDR_ENCODE) {
+    MOZ_ASSERT(ss->isCompressed<Unit>());
+  } else {
+    MOZ_ASSERT(ss->data.is<ScriptSource::Missing>());
+  }
+
+  uint32_t uncompressedLength;
+  if (mode == XDR_ENCODE) {
+    uncompressedLength =
+        ss->data.as<ScriptSource::Compressed<Unit, SourceRetrievable::No>>()
+            .uncompressedLength;
+  }
+  MOZ_TRY(xdr->codeUint32(&uncompressedLength));
+
+  uint32_t compressedLength;
+  if (mode == XDR_ENCODE) {
+    compressedLength =
+        ss->data.as<ScriptSource::Compressed<Unit, SourceRetrievable::No>>()
+            .raw.length();
+  }
+  MOZ_TRY(xdr->codeUint32(&compressedLength));
+
+  if (mode == XDR_DECODE) {
+    // Compressed data is always single-byte chars.
+    auto bytes = xdr->fc()->getAllocator()->template make_pod_array<char>(
+        compressedLength);
+    if (!bytes) {
+      return xdr->fail(JS::TranscodeResult::Throw);
+    }
+    MOZ_TRY(xdr->codeBytes(bytes.get(), compressedLength));
+
+    if (!ss->initializeWithUnretrievableCompressedSource<Unit>(
+            xdr->fc(), std::move(bytes), compressedLength,
+            uncompressedLength)) {
+      return xdr->fail(JS::TranscodeResult::Throw);
+    }
+  } else {
+    void* bytes = const_cast<char*>(ss->compressedData<Unit>()->raw.chars());
+    MOZ_TRY(xdr->codeBytes(bytes, compressedLength));
+  }
+
+  return Ok();
+}
+
+template <typename Unit,
+          template <typename U, SourceRetrievable CanRetrieve> class Data,
+          XDRMode mode>
+/* static */
+void StencilXDR::codeSourceRetrievable(ScriptSource* const ss) {
+  static_assert(
+      std::is_same_v<Unit, Utf8Unit> || std::is_same_v<Unit, char16_t>,
+      "should handle UTF-8 and UTF-16");
+
+  if (mode == XDR_ENCODE) {
+    MOZ_ASSERT((ss->data.is<Data<Unit, SourceRetrievable::Yes>>()));
+  } else {
+    MOZ_ASSERT(ss->data.is<ScriptSource::Missing>());
+    ss->data = ScriptSource::SourceType(ScriptSource::Retrievable<Unit>());
+  }
+}
+
+template <typename Unit, XDRMode mode>
+/* static */
+void StencilXDR::codeSourceRetrievableData(ScriptSource* ss) {
+  // There's nothing to code for retrievable data.  Just be sure to set
+  // retrievable data when decoding.
+  if (mode == XDR_ENCODE) {
+    MOZ_ASSERT(ss->data.is<ScriptSource::Retrievable<Unit>>());
+  } else {
+    MOZ_ASSERT(ss->data.is<ScriptSource::Missing>());
+    ss->data = ScriptSource::SourceType(ScriptSource::Retrievable<Unit>());
+  }
+}
+
+template <XDRMode mode>
+/* static */
+XDRResult StencilXDR::codeSourceData(XDRState<mode>* const xdr,
+                                     ScriptSource* const ss) {
+  // The order here corresponds to the type order in |ScriptSource::SourceType|
+  // so number->internal Variant tag is a no-op.
+  enum class DataType {
+    CompressedUtf8Retrievable,
+    UncompressedUtf8Retrievable,
+    CompressedUtf8NotRetrievable,
+    UncompressedUtf8NotRetrievable,
+    CompressedUtf16Retrievable,
+    UncompressedUtf16Retrievable,
+    CompressedUtf16NotRetrievable,
+    UncompressedUtf16NotRetrievable,
+    RetrievableUtf8,
+    RetrievableUtf16,
+    Missing,
+  };
+
+  DataType tag;
+  {
+    // This is terrible, but we can't do better.  When |mode == XDR_DECODE| we
+    // don't have a |ScriptSource::data| |Variant| to match -- the entire XDR
+    // idiom for tagged unions depends on coding a tag-number, then the
+    // corresponding tagged data.  So we must manually define a tag-enum, code
+    // it, then switch on it (and ignore the |Variant::match| API).
+    class XDRDataTag {
+     public:
+      DataType operator()(
+          const ScriptSource::Compressed<Utf8Unit, SourceRetrievable::Yes>&) {
+        return DataType::CompressedUtf8Retrievable;
+      }
+      DataType operator()(
+          const ScriptSource::Uncompressed<Utf8Unit, SourceRetrievable::Yes>&) {
+        return DataType::UncompressedUtf8Retrievable;
+      }
+      DataType operator()(
+          const ScriptSource::Compressed<Utf8Unit, SourceRetrievable::No>&) {
+        return DataType::CompressedUtf8NotRetrievable;
+      }
+      DataType operator()(
+          const ScriptSource::Uncompressed<Utf8Unit, SourceRetrievable::No>&) {
+        return DataType::UncompressedUtf8NotRetrievable;
+      }
+      DataType operator()(
+          const ScriptSource::Compressed<char16_t, SourceRetrievable::Yes>&) {
+        return DataType::CompressedUtf16Retrievable;
+      }
+      DataType operator()(
+          const ScriptSource::Uncompressed<char16_t, SourceRetrievable::Yes>&) {
+        return DataType::UncompressedUtf16Retrievable;
+      }
+      DataType operator()(
+          const ScriptSource::Compressed<char16_t, SourceRetrievable::No>&) {
+        return DataType::CompressedUtf16NotRetrievable;
+      }
+      DataType operator()(
+          const ScriptSource::Uncompressed<char16_t, SourceRetrievable::No>&) {
+        return DataType::UncompressedUtf16NotRetrievable;
+      }
+      DataType operator()(const ScriptSource::Retrievable<Utf8Unit>&) {
+        return DataType::RetrievableUtf8;
+      }
+      DataType operator()(const ScriptSource::Retrievable<char16_t>&) {
+        return DataType::RetrievableUtf16;
+      }
+      DataType operator()(const ScriptSource::Missing&) {
+        return DataType::Missing;
+      }
+    };
+
+    uint8_t type;
+    if (mode == XDR_ENCODE) {
+      type = static_cast<uint8_t>(ss->data.match(XDRDataTag()));
+    }
+    MOZ_TRY(xdr->codeUint8(&type));
+
+    if (type > static_cast<uint8_t>(DataType::Missing)) {
+      // Fail in debug, but only soft-fail in release, if the type is invalid.
+      MOZ_ASSERT_UNREACHABLE("bad tag");
+      return xdr->fail(JS::TranscodeResult::Failure_BadDecode);
+    }
+
+    tag = static_cast<DataType>(type);
+  }
+
+  switch (tag) {
+    case DataType::CompressedUtf8Retrievable:
+      codeSourceRetrievable<Utf8Unit, ScriptSource::Compressed, mode>(ss);
+      return Ok();
+
+    case DataType::CompressedUtf8NotRetrievable:
+      return codeSourceCompressedData<Utf8Unit>(xdr, ss);
+
+    case DataType::UncompressedUtf8Retrievable:
+      codeSourceRetrievable<Utf8Unit, ScriptSource::Uncompressed, mode>(ss);
+      return Ok();
+
+    case DataType::UncompressedUtf8NotRetrievable:
+      return codeSourceUncompressedData<Utf8Unit>(xdr, ss);
+
+    case DataType::CompressedUtf16Retrievable:
+      codeSourceRetrievable<char16_t, ScriptSource::Compressed, mode>(ss);
+      return Ok();
+
+    case DataType::CompressedUtf16NotRetrievable:
+      return codeSourceCompressedData<char16_t>(xdr, ss);
+
+    case DataType::UncompressedUtf16Retrievable:
+      codeSourceRetrievable<char16_t, ScriptSource::Uncompressed, mode>(ss);
+      return Ok();
+
+    case DataType::UncompressedUtf16NotRetrievable:
+      return codeSourceUncompressedData<char16_t>(xdr, ss);
+
+    case DataType::Missing: {
+      MOZ_ASSERT(ss->data.is<ScriptSource::Missing>(),
+                 "ScriptSource::data is initialized as missing, so neither "
+                 "encoding nor decoding has to change anything");
+
+      // There's no data to XDR for missing source.
+      break;
+    }
+
+    case DataType::RetrievableUtf8:
+      codeSourceRetrievableData<Utf8Unit, mode>(ss);
+      return Ok();
+
+    case DataType::RetrievableUtf16:
+      codeSourceRetrievableData<char16_t, mode>(ss);
+      return Ok();
+  }
+
+  // The range-check on |type| far above ought ensure the above |switch| is
+  // exhaustive and all cases will return, but not all compilers understand
+  // this.  Make the Missing case break to here so control obviously never flows
+  // off the end.
+  MOZ_ASSERT(tag == DataType::Missing);
+  return Ok();
+}
+
+template <XDRMode mode>
+/* static */
+XDRResult StencilXDR::codeSource(XDRState<mode>* xdr,
+                                 const JS::DecodeOptions* maybeOptions,
+                                 RefPtr<ScriptSource>& source) {
+  FrontendContext* fc = xdr->fc();
+
+  if (mode == XDR_DECODE) {
+    // Allocate a new ScriptSource and root it with the holder.
+    source = do_AddRef(fc->getAllocator()->new_<ScriptSource>());
+    if (!source) {
+      return xdr->fail(JS::TranscodeResult::Throw);
+    }
+  }
+
+  static constexpr uint8_t HasFilename = 1 << 0;
+  static constexpr uint8_t HasDisplayURL = 1 << 1;
+  static constexpr uint8_t HasSourceMapURL = 1 << 2;
+  static constexpr uint8_t MutedErrors = 1 << 3;
+
+  uint8_t flags = 0;
+  if (mode == XDR_ENCODE) {
+    if (source->filename_) {
+      flags |= HasFilename;
+    }
+    if (source->hasDisplayURL()) {
+      flags |= HasDisplayURL;
+    }
+    if (source->hasSourceMapURL()) {
+      flags |= HasSourceMapURL;
+    }
+    if (source->mutedErrors()) {
+      flags |= MutedErrors;
+    }
+  }
+
+  MOZ_TRY(xdr->codeUint8(&flags));
+
+  if (flags & HasFilename) {
+    XDRTranscodeString<char> chars;
+
+    if (mode == XDR_ENCODE) {
+      chars.construct<const char*>(source->filename());
+    }
+    MOZ_TRY(xdr->codeCharsZ(chars));
+    if (mode == XDR_DECODE) {
+      if (!source->setFilename(fc, std::move(chars.ref<UniqueChars>()))) {
+        return xdr->fail(JS::TranscodeResult::Throw);
+      }
+    }
+  }
+
+  if (flags & HasDisplayURL) {
+    XDRTranscodeString<char16_t> chars;
+
+    if (mode == XDR_ENCODE) {
+      chars.construct<const char16_t*>(source->displayURL());
+    }
+    MOZ_TRY(xdr->codeCharsZ(chars));
+    if (mode == XDR_DECODE) {
+      if (!source->setDisplayURL(fc,
+                                 std::move(chars.ref<UniqueTwoByteChars>()))) {
+        return xdr->fail(JS::TranscodeResult::Throw);
+      }
+    }
+  }
+
+  if (flags & HasSourceMapURL) {
+    XDRTranscodeString<char16_t> chars;
+
+    if (mode == XDR_ENCODE) {
+      chars.construct<const char16_t*>(source->sourceMapURL());
+    }
+    MOZ_TRY(xdr->codeCharsZ(chars));
+    if (mode == XDR_DECODE) {
+      if (!source->setSourceMapURL(
+              fc, std::move(chars.ref<UniqueTwoByteChars>()))) {
+        return xdr->fail(JS::TranscodeResult::Throw);
+      }
+    }
+  }
+
+  MOZ_ASSERT(source->parameterListEnd_ == 0);
+
+  if (flags & MutedErrors) {
+    if (mode == XDR_DECODE) {
+      source->mutedErrors_ = true;
+    }
+  }
+
+  MOZ_TRY(xdr->codeUint32(&source->startLine_));
+  MOZ_TRY(xdr->codeUint32(&source->startColumn_));
+
+  // The introduction info doesn't persist across encode/decode.
+  if (mode == XDR_DECODE) {
+    source->introductionType_ = maybeOptions->introductionType;
+    source->setIntroductionOffset(maybeOptions->introductionOffset);
+    if (maybeOptions->introducerFilename) {
+      if (!source->setIntroducerFilename(
+              fc, maybeOptions->introducerFilename.c_str())) {
+        return xdr->fail(JS::TranscodeResult::Throw);
+      }
+    }
+  }
+
+  MOZ_TRY(codeSourceData(xdr, source.get()));
+
+  return Ok();
+}
+
+template /* static */
+    XDRResult
+    StencilXDR::codeSource(XDRState<XDR_ENCODE>* xdr,
+                           const JS::DecodeOptions* maybeOptions,
+                           RefPtr<ScriptSource>& holder);
+template /* static */
+    XDRResult
+    StencilXDR::codeSource(XDRState<XDR_DECODE>* xdr,
+                           const JS::DecodeOptions* maybeOptions,
+                           RefPtr<ScriptSource>& holder);
+
+JS_PUBLIC_API bool JS::GetScriptTranscodingBuildId(
+    JS::BuildIdCharVector* buildId) {
+  MOZ_ASSERT(buildId->empty());
+  MOZ_ASSERT(GetBuildId);
+
+  if (!GetBuildId(buildId)) {
+    return false;
+  }
+
+  // Note: the buildId returned here is also used for the bytecode cache MIME
+  // type so use plain ASCII characters.
+
+  if (!buildId->reserve(buildId->length() + 4)) {
+    return false;
+  }
+
+  buildId->infallibleAppend('-');
+
+  // XDR depends on pointer size and endianness.
+  static_assert(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8);
+  buildId->infallibleAppend(sizeof(uintptr_t) == 4 ? '4' : '8');
+  buildId->infallibleAppend(MOZ_LITTLE_ENDIAN() ? 'l' : 'b');
+
+  return true;
+}
+
+template <XDRMode mode>
+static XDRResult VersionCheck(XDRState<mode>* xdr) {
+  JS::BuildIdCharVector buildId;
+  if (!JS::GetScriptTranscodingBuildId(&buildId)) {
+    ReportOutOfMemory(xdr->fc());
+    return xdr->fail(JS::TranscodeResult::Throw);
+  }
+  MOZ_ASSERT(!buildId.empty());
+
+  uint32_t buildIdLength;
+  if (mode == XDR_ENCODE) {
+    buildIdLength = buildId.length();
+  }
+
+  MOZ_TRY(xdr->codeUint32(&buildIdLength));
+
+  if (mode == XDR_DECODE && buildIdLength != buildId.length()) {
+    return xdr->fail(JS::TranscodeResult::Failure_BadBuildId);
+  }
+
+  if (mode == XDR_ENCODE) {
+    MOZ_TRY(xdr->codeBytes(buildId.begin(), buildIdLength));
+  } else {
+    JS::BuildIdCharVector decodedBuildId;
+
+    // buildIdLength is already checked against the length of current
+    // buildId.
+    if (!decodedBuildId.resize(buildIdLength)) {
+      ReportOutOfMemory(xdr->fc());
+      return xdr->fail(JS::TranscodeResult::Throw);
+    }
+
+    MOZ_TRY(xdr->codeBytes(decodedBuildId.begin(), buildIdLength));
+
+    // We do not provide binary compatibility with older scripts.
+    if (!mozilla::ArrayEqual(decodedBuildId.begin(), buildId.begin(),
+                             buildIdLength)) {
+      return xdr->fail(JS::TranscodeResult::Failure_BadBuildId);
+    }
+  }
+
+  return Ok();
+}
+
+XDRResult XDRStencilEncoder::codeStencil(
+    const RefPtr<ScriptSource>& source,
+    const frontend::CompilationStencil& stencil) {
+#ifdef DEBUG
+  auto sanityCheck = mozilla::MakeScopeExit(
+      [&] { MOZ_ASSERT(validateResultCode(fc(), resultCode())); });
+#endif
+
+  MOZ_TRY(frontend::StencilXDR::checkCompilationStencil(this, stencil));
+
+  MOZ_TRY(VersionCheck(this));
+
+  uint32_t dummy = 0;
+  size_t lengthOffset = buf->cursor();
+  MOZ_TRY(codeUint32(&dummy));
+  size_t hashOffset = buf->cursor();
+  MOZ_TRY(codeUint32(&dummy));
+
+  size_t contentOffset = buf->cursor();
+  MOZ_TRY(frontend::StencilXDR::codeSource(
+      this, nullptr, const_cast<RefPtr<ScriptSource>&>(source)));
+  MOZ_TRY(frontend::StencilXDR::codeCompilationStencil(
+      this, const_cast<frontend::CompilationStencil&>(stencil)));
+  size_t endOffset = buf->cursor();
+
+  if (endOffset > UINT32_MAX) {
+    ReportOutOfMemory(fc());
+    return fail(JS::TranscodeResult::Throw);
+  }
+
+  uint32_t length = endOffset - contentOffset;
+  codeUint32At(&length, lengthOffset);
+
+  const uint8_t* contentBegin = buf->bufferAt(contentOffset);
+  uint32_t hash = mozilla::HashBytes(contentBegin, length);
+  codeUint32At(&hash, hashOffset);
+
+  return Ok();
+}
+
+XDRResult XDRStencilEncoder::codeStencil(
+    const frontend::CompilationStencil& stencil) {
+  return codeStencil(stencil.source, stencil);
+}
+
+void StencilIncrementalEncoderPtr::reset() {
+  if (merger_) {
+    js_delete(merger_);
+  }
+  merger_ = nullptr;
+}
+
+bool StencilIncrementalEncoderPtr::setInitial(
+    JSContext* cx,
+    UniquePtr<frontend::ExtensibleCompilationStencil>&& initial) {
+  AutoReportFrontendContext fc(cx);
+  merger_ = fc.getAllocator()->new_<frontend::CompilationStencilMerger>();
+  if (!merger_) {
+    return false;
+  }
+
+  return merger_->setInitial(
+      &fc,
+      std::forward<UniquePtr<frontend::ExtensibleCompilationStencil>>(initial));
+}
+
+bool StencilIncrementalEncoderPtr::addDelazification(
+    JSContext* cx, const frontend::CompilationStencil& delazification) {
+  AutoReportFrontendContext fc(cx);
+  return merger_->addDelazification(&fc, delazification);
+}
+
+XDRResult XDRStencilDecoder::codeStencil(
+    const JS::DecodeOptions& options, frontend::CompilationStencil& stencil) {
+#ifdef DEBUG
+  auto sanityCheck = mozilla::MakeScopeExit(
+      [&] { MOZ_ASSERT(validateResultCode(fc(), resultCode())); });
+#endif
+
+  auto resetOptions = mozilla::MakeScopeExit([&] { options_ = nullptr; });
+  options_ = &options;
+
+  MOZ_TRY(VersionCheck(this));
+
+  uint32_t length;
+  MOZ_TRY(codeUint32(&length));
+
+  uint32_t hash;
+  MOZ_TRY(codeUint32(&hash));
+
+  const uint8_t* contentBegin;
+  MOZ_TRY(peekArray(length, &contentBegin));
+  uint32_t actualHash = mozilla::HashBytes(contentBegin, length);
+
+  if (MOZ_UNLIKELY(actualHash != hash)) {
+    return fail(JS::TranscodeResult::Failure_BadDecode);
+  }
+
+  MOZ_TRY(frontend::StencilXDR::codeSource(this, &options, stencil.source));
+  MOZ_TRY(frontend::StencilXDR::codeCompilationStencil(this, stencil));
 
   return Ok();
 }

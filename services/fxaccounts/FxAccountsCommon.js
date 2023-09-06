@@ -2,16 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+const { Log } = ChromeUtils.importESModule(
+  "resource://gre/modules/Log.sys.mjs"
 );
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { Preferences } = ChromeUtils.import(
-  "resource://gre/modules/Preferences.jsm"
-);
-const { Log } = ChromeUtils.import("resource://gre/modules/Log.jsm");
-const { LogManager } = ChromeUtils.import(
-  "resource://services-common/logmanager.js"
+const { LogManager } = ChromeUtils.importESModule(
+  "resource://services-common/logmanager.sys.mjs"
 );
 
 // loglevel should be one of "Fatal", "Error", "Warn", "Info", "Config",
@@ -26,36 +21,26 @@ const PREF_LOG_SENSITIVE_DETAILS = "identity.fxaccounts.log.sensitive";
 
 var exports = Object.create(null);
 
-XPCOMUtils.defineLazyGetter(exports, "log", function() {
-  let log = Log.repository.getLogger("FirefoxAccounts");
-  log.manageLevelFromPref(PREF_LOG_LEVEL);
-  return log;
-});
+exports.log = Log.repository.getLogger("FirefoxAccounts");
+exports.log.manageLevelFromPref(PREF_LOG_LEVEL);
 
-XPCOMUtils.defineLazyGetter(exports, "logManager", function() {
-  let logs = [
-    "Sync",
-    "Services.Common",
-    "FirefoxAccounts",
-    "Hawk",
-    "browserwindow.syncui",
-    "BookmarkSyncUtils",
-    "addons.xpi",
-  ];
+let logs = [
+  "Sync",
+  "Services.Common",
+  "FirefoxAccounts",
+  "Hawk",
+  "browserwindow.syncui",
+  "BookmarkSyncUtils",
+  "addons.xpi",
+];
 
-  // for legacy reasons, the log manager still thinks it's part of sync
-  return new LogManager(new Preferences("services.sync."), logs, "sync");
-});
+// For legacy reasons, the log manager still thinks it's part of sync.
+exports.logManager = new LogManager("services.sync.", logs, "sync");
 
 // A boolean to indicate if personally identifiable information (or anything
 // else sensitive, such as credentials) should be logged.
-XPCOMUtils.defineLazyGetter(exports, "logPII", function() {
-  try {
-    return Services.prefs.getBoolPref(PREF_LOG_SENSITIVE_DETAILS);
-  } catch (_) {
-    return false;
-  }
-});
+exports.logPII = () =>
+  Services.prefs.getBoolPref(PREF_LOG_SENSITIVE_DETAILS, false);
 
 exports.FXACCOUNTS_PERMISSION = "firefox-accounts";
 
@@ -89,6 +74,7 @@ exports.FXA_PUSH_SCOPE_ACCOUNT_UPDATE = "chrome://fxa-device-update";
 exports.ON_PROFILE_CHANGE_NOTIFICATION = "fxaccounts:profilechange"; // WebChannel
 exports.ON_ACCOUNT_STATE_CHANGE_NOTIFICATION = "fxaccounts:statechange";
 exports.ON_NEW_DEVICE_ID = "fxaccounts:new_device_id";
+exports.ON_DEVICELIST_UPDATED = "fxaccounts:devicelist_updated";
 
 // The common prefix for all commands.
 exports.COMMAND_PREFIX = "https://identity.mozilla.com/cmd/";
@@ -102,10 +88,7 @@ exports.FX_OAUTH_CLIENT_ID = "5882386c6d801776";
 exports.SCOPE_PROFILE = "profile";
 exports.SCOPE_PROFILE_WRITE = "profile:write";
 exports.SCOPE_OLD_SYNC = "https://identity.mozilla.com/apps/oldsync";
-// This scope and its associated key material are used by the old Kinto webextension
-// storage backend. We plan to remove that at some point (ref Bug 1637465) and when
-// we do, all uses of this legacy scope can be removed.
-exports.LEGACY_SCOPE_WEBEXT_SYNC = "sync:addon_storage";
+
 // This scope was previously used to calculate a telemetry tracking identifier for
 // the account, but that system has since been decommissioned. It's here entirely
 // so that we can remove the corresponding key from storage if present. We should
@@ -141,6 +124,7 @@ exports.COMMAND_SYNC_PREFERENCES = "fxaccounts:sync_preferences";
 exports.COMMAND_CHANGE_PASSWORD = "fxaccounts:change_password";
 exports.COMMAND_FXA_STATUS = "fxaccounts:fxa_status";
 exports.COMMAND_PAIR_PREFERENCES = "fxaccounts:pair_preferences";
+exports.COMMAND_FIREFOX_VIEW = "fxaccounts:firefox_view";
 
 // The pref branch where any prefs which relate to a specific account should
 // be stored. This branch will be reset on account signout and signin.
@@ -265,15 +249,6 @@ exports.ERROR_INVALID_PARAMETER = "INVALID_PARAMETER";
 exports.ERROR_CODE_METHOD_NOT_ALLOWED = 405;
 exports.ERROR_MSG_METHOD_NOT_ALLOWED = "METHOD_NOT_ALLOWED";
 
-// When FxA support first landed in Firefox, it was only used for sync and
-// we stored the relevant encryption keys as top-level fields in the account state.
-// We've since grown a more elaborate scheme of derived keys linked to specific
-// OAuth scopes, which are stored in a map in the `scopedKeys` field.
-// These are the names of pre-scoped-keys key material, maintained for b/w
-// compatibility to code elsewhere in Firefox; once all consuming code is updated
-// to use scoped keys, these fields can be removed from the account userData.
-exports.LEGACY_DERIVED_KEYS_NAMES = ["kSync", "kXCS", "kExtSync", "kExtKbHash"];
-
 // FxAccounts has the ability to "split" the credentials between a plain-text
 // JSON file in the profile dir and in the login manager.
 // In order to prevent new fields accidentally ending up in the "wrong" place,
@@ -291,19 +266,19 @@ exports.FXA_PWDMGR_PLAINTEXT_FIELDS = new Set([
   "profile",
   "device",
   "profileCache",
+  "encryptedSendTabKeys",
 ]);
 
 // Fields we store in secure storage if it exists.
 exports.FXA_PWDMGR_SECURE_FIELDS = new Set([
-  ...exports.LEGACY_DERIVED_KEYS_NAMES,
   "keyFetchToken",
   "unwrapBKey",
   "scopedKeys",
 ]);
 
-// A whitelist of fields that remain in storage when the user needs to
+// An allowlist of fields that remain in storage when the user needs to
 // reauthenticate. All other fields will be removed.
-exports.FXA_PWDMGR_REAUTH_WHITELIST = new Set([
+exports.FXA_PWDMGR_REAUTH_ALLOWLIST = new Set([
   "email",
   "uid",
   "profile",
@@ -326,7 +301,7 @@ for (let id in exports) {
   this[id] = exports[id];
 }
 
-// Allow this file to be imported via Components.utils.import().
+// Allow this file to be imported via ChromeUtils.import().
 var EXPORTED_SYMBOLS = Object.keys(exports);
 
 // Set these up now that everything has been loaded into |this|.

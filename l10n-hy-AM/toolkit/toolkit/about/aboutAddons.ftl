@@ -8,8 +8,11 @@ search-header =
     .placeholder = Որոնել addons.mozilla.org֊ում
     .searchbuttonlabel = Որոնել addons.mozilla.org֊ում
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+
+##
 
 list-empty-installed =
     .value = Դուք չունեք տեղակայված այս տեսակի հավելումներ
@@ -172,6 +175,10 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Վերջին Թարմացումները
 addon-category-recent-updates-title =
     .title = Վերջին Թարմացումները
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Կայքի թույլտվությունները { $host }-ի համար
 
 ## These are global warnings
 
@@ -182,7 +189,6 @@ extensions-warning-check-compatibility-button = Միացնել
 extensions-warning-update-security = Հավելումների թարմացման անվտանգության ստուգումը պասիվացված է: Թարմացումները կարող են վտանգավոր լինել ձեր համար:
 extensions-warning-update-security-button = Միացնել
     .title = Միացնել հավելման թարմացման անվտանգության ստուգումը
-
 
 ## Strings connected to add-on updates
 
@@ -258,6 +264,8 @@ shortcuts-duplicate-warning-message = { $shortcut }-ը մեկից ավելի ա�
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Արդեն օգտագործվում է{ $addon }
 
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Ցույց տալ { $numberToShow } Ավելին
@@ -278,7 +286,7 @@ discopane-intro =
     պաշտպանել գաղտնաբառերը, ներբեռնել տեսանյութեր, գտնել գործարքներ, արգելափակել նյարդայնացնող գովազդները, փոխել
     ձեր զննարկչի տեսքը և ավելին։ Այս փոքր ծրագրային ծրագրերը 
     հաճախ զարգացվել են երրորդ կողմի կողմից։ Ահա ընտրանք { -brand-product-name }
-    <a data-l10n-name="learn-more-trigger">խորհուր է տրվում</a> բացառիկ
+    <a data-l10n-name="learn-more-trigger">խորհուրդ է տրվում</a> բացառիկ
     անվտանգության, արդյունավետության և գործառություն համար։
 
 # Notice to make user aware that the recommendations are personalized.
@@ -332,7 +340,6 @@ extension-enabled-heading = Միացված
 extension-disabled-heading = Անջատված
 
 theme-enabled-heading = Միացված
-theme-disabled-heading = Անջատված
 
 plugin-enabled-heading = Միացված
 plugin-disabled-heading = Անջատված
@@ -351,6 +358,10 @@ addon-detail-version-label = Տարբերակ
 addon-detail-last-updated-label = Վերջին թարմացումը
 addon-detail-homepage-label = Կայքէջ
 addon-detail-rating-label = Վարկանիշ
+
+# Message for add-ons with a staged pending update.
+install-postponed-message = Այս ընդլայնումը կթարմացվի, երբ { -brand-short-name }-ը վերամեկնարկի:
+install-postponed-button = Թարմացնել հիմա
 
 # The average rating that the add-on has received.
 # Variables:
@@ -395,6 +406,9 @@ addon-detail-private-browsing-help = Երբ թույլատրված է, գաղտ�
 addon-detail-private-browsing-allow = Թույլատրել
 addon-detail-private-browsing-disallow = Չթույլատրել
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
@@ -436,3 +450,30 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Գործիքներ բոլոր հավելումների համար
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name }-ը և { -brand-short-name } { $version }-ը անհամատեղելի են:
+
+details-notification-unsigned-and-disabled = { $name }-ը չէր կարող հաստատվել { -brand-short-name }-ում օգտագործման համար և անջատվել է։
+details-notification-unsigned-and-disabled-link = Ավելի շատ տեղեկություն
+
+details-notification-unsigned = { $name }-ը չէր կարող վավերացվել { -brand-short-name }-ում օգտագործման համար։ Կատարվել է նախազգուշացմամբ։
+details-notification-unsigned-link = Ավելի շատ տեղեկություն
+
+details-notification-blocked = { $name }-ը անջատվել է` անվտանգություն կամ կայունություն ապահովելու նպատակով:
+details-notification-blocked-link = Ավելի շատ տեղեկություն
+
+details-notification-softblocked = Հայտնի է, որ { $name }-ը պատճառում է ապահովության կամ կայունության խնդիրներ:
+details-notification-softblocked-link = Ավելի շատ տեղեկություն
+
+details-notification-gmp-pending = { $name }-ը շուտով կտեղադրվի:

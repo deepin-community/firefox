@@ -13,8 +13,6 @@ change-password-old = كلمة السرّ الحاليّة:
 change-password-new = كلمة السرّ الجّديدة:
 change-password-reenter = كلمة السرّ الجّديدة (مرّة ثانية):
 
-## Reset Password dialog
-
 pippki-incorrect-pw = لم تُدخل كلمة السر الرئيسية الصحيحة. رجاءً أعِد المحاولة.
 
 ## Reset Primary Password dialog
@@ -24,9 +22,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = يجري تنزيل الشّهادات
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = يُطلب منك الوثوق بسلطة شهادات جديدة.
 download-cert-trust-ssl =
     .label = ثِق في سلطة الشّهادات هذه لتعريف مواقع وِب.
@@ -58,7 +56,5 @@ set-password-reminder = هامّ: إذا نسيت كلمة سرّ النّسخة
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = استيثاق علامة محمية
-protected-auth-msg = من فضلك استوثق من هذه العلامة. تعتمد طريقة الاستيثاق على نوع علامتك.
-protected-auth-token = علامة:
+## Protected authentication alert
+

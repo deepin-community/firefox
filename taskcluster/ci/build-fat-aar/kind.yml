@@ -2,26 +2,28 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 ---
-loader: taskgraph.loader.transform:loader
+loader: gecko_taskgraph.loader.transform:loader
 
 kind-dependencies:
     - build
     - toolchain
 
 transforms:
-    - taskgraph.transforms.build:transforms
-    - taskgraph.transforms.build_attrs:transforms
-    - taskgraph.transforms.build_lints:transforms
-    - taskgraph.transforms.build_fat_aar:transforms
-    - taskgraph.transforms.job:transforms
-    - taskgraph.transforms.task:transforms
+    - gecko_taskgraph.transforms.build:transforms
+    - gecko_taskgraph.transforms.build_attrs:transforms
+    - gecko_taskgraph.transforms.build_lints:transforms
+    - gecko_taskgraph.transforms.build_fat_aar:transforms
+    - gecko_taskgraph.transforms.job:transforms
+    - gecko_taskgraph.transforms.artifact:transforms
+    - gecko_taskgraph.transforms.task:transforms
 
 job-defaults:
     attributes:
-        artifact_map: taskcluster/taskgraph/manifests/fennec_geckoview.yml
+        artifact_map: taskcluster/gecko_taskgraph/manifests/fennec_geckoview.yml
     index:
         product: mobile
-    worker-type: b-linux
+    worker-type: b-linux-gcp
+    use-system-python: false
     worker:
         docker-image: {in-tree: android-build}
         max-run-time: 7200
@@ -30,9 +32,10 @@ job-defaults:
             GRADLE_USER_HOME: "/builds/worker/checkouts/build/gecko/mobile/android/gradle/dotgradle-online"
             TOOLTOOL_MANIFEST: "mobile/android/config/tooltool-manifests/android/releng.manifest"
             MOZ_ANDROID_FAT_AAR_ARCHITECTURES: "armeabi-v7a,arm64-v8a,x86,x86_64"
+            MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE: system
         artifacts:
             - name: public/build/maven
-              path: /builds/worker/workspace/obj-build/gradle/build/mobile/android/geckoview/maven/
+              path: /builds/worker/workspace/obj-build/gradle/maven/
               type: directory
             - name: public/build
               path: /builds/worker/artifacts/
@@ -40,8 +43,17 @@ job-defaults:
             - name: public/build/geckoview-androidTest.apk
               path: /builds/worker/workspace/obj-build/gradle/build/mobile/android/geckoview/outputs/apk/androidTest/withGeckoBinaries/debug/geckoview-withGeckoBinaries-debug-androidTest.apk
               type: file
+            - name: public/build/geckoview-test_runner.apk
+              path: /builds/worker/workspace/obj-build/gradle/build/mobile/android/test_runner/outputs/apk/withGeckoBinaries/debug/test_runner-withGeckoBinaries-debug.apk
+              type: file
+            - name: public/build/geckoview-test_runner.aab
+              path: /builds/worker/workspace/obj-build/gradle/build/mobile/android/test_runner/outputs/bundle/withGeckoBinariesDebug/test_runner-withGeckoBinaries-debug.aab
+              type: file
             - name: public/build/geckoview_example.apk
               path: /builds/worker/workspace/obj-build/gradle/build/mobile/android/geckoview_example/outputs/apk/withGeckoBinaries/debug/geckoview_example-withGeckoBinaries-debug.apk
+              type: file
+            - name: public/build/geckoview_example.aab
+              path: /builds/worker/workspace/obj-build/gradle/build/mobile/android/geckoview_example/outputs/bundle/withGeckoBinariesDebug/geckoview_example-withGeckoBinaries-debug.aab
               type: file
     run:
         using: mozharness
@@ -54,6 +66,7 @@ job-defaults:
             by-release-type:
                 nightly: nightly
                 nightly-oak: nightly-oak
+                nightly-pine: nightly-pine
                 beta:
                     by-shipping-product:
                         devedition: aurora
@@ -68,7 +81,9 @@ job-defaults:
         toolchain:
             - android-ndk-linux
             - android-sdk-linux
+            - linux64-binutils
             - linux64-clang
+            - linux64-jdk
             - linux64-rust-android
             - linux64-rust-size
             - linux64-cbindgen
@@ -76,6 +91,7 @@ job-defaults:
             - linux64-nasm
             - linux64-node
             - sysroot-x86_64-linux-gnu
+            - sysroot-wasm32-wasi
 
 jobs:
     android-geckoview-fat-aar-shippable/opt:
@@ -84,6 +100,8 @@ jobs:
             shippable: true
             enable-full-crashsymbols: true
             disable-push-apk: true
+            maven_packages:
+                - geckoview
         shipping-phase: build
         shipping-product: fennec
         index:
@@ -118,6 +136,9 @@ jobs:
             shippable: true
             enable-full-crashsymbols: true
             disable-push-apk: true
+            maven_packages:
+                - geckoview
+                - geckoview-exoplayer2
         shipping-phase: build
         shipping-product: fennec
         index:

@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Pasirinkti visas korteles
     .accesskey = P
+tab-context-play-tab =
+    .label = Groti kortelę
+    .accesskey = G
+tab-context-play-tabs =
+    .label = Groti korteles
+    .accesskey = i
 duplicate-tab =
     .label = Dubliuoti kortelę
     .accesskey = D
@@ -48,9 +54,6 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Korteles įtraukti į adresyną…
     .accesskey = t
-bookmark-tab =
-    .label = Įrašyti kortelę į adresyną
-    .accesskey = r
 tab-context-open-in-new-container-tab =
     .label = Atverti naujoje sudėtinėje kortelėje
     .accesskey = e
@@ -69,8 +72,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Dalintis
     .accesskey = i
-tab-context-share-more =
-    .label = Daugiau…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -84,15 +85,6 @@ tab-context-reopen-closed-tabs =
            *[other] Atkurti užvertas korteles
         }
     .accesskey = r
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Užverti kortelę
-            [one] Užverti kortelę
-            [few] Užverti korteles
-           *[other] Užverti kortelių
-        }
-    .accesskey = U
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

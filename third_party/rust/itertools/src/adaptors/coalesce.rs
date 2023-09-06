@@ -3,6 +3,7 @@ use std::iter::FusedIterator;
 
 use crate::size_hint;
 
+#[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 pub struct CoalesceBy<I, F, T>
 where
     I: Iterator,
@@ -86,7 +87,6 @@ impl<I: Iterator, F: CoalescePredicate<I::Item, T>, T> FusedIterator for Coalesc
 /// An iterator adaptor that may join together adjacent elements.
 ///
 /// See [`.coalesce()`](crate::Itertools::coalesce) for more information.
-#[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 pub type Coalesce<I, F> = CoalesceBy<I, F, <I as Iterator>::Item>;
 
 impl<F, Item, T> CoalescePredicate<Item, T> for F
@@ -113,11 +113,14 @@ where
 /// An iterator adaptor that removes repeated duplicates, determining equality using a comparison function.
 ///
 /// See [`.dedup_by()`](crate::Itertools::dedup_by) or [`.dedup()`](crate::Itertools::dedup) for more information.
-#[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 pub type DedupBy<I, Pred> = CoalesceBy<I, DedupPred2CoalescePred<Pred>, <I as Iterator>::Item>;
 
 #[derive(Clone)]
 pub struct DedupPred2CoalescePred<DP>(DP);
+
+impl<DP> fmt::Debug for DedupPred2CoalescePred<DP> {
+    debug_fmt_fields!(DedupPred2CoalescePred,);
+}
 
 pub trait DedupPredicate<T> {
     // TODO replace by Fn(&T, &T)->bool once Rust supports it
@@ -137,7 +140,7 @@ where
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DedupEq;
 
 impl<T: PartialEq> DedupPredicate<T> for DedupEq {
@@ -182,11 +185,10 @@ where
 ///
 /// See [`.dedup_by_with_count()`](crate::Itertools::dedup_by_with_count) or
 /// [`.dedup_with_count()`](crate::Itertools::dedup_with_count) for more information.
-#[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
 pub type DedupByWithCount<I, Pred> =
     CoalesceBy<I, DedupPredWithCount2CoalescePred<Pred>, (usize, <I as Iterator>::Item)>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DedupPredWithCount2CoalescePred<DP>(DP);
 
 impl<DP, T> CoalescePredicate<T, (usize, T)> for DedupPredWithCount2CoalescePred<DP>

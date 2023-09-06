@@ -13,8 +13,6 @@ change-password-old = Sohõda šennikufal
 change-password-new = Šennikufal taaga:
 change-password-reenter = Šennikufal taaga (koyme):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Goo ma tabatiyan-tiira zumandi
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Ir ga hãa kaŋ war ma naanay tabatiyan-tiira hini taagaa.
 download-cert-trust-ssl =
     .label = Naanay tabatiyan-tiira hinoo woo ka Interneti nungey tammaasa.
@@ -56,7 +54,5 @@ set-password-reminder = Hawgay: Nda war dirŋa war tabatiyan-tiira banda-gaabu �
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Tammaasa lasal-tabatandiyan jejebante
-protected-auth-msg = Taare tammaasa lasal-tabatandi. Lasal-tabatandiyan dabaroo ma tenji nda war boŋ tammaasa dumoo.
-protected-auth-token = Tammaasa:
+## Protected authentication alert
+

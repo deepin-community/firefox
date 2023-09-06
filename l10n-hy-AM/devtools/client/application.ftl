@@ -28,8 +28,14 @@ serviceworker-worker-unregister = Ապագրանցված
 serviceworker-worker-debug = Վրիպազերծել
     .title = Միայն աշխատեցվող ծառայության աշխատողները կարող են լինել վրիպազերծված
 
+# Text for the start link displayed for a registered but not running Service Worker.
+# Clicking on the link will attempt to start the service worker.
+serviceworker-worker-start3 = Սկսել
+
 # Text displayed for the updated time of the service worker. The <time> element will
 # display the last update time of the service worker script.
+# Variables:
+#   $date (date) - Update date
 serviceworker-worker-updated = Թարմացված <time>{ DATETIME($date, month: "long", year: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric") }</time>
 
 ## Service Worker status strings: all serviceworker-worker-status-* strings are also
@@ -41,6 +47,9 @@ serviceworker-worker-status-running = Աշխատեցում
 
 # Service Worker status. A stopped service worker is registered but not currently active.
 serviceworker-worker-status-stopped = Կանգնեցված
+
+# Link will open https://developer.mozilla.org/docs/Web/API/Service_Worker_API/Using_Service_Workers
+serviceworker-empty-intro-link = Իմանալ ավելին
 
 # Header for the Manifest page when we have an actual manifest
 manifest-view-header = Manifest հավելված
@@ -80,6 +89,8 @@ manifest-json-link-data-url = URL-ի տվյալներում manifest-ը ներկ
 
 # Text displayed at manifest icons to label their purpose, as declared
 # in the manifest.
+# Variables:
+#   $purpose (string) - Manifest purpose
 manifest-icon-purpose = Նպատակը՝<code>{ $purpose }</code>
 
 # Text displayed as the alt attribute for <img> tags showing the icons in the
@@ -88,8 +99,11 @@ manifest-icon-img =
     .alt = Մանրանկար
 
 # Text displayed as the title attribute for <img> tags showing the icons in the
-# manifest. `$sizes` is a user-dependent string that has been parsed as a
-# space-separated list of `<width>x<height>` sizes or the keyword `any`.
+# manifest.
+# Variables:
+#   $sizes (string) - User-dependent string that has been parsed as a
+#                     space-separated list of `<width>x<height>` sizes or
+#                     the keyword `any`.
 manifest-icon-img-title = Պատկերակ չափերով․{ $sizes }
 
 # Text displayed as the title attribute for <img> tags showing the icons in the
@@ -115,4 +129,3 @@ icon-warning =
 icon-error =
     .alt = Սխալ պատկերակ
     .title = Սխալ
-

@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,50 +60,39 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Не знайдено жодної програми із закладками, історією чи паролями.
 
 import-source-page-title = Імпорт налаштувань і даних
-import-items-page-title = Об’єкти для імпорту
+import-items-page-title = Елементи для імпорту
 
-import-items-description = Виберіть об’єкти для імпорту:
+import-items-description = Виберіть елементи для імпорту:
 
 import-permissions-page-title = Надайте дозволи для { -brand-short-name }
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS вимагає від вас явного дозволу для { -brand-short-name } на отримування доступу до закладок Safari. Натисніть “Продовжити” та виберіть файл “Bookmarks.plist” на панелі Файл Відкрити що з’явиться.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS вимагає від вас явного дозволу на доступ { -brand-short-name } до даних Safari. Клацніть “Продовжити”, виберіть теку “Safari“ у діалоговому вікні Finder, яке з’явиться, а потім натисніть “Відкрити”.
 
 import-migrating-page-title = Триває імпорт…
 
-import-migrating-description = Зараз імпортуються наступні об’єкти…
+import-migrating-description = Наразі триває імпортування зазначених елементів…
 
 import-select-profile-page-title = Вибір профілю
 
-import-select-profile-description = Імпорт можна провести з наступних профілів:
+import-select-profile-description = Можна виконати імпортування з таких доступних профілів:
 
 import-done-page-title = Імпорт успішно завершений
 
-import-done-description = Наступні об’єкти успішно імпортовані:
+import-done-description = Зазначені елементи успішно імпортовано:
 
 import-close-source-browser = Перед продовженням переконайтеся, що вибраний браузер закрито.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = З { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Список читання (з Safari)
 imported-edge-reading-list = Список читання (з Edge)
@@ -159,3 +157,8 @@ browser-data-session-checkbox =
     .label = Вікна і вкладки
 browser-data-session-label =
     .value = Вікна і вкладки
+
+browser-data-payment-methods-checkbox =
+    .label = Способи оплати
+browser-data-payment-methods-label =
+    .value = Способи оплати

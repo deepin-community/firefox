@@ -23,9 +23,12 @@
 #include "nsProxyRelease.h"
 #include "nsIScriptError.h"
 #include "nsISupportsPrimitives.h"
+#include "nsGlobalWindowInner.h"
+#include "js/friend/ErrorMessages.h"
 #include "mozilla/dom/WindowGlobalParent.h"
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/BrowserParent.h"
+#include "mozilla/dom/ScriptSettings.h"
 
 #include "mozilla/SchedulerGroup.h"
 #include "mozilla/Services.h"
@@ -59,13 +62,12 @@ nsConsoleService::MessageElement::~MessageElement() = default;
 
 nsConsoleService::nsConsoleService()
     : mCurrentSize(0),
+      // XXX grab this from a pref!
+      // hm, but worry about circularity, bc we want to be able to report
+      // prefs errs...
+      mMaximumSize(250),
       mDeliveringMessage(false),
       mLock("nsConsoleService.mLock") {
-  // XXX grab this from a pref!
-  // hm, but worry about circularity, bc we want to be able to report
-  // prefs errs...
-  mMaximumSize = 250;
-
 #ifdef XP_WIN
   // This environment variable controls whether the console service
   // should be prevented from putting output to the attached debugger.
@@ -263,12 +265,12 @@ LogMessageRunnable::Run() {
 // nsIConsoleService methods
 NS_IMETHODIMP
 nsConsoleService::LogMessage(nsIConsoleMessage* aMessage) {
-  return LogMessageWithMode(aMessage, OutputToLog);
+  return LogMessageWithMode(aMessage, nsIConsoleService::OutputToLog);
 }
 
 // This can be called off the main thread.
 nsresult nsConsoleService::LogMessageWithMode(
-    nsIConsoleMessage* aMessage, nsConsoleService::OutputMode aOutputMode) {
+    nsIConsoleMessage* aMessage, nsIConsoleService::OutputMode aOutputMode) {
   if (!aMessage) {
     return NS_ERROR_INVALID_ARG;
   }
@@ -395,6 +397,53 @@ nsresult nsConsoleService::LogMessageWithMode(
   return NS_OK;
 }
 
+// See nsIConsoleService.idl for more info about this method
+NS_IMETHODIMP
+nsConsoleService::CallFunctionAndLogException(
+    JS::Handle<JS::Value> targetGlobal, JS::HandleValue function, JSContext* cx,
+    JS::MutableHandleValue retval) {
+  if (!targetGlobal.isObject() || !function.isObject()) {
+    return NS_ERROR_INVALID_ARG;
+  }
+
+  JS::Rooted<JS::Realm*> contextRealm(cx, JS::GetCurrentRealmOrNull(cx));
+  if (!contextRealm) {
+    return NS_ERROR_INVALID_ARG;
+  }
+
+  JS::Rooted<JSObject*> global(
+      cx, js::CheckedUnwrapDynamic(&targetGlobal.toObject(), cx));
+  if (!global) {
+    return NS_ERROR_INVALID_ARG;
+  }
+
+  // Use AutoJSAPI in order to trigger AutoJSAPI::ReportException
+  // which will do most of the work required for this function.
+  //
+  // We only have to pick the right global for which we want to flag
+  // the exception against.
+  dom::AutoJSAPI jsapi;
+  if (!jsapi.Init(global)) {
+    return NS_ERROR_UNEXPECTED;
+  }
+  JSContext* ccx = jsapi.cx();
+
+  // AutoJSAPI picks `targetGlobal` as execution compartment
+  // whereas we expect to run `function` from the callsites compartment.
+  JSAutoRealm ar(ccx, JS::GetRealmGlobalOrNull(contextRealm));
+
+  JS::RootedValue funVal(ccx, function);
+  if (!JS_WrapValue(ccx, &funVal)) {
+    return NS_ERROR_FAILURE;
+  }
+  if (!JS_CallFunctionValue(ccx, nullptr, funVal, JS::HandleValueArray::empty(),
+                            retval)) {
+    return NS_ERROR_XPC_JAVASCRIPT_ERROR;
+  }
+
+  return NS_OK;
+}
+
 void nsConsoleService::CollectCurrentListeners(
     nsCOMArray<nsIConsoleListener>& aListeners) {
   MutexAutoLock lock(mLock);
@@ -411,8 +460,9 @@ nsConsoleService::LogStringMessage(const char16_t* aMessage) {
     return NS_OK;
   }
 
-  RefPtr<nsConsoleMessage> msg(new nsConsoleMessage(aMessage));
-  return this->LogMessage(msg);
+  RefPtr<nsConsoleMessage> msg(new nsConsoleMessage(
+      aMessage ? nsDependentString(aMessage) : EmptyString()));
+  return LogMessage(msg);
 }
 
 NS_IMETHODIMP

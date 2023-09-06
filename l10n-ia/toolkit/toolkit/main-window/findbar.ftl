@@ -36,3 +36,41 @@ findbar-entire-word =
     .label = Parolas integre
     .accesskey = i
     .tooltiptext = Cerca solmente parolas integre
+
+findbar-not-found = Phrase non trovate
+
+findbar-wrapped-to-top = Fin del pagina attingite, continuation ab initio
+findbar-wrapped-to-bottom = Initio del pagina attingite, continuation ab fin
+
+findbar-normal-find =
+    .placeholder = Cercar in le pagina
+findbar-fast-find =
+    .placeholder = Recerca rapide
+findbar-fast-find-links =
+    .placeholder = Recerca rapide (solmente ligamines)
+
+findbar-case-sensitive-status =
+    .value = (Differentiar majusculas/minusculas)
+findbar-match-diacritics-status =
+    .value = (con distinction de diacriticos)
+findbar-entire-word-status =
+    .value = (Solmente parolas integre)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $current } de { $total } correspondentia
+           *[other] { $current } de { $total } correspondentias
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Plus de { $limit } correspondentia
+           *[other] Plus de { $limit } correspondentias
+        }

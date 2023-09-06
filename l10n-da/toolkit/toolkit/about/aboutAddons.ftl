@@ -6,9 +6,16 @@ addons-page-title = Tilføjelser
 search-header =
     .placeholder = Søg på addons.mozilla.org
     .searchbuttonlabel = Søg
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Hent udvidelser og temaer på <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Hent ordbøger på <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Hent sprogpakker på <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Du har ikke nogen tilføjelser af denne type installeret
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Version
 detail-last-updated =
     .label = Senest opdateret
+addon-detail-description-expand = Vis mere
+addon-detail-description-collapse = Vis mindre
 detail-contributions-description = Udvikleren af denne tilføjelse forespøger om du vil hjælpe dens videre udvikling ved at bidrage med en lille donation.
 detail-contributions-button = Bidrag
     .title = Bidrag til udviklingen af denne tilføjelse
@@ -114,7 +123,7 @@ private-browsing-description2 =
     udvidelser være blokeret i privat browsing-tilstand, medmindre du giver dem tilladelse i indstillingerne.
     { -brand-short-name } blokerer udvidelserne for at sikre, at de kun med din tilladelse har adgang til din aktivitet
     på nettet, når du benytter privat browsing.
-    <label data-l10n-name="private-browsing-learn-more">Læs her, hvordan du håndterer indstillingerne for udvidelser.
+    <label data-l10n-name="private-browsing-learn-more">Læs her, hvordan du håndterer indstillingerne for udvidelser</label>.
 addon-category-discover = Anbefalinger
 addon-category-discover-title =
     .title = Anbefalinger
@@ -139,6 +148,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Seneste opdateringer
 addon-category-recent-updates-title =
     .title = Seneste opdateringer
+addon-category-sitepermission = Websteds-tilladelser
+addon-category-sitepermission-title =
+    .title = Websteds-tilladelser
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Websteds-tilladelser for { $host }
 
 ## These are global warnings
 
@@ -149,6 +165,8 @@ extensions-warning-check-compatibility-button = Aktiver
 extensions-warning-update-security = Sikkerhedstjek ved opdatering af tilføjelser er deaktiveret. Du kan blive kompromiteret ved opdateringer.
 extensions-warning-update-security-button = Aktiver
     .title = Aktiver sikkerhedstjek ved opdatering af tilføjelser
+extensions-warning-imported-addons = Færdiggør installeringen af udvidelser importeret til { -brand-short-name }.
+extensions-warning-imported-addons-button = Installer udvidelser
 
 ## Strings connected to add-on updates
 
@@ -217,6 +235,8 @@ shortcuts-duplicate-warning-message = { $shortcut } bliver brugt som genvej i me
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Bruges allerede af { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
        *[other] vis { $numberToShow } til
@@ -285,15 +305,15 @@ permissions-addon-button = Tilladelser
 extension-enabled-heading = Aktiveret
 extension-disabled-heading = Deaktiveret
 theme-enabled-heading = Aktiveret
-theme-disabled-heading = Deaktiveret
-theme-monochromatic-heading = Farvekombinationer
-theme-monochromatic-subheading = Dynamiske nye farvekombinationer fra { -brand-product-name }. Findes kun i begrænset tid.
+theme-disabled-heading2 = Gemte temaer
 plugin-enabled-heading = Aktiveret
 plugin-disabled-heading = Deaktiveret
 dictionary-enabled-heading = Aktiveret
 dictionary-disabled-heading = Deaktiveret
 locale-enabled-heading = Aktiveret
 locale-disabled-heading = Deaktiveret
+sitepermission-enabled-heading = Aktiveret
+sitepermission-disabled-heading = Deaktiveret
 always-activate-button = Aktiver altid
 never-activate-button = Aktiver aldrig
 addon-detail-author-label = Udvikler
@@ -334,6 +354,10 @@ addon-detail-updates-radio-on = Til
 addon-detail-updates-radio-off = Fra
 addon-detail-update-check-label = Søg efter opdateringer
 install-update-button = Opdater
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -342,6 +366,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Udvidelsen har adgang til dine aktiviteter i privat browsing-tilstand, hvis du giver den tilladelse til det. <a data-l10n-name="learn-more">Læs mere</a>
 addon-detail-private-browsing-allow = Tillad
 addon-detail-private-browsing-disallow = Tillad ikke
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Kør på websteder med begrænsninger
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Når udvidelsen har tilladelse til det, har den adgang til websteder begrænset af { -vendor-short-name }. Tillad kun dette, hvis du stoler på udvidelsen.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Tillad
+addon-detail-quarantined-domains-disallow = Tillad ikke
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -370,6 +412,9 @@ addon-permissions-optional = Valgfrie tilladelser for yderligere funktionalitet:
 addon-permissions-learnmore = Læs mere om tilladelser
 recommended-extensions-heading = Anbefalede udvidelser
 recommended-themes-heading = Anbefalede temaer
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Tilføjer følgende funktioner til <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Er du i det kreative hjørne? <a data-l10n-name="link">Byg dit eget tema med Firefox Color.</a>
@@ -382,6 +427,7 @@ plugin-heading = Håndter dine plugins
 dictionary-heading = Håndter dine ordbøger
 locale-heading = Håndter dine sprog
 updates-heading = Håndter dine opdateringer
+sitepermission-heading = Håndter websteds-tilladelser
 discover-heading = Tilpas { -brand-short-name }
 shortcuts-heading = Håndter genveje til dine udvidelser
 default-heading-search-label = Find flere udvidelser
@@ -389,3 +435,21 @@ addons-heading-search-input =
     .placeholder = Søg på addons.mozilla.org
 addon-page-options-button =
     .title = Indstillinger for alle tilføjelser
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } er inkompatibel med { -brand-short-name } { $version }.
+details-notification-incompatible-link = Mere information
+details-notification-unsigned-and-disabled = { $name } kunne ikke verificeres til brug i { -brand-short-name } og er blevet deaktiveret.
+details-notification-unsigned-and-disabled-link = Læs mere
+details-notification-unsigned = { $name } kunne ikke verificeres til brug i { -brand-short-name }. Fortsæt på eget ansvar.
+details-notification-unsigned-link = Læs mere
+details-notification-blocked = { $name } er blevet deaktiveret af sikkerheds- eller stabilitetsgrunde.
+details-notification-blocked-link = Mere information
+details-notification-softblocked = { $name } har kendte sikkerheds- og/eller stabilitetsproblemer.
+details-notification-softblocked-link = Mere information
+details-notification-gmp-pending = { $name } vil snart blive installeret.

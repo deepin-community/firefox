@@ -7,25 +7,24 @@ synced-tabs-sidebar-noclients-subtitle = Bu yerdagi varaqlarni boshqa qurilmalar
 synced-tabs-sidebar-intro = Boshqa qurilmalaringizdagi varaqlar roʻyxatini koʻring
 synced-tabs-sidebar-unverified = Hisobingiz tasdiqlanishi kerak.
 synced-tabs-sidebar-notabs = Ochiq varaqlar yoʻq
+synced-tabs-sidebar-open-settings = Sinxronizatsiya sozlamalarni ochish
 synced-tabs-sidebar-tabsnotsyncing = Boshqa qurilmalaridagi varaqlar roʻyxatini koʻrish uchun varaqlarni sinxronlashni yoqing.
 synced-tabs-sidebar-connect-another-device = Boshqa qurilmani ulash
 synced-tabs-sidebar-search =
     .placeholder = Sinxronlangan varaqlarni qidirish
+
+## Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
+## and/or devices in the list. The "Open" strings below should be translated
+## consistently with the equivalent strings for the bookmarks manager's context
+## menu. That menu is activated by right-clicking a bookmark in the Library
+## window. The bookmarks manager context's strings are located in places.ftl.
+
 synced-tabs-context-open =
     .label = Ochish
     .accesskey = O
-synced-tabs-context-open-in-new-tab =
-    .label = Yangi varaqda ochish
-    .accesskey = n
-synced-tabs-context-open-in-new-window =
-    .label = Yangi oynada ochish
-    .accesskey = o
-synced-tabs-context-open-in-new-private-window =
-    .label = Yangi maxfiy oynada ochish
-    .accesskey = m
-synced-tabs-context-bookmark-single-tab =
-    .label = Varaqni xatchoʻplarga qoʻshish…
-    .accesskey = x
+
+##
+
 synced-tabs-context-copy =
     .label = Nusxa olish
     .accesskey = N
@@ -38,3 +37,5 @@ synced-tabs-context-manage-devices =
 synced-tabs-context-sync-now =
     .label = Sinxronlash
     .accesskey = s
+synced-tabs-fxa-sign-in = Sinxronlash uchun hisobingizga kiring
+synced-tabs-turn-on-sync = Sinxronizatsiyani yoqish

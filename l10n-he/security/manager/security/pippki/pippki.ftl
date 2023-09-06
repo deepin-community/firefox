@@ -16,8 +16,6 @@ change-password-old = ססמה נוכחית:
 change-password-new = ססמה חדשה:
 change-password-reenter = ססמה חדשה (שוב):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = לא ניתן לשנות את הססמה.
 pippki-incorrect-pw = לא הכנסת את הססמה הנוכחית הנכונה. נא לנסות שוב.
 pippki-pw-change-ok = הססמה שונתה בהצלחה.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = מצבך כרגע הוא FIPS. ‏FIPS ד�
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = איפוס ססמה ראשית
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = איפוס
-
 reset-primary-password-text = אם הססמה הראשית שלך תאופס, כל הססמאות לאתרים ולדוא״ל, נתוני טפסים, האישורים האישיים והמפתחות הפרטיים המאוחסנים ישכחו. האם ברצונך לאפס את הססמה הראשית שלך?
 
 pippki-reset-password-confirmation-title = איפוס ססמה ראשית
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = הססמה הראשית שלך או
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = הורדת אישור
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = התבקשת לתת אמון ברשות אישורים (CA) חדשה.
 download-cert-trust-ssl =
     .label = מתן אמון ברשות אישורים זו לזיהוי אתרים.
@@ -77,7 +74,8 @@ set-password-reminder = חשוב: אם הססמה שלך לגיבוי האישו
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = הזדהות לאסימון מוגן
-protected-auth-msg = נא להזדהות לאסימון. צורת ההזדהות תלויה בסוג האסימון שבידך.
-protected-auth-token = אסימון:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = נא להזדהות לאסימון ״{ $tokenName }״. אופן ההזדהות תלוי באסימון (למשל, שימוש בקורא טביעות אצבע או הזנת קוד על לוח מקשים).

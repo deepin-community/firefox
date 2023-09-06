@@ -258,6 +258,9 @@ lt{
         "America:Chihuahua"{
             ec{"Čihuahua"}
         }
+        "America:Ciudad_Juarez"{
+            ec{"Siudad Chuaresas"}
+        }
         "America:Coral_Harbour"{
             ec{"Atikokanas"}
         }
@@ -1939,6 +1942,9 @@ lt{
             ld{"Jekaterinburgo vasaros laikas"}
             lg{"Jekaterinburgo laikas"}
             ls{"Jekaterinburgo žiemos laikas"}
+        }
+        "meta:Yukon"{
+            ls{"Jukono laikas"}
         }
         fallbackFormat{"{1} ({0})"}
         gmtFormat{"GMT{0}"}

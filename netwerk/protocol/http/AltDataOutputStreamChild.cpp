@@ -66,9 +66,9 @@ void AltDataOutputStreamChild::ReleaseIPDLReference() {
 
 bool AltDataOutputStreamChild::WriteDataInChunks(
     const nsDependentCSubstring& data) {
-  const uint32_t kChunkSize = 128 * 1024;
-  uint32_t next = std::min(data.Length(), kChunkSize);
-  for (uint32_t i = 0; i < data.Length();
+  const size_t kChunkSize = 128 * 1024;
+  size_t next = std::min(data.Length(), kChunkSize);
+  for (size_t i = 0; i < data.Length();
        i = next, next = std::min(data.Length(), next + kChunkSize)) {
     nsCString chunk(Substring(data, i, kChunkSize));
     if (mIPCOpen && !SendWriteData(chunk)) {
@@ -93,6 +93,14 @@ AltDataOutputStreamChild::Flush() {
 
   // This is a no-op
   return NS_OK;
+}
+
+NS_IMETHODIMP
+AltDataOutputStreamChild::StreamStatus() {
+  if (!mIPCOpen) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  return mError;
 }
 
 NS_IMETHODIMP
@@ -180,7 +188,7 @@ void AltDataOutputStreamChild::NotifyListener() {
   MOZ_ASSERT(mCallback);
 
   if (!mCallbackTarget) {
-    mCallbackTarget = GetMainThreadEventTarget();
+    mCallbackTarget = GetMainThreadSerialEventTarget();
   }
 
   nsCOMPtr<nsIOutputStreamCallback> asyncCallback =

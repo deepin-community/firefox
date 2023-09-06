@@ -4,8 +4,11 @@
 
 addons-page-title = កម្មវិធី​គ្រប់គ្រង​កម្មវិធី​បន្ថែម
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
+
 
 list-empty-installed =
     .value = អ្នក​មិន​មាន​កម្មវិធី​បន្ថែម​ប្រភេទ​ណាមួយ​ដែល​ត្រូវ​បាន​ដំឡើង​ទេ
@@ -131,7 +134,6 @@ extensions-warning-update-security = ការ​ត្រួតពិនិត�
 extensions-warning-update-security-button = បើក
     .title = បើក​ការ​ត្រួតពិនិត្យមើល​សុវត្ថិភាព​នៃ​បច្ចុប្បន្នភាព​របស់​កម្មវិធី​បន្ថែម
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = ពិនិត្យមើល​បច្ចុប្បន្នភាព
@@ -184,8 +186,12 @@ addon-open-about-debugging = បំបាត់​កំហុស​ផ្នែ
 ## Pending uninstall message bar
 
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
+
 
 ##
 
@@ -193,3 +199,29 @@ addon-open-about-debugging = បំបាត់​កំហុស​ផ្នែ
 
 addon-page-options-button =
     .title = ឧបករណ៍​សម្រាប់​កម្មវិធី​បន្ថែម​ទាំងអស់
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } មិន​ឆប​ជាមួយ { -brand-short-name } { $version } ។
+
+details-notification-unsigned-and-disabled = { $name } មិន​អាច​បញ្ជាក់​សម្រាប់​ប្រើ​នៅ​ក្នុង { -brand-short-name } និង​ត្រូវ​បាន​បិទ​ដំណើរការ។
+details-notification-unsigned-and-disabled-link = ព័ត៌មាន​បន្ថែម
+
+details-notification-unsigned = { $name } មិន​អាច​បញ្ជាក់​សម្រាប់​ប្រើ​នៅ​ក្នុង { -brand-short-name }។ ចាប់ផ្ដើម​ដំណើរការ​ដោយ​ប្រុងប្រយ័ត្ន។
+details-notification-unsigned-link = ព័ត៌មាន​បន្ថែម
+
+details-notification-blocked = { $name } ត្រូវ​បាន​បិទ​ ដោយសារ​តែ​បញ្ហា​សុវត្ថិភាព ឬ​ស្ថិរភាព ។
+details-notification-blocked-link = ព័ត៌មាន​បន្ថែម
+
+details-notification-softblocked = { $name } ត្រូវ​បាន​គេ​ដឹង​ថា នឹង​បង្ក​ឲ្យ​មាន​បញ្ហា​សុវត្ថិភាព ឬ​ស្ថិរភាព ។
+details-notification-softblocked-link = ព័ត៌មាន​បន្ថែម
+
+details-notification-gmp-pending = { $name } នឹង​ត្រូវ​បាន​ដំឡើង​នៅ​ពេល​បន្តិច​ទៀត។

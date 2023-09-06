@@ -8,7 +8,7 @@ const {
   Option,
   RetVal,
   generateActorSpec,
-} = require("devtools/shared/protocol");
+} = require("resource://devtools/shared/protocol.js");
 
 const perfDescription = {
   typeName: "perf",
@@ -30,12 +30,6 @@ const perfDescription = {
     },
     "profiler-stopped": {
       type: "profiler-stopped",
-    },
-    "profile-locked-by-private-browsing": {
-      type: "profile-locked-by-private-browsing",
-    },
-    "profile-unlocked-from-private-browsing": {
-      type: "profile-unlocked-from-private-browsing",
     },
   },
 
@@ -78,11 +72,6 @@ const perfDescription = {
     },
 
     isSupportedPlatform: {
-      request: {},
-      response: { value: RetVal("boolean") },
-    },
-
-    isLockedForPrivateBrowsing: {
       request: {},
       response: { value: RetVal("boolean") },
     },

@@ -10,21 +10,19 @@ synced-tabs-sidebar-tabsnotsyncing = သင့်အခြား ကိရိယ
 synced-tabs-sidebar-connect-another-device = အခြားကိရိယာကို ချိတ်ဆက်ရန်
 synced-tabs-sidebar-search =
     .placeholder = ထပ်တူပြုပြီးသော တပ်ဗ်များကို ရှာရန်
+
+## Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
+## and/or devices in the list. The "Open" strings below should be translated
+## consistently with the equivalent strings for the bookmarks manager's context
+## menu. That menu is activated by right-clicking a bookmark in the Library
+## window. The bookmarks manager context's strings are located in places.ftl.
+
 synced-tabs-context-open =
     .label = ဖွင့်ပါ
     .accesskey = O
-synced-tabs-context-open-in-new-tab =
-    .label = တပ်ဗ်အသစ်တစ်ခုတွင် ဖွင့်ပါ
-    .accesskey = w
-synced-tabs-context-open-in-new-window =
-    .label = ၀င်းဒိုးအသစ်တစ်ခုတွင် ဖွင့်ပါ
-    .accesskey = N
-synced-tabs-context-open-in-new-private-window =
-    .label = သီးသန့် ဝင်းဒိုးအသစ်ထဲတွင် ဖွင့်ပါ။
-    .accesskey = P
-synced-tabs-context-bookmark-single-tab =
-    .label = ဒီတပ်ဗ်ကို မှတ်သားပါ…
-    .accesskey = B
+
+##
+
 synced-tabs-context-copy =
     .label = ကူးယူပါ
     .accesskey = C

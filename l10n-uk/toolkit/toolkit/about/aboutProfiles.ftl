@@ -47,10 +47,10 @@ profiles-rename-profile-title = Перейменувати профіль
 #   $name (String) - Name of the profile
 profiles-rename-profile = Перейменувати профіль { $name }
 
-profiles-invalid-profile-name-title = Неприпустиме ім’я профілю
+profiles-invalid-profile-name-title = Неприпустиме ім'я профілю
 # Variables:
 #   $name (String) - Name of the profile
-profiles-invalid-profile-name = Назва профілю “{ $name }” не дозволена.
+profiles-invalid-profile-name = Ім'я профілю “{ $name }” не дозволене.
 
 profiles-delete-profile-title = Видалити профіль
 # Variables:

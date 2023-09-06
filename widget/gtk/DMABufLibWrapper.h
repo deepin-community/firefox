@@ -1,5 +1,5 @@
-/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim:expandtab:shiftwidth=4:tabstop=4:
+/* -*- Mode: C; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/* vim:expandtab:shiftwidth=2:tabstop=2:
  */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@
 
 #include "mozilla/widget/gbm.h"
 #include "mozilla/StaticMutex.h"
+#include <mutex>
 
 #ifdef MOZ_LOGGING
 #  include "mozilla/Logging.h"
@@ -29,6 +30,7 @@ namespace mozilla {
 namespace widget {
 
 typedef struct gbm_device* (*CreateDeviceFunc)(int);
+typedef void (*DestroyDeviceFunc)(struct gbm_device*);
 typedef struct gbm_bo* (*CreateFunc)(struct gbm_device*, uint32_t, uint32_t,
                                      uint32_t, uint32_t);
 typedef struct gbm_bo* (*CreateWithModifiersFunc)(struct gbm_device*, uint32_t,
@@ -49,17 +51,22 @@ typedef uint32_t (*GetOffsetFunc)(struct gbm_bo*, int);
 typedef int (*DeviceIsFormatSupportedFunc)(struct gbm_device*, uint32_t,
                                            uint32_t);
 typedef int (*DrmPrimeHandleToFDFunc)(int, uint32_t, uint32_t, int*);
+typedef struct gbm_surface* (*CreateSurfaceFunc)(struct gbm_device*, uint32_t,
+                                                 uint32_t, uint32_t, uint32_t);
+typedef void (*DestroySurfaceFunc)(struct gbm_surface*);
 
-class nsGbmLib {
+class GbmLib {
  public:
-  static bool Load();
-  static bool IsLoaded();
-  static bool IsAvailable();
+  static bool IsAvailable() { return sLoaded || Load(); }
   static bool IsModifierAvailable();
 
   static struct gbm_device* CreateDevice(int fd) {
     StaticMutexAutoLock lockDRI(sDRILock);
     return sCreateDevice(fd);
+  };
+  static void DestroyDevice(struct gbm_device* gdm) {
+    StaticMutexAutoLock lockDRI(sDRILock);
+    return sDestroyDevice(gdm);
   };
   static struct gbm_bo* Create(struct gbm_device* gbm, uint32_t width,
                                uint32_t height, uint32_t format,
@@ -127,9 +134,23 @@ class nsGbmLib {
     StaticMutexAutoLock lockDRI(sDRILock);
     return sDrmPrimeHandleToFD(fd, handle, flags, prime_fd);
   }
+  static struct gbm_surface* CreateSurface(struct gbm_device* gbm,
+                                           uint32_t width, uint32_t height,
+                                           uint32_t format, uint32_t flags) {
+    StaticMutexAutoLock lockDRI(sDRILock);
+    return sCreateSurface(gbm, width, height, format, flags);
+  }
+  static void DestroySurface(struct gbm_surface* surface) {
+    StaticMutexAutoLock lockDRI(sDRILock);
+    return sDestroySurface(surface);
+  }
 
  private:
+  static bool Load();
+  static bool IsLoaded();
+
   static CreateDeviceFunc sCreateDevice;
+  static DestroyDeviceFunc sDestroyDevice;
   static CreateFunc sCreate;
   static CreateWithModifiersFunc sCreateWithModifiers;
   static GetModifierFunc sGetModifier;
@@ -144,61 +165,65 @@ class nsGbmLib {
   static GetOffsetFunc sGetOffset;
   static DeviceIsFormatSupportedFunc sDeviceIsFormatSupported;
   static DrmPrimeHandleToFDFunc sDrmPrimeHandleToFD;
+  static CreateSurfaceFunc sCreateSurface;
+  static DestroySurfaceFunc sDestroySurface;
+  static bool sLoaded;
 
   static void* sGbmLibHandle;
   static void* sXf86DrmLibHandle;
-  static mozilla::StaticMutex sDRILock;
-  static bool sLibLoaded;
+  static mozilla::StaticMutex sDRILock MOZ_UNANNOTATED;
 };
 
 struct GbmFormat {
   bool mIsSupported;
   bool mHasAlpha;
   int mFormat;
-  uint64_t* mModifiers;
-  int mModifiersCount;
+  nsTArray<uint64_t> mModifiers;
 };
 
-class nsDMABufDevice {
+class DMABufDevice {
  public:
-  nsDMABufDevice();
+  DMABufDevice();
+  ~DMABufDevice();
 
+  int OpenDRMFd();
   gbm_device* GetGbmDevice();
-  // Returns -1 if we fails to gbm device file descriptor.
-  int GetGbmDeviceFd();
+  int GetDmabufFD(uint32_t aGEMHandle);
+
+  bool IsEnabled(nsACString& aFailureId);
 
   // Use dmabuf for WebRender general web content
-  bool IsDMABufTexturesEnabled();
-  // Use dmabuf for video playback
-  bool IsDMABufVideoEnabled();
-  // Use dmabuf for VA-API video playback
-  bool IsDMABufVAAPIEnabled();
+  static bool IsDMABufTexturesEnabled();
   // Use dmabuf for WebGL content
-  bool IsDMABufWebGLEnabled();
-  void DisableDMABufWebGL();
+  static bool IsDMABufWebGLEnabled();
+  static void DisableDMABufWebGL();
 
-  GbmFormat* GetGbmFormat(bool aHasAlpha);
-  GbmFormat* GetExactGbmFormat(int aFormat);
-  void ResetFormatsModifiers();
+#ifdef MOZ_WAYLAND
   void AddFormatModifier(bool aHasAlpha, int aFormat, uint32_t mModifierHi,
                          uint32_t mModifierLo);
-  bool Configure(nsACString& aFailureId);
+#endif
+  GbmFormat* GetGbmFormat(bool aHasAlpha);
 
  private:
-  bool mUseWebGLDmabufBackend;
+  void Configure();
+#ifdef MOZ_WAYLAND
+  void LoadFormatModifiers();
+  void SetModifiersToGfxVars();
+  void GetModifiersFromGfxVars();
+#endif
 
  private:
-  bool IsDMABufEnabled();
-
   GbmFormat mXRGBFormat;
   GbmFormat mARGBFormat;
 
-  gbm_device* mGbmDevice;
-  int mGbmFd;
-  bool mInitialized;
+  int mDRMFd = -1;
+  std::once_flag mFlagGbmDevice;
+  gbm_device* mGbmDevice = nullptr;
+  const char* mFailureId = nullptr;
+  nsAutoCString mDrmRenderNode;
 };
 
-nsDMABufDevice* GetDMABufDevice();
+DMABufDevice* GetDMABufDevice();
 
 }  // namespace widget
 }  // namespace mozilla

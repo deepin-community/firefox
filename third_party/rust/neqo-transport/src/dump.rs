@@ -13,6 +13,8 @@ use crate::packet::{PacketNumber, PacketType};
 use crate::path::PathRef;
 use neqo_common::{qdebug, Decoder};
 
+use std::fmt::Write;
+
 #[allow(clippy::module_name_repetitions)]
 pub fn dump_packet(
     conn: &Connection,
@@ -22,6 +24,10 @@ pub fn dump_packet(
     pn: PacketNumber,
     payload: &[u8],
 ) {
+    if ::log::Level::Debug > ::log::max_level() {
+        return;
+    }
+
     let mut s = String::from("");
     let mut d = Decoder::from(payload);
     while d.remaining() > 0 {
@@ -33,7 +39,7 @@ pub fn dump_packet(
             }
         };
         if let Some(x) = f.dump() {
-            s.push_str(&format!("\n  {} {}", dir, &x));
+            write!(&mut s, "\n  {} {}", dir, &x).unwrap();
         }
     }
     qdebug!([conn], "pn={} type={:?} {}{}", pn, pt, path.borrow(), s);

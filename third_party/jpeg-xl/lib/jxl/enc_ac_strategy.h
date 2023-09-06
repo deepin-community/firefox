@@ -9,11 +9,8 @@
 #include <stdint.h>
 
 #include "lib/jxl/ac_strategy.h"
-#include "lib/jxl/aux_out.h"
-#include "lib/jxl/aux_out_fwd.h"
 #include "lib/jxl/base/data_parallel.h"
 #include "lib/jxl/base/status.h"
-#include "lib/jxl/chroma_from_luma.h"
 #include "lib/jxl/common.h"
 #include "lib/jxl/dec_ans.h"
 #include "lib/jxl/enc_cache.h"
@@ -25,6 +22,8 @@
 // used in each block, as well as the initial quantization field.
 
 namespace jxl {
+
+struct AuxOut;
 
 // AC strategy selection: utility struct.
 
@@ -56,10 +55,6 @@ struct ACSConfig {
     JXL_DASSERT(quant_field_row[by * quant_field_stride + bx] > 0);
     return quant_field_row[by * quant_field_stride + bx];
   }
-  void SetQuant(size_t bx, size_t by, float value) const {
-    JXL_DASSERT(value > 0);
-    quant_field_row[by * quant_field_stride + bx] = value;
-  }
 };
 
 struct AcStrategyHeuristics {
@@ -69,10 +64,6 @@ struct AcStrategyHeuristics {
   ACSConfig config;
   PassesEncoderState* enc_state;
 };
-
-// Debug.
-void DumpAcStrategy(const AcStrategyImage& ac_strategy, size_t xsize,
-                    size_t ysize, const char* tag, AuxOut* aux_out);
 
 }  // namespace jxl
 

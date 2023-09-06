@@ -6,14 +6,14 @@
 profiles-title = О профилима
 profiles-subtitle = Управљајте профилима на овој страници. Сваки профил је независан и садржи засебну историју, обележиваче, подешавања и додатке.
 profiles-create = Направи нови профил
-profiles-restart-title = Рестартовање
-profiles-restart-in-safe-mode = Рестартуј са онемогућеним додацима…
-profiles-restart-normal = Рестартуј у обичном режиму…
+profiles-restart-title = Поново покрени
+profiles-restart-in-safe-mode = Поново покрени са онемогућеним додацима…
+profiles-restart-normal = Поново покрени у обичном режиму…
 profiles-conflict = Друга копија { -brand-product-name } је направила измене у профилима. Морате поново покренути { -brand-short-name } пре прављења нових измена.
 profiles-flush-fail-title = Промене нису сачуване
 profiles-flush-conflict = { profiles-conflict }
 profiles-flush-failed = Промене нису сачуване због неочекиване грешке.
-profiles-flush-restart-button = Рестартуј { -brand-short-name }
+profiles-flush-restart-button = Поново покрени { -brand-short-name }
 
 # Variables:
 #   $name (String) - Name of the profile

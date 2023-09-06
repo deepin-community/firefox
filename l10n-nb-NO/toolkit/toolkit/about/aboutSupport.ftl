@@ -73,6 +73,14 @@ app-basics-location-service-key-google = Google Location Service-nøkkel
 app-basics-safebrowsing-key-google = Google Safebrowsing-nøkkel
 app-basics-key-mozilla = Mozilla Location Service-nøkkel
 app-basics-safe-mode = Sikker modus
+app-basics-memory-size = Minnestørrelse (RAM)
+app-basics-disk-available = Tilgjengelig diskplass
+
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Vis i Finder
@@ -102,11 +110,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Beslutningslogg
 graphics-crash-guards-title = Krasjvern avslåtte funksjoner
 graphics-workarounds-title = Midlertidige løsninger
+graphics-device-pixel-ratios = Pikselforhold for vinduet
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Protokoll for vindusbehandler
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Skrivebordsmiljø
 place-database-title = Plasser-database
+place-database-stats = Statistikk
+place-database-stats-show = Vis statistikk
+place-database-stats-hide = Skjul statistikk
+place-database-stats-entity = Entitet
+place-database-stats-count = Antall
+place-database-stats-size-kib = Størrelse (KiB)
+place-database-stats-size-perc = Størrelse (%)
+place-database-stats-efficiency-perc = Effektivitet (%)
+place-database-stats-sequentiality-perc = Sekvensitet (%)
 place-database-integrity = Integritet
 place-database-verify-integrity = Verifiser integritet
 a11y-title = Tilgjengelighet
@@ -153,8 +171,11 @@ media-device-channels = Kanaler
 media-device-rate = Hastighet
 media-device-latency = Forsinkelse
 media-capabilities-title = Mediefunksjoner
+media-codec-support-info = Kodekstøtteinformasjon
 # List all the entries of the database.
 media-capabilities-enumerate = Telle opp databasen
+
+## Codec support table
 
 ##
 
@@ -277,6 +298,8 @@ webgl2-renderer = WebGL2-renderer
 webgl2-version = WebGL 2 driverversjon
 webgl2-driver-extensions = WebGL 2 driverutvidelse
 webgl2-extensions = WebGL 2 utvidelse
+webgpu-default-adapter = WebGPU standardadapter
+webgpu-fallback-adapter = WebGPU reserveadapter
 
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
@@ -312,6 +335,7 @@ can-sandbox-media = Sandkasse for medietillegg
 content-sandbox-level = Nivå for sandkasse for innholdsprosesser
 effective-content-sandbox-level = Effektiv sandbox-nivå for innholdsprosess
 content-win32k-lockdown-state = Win32k-låsestatus for innholdsprosesser
+support-sandbox-gpu-level = Nivå for sandkasse for GPU-prosesser
 sandbox-proc-type-content = innhold
 sandbox-proc-type-file = filinnhold
 sandbox-proc-type-media-plugin = programtillegg for medier
@@ -340,7 +364,7 @@ fission-status-experiment-control = Avslått av eksperiment
 fission-status-experiment-treatment = Påslått av eksperiment
 fission-status-disabled-by-e10s-env = Avslått av miljøet
 fission-status-enabled-by-env = Påslått av miljøet
-fission-status-disabled-by-safe-mode = Avslått av sikker modus
+fission-status-disabled-by-env = Avslått av miljøet
 fission-status-enabled-by-default = Påslått som standard
 fission-status-disabled-by-default = Avslått som standard
 fission-status-enabled-by-user-pref = Påslått av bruker

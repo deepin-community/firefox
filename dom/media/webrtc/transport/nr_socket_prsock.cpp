@@ -241,7 +241,9 @@ class SingletonThreadHolder final {
 static StaticRefPtr<SingletonThreadHolder> sThread;
 
 static void ClearSingletonOnShutdown() {
-  ClearOnShutdown(&sThread, ShutdownPhase::XPCOMShutdownLoaders);
+  // We expect everybody to have done ReleaseUse() at the latest during
+  // xpcom-shutdown-threads. So we need to live longer than that.
+  ClearOnShutdown(&sThread, ShutdownPhase::XPCOMShutdownFinal);
 }
 #endif
 
@@ -1094,8 +1096,8 @@ void NrUdpSocketIpc::Destroy() {
   // destroy_i also dispatches back to STS to call ReleaseUse, to avoid shutting
   // down the IO thread before close() runs.
   // We use a NonOwning runnable because our refcount has already gone to 0.
-  io_thread_->Dispatch(
-      NewNonOwningRunnableMethod(__func__, this, &NrUdpSocketIpc::destroy_i));
+  io_thread_->Dispatch(NewNonOwningRunnableMethod(
+      "NrUdpSocketIpc::Destroy", this, &NrUdpSocketIpc::destroy_i));
 #endif
 }
 
@@ -1504,8 +1506,7 @@ void NrUdpSocketIpc::create_i(const nsACString& host, const uint16_t port) {
                                     /* addressReuse = */ false,
                                     /* loopback = */ false,
                                     /* recv buffer size */ minBuffSize,
-                                    /* send buffer size */ minBuffSize,
-                                    /* mainThreadEventTarget */ nullptr))) {
+                                    /* send buffer size */ minBuffSize))) {
     err_ = true;
     MOZ_ASSERT(false, "Failed to create UDP socket");
     mon.NotifyAll();

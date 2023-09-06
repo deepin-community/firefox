@@ -3,10 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set-desktop-background-window =
-    .title = Rregulloni Sfond Desktopi
+    .title = Ujdisni Sfond Desktopi
 
 set-desktop-background-accept =
-    .label = Rregulloni Sfond Desktopi
+    .label = Ujdisni Sfond Desktopi
 
 open-desktop-prefs =
     .label = Hap Parapëlqime për Desktopin

@@ -22,13 +22,13 @@ process-type-extension = Extension
 # process used to open file:// URLs
 process-type-file = Local File
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Large Allocation
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Susbaint-lìn fa leth
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Isolated Service Worker
 
 # process preallocated; may change to other types
 process-type-prealloc = Ro-riaraichte
@@ -37,6 +37,7 @@ process-type-prealloc = Ro-riaraichte
 ## Localization for Gecko process types defined in GeckoProcessTypes.h
 ##
 
+process-type-default = Main
 process-type-tab = Taba
 
 # process used to communicate with the GPU for
@@ -48,6 +49,9 @@ process-type-socket = Socaid
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Sandboxed IPC Actor
 
 ##
 ## Other

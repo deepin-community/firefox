@@ -24,9 +24,9 @@ pippki-pw-change2empty-in-fips-mode = 現在 FIPS モードです。FIPS は空�
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = マスターパスワードのリセット
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = リセット
 # (^m^) en-US: "Primary Password"
@@ -36,9 +36,9 @@ pippki-reset-password-confirmation-message = マスターパスワードがリ�
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = 証明書のインポート
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = 新しい認証局 (CA) を信頼するよう求められています。本当にこの認証局を信頼しますか？
 download-cert-trust-ssl =
     .label = この認証局によるウェブサイトの識別を信頼する
@@ -68,9 +68,8 @@ set-password-repeat-backup-pw =
     .value = 証明書のバックアップ用パスワード(再入力):
 set-password-reminder = 重要: 証明書のバックアップ用パスワードを忘れてしまうと、バックアップした証明書を復元できなくなります。安全な場所に記録しておいてください。
 
-## Protected Auth dialog
+## Protected authentication alert
 
-protected-auth-window =
-    .title = 保護されたトークン認証
-protected-auth-msg = トークンの認証を行ってください。認証方法は使用するトークンの種類によって異なります。
-protected-auth-token = トークン:
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = トークン “{ $tokenName }” の認証を行ってください。認証方法は使用するトークンの種類によって異なります (例えば、指紋認証リーダーの使用やキーパッドでのコード入力など)。

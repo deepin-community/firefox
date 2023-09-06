@@ -3,17 +3,17 @@ import os
 import re
 import struct
 from collections import defaultdict
-
 from uuid import UUID
 
+import buildconfig
 from mozbuild.util import FileAvoidWrite
 from perfecthash import PerfectHash
-import buildconfig
-
 
 NO_CONTRACT_ID = 0xFFFFFFFF
 
 PHF_SIZE = 512
+
+TINY_PHF_SIZE = 16
 
 # In tests, we might not have a (complete) buildconfig.
 ENDIAN = (
@@ -63,6 +63,7 @@ class ProcessSelector:
     ALLOW_IN_VR_PROCESS = 0x8
     ALLOW_IN_SOCKET_PROCESS = 0x10
     ALLOW_IN_RDD_PROCESS = 0x20
+    ALLOW_IN_UTILITY_PROCESS = 0x30
     ALLOW_IN_GPU_AND_MAIN_PROCESS = ALLOW_IN_GPU_PROCESS | MAIN_PROCESS_ONLY
     ALLOW_IN_GPU_AND_SOCKET_PROCESS = ALLOW_IN_GPU_PROCESS | ALLOW_IN_SOCKET_PROCESS
     ALLOW_IN_GPU_AND_VR_PROCESS = ALLOW_IN_GPU_PROCESS | ALLOW_IN_VR_PROCESS
@@ -73,11 +74,24 @@ class ProcessSelector:
     ALLOW_IN_GPU_RDD_AND_SOCKET_PROCESS = (
         ALLOW_IN_GPU_PROCESS | ALLOW_IN_RDD_PROCESS | ALLOW_IN_SOCKET_PROCESS
     )
+    ALLOW_IN_GPU_RDD_SOCKET_AND_UTILITY_PROCESS = (
+        ALLOW_IN_GPU_PROCESS
+        | ALLOW_IN_RDD_PROCESS
+        | ALLOW_IN_SOCKET_PROCESS
+        | ALLOW_IN_UTILITY_PROCESS
+    )
     ALLOW_IN_GPU_RDD_VR_AND_SOCKET_PROCESS = (
         ALLOW_IN_GPU_PROCESS
         | ALLOW_IN_RDD_PROCESS
         | ALLOW_IN_VR_PROCESS
         | ALLOW_IN_SOCKET_PROCESS
+    )
+    ALLOW_IN_GPU_RDD_VR_SOCKET_AND_UTILITY_PROCESS = (
+        ALLOW_IN_GPU_PROCESS
+        | ALLOW_IN_RDD_PROCESS
+        | ALLOW_IN_VR_PROCESS
+        | ALLOW_IN_SOCKET_PROCESS
+        | ALLOW_IN_UTILITY_PROCESS
     )
 
 
@@ -97,7 +111,9 @@ PROCESSES = {
     ProcessSelector.ALLOW_IN_GPU_VR_AND_SOCKET_PROCESS: "ALLOW_IN_GPU_VR_AND_SOCKET_PROCESS",
     ProcessSelector.ALLOW_IN_RDD_AND_SOCKET_PROCESS: "ALLOW_IN_RDD_AND_SOCKET_PROCESS",
     ProcessSelector.ALLOW_IN_GPU_RDD_AND_SOCKET_PROCESS: "ALLOW_IN_GPU_RDD_AND_SOCKET_PROCESS",
+    ProcessSelector.ALLOW_IN_GPU_RDD_SOCKET_AND_UTILITY_PROCESS: "ALLOW_IN_GPU_RDD_SOCKET_AND_UTILITY_PROCESS",  # NOQA: E501
     ProcessSelector.ALLOW_IN_GPU_RDD_VR_AND_SOCKET_PROCESS: "ALLOW_IN_GPU_RDD_VR_AND_SOCKET_PROCESS",  # NOQA: E501
+    ProcessSelector.ALLOW_IN_GPU_RDD_VR_SOCKET_AND_UTILITY_PROCESS: "ALLOW_IN_GPU_RDD_VR_SOCKET_AND_UTILITY_PROCESS",  # NOQA: E501
 }
 
 
@@ -266,12 +282,15 @@ class ModuleEntry(object):
         self.init_method = data.get("init_method", [])
 
         self.jsm = data.get("jsm", None)
+        self.esModule = data.get("esModule", None)
 
         self.external = data.get(
             "external", not (self.headers or self.legacy_constructor)
         )
         self.singleton = data.get("singleton", False)
         self.overridable = data.get("overridable", False)
+
+        self.protocol_config = data.get("protocol_config", None)
 
         if "name" in data:
             self.anonymous = False
@@ -288,6 +307,16 @@ class ModuleEntry(object):
             )
 
         if self.jsm:
+            if not self.constructor:
+                error("JavaScript components must specify a constructor")
+
+            for prop in ("init_method", "legacy_constructor", "headers"):
+                if getattr(self, prop):
+                    error(
+                        "JavaScript components may not specify a '%s' "
+                        "property" % prop
+                    )
+        elif self.esModule:
             if not self.constructor:
                 error("JavaScript components must specify a constructor")
 
@@ -384,7 +413,7 @@ class ModuleEntry(object):
 
         if self.legacy_constructor:
             res += (
-                "      return /* legacy */ %s(nullptr, aIID, aResult);\n"
+                "      return /* legacy */ %s(aIID, aResult);\n"
                 % self.legacy_constructor
             )
             return res
@@ -396,6 +425,14 @@ class ModuleEntry(object):
                 "                                    %s,\n"
                 "                                    getter_AddRefs(inst)));"
                 "\n" % (json.dumps(self.jsm), json.dumps(self.constructor))
+            )
+        elif self.esModule:
+            res += (
+                "      nsCOMPtr<nsISupports> inst;\n"
+                "      MOZ_TRY(ConstructESModuleComponent(nsLiteralCString(%s),\n"
+                "                                         %s,\n"
+                "                                         getter_AddRefs(inst)));"
+                "\n" % (json.dumps(self.esModule), json.dumps(self.constructor))
             )
         elif self.external:
             res += (
@@ -486,6 +523,57 @@ static inline ::mozilla::xpcom::CreateInstanceHelper Create(nsresult* aRv = null
 
         return res
 
+    # Generates the rust code for the `xpcom::components::<name>` entry
+    # corresponding to this component. This may not be called for modules
+    # without an explicit `name` (in which cases, `self.anonymous` will be
+    # true).
+    def lower_getters_rust(self):
+        assert not self.anonymous
+
+        substs = {
+            "name": self.name,
+            "id": "super::ModuleID::%s" % self.name,
+        }
+
+        res = (
+            """
+#[allow(non_snake_case)]
+pub mod %(name)s {
+    /// Get the singleton service instance for this component.
+    pub fn service<T: crate::XpCom>() -> Result<crate::RefPtr<T>, nserror::nsresult> {
+        let mut ga = crate::GetterAddrefs::<T>::new();
+        let rv = unsafe { super::Gecko_GetServiceByModuleID(%(id)s, &T::IID, ga.void_ptr()) };
+        if rv.failed() {
+            return Err(rv);
+        }
+        ga.refptr().ok_or(nserror::NS_ERROR_NO_INTERFACE)
+    }
+"""
+            % substs
+        )
+
+        if not self.singleton:
+            res += (
+                """
+    /// Create a new instance of this component.
+    pub fn create<T: crate::XpCom>() -> Result<crate::RefPtr<T>, nserror::nsresult> {
+        let mut ga = crate::GetterAddrefs::<T>::new();
+        let rv = unsafe { super::Gecko_CreateInstanceByModuleID(%(id)s, &T::IID, ga.void_ptr()) };
+        if rv.failed() {
+            return Err(rv);
+        }
+        ga.refptr().ok_or(nserror::NS_ERROR_NO_INTERFACE)
+    }
+"""
+                % substs
+            )
+
+        res += """\
+}
+"""
+
+        return res
+
 
 # Returns a quoted string literal representing the given raw string, with
 # certain special characters replaced so that it can be used in a C++-style
@@ -509,6 +597,44 @@ class ContractEntry(object):
         }}""".format(
             contract=strings.entry_to_cxx(self.contract),
             module_id=lower_module_id(self.module),
+        )
+
+
+# Represents a static ProtocolHandler entry, corresponding to a C++
+# ProtocolEntry struct, mapping a scheme to a static module entry and metadata.
+class ProtocolHandler(object):
+    def __init__(self, config, module):
+        def error(str_):
+            raise Exception(
+                "Error defining protocol handler %s (%s): %s"
+                % (str(module.cid), ", ".join(map(repr, module.contract_ids)), str_)
+            )
+
+        self.module = module
+        self.scheme = config.get("scheme", None)
+        if self.scheme is None:
+            error("No scheme defined for protocol component")
+        self.flags = config.get("flags", None)
+        if self.flags is None:
+            error("No flags defined for protocol component")
+        self.default_port = config.get("default_port", -1)
+        self.has_dynamic_flags = config.get("has_dynamic_flags", False)
+
+    def to_cxx(self):
+        return """
+        {{
+          .mScheme = {scheme},
+          .mProtocolFlags = {flags},
+          .mDefaultPort = {default_port},
+          .mModuleID = {module_id},
+          .mHasDynamicFlags = {has_dynamic_flags},
+        }}
+        """.format(
+            scheme=strings.entry_to_cxx(self.scheme),
+            module_id=lower_module_id(self.module),
+            flags=" | ".join("nsIProtocolHandler::%s" % flag for flag in self.flags),
+            default_port=self.default_port,
+            has_dynamic_flags="true" if self.has_dynamic_flags else "false",
         )
 
 
@@ -643,6 +769,17 @@ def gen_getters(entries):
     return "".join(entry.lower_getters() for entry in entries if not entry.anonymous)
 
 
+# Generates the rust getter code for each named component entry in the
+# `xpcom::components::` module.
+def gen_getters_rust(entries):
+    entries = list(entries)
+    entries.sort(key=lambda e: e.name)
+
+    return "".join(
+        entry.lower_getters_rust() for entry in entries if not entry.anonymous
+    )
+
+
 def gen_includes(substs, all_headers):
     headers = set()
     absolute_headers = set()
@@ -719,14 +856,16 @@ def gen_substs(manifests):
                     value, process = entry
                 else:
                     value, process = entry, 0
-                categories[category].append((key, value, process))
+                categories[category].append(({"name": key}, value, process))
 
     cids = set()
     contracts = []
     contract_map = {}
     js_services = {}
+    protocol_handlers = {}
 
     jsms = set()
+    esModules = set()
 
     types = set()
 
@@ -751,10 +890,19 @@ def gen_substs(manifests):
         if mod.jsm:
             jsms.add(mod.jsm)
 
+        if mod.esModule:
+            esModules.add(mod.esModule)
+
         if mod.js_name:
             if mod.js_name in js_services:
                 raise Exception("Duplicate JS service name: %s" % mod.js_name)
             js_services[mod.js_name] = mod
+
+        if mod.protocol_config:
+            handler = ProtocolHandler(mod.protocol_config, mod)
+            if handler.scheme in protocol_handlers:
+                raise Exception("Duplicate protocol handler: %s" % handler.scheme)
+            protocol_handlers[handler.scheme] = handler
 
         if str(mod.cid) in cids:
             raise Exception("Duplicate cid: %s" % str(mod.cid))
@@ -766,6 +914,10 @@ def gen_substs(manifests):
 
     js_services_phf = PerfectHash(
         list(js_services.values()), PHF_SIZE, key=lambda entry: entry.js_name
+    )
+
+    protocol_handlers_phf = PerfectHash(
+        list(protocol_handlers.values()), TINY_PHF_SIZE, key=lambda entry: entry.scheme
     )
 
     js_services_json = {}
@@ -781,6 +933,9 @@ def gen_substs(manifests):
 
     substs["module_count"] = len(modules)
     substs["contract_count"] = len(contracts)
+    substs["protocol_handler_count"] = len(protocol_handlers)
+
+    substs["default_protocol_handler_idx"] = protocol_handlers_phf.get_index("default")
 
     gen_module_funcs(substs, module_funcs)
 
@@ -788,6 +943,12 @@ def gen_substs(manifests):
 
     substs["component_jsms"] = (
         "\n".join(" %s," % strings.entry_to_cxx(jsm) for jsm in sorted(jsms)) + "\n"
+    )
+    substs["component_esmodules"] = (
+        "\n".join(
+            " %s," % strings.entry_to_cxx(esModule) for esModule in sorted(esModules)
+        )
+        + "\n"
     )
 
     substs["interfaces"] = gen_interfaces(interfaces)
@@ -797,6 +958,8 @@ def gen_substs(manifests):
     substs["constructors"] = gen_constructors(cid_phf.entries)
 
     substs["component_getters"] = gen_getters(cid_phf.entries)
+
+    substs["component_getters_rust"] = gen_getters_rust(cid_phf.entries)
 
     substs["module_cid_table"] = cid_phf.cxx_codegen(
         name="ModuleByCID",
@@ -831,6 +994,18 @@ def gen_substs(manifests):
         lower_entry=lambda entry: entry.lower_js_service(),
         return_type="const JSServiceEntry*",
         return_entry="return entry.Name() == aKey ? &entry : nullptr;",
+        key_type="const nsACString&",
+        key_bytes="aKey.BeginReading()",
+        key_length="aKey.Length()",
+    )
+
+    substs["protocol_handlers_table"] = protocol_handlers_phf.cxx_codegen(
+        name="LookupProtocolHandler",
+        entry_type="StaticProtocolHandler",
+        entries_name="gStaticProtocolHandlers",
+        lower_entry=lambda entry: entry.to_cxx(),
+        return_type="const StaticProtocolHandler*",
+        return_entry="return entry.Scheme() == aKey ? &entry : nullptr;",
         key_type="const nsACString&",
         key_bytes="aKey.BeginReading()",
         key_length="aKey.Length()",
@@ -915,10 +1090,28 @@ static constexpr size_t kStaticCategoryCount = %(category_count)d;
 
 static constexpr size_t kModuleInitCount = %(init_count)d;
 
+static constexpr size_t kStaticProtocolHandlerCount = %(protocol_handler_count)d;
+
+static constexpr size_t kDefaultProtocolHandlerIndex = %(default_protocol_handler_idx)d;
+
 }  // namespace xpcom
 }  // namespace mozilla
 
 #endif
+"""
+            % substs
+        )
+
+    with open_output("components.rs") as fh:
+        fh.write(
+            """\
+/// Unique IDs for each statically-registered module.
+#[repr(u16)]
+pub enum ModuleID {
+%(module_ids)s
+}
+
+%(component_getters_rust)s
 """
             % substs
         )
@@ -951,6 +1144,10 @@ namespace xpcom {
 enum class ModuleID : uint16_t {
 %(module_ids)s
 };
+
+// May be added as a friend function to allow constructing services via
+// private constructors and init methods.
+nsresult CreateInstanceImpl(ModuleID aID, const nsIID& aIID, void** aResult);
 
 class MOZ_STACK_CLASS StaticModuleHelper : public nsCOMPtr_helper {
  public:

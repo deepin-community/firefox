@@ -63,9 +63,12 @@ RefPtr<MediaDataDecoder::InitPromise> VorbisDataDecoder::Init() {
 
   AutoTArray<unsigned char*, 4> headers;
   AutoTArray<size_t, 4> headerLens;
-  if (!XiphExtradataToHeaders(headers, headerLens,
-                              mInfo.mCodecSpecificConfig->Elements(),
-                              mInfo.mCodecSpecificConfig->Length())) {
+  MOZ_ASSERT(mInfo.mCodecSpecificConfig.is<VorbisCodecSpecificData>(),
+             "Vorbis decoder should get vorbis codec specific data");
+  RefPtr<MediaByteBuffer> vorbisHeaderBlob =
+      GetAudioCodecSpecificBlob(mInfo.mCodecSpecificConfig);
+  if (!XiphExtradataToHeaders(headers, headerLens, vorbisHeaderBlob->Elements(),
+                              vorbisHeaderBlob->Length())) {
     LOG(LogLevel::Warning, ("VorbisDecoder: could not get vorbis header"));
     return InitPromise::CreateAndReject(
         MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
@@ -139,6 +142,7 @@ nsresult VorbisDataDecoder::DecodeHeader(const unsigned char* aData,
 RefPtr<MediaDataDecoder::DecodePromise> VorbisDataDecoder::Decode(
     MediaRawData* aSample) {
   MOZ_ASSERT(mThread->IsOnCurrentThread());
+  PROCESS_DECODE_LOG(aSample);
 
   const unsigned char* aData = aSample->Data();
   size_t aLength = aSample->Size();
@@ -198,7 +202,7 @@ RefPtr<MediaDataDecoder::DecodePromise> VorbisDataDecoder::Decode(
       }
     }
 
-    auto duration = FramesToTimeUnit(frames, rate);
+    auto duration = media::TimeUnit(frames, rate);
     if (!duration.IsValid()) {
       LOG(LogLevel::Warning, ("VorbisDecoder: invalid packet duration"));
       return DecodePromise::CreateAndReject(
@@ -206,7 +210,7 @@ RefPtr<MediaDataDecoder::DecodePromise> VorbisDataDecoder::Decode(
                       RESULT_DETAIL("Overflow converting audio duration")),
           __func__);
     }
-    auto total_duration = FramesToTimeUnit(mFrames, rate);
+    auto total_duration = media::TimeUnit(mFrames, rate);
     if (!total_duration.IsValid()) {
       LOG(LogLevel::Warning, ("VorbisDecoder: invalid total duration"));
       return DecodePromise::CreateAndReject(

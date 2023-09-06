@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Definiera domäner som får åtkomst till Google 
 
 policy-AppAutoUpdate = Aktivera eller inaktivera automatisk applikationsuppdatering.
 
+policy-AppUpdatePin = Förhindra att { -brand-short-name } uppdateras utöver den angivna versionen.
+
 policy-AppUpdateURL = Ange anpassad URL för programuppdateringar.
 
 policy-Authentication = Ställ in integrerad autentisering för webbplatser som stödjer det.
@@ -40,6 +42,9 @@ policy-CertificatesDescription = Lägg till certifikat eller använd inbyggda ce
 
 policy-Cookies = Tillåt eller neka webbplatser att lagra kakor
 
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Ange policyer relaterade till behållare.
+
 policy-DisabledCiphers = Inaktivera chiffer.
 
 policy-DefaultDownloadDirectory = Ange standard för nedladdningskatalog.
@@ -59,7 +64,7 @@ policy-DisableFirefoxAccounts = Inaktivera { -fxaccount-brand-name }-baserade tj
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Inaktivera funktionen Firefox Screenshots
 
-policy-DisableFirefoxStudies = Förhindra { -brand-short-name } att genomföra undersökningar.
+policy-DisableFirefoxStudies = Förhindra { -brand-short-name } att genomföra studier.
 
 policy-DisableForgetButton = Förhindra tillgång till knappen Glöm.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Om det är sant kan ett huvudlösenord i
 
 policy-DisablePasswordReveal = Låt inte lösenord avslöjas i sparade inloggningar.
 
-policy-DisablePocket = Inaktivera funktionen att spara webbsidor till Pocket.
+policy-DisablePocket2 = Inaktivera funktionen att spara webbsidor till { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Inaktivera privat surfning.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Förhindra webbläsaren att installera och upp
 
 policy-DisableTelemetry = Stäng av telemetri.
 
+policy-DisableThirdPartyModuleBlocking = Förhindra användaren från att blockera tredjepartsmoduler som injiceras i { -brand-short-name }-processen.
+
 policy-DisplayBookmarksToolbar = Visa bokmärkesfältet som standard.
 
 policy-DisplayMenuBar = Visa menyraden som standard.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Aktivera eller inaktivera Innehållsblockering
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Aktivera eller inaktivera krypterade medieutökningar och lås den eventuellt.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Inaktivera varningar baserade på filtillägg för specifika filtyper på domäner.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Hantera alla aspekter av tilläggsinstallation.
 
 policy-ExtensionUpdate = Aktivera eller inaktivera automatiska utökningsuppdateringar.
 
-policy-FirefoxHome = Konfigurera Firefox startsida.
+policy-FirefoxHome2 = Konfigurera { -firefox-home-brand-name }.
 
-policy-FlashPlugin = Tillåt eller neka att insticksmodulen Flash används.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Tvinga direkt navigering på intranätet istället för att söka när du skriver in enstaka ord i adressfältet.
 
 policy-Handlers = Konfigurera standardprogramhanterare.
 
@@ -159,6 +168,8 @@ policy-OverridePostUpdatePage = Åsidosätt sidan "Vad är nytt" efter uppdateri
 
 policy-PasswordManagerEnabled = Aktivera att spara lösenord i lösenordshanteraren.
 
+policy-PasswordManagerExceptions = Förhindra { -brand-short-name } från att spara lösenord för specifika webbplatser.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = Inaktivera eller konfigurera PDF.js, den inbyggda PDF-visaren i { -brand-short-name }
 
@@ -184,8 +195,8 @@ policy-SearchEngines = Ange sökmotorinställningar. Denna policy finns bara på
 
 policy-SearchSuggestEnabled = Aktivera eller inaktivera sökförslag.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Installera PKCS #11-moduler.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Lägg till eller ta bort PKCS #11-moduler.
 
 policy-ShowHomeButton = Visa hemknappen i verktygsfältet.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = Ange den maximala SSL-versionen.
 
 policy-SSLVersionMin = Ange den lägsta SSL-versionen.
 
+policy-StartDownloadsInTempDirectory = Tvinga nedladdningar att starta på en lokal, tillfällig plats snarare än standardnedladdningskatalogen.
+
 policy-SupportMenu = Lägg till ett anpassat menyalternativ med hjälp i hjälpmenyn.
 
 policy-UserMessaging = Visa inte vissa meddelanden till användaren.
+
+policy-UseSystemPrintDialog = Skriv ut med hjälp av systemets utskriftsdialog.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Blockera besök på webbplatser. Läs dokumentationen för mer detaljer om hur de anges.

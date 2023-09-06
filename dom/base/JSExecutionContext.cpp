@@ -19,6 +19,7 @@
 #include "js/CompilationAndEvaluation.h"
 #include "js/CompileOptions.h"
 #include "js/Conversions.h"
+#include "js/experimental/JSStencil.h"
 #include "js/HeapAPI.h"
 #include "js/OffThreadScriptCompilation.h"
 #include "js/ProfilingCategory.h"
@@ -86,31 +87,25 @@ JSExecutionContext::JSExecutionContext(
   }
 }
 
-nsresult JSExecutionContext::JoinCompile(JS::OffThreadToken** aOffThreadToken) {
+nsresult JSExecutionContext::JoinOffThread(
+    JS::OffThreadToken** aOffThreadToken) {
   if (mSkip) {
     return mRv;
   }
 
   MOZ_ASSERT(!mWantsReturnValue);
-  MOZ_ASSERT(!mScript);
 
-  if (mEncodeBytecode) {
-    mScript.set(JS::FinishOffThreadScriptAndStartIncrementalEncoding(
-        mCx, *aOffThreadToken));
-  } else {
-    mScript.set(JS::FinishOffThreadScript(mCx, *aOffThreadToken));
-  }
+  JS::InstantiationStorage storage;
+  RefPtr<JS::Stencil> stencil =
+      JS::FinishOffThreadStencil(mCx, *aOffThreadToken, &storage);
   *aOffThreadToken = nullptr;  // Mark the token as having been finished.
-  if (!mScript) {
+  if (!stencil) {
     mSkip = true;
     mRv = EvaluationExceptionToNSResult(mCx);
     return mRv;
   }
 
-  if (!UpdateDebugMetadata()) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
-  return NS_OK;
+  return InstantiateStencil(std::move(stencil), &storage);
 }
 
 template <typename Unit>
@@ -125,26 +120,15 @@ nsresult JSExecutionContext::InternalCompile(JS::SourceText<Unit>& aSrcBuf) {
   mWantsReturnValue = !mCompileOptions.noScriptRval;
 #endif
 
-  MOZ_ASSERT(!mScript);
-
-  if (mEncodeBytecode) {
-    mScript =
-        JS::CompileAndStartIncrementalEncoding(mCx, mCompileOptions, aSrcBuf);
-  } else {
-    mScript = JS::Compile(mCx, mCompileOptions, aSrcBuf);
-  }
-
-  if (!mScript) {
+  RefPtr<JS::Stencil> stencil =
+      CompileGlobalScriptToStencil(mCx, mCompileOptions, aSrcBuf);
+  if (!stencil) {
     mSkip = true;
     mRv = EvaluationExceptionToNSResult(mCx);
     return mRv;
   }
 
-  if (!UpdateDebugMetadata()) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
-
-  return NS_OK;
+  return InstantiateStencil(std::move(stencil));
 }
 
 nsresult JSExecutionContext::Compile(JS::SourceText<char16_t>& aSrcBuf) {
@@ -178,52 +162,58 @@ nsresult JSExecutionContext::Decode(mozilla::Vector<uint8_t>& aBytecodeBuf,
     return mRv;
   }
 
+  JS::DecodeOptions decodeOptions(mCompileOptions);
+  decodeOptions.borrowBuffer = true;
+
+  JS::TranscodeRange range(aBytecodeBuf.begin() + aBytecodeIndex,
+                           aBytecodeBuf.length() - aBytecodeIndex);
+
   MOZ_ASSERT(!mWantsReturnValue);
-  JS::TranscodeResult tr = JS::DecodeScriptMaybeStencil(
-      mCx, mCompileOptions, aBytecodeBuf, &mScript, aBytecodeIndex);
+  RefPtr<JS::Stencil> stencil;
+  JS::TranscodeResult tr =
+      JS::DecodeStencil(mCx, decodeOptions, range, getter_AddRefs(stencil));
   // These errors are external parameters which should be handled before the
   // decoding phase, and which are the only reasons why you might want to
   // fallback on decoding failures.
-  MOZ_ASSERT(tr != JS::TranscodeResult::Failure_BadBuildId &&
-             tr != JS::TranscodeResult::Failure_WrongCompileOption);
+  MOZ_ASSERT(tr != JS::TranscodeResult::Failure_BadBuildId);
   if (tr != JS::TranscodeResult::Ok) {
     mSkip = true;
     mRv = NS_ERROR_DOM_JS_DECODING_ERROR;
     return mRv;
   }
 
-  if (!UpdateDebugMetadata()) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
-
-  return mRv;
+  return InstantiateStencil(std::move(stencil));
 }
 
-bool JSExecutionContext::UpdateDebugMetadata() {
-  if (!mCompileOptions.deferDebugMetadata) {
-    return true;
-  }
-  return JS::UpdateDebugMetadata(mCx, mScript, mCompileOptions,
-                                 mDebuggerPrivateValue, nullptr,
-                                 mDebuggerIntroductionScript, nullptr);
-}
-
-nsresult JSExecutionContext::JoinDecode(JS::OffThreadToken** aOffThreadToken) {
-  if (mSkip) {
-    return mRv;
-  }
-
-  MOZ_ASSERT(!mWantsReturnValue);
-  mScript.set(JS::FinishOffThreadScriptDecoder(mCx, *aOffThreadToken));
-  *aOffThreadToken = nullptr;  // Mark the token as having been finished.
-  if (!mScript) {
+nsresult JSExecutionContext::InstantiateStencil(
+    RefPtr<JS::Stencil>&& aStencil, JS::InstantiationStorage* aStorage) {
+  JS::InstantiateOptions instantiateOptions(mCompileOptions);
+  JS::Rooted<JSScript*> script(
+      mCx, JS::InstantiateGlobalStencil(mCx, instantiateOptions, aStencil,
+                                        aStorage));
+  if (!script) {
     mSkip = true;
     mRv = EvaluationExceptionToNSResult(mCx);
     return mRv;
   }
 
-  if (!UpdateDebugMetadata()) {
-    return NS_ERROR_OUT_OF_MEMORY;
+  if (mEncodeBytecode) {
+    if (!JS::StartIncrementalEncoding(mCx, std::move(aStencil))) {
+      mSkip = true;
+      mRv = EvaluationExceptionToNSResult(mCx);
+      return mRv;
+    }
+  }
+
+  MOZ_ASSERT(!mScript);
+  mScript.set(script);
+
+  if (instantiateOptions.deferDebugMetadata) {
+    if (!JS::UpdateDebugMetadata(mCx, mScript, instantiateOptions,
+                                 mDebuggerPrivateValue, nullptr,
+                                 mDebuggerIntroductionScript, nullptr)) {
+      return NS_ERROR_OUT_OF_MEMORY;
+    }
   }
 
   return NS_OK;

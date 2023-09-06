@@ -16,7 +16,6 @@ styleeditor-save-button = Gwok
     .accesskey = G
 styleeditor-options-button =
     .tooltiptext = Gin ayera me Layub cital
-styleeditor-media-rules = @adyere cik
 styleeditor-editor-textbox =
     .data-placeholder = Co CSS kany.
 styleeditor-no-stylesheet = Pot buk man pe ki style sheet.
@@ -25,3 +24,21 @@ styleeditor-open-link-new-tab =
     .label = Yab kakube i tab manyen
 styleeditor-copy-url =
     .label = Lok URL
+styleeditor-find =
+    .label = Nong
+    .accesskey = N
+styleeditor-find-again =
+    .label = Nong Doki
+    .accesskey = o
+styleeditor-go-to-line =
+    .label = Pye irek…
+    .accesskey = P
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } cik.
+       *[other] cik { $ruleCount }.
+    }

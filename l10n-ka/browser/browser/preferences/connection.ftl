@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = კავშირის პარამეტრები
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -16,7 +16,7 @@ connection-close-key =
 connection-disable-extension =
     .label = გაფართოების ამორთვა
 
-connection-proxy-configure = პროქსის გამართვა ინტერნეტზე წვდომისათვის
+connection-proxy-configure = პროქსის გამართვა ინტერნეტთან წვდომისათვის
 
 connection-proxy-option-no =
     .label = პროქსის გარეშე
@@ -31,11 +31,10 @@ connection-proxy-option-manual =
     .label = პროქსის ხელით გამართვა
     .accesskey = ხ
 
-connection-proxy-http = HTTP პროქსი
+connection-proxy-http = HTTP-პროქსი
     .accesskey = H
 connection-proxy-http-port = პორტი
     .accesskey = პ
-
 connection-proxy-https-sharing =
     .label = აგრეთვე, ამ პროქსის გამოყენება HTTPS-ისთვის
     .accesskey = ე
@@ -62,7 +61,7 @@ connection-proxy-noproxy = არ იქნება გამოყენებ
 connection-proxy-noproxy-desc = მაგალითი: .mozilla.org, .net.nz, 192.168.1.0/24
 
 # Do not translate "localhost", "127.0.0.1/8" and "::1". (You can translate "and".)
-connection-proxy-noproxy-localhost-desc-2 = ადგილობრივი კავშირები, 127.0.0.1/8, ამასთან ::1 არასდროს გამოიყენებს პროქსის.
+connection-proxy-noproxy-localhost-desc-2 = ადგილობრივი კავშირები, 127.0.0.1/8, ამასთან ::1 არასდროს გაივლის პროქსით.
 
 connection-proxy-autotype =
     .label = პროქსის თვითგამართვის URL
@@ -77,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = თ
     .tooltip = ამ მითითების შედეგად, პროქსის ანგარიშზე ავტომატურად შეხვალთ, თუ ანგარიშის მონაცემები შენახული იქნება. ასევე გეცნობებათ, თუ შესვლა ვერ მოხერხდება.
 
+connection-proxy-autologin-checkbox =
+    .label = შესვლის მოთხოვნის გამოტოვება, თუ პაროლი დამახსოვრებულია
+    .accesskey = თ
+    .tooltiptext = ამ მითითების შედეგად, პროქსის ანგარიშზე ავტომატურად შეხვალთ, თუ ანგარიშის მონაცემები შენახული იქნება. ასევე გეცნობებათ, თუ შესვლა ვერ მოხერხდება.
+
 connection-proxy-socks-remote-dns =
     .label = პროქსის DNS SOCKS v5-ის გამოყენებისას
     .accesskey = d
-
-connection-dns-over-https =
-    .label = DNS-სთან HTTPS-კავშირი
-    .accesskey = H
-
-connection-dns-over-https-url-resolver = მომსახურების გამოყენება
-    .accesskey = ხ
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

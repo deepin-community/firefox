@@ -16,8 +16,7 @@
 #include "nsIPrincipal.h"
 #include "nsProxyRelease.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 // static
 already_AddRefed<SharedWorkerManagerHolder> SharedWorkerManager::Create(
@@ -63,6 +62,12 @@ bool SharedWorkerManager::MaybeCreateRemoteWorker(
     const RemoteWorkerData& aData, uint64_t aWindowID,
     UniqueMessagePortId& aPortIdentifier, base::ProcessId aProcessId) {
   ::mozilla::ipc::AssertIsOnBackgroundThread();
+
+  // Creating remote workers may result in creating new processes, but during
+  // parent shutdown that would add just noise, so better bail out.
+  if (AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownConfirmed)) {
+    return false;
+  }
 
   if (!mRemoteWorkerController) {
     mRemoteWorkerController =
@@ -114,6 +119,14 @@ void SharedWorkerManager::AddActor(SharedWorkerParent* aParent) {
   MOZ_ASSERT(!mActors.Contains(aParent));
 
   mActors.AppendElement(aParent);
+
+  if (mLockCount) {
+    Unused << aParent->SendNotifyLock(true);
+  }
+
+  if (mWebTransportCount) {
+    Unused << aParent->SendNotifyWebTransport(true);
+  }
 
   // NB: We don't update our Suspended/Frozen state here, yet. The aParent is
   // responsible for doing so from SharedWorkerParent::ManagerCreated.
@@ -229,6 +242,38 @@ void SharedWorkerManager::ErrorReceived(const ErrorValue& aValue) {
   }
 }
 
+void SharedWorkerManager::LockNotified(bool aCreated) {
+  ::mozilla::ipc::AssertIsOnBackgroundThread();
+  MOZ_ASSERT_IF(!aCreated, mLockCount > 0);
+
+  mLockCount += aCreated ? 1 : -1;
+
+  // Notify only when we either:
+  // 1. Got a new lock when nothing were there
+  // 2. Lost all locks
+  if ((aCreated && mLockCount == 1) || !mLockCount) {
+    for (SharedWorkerParent* actor : mActors) {
+      Unused << actor->SendNotifyLock(aCreated);
+    }
+  }
+};
+
+void SharedWorkerManager::WebTransportNotified(bool aCreated) {
+  ::mozilla::ipc::AssertIsOnBackgroundThread();
+  MOZ_ASSERT_IF(!aCreated, mWebTransportCount > 0);
+
+  mWebTransportCount += aCreated ? 1 : -1;
+
+  // Notify only when we either:
+  // 1. Got a first WebTransport
+  // 2. The last WebTransport goes away
+  if ((aCreated && mWebTransportCount == 1) || mWebTransportCount == 0) {
+    for (SharedWorkerParent* actor : mActors) {
+      Unused << actor->SendNotifyWebTransport(aCreated);
+    }
+  }
+};
+
 void SharedWorkerManager::Terminated() {
   ::mozilla::ipc::AssertIsOnBackgroundThread();
 
@@ -294,5 +339,4 @@ SharedWorkerManagerWrapper::~SharedWorkerManagerWrapper() {
                          mHolder.forget());
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

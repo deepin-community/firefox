@@ -21,14 +21,14 @@
 #include "mozilla/dom/SVGPathElementBinding.h"
 #include "mozilla/gfx/2D.h"
 #include "mozilla/RefPtr.h"
+#include "mozilla/StaticPrefs_layout.h"
 #include "mozilla/SVGContentUtils.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(Path)
 
 using namespace mozilla::gfx;
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 JSObject* SVGPathElement::WrapNode(JSContext* aCx,
                                    JS::Handle<JSObject*> aGivenProto) {
@@ -66,8 +66,8 @@ uint32_t SVGPathElement::GetPathSegAtLength(float distance) {
     }
   };
 
-  if (StaticPrefs::layout_css_d_property_enabled() &&
-      SVGGeometryProperty::DoForComputedStyle(this, callback)) {
+  FlushStyleIfNeeded();
+  if (SVGGeometryProperty::DoForComputedStyle(this, callback)) {
     return seg;
   }
   return mD.GetAnimValue().GetPathSegAtLength(distance);
@@ -219,17 +219,17 @@ SVGPathElement::CreateSVGPathSegCurvetoQuadraticSmoothRel(float x, float y) {
   return pathSeg.forget();
 }
 
+// FIXME: This API is enabled only if dom.svg.pathSeg.enabled is true. This
+// preference is off by default in Bug 1388931, and will be dropped later.
+// So we are not planning to map d property for this API.
 already_AddRefed<DOMSVGPathSegList> SVGPathElement::PathSegList() {
-  // FIXME: This should be removed by Bug 1388931, so we don't add this extra
-  // API from style system. This WebIDL API only supports the SVG d attribute
-  // for now.
   return DOMSVGPathSegList::GetDOMWrapper(mD.GetBaseValKey(), this, false);
 }
 
+// FIXME: This API is enabled only if dom.svg.pathSeg.enabled is true. This
+// preference is off by default in Bug 1388931, and will be dropped later.
+// So we are not planning to map d property for this API.
 already_AddRefed<DOMSVGPathSegList> SVGPathElement::AnimatedPathSegList() {
-  // FIXME: This should be removed by Bug 1388931, so we don't add this extra
-  // API from style system. This WebIDL API only supports the SVG d attribute
-  // for now.
   return DOMSVGPathSegList::GetDOMWrapper(mD.GetAnimValKey(), this, true);
 }
 
@@ -256,23 +256,10 @@ bool SVGPathElement::HasValidDimensions() const {
 
 NS_IMETHODIMP_(bool)
 SVGPathElement::IsAttributeMapped(const nsAtom* name) const {
-  static const MappedAttributeEntry* const map[] = {sMarkersMap};
-
-  return FindAttributeDependence(name, map) ||
-         (StaticPrefs::layout_css_d_property_enabled() &&
-          name == nsGkAtoms::d) ||
-         SVGPathElementBase::IsAttributeMapped(name);
+  return name == nsGkAtoms::d || SVGPathElementBase::IsAttributeMapped(name);
 }
 
 already_AddRefed<Path> SVGPathElement::GetOrBuildPathForMeasuring() {
-  if (!StaticPrefs::layout_css_d_property_enabled()) {
-    return mD.GetAnimValue().BuildPathForMeasuring();
-  }
-
-  // FIXME: Bug 1715387, the IDL methods should flush style, but internal
-  // callers shouldn't. We have to make sure we flush the style well from the
-  // caller.
-
   RefPtr<Path> path;
   bool success = SVGGeometryProperty::DoForComputedStyle(
       this, [&path](const ComputedStyle* s) {
@@ -304,12 +291,28 @@ void SVGPathElement::GetMarkPoints(nsTArray<SVGMark>* aMarks) {
     }
   };
 
-  if (StaticPrefs::layout_css_d_property_enabled() &&
-      SVGGeometryProperty::DoForComputedStyle(this, callback)) {
+  if (SVGGeometryProperty::DoForComputedStyle(this, callback)) {
     return;
   }
 
   mD.GetAnimValue().GetMarkerPositioningData(aMarks);
+}
+
+void SVGPathElement::GetAsSimplePath(SimplePath* aSimplePath) {
+  aSimplePath->Reset();
+  auto callback = [&](const ComputedStyle* s) {
+    const nsStyleSVGReset* styleSVGReset = s->StyleSVGReset();
+    if (styleSVGReset->mD.IsPath()) {
+      auto pathData = styleSVGReset->mD.AsPath()._0.AsSpan();
+      auto maybeRect = SVGPathToAxisAlignedRect(pathData);
+      if (maybeRect.isSome()) {
+        Rect r = maybeRect.value();
+        aSimplePath->SetRect(r.x, r.y, r.width, r.height);
+      }
+    }
+  };
+
+  SVGGeometryProperty::DoForComputedStyle(this, callback);
 }
 
 already_AddRefed<Path> SVGPathElement::BuildPath(PathBuilder* aBuilder) {
@@ -323,7 +326,6 @@ already_AddRefed<Path> SVGPathElement::BuildPath(PathBuilder* aBuilder) {
   auto strokeLineCap = StyleStrokeLinecap::Butt;
   Float strokeWidth = 0;
   RefPtr<Path> path;
-  const bool useDProperty = StaticPrefs::layout_css_d_property_enabled();
 
   auto callback = [&](const ComputedStyle* s) {
     const nsStyleSVG* styleSVG = s->StyleSVG();
@@ -336,10 +338,6 @@ already_AddRefed<Path> SVGPathElement::BuildPath(PathBuilder* aBuilder) {
       strokeWidth = SVGContentUtils::GetStrokeWidth(this, s, nullptr);
     }
 
-    if (!useDProperty) {
-      return;
-    }
-
     const auto& d = s->StyleSVGReset()->mD;
     if (d.IsPath()) {
       path = SVGPathData::BuildPath(d.AsPath()._0.AsSpan(), aBuilder,
@@ -348,7 +346,7 @@ already_AddRefed<Path> SVGPathElement::BuildPath(PathBuilder* aBuilder) {
   };
 
   bool success = SVGGeometryProperty::DoForComputedStyle(this, callback);
-  if (success && useDProperty) {
+  if (success) {
     return path.forget();
   }
 
@@ -366,8 +364,7 @@ bool SVGPathElement::GetDistancesFromOriginToEndsOfVisibleSegments(
               d.AsPath()._0.AsSpan(), aOutput);
   };
 
-  if (StaticPrefs::layout_css_d_property_enabled() &&
-      SVGGeometryProperty::DoForComputedStyle(this, callback)) {
+  if (SVGGeometryProperty::DoForComputedStyle(this, callback)) {
     return ret;
   }
 
@@ -381,5 +378,4 @@ bool SVGPathElement::IsDPropertyChangedViaCSS(const ComputedStyle& aNewStyle,
   return aNewStyle.StyleSVGReset()->mD != aOldStyle.StyleSVGReset()->mD;
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

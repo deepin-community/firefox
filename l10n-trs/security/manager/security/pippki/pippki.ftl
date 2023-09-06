@@ -13,8 +13,6 @@ change-password-old = Da’nga’ huì nikājt akuan’ nïn:
 change-password-new = Da'nga' huì nakàa:
 change-password-reenter = Da'nga' huìi (gachrun ñû):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = si naduninj ma sertifikado
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Gachin ni'io' da' gida'aj si nuguan' 'ngò Dukuâ sun 'iaj sertifikando (CA).
 download-cert-trust-ssl =
     .label = Ga'nin' da' ni CA nani'ìn da'ngà' daj hua sitio web.
@@ -56,7 +54,5 @@ set-password-reminder = Sa ña'āanj: Si sā gini'ñunt si da'ngà' huì si sert
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Ni'ia dàj hua Token huā rán rayi'î
-protected-auth-msg = Gi'iaj 'ngō sunūj un nī nadigânt man'ânt riña token. Chrēj nīkoj da' nadiganj sò' daj hua man'an si tokênt.
-protected-auth-token = Token:
+## Protected authentication alert
+

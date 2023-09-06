@@ -26,9 +26,9 @@ certmgr-people = Имате сертификате датотеке која и�
 certmgr-server = Ови уноси идентификују изузетке грешака сертификата сервера
 certmgr-ca = Имате сертификате датотеке која идентификује ова сертификациона тела
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Измени поставке поверења сертификационог тела
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Измени поставке поверења:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Овај сертификат може да идентификује кориснике е-поште.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Избриши сертификат
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Хост
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Сервер
-
-certmgr-override-lifetime =
-    .label = Животни век
 
 certmgr-token-name =
     .label = Безбедносни уређај
@@ -119,7 +116,7 @@ exception-mgr-cert-location-url =
 
 exception-mgr-cert-location-download =
     .label = Добави сертификат
-    .accesskey = В
+    .accesskey = Д
 
 exception-mgr-cert-status-view-cert =
     .label = Преглед…
@@ -185,8 +182,6 @@ delete-email-cert-impact = Ако уклоните сертификат за е-
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Сертификат са серијским бројем: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Не шаљи потврду клијента

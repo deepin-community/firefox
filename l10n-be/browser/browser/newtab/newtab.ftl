@@ -20,12 +20,13 @@ newtab-personalize-dialog-label =
 newtab-search-box-search-button =
     .title = Шукаць
     .aria-label = Шукаць
-# Variables
-#  $engine (String): the name of the user's default search engine
+
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-text = Шукайце ў { $engine } або ўвядзіце адрас
 newtab-search-box-handoff-text-no-engine = Увядзіце запыт або адрас
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-input =
     .placeholder = Шукайце ў { $engine } або ўвядзіце адрас
     .title = Шукайце ў { $engine } або ўвядзіце адрас
@@ -34,10 +35,7 @@ newtab-search-box-handoff-input-no-engine =
     .placeholder = Увядзіце запыт або адрас
     .title = Увядзіце запыт або адрас
     .aria-label = Увядзіце запыт або адрас
-newtab-search-box-search-the-web-input =
-    .placeholder = Пошук у Інтэрнэце
-    .title = Пошук у Інтэрнэце
-    .aria-label = Пошук у Інтэрнэце
+
 newtab-search-box-text = Шукаць у Iнтэрнэце
 newtab-search-box-input =
     .placeholder = Пошук у інтэрнэце
@@ -46,20 +44,21 @@ newtab-search-box-input =
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Дадаць пашукавік
-newtab-topsites-add-topsites-header = Новы папулярны сайт
 newtab-topsites-add-shortcut-header = Новы цэтлік
 newtab-topsites-edit-topsites-header = Рэдагаваць папулярны сайт
 newtab-topsites-edit-shortcut-header = Рэдагаваць цэтлік
 newtab-topsites-title-label = Загаловак
 newtab-topsites-title-input =
     .placeholder = Увядзіце назву
+
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
     .placeholder = Увядзіце або ўстаўце URL
 newtab-topsites-url-validation = Патрабуецца сапраўдны URL
-newtab-topsites-image-url-label = URL уласнага відарыса
-newtab-topsites-use-image-link = Выкарыстоўваць уласны відарыс…
-newtab-topsites-image-validation = Не ўдалося атрымаць відарыс. Паспрабуйце іншы URL.
+
+newtab-topsites-image-url-label = Уласны URL выявы
+newtab-topsites-use-image-link = Выкарыстоўваць уласную выяву…
+newtab-topsites-image-validation = Не ўдалося атрымаць выяву. Паспрабуйце іншы URL.
 
 ## Top Sites - General form dialog buttons. These are verbs/actions.
 
@@ -85,13 +84,15 @@ newtab-topsite-sponsored = Спонсарскі
 newtab-menu-section-tooltip =
     .title = Адкрыць меню
     .aria-label = Адкрыць меню
+
 # Tooltip for dismiss button
 newtab-dismiss-button-tooltip =
     .title = Выдаліць
     .aria-label = Выдаліць
+
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = Адкрыць меню
     .aria-label = Адкрыць кантэкстнае меню для { $title }
@@ -161,18 +162,21 @@ newtab-label-removed-bookmark = Закладка выдалена
 newtab-label-recommended = Тэндэнцыі
 newtab-label-saved = Захавана ў { -pocket-brand-name }
 newtab-label-download = Сцягнута
+
 # This string is used in the story cards to indicate sponsored content
 # Variables:
-#  $sponsorOrSource (String): This is the name of a company or their domain
+#   $sponsorOrSource (string) - The name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource } · Спансаравана
+
 # This string is used at the bottom of story cards to indicate sponsored content
 # Variables:
-#  $sponsor (String): This is the name of a sponsor
+#   $sponsor (string) - The name of a sponsor
 newtab-label-sponsored-by = Ад спонсара { $sponsor }
+
 # This string is used under the image of story cards to indicate source and time to read
 # Variables:
-#  $source (String): This is the name of a company or their domain
-#  $timeToRead (Number): This is the estimated number of minutes to read this story
+#   $source (string) - The name of a company or their domain
+#   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } хв
 
 ## Section Menu: These strings are displayed in the section context menu and are
@@ -199,18 +203,18 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = Папулярныя сайты
-newtab-section-header-highlights = Выбранае
 newtab-section-header-recent-activity = Апошняя актыўнасць
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Рэкамендавана { $provider }
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
-newtab-empty-section-highlights = Пачніце агляданне, і мы пакажам вам тут некаторыя з найлепшых артыкулаў, відэаролікаў і іншых старонак, якія вы нядаўна наведалі або дадалі ў закладкі.
+newtab-empty-section-highlights = Пачніце агляданне, і мы пакажам вам тут некаторыя з найлепшых артыкулаў, відэаролікаў і іншых старонак, якія вы нядаўна наведалі або зрабілі закладкі.
+
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Гатова. Праверце пазней, каб убачыць больш матэрыялаў ад { $provider }. Не жадаеце чакаць? Выберыце папулярную тэму, каб знайсці больш цікавых матэрыялаў з усяго Інтэрнэту.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -232,19 +236,18 @@ newtab-pocket-learn-more = Падрабязней
 newtab-pocket-cta-button = Атрымаць { -pocket-brand-name }
 newtab-pocket-cta-text = Захоўвайце ўлюбёныя гісторыі ў { -pocket-brand-name }, і сілкуйце свой розум добрай чытанкай.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } уваходзіць у сямейства { -brand-product-name }
-# A save to Pocket button that shows over the card thumbnail on hover.
-newtab-pocket-save-to-pocket = Захаваць у { -pocket-brand-name }
-newtab-pocket-saved-to-pocket = Захавана ў { -pocket-brand-name }
-# This is a button shown at the bottom of the Pocket section that loads more stories when clicked.
-newtab-pocket-load-more-stories-button = Загрузіць больш гісторый
 
 ## Pocket Final Card Section.
 ## This is for the final card in the Pocket grid.
 
-newtab-pocket-last-card-title = Вы ўсё прачыталі!
-newtab-pocket-last-card-desc = Завітайце сюды пазней, каб пабачыць больш.
-newtab-pocket-last-card-image =
-    .alt = Вы ўсё прачыталі
+# A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-save = Захаваць
+newtab-pocket-saved = Захавана
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
+
+newtab-pocket-onboarding-discover = Адкрыйце для сябе лепшае з Інтэрнэту
+newtab-pocket-onboarding-cta = { -pocket-brand-name } даследуе разнастайныя публікацыі, каб прынесці найбольш інфарматыўнае, натхняльнае і вартае даверу змесціва прама ў ваш браўзер { -brand-product-name }.
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -256,6 +259,8 @@ newtab-error-fallback-refresh-link = Абнавіць старонку, каб �
 
 newtab-custom-shortcuts-title = Цэтлікі
 newtab-custom-shortcuts-subtitle = Сайты, якія вы захоўваеце або наведваеце
+# Variables
+#   $num (number) - Number of rows to display
 newtab-custom-row-selector =
     { $num ->
         [one] { $num } радок
@@ -266,6 +271,7 @@ newtab-custom-sponsored-sites = Спонсарскія цэтлікі
 newtab-custom-pocket-title = Рэкамендавана { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Выключнае змесціва, куратарам якога з'яўляецца { -pocket-brand-name }, частка сям'і { -brand-product-name }
 newtab-custom-pocket-sponsored = Артыкулы ад спонсараў
+newtab-custom-pocket-show-recent-saves = Паказваць апошнія захаванні
 newtab-custom-recent-title = Апошняя актыўнасць
 newtab-custom-recent-subtitle = Падборка нядаўніх сайтаў і змесціва
 newtab-custom-close-button = Закрыць

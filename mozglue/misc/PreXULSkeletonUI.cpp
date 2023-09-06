@@ -32,7 +32,6 @@
 #include "mozilla/UniquePtrExtensions.h"
 #include "mozilla/Unused.h"
 #include "mozilla/WindowsDpiAwareness.h"
-#include "mozilla/WindowsVersion.h"
 #include "mozilla/WindowsProcessMitigations.h"
 
 namespace mozilla {
@@ -315,7 +314,7 @@ static bool ProfileDbHasStartWithLastProfile(IFStream& iniContents) {
   bool inGeneral = false;
   std::string line;
   while (std::getline(iniContents, line)) {
-    int whitespace = 0;
+    size_t whitespace = 0;
     while (line.length() > whitespace &&
            (line[whitespace] == ' ' || line[whitespace] == '\t')) {
       whitespace++;
@@ -756,7 +755,7 @@ Result<Ok, PreXULSkeletonUIError> DrawSkeletonUI(
   int menubarHeightDevPixels =
       menubarShown ? CSSToDevPixels(28, sCSSToDevPixelScaling) : 0;
 
-  // controlled by css variable urlbarMarginInline in urlbar-searchbar.inc.css
+  // defined in urlbar-searchbar.inc.css as --urlbar-margin-inline: 5px
   int urlbarMargin =
       CSSToDevPixels(5, sCSSToDevPixelScaling) + horizontalOffset;
 
@@ -1000,7 +999,7 @@ Result<Ok, PreXULSkeletonUIError> DrawSkeletonUI(
     }
   }
 
-  for (int i = 1; i < noPlaceholderSpans.length(); i++) {
+  for (size_t i = 1; i < noPlaceholderSpans.length(); i++) {
     int start = noPlaceholderSpans[i - 1].end + placeholderMargin;
     int end = noPlaceholderSpans[i].start - placeholderMargin;
     if (start + 2 * placeholderBorderRadius >= end) {
@@ -1259,8 +1258,6 @@ DWORD WINAPI AnimateSkeletonUI(void* aUnused) {
       return 0;
     }
   }
-
-  return 0;
 }
 
 LRESULT WINAPI PreXULSkeletonUIProc(HWND hWnd, UINT msg, WPARAM wParam,
@@ -1624,9 +1621,9 @@ static Result<Ok, PreXULSkeletonUIError> ValidateCmdlineArguments(
     const char* flag = NormalizeFlag(argv[i]);
     if (!flag) {
       // If this is not a flag, then we interpret it as a URL, similar to
-      // BrowserContentHandler.jsm. Some command line options take additional
-      // arguments, which may or may not be URLs. We don't need to know this,
-      // because we don't need to parse them out; we just rely on the
+      // BrowserContentHandler.sys.mjs. Some command line options take
+      // additional arguments, which may or may not be URLs. We don't need to
+      // know this, because we don't need to parse them out; we just rely on the
       // assumption that if arg X is actually a parameter for the preceding
       // arg Y, then X must not look like a flag (starting with "--", "-",
       // or "/").
@@ -1707,7 +1704,7 @@ static Result<Vector<CSSPixelSpan>, PreXULSkeletonUIError> ReadRegCSSPixelSpans(
 
   Vector<CSSPixelSpan> resultVector;
   double* asDoubles = reinterpret_cast<double*>(buffer.get());
-  for (int i = 0; i < dataLen / (2 * sizeof(double)); i++) {
+  for (size_t i = 0; i < dataLen / (2 * sizeof(double)); i++) {
     CSSPixelSpan span = {};
     span.start = *(asDoubles++);
     span.end = *(asDoubles++);
@@ -1832,10 +1829,6 @@ static Result<Ok, PreXULSkeletonUIError> CreateAndStorePreXULSkeletonUIImpl(
       mscom::ProcessRuntime::ProcessCategory::GeckoBrowserParent);
 
   const TimeStamp skeletonStart = TimeStamp::Now();
-
-  if (!IsWin10OrLater()) {
-    return Err(PreXULSkeletonUIError::Ineligible);
-  }
 
   HKEY regKey;
   MOZ_TRY_VAR(regKey, OpenPreXULSkeletonUIRegKey());

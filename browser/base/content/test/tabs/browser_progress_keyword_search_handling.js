@@ -3,33 +3,28 @@
 
 "use strict";
 
-const { SearchTestUtils } = ChromeUtils.import(
-  "resource://testing-common/SearchTestUtils.jsm"
+const { SearchTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/SearchTestUtils.sys.mjs"
 );
 
 SearchTestUtils.init(this);
 
 const kButton = document.getElementById("reload-button");
 
-add_task(async function setup() {
+add_setup(async function () {
   await SpecialPowers.pushPrefEnv({
     set: [["browser.fixup.dns_first_for_single_words", true]],
   });
 
   // Create an engine to use for the test.
-  await SearchTestUtils.installSearchExtension({
-    name: "MozSearch",
-    search_url: "https://example.com/",
-    search_url_get_params: "q={searchTerms}",
-  });
-
-  let originalEngine = await Services.search.getDefault();
-  let engineDefault = Services.search.getEngineByName("MozSearch");
-  await Services.search.setDefault(engineDefault);
-
-  registerCleanupFunction(async function() {
-    await Services.search.setDefault(originalEngine);
-  });
+  await SearchTestUtils.installSearchExtension(
+    {
+      name: "MozSearch",
+      search_url: "https://example.com/",
+      search_url_get_params: "q={searchTerms}",
+    },
+    { setAsDefault: true }
+  );
 });
 
 /*
@@ -50,6 +45,10 @@ add_task(async function test_unknown_host() {
     EventUtils.synthesizeKey("KEY_Enter");
 
     await searchPromise;
+    // With parent initiated loads, we need to give XULBrowserWindow
+    // time to process the STATE_START event and set the attribute to true.
+    await new Promise(resolve => executeSoon(resolve));
+
     ok(kButton.hasAttribute("displaystop"), "Should be showing stop");
 
     await TestUtils.waitForCondition(
@@ -73,6 +72,7 @@ add_task(async function test_unknown_host_without_search() {
     let searchPromise = BrowserTestUtils.browserLoaded(
       browser,
       false,
+      // eslint-disable-next-line @microsoft/sdl/no-insecure-url
       "http://" + kNonExistingHost + "/",
       true /* want an error page */
     );

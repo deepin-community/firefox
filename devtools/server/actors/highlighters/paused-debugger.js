@@ -6,13 +6,21 @@
 
 const {
   CanvasFrameAnonymousContentHelper,
-} = require("devtools/server/actors/highlighters/utils/markup");
+} = require("resource://devtools/server/actors/highlighters/utils/markup.js");
 
-loader.lazyGetter(this, "L10N", () => {
-  const { LocalizationHelper } = require("devtools/shared/l10n");
-  const STRINGS_URI = "devtools/client/locales/debugger.properties";
-  return new LocalizationHelper(STRINGS_URI);
+loader.lazyGetter(this, "PausedReasonsBundle", () => {
+  return new Localization(
+    ["devtools/shared/debugger-paused-reasons.ftl"],
+    true
+  );
 });
+
+loader.lazyRequireGetter(
+  this,
+  "DEBUGGER_PAUSED_REASONS_L10N_MAPPING",
+  "resource://devtools/shared/constants.js",
+  true
+);
 
 /**
  * The PausedDebuggerOverlay is a class that displays a semi-transparent mask on top of
@@ -21,22 +29,23 @@ loader.lazyGetter(this, "L10N", () => {
  * The toolbar is used to display the reason for the pause in script execution as well as
  * buttons to resume or step through the program.
  */
-function PausedDebuggerOverlay(highlighterEnv, options = {}) {
-  this.env = highlighterEnv;
-  this.resume = options.resume;
-  this.stepOver = options.stepOver;
+class PausedDebuggerOverlay {
+  constructor(highlighterEnv, options = {}) {
+    this.env = highlighterEnv;
+    this.resume = options.resume;
+    this.stepOver = options.stepOver;
 
-  this.lastTarget = null;
+    this.lastTarget = null;
 
-  this.markup = new CanvasFrameAnonymousContentHelper(
-    highlighterEnv,
-    this._buildMarkup.bind(this)
-  );
-  this.isReady = this.markup.initialize();
-}
+    this.markup = new CanvasFrameAnonymousContentHelper(
+      highlighterEnv,
+      this._buildMarkup.bind(this),
+      { waitForDocumentToLoad: false }
+    );
+    this.isReady = this.markup.initialize();
+  }
 
-PausedDebuggerOverlay.prototype = {
-  ID_CLASS_PREFIX: "paused-dbg-",
+  ID_CLASS_PREFIX = "paused-dbg-";
 
   _buildMarkup() {
     const prefix = this.ID_CLASS_PREFIX;
@@ -124,14 +133,14 @@ PausedDebuggerOverlay.prototype = {
     });
 
     return container;
-  },
+  }
 
   destroy() {
     this.hide();
     this.markup.destroy();
     this.env = null;
     this.lastTarget = null;
-  },
+  }
 
   onClick(target) {
     const { id } = target;
@@ -144,7 +153,7 @@ PausedDebuggerOverlay.prototype = {
     } else if (id.includes("paused-dbg-resume-button")) {
       this.resume();
     }
-  },
+  }
 
   onMouseMove(target) {
     // Not an element we care about
@@ -176,7 +185,7 @@ PausedDebuggerOverlay.prototype = {
       // Remove the hover class if the user isn't on a button
       this.lastTarget.classList.remove("hover");
     }
-  },
+  }
 
   handleEvent(e) {
     switch (e.type) {
@@ -195,25 +204,14 @@ PausedDebuggerOverlay.prototype = {
         this.onMouseMove(e.target);
         break;
     }
-  },
+  }
 
   getElement(id) {
     return this.markup.getElement(this.ID_CLASS_PREFIX + id);
-  },
+  }
 
   show(reason) {
     if (this.env.isXUL || !reason) {
-      return false;
-    }
-
-    try {
-      reason = L10N.getStr(`whyPaused.${reason}`);
-    } catch (e) {
-      // This is a temporary workaround (See Bug 1591025).
-      // This actors relies on a client side properties file. This file will not
-      // be available when debugging Firefox for Android / Gecko View.
-      // The highlighter also shows buttons that use client only images and are
-      // therefore invisible when remote debugging a mobile Firefox.
       return false;
     }
 
@@ -229,7 +227,11 @@ PausedDebuggerOverlay.prototype = {
 
     // Set the text to appear in the toolbar.
     const toolbar = this.getElement("toolbar");
-    this.getElement("reason").setTextContent(reason);
+    this.getElement("reason").setTextContent(
+      PausedReasonsBundle.formatValueSync(
+        DEBUGGER_PAUSED_REASONS_L10N_MAPPING[reason]
+      )
+    );
     toolbar.removeAttribute("hidden");
 
     // When the debugger pauses execution in a page, events will not be delivered
@@ -238,7 +240,7 @@ PausedDebuggerOverlay.prototype = {
     // events (they'll be handled by the `handleEvent` method)
     this.env.window.document.setSuppressedEventListener(this);
     return true;
-  },
+  }
 
   hide() {
     if (this.env.isXUL) {
@@ -250,6 +252,9 @@ PausedDebuggerOverlay.prototype = {
 
     // Hide the overlay.
     this.getElement("root").setAttribute("hidden", "true");
-  },
-};
+    // Remove the hover state
+    this.getElement("step-button-wrapper").classList.remove("hover");
+    this.getElement("resume-button-wrapper").classList.remove("hover");
+  }
+}
 exports.PausedDebuggerOverlay = PausedDebuggerOverlay;

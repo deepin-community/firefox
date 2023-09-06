@@ -63,7 +63,6 @@ protections-panel-not-found-label = لم تُكتشف في الصفحة
 ##
 
 protections-panel-settings-label = إعدادات الحماية
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = لوحة معلومات الحماية
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -89,6 +88,9 @@ protections-panel-fingerprinters = تجمع مُسجّلات البصمات ال
 protections-panel-tracking-content = يمكن أن تُحمّل المواقع الإعلانات والفديوهات وغيرها من محتوى خارجي يحتوي على كود تعقّب. بحجب المحتوى الذي يتعقّبك هذا فأنت تساهم في تحميل الصفحات أسرع، على حساب إمكانية عدم عمل بعض الأزرار والاستمارات وحقول الولوج.
 protections-panel-social-media-trackers = تضع شبكات التواصل المتعقّبات في مواقعها لتعرف ما تفعل وترى وتشاهد على الشبكة. يُتيح هذا لها بأن تعلم المزيد عنك وعمّا شاركته في صفحاتك الشخصية عليها.
 
+protections-panel-description-shim-allowed = أُلغي حجب بعض المتعقّبات في هذه الصفحة، والتي عليها علامة أسفله لأنّك تفاعلتَ معها.
+protections-panel-description-shim-allowed-learn-more = اطّلع على المزيد
+
 protections-panel-content-blocking-manage-settings =
     .label = أدِر إعدادات الحماية
     .accesskey = د
@@ -105,3 +107,6 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = ألغِ
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = أرسِل البلاغ
+
+# Cookie Banner Handling
+

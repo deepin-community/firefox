@@ -36,3 +36,45 @@ findbar-entire-word =
     .label = Cyłe słowa
     .accesskey = C
     .tooltiptext = Jenož cyłe słowa pytać
+
+findbar-not-found = Pytanski wuraz njeje so namakał
+
+findbar-wrapped-to-top = Kónc strony docpěty, pokročuje so ze spočatkom
+findbar-wrapped-to-bottom = Spočatk strony docpěty, pokročuje so z kóncom
+
+findbar-normal-find =
+    .placeholder = Na stronje pytać
+findbar-fast-find =
+    .placeholder = Spěšne pytanje
+findbar-fast-find-links =
+    .placeholder = Spěšne pytanje (jenož wotkazy)
+
+findbar-case-sensitive-status =
+    .value = (Na wulkopisanje dźiwać)
+findbar-match-diacritics-status =
+    .value = (dźiwa na diakritikiske znamješka)
+findbar-entire-word-status =
+    .value = (Jenož cyłe słowa)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $current } z { $total } wotpowědnika
+            [two] { $current } z { $total } wotpowědnikow
+            [few] { $current } z { $total } wotpowědnikow
+           *[other] { $current } z { $total } wotpowědnikow
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Wyše { $limit } wotpowědnika
+            [two] Wyše { $limit } wotpowědnikow
+            [few] Wyše { $limit } wotpowědnikow
+           *[other] Wyše { $limit } wotpowědnikow
+        }

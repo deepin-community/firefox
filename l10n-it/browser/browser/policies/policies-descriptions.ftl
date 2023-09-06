@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 ## The Enterprise Policies feature is aimed at system administrators
 ## who want to deploy these settings across several Firefox installations
 ## all at once. This is traditionally done through the Windows Group Policy
@@ -14,6 +15,8 @@ policy-3rdparty = Imposta criteri a cui le estensioni basate su tecnologia WebEx
 policy-AllowedDomainsForApps = Definisce i domini con cui è consentito accedere a Google Workspace.
 
 policy-AppAutoUpdate = Attiva o disattiva aggiornamenti automatici dell’applicazione.
+
+policy-AppUpdatePin = Impedisce l’aggiornamento di { -brand-short-name } a una versione superiore a quella indicata.
 
 policy-AppUpdateURL = Imposta URL personalizzato per aggiornamento applicazione.
 
@@ -38,6 +41,9 @@ policy-CaptivePortal = Attiva o disattiva supporto per captive portal.
 policy-CertificatesDescription = Aggiungi certificati o utilizza i certificati predefiniti (built-in).
 
 policy-Cookies = Consenti o nega ai siti web di impostare cookie.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Imposta criteri relativi alle schede contenitore.
 
 policy-DisabledCiphers = Disattiva cifrature.
 
@@ -68,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Se impostato a “true” non è possibi
 
 policy-DisablePasswordReveal = Non permettere di mostrare le password nelle credenziali salvate.
 
-policy-DisablePocket = Disattiva la possibilità di salvare pagine web in Pocket.
+policy-DisablePocket2 = Disattiva la possibilità di salvare pagine web in { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Disattiva la modalità Navigazione anonima.
 
@@ -86,34 +92,44 @@ policy-DisableSystemAddonUpdate = Impedisci al browser di installare e aggiornar
 
 policy-DisableTelemetry = Disattiva telemetria.
 
+policy-DisableThirdPartyModuleBlocking = Impedisci all’utente di bloccare moduli di terze parti che vengono inseriti nel processo di { -brand-short-name }.
+
 policy-DisplayBookmarksToolbar = Visualizza la barra dei segnalibri per impostazione predefinita.
 
 policy-DisplayMenuBar = Visualizza la barra dei menu per impostazione predefinita.
 
-policy-DNSOverHTTPS = Configura DNS over HTTPS.
+policy-DNSOverHTTPS = Configura DNS su HTTPS.
 
 policy-DontCheckDefaultBrowser = Disattiva il controllo del browser predefinito all’avvio.
 
 policy-DownloadDirectory = Imposta la cartella per i download e impedisci ulteriori modifiche.
 
+# “lock” means that the user won’t be able to change this setting
 policy-EnableTrackingProtection = Attiva o disattiva il blocco contenuti ed eventualmente impedisci modifiche all’opzione.
 
+# “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Attiva o disattiva Encrypted Media Extensions ed eventualmente impedisci modifiche all’opzione.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Disattiva avvisi associati all’estensione dei file per determinati tipi di file e domini.
+
+# A “locked” extension can’t be disabled or removed by the user. This policy
+# takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
+# English or translate them as verbs.
 policy-Extensions = Installa, disinstalla o blocca estensioni. L’opzione per installare richiede URL o percorsi come parametri. L’opzione per disinstallare o bloccare richiede gli ID delle estensioni.
 
 policy-ExtensionSettings = Gestisci tutti gli aspetti connessi all’installazione di estensioni.
 
 policy-ExtensionUpdate = Attiva o disattiva l’aggiornamento automatico delle estensioni.
 
-policy-FirefoxHome = Configura pagina iniziale di Firefox.
+policy-FirefoxHome2 = Configura { -firefox-home-brand-name }.
 
-policy-FlashPlugin = Consenti o nega l’utilizzo del plugin Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Forza la navigazione verso pagine della Intranet invece di avviare una ricerca quando si digita una singola parola nella barra degli indirizzi.
 
 policy-Handlers = Configura i gestori predefiniti dell’applicazione.
 
 policy-HardwareAcceleration = Se “false”, disattiva l’accelerazione hardware.
 
+# “lock” means that the user won’t be able to change this setting
 policy-Homepage = Imposta la pagina iniziale ed eventualmente impedisci modifiche all’opzione.
 
 policy-InstallAddonsPermission = Consenti a determinati siti web di installare componenti aggiuntivi.
@@ -152,6 +168,9 @@ policy-OverridePostUpdatePage = Sostituisci la pagina “Novità” visualizzata
 
 policy-PasswordManagerEnabled = Attiva il salvataggio delle password nel gestore password.
 
+policy-PasswordManagerExceptions = Impedisci a { -brand-short-name } di salvare le password per determinati siti.
+
+# PDF.js and PDF should not be translated
 policy-PDFjs = Disattiva o configura PDF.js, il lettore integrato di PDF di { -brand-short-name }.
 
 policy-Permissions2 = Configura i permessi per fotocamera, microfono, posizione, notifiche e riproduzione automatica.
@@ -176,7 +195,8 @@ policy-SearchEngines = Configura le impostazioni relative ai motori di ricerca. 
 
 policy-SearchSuggestEnabled = Attiva o disattiva suggerimenti di ricerca.
 
-policy-SecurityDevices = Installa moduli PKCS #11.
+# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
+policy-SecurityDevices2 = Aggiungi o elimina moduli PKCS #11.
 
 policy-ShowHomeButton = Visualizza il pulsante Pagina iniziale nella barra degli strumenti.
 
@@ -184,10 +204,17 @@ policy-SSLVersionMax = Imposta la versione massima di SSL.
 
 policy-SSLVersionMin = Imposta la versione minima di SSL.
 
+policy-StartDownloadsInTempDirectory = Forza l’avvio dei download in una cartella temporanea locale invece della cartella predefinita per i download.
+
 policy-SupportMenu = Aggiungi una voce di menu personalizzata nel menu Aiuto.
 
 policy-UserMessaging = Non visualizzare determinati messaggi all’utente.
 
+policy-UseSystemPrintDialog = Stampa utilizzando la finestra di dialogo di sistema.
+
+# “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Impedisci l’accesso a determinati siti web. Consulta la documentazione per ulteriori dettagli sul formato da utilizzare.
 
 policy-Windows10SSO = Permetti l’utilizzo di Windows single sign-on per account Microsoft, account aziendale o dell’istituto di istruzione.
+
+

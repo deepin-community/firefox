@@ -54,3 +54,9 @@ profiles-delete-files = Fayllarni o‘chirish
 profiles-dont-delete-files = Fayllar o‘chirilmasin
 
 
+profiles-opendir =
+    { PLATFORM() ->
+        [macos] Topgichda ochish
+        [windows] Jildni ochish
+       *[other] Jildni ochish
+    }

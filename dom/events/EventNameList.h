@@ -149,7 +149,9 @@
 #endif /* BEFOREUNLOAD_EVENT */
 
 EVENT(abort, eImageAbort, EventNameType_All, eBasicEventClass)
+EVENT(beforetoggle, eBeforeToggle, EventNameType_HTMLXUL, eBasicEventClass)
 EVENT(bounce, eMarqueeBounce, EventNameType_HTMLMarqueeOnly, eBasicEventClass)
+EVENT(cancel, eCancel, EventNameType_HTMLXUL, eBasicEventClass)
 EVENT(canplay, eCanPlay, EventNameType_HTML, eBasicEventClass)
 EVENT(canplaythrough, eCanPlayThrough, EventNameType_HTML, eBasicEventClass)
 EVENT(change, eFormChange, EventNameType_HTMLXUL, eBasicEventClass)
@@ -160,7 +162,8 @@ EVENT(RadioStateChange, eFormRadioStateChange, EventNameType_None,
 EVENT(auxclick, eMouseAuxClick, EventNameType_All, eMouseEventClass)
 EVENT(click, eMouseClick, EventNameType_All, eMouseEventClass)
 EVENT(close, eClose, EventNameType_HTMLXUL, eBasicEventClass)
-EVENT(contextmenu, eContextMenu, EventNameType_HTMLXUL, eMouseEventClass)
+EVENT(contextmenu, eContextMenu,
+      EventNameType_HTMLXUL | EventNameType_SVGGraphic, eMouseEventClass)
 NON_IDL_EVENT(mouselongtap, eMouseLongTap, EventNameType_HTMLXUL,
               eMouseEventClass)
 EVENT(cuechange, eCueChange, EventNameType_All, eBasicEventClass)
@@ -238,7 +241,6 @@ EVENT(securitypolicyviolation, eSecurityPolicyViolation, EventNameType_All,
 EVENT(seeked, eSeeked, EventNameType_HTML, eBasicEventClass)
 EVENT(seeking, eSeeking, EventNameType_HTML, eBasicEventClass)
 EVENT(select, eFormSelect, EventNameType_HTMLXUL, eBasicEventClass)
-EVENT(show, eShow, EventNameType_HTML, eBasicEventClass)
 EVENT(slotchange, eSlotChange, EventNameType_All, eBasicEventClass)
 EVENT(stalled, eStalled, EventNameType_HTML, eBasicEventClass)
 EVENT(start, eMarqueeStart, EventNameType_HTMLMarqueeOnly, eBasicEventClass)
@@ -293,6 +295,7 @@ WINDOW_EVENT(languagechange, eLanguageChange,
 // need a different macro to flag things like that (IDL, but not content
 // attributes on body/frameset), or is just using EventNameType_None enough?
 WINDOW_EVENT(message, eMessage, EventNameType_None, eBasicEventClass)
+WINDOW_EVENT(rtctransform, eRTCTransform, EventNameType_None, eBasicEventClass)
 WINDOW_EVENT(messageerror, eMessageError, EventNameType_HTMLBodyOrFramesetOnly,
              eBasicEventClass)
 WINDOW_EVENT(offline, eOffline,
@@ -327,7 +330,7 @@ WINDOW_ONLY_EVENT(devicemotion, eDeviceMotion, EventNameType_None,
                   eBasicEventClass)
 WINDOW_ONLY_EVENT(deviceorientation, eDeviceOrientation, EventNameType_None,
                   eBasicEventClass)
-WINDOW_ONLY_EVENT(absolutedeviceorientation, eAbsoluteDeviceOrientation,
+WINDOW_ONLY_EVENT(deviceorientationabsolute, eDeviceOrientationAbsolute,
                   EventNameType_None, eBasicEventClass)
 WINDOW_ONLY_EVENT(userproximity, eUserProximity, EventNameType_None,
                   eBasicEventClass)
@@ -357,6 +360,9 @@ DOCUMENT_ONLY_EVENT(visibilitychange, eVisibilityChange, EventNameType_HTMLXUL,
                     eBasicEventClass)
 
 NON_IDL_EVENT(MozMouseHittest, eMouseHitTest, EventNameType_None,
+              eMouseEventClass)
+
+NON_IDL_EVENT(MozMouseExploreByTouch, eMouseExploreByTouch, EventNameType_None,
               eMouseEventClass)
 
 NON_IDL_EVENT(DOMAttrModified, eLegacyAttrModified, EventNameType_HTMLXUL,
@@ -421,6 +427,8 @@ NON_IDL_EVENT(commandupdate, eXULCommandUpdate, EventNameType_XUL,
 NON_IDL_EVENT(overflow, eScrollPortOverflow, EventNameType_XUL,
               eBasicEventClass)
 NON_IDL_EVENT(underflow, eScrollPortUnderflow, EventNameType_XUL,
+              eBasicEventClass)
+NON_IDL_EVENT(systemstatusbarclick, eXULSystemStatusBarClick, EventNameType_XUL,
               eBasicEventClass)
 
 // Various SVG events
@@ -536,6 +544,8 @@ EVENT(webkittransitionend, eUnidentifiedEvent, EventNameType_All,
 NON_IDL_EVENT(audioprocess, eAudioProcess, EventNameType_None, eBasicEventClass)
 
 NON_IDL_EVENT(complete, eAudioComplete, EventNameType_None, eBasicEventClass)
+
+EVENT(scrollend, eScrollend, EventNameType_All, eBasicEventClass)
 
 #ifdef DEFINED_FORWARDED_EVENT
 #  undef DEFINED_FORWARDED_EVENT

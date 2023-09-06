@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Buang Data
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Membersihkan semua kuki dan lokasi data yang disimpan oleh { -brand-short-name } boleh menyebabkan anda didaftar keluar dari laman web dan kandungan web luar talian dibuang. Membersihkan data cache tidak akan menjejaskan log masuk anda.
 

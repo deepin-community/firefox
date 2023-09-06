@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Definier domener som får tilgang til Google Work
 
 policy-AppAutoUpdate = Slå på eller slå av automatisk programoppdateringer.
 
+policy-AppUpdatePin = Forhindre at { -brand-short-name } oppdateres utover den angitte versjonen.
+
 policy-AppUpdateURL = Angi egendefinert programoppdateringsadresse.
 
 policy-Authentication = Konfigurer integrert godkjenning for nettsteder som støtter det.
@@ -39,6 +41,9 @@ policy-CaptivePortal = Aktiver eller deaktiver støtte for captive portal.
 policy-CertificatesDescription = Legg til sertifikater eller bruk innebygde sertifikater.
 
 policy-Cookies = Tillat eller nekt nettsteder å lagre infokapsler.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Angi policyer relatert til beholdere.
 
 policy-DisabledCiphers = Deaktiver krypteringsmetoder.
 
@@ -69,9 +74,9 @@ policy-DisablePrimaryPasswordCreation = Om aktiv, kan ikke et hovedpassord lages
 
 policy-DisablePasswordReveal = Ikke la passord bli avslørt for lagrede innlogginger.
 
-policy-DisablePocket = Deaktiver funksjonen for å lagre nettsider til Pocket.
+policy-DisablePocket2 = Deaktiver funksjonen for å lagre nettsider til { -pocket-brand-name }.
 
-policy-DisablePrivateBrowsing = Slå av Privat nettlesing.
+policy-DisablePrivateBrowsing = Slå av privat nettlesing.
 
 policy-DisableProfileImport = Deaktiver meny-kommandoen for å importere data fra en annen nettleser.
 
@@ -86,6 +91,8 @@ policy-DisableSetAsDesktopBackground = Deaktiver menykommandoen Bruk som skriveb
 policy-DisableSystemAddonUpdate = Forhindre at nettleseren installerer og oppdaterer system-utvidelser.
 
 policy-DisableTelemetry = Slå av av telemetri.
+
+policy-DisableThirdPartyModuleBlocking = Hindre brukeren fra å blokkere tredjepartsmoduler som blir injisert i { -brand-short-name }-prosessen.
 
 policy-DisplayBookmarksToolbar = Vise bokmerkeverktøylinjen som standard.
 
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Aktiver eller deaktiver innholdsblokkering med
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Aktiver eller deaktiver Encrypted Media Extension med mulighet til å låse valget.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Slå av advarsler basert på filetternavn for spesifikke filtyper på domener.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Håndter alle aspekter av utvidelsesinstallasjon.
 
 policy-ExtensionUpdate = Slå på eller slå av automatisk utvidelsesoppdateringer.
 
-policy-FirefoxHome = Konfigurer Firefox-startside.
+policy-FirefoxHome2 = Konfigurer { -firefox-home-brand-name }.
 
-policy-FlashPlugin = Tillat eller nekt bruk av programtillegget Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Tving direkte navigering på intranettet i stedet for å søke når du skriver inn enkeltord i adressefeltet.
 
 policy-Handlers = Konfigurer standard applikasjonsbehandlere.
 
@@ -159,6 +168,8 @@ policy-OverridePostUpdatePage = Bytt ut «Hva er nytt»-siden som blir vist ette
 
 policy-PasswordManagerEnabled = Slå på lagring av passord til passordbehandleren.
 
+policy-PasswordManagerExceptions = Forhindre { -brand-short-name } fra å lagre passord for bestemte nettsteder.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = Deaktiver eller konfigurer PDF.js, det innebygde PDF-visningsprogrammet i { -brand-short-name }.
 
@@ -184,8 +195,8 @@ policy-SearchEngines = Konfigurer søkemotorinnstillinger. Denne policyen er kun
 
 policy-SearchSuggestEnabled = Slå av eller på søkeforslag.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Installer PKCS #11-moduler.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Legg til eller slett PKCS #11-moduler.
 
 policy-ShowHomeButton = Vis hjemknappen på verktøylinjen.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = Angi den maksimale SSL-versjonen.
 
 policy-SSLVersionMin = Angi den minimale SSL-versjonen.
 
+policy-StartDownloadsInTempDirectory = Tving nedlastinger til å starte på en lokal, midlertidig plassering i stedet for standard nedlastingskatalog.
+
 policy-SupportMenu = Legg til et tilpasset menyelement med hjelp i hjelpemenyen.
 
 policy-UserMessaging = Ikke vis visse meldinger til brukeren.
+
+policy-UseSystemPrintDialog = Skriv ut ved hjelp av systemets utskriftsdialogvindu.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Blokker besøk på nettsteder. Les dokumentasjonen for detaljer om formatet.

@@ -45,7 +45,7 @@ struct NativeSharedLibrary {
   std::string path;
 };
 static std::vector<NativeSharedLibrary>* sSharedLibrariesList = nullptr;
-static mozilla::StaticMutex sSharedLibrariesMutex;
+static mozilla::StaticMutex sSharedLibrariesMutex MOZ_UNANNOTATED;
 
 static void SharedLibraryAddImage(const struct mach_header* mh,
                                   intptr_t vmaddr_slide) {
@@ -128,6 +128,7 @@ static void addSharedLibrary(const platform_mach_header* header,
   }
 
   nsAutoCString uuid;
+  nsAutoCString breakpadId;
   if (uuid_bytes != nullptr) {
     uuid.AppendPrintf(
         "%02X"
@@ -145,12 +146,18 @@ static void addSharedLibrary(const platform_mach_header* header,
         "%02X"
         "%02X"
         "%02X"
-        "%02X"
-        "0" /* breakpad id age */,
+        "%02X",
         uuid_bytes[0], uuid_bytes[1], uuid_bytes[2], uuid_bytes[3],
         uuid_bytes[4], uuid_bytes[5], uuid_bytes[6], uuid_bytes[7],
         uuid_bytes[8], uuid_bytes[9], uuid_bytes[10], uuid_bytes[11],
         uuid_bytes[12], uuid_bytes[13], uuid_bytes[14], uuid_bytes[15]);
+
+    // Breakpad id is the same as the uuid but with the additional trailing 0
+    // for the breakpad id age.
+    breakpadId.AppendPrintf(
+        "%s"
+        "0" /* breakpad id age */,
+        uuid.get());
   }
 
   nsAutoString pathStr;
@@ -166,8 +173,8 @@ static void addSharedLibrary(const platform_mach_header* header,
   const NXArchInfo* archInfo =
       NXGetArchInfoFromCpuType(header->cputype, header->cpusubtype);
 
-  info.AddSharedLibrary(SharedLibrary(start, start + size, 0, uuid, nameStr,
-                                      pathStr, nameStr, pathStr, ""_ns,
+  info.AddSharedLibrary(SharedLibrary(start, start + size, 0, breakpadId, uuid,
+                                      nameStr, pathStr, nameStr, pathStr, ""_ns,
                                       archInfo ? archInfo->name : ""));
 }
 
@@ -179,6 +186,25 @@ SharedLibraryInfo SharedLibraryInfo::GetInfoForSelf() {
 
   for (auto& info : *sSharedLibrariesList) {
     addSharedLibrary(info.header, info.path.c_str(), sharedLibraryInfo);
+  }
+
+  // Add the entry for dyld itself.
+  // We only support macOS 10.12+, which corresponds to dyld version 15+.
+  // dyld version 15 added the dyldPath property.
+  task_dyld_info_data_t task_dyld_info;
+  mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
+  if (task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&task_dyld_info,
+                &count) != KERN_SUCCESS) {
+    return sharedLibraryInfo;
+  }
+
+  struct dyld_all_image_infos* aii =
+      (struct dyld_all_image_infos*)task_dyld_info.all_image_info_addr;
+  if (aii->version >= 15) {
+    const platform_mach_header* header =
+        reinterpret_cast<const platform_mach_header*>(
+            aii->dyldImageLoadAddress);
+    addSharedLibrary(header, aii->dyldPath, sharedLibraryInfo);
   }
 
   return sharedLibraryInfo;

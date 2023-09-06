@@ -4,7 +4,7 @@
 /* eslint-env node */
 
 /*
-Ensure the `--firefox.preference=network.http.http3.enabled:true` is
+Ensure the `--firefox.preference=network.http.http3.enable:true` is
 set for this test.
 */
 
@@ -147,13 +147,12 @@ async function test(context, commands) {
       await commands.wait.byTime(waitTime);
     }
 
-    if (vals.length == 0) {
+    if (!vals.length) {
       throw new Error("No requestsPerSecond values were obtained");
     }
 
-    commands.measure.result[0].browserScripts.pageinfo.requestsPerSecond = average(
-      vals
-    );
+    commands.measure.result[0].browserScripts.pageinfo.requestsPerSecond =
+      average(vals);
   }
 }
 

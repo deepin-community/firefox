@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Emër përdoruesi
 common-dialog-password =
     .value = Fjalëkalim
+
+common-dialog-copy-cmd =
+    .label = Kopjoje
+    .accesskey = K
+common-dialog-select-all-cmd =
+    .label = Përzgjidhe Krejt
+    .accesskey = T

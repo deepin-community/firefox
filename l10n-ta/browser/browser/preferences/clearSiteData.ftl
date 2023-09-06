@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = தரவினை அகற்று
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = { -brand-short-name } ஆல் சேமிக்கப்பட்ட எல்லா நினைவிகள் மற்றும் தள தரவை அழிப்பது உங்களை வலைத்தளத்திலிருந்து வெளியேற்றுவதோடு இணையமில்லா வலை உள்ளடக்கங்களையும் நீக்கும். தற்காலிக நினைவிடத்தை அழிப்பது புகுபதிகைகளைப் பாதிக்காது.
 

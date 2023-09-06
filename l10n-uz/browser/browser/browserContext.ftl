@@ -84,6 +84,7 @@ toolbar-button-stop-reload =
 
 ## Firefox Account Button
 
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -91,30 +92,6 @@ main-context-menu-page-save =
     .accesskey = P
 
 ## Simple menu items
-
-main-context-menu-bookmark-add =
-    .aria-label = Sahifani xatcho‘plarga qo‘shish
-    .accesskey = m
-    .tooltiptext = Sahifani xatcho‘pga qo‘shish
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Sahifani xatcho‘plarga qo‘shish
-    .accesskey = m
-    .tooltiptext = Sahifani xatcho‘pga qo‘shish ({ $shortcut })
-
-main-context-menu-bookmark-change =
-    .aria-label = Ushbu xatcho‘pni o‘zgartirish
-    .accesskey = m
-    .tooltiptext = Ushbu xatcho‘pni tahrirlash
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Ushbu xatcho‘pni o‘zgartirish
-    .accesskey = m
-    .tooltiptext = Ushbu xatcho‘pni tahrirlash ({ $shortcut })
 
 main-context-menu-open-link =
     .label = Havolani ochish
@@ -144,11 +121,6 @@ main-context-menu-save-link-to-pocket =
     .label = Havolani { -pocket-brand-name } xizmatiga saqlash
     .accesskey = o
 
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
-
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
 ## are mutually exclusive.
@@ -156,6 +128,10 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = Email manzilidan nusxa olish
     .accesskey = E
+
+main-context-menu-copy-link-simple =
+    .label = Havoladan nusxa olish
+    .accesskey = l
 
 ## Media (video/audio) controls
 ##
@@ -210,9 +186,29 @@ main-context-menu-image-reload =
     .label = Rasmni qayta yuklash
     .accesskey = R
 
+main-context-menu-image-view-new-tab =
+    .label = Rasmni yangi varaqda ochish
+    .accesskey = o
+
+main-context-menu-video-view-new-tab =
+    .label = Videoni yangi varaqda ochish
+    .accesskey = i
+
 main-context-menu-image-copy =
     .label = Rasmdan nusxa olish
     .accesskey = u
+
+main-context-menu-image-copy-link =
+    .label = Havoladan nusxa olish
+    .accesskey = H
+
+main-context-menu-video-copy-link =
+    .label = Video havolasidan nusxa olish
+    .accesskey = o
+
+main-context-menu-audio-copy-link =
+    .label = Audio havolasidan nusxa olish
+    .accesskey = o
 
 main-context-menu-image-save-as =
     .label = Rasmni saqlash…
@@ -221,6 +217,10 @@ main-context-menu-image-save-as =
 main-context-menu-image-email =
     .label = Rasmni emaildan joʻnatish…
     .accesskey = m
+
+main-context-menu-image-set-image-as-background =
+    .label = Ish stoli orqa foni sifatida oʻrnatish
+    .accesskey = s
 
 main-context-menu-image-info =
     .label = Rasm maʼlumotini koʻrish
@@ -245,14 +245,6 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Audioni emaildan joʻnatish…
     .accesskey = A
-
-main-context-menu-plugin-play =
-    .label = Bu plaginni faollashtirish
-    .accesskey = f
-
-main-context-menu-plugin-hide =
-    .label = Bu plaginni yashirish
-    .accesskey = y
 
 main-context-menu-save-to-pocket =
     .label = Sahifani { -pocket-brand-name } xizmatiga saqlash
@@ -297,10 +289,6 @@ main-context-menu-frame-reload =
     .label = Freymni qayta yuklash
     .accesskey = q
 
-main-context-menu-frame-bookmark =
-    .label = Freymni xatchoʻplarga qoʻshish
-    .accesskey = h
-
 main-context-menu-frame-save-as =
     .label = Freym sifatida saqlash
     .accesskey = F
@@ -321,6 +309,14 @@ main-context-menu-view-selection-source =
     .label = Tanlangan fragment manba kodi
     .accesskey = e
 
+main-context-menu-take-screenshot =
+    .label = Skrinshot olish
+    .accesskey = S
+
+main-context-menu-take-frame-screenshot =
+    .label = Skrinshot olish
+    .accesskey = o
+
 main-context-menu-view-page-source =
     .label = Sahifa manba kodi
     .accesskey = k
@@ -333,10 +329,20 @@ main-context-menu-bidi-switch-page =
     .label = Sahifa yoʻnalishini almashtirish
     .accesskey = y
 
+main-context-menu-inspect =
+    .label = Tekshirish
+    .accesskey = T
+
 main-context-menu-inspect-a11y-properties =
     .label = Qulaylik xossalarini kuzatish
 
 main-context-menu-eme-learn-more =
     .label = DRM haqida batafsil…
     .accesskey = D
+
+# Variables
+#   $containerName (String): The name of the current container
+main-context-menu-open-link-in-container-tab =
+    .label = Havolani yangi { $containerName } varagʻida ochish
+    .accesskey = H
 

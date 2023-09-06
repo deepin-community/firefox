@@ -4,6 +4,7 @@
 
 # Page title
 about-processes-title = Rheolwr Prosesau
+
 # The Actions column
 about-processes-column-action =
     .title = Gweithredoedd
@@ -14,6 +15,7 @@ about-processes-shutdown-process =
     .title = Dadlwytho tabiau a lladd y broses
 about-processes-shutdown-tab =
     .title = Cau tab
+
 # Profiler icons
 # Variables:
 #    $duration (Number) The time in seconds during which the profiler will be running.
@@ -54,6 +56,8 @@ about-processes-socket-process = Rhwydwaith ({ $pid })
 about-processes-remote-sandbox-broker-process = Brocer Blwch Tywod Pell ({ $pid })
 about-processes-fork-server-process = Gweinydd Fforc ({ $pid })
 about-processes-preallocated-process = Wedi'i rhagddyrannu ({ $pid })
+about-processes-utility-process = Gwasanaeth ({ $pid })
+
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
@@ -66,10 +70,9 @@ about-processes-unknown-process = Arall: { $type } ({ $pid })
 ##    $origin (String) The domain name for this process.
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
-about-processes-web-large-allocation-process = { $origin } ({ $pid }, mawr)
+about-processes-web-serviceworker = { $origin } ({ $pid }, gweithiwr gwasanaeth)
 about-processes-with-coop-coep-process = { $origin } ({ $pid }, traws-darddiad ynysig)
 about-processes-web-isolated-process-private = { $origin } — Preifat ({ $pid })
-about-processes-web-large-allocation-process-private = { $origin } — Preifat ({ $pid }, mawr)
 about-processes-with-coop-coep-process-private = { $origin } — Preifat ({ $pid }, traws-darddiad ynysig)
 
 ## Details within processes
@@ -93,6 +96,7 @@ about-processes-active-threads =
         [many] { $active } edafedd gweithredol allan o { $number }:{ $list }
        *[other] { $active } edafedd gweithredol allan o { $number }:{ $list }
     }
+
 # Single-line summary of threads (idle process)
 # Variables:
 #    $number (Number) The number of threads in the process. Typically larger
@@ -108,26 +112,41 @@ about-processes-inactive-threads =
         [many] { $number } edafedd anweithredol
        *[other] { $number } edafedd anweithredol
     }
+
 # Thread details
 # Variables:
 #   $name (String) The name assigned to the thread.
 #   $tid (String) The thread id of this thread, assigned by the OS.
 about-processes-thread-name-and-id = { $name }
     .title = ID edafedd: { $tid }
+
 # Tab
 # Variables:
 #   $name (String) The name of the tab (typically the title of the page, might be the url while the page is loading).
 about-processes-tab-name = Tab: { $name }
 about-processes-preloaded-tab = Tab Newydd wedi'i Rhag-lwytho
+
 # Single subframe
 # Variables:
 #   $url (String) The full url of this subframe.
 about-processes-frame-name-one = Is-ffrâm: { $url }
+
 # Group of subframes
 # Variables:
 #   $number (Number) The number of subframes in this group. Always ≥ 1.
 #   $shortUrl (String) The shared prefix for the subframes in the group.
 about-processes-frame-name-many = Is-fframiau ({ $number }): { $shortUrl }
+
+## Utility process actor names
+
+about-processes-utility-actor-unknown = Actor anhysbys
+about-processes-utility-actor-audio-decoder-generic = Datgodiwr Sain Generig
+about-processes-utility-actor-audio-decoder-applemedia = Datgodiwr Sain Apple Media
+about-processes-utility-actor-audio-decoder-wmf = Datgodiwr Sain Fframwaith Windows Media
+about-processes-utility-actor-mf-media-engine = CDM Media Engine Windows Media Foundation
+# "Oracle" refers to an internal Firefox process and should be kept in English
+about-processes-utility-actor-js-oracle = JavaScript Oracle
+about-processes-utility-actor-windows-utils = Windows Utils
 
 ## Displaying CPU (percentage and total)
 ## Variables:
@@ -141,11 +160,18 @@ about-processes-frame-name-many = Is-fframiau ({ $number }): { $shortUrl }
 # Common case.
 about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
     .title = Cyfanswm amser CPU: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+
 # Special case: data is not available yet.
 about-processes-cpu-user-and-kernel-not-ready = (yn mesur)
+
+# Special case: process or thread is almost idle (using less than 0.1% of a CPU core).
+# This case only occurs on Windows where the precision of the CPU times is low.
+about-processes-cpu-almost-idle = <0.1%
+    .title = Cyfanswm amser CPU: { NUMBER($total, maximumFractionDigits: 0) }{ NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+
 # Special case: process or thread is currently idle.
-about-processes-cpu-idle = yn segur
-    .title = Cyfanswm amser CPU: { NUMBER($total, maximumFractionDigits: 2) }{ $unit }
+about-processes-cpu-fully-idle = yn segur
+    .title = Cyfanswm amser CPU { NUMBER($total, maximumFractionDigits: 0) }{ NUMBER($total, maximumFractionDigits: 0) }{ $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:
@@ -161,6 +187,7 @@ about-processes-cpu-idle = yn segur
 # Common case.
 about-processes-total-memory-size-changed = { NUMBER($total, maximumFractionDigits: 0) }{ $totalUnit }
     .title = Esblygiad: { $deltaSign }{ NUMBER($delta, maximumFractionDigits: 0) }{ $deltaUnit }
+
 # Special case: no change.
 about-processes-total-memory-size-no-change = { NUMBER($total, maximumFractionDigits: 0) }{ $totalUnit }
 

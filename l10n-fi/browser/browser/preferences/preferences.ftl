@@ -71,23 +71,23 @@ restart-later = Käynnistä uudestaan myöhemmin
 ## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
 ##
 ## Variables:
-##   $name (String): name of the extension
+##   $name (string) - Name of the extension
 
 # This string is shown to notify the user that the password manager setting
 # is being controlled by an extension
-extension-controlled-password-saving = Laajennus, <img data-l10n-name="icon"/> { $name }, hallitsee tätä asetusta.
+extension-controlling-password-saving = <img data-l10n-name="icon"/> <strong>{ $name }</strong> hallitsee tätä asetusta.
 # This string is shown to notify the user that their notifications permission
 # is being controlled by an extension.
-extension-controlled-web-notifications = Laajennus, <img data-l10n-name="icon"/> { $name }, hallitsee tätä asetusta.
+extension-controlling-web-notifications = <img data-l10n-name="icon"/> <strong>{ $name }</strong> hallitsee tätä asetusta.
 # This string is shown to notify the user that Container Tabs
 # are being enabled by an extension.
-extension-controlled-privacy-containers = Laajennus, <img data-l10n-name="icon"/> { $name }, vaatii eristetyt välilehdet.
+extension-controlling-privacy-containers = <img data-l10n-name="icon"/> <strong>{ $name }</strong> vaatii eristettyjä välilehtiä.
 # This string is shown to notify the user that their content blocking "All Detected Trackers"
 # preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = Laajennus, <img data-l10n-name="icon"/> { $name }, hallitsee tätä asetusta.
+extension-controlling-websites-content-blocking-all-trackers = <img data-l10n-name="icon"/> <strong>{ $name }</strong> hallitsee tätä asetusta.
 # This string is shown to notify the user that their proxy configuration preferences
 # are being controlled by an extension.
-extension-controlled-proxy-config = Laajennus, <img data-l10n-name="icon"/> { $name }, hallitsee { -brand-short-name }-selaimen verkkoyhteysasetuksia.
+extension-controlling-proxy-config = <img data-l10n-name ="icon"/> <strong>{ $name }</strong> hallitsee miten { -brand-short-name } yhdistää internetiin.
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
 #
@@ -113,9 +113,6 @@ is-not-default = { -brand-short-name } ei ole järjestelmän oletusselain
 set-as-my-default-browser =
     .label = Aseta oletukseksi…
     .accesskey = e
-startup-restore-previous-session =
-    .label = Palauta edellinen istunto
-    .accesskey = P
 startup-restore-windows-and-tabs =
     .label = Avaa aiemmat ikkunat ja välilehdet
     .accesskey = A
@@ -123,6 +120,11 @@ startup-restore-warn-on-quit =
     .label = Varoita, kun selainta ollaan sulkemassa
 disable-extension =
     .label = Poista laajennus käytöstä
+preferences-data-migration-header = Tuo selaimen tiedot
+preferences-data-migration-description = Tuo kirjanmerkit, salasanat, historia ja automaattisen täytön tiedot { -brand-short-name }iin.
+preferences-data-migration-button =
+    .label = Tuo tietoja
+    .accesskey = T
 tabs-group-header = Välilehdet
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab selaa välilehtiä käyttöjärjestyksessä alkaen viimeisimmästä
@@ -130,15 +132,12 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Avaa linkit välilehtiin uusien ikkunoiden sijasta
     .accesskey = A
-warn-on-close-multiple-tabs =
-    .label = Varoita, kun olen sulkemassa useita välilehtiä
-    .accesskey = V
 confirm-on-close-multiple-tabs =
     .label = Vahvista ennen kuin useat välilehdet suljetaan
     .accesskey = s
 # This string is used for the confirm before quitting preference.
 # Variables:
-#   $quitKey (String) - the quit keyboard shortcut, and formatted
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
 #                       in the same manner as it would appear,
 #                       for example, in the File menu.
 confirm-on-quit-with-key =
@@ -161,6 +160,10 @@ browser-containers-settings =
     .label = Asetukset…
     .accesskey = e
 containers-disable-alert-title = Suljetaanko kaikki eristetyt välilehdet?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Jos poistat eristetyt välilehdet käytöstä nyt, { $tabCount } eristetty välilehti suljetaan. Haluatko varmasti poistaa eristetyt välilehdet käytöstä?
@@ -171,10 +174,13 @@ containers-disable-alert-ok-button =
         [one] Sulje { $tabCount } eristetty välilehti
        *[other] Sulje { $tabCount } eristettyä välilehteä
     }
+
+##
+
 containers-disable-alert-cancel-button = Pidä käytössä
 containers-remove-alert-title = Poistetaanko tämä eristystila?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] Jos poistat tämän eristystilan nyt, { $count } eristetty välilehti suljetaan. Haluatko varmasti poistaa eristystilan?
@@ -186,7 +192,35 @@ containers-remove-cancel-button = Älä poista eristystilaa
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Kieli ja ulkoasu
-fonts-and-colors-header = Kirjasinlajit ja värit
+preferences-web-appearance-header = Verkkosivuston ulkoasu
+preferences-web-appearance-description = Jotkin verkkosivustot mukauttavat värimaailmaansa valintasi mukaan. Valitse, mitä värimaailmaa haluat käyttää tällaisilla sivustoilla.
+preferences-web-appearance-choice-auto = Automaattinen
+preferences-web-appearance-choice-light = Vaalea
+preferences-web-appearance-choice-dark = Tumma
+preferences-web-appearance-choice-tooltip-auto =
+    .title = Muuta automaattisesti verkkosivustojen taustaa ja sisältöä järjestelmäasetustesi ja { -brand-short-name }-teeman perusteella.
+preferences-web-appearance-choice-tooltip-light =
+    .title = Käytä vaaleaa ulkoasua verkkosivuston taustalle ja sisällölle.
+preferences-web-appearance-choice-tooltip-dark =
+    .title = Käytä tummaa ulkoasua verkkosivuston taustalle ja sisällölle.
+preferences-web-appearance-choice-input-auto =
+    .aria-description = { preferences-web-appearance-choice-tooltip-auto.title }
+preferences-web-appearance-choice-input-light =
+    .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
+preferences-web-appearance-choice-input-dark =
+    .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning = Värivalintasi ohittavat verkkosivuston ulkoasun. <a data-l10n-name="colors-link">Hallinnoi värejä</a>
+# This message contains one link. It can be moved within the sentence as needed
+# to adapt to your language, but should not be changed.
+preferences-web-appearance-footer = Hallinnoi { -brand-short-name }in teemoja <a data-l10n-name="themes-link">Laajennukset ja teemat -osiossa</a>
+preferences-colors-header = Värit
+preferences-colors-description = Ohita { -brand-short-name }in oletusvärit tekstille, verkkosivustojen taustoille ja linkeille.
+preferences-colors-manage-button =
+    .label = Hallitse värejä…
+    .accesskey = ä
+preferences-fonts-header = Kirjasimet
 default-font = Oletuskirjasinlaji
     .accesskey = t
 default-font-size = Koko
@@ -194,13 +228,12 @@ default-font-size = Koko
 advanced-fonts =
     .label = Lisäasetukset…
     .accesskey = a
-colors-settings =
-    .label = Värit…
-    .accesskey = ä
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Suurennus
 preferences-default-zoom = Oletuskoko
     .accesskey = O
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage } %
 preferences-zoom-text-only =
@@ -239,8 +272,7 @@ check-user-spelling =
 
 files-and-applications-title = Tiedostot ja ohjelmat
 download-header = Lataukset
-download-save-to =
-    .label = Tallenna kansioon
+download-save-where = Tallenna kansioon
     .accesskey = T
 download-choose-folder =
     .label =
@@ -294,15 +326,15 @@ applications-manage-app =
 applications-always-ask =
     .label = Kysy aina
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Käytä liitännäistä { $plugin-name } (ohjelmassa { -brand-short-name })
 applications-open-inapp =
@@ -331,6 +363,13 @@ applications-use-os-default-label =
 
 ##
 
+applications-handle-new-file-types-description = Mitä { -brand-short-name }in pitäisi tehdä muille tiedostoille?
+applications-save-for-new-types =
+    .label = Tallenna tiedostot
+    .accesskey = s
+applications-ask-before-handling =
+    .label = Kysy avataanko vai tallennetaanko tiedostot
+    .accesskey = A
 drm-content-header = Käyttöoikeuksien hallintaa (DRM) käyttävä sisältö
 play-drm-content =
     .label = Toista DRM-suojattua sisältöä
@@ -338,6 +377,8 @@ play-drm-content =
 play-drm-content-learn-more = Lue lisää
 update-application-title = { -brand-short-name }in päivitykset
 update-application-description = Pidä { -brand-short-name } ajan tasalla parhaan suorituskyvyn, vakauden ja turvallisuuden vuoksi.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Versio { $version } <a data-l10n-name="learn-more">Mitä uutta</a>
 update-history =
     .label = Näytä päivityshistoria…
@@ -359,9 +400,12 @@ update-application-warning-cross-user-setting = Tämä asetus koskee kaikkia Win
 update-application-use-service =
     .label = Asenna päivitykset taustalla toimivalla palvelulla
     .accesskey = u
+update-application-suppress-prompts =
+    .label = Näytä vähemmän päivitysilmoituksia
+    .accesskey = n
 update-setting-write-failure-title2 = Päivitysasetusten tallennusvirhe
 # Variables:
-#   $path (String) - Path to the configuration file
+#   $path (string) - Path to the configuration file
 # The newlines between the main text and the line containing the path is
 # intentional so the path is easier to identify.
 update-setting-write-failure-message2 =
@@ -391,7 +435,7 @@ performance-limit-content-process-option = Sisältöprosessien yläraja
 performance-limit-content-process-enabled-desc = Useammat sisältöprosessit parantavat suorituskykyä käytettäessä useita välilehtiä, mutta kuluttavat myös enemmän muistia.
 performance-limit-content-process-blocked-desc = Sisältöprosessien määrän muokkaaminen on mahdollista vain useaa prosessia hyödyntävällä { -brand-short-name }illa. <a data-l10n-name="learn-more">Lue, miten usean prosessin hyödyntämisen tilanteen voi tarkistaa</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (oletus)
 
@@ -404,12 +448,18 @@ browsing-use-autoscroll =
 browsing-use-smooth-scrolling =
     .label = Vieritä sivua tasaisesti
     .accesskey = e
+browsing-gtk-use-non-overlay-scrollbars =
+    .label = Näytä aina vierityspalkit
+    .accesskey = v
 browsing-use-onscreen-keyboard =
     .label = Näytä kosketusnäppäimistö tarvittaessa
     .accesskey = N
 browsing-use-cursor-navigation =
     .label = Liiku sivuilla nuolinäppäimillä
     .accesskey = s
+browsing-use-full-keyboard-navigation =
+    .label = Käytä sarkainnäppäintä siirtääksesi kohdistusta lomakkeen ohjauskontrollien ja linkkien välillä
+    .accesskey = t
 browsing-search-on-start-typing =
     .label = Ala etsiä tekstistä heti kirjoitettaessa
     .accesskey = A
@@ -450,10 +500,8 @@ home-newtabs-mode-label = Uudet välilehdet
 home-restore-defaults =
     .label = Palauta oletukset
     .accesskey = P
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Firefox-aloitussivu (oletus)
+home-mode-choice-default-fx =
+    .label = { -firefox-home-brand-name } (Oletus)
 home-mode-choice-custom =
     .label = Omat osoitteet…
 home-mode-choice-blank =
@@ -477,15 +525,10 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Firefox-aloitussivun sisältö
-home-prefs-content-description = Valitse Firefox-aloitussivulle haluamasi sisältö.
+home-prefs-content-header2 = { -firefox-home-brand-name }n sisältö
+home-prefs-content-description2 = Valitse mitä sisältöä haluat { -firefox-home-brand-name }lle.
 home-prefs-search-header =
     .label = Verkkohaku
-home-prefs-topsites-header =
-    .label = Ykkössivustot
-home-prefs-topsites-description = Useimmin vierailemasi sivustot
-home-prefs-topsites-by-option-sponsored =
-    .label = Sponsoroidut ykkössivustot
 home-prefs-shortcuts-header =
     .label = Oikotiet
 home-prefs-shortcuts-description = Tallentamasi tai vierailemasi sivustot
@@ -493,11 +536,10 @@ home-prefs-shortcuts-by-option-sponsored =
     .label = Sponsoroidut oikotiet
 
 ## Variables:
-##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 home-prefs-recommended-by-header =
     .label = Suositukset lähteestä { $provider }
-home-prefs-recommended-by-description-update = Poikkeuksellista sisältöä ympäri internetiä, valikoijana { $provider }
 home-prefs-recommended-by-description-new = Poikkeuksellista, valikoitua sisältöä { $provider }-palvelulta, osana { -brand-product-name }-perhettä
 
 ##
@@ -505,9 +547,8 @@ home-prefs-recommended-by-description-new = Poikkeuksellista, valikoitua sisält
 home-prefs-recommended-by-learn-more = Kuinka se toimii
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Sponsoroidut tarinat
-home-prefs-highlights-header =
-    .label = Nostot
-home-prefs-highlights-description = Valikoima sivustoja, joilla olet käynyt tai jotka olet tallentanut
+home-prefs-recommended-by-option-recent-saves =
+    .label = Näytä viimeisimmät tallennukset
 home-prefs-highlights-option-visited-pages =
     .label = Vieraillut sivustot
 home-prefs-highlights-options-bookmarks =
@@ -525,8 +566,9 @@ home-prefs-recent-activity-description = Valikoima viimeisimpiä sivustoja ja si
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Tiedonmuruset
-home-prefs-snippets-description = Päivitykset { -vendor-short-name }lta ja { -brand-product-name }ilta
 home-prefs-snippets-description-new = Vinkit ja uutiset { -vendor-short-name }lta ja { -brand-product-name }ilta
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -555,6 +597,11 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Näytä hakuehdotukset osoitepalkkihauissa
     .accesskey = o
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar
+# when using the current default search engine.
+search-show-search-term-option =
+    .label = Näytä hakuehdot URL-osoitteen sijaan oletushakukoneen tulossivulla
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -586,7 +633,7 @@ search-find-more-link = Etsi lisää hakukoneita
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Pikakomento jo käytössä
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Annettu pikakomento on jo kirjanmerkillä ”{ $name }”. Kirjoita uusi pikakomento.
 search-keyword-warning-bookmark = Annettu pikakomento on jo toisella kirjanmerkillä. Kirjoita uusi pikakomento.
 
@@ -606,7 +653,7 @@ containers-settings-button =
 containers-remove-button =
     .label = Poista
 
-## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = Pidä oma selain aina mukanasi
@@ -624,7 +671,7 @@ sync-signedout-account-signin3 =
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Lataa Firefox <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Androidille</a> tai <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS:lle</a> ja synkronoi tietosi kannettavalle laitteellesi.
 
-## Firefox Account - Signed in
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = Vaihda kuva
@@ -633,8 +680,15 @@ sync-sign-out =
     .accesskey = K
 sync-manage-account = Hallinnoi tiliä
     .accesskey = H
+
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = Sähköpostiosoitetta { $email } ei ole vahvistettu.
 sync-signedin-login-failure = Kirjaudu sisään palauttaaksesi osoitteen { $email } yhteyden
+
+##
+
 sync-resend-verification =
     .label = Lähetä vahvistus uudestaan
     .accesskey = v
@@ -657,10 +711,15 @@ prefs-sync-now =
     .labelnotsyncing = Synkronoi nyt
     .accesskeynotsyncing = N
     .labelsyncing = Synkronoidaan…
+prefs-sync-now-button =
+    .label = Synkronoi nyt
+    .accesskey = N
+prefs-syncing-button =
+    .label = Synkronoidaan…
 
 ## The list of things currently syncing.
 
-sync-currently-syncing-heading = Näitä synkronoidaan parhaillaan:
+sync-syncing-across-devices-heading = Synkronoit näitä tietoja kaikkien yhdistettyjen laitteiden välillä:
 sync-currently-syncing-bookmarks = Kirjanmerkit
 sync-currently-syncing-history = Historia
 sync-currently-syncing-tabs = Avoimet välilehdet
@@ -675,13 +734,14 @@ sync-change-options =
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog =
+sync-choose-what-to-sync-dialog3 =
     .title = Valitse, mitä synkronoidaan
-    .style = width: 36em; min-height: 35em;
+    .style = min-width: 36em;
     .buttonlabelaccept = Tallenna muutokset
     .buttonaccesskeyaccept = T
     .buttonlabelextra2 = Katkaise yhteys…
     .buttonaccesskeyextra2 = K
+sync-choose-dialog-subtitle = Muutokset synkronoitavien kohteiden luetteloon vaikuttavat kaikkiin yhdistämiisi laitteisiin.
 sync-engine-bookmarks =
     .label = Kirjanmerkit
     .accesskey = K
@@ -727,6 +787,16 @@ sync-device-name-save =
     .accesskey = T
 sync-connect-another-device = Yhdistä toinen laite
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Vahvistus lähetetty
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Vahvistuslinkki on lähetetty osoitteeseen { $email }.
+sync-verification-not-sent-title = Vahvistuksen lähetys epäonnistui
+sync-verification-not-sent-body = Vahvistussähköpostin lähetys ei onnistu tällä hetkellä. Yritä uudestaan myöhemmin.
+
 ## Privacy Section
 
 privacy-header = Selaimen tietosuoja
@@ -750,6 +820,9 @@ forms-breach-alerts =
     .label = Näytä hälytykset salasanoista sivustoille, jotka ovat kokeneet tietomurron
     .accesskey = h
 forms-breach-alerts-learn-more-link = Lue lisää
+preferences-relay-integration-checkbox =
+    .label = Ehdota { -relay-brand-name }-sähköpostimaskeja sähköpostiosoitteen suojaamiseksi
+relay-integration-learn-more-link = Lue lisää
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
     .label = Täytä automaattisesti käyttäjätunnukset ja salasanat
@@ -838,8 +911,8 @@ history-clear-button =
 sitedata-header = Evästeet ja sivustotiedot
 sitedata-total-size-calculating = Lasketaan sivustotietojen ja välimuistin kokoa…
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = Evästeet, sivustotiedot ja välimuisti vievät tällä hetkellä { $value } { $unit } levytilaa.
 sitedata-learn-more = Lue lisää
 sitedata-delete-on-close =
@@ -858,18 +931,14 @@ sitedata-block-desc = Tyyppi
     .accesskey = T
 sitedata-option-block-cross-site-trackers =
     .label = Sivustorajat ylittävät seuraimet
-sitedata-option-block-cross-site-and-social-media-trackers =
-    .label = Sivustorajat ylittävät ja sosiaalisen median seuraimet
-sitedata-option-block-cross-site-tracking-cookies-including-social-media =
-    .label = Sivustorajat ylittävät seurainevästeet — mukaan lukien sosiaalisen median evästeet
-sitedata-option-block-cross-site-cookies-including-social-media =
-    .label = Sivustorajat ylittävät evästeet — mukaan lukien sosiaalisen median evästeet
-sitedata-option-block-cross-site-and-social-media-trackers-plus-isolate =
-    .label = Sivustorajat ylittävät ja sosiaalisen median seuraimet, eristä jäljelle jäävät evästeet
+sitedata-option-block-cross-site-tracking-cookies =
+    .label = Sivustorajat ylittävät seurainevästeet
+sitedata-option-block-cross-site-cookies =
+    .label = Sivustorajat ylittävät evästeet, eristä muut sivustorajat ylittävät evästeet
 sitedata-option-block-unvisited =
     .label = Evästeet vierailemattomilta sivustoilta
-sitedata-option-block-all-third-party =
-    .label = Kaikki 3. osapuolen evästeet (voi aiheuttaa sivustovirheitä)
+sitedata-option-block-all-cross-site-cookies =
+    .label = Kaikki sivustorajat ylittävät evästeet (voi aiheuttaa sivustojen toimimattomuutta)
 sitedata-option-block-all =
     .label = Kaikki evästeet (aiheuttaa sivustovirheitä)
 sitedata-clear =
@@ -881,6 +950,14 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Hallitse poikkeuksia…
     .accesskey = p
+
+## Privacy Section - Cookie Banner Handling
+
+cookie-banner-handling-header = Evästeilmoitusten vähennys
+cookie-banner-handling-description = { -brand-short-name } pyrkii automaattisesti vastaamaan kielteisesti evästepyyntöihin tuetuilla sivustoilla.
+cookie-banner-learn-more = Lue lisää
+forms-handle-cookie-banners =
+    .label = Vähennä evästeilmoituksia
 
 ## Privacy Section - Address Bar
 
@@ -905,7 +982,11 @@ addressbar-locbar-topsites-option =
 addressbar-locbar-engines-option =
     .label = hakukoneista
     .accesskey = h
+addressbar-locbar-quickactions-option =
+    .label = Pikatoiminnot
+    .accesskey = Q
 addressbar-suggestions-settings = Muuta hakukoneiden ehdotusten asetuksia
+addressbar-quickactions-learn-more = Lue lisää
 
 ## Privacy Section - Content Blocking
 
@@ -935,7 +1016,7 @@ content-blocking-etp-strict-desc = Vahvempi suojaus, mutta saattaa aiheuttaa siv
 content-blocking-etp-custom-desc = Valitse, mitkä seuraimet ja komentosarjat estetään.
 content-blocking-etp-blocking-desc = { -brand-short-name } estää seuraavat:
 content-blocking-private-windows = Seurantaan tarkoitettu sisältö yksityisissä ikkunoissa
-content-blocking-cross-site-cookies-in-all-windows = Sivustorajat ylittävät evästeet kaikissa ikkunoissa (mukaan lukien seurainevästeet)
+content-blocking-cross-site-cookies-in-all-windows2 = Sivustorajat ylittävät evästeet kaikissa ikkunoissa
 content-blocking-cross-site-tracking-cookies = Sivustorajat ylittävät seurainevästeet
 content-blocking-all-cross-site-cookies-private-windows = Sivustorajat ylittävät evästeet yksityisissä ikkunoissa
 content-blocking-cross-site-tracking-cookies-plus-isolate = Sivustorajat ylittävät seuraimet, eristä jäljelle jäävät evästeet
@@ -943,11 +1024,17 @@ content-blocking-social-media-trackers = Sosiaalisen median seuraimet
 content-blocking-all-cookies = Kaikki evästeet
 content-blocking-unvisited-cookies = Evästeet sivustoilta, joilla ei ole käyty
 content-blocking-all-windows-tracking-content = Seurantaan tarkoitettu sisältö kaikissa ikkunoissa
-content-blocking-all-third-party-cookies = Kaikki kolmannen osapuolen evästeet
+content-blocking-all-cross-site-cookies = Kaikki sivustorajat ylittävät evästeet
 content-blocking-cryptominers = Kryptolouhijat
 content-blocking-fingerprinters = Yksilöijät
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
+
+# "Contains" here means "isolates", "limits".
+content-blocking-etp-standard-tcp-rollout-description = Totaalinen evästesuoja eristää evästeet sivustolle, jolla olet, joten seuraimet eivät voi käyttää niitä seurantaan sivustojen välillä.
+content-blocking-etp-standard-tcp-rollout-learn-more = Lue lisää
+content-blocking-etp-standard-tcp-title = Sisältää totaalisen evästesuojan, kaikkien aikojen tehokkaimman tietosuojaominaisuuden
 content-blocking-warning-title = Huomio!
-content-blocking-and-isolating-etp-warning-description = Seurainten estäminen ja evästeiden eristäminen saattaa vaikuttaa joidenkin sivustojen toimivuuteen. Lataa sivu uudelleen seurainten kera ladataksesi kaiken sisällön.
 content-blocking-and-isolating-etp-warning-description-2 = Tämä asetus saattaa aiheuttaa sen, että jotkin verkkosivustot eivät näytä sisältöä tai toimi oikein. Jos sivusto vaikuttaa rikkoutuneen, saatat haluta poistaa seurannan suojauksen käytöstä kyseisen sivuston kohdalta, jotta kaikki sisältö voidaan ladata.
 content-blocking-warning-learn-how = Lue lisää
 content-blocking-reload-description = Kaikki välilehdet tarvitsee päivittää, jotta muutokset tulevat voimaan.
@@ -1004,6 +1091,11 @@ permissions-microphone = Mikrofoni
 permissions-microphone-settings =
     .label = Asetukset…
     .accesskey = t
+# Short form for "the act of choosing sound output devices and redirecting audio to the chosen devices".
+permissions-speaker = Äänentoistolaitteen valinta
+permissions-speaker-settings =
+    .label = Asetukset…
+    .accesskey = t
 permissions-notification = Ilmoitukset
 permissions-notification-settings =
     .label = Asetukset…
@@ -1019,9 +1111,6 @@ permissions-autoplay-settings =
 permissions-block-popups =
     .label = Estä ponnahdusikkunat
     .accesskey = E
-permissions-block-popups-exceptions =
-    .label = Poikkeukset…
-    .accesskey = P
 # "popup" is a misspelling that is more popular than the correct spelling of
 # "pop-up" so it's included as a search keyword, not displayed in the UI.
 permissions-block-popups-exceptions-button =
@@ -1057,6 +1146,12 @@ addon-recommendations-link = Lue lisää
 collection-health-report-disabled = Tietojen kerääminen ei ole käytössä tässä koostamiskokoonpanossa
 collection-backlogged-crash-reports-with-link = Salli, että { -brand-short-name } lähettää lähettämättömät kaatumisraportit puolestasi <a data-l10n-name="crash-reports-link">Lue lisää</a>
     .accesskey = S
+privacy-segmentation-section-header = Uudet selaamista parantavat ominaisuudet
+privacy-segmentation-section-description = Kun tarjoamme ominaisuuksia, jotka käyttävät tietojasi aiempaa henkilökohtaisemman käyttökokemuksen tarjoamiseksi:
+privacy-segmentation-radio-off =
+    .label = Käytä { -brand-product-name }-suosituksia
+privacy-segmentation-radio-on =
+    .label = Näytä yksityiskohtaiset tiedot
 
 ## Privacy Section - Security
 ##
@@ -1106,12 +1201,65 @@ httpsonly-radio-enabled-pbm =
 httpsonly-radio-disabled =
     .label = Älä käytä ”Vain HTTPS”-tilaa
 
+## DoH Section
+
+preferences-doh-header = DNS HTTPS:n kautta
+preferences-doh-description = DNS (Domain Name System eli nimipalvelujärjestelmä) HTTPS:n kautta lähettää verkkotunnuksen nimeä koskevan pyyntösi salatun yhteyden kautta, luoden suojatun DNS:n ja vaikeuttaen muiden nähdä, mihin verkkosivustoon olet siirtymässä.
+# Variables:
+#   $status (string) - The status of the DoH connection
+preferences-doh-status = Tila: { $status }
+# Variables:
+#   $name (string) - The name of the DNS over HTTPS resolver. If a custom resolver is used, the name will be the domain of the URL.
+preferences-doh-resolver = Palveluntarjoaja: { $name }
+# This is displayed instead of $name in preferences-doh-resolver
+# when the DoH URL is not a valid URL
+preferences-doh-bad-url = Virheellinen osoite
+preferences-doh-steering-status = Käytetään paikallista palveluntarjoajaa
+preferences-doh-status-active = Käytössä
+preferences-doh-status-disabled = Ei käytössä
+# Variables:
+#   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
+preferences-doh-status-not-active = Ei aktiivinen ({ $reason })
+preferences-doh-group-message = Aseta suojattu DNS päälle käyttämällä:
+preferences-doh-expand-section =
+    .tooltiptext = Lisätietoja
+preferences-doh-setting-default =
+    .label = Oletussuojaus
+    .accesskey = O
+preferences-doh-default-desc = { -brand-short-name } päättää, milloin suojattua DNS:ää käytetään yksityisyytesi suojaamiseksi.
+preferences-doh-default-detailed-desc-1 = Käytä suojattua DNS:ää alueilla, joilla se on saatavilla
+preferences-doh-default-detailed-desc-2 = Käytä oletusarvoista DNS-selvittäjää, jos suojatussa DNS:ssä on ongelma
+preferences-doh-default-detailed-desc-3 = Käytä paikallista palveluntarjoajaa, jos mahdollista
+preferences-doh-default-detailed-desc-4 = Sammuta, kun VPN, vanhempien käytönvalvonta tai yrityskäytännöt ovat aktiivisia
+preferences-doh-default-detailed-desc-5 = Sammuta, kun verkko kertoo { -brand-short-name }ille, ettei sen pitäisi käyttää suojattua DNS:ää
+preferences-doh-setting-enabled =
+    .label = Lisätty suojaus
+    .accesskey = i
+preferences-doh-enabled-desc = Sinä hallitset, milloin suojattua DNS:ää käytetään ja valitset palveluntarjoajan.
+preferences-doh-enabled-detailed-desc-1 = Käytä valitsemaani palveluntarjoajaa
+preferences-doh-enabled-detailed-desc-2 = Käytä oletusarvoista DNS-selvittäjää vain, jos suojatussa DNS:ssä on ongelma
+preferences-doh-setting-strict =
+    .label = Täysi suojaus
+    .accesskey = ä
+preferences-doh-strict-desc = { -brand-short-name } käyttää aina suojattua DNS:ää. Näet turvallisuusriskivaroituksen, ennen kuin käytämme järjestelmäsi DNS:ää.
+preferences-doh-strict-detailed-desc-1 = Käytä vain valitsemaani palveluntarjoajaa
+preferences-doh-strict-detailed-desc-2 = Varoita aina, jos suojattu DNS ei ole käytettävissä
+preferences-doh-strict-detailed-desc-3 = Jos suojattu DNS ei ole käytettävissä, sivustot eivät lataudu tai toimi oikein
+preferences-doh-setting-off =
+    .label = Pois
+    .accesskey = o
+preferences-doh-off-desc = Käytä oletusarvoista DNS-selvittäjää
+preferences-doh-checkbox-warn =
+    .label = Varoita, jos kolmas osapuoli aktiivisesti estää suojatun DNS:n
+    .accesskey = V
+preferences-doh-select-resolver = Valitse palveluntarjoaja:
+preferences-doh-exceptions-description = { -brand-short-name } ei käytä suojattua DNS:ää näillä sivustoilla
+preferences-doh-manage-exceptions =
+    .label = Hallitse poikkeuksia…
+    .accesskey = H
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Työpöytä
 downloads-folder-name = Lataukset
 choose-download-folder-title = Valitse tallennuskansio
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Tallenna tiedostot palveluun { $service-name }

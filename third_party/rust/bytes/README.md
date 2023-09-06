@@ -18,7 +18,7 @@ To use `bytes`, first add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-bytes = "0.5"
+bytes = "1"
 ```
 
 Next, add this to your crate:
@@ -33,7 +33,16 @@ Serde support is optional and disabled by default. To enable use the feature `se
 
 ```toml
 [dependencies]
-bytes = { version = "0.5", features = ["serde"] }
+bytes = { version = "1", features = ["serde"] }
+```
+
+## Building documentation
+
+When building the `bytes` documentation the `docsrs` option should be used, otherwise
+feature gates will not be shown. This requires a nightly toolchain:
+
+```
+RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc
 ```
 
 ## License

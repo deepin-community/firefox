@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Isem n useqdac
 common-dialog-password =
     .value = Awal uffir
+
+common-dialog-copy-cmd =
+    .label = Nɣel
+    .accesskey = N
+common-dialog-select-all-cmd =
+    .label = Fren imaṛṛa
+    .accesskey = i

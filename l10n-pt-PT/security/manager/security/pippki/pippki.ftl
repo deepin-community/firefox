@@ -16,8 +16,6 @@ change-password-old = Palavra-passe atual:
 change-password-new = Nova palavra-passe:
 change-password-reenter = Nova palavra-passe (novamente):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Não foi possível alterar a palavra-passe.
 pippki-incorrect-pw = A palavra-passe que digitou não corresponde à palavra-passe principal atual. Por favor, tente novamente.
 pippki-pw-change-ok = Palavra-passe alterada com sucesso.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Atualmente, está no modo FIPS. Este modo 
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Repor palavra-passe principal
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Repor
-
 reset-primary-password-text = Se remover a sua palavra-passe principal, todas as suas palavras-passe da Internet e e-mail, certificados pessoais e chaves privadas guardadas serão esquecidas. Tem a certeza de que pretende repor a sua palavra-passe principal?
 
 pippki-reset-password-confirmation-title = Repor palavra-passe principal
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = A sua palavra-passe principal foi r
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = A transferir certificado
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Foi-lhe pedido para confiar numa nova autoridade certificadora (CA).
 download-cert-trust-ssl =
     .label = Confiar nesta entidade de certificação para identificar sites.
@@ -77,7 +74,8 @@ set-password-reminder = Importante: se esquecer a palavra-passe da cópia do seu
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Autenticação por token protegido
-protected-auth-msg = Por favor autentique o token. O método de autenticação depende do tipo do seu token.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Por favor, autentique-se na chave “{ $tokenName }”. A forma de fazer isto depende da chave (por exemplo, utilizando um leitor de impressão digital ou inserindo um código com um teclado).

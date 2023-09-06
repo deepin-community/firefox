@@ -1,6 +1,8 @@
 "use strict";
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
 var httpServer = null;
 
@@ -25,10 +27,7 @@ function run_test() {
   httpServer.registerPathHandler("/content", contentHandler);
   httpServer.start(-1);
 
-  var prefserv = Cc["@mozilla.org/preferences-service;1"].getService(
-    Ci.nsIPrefService
-  );
-  var prefs = prefserv.getBranch("network.proxy.");
+  var prefs = Services.prefs.getBranch("network.proxy.");
   prefs.setIntPref("type", 2);
   prefs.setCharPref(
     "autoconfig_url",

@@ -7,7 +7,6 @@ page-subtitle =
     Deze pagina bevat technische informatie die handig kan zijn als u een probleem
     probeert op te lossen. Als u antwoorden op veelgestelde vragen over { -brand-short-name }
     zoekt, kijk dan op onze <a data-l10n-name="support-link">ondersteuningswebsite</a>.
-
 crashes-title = Crashrapporten
 crashes-id = Rapport-ID
 crashes-send-date = Verzonden
@@ -19,6 +18,10 @@ support-addons-type = Type
 support-addons-enabled = Ingeschakeld
 support-addons-version = Versie
 support-addons-id = ID
+legacy-user-stylesheets-title = Verouderde gebruikersstijlbladen
+legacy-user-stylesheets-enabled = Actief
+legacy-user-stylesheets-stylesheet-types = Stijlbladen
+legacy-user-stylesheets-no-stylesheets-found = Geen stijlbladen gevonden
 security-software-title = Beveiligingssoftware
 security-software-type = Type
 security-software-name = Naam
@@ -76,6 +79,13 @@ app-basics-location-service-key-google = Google-locatieservicesleutel
 app-basics-safebrowsing-key-google = Google Safe Browsing-sleutel
 app-basics-key-mozilla = Mozilla-locatieservicesleutel
 app-basics-safe-mode = Veilige modus
+app-basics-memory-size = Geheugengrootte (RAM)
+app-basics-disk-available = Beschikbare schijfruimte
+app-basics-pointing-devices = Aanwijsapparaten
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Tonen in Finder
@@ -105,11 +115,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Beslissingenlogboek
 graphics-crash-guards-title = Door crashbeveiliging uitgeschakelde functies
 graphics-workarounds-title = Workarounds
+graphics-device-pixel-ratios = Pixelverhoudingen van vensterapparaat
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Vensterprotocol
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Desktopomgeving
 place-database-title = Places-database
+place-database-stats = Statistieken
+place-database-stats-show = Statistieken tonen
+place-database-stats-hide = Statistieken verbergen
+place-database-stats-entity = Entiteit
+place-database-stats-count = Aantal
+place-database-stats-size-kib = Grootte (KB)
+place-database-stats-size-perc = Grootte (%)
+place-database-stats-efficiency-perc = Efficiëntie (%)
+place-database-stats-sequentiality-perc = Volgorde (%)
 place-database-integrity = Integriteit
 place-database-verify-integrity = Integriteit verifiëren
 a11y-title = Toegankelijkheid
@@ -156,8 +176,18 @@ media-device-channels = Kanalen
 media-device-rate = Frequentie
 media-device-latency = Latentie
 media-capabilities-title = Mediamogelijkheden
+media-codec-support-info = Codec-ondersteuningsinformatie
 # List all the entries of the database.
 media-capabilities-enumerate = Database inventariseren
+
+## Codec support table
+
+media-codec-support-sw-decoding = Software-decodering
+media-codec-support-hw-decoding = Hardware-decodering
+media-codec-support-codec-name = Codecnaam
+media-codec-support-supported = Ondersteund
+media-codec-support-unsupported = Niet ondersteund
+media-codec-support-error = Codec-ondersteuningsinformatie niet beschikbaar. Probeer het opnieuw na het afspelen van een mediabestand.
 
 ##
 
@@ -193,7 +223,6 @@ report-crash-for-days =
         [one] Crashrapporten van de afgelopen { $days } dag
        *[other] Crashrapporten van de afgelopen { $days } dagen
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -201,7 +230,6 @@ crashes-time-minutes =
         [one] { $minutes } minuut geleden
        *[other] { $minutes } minuten geleden
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -209,7 +237,6 @@ crashes-time-hours =
         [one] { $hours } uur geleden
        *[other] { $hours } uur geleden
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -217,7 +244,6 @@ crashes-time-days =
         [one] { $days } dag geleden
        *[other] { $days } dagen geleden
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -225,7 +251,6 @@ pending-reports =
         [one] Alle crashrapporten (waaronder { $reports } crash in behandeling in het gegeven tijdsbereik)
        *[other] Alle crashrapporten (waaronder { $reports } crashes in behandeling in het gegeven tijdsbereik)
     }
-
 raw-data-copied = Onbewerkte gegevens naar klembord gekopieerd
 text-copied = Tekst naar klembord gekopieerd
 
@@ -238,11 +263,9 @@ blocked-mismatched-version = Geblokkeerd voor uw grafische stuurprogramma, versi
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = Geblokkeerd voor uw grafische stuurprogramma. Probeer uw grafische stuurprogramma bij te werken naar versie { $driverVersion } of nieuwer.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType-parameters
-
 compositing = Samenstellen
 hardware-h264 = Hardwarematige H264-decodering
 main-thread-no-omtc = hoofdthread, geen OMTC
@@ -257,7 +280,6 @@ virtual-monitor-disp = Virtual Monitor Display
 
 found = Gevonden
 missing = Ontbreekt
-
 gpu-process-pid = GPUProcessPid
 gpu-process = GPUProcess
 gpu-description = Beschrijving
@@ -280,19 +302,17 @@ webgl2-renderer = Renderer van  WebGL 2-stuurprogramma
 webgl2-version = Versie van WebGL 2-stuurprogramma
 webgl2-driver-extensions = Extensies van WebGL 2-stuurprogramma
 webgl2-extensions = WebGL 2-extensies
-
+webgpu-default-adapter = WebGPU-standaardadapter
+webgpu-fallback-adapter = WebGPU-terugvaladapter
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = Geblokkeerd vanwege bekende problemen: <a data-l10n-name="bug-link">bug { $bugNumber }</a>
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = Op blokkeerlijst; foutcode { $failureCode }
-
 d3d11layers-crash-guard = D3D11-compositor
 glcontext-crash-guard = OpenGL
 wmfvpxvideo-crash-guard = WMF VPX-videodecoder
-
 reset-on-next-restart = Herinitialiseren bij volgende herstart
 gpu-process-kill-button = GPU-proces beëindigen
 gpu-device-reset = Apparaatherinitialisatie
@@ -302,10 +322,8 @@ content-uses-tiling = Gebruikt Tiling (Inhoud)
 off-main-thread-paint-enabled = Off Main Thread Painting ingeschakeld
 off-main-thread-paint-worker-count = Aantal Off Main Thread Painting-workers
 target-frame-rate = Doelframerate
-
 min-lib-versions = Verwachte minimale versie
 loaded-lib-versions = Gebruikte versie
-
 has-seccomp-bpf = Seccomp-BPF (Systeemaanroepfiltering)
 has-seccomp-tsync = Seccomp-threadsynchronisatie
 has-user-namespaces = Namespaces van gebruiker
@@ -315,22 +333,20 @@ can-sandbox-media = Mediaplug-in-sandboxing
 content-sandbox-level = Sandboxniveau van inhoudsproces
 effective-content-sandbox-level = Effectief sandboxniveau van inhoudsproces
 content-win32k-lockdown-state = Win32k-vergrendelingsstatus voor inhoudsproces
+support-sandbox-gpu-level = Sandboxniveau van GPU-proces
 sandbox-proc-type-content = inhoud
 sandbox-proc-type-file = bestandsinhoud
 sandbox-proc-type-media-plugin = mediaplug-in
 sandbox-proc-type-data-decoder = gegevensdecoder
-
 startup-cache-title = Opstartbuffer
 startup-cache-disk-cache-path = Pad naar schijfbuffer
 startup-cache-ignore-disk-cache = Schijfbuffer negeren
 startup-cache-found-disk-cache-on-init = Schijfbuffer bij Init gevonden
 startup-cache-wrote-to-disk-cache = Naar schijfbuffer geschreven
-
 launcher-process-status-0 = Ingeschakeld
 launcher-process-status-1 = Uitgeschakeld vanwege fout
 launcher-process-status-2 = Geforceerd uitgeschakeld
 launcher-process-status-unknown = Onbekende status
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
@@ -343,14 +359,13 @@ fission-status-experiment-control = Uitgeschakeld door experiment
 fission-status-experiment-treatment = Ingeschakeld door experiment
 fission-status-disabled-by-e10s-env = Uitgeschakeld door omgeving
 fission-status-enabled-by-env = Ingeschakeld door omgeving
-fission-status-disabled-by-safe-mode = Uitgeschakeld door veilige modus
+fission-status-disabled-by-env = Uitgeschakeld door omgeving
 fission-status-enabled-by-default = Standaard ingeschakeld
 fission-status-disabled-by-default = Standaard uitgeschakeld
 fission-status-enabled-by-user-pref = Ingeschakeld door gebruiker
 fission-status-disabled-by-user-pref = Uitgeschakeld door gebruiker
 fission-status-disabled-by-e10s-other = E10s uitgeschakeld
 fission-status-enabled-by-rollout = Ingeschakeld door gefaseerde uitrol
-
 async-pan-zoom = Asynchroon pannen/zoomen
 apz-none = geen
 wheel-enabled = wielinvoer ingeschakeld
@@ -387,7 +402,13 @@ support-remote-experiments-title = Externe experimenten
 support-remote-experiments-name = Naam
 support-remote-experiments-branch = Experimenttak
 support-remote-experiments-see-about-studies = Zie <a data-l10n-name="support-about-studies-link">about:studies</a> voor meer informatie, waaronder hoe u individuele experimenten uit kunt schakelen of kunt voorkomen dat { -brand-short-name } dit soort experimenten in de toekomst uitvoert.
-
 support-remote-features-title = Externe functies
 support-remote-features-name = Naam
 support-remote-features-status = Status
+
+## Pointing devices
+
+pointing-device-mouse = Muis
+pointing-device-touchscreen = Aanraakscherm
+pointing-device-pen-digitizer = Pen Digitizer
+pointing-device-none = Geen aanwijsapparaten

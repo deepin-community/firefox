@@ -21,10 +21,11 @@ enum ResourceType {
 
 #[derive(Debug)]
 struct Resource {
+    #[allow(unused)]
     name: Option<String>,
     bind: naga::ResourceBinding,
     ty: ResourceType,
-    class: naga::StorageClass,
+    class: naga::AddressSpace,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -40,6 +41,16 @@ impl fmt::Display for NumericDimension {
             Self::Scalar => write!(f, ""),
             Self::Vector(size) => write!(f, "x{}", size as u8),
             Self::Matrix(columns, rows) => write!(f, "x{}{}", columns as u8, rows as u8),
+        }
+    }
+}
+
+impl NumericDimension {
+    fn num_components(&self) -> u32 {
+        match *self {
+            Self::Scalar => 1,
+            Self::Vector(size) => size as u32,
+            Self::Matrix(w, h) => w as u32 * h as u32,
         }
     }
 }
@@ -90,6 +101,7 @@ enum Varying {
     BuiltIn(naga::BuiltIn),
 }
 
+#[allow(unused)]
 #[derive(Debug)]
 struct SpecializationConstant {
     id: u32,
@@ -101,19 +113,22 @@ struct EntryPoint {
     inputs: Vec<Varying>,
     outputs: Vec<Varying>,
     resources: Vec<(naga::Handle<Resource>, GlobalUse)>,
+    #[allow(unused)]
     spec_constants: Vec<SpecializationConstant>,
     sampling_pairs: FastHashSet<(naga::Handle<Resource>, naga::Handle<Resource>)>,
+    workgroup_size: [u32; 3],
 }
 
 #[derive(Debug)]
 pub struct Interface {
     features: wgt::Features,
+    limits: wgt::Limits,
     resources: naga::Arena<Resource>,
     entry_points: FastHashMap<(naga::ShaderStage, String), EntryPoint>,
 }
 
 #[derive(Clone, Debug, Error)]
-#[error("buffer usage is {actual:?} which does not contain required usage {expected:?}")]
+#[error("Buffer usage is {actual:?} which does not contain required usage {expected:?}")]
 pub struct MissingBufferUsageError {
     pub(crate) actual: wgt::BufferUsages,
     pub(crate) expected: wgt::BufferUsages,
@@ -133,7 +148,7 @@ pub fn check_buffer_usage(
 }
 
 #[derive(Clone, Debug, Error)]
-#[error("texture usage is {actual:?} which does not contain required usage {expected:?}")]
+#[error("Texture usage is {actual:?} which does not contain required usage {expected:?}")]
 pub struct MissingTextureUsageError {
     pub(crate) actual: wgt::TextureUsages,
     pub(crate) expected: wgt::TextureUsages,
@@ -153,91 +168,108 @@ pub fn check_texture_usage(
 }
 
 #[derive(Clone, Debug, Error)]
+#[non_exhaustive]
 pub enum BindingError {
-    #[error("binding is missing from the pipeline layout")]
+    #[error("Binding is missing from the pipeline layout")]
     Missing,
-    #[error("visibility flags don't include the shader stage")]
+    #[error("Visibility flags don't include the shader stage")]
     Invisible,
     #[error("The shader requires the load/store access flags {required:?} but only {allowed:?} is allowed")]
     WrongUsage {
         required: GlobalUse,
         allowed: GlobalUse,
     },
-    #[error("type on the shader side does not match the pipeline binding")]
+    #[error("Type on the shader side does not match the pipeline binding")]
     WrongType,
-    #[error("storage class {binding:?} doesn't match the shader {shader:?}")]
-    WrongStorageClass {
-        binding: naga::StorageClass,
-        shader: naga::StorageClass,
+    #[error("Storage class {binding:?} doesn't match the shader {shader:?}")]
+    WrongAddressSpace {
+        binding: naga::AddressSpace,
+        shader: naga::AddressSpace,
     },
-    #[error("buffer structure size {0}, added to one element of an unbound array, if it's the last field, ended up greater than the given `min_binding_size`")]
+    #[error("Buffer structure size {0}, added to one element of an unbound array, if it's the last field, ended up greater than the given `min_binding_size`")]
     WrongBufferSize(wgt::BufferSize),
-    #[error("view dimension {dim:?} (is array: {is_array}) doesn't match the binding {binding:?}")]
+    #[error("View dimension {dim:?} (is array: {is_array}) doesn't match the binding {binding:?}")]
     WrongTextureViewDimension {
         dim: naga::ImageDimension,
         is_array: bool,
         binding: BindingType,
     },
-    #[error("texture class {binding:?} doesn't match the shader {shader:?}")]
+    #[error("Texture class {binding:?} doesn't match the shader {shader:?}")]
     WrongTextureClass {
         binding: naga::ImageClass,
         shader: naga::ImageClass,
     },
-    #[error("comparison flag doesn't match the shader")]
+    #[error("Comparison flag doesn't match the shader")]
     WrongSamplerComparison,
-    #[error("derived bind group layout type is not consistent between stages")]
+    #[error("Derived bind group layout type is not consistent between stages")]
     InconsistentlyDerivedType,
-    #[error("texture format {0:?} is not supported for storage use")]
+    #[error("Texture format {0:?} is not supported for storage use")]
     BadStorageFormat(wgt::TextureFormat),
     #[error(
-        "storage texture usage {0:?} doesn't have a matching supported `StorageTextureAccess`"
+        "Storage texture usage {0:?} doesn't have a matching supported `StorageTextureAccess`"
     )]
     UnsupportedTextureStorageAccess(GlobalUse),
 }
 
 #[derive(Clone, Debug, Error)]
+#[non_exhaustive]
 pub enum FilteringError {
-    #[error("integer textures can't be sampled")]
+    #[error("Integer textures can't be sampled with a filtering sampler")]
     Integer,
-    #[error("non-filterable float texture")]
-    NonFilterable,
+    #[error("Non-filterable float textures can't be sampled with a filtering sampler")]
+    Float,
 }
 
 #[derive(Clone, Debug, Error)]
+#[non_exhaustive]
 pub enum InputError {
-    #[error("input is not provided by the earlier stage in the pipeline")]
+    #[error("Input is not provided by the earlier stage in the pipeline")]
     Missing,
-    #[error("input type is not compatible with the provided {0}")]
+    #[error("Input type is not compatible with the provided {0}")]
     WrongType(NumericType),
-    #[error("input interpolation doesn't match provided {0:?}")]
+    #[error("Input interpolation doesn't match provided {0:?}")]
     InterpolationMismatch(Option<naga::Interpolation>),
-    #[error("input sampling doesn't match provided {0:?}")]
+    #[error("Input sampling doesn't match provided {0:?}")]
     SamplingMismatch(Option<naga::Sampling>),
 }
 
 /// Errors produced when validating a programmable stage of a pipeline.
 #[derive(Clone, Debug, Error)]
+#[non_exhaustive]
 pub enum StageError {
-    #[error("shader module is invalid")]
+    #[error("Shader module is invalid")]
     InvalidModule,
-    #[error("unable to find entry point '{0}'")]
+    #[error(
+        "Shader entry point's workgroup size {current:?} ({current_total} total invocations) must be less or equal to the per-dimension limit {limit:?} and the total invocation limit {total}"
+    )]
+    InvalidWorkgroupSize {
+        current: [u32; 3],
+        current_total: u32,
+        limit: [u32; 3],
+        total: u32,
+    },
+    #[error("Shader uses {used} inter-stage components above the limit of {limit}")]
+    TooManyVaryings { used: u32, limit: u32 },
+    #[error("Unable to find entry point '{0}'")]
     MissingEntryPoint(String),
-    #[error("shader global {0:?} is not available in the layout pipeline layout")]
+    #[error("Shader global {0:?} is not available in the layout pipeline layout")]
     Binding(naga::ResourceBinding, #[source] BindingError),
-    #[error("unable to filter the texture ({texture:?}) by the sampler ({sampler:?})")]
+    #[error("Unable to filter the texture ({texture:?}) by the sampler ({sampler:?})")]
     Filtering {
         texture: naga::ResourceBinding,
         sampler: naga::ResourceBinding,
         #[source]
         error: FilteringError,
     },
-    #[error("location[{location}] {var} is not provided by the previous stage outputs")]
+    #[error("Location[{location}] {var} is not provided by the previous stage outputs")]
     Input {
         location: wgt::ShaderLocation,
         var: InterfaceVar,
         #[source]
         error: InputError,
     },
+    #[error("Location[{location}] is provided by the previous stage output but is not consumed as input by this stage.")]
+    InputNotConsumed { location: wgt::ShaderLocation },
 }
 
 fn map_storage_format_to_naga(format: wgt::TextureFormat) -> Option<naga::StorageFormat> {
@@ -282,6 +314,13 @@ fn map_storage_format_to_naga(format: wgt::TextureFormat) -> Option<naga::Storag
         Tf::Rgba32Uint => Sf::Rgba32Uint,
         Tf::Rgba32Sint => Sf::Rgba32Sint,
         Tf::Rgba32Float => Sf::Rgba32Float,
+
+        Tf::R16Unorm => Sf::R16Unorm,
+        Tf::R16Snorm => Sf::R16Snorm,
+        Tf::Rg16Unorm => Sf::Rg16Unorm,
+        Tf::Rg16Snorm => Sf::Rg16Snorm,
+        Tf::Rgba16Unorm => Sf::Rgba16Unorm,
+        Tf::Rgba16Snorm => Sf::Rgba16Snorm,
 
         _ => return None,
     })
@@ -329,6 +368,13 @@ fn map_storage_format_from_naga(format: naga::StorageFormat) -> wgt::TextureForm
         Sf::Rgba32Uint => Tf::Rgba32Uint,
         Sf::Rgba32Sint => Tf::Rgba32Sint,
         Sf::Rgba32Float => Tf::Rgba32Float,
+
+        Sf::R16Unorm => Tf::R16Unorm,
+        Sf::R16Snorm => Tf::R16Snorm,
+        Sf::Rg16Unorm => Tf::Rg16Unorm,
+        Sf::Rg16Snorm => Tf::Rg16Snorm,
+        Sf::Rgba16Unorm => Tf::Rgba16Unorm,
+        Sf::Rgba16Snorm => Tf::Rgba16Snorm,
     }
 }
 
@@ -348,7 +394,7 @@ impl Resource {
                     } => {
                         let (class, global_use) = match ty {
                             wgt::BufferBindingType::Uniform => {
-                                (naga::StorageClass::Uniform, GlobalUse::READ)
+                                (naga::AddressSpace::Uniform, GlobalUse::READ)
                             }
                             wgt::BufferBindingType::Storage { read_only } => {
                                 let mut global_use = GlobalUse::READ | GlobalUse::QUERY;
@@ -356,15 +402,15 @@ impl Resource {
                                 let mut naga_access = naga::StorageAccess::LOAD;
                                 naga_access.set(naga::StorageAccess::STORE, !read_only);
                                 (
-                                    naga::StorageClass::Storage {
+                                    naga::AddressSpace::Storage {
                                         access: naga_access,
                                     },
                                     global_use,
                                 )
                             }
                         };
-                        if self.class != class {
-                            return Err(BindingError::WrongStorageClass {
+                        if !address_space_matches(self.class, class) {
+                            return Err(BindingError::WrongAddressSpace {
                                 binding: class,
                                 shader: self.class,
                             });
@@ -382,11 +428,8 @@ impl Resource {
                 allowed_usage
             }
             ResourceType::Sampler { comparison } => match entry.ty {
-                BindingType::Sampler {
-                    filtering: _,
-                    comparison: cmp,
-                } => {
-                    if cmp == comparison {
+                BindingType::Sampler(ty) => {
+                    if (ty == wgt::SamplerBindingType::Comparison) == comparison {
                         GlobalUse::READ
                     } else {
                         return Err(BindingError::WrongSamplerComparison);
@@ -518,8 +561,8 @@ impl Resource {
         Ok(match self.ty {
             ResourceType::Buffer { size } => BindingType::Buffer {
                 ty: match self.class {
-                    naga::StorageClass::Uniform => wgt::BufferBindingType::Uniform,
-                    naga::StorageClass::Storage { .. } => wgt::BufferBindingType::Storage {
+                    naga::AddressSpace::Uniform => wgt::BufferBindingType::Uniform,
+                    naga::AddressSpace::Storage { .. } => wgt::BufferBindingType::Storage {
                         read_only: !shader_usage.contains(GlobalUse::WRITE),
                     },
                     _ => return Err(BindingError::WrongType),
@@ -527,10 +570,11 @@ impl Resource {
                 has_dynamic_offset: false,
                 min_binding_size: Some(size),
             },
-            ResourceType::Sampler { comparison } => BindingType::Sampler {
-                filtering: true,
-                comparison,
-            },
+            ResourceType::Sampler { comparison } => BindingType::Sampler(if comparison {
+                wgt::SamplerBindingType::Comparison
+            } else {
+                wgt::SamplerBindingType::Filtering
+            }),
             ResourceType::Texture {
                 dim,
                 arrayed,
@@ -661,6 +705,9 @@ impl NumericType {
             Tf::Rg8Sint | Tf::Rg16Sint | Tf::Rg32Sint => {
                 (NumericDimension::Vector(Vs::Bi), Sk::Sint)
             }
+            Tf::R16Snorm | Tf::R16Unorm => (NumericDimension::Scalar, Sk::Float),
+            Tf::Rg16Snorm | Tf::Rg16Unorm => (NumericDimension::Vector(Vs::Bi), Sk::Float),
+            Tf::Rgba16Snorm | Tf::Rgba16Unorm => (NumericDimension::Vector(Vs::Quad), Sk::Float),
             Tf::Rgba8Unorm
             | Tf::Rgba8UnormSrgb
             | Tf::Rgba8Snorm
@@ -676,7 +723,12 @@ impl NumericType {
                 (NumericDimension::Vector(Vs::Quad), Sk::Sint)
             }
             Tf::Rg11b10Float => (NumericDimension::Vector(Vs::Tri), Sk::Float),
-            Tf::Depth32Float | Tf::Depth24Plus | Tf::Depth24PlusStencil8 => {
+            Tf::Stencil8
+            | Tf::Depth16Unorm
+            | Tf::Depth32Float
+            | Tf::Depth32FloatStencil8
+            | Tf::Depth24Plus
+            | Tf::Depth24PlusStencil8 => {
                 panic!("Unexpected depth format")
             }
             Tf::Rgb9e5Ufloat => (NumericDimension::Vector(Vs::Tri), Sk::Float),
@@ -688,45 +740,23 @@ impl NumericType {
             | Tf::Bc3RgbaUnormSrgb
             | Tf::Bc7RgbaUnorm
             | Tf::Bc7RgbaUnormSrgb
-            | Tf::Etc2RgbA1Unorm
-            | Tf::Etc2RgbA1UnormSrgb
-            | Tf::Astc4x4RgbaUnorm
-            | Tf::Astc4x4RgbaUnormSrgb
-            | Tf::Astc5x4RgbaUnorm
-            | Tf::Astc5x4RgbaUnormSrgb
-            | Tf::Astc5x5RgbaUnorm
-            | Tf::Astc5x5RgbaUnormSrgb
-            | Tf::Astc6x5RgbaUnorm
-            | Tf::Astc6x5RgbaUnormSrgb
-            | Tf::Astc6x6RgbaUnorm
-            | Tf::Astc6x6RgbaUnormSrgb
-            | Tf::Astc8x5RgbaUnorm
-            | Tf::Astc8x5RgbaUnormSrgb
-            | Tf::Astc8x6RgbaUnorm
-            | Tf::Astc8x6RgbaUnormSrgb
-            | Tf::Astc10x5RgbaUnorm
-            | Tf::Astc10x5RgbaUnormSrgb
-            | Tf::Astc10x6RgbaUnorm
-            | Tf::Astc10x6RgbaUnormSrgb
-            | Tf::Astc8x8RgbaUnorm
-            | Tf::Astc8x8RgbaUnormSrgb
-            | Tf::Astc10x8RgbaUnorm
-            | Tf::Astc10x8RgbaUnormSrgb
-            | Tf::Astc10x10RgbaUnorm
-            | Tf::Astc10x10RgbaUnormSrgb
-            | Tf::Astc12x10RgbaUnorm
-            | Tf::Astc12x10RgbaUnormSrgb
-            | Tf::Astc12x12RgbaUnorm
-            | Tf::Astc12x12RgbaUnormSrgb => (NumericDimension::Vector(Vs::Quad), Sk::Float),
-            Tf::Bc4RUnorm | Tf::Bc4RSnorm | Tf::EacRUnorm | Tf::EacRSnorm => {
+            | Tf::Etc2Rgb8A1Unorm
+            | Tf::Etc2Rgb8A1UnormSrgb
+            | Tf::Etc2Rgba8Unorm
+            | Tf::Etc2Rgba8UnormSrgb => (NumericDimension::Vector(Vs::Quad), Sk::Float),
+            Tf::Bc4RUnorm | Tf::Bc4RSnorm | Tf::EacR11Unorm | Tf::EacR11Snorm => {
                 (NumericDimension::Scalar, Sk::Float)
             }
-            Tf::Bc5RgUnorm | Tf::Bc5RgSnorm | Tf::EacRgUnorm | Tf::EacRgSnorm => {
+            Tf::Bc5RgUnorm | Tf::Bc5RgSnorm | Tf::EacRg11Unorm | Tf::EacRg11Snorm => {
                 (NumericDimension::Vector(Vs::Bi), Sk::Float)
             }
-            Tf::Bc6hRgbUfloat | Tf::Bc6hRgbSfloat | Tf::Etc2RgbUnorm | Tf::Etc2RgbUnormSrgb => {
+            Tf::Bc6hRgbUfloat | Tf::Bc6hRgbFloat | Tf::Etc2Rgb8Unorm | Tf::Etc2Rgb8UnormSrgb => {
                 (NumericDimension::Vector(Vs::Tri), Sk::Float)
             }
+            Tf::Astc {
+                block: _,
+                channel: _,
+            } => (NumericDimension::Vector(Vs::Quad), Sk::Float),
         };
 
         NumericType {
@@ -790,7 +820,7 @@ impl Interface {
         list: &mut Vec<Varying>,
         binding: Option<&naga::Binding>,
         ty: naga::Handle<naga::Type>,
-        arena: &naga::Arena<naga::Type>,
+        arena: &naga::UniqueArena<naga::Type>,
     ) {
         let numeric_ty = match arena[ty].inner {
             naga::TypeInner::Scalar { kind, width } => NumericType {
@@ -819,7 +849,11 @@ impl Interface {
                 return;
             }
             ref other => {
-                log::error!("Unexpected varying type: {:?}", other);
+                //Note: technically this should be at least `log::error`, but
+                // the reality is - every shader coming from `glslc` outputs an array
+                // of clip distances and hits this path :(
+                // So we lower it to `log::warn` to be less annoying.
+                log::warn!("Unexpected varying type: {:?}", other);
                 return;
             }
         };
@@ -850,6 +884,7 @@ impl Interface {
         module: &naga::Module,
         info: &naga::valid::ModuleInfo,
         features: wgt::Features,
+        limits: wgt::Limits,
     ) -> Self {
         let mut resources = naga::Arena::new();
         let mut resource_mapping = FastHashMap::default();
@@ -858,14 +893,14 @@ impl Interface {
                 Some(ref br) => br.clone(),
                 _ => continue,
             };
-            let ty = match module.types[var.ty].inner {
-                naga::TypeInner::Struct {
-                    top_level: true,
-                    members: _,
-                    span,
-                } => ResourceType::Buffer {
-                    size: wgt::BufferSize::new(span as u64).unwrap(),
-                },
+            let naga_ty = &module.types[var.ty].inner;
+
+            let inner_ty = match *naga_ty {
+                naga::TypeInner::BindingArray { base, .. } => &module.types[base].inner,
+                ref ty => ty,
+            };
+
+            let ty = match *inner_ty {
                 naga::TypeInner::Image {
                     dim,
                     arrayed,
@@ -876,17 +911,19 @@ impl Interface {
                     class,
                 },
                 naga::TypeInner::Sampler { comparison } => ResourceType::Sampler { comparison },
-                ref other => {
-                    log::error!("Unexpected resource type: {:?}", other);
-                    continue;
-                }
+                naga::TypeInner::Array { stride, .. } => ResourceType::Buffer {
+                    size: wgt::BufferSize::new(stride as u64).unwrap(),
+                },
+                ref other => ResourceType::Buffer {
+                    size: wgt::BufferSize::new(other.size(module.to_ctx()) as u64).unwrap(),
+                },
             };
             let handle = resources.append(
                 Resource {
                     name: var.name.clone(),
                     bind,
                     ty,
-                    class: var.class,
+                    class: var.space,
                 },
                 Default::default(),
             );
@@ -895,7 +932,7 @@ impl Interface {
 
         let mut entry_points = FastHashMap::default();
         entry_points.reserve(module.entry_points.len());
-        for (index, entry_point) in (&module.entry_points).iter().enumerate() {
+        for (index, entry_point) in module.entry_points.iter().enumerate() {
             let info = info.get_entry_point(index);
             let mut ep = EntryPoint::default();
             for arg in entry_point.function.arguments.iter() {
@@ -920,11 +957,19 @@ impl Interface {
                 }
             }
 
+            for key in info.sampling_set.iter() {
+                ep.sampling_pairs
+                    .insert((resource_mapping[&key.image], resource_mapping[&key.sampler]));
+            }
+
+            ep.workgroup_size = entry_point.workgroup_size;
+
             entry_points.insert((entry_point.stage, entry_point.name.clone()), ep);
         }
 
         Self {
             features,
+            limits,
             resources,
             entry_points,
         }
@@ -934,9 +979,11 @@ impl Interface {
         &self,
         given_layouts: Option<&[&BindEntryMap]>,
         derived_layouts: &mut [BindEntryMap],
+        shader_binding_sizes: &mut FastHashMap<naga::ResourceBinding, wgt::BufferSize>,
         entry_point_name: &str,
         stage_bit: wgt::ShaderStages,
         inputs: StageIo,
+        compare_function: Option<wgt::CompareFunction>,
     ) -> Result<StageIo, StageError> {
         // Since a shader module can have multiple entry points with the same name,
         // we need to look for one with the right execution model.
@@ -956,18 +1003,31 @@ impl Interface {
         for &(handle, usage) in entry_point.resources.iter() {
             let res = &self.resources[handle];
             let result = match given_layouts {
-                Some(layouts) => layouts
-                    .get(res.bind.group as usize)
-                    .and_then(|map| map.get(&res.bind.binding))
-                    .ok_or(BindingError::Missing)
-                    .and_then(|entry| {
-                        if entry.visibility.contains(stage_bit) {
-                            Ok(entry)
-                        } else {
-                            Err(BindingError::Invisible)
+                Some(layouts) => {
+                    // update the required binding size for this buffer
+                    if let ResourceType::Buffer { size } = res.ty {
+                        match shader_binding_sizes.entry(res.bind.clone()) {
+                            Entry::Occupied(e) => {
+                                *e.into_mut() = size.max(*e.get());
+                            }
+                            Entry::Vacant(e) => {
+                                e.insert(size);
+                            }
                         }
-                    })
-                    .and_then(|entry| res.check_binding_use(entry, usage)),
+                    }
+                    layouts
+                        .get(res.bind.group as usize)
+                        .and_then(|map| map.get(&res.bind.binding))
+                        .ok_or(BindingError::Missing)
+                        .and_then(|entry| {
+                            if entry.visibility.contains(stage_bit) {
+                                Ok(entry)
+                            } else {
+                                Err(BindingError::Invisible)
+                            }
+                        })
+                        .and_then(|entry| res.check_binding_use(entry, usage))
+                }
                 None => derived_layouts
                     .get_mut(res.bind.group as usize)
                     .ok_or(BindingError::Missing)
@@ -1007,25 +1067,22 @@ impl Interface {
                 assert!(texture_layout.visibility.contains(stage_bit));
                 assert!(sampler_layout.visibility.contains(stage_bit));
 
-                let error = match texture_layout.ty {
-                    wgt::BindingType::Texture {
-                        sample_type: wgt::TextureSampleType::Float { filterable },
-                        ..
-                    } => match sampler_layout.ty {
-                        wgt::BindingType::Sampler {
-                            filtering: true, ..
-                        } if !filterable => Some(FilteringError::NonFilterable),
-                        _ => None,
-                    },
-                    wgt::BindingType::Texture {
-                        sample_type: wgt::TextureSampleType::Sint,
-                        ..
+                let sampler_filtering = matches!(
+                    sampler_layout.ty,
+                    wgt::BindingType::Sampler(wgt::SamplerBindingType::Filtering)
+                );
+                let texture_sample_type = match texture_layout.ty {
+                    BindingType::Texture { sample_type, .. } => sample_type,
+                    _ => unreachable!(),
+                };
+
+                let error = match (sampler_filtering, texture_sample_type) {
+                    (true, wgt::TextureSampleType::Float { filterable: false }) => {
+                        Some(FilteringError::Float)
                     }
-                    | wgt::BindingType::Texture {
-                        sample_type: wgt::TextureSampleType::Uint,
-                        ..
-                    } => Some(FilteringError::Integer),
-                    _ => None, // unreachable, really
+                    (true, wgt::TextureSampleType::Sint) => Some(FilteringError::Integer),
+                    (true, wgt::TextureSampleType::Uint) => Some(FilteringError::Integer),
+                    _ => None,
                 };
 
                 if let Some(error) = error {
@@ -1038,6 +1095,32 @@ impl Interface {
             }
         }
 
+        // check workgroup size limits
+        if shader_stage == naga::ShaderStage::Compute {
+            let max_workgroup_size_limits = [
+                self.limits.max_compute_workgroup_size_x,
+                self.limits.max_compute_workgroup_size_y,
+                self.limits.max_compute_workgroup_size_z,
+            ];
+            let total_invocations = entry_point.workgroup_size.iter().product::<u32>();
+
+            if entry_point.workgroup_size.iter().any(|&s| s == 0)
+                || total_invocations > self.limits.max_compute_invocations_per_workgroup
+                || entry_point.workgroup_size[0] > max_workgroup_size_limits[0]
+                || entry_point.workgroup_size[1] > max_workgroup_size_limits[1]
+                || entry_point.workgroup_size[2] > max_workgroup_size_limits[2]
+            {
+                return Err(StageError::InvalidWorkgroupSize {
+                    current: entry_point.workgroup_size,
+                    current_total: total_invocations,
+                    limit: max_workgroup_size_limits,
+                    total: self.limits.max_compute_invocations_per_workgroup,
+                });
+            }
+        }
+
+        let mut inter_stage_components = 0;
+
         // check inputs compatibility
         for input in entry_point.inputs.iter() {
             match *input {
@@ -1047,11 +1130,12 @@ impl Interface {
                             .get(&location)
                             .ok_or(InputError::Missing)
                             .and_then(|provided| {
-                                let compatible = match shader_stage {
+                                let (compatible, num_components) = match shader_stage {
                                     // For vertex attributes, there are defaults filled out
                                     // by the driver if data is not provided.
                                     naga::ShaderStage::Vertex => {
-                                        iv.ty.is_compatible_with(&provided.ty)
+                                        // vertex inputs don't count towards inter-stage
+                                        (iv.ty.is_compatible_with(&provided.ty), 0)
                                     }
                                     naga::ShaderStage::Fragment => {
                                         if iv.interpolation != provided.interpolation {
@@ -1064,26 +1148,82 @@ impl Interface {
                                                 provided.sampling,
                                             ));
                                         }
-                                        iv.ty.is_subtype_of(&provided.ty)
+                                        (
+                                            iv.ty.is_subtype_of(&provided.ty),
+                                            iv.ty.dim.num_components(),
+                                        )
                                     }
-                                    naga::ShaderStage::Compute => false,
+                                    naga::ShaderStage::Compute => (false, 0),
                                 };
                                 if compatible {
-                                    Ok(())
+                                    Ok(num_components)
                                 } else {
                                     Err(InputError::WrongType(provided.ty))
                                 }
                             });
-                    if let Err(error) = result {
-                        return Err(StageError::Input {
-                            location,
-                            var: iv.clone(),
-                            error,
-                        });
+                    match result {
+                        Ok(num_components) => {
+                            inter_stage_components += num_components;
+                        }
+                        Err(error) => {
+                            return Err(StageError::Input {
+                                location,
+                                var: iv.clone(),
+                                error,
+                            })
+                        }
                     }
                 }
                 Varying::BuiltIn(_) => {}
             }
+        }
+
+        // Check all vertex outputs and make sure the fragment shader consumes them.
+        if shader_stage == naga::ShaderStage::Fragment {
+            for &index in inputs.keys() {
+                // This is a linear scan, but the count should be low enough
+                // that this should be fine.
+                let found = entry_point.inputs.iter().any(|v| match *v {
+                    Varying::Local { location, .. } => location == index,
+                    Varying::BuiltIn(_) => false,
+                });
+
+                if !found {
+                    return Err(StageError::InputNotConsumed { location: index });
+                }
+            }
+        }
+
+        if shader_stage == naga::ShaderStage::Vertex {
+            for output in entry_point.outputs.iter() {
+                //TODO: count builtins towards the limit?
+                inter_stage_components += match *output {
+                    Varying::Local { ref iv, .. } => iv.ty.dim.num_components(),
+                    Varying::BuiltIn(_) => 0,
+                };
+
+                if let Some(
+                    cmp @ wgt::CompareFunction::Equal | cmp @ wgt::CompareFunction::NotEqual,
+                ) = compare_function
+                {
+                    if let Varying::BuiltIn(naga::BuiltIn::Position { invariant: false }) = *output
+                    {
+                        log::warn!(
+                            "Vertex shader with entry point {entry_point_name} outputs a @builtin(position) without the @invariant \
+                            attribute and is used in a pipeline with {cmp:?}. On some machines, this can cause bad artifacting as {cmp:?} assumes \
+                            the values output from the vertex shader exactly match the value in the depth buffer. The @invariant attribute on the \
+                            @builtin(position) vertex output ensures that the exact same pixel depths are used every render."
+                        );
+                    }
+                }
+            }
+        }
+
+        if inter_stage_components > self.limits.max_inter_stage_shader_components {
+            return Err(StageError::TooManyVaryings {
+                used: inter_stage_components,
+                limit: self.limits.max_inter_stage_shader_components,
+            });
         }
 
         let outputs = entry_point
@@ -1095,5 +1235,74 @@ impl Interface {
             })
             .collect();
         Ok(outputs)
+    }
+}
+
+fn address_space_matches(shader: naga::AddressSpace, binding: naga::AddressSpace) -> bool {
+    match (shader, binding) {
+        (
+            naga::AddressSpace::Storage {
+                access: access_shader,
+            },
+            naga::AddressSpace::Storage {
+                access: access_pipeline,
+            },
+        ) => {
+            // Allow read- and write-only usages to match read-write layouts:
+            (access_shader & access_pipeline) == access_shader
+        }
+        (a, b) => a == b,
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::address_space_matches;
+
+    #[test]
+    fn address_space_matches_correctly() {
+        assert!(address_space_matches(
+            naga::AddressSpace::Uniform,
+            naga::AddressSpace::Uniform
+        ));
+
+        assert!(!address_space_matches(
+            naga::AddressSpace::Uniform,
+            naga::AddressSpace::Storage {
+                access: naga::StorageAccess::LOAD
+            }
+        ));
+
+        let test_cases = [
+            (naga::StorageAccess::LOAD, naga::StorageAccess::LOAD, true),
+            (naga::StorageAccess::STORE, naga::StorageAccess::LOAD, false),
+            (naga::StorageAccess::LOAD, naga::StorageAccess::STORE, false),
+            (naga::StorageAccess::STORE, naga::StorageAccess::STORE, true),
+            (
+                naga::StorageAccess::LOAD | naga::StorageAccess::STORE,
+                naga::StorageAccess::LOAD | naga::StorageAccess::STORE,
+                true,
+            ),
+            (
+                naga::StorageAccess::STORE,
+                naga::StorageAccess::LOAD | naga::StorageAccess::STORE,
+                true,
+            ),
+            (
+                naga::StorageAccess::LOAD,
+                naga::StorageAccess::LOAD | naga::StorageAccess::STORE,
+                true,
+            ),
+        ];
+
+        for (shader, binding, expect_match) in test_cases {
+            assert_eq!(
+                expect_match,
+                address_space_matches(
+                    naga::AddressSpace::Storage { access: shader },
+                    naga::AddressSpace::Storage { access: binding }
+                )
+            );
+        }
     }
 }

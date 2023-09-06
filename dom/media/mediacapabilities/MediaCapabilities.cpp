@@ -14,7 +14,6 @@
 #include "Benchmark.h"
 #include "DecoderBenchmark.h"
 #include "DecoderTraits.h"
-#include "Layers.h"
 #include "MediaInfo.h"
 #include "MediaRecorder.h"
 #include "PDMFactory.h"
@@ -32,6 +31,7 @@
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/layers/KnowsCompositor.h"
 #include "nsContentUtils.h"
+#include "WindowRenderer.h"
 
 static mozilla::LazyLogModule sMediaCapabilitiesLog("MediaCapabilities");
 
@@ -44,11 +44,35 @@ static nsCString VideoConfigurationToStr(const VideoConfiguration* aConfig) {
   if (!aConfig) {
     return nsCString();
   }
+
+  nsCString hdrMetaType(
+      aConfig->mHdrMetadataType.WasPassed()
+          ? HdrMetadataTypeValues::GetString(aConfig->mHdrMetadataType.Value())
+          : "?");
+
+  nsCString colorGamut(
+      aConfig->mColorGamut.WasPassed()
+          ? ColorGamutValues::GetString(aConfig->mColorGamut.Value())
+          : "?");
+
+  nsCString transferFunction(aConfig->mTransferFunction.WasPassed()
+                                 ? TransferFunctionValues::GetString(
+                                       aConfig->mTransferFunction.Value())
+                                 : "?");
+
   auto str = nsPrintfCString(
-      "[contentType:%s width:%d height:%d bitrate:%" PRIu64 " framerate:%s]",
+      "[contentType:%s width:%d height:%d bitrate:%" PRIu64
+      " framerate:%lf hasAlphaChannel:%s hdrMetadataType:%s colorGamut:%s "
+      "transferFunction:%s scalabilityMode:%s]",
       NS_ConvertUTF16toUTF8(aConfig->mContentType).get(), aConfig->mWidth,
-      aConfig->mHeight, aConfig->mBitrate,
-      NS_ConvertUTF16toUTF8(aConfig->mFramerate).get());
+      aConfig->mHeight, aConfig->mBitrate, aConfig->mFramerate,
+      aConfig->mHasAlphaChannel.WasPassed()
+          ? aConfig->mHasAlphaChannel.Value() ? "true" : "false"
+          : "?",
+      hdrMetaType.get(), colorGamut.get(), transferFunction.get(),
+      aConfig->mScalabilityMode.WasPassed()
+          ? NS_ConvertUTF16toUTF8(aConfig->mScalabilityMode.Value()).get()
+          : "?");
   return std::move(str);
 }
 
@@ -176,6 +200,12 @@ already_AddRefed<Promise> MediaCapabilities::DecodingInfo(
     }
     MOZ_DIAGNOSTIC_ASSERT(videoTracks.ElementAt(0),
                           "must contain a valid trackinfo");
+    // If the type refers to an audio codec, reject now.
+    if (videoTracks[0]->GetType() != TrackInfo::kVideoTrack) {
+      promise
+          ->MaybeRejectWithTypeError<MSG_INVALID_MEDIA_VIDEO_CONFIGURATION>();
+      return promise.forget();
+    }
     tracks.AppendElements(std::move(videoTracks));
   }
   if (aConfiguration.mAudio.WasPassed()) {
@@ -192,17 +222,22 @@ already_AddRefed<Promise> MediaCapabilities::DecodingInfo(
     }
     MOZ_DIAGNOSTIC_ASSERT(audioTracks.ElementAt(0),
                           "must contain a valid trackinfo");
+    // If the type refers to a video codec, reject now.
+    if (audioTracks[0]->GetType() != TrackInfo::kAudioTrack) {
+      promise
+          ->MaybeRejectWithTypeError<MSG_INVALID_MEDIA_AUDIO_CONFIGURATION>();
+      return promise.forget();
+    }
     tracks.AppendElements(std::move(audioTracks));
   }
 
-  typedef MozPromise<MediaCapabilitiesInfo, MediaResult,
-                     /* IsExclusive = */ true>
-      CapabilitiesPromise;
+  using CapabilitiesPromise = MozPromise<MediaCapabilitiesInfo, MediaResult,
+                                         /* IsExclusive = */ true>;
   nsTArray<RefPtr<CapabilitiesPromise>> promises;
 
   RefPtr<TaskQueue> taskQueue =
-      new TaskQueue(GetMediaThreadPool(MediaThreadType::PLATFORM_DECODER),
-                    "MediaCapabilities::TaskQueue");
+      TaskQueue::Create(GetMediaThreadPool(MediaThreadType::PLATFORM_DECODER),
+                        "MediaCapabilities::TaskQueue");
   for (auto&& config : tracks) {
     TrackInfo::TrackType type =
         config->IsVideo() ? TrackInfo::kVideoTrack : TrackInfo::kAudioTrack;
@@ -219,7 +254,8 @@ already_AddRefed<Promise> MediaCapabilities::DecodingInfo(
           InvokeAsync(taskQueue, __func__, [config = std::move(config)]() {
             RefPtr<PDMFactory> pdm = new PDMFactory();
             SupportDecoderParams params{*config};
-            if (!pdm->Supports(params, nullptr /* decoder doctor */)) {
+            if (pdm->Supports(params, nullptr /* decoder doctor */) ==
+                media::DecodeSupport::Unsupported) {
               return CapabilitiesPromise::CreateAndReject(NS_ERROR_FAILURE,
                                                           __func__);
             }
@@ -236,18 +272,26 @@ already_AddRefed<Promise> MediaCapabilities::DecodingInfo(
     // to create such decoder and perform initialization.
 
     RefPtr<layers::KnowsCompositor> compositor = GetCompositor();
-    double frameRate = videoContainer->ExtendedType().GetFramerate().ref();
+    float frameRate =
+        static_cast<float>(videoContainer->ExtendedType().GetFramerate().ref());
+    const bool shouldResistFingerprinting =
+        mParent->ShouldResistFingerprinting(RFPTarget::MediaCapabilities);
+
     // clang-format off
     promises.AppendElement(InvokeAsync(
         taskQueue, __func__,
-        [taskQueue, frameRate, compositor,
+        [taskQueue, frameRate, shouldResistFingerprinting, compositor,
          config = std::move(config)]() mutable -> RefPtr<CapabilitiesPromise> {
           // MediaDataDecoder keeps a reference to the config object, so we must
           // keep it alive until the decoder has been shutdown.
+          static Atomic<uint32_t> sTrackingIdCounter(0);
+          TrackingId trackingId(TrackingId::Source::MediaCapabilities,
+                                sTrackingIdCounter++,
+                                TrackingId::TrackAcrossProcesses::Yes);
           CreateDecoderParams params{
               *config, compositor,
               CreateDecoderParams::VideoFrameRate(frameRate),
-              TrackInfo::kVideoTrack};
+              TrackInfo::kVideoTrack, Some(std::move(trackingId))};
           // We want to ensure that all decoder's queries are occurring only
           // once at a time as it can quickly exhaust the system resources
           // otherwise.
@@ -265,7 +309,8 @@ already_AddRefed<Promise> MediaCapabilities::DecodingInfo(
           return AllocationWrapper::CreateDecoder(params, sVideoAllocPolicy)
               ->Then(
                   taskQueue, __func__,
-                  [taskQueue, frameRate, config = std::move(config)](
+                  [taskQueue, frameRate, shouldResistFingerprinting,
+                   config = std::move(config)](
                       AllocationWrapper::AllocateDecoderPromise::
                           ResolveOrRejectValue&& aValue) mutable {
                     if (aValue.IsReject()) {
@@ -279,6 +324,7 @@ already_AddRefed<Promise> MediaCapabilities::DecodingInfo(
                     RefPtr<CapabilitiesPromise> p = decoder->Init()->Then(
                         taskQueue, __func__,
                         [taskQueue, decoder, frameRate,
+                         shouldResistFingerprinting,
                          config = std::move(config)](
                             MediaDataDecoder::InitPromise::
                                 ResolveOrRejectValue&& aValue) mutable {
@@ -286,7 +332,7 @@ already_AddRefed<Promise> MediaCapabilities::DecodingInfo(
                           if (aValue.IsReject()) {
                             p = CapabilitiesPromise::CreateAndReject(
                                 std::move(aValue.RejectValue()), __func__);
-                          } else if (nsContentUtils::ShouldResistFingerprinting()) {
+                          } else if (shouldResistFingerprinting) {
                             p = CapabilitiesPromise::CreateAndResolve(
                                 MediaCapabilitiesInfo(true /* supported */,
                                 true /* smooth */, false /* power efficient */),
@@ -298,8 +344,7 @@ already_AddRefed<Promise> MediaCapabilities::DecodingInfo(
                               bool powerEfficient =
                                   decoder->IsHardwareAccelerated(reason);
 
-                              int32_t videoFrameRate =
-                                  frameRate < 1 ? 1 : frameRate;
+                              int32_t videoFrameRate = std::clamp<int32_t>(frameRate, 1, INT32_MAX);
 
                               DecoderBenchmarkInfo benchmarkInfo{
                                   config->mMimeType,

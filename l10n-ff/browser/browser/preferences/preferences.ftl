@@ -51,21 +51,16 @@ restart-later = Hurmitin so Ɓooyii
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that their notifications permission
-# is being controlled by an extension.
-extension-controlled-web-notifications = Jokkel, <img data-l10n-name="icon"/>{ $name }, jogii ndee ñaawirde
 
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = Timmitere, <img data-l10n-name="icon"/> { $name }, ena naamnii Tabbe Mooftirɗe.
-
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = Jokkel, <img data-l10n-name="icon"/>{ $name }, jogii ndee ñaawirde.
-
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = Timmitere, <img data-l10n-name="icon"/> { $name }, nana ɗowa hol no { -brand-short-name } seŋortoo e enternet oo.
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -95,10 +90,6 @@ set-as-my-default-browser =
     .label = Waɗ ɗum Woowaande…
     .accesskey = W
 
-startup-restore-previous-session =
-    .label = Artir rogere ɓennunde ndee
-    .accesskey = s
-
 startup-restore-warn-on-quit =
     .label = Reentin am tuma uddol wanngorde ndee
 
@@ -114,10 +105,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Uddit jokke e nder tabbe waasa wonde e kenorɗe kese ɗee
     .accesskey = w
-
-warn-on-close-multiple-tabs =
-    .label = Reentin am so tabbe keewɗe ine uddidee
-    .accesskey = k
 
 warn-on-open-many-tabs =
     .label = Reentin am so udditgol tabbe keewɗe ena keɓori leeltinde { -brand-short-name }
@@ -138,6 +125,10 @@ browser-containers-settings =
     .accesskey = l
 
 containers-disable-alert-title = Uddu Tabbe Mooftirɗe Kala?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] So a daaƴii Tabbe Mooftirɗe jooni, tabbere mooftirde { $tabCount } maa udde. Aɗa yenanaa yiɗde daaƴde Tabbe Mooftirɗe?
@@ -149,6 +140,9 @@ containers-disable-alert-ok-button =
         [one] Uddu Tabbere Mooftirde { $tabCount }
        *[other] Uddu Tabbe Mooftirɗe { $tabCount }
     }
+
+##
+
 containers-disable-alert-cancel-button = Woppu hurma
 
 containers-remove-alert-title = Itta ngal baɗirgal ?
@@ -164,12 +158,9 @@ containers-remove-alert-msg =
 containers-remove-ok-button = Momtu ngal baɗirgal
 containers-remove-cancel-button = Hoto momtu ngal Baɗirgal
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Ɗemngal e Mbaydi
-
-fonts-and-colors-header = Ponte & Nooneeji
 
 default-font = Fontere woowaande:
     .accesskey = F
@@ -179,10 +170,6 @@ default-font-size = Ɓetol:
 advanced-fonts =
     .label = Ceeɓtore…
     .accesskey = C
-
-colors-settings =
-    .label = Nooneeji…
-    .accesskey = N
 
 preferences-default-zoom-value =
     .label = { $percentage }
@@ -224,8 +211,7 @@ files-and-applications-title = Pille e Jaaɓnirɗe
 
 download-header = Gaawte
 
-download-save-to =
-    .label = Danndu piille to
+download-save-where = Danndu piille to
     .accesskey = n
 
 download-choose-folder =
@@ -298,7 +284,6 @@ applications-file-ending-with-type = { applications-file-ending }{ $type }
 #   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Huutoro { $plugin-name } (nder { -brand-short-name })
-
 applications-open-inapp =
     .label = Uddit e { -brand-short-name }
 
@@ -467,11 +452,6 @@ home-restore-defaults =
     .label = Artir Goowaaɗe
     .accesskey = R
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Jaɓɓorgo Firefox (Goowaaɗo)
-
 home-mode-choice-custom =
     .label = Heertin URLs...
 
@@ -499,17 +479,15 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Loowdi Jaɓɓorgo Firefox
-home-prefs-content-description = Suɓo hol loowdi njiɗɗaa e yaynirde jaɓɓorgo Firefox maa.
-
 home-prefs-search-header =
     .label = Njiilaw Geese
-home-prefs-topsites-header =
-    .label = Lowre Rowrowe
-home-prefs-topsites-description = Lowe ɗe ɓurɗaa waawde yillaade
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 # Variables:
 #  $provider (String): Name of the corresponding content provider, e.g "Pocket".
@@ -522,9 +500,6 @@ home-prefs-recommended-by-learn-more = Hol no gollortoo
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Daari joɓanaaɗi
 
-home-prefs-highlights-header =
-    .label = Jalbine
-home-prefs-highlights-description = Suɓngo lowe ɗe ndannduɗaa walla ɗe njilliɗaa
 home-prefs-highlights-option-visited-pages =
     .label = Kelle jiyaaɗe
 home-prefs-highlights-options-bookmarks =
@@ -540,7 +515,6 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Taƴitine
-home-prefs-snippets-description = Kesɗitineiwde e { -vendor-short-name } kañum e { -brand-product-name }
 
 home-prefs-sections-rows-option =
     .label =
@@ -568,6 +542,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Hollo basiye njiilaw e njaltudi palal ñiiɓirɗe ngal
     .accesskey = l
+
 
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
@@ -618,10 +593,11 @@ containers-new-tab-check =
 containers-remove-button =
     .label = Momtu
 
-## Sync Section - Signed out
-
-
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = Nawor Geesa Maa
@@ -636,10 +612,10 @@ sync-signedout-caption = Nawor Geesa Maa
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Aawto Firefox mo <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> walla <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a> ngam syncude kaɓirgol cinndol maa.
 
-## Sync Section - Signed in
-
-
 ## Firefox Account - Signed in
+
+
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = Waylu natal heftinirde
@@ -651,8 +627,13 @@ sync-sign-out =
 sync-manage-account = Toppito konte
     .accesskey = o
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } ƴeewtaaka.
 sync-signedin-login-failure = Tiiɗno seŋo ngam naattude { $email }
+
+##
 
 sync-resend-verification =
     .label = Neldit Ƴeewtagol
@@ -667,6 +648,7 @@ sync-sign-in =
     .accesskey = g
 
 ## Sync section - enabling or disabling sync.
+
 
 ## The list of things currently syncing.
 
@@ -735,12 +717,19 @@ sync-device-name-save =
 
 sync-connect-another-device = Seŋ kaɓirgol goɗngol
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Ƴeewtagol Neldaama
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Jokkol ƴeewtagol neldaama to { $email }.
+sync-verification-not-sent-title = Horiima Neldu Ƴeewtagol
+sync-verification-not-sent-body = Min koriima neldude iimeel ƴeewtagol e oo sahaa, tiiɗno eto kadi so ɓooyii.
+
 ## Privacy Section
 
 privacy-header = Suturo Wanngorde
-
-## Privacy Section - Forms
-
 
 ## Privacy Section - Logins and Passwords
 
@@ -861,6 +850,9 @@ sitedata-settings =
     .label = Yuɓɓin keɓe…
     .accesskey = M
 
+## Privacy Section - Cookie Banner Handling
+
+
 ## Privacy Section - Address Bar
 
 addressbar-header = Palal Ñiiɓirɗe
@@ -888,6 +880,9 @@ content-blocking-learn-more = Ɓeydu humpito
 
 
 ##
+
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
 content-blocking-tracking-protection-change-block-list = Waylo doggol padde
 
@@ -926,10 +921,6 @@ permissions-notification-pause =
 permissions-block-popups =
     .label = Falo kenorɗe cuppitte
     .accesskey = B
-
-permissions-block-popups-exceptions =
-    .label = Paltooje…
-    .accesskey = P
 
 permissions-addon-install-warning =
     .label = Jeertin-maa so lowe etiima aafde ɓeyditte
@@ -999,13 +990,12 @@ certs-devices =
 
 ## Privacy Section - HTTPS-Only
 
+
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Biro
 downloads-folder-name = Gaawte
 choose-download-folder-title = Suɓo Runngere Gaawte:
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Daɗndu piille to { $service-name }

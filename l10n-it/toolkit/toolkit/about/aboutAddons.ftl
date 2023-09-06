@@ -8,11 +8,16 @@ search-header =
     .placeholder = Cerca in addons.mozilla.org
     .searchbuttonlabel = Cerca
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
-list-empty-get-extensions-message =
-    Visita <a data-l10n-name="get-extensions">{ $domain }</a> per installare estensioni e temi
+list-empty-get-extensions-message = Visita <a data-l10n-name="get-extensions">{ $domain }</a> per installare estensioni e temi
+
+list-empty-get-dictionaries-message = Visita <a data-l10n-name="get-extensions">{ $domain }</a> per installare dizionari
+
+list-empty-get-language-packs-message = Visita <a data-l10n-name="get-extensions">{ $domain }</a> per installare pacchetti per la lingua
+
+##
 
 list-empty-installed =
     .value = Non risulta installato alcun componente aggiuntivo di questo tipo
@@ -48,6 +53,9 @@ detail-version =
 
 detail-last-updated =
     .label = Ultimo aggiornamento
+
+addon-detail-description-expand = Mostra altro
+addon-detail-description-collapse = Mostra meno
 
 detail-contributions-description = Lo sviluppatore di questo componente aggiuntivo chiede agli utenti una piccola donazione per contribuire al suo sviluppo.
 
@@ -178,6 +186,14 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Aggiornamenti recenti
 addon-category-recent-updates-title =
     .title = Aggiornamenti recenti
+addon-category-sitepermission = Permessi siti
+addon-category-sitepermission-title =
+    .title = Permessi siti
+
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string): DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Permessi siti per { $host }
 
 ## These are global warnings
 
@@ -189,6 +205,8 @@ extensions-warning-update-security = Il controllo sulla sicurezza degli aggiorna
 extensions-warning-update-security-button = Attiva
     .title = Attiva il controllo sulla sicurezza degli aggiornamenti dei componenti aggiuntivi
 
+extensions-warning-imported-addons = Completa l’installazione delle estensioni importate in { -brand-short-name }.
+extensions-warning-imported-addons-button = Installa estensioni
 
 ## Strings connected to add-on updates
 
@@ -329,18 +347,20 @@ extension-enabled-heading = Attive
 extension-disabled-heading = Disattivate
 
 theme-enabled-heading = Attivi
-theme-disabled-heading = Disattivati
+
+theme-disabled-heading2 = Temi salvati
 
 plugin-enabled-heading = Attivi
 plugin-disabled-heading = Disattivati
-theme-monochromatic-heading = Tonalità
-theme-monochromatic-subheading = Nuove vibranti tonalità da { -brand-product-name }. Disponibili per un periodo limitato.
 
 dictionary-enabled-heading = Attivi
 dictionary-disabled-heading = Disattivati
 
 locale-enabled-heading = Attive
 locale-disabled-heading = Disattivate
+
+sitepermission-enabled-heading = Attivi
+sitepermission-disabled-heading = Disattivati
 
 always-activate-button = Attiva sempre
 never-activate-button = Non attivare mai
@@ -381,6 +401,9 @@ addon-detail-updates-radio-off = Disattivato
 addon-detail-update-check-label = Controlla aggiornamenti
 install-update-button = Aggiorna
 
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
+
 addon-badge-private-browsing-allowed2 =
     .title = Attiva in finestre anonime
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -388,19 +411,35 @@ addon-detail-private-browsing-help = Se viene garantito il permesso, l’estensi
 addon-detail-private-browsing-allow = Consenti
 addon-detail-private-browsing-disallow = Non consentire
 
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Funzionamento in siti con restrizioni
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Se viene garantito il permesso, l’estensione avrà accesso a siti con restrizioni identificati da { -vendor-short-name }. Consentire solo se si considera l’estensione affidabile.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Consenti
+addon-detail-quarantined-domains-disallow = Non consentire
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 addon-badge-recommended2 =
     .title = Vengono consigliate solo estensioni che soddisfano i requisiti di sicurezza e prestazioni di { -brand-product-name }
     .aria-label = { addon-badge-recommended2.title }
-
 addon-badge-line3 =
-  .title = Estensione ufficiale realizzata da Mozilla. Rispetta gli standard in materia di sicurezza e prestazioni
-  .aria-label = { addon-badge-line3.title }
+    .title = Estensione ufficiale realizzata da Mozilla. Rispetta gli standard in materia di sicurezza e prestazioni
+    .aria-label = { addon-badge-line3.title }
 addon-badge-verified2 =
-  .title = Questa estensione è stata verificata per garantire il rispetto dei nostri standard in materia di sicurezza e prestazioni
-  .aria-label = { addon-badge-verified2.title }
+    .title = Questa estensione è stata verificata per garantire il rispetto dei nostri standard in materia di sicurezza e prestazioni
+    .aria-label = { addon-badge-verified2.title }
 
 ##
 
@@ -411,13 +450,14 @@ release-notes-loading = Caricamento in corso…
 release-notes-error = Siamo spiacenti, si è verificato un errore durante il caricamento delle note di versione.
 
 addon-permissions-empty = Questa estensione non richiede alcun permesso
-
 addon-permissions-required = Permessi obbligatori per funzionalità principali:
 addon-permissions-optional = Permessi facoltativi per funzionalità aggiuntive:
 addon-permissions-learnmore = Ulteriori informazioni sui permessi
 
 recommended-extensions-heading = Estensioni consigliate
 recommended-themes-heading = Temi consigliati
+
+addon-sitepermissions-required = Consente a <span data-l10n-name="hostname">{ $hostname }</span> di utilizzare le seguenti funzioni:
 
 recommended-theme-1 = Ti senti creativo? <a data-l10n-name="link">Disegna il tuo tema con Firefox Color</a>.
 
@@ -429,6 +469,7 @@ plugin-heading = Gestione plugin
 dictionary-heading = Gestione dizionari
 locale-heading = Gestione lingue
 updates-heading = Gestione aggiornamenti
+sitepermission-heading = Gestione permessi siti
 discover-heading = Personalizza { -brand-short-name }
 shortcuts-heading = Gestione scorciatoie da tastiera
 
@@ -438,3 +479,32 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Strumenti per tutti i componenti aggiuntivi
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } non è compatibile con { -brand-short-name } { $version }.
+
+details-notification-incompatible-link = Ulteriori informazioni
+
+details-notification-unsigned-and-disabled = { $name } è stato disattivato in quanto non è verificato per l’utilizzo in { -brand-short-name }.
+details-notification-unsigned-and-disabled-link = Ulteriori informazioni
+
+details-notification-unsigned = { $name } non è verificato per l’utilizzo in { -brand-short-name }. Procedere con cautela.
+details-notification-unsigned-link = Ulteriori informazioni
+
+details-notification-blocked = { $name } è stato disattivato in quanto comporta rischi per la stabilità o la sicurezza.
+details-notification-blocked-link = Ulteriori informazioni
+
+details-notification-softblocked = { $name } è riconosciuto come causa di problemi per la stabilità o la sicurezza.
+details-notification-softblocked-link = Ulteriori informazioni
+
+details-notification-gmp-pending = { $name } verrà installato tra qualche istante.
+

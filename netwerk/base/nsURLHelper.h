@@ -295,8 +295,11 @@ class URLParams final {
 
   /**
    * Serializes the current state to a query string.
+   *
+   * \param[out] aValue will be assigned the result of the serialization
+   * \param aEncode If this is true, the serialization will encode the string.
    */
-  void Serialize(nsAString& aValue) const;
+  void Serialize(nsAString& aValue, bool aEncode) const;
 
   void Get(const nsAString& aName, nsString& aRetval);
 
@@ -315,10 +318,14 @@ class URLParams final {
 
   bool Has(const nsAString& aName);
 
+  bool Has(const nsAString& aName, const nsAString& aValue);
+
   /**
    * \brief Deletes all parameters with the given name.
    */
   void Delete(const nsAString& aName);
+
+  void Delete(const nsAString& aName, const nsAString& aValue);
 
   void DeleteAll() { mParams.Clear(); }
 

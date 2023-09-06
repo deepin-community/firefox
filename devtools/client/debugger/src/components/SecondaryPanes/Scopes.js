@@ -3,23 +3,24 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import React, { PureComponent } from "react";
+import PropTypes from "prop-types";
 import { showMenu } from "../../context-menu/menu";
 import { connect } from "../../utils/connect";
 import actions from "../../actions";
 
 import {
-  getSelectedSource,
   getSelectedFrame,
+  getCurrentThread,
   getGeneratedFrameScope,
   getOriginalFrameScope,
   getPauseReason,
   isMapScopesEnabled,
-  getThreadContext,
   getLastExpandedScopes,
   getIsCurrentThreadPaused,
 } from "../../selectors";
 import { getScopes } from "../../utils/pause/scopes";
 import { getScopeItemPath } from "../../utils/pause/scopes/utils";
+import { clientCommands } from "../../client/firefox";
 
 import { objectInspector } from "devtools/client/shared/components/reps/index";
 
@@ -29,12 +30,8 @@ const { ObjectInspector } = objectInspector;
 
 class Scopes extends PureComponent {
   constructor(props) {
-    const {
-      why,
-      selectedFrame,
-      originalFrameScopes,
-      generatedFrameScopes,
-    } = props;
+    const { why, selectedFrame, originalFrameScopes, generatedFrameScopes } =
+      props;
 
     super(props);
 
@@ -45,7 +42,28 @@ class Scopes extends PureComponent {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  static get propTypes() {
+    return {
+      addWatchpoint: PropTypes.func.isRequired,
+      expandedScopes: PropTypes.array.isRequired,
+      generatedFrameScopes: PropTypes.object,
+      highlightDomElement: PropTypes.func.isRequired,
+      isLoading: PropTypes.bool.isRequired,
+      isPaused: PropTypes.bool.isRequired,
+      mapScopesEnabled: PropTypes.bool.isRequired,
+      openElementInInspector: PropTypes.func.isRequired,
+      openLink: PropTypes.func.isRequired,
+      originalFrameScopes: PropTypes.object,
+      removeWatchpoint: PropTypes.func.isRequired,
+      setExpandedScope: PropTypes.func.isRequired,
+      toggleMapScopes: PropTypes.func.isRequired,
+      unHighlightDomElement: PropTypes.func.isRequired,
+      why: PropTypes.object.isRequired,
+    };
+  }
+
+  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const {
       selectedFrame,
       originalFrameScopes,
@@ -102,7 +120,8 @@ class Scopes extends PureComponent {
       };
 
       const menuItems = [removeWatchpointItem];
-      return showMenu(event, menuItems);
+      showMenu(event, menuItems);
+      return;
     }
 
     const addSetWatchpointLabel = L10N.getStr("watchpoints.setWatchpoint");
@@ -164,7 +183,7 @@ class Scopes extends PureComponent {
     const { watchpoint } = item.contents;
     return (
       <button
-        className={`remove-${watchpoint}-watchpoint`}
+        className={`remove-watchpoint-${watchpoint}`}
         title={L10N.getStr("watchpoints.removeWatchpointTooltip")}
         onClick={e => {
           e.stopPropagation();
@@ -176,13 +195,13 @@ class Scopes extends PureComponent {
 
   renderScopesList() {
     const {
-      cx,
       isLoading,
       openLink,
       openElementInInspector,
       highlightDomElement,
       unHighlightDomElement,
       mapScopesEnabled,
+      selectedFrame,
       setExpandedScope,
       expandedScopes,
     } = this.props;
@@ -195,22 +214,28 @@ class Scopes extends PureComponent {
       return expandedScopes.some(path => path == getScopeItemPath(item));
     }
 
-    if (scopes && scopes.length > 0 && !isLoading) {
+    if (scopes && !!scopes.length && !isLoading) {
       return (
         <div className="pane scopes-list">
           <ObjectInspector
             roots={scopes}
             autoExpandAll={false}
             autoExpandDepth={1}
+            client={clientCommands}
+            createElement={tagName => document.createElement(tagName)}
             disableWrap={true}
             dimTopLevelWindow={true}
+            frame={selectedFrame}
+            mayUseCustomFormatter={true}
             openLink={openLink}
             onDOMNodeClick={grip => openElementInInspector(grip)}
             onInspectIconClick={grip => openElementInInspector(grip)}
             onDOMNodeMouseOver={grip => highlightDomElement(grip)}
             onDOMNodeMouseOut={grip => unHighlightDomElement(grip)}
             onContextMenu={this.onContextMenu}
-            setExpanded={(path, expand) => setExpandedScope(cx, path, expand)}
+            setExpanded={(path, expand) =>
+              setExpandedScope(selectedFrame, path, expand)
+            }
             initiallyExpanded={initiallyExpanded}
             renderItemActions={this.renderWatchpointButton}
             shouldRenderTooltip={true}
@@ -241,37 +266,32 @@ class Scopes extends PureComponent {
 }
 
 const mapStateToProps = state => {
-  const cx = getThreadContext(state);
-  const selectedFrame = getSelectedFrame(state, cx.thread);
-  const selectedSource = getSelectedSource(state);
+  // This component doesn't need any prop when we are not paused
+  const selectedFrame = getSelectedFrame(state, getCurrentThread(state));
+  if (!selectedFrame) {
+    return {};
+  }
 
-  const {
-    scope: originalFrameScopes,
-    pending: originalPending,
-  } = getOriginalFrameScope(
-    state,
-    cx.thread,
-    selectedSource?.id,
-    selectedFrame?.id
-  ) || { scope: null, pending: false };
+  const { scope: originalFrameScopes, pending: originalPending } =
+    getOriginalFrameScope(state, selectedFrame) || {
+      scope: null,
+      pending: false,
+    };
 
-  const {
-    scope: generatedFrameScopes,
-    pending: generatedPending,
-  } = getGeneratedFrameScope(state, cx.thread, selectedFrame?.id) || {
-    scope: null,
-    pending: false,
-  };
+  const { scope: generatedFrameScopes, pending: generatedPending } =
+    getGeneratedFrameScope(state, selectedFrame) || {
+      scope: null,
+      pending: false,
+    };
 
   return {
-    cx,
     selectedFrame,
     mapScopesEnabled: isMapScopesEnabled(state),
     isLoading: generatedPending || originalPending,
-    why: getPauseReason(state, cx.thread),
+    why: getPauseReason(state, selectedFrame.thread),
     originalFrameScopes,
     generatedFrameScopes,
-    expandedScopes: getLastExpandedScopes(state, cx.thread),
+    expandedScopes: getLastExpandedScopes(state, selectedFrame.thread),
     isPaused: getIsCurrentThreadPaused(state),
   };
 };

@@ -15,7 +15,6 @@ SOURCES += [
     "AccessibleWrap.cpp",
     "DocAccessibleWrap.cpp",
     "Platform.cpp",
-    "RemoteAccessibleWrap.cpp",
     "RootAccessibleWrap.cpp",
     "SessionAccessibility.cpp",
     "TraversalRule.cpp",
@@ -26,7 +25,6 @@ LOCAL_INCLUDES += [
     "/accessible/generic",
     "/accessible/html",
     "/accessible/ipc",
-    "/accessible/ipc/other",
     "/accessible/xpcom",
     "/accessible/xul",
     "/dom/base",
@@ -37,6 +35,3 @@ LOCAL_INCLUDES += [
 FINAL_LIBRARY = "xul"
 
 include("/ipc/chromium/chromium-config.mozbuild")
-
-if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-    CXXFLAGS += ["-Wno-error=shadow"]

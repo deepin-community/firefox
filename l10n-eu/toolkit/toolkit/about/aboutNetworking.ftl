@@ -8,6 +8,7 @@ about-networking-sockets = Socketak
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Garbitu DNS cachea
 about-networking-dns-trr-url = DoH URLa
+about-networking-dns-trr-mode = DoH modua
 about-networking-dns-suffix = DNS aurrizkia
 about-networking-websockets = WebSocketak
 about-networking-refresh = Berritu
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Aktibo
 about-networking-idle = Inaktibo
 about-networking-host = Ostalaria
-about-networking-tcp = TCP
 about-networking-type = Mota
 about-networking-sent = Bidalitakoak
 about-networking-received = Jasotakoak
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Helbideak
 about-networking-expires = Iraungitzea (segundoak)
 about-networking-originAttributesSuffix = Isolamendu gakoa
+about-networking-flags = Marka gehigarriak
 about-networking-messages-sent = Bidalitako mezuak
 about-networking-messages-received = Jasotako mezuak
 about-networking-bytes-sent = Bidalitako byteak
 about-networking-bytes-received = Jasotako byteak
 about-networking-logging = Erregistroa
-about-networking-log-tutorial = Ikusi <a data-l10n-name="logging">HTTP erregistora</a> orria tresna hau erabiltzeko argibideetarako.
-about-networking-current-log-file = Uneko erregistro-fitxategia:
-about-networking-current-log-modules = Uneko erregistro-moduluak:
-about-networking-set-log-file = Ezarri erregistro-fitxategia
-about-networking-set-log-modules = Ezarri erregistro-moduluak:
-about-networking-start-logging = Hasi erregistratzen
-about-networking-stop-logging = Gelditu erregistratzen
 about-networking-dns-lookup = DNS bilaketa
 about-networking-dns-lookup-button = Ebatzi
 about-networking-dns-domain = Domeinua:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Cache motel kopurua
 about-networking-rcwn-cache-not-slow = Cache ez motel kopurua
 about-networking-networkid = Sarearen IDa
 about-networking-networkid-id = Sarearen IDa
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Orri hau lekuz aldatu da <a data-l10n-name="about-logging-url">about:logging</a> helbidera.
 
 ## Link is intended as "network link"
 

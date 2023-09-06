@@ -9,6 +9,7 @@
 #ifndef nsCaret_h__
 #define nsCaret_h__
 
+#include "mozilla/intl/BidiEmbeddingLevel.h"
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/dom/Selection.h"
 #include "nsCoord.h"
@@ -179,7 +180,8 @@ class nsCaret final : public nsISelectionListener {
                                nsRect* aRect);
   static nsIFrame* GetCaretFrameForNodeOffset(
       nsFrameSelection* aFrameSelection, nsIContent* aContentNode,
-      int32_t aOffset, CaretAssociationHint aFrameHint, uint8_t aBidiLevel,
+      int32_t aOffset, CaretAssociationHint aFrameHint,
+      mozilla::intl::BidiEmbeddingLevel aBidiLevel,
       nsIFrame** aReturnUnadjustedFrame, int32_t* aReturnOffset);
   static nsRect GetGeometryForFrame(nsIFrame* aFrame, int32_t aFrameOffset,
                                     nscoord* aBidiIndicatorSize);
@@ -250,9 +252,9 @@ class nsCaret final : public nsISelectionListener {
   /**
    * mBlinkRate is the rate of the caret blinking the last time we read it.
    * It is used as a way to optimize whether we need to reset the blinking
-   * timer.
+   * timer. 0 or a negative value means no blinking.
    */
-  uint32_t mBlinkRate;
+  int32_t mBlinkRate;
   /**
    * mHideCount is not 0, it means that somebody doesn't want the caret
    * to be visible.  See AddForceHide() and RemoveForceHide().

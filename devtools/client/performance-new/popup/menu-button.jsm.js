@@ -10,25 +10,27 @@
  */
 
 // Provide an exports object for the JSM to be properly read by TypeScript.
-/** @type {any} */ (this).exports = {};
+/** @type {any} */
+var exports = {};
 
 const { createLazyLoaders } = ChromeUtils.import(
-  "resource://devtools/client/performance-new/typescript-lazy-load.jsm.js"
+  "resource://devtools/client/performance-new/shared/typescript-lazy-load.jsm.js"
 );
 
 const lazy = createLazyLoaders({
-  Services: () => ChromeUtils.import("resource://gre/modules/Services.jsm"),
   CustomizableUI: () =>
-    ChromeUtils.import("resource:///modules/CustomizableUI.jsm"),
+    ChromeUtils.importESModule("resource:///modules/CustomizableUI.sys.mjs"),
   CustomizableWidgets: () =>
-    ChromeUtils.import("resource:///modules/CustomizableWidgets.jsm"),
-  PopupPanel: () =>
+    ChromeUtils.importESModule(
+      "resource:///modules/CustomizableWidgets.sys.mjs"
+    ),
+  PopupLogic: () =>
     ChromeUtils.import(
-      "resource://devtools/client/performance-new/popup/panel.jsm.js"
+      "resource://devtools/client/performance-new/popup/logic.jsm.js"
     ),
   Background: () =>
     ChromeUtils.import(
-      "resource://devtools/client/performance-new/popup/background.jsm.js"
+      "resource://devtools/client/performance-new/shared/background.jsm.js"
     ),
 });
 
@@ -98,7 +100,6 @@ function openPopup(document) {
 function initialize(toggleProfilerKeyShortcuts) {
   const { CustomizableUI } = lazy.CustomizableUI();
   const { CustomizableWidgets } = lazy.CustomizableWidgets();
-  const { Services } = lazy.Services();
 
   const widget = CustomizableUI.getWidget(WIDGET_ID);
   if (widget && widget.provider == CustomizableUI.PROVIDER_API) {
@@ -111,7 +112,7 @@ function initialize(toggleProfilerKeyShortcuts) {
   /**
    * This is mutable state that will be shared between panel displays.
    *
-   * @type {import("devtools/client/performance-new/popup/panel.jsm.js").State}
+   * @type {import("devtools/client/performance-new/popup/logic.jsm.js").State}
    */
   const panelState = {
     cleanup: [],
@@ -140,10 +141,7 @@ function initialize(toggleProfilerKeyShortcuts) {
       // but we try to avoid interfering with profiling of automated tests.
       if (
         Services.profiler.IsActive() &&
-        (!Cu.isInAutomation ||
-          !Cc["@mozilla.org/process/environment;1"]
-            .getService(Ci.nsIEnvironment)
-            .exists("MOZ_PROFILER_STARTUP"))
+        (!Cu.isInAutomation || !Services.env.exists("MOZ_PROFILER_STARTUP"))
       ) {
         Services.profiler.StopProfiler();
       }
@@ -154,7 +152,7 @@ function initialize(toggleProfilerKeyShortcuts) {
     id: WIDGET_ID,
     type: "button-and-view",
     viewId,
-    tooltiptext: "profiler-button.tooltiptext",
+    l10nId: "profiler-popup-button-idle",
 
     onViewShowing:
       /**
@@ -170,17 +168,9 @@ function initialize(toggleProfilerKeyShortcuts) {
           // The popup logic is stored in a separate script so it doesn't have
           // to be parsed at browser startup, and will only be lazily loaded
           // when the popup is viewed.
-          const {
-            selectElementsInPanelview,
-            createViewControllers,
-            addPopupEventHandlers,
-            initializePopup,
-          } = lazy.PopupPanel();
+          const { initializePopup } = lazy.PopupLogic();
 
-          const panelElements = selectElementsInPanelview(event.target);
-          const panelView = createViewControllers(panelState, panelElements);
-          addPopupEventHandlers(panelState, panelElements, panelView);
-          initializePopup(panelState, panelElements, panelView);
+          initializePopup(panelState, event.target);
         } catch (error) {
           // Surface any errors better in the console.
           console.error(error);
@@ -237,13 +227,14 @@ function initialize(toggleProfilerKeyShortcuts) {
      * This method is used when we need to operate upon the button element itself.
      * This is called once per browser window.
      *
-     * @type {(node: HTMLElement) => void}
+     * @type {(node: ChromeHTMLElement) => void}
      */
     onCreated: node => {
-      const window = node.ownerDocument?.defaultView;
-      if (!window) {
+      const document = node.ownerDocument;
+      const window = document?.defaultView;
+      if (!document || !window) {
         console.error(
-          "Unable to find the window of the profiler toolbar item."
+          "Unable to find the document or the window of the profiler toolbar item."
         );
         return;
       }
@@ -266,25 +257,25 @@ function initialize(toggleProfilerKeyShortcuts) {
       buttonElement.classList.add("subviewbutton-nav");
 
       function setButtonActive() {
-        buttonElement.setAttribute(
-          "tooltiptext",
-          "The profiler is recording a profile"
+        document.l10n.setAttributes(
+          buttonElement,
+          "profiler-popup-button-recording"
         );
         buttonElement.classList.toggle("profiler-active", true);
         buttonElement.classList.toggle("profiler-paused", false);
       }
       function setButtonPaused() {
-        buttonElement.setAttribute(
-          "tooltiptext",
-          "The profiler is capturing a profile"
+        document.l10n.setAttributes(
+          buttonElement,
+          "profiler-popup-button-capturing"
         );
         buttonElement.classList.toggle("profiler-active", false);
         buttonElement.classList.toggle("profiler-paused", true);
       }
       function setButtonInactive() {
-        buttonElement.setAttribute(
-          "tooltiptext",
-          "Record a performance profile"
+        document.l10n.setAttributes(
+          buttonElement,
+          "profiler-popup-button-idle"
         );
         buttonElement.classList.toggle("profiler-active", false);
         buttonElement.classList.toggle("profiler-paused", false);

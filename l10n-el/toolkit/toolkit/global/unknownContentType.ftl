@@ -12,3 +12,31 @@ unknowncontenttype-settingschange =
             [windows] Μπορείτε να αλλάξετε τις ρυθμίσεις στις επιλογές του { -brand-short-name }.
            *[other] Μπορείτε να αλλάξετε τις ρυθμίσεις στις προτιμήσεις του { -brand-short-name }.
         }
+
+unknowncontenttype-intro = Έχετε επιλέξει να ανοίξετε το:
+unknowncontenttype-which-is = που είναι:
+unknowncontenttype-from = από:
+unknowncontenttype-prompt = Θέλετε να αποθηκεύσετε αυτό το αρχείο;
+unknowncontenttype-action-question = Τι να κάνει το { -brand-short-name } με αυτό το αρχείο;
+unknowncontenttype-open-with =
+    .label = Άνοιγμα με
+    .accesskey = ν
+unknowncontenttype-other =
+    .label = Άλλο...
+unknowncontenttype-choose-handler =
+    .label =
+        { PLATFORM() ->
+            [macos] Επιλογή…
+           *[other] Περιήγηση…
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [macos] λ
+           *[other] ε
+        }
+unknowncontenttype-save-file =
+    .label = Αποθήκευση αρχείου
+    .accesskey = σ
+unknowncontenttype-remember-choice =
+    .label = Να γίνεται αυτόματα από εδώ και πέρα για τέτοια αρχεία.
+    .accesskey = π

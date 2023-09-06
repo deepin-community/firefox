@@ -12,12 +12,13 @@ void AssertRoundTrips(const nsHttpResponseHead& aHead) {
   {
     // Assert it round-trips via IPC.
     UniquePtr<IPC::Message> msg(new IPC::Message(MSG_ROUTING_NONE, 0));
-    IPC::ParamTraits<nsHttpResponseHead>::Write(msg.get(), aHead);
+    IPC::MessageWriter writer(*msg);
+    IPC::ParamTraits<nsHttpResponseHead>::Write(&writer, aHead);
 
     nsHttpResponseHead deserializedHead;
-    PickleIterator iter(*msg);
+    IPC::MessageReader reader(*msg);
     bool res = IPC::ParamTraits<mozilla::net::nsHttpResponseHead>::Read(
-        msg.get(), &iter, &deserializedHead);
+        &reader, &deserializedHead);
     ASSERT_TRUE(res);
     ASSERT_EQ(aHead, deserializedHead);
   }
@@ -32,7 +33,10 @@ void AssertRoundTrips(const nsHttpResponseHead& aHead) {
     // Assert it round-trips through operator=
     nsHttpResponseHead copied;
     copied = aHead;
-    ASSERT_EQ(aHead, copied);
+    // It is important that the below statement cannot be
+    // ASSERT_EQ(aHead, copied) to avoid potential lock-order inversion problem.
+    // See Bug 1829445 for more details
+    ASSERT_EQ(copied, aHead);
   }
 }
 

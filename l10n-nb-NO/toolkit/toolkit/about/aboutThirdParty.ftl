@@ -34,10 +34,12 @@ third-party-tag-background = Bakgrunn
     .title =
         Denne modulen blokkerte ikke applikasjonen fordi den ble lastet inn
         i bakgrunnen.
-third-party-unsigned-icon =
+third-party-icon-unsigned =
     .title = Denne modulen er ikke signert
-third-party-warning-icon =
+    .alt = Denne modulen er ikke signert
+third-party-icon-warning =
     .title = { -brand-short-name } krasjet i kode fra denne modulen
+    .alt = { -brand-short-name } krasjet i kode fra denne modulen
 
 third-party-status-loaded = Lastet
 third-party-status-blocked = Blokkert
@@ -48,7 +50,28 @@ third-party-button-reload = Last på nytt med systeminfo
     .title = Last på nytt med systeminformasjon
 third-party-button-open =
     .title = Åpne filplassering…
+third-party-button-to-block =
+    .title = Blokker denne modulen
+    .aria-label = Blokker denne modulen
+third-party-button-to-unblock =
+    .title = For øyeblikket blokkert. Klikk for å oppheve blokkeringen.
+    .aria-label = For øyeblikket blokkert. Klikk for å oppheve blokkeringen.
+third-party-button-to-unblock-disabled =
+    .title =
+        For øyeblikket merket som blokkert, selv om blokkeringslisten er deaktivert for denne kjøringen
+        av { -brand-short-name }. Klikk for å oppheve blokkeringen.
+    .aria-label =
+        For øyeblikket merket som blokkert, selv om blokkeringslisten er deaktivert for denne kjøringen
+        av { -brand-short-name }. Klikk for å oppheve blokkeringen.
 third-party-button-expand =
     .title = Vis detaljert informasjon
 third-party-button-collapse =
     .title = Skjul detaljert informasjon
+third-party-blocking-requires-restart = For å blokkere en tredjepartsmodul må { -brand-short-name } starte på nytt.
+third-party-should-restart-title = Start { -brand-short-name } på nytt
+third-party-restart-now = Start på nytt nå
+third-party-restart-later = Start på nytt senere
+
+third-party-blocked-by-builtin =
+    .title = Blokkert av { -brand-short-name }
+    .alt = Blokkert av { -brand-short-name }

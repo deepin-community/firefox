@@ -6,9 +6,16 @@ addons-page-title = Gestionari de moduls complementaris
 search-header =
     .placeholder = Cercar sus addons.mozilla.org
     .searchbuttonlabel = Cercar
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Obtenètz d’extensions e tèmas sus <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Obtenètz de diccionaris sus <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Obtenètz de paquets lingüistics sus <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Avètz pas cap de modul d'aqueste tipe d'installat
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Version
 detail-last-updated =
     .label = Darrièra mesa a jorn
+addon-detail-description-expand = Ne veire mai
+addon-detail-description-collapse = Ne veire mens
 detail-contributions-description = Lo desvolopaire d'aqueste modul demanda que l'ajudetz a assegurar lo contunhament de son desvolopament en li pagant una pichona contribucion.
 detail-contributions-button = Contribuir
     .title = Contribuir al desvolopament d’aqueste modul
@@ -109,7 +118,7 @@ private-browsing-description2 =
     { -brand-short-name } modifica lo foncionament de las extensions dins la navegacion privada. Cap de las novèlas extensions qu'apondètz a
     { -brand-short-name } serà pas executada per defaut dins una fenèstra privada. Levat se l'autorisatz dins los paramètres,
     l'extension foncionarà pas pendent la navegacion privada e aurà pas accès a vòstras activitats en linha
-    Avèm aportat aquesta modificacion per gardar vòstra navigacion privada privada.
+    Avèm aportat aquesta modificacion per gardar vòstra navegacion privada privada.
     <label data-l10n-name="private-browsing-learn-more">Aprenètz a gerir los paramètres d'extension</label>
 addon-category-discover = Recomandacions
 addon-category-discover-title =
@@ -135,6 +144,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Mes a jorn
 addon-category-recent-updates-title =
     .title = Mes a jorn
+addon-category-sitepermission = Autorizacions de site
+addon-category-sitepermission-title =
+    .title = Autorizacions de site
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Autorizacions de site per { $host }
 
 ## These are global warnings
 
@@ -145,6 +161,7 @@ extensions-warning-check-compatibility-button = Activar
 extensions-warning-update-security = La verificacion de compatibilitat pels moduls complementaris es desactivada. Es possible que d'unas mesas a jorn sián problematicas.
 extensions-warning-update-security-button = Activar
     .title = Activar la verificacion de mesas a jorn de seguretat pels moduls complementaris
+extensions-warning-imported-addons-button = Installar las extensions
 
 ## Strings connected to add-on updates
 
@@ -213,6 +230,8 @@ shortcuts-duplicate-warning-message = { $shortcut } es utilizat coma acorchi din
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Ja utilizat per { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Ne veire { $numberToShow } mai
@@ -283,15 +302,15 @@ permissions-addon-button = Permissions
 extension-enabled-heading = Activadas
 extension-disabled-heading = Desactivadas
 theme-enabled-heading = Activat
-theme-disabled-heading = Desactivats
-theme-monochromatic-heading = Colorit
-theme-monochromatic-subheading = Combinasons de colors vibrantas de { -brand-product-name }. Disponiblas durant un temps limitat.
+theme-disabled-heading2 = Tèmas salvats
 plugin-enabled-heading = Activats
 plugin-disabled-heading = Desactivats
 dictionary-enabled-heading = Activats
 dictionary-disabled-heading = Desactivats
 locale-enabled-heading = Activadas
 locale-disabled-heading = Desactivadas
+sitepermission-enabled-heading = Activat
+sitepermission-disabled-heading = Desactivat
 always-activate-button = Totjorn activar
 never-activate-button = Activar pas jamai
 addon-detail-author-label = Autor
@@ -332,6 +351,10 @@ addon-detail-updates-radio-on = Activadas
 addon-detail-updates-radio-off = Desactivadas
 addon-detail-update-check-label = Recercar de mesas a jorn
 install-update-button = Metre a jorn
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -340,6 +363,22 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Quand es autorizada, l'extension a accès a vòstras activitats en linha pendent la navegacion privada. <a data-l10n-name="learn-more">Ne saber mai</a>
 addon-detail-private-browsing-allow = Autorizar
 addon-detail-private-browsing-disallow = Autorizar pas
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Executar suls sites amb restriccions
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Autorizar
+addon-detail-quarantined-domains-disallow = Autorizar pas
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -368,6 +407,9 @@ addon-permissions-optional = Permissions opcionalas per las foncionalitats suple
 addon-permissions-learnmore = Per ne saber mai sus las permissions
 recommended-extensions-heading = Extensions recomandadas
 recommended-themes-heading = Tèmas recomandats
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Donar las capacitats seguentas a <span data-l10n-name="hostname">{ $hostname }</span> :
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Vos sentissètz creatiu ? <a data-l10n-name="link">Creatz vòstre pròpri tèma amb Firefox Color.</a>
@@ -380,6 +422,7 @@ plugin-heading = Gestion dels plugins
 dictionary-heading = Gestion dels diccionaris
 locale-heading = Gestion de las lengas
 updates-heading = Gestion de las mesas a jorn
+sitepermission-heading = Gerir las autorizacions de site
 discover-heading = Personalizatz { -brand-short-name }
 shortcuts-heading = Gestion dels acorchis d’extensions
 default-heading-search-label = Trobar mai de moduls
@@ -387,3 +430,21 @@ addons-heading-search-input =
     .placeholder = Cercar sus addons.mozilla.org
 addon-page-options-button =
     .title = Aisinas per totes los moduls
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } es incompatible amb { -brand-short-name } { $version }.
+details-notification-incompatible-link = Mai d'informacions
+details-notification-unsigned-and-disabled = { $name } a pas poput èsser verificat per son utilizacion dins { -brand-short-name } e foguèt desactivat.
+details-notification-unsigned-and-disabled-link = Mai d'informacions
+details-notification-unsigned = { $name } a pas pogut èsser verificat per son utilizacion dins { -brand-short-name }. Fasètz atencion.
+details-notification-unsigned-link = Mai d'informacions
+details-notification-blocked = { $name } es estat desactivat en seguida de problèmas de seguretat o d'estabilitat.
+details-notification-blocked-link = Mai d'informacions
+details-notification-softblocked = { $name } es conegut per provocar de problèmas de seguretat o d'estabilitat.
+details-notification-softblocked-link = Mai d'informacions
+details-notification-gmp-pending = { $name } serà installat lèu.

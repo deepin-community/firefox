@@ -26,9 +26,9 @@ certmgr-people = Έχετε πιστοποιητικά στο αρχείο πο�
 certmgr-server = Αυτές οι καταχωρήσεις αναγνωρίζουν τις εξαιρέσεις σφαλμάτων του πιστοποιητικού διακομιστή
 certmgr-ca = Έχετε πιστοποιητικά στο αρχείο που ταυτοποιούν αυτές τις αρχές πιστοποιητικών
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Επεξεργασία ρυθμίσεων αξιοπιστίας πιστοποιητικών CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Επεξεργασία ρυθμίσεων εμπιστοσύνης:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Το παρόν πιστοποιεί χρήστες email.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Διαγραφή πιστοποιητικού
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Υπολογιστής
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Διακομιστής
-
-certmgr-override-lifetime =
-    .label = Διάρκεια ζωής
 
 certmgr-token-name =
     .label = Συσκευή ασφάλειας
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Σειριακός αριθμός
+
+certmgr-fingerprint-sha-256 =
+    .label = Αποτύπωμα SHA-256
 
 certmgr-view =
     .label = Προβολή…
@@ -177,7 +177,7 @@ delete-ca-cert-impact = Αν διαγράψετε ή άρετε την εμπι�
 delete-email-cert-title =
     .title = Διαγραφή πιστοποιητικών email
 delete-email-cert-confirm = Θέλετε σίγουρα να διαγράψετε τα πιστοποιητικά email αυτών των ατόμων;
-delete-email-cert-impact = Εάν διαγράψετε ένα πιστοποιητικό e-mail,  δεν θα μπορείτε πια να στέλνετε κρυπτογραφημένη αλληλογραφία σε αυτούς τους ανθρώπους.
+delete-email-cert-impact = Εάν διαγράψετε το πιστοποιητικό email ενός ατόμου, δεν θα μπορείτε πλέον να του στέλνετε κρυπτογραφημένα email.
 
 # Used for semi-uniquely representing a cert.
 #
@@ -185,8 +185,6 @@ delete-email-cert-impact = Εάν διαγράψετε ένα πιστοποιη
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Πιστοποιητικό με σειριακό αριθμό: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Χωρίς αποστολή πιστοποιητικού πελάτη

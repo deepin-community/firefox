@@ -1,7 +1,5 @@
 "use strict";
-const { E10SUtils } = ChromeUtils.import(
-  "resource://gre/modules/E10SUtils.jsm"
-);
+
 const triggeringPrincipal_base64 = E10SUtils.SERIALIZED_SYSTEMPRINCIPAL;
 
 const MAX_CONCURRENT_TABS = "browser.engagement.max_concurrent_tab_count";
@@ -13,6 +11,11 @@ const UNFILTERED_URI_COUNT = "browser.engagement.unfiltered_uri_count";
 const UNIQUE_DOMAINS_COUNT = "browser.engagement.unique_domains_count";
 const TOTAL_URI_COUNT_NORMAL_AND_PRIVATE_MODE =
   "browser.engagement.total_uri_count_normal_and_private_mode";
+
+BrowserUsageTelemetry._onTabsOpenedTask._timeoutMs = 0;
+registerCleanupFunction(() => {
+  BrowserUsageTelemetry._onTabsOpenedTask._timeoutMs = undefined;
+});
 
 function promiseBrowserStateRestored() {
   return new Promise(resolve => {
@@ -29,16 +32,22 @@ function promiseBrowserStateRestored() {
 add_task(async function test_privateMode() {
   // Let's reset the counts.
   Services.telemetry.clearScalars();
+  Services.fog.testResetFOG();
 
   // Open a private window and load a website in it.
   let privateWin = await BrowserTestUtils.openNewBrowserWindow({
     private: true,
   });
-  BrowserTestUtils.loadURI(
+  await BrowserTestUtils.firstBrowserLoaded(privateWin);
+  BrowserTestUtils.loadURIString(
     privateWin.gBrowser.selectedBrowser,
-    "http://example.com/"
+    "https://example.com/"
   );
-  await BrowserTestUtils.browserLoaded(privateWin.gBrowser.selectedBrowser);
+  await BrowserTestUtils.browserLoaded(
+    privateWin.gBrowser.selectedBrowser,
+    false,
+    "https://example.com/"
+  );
 
   // Check that tab and window count is recorded.
   const scalars = TelemetryTestUtils.getProcessScalars("parent");
@@ -80,6 +89,11 @@ add_task(async function test_privateMode() {
     1,
     "We should include URIs in private mode as part of the actual total URI count."
   );
+  is(
+    Glean.browserEngagement.uriCount.testGetValue(),
+    1,
+    "We should record the URI count in Glean as well."
+  );
 
   // Clean up.
   await BrowserTestUtils.closeWindow(privateWin);
@@ -114,10 +128,9 @@ add_task(async function test_sessionRestore() {
   };
 
   // Save the current session.
-  let SessionStore = ChromeUtils.import(
-    "resource:///modules/sessionstore/SessionStore.jsm",
-    {}
-  ).SessionStore;
+  let { SessionStore } = ChromeUtils.importESModule(
+    "resource:///modules/sessionstore/SessionStore.sys.mjs"
+  );
 
   // Load the custom state and wait for SSTabRestored, as we want to make sure
   // that the URI counting code was hit.

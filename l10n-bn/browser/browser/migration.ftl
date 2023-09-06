@@ -3,15 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 migration-wizard =
-    .title = ইমপোর্ট উইজার্ড
+    .title = আমদানির উইজার্ড
 
 import-from =
     { PLATFORM() ->
-        [windows] উল্লেখিত স্থান থেকে অপশনসমূহ, বুকমার্ক, ইতিহাস, পাসওয়ার্ড ও অন্যান্য তথ্য ইমপোর্ট করা হবে:
-       *[other] উল্লেখিত স্থান থেকে পছন্দসমূহ, বুকমার্ক, ইতিহাস, পাসওয়ার্ড ও অন্যান্য তথ্য ইমপোর্ট করা হবে:
+        [windows] এ স্থান থেকে অপশনসমূহ, বুকমার্ক, ইতিহাস, পাসওয়ার্ড ও অন্যান্য তথ্য আমদানি করা হবে:
+       *[other] এ স্থান থেকে পছন্দসমূহ, বুকমার্ক, ইতিহাস, পাসওয়ার্ড ও অন্যান্য তথ্য আমদানি করা হবে:
     }
 
-import-from-bookmarks = উল্লেখিত স্থান থেকে বুকমার্ক ইমপোর্ট করা হবে:
+import-from-bookmarks = এ স্থান থেকে বুকমার্ক আমদানি করা হবে:
 import-from-ie =
     .label = মাইক্রোসফট ইন্টারনেট এক্সপ্লোরার
     .accesskey = M
@@ -25,7 +25,7 @@ import-from-edge-beta =
     .label = Microsoft Edge Beta
     .accesskey = d
 import-from-nothing =
-    .label = কিছুই ইমপোর্ট করা হবে না
+    .label = কিছুই আমদানি করবেন না
     .accesskey = D
 import-from-safari =
     .label = সাফারি
@@ -54,12 +54,12 @@ import-from-360se =
 
 no-migration-sources = বুকমার্ক, ইতিহাস অথবা পাসওয়ার্ড ধারণকারী কোনো প্রোগ্রাম পাওয়া যায়নি।
 
-import-source-page-title = সেটিং ও তথ্য ইমপোর্ট করুন
-import-items-page-title = ইমপোর্ট করা হবে
+import-source-page-title = সেটিং ও উপাত্ত আমদানি করুন
+import-items-page-title = আমদানির আইটেম
 
-import-items-description = ইমপোর্ট করার জন্য আইটেম নির্বাচন:
+import-items-description = আমদানি করার জন্য আইটেম নির্বাচন করুন:
 
-import-migrating-page-title = ইমপোর্ট করা হচ্ছে...
+import-migrating-page-title = আমদানি করা হচ্ছে…
 
 import-migrating-description = বর্তমানে নিম্নলিখিত আইটেম ইমপোর্ট করা হচ্ছে...
 
@@ -71,41 +71,14 @@ import-done-page-title = ইমপোর্ট সমাপ্ত
 
 import-done-description = নিম্নলিখিত আইটেমের ইমপোর্ট সফল হয়েছে:
 
-import-close-source-browser = কন্টিনিউ করার পূর্বে এটি নিশ্চিত করুন যে আপনার ব্রাউসারটি বন্ধ।
-
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = { $source } থেকে
+import-close-source-browser = চালিয়ে যাওয়ার আগে, অনুগ্রহ করে নিশ্চিত করুন যে নির্বাচিত ব্রাউজারটি বন্ধ রয়েছে।
 
 source-name-ie = ইন্টারনেট এক্সপ্লোরার
 source-name-edge = মাইক্রোসফট এজ
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = সাফারি
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = ক্রোমিয়াম
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 নিরাপদ ব্রাউজার
 
 imported-safari-reading-list = তালিকা পড়া হচ্ছে (সাফারি হতে)
 imported-edge-reading-list = তালিকা পড়া হচ্ছে (Edge হতে)
-
-## Browser data types
-## All of these strings get a $browser variable passed in.
-## You can use the browser variable to differentiate the name of items,
-## which may have different labels in different browsers.
-## The supported values for the $browser variable are:
-## 360se
-## chrome
-## edge
-## firefox
-## safari
-## The various beta and development versions of edge and chrome all get
-## normalized to just "edge" and "chrome" for these strings.
 
 ## Browser data types
 ## All of these strings get a $browser variable passed in.
@@ -121,7 +94,23 @@ imported-edge-reading-list = তালিকা পড়া হচ্ছে (Edge 
 ## The various beta and development versions of edge and chrome all get
 ## normalized to just "edge" and "chrome" for these strings.
 
+browser-data-cookies-checkbox =
+    .label = কুকিস
+browser-data-cookies-label =
+    .value = কুকিস
+
+browser-data-formdata-checkbox =
+    .label = সংরক্ষিত ফরমের ইতিহাস
+browser-data-formdata-label =
+    .value = সংরক্ষিত ফরমের ইতিহাস
+
+browser-data-otherdata-checkbox =
+    .label = অন্যান্য তথ্য
+browser-data-otherdata-label =
+    .label = অন্যান্য তথ্য
+
 browser-data-session-checkbox =
     .label = উইন্ডো এবং ট্যাব
 browser-data-session-label =
     .value = উইন্ডো এবং ট্যাব
+

@@ -36,24 +36,6 @@
     )}
 % endfor
 
-#[cfg(feature = "gecko")]
-macro_rules! impl_align_conversions {
-    ($name: path) => {
-        impl From<u8> for $name {
-            fn from(bits: u8) -> $name {
-                $name(crate::values::specified::align::AlignFlags::from_bits(bits)
-                      .expect("bits contain valid flag"))
-            }
-        }
-
-        impl From<$name> for u8 {
-            fn from(v: $name) -> u8 {
-                v.0.bits()
-            }
-        }
-    };
-}
-
 ${helpers.predefined_type(
     "z-index",
     "ZIndex",
@@ -184,9 +166,6 @@ ${helpers.single_keyword(
         servo_restyle_damage="reflow",
     )}
 
-    #[cfg(feature = "gecko")]
-    impl_align_conversions!(crate::values::specified::align::AlignItems);
-
     ${helpers.predefined_type(
         "justify-items",
         "JustifyItems",
@@ -195,9 +174,6 @@ ${helpers.single_keyword(
         spec="https://drafts.csswg.org/css-align/#propdef-justify-items",
         animation_value_type="discrete",
     )}
-
-    #[cfg(feature = "gecko")]
-    impl_align_conversions!(crate::values::specified::align::JustifyItems);
 % endif
 
 // Flex item properties
@@ -258,9 +234,6 @@ ${helpers.predefined_type(
         spec="https://drafts.csswg.org/css-align/#justify-self-property",
         animation_value_type="discrete",
     )}
-
-    #[cfg(feature = "gecko")]
-    impl_align_conversions!(crate::values::specified::align::SelfAlignment);
 % endif
 
 // https://drafts.csswg.org/css-flexbox/#propdef-order
@@ -457,6 +430,19 @@ ${helpers.predefined_type(
     engines="gecko servo-2013",
     animation_value_type="ComputedValue",
     spec="https://drafts.csswg.org/css-sizing-4/#aspect-ratio",
-    gecko_pref="layout.css.aspect-ratio.enabled",
     servo_restyle_damage="reflow",
 )}
+
+% for (size, logical) in ALL_SIZES:
+    ${helpers.predefined_type(
+        "contain-intrinsic-" + size,
+        "ContainIntrinsicSize",
+        "computed::ContainIntrinsicSize::None",
+        engines="gecko",
+        logical_group="contain-intrinsic-size",
+        logical=logical,
+        gecko_pref="layout.css.contain-intrinsic-size.enabled",
+        spec="https://drafts.csswg.org/css-sizing-4/#intrinsic-size-override",
+        animation_value_type="NonNegativeLength",
+    )}
+% endfor

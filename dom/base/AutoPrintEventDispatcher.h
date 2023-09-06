@@ -8,7 +8,9 @@
 #define mozilla_dom_AutoPrintEventDispatcher_h
 
 #include "mozilla/dom/Document.h"
+#include "mozilla/dom/DocumentInlines.h"
 #include "nsContentUtils.h"
+#include "nsIPrintSettings.h"
 
 namespace mozilla::dom {
 
@@ -17,34 +19,42 @@ class AutoPrintEventDispatcher {
   // RecvCloneDocumentTreeIntoSelf.
   static void CollectInProcessSubdocuments(
       Document& aDoc, nsTArray<nsCOMPtr<Document>>& aDocs) {
-    aDocs.AppendElement(&aDoc);
     auto recurse = [&aDocs](Document& aSubDoc) {
+      aDocs.AppendElement(&aSubDoc);
       CollectInProcessSubdocuments(aSubDoc, aDocs);
       return CallState::Continue;
     };
     aDoc.EnumerateSubDocuments(recurse);
   }
 
-  void DispatchEvent(bool aBefore) {
-    for (nsCOMPtr<Document>& doc : mDocuments) {
+  MOZ_CAN_RUN_SCRIPT void DispatchEvent(bool aBefore) {
+    for (auto& doc : mDocuments) {
       nsContentUtils::DispatchTrustedEvent(
           doc, doc->GetWindow(), aBefore ? u"beforeprint"_ns : u"afterprint"_ns,
           CanBubble::eNo, Cancelable::eNo, nullptr);
+      if (RefPtr<nsPresContext> presContext = doc->GetPresContext()) {
+        presContext->EmulateMedium(aBefore ? nsGkAtoms::print : nullptr);
+        // Ensure media query listeners fire.
+        doc->FlushPendingNotifications(FlushType::Style);
+      }
     }
   }
 
  public:
-  explicit AutoPrintEventDispatcher(Document& aDoc) {
+  MOZ_CAN_RUN_SCRIPT explicit AutoPrintEventDispatcher(Document& aDoc) {
     if (!aDoc.IsStaticDocument()) {
+      mDocuments.AppendElement(&aDoc);
       CollectInProcessSubdocuments(aDoc, mDocuments);
     }
 
     DispatchEvent(true);
   }
 
-  ~AutoPrintEventDispatcher() { DispatchEvent(false); }
+  MOZ_CAN_RUN_SCRIPT ~AutoPrintEventDispatcher() { DispatchEvent(false); }
 
   AutoTArray<nsCOMPtr<Document>, 8> mDocuments;
+  const nsSize mPageSize;
+  nsRect mVisibleAreaToRestore;
 };
 
 }  // namespace mozilla::dom

@@ -67,7 +67,7 @@ fonts-langgroup-telugu =
 fonts-langgroup-thai =
     .label = Thai
 fonts-langgroup-tibetan =
-    .label = Tibeteg
+    .label = Tibet
 fonts-langgroup-canadian =
     .label = Unified Canadian Syllabary
 fonts-langgroup-other =
@@ -107,11 +107,6 @@ fonts-minsize-none =
 fonts-allow-own =
     .label = Caniatáu i dudalennau ddewis eu ffont eu hun, yn lle fy newis i uchod
     .accesskey = C
-
-## Text Encodings
-##
-## Translate the encoding names as adjectives for an encoding, not as the name
-## of the language.
 
 # Variables:
 #   $name {string, "Arial"} - Name of the default font

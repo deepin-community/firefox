@@ -5,15 +5,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 EXTRA_JS_MODULES += [
-    "BrowserSearchTelemetry.jsm",
-    "SearchOneOffs.jsm",
-    "SearchSERPTelemetry.jsm",
-    "SearchUIUtils.jsm",
+    "BrowserSearchTelemetry.sys.mjs",
+    "SearchOneOffs.sys.mjs",
+    "SearchSERPTelemetry.sys.mjs",
+    "SearchUIUtils.sys.mjs",
 ]
 
 BROWSER_CHROME_MANIFESTS += [
     "test/browser/browser.ini",
     "test/browser/google_codes/browser.ini",
+    "test/browser/telemetry/browser.ini",
 ]
 
 MARIONETTE_LAYOUT_MANIFESTS += ["test/marionette/manifest.ini"]

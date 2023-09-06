@@ -16,8 +16,6 @@ change-password-old = Şu anki parola:
 change-password-new = Yeni parola:
 change-password-reenter = Yeni parola (tekrar):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Parola değiştirilemedi.
 pippki-incorrect-pw = Mevcut parolanızı doğru şekilde girmediniz. Lütfen tekrar deneyin.
 pippki-pw-change-ok = Parola başarıyla değiştirildi.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Şu anda FIPS kipindesiniz. FIPS için bo�
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Ana parolayı sıfırla
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Sıfırla
-
 reset-primary-password-text = Ana parolanızı sıfırlarsanız tüm kayıtlı web ve e-posta parolalarınız, kişisel sertifikalarınız ve özel anahtarlarınız silinecektir. Ana parolanızı sıfırlamak istediğinizden emin misiniz?
 
 pippki-reset-password-confirmation-title = Ana Parolayı Sıfırla
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Ana parolanız sıfırlandı.
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Sertifika indiriliyor
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Yeni bir Sertifika Makamına (CA) güvenmeniz istendi.
 download-cert-trust-ssl =
     .label = Web sitelerini tanımlamak için bu CA'ya güven.
@@ -77,7 +74,8 @@ set-password-reminder = Önemli: Eğer sertifika yedek parolanızı unutursanız
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Korumalı Jeton Kimlik Doğrulaması
-protected-auth-msg = Lütfen jetonda kimliğinizi doğrulayın. Kimlik doğrulama yöntemi jeton türüne göre değişir.
-protected-auth-token = Jeton:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Lütfen “{ $tokenName }” jetonu için kimliğinizi doğrulayın. Bunun nasıl yapılacağı jetona bağlıdır. (Örneğin, parmak izi okuyucu kullanmanız veya tuş takımıyla bir kod girmeniz gerekebilir.)

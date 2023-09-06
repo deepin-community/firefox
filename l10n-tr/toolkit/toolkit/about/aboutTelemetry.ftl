@@ -34,7 +34,6 @@ about-telemetry-events-section = Olaylar
 about-telemetry-simple-measurements-section = Basit Ölçümler
 about-telemetry-slow-sql-section = Yavaş SQL Deyimleri
 about-telemetry-addon-details-section = Eklenti Ayrıntıları
-about-telemetry-captured-stacks-section = Yakalanan Yığınlar
 about-telemetry-late-writes-section = Geç Yazmalar
 about-telemetry-raw-payload-section = Ham yük
 about-telemetry-raw = Ham JSON
@@ -122,10 +121,6 @@ about-telemetry-keys-header = Özellik
 about-telemetry-names-header = Adı
 about-telemetry-values-header = Değer
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (yakalama sayısı: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Geç yazma #{ $lateWriteCount }
 about-telemetry-stack-title = Yığın:
@@ -136,12 +131,6 @@ about-telemetry-category-header = kategori
 about-telemetry-method-header = yöntem
 about-telemetry-object-header = nesne
 about-telemetry-extra-header = ekstra
-about-telemetry-origin-section = Köken Telemetrisi
-about-telemetry-origin-origin = köken
-about-telemetry-origin-count = sayaç
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Firefox Köken Telemetrisi</a> verileri göndermeden öne şifreler. Böylece { $telemetryServerOwner } bazı şeyleri sayabilir ama hangi { -brand-product-name } tarayıcılarının bu sayıma dahil olduğunu bilemez. (<a data-l10n-name="prio-blog-link">Daha fazla bilgi alın</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = { $process } işlemi

@@ -5,9 +5,9 @@
 
 ## Strings used for device manager
 
-devmgr =
+devmgr-window =
     .title = Zrjadowak grata
-    .style = width: 67em; height: 32em;
+    .style = min-width: 67em; min-height: 32em;
 
 devmgr-devlist =
     .label = Module a grat wěstoty
@@ -35,7 +35,7 @@ devmgr-button-load =
     .accesskey = a
 
 devmgr-button-unload =
-    .label = Wotstronić
+    .label = Wuswobodźić
     .accesskey = s
 
 devmgr-button-enable-fips =

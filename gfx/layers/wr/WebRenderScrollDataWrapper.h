@@ -237,6 +237,9 @@ class MOZ_STACK_CLASS WebRenderScrollDataWrapper final {
     // its mContainingSubtreeLastIndex.
     if (mLayer->GetDescendantCount() > 0) {
       size_t prevSiblingIndex = mLayerIndex + 1 + mLayer->GetDescendantCount();
+      // TODO(botond): Replace the min() with just prevSiblingIndex (which
+      // should be <= mContainingSubtreeLastIndex).
+      MOZ_ASSERT(prevSiblingIndex <= mContainingSubtreeLastIndex);
       size_t subtreeLastIndex =
           std::min(mContainingSubtreeLastIndex, prevSiblingIndex);
       return WebRenderScrollDataWrapper(mUpdater, mData, mLayerIndex + 1,
@@ -342,15 +345,6 @@ class MOZ_STACK_CLASS WebRenderScrollDataWrapper final {
     return false;
   }
 
-  EventRegions GetEventRegions() const {
-    MOZ_ASSERT(IsValid());
-
-    if (AtBottomLayer()) {
-      return mLayer->GetEventRegions();
-    }
-    return EventRegions();
-  }
-
   LayerIntRegion GetVisibleRegion() const {
     MOZ_ASSERT(IsValid());
 
@@ -384,21 +378,6 @@ class MOZ_STACK_CLASS WebRenderScrollDataWrapper final {
     if (AtBottomLayer()) {
       return mLayer->GetReferentId();
     }
-    return Nothing();
-  }
-
-  Maybe<ParentLayerIntRect> GetClipRect() const {
-    MOZ_ASSERT(IsValid());
-
-    // This function is only used by tests.
-    // This is a minimal implementation, which clips to the visible region,
-    // that's sufficient to satisfy the tests.
-    if (AtBottomLayer()) {
-      auto localTransform = GetTransformTyped() * AsyncTransformMatrix();
-      return Some(RoundedToInt(localTransform.TransformBounds(
-          LayerRect(mLayer->GetVisibleRegion().GetBounds()))));
-    }
-
     return Nothing();
   }
 
@@ -493,12 +472,6 @@ class MOZ_STACK_CLASS WebRenderScrollDataWrapper final {
     return mLayer->GetZoomAnimationId();
   }
 
-  bool IsBackfaceHidden() const {
-    // This is only used by APZCTM hit testing, and WR does its own
-    // hit testing, so no need to implement this.
-    return false;
-  }
-
   Maybe<ScrollableLayerGuid::ViewID> GetAsyncZoomContainerId() const {
     MOZ_ASSERT(IsValid());
     return mLayer->GetAsyncZoomContainerId();
@@ -510,6 +483,29 @@ class MOZ_STACK_CLASS WebRenderScrollDataWrapper final {
   const void* GetLayer() const {
     MOZ_ASSERT(IsValid());
     return mLayer;
+  }
+
+  template <int Level>
+  size_t Dump(gfx::TreeLog<Level>& aOut) const {
+    std::string result = "(invalid)";
+    if (!IsValid()) {
+      aOut << result;
+      return result.length();
+    }
+    if (AtBottomLayer()) {
+      if (mData != nullptr) {
+        const WebRenderLayerScrollData* layerData =
+            mData->GetLayerData(mLayerIndex);
+        if (layerData != nullptr) {
+          std::stringstream ss;
+          layerData->Dump(ss, *mData);
+          result = ss.str();
+          aOut << result;
+          return result.length();
+        }
+      }
+    }
+    return 0;
   }
 
  private:

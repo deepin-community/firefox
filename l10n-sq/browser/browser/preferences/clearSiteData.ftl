@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Spastroji të Dhënat
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Spastrimi i krejt cookie-eve dhe të dhënave të sajtit të depozituara nga { -brand-short-name }-i mund të sjellë daljen tuaj nga llogaritë në sajte dhe heqje të lëndës për përdorim pa qenë i lidhur në internet. Spastrimi i të dhënave të fshehtinës nuk do të prekë kredencialet tuaja për hyrje.
 

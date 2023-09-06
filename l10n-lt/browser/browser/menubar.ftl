@@ -43,15 +43,6 @@ menu-quit =
 menu-quit-mac =
     .label = Baigti „{ -brand-shorter-name }“ darbą
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Baigti „{ -brand-shorter-name }“ darbą
-
 menu-about =
     .label = Apie „{ -brand-shorter-name }“
     .accesskey = A
@@ -81,8 +72,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Atverti…
     .accesskey = A
-menu-file-close =
-    .label = Užverti
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Užverti kortelę
+            [one] Užverti { $tabCount } kortelę
+            [few] Užverti { $tabCount } korteles
+           *[other] Užverti { $tabCount } kortelių
+        }
     .accesskey = U
 menu-file-close-window =
     .label = Užverti langą
@@ -99,9 +98,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Puslapio nuostatos…
     .accesskey = n
-menu-file-print-preview =
-    .label = Spaudinio peržiūra
-    .accesskey = ž
 menu-file-print =
     .label = Spausdinti…
     .accesskey = S
@@ -188,6 +184,17 @@ menu-view-full-screen =
     .label = Visas ekranas
     .accesskey = V
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Pereiti į skaitymo rodinį
+    .accesskey = s
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Išjungti skaitymo rodinį
+    .accesskey = s
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +223,6 @@ menu-history-undo-menu =
     .label = Paskiausiai užvertos kortelės
 menu-history-undo-window-menu =
     .label = Paskiausiai užverti langai
-menu-history-reopen-all-tabs = Įkelti visas korteles
-menu-history-reopen-all-windows = Įkelti visus langus
 
 ## Bookmarks Menu
 
@@ -226,10 +231,10 @@ menu-bookmarks-menu =
     .accesskey = A
 menu-bookmarks-manage =
     .label = Tvarkyti adresyną
-menu-bookmark-current-tab =
-    .label = Įrašyti šią kortelę į adresyną
-menu-bookmark-edit =
-    .label = Taisyti adresyno įrašą
+menu-bookmark-tab =
+    .label = Įrašyti šią kortelę į adresyną…
+menu-edit-bookmark =
+    .label = Taisyti šį adresyno įrašą…
 menu-bookmarks-all-tabs =
     .label = Visas korteles įtraukti į adresyną…
 menu-bookmarks-toolbar =
@@ -314,9 +319,9 @@ menu-help-more-troubleshooting-info =
     .accesskey = p
 menu-help-report-site-issue =
     .label = Pranešti apie svetainės problemą…
-menu-help-feedback-page =
-    .label = Siųsti atsiliepimą…
-    .accesskey = S
+menu-help-share-ideas =
+    .label = Pasidalinti idėjomis ir atsiliepimais…
+    .accesskey = s
 menu-help-enter-troubleshoot-mode2 =
     .label = Trikčių šalinimo veiksena…
     .accesskey = v

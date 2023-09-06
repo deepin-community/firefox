@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Opavave
+printui-page-range-current = Ag̃agua
+printui-page-range-odd = Papapyete’ỹ
+printui-page-range-even = Avei
 printui-page-range-custom = Momba’epyre
 printui-page-range-label = Kuatiarogue
 printui-page-range-picker =

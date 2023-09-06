@@ -4,9 +4,10 @@
 
 "use strict";
 
-const { storageTypePool } = require("devtools/server/actors/storage");
-const EventEmitter = require("devtools/shared/event-emitter");
-const Services = require("Services");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
+const { isWindowGlobalPartOfContext } = ChromeUtils.importESModule(
+  "resource://devtools/server/actors/watcher/browsing-context-helpers.sys.mjs"
+);
 
 // ms of delay to throttle updates
 const BATCH_DELAY = 200;
@@ -27,11 +28,12 @@ function getFilteredStorageEvents(updates, storageType) {
     }
   }
 
-  return Object.keys(filteredUpdate).length > 0 ? filteredUpdate : null;
+  return Object.keys(filteredUpdate).length ? filteredUpdate : null;
 }
 
 class ParentProcessStorage {
-  constructor(storageKey, storageType) {
+  constructor(ActorConstructor, storageKey, storageType) {
+    this.ActorConstructor = ActorConstructor;
     this.storageKey = storageKey;
     this.storageType = storageType;
 
@@ -67,11 +69,25 @@ class ParentProcessStorage {
       ({ windowGlobal }) => this._onNewWindowGlobal(windowGlobal, true)
     );
 
-    const {
-      browsingContext,
-      innerWindowID: innerWindowId,
-    } = watcherActor.browserElement;
-    await this._spawnActor(browsingContext.id, innerWindowId);
+    if (watcherActor.sessionContext.type == "browser-element") {
+      const { browsingContext, innerWindowID: innerWindowId } =
+        watcherActor.browserElement;
+      await this._spawnActor(browsingContext.id, innerWindowId);
+    } else if (watcherActor.sessionContext.type == "webextension") {
+      const { addonBrowsingContextID, addonInnerWindowId } =
+        watcherActor.sessionContext;
+      await this._spawnActor(addonBrowsingContextID, addonInnerWindowId);
+    } else if (watcherActor.sessionContext.type == "all") {
+      const parentProcessTargetActor =
+        this.watcherActor.getTargetActorInParentProcess();
+      const { browsingContextID, innerWindowId } =
+        parentProcessTargetActor.form();
+      await this._spawnActor(browsingContextID, innerWindowId);
+    } else {
+      throw new Error(
+        "Unsupported session context type=" + watcherActor.sessionContext.type
+      );
+    }
   }
 
   onStoresUpdate(response) {
@@ -107,22 +123,18 @@ class ParentProcessStorage {
   }
 
   async _spawnActor(browsingContextID, innerWindowId) {
-    const ActorConstructor = storageTypePool.get(this.storageKey);
-
     const storageActor = new StorageActorMock(this.watcherActor);
     this.storageActor = storageActor;
-    this.actor = new ActorConstructor(storageActor);
+    this.actor = new this.ActorConstructor(storageActor);
 
     // Some storage types require to prelist their stores
-    if (typeof this.actor.preListStores === "function") {
-      try {
-        await this.actor.preListStores();
-      } catch (e) {
-        // It can happen that the actor gets destroyed while preListStores is being
-        // executed.
-        if (this.actor) {
-          throw e;
-        }
+    try {
+      await this.actor.populateStoresForHosts();
+    } catch (e) {
+      // It can happen that the actor gets destroyed while populateStoresForHosts is being
+      // executed.
+      if (this.actor) {
+        throw e;
       }
     }
 
@@ -189,22 +201,25 @@ class ParentProcessStorage {
    * @param {Boolean} isBfCacheNavigation
    */
   async _onNewWindowGlobal(windowGlobal, isBfCacheNavigation) {
-    // If the watcher is bound to one browser element (i.e. a tab), ignore
-    // windowGlobals related to other browser elements
+    // Only process WindowGlobals which are related to the debugged scope.
     if (
-      this.watcherActor.browserId &&
-      windowGlobal.browsingContext.browserId != this.watcherActor.browserId
+      !isWindowGlobalPartOfContext(
+        windowGlobal,
+        this.watcherActor.sessionContext,
+        { acceptNoWindowGlobal: true, acceptSameProcessIframes: true }
+      )
     ) {
       return;
     }
-    // ignore about:blank
+
+    // Ignore about:blank
     if (windowGlobal.documentURI.displaySpec === "about:blank") {
       return;
     }
 
+    // Only process top BrowsingContext (ignore same-process iframe ones)
     const isTopContext =
       windowGlobal.browsingContext.top == windowGlobal.browsingContext;
-
     if (!isTopContext) {
       return;
     }
@@ -215,7 +230,7 @@ class ParentProcessStorage {
     // - target switching is enabled OR bfCacheInParent is enabled, and a bfcache navigation
     //   is performed (See handling of "pageshow" event in DevToolsFrameChild)
     const isNewTargetBeingCreated =
-      this.watcherActor.isServerTargetSwitchingEnabled ||
+      this.watcherActor.sessionContext.isServerTargetSwitchingEnabled ||
       (isBfCacheNavigation && this.isBfcacheInParentEnabled);
 
     if (!isNewTargetBeingCreated) {
@@ -274,7 +289,7 @@ class StorageActorMock extends EventEmitter {
     // We only need to react to those events here if target switching is not enabled; when
     // it is enabled, ParentProcessStorage will spawn a whole new actor which will allow
     // the client to get the information it needs.
-    if (!this.watcherActor.isServerTargetSwitchingEnabled) {
+    if (!this.watcherActor.sessionContext.isServerTargetSwitchingEnabled) {
       this._offPageShow = watcherActor.on(
         "bf-cache-navigation-pageshow",
         ({ windowGlobal }) => {
@@ -322,17 +337,19 @@ class StorageActorMock extends EventEmitter {
   }
 
   get windows() {
-    const browsingContext = this.watcherActor.browserElement.browsingContext;
-    const contexts = browsingContext.getAllBrowsingContextsInSubtree();
-    // NOTE: we are removing about:blank because we might get them for iframes
-    // whose src attribute has not been set yet.
-    return contexts
-      .filter(x => !!x.currentWindowGlobal)
-      .map(x => {
-        const uri = x.currentWindowGlobal.documentURI;
-        return { location: uri };
-      })
-      .filter(x => x.location.displaySpec !== "about:blank");
+    return (
+      this.watcherActor
+        .getAllBrowsingContexts({
+          acceptSameProcessIframes: true,
+        })
+        .map(x => {
+          const uri = x.currentWindowGlobal.documentURI;
+          return { location: uri };
+        })
+        // NOTE: we are removing about:blank because we might get them for iframes
+        // whose src attribute has not been set yet.
+        .filter(x => x.location.displaySpec !== "about:blank")
+    );
   }
 
   // NOTE: this uri argument is not a real window.Location, but the
@@ -343,8 +360,8 @@ class StorageActorMock extends EventEmitter {
       case "file":
       case "javascript":
       case "resource":
-      case "moz-extension":
         return uri.displaySpec;
+      case "moz-extension":
       case "http":
       case "https":
         return uri.prePath;
@@ -355,14 +372,19 @@ class StorageActorMock extends EventEmitter {
   }
 
   getWindowFromHost(host) {
-    const browsingContext = this.watcherActor.browserElement.browsingContext;
-    const contexts = browsingContext
-      .getAllBrowsingContextsInSubtree()
-      .filter(x => !!x.currentWindowGlobal);
-    const hostBrowsingContext = contexts.find(x => {
-      const hostName = this.getHostName(x.currentWindowGlobal.documentURI);
-      return hostName === host;
-    });
+    const hostBrowsingContext = this.watcherActor
+      .getAllBrowsingContexts({ acceptSameProcessIframes: true })
+      .find(x => {
+        const hostName = this.getHostName(x.currentWindowGlobal.documentURI);
+        return hostName === host;
+      });
+    // In case of WebExtension or BrowserToolbox, we may pass privileged hosts
+    // which don't relate to any particular window.
+    // Like "indexeddb+++fx-devtools" or "chrome".
+    // (callsites of this method are used to handle null returned values)
+    if (!hostBrowsingContext) {
+      return null;
+    }
 
     const principal =
       hostBrowsingContext.currentWindowGlobal.documentStoragePrincipal;
@@ -371,37 +393,47 @@ class StorageActorMock extends EventEmitter {
   }
 
   get parentActor() {
-    return { isRootActor: !this.watcherActor.browserId };
+    return {
+      isRootActor: this.watcherActor.sessionContext.type == "all",
+      addonId: this.watcherActor.sessionContext.addonId,
+    };
   }
 
   /**
    * Event handler for any docshell update. This lets us figure out whenever
    * any new window is added, or an existing window is removed.
    */
-  async observe(subject, topic) {
-    // If the watcher is bound to one browser element (i.e. a tab), ignore
-    // updates related to other browser elements
+  async observe(windowGlobal, topic) {
+    // Only process WindowGlobals which are related to the debugged scope.
     if (
-      this.watcherActor.browserId &&
-      subject.browsingContext.browserId != this.watcherActor.browserId
+      !isWindowGlobalPartOfContext(
+        windowGlobal,
+        this.watcherActor.sessionContext,
+        { acceptNoWindowGlobal: true, acceptSameProcessIframes: true }
+      )
     ) {
       return;
     }
-    // ignore about:blank
-    if (subject.documentURI.displaySpec === "about:blank") {
+
+    // Ignore about:blank
+    if (windowGlobal.documentURI.displaySpec === "about:blank") {
       return;
     }
 
     // Only notify about remote iframe windows when JSWindowActor based targets are enabled
     // We will create a new StorageActor for the top level tab documents when server side target
     // switching is enabled
-    const isTopContext = subject.browsingContext.top == subject.browsingContext;
-    if (isTopContext && this.watcherActor.isServerTargetSwitchingEnabled) {
+    const isTopContext =
+      windowGlobal.browsingContext.top == windowGlobal.browsingContext;
+    if (
+      isTopContext &&
+      this.watcherActor.sessionContext.isServerTargetSwitchingEnabled
+    ) {
       return;
     }
 
     // emit window-wready and window-destroyed events when needed
-    const windowMock = { location: subject.documentURI };
+    const windowMock = { location: windowGlobal.documentURI };
     if (topic === "window-global-created") {
       this.emit("window-ready", windowMock);
     } else if (topic === "window-global-destroyed") {
@@ -481,7 +513,7 @@ class StorageActorMock extends EventEmitter {
 
       for (const host in data) {
         if (
-          data[host].length == 0 &&
+          !data[host].length &&
           this.boundUpdate.added &&
           this.boundUpdate.added[storeType] &&
           this.boundUpdate.added[storeType][host]
@@ -489,7 +521,7 @@ class StorageActorMock extends EventEmitter {
           delete this.boundUpdate.added[storeType][host];
         }
         if (
-          data[host].length == 0 &&
+          !data[host].length &&
           this.boundUpdate.changed &&
           this.boundUpdate.changed[storeType] &&
           this.boundUpdate.changed[storeType][host]

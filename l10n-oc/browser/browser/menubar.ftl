@@ -38,20 +38,9 @@ menu-quit =
             [windows] Q
            *[other] Q
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Sortir de { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Sortir de { -brand-shorter-name }
-
 menu-about =
     .label = A prepaus de { -brand-shorter-name }
     .accesskey = A
@@ -81,9 +70,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Dobrir un fichièr…
     .accesskey = o
-menu-file-close =
-    .label = Tampar
-    .accesskey = a
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Tampar l’onglet
+            [one] Tampar { $tabCount } onglet
+           *[other] Tampar { $tabCount } onglets
+        }
+    .accesskey = T
 menu-file-close-window =
     .label = Tampar la fenèstra
     .accesskey = f
@@ -99,9 +95,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Mesa en pagina…
     .accesskey = M
-menu-file-print-preview =
-    .label = Apercebut abans impression
-    .accesskey = A
 menu-file-print =
     .label = Imprimir…
     .accesskey = i
@@ -179,14 +172,25 @@ menu-view-repair-text-encoding =
 ## use on macOS.
 
 menu-view-enter-full-screen =
-    .label = Passar en mòde ecran complet
+    .label = Passar en mòde ecran complèt
     .accesskey = c
 menu-view-exit-full-screen =
-    .label = Quitar lo mòde Ecran complet
+    .label = Quitar lo mòde Ecran complèt
     .accesskey = p
 menu-view-full-screen =
-    .label = Ecran complet
+    .label = Ecran complèt
     .accesskey = p
+
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Entrar dins la vista de lectura
+    .accesskey = l
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Tampar la vista de lectura
+    .accesskey = l
 
 ##
 
@@ -216,8 +220,9 @@ menu-history-undo-menu =
     .label = Onglets tampats recentament
 menu-history-undo-window-menu =
     .label = Fenèstras tampadas recentament
-menu-history-reopen-all-tabs = Tornar dobrir totes los onglets
-menu-history-reopen-all-windows = Tornar dobrir totas las fenèstras
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Cercar dins l’istoric
 
 ## Bookmarks Menu
 
@@ -226,10 +231,13 @@ menu-bookmarks-menu =
     .accesskey = M
 menu-bookmarks-manage =
     .label = Gerir los marcapaginas
-menu-bookmark-current-tab =
-    .label = Marcar l’onglet actual
-menu-bookmark-edit =
-    .label = Modificar aqueste marcapagina
+menu-bookmark-tab =
+    .label = Marcar l’onglet actual…
+menu-edit-bookmark =
+    .label = Modificar aqueste marcapagina…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Cercar dins los marcapaginas
 menu-bookmarks-all-tabs =
     .label = Marcar totes los onglets…
 menu-bookmarks-toolbar =
@@ -314,15 +322,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = M
 menu-help-report-site-issue =
     .label = Senhalar lo problèma del site…
-menu-help-feedback-page =
-    .label = Balhar vòstre vejaire…
-    .accesskey = B
+menu-help-share-ideas =
+    .label = Partejar d’idèas e de retorns…
+    .accesskey = P
 menu-help-enter-troubleshoot-mode2 =
     .label = Mòde resolucion de problèmas…
     .accesskey = M
 menu-help-exit-troubleshoot-mode =
     .label = Arrestar la resolucion de problèmas
     .accesskey = A
+menu-help-switch-device =
+    .label = Passar a un aparelh novèl
+    .accesskey = P
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

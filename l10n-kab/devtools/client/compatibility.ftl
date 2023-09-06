@@ -14,7 +14,6 @@ compatibility-issue-deprecated = (d aqbur)
 compatibility-issue-experimental = (armitan)
 compatibility-issue-prefixneeded = (uzwir yettusra)
 compatibility-issue-deprecated-experimental = (d aqbur, d armitan)
-
 compatibility-issue-deprecated-prefixneeded = (d aqbur, uzwir yettusra)
 compatibility-issue-experimental-prefixneeded = (d armitan, uzwir yettusra)
 compatibility-issue-deprecated-experimental-prefixneeded = (d aqbur, d armitan, uzwir yettusra)
@@ -24,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (d aqbur, d armitan, 
 compatibility-settings-button-label = Iɣewwaren
 compatibility-settings-button-title =
     .title = Iɣewwaren
-compatibility-feedback-button-label = Takti
-compatibility-feedback-button-title =
-    .title = Takti
 
 ## Messages used as headers in settings pane
 
@@ -47,3 +43,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Ulac uguren n mṣada yettwafen.
 compatibility-close-settings-button =
     .title = Mdel iɣewwaren
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Ugur n umṣada deg:
+        { $browsers }

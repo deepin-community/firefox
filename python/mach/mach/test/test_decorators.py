@@ -2,19 +2,20 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, unicode_literals
-
-import os
+from pathlib import Path
+from unittest import mock
+from unittest.mock import Mock, patch
 
 import pytest
-from unittest.mock import Mock
-
+from mozbuild.base import MachCommandBase
 from mozunit import main
 
-import mach.registrar
 import mach.decorators
+import mach.registrar
 from mach.base import MachError
-from mach.decorators import CommandArgument, Command, SubCommand
+from mach.decorators import Command, CommandArgument, SubCommand
+from mach.requirements import MachEnvRequirements
+from mach.site import CommandSiteManager, MozSiteMetadata, SitePackagesSource
 
 
 @pytest.fixture
@@ -78,23 +79,38 @@ def test_register_command_sets_up_class_at_runtime(registrar):
     @Command("cmd_foo", category="testing", virtualenv_name="env_foo")
     def run_foo(command_context):
         assert (
-            os.path.basename(command_context.virtualenv_manager.virtualenv_root)
-            == "env_foo"
+            Path(command_context.virtualenv_manager.virtualenv_root).name == "env_foo"
         )
         inner_function("foo")
 
     @Command("cmd_bar", category="testing", virtualenv_name="env_bar")
     def run_bar(command_context):
         assert (
-            os.path.basename(command_context.virtualenv_manager.virtualenv_root)
-            == "env_bar"
+            Path(command_context.virtualenv_manager.virtualenv_root).name == "env_bar"
         )
         inner_function("bar")
 
-    registrar.dispatch("cmd_foo", context)
-    inner_function.assert_called_with("foo")
-    registrar.dispatch("cmd_bar", context)
-    inner_function.assert_called_with("bar")
+    def from_environment_patch(
+        topsrcdir: str, state_dir: str, virtualenv_name, directory: str
+    ):
+        return CommandSiteManager(
+            "",
+            "",
+            virtualenv_name,
+            virtualenv_name,
+            MozSiteMetadata(0, "mach", SitePackagesSource.VENV, "", ""),
+            True,
+            MachEnvRequirements(),
+        )
+
+    with mock.patch.object(
+        CommandSiteManager, "from_environment", from_environment_patch
+    ):
+        with patch.object(MachCommandBase, "activate_virtualenv"):
+            registrar.dispatch("cmd_foo", context)
+            inner_function.assert_called_with("foo")
+            registrar.dispatch("cmd_bar", context)
+            inner_function.assert_called_with("bar")
 
 
 def test_cannot_create_command_nonexisting_category(registrar):

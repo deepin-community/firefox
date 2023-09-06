@@ -6,17 +6,16 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use super::read_mp4;
-use super::Error;
 use super::ParseStrictness;
+use super::{Error, Status};
 use fallible_collections::TryRead as _;
 
 use std::convert::TryInto as _;
 use std::io::Cursor;
 use std::io::Read as _;
-extern crate test_assembler;
-use self::test_assembler::*;
+use test_assembler::*;
 
-use boxes::BoxType;
+use crate::boxes::BoxType;
 
 enum BoxSize {
     Short(u32),
@@ -122,7 +121,7 @@ fn read_box_header_short_unknown_size() {
 fn read_box_header_short_invalid_size() {
     let mut stream = make_box(BoxSize::UncheckedShort(2), b"test", |s| s);
     match super::read_box_header(&mut stream) {
-        Err(Error::InvalidData(s)) => assert_eq!(s, "malformed size"),
+        Err(Error::InvalidData(s)) => assert_eq!(s, Status::BoxBadSize),
         _ => panic!("unexpected result reading box with invalid size"),
     };
 }
@@ -131,7 +130,7 @@ fn read_box_header_short_invalid_size() {
 fn read_box_header_long_invalid_size() {
     let mut stream = make_box(BoxSize::UncheckedLong(2), b"test", |s| s);
     match super::read_box_header(&mut stream) {
-        Err(Error::InvalidData(s)) => assert_eq!(s, "malformed wide size"),
+        Err(Error::InvalidData(s)) => assert_eq!(s, Status::BoxBadWideSize),
         _ => panic!("unexpected result reading box with invalid size"),
     };
 }
@@ -165,6 +164,23 @@ fn read_box_header_truncated_uuid() {
     assert_eq!(stream.head.name, BoxType::UuidBox);
     assert_eq!(stream.head.size, 23);
     assert!(stream.head.uuid.is_none());
+}
+
+#[test]
+fn read_box_header_uuid_past_eof() {
+    const HEADER_UUID: [u8; 20] = [
+        0x00, 0x00, 0x00, 0x18, // size = 24
+        0x75, 0x75, 0x69, 0x64, // type = uuid
+        0x85, 0xc0, 0xb6, 0x87, 0x82, 0x0f, 0x11, 0xe0, 0x81, 0x11, 0xf4, 0xce,
+    ];
+
+    let mut cursor = Cursor::new(HEADER_UUID);
+    let mut iter = super::BoxIter::new(&mut cursor);
+    match iter.next_box() {
+        Ok(None) => (),
+        Ok(_) => panic!("unexpected box read"),
+        _ => panic!("unexpected error"),
+    };
 }
 
 #[test]
@@ -476,6 +492,27 @@ fn read_hdlr() {
 }
 
 #[test]
+fn read_hdlr_multiple_nul_in_name() {
+    let mut stream = make_fullbox(BoxSize::Short(45), b"hdlr", 0, |s| {
+        s.B32(0)
+            .append_bytes(b"vide")
+            .B32(0)
+            .B32(0)
+            .B32(0)
+            .append_bytes(b"Vide\0Handler")
+            .B8(0) // null-terminate string
+    });
+    let mut iter = super::BoxIter::new(&mut stream);
+    let mut stream = iter.next_box().unwrap().unwrap();
+    assert_eq!(stream.head.name, BoxType::HandlerBox);
+    assert_eq!(stream.head.size, 45);
+    assert_eq!(
+        super::Status::from(super::read_hdlr(&mut stream, ParseStrictness::Strict)),
+        super::Status::Ok,
+    );
+}
+
+#[test]
 fn read_hdlr_short_name() {
     let mut stream = make_fullbox(BoxSize::Short(33), b"hdlr", 0, |s| {
         s.B32(0).append_bytes(b"vide").B32(0).B32(0).B32(0).B8(0) // null-terminate string
@@ -497,13 +534,10 @@ fn read_hdlr_unsupported_version() {
     let mut stream = iter.next_box().unwrap().unwrap();
     assert_eq!(stream.head.name, BoxType::HandlerBox);
     assert_eq!(stream.head.size, 32);
-    match super::read_hdlr(&mut stream, ParseStrictness::Normal) {
-        Err(Error::Unsupported(msg)) => assert_eq!("hdlr version", msg),
-        result => {
-            eprintln!("{:?}", result);
-            panic!("expected Error::Unsupported")
-        }
-    }
+    assert_eq!(
+        super::Status::from(super::read_hdlr(&mut stream, ParseStrictness::Normal)),
+        super::Status::HdlrUnsupportedVersion,
+    );
 }
 
 #[test]
@@ -515,17 +549,10 @@ fn read_hdlr_invalid_pre_defined_field() {
     let mut stream = iter.next_box().unwrap().unwrap();
     assert_eq!(stream.head.name, BoxType::HandlerBox);
     assert_eq!(stream.head.size, 32);
-    match super::read_hdlr(&mut stream, ParseStrictness::Strict) {
-        Err(Error::InvalidData(msg)) => assert_eq!(
-            "The HandlerBox 'pre_defined' field shall be 0 \
-             per ISOBMFF (ISO 14496-12:2020) § 8.4.3.2",
-            msg
-        ),
-        result => {
-            eprintln!("{:?}", result);
-            panic!("expected Error::InvalidData")
-        }
-    }
+    assert_eq!(
+        super::Status::from(super::read_hdlr(&mut stream, ParseStrictness::Strict)),
+        super::Status::HdlrPredefinedNonzero,
+    );
 }
 
 #[test]
@@ -537,17 +564,10 @@ fn read_hdlr_invalid_reserved_field() {
     let mut stream = iter.next_box().unwrap().unwrap();
     assert_eq!(stream.head.name, BoxType::HandlerBox);
     assert_eq!(stream.head.size, 32);
-    match super::read_hdlr(&mut stream, ParseStrictness::Strict) {
-        Err(Error::InvalidData(msg)) => assert_eq!(
-            "The HandlerBox 'reserved' fields shall be 0 \
-             per ISOBMFF (ISO 14496-12:2020) § 8.4.3.2",
-            msg
-        ),
-        result => {
-            eprintln!("{:?}", result);
-            panic!("expected Error::InvalidData")
-        }
-    }
+    assert_eq!(
+        super::Status::from(super::read_hdlr(&mut stream, ParseStrictness::Strict)),
+        super::Status::HdlrReservedNonzero,
+    );
 }
 
 #[test]
@@ -559,17 +579,10 @@ fn read_hdlr_zero_length_name() {
     let mut stream = iter.next_box().unwrap().unwrap();
     assert_eq!(stream.head.name, BoxType::HandlerBox);
     assert_eq!(stream.head.size, 32);
-    match super::read_hdlr(&mut stream, ParseStrictness::Normal) {
-        Err(Error::InvalidData(msg)) => assert_eq!(
-            "The HandlerBox 'name' field shall be null-terminated \
-             per ISOBMFF (ISO 14496-12:2020) § 8.4.3.2",
-            msg
-        ),
-        result => {
-            eprintln!("{:?}", result);
-            panic!("expected Error::InvalidData")
-        }
-    }
+    assert_eq!(
+        super::Status::from(super::read_hdlr(&mut stream, ParseStrictness::Normal)),
+        super::Status::HdlrNameNoNul,
+    );
 }
 
 #[test]
@@ -647,7 +660,7 @@ fn make_dfla(
 ) -> Cursor<Vec<u8>> {
     assert!(data.len() < 1 << 24);
     make_fullbox(BoxSize::Auto, b"dfLa", 0, |s| {
-        let flag = if last { 1 } else { 0 };
+        let flag = u32::from(last);
         let size = match data_length {
             FlacBlockLength::Correct => (data.len() as u32) & 0x00ff_ffff,
             FlacBlockLength::Incorrect(size) => {
@@ -1061,6 +1074,35 @@ fn read_esds_aac_type5() {
 }
 
 #[test]
+fn read_esds_mpeg2_aac_lc() {
+    // Recognize MPEG-2 AAC LC (ISO 13818-7) object type as AAC.
+    // Extracted from BMO #1722497 sdasdasdasd_001.mp4 using Bento4.
+    // "mp4extract --payload-only moov/trak[1]/mdia/minf/stbl/stsd/mp4a/esds sdasdasdasd_001.mp4 /dev/stdout | xxd -i -c 15"
+    let aac_esds = vec![
+        0x03, 0x19, 0x00, 0x00, 0x00, 0x04, 0x11, 0x67, 0x15, 0x00, 0x02, 0x38, 0x00, 0x01, 0x0f,
+        0xd0, 0x00, 0x00, 0xf5, 0x48, 0x05, 0x02, 0x13, 0x90, 0x06, 0x01, 0x02,
+    ];
+    let aac_dc_descriptor = &aac_esds[22..24];
+
+    let mut stream = make_box(BoxSize::Auto, b"esds", |s| {
+        s.B32(0) // reserved
+            .append_bytes(aac_esds.as_slice())
+    });
+    let mut iter = super::BoxIter::new(&mut stream);
+    let mut stream = iter.next_box().unwrap().unwrap();
+
+    let es = super::read_esds(&mut stream).unwrap();
+
+    assert_eq!(es.audio_codec, super::CodecType::AAC);
+    assert_eq!(es.audio_object_type, Some(2));
+    assert_eq!(es.extended_audio_object_type, None);
+    assert_eq!(es.audio_sample_rate, Some(22050));
+    assert_eq!(es.audio_channel_count, Some(2));
+    assert_eq!(es.codec_esds, aac_esds);
+    assert_eq!(es.decoder_specific_data, aac_dc_descriptor);
+}
+
+#[test]
 fn read_stsd_mp4v() {
     let mp4v = vec![
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -1079,7 +1121,7 @@ fn read_stsd_mp4v() {
     let esds_specific_data = &mp4v[90..];
     #[cfg(feature = "mp4v")]
     let esds_specific_data = &mp4v[112..151];
-    println!("esds_specific_data {:?}", esds_specific_data);
+    println!("esds_specific_data {esds_specific_data:?}");
 
     let mut stream = make_box(BoxSize::Auto, b"mp4v", |s| s.append_bytes(mp4v.as_slice()));
     let mut iter = super::BoxIter::new(&mut stream);
@@ -1231,7 +1273,7 @@ fn read_esds_invalid_descriptor() {
     let mut stream = iter.next_box().unwrap().unwrap();
 
     match super::read_esds(&mut stream) {
-        Err(Error::InvalidData(s)) => assert_eq!(s, "Invalid descriptor."),
+        Err(Error::InvalidData(s)) => assert_eq!(s, Status::EsdsBadDescriptor),
         _ => panic!("unexpected result with invalid descriptor"),
     }
 }
@@ -1300,6 +1342,6 @@ fn read_to_end_() {
 
 #[test]
 fn read_to_end_oom() {
-    let mut src = b"1234567890".take(std::usize::MAX.try_into().expect("usize < u64"));
+    let mut src = b"1234567890".take(std::isize::MAX.try_into().expect("isize < u64"));
     assert!(src.read_into_try_vec().is_err());
 }

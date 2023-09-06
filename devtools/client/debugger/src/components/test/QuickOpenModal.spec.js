@@ -4,27 +4,39 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import React from "react";
-import lodash from "lodash";
+import { Provider } from "react-redux";
+import configureStore from "redux-mock-store";
 
 import { shallow, mount } from "enzyme";
 import { QuickOpenModal } from "../QuickOpenModal";
-import { mockcx } from "../../utils/test-mockup";
+import { getDisplayURL } from "../../utils/sources-tree/getURL";
+import { searchKeys } from "../../constants";
 
 jest.mock("fuzzaldrin-plus");
-jest.unmock("lodash");
 
 import { filter } from "fuzzaldrin-plus";
 
-lodash.throttle = jest.fn(fn => fn);
-
 function generateModal(propOverrides, renderType = "shallow") {
+  const mockStore = configureStore([]);
+  const store = mockStore({
+    ui: {
+      mutableSearchOptions: {
+        [searchKeys.QUICKOPEN_SEARCH]: {
+          regexMatch: false,
+          wholeWord: false,
+          caseSensitive: false,
+          excludePatterns: "",
+        },
+      },
+    },
+  });
   const props = {
-    cx: mockcx,
     enabled: false,
     query: "",
     searchType: "sources",
     displayedSources: [],
-    tabs: [],
+    blackBoxRanges: {},
+    tabUrls: [],
     selectSpecificLocation: jest.fn(),
     setQuickOpenQuery: jest.fn(),
     highlightLineRange: jest.fn(),
@@ -41,17 +53,17 @@ function generateModal(propOverrides, renderType = "shallow") {
   return {
     wrapper:
       renderType === "shallow"
-        ? shallow(<QuickOpenModal {...props} />)
-        : mount(<QuickOpenModal {...props} />),
+        ? shallow(
+            <Provider store={store}>
+              <QuickOpenModal {...props} />
+            </Provider>
+          ).dive()
+        : mount(
+            <Provider store={store}>
+              <QuickOpenModal {...props} />
+            </Provider>
+          ),
     props,
-  };
-}
-
-function generateTab(url) {
-  return {
-    url,
-    isOriginal: false,
-    thread: "FakeThread",
   };
 }
 
@@ -61,6 +73,12 @@ function generateQuickOpenResult(title) {
     value: "",
     title,
   };
+}
+
+async function waitForUpdateResultsThrottle() {
+  await new Promise(res =>
+    setTimeout(res, QuickOpenModal.UPDATE_RESULTS_THROTTLE)
+  );
 }
 
 describe("QuickOpenModal", () => {
@@ -116,8 +134,13 @@ describe("QuickOpenModal", () => {
       {
         enabled: true,
         query: "",
-        displayedSources: [{ url: "mozilla.com", relativeUrl: true }],
-        tabs: [generateTab("mozilla.com")],
+        displayedSources: [
+          {
+            url: "mozilla.com",
+            displayURL: getDisplayURL("mozilla.com"),
+          },
+        ],
+        tabUrls: ["mozilla.com"],
       },
       "shallow"
     );
@@ -125,10 +148,14 @@ describe("QuickOpenModal", () => {
       {
         id: undefined,
         icon: "tab result-item-icon",
-        subtitle: "true",
+        subtitle: "mozilla.com",
         title: "mozilla.com",
         url: "mozilla.com",
-        value: "true",
+        value: "mozilla.com",
+        source: {
+          url: "mozilla.com",
+          displayURL: getDisplayURL("mozilla.com"),
+        },
       },
     ]);
   });
@@ -209,7 +236,7 @@ describe("QuickOpenModal", () => {
     expect(wrapper).toMatchSnapshot();
   });
 
-  test("basic source search", () => {
+  test("basic source search", async () => {
     const { wrapper } = generateModal(
       {
         enabled: true,
@@ -221,13 +248,14 @@ describe("QuickOpenModal", () => {
       "mount"
     );
     wrapper.find("input").simulate("change", { target: { value: "somefil" } });
+    await waitForUpdateResultsThrottle();
     expect(filter).toHaveBeenCalledWith([], "somefil", {
       key: "value",
       maxResults: 100,
     });
   });
 
-  test("basic gotoSource search", () => {
+  test("basic gotoSource search", async () => {
     const { wrapper } = generateModal(
       {
         enabled: true,
@@ -242,6 +270,9 @@ describe("QuickOpenModal", () => {
     wrapper
       .find("input")
       .simulate("change", { target: { value: "somefil:33" } });
+
+    await waitForUpdateResultsThrottle();
+
     expect(filter).toHaveBeenCalledWith([], "somefil", {
       key: "value",
       maxResults: 100,
@@ -249,7 +280,7 @@ describe("QuickOpenModal", () => {
   });
 
   describe("empty symbol search", () => {
-    it("basic symbol search", () => {
+    it("basic symbol search", async () => {
       const { wrapper } = generateModal(
         {
           enabled: true,
@@ -269,7 +300,7 @@ describe("QuickOpenModal", () => {
       wrapper
         .find("input")
         .simulate("change", { target: { value: "@someFunc" } });
-
+      await waitForUpdateResultsThrottle();
       expect(filter).toHaveBeenCalledWith([], "someFunc", {
         key: "value",
         maxResults: 100,
@@ -312,8 +343,8 @@ describe("QuickOpenModal", () => {
       },
       "mount"
     );
-    expect(wrapper).toMatchSnapshot();
-    expect(wrapper.state().results).toEqual(null);
+    expect(wrapper.childAt(0)).toMatchSnapshot();
+    expect(wrapper.childAt(0).state().results).toEqual(null);
   });
 
   describe("onEnter", () => {
@@ -323,17 +354,22 @@ describe("QuickOpenModal", () => {
           enabled: true,
           query: ":34:12",
           searchType: "goto",
+          selectedSource: { id: "foo" },
         },
         "shallow"
       );
       const event = {
         key: "Enter",
       };
-      wrapper.find("SearchInput").simulate("keydown", event);
-      expect(props.selectSpecificLocation).toHaveBeenCalledWith(mockcx, {
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
+      expect(props.selectSpecificLocation).toHaveBeenCalledWith({
         column: 12,
         line: 34,
-        sourceId: "",
+        source: {
+          id: "foo",
+        },
+        sourceActorId: undefined,
+        sourceActor: null,
       });
     });
 
@@ -352,11 +388,15 @@ describe("QuickOpenModal", () => {
       const event = {
         key: "Enter",
       };
-      wrapper.find("SearchInput").simulate("keydown", event);
-      expect(props.selectSpecificLocation).toHaveBeenCalledWith(mockcx, {
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
+      expect(props.selectSpecificLocation).toHaveBeenCalledWith({
         column: 12,
         line: 34,
-        sourceId,
+        source: {
+          id: sourceId,
+        },
+        sourceActorId: undefined,
+        sourceActor: null,
       });
     });
 
@@ -372,7 +412,7 @@ describe("QuickOpenModal", () => {
       const event = {
         key: "Enter",
       };
-      wrapper.find("SearchInput").simulate("keydown", event);
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
       expect(props.setQuickOpenQuery).not.toHaveBeenCalled();
       expect(props.selectSpecificLocation).not.toHaveBeenCalled();
       expect(props.highlightLineRange).not.toHaveBeenCalled();
@@ -394,7 +434,7 @@ describe("QuickOpenModal", () => {
       const event = {
         key: "Enter",
       };
-      wrapper.find("SearchInput").simulate("keydown", event);
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
       expect(props.setQuickOpenQuery).not.toHaveBeenCalled();
       expect(props.selectSpecificLocation).not.toHaveBeenCalled();
       expect(props.highlightLineRange).not.toHaveBeenCalled();
@@ -418,7 +458,7 @@ describe("QuickOpenModal", () => {
         const event = {
           key: "Enter",
         };
-        wrapper.find("SearchInput").simulate("keydown", event);
+        wrapper.find("Connect(SearchInput)").simulate("keydown", event);
         expect(props.setQuickOpenQuery).toHaveBeenCalledWith(symbol);
       }
     });
@@ -439,20 +479,21 @@ describe("QuickOpenModal", () => {
       const event = {
         key: "Enter",
       };
-      wrapper.find("SearchInput").simulate("keydown", event);
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
       expect(props.setQuickOpenQuery).toHaveBeenCalledWith(":");
     });
 
     it("on Enter with results, handle result item", () => {
+      const id = "test_id";
       const { wrapper, props } = generateModal(
         {
           enabled: true,
           query: "@test",
           searchType: "other",
+          selectedSource: { id },
         },
         "shallow"
       );
-      const id = "test_id";
       wrapper.setState(() => ({
         results: [{}, { id }],
         selectedIndex: 1,
@@ -460,16 +501,19 @@ describe("QuickOpenModal", () => {
       const event = {
         key: "Enter",
       };
-      wrapper.find("SearchInput").simulate("keydown", event);
-      expect(props.selectSpecificLocation).toHaveBeenCalledWith(mockcx, {
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
+      expect(props.selectSpecificLocation).toHaveBeenCalledWith({
         column: undefined,
-        sourceId: id,
         line: 0,
+        source: { id },
+        sourceActorId: undefined,
+        sourceActor: null,
       });
       expect(props.setQuickOpenQuery).not.toHaveBeenCalled();
     });
 
     it("on Enter with results, handle functions result item", () => {
+      const id = "test_id";
       const { wrapper, props } = generateModal(
         {
           enabled: true,
@@ -479,10 +523,10 @@ describe("QuickOpenModal", () => {
             functions: [],
             variables: {},
           },
+          selectedSource: { id },
         },
         "shallow"
       );
-      const id = "test_id";
       wrapper.setState(() => ({
         results: [{}, { id }],
         selectedIndex: 1,
@@ -490,16 +534,19 @@ describe("QuickOpenModal", () => {
       const event = {
         key: "Enter",
       };
-      wrapper.find("SearchInput").simulate("keydown", event);
-      expect(props.selectSpecificLocation).toHaveBeenCalledWith(mockcx, {
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
+      expect(props.selectSpecificLocation).toHaveBeenCalledWith({
         column: undefined,
         line: 0,
-        sourceId: "",
+        source: { id },
+        sourceActorId: undefined,
+        sourceActor: null,
       });
       expect(props.setQuickOpenQuery).not.toHaveBeenCalled();
     });
 
     it("on Enter with results, handle gotoSource search", () => {
+      const id = "test_id";
       const { wrapper, props } = generateModal(
         {
           enabled: true,
@@ -509,10 +556,10 @@ describe("QuickOpenModal", () => {
             functions: [],
             variables: {},
           },
+          selectedSource: { id },
         },
         "shallow"
       );
-      const id = "test_id";
       wrapper.setState(() => ({
         results: [{}, { id }],
         selectedIndex: 1,
@@ -520,11 +567,13 @@ describe("QuickOpenModal", () => {
       const event = {
         key: "Enter",
       };
-      wrapper.find("SearchInput").simulate("keydown", event);
-      expect(props.selectSpecificLocation).toHaveBeenCalledWith(mockcx, {
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
+      expect(props.selectSpecificLocation).toHaveBeenCalledWith({
         column: 4,
         line: 3,
-        sourceId: id,
+        source: { id },
+        sourceActorId: undefined,
+        sourceActor: null,
       });
       expect(props.setQuickOpenQuery).not.toHaveBeenCalled();
     });
@@ -550,7 +599,7 @@ describe("QuickOpenModal", () => {
       const event = {
         key: "Enter",
       };
-      wrapper.find("SearchInput").simulate("keydown", event);
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
       expect(props.selectSpecificLocation).not.toHaveBeenCalled();
       expect(props.setQuickOpenQuery).toHaveBeenCalledWith(id);
     });
@@ -566,7 +615,7 @@ describe("QuickOpenModal", () => {
         },
         "shallow"
       );
-      wrapper.find("SearchInput").simulate("keydown", {});
+      wrapper.find("Connect(SearchInput)").simulate("keydown", {});
       expect(props.selectSpecificLocation).not.toHaveBeenCalled();
       expect(props.setQuickOpenQuery).not.toHaveBeenCalled();
     });
@@ -583,7 +632,7 @@ describe("QuickOpenModal", () => {
       const event = {
         key: "Tab",
       };
-      wrapper.find("SearchInput").simulate("keydown", event);
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
       expect(props.closeQuickOpen).toHaveBeenCalled();
       expect(props.selectSpecificLocation).not.toHaveBeenCalled();
     });
@@ -611,6 +660,7 @@ describe("QuickOpenModal", () => {
         key: "ArrowUp",
       };
       const location = {
+        sourceId: "sourceId",
         start: {
           line: 1,
         },
@@ -618,16 +668,17 @@ describe("QuickOpenModal", () => {
           line: 3,
         },
       };
+
       wrapper.setState(() => ({
         results: [{ id: "0", location }, { id: "1" }, { id: "2" }],
         selectedIndex: 1,
       }));
-      wrapper.find("SearchInput").simulate("keydown", event);
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(wrapper.state().selectedIndex).toEqual(0);
       expect(props.highlightLineRange).toHaveBeenCalledWith({
+        sourceId: "sourceId",
         end: 3,
-        sourceId,
         start: 1,
       });
     });
@@ -649,7 +700,7 @@ describe("QuickOpenModal", () => {
         results: null,
         selectedIndex: 1,
       }));
-      wrapper.find("SearchInput").simulate("keydown", event);
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(wrapper.state().selectedIndex).toEqual(0);
       expect(props.selectSpecificLocation).not.toHaveBeenCalledWith();
@@ -680,12 +731,11 @@ describe("QuickOpenModal", () => {
         results: [{ id: "0", location: null }, { id: "1" }, { id: "2" }],
         selectedIndex: 1,
       }));
-      wrapper.find("SearchInput").simulate("keydown", event);
+      wrapper.find("Connect(SearchInput)").simulate("keydown", event);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(wrapper.state().selectedIndex).toEqual(0);
-      expect(props.highlightLineRange).toHaveBeenCalledWith({
-        sourceId: "sourceId",
-      });
+      expect(props.highlightLineRange).not.toHaveBeenCalled();
+      expect(props.clearHighlightLineRange).toHaveBeenCalled();
     });
 
     it(
@@ -711,6 +761,7 @@ describe("QuickOpenModal", () => {
           key: "ArrowDown",
         };
         const location = {
+          sourceId: "sourceId",
           start: {
             line: 7,
           },
@@ -719,7 +770,7 @@ describe("QuickOpenModal", () => {
           results: [{ id: "0", location }, { id: "1" }, { id: "2" }],
           selectedIndex: 1,
         }));
-        wrapper.find("SearchInput").simulate("keydown", event);
+        wrapper.find("Connect(SearchInput)").simulate("keydown", event);
         expect(event.preventDefault).toHaveBeenCalled();
         expect(wrapper.state().selectedIndex).toEqual(2);
         expect(props.selectSpecificLocation).not.toHaveBeenCalled();
@@ -751,6 +802,7 @@ describe("QuickOpenModal", () => {
           key: "ArrowUp",
         };
         const location = {
+          sourceId: "sourceId",
           start: {
             line: 7,
           },
@@ -759,7 +811,7 @@ describe("QuickOpenModal", () => {
           results: [{ id: "0", location }, { id: "1" }, { id: "2" }],
           selectedIndex: 1,
         }));
-        wrapper.find("SearchInput").simulate("keydown", event);
+        wrapper.find("Connect(SearchInput)").simulate("keydown", event);
         expect(event.preventDefault).toHaveBeenCalled();
         expect(wrapper.state().selectedIndex).toEqual(0);
         expect(props.selectSpecificLocation).not.toHaveBeenCalled();
@@ -774,7 +826,7 @@ describe("QuickOpenModal", () => {
         {
           enabled: true,
           query: "test",
-          searchType: "",
+          searchType: "other",
         },
         "mount"
       );
@@ -800,7 +852,7 @@ describe("QuickOpenModal", () => {
         {
           enabled: true,
           query: "",
-          searchType: "",
+          searchType: "other",
         },
         "mount"
       );

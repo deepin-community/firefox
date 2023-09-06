@@ -8,6 +8,7 @@ about-networking-sockets = Igrudmawen
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Sfeḍ tuffirt DNS
 about-networking-dns-trr-url = DoH URL
+about-networking-dns-trr-mode = Askar DoH
 about-networking-dns-suffix = Uḍfiṛ DNS
 about-networking-websockets = Igrudam n tuqqna
 about-networking-refresh = Smiren
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Urmid
 about-networking-idle = idle
 about-networking-host = Asenneftaɣ
-about-networking-tcp = TCP
 about-networking-type = Anaw
 about-networking-sent = Ţwaznen
 about-networking-received = Iţwarmes
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Tansiwin
 about-networking-expires = Ad immet (tasinin)
 about-networking-originAttributesSuffix = Tasarut n uɛzal
+about-networking-flags = Annayen-nniḍen
 about-networking-messages-sent = Iznan iţwacegɛen
 about-networking-messages-received = Iznan ţwarmsen-d
 about-networking-bytes-sent = Iṭamḍanen iţwaceggɛen
 about-networking-bytes-received = Itamḍanen iţwaremsen
 about-networking-logging = Aɣmis
-about-networking-log-tutorial = Wali <a data-l10n-name="logging">Asniɣmes HTTP </a> ɣe wamek ad tesqedceḍ afecku-agi.
-about-networking-current-log-file = Afaylu aɣmis amiran:
-about-networking-current-log-modules = Izegrar iɣmisen imiranen:
-about-networking-set-log-file = Sbadu afaylu aɣmis
-about-networking-set-log-modules = Sbadu izegrar iɣmisen
-about-networking-start-logging = Senker asniɣmes
-about-networking-stop-logging = Seḥbes asniɣmes
 about-networking-dns-lookup = Anadi DNS
 about-networking-dns-lookup-button = Fru
 about-networking-dns-domain = Taɣult:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Amḍan n tuffirt ẓẓayen
 about-networking-rcwn-cache-not-slow = Amdan n tuffirt ur nelli ẓẓayet
 about-networking-networkid = Asulay n uẓeṭṭa
 about-networking-networkid-id = Asulay n uẓeṭṭa
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Asebter-a yettwasenkez ɣer <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

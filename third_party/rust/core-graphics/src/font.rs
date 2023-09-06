@@ -7,7 +7,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use core_foundation::base::{CFRelease, CFRetain, CFTypeID, TCFType};
+use core_foundation::base::{CFRelease, CFRetain, CFType, CFTypeID, TCFType};
 use core_foundation::array::{CFArray, CFArrayRef};
 use core_foundation::data::{CFData, CFDataRef};
 use core_foundation::number::CFNumber;
@@ -15,6 +15,7 @@ use core_foundation::string::{CFString, CFStringRef};
 use core_foundation::dictionary::{CFDictionary, CFDictionaryRef};
 use data_provider::CGDataProvider;
 use geometry::CGRect;
+use std::ptr::NonNull;
 
 use foreign_types::ForeignType;
 
@@ -24,15 +25,12 @@ pub use core_graphics_types::base::CGGlyph;
 
 foreign_type! {
     #[doc(hidden)]
-    type CType = ::sys::CGFont;
-    fn drop = |p| CFRelease(p as *mut _);
-    fn clone = |p| CFRetain(p as *const _) as *mut _;
-    pub struct CGFont;
-    pub struct CGFontRef;
+    pub unsafe type CGFont: Send + Sync {
+        type CType = ::sys::CGFont;
+        fn drop = |p| CFRelease(p as *mut _);
+        fn clone = |p| CFRetain(p as *const _) as *mut _;
+    }
 }
-
-unsafe impl Send for CGFont {}
-unsafe impl Sync for CGFont {}
 
 impl CGFont {
     pub fn type_id() -> CFTypeID {
@@ -44,10 +42,9 @@ impl CGFont {
     pub fn from_data_provider(provider: CGDataProvider) -> Result<CGFont, ()> {
         unsafe {
             let font_ref = CGFontCreateWithDataProvider(provider.as_ptr());
-            if !font_ref.is_null() {
-                Ok(CGFont::from_ptr(font_ref))
-            } else {
-                Err(())
+            match NonNull::new(font_ref) {
+                Some(font_ref) => Ok(CGFont(font_ref)),
+                None => Err(()),
             }
         }
     }
@@ -55,10 +52,9 @@ impl CGFont {
     pub fn from_name(name: &CFString) -> Result<CGFont, ()> {
         unsafe {
             let font_ref = CGFontCreateWithFontName(name.as_concrete_TypeRef());
-            if !font_ref.is_null() {
-                Ok(CGFont::from_ptr(font_ref))
-            } else {
-                Err(())
+            match NonNull::new(font_ref) {
+                Some(font_ref) => Ok(CGFont(font_ref)),
+                None => Err(()),
             }
         }
     }
@@ -67,10 +63,9 @@ impl CGFont {
         unsafe {
             let font_ref = CGFontCreateCopyWithVariations(self.as_ptr(),
                                                           vars.as_concrete_TypeRef());
-            if !font_ref.is_null() {
-                Ok(CGFont::from_ptr(font_ref))
-            } else {
-                Err(())
+            match NonNull::new(font_ref) {
+                Some(font_ref) => Ok(CGFont(font_ref)),
+                None => Err(()),
             }
         }
     }
@@ -122,6 +117,24 @@ impl CGFont {
             None
         }
     }
+
+    pub fn copy_variations(&self) -> Option<CFDictionary<CFString, CFNumber>> {
+        let variations = unsafe { CGFontCopyVariations(self.as_ptr()) };
+        if !variations.is_null() {
+            Some(unsafe { TCFType::wrap_under_create_rule(variations) })
+        } else {
+            None
+        }
+    }
+
+    pub fn copy_variation_axes(&self) -> Option<CFArray<CFDictionary<CFString, CFType>>> {
+        let axes = unsafe { CGFontCopyVariationAxes(self.as_ptr()) };
+        if !axes.is_null() {
+            Some(unsafe { TCFType::wrap_under_create_rule(axes) })
+        } else {
+            None
+        }
+    }
 }
 
 #[link(name = "CoreGraphics", kind = "framework")]
@@ -153,4 +166,6 @@ extern {
 
     fn CGFontCopyTableTags(font: ::sys::CGFontRef) -> CFArrayRef;
     fn CGFontCopyTableForTag(font: ::sys::CGFontRef, tag: u32) -> CFDataRef;
+    fn CGFontCopyVariations(font: ::sys::CGFontRef) -> CFDictionaryRef;
+    fn CGFontCopyVariationAxes(font: ::sys::CGFontRef) -> CFArrayRef;
 }

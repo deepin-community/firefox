@@ -1,7 +1,7 @@
 use syn::punctuated::Punctuated;
-use syn::{self, Ident, Type};
+use syn::{Ident, Type};
 
-use usage::{IdentRefSet, IdentSet, Options};
+use crate::usage::{IdentRefSet, IdentSet, Options};
 
 /// Searcher for finding type params in a syntax tree.
 /// This can be used to determine if a given type parameter needs to be bounded in a generated impl.
@@ -87,8 +87,8 @@ impl<T: UsesTypeParams, U> UsesTypeParams for Punctuated<T, U> {
 }
 
 uses_type_params!(syn::AngleBracketedGenericArguments, args);
+uses_type_params!(syn::AssocType, ty);
 uses_type_params!(syn::BareFnArg, ty);
-uses_type_params!(syn::Binding, ty);
 uses_type_params!(syn::Constraint, bounds);
 uses_type_params!(syn::DataEnum, variants);
 uses_type_params!(syn::DataStruct, fields);
@@ -96,7 +96,6 @@ uses_type_params!(syn::DataUnion, fields);
 uses_type_params!(syn::Field, ty);
 uses_type_params!(syn::FieldsNamed, named);
 uses_type_params!(syn::ParenthesizedGenericArguments, inputs, output);
-uses_type_params!(syn::PredicateEq, lhs_ty, rhs_ty);
 uses_type_params!(syn::PredicateType, bounded_ty, bounds);
 uses_type_params!(syn::QSelf, ty);
 uses_type_params!(syn::TraitBound, path);
@@ -161,8 +160,8 @@ impl UsesTypeParams for Type {
             Type::ImplTrait(ref v) => v.uses_type_params(options, type_set),
             Type::Macro(_) | Type::Verbatim(_) | Type::Infer(_) | Type::Never(_) => {
                 Default::default()
-            },
-            _ => panic!("Unknown syn::Type: {:?}", self)
+            }
+            _ => panic!("Unknown syn::Type: {:?}", self),
         }
     }
 }
@@ -217,7 +216,9 @@ impl UsesTypeParams for syn::WherePredicate {
         match *self {
             syn::WherePredicate::Lifetime(_) => Default::default(),
             syn::WherePredicate::Type(ref v) => v.uses_type_params(options, type_set),
-            syn::WherePredicate::Eq(ref v) => v.uses_type_params(options, type_set),
+            // non-exhaustive enum
+            // TODO: replace panic with failible function
+            _ => panic!("Unknown syn::WherePredicate: {:?}", self),
         }
     }
 }
@@ -226,11 +227,14 @@ impl UsesTypeParams for syn::GenericArgument {
     fn uses_type_params<'a>(&self, options: &Options, type_set: &'a IdentSet) -> IdentRefSet<'a> {
         match *self {
             syn::GenericArgument::Type(ref v) => v.uses_type_params(options, type_set),
-            syn::GenericArgument::Binding(ref v) => v.uses_type_params(options, type_set),
+            syn::GenericArgument::AssocType(ref v) => v.uses_type_params(options, type_set),
             syn::GenericArgument::Constraint(ref v) => v.uses_type_params(options, type_set),
-            syn::GenericArgument::Const(_) | syn::GenericArgument::Lifetime(_) => {
-                Default::default()
-            }
+            syn::GenericArgument::AssocConst(_)
+            | syn::GenericArgument::Const(_)
+            | syn::GenericArgument::Lifetime(_) => Default::default(),
+            // non-exhaustive enum
+            // TODO: replace panic with failible function
+            _ => panic!("Unknown syn::GenericArgument: {:?}", self),
         }
     }
 }
@@ -240,6 +244,9 @@ impl UsesTypeParams for syn::TypeParamBound {
         match *self {
             syn::TypeParamBound::Trait(ref v) => v.uses_type_params(options, type_set),
             syn::TypeParamBound::Lifetime(_) => Default::default(),
+            // non-exhaustive enum
+            // TODO: replace panic with failible function
+            _ => panic!("Unknown syn::TypeParamBound: {:?}", self),
         }
     }
 }
@@ -247,11 +254,11 @@ impl UsesTypeParams for syn::TypeParamBound {
 #[cfg(test)]
 mod tests {
     use proc_macro2::Span;
-    use syn::{DeriveInput, Ident};
+    use syn::{parse_quote, DeriveInput, Ident};
 
     use super::UsesTypeParams;
-    use usage::IdentSet;
-    use usage::Purpose::*;
+    use crate::usage::IdentSet;
+    use crate::usage::Purpose::*;
 
     fn ident_set(idents: Vec<&str>) -> IdentSet {
         idents
@@ -323,7 +330,7 @@ mod tests {
 
     #[test]
     fn box_fn_output() {
-        let input: DeriveInput = parse_quote! { struct Foo<T>(Box<Fn() -> T>); };
+        let input: DeriveInput = parse_quote! { struct Foo<T>(Box<dyn Fn() -> T>); };
         let generics = ident_set(vec!["T"]);
         let matches = input.data.uses_type_params(&BoundImpl.into(), &generics);
         assert_eq!(matches.len(), 1);
@@ -332,7 +339,7 @@ mod tests {
 
     #[test]
     fn box_fn_input() {
-        let input: DeriveInput = parse_quote! { struct Foo<T>(Box<Fn(&T) -> ()>); };
+        let input: DeriveInput = parse_quote! { struct Foo<T>(Box<dyn Fn(&T) -> ()>); };
         let generics = ident_set(vec!["T"]);
         let matches = input.data.uses_type_params(&BoundImpl.into(), &generics);
         assert_eq!(matches.len(), 1);

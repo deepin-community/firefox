@@ -16,8 +16,6 @@ change-password-old = Uneko pasahitza:
 change-password-new = Pasahitz berria:
 change-password-reenter = Pasahitz berria (berriro):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Ezin da pasahitza aldatu.
 pippki-incorrect-pw = Ez duzu uneko pasahitz zuzena sartu. Saiatu berriro.
 pippki-pw-change-ok = Pasahitza ondo aldatu da.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = FIPS moduan zaude. Honek hutsa ez den pasa
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Berrezarri pasahitz nagusia
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Berezarri
-
 reset-primary-password-text = Pasahitz nagusia berrezarriz gero, ahaztu egingo dira gordetako webeko eta posta elektronikoko pasahitzak, ziurtagiri pertsonalak eta gako pribatuak. Ziur zaude pasahitz nagusia berrezarri nahi duzula?
 
 pippki-reset-password-confirmation-title = Berrezarri pasahitz nagusia
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Zure pasahitz nagusia berrezarri eg
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Ziurtagiria deskargatzen
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Autoritate ziurtagiri (AZ) berri batez fidatzeko eskatu zaizu.
 download-cert-trust-ssl =
     .label = Fidatu AZ honetaz webguneak identifikatzeko.
@@ -77,7 +74,8 @@ set-password-reminder = Garrantzizkoa: Ziurtagiri-babeskopiaren pasahitza ahazte
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Babesturiko token autentifikazioa
-protected-auth-msg = Mesedez token-ean autentifikatu. Autentifikazio metodoa token moetaren arabera aldatzen da.
-protected-auth-token = Token-a:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Mesedez autentifikatu "{ $tokenName }" tokenera. Hori nola egin behar den tokenaren araberakoa da (adibidez, hatz-marken irakurgailu bat erabiliz edo zenbakizko teklatu batekin kode bat sartuz).

@@ -39,7 +39,6 @@ EXPORTS += [
     "LayoutLogging.h",
     "MobileViewportManager.h",
     "nsAutoLayoutPhase.h",
-    "nsBidi.h",
     "nsBidiPresUtils.h",
     "nsCaret.h",
     "nsChangeHint.h",
@@ -73,6 +72,9 @@ EXPORTS += [
 EXPORTS.mozilla += [
     "AccessibleCaretEventHub.h",
     "ArenaObjectID.h",
+    "Baseline.h",
+    "ContainStyleScopeManager.h",
+    "DepthOrderedFrameList.h",
     "DisplayPortUtils.h",
     "GeckoMVMContext.h",
     "GeometryUtils.h",
@@ -102,6 +104,9 @@ UNIFIED_SOURCES += [
     "AccessibleCaret.cpp",
     "AccessibleCaretEventHub.cpp",
     "AccessibleCaretManager.cpp",
+    "Baseline.cpp",
+    "ContainStyleScopeManager.cpp",
+    "DepthOrderedFrameList.cpp",
     "DisplayPortUtils.cpp",
     "GeckoMVMContext.cpp",
     "GeometryUtils.cpp",
@@ -109,7 +114,6 @@ UNIFIED_SOURCES += [
     "LayoutTelemetryTools.cpp",
     "MobileViewportManager.cpp",
     "MotionPathUtils.cpp",
-    "nsBidi.cpp",
     "nsBidiPresUtils.cpp",
     "nsCaret.cpp",
     "nsCounterManager.cpp",
@@ -183,6 +187,3 @@ BROWSER_CHROME_MANIFESTS += ["tests/browser.ini"]
 MARIONETTE_LAYOUT_MANIFESTS += ["tests/marionette/manifest.ini"]
 MOCHITEST_MANIFESTS += ["tests/mochitest.ini"]
 MOCHITEST_CHROME_MANIFESTS += ["tests/chrome/chrome.ini"]
-
-if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-    CXXFLAGS += ["-Wno-error=shadow"]

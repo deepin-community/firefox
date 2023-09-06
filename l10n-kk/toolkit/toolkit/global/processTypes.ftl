@@ -22,13 +22,13 @@ process-type-extension = Кеңейту
 # process used to open file:// URLs
 process-type-file = Жергілікті файл
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Үлкен бөлу
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Оқшауланған веб-мазмұны
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Оқшауланған Service Worker
 
 # process preallocated; may change to other types
 process-type-prealloc = Алдын-ала бөлінген
@@ -49,6 +49,9 @@ process-type-socket = Сокет
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Құмсалғыштағы IPC Actor
 
 ##
 ## Other

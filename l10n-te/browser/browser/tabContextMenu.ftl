@@ -2,12 +2,21 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+tab-context-new-tab =
+    .label = కొత్త ట్యాబు
+    .accesskey = w
 reload-tab =
     .label = ట్యాబుని మళ్ళీ లోడుచేయి
     .accesskey = R
 select-all-tabs =
     .label = ట్యాబులన్నీ ఎంచుకో
     .accesskey = S
+tab-context-play-tab =
+    .label = ప్లే ట్యాబు
+    .accesskey = P
+tab-context-play-tabs =
+    .label = ట్యాబులను ఆడనివ్వు
+    .accesskey = y
 duplicate-tab =
     .label = ట్యాబుని నకలుతీయి
     .accesskey = D
@@ -40,9 +49,6 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = ట్యాబులను ఇష్టాంశాలు చేయి…
     .accesskey = k
-bookmark-tab =
-    .label = ఇష్టాంశముల ట్యాబు
-    .accesskey = B
 move-to-start =
     .label = ప్రారంభించడానికి తరలించండి
     .accesskey = S
@@ -52,18 +58,7 @@ move-to-end =
 move-to-new-window =
     .label = కొత్త విండోకి తరలించు
     .accesskey = W
-tab-context-share-more =
-    .label = మరిన్ని…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
-
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] ట్యాబును మూసివేయి
-            [one] ట్యాబును మూసివేయి
-           *[other] ట్యాబులను మూసివేయి
-        }
-    .accesskey = C
 

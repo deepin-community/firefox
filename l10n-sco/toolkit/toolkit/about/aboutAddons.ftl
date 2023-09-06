@@ -8,10 +8,12 @@ search-header =
     .placeholder = Sairch addons.mozilla.org
     .searchbuttonlabel = Sairch
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
 list-empty-get-extensions-message = Get extensions and themes on <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
 
 list-empty-installed =
     .value = Ye dinnae hae onie eik-ons o this type instawed
@@ -193,7 +195,6 @@ extensions-warning-update-security = Eik-on update siccarness checkin is disable
 extensions-warning-update-security-button = Enable
     .title = Enable eik-on update siccarness checkin
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = Check fur Updates
@@ -312,6 +313,7 @@ install-theme-button = Instaw Theme
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Manage
 find-more-addons = Find mair eik-ons
+find-more-themes = Airt oot mair themes
 
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
@@ -343,7 +345,6 @@ extension-enabled-heading = Enabled
 extension-disabled-heading = Disabled
 
 theme-enabled-heading = Enabled
-theme-disabled-heading = Disabled
 
 plugin-enabled-heading = Enabled
 plugin-disabled-heading = Disabled
@@ -410,13 +411,15 @@ addon-detail-private-browsing-help = When allooed, the extension will hae ingang
 addon-detail-private-browsing-allow = Alloo
 addon-detail-private-browsing-disallow = Dinnae Alloo
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 addon-badge-recommended2 =
     .title = { -brand-product-name } anely recommends extensions that meet oor staunarts fur siccarness and performance
     .aria-label = { addon-badge-recommended2.title }
-
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
 addon-badge-line3 =
@@ -435,7 +438,6 @@ release-notes-loading = Loadin…
 release-notes-error = Awfie sorry, but there wis a mishanter loadin the roll-oot notes.
 
 addon-permissions-empty = This extension disnae need onie permeesions
-
 addon-permissions-required = Permeesions needit fur core functions:
 addon-permissions-optional = Optional permeesions fur better functions:
 addon-permissions-learnmore = Lairn mair aboot permeesions
@@ -464,3 +466,29 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Tools fur aw eik-ons
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } isnae compatible wi { -brand-short-name } { $version }.
+
+details-notification-unsigned-and-disabled = { $name } couldnae be trystmakkit fur yaise in { -brand-short-name } and has been disabled.
+details-notification-unsigned-and-disabled-link = Mair Information
+
+details-notification-unsigned = { $name } couldnae be trystmakkit fur yaise in { -brand-short-name }. Gang forrit wi tent.
+details-notification-unsigned-link = Mair Information
+
+details-notification-blocked = { $name } has been disabled acause o siccarness or stieveness issues.
+details-notification-blocked-link = Mair Information
+
+details-notification-softblocked = { $name } is kent tae cause siccarness or stieveness issues.
+details-notification-softblocked-link = Mair Information
+
+details-notification-gmp-pending = { $name } will be instawed jist the noo.

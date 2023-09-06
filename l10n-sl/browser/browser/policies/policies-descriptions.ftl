@@ -16,9 +16,11 @@ policy-AllowedDomainsForApps = Določi domene, ki jim je dovoljen dostop do Goog
 
 policy-AppAutoUpdate = Omogoči ali onemogoči samodejne posodobitve programa.
 
+policy-AppUpdatePin = { -brand-short-name(sklon: "dajalnik") } prepreči posodobitev preko določene različice.
+
 policy-AppUpdateURL = Nastavi poljuben URL za posodobitve programa.
 
-policy-Authentication = Nastavi integrirano overjanje za spletne strani, ki ga podpirajo.
+policy-Authentication = Nastavi integrirano overjanje za spletna mesta, ki ga podpirajo.
 
 policy-AutoLaunchProtocolsFromOrigins = Določi seznam zunanjih protokolov, ki jih je mogoče uporabiti z navedenih virov brez poziva uporabniku.
 
@@ -38,7 +40,10 @@ policy-CaptivePortal = Omogoči ali onemogoči podporo za prestrezni portal.
 
 policy-CertificatesDescription = Dodaj digitalna potrdila ali uporabi vgrajena potrdila.
 
-policy-Cookies = Spletnim stranem dovoli ali zavrni nastavljanje piškotkov.
+policy-Cookies = Spletnim mestom dovoli ali prepovej nastavljanje piškotkov.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Nastavi pravilnike, povezane z vsebniki.
 
 policy-DisabledCiphers = Onemogoči šifre.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Če je "true", glavnega gesla ni mogoče
 
 policy-DisablePasswordReveal = Ne dovoli razkrivanja gesel na seznamu shranjenih prijav.
 
-policy-DisablePocket = Onemogoči možnost shranjevanja spletnih strani v Pocket.
+policy-DisablePocket2 = Onemogoči možnost shranjevanja spletnih strani v { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Onemogoči zasebno brskanje.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Prepreči brskalniku nameščanje in posodablj
 
 policy-DisableTelemetry = Izključi telemetrijo.
 
+policy-DisableThirdPartyModuleBlocking = Uporabniku prepreči blokado modulov tretjih ponudnikov, ki se vstavljajo v proces { -brand-short-name(sklon: "rodilnik") }.
+
 policy-DisplayBookmarksToolbar = Privzeto prikaži orodno vrstico zaznamkov.
 
 policy-DisplayMenuBar = Privzeto prikaži vrstico z menijem.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Omogoči ali onemogoči zavračanje vsebine te
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Omogoči ali onemogoči Encrypted Media Extensions ter jih po potrebi zakleni.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Onemogoči opozorila glede na končnico datoteke za določene vrste datotek na domenah.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Upravljaj vse vidike namestitve razširitve.
 
 policy-ExtensionUpdate = Omogoči ali onemogoči samodejno posodabljanje razširitev.
 
-policy-FirefoxHome = Nastavi Firefoxovo domačo stran.
+policy-FirefoxHome2 = Nastavi { -firefox-home-brand-name(sklon: "tozilnik") }.
 
-policy-FlashPlugin = Dovoli ali zavrni uporabo vtičnika Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Ob vnosu ene besede v naslovno vrstico prisili neposredno krmarjenje na intranetno stran namesto iskanja.
 
 policy-Handlers = Nastavite privzete upravljalce aplikacij.
 
@@ -123,7 +132,7 @@ policy-HardwareAcceleration = Če je "false", izklopi strojno pospeševanje.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Nastavi in po potrebi zakleni domačo stran.
 
-policy-InstallAddonsPermission = Določenim spletnim stranem dovoli nameščanje dodatkov.
+policy-InstallAddonsPermission = Določenim spletnim mestom dovoli nameščanje dodatkov.
 
 policy-LegacyProfiles = Onemogoči možnost ustvarjanja ločenega profila za vsako namestitev.
 
@@ -135,7 +144,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Ponastavi zastarelo ve
 
 ##
 
-policy-LocalFileLinks = Določenim spletnim stranem dovoli povezovanje na krajevne datoteke.
+policy-LocalFileLinks = Določenim spletnim mestom dovoli povezovanje na krajevne datoteke.
 
 policy-ManagedBookmarks = Nastavi seznam zaznamkov, ki jih upravlja skrbnik in jih uporabnik ne more spremeniti.
 
@@ -159,6 +168,8 @@ policy-OverridePostUpdatePage = Preglasi stran "Kaj je novega", ki se odpre po p
 
 policy-PasswordManagerEnabled = Omogoči shranjevanje gesel v upravitelja gesel.
 
+policy-PasswordManagerExceptions = { -brand-short-name(sklon: "dajalnik") } prepreči shranjevanje gesel za določena spletna mesta.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = Onemogoči ali nastavi PDF.js, pregledovalnik PDF brskalnika { -brand-short-name }.
 
@@ -166,7 +177,7 @@ policy-Permissions2 = Nastavi dovoljenja za kamero, mikrofon, lokacijo, obvestil
 
 policy-PictureInPicture = Omogoči ali onemogoči sliko v sliki
 
-policy-PopupBlocking = Določenim spletnim stranem dovoli privzeto prikazovanje pojavnih oken.
+policy-PopupBlocking = Določenim spletnim mestom privzeto dovoli prikazovanje pojavnih oken.
 
 policy-Preferences = Nastavi in zakleni vrednost podnabora nastavitev.
 
@@ -184,8 +195,8 @@ policy-SearchEngines = Nastavi iskalnike. Ta pravilnik je na voljo le v izdaji E
 
 policy-SearchSuggestEnabled = Omogoči ali onemogoči predloge iskanja.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Namesti module PKCS #11.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Dodaj ali izbriši module PKCS #11.
 
 policy-ShowHomeButton = Prikaži gumb Domov v orodni vrstici.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = Nastavi najnovejšo dovoljeno različico SSL.
 
 policy-SSLVersionMin = Nastavi najstarejšo dovoljeno različico SSL.
 
+policy-StartDownloadsInTempDirectory = Vsili shranjevanje prenosov na lokalno začasno mesto namesto v privzeto mapo za prenose.
+
 policy-SupportMenu = Dodaj poljubno povezavo za podporo v meni Pomoč.
 
 policy-UserMessaging = Uporabniku ne prikazuj določenih sporočil.
+
+policy-UseSystemPrintDialog = Tiskaj s pomočjo pogovornega okna sistema.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Prepreči obisk določenih spletnih mest. Za več podrobnosti o obliki glejte dokumentacijo.

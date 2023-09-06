@@ -13,8 +13,7 @@ const UCT_URI = "chrome://mozapps/content/downloads/unknownContentType.xhtml";
 let tests = [
   {
     // This URL will trigger the simple UI, where only the Save an Cancel buttons are available
-    url:
-      "http://mochi.test:8888/browser/toolkit/mozapps/downloads/tests/browser/unknownContentType_dialog_layout_data.pif",
+    url: "http://mochi.test:8888/browser/toolkit/mozapps/downloads/tests/browser/unknownContentType_dialog_layout_data.pif",
     elements: {
       basicBox: { collapsed: false },
       normalBox: { collapsed: true },
@@ -22,8 +21,7 @@ let tests = [
   },
   {
     // This URL will trigger the full UI
-    url:
-      "http://mochi.test:8888/browser/toolkit/mozapps/downloads/tests/browser/unknownContentType_dialog_layout_data.txt",
+    url: "http://mochi.test:8888/browser/toolkit/mozapps/downloads/tests/browser/unknownContentType_dialog_layout_data.txt",
     elements: {
       basicBox: { collapsed: true },
       normalBox: { collapsed: false },
@@ -31,14 +29,10 @@ let tests = [
   },
 ];
 
-function waitDelay(delay) {
-  return new Promise((resolve, reject) => {
-    /* eslint-disable mozilla/no-arbitrary-setTimeout */
-    window.setTimeout(resolve, delay);
-  });
-}
-
 add_task(async function test_unknownContentType_dialog_layout() {
+  forcePromptForFiles("text/plain", "txt");
+  forcePromptForFiles("application/octet-stream", "pif");
+
   for (let test of tests) {
     let UCTObserver = {
       opened: PromiseUtils.defer(),
@@ -53,7 +47,7 @@ add_task(async function test_unknownContentType_dialog_layout() {
               "load",
               function onLoad(event) {
                 // Let the dialog initialize
-                SimpleTest.executeSoon(function() {
+                SimpleTest.executeSoon(function () {
                   UCTObserver.opened.resolve(win);
                 });
               },
@@ -78,27 +72,8 @@ add_task(async function test_unknownContentType_dialog_layout() {
         waitForLoad: false,
         waitForStateStop: true,
       },
-      async function() {
-        // If browser.download.improvements_to_download_panel pref is enabled,
-        // the unknownContentType will not appear by default.
-        // So wait an amount of time to ensure it hasn't opened.
-        let windowOpenDelay = waitDelay(1000);
-        let uctWindow = await Promise.race([
-          windowOpenDelay,
-          UCTObserver.opened.promise,
-        ]);
-        const prefEnabled = Services.prefs.getBoolPref(
-          "browser.download.improvements_to_download_panel"
-        );
-
-        if (prefEnabled) {
-          SimpleTest.is(
-            !uctWindow,
-            true,
-            "UnknownContentType window shouldn't open."
-          );
-          return;
-        }
+      async function () {
+        let uctWindow = await UCTObserver.opened.promise;
 
         for (let [id, props] of Object.entries(test.elements)) {
           let elem = uctWindow.dialog.dialogElement(id);

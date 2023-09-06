@@ -2,8 +2,8 @@
 /* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
 
-const { BrowserTestUtils } = ChromeUtils.import(
-  "resource://testing-common/BrowserTestUtils.jsm"
+const { BrowserTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/BrowserTestUtils.sys.mjs"
 );
 
 AddonTestUtils.init(this);
@@ -15,20 +15,11 @@ AddonTestUtils.createAppInfo(
   "43"
 );
 
-let {
-  promiseRestartManager,
-  promiseShutdownManager,
-  promiseStartupManager,
-} = AddonTestUtils;
+let { promiseRestartManager, promiseShutdownManager, promiseStartupManager } =
+  AddonTestUtils;
 
-Services.prefs.setBoolPref(
-  "extensions.webextensions.background-delayed-startup",
-  true
-);
-
-let { Management } = ChromeUtils.import(
-  "resource://gre/modules/Extension.jsm",
-  null
+const { Management } = ChromeUtils.importESModule(
+  "resource://gre/modules/Extension.sys.mjs"
 );
 
 // Crashes a <browser>'s remote process.
@@ -68,8 +59,7 @@ add_task(async function test_unload_extension_before_background_page_startup() {
   // Now the actual test: Unloading an extension before the startup has
   // finished should interrupt the start-up and abort pending delayed loads.
   info("Starting extension whose startup will be interrupted");
-  ExtensionParent._resetStartupPromises();
-  await promiseRestartManager();
+  await promiseRestartManager({ earlyStartup: false });
   await extension.awaitStartup();
 
   let extensionBrowserInsertions = 0;
@@ -86,14 +76,13 @@ add_task(async function test_unload_extension_before_background_page_startup() {
 
   // Trigger the notification that would load a background page.
   info("Forcing pending delayed background page to load");
-  Services.obs.notifyObservers(null, "sessionstore-windows-restored");
+  AddonTestUtils.notifyLateStartup();
 
   // This is the expected message from the re-enabled add-on.
   await extension.awaitMessage("background_startup_observed");
   await extension.unload();
 
   await promiseShutdownManager();
-  ExtensionParent._resetStartupPromises();
 
   Management.off("extension-browser-inserted", onExtensionBrowserInserted);
   Assert.equal(
@@ -120,25 +109,30 @@ add_task(async function test_unload_extension_during_background_page_startup() {
   await extension.startup();
   await extension.awaitMessage("background_starting");
 
-  ExtensionParent._resetStartupPromises();
-  await promiseRestartManager();
+  await promiseRestartManager({ lateStartup: false });
   await extension.awaitStartup();
 
   let bgStartupPromise = new Promise(resolve => {
     function onBackgroundPageDone(eventName) {
-      extension.extension.off("background-page-started", onBackgroundPageDone);
-      extension.extension.off("background-page-aborted", onBackgroundPageDone);
+      extension.extension.off(
+        "background-script-started",
+        onBackgroundPageDone
+      );
+      extension.extension.off(
+        "background-script-aborted",
+        onBackgroundPageDone
+      );
 
-      if (eventName === "background-page-aborted") {
-        info("Background page startup was interrupted");
+      if (eventName === "background-script-aborted") {
+        info("Background script startup was interrupted");
         resolve("bg_aborted");
       } else {
-        info("Background page startup finished normally");
+        info("Background script startup finished normally");
         resolve("bg_fully_loaded");
       }
     }
-    extension.extension.on("background-page-started", onBackgroundPageDone);
-    extension.extension.on("background-page-aborted", onBackgroundPageDone);
+    extension.extension.on("background-script-started", onBackgroundPageDone);
+    extension.extension.on("background-script-aborted", onBackgroundPageDone);
   });
 
   let bgStartingPromise = new Promise(resolve => {
@@ -150,8 +144,8 @@ add_task(async function test_unload_extension_during_background_page_startup() {
     // Prevent the background page from actually loading.
     Management.once("extension-browser-inserted", (eventName, browser) => {
       // Intercept background page load.
-      let browserLoadURI = browser.loadURI;
-      browser.loadURI = function() {
+      let browserFixupAndLoadURIString = browser.fixupAndLoadURIString;
+      browser.fixupAndLoadURIString = function () {
         Assert.equal(++backgroundLoadCount, 1, "loadURI should be called once");
         Assert.equal(
           arguments[0],
@@ -160,7 +154,7 @@ add_task(async function test_unload_extension_during_background_page_startup() {
         );
         // Reset to "about:blank" to not load the actual background page.
         arguments[0] = "about:blank";
-        browserLoadURI.apply(this, arguments);
+        browserFixupAndLoadURIString.apply(this, arguments);
 
         // And force the extension process to crash.
         if (browser.isRemote) {
@@ -178,7 +172,7 @@ add_task(async function test_unload_extension_during_background_page_startup() {
   });
 
   // Force background page to initialize.
-  Services.obs.notifyObservers(null, "sessionstore-windows-restored");
+  AddonTestUtils.notifyLateStartup();
   await bgStartingPromise;
 
   await extension.unload();
@@ -190,6 +184,4 @@ add_task(async function test_unload_extension_during_background_page_startup() {
   info("Waiting for background builder to finish");
   let bgLoadState = await bgStartupPromise;
   Assert.equal(bgLoadState, "bg_aborted", "Startup should be interrupted");
-
-  ExtensionParent._resetStartupPromises();
 });

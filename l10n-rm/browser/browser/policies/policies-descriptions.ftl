@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Definescha las domenas che dastgan acceder a Goog
 
 policy-AppAutoUpdate = Activar u deactivar l'actualisaziun automatica da l'applicaziun.
 
+policy-AppUpdatePin = Impedir che { -brand-short-name } vegnia actualisà ad ina versiun pli nova che quella inditgada.
+
 policy-AppUpdateURL = Definir ina URL dad actualisaziun persunalisada per l'applicaziun.
 
 policy-Authentication = Configurar l'autentificaziun integrada per websites che la sustegnan.
@@ -39,6 +41,9 @@ policy-CaptivePortal = Activar u deactivar il sustegn per captive portal.
 policy-CertificatesDescription = Agiuntar certificats u utilisar certificats predefinids.
 
 policy-Cookies = Permetter u scumandar a websites da definir cookies.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Definir directivas che concernan containers.
 
 policy-DisabledCiphers = Deactivar la cifraziun.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Sche activà, èsi impussibel da crear i
 
 policy-DisablePasswordReveal = Betg permetter da mussar pleds-clav en las infurmaziuns d'annunzia memorisadas.
 
-policy-DisablePocket = Deactivar la funcziun da memorisar paginas d'internet en Pocket.
+policy-DisablePocket2 = Deactivar la funcziun da memorisar paginas d'internet en { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Deactivar il modus privat.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Impedir ch'il navigatur installeschia ed actua
 
 policy-DisableTelemetry = Deactivar la telemetria.
 
+policy-DisableThirdPartyModuleBlocking = Evitar che l'utilisader blocheschia moduls da terzas partidas inserids en il process da { -brand-short-name }.
+
 policy-DisplayBookmarksToolbar = Mussar la trav da segnapaginas sco standard.
 
 policy-DisplayMenuBar = Mussar la trav da menu sco standard.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Activar u deactivar la bloccada da cuntegn e t
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Activar u deactivar Encrypted Media Extensions e tut tenor basegn impedir la modificaziun da l'opziun.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Deactivar avertiments che sa basan sin tschertas extensiuns da datoteca per tips da datoteca specifics sin domenas inditgadas.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Administrar tut ils aspects da l'installaziun dad ext
 
 policy-ExtensionUpdate = Activar u deactivar actualisaziuns automaticas dad extensiuns.
 
-policy-FirefoxHome = Configurar la pagina da partenza da Firefox.
+policy-FirefoxHome2 = Configurar { -firefox-home-brand-name }.
 
-policy-FlashPlugin = Permetter u scumandar l'utilisaziun dal plug-in Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Sfurzar la navigaziun directa en la website da l'intranet empè da tschertgar, en cas che singuls pleds vegnan tippads en la trav d'adressas.
 
 policy-Handlers = Configurar la gestiun dad applicaziuns da standard.
 
@@ -159,6 +168,8 @@ policy-OverridePostUpdatePage = Surscriver la pagina «What's New» che vegn mus
 
 policy-PasswordManagerEnabled = Activar la memorisaziun da pleds-clav en l'administraziun da pleds-clav.
 
+policy-PasswordManagerExceptions = Impedir che { -brand-short-name } memoriseschia pleds-clav per websites specificas.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = Deactivar u configurar PDF.js, il lectur per PDFs integrà en { -brand-short-name }.
 
@@ -184,8 +195,8 @@ policy-SearchEngines = Configurar ils parameters da maschinas da tschertgar. Que
 
 policy-SearchSuggestEnabled = Activar u deactivar propostas da tschertga.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Installar moduls PKCS #11.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Agiuntar u stizzar moduls PKCS #11.
 
 policy-ShowHomeButton = Mussar il buttun da la pagina da partenza en la trav d'utensils.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = Definir la versiun maximala da SSL.
 
 policy-SSLVersionMin = Definir la versiun minimala da SSL.
 
+policy-StartDownloadsInTempDirectory = Sfurzar las telechargias en in lieu local, temporar empè da las cumenzar en l'ordinatur da telechargiadas predefinì.
+
 policy-SupportMenu = Agiuntar in element da menu persunalisà en il menu d'agid.
 
 policy-UserMessaging = Betg mussar tscherts messadis a l'utilisader.
+
+policy-UseSystemPrintDialog = Stampar cun agid dal dialog da stampa dal sistem.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Impedir l'access a tschertas websites. Consultar la documentaziun per ulteriuras infurmaziuns davart il format.

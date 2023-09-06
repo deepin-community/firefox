@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Określenie domen, które mają dostęp do Google
 
 policy-AppAutoUpdate = Włączenie lub wyłączenie automatycznego aktualizowania aplikacji.
 
+policy-AppUpdatePin = Uniemożliwienie programowi { -brand-short-name } aktualizowania poza podaną wersję.
+
 policy-AppUpdateURL = Ustawienie niestandardowego adresu URL aktualizacji programu.
 
 policy-Authentication = Konfiguracja zintegrowanego uwierzytelniania dla witryn, które je obsługują.
@@ -39,6 +41,9 @@ policy-CaptivePortal = Włączenie lub wyłączenie obsługi portalu przechwytuj
 policy-CertificatesDescription = Dodawanie certyfikatów lub używanie wbudowanych.
 
 policy-Cookies = Zezwalanie lub zabranianie witrynom ustawiania ciasteczek.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Ustawianie zasad związanych z kontekstami.
 
 policy-DisabledCiphers = Wyłączenie szyfrów.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Wartość „prawda” powoduje, że nie
 
 policy-DisablePasswordReveal = Wyłączenie możliwości wyświetlania haseł w zachowanych danych logowania.
 
-policy-DisablePocket = Wyłączenie funkcji zachowywania stron w Pocket.
+policy-DisablePocket2 = Wyłączenie funkcji zachowywania stron w { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Wyłączenie trybu prywatnego.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Uniemożliwienie przeglądarce instalowania i�
 
 policy-DisableTelemetry = Wyłączenie telemetrii.
 
+policy-DisableThirdPartyModuleBlocking = Uniemożliwienie użytkownikowi blokowania modułów zewnętrznych, które są umieszczane w procesie programu { -brand-short-name }.
+
 policy-DisplayBookmarksToolbar = Domyślne wyświetlanie paska zakładek.
 
 policy-DisplayMenuBar = Domyślne wyświetlanie paska menu.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Włączenie lub wyłączenie blokowania treśc
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Włączenie lub wyłączenie Encrypted Media Extensions i opcjonalnie ich blokada.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Wyłączenie ostrzeżeń na podstawie rozszerzenia pliku dla podanych typów plików w domenach.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Zarządzanie wszystkimi aspektami instalacji rozszerz
 
 policy-ExtensionUpdate = Włączenie lub wyłączenie automatycznego aktualizowania rozszerzeń.
 
-policy-FirefoxHome = Konfiguracja strony startowej Firefoksa.
+policy-FirefoxHome2 = Konfiguracja { -firefox-home-brand-name(case: "gen", capitalization: "lower") }.
 
-policy-FlashPlugin = Zezwalanie lub zabranianie korzystania z wtyczki Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Wymuszenie bezpośredniej nawigacji na witrynie intranetowej zamiast wyszukiwania podczas wpisywania pojedynczych słów na pasku adresu.
 
 policy-Handlers = Konfiguracja domyślnych aplikacji obsługujących typy plików.
 
@@ -149,7 +158,7 @@ policy-NewTabPage = Włączenie lub wyłączenie strony nowej karty.
 
 policy-NoDefaultBookmarks = Wyłączenie tworzenia domyślnych zakładek dołączonych do przeglądarki { -brand-short-name } oraz dynamicznych zakładek („Często odwiedzane” i „Ostatnio używane etykiety”). Uwaga: ta zasada jest uwzględniana tylko przed pierwszym uruchomieniem profilu.
 
-policy-OfferToSaveLogins = Wymuszenie ustawienia zezwalającego przeglądarce { -brand-short-name } pytanie o zapamiętanie zachowanych danych logowania i haseł. Przyjmowane są wartości „prawda” i „fałsz”.
+policy-OfferToSaveLogins = Wymuszenie ustawienia zezwalającego programowi { -brand-short-name } pytanie o zapamiętanie zachowanych danych logowania i haseł. Przyjmowane są wartości „prawda” i „fałsz”.
 
 policy-OfferToSaveLoginsDefault = Ustawienie domyślnej wartości ustawienia zezwalającego programowi { -brand-short-name } pytanie o zapamiętanie zachowanych danych logowania i haseł. Przyjmowane są wartości „prawda” i „fałsz”.
 
@@ -158,6 +167,8 @@ policy-OverrideFirstRunPage = Zastąpienie strony pierwszego uruchomienia. Ustaw
 policy-OverridePostUpdatePage = Zastąpienie strony „Co nowego” wyświetlanej po aktualizacji. Ustawienie tej zasady na pustą wyłączy stronę wyświetlaną po aktualizacji.
 
 policy-PasswordManagerEnabled = Włączenie zachowywania haseł w menedżerze haseł.
+
+policy-PasswordManagerExceptions = Uniemożliwienie zachowywania haseł do podanych witryn przez program { -brand-short-name }.
 
 # PDF.js and PDF should not be translated
 policy-PDFjs = Wyłączenie lub konfiguracja PDF.js, wbudowanej przeglądarki plików PDF w programie { -brand-short-name }.
@@ -184,8 +195,8 @@ policy-SearchEngines = Konfiguracja ustawień wyszukiwarki. Ta zasada jest dost�
 
 policy-SearchSuggestEnabled = Włączenie lub wyłączenie podpowiedzi wyszukiwania.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instalacja modułów PKCS #11.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Dodawanie i usuwanie modułów PKCS #11.
 
 policy-ShowHomeButton = Wyświetlanie przycisku strony domowej na pasku narzędzi.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = Ustawienie maksymalnej wersji SSL.
 
 policy-SSLVersionMin = Ustawienie minimalnej wersji SSL.
 
+policy-StartDownloadsInTempDirectory = Wymuszenie rozpoczynania pobierania w lokalnym, tymczasowym położeniu zamiast w domyślnym katalogu pobierania.
+
 policy-SupportMenu = Dodanie niestandardowego elementu menu pomocy.
 
 policy-UserMessaging = Wyłączenie wyświetlania użytkownikowi pewnych komunikatów.
+
+policy-UseSystemPrintDialog = Drukowanie za pomocą systemowego okna drukowania.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Blokowanie odwiedzania witryn. Dokumentacja zawiera więcej informacji o formacie.

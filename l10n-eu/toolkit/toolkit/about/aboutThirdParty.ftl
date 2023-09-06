@@ -26,19 +26,49 @@ third-party-tag-background = Atzeko planoa
     .title =
         Modulu honek ez du aplikazioa blokeatu atzeko planoan
         kargatu delako.
-third-party-unsigned-icon =
+third-party-icon-unsigned =
     .title = Modulu hau ez dago sinatuta
-third-party-warning-icon =
+    .alt = Modulu hau ez dago sinatuta
+third-party-icon-warning =
     .title = Modulu honetako kodean egin du huts { -brand-short-name }(e)k
+    .alt = Modulu honetako kodean egin du huts { -brand-short-name }(e)k
 third-party-status-loaded = Kargatuta
 third-party-status-blocked = Blokeatuta
 third-party-status-redirected = Berbideratuta
 third-party-button-copy-to-clipboard = Kopiatu datu gordinak arbelean
+third-party-loading-data =
+    .alt = Sistemaren informazioa kargatzen...
+    .title = Sistemaren informazioa kargatzen...
 third-party-button-reload = Berritu sistemaren informazioarekin
     .title = Berritu sistemaren informazioarekin
 third-party-button-open =
     .title = Ireki fitxategi-kokalekua…
+third-party-button-to-block =
+    .title = Blokeatu modulu hau
+    .aria-label = Blokeatu modulu hau
+third-party-button-to-unblock =
+    .title = Une honetan blokeatuta. Egin klik desblokeatzeko.
+    .aria-label = Une honetan blokeatuta. Egin klik desblokeatzeko.
+third-party-button-to-unblock-disabled =
+    .title =
+        Une honetan blokeatutako gisa markatuta, nahiz eta blokeo-zerrenda desgaituta dagoen
+        { -brand-short-name }(r)en exekuzio honetarako. Egin klik desblokeatzeko.
+    .aria-label =
+        Une honetan blokeatutako gisa markatuta, nahiz eta blokeo-zerrenda desgaituta dagoen
+        { -brand-short-name }(r)en exekuzio honetarako. Egin klik desblokeatzeko.
+third-party-button-to-block-module = Blokeatu modulu hau
+    .title = Blokeatu modulu hau
+    .aria-label = Blokeatu modulu hau
+third-party-button-to-unblock-module = Desblokeatu modulu hau
+    .title = Blokeatuta dago. Egin klik desblokeatzeko.
+    .aria-label = Blokeatuta dago. Egin klik desblokeatzeko.
 third-party-button-expand =
     .title = Erakutsi informazio xehatua
 third-party-button-collapse =
     .title = Tolestu informazio xehatua
+third-party-should-restart-title = Berrabiarazi { -brand-short-name }
+third-party-restart-now = Berrabiarazi orain
+third-party-restart-later = Berrabiarazi geroago
+third-party-blocked-by-builtin =
+    .title = { -brand-short-name }(e)k blokeatuta
+    .alt = { -brand-short-name }(e)k blokeatuta

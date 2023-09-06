@@ -3,8 +3,8 @@
  * irc:) does not blank the page (Bug 1630757).
  */
 
-const { HandlerServiceTestUtils } = ChromeUtils.import(
-  "resource://testing-common/HandlerServiceTestUtils.jsm"
+const { HandlerServiceTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/HandlerServiceTestUtils.sys.mjs"
 );
 
 let gHandlerService = Cc["@mozilla.org/uriloader/handler-service;1"].getService(
@@ -17,9 +17,8 @@ let Pages = [httpURL("dummy_page.html"), fileURL("dummy_page.html")];
  * Creates dummy protocol handler
  */
 function initTestHandlers() {
-  let handlerInfo = HandlerServiceTestUtils.getBlankHandlerInfo(
-    "test-proto://"
-  );
+  let handlerInfo =
+    HandlerServiceTestUtils.getBlankHandlerInfo("test-proto://");
 
   let appHandler = Cc[
     "@mozilla.org/uriloader/local-handler-app;1"
@@ -41,7 +40,7 @@ async function runTest() {
   initTestHandlers();
 
   for (let page of Pages) {
-    await BrowserTestUtils.withNewTab(page, async function(aBrowser) {
+    await BrowserTestUtils.withNewTab(page, async function (aBrowser) {
       await SpecialPowers.spawn(aBrowser, [], async () => {
         let h = content.document.createElement("h1");
         ok(h);
@@ -74,6 +73,7 @@ async function runTest() {
       });
     });
   }
+  await SpecialPowers.popPrefEnv();
 }
 
 add_task(runTest);

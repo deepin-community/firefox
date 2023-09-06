@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = 指定允許存取 Google Workspace 的網域。
 
 policy-AppAutoUpdate = 開啟或關閉應用程式自動更新。
 
+policy-AppUpdatePin = 防止 { -brand-short-name } 更新超過特定版本。
+
 policy-AppUpdateURL = 自訂應用程式更新網址。
 
 policy-Authentication = 為支援的網站設定整合身分驗證方式。
@@ -39,6 +41,9 @@ policy-CaptivePortal = 開啟或關閉支援 Captive portal。
 policy-CertificatesDescription = 新增憑證，或使用內建憑證。
 
 policy-Cookies = 允許或拒絕網站設定 Cookie。
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = 設定容器分頁相關政策。
 
 policy-DisabledCiphers = 停用加密演算法。
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = 若為 true，將無法建立主控密�
 
 policy-DisablePasswordReveal = 不允許於儲存的登入資訊畫面中顯示密碼。
 
-policy-DisablePocket = 停用儲存網頁到 Pocket 的功能。
+policy-DisablePocket2 = 停用儲存網頁到 { -pocket-brand-name } 的功能。
 
 policy-DisablePrivateBrowsing = 停用隱私瀏覽功能。
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = 防止瀏覽器安裝或更新系統附加元�
 
 policy-DisableTelemetry = 關閉 Telemetry。
 
+policy-DisableThirdPartyModuleBlocking = 防止使用者封鎖插入 { -brand-short-name } 處理程序的第三方模組。
+
 policy-DisplayBookmarksToolbar = 預設顯示書籤工具列。
 
 policy-DisplayMenuBar = 預設顯示選單列。
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = 開啟或關閉內容封鎖功能，並可選�
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = 開啟或關閉加密媒體擴充功能，並可選擇鎖定該功能。
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = 針對特定網域，關閉特定檔案類型副檔名的警告。
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = 管理擴充套件的各種安裝設定。
 
 policy-ExtensionUpdate = 開啟或關閉擴充套件自動更新。
 
-policy-FirefoxHome = 設定 Firefox Home。
+policy-FirefoxHome2 = 設定 { -firefox-home-brand-name }。
 
-policy-FlashPlugin = 允許或拒絕使用 Flash 擴充套件。
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = 在網址列輸入單一文字時，強制導航到企業內部網站，而非進行線上搜尋。
 
 policy-Handlers = 設定預設應用程式處理方式。
 
@@ -159,6 +168,8 @@ policy-OverridePostUpdatePage = 覆蓋更新後會開啟的「有什麼新鮮事
 
 policy-PasswordManagerEnabled = 允許使用密碼管理員來儲存密碼。
 
+policy-PasswordManagerExceptions = 防止 { -brand-short-name } 儲存特定網站的密碼。
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = 停用或設定 { -brand-short-name } 內建的 PDF 閱讀器 PDF.js。
 
@@ -166,7 +177,7 @@ policy-Permissions2 = 設定攝影機、麥克風、地理位置、通知、自�
 
 policy-PictureInPicture = 開啟或關閉子母畫面功能。
 
-policy-PopupBlocking = 允許某些網站預設可顯示彈出視窗。
+policy-PopupBlocking = 允許某些網站預設可顯示彈出型視窗。
 
 policy-Preferences = 鎖定部分偏好設定的內容。
 
@@ -184,8 +195,8 @@ policy-SearchEngines = 調整搜尋引擎設定。此原則僅對 Extended Suppo
 
 policy-SearchSuggestEnabled = 啟用或停用搜尋建議。
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = 安裝 PKCS #11 模組。
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = 新增或刪除 PKCS #11 模組。
 
 policy-ShowHomeButton = 於工具列顯示首頁按鈕。
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = 設定最大 SSL 版本。
 
 policy-SSLVersionMin = 設定最小 SSL 版本。
 
+policy-StartDownloadsInTempDirectory = 強制在本機的暫存位置，而非預設下載目錄開始下載。
+
 policy-SupportMenu = 於說明選單內新增自訂的技術支援項目。
 
 policy-UserMessaging = 不要對使用者顯示某些訊息。
+
+policy-UseSystemPrintDialog = 使用系統列印對話框列印。
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = 封鎖網站，不讓使用者開啟。請參考文件取得設定格式的詳細資料。

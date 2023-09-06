@@ -23,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (ferâldere, eksperim
 compatibility-settings-button-label = Ynstellingen
 compatibility-settings-button-title =
     .title = Ynstellingen
-compatibility-feedback-button-label = Kommentaar
-compatibility-feedback-button-title =
-    .title = Kommentaar
 
 ## Messages used as headers in settings pane
 
@@ -46,3 +43,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Gjin kompatibiliteitsproblemen fûn.
 compatibility-close-settings-button =
     .title = Ynstellingen slute
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Kompatibiliteitsproblemen yn:
+        { $browsers }

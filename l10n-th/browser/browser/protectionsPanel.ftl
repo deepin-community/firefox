@@ -21,10 +21,10 @@ protections-popup-footer-protection-label-standard = มาตรฐาน
 
 # The text a screen reader speaks when focused on the info button.
 protections-panel-etp-more-info =
-    .aria-label = รายละเอียดเพิ่มเติมเกี่ยวกับการป้องกันการติดตามที่มากขึ้น
+    .aria-label = รายละเอียดเพิ่มเติมเกี่ยวกับการป้องกันการติดตามแบบพิเศษ
 
-protections-panel-etp-on-header = การป้องกันการติดตามที่มากขึ้นถูก เปิด สำหรับไซต์นี้
-protections-panel-etp-off-header = การป้องกันการติดตามที่มากขึ้นถูก ปิด สำหรับไซต์นี้
+protections-panel-etp-on-header = การป้องกันการติดตามแบบพิเศษเปิดอยู่สำหรับไซต์นี้
+protections-panel-etp-off-header = การป้องกันการติดตามแบบพิเศษปิดอยู่สำหรับไซต์นี้
 
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = ไซต์ไม่ทำงาน?
@@ -63,7 +63,6 @@ protections-panel-not-found-label = ตรวจไม่พบ
 ##
 
 protections-panel-settings-label = การตั้งค่าการป้องกัน
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = แดชบอร์ดการป้องกัน
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -78,6 +77,7 @@ protections-panel-site-not-working-view-issue-list-forms = แบบฟอร์
 protections-panel-site-not-working-view-issue-list-payments = การชำระเงิน
 protections-panel-site-not-working-view-issue-list-comments = ความคิดเห็น
 protections-panel-site-not-working-view-issue-list-videos = วิดีโอ
+protections-panel-site-not-working-view-issue-list-fonts = แบบอักษร
 
 protections-panel-site-not-working-view-send-report = ส่งรายงาน
 
@@ -101,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = รายงานไซต์ที่ใช้งานไม่ได้
 protections-panel-content-blocking-breakage-report-view-description = การปิดกั้นตัวติดตามบางตัวอาจทำให้เกิดปัญหากับบางเว็บไซต์ได้ การรายงานปัญหา ก็เท่ากับคุณช่วยทำให้ { -brand-short-name } ดีขึ้นสำหรับทุก ๆ คน การรายงานนี้จะส่ง URL พร้อมทั้งข้อมูลเกี่ยวกับการตั้งค่าเบราว์เซอร์ของคุณไปให้กับ Mozilla <label data-l10n-name="learn-more">เรียนรู้เพิ่มเติม</label>
+protections-panel-content-blocking-breakage-report-view-description2 = การปิดกั้นตัวติดตามบางตัวอาจทำให้เกิดปัญหากับบางเว็บไซต์ได้ การรายงานปัญหา ก็เท่ากับคุณช่วยทำให้ { -brand-short-name } ดีขึ้นสำหรับทุก ๆ คน การรายงานนี้จะส่ง URL พร้อมทั้งข้อมูลเกี่ยวกับการตั้งค่าเบราว์เซอร์ของคุณไปให้กับ { -vendor-short-name }
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -111,3 +112,22 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = ยกเลิก
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = ส่งรายงาน
+
+# Cookie Banner Handling
+
+protections-panel-cookie-banner-handling-header = การลดแบนเนอร์คุกกี้
+protections-panel-cookie-banner-handling-enabled = เปิดสำหรับไซต์นี้
+protections-panel-cookie-banner-handling-disabled = ปิดสำหรับไซต์นี้
+protections-panel-cookie-banner-handling-undetected = ไม่รองรับไซต์ในขณะนี้
+
+protections-panel-cookie-banner-view-title =
+    .title = การลดแบนเนอร์คุกกี้
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = ต้องการปิดการลดแบนเนอร์คุกกี้สำหรับ { $host } หรือไม่?
+protections-panel-cookie-banner-view-turn-on-for-site = ต้องการเปิดการลดแบนเนอร์คุกกี้สำหรับไซต์นี้หรือไม่?
+protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } จะล้างคุกกี้ของไซต์นี้และรีเฟรชหน้า การล้างคุกกี้ทั้งหมดอาจนำคุณออกจากระบบหรือล้างรถเข็นช็อปปิ้ง
+protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } จะพยายามปฏิเสธคำขอคุกกี้ทั้งหมดบนไซต์ที่รองรับโดยอัตโนมัติ
+protections-panel-cookie-banner-view-cancel = ยกเลิก
+protections-panel-cookie-banner-view-turn-off = ปิด
+protections-panel-cookie-banner-view-turn-on = เปิด

@@ -8,10 +8,16 @@ search-header =
     .placeholder = addons.mozilla.org ਨੂੰ ਖੋਜੋ
     .searchbuttonlabel = ਖੋਜੋ
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
 list-empty-get-extensions-message = <a data-l10n-name="get-extensions">{ $domain }</a> ਤੋਂ ਇਕਸਟੈਨਸ਼ਨਾਂ ਤੇ ਥੀਮ ਲਵੋ
+
+list-empty-get-dictionaries-message = <a data-l10n-name="get-extensions">{ $domain }</a> ਤੋਂ ਡਿਕਸ਼ਨਰੀਆਂ ਲਵੋ
+
+list-empty-get-language-packs-message = <a data-l10n-name="get-extensions">{ $domain }</a> ਤੋਂ ਭਾਸ਼ਾ ਪੈਕ ਲਵੋ
+
+##
 
 list-empty-installed =
     .value = ਤੁਹਾਡੇ ਕੋਲ ਇਸ ਕਿਸਮ ਦੀ ਕੋਈ ਵੀ ਐਡ-ਆਨ ਇੰਸਟਾਲ ਨਹੀਂ ਹੈ
@@ -47,6 +53,9 @@ detail-version =
 
 detail-last-updated =
     .label = ਆਖਰੀ ਅੱਪਡੇਟ
+
+addon-detail-description-expand = ਹੋਰ ਵੇਖਾਓ
+addon-detail-description-collapse = ਘੱਟ ਵੇਖਾਓ
 
 detail-contributions-description = ਇਹ ਐਡ-ਆਨ ਦੇ ਡਿਵੈਲਪਰ ਨੇ ਤੁਹਾਨੂੰ ਪੁੱਛਿਆ ਹੈ ਕਿ ਤੁਸੀਂ ਛੋਟਾ ਜਿਹਾ ਯੋਗਦਾਨ ਦੇ ਕੇ ਇਸ ਦੀ ਡਿਵੈਲਪਮੈਂਟ ਨੂੰ ਜਾਰੀ ਰੱਖਣ 'ਚ ਮੱਦਦ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ।
 
@@ -175,6 +184,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = ਤਾਜ਼ਾ ਅੱਪਡੇਟ
 addon-category-recent-updates-title =
     .title = ਤਾਜ਼ਾ ਅੱਪਡੇਟ
+addon-category-sitepermission = ਸਾਈਟ ਇਜਾਜ਼ਤਾਂ
+addon-category-sitepermission-title =
+    .title = ਸਾਈਟ ਇਜਾਜ਼ਤਾਂ
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string): DNS host name for which the webextension enables permissions
+addon-sitepermission-host = { $host } ਲਈ ਸਾਈਟ ਇਜਾਜ਼ਤਾਂ
 
 ## These are global warnings
 
@@ -185,7 +201,6 @@ extensions-warning-check-compatibility-button = ਸਮਰੱਥ
 extensions-warning-update-security = ਐਡ-ਆਨ ਅੱਪਡੇਟ ਸੁਰੱਖਿਆ ਚੈੱਕ ਕਰਨਾ ਬੰਦ ਹੈ। ਤੁਹਾਨੂੰ ਅੱਪਡੇਟ ਰਾਹੀਂ ਖਤਰਾ ਹੋ ਸਕਦਾ ਹੈ।
 extensions-warning-update-security-button = ਚਾਲੂ
     .title = ਐਡ-ਆਨ ਉੱਤੇ ਸੁਰੱਖਿਆ ਚੈੱਕ ਕੀਤਾ ਜਾਂਦਾ ਹੈ
-
 
 ## Strings connected to add-on updates
 
@@ -304,6 +319,7 @@ install-theme-button = ਥੀਮ ਇੰਸਟਾਲ ਕਰੋ
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = ਬੰਦੋਬਸਤ
 find-more-addons = ਹੋਰ ਐਡ-ਆਨ ਲੱਭੋ
+find-more-themes = ਹੋਰ ਥੀਮ ਲੱਭੋ
 
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
@@ -328,14 +344,14 @@ preferences-addon-button =
        *[other] ਪਸੰਦਾਂ
     }
 details-addon-button = ਵੇਰਵੇ
-release-notes-addon-button = ਰੀਲਿਜ਼ ਨੋਟਿਸ
+release-notes-addon-button = ਰੀਲੀਜ਼ ਨੋਟਸ
 permissions-addon-button = ਇਜਾਜ਼ਤਾਂ
 
 extension-enabled-heading = ਸਮਰੱਥ ਹੈ
 extension-disabled-heading = ਅਸਮਰੱਥ ਹੈ
 
 theme-enabled-heading = ਸਮਰੱਥ ਹੈ
-theme-disabled-heading = ਅਸਮਰੱਥ ਹੈ
+theme-disabled-heading2 = ਸੰਭਾਲੇ ਥੀਮ
 
 plugin-enabled-heading = ਸਮਰੱਥ ਹੈ
 plugin-disabled-heading = ਅਸਮਰੱਥ ਹੈ
@@ -345,6 +361,9 @@ dictionary-disabled-heading = ਅਸਮਰੱਥ ਹੈ
 
 locale-enabled-heading = ਸਮਰੱਥ ਹੈ
 locale-disabled-heading = ਅਸਮਰੱਥ ਹੈ
+
+sitepermission-enabled-heading = ਸਮਰੱਥ ਹੈ
+sitepermission-disabled-heading = ਅਸਮਰੱਥ ਹੈ
 
 always-activate-button = ਹਮੇਸ਼ਾ ਸਰਗਰਮ ਕਰੋ
 never-activate-button = ਕਦੇ ਸਰਗਰਮ ਨਾ ਕਰੋ
@@ -402,13 +421,15 @@ addon-detail-private-browsing-help = ਜਦੋਂ ਮਨਜ਼ੂਰੀ ਦਿੱ�
 addon-detail-private-browsing-allow = ਮਨਜ਼ੂਰ
 addon-detail-private-browsing-disallow = ਮਨਜ਼ੂਰ ਨਾ ਕਰੋ
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 addon-badge-recommended2 =
     .title = { -brand-product-name } ਉਹ ਇਕਸਟੈਨਸ਼ਨਾਂ ਦੀ ਸਿਫਾਰਸ਼ ਕਰਦਾ ਹੈ, ਜੋ ਸੁਰੱਖਿਆ ਅਤੇ ਕਾਰਗੁਜ਼ਾਰੀ ਲਈ ਸਾਡੇ ਮਿਆਰ ਪੂਰੇ ਕਰਦੇ ਹਨ।
     .aria-label = { addon-badge-recommended2.title }
-
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
 addon-badge-line3 =
@@ -427,13 +448,14 @@ release-notes-loading = …ਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ
 release-notes-error = ਅਫਸੋਸ, ਪਰ ਰੀਲਿਜ਼ ਨੋਟਿਸ ਡਾਊਨਲੋਡ ਕਰਨ ਦੌਰਾਨ ਸਮੱਸਿਆ ਆਈ ਹੈ।
 
 addon-permissions-empty = ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਲਈ ਕਿਸੇ ਇਜਾਜ਼ਤ ਦੀ ਲੋੜ ਨਹੀਂ ਹੈ
-
 addon-permissions-required = ਮੂਲ ਕੰਮਾਂ ਲਈ ਚਾਹੀਦੀਆਂ ਇਜਾਜ਼ਤਾਂ:
 addon-permissions-optional = ਵਾਧੂ ਕੰਮਾਂ ਲਈ ਚੋਣਵੀਆਂ ਇਜਾਜ਼ਤਾਂ:
 addon-permissions-learnmore = ਇਜਾਜ਼ਤਾਂ ਬਾਰੇ ਹੋਰ ਸਿੱਖੋ
 
 recommended-extensions-heading = ਸਿਫਾਰਸ਼ੀ ਇਕਟੈਨਸ਼ਨਾਂ
 recommended-themes-heading = ਸਿਫਾਰਸ਼ੀ ਥੀਮ
+
+addon-sitepermissions-required = <span data-l10n-name="hostname">{ $hostname }</span> ਨੂੰ ਅੱਗੇ ਦਿੱਤੀਆਂ ਸਮਰੱਥਾਵਾਂ ਦੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੈ
 
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
@@ -447,6 +469,7 @@ plugin-heading = ਆਪਣੀਆਂ ਪਲੱਗਇਨ ਦਾ ਇੰਤਜ਼ਾ
 dictionary-heading = ਆਪਣੀਆਂ ਡਿਕਸ਼ਨਰੀਆਂ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰੋ
 locale-heading = ਆਪਣੀਆਂ ਭਾਸ਼ਾਵਾਂ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰੋ
 updates-heading = ਆਪਣੇ ਅੱਪਡੇਟਾਂ ਦਾ ਬੰਦੋਬਸਤ ਕਰੋ
+sitepermission-heading = ਆਪਣੀਆਂ ਸਾਈਟ ਇਜਾਜ਼ਤਾਂ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰੋ
 discover-heading = ਆਪਣੇ { -brand-short-name } ਨੂੰ ਆਪਣਾ ਬਣਾਓ
 shortcuts-heading = ਇਕਸਟੈਨਸ਼ਨ ਸ਼ਾਰਟਕੱਟਾਂ ਦਾ ਬੰਦੋਬਸਤ ਕਰੋ
 
@@ -456,3 +479,30 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = ਸਭ ਐਡ-ਆਨ ਲਈ ਟੂਲ
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } { -brand-short-name } { $version } ਦੇ ਲਈ ਢੁੱਕਵੀਂ ਨਹੀਂ ਹੈ।
+details-notification-incompatible-link = ਹੋਰ ਜਾਣਕਾਰੀ
+
+details-notification-unsigned-and-disabled = { $name } ਨੂੰ { -brand-short-name } ਵਿੱਚ ਵਰਤਣ ਲਈ ਤਸਦੀਕ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ ਅਤੇ ਅਸਮਰੱਥ ਕੀਤਾ ਹੈ।
+details-notification-unsigned-and-disabled-link = ਹੋਰ ਜਾਣਕਾਰੀ
+
+details-notification-unsigned = { $name } ਨੂੰ { -brand-short-name } ਵਿੱਚ ਵਰਤਣ ਲਈ ਤਸਦੀਕ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਧਿਆਨ ਨਾਲ ਵਰਤੋਂ।
+details-notification-unsigned-link = ਹੋਰ ਜਾਣਕਾਰੀ
+
+details-notification-blocked = { $name } ਨੂੰ ਸੁਰੱਖਿਆ ਜਾਂ ਸਥਿਰਤਾ ਸਮੱਸਿਆਵਾਂ ਕਰਕੇ ਬੰਦ ਕੀਤਾ ਗਿਆ ਹੈ।
+details-notification-blocked-link = ਹੋਰ ਜਾਣਕਾਰੀ
+
+details-notification-softblocked = { $name } ਨੂੰ ਸੁਰੱਖਿਆ ਜਾਂ ਸਥਿਰਤਾ ਸਮੱਸਿਆ ਦਾ ਕਾਰਨ ਮੰਨਿਆ ਗਿਆ ਹੈ।
+details-notification-softblocked-link = ਹੋਰ ਜਾਣਕਾਰੀ
+
+details-notification-gmp-pending = { $name } ਨੂੰ ਛੇਤੀ ਹੀ ਇੰਸਟਾਲ ਕੀਤਾ ਜਾਵੇਗਾ।

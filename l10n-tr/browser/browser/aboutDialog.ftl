@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = G
 
 update-checkingForUpdates = Güncellemeler denetleniyor…
-update-downloading = <img data-l10n-name="icon"/>Güncelleme indiriliyor — <label data-l10n-name="download-status"/>
-update-downloading-message = Güncelleme indiriliyor — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Güncelleme indiriliyor — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Güncelleme indiriliyor — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Güncelleme uygulanıyor…
 
 update-failed = Güncelleme başarısız. <label data-l10n-name="failed-link">Son sürümü indirin</label>
@@ -25,15 +32,26 @@ update-failed-main = Güncelleme başarısız. <a data-l10n-name="failed-link-ma
 
 update-adminDisabled = Güncellemeler sistem yöneticiniz tarafından devre dışı bırakılmış
 update-noUpdatesFound = { -brand-short-name } güncel
+aboutdialog-update-checking-failed = Güncellemeler kontrol edilemedi.
 update-otherInstanceHandlingUpdates = { -brand-short-name } başka bir kopyası tarafından şu an güncelleniyor
 
-update-manual = Güncelleme adresi: <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Güncelleme adresi: <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Güncelleme adresi: <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Bu sistemde yeni güncellemeleri kullanamazsınız.<label data-l10n-name="unsupported-link">Daha fazla bilgi al</label>
 
 update-restarting = Yeniden başlatılıyor…
 
-channel-description = Şu anda <label data-l10n-name="current-channel"></label> güncelleme kanalındasınız.{ " " }
+update-internal-error2 = Dahili bir hata nedeniyle güncellemeler kontrol edilemiyor. Güncellemeleri <label data-l10n-name="manual-link">{ $displayUrl }</label> adresinde bulabilirsiniz.
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Şu anda <label data-l10n-name="current-channel">{ $channel }</label> güncelleme kanalındasınız.
 
 warningDesc-version = { -brand-short-name } deneyseldir ve kararsız olabilir.
 

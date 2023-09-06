@@ -19,12 +19,12 @@
 #include "mozilla/dom/SVGLengthBinding.h"
 #include "mozilla/gfx/2D.h"
 #include "mozilla/RefPtr.h"
+#include "mozilla/StaticPrefs_layout.h"
 #include "mozilla/SVGContentUtils.h"
 
 using namespace mozilla::gfx;
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 SVGElement::NumberInfo SVGGeometryElement::sNumberInfo = {nsGkAtoms::pathLength,
                                                           0, false};
@@ -40,21 +40,17 @@ SVGElement::NumberAttributesInfo SVGGeometryElement::GetNumberInfo() {
   return NumberAttributesInfo(&mPathLength, &sNumberInfo, 1);
 }
 
-nsresult SVGGeometryElement::AfterSetAttr(int32_t aNamespaceID, nsAtom* aName,
-                                          const nsAttrValue* aValue,
-                                          const nsAttrValue* aOldValue,
-                                          nsIPrincipal* aSubjectPrincipal,
-                                          bool aNotify) {
+void SVGGeometryElement::AfterSetAttr(int32_t aNamespaceID, nsAtom* aName,
+                                      const nsAttrValue* aValue,
+                                      const nsAttrValue* aOldValue,
+                                      nsIPrincipal* aSubjectPrincipal,
+                                      bool aNotify) {
   if (mCachedPath && aNamespaceID == kNameSpaceID_None &&
       AttributeDefinesGeometry(aName)) {
     mCachedPath = nullptr;
   }
   return SVGGeometryElementBase::AfterSetAttr(
       aNamespaceID, aName, aValue, aOldValue, aSubjectPrincipal, aNotify);
-}
-
-bool SVGGeometryElement::IsNodeOfType(uint32_t aFlags) const {
-  return !(aFlags & ~(eSHAPE | eUSE_TARGET));
 }
 
 bool SVGGeometryElement::AttributeDefinesGeometry(const nsAtom* aName) {
@@ -144,8 +140,7 @@ bool SVGGeometryElement::IsGeometryChangedViaCSS(
     return SVGEllipseElement::IsLengthChangedViaCSS(aNewStyle, aOldStyle);
   }
   if (name == nsGkAtoms::path) {
-    return StaticPrefs::layout_css_d_property_enabled() &&
-           SVGPathElement::IsDPropertyChangedViaCSS(aNewStyle, aOldStyle);
+    return SVGPathElement::IsDPropertyChangedViaCSS(aNewStyle, aOldStyle);
   }
   return false;
 }
@@ -178,27 +173,31 @@ static Point GetPointFrom(const DOMPointInit& aPoint) {
 }
 
 bool SVGGeometryElement::IsPointInFill(const DOMPointInit& aPoint) {
-  auto point = GetPointFrom(aPoint);
+  // d is a presentation attribute, so make sure style is up to date:
+  FlushStyleIfNeeded();
 
   RefPtr<Path> path = GetOrBuildPathForHitTest();
   if (!path) {
     return false;
   }
 
+  auto point = GetPointFrom(aPoint);
   return path->ContainsPoint(point, {});
 }
 
 bool SVGGeometryElement::IsPointInStroke(const DOMPointInit& aPoint) {
-  auto point = GetPointFrom(aPoint);
+  // stroke-* attributes and the d attribute are presentation attributes, so we
+  // flush the layout before building the path.
+  if (nsCOMPtr<Document> doc = GetComposedDoc()) {
+    doc->FlushPendingNotifications(FlushType::Layout);
+  }
 
   RefPtr<Path> path = GetOrBuildPathForHitTest();
   if (!path) {
     return false;
   }
-  if (nsCOMPtr<Document> doc = GetComposedDoc()) {
-    doc->FlushPendingNotifications(FlushType::Layout);
-  }
 
+  auto point = GetPointFrom(aPoint);
   bool res = false;
   SVGGeometryProperty::DoForComputedStyle(this, [&](const ComputedStyle* s) {
     // Per spec, we should take vector-effect into account.
@@ -224,13 +223,16 @@ bool SVGGeometryElement::IsPointInStroke(const DOMPointInit& aPoint) {
   return res;
 }
 
-float SVGGeometryElement::GetTotalLength() {
-  RefPtr<Path> flat = GetOrBuildPathForMeasuring();
-  return flat ? flat->ComputeLength() : 0.f;
+float SVGGeometryElement::GetTotalLengthForBinding() {
+  // d is a presentation attribute, so make sure style is up to date:
+  FlushStyleIfNeeded();
+  return GetTotalLength();
 }
 
 already_AddRefed<DOMSVGPoint> SVGGeometryElement::GetPointAtLength(
     float distance, ErrorResult& rv) {
+  // d is a presentation attribute, so make sure style is up to date:
+  FlushStyleIfNeeded();
   RefPtr<Path> path = GetOrBuildPathForMeasuring();
   if (!path) {
     rv.ThrowInvalidStateError("No path available for measuring");
@@ -246,7 +248,7 @@ float SVGGeometryElement::GetPathLengthScale(PathLengthScaleForType aFor) {
   MOZ_ASSERT(aFor == eForTextPath || aFor == eForStroking, "Unknown enum");
   if (mPathLength.IsExplicitlySet()) {
     float authorsPathLengthEstimate = mPathLength.GetAnimValue();
-    if (authorsPathLengthEstimate > 0) {
+    if (authorsPathLengthEstimate >= 0) {
       RefPtr<Path> path = GetOrBuildPathForMeasuring();
       if (!path) {
         // The path is empty or invalid so its length must be zero and
@@ -274,5 +276,25 @@ already_AddRefed<DOMSVGAnimatedNumber> SVGGeometryElement::PathLength() {
   return mPathLength.ToDOMAnimatedNumber(this);
 }
 
-}  // namespace dom
-}  // namespace mozilla
+float SVGGeometryElement::GetTotalLength() {
+  RefPtr<Path> flat = GetOrBuildPathForMeasuring();
+  return flat ? flat->ComputeLength() : 0.f;
+}
+
+void SVGGeometryElement::FlushStyleIfNeeded() {
+  // Note: we still can set d property on other elements which don't have d
+  // attribute, but we don't look at the d property on them, so here we only
+  // care about the element with d attribute, i.e. SVG path element.
+  if (GetPathDataAttrName() != nsGkAtoms::d) {
+    return;
+  }
+
+  RefPtr<Document> doc = GetComposedDoc();
+  if (!doc) {
+    return;
+  }
+
+  doc->FlushPendingNotifications(FlushType::Style);
+}
+
+}  // namespace mozilla::dom

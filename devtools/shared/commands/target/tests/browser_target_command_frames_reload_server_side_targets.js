@@ -15,10 +15,7 @@ const TEST_URL =
   `<iframe src=${REMOTE_IFRAME_URL_1}></iframe>` +
   `<iframe src=${REMOTE_IFRAME_URL_2}></iframe>`;
 
-add_task(async function() {
-  // Turn on server side targets
-  await pushPref("devtools.target-switching.server.enabled", true);
-
+add_task(async function () {
   // Create a TargetCommand for a given test tab
   const tab = await addTab(TEST_URL);
   const commands = await CommandsFactory.forTab(tab);
@@ -36,7 +33,11 @@ add_task(async function() {
   const onDestroyed = ({ targetFront }) => {
     destroyedTargets.push(targetFront);
   };
-  await targetCommand.watchTargets([TYPES.FRAME], onAvailable, onDestroyed);
+  await targetCommand.watchTargets({
+    types: [TYPES.FRAME],
+    onAvailable,
+    onDestroyed,
+  });
 
   await waitFor(() => targets.length === 3);
   ok(
@@ -92,7 +93,11 @@ add_task(async function() {
     }
   }
 
-  targetCommand.unwatchTargets([TYPES.FRAME], onAvailable, onDestroyed);
+  targetCommand.unwatchTargets({
+    types: [TYPES.FRAME],
+    onAvailable,
+    onDestroyed,
+  });
   targetCommand.destroy();
   BrowserTestUtils.removeTab(tab);
   await commands.destroy();

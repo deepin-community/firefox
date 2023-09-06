@@ -4,44 +4,51 @@
 
 "use strict";
 
-const Services = require("Services");
-const EventEmitter = require("devtools/shared/event-emitter");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
 const {
   getOrientation,
-} = require("devtools/client/responsive/utils/orientation");
-const Constants = require("devtools/client/responsive/constants");
+} = require("resource://devtools/client/responsive/utils/orientation.js");
+const Constants = require("resource://devtools/client/responsive/constants.js");
 const {
   CommandsFactory,
-} = require("devtools/shared/commands/commands-factory");
+} = require("resource://devtools/shared/commands/commands-factory.js");
 
 loader.lazyRequireGetter(
   this,
   "throttlingProfiles",
-  "devtools/client/shared/components/throttling/profiles"
+  "resource://devtools/client/shared/components/throttling/profiles.js"
 );
 loader.lazyRequireGetter(
   this,
   "message",
-  "devtools/client/responsive/utils/message"
+  "resource://devtools/client/responsive/utils/message.js"
 );
 loader.lazyRequireGetter(
   this,
   "showNotification",
-  "devtools/client/responsive/utils/notification",
+  "resource://devtools/client/responsive/utils/notification.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "PriorityLevels",
-  "devtools/client/shared/components/NotificationBox",
+  "resource://devtools/client/shared/components/NotificationBox.js",
   true
 );
-loader.lazyRequireGetter(this, "l10n", "devtools/client/responsive/utils/l10n");
-loader.lazyRequireGetter(this, "asyncStorage", "devtools/shared/async-storage");
+loader.lazyRequireGetter(
+  this,
+  "l10n",
+  "resource://devtools/client/responsive/utils/l10n.js"
+);
+loader.lazyRequireGetter(
+  this,
+  "asyncStorage",
+  "resource://devtools/shared/async-storage.js"
+);
 loader.lazyRequireGetter(
   this,
   "captureAndSaveScreenshot",
-  "devtools/client/shared/screenshot",
+  "resource://devtools/client/shared/screenshot.js",
   true
 );
 
@@ -166,23 +173,32 @@ class ResponsiveUI {
 
     // Create resizer handlers
     const resizeHandle = doc.createElement("div");
-    resizeHandle.classList.add("viewport-resize-handle");
+    resizeHandle.classList.add(
+      "rdm-viewport-resize-handle",
+      "viewport-resize-handle"
+    );
     const resizeHandleX = doc.createElement("div");
-    resizeHandleX.classList.add("viewport-horizontal-resize-handle");
+    resizeHandleX.classList.add(
+      "rdm-viewport-resize-handle",
+      "viewport-horizontal-resize-handle"
+    );
     const resizeHandleY = doc.createElement("div");
-    resizeHandleY.classList.add("viewport-vertical-resize-handle");
+    resizeHandleY.classList.add(
+      "rdm-viewport-resize-handle",
+      "viewport-vertical-resize-handle"
+    );
 
     this.browserContainerEl = gBrowser.getBrowserContainer(
       gBrowser.getBrowserForTab(this.tab)
     );
-    this.browserStackEl = this.browserContainerEl.querySelector(
-      ".browserStack"
-    );
+    this.browserStackEl =
+      this.browserContainerEl.querySelector(".browserStack");
 
     this.browserContainerEl.classList.add("responsive-mode");
 
-    // Prepend the RDM iframe inside of the current tab's browser stack.
-    this.browserStackEl.prepend(rdmFrame);
+    // Prepend the RDM iframe inside of the current tab's browser container.
+    this.browserContainerEl.prepend(rdmFrame);
+
     this.browserStackEl.append(resizeHandle);
     this.browserStackEl.append(resizeHandleX);
     this.browserStackEl.append(resizeHandleY);
@@ -213,23 +229,20 @@ class ResponsiveUI {
     this.resizeHandleY = resizeHandleY;
     this.resizeHandleY.addEventListener("mousedown", this.onResizeStart);
 
-    // Setup a ResizeObserver that stores the width and height of the
-    // .browserStack size as properties. These set properties are then used
-    // to out-of-grid elements that are affected by RDM.
-    this.resizeToolbarObserver = new this.browserWindow.ResizeObserver(() => {
-      const style = this.browserWindow.getComputedStyle(this.browserStackEl);
-
-      this.browserStackEl.style.setProperty("--rdm-stack-width", style.width);
-      this.browserStackEl.style.setProperty("--rdm-stack-height", style.height);
-      // If the toolbar needs extra space for the UA input, then set a class that
-      // will accomodate its height. We should also make sure to keep the width
-      // value we're toggling against in sync with the media-query in
-      // devtools/client/responsive/index.css
-      this.rdmFrame.classList.toggle(
-        "accomodate-ua",
-        parseFloat(style.width) < 520
-      );
-    });
+    this.resizeToolbarObserver = new this.browserWindow.ResizeObserver(
+      entries => {
+        for (const entry of entries) {
+          // If the toolbar needs extra space for the UA input, then set a class
+          // that will accomodate its height. We should also make sure to keep
+          // the width value we're toggling against in sync with the media-query
+          // in devtools/client/responsive/index.css
+          this.rdmFrame.classList.toggle(
+            "accomodate-ua",
+            entry.contentBoxSize[0].inlineSize < 520
+          );
+        }
+      }
+    );
 
     this.resizeToolbarObserver.observe(this.browserStackEl);
   }
@@ -266,7 +279,6 @@ class ResponsiveUI {
       await Promise.all([
         this.updateScreenOrientation("landscape-primary", 0),
         this.updateMaxTouchPointsEnabled(false),
-        this.responsiveFront.setFloatingScrollbars(false),
       ]);
 
       // Hide browser UI to avoid displaying weird intermediate states while closing.
@@ -287,6 +299,9 @@ class ResponsiveUI {
     // Remove observers on the stack.
     this.resizeToolbarObserver.unobserve(this.browserStackEl);
 
+    // Cleanup the frame content before disconnecting the frame element.
+    this.rdmFrame.contentWindow.destroy();
+
     this.rdmFrame.remove();
 
     // Clean up resize handlers
@@ -298,8 +313,6 @@ class ResponsiveUI {
     this.browserStackEl.style.removeProperty("--rdm-width");
     this.browserStackEl.style.removeProperty("--rdm-height");
     this.browserStackEl.style.removeProperty("--rdm-zoom");
-    this.browserStackEl.style.removeProperty("--rdm-stack-height");
-    this.browserStackEl.style.removeProperty("--rdm-stack-width");
 
     // Ensure the tab is reloaded if required when exiting RDM so that no emulated
     // settings are left in a customized state.
@@ -321,10 +334,10 @@ class ResponsiveUI {
       // any resource & target anymore, the JSWindowActors will be unregistered
       // which will trigger an early destruction of the RDM target, before we
       // could finalize the cleanup.
-      this.commands.targetCommand.unwatchTargets(
-        [this.commands.targetCommand.TYPES.FRAME],
-        this.onTargetAvailable
-      );
+      this.commands.targetCommand.unwatchTargets({
+        types: [this.commands.targetCommand.TYPES.FRAME],
+        onAvailable: this.onTargetAvailable,
+      });
 
       this.resourceCommand.unwatchResources(
         [this.resourceCommand.TYPES.NETWORK_EVENT],
@@ -368,10 +381,10 @@ class ResponsiveUI {
 
     await this.commands.targetCommand.startListening();
 
-    await this.commands.targetCommand.watchTargets(
-      [this.commands.targetCommand.TYPES.FRAME],
-      this.onTargetAvailable
-    );
+    await this.commands.targetCommand.watchTargets({
+      types: [this.commands.targetCommand.TYPES.FRAME],
+      onAvailable: this.onTargetAvailable,
+    });
 
     // To support network throttling the resource command
     // needs to be watching for network resources.
@@ -501,8 +514,11 @@ class ResponsiveUI {
     if (reloadNeeded) {
       this.reloadBrowser();
     }
+
     // Used by tests
-    this.emitForTests("device-changed", { reloadNeeded });
+    this.emitForTests("device-changed", {
+      reloadTriggered: reloadNeeded || reloadOnTouchSimulationChange,
+    });
   }
 
   async onChangeNetworkThrottling(event) {
@@ -561,7 +577,9 @@ class ResponsiveUI {
       this.reloadBrowser();
     }
     // Used by tests
-    this.emitForTests("device-association-removed", { reloadNeeded });
+    this.emitForTests("device-association-removed", {
+      reloadTriggered: reloadNeeded || reloadOnTouchSimulationChange,
+    });
   }
 
   /**
@@ -703,11 +721,7 @@ class ResponsiveUI {
   }
 
   onUpdateDeviceModal(event) {
-    if (event.data.isOpen) {
-      this.browserStackEl.classList.add("device-modal-opened");
-    } else {
-      this.browserStackEl.classList.remove("device-modal-opened");
-    }
+    this.rdmFrame.classList.toggle("device-modal-opened", event.data.isOpen);
   }
 
   async hasDeviceState() {
@@ -750,12 +764,6 @@ class ResponsiveUI {
     // on the BrowsingContext by RDM are not preserved. So we need to call
     // enterResponsiveMode whenever there is a target switch.
     this.tab.linkedBrowser.enterResponsiveMode();
-
-    // Apply floating scrollbar styles to document.
-    await this.responsiveFront.setFloatingScrollbars(true);
-
-    // Attach current target to the selected browser tab.
-    await this.currentTarget.attach();
 
     // If the target follows the window global lifecycle, the configuration was already
     // restored from the server during target switch, so we can stop here.

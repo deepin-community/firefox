@@ -7,8 +7,8 @@ Services.scriptloader.loadSubScript(CHROME_URL_ROOT + "helper-addons.js", this);
 
 // There are shutdown issues for which multiple rejections are left uncaught.
 // See bug 1018184 for resolving these issues.
-const { PromiseTestUtils } = ChromeUtils.import(
-  "resource://testing-common/PromiseTestUtils.jsm"
+const { PromiseTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/PromiseTestUtils.sys.mjs"
 );
 PromiseTestUtils.allowMatchingRejectionsGlobally(/File closed/);
 
@@ -30,7 +30,7 @@ add_task(async function testWebExtensionsToolboxWebConsole() {
 
   await installTemporaryExtensionFromXPI(
     {
-      background: function() {
+      background() {
         document.body.innerText = "Background Page Body Test Content";
       },
       id: ADDON_ID,
@@ -40,7 +40,7 @@ add_task(async function testWebExtensionsToolboxWebConsole() {
   );
 
   info("Open a toolbox to debug the addon");
-  const { devtoolsTab, devtoolsWindow } = await openAboutDevtoolsToolbox(
+  const { devtoolsWindow } = await openAboutDevtoolsToolbox(
     document,
     tab,
     window,
@@ -64,7 +64,23 @@ add_task(async function testWebExtensionsToolboxWebConsole() {
     "nodeActor has the expected inlineTextChild value"
   );
 
-  await closeAboutDevtoolsToolbox(document, devtoolsTab, window);
+  info("Check that the color scheme simulation buttons are hidden");
+  const lightButtonIsHidden = inspector.panelDoc
+    .querySelector("#color-scheme-simulation-light-toggle")
+    ?.hasAttribute("hidden");
+  const darkButtonIsHidded = inspector.panelDoc
+    .querySelector("#color-scheme-simulation-dark-toggle")
+    ?.hasAttribute("hidden");
+  ok(
+    lightButtonIsHidden,
+    "The light color scheme simulation button exists and is hidden"
+  );
+  ok(
+    darkButtonIsHidded,
+    "The dark color scheme simulation button exists and is hidden"
+  );
+
+  await closeWebExtAboutDevtoolsToolbox(devtoolsWindow, window);
   await removeTemporaryExtension(ADDON_NAME, document);
   await removeTab(tab);
 });

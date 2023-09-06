@@ -12,11 +12,15 @@
 
 policy-3rdparty = Defineix les polítiques a les quals WebExtensions pot accedir mitjançant chrome.storage.managed.
 
+policy-AllowedDomainsForApps = Defineix els dominis autoritzats a accedir a Google Workspace.
+
 policy-AppAutoUpdate = Activa o desactiva les actualitzacions automàtiques de l'aplicació.
 
 policy-AppUpdateURL = Defineix un URL personalitzat d'actualització de l'aplicació.
 
 policy-Authentication = Configura l'autenticació integrada per a les pàgines web que l'admeten.
+
+policy-BackgroundAppUpdate2 = Activa o desactiva l'actualitzador en segon pla.
 
 policy-BlockAboutAddons = Bloca l'accés al gestor de complements (about:addons).
 
@@ -63,7 +67,7 @@ policy-DisablePrimaryPasswordCreation = Si és cert, no es pot crear una contras
 
 policy-DisablePasswordReveal = No permet mostrar les contrasenyes dels inicis de sessió guardats.
 
-policy-DisablePocket = Desactiva la funció de guardar llocs web al Pocket.
+policy-DisablePocket2 = Desactiva la funció de guardar llocs web al { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Desactiva la navegació privada.
 
@@ -106,10 +110,6 @@ policy-ExtensionSettings = Gestiona tots els aspectes de la instal·lació de l'
 
 policy-ExtensionUpdate = Activa o desactiva les actualitzacions automàtiques de les extensions.
 
-policy-FirefoxHome = Configura el Firefox Home.
-
-policy-FlashPlugin = Permet o denega l'ús del connector Flash.
-
 policy-Handlers = Configura els gestors d'aplicacions per defecte.
 
 policy-HardwareAcceleration = Si és fals, desactiva l'acceleració de maquinari.
@@ -137,6 +137,8 @@ policy-ManualAppUpdateOnly = Permet només les actualitzacions manuals i sense n
 
 policy-PrimaryPassword = Requerir o impedir l'ús d'una contrasenya principal.
 
+policy-NetworkPrediction = Activa o desactiva la predicció de xarxa (obtenció prèvia de DNS).
+
 policy-NewTabPage = Activa o desactiva la pàgina de pestanya nova.
 
 policy-PasswordManagerEnabled = Permet guardar les contrasenyes en el gestor de contrasenyes.
@@ -160,8 +162,7 @@ policy-SearchBar = Defineix la ubicació per defecte de la barra de cerca. L'usu
 
 policy-SearchSuggestEnabled = Activa o desactiva els suggeriments de cerca.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instal·la mòduls PKCS #11.
+policy-ShowHomeButton = Mostra el botó d'inici a la barra d'eines.
 
 policy-SSLVersionMax = Defineix la versió màxima de SSL.
 

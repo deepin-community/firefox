@@ -8,9 +8,11 @@ const {
   FrontClassWithSpec,
   types,
   registerFront,
-} = require("devtools/shared/protocol.js");
-const { walkerSpec } = require("devtools/shared/specs/walker");
-const { safeAsyncMethod } = require("devtools/shared/async-utils");
+} = require("resource://devtools/shared/protocol.js");
+const { walkerSpec } = require("resource://devtools/shared/specs/walker.js");
+const {
+  safeAsyncMethod,
+} = require("resource://devtools/shared/async-utils.js");
 
 /**
  * Client side of the DOM walker.
@@ -133,7 +135,7 @@ class WalkerFront extends FrontClassWithSpec(walkerSpec) {
     // mimicking what the server will do here.
     const actorID = node.actorID;
     this._releaseFront(node, !!options.force);
-    return super.releaseNode({ actorID: actorID });
+    return super.releaseNode({ actorID });
   }
 
   async findInspectingNode() {
@@ -214,10 +216,7 @@ class WalkerFront extends FrontClassWithSpec(walkerSpec) {
 
       const emittedMutation = Object.assign(change, { target: targetFront });
 
-      if (
-        change.type === "childList" ||
-        change.type === "nativeAnonymousChildList"
-      ) {
+      if (change.type === "childList") {
         // Update the ownership tree according to the mutation record.
         const addedFronts = [];
         const removedFronts = [];
@@ -285,8 +284,7 @@ class WalkerFront extends FrontClassWithSpec(walkerSpec) {
       if (
         change.type === "inlineTextChild" ||
         change.type === "childList" ||
-        change.type === "shadowRootAttached" ||
-        change.type === "nativeAnonymousChildList"
+        change.type === "shadowRootAttached"
       ) {
         if (change.inlineTextChild) {
           targetFront.inlineTextChild = types
@@ -328,8 +326,8 @@ class WalkerFront extends FrontClassWithSpec(walkerSpec) {
     const previousSibling = await this.previousSibling(node);
     const nextSibling = await super.removeNode(node);
     return {
-      previousSibling: previousSibling,
-      nextSibling: nextSibling,
+      previousSibling,
+      nextSibling,
     };
   }
 
@@ -338,6 +336,27 @@ class WalkerFront extends FrontClassWithSpec(walkerSpec) {
       return super.children(node, options);
     }
     const target = await node.connectToFrame();
+
+    // We had several issues in the past where `connectToFrame` was returning the same
+    // target as the owner document one, which led to the inspector being broken.
+    // Ultimately, we shouldn't get to this point (fix should happen in connectToFrame or
+    // on the server, e.g. for Bug 1752342), but at least this will serve as a safe guard
+    // so we don't freeze/crash the inspector.
+    if (
+      target == this.targetFront &&
+      Services.prefs.getBoolPref(
+        "devtools.testing.bypass-walker-children-iframe-guard",
+        false
+      ) !== true
+    ) {
+      console.warn("connectToFrame returned an unexpected target");
+      return {
+        nodes: [],
+        hasFirst: true,
+        hasLast: true,
+      };
+    }
+
     const walker = (await target.getFront("inspector")).walker;
 
     // Finally retrieve the NodeFront of the remote frame's document
@@ -391,79 +410,6 @@ class WalkerFront extends FrontClassWithSpec(walkerSpec) {
     documentNode.reparent(parentNode);
   }
 
-  /**
-   * Evaluate the cross iframes query selectors for the current walker front.
-   *
-   * @param {Array} selectors
-   *        An array of CSS selectors to find the target accessible object.
-   *        Several selectors can be needed if the element is nested in frames
-   *        and not directly in the root document.
-   * @return {Promise} a promise that resolves when the node front is found for
-   *                   selection using inspector tools.
-   */
-  async findNodeFront(nodeSelectors) {
-    const querySelectors = async nodeFront => {
-      const selector = nodeSelectors.shift();
-      if (!selector) {
-        return nodeFront;
-      }
-      nodeFront = await this.querySelector(nodeFront, selector);
-
-      // It's possible the containing iframe isn't available by the time
-      // this.querySelector is called, which causes the re-selected node to be
-      // unavailable. There also isn't a way for us to know when all iframes on the page
-      // have been created after a reload. Because of this, we should should bail here.
-      if (!nodeFront) {
-        return null;
-      }
-
-      if (nodeSelectors.length > 0) {
-        await nodeFront.waitForFrameLoad();
-
-        const { nodes } = await this.children(nodeFront);
-
-        // If there are remaining selectors to process, they will target a document or a
-        // document-fragment under the current node. Whether the element is a frame or
-        // a web component, it can only contain one document/document-fragment, so just
-        // select the first one available.
-        nodeFront = nodes.find(node => {
-          const { nodeType } = node;
-          return (
-            nodeType === Node.DOCUMENT_FRAGMENT_NODE ||
-            nodeType === Node.DOCUMENT_NODE
-          );
-        });
-
-        // The iframe selector might have matched an element which is not an
-        // iframe in the new page (or an iframe with no document?). In this
-        // case, bail out and fallback to the root body element.
-        if (!nodeFront) {
-          return null;
-        }
-      }
-      return querySelectors(nodeFront) || nodeFront;
-    };
-    const nodeFront = await this.getRootNode();
-
-    // If rootSelectors are [frameSelector1, ..., frameSelectorN, rootSelector]
-    // we expect that [frameSelector1, ..., frameSelectorN] will also be in
-    // nodeSelectors.
-    // Otherwise it means the nodeSelectors target a node outside of this walker
-    // and we should return null.
-    const rootFrontSelectors = await nodeFront.getAllSelectors();
-    for (let i = 0; i < rootFrontSelectors.length - 1; i++) {
-      if (rootFrontSelectors[i] !== nodeSelectors[i]) {
-        return null;
-      }
-    }
-
-    // The query will start from the walker's rootNode, remove all the
-    // "frameSelectors".
-    nodeSelectors.splice(0, rootFrontSelectors.length - 1);
-
-    return querySelectors(nodeFront);
-  }
-
   _onRootNodeAvailable(rootNode) {
     if (rootNode.isTopLevelDocument) {
       this.rootNode = rootNode;
@@ -491,7 +437,11 @@ class WalkerFront extends FrontClassWithSpec(walkerSpec) {
     }
 
     this._isPicking = true;
-    return super.pick(doFocus);
+
+    return super.pick(
+      doFocus,
+      this.targetFront.commands.descriptorFront.isLocalTab
+    );
   }
 
   /**

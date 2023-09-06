@@ -16,8 +16,6 @@ change-password-old = मौजूदा कूटशब्द:
 change-password-new = नया कूटशब्द:
 change-password-reenter = नया कूटशब्द (फिर):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = पासवर्ड बदलने में असमर्थ।
 pippki-pw-change-ok = पासवर्ड सफलतापूर्वक बदल दिया गया है।
 
@@ -28,9 +26,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = प्रमाणपत्र डाउनलोड कर रहा है
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = आपको एक नया सर्टिफिकेट ऑथोरिटी (CA) पर विश्वास के लिये पूछा जायेगा.
 download-cert-trust-ssl =
     .label = इस CA को भरोसा करें वेबसाइट को पहचानने के लिये.
@@ -62,7 +60,5 @@ set-password-reminder = Important: अगर आप अपना प्रमा
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = संरक्षित टोकन सत्यापन
-protected-auth-msg = कृपया टोकन में सत्यापित करें. सत्यापन विधि आपके टोकन के प्रकार पर निर्भर करता है.
-protected-auth-token = टोकन:
+## Protected authentication alert
+

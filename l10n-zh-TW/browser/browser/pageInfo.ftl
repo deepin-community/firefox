@@ -65,6 +65,9 @@ media-dimension =
     .value = 尺寸:
 media-long-desc =
     .value = 完整描述:
+media-select-all =
+    .label = 選擇全部
+    .accesskey = e
 media-save-as =
     .label = 另存新檔…
     .accesskey = a
@@ -236,6 +239,9 @@ media-dimensions =
 # Variables:
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } KB
+
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
 
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab

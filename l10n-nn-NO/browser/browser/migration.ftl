@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 sikker nettlesar
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Klarte ikkje å finne program som inneheld bokmerke, historikk eller passordinformasjon.
 
@@ -61,8 +73,8 @@ import-items-description = Vel kva for element som skal importerast:
 
 import-permissions-page-title = Gi { -brand-short-name } løyve
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS krev at du eksplisitt gir { -brand-short-name } tilgang til Safaris bokmerke. Klikk på «Fortset» og vel «Bookmarks.plist»-fila i Opne fil-panelet som vert vist.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS krev at du eksplisitt gir { -brand-short-name } tilgang til Safaris data. Klikk «Hald fram», vel «Safari»-mappa i Finder-vindauget som vert vist, og klikk deretter «Opne».
 
 import-migrating-page-title = Importerer…
 
@@ -78,23 +90,9 @@ import-done-description = Følgjande element er importerte:
 
 import-close-source-browser = Kontroller at den valde nettlesaren er attlaten før du held fram.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Frå { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 trygg nettlesar
 
 imported-safari-reading-list = Leseliste (frå Safari)
 imported-edge-reading-list = Leseliste (frå Edge)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = Vindauge og faner
 browser-data-session-label =
     .value = Vindauge og faner
+
+browser-data-payment-methods-checkbox =
+    .label = Betalingsmåtar
+browser-data-payment-methods-label =
+    .value = Betalingsmåtar

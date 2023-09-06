@@ -51,21 +51,16 @@ restart-later = Pārstartēt vēlāk
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that their notifications permission
-# is being controlled by an extension.
-extension-controlled-web-notifications = Šo iestatījumu kontrolē paplašinājums <img data-l10n-name = "icon" /> { $name }.
 
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = Paplašinājumam <img data-l10n-name="icon"/> { $name } nepieciešamas konteineru cilnes.
-
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = Paplašinājums <img data-l10n-name="icon"/> { $name } kontrolē šo iestatījumu.
-
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = Paplašinājums <img data-l10n-name="icon"/> { $name } kontrolē kā { -brand-short-name } pieslēdzas internetam.
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -95,10 +90,6 @@ set-as-my-default-browser =
     .label = Padarīt par noklusēto…
     .accesskey = D
 
-startup-restore-previous-session =
-    .label = Atjaunot iepriekšējo sesiju
-    .accesskey = s
-
 disable-extension =
     .label = Deaktivēt paplašinājumu
 
@@ -111,10 +102,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Vērt saites cilnēs nevis jaunos logos
     .accesskey = v
-
-warn-on-close-multiple-tabs =
-    .label = Brīdināt, pirms aizvērt vairākas cilnes
-    .accesskey = m
 
 warn-on-open-many-tabs =
     .label = Brīdināt, kad vairāku ciļņu atvēršana varētu sabremzēt { -brand-short-name }
@@ -135,6 +122,10 @@ browser-containers-settings =
     .accesskey = i
 
 containers-disable-alert-title = Aizvērt visas konteineru cilnes?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [zero] Ja deaktivēsiet konteineru cilnes tagad, { $tabCount } konteineru cilnes tiks aizvērtas. Vai tiešām vēlaties deaktivēt konteineru cilnes?
@@ -148,6 +139,9 @@ containers-disable-alert-ok-button =
         [one] Aizvērt { $tabCount } konteineru cilni
        *[other] Aizvērt { $tabCount } konteineru cilnes
     }
+
+##
+
 containers-disable-alert-cancel-button = Paturēt aktivētu
 
 containers-remove-alert-title = Noņemt šo konteineru?
@@ -164,12 +158,9 @@ containers-remove-alert-msg =
 containers-remove-ok-button = Noņemt šo konteineru
 containers-remove-cancel-button = Nenoņemt šo konteineru
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Valoda un izskats
-
-fonts-and-colors-header = Fonti un krāsas
 
 default-font = Noklusējuma fonts
     .accesskey = N
@@ -179,10 +170,6 @@ default-font-size = Izmērs
 advanced-fonts =
     .label = Iestatījumi...
     .accesskey = a
-
-colors-settings =
-    .label = Krāsas...
-    .accesskey = K
 
 language-header = Valoda
 
@@ -221,8 +208,7 @@ files-and-applications-title = Faili un programmas
 
 download-header = Lejupielādes
 
-download-save-to =
-    .label = Vieta, kur saglabāt failus:
+download-save-where = Vieta, kur saglabāt failus:
     .accesskey = k
 
 download-choose-folder =
@@ -436,11 +422,6 @@ home-restore-defaults =
     .label = Atjaunot sākotnējos
     .accesskey = t
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Firefox sākuma lapu (noklusējuma)
-
 home-mode-choice-custom =
     .label = Pielāgotas adreses...
 
@@ -468,20 +449,16 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Firefox sākuma saturs
-home-prefs-content-description = Izvēlieties, ko redzēt Firefox sākuma lapā.
-
 home-prefs-search-header =
     .label = Tīmekļa meklēšana
-home-prefs-topsites-header =
-    .label = Populārākās lapas
-home-prefs-topsites-description = Biežāk apmeklētās lapas
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 
-# Variables:
-#  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+
 home-prefs-recommended-by-header =
     .label = Iesaka { $provider }
 
@@ -491,9 +468,6 @@ home-prefs-recommended-by-learn-more = Kā tas strādā
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Sponsorētie stāsti
 
-home-prefs-highlights-header =
-    .label = Aktualitātes
-home-prefs-highlights-description = Jūsu apmeklēto vai saglabāto lapu izlase
 home-prefs-highlights-option-visited-pages =
     .label = Apmeklētās lapas
 home-prefs-highlights-options-bookmarks =
@@ -509,7 +483,6 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Fragmenti
-home-prefs-snippets-description = { -vendor-short-name } un { -brand-product-name } jaunumi
 
 home-prefs-sections-rows-option =
     .label =
@@ -536,6 +509,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Rādīt meklēšanas ieteikumus adrešu joslā
     .accesskey = r
+
 
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
@@ -582,10 +556,11 @@ containers-add-button =
 containers-remove-button =
     .label = Noņemt
 
-## Sync Section - Signed out
-
-
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = Paņem tīmekli sev līdz
@@ -600,10 +575,10 @@ sync-signedout-caption = Paņem tīmekli sev līdz
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Lejupielādēt Firefox <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> vai <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a> lai sinhronizētos ar mobilajām ierīcēm.
 
-## Sync Section - Signed in
-
-
 ## Firefox Account - Signed in
+
+
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = Mainīt profila attēlu
@@ -611,8 +586,13 @@ sync-profile-picture =
 sync-manage-account = Pārvaldīt kontu
     .accesskey = a
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } nav apstiprināts.
 sync-signedin-login-failure = Lūdzu pieslēdzieties, lai atjaunotu savienojumu { $email }
+
+##
 
 sync-resend-verification =
     .label = Nosūtīt vēlreiz
@@ -678,12 +658,19 @@ sync-device-name-save =
     .label = Saglabāt
     .accesskey = r
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Apstiprinājums nosūtīts
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Apstiprinājuma saite ir nosūtīta uz { $email }.
+sync-verification-not-sent-title = Nevar nosūtīt apstiprinājumu
+sync-verification-not-sent-body = Diemžēl, šobrīd nav iespējams nosūtīt apstiprinājuma epastu, lūdzu mēģiniet vēlreiz nedaudz vēlāk.
+
 ## Privacy Section
 
 privacy-header = Pārlūka privātums
-
-## Privacy Section - Forms
-
 
 ## Privacy Section - Logins and Passwords
 
@@ -691,21 +678,28 @@ privacy-header = Pārlūka privātums
 pane-privacy-logins-and-passwords-header = Lietotājvārdi un paroles
     .searchkeywords = { -lockwise-brand-short-name }
 
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-logins =
     .label = Lūgt, lai saglabātu lietotājvārdu un paroles vietnēm
     .accesskey = r
 forms-exceptions =
     .label = Izņēmumi...
     .accesskey = z
+forms-breach-alerts-learn-more-link = Uzzināt vairāk
 
 forms-saved-logins =
     .label = Saglabātās paroles…
     .accesskey = l
+forms-primary-pw-learn-more-link = Uzzināt vairāk
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = Nomainīt galveno paroli...
     .accesskey = m
 
 forms-master-pw-fips-desc = Paroles maiņa neizdevās
+forms-windows-sso-learn-more-link = Uzzināt vairāk
 
 ## OS Authentication dialog
 
@@ -798,6 +792,9 @@ sitedata-settings =
     .label = Pārvaldīt datus…
     .accesskey = P
 
+## Privacy Section - Cookie Banner Handling
+
+
 ## Privacy Section - Address Bar
 
 addressbar-header = Adrešu josla
@@ -836,7 +833,7 @@ enhanced-tracking-protection-setting-custom =
 
 ##
 
-content-blocking-all-third-party-cookies = Visus trešo personu sīkfailus
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
 content-blocking-warning-title = Galvas augšu!
 
@@ -884,10 +881,6 @@ permissions-notification-pause =
 permissions-block-popups =
     .label = Bloķēt jaunos logus
     .accesskey = B
-
-permissions-block-popups-exceptions =
-    .label = Izņēmumi...
-    .accesskey = I
 
 permissions-addon-install-warning =
     .label = Brīdināt mani, ja lapas mēģina instalēt papildinājumus
@@ -957,13 +950,12 @@ certs-devices =
 
 ## Privacy Section - HTTPS-Only
 
+
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Darbvirsma
 downloads-folder-name = Lejupielādes
 choose-download-folder-title = Izvēlieties lejupielāžu mapi:
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Saglabāt failus { $service-name }

@@ -144,4 +144,3 @@ icon-warning =
 icon-error =
     .alt = Значок памылкі
     .title = Памылка
-

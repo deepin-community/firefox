@@ -35,10 +35,8 @@
 #include "TimeUnits.h"
 #include "Tracing.h"
 
-#ifdef MOZ_WEBM_ENCODER
-#  include "VP8TrackEncoder.h"
-#  include "WebMWriter.h"
-#endif
+#include "VP8TrackEncoder.h"
+#include "WebMWriter.h"
 
 mozilla::LazyLogModule gMediaEncoderLog("MediaEncoder");
 #define LOG(type, msg) MOZ_LOG(gMediaEncoderLog, type, msg)
@@ -440,37 +438,38 @@ MediaEncoder::MediaEncoder(
       mStarted(false),
       mCompleted(false),
       mError(false) {
+  if (!mAudioEncoder) {
+    mMuxedAudioEndTime = TimeUnit::FromInfinity();
+    mEncodedAudioQueue->Finish();
+  }
+  if (!mVideoEncoder) {
+    mMuxedVideoEndTime = TimeUnit::FromInfinity();
+    mEncodedVideoQueue->Finish();
+  }
+}
+
+void MediaEncoder::RegisterListeners() {
   if (mAudioEncoder) {
     mAudioPushListener = mEncodedAudioQueue->PushEvent().Connect(
         mEncoderThread, this, &MediaEncoder::OnEncodedAudioPushed);
     mAudioFinishListener = mEncodedAudioQueue->FinishEvent().Connect(
         mEncoderThread, this, &MediaEncoder::MaybeShutdown);
-    nsresult rv = mEncoderThread->Dispatch(NS_NewRunnableFunction(
+    MOZ_ALWAYS_SUCCEEDS(mEncoderThread->Dispatch(NS_NewRunnableFunction(
         "mozilla::AudioTrackEncoder::RegisterListener",
         [self = RefPtr<MediaEncoder>(this), this] {
           mAudioEncoder->RegisterListener(mEncoderListener);
-        }));
-    MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
-  } else {
-    mMuxedAudioEndTime = TimeUnit::FromInfinity();
-    mEncodedAudioQueue->Finish();
+        })));
   }
   if (mVideoEncoder) {
     mVideoPushListener = mEncodedVideoQueue->PushEvent().Connect(
         mEncoderThread, this, &MediaEncoder::OnEncodedVideoPushed);
     mVideoFinishListener = mEncodedVideoQueue->FinishEvent().Connect(
         mEncoderThread, this, &MediaEncoder::MaybeShutdown);
-    nsresult rv = mEncoderThread->Dispatch(NS_NewRunnableFunction(
+    MOZ_ALWAYS_SUCCEEDS(mEncoderThread->Dispatch(NS_NewRunnableFunction(
         "mozilla::VideoTrackEncoder::RegisterListener",
         [self = RefPtr<MediaEncoder>(this), this] {
           mVideoEncoder->RegisterListener(mEncoderListener);
-        }));
-    MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
-  } else {
-    mMuxedVideoEndTime = TimeUnit::FromInfinity();
-    mEncodedVideoQueue->Finish();
+        })));
   }
 }
 
@@ -702,12 +701,8 @@ already_AddRefed<MediaEncoder> MediaEncoder::CreateEncoder(
 
   if (mimeType->Type() == MEDIAMIMETYPE(VIDEO_WEBM) ||
       mimeType->Type() == MEDIAMIMETYPE(AUDIO_WEBM)) {
-#ifdef MOZ_WEBM_ENCODER
     MOZ_ASSERT_IF(mimeType->Type() == MEDIAMIMETYPE(AUDIO_WEBM), !videoEncoder);
     writer = MakeUnique<WebMWriter>();
-#else
-    MOZ_CRASH("Webm cannot be selected if not supported");
-#endif  // MOZ_WEBM_ENCODER
   } else if (mimeType->Type() == MEDIAMIMETYPE(AUDIO_OGG)) {
     MOZ_ASSERT(audioEncoder);
     MOZ_ASSERT(!videoEncoder);
@@ -733,11 +728,15 @@ already_AddRefed<MediaEncoder> MediaEncoder::CreateEncoder(
       videoEncoder->SetBitrate(aVideoBitrate);
     }
   }
-  return MakeAndAddRef<MediaEncoder>(
+  RefPtr<MediaEncoder> encoder = new MediaEncoder(
       std::move(aEncoderThread), std::move(driftCompensator), std::move(writer),
       std::move(audioEncoder), std::move(videoEncoder),
       std::move(encodedAudioQueue), std::move(encodedVideoQueue), aTrackRate,
       aMimeType, aMaxMemory, aTimeslice);
+
+  encoder->RegisterListeners();
+
+  return encoder.forget();
 }
 
 nsresult MediaEncoder::GetEncodedData(
@@ -1044,11 +1043,7 @@ void MediaEncoder::DisconnectTracks() {
 }
 
 bool MediaEncoder::IsWebMEncoderEnabled() {
-#ifdef MOZ_WEBM_ENCODER
   return StaticPrefs::media_encoder_webm_enabled();
-#else
-  return false;
-#endif
 }
 
 void MediaEncoder::UpdateInitialized() {

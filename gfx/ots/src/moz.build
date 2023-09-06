@@ -7,6 +7,11 @@
 EXPORTS += [
     '../include/opentype-sanitiser.h',
     '../include/ots-memory-stream.h',
+    '../RLBoxWOFF2Types.h',
+]
+
+UNIFIED_SOURCES += [
+    '../RLBoxWOFF2Host.cpp'
 ]
 
 UNIFIED_SOURCES += [
@@ -14,6 +19,8 @@ UNIFIED_SOURCES += [
     'cff.cc',
     'cff_charstring.cc',
     'cmap.cc',
+    'colr.cc',
+    'cpal.cc',
     'cvar.cc',
     'cvt.cc',
     'feat.cc',
@@ -64,6 +71,7 @@ DEFINES['PACKAGE_VERSION'] = '"moz"'
 DEFINES['PACKAGE_BUGREPORT'] = '"http://bugzilla.mozilla.org/"'
 DEFINES['OTS_GRAPHITE'] = 1
 DEFINES['OTS_VARIATIONS'] = 1
+DEFINES['OTS_SYNTHESIZE_MISSING_GVAR'] = 1
 
 USE_LIBS += [
     'brotli',
@@ -71,5 +79,6 @@ USE_LIBS += [
 ]
 
 LOCAL_INCLUDES += [
+    '!/security/rlbox',
     '/modules/woff2/src',
 ]

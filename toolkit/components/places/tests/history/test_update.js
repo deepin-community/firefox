@@ -132,9 +132,10 @@ add_task(async function test_description_change_saved() {
 
   let description = "Test description";
   await PlacesUtils.history.update({ url: TEST_URL, description });
-  let descriptionInDB = await PlacesTestUtils.fieldInDB(
-    TEST_URL,
-    "description"
+  let descriptionInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "description",
+    { url: TEST_URL }
   );
   Assert.equal(
     description,
@@ -144,17 +145,27 @@ add_task(async function test_description_change_saved() {
 
   description = "";
   await PlacesUtils.history.update({ url: TEST_URL, description });
-  descriptionInDB = await PlacesTestUtils.fieldInDB(TEST_URL, "description");
+  descriptionInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "description",
+    { url: TEST_URL }
+  );
   Assert.strictEqual(
     null,
     descriptionInDB,
     "an empty description should set it to null in the database"
   );
 
-  let guid = await PlacesTestUtils.fieldInDB(TEST_URL, "guid");
+  let guid = await PlacesTestUtils.getDatabaseValue("moz_places", "guid", {
+    url: TEST_URL,
+  });
   description = "Test description";
   await PlacesUtils.history.update({ url: TEST_URL, guid, description });
-  descriptionInDB = await PlacesTestUtils.fieldInDB(TEST_URL, "description");
+  descriptionInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "description",
+    { url: TEST_URL }
+  );
   Assert.equal(
     description,
     descriptionInDB,
@@ -163,7 +174,11 @@ add_task(async function test_description_change_saved() {
 
   description = "Test descipriton".repeat(1000);
   await PlacesUtils.history.update({ url: TEST_URL, description });
-  descriptionInDB = await PlacesTestUtils.fieldInDB(TEST_URL, "description");
+  descriptionInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "description",
+    { url: TEST_URL }
+  );
   Assert.ok(
     !!descriptionInDB.length < description.length,
     "a long description should be truncated"
@@ -171,11 +186,94 @@ add_task(async function test_description_change_saved() {
 
   description = null;
   await PlacesUtils.history.update({ url: TEST_URL, description });
-  descriptionInDB = await PlacesTestUtils.fieldInDB(TEST_URL, "description");
+  descriptionInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "description",
+    { url: TEST_URL }
+  );
   Assert.strictEqual(
     description,
     descriptionInDB,
     "a null description should set it to null in the database"
+  );
+});
+
+add_task(async function test_siteName_change_saved() {
+  await PlacesUtils.history.clear();
+
+  let TEST_URL = "http://mozilla.org/test_siteName_change_saved";
+  await PlacesTestUtils.addVisits(TEST_URL);
+  Assert.ok(await PlacesTestUtils.isPageInDB(TEST_URL));
+
+  let siteName = "Test site name";
+  await PlacesUtils.history.update({ url: TEST_URL, siteName });
+  let siteNameInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "site_name",
+    { url: TEST_URL }
+  );
+  Assert.equal(
+    siteName,
+    siteNameInDB,
+    "siteName should be updated via URL as expected"
+  );
+
+  siteName = "";
+  await PlacesUtils.history.update({ url: TEST_URL, siteName });
+  siteNameInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "site_name",
+    { url: TEST_URL }
+  );
+  Assert.strictEqual(
+    null,
+    siteNameInDB,
+    "an empty siteName should set it to null in the database"
+  );
+
+  let guid = await PlacesTestUtils.getDatabaseValue("moz_places", "guid", {
+    url: TEST_URL,
+  });
+  siteName = "Test site name";
+  await PlacesUtils.history.update({ url: TEST_URL, guid, siteName });
+  siteNameInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "site_name",
+    { url: TEST_URL }
+  );
+  Assert.equal(
+    siteName,
+    siteNameInDB,
+    "siteName should be updated via GUID as expected"
+  );
+
+  siteName = "Test site name".repeat(1000);
+  await PlacesUtils.history.update({ url: TEST_URL, siteName });
+  siteNameInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "site_name",
+    {
+      url: TEST_URL,
+    }
+  );
+  Assert.ok(
+    !!siteNameInDB.length < siteName.length,
+    "a long siteName should be truncated"
+  );
+
+  siteName = null;
+  await PlacesUtils.history.update({ url: TEST_URL, siteName });
+  siteNameInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "site_name",
+    {
+      url: TEST_URL,
+    }
+  );
+  Assert.strictEqual(
+    siteName,
+    siteNameInDB,
+    "a null siteName should set it to null in the database"
   );
 });
 
@@ -189,9 +287,12 @@ add_task(async function test_previewImageURL_change_saved() {
 
   let previewImageURL = IMAGE_URL;
   await PlacesUtils.history.update({ url: TEST_URL, previewImageURL });
-  let previewImageURLInDB = await PlacesTestUtils.fieldInDB(
-    TEST_URL,
-    "preview_image_url"
+  let previewImageURLInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "preview_image_url",
+    {
+      url: TEST_URL,
+    }
   );
   Assert.equal(
     previewImageURL,
@@ -201,9 +302,12 @@ add_task(async function test_previewImageURL_change_saved() {
 
   previewImageURL = null;
   await PlacesUtils.history.update({ url: TEST_URL, previewImageURL });
-  previewImageURLInDB = await PlacesTestUtils.fieldInDB(
-    TEST_URL,
-    "preview_image_url"
+  previewImageURLInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "preview_image_url",
+    {
+      url: TEST_URL,
+    }
   );
   Assert.strictEqual(
     null,
@@ -211,12 +315,17 @@ add_task(async function test_previewImageURL_change_saved() {
     "a null previewImageURL should set it to null in the database"
   );
 
-  let guid = await PlacesTestUtils.fieldInDB(TEST_URL, "guid");
+  let guid = await PlacesTestUtils.getDatabaseValue("moz_places", "guid", {
+    url: TEST_URL,
+  });
   previewImageURL = IMAGE_URL;
   await PlacesUtils.history.update({ guid, previewImageURL });
-  previewImageURLInDB = await PlacesTestUtils.fieldInDB(
-    TEST_URL,
-    "preview_image_url"
+  previewImageURLInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "preview_image_url",
+    {
+      url: TEST_URL,
+    }
   );
   Assert.equal(
     previewImageURL,
@@ -226,9 +335,12 @@ add_task(async function test_previewImageURL_change_saved() {
 
   previewImageURL = "";
   await PlacesUtils.history.update({ url: TEST_URL, previewImageURL });
-  previewImageURLInDB = await PlacesTestUtils.fieldInDB(
-    TEST_URL,
-    "preview_image_url"
+  previewImageURLInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "preview_image_url",
+    {
+      url: TEST_URL,
+    }
   );
   Assert.strictEqual(
     null,
@@ -252,13 +364,19 @@ add_task(async function test_change_description_and_preview_saved() {
     description,
     previewImageURL,
   });
-  let descriptionInDB = await PlacesTestUtils.fieldInDB(
-    TEST_URL,
-    "description"
+  let descriptionInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "description",
+    {
+      url: TEST_URL,
+    }
   );
-  let previewImageURLInDB = await PlacesTestUtils.fieldInDB(
-    TEST_URL,
-    "preview_image_url"
+  let previewImageURLInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "preview_image_url",
+    {
+      url: TEST_URL,
+    }
   );
   Assert.equal(
     description,
@@ -274,10 +392,19 @@ add_task(async function test_change_description_and_preview_saved() {
   // Update description should not touch other fields
   description = null;
   await PlacesUtils.history.update({ url: TEST_URL, description });
-  descriptionInDB = await PlacesTestUtils.fieldInDB(TEST_URL, "description");
-  previewImageURLInDB = await PlacesTestUtils.fieldInDB(
-    TEST_URL,
-    "preview_image_url"
+  descriptionInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "description",
+    {
+      url: TEST_URL,
+    }
+  );
+  previewImageURLInDB = await PlacesTestUtils.getDatabaseValue(
+    "moz_places",
+    "preview_image_url",
+    {
+      url: TEST_URL,
+    }
   );
   Assert.strictEqual(
     description,

@@ -127,13 +127,13 @@ pub struct ConnectionIdRef<'a> {
 
 impl<'a> ::std::fmt::Debug for ConnectionIdRef<'a> {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        write!(f, "CID {}", hex_with_len(&self.cid))
+        write!(f, "CID {}", hex_with_len(self.cid))
     }
 }
 
 impl<'a> ::std::fmt::Display for ConnectionIdRef<'a> {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        write!(f, "{}", hex(&self.cid))
+        write!(f, "{}", hex(self.cid))
     }
 }
 
@@ -333,7 +333,6 @@ pub type RemoteConnectionIdEntry = ConnectionIdEntry<[u8; 16]>;
 #[derive(Debug, Default)]
 pub struct ConnectionIdStore<SRT: Clone + PartialEq> {
     cids: SmallVec<[ConnectionIdEntry<SRT>; 8]>,
-    retired: Vec<[ConnectionIdEntry<SRT>; 8]>,
 }
 
 impl<SRT: Clone + PartialEq> ConnectionIdStore<SRT> {
@@ -446,9 +445,13 @@ impl ConnectionIdManager {
             // won't be sent until until after the handshake completes, because this initial
             // value remains until the connection completes and transport parameters are handled.
             limit: 2,
-            next_seqno: 2, // A different value.
+            next_seqno: 1,
             lost_new_connection_id: Vec::new(),
         }
+    }
+
+    pub fn generator(&self) -> Rc<RefCell<dyn ConnectionIdGenerator>> {
+        Rc::clone(&self.generator)
     }
 
     pub fn decoder(&self) -> ConnectionIdDecoderRef {
@@ -464,11 +467,10 @@ impl ConnectionIdManager {
         }
         if let Some(cid) = self.generator.borrow_mut().generate_cid() {
             assert_ne!(cid.len(), 0);
-            self.connection_ids.add_local(ConnectionIdEntry::new(
-                CONNECTION_ID_SEQNO_PREFERRED,
-                cid.clone(),
-                (),
-            ));
+            debug_assert_eq!(self.next_seqno, CONNECTION_ID_SEQNO_PREFERRED);
+            self.connection_ids
+                .add_local(ConnectionIdEntry::new(self.next_seqno, cid.clone(), ()));
+            self.next_seqno += 1;
 
             let srt = <[u8; 16]>::try_from(&random(16)[..]).unwrap();
             Ok((cid, srt))
@@ -490,6 +492,8 @@ impl ConnectionIdManager {
 
     /// During the handshake, a server needs to regard the client's choice of destination
     /// connection ID as valid.  This function saves it in the store in a special place.
+    /// Note that this is only done *after* an Initial packet from the client is
+    /// successfully processed.
     pub fn add_odcid(&mut self, cid: ConnectionId) {
         let entry = ConnectionIdEntry::new(CONNECTION_ID_SEQNO_ODCID, cid, ());
         self.connection_ids.add_local(entry);

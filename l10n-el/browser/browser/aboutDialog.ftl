@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = Ε
 
 update-checkingForUpdates = Έλεγχος για ενημερώσεις…
-update-downloading = <img data-l10n-name="icon"/>Λήψη ενημέρωσης — <label data-l10n-name="download-status"/>
-update-downloading-message = Λήψη ενημέρωσης — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Λήψη ενημέρωσης — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Λήψη ενημέρωσης — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Εφαρμογή ενημέρωσης…
 
 update-failed = Αποτυχία ενημέρωσης. <label data-l10n-name="failed-link">Λήψη της πιο πρόσφατης έκδοσης</label>
@@ -25,22 +32,33 @@ update-failed-main = Αποτυχία ενημέρωσης. <a data-l10n-name="f
 
 update-adminDisabled = Οι ενημερώσεις έχουν απενεργοποιηθεί από τον διαχειριστή του συστήματος σας
 update-noUpdatesFound = Το { -brand-short-name } είναι ενημερωμένο
+aboutdialog-update-checking-failed = Ο έλεγχος για ενημερώσεις απέτυχε.
 update-otherInstanceHandlingUpdates = Το { -brand-short-name } ενημερώνεται από μια άλλη διεργασία
 
-update-manual = Διαθέσιμες ενημερώσεις στο <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Διαθέσιμες ενημερώσεις στο <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Διαθέσιμες ενημερώσεις στο <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Δεν μπορείτε να εκτελέσετε περαιτέρω ενημερώσεις σε αυτό το σύστημα. <label data-l10n-name="unsupported-link">Μάθετε περισσότερα</label>
 
 update-restarting = Επανεκκίνηση…
 
-channel-description = Αυτήν τη στιγμή, βρίσκεστε στο κανάλι ενημερώσεων της έκδοσης <label data-l10n-name="current-channel"></label>.
+update-internal-error2 = Δεν είναι δυνατός ο έλεγχος για ενημερώσεις λόγω εσωτερικού σφάλματος. Οι ενημερώσεις διατίθενται στο <label data-l10n-name="manual-link">{ $displayUrl }</label>
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Αυτήν τη στιγμή, βρίσκεστε στο κανάλι ενημερώσεων της έκδοσης <label data-l10n-name="current-channel">{ $channel }</label>.
 
 warningDesc-version = Το { -brand-short-name } είναι σε πειραματικό στάδιο και πιθανότατα ασταθές.
 
 aboutdialog-help-user = Βοήθεια { -brand-product-name }
 aboutdialog-submit-feedback = Υποβολή σχολίων
 
-community-exp = <label data-l10n-name="community-exp-mozillaLink">Η { -vendor-short-name }</label> είναι μια <label data-l10n-name="community-exp-creditsLink">παγκόσμια κοινότητα</label> που συνεργάζεται για να κάνει το διαδίκτυο ανοικτό, ελεύθερο και προσβάσιμο από όλους χωρίς κανένα περιορισμό.
+community-exp = Η <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> είναι μια <label data-l10n-name="community-exp-creditsLink">παγκόσμια κοινότητα</label> που συνεργάζεται για να κάνει το διαδίκτυο ανοικτό, ελεύθερο και προσβάσιμο από όλους.
 
 community-2 = Το { -brand-short-name } έχει σχεδιαστεί από τη <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, μια <label data-l10n-name="community-creditsLink">παγκόσμια κοινότητα</label> που συνεργάζεται για να κάνει το διαδίκτυο ανοικτό, ελεύθερο και προσβάσιμο από όλους χωρίς κανένα περιορισμό.
 

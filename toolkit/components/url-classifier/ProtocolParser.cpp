@@ -10,6 +10,7 @@
 #include "mozilla/Logging.h"
 #include "prnetdb.h"
 #include "prprf.h"
+#include "Classifier.h"
 
 #include "nsUrlClassifierDBService.h"
 #include "nsUrlClassifierUtils.h"
@@ -21,10 +22,14 @@
 #include "mozilla/IntegerPrintfMacros.h"
 
 // MOZ_LOG=UrlClassifierProtocolParser:5
+extern mozilla::LazyLogModule gUrlClassifierDbServiceLog;
 mozilla::LazyLogModule gUrlClassifierProtocolParserLog(
     "UrlClassifierProtocolParser");
 #define PARSER_LOG(args) \
   MOZ_LOG(gUrlClassifierProtocolParserLog, mozilla::LogLevel::Debug, args)
+
+#define LOG_ENABLED() \
+  MOZ_LOG_TEST(gUrlClassifierDbServiceLog, mozilla::LogLevel::Debug)
 
 namespace mozilla {
 namespace safebrowsing {
@@ -39,17 +44,9 @@ const uint32_t DOMAIN_SIZE = 4;
 // Parse one stringified range of chunks of the form "n" or "n-m" from a
 // comma-separated list of chunks.  Upon return, 'begin' will point to the
 // next range of chunks in the list of chunks.
-static bool ParseChunkRange(nsACString::const_iterator& aBegin,
-                            const nsACString::const_iterator& aEnd,
-                            uint32_t* aFirst, uint32_t* aLast) {
-  nsACString::const_iterator iter = aBegin;
-  FindCharInReadable(',', iter, aEnd);
-
-  nsAutoCString element(Substring(aBegin, iter));
-  aBegin = iter;
-  if (aBegin != aEnd) aBegin++;
-
-  uint32_t numRead = PR_sscanf(element.get(), "%u-%u", aFirst, aLast);
+static bool ParseChunkRange(const nsAutoCString& string, uint32_t* aFirst,
+                            uint32_t* aLast) {
+  uint32_t numRead = PR_sscanf(string.get(), "%u-%u", aFirst, aLast);
   if (numRead == 2) {
     if (*aFirst > *aLast) {
       uint32_t tmp = *aFirst;
@@ -203,12 +200,9 @@ nsresult ProtocolParserV2::ProcessExpirations(const nsCString& aLine) {
     return NS_ERROR_FAILURE;
   }
   const nsACString& list = Substring(aLine, 3);
-  nsACString::const_iterator begin, end;
-  list.BeginReading(begin);
-  list.EndReading(end);
-  while (begin != end) {
+  for (const auto& str : list.Split(',')) {
     uint32_t first, last;
-    if (ParseChunkRange(begin, end, &first, &last)) {
+    if (ParseChunkRange(nsAutoCString(str), &first, &last)) {
       if (last < first) return NS_ERROR_FAILURE;
       if (last - first > MAX_CHUNK_RANGE) return NS_ERROR_FAILURE;
       for (uint32_t num = first; num <= last; num++) {
@@ -354,7 +348,7 @@ nsresult ProtocolParserV2::ProcessPlaintextChunk(const nsACString& aChunk) {
     return NS_ERROR_FAILURE;
   }
 
-  PARSER_LOG(("Handling a %d-byte simple chunk", aChunk.Length()));
+  PARSER_LOG(("Handling a %zd-byte simple chunk", aChunk.Length()));
 
   nsTArray<nsCString> lines;
   ParseString(PromiseFlatCString(aChunk), '\n', lines);
@@ -432,7 +426,7 @@ nsresult ProtocolParserV2::ProcessShaChunk(const nsACString& aChunk) {
     start++;
 
     PARSER_LOG(
-        ("Handling a %d-byte shavar chunk containing %u entries"
+        ("Handling a %zd-byte shavar chunk containing %u entries"
          " for domain %X",
          aChunk.Length(), numEntries, domain.ToUint32()));
 
@@ -462,7 +456,7 @@ nsresult ProtocolParserV2::ProcessShaChunk(const nsACString& aChunk) {
 }
 
 nsresult ProtocolParserV2::ProcessDigestChunk(const nsACString& aChunk) {
-  PARSER_LOG(("Handling a %d-byte digest256 chunk", aChunk.Length()));
+  PARSER_LOG(("Handling a %zd-byte digest256 chunk", aChunk.Length()));
 
   if (mChunkState.type == CHUNK_ADD_DIGEST) {
     return ProcessDigestAdd(aChunk);
@@ -665,16 +659,16 @@ nsresult ProtocolParserV2::ProcessHostSubComplete(uint8_t aNumEntries,
   }
 
   for (uint8_t i = 0; i < aNumEntries; i++) {
-    Completion hash;
-    hash.Assign(Substring(aChunk, *aStart, COMPLETE_SIZE));
-    *aStart += COMPLETE_SIZE;
-
     const nsACString& addChunkStr = Substring(aChunk, *aStart, 4);
     *aStart += 4;
 
     uint32_t addChunk;
     memcpy(&addChunk, addChunkStr.BeginReading(), 4);
     addChunk = PR_ntohl(addChunk);
+
+    Completion hash;
+    hash.Assign(Substring(aChunk, *aStart, COMPLETE_SIZE));
+    *aStart += COMPLETE_SIZE;
 
     nsresult rv = mTableUpdate->NewSubComplete(addChunk, hash, mChunkState.num);
     if (NS_FAILED(rv)) {
@@ -914,7 +908,7 @@ nsresult ProtocolParserProtobuf::ProcessRawAddition(
 
   if (LOG_ENABLED()) {
     PARSER_LOG((" Raw addition (%d-byte prefixes)", prefixSize));
-    PARSER_LOG(("  - # of prefixes: %u", prefixes.Length() / prefixSize));
+    PARSER_LOG(("  - # of prefixes: %zu", prefixes.Length() / prefixSize));
     if (4 == prefixSize) {
       uint32_t* fixedLengthPrefixes = (uint32_t*)prefixes.get();
       PARSER_LOG(("  - Memory address: 0x%p", fixedLengthPrefixes));

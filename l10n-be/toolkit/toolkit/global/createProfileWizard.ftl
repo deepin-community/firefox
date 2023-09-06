@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Майстар стварэння профіляў
-    .style = width: 55em; height: 34em;
+    .style = min-width: 55em; min-height: 34em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Уступ
-       *[other] Вас вітае { create-profile-window.title }
+       *[other] Вас вітае { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } захоўвае звесткі пра вашы налады і перавагі ў вашым асабістым профілі.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Выснова
-       *[other] Выкананне: { create-profile-window.title }
+       *[other] Выкананне: { create-profile-window2.title }
     }
 
 profile-creation-intro = Калі вы ствараеце некалькі профіляў, яны будуць мець розныя назвы. Вы можаце карыстацца прапанаванаю назваю, ці выбраць сваю ўласную.

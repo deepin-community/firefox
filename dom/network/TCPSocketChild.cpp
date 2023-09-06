@@ -33,11 +33,8 @@ bool DeserializeArrayBuffer(JSContext* cx, const nsTArray<uint8_t>& aBuffer,
   memcpy(data.get(), aBuffer.Elements(), aBuffer.Length());
 
   JSObject* obj =
-      JS::NewArrayBufferWithContents(cx, aBuffer.Length(), data.get());
+      JS::NewArrayBufferWithContents(cx, aBuffer.Length(), std::move(data));
   if (!obj) return false;
-  // If JS::NewArrayBufferWithContents returns non-null, the ownership of
-  // the data is transfered to obj, so we release the ownership here.
-  mozilla::Unused << data.release();
 
   aVal.setObject(*obj);
   return true;
@@ -89,10 +86,6 @@ TCPSocketChild::TCPSocketChild(const nsAString& aHost, const uint16_t& aPort,
 void TCPSocketChild::SendOpen(nsITCPSocketCallback* aSocket, bool aUseSSL,
                               bool aUseArrayBuffers) {
   mSocket = aSocket;
-
-  if (mIPCEventTarget) {
-    gNeckoChild->SetEventTargetForActor(this, mIPCEventTarget);
-  }
 
   AddIPDLReference();
   gNeckoChild->SendPTCPSocketConstructor(this, mHost, mPort);
@@ -171,7 +164,7 @@ void TCPSocketChild::SetSocket(TCPSocket* aSocket) { mSocket = aSocket; }
 
 void TCPSocketChild::GetHost(nsAString& aHost) { aHost = mHost; }
 
-void TCPSocketChild::GetPort(uint16_t* aPort) { *aPort = mPort; }
+void TCPSocketChild::GetPort(uint16_t* aPort) const { *aPort = mPort; }
 
 mozilla::ipc::IPCResult TCPSocketChild::RecvRequestDelete() {
   mozilla::Unused << Send__delete__(this);

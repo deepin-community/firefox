@@ -8,6 +8,7 @@ EXPORTS += [
     "malloc_decls.h",
     "mozjemalloc_types.h",
     "mozmemory.h",
+    "mozmemory_utils.h",
     "mozmemory_wrap.h",
 ]
 
@@ -27,6 +28,7 @@ if CONFIG["MOZ_MEMORY"]:
     UNIFIED_SOURCES += [
         "mozjemalloc.cpp",
         "mozmemory_wrap.cpp",
+        "Mutex.cpp",
     ]
 else:
     UNIFIED_SOURCES += [
@@ -58,4 +60,4 @@ DisableStlWrapping()
 if CONFIG["CC_TYPE"] == "clang-cl":
     AllowCompilerWarnings()  # workaround for bug 1090497
 
-REQUIRES_UNIFIED_BUILD = True
+TEST_DIRS += ["test"]

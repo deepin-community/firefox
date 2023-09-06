@@ -30,9 +30,9 @@ graph-week-summary-private-window = Трэкеры, якія { -brand-short-name
 protection-report-webpage-title = Панэль стану аховы
 protection-report-page-content-title = Панэль стану аховы
 # This message shows when all privacy protections are turned off, which is why we use the word "can", Firefox is able to protect your privacy, but it is currently not.
-protection-report-page-summary = { -brand-short-name } можа ахоўваць вашу прыватнасць за кадрам падчас аглядання. Гэта персаналізаваная зводка аб ахове, уключна з інструментамі для кантролю вашай бяспекі ў Інтэрнэце.
+protection-report-page-summary = { -brand-short-name } можа ахоўваць вашу прыватнасць за кадрам у часе аглядання. Гэта персаналізаваная зводка аб ахове, уключна з інструментамі для кантролю вашай бяспекі ў Інтэрнэце.
 # This message shows when at least some protections are turned on, we are more assertive compared to the message above, Firefox is actively protecting you.
-protection-report-page-summary-default = { -brand-short-name } ахоўвае вашу прыватнасць за кадрам падчас аглядання. Гэта персаналізаваная зводка аб ахове, уключна з інструментамі для кантролю вашай бяспекі ў Інтэрнэце.
+protection-report-page-summary-default = { -brand-short-name } ахоўвае вашу прыватнасць за кадрам у часе аглядання. Гэта персаналізаваная зводка аб ахове, уключна з інструментамі для кантролю вашай бяспекі ў Інтэрнэце.
 
 protection-report-settings-link = Кіруйце сваімі наладамі прыватнасці і бяспекі
 
@@ -50,16 +50,16 @@ graph-today = Сёння
 graph-legend-description = Графік змяшчае агульную колькасць трэкераў кожнага тыпу, заблакаваны на гэтым тыдні.
 
 social-tab-title = Трэкеры сацыяльных сетак
-social-tab-contant = Сацыяльныя сеткі размяшчаюць трэкеры на іншых сайтах, каб сачыць за тым, што вы робіце, бачыце і глядзіце ў сеціве. Гэта дазваляе кампаніям сацыяльных сетак даведацца пра вас больш за тое, чым вы дзяліцеся ў сваіх профілях у сацыяльных сетках. <a data-l10n-name="learn-more-link">Даведацца больш</a>
+social-tab-contant = Сацыяльныя сеткі размяшчаюць трэкеры на іншых сайтах, каб сачыць за тым, што вы робіце, бачыце і глядзіце ў сеціве. Гэта дазваляе кампаніям сацыяльных сетак даведацца пра вас больш за тое, чым вы дзеліцеся ў сваіх профілях у сацыяльных сетках. <a data-l10n-name="learn-more-link">Падрабязней</a>
 
 cookie-tab-title = Міжсайтавыя кукі асочвання
-cookie-tab-content = Гэтыя кукі ідуць за вамі з сайта на сайт, каб сабраць дадзеныя пра тое, што вы робіце ў Інтэрнэце. Яны ўсталёўваюцца трэцім бокам, такімі як рэкламадаўцы і аналітычныя кампаніі. Блакіроўка трэцебаковых кукі асочвання зніжае колькасць рэкламы, якія ідзе за вамі. <a data-l10n-name="learn-more-link">Даведацца больш</a>
+cookie-tab-content = Гэтыя кукі ідуць за вамі з сайта на сайт, каб сабраць дадзеныя пра тое, што вы робіце ў Інтэрнэце. Яны ўсталёўваюцца трэцім бокам, такім як рэкламадаўцы і аналітычныя кампаніі. Блакаванне трэцебаковых кукі асочвання зніжае колькасць рэкламы, якая ідзе за вамі. <a data-l10n-name="learn-more-link">Даведацца больш</a>
 
 tracker-tab-title = Змест з элементамі сачэння
 tracker-tab-description = Вэб-сайты могуць загружаць вонкавую рэкламу, відэа і іншае змесціва з кодам асочвання. Блакіроўка змесціва асочвання можа дапамагчы сайтам хутчэй загружацца, але некаторыя кнопкі, формы і палі ўваходу могуць не працаваць. <a data-l10n-name="learn-more-link">Даведацца больш</a>
 
-fingerprinter-tab-title = Збіральнікі адбіткаў пальцаў
-fingerprinter-tab-content = Збіральнікі адбіткаў пальцаў збіраюць налады вашага браўзера і камп'ютара для стварэння вашага профілю. Выкарыстоўваючы гэты лічбавы адбітак, яны могуць асочваць вас на розных сайтах. <a data-l10n-name="learn-more-link">Даведацца больш</a>
+fingerprinter-tab-title = Збіральнікі лічбавых адбіткаў
+fingerprinter-tab-content = Збіральнікі лічбавых адбіткаў збіраюць налады вашага браўзера і камп'ютара для стварэння вашага профілю. Выкарыстоўваючы гэты лічбавы адбітак, яны могуць асочваць вас на розных сайтах. <a data-l10n-name="learn-more-link">Даведацца больш</a>
 
 cryptominer-tab-title = Майнеры крыптавалют
 cryptominer-tab-content = Майнеры крыптавалют выкарыстоўваюць вылічальную магутнасць вашай сістэмы, каб здабываць лічбавыя грошы. Скрыпты для здабычы крыптавалют разраджаюць вашу батарэю, запавольваюць працу камп'ютара і могуць павялічыць ваш выдаткі на электраэнергію. <a data-l10n-name="learn-more-link">Даведацца больш</a>
@@ -67,22 +67,20 @@ cryptominer-tab-content = Майнеры крыптавалют выкарыст
 protections-close-button2 =
     .aria-label = Закрыць
     .title = Закрыць
-  
+
 mobile-app-title = Блакуйце рэкламныя трэкеры на некалькіх прыладах
 mobile-app-card-content = Выкарыстоўвайце мабільны браўзер з убудаванай аховай ад рэкламнага сачэння.
 mobile-app-links = { -brand-product-name } Браўзер для <a data-l10n-name="android-mobile-inline-link">Android</a> і <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Больш ніколі не забывайце свой пароль
-lockwise-title-logged-in2 = Кіраванне паролямі
-lockwise-header-content = { -lockwise-brand-name } надзейна захоўвае вашы паролі ў вашым браўзеры.
+passwords-title-logged-in = Кіруйце сваімі паролямі
+passwords-header-content = { -brand-product-name } надзейна захоўвае вашы паролі ў вашым браўзеры.
 lockwise-header-content-logged-in = Бяспечна захоўвайце і сінхранізуйце паролі на ўсіх сваіх прыладах.
-protection-report-save-passwords-button = Захоўваць паролі
-    .title = Захоўваць паролі ў { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Кіраваць паролямі
-    .title = Кіраваць паролямі ў { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Вазьміце свае паролі ўсюды
-lockwise-no-logins-card-content = Выкарыстоўвайце паролі, захаваныя ў { -brand-short-name }, на любой прыладзе.
-lockwise-app-links = { -lockwise-brand-name } для <a data-l10n-name="lockwise-android-inline-link">Android</a> і <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Захаваць паролі
+    .title = Захаваць паролі
+protection-report-passwords-manage-passwords-button = Кіраваць паролямі
+    .title = Кіраванне паролямі
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -234,12 +232,12 @@ bar-tooltip-tracker =
            *[many] { $count } элементаў сачэння ({ $percentage }%)
         }
 bar-tooltip-fingerprinter =
-    .title = Збіральнікі адбіткаў пальцаў
+    .title = Збіральнікі лічбавых адбіткаў
     .aria-label =
         { $count ->
-            [one] { $count } збіральнік адбіткаў пальцаў ({ $percentage }%)
-            [few] { $count } збіральнікі адбіткаў пальцаў ({ $percentage }%)
-           *[many] { $count } збіральнікаў адбіткаў пальцаў ({ $percentage }%)
+            [one] { $count } збіральнік лічбавых адбіткаў ({ $percentage }%)
+            [few] { $count } збіральнікі лічбавых адбіткаў ({ $percentage }%)
+           *[many] { $count } збіральнікаў лічбавых адбіткаў ({ $percentage }%)
         }
 bar-tooltip-cryptominer =
     .title = Майнеры крыптавалют

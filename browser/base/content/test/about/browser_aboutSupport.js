@@ -3,21 +3,21 @@
 
 "use strict";
 
-const { ExperimentAPI, NimbusFeatures } = ChromeUtils.import(
-  "resource://nimbus/ExperimentAPI.jsm"
+const { ExperimentAPI } = ChromeUtils.importESModule(
+  "resource://nimbus/ExperimentAPI.sys.mjs"
 );
-const { ExperimentFakes } = ChromeUtils.import(
-  "resource://testing-common/NimbusTestUtils.jsm"
+const { ExperimentFakes } = ChromeUtils.importESModule(
+  "resource://testing-common/NimbusTestUtils.sys.mjs"
 );
 
-add_task(async function() {
+add_task(async function () {
   await BrowserTestUtils.withNewTab(
     { gBrowser, url: "about:support" },
-    async function(browser) {
+    async function (browser) {
       let keyLocationServiceGoogleStatus = await SpecialPowers.spawn(
         browser,
         [],
-        async function() {
+        async function () {
           let textBox = content.document.getElementById(
             "key-location-service-google-box"
           );
@@ -36,7 +36,7 @@ add_task(async function() {
       let keySafebrowsingGoogleStatus = await SpecialPowers.spawn(
         browser,
         [],
-        async function() {
+        async function () {
           let textBox = content.document.getElementById(
             "key-safebrowsing-google-box"
           );
@@ -55,7 +55,7 @@ add_task(async function() {
       let keyMozillaStatus = await SpecialPowers.spawn(
         browser,
         [],
-        async function() {
+        async function () {
           let textBox = content.document.getElementById("key-mozilla-box");
           await ContentTaskUtils.waitForCondition(
             () => content.document.l10n.getAttributes(textBox).id,
@@ -72,18 +72,17 @@ add_task(async function() {
 add_task(async function test_nimbus_experiments() {
   await ExperimentAPI.ready();
   let doExperimentCleanup = await ExperimentFakes.enrollWithFeatureConfig({
-    enabled: true,
     featureId: "aboutwelcome",
-    value: null,
+    value: { enabled: true },
   });
 
   await BrowserTestUtils.withNewTab(
     { gBrowser, url: "about:support" },
-    async function(browser) {
+    async function (browser) {
       let experimentName = await SpecialPowers.spawn(
         browser,
         [],
-        async function() {
+        async function () {
           await ContentTaskUtils.waitForCondition(
             () =>
               content.document.querySelector(
@@ -107,30 +106,41 @@ add_task(async function test_nimbus_experiments() {
 
 add_task(async function test_remote_configuration() {
   await ExperimentAPI.ready();
-  await ExperimentFakes.remoteDefaultsHelper({
-    feature: NimbusFeatures.aboutwelcome,
-    configuration: {
-      slug: "about:studies-configuration-slug",
-      variables: { enabled: true },
-      targeting: "true",
-    },
+  let doCleanup = await ExperimentFakes.enrollWithRollout({
+    featureId: NimbusFeatures.aboutwelcome.featureId,
+    value: { enabled: true },
   });
 
   await BrowserTestUtils.withNewTab(
     { gBrowser, url: "about:support" },
-    async function(browser) {
-      let featureId = await SpecialPowers.spawn(browser, [], async function() {
-        await ContentTaskUtils.waitForCondition(
-          () =>
-            content.document.querySelector(
-              "#remote-features-tbody tr:first-child td"
-            )?.innerText
-        );
-        return content.document.querySelector(
-          "#remote-features-tbody tr:first-child td"
-        ).innerText;
-      });
-      ok(featureId.match("aboutwelcome"), "Rendered the expected featureId");
+    async function (browser) {
+      let [userFacingName, branch] = await SpecialPowers.spawn(
+        browser,
+        [],
+        async function () {
+          await ContentTaskUtils.waitForCondition(
+            () =>
+              content.document.querySelector(
+                "#remote-features-tbody tr:first-child td"
+              )?.innerText
+          );
+          let rolloutName = content.document.querySelector(
+            "#remote-features-tbody tr:first-child td"
+          ).innerText;
+          let branchName = content.document.querySelector(
+            "#remote-features-tbody tr:first-child td:nth-child(2)"
+          ).innerText;
+
+          return [rolloutName, branchName];
+        }
+      );
+      ok(
+        userFacingName.match("NimbusTestUtils"),
+        "Rendered the expected rollout"
+      );
+      ok(branch.match("aboutwelcome"), "Rendered the expected rollout branch");
     }
   );
+
+  await doCleanup();
 });

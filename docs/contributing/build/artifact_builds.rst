@@ -115,7 +115,7 @@ Things that are supported
 -------------------------
 
 -  Modifying JavaScript, (X)HTML, and CSS resources; and string
-   properties and DTD and FTL files.
+   properties and FTL files.
 -  Modifying Android Java code, resources, and strings.
 -  Running mochitests and xpcshell tests.
 -  Modifying ``Scalars.yaml`` to add Scalar Telemetry (since {{
@@ -171,4 +171,3 @@ Discussion is best started on the `dev-builds mailing
 list <https://lists.mozilla.org/listinfo/dev-builds>`__. Questions are
 best raised in `#build <https://chat.mozilla.org/#/room/#build:mozilla.org>`__ on `Matrix <https://chat.mozilla.org/>`__. Please
 file bugs in *Firefox Build System :: General*, blocking  `Bug 901840 <https://bugzilla.mozilla.org/show_bug.cgi?id=901840>`__
-

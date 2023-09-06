@@ -61,9 +61,6 @@ import-items-description = Yer jami me akela ki woko:
 
 import-permissions-page-title = Tim ber i mii ki { -brand-short-name } twero
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS mito ni iyee atir ki { -brand-short-name } me nongo alama buk pa Safari. Dii “Mede” ka i yer pwail me  “Bookmarks.plist” i dirica me PWAIL AYABA ma nyute.
-
 import-migrating-page-title = Kelo ki woko…
 
 import-migrating-description = Jami magi kombedi kitye ka kelo ki woko…
@@ -78,23 +75,9 @@ import-done-description = Jami magi okele maber ki woko:
 
 import-close-source-browser = Tim ber inen ni layeny ma kiyero ni kiloro woko mapud pe imede anyim.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Ki i { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 layeny ma tye ki ber bedo
 
 imported-safari-reading-list = Kwano nying (Ki i Safari)
 imported-edge-reading-list = Jami akwana (Ki i Edge)
@@ -155,3 +138,4 @@ browser-data-session-checkbox =
     .label = Dirica ki dirica matino
 browser-data-session-label =
     .value = Dirica ki dirica matino
+

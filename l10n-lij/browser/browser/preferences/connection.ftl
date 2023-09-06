@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Preferense de conescion
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -68,13 +68,14 @@ connection-proxy-autologin =
     .accesskey = c
     .tooltip = Sta òpçion a permette de aotenticase diretamente con in proxy se ti gh'æ de credensiali sarvæ. A domanda ti a vediæ in caxo de'erô.
 
+connection-proxy-autologin-checkbox =
+    .label = No domandâ l’aotenticaçion se a paròlla segreta a l'é sarvâ
+    .accesskey = c
+    .tooltiptext = Sta òpçion a permette de aotenticase diretamente con in proxy se ti gh'æ de credensiali sarvæ. A domanda ti a vediæ in caxo de'erô.
+
 connection-proxy-socks-remote-dns =
     .label = Proxy DNS quande se deuvia SOCKS v5
     .accesskey = D
-
-connection-dns-over-https =
-    .label = Abilita DNS in sce HTTPS
-    .accesskey = H
 
 connection-dns-over-https-url-custom =
     .label = Personalizou

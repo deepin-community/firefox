@@ -14,42 +14,32 @@ If you are looking for the absolute authority on what moz.build files can
 contain, you've come to the right place.
 """
 
-from __future__ import absolute_import, print_function, unicode_literals
-
+import itertools
 import operator
 import os
-
 from collections import Counter, OrderedDict
+from types import FunctionType
+
+import mozpack.path as mozpath
+import six
+
 from mozbuild.util import (
     HierarchicalStringList,
     ImmutableStrictOrderingOnAppendList,
     KeyedDefaultDict,
     List,
-    memoize,
-    memoized_property,
     ReadOnlyKeyedDefaultDict,
     StrictOrderingOnAppendList,
     StrictOrderingOnAppendListWithAction,
     StrictOrderingOnAppendListWithFlagsFactory,
     TypedList,
     TypedNamedTuple,
+    memoize,
+    memoized_property,
 )
 
 from .. import schedules
-
 from ..testing import read_manifestparser_manifest, read_reftest_manifest
-
-import mozpack.path as mozpath
-from types import FunctionType
-
-import itertools
-import six
-
-
-# The MOZ_HARDENING_CFLAGS and MOZ_HARDENING_LDFLAGS differ depending on whether
-# the context is under $TOPOBJDIR/js/src.
-def _context_under_js_src(context):
-    return mozpath.commonprefix([context.relsrcdir, "js/src"]) != ""
 
 
 class ContextDerivedValue(object):
@@ -386,6 +376,16 @@ class HostCompileFlags(BaseCompileFlags):
                 ["-I%s/dist/include" % context.config.topobjdir],
                 ("HOST_CFLAGS", "HOST_CXXFLAGS"),
             ),
+            (
+                "WARNINGS_CFLAGS",
+                context.config.substs.get("WARNINGS_HOST_CFLAGS"),
+                ("HOST_CFLAGS",),
+            ),
+            (
+                "WARNINGS_CXXFLAGS",
+                context.config.substs.get("WARNINGS_HOST_CXXFLAGS"),
+                ("HOST_CXXFLAGS",),
+            ),
         )
         BaseCompileFlags.__init__(self, context)
 
@@ -442,11 +442,7 @@ class LinkFlags(BaseCompileFlags):
             ("OS", self._os_ldflags(), ("LDFLAGS",)),
             (
                 "MOZ_HARDENING_LDFLAGS",
-                (
-                    context.config.substs.get("MOZ_HARDENING_LDFLAGS_JS")
-                    if _context_under_js_src(context)
-                    else context.config.substs.get("MOZ_HARDENING_LDFLAGS")
-                ),
+                context.config.substs.get("MOZ_HARDENING_LDFLAGS"),
                 ("LDFLAGS",),
             ),
             ("DEFFILE", None, ("LDFLAGS",)),
@@ -565,11 +561,7 @@ class CompileFlags(TargetCompileFlags):
             ),
             (
                 "MOZ_HARDENING_CFLAGS",
-                (
-                    context.config.substs.get("MOZ_HARDENING_CFLAGS_JS")
-                    if _context_under_js_src(context)
-                    else context.config.substs.get("MOZ_HARDENING_CFLAGS")
-                ),
+                context.config.substs.get("MOZ_HARDENING_CFLAGS"),
                 ("CXXFLAGS", "CFLAGS", "CXX_LDFLAGS", "C_LDFLAGS"),
             ),
             ("DEFINES", None, ("CXXFLAGS", "CFLAGS")),
@@ -659,7 +651,12 @@ class CompileFlags(TargetCompileFlags):
             (
                 "WARNINGS_CFLAGS",
                 context.config.substs.get("WARNINGS_CFLAGS"),
-                ("CFLAGS", "C_LDFLAGS"),
+                ("CFLAGS",),
+            ),
+            (
+                "WARNINGS_CXXFLAGS",
+                context.config.substs.get("WARNINGS_CXXFLAGS"),
+                ("CXXFLAGS",),
             ),
             ("MOZBUILD_CFLAGS", None, ("CFLAGS",)),
             ("MOZBUILD_CXXFLAGS", None, ("CXXFLAGS",)),
@@ -669,13 +666,30 @@ class CompileFlags(TargetCompileFlags):
                 ("CXXFLAGS", "CFLAGS"),
             ),
             (
-                "NEWPM",
-                context.config.substs.get("MOZ_NEW_PASS_MANAGER_FLAGS"),
+                "PASS_MANAGER",
+                context.config.substs.get("MOZ_PASS_MANAGER_FLAGS"),
                 ("CXXFLAGS", "CFLAGS"),
             ),
             (
                 "FILE_PREFIX_MAP",
                 context.config.substs.get("MOZ_FILE_PREFIX_MAP_FLAGS"),
+                ("CXXFLAGS", "CFLAGS"),
+            ),
+            (
+                # See bug 414641
+                "NO_STRICT_ALIASING",
+                ["-fno-strict-aliasing"],
+                ("CXXFLAGS", "CFLAGS"),
+            ),
+            (
+                # Disable floating-point contraction by default.
+                "FP_CONTRACT",
+                (
+                    ["-Xclang"]
+                    if context.config.substs.get("CC_TYPE") == "clang-cl"
+                    else []
+                )
+                + ["-ffp-contract=off"],
                 ("CXXFLAGS", "CFLAGS"),
             ),
         )
@@ -753,6 +767,7 @@ class WasmFlags(TargetCompileFlags):
                 context.config.substs.get("MOZ_FILE_PREFIX_MAP_FLAGS"),
                 ("WASM_CFLAGS", "WASM_CXXFLAGS"),
             ),
+            ("STL", context.config.substs.get("STL_FLAGS"), ("WASM_CXXFLAGS",)),
         )
 
         TargetCompileFlags.__init__(self, context)
@@ -856,7 +871,7 @@ class Path(six.with_metaclass(PathMeta, ContextDerivedValue, six.text_type)):
         return self
 
     def join(self, *p):
-        """ContextDerived equivalent of mozpath.join(self, *p), returning a
+        """ContextDerived equivalent of `mozpath.join(self, *p)`, returning a
         new Path instance.
         """
         return Path(self.context, mozpath.join(self, *p))
@@ -905,9 +920,11 @@ class SourcePath(Path):
 
     def __new__(cls, context, value=None):
         if value.startswith("!"):
-            raise ValueError("Object directory paths are not allowed")
+            raise ValueError(f'Object directory paths are not allowed\nPath: "{value}"')
         if value.startswith("%"):
-            raise ValueError("Filesystem absolute paths are not allowed")
+            raise ValueError(
+                f'Filesystem absolute paths are not allowed\nPath: "{value}"'
+            )
         self = super(SourcePath, cls).__new__(cls, context, value)
 
         if value.startswith("/"):
@@ -1018,10 +1035,12 @@ def ContextDerivedTypedRecord(*fields):
     This API is extremely similar to the TypedNamedTuple API,
     except that properties may be mutated. This supports syntax like:
 
-    VARIABLE_NAME.property += [
-      'item1',
-      'item2',
-    ]
+    .. code-block:: python
+
+        VARIABLE_NAME.property += [
+          'item1',
+          'item2',
+        ]
     """
 
     class _TypedRecord(ContextDerivedValue):
@@ -1417,12 +1436,6 @@ VARIABLES = {
 
         """,
     ),
-    "REQUIRES_UNIFIED_BUILD": (
-        bool,
-        bool,
-        """Whether this module requires building in unified environment.
-        """,
-    ),
     "IS_RUST_LIBRARY": (
         bool,
         bool,
@@ -1471,7 +1484,7 @@ VARIABLES = {
         """,
     ),
     "UNIFIED_SOURCES": (
-        ContextDerivedTypedList(SourcePath, StrictOrderingOnAppendList),
+        ContextDerivedTypedList(Path, StrictOrderingOnAppendList),
         list,
         """Source code files that can be compiled together.
 
@@ -2360,33 +2373,6 @@ VARIABLES = {
                 (...)
             }
             (...)
-        """,
-    ),
-    "GN_DIRS": (
-        StrictOrderingOnAppendListWithFlagsFactory(
-            {
-                "variables": dict,
-                "sandbox_vars": dict,
-                "non_unified_sources": StrictOrderingOnAppendList,
-                "mozilla_flags": list,
-                "gn_target": six.text_type,
-                "write_mozbuild_vars": dict,
-            }
-        ),
-        list,
-        """List of dirs containing gn files describing targets to build. Attributes:
-            - variables, a dictionary containing variables and values to pass
-              to `gn gen`.
-            - sandbox_vars, a dictionary containing variables and values to
-              pass to the mozbuild processor on top of those derived from gn.
-            - non_unified_sources, a list containing sources files, relative to
-              the current moz.build, that should be excluded from source file
-              unification.
-            - mozilla_flags, a set of flags that if present in the gn config
-              will be mirrored to the resulting mozbuild configuration.
-            - gn_target, the name of the target to build.
-            - write_mozbuild_vars, a dictionary containing variables to control
-              code generation of moz.build files.
         """,
     ),
     "SPHINX_TREES": (

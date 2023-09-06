@@ -12,9 +12,11 @@
 
 "use strict";
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
-XPCOMUtils.defineLazyGetter(this, "URL", function() {
+XPCOMUtils.defineLazyGetter(this, "URL", function () {
   return "http://localhost:" + httpServer.identity.primaryPort + "/content";
 });
 
@@ -35,10 +37,7 @@ function make_channel(url, callback, ctx) {
 }
 
 function inChildProcess() {
-  return (
-    Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime)
-      .processType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT
-  );
+  return Services.appinfo.processType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT;
 }
 
 const responseContent = "response body";
@@ -46,7 +45,6 @@ const responseContent2 = "response body 2";
 const altContent = "!@#$%^&*()";
 const altContentType = "text/binary";
 
-var servedNotModified = false;
 var shouldPassRevalidation = true;
 
 var cache_storage = null;
@@ -56,15 +54,15 @@ function contentHandler(metadata, response) {
   response.setHeader("Cache-Control", "no-cache");
   response.setHeader("ETag", "test-etag1");
 
+  let etag;
   try {
-    var etag = metadata.getHeader("If-None-Match");
+    etag = metadata.getHeader("If-None-Match");
   } catch (ex) {
-    var etag = "";
+    etag = "";
   }
 
   if (etag == "test-etag1" && shouldPassRevalidation) {
     response.setStatusLine(metadata.httpVersion, 304, "Not Modified");
-    servedNotModified = true;
   } else {
     var content = shouldPassRevalidation ? responseContent : responseContent2;
     response.bodyOutputStream.write(content, content.length);
@@ -104,7 +102,11 @@ function asyncOpen() {
   var chan = make_channel(URL);
 
   var cc = chan.QueryInterface(Ci.nsICacheInfoChannel);
-  cc.preferAlternativeDataType(altContentType, "", true);
+  cc.preferAlternativeDataType(
+    altContentType,
+    "",
+    Ci.nsICacheInfoChannel.ASYNC
+  );
 
   chan.asyncOpen(new ChannelListener(readServerContent, null));
 }
@@ -158,9 +160,17 @@ function flushAndReadServerContentAgain() {
 function readServerContentAgain() {
   var chan = make_channel(URL);
   var cc = chan.QueryInterface(Ci.nsICacheInfoChannel);
-  cc.preferAlternativeDataType("dummy1", "text/javascript", true);
-  cc.preferAlternativeDataType(altContentType, "text/plain", true);
-  cc.preferAlternativeDataType("dummy2", "", true);
+  cc.preferAlternativeDataType(
+    "dummy1",
+    "text/javascript",
+    Ci.nsICacheInfoChannel.ASYNC
+  );
+  cc.preferAlternativeDataType(
+    altContentType,
+    "text/plain",
+    Ci.nsICacheInfoChannel.ASYNC
+  );
+  cc.preferAlternativeDataType("dummy2", "", Ci.nsICacheInfoChannel.ASYNC);
 
   chan.asyncOpen(new ChannelListener(readServerContentAgainCB, null));
 }

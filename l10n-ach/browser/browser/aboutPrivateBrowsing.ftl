@@ -6,11 +6,24 @@ privatebrowsingpage-open-private-window-label = Yab dirica me mung
     .accesskey = m
 about-private-browsing-search-placeholder = Yeny Kakube
 about-private-browsing-info-title = Itye ii Dirica me Mung
-about-private-browsing-info-myths = Lok goba mapol kare ikom yeny i mung
+about-private-browsing-search-btn =
+    .title = Yeny kakube
+# Variables
+#  $engine (String): the name of the user's default search engine
+about-private-browsing-handoff =
+    .title = Yeny ki { $engine } onyo ket kanonge
+about-private-browsing-handoff-no-engine =
+    .title = Yeny onyo ket kanonge
+# Variables
+#  $engine (String): the name of the user's default search engine
+about-private-browsing-handoff-text = Yeny ki { $engine } onyo ket kanonge
+about-private-browsing-handoff-text-no-engine = Yeny onyo ket kanonge
 about-private-browsing-not-private = Kombedi pe itye i dirica me mung.
-about-private-browsing-info-description = { -brand-short-name } jwayo yeny ki gin mukato me yeny mamegi ka i kato woko ki i purugram onyo i loro dirica ki dirica matino weng me Yeny i Mung. Kadi bed ni man pe weko i bedo ma pe ingene bot kakube onyo lumi intanet mamegi, weko bedo yot me gwoko ngo ma itimo iwiyamo i mung ki bot ngat mukene ma tiyo ki kompuita man.
+about-private-browsing-learn-more-link = Nong ngec mapol
+about-private-browsing-prominent-cta = Bed i mung ki { -mozilla-vpn-brand-name }
+about-private-browsing-focus-promo-cta = Gam { -focus-brand-name }
 
-about-private-browsing-turn-on-vpn = Tem { -mozilla-vpn-brand-name }
+## The following strings will be used for experiments in Fx99 and Fx100
 
 # This string is the title for the banner for search engine selection
 # in a private window.
@@ -24,3 +37,11 @@ about-private-browsing-search-banner-description =
     }
 about-private-browsing-search-banner-close-button =
     .aria-label = Lor
+about-private-browsing-promo-close-button =
+    .title = Lor
+
+## Strings used in a “pin promotion” message, which prompts users to pin a private window
+
+
+## Strings used in a promotion message for cookie banner reduction
+

@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-permissions-window =
+permissions-window2 =
     .title = ခြွင်းချက်များ
-    .style = width: 45em
+    .style = min-width: 45em
 
 permissions-close-key =
     .key = w
@@ -65,31 +65,32 @@ permissions-invalid-uri-label = အလုပ်လုပ်သောတည်ရ
 
 ## Exceptions - Cookies
 
-permissions-exceptions-cookie-window =
+permissions-exceptions-cookie-window2 =
     .title = ခြွင်းချက်များ - ကွတ်ကီးများနှင့် ဆိုက်အချက်အလက်
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 
 ## Exceptions - HTTPS-Only Mode
 
+
 ## Exceptions - Pop-ups
 
-permissions-exceptions-popup-window =
+permissions-exceptions-popup-window2 =
     .title = ခွင့်ပြုထားသောဆိုက်များ - တိုးဖွင့်၀င်းဒိုး
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-popup-desc = သင်သည်မည်သည့်၀တ်ဆိုက်အားပေါ့အပ်၀င်းဒိုးခွင့်ပြုမည်ကိုခန့်ခွဲနိုင်သည်။သင်ခွင့်ပြုလိုသော၀တ်ဆိုက်လိပ်စာအတိအကျအားရိုက်ကာ ခွင့်ပြုမည်ကိုနှိပ်ပါ။
 
 ## Exceptions - Saved Logins
 
-permissions-exceptions-saved-logins-window =
+permissions-exceptions-saved-logins-window2 =
     .title = ခြွင်းချက်များ - သိမ်းဆည်းထားသည့် ဝင်ရောက်မှု အချက်အလက်များ
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-saved-logins-desc = အောက်ပါဆိုက်များအတွက် ဝင်ရောက်မှုများကို သိမ်းထားမည် မဟုတ်ပါ။
 
 ## Exceptions - Add-ons
 
-permissions-exceptions-addons-window =
+permissions-exceptions-addons-window2 =
     .title = ခွင့်ပြုထားသောဆိုက်များ - ထပ်မံဖြည့်စွက်မှုများ လုပ်ခြင်း
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-addons-desc = သင်သည်မည်သည့်၀တ်ဆိုက်အားအတ်အွန်များသွင်းခွင့်ပေးမည်ကို ခန့်ခွဲနိုင်သည်။သင်ခွင့်ပြုလိုသော၀တ်ဆိုက်အားတိကျစွာရိုက်ကာ ခွင့်ပြုမည်ကိုနှိပ်ပါ။
 
 ## Site Permissions - Autoplay
@@ -97,17 +98,17 @@ permissions-exceptions-addons-desc = သင်သည်မည်သည့်၀�
 
 ## Site Permissions - Notifications
 
-permissions-site-notification-window =
+permissions-site-notification-window2 =
     .title = အပြင်အဆင်များ - အသိပေးချက်များဆိုင်ရာ ခွင့်ပြုချက်များ
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-notification-disable-label =
     .label = အသိပေးချက်များပြရန် တောင်းဆိုမှုအသစ်များကို တားဆီးပါ
 
 ## Site Permissions - Location
 
-permissions-site-location-window =
+permissions-site-location-window2 =
     .title = အပြင်အဆင်များ - တည်နေရာဆိုင်ရာ ခွင့်ပြုချက်များ
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-location-disable-label =
     .label = တည်နေရာကို အသုံးပြုရန် တောင်းဆိုမှုအသစ်များကို တားဆီးပါ
 
@@ -116,16 +117,21 @@ permissions-site-location-disable-label =
 
 ## Site Permissions - Camera
 
-permissions-site-camera-window =
+permissions-site-camera-window2 =
     .title = အပြင်အဆင်များ - ကင်မရာဆိုင်ရာ ခွင့်ပြုချက်များ
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-camera-disable-label =
     .label = ကင်မရာအသုံးပြုရန် တောင်းဆိုမှုအသစ်များကို တားဆီးပါ
 
 ## Site Permissions - Microphone
 
-permissions-site-microphone-window =
+permissions-site-microphone-window2 =
     .title = အပြင်အဆင်များ - မိုက်ကရိုဖုန်းဆိုင်ရာ ခွင့်ပြုချက်များ
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-microphone-disable-label =
     .label = မိုက္ကရိုဖုန်းအသုံးပြုရန် တောင်းဆိုမှုအသစ်များကို တားဆီးပါ
+
+## Site Permissions - Speaker
+##
+## "Speaker" refers to an audio output device.
+

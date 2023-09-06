@@ -53,7 +53,6 @@ VRManagerChild::VRManagerChild()
   MOZ_ASSERT(NS_IsMainThread());
 
   mStartTimeStamp = TimeStamp::Now();
-  AddRef();
 }
 
 VRManagerChild::~VRManagerChild() { MOZ_ASSERT(NS_IsMainThread()); }
@@ -124,8 +123,8 @@ void VRManagerChild::InitSameProcess() {
 
   sVRManagerChildSingleton = new VRManagerChild();
   sVRManagerParentSingleton = VRManagerParent::CreateSameProcess();
-  sVRManagerChildSingleton->Open(sVRManagerParentSingleton->GetIPCChannel(),
-                                 CompositorThread(), mozilla::ipc::ChildSide);
+  sVRManagerChildSingleton->Open(sVRManagerParentSingleton, CompositorThread(),
+                                 mozilla::ipc::ChildSide);
 }
 
 /* static */
@@ -148,8 +147,6 @@ void VRManagerChild::ShutDown() {
   sVRManagerChildSingleton->Close();
   sVRManagerChildSingleton = nullptr;
 }
-
-void VRManagerChild::ActorDealloc() { Release(); }
 
 void VRManagerChild::ActorDestroy(ActorDestroyReason aReason) {
   if (sVRManagerChildSingleton == this) {
@@ -369,14 +366,8 @@ bool VRManagerChild::EnumerateVRDisplays() {
 void VRManagerChild::DetectRuntimes() { Unused << SendDetectRuntimes(); }
 
 PVRLayerChild* VRManagerChild::CreateVRLayer(uint32_t aDisplayID,
-                                             nsISerialEventTarget* aTarget,
                                              uint32_t aGroup) {
   PVRLayerChild* vrLayerChild = AllocPVRLayerChild(aDisplayID, aGroup);
-  // Do the DOM labeling.
-  if (aTarget) {
-    SetEventTargetForActor(vrLayerChild, aTarget);
-    MOZ_ASSERT(vrLayerChild->GetActorEventTarget());
-  }
   return SendPVRLayerConstructor(vrLayerChild, aDisplayID, aGroup);
 }
 
@@ -598,7 +589,7 @@ void VRManagerChild::StopActivity() {
   Unused << SendStopActivity();
 }
 
-void VRManagerChild::HandleFatalError(const char* aMsg) const {
+void VRManagerChild::HandleFatalError(const char* aMsg) {
   dom::ContentChild::FatalErrorIfNotUsingGPUProcess(aMsg, OtherPid());
 }
 

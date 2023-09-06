@@ -21,7 +21,7 @@ const EXPECTED_REFLOWS = [
  * This test ensures that there are no unexpected
  * uninterruptible reflows when opening new tabs.
  */
-add_task(async function() {
+add_task(async function () {
   // Force-enable tab animations
   gReduceMotionOverride = false;
 
@@ -44,7 +44,8 @@ add_task(async function() {
   // tab opening operation.
   gURLBar.focus();
 
-  let tabStripRect = gBrowser.tabContainer.arrowScrollbox.getBoundingClientRect();
+  let tabStripRect =
+    gBrowser.tabContainer.arrowScrollbox.getBoundingClientRect();
 
   let firstTabRect = gBrowser.selectedTab.getBoundingClientRect();
   let tabPaddingStart = parseFloat(
@@ -52,7 +53,8 @@ add_task(async function() {
   );
   let minTabWidth = firstTabRect.width - 2 * tabPaddingStart;
   let maxTabWidth = firstTabRect.width;
-  let firstTabLabelRect = gBrowser.selectedTab.textLabel.getBoundingClientRect();
+  let firstTabLabelRect =
+    gBrowser.selectedTab.textLabel.getBoundingClientRect();
   let newTabButtonRect = document
     .getElementById("tabs-newtab-button")
     .getBoundingClientRect();
@@ -62,9 +64,85 @@ add_task(async function() {
 
   let inRange = (val, min, max) => min <= val && val <= max;
 
+  info(`tabStripRect=${JSON.stringify(tabStripRect)}`);
+  info(`firstTabRect=${JSON.stringify(firstTabRect)}`);
+  info(`tabPaddingStart=${JSON.stringify(tabPaddingStart)}`);
+  info(`firstTabLabelRect=${JSON.stringify(firstTabLabelRect)}`);
+  info(`newTabButtonRect=${JSON.stringify(newTabButtonRect)}`);
+  info(`textBoxRect=${JSON.stringify(textBoxRect)}`);
+
+  let inTabStrip = function (r) {
+    return (
+      r.y1 >= tabStripRect.top &&
+      r.y2 <= tabStripRect.bottom &&
+      r.x1 >= tabStripRect.left &&
+      r.x2 <= tabStripRect.right
+    );
+  };
+
+  const kTabCloseIconWidth = 13;
+
+  let isExpectedChange = function (r) {
+    // We expect all changes to be within the tab strip.
+    if (!inTabStrip(r)) {
+      return false;
+    }
+
+    // The first tab should get deselected at the same time as the next tab
+    // starts appearing, so we should have one rect that includes the first tab
+    // but is wider.
+    if (
+      inRange(r.w, minTabWidth, maxTabWidth * 2) &&
+      inRange(r.x1, firstTabRect.x, firstTabRect.x + tabPaddingStart)
+    ) {
+      return true;
+    }
+
+    // The second tab gets painted several times due to tabopen animation.
+    let isSecondTabRect =
+      inRange(
+        r.x1,
+        // When the animation starts the tab close icon overflows.
+        // -1 for the border on Win7
+        firstTabRect.right - kTabCloseIconWidth - 1,
+        firstTabRect.right + firstTabRect.width
+      ) &&
+      r.x2 <
+        firstTabRect.right +
+          firstTabRect.width +
+          // Sometimes the '+' is in the same rect.
+          newTabButtonRect.width;
+
+    if (isSecondTabRect) {
+      return true;
+    }
+    // The '+' icon moves with an animation. At the end of the animation
+    // the former and new positions can touch each other causing the rect
+    // to have twice the icon's width.
+    if (
+      r.h == kTabCloseIconWidth &&
+      r.w <= 2 * kTabCloseIconWidth + kMaxEmptyPixels
+    ) {
+      return true;
+    }
+
+    // We sometimes have a rect for the right most 2px of the '+' button.
+    if (r.h == 2 && r.w == 2) {
+      return true;
+    }
+
+    // Same for the 'X' icon.
+    if (r.h == 10 && r.w <= 2 * 10) {
+      return true;
+    }
+
+    // Other changes are unexpected.
+    return false;
+  };
+
   // Add a reflow observer and open a new tab.
   await withPerfObserver(
-    async function() {
+    async function () {
       let switchDone = BrowserTestUtils.waitForEvent(window, "TabSwitchDone");
       BrowserOpenTab();
       await BrowserTestUtils.waitForEvent(
@@ -76,46 +154,7 @@ add_task(async function() {
     {
       expectedReflows: EXPECTED_REFLOWS,
       frames: {
-        filter: rects =>
-          rects.filter(
-            r =>
-              !(
-                // We expect all changes to be within the tab strip.
-                (
-                  r.y1 >= tabStripRect.top &&
-                  r.y2 <= tabStripRect.bottom &&
-                  r.x1 >= tabStripRect.left &&
-                  r.x2 <= tabStripRect.right &&
-                  // The first tab should get deselected at the same time as the next
-                  // tab starts appearing, so we should have one rect that includes the
-                  // first tab but is wider.
-                  ((inRange(r.w, minTabWidth, maxTabWidth * 2) &&
-                    inRange(
-                      r.x1,
-                      firstTabRect.x,
-                      firstTabRect.x + tabPaddingStart
-                    )) ||
-                  // The second tab gets painted several times due to tabopen animation.
-                  (inRange(
-                    r.x1,
-                    firstTabRect.right - 1, // -1 for the border on Win7
-                    firstTabRect.right + firstTabRect.width
-                  ) &&
-                    r.x2 <
-                      firstTabRect.right +
-                        firstTabRect.width +
-                        newTabButtonRect.width) || // Sometimes the '+' is in the same rect.
-                    // The '+' icon moves with an animation. At the end of the animation
-                    // the former and new positions can touch each other causing the rect
-                    // to have twice the icon's width.
-                    (r.h == 13 && r.w <= 2 * 13 + kMaxEmptyPixels) ||
-                    // We sometimes have a rect for the right most 2px of the '+' button.
-                    (r.h == 2 && r.w == 2) ||
-                    // Same for the 'X' icon.
-                    (r.h == 10 && r.w <= 2 * 10))
-                )
-              )
-          ),
+        filter: rects => rects.filter(r => !isExpectedChange(r)),
         exceptions: [
           {
             name:
@@ -143,8 +182,7 @@ add_task(async function() {
               r.y2 <= textBoxRect.bottom,
           },
           {
-            name:
-              "bug 1477966 - the name of a deselected tab should appear immediately",
+            name: "bug 1477966 - the name of a deselected tab should appear immediately",
             condition: r =>
               AppConstants.platform == "macosx" &&
               r.x1 >= firstTabLabelRect.x &&

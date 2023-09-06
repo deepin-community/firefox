@@ -3,43 +3,13 @@ $header-font-size: 17;
 $header-line-height: 24;
 $excerpt-font-size: 14;
 $excerpt-line-height: 20;
+$ds-card-image-gradient-fade: rgba(0, 0, 0, 0%);
+$ds-card-image-gradient-solid: rgba(0, 0, 0, 100%);
 
 .ds-card {
   display: flex;
   flex-direction: column;
   position: relative;
-
-  .playhead {
-    background: var(--newtab-primary-action-background) url('chrome://activity-stream/content/data/content/assets/glyph-playhead.svg') no-repeat 12px center;
-    border-radius: 20px;
-    bottom: -16px;
-    color: color-mix(in srgb, var(--newtab-primary-element-text-color) 0%, transparent);
-    display: flex;
-    flex-direction: column;
-    height: 40px;
-    justify-content: center;
-    left: 16px;
-    min-width: 40px;
-    padding: 0 0 0 40px;
-    position: absolute;
-    transition: padding 100ms ease-in-out 0ms, color 100ms linear 100ms;
-
-    &:hover {
-      color: var(--newtab-primary-element-text-color);
-      padding: 0 20px 0 40px;
-    }
-
-    span {
-      display: none;
-    }
-
-    &:hover span {
-      display: inline;
-      font-style: normal;
-      font-weight: 600;
-      font-size: 13px;
-    }
-  }
 
   &.placeholder {
     background: transparent;
@@ -64,16 +34,14 @@ $excerpt-line-height: 20;
     padding-top: 50%;
     pointer-events: none;
     background: $black-40;
-    border-radius: 8px;
+    border-radius: 8px 8px 0 0;
 
     .card-stp-button-position-wrapper {
       position: absolute;
-      margin-top: -16px;
-      left: 0;
-      right: 0;
-      top: 50%;
+      inset-inline-end: 10px;
+      top: 10px;
       display: flex;
-      justify-content: center;
+      justify-content: end;
       align-items: center;
     }
 
@@ -83,15 +51,13 @@ $excerpt-line-height: 20;
       height: 15px;
       width: 15px;
       background-size: 15px;
-    }
-
-    .icon-pocket {
-      fill: $pocket-icon-fill;
+      fill: $white;
     }
 
     .context-menu-button {
       position: static;
       transition: none;
+      border-radius: 3px;
     }
 
     .context-menu-position-container {
@@ -107,21 +73,16 @@ $excerpt-line-height: 20;
 
     .card-stp-button {
       display: flex;
-      margin-inline-end: 12px;
+      margin-inline-end: 7px;
       font-weight: 400;
       font-size: 13px;
       line-height: 16px;
-      background-color: var(--newtab-background-color-secondary);
+      background-color: $pocket-icon-fill;
       border: 0;
       border-radius: 4px;
-      padding: 8px;
+      padding: 6px;
       white-space: nowrap;
-
-      &:hover {
-        .icon-pocket-save {
-          fill: $pocket-icon-fill;
-        }
-      }
+      color: $white;
     }
 
     button,
@@ -143,12 +104,19 @@ $excerpt-line-height: 20;
     }
   }
 
-  &:hover,
-  &.active {
+  // The active class is added when the context menu is open.
+  &.active,
+  &:focus-within,
+  &:hover {
     .card-stp-button-hover-background {
       display: block;
       opacity: 1;
       transition-duration: 0.3s;
+
+      .context-menu-button {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
   }
 
@@ -166,6 +134,7 @@ $excerpt-line-height: 20;
     height: 100%;
     display: flex;
     flex-direction: column;
+    text-decoration: none;
 
     &:hover {
       header {
@@ -190,28 +159,6 @@ $excerpt-line-height: 20;
     }
   }
 
-  &.video-card .meta {
-    margin-top: 4px;
-  }
-
-  &.last-card-message {
-    .ds-last-card-desc {
-      font-size: 13px;
-      color: var(--newtab-text-secondary-color);
-    }
-
-    .ds-last-card-desc,
-    .title {
-      text-align: center;
-    }
-
-    .last-card-message-image {
-      object-fit: contain;
-      background: transparent;
-      box-shadow: none;
-    }
-  }
-
   .meta {
     display: flex;
     flex-direction: column;
@@ -225,6 +172,7 @@ $excerpt-line-height: 20;
     .title {
       // show only 3 lines of copy
       @include limit-visible-lines(3, $header-line-height, $header-font-size);
+
       font-weight: 600;
     }
 
@@ -242,54 +190,49 @@ $excerpt-line-height: 20;
       margin-bottom: 2px;
       font-size: 13px;
       color: var(--newtab-text-secondary-color);
-    }
 
-    .cta-button {
-      background-color: var(--newtab-button-secondary-color);
-      width: 100%;
-      margin: 12px 0 4px;
-      box-shadow: none;
-      border-radius: 4px;
-      height: 32px;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 5px 8px 7px;
-      border: $border-primary;
-
-      &:active {
-        box-shadow: $shadow-primary;
+      span {
+        display: inline-block;
       }
     }
 
-    .cta-link {
-      color: var(--newtab-primary-action-background);
-      fill: var(--newtab-primary-action-background);
+    .new-sponsored-label {
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+  }
 
-      font-size: 15px;
-      font-weight: 600;
-      line-height: 24px;
-      height: 24px;
-      width: auto;
-      background-size: auto;
-      background-position: right 1.5px;
-      padding-right: 9px;
+  &.ds-card-title-lines-2 .meta .title {
+    // show only 2 lines of copy
+    @include limit-visible-lines(2, $header-line-height, $header-font-size);
+  }
 
-      &:focus {
-        box-shadow: $shadow-primary;
+  &.ds-card-title-lines-1 .meta .title {
+    // show only 1 line of copy
+    @include limit-visible-lines(1, $header-line-height, $header-font-size);
+  }
 
-        border-radius: 4px;
-        outline: 0;
-      }
+  &.ds-card-desc-lines-2 .meta .excerpt {
+    // show only 2 lines of copy
+    @include limit-visible-lines(2, $excerpt-line-height, $excerpt-font-size);
+  }
 
-      &:active {
-        color: var(--newtab-primary-element-active-color);
-        fill: var(--newtab-primary-element-active-color);
-        box-shadow: none;
-      }
+  &.ds-card-desc-lines-1 .meta .excerpt {
+    // show only 1 line of copy
+    @include limit-visible-lines(1, $excerpt-line-height, $excerpt-font-size);
+  }
 
-      &:hover {
-        text-decoration: underline;
-      }
+  &.ds-card-compact-image .img {
+    padding-top: 47%;
+  }
+
+  &.ds-card-image-gradient {
+    img {
+      mask-image: linear-gradient(to top, $ds-card-image-gradient-fade, $ds-card-image-gradient-solid 40px);
+    }
+
+    .meta {
+      padding: 3px 15px 11px;
     }
   }
 

@@ -29,7 +29,7 @@ MIDIOutput* MIDIOutput::Create(nsPIDOMWindowInner* aWindow,
                                const bool aSysexEnabled) {
   MOZ_ASSERT(static_cast<MIDIPortType>(aPortInfo.type()) ==
              MIDIPortType::Output);
-  auto port = new MIDIOutput(aWindow, aMIDIAccessParent);
+  auto* port = new MIDIOutput(aWindow, aMIDIAccessParent);
   if (NS_WARN_IF(!port->Initialize(aPortInfo, aSysexEnabled))) {
     return nullptr;
   }
@@ -43,7 +43,7 @@ JSObject* MIDIOutput::WrapObject(JSContext* aCx,
 
 void MIDIOutput::Send(const Sequence<uint8_t>& aData,
                       const Optional<double>& aTimestamp, ErrorResult& aRv) {
-  if (mPort->DeviceState() == MIDIPortDeviceState::Disconnected) {
+  if (Port()->DeviceState() == MIDIPortDeviceState::Disconnected) {
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return;
   }
@@ -71,9 +71,12 @@ void MIDIOutput::Send(const Sequence<uint8_t>& aData,
   }
 
   nsTArray<MIDIMessage> msgArray;
-  MIDIUtils::ParseMessages(aData, timestamp, msgArray);
-  // Our translation of the spec is that invalid messages in a multi-message
-  // sequence will be thrown out, but that valid messages will still be used.
+  bool ret = MIDIUtils::ParseMessages(aData, timestamp, msgArray);
+  if (!ret) {
+    aRv.ThrowTypeError("Invalid MIDI message");
+    return;
+  }
+
   if (msgArray.IsEmpty()) {
     aRv.ThrowTypeError("Empty message array");
     return;
@@ -89,12 +92,12 @@ void MIDIOutput::Send(const Sequence<uint8_t>& aData,
       }
     }
   }
-  mPort->SendSend(msgArray);
+  Port()->SendSend(msgArray);
 }
 
 void MIDIOutput::Clear() {
-  if (mPort->ConnectionState() == MIDIPortConnectionState::Closed) {
+  if (Port()->ConnectionState() == MIDIPortConnectionState::Closed) {
     return;
   }
-  mPort->SendClear();
+  Port()->SendClear();
 }

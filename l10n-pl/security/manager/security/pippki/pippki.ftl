@@ -16,8 +16,6 @@ change-password-old = Bieżące hasło:
 change-password-new = Nowe hasło:
 change-password-reenter = Nowe hasło (ponownie):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Nie można zmienić hasła.
 pippki-incorrect-pw = Nie podano właściwego hasła. Proszę spróbować ponownie.
 pippki-pw-change-ok = Hasło zostało zmienione.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Program pracuje obecnie w trybie FIPS. Tr
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Zresetuj hasło główne
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Zresetuj
-
 reset-primary-password-text = Po zresetowaniu hasła głównego wszystkie przechowywane hasła internetowe i hasła serwerów pocztowych, certyfikaty osobiste oraz prywatne klucze zostaną usunięte. Czy na pewno zresetować hasło główne?
 
 pippki-reset-password-confirmation-title = Zresetuj hasło główne
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Hasło główne zostało zresetowan
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Pobieranie certyfikatu
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Otrzymano prośbę o dołączenie nowego organu certyfikacji do listy zaufanych organów.
 download-cert-trust-ssl =
     .label = Zaufaj temu CA przy identyfikacji witryn internetowych.
@@ -77,7 +74,8 @@ set-password-reminder = Ważne: jeżeli hasło zabezpieczające kopię certyfika
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Uwierzytelnienie do chronionego tokenu
-protected-auth-msg = Należy uwierzytelnić się do tokenu. Metoda uwierzytelnienia zależy od rodzaju tokenu.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Proszę uwierzytelnić się do tokenu „{ $tokenName }”. Metoda uwierzytelnienia zależy od tokenu (np. za pomocą czytnika linii papilarnych lub przez wpisanie kodu na specjalnej klawiaturze).

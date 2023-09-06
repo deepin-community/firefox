@@ -17,9 +17,9 @@ certmgr-tab-servers =
 certmgr-tab-ca =
     .label = ಅಥಾರಿಟಿಗಳು
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = CA ಪ್ರಮಾಣಪತ್ರ ನಂಬಿಕಾ ಸಿದ್ಧತೆಗಳನ್ನು ಸಂಪಾದಿಸು
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = ನಂಬಿಕಾ ಸಿದ್ಧತೆಗಳನ್ನು ಸಂಯೋಜಿಸು:
 
@@ -29,18 +29,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = ಈ ಪ್ರಮಾಣಪತ್ರವು ಮೇಲ್‍ ಬಳೆಕದಾರರನ್ನು ಗುರುತಿಸಬಲ್ಲದು.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = ಪ್ರಮಾಣಪತ್ರವನ್ನು ಅಳಿಸು
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = ಪ್ರಮಾಣಪತ್ರದ ಹೆಸರು
 
 certmgr-cert-server =
     .label = ಪರಿಚಾರಕ
-
-certmgr-override-lifetime =
-    .label = ಜೀವಿತಾವಧಿ
 
 certmgr-token-name =
     .label = ಸುರಕ್ಷತಾ ಸಾಧನ
@@ -162,9 +159,8 @@ delete-email-cert-title =
 delete-email-cert-confirm = ನೀವು ಈ ಎಲ್ಲಾ ವಿ-ಅಂಚೆ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ಖಚಿತವಾಗಿಯೂ ಅಳಿಸಲು ಬಯಸುತ್ತೀರೆ?
 delete-email-cert-impact = ನೀವು ಒಬ್ಬ ವ್ಯಕ್ತಿಯ ಇ-ಮೈಲ್‌ ಅಳಿಸಿದರೆ, ಆ ವ್ಯಕ್ತಿಗೆ ಮುಂದೆ ಗೂಢಲಿಪೀಕರಣಗೊಂಡ(ಎನ್‌ಕ್ರಿಪ್ಟ್‍ ) ಇ-ಮೈಲ್ ಅನ್ನು ಕಳುಹಿಸಲು ಸಾಧ್ಯವಿರುವುದಿಲ್ಲ.
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

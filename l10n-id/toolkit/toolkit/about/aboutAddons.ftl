@@ -8,10 +8,16 @@ search-header =
     .placeholder = Cari addons.mozilla.org
     .searchbuttonlabel = Cari
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
 list-empty-get-extensions-message = Dapatkan ekstensi dan tema di <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-dictionaries-message = Dapatkan kamus di <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-language-packs-message = Dapatkan paket bahasa di <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
 
 list-empty-installed =
     .value = Anda tidak memiliki pengaya terpasang jenis ini
@@ -47,6 +53,9 @@ detail-version =
 
 detail-last-updated =
     .label = Terakhir Diperbarui
+
+addon-detail-description-expand = Tampilkan lebih banyak
+addon-detail-description-collapse = Tampilkan lebih sedikit
 
 detail-contributions-description = Pengembang pengaya ini memohon bantuan dukungan Anda untuk membantu kesinambungan pengembangan pengaya dengan memberikan kontribusi kecil.
 
@@ -178,6 +187,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Versi Baru
 addon-category-recent-updates-title =
     .title = Versi Baru
+addon-category-sitepermission = Izin Situs
+addon-category-sitepermission-title =
+    .title = Izin Situs
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string): DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Izin Situs untuk { $host }
 
 ## These are global warnings
 
@@ -188,7 +204,6 @@ extensions-warning-check-compatibility-button = Aktifkan
 extensions-warning-update-security = Pemeriksaan keamanan pemutakhiran pengaya telah dinonaktifkan. Pemutakhiran pengaya saat ini memiliki risiko keamanan.
 extensions-warning-update-security-button = Aktifkan
     .title = Aktifkan pemeriksaan keamanan pemutakhiran pengaya
-
 
 ## Strings connected to add-on updates
 
@@ -304,6 +319,7 @@ install-theme-button = Pasang Tema
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Kelola
 find-more-addons = Temukan lebih banyak pengaya
+find-more-themes = Temukan lebih banyak tema
 
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
@@ -335,7 +351,7 @@ extension-enabled-heading = Aktif
 extension-disabled-heading = Nonaktif
 
 theme-enabled-heading = Aktif
-theme-disabled-heading = Nonaktif
+theme-disabled-heading2 = Tema Tersimpan
 
 plugin-enabled-heading = Aktif
 plugin-disabled-heading = Nonaktif
@@ -345,6 +361,9 @@ dictionary-disabled-heading = Nonaktif
 
 locale-enabled-heading = Aktif
 locale-disabled-heading = Nonaktif
+
+sitepermission-enabled-heading = Diaktifkan
+sitepermission-disabled-heading = Dinonaktifkan
 
 always-activate-button = Selalu Aktif
 never-activate-button = Jangan Pernah Aktifkan
@@ -401,13 +420,15 @@ addon-detail-private-browsing-help = Jika diizinkan, ekstensi akan memiliki akse
 addon-detail-private-browsing-allow = Izinkan
 addon-detail-private-browsing-disallow = Jangan Izinkan
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 addon-badge-recommended2 =
     .title = { -brand-product-name } hanya menyarankan ekstensi yang memenuhi standar keamanan dan kinerja kami.
     .aria-label = { addon-badge-recommended2.title }
-
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
 addon-badge-line3 =
@@ -426,13 +447,14 @@ release-notes-loading = Memuat…
 release-notes-error = Maaf, galat terjadi ketika memuat catatan rilis.
 
 addon-permissions-empty = Ekstensi ini tidak memerlukan izin apa pun
-
 addon-permissions-required = Izin yang diperlukan untuk fungsi inti:
 addon-permissions-optional = Izin opsional untuk fungsi tambahan:
 addon-permissions-learnmore = Pelajari lebih lanjut tentang perizinan
 
 recommended-extensions-heading = Ekstensi yang Disarankan
 recommended-themes-heading = Tema yang Disarankan
+
+addon-sitepermissions-required = Berikan kemampuan berikut untuk <span data-l10n-name="hostname">{ $hostname }</span>:
 
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
@@ -446,6 +468,7 @@ plugin-heading = Kelola plugin Anda
 dictionary-heading = Kelola kamus Anda
 locale-heading = Kelola bahasa Anda
 updates-heading = Kelola Pembaruan Anda
+sitepermission-heading = Kelola Izin Situs Anda
 discover-heading = Personalisasikan { -brand-short-name } Anda
 shortcuts-heading = Kelola Pintasan Ekstensi
 
@@ -455,3 +478,30 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Alat untuk semua pengaya
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } tidak kompatibel dengan { -brand-short-name } { $version }.
+details-notification-incompatible-link = Informasi Lebih Lanjut
+
+details-notification-unsigned-and-disabled = { $name } tidak dapat diverifikasi untuk digunakan di { -brand-short-name } dan telah dinonaktifkan.
+details-notification-unsigned-and-disabled-link = Informasi Lebih Lanjut
+
+details-notification-unsigned = { $name } tidak dapat diverifikasi untuk digunakan di { -brand-short-name }. Lanjutkan dengan hati-hati.
+details-notification-unsigned-link = Informasi Lebih Lanjut
+
+details-notification-blocked = { $name } telah dimatikan karena masalah keamanan atau kestabilan.
+details-notification-blocked-link = Informasi Lebih Lanjut
+
+details-notification-softblocked = { $name } telah dikenali mengakibatkan masalah keamanan atau kestabilan.
+details-notification-softblocked-link = Informasi Lebih Lanjut
+
+details-notification-gmp-pending = { $name } akan diinstal sebentar lagi.

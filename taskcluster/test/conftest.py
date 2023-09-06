@@ -1,20 +1,17 @@
 # Any copyright is dedicated to the public domain.
 # http://creativecommons.org/publicdomain/zero/1.0/
 
-from __future__ import absolute_import
-
 import json
 import logging
 import os
 
 import pytest
-from mach.logging import LoggingManager
-from responses import RequestsMock, logger as rsps_logger
-
+from gecko_taskgraph.util.bugbug import BUGBUG_BASE_URL
+from gecko_taskgraph.util.hg import PUSHLOG_PUSHES_TMPL
+from responses import RequestsMock
+from responses import logger as rsps_logger
 from taskgraph.generator import TaskGraphGenerator
 from taskgraph.parameters import parameters_loader
-from taskgraph.util.hg import PUSHLOG_PUSHES_TMPL
-from taskgraph.util.bugbug import BUGBUG_BASE_URL
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -33,11 +30,6 @@ def datadir():
 
 @pytest.fixture(scope="session")
 def create_tgg(responses, datadir):
-
-    # Setup logging.
-    lm = LoggingManager()
-    lm.add_terminal_logging()
-
     def inner(parameters=None, overrides=None):
         params = parameters_loader(parameters, strict=False, overrides=overrides)
         tgg = TaskGraphGenerator(None, params)

@@ -16,10 +16,12 @@
 //            that compile wasm bytecode
 //  instanceBox: if present, an object with a `value` property that will
 //               receive the constructed instance
-//  no_prefix: if true, do not add a prefix string (normally the end of the
-//             prologue)
-//  no_suffix: if true, do not add a suffix string (normally the start of the
-//             epilogue)
+//  no_prefix: by default, the required pattern must be immediately preceded
+//             by `x64_prefix`, and this is checked.  Setting this to true skips
+//             the check.
+//  no_suffix: by default, the required pattern must be immediately followed
+//             by `x64_suffix`, and this is checked.  Setting this to true skips
+//             the check.
 //  memory: if present, add a memory of length given by this property
 //  log: for debugging -- print the disassembly, then the preprocessed pattern
 
@@ -32,7 +34,7 @@ var RIPR = `0x${HEXES}`;
 var RIPRADDR = `${HEX}{2} ${HEX}{2} ${HEX}{2} ${HEX}{2}`;
 
 // End of prologue
-var x64_prefix = `48 8b ec                  mov %rsp, %rbp`
+var x64_prefix = `48 89 e5                  mov %rsp, %rbp`
 
 // Start of epilogue
 var x64_suffix = `5d                        pop %rbp`;
@@ -154,13 +156,20 @@ function codegenTestX64_adhoc(module_text, export_name, expected, options = {}) 
         expected = x64_prefix + '\n' + expected;
     if (!options.no_suffix)
         expected = expected + '\n' + x64_suffix;
+    const expected_pretty = striplines(expected);
     expected = fixlines(expected);
-    if (options.log) {
+
+    const success = output.match(new RegExp(expected)) != null;
+    if (options.log || !success) {
+        print("Module text:")
         print(module_text);
+        print("Actual output:")
         print(output);
+        print("Expected output (easy-to-read and fully-regex'd):")
+        print(expected_pretty);
         print(expected);
     }
-    assertEq(output.match(new RegExp(expected)) != null, true);
+    assertEq(success, true);
 }
 
 // Internal code below this line

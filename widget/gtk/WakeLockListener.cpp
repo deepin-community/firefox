@@ -18,6 +18,7 @@
 #    include "prlink.h"
 #    include <gdk/gdk.h>
 #    include <gdk/gdkx.h>
+#    include "X11UndefineNone.h"
 #  endif
 
 #  if defined(MOZ_WAYLAND)
@@ -29,6 +30,10 @@
 #  define FREEDESKTOP_SCREENSAVER_TARGET "org.freedesktop.ScreenSaver"
 #  define FREEDESKTOP_SCREENSAVER_OBJECT "/ScreenSaver"
 #  define FREEDESKTOP_SCREENSAVER_INTERFACE "org.freedesktop.ScreenSaver"
+
+#  define FREEDESKTOP_POWER_TARGET "org.freedesktop.PowerManagement"
+#  define FREEDESKTOP_POWER_OBJECT "/org/freedesktop/PowerManagement/Inhibit"
+#  define FREEDESKTOP_POWER_INTERFACE "org.freedesktop.PowerManagement.Inhibit"
 
 #  define SESSION_MANAGER_TARGET "org.gnome.SessionManager"
 #  define SESSION_MANAGER_OBJECT "/org/gnome/SessionManager"
@@ -48,7 +53,8 @@ StaticRefPtr<WakeLockListener> WakeLockListener::sSingleton;
 static mozilla::LazyLogModule gLinuxWakeLockLog("LinuxWakeLock");
 
 enum WakeLockDesktopEnvironment {
-  FreeDesktop,
+  FreeDesktopScreensaver,
+  FreeDesktopPower,
   GNOME,
 #  if defined(MOZ_X11)
   XScreenSaver,
@@ -68,7 +74,7 @@ class WakeLockTopic {
 #  endif
         mTopic(NS_ConvertUTF16toUTF8(aTopic)),
         mConnection(aConnection),
-        mDesktopEnvironment(FreeDesktop),
+        mDesktopEnvironment(FreeDesktopScreensaver),
         mInhibitRequest(0),
         mShouldInhibit(false),
         mWaitingForReply(false) {
@@ -81,7 +87,8 @@ class WakeLockTopic {
   bool SendInhibit();
   bool SendUninhibit();
 
-  bool SendFreeDesktopInhibitMessage();
+  bool SendFreeDesktopPowerInhibitMessage();
+  bool SendFreeDesktopScreensaverInhibitMessage();
   bool SendGNOMEInhibitMessage();
   bool SendMessage(DBusMessage* aMessage);
 
@@ -126,7 +133,25 @@ bool WakeLockTopic::SendMessage(DBusMessage* aMessage) {
   return true;
 }
 
-bool WakeLockTopic::SendFreeDesktopInhibitMessage() {
+bool WakeLockTopic::SendFreeDesktopPowerInhibitMessage() {
+  RefPtr<DBusMessage> message =
+      already_AddRefed<DBusMessage>(dbus_message_new_method_call(
+          FREEDESKTOP_POWER_TARGET, FREEDESKTOP_POWER_OBJECT,
+          FREEDESKTOP_POWER_INTERFACE, "Inhibit"));
+
+  if (!message) {
+    return false;
+  }
+
+  const char* app = g_get_prgname();
+  const char* topic = mTopic.get();
+  dbus_message_append_args(message, DBUS_TYPE_STRING, &app, DBUS_TYPE_STRING,
+                           &topic, DBUS_TYPE_INVALID);
+
+  return SendMessage(message);
+}
+
+bool WakeLockTopic::SendFreeDesktopScreensaverInhibitMessage() {
   RefPtr<DBusMessage> message =
       already_AddRefed<DBusMessage>(dbus_message_new_method_call(
           FREEDESKTOP_SCREENSAVER_TARGET, FREEDESKTOP_SCREENSAVER_OBJECT,
@@ -237,12 +262,12 @@ bool WakeLockTopic::InhibitXScreenSaver(bool inhibit) {
 
 /* static */
 bool WakeLockTopic::CheckWaylandIdleInhibitSupport() {
-  RefPtr<nsWaylandDisplay> waylandDisplay = WaylandDisplayGet();
+  nsWaylandDisplay* waylandDisplay = WaylandDisplayGet();
   return waylandDisplay && waylandDisplay->GetIdleInhibitManager() != nullptr;
 }
 
 bool WakeLockTopic::InhibitWaylandIdle() {
-  RefPtr<nsWaylandDisplay> waylandDisplay = WaylandDisplayGet();
+  nsWaylandDisplay* waylandDisplay = WaylandDisplayGet();
   if (!waylandDisplay) {
     return false;
   }
@@ -254,12 +279,11 @@ bool WakeLockTopic::InhibitWaylandIdle() {
 
   UninhibitWaylandIdle();
 
-  MozContainer* container = focusedWindow->GetMozContainer();
-  wl_surface* waylandSurface = moz_container_wayland_surface_lock(container);
+  MozContainerSurfaceLock lock(focusedWindow->GetMozContainer());
+  struct wl_surface* waylandSurface = lock.GetSurface();
   if (waylandSurface) {
     mWaylandInhibitor = zwp_idle_inhibit_manager_v1_create_inhibitor(
         waylandDisplay->GetIdleInhibitManager(), waylandSurface);
-    moz_container_wayland_surface_unlock(container, &waylandSurface);
   }
   return true;
 }
@@ -279,18 +303,26 @@ bool WakeLockTopic::SendInhibit() {
   bool sendOk = false;
 
   switch (mDesktopEnvironment) {
-    case FreeDesktop:
-      sendOk = SendFreeDesktopInhibitMessage();
+    case FreeDesktopScreensaver:
+      WAKE_LOCK_LOG("SendInhibit(): FreeDesktopScreensaver");
+      sendOk = SendFreeDesktopScreensaverInhibitMessage();
+      break;
+    case FreeDesktopPower:
+      WAKE_LOCK_LOG("SendInhibit(): FreeDesktopPower");
+      sendOk = SendFreeDesktopPowerInhibitMessage();
       break;
     case GNOME:
+      WAKE_LOCK_LOG("SendInhibit(): GNOME");
       sendOk = SendGNOMEInhibitMessage();
       break;
 #  if defined(MOZ_X11)
     case XScreenSaver:
+      WAKE_LOCK_LOG("SendInhibit(): InhibitXScreenSaver");
       return InhibitXScreenSaver(true);
 #  endif
 #  if defined(MOZ_WAYLAND)
     case WaylandIdleInhibit:
+      WAKE_LOCK_LOG("SendInhibit(): WaylandIdleInhibit");
       return InhibitWaylandIdle();
 #  endif
     case Unsupported:
@@ -307,22 +339,31 @@ bool WakeLockTopic::SendInhibit() {
 bool WakeLockTopic::SendUninhibit() {
   RefPtr<DBusMessage> message;
 
-  if (mDesktopEnvironment == FreeDesktop) {
+  if (mDesktopEnvironment == FreeDesktopScreensaver) {
+    WAKE_LOCK_LOG("SendUninhibit(): FreeDesktopScreensaver");
     message = already_AddRefed<DBusMessage>(dbus_message_new_method_call(
         FREEDESKTOP_SCREENSAVER_TARGET, FREEDESKTOP_SCREENSAVER_OBJECT,
         FREEDESKTOP_SCREENSAVER_INTERFACE, "UnInhibit"));
+  } else if (mDesktopEnvironment == FreeDesktopPower) {
+    WAKE_LOCK_LOG("SendUninhibit(): FreeDesktopPower");
+    message = already_AddRefed<DBusMessage>(dbus_message_new_method_call(
+        FREEDESKTOP_POWER_TARGET, FREEDESKTOP_POWER_OBJECT,
+        FREEDESKTOP_POWER_INTERFACE, "UnInhibit"));
   } else if (mDesktopEnvironment == GNOME) {
+    WAKE_LOCK_LOG("SendUninhibit(): GNOME");
     message = already_AddRefed<DBusMessage>(dbus_message_new_method_call(
         SESSION_MANAGER_TARGET, SESSION_MANAGER_OBJECT,
         SESSION_MANAGER_INTERFACE, "Uninhibit"));
   }
 #  if defined(MOZ_X11)
   else if (mDesktopEnvironment == XScreenSaver) {
+    WAKE_LOCK_LOG("SendUninhibit(): XScreenSaver");
     return InhibitXScreenSaver(false);
   }
 #  endif
 #  if defined(MOZ_WAYLAND)
   else if (mDesktopEnvironment == WaylandIdleInhibit) {
+    WAKE_LOCK_LOG("SendUninhibit(): Wayland");
     return UninhibitWaylandIdle();
   }
 #  endif
@@ -381,14 +422,18 @@ nsresult WakeLockTopic::UninhibitScreensaver() {
 void WakeLockTopic::InhibitFailed() {
   mWaitingForReply = false;
 
-  if (mDesktopEnvironment == FreeDesktop) {
+  if (mDesktopEnvironment == FreeDesktopScreensaver) {
     mDesktopEnvironment = GNOME;
+  } else if (mDesktopEnvironment == GNOME) {
+    mDesktopEnvironment = FreeDesktopPower;
 #  if defined(MOZ_X11)
-  } else if (mDesktopEnvironment == GNOME && CheckXScreenSaverSupport()) {
+  } else if (mDesktopEnvironment == FreeDesktopPower &&
+             CheckXScreenSaverSupport()) {
     mDesktopEnvironment = XScreenSaver;
 #  endif
 #  if defined(MOZ_WAYLAND)
-  } else if (mDesktopEnvironment == GNOME && CheckWaylandIdleInhibitSupport()) {
+  } else if (mDesktopEnvironment == FreeDesktopPower &&
+             CheckWaylandIdleInhibitSupport()) {
     mDesktopEnvironment = WaylandIdleInhibit;
 #  endif
   } else {
@@ -479,8 +524,12 @@ nsresult WakeLockListener::Callback(const nsAString& topic,
     return NS_ERROR_FAILURE;
   }
 
-  if (!topic.Equals(u"screen"_ns) && !topic.Equals(u"audio-playing"_ns) &&
-      !topic.Equals(u"video-playing"_ns))
+  WAKE_LOCK_LOG("WakeLockListener %s state %s",
+                NS_ConvertUTF16toUTF8(topic).get(),
+                NS_ConvertUTF16toUTF8(state).get());
+
+  if (!topic.Equals(u"screen"_ns) && !topic.Equals(u"video-playing"_ns) &&
+      !topic.Equals(u"autoscroll"_ns))
     return NS_OK;
 
   WakeLockTopic* const topicLock =
@@ -488,8 +537,7 @@ nsresult WakeLockListener::Callback(const nsAString& topic,
 
   // Treat "locked-background" the same as "unlocked" on desktop linux.
   bool shouldLock = state.EqualsLiteral("locked-foreground");
-  WAKE_LOCK_LOG("topic=%s, shouldLock=%d", NS_ConvertUTF16toUTF8(topic).get(),
-                shouldLock);
+  WAKE_LOCK_LOG("shouldLock %d", shouldLock);
 
   return shouldLock ? topicLock->InhibitScreensaver()
                     : topicLock->UninhibitScreensaver();

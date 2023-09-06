@@ -4,8 +4,8 @@
 
 import React, { PureComponent } from "react";
 import ReactDOM from "react-dom";
+import PropTypes from "prop-types";
 import { connect } from "../../utils/connect";
-import classNames from "classnames";
 import "./ConditionalPanel.css";
 import { toEditorLine } from "../../utils/editor";
 import { prefs } from "../../utils/prefs";
@@ -15,8 +15,9 @@ import {
   getClosestBreakpoint,
   getConditionalPanelLocation,
   getLogPointStatus,
-  getContext,
 } from "../../selectors";
+
+const classnames = require("devtools/client/shared/classnames.js");
 
 function addNewLine(doc) {
   const cursor = doc.getCursor();
@@ -34,6 +35,18 @@ export class ConditionalPanel extends PureComponent {
   constructor() {
     super();
     this.cbPanel = null;
+  }
+
+  static get propTypes() {
+    return {
+      breakpoint: PropTypes.object,
+      closeConditionalPanel: PropTypes.func.isRequired,
+      editor: PropTypes.object.isRequired,
+      location: PropTypes.any.isRequired,
+      log: PropTypes.bool.isRequired,
+      openConditionalPanel: PropTypes.func.isRequired,
+      setBreakpointOptions: PropTypes.func.isRequired,
+    };
   }
 
   keepFocusOnInput() {
@@ -63,7 +76,7 @@ export class ConditionalPanel extends PureComponent {
   };
 
   setBreakpoint(value) {
-    const { cx, log, breakpoint } = this.props;
+    const { log, breakpoint } = this.props;
     // If breakpoint is `pending`, props will not contain a breakpoint.
     // If source is a URL without location, breakpoint will contain no generatedLocation.
     const location =
@@ -72,7 +85,7 @@ export class ConditionalPanel extends PureComponent {
         : this.props.location;
     const options = breakpoint ? breakpoint.options : {};
     const type = log ? "logValue" : "condition";
-    return this.props.setBreakpointOptions(cx, location, {
+    return this.props.setBreakpointOptions(location, {
       ...options,
       [type]: value,
     });
@@ -95,11 +108,13 @@ export class ConditionalPanel extends PureComponent {
     }
   };
 
-  componentWillMount() {
+  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
+  UNSAFE_componentWillMount() {
     return this.renderToWidget(this.props);
   }
 
-  componentWillUpdate() {
+  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
+  UNSAFE_componentWillUpdate() {
     return this.clearConditionalPanel();
   }
 
@@ -120,7 +135,7 @@ export class ConditionalPanel extends PureComponent {
     }
     const { location, editor } = props;
 
-    const editorLine = toEditorLine(location.sourceId, location.line || 0);
+    const editorLine = toEditorLine(location.source.id, location.line || 0);
     this.cbPanel = editor.codeMirror.addLineWidget(
       editorLine,
       this.renderConditionalPanel(props),
@@ -206,7 +221,7 @@ export class ConditionalPanel extends PureComponent {
     const panel = document.createElement("div");
     ReactDOM.render(
       <div
-        className={classNames("conditional-breakpoint-panel", {
+        className={classnames("conditional-breakpoint-panel", {
           "log-point": log,
         })}
         onClick={() => this.keepFocusOnInput()}
@@ -238,18 +253,14 @@ const mapStateToProps = state => {
   const breakpoint = getClosestBreakpoint(state, location);
 
   return {
-    cx: getContext(state),
     breakpoint,
     location,
     log: getLogPointStatus(state),
   };
 };
 
-const {
-  setBreakpointOptions,
-  openConditionalPanel,
-  closeConditionalPanel,
-} = actions;
+const { setBreakpointOptions, openConditionalPanel, closeConditionalPanel } =
+  actions;
 
 const mapDispatchToProps = {
   setBreakpointOptions,

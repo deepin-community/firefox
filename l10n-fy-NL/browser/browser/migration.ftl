@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,8 +60,11 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
-no-migration-sources = Der binne gjin programma’s fûn dy't blêdwizers, skiednis of wachtwurden befetsje.
+no-migration-sources = Der binne gjin programma’s fûn dy’t blêdwizers, skiednis of wachtwurden befetsje.
 
 import-source-page-title = Ynstellingen en gegevens ymportearje út:
 import-items-page-title = Te ymportearjen ûnderdielen
@@ -61,8 +73,8 @@ import-items-description = Selektearje de te ymportearjen ûnderdielen:
 
 import-permissions-page-title = Jou { -brand-short-name } tastimmingen
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = Yn macOS moatte jo { -brand-short-name } eksplisyt tagong jaan ta de blêdwizers fan Safari. Klik op ‘Trochgean’ en selektearje yn it toande paniel Bestand openen it bestân ‘Bookmarks.plist’.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = Yn macOS moatte jo { -brand-short-name } eksplisyt tagong jaan ta de gegevens fan Safari. Klik op ‘Trochgean’, selektearje de map ‘Safari’ yn it toande Finder-dialoochfinster en klik dêrnei op ‘Openen’.
 
 import-migrating-page-title = Ymportearje…
 
@@ -78,23 +90,9 @@ import-done-description = De folgjende ûnderdielen binne mei sukses ymportearre
 
 import-close-source-browser = Soargje derfoar dat de selektearre browser sluten is eardat jo trochgean.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Ut { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Lêslist (út Safari)
 imported-edge-reading-list = Lêslist (út Edge)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = Finsters en ljepblêden
 browser-data-session-label =
     .value = Finsters en ljepblêden
+
+browser-data-payment-methods-checkbox =
+    .label = Betellingsmetoaden
+browser-data-payment-methods-label =
+    .value = Betellingsmetoaden

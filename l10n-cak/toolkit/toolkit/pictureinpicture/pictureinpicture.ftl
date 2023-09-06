@@ -4,19 +4,42 @@
 
 pictureinpicture-player-title = Picture-in-Picture
 
-pictureinpicture-pause =
-    .aria-label = Titanab'äx
-pictureinpicture-play =
-    .aria-label = Titzij
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
 
-pictureinpicture-mute =
-    .aria-label = Timemür
-pictureinpicture-unmute =
-    .aria-label = Tak'axäx
+## Note that this uses .tooltip rather than the standard '.title'
+## or '.tooltiptext' -  but it has the same effect. Code in the
+## picture-in-picture window will read and copy this to an in-document
+## DOM node that then shows the tooltip.
+##
+## Variables:
+##   $shortcut (String) - Keyboard shortcut to execute the command.
 
-pictureinpicture-unpip =
-    .aria-label = Titaq chik pa ri ruwi'
+pictureinpicture-unpip-btn =
+    .aria-label = Titaq chik ri ruwi'
+    .tooltip = Titzolïx pa ruwi'
 
-pictureinpicture-close =
+pictureinpicture-close-btn =
     .aria-label = Titz'apïx
+    .tooltip = Titz'apïx ({ $shortcut })
 
+##
+
+## Note that this uses .tooltip rather than the standard '.title'
+## or '.tooltiptext' -  but it has the same effect. Code in the
+## picture-in-picture window will read and copy this to an in-document
+## DOM node that then shows the tooltip.
+
+pictureinpicture-seekforward-btn =
+    .aria-label = Jun chik
+    .tooltip = Jun chik (→)
+
+##
+
+pictureinpicture-font-size-label = Runimilem tz'ib'
+
+pictureinpicture-font-size-small = Ko'öl
+
+pictureinpicture-font-size-medium = Loman
+
+pictureinpicture-font-size-large = Nïm

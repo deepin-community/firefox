@@ -4,8 +4,11 @@
 
 addons-page-title = Tontoney juwalkaa
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
+
 
 list-empty-installed =
     .value = War ši nda dumoo woo tontoni kul kaŋ sinjandi.
@@ -131,7 +134,6 @@ extensions-warning-update-security = Tontoni saajaw taagandiri koroširoo kayand
 extensions-warning-update-security-button = Tunandi
     .title = Tontoni saajaw taagandiri koroširoo tunandi
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = Taagandirey ceeci
@@ -184,8 +186,12 @@ addon-open-about-debugging = Hanseyan tontoney
 ## Pending uninstall message bar
 
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
+
 
 ##
 
@@ -193,3 +199,29 @@ addon-open-about-debugging = Hanseyan tontoney
 
 addon-page-options-button =
     .title = Goyjinayyaŋ tontoney kul še
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } nda { -brand-short-name } { $version } ši cere kanbe.
+
+details-notification-unsigned-and-disabled = { $name } mana hin ka korosandi ka goy nda { -brand-short-name } nda an' ka kayandi.
+details-notification-unsigned-and-disabled-link = Alhabar tontoni
+
+details-notification-unsigned = { $name } mana hin ka korosandi ka goy nda { -brand-short-name }. War ma hawgay.
+details-notification-unsigned-link = Alhabar tontoni
+
+details-notification-blocked = { $name } kay saajaw wala tabatiyan-jaŋay sabbu se.
+details-notification-blocked-link = Alhabar tontoni
+
+details-notification-softblocked = { $name } bayray ra, ga hin ka saajaw wala tabatiyan šenday tee.
+details-notification-softblocked-link = Alhabar tontoni
+
+details-notification-gmp-pending = { $name } ga kaa ka sinja kayna da.

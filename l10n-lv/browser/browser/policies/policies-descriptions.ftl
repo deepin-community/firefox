@@ -47,7 +47,7 @@ policy-DisableForgetButton = Liedz pieeju Aizmirst pogai.
 
 policy-DisableFormHistory = Neatceras meklēšanu un formu vēsturi.
 
-policy-DisablePocket = Deaktivē iespēju saglabāt lapas Pocket.
+policy-DisablePocket2 = Deaktivē iespēju saglabāt lapas { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Deaktivē privāto pārūkošanu.
 
@@ -82,8 +82,6 @@ policy-EnableTrackingProtection = Aktivē vai deaktivē satura bloķēšanu.
 # https://github.com/mozilla/policy-templates/blob/master/README.md#extensions-machine-only
 policy-Extensions = Instalē, atinstalē vai fiksē papildinājumus. Instalēšanas iespējai ir jānorāda adreses vai sistēmas ceļi. Atinstalēšanas un fiksēšanas iespējai paplašinājuma ID.
 
-policy-FlashPlugin = Atļauj vai lieds Flash spraudņa izmantošanu.
-
 policy-HardwareAcceleration = Ja atslēgts (false), atslēdz aparatūras paātrināšanu.
 
 # “lock” means that the user won’t be able to change this setting
@@ -92,6 +90,7 @@ policy-Homepage = Iestata un iespējams fiksē sākuma lapu.
 policy-InstallAddonsPermission = Ļauj konkrētām lapām instalēt papildinājumus.
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
+
 
 ##
 
@@ -112,9 +111,6 @@ policy-RequestedLocales = Iestatiet pieejamo valodu sarakstu prioritātes secīb
 policy-SearchBar = Iestata noklusēto meklēšanas joslas atrašanos. Šis joprojām ļauj lietotājam to mainīt.
 
 policy-SearchEngines = Konfigurē meklētāju iestatījumus. Šī politika ir pieejama vienīgi pagarinātā atbalsta laidienos (ESR).
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instalēt PCKS #11 moduļus.
 
 # “format” refers to the format used for the value of this policy. See also:
 # https://github.com/mozilla/policy-templates/blob/master/README.md#websitefilter-machine-only

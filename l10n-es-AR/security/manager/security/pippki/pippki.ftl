@@ -8,36 +8,41 @@ password-quality-meter = Medidor de calidad de contraseña
 
 change-device-password-window =
     .title = Cambiar contraseña
+
 # Variables:
 # $tokenName (String) - Security device of the change password dialog
 change-password-token = Dispositivo de seguridad: { $tokenName }
 change-password-old = Contraseña actual:
 change-password-new = Contraseña nueva:
 change-password-reenter = Contraseña nueva (de nuevo):
+
 pippki-failed-pw-change = No se puede cambiar la contraseña.
 pippki-incorrect-pw = No introdujo la actual contraseña maestra correctamente. Vuelva a intentarlo.
 pippki-pw-change-ok = Contraseña cambiada correctamente.
+
 pippki-pw-empty-warning = Sus contraseñas guardadas y claves privadas no estarán protegidas.
 pippki-pw-erased-ok = Eliminó su contraseña. { pippki-pw-empty-warning }
 pippki-pw-not-wanted = ¡Atención! Decidió no utilizar una contraseña. { pippki-pw-empty-warning }
+
 pippki-pw-change2empty-in-fips-mode = En este momento está en modo FIPS. FIPS requiere una contraseña no vacía.
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Restablecer la contraseña maestra
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Restablecer
 reset-primary-password-text = Si restablece su contraseña maestra, todas las contraseñas de webs y de correo electrónico, certificados personales y llaves privadas almacenados serán olvidadas. ¿Está seguro de que quiere restablecer su contraseña maestra?
+
 pippki-reset-password-confirmation-title = Restablecer la contraseña maestra
 pippki-reset-password-confirmation-message = Se restableció su contraseña maestra.
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Descargar certificado
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Se le ha pedido que confíe en una nueva autoridad de certificación (CA).
 download-cert-trust-ssl =
     .label = Confiar en esta CA para identificar sitios web.
@@ -69,7 +74,8 @@ set-password-reminder = Importante: Si olvida su contraseña de resguardo del ce
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Autenticación protegida por token
-protected-auth-msg = Autentíquese con el token. El método de autenticación depende del tipo de token.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Autentíquese en el token "{ $tokenName }". Cómo hacerlo depende del token (por ejemplo, usando un lector de huellas dactilares o ingresando un código con un teclado).

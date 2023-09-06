@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Не знойдзены ніякія праграмы, якія б утрымлівалі закладкі, гісторыю або паролі.
 
@@ -61,8 +73,8 @@ import-items-description = Выберыце, якія элементы трэб�
 
 import-permissions-page-title = Дайце дазвол для { -brand-short-name }
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS патрабуе ад вас яўнага дазволу { -brand-short-name } атрымаць доступ да закладак Safari. Націсніце «Працягнуць» і абярыце файл «Bookmarks.plist» на панэлі «Адкрыць файл», якая з'явіцца.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS патрабуе ад вас яўнага дазволу { -brand-short-name } атрымаць доступ да звестак Safari. Націсніце «Працягнуць», абярыце папку «Safari» у дыялогавым акне Finder, якое з'явіцца, а затым націсніце «Адкрыць».
 
 import-migrating-page-title = Імпарт…
 
@@ -78,23 +90,9 @@ import-done-description = Наступныя адзінкі паспяхова �
 
 import-close-source-browser = Калі ласка, упэўніцеся перад працягам, што выбраны браўзер закрыты.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = З { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Спіс чытання (з Safari)
 imported-edge-reading-list = Спіс для чытання (з Edge)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = Вокны і карткі
 browser-data-session-label =
     .value = Вокны і карткі
+
+browser-data-payment-methods-checkbox =
+    .label = Спосабы аплаты
+browser-data-payment-methods-label =
+    .value = Спосабы аплаты

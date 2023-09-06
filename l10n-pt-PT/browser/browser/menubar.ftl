@@ -38,20 +38,9 @@ menu-quit =
             [windows] r
            *[other] r
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Sair do { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Sair do { -brand-shorter-name }
-
 menu-about =
     .label = Acerca do { -brand-shorter-name }
     .accesskey = A
@@ -81,9 +70,15 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Abrir ficheiro…
     .accesskey = o
-menu-file-close =
-    .label = Fechar
-    .accesskey = F
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Fechar separador
+           *[other] Fechar { $tabCount } separadores
+        }
+    .accesskey = c
 menu-file-close-window =
     .label = Fechar janela
     .accesskey = j
@@ -99,9 +94,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Configurar página…
     .accesskey = C
-menu-file-print-preview =
-    .label = Pré-visualizar impressão
-    .accesskey = v
 menu-file-print =
     .label = Imprimir…
     .accesskey = p
@@ -188,6 +180,17 @@ menu-view-full-screen =
     .label = Ecrã completo
     .accesskey = E
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Entrar na vista de leitura
+    .accesskey = l
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Fechar vista de leitura
+    .accesskey = l
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +219,6 @@ menu-history-undo-menu =
     .label = Separadores fechados recentemente
 menu-history-undo-window-menu =
     .label = Janelas fechadas recentemente
-menu-history-reopen-all-tabs = Reabrir todos os separadores
-menu-history-reopen-all-windows = Reabrir todas as janelas
 
 ## Bookmarks Menu
 
@@ -226,10 +227,13 @@ menu-bookmarks-menu =
     .accesskey = M
 menu-bookmarks-manage =
     .label = Gerir marcadores
-menu-bookmark-current-tab =
-    .label = Adicionar separador aos marcadores
-menu-bookmark-edit =
-    .label = Editar este marcador
+menu-bookmark-tab =
+    .label = Adicionar separador atual aos marcadores…
+menu-edit-bookmark =
+    .label = Editar este marcador…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Pesquisar marcadores
 menu-bookmarks-all-tabs =
     .label = Adicionar todos os separadores aos marcadores…
 menu-bookmarks-toolbar =
@@ -313,16 +317,19 @@ menu-help-more-troubleshooting-info =
     .label = Mais informação para diagnóstico
     .accesskey = g
 menu-help-report-site-issue =
-    .label = Reportar problema do site…
-menu-help-feedback-page =
-    .label = Submeter feedback…
-    .accesskey = S
+    .label = Reportar problema no site…
+menu-help-share-ideas =
+    .label = Partilhe ideias e comentários…
+    .accesskey = h
 menu-help-enter-troubleshoot-mode2 =
     .label = Modo de diagnóstico…
     .accesskey = M
 menu-help-exit-troubleshoot-mode =
     .label = Desligar o modo de diagnóstico
     .accesskey = m
+menu-help-switch-device =
+    .label = Mudar para um dispositivo novo
+    .accesskey = n
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

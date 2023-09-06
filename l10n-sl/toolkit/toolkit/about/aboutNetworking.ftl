@@ -8,6 +8,7 @@ about-networking-sockets = Vtičnice
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Počisti predpomnilnik DNS
 about-networking-dns-trr-url = Spletni naslov DoH
+about-networking-dns-trr-mode = Način DoH
 about-networking-dns-suffix = Pripona DNS
 about-networking-websockets = WebSockets
 about-networking-refresh = Osveži
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Aktivno
 about-networking-idle = Mirovanje
 about-networking-host = Gostitelj
-about-networking-tcp = TCP
 about-networking-type = Vrsta
 about-networking-sent = Poslano
 about-networking-received = Prejeto
@@ -27,22 +27,18 @@ about-networking-family = Družina
 about-networking-trr = TRR
 about-networking-addresses = Naslovi
 about-networking-expires = Poteče (sekunde)
+about-networking-originAttributesSuffix = Izolacijski ključ
+about-networking-flags = Dodatne zastavice
 about-networking-messages-sent = Poslano sporočil
 about-networking-messages-received = Prejeto sporočil
 about-networking-bytes-sent = Poslano bajtov
 about-networking-bytes-received = Prejeto bajtov
 about-networking-logging = Beleženje
-about-networking-log-tutorial = Za navodila o uporabi tega orodja si oglejte <a data-l10n-name="logging">Beleženje HTTP</a>.
-about-networking-current-log-file = Trenutna dnevniška datoteka:
-about-networking-current-log-modules = Trenutni dnevniški moduli:
-about-networking-set-log-file = Nastavi dnevniško datoteko
-about-networking-set-log-modules = Nastavi dnevniške module
-about-networking-start-logging = Začni beleženje
-about-networking-stop-logging = Končaj beleženje
 about-networking-dns-lookup = Iskanje DNS
 about-networking-dns-lookup-button = Razreši
 about-networking-dns-domain = Domena:
 about-networking-dns-lookup-table-column = IP-ji
+about-networking-dns-https-rr-lookup-table-column = RR HTTP
 about-networking-rcwn = Statistika RCWN
 about-networking-rcwn-status = Stanje RCWN
 about-networking-rcwn-cache-won-count = Število zmag predpomnilnika
@@ -60,6 +56,8 @@ about-networking-rcwn-cache-slow = Število počasnih delovanj diska
 about-networking-rcwn-cache-not-slow = Število hitrih delovanj diska
 about-networking-networkid = ID omrežja
 about-networking-networkid-id = ID omrežja
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Ta stran se je preselila na <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

@@ -4,36 +4,28 @@
 
 "use strict";
 
-const promise = require("promise");
 const {
   style: { ELEMENT_STYLE },
-} = require("devtools/shared/constants");
-const CssLogic = require("devtools/shared/inspector/css-logic");
-const TextProperty = require("devtools/client/inspector/rules/models/text-property");
-const Services = require("Services");
+} = require("resource://devtools/shared/constants.js");
+const CssLogic = require("resource://devtools/shared/inspector/css-logic.js");
+const TextProperty = require("resource://devtools/client/inspector/rules/models/text-property.js");
 
 loader.lazyRequireGetter(
   this,
-  "getTargetBrowsers",
-  "devtools/client/inspector/shared/compatibility-user-settings",
-  true
-);
-loader.lazyRequireGetter(
-  this,
   "promiseWarn",
-  "devtools/client/inspector/shared/utils",
+  "resource://devtools/client/inspector/shared/utils.js",
   true
 );
 loader.lazyRequireGetter(
   this,
   "parseNamedDeclarations",
-  "devtools/shared/css/parsing-utils",
+  "resource://devtools/shared/css/parsing-utils.js",
   true
 );
 
 const STYLE_INSPECTOR_PROPERTIES =
   "devtools/shared/locales/styleinspector.properties";
-const { LocalizationHelper } = require("devtools/shared/l10n");
+const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 const STYLE_INSPECTOR_L10N = new LocalizationHelper(STYLE_INSPECTOR_PROPERTIES);
 
 /**
@@ -59,15 +51,19 @@ class Rule {
     this.elementStyle = elementStyle;
     this.domRule = options.rule;
     this.compatibilityIssues = null;
-    this.matchedSelectors = options.matchedSelectors || [];
+    this.matchedDesugaredSelectors =
+      options.matchedDesugaredSelectors ||
+      // @backward-compat { version 116 } matchedDesugaredSelectors is only sent by the
+      // server since 116, so we need to fall back to matchedSelectors, which was the
+      // previous name of the property.
+      options.matchedSelectors ||
+      [];
     this.pseudoElement = options.pseudoElement || "";
     this.isSystem = options.isSystem;
     this.isUnmatched = options.isUnmatched || false;
     this.inherited = options.inherited || null;
     this.keyframes = options.keyframes || null;
 
-    this.mediaText =
-      this.domRule && this.domRule.mediaText ? this.domRule.mediaText : "";
     this.cssProperties = this.elementStyle.ruleView.cssProperties;
     this.inspector = this.elementStyle.ruleView.inspector;
     this.store = this.elementStyle.ruleView.store;
@@ -90,6 +86,7 @@ class Rule {
 
     this.domRule.off("rule-updated", this.onStyleRuleFrontUpdated);
     this.compatibilityIssues = null;
+    this.destroyed = true;
   }
 
   get declarations() {
@@ -110,38 +107,14 @@ class Rule {
   get selector() {
     return {
       getUniqueSelector: this.getUniqueSelector,
-      matchedSelectors: this.matchedSelectors,
+      matchedDesugaredSelectors: this.matchedDesugaredSelectors,
       selectors: this.domRule.selectors,
       selectorText: this.keyframes ? this.domRule.keyText : this.selectorText,
     };
   }
 
-  get sourceLink() {
-    return {
-      label: this._getSourceText(true),
-      title: this._getSourceText(),
-    };
-  }
-
   get sourceMapURLService() {
     return this.inspector.toolbox.sourceMapURLService;
-  }
-
-  /**
-   * Returns the original source location which includes the original URL, line and
-   * column numbers.
-   */
-  get generatedLocation() {
-    if (!this._generatedLocation) {
-      this._generatedLocation = {
-        sheet: this.sheet,
-        url: this.sheet ? this.sheet.href || this.sheet.nodeHref : null,
-        line: this.ruleLine,
-        column: this.ruleColumn,
-      };
-    }
-
-    return this._generatedLocation;
   }
 
   get title() {
@@ -150,7 +123,7 @@ class Rule {
       title += ":" + this.ruleLine;
     }
 
-    return title + (this.mediaText ? " @media " + this.mediaText : "");
+    return title;
   }
 
   get inheritedSource() {
@@ -225,7 +198,7 @@ class Rule {
 
   /**
    * Get the declaration block issues from the compatibility actor
-   * @returns An Array of JSON objects with compatibility information in following form:
+   * @returns A promise that resolves with an array of objects in following form:
    *    {
    *      // Type of compatibility issue
    *      type: <string>,
@@ -243,12 +216,10 @@ class Rule {
    */
   async getCompatibilityIssues() {
     if (!this.compatibilityIssues) {
-      const targetBrowsers = getTargetBrowsers();
-      const compatibility = await this.inspector.inspectorFront.getCompatibilityFront();
-      this.compatibilityIssues = await compatibility.getCSSDeclarationBlockIssues(
-        this.domRule.declarations,
-        targetBrowsers
-      );
+      this.compatibilityIssues =
+        this.inspector.commands.inspectorCommand.getCSSDeclarationBlockIssues(
+          this.domRule.declarations
+        );
     }
 
     return this.compatibilityIssues;
@@ -267,37 +238,6 @@ class Rule {
   }
 
   /**
-   * Returns a formatted source text of the stylesheet URL with its source line
-   * and @media text.
-   *
-   * @param  {boolean} shortenURL True to get a shorter version of the URL.
-   */
-  _getSourceText(shortenURL) {
-    if (this.isSystem) {
-      return `${STYLE_INSPECTOR_L10N.getStr("rule.userAgentStyles")} ${
-        this.title
-      }`;
-    }
-
-    const currentLocation = this.generatedLocation;
-
-    let sourceText = currentLocation.url;
-    if (shortenURL) {
-      sourceText = CssLogic.shortSource({ href: sourceText });
-    }
-
-    if (currentLocation.line > 0) {
-      sourceText += ":" + currentLocation.line;
-    }
-
-    if (this.mediaText) {
-      sourceText += " @media " + this.mediaText;
-    }
-
-    return sourceText;
-  }
-
-  /**
    * Returns an unique selector for the CSS rule.
    */
   async getUniqueSelector() {
@@ -312,7 +252,7 @@ class Rule {
       selector = await this.inherited.getUniqueSelector();
     } else {
       // This is an inline style from the current node.
-      selector = this.inspector.selectionCssSelector;
+      selector = await this.inspector.selection.nodeFront.getUniqueSelector();
     }
 
     return selector;
@@ -398,7 +338,7 @@ class Rule {
 
     // Store disabled properties in the disabled store.
     const disabled = this.elementStyle.store.disabled;
-    if (disabledProps.length > 0) {
+    if (disabledProps.length) {
       disabled.set(this.domRule, disabledProps);
     } else {
       disabled.delete(this.domRule);
@@ -474,8 +414,7 @@ class Rule {
   applyProperties(modifier) {
     // If there is already a pending modification, we have to wait
     // until it settles before applying the next modification.
-    const resultPromise = promise
-      .resolve(this._applyingModifications)
+    const resultPromise = Promise.resolve(this._applyingModifications)
       .then(() => {
         const modifications = this.domRule.startModifyingProperties(
           this.cssProperties
@@ -560,6 +499,7 @@ class Rule {
    **@return {Promise}
    */
   previewPropertyValue(property, value, priority) {
+    this.elementStyle.ruleView.emitForTests("start-preview-property-value");
     const modifications = this.domRule.startModifyingProperties(
       this.cssProperties
     );
@@ -694,7 +634,13 @@ class Rule {
    * properties as needed.
    */
   refresh(options) {
-    this.matchedSelectors = options.matchedSelectors || [];
+    this.matchedDesugaredSelectors =
+      options.matchedDesugaredSelectors ||
+      // @backward-compat { version 116 } matchedDesugaredSelectors is only sent by the
+      // server since 116, so we need to fall back to matchedSelectors, which was the
+      // previous name of the property.
+      options.matchedSelectors ||
+      [];
     const newTextProps = this._getTextProperties();
 
     // The element style rule behaves differently on refresh. We basically need to update
@@ -877,6 +823,43 @@ class Rule {
     }
 
     return selectorText + " {" + terminator + cssText + "}";
+  }
+
+  /**
+   * @returns {Boolean} Whether or not the rule is in a layer
+   */
+  isInLayer() {
+    return this.domRule.ancestorData.some(({ type }) => type === "layer");
+  }
+
+  /**
+   * Return whether this rule and the one passed are in the same layer,
+   * (as in described in the spec; this is not checking that the 2 rules are children
+   * of the same CSSLayerBlockRule)
+   *
+   * @param {Rule} otherRule: The rule we want to compare with
+   * @returns {Boolean}
+   */
+  isInDifferentLayer(otherRule) {
+    const filterLayer = ({ type }) => type === "layer";
+    const thisLayers = this.domRule.ancestorData.filter(filterLayer);
+    const otherRuleLayers = otherRule.domRule.ancestorData.filter(filterLayer);
+
+    if (thisLayers.length !== otherRuleLayers.length) {
+      return true;
+    }
+
+    return thisLayers.some((layer, i) => {
+      const otherRuleLayer = otherRuleLayers[i];
+      // For named layers, we can compare the layer name directly, since we want to identify
+      // the actual layer, not the specific CSSLayerBlockRule.
+      // For nameless layers though, we don't have a choice and we can only identify them
+      // via their CSSLayerBlockRule, so we're using the rule actorID.
+      return (
+        (layer.value || layer.actorID) !==
+        (otherRuleLayer.value || otherRuleLayer.actorID)
+      );
+    });
   }
 
   /**

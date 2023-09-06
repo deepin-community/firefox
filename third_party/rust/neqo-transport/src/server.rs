@@ -20,8 +20,7 @@ use crate::addr_valid::{AddressValidation, AddressValidationResult};
 use crate::cid::{ConnectionId, ConnectionIdDecoder, ConnectionIdGenerator, ConnectionIdRef};
 use crate::connection::{Connection, Output, State};
 use crate::packet::{PacketBuilder, PacketType, PublicPacket};
-use crate::tparams::PreferredAddress;
-use crate::{ConnectionParameters, QuicVersion, Res};
+use crate::{ConnectionParameters, Res, Version};
 
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -110,7 +109,7 @@ struct InitialDetails {
     src_cid: ConnectionId,
     dst_cid: ConnectionId,
     token: Vec<u8>,
-    quic_version: QuicVersion,
+    version: Version,
 }
 
 impl InitialDetails {
@@ -119,7 +118,7 @@ impl InitialDetails {
             src_cid: ConnectionId::from(packet.scid()),
             dst_cid: ConnectionId::from(packet.dcid()),
             token: packet.token().to_vec(),
-            quic_version: packet.version().unwrap(),
+            version: packet.version().unwrap(),
         }
     }
 }
@@ -158,8 +157,6 @@ pub struct Server {
     zero_rtt_checker: ServerZeroRttChecker,
     /// A connection ID generator.
     cid_generator: Rc<RefCell<dyn ConnectionIdGenerator>>,
-    /// The preferred address(es).
-    preferred_address: Option<PreferredAddress>,
     /// Connection parameters.
     conn_params: ConnectionParameters,
     /// Active connection attempts, keyed by `AttemptKey`.  Initial packets with
@@ -210,7 +207,6 @@ impl Server {
             anti_replay,
             zero_rtt_checker: ServerZeroRttChecker::new(zero_rtt_checker),
             cid_generator,
-            preferred_address: None,
             conn_params,
             active_attempts: HashMap::default(),
             connections: Rc::default(),
@@ -237,11 +233,6 @@ impl Server {
     /// default values.
     pub fn set_ciphers(&mut self, ciphers: impl AsRef<[Cipher]>) {
         self.ciphers = Vec::from(ciphers.as_ref());
-    }
-
-    /// Set a preferred address.
-    pub fn set_preferred_address(&mut self, spa: PreferredAddress) {
-        self.preferred_address = Some(spa);
     }
 
     pub fn enable_ech(
@@ -348,7 +339,7 @@ impl Server {
                 };
                 if let Some(new_dcid) = self.cid_generator.borrow_mut().generate_cid() {
                     let packet = PacketBuilder::retry(
-                        initial.quic_version,
+                        initial.version,
                         &initial.src_cid,
                         &new_dcid,
                         &token,
@@ -487,11 +478,13 @@ impl Server {
             saved_cids: Vec::new(),
         }));
 
+        let mut params = self.conn_params.clone();
+        params.get_versions_mut().set_initial(initial.version);
         let sconn = Connection::new_server(
             &self.certs,
             &self.protocols,
             Rc::clone(&cid_mgr) as _,
-            self.conn_params.clone().quic_version(initial.quic_version),
+            params,
         );
 
         if let Ok(mut c) = sconn {
@@ -563,6 +556,29 @@ impl Server {
             return None;
         }
 
+        if packet.packet_type() == PacketType::OtherVersion
+            || (packet.packet_type() == PacketType::Initial
+                && !self
+                    .conn_params
+                    .get_versions()
+                    .all()
+                    .contains(&packet.version().unwrap()))
+        {
+            if dgram.len() < MIN_INITIAL_PACKET_SIZE {
+                qdebug!([self], "Unsupported version: too short");
+                return None;
+            }
+
+            qdebug!([self], "Unsupported version: {:x}", packet.wire_version());
+            let vn = PacketBuilder::version_negotiation(
+                packet.scid(),
+                packet.dcid(),
+                packet.wire_version(),
+                self.conn_params.get_versions().all(),
+            );
+            return Some(Datagram::new(dgram.destination(), dgram.source(), vn));
+        }
+
         match packet.packet_type() {
             PacketType::Initial => {
                 if dgram.len() < MIN_INITIAL_PACKET_SIZE {
@@ -577,14 +593,7 @@ impl Server {
                 let dcid = ConnectionId::from(packet.dcid());
                 self.handle_0rtt(dgram, dcid, now)
             }
-            PacketType::OtherVersion => {
-                if dgram.len() < MIN_INITIAL_PACKET_SIZE {
-                    qdebug!([self], "Unsupported version: too short");
-                    return None;
-                }
-                let vn = PacketBuilder::version_negotiation(packet.scid(), packet.dcid());
-                Some(Datagram::new(dgram.destination(), dgram.source(), vn))
-            }
+            PacketType::OtherVersion => unreachable!(),
             _ => {
                 qtrace!([self], "Not an initial packet");
                 None

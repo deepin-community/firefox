@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Skryje zobrazenou sekci
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Zobrazí všechny složky záložek
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Skryje zobrazenou sekci
+
 bookmark-overlay-new-folder-button =
     .label = Nová složka
     .accesskey = v
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Zobrazí všechny štítky
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Skryje zobrazenou sekci
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Zobrazí všechny štítky
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Skryje zobrazenou sekci
 
 bookmark-overlay-keyword-2 =
     .value = Klíčové slovo

@@ -5,9 +5,9 @@
 
 ## Strings used for device manager
 
-devmgr =
+devmgr-window =
     .title = Tækjastjóri
-    .style = width: 67em; height: 32em;
+    .style = min-width: 67em; min-height: 32em;
 
 devmgr-devlist =
     .label = Öryggiseiningar og tæki
@@ -23,7 +23,7 @@ devmgr-button-login =
     .accesskey = n
 
 devmgr-button-logout =
-    .label = Stimpla út
+    .label = Skrá út
     .accesskey = S
 
 devmgr-button-changepw =
@@ -116,6 +116,7 @@ devinfo-label =
 devinfo-serialnum =
     .label = Raðnúmer
 
+fips-nonempty-primary-password-required = FIPS hamur þarfnast þess að aðallykilorð sé skilgreint fyrir hvert öryggistæki. Settu upp lykilorðið áður en þú reynir að virkja FIPS-ham.
 unable-to-toggle-fips = Get ekki breytt FIPS ham fyrir öryggistæki. Mælt er með að þú hættir og endurræsir þetta forrit.
 load-pk11-module-file-picker-title = Veldu PKCS#11 rekil til að hlaða inn
 

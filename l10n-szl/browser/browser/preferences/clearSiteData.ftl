@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Wypucuj dane
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Wypucowanie wszyskich cookies i danych strōn spamiyntanych w aplikacyji { -brand-short-name } może cie wylogować ze strōn i skasować necowōm zawartość offline. Skasowanie danych z podryncznyj pamiyńci niy tyko danych logowanio.
 

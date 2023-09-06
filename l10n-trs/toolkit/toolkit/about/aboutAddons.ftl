@@ -8,8 +8,10 @@ search-header =
     .placeholder = Nana'uì' addons.mozilla.org
     .searchbuttonlabel = Nana'uì'
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
 
 list-empty-installed =
     .value = Nitaj ngà' si 'ngo komplementô hua dananj nu 'iaj sun 'iát
@@ -27,7 +29,6 @@ list-empty-button =
     .label = Gahuin chrūn doj rayi’î nej komplemênto
 
 help-button = Nej sa hua doj riña sopôrte
-
 sidebar-help-button-title =
     .title = Nej sa hua doj riña sopôrte
 
@@ -70,12 +71,10 @@ detail-private-browsing-label = Na'nïn riña Windows huìi
 # Some add-ons may elect to not run in private windows by setting incognito: not_allowed in the manifest.  This
 # cannot be overridden by the user.
 detail-private-disallowed-label = Si ga'ue riña Windows huìi
-
 detail-private-disallowed-description2 = Ngà aché nun huìt nī nitāj si ‘iaj sun ekstensiûn nan. <a data-l10n-name="learn-more">Gāhuin chrūn doj</a>
 
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
 detail-private-required-label = Da'ui na'nïn riña Windows huìi
-
 detail-private-required-description2 = Ngà aché nun huìt nī atûj ekstensiûn na ni’ia sa ‘iát. <a data-l10n-name="learn-more">Gāhuin chrūn doj</a>
 
 detail-private-browsing-on =
@@ -180,7 +179,6 @@ extensions-warning-check-compatibility-button = Dugi'iaj sun' man
 extensions-warning-update-security = Giyichin' sa natsij si hua nïn 'iaj sun nej komplemênto. Ga'ue ni nahuin nakà 'ngo sa nu garan' ruhuât.
 extensions-warning-update-security-button = Dugi'iaj sun' man
     .title = Nachrun sa dugumîn si hua hue'ê nej sa nahuin nakà riña aga' nan
-
 
 ## Strings connected to add-on updates
 
@@ -318,7 +316,6 @@ extension-enabled-heading = Ngà 'iaj sunj
 extension-disabled-heading = Nitaj si 'iaj sunj
 
 theme-enabled-heading = Ngà 'iaj sunj
-theme-disabled-heading = Nitāj si 'iaj sunj
 
 plugin-enabled-heading = Ngà 'iaj sunj
 plugin-disabled-heading = Nitāj si 'iaj sunj
@@ -381,6 +378,9 @@ addon-detail-private-browsing-help = Sisi ga'nïn, ekstensiûn nan ga'ue ni'iaj 
 addon-detail-private-browsing-allow = Ga'nïn
 addon-detail-private-browsing-disallow = Si ga'nï'
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
@@ -423,3 +423,29 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Rasuun gini'ñanj daran' nej komplemênto
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } nitaj si aran'anj ngà { -brand-short-name }{ $version }.
+
+details-notification-unsigned-and-disabled = { $name } nu ga'ue nari'ij daj 'iaj sun riña { -brand-short-name } ni naran riña man.
+details-notification-unsigned-and-disabled-link = Doj nuguan' a'min rayi'î nan
+
+details-notification-unsigned = { $name } nu ga'ue nari'ij daj 'iaj sun riña { -brand-short-name }. Ahi gache nunt.
+details-notification-unsigned-link = Doj nuguan' a'min rayi'î nan
+
+details-notification-blocked = { $name } naran riña man dadin' a'ui' yi'ij aga' na si guruhuaj.
+details-notification-blocked-link = Doj nuguan' a'min rayi'î nan
+
+details-notification-softblocked = { $name } a'ui' yi'ij riña aga' nan ga'ue si nagi'iaj na nej.
+details-notification-softblocked-link = Doj nuguan' a'min rayi'î nan
+
+details-notification-gmp-pending = { $name } Akuan' nïn nanunj riña aga' na.

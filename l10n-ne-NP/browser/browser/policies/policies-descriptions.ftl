@@ -20,7 +20,16 @@ policy-BlockAboutProfiles = about:profiles पृष्ठमा पहुँच
 
 policy-BlockAboutSupport = about:support पृष्ठमा पहुँच रोक्नुहोस ।
 
+policy-DisableAppUpdate = ब्राउजरलाई अद्धावधिक हुनबाट रोक्नुहोस्
+
+policy-DisableFormHistory = खाेजलाई नसम्झ्नुहोस् र इतिहास सिर्जना गर्नुहाेस् |
+
+policy-DisablePrivateBrowsing = गाेप्य ब्राउगिङ्गलाइ असक्षम गर्नुहोस् ।
+
+policy-DisableTelemetry = टेलिमेट्री बन्द गर्नुहोस्।
+
 ## Do not translate "SameSite", it's the name of a cookie attribute.
+
 
 ##
 

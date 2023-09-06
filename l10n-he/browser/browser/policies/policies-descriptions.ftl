@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = הגדרת שמות מתחם המורשים לג�
 
 policy-AppAutoUpdate = הפעלה או השבתה של עדכון אוטומטי ליישום.
 
+policy-AppUpdatePin = למנוע מ־{ -brand-short-name } להתעדכן מעבר לגרסה שצוינה.
+
 policy-AppUpdateURL = הגדרת כתובת מותאמת אישית לעדכון היישום.
 
 policy-Authentication = הגדרת אימות משולב לאתרים שתומכים בזה.
@@ -39,6 +41,9 @@ policy-CaptivePortal = הפעלה או השבתה של תמיכה ב־Captive Po
 policy-CertificatesDescription = הוספת אישורים או שימוש באישורים מובנים.
 
 policy-Cookies = לאשר או לסרב להגדרת עוגיות מאתרים.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = הגדרת מדיניות הקשורה למגירות לשוניות.
 
 policy-DisabledCiphers = השבתת צפנים.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = אם true, לא ניתן ליצור סס
 
 policy-DisablePasswordReveal = לא לאפשר לחשוף ססמאות בכניסות השמורות.
 
-policy-DisablePocket = השבתת התכונה לשמירת דפי אינטרנט ב־Pocket.
+policy-DisablePocket2 = השבתת התכונה לשמירת דפי אינטרנט ב־{ -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = השבתת גלישה פרטית.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = למנוע מהדפדפן להתקין ולע�
 
 policy-DisableTelemetry = כיבוי Telemetry.
 
+policy-DisableThirdPartyModuleBlocking = למנוע מהמשתמש לחסום מודולים של צד שלישי המוזרקים לתהליך של { -brand-short-name }.
+
 policy-DisplayBookmarksToolbar = הצגת סרגל הכלים של הסימניות כברירת מחדל.
 
 policy-DisplayMenuBar = הצגת סרגל התפריטים כברירת מחדל.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = הפעלה או השבתה של חסימת ת�
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = הפעלה או השבתה של Encrypted Media Extensions עם אפשרות לנעול את הבחירה.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = השבתת אזהרות המבוססות על סיומת קובץ עבור סוגי קבצים ספציפיים במתחמים.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = ניהול כל ההיבטים של התקנת הרח
 
 policy-ExtensionUpdate = הפעלה או השבתה של עדכונים אוטומטיים להרחבות.
 
-policy-FirefoxHome = הגדרת תצורה של מסך הבית של Firefox.
+policy-FirefoxHome2 = הגדרת תצורה של { -firefox-home-brand-name }.
 
-policy-FlashPlugin = לאפשר או לדחות את השימוש בתוסף החיצוני Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = לכפות ניווט ישיר לאתרי אינטראנט במקום לבצע חיפוש, בעת הקלדת רשומות של מילה בודדה בשורת הכתובת.
 
 policy-Handlers = קביעת תצורה של מטפלים ביישומי ברירת מחדל.
 
@@ -156,6 +165,8 @@ policy-OverridePostUpdatePage = שינוי כתובת הדף ״מה חדש״ ה�
 
 policy-PasswordManagerEnabled = הפעלה של שמירת ססמאות במנהל הססמאות.
 
+policy-PasswordManagerExceptions = למנוע מ־{ -brand-short-name } לשמור ססמאות עבור אתרים ספציפיים.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = השבתה או הגדרת התצורה של PDF.js, מציג ה־PDF המובנה ב־{ -brand-short-name }.
 
@@ -181,8 +192,8 @@ policy-SearchEngines = הגדרת תצורת מנועי החיפוש. מדיני
 
 policy-SearchSuggestEnabled = הפעלה או השבתה של הצעות חיפוש.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = התקנת מודולי PKCS #11.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = הוספה או מחיקת מודולי PKCS #11.
 
 policy-ShowHomeButton = הצגת כפתור הבית בסרגל הכלים.
 
@@ -190,9 +201,13 @@ policy-SSLVersionMax = הגדרת גרסת ה־SSL המקסימלית.
 
 policy-SSLVersionMin = הגדרת גרסת ה־SSL המינימלית.
 
+policy-StartDownloadsInTempDirectory = לכפות על הורדות להתחיל במיקום מקומי וזמני במקום בתיקיית ההורדות המוגדרת כברירת המחדל.
+
 policy-SupportMenu = הוספת תפריט תמיכה בהתאמה אישית לתפריט העזרה.
 
 policy-UserMessaging = לא להציג למשתמש הודעות מסוימות.
+
+policy-UseSystemPrintDialog = הדפסה באמצעות תיבת הדו־שיח להדפסה של המערכת.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = חסימת ביקור באתרים. יש לעיין בתיעוד לקבלת פרטים נוספים על התבנית.

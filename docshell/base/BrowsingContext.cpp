@@ -11,7 +11,6 @@
 #ifdef ACCESSIBILITY
 #  include "mozilla/a11y/DocAccessibleParent.h"
 #  include "mozilla/a11y/Platform.h"
-#  include "mozilla/a11y/RemoteAccessibleBase.h"
 #  include "nsAccessibilityService.h"
 #  if defined(XP_WIN)
 #    include "mozilla/a11y/AccessibleWrap.h"
@@ -21,6 +20,7 @@
 #endif
 #include "mozilla/AppShutdown.h"
 #include "mozilla/dom/CanonicalBrowsingContext.h"
+#include "mozilla/dom/BrowserHost.h"
 #include "mozilla/dom/BrowserChild.h"
 #include "mozilla/dom/BrowserParent.h"
 #include "mozilla/dom/BrowsingContextGroup.h"
@@ -33,18 +33,21 @@
 #include "mozilla/dom/HTMLIFrameElement.h"
 #include "mozilla/dom/Location.h"
 #include "mozilla/dom/LocationBinding.h"
+#include "mozilla/dom/MediaDevices.h"
 #include "mozilla/dom/PopupBlocker.h"
 #include "mozilla/dom/ScriptSettings.h"
+#include "mozilla/dom/SessionStoreChild.h"
 #include "mozilla/dom/SessionStorageManager.h"
-#include "mozilla/dom/SessionStoreDataCollector.h"
 #include "mozilla/dom/StructuredCloneTags.h"
 #include "mozilla/dom/UserActivationIPCUtils.h"
 #include "mozilla/dom/WindowBinding.h"
+#include "mozilla/dom/WindowContext.h"
 #include "mozilla/dom/WindowGlobalChild.h"
 #include "mozilla/dom/WindowGlobalParent.h"
 #include "mozilla/dom/WindowProxyHolder.h"
 #include "mozilla/dom/SyncedContextInlines.h"
 #include "mozilla/dom/XULFrameElement.h"
+#include "mozilla/ipc/ProtocolUtils.h"
 #include "mozilla/net/DocumentLoadListener.h"
 #include "mozilla/net/RequestContextService.h"
 #include "mozilla/Assertions.h"
@@ -57,9 +60,11 @@
 #include "mozilla/ResultExtensions.h"
 #include "mozilla/Services.h"
 #include "mozilla/StaticPrefs_fission.h"
+#include "mozilla/StaticPrefs_media.h"
 #include "mozilla/StaticPrefs_page_load.h"
 #include "mozilla/StaticPtr.h"
 #include "mozilla/URLQueryStringStripper.h"
+#include "mozilla/EventStateManager.h"
 #include "nsIURIFixup.h"
 #include "nsIXULRuntime.h"
 
@@ -67,6 +72,7 @@
 #include "nsDocShellLoadState.h"
 #include "nsFocusManager.h"
 #include "nsGlobalWindowOuter.h"
+#include "PresShell.h"
 #include "nsIObserverService.h"
 #include "nsISHistory.h"
 #include "nsContentUtils.h"
@@ -121,6 +127,22 @@ struct ParamTraits<mozilla::dom::TouchEventsOverride>
           mozilla::dom::TouchEventsOverride,
           mozilla::dom::TouchEventsOverride::Disabled,
           mozilla::dom::TouchEventsOverride::EndGuard_> {};
+
+template <>
+struct ParamTraits<mozilla::dom::EmbedderColorSchemes> {
+  using paramType = mozilla::dom::EmbedderColorSchemes;
+
+  static void Write(MessageWriter* aWriter, const paramType& aParam) {
+    WriteParam(aWriter, aParam.mUsed);
+    WriteParam(aWriter, aParam.mPreferred);
+  }
+
+  static bool Read(MessageReader* aReader, paramType* aResult) {
+    return ReadParam(aReader, &aResult->mUsed) &&
+           ReadParam(aReader, &aResult->mPreferred);
+  }
+};
+
 }  // namespace IPC
 
 namespace mozilla {
@@ -166,6 +188,15 @@ static void Register(BrowsingContext* aBrowsingContext) {
   }
 
   aBrowsingContext->Group()->Register(aBrowsingContext);
+}
+
+// static
+void BrowsingContext::UpdateCurrentTopByBrowserId(
+    BrowsingContext* aNewBrowsingContext) {
+  if (aNewBrowsingContext->IsTopContent()) {
+    sCurrentTopByBrowserId->InsertOrUpdate(aNewBrowsingContext->BrowserId(),
+                                           aNewBrowsingContext);
+  }
 }
 
 BrowsingContext* BrowsingContext::GetParent() const {
@@ -292,7 +323,7 @@ bool BrowsingContext::SameOriginWithTop() {
 already_AddRefed<BrowsingContext> BrowsingContext::CreateDetached(
     nsGlobalWindowInner* aParent, BrowsingContext* aOpener,
     BrowsingContextGroup* aSpecificGroup, const nsAString& aName, Type aType,
-    bool aCreatedDynamically) {
+    bool aIsPopupRequested, bool aCreatedDynamically) {
   if (aParent) {
     MOZ_DIAGNOSTIC_ASSERT(aParent->GetWindowContext());
     MOZ_DIAGNOSTIC_ASSERT(aParent->GetBrowsingContext()->mType == aType);
@@ -324,50 +355,66 @@ already_AddRefed<BrowsingContext> BrowsingContext::CreateDetached(
 
   // Configure initial values for synced fields.
   FieldValues fields;
-  fields.mName = aName;
+  fields.Get<IDX_Name>() = aName;
 
   if (aOpener) {
     MOZ_DIAGNOSTIC_ASSERT(!aParent,
                           "new BC with both initial opener and parent");
     MOZ_DIAGNOSTIC_ASSERT(aOpener->Group() == group);
     MOZ_DIAGNOSTIC_ASSERT(aOpener->mType == aType);
-    fields.mOpenerId = aOpener->Id();
-    fields.mHadOriginalOpener = true;
+    fields.Get<IDX_OpenerId>() = aOpener->Id();
+    fields.Get<IDX_HadOriginalOpener>() = true;
   }
 
   if (aParent) {
     MOZ_DIAGNOSTIC_ASSERT(parentBC->Group() == group);
     MOZ_DIAGNOSTIC_ASSERT(parentBC->mType == aType);
-    fields.mEmbedderInnerWindowId = aParent->WindowID();
+    fields.Get<IDX_EmbedderInnerWindowId>() = aParent->WindowID();
+    // Non-toplevel content documents are always embededed within content.
+    fields.Get<IDX_EmbeddedInContentDocument>() =
+        parentBC->mType == Type::Content;
 
     // XXX(farre): Can/Should we check aParent->IsLoading() here? (Bug
     // 1608448) Check if the parent was itself loading already
     auto readystate = aParent->GetDocument()->GetReadyStateEnum();
-    fields.mAncestorLoading =
+    fields.Get<IDX_AncestorLoading>() =
         parentBC->GetAncestorLoading() ||
         readystate == Document::ReadyState::READYSTATE_LOADING ||
         readystate == Document::ReadyState::READYSTATE_INTERACTIVE;
   }
 
-  fields.mBrowserId =
+  fields.Get<IDX_BrowserId>() =
       parentBC ? parentBC->GetBrowserId() : nsContentUtils::GenerateBrowserId();
 
-  fields.mOpenerPolicy = nsILoadInfo::OPENER_POLICY_UNSAFE_NONE;
+  fields.Get<IDX_OpenerPolicy>() = nsILoadInfo::OPENER_POLICY_UNSAFE_NONE;
   if (aOpener && aOpener->SameOriginWithTop()) {
     // We inherit the opener policy if there is a creator and if the creator's
     // origin is same origin with the creator's top-level origin.
     // If it is cross origin we should not inherit the CrossOriginOpenerPolicy
-    fields.mOpenerPolicy = aOpener->Top()->GetOpenerPolicy();
+    fields.Get<IDX_OpenerPolicy>() = aOpener->Top()->GetOpenerPolicy();
+
+    // If we inherit a policy which is potentially cross-origin isolated, we
+    // must be in a potentially cross-origin isolated BCG.
+    bool isPotentiallyCrossOriginIsolated =
+        fields.Get<IDX_OpenerPolicy>() ==
+        nsILoadInfo::OPENER_POLICY_SAME_ORIGIN_EMBEDDER_POLICY_REQUIRE_CORP;
+    MOZ_RELEASE_ASSERT(isPotentiallyCrossOriginIsolated ==
+                       group->IsPotentiallyCrossOriginIsolated());
   } else if (aOpener) {
     // They are not same origin
     auto topPolicy = aOpener->Top()->GetOpenerPolicy();
     MOZ_RELEASE_ASSERT(topPolicy == nsILoadInfo::OPENER_POLICY_UNSAFE_NONE ||
                        topPolicy ==
                            nsILoadInfo::OPENER_POLICY_SAME_ORIGIN_ALLOW_POPUPS);
+  } else if (!aParent && group->IsPotentiallyCrossOriginIsolated()) {
+    // If we're creating a brand-new toplevel BC in a potentially cross-origin
+    // isolated group, it should start out with a strict opener policy.
+    fields.Get<IDX_OpenerPolicy>() =
+        nsILoadInfo::OPENER_POLICY_SAME_ORIGIN_EMBEDDER_POLICY_REQUIRE_CORP;
   }
 
-  nsContentUtils::GenerateUUIDInPlace(fields.mHistoryID);
-  fields.mExplicitActive = [&] {
+  fields.Get<IDX_HistoryID>() = nsID::GenerateUUID();
+  fields.Get<IDX_ExplicitActive>() = [&] {
     if (parentBC) {
       // Non-root browsing-contexts inherit their status from its parent.
       return ExplicitActiveStatus::None;
@@ -381,32 +428,41 @@ already_AddRefed<BrowsingContext> BrowsingContext::CreateDetached(
     return ExplicitActiveStatus::Active;
   }();
 
-  fields.mFullZoom = parentBC ? parentBC->FullZoom() : 1.0f;
-  fields.mTextZoom = parentBC ? parentBC->TextZoom() : 1.0f;
+  fields.Get<IDX_FullZoom>() = parentBC ? parentBC->FullZoom() : 1.0f;
+  fields.Get<IDX_TextZoom>() = parentBC ? parentBC->TextZoom() : 1.0f;
 
   bool allowContentRetargeting =
       inherit ? inherit->GetAllowContentRetargetingOnChildren() : true;
-  fields.mAllowContentRetargeting = allowContentRetargeting;
-  fields.mAllowContentRetargetingOnChildren = allowContentRetargeting;
+  fields.Get<IDX_AllowContentRetargeting>() = allowContentRetargeting;
+  fields.Get<IDX_AllowContentRetargetingOnChildren>() = allowContentRetargeting;
 
   // Assume top allows fullscreen for its children unless otherwise stated.
   // Subframes start with it false unless otherwise noted in SetEmbedderElement.
-  fields.mFullscreenAllowedByOwner = !aParent;
+  fields.Get<IDX_FullscreenAllowedByOwner>() = !aParent;
 
-  fields.mAllowPlugins = inherit ? inherit->GetAllowPlugins() : true;
+  fields.Get<IDX_AllowPlugins>() = inherit ? inherit->GetAllowPlugins() : true;
 
-  fields.mDefaultLoadFlags =
+  fields.Get<IDX_DefaultLoadFlags>() =
       inherit ? inherit->GetDefaultLoadFlags() : nsIRequest::LOAD_NORMAL;
 
-  fields.mOrientationLock = mozilla::hal::eScreenOrientation_None;
+  fields.Get<IDX_OrientationLock>() = mozilla::hal::ScreenOrientation::None;
 
-  fields.mUseGlobalHistory = inherit ? inherit->GetUseGlobalHistory() : false;
+  fields.Get<IDX_UseGlobalHistory>() =
+      inherit ? inherit->GetUseGlobalHistory() : false;
 
-  fields.mUseErrorPages = true;
+  fields.Get<IDX_UseErrorPages>() = true;
 
-  fields.mTouchEventsOverrideInternal = TouchEventsOverride::None;
+  fields.Get<IDX_TouchEventsOverrideInternal>() = TouchEventsOverride::None;
 
-  fields.mAllowJavascript = inherit ? inherit->GetAllowJavascript() : true;
+  fields.Get<IDX_AllowJavascript>() =
+      inherit ? inherit->GetAllowJavascript() : true;
+
+  fields.Get<IDX_IsPopupRequested>() = aIsPopupRequested;
+
+  if (!parentBC) {
+    fields.Get<IDX_ShouldDelayMediaFromStart>() =
+        StaticPrefs::media_block_autoplay_until_in_foreground();
+  }
 
   RefPtr<BrowsingContext> context;
   if (XRE_IsParentProcess()) {
@@ -447,7 +503,7 @@ already_AddRefed<BrowsingContext> BrowsingContext::CreateIndependent(
                         "BCs created in the content process must be related to "
                         "some BrowserChild");
   RefPtr<BrowsingContext> bc(
-      CreateDetached(nullptr, nullptr, nullptr, u""_ns, aType));
+      CreateDetached(nullptr, nullptr, nullptr, u""_ns, aType, false));
   bc->mWindowless = bc->IsContent();
   bc->mEmbeddedByThisProcess = true;
   bc->EnsureAttached();
@@ -464,9 +520,9 @@ void BrowsingContext::EnsureAttached() {
 }
 
 /* static */
-void BrowsingContext::CreateFromIPC(BrowsingContext::IPCInitializer&& aInit,
-                                    BrowsingContextGroup* aGroup,
-                                    ContentParent* aOriginProcess) {
+mozilla::ipc::IPCResult BrowsingContext::CreateFromIPC(
+    BrowsingContext::IPCInitializer&& aInit, BrowsingContextGroup* aGroup,
+    ContentParent* aOriginProcess) {
   MOZ_DIAGNOSTIC_ASSERT(aOriginProcess || XRE_IsContentProcess());
   MOZ_DIAGNOSTIC_ASSERT(aGroup);
 
@@ -517,7 +573,7 @@ void BrowsingContext::CreateFromIPC(BrowsingContext::IPCInitializer&& aInit,
 
   Register(context);
 
-  context->Attach(/* aFromIPC */ true, aOriginProcess);
+  return context->Attach(/* aFromIPC */ true, aOriginProcess);
 }
 
 BrowsingContext::BrowsingContext(WindowContext* aParentWindow,
@@ -558,6 +614,8 @@ void BrowsingContext::SetDocShell(nsIDocShell* aDocShell) {
   if (mChildSessionHistory) {
     mChildSessionHistory->SetIsInProcess(true);
   }
+
+  RecomputeCanExecuteScripts();
 }
 
 // This class implements a callback that will return the remote window proxy for
@@ -668,6 +726,8 @@ void BrowsingContext::SetEmbedderElement(Element* aEmbedder) {
   if (aEmbedder) {
     Transaction txn;
     txn.SetEmbedderElementType(Some(aEmbedder->LocalName()));
+    txn.SetEmbeddedInContentDocument(
+        aEmbedder->OwnerDoc()->IsContentDocument());
     if (nsCOMPtr<nsPIDOMWindowInner> inner =
             do_QueryInterface(aEmbedder->GetOwnerGlobal())) {
       txn.SetEmbedderInnerWindowId(inner->WindowID());
@@ -685,8 +745,8 @@ void BrowsingContext::SetEmbedderElement(Element* aEmbedder) {
       }
       txn.SetMessageManagerGroup(messageManagerGroup);
 
-      bool useGlobalHistory = !aEmbedder->HasAttr(
-          kNameSpaceID_None, nsGkAtoms::disableglobalhistory);
+      bool useGlobalHistory =
+          !aEmbedder->HasAttr(nsGkAtoms::disableglobalhistory);
       txn.SetUseGlobalHistory(useGlobalHistory);
     }
 
@@ -704,7 +764,19 @@ void BrowsingContext::SetEmbedderElement(Element* aEmbedder) {
       obs->NotifyWhenScriptSafe(ToSupports(this),
                                 "browsing-context-did-set-embedder", nullptr);
     }
+
+    if (nsContentUtils::ShouldHideObjectOrEmbedImageDocument() &&
+        IsEmbedderTypeObjectOrEmbed()) {
+      Unused << SetSyntheticDocumentContainer(true);
+    }
   }
+}
+
+bool BrowsingContext::IsEmbedderTypeObjectOrEmbed() {
+  if (const Maybe<nsString>& type = GetEmbedderElementType()) {
+    return nsGkAtoms::object->Equals(*type) || nsGkAtoms::embed->Equals(*type);
+  }
+  return false;
 }
 
 void BrowsingContext::Embed() {
@@ -713,7 +785,8 @@ void BrowsingContext::Embed() {
   }
 }
 
-void BrowsingContext::Attach(bool aFromIPC, ContentParent* aOriginProcess) {
+mozilla::ipc::IPCResult BrowsingContext::Attach(bool aFromIPC,
+                                                ContentParent* aOriginProcess) {
   MOZ_DIAGNOSTIC_ASSERT(!mEverAttached);
   MOZ_DIAGNOSTIC_ASSERT_IF(aFromIPC, aOriginProcess || XRE_IsContentProcess());
   mEverAttached = true;
@@ -732,9 +805,29 @@ void BrowsingContext::Attach(bool aFromIPC, ContentParent* aOriginProcess) {
   MOZ_DIAGNOSTIC_ASSERT(mGroup);
   MOZ_DIAGNOSTIC_ASSERT(!mIsDiscarded);
 
+  if (mGroup->IsPotentiallyCrossOriginIsolated() !=
+      (Top()->GetOpenerPolicy() ==
+       nsILoadInfo::OPENER_POLICY_SAME_ORIGIN_EMBEDDER_POLICY_REQUIRE_CORP)) {
+    MOZ_DIAGNOSTIC_ASSERT(aFromIPC);
+    if (aFromIPC) {
+      auto* actor = aOriginProcess
+                        ? static_cast<mozilla::ipc::IProtocol*>(aOriginProcess)
+                        : static_cast<mozilla::ipc::IProtocol*>(
+                              ContentChild::GetSingleton());
+      return IPC_FAIL(
+          actor,
+          "Invalid CrossOriginIsolated state in BrowsingContext::Attach call");
+    } else {
+      MOZ_CRASH(
+          "Invalid CrossOriginIsolated state in BrowsingContext::Attach call");
+    }
+  }
+
   AssertCoherentLoadContext();
 
   // Add ourselves either to our parent or BrowsingContextGroup's child list.
+  // Important: We shouldn't return IPC_FAIL after this point, since the
+  // BrowsingContext will have already been added to the tree.
   if (mParentWindow) {
     if (!aFromIPC) {
       MOZ_DIAGNOSTIC_ASSERT(!mParentWindow->IsDiscarded(),
@@ -762,6 +855,11 @@ void BrowsingContext::Attach(bool aFromIPC, ContentParent* aOriginProcess) {
     CreateChildSHistory();
   }
 
+  // Why the context is being attached. This will always be "attach" in the
+  // content process, but may be "replace" if it's known the context being
+  // replaced in the parent process.
+  const char16_t* why = u"attach";
+
   if (XRE_IsContentProcess() && !aFromIPC) {
     // Send attach to our parent if we need to.
     ContentChild::GetSingleton()->SendCreateBrowsingContext(
@@ -788,6 +886,10 @@ void BrowsingContext::Attach(bool aFromIPC, ContentParent* aOriginProcess) {
       }
     });
 
+    if (IsTop() && IsContent() && Canonical()->GetWebProgress()) {
+      why = u"replace";
+    }
+
     // We want to create a BrowsingContextWebProgress for all content
     // BrowsingContexts.
     if (IsContent() && !Canonical()->mWebProgress) {
@@ -797,12 +899,13 @@ void BrowsingContext::Attach(bool aFromIPC, ContentParent* aOriginProcess) {
 
   if (nsCOMPtr<nsIObserverService> obs = services::GetObserverService()) {
     obs->NotifyWhenScriptSafe(ToSupports(this), "browsing-context-attached",
-                              nullptr);
+                              why);
   }
 
   if (XRE_IsParentProcess()) {
     Canonical()->CanonicalAttach();
   }
+  return IPC_OK();
 }
 
 void BrowsingContext::Detach(bool aFromIPC) {
@@ -1012,6 +1115,13 @@ void BrowsingContext::GetChildren(
   aChildren.AppendElements(Children());
 }
 
+Span<RefPtr<BrowsingContext>> BrowsingContext::NonSyntheticChildren() const {
+  if (WindowContext* current = mCurrentWindowContext) {
+    return current->NonSyntheticChildren();
+  }
+  return Span<RefPtr<BrowsingContext>>();
+}
+
 void BrowsingContext::GetWindowContexts(
     nsTArray<RefPtr<WindowContext>>& aWindows) {
   aWindows.AppendElements(mWindowContexts);
@@ -1105,100 +1215,15 @@ void BrowsingContext::GetAllBrowsingContextsInSubtree(
   });
 }
 
-// FindWithName follows the rules for choosing a browsing context,
-// with the exception of sandboxing for iframes. The implementation
-// for arbitrarily choosing between two browsing contexts with the
-// same name is as follows:
-//
-// 1) The start browsing context, i.e. 'this'
-// 2) Descendants in insertion order
-// 3) The parent
-// 4) Siblings and their children, both in insertion order
-// 5) After this we iteratively follow the parent chain, repeating 3
-//    and 4 until
-// 6) If there is no parent, consider all other top level browsing
-//    contexts and their children, both in insertion order
-//
-// See
-// https://html.spec.whatwg.org/multipage/browsers.html#the-rules-for-choosing-a-browsing-context-given-a-browsing-context-name
-BrowsingContext* BrowsingContext::FindWithName(
-    const nsAString& aName, bool aUseEntryGlobalForAccessCheck) {
-  RefPtr<BrowsingContext> requestingContext = this;
-  if (aUseEntryGlobalForAccessCheck) {
-    if (nsCOMPtr<nsIDocShell> caller = do_GetInterface(GetEntryGlobal())) {
-      if (caller->GetBrowsingContext()) {
-        requestingContext = caller->GetBrowsingContext();
-      }
-    }
-  }
-
-  BrowsingContext* found = nullptr;
-  if (aName.IsEmpty()) {
-    // You can't find a browsing context with an empty name.
-    found = nullptr;
-  } else if (aName.LowerCaseEqualsLiteral("_blank")) {
-    // Just return null. Caller must handle creating a new window with
-    // a blank name.
-    found = nullptr;
-  } else if (nsContentUtils::IsSpecialName(aName)) {
-    found = FindWithSpecialName(aName, *requestingContext);
-  } else if (BrowsingContext* child =
-                 FindWithNameInSubtree(aName, *requestingContext)) {
-    found = child;
-  } else {
-    BrowsingContext* current = this;
-
-    do {
-      Span<RefPtr<BrowsingContext>> siblings;
-      BrowsingContext* parent = current->GetParent();
-
-      if (!parent) {
-        // We've reached the root of the tree, consider browsing
-        // contexts in the same browsing context group.
-        siblings = mGroup->Toplevels();
-      } else if (parent->NameEquals(aName) &&
-                 requestingContext->CanAccess(parent) &&
-                 parent->IsTargetable()) {
-        found = parent;
-        break;
-      } else {
-        siblings = parent->Children();
-      }
-
-      for (BrowsingContext* sibling : siblings) {
-        if (sibling == current) {
-          continue;
-        }
-
-        if (BrowsingContext* relative =
-                sibling->FindWithNameInSubtree(aName, *requestingContext)) {
-          found = relative;
-          // Breaks the outer loop
-          parent = nullptr;
-          break;
-        }
-      }
-
-      current = parent;
-    } while (current);
-  }
-
-  // Helpers should perform access control checks, which means that we
-  // only need to assert that we can access found.
-  MOZ_DIAGNOSTIC_ASSERT(!found || requestingContext->CanAccess(found));
-
-  return found;
-}
-
 BrowsingContext* BrowsingContext::FindChildWithName(
-    const nsAString& aName, BrowsingContext& aRequestingContext) {
+    const nsAString& aName, WindowGlobalChild& aRequestingWindow) {
   if (aName.IsEmpty()) {
     // You can't find a browsing context with the empty name.
     return nullptr;
   }
 
-  for (BrowsingContext* child : Children()) {
-    if (child->NameEquals(aName) && aRequestingContext.CanAccess(child) &&
+  for (BrowsingContext* child : NonSyntheticChildren()) {
+    if (child->NameEquals(aName) && aRequestingWindow.CanNavigate(child) &&
         child->IsTargetable()) {
       return child;
     }
@@ -1208,7 +1233,7 @@ BrowsingContext* BrowsingContext::FindChildWithName(
 }
 
 BrowsingContext* BrowsingContext::FindWithSpecialName(
-    const nsAString& aName, BrowsingContext& aRequestingContext) {
+    const nsAString& aName, WindowGlobalChild& aRequestingWindow) {
   // TODO(farre): Neither BrowsingContext nor nsDocShell checks if the
   // browsing context pointed to by a special name is active. Should
   // it be? See Bug 1527913.
@@ -1218,7 +1243,7 @@ BrowsingContext* BrowsingContext::FindWithSpecialName(
 
   if (aName.LowerCaseEqualsLiteral("_parent")) {
     if (BrowsingContext* parent = GetParent()) {
-      return aRequestingContext.CanAccess(parent) ? parent : nullptr;
+      return aRequestingWindow.CanNavigate(parent) ? parent : nullptr;
     }
     return this;
   }
@@ -1226,71 +1251,30 @@ BrowsingContext* BrowsingContext::FindWithSpecialName(
   if (aName.LowerCaseEqualsLiteral("_top")) {
     BrowsingContext* top = Top();
 
-    return aRequestingContext.CanAccess(top) ? top : nullptr;
+    return aRequestingWindow.CanNavigate(top) ? top : nullptr;
   }
 
   return nullptr;
 }
 
 BrowsingContext* BrowsingContext::FindWithNameInSubtree(
-    const nsAString& aName, BrowsingContext& aRequestingContext) {
+    const nsAString& aName, WindowGlobalChild* aRequestingWindow) {
   MOZ_DIAGNOSTIC_ASSERT(!aName.IsEmpty());
 
-  if (NameEquals(aName) && aRequestingContext.CanAccess(this) &&
+  if (NameEquals(aName) &&
+      (!aRequestingWindow || aRequestingWindow->CanNavigate(this)) &&
       IsTargetable()) {
     return this;
   }
 
-  for (BrowsingContext* child : Children()) {
+  for (BrowsingContext* child : NonSyntheticChildren()) {
     if (BrowsingContext* found =
-            child->FindWithNameInSubtree(aName, aRequestingContext)) {
+            child->FindWithNameInSubtree(aName, aRequestingWindow)) {
       return found;
     }
   }
 
   return nullptr;
-}
-
-// For historical context, see:
-//
-// Bug 13871:   Prevent frameset spoofing
-// Bug 103638:  Targets with same name in different windows open in wrong
-//              window with javascript
-// Bug 408052:  Adopt "ancestor" frame navigation policy
-// Bug 1570207: Refactor logic to rely on BrowsingContextGroups to enforce
-//              origin attribute isolation.
-bool BrowsingContext::CanAccess(BrowsingContext* aTarget,
-                                bool aConsiderOpener) {
-  MOZ_ASSERT(
-      mDocShell,
-      "CanAccess() may only be called in the process of the accessing window");
-  MOZ_ASSERT(aTarget, "Must have a target");
-
-  MOZ_DIAGNOSTIC_ASSERT(
-      Group() == aTarget->Group(),
-      "A BrowsingContext should never see a context from a different group");
-
-  // A frame can navigate itself and its own root.
-  if (aTarget == this || aTarget == Top()) {
-    return true;
-  }
-
-  // A frame can navigate any frame with a same-origin ancestor.
-  for (BrowsingContext* bc = aTarget; bc; bc = bc->GetParent()) {
-    if (bc->mDocShell && nsDocShell::ValidateOrigin(this, bc)) {
-      return true;
-    }
-  }
-
-  // If the target is a top-level document, a frame can navigate it if it can
-  // navigate its opener.
-  if (aConsiderOpener && !aTarget->GetParent()) {
-    if (RefPtr<BrowsingContext> opener = aTarget->GetOpener()) {
-      return CanAccess(opener, false);
-    }
-  }
-
-  return false;
 }
 
 bool BrowsingContext::IsSandboxedFrom(BrowsingContext* aTarget) {
@@ -1345,10 +1329,14 @@ bool BrowsingContext::IsSandboxedFrom(BrowsingContext* aTarget) {
   }
 
   // If SANDBOXED_TOPLEVEL_NAVIGATION_USER_ACTIVATION flag is not on, we are not
-  // sandboxed from our top if we have user interaction.
+  // sandboxed from our top if we have user interaction. We assume there is a
+  // valid transient user gesture interaction if this check happens in the
+  // target process given that we have checked in the triggering process
+  // already.
   if (!(sandboxFlags & SANDBOXED_TOPLEVEL_NAVIGATION_USER_ACTIVATION) &&
       mCurrentWindowContext &&
-      mCurrentWindowContext->HasValidTransientUserGestureActivation() &&
+      (!mCurrentWindowContext->IsInProcess() ||
+       mCurrentWindowContext->HasValidTransientUserGestureActivation()) &&
       aTarget == Top()) {
     return false;
   }
@@ -1389,13 +1377,13 @@ void BrowsingContext::SetTriggeringAndInheritPrincipals(
   }
 }
 
-Tuple<nsCOMPtr<nsIPrincipal>, nsCOMPtr<nsIPrincipal>>
+std::tuple<nsCOMPtr<nsIPrincipal>, nsCOMPtr<nsIPrincipal>>
 BrowsingContext::GetTriggeringAndInheritPrincipalsForCurrentLoad() {
   nsCOMPtr<nsIPrincipal> triggeringPrincipal =
       GetSavedPrincipal(mTriggeringPrincipal);
   nsCOMPtr<nsIPrincipal> principalToInherit =
       GetSavedPrincipal(mPrincipalToInherit);
-  return MakeTuple(triggeringPrincipal, principalToInherit);
+  return std::make_tuple(triggeringPrincipal, principalToInherit);
 }
 
 nsIPrincipal* BrowsingContext::GetSavedPrincipal(
@@ -1403,7 +1391,7 @@ nsIPrincipal* BrowsingContext::GetSavedPrincipal(
   if (aPrincipalTuple) {
     nsCOMPtr<nsIPrincipal> principal;
     uint64_t loadIdentifier;
-    Tie(principal, loadIdentifier) = *aPrincipalTuple;
+    std::tie(principal, loadIdentifier) = *aPrincipalTuple;
     // We want to return a principal only if the load identifier for it
     // matches the current one for this BC.
     if (auto current = GetCurrentLoadIdentifier();
@@ -1483,7 +1471,7 @@ JSObject* BrowsingContext::ReadStructuredClone(JSContext* aCx,
     return nullptr;
   }
 
-  JS::RootedValue val(aCx, JS::NullValue());
+  JS::Rooted<JS::Value> val(aCx, JS::NullValue());
   // We'll get rooting hazard errors from the RefPtr destructor if it isn't
   // destroyed before we try to return a raw JSObject*, so create it in its own
   // scope.
@@ -1942,9 +1930,11 @@ nsresult BrowsingContext::LoadURI(nsDocShellLoadState* aLoadState,
 
   MOZ_DIAGNOSTIC_ASSERT(aLoadState->TargetBrowsingContext().IsNull(),
                         "Targeting occurs in InternalLoad");
+  aLoadState->AssertProcessCouldTriggerLoadIfSystem();
 
   if (mDocShell) {
-    return mDocShell->LoadURI(aLoadState, aSetNavigating);
+    nsCOMPtr<nsIDocShell> docShell = mDocShell;
+    return docShell->LoadURI(aLoadState, aSetNavigating);
   }
 
   // Note: We do this check both here and in `nsDocShell::InternalLoad`, since
@@ -1973,20 +1963,15 @@ nsresult BrowsingContext::LoadURI(nsDocShellLoadState* aLoadState,
 
   MOZ_DIAGNOSTIC_ASSERT(!sourceBC || sourceBC->Group() == Group());
   if (sourceBC && sourceBC->IsInProcess()) {
-    if (!sourceBC->CanAccess(this)) {
-      return NS_ERROR_DOM_PROP_ACCESS_DENIED;
-    }
-
     nsCOMPtr<nsPIDOMWindowOuter> win(sourceBC->GetDOMWindow());
     if (WindowGlobalChild* wgc =
             win->GetCurrentInnerWindow()->GetWindowGlobalChild()) {
-      wgc->SendLoadURI(this, aLoadState, aSetNavigating);
+      if (!wgc->CanNavigate(this)) {
+        return NS_ERROR_DOM_PROP_ACCESS_DENIED;
+      }
+      wgc->SendLoadURI(this, mozilla::WrapNotNull(aLoadState), aSetNavigating);
     }
   } else if (XRE_IsParentProcess()) {
-    // Strip the target query parameters before loading the URI in the parent.
-    // The loading in content will be handled in nsDocShell.
-    aLoadState->MaybeStripTrackerQueryStrings(this);
-
     if (Canonical()->LoadInParent(aLoadState, aSetNavigating)) {
       return NS_OK;
     }
@@ -2007,7 +1992,7 @@ nsresult BrowsingContext::LoadURI(nsDocShellLoadState* aLoadState,
       // load. Normally we'd expect a PDocumentChannel actor to have been
       // created to claim the load identifier by that time. If not, then it
       // won't be coming, so make sure we clean up and deregister.
-      cp->SendLoadURI(this, aLoadState, aSetNavigating)
+      cp->SendLoadURI(this, mozilla::WrapNotNull(aLoadState), aSetNavigating)
           ->Then(GetMainThreadSerialEventTarget(), __func__,
                  [loadIdentifier](
                      const PContentParent::LoadURIPromise::ResolveOrRejectValue&
@@ -2043,9 +2028,11 @@ nsresult BrowsingContext::InternalLoad(nsDocShellLoadState* aLoadState) {
                         "should have target bc set");
   MOZ_DIAGNOSTIC_ASSERT(aLoadState->TargetBrowsingContext() == this,
                         "must be targeting this BrowsingContext");
+  aLoadState->AssertProcessCouldTriggerLoadIfSystem();
 
   if (mDocShell) {
-    return nsDocShell::Cast(mDocShell)->InternalLoad(aLoadState);
+    RefPtr<nsDocShell> docShell = nsDocShell::Cast(mDocShell);
+    return docShell->InternalLoad(aLoadState);
   }
 
   // Note: We do this check both here and in `nsDocShell::InternalLoad`, since
@@ -2077,14 +2064,10 @@ nsresult BrowsingContext::InternalLoad(nsDocShellLoadState* aLoadState) {
 
     MOZ_ALWAYS_SUCCEEDS(
         SetCurrentLoadIdentifier(Some(aLoadState->GetLoadIdentifier())));
-    Unused << cp->SendInternalLoad(aLoadState);
+    Unused << cp->SendInternalLoad(mozilla::WrapNotNull(aLoadState));
   } else {
     MOZ_DIAGNOSTIC_ASSERT(sourceBC);
     MOZ_DIAGNOSTIC_ASSERT(sourceBC->Group() == Group());
-
-    if (!sourceBC->CanAccess(this)) {
-      return NS_ERROR_DOM_PROP_ACCESS_DENIED;
-    }
 
     nsCOMPtr<nsPIDOMWindowOuter> win(sourceBC->GetDOMWindow());
     WindowGlobalChild* wgc =
@@ -2092,10 +2075,13 @@ nsresult BrowsingContext::InternalLoad(nsDocShellLoadState* aLoadState) {
     if (!wgc || !wgc->CanSend()) {
       return NS_ERROR_FAILURE;
     }
+    if (!wgc->CanNavigate(this)) {
+      return NS_ERROR_DOM_PROP_ACCESS_DENIED;
+    }
 
     MOZ_ALWAYS_SUCCEEDS(
         SetCurrentLoadIdentifier(Some(aLoadState->GetLoadIdentifier())));
-    wgc->SendInternalLoad(aLoadState);
+    wgc->SendInternalLoad(mozilla::WrapNotNull(aLoadState));
   }
 
   return NS_OK;
@@ -2108,9 +2094,10 @@ void BrowsingContext::DisplayLoadError(const nsAString& aURI) {
 
   if (mDocShell) {
     bool didDisplayLoadError = false;
-    mDocShell->DisplayLoadError(NS_ERROR_MALFORMED_URI, nullptr,
-                                PromiseFlatString(aURI).get(), nullptr,
-                                &didDisplayLoadError);
+    nsCOMPtr<nsIDocShell> docShell = mDocShell;
+    docShell->DisplayLoadError(NS_ERROR_MALFORMED_URI, nullptr,
+                               PromiseFlatString(aURI).get(), nullptr,
+                               &didDisplayLoadError);
   } else {
     if (ContentParent* cp = Canonical()->GetContentParent()) {
       Unused << cp->SendDisplayLoadError(this, PromiseFlatString(aURI));
@@ -2167,6 +2154,7 @@ PopupBlocker::PopupControlState BrowsingContext::RevisePopupAbuseLevel(
     return PopupBlocker::openAllowed;
   }
 
+  RefPtr<Document> doc = GetExtantDocument();
   PopupBlocker::PopupControlState abuse = aControl;
   switch (abuse) {
     case PopupBlocker::openControlled:
@@ -2177,7 +2165,8 @@ PopupBlocker::PopupControlState BrowsingContext::RevisePopupAbuseLevel(
       }
       break;
     case PopupBlocker::openAbused:
-      if (IsPopupAllowed()) {
+      if (IsPopupAllowed() ||
+          (doc && doc->HasValidTransientUserGestureActivation())) {
         // Skip PopupBlocker::openBlocked
         abuse = PopupBlocker::openControlled;
       }
@@ -2200,7 +2189,7 @@ PopupBlocker::PopupControlState BrowsingContext::RevisePopupAbuseLevel(
 
   // If we're currently in-process, attempt to consume transient user gesture
   // activations.
-  if (RefPtr<Document> doc = GetExtantDocument()) {
+  if (doc) {
     // HACK: Some pages using bogus library + UA sniffing call window.open()
     // from a blank iframe, only on Firefox, see bug 1685056.
     //
@@ -2242,44 +2231,6 @@ PopupBlocker::PopupControlState BrowsingContext::RevisePopupAbuseLevel(
 
 void BrowsingContext::IncrementHistoryEntryCountForBrowsingContext() {
   Unused << SetHistoryEntryCount(GetHistoryEntryCount() + 1);
-}
-
-void BrowsingContext::FlushSessionStore() {
-  nsTArray<RefPtr<BrowserChild>> nestedBrowserChilds;
-
-  PreOrderWalk([&](BrowsingContext* aContext) {
-    BrowserChild* browserChild = BrowserChild::GetFrom(aContext->GetDocShell());
-    if (browserChild && browserChild->GetBrowsingContext() == aContext) {
-      nestedBrowserChilds.AppendElement(browserChild);
-    }
-
-    if (aContext->CreatedDynamically()) {
-      return WalkFlag::Skip;
-    }
-
-    WindowContext* windowContext = aContext->GetCurrentWindowContext();
-    if (!windowContext) {
-      return WalkFlag::Skip;
-    }
-
-    WindowGlobalChild* windowChild = windowContext->GetWindowGlobalChild();
-    if (!windowChild) {
-      return WalkFlag::Next;
-    }
-
-    RefPtr<SessionStoreDataCollector> collector =
-        windowChild->GetSessionStoreDataCollector();
-    if (!collector) {
-      return WalkFlag::Next;
-    }
-
-    collector->Flush();
-    return WalkFlag::Next;
-  });
-
-  for (auto& child : nestedBrowserChilds) {
-    child->UpdateSessionStore();
-  }
 }
 
 std::tuple<bool, bool> BrowsingContext::CanFocusCheck(CallerType aCallerType) {
@@ -2469,12 +2420,12 @@ void BrowsingContext::PostMessageMoz(JSContext* aCx,
   if (ContentChild* cc = ContentChild::GetSingleton()) {
     // The clone scope gets set when we write the message data based on the
     // requirements of that data that we're writing.
-    // If the message data contins a shared memory object, then CloneScope would
-    // return SameProcess. Otherwise, it returns DifferentProcess.
+    // If the message data contains a shared memory object, then CloneScope
+    // would return SameProcess. Otherwise, it returns DifferentProcess.
     if (message.CloneScope() ==
         StructuredCloneHolder::StructuredCloneScope::DifferentProcess) {
       ClonedMessageData clonedMessageData;
-      if (!message.BuildClonedMessageDataForChild(cc, clonedMessageData)) {
+      if (!message.BuildClonedMessageData(clonedMessageData)) {
         aError.Throw(NS_ERROR_FAILURE);
         return;
       }
@@ -2498,7 +2449,7 @@ void BrowsingContext::PostMessageMoz(JSContext* aCx,
     if (message.CloneScope() ==
         StructuredCloneHolder::StructuredCloneScope::DifferentProcess) {
       ClonedMessageData clonedMessageData;
-      if (!message.BuildClonedMessageDataForParent(cp, clonedMessageData)) {
+      if (!message.BuildClonedMessageData(clonedMessageData)) {
         aError.Throw(NS_ERROR_FAILURE);
         return;
       }
@@ -2602,6 +2553,37 @@ nsresult BrowsingContext::ResetGVAutoplayRequestStatus() {
   return txn.Commit(this);
 }
 
+template <typename Callback>
+void BrowsingContext::WalkPresContexts(Callback&& aCallback) {
+  PreOrderWalk([&](BrowsingContext* aContext) {
+    if (nsIDocShell* shell = aContext->GetDocShell()) {
+      if (RefPtr pc = shell->GetPresContext()) {
+        aCallback(pc.get());
+      }
+    }
+  });
+}
+
+void BrowsingContext::PresContextAffectingFieldChanged() {
+  WalkPresContexts([&](nsPresContext* aPc) {
+    aPc->RecomputeBrowsingContextDependentData();
+  });
+}
+
+void BrowsingContext::DidSet(FieldIndex<IDX_SessionStoreEpoch>,
+                             uint32_t aOldValue) {
+  if (!mCurrentWindowContext) {
+    return;
+  }
+  SessionStoreChild* sessionStoreChild =
+      SessionStoreChild::From(mCurrentWindowContext->GetWindowGlobalChild());
+  if (!sessionStoreChild) {
+    return;
+  }
+
+  sessionStoreChild->SetEpoch(GetSessionStoreEpoch());
+}
+
 void BrowsingContext::DidSet(FieldIndex<IDX_GVAudibleAutoplayRequestStatus>) {
   MOZ_ASSERT(IsTop(),
              "Should only set GVAudibleAutoplayRequestStatus in the top-level "
@@ -2631,25 +2613,29 @@ void BrowsingContext::DidSet(FieldIndex<IDX_ExplicitActive>,
   if (IsTop()) {
     Group()->UpdateToplevelsSuspendedIfNeeded();
 
+    if (XRE_IsParentProcess()) {
+      auto* bc = Canonical();
+      if (BrowserParent* bp = bc->GetBrowserParent()) {
+        bp->RecomputeProcessPriority();
 #if defined(XP_WIN) && defined(ACCESSIBILITY)
-    if (XRE_IsParentProcess() && a11y::Compatibility::IsDolphin()) {
-      // update active accessible documents on windows
-      if (BrowserParent* bp = Canonical()->GetBrowserParent()) {
-        if (a11y::DocAccessibleParent* tabDoc =
-                bp->GetTopLevelDocAccessible()) {
-          HWND window = tabDoc->GetEmulatedWindowHandle();
-          MOZ_ASSERT(window);
-          if (window) {
-            if (isActive) {
-              a11y::nsWinUtils::ShowNativeWindow(window);
-            } else {
-              a11y::nsWinUtils::HideNativeWindow(window);
+        if (a11y::Compatibility::IsDolphin()) {
+          // update active accessible documents on windows
+          if (a11y::DocAccessibleParent* tabDoc =
+                  bp->GetTopLevelDocAccessible()) {
+            HWND window = tabDoc->GetEmulatedWindowHandle();
+            MOZ_ASSERT(window);
+            if (window) {
+              if (isActive) {
+                a11y::nsWinUtils::ShowNativeWindow(window);
+              } else {
+                a11y::nsWinUtils::HideNativeWindow(window);
+              }
             }
           }
         }
+#endif
       }
     }
-#endif
   }
 
   PreOrderWalk([&](BrowsingContext* aContext) {
@@ -2657,6 +2643,15 @@ void BrowsingContext::DidSet(FieldIndex<IDX_ExplicitActive>,
       nsDocShell::Cast(ds)->ActivenessMaybeChanged();
     }
   });
+}
+
+void BrowsingContext::DidSet(FieldIndex<IDX_InRDMPane>, bool aOldValue) {
+  MOZ_ASSERT(IsTop(),
+             "Should only set InRDMPane in the top-level browsing context");
+  if (GetInRDMPane() == aOldValue) {
+    return;
+  }
+  PresContextAffectingFieldChanged();
 }
 
 bool BrowsingContext::CanSet(FieldIndex<IDX_PageAwakeRequestCount>,
@@ -2725,27 +2720,35 @@ bool BrowsingContext::CanSet(FieldIndex<IDX_TouchEventsOverrideInternal>,
   return XRE_IsParentProcess() && !aSource;
 }
 
+void BrowsingContext::DidSet(FieldIndex<IDX_TouchEventsOverrideInternal>,
+                             dom::TouchEventsOverride&& aOldValue) {
+  if (GetTouchEventsOverrideInternal() == aOldValue) {
+    return;
+  }
+  WalkPresContexts([&](nsPresContext* aPc) {
+    aPc->MediaFeatureValuesChanged(
+        {MediaFeatureChangeReason::SystemMetricsChange},
+        // We're already iterating through sub documents, so we don't need to
+        // propagate the change again.
+        MediaFeatureChangePropagation::JustThisDocument);
+  });
+}
+
+void BrowsingContext::DidSet(FieldIndex<IDX_EmbedderColorSchemes>,
+                             EmbedderColorSchemes&& aOldValue) {
+  if (GetEmbedderColorSchemes() == aOldValue) {
+    return;
+  }
+  PresContextAffectingFieldChanged();
+}
+
 void BrowsingContext::DidSet(FieldIndex<IDX_PrefersColorSchemeOverride>,
                              dom::PrefersColorSchemeOverride aOldValue) {
   MOZ_ASSERT(IsTop());
   if (PrefersColorSchemeOverride() == aOldValue) {
     return;
   }
-  PreOrderWalk([&](BrowsingContext* aContext) {
-    if (nsIDocShell* shell = aContext->GetDocShell()) {
-      if (nsPresContext* pc = shell->GetPresContext()) {
-        // This is a bit of a lie, but it's the code-path that gets taken for
-        // regular system metrics changes via ThemeChanged().
-        // TODO(emilio): The JustThisDocument is a bit suspect here,
-        // prefers-color-scheme also applies to images or such, but the override
-        // means that we could need to render the same image both with "light"
-        // and "dark" appearance, so we just don't bother.
-        pc->MediaFeatureValuesChanged(
-            {MediaFeatureChangeReason::SystemMetricsChange},
-            MediaFeatureChangePropagation::JustThisDocument);
-      }
-    }
-  });
+  PresContextAffectingFieldChanged();
 }
 
 void BrowsingContext::DidSet(FieldIndex<IDX_MediumOverride>,
@@ -2754,13 +2757,7 @@ void BrowsingContext::DidSet(FieldIndex<IDX_MediumOverride>,
   if (GetMediumOverride() == aOldValue) {
     return;
   }
-  PreOrderWalk([&](BrowsingContext* aContext) {
-    if (nsIDocShell* shell = aContext->GetDocShell()) {
-      if (nsPresContext* pc = shell->GetPresContext()) {
-        pc->RecomputeBrowsingContextDependentData();
-      }
-    }
-  });
+  PresContextAffectingFieldChanged();
 }
 
 void BrowsingContext::DidSet(FieldIndex<IDX_DisplayMode>,
@@ -2771,19 +2768,15 @@ void BrowsingContext::DidSet(FieldIndex<IDX_DisplayMode>,
     return;
   }
 
-  PreOrderWalk([&](BrowsingContext* aContext) {
-    if (nsIDocShell* shell = aContext->GetDocShell()) {
-      if (nsPresContext* pc = shell->GetPresContext()) {
-        pc->MediaFeatureValuesChanged(
-            {MediaFeatureChangeReason::DisplayModeChange},
-            // We're already iterating through sub documents, so we don't need
-            // to propagate the change again.
-            //
-            // Images and other resources don't change their display-mode
-            // evaluation, display-mode is a property of the browsing context.
-            MediaFeatureChangePropagation::JustThisDocument);
-      }
-    }
+  WalkPresContexts([&](nsPresContext* aPc) {
+    aPc->MediaFeatureValuesChanged(
+        {MediaFeatureChangeReason::DisplayModeChange},
+        // We're already iterating through sub documents, so we don't need
+        // to propagate the change again.
+        //
+        // Images and other resources don't change their display-mode
+        // evaluation, display-mode is a property of the browsing context.
+        MediaFeatureChangePropagation::JustThisDocument);
   });
 }
 
@@ -2800,6 +2793,36 @@ void BrowsingContext::DidSet(FieldIndex<IDX_Muted>) {
   });
 }
 
+bool BrowsingContext::CanSet(FieldIndex<IDX_IsAppTab>, const bool& aValue,
+                             ContentParent* aSource) {
+  return XRE_IsParentProcess() && !aSource && IsTop();
+}
+
+bool BrowsingContext::CanSet(FieldIndex<IDX_HasSiblings>, const bool& aValue,
+                             ContentParent* aSource) {
+  return XRE_IsParentProcess() && !aSource && IsTop();
+}
+
+bool BrowsingContext::CanSet(FieldIndex<IDX_ShouldDelayMediaFromStart>,
+                             const bool& aValue, ContentParent* aSource) {
+  return IsTop();
+}
+
+void BrowsingContext::DidSet(FieldIndex<IDX_ShouldDelayMediaFromStart>,
+                             bool aOldValue) {
+  MOZ_ASSERT(IsTop(), "Set attribute on non top-level context!");
+  if (aOldValue == GetShouldDelayMediaFromStart()) {
+    return;
+  }
+  if (!GetShouldDelayMediaFromStart()) {
+    PreOrderWalk([&](BrowsingContext* aContext) {
+      if (nsPIDOMWindowOuter* win = aContext->GetDOMWindow()) {
+        win->ActivateMediaComponents();
+      }
+    });
+  }
+}
+
 bool BrowsingContext::CanSet(FieldIndex<IDX_OverrideDPPX>, const float& aValue,
                              ContentParent* aSource) {
   return XRE_IsParentProcess() && !aSource && IsTop();
@@ -2810,14 +2833,7 @@ void BrowsingContext::DidSet(FieldIndex<IDX_OverrideDPPX>, float aOldValue) {
   if (GetOverrideDPPX() == aOldValue) {
     return;
   }
-
-  PreOrderWalk([&](BrowsingContext* aContext) {
-    if (nsIDocShell* shell = aContext->GetDocShell()) {
-      if (nsPresContext* pc = shell->GetPresContext()) {
-        pc->RecomputeBrowsingContextDependentData();
-      }
-    }
-  });
+  PresContextAffectingFieldChanged();
 }
 
 void BrowsingContext::SetCustomUserAgent(const nsAString& aUserAgent,
@@ -2851,24 +2867,45 @@ void BrowsingContext::DidSet(FieldIndex<IDX_IsInBFCache>) {
 
   const bool isInBFCache = GetIsInBFCache();
   if (!isInBFCache) {
-    PreOrderWalk(
-        [&](BrowsingContext* aContext) { aContext->mIsInBFCache = false; });
+    UpdateCurrentTopByBrowserId(this);
+    PreOrderWalk([&](BrowsingContext* aContext) {
+      aContext->mIsInBFCache = false;
+      nsCOMPtr<nsIDocShell> shell = aContext->GetDocShell();
+      if (shell) {
+        nsDocShell::Cast(shell)->ThawFreezeNonRecursive(true);
+      }
+    });
   }
 
   if (isInBFCache && XRE_IsContentProcess() && mDocShell) {
     nsDocShell::Cast(mDocShell)->MaybeDisconnectChildListenersOnPageHide();
   }
 
-  PreOrderWalk([&](BrowsingContext* aContext) {
-    nsCOMPtr<nsIDocShell> shell = aContext->GetDocShell();
-    if (shell) {
-      static_cast<nsDocShell*>(shell.get())
-          ->FirePageHideShowNonRecursive(!isInBFCache);
-    }
-  });
+  if (isInBFCache) {
+    PreOrderWalk([&](BrowsingContext* aContext) {
+      nsCOMPtr<nsIDocShell> shell = aContext->GetDocShell();
+      if (shell) {
+        nsDocShell::Cast(shell)->FirePageHideShowNonRecursive(false);
+      }
+    });
+  } else {
+    PostOrderWalk([&](BrowsingContext* aContext) {
+      nsCOMPtr<nsIDocShell> shell = aContext->GetDocShell();
+      if (shell) {
+        nsDocShell::Cast(shell)->FirePageHideShowNonRecursive(true);
+      }
+    });
+  }
 
   if (isInBFCache) {
     PreOrderWalk([&](BrowsingContext* aContext) {
+      nsCOMPtr<nsIDocShell> shell = aContext->GetDocShell();
+      if (shell) {
+        nsDocShell::Cast(shell)->ThawFreezeNonRecursive(false);
+        if (nsPresContext* pc = shell->GetPresContext()) {
+          pc->EventStateManager()->ResetHoverState();
+        }
+      }
       aContext->mIsInBFCache = true;
       Document* doc = aContext->GetDocument();
       if (doc) {
@@ -2876,6 +2913,20 @@ void BrowsingContext::DidSet(FieldIndex<IDX_IsInBFCache>) {
         doc->NotifyActivityChanged();
       }
     });
+
+    if (XRE_IsParentProcess()) {
+      if (mCurrentWindowContext &&
+          mCurrentWindowContext->Canonical()->Fullscreen()) {
+        mCurrentWindowContext->Canonical()->ExitTopChromeDocumentFullscreen();
+      }
+    }
+  }
+}
+
+void BrowsingContext::DidSet(FieldIndex<IDX_SyntheticDocumentContainer>) {
+  if (WindowContext* parentWindowContext = GetParentWindowContext()) {
+    parentWindowContext->UpdateChildSynthetic(this,
+                                              GetSyntheticDocumentContainer());
   }
 }
 
@@ -2926,20 +2977,42 @@ void BrowsingContext::DidSet(FieldIndex<IDX_IsActiveBrowserWindowInternal>,
   // for all in-process documents.
   PreOrderWalk([isActivateEvent](BrowsingContext* aContext) {
     if (RefPtr<Document> doc = aContext->GetExtantDocument()) {
-      doc->UpdateDocumentStates(NS_DOCUMENT_STATE_WINDOW_INACTIVE, true);
+      doc->UpdateDocumentStates(DocumentState::WINDOW_INACTIVE, true);
 
-      if (XRE_IsContentProcess() &&
-          (!aContext->GetParent() || !aContext->GetParent()->IsInProcess())) {
-        // Send the inner window an activate/deactivate event if
-        // the context is the top of a sub-tree of in-process
-        // contexts.
-        nsContentUtils::DispatchEventOnlyToChrome(
-            doc, doc->GetWindow()->GetCurrentInnerWindow(),
-            isActivateEvent ? u"activate"_ns : u"deactivate"_ns,
-            CanBubble::eYes, Cancelable::eYes, nullptr);
+      RefPtr<nsPIDOMWindowInner> win = doc->GetInnerWindow();
+      if (win) {
+        RefPtr<MediaDevices> devices;
+        if (isActivateEvent && (devices = win->GetExtantMediaDevices())) {
+          devices->BrowserWindowBecameActive();
+        }
+
+        if (XRE_IsContentProcess() &&
+            (!aContext->GetParent() || !aContext->GetParent()->IsInProcess())) {
+          // Send the inner window an activate/deactivate event if
+          // the context is the top of a sub-tree of in-process
+          // contexts.
+          nsContentUtils::DispatchEventOnlyToChrome(
+              doc, win, isActivateEvent ? u"activate"_ns : u"deactivate"_ns,
+              CanBubble::eYes, Cancelable::eYes, nullptr);
+        }
       }
     }
   });
+}
+
+bool BrowsingContext::CanSet(FieldIndex<IDX_OpenerPolicy>,
+                             nsILoadInfo::CrossOriginOpenerPolicy aPolicy,
+                             ContentParent* aSource) {
+  // A potentially cross-origin isolated BC can't change opener policy, nor can
+  // a BC become potentially cross-origin isolated. An unchanged policy is
+  // always OK.
+  return GetOpenerPolicy() == aPolicy ||
+         (GetOpenerPolicy() !=
+              nsILoadInfo::
+                  OPENER_POLICY_SAME_ORIGIN_EMBEDDER_POLICY_REQUIRE_CORP &&
+          aPolicy !=
+              nsILoadInfo::
+                  OPENER_POLICY_SAME_ORIGIN_EMBEDDER_POLICY_REQUIRE_CORP);
 }
 
 auto BrowsingContext::CanSet(FieldIndex<IDX_AllowContentRetargeting>,
@@ -2971,19 +3044,18 @@ bool BrowsingContext::CanSet(FieldIndex<IDX_UseErrorPages>,
   return CheckOnlyEmbedderCanSet(aSource);
 }
 
-mozilla::dom::TouchEventsOverride BrowsingContext::TouchEventsOverride() const {
-  const BrowsingContext* bc = this;
-  while (bc) {
-    mozilla::dom::TouchEventsOverride tev =
-        bc->GetTouchEventsOverrideInternal();
-    if (tev != mozilla::dom::TouchEventsOverride::None) {
+TouchEventsOverride BrowsingContext::TouchEventsOverride() const {
+  for (const auto* bc = this; bc; bc = bc->GetParent()) {
+    auto tev = bc->GetTouchEventsOverrideInternal();
+    if (tev != dom::TouchEventsOverride::None) {
       return tev;
     }
-
-    bc = bc->GetParent();
   }
+  return dom::TouchEventsOverride::None;
+}
 
-  return mozilla::dom::TouchEventsOverride::None;
+bool BrowsingContext::TargetTopLevelLinkClicksToBlank() const {
+  return Top()->GetTargetTopLevelLinkClicksToBlankInternal();
 }
 
 // We map `watchedByDevTools` WebIDL attribute to `watchedByDevToolsInternal`
@@ -3114,6 +3186,11 @@ auto BrowsingContext::CanSet(FieldIndex<IDX_CurrentInnerWindowId>,
   return CanSetResult::Allow;
 }
 
+bool BrowsingContext::CanSet(FieldIndex<IDX_ParentInitiatedNavigationEpoch>,
+                             const uint64_t& aValue, ContentParent* aSource) {
+  return XRE_IsParentProcess() && !aSource;
+}
+
 void BrowsingContext::DidSet(FieldIndex<IDX_CurrentInnerWindowId>) {
   RefPtr<WindowContext> prevWindowContext = mCurrentWindowContext.forget();
   mCurrentWindowContext = WindowContext::GetById(GetCurrentInnerWindowId());
@@ -3230,7 +3307,7 @@ void BrowsingContext::DidSet(FieldIndex<IDX_AuthorStyleDisabledDefault>) {
              "Should only set AuthorStyleDisabledDefault in the top "
              "browsing context");
 
-  // We don't need to handle changes to this field, since PageStyleChild.jsm
+  // We don't need to handle changes to this field, since PageStyleChild.sys.mjs
   // will respond to the PageStyle:Disable message in all content processes.
   //
   // But we store the state here on the top BrowsingContext so that the
@@ -3258,10 +3335,9 @@ void BrowsingContext::DidSet(FieldIndex<IDX_TextZoom>, float aOldValue) {
 
   if (IsTop() && XRE_IsParentProcess()) {
     if (Element* element = GetEmbedderElement()) {
-      auto dispatcher = MakeRefPtr<AsyncEventDispatcher>(
-          element, u"TextZoomChange"_ns, CanBubble::eYes,
-          ChromeOnlyDispatch::eYes);
-      dispatcher->RunDOMEventWhenSafe();
+      AsyncEventDispatcher::RunDOMEventWhenSafe(*element, u"TextZoomChange"_ns,
+                                                CanBubble::eYes,
+                                                ChromeOnlyDispatch::eYes);
     }
   }
 }
@@ -3289,10 +3365,9 @@ void BrowsingContext::DidSet(FieldIndex<IDX_FullZoom>, float aOldValue) {
 
   if (IsTop() && XRE_IsParentProcess()) {
     if (Element* element = GetEmbedderElement()) {
-      auto dispatcher = MakeRefPtr<AsyncEventDispatcher>(
-          element, u"FullZoomChange"_ns, CanBubble::eYes,
-          ChromeOnlyDispatch::eYes);
-      dispatcher->RunDOMEventWhenSafe();
+      AsyncEventDispatcher::RunDOMEventWhenSafe(*element, u"FullZoomChange"_ns,
+                                                CanBubble::eYes,
+                                                ChromeOnlyDispatch::eYes);
     }
   }
 }
@@ -3306,6 +3381,17 @@ void BrowsingContext::AddDeprioritizedLoadRunner(nsIRunnable* aRunner) {
   NS_DispatchToCurrentThreadQueue(
       runner.forget(), StaticPrefs::page_load_deprioritization_period(),
       EventQueuePriority::Idle);
+}
+
+bool BrowsingContext::IsDynamic() const {
+  const BrowsingContext* current = this;
+  do {
+    if (current->CreatedDynamically()) {
+      return true;
+    }
+  } while ((current = current->GetParent()));
+
+  return false;
 }
 
 bool BrowsingContext::GetOffsetPath(nsTArray<uint32_t>& aPath) const {
@@ -3380,6 +3466,13 @@ void BrowsingContext::DidSet(FieldIndex<IDX_HasSessionHistory>,
   }
 }
 
+bool BrowsingContext::CanSet(
+    FieldIndex<IDX_TargetTopLevelLinkClicksToBlankInternal>,
+    const bool& aTargetTopLevelLinkClicksToBlankInternal,
+    ContentParent* aSource) {
+  return XRE_IsParentProcess() && !aSource && IsTop();
+}
+
 bool BrowsingContext::CanSet(FieldIndex<IDX_BrowserId>, const uint32_t& aValue,
                              ContentParent* aSource) {
   // We should only be able to set this for toplevel contexts which don't have
@@ -3399,6 +3492,52 @@ bool BrowsingContext::CanSet(FieldIndex<IDX_HasRestoreData>, bool aNewValue,
   return IsTop();
 }
 
+bool BrowsingContext::CanSet(FieldIndex<IDX_IsUnderHiddenEmbedderElement>,
+                             const bool& aIsUnderHiddenEmbedderElement,
+                             ContentParent* aSource) {
+  return true;
+}
+
+void BrowsingContext::DidSet(FieldIndex<IDX_IsUnderHiddenEmbedderElement>,
+                             bool aOldValue) {
+  nsIDocShell* shell = GetDocShell();
+  if (!shell) {
+    return;
+  }
+
+  const bool newValue = IsUnderHiddenEmbedderElement();
+  if (NS_WARN_IF(aOldValue == newValue)) {
+    return;
+  }
+  if (PresShell* presShell = shell->GetPresShell()) {
+    presShell->SetIsUnderHiddenEmbedderElement(newValue);
+  }
+
+  // Propagate to children.
+  for (BrowsingContext* child : Children()) {
+    Element* embedderElement = child->GetEmbedderElement();
+    if (!embedderElement) {
+      // TODO: We shouldn't need to null check here since `child` and the
+      // element returned by `child->GetEmbedderElement()` are in our
+      // process (the actual browsing context represented by `child` may not
+      // be, but that doesn't matter).  However, there are currently a very
+      // small number of crashes due to `embedderElement` being null, somehow
+      // - see bug 1551241.  For now we wallpaper the crash.
+      continue;
+    }
+
+    bool embedderFrameIsHidden = true;
+    if (auto embedderFrame = embedderElement->GetPrimaryFrame()) {
+      embedderFrameIsHidden = !embedderFrame->StyleVisibility()->IsVisible();
+    }
+
+    bool hidden = IsUnderHiddenEmbedderElement() || embedderFrameIsHidden;
+    if (child->IsUnderHiddenEmbedderElement() != hidden) {
+      Unused << child->SetIsUnderHiddenEmbedderElement(hidden);
+    }
+  }
+}
+
 bool BrowsingContext::IsPopupAllowed() {
   for (auto* context = GetCurrentWindowContext(); context;
        context = context->GetParentWindowContext()) {
@@ -3410,10 +3549,33 @@ bool BrowsingContext::IsPopupAllowed() {
   return false;
 }
 
+/* static */
+bool BrowsingContext::ShouldAddEntryForRefresh(
+    nsIURI* aPreviousURI, const SessionHistoryInfo& aInfo) {
+  return ShouldAddEntryForRefresh(aPreviousURI, aInfo.GetURI(),
+                                  aInfo.HasPostData());
+}
+
+/* static */
+bool BrowsingContext::ShouldAddEntryForRefresh(nsIURI* aPreviousURI,
+                                               nsIURI* aNewURI,
+                                               bool aHasPostData) {
+  if (aHasPostData) {
+    return true;
+  }
+
+  bool equalsURI = false;
+  if (aPreviousURI) {
+    aPreviousURI->Equals(aNewURI, &equalsURI);
+  }
+  return !equalsURI;
+}
+
 void BrowsingContext::SessionHistoryCommit(
     const LoadingSessionHistoryInfo& aInfo, uint32_t aLoadType,
-    bool aHadActiveEntry, bool aPersist, bool aCloneEntryChildren,
-    bool aChannelExpired) {
+    nsIURI* aPreviousURI, SessionHistoryInfo* aPreviousActiveEntry,
+    bool aPersist, bool aCloneEntryChildren, bool aChannelExpired,
+    uint32_t aCacheKey) {
   nsID changeID = {};
   if (XRE_IsContentProcess()) {
     RefPtr<ChildSHistory> rootSH = Top()->GetChildSessionHistory();
@@ -3423,13 +3585,25 @@ void BrowsingContext::SessionHistoryCommit(
         // CanonicalBrowsingContext::SessionHistoryCommit. We'll be
         // incrementing the session history length if we're not replacing,
         // this is a top-level load or it's not the initial load in an iframe,
-        // and ShouldUpdateSessionHistory(loadType) returns true.
+        // ShouldUpdateSessionHistory(loadType) returns true and it's not a
+        // refresh for which ShouldAddEntryForRefresh returns false.
         // It is possible that this leads to wrong length temporarily, but
         // so would not having the check for replace.
+        // Note that nsSHistory::AddEntry does a replace load if the current
+        // entry is not marked as a persisted entry. The child process does
+        // not have access to the current entry, so we use the previous active
+        // entry as the best approximation. When that's not the current entry
+        // then the length might be wrong briefly, until the parent process
+        // commits the actual length.
         if (!LOAD_TYPE_HAS_FLAGS(
                 aLoadType, nsIWebNavigation::LOAD_FLAGS_REPLACE_HISTORY) &&
-            (IsTop() || aHadActiveEntry) &&
-            ShouldUpdateSessionHistory(aLoadType)) {
+            (IsTop()
+                 ? (!aPreviousActiveEntry || aPreviousActiveEntry->GetPersist())
+                 : !!aPreviousActiveEntry) &&
+            ShouldUpdateSessionHistory(aLoadType) &&
+            (!LOAD_TYPE_HAS_FLAGS(aLoadType,
+                                  nsIWebNavigation::LOAD_FLAGS_IS_REFRESH) ||
+             ShouldAddEntryForRefresh(aPreviousURI, aInfo.mInfo))) {
           changeID = rootSH->AddPendingHistoryChange();
         }
       } else {
@@ -3440,17 +3614,17 @@ void BrowsingContext::SessionHistoryCommit(
     ContentChild* cc = ContentChild::GetSingleton();
     mozilla::Unused << cc->SendHistoryCommit(
         this, aInfo.mLoadId, changeID, aLoadType, aPersist, aCloneEntryChildren,
-        aChannelExpired);
+        aChannelExpired, aCacheKey);
   } else {
     Canonical()->SessionHistoryCommit(aInfo.mLoadId, changeID, aLoadType,
                                       aPersist, aCloneEntryChildren,
-                                      aChannelExpired);
+                                      aChannelExpired, aCacheKey);
   }
 }
 
 void BrowsingContext::SetActiveSessionHistoryEntry(
     const Maybe<nsPoint>& aPreviousScrollPos, SessionHistoryInfo* aInfo,
-    uint32_t aLoadType, uint32_t aUpdatedCacheKey) {
+    uint32_t aLoadType, uint32_t aUpdatedCacheKey, bool aUpdateLength) {
   if (XRE_IsContentProcess()) {
     // XXX Why we update cache key only in content process case?
     if (aUpdatedCacheKey != 0) {
@@ -3458,9 +3632,11 @@ void BrowsingContext::SetActiveSessionHistoryEntry(
     }
 
     nsID changeID = {};
-    RefPtr<ChildSHistory> shistory = Top()->GetChildSessionHistory();
-    if (shistory) {
-      changeID = shistory->AddPendingHistoryChange();
+    if (aUpdateLength) {
+      RefPtr<ChildSHistory> shistory = Top()->GetChildSessionHistory();
+      if (shistory) {
+        changeID = shistory->AddPendingHistoryChange();
+      }
     }
     ContentChild::GetSingleton()->SendSetActiveSessionHistoryEntry(
         this, aPreviousScrollPos, *aInfo, aLoadType, aUpdatedCacheKey,
@@ -3498,10 +3674,9 @@ void BrowsingContext::RemoveFromSessionHistory(const nsID& aChangeID) {
   }
 }
 
-void BrowsingContext::HistoryGo(int32_t aOffset, uint64_t aHistoryEpoch,
-                                bool aRequireUserInteraction,
-                                bool aUserActivation,
-                                std::function<void(int32_t&&)>&& aResolver) {
+void BrowsingContext::HistoryGo(
+    int32_t aOffset, uint64_t aHistoryEpoch, bool aRequireUserInteraction,
+    bool aUserActivation, std::function<void(Maybe<int32_t>&&)>&& aResolver) {
   if (XRE_IsContentProcess()) {
     ContentChild::GetSingleton()->SendHistoryGo(
         this, aOffset, aHistoryEpoch, aRequireUserInteraction, aUserActivation,
@@ -3509,12 +3684,12 @@ void BrowsingContext::HistoryGo(int32_t aOffset, uint64_t aHistoryEpoch,
         [](mozilla::ipc::
                ResponseRejectReason) { /* FIXME Is ignoring this fine? */ });
   } else {
-    Canonical()->HistoryGo(
+    RefPtr<CanonicalBrowsingContext> self = Canonical();
+    aResolver(self->HistoryGo(
         aOffset, aHistoryEpoch, aRequireUserInteraction, aUserActivation,
         Canonical()->GetContentParent()
             ? Some(Canonical()->GetContentParent()->ChildID())
-            : Nothing(),
-        std::move(aResolver));
+            : Nothing()));
   }
 }
 
@@ -3587,19 +3762,19 @@ void BrowsingContext::ResetLocationChangeRateLimit() {
 namespace ipc {
 
 void IPDLParamTraits<dom::MaybeDiscarded<dom::BrowsingContext>>::Write(
-    IPC::Message* aMsg, IProtocol* aActor,
+    IPC::MessageWriter* aWriter, IProtocol* aActor,
     const dom::MaybeDiscarded<dom::BrowsingContext>& aParam) {
   MOZ_DIAGNOSTIC_ASSERT(!aParam.GetMaybeDiscarded() ||
                         aParam.GetMaybeDiscarded()->EverAttached());
   uint64_t id = aParam.ContextId();
-  WriteIPDLParam(aMsg, aActor, id);
+  WriteIPDLParam(aWriter, aActor, id);
 }
 
 bool IPDLParamTraits<dom::MaybeDiscarded<dom::BrowsingContext>>::Read(
-    const IPC::Message* aMsg, PickleIterator* aIter, IProtocol* aActor,
+    IPC::MessageReader* aReader, IProtocol* aActor,
     dom::MaybeDiscarded<dom::BrowsingContext>* aResult) {
   uint64_t id = 0;
-  if (!ReadIPDLParam(aMsg, aIter, aActor, &id)) {
+  if (!ReadIPDLParam(aReader, aActor, &id)) {
     return false;
   }
 
@@ -3614,43 +3789,39 @@ bool IPDLParamTraits<dom::MaybeDiscarded<dom::BrowsingContext>>::Read(
 }
 
 void IPDLParamTraits<dom::BrowsingContext::IPCInitializer>::Write(
-    IPC::Message* aMessage, IProtocol* aActor,
+    IPC::MessageWriter* aWriter, IProtocol* aActor,
     const dom::BrowsingContext::IPCInitializer& aInit) {
   // Write actor ID parameters.
-  WriteIPDLParam(aMessage, aActor, aInit.mId);
-  WriteIPDLParam(aMessage, aActor, aInit.mParentId);
-  WriteIPDLParam(aMessage, aActor, aInit.mWindowless);
-  WriteIPDLParam(aMessage, aActor, aInit.mUseRemoteTabs);
-  WriteIPDLParam(aMessage, aActor, aInit.mUseRemoteSubframes);
-  WriteIPDLParam(aMessage, aActor, aInit.mCreatedDynamically);
-  WriteIPDLParam(aMessage, aActor, aInit.mChildOffset);
-  WriteIPDLParam(aMessage, aActor, aInit.mOriginAttributes);
-  WriteIPDLParam(aMessage, aActor, aInit.mRequestContextId);
-  WriteIPDLParam(aMessage, aActor, aInit.mSessionHistoryIndex);
-  WriteIPDLParam(aMessage, aActor, aInit.mSessionHistoryCount);
-  WriteIPDLParam(aMessage, aActor, aInit.mFields);
+  WriteIPDLParam(aWriter, aActor, aInit.mId);
+  WriteIPDLParam(aWriter, aActor, aInit.mParentId);
+  WriteIPDLParam(aWriter, aActor, aInit.mWindowless);
+  WriteIPDLParam(aWriter, aActor, aInit.mUseRemoteTabs);
+  WriteIPDLParam(aWriter, aActor, aInit.mUseRemoteSubframes);
+  WriteIPDLParam(aWriter, aActor, aInit.mCreatedDynamically);
+  WriteIPDLParam(aWriter, aActor, aInit.mChildOffset);
+  WriteIPDLParam(aWriter, aActor, aInit.mOriginAttributes);
+  WriteIPDLParam(aWriter, aActor, aInit.mRequestContextId);
+  WriteIPDLParam(aWriter, aActor, aInit.mSessionHistoryIndex);
+  WriteIPDLParam(aWriter, aActor, aInit.mSessionHistoryCount);
+  WriteIPDLParam(aWriter, aActor, aInit.mFields);
 }
 
 bool IPDLParamTraits<dom::BrowsingContext::IPCInitializer>::Read(
-    const IPC::Message* aMessage, PickleIterator* aIterator, IProtocol* aActor,
+    IPC::MessageReader* aReader, IProtocol* aActor,
     dom::BrowsingContext::IPCInitializer* aInit) {
   // Read actor ID parameters.
-  if (!ReadIPDLParam(aMessage, aIterator, aActor, &aInit->mId) ||
-      !ReadIPDLParam(aMessage, aIterator, aActor, &aInit->mParentId) ||
-      !ReadIPDLParam(aMessage, aIterator, aActor, &aInit->mWindowless) ||
-      !ReadIPDLParam(aMessage, aIterator, aActor, &aInit->mUseRemoteTabs) ||
-      !ReadIPDLParam(aMessage, aIterator, aActor,
-                     &aInit->mUseRemoteSubframes) ||
-      !ReadIPDLParam(aMessage, aIterator, aActor,
-                     &aInit->mCreatedDynamically) ||
-      !ReadIPDLParam(aMessage, aIterator, aActor, &aInit->mChildOffset) ||
-      !ReadIPDLParam(aMessage, aIterator, aActor, &aInit->mOriginAttributes) ||
-      !ReadIPDLParam(aMessage, aIterator, aActor, &aInit->mRequestContextId) ||
-      !ReadIPDLParam(aMessage, aIterator, aActor,
-                     &aInit->mSessionHistoryIndex) ||
-      !ReadIPDLParam(aMessage, aIterator, aActor,
-                     &aInit->mSessionHistoryCount) ||
-      !ReadIPDLParam(aMessage, aIterator, aActor, &aInit->mFields)) {
+  if (!ReadIPDLParam(aReader, aActor, &aInit->mId) ||
+      !ReadIPDLParam(aReader, aActor, &aInit->mParentId) ||
+      !ReadIPDLParam(aReader, aActor, &aInit->mWindowless) ||
+      !ReadIPDLParam(aReader, aActor, &aInit->mUseRemoteTabs) ||
+      !ReadIPDLParam(aReader, aActor, &aInit->mUseRemoteSubframes) ||
+      !ReadIPDLParam(aReader, aActor, &aInit->mCreatedDynamically) ||
+      !ReadIPDLParam(aReader, aActor, &aInit->mChildOffset) ||
+      !ReadIPDLParam(aReader, aActor, &aInit->mOriginAttributes) ||
+      !ReadIPDLParam(aReader, aActor, &aInit->mRequestContextId) ||
+      !ReadIPDLParam(aReader, aActor, &aInit->mSessionHistoryIndex) ||
+      !ReadIPDLParam(aReader, aActor, &aInit->mSessionHistoryCount) ||
+      !ReadIPDLParam(aReader, aActor, &aInit->mFields)) {
     return false;
   }
   return true;

@@ -107,7 +107,7 @@ const TEST_URL = `<span class="span" id="span">
                   <button class="bb bc" id="bb"></button>
                   <button class="bc" id="ba"></button>`;
 
-add_task(async function() {
+add_task(async function () {
   const { inspector } = await openInspectorForURL(
     "data:text/html;charset=utf-8," + encodeURI(TEST_URL)
   );
@@ -128,11 +128,13 @@ add_task(async function() {
     );
 
     const onCommand = once(searchBox, "input", true);
+    const onSearchProcessingDone =
+      inspector.searchSuggestions.once("processing-done");
     EventUtils.synthesizeKey(key, {}, inspector.panelWin);
     await onCommand;
 
     info("Waiting for the suggestions to be retrieved");
-    await inspector.searchSuggestions._lastQuery;
+    await onSearchProcessingDone;
 
     const actualSuggestions = popup.getItems();
     is(

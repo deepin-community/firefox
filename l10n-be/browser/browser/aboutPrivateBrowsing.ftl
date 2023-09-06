@@ -2,11 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-privatebrowsingpage-open-private-window-label = Адчыніць прыватнае акно
+privatebrowsingpage-open-private-window-label = Адкрыць прыватнае акно
     .accesskey = а
 about-private-browsing-search-placeholder = Пошук у Інтэрнэце
 about-private-browsing-info-title = Вы ў прыватным акне
-about-private-browsing-info-myths = Шырокавядомыя забабоны пра прыватнае агляданне
 about-private-browsing-search-btn =
     .title = Шукаць у Iнтэрнэце
 # Variables
@@ -19,17 +18,27 @@ about-private-browsing-handoff-no-engine =
 #  $engine (String): the name of the user's default search engine
 about-private-browsing-handoff-text = Шукайце з дапамогай { $engine } альбо увядзіце адрас
 about-private-browsing-handoff-text-no-engine = Увядзіце пошукавы запыт альбо адрас
-about-private-browsing-not-private = Вы зараз не ў прыватным акне.
-about-private-browsing-info-description = { -brand-short-name } ачышчае вашу гісторыю пошуку і аглядання, калі вы выходзіце з праграмы або закрываеце ўсе карткі і вокны прыватнага аглядання. У той час як гэта не робіць вас ананімным для вэб-сайтаў і інтэрнэт-правайдара, гэта дазваляе лягчэй трымаць у сакрэце тое, што вы робіце ў сеціве, ад астатніх карыстальнікаў гэтага камп'ютара.
-about-private-browsing-need-more-privacy = Трэба больш прыватнасці?
-about-private-browsing-turn-on-vpn = Паспрабуйце { -mozilla-vpn-brand-name }
+about-private-browsing-not-private = Вы зараз не ў прыватным акне.
 about-private-browsing-info-description-private-window = Прыватнае акно: { -brand-short-name } ачышчае гісторыю пошуку і аглядання, калі вы закрываеце ўсе прыватныя вокны. Гэта не робіць вас ананімнымi.
 about-private-browsing-info-description-simplified = { -brand-short-name } ачышчае гісторыю пошуку і аглядання, калі вы закрываеце ўсе прыватныя вокны, але гэта не робіць вас ананімным.
 about-private-browsing-learn-more-link = Даведацца больш
+
 about-private-browsing-hide-activity = Хавайце сваю актыўнасць і месцазнаходжанне ўсюды, дзе аглядаеце
 about-private-browsing-get-privacy = Атрымайце абарону прыватнасці ўсюды, дзе аглядаеце
 about-private-browsing-hide-activity-1 = Хавайце актыўнасць агляду і месцазнаходжанне з дапамогай { -mozilla-vpn-brand-name }. Адзін пстрык стварае бяспечнае злучэнне нават у агульнадаступнай сетцы Wi-Fi.
 about-private-browsing-prominent-cta = Заставайцеся прыватным з { -mozilla-vpn-brand-name }
+
+about-private-browsing-focus-promo-cta = Сцягнуць { -focus-brand-name }
+about-private-browsing-focus-promo-header = { -focus-brand-name }: прыватнае агляданне ў дарозе
+about-private-browsing-focus-promo-text = Наша спецыялізаваная мабільная праграма для прыватнага аглядання кожны раз ачышчае вашу гісторыю і кукі.
+
+## The following strings will be used for experiments in Fx99 and Fx100
+
+about-private-browsing-focus-promo-header-b = Вазьміце прыватнае агляданне на свой тэлефон
+about-private-browsing-focus-promo-text-b = Выкарыстоўвайце { -focus-brand-name } для тых прыватных пошукаў, якія не хочаце, каб ваш асноўны мабільны браўзер бачыў.
+about-private-browsing-focus-promo-header-c = Новы ўзровень прыватнасці на мабільных прыладах
+about-private-browsing-focus-promo-text-c = { -focus-brand-name } кожны раз ачышчае вашу гісторыю, блакуючы рэкламу і трэкеры.
+
 # This string is the title for the banner for search engine selection
 # in a private window.
 # Variables:
@@ -42,3 +51,24 @@ about-private-browsing-search-banner-description =
     }
 about-private-browsing-search-banner-close-button =
     .aria-label = Закрыць
+
+about-private-browsing-promo-close-button =
+    .title = Закрыць
+
+## Strings used in a “pin promotion” message, which prompts users to pin a private window
+
+about-private-browsing-pin-promo-header = Свабода прыватнага аглядання ў адзін націск
+about-private-browsing-pin-promo-link-text =
+    { PLATFORM() ->
+        [macos] Трымаць у доку
+       *[other] Замацаваць на панэлі заданняў
+    }
+about-private-browsing-pin-promo-title = Ніякіх захаваных кукаў або гісторыі наўпрост з працоўнага стала. Аглядайце так, нібы ніхто не назірае.
+
+## Strings used in a promotion message for cookie banner reduction
+
+# Simplified version of the headline if the original text doesn't work
+# in your language: `See fewer cookie requests`.
+about-private-browsing-cookie-banners-promo-header = Банеры з кукамі зніклі!
+about-private-browsing-cookie-banners-promo-button = Памяншаць колькасць банераў кукі
+about-private-browsing-cookie-banners-promo-message = Дазвольце { -brand-short-name } аўтаматычна адказваць на выплыўныя вокны файлаў кукі, каб вы маглі вярнуцца да прагляду сайтаў без адцягнення ўвагі. { -brand-short-name } будзе адхіляць усе запыты, калі гэта магчыма.

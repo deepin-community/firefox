@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Ukryj
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Wyświetl wszystkie foldery zakładek
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Ukryj
+
 bookmark-overlay-new-folder-button =
     .label = Nowy folder
     .accesskey = d
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Wyświetl wszystkie etykiety
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Ukryj
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Wyświetl wszystkie etykiety
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Ukryj
 
 bookmark-overlay-keyword-2 =
     .value = Słowo kluczowe

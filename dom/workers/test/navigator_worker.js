@@ -14,13 +14,14 @@ var supportedProps = [
   "onLine",
   "language",
   "languages",
+  { name: "locks", isSecureContext: true },
   "mediaCapabilities",
   "hardwareConcurrency",
   { name: "storage", isSecureContext: true },
   "connection",
 ];
 
-self.onmessage = function(event) {
+self.onmessage = function (event) {
   if (!event || !event.data) {
     return;
   }

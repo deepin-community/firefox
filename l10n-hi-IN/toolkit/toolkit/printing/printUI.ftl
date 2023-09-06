@@ -15,6 +15,8 @@ printui-destination-pdf-label = PDF में सहेजें
 printui-more-settings = अधिक सेटिंग
 printui-less-settings = कम सेटिंग
 
+printui-paper-size-label = कागज़ का आकार
+
 # Section title (noun) for the two-sided print options
 printui-two-sided-printing = दो तरफा प्रिंटिंग
 
@@ -26,9 +28,14 @@ printui-headers-footers-checkbox = हेडर और फुटर प्रि
 ## options to select between the original page, selected text only, or a version
 ## where the page is processed with "Reader View".
 
+
 ##
 
+printui-color-mode-color = रंगीन
+
+printui-margins = मार्जिन
 printui-margins-default = तयशुदा
+printui-margins-min = न्यूनतम
 printui-margins-custom-top = ऊपर
 printui-margins-custom-top-inches = ऊपर (इंच)
 printui-margins-custom-bottom = नीचे
@@ -62,4 +69,6 @@ printui-paper-jis-b5 = JIS-B5
 printui-paper-jis-b4 = JIS-B4
 
 ## Error messages shown when a user has an invalid input
+
+printui-error-invalid-margin = चुने हुए पेपर के आकार के लिए कृपया एक मान्य मार्जिन दर्ज करें।
 

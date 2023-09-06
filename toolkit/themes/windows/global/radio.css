@@ -13,7 +13,7 @@
 radio {
   appearance: auto;
   -moz-default-appearance: radio-container;
-  -moz-box-align: center;
+  align-items: center;
   margin: 2px 4px;
   padding-top: 1px;
   padding-bottom: 1px;
@@ -25,6 +25,10 @@ radio {
   appearance: auto;
   -moz-default-appearance: radio;
   margin: 1px 0;
+  /* TODO: This matches what the old native theme did, but maybe we want to
+   * use em-based sizes here. */
+  width: 13px;
+  height: 13px;
 }
 
 .radio-label-box {
@@ -43,19 +47,12 @@ radio {
 
 /* ..... focused state ..... */
 
-radio[focused="true"] > .radio-label-box {
-  outline: 1px dotted;
+radiogroup:focus-visible > radio[focused="true"] > .radio-label-box {
+  outline: var(--focus-outline);
 }
 
 /* ..... disabled state ..... */
 
 radio[disabled="true"] {
   color: GrayText;
-}
-
-@media (-moz-windows-classic) {
-  radio[disabled="true"] {
-    color: ThreeDShadow;
-    text-shadow: 1px 1px ThreeDHighlight;
-  }
 }

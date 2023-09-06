@@ -6,16 +6,20 @@
 "use strict";
 
 const TEST_DOMAIN = "http://example.net/";
+const TEST_DOMAIN_HTTPS = "https://example.net/";
 const TEST_DOMAIN_2 = "http://xn--exmple-cua.test/";
 const TEST_DOMAIN_3 = "https://xn--hxajbheg2az3al.xn--jxalpdlp/";
 const TEST_DOMAIN_4 = "http://prefixexample.com/";
 const TEST_DOMAIN_5 = "http://test/";
 const TEST_DOMAIN_6 = "http://mochi.test:8888/";
+const TEST_DOMAIN_7 = "http://example.com/";
+const TEST_DOMAIN_8 = "http://www.example.com/";
 const TEST_3RD_PARTY_DOMAIN = "https://tracking.example.org/";
 const TEST_3RD_PARTY_DOMAIN_HTTP = "http://tracking.example.org/";
 const TEST_3RD_PARTY_DOMAIN_TP = "https://tracking.example.com/";
 const TEST_3RD_PARTY_DOMAIN_STP = "https://social-tracking.example.org/";
 const TEST_4TH_PARTY_DOMAIN = "http://not-tracking.example.com/";
+const TEST_4TH_PARTY_DOMAIN_HTTPS = "https://not-tracking.example.com/";
 const TEST_ANOTHER_3RD_PARTY_DOMAIN_HTTP =
   "http://another-tracking.example.net/";
 const TEST_ANOTHER_3RD_PARTY_DOMAIN_HTTPS =
@@ -23,15 +27,19 @@ const TEST_ANOTHER_3RD_PARTY_DOMAIN_HTTPS =
 const TEST_ANOTHER_3RD_PARTY_DOMAIN = SpecialPowers.useRemoteSubframes
   ? TEST_ANOTHER_3RD_PARTY_DOMAIN_HTTP
   : TEST_ANOTHER_3RD_PARTY_DOMAIN_HTTPS;
+const TEST_EMAIL_TRACKER_DOMAIN = "http://email-tracking.example.org/";
 
 const TEST_PATH = "browser/toolkit/components/antitracking/test/browser/";
 
 const TEST_TOP_PAGE = TEST_DOMAIN + TEST_PATH + "page.html";
+const TEST_TOP_PAGE_HTTPS = TEST_DOMAIN_HTTPS + TEST_PATH + "page.html";
 const TEST_TOP_PAGE_2 = TEST_DOMAIN_2 + TEST_PATH + "page.html";
 const TEST_TOP_PAGE_3 = TEST_DOMAIN_3 + TEST_PATH + "page.html";
 const TEST_TOP_PAGE_4 = TEST_DOMAIN_4 + TEST_PATH + "page.html";
 const TEST_TOP_PAGE_5 = TEST_DOMAIN_5 + TEST_PATH + "page.html";
 const TEST_TOP_PAGE_6 = TEST_DOMAIN_6 + TEST_PATH + "page.html";
+const TEST_TOP_PAGE_7 = TEST_DOMAIN_7 + TEST_PATH + "page.html";
+const TEST_TOP_PAGE_8 = TEST_DOMAIN_8 + TEST_PATH + "page.html";
 const TEST_EMBEDDER_PAGE = TEST_DOMAIN + TEST_PATH + "embedder.html";
 const TEST_POPUP_PAGE = TEST_DOMAIN + TEST_PATH + "popup.html";
 const TEST_IFRAME_PAGE = TEST_DOMAIN + TEST_PATH + "iframe.html";
@@ -59,6 +67,8 @@ const TEST_3RD_PARTY_PARTITIONED_PAGE =
   TEST_3RD_PARTY_DOMAIN + TEST_PATH + "3rdPartyPartitioned.html";
 const TEST_4TH_PARTY_STORAGE_PAGE =
   TEST_4TH_PARTY_DOMAIN + TEST_PATH + "3rdPartyStorage.html";
+const TEST_4TH_PARTY_STORAGE_PAGE_HTTPS =
+  TEST_4TH_PARTY_DOMAIN_HTTPS + TEST_PATH + "3rdPartyStorage.html";
 const TEST_4TH_PARTY_PARTITIONED_PAGE =
   TEST_4TH_PARTY_DOMAIN + TEST_PATH + "3rdPartyPartitioned.html";
 
@@ -80,12 +90,12 @@ requestLongerTimeout = function AntiTrackingRequestLongerTimeout(factor) {
 
 requestLongerTimeout(3);
 
-const { UrlClassifierTestUtils } = ChromeUtils.import(
-  "resource://testing-common/UrlClassifierTestUtils.jsm"
+const { UrlClassifierTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/UrlClassifierTestUtils.sys.mjs"
 );
 
-const { PermissionTestUtils } = ChromeUtils.import(
-  "resource://testing-common/PermissionTestUtils.jsm"
+const { PermissionTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/PermissionTestUtils.sys.mjs"
 );
 
 Services.scriptloader.loadSubScript(

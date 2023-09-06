@@ -3,7 +3,7 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import React, { Component } from "react";
-import classnames from "classnames";
+import PropTypes from "prop-types";
 
 import { connect } from "../../utils/connect";
 import actions from "../../actions";
@@ -15,6 +15,8 @@ import {
 
 import AccessibleImage from "../shared/AccessibleImage";
 
+const classnames = require("devtools/client/shared/classnames.js");
+
 import "./EventListeners.css";
 
 class EventListeners extends Component {
@@ -22,6 +24,18 @@ class EventListeners extends Component {
     searchText: "",
     focused: false,
   };
+
+  static get propTypes() {
+    return {
+      activeEventListeners: PropTypes.array.isRequired,
+      addEventListenerExpanded: PropTypes.func.isRequired,
+      addEventListeners: PropTypes.func.isRequired,
+      categories: PropTypes.array.isRequired,
+      expandedCategories: PropTypes.array.isRequired,
+      removeEventListenerExpanded: PropTypes.func.isRequired,
+      removeEventListeners: PropTypes.func.isRequired,
+    };
+  }
 
   hasMatch(eventOrCategoryName, searchText) {
     const lowercaseEventOrCategoryName = eventOrCategoryName.toLowerCase();

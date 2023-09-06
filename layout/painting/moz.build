@@ -13,8 +13,8 @@ EXPORTS += [
     "DisplayItemClipChain.h",
     "DisplayListClipState.h",
     "HitTestInfo.h",
-    "LayerState.h",
     "MatrixStack.h",
+    "nsCSSRendering.h",
     "nsCSSRenderingBorders.h",
     "nsCSSRenderingGradients.h",
     "nsDisplayItemTypes.h",
@@ -70,8 +70,3 @@ LOCAL_INCLUDES += [
 LOCAL_INCLUDES += CONFIG["SKIA_INCLUDES"]
 
 FINAL_LIBRARY = "xul"
-
-if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-    CXXFLAGS += ["-Wno-error=shadow"]
-
-REQUIRES_UNIFIED_BUILD = True

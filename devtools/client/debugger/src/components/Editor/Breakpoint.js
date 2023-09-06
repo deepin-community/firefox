@@ -3,19 +3,26 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import { PureComponent } from "react";
-import classnames from "classnames";
+import PropTypes from "prop-types";
 
 import { getDocument, toEditorLine } from "../../utils/editor";
 import { getSelectedLocation } from "../../utils/selected-location";
 import { features } from "../../utils/prefs";
-import { showMenu } from "../../context-menu/menu";
-import { breakpointItems } from "./menus/breakpoints";
+const classnames = require("devtools/client/shared/classnames.js");
 
 const breakpointSvg = document.createElement("div");
 breakpointSvg.innerHTML =
   '<svg viewBox="0 0 60 15" width="60" height="15"><path d="M53.07.5H1.5c-.54 0-1 .46-1 1v12c0 .54.46 1 1 1h51.57c.58 0 1.15-.26 1.53-.7l4.7-6.3-4.7-6.3c-.38-.44-.95-.7-1.53-.7z"/></svg>';
 
 class Breakpoint extends PureComponent {
+  static get propTypes() {
+    return {
+      breakpoint: PropTypes.object.isRequired,
+      editor: PropTypes.object.isRequired,
+      selectedSource: PropTypes.object,
+    };
+  }
+
   componentDidMount() {
     this.addBreakpoint(this.props);
   }
@@ -45,9 +52,9 @@ class Breakpoint extends PureComponent {
 
   onClick = event => {
     const {
-      cx,
-      breakpointActions,
-      editorActions,
+      continueToHere,
+      toggleBreakpointsAtLine,
+      removeBreakpointsAtLine,
       breakpoint,
       selectedSource,
     } = this.props;
@@ -62,37 +69,25 @@ class Breakpoint extends PureComponent {
 
     const selectedLocation = getSelectedLocation(breakpoint, selectedSource);
     if (event.metaKey) {
-      return editorActions.continueToHere(cx, selectedLocation.line);
+      continueToHere(selectedLocation);
+      return;
     }
 
     if (event.shiftKey) {
-      if (features.columnBreakpoints) {
-        return breakpointActions.toggleBreakpointsAtLine(
-          cx,
-          !breakpoint.disabled,
-          selectedLocation.line
-        );
-      }
-
-      return breakpointActions.toggleDisabledBreakpoint(cx, breakpoint);
+      toggleBreakpointsAtLine(!breakpoint.disabled, selectedLocation.line);
+      return;
     }
 
-    return breakpointActions.removeBreakpointsAtLine(
-      cx,
-      selectedLocation.sourceId,
-      selectedLocation.line
-    );
+    removeBreakpointsAtLine(selectedLocation.source, selectedLocation.line);
   };
 
   onContextMenu = event => {
-    const { cx, breakpoint, selectedSource, breakpointActions } = this.props;
     event.stopPropagation();
     event.preventDefault();
-    const selectedLocation = getSelectedLocation(breakpoint, selectedSource);
 
-    showMenu(
+    this.props.showEditorEditBreakpointContextMenu(
       event,
-      breakpointItems(cx, breakpoint, selectedLocation, breakpointActions)
+      this.props.breakpoint
     );
   };
 
@@ -115,19 +110,19 @@ class Breakpoint extends PureComponent {
 
     doc.setGutterMarker(line, "breakpoints", this.makeMarker());
 
-    editor.codeMirror.addLineClass(line, "wrapClass", "new-breakpoint");
-    editor.codeMirror.removeLineClass(line, "wrapClass", "breakpoint-disabled");
-    editor.codeMirror.removeLineClass(line, "wrapClass", "has-condition");
-    editor.codeMirror.removeLineClass(line, "wrapClass", "has-log");
+    editor.codeMirror.addLineClass(line, "wrap", "new-breakpoint");
+    editor.codeMirror.removeLineClass(line, "wrap", "breakpoint-disabled");
+    editor.codeMirror.removeLineClass(line, "wrap", "has-condition");
+    editor.codeMirror.removeLineClass(line, "wrap", "has-log");
 
     if (breakpoint.disabled) {
-      editor.codeMirror.addLineClass(line, "wrapClass", "breakpoint-disabled");
+      editor.codeMirror.addLineClass(line, "wrap", "breakpoint-disabled");
     }
 
     if (breakpoint.options.logValue) {
-      editor.codeMirror.addLineClass(line, "wrapClass", "has-log");
+      editor.codeMirror.addLineClass(line, "wrap", "has-log");
     } else if (breakpoint.options.condition) {
-      editor.codeMirror.addLineClass(line, "wrapClass", "has-condition");
+      editor.codeMirror.addLineClass(line, "wrap", "has-condition");
     }
   }
 
@@ -148,10 +143,10 @@ class Breakpoint extends PureComponent {
     const line = toEditorLine(sourceId, selectedLocation.line);
 
     doc.setGutterMarker(line, "breakpoints", null);
-    doc.removeLineClass(line, "wrapClass", "new-breakpoint");
-    doc.removeLineClass(line, "wrapClass", "breakpoint-disabled");
-    doc.removeLineClass(line, "wrapClass", "has-condition");
-    doc.removeLineClass(line, "wrapClass", "has-log");
+    doc.removeLineClass(line, "wrap", "new-breakpoint");
+    doc.removeLineClass(line, "wrap", "breakpoint-disabled");
+    doc.removeLineClass(line, "wrap", "has-condition");
+    doc.removeLineClass(line, "wrap", "has-log");
   }
 
   render() {

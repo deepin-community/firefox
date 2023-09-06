@@ -3,12 +3,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* import-globals-from head.js */
-
 "use strict";
 
-const { RemoteSettings } = ChromeUtils.import(
-  "resource://services-settings/remote-settings.js"
+const { RemoteSettings } = ChromeUtils.importESModule(
+  "resource://services-settings/remote-settings.sys.mjs"
 );
 
 XPCOMUtils.defineLazyServiceGetter(
@@ -35,7 +33,7 @@ async function cleanup() {
   });
 }
 
-add_task(async function setup() {
+add_setup(async function () {
   await SpecialPowers.flushPrefEnv();
   await SpecialPowers.pushPrefEnv({
     set: [
@@ -51,6 +49,8 @@ add_task(async function setup() {
       ["privacy.trackingprotection.enabled", false],
       ["privacy.trackingprotection.pbmode.enabled", false],
       ["privacy.trackingprotection.annotate_channels", true],
+      // Bug 1617611: Fix all the tests broken by "cookies SameSite=lax by default"
+      ["network.cookie.sameSite.laxByDefault", false],
     ],
   });
   registerCleanupFunction(cleanup);
@@ -269,10 +269,17 @@ add_task(async function testRedirectHeuristicDisabled() {
 
 class UpdateEvent extends EventTarget {}
 function waitForEvent(element, eventName) {
-  return new Promise(function(resolve) {
+  return new Promise(function (resolve) {
     element.addEventListener(eventName, e => resolve(e.detail), { once: true });
   });
 }
+
+// The test URLs have a trailing / which means they're not valid origins.
+const TEST_ORIGIN = TEST_DOMAIN.substring(0, TEST_DOMAIN.length - 1);
+const TEST_3RD_PARTY_ORIGIN = TEST_3RD_PARTY_DOMAIN.substring(
+  0,
+  TEST_3RD_PARTY_DOMAIN.length - 1
+);
 
 async function runTestExceptionListPref(disableHeuristics) {
   info("Starting Dynamic FPI exception list test pref");
@@ -325,7 +332,7 @@ async function runTestExceptionListPref(disableHeuristics) {
   info("set exception list pref");
   Services.prefs.setStringPref(
     EXCEPTION_LIST_PREF_NAME,
-    `${TEST_DOMAIN},${TEST_3RD_PARTY_DOMAIN}`
+    `${TEST_ORIGIN},${TEST_3RD_PARTY_ORIGIN}`
   );
 
   info("check data");
@@ -338,7 +345,7 @@ async function runTestExceptionListPref(disableHeuristics) {
   ]);
 
   info("set incomplete exception list pref");
-  Services.prefs.setStringPref(EXCEPTION_LIST_PREF_NAME, `${TEST_DOMAIN}`);
+  Services.prefs.setStringPref(EXCEPTION_LIST_PREF_NAME, `${TEST_ORIGIN}`);
 
   info("check data");
   await Promise.all([
@@ -352,7 +359,22 @@ async function runTestExceptionListPref(disableHeuristics) {
   info("set exception list pref, with extra semicolons");
   Services.prefs.setStringPref(
     EXCEPTION_LIST_PREF_NAME,
-    `;${TEST_DOMAIN},${TEST_3RD_PARTY_DOMAIN};;`
+    `;${TEST_ORIGIN},${TEST_3RD_PARTY_ORIGIN};;`
+  );
+
+  info("check data");
+  await Promise.all([
+    checkData(browserFirstParty, {
+      firstParty: "firstParty",
+      thirdParty: disableHeuristics ? "thirdParty" : "ExceptionListFirstParty",
+    }),
+    checkData(browserThirdParty, { firstParty: "ExceptionListFirstParty" }),
+  ]);
+
+  info("set exception list pref, with subdomain wildcard");
+  Services.prefs.setStringPref(
+    EXCEPTION_LIST_PREF_NAME,
+    `${TEST_ORIGIN},${TEST_3RD_PARTY_ORIGIN.replace("tracking", "*")}`
   );
 
   info("check data");
@@ -395,8 +417,8 @@ add_task(async function testExceptionListRemoteSettings() {
   Services.prefs.setStringPref(EXCEPTION_LIST_PREF_NAME, "");
 
   // Add some initial data
-  let db = await RemoteSettings(COLLECTION_NAME).db;
-  await db.importChanges({}, 42, []);
+  let db = RemoteSettings(COLLECTION_NAME).db;
+  await db.importChanges({}, Date.now(), []);
 
   // make peuSerivce start working by calling
   // registerAndRunExceptionListObserver
@@ -456,9 +478,9 @@ add_task(async function testExceptionListRemoteSettings() {
       current: [
         {
           id: "1",
-          last_modified: 100000000000000000001,
-          firstPartyOrigin: TEST_DOMAIN,
-          thirdPartyOrigin: TEST_3RD_PARTY_DOMAIN,
+          last_modified: 1000000000000001,
+          firstPartyOrigin: TEST_ORIGIN,
+          thirdPartyOrigin: TEST_3RD_PARTY_ORIGIN,
         },
       ],
     },
@@ -467,7 +489,7 @@ add_task(async function testExceptionListRemoteSettings() {
   let list = await promise;
   is(
     list,
-    `${TEST_DOMAIN},${TEST_3RD_PARTY_DOMAIN}`,
+    `${TEST_ORIGIN},${TEST_3RD_PARTY_ORIGIN}`,
     "exception list is correctly set"
   );
 
@@ -546,7 +568,7 @@ add_task(async function testWildcardExceptionListPref() {
   info("set wildcard (1st-party) pref");
   Services.prefs.setStringPref(
     EXCEPTION_LIST_PREF_NAME,
-    `*,${TEST_3RD_PARTY_DOMAIN}`
+    `*,${TEST_3RD_PARTY_ORIGIN}`
   );
 
   info("check wildcard (1st-party) data");
@@ -571,7 +593,7 @@ add_task(async function testWildcardExceptionListPref() {
   ]);
 
   info("set wildcard (3rd-party) pref");
-  Services.prefs.setStringPref(EXCEPTION_LIST_PREF_NAME, `${TEST_DOMAIN},*`);
+  Services.prefs.setStringPref(EXCEPTION_LIST_PREF_NAME, `${TEST_ORIGIN},*`);
 
   info("check wildcard (3rd-party) data");
   await Promise.all([

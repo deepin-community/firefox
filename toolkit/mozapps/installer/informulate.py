@@ -6,8 +6,6 @@
 # Generate build info files for use by other tools.
 # This script assumes it is being run in a Mozilla CI build.
 
-from __future__ import unicode_literals
-
 from argparse import ArgumentParser
 import datetime
 import buildconfig
@@ -46,15 +44,26 @@ def main():
         "MOZ_APP_VERSION",
         "MOZ_APP_MAXVERSION",
         "MOZ_APP_ID",
+        "MOZ_SOURCE_REPO",
+    ]
+    other_substitutions = [
         "CC",
         "CXX",
         "AS",
-        "MOZ_SOURCE_REPO",
     ]
 
     all_key_value_pairs = {
         x.lower(): buildconfig.substs[x] for x in important_substitutions
     }
+
+    def stringify(x):
+        if isinstance(x, (tuple, list)):
+            return " ".join(x)
+        return x or ""
+
+    all_key_value_pairs.update(
+        {x.lower(): stringify(buildconfig.substs.get(x)) for x in other_substitutions}
+    )
     build_id = os.environ["MOZ_BUILD_DATE"]
     all_key_value_pairs.update(
         {
@@ -75,9 +84,9 @@ def main():
             "build": {
                 "id": build_id,
                 "date": build_time.isoformat() + "Z",
-                "as": s["AS"],
-                "cc": s["CC"],
-                "cxx": s["CXX"],
+                "as": all_key_value_pairs["as"],
+                "cc": all_key_value_pairs["cc"],
+                "cxx": all_key_value_pairs["cxx"],
                 "host": s["host_alias"],
                 "target": s["target_alias"],
             },

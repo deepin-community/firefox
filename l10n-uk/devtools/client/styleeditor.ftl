@@ -8,15 +8,19 @@ styleeditor-new-button =
 styleeditor-import-button =
     .tooltiptext = Імпортувати і додати наявну таблицю стилів у документ
     .accesskey = І
+styleeditor-filter-input =
+    .placeholder = Фільтрувати таблиці стилів
 styleeditor-visibility-toggle =
     .tooltiptext = Перемкнути видимість таблиці стилів
     .accesskey = З
+styleeditor-visibility-toggle-system =
+    .tooltiptext = Системні таблиці стилів не можна вимкнути
 styleeditor-save-button = Зберегти
     .tooltiptext = Зберегти цю таблицю стилів у файл
     .accesskey = З
 styleeditor-options-button =
     .tooltiptext = Налаштування редактора стилів
-styleeditor-media-rules = Правила @media
+styleeditor-at-rules = At-правила
 styleeditor-editor-textbox =
     .data-placeholder = Введіть код CSS тут.
 styleeditor-no-stylesheet = Ця сторінка не має таблиці стилів.
@@ -25,3 +29,24 @@ styleeditor-open-link-new-tab =
     .label = Відкрити посилання в новій вкладці
 styleeditor-copy-url =
     .label = Копіювати URL
+styleeditor-find =
+    .label = Знайти
+    .accesskey = З
+styleeditor-find-again =
+    .label = Знайти знову
+    .accesskey = т
+styleeditor-go-to-line =
+    .label = Перейти до рядка…
+    .accesskey = й
+# Label displayed when searching a term that is not found in any stylesheet path
+styleeditor-stylesheet-all-filtered = Не знайдено відповідної таблиці стилів.
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } правило.
+        [few] { $ruleCount } правила.
+       *[many] { $ruleCount } правил.
+    }

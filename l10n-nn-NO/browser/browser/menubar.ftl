@@ -38,20 +38,9 @@ menu-quit =
             [windows] t
            *[other] t
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Avslutt { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Avslutt { -brand-shorter-name }
-
 menu-about =
     .label = Om { -brand-shorter-name }
     .accesskey = O
@@ -81,8 +70,14 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Opne fil…
     .accesskey = O
-menu-file-close =
-    .label = Lat att
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Lat att fane
+           *[other] Lat att { $tabCount } faner
+        }
     .accesskey = L
 menu-file-close-window =
     .label = Lat att vindauge
@@ -99,9 +94,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Utskriftsformat…
     .accesskey = m
-menu-file-print-preview =
-    .label = Førehandsvis sida
-    .accesskey = v
 menu-file-print =
     .label = Skriv ut…
     .accesskey = u
@@ -188,6 +180,17 @@ menu-view-full-screen =
     .label = Fullskjerm
     .accesskey = F
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Gå i lesevising
+    .accesskey = l
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Lat att lesevising
+    .accesskey = L
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +219,9 @@ menu-history-undo-menu =
     .label = Nyleg attlatne faner
 menu-history-undo-window-menu =
     .label = Nyleg attlatne vindauge
-menu-history-reopen-all-tabs = Opne alle faner på nytt
-menu-history-reopen-all-windows = Opne alle vindauge på nytt
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Søk i historikk
 
 ## Bookmarks Menu
 
@@ -225,11 +229,14 @@ menu-bookmarks-menu =
     .label = Bokmerke
     .accesskey = B
 menu-bookmarks-manage =
-    .label = Handter bokmerke
-menu-bookmark-current-tab =
-    .label = Bokmerk gjeldande fane
-menu-bookmark-edit =
-    .label = Rediger dette bokmerket
+    .label = Handsam bokmerke
+menu-bookmark-tab =
+    .label = Bokmerk gjeldande fane…
+menu-edit-bookmark =
+    .label = Rediger dette bokmerket…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Søk i bokmerke
 menu-bookmarks-all-tabs =
     .label = Bokmerk alle faner…
 menu-bookmarks-toolbar =
@@ -266,7 +273,7 @@ menu-tools-browser-tools =
     .label = Nettlesarverktøy
     .accesskey = N
 menu-tools-task-manager =
-    .label = Oppgåvehandterar
+    .label = Oppgåvehandsamar
     .accesskey = O
 menu-tools-page-source =
     .label = Kjeldekode
@@ -314,15 +321,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = M
 menu-help-report-site-issue =
     .label = Rapporter problem med nettstad…
-menu-help-feedback-page =
-    .label = Gje tilbakemelding…
-    .accesskey = G
+menu-help-share-ideas =
+    .label = Del idear og tilbakemeldingar...
+    .accesskey = D
 menu-help-enter-troubleshoot-mode2 =
     .label = Feilsøkingsmodus…
     .accesskey = F
 menu-help-exit-troubleshoot-mode =
     .label = Slå av feilsøkingsmodus
     .accesskey = S
+menu-help-switch-device =
+    .label = Byter til ei ny eining
+    .accesskey = B
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

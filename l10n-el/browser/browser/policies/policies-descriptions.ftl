@@ -16,11 +16,13 @@ policy-AllowedDomainsForApps = Καθορισμός τομέων στους οπ
 
 policy-AppAutoUpdate = Ενεργοποίηση ή απενεργοποίηση αυτόματων ενημερώσεων εφαρμογής.
 
+policy-AppUpdatePin = Αποτροπή ενημέρωσης του { -brand-short-name } πέρα από την καθορισμένη έκδοση.
+
 policy-AppUpdateURL = Ορισμός προσαρμοσμένου URL ενημέρωσης εφαρμογής.
 
 policy-Authentication = Ρύθμιση ενσωματωμένης ταυτοποίησης για ιστοτόπους που την υποστηρίζουν.
 
-policy-AutoLaunchProtocolsFromOrigins = Καθορίστε μια λίστα με εξωτερικά πρωτόκολλα που μπορούν να χρησιμοποιηθούν από καταχωρημένες προελεύσεις χωρίς να ζητηθεί άδεια από τον χρήστη.
+policy-AutoLaunchProtocolsFromOrigins = Καθορισμός μιας λίστας με εξωτερικά πρωτόκολλα που μπορούν να χρησιμοποιηθούν από καταχωρημένες προελεύσεις χωρίς να ζητηθεί άδεια από τον χρήστη.
 
 policy-BackgroundAppUpdate2 = Ενεργοποίηση ή απενεργοποίηση υπηρεσίας ενημερώσεων παρασκηνίου.
 
@@ -39,6 +41,9 @@ policy-CaptivePortal = Ενεργοποίηση ή απενεργοποίηση 
 policy-CertificatesDescription = Προσθήκη πιστοποιητικών ή χρήση ενσωματωμένων πιστοποιητικών.
 
 policy-Cookies = Αποδοχή ή άρνηση αιτημάτων αποθήκευσης cookies.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Ορισμός πολιτικών που σχετίζονται με τις θεματικές ενότητες.
 
 policy-DisabledCiphers = Απενεργοποίηση κρυπτογράφησης.
 
@@ -63,13 +68,13 @@ policy-DisableFirefoxStudies = Αποτροπή εκτέλεσης μελετώ�
 
 policy-DisableForgetButton = Αποτροπή πρόσβασης στο κουμπί "Διαγραφή".
 
-policy-DisableFormHistory = Χωρίς διατήρηση ιστορικού αναζήτησης και φορμών.
+policy-DisableFormHistory = Να μη γίνεται διατήρηση ιστορικού αναζήτησης και φορμών.
 
 policy-DisablePrimaryPasswordCreation = Αν είναι αληθές, δεν είναι δυνατή η δημιουργία κύριου κωδικού πρόσβασης.
 
 policy-DisablePasswordReveal = Να μην επιτρέπεται η αποκάλυψη κωδικών πρόσβασης σε αποθηκευμένες συνδέσεις.
 
-policy-DisablePocket = Απενεργοποίηση λειτουργίας για αποθήκευση ιστοσελίδων στο Pocket.
+policy-DisablePocket2 = Απενεργοποίηση λειτουργίας για αποθήκευση ιστοσελίδων στο { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Απενεργοποίηση ιδιωτικής περιήγησης.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Αποτροπή εγκατάστασης κα
 
 policy-DisableTelemetry = Απενεργοποίηση τηλεμετρίας.
 
+policy-DisableThirdPartyModuleBlocking = Αποτροπή του χρήστη από το να αποκλείει μονάδες τρίτων που εισάγονται στη διεργασία του { -brand-short-name }.
+
 policy-DisplayBookmarksToolbar = Προβολή της γραμμής σελιδοδεικτών από προεπιλογή.
 
 policy-DisplayMenuBar = Προβολή γραμμής μενού από προεπιλογή.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Ενεργοποίηση ή απενεργοπ
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Ενεργοποίηση ή απενεργοποίηση κρυπτογραφημένων επεκτάσεων πολυμέσων και προαιρετικό κλείδωμα.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Απενεργοποίηση προειδοποιήσεων βάσει επέκτασης αρχείου για συγκεκριμένους τύπους αρχείων σε τομείς.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Διαχείριση όλων των πτυχών τ�
 
 policy-ExtensionUpdate = Ενεργοποίηση ή απενεργοποίηση αυτόματων ενημερώσεων επεκτάσεων.
 
-policy-FirefoxHome = Ρύθμιση παραμέτρων της Αρχικής Firefox.
+policy-FirefoxHome2 = Διαμόρφωση του { -firefox-home-brand-name }.
 
-policy-FlashPlugin = Αποδοχή ή απόρριψη χρήσης του αρθρώματος Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Αναγκαστική πλοήγηση στον ιστότοπο ενδοδικτύου, αντί για αναζήτηση κατά την πληκτρολόγηση μίας λέξης στη γραμμή διευθύνσεων.
 
 policy-Handlers = Ρύθμιση παραμέτρων χειριστών προεπιλεγμένης εφαρμογής.
 
@@ -149,15 +158,17 @@ policy-NewTabPage = Ενεργοποίηση ή απενεργοποίηση τ�
 
 policy-NoDefaultBookmarks = Απενεργοποίηση δημιουργίας των προεπιλεγμένων σελιδοδεικτών που έρχονται με το { -brand-short-name }, καθώς και των "έξυπνων" σελιδοδεικτών (Συχνές επισκέψεις, Πρόσφατες ετικέτες). Σημείωση: η πολιτική υλοποιείται μόνο αν χρησιμοποιηθεί πριν την πρώτη εκτέλεση του προφίλ.
 
-policy-OfferToSaveLogins = Εξαναγκασμός της ρύθμισης για να επιτρέπεται στο { -brand-short-name } η πρόταση για απομνημόνευση αποθηκευμένων συνδέσεων και κωδικών πρόσβασης. Αποδεκτές η τιμή "αληθές" και η τιμή "ψευδές".
+policy-OfferToSaveLogins = Εξαναγκασμός της ρύθμισης για να επιτρέπεται στο { -brand-short-name } η πρόταση για απομνημόνευση αποθηκευμένων συνδέσεων και κωδικών πρόσβασης. Αποδεκτές οι τιμές «true» και «false».
 
-policy-OfferToSaveLoginsDefault = Ορισμός προεπιλεγμένης τιμής για να επιτρέπεται στο { -brand-short-name } η πρόταση για απομνημόνευση αποθηκευμένων συνδέσεων και κωδικών πρόσβασης. Είναι αποδεκτές οι τιμές true και false.
+policy-OfferToSaveLoginsDefault = Ορισμός προεπιλεγμένης τιμής για να επιτρέπεται στο { -brand-short-name } η πρόταση για απομνημόνευση αποθηκευμένων συνδέσεων και κωδικών πρόσβασης. Αποδεκτές οι τιμές «true» και «false».
 
 policy-OverrideFirstRunPage = Παράκαμψη της σελίδας πρώτης εκτέλεσης. Αφήστε αυτήν την πολιτική κενή αν θέλετε να απενεργοποιήσετε τη σελίδα πρώτης εκτέλεσης.
 
 policy-OverridePostUpdatePage = Παράκαμψη της σελίδας «Τι νέο υπάρχει» μετά την ενημέρωση. Αφήστε αυτήν την πολιτική κενή αν θέλετε να απενεργοποιήσετε τη σελίδα μετά την ενημέρωση.
 
 policy-PasswordManagerEnabled = Ενεργοποίηση αποθήκευσης κωδικών πρόσβασης στη διαχείριση κωδικών πρόσβασης.
+
+policy-PasswordManagerExceptions = Αποτροπή αποθήκευσης κωδικών πρόσβασης στο { -brand-short-name } για ορισμένους ιστοτόπους.
 
 # PDF.js and PDF should not be translated
 policy-PDFjs = Απενεργοποίηση ή ρύθμιση του PDF.js, του ενσωματωμένου προγράμματος προβολής PDF στο { -brand-short-name }.
@@ -178,14 +189,14 @@ policy-RequestedLocales = Ορισμός λίστας απαιτούμενων �
 
 policy-SanitizeOnShutdown2 = Εκκαθάριση δεδομένων πλοήγησης κατά τον τερματισμό λειτουργίας.
 
-policy-SearchBar = Ορίστε την προεπιλεγμένη τοποθεσία της γραμμής αναζήτησης. Ο χρήστης θα μπορεί να την προσαρμόσει.
+policy-SearchBar = Ορισμός της προεπιλεγμένης τοποθεσίας της γραμμής αναζήτησης. Ο χρήστης θα μπορεί να την προσαρμόσει.
 
 policy-SearchEngines = Διαμόρφωση ρυθμίσεων μηχανής αναζήτησης. Αυτή η πολιτική είναι διαθέσιμη μόνο στην έκδοση εκτεταμένης υποστήριξης (ESR).
 
 policy-SearchSuggestEnabled = Ενεργοποίηση ή απενεργοποίηση προτάσεων αναζήτησης.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Εγκατάσταση μονάδων PKCS #11.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Προσθήκη ή διαγραφή μονάδων PKCS #11.
 
 policy-ShowHomeButton = Εμφάνιση του κουμπιού αρχικής σελίδας στη γραμμή εργαλείων.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = Ορισμός μέγιστης έκδοσης SSL.
 
 policy-SSLVersionMin = Ορισμός ελάχιστης έκδοσης SSL.
 
+policy-StartDownloadsInTempDirectory = Εξαναγκαστική έναρξη λήψεων σε μια τοπική, προσωρινή τοποθεσία και όχι στον προεπιλεγμένο κατάλογο λήψεων.
+
 policy-SupportMenu = Προσθήκη προσαρμοσμένου στοιχείου μενού υποστήριξης στο μενού βοήθειας.
 
 policy-UserMessaging = Απόκρυψη ορισμένων μηνυμάτων από τον χρήστη.
+
+policy-UseSystemPrintDialog = Εκτύπωση μέσω του διαλόγου εκτύπωσης συστήματος.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Φραγή ιστοτόπων προς επίσκεψη. Δείτε την τεκμηρίωση για περισσότερες λεπτομέρειες σχετικά με τη μορφή.

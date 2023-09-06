@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Definuje domény, ktoré majú povolený prístup
 
 policy-AppAutoUpdate = Zapne alebo vypne automatické aktualizácie aplikácie.
 
+policy-AppUpdatePin = Zabráni aktualizácii { -brand-short-name(case: "gen") } nad rámec špecifikovanej verzie.
+
 policy-AppUpdateURL = Nastaví vlastnú URL adresu pre aktualizáciu aplikácie.
 
 policy-Authentication = Nakonfiguruje integrovanú autentifikáciu webových stránok, ktoré ju podporujú.
@@ -40,13 +42,16 @@ policy-CertificatesDescription = Pridá certifikáty alebo použije zabudované 
 
 policy-Cookies = Povolí alebo zakáže webovým stránkam nastavovať cookies.
 
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Nastaví pravidlá súvisiace s kontajnermi.
+
 policy-DisabledCiphers = Zakáže šifry.
 
 policy-DefaultDownloadDirectory = Nastaví predvolené umiestnenie pre sťahovanie súborov.
 
 policy-DisableAppUpdate = Zabráni aktualizáciám prehliadača.
 
-policy-DisableBuiltinPDFViewer = Zablokuje PDF prehliadač PDF.js zabudovaný v aplikácii { -brand-short-name }.
+policy-DisableBuiltinPDFViewer = Zakáže PDF prehliadač PDF.js zabudovaný v prehliadači { -brand-short-name }.
 
 policy-DisableDefaultBrowserAgent = Zabráni agentovi Default browser vykonávať akékoľvek činnosti. Platí len pre Windows; iné platformy nemajú agenta Default browser.
 
@@ -69,13 +74,13 @@ policy-DisablePrimaryPasswordCreation = Hodnota true znemožní nastavenie hlavn
 
 policy-DisablePasswordReveal = Zablokuje zobrazovanie hesiel v správcovi prihlasovacích údajov.
 
-policy-DisablePocket = Vypne funkciu pre ukladanie stránok do služby Pocket.
+policy-DisablePocket2 = Vypne funkciu pre ukladanie stránok do služby { -pocket-brand-name }.
 
-policy-DisablePrivateBrowsing = Zablokuje súkromné prehliadanie
+policy-DisablePrivateBrowsing = Zablokuje súkromné prehliadanie.
 
 policy-DisableProfileImport = Zablokuje možnosť importu údajov z iných prehliadačov.
 
-policy-DisableProfileRefresh = Zablokuje tlačidlo pre obnovu aplikácie { -brand-short-name } na stránke about:support.
+policy-DisableProfileRefresh = Zablokuje tlačidlo pre obnovenie prehliadača { -brand-short-name } do pôvodných nastavení na stránke about:support.
 
 policy-DisableSafeMode = Zablokuje funkciu reštartu so zakázanými doplnkami. Poznámka: prechod do núdzového režimu podržaním klávesy Shift je v systéme Windows možné len pomocou skupinovej politiky.
 
@@ -86,6 +91,8 @@ policy-DisableSetAsDesktopBackground = Zablokuje kontextovú ponuku obrázkov a 
 policy-DisableSystemAddonUpdate = Zablokuje inštaláciu a aktualizáciu systémových doplnkov prehliadača.
 
 policy-DisableTelemetry = Vypne telemetriu.
+
+policy-DisableThirdPartyModuleBlocking = Zabráni používateľovi blokovať moduly tretích strán, ktoré sa vkladajú do procesu { -brand-short-name(case: "gen") }.
 
 policy-DisplayBookmarksToolbar = Zobrazí panel záložiek v predvolenom nastavení.
 
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Zapne alebo vypne blokovanie obsahu a prípadn
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Zapne alebo vypne Encrypted Media Extensions a prípadne uzamkne toto nastavenie.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = V doménach zakáže upozornenia pre konkrétne typy súborov na základe ich prípony.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Spravuje všetky aspekty inštalácie rozšírenia.
 
 policy-ExtensionUpdate = Zapne alebo vypne automatické aktualizácie rozšírení.
 
-policy-FirefoxHome = Nastaví domovskú stránku Firefoxu.
+policy-FirefoxHome2 = Nakonfiguruje { -firefox-home-brand-name(case: "acc") }.
 
-policy-FlashPlugin = Povolí alebo zakáže používanie zásuvného modulu Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Vynúti priamu navigáciu v intranetovej lokalite namiesto vyhľadávania pri zadávaní jednotlivých slov do panela s adresou.
 
 policy-Handlers = Nastaví predvolené aplikácie pre odkazy a typy súborov.
 
@@ -125,7 +134,7 @@ policy-Homepage = Nastaví a v prípade potreby uzamkne domovskú stránku.
 
 policy-InstallAddonsPermission = Povolí určitým webovým stránkam inštalovať doplnky.
 
-policy-LegacyProfiles = Vypne funkciu, ktorá vynucuje samostatný profil pre každú inštaláciu aplikácie
+policy-LegacyProfiles = Vypne funkciu, ktorá vynucuje samostatný profil pre každú inštaláciu aplikácie.
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
 
@@ -147,9 +156,9 @@ policy-NetworkPrediction = Povolí alebo zakáže prednačítavanie DNS (prefetc
 
 policy-NewTabPage = Povolí alebo zakáže stránku novej karty.
 
-policy-NoDefaultBookmarks = Vypne vytváranie predvolených záložiek a chytrých záložiek aplikácie { -brand-short-name } (Najnavštevovanejšie, Naposledy použité značky). Poznámka: toto pravidlo možno efektívne využiť len vtedy, ak bude nastavené pred prvým spustením.
+policy-NoDefaultBookmarks = Vypne vytváranie predvolených a inteligentných záložiek (Najobľúbenejšie, Naposledy použité značky) v prehliadači { -brand-short-name }. Poznámka: toto pravidlo možno efektívne využiť len vtedy, ak bude nastavené pred prvým spustením.
 
-policy-OfferToSaveLogins = Nastaví pravidlo na uloženie prihlasovacích údajov v aplikácii { -brand-short-name }. Je možné použiť hodnoty true aj false.
+policy-OfferToSaveLogins = Nastaví pravidlo na uloženie prihlasovacích údajov v prehliadači { -brand-short-name }. Je možné použiť hodnoty true aj false.
 
 policy-OfferToSaveLoginsDefault = Nastaví predvolenú hodnotu, či má { -brand-short-name } ponúkať ukladanie prihlasovacích údajov. Platné hodnoty sú true a false.
 
@@ -159,12 +168,14 @@ policy-OverridePostUpdatePage = Nastaví vlastnú stránku po aktualizácii apli
 
 policy-PasswordManagerEnabled = Povolí ukladanie hesiel do správcu hesiel.
 
+policy-PasswordManagerExceptions = Zabráni { -brand-short-name(case: "gen") } ukladať heslá pre konkrétne stránky.
+
 # PDF.js and PDF should not be translated
-policy-PDFjs = Zablokuje alebo nastaví zabudovaný PDF prehliadač PDF.js v aplikácii { -brand-short-name }.
+policy-PDFjs = Zablokuje alebo nastaví PDF prehliadač PDF.js zabudovaný v prehliadači { -brand-short-name }.
 
 policy-Permissions2 = Nastaví povolenia pre kameru, mikrofón, polohu, upozornenia a automatické prehrávanie.
 
-policy-PictureInPicture = Povolí alebo zakáže režim obraz v obraze.
+policy-PictureInPicture = Povolí alebo zakáže režim Obraz v obraze.
 
 policy-PopupBlocking = Povolí určitým webovým stránkam zobrazovať v predvolenom nastavení vyskakovacie okná.
 
@@ -184,8 +195,8 @@ policy-SearchEngines = Nakonfiguruje nastavenie vyhľadávacích modulov. Toto p
 
 policy-SearchSuggestEnabled = Povolí alebo zakáže návrhy vyhľadávania.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Nainštaluje moduly PKCS #11.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Pridá alebo odstráni moduly PKCS #11.
 
 policy-ShowHomeButton = Zobrazí tlačidlo Domov na paneli nástrojov.
 
@@ -193,11 +204,15 @@ policy-SSLVersionMax = Nastaví maximálnu verziu SSL.
 
 policy-SSLVersionMin = Nastaví minimálnu verziu SSL.
 
+policy-StartDownloadsInTempDirectory = Vynúti spustenie sťahovania v lokálnom, dočasnom umiestnení a nie v predvolenom adresári sťahovania.
+
 policy-SupportMenu = Pridá vlastnú položku do ponuky pomocníka.
 
 policy-UserMessaging = Používateľovi sa nebudú zobrazovať určité oznámenia.
 
+policy-UseSystemPrintDialog = Tlač pomocou systémového dialógového okna tlače.
+
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Zablokuje prístup na určité webové stránky. Ďalšie informácie o formáte nájdete v dokumentácii.
 
-policy-Windows10SSO = Povolí jednotné prihlásenie systému Windows pre účty Microsoft, pracovné a školské účty.
+policy-Windows10SSO = Povolí jednotné prihlásenie systému Windows pre konto Microsoft a pracovné a školské účty.

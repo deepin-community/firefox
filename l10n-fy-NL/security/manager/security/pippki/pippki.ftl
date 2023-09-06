@@ -16,8 +16,6 @@ change-password-old = Aktueel wachtwurd:
 change-password-new = Nij wachtwurd:
 change-password-reenter = Nij wachtwurd (opnij):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Kin haadwachtwurd net wizigje.
 pippki-incorrect-pw = Jo ha net it korrekte haadwachtwurd ynfierd. Probearje it opnij.
 pippki-pw-change-ok = Wachtwurd mei sukses wizige.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Jo binne no yn FIPS-modus. FIPS fereasket 
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Haadwachtwurd opnij ynstelle
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Opnij inisjalisearje
-
 reset-primary-password-text = As jo jo haadwachtwurd opnij ynstelle sille, al jo bewarre web- en e-mailwachtwurden, persoanlijke sertifikaten en priveekaaien fergetten wurde. Binne jo wis dat jo jo haadwachtwurd opnij inisjalisearje wolle?
 
 pippki-reset-password-confirmation-title = Haadwachtwurd opnij ynstelle
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Jo haadwachtwurd is opnij ynsteld
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Sertifikaat downloade
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Jo wurdt frege in nije sertifikaatautoriteit (CA) te fertrouwen.
 download-cert-trust-ssl =
     .label = Fertrou dizze CA foar it identifisearjen fan websites.
@@ -77,7 +74,8 @@ set-password-reminder = Wichtich: as jo jo wachtwurd foar de reservekopy fan it 
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Beskerme tokenautentikaasje
-protected-auth-msg = Autentisearje by de token. Autentikaasje metoade hinget ôf fan it type fan jo token.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Autentisearje by it token ‘{ $tokenName }’. Hoe’t jo dit dogge, hinget ôf fan it token (bygelyks mei help fan in fingerôfdruklêzer of it ynfieren fan in koade mei in toetseboerd).

@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Alle
+printui-page-range-current = Gjeldende
+printui-page-range-odd = Oddetall
+printui-page-range-even = Partall
 printui-page-range-custom = Tilpasset
 printui-page-range-label = Sider
 printui-page-range-picker =
@@ -32,7 +35,7 @@ printui-portrait = Stående
 
 # Section title for the printer or destination device to target
 printui-destination-label = Mål
-printui-destination-pdf-label = Lagre til PDF
+printui-destination-pdf-label = Lagre som PDF
 
 printui-more-settings = Flere innstillinger
 printui-less-settings = Færre innstillinger

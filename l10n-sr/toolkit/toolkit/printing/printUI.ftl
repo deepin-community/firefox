@@ -16,6 +16,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Све
+printui-page-range-current = Тренутно
+printui-page-range-odd = Непарне
+printui-page-range-even = Парне
 printui-page-range-custom = Прилагођено
 printui-page-range-label = Странице
 printui-page-range-picker =

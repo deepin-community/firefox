@@ -1,3 +1,22 @@
+## v1.15.0
+
+### Fixes
+
+- update hermit-abi
+
+## v1.14.0
+
+### Features
+
+- add support for cgroups v2
+- Skip reading files in Miri
+
+## v1.13.1
+
+### Fixes
+
+- fix parsing zero or multiple optional fields in cgroup mountinfo.
+
 ## v1.13.0
 
 ### Features

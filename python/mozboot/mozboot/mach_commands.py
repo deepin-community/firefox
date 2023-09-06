@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this,
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
 import errno
 import sys
+from pathlib import Path
 
-from mach.decorators import CommandArgument, Command
+from mach.decorators import Command, CommandArgument
+
 from mozboot.bootstrap import APPLICATIONS
 
 
@@ -29,7 +29,14 @@ from mozboot.bootstrap import APPLICATIONS
     action="store_true",
     help="Only execute actions that leave the system configuration alone.",
 )
-def bootstrap(command_context, application_choice=None, no_system_changes=False):
+@CommandArgument(
+    "--exclude",
+    nargs="+",
+    help="A list of bootstrappable elements not to bootstrap.",
+)
+def bootstrap(
+    command_context, application_choice=None, no_system_changes=False, exclude=[]
+):
     """Bootstrap system and mach for optimal development experience."""
     from mozboot.bootstrap import Bootstrapper
 
@@ -37,6 +44,7 @@ def bootstrap(command_context, application_choice=None, no_system_changes=False)
         choice=application_choice,
         no_interactive=not command_context._mach_context.is_interactive,
         no_system_changes=no_system_changes,
+        exclude=exclude,
         mach_context=command_context._mach_context,
     )
     bootstrapper.bootstrap(command_context.settings)
@@ -68,9 +76,11 @@ def vcs_setup(command_context, update_only=False):
     and this command only ensures that remote repositories providing
     VCS extensions are up to date.
     """
-    import mozboot.bootstrap as bootstrap
     import mozversioncontrol
+    from mach.util import to_optional_path
     from mozfile import which
+
+    import mozboot.bootstrap as bootstrap
 
     repo = mozversioncontrol.get_repository_object(command_context._mach_context.topdir)
     tool = "hg"
@@ -83,7 +93,7 @@ def vcs_setup(command_context, update_only=False):
     if sys.platform in ("win32", "msys"):
         tool += ".exe"
 
-    vcs = which(tool)
+    vcs = to_optional_path(which(tool))
     if not vcs:
         raise OSError(errno.ENOENT, "Could not find {} on $PATH".format(tool))
 
@@ -91,18 +101,19 @@ def vcs_setup(command_context, update_only=False):
         if repo.name == "git":
             bootstrap.update_git_tools(
                 vcs,
-                command_context._mach_context.state_dir,
-                command_context._mach_context.topdir,
+                Path(command_context._mach_context.state_dir),
             )
         else:
-            bootstrap.update_vct(vcs, command_context._mach_context.state_dir)
+            bootstrap.update_vct(vcs, Path(command_context._mach_context.state_dir))
     else:
         if repo.name == "git":
             bootstrap.configure_git(
                 vcs,
-                which("git-cinnabar"),
-                command_context._mach_context.state_dir,
-                command_context._mach_context.topdir,
+                to_optional_path(which("git-cinnabar")),
+                Path(command_context._mach_context.state_dir),
+                Path(command_context._mach_context.topdir),
             )
         else:
-            bootstrap.configure_mercurial(vcs, command_context._mach_context.state_dir)
+            bootstrap.configure_mercurial(
+                vcs, Path(command_context._mach_context.state_dir)
+            )

@@ -14,16 +14,18 @@ class MediaTransportChild;
 
 // Implementation of MediaTransportHandler that uses IPC (PMediaTransport) to
 // talk to mtransport on another process.
-class MediaTransportHandlerIPC : public MediaTransportHandler {
+class MediaTransportHandlerIPC final : public MediaTransportHandler {
  public:
   explicit MediaTransportHandlerIPC(nsISerialEventTarget* aCallbackThread);
+  void Initialize() override;
   RefPtr<IceLogPromise> GetIceLog(const nsCString& aPattern) override;
   void ClearIceLog() override;
   void EnterPrivateMode() override;
   void ExitPrivateMode() override;
 
-  nsresult CreateIceCtx(const std::string& aName,
-                        const nsTArray<dom::RTCIceServer>& aIceServers,
+  void CreateIceCtx(const std::string& aName) override;
+
+  nsresult SetIceConfig(const nsTArray<dom::RTCIceServer>& aIceServers,
                         dom::RTCIceTransportPolicy aIcePolicy) override;
 
   // We will probably be able to move the proxy lookup stuff into
@@ -33,7 +35,7 @@ class MediaTransportHandlerIPC : public MediaTransportHandler {
   void EnsureProvisionalTransport(const std::string& aTransportId,
                                   const std::string& aLocalUfrag,
                                   const std::string& aLocalPwd,
-                                  size_t aComponentCount) override;
+                                  int aComponentCount) override;
 
   void SetTargetForDefaultLocalAddressLookup(const std::string& aTargetIp,
                                              uint16_t aTargetPort) override;

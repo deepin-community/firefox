@@ -39,15 +39,6 @@ menu-quit =
 menu-quit-mac =
     .label = Iziet no { -brand-shorter-name }
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Aizvērt { -brand-shorter-name }
-
 menu-about =
     .label = Par { -brand-shorter-name }
     .accesskey = a
@@ -77,9 +68,6 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Atvērt failu…
     .accesskey = A
-menu-file-close =
-    .label = Aizvērt
-    .accesskey = z
 menu-file-close-window =
     .label = Aizvērt logu
     .accesskey = g
@@ -92,9 +80,6 @@ menu-file-email-link =
 menu-file-print-setup =
     .label = Lapas iestatījumi…
     .accesskey = u
-menu-file-print-preview =
-    .label = Drukas priekšskatījums
-    .accesskey = p
 menu-file-print =
     .label = Drukāt…
     .accesskey = D
@@ -166,6 +151,17 @@ menu-view-full-screen =
     .label = Pa visu ekrānu
     .accesskey = v
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Ieiet lasītāja skatā
+    .accesskey = L
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Aizvērt lasītāja skatu
+    .accesskey = L
+
 ##
 
 menu-view-show-all-tabs =
@@ -200,8 +196,6 @@ menu-history-undo-window-menu =
 menu-bookmarks-menu =
     .label = Grāmatzīmes
     .accesskey = G
-menu-bookmark-edit =
-    .label = Rediģēt šo grāmatzīmi
 menu-bookmarks-all-tabs =
     .label = Saglabāt visas cilnes grāmatzīmēs…
 menu-bookmarks-toolbar =
@@ -245,15 +239,6 @@ menu-window-bring-all-to-front =
 # NOTE: For Engineers, any additions or changes to Help menu strings should
 # also be reflected in the related strings in appmenu.ftl. Those strings, by
 # convention, will have the same ID as these, but prefixed with "app".
-# Example: appmenu-help-product
-#
-# These strings are duplicated to allow for different casing depending on
-# where the strings appear.
-
-
-# NOTE: For Engineers, any additions or changes to Help menu strings should
-# also be reflected in the related strings in appmenu.ftl. Those strings, by
-# convention, will have the same ID as these, but prefixed with "app".
 # Example: appmenu-get-help
 #
 # These strings are duplicated to allow for different casing depending on
@@ -264,9 +249,6 @@ menu-help =
     .accesskey = P
 menu-help-report-site-issue =
     .label = Ziņot par problēmu ar lapu…
-menu-help-feedback-page =
-    .label = Nosūtīt atsauksmi…
-    .accesskey = s
 # Label of the Help menu item. Either this or
 # safeb.palm.notdeceptive.label from
 # phishing-afterload-warning-message.dtd is shown.

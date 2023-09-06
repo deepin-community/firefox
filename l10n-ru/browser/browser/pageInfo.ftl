@@ -8,7 +8,7 @@ page-info-window =
 copy =
     .key = C
 menu-copy =
-    .label = Копировать
+    .label = Скопировать
     .accesskey = п
 
 select-all =
@@ -65,6 +65,9 @@ media-dimension =
     .value = Размеры:
 media-long-desc =
     .value = Длинное описание:
+media-select-all =
+    .label = Выделить всё
+    .accesskey = ы
 media-save-as =
     .label = Сохранить как…
     .accesskey = к
@@ -97,16 +100,16 @@ security-view-identity-verifier =
 security-view-identity-validity =
     .value = Действителен по:
 security-view-privacy =
-    .value = Приватность и История
+    .value = Приватность и история
 
 security-view-privacy-history-value = Посещал ли я этот сайт до сегодняшнего дня?
-security-view-privacy-sitedata-value = Хранит ли этот веб-сайт информацию на моём компьютере?
+security-view-privacy-sitedata-value = Хранит ли этот сайт информацию на моём компьютере?
 
 security-view-privacy-clearsitedata =
     .label = Удалить куки и данные сайта
     .accesskey = а
 
-security-view-privacy-passwords-value = Сохранял ли я для этого веб-сайта какие-либо пароли?
+security-view-privacy-passwords-value = Сохранял ли я пароли для этого сайта?
 
 security-view-privacy-viewpasswords =
     .label = Просмотреть сохранённые пароли
@@ -160,7 +163,7 @@ page-info-security-no-owner =
     .value = Информация о владельце этого веб-сайта отсутствует.
 media-select-folder = Выберите папку для сохранения изображений
 media-unknown-not-cached =
-    .value = Неизвестно (не кэшировано)
+    .value = Неизвестно (не кешировано)
 permissions-use-default =
     .label = По умолчанию
 security-no-visits = Нет
@@ -244,18 +247,17 @@ media-dimensions =
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } КБ
 
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
+
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab
-# Variables:
-#   $website (string) - The website name
 media-block-image =
     .label = Блокировать изображения с { $website }
     .accesskey = л
 
 # This string is used to display the URL of the website on top of the
 # pageInfo dialog box
-# Variables:
-#   $website (string) — The url of the website pageInfo is getting info for
 page-info-page =
     .title = Информация о странице — { $website }
 page-info-frame =

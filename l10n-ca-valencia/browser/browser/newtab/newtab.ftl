@@ -8,10 +8,11 @@
 newtab-page-title = Pestanya nova
 newtab-settings-button =
     .title = Personalitzeu la pàgina de pestanya nova
-
 newtab-personalize-icon-label =
     .title = Personalitza la pestanya nova
     .aria-label = Personalitza la pestanya nova
+newtab-personalize-dialog-label =
+    .aria-label = Personalitza
 
 ## Search box component.
 
@@ -35,11 +36,7 @@ newtab-search-box-handoff-input-no-engine =
     .title = Escriviu una cerca o adreça
     .aria-label = Escriviu una cerca o adreça
 
-newtab-search-box-search-the-web-input =
-    .placeholder = Cerca al web
-    .title = Cerca al web
-    .aria-label = Cerca al web
-
+newtab-search-box-text = Cerca al web
 newtab-search-box-input =
     .placeholder = Cerca al web
     .aria-label = Cerca al web
@@ -47,7 +44,6 @@ newtab-search-box-input =
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Afig un motor de cerca
-newtab-topsites-add-topsites-header = Lloc principal nou
 newtab-topsites-add-shortcut-header = Drecera nova
 newtab-topsites-edit-topsites-header = Edita el lloc principal
 newtab-topsites-edit-shortcut-header = Edita la drecera
@@ -177,6 +173,12 @@ newtab-label-sponsored = { $sponsorOrSource } · Patrocinat
 #  $sponsor (String): This is the name of a sponsor
 newtab-label-sponsored-by = Patrocinat per { $sponsor }
 
+# This string is used under the image of story cards to indicate source and time to read
+# Variables:
+#  $source (String): This is the name of a company or their domain
+#  $timeToRead (Number): This is the estimated number of minutes to read this story
+newtab-label-source-read-time = { $source } - { $timeToRead } min
+
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
 
@@ -201,7 +203,6 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = Llocs principals
-newtab-section-header-highlights = Destacats
 newtab-section-header-recent-activity = Activitat recent
 # Variables:
 #  $provider (String): Name of the corresponding content provider.
@@ -216,7 +217,6 @@ newtab-empty-section-highlights = Comenceu a navegar i ací vos mostrarem els mi
 #  $provider (String): Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Ja esteu al dia. Torneu més tard per veure més articles populars de { $provider }. No podeu esperar? Trieu un tema popular per descobrir els articles més interessants de tot el web.
 
-
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
 newtab-discovery-empty-section-topstories-header = Ja esteu al dia.
@@ -230,10 +230,17 @@ newtab-discovery-empty-section-topstories-timed-out = Ups! Pareix que esta secci
 
 # This is shown at the bottom of the trending stories section and precedes a list of links to popular topics.
 newtab-pocket-read-more = Temes populars:
+newtab-pocket-new-topics-title = Voleu encara més articles? Descobriu estos temes populars del { -pocket-brand-name }
 newtab-pocket-more-recommendations = Més recomanacions
 newtab-pocket-learn-more = Més informació
 newtab-pocket-cta-button = Obtén el { -pocket-brand-name }
 newtab-pocket-cta-text = Guardeu els vostres articles preferits al { -pocket-brand-name } i gaudiu d'altres recomanacions fascinants.
+newtab-pocket-pocket-firefox-family = El { -pocket-brand-name } és part de la família { -brand-product-name }
+
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -257,5 +264,4 @@ newtab-custom-pocket-sponsored = Articles patrocinats
 newtab-custom-recent-title = Activitat recent
 newtab-custom-recent-subtitle = Una selecció de llocs i continguts recents
 newtab-custom-close-button = Tanca
-
 newtab-custom-settings = Gestiona més paràmetres

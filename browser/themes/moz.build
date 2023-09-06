@@ -7,6 +7,19 @@
 with Files("**"):
     BUG_COMPONENT = ("Firefox", "Theme")
 
+with Files("ThemeVariableMap.sys.mjs"):
+    BUG_COMPONENT = ("WebExtensions", "Themes")
+
+EXTRA_JS_MODULES += [
+    "BuiltInThemeConfig.sys.mjs",
+    "BuiltInThemes.sys.mjs",
+    "ThemeVariableMap.sys.mjs",
+]
+
+BROWSER_CHROME_MANIFESTS += [
+    "test/browser/browser.ini",
+]
+
 toolkit = CONFIG["MOZ_WIDGET_TOOLKIT"]
 
 if toolkit == "cocoa":
@@ -16,9 +29,7 @@ elif toolkit == "gtk":
 else:
     DIRS += ["windows"]
 
-DIRS += [
-    "addons",
-]
+DIRS += ["addons", "shared/app-marketplace-icons"]
 
 with Files("osx/**"):
     SCHEDULES.exclusive = ["macosx"]

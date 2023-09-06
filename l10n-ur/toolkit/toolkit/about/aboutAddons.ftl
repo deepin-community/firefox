@@ -8,8 +8,10 @@ search-header =
     .placeholder = addons.mozilla.org تلاش کریں
     .searchbuttonlabel = تلاش
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
 
 list-empty-installed =
     .value = آپ کے پاس اس قسم کے کوئی ایڈ اون تنصیب شدہ نہیں
@@ -172,7 +174,6 @@ extensions-warning-update-security = ایڈ اون سلامتی پڑتال نا 
 extensions-warning-update-security-button = اہل بنائیں
     .title = ایڈ اون تازہ کاری سلامتی پڑتال کو اہل بنائیں
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = تازہ کاریوں کے لیے پڑتال کریں
@@ -283,7 +284,6 @@ extension-enabled-heading = اہل بنایا گیا
 extension-disabled-heading = نااہل
 
 theme-enabled-heading = اہل
-theme-disabled-heading = نااہل
 
 plugin-enabled-heading = اہل
 plugin-disabled-heading = نااہل
@@ -319,6 +319,9 @@ install-update-button = تازہ کاری کریں
 addon-detail-private-browsing-allow = اجازت دیں
 addon-detail-private-browsing-disallow = اجازت مت دیں
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
@@ -350,3 +353,29 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = تمام ایڈ اون کے لیے ٹول
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } { -brand-short-name } { $version } کے ساتھ غیر موازن ہے۔
+
+details-notification-unsigned-and-disabled = { $name } { -brand-short-name } میں استعمال کے لیے تصدیق شدہ نہیں ہے اور نااہل بنا دیا گیا ہے۔
+details-notification-unsigned-and-disabled-link = مزید معلومات
+
+details-notification-unsigned = { $name } کی { -brand-short-name } میں استعمال کے لیے تصدیق نہیں ہو سکی۔ احتیاط سے آگے بڑھیں۔
+details-notification-unsigned-link = مزید معلومات
+
+details-notification-blocked = { $name } سلامتی یا سٹبلٹی مسائل کی بناہ پر نا اہل کر دیا گیا ہے۔
+details-notification-blocked-link = مزید معلومات
+
+details-notification-softblocked = { $name } سلامتی یا سٹبلٹی مسائل پیدا کرنے کی وجہ سے جانا جاتا ہے۔
+details-notification-softblocked-link = مزید معلومات
+
+details-notification-gmp-pending = { $name } ابھی تنصیب ہو جائے گا۔

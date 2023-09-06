@@ -5,12 +5,12 @@
 
 about-logins-page-title = Dane logowania i hasła
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Szukaj danych logowania
+    .key = F
 
-create-login-button = Utwórz nowe dane logowania
+create-new-login-button =
+    .title = Utwórz nowe dane logowania
 
 fxaccounts-sign-in-text = Korzystaj ze swoich haseł na innych urządzeniach
 fxaccounts-sign-in-sync-button = Zaloguj się do synchronizacji
@@ -37,11 +37,22 @@ about-logins-menu-menuitem-help = Pomoc
 
 login-list =
     .aria-label = Dane logowania pasujące do zapytania
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } dane logowania
         [few] { $count } dane logowania
        *[many] { $count } danych logowania
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } z { $total } danych logowania
+        [few] { $count } z { $total } danych logowania
+       *[many] { $count } z { $total } danych logowania
     }
 login-list-sort-label-text = Sortuj wg:
 login-list-name-option = Nazwa (A-Z)
@@ -62,7 +73,6 @@ about-logins-list-item-breach-icon =
     .title = Witryna z wyciekiem haseł
 about-logins-list-item-vulnerable-password-icon =
     .title = Potencjalnie niebezpieczne hasło
-
 about-logins-list-section-breach = Witryny z wyciekami haseł
 about-logins-list-section-vulnerable = Potencjalnie niebezpieczne hasła
 about-logins-list-section-nothing = Brak powiadomienia
@@ -77,8 +87,8 @@ about-logins-login-intro-heading-logged-in = Brak synchronizowanych danych logow
 login-intro-description = Aby przenieść tutaj dane logowania zachowane w przeglądarce { -brand-product-name } na innym urządzeniu:
 login-intro-instructions-fxa = Zarejestruj się lub zaloguj na { -fxaccount-brand-name(case: "loc", capitalization: "lower") } na urządzeniu, w którym zachowano dane logowania.
 login-intro-instructions-fxa-settings = Otwórz Ustawienia → Synchronizacja → Włącz synchronizację… i zaznacz pole „dane logowania i hasła”.
-login-intro-instructions-fxa-help = <a data-l10n-name="help-link">Pomoc usługi { -lockwise-brand-short-name }</a> zawiera więcej informacji.
-about-logins-intro-import = Jeśli dane logowania są zachowane w innej przeglądarce, możesz <a data-l10n-name="import-link">zaimportować je do usługi { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = <a data-l10n-name="passwords-help-link">Pomoc na temat haseł</a> zawiera więcej informacji.
+about-logins-intro-browser-only-import = Jeśli dane logowania są zachowane w innej przeglądarce, możesz <a data-l10n-name="import-link">zaimportować je do przeglądarki { -brand-product-name }</a>
 about-logins-intro-import2 = Jeśli dane logowania są zachowane poza przeglądarką { -brand-product-name }, możesz <a data-l10n-name="import-browser-link">zaimportować je z innej przeglądarki</a> lub <a data-l10n-name="import-file-link">z pliku</a>
 
 ## Login
@@ -103,9 +113,17 @@ login-item-copied-password-button-text = Skopiowano
 login-item-save-changes-button = Zapisz zmiany
 login-item-save-new-button = Zapisz
 login-item-cancel-button = Anuluj
-login-item-time-changed = Ostatnia modyfikacja: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Utworzono: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Ostatnie użycie: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Utworzenie
+login-item-timeline-action-updated = Aktualizacja
+login-item-timeline-action-used = Użycie
 
 ## OS Authentication dialog
 
@@ -133,8 +151,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Aby skopiować hasło, w
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = skopiowanie zachowanego hasła
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Aby wyeksportować dane logowania witryn, wprowadź swoje dane logowania do systemu Windows. Pomaga to chronić bezpieczeństwo Twoich kont.
 # This message can be seen when attempting to export a password in about:logins
@@ -148,8 +164,6 @@ master-password-reload-button =
     .label = Zaloguj się
     .accesskey = Z
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Anuluj
@@ -159,6 +173,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Czy usunąć te dane logowania?
 confirm-delete-dialog-message = Tej czynności nie można cofnąć.
 about-logins-confirm-remove-dialog-confirm-button = Usuń
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -202,6 +219,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[many] Spowoduje to usunięcie danych logowania zachowanych w przeglądarce { -brand-short-name } na wszystkich urządzeniach synchronizowanych z { -fxaccount-brand-name(case: "ins", capitalization: "lower") } oraz widocznych tutaj powiadomień o wyciekach danych. Tego działania nie można cofnąć.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Eksport danych logowania i haseł
 about-logins-confirm-export-dialog-message = Twoje hasła zostaną zapisane jako zwykły tekst (np. SłabeH@s1o), więc każdy, kto może otworzyć wyeksportowany plik, będzie mógł je zobaczyć.
 about-logins-confirm-export-dialog-confirm-button = Eksportuj…
@@ -221,7 +240,6 @@ about-logins-breach-alert-date = Wyciek z { DATETIME($date, day: "numeric", mon
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Otwórz witrynę { $hostname }
-about-logins-breach-alert-learn-more-link = Więcej informacji
 
 ## Vulnerable Password notification
 

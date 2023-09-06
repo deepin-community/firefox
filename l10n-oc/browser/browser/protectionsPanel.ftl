@@ -10,8 +10,8 @@ protections-panel-sitefixedsendreport-label = Lo site es petaçat ? Enviatz un
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
 
-protections-popup-footer-protection-label-strict = Estricte
-    .label = Estricte
+protections-popup-footer-protection-label-strict = Estricta
+    .label = Estricta
 protections-popup-footer-protection-label-custom = Personalizat
     .label = Personalizat
 protections-popup-footer-protection-label-standard = Estandard
@@ -63,7 +63,6 @@ protections-panel-not-found-label = Cap pas detectat
 ##
 
 protections-panel-settings-label = Paramètres de proteccion
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Taula de bòrd de las proteccions
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -78,6 +77,7 @@ protections-panel-site-not-working-view-issue-list-forms = Los formularis
 protections-panel-site-not-working-view-issue-list-payments = Los pagaments
 protections-panel-site-not-working-view-issue-list-comments = Los comentaris
 protections-panel-site-not-working-view-issue-list-videos = Las vidèos
+protections-panel-site-not-working-view-issue-list-fonts = Polissas
 
 protections-panel-site-not-working-view-send-report = Enviar un rapòrt
 
@@ -101,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Senhalar un site copat
 protections-panel-content-blocking-breakage-report-view-description = Lo blocatge d’unes traçadors pòt causar de problèmas amb qualques sites web. En senhalant aquestes problèmas ajudatz a melhorar { -brand-short-name } per totes. Amb lo rapòrt serà tanben junta l’URL e d’informacions sus las preferéncias del navegador. <label data-l10n-name="learn-more">Ne saber mai</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Lo blocatge d’unes traçadors pòt causar de problèmas amb qualques sites web. En senhalant aquestes problèmas ajudatz a melhorar { -brand-short-name } per totes. Amb lo rapòrt serà tanben junta l’URL e d’informacions sus las preferéncias del navegador.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -111,3 +112,22 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Anullar
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Enviar lo rapòrt
+
+# Cookie Banner Handling
+
+protections-panel-cookie-banner-handling-header = Reduccion de las bandièras de cookies
+protections-panel-cookie-banner-handling-enabled = Activada per aqueste site
+protections-panel-cookie-banner-handling-disabled = Desactivada per aqueste site
+protections-panel-cookie-banner-handling-undetected = Site actualament pas pres en carga
+
+protections-panel-cookie-banner-view-title =
+    .title = Reduccion de las bandièras de cookies
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = Desactivar la reduccion de las bandièras de cookies per { $host } ?
+protections-panel-cookie-banner-view-turn-on-for-site = Activar la reduccion de las bandièras de cookies per aqueste site ?
+protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } escafarà los cookies d’aqueste site e actualizarà la pagina. La supression de totes los cookies pòt vos desconnectar o voidar los panièrs de crompa.
+protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } ensaja de regetar automaticament totas las demandas de cookies suls sites compatibles.
+protections-panel-cookie-banner-view-cancel = Anullar
+protections-panel-cookie-banner-view-turn-off = Desactivar
+protections-panel-cookie-banner-view-turn-on = Activar

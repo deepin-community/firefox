@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = អ្នក​ជំនួយ​ការ​បង្កើត​ទម្រង់​
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] សេចក្ដីផ្ដើម
-       *[other] ស្វាគមន៍​មក​កាន់ { create-profile-window.title }
+       *[other] ស្វាគមន៍​មក​កាន់ { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } រក្សា​ទុក​ព័ត៌មាន​អំពី​ការ​កំណត់​ និង ចំណង់​ចំណូល​ចិត្ត​របស់​អ្នក​ ក្នុង​ទម្រង់​ផ្ទាល់​ខ្លួន​របស់​អ្នក ។
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] សេចក្ដីបញ្ចប់
-       *[other] កំពុង​បញ្ចប់ { create-profile-window.title }
+       *[other] កំពុង​បញ្ចប់ { create-profile-window2.title }
     }
 
 profile-creation-intro = ប្រសិន​​បើ​​អ្នក​​បង្កើត​​ទម្រង់​​ច្រើន​ អ្នក​អាច​​បញ្ជាក់​​ពួក​វា​​ដោយ​​ឡែក​​ដោយ​​ឈ្មោះ​របស់​ទម្រង់ ។ អ្នក​​អាច​​ប្រើ​​ឈ្មោះ​​ដែល​បាន​ផ្តល់​ទី​នេះ​ ឬ​​ ឈ្មោះ​ផ្សេង​ដែល​​អ្នក​​ចង់​​បាន ។

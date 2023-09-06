@@ -36,3 +36,41 @@ findbar-entire-word =
     .label = Mots entièrs
     .accesskey = m
     .tooltiptext = Cercar sonque los mots entièrs
+
+findbar-not-found = Frasa pas trobada
+
+findbar-wrapped-to-top = Bas de la pagina atenh, seguida al debut
+findbar-wrapped-to-bottom = Naut de la pagina atenh, seguida del bas
+
+findbar-normal-find =
+    .placeholder = Recercar dins la pagina
+findbar-fast-find =
+    .placeholder = Recèrca rapida
+findbar-fast-find-links =
+    .placeholder = Recèrca rapida (ligams solament)
+
+findbar-case-sensitive-status =
+    .value = (Sensible a la cassa)
+findbar-match-diacritics-status =
+    .value = (Respècte dels diacritics)
+findbar-entire-word-status =
+    .value = (Pas que de mots entièrs)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] Ocuréncia { $current } de { $total }
+           *[other] Ocuréncia { $current } de { $total }
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Mai de { $limit } ocuréncia
+           *[other] Mai de { $limit } ocuréncias
+        }

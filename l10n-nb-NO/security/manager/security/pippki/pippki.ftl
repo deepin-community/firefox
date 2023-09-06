@@ -16,8 +16,6 @@ change-password-old = Nåværende passord:
 change-password-new = Nytt passord:
 change-password-reenter = Nytt passord (igjen):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Klarte ikke å endre passord.
 pippki-incorrect-pw = Du skrev ikke inn riktig gjeldende passord. Prøv igjen.
 pippki-pw-change-ok = Passordet er endret.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Du er i FIPS-modus. FIPS krever at du bruk
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Tilbakestill hovedpassord
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Tilbakestill
-
 reset-primary-password-text = Dersom du tilbakestiller hovedpassordet vil alle lagrede nettside- og e-postpassord, personlige sertifikater og private nøkler gå tapt. Er du sikker på at du vil tilbakestille hovedpassordet?
 
 pippki-reset-password-confirmation-title = Tilbakestill hovedpassord
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Primærpassordet ditt er tilbakesti
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Laster ned sertifikat
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Du er forespurt å ha tillit til en ny sertifikatutsteder (CA)
 download-cert-trust-ssl =
     .label = Stol på denne CA-en til å identifisere nettsider.
@@ -77,7 +74,8 @@ set-password-reminder = Viktig: Hvis du glemmer passordet til sertifikatsikkerhe
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Autentisering med beskyttet tegn
-protected-auth-msg = Autentifiser deg selv for dette symbolet. Autentiseringsmetoden er avhengig av type signeringsenhet.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Bekreft i henhold til sikkerhetmetoden «{ $tokenName }». Hvordan du gjør det, avhenger av metoden (for eksempel ved bruk av fingeravtrykkleser eller å taste inn en kode med et tastatur).

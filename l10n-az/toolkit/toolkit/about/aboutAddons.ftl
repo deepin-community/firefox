@@ -8,8 +8,11 @@ search-header =
     .placeholder = addons.mozilla.org saytında axtar
     .searchbuttonlabel = Axtar
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
+
 
 list-empty-installed =
     .value = Bu növ qurulmuş əlavəniz yoxdur
@@ -27,7 +30,6 @@ list-empty-button =
     .label = Əlavələr haqqında daha çox öyrənin
 
 help-button = Əlavə Dəstəyi
-
 sidebar-help-button-title =
     .title = Əlavə Dəstəyi
 
@@ -161,7 +163,6 @@ extensions-warning-update-security = Əlavə yeniləmə təhlükəsizliyinə  n�
 extensions-warning-update-security-button = Aktiv et
     .title = Əlavə yeniləmə təhlükəsizliyinə  nəzarəti aktivləşdir
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = Yeniləmələrə bax…
@@ -245,8 +246,12 @@ enable-addon-button = Aktiv et
 ## Pending uninstall message bar
 
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
+
 
 ##
 
@@ -265,3 +270,29 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Bütün əlavələr üçün alətlər
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } əlavəsi { -brand-short-name } { $version } ile uyğun deyil.
+
+details-notification-unsigned-and-disabled = { $name } { -brand-short-name } üzərində işlədilmək üçün təsdiqlənə bilmədi və söndürüldü.
+details-notification-unsigned-and-disabled-link = Ətraflı Məlumat
+
+details-notification-unsigned = { $name } { -brand-short-name } üzərində işlədilmək üçün təsdiqlənə bilmədi. Ehtiyyatla davam edin.
+details-notification-unsigned-link = Ətraflı Məlumat
+
+details-notification-blocked = { $name } təhlükəsizlik və sabitlik səbəbi ilə söndürüldü.
+details-notification-blocked-link = Daha çox məlumati
+
+details-notification-softblocked = { $name } əlavəsinin təhlükəsizlik və ya sabitlik problemlərinə səbəb olduğu məlumdur.
+details-notification-softblocked-link = Daha çox məlumati
+
+details-notification-gmp-pending = { $name } qısa müddətdə quraşdırılacaq.

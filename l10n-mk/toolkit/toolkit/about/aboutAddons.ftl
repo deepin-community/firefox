@@ -4,8 +4,11 @@
 
 addons-page-title = Менаџер за додатоци
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
+
 
 list-empty-installed =
     .value = Немате инсталирано додатоци од овој тип
@@ -141,7 +144,6 @@ extensions-warning-update-security = Проверката за безбедно�
 extensions-warning-update-security-button = Овозможи
     .title = Овозможи проверување на безбедноста при надградба на додаток
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = Провери за надградби
@@ -194,8 +196,12 @@ addon-open-about-debugging = Дебагирање на додатоци
 ## Pending uninstall message bar
 
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
+
 
 ##
 
@@ -203,3 +209,29 @@ addon-open-about-debugging = Дебагирање на додатоци
 
 addon-page-options-button =
     .title = Алатки за сите додатоци
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } е некомпатибилна со { -brand-short-name } { $version }.
+
+details-notification-unsigned-and-disabled = { $name } не може да се верифицира за употреба во { -brand-short-name } и беше исклучен.
+details-notification-unsigned-and-disabled-link = Повеќе информации
+
+details-notification-unsigned = { $name } не може да се верифицира за употреба во { -brand-short-name }. Бидете внимателни.
+details-notification-unsigned-link = Повеќе информации
+
+details-notification-blocked = { $name } е онеспособен поради проблем со безбедност или стабилност.
+details-notification-blocked-link = Повеќе информации
+
+details-notification-softblocked = Познато е дека { $name } предизвикува проблеми со безбедноста и стабилноста.
+details-notification-softblocked-link = Повеќе информации
+
+details-notification-gmp-pending = { $name } ќе се инсталира за кратко.

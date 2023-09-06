@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Google Workspace’e erişim izni olan etki alanl
 
 policy-AppAutoUpdate = Otomatik uygulama güncellemesini aç veya kapat.
 
+policy-AppUpdatePin = { -brand-short-name } tarayıcısının belirtilen sürümün üzerine güncellenmesini engelle.
+
 policy-AppUpdateURL = Özel uygulama güncelleme URL’si ayarla.
 
 policy-Authentication = Destekleyen web siteleri için bütünleşik kimlik doğrulamasını yapılandır.
@@ -39,6 +41,9 @@ policy-CaptivePortal = Kısıtlama portali desteğini aç veya kapat.
 policy-CertificatesDescription = Sertifika ekle veya yerleşik sertifikaları kullan.
 
 policy-Cookies = Web sitelerinin çerez ayarlamasına izin ver veya verme.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Kapsayıcılarla ilgili ilkeleri ayarla.
 
 policy-DisabledCiphers = Şifrelemeleri devre dışı bırak.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = True olarak ayarlanırsa ana parola olu�
 
 policy-DisablePasswordReveal = Kayıtlı hesaplardaki parolaların görüntülenmesine izin verme.
 
-policy-DisablePocket = Web sayfalarını Pocket’a kaydetme özelliğini devre dışı bırak.
+policy-DisablePocket2 = Web sayfalarını { -pocket-brand-name }’a kaydetme özelliğini devre dışı bırak.
 
 policy-DisablePrivateBrowsing = Gizli gezintiyi devre dışı bırak.
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Tarayıcının sistem eklentilerini kurmasın�
 
 policy-DisableTelemetry = Telemetri’yi kapat.
 
+policy-DisableThirdPartyModuleBlocking = { -brand-short-name } işlemine eklenen üçüncü taraf modüllerini kullanıcının engellemesini önle.
+
 policy-DisplayBookmarksToolbar = Varsayılan olarak yer imleri araç çubuğunu göster.
 
 policy-DisplayMenuBar = Varsayılan olarak menü çubuğunu göster.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = İçerik engellemeyi etkinleştir veya devre d
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Encrypted Media Extensions’ı etkinleştir veya devre dışı bırak ve isteğe bağlı olarak kilitle.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Alan adlarında belirli dosya türleri için dosya uzantısına dayalı olarak uyarıları devre dışı bırak.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Uzantı kurulumunun tüm yönlerini yönet.
 
 policy-ExtensionUpdate = Otomatik uzantı güncellemelerini aç veya kapat.
 
-policy-FirefoxHome = Firefox giriş sayfasını yapılandır.
+policy-FirefoxHome2 = { -firefox-home-brand-name }'i yapılandır.
 
-policy-FlashPlugin = Flash yan uygulama kullanımını engelle ya da kullanımına izin ver.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Adres çubuğuna tek bir sözcük yazıldığında arama yapmak yerine doğrudan intranet sitesine git.
 
 policy-Handlers = Varsayılan uygulama işleyicilerini yapılandır.
 
@@ -159,6 +168,8 @@ policy-OverridePostUpdatePage = Güncelleme sonrası “Yenilikler” sayfasın�
 
 policy-PasswordManagerEnabled = Parolaları parola yöneticisine kaydetmeyi aç.
 
+policy-PasswordManagerExceptions = { -brand-short-name } tarayıcısının belirli sitelerde parola kaydetmesini engelle.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = Dahili { -brand-short-name } PDF göstericisi olan PDF.js’i devre dışı bırak veya yapılandır.
 
@@ -184,8 +195,8 @@ policy-SearchEngines = Arama motoru ayarlarını yapılandır. Bu ilke yalnızca
 
 policy-SearchSuggestEnabled = Arama önerilerini etkinleştir veya devre dışı bırak.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = PKCS #11 modüllerini yükle.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = PKCS #11 modülü ekle veya sil.
 
 policy-ShowHomeButton = Araç çubuğunda giriş sayfası düğmesini göster.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = Maksimum SSL sürümünü ayarla.
 
 policy-SSLVersionMin = Minimum SSL sürümünü ayarla.
 
+policy-StartDownloadsInTempDirectory = İndirmeleri varsayılan indirme dizini yerine  geçici bir yerel konumda başlat.
+
 policy-SupportMenu = Yardım menüsüne özel bir destek menüsü öğesi ekle.
 
 policy-UserMessaging = Kullanıcıya belirli mesajları gösterme.
+
+policy-UseSystemPrintDialog = Sistem yazdırma iletişim kutusunu kullanarak yazdır.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Web sitelerinin ziyaret edilmesini engelle. Biçimle ilgili daha fazla bilgi için belgelendirmeye bakın.

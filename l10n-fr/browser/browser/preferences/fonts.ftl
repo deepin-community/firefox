@@ -98,7 +98,7 @@ fonts-monospace = Largeur fixe
 fonts-monospace-size = Taille
     .accesskey = e
 
-fonts-minsize = Taille minimale de la police
+fonts-minsize = Taille minimale des polices
     .accesskey = m
 
 fonts-minsize-none =
@@ -107,11 +107,6 @@ fonts-minsize-none =
 fonts-allow-own =
     .label = Autoriser les pages web à utiliser leurs propres polices au lieu de celles choisies ci-dessus
     .accesskey = h
-
-## Text Encodings
-##
-## Translate the encoding names as adjectives for an encoding, not as the name
-## of the language.
 
 # Variables:
 #   $name {string, "Arial"} - Name of the default font

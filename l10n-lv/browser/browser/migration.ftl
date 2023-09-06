@@ -67,38 +67,12 @@ import-done-description = Tika sekmīgi importēti:
 
 import-close-source-browser = Lūdzu pārliecinieties ka izvēlētais pārlūks ir aizvērts pirms turpināt.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = No { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Drošs pārlūks
 
 imported-safari-reading-list = Lasāmo lietu saraksts (No Safari)
 imported-edge-reading-list = Lasāmo lietu saraksts (No Edge)
-
-## Browser data types
-## All of these strings get a $browser variable passed in.
-## You can use the browser variable to differentiate the name of items,
-## which may have different labels in different browsers.
-## The supported values for the $browser variable are:
-## 360se
-## chrome
-## edge
-## firefox
-## safari
-## The various beta and development versions of edge and chrome all get
-## normalized to just "edge" and "chrome" for these strings.
 
 ## Browser data types
 ## All of these strings get a $browser variable passed in.
@@ -114,7 +88,17 @@ imported-edge-reading-list = Lasāmo lietu saraksts (No Edge)
 ## The various beta and development versions of edge and chrome all get
 ## normalized to just "edge" and "chrome" for these strings.
 
+# This string should use the same phrase for "logins and passwords" as the
+# label in the main hamburger menu that opens about:logins.
+browser-data-passwords-checkbox =
+    .label = Saglabātie lietotājvārdi un paroles
+# This string should use the same phrase for "logins and passwords" as the
+# label in the main hamburger menu that opens about:logins.
+browser-data-passwords-label =
+    .value = Saglabātie lietotājvārdi un paroles
+
 browser-data-session-checkbox =
     .label = Logus un cilnes
 browser-data-session-label =
     .value = Logus un cilnes
+

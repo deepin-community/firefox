@@ -2,11 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Hreinsa gögn
-    .style = width: 35em
+    .style = min-width: 35em
 
-clear-site-data-description = Ef þú hreinsar út allar smákökur og gögn sem eru geymd af { -brand-short-name } gæti það orðið til þess að þú verðir skráður út af vefsvæðum og ótengd gögn verði fjarlægð. Hreinsum á skyndinminni hefur ekki áhrif á innskráningar.
+clear-site-data-description = Ef þú hreinsar út allar vefkökur og gögn sem eru geymd af { -brand-short-name } gæti það orðið til þess að þú verðir skráð/ur út af vefsvæðum og ótengd gögn verði fjarlægð. Hreinsun á skyndiminni hefur ekki áhrif á innskráningar.
 
 clear-site-data-close-key =
     .key = w
@@ -17,8 +17,8 @@ clear-site-data-close-key =
 #   $amount (Number) - Amount of site data currently stored on disk
 #   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
 clear-site-data-cookies-with-data =
-    .label = Smákökur og gögn ({ $amount } { $unit })
-    .accesskey = S
+    .label = Vefkökur og vefsvæðagögn ({ $amount } { $unit })
+    .accesskey = V
 
 # This string is a placeholder for while the data used to fill
 # clear-site-data-cookies-with-data is loading. This placeholder is usually
@@ -26,10 +26,10 @@ clear-site-data-cookies-with-data =
 # or the same as clear-site-data-cookies-with-data (except the amount and unit),
 # to avoid flickering.
 clear-site-data-cookies-empty =
-    .label = Smákökur og gögn vefsvæðis
-    .accesskey = S
+    .label = Vefkökur og gögn vefsvæðis
+    .accesskey = g
 
-clear-site-data-cookies-info = Þú gætir verið skráður út af vefsíðum ef gögn eru hreinsuð
+clear-site-data-cookies-info = Þú gætir verið skráð/ur út af vefsvæðum ef gögn eru hreinsuð
 
 # The parameters in parentheses in this string describe disk usage
 # in the format ($amount $unit), e.g. "Cached Web Content (24 KB)"

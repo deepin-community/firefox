@@ -20,12 +20,12 @@ newtab-personalize-dialog-label =
 newtab-search-box-search-button =
     .title = Bilatu
     .aria-label = Bilatu
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-text = Bilatu { $engine } erabiliz edo idatzi helbidea
 newtab-search-box-handoff-text-no-engine = Bilatu edo idatzi helbidea
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-input =
     .placeholder = Bilatu { $engine } erabiliz edo idatzi helbidea
     .title = Bilatu { $engine } erabiliz edo idatzi helbidea
@@ -34,10 +34,6 @@ newtab-search-box-handoff-input-no-engine =
     .placeholder = Bilatu edo idatzi helbidea
     .title = Bilatu edo idatzi helbidea
     .aria-label = Bilatu edo idatzi helbidea
-newtab-search-box-search-the-web-input =
-    .placeholder = Bilatu webean
-    .title = Bilatu webean
-    .aria-label = Bilatu webean
 newtab-search-box-text = Bilatu webean
 newtab-search-box-input =
     .placeholder = Bilatu webean
@@ -46,7 +42,6 @@ newtab-search-box-input =
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Gehitu bilaketa-motorra
-newtab-topsites-add-topsites-header = Maiz erabilitako gune berria
 newtab-topsites-add-shortcut-header = Lasterbide berria
 newtab-topsites-edit-topsites-header = Editatu maiz erabilitako gunea
 newtab-topsites-edit-shortcut-header = Editatu lasterbidea
@@ -91,7 +86,7 @@ newtab-dismiss-button-tooltip =
     .aria-label = Kendu
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = Ireki menua
     .aria-label = Ikusi { $title } gunerako testuinguru-menua
@@ -162,16 +157,16 @@ newtab-label-saved = { -pocket-brand-name }-en gordeta
 newtab-label-download = Deskargatuta
 # This string is used in the story cards to indicate sponsored content
 # Variables:
-#  $sponsorOrSource (String): This is the name of a company or their domain
+#   $sponsorOrSource (string) - The name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource }(e)k lagundua
 # This string is used at the bottom of story cards to indicate sponsored content
 # Variables:
-#  $sponsor (String): This is the name of a sponsor
+#   $sponsor (string) - The name of a sponsor
 newtab-label-sponsored-by = Babeslea: { $sponsor }
 # This string is used under the image of story cards to indicate source and time to read
 # Variables:
-#  $source (String): This is the name of a company or their domain
-#  $timeToRead (Number): This is the estimated number of minutes to read this story
+#   $source (string) - The name of a company or their domain
+#   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } min
 
 ## Section Menu: These strings are displayed in the section context menu and are
@@ -198,10 +193,9 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = Gune erabilienak
-newtab-section-header-highlights = Nabarmendutakoak
 newtab-section-header-recent-activity = Azken jarduera
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } hornitzaileak gomendatuta
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
@@ -209,7 +203,7 @@ newtab-section-header-pocket = { $provider } hornitzaileak gomendatuta
 newtab-empty-section-highlights = Hasi nabigatzen eta azkenaldian bisitatutako edo laster-marka egindako aparteko artikulu, bideo eta orriak erakutsiko ditugu.
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Egunean zaude jada. Etorri berriro geroago { $provider } hornitzailearen istorio ezagun gehiagorako. Ezin duzu itxaron? Hautatu gai ezagun bat webeko istorio gehiago aurkitzeko.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -232,18 +226,12 @@ newtab-pocket-cta-button = Eskuratu { -pocket-brand-name }
 newtab-pocket-cta-text = Gorde gogoko dituzun istorioak { -pocket-brand-name }-en eta piztu zure gogoa irakurgai erakargarriekin.
 newtab-pocket-pocket-firefox-family = { -brand-product-name }(r)en familiakoa da { -pocket-brand-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
-newtab-pocket-save-to-pocket = Gorde { -pocket-brand-name }-en
-newtab-pocket-saved-to-pocket = { -pocket-brand-name }-en gordeta
-# This is a button shown at the bottom of the Pocket section that loads more stories when clicked.
-newtab-pocket-load-more-stories-button = Kargatu istorio gehiago
+newtab-pocket-save = Gorde
+newtab-pocket-saved = Gordeta
 
-## Pocket Final Card Section.
-## This is for the final card in the Pocket grid.
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
-newtab-pocket-last-card-title = Egunean zaude!
-newtab-pocket-last-card-desc = Itzuli geroago gehiago aurkitzeko.
-newtab-pocket-last-card-image =
-    .alt = Egunean zaude!
+newtab-pocket-onboarding-discover = Aurkitu webeko onena
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -255,6 +243,8 @@ newtab-error-fallback-refresh-link = Berritu orria berriro saiatzeko.
 
 newtab-custom-shortcuts-title = Lasterbideak
 newtab-custom-shortcuts-subtitle = Gordetzen edo bisitatzen dituzun guneak
+# Variables
+#   $num (number) - Number of rows to display
 newtab-custom-row-selector =
     { $num ->
         [one] Errenkada bat
@@ -264,6 +254,7 @@ newtab-custom-sponsored-sites = Babesleen lasterbideak
 newtab-custom-pocket-title = { -pocket-brand-name }-ek gomendatua
 newtab-custom-pocket-subtitle = { -brand-product-name } familiakide den { -pocket-brand-name }-eko taldeak hautatutako aparteko edukia.
 newtab-custom-pocket-sponsored = Babesleen istorioak
+newtab-custom-pocket-show-recent-saves = Erakutsi gordetako azkenak
 newtab-custom-recent-title = Azken jarduera
 newtab-custom-recent-subtitle = Azken gune eta edukien hautapena
 newtab-custom-close-button = Itxi

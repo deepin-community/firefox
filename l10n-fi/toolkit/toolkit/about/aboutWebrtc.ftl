@@ -13,6 +13,9 @@ about-webrtc-document-title = WebRTC-tiedot
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = tallenna about:webrtc nimellä
 
+## These labels are for a disclosure which contains the information for closed PeerConnection sections
+
+
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = AEC-lokitus
@@ -20,7 +23,16 @@ about-webrtc-aec-logging-off-state-label = Käynnistä AEC-lokitus
 about-webrtc-aec-logging-on-state-label = Pysäytä AEC-lokitus
 about-webrtc-aec-logging-on-state-msg = AEC-lokitus päällä (keskustele soittajan kanssa muutama minuutti ja lopeta sen jälkeen kaappaus)
 
+about-webrtc-aec-logging-toggled-on-state-msg = AEC-lokitus päällä (keskustele soittajan kanssa muutama minuutti ja lopeta sen jälkeen kaappaus)
+# Variables:
+#  $path (String) - The path to which the aec log file is saved.
+about-webrtc-aec-logging-toggled-off-state-msg = Kaapatut lokitiedostot kohteessa: { $path }
+
 ##
+
+# The autorefresh checkbox causes the page to autorefresh its content when checked
+about-webrtc-auto-refresh-label = Automaattinen päivitys
+
 
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
@@ -59,11 +71,6 @@ about-webrtc-ice-pair-bytes-sent = Tavuja lähetetty:
 about-webrtc-ice-pair-bytes-received = Tavuja vastaanotettu:
 about-webrtc-ice-component-id = Komponentin tunniste
 
-## "Avg." is an abbreviation for Average. These are used as data labels.
-
-about-webrtc-avg-bitrate-label = Keskim. bittinopeus:
-about-webrtc-avg-framerate-label = Keskim. ruudunpäivitys:
-
 ## These adjectives are used to label a line of statistics collected for a peer
 ## connection. The data represents either the local or remote end of the
 ## connection.
@@ -95,6 +102,12 @@ about-webrtc-log-show-msg = näytä loki
 about-webrtc-log-hide-msg = piilota loki
     .title = kutista napsauttamalla
 
+about-webrtc-log-section-show-msg = Näytä loki
+    .title = Laajenna napsauttamalla
+about-webrtc-log-section-hide-msg = Piilota loki
+    .title = Kutista napsauttamalla
+about-webrtc-copy-report-button = Kopioi raportti
+
 ## These are used to display a header for a PeerConnection.
 ## Variables:
 ##  $browser-id (Number) - A numeric id identifying the browser tab for the PeerConnection.
@@ -104,6 +117,11 @@ about-webrtc-log-hide-msg = piilota loki
 
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (suljettu) { $now }
+
+## These are used to indicate what direction media is flowing.
+## Variables:
+##  $codecs - a list of media codecs
+
 
 ##
 
@@ -116,16 +134,25 @@ about-webrtc-raw-cand-show-msg = näytä raa’at ehdokkaat
     .title = laajenna napsauttamalla
 about-webrtc-raw-cand-hide-msg = piilota raa’at ehdokkaat
     .title = kutista napsauttamalla
+about-webrtc-raw-cand-section-show-msg = Näytä raa’at ehdokkaat
+    .title = Laajenna napsauttamalla
+about-webrtc-raw-cand-section-hide-msg = Piilota raa’at ehdokkaat
+    .title = Kutista napsauttamalla
 about-webrtc-priority = Prioriteetti
 about-webrtc-fold-show-msg = näytä tiedot
     .title = laajenna napsauttamalla
 about-webrtc-fold-hide-msg = piilota tiedot
     .title = kutista napsauttamalla
+about-webrtc-fold-default-show-msg = Näytä tiedot
+    .title = Laajenna napsauttamalla
+about-webrtc-fold-default-hide-msg = Piilota tiedot
+    .title = Kutista napsauttamalla
 about-webrtc-dropped-frames-label = Pudotetut kehykset:
 about-webrtc-discarded-packets-label = Hylätyt paketit:
 about-webrtc-decoder-label = Purkaja
 about-webrtc-encoder-label = Enkoodaaja
 about-webrtc-show-tab-label = Näytä välilehti
+about-webrtc-current-framerate-label = Kuvataajuus
 about-webrtc-width-px = Leveys (px)
 about-webrtc-height-px = Korkeus (px)
 about-webrtc-consecutive-frames = Peräkkäiset ruudut
@@ -141,6 +168,12 @@ about-webrtc-last-frame-timestamp = Viimeisen ruudun vastaanoton aikaleima
 about-webrtc-local-receive-ssrc = Paikallinen vastaanottava SSRC
 # This is an SSRC on the remote side of the connection that is sending RTP
 about-webrtc-remote-send-ssrc = Lähettävä etä-SSRC
+
+## These are displayed on the button that shows or hides the
+## PeerConnection configuration disclosure
+
+about-webrtc-pc-configuration-show-msg = Näytä kokoonpano
+about-webrtc-pc-configuration-hide-msg = Piilota kokoonpano
 
 ##
 
@@ -193,7 +226,29 @@ about-webrtc-debug-mode-off-state-msg = jäljitysloki kohteessa: { $path }
 about-webrtc-debug-mode-on-state-msg = virheenjäljitystila päällä, jäljitysloki kohteessa: { $path }
 about-webrtc-aec-logging-off-state-msg = kaapatut lokitiedostot kohteessa: { $path }
 
+about-webrtc-save-page-complete-msg = Sivu tallennettu kohteeseen: { $path }
+about-webrtc-debug-mode-toggled-off-state-msg = Jäljitysloki kohteessa: { $path }
+about-webrtc-debug-mode-toggled-on-state-msg = Virheenjäljitystila päällä, jäljitysloki kohteessa: { $path }
+
 ##
+
+# This is the total number of frames encoded or decoded over an RTP stream.
+# Variables:
+#  $frames (Number) - The number of frames encoded or decoded.
+about-webrtc-frames =
+    { $frames ->
+        [one] { $frames } ruutu
+       *[other] { $frames } ruutua
+    }
+
+# This is the number of audio channels encoded or decoded over an RTP stream.
+# Variables:
+#  $channels (Number) - The number of channels encoded or decoded.
+about-webrtc-channels =
+    { $channels ->
+        [one] { $channels } kanava
+       *[other] { $channels } kanavaa
+    }
 
 # This is the total number of packets received on the PeerConnection.
 # Variables:
@@ -251,6 +306,16 @@ about-webrtc-sdp-set-at-timestamp-remote = Asetettiin Etä-SDP ajanhetkellä { N
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 #  $relative-timestamp (Number) - The timestamp relative to the timestamp of the earliest received SDP.
 about-webrtc-sdp-set-timestamp = Aikaleima { NUMBER($timestamp, useGrouping: "false") } (+ { $relative-timestamp } ms)
+
+## These are displayed on the button that shows or hides the SDP information disclosure
+
+about-webrtc-show-msg-sdp = Näytä SDP
+about-webrtc-hide-msg-sdp = Piilota SDP
+
+## These are displayed on the button that shows or hides the Media Context information disclosure.
+## The Media Context is the set of preferences and detected capabilities that informs
+## the negotiated CODEC settings.
+
 
 ##
 

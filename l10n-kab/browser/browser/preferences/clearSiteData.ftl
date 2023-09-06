@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Sfeḍ isefka
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Asfaḍn  inagan n tuqna meṛṛa akked isefka isekles { -brand-short-name } izmer ad ak-id-isuffeγ seg ismal web, ad ak-ikkes aqbur n war tuqna. Asfaḍ n isefka n tkatut tuffirt ur igellu ara s inekcam-inek.
 

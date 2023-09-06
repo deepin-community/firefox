@@ -6,9 +6,16 @@ addons-page-title = 附加组件管理器
 search-header =
     .placeholder = 在 addons.mozilla.org 搜索
     .searchbuttonlabel = 搜索
-search-header-shortcut =
-    .key = f
-list-empty-get-extensions-message = 到 <a data-l10n-name="get-extensions">{ $domain }</a> 获取扩展和主题。
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+list-empty-get-extensions-message = 到 <a data-l10n-name="get-extensions">{ $domain }</a> 安装扩展和主题。
+list-empty-get-dictionaries-message = 到 <a data-l10n-name="get-extensions">{ $domain }</a> 安装字典
+list-empty-get-language-packs-message = 到 <a data-l10n-name="get-extensions">{ $domain }</a> 安装语言包
+
+##
+
 list-empty-installed =
     .value = 您没有安装任何此类型的附加组件
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = 版本
 detail-last-updated =
     .label = 上次更新
+addon-detail-description-expand = 显示更多
+addon-detail-description-collapse = 折叠
 detail-contributions-description = 此附加组件的开发者希望通过您的小额捐款，帮助支持其持续开发。
 detail-contributions-button = 捐助
     .title = 捐助此附加组件的开发
@@ -132,6 +141,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = 最近更新
 addon-category-recent-updates-title =
     .title = 最近更新
+addon-category-sitepermission = 网站权限
+addon-category-sitepermission-title =
+    .title = 网站权限
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = { $host } 的网站权限
 
 ## These are global warnings
 
@@ -142,6 +158,8 @@ extensions-warning-check-compatibility-button = 启用
 extensions-warning-update-security = 附加组件更新安全检查已被禁用。您可能会受到更新带来的安全威胁。
 extensions-warning-update-security-button = 启用
     .title = 启用附加组件安全更新检查
+extensions-warning-imported-addons = 请完成安装导入至 { -brand-short-name } 的扩展。
+extensions-warning-imported-addons-button = 安装扩展
 
 ## Strings connected to add-on updates
 
@@ -210,11 +228,13 @@ shortcuts-duplicate-warning-message = 有超过一个附加组件使用 { $short
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = 已被 { $addon } 占用
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
        *[other] 显示另外 { $numberToShow } 个
     }
-shortcuts-card-collapse-button = 显示更少
+shortcuts-card-collapse-button = 折叠
 header-back-button =
     .title = 返回
 
@@ -270,15 +290,15 @@ permissions-addon-button = 权限
 extension-enabled-heading = 已启用
 extension-disabled-heading = 已禁用
 theme-enabled-heading = 已启用
-theme-disabled-heading = 已禁用
-theme-monochromatic-heading = 配色
-theme-monochromatic-subheading = 元气满满的 { -brand-product-name } 新配色，限时提供。
+theme-disabled-heading2 = 保存的主题
 plugin-enabled-heading = 已启用
 plugin-disabled-heading = 已禁用
 dictionary-enabled-heading = 已启用
 dictionary-disabled-heading = 已禁用
 locale-enabled-heading = 已启用
 locale-disabled-heading = 已禁用
+sitepermission-enabled-heading = 已启用
+sitepermission-disabled-heading = 已禁用
 always-activate-button = 一律激活
 never-activate-button = 永不激活
 addon-detail-author-label = 作者
@@ -318,6 +338,10 @@ addon-detail-updates-radio-on = 开
 addon-detail-updates-radio-off = 关
 addon-detail-update-check-label = 检查更新
 install-update-button = 更新
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -326,6 +350,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = 若允许，扩展可在隐私浏览中获知您的在线活动。 <a data-l10n-name="learn-more">详细了解</a>
 addon-detail-private-browsing-allow = 允许
 addon-detail-private-browsing-disallow = 不允许
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = 在受限制的网站上运行
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = 允许后，此扩展将能够访问受 { -vendor-short-name } 限制的网站。请仅在您信任此网站时才允许。
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = 允许
+addon-detail-quarantined-domains-disallow = 不允许
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -346,14 +388,17 @@ addon-badge-verified2 =
 
 available-updates-heading = 可用更新
 recent-updates-heading = 最近更新
-release-notes-loading = 正在载入…
-release-notes-error = 抱歉，载入发行说明时出错。
+release-notes-loading = 正在加载…
+release-notes-error = 抱歉，加载发行说明时出错。
 addon-permissions-empty = 此扩展未要求任何权限
 addon-permissions-required = 核心功能所需的权限：
 addon-permissions-optional = 附加功能的可选权限：
 addon-permissions-learnmore = 详细了解“权限”
 recommended-extensions-heading = 推荐扩展
 recommended-themes-heading = 推荐主题
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = 授予 <span data-l10n-name="hostname">{ $hostname }</span> 以下功能：
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = 有好的创意？<a data-l10n-name="link">使用 Firefox Color 打造自己的主题。</a>
@@ -366,6 +411,7 @@ plugin-heading = 管理您的插件
 dictionary-heading = 管理您的字典
 locale-heading = 管理您的语言包
 updates-heading = 管理您的更新
+sitepermission-heading = 管理网站权限
 discover-heading = 让 { -brand-short-name } 有您的个性
 shortcuts-heading = 管理扩展快捷键
 default-heading-search-label = 寻找更多附加组件
@@ -373,3 +419,21 @@ addons-heading-search-input =
     .placeholder = 在 addons.mozilla.org 搜索
 addon-page-options-button =
     .title = 用于所有附加组件的工具
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } 不兼容 { -brand-short-name } { $version }。
+details-notification-incompatible-link = 更多信息
+details-notification-unsigned-and-disabled = { $name } 未通过针对是否适用于 { -brand-short-name } 的验证，现已被禁用。
+details-notification-unsigned-and-disabled-link = 了解详情
+details-notification-unsigned = { $name } 未通过针对是否适用于 { -brand-short-name } 的验证。请谨慎。
+details-notification-unsigned-link = 了解详情
+details-notification-blocked = { $name } 由于安全或稳定性问题已被禁用。
+details-notification-blocked-link = 了解详情
+details-notification-softblocked = { $name } 已知会导致安全性或稳定性问题。
+details-notification-softblocked-link = 了解详情
+details-notification-gmp-pending = { $name } 即将安装。

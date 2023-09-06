@@ -3,6 +3,7 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import "./Dropdown.css";
 
 export class Dropdown extends Component {
@@ -10,6 +11,13 @@ export class Dropdown extends Component {
     super(props);
     this.state = {
       dropdownShown: false,
+    };
+  }
+
+  static get propTypes() {
+    return {
+      icon: PropTypes.node.isRequired,
+      panel: PropTypes.node.isRequired,
     };
   }
 
@@ -33,7 +41,6 @@ export class Dropdown extends Component {
 
   renderButton() {
     return (
-      // eslint-disable-next-line prettier/prettier
       <button className="dropdown-button" onClick={this.toggleDropdown}>
         {this.props.icon}
       </button>

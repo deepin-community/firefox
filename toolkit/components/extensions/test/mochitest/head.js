@@ -2,21 +2,12 @@
 
 /* exported AppConstants, Assert, AppTestDelegate */
 
-var { AppConstants } = SpecialPowers.Cu.import(
-  "resource://gre/modules/AppConstants.jsm",
-  {}
+var { AppConstants } = SpecialPowers.ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
 );
-var { AppTestDelegate } = SpecialPowers.Cu.import(
-  "resource://specialpowers/AppTestDelegate.jsm",
-  {}
+var { AppTestDelegate } = SpecialPowers.ChromeUtils.importESModule(
+  "resource://specialpowers/AppTestDelegate.sys.mjs"
 );
-
-let remote = SpecialPowers.getBoolPref("extensions.webextensions.remote");
-if (remote) {
-  // We don't want to reset this at the end of the test, so that we don't have
-  // to spawn a new extension child process for each test unit.
-  SpecialPowers.setIntPref("dom.ipc.keepProcessesAlive.extension", 1);
-}
 
 {
   let chromeScript = SpecialPowers.loadChromeScript(
@@ -41,7 +32,7 @@ if (remote) {
 }
 
 let Assert = {
-  // Cut-down version based on Assert.jsm. Only supports regexp and objects as
+  // Cut-down version based on Assert.sys.mjs. Only supports regexp and objects as
   // the expected variables.
   rejects(promise, expected, msg) {
     return promise.then(
@@ -74,7 +65,7 @@ function waitForLoad(win) {
   return new Promise(resolve => {
     win.addEventListener(
       "load",
-      function() {
+      function () {
         resolve();
       },
       { capture: true, once: true }
@@ -85,7 +76,6 @@ function waitForLoad(win) {
 /* exported loadChromeScript */
 function loadChromeScript(fn) {
   let wrapper = `
-const {Services} = Cu.import("resource://gre/modules/Services.jsm", {});
 (${fn.toString()})();`;
 
   return SpecialPowers.loadChromeScript(new Function(wrapper));

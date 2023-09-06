@@ -16,8 +16,8 @@ downloads-panel =
 # The style attribute has the width of the Downloads Panel expressed using
 # a CSS unit. The longest labels that should fit are usually those of
 # in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
+downloads-panel-items =
+    .style = width: 35em
 
 downloads-cmd-pause =
     .label = Ընդմիջել
@@ -30,42 +30,53 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Չեղարկել
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Բացել թղթապանակը
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] Ցուցադրել պանակում
+           *[other] Ցուցադրել պանակում
+        }
     .accesskey = F
 
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Ցուցադրել Finder-ում
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = Բացել համակարգի դիտակում
     .accesskey = V
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-use-system-default-named =
+    .label = Բացել { $handler }-ում
+    .accesskey = I
 
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
     .label = Միշտ բացել համակարգի դիտակում
     .accesskey = w
 
-downloads-cmd-show-button =
+##
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
-            [macos] Ցուցադրել Finder-ում
-           *[other] Բացել թղթապանակը
+            [macos] Ցուցադրել որոնիչում
+           *[other] Ցուցադրել պանակում
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
-            [macos] Ցուցադրել Finder-ում
-           *[other] Բացել թղթապանակը
+            [macos] Ցուցադրել որոնիչում
+           *[other] Ցուցադրել պանակում
         }
-downloads-cmd-show-description =
+downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
-            [macos] Ցուցադրել Finder-ում
-           *[other] Բացել թղթապանակը
+            [macos] Ցուցադրել որոնիչում
+           *[other] Ցուցադրել պանակում
         }
 
 downloads-cmd-show-downloads =
@@ -89,6 +100,9 @@ downloads-cmd-clear-list =
 downloads-cmd-clear-downloads =
     .label = Մաքրել Ներբեռնումները
     .accesskey = Ն
+downloads-cmd-delete-file =
+    .label = Ջնջել
+    .accesskey = D
 
 # This command is shown in the context menu when downloads are blocked.
 downloads-cmd-unblock =
@@ -138,6 +152,19 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = Կբացվի { $hours }ժ { $minutes } ր-ից...
+downloading-file-opens-in-minutes-2 =
+    .value = Կբացվի { $minutes } ր-ից...
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = Կբացվի { $minutes } ր { $seconds } վ.-ից...
+downloading-file-opens-in-seconds-2 =
+    .value = Կբացվի { $seconds } վ-ից...
+downloading-file-opens-in-some-time-2 =
+    .value = Կբացվի ներբեռնելուց հետո…
+downloading-file-click-to-open =
+    .value = Բացել ներբեռնելուց հետո
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -157,10 +184,18 @@ downloads-history =
     .label = Ցուցադրել բոլոր ներբեռնումները
     .accesskey = S
 
-# This string is shown at the top of the Download Details Panel, to indicate
+# This string is shown at the top of the download details sub-panel to indicate
 # that we are showing the details of a single download.
 downloads-details =
     .title = Ներբեռնմանի մանրամասները
+
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
 
 downloads-clear-downloads-button =
     .label = Մաքրել ներբեռնումները
@@ -174,3 +209,12 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Չկան ներբեռնումներ այս աշխատաշրջանում:
+
+## Download errors
+
+downloads-error-alert-title = Բեռնման Սխալ
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Բեռնումը չի կարող պահպանվել անհայտ վթարի պատճառով:
+    
+    Կրկին փորձեք:

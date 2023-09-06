@@ -8,8 +8,14 @@ search-header =
     .placeholder = Caută pe addons.mozilla.org
     .searchbuttonlabel = Căutare
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+list-empty-get-extensions-message = Obține extensii și teme pe <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-language-packs-message = Obține pachete lingvistice pe <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
 
 list-empty-installed =
     .value = Nu ai vreun supliment de acest tip instalat
@@ -184,7 +190,6 @@ extensions-warning-update-security = Verificarea securității actualizărilor d
 extensions-warning-update-security-button = Activează
     .title = Activează verificarea securității actualizărilor suplimentelor
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = Caută actualizări
@@ -259,6 +264,8 @@ shortcuts-duplicate-warning-message = { $shortcut } este folosită drept comand�
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Deja utilizat de { $addon }
 
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Afișează încă { $numberToShow }
@@ -297,6 +304,7 @@ install-theme-button = Instalează tema
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Gestionează
 find-more-addons = Caută mai multe suplimente
+find-more-themes = Găsește mai multe teme
 
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
@@ -328,7 +336,7 @@ extension-enabled-heading = Activate
 extension-disabled-heading = Dezactivate
 
 theme-enabled-heading = Activate
-theme-disabled-heading = Dezactivate
+theme-disabled-heading2 = Teme salvate
 
 plugin-enabled-heading = Activate
 plugin-disabled-heading = Dezactivate
@@ -396,6 +404,9 @@ addon-detail-private-browsing-help = Când are accesul permis, extensia va avea 
 addon-detail-private-browsing-allow = Permite
 addon-detail-private-browsing-disallow = Nu permite
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
@@ -412,7 +423,6 @@ release-notes-loading = Se încarcă...
 release-notes-error = Ne pare rău, dar a intervenit o eroare la încărcarea notelor privind versiunea.
 
 addon-permissions-empty = Această extensie nu necesită nicio permisiune
-
 addon-permissions-required = Permisiuni necesare pentru funcționalitatea de bază:
 addon-permissions-learnmore = Află mai multe despre permisiuni
 
@@ -440,3 +450,30 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Instrumente pentru toate suplimentele
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } este incompatibil cu { -brand-short-name } { $version }.
+
+details-notification-unsigned-and-disabled = { $name } nu a putut fi verificat pentru a fi folosit în { -brand-short-name } și a fost dezactivat.
+details-notification-unsigned-and-disabled-link = Mai multe informații
+
+details-notification-unsigned = { $name } nu a putut fi verificat pentru a fi folosit în { -brand-short-name }. Continuă cu atenție.
+details-notification-unsigned-link = Mai multe informații
+
+details-notification-blocked = { $name } a fost dezactivat din cauza unor probleme de securitate sau stabilitate.
+details-notification-blocked-link = Mai multe informații
+
+details-notification-softblocked = Se știe că { $name } poate provoca probleme de securitate sau stabilitate.
+details-notification-softblocked-link = Mai multe informații
+
+details-notification-gmp-pending = { $name } va fi instalat în scurt timp.

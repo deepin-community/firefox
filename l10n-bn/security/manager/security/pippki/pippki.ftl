@@ -13,8 +13,6 @@ change-password-old = বর্তমান পাসওয়ার্ড:
 change-password-new = নতুন পাসওয়ার্ড:
 change-password-reenter = নতুন পাসওয়ার্ড (পুনরায় লিখুন):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = সার্টিফিকেট ডাউনলোড করা হচ্ছে
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = একটি নতুন সার্টিফিকেট কর্তৃপক্ষকে (CA) বিশ্বাস করার অনুরোধ জানানো হয়েছে।
 download-cert-trust-ssl =
     .label = ওয়েব-সাইট সনাক্ত করতে এই CA-টি বিশ্বাস করা হবে।
@@ -56,7 +54,5 @@ set-password-reminder = গুরুত্বপূর্ণ: সার্টি
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = সুরক্ষিত টোকেন অনুমোদন
-protected-auth-msg = অনুগ্রহ করে টোকেন সহযোগে অনুমোদন করুন। ব্যবহৃত টোকেনের উপর অনুমোদন পদ্ধতি নির্ভরশীল।
-protected-auth-token = টোকেন:
+## Protected authentication alert
+

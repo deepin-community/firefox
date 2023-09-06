@@ -4,7 +4,7 @@
 "use strict";
 
 const PAGE_URL =
-  "http://example.com/browser/remote/cdp/test/browser/input/doc_events.html";
+  "https://example.com/browser/remote/cdp/test/browser/input/doc_events.html";
 
 add_task(async function testShiftEvents({ client }) {
   await setupForInput(PAGE_URL);
@@ -30,7 +30,7 @@ add_task(async function testShiftEvents({ client }) {
   await withModifier(Input, "Shift", "shift", "Tab");
   events = await getEvents();
   checkEvent(events[1], "keydown", "Tab", "shift", true);
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function() {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     const input = content.document.querySelector("input");
     isnot(input, content.document.activeElement, "input should lose focus");
   });
@@ -41,7 +41,7 @@ add_task(async function testAltEvents({ client }) {
   const { Input } = client;
 
   await withModifier(Input, "Alt", "alt", "a");
-  if (isMac) {
+  if (AppInfo.isMac) {
     await checkInputContent("a", 1);
   } else {
     await checkInputContent("", 0);
@@ -63,7 +63,7 @@ add_task(async function testControlEvents({ client }) {
 });
 
 add_task(async function testMetaEvents({ client }) {
-  if (!isMac) {
+  if (!AppInfo.isMac) {
     return;
   }
   await setupForInput(PAGE_URL);
@@ -75,55 +75,3 @@ add_task(async function testMetaEvents({ client }) {
   checkEvent(events[1], "keydown", "a", "meta", true);
   checkEvent(events[events.length - 1], "keyup", "Meta", "meta", false);
 });
-
-add_task(async function testShiftClick({ client }) {
-  await loadURL(PAGE_URL);
-  const { Input } = client;
-  await resetEvents();
-
-  await dispatchKeyEvent(Input, "Shift", "rawKeyDown", shift);
-  info("Click the 'pointers' div.");
-  await Input.dispatchMouseEvent({
-    type: "mousePressed",
-    x: 80,
-    y: 180,
-    modifiers: shift,
-  });
-  await Input.dispatchMouseEvent({
-    type: "mouseReleased",
-    x: 80,
-    y: 180,
-    modifiers: shift,
-  });
-  await dispatchKeyEvent(Input, "Shift", "keyUp", shift);
-  let events = await getEvents();
-  checkProperties({ type: "click", shiftKey: true, button: 0 }, events[2]);
-});
-
-async function getEvents() {
-  const events = await SpecialPowers.spawn(gBrowser.selectedBrowser, [], () => {
-    return content.eval("allEvents");
-  });
-  info(`Events: ${JSON.stringify(events)}`);
-  return events;
-}
-
-async function resetEvents() {
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], () => {
-    content.eval("resetEvents()");
-    const events = content.eval("allEvents");
-    is(events.length, 0, "List of events should be empty");
-  });
-}
-
-function checkEvent(event, type, key, property, expectedValue) {
-  let expected = { type, key };
-  expected[property] = expectedValue;
-  checkProperties(expected, event, "Event");
-}
-
-function checkProperties(expectedObj, targetObj, message = "Compare objects") {
-  for (const prop in expectedObj) {
-    is(targetObj[prop], expectedObj[prop], message + `: check ${prop}`);
-  }
-}

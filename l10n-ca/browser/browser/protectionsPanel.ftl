@@ -63,7 +63,6 @@ protections-panel-not-found-label = Cap detectat
 ##
 
 protections-panel-settings-label = Paràmetres de protecció
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Tauler de proteccions
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -78,6 +77,7 @@ protections-panel-site-not-working-view-issue-list-forms = Formularis
 protections-panel-site-not-working-view-issue-list-payments = Pagaments
 protections-panel-site-not-working-view-issue-list-comments = Comentaris
 protections-panel-site-not-working-view-issue-list-videos = Vídeos
+protections-panel-site-not-working-view-issue-list-fonts = Tipus de lletra
 
 protections-panel-site-not-working-view-send-report = Envieu un informe
 
@@ -101,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Informeu sobre un lloc que no funciona
 protections-panel-content-blocking-breakage-report-view-description = El bloqueig d'alguns elements de seguiment pot causar problemes en alguns llocs web. Notificar aquests problemes ajuda a millorar el { -brand-short-name } per a tothom. Juntament amb l'informe, també s'enviarà a Mozilla un URL i informació de la configuració del vostre navegador. <label data-l10n-name="learn-more">Més informació</label>
+protections-panel-content-blocking-breakage-report-view-description2 = El bloqueig d'alguns elements de seguiment pot causar problemes en alguns llocs web. Notificar aquests problemes ajuda a millorar el { -brand-short-name } per a tothom. Juntament amb l'informe, també s'enviarà a { -vendor-short-name } un URL i informació de la configuració del vostre navegador.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -111,3 +112,22 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Cancel·la
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Envia l'informe
+
+# Cookie Banner Handling
+
+protections-panel-cookie-banner-handling-header = Reducció de bàners de galetes
+protections-panel-cookie-banner-handling-enabled = Activada en aquest lloc
+protections-panel-cookie-banner-handling-disabled = Desactivada en aquest lloc
+protections-panel-cookie-banner-handling-undetected = Aquest lloc no és compatible ara per ara
+
+protections-panel-cookie-banner-view-title =
+    .title = Reducció de bàners de galetes
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = Voleu desactivar la reducció de bàners de galetes per a { $host }?
+protections-panel-cookie-banner-view-turn-on-for-site = Voleu activar la reducció de bàners de galetes per a aquest lloc?
+protections-panel-cookie-banner-view-cookie-clear-warning = El { -brand-short-name } esborrarà les galetes d’aquest lloc i actualitzarà la pàgina. En esborrar totes les galetes, pot ser que se us tanquin les sessions o que se us buidin els carros de la compra.
+protections-panel-cookie-banner-view-turn-on-description = El { -brand-short-name } intenta rebutjar automàticament totes les sol·licituds de galetes de tots els llocs compatibles.
+protections-panel-cookie-banner-view-cancel = Cancel·la
+protections-panel-cookie-banner-view-turn-off = Desactiva
+protections-panel-cookie-banner-view-turn-on = Activa

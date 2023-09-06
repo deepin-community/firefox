@@ -73,6 +73,14 @@ app-basics-location-service-key-google = „Google“ buvimo vietos nustatymo pa
 app-basics-safebrowsing-key-google = „Google“ saugaus naršymo paslaugos raktas
 app-basics-key-mozilla = „Mozillos“ buvimo vietos nustatymo paslaugos raktas
 app-basics-safe-mode = Ribotoji veiksena
+app-basics-memory-size = Atminties dydis (RAM)
+app-basics-disk-available = Laisva vieta diske
+
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
+
 show-dir-label =
     { PLATFORM() ->
         [macos] Rodyti per „Finder“
@@ -155,6 +163,8 @@ media-device-latency = Delsa
 media-capabilities-title = Medijos galimybės
 # List all the entries of the database.
 media-capabilities-enumerate = Išvardinti duomenų bazės turinį
+
+## Codec support table
 
 ##
 
@@ -345,7 +355,7 @@ fission-status-experiment-control = Išjungta dėl tyrimo
 fission-status-experiment-treatment = Įjungta dėl tyrimo
 fission-status-disabled-by-e10s-env = Išjungta dėl aplinkos
 fission-status-enabled-by-env = Įjungta dėl aplinkos
-fission-status-disabled-by-safe-mode = Išjungta dėl ribotosios veiksenos
+fission-status-disabled-by-env = Išjungta dėl aplinkos
 fission-status-enabled-by-default = Įjungta pagal numatymą
 fission-status-disabled-by-default = išjungta pagal numatymą
 fission-status-enabled-by-user-pref = Įjungta naudotojo

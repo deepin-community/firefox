@@ -2,19 +2,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* import-globals-from head.js */
-
 // Basic test to assert that the storage tree and table corresponding to each
 // item in the storage tree is correctly displayed
 
 "use strict";
 
-const { SiteDataTestUtils } = ChromeUtils.import(
-  "resource://testing-common/SiteDataTestUtils.jsm"
+const { SiteDataTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/SiteDataTestUtils.sys.mjs"
 );
 
 // Ensure iframe.src in storage-dfpi.html starts with PREFIX.
-const PREFIX = "http://sub1.test1.example";
+const PREFIX = "https://sub1.test1.example";
 const ORIGIN = `${PREFIX}.org`;
 const ORIGIN_THIRD_PARTY = `${PREFIX}.com`;
 const TEST_URL = `${ORIGIN}/${PATH}storage-dfpi.html`;
@@ -27,10 +25,15 @@ function listOrigins() {
   });
 }
 
-add_task(async function() {
+add_task(async function () {
   await pushPref(
     "network.cookie.cookieBehavior",
     Ci.nsICookieService.BEHAVIOR_REJECT_TRACKER_AND_PARTITION_FOREIGN
+  );
+
+  await pushPref(
+    "privacy.partition.always_partition_third_party_non_cookie_storage",
+    false
   );
 
   registerCleanupFunction(SiteDataTestUtils.clear);
@@ -92,6 +95,8 @@ async function testPartitionedStorage(
     "network.cookie.cookieBehavior",
     Ci.nsICookieService.BEHAVIOR_REJECT_TRACKER_AND_PARTITION_FOREIGN
   );
+  // Bug 1617611: Fix all the tests broken by "cookies SameSite=lax by default"
+  await pushPref("network.cookie.sameSite.laxByDefault", false);
 
   info(
     "Open the test url in a new tab and add storage entries *before* opening the storage panel."

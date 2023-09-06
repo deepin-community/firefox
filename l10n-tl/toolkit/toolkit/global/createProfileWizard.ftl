@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Wizard sa Paglikha ng Profile
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Panimula
-       *[other] Maligayang Pagdating sa { create-profile-window.title }
+       *[other] Maligayang Pagdating sa { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = Ang { -brand-short-name } ay nag-iimbak ng impormasyon tungkol sa iyong mga setting at kagustuhan sa iyong personal profile.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Konklusyon
-       *[other] Kinukumpleto ang { create-profile-window.title }
+       *[other] Kinukumpleto ang { create-profile-window2.title }
     }
 
 profile-creation-intro = Kung ikaw ay nakagawa ng maraming profiles, puwede mong hiawa-hiwalayin sila sa pamamagitan ng profile names. Puwede mong gamitin ang mga pangalan na nakalagay dito o gamitin mo kung ano ang gusto mo.

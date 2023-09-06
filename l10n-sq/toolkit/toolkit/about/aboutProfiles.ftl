@@ -9,7 +9,7 @@ profiles-create = Krijoni një Profil të Ri
 profiles-restart-title = Riniseni
 profiles-restart-in-safe-mode = Riniseni me Shtesat të Çaktivizuara…
 profiles-restart-normal = Riniseni normalisht…
-profiles-conflict = Një tjetër kopje e { -brand-product-name }-it ka bërë ndryshime te profilet. Duhet të rinisni { -brand-short-name }-in, përpara se të bëni ndryshime të tjera.
+profiles-conflict = Një tjetër kopje e { -brand-product-name }-it ka bërë ndryshime te profile. Duhet të rinisni { -brand-short-name }-in, përpara se të bëni ndryshime të tjera.
 profiles-flush-fail-title = Ndryshimet s’u ruajtën
 profiles-flush-conflict = { profiles-conflict }
 profiles-flush-failed = Një gabim i papritur pengoi ruajtjen e ndryshimeve tuaja.
@@ -57,7 +57,7 @@ profiles-delete-profile-title = Fshini Profil
 #   $dir (String) - Path to be displayed
 profiles-delete-profile-confirm =
     Fshirja e një profili do të sjellë heqjen e tij prej listës së profileve të përdorshëm dhe s’mund të zhbëhet.
-    Mund të zgjidhni edhe fshirjen e kartelave të të dhënave të profilit, përfshi rregullimet, dëshmitë, dhe të tjera të dhëna tuajat si përdorues. Kjo zgjedhje do sjellë fshirjen e dosjes "{ $dir }" dhe s’mund të zhbëhet.
+    Mund të zgjidhni edhe fshirjen e kartelave të të dhënave të profilit, përfshi rregullimet, dëshmitë dhe të tjera të dhëna tuajat si përdorues. Kjo zgjedhje do sjellë fshirjen e dosjes “{ $dir }” dhe s’mund të zhbëhet.
     Do të donit të fshihen kartela të dhënash profili?
 profiles-delete-files = Fshiji Kartelat
 profiles-dont-delete-files = Mos i Fshi Kartelat

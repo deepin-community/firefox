@@ -5,35 +5,33 @@
 # This file contains a build backend for generating Visual Studio project
 # files.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
 import errno
 import os
 import re
 import sys
 import uuid
-
+from pathlib import Path
 from xml.dom import getDOMImplementation
 
 from mozpack.files import FileFinder
 
-from .common import CommonBackend
+from mozbuild.base import ExecutionSummary
+
 from ..frontend.data import (
     Defines,
-    GeneratedSources,
     HostProgram,
     HostSources,
     Library,
     LocalInclude,
     Program,
-    Sources,
     SandboxedWasmLibrary,
+    Sources,
     UnifiedSources,
 )
-from mozbuild.base import ExecutionSummary
-
+from .common import CommonBackend
 
 MSBUILD_NAMESPACE = "http://schemas.microsoft.com/developer/msbuild/2003"
+MSNATVIS_NAMESPACE = "http://schemas.microsoft.com/vstudio/debugger/natvis/2010"
 
 
 def get_id(name):
@@ -45,6 +43,10 @@ def get_id(name):
 def visual_studio_product_to_solution_version(version):
     if version == "2017":
         return "12.00", "15"
+    elif version == "2019":
+        return "12.00", "16"
+    elif version == "2022":
+        return "12.00", "17"
     else:
         raise Exception("Unknown version seen: %s" % version)
 
@@ -52,6 +54,10 @@ def visual_studio_product_to_solution_version(version):
 def visual_studio_product_to_platform_toolset_version(version):
     if version == "2017":
         return "v141"
+    elif version == "2019":
+        return "v142"
+    elif version == "2022":
+        return "v143"
     else:
         raise Exception("Unknown version seen: %s" % version)
 
@@ -100,9 +106,6 @@ class VisualStudioBackend(CommonBackend):
             self._add_sources(reldir, obj)
 
         elif isinstance(obj, HostSources):
-            self._add_sources(reldir, obj)
-
-        elif isinstance(obj, GeneratedSources):
             self._add_sources(reldir, obj)
 
         elif isinstance(obj, UnifiedSources):
@@ -161,7 +164,7 @@ class VisualStudioBackend(CommonBackend):
                 basename,
                 target,
                 build_command=command,
-                clean_command="$(SolutionDir)\\mach.bat build clean",
+                clean_command="$(SolutionDir)\\mach.bat clobber",
             )
 
             projects[basename] = (project_id, basename, target)
@@ -421,6 +424,9 @@ class VisualStudioBackend(CommonBackend):
             e = e.appendChild(doc.createElement("Value"))
             e.appendChild(doc.createTextNode("$(%s)" % k))
 
+        natvis = ig.appendChild(doc.createElement("Natvis"))
+        natvis.setAttribute("Include", "../../../toolkit/library/gecko.natvis")
+
         add_var("TopObjDir", os.path.normpath(self.environment.topobjdir))
         add_var("TopSrcDir", os.path.normpath(self.environment.topsrcdir))
         add_var("PYTHON", "$(TopObjDir)\\_virtualenv\\Scripts\\python.exe")
@@ -431,6 +437,50 @@ class VisualStudioBackend(CommonBackend):
 
         fh.write(b"\xef\xbb\xbf")
         doc.writexml(fh, addindent="  ", newl="\r\n")
+
+    def _create_natvis_type(
+        self, doc, visualizer, name, displayString, stringView=None
+    ):
+
+        t = visualizer.appendChild(doc.createElement("Type"))
+        t.setAttribute("Name", name)
+
+        ds = t.appendChild(doc.createElement("DisplayString"))
+        ds.appendChild(doc.createTextNode(displayString))
+
+        if stringView is not None:
+            sv = t.appendChild(doc.createElement("DisplayString"))
+            sv.appendChild(doc.createTextNode(stringView))
+
+    def _create_natvis_simple_string_type(self, doc, visualizer, name):
+        self._create_natvis_type(
+            doc, visualizer, name + "<char16_t>", "{mData,su}", "mData,su"
+        )
+        self._create_natvis_type(
+            doc, visualizer, name + "<char>", "{mData,s}", "mData,s"
+        )
+
+    def _create_natvis_string_tuple_type(self, doc, visualizer, chartype, formatstring):
+        t = visualizer.appendChild(doc.createElement("Type"))
+        t.setAttribute("Name", "nsTSubstringTuple<" + chartype + ">")
+
+        ds1 = t.appendChild(doc.createElement("DisplayString"))
+        ds1.setAttribute("Condition", "mHead != nullptr")
+        ds1.appendChild(
+            doc.createTextNode("{mHead,na} {mFragB->mData," + formatstring + "}")
+        )
+
+        ds2 = t.appendChild(doc.createElement("DisplayString"))
+        ds2.setAttribute("Condition", "mHead == nullptr")
+        ds2.appendChild(
+            doc.createTextNode(
+                "{mFragA->mData,"
+                + formatstring
+                + "} {mFragB->mData,"
+                + formatstring
+                + "}"
+            )
+        )
 
     def _relevant_environment_variables(self):
         # Write out the environment variables, presumably coming from
@@ -466,11 +516,16 @@ class VisualStudioBackend(CommonBackend):
         fh.write(b"$expanded = $bashargs -join ' '\r\n")
         fh.write(b'$procargs = "-c", $expanded\r\n')
 
+        if (Path(os.environ["MOZILLABUILD"]) / "msys2").exists():
+            bash_path = rb"msys2\usr\bin\bash"
+        else:
+            bash_path = rb"msys\bin\bash"
+
         fh.write(
             b"Start-Process -WorkingDirectory $env:TOPOBJDIR "
-            b"-FilePath $env:MOZILLABUILD\\msys\\bin\\bash "
+            b"-FilePath $env:MOZILLABUILD\\%b "
             b"-ArgumentList $procargs "
-            b"-Wait -NoNewWindow\r\n"
+            b"-Wait -NoNewWindow\r\n" % bash_path
         )
 
     def _write_mach_batch(self, fh):
@@ -492,12 +547,17 @@ class VisualStudioBackend(CommonBackend):
             self.environment.topsrcdir, self.environment.topobjdir
         ).replace("\\", "/")
 
+        if (Path(os.environ["MOZILLABUILD"]) / "msys2").exists():
+            bash_path = rb"msys2\usr\bin\bash"
+        else:
+            bash_path = rb"msys\bin\bash"
+
         # We go through mach because it has the logic for choosing the most
         # appropriate build tool.
         fh.write(
-            b'"%%MOZILLABUILD%%\\msys\\bin\\bash" '
+            b'"%%MOZILLABUILD%%\\%b" '
             b'-c "%s/mach --log-no-times %%1 %%2 %%3 %%4 %%5 %%6 %%7"'
-            % relpath.encode("utf-8")
+            % (bash_path, relpath.encode("utf-8"))
         )
 
     def _write_vs_project(self, out_dir, basename, name, **kwargs):
@@ -624,6 +684,10 @@ class VisualStudioBackend(CommonBackend):
 
             n = pg.appendChild(doc.createElement("LocalDebuggerCommandArguments"))
             n.appendChild(doc.createTextNode(debugger[1]))
+
+        # Sets IntelliSense to use c++17 Language Standard
+        n = pg.appendChild(doc.createElement("AdditionalOptions"))
+        n.appendChild(doc.createTextNode("/std:c++17"))
 
         i = project.appendChild(doc.createElement("Import"))
         i.setAttribute("Project", "$(VCTargetsPath)\\Microsoft.Cpp.props")

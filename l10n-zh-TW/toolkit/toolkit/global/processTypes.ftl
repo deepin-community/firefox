@@ -22,13 +22,13 @@ process-type-extension = 擴充套件
 # process used to open file:// URLs
 process-type-file = 本機檔案
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = 大量記憶體分配
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = 隔離的網頁內容
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = 被隔離的 Service Worker
 
 # process preallocated; may change to other types
 process-type-prealloc = 預先分配
@@ -49,6 +49,9 @@ process-type-socket = Socket
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Sandboxed IPC Actor
 
 ##
 ## Other

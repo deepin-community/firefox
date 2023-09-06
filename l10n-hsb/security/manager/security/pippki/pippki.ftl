@@ -16,8 +16,6 @@ change-password-old = Aktualne hesło:
 change-password-new = Nowe hesło:
 change-password-reenter = Nowe hesło (hišće raz):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = Njeje móžno, hesło změnić.
 pippki-incorrect-pw = Njejsće prawe hesło zapodał. Prošu spytajće hišće raz.
 pippki-pw-change-ok = Hesło je so wuspěšnje změniło.
@@ -30,12 +28,11 @@ pippki-pw-change2empty-in-fips-mode = Sće tuchwilu we FIPS-modusu. FIPS sej hes
 
 ## Reset Primary Password dialog
 
-reset-primary-password-window =
+reset-primary-password-window2 =
     .title = Hłowne hesło wróćo stajić
-    .style = width: 40em
+    .style = min-width: 40em
 reset-password-button-label =
     .label = Wróćo stajić
-
 reset-primary-password-text = Jeli swoje hłowne hesło wróćo stajiće, zabudu se wšě waše składowane webowe a e-mejlowe hesła, wosobinski certifikata a priwatne kluče. Chceće woprawdźe swoje hłowne hesło wróćo stajić?
 
 pippki-reset-password-confirmation-title = Hłowne hesło wróćo stajić
@@ -43,9 +40,9 @@ pippki-reset-password-confirmation-message = Waše hłowne hesło je so wróćo 
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Sćehnjenje certifikata
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Bušće poprošeny nowej certifikatowej awtoriće (CA) dowěrić.
 download-cert-trust-ssl =
     .label = Tutej certifikatowej awtoriće dowěrić, zo bychu so websydła identifikowali.
@@ -77,7 +74,8 @@ set-password-reminder = Wažny: Jeli swoje hesło za zawěsćenje certifikata za
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Přez token škitana awtentifikacija
-protected-auth-msg = Prošu awtentifikujće token. Awtentifikaciska metoda wotwisuje wot typa wašeho tokena.
-protected-auth-token = Token:
+## Protected authentication alert
+
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Prošu awtentifikujće so pola tokena “{ $tokenName }”. Kak dyrbiće to činić, wotwisuje wot tokena (na přikład přez wužiwanje čitaka porstowych wotćišćow abo přez zapodawanje koda z tastaturu).

@@ -40,7 +40,6 @@ public:
    * @brief Unwrap a tainted value without verification. This is an unsafe
    * operation and should be used with care.
    */
-  inline auto UNSAFE_unverified() { return impl().get_raw_value(); }
   inline auto UNSAFE_unverified() const { return impl().get_raw_value(); }
   /**
    * @brief Like UNSAFE_unverified, but get the underlying sandbox
@@ -51,10 +50,6 @@ public:
    * For the Wasm-based sandbox, this function additionally validates the
    * unwrapped value against the machine model of the sandbox (LP32).
    */
-  inline auto UNSAFE_sandboxed(rlbox_sandbox<T_Sbx>& sandbox)
-  {
-    return impl().get_raw_sandbox_value(sandbox);
-  }
   inline auto UNSAFE_sandboxed(rlbox_sandbox<T_Sbx>& sandbox) const
   {
     return impl().get_raw_sandbox_value(sandbox);
@@ -66,44 +61,41 @@ public:
    *
    * @param reason An explanation why the unverified unwrapping is safe.
    */
-  rlbox_detail_member_and_const(
-    template<size_t N>
-    inline auto unverified_safe_because(const char (&reason)[N]),
+  template<size_t N>
+  inline auto unverified_safe_because(const char (&reason)[N]) const
+  {
+    RLBOX_UNUSED(reason);
+    static_assert(!std::is_pointer_v<T>,
+                  "unverified_safe_because does not support pointers. Use "
+                  "unverified_safe_pointer_because.");
+    return UNSAFE_unverified();
+  }
+
+  template<size_t N>
+  inline auto unverified_safe_pointer_because(size_t count,
+                                              const char (&reason)[N]) const
+  {
+    RLBOX_UNUSED(reason);
+
+    static_assert(std::is_pointer_v<T>, "Expected pointer type");
+    using T_Pointed = std::remove_pointer_t<T>;
+    if_constexpr_named(cond1, std::is_pointer_v<T_Pointed>)
     {
-      RLBOX_UNUSED(reason);
-      static_assert(!std::is_pointer_v<T>,
-                    "unverified_safe_because does not support pointers. Use "
-                    "unverified_safe_pointer_because.");
-      return UNSAFE_unverified();
-    });
+      rlbox_detail_static_fail_because(
+        cond1,
+        "There is no way to use unverified_safe_pointer_because for "
+        "'pointers to pointers' safely. Use copy_and_verify instead.");
+      return nullptr;
+    }
 
-  rlbox_detail_member_and_const(
-    template<size_t N>
-    inline auto unverified_safe_pointer_because(size_t count,
-                                                const char (&reason)[N]),
-    {
-      RLBOX_UNUSED(reason);
+    auto ret = UNSAFE_unverified();
+    if (ret != nullptr) {
+      size_t bytes = sizeof(T) * count;
+      detail::check_range_doesnt_cross_app_sbx_boundary<T_Sbx>(ret, bytes);
+    }
+    return ret;
+  }
 
-      static_assert(std::is_pointer_v<T>, "Expected pointer type");
-      using T_Pointed = std::remove_pointer_t<T>;
-      if_constexpr_named(cond1, std::is_pointer_v<T_Pointed>)
-      {
-        rlbox_detail_static_fail_because(
-          cond1,
-          "There is no way to use unverified_safe_pointer_because for "
-          "'pointers to pointers' safely. Use copy_and_verify instead.");
-        return nullptr;
-      }
-
-      auto ret = UNSAFE_unverified();
-      if (ret != nullptr) {
-        size_t bytes = sizeof(T) * count;
-        detail::check_range_doesnt_cross_app_sbx_boundary<T_Sbx>(ret, bytes);
-      }
-      return ret;
-    });
-
-  inline auto INTERNAL_unverified_safe() { return UNSAFE_unverified(); }
   inline auto INTERNAL_unverified_safe() const { return UNSAFE_unverified(); }
 
 #define BinaryOpValAndPtr(opSymbol)                                            \
@@ -163,7 +155,8 @@ public:
                                                                                \
     auto raw = impl().get_raw_value();                                         \
     auto raw_rhs = detail::unwrap_value(rhs);                                  \
-    static_assert(std::is_integral_v<decltype(raw_rhs)>,                       \
+    static_assert(std::is_integral_v<decltype(raw_rhs)> ||                     \
+                    std::is_floating_point_v<decltype(raw_rhs)>,               \
                   "Can only operate on numeric types");                        \
                                                                                \
     auto ret = raw opSymbol raw_rhs;                                           \
@@ -427,7 +420,7 @@ public:
   template<typename T_Rhs>
   inline T_OpSubscriptArrRet& operator[](T_Rhs&& rhs)
   {
-    rlbox_detail_forward_to_const_a(operator[], T_OpSubscriptArrRet&, rhs);
+    return const_cast<T_OpSubscriptArrRet&>(std::as_const(*this)[rhs]);
   }
 
 private:
@@ -446,29 +439,20 @@ public:
     return *ret_ptr;
   }
 
-  inline T_OpDerefRet& operator*()
-  {
-    rlbox_detail_forward_to_const(operator*, T_OpDerefRet&);
-  }
-
   // We need to implement the -> operator even if T is not a struct
   // So that we can support code patterns such as the below
   // tainted<T*> a;
   // a->UNSAFE_unverified();
-  inline auto operator->() const
+  inline const T_OpDerefRet* operator->() const
   {
     static_assert(std::is_pointer_v<T>,
                   "Operator -> only supported for pointer types");
-    auto ret = impl().get_raw_value();
-    using T_Ret = std::remove_pointer_t<T>;
-    using T_RetWrap = const tainted_volatile<T_Ret, T_Sbx>;
-    return reinterpret_cast<T_RetWrap*>(ret);
+    return reinterpret_cast<const T_OpDerefRet*>(impl().get_raw_value());
   }
 
-  inline auto operator->()
+  inline T_OpDerefRet* operator->()
   {
-    using T_Ret = tainted_volatile<std::remove_pointer_t<T>, T_Sbx>*;
-    rlbox_detail_forward_to_const(operator->, T_Ret);
+    return const_cast<T_OpDerefRet*>(std::as_const(*this).operator->());
   }
 
   inline auto operator!()
@@ -495,7 +479,7 @@ public:
   /**
    * @brief Copy tainted value from sandbox and verify it.
    *
-   * @param verifer Function used to verify the copied value.
+   * @param verifier Function used to verify the copied value.
    * @tparam T_Func the type of the verifier.
    * @return Whatever the verifier function returns.
    */
@@ -628,7 +612,7 @@ public:
   /**
    * @brief Copy a range of tainted values from sandbox and verify them.
    *
-   * @param verifer Function used to verify the copied value.
+   * @param verifier Function used to verify the copied value.
    * @param count Number of elements to copy.
    * @tparam T_Func the type of the verifier. If the tainted type is ``int*``
    * then ``T_Func = T_Ret(*)(unique_ptr<int[]>)``.
@@ -654,8 +638,9 @@ public:
   /**
    * @brief Copy a tainted string from sandbox and verify it.
    *
-   * @param verifer Function used to verify the copied value.
-   * @tparam T_Func the type of the verifier ``T_Ret(*)(unique_ptr<char[]>)``
+   * @param verifier Function used to verify the copied value.
+   * @tparam T_Func the type of the verifier either
+   * ``T_Ret(*)(unique_ptr<char[]>)`` or ``T_Ret(*)(std::string)``
    * @return Whatever the verifier function returns.
    */
   template<typename T_Func>
@@ -667,23 +652,61 @@ public:
     static_assert(std::is_same_v<char, T_CopyAndVerifyRangeEl>,
                   "copy_and_verify_string only allows char*");
 
+    using T_VerifParam = detail::func_first_arg_t<T_Func>;
+
     auto start = impl().get_raw_value();
-    if (start == nullptr) {
-      return verifier(nullptr);
+    if_constexpr_named(
+      cond1,
+      std::is_same_v<T_VerifParam, std::unique_ptr<char[]>> ||
+        std::is_same_v<T_VerifParam, std::unique_ptr<const char[]>>)
+    {
+      if (start == nullptr) {
+        return verifier(nullptr);
+      }
+
+      // it is safe to run strlen on a tainted<string> as worst case, the string
+      // does not have a null and we try to copy all the memory out of the
+      // sandbox however, copy_and_verify_range ensures that we never copy
+      // memory outsider the range
+      auto str_len = std::strlen(start) + 1;
+      std::unique_ptr<T_CopyAndVerifyRangeEl[]> target =
+        copy_and_verify_range_helper(str_len);
+
+      // ensure the string has a trailing null
+      target[str_len - 1] = '\0';
+
+      return verifier(std::move(target));
     }
+    else if_constexpr_named(cond2, std::is_same_v<T_VerifParam, std::string>)
+    {
+      if (start == nullptr) {
+        std::string param = "";
+        return verifier(param);
+      }
 
-    // it is safe to run strlen on a tainted<string> as worst case, the string
-    // does not have a null and we try to copy all the memory out of the sandbox
-    // however, copy_and_verify_range ensures that we never copy memory outsider
-    // the range
-    auto str_len = std::strlen(start) + 1;
-    std::unique_ptr<T_CopyAndVerifyRangeEl[]> target =
-      copy_and_verify_range_helper(str_len);
+      // it is safe to run strlen on a tainted<string> as worst case, the string
+      // does not have a null and we try to copy all the memory out of the
+      // sandbox however, copy_and_verify_range ensures that we never copy
+      // memory outsider the range
+      auto str_len = std::strlen(start) + 1;
 
-    // ensure the string has a trailing null
-    target[str_len - 1] = '\0';
+      const char* checked_start = (const char*)verify_range_helper(str_len);
+      if (checked_start == nullptr) {
+        std::string param = "";
+        return verifier(param);
+      }
 
-    return verifier(std::move(target));
+      std::string copy(checked_start, str_len - 1);
+      return verifier(std::move(copy));
+    }
+    else
+    {
+      constexpr bool unknownCase = !(cond1 || cond2);
+      rlbox_detail_static_fail_because(
+        unknownCase,
+        "copy_and_verify_string verifier parameter should either be "
+        "unique_ptr<char[]>, unique_ptr<const char[]> or std::string");
+    }
   }
 
   /**
@@ -698,7 +721,7 @@ public:
    * @return Whatever the verifier function returns.
    */
   template<typename T_Func>
-  inline auto copy_and_verify_address(T_Func verifier)
+  inline auto copy_and_verify_address(T_Func verifier) const
   {
     static_assert(std::is_pointer_v<T>,
                   "copy_and_verify_address must be used on pointers");
@@ -721,7 +744,8 @@ public:
    * @return Whatever the verifier function returns.
    */
   template<typename T_Func>
-  inline auto copy_and_verify_buffer_address(T_Func verifier, std::size_t size)
+  inline auto copy_and_verify_buffer_address(T_Func verifier,
+                                             std::size_t size) const
   {
     static_assert(std::is_pointer_v<T>,
                   "copy_and_verify_address must be used on pointers");
@@ -851,10 +875,10 @@ class tainted : public tainted_base_impl<tainted, T, T_Sbx>
   // Classes recieve their own specialization
   static_assert(
     !std::is_class_v<T>,
-    "Missing specialization for class T. This error occurs for one "
+    "Missing definition for class T. This error occurs for one "
     "of 2 reasons.\n"
     "  1) Make sure you have include a call rlbox_load_structs_from_library "
-    "for this library.\n"
+    "for this library with this class included.\n"
     "  2) Make sure you run (re-run) the struct-dump tool to list "
     "all structs in use by your program.\n");
 
@@ -888,18 +912,6 @@ private:
                            adjust_type_context::SANDBOX>(
       ret, data, nullptr /* example_unsandboxed_ptr */, &sandbox);
     return ret;
-  };
-
-  inline std::remove_cv_t<T_AppType> get_raw_value() noexcept
-  {
-    rlbox_detail_forward_to_const(get_raw_value, std::remove_cv_t<T_AppType>);
-  }
-
-  inline std::remove_cv_t<T_SandboxedType> get_raw_sandbox_value(
-    rlbox_sandbox<T_Sbx>& sandbox)
-  {
-    rlbox_detail_forward_to_const_a(
-      get_raw_sandbox_value, std::remove_cv_t<T_SandboxedType>, sandbox);
   };
 
   inline const void* find_example_pointer_or_null() const noexcept
@@ -1105,10 +1117,10 @@ class tainted_volatile : public tainted_base_impl<tainted_volatile, T, T_Sbx>
   // Classes recieve their own specialization
   static_assert(
     !std::is_class_v<T>,
-    "Missing specialization for class T. This error occurs for one "
+    "Missing definition for class T. This error occurs for one "
     "of 2 reasons.\n"
     "  1) Make sure you have include a call rlbox_load_structs_from_library "
-    "for this library.\n"
+    "for this library with this class included.\n"
     "  2) Make sure you run (re-run) the struct-dump tool to list "
     "all structs in use by your program.\n");
 
@@ -1152,25 +1164,8 @@ private:
   inline std::remove_cv_t<T_SandboxedType> get_raw_sandbox_value(
     rlbox_sandbox<T_Sbx>& sandbox) const noexcept
   {
+    RLBOX_UNUSED(sandbox);
     return data;
-  };
-
-  inline std::remove_cv_t<T_AppType> get_raw_value()
-  {
-    rlbox_detail_forward_to_const(get_raw_value, std::remove_cv_t<T_AppType>);
-  }
-
-  inline std::remove_cv_t<T_SandboxedType> get_raw_sandbox_value() noexcept
-  {
-    rlbox_detail_forward_to_const(get_raw_sandbox_value,
-                                  std::remove_cv_t<T_SandboxedType>);
-  };
-
-  inline std::remove_cv_t<T_SandboxedType> get_raw_sandbox_value(
-    rlbox_sandbox<T_Sbx>& sandbox) noexcept
-  {
-    rlbox_detail_forward_to_const(get_raw_sandbox_value,
-                                  std::remove_cv_t<T_SandboxedType>);
   };
 
   tainted_volatile() = default;
@@ -1182,14 +1177,12 @@ public:
     auto ref =
       detail::remove_volatile_from_ptr_cast(&this->get_sandbox_value_ref());
     auto ref_cast = reinterpret_cast<const T*>(ref);
-    auto ret = tainted<const T*, T_Sbx>::internal_factory(ref_cast);
-    return ret;
+    return tainted<const T*, T_Sbx>::internal_factory(ref_cast);
   }
 
   inline tainted<T*, T_Sbx> operator&() noexcept
   {
-    using T_Ret = tainted<T*, T_Sbx>;
-    rlbox_detail_forward_to_const(operator&, T_Ret);
+    return sandbox_const_cast<T*>(&std::as_const(*this));
   }
 
   // Needed as the definition of unary & above shadows the base's binary &
@@ -1261,7 +1254,7 @@ public:
         // is safe.
         auto func = val.get_raw_sandbox_value();
         using T_Cast = std::remove_volatile_t<T_SandboxedType>;
-        get_sandbox_value_ref() = reinterpret_cast<T_Cast>(func);
+        get_sandbox_value_ref() = (T_Cast)func;
       }
     }
     else if_constexpr_named(

@@ -4,8 +4,11 @@
 
 addons-page-title = एडअन प्रबन्धक
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
+##
+
 
 list-empty-installed =
     .value = तपाईँले यस प्रकारको कुनै पनि एडअन स्थापना गर्नुभएको छैन
@@ -141,7 +144,6 @@ extensions-warning-update-security = एडअनमा अद्यावधि
 extensions-warning-update-security-button = सक्षम पार्नुहोस्
     .title = एड-अन अद्यावधिक सुरक्षा जाँच सक्षम पार्नुहोस्
 
-
 ## Strings connected to add-on updates
 
 addon-updates-check-for-updates = अद्यावधिकहरूका लागि जाँच गर्नुहोस्
@@ -194,8 +196,12 @@ addon-open-about-debugging = एडअनहरू डिबग गर्नु�
 ## Pending uninstall message bar
 
 
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
+
 
 ##
 
@@ -203,3 +209,29 @@ addon-open-about-debugging = एडअनहरू डिबग गर्नु�
 
 addon-page-options-button =
     .title = सबै एडअनहरूको लागि उपकरणहरू
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } { -brand-short-name } { $version } सगँ असंगत छ।
+
+details-notification-unsigned-and-disabled = { $name } { -brand-short-name } मा प्रयोग गर्नको लागि प्रमाणित गर्न सकिएन र अक्षम भएको छ।
+details-notification-unsigned-and-disabled-link = थप जानकारी
+
+details-notification-unsigned = { $name } { -brand-short-name } मा प्रयोग को लागि प्रमाणित गर्न सकिएन। सावधानीसंग अगाडि बढ्नुहोस्।
+details-notification-unsigned-link = थप जानकारी
+
+details-notification-blocked = { $name } सुरक्षाको कारण वा स्थिरता कारण अक्षम भएको छ।
+details-notification-blocked-link = थप जानकारी
+
+details-notification-softblocked = { $name } ले सुरक्षा वा स्थिरता मुद्दाहरू ल्याउँछ।
+details-notification-softblocked-link = थप जानकारी
+
+details-notification-gmp-pending = { $name } छिट्टै स्थापना गरिनेछ।

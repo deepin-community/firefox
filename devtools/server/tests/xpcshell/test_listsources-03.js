@@ -22,12 +22,12 @@ add_task(
     );
 
     Assert.ok(
-      response.sources.some(function(s) {
+      response.sources.some(function (s) {
         return s.url.match(/foo-999.js$/);
       })
     );
 
-    threadFront.resume();
+    await threadFront.resume();
   })
 );
 

@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Alle Tabs auswählen
     .accesskey = A
+tab-context-play-tab =
+    .label = Tab wiedergeben
+    .accesskey = w
+tab-context-play-tabs =
+    .label = Tabs wiedergeben
+    .accesskey = w
 duplicate-tab =
     .label = Tab klonen
     .accesskey = k
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Tabs als Lesezeichen hinzufügen…
     .accesskey = L
-bookmark-tab =
-    .label = Tab als Lesezeichen hinzufügen
+tab-context-bookmark-tab =
+    .label = Tab als Lesezeichen hinzufügen…
     .accesskey = L
 tab-context-open-in-new-container-tab =
     .label = In neuem Tab in Umgebung öffnen
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Teilen
     .accesskey = T
-tab-context-share-more =
-    .label = Mehr…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,14 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] Geschlossene Tabs wieder öffnen
         }
     .accesskey = G
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Tab schließen
-            [one] Tab schließen
-           *[other] Tabs schließen
-        }
-    .accesskey = c
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

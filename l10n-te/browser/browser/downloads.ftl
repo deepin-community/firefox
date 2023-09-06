@@ -13,12 +13,6 @@ downloads-panel =
 
 ##
 
-# The style attribute has the width of the Downloads Panel expressed using
-# a CSS unit. The longest labels that should fit are usually those of
-# in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 72ch
-
 downloads-cmd-pause =
     .label = నిలిపివుంచు
     .accesskey = P
@@ -30,42 +24,53 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = రద్దుచేయి
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = ఈ ఫైలు ఉన్న సంచయాన్ని తెరువు
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] ఫైండర్‌లో చూపించు
+           *[other] సంచయంలో చూపించు
+        }
     .accesskey = F
 
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = ఫైండర్‌లో చూపించు
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = వ్యవస్థ దర్శనిలో తెరువు
     .accesskey = V
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-use-system-default-named =
+    .label = { $handler }లో తెరువు
+    .accesskey = I
 
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
     .label = ఎల్లప్పుడూ వ్యవస్థ దర్శినిలో తెరువు
     .accesskey = w
 
-downloads-cmd-show-button =
+##
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
             [macos] ఫైండర్‌లో చూపించు
-           *[other] ఈ ఫైలు ఉన్న సంచయాన్ని తెరువు
+           *[other] సంచయంలో చూపించు
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
             [macos] ఫైండర్‌లో చూపించు
-           *[other] ఈ ఫైలు ఉన్న సంచయాన్ని తెరువు
+           *[other] సంచయంలో చూపించు
         }
-downloads-cmd-show-description =
+downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
             [macos] ఫైండర్‌లో చూపించు
-           *[other] ఈ ఫైలు ఉన్న సంచయాన్ని తెరువు
+           *[other] సంచయంలో చూపించు
         }
 
 downloads-cmd-show-downloads =
@@ -88,6 +93,9 @@ downloads-cmd-clear-list =
     .accesskey = అ
 downloads-cmd-clear-downloads =
     .label = దింపుకోళ్ళను శుభ్రంచేయి
+    .accesskey = D
+downloads-cmd-delete-file =
+    .label = తొలగించు
     .accesskey = D
 
 # This command is shown in the context menu when downloads are blocked.
@@ -138,6 +146,9 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+downloading-file-click-to-open =
+    .value = పూర్తయిన తర్వాత తెరువు
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -162,6 +173,14 @@ downloads-history =
 downloads-details =
     .title = దింపుకోలు వివరాలు
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
+
 downloads-clear-downloads-button =
     .label = దింపుకోళ్ళను శుభ్రంచేయి
     .tooltiptext = పూర్తయిన, రద్దుచేసిన మరియు విఫలమైన దింపుకోళ్ళను తుడిచివేస్తుంది
@@ -174,3 +193,22 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = ఈ సెషన్‌కు ఏ దింపుకోళ్ళు లేవు.
+
+# This is displayed in an item at the bottom of the Downloads Panel when there
+# are more downloads than can fit in the list in the panel.
+#   $count (number) - number of files being downloaded that are not shown in the
+#                     panel list.
+downloads-more-downloading =
+    { $count ->
+        [one] ఇంకా { $count } ఫైలును దించుకుంటుంది
+       *[other] ఇంకా { $count } ఫైళ్ళను దించుకుంటుంది
+    }
+
+## Download errors
+
+downloads-error-alert-title = దింపుకోలు దోషం
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    డౌన్‌లోడు భద్రపరచలేము ఎందుకంటే తెలియని దోషము సంభవించింది.
+    
+    దయచేసి మరలా ప్రయత్నించండి.

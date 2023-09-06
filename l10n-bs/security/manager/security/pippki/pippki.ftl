@@ -13,8 +13,6 @@ change-password-old = Trenutna lozinka:
 change-password-new = Nova lozinka:
 change-password-reenter = Nova lozinka (ponovo):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Preuzimam certifikate
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Upitani ste da li vjerujete novom Certifikacijskom Autoritetu (CA).
 download-cert-trust-ssl =
     .label = Vjeruj ovom CA da identifikuje web stranice.
@@ -56,7 +54,5 @@ set-password-reminder = Važno: Ukoliko zaboravite lozinku backupa certifikata, 
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = Zaštitite znak za ovjeru vjerodostojnosti
-protected-auth-msg = Molimo vas da izvršite ovjeru vjerodostojnosti znaka. Metoda ovjere vjerodostojnosti znaka ovisi o tipu vašeg znaka.
-protected-auth-token = Žeton:
+## Protected authentication alert
+

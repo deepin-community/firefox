@@ -8,7 +8,6 @@
 #include "AndroidDecoderModule.h"
 #include "SurfaceTexture.h"
 #include "TimeUnits.h"
-#include "mozilla/Maybe.h"
 #include "mozilla/Monitor.h"
 #include "mozilla/java/CodecProxyWrappers.h"
 
@@ -19,6 +18,8 @@ DDLoggedTypeDeclNameAndBase(RemoteDataDecoder, MediaDataDecoder);
 class RemoteDataDecoder : public MediaDataDecoder,
                           public DecoderDoctorLifeLogger<RemoteDataDecoder> {
  public:
+  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(RemoteDataDecoder, final);
+
   static already_AddRefed<MediaDataDecoder> CreateAudioDecoder(
       const CreateDecoderParams& aParams, const nsString& aDrmStubId,
       CDMProxy* aProxy);
@@ -36,7 +37,7 @@ class RemoteDataDecoder : public MediaDataDecoder,
   }
 
  protected:
-  virtual ~RemoteDataDecoder() {}
+  virtual ~RemoteDataDecoder() = default;
   RemoteDataDecoder(MediaData::Type aType, const nsACString& aMimeType,
                     java::sdk::MediaFormat::Param aFormat,
                     const nsString& aDrmStubId);
@@ -78,7 +79,7 @@ class RemoteDataDecoder : public MediaDataDecoder,
 
   // Preallocated Java object used as a reusable storage for input buffer
   // information. Contents must be changed only on mThread.
-  java::sdk::BufferInfo::GlobalRef mInputBufferInfo;
+  java::sdk::MediaCodec::BufferInfo::GlobalRef mInputBufferInfo;
 
   // Session ID attached to samples. It is returned by CodecProxy::Input().
   // Accessed on mThread only.
@@ -91,6 +92,12 @@ class RemoteDataDecoder : public MediaDataDecoder,
     AssertOnThread();
     return mNumPendingInputs > 0;
   }
+
+  // Returns true if we are in a state which requires a new decoder to be
+  // created. In this case all errors will be reported as
+  // NS_ERROR_DOM_MEDIA_NEED_NEW_DECODER to avoid reporting errors as fatal when
+  // they can be fixed with a new decoder.
+  virtual bool NeedsNewDecoder() const { return false; }
 
   // The following members must only be accessed on mThread.
   MozPromiseHolder<DecodePromise> mDecodePromise;

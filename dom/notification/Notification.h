@@ -10,6 +10,7 @@
 #include "mozilla/DOMEventTargetHelper.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/dom/NotificationBinding.h"
+#include "mozilla/dom/WorkerPrivate.h"
 
 #include "nsIObserver.h"
 #include "nsISupports.h"
@@ -22,14 +23,12 @@
 class nsIPrincipal;
 class nsIVariant;
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 class NotificationRef;
 class WorkerNotificationObserver;
 class Promise;
 class StrongWorkerRef;
-class WorkerPrivate;
 
 /*
  * Notifications on workers introduce some lifetime issues. The property we
@@ -107,8 +106,6 @@ class Notification : public DOMEventTargetHelper,
   NS_DECL_NSIOBSERVER
 
   static bool PrefEnabled(JSContext* aCx, JSObject* aObj);
-  // Returns if Notification.get() is allowed for the current global.
-  static bool IsGetEnabled(JSContext* aCx, JSObject* aObj);
 
   static already_AddRefed<Notification> Constructor(
       const GlobalObject& aGlobal, const nsAString& aTitle,
@@ -164,10 +161,6 @@ class Notification : public DOMEventTargetHelper,
                                        const nsAString& aScope,
                                        ErrorResult& aRv);
 
-  static already_AddRefed<Promise> Get(const GlobalObject& aGlobal,
-                                       const GetNotificationOptions& aFilter,
-                                       ErrorResult& aRv);
-
   static already_AddRefed<Promise> WorkerGet(
       WorkerPrivate* aWorkerPrivate, const GetNotificationOptions& aFilter,
       const nsAString& aScope, ErrorResult& aRv);
@@ -207,7 +200,7 @@ class Notification : public DOMEventTargetHelper,
 
   // Initialized on the worker thread, never unset, and always used in
   // a read-only capacity. Used on any thread.
-  WorkerPrivate* mWorkerPrivate;
+  CheckedUnsafePtr<WorkerPrivate> mWorkerPrivate;
 
   // Main thread only.
   WorkerNotificationObserver* mObserver;
@@ -256,10 +249,10 @@ class Notification : public DOMEventTargetHelper,
   nsresult Init();
   bool IsInPrivateBrowsing();
   void ShowInternal();
-  void CloseInternal();
+  void CloseInternal(bool aContextClosed = false);
 
-  static NotificationPermission GetPermissionInternal(nsISupports* aGlobal,
-                                                      ErrorResult& rv);
+  static NotificationPermission GetPermissionInternal(
+      nsPIDOMWindowInner* aWindow, ErrorResult& rv);
 
   static const nsString DirectionToString(NotificationDirection aDirection) {
     switch (aDirection) {
@@ -363,7 +356,6 @@ class Notification : public DOMEventTargetHelper,
   uint32_t mTaskCount;
 };
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 #endif  // mozilla_dom_notification_h__

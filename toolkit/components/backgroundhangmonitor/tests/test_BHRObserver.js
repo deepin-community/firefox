@@ -1,22 +1,17 @@
 /* Any copyright is dedicated to the Public Domain.
    http://creativecommons.org/publicdomain/zero/1.0/ */
 
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { TelemetryUtils } = ChromeUtils.import(
-  "resource://gre/modules/TelemetryUtils.jsm"
+const { TelemetryUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/TelemetryUtils.sys.mjs"
 );
 
 function ensureProfilerInitialized() {
   // Starting and stopping the profiler with the "stackwalk" flag will cause the
   // profiler's stackwalking features to be synchronously initialized. This
   // should prevent us from not initializing BHR quickly enough.
-  if (!Services.profiler.CanProfile()) {
-    return false;
-  }
   let features = ["stackwalk"];
   Services.profiler.StartProfiler(1000, 10, features);
   Services.profiler.StopProfiler();
-  return true;
 }
 
 add_task(async function test_BHRObserver() {
@@ -25,12 +20,10 @@ add_task(async function test_BHRObserver() {
     return;
   }
 
-  if (!ensureProfilerInitialized()) {
-    return;
-  }
+  ensureProfilerInitialized();
 
-  let telSvc = Cc["@mozilla.org/bhr-telemetry-service;1"].getService()
-    .wrappedJSObject;
+  let telSvc =
+    Cc["@mozilla.org/bhr-telemetry-service;1"].getService().wrappedJSObject;
   ok(telSvc, "Should have BHRTelemetryService");
   let beforeLen = telSvc.payload.hangs.length;
 

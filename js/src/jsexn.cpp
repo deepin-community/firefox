@@ -25,8 +25,8 @@
 #include "jsfriendapi.h"
 #include "jstypes.h"
 
-#include "gc/Rooting.h"
-#include "js/CharacterEncoding.h"
+#include "frontend/FrontendContext.h"  // AutoReportFrontendContext
+#include "js/CharacterEncoding.h"      // JS::UTF8Chars, JS::ConstUTF8CharsZ
 #include "js/Class.h"
 #include "js/Conversions.h"
 #include "js/ErrorReport.h"             // JS::PrintError
@@ -45,8 +45,8 @@
 #include "util/StringBuffer.h"
 #include "vm/Compartment.h"
 #include "vm/ErrorObject.h"
-#include "vm/FrameIter.h"  // js::NonBuiltinFrameIter
-#include "vm/JSAtom.h"
+#include "vm/FrameIter.h"    // js::NonBuiltinFrameIter
+#include "vm/JSAtomUtils.h"  // ClassName
 #include "vm/JSContext.h"
 #include "vm/JSObject.h"
 #include "vm/JSScript.h"
@@ -58,6 +58,7 @@
 #include "vm/StringType.h"
 #include "vm/SymbolType.h"
 #include "vm/WellKnownAtom.h"  // js_*_str
+#include "wasm/WasmJS.h"       // WasmExceptionObject
 
 #include "vm/Compartment-inl.h"
 #include "vm/ErrorObject-inl.h"
@@ -146,7 +147,8 @@ static UniquePtr<T> CopyErrorHelper(JSContext* cx, T* report) {
   static_assert(sizeof(T) % sizeof(const char*) == 0);
   static_assert(sizeof(const char*) % sizeof(char16_t) == 0);
 
-  size_t filenameSize = report->filename ? strlen(report->filename) + 1 : 0;
+  size_t filenameSize =
+      report->filename ? strlen(report->filename.c_str()) + 1 : 0;
   size_t messageSize = 0;
   if (report->message()) {
     messageSize = strlen(report->message().c_str()) + 1;
@@ -173,8 +175,8 @@ static UniquePtr<T> CopyErrorHelper(JSContext* cx, T* report) {
   }
 
   if (report->filename) {
-    copy->filename = (const char*)cursor;
-    js_memcpy(cursor, report->filename, filenameSize);
+    copy->filename = JS::ConstUTF8CharsZ((const char*)cursor);
+    js_memcpy(cursor, report->filename.c_str(), filenameSize);
     cursor += filenameSize;
   }
 
@@ -266,12 +268,18 @@ JSErrorReport* js::ErrorFromException(JSContext* cx, HandleObject objArg) {
 }
 
 JS_PUBLIC_API JSObject* JS::ExceptionStackOrNull(HandleObject objArg) {
-  ErrorObject* obj = objArg->maybeUnwrapIf<ErrorObject>();
-  if (!obj) {
-    return nullptr;
+  ErrorObject* errorObject = objArg->maybeUnwrapIf<ErrorObject>();
+  if (errorObject) {
+    return errorObject->stack();
   }
 
-  return obj->stack();
+  WasmExceptionObject* wasmObject =
+      objArg->maybeUnwrapIf<WasmExceptionObject>();
+  if (wasmObject) {
+    return wasmObject->stack();
+  }
+
+  return nullptr;
 }
 
 JS_PUBLIC_API JSLinearString* js::GetErrorTypeName(JSContext* cx,
@@ -288,7 +296,7 @@ JS_PUBLIC_API JSLinearString* js::GetErrorTypeName(JSContext* cx,
   return ClassName(key, cx);
 }
 
-void js::ErrorToException(JSContext* cx, JSErrorReport* reportp,
+bool js::ErrorToException(JSContext* cx, JSErrorReport* reportp,
                           JSErrorCallback callback, void* userRef) {
   MOZ_ASSERT(!reportp->isWarning());
 
@@ -304,7 +312,7 @@ void js::ErrorToException(JSContext* cx, JSErrorReport* reportp,
 
   // Prevent infinite recursion.
   if (cx->generatingError) {
-    return;
+    return false;
   }
 
   cx->generatingError = true;
@@ -313,12 +321,18 @@ void js::ErrorToException(JSContext* cx, JSErrorReport* reportp,
   // Create an exception object.
   RootedString messageStr(cx, reportp->newMessageString(cx));
   if (!messageStr) {
-    return;
+    return false;
   }
 
-  RootedString fileName(cx, JS_NewStringCopyZ(cx, reportp->filename));
-  if (!fileName) {
-    return;
+  Rooted<JSString*> fileName(cx);
+  if (const char* filename = reportp->filename.c_str()) {
+    fileName =
+        JS_NewStringCopyUTF8N(cx, JS::UTF8Chars(filename, strlen(filename)));
+    if (!fileName) {
+      return false;
+    }
+  } else {
+    fileName = cx->emptyString();
   }
 
   uint32_t sourceId = reportp->sourceId;
@@ -330,28 +344,29 @@ void js::ErrorToException(JSContext* cx, JSErrorReport* reportp,
 
   RootedObject stack(cx);
   if (!CaptureStack(cx, &stack)) {
-    return;
+    return false;
   }
 
   UniquePtr<JSErrorReport> report = CopyErrorReport(cx, reportp);
   if (!report) {
-    return;
+    return false;
   }
 
   ErrorObject* errObject =
       ErrorObject::create(cx, exnType, stack, fileName, sourceId, lineNumber,
                           columnNumber, std::move(report), messageStr, cause);
   if (!errObject) {
-    return;
+    return false;
   }
 
   // Throw it.
   RootedValue errValue(cx, ObjectValue(*errObject));
-  RootedSavedFrame nstack(cx);
+  Rooted<SavedFrame*> nstack(cx);
   if (stack) {
     nstack = &stack->as<SavedFrame>();
   }
   cx->setPendingException(errValue, nstack);
+  return true;
 }
 
 using SniffingBehavior = JS::ErrorReportBuilder::SniffingBehavior;
@@ -392,7 +407,7 @@ static bool IsDuckTypedErrorObject(JSContext* cx, HandleObject exnObject,
 
 static bool GetPropertyNoException(JSContext* cx, HandleObject obj,
                                    SniffingBehavior behavior,
-                                   HandlePropertyName name,
+                                   Handle<PropertyName*> name,
                                    MutableHandleValue vp) {
   // This function has no side-effects so always use it.
   if (GetPropertyPure(cx, obj, NameToId(name), vp.address())) {
@@ -576,7 +591,7 @@ bool JS::ErrorReportBuilder::init(JSContext* cx,
 
     reportp = &ownedReport;
     new (reportp) JSErrorReport();
-    ownedReport.filename = filename.get();
+    ownedReport.filename = JS::ConstUTF8CharsZ(filename.get());
     ownedReport.lineno = lineno;
     ownedReport.exnType = JSEXN_INTERNALERR;
     ownedReport.column = column;
@@ -647,7 +662,7 @@ bool JS::ErrorReportBuilder::populateUncaughtExceptionReportUTF8VA(
   ownedReport.errorNumber = JSMSG_UNCAUGHT_EXCEPTION;
 
   bool skippedAsync;
-  RootedSavedFrame frame(
+  Rooted<SavedFrame*> frame(
       cx, UnwrapSavedFrame(cx, cx->realm()->principals(), stack,
                            SavedFrameSelfHosted::Exclude, skippedAsync));
   if (frame) {
@@ -657,7 +672,7 @@ bool JS::ErrorReportBuilder::populateUncaughtExceptionReportUTF8VA(
     }
 
     // |ownedReport.filename| inherits the lifetime of |ErrorReport::filename|.
-    ownedReport.filename = filename.get();
+    ownedReport.filename = JS::ConstUTF8CharsZ(filename.get());
     ownedReport.sourceId = frame->getSourceId();
     ownedReport.lineno = frame->getLine();
     // Follow FixupColumnForDisplay and set column to 1 for WASM.
@@ -668,7 +683,7 @@ bool JS::ErrorReportBuilder::populateUncaughtExceptionReportUTF8VA(
     // related to our exception object.
     NonBuiltinFrameIter iter(cx, cx->realm()->principals());
     if (!iter.done()) {
-      ownedReport.filename = iter.filename();
+      ownedReport.filename = JS::ConstUTF8CharsZ(iter.filename());
       uint32_t column;
       ownedReport.sourceId =
           iter.hasScript() ? iter.script()->scriptSource()->id() : 0;
@@ -678,7 +693,8 @@ bool JS::ErrorReportBuilder::populateUncaughtExceptionReportUTF8VA(
     }
   }
 
-  if (!ExpandErrorArgumentsVA(cx, GetErrorMessage, nullptr,
+  AutoReportFrontendContext fc(cx);
+  if (!ExpandErrorArgumentsVA(&fc, GetErrorMessage, nullptr,
                               JSMSG_UNCAUGHT_EXCEPTION, ArgumentsAreUTF8,
                               &ownedReport, ap)) {
     return false;
@@ -710,6 +726,11 @@ JSObject* js::CopyErrorObject(JSContext* cx, Handle<ErrorObject*> err) {
   if (!cx->compartment()->wrap(cx, &stack)) {
     return nullptr;
   }
+  if (stack && JS_IsDeadWrapper(stack)) {
+    // ErrorObject::create expects |stack| to be either nullptr or a (possibly
+    // wrapped) SavedFrame instance.
+    stack = nullptr;
+  }
   Rooted<mozilla::Maybe<Value>> cause(cx, mozilla::Nothing());
   if (auto maybeCause = err->getCause()) {
     RootedValue errorCause(cx, maybeCause.value());
@@ -733,6 +754,7 @@ JS_PUBLIC_API bool JS::CreateError(JSContext* cx, JSExnType type,
                                    HandleObject stack, HandleString fileName,
                                    uint32_t lineNumber, uint32_t columnNumber,
                                    JSErrorReport* report, HandleString message,
+                                   Handle<mozilla::Maybe<Value>> cause,
                                    MutableHandleValue rval) {
   cx->check(stack, fileName, message);
   AssertObjectIsSavedFrameOrWrapper(cx, stack);
@@ -744,10 +766,6 @@ JS_PUBLIC_API bool JS::CreateError(JSContext* cx, JSExnType type,
       return false;
     }
   }
-
-  // The public API doesn't (yet) support a |cause| argument, so we default to
-  // |Nothing()| here.
-  auto cause = JS::NothingHandleValue;
 
   JSObject* obj =
       js::ErrorObject::create(cx, type, stack, fileName, 0, lineNumber,
@@ -778,8 +796,8 @@ const char* js::ValueToSourceForError(JSContext* cx, HandleValue val,
   }
 
   JSStringBuilder sb(cx);
-  if (val.isObject()) {
-    RootedObject valObj(cx, val.toObjectOrNull());
+  if (val.hasObjectPayload()) {
+    RootedObject valObj(cx, &val.getObjectPayload());
     ESClass cls;
     if (!JS::GetBuiltinClass(cx, valObj, &cls)) {
       return "<<error determining class of value>>";
@@ -791,6 +809,12 @@ const char* js::ValueToSourceForError(JSContext* cx, HandleValue val,
       s = "the array buffer ";
     } else if (JS_IsArrayBufferViewObject(valObj)) {
       s = "the typed array ";
+#ifdef ENABLE_RECORD_TUPLE
+    } else if (cls == ESClass::Record) {
+      s = "the record ";
+    } else if (cls == ESClass::Tuple) {
+      s = "the tuple ";
+#endif
     } else {
       s = "the object ";
     }
@@ -847,4 +871,12 @@ bool js::GetAggregateError(JSContext* cx, unsigned errorNumber,
   args[0].set(Int32Value(errorNumber));
   return CallSelfHostedFunction(cx, cx->names().GetAggregateError,
                                 NullHandleValue, args, error);
+}
+
+JS_PUBLIC_API mozilla::Maybe<Value> JS::GetExceptionCause(JSObject* exc) {
+  if (!exc->is<ErrorObject>()) {
+    return mozilla::Nothing();
+  }
+  auto& error = exc->as<ErrorObject>();
+  return error.getCause();
 }

@@ -39,14 +39,6 @@ nsresult nsHtml5DocumentBuilder::MarkAsBroken(nsresult aReason) {
   return aReason;
 }
 
-void nsHtml5DocumentBuilder::SetDocumentCharsetAndSource(
-    NotNull<const Encoding*> aEncoding, int32_t aCharsetSource) {
-  if (mDocument) {
-    mDocument->SetDocumentCharacterSetSource(aCharsetSource);
-    mDocument->SetDocumentCharacterSet(aEncoding);
-  }
-}
-
 void nsHtml5DocumentBuilder::UpdateStyleSheet(nsIContent* aElement) {
   auto* linkStyle = LinkStyle::FromNode(*aElement);
   if (!linkStyle) {
@@ -81,18 +73,43 @@ void nsHtml5DocumentBuilder::UpdateStyleSheet(nsIContent* aElement) {
 
 void nsHtml5DocumentBuilder::SetDocumentMode(nsHtml5DocumentMode m) {
   nsCompatibility mode = eCompatibility_NavQuirks;
+  const char* errMsgId = nullptr;
+
   switch (m) {
     case STANDARDS_MODE:
       mode = eCompatibility_FullStandards;
       break;
     case ALMOST_STANDARDS_MODE:
       mode = eCompatibility_AlmostStandards;
+      errMsgId = "errAlmostStandardsDoctypeVerbose";
       break;
     case QUIRKS_MODE:
       mode = eCompatibility_NavQuirks;
+      errMsgId = "errQuirkyDoctypeVerbose";
       break;
   }
   mDocument->SetCompatibilityMode(mode);
+
+  if (errMsgId && !mDocument->IsLoadedAsData()) {
+    nsCOMPtr<nsIURI> docURI = mDocument->GetDocumentURI();
+    bool isData = false;
+    docURI->SchemeIs("data", &isData);
+    bool isHttp = false;
+    docURI->SchemeIs("http", &isHttp);
+    bool isHttps = false;
+    docURI->SchemeIs("https", &isHttps);
+
+    nsCOMPtr<nsIPrincipal> principal = mDocument->GetPrincipal();
+    if (principal->GetIsNullPrincipal() && !isData && !isHttp && !isHttps) {
+      // Don't normally warn for null principals. It may well be internal
+      // documents for which the warning is not applicable.
+      return;
+    }
+
+    nsContentUtils::ReportToConsole(
+        nsIScriptError::warningFlag, "HTML_PARSER__DOCTYPE"_ns, mDocument,
+        nsContentUtils::eHTMLPARSER_PROPERTIES, errMsgId);
+  }
 }
 
 // nsContentSink overrides

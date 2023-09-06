@@ -16,8 +16,6 @@ change-password-old = حالیہ پاس ورڈ:
 change-password-new = نیا پاس ورڈ:
 change-password-reenter = نیا پاس ورڈ (دوبارہ):
 
-## Reset Password dialog
-
 pippki-failed-pw-change = پاس ورڈ تبدیل کرنے سے قاصر ہے
 pippki-pw-change-ok = پاسوڑد کامیابی سے تبدیل ہو گیا ہے.
 
@@ -31,9 +29,9 @@ pippki-reset-password-confirmation-message = آپ کا بنیادی پاس ور�
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = تصدیق نامہ ڈاؤن لوڈ کر رہا ہے
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = آپ کو نئی مقتدرہ تصدیق نامہ (سی اے) پر بھروسے کے لیے کہا گیا ہے۔
 download-cert-trust-ssl =
     .label = ویب سائٹیں شناخت کرنے کے لیے اس CA پر بھروسا کریں۔
@@ -65,7 +63,5 @@ set-password-reminder = اہم: اگر آپ اپنا تصدیق نامہ پشت�
 
 ## Protected Auth dialog
 
-protected-auth-window =
-    .title = تحفظ شدہ ٹوکن توثیق کاری
-protected-auth-msg = برا ئے مہربانی ٹوکن کو توثیق کریں۔ توثیق کاری کا طریقہ آپ کے ٹوکن کی قسم پر انحصار کرتا ہے۔
-protected-auth-token = ٹوکن:
+## Protected authentication alert
+

@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Maintainers of Mozilla-related packages <team+pkg-mozilla@tracker.debian.org>
 Uploaders: Mike Hommey <glandium@debian.org>
 Build-Depends: autotools-dev,
-               debhelper (>= 9.20160114),
+               debhelper-compat (= 12),
                libx11-dev,
                libx11-xcb-dev,
                libxt-dev,
@@ -24,11 +24,11 @@ Build-Depends: autotools-dev,
                libnspr4-dev (>= 2:@NSPR_VERSION@~),
 %endif
 %if USE_SYSTEM_NSS
-%define NSS_VERSION 3.71
+%define NSS_VERSION 3.91
                libnss3-dev (>= 2:@NSS_VERSION@~),
 %endif
 %if USE_SYSTEM_VPX
-               libvpx-dev (>= 1.8.0),
+               libvpx-dev (>= 1.10.0),
 %endif
                libdbus-glib-1-dev,
 %if USE_SYSTEM_FFI
@@ -40,29 +40,27 @@ Build-Depends: autotools-dev,
                libpulse-dev,
                libasound2-dev,
                yasm,
-%if DIST == stretch
-               nasm-mozilla (>= 2.14) [amd64 i386],
-%else
                nasm (>= 2.14) [amd64 i386],
-%endif
-               rustc (>= 1.53),
-               cargo (>= 0.54),
-%if DIST == stretch
-               gcc-mozilla (>= 7.1),
-               llvm-7-dev,
-               libclang-7-dev,
-               clang-7,
+%if DIST == bookworm || DIST == bullseye || DIST == buster
+               rustc-mozilla (>= 1.66),
 %else
+               rustc (>= 1.66),
+%endif
+%if DIST == bullseye || DIST == buster
+               cargo-mozilla (>= 0.66),
+%else
+               cargo (>= 0.66),
+%endif
                llvm-dev,
                libclang-dev,
                clang,
+%if DIST != bullseye && DIST != buster
+               libc++-dev-wasm32,
+               libclang-rt-dev-wasm32,
+               lld,
 %endif
-               cbindgen (>= 0.19.0),
-%if DIST == stretch
-               nodejs-mozilla (>= 10),
-%else
-               nodejs (>= 10),
-%endif
+               cbindgen (>= 0.24.3),
+               nodejs (>= 12.22.1),
                zip,
                unzip,
                locales,

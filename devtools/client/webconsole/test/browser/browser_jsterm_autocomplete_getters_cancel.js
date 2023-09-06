@@ -5,7 +5,7 @@
 
 // Test that the confirm dialog can be closed with different actions.
 
-const TEST_URI = `data:text/html;charset=utf-8,
+const TEST_URI = `data:text/html;charset=utf-8,<!DOCTYPE html>
 <head>
   <script>
     let sideEffect;
@@ -19,7 +19,7 @@ const TEST_URI = `data:text/html;charset=utf-8,
 </head>
 <body>Autocomplete popup - invoke getter - close dialog test</body>`;
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
   const { jsterm } = hud;
   const toolbox = await gDevTools.getToolboxForTab(gBrowser.selectedTab);
@@ -84,6 +84,6 @@ add_task(async function() {
   EventUtils.sendString("length");
   EventUtils.synthesizeKey("KEY_Enter");
   await waitFor(() => !isConfirmDialogOpened(toolbox));
-  await waitFor(() => findMessage(hud, "3", ".result"));
+  await waitFor(() => findEvaluationResultMessage(hud, "3"));
   ok("Expression was evaluated and tooltip was closed");
 });

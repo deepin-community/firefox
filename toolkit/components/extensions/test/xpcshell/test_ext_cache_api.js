@@ -93,7 +93,7 @@ add_task(async function test_cache_api_from_ext_shared_worker() {
     Services.obs.notifyObservers(null, "profile-after-change");
   }
 
-  const background = async function() {
+  const background = async function () {
     const BASE_URL_OK = `http://example.com/dummy`;
     const BASE_URL_KO = `http://anotherdomain.com/dummy`;
     const worker = new SharedWorker("worker.js");
@@ -142,7 +142,7 @@ add_task(async function test_cache_api_from_ext_shared_worker() {
     background,
     manifest: { permissions: ["http://example.com/*"] },
     files: {
-      "worker.js": function() {
+      "worker.js": function () {
         self.onconnect = evt => {
           const port = evt.ports[0];
           port.onmessage = async evt => {
@@ -248,3 +248,56 @@ add_task(async function test_cache_storage_evicted_on_addon_uninstalled() {
     "The extension cache storage data should have been evicted on addon uninstall"
   );
 });
+
+add_task(
+  {
+    // Pref used to allow to use the Cache WebAPI related to a page loaded from http
+    // (otherwise Gecko will throw a SecurityError when trying to access the webpage
+    // cache storage from the content script, unless the webpage is loaded from https).
+    pref_set: [["dom.caches.testing.enabled", true]],
+  },
+  async function test_cache_put_from_contentscript() {
+    const extension = ExtensionTestUtils.loadExtension({
+      manifest: {
+        content_scripts: [
+          {
+            matches: ["http://example.com/*"],
+            js: ["content.js"],
+          },
+        ],
+      },
+      files: {
+        "content.js": async function () {
+          const cache = await caches.open("test-cachestorage");
+          const request = "http://example.com";
+          const response = await fetch(request);
+          await cache.put(request, response).catch(err => {
+            browser.test.sendMessage("cache-put-error", {
+              name: err.name,
+              message: err.message,
+            });
+          });
+        },
+      },
+    });
+
+    await extension.startup();
+
+    const page = await ExtensionTestUtils.loadContentPage("http://example.com");
+    const actualError = await extension.awaitMessage("cache-put-error");
+    equal(
+      actualError.name,
+      "SecurityError",
+      "Got a security error from cache.put call as expected"
+    );
+    ok(
+      /Disallowed on WebExtension ContentScript Request/.test(
+        actualError.message
+      ),
+      `Got the expected error message: ${actualError.message}`
+    );
+
+    await page.close();
+    await extension.unload();
+  }
+);

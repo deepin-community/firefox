@@ -10,17 +10,19 @@
 #include "nsCycleCollectionParticipant.h"
 #include "mozilla/dom/AuthenticatorResponse.h"
 #include "mozilla/HoldDropJSObjects.h"
+#include "mozilla/Preferences.h"
 
-#ifdef OS_WIN
+#ifdef XP_WIN
 #  include "WinWebAuthnManager.h"
 #endif
 
 #ifdef MOZ_WIDGET_ANDROID
+#  include "mozilla/MozPromise.h"
+#  include "mozilla/java/GeckoResultNatives.h"
 #  include "mozilla/java/WebAuthnTokenManagerWrappers.h"
 #endif
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 NS_IMPL_CYCLE_COLLECTION_CLASS(PublicKeyCredential)
 NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN_INHERITED(PublicKeyCredential, Credential)
@@ -34,6 +36,7 @@ NS_IMPL_CYCLE_COLLECTION_TRACE_END
 
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INHERITED(PublicKeyCredential,
                                                   Credential)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mResponse)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 NS_IMPL_ADDREF_INHERITED(PublicKeyCredential, Credential)
@@ -81,15 +84,10 @@ void PublicKeyCredential::SetResponse(RefPtr<AuthenticatorResponse> aResponse) {
 /* static */
 already_AddRefed<Promise>
 PublicKeyCredential::IsUserVerifyingPlatformAuthenticatorAvailable(
-    GlobalObject& aGlobal) {
-  nsIGlobalObject* globalObject = xpc::CurrentNativeGlobal(aGlobal.Context());
-  if (NS_WARN_IF(!globalObject)) {
-    return nullptr;
-  }
-
-  ErrorResult rv;
-  RefPtr<Promise> promise = Promise::Create(globalObject, rv);
-  if (rv.Failed()) {
+    GlobalObject& aGlobal, ErrorResult& aError) {
+  RefPtr<Promise> promise =
+      Promise::Create(xpc::CurrentNativeGlobal(aGlobal.Context()), aError);
+  if (aError.Failed()) {
     return nullptr;
   }
 
@@ -97,7 +95,7 @@ PublicKeyCredential::IsUserVerifyingPlatformAuthenticatorAvailable(
 //
 // If on latest windows, call system APIs, otherwise return false, as we don't
 // have other UVPAAs available at this time.
-#ifdef OS_WIN
+#ifdef XP_WIN
 
   if (WinWebAuthnManager::IsUserVerifyingPlatformAuthenticatorAvailable()) {
     promise->MaybeResolve(true);
@@ -125,27 +123,26 @@ PublicKeyCredential::IsUserVerifyingPlatformAuthenticatorAvailable(
 
 /* static */
 already_AddRefed<Promise>
-PublicKeyCredential::IsExternalCTAP2SecurityKeySupported(
-    GlobalObject& aGlobal) {
-  nsIGlobalObject* globalObject = xpc::CurrentNativeGlobal(aGlobal.Context());
-  if (NS_WARN_IF(!globalObject)) {
+PublicKeyCredential::IsExternalCTAP2SecurityKeySupported(GlobalObject& aGlobal,
+                                                         ErrorResult& aError) {
+  RefPtr<Promise> promise =
+      Promise::Create(xpc::CurrentNativeGlobal(aGlobal.Context()), aError);
+  if (aError.Failed()) {
     return nullptr;
   }
 
-  ErrorResult rv;
-  RefPtr<Promise> promise = Promise::Create(globalObject, rv);
-  if (rv.Failed()) {
-    return nullptr;
-  }
-
-#ifdef OS_WIN
+#ifdef XP_WIN
   if (WinWebAuthnManager::AreWebAuthNApisAvailable()) {
     promise->MaybeResolve(true);
-    return promise.forget();
+  } else {
+    promise->MaybeResolve(Preferences::GetBool("security.webauthn.ctap2"));
   }
+#elif defined(MOZ_WIDGET_ANDROID)
+  promise->MaybeResolve(false);
+#else
+  promise->MaybeResolve(Preferences::GetBool("security.webauthn.ctap2"));
 #endif
 
-  promise->MaybeResolve(false);
   return promise.forget();
 }
 
@@ -165,5 +162,4 @@ void PublicKeyCredential::SetClientExtensionResultHmacSecret(
   mClientExtensionOutputs.mHmacCreateSecret.Value() = aHmacCreateSecret;
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

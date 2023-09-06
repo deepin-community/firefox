@@ -16,8 +16,8 @@ downloads-panel =
 # The style attribute has the width of the Downloads Panel expressed using
 # a CSS unit. The longest labels that should fit are usually those of
 # in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
+downloads-panel-items =
+    .style = width: 35em
 
 downloads-cmd-pause =
     .label = Asteɛfu
@@ -30,42 +30,65 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Sefsex
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Ldi akaram igebren afaylu
-    .accesskey = L
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] Sken deg ukaram
+           *[other] Sken deg ukaram
+        }
+    .accesskey = A
 
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Sken-d di Finder
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = Ldi deg umeskan n unagraw
     .accesskey = L
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-use-system-default-named =
+    .label = Ldi deg { $handler }
+    .accesskey = D
 
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
     .label = Ldi yal tikkelt deg umeskan n unagraw
     .accesskey = d
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-always-use-system-default-named =
+    .label = Ldi yal tikkelt deg { $handler }
+    .accesskey = k
 
-downloads-cmd-show-button =
+##
+
+# We can use the same accesskey as downloads-cmd-always-use-system-default.
+# Both should not be visible in the downloads context menu at the same time.
+downloads-cmd-always-open-similar-files =
+    .label = Ttalday yal tikkelt ifuyla yemṣadan
+    .accesskey = y
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
-            [macos] Sken-d di Finder
-           *[other] Ldi akaram igebren afaylu
+            [macos] Sken deg ukaram
+           *[other] Sken deg ukaram
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
-            [macos] Sken-d di Finder
-           *[other] Ldi akaram igebren afaylu
+            [macos] Sken deg ukaram
+           *[other] Sken deg ukaram
         }
-downloads-cmd-show-description =
+downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
-            [macos] Sken-d di Finder
-           *[other] Ldi akaram igebren afaylu
+            [macos] Sken deg ukaram
+           *[other] Sken deg ukaram
         }
 
 downloads-cmd-show-downloads =
@@ -89,6 +112,9 @@ downloads-cmd-clear-list =
 downloads-cmd-clear-downloads =
     .label = Sfeḍ izedman
     .accesskey = z
+downloads-cmd-delete-file =
+    .label = Kkes
+    .accesskey = K
 
 # This command is shown in the context menu when downloads are blocked.
 downloads-cmd-unblock =
@@ -138,11 +164,18 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
-downloading-file-opens-in-hours-and-minutes = Tawaledyawt deg { $hours }h { $minutes }m…
-downloading-file-opens-in-minutes = Tawaledyawt deg { $minutes }m…
-downloading-file-opens-in-minutes-and-seconds = Tawaledayawt deg { $minutes }m { $seconds }s…
-downloading-file-opens-in-seconds = Tawaledyawt deg { $seconds }s…
-downloading-file-opens-in-some-time = Tawaledyawt mi ara yemmed…
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = Tawaledyawt deg { $hours }h { $minutes }m…
+downloading-file-opens-in-minutes-2 =
+    .value = Tawaledyawt deg { $minutes }m…
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = Tawaledayawt deg { $minutes }m { $seconds }s…
+downloading-file-opens-in-seconds-2 =
+    .value = Tawaledyawt deg { $seconds }s…
+downloading-file-opens-in-some-time-2 =
+    .value = Tawaledyawt mi ara yemmed…
+downloading-file-click-to-open =
+    .value = Ldi mi ara yemmed
 
 ##
 
@@ -168,6 +201,21 @@ downloads-history =
 downloads-details =
     .title = Talqayt n usader
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+downloads-files-not-downloaded =
+    { $num ->
+        [one] Afaylu ur d-yettwasader ara.
+       *[other] { $num } yifuyla ur d-ttwasadren ara.
+    }
+downloads-blocked-from-url = Isadaren ttusweḥlen seg { $url }.
+downloads-blocked-download-detailed-info = { $url } yeεreḍ ad d-isader s wudem awurman aṭas n yifuyla. Asmel yezmer ad yili yerreẓ neɣ yettaεraḍ ad issekles ifuyla n uspam ɣef yibenk-ik·im.
+
+##
+
 downloads-clear-downloads-button =
     .label = Sfeḍ isadaren
     .tooltiptext = Sfeḍ isadaren immden, ifesxen neɣ wid ur neddi ara
@@ -180,3 +228,27 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Ulac yisadaren deg tɣimit-a.
+
+# This is displayed in an item at the bottom of the Downloads Panel when there
+# are more downloads than can fit in the list in the panel.
+#   $count (number) - number of files being downloaded that are not shown in the
+#                     panel list.
+downloads-more-downloading =
+    { $count ->
+        [one] { $count } n usader n wugar n ufaylu
+       *[other] { $count } n usader n wugar n yifuyla
+    }
+
+## Download errors
+
+downloads-error-alert-title = Tuccḍa n usader
+# Variables:
+#   $extension (String): the name of the blocking extension.
+downloads-error-blocked-by = Asader ulamek yettusekles acku yettusewḥel s { $extension }.
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = Asader ulamek yettusekles acku yettusewḥel s usiɣzef.
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Asader-agi ur yezmir ara d yettwasekles acku teḍra-d tuccḍa tarussint.
+    
+    Ma ulac aɣilif, ɛreḍ tikkelt-nniḍen.

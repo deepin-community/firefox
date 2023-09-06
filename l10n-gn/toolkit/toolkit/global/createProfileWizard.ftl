@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Mba’ete moheñoiha pytyvõhára
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Moñepyrũ
-       *[other] Eg̃uahẽporãite { create-profile-window.title }-pe
+       *[other] Eg̃uahẽporãite { create-profile-window2.title }-pe
     }
 
 profile-creation-explanation-1 = { -brand-short-name } oñongatu marandu ñembohekopyahu rehegua ha erororyvéva nemba’eteépe.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Mohu’ã
-       *[other] Emoĩmba { create-profile-window.title }
+       *[other] Emoĩmba { create-profile-window2.title }
     }
 
 profile-creation-intro = Emoheñoirõ heta mba’ete ikatu eikuaa héra rupi. Ikatu eipuru pe téra ome’ẽva kóva térã eiporavo ndete voi.

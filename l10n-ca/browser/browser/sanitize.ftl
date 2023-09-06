@@ -2,19 +2,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
-    .title = Paràmetres de neteja de l'historial
-    .style = width: 36em
+sanitize-prefs2 =
+    .title = Paràmetres d'esborrar l'historial
+    .style = min-width: 36em
 sanitize-prefs-style =
     .style = width: 17em
-dialog-title =
-    .title = Neteja l'historial recent
-    .style = width: 34em
+sanitize-dialog-title =
+    .title = Esborra l'historial recent
+    .style = min-width: 34em
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
-    .title = Neteja tot l'historial
-    .style = width: 34em
+sanitize-dialog-title-everything =
+    .title = Esborra tot l'historial
+    .style = min-width: 34em
 clear-data-settings-label = En tancar el { -brand-short-name }, esborra automàticament
 
 ## clear-time-duration-prefix is followed by a dropdown list, with
@@ -26,7 +26,7 @@ clear-data-settings-label = En tancar el { -brand-short-name }, esborra automàt
 ## Time range to clear: (Last Hour, Today, etc.)
 
 clear-time-duration-prefix =
-    .value = Abast temporal per netejar:{ " " }
+    .value = Interval de temps que s'esborrarà:{ " " }
     .accesskey = r
 clear-time-duration-value-last-hour =
     .label = La darrera hora
@@ -61,9 +61,6 @@ item-form-search-history =
     .label = Historial de formularis i de cerques
     .accesskey = F
 data-section-label = Dades
-item-site-preferences =
-    .label = Preferències dels llocs
-    .accesskey = P
 item-site-settings =
     .label = Paràmetres del lloc
     .accesskey = P
@@ -74,16 +71,16 @@ sanitize-everything-undo-warning = Aquesta acció no es pot desfer.
 window-close =
     .key = w
 sanitize-button-ok =
-    .label = Neteja-ho ara
+    .label = Esborra-ho ara
 # The label for the default button between the user clicking it and the window
 # closing.  Indicates the items are being cleared.
 sanitize-button-clearing =
-    .label = S'està netejant
+    .label = S'està esborrant
 # Warning that appears when "Time range to clear" is set to "Everything" in Clear
 # Recent History dialog, provided that the user has not modified the default set
 # of history items to clear.
-sanitize-everything-warning = Es netejarà tot l'historial.
+sanitize-everything-warning = S'esborrarà tot l'historial.
 # Warning that appears when "Time range to clear" is set to "Everything" in Clear
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
-sanitize-selected-warning = Es netejaran tots els elements seleccionats.
+sanitize-selected-warning = S'esborraran tots els elements seleccionats.

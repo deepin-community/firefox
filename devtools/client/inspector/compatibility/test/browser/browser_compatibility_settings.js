@@ -8,10 +8,10 @@
 const TEST_URI = `
   <style>
   body {
-    border-block-color: lime;
+    text-size-adjust: none;
   }
   div {
-    border-block-width: 1px;
+    text-size-adjust: none;
   }
   </style>
   <body><div></div></body>
@@ -19,9 +19,9 @@ const TEST_URI = `
 
 const {
   COMPATIBILITY_UPDATE_TARGET_BROWSERS_COMPLETE,
-} = require("devtools/client/inspector/compatibility/actions/index");
+} = require("resource://devtools/client/inspector/compatibility/actions/index.js");
 
-add_task(async function() {
+add_task(async function () {
   registerCleanupFunction(() => {
     Services.prefs.clearUserPref(
       "devtools.inspector.compatibility.target-browsers"
@@ -65,6 +65,29 @@ async function updateTargetBrowsers(panel, store, isTargetBrowserFunc) {
   const settingsButton = panel.querySelector(".compatibility-footer__button");
   settingsButton.click();
   await waitUntil(() => panel.querySelector(".compatibility-settings"));
+
+  const browsers = [
+    ...new Set(
+      Array.from(panel.querySelectorAll("[data-id]")).map(el =>
+        el.getAttribute("data-id")
+      )
+    ),
+  ];
+  Assert.deepEqual(
+    // Filter out IE, to be removed in an upcoming browser compat data sync.
+    // TODO: Remove the filter once D150961 lands. see Bug 1778009
+    browsers.filter(browser => browser != "ie"),
+    [
+      "chrome",
+      "chrome_android",
+      "edge",
+      "firefox",
+      "firefox_android",
+      "safari",
+      "safari_ios",
+    ],
+    "The expected browsers are displayed"
+  );
 
   info("Change target browsers");
   const settingsPane = panel.querySelector(".compatibility-settings");

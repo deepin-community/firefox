@@ -28,14 +28,6 @@
                 <menuitem id="menu_newPrivateWindow"
                           command="Tools:PrivateBrowsing"
                           key="key_privatebrowsing" data-l10n-id="menu-file-new-private-window"/>
-#ifdef NIGHTLY_BUILD
-                <menuitem id="menu_newFissionWindow"
-                          command="Tools:FissionWindow"
-                          accesskey="s" label="New Fission Window"/>
-                <menuitem id="menu_newNonFissionWindow"
-                          command="Tools:NonFissionWindow"
-                          accesskey="s" label="New Non-Fission Window"/>
-#endif
                 <menuitem id="menu_openLocation"
                           hidden="true"
                           command="Browser:OpenLocation"
@@ -46,7 +38,7 @@
                 <menuitem id="menu_close"
                           class="show-only-for-keyboard"
                           key="key_close"
-                          command="cmd_close" data-l10n-id="menu-file-close"/>
+                          command="cmd_close" data-l10n-id="menu-file-close-tab" data-l10n-args='{"tabCount": 1}'/>
                 <menuitem id="menu_closeWindow"
                           class="show-only-for-keyboard"
                           hidden="true"
@@ -56,7 +48,7 @@
                 <menuitem id="menu_savePage"
                           key="key_savePage"
                           command="Browser:SavePage" data-l10n-id="menu-file-save-page"/>
-#ifndef XP_MACOSX
+#if !defined(XP_MACOSX) || defined(MOZ_PROXY_BYPASS_PROTECTION)
                 <menuitem id="menu_sendLink"
                           command="Browser:SendLink" data-l10n-id="menu-file-email-link"/>
 #endif
@@ -64,10 +56,6 @@
 #if !defined(MOZ_WIDGET_GTK)
                 <menuitem id="menu_printSetup"
                           command="cmd_pageSetup" data-l10n-id="menu-file-print-setup" hidden="true"/>
-#endif
-#ifndef XP_MACOSX
-                <menuitem id="menu_printPreview"
-                          command="cmd_printPreview" data-l10n-id="menu-file-print-preview" hidden="true"/>
 #endif
                 <menuitem id="menu_print"
                           key="printKb"
@@ -168,8 +156,7 @@
                   </menupopup>
                 </menu>
                 <menuseparator/>
-                <menu id="viewFullZoomMenu"
-                      onpopupshowing="FullZoom.updateMenu();" data-l10n-id="menu-view-full-zoom">
+                <menu id="viewFullZoomMenu" data-l10n-id="menu-view-full-zoom">
                   <menupopup>
                     <menuitem id="menu_zoomEnlarge"
                               key="key_fullZoomEnlarge"
@@ -207,23 +194,24 @@
                 <menuseparator/>
 #ifdef XP_MACOSX
                 <menuitem id="enterFullScreenItem"
-                          key="key_fullScreen" data-l10n-id="menu-view-enter-full-screen">
+                          key="key_enterFullScreen" data-l10n-id="menu-view-enter-full-screen">
                   <observes element="View:FullScreen" attribute="oncommand"/>
                 </menuitem>
                 <menuitem id="exitFullScreenItem"
-                          key="key_fullScreen"
+                          key="key_exitFullScreen"
                           hidden="true" data-l10n-id="menu-view-exit-full-screen">
                   <observes element="View:FullScreen" attribute="oncommand"/>
                 </menuitem>
 #else
                 <menuitem id="fullScreenItem"
-                          key="key_fullScreen"
+                          key="key_enterFullScreen"
                           type="checkbox"
                           observes="View:FullScreen" data-l10n-id="menu-view-full-screen"/>
 #endif
                 <menuitem id="menu_readerModeItem"
                           observes="View:ReaderView"
                           key="key_toggleReaderMode"
+                          data-l10n-id="menu-view-enter-readerview"
                           hidden="true"/>
                 <menuitem id="menu_showAllTabs"
                           hidden="true"
@@ -237,7 +225,7 @@
             </menu>
 
             <menu id="history-menu" data-l10n-id="menu-history">
-              <menupopup id="goPopup"
+              <menupopup id="historyMenuPopup"
 #ifndef XP_MACOSX
                          placespopup="true"
                          is="places-popup"
@@ -260,8 +248,11 @@
                 <menuitem id="historyRestoreLastSession"
                           command="Browser:RestoreLastSession" data-l10n-id="menu-history-restore-last-session"/>
                 <menuitem id="hiddenTabsMenu"
-                          oncommand="gTabsPanel.showHiddenTabsPanel(event);"
+                          oncommand="gTabsPanel.showHiddenTabsPanel(event, 'hidden-tabs-menuitem');"
                           hidden="true" data-l10n-id="menu-history-hidden-tabs"/>
+                <menuitem id="menu_searchHistory"
+                          command="History:SearchHistory"
+                          data-l10n-id="menu-history-search"/>
                 <menu id="historyUndoMenu"
                       disabled="true" data-l10n-id="menu-history-undo-menu">
                   <menupopup id="historyUndoPopup"
@@ -323,7 +314,10 @@
       <menuitem id="menu_bookmarkThisPage"
                 command="Browser:AddBookmarkAs"
                 key="addBookmarkAsKb"
-                data-l10n-id="menu-bookmark-current-tab"/>
+                data-l10n-id="menu-bookmark-tab"/>
+      <menuitem id="menu_searchBookmarks"
+                command="Browser:SearchBookmarks"
+                data-l10n-id="menu-bookmarks-search"/>
       <menuitem id="menu_bookmarkAllTabs"
                 class="show-only-for-keyboard"
                 command="Browser:BookmarkAllTabs"
@@ -405,11 +399,15 @@
                         class="sync-ui-item"
                         hidden="true"
                         oncommand="gSync.openSignInAgainPage('menubar');" data-l10n-id="menu-tools-fxa-re-auth"/>
+
+              <menuitem id="menu_openFirefoxView"
+                        oncommand="FirefoxViewHandler.openTab();" data-l10n-id="menu-tools-firefox-view"/>
               <menuseparator id="devToolsSeparator"/>
-              <menu id="webDeveloperMenu" data-l10n-id="menu-tools-browser-tools">
+              <menu id="browserToolsMenu" data-l10n-id="menu-tools-browser-tools">
                 <menupopup id="menuWebDeveloperPopup">
                   <menuitem id="menu_taskManager"
-                            oncommand="switchToTabHavingURI('about:performance', true)"
+                            key="key_aboutProcesses"
+                            command="View:AboutProcesses"
                             data-l10n-id="menu-tools-task-manager"/>
                   <menuitem id="menu_pageSource"
                             key="key_viewSource"
@@ -445,11 +443,13 @@
               </menupopup>
             </menu>
 #ifdef XP_MACOSX
+<!-- Do not dynamically modify the Window menu and be careful when making static changes to it.
+     macOS adds extra functionality to this menu, such as a list of windows, which can break when
+     modifying this menu. See bug 1642138 and bug 1807697 for example. -->
             <menu id="windowMenu"
-                  onpopupshowing="macWindowMenuDidShow();"
-                  onpopuphidden="macWindowMenuDidHide();"
                    data-l10n-id="menu-window-menu">
                 <menupopup id="windowPopup">
+                    <menuseparator/>
                     <menuitem command="minimizeWindow" key="key_minimizeWindow"/>
                     <menuitem command="zoomWindow"/>
                     <!-- decomment when "BringAllToFront" is implemented
@@ -474,8 +474,8 @@
 #endif
                 <menuitem id="feedbackPage"
                           oncommand="openFeedbackPage()"
-                          data-l10n-id="menu-help-feedback-page"
-                          appmenu-data-l10n-id="appmenu-help-feedback-page"/>
+                          data-l10n-id="menu-help-share-ideas"
+                          appmenu-data-l10n-id="appmenu-help-share-ideas"/>
                 <menuitem id="helpSafeMode"
                           oncommand="safeModeRestart();"
                           data-l10n-id="menu-help-enter-troubleshoot-mode2"
@@ -501,6 +501,10 @@
                           data-l10n-id="menu-help-not-deceptive"
                           appmenu-data-l10n-id="appmenu-help-not-deceptive"
                           hidden="true"/>
+                <menuitem id="helpSwitchDevice"
+                          oncommand="openSwitchingDevicesPage();"
+                          data-l10n-id="menu-help-switch-device"
+                          appmenu-data-l10n-id="appmenu-help-switch-device"/>
                 <menuseparator id="aboutSeparator"/>
                 <menuitem id="aboutName"
                           oncommand="openAboutDialog();"
@@ -510,7 +514,7 @@
                           hidden="true"/>
                 <menuitem id="helpPolicySupport"
                           hidden="true"
-                          oncommand="openUILinkIn(Services.policies.getSupportMenu().URL.href, 'tab', {triggeringPrincipal: Services.scriptSecurityManager.createNullPrincipal({})});"/>
+                          oncommand="openTrustedLinkIn(Services.policies.getSupportMenu().URL.href, 'tab');"/>
               </menupopup>
           </menu>
         </menubar>

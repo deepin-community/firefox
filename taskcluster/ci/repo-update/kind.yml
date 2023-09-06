@@ -2,11 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 ---
-loader: taskgraph.loader.transform:loader
+loader: gecko_taskgraph.loader.transform:loader
 
 transforms:
-    - taskgraph.transforms.repo_update:transforms
-    - taskgraph.transforms.task:transforms
+    - gecko_taskgraph.transforms.repo_update:transforms
+    - gecko_taskgraph.transforms.task:transforms
 
 
 job-defaults:
@@ -44,7 +44,7 @@ jobs:
             platform: linux64/opt
             symbol: pfu
             tier: 1
-        worker-type: b-linux
+        worker-type: b-linux-xlarge-gcp
         worker:
             implementation: docker-worker
             os: linux
@@ -52,7 +52,7 @@ jobs:
             max-run-time: 14400  # Takes up to 4 hours
             env:
                 PRODUCT: firefox
-                REVIEWERS: "ryanvm"
+                REVIEWERS: "#release-managers"
             command:
                 - /runme.sh
             taskcluster-proxy: true

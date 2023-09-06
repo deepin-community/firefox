@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function
-
 import contextlib
 import os
 
@@ -15,7 +13,6 @@ from marionette_driver.marionette import Alert
 from marionette_harness import (
     MarionetteTestCase,
     run_if_manage_instance,
-    skip_unless_browser_pref,
     WindowManagerMixin,
 )
 
@@ -48,9 +45,6 @@ class BaseNavigationTestCase(WindowManagerMixin, MarionetteTestCase):
             "navigation_pushstate.html"
         )
         self.test_page_remote = self.marionette.absolute_url("test.html")
-        self.test_page_slow_resource = self.marionette.absolute_url(
-            "slow_resource.html"
-        )
 
         if self.marionette.session_capabilities["platformName"] == "mac":
             self.mod_key = Keys.META
@@ -82,15 +76,18 @@ class BaseNavigationTestCase(WindowManagerMixin, MarionetteTestCase):
             # TODO: DO NOT USE MOST RECENT WINDOW BUT CURRENT ONE
             return self.marionette.execute_script(
                 """
-              Components.utils.import("resource://gre/modules/AppConstants.jsm");
+              const { AppConstants } = ChromeUtils.importESModule(
+                "resource://gre/modules/AppConstants.sys.mjs"
+              );
 
               let win = null;
 
               if (AppConstants.MOZ_APP_NAME == "fennec") {
-                Components.utils.import("resource://gre/modules/Services.jsm");
                 win = Services.wm.getMostRecentWindow("navigator:browser");
               } else {
-                Components.utils.import("resource:///modules/BrowserWindowTracker.jsm");
+                const { BrowserWindowTracker } = ChromeUtils.importESModule(
+                  "resource:///modules/BrowserWindowTracker.sys.mjs"
+                );
                 win = BrowserWindowTracker.getTopWindow();
               }
 
@@ -292,27 +289,13 @@ class TestNavigate(BaseNavigationTestCase):
         self.marionette.navigate("about:robots")
         self.assertFalse(self.is_remote_tab)
 
-    def test_stale_element_after_remoteness_change(self):
+    def test_no_such_element_after_remoteness_change(self):
         self.marionette.navigate(self.test_page_file_url)
         self.assertTrue(self.is_remote_tab)
         elem = self.marionette.find_element(By.ID, "file-url")
 
         self.marionette.navigate("about:robots")
         self.assertFalse(self.is_remote_tab)
-
-        # Force a GC to get rid of the replaced browsing context.
-        with self.marionette.using_context("chrome"):
-            self.marionette.execute_async_script(
-                """
-                const resolve = arguments[0];
-
-                var memSrv = Cc["@mozilla.org/memory-reporter-manager;1"]
-                  .getService(Ci.nsIMemoryReporterManager);
-
-                Services.obs.notifyObservers(null, "child-mmu-request", null);
-                memSrv.minimizeMemoryUsage(resolve);
-            """
-            )
 
         with self.assertRaises(errors.StaleElementException):
             elem.click()
@@ -334,6 +317,18 @@ class TestNavigate(BaseNavigationTestCase):
         self.marionette.restart()
 
         self.marionette.navigate(inline("<input autofocus>"))
+
+        # Per spec, autofocus candidates will be
+        # flushed by next paint, so we use rAF here to
+        # ensure the candidates are flushed.
+        self.marionette.execute_async_script(
+            """
+        const callback = arguments[arguments.length - 1];
+        window.requestAnimationFrame(function() {
+            window.requestAnimationFrame(callback);
+        });
+        """
+        )
         focus_el = self.marionette.find_element(By.CSS_SELECTOR, ":focus")
         self.assertEqual(self.marionette.get_active_element(), focus_el)
 
@@ -848,6 +843,23 @@ class TestTLSNavigation(BaseNavigationTestCase):
 
 
 class TestPageLoadStrategy(BaseNavigationTestCase):
+    def setUp(self):
+        super(TestPageLoadStrategy, self).setUp()
+
+        # Test page that delays the response and as such the document to be
+        # loaded. It is used for testing the page load strategy "none".
+        self.test_page_slow = self.marionette.absolute_url("slow")
+
+        # Similar to "slow" but additionally triggers a cross group navigation
+        # which triggers a replacement of the top-level browsing context.
+        self.test_page_slow_coop = self.marionette.absolute_url("slow-coop")
+
+        # Test page that contains a slow loading <img> element which delays the
+        # "load" but not the "DOMContentLoaded" event.
+        self.test_page_slow_resource = self.marionette.absolute_url(
+            "slow_resource.html"
+        )
+
     def tearDown(self):
         self.marionette.delete_session()
         self.marionette.start_session()
@@ -858,20 +870,59 @@ class TestPageLoadStrategy(BaseNavigationTestCase):
         self.marionette.delete_session()
         self.marionette.start_session({"pageLoadStrategy": "none"})
 
-        self.marionette.navigate(self.test_page_slow_resource)
-        Wait(self.marionette, timeout=self.marionette.timeout.page_load).until(
-            lambda _: self.marionette.get_url() == self.test_page_slow_resource,
-            message="Target page has not been loaded",
-        )
-        self.marionette.find_element(By.ID, "slow")
+        # Navigate will return immediately. As such wait for the target URL to
+        # be the current location, and the element to exist.
+        self.marionette.navigate(self.test_page_slow)
+        with self.assertRaises(errors.NoSuchElementException):
+            self.marionette.find_element(By.ID, "delay")
+
+        Wait(
+            self.marionette,
+            ignored_exceptions=errors.NoSuchElementException,
+            timeout=self.marionette.timeout.page_load,
+        ).until(lambda _: self.marionette.find_element(By.ID, "delay"))
+
+        self.assertEqual(self.marionette.get_url(), self.test_page_slow)
+
+    def test_none_with_new_session_waits_for_page_loaded(self):
+        self.marionette.delete_session()
+        self.marionette.start_session({"pageLoadStrategy": "none"})
+
+        # Navigate will return immediately.
+        self.marionette.navigate(self.test_page_slow)
+
+        # Make sure that when creating a new session right away it waits
+        # until the page has been finished loading.
+        self.marionette.delete_session()
+        self.marionette.start_session()
+
+        self.assertEqual(self.marionette.get_url(), self.test_page_slow)
+        self.assertEqual(self.ready_state, "complete")
+        self.marionette.find_element(By.ID, "delay")
+
+    def test_none_with_new_session_waits_for_page_loaded_remoteness_change(self):
+        self.marionette.delete_session()
+        self.marionette.start_session({"pageLoadStrategy": "none"})
+
+        # Navigate will return immediately.
+        self.marionette.navigate(self.test_page_slow_coop)
+
+        # Make sure that when creating a new session right away it waits
+        # until the page has been finished loading.
+        self.marionette.delete_session()
+        self.marionette.start_session()
+
+        self.assertEqual(self.marionette.get_url(), self.test_page_slow_coop)
+        self.assertEqual(self.ready_state, "complete")
+        self.marionette.find_element(By.ID, "delay")
 
     def test_eager(self):
         self.marionette.delete_session()
         self.marionette.start_session({"pageLoadStrategy": "eager"})
 
         self.marionette.navigate(self.test_page_slow_resource)
-        self.assertEqual("interactive", self.ready_state)
-        self.assertEqual(self.test_page_slow_resource, self.marionette.get_url())
+        self.assertEqual(self.ready_state, "interactive")
+        self.assertEqual(self.marionette.get_url(), self.test_page_slow_resource)
         self.marionette.find_element(By.ID, "slow")
 
     def test_normal(self):
@@ -879,8 +930,8 @@ class TestPageLoadStrategy(BaseNavigationTestCase):
         self.marionette.start_session({"pageLoadStrategy": "normal"})
 
         self.marionette.navigate(self.test_page_slow_resource)
-        self.assertEqual(self.test_page_slow_resource, self.marionette.get_url())
-        self.assertEqual("complete", self.ready_state)
+        self.assertEqual(self.marionette.get_url(), self.test_page_slow_resource)
+        self.assertEqual(self.ready_state, "complete")
         self.marionette.find_element(By.ID, "slow")
 
     def test_strategy_after_remoteness_change(self):
@@ -895,4 +946,4 @@ class TestPageLoadStrategy(BaseNavigationTestCase):
         self.marionette.navigate("about:robots")
         self.assertFalse(self.is_remote_tab, "Tab has remoteness flag set")
         self.marionette.navigate(self.test_page_slow_resource)
-        self.assertEqual("interactive", self.ready_state)
+        self.assertEqual(self.ready_state, "interactive")

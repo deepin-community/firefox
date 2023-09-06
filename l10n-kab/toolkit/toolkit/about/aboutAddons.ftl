@@ -8,10 +8,16 @@ search-header =
     .placeholder = Nadi addons.mozilla.org
     .searchbuttonlabel = Nadi
 
-search-header-shortcut =
-    .key = f
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
 list-empty-get-extensions-message = Awi isiɣzaf d yisental seg <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-dictionaries-message = Awi imawalen seg <a data-l10n-name="get-extensions">{ $domain }</a>
+
+list-empty-get-language-packs-message = Awi ikemmusen n tutlayt seg <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
 
 list-empty-installed =
     .value = Ur ɣur-k ara azegrir yettwasebden n tewsit-agi
@@ -48,6 +54,9 @@ detail-version =
 detail-last-updated =
     .label = Aleqqem aneggaru
 
+addon-detail-description-expand = Sken ugar
+addon-detail-description-collapse = Sken drus
+
 detail-contributions-description = Aneflay n uzegrir-agi isutur-ak-d tallelt akken ad iseddu taneflit-ines ticki tmuddeḍ-as cwiṭ n tewsa.
 
 detail-contributions-button = Ttekki
@@ -75,11 +84,11 @@ detail-private-browsing-label = Sker deg usfaylu uslig
 # Some add-ons may elect to not run in private windows by setting incognito: not_allowed in the manifest.  This
 # cannot be overridden by the user.
 detail-private-disallowed-label = Ur yettusireg ara deg isfuyla usligen
-detail-private-disallowed-description2 = Asiɣzef-a ur yettwaselkam ara deg tunigt tusrigt. <a data-l10n-name="learn-more">Issin ugar</label>
+detail-private-disallowed-description2 = Asiɣzef-a ur yettwaselkam ara deg tunigt tusrigt. <a data-l10n-name="learn-more">Issin ugar</a>
 
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
 detail-private-required-label = Yesra anekcum ɣer isfuyla usligen
-detail-private-required-description2 = Asiɣzef-a ɣur-s anekcum ɣer urmud-ik srid deg tunigt. <a data-l10n-name="learn-more">Issin ugar</label>
+detail-private-required-description2 = Asiɣzef-a ɣur-s anekcum ɣer urmud-ik srid deg tunigt. <a data-l10n-name="learn-more">Issin ugar</a>
 
 detail-private-browsing-on =
     .label = Sireg
@@ -148,10 +157,10 @@ legacy-extensions =
 legacy-extensions-description = Iseγzaf-agi ur sεin ara ilugan n { -brand-short-name } imiranen γef aya ittwasensen. <label data-l10n-name="legacy-learn-more">Issin ugar ɣef usnifel ɣer izegrar</label>
 
 private-browsing-description2 =
-    { -brand-short-name } ittbeddil tarrayt make iteddu deg tunigt tusrigt. Ula dyiwen n usiɣzef are ternuḍ ɣer 
+    { -brand-short-name } ittbeddil tarrayt ma iteddu deg tunigin tusligt. Ula d asiɣzef ara ternuḍ ɣer 
     { -brand-short-name } ur yettwaselkam swudem amezwer deg usfaylu uslig. Ma yella ur t-termideḍ ara deg yiɣewwaren, 
-    asiɣzef ur iteddu ara deg tunigt tusrigt, daɣen ur ikeččem ara ɣer urmud-ik
-    srid. Nexdem abeddel-a akken akken tunigt-ik tusligt ad teqqim d tabadnit.
+    asiɣzef ur iteddu ara deg tunigin tusligt, daɣen ur ikeččem ara ɣer urmud-ik
+    srid. Nexdem abeddel-a akken tunigin-ik tusligt ad teqqim d tabadnit.
     <label data-l10n-name="private-browsing-learn-more">Issin amek ara tesferkeḍ iɣewwaren n usiɣzef</label>
 
 addon-category-discover = Iwellihen
@@ -178,6 +187,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Ileqman n melmi kan
 addon-category-recent-updates-title =
     .title = Ileqman n melmi kan
+addon-category-sitepermission = Tisirag n usmel
+addon-category-sitepermission-title =
+    .title = Tisirag n usmel
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string): DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Tisirag n usmel i { $host }
 
 ## These are global warnings
 
@@ -188,7 +204,6 @@ extensions-warning-check-compatibility-button = Rmed
 extensions-warning-update-security = Asenqed n ileqman n tɣellist n izegrar ur yermid ara. Yezmer ad tesɛuḍ yir izegrar.
 extensions-warning-update-security-button = Rmed
     .title = Rmed asenqed n ileqman n tɣellist i yezgrar isemmadanen
-
 
 ## Strings connected to add-on updates
 
@@ -303,6 +318,7 @@ install-theme-button = Sebded asentel
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Sefrek
 find-more-addons = Aff-d ugar n izegrar
+find-more-themes = Af ugar n yisental
 
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
@@ -334,7 +350,7 @@ extension-enabled-heading = Irmed
 extension-disabled-heading = Yensa
 
 theme-enabled-heading = Irmed
-theme-disabled-heading = Yensa
+theme-disabled-heading2 = Isental yettwaskelsen
 
 plugin-enabled-heading = Irmed
 plugin-disabled-heading = Yensa
@@ -344,6 +360,9 @@ dictionary-disabled-heading = Arurmid
 
 locale-enabled-heading = Irmed
 locale-disabled-heading = Arurmid
+
+sitepermission-enabled-heading = Irmed
+sitepermission-disabled-heading = Yensa
 
 always-activate-button = Rmed yal tikelt
 never-activate-button = weṛǧin ad yermed
@@ -397,9 +416,12 @@ install-update-button = Leqqem
 addon-badge-private-browsing-allowed2 =
     .title = Yettusireg def usfaylu uslig kan
     .aria-label = { addon-badge-private-browsing-allowed2.title }
-addon-detail-private-browsing-help = Ma yettwasireg, asiɣzef ad yekcem ɣer urmud-ik srid deg tunigt tusrigt.<a data-l10n-name="learn-more">Issin ugar</label>
+addon-detail-private-browsing-help = Ma yettwasireg, asiɣzef ad yekcem ɣer urmud-ik srid deg tunigt tusrigt.<a data-l10n-name="learn-more">Issin ugar</a>
 addon-detail-private-browsing-allow = Sireg
 addon-detail-private-browsing-disallow = Ur ttaǧǧa ara
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -407,7 +429,6 @@ addon-detail-private-browsing-disallow = Ur ttaǧǧa ara
 addon-badge-recommended2 =
     .title = { -brand-product-name } ur ittwelleh ala isiɣzaf yemṣadan d yilugan-nneɣ icudden ɣer tɣellist akked timellit.
     .aria-label = { addon-badge-recommended2.title }
-
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
 addon-badge-line3 =
@@ -426,13 +447,14 @@ release-notes-loading = Asali…
 release-notes-error = Suref-aɣ, teḍṛa-d tuccḍa deg usali n iwenniten n lqem.
 
 addon-permissions-empty = Asiɣzef-agi ur yesra ara tisirag
-
 addon-permissions-required = Tisirag yettwasran i tmahilin n uzadur:
 addon-permissions-optional = Tisirag tifrayanin i tmahilin yettwarnan:
 addon-permissions-learnmore = Issin ugar ɣef tsirag
 
 recommended-extensions-heading = Isiɣzaf ihulen
 recommended-themes-heading = Isental ihulen
+
+addon-sitepermissions-required = Mudd tizemmar-a i <span data-l10n-name="hostname">{ $hostname }</span>:
 
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
@@ -446,6 +468,7 @@ plugin-heading = Sefrek izegrar-ik/im
 dictionary-heading = Sefrek imawalen-ik/im
 locale-heading = Sefrekl tutlayin-ik/im
 updates-heading = Sefrek ileqman-ik
+sitepermission-heading = Sefrek tisirag-ik•im n usmel
 discover-heading = Err { -brand-short-name }-ik d udmawan
 shortcuts-heading = Sefrek inegzumen n isiɣzaf
 
@@ -455,3 +478,30 @@ addons-heading-search-input =
 
 addon-page-options-button =
     .title = Ifecka i yizegrar imaṛṛa
+
+## Detail notifications
+## Variables:
+##   $name (String): name of the add-on.
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = { $name } ur imṣada ara d { -brand-short-name } { $version }.
+details-notification-incompatible-link = Ugar n telɣut
+
+details-notification-unsigned-and-disabled = { $name } ur iţusenqed ara i weseqdec-ines ɣef { -brand-short-name }, atan ihi irermed.
+details-notification-unsigned-and-disabled-link = Ugar n telɣut
+
+details-notification-unsigned = { $name } ur iţusenqed ara i weseqdec-ines ɣef { -brand-short-name }. Ɣuṛ-k.
+details-notification-unsigned-link = Ugar n telɣut
+
+details-notification-blocked = { $name } yensa imi d-imuger uguren n tɣellist neɣ n urkad.
+details-notification-blocked-link = Ugar n telɣut
+
+details-notification-softblocked = { $name } iţwassen dakken iggar-d uguren n tɣellist neɣ n urkad.
+details-notification-softblocked-link = Ugar n telɣut
+
+details-notification-gmp-pending = { $name } ad iţwasebded si sya ɣer da.

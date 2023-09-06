@@ -25,7 +25,6 @@ pocket-panel-saved-save-tags = जतन करा
 pocket-panel-saved-saving-tags = जतन करत आहे...
 pocket-panel-saved-suggested-tags = सूचविलेले टॅग
 pocket-panel-saved-tags-saved = टॅग जोडले
-pocket-panel-signup-view-list = यादी पहा
 
 ## about:pocket-signup panel
 
@@ -40,4 +39,8 @@ pocket-panel-signup-tagline-story-one = { -brand-product-name } वरील क
 pocket-panel-signup-tagline-story-two = कधीही कुठल्याही साधनावर { -pocket-brand-name } मध्ये पाहा.
 
 ## about:pocket-home panel
+
+## Pocket panel header component
+
+## Pocket panel buttons
 

@@ -38,20 +38,9 @@ menu-quit =
             [windows] x
            *[other] Q
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = { -brand-shorter-name }-gui ñesẽ
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = { -brand-shorter-name }-gui ñesẽ
-
 menu-about =
     .label = { -brand-shorter-name } rehegua
     .accesskey = A
@@ -81,8 +70,15 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Marandurendápe jeike…
     .accesskey = O
-menu-file-close =
-    .label = Mboty
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Emboty tendayke
+            [one] Emboty tendayke
+           *[other] Emboty { $tabCount } tendayke
+        }
     .accesskey = C
 menu-file-close-window =
     .label = Ovetã mboty
@@ -99,9 +95,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Kuatiarogue moambue…
     .accesskey = u
-menu-file-print-preview =
-    .label = Apopy mboyvegua recha
-    .accesskey = v
 menu-file-print =
     .label = Mbokuatia…
     .accesskey = P
@@ -188,6 +181,17 @@ menu-view-full-screen =
     .label = Mba’erechaha tuichavéva
     .accesskey = F
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Moñe’ẽha jehechápe jeike
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Moñe’ẽha jehecha mboty
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +220,9 @@ menu-history-undo-menu =
     .label = Tendayke oñembotyramóva
 menu-history-undo-window-menu =
     .label = Ovetã oñembotyramóva
-menu-history-reopen-all-tabs = Embojurujajey opaite tendayke
-menu-history-reopen-all-windows = Embojurujajey opaite ovetã
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Eheka Tembiasakue
 
 ## Bookmarks Menu
 
@@ -226,10 +231,13 @@ menu-bookmarks-menu =
     .accesskey = B
 menu-bookmarks-manage =
     .label = Eñangareko Techaukaháre
-menu-bookmark-current-tab =
-    .label = Emongurusu tendayke ag̃agua
-menu-bookmark-edit =
-    .label = Ko techaukaha mbosako’i
+menu-bookmark-tab =
+    .label = Embojuaju tendayke ag̃agua techaukaháre…
+menu-edit-bookmark =
+    .label = Embosako’i ko techaukaha…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Eheka techaukaha
 menu-bookmarks-all-tabs =
     .label = Tendayke mbojoapy techaukaháre…
 menu-bookmarks-toolbar =
@@ -314,15 +322,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = T
 menu-help-report-site-issue =
     .label = Eikuaauka iñapañuãiha ko Tenda…
-menu-help-feedback-page =
-    .label = Temiandu mondo…
-    .accesskey = T
+menu-help-share-ideas =
+    .label = Emoherakuã ãroky ha ñe’ẽngue…
+    .accesskey = S
 menu-help-enter-troubleshoot-mode2 =
     .label = Mba’éicha emyatyrõta apañuãi…
     .accesskey = M
 menu-help-exit-troubleshoot-mode =
     .label = Eipe’a mba’éicha emyatyrõta apañuãi
     .accesskey = M
+menu-help-switch-device =
+    .label = Eva ambue mba’e’okápe
+    .accesskey = N
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

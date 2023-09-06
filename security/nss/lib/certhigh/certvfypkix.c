@@ -817,6 +817,8 @@ cert_PkixErrorToNssCode(
     void *plContext)
 {
     int errLevel = 0;
+    (void)errLevel; /* Suppress unused var warning (Bug 1738028) */
+
     PKIX_Int32 nssErr = 0;
     PKIX_Error *errPtr = error;
 
@@ -833,11 +835,9 @@ cert_PkixErrorToNssCode(
         }
         if (pkixLog) {
 #ifdef PKIX_ERROR_DESCRIPTION
-            PR_LOG(pkixLog, 2, ("Error at level %d: %s\n", errLevel,
-                                PKIX_ErrorText[errPtr->errCode]));
+            PR_LOG(pkixLog, 2, ("Error at level %d: %s\n", errLevel, PKIX_ErrorText[errPtr->errCode]));
 #else
-            PR_LOG(pkixLog, 2, ("Error at level %d: Error code %d\n", errLevel,
-                                errPtr->errCode));
+            PR_LOG(pkixLog, 2, ("Error at level %d: Error code %d\n", errLevel, errPtr->errCode));
 #endif /* PKIX_ERROR_DESCRIPTION */
         }
         errPtr = errPtr->cause;
