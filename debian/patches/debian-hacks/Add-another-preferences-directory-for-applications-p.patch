@@ -13,18 +13,18 @@ to disable the "set as default browser" dialog.
  1 file changed, 2 insertions(+)
 
 diff --git a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
-index 50a64a2..87a33f1 100644
+index dac063c..db7e780 100644
 --- a/toolkit/xre/nsXREDirProvider.cpp
 +++ b/toolkit/xre/nsXREDirProvider.cpp
-@@ -805,6 +805,7 @@ static const char* const kAppendPrefDir[] = {"defaults", "preferences",
+@@ -682,6 +682,7 @@ static const char* const kAppendPrefDir[] = {"defaults", "preferences",
  static const char* const kAppendBackgroundTasksPrefDir[] = {
      "defaults", "backgroundtasks", nullptr};
  #endif
 +static const char *const kAppendSysPrefDir[] = { "defaults", "syspref", nullptr };
  
- nsresult nsXREDirProvider::GetFilesInternal(const char* aProperty,
-                                             nsISimpleEnumerator** aResult) {
-@@ -821,6 +822,7 @@ nsresult nsXREDirProvider::GetFilesInternal(const char* aProperty,
+ NS_IMETHODIMP
+ nsXREDirProvider::GetFiles(const char* aProperty,
+@@ -699,6 +700,7 @@ nsXREDirProvider::GetFiles(const char* aProperty,
        LoadDirIntoArray(mXULAppDir, kAppendBackgroundTasksPrefDir, directories);
      }
  #endif

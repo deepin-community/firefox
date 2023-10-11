@@ -127,9 +127,44 @@ cfr-whatsnew-release-notes-link-text = Izlasiet laidiena piezīmes
 
 ## Full Video Support CFR message
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+## Firefox View CFR
+
+## Firefox View Spotlight
+
+## Colorways expiry reminder CFR
+
+## Cookie Banner Handling CFR
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
 

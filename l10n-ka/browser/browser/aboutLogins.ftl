@@ -4,9 +4,11 @@
 # NOTE: New strings should use the about-logins- prefix.
 
 about-logins-page-title = ანგარიშები და პაროლები
-login-filter =
+about-logins-login-filter =
     .placeholder = ანგარიშების ძიება
-create-login-button = ანგარიშის ახალი მონაცემები
+    .key = F
+create-new-login-button =
+    .title = ახალი ანგარიშის მონაცემები
 fxaccounts-sign-in-text = გადმოიტანეთ პაროლები სხვა მოწყობილობებიდან
 fxaccounts-sign-in-sync-button = სინქრონიზაციაში შესვლა
 fxaccounts-avatar-button =
@@ -32,10 +34,20 @@ about-logins-menu-menuitem-help = დახმარება
 
 login-list =
     .aria-label = მოძიებული ანგარიშების მონაცემები
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } ანგარიშის მონაცემი
        *[other] { $count } ანგარიშის მონაცემი
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } სულ { $total } ანგარიშიდან
+       *[other] { $count } სულ { $total } ანგარიშიდან
     }
 login-list-sort-label-text = დალაგება:
 login-list-name-option = სახელი (ა-ჰ)
@@ -70,8 +82,8 @@ about-logins-login-intro-heading-logged-in = დასინქრონებ�
 login-intro-description = თუ თქვენს მონაცემებს { -brand-product-name } სხვა მოწყობილობაზე ინახავს, ნახეთ როგორ უნდა გადმოიტანოთ აქ:
 login-intro-instructions-fxa = შედით ან შექმენით { -fxaccount-brand-name } იმ მოწყობილობიდან, რომელზეც თქვენი ანგარიშები ინახება.
 login-intro-instructions-fxa-settings = გადადით პარამეტრებში > სინქრონიზაცია > სინქრონიზაციის ჩართვა… აირჩიეთ ანგარიშები და პაროლები.
-login-intro-instructions-fxa-help = იხილეთ <a data-l10n-name="help-link">{ -lockwise-brand-short-name }-მხარდაჭერის</a> გვერდი, დახმარების მისაღებად.
-about-logins-intro-import = თუ თქვენი ანგარიშების მონაცემებ, სხვა ბრაუზერში ინახება, შეგიძლიათ <a data-l10n-name="import-link">გადმოიტანოთ { -lockwise-brand-short-name }-ში</a>
+login-intro-instructions-fxa-passwords-help = იხილეთ <a data-l10n-name="passwords-help-link">პაროლების მხარდაჭერის გვერდი</a> დახმარების მისაღებად.
+about-logins-intro-browser-only-import = თუ თქვენი ანგარიშების მონაცემები, სხვა ბრაუზერშია, შეგიძლიათ <a data-l10n-name="import-link">გადმოიტანოთ და შეინახავს { -brand-product-name }</a>
 about-logins-intro-import2 = თუ თქვენი ანგარიში მონაცემებს { -brand-product-name } არ ინახავდა, შეგიძლიათ <a data-l10n-name="import-browser-link">გადმოიტანოთ სხვა ბრაუზერიდან</a> ან <a data-l10n-name="import-file-link">პირდაპირ ფაილიდან</a>
 
 ## Login
@@ -96,9 +108,17 @@ login-item-copied-password-button-text = ასლი აღებულია!
 login-item-save-changes-button = ცვლილებების შენახვა
 login-item-save-new-button = შენახვა
 login-item-cancel-button = გაუქმება
-login-item-time-changed = ბოლო ცვლილება: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = შექმნილი: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = ბოლო გამოყენება: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = შექმნილი
+login-item-timeline-action-updated = განახლებული
+login-item-timeline-action-used = გამოყენებული
 
 ## OS Authentication dialog
 
@@ -141,9 +161,13 @@ master-password-reload-button =
 confirmation-dialog-cancel-button = გაუქმება
 confirmation-dialog-dismiss-button =
     .title = გაუქმება
-about-logins-confirm-remove-dialog-title = მოცილდეს ეს მონაცემები?
+about-logins-confirm-remove-dialog-title = გსურთ ამ მონაცემების მოცილება?
 confirm-delete-dialog-message = ეს ქმედება შეუქცევადია.
 about-logins-confirm-remove-dialog-confirm-button = მოცილება
+
+## Variables
+##   $count (number) - Number of items
+
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
         [1] მოცილება
@@ -162,21 +186,24 @@ about-logins-confirm-remove-all-dialog-title =
     }
 about-logins-confirm-remove-all-dialog-message =
     { $count ->
-        [1] შედეგად წაიშლება ანგარიშის მონაცემები, რომელსაც ინახავს { -brand-short-name } და მოსცილდება მიტაცებებზე შეტყობინებები. ეს ქმედება შეუქცევადია.
-        [one] შედეგად წაიშლება ანგარიშის მონაცემები, რომელსაც ინახავს { -brand-short-name } და მოსცილდება მიტაცებებზე შეტყობინებები. ეს ქმედება შეუქცევადია.
-       *[other] შედეგად წაიშლება ანგარიშების მონაცემები, რომელთაც ინახავს { -brand-short-name } და მოსცილდება მიტაცებებზე შეტყობინებები. ეს ქმედება შეუქცევადია.
+        [1] შედეგად წაიშლება ანგარიშის მონაცემები, რომელსაც ინახავს { -brand-short-name } და მოცილდება მიტაცებებზე შეტყობინებები. ეს ქმედება შეუქცევადია.
+        [one] შედეგად წაიშლება ანგარიშის მონაცემები, რომელსაც ინახავს { -brand-short-name } და მოცილდება მიტაცებებზე შეტყობინებები. ეს ქმედება შეუქცევადია.
+       *[other] შედეგად წაიშლება ანგარიშების მონაცემები, რომელთაც ინახავს { -brand-short-name } და მოცილდება მიტაცებებზე შეტყობინებები. ეს ქმედება შეუქცევადია.
     }
 about-logins-confirm-remove-all-sync-dialog-title =
     { $count ->
         [one] მოცილდეს { $count } ანგარიში ყველა მოწყობილობიდან?
-       *[other] მოცილდეს { $count } ანგარიში ყველა მოწყობილობიდან
+       *[other] მოცილდეს { $count } ანგარიში ყველა მოწყობილობიდან?
     }
 about-logins-confirm-remove-all-sync-dialog-message =
     { $count ->
-        [1] შედეგად წაიშლება ანგარიშის მონაცემები, რომელსაც ინახავს { -brand-short-name } და ასინქრონებს ყველა მოწყობილობაზე { -fxaccount-brand-name(case: "ins") }. აგრეთვე მოსცილდება მიტაცებებზე შეტყობინებებიც. ეს ქმედება შეუქცევადია.
-        [one] შედეგად წაიშლება ანგარიშის მონაცემები, რომელსაც ინახავს { -brand-short-name } და ასინქრონებს ყველა მოწყობილობაზე { -fxaccount-brand-name(case: "ins") }. აგრეთვე მოსცილდება მიტაცებებზე შეტყობინებებიც. ეს ქმედება შეუქცევადია.
-       *[other] შედეგად წაიშლება ანგარიშების მონაცემები, რომელთაც ინახავს { -brand-short-name } და ასინქრონებს ყველა მოწყობილობაზე { -fxaccount-brand-name(case: "ins") }. აგრეთვე მოსცილდება მიტაცებებზე შეტყობინებებიც. ეს ქმედება შეუქცევადია.
+        [1] შედეგად წაიშლება ანგარიშის მონაცემები, რომელსაც ინახავს { -brand-short-name } და ასინქრონებს ყველა მოწყობილობაზე { -fxaccount-brand-name(case: "ins") }. აგრეთვე მოცილდება მიტაცებებზე შეტყობინებებიც. ეს ქმედება შეუქცევადია.
+        [one] შედეგად წაიშლება ანგარიშის მონაცემები, რომელსაც ინახავს { -brand-short-name } და ასინქრონებს ყველა მოწყობილობაზე { -fxaccount-brand-name(case: "ins") }. აგრეთვე მოცილდება მიტაცებებზე შეტყობინებებიც. ეს ქმედება შეუქცევადია.
+       *[other] შედეგად წაიშლება ანგარიშების მონაცემები, რომელთაც ინახავს { -brand-short-name } და ასინქრონებს ყველა მოწყობილობაზე { -fxaccount-brand-name(case: "ins") }. აგრეთვე მოცილდება მიტაცებებზე შეტყობინებებიც. ეს ქმედება შეუქცევადია.
     }
+
+##
+
 about-logins-confirm-export-dialog-title = მონაცემებისა და პაროლების გატანა
 about-logins-confirm-export-dialog-message = თქვენი პაროლები შეინახება წასაკითხ ტექსტად (მაგ. BadP@ssw0rd) ასე რომ, ნებისმიერს შეეძლება მათი ნახვა, თუ გატანილ ფაილს გახსნის.
 about-logins-confirm-export-dialog-confirm-button = გატანა…
@@ -189,12 +216,11 @@ confirm-discard-changes-dialog-confirm-button = გაუქმება
 ## Breach Alert notification
 
 about-logins-breach-alert-title = იერიშმიტანილი საიტი
-breach-alert-text = პაროლების მონაცემები გაიტაცეს ან გაჟონა ამ საიტიდან მას შემდეგ, რაც ბოლოს განაახლეთ თქვენი ანგარიშის ინფორმაცია. ანგარიშის უსაფრთხოებისთვის, შეცვალეთ თქვენი პაროლი.
+breach-alert-text = პაროლების მონაცემები გაიტაცეს ან გაჟონა ამ საიტიდან მას შემდეგ, რაც ბოლოს განაახლეთ თქვენი ანგარიშის ინფორმაცია. ანგარიშის უსაფრთხოებისთვის შეცვალეთ თქვენი პაროლი.
 about-logins-breach-alert-date = მიტაცების თარიღი { DATETIME($date, day: "numeric", month: "long", year: "numeric") }
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = გადასვლა საიტზე { $hostname }
-about-logins-breach-alert-learn-more-link = იხილეთ ვრცლად
 
 ## Vulnerable Password notification
 

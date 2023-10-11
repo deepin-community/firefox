@@ -7,8 +7,16 @@ const TEST_PATH =
   TEST_DOMAIN + "browser/browser/components/originattributes/test/browser/";
 const TEST_PAGE = TEST_PATH + "file_broadcastChannel.html";
 
+// IsolationTestTools flushes all preferences
+// hence we explicitly pref off https-first mode
+async function prefOffHttpsFirstMode() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["dom.security.https_first", false]],
+  });
+}
+
 async function doTest(aBrowser) {
-  let response = await SpecialPowers.spawn(aBrowser, [], async function() {
+  let response = await SpecialPowers.spawn(aBrowser, [], async function () {
     let displayItem = content.document.getElementById("display");
 
     // If there is nothing in the 'display', we will try to send a message to
@@ -44,4 +52,4 @@ async function doTest(aBrowser) {
   return response;
 }
 
-IsolationTestTools.runTests(TEST_PAGE, doTest);
+IsolationTestTools.runTests(TEST_PAGE, doTest, null, prefOffHttpsFirstMode);

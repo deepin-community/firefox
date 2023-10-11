@@ -65,6 +65,9 @@ media-dimension =
     .value = Dimension:
 media-long-desc =
     .value = Lång beskrivning:
+media-select-all =
+    .label = Välj alla
+    .accesskey = V
 media-save-as =
     .label = Spara som…
     .accesskey = S
@@ -73,10 +76,10 @@ media-save-image-as =
     .accesskey = p
 
 perm-tab =
-    .label = Rättigheter
-    .accesskey = t
+    .label = Behörigheter
+    .accesskey = B
 permissions-for =
-    .value = Rättigheter för:
+    .value = Behörigheter för:
 
 security-tab =
     .label = Säkerhet
@@ -100,7 +103,7 @@ security-view-privacy =
     .value = Sekretess & historik
 
 security-view-privacy-history-value = Har jag besökt den här webbplatsen tidigare dagar?
-security-view-privacy-sitedata-value = Lagrar denna webbplats information på min dator?
+security-view-privacy-sitedata-value = Lagrar den här webbplatsen information på min dator?
 
 security-view-privacy-clearsitedata =
     .label = Rensa kakor och webbplatsdata
@@ -153,7 +156,7 @@ saved-passwords-no = Nej
 no-page-title =
     .value = Namnlös sida:
 general-quirks-mode =
-    .value = Tolerant läge
+    .value = Bristfällig kod
 general-strict-mode =
     .value = Strikt enligt standard
 page-info-security-no-owner =
@@ -240,6 +243,9 @@ media-dimensions =
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } kB
 
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
+
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab
 # Variables:
@@ -251,7 +257,7 @@ media-block-image =
 # This string is used to display the URL of the website on top of the
 # pageInfo dialog box
 # Variables:
-#   $website (string) - The url of the website pageInfo is getting info for
+#   $website (string) — The url of the website pageInfo is getting info for
 page-info-page =
     .title = Sidinfo - { $website }
 page-info-frame =

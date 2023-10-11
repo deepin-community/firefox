@@ -5,12 +5,12 @@
 
 about-logins-page-title = Käyttäjätunnukset ja salasanat
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Etsi kirjautumistietoja
+    .key = F
 
-create-login-button = Luo uusi kirjautumistieto
+create-new-login-button =
+    .title = Luo uusi kirjautumistieto
 
 fxaccounts-sign-in-text = Käytä salasanojasi kaikilla laitteillasi
 fxaccounts-sign-in-sync-button = Kirjaudu synkronoidaksesi
@@ -33,10 +33,20 @@ about-logins-menu-menuitem-help = Ohje
 
 login-list =
     .aria-label = Hakuasi vastaavat kirjautumistiedot
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } kirjautumistieto
        *[other] { $count } kirjautumistietoa
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count }/{ $total } kirjautumistieto
+       *[other] { $count }/{ $total } kirjautumistietoa
     }
 login-list-sort-label-text = Järjestys:
 login-list-name-option = Nimi (A–Ö)
@@ -57,7 +67,6 @@ about-logins-list-item-breach-icon =
     .title = Tietovuodon kokenut sivusto
 about-logins-list-item-vulnerable-password-icon =
     .title = Vaarantunut salasana
-
 about-logins-list-section-breach = Tietovuodon kokeneet sivustot
 about-logins-list-section-vulnerable = Vaarantuneet salasanat
 about-logins-list-section-nothing = Ei hälytystä
@@ -72,8 +81,8 @@ about-logins-login-intro-heading-logged-in = Synkronoituja kirjautumistietoja ei
 login-intro-description = Jos tallensit kirjautumistietosi { -brand-product-name }-selaimeen toisella laitteella, saat ne käyttöön seuraavasti:
 login-intro-instructions-fxa = Kirjaudu { -fxaccount-brand-name(case: "allative") } tai luo tili laitteella, jolle kirjautumistietosi on tallennettu.
 login-intro-instructions-fxa-settings = Avaa Asetukset > Synkronointi > Ota synkronointi käyttöön… Valitse valintaruutu ”Käyttäjätunnukset ja salasanat”.
-login-intro-instructions-fxa-help = Siirry <a data-l10n-name="help-link">{ -lockwise-brand-short-name }-tukeen</a> saadaksesi ohjeita.
-about-logins-intro-import = Jos kirjautumistietosi on tallennettu toiseen selaimeen, voit <a data-l10n-name="import-link">tuoda ne { -lockwise-brand-short-name }en</a>
+login-intro-instructions-fxa-passwords-help = Käy <a data-l10n-name="passwords-help-link">salasanatuessa</a> saadaksesi lisätietoja.
+about-logins-intro-browser-only-import = Jos kirjautumistietojasi on tallennettu toiseen selaimeen, voit <a data-l10n-name="import-link">tuoda ne { -brand-product-name }iin</a>
 about-logins-intro-import2 = Jos kirjautumistietosi on tallennettu { -brand-product-name }-selaimen ulkopuolelle, voit <a data-l10n-name="import-browser-link">tuoda ne toisesta selaimesta</a> tai <a data-l10n-name="import-file-link">tiedostosta</a>
 
 ## Login
@@ -98,9 +107,17 @@ login-item-copied-password-button-text = Kopioitu!
 login-item-save-changes-button = Tallenna muutokset
 login-item-save-new-button = Tallenna
 login-item-cancel-button = Peruuta
-login-item-time-changed = Viimeksi muokattu: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Luotu: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Viimeksi käytetty: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "numeric", year: "numeric") }
+login-item-timeline-action-created = Luotu
+login-item-timeline-action-updated = Päivitetty
+login-item-timeline-action-used = Käytetty
 
 ## OS Authentication dialog
 
@@ -128,8 +145,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Kopioi salasana kirjoitt
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = kopioida tallennetun salasanan
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Jatka kirjautumistietojesi vientiin kirjoittamalla Windows-kirjautumistiedot. Tämä auttaa suojaamaan tilejäsi.
 # This message can be seen when attempting to export a password in about:logins
@@ -143,8 +158,6 @@ master-password-reload-button =
     .label = Kirjaudu
     .accesskey = K
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Peruuta
@@ -154,6 +167,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Poistetaanko tämä kirjautumistieto?
 confirm-delete-dialog-message = Tätä toimintoa ei voi perua.
 about-logins-confirm-remove-dialog-confirm-button = Poista
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -189,6 +205,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Tämä poistaa kaikki kirjautumistiedot, jotka olet tallentanut { -brand-short-name }iin, kaikilta laitteilta, jotka on synkronoitu { -fxaccount-brand-name(case: "allative") }. Tämä poistaa myös tässä näkyvät vuotohälytykset. Tätä toimintoa ei voi kumota.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Vie kirjautumistiedot ja salasanat
 about-logins-confirm-export-dialog-message = Salasanasi tallennetaan luettavaan muotoon (esim. hu0n0s4l4s4n4), joten kuka tahansa viedyn tiedoston avaamiseen kykenevä voi nähdä salasanat.
 about-logins-confirm-export-dialog-confirm-button = Vie…
@@ -208,7 +226,6 @@ about-logins-breach-alert-date = Tämä vuoto tapahtui { DATETIME($date, day: "n
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Siirry sivustolle { $hostname }
-about-logins-breach-alert-learn-more-link = Lue lisää
 
 ## Vulnerable Password notification
 

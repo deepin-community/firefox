@@ -41,6 +41,17 @@ options-collapse-attrs-label = DOM 속성 줄이기
 options-collapse-attrs-tooltip =
     .title = 검사기에서 긴 속성을 줄입니다
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = 클릭하고 드래그하여 크기 값 편집
+options-inspector-draggable-properties-tooltip =
+    .title = 검사기 규칙 보기에서 크기 값을 편집하려면 클릭하고 드래그하세요.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = prefers-reduced-motion에 단순한 하이라이터 사용
+options-inspector-simplified-highlighters-tooltip =
+    .title = prefers-reduced-motion이 활성화되면 단순한 하이라이터를 활성화합니다. 깜박이는 효과를 피하기 위해 강조 표시된 요소 주위에 채워진 사각형 대신 선을 그립니다.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = 기본 색상 단위
@@ -48,6 +59,7 @@ options-default-color-unit-authored = 작성된 대로
 options-default-color-unit-hex = Hex
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = 색상 이름
 
 ## Style Editor section
@@ -73,7 +85,7 @@ options-screenshot-clipboard-tooltip2 =
 # Label for the checkbox that toggles the camera shutter audio for screenshot tool
 options-screenshot-audio-label = 카메라 셔터 소리 재생
 options-screenshot-audio-tooltip =
-    .title = 스크린샷을 찍을 때 카메라 셔터 소리를 재생합니다
+    .title = 스크린샷을 찍을 때 카메라 오디오 소리를 사용
 
 ## Editor section
 
@@ -118,6 +130,16 @@ options-enable-remote-label = 원격 디버깅 사용
 options-enable-remote-tooltip2 =
     .title = 이 옵션을 켜면 이 브라우저 인스턴스를 원격으로 디버깅 할 수 있습니다
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = F12 키를 사용하여 개발자 도구를 열거나 닫음
+options-enable-f12-tooltip =
+    .title = 이 옵션을 켜면 F12 키가 바인딩되어 개발자 도구 상자를 열거나 닫습니다
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = 사용자 지정 포맷터 사용
+options-enable-custom-formatters-tooltip =
+    .title = 이 옵션을 켜면 사이트가 DOM 개체에 대한 사용자 지정 포맷터를 정의할 수 있습니다
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = HTTP를 통한 Service Worker 사용 (도구상자가 열려 있을 때)
 options-enable-service-workers-http-tooltip =
@@ -130,9 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * 현재 세션만 해당되며, 페이지를 새로 고침
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Gecko 플랫폼 데이터
-options-show-platform-data-tooltip =
-    .title = 이 옵션을 사용하면 JavaScript 프로파일러 보고서에 Gecko 플랫폼 기호가 들어갑니다

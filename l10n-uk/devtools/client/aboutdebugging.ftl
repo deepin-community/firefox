@@ -9,11 +9,12 @@
 # Page Title strings
 
 # Page title (ie tab title) for the Setup page
-about-debugging-page-title-setup-page = Зневадження - Налаштування
+about-debugging-page-title-setup-page = Налагодження - Налаштування
 
 # Page title (ie tab title) for the Runtime page
-# { $selectedRuntimeId } is the id of the current runtime, such as "this-firefox", "localhost:6080", ...
-about-debugging-page-title-runtime-page = Зневадження - Runtime / { $selectedRuntimeId }
+# Variables:
+#   $selectedRuntimeId - ID of the current runtime, such as "this-firefox", "localhost:6080", etc.
+about-debugging-page-title-runtime-page = Налагодження - Runtime / { $selectedRuntimeId }
 
 # Sidebar strings
 
@@ -59,7 +60,7 @@ about-debugging-sidebar-item-connect-button-connection-failed = Не вдало�
 about-debugging-sidebar-item-connect-button-connection-not-responding = З'єднання все ще очікується. Перевірте повідомлення в цільовому браузері
 
 # Text displayed as connection error in sidebar item when the connection has timed out.
-about-debugging-sidebar-item-connect-button-connection-timeout = Час очікування з’єднання закінчився
+about-debugging-sidebar-item-connect-button-connection-timeout = Час очікування з'єднання завершився
 
 # Text displayed in sidebar items for remote devices where a compatible browser (eg
 # Firefox) has not been detected yet. Typically, Android phones connected via USB with
@@ -71,16 +72,21 @@ about-debugging-sidebar-runtime-item-waiting-for-browser = Очікування 
 about-debugging-sidebar-runtime-item-unplugged = Відключено
 
 # Title for runtime sidebar items that are related to a specific device (USB, WiFi).
+# Variables:
+#   $displayName (string) - Displayed name
+#   $deviceName (string) - Name of the device
 about-debugging-sidebar-runtime-item-name =
     .title = { $displayName } ({ $deviceName })
 # Title for runtime sidebar items where we cannot get device information (network
 # locations).
+# Variables:
+#   $displayName (string) - Displayed name
 about-debugging-sidebar-runtime-item-name-no-device =
     .title = { $displayName }
 
 # Text to show in the footer of the sidebar that links to a help page
-# (currently: https://developer.mozilla.org/docs/Tools/about:debugging)
-about-debugging-sidebar-support = Допомога зі зневадженням
+# (currently: https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/)
+about-debugging-sidebar-support = Допомога із налагодженням
 
 # Text to show as the ALT attribute of a help icon that accompanies the help about
 # debugging link in the footer of the sidebar
@@ -97,10 +103,10 @@ about-debugging-refresh-usb-devices-button = Оновити список при�
 about-debugging-setup-title = Налаштування
 
 # Introduction text in the Setup page to explain how to configure remote debugging.
-about-debugging-setup-intro = Налаштуйте метод з'єднання, за допомогою якого ви бажаєте виконати віддалене зневадження свого пристрою.
+about-debugging-setup-intro = Налаштуйте метод з'єднання, за допомогою якого ви бажаєте виконати віддалене налагодження свого пристрою.
 
 # Explanatory text in the Setup page about what the 'This Firefox' page is for
-about-debugging-setup-this-firefox2 = Використовуйте <a>{ about-debugging-this-firefox-runtime-name }</a> для зневадження розширень і service workers в цій версії { -brand-shorter-name }.
+about-debugging-setup-this-firefox2 = Використовуйте <a>{ about-debugging-this-firefox-runtime-name }</a> для налагодження розширень і service workers в цій версії { -brand-shorter-name }.
 
 # Title of the heading Connect section of the Setup page.
 about-debugging-setup-connect-heading = Під'єднати пристрій
@@ -109,7 +115,7 @@ about-debugging-setup-connect-heading = Під'єднати пристрій
 about-debugging-setup-usb-title = USB
 
 # Explanatory text displayed in the Setup page when USB debugging is disabled
-about-debugging-setup-usb-disabled = Увімкнення цієї функції завантажить і додасть необхідні компоненти зневадження Android USB до { -brand-shorter-name }.
+about-debugging-setup-usb-disabled = Увімкнення цієї функції завантажить і додасть необхідні компоненти налагодження Android USB до { -brand-shorter-name }.
 
 # Text of the button displayed in the USB section of the setup page when USB debugging is disabled.
 # Clicking on it will download components needed to debug USB Devices remotely.
@@ -131,16 +137,16 @@ about-debugging-setup-usb-status-updating = Оновлення…
 about-debugging-setup-usb-step-enable-dev-menu2 = Увімкніть меню Розробник на пристрої Android.
 
 # USB section step by step guide
-about-debugging-setup-usb-step-enable-debug2 = Увімкніть зневадження через USB в меню розробника Android.
+about-debugging-setup-usb-step-enable-debug2 = Увімкніть налагодження через USB в меню розробника Android.
 
 # USB section step by step guide
-about-debugging-setup-usb-step-enable-debug-firefox2 = Увімкніть зневадження через USB в Firefox на пристрої Android.
+about-debugging-setup-usb-step-enable-debug-firefox2 = Увімкніть налагодження через USB у Firefox на пристрої Android.
 
 # USB section step by step guide
 about-debugging-setup-usb-step-plug-device = Під'єднайте пристрій Android до комп'ютера.
 
 # Text shown in the USB section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/docs/Tools/Remote_Debugging/Debugging_over_USB
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-to-a-remote-device
 about-debugging-setup-usb-troubleshoot = Проблеми з підключенням до пристрою через USB? <a>Пошук рішення</a>
 
 # Network section of the Setup page
@@ -148,7 +154,7 @@ about-debugging-setup-network =
     .title = Мережеве розташування
 
 # Text shown in the Network section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/en-US/docs/Tools/Remote_Debugging/Debugging_over_a_network
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-over-the-network
 about-debugging-setup-network-troubleshoot = Проблеми з підключенням через мережеве розташування? <a>Пошук рішення</a>
 
 # Text of a button displayed after the network locations "Host" input.
@@ -161,7 +167,7 @@ about-debugging-network-locations-empty-text = Поки що не додано �
 # Text of the label for the text input that allows users to add new network locations in
 # the Connect page. A host is a hostname and a port separated by a colon, as suggested by
 # the input's placeholder "localhost:6080".
-about-debugging-network-locations-host-input-label = Вузол
+about-debugging-network-locations-host-input-label = Хост
 
 # Text of a button displayed next to existing network locations in the Connect page.
 # Clicking on it removes the network location from the list.
@@ -170,12 +176,12 @@ about-debugging-network-locations-remove-button = Вилучити
 # Text used as error message if the format of the input value was invalid in the network locations form of the Setup page.
 # Variables:
 #   $host-value (string) - The input value submitted by the user in the network locations form
-about-debugging-network-location-form-invalid = Неправильний вузол “{ $host-value }”. Правильний формат “hostname:portnumber”.
+about-debugging-network-location-form-invalid = Недійсний хост “{ $host-value }”. Правильний формат “hostname:portnumber”.
 
 # Text used as error message if the input value was already registered in the network locations form of the Setup page.
 # Variables:
 #   $host-value (string) - The input value submitted by the user in the network locations form
-about-debugging-network-location-form-duplicate = Вузол “{ $host-value }” вже зареєстрований
+about-debugging-network-location-form-duplicate = Хост “{ $host-value }” вже зареєстрований
 
 # Runtime Page strings
 
@@ -208,22 +214,22 @@ about-debugging-runtime-processes =
 about-debugging-runtime-profile-button2 = Профіль швидкодії
 
 # This string is displayed in the runtime page if the current configuration of the
-# target runtime is incompatible with service workers. "Learn more" points to MDN.
-# https://developer.mozilla.org/en-US/docs/Tools/about%3Adebugging#Service_workers_not_compatible
+# target runtime is incompatible with service workers. "Learn more" points to:
+# https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#service-workers-not-compatible
 about-debugging-runtime-service-workers-not-compatible = Конфігурація вашого браузера несумісна з Service Workers. <a>Докладніше</a>
 
 # This string is displayed in the runtime page if the remote browser version is too old.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
 # { $minVersion } is the minimum version that is compatible with the current Firefox instance (same format)
 about-debugging-browser-version-too-old = Під'єднаний браузер має застарілу версію ({ $runtimeVersion }). Мінімальна підтримувана версія ({ $minVersion }). Ця конфігурація не підтримується і може призвести до збою DevTools. Будь ласка, оновіть під'єднаний браузер. <a>Розв'язання проблем</a>
 
 # Dedicated message for a backward compatibility issue that occurs when connecting:
 # from Fx 70+ to the old Firefox for Android (aka Fennec) which uses Fx 68.
-about-debugging-browser-version-too-old-fennec = Ця версія Firefox не може зневадити Firefox для Android (68). Радимо встановити Firefox для Android Nightly на ваш телефон для тестування. <a>Детальніше</a>
+about-debugging-browser-version-too-old-fennec = Ця версія Firefox не може налагодити Firefox для Android (68). Радимо встановити Firefox для Android Nightly на ваш телефон для тестування. <a>Детальніше</a>
 
 # This string is displayed in the runtime page if the remote browser version is too recent.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeID } is the build ID of the remote browser (for instance "20181231", format is yyyyMMdd)
 # { $localID } is the build ID of the current Firefox instance (same format)
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
@@ -241,11 +247,11 @@ about-debugging-runtime-disconnect-button = Від'єднати
 
 # Text of the connection prompt button displayed in Runtime pages, when the preference
 # "devtools.debugger.prompt-connection" is false on the target runtime.
-about-debugging-connection-prompt-enable-button = Увімкнути запит на підключення
+about-debugging-connection-prompt-enable-button = Увімкнути запит на під'єднання
 
 # Text of the connection prompt button displayed in Runtime pages, when the preference
 # "devtools.debugger.prompt-connection" is true on the target runtime.
-about-debugging-connection-prompt-disable-button = Вимкнути запит на підключення
+about-debugging-connection-prompt-disable-button = Вимкнути запит на під'єднання
 
 # Title of a modal dialog displayed on remote runtime pages after clicking on the Profile Runtime button.
 about-debugging-profiler-dialog-title2 = Profiler
@@ -281,6 +287,12 @@ about-debugging-tmp-extension-reload-button = Перезавантажити
 # Clicking on the button will uninstall the extension and remove it from the page.
 about-debugging-tmp-extension-remove-button = Вилучити
 
+# Text of a button displayed for a temporary extension loaded in the "This Firefox" page.
+# Clicking on the button will forcefully terminate the extension background script (button
+# only visible in extensions that includes a non-persistent background script, either an
+# event page or a background service worker).
+about-debugging-tmp-extension-terminate-bgscript-button = Завершити фоновий скрипт
+
 # Message displayed in the file picker that opens to select a temporary extension to load
 # (triggered by the button using "about-debugging-tmp-extension-install-button")
 # manifest.json .xpi and .zip should not be localized.
@@ -309,6 +321,18 @@ about-debugging-extension-location =
 # For instance "geckoprofiler@mozilla.com" or "{ed26ddcb-5611-4512-a89a-51b8db81cfb2}".
 about-debugging-extension-id =
     .label = ID розширення
+
+# Text displayed for extensions in "runtime" pages, before displaying the status of the
+# extension background script.
+about-debugging-extension-backgroundscript =
+    .label = Фоновий скрипт
+
+# Displayed for extension using a non-persistent background page (either an event page or
+# background service worker) when the background script is currently running.
+about-debugging-extension-backgroundscript-status-running = Виконується
+
+# Displayed for extension using a non-persistent background page when is currently stopped.
+about-debugging-extension-backgroundscript-status-stopped = Зупинено
 
 # This string is displayed as a label of the button that pushes a test payload
 # to a service worker.
@@ -363,17 +387,10 @@ about-debugging-zombie-tab-inspect-action-disabled =
 
 # Displayed as name for the Main Process debug target in the Processes category. Only for
 # remote runtimes, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-name = Головний процес
+about-debugging-multiprocess-toolbox-name = Панель багатопроцесності
 
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-description2 = Головний процес для цільового браузера
-
-# Displayed instead of the Main Process debug target when the preference
-# `devtools.browsertoolbox.fission` is true.
-about-debugging-multiprocess-toolbox-name = Панель багатопроцесності
-
-# Description for the Multiprocess Toolbox target.
 about-debugging-multiprocess-toolbox-description = Основний процес і процеси вмісту цільового браузера
 
 # Alt text used for the close icon of message component (warnings, errors and notifications).

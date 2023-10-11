@@ -13,6 +13,9 @@ about-webrtc-document-title = Detalles internos de WebRTC
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = nombra y alza a salida d'about:webrtc
 
+## These labels are for a disclosure which contains the information for closed PeerConnection sections
+
+
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = Rechistro d'AEC
@@ -20,7 +23,13 @@ about-webrtc-aec-logging-off-state-label = Empecipiar o rechistro d'AEC
 about-webrtc-aec-logging-on-state-label = Atura o rechistro d'AEC
 about-webrtc-aec-logging-on-state-msg = Rechistro d'AEC activo (parle con o interlocutor por bells minutos y dimpués ature a captura)
 
+about-webrtc-aec-logging-toggled-on-state-msg = Rechistro d'AEC activo (parle con o interlocutor por bells minutos y dimpués ature a captura)
+# Variables:
+#  $path (String) - The path to which the aec log file is saved.
+about-webrtc-aec-logging-toggled-off-state-msg = Os fichers de rechistro capturaus se troban en: { $path }
+
 ##
+
 
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
@@ -57,9 +66,6 @@ about-webrtc-ice-pair-bytes-sent = Bytes ninviaus:
 about-webrtc-ice-pair-bytes-received = Bytes recibius:
 about-webrtc-ice-component-id = ID de componente
 
-## "Avg." is an abbreviation for Average. These are used as data labels.
-
-
 ## These adjectives are used to label a line of statistics collected for a peer
 ## connection. The data represents either the local or remote end of the
 ## connection.
@@ -68,7 +74,6 @@ about-webrtc-type-local = Local
 about-webrtc-type-remote = Remoto
 
 ##
-
 
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
@@ -92,6 +97,11 @@ about-webrtc-log-show-msg = amuestra o rechistro
 about-webrtc-log-hide-msg = amaga o rechistro
     .title = fe clic pa reducir ista sección
 
+about-webrtc-log-section-show-msg = Amuestra o rechistro
+    .title = Fe clic ta ixamplar ista sección
+about-webrtc-log-section-hide-msg = Amaga o rechistro
+    .title = Fe clic pa reducir ista sección
+
 ## These are used to display a header for a PeerConnection.
 ## Variables:
 ##  $browser-id (Number) - A numeric id identifying the browser tab for the PeerConnection.
@@ -102,8 +112,12 @@ about-webrtc-log-hide-msg = amaga o rechistro
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (zarrau) { $now }
 
-##
+## These are used to indicate what direction media is flowing.
+## Variables:
+##  $codecs - a list of media codecs
 
+
+##
 
 about-webrtc-local-candidate = Candidato local
 about-webrtc-remote-candidate = Candidato remoto
@@ -114,18 +128,31 @@ about-webrtc-raw-cand-show-msg = amostrar los candidatos crudos
     .title = fe clic ta ixamplar ista sección
 about-webrtc-raw-cand-hide-msg = amagar los candidatos crudos
     .title = fe clic pa reducir ista sección
+about-webrtc-raw-cand-section-show-msg = Amostrar los candidatos crudos
+    .title = Fe clic ta ixamplar ista sección
+about-webrtc-raw-cand-section-hide-msg = Amagar los candidatos crudos
+    .title = Fe clic pa reducir ista sección
 about-webrtc-priority = Prioridat
 about-webrtc-fold-show-msg = amostrar os detalles
     .title = fe clic ta ixamplar ista sección
 about-webrtc-fold-hide-msg = Amagar os detalles
     .title = fe clic pa reducir ista sección
+about-webrtc-fold-default-show-msg = Amostrar os detalles
+    .title = Fe clic ta ixamplar ista sección
+about-webrtc-fold-default-hide-msg = Amagar os detalles
+    .title = Fe clic pa reducir ista sección
 about-webrtc-decoder-label = Descodificador
 about-webrtc-encoder-label = Codificador
 
 ## SSRCs are identifiers that represent endpoints in an RTP stream
 
 
+## These are displayed on the button that shows or hides the
+## PeerConnection configuration disclosure
+
+
 ##
+
 
 ## These are paths used for saving the about:webrtc page or log files so
 ## they can be attached to bug reports.
@@ -136,6 +163,10 @@ about-webrtc-save-page-msg = a pachina s'ha alzau en: { $path }
 about-webrtc-debug-mode-off-state-msg = o rechistro de traza se troba en: { $path }
 about-webrtc-debug-mode-on-state-msg = o modo de depuración activo: o rechistro de traza ye en: { $path }
 about-webrtc-aec-logging-off-state-msg = os fichers de rechistro capturaus se troban en: { $path }
+
+about-webrtc-save-page-complete-msg = A pachina s'ha alzau en: { $path }
+about-webrtc-debug-mode-toggled-off-state-msg = O rechistro de traza se troba en: { $path }
+about-webrtc-debug-mode-toggled-on-state-msg = O modo de depuración activo: o rechistro de traza ye en: { $path }
 
 ##
 
@@ -154,9 +185,12 @@ about-webrtc-trickle-caption-msg = Los candidatos lentos (que arriban dimpués d
 ## See http://wikipedia.org/wiki/Session_Description_Protocol
 
 
-##
+## These are displayed on the button that shows or hides the SDP information disclosure
 
-##
+
+## These are displayed on the button that shows or hides the Media Context information disclosure.
+## The Media Context is the set of preferences and detected capabilities that informs
+## the negotiated CODEC settings.
 
 
 ##

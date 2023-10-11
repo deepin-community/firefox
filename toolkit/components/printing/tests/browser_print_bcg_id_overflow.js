@@ -9,7 +9,7 @@ const TEST_PATH = getRootDirectory(gTestPath).replace(
 );
 
 // The actual uri we open doesn't really matter.
-const OPENED_URI = PrintHelper.defaultTestPageUrl;
+const OPENED_URI = PrintHelper.defaultTestPageUrlHTTPS;
 
 // Test for bug 1669554:
 //
@@ -22,15 +22,11 @@ const OPEN_NOOPENER_WINDOW = `
 `;
 
 add_task(async function test_bc_id_overflow() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["print.tab_modal.enabled", true]],
-  });
-
   is(document.querySelector(".printPreviewBrowser"), null);
 
   await BrowserTestUtils.withNewTab(
     `data:text/html,` + encodeURIComponent(OPEN_NOOPENER_WINDOW),
-    async function(browser) {
+    async function (browser) {
       let tabOpenedPromise = BrowserTestUtils.waitForNewTab(
         gBrowser,
         OPENED_URI,

@@ -55,26 +55,31 @@ test(t => {
                         'getComputedTiming().endTime after set delay -100');
 }, 'Allows setting the delay to a negative number');
 
-test(t => {
+promise_test(async t => {
   const anim = createScrollLinkedAnimationWithTiming(t, {duration: 100})
   anim.play();
+  await anim.ready;
   anim.effect.updateTiming({ delay: 100 });
   assert_equals(anim.effect.getComputedTiming().progress, null);
   assert_equals(anim.effect.getComputedTiming().currentIteration, null);
 }, 'Allows setting the delay of an animation in progress: positive delay that'
    + ' causes the animation to be no longer in-effect');
 
-test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t, { fill: 'both', duration: 100 })
+promise_test(async t => {
+  const anim =
+      createScrollLinkedAnimationWithTiming(t, { fill: 'both', duration: 100 });
   anim.play();
+  await anim.ready;
   anim.effect.updateTiming({ delay: -50 });
   assert_equals(anim.effect.getComputedTiming().progress, 0.5);
 }, 'Allows setting the delay of an animation in progress: negative delay that'
    + ' seeks into the active interval');
 
-test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t, { fill: 'both', duration: 100 })
+promise_test(async t => {
+  const anim =
+      createScrollLinkedAnimationWithTiming(t, { fill: 'both', duration: 100 });
   anim.play();
+  await anim.ready;
   anim.effect.updateTiming({ delay: -100 });
   assert_equals(anim.effect.getComputedTiming().progress, 1);
   assert_equals(anim.effect.getComputedTiming().currentIteration, 0);
@@ -96,9 +101,10 @@ for (const invalid of gBadDelayValues) {
 //  endDelay
 // ------------------------------
 
-test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 })
+promise_test(async t => {
+  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 });
   anim.play();
+  await anim.ready;
   anim.effect.updateTiming({ endDelay: 123.45 });
   assert_time_equals_literal(anim.effect.getTiming().endDelay, 123.45,
                              'set endDelay 123.45');
@@ -106,26 +112,29 @@ test(t => {
                              'getComputedTiming() after set endDelay 123.45');
 }, 'Allows setting the endDelay to a positive number');
 
-test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 })
+promise_test(async t => {
+  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 });
   anim.play();
+  await anim.ready;
   anim.effect.updateTiming({ endDelay: -1000 });
   assert_equals(anim.effect.getTiming().endDelay, -1000, 'set endDelay -1000');
   assert_equals(anim.effect.getComputedTiming().endDelay, -1000,
                 'getComputedTiming() after set endDelay -1000');
 }, 'Allows setting the endDelay to a negative number');
 
-test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 })
+promise_test(async t => {
+  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 });
   anim.play();
+  await anim.ready;
   assert_throws_js(TypeError, () => {
     anim.effect.updateTiming({ endDelay: Infinity });
   });
 }, 'Throws when setting the endDelay to infinity');
 
-test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 })
+promise_test(async t => {
+  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 });
   anim.play();
+  await anim.ready;
   assert_throws_js(TypeError, () => {
     anim.effect.updateTiming({ endDelay: -Infinity });
   });
@@ -152,53 +161,59 @@ for (const fill of ['none', 'forwards', 'backwards', 'both']) {
 //  iterationStart
 // ------------------------------
 
-test(t => {
+promise_test(async t => {
   const anim = createScrollLinkedAnimationWithTiming(t, { iterationStart: 0.2,
                                       iterations: 1,
                                       fill: 'both',
                                       duration: 100,
                                       delay: 1 })
   anim.play();
+  await anim.ready;
   anim.effect.updateTiming({ iterationStart: 2.5 });
   assert_time_equals_literal(anim.effect.getComputedTiming().progress, 0.5);
   assert_equals(anim.effect.getComputedTiming().currentIteration, 2);
 }, 'Allows setting the iterationStart of an animation in progress:'
    + ' backwards-filling');
 
-test(t => {
+promise_test(async t => {
   const anim = createScrollLinkedAnimationWithTiming(t, { iterationStart: 0.2,
                                       iterations: 1,
                                       fill: 'both',
                                       duration: 100,
                                       delay: 0 })
   anim.play();
+  await anim.ready;
   anim.effect.updateTiming({ iterationStart: 2.5 });
   assert_time_equals_literal(anim.effect.getComputedTiming().progress, 0.5);
   assert_equals(anim.effect.getComputedTiming().currentIteration, 2);
 }, 'Allows setting the iterationStart of an animation in progress:'
    + ' active phase');
 
-test(t => {
+promise_test(async t => {
   const anim = createScrollLinkedAnimationWithTiming(t, { iterationStart: 0.3,
                                       iterations: 1,
                                       fill: 'both',
                                       duration: 200,
                                       delay: 0 })
   anim.play();
+  await anim.ready;
   assert_percents_equal(anim.currentTime, 0);
-  assert_percents_equal(anim.effect.getComputedTiming().localTime, 0, "localTime");
+  assert_percents_equal(anim.effect.getComputedTiming().localTime, 0,
+                        "localTime");
   assert_time_equals_literal(anim.effect.getComputedTiming().progress, 0.3);
   assert_equals(anim.effect.getComputedTiming().currentIteration, 0);
 
   anim.finish();
   assert_percents_equal(anim.currentTime, 100);
-  assert_percents_equal(anim.effect.getComputedTiming().localTime, 100, "localTime");
+  assert_percents_equal(anim.effect.getComputedTiming().localTime, 100,
+                        "localTime");
   assert_time_equals_literal(anim.effect.getComputedTiming().progress, 0.3);
   assert_equals(anim.effect.getComputedTiming().currentIteration, 1);
 
   anim.effect.updateTiming({ iterationStart: 2.5 });
   assert_percents_equal(anim.currentTime, 100);
-  assert_percents_equal(anim.effect.getComputedTiming().localTime, 100, "localTime");
+  assert_percents_equal(anim.effect.getComputedTiming().localTime, 100,
+                        "localTime");
   assert_time_equals_literal(anim.effect.getComputedTiming().progress, 0.5);
   assert_equals(anim.effect.getComputedTiming().currentIteration, 3);
 }, 'Allows setting the iterationStart of an animation in progress:'
@@ -219,7 +234,7 @@ for (const invalid of gBadIterationStartValues) {
 // ------------------------------
 
 test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 })
+  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 });
   anim.play();
   anim.effect.updateTiming({ iterations: 2 });
   assert_equals(anim.effect.getTiming().iterations, 2, 'set duration 2');
@@ -228,7 +243,7 @@ test(t => {
 }, 'Allows setting iterations to a double value');
 
 test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 })
+  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 });
   anim.play();
   assert_throws_js(TypeError, () => {
     anim.effect.updateTiming({ iterations: Infinity });
@@ -239,14 +254,16 @@ test(t => {
 // progress based animations behave a bit differently than time based animations
 // when changing iterations.
 test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t,  { duration: 100000, fill: 'both' })
+  const anim =
+      createScrollLinkedAnimationWithTiming(
+          t, { duration: 100000, fill: 'both' });
   anim.play();
   anim.finish();
 
   assert_equals(anim.effect.getComputedTiming().progress, 1,
                 'progress when animation is finished');
-  assert_equals(anim.effect.getComputedTiming().duration, 100,
-                'duration when animation is finished');
+  assert_percents_equal(anim.effect.getComputedTiming().duration, 100,
+                        'duration when animation is finished');
   assert_equals(anim.effect.getComputedTiming().currentIteration, 0,
                 'current iteration when animation is finished');
 
@@ -254,8 +271,8 @@ test(t => {
 
   assert_equals(anim.effect.getComputedTiming().progress, 1,
                 'progress after adding an iteration');
-  assert_equals(anim.effect.getComputedTiming().duration, 50,
-                'duration after adding an iteration');
+  assert_percents_equal(anim.effect.getComputedTiming().duration, 50,
+                        'duration after adding an iteration');
   assert_equals(anim.effect.getComputedTiming().currentIteration, 1,
                 'current iteration after adding an iteration');
 
@@ -263,8 +280,8 @@ test(t => {
 
   assert_equals(anim.effect.getComputedTiming().progress, 1,
                 'progress after setting iterations to 4');
-  assert_equals(anim.effect.getComputedTiming().duration, 25,
-                'duration after setting iterations to 4');
+  assert_percents_equal(anim.effect.getComputedTiming().duration, 25,
+                        'duration after setting iterations to 4');
   assert_equals(anim.effect.getComputedTiming().currentIteration, 3,
                 'current iteration after setting iterations to 4');
 
@@ -272,22 +289,22 @@ test(t => {
 
   assert_equals(anim.effect.getComputedTiming().progress, 0,
                 'progress after setting iterations to zero');
-  assert_equals(anim.effect.getComputedTiming().duration, 0,
-                'duration after setting iterations to zero');
+  assert_percents_equal(anim.effect.getComputedTiming().duration, 0,
+                        'duration after setting iterations to zero');
   assert_equals(anim.effect.getComputedTiming().currentIteration, 0,
                 'current iteration after setting iterations to zero');
 }, 'Allows setting the iterations of an animation in progress');
 
 // Added test for checking duration "auto"
 test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t,  { fill: 'both' })
+  const anim = createScrollLinkedAnimationWithTiming(t,  { fill: 'both' });
   anim.play();
   anim.finish();
 
   assert_equals(anim.effect.getComputedTiming().progress, 1,
                 'progress when animation is finished');
-  assert_equals(anim.effect.getComputedTiming().duration, 100,
-                'duration when animation is finished');
+  assert_percents_equal(anim.effect.getComputedTiming().duration, 100,
+                        'duration when animation is finished');
   assert_equals(anim.effect.getComputedTiming().currentIteration, 0,
                 'current iteration when animation is finished');
 
@@ -295,8 +312,8 @@ test(t => {
 
   assert_equals(anim.effect.getComputedTiming().progress, 1,
                 'progress after adding an iteration');
-  assert_equals(anim.effect.getComputedTiming().duration, 50,
-                'duration after adding an iteration');
+  assert_percents_equal(anim.effect.getComputedTiming().duration, 50,
+                        'duration after adding an iteration');
   assert_equals(anim.effect.getComputedTiming().currentIteration, 1,
                 'current iteration after adding an iteration');
 
@@ -304,8 +321,8 @@ test(t => {
 
   assert_equals(anim.effect.getComputedTiming().progress, 1,
                 'progress after setting iterations to 4');
-  assert_equals(anim.effect.getComputedTiming().duration, 25,
-                'duration after setting iterations to 4');
+  assert_percents_equal(anim.effect.getComputedTiming().duration, 25,
+                        'duration after setting iterations to 4');
   assert_equals(anim.effect.getComputedTiming().currentIteration, 3,
                 'current iteration after setting iterations to 4');
 
@@ -313,11 +330,12 @@ test(t => {
 
   assert_equals(anim.effect.getComputedTiming().progress, 0,
                 'progress after setting iterations to zero');
-  assert_equals(anim.effect.getComputedTiming().duration, 0,
-                'duration after setting iterations to zero');
+  assert_percents_equal(anim.effect.getComputedTiming().duration, 0,
+                        'duration after setting iterations to zero');
   assert_equals(anim.effect.getComputedTiming().currentIteration, 0,
                 'current iteration after setting iterations to zero');
-}, 'Allows setting the iterations of an animation in progress with duration "auto"');
+}, 'Allows setting the iterations of an animation in progress with duration ' +
+   '"auto"');
 
 
 // ------------------------------
@@ -333,7 +351,7 @@ const gGoodDurationValuesForProgressBased = [
 
 for (const duration of gGoodDurationValuesForProgressBased) {
   test(t => {
-    const anim = createScrollLinkedAnimationWithTiming(t, 2000)
+    const anim = createScrollLinkedAnimationWithTiming(t, 2000);
     anim.play();
     anim.effect.updateTiming({ duration: duration.specified });
     if (typeof duration.specified === 'number') {
@@ -344,9 +362,9 @@ for (const duration of gGoodDurationValuesForProgressBased) {
       assert_equals(anim.effect.getTiming().duration, duration.specified,
                     'Updates specified duration');
     }
-    assert_time_equals_literal(anim.effect.getComputedTiming().duration,
-                               duration.computed,
-                               'Updates computed duration');
+    assert_percents_equal(anim.effect.getComputedTiming().duration,
+                          duration.computed,
+                          'Updates computed duration');
   }, `Allows setting the duration to ${duration.specified}`);
 }
 
@@ -366,7 +384,9 @@ for (const invalid of gBadDurationValuesForProgressBased) {
 }
 
 test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t,  { duration: 100000, fill: 'both' })
+  const anim =
+      createScrollLinkedAnimationWithTiming(
+          t, { duration: 100000, fill: 'both' });
   anim.play();
   anim.finish();
   assert_equals(anim.effect.getComputedTiming().progress, 1,
@@ -383,19 +403,21 @@ test(t => {
 }, 'Allows setting the duration of an animation in progress');
 
 promise_test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t,  { duration: 100000, fill: 'both' })
+  const anim =
+      createScrollLinkedAnimationWithTiming(
+          t,  { duration: 100000, fill: 'both' });
   anim.play();
   return anim.ready.then(() => {
     const originalStartTime   = anim.startTime;
     const originalCurrentTime = anim.currentTime;
-    assert_time_equals_literal(
+    assert_percents_equal(
       anim.effect.getComputedTiming().duration,
       100,
       'Initial duration should be as set on KeyframeEffect'
     );
 
     anim.effect.updateTiming({ duration: 200000 });
-    assert_time_equals_literal(
+    assert_percents_equal(
       anim.effect.getComputedTiming().duration,
       100,
       'Effect duration should remain at 100% for progress based animations'
@@ -417,7 +439,7 @@ promise_test(t => {
 // ------------------------------
 
 test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 })
+  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 2000 });
   anim.play();
 
   const directions = ['normal', 'reverse', 'alternate', 'alternate-reverse'];
@@ -429,9 +451,11 @@ test(t => {
 }, 'Allows setting the direction to each of the possible keywords');
 
 promise_test(async t => {
-  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 10000, direction: 'normal' });
+  const anim =
+      createScrollLinkedAnimationWithTiming(
+          t, { duration: 10000, direction: 'normal' });
 
-  const scroller = anim.timeline.scrollSource;
+  const scroller = anim.timeline.source;
   const maxScroll = scroller.scrollHeight - scroller.clientHeight;
   anim.play();
   await anim.ready;
@@ -445,12 +469,15 @@ promise_test(async t => {
 
   assert_time_equals_literal(anim.effect.getComputedTiming().progress, 0.93,
                              'progress after updating direction');
-}, 'Allows setting the direction of an animation in progress from \'normal\' to'
-   + ' \'reverse\'');
+}, 'Allows setting the direction of an animation in progress from \'normal\' ' +
+   'to \'reverse\'');
 
-test(t => {
-  const anim = createScrollLinkedAnimationWithTiming(t, { duration: 10000, direction: 'normal' });
+promise_test(async t => {
+  const anim =
+      createScrollLinkedAnimationWithTiming(
+          t, { duration: 10000, direction: 'normal' });
   anim.play();
+  await anim.ready;
   assert_equals(anim.effect.getComputedTiming().progress, 0,
                 'progress before updating direction');
 
@@ -461,12 +488,13 @@ test(t => {
 }, 'Allows setting the direction of an animation in progress from \'normal\' to'
    + ' \'reverse\' while at start of active interval');
 
-test(t => {
+promise_test(async t => {
   const anim = createScrollLinkedAnimationWithTiming(t, { fill: 'backwards',
                                       duration: 10000,
                                       delay: 10000,
                                       direction: 'normal' });
   anim.play();
+  await anim.ready;
   assert_equals(anim.effect.getComputedTiming().progress, 0,
                 'progress before updating direction');
 
@@ -481,7 +509,7 @@ promise_test(async t => {
   const anim = createScrollLinkedAnimationWithTiming(t, { iterations: 2,
                                       duration: 10000,
                                       direction: 'normal' });
-  const scroller = anim.timeline.scrollSource;
+  const scroller = anim.timeline.source;
   const maxScroll = scroller.scrollHeight - scroller.clientHeight;
   anim.play();
   await anim.ready;
@@ -502,7 +530,7 @@ promise_test(async t => {
   const anim = createScrollLinkedAnimationWithTiming(t, { iterations: 2,
                                       duration: 10000,
                                       direction: 'alternate' });
-  const scroller = anim.timeline.scrollSource;
+  const scroller = anim.timeline.source;
   const maxScroll = scroller.scrollHeight - scroller.clientHeight;
   anim.play();
   await anim.ready;
@@ -525,7 +553,7 @@ promise_test(async t => {
 // ------------------------------
 
 async function assert_progress(animation, scrollPercent, easingFunction) {
-  const scroller = animation.timeline.scrollSource;
+  const scroller = animation.timeline.source;
   const maxScroll = scroller.scrollHeight - scroller.clientHeight;
   scroller.scrollTop = maxScroll * scrollPercent
   await waitForNextFrame();
@@ -572,7 +600,7 @@ promise_test(async t => {
   const anim = createScrollLinkedAnimationWithTiming(t,
     { duration: 1000000, fill: 'both', delay: delay, easing: 'steps(2, start)' });
 
-  const scroller = anim.timeline.scrollSource;
+  const scroller = anim.timeline.source;
   const maxScroll = scroller.scrollHeight - scroller.clientHeight;
   anim.play();
   await anim.ready;

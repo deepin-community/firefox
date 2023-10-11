@@ -11,7 +11,10 @@
 #include "mozilla/TimeStamp.h"
 #include "mozilla/Maybe.h"
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if defined(XP_WIN)
+#  include "mozilla/UniquePtrExtensions.h"
+#endif
+#if !defined(XP_WIN) && !defined(XP_DARWIN)
 #  include <pthread.h>
 #  include <semaphore.h>
 #  include "mozilla/ipc/SharedMemoryBasic.h"
@@ -34,9 +37,9 @@ inline bool IsHandleValid(const T& handle) {
   return bool(handle);
 }
 
-#if defined(OS_WIN)
-typedef HANDLE CrossProcessSemaphoreHandle;
-#elif !defined(OS_MACOSX)
+#if defined(XP_WIN)
+typedef mozilla::UniqueFileHandle CrossProcessSemaphoreHandle;
+#elif !defined(XP_DARWIN)
 typedef mozilla::ipc::SharedMemoryBasic::Handle CrossProcessSemaphoreHandle;
 
 template <>
@@ -82,13 +85,13 @@ class CrossProcessSemaphore {
   void Signal();
 
   /**
-   * ShareToProcess
+   * CloneHandle
    * This function is called to generate a serializable structure that can
    * be sent to the specified process and opened on the other side.
    *
    * @returns A handle that can be shared to another process
    */
-  CrossProcessSemaphoreHandle ShareToProcess(base::ProcessId aTargetPid);
+  CrossProcessSemaphoreHandle CloneHandle();
 
   void CloseHandle();
 
@@ -99,11 +102,11 @@ class CrossProcessSemaphore {
   CrossProcessSemaphore(const CrossProcessSemaphore&);
   CrossProcessSemaphore& operator=(const CrossProcessSemaphore&);
 
-#if defined(OS_WIN)
+#if defined(XP_WIN)
   explicit CrossProcessSemaphore(HANDLE aSemaphore);
 
   HANDLE mSemaphore;
-#elif !defined(OS_MACOSX)
+#elif !defined(XP_DARWIN)
   RefPtr<mozilla::ipc::SharedMemoryBasic> mSharedBuffer;
   sem_t* mSemaphore;
   mozilla::Atomic<int32_t>* mRefCount;

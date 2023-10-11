@@ -45,9 +45,8 @@ Project names are the repositories.  They can be:
 * `mozilla-central`
 * `mozilla-beta`
 * `mozilla-release`
-* `mozilla-esr78`
-* `mozilla-esr91`
-* ... A partial list can be found in taskcluster/taskgraph/util/attributes.py
+* `mozilla-esr102`
+* ... A partial list can be found in taskcluster/gecko_taskgraph/util/attributes.py
 
 For try, this attribute applies only if ``-p all`` is specified.  All jobs can
 be specified by name regardless of ``run_on_projects``.
@@ -145,7 +144,7 @@ unittest_variant
 
 The configuration variant the test suite is running with. If set, this usually
 means the tests are running with a special pref enabled. These are defined in
-``taskgraph.transforms.tests.TEST_VARIANTS``.
+``taskgraph.transforms.test.TEST_VARIANTS``.
 
 talos_try_name
 ==============
@@ -172,12 +171,6 @@ test_manifests
 ==============
 
 A list of the test manifests that run in this task.
-
-e10s
-====
-
-For test suites which distinguish whether they run with or without e10s, this
-boolean value identifies this particular run.
 
 image_name
 ==========
@@ -255,6 +248,18 @@ toolchain-alias
 An alias that can be used instead of the real toolchain job name in fetch
 stanzas for jobs.
 
+toolchain-env
+=============
+Extra environment variables that will be set on the worker when fetching this
+toolchain.
+
+toolchain-command
+=================
+An extra attribute used to communicate to the build system bootstrap code the
+command used to build the toolchain. This is useful because the commands are
+formatted differently depending on the worker type, sometimes unconveniently
+to parse afterwards.
+
 always_target
 =============
 
@@ -297,6 +302,11 @@ artifact_map
 For beetmover jobs, this indicates which yaml file should be used to
 generate the upstream artifacts and payload instructions to the task.
 
+release_artifacts
+=================
+A set of artifacts that are candidates for downstream release tasks to operate
+on.
+
 batch
 =====
 Used by `perftest` to indicates that a task can be run as a batch.
@@ -314,6 +324,12 @@ skip-upload-crashsymbols
 Shippable/nightly builds are normally required to set enable-full-crashsymbols,
 but in some limited corner cases (universal builds), that is not wanted, because
 the symbols are uploaded independently already.
+
+upload-generated-sources
+========================
+generated-sources are normally only uploaded to S3 for shippable/nightly
+builds.  This attributes turns that on for other builds such as macosx
+before unification.
 
 cron
 ====
@@ -435,7 +451,21 @@ This deliberately excludes builds that are implemented using the artifact build
 machinery, but are not primarily intended to short-circuit build time. In
 particular the Windows aarch64 builds are not marked this way.
 
+maven_packages
+===============
+List of maven packages produced by the build.
+
 supports-artifact-builds
 ========================
 
 If false, the task requires a compiled build and will not work with artifact builds.
+
+primary-kind-dependency
+=======================
+
+For tasks that were derived from a group of dependencies, this attribute
+denotes which dependent kind is the `primary one`_.
+
+Typically this is set by the ``taskgraph.transforms.from_deps`` transforms.
+
+.. _primary one: https://taskcluster-taskgraph.readthedocs.io/en/latest/reference/transforms/from_deps.html#primary-kind

@@ -30,6 +30,9 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -61,9 +64,6 @@ import-items-description = Wale whit items tae inbring:
 
 import-permissions-page-title = Gonnae gie { -brand-short-name } permeesions?
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS needs ye tae gie direct permeesion tae { -brand-short-name } fur tae hae ingang tae Safari’s buikmerks. Click “Continue” and wale the “Bookmarks.plist” file in the File Open panel that kythes itsel.
-
 import-migrating-page-title = Inbringin…
 
 import-migrating-description = The follaein items are bein inbrocht the noo…
@@ -78,23 +78,9 @@ import-done-description = The follaein items were inbrocht wioot onie problem:
 
 import-close-source-browser = Gonnae mak siccar the wab-stravaiger ye've waled is sneckit afore haudin forrit.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Fae { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Siccar Stravaiger
 
 imported-safari-reading-list = Readin List (Fae Safari)
 imported-edge-reading-list = Readin List (Fae Edge)
@@ -169,3 +155,4 @@ browser-data-session-checkbox =
     .label = Windaes and Tabs
 browser-data-session-label =
     .value = Windaes and Tabs
+

@@ -2,7 +2,10 @@
 
 from optparse import OptionParser
 import fnmatch
+import struct
 import tarfile
+import zipfile
+from datetime import datetime, timezone
 from io import BytesIO
 import re
 import os
@@ -106,18 +109,65 @@ class TarFilterList(object):
 def file_extension(name):
     return os.path.splitext(name)[1][1:]
 
-def filter_tar(orig, new, filt, topdir = None):
-    filt = TarFilterList(filt)
-    if urlparse(orig).scheme:
-        tar = tarfile.open(orig, "r:" + file_extension(orig), URLFile(orig))
-    else:
-        tar = tarfile.open(orig, "r:" + file_extension(orig))
-    new_tar = tarfile.open(new + ".new", "w:" + file_extension(new), format=tar.format)
+class ZipAsTar(object):
+    def __init__(self, zip):
+        self.zip = zip
+        self.infos = {}
 
-    while True:
-        info = tar.next()
-        if not info:
-            break
+    def close(self):
+        self.zip.close()
+
+    def extractfile(self, info):
+        return self.zip.open(self.infos[info], mode="r")
+
+    def __iter__(self):
+        for info in self.zip.infolist():
+            tar_info = tarfile.TarInfo(info.filename)
+            self.infos[tar_info] = info.filename
+            tar_info.size = info.file_size
+            mtime = datetime(*info.date_time, tzinfo=timezone.utc)
+            tar_info.mtime = mtime.timestamp()
+
+            extra = info.extra
+            while len(extra) >= 4:
+                signature, length = struct.unpack("<HH", extra[:4])
+                assert len(extra) >= length + 4
+                if signature == 0x5455:  # extended timestamps
+                    (flags,) = struct.unpack("B", extra[4:5])
+                    if flags & 0x1:  # mtime
+                        assert length >= 5
+                        (mtime,) = struct.unpack("<L", extra[5:9])
+                        tar_info.mtime = float(mtime)
+                extra = extra[length + 4:]
+
+            tar_info.mode = (info.external_attr >> 16) & 0o777
+            if len(info.filename) > tarfile.LENGTH_NAME:
+                tar_info.pax_headers["path"] = info.filename
+
+            yield tar_info
+
+
+def filter_archive(orig, new, filt, topdir = None):
+    filt = TarFilterList(filt)
+    is_url = urlparse(orig).scheme
+    if orig.endswith(".zip"):
+        if is_url:
+            # zipfile needs to seek so doesn't work with the simple URLFile.  Only
+            # the l10n packages are zipfiles and they are small so buffering the
+            # whole archive in memory is fine
+            orig_bytes = urllib.request.urlopen(orig).read()
+            zip = zipfile.ZipFile(BytesIO(orig_bytes))
+        else:
+            zip = zipfile.ZipFile(orig)
+        tar = ZipAsTar(zip)
+        format = tarfile.PAX_FORMAT
+    else:
+        fileobj = URLFile(orig) if is_url else None
+        tar = tarfile.open(orig, "r:" + file_extension(orig), fileobj)
+        format = tar.format
+
+    new_tar = tarfile.open(new + ".new", "w:" + file_extension(new), format=format)
+    for info in tar:
         if topdir:
             namefilt = lambda n: "/".join([topdir] + n.split("/")[1:])
             info.name = namefilt(info.name)
@@ -211,7 +261,7 @@ def main():
             new_file = options.package + "_" + options.upstream_version + ".orig.tar." + compression
             new_file = os.path.realpath(os.path.join(dirname(orig), new_file))
     print(orig, new_file)
-    filter_tar(orig, new_file, options.filter, options.topdir)
+    filter_archive(orig, new_file, options.filter, options.topdir)
 
 if __name__ == '__main__':
     main()

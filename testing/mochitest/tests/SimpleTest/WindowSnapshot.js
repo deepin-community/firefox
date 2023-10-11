@@ -75,13 +75,8 @@ function compareSnapshots(s1, s2, expectEqual, fuzz) {
 }
 
 function assertSnapshots(s1, s2, expectEqual, fuzz, s1name, s2name) {
-  var [
-    passed,
-    s1DataURI,
-    s2DataURI,
-    numDifferentPixels,
-    maxDifference,
-  ] = compareSnapshots(s1, s2, expectEqual, fuzz);
+  var [passed, s1DataURI, s2DataURI, numDifferentPixels, maxDifference] =
+    compareSnapshots(s1, s2, expectEqual, fuzz);
   var sym = expectEqual ? "==" : "!=";
   ok(passed, "reftest comparison: " + sym + " " + s1name + " " + s2name);
   if (!passed) {
@@ -110,7 +105,7 @@ function assertSnapshots(s1, s2, expectEqual, fuzz, s1name, s2name) {
     } else {
       report += "REFTEST   IMAGE: " + s1DataURI + "\n";
     }
-    dump(report);
+    (info || dump)(report);
   }
   return passed;
 }

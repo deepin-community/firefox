@@ -78,7 +78,9 @@ nsresult ProxyRelease(const char* aName, nsIEventTarget* aTarget,
 
   rv = aTarget->Dispatch(ev, NS_DISPATCH_NORMAL);
   if (NS_FAILED(rv)) {
-    NS_WARNING("failed to post proxy release event, leaking!");
+    NS_WARNING(nsPrintfCString(
+                   "failed to post proxy release event for %s, leaking!", aName)
+                   .get());
     // It is better to leak the aDoomed object than risk crashing as
     // a result of deleting it on the wrong thread.
   }
@@ -183,13 +185,6 @@ inline NS_HIDDEN_(void)
   }
 
   NS_ProxyRelease(aName, target, doomed.forget(), aAlwaysProxy);
-}
-
-template <class T>
-inline NS_HIDDEN_(void) NS_ReleaseOnMainThread(already_AddRefed<T> aDoomed,
-                                               bool aAlwaysProxy = false) {
-  NS_ReleaseOnMainThread("NS_ReleaseOnMainThread", std::move(aDoomed),
-                         aAlwaysProxy);
 }
 
 /**

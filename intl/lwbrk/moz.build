@@ -8,12 +8,19 @@ TEST_DIRS += ["gtest"]
 
 EXPORTS.mozilla.intl += [
     "LineBreaker.h",
+    "nsComplexBreaker.h",
+    "Segmenter.h",
     "WordBreaker.h",
 ]
 
 UNIFIED_SOURCES += [
     "LineBreaker.cpp",
+    "Segmenter.cpp",
     "WordBreaker.cpp",
+]
+
+SOURCES += [
+    "nsComplexBreaker.cpp",
 ]
 
 if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
@@ -25,10 +32,6 @@ elif CONFIG["MOZ_WIDGET_TOOLKIT"] == "windows":
     SOURCES += [
         "nsUniscribeBreaker.cpp",
     ]
-    if CONFIG["NIGHTLY_BUILD"]:
-        SOURCES += [
-            "rulebrk.c",
-        ]
 elif CONFIG["MOZ_WIDGET_TOOLKIT"] == "cocoa":
     UNIFIED_SOURCES += [
         "nsCarbonBreaker.cpp",
@@ -36,11 +39,19 @@ elif CONFIG["MOZ_WIDGET_TOOLKIT"] == "cocoa":
 else:
     SOURCES += [
         "nsRuleBreaker.cpp",
-    ]
-    SOURCES += [
         "rulebrk.c",
     ]
 
-FINAL_LIBRARY = "xul"
+if CONFIG["JS_HAS_INTL_API"] and CONFIG["MOZ_ICU4X"]:
+    LOCAL_INCLUDES += [
+        "/third_party/rust/icu_capi/cpp/include",
+    ]
+    # Disable warnings when including C++ headers of ICU4X.
+    # - https://github.com/rust-diplomat/diplomat/issues/277
+    # - https://github.com/rust-diplomat/diplomat/issues/335
+    CXXFLAGS += [
+        "-Wno-mismatched-tags",
+        "-Wno-pessimizing-move",
+    ]
 
-REQUIRES_UNIFIED_BUILD = True
+FINAL_LIBRARY = "xul"

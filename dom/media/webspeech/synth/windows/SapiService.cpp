@@ -17,8 +17,10 @@
 #include "mozilla/ProfilerLabels.h"
 #include "mozilla/StaticPrefs_media.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
+
+constexpr static WCHAR kSpCategoryOneCoreVoices[] =
+    L"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Speech_OneCore\\Voices";
 
 StaticRefPtr<SapiService> SapiService::sSingleton;
 
@@ -32,7 +34,7 @@ class SapiCallback final : public nsISpeechTaskCallback {
         mSpeakTextLen(aSpeakTextLen),
         mCurrentIndex(0),
         mStreamNum(0) {
-    mStartingTime = GetTickCount();
+    mStartingTime = TimeStamp::Now();
   }
 
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
@@ -48,6 +50,11 @@ class SapiCallback final : public nsISpeechTaskCallback {
  private:
   ~SapiCallback() {}
 
+  float GetTimeDurationFromStart() const {
+    TimeDuration duration = TimeStamp::Now() - mStartingTime;
+    return duration.ToSeconds();
+  }
+
   // This pointer is used to dispatch events
   nsCOMPtr<nsISpeechTask> mTask;
   RefPtr<ISpVoice> mSapiClient;
@@ -56,7 +63,7 @@ class SapiCallback final : public nsISpeechTaskCallback {
   uint32_t mSpeakTextLen;
 
   // Used for calculating the time taken to speak the utterance
-  double mStartingTime;
+  TimeStamp mStartingTime;
   uint32_t mCurrentIndex;
 
   ULONG mStreamNum;
@@ -82,7 +89,7 @@ SapiCallback::OnPause() {
     // from chrome process yet.
     return NS_ERROR_FAILURE;
   }
-  mTask->DispatchPause(GetTickCount() - mStartingTime, mCurrentIndex);
+  mTask->DispatchPause(GetTimeDurationFromStart(), mCurrentIndex);
   return NS_OK;
 }
 
@@ -96,7 +103,7 @@ SapiCallback::OnResume() {
     // from chrome process yet.
     return NS_ERROR_FAILURE;
   }
-  mTask->DispatchResume(GetTickCount() - mStartingTime, mCurrentIndex);
+  mTask->DispatchResume(GetTimeDurationFromStart(), mCurrentIndex);
   return NS_OK;
 }
 
@@ -127,23 +134,23 @@ void SapiCallback::OnSpeechEvent(const SPEVENT& speechEvent) {
       if (mSpeakTextLen) {
         mCurrentIndex = mSpeakTextLen;
       }
-      mTask->DispatchEnd(GetTickCount() - mStartingTime, mCurrentIndex);
+      mTask->DispatchEnd(GetTimeDurationFromStart(), mCurrentIndex);
       mTask = nullptr;
       break;
     case SPEI_TTS_BOOKMARK:
       mCurrentIndex = static_cast<ULONG>(speechEvent.lParam) - mTextOffset;
-      mTask->DispatchBoundary(u"mark"_ns, GetTickCount() - mStartingTime,
+      mTask->DispatchBoundary(u"mark"_ns, GetTimeDurationFromStart(),
                               mCurrentIndex, 0, 0);
       break;
     case SPEI_WORD_BOUNDARY:
       mCurrentIndex = static_cast<ULONG>(speechEvent.lParam) - mTextOffset;
-      mTask->DispatchBoundary(u"word"_ns, GetTickCount() - mStartingTime,
+      mTask->DispatchBoundary(u"word"_ns, GetTimeDurationFromStart(),
                               mCurrentIndex,
                               static_cast<ULONG>(speechEvent.wParam), 1);
       break;
     case SPEI_SENTENCE_BOUNDARY:
       mCurrentIndex = static_cast<ULONG>(speechEvent.lParam) - mTextOffset;
-      mTask->DispatchBoundary(u"sentence"_ns, GetTickCount() - mStartingTime,
+      mTask->DispatchBoundary(u"sentence"_ns, GetTimeDurationFromStart(),
                               mCurrentIndex,
                               static_cast<ULONG>(speechEvent.wParam), 1);
       break;
@@ -232,13 +239,22 @@ already_AddRefed<ISpVoice> SapiService::InitSapiInstance() {
 }
 
 bool SapiService::RegisterVoices() {
-  nsresult rv;
-
   nsCOMPtr<nsISynthVoiceRegistry> registry =
       do_GetService(NS_SYNTHVOICEREGISTRY_CONTRACTID);
   if (!registry) {
     return false;
   }
+  bool result = RegisterVoices(registry, kSpCategoryOneCoreVoices);
+  result |= RegisterVoices(registry, SPCAT_VOICES);
+  if (result) {
+    registry->NotifyVoicesChanged();
+  }
+  return result;
+}
+
+bool SapiService::RegisterVoices(nsCOMPtr<nsISynthVoiceRegistry>& registry,
+                                 const WCHAR* categoryId) {
+  nsresult rv;
 
   RefPtr<ISpObjectTokenCategory> category;
   if (FAILED(CoCreateInstance(CLSID_SpObjectTokenCategory, nullptr, CLSCTX_ALL,
@@ -246,7 +262,7 @@ bool SapiService::RegisterVoices() {
                               getter_AddRefs(category)))) {
     return false;
   }
-  if (FAILED(category->SetId(SPCAT_VOICES, FALSE))) {
+  if (FAILED(category->SetId(categoryId, FALSE))) {
     return false;
   }
 
@@ -307,8 +323,6 @@ bool SapiService::RegisterVoices() {
 
     mVoices.InsertOrUpdate(uri, std::move(voiceToken));
   }
-
-  registry->NotifyVoicesChanged();
 
   return true;
 }
@@ -428,5 +442,4 @@ already_AddRefed<SapiService> SapiService::GetInstanceForService() {
   return sapiService.forget();
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

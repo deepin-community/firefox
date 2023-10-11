@@ -86,38 +86,38 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
-main-context-menu-bookmark-add =
-    .aria-label = Marcar esta páxina
+main-context-menu-bookmark-page =
+    .aria-label = Marcar a páxina…
     .accesskey = m
-    .tooltiptext = Marcar esta páxina
+    .tooltiptext = Marcar a páxina.
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
+# Cannot be shown at the same time as main-context-menu-edit-bookmark-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = Marcar páxina
-    .accesskey = M
+main-context-menu-bookmark-page-mac =
+    .label = Marcar a páxina…
+    .accesskey = m
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-add-mac,
+# Cannot be shown at the same time as main-context-menu-bookmark-page-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-edit-mac =
-    .label = Editar marcador
+main-context-menu-edit-bookmark-mac =
+    .label = Editar o marcador…
     .accesskey = m
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Marcar esta páxina
+main-context-menu-bookmark-page-with-shortcut =
+    .aria-label = Marcar a páxina…
     .accesskey = m
-    .tooltiptext = Marcar esta páxina ({ $shortcut })
-main-context-menu-bookmark-change =
-    .aria-label = Editar este marcador
+    .tooltiptext = Marcar a páxina ({ $shortcut })
+main-context-menu-edit-bookmark =
+    .aria-label = Editar o marcador…
     .accesskey = m
-    .tooltiptext = Editar este marcador
+    .tooltiptext = Editar o marcador
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Editar este marcador
+main-context-menu-edit-bookmark-with-shortcut =
+    .aria-label = Editar o marcador…
     .accesskey = m
-    .tooltiptext = Editar este marcador ({ $shortcut })
+    .tooltiptext = Editar o marcador ({ $shortcut })
 main-context-menu-open-link =
     .label = Abrir a ligazón
     .accesskey = A
@@ -133,9 +133,9 @@ main-context-menu-open-link-new-window =
 main-context-menu-open-link-new-private-window =
     .label = Abrir a ligazón nunha nova xanela privada
     .accesskey = p
-main-context-menu-bookmark-link =
-    .label = Marcar ligazón
-    .accesskey = M
+main-context-menu-bookmark-link-2 =
+    .label = Marcar a ligazón…
+    .accesskey = l
 main-context-menu-save-link =
     .label = Gardar ligazón como…
     .accesskey = m
@@ -150,8 +150,16 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = Copiar correo electrónico
     .accesskey = e
+main-context-menu-copy-phone =
+    .label = Copiar o número de teléfono
+    .accesskey = o
 main-context-menu-copy-link-simple =
     .label = Copiar ligazón
+    .accesskey = C
+# This command copies the link, removing additional
+# query parameters used to track users across sites.
+main-context-menu-strip-on-share-link =
+    .label = Copiar ligazón sen seguimento do sitio
     .accesskey = C
 
 ## Media (video/audio) controls
@@ -245,6 +253,9 @@ main-context-menu-image-email =
 main-context-menu-image-set-image-as-background =
     .label = Estabelecer imaxe como fondo do escritorio…
     .accesskey = s
+main-context-menu-image-copy-text =
+    .label = Copiar o texto da imaxe
+    .accesskey = x
 main-context-menu-image-info =
     .label = Ver a información da imaxe
     .accesskey = f
@@ -266,12 +277,6 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Enviar o ficheiro de son por correo…
     .accesskey = a
-main-context-menu-plugin-play =
-    .label = Activar este engadido
-    .accesskey = c
-main-context-menu-plugin-hide =
-    .label = Agochar este engadido
-    .accesskey = h
 main-context-menu-save-to-pocket =
     .label = Gardar páxina en { -pocket-brand-name }
     .accesskey = k
@@ -292,6 +297,9 @@ main-context-menu-use-saved-password =
 
 ##
 
+main-context-menu-use-relay-mask =
+    .label = Usar máscara de correo electrónico de { -relay-brand-short-name }
+    .accesskey = m
 main-context-menu-suggest-strong-password =
     .label = Suxerir contrasinal forte ...
     .accesskey = S
@@ -319,8 +327,8 @@ main-context-menu-frame-open-window =
 main-context-menu-frame-reload =
     .label = Recargar o marco
     .accesskey = R
-main-context-menu-frame-bookmark =
-    .label = Marcar este marco
+main-context-menu-frame-add-bookmark =
+    .label = Marcar o marco…
     .accesskey = m
 main-context-menu-frame-save-as =
     .label = Gardar marco como…
@@ -334,8 +342,8 @@ main-context-menu-frame-view-source =
 main-context-menu-frame-view-info =
     .label = Ver a información do marco
     .accesskey = m
-main-context-menu-print-selection =
-    .label = Imprimir selección
+main-context-menu-print-selection-2 =
+    .label = Imprimir a selección…
     .accesskey = r
 main-context-menu-view-selection-source =
     .label = Ver o código da selección
@@ -368,3 +376,6 @@ main-context-menu-eme-learn-more =
 main-context-menu-open-link-in-container-tab =
     .label = Abrir ligazón nunha lapela { $containerName } nova
     .accesskey = T
+main-context-menu-reveal-password =
+    .label = Revelar o contrasinal
+    .accesskey = v

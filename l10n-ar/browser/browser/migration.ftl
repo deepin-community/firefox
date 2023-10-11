@@ -61,9 +61,6 @@ import-items-description = اختر أي العناصر تريد استيراد�
 
 import-permissions-page-title = من فضلك امنح { -brand-short-name } الصلاحيات اللازمة
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = يطلب نظام ماك‌أو‌إس أن تسمح بجهارةٍ لمتصفح { -brand-short-name } بالوصول إلى علامات متصفح سفاري. انقر ”واصِل“ واختر ”Bookmarks.plist“ في لوحة فتح الملف التي ستظهر.
-
 import-migrating-page-title = يستورد…
 
 import-migrating-description = يجري استيراد العناصر التالية…
@@ -78,23 +75,9 @@ import-done-description = تمّ استيراد العناصر التّالية 
 
 import-close-source-browser = من فضلك تأكد من أن المتصفح الذي اخترته مغلق قبل أن تتابع.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = من { $source }
-
 source-name-ie = إنترنت إكسبلورر
 source-name-edge = ميكروسوفت إدج
-source-name-edge-beta = ميكروسوفت إدج بيتا
-source-name-safari = سفاري
-source-name-canary = جوجل كروم كناري
 source-name-chrome = جوجل كروم
-source-name-chrome-beta = جوجل كروم بيتا
-source-name-chrome-dev = إصدارة جوجل كروم التطويرية
-source-name-chromium = كروميوم
-source-name-firefox = Mozilla Firefox
-source-name-360se = متصفح ٣٦٠ الآمن
 
 imported-safari-reading-list = قائمة القراءة (من سفاري)
 imported-edge-reading-list = قائمة القراءة (من إدج)
@@ -169,3 +152,4 @@ browser-data-session-checkbox =
     .label = النوافذ و الألسنة
 browser-data-session-label =
     .value = النوافذ و الألسنة
+

@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Tilkoblingsinnstillinger
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -35,7 +35,6 @@ connection-proxy-http = HTTP-proxy
     .accesskey = x
 connection-proxy-http-port = Port
     .accesskey = p
-
 connection-proxy-https-sharing =
     .label = Bruk også denne proxyserver for HTTPS
     .accesskey = s
@@ -77,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = Dette valget autentiserer deg automatisk mot proxier når du har lagrede innloggingsdetaljer for de. Du vil få spørsmål dersom autentisering er mislykket.
 
+connection-proxy-autologin-checkbox =
+    .label = Ikke spør om autentisering hvis passordet er lagret
+    .accesskey = i
+    .tooltiptext = Dette valget autentiserer deg automatisk mot proxier når du har lagrede innloggingsdetaljer for de. Du vil få spørsmål dersom autentisering er mislykket.
+
 connection-proxy-socks-remote-dns =
     .label = Proxy DNS når du bruker SOCKS v5
     .accesskey = d
-
-connection-dns-over-https =
-    .label = Aktiver DNS-over-HTTPS
-    .accesskey = H
-
-connection-dns-over-https-url-resolver = Bruk leverandør
-    .accesskey = B
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

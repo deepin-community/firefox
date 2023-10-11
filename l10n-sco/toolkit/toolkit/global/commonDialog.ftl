@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Yaiser nemme
 common-dialog-password =
     .value = Passwird
+
+common-dialog-copy-cmd =
+    .label = Copy
+    .accesskey = C
+common-dialog-select-all-cmd =
+    .label = Wale Aw
+    .accesskey = A

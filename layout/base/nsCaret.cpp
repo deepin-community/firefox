@@ -12,6 +12,8 @@
 
 #include "gfxUtils.h"
 #include "mozilla/gfx/2D.h"
+#include "mozilla/intl/BidiEmbeddingLevel.h"
+#include "mozilla/StaticPrefs_bidi.h"
 #include "nsCOMPtr.h"
 #include "nsFontMetrics.h"
 #include "nsITimer.h"
@@ -39,13 +41,12 @@ using namespace mozilla;
 using namespace mozilla::dom;
 using namespace mozilla::gfx;
 
-// The bidi indicator hangs off the caret to one side, to show which
-// direction the typing is in. It needs to be at least 2x2 to avoid looking like
-// an insignificant dot
-static const int32_t kMinBidiIndicatorPixels = 2;
+using BidiEmbeddingLevel = mozilla::intl::BidiEmbeddingLevel;
 
-// The default caret blinking rate (in ms of blinking interval)
-static const uint32_t kDefaultCaretBlinkRate = 500;
+// The bidi indicator hangs off the caret to one side, to show which
+// direction the typing is in. It needs to be at least 2x2 to avoid looking
+// like an insignificant dot
+static const int32_t kMinBidiIndicatorPixels = 2;
 
 /**
  * Find the first frame in an in-order traversal of the frame subtree rooted
@@ -105,8 +106,6 @@ static void AdjustCaretFrameForLineEnd(nsIFrame** aFrame, int32_t* aOffset) {
   }
 }
 
-static bool IsBidiUI() { return Preferences::GetBool("bidi.browser.ui"); }
-
 nsCaret::nsCaret()
     : mOverrideOffset(0),
       mBlinkCount(-1),
@@ -146,9 +145,13 @@ nsresult nsCaret::Init(PresShell* aPresShell) {
 static bool DrawCJKCaret(nsIFrame* aFrame, int32_t aOffset) {
   nsIContent* content = aFrame->GetContent();
   const nsTextFragment* frag = content->GetText();
-  if (!frag) return false;
-  if (aOffset < 0 || uint32_t(aOffset) >= frag->GetLength()) return false;
-  char16_t ch = frag->CharAt(aOffset);
+  if (!frag) {
+    return false;
+  }
+  if (aOffset < 0 || static_cast<uint32_t>(aOffset) >= frag->GetLength()) {
+    return false;
+  }
+  const char16_t ch = frag->CharAt(AssertedCast<uint32_t>(aOffset));
   return 0x2e80 <= ch && ch <= 0xd7ff;
 }
 
@@ -235,6 +238,80 @@ void nsCaret::SetCaretReadOnly(bool inMakeReadonly) {
   SchedulePaint();
 }
 
+// Clamp the inline-position to be within our closest scroll frame and any
+// ancestor clips if any. If we don't, then it clips us, and we don't appear at
+// all. See bug 335560 and bug 1539720.
+static nsPoint AdjustRectForClipping(const nsRect& aRect, nsIFrame* aFrame,
+                                     bool aVertical) {
+  nsRect rectRelativeToClip = aRect;
+  nsIScrollableFrame* sf = nullptr;
+  nsIFrame* scrollFrame = nullptr;
+  for (nsIFrame* current = aFrame; current; current = current->GetParent()) {
+    if ((sf = do_QueryFrame(current))) {
+      scrollFrame = current;
+      break;
+    }
+    if (current->IsTransformed()) {
+      // We don't account for transforms in rectRelativeToCurrent, so stop
+      // adjusting here.
+      break;
+    }
+    rectRelativeToClip += current->GetPosition();
+  }
+
+  if (!sf) {
+    return {};
+  }
+
+  nsRect clipRect = sf->GetScrollPortRect();
+  {
+    const auto& disp = *scrollFrame->StyleDisplay();
+    if (disp.mOverflowClipBoxBlock == StyleOverflowClipBox::ContentBox ||
+        disp.mOverflowClipBoxInline == StyleOverflowClipBox::ContentBox) {
+      const WritingMode wm = scrollFrame->GetWritingMode();
+      const bool cbH = (wm.IsVertical() ? disp.mOverflowClipBoxBlock
+                                        : disp.mOverflowClipBoxInline) ==
+                       StyleOverflowClipBox::ContentBox;
+      const bool cbV = (wm.IsVertical() ? disp.mOverflowClipBoxInline
+                                        : disp.mOverflowClipBoxBlock) ==
+                       StyleOverflowClipBox::ContentBox;
+      nsMargin padding = scrollFrame->GetUsedPadding();
+      if (!cbH) {
+        padding.left = padding.right = 0;
+      }
+      if (!cbV) {
+        padding.top = padding.bottom = 0;
+      }
+      clipRect.Deflate(padding);
+    }
+  }
+  nsPoint offset;
+  // Now see if the caret extends beyond the view's bounds. If it does, then
+  // snap it back, put it as close to the edge as it can.
+  if (aVertical) {
+    nscoord overflow = rectRelativeToClip.YMost() - clipRect.YMost();
+    if (overflow > 0) {
+      offset.y -= overflow;
+    } else {
+      overflow = rectRelativeToClip.y - clipRect.y;
+      if (overflow < 0) {
+        offset.y -= overflow;
+      }
+    }
+  } else {
+    nscoord overflow = rectRelativeToClip.XMost() - clipRect.XMost();
+    if (overflow > 0) {
+      offset.x -= overflow;
+    } else {
+      overflow = rectRelativeToClip.x - clipRect.x;
+      if (overflow < 0) {
+        offset.x -= overflow;
+      }
+    }
+  }
+  return offset;
+}
+
 /* static */
 nsRect nsCaret::GetGeometryForFrame(nsIFrame* aFrame, int32_t aFrameOffset,
                                     nscoord* aBidiIndicatorSize) {
@@ -254,38 +331,21 @@ nsRect nsCaret::GetGeometryForFrame(nsIFrame* aFrame, int32_t aFrameOffset,
   }
   NS_ASSERTION(!frame->HasAnyStateBits(NS_FRAME_IN_REFLOW),
                "We should not be in the middle of reflow");
-  nscoord baseline = frame->GetCaretBaseline();
-  nscoord ascent = 0, descent = 0;
+  WritingMode wm = aFrame->GetWritingMode();
   RefPtr<nsFontMetrics> fm =
       nsLayoutUtils::GetInflatedFontMetricsForFrame(aFrame);
-  NS_ASSERTION(fm, "We should be able to get the font metrics");
-  if (fm) {
-    ascent = fm->MaxAscent();
-    descent = fm->MaxDescent();
-  }
-  nscoord height = ascent + descent;
-  WritingMode wm = aFrame->GetWritingMode();
-  bool vertical = wm.IsVertical();
-  if (vertical) {
-    if (wm.IsLineInverted()) {
-      framePos.x = baseline - descent;
-    } else {
-      framePos.x = baseline - ascent;
-    }
-  } else {
-    framePos.y = baseline - ascent;
-  }
-  Metrics caretMetrics = ComputeMetrics(aFrame, aFrameOffset, height);
+  const auto caretBlockAxisMetrics = frame->GetCaretBlockAxisMetrics(wm, *fm);
+  const bool vertical = wm.IsVertical();
+  Metrics caretMetrics =
+      ComputeMetrics(aFrame, aFrameOffset, caretBlockAxisMetrics.mExtent);
 
-  nsTextFrame* textFrame = do_QueryFrame(aFrame);
-  if (textFrame) {
-    gfxTextRun* textRun =
-        textFrame->GetTextRun(nsTextFrame::TextRunType::eInflated);
-    if (textRun) {
+  nscoord inlineOffset = 0;
+  if (nsTextFrame* textFrame = do_QueryFrame(aFrame)) {
+    if (gfxTextRun* textRun = textFrame->GetTextRun(nsTextFrame::eInflated)) {
       // For "upstream" text where the textrun direction is reversed from the
       // frame's inline-dir we want the caret to be painted before rather than
       // after its nominal inline position, so we offset by its width.
-      bool textRunDirIsReverseOfFrame =
+      const bool textRunDirIsReverseOfFrame =
           wm.IsInlineReversed() != textRun->IsInlineReversed();
       // However, in sideways-lr mode we invert this behavior because this is
       // the one writing mode where bidi-LTR corresponds to inline-reversed
@@ -294,63 +354,35 @@ nsRect nsCaret::GetGeometryForFrame(nsIFrame* aFrame, int32_t aFrameOffset,
       //   if ( (!textRun->IsSidewaysLeft() && textRunDirIsReverseOfFrame) ||
       //        (textRun->IsSidewaysLeft()  && !textRunDirIsReverseOfFrame) )
       if (textRunDirIsReverseOfFrame != textRun->IsSidewaysLeft()) {
-        int dir = wm.IsBidiLTR() ? -1 : 1;
-        if (vertical) {
-          framePos.y += dir * caretMetrics.mCaretWidth;
-        } else {
-          framePos.x += dir * caretMetrics.mCaretWidth;
-        }
+        inlineOffset = wm.IsBidiLTR() ? -caretMetrics.mCaretWidth
+                                      : caretMetrics.mCaretWidth;
       }
     }
   }
 
-  rect = nsRect(framePos, vertical ? nsSize(height, caretMetrics.mCaretWidth)
-                                   : nsSize(caretMetrics.mCaretWidth, height));
-
-  // Clamp the inline-position to be within our scroll frame. If we don't, then
-  // it clips us, and we don't appear at all. See bug 335560.
-
-  // Find the ancestor scroll frame and determine whether we have any transforms
-  // up the ancestor chain.
-  bool hasTransform = false;
-  nsIFrame* scrollFrame = nullptr;
-  for (nsIFrame* f = aFrame; f; f = f->GetParent()) {
-    if (f->IsScrollFrame()) {
-      scrollFrame = f;
-      break;
-    }
-    if (f->IsTransformed()) {
-      hasTransform = true;
-    }
-  }
-
-  // FIXME(heycam): Skip clamping if we find any transform up the ancestor
-  // chain, since the GetOffsetTo call below doesn't take transforms into
-  // account. We could change this clamping to take transforms into account, but
-  // the clamping seems to be broken anyway; see bug 1539720.
-  if (scrollFrame && !hasTransform) {
-    // First, use the scrollFrame to get at the scrollable view that we're in.
-    nsIScrollableFrame* sf = do_QueryFrame(scrollFrame);
-    nsIFrame* scrolled = sf->GetScrolledFrame();
-    nsRect caretInScroll = rect + aFrame->GetOffsetTo(scrolled);
-
-    // Now see if the caret extends beyond the view's bounds. If it does,
-    // then snap it back, put it as close to the edge as it can.
+  // on RTL frames the right edge of mCaretRect must be equal to framePos
+  if (aFrame->StyleVisibility()->mDirection == StyleDirection::Rtl) {
     if (vertical) {
-      nscoord overflow = caretInScroll.YMost() -
-                         scrolled->InkOverflowRectRelativeToSelf().height;
-      if (overflow > 0) {
-        rect.y -= overflow;
-      }
+      inlineOffset -= caretMetrics.mCaretWidth;
     } else {
-      nscoord overflow = caretInScroll.XMost() -
-                         scrolled->InkOverflowRectRelativeToSelf().width;
-      if (overflow > 0) {
-        rect.x -= overflow;
-      }
+      inlineOffset -= caretMetrics.mCaretWidth;
     }
   }
 
+  if (vertical) {
+    framePos.x = caretBlockAxisMetrics.mOffset;
+    framePos.y += inlineOffset;
+  } else {
+    framePos.x += inlineOffset;
+    framePos.y = caretBlockAxisMetrics.mOffset;
+  }
+
+  rect = nsRect(framePos, vertical ? nsSize(caretBlockAxisMetrics.mExtent,
+                                            caretMetrics.mCaretWidth)
+                                   : nsSize(caretMetrics.mCaretWidth,
+                                            caretBlockAxisMetrics.mExtent));
+
+  rect.MoveBy(AdjustRectForClipping(rect, aFrame, vertical));
   if (aBidiIndicatorSize) {
     *aBidiIndicatorSize = caretMetrics.mBidiIndicatorSize;
   }
@@ -385,7 +417,7 @@ nsIFrame* nsCaret::GetFrameAndOffset(const Selection* aSelection,
 
   nsIContent* contentNode = focusNode->AsContent();
   nsFrameSelection* frameSelection = aSelection->GetFrameSelection();
-  nsBidiLevel bidiLevel = frameSelection->GetCaretBidiLevel();
+  BidiEmbeddingLevel bidiLevel = frameSelection->GetCaretBidiLevel();
 
   return nsCaret::GetCaretFrameForNodeOffset(
       frameSelection, contentNode, focusOffset, frameSelection->GetHint(),
@@ -402,6 +434,13 @@ nsIFrame* nsCaret::GetGeometry(const Selection* aSelection, nsRect* aRect) {
   return frame;
 }
 
+[[nodiscard]] static nsIFrame* GetContainingBlockIfNeeded(nsIFrame* aFrame) {
+  if (aFrame->IsBlockOutside() || aFrame->IsBlockFrameOrSubclass()) {
+    return nullptr;
+  }
+  return aFrame->GetContainingBlock();
+}
+
 void nsCaret::SchedulePaint(Selection* aSelection) {
   Selection* selection;
   if (aSelection) {
@@ -413,8 +452,13 @@ void nsCaret::SchedulePaint(Selection* aSelection) {
   int32_t frameOffset;
   nsIFrame* frame = GetFrameAndOffset(selection, mOverrideContent,
                                       mOverrideOffset, &frameOffset);
+  if (!frame) {
+    return;
+  }
 
-  if (frame) {
+  if (nsIFrame* cb = GetContainingBlockIfNeeded(frame)) {
+    cb->SchedulePaint();
+  } else {
     frame->SchedulePaint();
   }
 }
@@ -433,7 +477,7 @@ void nsCaret::SetCaretPosition(nsINode* aNode, int32_t aOffset) {
 }
 
 void nsCaret::CheckSelectionLanguageChange() {
-  if (!IsBidiUI()) {
+  if (!StaticPrefs::bidi_browser_ui()) {
     return;
   }
 
@@ -455,10 +499,7 @@ void nsCaret::CheckSelectionLanguageChange() {
 [[nodiscard]] static nsIFrame* MapToContainingBlock(nsIFrame* aFrame,
                                                     nsRect* aCaretRect,
                                                     nsRect* aHookRect) {
-  if (aFrame->IsBlockOutside() || aFrame->IsBlockFrameOrSubclass()) {
-    return aFrame;
-  }
-  nsIFrame* containingBlock = aFrame->GetContainingBlock();
+  nsIFrame* containingBlock = GetContainingBlockIfNeeded(aFrame);
   if (!containingBlock) {
     return aFrame;
   }
@@ -501,7 +542,7 @@ nsIFrame* nsCaret::GetPaintGeometry(nsRect* aCaretRect, nsRect* aHookRect,
   // since the <br> we're focused at is editable, but we do want to paint it at
   // the adjusted frame offset, so that we can see the collapsed whitespace.
   const nsStyleUI* ui = unadjustedFrame->StyleUI();
-  if ((!mIgnoreUserModify && ui->mUserModify == StyleUserModify::ReadOnly) ||
+  if ((!mIgnoreUserModify && ui->UserModify() == StyleUserModify::ReadOnly) ||
       unadjustedFrame->IsContentDisabled()) {
     return nullptr;
   }
@@ -556,8 +597,8 @@ void nsCaret::PaintCaret(DrawTarget& aDrawTarget, nsIFrame* aForFrame,
 }
 
 NS_IMETHODIMP
-nsCaret::NotifySelectionChanged(Document*, Selection* aDomSel,
-                                int16_t aReason) {
+nsCaret::NotifySelectionChanged(Document*, Selection* aDomSel, int16_t aReason,
+                                int32_t aAmount) {
   // Note that aDomSel, per the comment below may not be the same as our
   // selection, but that's OK since if that is the case, it wouldn't have
   // mattered what IsVisible() returns here, so we just opt for checking
@@ -583,6 +624,13 @@ nsCaret::NotifySelectionChanged(Document*, Selection* aDomSel,
 }
 
 void nsCaret::ResetBlinking() {
+  using IntID = LookAndFeel::IntID;
+
+  // The default caret blinking rate (in ms of blinking interval)
+  constexpr uint32_t kDefaultBlinkRate = 500;
+  // The default caret blinking count (-1 for "never stop blinking")
+  constexpr int32_t kDefaultBlinkCount = -1;
+
   mIsBlinkOn = true;
 
   if (mReadOnly || !mVisible || mHideCount) {
@@ -590,12 +638,21 @@ void nsCaret::ResetBlinking() {
     return;
   }
 
-  uint32_t blinkRate = static_cast<uint32_t>(LookAndFeel::GetInt(
-      LookAndFeel::IntID::CaretBlinkTime, kDefaultCaretBlinkRate));
+  auto blinkRate =
+      LookAndFeel::GetInt(IntID::CaretBlinkTime, kDefaultBlinkRate);
+
+  if (blinkRate > 0) {
+    // Make sure to reset the remaining blink count even if the blink rate
+    // hasn't changed.
+    mBlinkCount =
+        LookAndFeel::GetInt(IntID::CaretBlinkCount, kDefaultBlinkCount);
+  }
+
   if (mBlinkRate == blinkRate) {
-    // If the rate hasn't changed, then there is nothing to do.
+    // If the rate hasn't changed, then there is nothing else to do.
     return;
   }
+
   mBlinkRate = blinkRate;
 
   if (mBlinkTimer) {
@@ -615,7 +672,6 @@ void nsCaret::ResetBlinking() {
   }
 
   if (blinkRate > 0) {
-    mBlinkCount = LookAndFeel::GetInt(LookAndFeel::IntID::CaretBlinkCount, -1);
     mBlinkTimer->InitWithNamedFuncCallback(CaretBlinkCallback, this, blinkRate,
                                            nsITimer::TYPE_REPEATING_SLACK,
                                            "nsCaret::CaretBlinkCallback_timer");
@@ -629,10 +685,13 @@ void nsCaret::StopBlinking() {
   }
 }
 
-nsIFrame* nsCaret::GetCaretFrameForNodeOffset(
-    nsFrameSelection* aFrameSelection, nsIContent* aContentNode,
-    int32_t aOffset, CaretAssociationHint aFrameHint, nsBidiLevel aBidiLevel,
-    nsIFrame** aReturnUnadjustedFrame, int32_t* aReturnOffset) {
+nsIFrame* nsCaret::GetCaretFrameForNodeOffset(nsFrameSelection* aFrameSelection,
+                                              nsIContent* aContentNode,
+                                              int32_t aOffset,
+                                              CaretAssociationHint aFrameHint,
+                                              BidiEmbeddingLevel aBidiLevel,
+                                              nsIFrame** aReturnUnadjustedFrame,
+                                              int32_t* aReturnOffset) {
   if (!aFrameSelection) {
     return nullptr;
   }
@@ -683,8 +742,10 @@ nsIFrame* nsCaret::GetCaretFrameForNodeOffset(
 
     nsIFrame* frameBefore;
     nsIFrame* frameAfter;
-    nsBidiLevel levelBefore;  // Bidi level of the character before the caret
-    nsBidiLevel levelAfter;   // Bidi level of the character after the caret
+    BidiEmbeddingLevel
+        levelBefore;  // Bidi level of the character before the caret
+    BidiEmbeddingLevel
+        levelAfter;  // Bidi level of the character after the caret
 
     auto [start, end] = theFrame->GetOffsets();
     if (start == 0 || end == 0 || start == theFrameOffset ||
@@ -707,9 +768,9 @@ nsIFrame* nsCaret::GetCaretFrameForNodeOffset(
                                 std::max(levelBefore, levelAfter));  // rule c4
           if (aBidiLevel == levelBefore ||                           // rule c1
               (aBidiLevel > levelBefore && aBidiLevel < levelAfter &&
-               IS_SAME_DIRECTION(aBidiLevel, levelBefore)) ||  // rule c5
+               aBidiLevel.IsSameDirection(levelBefore)) ||  // rule c5
               (aBidiLevel < levelBefore && aBidiLevel > levelAfter &&
-               IS_SAME_DIRECTION(aBidiLevel, levelBefore)))  // rule c9
+               aBidiLevel.IsSameDirection(levelBefore)))  // rule c9
           {
             if (theFrame != frameBefore) {
               if (frameBefore) {  // if there is a frameBefore, move into it
@@ -722,11 +783,12 @@ nsIFrame* nsCaret::GetCaretFrameForNodeOffset(
                 // the first frame on the line has a different Bidi level from
                 // the paragraph level, there is no real frame for the caret to
                 // be in. We have to find the visually first frame on the line.
-                nsBidiLevel baseLevel = frameAfter->GetBaseLevel();
+                BidiEmbeddingLevel baseLevel = frameAfter->GetBaseLevel();
                 if (baseLevel != levelAfter) {
-                  nsPeekOffsetStruct pos(eSelectBeginLine, eDirPrevious, 0,
-                                         nsPoint(0, 0), false, true, false,
-                                         true, false);
+                  PeekOffsetStruct pos(eSelectBeginLine, eDirPrevious, 0,
+                                       nsPoint(0, 0),
+                                       {PeekOffsetOption::ScrollViewStop,
+                                        PeekOffsetOption::Visual});
                   if (NS_SUCCEEDED(frameAfter->PeekOffset(&pos))) {
                     theFrame = pos.mResultFrame;
                     theFrameOffset = pos.mContentOffset;
@@ -736,9 +798,9 @@ nsIFrame* nsCaret::GetCaretFrameForNodeOffset(
             }
           } else if (aBidiLevel == levelAfter ||  // rule c2
                      (aBidiLevel > levelBefore && aBidiLevel < levelAfter &&
-                      IS_SAME_DIRECTION(aBidiLevel, levelAfter)) ||  // rule c6
+                      aBidiLevel.IsSameDirection(levelAfter)) ||  // rule c6
                      (aBidiLevel < levelBefore && aBidiLevel > levelAfter &&
-                      IS_SAME_DIRECTION(aBidiLevel, levelAfter)))  // rule c10
+                      aBidiLevel.IsSameDirection(levelAfter)))  // rule c10
           {
             if (theFrame != frameAfter) {
               if (frameAfter) {
@@ -753,11 +815,12 @@ nsIFrame* nsCaret::GetCaretFrameForNodeOffset(
                 // Bidi level from the paragraph level, there is no real frame
                 // for the caret to be in. We have to find the visually last
                 // frame on the line.
-                nsBidiLevel baseLevel = frameBefore->GetBaseLevel();
+                BidiEmbeddingLevel baseLevel = frameBefore->GetBaseLevel();
                 if (baseLevel != levelBefore) {
-                  nsPeekOffsetStruct pos(eSelectEndLine, eDirNext, 0,
-                                         nsPoint(0, 0), false, true, false,
-                                         true, false);
+                  PeekOffsetStruct pos(eSelectEndLine, eDirNext, 0,
+                                       nsPoint(0, 0),
+                                       {PeekOffsetOption::ScrollViewStop,
+                                        PeekOffsetOption::Visual});
                   if (NS_SUCCEEDED(frameBefore->PeekOffset(&pos))) {
                     theFrame = pos.mResultFrame;
                     theFrameOffset = pos.mContentOffset;
@@ -768,34 +831,38 @@ nsIFrame* nsCaret::GetCaretFrameForNodeOffset(
           } else if (aBidiLevel > levelBefore &&
                      aBidiLevel < levelAfter &&  // rule c7/8
                      // before and after have the same parity
-                     IS_SAME_DIRECTION(levelBefore, levelAfter) &&
+                     levelBefore.IsSameDirection(levelAfter) &&
                      // caret has different parity
-                     !IS_SAME_DIRECTION(aBidiLevel, levelAfter)) {
+                     !aBidiLevel.IsSameDirection(levelAfter)) {
             if (NS_SUCCEEDED(aFrameSelection->GetFrameFromLevel(
                     frameAfter, eDirNext, aBidiLevel, &theFrame))) {
               std::tie(start, end) = theFrame->GetOffsets();
               levelAfter = theFrame->GetEmbeddingLevel();
-              if (IS_LEVEL_RTL(aBidiLevel))  // c8: caret to the right of the
-                                             // rightmost character
-                theFrameOffset = IS_LEVEL_RTL(levelAfter) ? start : end;
-              else  // c7: caret to the left of the leftmost character
-                theFrameOffset = IS_LEVEL_RTL(levelAfter) ? end : start;
+              if (aBidiLevel.IsRTL()) {
+                // c8: caret to the right of the rightmost character
+                theFrameOffset = levelAfter.IsRTL() ? start : end;
+              } else {
+                // c7: caret to the left of the leftmost character
+                theFrameOffset = levelAfter.IsRTL() ? end : start;
+              }
             }
           } else if (aBidiLevel < levelBefore &&
                      aBidiLevel > levelAfter &&  // rule c11/12
                      // before and after have the same parity
-                     IS_SAME_DIRECTION(levelBefore, levelAfter) &&
+                     levelBefore.IsSameDirection(levelAfter) &&
                      // caret has different parity
-                     !IS_SAME_DIRECTION(aBidiLevel, levelAfter)) {
+                     !aBidiLevel.IsSameDirection(levelAfter)) {
             if (NS_SUCCEEDED(aFrameSelection->GetFrameFromLevel(
                     frameBefore, eDirPrevious, aBidiLevel, &theFrame))) {
               std::tie(start, end) = theFrame->GetOffsets();
               levelBefore = theFrame->GetEmbeddingLevel();
-              if (IS_LEVEL_RTL(aBidiLevel))  // c12: caret to the left of the
-                                             // leftmost character
-                theFrameOffset = IS_LEVEL_RTL(levelBefore) ? end : start;
-              else  // c11: caret to the right of the rightmost character
-                theFrameOffset = IS_LEVEL_RTL(levelBefore) ? start : end;
+              if (aBidiLevel.IsRTL()) {
+                // c12: caret to the left of the leftmost character
+                theFrameOffset = levelBefore.IsRTL() ? end : start;
+              } else {
+                // c11: caret to the right of the rightmost character
+                theFrameOffset = levelBefore.IsRTL() ? start : end;
+              }
             }
           }
         }
@@ -821,7 +888,6 @@ size_t nsCaret::SizeOfIncludingThis(mozilla::MallocSizeOf aMallocSizeOf) const {
 }
 
 bool nsCaret::IsMenuPopupHidingCaret() {
-#ifdef MOZ_XUL
   // Check if there are open popups.
   nsXULPopupManager* popMgr = nsXULPopupManager::GetInstance();
   nsTArray<nsIFrame*> popups;
@@ -851,7 +917,7 @@ bool nsCaret::IsMenuPopupHidingCaret() {
       return false;
     }
 
-    if (popupFrame->PopupType() == ePopupTypeMenu &&
+    if (popupFrame->GetPopupType() == widget::PopupType::Menu &&
         !popupFrame->IsContextMenu()) {
       // This is an open menu popup. It does not contain the caret (else we'd
       // have returned above). Even if the caret is in a subsequent popup,
@@ -859,7 +925,6 @@ bool nsCaret::IsMenuPopupHidingCaret() {
       return true;
     }
   }
-#endif
 
   // There are no open menu popups, no need to hide the caret.
   return false;
@@ -875,20 +940,10 @@ void nsCaret::ComputeCaretRects(nsIFrame* aFrame, int32_t aFrameOffset,
   nscoord bidiIndicatorSize;
   *aCaretRect = GetGeometryForFrame(aFrame, aFrameOffset, &bidiIndicatorSize);
 
-  // on RTL frames the right edge of mCaretRect must be equal to framePos
-  const nsStyleVisibility* vis = aFrame->StyleVisibility();
-  if (StyleDirection::Rtl == vis->mDirection) {
-    if (isVertical) {
-      aCaretRect->y -= aCaretRect->height;
-    } else {
-      aCaretRect->x -= aCaretRect->width;
-    }
-  }
-
   // Simon -- make a hook to draw to the left or right of the caret to show
   // keyboard language direction
   aHookRect->SetEmpty();
-  if (!IsBidiUI()) {
+  if (!StaticPrefs::bidi_browser_ui()) {
     return;
   }
 

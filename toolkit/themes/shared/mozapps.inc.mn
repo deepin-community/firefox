@@ -15,17 +15,16 @@
   skin/classic/mozapps/extensions/category-extensions.svg    (../../shared/extensions/category-extensions.svg)
   skin/classic/mozapps/extensions/category-plugins.svg       (../../shared/extensions/category-plugins.svg)
   skin/classic/mozapps/extensions/category-recent.svg        (../../shared/extensions/category-recent.svg)
+  skin/classic/mozapps/extensions/category-sitepermission.svg  (../../shared/extensions/category-sitepermission.svg)
   skin/classic/mozapps/extensions/extension.svg              (../../shared/extensions/extension.svg)
   skin/classic/mozapps/extensions/recommended.svg            (../../shared/extensions/recommended.svg)
   skin/classic/mozapps/extensions/line.svg                   (../../shared/extensions/line.svg)
-#ifndef ANDROID
-  skin/classic/mozapps/extensions/rating-star.svg            (../../shared/extensions/rating-star.svg)
-#endif
 #ifndef ANDROID
   skin/classic/mozapps/aboutProfiles.css                     (../../shared/aboutProfiles.css)
 #endif
   skin/classic/mozapps/aboutServiceWorkers.css               (../../shared/aboutServiceWorkers.css)
   skin/classic/mozapps/profileDowngrade.css                  (../../shared/profileDowngrade.css)
+  skin/classic/mozapps/profileSelection.css                  (../../shared/profileSelection.css)
 
 % override chrome://mozapps/skin/extensions/category-languages.svg        chrome://mozapps/skin/extensions/localeGeneric.svg
 % override chrome://mozapps/skin/extensions/category-themes.svg           chrome://mozapps/skin/extensions/themeGeneric.svg

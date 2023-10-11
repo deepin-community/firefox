@@ -8,6 +8,7 @@ about-networking-sockets = Сокеттер
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = DNS кэшін тазарту
 about-networking-dns-trr-url = DoH URL
+about-networking-dns-trr-mode = DoH режимі
 about-networking-dns-suffix = DNS жұрнағы
 about-networking-websockets = WebSockets
 about-networking-refresh = Жаңарту
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Белсенді
 about-networking-idle = Іссіз
 about-networking-host = Хост
-about-networking-tcp = TCP
 about-networking-type = Түрі
 about-networking-sent = Жіберілген
 about-networking-received = Алынған
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Адрестер
 about-networking-expires = Мерзімі бітеді (секунд)
 about-networking-originAttributesSuffix = Оқшаулау кілті
+about-networking-flags = Қосымша жалаушалар
 about-networking-messages-sent = Жіберілген хабарламалар
 about-networking-messages-received = Алынған хабарламалар
 about-networking-bytes-sent = Жіберілген байттар
 about-networking-bytes-received = Алынған байттар
 about-networking-logging = Журналдау
-about-networking-log-tutorial = Бұл құралды қолдану нұсқаулығын <a data-l10n-name="logging">HTTP Logging</a> адресінен қараңыз.
-about-networking-current-log-file = Ағымдағы журналдау файлы:
-about-networking-current-log-modules = Ағымдағы журналдау модульдері:
-about-networking-set-log-file = Журналдау файлын орнату
-about-networking-set-log-modules = Журналдау модульдерін орнату
-about-networking-start-logging = Журналдауды бастау
-about-networking-stop-logging = Журналдауды аяқтау
 about-networking-dns-lookup = DNS іздеуі
 about-networking-dns-lookup-button = Шешу
 about-networking-dns-domain = Домен:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Кэшке баяу қатынаудың са
 about-networking-rcwn-cache-not-slow = Кэшке баяу емес қатынаудың саны
 about-networking-networkid = Желі идентификаторы
 about-networking-networkid-id = Желі идентификаторы
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Бұл бет <a data-l10n-name="about-logging-url">about:logging</a> ішіне жылжытылды.
 
 ## Link is intended as "network link"
 

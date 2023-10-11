@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Felhasználónév
 common-dialog-password =
     .value = Jelszó
+
+common-dialog-copy-cmd =
+    .label = Másolás
+    .accesskey = M
+common-dialog-select-all-cmd =
+    .label = Minden kijelölése
+    .accesskey = i

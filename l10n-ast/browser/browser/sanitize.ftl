@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Axustes pa la llimpieza del historial
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
-    .style = width: 30em
+    .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Llimpieza del historial recién
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Llimpieza de tol historial
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = Al zarrar { -brand-short-name }, habría llimpiase too automáticamente
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = f
 
 data-section-label = Datos
-
-item-site-preferences =
-    .label = Preferencies de los sitios
-    .accesskey = s
 
 item-offline-apps =
     .label = Datos de los sitios web del mou ensin conexón

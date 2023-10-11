@@ -5,13 +5,16 @@
 
 ## App Menu
 
-appmenuitem-update-banner3 =
-    .label-update-downloading = Đang tải xuống bản cập nhật { -brand-shorter-name }
-    .label-update-available = Đã có bản cập nhật — tải xuống ngay
-    .label-update-manual = Đã có bản cập nhật — tải xuống ngay
-    .label-update-unsupported = Không thể cập nhật — hệ thống không tương thích
-    .label-update-restart = Đã có bản cập nhật — khởi động lại ngay
-appmenuitem-protection-dashboard-title = Bảng điều khiển bảo vệ
+appmenuitem-banner-update-downloading =
+    .label = Đang tải xuống bản cập nhật { -brand-shorter-name }
+appmenuitem-banner-update-available =
+    .label = Đã có bản cập nhật — tải xuống ngay
+appmenuitem-banner-update-manual =
+    .label = Đã có bản cập nhật — tải xuống ngay
+appmenuitem-banner-update-unsupported =
+    .label = Không thể cập nhật — hệ thống không tương thích
+appmenuitem-banner-update-restart =
+    .label = Đã có bản cập nhật — khởi động lại ngay
 appmenuitem-new-tab =
     .label = Thẻ mới
 appmenuitem-new-window =
@@ -30,10 +33,12 @@ appmenuitem-print =
     .label = In…
 appmenuitem-find-in-page =
     .label = Tìm trong trang…
+appmenuitem-translate =
+    .label = Dịch trang…
 appmenuitem-zoom =
     .value = Thu phóng
 appmenuitem-more-tools =
-    .label = Thêm công cụ
+    .label = Công cụ khác
 appmenuitem-help =
     .label = Trợ giúp
 appmenuitem-exit2 =
@@ -98,7 +103,6 @@ appmenu-fxa-sync-and-save-data2 = Đồng bộ hóa và lưu dữ liệu
 appmenu-fxa-signed-in-label = Đăng nhập
 appmenu-fxa-setup-sync =
     .label = Bật đồng bộ hóa…
-appmenu-fxa-show-more-tabs = Hiển thị thêm các thẻ
 appmenuitem-save-page =
     .label = Lưu trang dưới dạng…
 
@@ -124,31 +128,20 @@ profiler-popup-button-recording =
 profiler-popup-button-capturing =
     .label = Profiler
     .tooltiptext = Profiler đang ghi một hồ sơ
-profiler-popup-title =
-    .value = { -profiler-brand-name }
+profiler-popup-header-text = { -profiler-brand-name }
 profiler-popup-reveal-description-button =
-    .aria-label = Hiện thêm thông tin
+    .aria-label = Hiển thị thêm thông tin
 profiler-popup-description-title =
     .value = Ghi lại, phân tích, chia sẻ
 profiler-popup-description = Cộng tác về các vấn đề hiệu suất bằng cách xuất bản hồ sơ để chia sẻ với nhóm của bạn.
-profiler-popup-learn-more = Tìm hiểu thêm
 profiler-popup-learn-more-button =
     .label = Tìm hiểu thêm
 profiler-popup-settings =
     .value = Cài đặt
 # This link takes the user to about:profiling, and is only visible with the Custom preset.
-profiler-popup-edit-settings = Chỉnh sửa cài đặt…
-# This link takes the user to about:profiling, and is only visible with the Custom preset.
 profiler-popup-edit-settings-button =
     .label = Chỉnh sửa cài đặt…
-profiler-popup-disabled =
-    Profiler hiện bị vô hiệu hóa, rất có thể do cửa sổ Duyệt web riêng tư
-    đang mở.
 profiler-popup-recording-screen = Đang ghi…
-# The profiler presets list is generated elsewhere, but the custom preset is defined
-# here only.
-profiler-popup-presets-custom =
-    .label = Tùy chỉnh
 profiler-popup-start-recording-button =
     .label = Bắt đầu ghi
 profiler-popup-discard-button =
@@ -171,24 +164,28 @@ profiler-popup-capture-shortcut =
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
+# devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
 profiler-popup-presets-web-developer-description = Cài đặt trước được đề xuất cho hầu hết gỡ lỗi ứng dụng web, với chi phí thấp.
 profiler-popup-presets-web-developer-label =
-    .label = Web Developer
-profiler-popup-presets-firefox-platform-description = Cấu hình được đề xuất để gỡ lỗi nền tảng Firefox nội bộ.
-profiler-popup-presets-firefox-platform-label =
-    .label = Firefox Platform
-profiler-popup-presets-firefox-front-end-description = Cấu hình được đề xuất để gỡ lỗi giao diện người dùng nội bộ của Firefox.
-profiler-popup-presets-firefox-front-end-label =
-    .label = Firefox Front-End
-profiler-popup-presets-firefox-graphics-description = Cấu hình được đề xuất để điều tra hiệu suất đồ họa của Firefox.
-profiler-popup-presets-firefox-graphics-label =
-    .label = Firefox Graphics
-profiler-popup-presets-media-description = Cấu hình được đề xuất để chẩn đoán các vấn đề về âm thanh và video.
+    .label = Nhà phát triển Web
+profiler-popup-presets-firefox-description = Giá trị đặt trước được đề xuất để kiểm tra hiệu suất { -brand-shorter-name }.
+profiler-popup-presets-firefox-label =
+    .label = { -brand-shorter-name }
+profiler-popup-presets-graphics-description = Giá trị đặt trước để điều tra lỗi đồ họa trong { -brand-shorter-name }.
+profiler-popup-presets-graphics-label =
+    .label = Đồ họa
+profiler-popup-presets-media-description2 = Giá trị đặt trước để điều tra lỗi âm thanh và video trong { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Media
+profiler-popup-presets-networking-description = Giá trị đặt trước để điều tra lỗi mạng trong { -brand-shorter-name }.
+profiler-popup-presets-networking-label =
+    .label = Kết nối mạng
+profiler-popup-presets-power-description = Giá trị đặt trước để điều tra lỗi sử dụng điện trong { -brand-shorter-name }, với chi phí thấp.
+# "Power" is used in the sense of energy (electricity used by the computer).
+profiler-popup-presets-power-label =
+    .label = Nguồn điện
 profiler-popup-presets-custom-label =
     .label = Tùy chỉnh
 
@@ -196,8 +193,6 @@ profiler-popup-presets-custom-label =
 
 appmenu-manage-history =
     .label = Quản lý lịch sử
-appmenu-reopen-all-tabs = Mở lại tất cả các thẻ
-appmenu-reopen-all-windows = Mở lại tất cả các cửa sổ
 appmenu-restore-session =
     .label = Khôi phục phiên làm việc trước
 appmenu-clear-history =
@@ -207,6 +202,9 @@ appmenu-recently-closed-tabs =
     .label = Thẻ mới đóng gần đây
 appmenu-recently-closed-windows =
     .label = Các cửa sổ mới đóng
+# This allows to search through the browser's history.
+appmenu-search-history =
+    .label = Lịch sử tìm kiếm
 
 ## Help panel
 
@@ -223,9 +221,11 @@ appmenu-help-more-troubleshooting-info =
     .accesskey = T
 appmenu-help-report-site-issue =
     .label = Báo cáo vấn đề về trang…
-appmenu-help-feedback-page =
-    .label = Gửi phản hồi…
+appmenu-help-share-ideas =
+    .label = Chia sẻ ý tưởng và phản hồi…
     .accesskey = S
+appmenu-help-switch-device =
+    .label = Chuyển sang thiết bị mới
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -251,8 +251,6 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Tùy biến thanh công cụ…
-appmenu-taskmanager =
-    .label = Quản lý tác vụ
 appmenu-developer-tools-subheader = Công cụ của trình duyệt
 appmenu-developer-tools-extensions =
     .label = Tiện ích mở rộng dành cho nhà phát triển

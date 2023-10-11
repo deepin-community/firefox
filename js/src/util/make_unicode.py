@@ -19,12 +19,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function, unicode_literals
-
 import csv
 import io
-import re
 import os
+import re
 import sys
 from contextlib import closing
 from functools import partial
@@ -33,7 +31,10 @@ from operator import is_not, itemgetter
 from zipfile import ZipFile
 
 if sys.version_info.major == 2:
-    from itertools import ifilter as filter, imap as map, izip_longest as zip_longest
+    from itertools import ifilter as filter
+    from itertools import imap as map
+    from itertools import izip_longest as zip_longest
+
     from urllib2 import urlopen
 
     range = xrange
@@ -198,7 +199,7 @@ def read_special_casing(special_casing):
 
 
 def int_ranges(ints):
-    """ Yields consecutive ranges (inclusive) from integer values. """
+    """Yields consecutive ranges (inclusive) from integer values."""
     (a, b) = tee(sorted(ints))
     start = next(b)
     for (curr, succ) in zip_longest(a, b):
@@ -680,7 +681,7 @@ def make_non_bmp_file(version, non_bmp_lower_map, non_bmp_upper_map, codepoint_t
 
 def write_special_casing_methods(unconditional_toupper, codepoint_table, println):
     def hexlit(n):
-        """ Returns C++ hex-literal for |n|. """
+        """Returns C++ hex-literal for |n|."""
         return "0x{:04X}".format(n)
 
     def describe_range(ranges, depth):
@@ -697,13 +698,13 @@ def write_special_casing_methods(unconditional_toupper, codepoint_table, println
                 )
 
     def out_range(start, end):
-        """ Tests if the input character isn't a member of the set {x | start <= x <= end}. """
+        """Tests if the input character isn't a member of the set {x | start <= x <= end}."""
         if start == end:
             return "ch != {}".format(hexlit(start))
         return "ch < {} || ch > {}".format(hexlit(start), hexlit(end))
 
     def in_range(start, end, parenthesize=False):
-        """ Tests if the input character is in the set {x | start <= x <= end}. """
+        """Tests if the input character is in the set {x | start <= x <= end}."""
         if start == end:
             return "ch == {}".format(hexlit(start))
         (left, right) = ("(", ")") if parenthesize else ("", "")
@@ -712,7 +713,7 @@ def write_special_casing_methods(unconditional_toupper, codepoint_table, println
         )
 
     def in_any_range(ranges, spaces):
-        """ Tests if the input character is included in any of the given ranges. """
+        """Tests if the input character is included in any of the given ranges."""
         lines = [[]]
         for (start, end) in ranges:
             expr = in_range(start, end, parenthesize=True)
@@ -724,7 +725,7 @@ def write_special_casing_methods(unconditional_toupper, codepoint_table, println
         return " ||\n{}".format(spaces).join(" || ".join(t) for t in lines)
 
     def write_range_accept(parent_list, child_list, depth):
-        """ Accepts the input character if it matches any code unit in |child_list|. """
+        """Accepts the input character if it matches any code unit in |child_list|."""
         (min_parent, max_parent) = (parent_list[0], parent_list[-1])
         (min_child, max_child) = (child_list[0], child_list[-1])
         assert min_child >= min_parent
@@ -770,7 +771,7 @@ def write_special_casing_methods(unconditional_toupper, codepoint_table, println
             println(indent, "}")
 
     def write_ChangesWhenUpperCasedSpecialCasing():
-        """ Checks if the input has a special upper case mapping. """
+        """Checks if the input has a special upper case mapping."""
         println("bool")
         println("js::unicode::ChangesWhenUpperCasedSpecialCasing(char16_t ch)")
         println("{")
@@ -829,7 +830,7 @@ def write_special_casing_methods(unconditional_toupper, codepoint_table, println
         println("}")
 
     def write_LengthUpperCaseSpecialCasing():
-        """ Slow case: Special casing character was found, returns its mapping length. """
+        """Slow case: Special casing character was found, returns its mapping length."""
         println("size_t")
         println("js::unicode::LengthUpperCaseSpecialCasing(char16_t ch)")
         println("{")
@@ -851,7 +852,7 @@ def write_special_casing_methods(unconditional_toupper, codepoint_table, println
         println("}")
 
     def write_AppendUpperCaseSpecialCasing():
-        """ Slow case: Special casing character was found, append its mapping characters. """
+        """Slow case: Special casing character was found, append its mapping characters."""
         println("void")
         println(
             "js::unicode::AppendUpperCaseSpecialCasing(char16_t ch, char16_t* elements, size_t* index)"  # NOQA: E501
@@ -1303,7 +1304,7 @@ def make_unicode_file(
 
     def write_supplemental_identifier_method(name, group_set, println):
         println("bool")
-        println("js::unicode::{}(uint32_t codePoint)".format(name))
+        println("js::unicode::{}(char32_t codePoint)".format(name))
         println("{")
         for (from_code, to_code) in int_ranges(group_set.keys()):
             println(
@@ -1378,7 +1379,7 @@ def make_unicode_file(
 
 
 def getsize(data):
-    """ return smallest possible integer size for the given array """
+    """return smallest possible integer size for the given array"""
     maxdata = max(data)
     assert maxdata < 2 ** 32
 

@@ -2,14 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-webpage-languages-window =
+webpage-languages-window2 =
     .title = Налады мовы вэб-старонак
-    .style = width: 40em
+    .style = min-width: 40em
 
 languages-close-key =
     .key = w
 
-languages-description = Часам старонкі сеціва даступны на некалькіх мовах. Выберыце мовы для прагляду старонак сеціва, у парадку пераваг
+languages-description = Часам старонкі сеціва даступны на некалькіх мовах. Выберыце мовы для прагляду такіх старонак, у парадку прыярытэту
 
 languages-customize-spoof-english =
     .label = Запытваць англійскую версію вэб-старонак для лепшай прыватнасці
@@ -49,9 +49,9 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
-browser-languages-window =
+browser-languages-window2 =
     .title = Налады мовы { -brand-short-name }
-    .style = width: 40em
+    .style = min-width: 40em
 
 browser-languages-description = { -brand-short-name } тыпова будзе паказваць старонкі першай мовай у спісе, а іншыя мовы, калі спатрэбіцца, у азначаным парадку.
 

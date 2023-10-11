@@ -41,13 +41,6 @@ menu-quit =
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Kuitaat { -brand-shorter-name }
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Kuitaat { -brand-shorter-name }
 menu-about =
     .label = A-zivout { -brand-shorter-name }
     .accesskey = A
@@ -77,8 +70,18 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Digeriñ ur restr…
     .accesskey = D
-menu-file-close =
-    .label = Serriñ
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Serriñ an ivinell
+            [one] Serriñ { $tabCount } ivinell
+            [two] Serriñ { $tabCount } ivinell
+            [few] Serriñ { $tabCount } ivinell
+            [many] Serriñ { $tabCount } a ivinelloù
+           *[other] Serriñ { $tabCount } ivinell
+        }
     .accesskey = S
 menu-file-close-window =
     .label = Serriñ ar prenestr
@@ -95,9 +98,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Arventennoù ar bajenn…
     .accesskey = A
-menu-file-print-preview =
-    .label = Alberz ar moullañ
-    .accesskey = l
 menu-file-print =
     .label = Moullañ…
     .accesskey = M
@@ -184,6 +184,17 @@ menu-view-full-screen =
     .label = Skramm a-bezh
     .accesskey = S
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Mont er mod lenn
+    .accesskey = L
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Serriñ ar mod lenn
+    .accesskey = L
+
 ##
 
 menu-view-show-all-tabs =
@@ -212,8 +223,9 @@ menu-history-undo-menu =
     .label = Ivinelloù serret nevez zo
 menu-history-undo-window-menu =
     .label = Prenestroù serret nevez zo
-menu-history-reopen-all-tabs = Digeriñ en-dro an holl ivinelloù
-menu-history-reopen-all-windows = Digeriñ en-dro an holl brenestroù
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Klask er roll istor
 
 ## Bookmarks Menu
 
@@ -222,10 +234,13 @@ menu-bookmarks-menu =
     .accesskey = n
 menu-bookmarks-manage =
     .label = Merañ ar sinedoù
-menu-bookmark-current-tab =
-    .label = Lakaat an ivinell vremanel er sinedoù
-menu-bookmark-edit =
-    .label = Embann ar sined-mañ
+menu-bookmark-tab =
+    .label = Lakaat an ivinell a-vremañ er sinedoù…
+menu-edit-bookmark =
+    .label = Embann ar sined-mañ…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Klask er sinedoù
 menu-bookmarks-all-tabs =
     .label = Ouzhpennañ an holl ivinelloù d'ar sinedoù
 menu-bookmarks-toolbar =
@@ -310,15 +325,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = M
 menu-help-report-site-issue =
     .label = Danevell kudennoù al lec'hienn…
-menu-help-feedback-page =
-    .label = Reiñ ho meno…
-    .accesskey = m
+menu-help-share-ideas =
+    .label = Kinnig mennozhioù hag alioù...
+    .accesskey = K
 menu-help-enter-troubleshoot-mode2 =
     .label = Mod disac’hañ
     .accesskey = M
 menu-help-exit-troubleshoot-mode =
     .label = Diweredekaat ar mod disac’hañ
     .accesskey = D
+menu-help-switch-device =
+    .label = Tremen war un trevnad nevez
+    .accesskey = T
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

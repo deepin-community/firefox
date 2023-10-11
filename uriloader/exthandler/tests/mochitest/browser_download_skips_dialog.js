@@ -1,5 +1,5 @@
-const { DownloadIntegration } = ChromeUtils.import(
-  "resource://gre/modules/DownloadIntegration.jsm"
+const { DownloadIntegration } = ChromeUtils.importESModule(
+  "resource://gre/modules/DownloadIntegration.sys.mjs"
 );
 
 const TEST_PATH = getRootDirectory(gTestPath).replace(
@@ -11,8 +11,9 @@ const TEST_PATH = getRootDirectory(gTestPath).replace(
 add_task(async function skipDialogAndDownloadFile() {
   await SpecialPowers.pushPrefEnv({
     set: [
-      ["browser.download.improvements_to_download_panel", true],
+      ["browser.download.always_ask_before_handling_new_types", false],
       ["browser.download.useDownloadDir", true],
+      ["image.webp.enabled", true],
     ],
   });
 
@@ -24,10 +25,12 @@ add_task(async function skipDialogAndDownloadFile() {
 
   let initialTabsCount = gBrowser.tabs.length;
 
-  let loadingTab = await BrowserTestUtils.openNewForegroundTab(
+  let loadingTab = await BrowserTestUtils.openNewForegroundTab({
     gBrowser,
-    TEST_PATH + "file_pdf_application_pdf.pdf"
-  );
+    opening: TEST_PATH + "file_green.webp",
+    waitForLoad: false,
+    waitForStateStop: true,
+  });
 
   // We just open the file to be downloaded... and wait for it to be downloaded!
   // We see no dialogs to be accepted in the process.
@@ -40,7 +43,7 @@ add_task(async function skipDialogAndDownloadFile() {
   BrowserTestUtils.removeTab(loadingTab);
 
   Assert.ok(
-    await OS.File.exists(download.target.path),
+    await IOUtils.exists(download.target.path),
     "The file should have been downloaded."
   );
 

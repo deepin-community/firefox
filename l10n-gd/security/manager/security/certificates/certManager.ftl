@@ -26,9 +26,9 @@ certmgr-people = Tha teisteanasan agad a bheir aithne air na daoine a leanas
 certmgr-server = Aithnichidh na h-innteartan seo eisgeachdan air mearachdan teisteanasan fhrithealaichean
 certmgr-ca = Tha teisteanasan agad a bheir aithne air na h-ùghdarrasan teisteanachaidh a leanas
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Deasaich roghainnean earbsa de theisteanasan nan ùghdarrasan teisteanachaidh
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Deasaich na roghainnean earbsa:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = 'S urrainn dhan teisteanas seo cleachdaichean puist-dhealain aithneachadh.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Sguab às teisteanas
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Òstair
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Am frithealaiche
-
-certmgr-override-lifetime =
-    .label = Saoghal
 
 certmgr-token-name =
     .label = Uidheam tèarainteachd
@@ -109,7 +106,7 @@ exception-mgr =
     .title = Cuir eisgeachd tèarainteachd ris
 
 exception-mgr-extra-button =
-    .label = Dearbhaich eisgeachd tèarainteachd
+    .label = Dearbh an eisgeachd tèarainteachd
     .accesskey = c
 
 exception-mgr-supplemental-warning = Chan iarr bancaichean, bùithtean is làraichean poblach is dligheach eile ort seo a dhèanamh.
@@ -186,13 +183,14 @@ delete-email-cert-impact = Ma sguabas tu às teisteanas post-dealain duine, chan
 cert-with-serial =
     .value = Teisteanas leis an àireamh shreathach: { $serialNumber }
 
-## Cert Viewer
-
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Na cuir teisteanas cliant
 
 # Used when no cert is stored for an override
 no-cert-stored-for-override = (Gun stòradh)
+
+# When a certificate is unavailable (for example, it has been deleted or the token it exists on has been removed).
+certificate-not-available = (Unavailable)
 
 ## Used to show whether an override is temporary or permanent
 

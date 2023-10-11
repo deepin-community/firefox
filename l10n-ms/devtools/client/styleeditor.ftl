@@ -16,7 +16,6 @@ styleeditor-save-button = Simpan
     .accesskey = S
 styleeditor-options-button =
     .tooltiptext = Pilihan Editor Gaya
-styleeditor-media-rules = Aturan @media
 styleeditor-editor-textbox =
     .data-placeholder = Taip CSS di sini.
 styleeditor-no-stylesheet = Halaman ini tiada lembaran gaya.
@@ -25,3 +24,17 @@ styleeditor-open-link-new-tab =
     .label = Buka Pautan dalam Tab Baru
 styleeditor-copy-url =
     .label = Salin URL
+styleeditor-find =
+    .label = Cari
+    .accesskey = r
+styleeditor-find-again =
+    .label = Cari Lagi
+    .accesskey = g
+styleeditor-go-to-line =
+    .label = Langkau ke barisan…
+    .accesskey = L
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count = { $ruleCount } peraturan.

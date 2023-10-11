@@ -5,12 +5,12 @@
 
 about-logins-page-title = Přizjewjenja a hesła
 
-# "Google Play" and "App Store" are both branding and should not be translated
+about-logins-login-filter =
+    .placeholder = Přizjewjenja přepytać
+    .key = F
 
-login-filter =
-    .placeholder = Přizjewjenja pytać
-
-create-login-button = Nowe přizjewjenje załožić
+create-new-login-button =
+    .title = Nowe přizjewjenje załožić
 
 fxaccounts-sign-in-text = Přinjesće swoje hesła do wašich druhich gratow
 fxaccounts-sign-in-sync-button = Pola Sync přizjewić
@@ -37,12 +37,24 @@ about-logins-menu-menuitem-help = Pomoc
 
 login-list =
     .aria-label = Přizjewjenja, kotrež pytanskemu naprašowanju wotpowěduja
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } přizjewjenje
         [two] { $count } přizjewjeni
         [few] { $count } přizjewjenja
        *[other] { $count } přizjewjenjow
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } z { $total } přizjewjenja
+        [two] { $count } z { $total } přizjewjenjow
+        [few] { $count } z { $total } přizjewjenjow
+       *[other] { $count } z { $total } přizjewjenjow
     }
 login-list-sort-label-text = Sortěrować po:
 login-list-name-option = Mjenje (A-Z)
@@ -63,7 +75,6 @@ about-logins-list-item-breach-icon =
     .title = Zranjene websydło
 about-logins-list-item-vulnerable-password-icon =
     .title = Zranite hesło
-
 about-logins-list-section-breach = Websydła z datowymi dźěrami
 about-logins-list-section-vulnerable = Zranite hesła
 about-logins-list-section-nothing = Žane warnowanje
@@ -78,8 +89,8 @@ about-logins-login-intro-heading-logged-in = Žane synchronizowane přizjewjenja
 login-intro-description = Jeli sće swoje přizjewjenja { -brand-product-name } na druhim graće składował, tak móžeće je sem přinjesć:
 login-intro-instructions-fxa = Załožće abo přizjewće so pola swojeho { -fxaccount-brand-name } na graće, hdźež waše přizjewjenja su składowane
 login-intro-instructions-fxa-settings = Dźiće k Nastajenja > Sync > Synchronizaciju zmóžnić… Wubjerće kontrolny kašćik „Přizjewjenja a hesła“.
-login-intro-instructions-fxa-help = Wopytajće <a data-l10n-name="help-link">pomoc { -lockwise-brand-short-name }</a> za wjace pomocy.
-about-logins-intro-import = Jeli waše přizjewjenja su składowane w druhim wobhladowaku, móžeće <a data-l10n-name="import-link">je do { -lockwise-brand-short-name } importować</a>
+login-intro-instructions-fxa-passwords-help = Wopytajće <a data-l10n-name="passwords-help-link">pomoc hesłow</a> za wjace pomocy.
+about-logins-intro-browser-only-import = Jeli waše přizjewjenja su składowane w druhim wobhladowaku, móžeće <a data-l10n-name="import-link">je do{ -brand-product-name } importować</a>
 about-logins-intro-import2 = Jeli waše přizjewjenja so zwonka { -brand-product-name } składuja, móžeće <a data-l10n-name="import-browser-link">je z druheho wobhladowaka importować</a>, abo <a data-l10n-name="import-file-link">z dataje</a>
 
 ## Login
@@ -104,9 +115,17 @@ login-item-copied-password-button-text = Kopěrowane!
 login-item-save-changes-button = Změny składować
 login-item-save-new-button = Składować
 login-item-cancel-button = Přetorhnyć
-login-item-time-changed = Poslednja změna: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Wutworjeny: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Poslednje wužiće: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Wutworjeny
+login-item-timeline-action-updated = Zaktualizowany
+login-item-timeline-action-used = Wužity
 
 ## OS Authentication dialog
 
@@ -134,8 +153,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Zapodajće swoje přizje
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = składowane hesło kopěrować
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Zapodajće swoje přizjewjenske daty Windows, zo byšće swoje přizjewjenja eksportował. To wěstotu wašich kontow škita.
 # This message can be seen when attempting to export a password in about:logins
@@ -149,8 +166,6 @@ master-password-reload-button =
     .label = Přizjewić
     .accesskey = P
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Přetorhnyć
@@ -160,6 +175,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Tute přizjewjenje wotstronić?
 confirm-delete-dialog-message = Tuta akcija njeda so cofnyć.
 about-logins-confirm-remove-dialog-confirm-button = Wotstronić
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -211,6 +229,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] To přizjewjenja wotstroni, kotrež sće w { -brand-short-name } na wšěch gratach składował a kotrež su z wašim kontom { -fxaccount-brand-name } synchronizowane. To tež warnowanja wo datowych dźěrach wotstroni, kotrež so tu pokazuja. Njemóžeće tutu akciju cofnyć.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Přizjewjenja a hesła eksportować
 about-logins-confirm-export-dialog-message = Waše hesła budu so jako čitajomny tekst składować (na př. BadP@ass0rd), tohodla móže kóždy, kotryž móže eksportowanu dataju wočinić, je widźeć.
 about-logins-confirm-export-dialog-confirm-button = Eksportować…
@@ -230,7 +250,6 @@ about-logins-breach-alert-date = Tuta datowa dźěra je { DATETIME($date, day: "
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = K { $hostname }
-about-logins-breach-alert-learn-more-link = Dalše informacije
 
 ## Vulnerable Password notification
 

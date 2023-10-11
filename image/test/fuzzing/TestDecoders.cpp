@@ -33,6 +33,7 @@ using namespace mozilla::image;
   if (x) {          \
     volatile int v; \
     v = 0;          \
+    (void)v;        \
   }
 
 class DecodeToSurfaceRunnableFuzzing : public Runnable {
@@ -91,7 +92,8 @@ static int RunDecodeToSurfaceFuzzing(nsCOMPtr<nsIInputStream> inputStream,
   RefPtr<SourceSurface> surface;
   nsCOMPtr<nsIRunnable> runnable =
       new DecodeToSurfaceRunnableFuzzing(surface, inputStream, mimeType);
-  thread->Dispatch(runnable, nsIThread::DISPATCH_SYNC);
+  NS_DispatchAndSpinEventLoopUntilComplete("RunDecodeToSurfaceFuzzing"_ns,
+                                           thread, runnable.forget());
 
   thread->Shutdown();
 
@@ -136,7 +138,7 @@ static int RunDecodeToSurfaceFuzzingJXL(nsCOMPtr<nsIInputStream> inputStream) {
 #endif
 
 int FuzzingInitImage(int* argc, char*** argv) {
-  Preferences::SetBool("image.avif.enabled", true);
+  Preferences::SetBool("image.avif.sequence.enabled", true);
 #ifdef MOZ_JXL
   Preferences::SetBool("image.jxl.enabled", true);
 #endif

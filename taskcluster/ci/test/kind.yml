@@ -2,24 +2,27 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 ---
-loader: taskgraph.loader.test:loader
+loader: gecko_taskgraph.loader.test:loader
 
 kind-dependencies:
     - build
     - build-signing
+    - repackage-signing-shippable-l10n-msix
+    - repackage-signing-msix
+    - repackage-signing
     - repackage
     - fetch
     - toolchain
 
 transforms:
-    - taskgraph.transforms.tests:transforms
-    - taskgraph.transforms.job:transforms
-    - taskgraph.transforms.task:transforms
+    - gecko_taskgraph.transforms.test:transforms
+    - gecko_taskgraph.transforms.job:transforms
+    - gecko_taskgraph.transforms.task:transforms
 
 # Each stanza in a file pointed to by 'jobs-from' describes a particular test
 # suite or sub-suite. These are processed through the transformations described
 # above to produce a bunch of tasks. See the schema in
-# `taskcluster/taskgraph/transforms/tests.py` for a description of the fields
+# `taskcluster/gecko_taskgraph/transforms/test/__init__.py` for a description of the fields
 # used in these files.
 
 # Adding a new test type or running tests on a new platform? Be sure to review
@@ -34,10 +37,6 @@ jobs-from:
     - marionette.yml
     - misc.yml
     - mochitest.yml
-    - raptor.yml
-    - raptor-chrome.yml
-    - raptor-gve.yml
-    - raptor-refbrow.yml
     - reftest.yml
     - talos.yml
     - web-platform.yml
@@ -58,6 +57,10 @@ job-defaults:
         requires-signed-builds:
             by-test-platform:
                 macosx1100.*: true
+                windows1.*:
+                    by-variant:
+                        msix: true
+                        default: false
                 default: false
     fetches:
         toolchain:

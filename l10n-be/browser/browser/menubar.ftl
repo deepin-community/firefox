@@ -38,20 +38,9 @@ menu-quit =
             [windows] ы
            *[other] В
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Выйсці з { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Выйсці з { -brand-shorter-name }
-
 menu-about =
     .label = Пра { -brand-shorter-name }
     .accesskey = П
@@ -81,8 +70,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Адкрыць файл…
     .accesskey = ф
-menu-file-close =
-    .label = Закрыць
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Закрыць картку
+            [one] Закрыць { $tabCount } картку
+            [few] Закрыць { $tabCount } карткi
+           *[many] Закрыць { $tabCount } картак
+        }
     .accesskey = З
 menu-file-close-window =
     .label = Закрыць акно
@@ -91,17 +88,14 @@ menu-file-save-page =
     .label = Захаваць старонку як…
     .accesskey = я
 menu-file-email-link =
-    .label = Даслаць спасылку эл.поштай…
-    .accesskey = с
+    .label = Даслаць спасылку поштай…
+    .accesskey = у
 menu-file-share-url =
     .label = Падзялiцца
     .accesskey = П
 menu-file-print-setup =
     .label = Наладзіць старонку…
     .accesskey = л
-menu-file-print-preview =
-    .label = Перадпрагляд друку
-    .accesskey = г
 menu-file-print =
     .label = Друкаваць…
     .accesskey = Д
@@ -136,7 +130,7 @@ menu-view-toolbars-menu =
     .label = Паліцы прылад
     .accesskey = л
 menu-view-customize-toolbar2 =
-    .label = Уладкаваць паліцы прылад…
+    .label = Уладкаваць паліцу прылад…
     .accesskey = У
 menu-view-sidebar =
     .label = Бакавая панэль
@@ -188,6 +182,17 @@ menu-view-full-screen =
     .label = Увесь экран
     .accesskey = У
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Увайсці ў Рэжым чытання
+    .accesskey = Ч
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Закрыць Рэжым чытання
+    .accesskey = Ч
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +221,9 @@ menu-history-undo-menu =
     .label = Нядаўна закрытыя карткі
 menu-history-undo-window-menu =
     .label = Нядаўна закрытыя вокны
-menu-history-reopen-all-tabs = Перааадкрыць усе карткі
-menu-history-reopen-all-windows = Перааадкрыць усе вокны
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Шукаць у гісторыі
 
 ## Bookmarks Menu
 
@@ -226,10 +232,13 @@ menu-bookmarks-menu =
     .accesskey = З
 menu-bookmarks-manage =
     .label = Кіраванне закладкамі
-menu-bookmark-current-tab =
-    .label = Зрабіць закладку на гэту картку
-menu-bookmark-edit =
-    .label = Правіць гэтую закладку
+menu-bookmark-tab =
+    .label = Зрабіць закладку на дзейную картку…
+menu-edit-bookmark =
+    .label = Правіць гэтую закладку…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Шукаць у закладках
 menu-bookmarks-all-tabs =
     .label = Закладкі на ўсе карткі…
 menu-bookmarks-toolbar =
@@ -242,13 +251,13 @@ menu-bookmarks-mobile =
 ## Tools Menu
 
 menu-tools =
-    .label = Прылады
-    .accesskey = л
+    .label = Інструменты
+    .accesskey = е
 menu-tools-downloads =
     .label = Сцягванні
     .accesskey = С
 menu-tools-addons-and-themes =
-    .label = Дадаткі і тэмы
+    .label = Дадаткі і тэмы
     .accesskey = Д
 menu-tools-fxa-sign-in2 =
     .label = Увайсці
@@ -314,15 +323,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = е
 menu-help-report-site-issue =
     .label = Паведаміць аб праблеме з сайтам…
-menu-help-feedback-page =
-    .label = Падаць водгук…
-    .accesskey = П
+menu-help-share-ideas =
+    .label = Падзяліцца ідэямі ці водгукам…
+    .accesskey = ц
 menu-help-enter-troubleshoot-mode2 =
-    .label = Рэжым вырашэння праблем…
+    .label = Рэжым вырашэння праблемаў…
     .accesskey = Р
 menu-help-exit-troubleshoot-mode =
     .label = Выключыць рэжым вырашэння праблем
     .accesskey = ь
+menu-help-switch-device =
+    .label = Пераход на новую прыладу
+    .accesskey = ю
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

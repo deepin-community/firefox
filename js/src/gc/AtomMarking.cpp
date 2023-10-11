@@ -9,7 +9,6 @@
 #include <type_traits>
 
 #include "gc/PublicIterators.h"
-#include "vm/Realm.h"
 
 #include "gc/GC-inl.h"
 #include "gc/Heap-inl.h"
@@ -75,7 +74,6 @@ void AtomMarkingRuntime::unregisterArena(Arena* arena, const AutoLockGC& lock) {
 bool AtomMarkingRuntime::computeBitmapFromChunkMarkBits(JSRuntime* runtime,
                                                         DenseBitmap& bitmap) {
   MOZ_ASSERT(CurrentThreadIsPerformingGC());
-  MOZ_ASSERT(!runtime->hasHelperThreadZones());
 
   if (!bitmap.ensureSpace(allocatedWords)) {
     return false;
@@ -129,29 +127,44 @@ static void BitwiseOrIntoChunkMarkBits(JSRuntime* runtime, Bitmap& bitmap) {
 
 void AtomMarkingRuntime::markAtomsUsedByUncollectedZones(JSRuntime* runtime) {
   MOZ_ASSERT(CurrentThreadIsPerformingGC());
-  MOZ_ASSERT(!runtime->hasHelperThreadZones());
 
-  // Try to compute a simple union of the zone atom bitmaps before updating
-  // the chunk mark bitmaps. If this allocation fails then fall back to
-  // updating the chunk mark bitmaps separately for each zone.
-  DenseBitmap markedUnion;
-  if (markedUnion.ensureSpace(allocatedWords)) {
-    for (ZonesIter zone(runtime, SkipAtoms); !zone.done(); zone.next()) {
-      // We only need to update the chunk mark bits for zones which were
-      // not collected in the current GC. Atoms which are referenced by
-      // collected zones have already been marked.
-      if (!zone->isCollectingFromAnyThread()) {
-        zone->markedAtoms().bitwiseOrInto(markedUnion);
-      }
+  size_t uncollectedZones = 0;
+  for (ZonesIter zone(runtime, SkipAtoms); !zone.done(); zone.next()) {
+    if (!zone->isCollecting()) {
+      uncollectedZones++;
     }
-    BitwiseOrIntoChunkMarkBits(runtime, markedUnion);
-  } else {
+  }
+
+  // If there are no uncollected non-atom zones then there's no work to do.
+  if (uncollectedZones == 0) {
+    return;
+  }
+
+  // If there is more than one zone then try to compute a simple union of the
+  // zone atom bitmaps before updating the chunk mark bitmaps. If there is only
+  // one zone or this allocation fails then update the chunk mark bitmaps
+  // separately for each zone.
+
+  DenseBitmap markedUnion;
+  if (uncollectedZones == 1 || !markedUnion.ensureSpace(allocatedWords)) {
     for (ZonesIter zone(runtime, SkipAtoms); !zone.done(); zone.next()) {
-      if (!zone->isCollectingFromAnyThread()) {
+      if (!zone->isCollecting()) {
         BitwiseOrIntoChunkMarkBits(runtime, zone->markedAtoms());
       }
     }
+    return;
   }
+
+  for (ZonesIter zone(runtime, SkipAtoms); !zone.done(); zone.next()) {
+    // We only need to update the chunk mark bits for zones which were
+    // not collected in the current GC. Atoms which are referenced by
+    // collected zones have already been marked.
+    if (!zone->isCollecting()) {
+      zone->markedAtoms().bitwiseOrInto(markedUnion);
+    }
+  }
+
+  BitwiseOrIntoChunkMarkBits(runtime, markedUnion);
 }
 
 template <typename T>
@@ -190,12 +203,6 @@ void AtomMarkingRuntime::markAtomValue(JSContext* cx, const Value& value) {
                                        value.isBigInt());
 }
 
-void AtomMarkingRuntime::adoptMarkedAtoms(Zone* target, Zone* source) {
-  MOZ_ASSERT(CurrentThreadCanAccessZone(source));
-  MOZ_ASSERT(CurrentThreadCanAccessZone(target));
-  target->markedAtoms().bitwiseOrWith(source->markedAtoms());
-}
-
 #ifdef DEBUG
 template <typename T>
 bool AtomMarkingRuntime::atomIsMarked(Zone* zone, T* thing) {
@@ -215,14 +222,13 @@ bool AtomMarkingRuntime::atomIsMarked(Zone* zone, T* thing) {
   }
 
   if constexpr (std::is_same_v<T, JSAtom>) {
-    JSRuntime* rt = zone->runtimeFromAnyThread();
-    if (rt->atoms().atomIsPinned(rt, thing)) {
+    if (thing->isPinned()) {
       return true;
     }
   }
 
   size_t bit = GetAtomBit(&thing->asTenured());
-  return zone->markedAtoms().getBit(bit);
+  return zone->markedAtoms().readonlyThreadsafeGetBit(bit);
 }
 
 template bool AtomMarkingRuntime::atomIsMarked(Zone* zone, JSAtom* thing);
@@ -274,7 +280,7 @@ bool AtomMarkingRuntime::valueIsMarked(Zone* zone, const Value& value) {
     return atomIsMarked(zone, value.toSymbol());
   }
 
-  MOZ_ASSERT_IF(value.isGCThing(), value.isObject() ||
+  MOZ_ASSERT_IF(value.isGCThing(), value.hasObjectPayload() ||
                                        value.isPrivateGCThing() ||
                                        value.isBigInt());
   return true;

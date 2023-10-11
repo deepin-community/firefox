@@ -5,12 +5,12 @@
 
 about-logins-page-title = Contos e contrasignos
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Cercar credentiales
+    .key = F
 
-create-login-button = Crear nove credentiales
+create-new-login-button =
+    .title = Crear nove credentiales
 
 fxaccounts-sign-in-text = Accede a tu credentiales sur tote tu apparatos
 fxaccounts-sign-in-sync-button = Aperi session pro synchronisar
@@ -22,8 +22,8 @@ fxaccounts-avatar-button =
 menu =
     .title = Aperir menu
 # This menuitem is only visible on Windows and macOS
-about-logins-menu-menuitem-import-from-another-browser = Importar ab un altere navigator…
-about-logins-menu-menuitem-import-from-a-file = Importar ab un file…
+about-logins-menu-menuitem-import-from-another-browser = Importar de un altere navigator…
+about-logins-menu-menuitem-import-from-a-file = Importar de un file…
 about-logins-menu-menuitem-export-logins = Exportar credentiales…
 about-logins-menu-menuitem-remove-all-logins = Remover tote le credentiales…
 menu-menuitem-preferences =
@@ -37,10 +37,20 @@ about-logins-menu-menuitem-help = Adjuta
 
 login-list =
     .aria-label = Credentiales resultante del recerca
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } conto
        *[other] { $count } contos
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } de { $total } credential
+       *[other] { $count } de { $total } credentiales
     }
 login-list-sort-label-text = Ordinar per:
 login-list-name-option = Nomine (A-Z)
@@ -61,7 +71,6 @@ about-logins-list-item-breach-icon =
     .title = Sito web violate
 about-logins-list-item-vulnerable-password-icon =
     .title = Contrasigno vulnerabile
-
 about-logins-list-section-breach = Sitos web violate
 about-logins-list-section-vulnerable = Contrasignos vulnerabile
 about-logins-list-section-nothing = Nulle alerta
@@ -76,8 +85,8 @@ about-logins-login-intro-heading-logged-in = Nulle credentiales synchronisate tr
 login-intro-description = Si tu ha salvate tu credentiales in { -brand-product-name } sur un altere apparato, ecce como render los disponibile hic:
 login-intro-instructions-fxa = Aperi session o crea un { -fxaccount-brand-name } sur le apparato ubi se trova tu credentiales.
 login-intro-instructions-fxa-settings = Va a Parametros > Sync > Activar synchronisation… Selige le quadrato ‘Contos e contrasignos’.
-login-intro-instructions-fxa-help = Visita <a data-l10n-name="help-link">{ -lockwise-brand-short-name } Support</a> pro obtener adjuta.
-about-logins-intro-import = Si tu credentiales es salvate in un altere navigator, tu pote <a data-l10n-name="import-link">importar los in { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = Visita <a data-l10n-name="passwords-help-link">supporto pro contrasignos</a> pro adjuta ulterior.
+about-logins-intro-browser-only-import = Si tu credentiales es salvate in un altere navigator, tu pote <a data-l10n-name="import-link">importar los in { -brand-product-name }</a>
 about-logins-intro-import2 = Si tu credentiales es salvate foras de { -brand-product-name }, tu pote <a data-l10n-name="import-browser-link">importar los ab un altere navigator</a> o <a data-l10n-name="import-file-link">ab un file</a>
 
 ## Login
@@ -102,9 +111,17 @@ login-item-copied-password-button-text = Copiate!
 login-item-save-changes-button = Salvar le cambiamentos
 login-item-save-new-button = Salvar
 login-item-cancel-button = Cancellar
-login-item-time-changed = Ultime modification : { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Create: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Ultime uso: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Create
+login-item-timeline-action-updated = Actualisate
+login-item-timeline-action-used = Usate
 
 ## OS Authentication dialog
 
@@ -132,8 +149,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Pro copiar le contrasign
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = copiar le contrasigno salvate
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Pro exportar tu credentiales de accesso, insere tu credentiales de accesso Windows. Isto adjuta proteger le securitate de tu contos.
 # This message can be seen when attempting to export a password in about:logins
@@ -147,8 +162,6 @@ master-password-reload-button =
     .label = Aperir session
     .accesskey = A
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Cancellar
@@ -158,6 +171,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Remover iste credentiales?
 confirm-delete-dialog-message = Iste action es irreversibile.
 about-logins-confirm-remove-dialog-confirm-button = Remover
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -193,6 +209,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Isto removera le credentiales salvate pro { -brand-short-name } sur tote le apparatos synchronisate a tu { -fxaccount-brand-name }. Isto removera etiam le alertas de violation que appare hic. Tu non potera disfacer iste action.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Exportar credentiales e contrasignos
 about-logins-confirm-export-dialog-message = Tu contrasignos sera salvate como texto legibile (e.g., "P@ssw0rd123"), assi quicunque pote aperir le file exportate, pote vider los.
 about-logins-confirm-export-dialog-confirm-button = Exportar…
@@ -212,7 +230,6 @@ about-logins-breach-alert-date = Iste violation occurreva le { DATETIME($date, d
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Ir a { $hostname }
-about-logins-breach-alert-learn-more-link = Saper plus
 
 ## Vulnerable Password notification
 

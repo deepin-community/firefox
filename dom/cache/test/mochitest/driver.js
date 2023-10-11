@@ -17,10 +17,11 @@
 // when the returned promise is resolved.
 
 function runTests(testFile, order) {
-  function setupPrefs() {
+  async function setupPrefs() {
+    // Bug 1746646: Make mochitests work with TCP enabled (cookieBehavior = 5)
+    // Acquire storage access permission here so that the Cache API is avaialable
     return SpecialPowers.pushPrefEnv({
       set: [
-        ["dom.caches.enabled", true],
         ["dom.caches.testing.enabled", true],
         ["dom.serviceWorkers.enabled", true],
         ["dom.serviceWorkers.testing.enabled", true],
@@ -31,17 +32,25 @@ function runTests(testFile, order) {
 
   // adapted from dom/indexedDB/test/helpers.js
   function clearStorage() {
-    return new Promise(function(resolve, reject) {
+    var clearUnpartitionedStorage = new Promise(function (resolve, reject) {
       var qms = SpecialPowers.Services.qms;
       var principal = SpecialPowers.wrap(document).nodePrincipal;
       var request = qms.clearStoragesForPrincipal(principal);
       var cb = SpecialPowers.wrapCallback(resolve);
       request.callback = cb;
     });
+    var clearPartitionedStorage = new Promise(function (resolve, reject) {
+      var qms = SpecialPowers.Services.qms;
+      var principal = SpecialPowers.wrap(document).partitionedPrincipal;
+      var request = qms.clearStoragesForPrincipal(principal);
+      var cb = SpecialPowers.wrapCallback(resolve);
+      request.callback = cb;
+    });
+    return Promise.all([clearUnpartitionedStorage, clearPartitionedStorage]);
   }
 
   function loadScript(script) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       var s = document.createElement("script");
       s.src = script;
       s.onerror = reject;
@@ -68,10 +77,10 @@ function runTests(testFile, order) {
   }
 
   function runFrameTest() {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       var iframe = document.createElement("iframe");
       iframe.src = "frame.html";
-      iframe.onload = function() {
+      iframe.onload = function () {
         var doc = iframe.contentDocument;
         var s = doc.createElement("script");
         s.src = testFile;
@@ -106,7 +115,7 @@ function runTests(testFile, order) {
 
   if (order == "both") {
     info("Running tests in both modes; first: sequential");
-    return runTests(testFile, "sequential").then(function() {
+    return runTests(testFile, "sequential").then(function () {
       info("Running tests in parallel mode");
       return runTests(testFile, "parallel");
     });
@@ -120,7 +129,7 @@ function runTests(testFile, order) {
       .then(clearStorage)
       .then(runFrameTest)
       .then(clearStorage)
-      .catch(function(e) {
+      .catch(function (e) {
         ok(false, "A promise was rejected during test execution: " + e);
       });
   }
@@ -130,7 +139,7 @@ function runTests(testFile, order) {
       Promise.all([runWorkerTest(), runServiceWorkerTest(), runFrameTest()])
     )
     .then(clearStorage)
-    .catch(function(e) {
+    .catch(function (e) {
       ok(false, "A promise was rejected during test execution: " + e);
     });
 }

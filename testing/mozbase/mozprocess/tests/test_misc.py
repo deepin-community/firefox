@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 import os
 import sys
 
 import mozunit
-
 import proctest
 from mozprocess import processhandler
 
@@ -15,7 +12,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 
 
 class ProcTestMisc(proctest.ProcTest):
-    """ Class to test misc operations """
+    """Class to test misc operations"""
 
     def test_process_timeout_no_kill(self):
         """Process is started, runs but we time out waiting on it

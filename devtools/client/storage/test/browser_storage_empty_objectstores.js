@@ -21,19 +21,19 @@
 // storage-secured-iframe.html and storage-unsecured-iframe.html
 const storeItems = [
   [
-    ["indexedDB", "http://test1.example.org"],
+    ["indexedDB", "https://test1.example.org"],
     ["idb1 (default)", "idb2 (default)"],
   ],
   [
-    ["indexedDB", "http://test1.example.org", "idb1 (default)"],
+    ["indexedDB", "https://test1.example.org", "idb1 (default)"],
     ["obj1", "obj2"],
   ],
-  [["indexedDB", "http://test1.example.org", "idb2 (default)"], []],
+  [["indexedDB", "https://test1.example.org", "idb2 (default)"], []],
   [
-    ["indexedDB", "http://test1.example.org", "idb1 (default)", "obj1"],
+    ["indexedDB", "https://test1.example.org", "idb1 (default)", "obj1"],
     [1, 2, 3],
   ],
-  [["indexedDB", "http://test1.example.org", "idb1 (default)", "obj2"], [1]],
+  [["indexedDB", "https://test1.example.org", "idb1 (default)", "obj2"], [1]],
 ];
 
 /**
@@ -52,7 +52,7 @@ function testTree() {
 /**
  * Test that correct table entries are shown for each of the tree item
  */
-const testTables = async function() {
+const testTables = async function () {
   const doc = gPanelWindow.document;
   // Expand all nodes so that the synthesized click event actually works
   gUI.tree.expandAll();
@@ -64,7 +64,7 @@ const testTables = async function() {
     // Check whether correct number of items are present in the table
     is(
       doc.querySelectorAll(
-        ".table-widget-wrapper:first-of-type .table-widget-cell"
+        ".table-widget-column:first-of-type .table-widget-cell"
       ).length,
       ids.length,
       "Number of items in table is correct"
@@ -80,8 +80,10 @@ const testTables = async function() {
   }
 };
 
-add_task(async function() {
-  await openTabAndSetupStorage(MAIN_DOMAIN + "storage-empty-objectstores.html");
+add_task(async function () {
+  await openTabAndSetupStorage(
+    MAIN_DOMAIN_SECURED + "storage-empty-objectstores.html"
+  );
 
   testTree();
   await testTables();

@@ -7,6 +7,20 @@ do-not-track-learn-more = Tuilleadh eolais
 do-not-track-option-always =
     .label = I gCónaí
 
+settings-page-title = Socruithe
+
+# This is used to determine the width of the search field in about:preferences,
+# in order to make the entire placeholder string visible
+#
+# Please keep the placeholder string short to avoid truncation.
+#
+# Notice: The value of the `.style` attribute is a CSS string, and the `width`
+# is the name of the CSS property. It is intended only to adjust the element's width.
+# Do not translate.
+search-input-box2 =
+    .style = width: 15.4em
+    .placeholder = Aimsigh sna Socruithe
+
 pane-general-title = Ginearálta
 category-general =
     .tooltiptext = { pane-general-title }
@@ -22,6 +36,8 @@ category-search =
 pane-privacy-title = Príobháideachas agus Slándáil
 category-privacy =
     .tooltiptext = { pane-privacy-title }
+
+pane-experimental-search-results-header = { -brand-short-name } Turgnaimh: Bí cúramach
 
 help-button-label = Tacaíocht { -brand-short-name }
 addons-button-label = Eisínteachtaí agus Téamaí
@@ -52,6 +68,17 @@ restart-later = Atosaigh Ar Ball
 ##   $name (String): name of the extension
 
 
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
+
+
 ## Preferences UI Search Results
 
 search-results-header = Torthaí an Chuardaigh
@@ -71,19 +98,11 @@ set-as-my-default-browser =
     .label = Úsáid mar Réamhshocrú…
     .accesskey = d
 
-startup-restore-previous-session =
-    .label = Athchóirigh an seisiún roimhe seo
-    .accesskey = s
-
 tabs-group-header = Cluaisíní
 
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab le dul trí na cluaisíní san ord ar bhain tú úsáid astu le déanaí
     .accesskey = T
-
-warn-on-close-multiple-tabs =
-    .label = Tabhair rabhadh dom agus níos mó ná cluaisín amháin á ndúnadh
-    .accesskey = m
 
 warn-on-open-many-tabs =
     .label = Tabhair rabhadh dom má tá baol ann go mbeidh { -brand-short-name } níos moille tar éis cluaisíní a oscailt
@@ -104,6 +123,10 @@ browser-containers-settings =
     .accesskey = i
 
 containers-disable-alert-title = An bhfuil fonn ort gach Cluaisín Coimeádáin a dhúnadh?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Má dhíchumasaíonn tú Cluaisíní Coimeádáin anois, dúnfar { $tabCount } chluaisín coimeádáin. An bhfuil tú cinnte gur mhaith leat Cluaisíní Coimeádáin a dhíchumasú?
@@ -121,6 +144,9 @@ containers-disable-alert-ok-button =
         [many] Dún { $tabCount } gCluaisín Coimeádáin
        *[other] Dún { $tabCount } Cluaisín Coimeádáin
     }
+
+##
+
 containers-disable-alert-cancel-button = Ná díchumasaigh
 
 containers-remove-alert-title = Bain an Coimeádán seo?
@@ -139,12 +165,9 @@ containers-remove-alert-msg =
 containers-remove-ok-button = Bain an Coimeádán seo
 containers-remove-cancel-button = Ná bain an Coimeádán seo
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Teanga agus Cuma
-
-fonts-and-colors-header = Clófhoirne agus Dathanna
 
 default-font = Cló réamhshocraithe
     .accesskey = r
@@ -154,10 +177,6 @@ default-font-size = Méid
 advanced-fonts =
     .label = Casta…
     .accesskey = t
-
-colors-settings =
-    .label = Dathanna…
-    .accesskey = D
 
 language-header = Teanga
 
@@ -191,8 +210,7 @@ files-and-applications-title = Comhaid agus Feidhmchláir
 
 download-header = Íoslódálacha
 
-download-save-to =
-    .label = Sábháil comhaid i
+download-save-where = Sábháil comhaid i
     .accesskey = S
 
 download-choose-folder =
@@ -415,21 +433,19 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-topsites-header =
-    .label = Barrshuímh
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 
-# Variables:
-#  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+
 home-prefs-recommended-by-header =
     .label = Molta ag { $provider }
 
 ##
 
-home-prefs-highlights-header =
-    .label = Buaicphointí
 home-prefs-highlights-options-bookmarks =
     .label = Leabharmharcanna
 
@@ -442,6 +458,8 @@ home-prefs-snippets-header =
 
 ## Search Section
 
+search-bar-header = Barra Cuardaigh
+
 search-engine-default-header = Inneall Cuardaigh Réamhshocraithe
 
 search-suggestions-option =
@@ -451,6 +469,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Taispeáin moltaí cuardaigh i dtorthaí sa mbarra suímh
     .accesskey = s
+
 
 search-suggestions-cant-show = Ní thaispeánfar moltaí cuardaigh sa mbarra suímh toisc go ndúirt tú le { -brand-short-name } gan do stair bhrabhsála a mheabhrú.
 
@@ -468,6 +487,9 @@ search-restore-default =
 search-remove-engine =
     .label = Bain
     .accesskey = B
+search-add-engine =
+    .label = Cuir Leis
+    .accesskey = C
 
 search-find-more-link = Tuilleadh inneall cuardaigh
 
@@ -481,18 +503,23 @@ search-keyword-warning-bookmark = Roghnaigh tú eochairfhocal atá in úsáid fa
 
 ## Containers Section
 
+containers-back-button2 =
+    .aria-label = Fill ar na Socruithe
 containers-header = Cluaisíní Coimeádáin
 containers-add-button =
     .label = Coimeádán Nua
     .accesskey = C
 
+containers-settings-button =
+    .label = Socruithe
 containers-remove-button =
     .label = Bain
 
-## Sync Section - Signed out
-
-
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = Beir do Ghréasán féin leat
@@ -507,10 +534,10 @@ sync-signedout-caption = Beir do Ghréasán féin leat
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Íoslódáil Firefox ar <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> nó <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a> chun sioncronú le do ghléas soghluaiste.
 
-## Sync Section - Signed in
-
-
 ## Firefox Account - Signed in
+
+
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = Athraigh an pictiúr próifíle
@@ -518,8 +545,13 @@ sync-profile-picture =
 sync-manage-account = Bainistigh mo chuntas
     .accesskey = o
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = Níl { $email } deimhnithe.
 sync-signedin-login-failure = Logáil isteach chun athcheangal { $email }
+
+##
 
 sync-sign-in =
     .label = Logáil isteach
@@ -530,6 +562,7 @@ sync-sign-in =
 
 ## The list of things currently syncing.
 
+sync-currently-syncing-tabs = Cluaisíní oscailte
 
 ## The "Choose what to sync" dialog.
 
@@ -567,12 +600,19 @@ sync-device-name-save =
     .label = Sábháil
     .accesskey = b
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Teachtaireacht Deimhnithe Seolta
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Seoladh nasc deimhnithe chuig { $email }.
+sync-verification-not-sent-title = Níorbh fhéidir deimhniúchán a sheoladh
+sync-verification-not-sent-body = Ní rabhthas ábalta an ríomhphost deimhnithe a sheoladh; bain triail eile as ar ball.
+
 ## Privacy Section
 
 privacy-header = Príobháideachas
-
-## Privacy Section - Forms
-
 
 ## Privacy Section - Logins and Passwords
 
@@ -583,6 +623,9 @@ forms-exceptions =
 forms-saved-logins =
     .label = Focail fhaire a sábháladh…
     .accesskey = f
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = Athraigh an Príomhfhocal Faire…
     .accesskey = P
@@ -590,6 +633,7 @@ forms-master-pw-change =
 forms-master-pw-fips-desc = Theip ar athrú an fhocail faire.
 
 ## OS Authentication dialog
+
 
 ## Privacy Section - History
 
@@ -638,6 +682,9 @@ sitedata-header = Fianáin agus Sonraí Suímh
 
 sitedata-learn-more = Tuilleadh eolais
 
+## Privacy Section - Cookie Banner Handling
+
+
 ## Privacy Section - Address Bar
 
 addressbar-header = Barra Suímh
@@ -653,6 +700,9 @@ addressbar-locbar-bookmarks-option =
 addressbar-locbar-openpage-option =
     .label = Cluaisíní oscailte
     .accesskey = o
+addressbar-locbar-engines-option =
+    .label = Innill Chuardaigh
+    .accesskey = I
 
 addressbar-suggestions-settings = Roghanna a bhaineann le moltaí cuardaigh
 
@@ -669,6 +719,9 @@ enhanced-tracking-protection-setting-standard =
     .accesskey = d
 
 ##
+
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
 content-blocking-cookies-label =
     .label = Fianáin
@@ -724,9 +777,12 @@ permissions-block-popups =
     .label = Cuir Cosc ar Phreabfhuinneoga
     .accesskey = C
 
-permissions-block-popups-exceptions =
+# "popup" is a misspelling that is more popular than the correct spelling of
+# "pop-up" so it's included as a search keyword, not displayed in the UI.
+permissions-block-popups-exceptions-button =
     .label = Eisceachtaí…
     .accesskey = E
+    .searchkeywords = míreanna aníos
 
 permissions-addon-exceptions =
     .label = Eisceachtaí…
@@ -785,9 +841,12 @@ certs-devices =
 
 ## Privacy Section - HTTPS-Only
 
+
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Deasc
 downloads-folder-name = Downloads
 choose-download-folder-title = Roghnaigh Fillteán Íoslódála:
-

@@ -65,22 +65,19 @@ cryptominer-tab-content = Cryptohowkers yaise yer system's computin pouer fur ta
 protections-close-button2 =
     .aria-label = Sneck
     .title = Sneck
-  
+
 mobile-app-title = Block ad trackers across mair devices
 mobile-app-card-content = Yaise the mobile stravaiger wi in-built bieldin against ad trackin.
 mobile-app-links = { -brand-product-name } Stravaiger fur <a data-l10n-name="android-mobile-inline-link">Android</a> and <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Nivver forget a passwird again
-lockwise-title-logged-in2 = Passwird Management
-lockwise-header-content = { -lockwise-brand-name } hauds yer passwirds siccar-like in yer stravaiger.
+passwords-title-logged-in = Manage yer passwirds
 lockwise-header-content-logged-in = Store and sync yer passwirds siccar tae aw yer devices.
-protection-report-save-passwords-button = Save Passwirds
-    .title = Save Passwirds on { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Manage Passwirds
-    .title = Manage Passwirds on { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Tak yer passwirds awwhaur
-lockwise-no-logins-card-content = Yaise passwirds saved in { -brand-short-name } on onie device.
-lockwise-app-links = { -lockwise-brand-name } fur <a data-l10n-name="lockwise-android-inline-link">Android</a> and <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Save Passwirds
+    .title = Save Passwirds
+protection-report-passwords-manage-passwords-button = Manage Passwirds
+    .title = Manage Passwirds
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

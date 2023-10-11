@@ -4,10 +4,13 @@
 
 "use strict";
 
-const Services = require("Services");
-const { throttle } = require("devtools/shared/throttle");
+const { throttle } = require("resource://devtools/shared/throttle.js");
 
-const BROWSERTOOLBOX_FISSION_ENABLED = "devtools.browsertoolbox.fission";
+let gLastResourceId = 0;
+
+function cacheKey(resourceType, resourceId) {
+  return `${resourceType}:${resourceId}`;
+}
 
 class ResourceCommand {
   /**
@@ -23,6 +26,9 @@ class ResourceCommand {
    */
   constructor({ commands }) {
     this.targetCommand = commands.targetCommand;
+
+    // Public attribute set by tests to disable throttling
+    this.throttlingDisabled = false;
 
     this._onTargetAvailable = this._onTargetAvailable.bind(this);
     this._onTargetDestroyed = this._onTargetDestroyed.bind(this);
@@ -42,8 +48,8 @@ class ResourceCommand {
     // delete operations.
     this._pendingWatchers = new Set();
 
-    // Cache for all resources by the order that the resource was taken.
-    this._cache = [];
+    // Caches for all resources by the order that the resource was taken.
+    this._cache = new Map();
     this._listenedResources = new Set();
 
     // WeakMap used to avoid starting a legacy listener twice for the same
@@ -66,6 +72,39 @@ class ResourceCommand {
     return this.targetCommand.watcherFront;
   }
 
+  addResourceToCache(resource) {
+    const { resourceId, resourceType } = resource;
+    this._cache.set(cacheKey(resourceType, resourceId), resource);
+  }
+
+  /**
+   * Clear all the resources related to specifed resource types.
+   * Should also trigger clearing of the caches that exists on the related
+   * serverside resource watchers.
+   *
+   * @param {Array:string} resourceTypes
+   *                       A list of all the resource types whose
+   *                       resources shouled be cleared.
+   */
+  async clearResources(resourceTypes) {
+    if (!Array.isArray(resourceTypes)) {
+      throw new Error("clearResources expects a list of resources types");
+    }
+    // Clear the cached resources of the type.
+    for (const [key, resource] of this._cache) {
+      if (resourceTypes.includes(resource.resourceType)) {
+        // NOTE: To anyone paranoid like me, yes it is okay to delete from a Map while iterating it.
+        this._cache.delete(key);
+      }
+    }
+
+    const resourcesToClear = resourceTypes.filter(resourceType =>
+      this.hasResourceCommandSupport(resourceType)
+    );
+    if (resourcesToClear.length) {
+      this.watcherFront.clearResources(resourcesToClear);
+    }
+  }
   /**
    * Return all specified resources cached in this watcher.
    *
@@ -73,7 +112,13 @@ class ResourceCommand {
    * @return {Array} resources cached in this watcher
    */
   getAllResources(resourceType) {
-    return this._cache.filter(r => r.resourceType === resourceType);
+    const result = [];
+    for (const resource of this._cache.values()) {
+      if (resource.resourceType === resourceType) {
+        result.push(resource);
+      }
+    }
+    return result;
   }
 
   /**
@@ -84,9 +129,7 @@ class ResourceCommand {
    * @return {Object} resource cached in this watcher
    */
   getResourceById(resourceType, resourceId) {
-    return this._cache.find(
-      r => r.resourceType === resourceType && r.resourceId === resourceId
-    );
+    return this._cache.get(cacheKey(resourceType, resourceId));
   }
 
   /**
@@ -251,7 +294,7 @@ class ResourceCommand {
     }
     this._watchers = this._watchers.filter(entry => {
       // Remove entries entirely if it isn't watching for any resource type
-      return entry.resources.length > 0;
+      return !!entry.resources.length;
     });
 
     // Stop listening to all resources for which we removed the last watcher
@@ -315,6 +358,18 @@ class ResourceCommand {
   }
 
   /**
+   * Check if there are any watchers for the specified resource.
+   *
+   * @param {String} resourceType
+   *         One of ResourceCommand.TYPES
+   * @return {Boolean}
+   *         If the resources type is beibg watched.
+   */
+  isResourceWatched(resourceType) {
+    return this._listenedResources.has(resourceType);
+  }
+
+  /**
    * Start watching for all already existing and future targets.
    *
    * We are using ALL_TYPES, but this won't force listening to all types.
@@ -325,11 +380,11 @@ class ResourceCommand {
       // If this is the very first listener registered, of all kind of resource types:
       // * we want to start observing targets via TargetCommand
       // * _onTargetAvailable will be called for each already existing targets and the next one to come
-      this._watchTargetsPromise = this.targetCommand.watchTargets(
-        this.targetCommand.ALL_TYPES,
-        this._onTargetAvailable,
-        this._onTargetDestroyed
-      );
+      this._watchTargetsPromise = this.targetCommand.watchTargets({
+        types: this.targetCommand.ALL_TYPES,
+        onAvailable: this._onTargetAvailable,
+        onDestroyed: this._onTargetDestroyed,
+      });
     }
     return this._watchTargetsPromise;
   }
@@ -345,11 +400,11 @@ class ResourceCommand {
     this._offTargetFrontListeners.clear();
 
     this._watchTargetsPromise = null;
-    this.targetCommand.unwatchTargets(
-      this.targetCommand.ALL_TYPES,
-      this._onTargetAvailable,
-      this._onTargetDestroyed
-    );
+    this.targetCommand.unwatchTargets({
+      types: this.targetCommand.ALL_TYPES,
+      onAvailable: this._onTargetAvailable,
+      onDestroyed: this._onTargetDestroyed,
+    });
   }
 
   /**
@@ -386,18 +441,15 @@ class ResourceCommand {
   /**
    * Method called by the TargetCommand for each already existing or target which has just been created.
    *
-   * @param {Front} targetFront
+   * @param {Object} arg
+   * @param {Front} arg.targetFront
    *        The Front of the target that is available.
    *        This Front inherits from TargetMixin and is typically
    *        composed of a WindowGlobalTargetFront or ContentProcessTargetFront.
+   * @param {Boolean} arg.isTargetSwitching
+   *         true when the new target was created because of a target switching.
    */
   async _onTargetAvailable({ targetFront, isTargetSwitching }) {
-    // We put the resourceCommand on the targetFront so it can be retrieved in the
-    // inspector and style-rule fronts. This might be removed in the future if/when we
-    // turn the resourceCommand into a Command.
-    // ⚠️ This shouldn't be used anywhere else ⚠️
-    targetFront.resourceCommand = this;
-
     const resources = [];
     if (isTargetSwitching) {
       // WatcherActor currently only watches additional frame targets and
@@ -510,8 +562,8 @@ class ResourceCommand {
     // and only become true when doing a bfcache navigation.
     // (only server side targets follow the WindowGlobal lifecycle)
     // When server side targets are enabled, this will always be true.
-    const isServerSideTarget = this.targetCommand.targetFront.targetForm
-      .followWindowGlobalLifeCycle;
+    const isServerSideTarget =
+      this.targetCommand.targetFront.targetForm.followWindowGlobalLifeCycle;
     if (isServerSideTarget) {
       // For top-level targets created from the server, only restart legacy
       // listeners.
@@ -525,11 +577,13 @@ class ResourceCommand {
 
   /**
    * Method called by the TargetCommand when a target has just been destroyed
-   * See _onTargetAvailable for arguments, they are the same.
+   * @param {Object} arg
+   * @param {Front} arg.targetFront
+   *        The Front of the target that was destroyed
+   * @param {Boolean} arg.isModeSwitching
+   *         true when this is called as the result of a change to the devtools.browsertoolbox.scope pref.
    */
-  _onTargetDestroyed({ targetFront }) {
-    delete targetFront.resourceCommand;
-
+  _onTargetDestroyed({ targetFront, isModeSwitching }) {
     // Clear the map of legacy listeners for this target.
     this._existingLegacyListeners.set(targetFront, []);
     this._offTargetFrontListeners.delete(targetFront);
@@ -538,16 +592,30 @@ class ResourceCommand {
     // Top level BrowsingContext target will be purge via DOCUMENT_EVENT will-navigate events.
     // If we were to clean resources from target-destroyed, we will clear resources
     // happening between will-navigate and target-destroyed. Typically the navigation request
+    // At the moment, isModeSwitching can only be true when targetFront.isTopLevel isn't true,
+    // so we don't need to add a specific check for isModeSwitching.
     if (!targetFront.isTopLevel || !targetFront.isBrowsingContext) {
-      this._cache = this._cache.filter(
-        cachedResource => cachedResource.targetFront !== targetFront
-      );
+      for (const [key, resource] of this._cache) {
+        if (resource.targetFront === targetFront) {
+          // NOTE: To anyone paranoid like me, yes it is okay to delete from a Map while iterating it.
+          this._cache.delete(key);
+        }
+      }
     }
 
-    //TODO: Is there a point in doing anything else?
-    //
-    // We could remove the available/destroyed event, but as the target is destroyed
-    // its listeners will be destroyed anyway.
+    // Purge "available" pendingEvents for resources from the destroyed target when switching
+    // mode as we want to ignore those.
+    if (isModeSwitching) {
+      for (const watcherEntry of this._watchers) {
+        for (const pendingEvent of watcherEntry.pendingEvents) {
+          if (pendingEvent.callbackType == "available") {
+            pendingEvent.updates = pendingEvent.updates.filter(
+              update => update.targetFront !== targetFront
+            );
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -573,13 +641,22 @@ class ResourceCommand {
 
       if (watcherFront) {
         targetFront = await this._getTargetForWatcherResource(resource);
+        // When we receive resources from the Watcher actor,
+        // there is no guarantee that the target front is fully initialized.
+        // The Target Front is initialized by the TargetCommand, by calling TargetFront.attachAndInitThread.
+        // We have to wait for its completion as resources watchers are expecting it to be completed.
+        //
+        // But when navigating, we may receive resources packets for a destroyed target.
+        // Or, in the context of the browser toolbox, they may not relate to any target.
+        if (targetFront) {
+          await targetFront.initialized;
+        }
       }
 
       // isAlreadyExistingResource indicates that the resources already existed before
       // the resource command started watching for this type of resource.
-      resource.isAlreadyExistingResource = this._processingExistingResources.has(
-        resourceType
-      );
+      resource.isAlreadyExistingResource =
+        this._processingExistingResources.has(resourceType);
 
       // Put the targetFront on the resource for easy retrieval.
       // (Resources from the legacy listeners may already have the attribute set)
@@ -594,6 +671,10 @@ class ResourceCommand {
           targetFront,
           watcherFront: this.watcherFront,
         });
+      }
+
+      if (!resource.resourceId) {
+        resource.resourceId = `auto:${++gLastResourceId}`;
       }
 
       // Only consider top level document, and ignore remote iframes top document
@@ -617,9 +698,9 @@ class ResourceCommand {
 
       // Avoid storing will-navigate resource and consider it as a transcient resource.
       // We do that to prevent leaking this resource (and its target) on navigation.
-      // We do clear _cache in _onWillNavigate, that we call a few lines before this.
+      // We do clear the cache in _onWillNavigate, that we call a few lines before this.
       if (!isWillNavigate) {
-        this._cache.push(resource);
+        this.addResourceToCache(resource);
       }
     }
 
@@ -631,7 +712,8 @@ class ResourceCommand {
     if (
       includesDocumentEventWillNavigate ||
       (includesDocumentEventDomLoading &&
-        !this.targetCommand.hasTargetWatcherSupport("service_worker"))
+        !this.targetCommand.hasTargetWatcherSupport("service_worker")) ||
+      this.throttlingDisabled
     ) {
       this._notifyWatchers();
     } else {
@@ -690,12 +772,23 @@ class ResourceCommand {
         console.warn(`Expected resource ${resourceType} to have a resourceId`);
       }
 
-      const existingResource = this._cache.find(
-        cachedResource =>
-          cachedResource.resourceType === resourceType &&
-          cachedResource.resourceId === resourceId
-      );
+      // See _onResourceAvailable()
+      // We also need to wait for the related targetFront to be initialized
+      // otherwise we would notify about the udpate *before* the available
+      // and the resource won't be in _cache.
+      if (watcherFront) {
+        targetFront = await this._getTargetForWatcherResource(update);
+        // When we receive the navigation request, the target front has already been
+        // destroyed, but this is fine. The cached resource has the reference to
+        // the (destroyed) target front and it is fully initialized.
+        if (targetFront) {
+          await targetFront.initialized;
+        }
+      }
 
+      const existingResource = this._cache.get(
+        cacheKey(resourceType, resourceId)
+      );
       if (!existingResource) {
         continue;
       }
@@ -730,25 +823,7 @@ class ResourceCommand {
   async _onResourceDestroyed({ targetFront, watcherFront }, resources) {
     for (const resource of resources) {
       const { resourceType, resourceId } = resource;
-
-      let index = -1;
-      if (resourceId) {
-        index = this._cache.findIndex(
-          cachedResource =>
-            cachedResource.resourceType == resourceType &&
-            cachedResource.resourceId == resourceId
-        );
-      } else {
-        index = this._cache.indexOf(resource);
-      }
-      if (index >= 0) {
-        this._cache.splice(index, 1);
-      } else {
-        console.warn(
-          `Resource ${resourceId || ""} of ${resourceType} was not found.`
-        );
-      }
-
+      this._cache.delete(cacheKey(resourceType, resourceId));
       this._queueResourceEvent("destroyed", resourceType, resource);
     }
     this._throttledNotifyWatchers();
@@ -761,7 +836,7 @@ class ResourceCommand {
         continue;
       }
       // If we receive a new event of the same type, accumulate the new update in the last event
-      if (pendingEvents.length > 0) {
+      if (pendingEvents.length) {
         const lastEvent = pendingEvents[pendingEvents.length - 1];
         if (lastEvent.callbackType == callbackType) {
           lastEvent.updates.push(update);
@@ -784,12 +859,8 @@ class ResourceCommand {
    */
   _notifyWatchers() {
     for (const watcherEntry of this._watchers) {
-      const {
-        onAvailable,
-        onUpdated,
-        onDestroyed,
-        pendingEvents,
-      } = watcherEntry;
+      const { onAvailable, onUpdated, onDestroyed, pendingEvents } =
+        watcherEntry;
       // Immediately clear the buffer in order to avoid possible races, where an event listener
       // would end up somehow adding a new throttled resource
       watcherEntry.pendingEvents = [];
@@ -820,7 +891,7 @@ class ResourceCommand {
   // (`targetFront` will be null as the watcher is in the parent process
   // and targets are in distinct processes)
   _getTargetForWatcherResource(resource) {
-    const { browsingContextID, resourceType } = resource;
+    const { browsingContextID, innerWindowId, resourceType } = resource;
 
     // Some privileged resources aren't related to any BrowsingContext
     // and so aren't bound to any Target Front.
@@ -830,15 +901,17 @@ class ResourceCommand {
       return null;
     }
 
-    // Resource emitted from the Watcher Actor should all have a
-    // browsingContextID attribute
-    if (!browsingContextID) {
-      console.error(
-        `Resource of ${resourceType} is missing a browsingContextID attribute`
+    if (innerWindowId && this.targetCommand.isServerTargetSwitchingEnabled()) {
+      return this.watcherFront.getWindowGlobalTargetByInnerWindowId(
+        innerWindowId
       );
-      return null;
+    } else if (browsingContextID) {
+      return this.watcherFront.getWindowGlobalTarget(browsingContextID);
     }
-    return this.watcherFront.getWindowGlobalTarget(browsingContextID);
+    console.error(
+      `Resource of ${resourceType} is missing a browsingContextID or innerWindowId attribute`
+    );
+    return null;
   }
 
   _onWillNavigate(targetFront) {
@@ -846,7 +919,12 @@ class ResourceCommand {
     // purge the cache entirely when we start navigating to a new document.
     // Other toolboxes and additional target for remote iframes or content process
     // will be purge from onTargetDestroyed.
-    this._cache = [];
+
+    // NOTE: we could `clear` the cache here, but technically if anything is
+    // currently iterating over resources provided by getAllResources, that
+    // would interfere with their iteration. We just assign a new Map here to
+    // leave those iterators as is.
+    this._cache = new Map();
   }
 
   /**
@@ -856,16 +934,6 @@ class ResourceCommand {
    * @return {Boolean} True, if the server supports this type.
    */
   hasResourceCommandSupport(resourceType) {
-    // If the targetCommand top level target is a parent process, we're in the browser console or browser toolbox.
-    // In such case, if the browser toolbox fission pref is disabled, we don't want to use watchers
-    // (even if traits on the server are enabled).
-    if (
-      this.targetCommand.descriptorFront.isParentProcessDescriptor &&
-      !Services.prefs.getBoolPref(BROWSERTOOLBOX_FISSION_ENABLED, false)
-    ) {
-      return false;
-    }
-
     return this.watcherFront?.traits?.resources?.[resourceType];
   }
 
@@ -952,17 +1020,17 @@ class ResourceCommand {
    * being fetched from these targets.
    */
   _shouldRunLegacyListenerEvenWithWatcherSupport(resourceType) {
-    return (
-      resourceType == ResourceCommand.TYPES.SOURCE ||
-      resourceType == ResourceCommand.TYPES.THREAD_STATE
-    );
+    return WORKER_RESOURCE_TYPES.includes(resourceType);
   }
 
   async _forwardExistingResources(resourceTypes, onAvailable) {
-    const existingResources = this._cache.filter(resource =>
-      resourceTypes.includes(resource.resourceType)
-    );
-    if (existingResources.length > 0) {
+    const existingResources = [];
+    for (const resource of this._cache.values()) {
+      if (resourceTypes.includes(resource.resourceType)) {
+        existingResources.push(resource);
+      }
+    }
+    if (existingResources.length) {
       await onAvailable(existingResources, { areExistingResources: true });
     }
   }
@@ -979,6 +1047,17 @@ class ResourceCommand {
     if (this._hasResourceCommandSupportForTarget(resourceType, targetFront)) {
       // This resource / target pair should already be handled by the watcher,
       // no need to start legacy listeners.
+      return;
+    }
+
+    // All workers target types are still not supported by the watcher
+    // so that we have to spawn legacy listener for all their resources.
+    // But some resources are irrelevant to workers, like network events.
+    // And we removed the related legacy listener as they are no longer used.
+    if (
+      targetFront.targetType.endsWith("worker") &&
+      !WORKER_RESOURCE_TYPES.includes(resourceType)
+    ) {
       return;
     }
 
@@ -1047,9 +1126,12 @@ class ResourceCommand {
     }
 
     // Clear the cached resources of the type.
-    this._cache = this._cache.filter(
-      cachedResource => cachedResource.resourceType !== resourceType
-    );
+    for (const [key, resource] of this._cache) {
+      if (resource.resourceType == resourceType) {
+        // NOTE: To anyone paranoid like me, yes it is okay to delete from a Map while iterating it.
+        this._cache.delete(key);
+      }
+    }
 
     // If the server supports the Watcher API and the Watcher supports
     // this resource type, use this API
@@ -1058,9 +1140,8 @@ class ResourceCommand {
         this.watcherFront.unwatchResources([resourceType]);
       }
 
-      const shouldRunLegacyListeners = this._shouldRunLegacyListenerEvenWithWatcherSupport(
-        resourceType
-      );
+      const shouldRunLegacyListeners =
+        this._shouldRunLegacyListenerEvenWithWatcherSupport(resourceType);
       if (!shouldRunLegacyListeners) {
         return;
       }
@@ -1113,8 +1194,6 @@ ResourceCommand.TYPES = ResourceCommand.prototype.TYPES = {
   CSS_MESSAGE: "css-message",
   ERROR_MESSAGE: "error-message",
   PLATFORM_MESSAGE: "platform-message",
-  // Legacy listener only. Can be removed in Bug 1625937.
-  CLONED_CONTENT_PROCESS_MESSAGE: "cloned-content-process-message",
   DOCUMENT_EVENT: "document-event",
   ROOT_NODE: "root-node",
   STYLESHEET: "stylesheet",
@@ -1130,29 +1209,29 @@ ResourceCommand.TYPES = ResourceCommand.prototype.TYPES = {
   REFLOW: "reflow",
   SOURCE: "source",
   THREAD_STATE: "thread-state",
+  TRACING_STATE: "tracing-state",
   SERVER_SENT_EVENT: "server-sent-event",
+  LAST_PRIVATE_CONTEXT_EXIT: "last-private-context-exit",
 };
 ResourceCommand.ALL_TYPES = ResourceCommand.prototype.ALL_TYPES = Object.values(
   ResourceCommand.TYPES
 );
 module.exports = ResourceCommand;
 
+// This is the list of resource types supported by workers.
+// We need such list to know when forcing to run the legacy listeners
+// and when to avoid try to spawn some unsupported ones for workers.
+const WORKER_RESOURCE_TYPES = [
+  ResourceCommand.TYPES.CONSOLE_MESSAGE,
+  ResourceCommand.TYPES.ERROR_MESSAGE,
+  ResourceCommand.TYPES.SOURCE,
+  ResourceCommand.TYPES.THREAD_STATE,
+];
+
 // Backward compat code for each type of resource.
 // Each section added here should eventually be removed once the equivalent server
 // code is implement in Firefox, in its release channel.
 const LegacyListeners = {
-  [ResourceCommand.TYPES
-    .CONSOLE_MESSAGE]: require("devtools/shared/commands/resource/legacy-listeners/console-messages"),
-  [ResourceCommand.TYPES
-    .CSS_CHANGE]: require("devtools/shared/commands/resource/legacy-listeners/css-changes"),
-  [ResourceCommand.TYPES
-    .CSS_MESSAGE]: require("devtools/shared/commands/resource/legacy-listeners/css-messages"),
-  [ResourceCommand.TYPES
-    .ERROR_MESSAGE]: require("devtools/shared/commands/resource/legacy-listeners/error-messages"),
-  [ResourceCommand.TYPES
-    .PLATFORM_MESSAGE]: require("devtools/shared/commands/resource/legacy-listeners/platform-messages"),
-  [ResourceCommand.TYPES
-    .CLONED_CONTENT_PROCESS_MESSAGE]: require("devtools/shared/commands/resource/legacy-listeners/cloned-content-process-messages"),
   async [ResourceCommand.TYPES.DOCUMENT_EVENT]({
     targetCommand,
     targetFront,
@@ -1170,59 +1249,108 @@ const LegacyListeners = {
     });
     await webConsoleFront.startListeners(["DocumentEvents"]);
   },
-  [ResourceCommand.TYPES
-    .ROOT_NODE]: require("devtools/shared/commands/resource/legacy-listeners/root-node"),
-  [ResourceCommand.TYPES
-    .STYLESHEET]: require("devtools/shared/commands/resource/legacy-listeners/stylesheet"),
-  [ResourceCommand.TYPES
-    .NETWORK_EVENT]: require("devtools/shared/commands/resource/legacy-listeners/network-events"),
-  [ResourceCommand.TYPES
-    .WEBSOCKET]: require("devtools/shared/commands/resource/legacy-listeners/websocket"),
-  [ResourceCommand.TYPES
-    .COOKIE]: require("devtools/shared/commands/resource/legacy-listeners/cookie"),
-  [ResourceCommand.TYPES
-    .CACHE_STORAGE]: require("devtools/shared/commands/resource/legacy-listeners/cache-storage"),
-  [ResourceCommand.TYPES
-    .LOCAL_STORAGE]: require("devtools/shared/commands/resource/legacy-listeners/local-storage"),
-  [ResourceCommand.TYPES
-    .SESSION_STORAGE]: require("devtools/shared/commands/resource/legacy-listeners/session-storage"),
-  [ResourceCommand.TYPES
-    .EXTENSION_STORAGE]: require("devtools/shared/commands/resource/legacy-listeners/extension-storage"),
-  [ResourceCommand.TYPES
-    .INDEXED_DB]: require("devtools/shared/commands/resource/legacy-listeners/indexed-db"),
-  [ResourceCommand.TYPES
-    .NETWORK_EVENT_STACKTRACE]: require("devtools/shared/commands/resource/legacy-listeners/network-event-stacktraces"),
-  [ResourceCommand.TYPES
-    .SOURCE]: require("devtools/shared/commands/resource/legacy-listeners/source"),
-  [ResourceCommand.TYPES
-    .THREAD_STATE]: require("devtools/shared/commands/resource/legacy-listeners/thread-states"),
-  [ResourceCommand.TYPES
-    .SERVER_SENT_EVENT]: require("devtools/shared/commands/resource/legacy-listeners/server-sent-events"),
-  [ResourceCommand.TYPES
-    .REFLOW]: require("devtools/shared/commands/resource/legacy-listeners/reflow"),
 };
+loader.lazyRequireGetter(
+  LegacyListeners,
+  ResourceCommand.TYPES.CONSOLE_MESSAGE,
+  "resource://devtools/shared/commands/resource/legacy-listeners/console-messages.js"
+);
+loader.lazyRequireGetter(
+  LegacyListeners,
+  ResourceCommand.TYPES.CSS_CHANGE,
+  "resource://devtools/shared/commands/resource/legacy-listeners/css-changes.js"
+);
+loader.lazyRequireGetter(
+  LegacyListeners,
+  ResourceCommand.TYPES.CSS_MESSAGE,
+  "resource://devtools/shared/commands/resource/legacy-listeners/css-messages.js"
+);
+loader.lazyRequireGetter(
+  LegacyListeners,
+  ResourceCommand.TYPES.ERROR_MESSAGE,
+  "resource://devtools/shared/commands/resource/legacy-listeners/error-messages.js"
+);
+loader.lazyRequireGetter(
+  LegacyListeners,
+  ResourceCommand.TYPES.PLATFORM_MESSAGE,
+  "resource://devtools/shared/commands/resource/legacy-listeners/platform-messages.js"
+);
+loader.lazyRequireGetter(
+  LegacyListeners,
+  ResourceCommand.TYPES.ROOT_NODE,
+  "resource://devtools/shared/commands/resource/legacy-listeners/root-node.js"
+);
+
+loader.lazyRequireGetter(
+  LegacyListeners,
+  ResourceCommand.TYPES.SOURCE,
+  "resource://devtools/shared/commands/resource/legacy-listeners/source.js"
+);
+loader.lazyRequireGetter(
+  LegacyListeners,
+  ResourceCommand.TYPES.THREAD_STATE,
+  "resource://devtools/shared/commands/resource/legacy-listeners/thread-states.js"
+);
+
+loader.lazyRequireGetter(
+  LegacyListeners,
+  ResourceCommand.TYPES.REFLOW,
+  "resource://devtools/shared/commands/resource/legacy-listeners/reflow.js"
+);
 
 // Optional transformers for each type of resource.
 // Each module added here should be a function that will receive the resource, the target, …
 // and perform some transformation on the resource before it will be emitted.
 // This is a good place to handle backward compatibility and manual resource marshalling.
-const ResourceTransformers = {
-  [ResourceCommand.TYPES
-    .CONSOLE_MESSAGE]: require("devtools/shared/commands/resource/transformers/console-messages"),
-  [ResourceCommand.TYPES
-    .ERROR_MESSAGE]: require("devtools/shared/commands/resource/transformers/error-messages"),
-  [ResourceCommand.TYPES
-    .CACHE_STORAGE]: require("devtools/shared/commands/resource/transformers/storage-cache.js"),
-  [ResourceCommand.TYPES
-    .COOKIE]: require("devtools/shared/commands/resource/transformers/storage-cookie.js"),
-  [ResourceCommand.TYPES
-    .INDEXED_DB]: require("devtools/shared/commands/resource/transformers/storage-indexed-db.js"),
-  [ResourceCommand.TYPES
-    .LOCAL_STORAGE]: require("devtools/shared/commands/resource/transformers/storage-local-storage.js"),
-  [ResourceCommand.TYPES
-    .SESSION_STORAGE]: require("devtools/shared/commands/resource/transformers/storage-session-storage.js"),
-  [ResourceCommand.TYPES
-    .NETWORK_EVENT]: require("devtools/shared/commands/resource/transformers/network-events"),
-  [ResourceCommand.TYPES
-    .THREAD_STATE]: require("devtools/shared/commands/resource/transformers/thread-states"),
-};
+const ResourceTransformers = {};
+
+loader.lazyRequireGetter(
+  ResourceTransformers,
+  ResourceCommand.TYPES.CONSOLE_MESSAGE,
+  "resource://devtools/shared/commands/resource/transformers/console-messages.js"
+);
+loader.lazyRequireGetter(
+  ResourceTransformers,
+  ResourceCommand.TYPES.ERROR_MESSAGE,
+  "resource://devtools/shared/commands/resource/transformers/error-messages.js"
+);
+loader.lazyRequireGetter(
+  ResourceTransformers,
+  ResourceCommand.TYPES.CACHE_STORAGE,
+  "resource://devtools/shared/commands/resource/transformers/storage-cache.js"
+);
+loader.lazyRequireGetter(
+  ResourceTransformers,
+  ResourceCommand.TYPES.COOKIE,
+  "resource://devtools/shared/commands/resource/transformers/storage-cookie.js"
+);
+loader.lazyRequireGetter(
+  ResourceTransformers,
+  ResourceCommand.TYPES.EXTENSION_STORAGE,
+  "resource://devtools/shared/commands/resource/transformers/storage-extension.js"
+);
+loader.lazyRequireGetter(
+  ResourceTransformers,
+  ResourceCommand.TYPES.INDEXED_DB,
+  "resource://devtools/shared/commands/resource/transformers/storage-indexed-db.js"
+);
+loader.lazyRequireGetter(
+  ResourceTransformers,
+  ResourceCommand.TYPES.LOCAL_STORAGE,
+  "resource://devtools/shared/commands/resource/transformers/storage-local-storage.js"
+);
+loader.lazyRequireGetter(
+  ResourceTransformers,
+  ResourceCommand.TYPES.SESSION_STORAGE,
+  "resource://devtools/shared/commands/resource/transformers/storage-session-storage.js"
+);
+loader.lazyRequireGetter(
+  ResourceTransformers,
+  ResourceCommand.TYPES.NETWORK_EVENT,
+  "resource://devtools/shared/commands/resource/transformers/network-events.js"
+);
+loader.lazyRequireGetter(
+  ResourceTransformers,
+  ResourceCommand.TYPES.THREAD_STATE,
+  "resource://devtools/shared/commands/resource/transformers/thread-states.js"
+);

@@ -65,22 +65,20 @@ cryptominer-tab-content = Les mineurs de cryptomonnaies utilisent la puissance d
 protections-close-button2 =
     .aria-label = Fermer
     .title = Fermer
-  
+
 mobile-app-title = Bloquez les traqueurs publicitaires sur plusieurs appareils
 mobile-app-card-content = Utilisez le navigateur mobile avec une protection intégrée contre le pistage publicitaire.
 mobile-app-links = Navigateur { -brand-product-name } pour <a data-l10n-name="android-mobile-inline-link">Android</a> et <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = N’oubliez plus jamais vos mots de passe
-lockwise-title-logged-in2 = Gestion des mots de passe
-lockwise-header-content = { -lockwise-brand-name } conserve de manière sécurisée vos mots de passe dans votre navigateur.
+passwords-title-logged-in = Gérer vos mots de passe
+passwords-header-content = { -brand-product-name } conserve de manière sécurisée vos mots de passe dans votre navigateur.
 lockwise-header-content-logged-in = Enregistrez et synchronisez vos mots de passe sur tous vos appareils en toute sécurité.
-protection-report-save-passwords-button = Enregistrer les mots de passe
-    .title = Enregistrer les mots de passe dans { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Gérer les mots de passe
-    .title = Gérer les mots de passe dans { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Emportez vos mots de passe partout
-lockwise-no-logins-card-content = Utilisez les mots de passe enregistrés dans { -brand-short-name } sur n’importe quel appareil.
-lockwise-app-links = { -lockwise-brand-name } pour <a data-l10n-name="lockwise-android-inline-link">Android</a> et <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Enregistrer les mots de passe
+    .title = Enregistrer les mots de passe
+protection-report-passwords-manage-passwords-button = Gérer les mots de passe
+    .title = Gérer les mots de passe
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -110,7 +108,7 @@ monitor-sign-up-link = S’inscrire aux alertes de fuites de données
 auto-scan = Vérifiées aujourd’hui automatiquement
 
 monitor-emails-tooltip =
-    .title = Afficher les adresses électroniques surveillées sur { -monitor-brand-short-name }
+    .title = Afficher les adresses e-mail surveillées sur { -monitor-brand-short-name }
 monitor-breaches-tooltip =
     .title = Afficher les fuites de données connues sur { -monitor-brand-short-name }
 monitor-passwords-tooltip =
@@ -121,8 +119,8 @@ monitor-passwords-tooltip =
 # your localization, because it would result in the number showing twice.
 info-monitored-emails =
     { $count ->
-        [one] adresse électronique surveillée
-       *[other] adresses électroniques surveillées
+        [one] adresse e-mail surveillée
+       *[other] adresses e-mail surveillées
     }
 
 # This string is displayed after a large numeral that indicates the total number
@@ -170,7 +168,7 @@ monitor-breaches-unresolved-description = Après avoir examiné les détails des
 monitor-manage-breaches-link = Gérer les fuites de données
     .title = Gérer les fuites de données avec { -monitor-brand-short-name }
 monitor-breaches-resolved-title = Bien ! Vous avez réglé toutes les fuites de données connues.
-monitor-breaches-resolved-description = Si votre adresse électronique figure dans de nouvelles fuites de donnés, nous vous préviendrons.
+monitor-breaches-resolved-description = Si votre adresse e-mail figure dans de nouvelles fuites de donnés, nous vous préviendrons.
 
 # Variables:
 # $numBreachesResolved (Number) - Number of breaches marked as resolved by the user on Monitor.

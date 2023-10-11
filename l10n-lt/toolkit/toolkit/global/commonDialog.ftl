@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Naudotojo vardas
 common-dialog-password =
     .value = Slaptažodis
+
+common-dialog-copy-cmd =
+    .label = Kopijuoti
+    .accesskey = K
+common-dialog-select-all-cmd =
+    .label = Pažymėti viską
+    .accesskey = v

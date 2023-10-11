@@ -69,7 +69,7 @@ policy-DisablePrimaryPasswordCreation = Gin true, a Primary Passwird cannae be m
 
 policy-DisablePasswordReveal = Dinnae alloo passwirds tae be kythed in saved logins.
 
-policy-DisablePocket = Disable the featur tae save wabpages tae Pocket.
+policy-DisablePocket2 = Disable the featur tae save wabpages tae { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Disable Private Stravaigin
 
@@ -111,10 +111,6 @@ policy-Extensions = Instaw, uninstaw or lock extensions. The Instaw option taks 
 policy-ExtensionSettings = Manage aw aspecks o extension instawment.
 
 policy-ExtensionUpdate = Enable or disable automatic extension updates.
-
-policy-FirefoxHome = Confeegur Firefox Hame.
-
-policy-FlashPlugin = Alloo or deny yaisage o the Flash plugin.
 
 policy-Handlers = Confeegur staunart application handlers.
 
@@ -183,9 +179,6 @@ policy-SearchBar = Set the staunart airtin o the sairch baur. The yaiser can aye
 policy-SearchEngines = Confeegur airt-oot engine settins. This policy is available anely on the Extendit Support Release (ESR) version.
 
 policy-SearchSuggestEnabled = Enable or disable airt-oot suggestions.
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instaw PKCS #11 modules.
 
 policy-ShowHomeButton = Kythe the hame button on the toolbaur.
 

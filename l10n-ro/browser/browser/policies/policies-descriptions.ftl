@@ -63,7 +63,7 @@ policy-DisablePrimaryPasswordCreation = Dacă valoarea este adevărată, nu se p
 
 policy-DisablePasswordReveal = Nu permite dezvăluirea parolelor din datele de autentificare salvate.
 
-policy-DisablePocket = Dezactivează funcționalitatea de salvare a paginilor web în Pocket.
+policy-DisablePocket2 = Dezactivează funcționalitatea de salvare a paginilor web în { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Dezactivează navigarea privată.
 
@@ -106,9 +106,7 @@ policy-ExtensionSettings = Gestionează toate aspectele de instalare a extensiil
 
 policy-ExtensionUpdate = Activează sau dezactivează actualizările automate de extensii.
 
-policy-FirefoxHome = Configurează pagina de start Firefox.
-
-policy-FlashPlugin = Permite sau respinge utilizarea pluginului Flash.
+policy-FirefoxHome2 = Configurează pagina de { -firefox-home-brand-name }.
 
 policy-Handlers = Configurează gestionarii aplicațiilor implicite.
 
@@ -175,9 +173,6 @@ policy-SearchBar = Setează locația implicită în bara de căutare. Utilizator
 policy-SearchEngines = Configurează setările motorului de căutare. Politica este disponibilă numai în versiunea Ediție cu suport extins (ERS).
 
 policy-SearchSuggestEnabled = Activează sau dezactivează sugestiile de căutare.
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instalează module PKCS #11.
 
 policy-SSLVersionMax = Setează versiunea maximă SSL.
 

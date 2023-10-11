@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = Blockeringslistor
-    .style = width: 55em
+    .style = min-width: 55em
 
 blocklist-description = Välj den lista som { -brand-short-name } använder för att blockera spårare på nätet. Listor som tillhandahålls av <a data-l10n-name="disconnect-link" title="Disconnect">Disconnect</a>.
 blocklist-close-key =

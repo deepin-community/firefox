@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Nom d’utilizaire
 common-dialog-password =
     .value = Senhal
+
+common-dialog-copy-cmd =
+    .label = Copiar
+    .accesskey = C
+common-dialog-select-all-cmd =
+    .label = Seleccionar tot
+    .accesskey = t

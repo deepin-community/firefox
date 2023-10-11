@@ -5,12 +5,12 @@
 
 about-logins-page-title = Identificants e senhals
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Recercar d’identificants
+    .key = F
 
-create-login-button = Crear un identificant novèl
+create-new-login-button =
+    .title = Crear un identificant novèl
 
 fxaccounts-sign-in-text = Accedissètz a vòstres senhals sus vòstres periferics
 fxaccounts-sign-in-sync-button = Se connectar per sincronizar
@@ -37,10 +37,20 @@ about-logins-menu-menuitem-help = Ajuda
 
 login-list =
     .aria-label = Identificants correspondents a la recèrca
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } identificant
        *[other] { $count } identificants
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } de { $total } identificant
+       *[other] { $count } de { $total } identificants
     }
 login-list-sort-label-text = Triar per :
 login-list-name-option = Nom (A-Z)
@@ -61,7 +71,6 @@ about-logins-list-item-breach-icon =
     .title = Site amb contengut expausat al public
 about-logins-list-item-vulnerable-password-icon =
     .title = Senhal vulnerable
-
 about-logins-list-section-breach = Site amb contengut expausat al public
 about-logins-list-section-vulnerable = Senhals vulnerables
 about-logins-list-section-nothing = Cap d’alèrta
@@ -76,8 +85,8 @@ about-logins-login-intro-heading-logged-in = Cap d’identificant sincronizat pa
 login-intro-description = Se salvatz vòstres identificants dins { -brand-product-name } sus un autre periferics, vaquí cossí i accedir aquí :
 login-intro-instructions-fxa = Connectatz-vos o creatz un { -fxaccount-brand-name } sul periferic ont son salvats los identificants.
 login-intro-instructions-fxa-settings = Anatz als Paramètres > Sincronizacion > Activar la sincronizacion… e marcatz la cassa « Identificants e senhals ».
-login-intro-instructions-fxa-help = Consultatz l’<a data-l10n-name="help-link">assisténcia { -lockwise-brand-short-name }</a> per mai d’ajuda.
-about-logins-intro-import = Se vòstres identificants son salvats dins un autre navegador, podètz <a data-l10n-name="import-link">los importar dins { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = Consultatz <a data-l10n-name="passwords-help-link">l’assisténcia dels senhals</a> per mai d’ajuda.
+about-logins-intro-browser-only-import = Se vòstres identificants son salvats dins un autre navegador, podètz <a data-l10n-name="import-link">los importar dins { -brand-product-name }</a>
 about-logins-intro-import2 = Se vòstres identificants de connexion e senhals son salvats al defòra de { -brand-product-name }, podètz <a data-l10n-name="import-browser-link">los importar d‘un autre navegador estant</a> o <a data-l10n-name="import-file-link"> a partir d’un fichièr</a>
 
 ## Login
@@ -102,9 +111,17 @@ login-item-copied-password-button-text = Copiat !
 login-item-save-changes-button = Enregistrar las modificacions
 login-item-save-new-button = Enregistrar
 login-item-cancel-button = Anullar
-login-item-time-changed = Darrièra modificacion : { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Creacion : { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Darrièra utilizacion : { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Creacion
+login-item-timeline-action-updated = Mesa a jorn
+login-item-timeline-action-used = Utilizacion
 
 ## OS Authentication dialog
 
@@ -132,8 +149,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Per copiar vòstre senha
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = copiar lo senhal salvat
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Per exportar vòstres identificants, picatz vòstras informacions de connexion Windows. Aquò permet de servar la seguretat dels comptes.
 # This message can be seen when attempting to export a password in about:logins
@@ -147,8 +162,6 @@ master-password-reload-button =
     .label = Connexion
     .accesskey = C
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Anullar
@@ -158,6 +171,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Suprimir aqueste identificant ?
 confirm-delete-dialog-message = Aquesta accion es irreversibla.
 about-logins-confirm-remove-dialog-confirm-button = Suprimir
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -197,8 +213,10 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Suprimirà totes los identificants qu’enregistrèretz dins { -brand-short-name } de totes los periferics sincronizats a vòstre { -fxaccount-brand-name }. Aquò suprimirà tanben las alèrtas de pèrda qu’apareis aquí. Poiretz pas anullar aquesta accion.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Exportacion dels identificants e senhals
-about-logins-confirm-export-dialog-message = Vòstres senhals seràn salvats jos la forma de tèxt legible (per exemple, « senh4l-f3bl3 ») ; atal qual que siá que pòt dobrir lo fichièr poirà los consultar.
+about-logins-confirm-export-dialog-message = Vòstres senhals seràn salvats jos la fòrma de tèxt legible (per exemple, « senh4l-f3bl3 ») ; atal qual que siá que pòt dobrir lo fichièr poirà los consultar.
 about-logins-confirm-export-dialog-confirm-button = Exportar…
 
 about-logins-alert-import-title = Importacion acabada
@@ -216,7 +234,6 @@ about-logins-breach-alert-date = Aquesta divulgacion se passèt lo { DATETIME($d
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Accedir a { $hostname }
-about-logins-breach-alert-learn-more-link = Ne saber mai
 
 ## Vulnerable Password notification
 

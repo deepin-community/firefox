@@ -8,7 +8,6 @@
 newtab-page-title = Tab Baru
 newtab-settings-button =
     .title = Ubahsuai laman Tab Baru Anda
-
 newtab-personalize-icon-label =
     .title = Personalisasikan tab baru
     .aria-label = Personalisasikan tab baru
@@ -37,11 +36,7 @@ newtab-search-box-handoff-input-no-engine =
     .title = Cari atau masukkan alamat
     .aria-label = Cari atau masukkan alamat
 
-newtab-search-box-search-the-web-input =
-    .placeholder = Cari di Web
-    .title = Cari di Web
-    .aria-label = Cari di Web
-
+newtab-search-box-text = Cari di Web
 newtab-search-box-input =
     .placeholder = Cari di web
     .aria-label = Cari di web
@@ -49,7 +44,6 @@ newtab-search-box-input =
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Tambahkan Mesin Pencari
-newtab-topsites-add-topsites-header = Situs Pilihan Baru
 newtab-topsites-add-shortcut-header = Pintasan Baru
 newtab-topsites-edit-topsites-header = Ubah Situs Pilihan
 newtab-topsites-edit-shortcut-header = Edit Pintasan
@@ -175,6 +169,12 @@ newtab-label-sponsored = { $sponsorOrSource } · Pesan Sponsor
 #  $sponsor (String): This is the name of a sponsor
 newtab-label-sponsored-by = Disponsori oleh { $sponsor }
 
+# This string is used under the image of story cards to indicate source and time to read
+# Variables:
+#  $source (String): This is the name of a company or their domain
+#  $timeToRead (Number): This is the estimated number of minutes to read this story
+newtab-label-source-read-time = { $source } ・ { $timeToRead } mnt
+
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
 
@@ -199,7 +199,6 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = Situs Teratas
-newtab-section-header-highlights = Sorotan
 newtab-section-header-recent-activity = Aktivitas terbaru
 # Variables:
 #  $provider (String): Name of the corresponding content provider.
@@ -214,7 +213,6 @@ newtab-empty-section-highlights = Mulai menjelajah, dan kami akan menampilkan be
 #  $provider (String): Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Maaf Anda tercegat. Periksa lagi nanti untuk lebih banyak cerita terbaik dari { $provider }. Tidak mau menunggu? Pilih topik populer untuk menemukan lebih banyak cerita hebat dari seluruh web.
 
-
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
 newtab-discovery-empty-section-topstories-header = Semua sudah selesai terbaca!
@@ -228,10 +226,21 @@ newtab-discovery-empty-section-topstories-timed-out = Ups! Kami belum selesai me
 
 # This is shown at the bottom of the trending stories section and precedes a list of links to popular topics.
 newtab-pocket-read-more = Topik Populer:
+newtab-pocket-new-topics-title = Ingin lebih banyak cerita? Lihat topik populer ini dari { -pocket-brand-name }
 newtab-pocket-more-recommendations = Rekomendasi Lainnya
 newtab-pocket-learn-more = Pelajari lebih lanjut
 newtab-pocket-cta-button = Dapatkan { -pocket-brand-name }
 newtab-pocket-cta-text = Simpan cerita yang anda sukai di { -pocket-brand-name }, dan dapatkan bacaan menarik untuk Anda.
+newtab-pocket-pocket-firefox-family = { -pocket-brand-name } adalah bagian dari keluarga { -brand-product-name }
+
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+# A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-save = Simpan
+newtab-pocket-saved = Disimpan
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -251,8 +260,8 @@ newtab-custom-sponsored-sites = Pintasan bersponsor
 newtab-custom-pocket-title = Disarankan oleh { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Konten luar biasa yang dikelola oleh { -pocket-brand-name }, bagian dari keluarga { -brand-product-name }
 newtab-custom-pocket-sponsored = Konten bersponsor
+newtab-custom-pocket-show-recent-saves = Tampilkan penyimpanan terbaru
 newtab-custom-recent-title = Aktivitas terbaru
 newtab-custom-recent-subtitle = Pilihan situs dan konten terbaru
 newtab-custom-close-button = Tutup
-
 newtab-custom-settings = Kelola pengaturan lainnya

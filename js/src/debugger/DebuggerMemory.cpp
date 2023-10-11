@@ -32,6 +32,7 @@
 #include "vm/SavedStacks.h"
 
 #include "debugger/Debugger-inl.h"
+#include "gc/StableCellHasher-inl.h"
 #include "vm/NativeObject-inl.h"
 
 using namespace js;
@@ -88,19 +89,6 @@ DebuggerMemory* DebuggerMemory::checkThis(JSContext* cx, CallArgs& args) {
     JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
                               JSMSG_INCOMPATIBLE_PROTO, class_.name, "method",
                               thisObject.getClass()->name);
-    return nullptr;
-  }
-
-  // Check for Debugger.Memory.prototype, which has the same class as
-  // Debugger.Memory instances, however doesn't actually represent an instance
-  // of Debugger.Memory. It is the only object that is<DebuggerMemory>() but
-  // doesn't have a Debugger instance.
-  if (thisObject.as<DebuggerMemory>()
-          .getReservedSlot(JSSLOT_DEBUGGER)
-          .isUndefined()) {
-    JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
-                              JSMSG_INCOMPATIBLE_PROTO, class_.name, "method",
-                              "prototype object");
     return nullptr;
   }
 
@@ -202,14 +190,14 @@ bool DebuggerMemory::CallData::drainAllocationsLog() {
 
   size_t length = dbg->allocationsLog.length();
 
-  RootedArrayObject result(cx, NewDenseFullyAllocatedArray(cx, length));
+  Rooted<ArrayObject*> result(cx, NewDenseFullyAllocatedArray(cx, length));
   if (!result) {
     return false;
   }
   result->ensureDenseInitializedLength(0, length);
 
   for (size_t i = 0; i < length; i++) {
-    RootedPlainObject obj(cx, NewPlainObject(cx));
+    Rooted<PlainObject*> obj(cx, NewPlainObject(cx));
     if (!obj) {
       return false;
     }
@@ -413,14 +401,14 @@ bool DebuggerMemory::CallData::takeCensus() {
   }
 
   {
-    Maybe<JS::AutoCheckCannotGC> maybeNoGC;
-    JS::ubi::RootList rootList(cx, maybeNoGC);
-    if (!rootList.init(dbgObj)) {
+    JS::ubi::RootList rootList(cx);
+    auto [ok, nogc] = rootList.init(dbgObj);
+    if (!ok) {
       ReportOutOfMemory(cx);
       return false;
     }
 
-    JS::ubi::CensusTraversal traversal(cx, handler, maybeNoGC.ref());
+    JS::ubi::CensusTraversal traversal(cx, handler, nogc);
     traversal.wantNames = false;
 
     if (!traversal.addStart(JS::ubi::Node(&rootList)) ||

@@ -3,7 +3,9 @@
 
 "use strict";
 
-const { require } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
+const { require } = ChromeUtils.importESModule(
+  "resource://devtools/shared/loader/Loader.sys.mjs"
+);
 
 const TEST_DATA = [
   {
@@ -55,7 +57,7 @@ const TEST_DATA = [
 function run_test() {
   const {
     toAbsoluteOrder,
-  } = require("devtools/client/framework/toolbox-tabs-order-manager");
+  } = require("resource://devtools/client/framework/toolbox-tabs-order-manager.js");
 
   for (const {
     description,

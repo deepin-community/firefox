@@ -9,11 +9,8 @@ async function testReturnStatus(expectedStatus) {
     "http://example.net/"
   );
 
-  let saveDir = FileUtils.getDir(
-    "TmpD",
-    [`testSaveDir-${Math.random()}`],
-    true
-  );
+  let saveDir = FileUtils.getDir("TmpD", [`testSaveDir-${Math.random()}`]);
+  saveDir.create(Ci.nsIFile.DIRECTORY_TYPE, FileUtils.PERMS_DIRECTORY);
 
   let saveFile = saveDir.clone();
   saveFile.append("testSaveFile.pdf");
@@ -57,7 +54,7 @@ async function testReturnStatus(expectedStatus) {
   let extension = ExtensionTestUtils.loadExtension({
     manifest: manifest,
 
-    background: async function() {
+    background: async function () {
       let pageSettings = {};
 
       let expected = chrome.runtime.getManifest().description;
@@ -76,10 +73,8 @@ async function testReturnStatus(expectedStatus) {
 
   if (expectedStatus == "saved" || expectedStatus == "replaced") {
     // Check that first four bytes of saved PDF file are "%PDF"
-    let text = await OS.File.read(saveFile.path, {
-      encoding: "utf-8",
-      bytes: 4,
-    });
+    let text = await IOUtils.read(saveFile.path, { maxBytes: 4 });
+    text = new TextDecoder().decode(text);
     is(text, "%PDF", "Got correct magic number - %PDF");
   }
 
@@ -121,11 +116,8 @@ async function testFileName(expectedFileName) {
     "http://example.net/"
   );
 
-  let saveDir = FileUtils.getDir(
-    "TmpD",
-    [`testSaveDir-${Math.random()}`],
-    true
-  );
+  let saveDir = FileUtils.getDir("TmpD", [`testSaveDir-${Math.random()}`]);
+  saveDir.create(Ci.nsIFile.DIRECTORY_TYPE, FileUtils.PERMS_DIRECTORY);
 
   let saveFile = saveDir.clone();
   saveFile.append(expectedFileName);
@@ -161,7 +153,7 @@ async function testFileName(expectedFileName) {
   let extension = ExtensionTestUtils.loadExtension({
     manifest: manifest,
 
-    background: async function() {
+    background: async function () {
       let pageSettings = {};
 
       let expected = chrome.runtime.getManifest().description;
@@ -183,10 +175,8 @@ async function testFileName(expectedFileName) {
   await extension.unload();
 
   // Check that first four bytes of saved PDF file are "%PDF"
-  let text = await OS.File.read(saveFile.path, {
-    encoding: "utf-8",
-    bytes: 4,
-  });
+  let text = await IOUtils.read(saveFile.path, { maxBytes: 4 });
+  text = new TextDecoder().decode(text);
   is(text, "%PDF", "Got correct magic number - %PDF");
 
   MockFilePicker.cleanup();

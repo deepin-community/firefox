@@ -24,9 +24,9 @@ de_CH{
                 other{"{0} Quadratfuss"}
             }
         }
-        concentr{
-            milligram-ofglucose-per-deciliter{
-                dnam{"mg/dL"}
+        duration{
+            quarter{
+                dnam{"Quartal"}
             }
         }
         length{
@@ -51,11 +51,6 @@ de_CH{
                 per{"{0} pro Fuss"}
             }
         }
-        mass{
-            grain{
-                dnam{"Messerspitze"}
-            }
-        }
         volume{
             cubic-foot{
                 case{
@@ -77,25 +72,43 @@ de_CH{
                 other{"{0} Kubikfuss"}
             }
             gallon-imperial{
+                case{
+                    accusative{
+                        one{"{0} gal Imp."}
+                        other{"{0} gal Imp."}
+                    }
+                    dative{
+                        one{"{0} gal Imp."}
+                        other{"{0} gal Imp."}
+                    }
+                    genitive{
+                        one{"{0} gal Imp."}
+                        other{"{0} gal Imp."}
+                    }
+                }
                 one{"{0} gal Imp."}
                 other{"{0} gal Imp."}
                 per{"{0}/gal Imp."}
             }
+        }
+    }
+    unitsNarrow{
+        volume{
             jigger{
-                dnam{"Schuss"}
+                one{"Schuss"}
+                other{"{0} Schuss"}
             }
         }
     }
     unitsShort{
+        duration{
+            quarter{
+                dnam{"Quartal"}
+            }
+        }
         length{
             foot{
                 dnam{"Fuss"}
-            }
-        }
-        mass{
-            grain{
-                dnam{"Messerspitze"}
-                other{"{0} Msp."}
             }
         }
         volume{
@@ -105,8 +118,6 @@ de_CH{
                 other{"{0} dr."}
             }
             gallon-imperial{
-                one{"{0} gal Imp."}
-                other{"{0} gal Imp."}
                 per{"{0}/gal Imp."}
             }
             jigger{

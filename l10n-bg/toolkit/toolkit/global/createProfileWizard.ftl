@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Помощник за създаване на профил
-    .style = width: 50em; height: 32em;
+    .style = min-width: 50em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Въведение
-       *[other] Добре дошли в { create-profile-window.title }
+       *[other] Добре дошли в { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } съхранява информацията за вашите настройки и предпочитания в личния ви профил.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Завършване
-       *[other] Завършване на { create-profile-window.title }
+       *[other] Завършване на { create-profile-window2.title }
     }
 
 profile-creation-intro = Ако създадете няколко профила, може да ги разграничавате с различни имена. Използвайте шаблонното име или използвайте свое.

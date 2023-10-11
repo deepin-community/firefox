@@ -7,6 +7,7 @@
 external_dirs = []
 
 DIRS += [
+    "gkcodecs",
     "lgpllibs",
     "rlbox",
     "sqlite",
@@ -22,7 +23,6 @@ if not CONFIG["MOZ_SYSTEM_JPEG"]:
     external_dirs += ["media/libjpeg"]
 
 DIRS += [
-    "/third_party/prio",
     "/third_party/msgpack",
     "/third_party/sipcc",
 ]
@@ -35,12 +35,6 @@ external_dirs += ["modules/xz-embedded"]
 
 if CONFIG["MOZ_VORBIS"]:
     external_dirs += ["media/libvorbis"]
-
-if CONFIG["MOZ_TREMOR"]:
-    external_dirs += ["media/libtremor"]
-
-if CONFIG["MOZ_WEBM_ENCODER"]:
-    external_dirs += ["media/libmkv"]
 
 if not CONFIG["MOZ_SYSTEM_LIBVPX"]:
     external_dirs += ["media/libvpx"]
@@ -67,6 +61,7 @@ if CONFIG["MOZ_JXL"]:
 external_dirs += [
     "media/kiss_fft",
     "media/libcubeb",
+    "media/libmkv",
     "media/libnestegg",
     "media/libogg",
     "media/libopus",

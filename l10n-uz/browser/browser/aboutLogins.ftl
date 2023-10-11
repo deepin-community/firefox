@@ -4,9 +4,7 @@
 # NOTE: New strings should use the about-logins- prefix.
 
 about-logins-page-title = Login va parollar
-login-filter =
-    .placeholder = Loginlarni qidirish
-create-login-button = Yangi login yaratish
+
 fxaccounts-sign-in-text = Boshqa qurilmalardagi parollaringizdan foydalaning
 fxaccounts-sign-in-sync-button = Sinxronlash uchun hisobingizga kiring
 fxaccounts-avatar-button =
@@ -69,7 +67,8 @@ about-logins-login-intro-heading-logged-out2 = Saqlangan loginlarni izlayapsizmi
 about-logins-login-intro-heading-logged-in = Sinxronlangan loginlar topilmadi
 login-intro-description = Loginlaringizni boshqa qurilmadagi { -brand-product-name } brauzeriga saqlagan boʻlsangiz, ularni olish haqida bu yerdan maʼlumot olish mumkin:
 login-intro-instructions-fxa = Yangi hisob yarating yoki loginlaringiz saqlangan qurilmadagi { -fxaccount-brand-name }  hisobiga kiring
-about-logins-intro-import = Loginlaringiz boshqa brauzerga saqlangan boʻlsa, ularni <a data-l10n-name="import-link">import qilishingiz mumkin { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-settings = Sozlamalar > Sinxronizatsiya > Sinxronizatsiyani yoqishni oching. Belgilash katagida login va parollarni tanlang.
+login-intro-instructions-fxa-passwords-help = Koʻproq yordam olish uchun <a data-l10n-name="passwords-help-link">parol boʻyicha yordam</a> sahifasiga kiring.
 
 ## Login
 
@@ -92,9 +91,10 @@ login-item-copied-password-button-text = Nusxa olindi!
 login-item-save-changes-button = Oʻzgarishlarni saqlash
 login-item-save-new-button = Saqlash
 login-item-cancel-button = Bekor qilish
-login-item-time-changed = Oxirgi marta oʻzgartirilgan: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Yaratilgan: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Oxirgi marta foydalanilgan: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
 
 ## OS Authentication dialog
 
@@ -107,15 +107,22 @@ about-logins-os-auth-dialog-caption = { -brand-full-name }
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = saqlangan loginni tahrirlash
+
 # This message can be seen when attempting to reveal a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-reveal-password-os-auth-dialog-message-macosx = saqlangan parolni koʻrsatish
+
 # This message can be seen when attempting to copy a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = saqlangan paroldan nusxa olish
 
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message-macosx = saqlangan login parollarni eksport qilish
+
 ## Primary Password notification
 
+about-logins-primary-password-notification-message = Saqlangan login va parollarni koʻrish uchun asosiy parolni kiriting
 master-password-reload-button =
     .label = Kirish
     .accesskey = K
@@ -125,9 +132,25 @@ master-password-reload-button =
 confirmation-dialog-cancel-button = Bekor qilish
 confirmation-dialog-dismiss-button =
     .title = Bekor qilish
+
 about-logins-confirm-remove-dialog-title = Bu login olib tashlansinmi?
 confirm-delete-dialog-message = Bu amalni orqaga qaytarib boʻlmaydi.
 about-logins-confirm-remove-dialog-confirm-button = Olib tashlash
+
+## Variables
+##   $count (number) - Number of items
+
+about-logins-confirm-remove-all-sync-dialog-title =
+    { $count ->
+        [one] { $count } ta login barcha qurilmalardan olib tashlansinmi?
+       *[other] { $count } ta login barcha qurilmalardan olib tashlansinmi?
+    }
+
+##
+
+about-logins-confirm-export-dialog-title = Login va parollarni eksport qilish
+about-logins-confirm-export-dialog-message = Parollaringiz oʻqilishi mumkin boʻlgan matn sifatida saqlanadi (masalan, BadP@ssw0rd). Eksport qilingan faylni ochadigan har bir kishi ularni koʻrishi mumkin.
+
 confirm-discard-changes-dialog-title = Saqlanmagan oʻzgarishlar bekor qilinsinmi?
 confirm-discard-changes-dialog-message = Barcha saqlanmagan oʻzgarishlar yoʻqoladi.
 confirm-discard-changes-dialog-confirm-button = Rad etish
@@ -140,7 +163,6 @@ about-logins-breach-alert-date = Maʼlumotlar sizishi yuz bergan vaqt: { DATETIM
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = { $hostname } saytini ochish
-about-logins-breach-alert-learn-more-link = Batafsil
 
 ## Vulnerable Password notification
 
@@ -158,6 +180,7 @@ about-logins-vulnerable-alert-learn-more-link = Batafsil
 # Variables:
 #   $loginTitle (String) - The title of the website associated with the login.
 about-logins-error-message-duplicate-login-with-link = { $loginTitle } uchun kiritilgan foydalanuvchi nomi allaqachon mavjud. <a data-l10n-name="duplicate-link">Mavjud yozuv ochilsinmi?</a>
+
 # This is a generic error message.
 about-logins-error-message-default = Bu parolni saqlashda xatolik yuz berdi.
 
@@ -174,6 +197,11 @@ about-logins-export-file-picker-default-filename = logins.csv
 ## Variables:
 ##  $count (number) - The number of affected elements
 
+about-logins-import-dialog-error-conflicting-values-description = Masalan: bir nechta foydalanuvchi nomi, parollar, URLlarni bitta login bilan olish mumkin.
+
+about-logins-import-report-description = Login va parollar { -brand-short-name }ga import qilindi.
+
+about-logins-import-report-row-description-modified = Mavjud login yangilandi
 
 ##
 ## Variables:

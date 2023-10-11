@@ -34,7 +34,6 @@ about-telemetry-events-section = Оқиғалар
 about-telemetry-simple-measurements-section = Қарапайым өлшемдер
 about-telemetry-slow-sql-section = Баяу SQL сұраныстары
 about-telemetry-addon-details-section = Қосымша ақпараты
-about-telemetry-captured-stacks-section = Түсірілген стектер
 about-telemetry-late-writes-section = Кеш жазулар
 about-telemetry-raw-payload-section = Шикі жүктеме
 about-telemetry-raw = Шикі JSON
@@ -121,10 +120,6 @@ about-telemetry-keys-header = Қасиеті
 about-telemetry-names-header = Аты
 about-telemetry-values-header = Мәні
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (ұстаулар саны: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Кеш жазу #{ $lateWriteCount }
 about-telemetry-stack-title = Стек:
@@ -135,12 +130,6 @@ about-telemetry-category-header = санат
 about-telemetry-method-header = тәсіл
 about-telemetry-object-header = объект
 about-telemetry-extra-header = қосымша
-about-telemetry-origin-section = Қайнар көздер телеметриясы
-about-telemetry-origin-origin = қайнар көзі
-about-telemetry-origin-count = саны
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Firefox қайнар көзі телеметриясы</a> жіберуге дейін деректерді шифрлейді, осылайша { $telemetryServerOwner } нәрселерді санай алады, бірақ, берілген { -brand-product-name } оған үлесін қосқан ба, соны біле алмайды. (<a data-l10n-name="prio-blog-link">көбірек білу</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = { $process } процес

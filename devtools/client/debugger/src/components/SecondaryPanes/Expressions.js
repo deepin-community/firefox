@@ -3,8 +3,17 @@
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
 import React, { Component } from "react";
+import {
+  div,
+  input,
+  li,
+  ul,
+  form,
+  datalist,
+  option,
+} from "react-dom-factories";
+import PropTypes from "prop-types";
 import { connect } from "../../utils/connect";
-import classnames from "classnames";
 import { features } from "../../utils/prefs";
 
 import { objectInspector } from "devtools/client/shared/components/reps/index";
@@ -14,15 +23,15 @@ import {
   getExpressions,
   getExpressionError,
   getAutocompleteMatchset,
-  getThreadContext,
 } from "../../selectors";
-import { getValue } from "../../utils/expressions";
-import { getGrip, getFront } from "../../utils/evaluation-result";
+import { getExpressionResultGripAndFront } from "../../utils/expressions";
 
 import { CloseButton } from "../shared/Button";
-import { debounce } from "lodash";
 
 import "./Expressions.css";
+
+const { debounce } = require("devtools/shared/debounce");
+const classnames = require("devtools/client/shared/classnames.js");
 
 const { ObjectInspector } = objectInspector;
 
@@ -35,6 +44,26 @@ class Expressions extends Component {
       editIndex: -1,
       inputValue: "",
       focused: false,
+    };
+  }
+
+  static get propTypes() {
+    return {
+      addExpression: PropTypes.func.isRequired,
+      autocomplete: PropTypes.func.isRequired,
+      autocompleteMatches: PropTypes.array,
+      clearAutocomplete: PropTypes.func.isRequired,
+      clearExpressionError: PropTypes.func.isRequired,
+      deleteExpression: PropTypes.func.isRequired,
+      expressionError: PropTypes.bool.isRequired,
+      expressions: PropTypes.array.isRequired,
+      highlightDomElement: PropTypes.func.isRequired,
+      onExpressionAdded: PropTypes.func.isRequired,
+      openElementInInspector: PropTypes.func.isRequired,
+      openLink: PropTypes.any.isRequired,
+      showInput: PropTypes.bool.isRequired,
+      unHighlightDomElement: PropTypes.func.isRequired,
+      updateExpression: PropTypes.func.isRequired,
     };
   }
 
@@ -55,7 +84,8 @@ class Expressions extends Component {
     });
   };
 
-  componentWillReceiveProps(nextProps) {
+  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.state.editing && !nextProps.expressionError) {
       this.clear();
     }
@@ -69,12 +99,8 @@ class Expressions extends Component {
 
   shouldComponentUpdate(nextProps, nextState) {
     const { editing, inputValue, focused } = this.state;
-    const {
-      expressions,
-      expressionError,
-      showInput,
-      autocompleteMatches,
-    } = this.props;
+    const { expressions, expressionError, showInput, autocompleteMatches } =
+      this.props;
 
     return (
       autocompleteMatches !== nextProps.autocompleteMatches ||
@@ -88,17 +114,17 @@ class Expressions extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const input = this._input;
+    const _input = this._input;
 
-    if (!input) {
+    if (!_input) {
       return;
     }
 
     if (!prevState.editing && this.state.editing) {
-      input.setSelectionRange(0, input.value.length);
-      input.focus();
+      _input.setSelectionRange(0, _input.value.length);
+      _input.focus();
     } else if (this.props.showInput && !this.state.focused) {
-      input.focus();
+      _input.focus();
     }
   }
 
@@ -126,7 +152,7 @@ class Expressions extends Component {
 
   findAutocompleteMatches = debounce((value, selectionStart) => {
     const { autocomplete } = this.props;
-    autocomplete(this.props.cx, value, selectionStart);
+    autocomplete(value, selectionStart);
   }, 250);
 
   handleKeyDown = e => {
@@ -139,6 +165,10 @@ class Expressions extends Component {
     this.setState({ focused: false });
     this.props.onExpressionAdded();
     this.props.clearExpressionError();
+  };
+
+  createElement = element => {
+    return document.createElement(element);
   };
 
   onFocus = () => {
@@ -154,11 +184,7 @@ class Expressions extends Component {
     e.preventDefault();
     e.stopPropagation();
 
-    this.props.updateExpression(
-      this.props.cx,
-      this.state.inputValue,
-      expression
-    );
+    this.props.updateExpression(this.state.inputValue, expression);
   };
 
   handleNewSubmit = async e => {
@@ -167,7 +193,7 @@ class Expressions extends Component {
     e.stopPropagation();
 
     this.props.clearExpressionError();
-    await this.props.addExpression(this.props.cx, this.state.inputValue);
+    await this.props.addExpression(this.state.inputValue);
     this.setState({
       editing: false,
       editIndex: -1,
@@ -187,72 +213,81 @@ class Expressions extends Component {
     } = this.props;
 
     const { editing, editIndex } = this.state;
-    const { input, updating } = expression;
+    const { input: _input, updating } = expression;
     const isEditingExpr = editing && editIndex === index;
     if (isEditingExpr || (isEditingExpr && expressionError)) {
       return this.renderExpressionEditInput(expression);
     }
 
     if (updating) {
-      return;
+      return null;
     }
 
-    let value = getValue(expression);
-    let front = null;
-    if (value && value.unavailable !== true) {
-      value = getGrip(value);
-      front = getFront(value);
-    }
+    const { expressionResultGrip, expressionResultFront } =
+      getExpressionResultGripAndFront(expression);
 
     const root = {
       name: expression.input,
-      path: input,
+      path: _input,
       contents: {
-        value,
-        front,
+        value: expressionResultGrip,
+        front: expressionResultFront,
       },
     };
 
-    return (
-      <li className="expression-container" key={input} title={expression.input}>
-        <div className="expression-content">
-          <ObjectInspector
-            roots={[root]}
-            autoExpandDepth={0}
-            disableWrap={true}
-            openLink={openLink}
-            onDoubleClick={(items, { depth }) => {
-              if (depth === 0) {
-                this.editExpression(expression, index);
-              }
-            }}
-            onDOMNodeClick={grip => openElementInInspector(grip)}
-            onInspectIconClick={grip => openElementInInspector(grip)}
-            onDOMNodeMouseOver={grip => highlightDomElement(grip)}
-            onDOMNodeMouseOut={grip => unHighlightDomElement(grip)}
-            shouldRenderTooltip={true}
-          />
-          <div className="expression-container__close-btn">
-            <CloseButton
-              handleClick={e => this.deleteExpression(e, expression)}
-              tooltip={L10N.getStr("expressions.remove.tooltip")}
-            />
-          </div>
-        </div>
-      </li>
+    return li(
+      {
+        className: "expression-container",
+        key: _input,
+        title: expression.input,
+      },
+      div(
+        {
+          className: "expression-content",
+        },
+        React.createElement(ObjectInspector, {
+          roots: [root],
+          autoExpandDepth: 0,
+          disableWrap: true,
+          openLink: openLink,
+          createElement: this.createElement,
+          onDoubleClick: (items, { depth }) => {
+            if (depth === 0) {
+              this.editExpression(expression, index);
+            }
+          },
+          onDOMNodeClick: grip => openElementInInspector(grip),
+          onInspectIconClick: grip => openElementInInspector(grip),
+          onDOMNodeMouseOver: grip => highlightDomElement(grip),
+          onDOMNodeMouseOut: grip => unHighlightDomElement(grip),
+          shouldRenderTooltip: true,
+          mayUseCustomFormatter: true,
+        }),
+        div(
+          {
+            className: "expression-container__close-btn",
+          },
+          React.createElement(CloseButton, {
+            handleClick: e => this.deleteExpression(e, expression),
+            tooltip: L10N.getStr("expressions.remove.tooltip"),
+          })
+        )
+      )
     );
   };
 
   renderExpressions() {
     const { expressions, showInput } = this.props;
-
-    return (
-      <>
-        <ul className="pane expressions-list">
-          {expressions.map(this.renderExpression)}
-        </ul>
-        {showInput && this.renderNewExpressionInput()}
-      </>
+    return React.createElement(
+      React.Fragment,
+      null,
+      ul(
+        {
+          className: "pane expressions-list",
+        },
+        expressions.map(this.renderExpression)
+      ),
+      showInput && this.renderNewExpressionInput()
     );
   }
 
@@ -262,15 +297,21 @@ class Expressions extends Component {
     }
     const { autocompleteMatches } = this.props;
     if (autocompleteMatches) {
-      return (
-        <datalist id="autocomplete-matches">
-          {autocompleteMatches.map((match, index) => {
-            return <option key={index} value={match} />;
-          })}
-        </datalist>
+      return datalist(
+        {
+          id: "autocomplete-matches",
+        },
+        autocompleteMatches.map((match, index) => {
+          return option({
+            key: index,
+            value: match,
+          });
+        })
       );
     }
-    return <datalist id="autocomplete-matches" />;
+    return datalist({
+      id: "autocomplete-matches",
+    });
   }
 
   renderNewExpressionInput() {
@@ -280,32 +321,38 @@ class Expressions extends Component {
     const placeholder = error
       ? L10N.getStr("expressions.errorMsg")
       : L10N.getStr("expressions.placeholder");
-
-    return (
-      <form
-        className={classnames(
+    return form(
+      {
+        className: classnames(
           "expression-input-container expression-input-form",
-          { focused, error }
-        )}
-        onSubmit={this.handleNewSubmit}
-      >
-        <input
-          className="input-expression"
-          type="text"
-          placeholder={placeholder}
-          onChange={this.handleChange}
-          onBlur={this.hideInput}
-          onKeyDown={this.handleKeyDown}
-          onFocus={this.onFocus}
-          value={!editing ? inputValue : ""}
-          ref={c => (this._input = c)}
-          {...(features.autocompleteExpression && {
-            list: "autocomplete-matches",
-          })}
-        />
-        {this.renderAutoCompleteMatches()}
-        <input type="submit" style={{ display: "none" }} />
-      </form>
+          {
+            focused,
+            error,
+          }
+        ),
+        onSubmit: this.handleNewSubmit,
+      },
+      input({
+        className: "input-expression",
+        type: "text",
+        placeholder: placeholder,
+        onChange: this.handleChange,
+        onBlur: this.hideInput,
+        onKeyDown: this.handleKeyDown,
+        onFocus: this.onFocus,
+        value: !editing ? inputValue : "",
+        ref: c => (this._input = c),
+        ...(features.autocompleteExpression && {
+          list: "autocomplete-matches",
+        }),
+      }),
+      this.renderAutoCompleteMatches(),
+      input({
+        type: "submit",
+        style: {
+          display: "none",
+        },
+      })
     );
   }
 
@@ -313,32 +360,40 @@ class Expressions extends Component {
     const { expressionError } = this.props;
     const { inputValue, editing, focused } = this.state;
     const error = editing === true && expressionError === true;
-
-    return (
-      <form
-        key={expression.input}
-        className={classnames(
+    return form(
+      {
+        key: expression.input,
+        className: classnames(
           "expression-input-container expression-input-form",
-          { focused, error }
-        )}
-        onSubmit={e => this.handleExistingSubmit(e, expression)}
-      >
-        <input
-          className={classnames("input-expression", { error })}
-          type="text"
-          onChange={this.handleChange}
-          onBlur={this.clear}
-          onKeyDown={this.handleKeyDown}
-          onFocus={this.onFocus}
-          value={editing ? inputValue : expression.input}
-          ref={c => (this._input = c)}
-          {...(features.autocompleteExpression && {
-            list: "autocomplete-matches",
-          })}
-        />
-        {this.renderAutoCompleteMatches()}
-        <input type="submit" style={{ display: "none" }} />
-      </form>
+          {
+            focused,
+            error,
+          }
+        ),
+        onSubmit: e => this.handleExistingSubmit(e, expression),
+      },
+      input({
+        className: classnames("input-expression", {
+          error,
+        }),
+        type: "text",
+        onChange: this.handleChange,
+        onBlur: this.clear,
+        onKeyDown: this.handleKeyDown,
+        onFocus: this.onFocus,
+        value: editing ? inputValue : expression.input,
+        ref: c => (this._input = c),
+        ...(features.autocompleteExpression && {
+          list: "autocomplete-matches",
+        }),
+      }),
+      this.renderAutoCompleteMatches(),
+      input({
+        type: "submit",
+        style: {
+          display: "none",
+        },
+      })
     );
   }
 
@@ -354,7 +409,6 @@ class Expressions extends Component {
 }
 
 const mapStateToProps = state => ({
-  cx: getThreadContext(state),
   autocompleteMatches: getAutocompleteMatchset(state),
   expressions: getExpressions(state),
   expressionError: getExpressionError(state),

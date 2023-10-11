@@ -20,6 +20,19 @@ server.registerPathHandler("/dummy", (request, response) => {
   response.write("test_ext_cache_api.js");
 });
 
+add_setup(() => {
+  // NOTE: This prevents a test failure when this test file is executed
+  // in Android builds, under the GeckoView TestRunnner, and the
+  // extensions running in the child extension process, See Bug 1844825.
+  //
+  // TODO(Bug 1845576): remove this workaround if we removed from head.js the
+  // code that is setting Services.io.offline in Android builds.
+  if (AppConstants.platform == "android" && Services.io.offline) {
+    info("Services.io.offline is set to true, flipping it to false");
+    Services.io.offline = false;
+  }
+});
+
 add_task(async function test_cache_api_http_resource_allowed() {
   async function background() {
     try {
@@ -36,7 +49,7 @@ add_task(async function test_cache_api_http_resource_allowed() {
       await cache.add(BASE_URL);
       browser.test.assertEq(
         "test_ext_cache_api.js",
-        await cache.match(BASE_URL).then(res => res.text()),
+        await cache.match(BASE_URL).then(res => res?.text()),
         "Got the expected content from the cached http url"
       );
 
@@ -93,7 +106,7 @@ add_task(async function test_cache_api_from_ext_shared_worker() {
     Services.obs.notifyObservers(null, "profile-after-change");
   }
 
-  const background = async function() {
+  const background = async function () {
     const BASE_URL_OK = `http://example.com/dummy`;
     const BASE_URL_KO = `http://anotherdomain.com/dummy`;
     const worker = new SharedWorker("worker.js");
@@ -101,19 +114,22 @@ add_task(async function test_cache_api_from_ext_shared_worker() {
       worker.port.onmessage = resolve;
       worker.port.postMessage(["worker-cacheapi-test-allowed", BASE_URL_OK]);
     });
-    browser.test.log(
-      `Got result from extension worker for allowed host url: ${JSON.stringify(
-        resultOK
-      )}`
+    browser.test.assertDeepEq(
+      ["worker-cacheapi-test-allowed:result", { success: true }],
+      resultOK,
+      "Got success result from extension worker for allowed host url"
     );
     const { data: resultKO } = await new Promise(resolve => {
       worker.port.onmessage = resolve;
       worker.port.postMessage(["worker-cacheapi-test-disallowed", BASE_URL_KO]);
     });
-    browser.test.log(
-      `Got result from extension worker for disallowed host url: ${JSON.stringify(
-        resultKO
-      )}`
+    browser.test.assertDeepEq(
+      [
+        "worker-cacheapi-test-disallowed:result",
+        { error: "NetworkError when attempting to fetch resource." },
+      ],
+      resultKO,
+      "Got result from extension worker for disallowed host url"
     );
 
     browser.test.assertTrue(
@@ -123,7 +139,7 @@ add_task(async function test_cache_api_from_ext_shared_worker() {
     const cache = await window.caches.open("test-cache-api");
     browser.test.assertEq(
       "test_ext_cache_api.js",
-      await cache.match(BASE_URL_OK).then(res => res.text()),
+      await cache.match(BASE_URL_OK).then(res => res?.text()),
       "Got the expected content from the cached http url"
     );
     browser.test.assertEq(
@@ -132,17 +148,14 @@ add_task(async function test_cache_api_from_ext_shared_worker() {
       "Got no match for the http url that isn't allowed by host permissions"
     );
 
-    browser.test.sendMessage("test-cacheapi-sharedworker:done", {
-      expectAllowed: resultOK,
-      expectDisallowed: resultKO,
-    });
+    browser.test.sendMessage("test-cacheapi-sharedworker:done");
   };
 
   const extension = ExtensionTestUtils.loadExtension({
     background,
     manifest: { permissions: ["http://example.com/*"] },
     files: {
-      "worker.js": function() {
+      "worker.js": function () {
         self.onconnect = evt => {
           const port = evt.ports[0];
           port.onmessage = async evt => {
@@ -167,25 +180,7 @@ add_task(async function test_cache_api_from_ext_shared_worker() {
   });
 
   await extension.startup();
-  const { expectAllowed, expectDisallowed } = await extension.awaitMessage(
-    "test-cacheapi-sharedworker:done"
-  );
-  // Increase the chance to have the error message related to an unexpected
-  // failure to be explicitly mention in the failure message.
-  Assert.deepEqual(
-    expectAllowed,
-    ["worker-cacheapi-test-allowed:result", { success: true }],
-    "Expect worker result to be successfull with the required host permission"
-  );
-  Assert.deepEqual(
-    expectDisallowed,
-    [
-      "worker-cacheapi-test-disallowed:result",
-      { error: "NetworkError when attempting to fetch resource." },
-    ],
-    "Expect worker result to be unsuccessfull without the required host permission"
-  );
-
+  await extension.awaitMessage("test-cacheapi-sharedworker:done");
   await extension.unload();
 });
 
@@ -205,7 +200,7 @@ add_task(async function test_cache_storage_evicted_on_addon_uninstalled() {
       await cache.add(BASE_URL);
       browser.test.assertEq(
         "test_ext_cache_api.js",
-        await cache.match(BASE_URL).then(res => res.text()),
+        await cache.match(BASE_URL).then(res => res?.text()),
         "Got the expected content from the cached http url"
       );
     } catch (err) {
@@ -248,3 +243,56 @@ add_task(async function test_cache_storage_evicted_on_addon_uninstalled() {
     "The extension cache storage data should have been evicted on addon uninstall"
   );
 });
+
+add_task(
+  {
+    // Pref used to allow to use the Cache WebAPI related to a page loaded from http
+    // (otherwise Gecko will throw a SecurityError when trying to access the webpage
+    // cache storage from the content script, unless the webpage is loaded from https).
+    pref_set: [["dom.caches.testing.enabled", true]],
+  },
+  async function test_cache_put_from_contentscript() {
+    const extension = ExtensionTestUtils.loadExtension({
+      manifest: {
+        content_scripts: [
+          {
+            matches: ["http://example.com/*"],
+            js: ["content.js"],
+          },
+        ],
+      },
+      files: {
+        "content.js": async function () {
+          const cache = await caches.open("test-cachestorage");
+          const request = "http://example.com";
+          const response = await fetch(request);
+          await cache.put(request, response).catch(err => {
+            browser.test.sendMessage("cache-put-error", {
+              name: err.name,
+              message: err.message,
+            });
+          });
+        },
+      },
+    });
+
+    await extension.startup();
+
+    const page = await ExtensionTestUtils.loadContentPage("http://example.com");
+    const actualError = await extension.awaitMessage("cache-put-error");
+    equal(
+      actualError.name,
+      "SecurityError",
+      "Got a security error from cache.put call as expected"
+    );
+    ok(
+      /Disallowed on WebExtension ContentScript Request/.test(
+        actualError.message
+      ),
+      `Got the expected error message: ${actualError.message}`
+    );
+
+    await page.close();
+    await extension.unload();
+  }
+);

@@ -22,6 +22,8 @@
 
 namespace jxl {
 
+struct AuxOut;
+
 struct BitWriter {
   // Upper bound on `n_bits` in each call to Write. We shift a 64-bit word by
   // 7 bits (max already valid bits in the last byte) and at least 1 bit is
@@ -37,10 +39,6 @@ struct BitWriter {
   BitWriter& operator=(const BitWriter&) = delete;
   BitWriter(BitWriter&&) = default;
   BitWriter& operator=(BitWriter&&) = default;
-
-  explicit BitWriter(PaddedBytes&& donor)
-      : bits_written_(donor.size() * kBitsPerByte),
-        storage_(std::move(donor)) {}
 
   size_t BitsWritten() const { return bits_written_; }
 
@@ -60,8 +58,11 @@ struct BitWriter {
     return std::move(storage_);
   }
 
+ private:
   // Must be byte-aligned before calling.
   void AppendByteAligned(const Span<const uint8_t>& span);
+
+ public:
   // NOTE: no allotment needed, the other BitWriters have already been charged.
   void AppendByteAligned(const BitWriter& other);
   void AppendByteAligned(const std::vector<std::unique_ptr<BitWriter>>& others);
@@ -85,26 +86,20 @@ struct BitWriter {
       return histogram_bits_;
     }
 
-    // Do not call directly - use ::ReclaimAndCharge instead, which ensures
-    // the bits are charged to a layer.
+    void ReclaimAndCharge(BitWriter* JXL_RESTRICT writer, size_t layer,
+                          AuxOut* JXL_RESTRICT aux_out);
+
+   private:
     void PrivateReclaim(BitWriter* JXL_RESTRICT writer,
                         size_t* JXL_RESTRICT used_bits,
                         size_t* JXL_RESTRICT unused_bits);
 
-   private:
     size_t prev_bits_written_;
     const size_t max_bits_;
     size_t histogram_bits_ = 0;
     bool called_ = false;
     Allotment* parent_;
   };
-
-  // WARNING: think twice before using this. Concatenating two BitWriters that
-  // pad to bytes is NOT the same as one contiguous BitWriter.
-  BitWriter& operator+=(const BitWriter& other);
-
-  // TODO(janwas): remove once all callers use BitWriter
-  BitWriter& operator+=(const PaddedBytes& other);
 
   // Writes bits into bytes in increasing addresses, and within a byte
   // least-significant-bit first.
@@ -114,23 +109,13 @@ struct BitWriter {
 
   // This should only rarely be used - e.g. when the current location will be
   // referenced via byte offset (TOCs point to groups), or byte-aligned reading
-  // is required for speed. WARNING: this interacts badly with operator+=,
-  // see above.
+  // is required for speed.
   void ZeroPadToByte() {
     const size_t remainder_bits =
         RoundUpBitsToByteMultiple(bits_written_) - bits_written_;
     if (remainder_bits == 0) return;
     Write(remainder_bits, 0);
     JXL_ASSERT(bits_written_ % kBitsPerByte == 0);
-  }
-
-  // TODO(janwas): remove? only called from ANS
-  void RewindStorage(const size_t pos0) {
-    JXL_ASSERT(pos0 <= bits_written_);
-    bits_written_ = pos0;
-    static const uint8_t kRewindMasks[8] = {0x0, 0x1,  0x3,  0x7,
-                                            0xf, 0x1f, 0x3f, 0x7f};
-    storage_[pos0 >> 3] &= kRewindMasks[pos0 & 7];
   }
 
  private:

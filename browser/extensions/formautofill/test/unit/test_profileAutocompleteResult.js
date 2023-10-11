@@ -1,9 +1,9 @@
 "use strict";
 
 var AddressResult, CreditCardResult;
-add_task(async function setup() {
-  ({ AddressResult, CreditCardResult } = ChromeUtils.import(
-    "resource://autofill/ProfileAutoCompleteResult.jsm"
+add_setup(async () => {
+  ({ AddressResult, CreditCardResult } = ChromeUtils.importESModule(
+    "resource://autofill/ProfileAutoCompleteResult.sys.mjs"
   ));
 });
 

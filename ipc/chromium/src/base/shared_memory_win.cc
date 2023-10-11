@@ -11,9 +11,11 @@
 #include "base/string_util.h"
 #include "mozilla/ipc/ProtocolUtils.h"
 #include "mozilla/RandomNum.h"
-#include "mozilla/WindowsVersion.h"
 #include "nsDebug.h"
 #include "nsString.h"
+#ifdef MOZ_MEMORY
+#  include "mozmemory_utils.h"
+#endif
 
 namespace {
 // NtQuerySection is an internal (but believed to be stable) API and the
@@ -69,7 +71,7 @@ bool SharedMemory::SetHandle(SharedMemoryHandle handle, bool read_only) {
 
   external_section_ = true;
   freezeable_ = false;  // just in case
-  mapped_file_.reset(handle);
+  mapped_file_ = std::move(handle);
   read_only_ = read_only;
   return true;
 }
@@ -82,6 +84,71 @@ bool SharedMemory::IsHandleValid(const SharedMemoryHandle& handle) {
 // static
 SharedMemoryHandle SharedMemory::NULLHandle() { return nullptr; }
 
+// Wrapper around CreateFileMappingW for pagefile-backed regions. When out of
+// memory, may attempt to stall and retry rather than returning immediately, in
+// hopes that the page file is about to be expanded by Windows. (bug 1822383,
+// bug 1716727)
+//
+// This method is largely a copy of the MozVirtualAlloc method from
+// mozjemalloc.cpp, which implements this strategy for VirtualAlloc calls,
+// except re-purposed to handle CreateFileMapping.
+static HANDLE MozCreateFileMappingW(
+    LPSECURITY_ATTRIBUTES lpFileMappingAttributes, DWORD flProtect,
+    DWORD dwMaximumSizeHigh, DWORD dwMaximumSizeLow, LPCWSTR lpName) {
+#ifdef MOZ_MEMORY
+  constexpr auto IsOOMError = [] {
+    return ::GetLastError() == ERROR_COMMITMENT_LIMIT;
+  };
+
+  {
+    HANDLE handle = ::CreateFileMappingW(
+        INVALID_HANDLE_VALUE, lpFileMappingAttributes, flProtect,
+        dwMaximumSizeHigh, dwMaximumSizeLow, lpName);
+    if (MOZ_LIKELY(handle)) {
+      MOZ_DIAGNOSTIC_ASSERT(handle != INVALID_HANDLE_VALUE,
+                            "::CreateFileMapping should return NULL, not "
+                            "INVALID_HANDLE_VALUE, on failure");
+      return handle;
+    }
+
+    // We can't do anything for errors other than OOM.
+    if (!IsOOMError()) {
+      return nullptr;
+    }
+  }
+
+  // Retry as many times as desired (possibly zero).
+  const mozilla::StallSpecs stallSpecs = mozilla::GetAllocatorStallSpecs();
+
+  const auto ret =
+      stallSpecs.StallAndRetry(&::Sleep, [&]() -> std::optional<HANDLE> {
+        HANDLE handle = ::CreateFileMappingW(
+            INVALID_HANDLE_VALUE, lpFileMappingAttributes, flProtect,
+            dwMaximumSizeHigh, dwMaximumSizeLow, lpName);
+
+        if (handle) {
+          MOZ_DIAGNOSTIC_ASSERT(handle != INVALID_HANDLE_VALUE,
+                                "::CreateFileMapping should return NULL, not "
+                                "INVALID_HANDLE_VALUE, on failure");
+          return handle;
+        }
+
+        // Failure for some reason other than OOM.
+        if (!IsOOMError()) {
+          return nullptr;
+        }
+
+        return std::nullopt;
+      });
+
+  return ret.value_or(nullptr);
+#else
+  return ::CreateFileMappingW(INVALID_HANDLE_VALUE, lpFileMappingAttributes,
+                              flProtect, dwMaximumSizeHigh, dwMaximumSizeLow,
+                              lpName);
+#endif
+}
+
 bool SharedMemory::CreateInternal(size_t size, bool freezeable) {
   DCHECK(!mapped_file_);
   read_only_ = false;
@@ -93,7 +160,6 @@ bool SharedMemory::CreateInternal(size_t size, bool freezeable) {
   SECURITY_ATTRIBUTES sa, *psa = nullptr;
   SECURITY_DESCRIPTOR sd;
   ACL dacl;
-  nsAutoStringN<sizeof("MozSharedMem_") + 16 * 4> name;
 
   if (freezeable) {
     psa = &sa;
@@ -107,24 +173,10 @@ bool SharedMemory::CreateInternal(size_t size, bool freezeable) {
         NS_WARN_IF(!SetSecurityDescriptorDacl(&sd, TRUE, &dacl, FALSE))) {
       return false;
     }
-
-    // Older versions of Windows will silently ignore the security
-    // attributes unless the object has a name.
-    if (!mozilla::IsWin8Point1OrLater()) {
-      name.AssignLiteral("MozSharedMem_");
-      for (size_t i = 0; i < 4; ++i) {
-        mozilla::Maybe<uint64_t> randomNum = mozilla::RandomUint64();
-        if (NS_WARN_IF(randomNum.isNothing())) {
-          return false;
-        }
-        name.AppendPrintf("%016llx", *randomNum);
-      }
-    }
   }
 
-  mapped_file_.reset(CreateFileMapping(
-      INVALID_HANDLE_VALUE, psa, PAGE_READWRITE, 0, static_cast<DWORD>(size),
-      name.IsEmpty() ? nullptr : name.get()));
+  mapped_file_.reset(MozCreateFileMappingW(psa, PAGE_READWRITE, 0,
+                                           static_cast<DWORD>(size), nullptr));
   if (!mapped_file_) return false;
 
   max_size_ = size;
@@ -191,39 +243,16 @@ void* SharedMemory::FindFreeAddressSpace(size_t size) {
   return memory;
 }
 
-bool SharedMemory::ShareToProcessCommon(ProcessId processId,
-                                        SharedMemoryHandle* new_handle,
-                                        bool close_self) {
+SharedMemoryHandle SharedMemory::CloneHandle() {
   freezeable_ = false;
-  *new_handle = 0;
-  DWORD access = FILE_MAP_READ | SECTION_QUERY;
-  DWORD options = 0;
-  HANDLE mapped_file;
-  HANDLE result;
-  if (!read_only_) {
-    access |= FILE_MAP_WRITE;
+  HANDLE handle = INVALID_HANDLE_VALUE;
+  if (DuplicateHandle(GetCurrentProcess(), mapped_file_.get(),
+                      GetCurrentProcess(), &handle, 0, false,
+                      DUPLICATE_SAME_ACCESS)) {
+    return SharedMemoryHandle(handle);
   }
-  if (close_self) {
-    // DUPLICATE_CLOSE_SOURCE causes DuplicateHandle to close mapped_file.
-    mapped_file = mapped_file_.release();
-    options = DUPLICATE_CLOSE_SOURCE;
-    Unmap();
-  } else {
-    mapped_file = mapped_file_.get();
-  }
-
-  if (processId == GetCurrentProcId() && close_self) {
-    *new_handle = mapped_file;
-    return true;
-  }
-
-  if (!mozilla::ipc::DuplicateHandle(mapped_file, processId, &result, access,
-                                     options)) {
-    return false;
-  }
-
-  *new_handle = result;
-  return true;
+  NS_WARNING("DuplicateHandle Failed!");
+  return nullptr;
 }
 
 void SharedMemory::Close(bool unmap_view) {

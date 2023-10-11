@@ -22,13 +22,13 @@ process-type-extension = Extensió
 # process used to open file:// URLs
 process-type-file = Fitxer local
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Assignació gran
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Contingut web aïllat
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Procés de treball de servei aïllat
 
 # process preallocated; may change to other types
 process-type-prealloc = Preassignat

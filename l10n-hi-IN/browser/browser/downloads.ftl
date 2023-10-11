@@ -13,12 +13,6 @@ downloads-panel =
 
 ##
 
-# The style attribute has the width of the Downloads Panel expressed using
-# a CSS unit. The longest labels that should fit are usually those of 
-# in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
-
 downloads-cmd-pause =
     .label = ठहराएँ
     .accesskey = P
@@ -30,34 +24,40 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = रद्द करें
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = संग्राहक फोल्डर खोलें
-    .accesskey = F
-  
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = फाइंडर में दिखाएँ
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] फाइंडर में दिखाएं
+           *[other] फोल्डर में दिखाएं
+        }
     .accesskey = F
 
-downloads-cmd-show-button =
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
+
+
+##
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
-            [macos] फाइंडर में दिखाएँ
-           *[other] संग्राहक फोल्डर खोलें
+            [macos] फाइंडर में दिखाएं
+           *[other] फोल्डर में दिखाएं
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
-            [macos] फाइंडर में दिखाएँ
-           *[other] संग्राहक फोल्डर खोलें
+            [macos] फाइंडर में दिखाएं
+           *[other] फोल्डर में दिखाएं
         }
-downloads-cmd-show-description =
+downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
-            [macos] फाइंडर में दिखाएँ
-           *[other] संग्राहक फोल्डर खोलें
+            [macos] फाइंडर में दिखाएं
+           *[other] फोल्डर में दिखाएं
         }
 
 downloads-cmd-show-downloads =
@@ -130,6 +130,7 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -154,6 +155,14 @@ downloads-history =
 downloads-details =
     .title = विवरण डाउनलोड करें
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
+
 downloads-clear-downloads-button =
     .label = ‌डाउनलोड्स साफ़ करें
     .tooltiptext = संपन्न, रद्द, और विफल डाउनलोड को हटाया
@@ -166,3 +175,14 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = इस सत्र के लिए कोई डाउनलोड नहीं.
+
+## Download errors
+
+downloads-error-alert-title = डाउनलोड त्रुटि
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = डाउनलोड सहेजा नहीं जा सकता क्योंकि यह एक एक्सटेंशन द्वारा अवरुद्ध है।
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    डाउनलोड सहेजा नहीं जा सकता है क्योंकि एक अनजान त्रुटि आई.
+    
+    कृपया फिर कोशिश करें.

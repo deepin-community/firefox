@@ -2,19 +2,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 ---
-loader: taskgraph.loader.transform:loader
+loader: gecko_taskgraph.loader.transform:loader
 
 transforms:
-    - taskgraph.transforms.scriptworker_canary:transforms
-    - taskgraph.transforms.job:transforms
-    - taskgraph.transforms.task:transforms
+    - gecko_taskgraph.transforms.scriptworker_canary:transforms
+    - gecko_taskgraph.transforms.job:transforms
+    - gecko_taskgraph.transforms.task:transforms
 
 job-defaults:
     treeherder:
         platform: firefox-release/opt
         tier: 1
         kind: build
-    worker-type: b-linux
+    worker-type: b-linux-gcp
     worker:
         docker-image: {in-tree: push-to-try}
         max-run-time: 1800

@@ -79,7 +79,7 @@ about-debugging-sidebar-runtime-item-name-no-device =
     .title = { $displayName }
 
 # Text to show in the footer of the sidebar that links to a help page
-# (currently: https://developer.mozilla.org/docs/Tools/about:debugging)
+# (currently: https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/)
 about-debugging-sidebar-support = Pomoc za pytanje zmólkow
 
 # Text to show as the ALT attribute of a help icon that accompanies the help about
@@ -140,7 +140,7 @@ about-debugging-setup-usb-step-enable-debug-firefox2 = Pytanje zmólkow USB w Fi
 about-debugging-setup-usb-step-plug-device = Zwězajśo rěd Android ze swójim licadłom.
 
 # Text shown in the USB section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/docs/Tools/Remote_Debugging/Debugging_over_USB
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-to-a-remote-device
 about-debugging-setup-usb-troubleshoot = Maśo problemy pśi zwězowanju z USB-rědom? <a>Problem rozwězaś</a>
 
 # Network section of the Setup page
@@ -148,7 +148,7 @@ about-debugging-setup-network =
     .title = Seśowa adresa
 
 # Text shown in the Network section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/en-US/docs/Tools/Remote_Debugging/Debugging_over_a_network
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-over-the-network
 about-debugging-setup-network-troubleshoot = Maśo problemy pśi zwězowanju pśez seśowu adresu? <a>Problem rozwězaś</a>
 
 # Text of a button displayed after the network locations "Host" input.
@@ -208,12 +208,12 @@ about-debugging-runtime-processes =
 about-debugging-runtime-profile-button2 = Profilowe wugbaśe
 
 # This string is displayed in the runtime page if the current configuration of the
-# target runtime is incompatible with service workers. "Learn more" points to MDN.
-# https://developer.mozilla.org/en-US/docs/Tools/about%3Adebugging#Service_workers_not_compatible
+# target runtime is incompatible with service workers. "Learn more" points to:
+# https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#service-workers-not-compatible
 about-debugging-runtime-service-workers-not-compatible = Konfiguracija wašogo wobglědowaka njejo kompatibelna ze service workers. <a>Dalšne informacije</a>
 
 # This string is displayed in the runtime page if the remote browser version is too old.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
 # { $minVersion } is the minimum version that is compatible with the current Firefox instance (same format)
 about-debugging-browser-version-too-old = Zwězany wobglědowak ma staru wersiju ({ $runtimeVersion }). Pódpěrana minimalna wersija jo ({ $minVersion }). To jo njepódpěrana konfiguracija a móžo zawinowaś, až wuwijaŕske rědy njefunkcioněruju. Pšosym aktualizěrujśo zwězany wobglědowak. <a>Rozwězanje problemow</a>
@@ -223,7 +223,7 @@ about-debugging-browser-version-too-old = Zwězany wobglědowak ma staru wersiju
 about-debugging-browser-version-too-old-fennec = Toś ta wersija Firefox njamóžo Firefox za Android (68) za zmólkami pśeglědowaś. Pórucamy, až Firefox za Android Nightly na swójom telefonje za testowanje instalěrujośo. <a>Dalšne drobnostki</a>
 
 # This string is displayed in the runtime page if the remote browser version is too recent.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeID } is the build ID of the remote browser (for instance "20181231", format is yyyyMMdd)
 # { $localID } is the build ID of the current Firefox instance (same format)
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
@@ -281,6 +281,12 @@ about-debugging-tmp-extension-reload-button = Znowego zacytaś
 # Clicking on the button will uninstall the extension and remove it from the page.
 about-debugging-tmp-extension-remove-button = Wótwónoźeś
 
+# Text of a button displayed for a temporary extension loaded in the "This Firefox" page.
+# Clicking on the button will forcefully terminate the extension background script (button
+# only visible in extensions that includes a non-persistent background script, either an
+# event page or a background service worker).
+about-debugging-tmp-extension-terminate-bgscript-button = Slězynowy skript dokóńcyś
+
 # Message displayed in the file picker that opens to select a temporary extension to load
 # (triggered by the button using "about-debugging-tmp-extension-install-button")
 # manifest.json .xpi and .zip should not be localized.
@@ -309,6 +315,18 @@ about-debugging-extension-location =
 # For instance "geckoprofiler@mozilla.com" or "{ed26ddcb-5611-4512-a89a-51b8db81cfb2}".
 about-debugging-extension-id =
     .label = ID rozšyrjenja
+
+# Text displayed for extensions in "runtime" pages, before displaying the status of the
+# extension background script.
+about-debugging-extension-backgroundscript =
+    .label = Slězynowy skript
+
+# Displayed for extension using a non-persistent background page (either an event page or
+# background service worker) when the background script is currently running.
+about-debugging-extension-backgroundscript-status-running = Běžy
+
+# Displayed for extension using a non-persistent background page when is currently stopped.
+about-debugging-extension-backgroundscript-status-stopped = Zastajony
 
 # This string is displayed as a label of the button that pushes a test payload
 # to a service worker.
@@ -360,14 +378,6 @@ about-debugging-worker-inspect-action-disabled =
 # Displayed as title of the inspect button for zombie tabs (e.g. tabs loaded via a session restore).
 about-debugging-zombie-tab-inspect-action-disabled =
     .title = Rejtarik njejo se dopołnje zacytał a njedajo se pśeglědowaś
-
-# Displayed as name for the Main Process debug target in the Processes category. Only for
-# remote runtimes, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-name = Głowny proces
-
-# Displayed as description for the Main Process debug target in the Processes category.
-# Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-description2 = Głowny proces za celowy wobglědowak
 
 # Displayed instead of the Main Process debug target when the preference
 # `devtools.browsertoolbox.fission` is true.

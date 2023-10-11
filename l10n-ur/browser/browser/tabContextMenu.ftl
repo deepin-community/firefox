@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = تمام ٹیب منتخب کریں
     .accesskey = S
+tab-context-play-tab =
+    .label = ٹیب چلائیں
+    .accesskey = چ
+tab-context-play-tabs =
+    .label = ٹیب چلائیں
+    .accesskey = y
 duplicate-tab =
     .label = دوهرا ٹیب
     .accesskey = D
@@ -43,9 +49,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = ٹیب بک مارک کریں…
     .accesskey = B
-bookmark-tab =
-    .label = ٹیب بک مارک کریں
-    .accesskey = B
+tab-context-open-in-new-container-tab =
+    .label = نئے کنٹینر ٹیب میں کھولیں۔
+    .accesskey = e
 move-to-new-window =
     .label = نئے دریچے میں بڑھائیں
     .accesskey = W
@@ -55,8 +61,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = شیئر کریں
     .accesskey = h
-tab-context-share-more =
-    .label = مزید…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -69,14 +73,6 @@ tab-context-reopen-closed-tabs =
            *[other] o
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] ٹیب بند کریں
-            [one] ٹیب بند کریں
-           *[other] ٹیبز بند کریں
-        }
-    .accesskey = C
 tab-context-move-tabs =
     .label =
         { $tabCount ->

@@ -22,18 +22,17 @@ if CONFIG["WRAP_STL_INCLUDES"]:
         ]
 
 if CONFIG["OS_TARGET"] == "WINNT":
-    # Keep this file separate to avoid #include'ing windows.h everywhere.
-    SOURCES += [
-        "winheap.cpp",
-    ]
+    # Don't build winheap.cpp when mozglue is a static library.
+    if CONFIG["MOZ_MEMORY"] or not CONFIG["JS_STANDALONE"]:
+        # Keep this file separate to avoid #include'ing windows.h everywhere.
+        SOURCES += [
+            "winheap.cpp",
+        ]
 
 UNIFIED_SOURCES += [
     "mozalloc.cpp",
-    "mozalloc_oom.cpp",
-]
-
-SOURCES += [
     "mozalloc_abort.cpp",
+    "mozalloc_oom.cpp",
 ]
 
 if CONFIG["MOZ_MEMORY"]:
@@ -44,9 +43,6 @@ if CONFIG["MOZ_MEMORY"]:
         SOURCES += [
             "cxxalloc.cpp",
         ]
-
-if CONFIG["CPU_ARCH"] == "arm" and CONFIG["CC_TYPE"] == "clang":
-    SOURCES["mozalloc_abort.cpp"].flags += ["-Wno-infinite-recursion"]
 
 FINAL_LIBRARY = "mozglue"
 
@@ -61,5 +57,3 @@ LOCAL_INCLUDES += [
 ]
 
 DIST_INSTALL = True
-
-REQUIRES_UNIFIED_BUILD = True

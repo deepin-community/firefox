@@ -10,16 +10,14 @@ import { DSMessage } from "content-src/components/DiscoveryStreamComponents/DSMe
 import { DSPrivacyModal } from "content-src/components/DiscoveryStreamComponents/DSPrivacyModal/DSPrivacyModal";
 import { DSSignup } from "content-src/components/DiscoveryStreamComponents/DSSignup/DSSignup";
 import { DSTextPromo } from "content-src/components/DiscoveryStreamComponents/DSTextPromo/DSTextPromo";
-import { Hero } from "content-src/components/DiscoveryStreamComponents/Hero/Hero";
 import { Highlights } from "content-src/components/DiscoveryStreamComponents/Highlights/Highlights";
 import { HorizontalRule } from "content-src/components/DiscoveryStreamComponents/HorizontalRule/HorizontalRule";
-import { List } from "content-src/components/DiscoveryStreamComponents/List/List";
 import { Navigation } from "content-src/components/DiscoveryStreamComponents/Navigation/Navigation";
 import { PrivacyLink } from "content-src/components/DiscoveryStreamComponents/PrivacyLink/PrivacyLink";
 import React from "react";
 import { SectionTitle } from "content-src/components/DiscoveryStreamComponents/SectionTitle/SectionTitle";
 import { selectLayoutRender } from "content-src/lib/selectLayoutRender";
-import { TopSites } from "content-src/components/DiscoveryStreamComponents/TopSites/TopSites";
+import { TopSites } from "content-src/components/TopSites/TopSites";
 
 const ALLOWED_CSS_URL_PREFIXES = [
   "chrome://",
@@ -81,14 +79,15 @@ export class _DiscoveryStreamBase extends React.PureComponent {
           [...rule.style].forEach(property => {
             const value = rule.style[property];
             if (!isAllowedCSS(property, value)) {
-              console.error(`Bad CSS declaration ${property}: ${value}`); // eslint-disable-line no-console
+              console.error(`Bad CSS declaration ${property}: ${value}`);
               rule.style.removeProperty(property);
             }
           });
 
           // Set the actual desired selectors scoped to the component
-          const prefix = `.ds-layout > .ds-column:nth-child(${rowIndex +
-            1}) .ds-column-grid > :nth-child(${componentIndex + 1})`;
+          const prefix = `.ds-layout > .ds-column:nth-child(${
+            rowIndex + 1
+          }) .ds-column-grid > :nth-child(${componentIndex + 1})`;
           // NB: Splitting on "," doesn't work with strings with commas, but
           // we're okay with not supporting those selectors
           rule.selectorText = selectors
@@ -104,7 +103,7 @@ export class _DiscoveryStreamBase extends React.PureComponent {
 
           // CSSOM silently ignores bad selectors, so we'll be noisy instead
           if (rule.selectorText === DUMMY_CSS_SELECTOR) {
-            console.error(`Bad CSS selector ${selectors}`); // eslint-disable-line no-console
+            console.error(`Bad CSS selector ${selectors}`);
           }
         });
       });
@@ -112,29 +111,14 @@ export class _DiscoveryStreamBase extends React.PureComponent {
   }
 
   renderComponent(component, embedWidth) {
-    const ENGAGEMENT_LABEL_ENABLED = this.props.Prefs.values[
-      `discoverystream.engagementLabelEnabled`
-    ];
-
     switch (component.type) {
       case "Highlights":
         return <Highlights />;
       case "TopSites":
-        let promoAlignment;
-        if (
-          component.spocs &&
-          component.spocs.positions &&
-          component.spocs.positions.length
-        ) {
-          promoAlignment =
-            component.spocs.positions[0].index === 0 ? "left" : "right";
-        }
         return (
-          <TopSites
-            header={component.header}
-            data={component.data}
-            promoAlignment={promoAlignment}
-          />
+          <div className="ds-top-sites">
+            <TopSites isFixed={true} title={component.header?.title} />
+          </div>
         );
       case "TextPromo":
         return (
@@ -160,6 +144,8 @@ export class _DiscoveryStreamBase extends React.PureComponent {
             link_text={component.header && component.header.link_text}
             link_url={component.header && component.header.link_url}
             icon={component.header && component.header.icon}
+            essentialReadsHeader={component.essentialReadsHeader}
+            editorsPicksHeader={component.editorsPicksHeader}
           />
         );
       case "SectionTitle":
@@ -171,7 +157,6 @@ export class _DiscoveryStreamBase extends React.PureComponent {
             links={component.properties.links}
             extraLinks={component.properties.extraLinks}
             alignment={component.properties.alignment}
-            display_variant={component.properties.display_variant}
             explore_topics={component.properties.explore_topics}
             header={component.header}
             locale={this.props.App.locale}
@@ -187,11 +172,8 @@ export class _DiscoveryStreamBase extends React.PureComponent {
             feed={component.feed}
             spocs={DiscoveryStream.spocs}
             placement={component.placement}
-            border={component.properties.border}
             type={component.type}
             items={component.properties.items}
-            cta_variant={component.cta_variant}
-            display_engagement_labels={ENGAGEMENT_LABEL_ENABLED}
             dismissible={this.props.DiscoveryStream.isCollectionDismissible}
             dispatch={this.props.dispatch}
           />
@@ -199,55 +181,26 @@ export class _DiscoveryStreamBase extends React.PureComponent {
       case "CardGrid":
         return (
           <CardGrid
-            enable_video_playheads={
-              !!component.properties.enable_video_playheads
-            }
             title={component.header && component.header.title}
-            display_variant={component.properties.display_variant}
             data={component.data}
             feed={component.feed}
-            border={component.properties.border}
+            widgets={component.widgets}
             type={component.type}
             dispatch={this.props.dispatch}
             items={component.properties.items}
-            compact={component.properties.compact}
-            include_descriptions={!component.properties.compact}
-            loadMoreEnabled={component.loadMoreEnabled}
-            lastCardMessageEnabled={component.lastCardMessageEnabled}
-            saveToPocketCard={component.saveToPocketCard}
-            cta_variant={component.cta_variant}
-            display_engagement_labels={ENGAGEMENT_LABEL_ENABLED}
-          />
-        );
-      case "Hero":
-        return (
-          <Hero
-            subComponentType={embedWidth >= 9 ? `cards` : `list`}
-            feed={component.feed}
-            title={component.header && component.header.title}
-            data={component.data}
-            border={component.properties.border}
-            type={component.type}
-            dispatch={this.props.dispatch}
-            items={component.properties.items}
+            hybridLayout={component.properties.hybridLayout}
+            hideCardBackground={component.properties.hideCardBackground}
+            fourCardLayout={component.properties.fourCardLayout}
+            compactGrid={component.properties.compactGrid}
+            essentialReadsHeader={component.properties.essentialReadsHeader}
+            onboardingExperience={component.properties.onboardingExperience}
+            editorsPicksHeader={component.properties.editorsPicksHeader}
+            recentSavesEnabled={this.props.DiscoveryStream.recentSavesEnabled}
+            hideDescriptions={this.props.DiscoveryStream.hideDescriptions}
           />
         );
       case "HorizontalRule":
         return <HorizontalRule />;
-      case "List":
-        return (
-          <List
-            data={component.data}
-            feed={component.feed}
-            fullWidth={component.properties.full_width}
-            hasBorders={component.properties.border === "border"}
-            hasImages={component.properties.has_images}
-            hasNumbers={component.properties.has_numbers}
-            items={component.properties.items}
-            type={component.type}
-            header={component.header}
-          />
-        );
       case "PrivacyLink":
         return <PrivacyLink properties={component.properties} />;
       default:
@@ -263,11 +216,12 @@ export class _DiscoveryStreamBase extends React.PureComponent {
   }
 
   render() {
+    const { locale } = this.props;
     // Select layout render data by adding spocs and position to recommendations
     const { layoutRender } = selectLayoutRender({
       state: this.props.DiscoveryStream,
       prefs: this.props.Prefs.values,
-      locale: this.props.locale,
+      locale,
     });
     const { config } = this.props.DiscoveryStream;
 
@@ -311,7 +265,28 @@ export class _DiscoveryStreamBase extends React.PureComponent {
         title: topStories.title,
       },
     };
+
     const privacyLinkComponent = extractComponent("PrivacyLink");
+    let learnMore = {
+      link: {
+        href: message.header.link_url,
+        message: message.header.link_text,
+      },
+    };
+    let sectionTitle = message.header.title;
+    let subTitle = "";
+
+    // If we're in one of these experiments, override the default message.
+    // For now this is English only.
+    if (message.essentialReadsHeader || message.editorsPicksHeader) {
+      learnMore = null;
+      subTitle = "Recommended By Pocket";
+      if (message.essentialReadsHeader) {
+        sectionTitle = "Today’s Essential Reads";
+      } else if (message.editorsPicksHeader) {
+        sectionTitle = "Editor’s Picks";
+      }
+    }
 
     // Render a DS-style TopSites then the rest if any in a collapsible section
     return (
@@ -340,15 +315,11 @@ export class _DiscoveryStreamBase extends React.PureComponent {
             dispatch={this.props.dispatch}
             id={topStories.id}
             isFixed={true}
-            learnMore={{
-              link: {
-                href: message.header.link_url,
-                message: message.header.link_text,
-              },
-            }}
+            learnMore={learnMore}
             privacyNoticeURL={topStories.privacyNoticeURL}
             showPrefName={topStories.pref.feed}
-            title={message.header.title}
+            title={sectionTitle}
+            subTitle={subTitle}
             eventSource="CARDGRID"
           >
             {this.renderLayout(layoutRender)}

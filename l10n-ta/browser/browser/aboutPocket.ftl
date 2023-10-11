@@ -24,14 +24,18 @@ pocket-panel-saved-save-tags = சேமி
 pocket-panel-saved-saving-tags = சேமிக்கிறது…
 pocket-panel-saved-suggested-tags = பரிந்துரைக்கப்பட்ட குறிகள்
 pocket-panel-saved-tags-saved = குறிகள் சேர்க்கப்பட்டன
-pocket-panel-signup-view-list = பட்டியலைப் பார்
 
 ## about:pocket-signup panel
 
 pocket-panel-signup-learn-more = மேலும் அறிக
 pocket-panel-signup-login = உள் நுழை
 pocket-panel-signup-signup-email = மின்னஞ்சல் கொண்டு உள்நுழையுங்கள்
-pocket-panel-signup-signup-firefox = பயர்பாக்ஸ் கொண்டு உள்நுழை
 
 ## about:pocket-home panel
+
+
+## Pocket panel header component
+
+
+## Pocket panel buttons
 

@@ -2,28 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
 import argparse
 import logging
 import os
+import sys
 
 import mozpack.path as mozpath
-
-from mozbuild.base import (
-    MachCommandConditions as conditions,
-)
-
-from mozbuild.shellutil import (
-    split as shell_split,
-)
-
-from mach.decorators import (
-    CommandArgument,
-    Command,
-    SubCommand,
-)
-
+from mach.decorators import Command, CommandArgument, SubCommand
+from mozbuild.base import MachCommandConditions as conditions
+from mozbuild.shellutil import split as shell_split
 
 # Mach's conditions facility doesn't support subcommands.  Print a
 # deprecation message ourselves instead.
@@ -223,6 +210,18 @@ def android_build_geckoview_example(command_context, args):
     return 0
 
 
+def install_app_bundle(command_context, bundle):
+    from mozdevice import ADBDeviceFactory
+
+    bundletool = mozpath.join(command_context._mach_context.state_dir, "bundletool.jar")
+    device = ADBDeviceFactory(verbose=True)
+    bundle_path = mozpath.join(command_context.topobjdir, bundle)
+    java_home = java_home = os.path.dirname(
+        os.path.dirname(command_context.substs["JAVA"])
+    )
+    device.install_app_bundle(bundletool, bundle_path, java_home, timeout=120)
+
+
 @SubCommand("android", "install-geckoview_example", """Install geckoview_example """)
 @CommandArgument("args", nargs=argparse.REMAINDER)
 def android_install_geckoview_example(command_context, args):
@@ -237,6 +236,59 @@ def android_install_geckoview_example(command_context, args):
         "to just build the geckoview_example and test APKs."
     )
 
+    return 0
+
+
+@SubCommand(
+    "android", "install-geckoview-test_runner", """Install geckoview.test_runner """
+)
+@CommandArgument("args", nargs=argparse.REMAINDER)
+def android_install_geckoview_test_runner(command_context, args):
+    gradle(
+        command_context,
+        command_context.substs["GRADLE_ANDROID_INSTALL_GECKOVIEW_TEST_RUNNER_TASKS"]
+        + args,
+        verbose=True,
+    )
+    return 0
+
+
+@SubCommand(
+    "android",
+    "install-geckoview-test_runner-aab",
+    """Install geckoview.test_runner with AAB""",
+)
+@CommandArgument("args", nargs=argparse.REMAINDER)
+def android_install_geckoview_test_runner_aab(command_context, args):
+    install_app_bundle(
+        command_context,
+        command_context.substs["GRADLE_ANDROID_GECKOVIEW_TEST_RUNNER_BUNDLE"],
+    )
+    return 0
+
+
+@SubCommand(
+    "android",
+    "install-geckoview_example-aab",
+    """Install geckoview_example with AAB""",
+)
+@CommandArgument("args", nargs=argparse.REMAINDER)
+def android_install_geckoview_example_aab(command_context, args):
+    install_app_bundle(
+        command_context,
+        command_context.substs["GRADLE_ANDROID_GECKOVIEW_EXAMPLE_BUNDLE"],
+    )
+    return 0
+
+
+@SubCommand("android", "install-geckoview-test", """Install geckoview.test """)
+@CommandArgument("args", nargs=argparse.REMAINDER)
+def android_install_geckoview_test(command_context, args):
+    gradle(
+        command_context,
+        command_context.substs["GRADLE_ANDROID_INSTALL_GECKOVIEW_TEST_TASKS"] + args,
+        verbose=True,
+    )
     return 0
 
 
@@ -441,6 +493,8 @@ def gradle(command_context, args, verbose=False):
             "GRADLE_OPTS": "-Dfile.encoding=utf-8",
             "JAVA_HOME": java_home,
             "JAVA_TOOL_OPTIONS": "-Dfile.encoding=utf-8",
+            # Let Gradle get the right Python path on Windows
+            "GRADLE_MACH_PYTHON": sys.executable,
         }
     )
     # Set ANDROID_SDK_ROOT if --with-android-sdk was set.
@@ -474,13 +528,13 @@ def gradle_install_REMOVED(command_context):
 @CommandArgument(
     "--version",
     metavar="VERSION",
-    choices=["arm", "x86_64"],
+    choices=["arm", "arm64", "x86_64"],
     help="Specify which AVD to run in emulator. "
-    'One of "arm" (Android supporting armv7 binaries), or '
+    'One of "arm" (Android supporting armv7 binaries), '
+    '"arm64" (for Apple Silicon), or '
     '"x86_64" (Android supporting x86 or x86_64 binaries, '
     "recommended for most applications). "
-    'By default, "arm" will be used if the current build environment '
-    'architecture is arm; otherwise "x86_64".',
+    "By default, the value will match the current build environment.",
 )
 @CommandArgument("--wait", action="store_true", help="Wait for emulator to be closed.")
 @CommandArgument("--gpu", help="Over-ride the emulator -gpu argument.")

@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Iɣewwaṛen i usfaḍ n umazray
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Sfeḍ azray n melmi kan
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Sfeḍ akk azray
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = Ticki yemdel, { -brand-short-name } ad yekkes s wudem awurman iferdisen-agi meṛṛa
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = m
 
 data-section-label = Isefka
-
-item-site-preferences =
-    .label = Ismenyifen n usmel web
-    .accesskey = I
 
 item-site-settings =
     .label = Iɣewwaṛen n usmel

@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = R
 
 update-checkingForUpdates = S'estan cercant actualitzacions…
-update-downloading = <img data-l10n-name="icon"/>S'està baixant l'actualització — <label data-l10n-name="download-status"/>
-update-downloading-message = S'està baixant l'actualització — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>S'està baixant l'actualització — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = S'està baixant l'actualització — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = S'està actualitzant…
 
 update-failed = L'actualització ha fallat. <label data-l10n-name="failed-link">Baixeu la darrera versió</label>
@@ -27,13 +34,21 @@ update-adminDisabled = L'administrador ha inhabilitat les actualitzacions
 update-noUpdatesFound = El { -brand-short-name } està actualitzat
 update-otherInstanceHandlingUpdates = Una altra instància està actualitzant el { -brand-short-name }
 
-update-manual = Hi ha actualitzacions disponibles a <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Hi ha actualitzacions disponibles a <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Hi ha actualitzacions disponibles a <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = No podeu actualitzar en este sistema. <label data-l10n-name="unsupported-link">Més informació</label>
 
 update-restarting = S'està reiniciant…
 
-channel-description = Actualment esteu al canal <label data-l10n-name="current-channel"></label> d'actualitzacions.
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Actualment esteu al canal <label data-l10n-name="current-channel">{ $channel }</label> d'actualitzacions.
 
 warningDesc-version = El { -brand-short-name } és experimental i pot ser inestable.
 

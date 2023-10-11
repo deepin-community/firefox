@@ -21,8 +21,7 @@ add_task(
     threadFront.setBreakpoint(location, { condition: "a === 1" });
 
     // Continue until the breakpoint is hit.
-    threadFront.resume();
-    const packet2 = await waitForPause(threadFront);
+    const packet2 = await resumeAndWaitForPause(threadFront);
 
     Assert.equal(hitBreakpoint, false);
     hitBreakpoint = true;
@@ -34,7 +33,7 @@ add_task(
     // Remove the breakpoint.
     await threadFront.removeBreakpoint(location);
 
-    threadFront.resume();
+    await threadFront.resume();
 
     Assert.equal(hitBreakpoint, true);
   })
@@ -44,7 +43,7 @@ function evalCode(debuggee) {
   /* eslint-disable */
   Cu.evalInSandbox(
     "debugger;\n" + // line 1
-    "var a = 1;\n" + // line 2
+      "var a = 1;\n" + // line 2
       "var b = 2;\n", // line 3
     debuggee,
     "1.8",

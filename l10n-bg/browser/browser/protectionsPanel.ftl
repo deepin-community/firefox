@@ -56,7 +56,6 @@ protections-panel-not-found-label = Липсващи
 ##
 
 protections-panel-settings-label = Настройки на защитите
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Табло със защити
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -82,6 +81,8 @@ protections-panel-fingerprinters = Компаниите, които снемат
 protections-panel-tracking-content = Страниците могат да зареждат външни реклами, видеоклипове и друго съдържание с проследяващ код. Ограничаването на проследяващо съдържание може да помогне на сайтовете да се зареждат по-бързо, но някои бутони, формуляри и полета за вход може да не работят.
 protections-panel-social-media-trackers = Социалните мрежи поставят проследяващи елементи на други страници, за да следят какво правите, виждате и гледате онлайн. Това позволява на компаниите за социални медии да научат повече за вас отвъд това, което споделяте във вашите профили.
 
+protections-panel-description-shim-allowed-learn-more = Научете повече
+
 protections-panel-content-blocking-manage-settings =
     .label = Настройки на защитите
     .accesskey = н
@@ -89,6 +90,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Докладване за неработеща страница
 protections-panel-content-blocking-breakage-report-view-description = Спирането на определени проследявания може да наруши работата на някои страници. Като докладвате такива страници помагате да направим { -brand-short-name } по-добър за всички. Към Mozilla ще бъде изпратен адреса на страницата, а също и данни за настройките на четеца. <label data-l10n-name="learn-more">Научете повече</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Спирането на определени проследявания може да наруши работата на някои страници. Като докладвате такива страници помагате да направим { -brand-short-name } по-добър за всички. Към { -vendor-short-name } ще бъде изпратен адреса на страницата, а също и данни за настройките на четеца.
 protections-panel-content-blocking-breakage-report-view-collection-url = Адрес
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = Адрес
@@ -99,3 +101,14 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Отказ
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Докладване
+
+# Cookie Banner Handling
+
+protections-panel-cookie-banner-handling-header = Намаляване на банерите за бисквитки
+
+protections-panel-cookie-banner-view-title =
+    .title = Намаляване на банерите за бисквитки
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = Изключване на намаляването на банерите за бисквитки за { $host }?
+protections-panel-cookie-banner-view-turn-on-for-site = Включване на намаляването на банерите за бисквитки за страницата?

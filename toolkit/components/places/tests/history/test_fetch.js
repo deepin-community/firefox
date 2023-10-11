@@ -36,7 +36,9 @@ add_task(async function test_fetch_existent() {
   Assert.equal(await PlacesTestUtils.visitsInDB(uri), visits.length);
 
   // Store guid for further use in testing.
-  guid = await PlacesTestUtils.fieldInDB(uri, "guid");
+  guid = await PlacesTestUtils.getDatabaseValue("moz_places", "guid", {
+    url: uri,
+  });
   Assert.ok(guid, guid);
 
   // Initialize the objects to compare against.
@@ -101,6 +103,11 @@ add_task(async function test_fetch_page_meta_info() {
     pageInfo.previewImageURL,
     "fetch should return a null previewImageURL"
   );
+  Assert.strictEqual(
+    "",
+    pageInfo.siteName,
+    "fetch should return a null siteName"
+  );
   Assert.equal(
     "",
     pageInfo.description,
@@ -109,11 +116,13 @@ add_task(async function test_fetch_page_meta_info() {
 
   // Now set the pageMetaInfo for this page
   let description = "Test description";
+  let siteName = "Mozilla";
   let previewImageURL = "http://mozilla.com/test_preview_image.png";
   await PlacesUtils.history.update({
     url: TEST_URI,
     description,
     previewImageURL,
+    siteName,
   });
 
   includeMeta = true;
@@ -123,6 +132,7 @@ add_task(async function test_fetch_page_meta_info() {
     pageInfo.previewImageURL.href,
     "fetch should return a previewImageURL"
   );
+  Assert.equal(siteName, pageInfo.siteName, "fetch should return a siteName");
   Assert.equal(
     description,
     pageInfo.description,
@@ -134,6 +144,10 @@ add_task(async function test_fetch_page_meta_info() {
   Assert.ok(
     !("description" in pageInfo),
     "fetch should not return a description if includeMeta is false"
+  );
+  Assert.ok(
+    !("siteName" in pageInfo),
+    "fetch should not return a siteName if includeMeta is false"
   );
   Assert.ok(
     !("previewImageURL" in pageInfo),

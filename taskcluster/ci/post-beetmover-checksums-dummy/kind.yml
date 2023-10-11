@@ -2,11 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 ---
-loader: taskgraph.loader.transform:loader
+loader: gecko_taskgraph.loader.transform:loader
 
 transforms:
-    - taskgraph.transforms.reverse_chunk_deps:transforms
-    - taskgraph.transforms.task:transforms
+    - gecko_taskgraph.transforms.reverse_chunk_deps:transforms
+    - gecko_taskgraph.transforms.task:transforms
 
 kind-dependencies:
     - beetmover-checksums
@@ -22,8 +22,6 @@ jobs:
         shipping-phase: promote
         shipping-product: firefox
         worker-type: succeed
-        worker:
-            implementation: succeed
     devedition-promote:
         name: post-beetmover-checksums-dummy
         description: Dummy task to deal with max_dependencies
@@ -31,5 +29,3 @@ jobs:
         shipping-phase: promote
         shipping-product: devedition
         worker-type: succeed
-        worker:
-            implementation: succeed

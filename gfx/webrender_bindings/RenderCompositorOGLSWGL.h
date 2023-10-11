@@ -69,9 +69,14 @@ class RenderCompositorOGLSWGL : public RenderCompositorLayersSWGL {
   void DestroyEGLSurface();
 
   EGLSurface mEGLSurface = EGL_NO_SURFACE;
-  // On android, we must track our own surface size.
-  Maybe<LayoutDeviceIntSize> mEGLSurfaceSize;
   bool mFullRender = false;
+
+#ifdef MOZ_WIDGET_ANDROID
+  // Whether we are in the process of handling a NEW_SURFACE error. On Android
+  // this is used to allow the widget an opportunity to recover from the first
+  // instance, before raising a WebRenderError on subsequent occurences.
+  bool mHandlingNewSurfaceError = false;
+#endif
 
   class TileOGL : public RenderCompositorLayersSWGL::Tile {
    public:

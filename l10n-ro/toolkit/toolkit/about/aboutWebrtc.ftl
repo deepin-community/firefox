@@ -13,6 +13,9 @@ about-webrtc-document-title = Date interne WebRTC
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = salvează about:webrtc ca
 
+## These labels are for a disclosure which contains the information for closed PeerConnection sections
+
+
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = Jurnalizare AEC
@@ -20,7 +23,13 @@ about-webrtc-aec-logging-off-state-label = Pornește jurnalizarea AEC
 about-webrtc-aec-logging-on-state-label = Oprește jurnalizarea AEC
 about-webrtc-aec-logging-on-state-msg = Jurnalizare AEC activă (vorbește cu apelantul câteva minute și apoi oprește înregistrarea)
 
+about-webrtc-aec-logging-toggled-on-state-msg = Jurnalizare AEC activă (vorbește cu apelantul câteva minute și apoi oprește înregistrarea)
+# Variables:
+#  $path (String) - The path to which the aec log file is saved.
+about-webrtc-aec-logging-toggled-off-state-msg = Fișierele de jurnal captate se găsesc în: { $path }
+
 ##
+
 
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
@@ -59,9 +68,6 @@ about-webrtc-ice-pair-bytes-sent = Byți trimiși:
 about-webrtc-ice-pair-bytes-received = Byți primiți:
 about-webrtc-ice-component-id = ID-ul componentei
 
-## "Avg." is an abbreviation for Average. These are used as data labels.
-
-
 ## These adjectives are used to label a line of statistics collected for a peer
 ## connection. The data represents either the local or remote end of the
 ## connection.
@@ -70,7 +76,6 @@ about-webrtc-type-local = local
 about-webrtc-type-remote = la distanță
 
 ##
-
 
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
@@ -94,6 +99,11 @@ about-webrtc-log-show-msg = afișează jurnalul
 about-webrtc-log-hide-msg = ascunde jurnalul
     .title = clic pentru restrângerea secțiunii
 
+about-webrtc-log-section-show-msg = Afișează jurnalul
+    .title = Clic pentru extinderea secțiunii
+about-webrtc-log-section-hide-msg = Ascunde jurnalul
+    .title = Clic pentru restrângerea secțiunii
+
 ## These are used to display a header for a PeerConnection.
 ## Variables:
 ##  $browser-id (Number) - A numeric id identifying the browser tab for the PeerConnection.
@@ -104,8 +114,12 @@ about-webrtc-log-hide-msg = ascunde jurnalul
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (închis) { $now }
 
-##
+## These are used to indicate what direction media is flowing.
+## Variables:
+##  $codecs - a list of media codecs
 
+
+##
 
 about-webrtc-local-candidate = Candidat local
 about-webrtc-remote-candidate = Candidat la distanță
@@ -116,11 +130,19 @@ about-webrtc-raw-cand-show-msg = afișează candidații bruți
     .title = clic pentru extinderea secțiunii
 about-webrtc-raw-cand-hide-msg = ascunde candidații bruți
     .title = clic pentru restrângerea secțiunii
+about-webrtc-raw-cand-section-show-msg = Afișează candidații bruți
+    .title = Clic pentru extinderea secțiunii
+about-webrtc-raw-cand-section-hide-msg = Ascunde candidații bruți
+    .title = Clic pentru restrângerea secțiunii
 about-webrtc-priority = Prioritate
 about-webrtc-fold-show-msg = afișează detaliile
     .title = clic pentru extinderea secțiunii
 about-webrtc-fold-hide-msg = ascunde detalii
     .title = clic pentru restrângerea secțiunii
+about-webrtc-fold-default-show-msg = Afișează detaliile
+    .title = Clic pentru extinderea secțiunii
+about-webrtc-fold-default-hide-msg = Ascunde detalii
+    .title = Clic pentru restrângerea secțiunii
 about-webrtc-decoder-label = Decodor
 about-webrtc-encoder-label = Codor
 about-webrtc-show-tab-label = Afișează fila
@@ -139,6 +161,10 @@ about-webrtc-last-frame-timestamp = Marcaj temporal de recepție a ultimului cad
 about-webrtc-local-receive-ssrc = SSRC de recepție locală
 # This is an SSRC on the remote side of the connection that is sending RTP
 about-webrtc-remote-send-ssrc = SSRC de transmisie la distanță
+
+## These are displayed on the button that shows or hides the
+## PeerConnection configuration disclosure
+
 
 ##
 
@@ -162,6 +188,10 @@ about-webrtc-save-page-msg = pagină salvată în: { $path }
 about-webrtc-debug-mode-off-state-msg = jurnalul de urmărire poate fi găsit la: { $path }
 about-webrtc-debug-mode-on-state-msg = mod de depanare activ, jurnalul de urmărire la: { $path }
 about-webrtc-aec-logging-off-state-msg = fișierele de jurnal captate se găsesc în: { $path }
+
+about-webrtc-save-page-complete-msg = Pagină salvată în: { $path }
+about-webrtc-debug-mode-toggled-off-state-msg = Jurnalul de urmărire poate fi găsit la: { $path }
+about-webrtc-debug-mode-toggled-on-state-msg = Mod de depanare activ, jurnalul de urmărire la: { $path }
 
 ##
 
@@ -195,9 +225,13 @@ about-webrtc-sdp-set-at-timestamp-remote = Setează SDP de la distanță la marc
 #  $relative-timestamp (Number) - The timestamp relative to the timestamp of the earliest received SDP.
 about-webrtc-sdp-set-timestamp = Marcaj temporal { NUMBER($timestamp, useGrouping: "false") } (+ { $relative-timestamp } ms)
 
-##
+## These are displayed on the button that shows or hides the SDP information disclosure
 
-##
+
+## These are displayed on the button that shows or hides the Media Context information disclosure.
+## The Media Context is the set of preferences and detected capabilities that informs
+## the negotiated CODEC settings.
+
 
 ##
 

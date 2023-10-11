@@ -14,7 +14,6 @@ compatibility-issue-deprecated = (oiko’ỹva)
 compatibility-issue-experimental = (mba’epyahu)
 compatibility-issue-prefixneeded = (prefix needed)
 compatibility-issue-deprecated-experimental = (oiko’ỹva, mba’epyahu)
-
 compatibility-issue-deprecated-prefixneeded = (ndoikói, oikotevẽ ñe’ẽpehẽ)
 compatibility-issue-experimental-prefixneeded = (ipyahúva, oikotevẽ ñe’ẽpehẽ)
 compatibility-issue-deprecated-experimental-prefixneeded = (oiko’ỹva, ipyahu, oikotevẽ ñe’ẽpehẽ)
@@ -24,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (oiko’ỹva, ipyahu
 compatibility-settings-button-label = Ñemboheko
 compatibility-settings-button-title =
     .title = Ñemboheko
-compatibility-feedback-button-label = Mongarujey
-compatibility-feedback-button-title =
-    .title = Mongarujey
 
 ## Messages used as headers in settings pane
 
@@ -47,3 +43,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Ndaipóri apañuãi jokupytygua.
 compatibility-close-settings-button =
     .title = Embogue ñemboheko
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Apañuãi jokupytyguáva:
+        { $browsers }

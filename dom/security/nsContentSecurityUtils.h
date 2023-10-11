@@ -19,11 +19,9 @@ class nsIHttpChannel;
 class nsIPrincipal;
 class NS_ConvertUTF8toUTF16;
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 class Document;
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 using FilenameTypeAndDetails = std::pair<nsCString, mozilla::Maybe<nsString>>;
 
@@ -49,6 +47,8 @@ class nsContentSecurityUtils {
   // disabled. We can't/won't enforce strong security for people with those
   // hacks. The function will cache its result.
   static void DetectJsHacks();
+  // Helper function for detecting custom agent styles
+  static void DetectCssHacks();
 
   // Helper function to query the HTTP Channel of a potential
   // multi-part channel. Mostly used for querying response headers
@@ -60,6 +60,11 @@ class nsContentSecurityUtils {
   // * x-frame-options
   // If any of the two disallows framing, the channel will be cancelled.
   static void PerformCSPFrameAncestorAndXFOCheck(nsIChannel* aChannel);
+
+  // Helper function which just checks if the channel violates any:
+  // 1. CSP frame-ancestors properties
+  // 2. x-frame-options
+  static bool CheckCSPFrameAncestorAndXFO(nsIChannel* aChannel);
 
   // Helper function to Check if a Download is allowed;
   static long ClassifyDownload(nsIChannel* aChannel,
@@ -79,8 +84,7 @@ class nsContentSecurityUtils {
   static void AssertAboutPageHasCSP(mozilla::dom::Document* aDocument);
 #endif
 
-  static bool ValidateScriptFilename(const char* aFilename,
-                                     bool aIsSystemRealm);
+  static bool ValidateScriptFilename(JSContext* cx, const char* aFilename);
   // Helper Function to Post a message to the corresponding JS-Console
   static void LogMessageToConsole(nsIHttpChannel* aChannel, const char* aMsg);
 };

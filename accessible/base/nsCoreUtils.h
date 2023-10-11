@@ -6,7 +6,9 @@
 #ifndef nsCoreUtils_h_
 #define nsCoreUtils_h_
 
+#include "AttrArray.h"
 #include "mozilla/EventForwards.h"
+#include "nsCaseTreatment.h"
 #include "nsIAccessibleEvent.h"
 #include "nsIContent.h"
 #include "mozilla/FlushType.h"
@@ -14,7 +16,10 @@
 
 #include "nsPoint.h"
 #include "nsTArray.h"
+#include "Units.h"
 
+class nsAttrValue;
+class nsGenericHTMLElement;
 class nsRange;
 class nsTreeColumn;
 class nsIFrame;
@@ -167,10 +172,10 @@ class nsCoreUtils {
    *
    * @param aScrollableFrame  the scrollable frame
    * @param aFrame            the frame to scroll
-   * @param aPoint            the point scroll to
+   * @param aPoint            the point scroll to (in dev pixels)
    */
   static void ScrollFrameToPoint(nsIFrame* aScrollableFrame, nsIFrame* aFrame,
-                                 const nsIntPoint& aPoint);
+                                 const mozilla::LayoutDeviceIntPoint& aPoint);
 
   /**
    * Converts scroll type constant defined in nsIAccessibleScrollType to
@@ -179,14 +184,6 @@ class nsCoreUtils {
   static void ConvertScrollTypeToPercents(uint32_t aScrollType,
                                           mozilla::ScrollAxis* aVertical,
                                           mozilla::ScrollAxis* aHorizontal);
-
-  /**
-   * Returns coordinates in device pixels relative screen for the top level
-   * window.
-   *
-   * @param aNode  the DOM node hosted in the window.
-   */
-  static nsIntPoint GetScreenCoordsForWindow(nsINode* aNode);
 
   /**
    * Return document shell for the given DOM node.
@@ -229,6 +226,7 @@ class nsCoreUtils {
    * attribute or wrong value then false is returned.
    */
   static bool GetUIntAttr(nsIContent* aContent, nsAtom* aAttr, int32_t* aUInt);
+  static bool GetUIntAttrValue(const nsAttrValue* aVal, int32_t* aUInt);
 
   /**
    * Returns language for the given node.
@@ -318,6 +316,7 @@ class nsCoreUtils {
   static void DispatchAccEvent(RefPtr<nsIAccessibleEvent> aEvent);
 
   static bool IsDisplayContents(nsIContent* aContent);
+  static bool CanCreateAccessibleWithoutFrame(nsIContent* aContent);
 
   /**
    * Return whether the document and all its in-process ancestors are visible in

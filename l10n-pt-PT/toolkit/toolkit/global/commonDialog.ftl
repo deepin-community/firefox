@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Nome de utilizador
 common-dialog-password =
     .value = Palavra-passe
+
+common-dialog-copy-cmd =
+    .label = Copiar
+    .accesskey = C
+common-dialog-select-all-cmd =
+    .label = Selecionar tudo
+    .accesskey = a

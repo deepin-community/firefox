@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Inställningar för rensning av historik
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 22em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Rensa ut tidigare historik
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Ta bort all historik
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = När { -brand-short-name } stängs, ska följande tas bort automatiskt
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = F
 
 data-section-label = Data
-
-item-site-preferences =
-    .label = Platsspecifika inställningar
-    .accesskey = P
 
 item-site-settings =
     .label = Webbplatsinställningar

@@ -22,9 +22,17 @@ text-action-copy =
     .accesskey = p
 text-action-copy-shortcut =
     .key = C
+# This command copies the link, removing additional
+# query parameters used to track users across sites.
+text-action-strip-on-share =
+    .label = Copier sans le pistage du site
+    .accesskey = d
 text-action-paste =
     .label = Coller
     .accesskey = o
+text-action-paste-no-formatting =
+    .label = Coller sans mise en forme
+    .accesskey = s
 text-action-paste-shortcut =
     .key = V
 text-action-delete =

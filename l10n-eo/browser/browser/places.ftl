@@ -8,6 +8,9 @@ places-open =
 places-open-in-tab =
     .label = Malfermi en nova langeto
     .accesskey = M
+places-open-in-container-tab =
+    .label = Malfermi en nova inga langeto
+    .accesskey = n
 places-open-all-bookmarks =
     .label = Malfermi ĉiujn legosignojn
     .accesskey = l
@@ -20,6 +23,8 @@ places-open-in-window =
 places-open-in-private-window =
     .label = Malfermi en nova privata fenestro
     .accesskey = p
+places-empty-bookmarks-folder =
+    .label = (Malplena)
 places-add-bookmark =
     .label = Aldoni legosignon…
     .accesskey = A
@@ -51,11 +56,11 @@ places-by-day-and-site =
     .label = Laŭ dato kaj retejo
     .accesskey = k
 places-history-search =
-    .placeholder = Serĉi historion
+    .placeholder = Serĉi en historio
 places-history =
     .aria-label = Historio
 places-bookmarks-search =
-    .placeholder = Serĉi legosignojn
+    .placeholder = Serĉi en legosignoj
 places-delete-domain-data =
     .label = Forgesi tiun ĉi retejon
     .accesskey = F
@@ -69,15 +74,26 @@ places-edit-bookmark =
 places-edit-generic =
     .label = Modifi…
     .accesskey = M
-places-edit-folder =
-    .label = Renomi dosierujon…
-    .accesskey = d
-places-remove-folder =
+places-edit-folder2 =
+    .label = Modifi dosierujon…
+    .accesskey = M
+# Variables
+#   $count (number) - Number of folders to delete
+places-delete-folder =
     .label =
         { $count ->
             [1] Forigi dosierujon
             [one] Forigi dosierujon
            *[other] Forigi dosierujojn
+        }
+    .accesskey = F
+# Variables:
+#   $count (number) - The number of pages selected for removal.
+places-delete-page =
+    .label =
+        { $count ->
+            [1] Forigi paĝon
+           *[other] Forigi paĝojn
         }
     .accesskey = F
 # Managed bookmarks are created by an administrator and cannot be changed by the user.
@@ -89,22 +105,41 @@ managed-bookmarks-subfolder =
 # This label is used for the "Other Bookmarks" folder that appears in the bookmarks toolbar.
 other-bookmarks-folder =
     .label = Aliaj legosignoj
+places-show-in-folder =
+    .label = Montri en dosierujo
+    .accesskey = d
 # Variables:
 # $count (number) - The number of elements being selected for removal.
-places-remove-bookmark =
+places-delete-bookmark =
     .label =
         { $count ->
             [1] Forigi legosignon
             [one] Forigi legosignon
            *[other] Forigi legosignojn
         }
+    .accesskey = l
+# Variables:
+#   $count (number) - The number of bookmarks being added.
+places-create-bookmark =
+    .label =
+        { $count ->
+            [1] Aldoni paĝon al legosignoj…
+           *[other] Aldoni paĝojn al legosignoj…
+        }
+    .accesskey = p
+places-untag-bookmark =
+    .label = Forigi etikedon
     .accesskey = F
 places-manage-bookmarks =
     .label = Administri legosignojn
     .accesskey = l
-places-library =
+places-forget-about-this-site-confirmation-title = Forgesi tiun ĉi retejon
+# Variables:
+# $hostOrBaseDomain (string) - The base domain (or host in case there is no base domain) for which data is being removed
+places-forget-about-this-site-confirmation-msg = Tiu ĉi ago forigos ĉiujn datumojn, kiuj estas rilatitaj kun { $hostOrBaseDomain }. Tio inkluzivas historion, kuketojn, staplon kaj preferojn pri enhavo. Rilatitaj legosignoj kaj pasvortoj ne estos forigitaj. Ĉu vi certe volas daŭrigi?
+places-forget-about-this-site-forget = Forgesi
+places-library3 =
     .title = Biblioteko
-    .style = width:700px; height:500px;
 places-organize-button =
     .label = Organizi
     .tooltiptext = Organizi viajn legosignojn
@@ -178,6 +213,27 @@ places-view-sort-col-date-added =
     .label = Aldonita
 places-view-sort-col-last-modified =
     .label = Laste modifita
+places-view-sortby-name =
+    .label = Ordigi laŭ nomo
+    .accesskey = o
+places-view-sortby-url =
+    .label = Ordigi laŭ retadreso
+    .accesskey = r
+places-view-sortby-date =
+    .label = Origi laŭ plej ĵusa vizito
+    .accesskey = v
+places-view-sortby-visit-count =
+    .label = Ordigi laŭ nombro de vizitoj
+    .accesskey = n
+places-view-sortby-date-added =
+    .label = Ordigi laŭ dato de aldono
+    .accesskey = d
+places-view-sortby-last-modified =
+    .label = Ordigi laŭ dato de lasta modifo
+    .accesskey = m
+places-view-sortby-tags =
+    .label = Ordigi laŭ etikedoj
+    .accesskey = e
 places-cmd-find-key =
     .key = f
 places-back-button =
@@ -185,3 +241,27 @@ places-back-button =
 places-forward-button =
     .tooltiptext = Antaŭen
 places-details-pane-select-an-item-description = Elekti elementon por vidi kaj modifi ĝiajn atributojn
+places-details-pane-no-items =
+    .value = Neniu elemento
+# Variables:
+#   $count (Number): number of items
+places-details-pane-items-count =
+    .value =
+        { $count ->
+            [one] Unu elemento
+           *[other] { $count } elementoj
+        }
+
+## Strings used as a placeholder in the Library search field. For example,
+## "Search History" stands for "Search through the browser's history".
+
+places-search-bookmarks =
+    .placeholder = Serĉi en legosignoj
+places-search-history =
+    .placeholder = Serĉi en historio
+places-search-downloads =
+    .placeholder = Serĉi en elŝutoj
+
+##
+
+places-locked-prompt = La paĝosigna kaj historia sistemo ne estos aktiva ĉar unu el la dosieroj de { -brand-short-name } estas uzata de alia programo. Tiun problemon povas okazigi sekureca programo.

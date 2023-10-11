@@ -8,6 +8,7 @@ about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = ניקוי מטמון DNS
 about-networking-dns-trr-url = כתובת DoH
+about-networking-dns-trr-mode = מצב DoH
 about-networking-dns-suffix = סיומת DNS
 about-networking-websockets = WebSockets
 about-networking-refresh = רענון
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = פעיל
 about-networking-idle = בהמתנה
 about-networking-host = מארח
-about-networking-tcp = TCP
 about-networking-type = סוג
 about-networking-sent = נשלחו
 about-networking-received = התקבלו
@@ -27,18 +27,12 @@ about-networking-family = משפחה
 about-networking-trr = TRR
 about-networking-addresses = כתובות
 about-networking-expires = תפוגה (בשניות)
+about-networking-flags = דגלים נוספים
 about-networking-messages-sent = הודעות שנשלחו
 about-networking-messages-received = הודעות שהתקבלו
 about-networking-bytes-sent = בתים שנשלחו
 about-networking-bytes-received = בתים שהתקבלו
 about-networking-logging = רישום
-about-networking-log-tutorial = לקבלת הוראות לגבי השימוש בכלי זה, נא לפנות אל המאמר <a data-l10n-name="logging">רישום HTTP</a>.
-about-networking-current-log-file = קובץ רישום נוכחי:
-about-networking-current-log-modules = מודולי רישום נוכחיים:
-about-networking-set-log-file = הגדרת קובץ רישום
-about-networking-set-log-modules = הגדרת מודולי רישום
-about-networking-start-logging = התחלת רישום
-about-networking-stop-logging = הפסקת רישום
 about-networking-dns-lookup = חיפוש ב־DNS
 about-networking-dns-lookup-button = זיהוי
 about-networking-dns-domain = שם מתחם:
@@ -60,6 +54,8 @@ about-networking-rcwn-cache-slow = ספירת אטיות במטמון
 about-networking-rcwn-cache-not-slow = ספירת חוסר אטיות במטמון
 about-networking-networkid = מזהה רשת
 about-networking-networkid-id = מזהה רשת
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = דף זה עבר אל <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

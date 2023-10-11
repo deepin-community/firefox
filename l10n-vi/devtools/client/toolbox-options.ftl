@@ -17,7 +17,7 @@ options-tool-not-supported-label = * Không được hỗ trợ cho hộp công 
 
 # The label for the heading of group of checkboxes corresponding to the developer tools
 # added by add-ons. This heading is hidden when there is no developer tool installed by add-ons.
-options-select-additional-tools-label = Công cụ phát triển được cài đặt bởi tiến ích
+options-select-additional-tools-label = Công cụ phát triển được cài đặt bởi tiện ích
 
 # The label for the heading of group of checkboxes corresponding to the default developer
 # tool buttons.
@@ -41,6 +41,11 @@ options-collapse-attrs-label = Cắt bớt các thuộc tính DOM
 options-collapse-attrs-tooltip =
     .title = Cắt ngắn các thuộc tính dài trong trình kiểm tra
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Nhấp và kéo để chỉnh sửa giá trị kích thước
+options-inspector-draggable-properties-tooltip =
+    .title = Nhấp và kéo để chỉnh sửa các giá trị kích thước trong phần Quy tắc của Trình kiểm tra.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Đơn vị màu mặc định
@@ -48,6 +53,7 @@ options-default-color-unit-authored = Theo bản gốc
 options-default-color-unit-hex = Thập lục phân
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Tên màu
 
 ## Style Editor section
@@ -118,6 +124,16 @@ options-enable-remote-label = Cho phép gỡ lỗi từ xa
 options-enable-remote-tooltip2 =
     .title = Bật tùy chọn này sẽ cho phép gỡ lỗi phiên bản trình duyệt này từ xa
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Sử dụng phím F12 để mở hoặc đóng DevTools
+options-enable-f12-tooltip =
+    .title = Bật tùy chọn này sẽ liên kết phím F12 để mở hoặc đóng hộp công cụ DevTools
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Bật bộ định dạng tùy chỉnh
+options-enable-custom-formatters-tooltip =
+    .title = Bật tùy chọn này sẽ cho phép các trang web xác định bộ định dạng tùy chỉnh cho các đối tượng DOM
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Cho phép Service Worker qua HTTP (khi hộp công cụ mở)
 options-enable-service-workers-http-tooltip =
@@ -130,11 +146,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Chỉ phiên hiện tại, tải lại trang
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Hiện dữ liệu nền tảng Gecko
-options-show-platform-data-tooltip =
-    .title =
-        Nếu bạn bật tùy chọn này, báo cáo trình cấu hình JavaScript sẽ bao gồm
-        kí hiệu nền tảng Gecko

@@ -71,7 +71,7 @@
 == mouse-click-open-second-summary.html open-multiple-summary.html
 == mouse-click-overflow-hidden-details.html overflow-hidden-open-details.html
 == mouse-click-twice-overflow-hidden-details.html overflow-hidden-details.html
-fuzzy-if(gtkWidget||OSX||geckoview,0-1,0-20) fuzzy-if(webrender,0-1,0-172) == mouse-click-overflow-auto-details.html overflow-auto-open-details.html #Bug 1294278
+fuzzy(0-1,0-172) == mouse-click-overflow-auto-details.html overflow-auto-open-details.html #Bug 1294278
 == mouse-click-twice-overflow-auto-details.html overflow-auto-details.html
 == mouse-click-display-none-details.html open-single-summary.html
 == mouse-click-change-details-to-display-none.html open-single-summary.html
@@ -84,17 +84,11 @@ fuzzy-if(gtkWidget||OSX||geckoview,0-1,0-20) fuzzy-if(webrender,0-1,0-172) == mo
 fuzzy-if(geckoview,0-7,0-1) == mouse-click-float-details.html open-float-details.html
 fuzzy(0-4,0-1) == mouse-click-twice-float-details.html float-details.html # Bug 1316430
 
-# Dispatch keyboard event to summary
-== key-enter-single-summary.html open-single-summary.html
-== key-enter-open-second-summary.html open-multiple-summary.html
-== key-enter-prevent-default.html single-summary.html
-== key-space-single-summary.html open-single-summary.html
-
 # Generated content bits
-== details-after.html single-summary.html
-== details-before.html single-summary.html
+== details-after.html details-after-ref.html
+== details-before.html details-before-ref.html
 == open-details-after.html open-single-summary.html
-== open-details-before.html open-single-summary.html
+== open-details-before.html details-before-ref.html
 
 # Move summary element
 == move-float-summary-to-different-details.html move-float-summary-to-different-details-ref.html

@@ -8,6 +8,13 @@ common-dialog-title-system = { -brand-short-name }
 common-dialog-title-unknown = Sconosciuto
 
 common-dialog-username =
-  .value = Nome utente
+    .value = Nome utente
 common-dialog-password =
-  .value = Password
+    .value = Password
+
+common-dialog-copy-cmd =
+    .label = Copia
+    .accesskey = C
+common-dialog-select-all-cmd =
+    .label = Seleziona tutto
+    .accesskey = S

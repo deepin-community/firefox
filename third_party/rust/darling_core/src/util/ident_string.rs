@@ -5,7 +5,7 @@ use proc_macro2::{Span, TokenStream};
 use quote::ToTokens;
 use syn::{Ident, Meta};
 
-use {FromMeta, Result};
+use crate::{FromMeta, Result};
 
 /// A wrapper for an `Ident` which also keeps the value as a string.
 ///
@@ -137,6 +137,8 @@ impl FromMeta for IdentString {
 
 #[cfg(test)]
 mod tests {
+    use syn::parse_quote;
+
     use super::IdentString;
 
     #[test]

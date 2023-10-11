@@ -15,17 +15,12 @@ const CLEARED = "Runtime.executionContextsCleared";
 add_task(async function frameIdMissing({ client }) {
   const { Page } = client;
 
-  let errorThrown = "";
-  try {
-    await Page.createIsolatedWorld({
+  await Assert.rejects(
+    Page.createIsolatedWorld({
       worldName: WORLD_NAME_1,
       grantUniversalAccess: true,
-    });
-  } catch (e) {
-    errorThrown = e.message;
-  }
-  ok(
-    errorThrown.match(/frameId: string value expected/),
+    }),
+    /frameId: string value expected/,
     `Fails with missing frameId`
   );
 });
@@ -34,16 +29,11 @@ add_task(async function frameIdInvalidTypes({ client }) {
   const { Page } = client;
 
   for (const frameId of [null, true, 1, [], {}]) {
-    let errorThrown = "";
-    try {
-      await Page.createIsolatedWorld({
+    await Assert.rejects(
+      Page.createIsolatedWorld({
         frameId,
-      });
-    } catch (e) {
-      errorThrown = e.message;
-    }
-    ok(
-      errorThrown.match(/frameId: string value expected/),
+      }),
+      /frameId: string value expected/,
       `Fails with invalid type: ${frameId}`
     );
   }
@@ -60,17 +50,12 @@ add_task(async function worldNameInvalidTypes({ client }) {
   await loadEvent;
 
   for (const worldName of [null, true, 1, [], {}]) {
-    let errorThrown = "";
-    try {
-      await Page.createIsolatedWorld({
+    await Assert.rejects(
+      Page.createIsolatedWorld({
         frameId,
         worldName,
-      });
-    } catch (e) {
-      errorThrown = e.message;
-    }
-    ok(
-      errorThrown.match(/worldName: string value expected/),
+      }),
+      /worldName: string value expected/,
       `Fails with invalid type: ${worldName}`
     );
   }
@@ -94,7 +79,7 @@ add_task(async function noEventsWhenRuntimeDomainDisabled({ client }) {
       worldName: WORLD_NAME_1,
       grantUniversalAccess: true,
     });
-    await assertEventOrder({ history, expectedEvents: [] });
+    await assertEvents({ history, expectedEvents: [] });
   } catch (e) {
     errorThrown = e.message;
   }
@@ -124,7 +109,7 @@ add_task(async function noEventsAfterRuntimeDomainDisabled({ client }) {
     worldName: WORLD_NAME_2,
     grantUniversalAccess: true,
   });
-  await assertEventOrder({ history, expectedEvents: [] });
+  await assertEvents({ history, expectedEvents: [] });
 });
 
 add_task(async function contextCreatedAfterNavigation({ client }) {
@@ -145,7 +130,7 @@ add_task(async function contextCreatedAfterNavigation({ client }) {
     worldName: WORLD_NAME_1,
     grantUniversalAccess: true,
   });
-  await assertEventOrder({
+  await assertEvents({
     history,
     expectedEvents: [
       DESTROYED, // default, about:blank
@@ -183,7 +168,7 @@ add_task(async function contextDestroyedForNavigation({ client }) {
   await Page.navigate({ url: PAGE_URL });
   await frameNavigated;
 
-  await assertEventOrder({
+  await assertEvents({
     history,
     expectedEvents: [
       DESTROYED, // default, about:blank
@@ -227,22 +212,20 @@ add_task(async function contextsForFramesetNavigation({ client }) {
   const { frameTree } = await Page.getFrameTree();
   const subFrame = frameTree.childFrames[0].frame;
 
-  const {
-    executionContextId: contextIdParent,
-  } = await Page.createIsolatedWorld({
-    frameId: frameIdTo,
-    worldName: WORLD_NAME_1,
-    grantUniversalAccess: true,
-  });
-  const {
-    executionContextId: contextIdSubFrame,
-  } = await Page.createIsolatedWorld({
-    frameId: subFrame.id,
-    worldName: WORLD_NAME_2,
-    grantUniversalAccess: true,
-  });
+  const { executionContextId: contextIdParent } =
+    await Page.createIsolatedWorld({
+      frameId: frameIdTo,
+      worldName: WORLD_NAME_1,
+      grantUniversalAccess: true,
+    });
+  const { executionContextId: contextIdSubFrame } =
+    await Page.createIsolatedWorld({
+      frameId: subFrame.id,
+      worldName: WORLD_NAME_2,
+      grantUniversalAccess: true,
+    });
 
-  await assertEventOrder({
+  await assertEvents({
     history: historyTo,
     expectedEvents: [
       DESTROYED, // default, about:blank
@@ -283,7 +266,7 @@ add_task(async function contextsForFramesetNavigation({ client }) {
   await Page.navigate({ url: PAGE_URL });
   await loadEventFrom;
 
-  await assertEventOrder({
+  await assertEvents({
     history: historyFrom,
     expectedEvents: [
       DESTROYED, // default, PAGE_URL
@@ -336,18 +319,13 @@ add_task(async function evaluateInIsolatedAndDefault({ client }) {
   });
   is(result1.value, 11, "Isolated context incremented the expected value");
 
-  let errorThrown = "";
-  try {
-    await Runtime.callFunctionOn({
+  await Assert.rejects(
+    Runtime.callFunctionOn({
       executionContextId: isolatedContext.id,
       functionDeclaration: "arg => ++arg.foo",
       arguments: [{ objectId: objDefault.objectId }],
-    });
-  } catch (e) {
-    errorThrown = e.message;
-  }
-  ok(
-    errorThrown.match(/Could not find object with given id/),
+    }),
+    /Could not find object with given id/,
     "Contexts do not share objects"
   );
 });
@@ -474,7 +452,7 @@ function recordEvents(Runtime, total, cleared = false) {
   return history;
 }
 
-async function assertEventOrder(options = {}) {
+async function assertEvents(options = {}) {
   const { history, expectedEvents, timeout = 1000 } = options;
   const events = await history.record(timeout);
   const eventNames = events.map(item => item.eventName);
@@ -486,8 +464,8 @@ async function assertEventOrder(options = {}) {
     "Received expected number of Runtime context events"
   );
   Assert.deepEqual(
-    eventNames,
-    expectedEvents,
-    "Received Runtime context events in expected order"
+    eventNames.sort(),
+    expectedEvents.sort(),
+    "Received expected Runtime context events"
   );
 }

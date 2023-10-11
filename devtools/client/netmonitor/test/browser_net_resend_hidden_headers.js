@@ -7,13 +7,14 @@
  * Test that custom request headers are sent even without clicking on the original request (bug 1583397)
  */
 
-add_task(async function() {
-  const { monitor } = await initNetMonitor(SIMPLE_URL, { requestCount: 1 });
+add_task(async function () {
+  const { monitor } = await initNetMonitor(HTTPS_SIMPLE_URL, {
+    requestCount: 1,
+  });
   info("Starting test... ");
 
   const { store, windowRequire, connector } = monitor.panelWin;
   const Actions = windowRequire("devtools/client/netmonitor/src/actions/index");
-  const { sendHTTPRequest } = connector;
 
   const { getSortedRequests } = windowRequire(
     "devtools/client/netmonitor/src/selectors/index"
@@ -21,13 +22,13 @@ add_task(async function() {
 
   store.dispatch(Actions.batchEnable(false));
 
-  const requestUrl = SIMPLE_SJS;
+  const requestUrl = HTTPS_SIMPLE_SJS;
   const requestHeaders = [
     { name: "Accept", value: "application/vnd.example+json" },
   ];
 
   const originalRequest = waitForNetworkEvents(monitor, 1);
-  sendHTTPRequest({
+  connector.networkCommand.sendHTTPRequest({
     url: requestUrl,
     method: "GET",
     headers: requestHeaders,
@@ -47,7 +48,7 @@ add_task(async function() {
 
   const clonedRequest = waitForNetworkEvents(monitor, 1);
 
-  store.dispatch(Actions.sendCustomRequest(connector, originalItem.id));
+  store.dispatch(Actions.sendCustomRequest(originalItem.id));
 
   await clonedRequest;
 

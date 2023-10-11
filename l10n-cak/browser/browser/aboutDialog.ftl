@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = T
 
 update-checkingForUpdates = Tajin yekanöx taq k'exoj ruwäch…
-update-downloading = <img data-l10n-name="icon"/>Tajin niqasäx k'exoj ruwäch — <label data-l10n-name="download-status"/>
-update-downloading-message = Niqasäx k'exoj — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Tajin niqasäx k'exoj ruwäch — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Niqasäx k'exoj — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Nokisäx k'exoj…
 
 update-failed = Man xuchäp ta ri k'exoj ruwäch. <label data-l10n-name="failed-link">Taqasaj ri k'ak'a' ruwäch</label>
@@ -25,15 +32,26 @@ update-failed-main = Man xuchäp ta ri k'exoj ruwäch. <a data-l10n-name="failed
 
 update-adminDisabled = Xechup ri taq k'exoj ruma ri runuk'samajel q'inoj
 update-noUpdatesFound = { -brand-short-name } jalon chik
+aboutdialog-update-checking-failed = Xsach toq yekanöx taq k'exoj.
 update-otherInstanceHandlingUpdates = { -brand-short-name } tajin nik'ex pa jun chik molaj
 
-update-manual = Wachel taq k'exoj ruwäch pa <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Wachel taq k'exoj ruwäch pa <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Wachel taq k'exoj ruwäch pa <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Man tikirel ta chik nab'an taq k'exoj pa re q'inoj re'. <label data-l10n-name="unsupported-link">Tetamäx ch'aqa' chik</label>
 
 update-restarting = Nitikirisäx…
 
-channel-description = Tajin nawokisaj ri q'axab'äl <label data-l10n-name="current-channel"></label> kiq'axab'al taq k'exoj ruwäch.
+update-internal-error2 = Man ye'ilitäj ta taq k'exoj ruma k'o jun sachoj chupam. K'o taq k'exoj pa <label data-l10n-name="manual-link">{ $displayUrl }</label>
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Tajin nawokisaj ri q'axab'äl <label data-l10n-name="current-channel">{ $channel }</label> kiq'axab'al taq k'exoj ruwäch.
 
 warningDesc-version = { -brand-short-name } choj ok nitojtob'ëx, rik’in jub'a' man pa rub'eyal ta.
 

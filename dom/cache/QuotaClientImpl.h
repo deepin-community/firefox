@@ -8,13 +8,11 @@
 #define mozilla_dom_cache_QuotaClientImpl_h
 
 #include "mozilla/dom/QMResult.h"
-#include "mozilla/dom/QMResultInlines.h"
 #include "mozilla/dom/cache/QuotaClient.h"
 #include "mozilla/dom/cache/FileUtils.h"
+#include "mozilla/dom/quota/ResultExtensions.h"
 
-namespace mozilla {
-namespace dom {
-namespace cache {
+namespace mozilla::dom::cache {
 
 class CacheQuotaClient final : public quota::Client {
   static CacheQuotaClient* sInstance;
@@ -44,6 +42,8 @@ class CacheQuotaClient final : public quota::Client {
 
   virtual void OnOriginClearCompleted(PersistenceType aPersistenceType,
                                       const nsACString& aOrigin) override;
+
+  void OnRepositoryClearCompleted(PersistenceType aPersistenceType) override;
 
   virtual void ReleaseIOThreadObjects() override;
 
@@ -93,7 +93,7 @@ class CacheQuotaClient final : public quota::Client {
     // next action recalculate the padding size.
     QM_TRY(MOZ_TO_RESULT(aCommitHook()));
 
-    QM_WARNONLY_TRY(ToResult(DirectoryPaddingFinalizeWrite(aBaseDir)),
+    QM_WARNONLY_TRY(MOZ_TO_RESULT(DirectoryPaddingFinalizeWrite(aBaseDir)),
                     ([&aBaseDir](const nsresult) {
                       // Force restore file next time.
                       QM_WARNONLY_TRY(QM_TO_RESULT(DirectoryPaddingDeleteFile(
@@ -116,8 +116,8 @@ class CacheQuotaClient final : public quota::Client {
   nsresult RestorePaddingFileInternal(nsIFile* aBaseDir,
                                       mozIStorageConnection* aConn);
 
-  nsresult WipePaddingFileInternal(const QuotaInfo& aQuotaInfo,
-                                   nsIFile* aBaseDir);
+  nsresult WipePaddingFileInternal(
+      const CacheDirectoryMetadata& aDirectoryMetadata, nsIFile* aBaseDir);
 
  private:
   ~CacheQuotaClient();
@@ -131,8 +131,6 @@ class CacheQuotaClient final : public quota::Client {
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(CacheQuotaClient, override)
 };
 
-}  // namespace cache
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom::cache
 
 #endif  // mozilla_dom_cache_QuotaClientImpl_h

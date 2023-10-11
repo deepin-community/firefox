@@ -11,7 +11,7 @@
 // - tab key when there is not visible autocomplete suggestion insert a tab
 // See Bug 812618, 1479521 and 1334130.
 
-const TEST_URI = `data:text/html;charset=utf-8,
+const TEST_URI = `data:text/html;charset=utf-8,<!DOCTYPE html>
 <head>
   <script>
     window.testBugAA = "hello world";
@@ -21,7 +21,7 @@ const TEST_URI = `data:text/html;charset=utf-8,
 </head>
 <body>bug 812618 - test completion inside text</body>`;
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
   const { jsterm } = hud;
   info("web console opened");

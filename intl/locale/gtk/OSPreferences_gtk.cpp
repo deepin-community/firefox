@@ -5,13 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <locale.h>
+#include "mozilla/intl/Locale.h"
 #include "OSPreferences.h"
-
-#include "unicode/uloc.h"
 
 #include "nsServiceManagerUtils.h"
 #include "nsIGSettingsService.h"
 
+using namespace mozilla;
 using namespace mozilla::intl;
 
 OSPreferences::OSPreferences() = default;
@@ -19,7 +19,7 @@ OSPreferences::OSPreferences() = default;
 bool OSPreferences::ReadSystemLocales(nsTArray<nsCString>& aLocaleList) {
   MOZ_ASSERT(aLocaleList.IsEmpty());
 
-  nsAutoCString defaultLang(uloc_getDefault());
+  nsAutoCString defaultLang(Locale::GetDefaultLocale());
 
   if (CanonicalizeLanguageTag(defaultLang)) {
     aLocaleList.AppendElement(defaultLang);
@@ -47,45 +47,33 @@ bool OSPreferences::ReadRegionalPrefsLocales(nsTArray<nsCString>& aLocaleList) {
  * This looks up into gtk settings for hourCycle format.
  *
  * This works for all GUIs that use gtk settings like Gnome, Elementary etc.
- * Ubuntu does not use those settings so we'll want to support them separately.
  *
  * We're taking the current 12/24h settings irrelevant of the locale, because
  * in the UI user selects this setting for all locales.
  */
 static int HourCycle() {
-  int rval = 0;
-
-  // Ubuntu 16.04 and lower report "Unity". Ubuntu 16.04 is supported until
-  // April 2021. This code can be removed once it hits EOL.
-  nsAutoCString schema;
-  nsAutoCString key;
-  const char* env = getenv("XDG_CURRENT_DESKTOP");
-  if (env && strcmp(env, "Unity") == 0) {
-    schema = "com.canonical.indicator.datetime";
-    key = "time-format";
-  } else {
-    schema = "org.gnome.desktop.interface";
-    key = "clock-format";
-  }
-
   nsCOMPtr<nsIGSettingsService> gsettings =
       do_GetService(NS_GSETTINGSSERVICE_CONTRACTID);
-  nsCOMPtr<nsIGSettingsCollection> desktop_settings;
-
-  if (gsettings) {
-    gsettings->GetCollectionForSchema(schema, getter_AddRefs(desktop_settings));
-    if (desktop_settings) {
-      nsAutoCString result;
-      desktop_settings->GetString(key, result);
-      if (result == "12h") {
-        rval = 12;
-      } else if (result == "24h") {
-        rval = 24;
-      }
-    }
+  if (!gsettings) {
+    return 0;
   }
 
-  return rval;
+  nsCOMPtr<nsIGSettingsCollection> desktop_settings;
+  gsettings->GetCollectionForSchema("org.gnome.desktop.interface"_ns,
+                                    getter_AddRefs(desktop_settings));
+  if (!desktop_settings) {
+    return 0;
+  }
+
+  nsAutoCString result;
+  desktop_settings->GetString("clock-format"_ns, result);
+  if (result == "12h") {
+    return 12;
+  }
+  if (result == "24h") {
+    return 24;
+  }
+  return 0;
 }
 
 /**

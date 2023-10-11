@@ -31,6 +31,10 @@
 #include "mozilla/Atomics.h"
 #include "mozilla/WindowsProcessMitigations.h"
 
+#ifdef MOZ_BACKGROUNDTASKS
+#  include "mozilla/BackgroundTasks.h"
+#endif
+
 #if defined(ACCESSIBILITY)
 #  include "mozilla/a11y/Compatibility.h"
 #  include "mozilla/a11y/Platform.h"
@@ -97,7 +101,7 @@ class WinWakeLockListener final : public nsIDOMMozWakeLockListener {
     context.Reason.SimpleReasonString = RequestTypeLPWSTR(aType);
     HANDLE handle = PowerCreateRequest(&context);
     if (!handle) {
-      WAKE_LOCK_LOG("Failed to create handle for %s, error=%d",
+      WAKE_LOCK_LOG("Failed to create handle for %s, error=%lu",
                     RequestTypeStr(aType), GetLastError());
       return nullptr;
     }
@@ -146,7 +150,7 @@ class WinWakeLockListener final : public nsIDOMMozWakeLockListener {
     if (PowerSetRequest(handle, aType)) {
       WAKE_LOCK_LOG("Requested %s lock", RequestTypeStr(aType));
     } else {
-      WAKE_LOCK_LOG("Failed to request %s lock, error=%d",
+      WAKE_LOCK_LOG("Failed to request %s lock, error=%lu",
                     RequestTypeStr(aType), GetLastError());
       SetHandle(nullptr, aType);
     }
@@ -160,7 +164,7 @@ class WinWakeLockListener final : public nsIDOMMozWakeLockListener {
 
     WAKE_LOCK_LOG("Prepare to release wakelock for %s", RequestTypeStr(aType));
     if (!PowerClearRequest(GetHandle(aType), aType)) {
-      WAKE_LOCK_LOG("Failed to release %s lock, error=%d",
+      WAKE_LOCK_LOG("Failed to release %s lock, error=%lu",
                     RequestTypeStr(aType), GetLastError());
       return;
     }
@@ -207,66 +211,13 @@ class WinWakeLockListener final : public nsIDOMMozWakeLockListener {
   HANDLE mNonDisplayHandle = nullptr;
 };
 NS_IMPL_ISUPPORTS(WinWakeLockListener, nsIDOMMozWakeLockListener)
-
-// This wakelock is used for the version older than Windows7.
-class LegacyWinWakeLockListener final : public nsIDOMMozWakeLockListener {
- public:
-  NS_DECL_ISUPPORTS
-  LegacyWinWakeLockListener() { MOZ_ASSERT(XRE_IsParentProcess()); }
-
- private:
-  ~LegacyWinWakeLockListener() {}
-
-  NS_IMETHOD Callback(const nsAString& aTopic,
-                      const nsAString& aState) override {
-    WAKE_LOCK_LOG("WinWakeLock: topic=%s, state=%s",
-                  NS_ConvertUTF16toUTF8(aTopic).get(),
-                  NS_ConvertUTF16toUTF8(aState).get());
-    if (!aTopic.EqualsASCII("screen") && !aTopic.EqualsASCII("audio-playing") &&
-        !aTopic.EqualsASCII("video-playing")) {
-      return NS_OK;
-    }
-
-    // Check what kind of lock we will require, if both display lock and non
-    // display lock are needed, we would require display lock because it has
-    // higher priority.
-    if (aTopic.EqualsASCII("audio-playing")) {
-      mRequireForNonDisplayLock = aState.EqualsASCII("locked-foreground") ||
-                                  aState.EqualsASCII("locked-background");
-    } else if (aTopic.EqualsASCII("screen") ||
-               aTopic.EqualsASCII("video-playing")) {
-      mRequireForDisplayLock = aState.EqualsASCII("locked-foreground");
-    }
-
-    if (mRequireForDisplayLock) {
-      WAKE_LOCK_LOG("WinWakeLock: Request display lock");
-      SetThreadExecutionState(ES_DISPLAY_REQUIRED | ES_CONTINUOUS);
-    } else if (mRequireForNonDisplayLock) {
-      WAKE_LOCK_LOG("WinWakeLock: Request non-display lock");
-      SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_CONTINUOUS);
-    } else {
-      WAKE_LOCK_LOG("WinWakeLock: reset lock");
-      SetThreadExecutionState(ES_CONTINUOUS);
-    }
-    return NS_OK;
-  }
-
-  bool mRequireForDisplayLock = false;
-  bool mRequireForNonDisplayLock = false;
-};
-
-NS_IMPL_ISUPPORTS(LegacyWinWakeLockListener, nsIDOMMozWakeLockListener)
 StaticRefPtr<nsIDOMMozWakeLockListener> sWakeLockListener;
 
 static void AddScreenWakeLockListener() {
   nsCOMPtr<nsIPowerManagerService> sPowerManagerService =
       do_GetService(POWERMANAGERSERVICE_CONTRACTID);
   if (sPowerManagerService) {
-    if (IsWin7SP1OrLater()) {
-      sWakeLockListener = new WinWakeLockListener();
-    } else {
-      sWakeLockListener = new LegacyWinWakeLockListener();
-    }
+    sWakeLockListener = new WinWakeLockListener();
     sPowerManagerService->AddWakeLockListener(sWakeLockListener);
   } else {
     NS_WARNING(
@@ -351,6 +302,8 @@ static Atomic<size_t, ReleaseAcquire> sOutstandingNativeEventCallbacks;
 /*static*/ LRESULT CALLBACK nsAppShell::EventWindowProc(HWND hwnd, UINT uMsg,
                                                         WPARAM wParam,
                                                         LPARAM lParam) {
+  NativeEventLogger eventLogger("AppShell", hwnd, uMsg, wParam, lParam);
+
   if (uMsg == sAppShellGeckoMsgId) {
     // The app shell might have been destroyed between this message being
     // posted and being executed, so be extra careful.
@@ -363,7 +316,10 @@ static Atomic<size_t, ReleaseAcquire> sOutstandingNativeEventCallbacks;
     --sOutstandingNativeEventCallbacks;
     return TRUE;
   }
-  return DefWindowProc(hwnd, uMsg, wParam, lParam);
+
+  LRESULT ret = DefWindowProc(hwnd, uMsg, wParam, lParam);
+  eventLogger.SetResult(ret, false);
+  return ret;
 }
 
 nsAppShell::~nsAppShell() {
@@ -380,104 +336,12 @@ nsAppShell::~nsAppShell() {
   sOutstandingNativeEventCallbacks = 0;
 }
 
-#if defined(ACCESSIBILITY)
-
-static ULONG gUiaMsg;
-static HHOOK gUiaHook;
-static uint32_t gUiaAttempts;
-static const uint32_t kMaxUiaAttempts = 5;
-
-static void InitUIADetection();
-
-static LRESULT CALLBACK UiaHookProc(int aCode, WPARAM aWParam, LPARAM aLParam) {
-  if (aCode < 0) {
-    return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
-  }
-
-  auto cwp = reinterpret_cast<CWPSTRUCT*>(aLParam);
-  if (gUiaMsg && cwp->message == gUiaMsg) {
-    if (gUiaAttempts < kMaxUiaAttempts) {
-      ++gUiaAttempts;
-
-      Maybe<bool> shouldCallNextHook =
-          a11y::Compatibility::OnUIAMessage(cwp->wParam, cwp->lParam);
-      if (shouldCallNextHook.isSome()) {
-        // We've got an instantiator.
-        if (!shouldCallNextHook.value()) {
-          // We're blocking this instantiation. We need to keep this hook set
-          // so that we can catch any future instantiation attempts.
-          return 0;
-        }
-
-        // We're allowing the instantiator to proceed, so this hook is no longer
-        // needed.
-        if (::UnhookWindowsHookEx(gUiaHook)) {
-          gUiaHook = nullptr;
-        }
-      } else {
-        // Our hook might be firing after UIA; let's try reinstalling ourselves.
-        InitUIADetection();
-      }
-    } else {
-      // We've maxed out our attempts. Let's unhook.
-      if (::UnhookWindowsHookEx(gUiaHook)) {
-        gUiaHook = nullptr;
-      }
-    }
-  }
-
-  return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
-}
-
-static void InitUIADetection() {
-  if (gUiaHook) {
-    // In this case we want to re-hook so that the hook is always called ahead
-    // of UIA's hook.
-    if (::UnhookWindowsHookEx(gUiaHook)) {
-      gUiaHook = nullptr;
-    }
-  }
-
-  if (!gUiaMsg) {
-    // This is the message that UIA sends to trigger a command. UIA's
-    // CallWndProc looks for this message and then handles the request.
-    // Our hook gets in front of UIA's hook and examines the message first.
-    gUiaMsg = ::RegisterWindowMessageW(L"HOOKUTIL_MSG");
-  }
-
-  if (!gUiaHook) {
-    gUiaHook = ::SetWindowsHookEx(WH_CALLWNDPROC, &UiaHookProc, nullptr,
-                                  ::GetCurrentThreadId());
-  }
-}
-
-#endif  // defined(ACCESSIBILITY)
-
 NS_IMETHODIMP
 nsAppShell::Observe(nsISupports* aSubject, const char* aTopic,
                     const char16_t* aData) {
   if (XRE_IsParentProcess()) {
     nsCOMPtr<nsIObserverService> obsServ(
         mozilla::services::GetObserverService());
-
-#if defined(ACCESSIBILITY)
-    if (!strcmp(aTopic, "dll-loaded-main-thread")) {
-      if (a11y::PlatformDisabledState() != a11y::ePlatformIsDisabled &&
-          !gUiaHook) {
-        nsDependentString dllName(aData);
-
-        if (StringEndsWith(dllName, u"uiautomationcore.dll"_ns,
-                           nsCaseInsensitiveStringComparator)) {
-          InitUIADetection();
-
-          // Now that we've handled the observer notification, we can remove it
-          obsServ->RemoveObserver(this, "dll-loaded-main-thread");
-        }
-      }
-
-      return NS_OK;
-    }
-#endif  // defined(ACCESSIBILITY)
 
     if (!strcmp(aTopic, "sessionstore-restoring-on-startup")) {
       nsWindow::SetIsRestoringSession(true);
@@ -534,11 +398,13 @@ nsresult nsAppShell::Init() {
       wc.hbrBackground = (HBRUSH) nullptr;
       wc.lpszMenuName = (LPCWSTR) nullptr;
       wc.lpszClassName = kWindowClass;
-      RegisterClassW(&wc);
+      [[maybe_unused]] ATOM wcA = RegisterClassW(&wc);
+      MOZ_DIAGNOSTIC_ASSERT(wcA, "RegisterClassW for EventWindowClass failed");
     }
 
     mEventWnd = CreateWindowW(kWindowClass, L"nsAppShell:EventWindow", 0, 0, 0,
                               10, 10, HWND_MESSAGE, nullptr, module, nullptr);
+    MOZ_DIAGNOSTIC_ASSERT(mEventWnd, "CreateWindowW for EventWindow failed");
     NS_ENSURE_STATE(mEventWnd);
   } else if (XRE_IsContentProcess() && !IsWin32kLockedDown()) {
     // We're not generally processing native events, but still using GDI and we
@@ -568,14 +434,10 @@ nsresult nsAppShell::Init() {
 
     obsServ->AddObserver(this, "sessionstore-restoring-on-startup", false);
     obsServ->AddObserver(this, "sessionstore-windows-restored", false);
+  }
 
-#if defined(ACCESSIBILITY)
-    if (::GetModuleHandleW(L"uiautomationcore.dll")) {
-      InitUIADetection();
-    } else {
-      obsServ->AddObserver(this, "dll-loaded-main-thread", false);
-    }
-#endif  // defined(ACCESSIBILITY)
+  if (!WinUtils::GetTimezoneName(mTimezoneName)) {
+    NS_WARNING("Unable to get system timezone name, timezone may be invalid\n");
   }
 
   return nsBaseAppShell::Init();
@@ -583,20 +445,21 @@ nsresult nsAppShell::Init() {
 
 NS_IMETHODIMP
 nsAppShell::Run(void) {
-  // Content processes initialize audio later through PContent using audio
-  // tray id information pulled from the browser process AudioSession. This
-  // way the two share a single volume control.
-  // Note StopAudioSession() is called from nsAppRunner.cpp after xpcom is torn
-  // down to insure the browser shuts down after child processes.
+  bool wantAudio = true;
   if (XRE_IsParentProcess()) {
-    mozilla::widget::StartAudioSession();
-  }
+#ifdef MOZ_BACKGROUNDTASKS
+    if (BackgroundTasks::IsBackgroundTaskMode()) {
+      wantAudio = false;
+    }
+#endif
+    if (MOZ_LIKELY(wantAudio)) {
+      mozilla::widget::StartAudioSession();
+    }
 
-  // Add an observer that disables the screen saver when requested by Gecko.
-  // For example when we're playing video in the foreground tab. Whole firefox
-  // only needs one wakelock instance, so we would only create one listener in
-  // chrome process to prevent requesting unnecessary wakelock.
-  if (XRE_IsParentProcess()) {
+    // Add an observer that disables the screen saver when requested by Gecko.
+    // For example when we're playing video in the foreground tab. Whole firefox
+    // only needs one wakelock instance, so we would only create one listener in
+    // chrome process to prevent requesting unnecessary wakelock.
     AddScreenWakeLockListener();
   }
 
@@ -604,26 +467,13 @@ nsAppShell::Run(void) {
 
   if (XRE_IsParentProcess()) {
     RemoveScreenWakeLockListener();
+
+    if (MOZ_LIKELY(wantAudio)) {
+      mozilla::widget::StopAudioSession();
+    }
   }
 
   return rv;
-}
-
-NS_IMETHODIMP
-nsAppShell::Exit(void) {
-#if defined(ACCESSIBILITY)
-  if (XRE_IsParentProcess()) {
-    nsCOMPtr<nsIObserverService> obsServ(
-        mozilla::services::GetObserverService());
-    obsServ->RemoveObserver(this, "dll-loaded-main-thread");
-
-    if (gUiaHook && ::UnhookWindowsHookEx(gUiaHook)) {
-      gUiaHook = nullptr;
-    }
-  }
-#endif  // defined(ACCESSIBILITY)
-
-  return nsBaseAppShell::Exit();
 }
 
 void nsAppShell::DoProcessMoreGeckoEvents() {
@@ -727,6 +577,24 @@ bool nsAppShell::ProcessNextNativeEvent(bool mayWait) {
           continue;
         }
 #endif
+
+        // Windows documentation suggets that WM_SETTINGSCHANGE is the message
+        // to watch for timezone changes, but experimentation showed that it
+        // doesn't fire on changing the timezone, but that WM_TIMECHANGE does,
+        // even if there's no immediate effect on the clock (e.g., changing
+        // from Pacific Daylight at UTC-7 to Arizona at UTC-7).
+        if (msg.message == WM_TIMECHANGE) {
+          // The message may not give us sufficient information to determine
+          // if the timezone changed, so keep track of it ourselves.
+          wchar_t systemTimezone[128];
+          bool getSystemTimeSucceeded =
+              WinUtils::GetTimezoneName(systemTimezone);
+          if (getSystemTimeSucceeded && wcscmp(systemTimezone, mTimezoneName)) {
+            nsBaseAppShell::OnSystemTimezoneChange();
+
+            wcscpy_s(mTimezoneName, 128, systemTimezone);
+          }
+        }
 
         ::TranslateMessage(&msg);
         ::DispatchMessageW(&msg);

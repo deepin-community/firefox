@@ -87,25 +87,16 @@ restart-later = أعِد التشغيل لاحقًا
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that the password manager setting
-# is being controlled by an extension
-extension-controlled-password-saving = يتحكم أحد الامتدادات (<img data-l10n-name="icon"/> { $name }) في هذا الإعداد.
 
-# This string is shown to notify the user that their notifications permission
-# is being controlled by an extension.
-extension-controlled-web-notifications = يتحكّم الامتداد <img data-l10n-name="icon"/> { $name } بهذا الإعداد.
-
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = يتطلب أحد الامتدادات (<img data-l10n-name="icon"/> { $name }) الألسنة الحاوية.
-
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = يتحكم أحد الامتدادات (<img data-l10n-name="icon"/> { $name }) في هذا الإعداد.
-
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = يتحكم أحد الامتدادات <img data-l10n-name="icon"/> { $name } في طريقة اتصال { -brand-short-name } بالإنترنت.
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -138,9 +129,9 @@ set-as-my-default-browser =
     .label = اجعله المبدئي…
     .accesskey = م
 
-startup-restore-previous-session =
-    .label = استعد الجلسة السابقة
-    .accesskey = س
+startup-restore-windows-and-tabs =
+    .label = افتح النوافذ والألسنة السابقة
+    .accesskey = ن
 
 startup-restore-warn-on-quit =
     .label = نبّهني عند إنهاء المتصفح
@@ -158,13 +149,26 @@ open-new-link-as-tabs =
     .label = افتح الروابط في ألسنة بدل فتح نوافذ جديدة
     .accesskey = ن
 
-warn-on-close-multiple-tabs =
-    .label = نبّهني عند محاولة إغلاق عدّة ألسنة
-    .accesskey = ة
+confirm-on-close-multiple-tabs =
+    .label = أكّد علي عند محاولة إغلاق عدّة ألسنة
+    .accesskey = ك
+
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (String) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+confirm-on-quit-with-key =
+    .label = أكّد علي قبل المغادرة باستعمال { $quitKey }
+    .accesskey = د
 
 warn-on-open-many-tabs =
     .label = نبّهني عند فتح عدة ألسنة أن هذا قد يبطئ { -brand-short-name }
     .accesskey = ف
+
+switch-to-new-tabs =
+    .label = عند فتح رابط أو صورة أو وسيط في لسان جديد، انتقل إليه مباشرة
+    .accesskey = ع
 
 show-tabs-in-taskbar =
     .label = أظهِر معاينات للألسنة في شريط مهام ويندوز
@@ -181,6 +185,10 @@ browser-containers-settings =
     .accesskey = د
 
 containers-disable-alert-title = أأغلق كل الألسنة الحاوية؟
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] إذا عطلت الألسنة الحاوية الآن فسيغلق لسان حاو. أمتأكد أنك تريد تعطيل الألسنة الحاوية؟
@@ -198,6 +206,9 @@ containers-disable-alert-ok-button =
         [many] أغلق { $tabCount } لسانًا حاويًا
        *[other] أغلق { $tabCount } لسان حاو
     }
+
+##
+
 containers-disable-alert-cancel-button = أبقها مفعلّة
 
 containers-remove-alert-title = أتريد إزالة هذه الحاوية؟
@@ -216,12 +227,9 @@ containers-remove-alert-msg =
 containers-remove-ok-button = أزل الحاوية
 containers-remove-cancel-button = لا تزِل هذه الحاوية
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = اللغة و المظهر
-
-fonts-and-colors-header = الخطوط و الألوان
 
 default-font = الخط المبدئي
     .accesskey = ط
@@ -231,10 +239,6 @@ default-font-size = الحجم
 advanced-fonts =
     .label = متقدم…
     .accesskey = د
-
-colors-settings =
-    .label = الألوان…
-    .accesskey = ل
 
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = التقريب
@@ -268,6 +272,8 @@ translate-web-pages =
     .label = ترجم محتوى الوب
     .accesskey = ت
 
+fx-translate-web-pages = { -translations-brand-name }
+
 # The <img> element is replaced by the logo of the provider
 # used to provide machine translations for web pages.
 translate-attribution = ترجمات <img data-l10n-name="logo"/>
@@ -291,8 +297,7 @@ files-and-applications-title = الملفات و التطبيقات
 
 download-header = التّنزيلات
 
-download-save-to =
-    .label = احفظ الملفّات في
+download-save-where = احفظ الملفّات في
     .accesskey = ظ
 
 download-choose-folder =
@@ -568,11 +573,6 @@ home-restore-defaults =
     .label = استعد المبدئيات
     .accesskey = س
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = صفحة بداية Firefox (المبدئية)
-
 home-mode-choice-custom =
     .label = عناوين مخصصة…
 
@@ -600,17 +600,8 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = محتوى Firefox الرئيسي
-home-prefs-content-description = اختر المحتوى الذي تريد عرضه في شاشة بداية Firefox.
-
 home-prefs-search-header =
     .label = ابحث في الوِب
-home-prefs-topsites-header =
-    .label = المواقع الأكثر زيارة
-home-prefs-topsites-description = أكثر المواقع المزارة
-
-home-prefs-topsites-by-option-sponsored =
-    .label = أهم المواقع المموّلة
 home-prefs-shortcuts-header =
     .label = الاختصارات
 home-prefs-shortcuts-description = المواقع التي حفظتها أو زُرتها
@@ -620,9 +611,12 @@ home-prefs-shortcuts-by-option-sponsored =
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+
 home-prefs-recommended-by-header =
     .label = ينصح به { $provider }
-home-prefs-recommended-by-description-update = محتوى مميّز من أرجاء الوِب جمعه لك { $provider }
 home-prefs-recommended-by-description-new = محتوى مميّز جمعه لك { $provider }، وهو جزء من عائلة { -brand-product-name }
 
 ##
@@ -631,9 +625,6 @@ home-prefs-recommended-by-learn-more = آلية العمل
 home-prefs-recommended-by-option-sponsored-stories =
     .label = الأخبار الممولة
 
-home-prefs-highlights-header =
-    .label = أهم الأحداث
-home-prefs-highlights-description = مجموعة المواقع التي حفظتها أو زرتها
 home-prefs-highlights-option-visited-pages =
     .label = الصفحات المزارة
 home-prefs-highlights-options-bookmarks =
@@ -653,7 +644,6 @@ home-prefs-recent-activity-description = مختارات من المواقع وا
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = المقتطفات
-home-prefs-snippets-description = التحديثات من { -vendor-short-name } و{ -brand-product-name }
 
 home-prefs-snippets-description-new = فوائد وأخبار من { -vendor-short-name } و{ -brand-product-name }
 
@@ -694,6 +684,7 @@ search-show-suggestions-url-bar-option =
     .label = أظهر اقتراحات البحث في نتائج شريط العناوين
     .accesskey = ت
 
+
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -725,7 +716,6 @@ search-restore-default =
 search-remove-engine =
     .label = احذف
     .accesskey = ح
-
 search-add-engine =
     .label = أضِف
     .accesskey = ض
@@ -761,8 +751,11 @@ containers-remove-button =
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
-sync-signedout-caption = خُذ الوِب معك
 
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+sync-signedout-caption = خُذ الوِب معك
 sync-signedout-description2 = زامن علاماتك، و تأريخك، و ألسنتك، و كلمات سرك، و إضافاتك و الإعدادات بين كل أجهزتك.
 
 sync-signedout-account-signin3 =
@@ -781,6 +774,9 @@ sync-mobile-promo = نزّل Firefox لنظامي <img data-l10n-name="android-i
 
 ## Firefox Account - Signed in
 
+
+## Firefox account - Signed in
+
 sync-profile-picture =
     .tooltiptext = غيّر صورة الحساب
 
@@ -791,8 +787,13 @@ sync-sign-out =
 sync-manage-account = أدِر الحساب
     .accesskey = س
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } ليس مؤكّدًا.
 sync-signedin-login-failure = من فضلك لج لإعادة التوصيل { $email }
+
+##
 
 sync-resend-verification =
     .label = أعِد إرسال التأكيد
@@ -823,9 +824,14 @@ prefs-sync-now =
     .accesskeynotsyncing = م
     .labelsyncing = يُزامن…
 
-## The list of things currently syncing.
+prefs-sync-now-button =
+    .label = زامِن الآن
+    .accesskey = م
 
-sync-currently-syncing-heading = تُزامن الآن هذه المعلومات:
+prefs-syncing-button =
+    .label = يُزامن…
+
+## The list of things currently syncing.
 
 sync-currently-syncing-bookmarks = العلامات
 sync-currently-syncing-history = التأريخ
@@ -834,7 +840,6 @@ sync-currently-syncing-logins-passwords = جلسات الولوج وكلمات �
 sync-currently-syncing-addresses = العناوين
 sync-currently-syncing-creditcards = بطاقات الائتمان
 sync-currently-syncing-addons = الإضافات
-
 sync-currently-syncing-settings = الإعدادات
 
 sync-change-options =
@@ -843,9 +848,9 @@ sync-change-options =
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog =
+sync-choose-what-to-sync-dialog3 =
     .title = اختر ما تريد مزامنته
-    .style = width: 36em; min-height: 35em;
+    .style = min-width: 36em;
     .buttonlabelaccept = احفظ التغييرات
     .buttonaccesskeyaccept = ح
     .buttonlabelextra2 = اقطع الاتصال…
@@ -907,6 +912,16 @@ sync-device-name-save =
 
 sync-connect-another-device = صِلْ جهازا آخر
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = أُرسل رابط التأكّد
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = أُرسل رابط تأكيد إلى { $email }.
+sync-verification-not-sent-title = تعذّر إرسال رسالة التأكيد
+sync-verification-not-sent-body = يتعذّر إرسال بريد التأكيد حاليًا، رجاء إعادة المحاولة لاحقًا.
+
 ## Privacy Section
 
 privacy-header = خصوصية المتصفح
@@ -949,7 +964,6 @@ forms-primary-pw-learn-more-link = اطّلع على المزيد
 forms-master-pw-change =
     .label = غيّر كلمة السر الرئيسيّة…
     .accesskey = ر
-
 forms-primary-pw-change =
     .label = غيّر كلمة السر الرئيسيّة…
     .accesskey = غ
@@ -960,6 +974,10 @@ forms-primary-pw-former-name = { "" }
 
 forms-primary-pw-fips-title = أنت حاليًّا في وضع FIPS. يتطلّب FIPS كلمة سر رئيسية غير فارغة.
 forms-master-pw-fips-desc = فشل تغيير كلمة السر
+forms-windows-sso =
+    .label = اسمح بالولوج الموحّد من وِندوز إلى حسابات ميكروسوفت وحسابات العمل والحسابات المدرسية.
+forms-windows-sso-learn-more-link = اطّلع على المزيد
+forms-windows-sso-desc = أدِر الحسابات في إعدادات الجهاز
 
 ## OS Authentication dialog
 
@@ -1057,18 +1075,10 @@ sitedata-block-desc = النوع المحجوب
 
 sitedata-option-block-cross-site-trackers =
     .label = المتعقّبات بين المواقع
-sitedata-option-block-cross-site-and-social-media-trackers =
-    .label = المتعقّبات الاجتماعية ومتعقّبات بين المواقع
-sitedata-option-block-cross-site-tracking-cookies-including-social-media =
-    .label = المتعقّبات التي تعبر المواقع، تشمل متعقّبات المواقع الاجتماعية
-sitedata-option-block-cross-site-cookies-including-social-media =
-    .label = الكعكات التي تعبر المواقع، تشمل متعقّبات المواقع الاجتماعية
-sitedata-option-block-cross-site-and-social-media-trackers-plus-isolate =
-    .label = المتعقّبات الاجتماعية وتلك التي تعبر المواقع، واعزل بقية الكعكات
+sitedata-option-block-cross-site-tracking-cookies =
+    .label = الكعكات التي تتعقّبك بين المواقع
 sitedata-option-block-unvisited =
     .label = الكعكات من المواقع غير المُزارة
-sitedata-option-block-all-third-party =
-    .label = كل كعكات الأطراف الثالثة (يمكن أن تعطب المواقع هكذا)
 sitedata-option-block-all =
     .label = كل الكعكات (يمكن أن تعطب المواقع هكذا)
 
@@ -1083,6 +1093,9 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = أدِر الاستثناءات…
     .accesskey = ت
+
+## Privacy Section - Cookie Banner Handling
+
 
 ## Privacy Section - Address Bar
 
@@ -1106,7 +1119,6 @@ addressbar-locbar-shortcuts-option =
 addressbar-locbar-topsites-option =
     .label = المواقع الأكثر زيارة
     .accesskey = ك
-
 addressbar-locbar-engines-option =
     .label = محركات البحث
     .accesskey = ح
@@ -1140,20 +1152,24 @@ enhanced-tracking-protection-setting-custom =
 content-blocking-etp-standard-desc = يوازن بين الحماية والأداء. ستتحمّل الصفحات كالعادة.
 content-blocking-etp-strict-desc = حماية أقوى وأعتى، لكنها قد تعطب محتويات بعض المواقع أو المواقع نفسها.
 content-blocking-etp-custom-desc = اختر المتعقّبات والسكربتات التي تريد حجبها.
+content-blocking-etp-blocking-desc = يحجب { -brand-short-name } الآتي:
 
 content-blocking-private-windows = المحتوى الذي يتعقّبك في النوافذ الخاصة
 content-blocking-cross-site-tracking-cookies = كعكات تتعقّبك بين المواقع
+content-blocking-all-cross-site-cookies-private-windows = الكعكات بين المواقع في النوافذ الخاصة
 content-blocking-cross-site-tracking-cookies-plus-isolate = المتعقّبات التي تعبر المواقع، واعزل بقية الكعكات
 content-blocking-social-media-trackers = متعقبات مواقع التواصل الاجتماعي
 content-blocking-all-cookies = كل الكعكات
 content-blocking-unvisited-cookies = الكعكات من المواقع غير المُزارة
 content-blocking-all-windows-tracking-content = المحتوى الذي يتعقّبك في كل النوافذ
-content-blocking-all-third-party-cookies = كل الكعكات من الأطراف الثالثة
 content-blocking-cryptominers = المُعدّنات المعمّاة
 content-blocking-fingerprinters = مسجّلات البصمات
 
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
+
+content-blocking-etp-standard-tcp-rollout-learn-more = اطّلع على المزيد
+
 content-blocking-warning-title = انتبه!
-content-blocking-and-isolating-etp-warning-description = يمكن أن يضرّ حجب المتعقّبات وعزل الكعكات بمزايا بعض المواقع. أعِد تحميل الصفحات التي فيها متعقّبات لتحميل كلّ محتواها.
 content-blocking-and-isolating-etp-warning-description-2 = قد يتسبّب هذا الإعداد بألّا تعرض بعض المواقع أي محتوى أو ألا تعمل كما ينبغي. إن رأيت الموقع معطوبًا، فيمكنك تعطيل الحماية من التعقّب لهذا الموقع لتحميل محتواه.
 content-blocking-warning-learn-how = اطّلع على المزيد
 
@@ -1240,10 +1256,6 @@ permissions-autoplay-settings =
 permissions-block-popups =
     .label = احجب النوافذ المنبثقة
     .accesskey = ذ
-
-permissions-block-popups-exceptions =
-    .label = الاستثناءات…
-    .accesskey = ت
 
 permissions-addon-install-warning =
     .label = حذّرني عندما يحاول موقع وِب تنصيب إضافات
@@ -1343,13 +1355,11 @@ httpsonly-radio-enabled-pbm =
 httpsonly-radio-disabled =
     .label = لا تفعّل وضع HTTPS فقط
 
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = سطح المكتب
 downloads-folder-name = التّنزيلات
 choose-download-folder-title = اختر مجلّد التّنزيلات:
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = احفظ الملفات في { $service-name }

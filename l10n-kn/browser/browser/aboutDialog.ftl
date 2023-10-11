@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = R
 
 update-checkingForUpdates = ಅಪ್‌ಡೇಟ್‌ಗಳಿಗಾಗಿ ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ…
-update-downloading = <img data-l10n-name="icon"/>ಅಪ್‌ಡೇಟ್‌ ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ — <label data-l10n-name="download-status"/>
-update-applying = ಅಪ್‌ಡೇಟ್‌ ಅನ್ನು ಅನ್ವಯಿಸಲಾಗುತ್ತಿದೆ…
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>ಅಪ್‌ಡೇಟ್‌ ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
+update-applying = ನವೀಕರಣವನ್ನು ಅನ್ವಯಿಸಲಾಗುತ್ತಿದೆ...
 
 update-failed = ಅಪ್‌ಡೇಟ್ ವಿಫಲಗೊಂಡಿದೆ. <label data-l10n-name="failed-link">ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯನ್ನು ಡೌನ್‌ಲೋಡ ಮಾಡಿಕೊಳ್ಳಿ</label>
 update-failed-main = ಅಪ್‌ಡೇಟ್ ವಿಫಲಗೊಂಡಿದೆ. <a data-l10n-name="failed-link-main">ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯನ್ನು ಡೌನ್‌ಲೋಡ ಮಾಡಿಕೊಳ್ಳಿ</a>
@@ -26,13 +33,21 @@ update-adminDisabled = ನಿಮ್ಮ ವ್ಯವಸ್ಥೆಯ ನಿರ್�
 update-noUpdatesFound = { -brand-short-name } ಅಪ್‌ಟುಡೇಟ್ ಆಗಿದೆ
 update-otherInstanceHandlingUpdates = { -brand-short-name } ಅನ್ನು ಇನ್ನೊಂದು ನಿದರ್ಶನದಿಂದ ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ
 
-update-manual = ಅಪ್‌ಡೇಟ್‌ಗಳು ಇಲ್ಲಿ ಲಭ್ಯವಿವೆ <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = ಅಪ್‌ಡೇಟ್‌ಗಳು ಇಲ್ಲಿ ಲಭ್ಯವಿವೆ <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = ಅಪ್‌ಡೇಟ್‌ಗಳು ಇಲ್ಲಿ ಲಭ್ಯವಿವೆ <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = ಈ ವ್ಯವಸ್ಥೆಗೆ ಇನ್ನು ಮುಂದಿನ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ. <label data-l10n-name="unsupported-link">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</label>
 
 update-restarting = ಮರಳಿಆರಂಭಿಸಲಾಗುತ್ತಿದೆ…
 
-channel-description = ನೀವು ಈಗ <label data-l10n-name="current-channel"></label> ಅಪ್‌ಡೇಟ್ ಚಾನಲ್‌ನಲ್ಲಿದ್ದೀರಿ.
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = ನೀವು ಈಗ <label data-l10n-name="current-channel">{ $channel }</label> ಅಪ್‌ಡೇಟ್ ಚಾನಲ್‌ನಲ್ಲಿದ್ದೀರಿ.
 
 warningDesc-version = { -brand-short-name } ಪ್ರಾಯೋಗಿಕ ತಂತ್ರಾಂಶವಾಗಿರುವುದರಿಂದ ಅಸ್ಥಿರವಾಗಿರಬಹುದು.
 

@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = இணைப்பு அமைப்புகள்
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -68,12 +68,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = நீங்கள் கடவுச்சொற்களை சேமித்திருந்தால் இந்த விருப்பத்தேர்வானது சத்தமில்லாமல் உங்களை ப்ராக்ஸியில் அங்கீகரிக்கும். நீங்கள் அங்கீகரிக்கப்படாமல் இருந்தால் நினைவூட்டப்பட்டிருக்கும்.
 
+connection-proxy-autologin-checkbox =
+    .label = கடவுச்சொல் சேமிக்கப்பட்டிருந்தால் அங்கீகரிப்புக்காக நினைவுப்படத்த வே்டாம்
+    .accesskey = i
+    .tooltiptext = நீங்கள் கடவுச்சொற்களை சேமித்திருந்தால் இந்த விருப்பத்தேர்வானது சத்தமில்லாமல் உங்களை ப்ராக்ஸியில் அங்கீகரிக்கும். நீங்கள் அங்கீகரிக்கப்படாமல் இருந்தால் நினைவூட்டப்பட்டிருக்கும்.
+
 connection-proxy-socks-remote-dns =
     .label = பதிலாள் DNS SOCKS V5 பயன்படுத்தும் போது
     .accesskey = d
-
-connection-dns-over-https-url-resolver = வழங்குநரைப் பயன்படுத்தவும்
-    .accesskey = P
 
 connection-dns-over-https-url-custom =
     .label = தனிப்பயனாக்கு

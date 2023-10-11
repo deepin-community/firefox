@@ -9,10 +9,14 @@
 use super::{Node, Rng};
 use neqo_common::{event::Provider, qdebug, qtrace, Datagram};
 use neqo_crypto::AuthenticationStatus;
-use neqo_transport::{Connection, ConnectionEvent, Output, State, StreamId, StreamType};
-use std::cmp::min;
-use std::fmt::{self, Debug};
-use std::time::Instant;
+use neqo_transport::{
+    Connection, ConnectionEvent, ConnectionParameters, Output, State, StreamId, StreamType,
+};
+use std::{
+    cmp::min,
+    fmt::{self, Debug},
+    time::Instant,
+};
 
 /// The status of the processing of an event.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -45,18 +49,32 @@ pub struct ConnectionNode {
 }
 
 impl ConnectionNode {
-    pub fn new_client(goals: impl IntoIterator<Item = Box<dyn ConnectionGoal>>) -> Self {
+    pub fn new_client(
+        params: ConnectionParameters,
+        goals: impl IntoIterator<Item = Box<dyn ConnectionGoal>>,
+    ) -> Self {
         Self {
-            c: test_fixture::default_client(),
+            c: test_fixture::new_client(params),
             goals: goals.into_iter().collect(),
         }
     }
 
-    pub fn new_server(goals: impl IntoIterator<Item = Box<dyn ConnectionGoal>>) -> Self {
+    pub fn new_server(
+        params: ConnectionParameters,
+        goals: impl IntoIterator<Item = Box<dyn ConnectionGoal>>,
+    ) -> Self {
         Self {
-            c: test_fixture::default_server(),
+            c: test_fixture::new_server(test_fixture::DEFAULT_ALPN, params),
             goals: goals.into_iter().collect(),
         }
+    }
+
+    pub fn default_client(goals: impl IntoIterator<Item = Box<dyn ConnectionGoal>>) -> Self {
+        Self::new_client(ConnectionParameters::default(), goals)
+    }
+
+    pub fn default_server(goals: impl IntoIterator<Item = Box<dyn ConnectionGoal>>) -> Self {
+        Self::new_server(ConnectionParameters::default(), goals)
     }
 
     #[allow(dead_code)]
@@ -100,7 +118,7 @@ impl Node for ConnectionNode {
     }
 
     fn process(&mut self, mut d: Option<Datagram>, now: Instant) -> Output {
-        let _ = self.process_goals(|goal, c| goal.process(c, now));
+        _ = self.process_goals(|goal, c| goal.process(c, now));
         loop {
             let res = self.c.process(d.take(), now);
 
@@ -184,14 +202,13 @@ impl SendData {
         if self.stream_id.is_none() {
             if let Ok(stream_id) = c.stream_create(StreamType::UniDi) {
                 qdebug!([c], "made stream {} for sending", stream_id);
-                self.stream_id = Some(StreamId::new(stream_id));
+                self.stream_id = Some(stream_id);
             }
         }
     }
 
     fn send(&mut self, c: &mut Connection, stream_id: StreamId) -> GoalStatus {
         const DATA: &[u8] = &[0; 4096];
-        let stream_id = stream_id.as_u64();
         let mut status = GoalStatus::Waiting;
         loop {
             let end = min(self.remaining, DATA.len());
@@ -266,7 +283,7 @@ impl ReceiveData {
         let mut status = GoalStatus::Waiting;
         loop {
             let end = min(self.remaining, buf.len());
-            let (recvd, _) = c.stream_recv(stream_id.as_u64(), &mut buf[..end]).unwrap();
+            let (recvd, _) = c.stream_recv(stream_id, &mut buf[..end]).unwrap();
             qtrace!("received {} remaining {}", recvd, self.remaining);
             if recvd == 0 {
                 return status;
@@ -288,7 +305,7 @@ impl ConnectionGoal for ReceiveData {
         _now: Instant,
     ) -> GoalStatus {
         if let ConnectionEvent::RecvStreamReadable { stream_id } = e {
-            self.recv(c, StreamId::new(*stream_id))
+            self.recv(c, *stream_id)
         } else {
             GoalStatus::Waiting
         }

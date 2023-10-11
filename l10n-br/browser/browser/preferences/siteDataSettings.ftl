@@ -59,5 +59,8 @@ site-data-removing-dialog =
 site-data-removing-header = O lemel kuit an toupinoù ha roadennoù lec'hienn
 
 site-data-removing-desc = Dilemel an toupinoù hag ar roadennoù lec'hienn a c'hall digennaskañ ac'hanoc'h eus lec'hiennoù ’zo. Sur oc'h e fell deoc'h ober ar c'hemmoù-se?
+# Variables:
+#   $baseDomain (String) - The single domain for which data is being removed
+site-data-removing-single-desc = Dilemel an toupinoù ha roadennoù al lec'hiennoù a zigennasko ac'hanoc'h eus al lec'hiennoù. Sur oc'h e fell deoc'h dilemel an toupinoù ha roadennoù al lec'hiennoù evit <strong>{ $baseDomain }</strong>?
 
 site-data-removing-table = Dilamet e vo an toupinoù hag ar roadennoù lec'hienn diouzh al lec'hiennoù da-heul

@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Erabiltzaile-izena
 common-dialog-password =
     .value = Pasahitza
+
+common-dialog-copy-cmd =
+    .label = Kopiatu
+    .accesskey = K
+common-dialog-select-all-cmd =
+    .label = Hautatu dena
+    .accesskey = a

@@ -24,11 +24,11 @@ RenderSharedSurfaceTextureHost::~RenderSharedSurfaceTextureHost() {
   MOZ_COUNT_DTOR_INHERITED(RenderSharedSurfaceTextureHost, RenderTextureHost);
 }
 
-wr::WrExternalImage RenderSharedSurfaceTextureHost::Lock(
-    uint8_t aChannelIndex, gl::GLContext* aGL, wr::ImageRendering aRendering) {
+wr::WrExternalImage RenderSharedSurfaceTextureHost::Lock(uint8_t aChannelIndex,
+                                                         gl::GLContext* aGL) {
   if (!mLocked) {
-    if (NS_WARN_IF(!mSurface->Map(gfx::DataSourceSurface::MapType::READ_WRITE,
-                                  &mMap))) {
+    if (NS_WARN_IF(
+            !mSurface->Map(gfx::DataSourceSurface::MapType::READ, &mMap))) {
       return InvalidToWrExternalImage();
     }
     mLocked = true;

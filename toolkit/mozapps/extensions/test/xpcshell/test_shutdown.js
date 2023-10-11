@@ -9,8 +9,6 @@ const IGNORE = [
   "escapeAddonURI",
   "shouldAutoUpdate",
   "getStartupChanges",
-  "addTypeListener",
-  "removeTypeListener",
   "addAddonListener",
   "removeAddonListener",
   "addInstallListener",
@@ -26,14 +24,12 @@ const IGNORE = [
   "addUpgradeListener",
   "removeUpgradeListener",
   "getInstallSourceFromHost",
-  "getInstallSourceFromPrincipal",
   "stageLangpacksForAppUpdate",
 ];
 
 const IGNORE_PRIVATE = [
   "AddonAuthor",
   "AddonScreenshot",
-  "AddonType",
   "startup",
   "shutdown",
   "addonIsActive",
@@ -58,6 +54,8 @@ const IGNORE_PRIVATE = [
   "recordTiming",
   "BOOTSTRAP_REASONS",
   "notifyAddonChanged",
+  "overrideAddonRepository",
+  "overrideAsyncShutdown",
 ];
 
 async function test_functions() {
@@ -120,7 +118,7 @@ async function test_functions() {
   }
 }
 
-add_task(async function() {
+add_task(async function () {
   await test_functions();
   await promiseStartupManager();
   await promiseShutdownManager();

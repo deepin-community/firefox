@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-webpage-languages-window =
+webpage-languages-window2 =
     .title = વેબપૃષ્ઠ ભાષા સેટિંગ્સ
-    .style = width: 40em
+    .style = min-width: 40em
 
 languages-close-key =
     .key = w
@@ -49,9 +49,9 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
-browser-languages-window =
+browser-languages-window2 =
     .title = { -brand-short-name } ભાષા સેટિંગ્સ
-    .style = width: 40em
+    .style = min-width: 40em
 
 browser-languages-description = { -brand-short-name } તમારી મૂળભૂત તરીકે પ્રથમ ભાષાને પ્રદર્શિત કરશે અને આવશ્યક ક્રમમાં તેઓ દેખાતા વૈકલ્પિક ભાષાઓ પ્રદર્શિત કરશે.
 

@@ -1,12 +1,15 @@
 "use strict";
+const { SpecialMessageActions } = ChromeUtils.importESModule(
+  "resource://messaging-system/lib/SpecialMessageActions.sys.mjs"
+);
 
 const DID_SEE_ABOUT_WELCOME_PREF = "trailhead.firstrun.didSeeAboutWelcome";
 
-const TEST_PROTON_CONTENT = [
+const TEST_DEFAULT_CONTENT = [
   {
     id: "AW_STEP1",
-    order: 0,
     content: {
+      position: "split",
       title: "Step 1",
       primary_button: {
         label: "Next",
@@ -24,15 +27,15 @@ const TEST_PROTON_CONTENT = [
           data: { entrypoint: "test" },
         },
       },
-      help_text: {
-        text: "Here's some sample help text",
+      info_text: {
+        raw: "Here's some sample help text",
       },
     },
   },
   {
     id: "AW_STEP2",
-    order: 1,
     content: {
+      position: "center",
       title: "Step 2",
       primary_button: {
         label: "Next",
@@ -43,11 +46,11 @@ const TEST_PROTON_CONTENT = [
       secondary_button: {
         label: "link",
       },
+      has_noodles: true,
     },
   },
   {
     id: "AW_STEP3",
-    order: 2,
     content: {
       title: "Step 3",
       tiles: {
@@ -84,7 +87,7 @@ const TEST_PROTON_CONTENT = [
   },
   {
     id: "AW_STEP4",
-    order: 3,
+    auto_advance: "primary_button",
     content: {
       title: "Step 4",
       primary_button: {
@@ -100,11 +103,11 @@ const TEST_PROTON_CONTENT = [
   },
 ];
 
-const TEST_PROTON_JSON = JSON.stringify(TEST_PROTON_CONTENT);
+const TEST_DEFAULT_JSON = JSON.stringify(TEST_DEFAULT_CONTENT);
 
 async function openAboutWelcome() {
   await setAboutWelcomePref(true);
-  await setAboutWelcomeMultiStage(TEST_PROTON_JSON);
+  await setAboutWelcomeMultiStage(TEST_DEFAULT_JSON);
 
   let tab = await BrowserTestUtils.openNewForegroundTab(
     gBrowser,
@@ -118,9 +121,9 @@ async function openAboutWelcome() {
 }
 
 /**
- * Test the multistage welcome Proton UI
+ * Test the multistage welcome default UI
  */
-add_task(async function test_multistage_aboutwelcome_proton() {
+add_task(async function test_multistage_aboutwelcome_default() {
   const sandbox = sinon.createSandbox();
   let browser = await openAboutWelcome();
   let aboutWelcomeActor = await getAboutWelcomeParent(browser);
@@ -132,24 +135,23 @@ add_task(async function test_multistage_aboutwelcome_proton() {
 
   await test_screen_content(
     browser,
-    "multistage proton step 1",
+    "multistage step 1",
     // Expected selectors:
     [
       "main.AW_STEP1",
       "div.onboardingContainer",
-      "div.proton[style*='.jpg']",
-      "div.section-left",
-      "span.attrib-text",
+      "div.section-secondary",
       "div.secondary-cta.top",
+      "div.steps",
+      "div.indicator.current",
+      "span.info-text",
     ],
     // Unexpected selectors:
     [
       "main.AW_STEP2",
       "main.AW_STEP3",
-      "nav.steps",
       "main.dialog-initial",
       "main.dialog-last",
-      "div.indicator.current",
     ]
   );
 
@@ -167,50 +169,57 @@ add_task(async function test_multistage_aboutwelcome_proton() {
   }
 
   Assert.ok(
-    clickCall.args[1].message_id === "DEFAULT_ABOUTWELCOME_PROTON_0_AW_STEP1",
-    "AboutWelcome proton message id joined with screen id"
+    clickCall.args[1].message_id === "MR_WELCOME_DEFAULT_0_AW_STEP1",
+    "AboutWelcome MR message id joined with screen id"
   );
 
   await test_screen_content(
     browser,
-    "multistage proton step 2",
+    "multistage step 2",
     // Expected selectors:
     [
-      "main.AW_STEP2.dialog-initial",
+      "main.AW_STEP2",
       "div.onboardingContainer",
-      "div.proton[style*='.jpg']",
       "div.section-main",
-      "nav.steps",
+      "div.steps",
       "div.indicator.current",
+      "main.with-noodles",
     ],
     // Unexpected selectors:
-    ["main.AW_STEP1", "main.AW_STEP3", "div.section-left", "main.dialog-last"]
+    [
+      "main.AW_STEP1",
+      "main.AW_STEP3",
+      "div.section-secondary",
+      "main.dialog-last",
+    ]
   );
 
   await onButtonClick(browser, "button.primary");
 
   // No 3rd screen to go to for win7.
-  if (win7Content) return;
+  if (win7Content) {
+    return;
+  }
 
   await test_screen_content(
     browser,
-    "multistage proton step 3",
+    "multistage step 3",
     // Expected selectors:
     [
       "main.AW_STEP3",
       "div.onboardingContainer",
-      "div.proton[style*='.jpg']",
       "div.section-main",
       "div.tiles-theme-container",
-      "nav.steps",
+      "div.steps",
       "div.indicator.current",
     ],
     // Unexpected selectors:
     [
       "main.AW_STEP2",
       "main.AW_STEP1",
-      "div.section-left",
+      "div.section-secondary",
       "main.dialog-initial",
+      "main.with-noodles",
       "main.dialog-last",
     ]
   );
@@ -219,7 +228,7 @@ add_task(async function test_multistage_aboutwelcome_proton() {
 
   await test_screen_content(
     browser,
-    "multistage proton step 4",
+    "multistage step 4",
     // Expected selectors:
     [
       "main.AW_STEP4.screen-1",
@@ -231,6 +240,7 @@ add_task(async function test_multistage_aboutwelcome_proton() {
       "main.AW_STEP2",
       "main.AW_STEP1",
       "main.AW_STEP3",
+      "div.steps",
       "main.dialog-initial",
       "main.AW_STEP4.screen-0",
       "main.AW_STEP4.screen-2",
@@ -260,6 +270,7 @@ add_task(async function test_Multistage_About_Welcome_navigation() {
       "div.secondary-cta.top",
       "button[value='secondary_button']",
       "button[value='secondary_button_top']",
+      "span.info-text",
     ],
     // Unexpected selectors:
     ["main.AW_STEP2", "main.AW_STEP3"]
@@ -275,12 +286,7 @@ add_task(async function test_AWMultistage_Primary_Action() {
   let browser = await openAboutWelcome();
   let aboutWelcomeActor = await getAboutWelcomeParent(browser);
   const sandbox = sinon.createSandbox();
-  // Stub AboutWelcomeParent Content Message Handler
-  sandbox
-    .stub(aboutWelcomeActor, "onContentMessage")
-    .resolves("")
-    .withArgs("AWPage:IMPORTABLE_SITES")
-    .resolves([]);
+  sandbox.spy(aboutWelcomeActor, "onContentMessage");
   registerCleanupFunction(() => {
     sandbox.restore();
   });
@@ -290,7 +296,6 @@ add_task(async function test_AWMultistage_Primary_Action() {
   ok(callCount >= 1, `${callCount} Stub was called`);
 
   let clickCall;
-  let impressionCall;
   let performanceCall;
   for (let i = 0; i < callCount; i++) {
     const call = aboutWelcomeActor.onContentMessage.getCall(i);
@@ -299,46 +304,11 @@ add_task(async function test_AWMultistage_Primary_Action() {
       clickCall = call;
     } else if (
       call.calledWithMatch("", {
-        event_context: { importable: sinon.match.number },
-      })
-    ) {
-      impressionCall = call;
-    } else if (
-      call.calledWithMatch("", {
         event_context: { mountStart: sinon.match.number },
       })
     ) {
       performanceCall = call;
     }
-  }
-
-  // For some builds, we can stub fast enough to catch the impression
-  if (impressionCall) {
-    Assert.equal(
-      impressionCall.args[0],
-      "AWPage:TELEMETRY_EVENT",
-      "send telemetry event"
-    );
-    Assert.equal(
-      impressionCall.args[1].event,
-      "IMPRESSION",
-      "impression event recorded in telemetry"
-    );
-    Assert.equal(
-      impressionCall.args[1].event_context.display,
-      "static",
-      "static sites display recorded in telemetry"
-    );
-    Assert.equal(
-      typeof impressionCall.args[1].event_context.importable,
-      "number",
-      "numeric importable sites recorded in telemetry"
-    );
-    Assert.equal(
-      impressionCall.args[1].message_id,
-      "DEFAULT_ABOUTWELCOME_PROTON_SITES",
-      "SITES MessageId sent in impression event telemetry"
-    );
   }
 
   // For some builds, we can stub fast enough to catch the performance
@@ -370,7 +340,7 @@ add_task(async function test_AWMultistage_Primary_Action() {
     );
     Assert.equal(
       performanceCall.args[1].message_id,
-      "DEFAULT_ABOUTWELCOME_PROTON",
+      "MR_WELCOME_DEFAULT",
       "MessageId sent in performance event telemetry"
     );
   }
@@ -392,22 +362,20 @@ add_task(async function test_AWMultistage_Primary_Action() {
   );
   Assert.equal(
     clickCall.args[1].message_id,
-    "DEFAULT_ABOUTWELCOME_PROTON_0_AW_STEP1",
+    "MR_WELCOME_DEFAULT_0_AW_STEP1",
     "MessageId sent in click event telemetry"
   );
 });
 
 add_task(async function test_AWMultistage_Secondary_Open_URL_Action() {
-  if (win7Content) return;
+  if (win7Content) {
+    return;
+  }
   let browser = await openAboutWelcome();
   let aboutWelcomeActor = await getAboutWelcomeParent(browser);
   const sandbox = sinon.createSandbox();
   // Stub AboutWelcomeParent Content Message Handler
-  sandbox
-    .stub(aboutWelcomeActor, "onContentMessage")
-    .resolves("")
-    .withArgs("AWPage:IMPORTABLE_SITES")
-    .resolves([]);
+  sandbox.stub(aboutWelcomeActor, "onContentMessage").resolves(null);
   registerCleanupFunction(() => {
     sandbox.restore();
   });
@@ -470,27 +438,26 @@ add_task(async function test_AWMultistage_Secondary_Open_URL_Action() {
 
 add_task(async function test_AWMultistage_Themes() {
   // No theme screen to test for win7.
-  if (win7Content) return;
+  if (win7Content) {
+    return;
+  }
 
   let browser = await openAboutWelcome();
   let aboutWelcomeActor = await getAboutWelcomeParent(browser);
 
   const sandbox = sinon.createSandbox();
-  // Stub AboutWelcomeParent Content Message Handler
-  sandbox
-    .stub(aboutWelcomeActor, "onContentMessage")
-    .resolves("")
-    .withArgs("AWPage:IMPORTABLE_SITES")
-    .resolves([]);
+  sandbox.spy(aboutWelcomeActor, "onContentMessage");
+
   registerCleanupFunction(() => {
     sandbox.restore();
   });
   await onButtonClick(browser, "button.primary");
+
   await test_screen_content(
     browser,
     "multistage proton step 2",
     // Expected selectors:
-    ["main.AW_STEP2.dialog-initial"],
+    ["main.AW_STEP2"],
     // Unexpected selectors:
     ["main.AW_STEP1"]
   );
@@ -549,9 +516,82 @@ add_task(async function test_AWMultistage_Themes() {
   );
 });
 
+add_task(async function test_AWMultistage_can_restore_theme() {
+  const { XPIProvider } = ChromeUtils.import(
+    "resource://gre/modules/addons/XPIProvider.jsm"
+  );
+  const sandbox = sinon.createSandbox();
+  registerCleanupFunction(() => sandbox.restore());
+
+  const fakeAddons = [];
+  class FakeAddon {
+    constructor({ id = "default-theme@mozilla.org", isActive = false } = {}) {
+      this.id = id;
+      this.isActive = isActive;
+    }
+    enable() {
+      for (let addon of fakeAddons) {
+        addon.isActive = false;
+      }
+      this.isActive = true;
+    }
+  }
+  fakeAddons.push(
+    new FakeAddon({ id: "fake-theme-1@mozilla.org", isActive: true }),
+    new FakeAddon({ id: "fake-theme-2@mozilla.org" })
+  );
+
+  let browser = await openAboutWelcome();
+  let aboutWelcomeActor = await getAboutWelcomeParent(browser);
+
+  sandbox.stub(XPIProvider, "getAddonsByTypes").resolves(fakeAddons);
+  sandbox
+    .stub(XPIProvider, "getAddonByID")
+    .callsFake(id => fakeAddons.find(addon => addon.id === id));
+  sandbox.spy(aboutWelcomeActor, "onContentMessage");
+
+  // Test that the active theme ID is stored in LIGHT_WEIGHT_THEMES
+  await aboutWelcomeActor.receiveMessage({
+    name: "AWPage:GET_SELECTED_THEME",
+  });
+  Assert.equal(
+    await aboutWelcomeActor.onContentMessage.lastCall.returnValue,
+    "automatic",
+    `Should return "automatic" for non-built-in theme`
+  );
+
+  await aboutWelcomeActor.receiveMessage({
+    name: "AWPage:SELECT_THEME",
+    data: "AUTOMATIC",
+  });
+  Assert.equal(
+    XPIProvider.getAddonByID.lastCall.args[0],
+    fakeAddons[0].id,
+    `LIGHT_WEIGHT_THEMES.AUTOMATIC should be ${fakeAddons[0].id}`
+  );
+
+  // Enable a different theme...
+  fakeAddons[1].enable();
+  // And test that AWGetSelectedTheme updates the active theme ID
+  await aboutWelcomeActor.receiveMessage({
+    name: "AWPage:GET_SELECTED_THEME",
+  });
+  await aboutWelcomeActor.receiveMessage({
+    name: "AWPage:SELECT_THEME",
+    data: "AUTOMATIC",
+  });
+  Assert.equal(
+    XPIProvider.getAddonByID.lastCall.args[0],
+    fakeAddons[1].id,
+    `LIGHT_WEIGHT_THEMES.AUTOMATIC should be ${fakeAddons[1].id}`
+  );
+});
+
 add_task(async function test_AWMultistage_Import() {
   // No import screen to test for win7.
-  if (win7Content) return;
+  if (win7Content) {
+    return;
+  }
   let browser = await openAboutWelcome();
   let aboutWelcomeActor = await getAboutWelcomeParent(browser);
 
@@ -561,19 +601,16 @@ add_task(async function test_AWMultistage_Import() {
     browser,
     "multistage proton step 2",
     // Expected selectors:
-    ["main.AW_STEP2.dialog-initial"],
+    ["main.AW_STEP2"],
     // Unexpected selectors:
     ["main.AW_STEP1"]
   );
   await onButtonClick(browser, "button.primary");
 
   const sandbox = sinon.createSandbox();
-  // Stub AboutWelcomeParent Content Message Handler
-  sandbox
-    .stub(aboutWelcomeActor, "onContentMessage")
-    .resolves("")
-    .withArgs("AWPage:IMPORTABLE_SITES")
-    .resolves([]);
+  sandbox.stub(SpecialMessageActions, "handleAction");
+  sandbox.spy(aboutWelcomeActor, "onContentMessage");
+
   registerCleanupFunction(() => {
     sandbox.restore();
   });
@@ -637,7 +674,7 @@ add_task(async function test_updatesPrefOnAWOpen() {
   Services.prefs.clearUserPref(DID_SEE_ABOUT_WELCOME_PREF);
 });
 
-add_task(async function setup() {
+add_setup(async function () {
   const sandbox = sinon.createSandbox();
   // This needs to happen before any about:welcome page opens
   sandbox.stub(FxAccounts.config, "promiseMetricsFlowURI").resolves("");
@@ -648,29 +685,61 @@ add_task(async function setup() {
   });
 });
 
-// Test Fxaccounts MetricsFlowURI
-test_newtab(
-  {
-    async before({ pushPrefs }) {
-      await pushPrefs(["browser.aboutwelcome.enabled", true]);
-    },
-    test: async function test_startBrowsing() {
+add_task(async function test_FxA_metricsFlowURI() {
+  let browser = await openAboutWelcome();
+
+  await ContentTask.spawn(browser, {}, async () => {
+    Assert.ok(
       await ContentTaskUtils.waitForCondition(
         () => content.document.querySelector("div.onboardingContainer"),
         "Wait for about:welcome to load"
-      );
-    },
-    after() {
-      Assert.ok(
-        FxAccounts.config.promiseMetricsFlowURI.called,
-        "Stub was called"
-      );
-      Assert.equal(
-        FxAccounts.config.promiseMetricsFlowURI.firstCall.args[0],
-        "aboutwelcome",
-        "Called by AboutWelcomeParent"
-      );
-    },
-  },
-  "about:welcome"
-);
+      ),
+      "about:welcome loaded"
+    );
+  });
+
+  Assert.ok(FxAccounts.config.promiseMetricsFlowURI.called, "Stub was called");
+  Assert.equal(
+    FxAccounts.config.promiseMetricsFlowURI.firstCall.args[0],
+    "aboutwelcome",
+    "Called by AboutWelcomeParent"
+  );
+
+  SpecialPowers.popPrefEnv();
+});
+
+add_task(async function test_send_aboutwelcome_as_page_in_event_telemetry() {
+  const sandbox = sinon.createSandbox();
+  let browser = await openAboutWelcome();
+  let aboutWelcomeActor = await getAboutWelcomeParent(browser);
+  sandbox.spy(aboutWelcomeActor, "onContentMessage");
+
+  await onButtonClick(browser, "button.primary");
+
+  const { callCount } = aboutWelcomeActor.onContentMessage;
+  ok(callCount >= 1, `${callCount} Stub was called`);
+
+  let eventCall;
+  for (let i = 0; i < callCount; i++) {
+    const call = aboutWelcomeActor.onContentMessage.getCall(i);
+    info(`Call #${i}: ${call.args[0]} ${JSON.stringify(call.args[1])}`);
+    if (call.calledWithMatch("", { event: "CLICK_BUTTON" })) {
+      eventCall = call;
+    }
+  }
+
+  Assert.equal(
+    eventCall.args[1].event,
+    "CLICK_BUTTON",
+    "Event telemetry sent on primary button press"
+  );
+  Assert.equal(
+    eventCall.args[1].event_context.page,
+    "about:welcome",
+    "Event context page set to 'about:welcome' in event telemetry"
+  );
+
+  registerCleanupFunction(() => {
+    sandbox.restore();
+  });
+});

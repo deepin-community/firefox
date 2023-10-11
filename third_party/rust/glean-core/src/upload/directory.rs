@@ -171,7 +171,7 @@ impl PingDirectoryManager {
         if let (Some(Ok(path)), Some(Ok(body)), Ok(metadata)) =
             (lines.next(), lines.next(), lines.next().transpose())
         {
-            let headers = metadata.map(|m| process_metadata(&path, &m)).flatten();
+            let headers = metadata.and_then(|m| process_metadata(&path, &m));
             return Some((document_id.into(), path, body, headers));
         } else {
             log::warn!(
@@ -307,7 +307,7 @@ mod test {
         glean.register_ping_type(&ping_type);
 
         // Submit the ping to populate the pending_pings directory
-        glean.submit_ping(&ping_type, None);
+        ping_type.submit_sync(&glean, None);
 
         let directory_manager = PingDirectoryManager::new(dir.path());
 
@@ -333,9 +333,9 @@ mod test {
         glean.register_ping_type(&ping_type);
 
         // Submit the ping to populate the pending_pings directory
-        glean.submit_ping(&ping_type, None);
+        ping_type.submit_sync(&glean, None);
 
-        let directory_manager = PingDirectoryManager::new(&dir.path());
+        let directory_manager = PingDirectoryManager::new(dir.path());
 
         let not_uuid_path = dir
             .path()
@@ -368,9 +368,9 @@ mod test {
         glean.register_ping_type(&ping_type);
 
         // Submit the ping to populate the pending_pings directory
-        glean.submit_ping(&ping_type, None);
+        ping_type.submit_sync(&glean, None);
 
-        let directory_manager = PingDirectoryManager::new(&dir.path());
+        let directory_manager = PingDirectoryManager::new(dir.path());
 
         let wrong_contents_file_path = dir
             .path()
@@ -399,7 +399,10 @@ mod test {
         let (glean, dir) = new_glean(None);
 
         // Submit a deletion request ping to populate deletion request folder.
-        glean.internal_pings.deletion_request.submit(&glean, None);
+        glean
+            .internal_pings
+            .deletion_request
+            .submit_sync(&glean, None);
 
         let directory_manager = PingDirectoryManager::new(dir.path());
 

@@ -25,7 +25,6 @@
 #include "mozilla/UniquePtr.h"
 #include "nsTArray.h"
 #include "nsWindowsDllInterceptor.h"
-#include "plstr.h"
 
 #ifdef MOZ_REPLACE_MALLOC
 #  include "replace_malloc_bridge.h"
@@ -434,6 +433,17 @@ static mozilla::WindowsDllInterceptor sNtDllInterceptor;
 namespace mozilla {
 
 void InitPoisonIOInterposer() {
+  // Currently we hook the functions not early enough to precede third-party
+  // injections.  Until we implement a compatible way e.g. applying a hook
+  // in the parent process (bug 1646804), we skip interposing functions under
+  // the known condition(s).
+
+  // Bug 1679741: Kingsoft Internet Security calls NtReadFile in their thread
+  // simultaneously when we're applying a hook on NtReadFile.
+  if (::GetModuleHandleW(L"kwsui64.dll")) {
+    return;
+  }
+
   // Don't poison twice... as this function may only be invoked on the main
   // thread when no other threads are running, it safe to allow multiple calls
   // to InitPoisonIOInterposer() without complaining (ie. failing assertions).
@@ -454,7 +464,9 @@ void InitPoisonIOInterposer() {
 
   // Stdout and Stderr are OK.
   MozillaRegisterDebugFD(1);
-  MozillaRegisterDebugFD(2);
+  if (::GetStdHandle(STD_OUTPUT_HANDLE) != ::GetStdHandle(STD_ERROR_HANDLE)) {
+    MozillaRegisterDebugFD(2);
+  }
 
 #ifdef MOZ_REPLACE_MALLOC
   // The contract with InitDebugFd is that the given registry can be used

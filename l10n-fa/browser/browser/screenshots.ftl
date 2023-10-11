@@ -3,8 +3,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 screenshot-toolbarbutton =
-    .label = عکس صفحه
-    .tooltiptext = گرفتن عکس از صفحه
+    .label = نماگرفت
+    .tooltiptext = گرفتن نماگرفت
+
+screenshot-shortcut =
+    .key = S
 
 screenshots-instructions = با کشیدن یا کلیک کردن روی صفحه یک منطقه را انتخاب کنید. برای لغو، ESC را فشار دهید.
 screenshots-cancel-button = لغو
@@ -14,6 +17,14 @@ screenshots-download-button = دریافت
 screenshots-download-button-tooltip = دریافت تصاویرگرفته شده از صفحه
 screenshots-copy-button = رونوشت
 screenshots-copy-button-tooltip = برداشت تصاویرگرفته شده از صفحه به کلیپ بورد
+screenshots-download-button-title =
+    .title = دریافت تصویر
+screenshots-copy-button-title =
+    .title = رونوشت تصویر گرفته شده در کلیپ‌بورد
+screenshots-cancel-button-title =
+    .title = لغو
+screenshots-retry-button-title =
+    .title = تلاش مجدد
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -44,3 +55,4 @@ screenshots-private-window-error-details = به خاطر مزاحمت متاسف
 
 screenshots-generic-error-title = اوه! { -screenshots-brand-name } درست کار نمی‌کند.
 screenshots-generic-error-details = مطمئن نیستیم چه اتفاقی افتاده است. می‌خواهید دوباره امتحان کنید یا از یک صفحهٔ دیگر عکس بگیرید؟
+

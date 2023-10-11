@@ -1,3 +1,5 @@
+/* eslint-env mozilla/chrome-script */
+
 Cu.importGlobalProperties(["File"]);
 
 var tmpFile;
@@ -10,12 +12,12 @@ function writeFile(text, answer) {
   stream.write(text, text.length);
   stream.close();
 
-  File.createFromNsIFile(tmpFile).then(function(file) {
+  File.createFromNsIFile(tmpFile).then(function (file) {
     sendAsyncMessage(answer, { file });
   });
 }
 
-addMessageListener("file.open", function(e) {
+addMessageListener("file.open", function (e) {
   tmpFile = Cc["@mozilla.org/file/directory_service;1"]
     .getService(Ci.nsIDirectoryService)
     .QueryInterface(Ci.nsIProperties)
@@ -26,6 +28,6 @@ addMessageListener("file.open", function(e) {
   writeFile("hello world", "file.opened");
 });
 
-addMessageListener("file.change", function(e) {
+addMessageListener("file.change", function (e) {
   writeFile("hello world---------------", "file.changed");
 });

@@ -1,10 +1,10 @@
 /* Any copyright is dedicated to the Public Domain.
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 
-XPCOMUtils.defineLazyModuleGetters(this, {
-  ExperimentAPI: "resource://nimbus/ExperimentAPI.jsm",
-  ExperimentFakes: "resource://testing-common/NimbusTestUtils.jsm",
-  NimbusFeatures: "resource://nimbus/ExperimentAPI.jsm",
+ChromeUtils.defineESModuleGetters(this, {
+  ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
+  ExperimentFakes: "resource://testing-common/NimbusTestUtils.sys.mjs",
+  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
 });
 
 registerCleanupFunction(() => {
@@ -24,13 +24,9 @@ add_task(async function remote_disable() {
     return;
   }
 
-  await ExperimentFakes.remoteDefaultsHelper({
-    feature: NimbusFeatures.shellService,
-    configuration: {
-      slug: "shellService_remoteDisable",
-      variables: { disablePin: true, enabled: true },
-      targeting: "true",
-    },
+  let doCleanup = await ExperimentFakes.enrollWithRollout({
+    featureId: NimbusFeatures.shellService.featureId,
+    value: { disablePin: true, enabled: true },
   });
 
   Assert.equal(
@@ -38,6 +34,8 @@ add_task(async function remote_disable() {
     false,
     "Pinning disabled via nimbus"
   );
+
+  await doCleanup();
 });
 
 add_task(async function restore_default() {

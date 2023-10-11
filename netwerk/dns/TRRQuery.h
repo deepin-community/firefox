@@ -8,6 +8,7 @@
 #define mozilla_net_TRRQuery_h
 
 #include "nsHostResolver.h"
+#include "DNSPacket.h"
 
 namespace mozilla {
 namespace net {
@@ -21,7 +22,7 @@ class TRRQuery : public AHostResolver {
         mRecord(aHostRecord),
         mTrrLock("TRRQuery.mTrrLock") {}
 
-  nsresult DispatchLookup(TRR* pushedTRR = nullptr, bool aUseODoHProxy = false);
+  nsresult DispatchLookup(TRR* pushedTRR = nullptr);
 
   void Cancel(nsresult aStatus);
 
@@ -42,8 +43,8 @@ class TRRQuery : public AHostResolver {
       uint32_t aTtl, bool pb) override;
   virtual nsresult GetHostRecord(const nsACString& host,
                                  const nsACString& aTrrServer, uint16_t type,
-                                 uint16_t flags, uint16_t af, bool pb,
-                                 const nsCString& originSuffix,
+                                 nsIDNSService::DNSFlags flags, uint16_t af,
+                                 bool pb, const nsCString& originSuffix,
                                  nsHostRecord** result) override {
     if (!mHostResolver) {
       return NS_ERROR_FAILURE;
@@ -68,11 +69,20 @@ class TRRQuery : public AHostResolver {
   mozilla::TimeDuration Duration() { return mTrrDuration; }
 
  private:
+  nsresult DispatchByTypeLookup(TRR* pushedTRR = nullptr);
+
+ private:
   ~TRRQuery() = default;
+
+  void MarkSendingTRR(TRR* trr, TrrType rectype, MutexAutoLock&);
+  void PrepareQuery(TrrType aRecType, nsTArray<RefPtr<TRR>>& aRequestsToSend);
+  bool SendQueries(nsTArray<RefPtr<TRR>>& aRequestsToSend);
+
   RefPtr<nsHostResolver> mHostResolver;
   RefPtr<nsHostRecord> mRecord;
 
-  Mutex mTrrLock;  // lock when accessing the mTrrA[AAA] pointers
+  Mutex mTrrLock
+      MOZ_UNANNOTATED;  // lock when accessing the mTrrA[AAA] pointers
   RefPtr<mozilla::net::TRR> mTrrA;
   RefPtr<mozilla::net::TRR> mTrrAAAA;
   RefPtr<mozilla::net::TRR> mTrrByType;
@@ -84,12 +94,15 @@ class TRRQuery : public AHostResolver {
   Atomic<uint32_t> mTRRRequestCounter{0};
 
   uint8_t mTRRSuccess = 0;  // number of successful TRR responses
+  bool mCalledCompleteLookup = false;
 
   mozilla::TimeDuration mTrrDuration;
   mozilla::TimeStamp mTrrStart;
 
-  RefPtr<mozilla::net::AddrInfo> mFirstTRR;  // partial TRR storage
-  nsresult mFirstTRRresult = NS_OK;
+  RefPtr<mozilla::net::AddrInfo> mAddrInfoA;
+  RefPtr<mozilla::net::AddrInfo> mAddrInfoAAAA;
+  nsresult mAResult = NS_OK;
+  nsresult mAAAAResult = NS_OK;
 };
 
 }  // namespace net

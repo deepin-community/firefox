@@ -54,10 +54,18 @@ bool DMABUFTextureData::Serialize(SurfaceDescriptor& aOutDescriptor) {
   return mSurface->Serialize(aOutDescriptor);
 }
 
+void DMABUFTextureData::GetSubDescriptor(
+    RemoteDecoderVideoSubDescriptor* const aOutDesc) {
+  SurfaceDescriptor desc;
+  if (!mSurface->Serialize(desc)) {
+    return;
+  }
+  *aOutDesc = static_cast<SurfaceDescriptorDMABuf>(desc);
+}
+
 void DMABUFTextureData::FillInfo(TextureData::Info& aInfo) const {
   aInfo.size = gfx::IntSize(mSurface->GetWidth(), mSurface->GetHeight());
   aInfo.format = mSurface->GetFormat();
-  aInfo.hasIntermediateBuffer = false;
   aInfo.hasSynchronization = false;
   aInfo.supportsMoz2D = true;
   aInfo.canExposeMappedData = false;

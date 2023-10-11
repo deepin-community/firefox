@@ -8,6 +8,7 @@ about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Vider le cache DNS
 about-networking-dns-trr-url = URL DoH
+about-networking-dns-trr-mode = Mode DoH
 about-networking-dns-suffix = Suffixe DNS
 about-networking-websockets = WebSockets
 about-networking-refresh = Actualiser
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Actif
 about-networking-idle = Inactif
 about-networking-host = Hôte
-about-networking-tcp = TCP
 about-networking-type = Type
 about-networking-sent = Envoyés
 about-networking-received = Reçus
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Adresses
 about-networking-expires = Expiration (secondes)
 about-networking-originAttributesSuffix = Clé d’isolement
+about-networking-flags = Flags supplémentaires
 about-networking-messages-sent = Messages envoyés
 about-networking-messages-received = Messages reçus
 about-networking-bytes-sent = Octets envoyés
 about-networking-bytes-received = Octets reçus
 about-networking-logging = Journalisation
-about-networking-log-tutorial = Consultez <a data-l10n-name="logging">HTTP Logging</a> pour obtenir des informations sur l’utilisation de cet outil.
-about-networking-current-log-file = Fichier de journalisation actuel :
-about-networking-current-log-modules = Modules de journalisation actuels :
-about-networking-set-log-file = Définir un fichier de journalisation
-about-networking-set-log-modules = Définir des modules de journalisation
-about-networking-start-logging = Lancer la journalisation
-about-networking-stop-logging = Arrêter la journalisation
 about-networking-dns-lookup = Recherche DNS
 about-networking-dns-lookup-button = Résolution
 about-networking-dns-domain = Domaine:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Nombre de fois où le cache est lent
 about-networking-rcwn-cache-not-slow = Nombre de fois où le cache est rapide
 about-networking-networkid = Identifiant réseau
 about-networking-networkid-id = Identifiant réseau
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Cette page a été déplacée vers <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

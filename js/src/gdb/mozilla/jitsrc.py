@@ -10,8 +10,9 @@
 #  => 0x240e954ac13a:	pushq  (%rbx)
 #  (rr) jitsrc 0x240e954ac13a
 
-import gdb
 import re
+
+import gdb
 
 # (base_name, hops, func_name, source_var, dest_var) tuples, such that :
 #   - `base_name`: a regex matching the name of the function that implements
@@ -27,21 +28,27 @@ import re
 # is normally to add a new pattern here.
 patterns = [
     (
-        "__memmove_avx_unaligned_erms",
+        "__memmove_(avx|evex)_unaligned_erms",
         1,
         "js::jit::X86Encoding::BaseAssembler::executableCopy",
         "src",
         "dst",
     ),
     (
-        "__memcpy_avx_unaligned",
+        "__memcpy_(avx|evex)_unaligned",
         1,
         "js::jit::X86Encoding::BaseAssembler::executableCopy",
         "src",
         "dst",
     ),
-    ("__memmove_avx_unaligned_erms", 1, "arena_t::RallocSmallOrLarge", "aPtr", "ret"),
-    ("__memcpy_avx_unaligned", 1, "arena_t::RallocSmallOrLarge", "aPtr", "ret"),
+    (
+        "__memmove_(avx|evex)_unaligned_erms",
+        1,
+        "arena_t::RallocSmallOrLarge",
+        "aPtr",
+        "ret",
+    ),
+    ("__memcpy_(avx|evex)_unaligned", 1, "arena_t::RallocSmallOrLarge", "aPtr", "ret"),
     (
         "mozilla::detail::VectorImpl<.*>::new_<.*>",
         3,
@@ -50,7 +57,7 @@ patterns = [
         "newBuf",
     ),
     (
-        "__memmove_avx_unaligned_erms",
+        "__memmove_(avx|evex)_unaligned_erms",
         1,
         "js::jit::AssemblerBufferWithConstantPools",
         "&cur->instructions[0]",
@@ -88,7 +95,7 @@ patterns = [
     ),
     ("std::__copy_move", 4, "CopySpan", "source.data()", "target.data()"),
     (
-        "__memmove_avx_unaligned_erms",
+        "__memmove_(avx|evex)_unaligned_erms",
         1,
         "mozilla::detail::EndianUtils::copyAndSwapTo<.*0,.*0",
         "aSrc",

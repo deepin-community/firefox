@@ -5,9 +5,9 @@
 
 ## Strings used for device manager
 
-devmgr =
+devmgr-window =
     .title = Управление устройствами
-    .style = width: 67em; height: 32em;
+    .style = min-width: 67em; min-height: 32em;
 
 devmgr-devlist =
     .label = Модули и устройства защиты
@@ -116,7 +116,7 @@ devinfo-label =
 devinfo-serialnum =
     .label = Серийный номер
 
-fips-nonempty-primary-password-required = Для работы в режиме соответствия FIPS необходимо для каждого устройства защиты установить мастер-пароль. Установите этот пароль перед переходом в данный режим.
+fips-nonempty-primary-password-required = Для работы в режиме FIPS необходим основной пароль для каждого устройства защиты. Установите этот пароль перед переходом в режим FIPS.
 unable-to-toggle-fips = Не удалось сменить режим соответствия FIPS для устройства защиты. Мы рекомендуем вам закрыть и перезапустить это приложение.
 load-pk11-module-file-picker-title = Выберите для загрузки драйвер устройства PKCS#11
 

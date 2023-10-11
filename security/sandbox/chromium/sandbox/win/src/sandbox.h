@@ -122,6 +122,11 @@ class BrokerServices {
   virtual ResultCode GetPolicyDiagnostics(
       std::unique_ptr<PolicyDiagnosticsReceiver> receiver) = 0;
 
+  // Derive a capability PSID from the given string.
+  virtual bool DeriveCapabilitySidFromName(const wchar_t* name,
+                                           PSID derived_sid,
+                                           DWORD sid_buffer_length) = 0;
+
  protected:
   ~BrokerServices() {}
 };
@@ -180,6 +185,9 @@ class TargetServices {
                                      HANDLE* target_handle,
                                      DWORD desired_access,
                                      DWORD options) = 0;
+
+  virtual ResultCode GetComplexLineBreaks(const WCHAR* text, uint32_t length,
+                                          uint8_t* break_before) = 0;
 
  protected:
   ~TargetServices() {}

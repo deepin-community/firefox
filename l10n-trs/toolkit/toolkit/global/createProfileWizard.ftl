@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Sa rugûñun’ūnj da’ girī’ ‘ngō perfil
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Nuguan' tàj ñaan
-       *[other] Guruhuât gunumânt riña { create-profile-window.title }
+       *[other] Guruhuât gunumânt riña { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } nachra sà’ nuguan’ huā dàj nagi’iát riña perfil arâj sunt.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Nuguan' nahuij
-       *[other] Hìaj dusìj man { create-profile-window.title }
+       *[other] Hìaj dusìj man { create-profile-window2.title }
     }
 
 profile-creation-intro = Sisī ruhuât girīt ga’ì perfil nī, ga’ue nani’înt nej man ngà si yugui da’ go’ngō man. Ga’ue gārasunt si yugui nùn hiuj nan asi girīt a’ngoj.

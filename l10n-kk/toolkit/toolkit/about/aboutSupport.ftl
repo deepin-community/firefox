@@ -4,7 +4,6 @@
 
 page-title = Мәселелерді шешу ақпараты
 page-subtitle = Бұл парақта мәселелерді шешуде пайдалы бола алатын техникалық ақпарат бар. Егер сіз { -brand-short-name } туралы жалпы сұрақтарға жауапты іздесеңіз, біздің <a data-l10n-name="support-link">қолдау көрсету</a> сайтын шолыңыз.
-
 crashes-title = Құлау туралы хабарлар
 crashes-id = Хабарлама ID
 crashes-send-date = Жіберілген
@@ -16,6 +15,10 @@ support-addons-type = Түрі
 support-addons-enabled = Іске қосылған
 support-addons-version = Нұсқасы
 support-addons-id = ID
+legacy-user-stylesheets-title = Ескірген пайдаланушы стильдер кестелері
+legacy-user-stylesheets-enabled = Белсенді
+legacy-user-stylesheets-stylesheet-types = Стильдер кестелері
+legacy-user-stylesheets-no-stylesheets-found = Стильдер кестелері табылмады
 security-software-title = Қауіпсіздік БҚ-сы
 security-software-type = Түрі
 security-software-name = Аты
@@ -68,11 +71,18 @@ app-basics-launcher-process-status = Жөнелтетін үрдіс
 app-basics-multi-process-support = Мультипроцесс терезелері
 app-basics-fission-support = Fission терезелері
 app-basics-remote-processes-count = Қашықтағы үрдістер
-app-basics-enterprise-policies = Кәсіпоорындық саясаттар
+app-basics-enterprise-policies = Кәсіпорындық саясаттар
 app-basics-location-service-key-google = Google орналасулар қызметінің кілті
 app-basics-safebrowsing-key-google = Google Safebrowsing кілті
 app-basics-key-mozilla = Mozilla орналасулар қызметінің кілті
 app-basics-safe-mode = Қауіпсіз режимі
+app-basics-memory-size = Жады өлшемі (RAM)
+app-basics-disk-available = Дисктегі қолжетімді орын
+app-basics-pointing-devices = Көрсеткіш құрылғылары
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Finder ішінен көрсету
@@ -102,11 +112,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Шешімдер журналы
 graphics-crash-guards-title = Қулаудан қорғаныс сөндірген мүмкіндіктері
 graphics-workarounds-title = Арнайы қолдау
+graphics-device-pixel-ratios = Терезе құрылғысының пиксельдік арақатынасы
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Терезелерді басқару хаттамасы
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Жұмыс үстелі ортасы
 place-database-title = Орналасулар дерекқоры
+place-database-stats = Статистика
+place-database-stats-show = Статистиканы көрсету
+place-database-stats-hide = Статистиканы жасыру
+place-database-stats-entity = Объект
+place-database-stats-count = Саны
+place-database-stats-size-kib = Өлшемі (КиБ)
+place-database-stats-size-perc = Өлшемі (%)
+place-database-stats-efficiency-perc = Тиімділік (%)
+place-database-stats-sequentiality-perc = Кезектілік (%)
 place-database-integrity = Бүтіндігі
 place-database-verify-integrity = Бүтіндігін тексеру
 a11y-title = Қолжетерлілік
@@ -153,8 +173,18 @@ media-device-channels = Арналар
 media-device-rate = Жиілігі
 media-device-latency = Кідірісі
 media-capabilities-title = Медиа мүмкіндіктері
+media-codec-support-info = Кодек қолдау ақпараты
 # List all the entries of the database.
 media-capabilities-enumerate = Дерекқор жазбаларын шығару
+
+## Codec support table
+
+media-codec-support-sw-decoding = Бағдарламалық декодтау
+media-codec-support-hw-decoding = Құрылғылық декодтау
+media-codec-support-codec-name = Кодек атауы
+media-codec-support-supported = Қолдауы бар
+media-codec-support-unsupported = Қолдауы жоқ
+media-codec-support-error = Кодектерге қолдау көрсету ақпараты қолжетімді емес. Медиа файлын ойнатқаннан кейін қайта көріңіз.
 
 ##
 
@@ -190,7 +220,6 @@ report-crash-for-days =
         [one] Соңғы { $days } күн үшін құлау хабарламалары
        *[other] Соңғы { $days } күн үшін құлау хабарламалары
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -198,7 +227,6 @@ crashes-time-minutes =
         [one] { $minutes } минут бұрын
        *[other] { $minutes } минут бұрын
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -206,7 +234,6 @@ crashes-time-hours =
         [one] { $hours } сағат бұрын
        *[other] { $hours } сағат бұрын
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -214,7 +241,6 @@ crashes-time-days =
         [one] { $days } күн бұрын
        *[other] { $days } күн бұрын
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -222,7 +248,6 @@ pending-reports =
         [one] Барлық құлау хабарламалары (соның ішінде берілген уақыт аралығындағы әлі жіберілмеген { $reports } құлау)
        *[other] Барлық құлау хабарламалары (соның ішінде берілген уақыт аралығындағы әлі жіберілмеген { $reports } құлау)
     }
-
 raw-data-copied = Өнделмеген мәліметтерді алмасу буферіне көшірілген
 text-copied = Мәтінді алмасу буферіне көшірілген
 
@@ -235,11 +260,9 @@ blocked-mismatched-version = Графикалық драйверіңіздің �
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = Графикалық драйверіңіз нұсқасымен блокталған. Драйверіңізді { $driverVersion } не жаңалау нұсқасына дейін жаңартыңыз.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType баптаулары
-
 compositing = Композитинг
 hardware-h264 = Құрылғылық H264 декодтау
 main-thread-no-omtc = басты ағын, OMTC жоқ
@@ -254,7 +277,6 @@ virtual-monitor-disp = Виртуалды монитор экраны
 
 found = Табылған
 missing = Жоқ
-
 gpu-process-pid = GPUProcessPid
 gpu-process = GPUProcess
 gpu-description = Сипаттамасы
@@ -277,19 +299,17 @@ webgl2-renderer = WebGL 2 драйвер Renderer
 webgl2-version = WebGL 2 драйвер нұсқасы
 webgl2-driver-extensions = WebGL 2 драйвер кеңейтулері
 webgl2-extensions = WebGL 2 кеңейтулері
-
+webgpu-default-adapter = WebGPU бастапқы адаптері
+webgpu-fallback-adapter = WebGPU қосымша адаптері
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = Белгілі мәселелерге байланысты бұғатталған: <a data-l10n-name="bug-link">bug { $bugNumber }</a>
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = Блоктізіміде; қателік коды { $failureCode }
-
 d3d11layers-crash-guard = D3D11 араластырушысы
 glcontext-crash-guard = OpenGL
 wmfvpxvideo-crash-guard = WMF VPX видео декодері
-
 reset-on-next-restart = Келесі іске қосылған кезде тастау
 gpu-process-kill-button = GPU процесін тоқтату
 gpu-device-reset = Құрылғыны қалпына келтіру
@@ -299,10 +319,8 @@ content-uses-tiling = Тайлинг қолданады (мазмұны)
 off-main-thread-paint-enabled = Басты емес ағында элементтерді суреттеу іске қосылған
 off-main-thread-paint-worker-count = Негізгі ағыннан тыс салатын воркер саны
 target-frame-rate = Кадр/сек мақсат көрсеткіші
-
 min-lib-versions = Күтілген минималды нұсқасы
 loaded-lib-versions = Қолданыстағы нұсқасы
-
 has-seccomp-bpf = Seccomp-BPF (Жүйелік шақыруларды сүзгілеу)
 has-seccomp-tsync = Seccomp ағынының синхрондалуы
 has-user-namespaces = Пайдаланушының аттар кеңістіктері
@@ -311,22 +329,21 @@ can-sandbox-content = Құраманың үрдісін құмсалғышта �
 can-sandbox-media = Медиа плагиндерін құмсалғышта орындау
 content-sandbox-level = Құрамасы бар үрдістер үшін шектеулер деңгейі
 effective-content-sandbox-level = Құрамасы бар үрдістер үшін эффективті шектеулер деңгейі
+content-win32k-lockdown-state = Мазмұн процесі үшін Win32k құлыптау күйі
+support-sandbox-gpu-level = GPU процесінің құмсалғыш деңгейі
 sandbox-proc-type-content = құрамасы
 sandbox-proc-type-file = файл құрамасы
 sandbox-proc-type-media-plugin = медиа плагині
 sandbox-proc-type-data-decoder = деректер декодері
-
 startup-cache-title = Іске қосу кэші
 startup-cache-disk-cache-path = Диск кэш жолы
 startup-cache-ignore-disk-cache = Диск кэшін елемеу
 startup-cache-found-disk-cache-on-init = Іске қосылу кезінде диск кэші табылды
 startup-cache-wrote-to-disk-cache = Диск кэшіне жазылды
-
 launcher-process-status-0 = Іске қосулы
 launcher-process-status-1 = Ақаулығы салдарынан сөндірілген
 launcher-process-status-2 = Мәжбүрлі сөндірілген
 launcher-process-status-unknown = Қалып-күйі белгісіз
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
@@ -339,13 +356,13 @@ fission-status-experiment-control = Тәжірибемен сөндірілге�
 fission-status-experiment-treatment = Тәжірибемен іске қосылған
 fission-status-disabled-by-e10s-env = Қоршаммен сөндірілген
 fission-status-enabled-by-env = Қоршаммен іске қосылған
-fission-status-disabled-by-safe-mode = Қауіпсіз режиммен сөндірілген
+fission-status-disabled-by-env = Қоршаммен сөндірілген
 fission-status-enabled-by-default = Үнсіз келісім бойынша іске қосылған
 fission-status-disabled-by-default = Үнсіз келісім бойынша сөндірілген
 fission-status-enabled-by-user-pref = Пайдаланушымен іске қосылған
 fission-status-disabled-by-user-pref = Пайдаланушымен сөндірілген
 fission-status-disabled-by-e10s-other = E10s сөндірілген
-
+fission-status-enabled-by-rollout = Кезеңді шығару арқылы іске қосылған
 async-pan-zoom = Асинхронды панорамдау/масштабтау
 apz-none = ешнәрсе
 wheel-enabled = тышқан дөңгелегімен енгізу іске қосылған
@@ -382,7 +399,13 @@ support-remote-experiments-title = Қашықтағы тәжірибелер
 support-remote-experiments-name = Аты
 support-remote-experiments-branch = Сынамалы бұтақ
 support-remote-experiments-see-about-studies = Қосымша ақпаратты, соның ішінде жеке-жеке тәжірибелерді сөндіру немесе { -brand-short-name } үшін осындай түрдегі тәжірибелерді болашақта орындамауды қалай іске қосу туралы қосымша ақпаратты <a data-l10n-name="support-about-studies-link">about:studies</a> бөлімінен қараңыз.
-
 support-remote-features-title = Қашықтағы мүмкіндіктер
 support-remote-features-name = Аты
 support-remote-features-status = Қалып-күйі
+
+## Pointing devices
+
+pointing-device-mouse = Тышқан
+pointing-device-touchscreen = Тачскрин
+pointing-device-pen-digitizer = Қалам диджитайзері
+pointing-device-none = Көрсеткіш құрылғылары жоқ

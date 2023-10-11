@@ -96,43 +96,33 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
-main-context-menu-bookmark-add =
-    .aria-label = Aggiungi pagina ai segnalibri
+main-context-menu-bookmark-page =
+    .aria-label = Aggiungi pagina ai segnalibri…
     .accesskey = u
-    .tooltiptext = Aggiungi ai segnalibri
+    .tooltiptext = Aggiungi pagina ai segnalibri
 
-# This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
-# so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = Aggiungi pagina ai segnalibri
+main-context-menu-bookmark-page-mac =
+    .label = Aggiungi pagina ai segnalibri…
     .accesskey = n
 
-# This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-add-mac,
-# so should probably have the same access key if possible.
-main-context-menu-bookmark-edit-mac =
-    .label = Modifica segnalibro
+main-context-menu-edit-bookmark-mac =
+    .label = Modifica segnalibro…
     .accesskey = n
 
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Aggiungi pagina ai segnalibri
+main-context-menu-bookmark-page-with-shortcut =
+    .aria-label = Aggiungi pagina ai segnalibri…
     .accesskey = n
-    .tooltiptext = Aggiungi ai segnalibri ({ $shortcut })
+    .tooltiptext = Aggiungi pagina ai segnalibri ({ $shortcut })
 
-main-context-menu-bookmark-change =
-    .aria-label = Modifica segnalibro
+main-context-menu-edit-bookmark =
+    .aria-label = Modifica segnalibro…
     .accesskey = n
-    .tooltiptext = Modifica questo segnalibro
+    .tooltiptext = Modifica segnalibro
 
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Modifica segnalibro
+main-context-menu-edit-bookmark-with-shortcut =
+    .aria-label = Modifica segnalibro…
     .accesskey = n
-    .tooltiptext = Modifica questo segnalibro ({ $shortcut })
+    .tooltiptext = Modifica segnalibro ({ $shortcut })
 
 main-context-menu-open-link =
     .label = Apri link
@@ -154,7 +144,7 @@ main-context-menu-open-link-new-private-window =
     .label = Apri link in nuova finestra anonima
     .accesskey = k
 
-main-context-menu-bookmark-link =
+main-context-menu-bookmark-link-2 =
     .label = Aggiungi link ai segnalibri…
     .accesskey = b
 
@@ -179,9 +169,19 @@ main-context-menu-copy-email =
     .label = Copia indirizzo email
     .accesskey = e
 
+main-context-menu-copy-phone =
+    .label = Copia numero di telefono
+    .accesskey = f
+
 main-context-menu-copy-link-simple =
     .label = Copia link
     .accesskey = a
+
+# This command copies the link, removing additional
+# query parameters used to track users across sites.
+main-context-menu-strip-on-share-link =
+    .label = Copia link senza traccianti del sito
+    .accesskey = k
 
 ## Media (video/audio) controls
 ##
@@ -295,6 +295,10 @@ main-context-menu-image-set-image-as-background =
     .label = Imposta immagine come sfondo del desktop…
     .accesskey = p
 
+main-context-menu-image-copy-text =
+    .label = Copia testo da immagine
+    .accesskey = m
+
 main-context-menu-image-info =
     .label = Visualizza informazioni immagine
     .accesskey = u
@@ -323,14 +327,6 @@ main-context-menu-audio-email =
     .label = Invia audio per email…
     .accesskey = n
 
-main-context-menu-plugin-play =
-    .label = Attiva questo plugin
-    .accesskey = l
-
-main-context-menu-plugin-hide =
-    .label = Nascondi questo plugin
-    .accesskey = N
-
 main-context-menu-save-to-pocket =
     .label = Salva pagina in { -pocket-brand-name }
     .accesskey = k
@@ -352,6 +348,10 @@ main-context-menu-use-saved-password =
     .accesskey = U
 
 ##
+
+main-context-menu-use-relay-mask =
+    .label = Utilizza un alias di posta elettronica { -relay-brand-short-name }
+    .accesskey = e
 
 main-context-menu-suggest-strong-password =
     .label = Suggerisci password complessa…
@@ -389,7 +389,7 @@ main-context-menu-frame-reload =
     .label = Ricarica riquadro
     .accesskey = R
 
-main-context-menu-frame-bookmark =
+main-context-menu-frame-add-bookmark =
     .label = Aggiungi riquadro ai segnalibri…
     .accesskey = e
 
@@ -409,8 +409,8 @@ main-context-menu-frame-view-info =
     .label = Visualizza informazioni riquadro
     .accesskey = n
 
-main-context-menu-print-selection =
-    .label = Stampa selezione
+main-context-menu-print-selection-2 =
+    .label = Stampa selezione…
     .accesskey = m
 
 main-context-menu-view-selection-source =
@@ -453,3 +453,9 @@ main-context-menu-eme-learn-more =
 main-context-menu-open-link-in-container-tab =
     .label = Apri link in nuova scheda { $containerName }
     .accesskey = s
+
+main-context-menu-reveal-password =
+    .label = Rivela password
+    .accesskey = v
+
+

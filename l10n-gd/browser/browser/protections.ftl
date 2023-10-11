@@ -69,22 +69,20 @@ cryptominer-tab-content = Cleachdaidh criopto-mhèinneadairean comasan an t-sios
 protections-close-button2 =
     .aria-label = Dùin
     .title = Dùin
-  
+
 mobile-app-title = Bac tracaichean sanasachd thar barrachd uidheaman
 mobile-app-card-content = Cleachd am brabhsair mobile le dìon an aghaidh tracadh sanasachd na bhroinn.
 mobile-app-links = Brabhsair { -brand-product-name } airson<a data-l10n-name="android-mobile-inline-link">Android</a> agus <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Na dìochuimhnich facal-faire a-rithist gu bràth
-lockwise-title-logged-in2 = Stiùireadh fhaclan-faire
-lockwise-header-content = Stòraidh { -lockwise-brand-name } na faclan-faire agad sa bhrabhsair agad gu tèarainte.
+passwords-title-logged-in = Stiùirich na faclan-faire agad
+passwords-header-content = Stòraidh { -brand-product-name } na faclan-faire sa bhrabhsair agad air dòigh thèarainte.
 lockwise-header-content-logged-in = Cùm is sioncronaich na faclan-faire agad gu tèarainte air feadh nan uidheaman agad.
-protection-report-save-passwords-button = Sàbhail na faclan-faire
-    .title = Sàbhail na faclan-faire air { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Stiùirich na faclan-faire
-    .title = Stiùirich na faclan-faire air { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Thoir leat na faclan-faire agad ge be càit an dèid thu
-lockwise-no-logins-card-content = Cleachd na faclan-faire a shàbhail thu am broinn { -brand-short-name } air uidheam sam bith.
-lockwise-app-links = { -lockwise-brand-name } airson <a data-l10n-name="lockwise-android-inline-link">Android</a> agus <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Sàbhail na faclan-faire
+    .title = Sàbhail na faclan-faire
+protection-report-passwords-manage-passwords-button = Stiùirich na faclan-faire
+    .title = Stiùirich na faclan-faire
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-permissions-window =
+permissions-window2 =
     .title = Eceçioin…
-    .style = width: 36em
+    .style = min-width: 36em
 
 permissions-close-key =
     .key = w
@@ -69,32 +69,33 @@ permissions-invalid-uri-label = Pe piaxei inserisci un nomme de host valido
 
 ## Exceptions - Cookies
 
-permissions-exceptions-cookie-window =
+permissions-exceptions-cookie-window2 =
     .title = Eceçioin - Cookie e Dæti di Sciti
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Ti peu anche decidde quali sciti peuan de longo ò mai deuviâ cookie e dæti di sciti.  Scrivi ben l'indirisso ezatto di sciti che ti veu gestî e pöi sciacca Blòcca, Permetti pe sescion ò Permetti.
 
 ## Exceptions - HTTPS-Only Mode
 
+
 ## Exceptions - Pop-ups
 
-permissions-exceptions-popup-window =
+permissions-exceptions-popup-window2 =
     .title = Sciti permissi - Pop-up
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-popup-desc = Ti ti peu dî quæ sciti peuan arvî barcoin de pop-up. Scrivi l'indirisso di sciti a-i quæ ti ghe veu dâ o permisso e sciacca Permetti.
 
 ## Exceptions - Saved Logins
 
-permissions-exceptions-saved-logins-window =
+permissions-exceptions-saved-logins-window2 =
     .title = Eceçioin - Login sarvæ
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-saved-logins-desc = I dæti d'acesso pe sti sciti no saian sarvæ
 
 ## Exceptions - Add-ons
 
-permissions-exceptions-addons-window =
+permissions-exceptions-addons-window2 =
     .title = Sciti permissi - Instalaçion di conponenti azonti
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-addons-desc = Ti ti peu dî quæ sciti peuan arvî ò instalâ di conponenti azonti. Scrivi l'indirisso di sciti a-i quæ ti veu dâ o permisso e sciacca Permetti.
 
 ## Site Permissions - Autoplay
@@ -102,9 +103,9 @@ permissions-exceptions-addons-desc = Ti ti peu dî quæ sciti peuan arvî ò ins
 
 ## Site Permissions - Notifications
 
-permissions-site-notification-window =
+permissions-site-notification-window2 =
     .title = Inpostaçioin - Permessi de Notificaçion
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-notification-desc = Sti sciti an domandou de mandate de notifiche. Ti peu dî quæ sciti peuan mandate e notifiche. Ti peu anche blocâ e neuve domande de permette e notifiche.
 permissions-site-notification-disable-label =
     .label = Blòcca e neuve domande de permette e notifiche
@@ -112,9 +113,9 @@ permissions-site-notification-disable-desc = Questo o blòcca i sciti che no en 
 
 ## Site Permissions - Location
 
-permissions-site-location-window =
+permissions-site-location-window2 =
     .title = Inpostaçioin - Permessi de Poxiçion
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-location-desc = Sti sciti an domandou de acede a-a teu poxiçion. Tei peu dî quæ sciti gh'an o permisso de acede a-a teu poxiçion. Ti peu anche blocâ e neuve domande de acede a-a teu poxiçion.
 permissions-site-location-disable-label =
     .label = Blòcca e neuve domande de acede a-a teu poxiçion
@@ -125,9 +126,9 @@ permissions-site-location-disable-desc = Questo o blòcca i sciti che no en inta
 
 ## Site Permissions - Camera
 
-permissions-site-camera-window =
+permissions-site-camera-window2 =
     .title = Inpostaçioin - Permessi da Fötocamera
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-camera-desc = Sti sciti an domandou de acede a-a teu fötocamera. Ti peu anche dî quæ sciti peuan acede a-a teu fötocamera. Ti peu anche blocâ e neuve doamande de acede a-a teu fötocamera.
 permissions-site-camera-disable-label =
     .label = Blòcca e neuve domande de acede a-a teu fötocamera
@@ -135,10 +136,15 @@ permissions-site-camera-disable-desc = Questo o no permette a-i sciti che non en
 
 ## Site Permissions - Microphone
 
-permissions-site-microphone-window =
+permissions-site-microphone-window2 =
     .title = Inpostaçioin - Permessi do Micròfono
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-microphone-desc = Sti sciti an domandou de acede a-a teu micròfono. Ti peu anche dî quæ sciti peuan acede a-a teu micròfono. Ti peu anche blocâ e neuve doamande de acede a-a teu micròfono.
 permissions-site-microphone-disable-label =
     .label = Blòcca e neuve domande de acede a-a teu micròfono
 permissions-site-microphone-disable-desc = Questo o no permette a-i sciti che non en chi sotta de domandâ o permisso de acede a-a teu micròfono. Blocâ l'acesso a-a teu micròfono o peu inpedî çerte carateristiche do scito.
+
+## Site Permissions - Speaker
+##
+## "Speaker" refers to an audio output device.
+

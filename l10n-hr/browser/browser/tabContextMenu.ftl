@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Odaberi sve kartice
     .accesskey = s
+tab-context-play-tab =
+    .label = Kartica reprodukcije
+    .accesskey = r
+tab-context-play-tabs =
+    .label = Reproduciraj kartice
+    .accesskey = p
 duplicate-tab =
     .label = Dupliciraj karticu
     .accesskey = D
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Zabilježi kartice…
     .accesskey = b
-bookmark-tab =
-    .label = Zabilježi karticu
+tab-context-bookmark-tab =
+    .label = Zabilježi karticu…
     .accesskey = b
 tab-context-open-in-new-container-tab =
     .label = Otvori u novoj kontejnerskoj kartici
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Podijeli
     .accesskey = h
-tab-context-share-more =
-    .label = Više…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -84,15 +88,6 @@ tab-context-reopen-closed-tabs =
            *[other] Ponovno otvori zatvorene kartice
         }
     .accesskey = r
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Zatvori karticu
-            [one] Zatvori karticu
-            [few] Zatvori kartice
-           *[other] Zatvori kartice
-        }
-    .accesskey = c
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->
@@ -111,7 +106,6 @@ tab-context-move-tabs =
            *[other] Premjesti kartice
         }
     .accesskey = m
-
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->

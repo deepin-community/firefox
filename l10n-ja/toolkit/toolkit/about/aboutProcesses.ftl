@@ -4,7 +4,6 @@
 
 # Page title
 about-processes-title = プロセスマネージャー
-
 # The Actions column
 about-processes-column-action =
     .title = 操作
@@ -50,7 +49,7 @@ about-processes-socket-process = ネットワーク ({ $pid })
 about-processes-remote-sandbox-broker-process = リモートサンドボックスブローカー ({ $pid })
 about-processes-fork-server-process = フォークサーバー ({ $pid })
 about-processes-preallocated-process = 事前割り当て ({ $pid })
-
+about-processes-utility-process = ユーティリティ ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
@@ -63,10 +62,9 @@ about-processes-unknown-process = その他: { $type } ({ $pid })
 ##    $origin (String) The domain name for this process.
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
-about-processes-web-large-allocation-process = { $origin } ({ $pid }, 大きい)
+about-processes-web-serviceworker = { $origin } ({ $pid }, ServiceWorker)
 about-processes-with-coop-coep-process = { $origin } ({ $pid }, クロスオリジン隔離)
 about-processes-web-isolated-process-private = { $origin } — プライベート ({ $pid })
-about-processes-web-large-allocation-process-private = { $origin } — プライベート ({ $pid }, 大きい)
 about-processes-with-coop-coep-process-private = { $origin } — プライベート ({ $pid }, クロスオリジン隔離)
 
 ## Details within processes
@@ -85,7 +83,6 @@ about-processes-active-threads = { $active ->
      [one] 実行中のスレッド数 { $active } / { $number }: { $list }
     *[other] 実行中のスレッド数 { $active } / { $number }: { $list }
 }
-
 # Single-line summary of threads (idle process)
 # Variables:
 #    $number (Number) The number of threads in the process. Typically larger
@@ -96,30 +93,37 @@ about-processes-inactive-threads = { $number ->
      [one] 待機中のスレッド数 { $number }
     *[other] 待機中のスレッド数 { $number }
 }
-
 # Thread details
 # Variables:
 #   $name (String) The name assigned to the thread.
 #   $tid (String) The thread id of this thread, assigned by the OS.
 about-processes-thread-name-and-id = { $name }
     .title = スレッド ID: { $tid }
-
 # Tab
 # Variables:
 #   $name (String) The name of the tab (typically the title of the page, might be the url while the page is loading).
 about-processes-tab-name = タブ: { $name }
 about-processes-preloaded-tab = 事前に読み込まれた新しいタブ
-
 # Single subframe
 # Variables:
 #   $url (String) The full url of this subframe.
 about-processes-frame-name-one = サブフレーム: { $url }
-
 # Group of subframes
 # Variables:
 #   $number (Number) The number of subframes in this group. Always ≥ 1.
 #   $shortUrl (String) The shared prefix for the subframes in the group.
 about-processes-frame-name-many = サブフレーム ({ $number }): { $shortUrl }
+
+## Utility process actor names
+
+about-processes-utility-actor-unknown = 未知のアクター
+about-processes-utility-actor-audio-decoder-generic = 一般音声デコーダー
+about-processes-utility-actor-audio-decoder-applemedia = Apple Media 音声デコーダー
+about-processes-utility-actor-audio-decoder-wmf = Windows Media Framework 音声デコーダー
+about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media Engine CDM
+# "Oracle" refers to an internal Firefox process and should be kept in English
+about-processes-utility-actor-js-oracle = JavaScript Oracle
+about-processes-utility-actor-windows-utils = Windows Utils
 
 ## Displaying CPU (percentage and total)
 ## Variables:
@@ -133,13 +137,16 @@ about-processes-frame-name-many = サブフレーム ({ $number }): { $shortUrl 
 # Common case.
 about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
     .title = 合計 CPU 時間: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
-
 # Special case: data is not available yet.
 about-processes-cpu-user-and-kernel-not-ready = (計測中)
-
+# Special case: process or thread is almost idle (using less than 0.1% of a CPU core).
+# This case only occurs on Windows where the precision of the CPU times is low.
+about-processes-cpu-almost-idle = < 0.1%
+    .title = 合計 CPU 時間: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
 # Special case: process or thread is currently idle.
-about-processes-cpu-idle = 待機
-    .title = 合計 CPU 時間: { NUMBER($total, maximumFractionDigits: 2) }{ $unit }
+about-processes-cpu-fully-idle = 待機
+    .title = 合計 CPU 時間: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+
 
 ## Displaying Memory (total and delta)
 ## Variables:

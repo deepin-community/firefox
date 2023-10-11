@@ -2,27 +2,45 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// If the container has a "page" data attribute, then this is
+// a Spotlight modal or Feature Callout. Otherwise, this is
+// about:welcome and we should return the current page.
+const page =
+  document.querySelector(
+    "#multi-stage-message-root.onboardingContainer[data-page]"
+  )?.dataset.page || document.location.href;
+
 export const AboutWelcomeUtils = {
   handleUserAction(action) {
-    window.AWSendToParent("SPECIAL_ACTION", action);
+    return window.AWSendToParent("SPECIAL_ACTION", action);
   },
   sendImpressionTelemetry(messageId, context) {
-    window.AWSendEventTelemetry({
+    window.AWSendEventTelemetry?.({
       event: "IMPRESSION",
-      event_context: context,
+      event_context: {
+        ...context,
+        page,
+      },
       message_id: messageId,
     });
   },
-  sendActionTelemetry(messageId, elementId) {
+  sendActionTelemetry(messageId, elementId, eventName = "CLICK_BUTTON") {
     const ping = {
-      event: "CLICK_BUTTON",
+      event: eventName,
       event_context: {
         source: elementId,
-        page: "about:welcome",
+        page,
       },
       message_id: messageId,
     };
-    window.AWSendEventTelemetry(ping);
+    window.AWSendEventTelemetry?.(ping);
+  },
+  sendDismissTelemetry(messageId, elementId) {
+    // Don't send DISMISS telemetry in spotlight modals since they already send
+    // their own equivalent telemetry.
+    if (page !== "spotlight") {
+      this.sendActionTelemetry(messageId, elementId, "DISMISS");
+    }
   },
   async fetchFlowParams(metricsFlowUri) {
     let flowParams;
@@ -34,7 +52,7 @@ export const AboutWelcomeUtils = {
         const { deviceId, flowId, flowBeginTime } = await response.json();
         flowParams = { deviceId, flowId, flowBeginTime };
       } else {
-        console.error("Non-200 response", response); // eslint-disable-line no-console
+        console.error("Non-200 response", response);
       }
     } catch (e) {
       flowParams = null;
@@ -49,30 +67,55 @@ export const AboutWelcomeUtils = {
       })
     );
   },
+  getLoadingStrategyFor(url) {
+    return url?.startsWith("http") ? "lazy" : "eager";
+  },
 };
 
 export const DEFAULT_RTAMO_CONTENT = {
   template: "return_to_amo",
+  utm_term: "rtamo",
   content: {
-    header: { string_id: "onboarding-welcome-header" },
-    subtitle: { string_id: "return-to-amo-subtitle" },
-    text: {
-      string_id: "return-to-amo-addon-title",
+    position: "split",
+    title: { string_id: "mr1-return-to-amo-subtitle" },
+    has_noodles: false,
+    subtitle: {
+      string_id: "mr1-return-to-amo-addon-title",
     },
+    backdrop:
+      "var(--mr-welcome-background-color) var(--mr-welcome-background-gradient)",
+    background:
+      "url('chrome://activity-stream/content/data/content/assets/mr-rtamo-background-image.svg') no-repeat center",
+    progress_bar: true,
     primary_button: {
-      label: { string_id: "return-to-amo-add-extension-label" },
+      label: { string_id: "mr1-return-to-amo-add-extension-label" },
+      source_id: "ADD_EXTENSION_BUTTON",
       action: {
         type: "INSTALL_ADDON_FROM_URL",
         data: { url: null, telemetrySource: "rtamo" },
       },
     },
-    startButton: {
+    secondary_button: {
       label: {
         string_id: "onboarding-not-now-button-label",
       },
-      message_id: "RTAMO_START_BROWSING_BUTTON",
+      source_id: "RTAMO_START_BROWSING_BUTTON",
       action: {
         type: "OPEN_AWESOME_BAR",
+      },
+    },
+    secondary_button_top: {
+      label: {
+        string_id: "mr1-onboarding-sign-in-button-label",
+      },
+      source_id: "RTAMO_FXA_SIGNIN_BUTTON",
+      action: {
+        data: {
+          entrypoint: "activity-stream-firstrun",
+          where: "tab",
+        },
+        type: "SHOW_FIREFOX_ACCOUNTS",
+        addFlowParams: true,
       },
     },
   },

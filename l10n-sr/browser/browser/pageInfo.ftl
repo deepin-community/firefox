@@ -65,6 +65,9 @@ media-dimension =
     .value = Димензије:
 media-long-desc =
     .value = Дуги опис:
+media-select-all =
+    .label = Изабери све
+    .accesskey = И
 media-save-as =
     .label = Сачувај као…
     .accesskey = С
@@ -97,7 +100,7 @@ security-view-identity-verifier =
 security-view-identity-validity =
     .value = Истиче:
 security-view-privacy =
-    .value = Приватност и историјат
+    .value = Приватност и историја
 
 security-view-privacy-history-value = Да ли сте раније посетили овај сајт?
 security-view-privacy-sitedata-value = Складишти ли овај веб-сајт податке на мом рачунару?
@@ -243,6 +246,9 @@ media-dimensions =
 # Variables:
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } KB
+
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
 
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab

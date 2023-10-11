@@ -11,3 +11,10 @@ common-dialog-username =
     .value = ชื่อผู้ใช้
 common-dialog-password =
     .value = รหัสผ่าน
+
+common-dialog-copy-cmd =
+    .label = คัดลอก
+    .accesskey = ค
+common-dialog-select-all-cmd =
+    .label = เลือกทั้งหมด
+    .accesskey = ท

@@ -8,6 +8,9 @@ places-open =
 places-open-in-tab =
     .label = Eike tendayke pyahúpe
     .accesskey = W
+places-open-in-container-tab =
+    .label = Embojuruja mbyatyha rendayke pyahúpe
+    .accesskey = i
 places-open-all-bookmarks =
     .label = Embojurujapaite techaukaha
     .accesskey = O
@@ -20,6 +23,8 @@ places-open-in-window =
 places-open-in-private-window =
     .label = Eike Ovetã Ñemigua Pyahúpe
     .accesskey = P
+places-empty-bookmarks-folder =
+    .label = (Nandi)
 places-add-bookmark =
     .label = Embojuaju techaukaha…
     .accesskey = B
@@ -69,26 +74,26 @@ places-edit-bookmark =
 places-edit-generic =
     .label = Mbosako’i…
     .accesskey = i
-places-edit-folder =
-    .label = Embohérajey ñongatuha…
-    .accesskey = e
-places-remove-folder =
-    .label =
-        { $count ->
-            [1] Emboguete ñongatuha
-            [one] Emboguete ñongatuha
-           *[other] Emboguete ñongatuhakuéra
-        }
-    .accesskey = m
 places-edit-folder2 =
     .label = Embosako’i ñongatuha…
     .accesskey = i
+# Variables
+#   $count (number) - Number of folders to delete
 places-delete-folder =
     .label =
         { $count ->
             [1] Emboguete ñongatuha
             [one] Emboguete ñongatuhakuéra
            *[other] Emboguete ñongatuhakuéra
+        }
+    .accesskey = D
+# Variables:
+#   $count (number) - The number of pages selected for removal.
+places-delete-page =
+    .label =
+        { $count ->
+            [1] Emboguete kuatiarogue
+           *[other] Emboguete kuatiarogue
         }
     .accesskey = D
 # Managed bookmarks are created by an administrator and cannot be changed by the user.
@@ -100,16 +105,6 @@ managed-bookmarks-subfolder =
 # This label is used for the "Other Bookmarks" folder that appears in the bookmarks toolbar.
 other-bookmarks-folder =
     .label = Ambuekuéra Techaukaha
-# Variables:
-# $count (number) - The number of elements being selected for removal.
-places-remove-bookmark =
-    .label =
-        { $count ->
-            [1] Emboguete Techaukaha
-            [one] Emboguete techaukahakuéra
-           *[other] Emboguete techaukahakuéra
-        }
-    .accesskey = e
 places-show-in-folder =
     .label = Ehechauka marandurendápe
     .accesskey = F
@@ -123,17 +118,28 @@ places-delete-bookmark =
            *[other] Emboguete techaukahakuéra
         }
     .accesskey = D
+# Variables:
+#   $count (number) - The number of bookmarks being added.
+places-create-bookmark =
+    .label =
+        { $count ->
+            [1] Embojuaju kuatiarogue techaukaháre…
+           *[other] Embojuaju kuatiarogue techaukaháre…
+        }
+    .accesskey = B
+places-untag-bookmark =
+    .label = Emboguete teramoĩ
+    .accesskey = R
 places-manage-bookmarks =
     .label = Eñangareko Techaukaháre
     .accesskey = M
 places-forget-about-this-site-confirmation-title = Eñembyesarái ko tendágui
 # Variables:
 # $hostOrBaseDomain (string) - The base domain (or host in case there is no base domain) for which data is being removed
-places-forget-about-this-site-confirmation-message = Ko tembiapo omboguepáta umi mba’ekuaarã ojokupytýva { $hostOrBaseDomain } ndive oĩhápe tembiasakue, ñe’ẽñemi, kookie, kache ha tetepy guerohoryvéva. ¿Eku’eseve añetehápe?
+places-forget-about-this-site-confirmation-msg = Ko tembiapo omboguepáta mba’ekuaarã ojokupytýva { $hostOrBaseDomain } ndive, oĩhápe tembiasakue, kookie, kache ha tetepy eguerohoryvéva. Techaukaha ha ñe’ẽñemi ojokupytýva ndoguemo’ãi. ¿Eku’eseve añetehápe?
 places-forget-about-this-site-forget = Tesarái
-places-library =
+places-library3 =
     .title = Mba’erysýi
-    .style = width:700px; height:500px;
 places-organize-button =
     .label = Mohenda
     .tooltiptext = Emohenda nde rechaukahakuéra
@@ -207,6 +213,27 @@ places-view-sort-col-date-added =
     .label = Mbojoapypyre
 places-view-sort-col-last-modified =
     .label = Ñemoambue ramove
+places-view-sortby-name =
+    .label = Teraite rupi ñemohenda
+    .accesskey = N
+places-view-sortby-url =
+    .label = Tendaite rupi ñemohenda
+    .accesskey = L
+places-view-sortby-date =
+    .label = Jeike ramovéva rupi ñemohenda
+    .accesskey = V
+places-view-sortby-visit-count =
+    .label = Jeikehague jepapa rupi
+    .accesskey = C
+places-view-sortby-date-added =
+    .label = Ñembojoapy ramove rupi
+    .accesskey = e
+places-view-sortby-last-modified =
+    .label = Emohenda ñemoambueramovéva rupi
+    .accesskey = M
+places-view-sortby-tags =
+    .label = Teramoĩ rupi ñemohenda
+    .accesskey = T
 places-cmd-find-key =
     .key = f
 places-back-button =
@@ -214,3 +241,27 @@ places-back-button =
 places-forward-button =
     .tooltiptext = Tenonde jeho
 places-details-pane-select-an-item-description = Eiporavo peteĩ mba’epuru ehecha ha embosako’i hag̃ua imba’etee
+places-details-pane-no-items =
+    .value = Mba’epururã’ỹ
+# Variables:
+#   $count (Number): number of items
+places-details-pane-items-count =
+    .value =
+        { $count ->
+            [one] Peteĩ mba’epuru
+           *[other] { $count } mba’epurukuéra
+        }
+
+## Strings used as a placeholder in the Library search field. For example,
+## "Search History" stands for "Search through the browser's history".
+
+places-search-bookmarks =
+    .placeholder = Techaukaha jeheka
+places-search-history =
+    .placeholder = Heka
+places-search-downloads =
+    .placeholder = Ñemboguejy jeheka
+
+##
+
+places-locked-prompt = Apopyvusu techaukaha ha tembiasakue rehegua ndoikomo’ãi oĩre peteĩva { -brand-short-name }’s marandurenda ojepurúva ambue tembiporu’ípe. Oĩ tembiaporape hekorosãva ikatuvahína omoapanuãi.

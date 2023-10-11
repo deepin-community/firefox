@@ -5,19 +5,20 @@
 
 ## App Menu
 
-appmenuitem-update-banner3 =
-    .label-update-downloading =
-        Stahování aktualizace { -brand-shorter-name.gender ->
-            [masculine] { -brand-shorter-name(case: "gen") }
-            [feminine] { -brand-shorter-name(case: "gen") }
-            [neuter] { -brand-shorter-name(case: "gen") }
-           *[other] { "" }
+appmenuitem-banner-update-downloading =
+    .label =
+        { -brand-shorter-name.case-status ->
+            [with-cases] Stahování aktualizace { -brand-shorter-name(case: "gen") }
+           *[no-cases] Stahování aktualizace
         }
-    .label-update-available = Nová aktualizace — stáhnout
-    .label-update-manual = Nová aktualizace — stáhnout
-    .label-update-unsupported = Nekompatibilní systém pro novou aktualizaci
-    .label-update-restart = Nová aktualizace — restartovat
-appmenuitem-protection-dashboard-title = Přehled ochrany soukromí
+appmenuitem-banner-update-available =
+    .label = Nová aktualizace — stáhnout
+appmenuitem-banner-update-manual =
+    .label = Nová aktualizace — stáhnout
+appmenuitem-banner-update-unsupported =
+    .label = Nekompatibilní systém pro novou aktualizaci
+appmenuitem-banner-update-restart =
+    .label = Nová aktualizace — restartovat
 appmenuitem-new-tab =
     .label = Nový panel
 appmenuitem-new-window =
@@ -36,6 +37,8 @@ appmenuitem-print =
     .label = Vytisknout stránku…
 appmenuitem-find-in-page =
     .label = Najít na stránce…
+appmenuitem-translate =
+    .label = Přeložit stránku…
 appmenuitem-zoom =
     .value = Velikost stránky
 appmenuitem-more-tools =
@@ -88,7 +91,11 @@ appmenu-remote-tabs-connectdevice =
 appmenu-remote-tabs-welcome = Seznam panelů z ostatních zařízení
 appmenu-remote-tabs-unverified = Je potřeba ověřit váš účet.
 appmenuitem-fxa-toolbar-sync-now2 = Synchronizovat
-appmenuitem-fxa-sign-in = Přihlásit se k aplikaci { -brand-product-name }
+appmenuitem-fxa-sign-in =
+    { -brand-product-name.case-status ->
+        [with-cases] Přihlásit se k { -brand-product-name(case: "dat") }
+       *[no-cases] Přihlásit se k aplikaci { -brand-product-name }
+    }
 appmenuitem-fxa-manage-account = Správa účtu
 appmenu-fxa-header2 = { -fxaccount-brand-name }
 # Variables
@@ -100,7 +107,6 @@ appmenu-fxa-sync-and-save-data2 = Synchronizace a ukládání dat
 appmenu-fxa-signed-in-label = Přihlásit se
 appmenu-fxa-setup-sync =
     .label = Zapnout synchronizaci…
-appmenu-fxa-show-more-tabs = Zobrazit další panely
 appmenuitem-save-page =
     .label = Uložit stránku jako…
 
@@ -120,29 +126,26 @@ whatsnew-panel-footer-checkbox =
 profiler-popup-button-idle =
     .label = Profiler
     .tooltiptext = Záznam výkonu
-profiler-popup-title =
-    .value = { -profiler-brand-name }
+profiler-popup-button-recording =
+    .label = Profiler
+    .tooltiptext = Právě probíhá profilování
+profiler-popup-button-capturing =
+    .label = Profiler
+    .tooltiptext = Právě probíhá profilování
+profiler-popup-header-text = { -profiler-brand-name }
 profiler-popup-reveal-description-button =
     .aria-label = Zobrazit podrobnosti
 profiler-popup-description-title =
     .value = Zaznamenejte, analyzujte, sdílejte
 profiler-popup-description = Spolupracujte na řešení výkonnostních problémů sdílením dat se svým týmem.
-profiler-popup-learn-more = Zjistit více
 profiler-popup-learn-more-button =
     .label = Zjistit více
 profiler-popup-settings =
     .value = Nastavení
 # This link takes the user to about:profiling, and is only visible with the Custom preset.
-profiler-popup-edit-settings = Úprava nastavení
-# This link takes the user to about:profiling, and is only visible with the Custom preset.
 profiler-popup-edit-settings-button =
     .label = Úprava nastavení
-profiler-popup-disabled = Profiler je v tuto chvíli vypnutý, pravděpodobně protože máte otevřené okno anonymního prohlížení.
 profiler-popup-recording-screen = Nahrávání…
-# The profiler presets list is generated elsewhere, but the custom preset is defined
-# here only.
-profiler-popup-presets-custom =
-    .label = Vlastní
 profiler-popup-start-recording-button =
     .label = Spustit nahrávání
 profiler-popup-discard-button =
@@ -165,16 +168,55 @@ profiler-popup-capture-shortcut =
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
+# devtools/client/performance-new/shared/background.jsm.js
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
+profiler-popup-presets-web-developer-description = Doporučené nastavení s minimální režií pro ladění většiny webových aplikací.
+profiler-popup-presets-web-developer-label =
+    .label = Nástroje pro webové vývojáře
+profiler-popup-presets-firefox-description =
+    { -brand-shorter-name.case-status ->
+        [with-cases] Doporučené nastavení pro profilování { -brand-shorter-name(case: "gen") }.
+       *[no-cases] Doporučené nastavení pro profilování aplikace { -brand-shorter-name }.
+    }
+profiler-popup-presets-firefox-label =
+    .label = { -brand-shorter-name }
+profiler-popup-presets-graphics-description =
+    { -brand-shorter-name.case-status ->
+        [with-cases] Doporučené nastavení pro ladění grafických chyb ve { -brand-shorter-name(case: "loc") }.
+       *[no-cases] Doporučené nastavení pro ladění grafických chyb v aplikaci { -brand-shorter-name }.
+    }
+profiler-popup-presets-graphics-label =
+    .label = Grafika
+profiler-popup-presets-media-description2 =
+    { -brand-shorter-name.case-status ->
+        [with-cases] Doporučené nastavení pro ladění chyb při přehrávání zvuku nebo videa ve { -brand-shorter-name(case: "loc") }.
+       *[no-cases] Doporučené nastavení pro ladění chyb při přehrávání zvuku nebo videa v aplikaci { -brand-shorter-name }.
+    }
+profiler-popup-presets-media-label =
+    .label = Média
+profiler-popup-presets-networking-description =
+    { -brand-shorter-name.case-status ->
+        [with-cases] Doporučené nastavení pro ladění síťových problémů ve { -brand-shorter-name(case: "loc") }.
+       *[no-cases] Doporučené nastavení pro ladění síťových problémů v aplikaci { -brand-shorter-name }.
+    }
+profiler-popup-presets-networking-label =
+    .label = Síť
+profiler-popup-presets-power-description =
+    { -brand-shorter-name.case-status ->
+        [with-cases] Doporučené nastavení pro ladění chyb ve spotřebě { -brand-shorter-name(case: "gen") }.
+       *[no-cases] Doporučené nastavení pro ladění chyb ve spotřebě aplikace { -brand-shorter-name }.
+    }
+# "Power" is used in the sense of energy (electricity used by the computer).
+profiler-popup-presets-power-label =
+    .label = Napájení a spotřeba
+profiler-popup-presets-custom-label =
+    .label = Vlastní
 
 ## History panel
 
 appmenu-manage-history =
     .label = Správa historie
-appmenu-reopen-all-tabs = Znovu otevřít všechny panely
-appmenu-reopen-all-windows = Znovu otevřít všechna okna
 appmenu-restore-session =
     .label = Obnovit předchozí relaci
 appmenu-clear-history =
@@ -184,19 +226,24 @@ appmenu-recently-closed-tabs =
     .label = Naposledy zavřené panely
 appmenu-recently-closed-windows =
     .label = Naposledy zavřená okna
+# This allows to search through the browser's history.
+appmenu-search-history =
+    .label = Hledat v historii
 
 ## Help panel
 
 appmenu-help-header =
     .title =
-        Nápověda { -brand-shorter-name.gender ->
-            [masculine] { -brand-shorter-name(case: "gen") }
-            [feminine] { -brand-shorter-name(case: "gen") }
-            [neuter] { -brand-shorter-name(case: "gen") }
-           *[other] aplikace { -brand-shorter-name }
+        { -brand-shorter-name.case-status ->
+            [with-cases] Nápověda { -brand-shorter-name(case: "gen") }
+           *[no-cases] Nápověda aplikace { -brand-shorter-name }
         }
 appmenu-about =
-    .label = O aplikaci { -brand-shorter-name }
+    .label =
+        { -brand-shorter-name.case-status ->
+            [with-cases] O { -brand-shorter-name(case: "loc") }
+           *[no-cases] O aplikaci { -brand-shorter-name }
+        }
     .accesskey = O
 appmenu-get-help =
     .label = Získat pomoc
@@ -206,9 +253,11 @@ appmenu-help-more-troubleshooting-info =
     .accesskey = t
 appmenu-help-report-site-issue =
     .label = Nahlásit problém se zobrazením stránky…
-appmenu-help-feedback-page =
-    .label = Odeslat zpětnou vazbu…
-    .accesskey = d
+appmenu-help-share-ideas =
+    .label = Sdílet nápad nebo zpětnou vazbu…
+    .accesskey = S
+appmenu-help-switch-device =
+    .label = Přechod na nové zařízení
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -234,8 +283,6 @@ appmenu-help-not-deceptive =
 
 appmenu-customizetoolbar =
     .label = Nastavení tlačítek a lišt…
-appmenu-taskmanager =
-    .label = Správce úloh
 appmenu-developer-tools-subheader = Nástroje prohlížeče
 appmenu-developer-tools-extensions =
     .label = Rozšíření pro vývojáře

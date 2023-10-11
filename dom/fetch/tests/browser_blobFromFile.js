@@ -21,7 +21,7 @@ add_task(async function test() {
   outStream.init(
     file,
     0x02 | 0x08 | 0x20, // write, create, truncate
-    0666,
+    0o666,
     0
   );
   outStream.write(fileData, fileData.length);
@@ -40,18 +40,20 @@ add_task(async function test() {
   let browser = gBrowser.getBrowserForTab(tab);
   await BrowserTestUtils.browserLoaded(browser);
 
-  let blob = await SpecialPowers.spawn(browser, [file.leafName], function(
-    fileName
-  ) {
-    return new content.window.Promise(resolve => {
-      content.window
-        .fetch(fileName)
-        .then(r => r.blob())
-        .then(blob => resolve(blob));
-    });
-  });
+  let blob = await SpecialPowers.spawn(
+    browser,
+    [file.leafName],
+    function (fileName) {
+      return new content.window.Promise(resolve => {
+        content.window
+          .fetch(fileName)
+          .then(r => r.blob())
+          .then(blob => resolve(blob));
+      });
+    }
+  );
 
-  ok(blob instanceof File, "We have a file");
+  ok(File.isInstance(blob), "We have a file");
 
   is(blob.size, file.fileSize, "The size matches");
   is(blob.name, file.leafName, "The name is correct");

@@ -8,6 +8,7 @@ about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = DNS-Cache leeren
 about-networking-dns-trr-url = DoH-Adresse
+about-networking-dns-trr-mode = DoH-Modus
 about-networking-dns-suffix = DNS-Suffixe
 about-networking-websockets = WebSockets
 about-networking-refresh = Aktualisieren
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Aktiv
 about-networking-idle = Untätig
 about-networking-host = Host
-about-networking-tcp = TCP
 about-networking-type = Typ
 about-networking-sent = Gesendet
 about-networking-received = Empfangen
@@ -28,18 +28,12 @@ about-networking-trr = TRR (Trusted Recursive Resolver)
 about-networking-addresses = Adressen
 about-networking-expires = Läuft ab (Sekunden)
 about-networking-originAttributesSuffix = Isolationsschlüssel
+about-networking-flags = Zusätzliche Flaggen
 about-networking-messages-sent = Nachrichten gesendet
 about-networking-messages-received = Nachrichten empfangen
 about-networking-bytes-sent = Bytes gesendet
 about-networking-bytes-received = Bytes empfangen
 about-networking-logging = Protokollieren
-about-networking-log-tutorial = Weitere Informationen zur Verwendung dieses Werkzeugs stehen unter <a data-l10n-name="logging">HTTP-Protokollierung</a> zur Verfügung.
-about-networking-current-log-file = Derzeitige Protokolldatei:
-about-networking-current-log-modules = Derzeit protokollierte Module:
-about-networking-set-log-file = Als Protokolldatei festlegen
-about-networking-set-log-modules = Als zu protokollierende Module festlegen
-about-networking-start-logging = Aufzeichnung starten
-about-networking-stop-logging = Aufzeichnung beenden
 about-networking-dns-lookup = DNS-Lookup
 about-networking-dns-lookup-button = Auflösen
 about-networking-dns-domain = Domain:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Anzahl Cache langsam
 about-networking-rcwn-cache-not-slow = Anzahl Cache nicht langsam
 about-networking-networkid = Netzwerk-ID
 about-networking-networkid-id = Netzwerk-ID
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Diese Seite wurde nach <a data-l10n-name="about-logging-url">about:logging</a> verschoben.
 
 ## Link is intended as "network link"
 

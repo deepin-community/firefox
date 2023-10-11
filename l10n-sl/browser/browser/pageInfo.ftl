@@ -65,11 +65,14 @@ media-dimension =
     .value = Mere:
 media-long-desc =
     .value = Dolg opis:
+media-select-all =
+    .label = Izberi vse
+    .accesskey = v
 media-save-as =
-    .label = Shrani kot ...
+    .label = Shrani kot …
     .accesskey = h
 media-save-image-as =
-    .label = Shrani kot ...
+    .label = Shrani kot …
     .accesskey = r
 
 perm-tab =
@@ -87,11 +90,11 @@ security-view =
 security-view-unknown = Neznano
     .value = Neznano
 security-view-identity =
-    .value = Identiteta spletne strani
+    .value = Identiteta spletnega mesta
 security-view-identity-owner =
     .value = Lastnik:
 security-view-identity-domain =
-    .value = Spletna stran:
+    .value = Spletno mesto:
 security-view-identity-verifier =
     .value = Preveril:
 security-view-identity-validity =
@@ -99,14 +102,14 @@ security-view-identity-validity =
 security-view-privacy =
     .value = Zasebnost in zgodovina
 
-security-view-privacy-history-value = Ali sem to stran obiskal že kdaj pred današnjim dnem?
-security-view-privacy-sitedata-value = Ali ta spletna stran shranjuje podatke na moj računalnik?
+security-view-privacy-history-value = Ali sem to spletno mesto obiskal že kdaj pred današnjim dnem?
+security-view-privacy-sitedata-value = Ali to spletno mesto shranjuje podatke na moj računalnik?
 
 security-view-privacy-clearsitedata =
     .label = Počisti piškotke in podatke strani
     .accesskey = č
 
-security-view-privacy-passwords-value = Ali sem shranil kakšno geslo za to stran?
+security-view-privacy-passwords-value = Ali sem shranil kakšno geslo za to spletno mesto?
 
 security-view-privacy-viewpasswords =
     .label = Preglej shranjena gesla
@@ -124,7 +127,7 @@ help-button =
 ##   $unit (string) - The unit of data being stored (Usually KB)
 
 security-site-data-cookies = Da, piškotke in { $value } { $unit } podatkov strani
-security-site-data-only = Da, { $value } { $unit } podatkov strani
+security-site-data-only = Da, { $value } { $unit } podatkov
 
 security-site-data-cookies-only = Da, piškotke
 security-site-data-no = Ne
@@ -157,7 +160,7 @@ general-quirks-mode =
 general-strict-mode =
     .value = Način v skladu s standardi
 page-info-security-no-owner =
-    .value = Ta spletna stran ne vsebuje podatkov o lastništvu.
+    .value = To spletno mesto ne vsebuje podatkov o lastništvu.
 media-select-folder = Izberite mapo za shranjevanje slik
 media-unknown-not-cached =
     .value = Neznano (ni predpomnjeno)
@@ -247,6 +250,9 @@ media-dimensions =
 # Variables:
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } KB
+
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
 
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab

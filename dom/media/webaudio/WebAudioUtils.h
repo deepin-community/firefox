@@ -10,6 +10,7 @@
 #include <cmath>
 #include <limits>
 #include <type_traits>
+#include "fdlibm.h"
 #include "mozilla/FloatingPoint.h"
 #include "mozilla/Logging.h"
 #include "MediaSegment.h"
@@ -59,32 +60,32 @@ void ConvertAudioTimelineEventToTicks(AudioTimelineEvent& aEvent,
  * value is 0.
  */
 inline float ConvertLinearToDecibels(float aLinearValue, float aMinDecibels) {
-  return aLinearValue ? 20.0f * std::log10(aLinearValue) : aMinDecibels;
+  return aLinearValue ? 20.0f * fdlibm_log10f(aLinearValue) : aMinDecibels;
 }
 
 /**
  * Converts a decibel value to a linear value.
  */
 inline float ConvertDecibelsToLinear(float aDecibels) {
-  return std::pow(10.0f, 0.05f * aDecibels);
+  return fdlibm_powf(10.0f, 0.05f * aDecibels);
 }
 
 /**
  * Converts a decibel to a linear value.
  */
 inline float ConvertDecibelToLinear(float aDecibel) {
-  return std::pow(10.0f, 0.05f * aDecibel);
+  return fdlibm_powf(10.0f, 0.05f * aDecibel);
 }
 
 inline void FixNaN(double& aDouble) {
-  if (IsNaN(aDouble) || IsInfinite(aDouble)) {
+  if (std::isnan(aDouble) || std::isinf(aDouble)) {
     aDouble = 0.0;
   }
 }
 
 inline double DiscreteTimeConstantForSampleRate(double timeConstant,
                                                 double sampleRate) {
-  return 1.0 - std::exp(-1.0 / (sampleRate * timeConstant));
+  return 1.0 - fdlibm_exp(-1.0 / (sampleRate * timeConstant));
 }
 
 inline bool IsTimeValid(double aTime) {
@@ -161,7 +162,7 @@ IntType TruncateFloatToInt(FloatType f) {
   static_assert(std::is_floating_point_v<FloatType> == true,
                 "FloatType must be a floating point type");
 
-  if (mozilla::IsNaN(f)) {
+  if (std::isnan(f)) {
     // It is the responsibility of the caller to deal with NaN values.
     // If we ever get to this point, we have a serious bug to fix.
     MOZ_CRASH("We should never see a NaN here");

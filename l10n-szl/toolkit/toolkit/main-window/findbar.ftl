@@ -36,3 +36,43 @@ findbar-entire-word =
     .label = Cołke słowa
     .accesskey = C
     .tooltiptext = Szukej ino cołkich słōw
+
+findbar-not-found = Fraza niy znaleziōno
+
+findbar-wrapped-to-top = Doszło do kōńca strōny, dalij ôd poczōntku
+findbar-wrapped-to-bottom = Doszło do poczōntku strōny, dalij ôd kōńca
+
+findbar-normal-find =
+    .placeholder = Znojdź na strōnie
+findbar-fast-find =
+    .placeholder = Gibkie szukanie
+findbar-fast-find-links =
+    .placeholder = Gibkie szukanie (ino linki)
+
+findbar-case-sensitive-status =
+    .value = (Dowej pozōr na srogość liter)
+findbar-match-diacritics-status =
+    .value = (Dowej pozōr na diakrytyki)
+findbar-entire-word-status =
+    .value = (Ino cołkie słowa)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $current } z { $total } pasownego
+            [few] { $current } ze { $total } pasownych
+           *[many] { $current } z { $total } pasownych
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Wiyncyj jak { $limit } pasownych
+            [few] Wiyncyj jak { $limit } pasowne
+           *[many] Wiyncyj jak { $limit } pasownych
+        }

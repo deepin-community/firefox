@@ -2,22 +2,24 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Socruithe maidir le glanadh na staire
-    .style = width: 46em
+    .style = min-width: 46em
 
 sanitize-prefs-style =
     .style = width: 19em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Glan an Stair Is Déanaí
-    .style = width: 46em
+    .style = min-width: 46em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Glan an Stair Go Léir
-    .style = width: 46em
+    .style = min-width: 46em
+
+clear-data-settings-label = Nuair a dhúntar é, ba cheart do { -brand-short-name } na nithe seo a ghlanadh go huathoibríoch
 
 ## clear-time-duration-prefix is followed by a dropdown list, with
 ## values localized using clear-time-duration-value-* messages.
@@ -76,8 +78,8 @@ item-form-search-history =
 
 data-section-label = Sonraí
 
-item-site-preferences =
-    .label = Sainroghanna an tSuímh
+item-site-settings =
+    .label = Socruithe an tsuímh
     .accesskey = S
 
 item-offline-apps =

@@ -6,12 +6,12 @@
 
 #![deny(missing_docs)]
 
-use crate::element_state::ElementState;
 use crate::stylesheets::{Namespaces, Origin, UrlExtraData};
 use crate::values::serialize_atom_identifier;
 use crate::Atom;
 use cssparser::{Parser as CssParser, ParserInput};
-use selectors::parser::SelectorList;
+use dom::ElementState;
+use selectors::parser::{SelectorList, ParseRelative};
 use std::fmt::{self, Debug, Write};
 use style_traits::{CssWriter, ParseError, ToCss};
 
@@ -46,7 +46,9 @@ pub struct SelectorParser<'a> {
     pub namespaces: &'a Namespaces,
     /// The extra URL data of the stylesheet, which is used to look up
     /// whether we are parsing a chrome:// URL style sheet.
-    pub url_data: Option<&'a UrlExtraData>,
+    pub url_data: &'a UrlExtraData,
+    /// Whether we're parsing selectors for `@supports`
+    pub for_supports_rule: bool,
 }
 
 impl<'a> SelectorParser<'a> {
@@ -54,17 +56,19 @@ impl<'a> SelectorParser<'a> {
     /// account namespaces.
     ///
     /// This is used for some DOM APIs like `querySelector`.
-    pub fn parse_author_origin_no_namespace(
-        input: &str,
-    ) -> Result<SelectorList<SelectorImpl>, ParseError> {
+    pub fn parse_author_origin_no_namespace<'i>(
+        input: &'i str,
+        url_data: &UrlExtraData,
+    ) -> Result<SelectorList<SelectorImpl>, ParseError<'i>> {
         let namespaces = Namespaces::default();
         let parser = SelectorParser {
             stylesheet_origin: Origin::Author,
             namespaces: &namespaces,
-            url_data: None,
+            url_data,
+            for_supports_rule: false,
         };
         let mut input = ParserInput::new(input);
-        SelectorList::parse(&parser, &mut CssParser::new(&mut input))
+        SelectorList::parse(&parser, &mut CssParser::new(&mut input), ParseRelative::No)
     }
 
     /// Whether we're parsing selectors in a user-agent stylesheet.
@@ -75,8 +79,7 @@ impl<'a> SelectorParser<'a> {
     /// Whether we're parsing selectors in a stylesheet that has chrome
     /// privilege.
     pub fn chrome_rules_enabled(&self) -> bool {
-        self.url_data.map_or(false, |d| d.chrome_rules_enabled()) ||
-            self.stylesheet_origin == Origin::User
+        self.url_data.chrome_rules_enabled() || self.stylesheet_origin == Origin::User
     }
 }
 
@@ -126,7 +129,7 @@ where
     T: Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("[")?;
+        f.write_char('[')?;
         let mut first = true;
         for entry in self.entries.iter() {
             if !first {
@@ -135,7 +138,7 @@ where
             first = false;
             entry.fmt(f)?;
         }
-        f.write_str("]")
+        f.write_char(']')
     }
 }
 
@@ -170,8 +173,13 @@ impl<T> PerPseudoElementMap<T> {
     }
 
     /// Get an iterator for the entries.
-    pub fn iter(&self) -> ::std::slice::Iter<Option<T>> {
+    pub fn iter(&self) -> std::slice::Iter<Option<T>> {
         self.entries.iter()
+    }
+
+    /// Get a mutable iterator for the entries.
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<Option<T>> {
+        self.entries.iter_mut()
     }
 }
 
@@ -215,8 +223,8 @@ impl Direction {
     /// Gets the element state relevant to this :dir() selector.
     pub fn element_state(&self) -> ElementState {
         match self.as_horizontal_direction() {
-            Some(HorizontalDirection::Ltr) => ElementState::IN_LTR_STATE,
-            Some(HorizontalDirection::Rtl) => ElementState::IN_RTL_STATE,
+            Some(HorizontalDirection::Ltr) => ElementState::LTR,
+            Some(HorizontalDirection::Rtl) => ElementState::RTL,
             None => ElementState::empty(),
         }
     }

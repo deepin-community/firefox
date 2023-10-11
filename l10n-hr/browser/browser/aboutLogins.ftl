@@ -5,12 +5,12 @@
 
 about-logins-page-title = Prijave i lozinke
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Pretraži prijave
+    .key = F
 
-create-login-button = Stvori novu prijavu
+create-new-login-button =
+    .title = Stvori novu prijavu
 
 fxaccounts-sign-in-text = Preuzmi lozinke na drugim uređajima
 fxaccounts-sign-in-sync-button = Prijavi se za sinkronizaciju
@@ -24,7 +24,7 @@ menu =
 # This menuitem is only visible on Windows and macOS
 about-logins-menu-menuitem-import-from-another-browser = Uvezi iz jednog drugog preglednika …
 about-logins-menu-menuitem-import-from-a-file = Uvezi iz datoteke …
-about-logins-menu-menuitem-export-logins = Izvezi prijave…
+about-logins-menu-menuitem-export-logins = Izvezi prijave …
 about-logins-menu-menuitem-remove-all-logins = Ukloni sve prijave…
 menu-menuitem-preferences =
     { PLATFORM() ->
@@ -37,11 +37,22 @@ about-logins-menu-menuitem-help = Pomoć
 
 login-list =
     .aria-label = Prijave koje odgovaraju upitu
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } prijava
         [few] { $count } prijave
        *[other] { $count } prijava
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } od { $total } prijave
+        [few] { $count } od { $total } prijava
+       *[other] { $count } od { $total } prijava
     }
 login-list-sort-label-text = Poredaj po:
 login-list-name-option = Naziv (A-Z)
@@ -62,7 +73,6 @@ about-logins-list-item-breach-icon =
     .title = Hakirana web-stranica
 about-logins-list-item-vulnerable-password-icon =
     .title = Ranjiva lozinka
-
 about-logins-list-section-breach = Hakirane web-stranice
 about-logins-list-section-vulnerable = Ranjive lozinke
 about-logins-list-section-nothing = Bez upozorenja
@@ -77,8 +87,8 @@ about-logins-login-intro-heading-logged-in = Nema sinkroniziranih prijava.
 login-intro-description = Ako su tvoje prijave spremljene u { -brand-product-name }u na jednom drugom uređaju, evo kako ih ovdje možeš preuzeti:
 login-intro-instructions-fxa = Stvori ili prijavi se na svoj { -fxaccount-brand-name } na uređaju gdje su spremljene tvoje prijave.
 login-intro-instructions-fxa-settings = Idi u Postavke > Sinkronizacija > Uključi sinkronizaciju… Odaberi opciju "Prijave i lozinke".
-login-intro-instructions-fxa-help = Posjeti <a data-l10n-name="help-link">podršku za { -lockwise-brand-short-name }</a> za više pomoći.
-about-logins-intro-import = Ako su tvoje prijave spremljene u jednom drugom pregledniku, možeš ih <a data-l10n-name="import-link"> uvesti u { -lockwise-brand-short-name } </a>
+login-intro-instructions-fxa-passwords-help = Posjeti <a data-l10n-name="passwords-help-link">podršku za lozinke</a> za dodatnu pomoć.
+about-logins-intro-browser-only-import = Ako su tvoje prijave spremljene u drugom pregledniku, možeš ih <a data-l10n-name="import-link">uvesti u { -brand-product-name }</a>
 about-logins-intro-import2 = Ako su tvoje prijave spremljene izvan { -brand-product-name(case: "gen") }, možeš ih <a data-l10n-name="import-browser-link">uvesti iz jednog drugog preglednika</a> ili <a data-l10n-name="import-file-link">iz jedne datoteke</a>
 
 ## Login
@@ -103,9 +113,17 @@ login-item-copied-password-button-text = Kopirano!
 login-item-save-changes-button = Spremi promjene
 login-item-save-new-button = Spremi
 login-item-cancel-button = Odustani
-login-item-time-changed = Zadnja izmjena: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Stvoreno: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Zadnji put korišteno: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Stvoreno
+login-item-timeline-action-updated = Aktualizirano
+login-item-timeline-action-used = Korišteno
 
 ## OS Authentication dialog
 
@@ -133,8 +151,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Za kopiranje tvoje lozin
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = kopiraj spremljenu lozinku
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Za izvoz tvojih prijava, upiši svoje podatke za prijavu na Windows. To pomaže zaštiti sigurnost tvojih računa.
 # This message can be seen when attempting to export a password in about:logins
@@ -148,8 +164,6 @@ master-password-reload-button =
     .label = Prijava
     .accesskey = r
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Odustani
@@ -159,6 +173,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Ukloniti ovu prijavu?
 confirm-delete-dialog-message = Ova radnja je nepovratna.
 about-logins-confirm-remove-dialog-confirm-button = Ukloni
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -204,9 +221,11 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Ovo će ukloniti prijave spremljene u { -brand-short-name }u na svim uređajima sinkroniziranim s tvojim { -fxaccount-brand-name }. Ovo će ukloniti i upozorenja o curenju podataka koja se nalaze ovdje. Ovu radnju nije moguće poništiti.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Izvezi prijave i lozinke
 about-logins-confirm-export-dialog-message = Vaše lozinke bit će spremljene kao čitljivi tekst (npr. Loš@L0zinka) pa će ih moći vidjeti svi koji mogu otvoriti izvezenu datoteku.
-about-logins-confirm-export-dialog-confirm-button = Izvoz…
+about-logins-confirm-export-dialog-confirm-button = Izvezi …
 
 about-logins-alert-import-title = Uvoz je dovršen
 about-logins-alert-import-message = Pogledaj detaljni sažetak uvoza
@@ -223,7 +242,6 @@ about-logins-breach-alert-date = Curenje podataka dogodilo se { DATETIME($date, 
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Idi na { $hostname }
-about-logins-breach-alert-learn-more-link = Saznaj više
 
 ## Vulnerable Password notification
 
@@ -248,11 +266,11 @@ about-logins-error-message-default = Došlo je do greške pri pokušaju spremanj
 ## Login Export Dialog
 
 # Title of the file picker dialog
-about-logins-export-file-picker-title = Izvoz datoteke prijava
+about-logins-export-file-picker-title = Izvezi datoteku prijava
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = prijave.csv
-about-logins-export-file-picker-export-button = Izvoz
+about-logins-export-file-picker-export-button = Izvezi
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
 about-logins-export-file-picker-csv-filter-title =
@@ -378,4 +396,4 @@ about-logins-import-report-error =
 
 ## Logins import report page
 
-about-logins-import-report-page-title = Sažeto izvješće uvoza
+about-logins-import-report-page-title = Uvezi izvještaj o sažetku

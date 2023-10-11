@@ -45,3 +45,9 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
+browser-languages-downloading =
+    .label = Презема…
+
+browser-languages-installed-label = Инсталирани јазици
+browser-languages-available-label = Достапни јазици
+

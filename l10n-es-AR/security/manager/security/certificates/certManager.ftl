@@ -26,9 +26,9 @@ certmgr-people = Usted tiene certificados en el archivo que identifican a las si
 certmgr-server = Estas entradas identifican las excepciones de error del certificado del servidor
 certmgr-ca = Tiene certificados en el archivo que identifican a las siguientes autoridades de certificación
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Modificar opciones de confianza en el certicado de CA
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Modificar opciones de confianza:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Este certificado puede identificar usuarios de correo
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Eliminar certificado
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Anfitrión
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Servidor
-
-certmgr-override-lifetime =
-    .label = Tiempo de vida
 
 certmgr-token-name =
     .label = Dispositivo de seguridad
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Número de serie
+
+certmgr-fingerprint-sha-256 =
+    .label = Huella digital SHA-256:
 
 certmgr-view =
     .label = Ver…
@@ -185,8 +185,6 @@ delete-email-cert-impact = Si elimina un certificado de correo de alguien,  ya n
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Certificado con número de serie: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = No enviar certificado de cliente

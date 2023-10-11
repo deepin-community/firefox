@@ -23,7 +23,7 @@ graph-total-tracker-summary =
 # Text displayed instead of the graph when in Private Mode
 graph-private-window = { -brand-short-name } bliuwt trackers blokkearje yn priveefinsters, mar hâldt net by wat blokkearre is.
 # Weekly summary of the graph when the graph is empty in Private Mode
-graph-week-summary-private-window = Trackers dy't { -brand-short-name } dizze wike blokkearre hat
+graph-week-summary-private-window = Trackers dy’t { -brand-short-name } dizze wike blokkearre hat
 
 protection-report-webpage-title = Befeiligingsdashboerd
 protection-report-page-content-title = Befeiligingsdashboerd
@@ -45,7 +45,7 @@ protection-report-manage-protections = Ynstellingen beheare
 graph-today = Hjoed
 
 # This string is used to describe the graph for screenreader users.
-graph-legend-description = In grafyk fan it totale oantal trackers per type dy't dizze wike blokkearre binne.
+graph-legend-description = In grafyk fan it totale oantal trackers per type dy’t dizze wike blokkearre binne.
 
 social-tab-title = Sosjale-mediatrackers
 social-tab-contant = Sosjale netwurken pleatse trackers op oare websites om te folgjen wat jo online dogge en besjogge. Hjirtroch kinne sosjale-mediabedriuwen mear oer jo leare dan wat jo diele op jo sosjale-mediaprofilen. <a data-l10n-name="learn-more-link">Mear ynfo</a>
@@ -65,22 +65,20 @@ cryptominer-tab-content = Cryptominers brûke de rekkenkrêft fan jo systeem om 
 protections-close-button2 =
     .aria-label = Slute
     .title = Slute
-  
+
 mobile-app-title = Blokkearje advertinsjetrackers op mear apparaten
 mobile-app-card-content = Brûk de mobile browser mei ynboude beskerming tsjin advertinsjetrackers.
 mobile-app-links = { -brand-product-name } Browser foar <a data-l10n-name="android-mobile-inline-link">Android</a> en <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Ferjit nea mear in wachtwurd
-lockwise-title-logged-in2 = Wachtwurdbehear
-lockwise-header-content = { -lockwise-brand-name } bewarret jo wachtwurden feilich yn jo browser.
+passwords-title-logged-in = Jo wachtwurden beheare
+passwords-header-content = { -brand-product-name } bewarret jo wachtwurden feilich yn jo browser.
 lockwise-header-content-logged-in = Bewarje en syngronisearje jo wachtwurden feilich op al jo apparaten.
-protection-report-save-passwords-button = Wachtwurden bewarje
-    .title = Wachtwurden bewarje yn { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Wachtwurden beheare
-    .title = Wachtwurden beheare yn { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Nim jo wachtwurden oeral mei hinne
-lockwise-no-logins-card-content = Brûk yn { -brand-short-name } bewarre wachtwurden op elk apparaat.
-lockwise-app-links = { -lockwise-brand-name } foar <a data-l10n-name="lockwise-android-inline-link">Android</a> en <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Wachtwurden bewarje
+    .title = Wachtwurden bewarje
+protection-report-passwords-manage-passwords-button = Wachtwurden beheare
+    .title = Wachtwurden beheare
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -99,10 +97,10 @@ lockwise-scanned-text-no-breached-logins =
         [one] In wachtwurd is feilich bewarre.
        *[other] Jo wachtwurden wurde feilich bewarre.
     }
-lockwise-how-it-works-link = Hoe't it wurket
+lockwise-how-it-works-link = Hoe’t it wurket
 
 monitor-title = Let op datalekken
-monitor-link = Hoe't it wurket
+monitor-link = Hoe’t it wurket
 monitor-header-content-no-account = Sjoch op { -monitor-brand-name } om te sjen oft jo troffen binne troch in bekend datalek en ûntfang warskôgingen oer nije datalekken.
 monitor-header-content-signed-in = { -monitor-brand-name } warskôget jo as jo gegevens foarkomme yn in bekend datalek
 monitor-sign-up-link = Ynskriuwe foar warskôgingen oer datalekken

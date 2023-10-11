@@ -1,9 +1,5 @@
 "use strict";
 
-const { E10SUtils } = ChromeUtils.import(
-  "resource://gre/modules/E10SUtils.jsm"
-);
-
 const COOP_PREF = "browser.tabs.remote.useCrossOriginOpenerPolicy";
 
 async function setPref() {
@@ -49,7 +45,7 @@ async function test_coop(
       url: start,
       waitForStateStop: true,
     },
-    async function(_browser) {
+    async function (_browser) {
       info(`test_coop: Test tab ready: ${start}`);
 
       let browser = gBrowser.selectedBrowser;
@@ -68,7 +64,7 @@ async function test_coop(
           url: target,
           maybeErrorPage: false,
         },
-        async () => BrowserTestUtils.loadURI(browser, target)
+        async () => BrowserTestUtils.loadURIString(browser, target)
       );
 
       info(`Navigated to: ${target}`);
@@ -117,8 +113,43 @@ function waitForDownloadWindow() {
   });
 }
 
+async function waitForDownloadUI() {
+  return BrowserTestUtils.waitForEvent(DownloadsPanel.panel, "popupshown");
+}
+
+async function cleanupDownloads(downloadList) {
+  info("cleaning up downloads");
+  let [download] = await downloadList.getAll();
+  await downloadList.remove(download);
+  await download.finalize(true);
+
+  try {
+    if (Services.appinfo.OS === "WINNT") {
+      // We need to make the file writable to delete it on Windows.
+      await IOUtils.setPermissions(download.target.path, 0o600);
+    }
+    await IOUtils.remove(download.target.path);
+  } catch (error) {
+    info("The file " + download.target.path + " is not removed, " + error);
+  }
+
+  if (DownloadsPanel.panel.state !== "closed") {
+    let hiddenPromise = BrowserTestUtils.waitForEvent(
+      DownloadsPanel.panel,
+      "popuphidden"
+    );
+    DownloadsPanel.hidePanel();
+    await hiddenPromise;
+  }
+  is(
+    DownloadsPanel.panel.state,
+    "closed",
+    "Check that the download panel is closed"
+  );
+}
+
 async function test_download_from(initCoop, downloadCoop) {
-  return BrowserTestUtils.withNewTab("about:blank", async function(_browser) {
+  return BrowserTestUtils.withNewTab("about:blank", async function (_browser) {
     info(`test_download: Test tab ready`);
 
     let start = httpURL(
@@ -133,23 +164,37 @@ async function test_download_from(initCoop, downloadCoop) {
       },
       async () => {
         info(`test_download: Loading download page ${start}`);
-        return BrowserTestUtils.loadURI(_browser, start);
+        return BrowserTestUtils.loadURIString(_browser, start);
       }
     );
 
     info(`test_download: Download page ready ${start}`);
     info(`Downloading ${downloadCoop}`);
 
-    let winPromise = waitForDownloadWindow();
+    let expectDialog = Services.prefs.getBoolPref(
+      "browser.download.always_ask_before_handling_new_types",
+      false
+    );
+    let resultPromise = expectDialog
+      ? waitForDownloadWindow()
+      : waitForDownloadUI();
     let browser = gBrowser.selectedBrowser;
     SpecialPowers.spawn(browser, [downloadCoop], downloadCoop => {
       content.document.getElementById(downloadCoop).click();
     });
 
     // if the download page doesn't appear, the promise leads a timeout.
-    let win = await winPromise;
-
-    await BrowserTestUtils.closeWindow(win);
+    if (expectDialog) {
+      let win = await resultPromise;
+      await BrowserTestUtils.closeWindow(win);
+    } else {
+      // verify link target will get automatically downloaded
+      await resultPromise;
+      let downloadList = await Downloads.getList(Downloads.PUBLIC);
+      is((await downloadList.getAll()).length, 1, "Target was downloaded");
+      await cleanupDownloads(downloadList);
+      is((await downloadList.getAll()).length, 0, "Downloads were cleaned up");
+    }
   });
 }
 
@@ -163,7 +208,7 @@ add_task(async function test_multiple_nav_process_switches() {
       url: httpURL("coop_header.sjs", "https://example.org"),
       waitForStateStop: true,
     },
-    async function(browser) {
+    async function (browser) {
       let prevBC = browser.browsingContext;
 
       let target = httpURL("coop_header.sjs?.", "https://example.org");
@@ -173,7 +218,7 @@ add_task(async function test_multiple_nav_process_switches() {
           url: target,
           maybeErrorPage: false,
         },
-        async () => BrowserTestUtils.loadURI(browser, target)
+        async () => BrowserTestUtils.loadURIString(browser, target)
       );
 
       Assert.equal(prevBC, browser.browsingContext);
@@ -189,7 +234,7 @@ add_task(async function test_multiple_nav_process_switches() {
           url: target,
           maybeErrorPage: false,
         },
-        async () => BrowserTestUtils.loadURI(browser, target)
+        async () => BrowserTestUtils.loadURIString(browser, target)
       );
 
       Assert.notEqual(prevBC, browser.browsingContext);
@@ -205,7 +250,7 @@ add_task(async function test_multiple_nav_process_switches() {
           url: target,
           maybeErrorPage: false,
         },
-        async () => BrowserTestUtils.loadURI(browser, target)
+        async () => BrowserTestUtils.loadURIString(browser, target)
       );
 
       Assert.notEqual(prevBC, browser.browsingContext);
@@ -221,7 +266,7 @@ add_task(async function test_multiple_nav_process_switches() {
           url: target,
           maybeErrorPage: false,
         },
-        async () => BrowserTestUtils.loadURI(browser, target)
+        async () => BrowserTestUtils.loadURIString(browser, target)
       );
 
       Assert.equal(prevBC, browser.browsingContext);

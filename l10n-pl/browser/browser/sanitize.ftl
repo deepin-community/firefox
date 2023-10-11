@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Ustawienia czyszczenia historii
-    .style = width: 41em
+    .style = min-width: 41em
 
 sanitize-prefs-style =
     .style = width: 25em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Czyszczenie historii
-    .style = width: 42em
+    .style = min-width: 42em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Czyszczenie historii
-    .style = width: 42em
+    .style = min-width: 42em
 
 clear-data-settings-label = Rzeczy zaznaczone poniżej będą usuwane podczas zamykania przeglądarki { -brand-short-name }.
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = D
 
 data-section-label = Dane
-
-item-site-preferences =
-    .label = Ustawienia uprawnień witryn
-    .accesskey = U
 
 item-site-settings =
     .label = Ustawienia witryn

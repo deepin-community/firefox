@@ -5,14 +5,15 @@
 
 about-logins-page-title = Մուտքագրումներ և գաղտնաբառեր
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Որոնել մուտքագրումներ
+    .key = F
 
-create-login-button = Ստեղծել նոր մուտքագրում
+create-new-login-button =
+    .title = Ստեղծել նոր մուտքագրում
 
 fxaccounts-sign-in-text = Ստացեք ձեր գաղտնաբառերը ձեր մյուս սարքերում
+fxaccounts-sign-in-sync-button = Մուտք գործեք՝ համաժամեցնելու համար
 fxaccounts-avatar-button =
     .title = Կառավարել հաշիվը
 
@@ -36,14 +37,26 @@ about-logins-menu-menuitem-help = Օգնություն
 
 login-list =
     .aria-label = Մուտքագրումների համապատասխանության որոնման հարցում
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } մուտքագրում
        *[other] { $count } մուտքագրումներ
     }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count }-ը { $total } մուտքագրումից
+       *[other] { $count }-ը { $total } մուտքագրումներից
+    }
 login-list-sort-label-text = Տեսակավարել ըստ՝
 login-list-name-option = Անվան (Ա-Ֆ)
 login-list-name-reverse-option = Անվան (Ա-Ֆ)
+login-list-username-option = Մականուն (Ա-Ֆ)
+login-list-username-reverse-option = Մականուն (Ֆ-Ա)
 about-logins-login-list-alerts-option = Զգուշացումներ
 login-list-last-changed-option = Վերջին փոփոխության
 login-list-last-used-option = Վերջին օգտագործման
@@ -58,12 +71,17 @@ about-logins-list-item-breach-icon =
     .title = Խախտված կայք
 about-logins-list-item-vulnerable-password-icon =
     .title = Խոցելի գաղտնաբառ
+about-logins-list-section-breach = Խախտված կայք
+about-logins-list-section-vulnerable = Խոցելի գաղտնաբառեր
+about-logins-list-section-nothing = Զգուշացում չկա
+about-logins-list-section-today = Այսօր
+about-logins-list-section-yesterday = Երեկ
+about-logins-list-section-week = Վերջին 7 օրում
 
 ## Introduction screen
 
 about-logins-login-intro-heading-logged-in = Համաժամեցված մուտք չի գտնվել:
 login-intro-description = Եթե պահպանել եք ձեր մուտքագրումները { -brand-product-name }-ում այլ սարքում, ահա թե ինչպես կարող եք ստանալ դրանք.
-about-logins-intro-import = Եթե ձեր մուտքանունները այլ զննարկիչում են պահպանված, դուք կարող եք <a data-l10n-name="import-link">դրանք ներածել { -lockwise-brand-short-name }</a>-ում
 
 ## Login
 
@@ -86,9 +104,14 @@ login-item-copied-password-button-text = Պատճենված
 login-item-save-changes-button = Պահպանել փոփոխությունները
 login-item-save-new-button = Պահպանել
 login-item-cancel-button = Չեղարկել
-login-item-time-changed = Վերջին փոփոխությունը ՝ { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Ստեղծված. { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Վերջին անգամ օգտագործված ՝{ DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+login-item-timeline-action-created = Ստեղծված
+login-item-timeline-action-updated = Արդիացված
+login-item-timeline-action-used = Օգտագործված
 
 ## OS Authentication dialog
 
@@ -116,8 +139,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Ձեր մուտքագր�
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = պատճենեք պահպանված գաղտնաբառը
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Ձեր մուտքագրումը արտահանելու համար մուտքագրեք ձեր Windows մուտքի հավատարմագրերը: Սա օգնում է պաշտպանել ձեր հաշիվների անվտանգությունը:
 # This message can be seen when attempting to export a password in about:logins
@@ -131,8 +152,6 @@ master-password-reload-button =
     .label = Մուտք գործել
     .accesskey = L
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Չեղարկել
@@ -142,6 +161,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Հեռացնե՞լ այս մուտքանունը։
 confirm-delete-dialog-message = Այս գործողությունը չի կարող ետարկվել:
 about-logins-confirm-remove-dialog-confirm-button = Հեռացնել
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -163,6 +185,8 @@ about-logins-confirm-remove-all-dialog-title =
        *[other] Հեռացնե՞լ բոլոր { $count } մուտքագրումները:
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Արտահանել մուտքանունները և գաղտնաբառերը
 about-logins-confirm-export-dialog-message = Ձեր գաղտնաբառերը կպահպանվեն որպես ընթեռնելի տեքստ (օր. ՝ BadP@ssw0rd), այնպես որ յուրաքանչյուրը, ով կարող է բացել արտահանվող ֆայլը, կարող է դիտել դրանք:
 about-logins-confirm-export-dialog-confirm-button = Արտահանել...
@@ -182,7 +206,6 @@ about-logins-breach-alert-date = Այս խախտումը տեղի է ունեց�
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Անցնել { $hostname }-ին
-about-logins-breach-alert-learn-more-link = Իմանալ ավելին
 
 ## Vulnerable Password notification
 
@@ -203,7 +226,6 @@ about-logins-error-message-duplicate-login-with-link = { $loginTitle }-ի այդ
 
 # This is a generic error message.
 about-logins-error-message-default = Գաղտնաբառի պահման ժամանակ հայտնվեց սխալ։
-
 
 ## Login Export Dialog
 
@@ -264,15 +286,23 @@ about-logins-import-dialog-error-title = Ներմուծման սխալ
 about-logins-import-dialog-error-file-permission-title = Հնարավոր չէ կարդալ ֆայլը
 about-logins-import-dialog-error-no-logins-imported = Ոչ մի մուտքագրում չի ներմուծվել
 about-logins-import-dialog-error-learn-more = Իմանալ ավելին
+about-logins-import-dialog-error-try-import-again = Նորից փորձեք ներմուծել…
 about-logins-import-dialog-error-cancel = Չեղարկել
+
+about-logins-import-report-title = Ներմուծման ամփոփագիր
+
+about-logins-import-report-row-description-error = Սխալ․ դաշտ չկա
 
 ##
 ## Variables:
 ##  $field (String) - The name of the field from the CSV file for example url, username or password
 
+about-logins-import-report-row-description-error-missing-field = Սխալ․ բացակայում է { $field }
+
 ##
 ## Variables:
 ##  $count (number) - The number of affected elements
+
 
 ## Logins import report page
 

@@ -41,13 +41,6 @@ menu-quit =
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Saír do { -brand-shorter-name }
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Saír do { -brand-shorter-name }
 menu-about =
     .label = Sobre o { -brand-shorter-name }
     .accesskey = S
@@ -77,9 +70,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Abrir ficheiro…
     .accesskey = A
-menu-file-close =
-    .label = Pechar
-    .accesskey = c
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Pechar lapela
+            [one] Pechar { $tabCount } lapela
+           *[other] Pechar { $tabCount } lapelas
+        }
+    .accesskey = P
 menu-file-close-window =
     .label = Pechar xanela
     .accesskey = P
@@ -95,9 +95,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Configuración da páxina…
     .accesskey = o
-menu-file-print-preview =
-    .label = Previsualización da impresión
-    .accesskey = r
 menu-file-print =
     .label = Imprimir…
     .accesskey = I
@@ -184,6 +181,17 @@ menu-view-full-screen =
     .label = Pantalla completa
     .accesskey = a
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Activar a vista de lectura
+    .accesskey = r
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Pechar a vista de lectura
+    .accesskey = r
+
 ##
 
 menu-view-show-all-tabs =
@@ -212,8 +220,9 @@ menu-history-undo-menu =
     .label = Lapelas pechadas recentemente
 menu-history-undo-window-menu =
     .label = Xanelas pechadas recentemente
-menu-history-reopen-all-tabs = Reabrir todas as lapelas
-menu-history-reopen-all-windows = Reabrir todas as xanelas
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Buscar no historial
 
 ## Bookmarks Menu
 
@@ -222,10 +231,13 @@ menu-bookmarks-menu =
     .accesskey = M
 menu-bookmarks-manage =
     .label = Xestionar marcadores
-menu-bookmark-current-tab =
-    .label = Marcar lapela actual
-menu-bookmark-edit =
-    .label = Editar este marcador
+menu-bookmark-tab =
+    .label = Marcar esta lapela…
+menu-edit-bookmark =
+    .label = Editar este marcador…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Buscar nos marcadores
 menu-bookmarks-all-tabs =
     .label = Marcar todas as lapelas…
 menu-bookmarks-toolbar =
@@ -310,15 +322,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = P
 menu-help-report-site-issue =
     .label = Informar dunha incidencia no sitio…
-menu-help-feedback-page =
-    .label = Enviar opinión…
-    .accesskey = o
+menu-help-share-ideas =
+    .label = Compartir ideas e comentarios…
+    .accesskey = s
 menu-help-enter-troubleshoot-mode2 =
     .label = Modo de resolución de problemas…
     .accesskey = r
 menu-help-exit-troubleshoot-mode =
     .label = Desactivar o modo de resolución de problemas
     .accesskey = M
+menu-help-switch-device =
+    .label = Cambiando a un dispositivo novo
+    .accesskey = C
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

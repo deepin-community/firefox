@@ -12,11 +12,15 @@ DIRS += [
 if not CONFIG["JS_STANDALONE"]:
     DIRS += [
         "common",
-        "faulty",
         "messagemanager",
         "shmem",
-        "ipc",
     ]
+
+    if CONFIG["FUZZING_SNAPSHOT"]:
+        DIRS += [
+            "ipc",
+            "nyx",
+        ]
 
     if CONFIG["LIBFUZZER"]:
         DIRS += [

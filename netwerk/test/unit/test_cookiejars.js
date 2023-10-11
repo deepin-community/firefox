@@ -9,11 +9,13 @@
 
 "use strict";
 
-XPCOMUtils.defineLazyGetter(this, "URL", function() {
+ChromeUtils.defineLazyGetter(this, "URL", function () {
   return "http://localhost:" + httpserver.identity.primaryPort;
 });
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
 var httpserver = new HttpServer();
 
@@ -21,10 +23,7 @@ var cookieSetPath = "/setcookie";
 var cookieCheckPath = "/checkcookie";
 
 function inChildProcess() {
-  return (
-    Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime)
-      .processType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT
-  );
+  return Services.appinfo.processType != Ci.nsIXULRuntime.PROCESS_TYPE_DEFAULT;
 }
 
 // Test array:
@@ -63,6 +62,23 @@ function setupChannel(path) {
   });
   chan.loadInfo.originAttributes = tests[i].originAttributes;
   chan.QueryInterface(Ci.nsIHttpChannel);
+
+  let loadGroup = Cc["@mozilla.org/network/load-group;1"].createInstance(
+    Ci.nsILoadGroup
+  );
+
+  if (chan.loadInfo.originAttributes.privateBrowsingId == 0) {
+    loadGroup.notificationCallbacks = Cu.createLoadContext();
+    chan.loadGroup = loadGroup;
+
+    chan.notificationCallbacks = Cu.createLoadContext();
+  } else {
+    loadGroup.notificationCallbacks = Cu.createPrivateLoadContext();
+    chan.loadGroup = loadGroup;
+
+    chan.notificationCallbacks = Cu.createPrivateLoadContext();
+  }
+
   return chan;
 }
 

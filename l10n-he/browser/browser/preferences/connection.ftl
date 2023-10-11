@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = הגדרות חיבור
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -35,7 +35,6 @@ connection-proxy-http = שרת מתווך HTTP‏
     .accesskey = H
 connection-proxy-http-port = שער
     .accesskey = ש
-
 connection-proxy-https-sharing =
     .label = שימוש בשרת מתווך זה גם עבור HTTPS
     .accesskey = ש
@@ -77,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = ס
     .tooltip = אפשרות זו מבצעת הזדהות שקטה מול שרתים מתווכים כאשר נשמרו פרטי ההתחברות עבורם. בקשת ההזדהות תופיע אם האימות נכשל.
 
+connection-proxy-autologin-checkbox =
+    .label = לא לבקש ססמת הזדהות אם נשמרה הססמה
+    .accesskey = ס
+    .tooltiptext = אפשרות זו מבצעת הזדהות שקטה מול שרתים מתווכים כאשר נשמרו פרטי ההתחברות עבורם. בקשת ההזדהות תופיע אם האימות נכשל.
+
 connection-proxy-socks-remote-dns =
     .label = שימוש ב־DNS דרך מתווך בעת שימוש ב־SOCKS v5
     .accesskey = מ
-
-connection-dns-over-https =
-    .label = הפעלת DNS על גבי HTTPS
-    .accesskey = פ
-
-connection-dns-over-https-url-resolver = שימוש בספק
-    .accesskey = ש
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

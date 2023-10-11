@@ -24,34 +24,34 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Cealaigh
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Oscail an Fillteán ina bhfuil an Comhad
-    .accesskey = F
-  
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Taispeáin San Aimsitheoir
-    .accesskey = A
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] Taispeáin san Aimsitheoir
+           *[other] Taispeáin san Fhillteán
+        }
+    .accesskey = T
 
-downloads-cmd-show-button =
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
+
+
+##
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
-            [macos] Taispeáin San Aimsitheoir
-           *[other] Oscail an Fillteán ina bhfuil an Comhad
+            [macos] Taispeáin san Aimsitheoir
+           *[other] Taispeáin san Fhillteán
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
-            [macos] Taispeáin San Aimsitheoir
-           *[other] Oscail an Fillteán ina bhfuil an Comhad
-        }
-downloads-cmd-show-description =
-    .value =
-        { PLATFORM() ->
-            [macos] Taispeáin San Aimsitheoir
-           *[other] Oscail an Fillteán ina bhfuil an Comhad
+            [macos] Taispeán san Aimsitheoir
+           *[other] Taispeáin san Fhillteán
         }
 
 downloads-cmd-retry =
@@ -122,6 +122,7 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -141,6 +142,14 @@ downloads-history =
     .label = Taispeáin Gach Íoslódáil
     .accesskey = T
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
+
 downloads-clear-downloads-button =
     .label = Bánaigh na hÍoslódálacha
     .tooltiptext = Bánaíonn sé seo íoslódálacha críochnaithe, cealaithe, agus teipthe
@@ -153,3 +162,12 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Níl aon íoslódáil sa seisiún seo.
+
+## Download errors
+
+downloads-error-alert-title = Earráid Íoslódála
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Ní féidir an íoslódáil a shábháil toisc gur tharla earráid anaithnid.
+    
+    Déan iarracht eile, le do thoil.

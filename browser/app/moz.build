@@ -32,12 +32,16 @@ with Files("profile/firefox.js"):
 if CONFIG["MOZ_MACBUNDLE_NAME"]:
     DIRS += ["macbuild/Contents"]
 
+browser_linkage = "standalone"
+if CONFIG["FUZZING_SNAPSHOT"] or CONFIG["AFLFUZZ"]:
+    browser_linkage = "dependent"
+
 if CONFIG["MOZ_NO_PIE_COMPAT"]:
-    GeckoProgram(CONFIG["MOZ_APP_NAME"] + "-bin")
+    GeckoProgram(CONFIG["MOZ_APP_NAME"] + "-bin", linkage=browser_linkage)
 
     DIRS += ["no-pie"]
 else:
-    GeckoProgram(CONFIG["MOZ_APP_NAME"])
+    GeckoProgram(CONFIG["MOZ_APP_NAME"], linkage=browser_linkage)
 
 SOURCES += [
     "nsBrowserApp.cpp",
@@ -70,6 +74,7 @@ if CONFIG["CC_TYPE"] == "clang-cl":
 if CONFIG["OS_ARCH"] == "WINNT":
     RCINCLUDE = "splash.rc"
     DIRS += [
+        "pbproxy",
         "winlauncher",
     ]
     USE_LIBS += [
@@ -78,10 +83,17 @@ if CONFIG["OS_ARCH"] == "WINNT":
     LOCAL_INCLUDES += [
         "/browser/app/winlauncher",
     ]
+    OS_LIBS += [
+        "advapi32",
+        "shell32",
+        "uuid",
+    ]
     DELAYLOAD_DLLS += [
+        "advapi32.dll",
         "oleaut32.dll",
         "ole32.dll",
         "rpcrt4.dll",
+        "shell32.dll",
         "version.dll",
     ]
 
@@ -98,9 +110,9 @@ if CONFIG["OS_ARCH"] == "WINNT":
     # only enable it for processes that are not using JIT in xul.dll.
     LINK_FLAGS["CETCOMPAT"] = []
 
-if CONFIG["MOZ_SANDBOX"] and CONFIG["OS_ARCH"] == "Darwin":
-    USE_LIBS += [
-        "mozsandbox",
+if CONFIG["OS_ARCH"] == "Darwin":
+    OS_LIBS += [
+        "-framework CoreFoundation",
     ]
 
 if CONFIG["MOZ_SANDBOX"] and CONFIG["OS_ARCH"] == "WINNT":
@@ -114,9 +126,13 @@ if CONFIG["MOZ_SANDBOX"] and CONFIG["OS_ARCH"] == "WINNT":
         "sandbox_s",
     ]
 
+    OS_LIBS += [
+        "winmm",
+    ]
     DELAYLOAD_DLLS += [
         "winmm.dll",
         "user32.dll",
+        "usp10.dll",
     ]
 
 # Control the default heap size.
@@ -147,7 +163,7 @@ if CONFIG["MOZ_LINUX_32_SSE2_STARTUP_ERROR"]:
         "-mfpmath=387",
     ]
 
-for icon in ("firefox", "document", "newwindow", "newtab", "pbmode"):
+for icon in ("firefox", "document", "newwindow", "newtab", "pbmode", "document_pdf"):
     DEFINES[icon.upper() + "_ICO"] = '"%s/%s/%s.ico"' % (
         TOPSRCDIR,
         CONFIG["MOZ_BRANDING_DIRECTORY"],

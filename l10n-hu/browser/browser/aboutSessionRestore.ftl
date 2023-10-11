@@ -8,7 +8,7 @@ restore-page-tab-title = Munkamenet helyreállítása
 # and regret that we are unable to restore the session for the user
 restore-page-error-title = Sajnáljuk, nem tudjuk visszaállítani a lapjait.
 restore-page-problem-desc = Nem tudjuk helyreállítani az előző böngészési munkamenetét. Válassza a Munkamenet helyreállítását az újrapróbálkozáshoz.
-restore-page-try-this = Még mindig nem tudja helyreállítani a munkamenetét? Néha egy lap okozza a problémát. Nézze meg az előző lapokat, vegye ki a pipát azoknál a lapoknál, amelyekre nincs szükséges, és aztán állítsa helyre.
+restore-page-try-this = Még mindig nem tudja helyreállítani a munkamenetét? Néha egy lap okozza a problémát. Nézze meg az előző lapokat, vegye ki a pipát azoknál a lapoknál, amelyekre nincs szüksége, és aztán állítsa helyre.
 
 restore-page-hide-tabs = Előző lapok elrejtése
 restore-page-show-tabs = Előző lapok megtekintése
@@ -48,4 +48,3 @@ welcome-back-restore-all-label = Minden ablak és lap visszaállítása
 welcome-back-restore-some-label = Csak a kiválasztottak visszaállítása
 
 welcome-back-page-info-link = Kiegészítői és a testreszabások eltávolításra kerültek, és a böngésző beállításai vissza lettek állítva az alapbeállításokra. Ha ez nem oldotta meg a problémát, akkor <a data-l10n-name="link-more">tudjon meg többet a további lehetőségekről.</a>
-

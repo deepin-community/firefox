@@ -21,6 +21,7 @@ perftools-heading-features-default = Características (como recomendación prede
 perftools-heading-features-disabled = Características desactivadas
 perftools-heading-features-experimental = Experimental
 perftools-heading-threads = Fíos
+perftools-heading-threads-jvm = Fíos de JVM
 perftools-heading-local-build = Compilación local
 
 ##
@@ -42,16 +43,15 @@ perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Tamaño do búfer:
+
 perftools-custom-threads-label = Engadir fíos personalizados por nome:
+
 perftools-devtools-interval-label = Intervalo:
 perftools-devtools-threads-label = Fíos:
 perftools-devtools-settings-label = Configuración
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice =
-    O perfilador resulta desactivado cando se activa a navegación privada.
-    Peche todas as xanelas privadas para reactivar o perfilador.
 perftools-status-recording-stopped-by-another-tool = A gravación resultou detida por outra ferramenta.
 perftools-status-restart-required = O navegador debe reiniciarse para activar esta característica.
 
@@ -83,8 +83,8 @@ perftools-thread-renderer =
     .title = Cando WebRender está activado, o fío que executa as chamadas de OpenGL
 perftools-thread-render-backend =
     .title = O fíoWebRender de RenderBackend
-perftools-thread-paint-worker =
-    .title = Cando o pintado fóra-do-fío-principal esta activado, o fío no que o pintado sucede
+perftools-thread-timer =
+    .title = Os temporizadores de manexo de fíos (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
     .title = A computación de estilo sepárase en múltiplos fíos
 pref-thread-stream-trans =
@@ -95,22 +95,35 @@ perftools-thread-img-decoder =
     .title = Fíos da descodificación de imaxe
 perftools-thread-dns-resolver =
     .title = Neste fío sucede a resolución de DNS
+perftools-thread-task-controller =
+    .title = Fíos de agrupación de subprocesos de TaskController
+perftools-thread-jvm-gecko =
+    .title = O fío principal da JVM de Gecko
+perftools-thread-jvm-nimbus =
+    .title = Os fíos principais para o SDK de experimentos de Nimbus
+perftools-thread-jvm-default-dispatcher =
+    .title = O despachante predeterminado para a biblioteca de corutinas de Kotlin
+perftools-thread-jvm-glean =
+    .title = Os fíos principais do SDK de telemetría de Glean
+perftools-thread-jvm-arch-disk-io =
+    .title = O despachante de entrada e saída para a biblioteca de corutinas de Kotlin
+perftools-thread-jvm-pool =
+    .title = Fíos creados nun grupo de fíos sen nome
 
 ##
 
 perftools-record-all-registered-threads = Rodea as seleccións anteriores e grava todos os fíos rexistrados
+
 perftools-tools-threads-input-label =
     .title =
         Eses nomes de fíos son unha lista separada por comas que se utiliza para activar o perfilado dos fíos no perfilador.
         O nome debe ter só unha coincidencia parcial co nome do fío para que sexa incluído. É sensíbel aos espazos en branco.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>Novo</b>:{ -profiler-brand-name } está agora integrado nas Developer Tools.<a>Saiba máis</a> sobre esta poderosa ferramenta nova.
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (Durante un tempo limitado, pode acceder ao panel orixinal de Rendemento via<a>{ options-context-advanced-settings }</a>)
+
 perftools-onboarding-close-button =
     .aria-label = Pechar a mensaxe de incorporación
 
@@ -121,7 +134,30 @@ perftools-onboarding-close-button =
 # devtools/client/performance-new/popup/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
 perftools-presets-web-developer-label = Desenvolvedores web
+perftools-presets-web-developer-description = Predefinición recomendada para a maioría da depuración de aplicacións web, con sobrecarga baixa.
+
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = Configuración predeterminada recomendada para o perfil { -brand-shorter-name }.
+
+perftools-presets-graphics-label = Gráficos
+perftools-presets-graphics-description = Predefinido para investigar erros gráficos en { -brand-shorter-name }.
+
+perftools-presets-media-label = Multimedia
+perftools-presets-media-description2 = Predefinido para investigar erros de son e de vídeo en { -brand-shorter-name }.
+
+perftools-presets-networking-label = Rede
+perftools-presets-networking-description = Predefinido para investigar erros de rede en { -brand-shorter-name }.
+
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = Enerxía
+perftools-presets-power-description = Predefinición para investigar erros de uso de enerxía en { -brand-shorter-name }, con baixo consumo de recursos.
+
 perftools-presets-custom-label = Personalizado
 
 ##

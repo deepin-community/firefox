@@ -65,8 +65,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } usuarios
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Sincroniza tus marcadores en cualquier lugar.
@@ -94,24 +92,6 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Lee las notas de la versión
 
-## Search Bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 # Variables:
@@ -124,20 +104,6 @@ cfr-doorhanger-milestone-heading2 =
     }
 cfr-doorhanger-milestone-ok-button = Ver todos
     .accesskey = S
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = Cerrar
     .accesskey = C
 
@@ -152,13 +118,6 @@ cfr-doorhanger-doh-secondary-button = Desactivar
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Tu privacidad importa. { -brand-short-name } ahora aísla, o coloca en cajas separadas los sitios web, lo que dificulta que los piratas informáticos roben contraseñas, números de tarjetas de crédito y otra información confidencial.
-cfr-doorhanger-fission-header = Aislamiento del sitio
-cfr-doorhanger-fission-primary-button = Ok, ¡ya caché!
-    .accesskey = O
-cfr-doorhanger-fission-secondary-button = Aprender más
-    .accesskey = L
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Los videos en este sitio podrían no reproducirse correctamente en esta versión de { -brand-short-name }. Para soporte completo de video, actualiza { -brand-short-name } ahora.
@@ -166,15 +125,134 @@ cfr-doorhanger-video-support-header = Actualiza { -brand-short-name } para repro
 cfr-doorhanger-video-support-primary-button = Actualizar ahora
     .accesskey = U
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
 spotlight-public-wifi-vpn-header = Parece que estás usando una red Wi-Fi pública
 spotlight-public-wifi-vpn-body = Para ocultar tu ubicación y actividad de navegación, considera una Red Privada Virtual. Te ayudará a mantenerte protegido cuando navegues en lugares públicos como aeropuertos y cafeterías.
 spotlight-public-wifi-vpn-primary-button = Mantente en privado con { -mozilla-vpn-brand-name }
     .accesskey = S
 spotlight-public-wifi-vpn-link = Ahora no
     .accesskey = N
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Un Internet mejor comienza contigo
+spotlight-better-internet-body = Cuando usas { -brand-short-name }, estás votando por un Internet abierto y accesible que sea mejor para todos.
+spotlight-peace-mind-header = Nosotros te protegemos
+spotlight-peace-mind-body = Cada mes, { -brand-short-name } bloquea un promedio de más de 3.000 rastreadores por usuario. Porque nada, especialmente las molestias de privacidad como los rastreadores, debe interponerse entre tu y el buen Internet.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Mantener en el Dock
+       *[other] Fijar a la barra de tareas
+    }
+spotlight-pin-secondary-button = Ahora no
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+mr2022-background-update-toast-title = Nuevo { -brand-short-name }. Mas privado. Menos rastreadores. Sin compromisos.
+mr2022-background-update-toast-text = Prueba el { -brand-short-name } más nuevo a la fecha, actualizado con nuestra protección anti-seguimiento más sólida hasta el momento.
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it
+# using a variable font like Arial): the button can only fit 1-2
+# additional characters, exceeding characters will be truncated.
+mr2022-background-update-toast-primary-button-label = Abrir { -brand-shorter-name } ahora
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = Recordarme más tarde
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Inténtalo
+    .accesskey = T
+firefoxview-cfr-secondarybutton = Ahora no
+    .accesskey = N
+firefoxview-cfr-header-v2 = Continúa rápidamente donde quedaste
+firefoxview-cfr-body-v2 = Recupera las pestañas cerradas recientemente y salta sin problemas entre dispositivos con { -firefoxview-brand-name }.
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = Dí hola a { -firefoxview-brand-name }
+
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = ¿Quieres que esa pestaña abierta esté también en tu teléfono? Tenla ahí. ¿Necesitas ese sitio que acabas de visitar? Puf, ha regresado gracias a { -firefoxview-brand-name }.
+firefoxview-spotlight-promo-primarybutton = Mira cómo funciona
+firefoxview-spotlight-promo-secondarybutton = Saltar
+
+## Colorways expiry reminder CFR
+
+colorways-cfr-primarybutton = Elegir combinación de colores
+    .accesskey = C
+
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = Colorea tu navegador con tonos exclusivos de { -brand-short-name } inspirados en voces que cambiaron la cultura.
+colorways-cfr-header-28days = Las combinaciones de colores de Independent Voices dejarán de estar disponibles el 16 de enero
+colorways-cfr-header-14days = Las combinaciones de colores de Independent Voices dejarán de estar disponibles en dos semanas
+colorways-cfr-header-7days = Las combinaciones de colores de Independent Voices dejarán de estar disponibles esta semana
+colorways-cfr-header-today = Las combinaciones de colores de Independent Voices dejarán de estar disponibles hoy
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-header = ¿Permitir que { -brand-short-name } rechace los anuncios de cookies?
+cfr-cbh-body = { -brand-short-name } puede rechazar automáticamente muchos anuncios de cookies.
+cfr-cbh-confirm-button = Rechazar los anuncios de cookies
+    .accesskey = R
+cfr-cbh-dismiss-button = Ahora no
+    .accesskey = N
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+july-jam-headline = Nosotros te protegemos
+july-jam-body = Cada mes, { -brand-short-name } bloquea un promedio de más de 3000 rastreadores por usuario, lo que le brinda un acceso rápido y seguro a Internet.
+july-jam-set-default-primary = Abrir mis enlaces con { -brand-short-name }
+fox-doodle-pin-headline = Bienvenido nuevamente
+
+# “indie” is short for the term “independent”.
+# In this instance, free from outside influence or control.
+fox-doodle-pin-body = Aquí hay un recordatorio rápido de que puedes mantener tu navegador independiente favorito a solo un clic de distancia.
+fox-doodle-pin-primary = Abrir mis enlaces con { -brand-short-name }
+fox-doodle-pin-secondary = Ahora no
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+set-default-pdf-handler-headline = <strong>Tus archivos PDF ahora se abren en { -brand-short-name }.</strong> Edita o firma formularios directamente en tu navegador. Para cambiar, busca "PDF" en los ajustes.
+set-default-pdf-handler-primary = Entendido
+
+## FxA sync CFR
+
+fxa-sync-cfr-header = ¿Nuevo dispositivo en tu futuro?
+fxa-sync-cfr-body = Asegúrate de que tus últimos marcadores, contraseñas y pestañas estén contigo cada vez que abras un nuevo navegador { -brand-product-name }.
+fxa-sync-cfr-primary = Aprender más
+    .accesskey = L
+fxa-sync-cfr-secondary = Recordarme más tarde
+    .accesskey = R
+
+## Device Migration FxA Spotlight
+
+device-migration-fxa-spotlight-header = ¿Usando un dispositivo más antiguo?
+device-migration-fxa-spotlight-body = Realiza una copia de seguridad de tus datos para asegurarte de no perder información importante como marcadores y contraseñas, especialmente si cambias a un nuevo dispositivo.
+device-migration-fxa-spotlight-primary-button = Cómo hacer una copia de seguridad de mis datos
+device-migration-fxa-spotlight-link = Recordarme más tarde

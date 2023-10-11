@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-webpage-languages-window =
+webpage-languages-window2 =
     .title = 网页语言设置
-    .style = width: 40em
+    .style = min-width: 40em
 
 languages-close-key =
     .key = w
@@ -49,9 +49,9 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
-browser-languages-window =
+browser-languages-window2 =
     .title = { -brand-short-name } 语言设置
-    .style = width: 40em
+    .style = min-width: 40em
 
 browser-languages-description = { -brand-short-name } 将显示的第一个语言作为您的默认语言，并在必要时按语言的顺序显示备用语言。
 
@@ -68,6 +68,6 @@ browser-languages-select-language =
     .placeholder = 选择要添加的语言…
 
 browser-languages-installed-label = 已安装的语言
-browser-languages-available-label = 可用的语言
+browser-languages-available-label = 可用语言 (*正體=繁体)
 
 browser-languages-error = { -brand-short-name } 目前无法更新您的语言。请检查您是否已连接到互联网，然后重试。

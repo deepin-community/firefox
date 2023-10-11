@@ -13,7 +13,7 @@ namespace mozilla::dom {
 
 NS_IMETHODIMP
 MIDIBackgroundRunnable::Run() {
-  ::mozilla::ipc::AssertIsOnBackgroundThread();
+  MIDIPlatformService::AssertThread();
   if (!MIDIPlatformService::IsRunning()) {
     return NS_OK;
   }
@@ -34,7 +34,7 @@ void RemovePortRunnable::RunInternal() {
 }
 
 void SetStatusRunnable::RunInternal() {
-  MIDIPlatformService::Get()->UpdateStatus(mPortId, mState, mConnection);
+  MIDIPlatformService::Get()->UpdateStatus(mPort, mState, mConnection);
 }
 
 void SendPortListRunnable::RunInternal() {

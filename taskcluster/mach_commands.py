@@ -5,7 +5,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-from __future__ import absolute_import, print_function, unicode_literals
 import argparse
 import json
 import logging
@@ -15,15 +14,9 @@ import time
 import traceback
 from functools import partial
 
-from mach.decorators import (
-    Command,
-    CommandArgument,
-    SettingsProvider,
-    SubCommand,
-)
-
-import taskgraph.main
-from taskgraph.main import commands as taskgraph_commands
+import gecko_taskgraph.main
+from gecko_taskgraph.main import commands as taskgraph_commands
+from mach.decorators import Command, CommandArgument, SettingsProvider, SubCommand
 
 logger = logging.getLogger("taskcluster")
 
@@ -106,34 +99,6 @@ def get_taskgraph_decision_parser():
                 "action": "append",
                 "default": argparse.SUPPRESS,
                 "help": "Kinds that should not be re-used from the on-push graph.",
-            },
-        ),
-        (
-            ["--comm-base-repository"],
-            {
-                "required": False,
-                "help": "URL for 'base' comm-* repository to clone",
-            },
-        ),
-        (
-            ["--comm-head-repository"],
-            {
-                "required": False,
-                "help": "URL for 'head' comm-* repository to fetch revision from",
-            },
-        ),
-        (
-            ["--comm-head-ref"],
-            {
-                "required": False,
-                "help": "comm-* Reference (this is same as rev usually for hg)",
-            },
-        ),
-        (
-            ["--comm-head-rev"],
-            {
-                "required": False,
-                "help": "Commit revision to use from head comm-* repository",
             },
         ),
     ]
@@ -221,7 +186,7 @@ def run_show_taskgraph(command_context, **options):
     # are being redirected to disk). By monkeypatching the 'setup_logging'
     # function we can let 'taskgraph.main' decide whether or not to log to
     # the terminal.
-    taskgraph.main.setup_logging = partial(
+    gecko_taskgraph.main.setup_logging = partial(
         setup_logging,
         command_context,
         quiet=options["quiet"],
@@ -357,23 +322,23 @@ def setup_logging(command_context, quiet=False, verbose=True):
 
 
 def show_actions(command_context, options):
-    import taskgraph
-    import taskgraph.actions
-    import taskgraph.generator
-    import taskgraph.parameters
+    import gecko_taskgraph
+    import gecko_taskgraph.actions
+    from taskgraph.generator import TaskGraphGenerator
+    from taskgraph.parameters import parameters_loader
 
     try:
         setup_logging(
             command_context, quiet=options["quiet"], verbose=options["verbose"]
         )
-        parameters = taskgraph.parameters.parameters_loader(options["parameters"])
+        parameters = parameters_loader(options["parameters"])
 
-        tgg = taskgraph.generator.TaskGraphGenerator(
+        tgg = TaskGraphGenerator(
             root_dir=options.get("root"),
             parameters=parameters,
         )
 
-        actions = taskgraph.actions.render_actions_json(
+        actions = gecko_taskgraph.actions.render_actions_json(
             tgg.parameters,
             tgg.graph_config,
             decision_task_id="DECISION-TASK",
@@ -435,7 +400,7 @@ def image_digest(command_context, **kwargs):
     "--product", default="Firefox", help="The product identifier, such as 'Firefox'"
 )
 def generate_partials_builds(command_context, product, branch):
-    from taskgraph.util.partials import populate_release_history
+    from gecko_taskgraph.util.partials import populate_release_history
 
     try:
         import yaml

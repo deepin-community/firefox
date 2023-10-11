@@ -38,20 +38,9 @@ menu-quit =
             [windows] K
            *[other] K
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Keluar dari { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Keluar dari { -brand-shorter-name }
-
 menu-about =
     .label = Tentang { -brand-shorter-name }
     .accesskey = T
@@ -81,9 +70,15 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Buka Berkas…
     .accesskey = B
-menu-file-close =
-    .label = Tutup
-    .accesskey = u
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Tutup Tab
+           *[other] Tutup { $tabCount } Tab
+        }
+    .accesskey = T
 menu-file-close-window =
     .label = Tutup Jendela
     .accesskey = d
@@ -93,12 +88,12 @@ menu-file-save-page =
 menu-file-email-link =
     .label = Surelkan Tautan…
     .accesskey = K
+menu-file-share-url =
+    .label = Bagikan
+    .accesskey = B
 menu-file-print-setup =
     .label = Tata Laman…
     .accesskey = n
-menu-file-print-preview =
-    .label = Pratinjau Cetak
-    .accesskey = P
 menu-file-print =
     .label = Cetak…
     .accesskey = C
@@ -168,7 +163,6 @@ menu-view-page-style-no-style =
 menu-view-page-basic-style =
     .label = Gaya Standar Laman
     .accesskey = S
-
 menu-view-repair-text-encoding =
     .label = Memperbaiki Pengodean Teks
     .accesskey = k
@@ -185,6 +179,17 @@ menu-view-exit-full-screen =
 menu-view-full-screen =
     .label = Layar Penuh
     .accesskey = P
+
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Masuk ke Tampilan Baca
+    .accesskey = B
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Tutup Tampilan Pembaca
+    .accesskey = T
 
 ##
 
@@ -215,9 +220,6 @@ menu-history-undo-menu =
 menu-history-undo-window-menu =
     .label = Jendela yang Baru Saja Ditutup
 
-menu-history-reopen-all-tabs = Buka Ulang Semua Tab
-menu-history-reopen-all-windows = Buka Ulang Semua Jendela
-
 ## Bookmarks Menu
 
 menu-bookmarks-menu =
@@ -225,10 +227,10 @@ menu-bookmarks-menu =
     .accesskey = M
 menu-bookmarks-manage =
     .label = Kelola Markah
-menu-bookmark-current-tab =
-    .label = Markahi Tab Saat Ini
-menu-bookmark-edit =
-    .label = Edit Markah Ini
+menu-bookmark-tab =
+    .label = Markahi Tab Saat Ini…
+menu-edit-bookmark =
+    .label = Ubah Markah Ini…
 menu-bookmarks-all-tabs =
     .label = Markahi Semua Tab…
 menu-bookmarks-toolbar =
@@ -313,15 +315,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = I
 menu-help-report-site-issue =
     .label = Laporkan Masalah Situs…
-menu-help-feedback-page =
-    .label = Kirim Saran…
-    .accesskey = S
+menu-help-share-ideas =
+    .label = Bagikan Ide dan Umpan Balik
+    .accesskey = B
 menu-help-enter-troubleshoot-mode2 =
     .label = Mode Pemecahan Masalah…
     .accesskey = P
 menu-help-exit-troubleshoot-mode =
     .label = Nonaktifkan Mode Pemecahan Masalah
     .accesskey = N
+menu-help-switch-device =
+    .label = Beralih ke Perangkat Baru
+    .accesskey = B
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

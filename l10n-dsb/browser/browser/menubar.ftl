@@ -38,20 +38,9 @@ menu-quit =
             [windows] k
            *[other] S
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = { -brand-shorter-name } skóńcyś
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = { -brand-shorter-name } skóńcyś
-
 menu-about =
     .label = Wó { -brand-shorter-name }
     .accesskey = W
@@ -81,9 +70,18 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Dataju wócyniś…
     .accesskey = D
-menu-file-close =
-    .label = Zacyniś
-    .accesskey = Z
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] { $tabCount } rejtarik zacyniś
+            [one] { $tabCount } rejtarik zacyniś
+            [two] { $tabCount } rejtarika zacyniś
+            [few] { $tabCount } rejtariki zacyniś
+           *[other] { $tabCount } rejtarikow zacyniś
+        }
+    .accesskey = r
 menu-file-close-window =
     .label = Wokno zacyniś
     .accesskey = z
@@ -99,9 +97,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Bok zarědowaś…
     .accesskey = B
-menu-file-print-preview =
-    .label = Śišćaŕski pśeglěd
-    .accesskey = l
 menu-file-print =
     .label = Śišćaś…
     .accesskey = i
@@ -188,6 +183,17 @@ menu-view-full-screen =
     .label = Połna wobrazowka
     .accesskey = P
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Do cytańskego naglěda stupiś
+    .accesskey = c
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Cytański naglěd zacyniś
+    .accesskey = z
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +222,9 @@ menu-history-undo-menu =
     .label = Rowno zacynjone rejtariki
 menu-history-undo-window-menu =
     .label = Rowno zacynjone wokna
-menu-history-reopen-all-tabs = Wšykne rejtariki znowego wócyniś
-menu-history-reopen-all-windows = Wšykne wokna znowego wócyniś
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Historiju pśepytaś
 
 ## Bookmarks Menu
 
@@ -226,10 +233,13 @@ menu-bookmarks-menu =
     .accesskey = C
 menu-bookmarks-manage =
     .label = Cytańske znamjenja zastojaś
-menu-bookmark-current-tab =
-    .label = Aktualny rejtarik ako cytańske znamje składowaś
-menu-bookmark-edit =
-    .label = Toś to cytańske znamje wobźěłaś
+menu-bookmark-tab =
+    .label = Aktualny rejtarik ako cytańske znamje składowaś …
+menu-edit-bookmark =
+    .label = Toś to cytańske znamje wobźěłaś …
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Cytańske znamjenja pśepytaś
 menu-bookmarks-all-tabs =
     .label = Wšykne rejtariki ako cytańske znamjenja…
 menu-bookmarks-toolbar =
@@ -314,15 +324,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = I
 menu-help-report-site-issue =
     .label = Sedłowy problem k wěsći daś…
-menu-help-feedback-page =
-    .label = Pósudk pósłaś…
-    .accesskey = P
+menu-help-share-ideas =
+    .label = Ideje a měnjenja źěliś …
+    .accesskey = I
 menu-help-enter-troubleshoot-mode2 =
     .label = Modus za rozwězowanje problemow…
     .accesskey = M
 menu-help-exit-troubleshoot-mode =
     .label = Modus za rozwězowanje problemow znjemóžniś
     .accesskey = M
+menu-help-switch-device =
+    .label = K nowemu rědoju pśejś
+    .accesskey = n
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = Llistes de bloqueos
-    .style = width: 50em
+    .style = min-width: 50em
 
 blocklist-description = Escueyi la llista que { -brand-short-name } usa pa bloquiar los rastrexadores en llinia. Les llistes fórneles <a data-l10n-name="disconnect-link" title="Disconnect">Disconnect</a>.
 blocklist-close-key =

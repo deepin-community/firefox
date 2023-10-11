@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-permissions-window =
+permissions-window2 =
     .title = Iznimke
-    .style = width: 41em
+    .style = min-width: 41em
 
 permissions-close-key =
     .key = w
@@ -15,6 +15,10 @@ permissions-address = Adresa web stranice
 permissions-block =
     .label = Blokiraj
     .accesskey = B
+
+permissions-disable-etp =
+    .label = Dodaj iznimku
+    .accesskey = i
 
 permissions-session =
     .label = Dozvoli za sesiju
@@ -88,57 +92,56 @@ permissions-invalid-uri-label = Upiši valjano ime glavnog računala
 
 ## Exceptions - Tracking Protection
 
-permissions-exceptions-etp-window =
+permissions-exceptions-etp-window2 =
     .title = Iznimke za poboljšanu zaštitu od praćenja
-    .style = { permissions-window.style }
-permissions-exceptions-etp-desc = Zaštita je isključena na ovim web stranicama.
+    .style = { permissions-window2.style }
 
 ## Exceptions - Cookies
 
-permissions-exceptions-cookie-window =
+permissions-exceptions-cookie-window2 =
     .title = Iznimke - kolačići i podaci web stranice
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Možeš odrediti web stranice, koje smiju uvijek ili ne smiju nikada koristiti kolačiće i podatke web stranice. Upiši točnu adresu stranice koju želiš podesiti i klikni „Blokiraj”, „Dozvoli za sesiju” ili „Dozvoli”.
 
 ## Exceptions - HTTPS-Only Mode
 
-permissions-exceptions-https-only-window =
+permissions-exceptions-https-only-window2 =
     .title = Iznimke - način rada "samo HTTPS"
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 
 ## Exceptions - Pop-ups
 
-permissions-exceptions-popup-window =
+permissions-exceptions-popup-window2 =
     .title = Dopuštene stranice - skočni prozori
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-popup-desc = Možeš odrediti web-stranice, koje smiju prikazivati skočne prozore. Upiši točnu adresu web-stranice kojoj to želiš dozvoliti, te klikni na „Dozvoli”.
 
 ## Exceptions - Saved Logins
 
-permissions-exceptions-saved-logins-window =
+permissions-exceptions-saved-logins-window2 =
     .title = Iznimke - spremljene prijave
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-saved-logins-desc = Prijave za sljedeće stranice neće biti spremljene
 
 ## Exceptions - Add-ons
 
-permissions-exceptions-addons-window =
+permissions-exceptions-addons-window2 =
     .title = Dopuštene stranice - Instalacija dodataka
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-exceptions-addons-desc = Možeš odrediti web-stranice, koje smiju instalirati dodatke. Upiši točnu adresu web-stranice kojoj to želiš dozvoliti, te klikni na „Dozvoli”.
 
 ## Site Permissions - Autoplay
 
-permissions-site-autoplay-window =
+permissions-site-autoplay-window2 =
     .title = Postavke - automatska reprodukcija
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-autoplay-desc = Ovdje možeđ upravljati stranicama koje ne slijede standardne postavke za automatsku reprodukciju.
 
 ## Site Permissions - Notifications
 
-permissions-site-notification-window =
+permissions-site-notification-window2 =
     .title = Postavke - dozvole za obavijesti
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-notification-desc = Sljedeće web stranice su te zatražile za odobrenje slanja obavijesti. Možeš navesti web stranice, kojima dopuštaš slanje obavijesti. Također možeš blokirati nove zahtjeve za slanje obavijesti.
 permissions-site-notification-disable-label =
     .label = Blokiraj nove zahtjeve koji traže dozvolu za obavijesti
@@ -146,9 +149,9 @@ permissions-site-notification-disable-desc = Ovo će spriječiti traženje dopu�
 
 ## Site Permissions - Location
 
-permissions-site-location-window =
+permissions-site-location-window2 =
     .title = Postavke - lokacijske dozvole
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-location-desc = Sljedeće stranice su zatražile pristup tvojoj lokaciji. Može navesti koje web stranice imaju pristup tvojoj lokaciji. Također možeš blokirati nove zahtjeve koji traže pristup tvojoj lokaciji.
 permissions-site-location-disable-label =
     .label = Blokiraj nove zahtjeve za pristup tvojoj lokaciji
@@ -156,9 +159,9 @@ permissions-site-location-disable-desc = Ovo će spriječiti traženje pristupa 
 
 ## Site Permissions - Virtual Reality
 
-permissions-site-xr-window =
+permissions-site-xr-window2 =
     .title = Postavke - dopuštenja virtualne stvarnosti
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-xr-desc = Sljedeće web stranice zatražile su pristup tvojim uređajima za virtualnu stvarnost. Možeš odabrati kojim web stranicama ćeš dozvoliti pristup tvojim uređajima za virtualnu stvarnost. Možeš i blokirati nove zahtjeve za pristup tvojim uređajima za virtualnu stvarnost.
 permissions-site-xr-disable-label =
     .label = Blokiraj nove zahtjeve za pristup tvojim uređajima za virtualnu stvarnost
@@ -166,9 +169,9 @@ permissions-site-xr-disable-desc = Ovo će spriječiti bilo koju web stranicu ko
 
 ## Site Permissions - Camera
 
-permissions-site-camera-window =
+permissions-site-camera-window2 =
     .title = Postavke - dozvole pristupa kameri
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-camera-desc = Sljedeće stranice su zatražile pristup tvojoj kameri. Možeš navesti koje web stranice imaju pristup tvojoj kameri. Također možeš blokirati nove zahtjeve koji traže pristup tvojoj kameri.
 permissions-site-camera-disable-label =
     .label = Blokiraj nove zahtjeve za pristup tvojoj kameri
@@ -176,10 +179,32 @@ permissions-site-camera-disable-desc = Ovo će spriječiti traženje pristupa tv
 
 ## Site Permissions - Microphone
 
-permissions-site-microphone-window =
+permissions-site-microphone-window2 =
     .title = Postavke - dozvole pristupa mikrofonu
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 permissions-site-microphone-desc = Sljedeće stranice su zatražile pristup tvom mikrofonu. Možeš navesti koje web stranice imaju pristup tvom mikrofonu. Također možeš blokirati nove zahtjeve koji traže pristup tvom mikrofonu.
 permissions-site-microphone-disable-label =
     .label = Blokiraj nove zahtjeve za pristup tvom mikrofonu
 permissions-site-microphone-disable-desc = Ovo će spriječiti traženje pristupa tvom mikrofonu za svaku stranicu koja nije navedena. Blokiranje pristupa tvom mikrofonu može pokvariti neke funkcije web stranice.
+
+## Site Permissions - Speaker
+##
+## "Speaker" refers to an audio output device.
+
+permissions-doh-entry-field = Upiši ime domene web stranice
+    .accesskey = d
+
+permissions-doh-add-exception =
+    .label = Dodaj
+    .accesskey = D
+
+permissions-doh-col =
+    .label = Domena
+
+permissions-doh-remove =
+    .label = Ukloni
+    .accesskey = U
+
+permissions-doh-remove-all =
+    .label = Ukloni sve
+    .accesskey = s

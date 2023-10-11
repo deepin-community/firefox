@@ -44,23 +44,34 @@ void ScreenManager::SetHelper(UniquePtr<Helper> aHelper) {
   mHelper = std::move(aHelper);
 }
 
+// static
 void ScreenManager::Refresh(nsTArray<RefPtr<Screen>>&& aScreens) {
+  if (PastShutdownPhase(ShutdownPhase::XPCOMShutdown)) {
+    // We don't refresh screen data if starting XPCOM shutdown path.
+    // GetSingleton returns invalid data since it is freed.
+    return;
+  }
   MOZ_LOG(sScreenLog, LogLevel::Debug, ("Refresh screens"));
-
-  mScreenList = std::move(aScreens);
-
-  CopyScreensToAllRemotesIfIsParent();
+  GetSingleton().RefreshInternal(std::move(aScreens));
 }
 
 void ScreenManager::Refresh(nsTArray<mozilla::dom::ScreenDetails>&& aScreens) {
   MOZ_LOG(sScreenLog, LogLevel::Debug, ("Refresh screens from IPC"));
 
-  mScreenList.Clear();
+  AutoTArray<RefPtr<Screen>, 4> screens;
   for (auto& screen : aScreens) {
-    mScreenList.AppendElement(new Screen(screen));
+    screens.AppendElement(new Screen(screen));
   }
+  RefreshInternal(std::move(screens));
+}
+
+void ScreenManager::RefreshInternal(nsTArray<RefPtr<Screen>>&& aScreens) {
+  mScreenList = std::move(aScreens);
 
   CopyScreensToAllRemotesIfIsParent();
+  if (nsCOMPtr<nsIObserverService> s = services::GetObserverService()) {
+    s->NotifyObservers(nullptr, "screen-information-changed", nullptr);
+  }
 }
 
 template <class Range>
@@ -106,8 +117,16 @@ void ScreenManager::CopyScreensToAllRemotesIfIsParent() {
 NS_IMETHODIMP
 ScreenManager::ScreenForRect(int32_t aX, int32_t aY, int32_t aWidth,
                              int32_t aHeight, nsIScreen** aOutScreen) {
+  DesktopIntRect rect(aX, aY, aWidth, aHeight);
+  nsCOMPtr<nsIScreen> screen = ScreenForRect(rect);
+  screen.forget(aOutScreen);
+  return NS_OK;
+}
+
+already_AddRefed<Screen> ScreenManager::ScreenForRect(
+    const DesktopIntRect& aRect) {
 #if defined(MOZ_WAYLAND) && defined(MOZ_LOGGING)
-  static bool inWayland = mozilla::widget::GdkIsWaylandDisplay();
+  static bool inWayland = GdkIsWaylandDisplay();
   if (inWayland) {
     MOZ_LOG(sScreenLog, LogLevel::Warning,
             ("Getting screen in wayland, primary display will be returned."));
@@ -117,17 +136,17 @@ ScreenManager::ScreenForRect(int32_t aX, int32_t aY, int32_t aWidth,
   if (mScreenList.IsEmpty()) {
     MOZ_LOG(sScreenLog, LogLevel::Warning,
             ("No screen available. This can happen in xpcshell."));
-    RefPtr<Screen> ret = new Screen(
-        LayoutDeviceIntRect(), LayoutDeviceIntRect(), 0, 0,
-        DesktopToLayoutDeviceScale(), CSSToLayoutDeviceScale(), 96 /* dpi */);
-    ret.forget(aOutScreen);
-    return NS_OK;
+    auto screen = MakeRefPtr<Screen>(
+        LayoutDeviceIntRect(), LayoutDeviceIntRect(), 0, 0, 0,
+        DesktopToLayoutDeviceScale(), CSSToLayoutDeviceScale(), 96 /* dpi */,
+        Screen::IsPseudoDisplay::No, hal::ScreenOrientation::None, 0);
+    return screen.forget();
   }
 
   // Optimize for the common case. If the number of screens is only
   // one then just return the primary screen.
   if (mScreenList.Length() == 1) {
-    return GetPrimaryScreen(aOutScreen);
+    return GetPrimaryScreen();
   }
 
   // which screen should we return?
@@ -136,14 +155,13 @@ ScreenManager::ScreenForRect(int32_t aX, int32_t aY, int32_t aWidth,
   // walk the list of screens and find the one that has the most
   // surface area.
   uint32_t area = 0;
-  DesktopIntRect windowRect(aX, aY, aWidth, aHeight);
   for (auto& screen : mScreenList) {
     int32_t x, y, width, height;
     x = y = width = height = 0;
     screen->GetRectDisplayPix(&x, &y, &width, &height);
     // calculate the surface area
     DesktopIntRect screenRect(x, y, width, height);
-    screenRect.IntersectRect(screenRect, windowRect);
+    screenRect.IntersectRect(screenRect, aRect);
     uint32_t tempArea = screenRect.Area();
     if (tempArea > area) {
       which = screen.get();
@@ -155,8 +173,7 @@ ScreenManager::ScreenForRect(int32_t aX, int32_t aY, int32_t aWidth,
   // return the screen that has the largest intersection.
   if (area > 0) {
     RefPtr<Screen> ret = which;
-    ret.forget(aOutScreen);
-    return NS_OK;
+    return ret.forget();
   }
 
   // If the rect does not intersect a screen, find
@@ -168,17 +185,17 @@ ScreenManager::ScreenForRect(int32_t aX, int32_t aY, int32_t aWidth,
     screen->GetRectDisplayPix(&x, &y, &width, &height);
 
     uint32_t distanceX = 0;
-    if (aX > (x + width)) {
-      distanceX = aX - (x + width);
-    } else if ((aX + aWidth) < x) {
-      distanceX = x - (aX + aWidth);
+    if (aRect.x > (x + width)) {
+      distanceX = aRect.x - (x + width);
+    } else if (aRect.XMost() < x) {
+      distanceX = x - aRect.XMost();
     }
 
     uint32_t distanceY = 0;
-    if (aY > (y + height)) {
-      distanceY = aY - (y + height);
-    } else if ((aY + aHeight) < y) {
-      distanceY = y - (aY + aHeight);
+    if (aRect.y > (y + height)) {
+      distanceY = aRect.y - (y + height);
+    } else if (aRect.YMost() < y) {
+      distanceY = y - aRect.YMost();
     }
 
     uint32_t tempDistance = distanceX * distanceX + distanceY * distanceY;
@@ -192,27 +209,29 @@ ScreenManager::ScreenForRect(int32_t aX, int32_t aY, int32_t aWidth,
   }
 
   RefPtr<Screen> ret = which;
-  ret.forget(aOutScreen);
-  return NS_OK;
+  return ret.forget();
 }
 
 // The screen with the menubar/taskbar. This shouldn't be needed very
 // often.
 //
-NS_IMETHODIMP
-ScreenManager::GetPrimaryScreen(nsIScreen** aPrimaryScreen) {
+already_AddRefed<Screen> ScreenManager::GetPrimaryScreen() {
   if (mScreenList.IsEmpty()) {
     MOZ_LOG(sScreenLog, LogLevel::Warning,
             ("No screen available. This can happen in xpcshell."));
-    RefPtr<Screen> ret = new Screen(
-        LayoutDeviceIntRect(), LayoutDeviceIntRect(), 0, 0,
-        DesktopToLayoutDeviceScale(), CSSToLayoutDeviceScale(), 96 /* dpi */);
-    ret.forget(aPrimaryScreen);
-    return NS_OK;
+    return MakeAndAddRef<Screen>(
+        LayoutDeviceIntRect(), LayoutDeviceIntRect(), 0, 0, 0,
+        DesktopToLayoutDeviceScale(), CSSToLayoutDeviceScale(), 96 /* dpi */,
+        Screen::IsPseudoDisplay::No, hal::ScreenOrientation::None, 0);
   }
 
-  RefPtr<Screen> ret = mScreenList[0];
-  ret.forget(aPrimaryScreen);
+  return do_AddRef(mScreenList[0]);
+}
+
+NS_IMETHODIMP
+ScreenManager::GetPrimaryScreen(nsIScreen** aPrimaryScreen) {
+  nsCOMPtr<nsIScreen> screen = GetPrimaryScreen();
+  screen.forget(aPrimaryScreen);
   return NS_OK;
 }
 

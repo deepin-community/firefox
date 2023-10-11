@@ -15,7 +15,7 @@ certificate-viewer-algorithm = Algorithme
 certificate-viewer-certificate-authority = Autorité de certification
 certificate-viewer-cipher-suite = Suite de chiffrement
 certificate-viewer-common-name = Nom courant
-certificate-viewer-email-address = Adresse électronique
+certificate-viewer-email-address = Adresse e-mail
 # Variables:
 #   $firstCertName (String) - Common Name for the displayed certificate
 certificate-viewer-tab-title = Certificat pour { $firstCertName }

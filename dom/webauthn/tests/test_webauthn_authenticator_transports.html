@@ -14,6 +14,10 @@
   <script class="testbody" type="text/javascript">
     "use strict";
 
+    add_task(async () => {
+      await addVirtualAuthenticator();
+    });
+
     function arrivingHereIsGood(aResult) {
       ok(true, "Good result! Received a: " + aResult);
     }
@@ -33,16 +37,6 @@
     // Store the credential of the first successful make credential
     // operation so we can use it to get assertions later.
     let gCredential;
-
-    add_task(() => {
-      // Enable the softtoken.
-      return SpecialPowers.pushPrefEnv({"set": [
-        ["security.webauth.webauthn", true],
-        ["security.webauth.webauthn_enable_softtoken", true],
-        ["security.webauth.webauthn_enable_usbtoken", false],
-        ["security.webauth.webauthn_enable_android_fido2", false],
-      ]});
-    });
 
     // Start a new MakeCredential() request.
     function requestMakeCredential(excludeCredentials) {
@@ -71,7 +65,7 @@
     }
 
     // Test make credential behavior.
-    add_task(async () => {
+    add_task(async function test_make_credential() {
       // Make a credential.
       await requestMakeCredential([])
          // Save the credential for later.
@@ -118,7 +112,7 @@
     });
 
     // Test get assertion behavior.
-    add_task(async () => {
+    add_task(async function test_get_assertion() {
       // Request an assertion for gCredential.
       await requestGetAssertion([{
         type: "public-key",
@@ -127,15 +121,15 @@
       }]).then(arrivingHereIsGood)
          .catch(arrivingHereIsBad);
 
-      // Request an assertion for a random credential. The token indicates
-      // consent even though this credential doesn't exist, so expect an
-      // InvalidStateError.
+      // Request an assertion for a random credential. This should be
+      // indistinguishable from the user denying consent for a known
+      // credential, so expect a NotAllowedError.
       await requestGetAssertion([{
         type: "public-key",
         id: crypto.getRandomValues(new Uint8Array(16)),
         transports: ["usb"],
       }]).then(arrivingHereIsBad)
-         .catch(expectInvalidStateError);
+         .catch(expectNotAllowedError);
 
       // Request an assertion for gCredential with transport=nfc.
       // The softoken pretends to support all transports.

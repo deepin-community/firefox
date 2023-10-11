@@ -45,9 +45,9 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
-browser-languages-window =
+browser-languages-window2 =
     .title = Ter me Leb pi { -brand-short-name }
-    .style = width: 40em
+    .style = min-width: 40em
 
 browser-languages-description = { -brand-short-name } bi nyuto leb me acel calo megi makwongo ki bi nyuto leb mukene ka mite malube ki kit ma gi nen kwede.
 

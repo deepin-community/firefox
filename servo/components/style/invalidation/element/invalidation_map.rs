@@ -5,18 +5,18 @@
 //! Code for invalidations due to state or attribute changes.
 
 use crate::context::QuirksMode;
-use crate::element_state::{DocumentState, ElementState};
 use crate::selector_map::{
     MaybeCaseInsensitiveHashMap, PrecomputedHashMap, SelectorMap, SelectorMapEntry,
 };
 use crate::selector_parser::SelectorImpl;
-use crate::{Atom, LocalName, Namespace};
-use fallible::FallibleVec;
-use hashglobe::FailedAllocationError;
+use crate::AllocErr;
+use crate::{Atom, LocalName, Namespace, ShrinkIfNeeded};
+use dom::{DocumentState, ElementState};
 use selectors::attr::NamespaceConstraint;
 use selectors::parser::{Combinator, Component};
 use selectors::parser::{Selector, SelectorIter};
-use selectors::visitor::SelectorVisitor;
+use selectors::visitor::{SelectorListKind, SelectorVisitor};
+use servo_arc::Arc;
 use smallvec::SmallVec;
 
 /// Mapping between (partial) CompoundSelectors (and the combinator to their
@@ -40,11 +40,7 @@ use smallvec::SmallVec;
 #[derive(Clone, Debug, MallocSizeOf)]
 pub struct Dependency {
     /// The dependency selector.
-    #[cfg_attr(
-        feature = "gecko",
-        ignore_malloc_size_of = "CssRules have primary refs, we measure there"
-    )]
-    #[cfg_attr(feature = "servo", ignore_malloc_size_of = "Arc")]
+    #[ignore_malloc_size_of = "CssRules have primary refs, we measure there"]
     pub selector: Selector<SelectorImpl>,
 
     /// The offset into the selector that we should match on.
@@ -65,7 +61,8 @@ pub struct Dependency {
     ///    * One dependency from .bar pointing to C (parent: None)
     ///    * One dependency from .foo pointing to A (parent: None)
     ///
-    pub parent: Option<Box<Dependency>>,
+    #[ignore_malloc_size_of = "Arc"]
+    pub parent: Option<Arc<Dependency>>,
 }
 
 /// The kind of elements down the tree this dependency may affect.
@@ -238,13 +235,21 @@ impl InvalidationMap {
         self.other_attribute_affecting_selectors.clear();
     }
 
+    /// Shrink the capacity of hash maps if needed.
+    pub fn shrink_if_needed(&mut self) {
+        self.class_to_selector.shrink_if_needed();
+        self.id_to_selector.shrink_if_needed();
+        self.state_affecting_selectors.shrink_if_needed();
+        self.other_attribute_affecting_selectors.shrink_if_needed();
+    }
+
     /// Adds a selector to this `InvalidationMap`.  Returns Err(..) to
     /// signify OOM.
     pub fn note_selector(
         &mut self,
         selector: &Selector<SelectorImpl>,
         quirks_mode: QuirksMode,
-    ) -> Result<(), FailedAllocationError> {
+    ) -> Result<(), AllocErr> {
         debug!("InvalidationMap::note_selector({:?})", selector);
 
         let mut document_state = DocumentState::empty();
@@ -274,7 +279,8 @@ impl InvalidationMap {
                 state: document_state,
                 dependency: Dependency::for_full_selector_invalidation(selector.clone()),
             };
-            self.document_state_selectors.try_push(dep)?;
+            self.document_state_selectors.try_reserve(1)?;
+            self.document_state_selectors.push(dep);
         }
 
         Ok(())
@@ -298,6 +304,12 @@ impl PerCompoundState {
     }
 }
 
+struct ParentDependencyEntry {
+    selector: Selector<SelectorImpl>,
+    offset: usize,
+    cached_dependency: Option<Arc<Dependency>>,
+}
+
 /// A struct that collects invalidations for a given compound selector.
 struct SelectorDependencyCollector<'a> {
     map: &'a mut InvalidationMap,
@@ -315,8 +327,8 @@ struct SelectorDependencyCollector<'a> {
     /// sequence.
     ///
     /// This starts empty. It grows when we find nested :is and :where selector
-    /// lists.
-    parent_selectors: &'a mut SmallVec<[(Selector<SelectorImpl>, usize); 5]>,
+    /// lists. The dependency field is cached and reference counted.
+    parent_selectors: &'a mut SmallVec<[ParentDependencyEntry; 5]>,
 
     /// The quirks mode of the document where we're inserting dependencies.
     quirks_mode: QuirksMode,
@@ -325,7 +337,7 @@ struct SelectorDependencyCollector<'a> {
     compound_state: PerCompoundState,
 
     /// The allocation error, if we OOM.
-    alloc_error: &'a mut Option<FailedAllocationError>,
+    alloc_error: &'a mut Option<AllocErr>,
 }
 
 impl<'a> SelectorDependencyCollector<'a> {
@@ -361,7 +373,7 @@ impl<'a> SelectorDependencyCollector<'a> {
                     self.quirks_mode,
                 );
                 if let Err(alloc_error) = result {
-                    *self.alloc_error = Some(alloc_error);
+                    *self.alloc_error = Some(alloc_error.into());
                     return false;
                 }
             }
@@ -378,41 +390,48 @@ impl<'a> SelectorDependencyCollector<'a> {
         let dependency = self.dependency();
 
         let map = &mut self.map.other_attribute_affecting_selectors;
-        let entry = match map.try_entry(name) {
-            Ok(entry) => entry,
-            Err(err) => {
-                *self.alloc_error = Some(err);
-                return false;
-            },
-        };
-
-        match entry.or_insert_with(SmallVec::new).try_push(dependency) {
-            Ok(..) => true,
-            Err(err) => {
-                *self.alloc_error = Some(err);
-                return false;
-            },
+        if let Err(err) = map.try_reserve(1) {
+            *self.alloc_error = Some(err.into());
+            return false;
         }
+        let vec = map.entry(name).or_default();
+        if let Err(err) = vec.try_reserve(1) {
+            *self.alloc_error = Some(err.into());
+            return false;
+        }
+        vec.push(dependency);
+        true
     }
 
-    fn dependency(&self) -> Dependency {
-        let mut parent = None;
-
-        // TODO(emilio): Maybe we should refcount the parent dependencies, or
-        // cache them or something.
-        for &(ref selector, ref selector_offset) in self.parent_selectors.iter() {
-            debug_assert_ne!(
-                self.compound_state.offset, 0,
-                "Shouldn't bother creating nested dependencies for the rightmost compound",
-            );
-            let new_parent = Dependency {
-                selector: selector.clone(),
-                selector_offset: *selector_offset,
-                parent,
-            };
-            parent = Some(Box::new(new_parent));
+    fn parent_dependency(&mut self) -> Option<Arc<Dependency>> {
+        if self.parent_selectors.is_empty() {
+            return None;
         }
 
+        fn dependencies_from(entries: &mut [ParentDependencyEntry]) -> Option<Arc<Dependency>> {
+            if entries.is_empty() {
+                return None
+            }
+
+            let last_index = entries.len() - 1;
+            let (previous, last) = entries.split_at_mut(last_index);
+            let last = &mut last[0];
+            let selector = &last.selector;
+            let selector_offset = last.offset;
+            Some(last.cached_dependency.get_or_insert_with(|| {
+                Arc::new(Dependency {
+                    selector: selector.clone(),
+                    selector_offset,
+                    parent: dependencies_from(previous),
+                })
+            }).clone())
+        }
+
+        dependencies_from(&mut self.parent_selectors)
+    }
+
+    fn dependency(&mut self) -> Dependency {
+        let parent = self.parent_dependency();
         Dependency {
             selector: self.selector.clone(),
             selector_offset: self.compound_state.offset,
@@ -424,7 +443,11 @@ impl<'a> SelectorDependencyCollector<'a> {
 impl<'a> SelectorVisitor for SelectorDependencyCollector<'a> {
     type Impl = SelectorImpl;
 
-    fn visit_selector_list(&mut self, list: &[Selector<SelectorImpl>]) -> bool {
+    fn visit_selector_list(
+        &mut self,
+        _list_kind: SelectorListKind,
+        list: &[Selector<SelectorImpl>],
+    ) -> bool {
         for selector in list {
             // Here we cheat a bit: We can visit the rightmost compound with
             // the "outer" visitor, and it'd be fine. This reduces the amount of
@@ -448,8 +471,11 @@ impl<'a> SelectorVisitor for SelectorDependencyCollector<'a> {
 
             index += 1; // account for the combinator.
 
-            self.parent_selectors
-                .push((self.selector.clone(), self.compound_state.offset));
+            self.parent_selectors.push(ParentDependencyEntry {
+                selector: self.selector.clone(),
+                offset: self.compound_state.offset,
+                cached_dependency: None,
+            });
             let mut nested = SelectorDependencyCollector {
                 map: &mut *self.map,
                 document_state: &mut *self.document_state,
@@ -481,24 +507,20 @@ impl<'a> SelectorVisitor for SelectorDependencyCollector<'a> {
                 let entry = match map.try_entry(atom.0.clone(), self.quirks_mode) {
                     Ok(entry) => entry,
                     Err(err) => {
-                        *self.alloc_error = Some(err);
+                        *self.alloc_error = Some(err.into());
                         return false;
                     },
                 };
-                match entry.or_insert_with(SmallVec::new).try_push(dependency) {
-                    Ok(..) => true,
-                    Err(err) => {
-                        *self.alloc_error = Some(err);
-                        return false;
-                    },
+                let vec = entry.or_insert_with(SmallVec::new);
+                if let Err(err) = vec.try_reserve(1) {
+                    *self.alloc_error = Some(err.into());
+                    return false;
                 }
+                vec.push(dependency);
+                true
             },
             Component::NonTSPseudoClass(ref pc) => {
-                self.compound_state.element_state |= match *pc {
-                    #[cfg(feature = "gecko")]
-                    NonTSPseudoClass::Dir(ref dir) => dir.element_state(),
-                    _ => pc.state_flag(),
-                };
+                self.compound_state.element_state |= pc.state_flag();
                 *self.document_state |= pc.document_state_flag();
 
                 let attr_name = match *pc {

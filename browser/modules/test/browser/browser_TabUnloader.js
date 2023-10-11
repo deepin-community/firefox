@@ -1,8 +1,8 @@
 /* Any copyright is dedicated to the Public Domain.
    http://creativecommons.org/publicdomain/zero/1.0/ */
 
-const { TabUnloader } = ChromeUtils.import(
-  "resource:///modules/TabUnloader.jsm"
+const { TabUnloader } = ChromeUtils.importESModule(
+  "resource:///modules/TabUnloader.sys.mjs"
 );
 
 const BASE_URL = "https://example.com/browser/browser/modules/test/browser/";
@@ -22,7 +22,7 @@ async function play(tab) {
     }
   );
 
-  await SpecialPowers.spawn(browser, [], async function() {
+  await SpecialPowers.spawn(browser, [], async function () {
     let audio = content.document.querySelector("audio");
     await audio.play();
   });
@@ -36,6 +36,16 @@ async function addTab(win = window) {
     url: BASE_URL + "dummy_page.html",
     waitForLoad: true,
   });
+}
+
+async function addPrivTab(win = window) {
+  const tab = BrowserTestUtils.addTab(
+    win.gBrowser,
+    BASE_URL + "dummy_page.html"
+  );
+  const browser = win.gBrowser.getBrowserForTab(tab);
+  await BrowserTestUtils.browserLoaded(browser);
+  return tab;
 }
 
 async function addAudioTab(win = window) {
@@ -54,7 +64,7 @@ async function addWebRTCTab(win = window) {
   let popupPromise = new Promise(resolve => {
     win.PopupNotifications.panel.addEventListener(
       "popupshown",
-      function() {
+      function () {
         executeSoon(resolve);
       },
       { once: true }
@@ -86,7 +96,7 @@ async function pressure() {
     "TabBrowserDiscarded",
     true
   );
-  TabUnloader.unloadTabAsync();
+  TabUnloader.unloadTabAsync(null);
   return tabDiscarded;
 }
 
@@ -106,12 +116,12 @@ function pressureAndObserve(aExpectedTopic) {
     };
     Services.obs.addObserver(observer, aExpectedTopic);
   });
-  TabUnloader.unloadTabAsync();
+  TabUnloader.unloadTabAsync(null);
   return promise;
 }
 
 async function compareTabOrder(expectedOrder) {
-  let tabInfo = await TabUnloader.getSortedTabs();
+  let tabInfo = await TabUnloader.getSortedTabs(null);
 
   is(
     tabInfo.length,
@@ -119,7 +129,7 @@ async function compareTabOrder(expectedOrder) {
     "right number of tabs in discard sort list"
   );
   for (let idx = 0; idx < expectedOrder.length; idx++) {
-    is(tabInfo[idx].tab, expectedOrder[idx], "index " + idx + " is incorrect");
+    is(tabInfo[idx].tab, expectedOrder[idx], "index " + idx + " is correct");
   }
 }
 
@@ -128,12 +138,25 @@ const PREF_AUDIO_LOOPBACK = "media.audio_loopback_dev";
 const PREF_VIDEO_LOOPBACK = "media.video_loopback_dev";
 const PREF_FAKE_STREAMS = "media.navigator.streams.fake";
 const PREF_ENABLE_UNLOADER = "browser.tabs.unloadOnLowMemory";
+const PREF_MAC_LOW_MEM_RESPONSE = "browser.lowMemoryResponseMask";
 
 add_task(async function test() {
   registerCleanupFunction(() => {
     Services.prefs.clearUserPref(PREF_ENABLE_UNLOADER);
+    if (AppConstants.platform == "macosx") {
+      Services.prefs.clearUserPref(PREF_MAC_LOW_MEM_RESPONSE);
+    }
   });
   Services.prefs.setBoolPref(PREF_ENABLE_UNLOADER, true);
+
+  // On Mac, tab unloading and memory pressure notifications are limited
+  // to Nightly so force them on for this test for non-Nightly builds. i.e.,
+  // tests on Release and Beta builds. Mac tab unloading and memory pressure
+  // notifications require this pref to be set.
+  if (AppConstants.platform == "macosx") {
+    Services.prefs.setIntPref(PREF_MAC_LOW_MEM_RESPONSE, 3);
+  }
+
   TabUnloader.init();
 
   // Set some WebRTC simulation preferences.
@@ -156,7 +179,20 @@ add_task(async function test() {
   let pinnedSoundTab = await addAudioTab();
   gBrowser.pinTab(pinnedSoundTab);
 
+  // Open a new private window and add a tab
+  const windowPriv = await BrowserTestUtils.openNewBrowserWindow({
+    private: true,
+  });
+  const tabPriv0 = windowPriv.gBrowser.tabs[0];
+  const tabPriv1 = await addPrivTab(windowPriv);
+
+  // Move the original window to the foreground to pass the tests
+  gBrowser.selectedTab = tab0;
+  tab0.ownerGlobal.focus();
+
   // Pretend we've visited the tabs
+  await BrowserTestUtils.switchTab(windowPriv.gBrowser, tabPriv1);
+  await BrowserTestUtils.switchTab(windowPriv.gBrowser, tabPriv0);
   await BrowserTestUtils.switchTab(gBrowser, tab1);
   await BrowserTestUtils.switchTab(gBrowser, tab2);
   await BrowserTestUtils.switchTab(gBrowser, pinnedTab);
@@ -176,9 +212,11 @@ add_task(async function test() {
     tab1,
     tab2,
     pinnedTab,
+    tabPriv1,
     soundTab,
     tab0,
     pinnedSoundTab,
+    tabPriv0,
   ]);
 
   // Check that the tabs are present
@@ -187,7 +225,9 @@ add_task(async function test() {
       tab2.linkedPanel &&
       pinnedTab.linkedPanel &&
       soundTab.linkedPanel &&
-      pinnedSoundTab.linkedPanel,
+      pinnedSoundTab.linkedPanel &&
+      tabPriv0.linkedPanel &&
+      tabPriv1.linkedPanel,
     "tabs are present"
   );
 
@@ -198,24 +238,39 @@ add_task(async function test() {
     "low-memory memory-pressure notification unloaded the LRU tab"
   );
 
-  await compareTabOrder([tab2, pinnedTab, soundTab, tab0, pinnedSoundTab]);
+  await compareTabOrder([
+    tab2,
+    pinnedTab,
+    tabPriv1,
+    soundTab,
+    tab0,
+    pinnedSoundTab,
+    tabPriv0,
+  ]);
 
   // If no normal tab is available unload pinned tabs
   await pressure();
   ok(!tab2.linkedPanel, "unloaded a second tab in LRU order");
-  await compareTabOrder([pinnedTab, soundTab, tab0, pinnedSoundTab]);
+  await compareTabOrder([
+    pinnedTab,
+    tabPriv1,
+    soundTab,
+    tab0,
+    pinnedSoundTab,
+    tabPriv0,
+  ]);
 
   ok(soundTab.soundPlaying, "tab is still playing sound");
 
   await pressure();
   ok(!pinnedTab.linkedPanel, "unloaded a pinned tab");
-  await compareTabOrder([soundTab, tab0, pinnedSoundTab]);
+  await compareTabOrder([tabPriv1, soundTab, tab0, pinnedSoundTab, tabPriv0]);
 
   ok(pinnedSoundTab.soundPlaying, "tab is still playing sound");
 
   // There are no unloadable tabs.
-  TabUnloader.unloadTabAsync();
-  ok(soundTab.linkedPanel, "a tab playing sound is never unloaded");
+  TabUnloader.unloadTabAsync(null);
+  ok(tabPriv1.linkedPanel, "a tab in a private window is never unloaded");
 
   const histogram = TelemetryTestUtils.getAndClearHistogram(
     "TAB_UNLOAD_TO_RELOAD"
@@ -246,12 +301,16 @@ add_task(async function test() {
   await compareTabOrder([
     tab1,
     pinnedTab,
+    tabPriv1,
     soundTab,
     webrtcTab,
     anotherSoundTab,
     tab0,
     pinnedSoundTab,
+    tabPriv0,
   ]);
+
+  await BrowserTestUtils.closeWindow(windowPriv);
 
   let window2 = await BrowserTestUtils.openNewBrowserWindow();
   let win2tab1 = window2.gBrowser.selectedTab;

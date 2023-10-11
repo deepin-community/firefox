@@ -7,12 +7,16 @@
 #include "WebSocketLog.h"
 #include "WebSocketConnectionChild.h"
 
+#include "WebSocketConnection.h"
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/PBackgroundChild.h"
 #include "nsISerializable.h"
+#include "nsITLSSocketControl.h"
+#include "nsITransportSecurityInfo.h"
+#include "nsNetCID.h"
 #include "nsSerializationHelper.h"
+#include "nsSocketTransportService2.h"
 #include "nsThreadUtils.h"
-#include "WebSocketConnection.h"
 
 namespace mozilla {
 namespace net {
@@ -78,15 +82,10 @@ WebSocketConnectionChild::OnTransportAvailable(
     return NS_ERROR_NOT_AVAILABLE;
   }
 
-  nsAutoCString serializedSecurityInfo;
-  nsCOMPtr<nsISupports> secInfoSupp;
-  aTransport->GetSecurityInfo(getter_AddRefs(secInfoSupp));
-  if (secInfoSupp) {
-    nsCOMPtr<nsISerializable> secInfoSer = do_QueryInterface(secInfoSupp);
-    if (secInfoSer) {
-      NS_SerializeToString(secInfoSer, serializedSecurityInfo);
-    }
-  }
+  nsCOMPtr<nsITLSSocketControl> tlsSocketControl;
+  aTransport->GetTlsSocketControl(getter_AddRefs(tlsSocketControl));
+  nsCOMPtr<nsITransportSecurityInfo> securityInfo(
+      do_QueryInterface(tlsSocketControl));
 
   RefPtr<WebSocketConnection> connection =
       new WebSocketConnection(aTransport, aSocketIn, aSocketOut);
@@ -98,7 +97,7 @@ WebSocketConnectionChild::OnTransportAvailable(
 
   mConnection = std::move(connection);
 
-  Unused << SendOnTransportAvailable(serializedSecurityInfo);
+  Unused << SendOnTransportAvailable(securityInfo);
   return NS_OK;
 }
 
@@ -114,6 +113,12 @@ WebSocketConnectionChild::OnUpgradeFailed(nsresult aReason) {
     Unused << SendOnUpgradeFailed(aReason);
   }
   return NS_OK;
+}
+
+NS_IMETHODIMP
+WebSocketConnectionChild::OnWebSocketConnectionAvailable(
+    WebSocketConnectionBase* aConnection) {
+  return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 mozilla::ipc::IPCResult WebSocketConnectionChild::RecvWriteOutputData(

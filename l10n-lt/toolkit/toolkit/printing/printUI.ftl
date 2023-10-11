@@ -16,6 +16,8 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Visi
+printui-page-range-odd = Nelyginiai
+printui-page-range-even = Lyginiai
 printui-page-range-custom = Pasirinktinai
 printui-page-range-label = Puslapiai
 printui-page-range-picker =

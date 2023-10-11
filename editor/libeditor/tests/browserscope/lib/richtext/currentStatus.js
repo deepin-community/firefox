@@ -19,6 +19,7 @@ var knownFailures = {
   },
   'a' : {
     'createbookmark-0' : true,
+    'decreasefontsize-0' : true,
     'fontsize-1' : true,
     'subscript-1' : true,
     'superscript-1' : true,
@@ -35,12 +36,8 @@ var knownFailures = {
     'fontsize-1' : true,
     'fontsize-2' : true,
   },
-  'c': {
-    'fontsize-1' : true,
-    'fontsize-2' : true,
-  },
 };
 
 function isKnownFailure(type, test, param) {
-  return (type in knownFailures) && ((test + "-" + param) in knownFailures[type]);
+  return (type in knownFailures) && knownFailures[type][test + "-" + param];
 }

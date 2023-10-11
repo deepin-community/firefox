@@ -3,16 +3,6 @@
 
 "use strict";
 
-const { SearchEngineSelector } = ChromeUtils.import(
-  "resource://gre/modules/SearchEngineSelector.jsm"
-);
-const { MockRegistrar } = ChromeUtils.import(
-  "resource://testing-common/MockRegistrar.jsm"
-);
-
-const SEARCH_SERVICE_TOPIC = "browser-search-service";
-const SEARCH_ENGINE_TOPIC = "browser-search-engine-modified";
-
 const CONFIG = [
   {
     // Engine initially default, but the defaults will be changed to engine-pref.
@@ -128,21 +118,6 @@ const CONFIG = [
   },
 ];
 
-function listenFor(name, key) {
-  let notifyObserved = false;
-  let obs = (subject, topic, data) => {
-    if (data == key) {
-      notifyObserved = true;
-    }
-  };
-  Services.obs.addObserver(obs, name);
-
-  return () => {
-    Services.obs.removeObserver(obs, name);
-    return notifyObserved;
-  };
-}
-
 async function visibleEngines() {
   return (await Services.search.getVisibleEngines()).map(e => e.identifier);
 }
@@ -195,9 +170,8 @@ add_task(async function test_initial_config_correct() {
 
 add_task(async function test_config_updated_engine_changes() {
   // Update the config.
-  const reloadObserved = SearchTestUtils.promiseSearchNotification(
-    "engines-reloaded"
-  );
+  const reloadObserved =
+    SearchTestUtils.promiseSearchNotification("engines-reloaded");
   const defaultEngineChanged = SearchTestUtils.promiseSearchNotification(
     SearchUtils.MODIFIED_TYPE.DEFAULT,
     SearchUtils.TOPIC_ENGINE_MODIFIED
@@ -297,7 +271,9 @@ add_task(async function test_config_updated_engine_changes() {
   );
 
   Assert.equal(
-    Services.search.wrappedJSObject._settings.getAttribute("useSavedOrder"),
+    Services.search.wrappedJSObject._settings.getMetaDataAttribute(
+      "useSavedOrder"
+    ),
     false,
     "Should not have set the useSavedOrder preference"
   );

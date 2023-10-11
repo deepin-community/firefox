@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Skjul
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Vis alle bogmærkemapper
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Skjul
+
 bookmark-overlay-new-folder-button =
     .label = Ny mappe
     .accesskey = y
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Vis alle mærkater
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Skjul
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Vis alle mærkater
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Skjul
 
 bookmark-overlay-keyword-2 =
     .value = Genvej

@@ -6,7 +6,7 @@
 // Test that accessing properties with getters displays the confirm dialog to invoke them,
 // and then displays the autocomplete popup with the results.
 
-const TEST_URI = `data:text/html;charset=utf-8,
+const TEST_URI = `data:text/html;charset=utf-8,<!DOCTYPE html>
 <head>
   <script>
     /* Create a prototype-less object so popup does not contain native
@@ -37,11 +37,11 @@ const TEST_URI = `data:text/html;charset=utf-8,
 </head>
 <body>Autocomplete popup - invoke getter usage test</body>`;
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
   const { jsterm } = hud;
   const { autocompletePopup } = jsterm;
-  const toolbox = await gDevTools.getToolboxForTab(gBrowser.selectedTab);
+  const toolbox = gDevTools.getToolboxForTab(gBrowser.selectedTab);
 
   let tooltip = await setInputValueForGetterConfirmDialog(
     toolbox,

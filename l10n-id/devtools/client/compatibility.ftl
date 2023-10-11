@@ -23,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (tidak disarankan, ek
 compatibility-settings-button-label = Pengaturan
 compatibility-settings-button-title =
     .title = Pengaturan
-compatibility-feedback-button-label = Umpan Balik
-compatibility-feedback-button-title =
-    .title = Umpan Balik
 
 ## Messages used as headers in settings pane
 
@@ -45,3 +42,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Tidak ditemukan masalah kompatibilitas.
 compatibility-close-settings-button =
     .title = Pengaturan tertutup
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Masalah kompatibilitas di:
+        { $browsers }

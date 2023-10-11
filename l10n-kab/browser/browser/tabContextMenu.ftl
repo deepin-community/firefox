@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Fren akk accaren
     .accesskey = M
+tab-context-play-tab =
+    .label = Iccer n wurar
+    .accesskey = I
+tab-context-play-tabs =
+    .label = Iccaren n wurar
+    .accesskey = y
 duplicate-tab =
     .label = Sleg iccer
     .accesskey = N
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Creḍ akk accaren…
     .accesskey = k
-bookmark-tab =
-    .label = Iccer n tecraḍ n yisebtar
-    .accesskey = C
+tab-context-bookmark-tab =
+    .label = Iccer n tecraḍ n yisebtar…
+    .accesskey = I
 tab-context-open-in-new-container-tab =
     .label = Ldi deg yiccer n umagbar amaynut
     .accesskey = i
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Bḍu
     .accesskey = B
-tab-context-share-more =
-    .label = Ugar…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -83,14 +87,6 @@ tab-context-reopen-closed-tabs =
            *[other] Ales tawaledyawt n waccaren imedlen
         }
     .accesskey = a
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Mdel iccer
-            [one] Mdel Iccer
-           *[other] Mdel Iccaren
-        }
-    .accesskey = M
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

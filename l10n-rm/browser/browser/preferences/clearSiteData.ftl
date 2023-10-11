@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Stizzar las datas
-    .style = width: 45em
+    .style = min-width: 45em
 
 clear-site-data-description = Cun stizzar tut ils cookies e tut las datas da websites memorisadas da { -brand-short-name } vegnas ti eventualmain deconnectà da tschertas websites e cuntegn da web offline vegn stizzà. Las infurmaziuns d'annunzia vegnan preservadas era sch'il cache vegn svidà.
 

@@ -9,7 +9,7 @@
 const TEST_URL = `data:text/html;charset=utf-8,
    <h1 style='background:yellow;position:absolute;left:5rem;'>Hello</h1>`;
 
-add_task(async function() {
+add_task(async function () {
   const { inspector, toolbox } = await openInspectorForURL(TEST_URL);
 
   info("Select the absolute positioned element");
@@ -56,7 +56,7 @@ add_task(async function() {
   ok("Highlighter was hidden when using the node picker");
 
   // stop the node picker
-  await toolbox.nodePicker.stop();
+  await toolbox.nodePicker.stop({ canceled: true });
 
   info("Check that selecting another node does hide the highlighter");
   onHighlighterShown = onHighlighterShown = getOnceHighlighterShown(inspector);
@@ -64,9 +64,8 @@ add_task(async function() {
   await onHighlighterShown;
   ok(true, "highlighter is displayed again");
 
-  onHighlighterHidden = onHighlighterHidden = getOnceHighlighterHidden(
-    inspector
-  );
+  onHighlighterHidden = onHighlighterHidden =
+    getOnceHighlighterHidden(inspector);
   await selectNode("body", inspector);
   await onHighlighterHidden;
   ok(true, "Selecting another node hides the highlighter");

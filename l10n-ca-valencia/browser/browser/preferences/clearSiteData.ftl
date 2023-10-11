@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Neteja les dades
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Esborrar totes les galetes i dades dels llocs emmagatzemades pel { -brand-short-name } pot fer que es tanque la sessió dels llocs web i que s'elimini el contingut web fora de línia. Esborrar les dades de la memòria cau no afecta les sessions iniciades.
 

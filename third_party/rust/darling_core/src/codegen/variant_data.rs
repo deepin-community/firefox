@@ -1,8 +1,8 @@
 use proc_macro2::TokenStream;
+use quote::quote;
 
-use ast::Fields;
-use ast::Style;
-use codegen::Field;
+use crate::ast::{Fields, Style};
+use crate::codegen::Field;
 
 pub struct FieldsGen<'a> {
     fields: &'a Fields<Field<'a>>,
@@ -18,11 +18,12 @@ impl<'a> FieldsGen<'a> {
     }
 
     /// Create declarations for all the fields in the struct.
-    pub(in codegen) fn declarations(&self) -> TokenStream {
+    pub(in crate::codegen) fn declarations(&self) -> TokenStream {
         match *self.fields {
             Fields {
                 style: Style::Struct,
                 ref fields,
+                ..
             } => {
                 let vdr = fields.iter().map(Field::as_declaration);
                 quote!(#(#vdr)*)
@@ -32,7 +33,7 @@ impl<'a> FieldsGen<'a> {
     }
 
     /// Generate the loop which walks meta items looking for property matches.
-    pub(in codegen) fn core_loop(&self) -> TokenStream {
+    pub(in crate::codegen) fn core_loop(&self) -> TokenStream {
         let arms = self.fields.as_ref().map(Field::as_match);
 
         // If we're allowing unknown fields, then handling one is a no-op.
@@ -58,11 +59,17 @@ impl<'a> FieldsGen<'a> {
 
         quote!(
             for __item in __items {
-                if let ::syn::NestedMeta::Meta(ref __inner) = *__item {
-                    let __name = __inner.path().segments.iter().map(|s| s.ident.to_string()).collect::<Vec<String>>().join("::");
-                    match __name.as_str() {
-                        #(#arms)*
-                        __other => { #handle_unknown }
+                match *__item {
+                    ::darling::export::NestedMeta::Meta(ref __inner) => {
+                        let __name = ::darling::util::path_to_string(__inner.path());
+                        match __name.as_str() {
+                            #(#arms)*
+                            __other => { #handle_unknown }
+                        }
+                    }
+                    ::darling::export::NestedMeta::Lit(ref __inner) => {
+                        __errors.push(::darling::Error::unsupported_format("literal")
+                            .with_span(__inner));
                     }
                 }
             }
@@ -74,6 +81,7 @@ impl<'a> FieldsGen<'a> {
             Fields {
                 style: Style::Struct,
                 ref fields,
+                ..
             } => {
                 let checks = fields.iter().map(Field::as_presence_check);
                 quote!(#(#checks)*)
@@ -82,7 +90,7 @@ impl<'a> FieldsGen<'a> {
         }
     }
 
-    pub(in codegen) fn initializers(&self) -> TokenStream {
+    pub(in crate::codegen) fn initializers(&self) -> TokenStream {
         let inits = self.fields.as_ref().map(Field::as_initializer);
         let inits = inits.iter();
 

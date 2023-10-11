@@ -14,15 +14,21 @@
 #include "mozilla/Unused.h"
 #include "mozilla/WorkerTimelineMarker.h"
 #include "nsContentUtils.h"
-#include "nsGlobalWindowOuter.h"
+#include "nsGlobalWindowInner.h"
 #include "WorkerPrivate.h"
+#include "EventWithOptionsRunnable.h"
+#include "js/RootingAPI.h"
+#include "mozilla/dom/BindingDeclarations.h"
+#include "nsISupports.h"
+#include "nsDebug.h"
+#include "mozilla/dom/WorkerStatus.h"
+#include "mozilla/RefPtr.h"
 
 #ifdef XP_WIN
 #  undef PostMessage
 #endif
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 /* static */
 already_AddRefed<Worker> Worker::Constructor(const GlobalObject& aGlobal,
@@ -43,7 +49,8 @@ already_AddRefed<Worker> Worker::Constructor(const GlobalObject& aGlobal,
 
   RefPtr<WorkerPrivate> workerPrivate = WorkerPrivate::Constructor(
       cx, aScriptURL, false /* aIsChromeWorker */, WorkerKindDedicated,
-      aOptions.mName, VoidCString(), nullptr /*aLoadInfo */, aRv);
+      aOptions.mCredentials, aOptions.mType, aOptions.mName, VoidCString(),
+      nullptr /*aLoadInfo */, aRv);
   if (NS_WARN_IF(aRv.Failed())) {
     return nullptr;
   }
@@ -86,6 +93,8 @@ void Worker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
   if (!mWorkerPrivate || mWorkerPrivate->ParentStatusProtected() > Running) {
     return;
   }
+  RefPtr<WorkerPrivate> workerPrivate = mWorkerPrivate;
+  Unused << workerPrivate;
 
   JS::Rooted<JS::Value> transferable(aCx, JS::UndefinedValue());
 
@@ -95,9 +104,14 @@ void Worker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
     return;
   }
 
-  NS_ConvertUTF16toUTF8 nameOrScriptURL(mWorkerPrivate->WorkerName().IsEmpty()
-                                            ? mWorkerPrivate->ScriptURL()
-                                            : mWorkerPrivate->WorkerName());
+  NS_ConvertUTF16toUTF8 nameOrScriptURL(
+      mWorkerPrivate->WorkerName().IsEmpty()
+          ? Substring(
+                mWorkerPrivate->ScriptURL(), 0,
+                std::min(size_t(1024), mWorkerPrivate->ScriptURL().Length()))
+          : Substring(
+                mWorkerPrivate->WorkerName(), 0,
+                std::min(size_t(1024), mWorkerPrivate->WorkerName().Length())));
   AUTO_PROFILER_MARKER_TEXT("Worker.postMessage", DOM, {}, nameOrScriptURL);
   uint32_t flags = uint32_t(js::ProfilingStackFrame::Flags::RELEVANT_FOR_JS);
   if (mWorkerPrivate->IsChromeWorker()) {
@@ -112,8 +126,7 @@ void Worker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
 
   UniquePtr<AbstractTimelineMarker> start;
   UniquePtr<AbstractTimelineMarker> end;
-  RefPtr<TimelineConsumers> timelines = TimelineConsumers::Get();
-  bool isTimelineRecording = timelines && !timelines->IsEmpty();
+  bool isTimelineRecording = !TimelineConsumers::IsEmpty();
 
   if (isTimelineRecording) {
     start = MakeUnique<WorkerTimelineMarker>(
@@ -128,7 +141,7 @@ void Worker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
   clonePolicy.allowIntraClusterClonableSharedObjects();
 
   if (NS_IsMainThread()) {
-    nsGlobalWindowInner* win = nsContentUtils::CallerInnerWindow();
+    nsGlobalWindowInner* win = nsContentUtils::IncumbentInnerWindow();
     if (win && win->IsSharedMemoryAllowed()) {
       clonePolicy.allowSharedMemoryObjects();
     }
@@ -141,14 +154,18 @@ void Worker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
 
   runnable->Write(aCx, aMessage, transferable, clonePolicy, aRv);
 
+  if (!mWorkerPrivate || mWorkerPrivate->ParentStatusProtected() > Running) {
+    return;
+  }
+
   if (isTimelineRecording) {
     end = MakeUnique<WorkerTimelineMarker>(
         NS_IsMainThread()
             ? ProfileTimelineWorkerOperationType::SerializeDataOnMainThread
             : ProfileTimelineWorkerOperationType::SerializeDataOffMainThread,
         MarkerTracingType::END);
-    timelines->AddMarkerForAllObservedDocShells(start);
-    timelines->AddMarkerForAllObservedDocShells(end);
+    TimelineConsumers::AddMarkerForAllObservedDocShells(start);
+    TimelineConsumers::AddMarkerForAllObservedDocShells(end);
   }
 
   if (NS_WARN_IF(aRv.Failed())) {
@@ -165,6 +182,34 @@ void Worker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
                          const StructuredSerializeOptions& aOptions,
                          ErrorResult& aRv) {
   PostMessage(aCx, aMessage, aOptions.mTransfer, aRv);
+}
+
+void Worker::PostEventWithOptions(JSContext* aCx,
+                                  JS::Handle<JS::Value> aOptions,
+                                  const Sequence<JSObject*>& aTransferable,
+                                  EventWithOptionsRunnable* aRunnable,
+                                  ErrorResult& aRv) {
+  NS_ASSERT_OWNINGTHREAD(Worker);
+
+  if (NS_WARN_IF(!mWorkerPrivate ||
+                 mWorkerPrivate->ParentStatusProtected() > Running)) {
+    return;
+  }
+  RefPtr<WorkerPrivate> workerPrivate = mWorkerPrivate;
+  Unused << workerPrivate;
+
+  aRunnable->InitOptions(aCx, aOptions, aTransferable, aRv);
+
+  if (NS_WARN_IF(!mWorkerPrivate ||
+                 mWorkerPrivate->ParentStatusProtected() > Running)) {
+    return;
+  }
+
+  if (NS_WARN_IF(aRv.Failed())) {
+    return;
+  }
+
+  Unused << NS_WARN_IF(!aRunnable->Dispatch());
 }
 
 void Worker::Terminate() {
@@ -198,5 +243,4 @@ NS_INTERFACE_MAP_END_INHERITING(DOMEventTargetHelper)
 NS_IMPL_ADDREF_INHERITED(Worker, DOMEventTargetHelper)
 NS_IMPL_RELEASE_INHERITED(Worker, DOMEventTargetHelper)
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

@@ -6,9 +6,16 @@ addons-page-title = Administraziun dals supplements
 search-header =
     .placeholder = Tschertgar sin addons.mozilla.org
     .searchbuttonlabel = Tschertgar
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Visita <a data-l10n-name="get-extensions">{ $domain }</a> per installar extensiuns e designs
+list-empty-get-dictionaries-message = Va per dicziunaris sin <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Va per pachets da lingua sin <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Ti n'has anc installà nagins supplements da quest tip
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Versiun
 detail-last-updated =
     .label = Ultima actualisaziun
+addon-detail-description-expand = Mussar dapli
+addon-detail-description-collapse = Mussar damain
 detail-contributions-description = Il sviluppader da quest supplement ta dumonda da sustegnair il svilup dal supplement cun ina pitschna contribuziun finanziala.
 detail-contributions-button = Contribuir
     .title = Contribuir al svilup da quest supplement
@@ -135,16 +144,33 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Ultimas actualisaziuns
 addon-category-recent-updates-title =
     .title = Ultimas actualisaziuns
+addon-category-sitepermission = Autorisaziuns per la website
+addon-category-sitepermission-title =
+    .title = Autorisaziuns per la website
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Autorisaziuns per la website { $host }
 
 ## These are global warnings
 
 extensions-warning-safe-mode = Tut ils supplements èn vegnids deactivads dal modus segirà.
 extensions-warning-check-compatibility = Il test da cumpatibilitad per supplements è deactivà. I po esser che supplements incumpatibels èn installads.
+extensions-warning-safe-mode2 =
+    .message = Tut ils supplements èn vegnids deactivads dal modus segirà.
+extensions-warning-check-compatibility2 =
+    .message = Il test da cumpatibilitad per supplements è deactivà. I po esser che supplements incumpatibels èn installads.
 extensions-warning-check-compatibility-button = Activar
     .title = Activar il test da cumpatibilitad dals supplements
 extensions-warning-update-security = Il test da segirezza per l'actualisaziun da supplements è deactivà. Eventualmain pon actualisaziuns donnegiar tes computer.
+extensions-warning-update-security2 =
+    .message = Il test da segirezza per l'actualisaziun da supplements è deactivà. Eventualmain pon actualisaziuns donnegiar tes computer.
 extensions-warning-update-security-button = Activar
     .title = Activar il test da segirezza per l'actualisaziun da supplements
+extensions-warning-imported-addons = Finescha per plaschair l'installaziun da las extensiuns importadas en { -brand-short-name }.
+extensions-warning-imported-addons2 =
+    .message = Finescha per plaschair l'installaziun da las extensiuns importadas en { -brand-short-name }.
+extensions-warning-imported-addons-button = Installar las extensiuns
 
 ## Strings connected to add-on updates
 
@@ -209,10 +235,17 @@ shortcuts-duplicate = Cumbinaziun da tastas occupada dublamain
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = { $shortcut } vegn utilisà sco cumbinaziun da tastas per plirs cumonds. Cumbinaziuns da tastas duplitgadas pon chaschunar cumportaments nunprevis.
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = { $shortcut } vegn utilisà sco cumbinaziun da tastas per plirs cumonds. Cumbinaziuns da tastas duplitgadas pon chaschunar cumportaments nunprevis.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Gia utilisada da { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Mussar anc { $numberToShow }
@@ -235,6 +268,9 @@ discopane-intro =
     prestaziun e funcziunalitad maximala.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations = Tschertas da questas recumandaziuns èn persunalisadas. Ellas sa basan sin autras extensiuns installadas, preferenzas dal profil e statisticas davart l'utilisaziun.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message = Tschertas da questas recumandaziuns èn persunalisadas. Ellas sa basan sin autras extensiuns installadas, preferenzas dal profil e statisticas davart l'utilisaziun.
 discopane-notice-learn-more = Ulteriuras infurmaziuns
 privacy-policy = Directivas per la protecziun da datas
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -280,15 +316,15 @@ permissions-addon-button = Autorisaziuns
 extension-enabled-heading = Activà
 extension-disabled-heading = Deactivà
 theme-enabled-heading = Activà
-theme-disabled-heading = Deactivà
-theme-monochromatic-heading = Cumbinaziun da colurs
-theme-monochromatic-subheading = Novas cumbinaziuns da colurs vivas da { -brand-product-name }. Disponiblas durant in temp limità.
+theme-disabled-heading2 = Designs memorisads
 plugin-enabled-heading = Activà
 plugin-disabled-heading = Deactivà
 dictionary-enabled-heading = Activà
 dictionary-disabled-heading = Deactivà
 locale-enabled-heading = Activà
 locale-disabled-heading = Deactivà
+sitepermission-enabled-heading = Activà
+sitepermission-disabled-heading = Deactivà
 always-activate-button = Adina activar
 never-activate-button = Mai activar
 addon-detail-author-label = Autur(a)
@@ -298,6 +334,9 @@ addon-detail-homepage-label = Pagina d'internet
 addon-detail-rating-label = Valitaziun
 # Message for add-ons with a staged pending update.
 install-postponed-message = Questa extensiun vegn actualisada cura che { -brand-short-name } vegn reavià.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Questa extensiun vegn actualisada cura che { -brand-short-name } vegn reavià.
 install-postponed-button = Actualisar ussa
 # The average rating that the add-on has received.
 # Variables:
@@ -329,6 +368,10 @@ addon-detail-updates-radio-on = Activà
 addon-detail-updates-radio-off = Deactivà
 addon-detail-update-check-label = Tschertgar actualisaziuns
 install-update-button = Actualisar
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -337,6 +380,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Sche permess ha questa extensiun access a tias activitads online en il modus privat. <a data-l10n-name="learn-more">Ulteriuras infurmaziuns</a>
 addon-detail-private-browsing-allow = Permetter
 addon-detail-private-browsing-disallow = Betg permetter
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Exequir sin websites cun restricziuns
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Sche permess, ha l'extensiun access a websites bloccadas da { -vendor-short-name }. Mo permetter sche ti ta fidas da questa extensiun.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Permetter
+addon-detail-quarantined-domains-disallow = Betg permetter
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -365,6 +426,9 @@ addon-permissions-optional = Permissiuns facultativas per funcziunalitads supple
 addon-permissions-learnmore = Vegnir a savair dapli davart permissiuns
 recommended-extensions-heading = Extensiuns recumandadas
 recommended-themes-heading = Designs recumandads
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Permetta a <span data-l10n-name="hostname">{ $hostname }</span> dad utilisar las suandantas funcziuns:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Inspirà? <a data-l10n-name="link">Creescha tes agen design cun Firefox Color.</a>
@@ -377,6 +441,7 @@ plugin-heading = Administrar tes plug-ins
 dictionary-heading = Administrar tes dicziunaris
 locale-heading = Administrar tias linguas
 updates-heading = Administrar las actualisaziuns
+sitepermission-heading = Administrar tias autorisaziuns da website
 discover-heading = Persunalisescha tes { -brand-short-name }
 shortcuts-heading = Administrar scursanidas dad extensiuns
 default-heading-search-label = Chattar ulteriurs supplements
@@ -384,3 +449,35 @@ addons-heading-search-input =
     .placeholder = Tschertgar sin addons.mozilla.org
 addon-page-options-button =
     .title = Utensils per tut ils supplements
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } n'è betg cumpatibel cun { -brand-short-name } { $version }.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = { $name } n'è betg cumpatibel cun { -brand-short-name } { $version }.
+details-notification-incompatible-link = Ulteriuras infurmaziuns
+details-notification-unsigned-and-disabled = Impussibel da verifitgar { $name } per l'utilisaziun en { -brand-short-name }. Il suplement è vegnì deactivà.
+details-notification-unsigned-and-disabled2 =
+    .message = Impussibel da verifitgar { $name } per l'utilisaziun en { -brand-short-name }. Il suplement è vegnì deactivà.
+details-notification-unsigned-and-disabled-link = Ulteriuras infurmaziuns
+details-notification-unsigned = Impussibel da verifitgar { $name } per l'utilisaziun en { -brand-short-name }. Cuntinuar cun precauziun.
+details-notification-unsigned2 =
+    .message = Impussibel da verifitgar { $name } per l'utilisaziun en { -brand-short-name }. Cuntinuar cun precauziun.
+details-notification-unsigned-link = Ulteriuras infurmaziuns
+details-notification-blocked = { $name } è vegnì deactivà pervia da problems da segirezza u da stabilitad.
+details-notification-blocked2 =
+    .message = { $name } è vegnì deactivà pervia da problems da segirezza u da stabilitad.
+details-notification-blocked-link = Dapli infurmaziuns
+details-notification-softblocked = { $name } po chaschunar problems da segirezza u da stabilitad.
+details-notification-softblocked2 =
+    .message = { $name } po chaschunar problems da segirezza u da stabilitad.
+details-notification-softblocked-link = Ulteriuras infurmaziuns
+details-notification-gmp-pending = { $name } vegn installà en curt mument.
+details-notification-gmp-pending2 =
+    .message = { $name } vegn installà en curt mument.

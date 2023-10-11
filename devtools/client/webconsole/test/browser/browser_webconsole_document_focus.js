@@ -5,15 +5,15 @@
 
 // Check that focus is restored to content page after closing the console. See Bug 588342.
 const TEST_URI =
-  "data:text/html;charset=utf-8,Test content focus after closing console";
+  "data:text/html;charset=utf-8,<!DOCTYPE html>Test content focus after closing console";
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
 
   info("Focus after console is opened");
   ok(isInputFocused(hud), "input node is focused after console is opened");
 
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function() {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     content.onFocus = new Promise(resolve => {
       content.addEventListener("focus", resolve, { once: true });
     });
@@ -25,7 +25,7 @@ add_task(async function() {
   const isFocused = await SpecialPowers.spawn(
     gBrowser.selectedBrowser,
     [],
-    async function() {
+    async function () {
       await content.onFocus;
       return Services.focus.focusedWindow == content;
     }
@@ -39,7 +39,7 @@ add_task(async function testSeparateWindowToolbox() {
   info("Focus after console is opened");
   ok(isInputFocused(hud), "input node is focused after console is opened");
 
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function() {
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], function () {
     content.onFocus = new Promise(resolve => {
       content.addEventListener("focus", resolve, { once: true });
     });
@@ -51,7 +51,7 @@ add_task(async function testSeparateWindowToolbox() {
   const isFocused = await SpecialPowers.spawn(
     gBrowser.selectedBrowser,
     [],
-    async function() {
+    async function () {
       await content.onFocus;
       return Services.focus.focusedWindow == content;
     }
@@ -64,7 +64,7 @@ add_task(async function testSeparateWindowToolboxInactiveTab() {
 
   info("Focus after console is opened");
   const firstTab = gBrowser.selectedTab;
-  await addTab(`data:text/html,<meta charset=utf8>New tab XXX`);
+  await addTab(`data:text/html,<!DOCTYPE html><meta charset=utf8>New tab XXX`);
 
   await SpecialPowers.spawn(firstTab.linkedBrowser, [], async () => {
     // For some reason, there is no blur event fired on the document
@@ -83,7 +83,7 @@ add_task(async function testSeparateWindowToolboxInactiveTab() {
   const onFirstTabFocus = SpecialPowers.spawn(
     firstTab.linkedBrowser,
     [],
-    async function() {
+    async function () {
       await content.onFocus;
       return "focused";
     }

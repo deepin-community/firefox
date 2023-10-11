@@ -131,7 +131,7 @@ picture-in-picture-toggle-shortcut-mac =
 # in your locale keyboards above the
 # `picture-in-picture-toggle-shortcut-mac` key.
 picture-in-picture-toggle-shortcut-mac-alt =
-    .key = *
+    .key = { "}" }
 
 picture-in-picture-toggle-shortcut =
     .key = ]

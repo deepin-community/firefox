@@ -3,14 +3,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 appmenu-update-available2 =
-    .label = Eipurukuaa ñemboheko
+    .label = Eiporukuaa ñemboheko
     .buttonlabel = Emboguejy
     .buttonaccesskey = D
     .secondarybuttonlabel = Ehejarei
     .secondarybuttonaccesskey = m
 appmenu-update-available-message2 = Emboguejy { -brand-shorter-name } ipyahuvéva.
 appmenu-update-manual2 =
-    .label = Eipurukuaa ñemboheko
+    .label = Eiporukuaa ñemboheko
     .buttonlabel = Emboguejy
     .buttonaccesskey = D
     .secondarybuttonlabel = Ehejarei
@@ -24,7 +24,7 @@ appmenu-update-unsupported2 =
     .secondarybuttonaccesskey = m
 appmenu-update-unsupported-message2 = Nde apopyvusu oku’éva ndojokupytýi { -brand-shorter-name } apopyre ipyahuvéva ndive.
 appmenu-update-restart2 =
-    .label = Eipurukuaa ñembohekopyahu
+    .label = Eiporukuaa ñembohekopyahu
     .buttonlabel = Embohekopyahu ha eñepyrũjey
     .buttonaccesskey = U
     .secondarybuttonlabel = Ehejarei
@@ -37,15 +37,13 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Ko’ág̃a nahániri
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = Oĩ { -brand-shorter-name } hekopyahúmava, hákatu ndaikatúi gueteri emohenda ojejapo rupi { -brand-shorter-name } momokõi. Emboty ikatu hag̃ua embohekopyahu térã eiporavo mbohekopyahu opaicharei (ikatuhína pe ambue momokõimbyre ndoikoporãi emoñepyrũjey peve).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Moneĩ
     .buttonaccesskey = O
-appmenu-addon-post-install-message3 = Eñangareko ne moĩmbaha ha téma tembipuru’i poravorã guive.
+appmenu-addon-post-install-message3 = Eñangareko ne moĩmbaha ha téma tembiporu’i poravorã guive.
 appmenu-addon-post-install-incognito-checkbox =
     .label = Emoneĩ ko jepysokue oñembohekóvo Windows ñemiguápe
     .accesskey = A
-    
 appmenu-new-tab-controlled-changes =
     .label = Nde kuatiarogue tendayke pyahugua iñambuéma.
     .buttonlabel = Erekotapia umi moambue

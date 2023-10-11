@@ -9,6 +9,7 @@ Program("mozjemalloc-info")
 SOURCES += [
     "/mfbt/Assertions.cpp",
     "/mfbt/RandomNum.cpp",
+    "/mozglue/misc/StackWalk.cpp",
     "MozjemallocInfo.cpp",
 ]
 
@@ -36,5 +37,3 @@ UNIFIED_SOURCES += [
 DisableStlWrapping()
 
 include("/mozglue/build/replace_malloc.mozbuild")
-
-REQUIRES_UNIFIED_BUILD = True

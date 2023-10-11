@@ -1,10 +1,6 @@
 /* -*- indent-tabs-mode: nil; js-indent-level: 2 -*- */
 "use strict";
 
-var gIoService = Cc["@mozilla.org/network/io-service;1"].getService(
-  Ci.nsIIOService
-);
-
 // Run by: cd objdir;  make -C netwerk/test/ xpcshell-tests
 // or: cd objdir; make SOLO_FILE="test_URIs2.js" -C netwerk/test/ check-one
 
@@ -138,6 +134,7 @@ var gTests = [
     ref: "", // fix
     specIgnoringRef: "http://a/b/c/g?y",
     hasRef: false,
+    hasQuery: true,
     nsIURL: true,
     nsINestedURI: false,
   },
@@ -464,6 +461,7 @@ var gTests = [
     scheme: "https",
     prePath: "https://www3.example2.com",
     pathQueryRef: "/bar",
+    hasQuery: false,
     ref: "",
     nsIURL: true,
     nsINestedURI: false,
@@ -574,7 +572,7 @@ function do_test_uri_basic(aTest) {
     var relURI;
 
     try {
-      relURI = gIoService.newURI(aTest.relativeURI, null, URI);
+      relURI = Services.io.newURI(aTest.relativeURI, null, URI);
     } catch (e) {
       do_info(
         "Caught error on Relative parse of " +
@@ -603,12 +601,7 @@ function do_test_uri_basic(aTest) {
   // Sanity-check
   do_info("testing " + aTest.spec + " equals a clone of itself");
   do_check_uri_eq(URI, URI.mutate().finalize());
-  do_check_uri_eqExceptRef(
-    URI,
-    URI.mutate()
-      .setRef("")
-      .finalize()
-  );
+  do_check_uri_eqExceptRef(URI, URI.mutate().setRef("").finalize());
   do_info("testing " + aTest.spec + " instanceof nsIURL");
   Assert.equal(URI instanceof Ci.nsIURL, aTest.nsIURL);
   do_info("testing " + aTest.spec + " instanceof nsINestedURI");
@@ -646,6 +639,10 @@ function do_test_uri_basic(aTest) {
     do_info("testing hasref: " + aTest.hasRef + " vs " + URI.hasRef);
     Assert.equal(aTest.hasRef, URI.hasRef);
   }
+  if ("hasQuery" in aTest) {
+    do_info("testing hasQuery: " + aTest.hasQuery + " vs " + URI.hasQuery);
+    Assert.equal(aTest.hasQuery, URI.hasQuery);
+  }
 }
 
 // Test that a given URI parses correctly when we add a given ref to the end
@@ -658,7 +655,7 @@ function do_test_uri_with_hash_suffix(aTest, aSuffix) {
 
   if (aTest.relativeURI) {
     try {
-      origURI = gIoService.newURI(aTest.relativeURI, null, origURI);
+      origURI = Services.io.newURI(aTest.relativeURI, null, origURI);
     } catch (e) {
       do_info(
         "Caught error on Relative parse of " +
@@ -671,7 +668,7 @@ function do_test_uri_with_hash_suffix(aTest, aSuffix) {
       return;
     }
     try {
-      testURI = gIoService.newURI(aSuffix, null, origURI);
+      testURI = Services.io.newURI(aSuffix, null, origURI);
     } catch (e) {
       do_info(
         "Caught error adding suffix to " +
@@ -727,10 +724,7 @@ function do_test_uri_with_hash_suffix(aTest, aSuffix) {
         testURI.spec +
         " is equal to no-ref version but not equal to ref version"
     );
-    var cloneNoRef = testURI
-      .mutate()
-      .setRef("")
-      .finalize();
+    var cloneNoRef = testURI.mutate().setRef("").finalize();
     do_check_uri_eq(cloneNoRef, origURI);
     Assert.ok(!cloneNoRef.equals(testURI));
   }
@@ -739,10 +733,10 @@ function do_test_uri_with_hash_suffix(aTest, aSuffix) {
   do_check_property(aTest, testURI, "prePath");
   if (!origURI.ref) {
     // These don't work if it's a ref already because '+' doesn't give the right result
-    do_check_property(aTest, testURI, "pathQueryRef", function(aStr) {
+    do_check_property(aTest, testURI, "pathQueryRef", function (aStr) {
       return aStr + aSuffix;
     });
-    do_check_property(aTest, testURI, "ref", function(aStr) {
+    do_check_property(aTest, testURI, "ref", function (aStr) {
       return aSuffix.substr(1);
     });
   }
@@ -766,10 +760,7 @@ function do_test_mutate_ref(aTest, aSuffix) {
       aSuffix +
       "' does what we expect"
   );
-  testURI = testURI
-    .mutate()
-    .setRef(aSuffix)
-    .finalize();
+  testURI = testURI.mutate().setRef(aSuffix).finalize();
   do_check_uri_eq(testURI, refURIWithSuffix);
   do_check_uri_eqExceptRef(testURI, refURIWithoutSuffix);
 
@@ -784,10 +775,7 @@ function do_test_mutate_ref(aTest, aSuffix) {
         suffixLackingHash +
         "' does what we expect"
     );
-    testURI = testURI
-      .mutate()
-      .setRef(suffixLackingHash)
-      .finalize();
+    testURI = testURI.mutate().setRef(suffixLackingHash).finalize();
     do_check_uri_eq(testURI, refURIWithSuffix);
     do_check_uri_eqExceptRef(testURI, refURIWithoutSuffix);
   }
@@ -796,10 +784,7 @@ function do_test_mutate_ref(aTest, aSuffix) {
   do_info(
     "testing that clearing .ref on " + testURI.spec + " does what we expect"
   );
-  testURI = testURI
-    .mutate()
-    .setRef("")
-    .finalize();
+  testURI = testURI.mutate().setRef("").finalize();
   do_check_uri_eq(testURI, refURIWithoutSuffix);
   do_check_uri_eqExceptRef(testURI, refURIWithSuffix);
 
@@ -813,11 +798,7 @@ function do_test_mutate_ref(aTest, aSuffix) {
         specWithSuffix +
         " and then clearing ref does what we expect"
     );
-    testURI = testURI
-      .mutate()
-      .setSpec(specWithSuffix)
-      .setRef("")
-      .finalize();
+    testURI = testURI.mutate().setSpec(specWithSuffix).setRef("").finalize();
     do_check_uri_eq(testURI, refURIWithoutSuffix);
     do_check_uri_eqExceptRef(testURI, refURIWithSuffix);
 
@@ -842,19 +823,13 @@ function do_test_mutate_ref(aTest, aSuffix) {
       do_check_uri_eqExceptRef(testURI, refURIWithSuffix);
 
       // Also: make sure that clearing .pathQueryRef also clears .ref
-      testURI = testURI
-        .mutate()
-        .setPathQueryRef(pathWithSuffix)
-        .finalize();
+      testURI = testURI.mutate().setPathQueryRef(pathWithSuffix).finalize();
       do_info(
         "testing that clearing path from " +
           pathWithSuffix +
           " also clears .ref"
       );
-      testURI = testURI
-        .mutate()
-        .setPathQueryRef("")
-        .finalize();
+      testURI = testURI.mutate().setPathQueryRef("").finalize();
       Assert.equal(testURI.ref, "");
     }
   }
@@ -865,9 +840,9 @@ function do_test_mutate_ref(aTest, aSuffix) {
 function run_test() {
   // UTF-8 check - From bug 622981
   // ASCII
-  let base = gIoService.newURI("http://example.org/xenia?");
-  let resolved = gIoService.newURI("?x", null, base);
-  let expected = gIoService.newURI("http://example.org/xenia?x");
+  let base = Services.io.newURI("http://example.org/xenia?");
+  let resolved = Services.io.newURI("?x", null, base);
+  let expected = Services.io.newURI("http://example.org/xenia?x");
   do_info(
     "Bug 662981: ACSII - comparing " + resolved.spec + " and " + expected.spec
   );
@@ -875,21 +850,21 @@ function run_test() {
 
   // UTF-8 character "è"
   // Bug 622981 was triggered by an empty query string
-  base = gIoService.newURI("http://example.org/xènia?");
-  resolved = gIoService.newURI("?x", null, base);
-  expected = gIoService.newURI("http://example.org/xènia?x");
+  base = Services.io.newURI("http://example.org/xènia?");
+  resolved = Services.io.newURI("?x", null, base);
+  expected = Services.io.newURI("http://example.org/xènia?x");
   do_info(
     "Bug 662981: UTF8 - comparing " + resolved.spec + " and " + expected.spec
   );
   Assert.ok(resolved.equals(expected));
 
-  gTests.forEach(function(aTest) {
+  gTests.forEach(function (aTest) {
     // Check basic URI functionality
     do_test_uri_basic(aTest);
 
     if (!aTest.fail) {
       // Try adding various #-prefixed strings to the ends of the URIs
-      gHashSuffixes.forEach(function(aSuffix) {
+      gHashSuffixes.forEach(function (aSuffix) {
         do_test_uri_with_hash_suffix(aTest, aSuffix);
         if (!aTest.immutable) {
           do_test_mutate_ref(aTest, aSuffix);

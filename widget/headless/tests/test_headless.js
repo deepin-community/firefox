@@ -1,17 +1,18 @@
 /* -*- Mode: indent-tabs-mode: nil; js-indent-level: 2 -*- */
 /* vim: set sts=2 sw=2 et tw=80: */
 "use strict";
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
-const gProfDir = do_get_profile();
+do_get_profile();
 const server = new HttpServer();
 server.registerDirectory("/", do_get_cwd());
 server.start(-1);
 const ROOT = `http://localhost:${server.identity.primaryPort}`;
 const BASE = `${ROOT}/`;
-const HEADLESS_URL = `${BASE}/headless.html`;
-const HEADLESS_BUTTON_URL = `${BASE}/headless_button.html`;
+const HEADLESS_URL = Services.io.newURI(`${BASE}/headless.html`);
+const HEADLESS_BUTTON_URL = Services.io.newURI(`${BASE}/headless_button.html`);
 registerCleanupFunction(() => {
   server.stop(() => {});
 });

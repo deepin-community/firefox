@@ -4,15 +4,16 @@
 
 page-title = Technické informace
 page-subtitle =
-    Tato stránka obsahuje technické informace, které mohou být užitečné, pokud se snažíte
-    vyřešit nějaký složitější problém s aplikací. Odpovědi na často kladené otázky ohledně
-    { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "gen") }
-        [feminine] { -brand-short-name(case: "gen") }
-        [neuter] { -brand-short-name(case: "gen") }
-       *[other] aplikace { -brand-short-name }
-    } naleznete na <a data-l10n-name="support-link">webových stránkách podpory</a>.
-
+    { -brand-short-name.case-status ->
+        [with-cases]
+            Tato stránka obsahuje technické informace, které mohou být užitečné, pokud se snažíte
+            vyřešit nějaký složitější problém s aplikací. Odpovědi na často kladené otázky ohledně
+            { -brand-short-name(case: "gen") } naleznete na <a data-l10n-name="support-link">webových stránkách podpory</a>.
+       *[no-cases]
+            Tato stránka obsahuje technické informace, které mohou být užitečné, pokud se snažíte
+            vyřešit nějaký složitější problém s aplikací. Odpovědi na často kladené otázky ohledně
+            aplikace { -brand-short-name } naleznete na <a data-l10n-name="support-link">webových stránkách podpory</a>.
+    }
 crashes-title = Hlášení pádů
 crashes-id = ID hlášení
 crashes-send-date = Odeslaná
@@ -24,6 +25,10 @@ support-addons-type = Typ
 support-addons-enabled = Povoleno
 support-addons-version = Verze
 support-addons-id = ID
+legacy-user-stylesheets-title = Starší uživatelské kaskádové styly
+legacy-user-stylesheets-enabled = Aktivní
+legacy-user-stylesheets-stylesheet-types = Kaskádové styly
+legacy-user-stylesheets-no-stylesheets-found = Nebyly nalezeny žádné kaskádové styly
 security-software-title = Bezpečnostní software
 security-software-type = Typ
 security-software-name = Název
@@ -31,11 +36,9 @@ security-software-antivirus = Antivir
 security-software-antispyware = Antispyware
 security-software-firewall = Firewall
 features-title =
-    Funkce { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "gen") }
-        [feminine] { -brand-short-name(case: "gen") }
-        [neuter] { -brand-short-name(case: "gen") }
-       *[other] aplikace { -brand-short-name }
+    { -brand-short-name.case-status ->
+        [with-cases] Funkce { -brand-short-name(case: "gen") }
+       *[no-cases] Funkce aplikace { -brand-short-name }
     }
 features-name = Název
 features-version = Verze
@@ -79,6 +82,13 @@ app-basics-location-service-key-google = Klíč služby Google Location Service
 app-basics-safebrowsing-key-google = Klíč služby Google Safebrowsing
 app-basics-key-mozilla = Klíč Mozilla Location Service
 app-basics-safe-mode = Nouzový režim
+app-basics-memory-size = Velikost paměti (RAM)
+app-basics-disk-available = Dostupné místo na disku
+app-basics-pointing-devices = Polohovací zařízení
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Zobrazit ve Finderu
@@ -95,12 +105,10 @@ modified-prefs-name = Název
 modified-prefs-value = Hodnota
 user-js-title = Předvolby user.js
 user-js-description =
-    Složka s profilem obsahuje <a data-l10n-name="user-js-link">soubor user.js</a>, který obsahuje předvolby, které nebyly vytvořeny { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "ins") }
-        [feminine] { -brand-short-name(case: "ins") }
-        [neuter] { -brand-short-name(case: "ins") }
-       *[other] aplikací { -brand-short-name }
-    }.
+    { -brand-short-name.case-status ->
+        [with-cases] Složka s profilem obsahuje <a data-l10n-name="user-js-link">soubor user.js</a>, který obsahuje předvolby, které nebyly vytvořeny { -brand-short-name(case: "ins") }.
+       *[no-cases] Složka s profilem obsahuje <a data-l10n-name="user-js-link">soubor user.js</a>, který obsahuje předvolby, které nebyly vytvořeny aplikací { -brand-short-name }.
+    }
 locked-key-prefs-title = Důležité uzamčené předvolby
 locked-prefs-name = Název
 locked-prefs-value = Hodnota
@@ -113,11 +121,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Protokol rozhodování
 graphics-crash-guards-title = Zakázat funkce Crash Guard
 graphics-workarounds-title = Možná řešení
+graphics-device-pixel-ratios = Poměr pixelů zařízení okna
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Protokol zobrazování oken
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Desktopové prostředí
 place-database-title = Databáze Places
+place-database-stats = Statistiky
+place-database-stats-show = Zobrazit statistiku
+place-database-stats-hide = Skrýt statistiku
+place-database-stats-entity = Entita
+place-database-stats-count = Počet
+place-database-stats-size-kib = Velikost (KiB)
+place-database-stats-size-perc = Velikost (%)
+place-database-stats-efficiency-perc = Efektivita (%)
+place-database-stats-sequentiality-perc = Sekvence (%)
 place-database-integrity = Integrita
 place-database-verify-integrity = Zkontrolovat integritu
 a11y-title = Přístupnost
@@ -142,12 +160,10 @@ restart-in-troubleshoot-mode-label = Režim řešení potíží…
 clear-startup-cache-title = Zkuste vymazat mezipaměť spouštění
 clear-startup-cache-label = Vymazat mezipaměť spouštění…
 startup-cache-dialog-title2 =
-    Chcete restartovat { -brand-shorter-name.gender ->
-        [masculine] { -brand-short-name(case: "acc") }
-        [feminine] { -brand-short-name(case: "acc") }
-        [neuter] { -brand-short-name(case: "acc") }
-       *[other] aplikaci { -brand-short-name }
-    } a vymazat mezipaměť spouštění?
+    { -brand-shorter-name.case-status ->
+        [with-cases] Chcete restartovat { -brand-short-name(case: "acc") } a vymazat mezipaměť spouštění?
+       *[no-cases] Chcete restartovat aplikaci { -brand-short-name } a vymazat mezipaměť spouštění?
+    }
 startup-cache-dialog-body2 = Vaše nastavení i nainstalována rozšíření nebudou nijak ovlivněna.
 restart-button-label = Restartovat
 
@@ -170,8 +186,18 @@ media-device-channels = Kanály
 media-device-rate = Vzorkování
 media-device-latency = Prodleva
 media-capabilities-title = Podpora médií
+media-codec-support-info = Informace o podpoře kodeků
 # List all the entries of the database.
 media-capabilities-enumerate = Vypsat databázi
+
+## Codec support table
+
+media-codec-support-sw-decoding = Softwarové dekódování
+media-codec-support-hw-decoding = Hardwarové dekódování
+media-codec-support-codec-name = Název kodeku
+media-codec-support-supported = Podporované
+media-codec-support-unsupported = Nepodporováné
+media-codec-support-error = Informace o podpoře kodeků není k dispozici. Zkuste to znovu po přehrání mediálního souboru.
 
 ##
 
@@ -208,7 +234,6 @@ report-crash-for-days =
         [few] Hlášení o pádech za poslední { $days } dny
        *[other] Hlášení o pádech za posledních { $days } dní
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -217,7 +242,6 @@ crashes-time-minutes =
         [few] Před { $minutes } minutami
        *[other] Před { $minutes } minutami
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -226,7 +250,6 @@ crashes-time-hours =
         [few] Před { $hours } hodinami
        *[other] Před { $hours } hodinami
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -235,7 +258,6 @@ crashes-time-days =
         [few] Před { $days } dny
        *[other] Před { $days } dny
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -244,7 +266,6 @@ pending-reports =
         [few] Všechna hlášení o pádech (zahrnující { $reports } čekající za dané časové období)
        *[other] Všechna hlášení o pádech (zahrnující { $reports } čekajících za dané časové období)
     }
-
 raw-data-copied = Data byla zkopírována
 text-copied = Text zkopírován do schránky
 
@@ -257,11 +278,9 @@ blocked-mismatched-version = Zakázáno kvůli nesouhlasící verzi ovladačů v
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = Zakázáno kvůli verzi ovladače grafické karty. Zkuste aktualizovat ovladač grafické karty na verzi { $driverVersion } nebo novější.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = Technologie ClearType
-
 compositing = Compositing
 hardware-h264 = Hardwarové dekódování H264
 main-thread-no-omtc = hlavní vlákno, ne OMTC
@@ -276,7 +295,6 @@ virtual-monitor-disp = Zobrazení virtuálního monitoru
 
 found = Nalezeno
 missing = Chybí
-
 gpu-process-pid = GPUProcessPid
 gpu-process = GPUProcess
 gpu-description = Popis
@@ -299,19 +317,17 @@ webgl2-renderer = Zobrazování WebGL2
 webgl2-version = Verze ovladače WebGL 2
 webgl2-driver-extensions = Rozšíření ovladače WebGL 2
 webgl2-extensions = Rozšíření WebGL 2
-
+webgpu-default-adapter = Výchozí adaptér WebGPU
+webgpu-fallback-adapter = Záložní adaptér WebGPU
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = Zablokováno kvůli známým problémům: <a data-l10n-name="bug-link">bug { $bugNumber }</a>
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = Zablokováno; chybový kód { $failureCode }
-
 d3d11layers-crash-guard = D3D11 Compositor
 glcontext-crash-guard = OpenGL
 wmfvpxvideo-crash-guard = WMF VPX Video dekodér
-
 reset-on-next-restart = Obnovit po při příštím restartu
 gpu-process-kill-button = Ukončit GPU proces
 gpu-device-reset = Obnova zařízení
@@ -321,10 +337,8 @@ content-uses-tiling = Používá skládání (obsah)
 off-main-thread-paint-enabled = Vykreslování mimo hlavní vlákno povoleno
 off-main-thread-paint-worker-count = Počet vláken pro vykreslování mimo hlavní vlákno
 target-frame-rate = Cílová frekvence snímků
-
 min-lib-versions = Očekávaná minimální verze
 loaded-lib-versions = Používaná verze
-
 has-seccomp-bpf = Seccomp-BPF (filtrování systémových volání)
 has-seccomp-tsync = Synchronizace vláken Seccomp
 has-user-namespaces = Uživatelské jmenné prostory
@@ -334,22 +348,20 @@ can-sandbox-media = Sandbox zásuvných modulů médií
 content-sandbox-level = Úroveň sandboxu procesů pro obsah
 effective-content-sandbox-level = Účinná úroveň sandboxu procesů pro obsah
 content-win32k-lockdown-state = Stav uzamčení Win32k procesů pro obsah
+support-sandbox-gpu-level = Úroveň sandboxu procesů GPU
 sandbox-proc-type-content = obsah
 sandbox-proc-type-file = obsah souboru
 sandbox-proc-type-media-plugin = zásuvný modul médií
 sandbox-proc-type-data-decoder = dekodér dat
-
 startup-cache-title = Mezipaměť spouštění
 startup-cache-disk-cache-path = Cesta k mezipaměti na disku
 startup-cache-ignore-disk-cache = Ignorovat mezipaměť na disku
 startup-cache-found-disk-cache-on-init = Mezipaměť na disku během inicializace nalezena
 startup-cache-wrote-to-disk-cache = Zapsáno do mezipaměti na disku
-
 launcher-process-status-0 = Povoleno
 launcher-process-status-1 = Zakázáno kvůli chybě
 launcher-process-status-2 = Násilně zakázáno
 launcher-process-status-unknown = Neznámý stav
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
@@ -362,14 +374,13 @@ fission-status-experiment-control = Zakázáno experimentem
 fission-status-experiment-treatment = Povoleno experimentem
 fission-status-disabled-by-e10s-env = Zakázáno prostředím
 fission-status-enabled-by-env = Povoleno prostředím
-fission-status-disabled-by-safe-mode = Zakázáno v nouzovém režimu
+fission-status-disabled-by-env = Zakázáno prostředím
 fission-status-enabled-by-default = Povoleno ve výchozím nastavení
 fission-status-disabled-by-default = Zakázáno ve výchozím nastavení
 fission-status-enabled-by-user-pref = Povoleno uživatelem
 fission-status-disabled-by-user-pref = Zakázáno uživatelem
 fission-status-disabled-by-e10s-other = Zakázáno kvůli E10S
 fission-status-enabled-by-rollout = Povoleno postupným zaváděním
-
 async-pan-zoom = Asynchronní lupa/panning
 apz-none = nic
 wheel-enabled = vstup kolečka povolen
@@ -406,7 +417,13 @@ support-remote-experiments-title = Vzdálené experimenty
 support-remote-experiments-name = Název
 support-remote-experiments-branch = Větev experimentu
 support-remote-experiments-see-about-studies = Podrobnosti o experimentech { -brand-short-name(case: "gen") } a možnost je zakázat jednotlivě nebo celkově i do budoucna najdete na stránce <a data-l10n-name="support-about-studies-link">about:studies</a>.
-
 support-remote-features-title = Vzdálené funkce
 support-remote-features-name = Název
 support-remote-features-status = Stav
+
+## Pointing devices
+
+pointing-device-mouse = Myš
+pointing-device-touchscreen = Dotyková obrazovka
+pointing-device-pen-digitizer = Digitální pero
+pointing-device-none = Žádná polohovací zařízení

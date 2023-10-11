@@ -6,32 +6,22 @@
 # drop-in replacement for autoconf 2.13's config.status, with features
 # borrowed from autoconf > 2.5, and additional features.
 
-from __future__ import absolute_import, print_function
-
 import logging
 import os
 import sys
 import time
-
 from argparse import ArgumentParser
+from itertools import chain
 
 from mach.logging import LoggingManager
+
+from mozbuild.backend import backends, get_backend_class
 from mozbuild.backend.configenvironment import ConfigEnvironment
 from mozbuild.base import MachCommandConditions
 from mozbuild.frontend.emitter import TreeMetadataEmitter
 from mozbuild.frontend.reader import BuildReader
 from mozbuild.mozinfo import write_mozinfo
-from itertools import chain
-
-from mozbuild.backend import (
-    backends,
-    get_backend_class,
-)
-from mozbuild.util import (
-    FileAvoidWrite,
-    process_time,
-)
-
+from mozbuild.util import FileAvoidWrite, process_time
 
 log_manager = LoggingManager()
 
@@ -40,24 +30,12 @@ ANDROID_IDE_ADVERTISEMENT = """
 =============
 ADVERTISEMENT
 
-You are building Firefox for Android. After your build completes, you can open
+You are building GeckoView. After your build completes, you can open
 the top source directory in Android Studio directly and build using Gradle.
 See the documentation at
 
-https://developer.mozilla.org/en-US/docs/Simple_Firefox_for_Android_build
+https://firefox-source-docs.mozilla.org/mobile/android/geckoview/contributor/geckoview-quick-start.html#build-using-android-studio
 =============
-""".strip()
-
-VISUAL_STUDIO_ADVERTISEMENT = """
-===============================
-Visual Studio Support Available
-
-You are building Firefox on Windows. You can generate Visual Studio
-files by running:
-
-   mach build-backend --backend=VisualStudio
-
-===============================
 """.strip()
 
 
@@ -150,7 +128,7 @@ def config_status(
         write_mozinfo(f, env, os.environ)
 
     cpu_start = process_time()
-    time_start = time.time()
+    time_start = time.monotonic()
 
     # Make appropriate backend instances, defaulting to RecursiveMakeBackend,
     # or what is in BUILD_BACKENDS.
@@ -186,7 +164,7 @@ def config_status(
             print(summary, file=sys.stderr)
 
     cpu_time = process_time() - cpu_start
-    wall_time = time.time() - time_start
+    wall_time = time.monotonic() - time_start
     efficiency = cpu_time / wall_time if wall_time else 100
     untracked = wall_time - execution_time
 
@@ -200,10 +178,6 @@ def config_status(
         for the_backend in selected_backends:
             for path, diff in sorted(the_backend.file_diffs.items()):
                 print("\n".join(diff))
-
-    # Advertise Visual Studio if appropriate.
-    if os.name == "nt" and "VisualStudio" not in options.backend:
-        print(VISUAL_STUDIO_ADVERTISEMENT)
 
     # Advertise Android Studio if it is appropriate.
     if MachCommandConditions.is_android(env):

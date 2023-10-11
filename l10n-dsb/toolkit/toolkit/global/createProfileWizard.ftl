@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Asistent za založenje profilow
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Zachopjeńk
-       *[other] Witajśo do { create-profile-window.title }
+       *[other] Witajśo do { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name } składujo informacije wó wašych nastajenjach a preferencach we wašom wósobinskem profilu.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Dokóńcenje
-       *[other] { create-profile-window.title } dokóńcyś
+       *[other] { create-profile-window2.title } dokóńcyś
     }
 
 profile-creation-intro = Jolic založujośo někotare profile, móžośo je z profilowymi mjenjami rozeznaś. Móžośo how pódane abo swójske mě wužywaś.

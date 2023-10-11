@@ -2,7 +2,9 @@
  * Tests for imgITools
  */
 
-const { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
+const { NetUtil } = ChromeUtils.importESModule(
+  "resource://gre/modules/NetUtil.sys.mjs"
+);
 
 /*
  * dumpToFile()
@@ -10,9 +12,10 @@ const { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
  * For test development, dumps the specified array to a file.
  * Call |dumpToFile(outData);| in a test to file to a file.
  */
+// eslint-disable-next-line no-unused-vars
 function dumpToFile(aData) {
-  var outputFile = do_get_tempdir();
-  outputFile.append("testdump.png");
+  var outputFile = do_get_cwd();
+  outputFile.append("testdump.webp");
 
   var outputStream = Cc[
     "@mozilla.org/network/file-output-stream;1"
@@ -229,7 +232,7 @@ function run_test() {
       refName = isWindows ? "image2jpg16x16-win.png" : "image2jpg16x16.png";
       refFile = do_get_file(refName);
       istream = getFileInputStream(refFile);
-      Assert.equal(istream.available(), 950);
+      Assert.equal(istream.available(), 955);
       referenceBytes = streamToArray(istream);
 
       // compare the encoder's output to the reference file.
@@ -249,7 +252,7 @@ function run_test() {
       refName = isWindows ? "image2jpg32x32-win.png" : "image2jpg32x32.png";
       refFile = do_get_file(refName);
       istream = getFileInputStream(refFile);
-      Assert.equal(istream.available(), 3105);
+      Assert.equal(istream.available(), 3026);
       referenceBytes = streamToArray(istream);
 
       // compare the encoder's output to the reference file.
@@ -292,7 +295,7 @@ function run_test() {
     refName = "image3ico32x32.png";
     refFile = do_get_file(refName);
     istream = getFileInputStream(refFile);
-    Assert.equal(istream.available(), 2285);
+    Assert.equal(istream.available(), 2280);
     referenceBytes = streamToArray(istream);
 
     // compare the encoder's output to the reference file.
@@ -310,7 +313,7 @@ function run_test() {
     refName = "image3ico16x16.png";
     refFile = do_get_file(refName);
     istream = getFileInputStream(refFile);
-    Assert.equal(istream.available(), 330);
+    Assert.equal(istream.available(), 520);
     referenceBytes = streamToArray(istream);
 
     // compare the encoder's output to the reference file.
@@ -618,7 +621,7 @@ function run_test() {
     // compare the encoder's output to the reference file.
     compareArrays(encodedBytes, referenceBytes);
 
-    /* ========== 22 ========== */
+    /* ========== 23 ========== */
     testnum++;
     testdesc = "test invalid arguments for cropping";
 
@@ -668,9 +671,75 @@ function run_test() {
 
     Assert.equal(numErrors, 6);
 
+    /* ========== 24 ========== */
+    testnum++;
+    testdesc = "test encoding webp";
+
+    // Load picture that we want to convert
+    imgName = "image1.png";
+    inMimeType = "image/png";
+    imgFile = do_get_file(imgName);
+
+    istream = getFileInputStream(imgFile);
+    Assert.equal(istream.available(), 8415);
+
+    buffer = NetUtil.readInputStreamToString(istream, istream.available());
+    container = imgTools.decodeImageFromBuffer(
+      buffer,
+      buffer.length,
+      inMimeType
+    );
+
+    // Convert image to webp
+    istream = imgTools.encodeImage(container, "image/webp");
+    encodedBytes = streamToArray(istream);
+
+    // Get bytes for expected result
+    refName = "image1.webp";
+    refFile = do_get_file(refName);
+    istream = getFileInputStream(refFile);
+    Assert.equal(istream.available(), 3206);
+    referenceBytes = streamToArray(istream);
+
+    // compare the encoder's output to the reference file.
+    compareArrays(encodedBytes, referenceBytes);
+
+    /* ========== 25 ========== */
+    testnum++;
+    testdesc = "test encoding webp with quality parameter";
+
+    // Load picture that we want to convert
+    imgName = "image1.png";
+    inMimeType = "image/png";
+    imgFile = do_get_file(imgName);
+
+    istream = getFileInputStream(imgFile);
+    Assert.equal(istream.available(), 8415);
+
+    buffer = NetUtil.readInputStreamToString(istream, istream.available());
+    container = imgTools.decodeImageFromBuffer(
+      buffer,
+      buffer.length,
+      inMimeType
+    );
+
+    // Convert image to webp
+    istream = imgTools.encodeImage(container, "image/webp", "quality=50");
+    encodedBytes = streamToArray(istream);
+
+    // Get bytes for expected result
+    refName = "image1quality50.webp";
+    refFile = do_get_file(refName);
+    istream = getFileInputStream(refFile);
+    Assert.equal(istream.available(), 1944);
+    referenceBytes = streamToArray(istream);
+
+    // compare the encoder's output to the reference file.
+    compareArrays(encodedBytes, referenceBytes);
+
     /* ========== bug 363986 ========== */
     testnum = 363986;
-    testdesc = "test PNG and JPEG encoders' Read/ReadSegments methods";
+    testdesc = "test PNG and JPEG and WEBP encoders' Read/ReadSegments methods";
 
     var testData = [
       {
@@ -684,6 +753,12 @@ function run_test() {
         preImageMimeType: "image/png",
         refImage: "image1png64x64.jpg",
         refImageMimeType: "image/jpeg",
+      },
+      {
+        preImage: "image1.png",
+        preImageMimeType: "image/png",
+        refImage: "image1.webp",
+        refImageMimeType: "image/webp",
       },
     ];
 

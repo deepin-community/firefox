@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Nastajenja za wuproznjenje historije
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Aktualnu historiju wuprozniś
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Cełu historiju wuprozniś
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = Gaž { -brand-short-name } se kóńcy, by měło se wšykno awtomatiski wulašowaś
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = f
 
 data-section-label = Daty
-
-item-site-preferences =
-    .label = Sedłowe nastajenja
-    .accesskey = S
 
 item-site-settings =
     .label = Sedłowe nastajenja

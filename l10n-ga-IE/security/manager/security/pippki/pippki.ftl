@@ -13,8 +13,6 @@ change-password-old = Focal Faire Reatha:
 change-password-new = Focal Faire Nua:
 change-password-reenter = Focal Faire Nua (Arís):
 
-## Reset Password dialog
-
 ## Reset Primary Password dialog
 
 reset-password-button-label =
@@ -22,9 +20,9 @@ reset-password-button-label =
 
 ## Downloading cert dialog
 
-download-cert-window =
+download-cert-window2 =
     .title = Teastas á íoslódáil
-    .style = width: 46em
+    .style = min-width: 46em
 download-cert-message = Iarrtar ort muinín a bheith agat as Údarás Deimhniúcháin nua.
 download-cert-trust-ssl =
     .label = Tá muinín agat as an údarás deimhniúcháin seo chun suímh Ghréasáin a shainaithint.
@@ -37,11 +35,38 @@ download-cert-view-text = Scrúdaigh Teastas an Údaráis Deimhniúcháin
 
 ## Client Authorization Ask dialog
 
+
+## Client Authentication Ask dialog
+
 client-auth-window =
     .title = Iarratas Aitheantais Úsáideora
 client-auth-site-description = Iarann an suíomh seo ort tú féin a shainaithint le teastas:
 client-auth-choose-cert = Roghnaigh teastas le taispeáint mar aitheantas:
 client-auth-cert-details = Mionsonraí an teastais roghnaithe:
+# Variables:
+# $issuedTo (String) - The subject common name of the currently-selected client authentication certificate
+client-auth-cert-details-issued-to = Eisithe chuig: { $issuedTo }
+# Variables:
+# $serialNumber (String) - The serial number of the certificate (hexadecimal of the form "AA:BB:...")
+client-auth-cert-details-serial-number = Sraithuimhir: { $serialNumber }
+# Variables:
+# $notBefore (String) - The date before which the certificate is not valid (e.g. Apr 21, 2023, 1:47:53 PM UTC)
+# $notAfter (String) - The date after which the certificate is not valid
+client-auth-cert-details-validity-period = Bailí ó { $notBefore } go { $notAfter }
+# Variables:
+# $keyUsages (String) - A list of already-localized key usages for which the certificate may be used
+client-auth-cert-details-key-usages = Úsáidí Eochracha: { $keyUsages }
+# Variables:
+# $emailAddresses (String) - A list of email addresses present in the certificate
+client-auth-cert-details-email-addresses = Seoltaí ríomhphoist: { $emailAddresses }
+# Variables:
+# $issuedBy (String) - The issuer common name of the certificate
+client-auth-cert-details-issued-by = Eisithe ag: { $issuedBy }
+# Variables:
+# $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
+client-auth-cert-details-stored-on = Stóráilte ar: { $storedOn }
+client-auth-cert-remember-box =
+    .label = Meabhraigh an cinneadh seo
 
 ## Set password (p12) dialog
 
@@ -54,9 +79,5 @@ set-password-repeat-backup-pw =
     .value = Focal faire an chúltaca teastais (arís):
 set-password-reminder = Tábhachtach: má dhéanann tú dearmad ar an bhfocal faire don chúltaca teastais ní bheidh tú in ann an cúltaca seo a chur ar ais. Breac síos tuairisc de in áit shlán.
 
-## Protected Auth dialog
+## Protected authentication alert
 
-protected-auth-window =
-    .title = Fíordheimhniú le Comhartha Cosanta
-protected-auth-msg = Fíordheimhnigh leis an gcomhartha le do thoil. Braitheann an modh fíordheimhnithe ar chineál do chomhartha.
-protected-auth-token = Ceadchomhartha:

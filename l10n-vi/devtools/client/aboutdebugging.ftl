@@ -79,7 +79,7 @@ about-debugging-sidebar-runtime-item-name-no-device =
     .title = { $displayName }
 
 # Text to show in the footer of the sidebar that links to a help page
-# (currently: https://developer.mozilla.org/docs/Tools/about:debugging)
+# (currently: https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/)
 about-debugging-sidebar-support = Hỗ trợ gỡ lỗi
 
 # Text to show as the ALT attribute of a help icon that accompanies the help about
@@ -140,7 +140,7 @@ about-debugging-setup-usb-step-enable-debug-firefox2 = Bật gỡ lỗi USB tron
 about-debugging-setup-usb-step-plug-device = Kết nối thiết bị Android với máy tính của bạn.
 
 # Text shown in the USB section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/docs/Tools/Remote_Debugging/Debugging_over_USB
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-to-a-remote-device
 about-debugging-setup-usb-troubleshoot = Sự cố kết nối với thiết bị USB? <a>Khắc phục sự cố</a>
 
 # Network section of the Setup page
@@ -148,7 +148,7 @@ about-debugging-setup-network =
     .title = Vị trí mạng
 
 # Text shown in the Network section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/en-US/docs/Tools/Remote_Debugging/Debugging_over_a_network
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-over-the-network
 about-debugging-setup-network-troubleshoot = Sự cố kết nối qua vị trí mạng? <a>Khắc phục sự</a>
 
 # Text of a button displayed after the network locations "Host" input.
@@ -208,12 +208,12 @@ about-debugging-runtime-processes =
 about-debugging-runtime-profile-button2 = Hồ sơ hiệu suất
 
 # This string is displayed in the runtime page if the current configuration of the
-# target runtime is incompatible with service workers. "Learn more" points to MDN.
-# https://developer.mozilla.org/en-US/docs/Tools/about%3Adebugging#Service_workers_not_compatible
+# target runtime is incompatible with service workers. "Learn more" points to:
+# https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#service-workers-not-compatible
 about-debugging-runtime-service-workers-not-compatible = Cấu hình trình duyệt của bạn không tương thích với Service Workers. <a>Tìm hiểu thêm</a>
 
 # This string is displayed in the runtime page if the remote browser version is too old.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
 # { $minVersion } is the minimum version that is compatible with the current Firefox instance (same format)
 about-debugging-browser-version-too-old = Trình duyệt được kết nối có phiên bản cũ ({ $runtimeVersion }). Phiên bản được hỗ trợ tối thiểu là ({ $minVersion }). Đây là một thiết lập không được hỗ trợ và có thể khiến DevTools bị lỗi. Vui lòng cập nhật trình duyệt được kết nối. <a>Khắc phục sự cố</a>
@@ -223,7 +223,7 @@ about-debugging-browser-version-too-old = Trình duyệt được kết nối c�
 about-debugging-browser-version-too-old-fennec = Phiên bản Firefox này không thể gỡ lỗi Firefox dành cho Android (68). Chúng tôi khuyên bạn nên cài đặt Firefox Nightly dành cho Android trên điện thoại để thử nghiệm. <a>Chi tiết khác</a>
 
 # This string is displayed in the runtime page if the remote browser version is too recent.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeID } is the build ID of the remote browser (for instance "20181231", format is yyyyMMdd)
 # { $localID } is the build ID of the current Firefox instance (same format)
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
@@ -281,6 +281,12 @@ about-debugging-tmp-extension-reload-button = Tải lại
 # Clicking on the button will uninstall the extension and remove it from the page.
 about-debugging-tmp-extension-remove-button = Xóa
 
+# Text of a button displayed for a temporary extension loaded in the "This Firefox" page.
+# Clicking on the button will forcefully terminate the extension background script (button
+# only visible in extensions that includes a non-persistent background script, either an
+# event page or a background service worker).
+about-debugging-tmp-extension-terminate-bgscript-button = Chấm dứt tập lệnh nền
+
 # Message displayed in the file picker that opens to select a temporary extension to load
 # (triggered by the button using "about-debugging-tmp-extension-install-button")
 # manifest.json .xpi and .zip should not be localized.
@@ -309,6 +315,18 @@ about-debugging-extension-location =
 # For instance "geckoprofiler@mozilla.com" or "{ed26ddcb-5611-4512-a89a-51b8db81cfb2}".
 about-debugging-extension-id =
     .label = ID tiện ích mở rộng
+
+# Text displayed for extensions in "runtime" pages, before displaying the status of the
+# extension background script.
+about-debugging-extension-backgroundscript =
+    .label = Tập lệnh nền
+
+# Displayed for extension using a non-persistent background page (either an event page or
+# background service worker) when the background script is currently running.
+about-debugging-extension-backgroundscript-status-running = Đang chạy
+
+# Displayed for extension using a non-persistent background page when is currently stopped.
+about-debugging-extension-backgroundscript-status-stopped = Đã dừng
 
 # This string is displayed as a label of the button that pushes a test payload
 # to a service worker.
@@ -360,14 +378,6 @@ about-debugging-worker-inspect-action-disabled =
 # Displayed as title of the inspect button for zombie tabs (e.g. tabs loaded via a session restore).
 about-debugging-zombie-tab-inspect-action-disabled =
     .title = Thẻ không được tải đầy đủ và không thể được kiểm tra
-
-# Displayed as name for the Main Process debug target in the Processes category. Only for
-# remote runtimes, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-name = Tiến trình chính
-
-# Displayed as description for the Main Process debug target in the Processes category.
-# Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-description2 = Quy trình chính cho trình duyệt đích
 
 # Displayed instead of the Main Process debug target when the preference
 # `devtools.browsertoolbox.fission` is true.

@@ -43,7 +43,8 @@ class HttpBackgroundChannelParent final : public PHttpBackgroundChannelParent {
   bool OnStartRequest(const nsHttpResponseHead& aResponseHead,
                       const bool& aUseResponseHead,
                       const nsHttpHeaderArray& aRequestHeaders,
-                      const HttpChannelOnStartRequestArgs& aArgs);
+                      const HttpChannelOnStartRequestArgs& aArgs,
+                      const nsCOMPtr<nsICacheEntry>& aCacheEntry);
 
   // To send OnTransportAndData message over background channel.
   bool OnTransportAndData(const nsresult& aChannelStatus,
@@ -78,9 +79,6 @@ class HttpBackgroundChannelParent final : public PHttpBackgroundChannelParent {
   bool OnNotifyClassificationFlags(uint32_t aClassificationFlags,
                                    bool aIsThirdParty);
 
-  // To send NotifyFlashPluginStateChanged message over background channel.
-  bool OnNotifyFlashPluginStateChanged(nsIHttpChannel::FlashPluginState aState);
-
   // To send SetClassifierMatchedInfo message over background channel.
   bool OnSetClassifierMatchedInfo(const nsACString& aList,
                                   const nsACString& aProvider,
@@ -98,6 +96,8 @@ class HttpBackgroundChannelParent final : public PHttpBackgroundChannelParent {
       Endpoint<extensions::PStreamFilterParent>&& aParentEndpoint,
       Endpoint<extensions::PStreamFilterChild>&& aChildEndpoint);
 
+  [[nodiscard]] RefPtr<GenericPromise> DetachStreamFilters();
+
  protected:
   void ActorDestroy(ActorDestroyReason aWhy) override;
 
@@ -107,7 +107,7 @@ class HttpBackgroundChannelParent final : public PHttpBackgroundChannelParent {
   Atomic<bool> mIPCOpened;
 
   // Used to ensure atomicity of mBackgroundThread
-  Mutex mBgThreadMutex;
+  Mutex mBgThreadMutex MOZ_UNANNOTATED;
 
   nsCOMPtr<nsISerialEventTarget> mBackgroundThread;
 

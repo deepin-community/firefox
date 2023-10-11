@@ -21,6 +21,8 @@
 
 namespace mozilla::ipc {
 
+class GeckoChildProcessHost;
+
 class NodeController final : public mojo::core::ports::NodeDelegate,
                              public NodeChannel::Listener {
   using NodeName = mojo::core::ports::NodeName;
@@ -86,16 +88,19 @@ class NodeController final : public mojo::core::ports::NodeDelegate,
 
   // Called in the broker process from GeckoChildProcessHost to introduce a new
   // child process into the network. Returns a `PortRef` which can be used to
-  // communicate with the `PortRef` returned from `InitChildProcess`. The port
-  // can immediately have messages sent to it.
-  ScopedPort InviteChildProcess(UniquePtr<IPC::Channel> aChannel);
+  // communicate with the `PortRef` returned from `InitChildProcess`, and a
+  // reference to the `NodeChannel` created for the new process. The port can
+  // immediately have messages sent to it.
+  std::tuple<ScopedPort, RefPtr<NodeChannel>> InviteChildProcess(
+      UniquePtr<IPC::Channel> aChannel,
+      GeckoChildProcessHost* aChildProcessHost);
 
   // Called as the IO thread is started in the parent process.
   static void InitBrokerProcess();
 
   // Called as the IO thread is started in a child process.
   static ScopedPort InitChildProcess(UniquePtr<IPC::Channel> aChannel,
-                                     int32_t aParentPid = -1);
+                                     base::ProcessId aParentPid);
 
   // Called when the IO thread is torn down.
   static void CleanUp();
@@ -105,8 +110,10 @@ class NodeController final : public mojo::core::ports::NodeDelegate,
   ~NodeController();
 
   UniquePtr<IPC::Message> SerializeEventMessage(
-      UniquePtr<Event> aEvent, uint32_t aType = EVENT_MESSAGE_TYPE);
-  UniquePtr<Event> DeserializeEventMessage(UniquePtr<IPC::Message> aMessage);
+      UniquePtr<Event> aEvent, const NodeName* aRelayTarget = nullptr,
+      uint32_t aType = EVENT_MESSAGE_TYPE);
+  UniquePtr<Event> DeserializeEventMessage(UniquePtr<IPC::Message> aMessage,
+                                           NodeName* aRelayTarget = nullptr);
 
   // Get the `NodeChannel` for the named node.
   already_AddRefed<NodeChannel> GetNodeChannel(const NodeName& aName);

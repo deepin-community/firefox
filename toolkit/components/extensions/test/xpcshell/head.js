@@ -1,15 +1,16 @@
 "use strict";
-
 /* exported createHttpServer, cleanupDir, clearCache, optionalPermissionsPromptHandler, promiseConsoleOutput,
             promiseQuotaManagerServiceReset, promiseQuotaManagerServiceClear,
-            runWithPrefs, testEnv, withHandlingUserInput, resetHandlingUserInput */
+            runWithPrefs, testEnv, withHandlingUserInput, resetHandlingUserInput,
+            assertPersistentListeners, promiseExtensionEvent, assertHasPersistedScriptsCachedFlag,
+            assertIsPersistedScriptsCachedFlag
+*/
 
-var { AppConstants } = ChromeUtils.import(
-  "resource://gre/modules/AppConstants.jsm"
+var { AppConstants } = ChromeUtils.importESModule(
+  "resource://gre/modules/AppConstants.sys.mjs"
 );
-var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-var { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
+var { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
 );
 var {
   clearInterval,
@@ -18,28 +19,36 @@ var {
   setIntervalWithTarget,
   setTimeout,
   setTimeoutWithTarget,
-} = ChromeUtils.import("resource://gre/modules/Timer.jsm");
-var { AddonTestUtils, MockAsyncShutdown } = ChromeUtils.import(
-  "resource://testing-common/AddonTestUtils.jsm"
+} = ChromeUtils.importESModule("resource://gre/modules/Timer.sys.mjs");
+var { AddonTestUtils, MockAsyncShutdown } = ChromeUtils.importESModule(
+  "resource://testing-common/AddonTestUtils.sys.mjs"
 );
 
-// eslint-disable-next-line no-unused-vars
-XPCOMUtils.defineLazyModuleGetters(this, {
-  ContentTask: "resource://testing-common/ContentTask.jsm",
-  Extension: "resource://gre/modules/Extension.jsm",
-  ExtensionData: "resource://gre/modules/Extension.jsm",
-  ExtensionParent: "resource://gre/modules/ExtensionParent.jsm",
-  ExtensionTestUtils: "resource://testing-common/ExtensionXPCShellUtils.jsm",
-  FileUtils: "resource://gre/modules/FileUtils.jsm",
-  MessageChannel: "resource://testing-common/MessageChannel.jsm",
-  NetUtil: "resource://gre/modules/NetUtil.jsm",
-  PromiseTestUtils: "resource://testing-common/PromiseTestUtils.jsm",
-  Schemas: "resource://gre/modules/Schemas.jsm",
+ChromeUtils.defineESModuleGetters(this, {
+  ContentTask: "resource://testing-common/ContentTask.sys.mjs",
+  Extension: "resource://gre/modules/Extension.sys.mjs",
+  ExtensionData: "resource://gre/modules/Extension.sys.mjs",
+  ExtensionParent: "resource://gre/modules/ExtensionParent.sys.mjs",
+  ExtensionTestUtils:
+    "resource://testing-common/ExtensionXPCShellUtils.sys.mjs",
+  FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
+  MessageChannel: "resource://testing-common/MessageChannel.sys.mjs",
+  NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
+  PromiseTestUtils: "resource://testing-common/PromiseTestUtils.sys.mjs",
+  Schemas: "resource://gre/modules/Schemas.sys.mjs",
 });
 
 PromiseTestUtils.allowMatchingRejectionsGlobally(
   /Message manager disconnected/
 );
+
+// Persistent Listener test functionality
+const { assertPersistentListeners } = ExtensionTestUtils.testAssertions;
+
+// https_first automatically upgrades http to https, but the tests are not
+// designed to expect that. And it is not easy to change that because
+// nsHttpServer does not support https (bug 1742061). So disable https_first.
+Services.prefs.setBoolPref("dom.security.https_first", false);
 
 // These values may be changed in later head files and tested in check_remote
 // below.
@@ -49,7 +58,7 @@ const testEnv = {
   expectRemote: false,
 };
 
-add_task(function check_remote() {
+add_setup(function check_remote() {
   Assert.equal(
     WebExtensionPolicy.useRemoteWebExtensions,
     testEnv.expectRemote,
@@ -73,6 +82,67 @@ if (AppConstants.platform === "android") {
   Services.io.offline = true;
 }
 
+// Some tests load non-moz-extension:-URLs in their extension document. When
+// extensions run in-process (extensions.webextensions.remote set to false),
+// that fails.
+// For details, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1724099
+// To avoid skip-if on the whole file, use this:
+//
+//   add_task(async function test_description_here() {
+//     // Comment explaining why.
+//     allow_unsafe_parent_loads_when_extensions_not_remote();
+//     ...
+//     revert_allow_unsafe_parent_loads_when_extensions_not_remote();
+//   });
+var private_upl_cleanup_handlers = [];
+function allow_unsafe_parent_loads_when_extensions_not_remote() {
+  if (WebExtensionPolicy.useRemoteWebExtensions) {
+    // We should only allow remote iframes in the main process.
+    return;
+  }
+  if (!Cu.isInAutomation) {
+    // isInAutomation is false by default in xpcshell (bug 1598804). Flip pref.
+    Services.prefs.setBoolPref(
+      "security.turn_off_all_security_so_that_viruses_can_take_over_this_computer",
+      true
+    );
+    private_upl_cleanup_handlers.push(() => {
+      Services.prefs.setBoolPref(
+        "security.turn_off_all_security_so_that_viruses_can_take_over_this_computer",
+        false
+      );
+    });
+    // Sanity check: Fail immediately if setting the above pref does somehow
+    // not flip the isInAutomation flag.
+    if (!Cu.isInAutomation) {
+      // This condition is unexpected, because it is enforced at:
+      // https://searchfox.org/mozilla-central/rev/ea65de7c/js/xpconnect/src/xpcpublic.h#753-759
+      throw new Error("Failed to set isInAutomation to true");
+    }
+  }
+  // Note: The following pref requires the isInAutomation flag to be set.
+  // When unset, the pref is ignored, and tests would encounter bug 1724099.
+  if (!Services.prefs.getBoolPref("security.allow_unsafe_parent_loads")) {
+    info("Setting pref security.allow_unsafe_parent_loads to true");
+    Services.prefs.setBoolPref("security.allow_unsafe_parent_loads", true);
+    private_upl_cleanup_handlers.push(() => {
+      info("Reverting pref security.allow_unsafe_parent_loads to false");
+      Services.prefs.setBoolPref("security.allow_unsafe_parent_loads", false);
+    });
+  }
+
+  registerCleanupFunction(
+    // eslint-disable-next-line no-use-before-define
+    revert_allow_unsafe_parent_loads_when_extensions_not_remote
+  );
+}
+
+function revert_allow_unsafe_parent_loads_when_extensions_not_remote() {
+  for (let revert of private_upl_cleanup_handlers.splice(0)) {
+    revert();
+  }
+}
+
 /**
  * Clears the HTTP and content image caches.
  */
@@ -85,7 +155,7 @@ function clearCache() {
   imageCache.clearCache(false);
 }
 
-var promiseConsoleOutput = async function(task) {
+var promiseConsoleOutput = async function (task) {
   const DONE = `=== console listener ${Math.random()} done ===`;
 
   let listener;
@@ -210,8 +280,8 @@ let extensionHandlers = new WeakSet();
 function handlingUserInputFrameScript() {
   /* globals content */
   // eslint-disable-next-line no-shadow
-  const { MessageChannel } = ChromeUtils.import(
-    "resource://testing-common/MessageChannel.jsm"
+  const { MessageChannel } = ChromeUtils.importESModule(
+    "resource://testing-common/MessageChannel.sys.mjs"
   );
 
   let handle;
@@ -306,3 +376,37 @@ const optionalPermissionsPromptHandler = {
     }
   },
 };
+
+function promiseExtensionEvent(wrapper, event) {
+  return new Promise(resolve => {
+    wrapper.extension.once(event, (...args) => resolve(args));
+  });
+}
+
+async function assertHasPersistedScriptsCachedFlag(ext) {
+  const { StartupCache } = ExtensionParent;
+  const allCachedGeneral = StartupCache._data.get("general");
+  equal(
+    allCachedGeneral
+      .get(ext.id)
+      ?.get(ext.version)
+      ?.get("scripting")
+      ?.has("hasPersistedScripts"),
+    true,
+    "Expect the StartupCache to include hasPersistedScripts flag"
+  );
+}
+
+async function assertIsPersistentScriptsCachedFlag(ext, expectedValue) {
+  const { StartupCache } = ExtensionParent;
+  const allCachedGeneral = StartupCache._data.get("general");
+  equal(
+    allCachedGeneral
+      .get(ext.id)
+      ?.get(ext.version)
+      ?.get("scripting")
+      ?.get("hasPersistedScripts"),
+    expectedValue,
+    "Expected cached value set on hasPersistedScripts flag"
+  );
+}

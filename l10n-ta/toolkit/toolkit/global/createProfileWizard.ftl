@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = சுயவிவரத்தை உருவாக்கும் வழிகாட்டி
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] அறிமுகம்
-       *[other] { create-profile-window.title } க்கு நல்வரவு
+       *[other] { create-profile-window2.title } க்கு நல்வரவு
     }
 
 profile-creation-explanation-1 = { -brand-short-name } உங்கள் அமைப்புகள் மற்றும் விருப்பங்களை தனி விருப்பங்களில் சேமிக்கும்.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] முடிவுரை
-       *[other] { create-profile-window.title } முடிகிறது
+       *[other] { create-profile-window2.title } முடிகிறது
     }
 
 profile-creation-intro = பல விவரக்குறிப்பை உருவாக்கினால் அவைகளுக்கு தனி பெயரை பயன்படுத்தலாம். இங்கே கொடுக்கப்பட்ட பெயர் அல்லது சொந்த பெயரை பயன்படுத்தலாம்.

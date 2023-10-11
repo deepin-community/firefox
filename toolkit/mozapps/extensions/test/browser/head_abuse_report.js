@@ -12,14 +12,14 @@
 
 /* global MockProvider, loadInitialView, closeView */
 
-const { AbuseReporter } = ChromeUtils.import(
-  "resource://gre/modules/AbuseReporter.jsm"
+const { AbuseReporter } = ChromeUtils.importESModule(
+  "resource://gre/modules/AbuseReporter.sys.mjs"
 );
-const { AddonTestUtils } = ChromeUtils.import(
-  "resource://testing-common/AddonTestUtils.jsm"
+const { AddonTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/AddonTestUtils.sys.mjs"
 );
-const { ExtensionCommon } = ChromeUtils.import(
-  "resource://gre/modules/ExtensionCommon.jsm"
+const { ExtensionCommon } = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionCommon.sys.mjs"
 );
 
 const { makeWidgetId } = ExtensionCommon;
@@ -30,10 +30,6 @@ const BASE_TEST_MANIFEST = {
   name: "Fake extension to report",
   author: "Fake author",
   homepage_url: "https://fake.extension.url/",
-  applications: { gecko: { id: ADDON_ID } },
-  icons: {
-    32: "test-icon.png",
-  },
 };
 const DEFAULT_BUILTIN_THEME_ID = "default-theme@mozilla.org";
 const EXT_DICTIONARY_ADDON_ID = "fake-dictionary@mochi.test";
@@ -89,26 +85,69 @@ async function installTestExtension(
   type = "extension",
   manifest = {}
 ) {
-  const additionalProps =
-    type === "theme"
-      ? {
-          theme: {
-            colors: {
-              frame: "#a14040",
-              tab_background_text: "#fac96e",
-            },
+  let additionalProps = {
+    icons: {
+      32: "test-icon.png",
+    },
+  };
+
+  switch (type) {
+    case "theme":
+      additionalProps = {
+        ...additionalProps,
+        theme: {
+          colors: {
+            frame: "#a14040",
+            tab_background_text: "#fac96e",
           },
-        }
-      : {};
-  const extension = ExtensionTestUtils.loadExtension({
+        },
+      };
+      break;
+
+    // TODO(Bug 1789718): Remove after the deprecated XPIProvider-based
+    // implementation is also removed.
+    case "sitepermission-deprecated":
+      additionalProps = {
+        name: "WebMIDI test addon for https://mochi.test",
+        install_origins: ["https://mochi.test"],
+        site_permissions: ["midi"],
+      };
+      break;
+    case "extension":
+      break;
+    default:
+      throw new Error(`Unexpected addon type: ${type}`);
+  }
+
+  const extensionOpts = {
     manifest: {
       ...BASE_TEST_MANIFEST,
       ...additionalProps,
       ...manifest,
-      applications: { gecko: { id } },
+      browser_specific_settings: { gecko: { id } },
     },
     useAddonManager: "temporary",
-  });
+  };
+
+  // TODO(Bug 1789718): Remove after the deprecated XPIProvider-based
+  // implementation is also removed.
+  if (type === "sitepermission-deprecated") {
+    const xpi = AddonTestUtils.createTempWebExtensionFile(extensionOpts);
+    const addon = await AddonManager.installTemporaryAddon(xpi);
+    // The extension object that ExtensionTestUtils.loadExtension returns for
+    // mochitest is pretty tight to the Extension class, and so for now this
+    // returns a more minimal `extension` test object which only provides the
+    // `unload` method.
+    //
+    // For the purpose of the abuse reports tests that are using this helper
+    // this should be already enough.
+    return {
+      addon,
+      unload: () => addon.uninstall(),
+    };
+  }
+
+  const extension = ExtensionTestUtils.loadExtension(extensionOpts);
   await extension.startup();
   return extension;
 }
@@ -149,7 +188,7 @@ const AbuseReportTestUtils = {
 
   // Returns the currently open abuse report dialog window (if any).
   getReportDialog() {
-    return Services.ww.getWindowByName("addons-abuse-report-dialog", null);
+    return Services.ww.getWindowByName("addons-abuse-report-dialog");
   },
 
   // Returns the parameters related to the report dialog (if any).
@@ -324,6 +363,21 @@ const AbuseReportTestUtils = {
     });
   },
 
+  async assertFluentStrings(containerEl) {
+    // Make sure all localized elements have defined Fluent strings.
+    const localizedEls = Array.from(
+      containerEl.querySelectorAll("[data-l10n-id]")
+    );
+    ok(localizedEls.length, "Got localized elements");
+    for (let el of localizedEls) {
+      const l10nId = el.getAttribute("data-l10n-id");
+      await TestUtils.waitForCondition(
+        () => el.textContent !== "",
+        `Element with Fluent id '${l10nId}' should not be empty`
+      );
+    }
+  },
+
   // Assert that the report action is hidden on the addon card
   // for the given about:addons windows and extension id.
   async assertReportActionHidden(gManagerWindow, extId) {
@@ -361,9 +415,8 @@ const AbuseReportTestUtils = {
   },
 
   triggerSubmit(reason, message) {
-    const reportEl = this.getReportDialog().document.querySelector(
-      "addon-abuse-report"
-    );
+    const reportEl =
+      this.getReportDialog().document.querySelector("addon-abuse-report");
     reportEl._form.elements.message.value = message;
     reportEl._form.elements.reason.value = reason;
     reportEl.submit();

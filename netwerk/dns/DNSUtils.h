@@ -15,12 +15,13 @@ class nsIChannel;
 namespace mozilla {
 namespace net {
 
-class ODoHService;
+class NetworkConnectivityService;
 class TRR;
 
 class DNSUtils final {
  private:
-  friend class ODoHService;
+  friend class NetworkConnectivityService;
+  friend class ObliviousHttpService;
   friend class TRR;
   static nsresult CreateChannelHelper(nsIURI* aUri, nsIChannel** aResult);
 };

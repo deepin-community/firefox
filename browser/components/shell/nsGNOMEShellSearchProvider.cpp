@@ -7,24 +7,23 @@
 
 #include "nsGNOMEShellSearchProvider.h"
 
-#include "nsIWidget.h"
 #include "nsToolkitCompsCID.h"
 #include "nsIFaviconService.h"
-#include "RemoteUtils.h"
 #include "base/message_loop.h"  // for MessageLoop
 #include "base/task.h"          // for NewRunnableMethod, etc
-#include "nsIServiceManager.h"
+#include "mozilla/gfx/2D.h"
+#include "nsComponentManagerUtils.h"
+#include "nsIIOService.h"
 #include "nsIURI.h"
 #include "nsNetCID.h"
 #include "nsPrintfCString.h"
-#include "nsIIOService.h"
+#include "nsServiceManagerUtils.h"
 
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include "imgIContainer.h"
 #include "imgITools.h"
-#include "mozilla/gfx/DataSurfaceHelpers.h"
 
 using namespace mozilla;
 using namespace mozilla::gfx;
@@ -237,8 +236,8 @@ nsresult nsGNOMEShellSearchProvider::Startup() {
 
   DBusError err;
   dbus_error_init(&err);
-  dbus_bus_request_name(mConnection, DBUS_BUS_NAME, DBUS_NAME_FLAG_DO_NOT_QUEUE,
-                        &err);
+  dbus_bus_request_name(mConnection, GetDBusBusName(),
+                        DBUS_NAME_FLAG_DO_NOT_QUEUE, &err);
   // The interface is already owned - there is another application/profile
   // instance already running.
   if (dbus_error_is_set(&err)) {
@@ -247,7 +246,7 @@ nsresult nsGNOMEShellSearchProvider::Startup() {
     return NS_ERROR_FAILURE;
   }
 
-  if (!dbus_connection_register_object_path(mConnection, DBUS_OBJECT_PATH,
+  if (!dbus_connection_register_object_path(mConnection, GetDBusObjectPath(),
                                             &remoteHandlersTable, this)) {
     mConnection = nullptr;
     return NS_ERROR_FAILURE;
@@ -262,7 +261,7 @@ void nsGNOMEShellSearchProvider::Shutdown() {
     return;
   }
 
-  dbus_connection_unregister_object_path(mConnection, DBUS_OBJECT_PATH);
+  dbus_connection_unregister_object_path(mConnection, GetDBusObjectPath());
 
   // dbus_connection_unref() will be called by RefPtr here.
   mConnection = nullptr;

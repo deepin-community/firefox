@@ -16,11 +16,6 @@ newtab-search-box-search-button =
     .title = खोजें
     .aria-label = खोजें
 
-newtab-search-box-search-the-web-input =
-    .placeholder = वेब पर खोजें
-    .title = वेब पर खोजें
-    .aria-label = वेब पर खोजें
-
 newtab-search-box-input =
     .placeholder = वेब पर खोजें
     .aria-label = वेब पर खोजें
@@ -28,7 +23,6 @@ newtab-search-box-input =
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = खोज ईंजन जोड़ें
-newtab-topsites-add-topsites-header = नई शीर्ष साइट
 newtab-topsites-add-shortcut-header = नया शॉर्टकट
 newtab-topsites-edit-topsites-header = शीर्ष साइट संपादित करें
 newtab-topsites-edit-shortcut-header = शॉर्टकट संपादित करें
@@ -151,6 +145,12 @@ newtab-label-sponsored = { $sponsorOrSource } . द्वारा प्रा�
 #  $sponsor (String): This is the name of a sponsor
 newtab-label-sponsored-by = { $sponsor } द्वारा प्रायोजित
 
+# This string is used under the image of story cards to indicate source and time to read
+# Variables:
+#  $source (String): This is the name of a company or their domain
+#  $timeToRead (Number): This is the estimated number of minutes to read this story
+newtab-label-source-read-time = { $source } · { $timeToRead } मिनट
+
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
 
@@ -175,7 +175,6 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = सर्वोच्च साइटें
-newtab-section-header-highlights = प्रमुखताएँ
 # Variables:
 #  $provider (String): Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } द्वारा अनुशंसित
@@ -188,7 +187,6 @@ newtab-empty-section-highlights = ब्राउज़िंग प्रारं
 # Variables:
 #  $provider (String): Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = आप अंत तक आ गए हैं. { $provider } से और शीर्ष घटनाओं के लिए कुछ समय में पुनः आइए. इंतज़ार नहीं कर सकते? वेब से और प्रमुख घटनाएं ढूंढने के लिए एक लोकप्रिय विषय चुनें.
-
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -205,6 +203,12 @@ newtab-pocket-more-recommendations = अधिक अनुशंसाएँ
 newtab-pocket-learn-more = अधिक जानें
 newtab-pocket-cta-button = { -pocket-brand-name } प्राप्त करें
 newtab-pocket-cta-text = अपने पसंदीद कहानियाँ { -pocket-brand-name } में सहेजें, और आकर्षक पढ़ाई के साथ अपने दिमाग को शक्ति दें।
+
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.

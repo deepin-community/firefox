@@ -8,6 +8,7 @@ about-networking-sockets = Sockety
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Vymazat mezipaměť DNS
 about-networking-dns-trr-url = URL serveru DoH
+about-networking-dns-trr-mode = Režim DoH
 about-networking-dns-suffix = Přípona DNS
 about-networking-websockets = WebSockets
 about-networking-refresh = Obnovit
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Aktivní
 about-networking-idle = Nečinný
 about-networking-host = Server
-about-networking-tcp = TCP
 about-networking-type = Typ
 about-networking-sent = Odesláno
 about-networking-received = Přijato
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Adresy
 about-networking-expires = Vyprší (sekundy)
 about-networking-originAttributesSuffix = Izolační klíč
+about-networking-flags = Další přepínače
 about-networking-messages-sent = Odesláno zpráv
 about-networking-messages-received = Přijato zpráv
 about-networking-bytes-sent = Odesláno bajtů
 about-networking-bytes-received = Obdrženo bajtů
 about-networking-logging = Protokol
-about-networking-log-tutorial = Pro informace o používání tohoto nástroje prosím navštivte stránku <a data-l10n-name="logging">HTTP Logging</a>.
-about-networking-current-log-file = Současný soubor protokolu:
-about-networking-current-log-modules = Současné moduly protokolu:
-about-networking-set-log-file = Nastavit soubor protokolu
-about-networking-set-log-modules = Nastavit moduly protokolu
-about-networking-start-logging = Spustit ukládání protokolu
-about-networking-stop-logging = Ukončit ukládání protokolu
 about-networking-dns-lookup = Vyhledávání v DNS
 about-networking-dns-lookup-button = Přeložit
 about-networking-dns-domain = Doména:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Počet pomalých přístupů do mezipaměti
 about-networking-rcwn-cache-not-slow = Počet rychlých přístupů do mezipaměti
 about-networking-networkid = ID sítě
 about-networking-networkid-id = ID sítě
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Tato stránka byla přesunuta do <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

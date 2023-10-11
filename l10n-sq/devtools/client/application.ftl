@@ -30,7 +30,7 @@ serviceworker-worker-debug = Diagnostikoje
 
 # Alt text for the image icon displayed inside a debug link for a service worker.
 serviceworker-worker-inspect-icon =
-    .alt = Shqyrtoje
+    .alt = Inspektojeni
 
 # Text for the start link displayed for a registered but not running Service Worker.
 # Clicking on the link will attempt to start the service worker.
@@ -144,4 +144,3 @@ icon-warning =
 icon-error =
     .alt = Ikonë gabimi
     .title = Gabim
-

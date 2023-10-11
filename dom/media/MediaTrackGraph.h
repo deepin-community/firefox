@@ -86,7 +86,7 @@ enum class AudioContextState : uint8_t;
  * reprocess it. This is triggered automatically by the MediaTrackGraph.
  */
 
-class AudioInputTrack;
+class AudioProcessingTrack;
 class AudioNodeEngine;
 class AudioNodeExternalInputTrack;
 class AudioNodeTrack;
@@ -97,31 +97,10 @@ class MediaTrack;
 class MediaTrackGraph;
 class MediaTrackGraphImpl;
 class MediaTrackListener;
-class NativeInputTrack;
+class DeviceInputConsumerTrack;
+class DeviceInputTrack;
 class ProcessedMediaTrack;
 class SourceMediaTrack;
-
-// The interleaved audio input data from audio input callbacks
-class AudioInputSamples {
- public:
-  AudioInputSamples() = default;
-  ~AudioInputSamples() = default;
-
-  const AudioDataValue* Data() const;
-  size_t FrameCount() const;
-  TrackRate Rate() const;
-  uint32_t Channels() const;
-
-  bool IsEmpty() const;
-  void Push(const AudioDataValue* aBuffer, size_t aFrames, TrackRate aRate,
-            uint32_t aChannels);
-  void Clear();
-
- private:
-  nsTArray<AudioDataValue> mData;
-  TrackRate mRate = 0;
-  uint32_t mChannels = 0;
-};
 
 class AudioDataListenerInterface {
  protected:
@@ -129,31 +108,6 @@ class AudioDataListenerInterface {
   virtual ~AudioDataListenerInterface() = default;
 
  public:
-  /* These are for cubeb audio input & output streams: */
-  /**
-   * Output data to speakers, for use as the "far-end" data for echo
-   * cancellation.  This is not guaranteed to be in any particular size
-   * chunks.
-   */
-  virtual void NotifyOutputData(MediaTrackGraphImpl* aGraph,
-                                AudioDataValue* aBuffer, size_t aFrames,
-                                TrackRate aRate, uint32_t aChannels) = 0;
-  /**
-   * An AudioCallbackDriver with an input stream signaling that it has stopped
-   * for any reason and the AudioDataListener will not be notified of input data
-   * until the driver is restarted or another driver has started.
-   */
-  virtual void NotifyInputStopped(MediaTrackGraphImpl* aGraph) = 0;
-
-  /**
-   * Input data from a microphone (or other audio source.  This is not
-   * guaranteed to be in any particular size chunks.
-   */
-  virtual void NotifyInputData(MediaTrackGraphImpl* aGraph,
-                               const AudioDataValue* aBuffer, size_t aFrames,
-                               TrackRate aRate, uint32_t aChannels,
-                               uint32_t aAlreadyBuffered) = 0;
-
   /**
    * Number of audio input channels.
    */
@@ -314,16 +268,16 @@ class MediaTrack : public mozilla::LinkedListElement<MediaTrack> {
   void SetGraphImpl(MediaTrackGraph* aGraph);
 
   // Control API.
-  virtual void AddAudioOutput(void* aKey);
-  virtual void SetAudioOutputVolume(void* aKey, float aVolume);
-  virtual void RemoveAudioOutput(void* aKey);
+  void AddAudioOutput(void* aKey);
+  void SetAudioOutputVolume(void* aKey, float aVolume);
+  void RemoveAudioOutput(void* aKey);
   // Explicitly suspend. Useful for example if a media element is pausing
   // and we need to stop its track emitting its buffered data. As soon as the
   // Suspend message reaches the graph, the track stops processing. It
   // ignores its inputs and produces silence/no video until Resumed. Its
   // current time does not advance.
-  virtual void Suspend();
-  virtual void Resume();
+  void Suspend();
+  void Resume();
   // Events will be dispatched by calling methods of aListener.
   virtual void AddListener(MediaTrackListener* aListener);
   virtual RefPtr<GenericPromise> RemoveListener(MediaTrackListener* aListener);
@@ -335,7 +289,7 @@ class MediaTrack : public mozilla::LinkedListElement<MediaTrack> {
    * Note that the listener will be notified on the MediaTrackGraph thread
    * with whether the installation of it at the source was successful or not.
    */
-  virtual void AddDirectListener(DirectMediaTrackListener* aListener);
+  void AddDirectListener(DirectMediaTrackListener* aListener);
 
   /**
    * Removes aListener from the source track of this track.
@@ -344,7 +298,7 @@ class MediaTrack : public mozilla::LinkedListElement<MediaTrack> {
    * about this, removing when the source cannot be found, or when the listener
    * had already been removed does nothing.
    */
-  virtual void RemoveDirectListener(DirectMediaTrackListener* aListener);
+  void RemoveDirectListener(DirectMediaTrackListener* aListener);
 
   // A disabled track has video replaced by black, and audio replaced by
   // silence.
@@ -399,14 +353,17 @@ class MediaTrack : public mozilla::LinkedListElement<MediaTrack> {
   friend class MediaInputPort;
   friend class AudioNodeExternalInputTrack;
 
-  virtual AudioInputTrack* AsAudioInputTrack() { return nullptr; }
+  virtual AudioProcessingTrack* AsAudioProcessingTrack() { return nullptr; }
   virtual SourceMediaTrack* AsSourceTrack() { return nullptr; }
   virtual ProcessedMediaTrack* AsProcessedTrack() { return nullptr; }
   virtual AudioNodeTrack* AsAudioNodeTrack() { return nullptr; }
   virtual ForwardedInputTrack* AsForwardedInputTrack() { return nullptr; }
   virtual CrossGraphTransmitter* AsCrossGraphTransmitter() { return nullptr; }
   virtual CrossGraphReceiver* AsCrossGraphReceiver() { return nullptr; }
-  virtual NativeInputTrack* AsNativeInputTrack() { return nullptr; }
+  virtual DeviceInputTrack* AsDeviceInputTrack() { return nullptr; }
+  virtual DeviceInputConsumerTrack* AsDeviceInputConsumerTrack() {
+    return nullptr;
+  }
 
   // These Impl methods perform the core functionality of the control methods
   // above, on the media graph thread.
@@ -714,7 +671,9 @@ class SourceMediaTrack : public MediaTrack {
   // The value set here is applied in MoveToSegment so we can avoid the
   // buffering delay in applying the change. See Bug 1443511.
   void SetVolume(float aVolume);
-  float GetVolumeLocked();
+  float GetVolumeLocked() MOZ_REQUIRES(mMutex);
+
+  Mutex& GetMutex() MOZ_RETURN_CAPABILITY(mMutex) { return mMutex; }
 
   friend class MediaTrackGraphImpl;
 
@@ -747,7 +706,8 @@ class SourceMediaTrack : public MediaTrack {
 
   bool NeedsMixing();
 
-  void ResampleAudioToGraphSampleRate(MediaSegment* aSegment);
+  void ResampleAudioToGraphSampleRate(MediaSegment* aSegment)
+      MOZ_REQUIRES(mMutex);
 
   void AddDirectListenerImpl(
       already_AddRefed<DirectMediaTrackListener> aListener) override;
@@ -759,7 +719,7 @@ class SourceMediaTrack : public MediaTrack {
    * from AppendData on the thread providing the data, and will call
    * the Listeners on this thread.
    */
-  void NotifyDirectConsumers(MediaSegment* aSegment);
+  void NotifyDirectConsumers(MediaSegment* aSegment) MOZ_REQUIRES(mMutex);
 
   void OnGraphThreadDone() override {
     MutexAutoLock lock(mMutex);
@@ -780,9 +740,10 @@ class SourceMediaTrack : public MediaTrack {
   // held together.
   Mutex mMutex;
   // protected by mMutex
-  float mVolume = 1.0;
-  UniquePtr<TrackData> mUpdateTrack;
-  nsTArray<RefPtr<DirectMediaTrackListener>> mDirectTrackListeners;
+  float mVolume MOZ_GUARDED_BY(mMutex) = 1.0;
+  UniquePtr<TrackData> mUpdateTrack MOZ_GUARDED_BY(mMutex);
+  nsTArray<RefPtr<DirectMediaTrackListener>> mDirectTrackListeners
+      MOZ_GUARDED_BY(mMutex);
 };
 
 /**
@@ -856,8 +817,8 @@ class MediaInputPort final {
   // and destination tracks.
   void Disconnect();
 
-  MediaTrack* GetSource() const { return mSource; }
-  ProcessedMediaTrack* GetDestination() const { return mDest; }
+  MediaTrack* GetSource() const;
+  ProcessedMediaTrack* GetDestination() const;
 
   uint16_t InputNumber() const { return mInputNumber; }
   uint16_t OutputNumber() const { return mOutputNumber; }
@@ -1075,10 +1036,8 @@ class MediaTrackGraph {
   // Idempotent
   void ForceShutDown();
 
-  virtual nsresult OpenAudioInput(CubebUtils::AudioDeviceID aID,
-                                  AudioDataListener* aListener) = 0;
-  virtual void CloseAudioInput(CubebUtils::AudioDeviceID aID,
-                               AudioDataListener* aListener) = 0;
+  virtual void OpenAudioInput(DeviceInputTrack* aTrack) = 0;
+  virtual void CloseAudioInput(DeviceInputTrack* aTrack) = 0;
 
   // Control API.
   /**

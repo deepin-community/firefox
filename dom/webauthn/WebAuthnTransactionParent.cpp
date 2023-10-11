@@ -5,34 +5,58 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/WebAuthnTransactionParent.h"
+#include "mozilla/dom/WebAuthnController.h"
 #include "mozilla/dom/U2FTokenManager.h"
 #include "mozilla/ipc/PBackgroundParent.h"
 #include "mozilla/ipc/BackgroundParent.h"
+#include "mozilla/StaticPrefs_security.h"
 
-#ifdef OS_WIN
+#include "nsThreadUtils.h"
+
+#ifdef XP_WIN
 #  include "WinWebAuthnManager.h"
 #endif
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 mozilla::ipc::IPCResult WebAuthnTransactionParent::RecvRequestRegister(
     const uint64_t& aTransactionId,
     const WebAuthnMakeCredentialInfo& aTransactionInfo) {
   ::mozilla::ipc::AssertIsOnBackgroundThread();
 
-#ifdef OS_WIN
-  if (WinWebAuthnManager::AreWebAuthNApisAvailable()) {
+#ifdef XP_WIN
+  bool usingTestToken =
+      StaticPrefs::security_webauth_webauthn_enable_softtoken();
+  if (!usingTestToken && WinWebAuthnManager::AreWebAuthNApisAvailable()) {
     WinWebAuthnManager* mgr = WinWebAuthnManager::Get();
-    mgr->Register(this, aTransactionId, aTransactionInfo);
-  } else {
-    U2FTokenManager* mgr = U2FTokenManager::Get();
-    mgr->Register(this, aTransactionId, aTransactionInfo);
+    if (mgr) {
+      mgr->Register(this, aTransactionId, aTransactionInfo);
+    }
+    return IPC_OK();
   }
-#else
-  U2FTokenManager* mgr = U2FTokenManager::Get();
-  mgr->Register(this, aTransactionId, aTransactionInfo);
 #endif
+
+// Bug 1819414 will reroute requests on Android through WebAuthnController and
+// allow us to remove this.
+#ifdef MOZ_WIDGET_ANDROID
+  bool usingTestToken =
+      StaticPrefs::security_webauth_webauthn_enable_softtoken();
+  bool androidFido2 =
+      StaticPrefs::security_webauth_webauthn_enable_android_fido2();
+
+  if (!usingTestToken && androidFido2) {
+    U2FTokenManager* mgr = U2FTokenManager::Get();
+    if (mgr) {
+      mgr->Register(this, aTransactionId, aTransactionInfo);
+    }
+    return IPC_OK();
+  }
+#endif
+
+  WebAuthnController* ctrl = WebAuthnController::Get();
+  if (ctrl) {
+    ctrl->Register(this, aTransactionId, aTransactionInfo);
+  }
 
   return IPC_OK();
 }
@@ -42,18 +66,37 @@ mozilla::ipc::IPCResult WebAuthnTransactionParent::RecvRequestSign(
     const WebAuthnGetAssertionInfo& aTransactionInfo) {
   ::mozilla::ipc::AssertIsOnBackgroundThread();
 
-#ifdef OS_WIN
-  if (WinWebAuthnManager::AreWebAuthNApisAvailable()) {
+#ifdef XP_WIN
+  bool usingTestToken =
+      StaticPrefs::security_webauth_webauthn_enable_softtoken();
+  if (!usingTestToken && WinWebAuthnManager::AreWebAuthNApisAvailable()) {
     WinWebAuthnManager* mgr = WinWebAuthnManager::Get();
-    mgr->Sign(this, aTransactionId, aTransactionInfo);
-  } else {
-    U2FTokenManager* mgr = U2FTokenManager::Get();
-    mgr->Sign(this, aTransactionId, aTransactionInfo);
+    if (mgr) {
+      mgr->Sign(this, aTransactionId, aTransactionInfo);
+    }
+    return IPC_OK();
   }
-#else
-  U2FTokenManager* mgr = U2FTokenManager::Get();
-  mgr->Sign(this, aTransactionId, aTransactionInfo);
 #endif
+
+// Bug 1819414 will reroute requests on Android through WebAuthnController and
+// allow us to remove this.
+#ifdef MOZ_WIDGET_ANDROID
+  bool usingTestToken =
+      StaticPrefs::security_webauth_webauthn_enable_softtoken();
+  bool androidFido2 =
+      StaticPrefs::security_webauth_webauthn_enable_android_fido2();
+
+  if (!usingTestToken && androidFido2) {
+    U2FTokenManager* mgr = U2FTokenManager::Get();
+    if (mgr) {
+      mgr->Sign(this, aTransactionId, aTransactionInfo);
+    }
+    return IPC_OK();
+  }
+#endif
+
+  WebAuthnController* ctrl = WebAuthnController::Get();
+  ctrl->Sign(this, aTransactionId, aTransactionInfo);
 
   return IPC_OK();
 }
@@ -62,18 +105,30 @@ mozilla::ipc::IPCResult WebAuthnTransactionParent::RecvRequestCancel(
     const Tainted<uint64_t>& aTransactionId) {
   ::mozilla::ipc::AssertIsOnBackgroundThread();
 
-#ifdef OS_WIN
+#ifdef XP_WIN
   if (WinWebAuthnManager::AreWebAuthNApisAvailable()) {
     WinWebAuthnManager* mgr = WinWebAuthnManager::Get();
-    mgr->Cancel(this, aTransactionId);
-  } else {
-    U2FTokenManager* mgr = U2FTokenManager::Get();
+    if (mgr) {
+      mgr->Cancel(this, aTransactionId);
+    }
+  }
+  // fall through in case WebAuthnController was used.
+#endif
+
+// Bug 1819414 will reroute requests on Android through WebAuthnController and
+// allow us to remove this.
+#ifdef MOZ_WIDGET_ANDROID
+  U2FTokenManager* mgr = U2FTokenManager::Get();
+  if (mgr) {
     mgr->Cancel(this, aTransactionId);
   }
-#else
-  U2FTokenManager* mgr = U2FTokenManager::Get();
-  mgr->Cancel(this, aTransactionId);
+  // fall through in case WebAuthnController was used.
 #endif
+
+  WebAuthnController* ctrl = WebAuthnController::Get();
+  if (ctrl) {
+    ctrl->Cancel(this, aTransactionId);
+  }
 
   return IPC_OK();
 }
@@ -102,25 +157,30 @@ void WebAuthnTransactionParent::ActorDestroy(ActorDestroyReason aWhy) {
   // Called either by Send__delete__() in RecvDestroyMe() above, or when
   // the channel disconnects. Ensure the token manager forgets about us.
 
-#ifdef OS_WIN
+#ifdef XP_WIN
   if (WinWebAuthnManager::AreWebAuthNApisAvailable()) {
     WinWebAuthnManager* mgr = WinWebAuthnManager::Get();
     if (mgr) {
       mgr->MaybeClearTransaction(this);
     }
-  } else {
-    U2FTokenManager* mgr = U2FTokenManager::Get();
-    if (mgr) {
-      mgr->MaybeClearTransaction(this);
-    }
   }
-#else
+  // fall through in case WebAuthnController was used.
+#endif
+
+// Bug 1819414 will reroute requests on Android through WebAuthnController and
+// allow us to remove this.
+#ifdef MOZ_WIDGET_ANDROID
   U2FTokenManager* mgr = U2FTokenManager::Get();
   if (mgr) {
     mgr->MaybeClearTransaction(this);
   }
+  // fall through in case WebAuthnController was used.
 #endif
+
+  WebAuthnController* ctrl = WebAuthnController::Get();
+  if (ctrl) {
+    ctrl->MaybeClearTransaction(this);
+  }
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

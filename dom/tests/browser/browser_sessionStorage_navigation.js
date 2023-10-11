@@ -12,8 +12,8 @@ const URL1 = `${ORIGIN1}/${PATH}`;
 const URL2 = `${ORIGIN2}/${PATH}`;
 const URL1_WITH_COOP_COEP = `${ORIGIN1}/${DIRPATH}file_coop_coep.html`;
 
-add_task(async function() {
-  await BrowserTestUtils.withNewTab(URL1, async function(browser) {
+add_task(async function () {
+  await BrowserTestUtils.withNewTab(URL1, async function (browser) {
     const key = "key";
     const value = "value";
 
@@ -22,7 +22,16 @@ add_task(async function() {
         `cross-origin site and then navigating back`
     );
 
-    BrowserTestUtils.loadURI(browser, URL1);
+    await SpecialPowers.pushPrefEnv({
+      set: [
+        [
+          "privacy.partition.always_partition_third_party_non_cookie_storage",
+          false,
+        ],
+      ],
+    });
+
+    BrowserTestUtils.loadURIString(browser, URL1);
     await BrowserTestUtils.browserLoaded(browser);
 
     await SpecialPowers.spawn(
@@ -51,7 +60,7 @@ add_task(async function() {
       }
     );
 
-    BrowserTestUtils.loadURI(browser, URL2);
+    BrowserTestUtils.loadURIString(browser, URL2);
     await BrowserTestUtils.browserLoaded(browser);
 
     await SpecialPowers.spawn(
@@ -70,7 +79,7 @@ add_task(async function() {
       }
     );
 
-    BrowserTestUtils.loadURI(browser, URL1);
+    BrowserTestUtils.loadURIString(browser, URL1);
     await BrowserTestUtils.browserLoaded(browser);
 
     await SpecialPowers.spawn(
@@ -90,7 +99,7 @@ add_task(async function() {
 
     info(`Verifying sessionStorage is preserved for ${URL1} after navigating`);
 
-    BrowserTestUtils.loadURI(browser, URL2);
+    BrowserTestUtils.loadURIString(browser, URL2);
     await BrowserTestUtils.browserLoaded(browser);
 
     await SpecialPowers.spawn(
@@ -107,12 +116,24 @@ add_task(async function() {
         await content.SpecialPowers.spawn(
           iframe,
           [iframeORIGIN, key, value],
-          async function(ORIGIN, key, value) {
+          async function (ORIGIN, key, value) {
             is(
               content.window.origin,
               ORIGIN,
               `Navigate to ${ORIGIN} as expected`
             );
+
+            // Bug 1746646: Make mochitests work with TCP enabled (cookieBehavior = 5)
+            // Acquire storage access permission here so that the iframe has
+            // first-party access to the sessionStorage. Without this, it is
+            // isolated and this test will always fail
+            SpecialPowers.wrap(content.document).notifyUserGestureActivation();
+            await SpecialPowers.addPermission(
+              "storageAccessAPI",
+              true,
+              content.window.location.href
+            );
+            await SpecialPowers.wrap(content.document).requestStorageAccess();
 
             let value1 = content.window.sessionStorage.getItem(key);
             is(
@@ -128,7 +149,7 @@ add_task(async function() {
 
     info(`Verifying SSCache is loaded to the content process only once`);
 
-    BrowserTestUtils.loadURI(browser, URL1);
+    BrowserTestUtils.loadURIString(browser, URL1);
     await BrowserTestUtils.browserLoaded(browser);
 
     await SpecialPowers.spawn(
@@ -145,7 +166,7 @@ add_task(async function() {
         await content.SpecialPowers.spawn(
           iframe,
           [ORIGIN, key, value],
-          async function(ORIGIN, key, value) {
+          async function (ORIGIN, key, value) {
             is(
               content.window.origin,
               ORIGIN,
@@ -175,7 +196,7 @@ add_task(async function() {
     const anotherKey = `anotherKey`;
     const anotherValue = `anotherValue;`;
 
-    BrowserTestUtils.loadURI(browser, URL1_WITH_COOP_COEP);
+    BrowserTestUtils.loadURIString(browser, URL1_WITH_COOP_COEP);
     await BrowserTestUtils.browserLoaded(browser);
 
     await SpecialPowers.spawn(
@@ -216,7 +237,7 @@ add_task(async function() {
       }
     );
 
-    BrowserTestUtils.loadURI(browser, URL1);
+    BrowserTestUtils.loadURIString(browser, URL1);
     await BrowserTestUtils.browserLoaded(browser);
 
     await SpecialPowers.spawn(

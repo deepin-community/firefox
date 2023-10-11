@@ -11,6 +11,7 @@
 #include "mozilla/dom/HTMLUnknownElement.h"
 #include "mozilla/dom/ShadowRoot.h"
 #include "mozilla/dom/Text.h"
+#include "mozilla/AppShutdown.h"
 #include "nsContentUtils.h"
 #include "nsGkAtoms.h"
 
@@ -73,9 +74,8 @@ void HTMLSlotElement::UnbindFromTree(bool aNullParent) {
   }
 }
 
-nsresult HTMLSlotElement::BeforeSetAttr(int32_t aNameSpaceID, nsAtom* aName,
-                                        const nsAttrValueOrString* aValue,
-                                        bool aNotify) {
+void HTMLSlotElement::BeforeSetAttr(int32_t aNameSpaceID, nsAtom* aName,
+                                    const nsAttrValue* aValue, bool aNotify) {
   if (aNameSpaceID == kNameSpaceID_None && aName == nsGkAtoms::name) {
     if (ShadowRoot* containingShadow = GetContainingShadow()) {
       containingShadow->RemoveSlot(this);
@@ -86,11 +86,11 @@ nsresult HTMLSlotElement::BeforeSetAttr(int32_t aNameSpaceID, nsAtom* aName,
                                              aNotify);
 }
 
-nsresult HTMLSlotElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
-                                       const nsAttrValue* aValue,
-                                       const nsAttrValue* aOldValue,
-                                       nsIPrincipal* aSubjectPrincipal,
-                                       bool aNotify) {
+void HTMLSlotElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
+                                   const nsAttrValue* aValue,
+                                   const nsAttrValue* aOldValue,
+                                   nsIPrincipal* aSubjectPrincipal,
+                                   bool aNotify) {
   if (aNameSpaceID == kNameSpaceID_None && aName == nsGkAtoms::name) {
     if (ShadowRoot* containingShadow = GetContainingShadow()) {
       containingShadow->AddSlot(this);
@@ -169,7 +169,6 @@ const nsTArray<nsINode*>& HTMLSlotElement::ManuallyAssignedNodes() const {
 }
 
 void HTMLSlotElement::Assign(const Sequence<OwningElementOrText>& aNodes) {
-  MOZ_ASSERT(StaticPrefs::dom_shadowdom_slot_assign_enabled());
   nsAutoScriptBlocker scriptBlocker;
 
   // no-op if the input nodes and the assigned nodes are identical
@@ -228,18 +227,12 @@ void HTMLSlotElement::Assign(const Sequence<OwningElementOrText>& aNodes) {
 
   // Clear out existing assigned nodes
   if (mInManualShadowRoot) {
-    nsTArray<RefPtr<nsINode>> assignedNodes(std::move(mAssignedNodes));
-    for (RefPtr<nsINode>& node : assignedNodes) {
-      nsIContent* content = node->AsContent();
-      HTMLSlotElement* oldSlot = content->GetAssignedSlot();
-      MOZ_RELEASE_ASSERT(oldSlot == this);
-      if (changedSlots.EnsureInserted(oldSlot)) {
-        if (root) {
-          MOZ_ASSERT(oldSlot->GetContainingShadow() == root);
-          root->InvalidateStyleAndLayoutOnSubtree(oldSlot);
-        }
+    if (!mAssignedNodes.IsEmpty()) {
+      changedSlots.EnsureInserted(this);
+      if (root) {
+        root->InvalidateStyleAndLayoutOnSubtree(this);
       }
-      oldSlot->RemoveAssignedNode(*content);
+      ClearAssignedNodes();
     }
 
     MOZ_ASSERT(mAssignedNodes.IsEmpty());
@@ -347,7 +340,7 @@ void HTMLSlotElement::EnqueueSlotChangeEvent() {
 
   // FIXME(bug 1459704): Need to figure out how to deal with microtasks posted
   // during shutdown.
-  if (gXPCOMThreadsShutDown) {
+  if (AppShutdown::IsInOrBeyond(ShutdownPhase::XPCOMShutdownThreads)) {
     return;
   }
 

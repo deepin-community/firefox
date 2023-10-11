@@ -8,8 +8,12 @@
 const TEST_URL =
   "data:text/html;charset=UTF-8,<div>Target allocations test</div>";
 
-const { require } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
-const { gDevTools } = require("devtools/client/framework/devtools");
+const { require } = ChromeUtils.importESModule(
+  "resource://devtools/shared/loader/Loader.sys.mjs"
+);
+const {
+  gDevTools,
+} = require("resource://devtools/client/framework/devtools.js");
 
 async function testScript(tab) {
   const toolbox = await gDevTools.showToolboxForTab(tab, {
@@ -20,9 +24,13 @@ async function testScript(tab) {
   await new Promise(resolve => setTimeout(resolve, 1000));
 
   await toolbox.destroy();
+
+  // Spin the event loop to ensure toolbox destroy is fully completed
+  // eslint-disable-next-line mozilla/no-arbitrary-setTimeout
+  await new Promise(resolve => setTimeout(resolve, 0));
 }
 
-add_task(async function() {
+add_task(async function () {
   const tab = await addTab(TEST_URL);
 
   // Run the test scenario first before recording in order to load all the

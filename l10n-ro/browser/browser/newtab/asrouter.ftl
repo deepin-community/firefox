@@ -67,8 +67,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } de utilizatori
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Sincronizează-ți marcajele oriunde ai fi
@@ -96,42 +94,10 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Citește notele privind versiunea
 
-## Search Bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 cfr-doorhanger-milestone-ok-button = Afișează tot
     .accesskey = S
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = Închide
     .accesskey = C
 
@@ -146,16 +112,64 @@ cfr-doorhanger-doh-secondary-button = Dezactivează
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-primary-button = OK, am înțeles!
-    .accesskey = K
-cfr-doorhanger-fission-secondary-button = Află mai multe
-    .accesskey = L
-
 ## Full Video Support CFR message
+
+
+## Spotlight modal shared strings
+
 
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
+
+
+## Total Cookie Protection Rollout
+
+
+## Emotive Continuous Onboarding
+
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Păstrează în Dock
+       *[other] Fixează în bara de activități
+    }
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+
+## Firefox View CFR
+
+
+## Firefox View Spotlight
+
+
+## Colorways expiry reminder CFR
+
+
+## Cookie Banner Handling CFR
+
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+
+## FxA sync CFR
+
+
+## Device Migration FxA Spotlight
 

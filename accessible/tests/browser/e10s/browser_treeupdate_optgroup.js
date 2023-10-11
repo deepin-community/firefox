@@ -9,7 +9,7 @@ loadScripts({ name: "role.js", dir: MOCHITESTS_DIR });
 
 addAccessibleTask(
   '<select id="select"></select>',
-  async function(browser, accDoc) {
+  async function (browser, accDoc) {
     let select = findAccessibleChildByID(accDoc, "select");
 
     let onEvent = waitForEvent(EVENT_REORDER, "select");
@@ -41,10 +41,7 @@ addAccessibleTask(
         {
           COMBOBOX_LIST: [
             {
-              GROUPING: [
-                { COMBOBOX_OPTION: [{ TEXT_LEAF: [] }] },
-                { COMBOBOX_OPTION: [{ TEXT_LEAF: [] }] },
-              ],
+              GROUPING: [{ COMBOBOX_OPTION: [] }, { COMBOBOX_OPTION: [] }],
             },
             {
               COMBOBOX_OPTION: [],

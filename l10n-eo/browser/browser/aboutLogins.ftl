@@ -5,12 +5,12 @@
 
 about-logins-page-title = Legitimiloj kaj pasvortoj
 
-# "Google Play" and "App Store" are both branding and should not be translated
+about-logins-login-filter =
+    .placeholder = Serĉi legitimilojn
+    .key = F
 
-login-filter =
-    .placeholder = Serĉi en legitimiloj
-
-create-login-button = Krei novan legitimilon
+create-new-login-button =
+    .title = Krei novan legitimilon
 
 fxaccounts-sign-in-text = Spegulu viajn pasvortojn en viaj aliaj aparatoj
 fxaccounts-sign-in-sync-button = Komenci seancon por speguli
@@ -37,10 +37,20 @@ about-logins-menu-menuitem-help = Helpo
 
 login-list =
     .aria-label = Legitimiloj kongruaj kun la serĉo
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] unu legitimilo
        *[other] { $count } legitimiloj
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } el { $total } legitimilo
+       *[other] { $count } el { $total } legitimiloj
     }
 login-list-sort-label-text = Ordigi laŭ:
 login-list-name-option = Nomo (A-Z)
@@ -61,7 +71,6 @@ about-logins-list-item-breach-icon =
     .title = Retejo kun datumfuĝo
 about-logins-list-item-vulnerable-password-icon =
     .title = Sendefenda pasvorto
-
 about-logins-list-section-breach = Retejoj kun datumfuĝo
 about-logins-list-section-vulnerable = Atakeblaj pasvortoj
 about-logins-list-section-nothing = Neniu atentigo
@@ -76,8 +85,8 @@ about-logins-login-intro-heading-logged-in = Neniu spegulita legitimilo trovita.
 login-intro-description = Se vi konservis viajn legitimilojn en { -brand-product-name } en alia aparato, vi povas havi ilin ankaŭ ĉi tie jene:
 login-intro-instructions-fxa = Krei konton aŭ komencu seancon en { -fxaccount-brand-name } en la aparato, kie la legitimiloj estas konservitaj
 login-intro-instructions-fxa-settings = Iru al Agordoj->Spegulado->Ŝalti speguladon… Elektu la markobutonon "Legitimiloj kaj pasvortoj".
-login-intro-instructions-fxa-help = Vizitu <a data-l10n-name="help-link">helpo pri { -lockwise-brand-short-name }</a> por pli da informo.
-about-logins-intro-import = Se viaj legitimiloj estas konservitaj en alia retumilo, vi povas <a data-l10n-name="import-link">enporti ilin en { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = Vizitu la paĝon <a data-l10n-name="passwords-help-link">helpo pri pasvortoj</a> por havi pli da informo.
+about-logins-intro-browser-only-import = Se viaj legitimiloj estas konservitaj en alia retumilo, vi povas <a data-l10n-name="import-link">enporti ilin en { -brand-product-name }</a>
 about-logins-intro-import2 = Se viaj legitimiloj estas konservitaj ekster { -brand-product-name }, vi povas <a data-l10n-name="import-browser-link">enporti ilin el alia retumilo</a> aŭ <a data-l10n-name="import-file-link">el dosiero</a>
 
 ## Login
@@ -102,9 +111,17 @@ login-item-copied-password-button-text = Kopiita!
 login-item-save-changes-button = Konservi ŝanĝojn
 login-item-save-new-button = Konservi
 login-item-cancel-button = Nuligi
-login-item-time-changed = Laste modifita: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Kreita: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Laste uzita: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Kreita
+login-item-timeline-action-updated = Ĝisdatigita
+login-item-timeline-action-used = Uzita
 
 ## OS Authentication dialog
 
@@ -132,8 +149,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Por kopii vian pasvorton
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = kopii la konservitan pasvorton
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Por elporti viajn legitimilojn, tajpu la akdreditilojn  de Windows. Tio helpas protekti la sekurecon de viaj kontoj.
 # This message can be seen when attempting to export a password in about:logins
@@ -147,8 +162,6 @@ master-password-reload-button =
     .label = Komenci seancon
     .accesskey = K
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Nuligi
@@ -158,6 +171,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Ĉu forigi tiun ĉi legitimilon?
 confirm-delete-dialog-message = Tiu ĉi ago ne estas malfarebla.
 about-logins-confirm-remove-dialog-confirm-button = Forigi
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -195,6 +211,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Tio ĉi forigos la legitimilojn konservitajn de vi en { -brand-short-name } en ĉiuj aparatoj spegulitaj per via { -fxaccount-brand-name }. Tio ankaŭ forigos la datumfuĝajn atentigojn, kiuj aperas tie. Tiu ĉi ago ne estas malfarebla.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Elporti legitimilojn kaj pasvortojn
 about-logins-confirm-export-dialog-message = Viaj pasvortoj estos konservitaj kiel legebla teksto (ekzemple: Aĉ@pasvorto) tiel ke iu ajn kun aliro al la dosiero povos vidi ilin.
 about-logins-confirm-export-dialog-confirm-button = Elporti…
@@ -214,7 +232,6 @@ about-logins-breach-alert-date = Tiu ĉi datumfuĝo okazis la { DATETIME($date, 
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Iri al { $hostname }
-about-logins-breach-alert-learn-more-link = Pli da informo
 
 ## Vulnerable Password notification
 

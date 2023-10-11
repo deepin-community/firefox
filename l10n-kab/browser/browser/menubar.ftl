@@ -38,20 +38,9 @@ menu-quit =
             [windows] F
            *[other] F
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Anef { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Anef { -brand-shorter-name }
-
 menu-about =
     .label = Ɣef { -brand-shorter-name }
     .accesskey = Γ
@@ -81,8 +70,15 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Ldi afaylu…
     .accesskey = L
-menu-file-close =
-    .label = Mdel
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Mdel iccer
+            [one] Mdel iccer
+           *[other] Mdel { $tabCount } waccaren
+        }
     .accesskey = M
 menu-file-close-window =
     .label = Mdel asfaylu
@@ -99,9 +95,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Tarusi n yisebtar…
     .accesskey = a
-menu-file-print-preview =
-    .label = Awali send asiggez
-    .accesskey = s
 menu-file-print =
     .label = Siggez
     .accesskey = S
@@ -188,6 +181,17 @@ menu-view-full-screen =
     .label = Agdil Ačaran
     .accesskey = A
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Uɣal ɣeṛ tmeẓri n tɣuṛi
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Mdel timeẓri n tɣuṛi
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +220,9 @@ menu-history-undo-menu =
     .label = Accaren imedlen melmi kan
 menu-history-undo-window-menu =
     .label = Isfuyla imedlen melmi kan
-menu-history-reopen-all-tabs = Ales tawaledyawt n meṛṛa accaren
-menu-history-reopen-all-windows = Ales tawaledyawt n meṛṛa isfuyla
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Nadi deg uzray
 
 ## Bookmarks Menu
 
@@ -226,10 +231,13 @@ menu-bookmarks-menu =
     .accesskey = r
 menu-bookmarks-manage =
     .label = Sefrek ticraḍ n yisebtar
-menu-bookmark-current-tab =
-    .label = Creḍ iccer amiran
-menu-bookmark-edit =
-    .label = Ẓreg tacreḍṭ n usebter-a
+menu-bookmark-tab =
+    .label = Iccer amiran n tecreḍt n usebter…
+menu-edit-bookmark =
+    .label = Ẓreg tacreḍṭ n usebter-a…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Nadi ticraḍ n yisebtar
 menu-bookmarks-all-tabs =
     .label = Creḍ akk accaren…
 menu-bookmarks-toolbar =
@@ -314,14 +322,17 @@ menu-help-more-troubleshooting-info =
     .accesskey = T
 menu-help-report-site-issue =
     .label = Azen ugur ɣef usmel…
-menu-help-feedback-page =
-    .label = Efk-d tamuɣli-ik…
-    .accesskey = M
+menu-help-share-ideas =
+    .label = Bḍu taktiwin d tamawat…
+    .accesskey = B
 menu-help-enter-troubleshoot-mode2 =
     .label = Askar n usellek…
     .accesskey = A
 menu-help-exit-troubleshoot-mode =
     .label = Sens askar n ferru n wuguren
+    .accesskey = A
+menu-help-switch-device =
+    .label = Uɣal ɣer yibenk amaynut
     .accesskey = A
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.

@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Toto
+printui-page-range-current = Actual
+printui-page-range-odd = Impare
+printui-page-range-even = Par
 printui-page-range-custom = Personalisate
 printui-page-range-label = Paginas
 printui-page-range-picker =

@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Pōmager rychtowanio profilu
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Wstymp
-       *[other] { create-profile-window.title } - witej
+       *[other] { create-profile-window2.title } - witej
     }
 
 profile-creation-explanation-1 = { -brand-short-name } schranio informacyje ô twojich sztalōnkach i preferyncyjach we twojim prywatnym profilu.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Na ôstatek
-       *[other] { create-profile-window.title } - dokōńczynie
+       *[other] { create-profile-window2.title } - dokōńczynie
     }
 
 profile-creation-intro = Jak zrychtujesz pora profilōw, kożdy musi mieć inksze miano. Możesz użyć prziszykowanego sam miana, abo wkludzić włosne.

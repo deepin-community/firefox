@@ -59,11 +59,8 @@ let $0 = instantiate(`(module
 // ./test/core/type.wast:43
 assert_malformed(
   () => instantiate(`(type (func (result i32) (param i32))) `),
-  `result before parameter`,
+  `unexpected token`,
 );
 
 // ./test/core/type.wast:47
-assert_malformed(
-  () => instantiate(`(type (func (result $$x i32))) `),
-  `unexpected token`,
-);
+assert_malformed(() => instantiate(`(type (func (result $$x i32))) `), `unexpected token`);

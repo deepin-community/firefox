@@ -16,15 +16,9 @@ newtab-search-box-search-button =
     .title = Барај
     .aria-label = Барај
 
-newtab-search-box-search-the-web-input =
-    .placeholder = Пребарајте на Интернет
-    .title = Пребарајте на Интернет
-    .aria-label = Пребарајте на Интернет
-
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Додај сервис за пребарување
-newtab-topsites-add-topsites-header = Ново врвно мрежно место
 newtab-topsites-edit-topsites-header = Уреди врвно мрежно место
 newtab-topsites-title-label = Наслов
 newtab-topsites-title-input =
@@ -109,6 +103,11 @@ newtab-menu-remove-download = Избриши од историјата
 ## been downloaded. The intention behind "this action" is that it will show where the downloaded file exists on the file
 ## system for each operating system.
 
+newtab-menu-show-file =
+    { PLATFORM() ->
+        [macos] Покажи во Finder
+       *[other] Отвори ја папката со преземања
+    }
 newtab-menu-open-file = Отвори датотека
 
 ## Card Labels: These labels are associated to pages to give
@@ -136,7 +135,6 @@ newtab-section-menu-privacy-notice = Белешка за приватност
 ## Section Headers.
 
 newtab-section-header-topsites = Популарни мрежни места
-newtab-section-header-highlights = Интереси
 # Variables:
 #  $provider (String): Name of the corresponding content provider.
 newtab-section-header-pocket = Препорачано од { $provider }
@@ -150,21 +148,32 @@ newtab-empty-section-highlights = Започнете со прелистувањ
 #  $provider (String): Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Имате видено сѐ! Навратете се подоцна за нови содржини од { $provider }. Не можете да чекате? Изберете популарна тема и откријте уште одлични содржини ширум Интернет.
 
-
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
+newtab-discovery-empty-section-topstories-content = Проверете подоцна за повеќе приказни.
 newtab-discovery-empty-section-topstories-try-again-button = Обиди се повторно
 newtab-discovery-empty-section-topstories-loading = Се вчитува…
+# Displays when a layout in a section took too long to fetch articles.
+newtab-discovery-empty-section-topstories-timed-out = Упс! Скоро го вчитавме овој дел, но не баш.
 
 ## Pocket Content Section.
 
 # This is shown at the bottom of the trending stories section and precedes a list of links to popular topics.
 newtab-pocket-read-more = Популарни теми:
 newtab-pocket-more-recommendations = Повеќе препораки
+newtab-pocket-cta-button = Превземете го { -pocket-brand-name }
+
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
+newtab-error-fallback-info = Упс, нешто отиде погрешно со прикажување на оваа содржина
+newtab-error-fallback-refresh-link = Освежете ја страницата за да се обидете повторно.
 
 ## Customization Menu
 

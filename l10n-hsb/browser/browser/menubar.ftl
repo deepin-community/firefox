@@ -38,20 +38,9 @@ menu-quit =
             [windows] k
            *[other] o
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = { -brand-shorter-name }Name; wopušćić
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = { -brand-shorter-name } skónčić
-
 menu-about =
     .label = Wo { -brand-shorter-name }
     .accesskey = W
@@ -81,9 +70,18 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Dataju wočinić…
     .accesskey = D
-menu-file-close =
-    .label = Začinić
-    .accesskey = Z
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] { $tabCount } rajtark začinić
+            [one] { $tabCount } rajtark začinić
+            [two] { $tabCount } rajtarkaj začinić
+            [few] { $tabCount } rajtarki začinić
+           *[other] { $tabCount } rajtarkow začinić
+        }
+    .accesskey = r
 menu-file-close-window =
     .label = Wokno začinić
     .accesskey = z
@@ -99,9 +97,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Stronu připrawić…
     .accesskey = u
-menu-file-print-preview =
-    .label = Ćišćerski přehlad
-    .accesskey = h
 menu-file-print =
     .label = Ćišćeć…
     .accesskey = i
@@ -188,6 +183,17 @@ menu-view-full-screen =
     .label = Połna wobrazowka
     .accesskey = P
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Do čitanskeho napohlada zastupić
+    .accesskey = t
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Čitanski napohlad začinić
+    .accesskey = z
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +222,9 @@ menu-history-undo-menu =
     .label = Runje začinjene rajtarki
 menu-history-undo-window-menu =
     .label = Runje začinjene wokna
-menu-history-reopen-all-tabs = Wšě rajtarki znowa wočinić
-menu-history-reopen-all-windows = Wšě wokna znowa wočinić
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Historiju přepytać
 
 ## Bookmarks Menu
 
@@ -226,10 +233,13 @@ menu-bookmarks-menu =
     .accesskey = Z
 menu-bookmarks-manage =
     .label = Zapołožki rjadować
-menu-bookmark-current-tab =
-    .label = Aktualny rajtark jako zapołožku składować
-menu-bookmark-edit =
-    .label = Tutu zapołožku wobdźěłać
+menu-bookmark-tab =
+    .label = Aktualny rajtark jako zapołožku składować …
+menu-edit-bookmark =
+    .label = Tutu zapołožku wobdźěłać …
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Zapołožki přepytać
 menu-bookmarks-all-tabs =
     .label = Wšě rajtarki jako zapołožki…
 menu-bookmarks-toolbar =
@@ -314,15 +324,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = I
 menu-help-report-site-issue =
     .label = Sydłowy problem zdźělić…
-menu-help-feedback-page =
-    .label = Posudk pósłać…
-    .accesskey = P
+menu-help-share-ideas =
+    .label = Ideje a měnjenja dźělić …
+    .accesskey = I
 menu-help-enter-troubleshoot-mode2 =
     .label = Modus za rozrisowanje problemow…
     .accesskey = M
 menu-help-exit-troubleshoot-mode =
     .label = Modus za rozrisanje problemow znjemóžnić
     .accesskey = M
+menu-help-switch-device =
+    .label = K nowemu gratej přeńć
+    .accesskey = n
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

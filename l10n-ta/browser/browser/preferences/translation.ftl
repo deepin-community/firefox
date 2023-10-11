@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-translation-window =
+translation-window2 =
     .title = விதிவிலக்குகள் - மொழிபெயர்ப்பு
-    .style = width: 36em
+    .style = min-width: 36em
 
 translation-close-key =
     .key = w

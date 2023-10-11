@@ -11,3 +11,10 @@ common-dialog-username =
     .value = صارف کا نام
 common-dialog-password =
     .value = پاس ورڈ
+
+common-dialog-copy-cmd =
+    .label = نقل کریں
+    .accesskey = ن
+common-dialog-select-all-cmd =
+    .label = تمام منتخب کریں
+    .accesskey = ت

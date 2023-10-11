@@ -15,6 +15,7 @@
 #include "mozilla/UniquePtr.h"
 #include "mozilla/ErrorResult.h"
 #include "AudioParamTimeline.h"
+#include "Tracing.h"
 
 namespace mozilla::dom {
 
@@ -34,7 +35,7 @@ static void SetParamsOnBiquad(WebCore::Biquad& aBiquad, float aSampleRate,
   double normalizedFrequency = aFrequency / nyquist;
 
   if (aDetune) {
-    normalizedFrequency *= std::exp2(aDetune / 1200);
+    normalizedFrequency *= fdlibm_exp2(aDetune / 1200);
   }
 
   switch (aType) {
@@ -120,6 +121,7 @@ class BiquadFilterNodeEngine final : public AudioNodeEngine {
   void ProcessBlock(AudioNodeTrack* aTrack, GraphTime aFrom,
                     const AudioBlock& aInput, AudioBlock* aOutput,
                     bool* aFinished) override {
+    TRACE("BiquadFilterNode::ProcessBlock");
     float inputBuffer[WEBAUDIO_BLOCK_SIZE + 4];
     float* alignedInputBuffer = ALIGNED16(inputBuffer);
     ASSERT_ALIGNED16(alignedInputBuffer);

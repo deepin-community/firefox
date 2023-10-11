@@ -108,14 +108,9 @@ fonts-allow-own =
     .label = Дазволіць старонкам выбіраць уласны шрыфт замест пазначаных вышэй
     .accesskey = Д
 
-## Text Encodings
-##
-## Translate the encoding names as adjectives for an encoding, not as the name
-## of the language.
-
 # Variables:
 #   $name {string, "Arial"} - Name of the default font
 fonts-label-default =
-    .label = Прадвызначаны ({ $name })
+    .label = Тыповы ({ $name })
 fonts-label-default-unnamed =
     .label = Прадвызначана

@@ -4,9 +4,14 @@
 # NOTE: New strings should use the about-logins- prefix.
 
 about-logins-page-title = Kitikirisaxik molojri'ïl & Ewan taq Tzij
-login-filter =
+
+about-logins-login-filter =
     .placeholder = Kekanöx Tikirib'äl taq Molojri'ïl
-create-login-button = Titz'uk K'ak'a' Tikirib'äl Molojri'ïl
+    .key = F
+
+create-new-login-button =
+    .title = Titz'uk k'ak'a' rutikirib'al molojri'ïl
+
 fxaccounts-sign-in-text = Ke'ak'ulu' ewan taq kitzij ru ch'aqa' chik taq okisab'äl
 fxaccounts-sign-in-sync-button = Tatikirisaj molojri'ïl pa yaximon
 fxaccounts-avatar-button =
@@ -32,14 +37,26 @@ about-logins-menu-menuitem-help = To'ïk
 
 login-list =
     .aria-label = Tikirib'äl taq molojri'ïl nikik'äm ki' rik'in ri nikanöx
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } tikirib'äl molojri'ïl
        *[other] { $count } tikirib'äl taq molojri'ïl
     }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } richin { $total } molojri'ïl
+       *[other] { $count } richin { $total } taq molojri'ïl
+    }
 login-list-sort-label-text = Tichol chi:
 login-list-name-option = B'i'aj (A-Y)
 login-list-name-reverse-option = B'i'aj (Z-A)
+login-list-username-option = B'i'aj (A-Y)
+login-list-username-reverse-option = B'i'aj (Y-A)
 about-logins-login-list-alerts-option = Retal taq k'ayewal
 login-list-last-changed-option = Ruk'isib'äl Jaloj
 login-list-last-used-option = Ruk'isib'äl Rokisaxik
@@ -54,7 +71,9 @@ about-logins-list-item-breach-icon =
     .title = Tz'ilan Ajk'amaya'l taq Ruxaq
 about-logins-list-item-vulnerable-password-icon =
     .title = Tz'ilanel ewan tzij
+about-logins-list-section-breach = Tz'ilan ajk'amaya'l taq ruxaq
 about-logins-list-section-vulnerable = Tz'ilanel ewan taq tzij
+about-logins-list-section-nothing = Majun rutzijol tz'ilanem
 about-logins-list-section-today = Wakami
 about-logins-list-section-yesterday = Iwir
 about-logins-list-section-week = Ruk'isib'äl 7 q'ij
@@ -66,8 +85,8 @@ about-logins-login-intro-heading-logged-in = Majun ximon taq tikirib'äl molojri
 login-intro-description = We xe'ayäk ri rutikirib'al amolojri'ïl pa { -brand-product-name } pa jun chik wi okisab'äl, wawe' nik'ut pe richin nak'ul wawe' chuqa':
 login-intro-instructions-fxa = Tatz'uku' o tatikirisaj molojri'ïl pa { -fxaccount-brand-name } chupam ri okisab'äl, akuchi' e yakäl ri tikirib'äl amolojri'ïl.
 login-intro-instructions-fxa-settings = Jät pa runuk'ulem > Sync > Titzij ri ximoj… Tacha' ri ruk'ojlem Ruwujil chuqa' ewan taq tzij.
-login-intro-instructions-fxa-help = Tatz'eta' <a data-l10n-name="help-link">{ -lockwise-brand-short-name } Tob'äl</a> richin ch'aqa' chik to'ïk.
-about-logins-intro-import = We ri rutikirib'al amolojri'ïl yakon pa jun chik okik'amaya'l, yatikïr <a data-l10n-name="import-link">ye'ajïk' pa { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = Tatz'eta' <a data-l10n-name="passwords-help-link">rutob'al ewan taq tzij</a>richin yatkito'.
+about-logins-intro-browser-only-import = We ri rutikirib'al taq amolojri'ïl yakon pa jun chik okik'amaya'l, yatikïr <a data-l10n-name="import-link">ye'ajïk' pa { -brand-product-name }</a>
 about-logins-intro-import2 = We ri taq awujil man yek'oje' ta chupam { -brand-product-name } yatikïr <a data-l10n-name="import-browser-link">ye'ajïk pe chupam jun chik okik'amaya'l</a> o <a data-l10n-name="import-file-link">chupam jun yakb'äl</a>
 
 ## Login
@@ -92,9 +111,17 @@ login-item-copied-password-button-text = ¡Xwachib'ëx!
 login-item-save-changes-button = Keyak Jaloj
 login-item-save-new-button = Tiyak
 login-item-cancel-button = Tiq'at
-login-item-time-changed = Ruk'isib'äl jaloj: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Xtz'uk: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Ruk'isib'äl rokisaxik: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Xtz'uk
+login-item-timeline-action-updated = Xk'ex
+login-item-timeline-action-used = Xokisäx
 
 ## OS Authentication dialog
 
@@ -109,16 +136,19 @@ about-logins-edit-login-os-auth-dialog-message-win = Richin nanük' ri rutikirib
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = tinuk' ri yakon rutikirib'al molojri'ïl
+
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Richin natz'ët ri ewan atzij, tatz'ib'aj ri ruwujil rutikirisaxik molojri'ïl richin Windows. Re re' nuto' richin nuchajij rujikomal ri rub'i' ataqoya'l.
 # This message can be seen when attempting to reveal a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-reveal-password-os-auth-dialog-message-macosx = tik'ut ri yakon ewan tzij
+
 # This message can be seen when attempting to copy a password in about:logins on Windows.
 about-logins-copy-password-os-auth-dialog-message-win = Richin nawachib'ej ri ewan atzij, tatz'ib'aj ri ruwujil rutikirisaxik molojri'ïl richin Windows. Re re' nuto' richin nuchajij rujikomal ri rub'i' ataqoya'l.
 # This message can be seen when attempting to copy a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = tiwachib'ëx ri yakon ewan tzij
+
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Richin ye'ak'waj ri rutikirib'al taq amolojri'ïl, tatz'ib'aj ri ruwujil rutikirisaxik molojri'ïl richin Windows. Re re' nuto' richin nuchajij rujikomal ri rub'i' ataqoya'l.
 # This message can be seen when attempting to export a password in about:logins
@@ -137,21 +167,28 @@ master-password-reload-button =
 confirmation-dialog-cancel-button = Tiq'at
 confirmation-dialog-dismiss-button =
     .title = Tiq'at
+
 about-logins-confirm-remove-dialog-title = ¿La niyuj el rutikirib'al re moloj re'?
 confirm-delete-dialog-message = Man tikirel ta nitzolïx re b'anïk.
 about-logins-confirm-remove-dialog-confirm-button = Tiyuj
+
+## Variables
+##   $count (number) - Number of items
+
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
         [1] Tiyuj
         [one] Tiyuj
        *[other] Keyuj Ronojel
     }
+
 about-logins-confirm-remove-all-dialog-checkbox-label =
     { $count ->
         [1] Ja', tiyuj re molojri'ïl
         [one] Ja', tiyuj re molojri'ïl
        *[other] Ja', keyuj re taq molojri'ïl
     }
+
 about-logins-confirm-remove-all-dialog-title =
     { $count ->
         [one] ¿La niyuj { $count } molojri'ïl?
@@ -163,6 +200,7 @@ about-logins-confirm-remove-all-dialog-message =
         [one] Re' xtuyüj ri rutikirib'al molojri'ïl xayäk rik'in { -brand-short-name } chuqa' xab'achike rutzijol tz'ilanem xtuk'ulun pe wawe'. Man xkatikïr ta xtatzolij re b'anoj re'.
        *[other] Re' xkeruyüj ri kitikirib'al taq molojri'ïl xe'ayäk rik'in { -brand-short-name } chuqa' xab'achike rutzijol tz'ilanem xtuk'ulun pe wawe'. Man xkatikïr ta xtatzolij re b'anoj re'.
     }
+
 about-logins-confirm-remove-all-sync-dialog-title =
     { $count ->
         [one] ¿La niyuj { $count } molojri'ïl pa ronojel okisab'äl?
@@ -174,11 +212,16 @@ about-logins-confirm-remove-all-sync-dialog-message =
         [one] Re' xtuyüj ronojel ri rutikirisab'al molojri'ïl xayäk rik'in { -brand-short-name } pa ronojel ximon taq awokisab'al rik'in { -fxaccount-brand-name }. Re' chuqa' xkeruyüj ri rutzijol taq tz'ilanem yek'ulun wawe'. Man xkatikïr ta xtatzolij re' b'anoj re'.
        *[other] Re' xkeruyüj ronojel ri kitikirisab'al taq molojri'ïl xe'ayäk rik'in { -brand-short-name } pa ronojel ximon taq awokisab'al rik'in { -fxaccount-brand-name }. Re' chuqa' xkeruyüj ri rutzijol taq tz'ilanem yek'ulun wawe'. Man xkatikïr ta xtatzolij re' b'anoj re'.
     }
+
+##
+
 about-logins-confirm-export-dialog-title = Kek'wäx el kitikirisaxik molojri'ïl chuqa' ewan taq tzij
 about-logins-confirm-export-dialog-message = Xkeyak ri ewan taq atzij achi'el tz'etel tz'ib'anïk (achi'el, BadP@ssw0rd) richin chi xab'achike xtijaqon ri yakb'äl k'wa'an, nitikïr nutz'ët.
 about-logins-confirm-export-dialog-confirm-button = Tik'wäx el…
+
 about-logins-alert-import-title = Xtz'aqät Ruk'amik
 about-logins-alert-import-message = Titz'et rub'anikil ruk'amik
+
 confirm-discard-changes-dialog-title = ¿La yech'aqïx ri taq jaloj man eyakon ta?
 confirm-discard-changes-dialog-message = Xkesach ronojel ri jaloj man eyakon ta.
 confirm-discard-changes-dialog-confirm-button = Tich'aqïx
@@ -191,7 +234,6 @@ about-logins-breach-alert-date = Re tz'ilanem re' xk'ulwachitäj pa { DATETIME($
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Tib'e pa { $hostname }
-about-logins-breach-alert-learn-more-link = Tetamäx ch'aqa' chik
 
 ## Vulnerable Password notification
 
@@ -209,6 +251,7 @@ about-logins-vulnerable-alert-learn-more-link = Tetamäx ch'aqa' chik
 # Variables:
 #   $loginTitle (String) - The title of the website associated with the login.
 about-logins-error-message-duplicate-login-with-link = K'o chik jun okib'äl richin { $loginTitle } rik'in ri rub'i' winäq ri'. <a data-l10n-name="duplicate-link">¿La nawajo' yab'e pa ri okib'äl ri'?</a>
+
 # This is a generic error message.
 about-logins-error-message-default = Xk'ulwachitäj jun sachoj toq niyak re ewan tzij.
 
@@ -258,11 +301,13 @@ about-logins-import-dialog-items-added =
         [one] <span>Xtz'aqatisäx k'ak'a' rutikirib'al molojri'ïl:</span> <span data-l10n-name="count">{ $count }</span>
        *[other] <span>Xetz'aqatisäx k'ak'a' kitikirib'al molojri'ïl:</span> <span data-l10n-name="count">{ $count }</span>
     }
+
 about-logins-import-dialog-items-modified =
     { $count ->
         [one] <span>Xk'ëx rutikirib'al molojri'ïl:</span> <span data-l10n-name="count">{ $count }</span>
        *[other] <span>Xek'ex kitikirib'al molojri'ïl:</span> <span data-l10n-name="count">{ $count }</span>
     }
+
 about-logins-import-dialog-items-no-change =
     { $count ->
         [one] <span>Xilitäj kamulun rutikirib'al molojri'ïl:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(man xk'am ta pe)</span>
@@ -274,6 +319,7 @@ about-logins-import-dialog-items-error =
        *[other] <span>Taq sachoj:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(man xek'am ta pe)</span>
     }
 about-logins-import-dialog-done = Xk'is
+
 about-logins-import-dialog-error-title = Tijik Sachoj
 about-logins-import-dialog-error-conflicting-values-title = Jalajöj Retal K'ayew richin Nitikirisaj Molojri'ïl
 about-logins-import-dialog-error-conflicting-values-description = Achi'el: jalajöj kib'i' okisanela', ewan taq tzij, URLs, ch'aqa' chik richin jun rutikirisaxik molojri'ïl.
@@ -287,8 +333,10 @@ about-logins-import-dialog-error-no-logins-imported = Man xejik' ta tikirib'äl 
 about-logins-import-dialog-error-learn-more = Tetamäx juley
 about-logins-import-dialog-error-try-import-again = Tatojtob'ej Tajik'a' Chik…
 about-logins-import-dialog-error-cancel = Tiq'at
+
 about-logins-import-report-title = Tijik' Chutitzijol
 about-logins-import-report-description = Kitikirisaxik molojri'ïl chuqa' ewan taq tzij ejik'on pa { -brand-short-name }.
+
 #
 # Variables:
 #  $number (number) - The number of the row

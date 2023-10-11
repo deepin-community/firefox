@@ -46,7 +46,11 @@ inactive-css-not-for-internal-table-elements-except-table-cells = <strong>{ $pro
 
 inactive-css-not-table = <strong>{ $property }</strong>a pas cap d’efèit sus aqueste element per çò qu’es pas un tablèu.
 
-inactive-scroll-padding-when-not-scroll-container = <strong>{ $property }</strong>a pas cap d’efèit sus aqueste element per çò que desfila pas.
+inactive-scroll-padding-when-not-scroll-container = <strong>{ $property }</strong>a pas cap d’efèit sus aqueste element per çò que defila pas.
+
+inactive-css-border-image = </strong>{ $property }<strong> a pas cap d’efièch sus aqueste element coma aquesta proprietat se pòt pas aplicar a d ’elements intèrns d’un tablèu quand <strong>border-collapse</strong> es definit a <strong>collapse</strong> sus l’element parent dins lo tablèu.
+
+inactive-css-ruby-element = <strong>{ $property }</strong> a pas cap efièch sus aqueste element pr’amor que s’agís d’un element ruby. Sa talha es determinada per aquela de la polissa utilizada pel tèxte ruby.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain how
@@ -55,8 +59,6 @@ inactive-scroll-padding-when-not-scroll-container = <strong>{ $property }</stron
 inactive-css-not-grid-or-flex-container-fix = Ensajatz d’apondre <strong>display:grid</strong> o <strong>display:flex</strong>. { learn-more }
 
 inactive-css-not-grid-or-flex-container-or-multicol-container-fix = Ensajatz d’apondre siá <strong>display:grid</strong>, <strong>display:flex</strong>, o <strong>columns:2</strong>. { learn-more }
-
-inactive-css-not-grid-or-flex-item-fix-2 = Ensajatz d’apondre <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong>, o <strong>display:inline-flex</strong>. { learn-more }
 
 inactive-css-not-grid-or-flex-item-fix-3 = Ensajatz d’apondre <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong>, o <strong>display:inline-flex</strong> a l’element parent. { learn-more }
 
@@ -87,6 +89,10 @@ inactive-css-not-for-internal-table-elements-except-table-cells-fix = Ensajatz d
 inactive-css-not-table-fix = Ensajatz d’apondre <strong>display:table</strong> o <strong>display:inline-table</strong>. { learn-more }
 
 inactive-scroll-padding-when-not-scroll-container-fix = Ensajatz d’apondre <strong>overflow:auto</strong>, <strong>overflow:scroll</strong>, o <strong>overflow:hidden</strong>. { learn-more }
+
+inactive-css-border-image-fix = Sus l’element parent dins lo tablèu, suprimissètz la proprietat <strong>border-collapse</strong> o modificatz sa valor per quicòm mai que <strong>collapse</strong>. { learn-more }
+
+inactive-css-ruby-element-fix = Ensajatz de modificar la <strong>talha de polissa</strong> del tèxte ruby. { learn-more }
 
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why

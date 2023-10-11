@@ -7,16 +7,17 @@
 #ifndef mozilla_Hal_h
 #define mozilla_Hal_h
 
-#include "base/basictypes.h"
 #include "base/platform_thread.h"
 #include "nsTArray.h"
 #include "mozilla/hal_sandbox/PHal.h"
+#include "mozilla/HalScreenConfiguration.h"
 #include "mozilla/HalBatteryInformation.h"
 #include "mozilla/HalNetworkInformation.h"
-#include "mozilla/HalScreenConfiguration.h"
 #include "mozilla/HalWakeLockInformation.h"
 #include "mozilla/HalTypes.h"
-#include "mozilla/Types.h"
+#include "mozilla/MozPromise.h"
+
+#include <cstdint>
 
 /*
  * Hal.h contains the public Hal API.
@@ -215,26 +216,11 @@ void GetWakeLockInfo(const nsAString& aTopic,
  */
 void NotifyWakeLockChange(const hal::WakeLockInformation& aWakeLockInfo);
 
-MOZ_DEFINE_HAL_OBSERVER(ScreenConfiguration);
-
-/**
- * Returns the current screen configuration.
- */
-void GetCurrentScreenConfiguration(
-    hal::ScreenConfiguration* aScreenConfiguration);
-
-/**
- * Notify of a change in the screen configuration.
- * @param aScreenConfiguration The new screen orientation.
- */
-void NotifyScreenConfigurationChange(
-    const hal::ScreenConfiguration& aScreenConfiguration);
-
 /**
  * Lock the screen orientation to the specific orientation.
- * @return Whether the lock has been accepted.
+ * @return A promise indicating that the screen orientation has been locked.
  */
-[[nodiscard]] bool LockScreenOrientation(
+[[nodiscard]] RefPtr<GenericNonExclusivePromise> LockScreenOrientation(
     const hal::ScreenOrientation& aOrientation);
 
 /**
@@ -250,6 +236,20 @@ void UnlockScreenOrientation();
  * ignore this call entirely.
  */
 void SetProcessPriority(int aPid, hal::ProcessPriority aPriority);
+
+/**
+ * Creates a PerformanceHintSession.
+ *
+ * A PerformanceHintSession represents a workload shared by a group of threads
+ * that should be completed in a target duration each cycle.
+ *
+ * Each cycle, the actual work duration should be reported using
+ * PerformanceHintSession::ReportActualWorkDuration(). The system can then
+ * adjust the scheduling accordingly in order to achieve the target.
+ */
+UniquePtr<hal::PerformanceHintSession> CreatePerformanceHintSession(
+    const nsTArray<PlatformThreadHandle>& aThreads,
+    mozilla::TimeDuration aTargetWorkDuration);
 
 }  // namespace MOZ_HAL_NAMESPACE
 }  // namespace mozilla

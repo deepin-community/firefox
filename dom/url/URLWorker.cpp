@@ -9,12 +9,10 @@
 #include "mozilla/dom/Blob.h"
 #include "mozilla/dom/BlobImpl.h"
 #include "mozilla/dom/BlobURLProtocolHandler.h"
-#include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/dom/WorkerRunnable.h"
 #include "mozilla/dom/WorkerScope.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 // This class creates an URL from a DOM Blob on the main thread.
 class CreateURLRunnable : public WorkerMainThreadRunnable {
@@ -38,9 +36,16 @@ class CreateURLRunnable : public WorkerMainThreadRunnable {
 
     nsCOMPtr<nsIPrincipal> principal = mWorkerPrivate->GetPrincipal();
 
+    nsCOMPtr<nsICookieJarSettings> cookieJarSettings =
+        mWorkerPrivate->CookieJarSettings();
+
+    nsAutoString partKey;
+    cookieJarSettings->GetPartitionKey(partKey);
+
     nsAutoCString url;
     nsresult rv = BlobURLProtocolHandler::AddDataEntry(
-        mBlobImpl, principal, Some(mWorkerPrivate->AgentClusterId()), url);
+        mBlobImpl, principal, Some(mWorkerPrivate->AgentClusterId()),
+        NS_ConvertUTF16toUTF8(partKey), url);
 
     if (NS_FAILED(rv)) {
       NS_WARNING("Failed to add data entry for the blob!");
@@ -68,9 +73,15 @@ class RevokeURLRunnable : public WorkerMainThreadRunnable {
 
     NS_ConvertUTF16toUTF8 url(mURL);
 
+    nsCOMPtr<nsICookieJarSettings> cookieJarSettings =
+        mWorkerPrivate->CookieJarSettings();
+
+    nsAutoString partKey;
+    cookieJarSettings->GetPartitionKey(partKey);
+
     BlobURLProtocolHandler::RemoveDataEntry(
         url, mWorkerPrivate->GetPrincipal(),
-        Some(mWorkerPrivate->AgentClusterId()));
+        Some(mWorkerPrivate->AgentClusterId()), NS_ConvertUTF16toUTF8(partKey));
     return true;
   }
 };
@@ -143,8 +154,8 @@ void URLWorker::RevokeObjectURL(const GlobalObject& aGlobal,
 }
 
 /* static */
-bool URLWorker::IsValidURL(const GlobalObject& aGlobal, const nsAString& aUrl,
-                           ErrorResult& aRv) {
+bool URLWorker::IsValidObjectURL(const GlobalObject& aGlobal,
+                                 const nsAString& aUrl, ErrorResult& aRv) {
   JSContext* cx = aGlobal.Context();
   WorkerPrivate* workerPrivate = GetWorkerPrivateFromContext(cx);
 
@@ -159,5 +170,4 @@ bool URLWorker::IsValidURL(const GlobalObject& aGlobal, const nsAString& aUrl,
   return runnable->IsValidURL();
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

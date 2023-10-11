@@ -4,11 +4,13 @@
 
 "use strict";
 
-const { storageTypePool } = require("devtools/server/actors/storage");
-const EventEmitter = require("devtools/shared/event-emitter");
-const { Ci } = require("chrome");
-const Services = require("Services");
-const { isWindowIncluded } = require("devtools/shared/layout/utils");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
+
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  getAddonIdForWindowGlobal:
+    "resource://devtools/server/actors/watcher/browsing-context-helpers.sys.mjs",
+});
 
 // ms of delay to throttle updates
 const BATCH_DELAY = 200;
@@ -29,11 +31,12 @@ function getFilteredStorageEvents(updates, storageType) {
     }
   }
 
-  return Object.keys(filteredUpdate).length > 0 ? filteredUpdate : null;
+  return Object.keys(filteredUpdate).length ? filteredUpdate : null;
 }
 
 class ContentProcessStorage {
-  constructor(storageKey, storageType) {
+  constructor(ActorConstructor, storageKey, storageType) {
+    this.ActorConstructor = ActorConstructor;
     this.storageKey = storageKey;
     this.storageType = storageType;
 
@@ -41,16 +44,13 @@ class ContentProcessStorage {
     this.onStoresCleared = this.onStoresCleared.bind(this);
   }
 
-  async watch(targetActor, { onAvailable, onUpdated, onDestroyed }) {
-    const ActorConstructor = storageTypePool.get(this.storageKey);
+  async watch(targetActor, { onAvailable }) {
     const storageActor = new StorageActorMock(targetActor);
     this.storageActor = storageActor;
-    this.actor = new ActorConstructor(storageActor);
+    this.actor = new this.ActorConstructor(storageActor);
 
     // Some storage types require to prelist their stores
-    if (typeof this.actor.preListStores === "function") {
-      await this.actor.preListStores();
-    }
+    await this.actor.populateStoresForHosts();
 
     // We have to manage the actor manually, because ResourceCommand doesn't
     // use the protocol.js specification.
@@ -207,6 +207,9 @@ class StorageActorMock extends EventEmitter {
       // creating any global.
       return null;
     }
+    if (!this.isIncludedInTopLevelWindow(window)) {
+      return null;
+    }
     this.childWindowPool.add(window);
     for (let i = 0; i < docShell.childCount; i++) {
       const child = docShell.getChildAt(i);
@@ -216,15 +219,12 @@ class StorageActorMock extends EventEmitter {
   }
 
   isIncludedInTargetExtension(subject) {
-    const { document } = subject;
-    return (
-      document.nodePrincipal.addonId &&
-      document.nodePrincipal.addonId === this.targetActor.addonId
-    );
+    const addonId = lazy.getAddonIdForWindowGlobal(subject.windowGlobalChild);
+    return addonId && addonId === this.targetActor.addonId;
   }
 
   isIncludedInTopLevelWindow(window) {
-    return isWindowIncluded(this.window, window);
+    return this.targetActor.windows.includes(window);
   }
 
   getWindowFromInnerWindowID(innerID) {
@@ -386,7 +386,7 @@ class StorageActorMock extends EventEmitter {
 
       for (const host in data) {
         if (
-          data[host].length == 0 &&
+          !data[host].length &&
           this.boundUpdate.added &&
           this.boundUpdate.added[storeType] &&
           this.boundUpdate.added[storeType][host]
@@ -394,7 +394,7 @@ class StorageActorMock extends EventEmitter {
           delete this.boundUpdate.added[storeType][host];
         }
         if (
-          data[host].length == 0 &&
+          !data[host].length &&
           this.boundUpdate.changed &&
           this.boundUpdate.changed[storeType] &&
           this.boundUpdate.changed[storeType][host]

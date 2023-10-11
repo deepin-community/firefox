@@ -14,7 +14,7 @@ about-service-workers-warning-no-service-workers = Không có Service Worker đ�
 #
 # Variables:
 #   $originTitle: original title
-origin-title = Nguồn gốc: { $originTitle }
+origin-title = Origin: { $originTitle }
 
 ## These strings are for showing the information of workers.
 ##

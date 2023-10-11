@@ -5,12 +5,12 @@
 
 about-logins-page-title = Inekcam & wawalen uffiren
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Nadi inekcam
+    .key = F
 
-create-login-button = Rnu anekcum amaynut
+create-new-login-button =
+    .title = Rnu anekcum amaynut
 
 fxaccounts-sign-in-text = Kcem ɣer wawalen-ik uffiren ɣef yibenkan-nniḍen
 fxaccounts-sign-in-sync-button = Kcem akken ad yemtawi
@@ -37,10 +37,20 @@ about-logins-menu-menuitem-help = Tallalt
 
 login-list =
     .aria-label = Inekcam mmenṭaḍen d unadi
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } anekcum
        *[other] { $count } inekcam
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } seg { $total } unekcum
+       *[other] { $count } seg { $total } inekcam
     }
 login-list-sort-label-text = Smizzwer s:
 login-list-name-option = Isem (A-Z)
@@ -61,7 +71,6 @@ about-logins-list-item-breach-icon =
     .title = Asmel i tḥuza trewla n yisefka
 about-logins-list-item-vulnerable-password-icon =
     .title = Awal uffir ur iǧhid ara
-
 about-logins-list-section-breach = Ismal i tḥuza trewla n yisefka
 about-logins-list-section-vulnerable = Awalen uffiren ur ǧhiden ara
 about-logins-list-section-nothing = Ulac alɣu
@@ -76,8 +85,8 @@ about-logins-login-intro-heading-logged-in = Ulac inekcam yemtawin i yettwafen.
 login-intro-description = Ma teskelseḍ inekcam-ik deg { -brand-product-name } ɣef ddeqs n yibenkan, a-t-an amek ara tkecmeḍ ɣur-sen.
 login-intro-instructions-fxa = Rnu neɣ qqen ɣer { -fxaccount-brand-name } inek·inem ɣef yibenk anida ttwaskelsen yinekcam-ik·im.
 login-intro-instructions-fxa-settings = Ddu ɣer yiɣewwaren > Rmed amtawi… Ṛcem tibewwaḍin n yinekcam akked wawalen uffiren
-login-intro-instructions-fxa-help = Rzu ɣer <a data-l10n-name="help-link">{ -lockwise-brand-short-name } tallalt</a> i wugar n yisallen.
-about-logins-intro-import = Ma yella tuqqna-inek tettwasekles deg yiminig-nniḍen, tzemreḍ <a data-l10n-name="import-link"> ad ten-id-ktereḍ seg { -lockwise-brand-short-name }</a>
+login-intro-instructions-fxa-passwords-help = Rzu ɣer <a data-l10n-name="passwords-help-link">tallalt n wawalen uffiren</a> i wugar n tallelt.
+about-logins-intro-browser-only-import = Ma yella ttwaskelsen inekcam-ik·im deg yiming-nniḍen, tzemreḍ <a data-l10n-name="import-link">ad ten-id-tketreḍ deg { -brand-product-name }</a>
 about-logins-intro-import2 = Ma yella inekcam-ik/im ttwaskelsen beṛṛa n { -brand-product-name }, tzemreḍ <a data-l10n-name="import-browser-link"> ad ten-id-tketreḍ seg yiminig-nniḍen</a> neɣ <a data-l10n-name="import-file-link">seg ufaylu</a>
 
 ## Login
@@ -102,9 +111,17 @@ login-item-copied-password-button-text = Inɣel!
 login-item-save-changes-button = Sekles asnifel
 login-item-save-new-button = Sekles
 login-item-cancel-button = Sefsex
-login-item-time-changed = Abeddel aneggaru: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Timerna: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Aseqdec aneggaru: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Yettwarna
+login-item-timeline-action-updated = Yettusnifel
+login-item-timeline-action-used = Yettwaseqdec
 
 ## OS Authentication dialog
 
@@ -132,8 +149,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Akken ad d-tneɣleḍ aw
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = Nɣel awal-inek uffir yettwaskelsen
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Akken ad tketreḍ inekcam-inek/inem, sekcem anekcum-inek/inem n tuqqna n Windows. Ayagi ad yeḍmen aḥraz n tɣellist n yimiḍanen-inek.
 # This message can be seen when attempting to export a password in about:logins
@@ -147,8 +162,6 @@ master-password-reload-button =
     .label = Kcem
     .accesskey = K
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Sefsex
@@ -158,6 +171,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Kkes anekcam-agi?
 confirm-delete-dialog-message = Ulac tuɣalin ɣer deffir.
 about-logins-confirm-remove-dialog-confirm-button = Kkes
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -197,6 +213,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Aya ad yekkes inekcumen i teskelseḍ deg { -brand-short-name } ɣef meṛṛa ibenkan yemtawan akkaed { -fxaccount-brand-name }-inek·inem. Ad yekkes ula d talɣut n trewla n yisefka ara d-ibanen da. Ur tezmireḍ ad esfesxeḍ tigawt-a.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Sifeḍ inekcam d wawalen uffiren
 about-logins-confirm-export-dialog-message = Awalen-inek uffiren ad ttwaskelsen am uḍris ara d-ibanen i tɣuri (d amedya, BadP@ssw0rd) akken yal amdan ara yeldin afaylu i yettusifḍen ad yizmir ad t-iwali.
 about-logins-confirm-export-dialog-confirm-button = Kter…
@@ -216,7 +234,6 @@ about-logins-breach-alert-date = Tarewla-agi n yisefka teḍra-d deg { DATETIME(
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Ddu ɣer { $hostname }
-about-logins-breach-alert-learn-more-link = Issin ugar
 
 ## Vulnerable Password notification
 

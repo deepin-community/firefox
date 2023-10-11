@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = B
 
 update-checkingForUpdates = Eguneraketak bilatzen…
-update-downloading = <img data-l10n-name="icon"/>Eguneraketa deskargatzen — <label data-l10n-name="download-status"/>
-update-downloading-message = Eguneraketa deskargatzen — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Eguneraketa deskargatzen — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Eguneraketa deskargatzen — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Eguneraketa aplikatzen…
 
 update-failed = Eguneraketak huts egin du.<label data-l10n-name="failed-link">Deskargatu azken bertsioa</label>
@@ -25,15 +32,26 @@ update-failed-main = Eguneraketak huts egin du.<a data-l10n-name="failed-link-ma
 
 update-adminDisabled = Eguneraketak desgaitu ditu sistemaren administratzaileak
 update-noUpdatesFound = { -brand-short-name } eguneratuta dago
+aboutdialog-update-checking-failed = Huts egin du eguneraketak bilatzean.
 update-otherInstanceHandlingUpdates = Beste instantzia bat ari da { -brand-short-name } eguneratzen
 
-update-manual = Eskuratu eguneraketak <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Eskuratu eguneraketak <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Eskuratu eguneraketak <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Ezin duzu eguneraketa gehiago burutu sistema honetan.<label data-l10n-name="unsupported-link">Argibide gehiago</label>
 
 update-restarting = Berrabiarazten…
 
-channel-description = Une honetan <label data-l10n-name="current-channel"></label> eguneraketa-kanalean zaude.
+update-internal-error2 = Ezin dira eguneraketak bilatu barne-errore bat dela eta. Eguneraketak <label data-l10n-name="manual-link">{ $displayUrl }</label> helbidean daude erabilgarri
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Une honetan <label data-l10n-name="current-channel">{ $channel }</label> eguneraketa-kanalean zaude.
 
 warningDesc-version = { -brand-short-name } esperimentala da eta ezegonkorra izan liteke.
 

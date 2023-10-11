@@ -9,11 +9,28 @@
 ##  $scheme - the type of link that's being opened.
 ##  $appName - Name of the application that will be opened.
 
+
+## Permission Dialog
+## Variables:
+##  $host - the hostname that is initiating the request
+##  $scheme - the type of link that's being opened.
+##  $appName - Name of the application that will be opened.
+##  $extension - Name of extension that initiated the request
+
+## Permission Dialog
+## Variables:
+##  $host (string) - The hostname that is initiating the request
+##  $scheme (string) - The type of link that's being opened.
+##  $appName (string) - Name of the application that will be opened.
+##  $extension (string) - Name of extension that initiated the request
+
 permission-dialog-description = Дозволити да овај сајт отвори { $scheme } везу?
 
 permission-dialog-description-file = Дозволити да ова датотека отвори { $scheme } везу?
 
 permission-dialog-description-host = Дозволити да { $host } отвори { $scheme } везу?
+
+permission-dialog-description-extension = Дозволити додатку { $extension } да отвори { $scheme } везу?
 
 permission-dialog-description-app = Дозволити да овај сајт отвори { $scheme } везу помоћу програма { $appName }?
 
@@ -21,13 +38,24 @@ permission-dialog-description-host-app = Дозволити да { $host } от�
 
 permission-dialog-description-file-app = Дозволити да ова датотека отвара { $scheme } везе помоћу програма { $appName }?
 
+permission-dialog-description-extension-app = Дозволити додатку { $extension } да отвори { $scheme } везу путем { $appName }-а?
+
 ## Please keep the emphasis around the hostname and scheme (ie the
 ## `<strong>` HTML tags). Please also keep the hostname as close to the start
 ## of the sentence as your language's grammar allows.
 
+## Please keep the emphasis around the hostname and scheme (ie the
+## `<strong>` HTML tags). Please also keep the hostname as close to the start
+## of the sentence as your language's grammar allows.
+## Variables:
+##  $host (string) - The hostname that is initiating the request
+##  $scheme (string) - The type of link that's being opened.
+
 permission-dialog-remember = Увек дозволи да <strong>{ $host }</strong> отвара <strong>{ $scheme }</strong> везе
 
 permission-dialog-remember-file = Увек дозволи да ова датотека отвара <strong>{ $scheme }</strong> везе
+
+permission-dialog-remember-extension = Увек дозволи овом додатку да отвара <strong>{ $scheme }</strong> везе
 
 ##
 
@@ -46,6 +74,10 @@ permission-dialog-set-change-app-link = Одаберите други прогр
 ## Chooser dialog
 ## Variables:
 ##  $scheme - the type of link that's being opened.
+
+## Chooser dialog
+## Variables:
+##  $scheme (string) - The type of link that's being opened.
 
 chooser-window =
     .title = Одабери програм

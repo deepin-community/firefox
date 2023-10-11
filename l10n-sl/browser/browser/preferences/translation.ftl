@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-translation-window =
+translation-window2 =
     .title = Izjeme - Prevajanje
-    .style = width: 36em
+    .style = min-width: 36em
 
 translation-close-key =
     .key = w
@@ -22,7 +22,7 @@ translation-languages-button-remove-all =
     .label = Odstrani vse jezike
     .accesskey = e
 
-translation-sites-disabled-desc = Prevod ne bo na voljo za naslednje strani
+translation-sites-disabled-desc = Prevod ne bo na voljo za naslednja spletna mesta
 
 translation-sites-column =
     .label = Spletne strani

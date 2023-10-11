@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Wužiwarske mjeno
 common-dialog-password =
     .value = Hesło
+
+common-dialog-copy-cmd =
+    .label = Kopěrować
+    .accesskey = K
+common-dialog-select-all-cmd =
+    .label = Wšo wubrać
+    .accesskey = W

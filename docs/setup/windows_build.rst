@@ -18,31 +18,11 @@ Requirements
 -  **Operating System:** Windows 10. It is advisable to have Windows Update be fully
    up-to-date. See :ref:`build_hosts` for more information.
 
-1. System preparation
----------------------
-
-1.1 Install Visual Studio
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-`Download and install the Community edition
-<https://visualstudio.microsoft.com/downloads/>`_ of Visual
-Studio 2019. If you have the Professional or Enterprise edition, that
-is also supported.
-
-Ensure you've checked the following items for installation:
-
--  In the Workloads tab:
-    -  Desktop development with C++.
-    -  Game development with C++.
--  In the Individual components tab:
-    -  Windows 10 SDK (at least **10.0.17134.0**).
-    -  C++ ATL for v142 build tools (x86 and x64).
-
-1.2 Install MozillaBuild
-~~~~~~~~~~~~~~~~~~~~~~~~
+1. Install MozillaBuild
+-----------------------
 
 Install `MozillaBuild
-<https://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe>`_.
+<https://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe>`_.
 
 Accept the default installation directory.
 Windows may prompt you to "reinstall with the correct settings", which you
@@ -67,11 +47,19 @@ the interactive setup process.
 
 .. code-block:: shell
 
+    # Using the C:\mozilla-build\start-shell.bat shell from step 1:
     cd c:/
     mkdir mozilla-source
     cd mozilla-source
     wget https://hg.mozilla.org/mozilla-central/raw-file/default/python/mozboot/bin/bootstrap.py
     python3 bootstrap.py
+.. note::
+
+    When running ``bootstrap.py`` there will be a `UAC (User Account Control) prompt <https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works>`_ for PowerShell after
+    selecting the destination directory for the source code clone. This is
+    necessary to add the Microsoft Defender Antivirus exclusions automatically. You
+    should select ``Yes`` on the UAC prompt, otherwise you will need
+    to :ref:`follow some manual steps below <Ensure antivirus exclusions>`.
 
 .. note::
 
@@ -88,26 +76,31 @@ the interactive setup process.
 Choosing a build type
 ~~~~~~~~~~~~~~~~~~~~~
 
-If you aren't modifying the Firefox backend, then then select one of the
+If you aren't modifying the Firefox backend, then select one of the
 :ref:`Artifact Mode <Understanding Artifact Builds>` options. If you are
-building Firefox for Android, you should also see the :ref:`GeckoView Contributor Guide`.
+building Firefox for Android, you should also see the :ref:`GeckoView Contributor Guide <geckoview-contributor-guide>`.
 
-Set antivirus exclusions
-~~~~~~~~~~~~~~~~~~~~~~~~
+.. _Ensure antivirus exclusions:
 
-Windows Defender and some scanning antivirus products are known to significantly degrade
-build times and sometimes even cause failed builds (due to a "missing file").
-This is usually because we have tests for well-known security bugs that have
-code samples that antivirus software identifies as a threat, automatically
-quarantining/corrupting the files.
+Ensure antivirus exclusions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To avoid this, add two folders to your antivirus exclusion list:
+Microsoft Defender Antivirus and some third-party antivirus products
+are known to significantly degrade build times and sometimes even cause failed
+builds (due to a "missing file"). This is usually because we have tests for
+well-known security bugs that have code samples that antivirus software identifies
+as a threat, automatically quarantining/corrupting the files.
+
+To avoid this, add the following folders to your third-party antivirus exclusion list:
 
 -  The ``C:\mozilla-build`` folder.
 -  The directory where the Firefox code is (probably ``C:\mozilla-source``).
+-  The ``%USERPROFILE%/.mozbuild`` directory (probably ``C:\Users\<user>\.mozbuild``).
 
-If you haven't installed an antivirus, then you will need to `add the exclusions
-to Windows Defender
+The ``bootstrap.py`` script attempts to add the above folders to the Microsoft
+Defender Antivirus exclusion list automatically. You should check that they were
+successfully added, but if they're missing you will need to `add the exclusions to
+Microsoft Defender Antivirus manually
 <https://support.microsoft.com/en-ca/help/4028485/windows-10-add-an-exclusion-to-windows-security>`_.
 
 .. note::
@@ -122,8 +115,8 @@ Now that your system is bootstrapped, you should be able to build!
 
 .. code-block:: shell
 
-    rm bootstrap.py
-    cd mozilla-central
+    cd c:/mozilla-source/mozilla-unified
+    hg up -C central
     ./mach build
     ./mach run
 
@@ -139,6 +132,12 @@ start working on <https://codetribute.mozilla.org/>`_.
 See the :ref:`Firefox Contributors' Quick Reference` to learn how to test your changes,
 send patches to Mozilla, update your source code locally, and more.
 
+.. note::
+
+    If you'd like to interact with Mach from a different command line environment
+    than MozillaBuild, there's experimental support for it described
+    :ref:`over here <Using Mach on Windows Outside MozillaBuild>`.
+
 Troubleshooting
 ---------------
 
@@ -152,18 +151,11 @@ they may be resolved by `upgrading your MozillaBuild <https://wiki.mozilla.org/M
 Spaces in folder names
 ~~~~~~~~~~~~~~~~~~~~~~
 
-**Firefox will not build** if the path to the installation
-tool folders contains **spaces** or other breaking characters such as
-pluses, quotation marks, or metacharacters.  The Visual Studio tools and
-SDKs are an exception - they may be installed in a directory which
-contains spaces. It is strongly recommended that you accept the default
-settings for all installation locations.
-
-Installing Visual Studio in a different language than Windows
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If Visual Studio is using a different language than the system, then your build
-may fail with a link error after reporting a bunch of include errors.
+**Firefox will not build** if the path to MozillaBuild or the Firefox source
+contain **spaces** or other breaking characters such as pluses, quotation marks,
+or metacharacters.  The Visual Studio tools and SDKs are an exception - they may
+be installed in a directory which contains spaces. It is strongly recommended
+that you accept the default settings for all installation locations.
 
 Quotation marks in ``PATH``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -186,11 +178,3 @@ If you happen to have Cygwin installed, its tools may erroneously be
 used when building Firefox. Ensure that MozillaBuild directories (in
 ``C:\mozilla-build\``) are before Cygwin directories in the ``PATH``
 environment variable.
-
-Building from within Users
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If you encounter a build failure with:
-``LINK: fatal error LNK1181: cannot open input file ..\..\..\..\..\security\nss3.lib``
-and the Firefox code is underneath the ``C:\Users`` folder, then you should try
-moving the code to be underneath ``C:\\mozilla-source`` instead.

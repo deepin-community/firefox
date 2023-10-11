@@ -25,6 +25,26 @@ template bool RangeUtils::IsValidPoints(const RawRangeBoundary& aStartBoundary,
 template bool RangeUtils::IsValidPoints(const RawRangeBoundary& aStartBoundary,
                                         const RawRangeBoundary& aEndBoundary);
 
+template nsresult RangeUtils::CompareNodeToRangeBoundaries(
+    nsINode* aNode, const RangeBoundary& aStartBoundary,
+    const RangeBoundary& aEndBoundary, bool* aNodeIsBeforeRange,
+    bool* aNodeIsAfterRange);
+
+template nsresult RangeUtils::CompareNodeToRangeBoundaries(
+    nsINode* aNode, const RangeBoundary& aStartBoundary,
+    const RawRangeBoundary& aEndBoundary, bool* aNodeIsBeforeRange,
+    bool* aNodeIsAfterRange);
+
+template nsresult RangeUtils::CompareNodeToRangeBoundaries(
+    nsINode* aNode, const RawRangeBoundary& aStartBoundary,
+    const RangeBoundary& aEndBoundary, bool* aNodeIsBeforeRange,
+    bool* aNodeIsAfterRange);
+
+template nsresult RangeUtils::CompareNodeToRangeBoundaries(
+    nsINode* aNode, const RawRangeBoundary& aStartBoundary,
+    const RawRangeBoundary& aEndBoundary, bool* aNodeIsBeforeRange,
+    bool* aNodeIsAfterRange);
+
 // static
 nsINode* RangeUtils::ComputeRootNode(nsINode* aNode) {
   if (!aNode) {
@@ -47,7 +67,8 @@ nsINode* RangeUtils::ComputeRootNode(nsINode* aNode) {
     }
 
     // If the node is in NAC, then the NAC parent should be the root.
-    if (nsINode* root = content->GetClosestNativeAnonymousSubtreeRootParent()) {
+    if (nsINode* root =
+            content->GetClosestNativeAnonymousSubtreeRootParentOrHost()) {
       return root;
     }
   }
@@ -122,11 +143,24 @@ nsresult RangeUtils::CompareNodeToRange(nsINode* aNode,
                                         AbstractRange* aAbstractRange,
                                         bool* aNodeIsBeforeRange,
                                         bool* aNodeIsAfterRange) {
+  if (NS_WARN_IF(!aAbstractRange) ||
+      NS_WARN_IF(!aAbstractRange->IsPositioned())) {
+    return NS_ERROR_INVALID_ARG;
+  }
+  return CompareNodeToRangeBoundaries(aNode, aAbstractRange->StartRef(),
+                                      aAbstractRange->EndRef(),
+                                      aNodeIsBeforeRange, aNodeIsAfterRange);
+}
+template <typename SPT, typename SRT, typename EPT, typename ERT>
+nsresult RangeUtils::CompareNodeToRangeBoundaries(
+    nsINode* aNode, const RangeBoundaryBase<SPT, SRT>& aStartBoundary,
+    const RangeBoundaryBase<EPT, ERT>& aEndBoundary, bool* aNodeIsBeforeRange,
+    bool* aNodeIsAfterRange) {
   MOZ_ASSERT(aNodeIsBeforeRange);
   MOZ_ASSERT(aNodeIsAfterRange);
 
-  if (NS_WARN_IF(!aNode) || NS_WARN_IF(!aAbstractRange) ||
-      NS_WARN_IF(!aAbstractRange->IsPositioned())) {
+  if (NS_WARN_IF(!aNode) ||
+      NS_WARN_IF(!aStartBoundary.IsSet() || !aEndBoundary.IsSet())) {
     return NS_ERROR_INVALID_ARG;
   }
 
@@ -138,7 +172,8 @@ nsresult RangeUtils::CompareNodeToRange(nsINode* aNode,
   // then the Node is contained (completely) by the Range.
 
   // gather up the dom point info
-  int32_t nodeStart, nodeEnd;
+  int32_t nodeStart;
+  uint32_t nodeEnd;
   nsINode* parent = aNode->GetParentNode();
   if (!parent) {
     // can't make a parent/offset pair to represent start or
@@ -146,14 +181,15 @@ nsresult RangeUtils::CompareNodeToRange(nsINode* aNode,
     // so instead represent it by (node,0) and (node,numChildren)
     parent = aNode;
     nodeStart = 0;
-    uint32_t childCount = aNode->GetChildCount();
-    MOZ_ASSERT(childCount <= INT32_MAX,
-               "There shouldn't be over INT32_MAX children");
-    nodeEnd = static_cast<int32_t>(childCount);
+    nodeEnd = aNode->GetChildCount();
   } else {
-    nodeStart = parent->ComputeIndexOf(aNode);
-    nodeEnd = nodeStart + 1;
-    MOZ_ASSERT(nodeStart < nodeEnd, "nodeStart shouldn't be INT32_MAX");
+    nodeStart = parent->ComputeIndexOf_Deprecated(aNode);
+    NS_WARNING_ASSERTION(
+        nodeStart >= 0,
+        "aNode has the parent node but it does not have aNode!");
+    nodeEnd = nodeStart + 1u;
+    MOZ_ASSERT(nodeStart < 0 || static_cast<uint32_t>(nodeStart) < nodeEnd,
+               "nodeStart should be less than nodeEnd");
   }
 
   // XXX nsContentUtils::ComparePoints() may be expensive.  If some callers
@@ -170,27 +206,25 @@ nsresult RangeUtils::CompareNodeToRange(nsINode* aNode,
   // silence the warning. (Bug 1438996)
 
   // is RANGE(start) <= NODE(start) ?
-  Maybe<int32_t> order = nsContentUtils::ComparePoints(
-      aAbstractRange->StartRef().Container(),
-      *aAbstractRange->StartRef().Offset(
-          RangeBoundary::OffsetFilter::kValidOrInvalidOffsets),
+  Maybe<int32_t> order = nsContentUtils::ComparePoints_AllowNegativeOffsets(
+      aStartBoundary.Container(),
+      *aStartBoundary.Offset(
+          RangeBoundaryBase<SPT, SRT>::OffsetFilter::kValidOrInvalidOffsets),
       parent, nodeStart);
   if (NS_WARN_IF(!order)) {
     return NS_ERROR_DOM_WRONG_DOCUMENT_ERR;
   }
   *aNodeIsBeforeRange = *order > 0;
-
   // is RANGE(end) >= NODE(end) ?
   order = nsContentUtils::ComparePoints(
-      aAbstractRange->EndRef().Container(),
-      *aAbstractRange->EndRef().Offset(
-          RangeBoundary::OffsetFilter::kValidOrInvalidOffsets),
+      aEndBoundary.Container(),
+      *aEndBoundary.Offset(
+          RangeBoundaryBase<EPT, ERT>::OffsetFilter::kValidOrInvalidOffsets),
       parent, nodeEnd);
 
   if (NS_WARN_IF(!order)) {
     return NS_ERROR_DOM_WRONG_DOCUMENT_ERR;
   }
-
   *aNodeIsAfterRange = *order < 0;
 
   return NS_OK;

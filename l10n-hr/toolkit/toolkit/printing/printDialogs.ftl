@@ -4,7 +4,7 @@
 
 print-setup =
     .title = Postava stranice
-custom-prompt-title = Prilagođeno...
+custom-prompt-title = Prilagođeno …
 custom-prompt-prompt = Upiši tvoj standardni tekst zaglavlja/podnožja
 basic-tab =
     .label = Format i opcije
@@ -90,13 +90,13 @@ hf-page =
 hf-page-and-total =
     .label = Stranica # od #
 hf-custom =
-    .label = Prilagođeno...
+    .label = Prilagođeno …
 print-preview-window =
     .title = Pregled ispisa
 print-title =
     .value = Naslov:
 print-preparing =
-    .value = Priprema...
+    .value = Pripremanje …
 print-progress =
     .value = Napredak:
 print-window =

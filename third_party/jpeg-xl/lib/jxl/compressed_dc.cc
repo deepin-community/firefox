@@ -23,13 +23,10 @@
 
 #include "lib/jxl/ac_strategy.h"
 #include "lib/jxl/ans_params.h"
-#include "lib/jxl/aux_out.h"
-#include "lib/jxl/aux_out_fwd.h"
 #include "lib/jxl/base/bits.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/data_parallel.h"
 #include "lib/jxl/base/padded_bytes.h"
-#include "lib/jxl/base/profiler.h"
 #include "lib/jxl/base/status.h"
 #include "lib/jxl/chroma_from_luma.h"
 #include "lib/jxl/common.h"
@@ -46,8 +43,16 @@ using D = HWY_FULL(float);
 using DScalar = HWY_CAPPED(float, 1);
 
 // These templates are not found via ADL.
+using hwy::HWY_NAMESPACE::Abs;
+using hwy::HWY_NAMESPACE::Add;
+using hwy::HWY_NAMESPACE::Div;
+using hwy::HWY_NAMESPACE::Max;
+using hwy::HWY_NAMESPACE::Mul;
+using hwy::HWY_NAMESPACE::MulAdd;
 using hwy::HWY_NAMESPACE::Rebind;
+using hwy::HWY_NAMESPACE::Sub;
 using hwy::HWY_NAMESPACE::Vec;
+using hwy::HWY_NAMESPACE::ZeroIfNegative;
 
 // TODO(veluca): optimize constants.
 const float w1 = 0.20345139757231578f;
@@ -88,12 +93,12 @@ JXL_INLINE void ComputePixelChannel(const D d, const float dc_factor,
   const auto w_side = Set(d, w1);
   const auto w_corner = Set(d, w2);
 
-  const auto corner = tl + tr + bl + br;
-  const auto side = ml + mr + tc + bc;
-  *sm = corner * w_corner + side * w_side + *mc * w_center;
+  const auto corner = Add(Add(tl, tr), Add(bl, br));
+  const auto side = Add(Add(ml, mr), Add(tc, bc));
+  *sm = MulAdd(corner, w_corner, MulAdd(side, w_side, Mul(*mc, w_center)));
 
   const auto dc_quant = Set(d, dc_factor);
-  *gap = MaxWorkaround(*gap, Abs((*mc - *sm) / dc_quant));
+  *gap = MaxWorkaround(*gap, Abs(Div(Sub(*mc, *sm), dc_quant)));
 }
 
 template <typename D>
@@ -120,11 +125,11 @@ JXL_INLINE void ComputePixel(
   auto factor = MulAdd(Set(d, -4.0f), gap, Set(d, 3.0f));
   factor = ZeroIfNegative(factor);
 
-  auto out = MulAdd(sm_x - mc_x, factor, mc_x);
+  auto out = MulAdd(Sub(sm_x, mc_x), factor, mc_x);
   Store(out, d, out_rows[0] + x);
-  out = MulAdd(sm_y - mc_y, factor, mc_y);
+  out = MulAdd(Sub(sm_y, mc_y), factor, mc_y);
   Store(out, d, out_rows[1] + x);
-  out = MulAdd(sm_b - mc_b, factor, mc_b);
+  out = MulAdd(Sub(sm_b, mc_b), factor, mc_b);
   Store(out, d, out_rows[2] + x);
 }
 
@@ -139,8 +144,6 @@ void AdaptiveDCSmoothing(const float* dc_factors, Image3F* dc,
   // the x and b channels through color correlation.
   JXL_ASSERT(w1 + w2 < 0.25f);
 
-  PROFILER_FUNC;
-
   Image3F smoothed(xsize, ysize);
   // Fill in borders that the loop below will not. First and last are unused.
   for (size_t c = 0; c < 3; c++) {
@@ -149,7 +152,7 @@ void AdaptiveDCSmoothing(const float* dc_factors, Image3F* dc,
              xsize * sizeof(float));
     }
   }
-  auto process_row = [&](int y, int /*thread*/) {
+  auto process_row = [&](const uint32_t y, size_t /*thread*/) {
     const float* JXL_RESTRICT rows_top[3]{
         dc->ConstPlaneRow(0, y - 1),
         dc->ConstPlaneRow(1, y - 1),
@@ -193,8 +196,8 @@ void AdaptiveDCSmoothing(const float* dc_factors, Image3F* dc,
                             x);
     }
   };
-  RunOnPool(pool, 1, ysize - 1, ThreadPool::SkipInit(), process_row,
-            "DCSmoothingRow");
+  JXL_CHECK(RunOnPool(pool, 1, ysize - 1, ThreadPool::NoInit, process_row,
+                      "DCSmoothingRow"));
   dc->Swap(smoothed);
 }
 
@@ -222,9 +225,9 @@ void DequantDC(const Rect& r, Image3F* dc, ImageB* quant_dc, const Image& in,
         const auto in_q_x = Load(di, quant_row_x + x);
         const auto in_q_y = Load(di, quant_row_y + x);
         const auto in_q_b = Load(di, quant_row_b + x);
-        const auto in_x = ConvertTo(df, in_q_x) * fac_x;
-        const auto in_y = ConvertTo(df, in_q_y) * fac_y;
-        const auto in_b = ConvertTo(df, in_q_b) * fac_b;
+        const auto in_x = Mul(ConvertTo(df, in_q_x), fac_x);
+        const auto in_y = Mul(ConvertTo(df, in_q_y), fac_y);
+        const auto in_b = Mul(ConvertTo(df, in_q_b), fac_b);
         Store(in_y, df, dec_row_y + x);
         Store(MulAdd(in_y, cfl_fac_x, in_x), df, dec_row_x + x);
         Store(MulAdd(in_y, cfl_fac_b, in_b), df, dec_row_b + x);
@@ -243,7 +246,7 @@ void DequantDC(const Rect& r, Image3F* dc, ImageB* quant_dc, const Image& in,
         float* row = rect.PlaneRow(dc, c, y);
         for (size_t x = 0; x < rect.xsize(); x += Lanes(di)) {
           const auto in_q = Load(di, quant_row + x);
-          const auto in = ConvertTo(df, in_q) * fac;
+          const auto in = Mul(ConvertTo(df, in_q), fac);
           Store(in, df, row + x);
         }
       }

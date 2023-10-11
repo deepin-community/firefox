@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = სანიშნების, ისტორიის ან პაროლის მონაცემთა შემცველი პროგრამები ვერ მოიძებნა.
 
@@ -61,8 +73,8 @@ import-items-description = მიუთითეთ გადმოსატა�
 
 import-permissions-page-title = { -brand-short-name } გთხოვთ ნებართვებს
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS საჭიროებს, რომ { -brand-short-name } თქვენი საგანგებო დაშვებით დაუკავშირდეს Safari-ის სანიშნებს. დაწკაპეთ „გაგრძელება” და აირჩიეთ „Bookmarks.plist“ ფაილი, ასარჩევი არედან.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS ითხოვს, რომ { -brand-short-name } მხოლოდ თქვენ მიერ საგანგებოდ გაცემული ნებართვით დაუკავშირდეს Safari-ს მონაცემებს. დაწკაპეთ „გაგრძელება” და აირჩიეთ Safari-ს საქაღალდე ასარჩევ არეში.
 
 import-migrating-page-title = გადმოტანა…
 
@@ -78,23 +90,9 @@ import-done-description = გადმოტანილია შემდე�
 
 import-close-source-browser = სანამ განაგრძობთ დარწმუნდით, რომ არჩეული ბრაუზერი დახურულია.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = { $source }-დან
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = წასაკითხი სია (Safari-დან)
 imported-edge-reading-list = წასაკითხი სია (Edge-დან)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = ფანჯრები და ჩანართები
 browser-data-session-label =
     .value = ფანჯრები და ჩანართები
+
+browser-data-payment-methods-checkbox =
+    .label = გადახდის საშუალებები
+browser-data-payment-methods-label =
+    .value = გადახდის საშუალებები

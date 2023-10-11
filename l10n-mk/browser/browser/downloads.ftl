@@ -13,6 +13,12 @@ downloads-panel =
 
 ##
 
+# The style attribute has the width of the Downloads Panel expressed using
+# a CSS unit. The longest labels that should fit are usually those of
+# in-progress and blocked downloads.
+downloads-panel-items =
+    .style = width: 35em
+
 downloads-cmd-pause =
     .label = Паузирај
     .accesskey = П
@@ -24,35 +30,13 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Откажи
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Отвори ја папката со преземања
-    .accesskey = о
-  
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Покажи во Finder
-    .accesskey = о
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
-downloads-cmd-show-button =
-    .tooltiptext =
-        { PLATFORM() ->
-            [macos] Покажи во Finder
-           *[other] Отвори ја папката со преземања
-        }
 
-downloads-cmd-show-panel =
-    .aria-label =
-        { PLATFORM() ->
-            [macos] Покажи во Finder
-           *[other] Отвори ја папката со преземања
-        }
-downloads-cmd-show-description =
-    .value =
-        { PLATFORM() ->
-            [macos] Покажи во Finder
-           *[other] Отвори ја папката со преземања
-        }
+##
 
 downloads-cmd-show-downloads =
     .label = Прикажи папка за преземања
@@ -124,6 +108,7 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -148,6 +133,14 @@ downloads-history =
 downloads-details =
     .title = Детали за преземање
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
+
 downloads-clear-downloads-button =
     .label = Исчисти ги преземањата
     .tooltiptext = Ги чисти списокот од завшени, откажани и неуспешни преземања
@@ -160,3 +153,17 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Нема преземања во текот на оваа сесија.
+
+## Download errors
+
+downloads-error-alert-title = Грешка во преземањето
+# Variables:
+#   $extension (String): the name of the blocking extension.
+downloads-error-blocked-by = Преземањето не може да се зачува бидејќи е блокирано од { $extension }.
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = Преземањето не може да се зачува бидејќи е блокирано од додаток.
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Преземањето не може да се сними бидејќи настана непозната грешка.
+    
+    Обидете се повторно.

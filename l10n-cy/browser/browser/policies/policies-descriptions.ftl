@@ -13,6 +13,7 @@
 policy-3rdparty = Gosodwch bolisïau y gall WebExtensions gael mynediad atyn nhw trwy chrome.storage.managed.
 policy-AllowedDomainsForApps = Diffinio parthau sy'n cael eu caniatáu i gael mynediad at Google Workpace.
 policy-AppAutoUpdate = Galluogi neu analluogi diweddaru rhaglen yn awtomatig.
+policy-AppUpdatePin = Rhwystro { -brand-short-name } rhag cael ei ddiweddaru y tu hwnt i'r fersiwn penodedig.
 policy-AppUpdateURL = Gosod URL diweddaru ap cyfaddas.
 policy-Authentication = Ffurfweddu dilysu integredig ar gyfer gwefannau sy'n ei gefnogi.
 policy-AutoLaunchProtocolsFromOrigins = Diffiniwch restr o brotocolau allanol y mae modd eu defnyddio o darddiad rhestredig heb annog y defnyddiwr.
@@ -25,6 +26,9 @@ policy-Bookmarks = Creu nodau tudalen yn y bar offer Nodau Tudalen, dewislen Nod
 policy-CaptivePortal = Galluogi neu analluogi'r cymorth porth caeth.
 policy-CertificatesDescription = Ychwanegu tystysgrifau neu ddefnyddio tystysgrifau mewnol.
 policy-Cookies = Caniatáu neu wrthod i wefannau osod cwcis.
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Gosod polisïau sy'n ymwneud â chynwysyddion.
+policy-DisableAccounts = Analluogi gwasanaethau sy'n seiliedig ar gyfrifon, gan gynnwys cydweddu.
 policy-DisabledCiphers = Analluogi seifferau.
 policy-DefaultDownloadDirectory = Gosod y cyfeiriadur llwytho i lawr rhagosodedig.
 policy-DisableAppUpdate = Rhwystro'r wefan rhag diweddaru.
@@ -40,7 +44,7 @@ policy-DisableForgetButton = Rhwystro mynediad at y botwm Anghofio.
 policy-DisableFormHistory = Peidio cofio chwilio a hanes ffurflenni.
 policy-DisablePrimaryPasswordCreation = Os yn wir, nid oes modd creu Prif Cyfrinair.
 policy-DisablePasswordReveal = Peidiwch â gadael i gyfrineiriau gael eu datgelu mewn mewngofnodi sydd wedi'u cadw.
-policy-DisablePocket = Analluogi'r nodwedd i gadw tudalennau gwe i Pocket.
+policy-DisablePocket2 = Analluogi'r nodwedd i gadw tudalennau gwe i { -pocket-brand-name }.
 policy-DisablePrivateBrowsing = Analluogi Pori Preifat.
 policy-DisableProfileImport = Analluogi'r gorchymyn dewislen i fewnforio data o borwr arall.
 policy-DisableProfileRefresh = Analluogi botwm Adnewyddu { -brand-short-name } yn nhudalen about:support
@@ -49,23 +53,26 @@ policy-DisableSecurityBypass = Rhwystro'r defnyddiwr rhag osgoi rhai rhybuddion 
 policy-DisableSetAsDesktopBackground = Analluogi'r dewislen gorchymyn Gosod fel Delwedd Cefndir ar gyfer delwddau.
 policy-DisableSystemAddonUpdate = Rhwystro'r porwr rhag gosod a diweddaru ychwanegion y system.
 policy-DisableTelemetry = Diffodd Telemetreg
+policy-DisableThirdPartyModuleBlocking = Rhwystrwch y defnyddiwr rhag rhwystro modiwlau trydydd parti sy'n cael eu chwistrellu i'r broses { -brand-short-name }.
 policy-DisplayBookmarksToolbar = Dangos y Bar Offer Nodau Tudalen drwy ragosodiad.
 policy-DisplayMenuBar = Dangos y Bar Dewislen drwy ragosodiad
 policy-DNSOverHTTPS = Ffurfweddu DNS dros HTTPS.
-policy-DontCheckDefaultBrowser = Analluogi gwirio am y porwr rhagosodedig wrth gychwyn.
+policy-DontCheckDefaultBrowser = Analluogwch gwirio am y porwr rhagosodedig wrth gychwyn.
 policy-DownloadDirectory = Gosod a chloi'r cyfeiriadur llwytho i lawr.
 # “lock” means that the user won’t be able to change this setting
 policy-EnableTrackingProtection = Galluogi neu analluogi Rhwystro Cynnwys ac o ddewis ei gloi.
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Galluogi neu Analluogi Estyniadau Cyfryngau Amgryptiedig ac o ddewis eu cloi.
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Analluogi rhybuddion yn seiliedig ar estyniad ffeil ar gyfer mathau penodol o ffeiliau ar barthau.
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
 policy-Extensions = Gosod, dadosod neu gloi estyniadau. Mae'r dewis gosod yn cymryd URL neu lwybrau fel paramedrau. Mae'r dewisiadau Dadosod a Chloi yn cymryd dynodiad estyniadau.
 policy-ExtensionSettings = Rheoli pob agwedd o osod estyniad.
 policy-ExtensionUpdate = Galluogi neu analluogi diweddaru estyniadau'n awtomatig.
-policy-FirefoxHome = Ffurfweddu Firefox Home.
-policy-FlashPlugin = Caniatáu neu wrthod defnydd o'r ychwanegyn Flash.
+policy-FirefoxHome2 = Ffurfweddu { -firefox-home-brand-name }.
+policy-FirefoxSuggest = Ffurfweddu { -firefox-suggest-brand-name }.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Gorfodi llywio safle mewnrwyd yn uniongyrchol yn lle chwilio wrth deipio gair yn y bar cyfeiriad.
 policy-Handlers = Ffurfweddu trinwyr rhaglenni rhagosodedig.
 policy-HardwareAcceleration = Os gau, diffodd cyflymu caledwedd.
 # “lock” means that the user won’t be able to change this setting
@@ -92,6 +99,7 @@ policy-OfferToSaveLoginsDefault = Gosodwch y gwerth ragosodedig ar gyfer caniat�
 policy-OverrideFirstRunPage = Diystyru y dudalen rhediad gyntaf. Gosod y polisi hwn i gwag os ydych am analluogi'r dudalen rhediad cyntaf.
 policy-OverridePostUpdatePage = Diystyru'r dudalen ôl ddiweddaru "Beth sy'n Newydd". Gosodwch y polisi hwn i gwag os hoffech chi analluogi'r dudalen ôl ddiweddaru.
 policy-PasswordManagerEnabled = Galluogi cadw cyfrineiriau i'r rheolwr cyfrinair.
+policy-PasswordManagerExceptions = Rhwystro { -brand-short-name } rhag cadw cyfrineiriau ar gyfer gwefannau penodol.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Analluogwch neu ffurfweddu PDF.js, y darllenydd PDF mewnol yn { -brand-short-name }.
 policy-Permissions2 = Ffurfweddwch y caniatâd ar gyfer camera, meicroffon, lleoliadau, hysbysiadau ac awtochwarae.
@@ -105,13 +113,15 @@ policy-SanitizeOnShutdown2 = Clirio data llywio wrth gau.
 policy-SearchBar = Gosod y lleoliad ragosodedig y bar chwilio. Mae'r defnyddiwr dal yn cael ei gyfaddasu.
 policy-SearchEngines = Ffurfweddu gosodiadau peiriannau chwilio. Dim ond yn y fersiwn Extended Support Release (ESR) mae'r polisi hwn ar gael.
 policy-SearchSuggestEnabled = Galluogi neu analluogi awgrymiadau chwilio.
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Gosod modiwlau PKCS #11.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Ychwanegu neu ddileu modiwlau PKCS #11.
 policy-ShowHomeButton = Dangos y botwm cartref ar y bar offer.
 policy-SSLVersionMax = Gosodwch y fersiwn SSL uchaf.
 policy-SSLVersionMin = Gosodwch y fersiwn SSL lleiaf.
+policy-StartDownloadsInTempDirectory = Gorfodi llwytho i lawr i gychwyn mewn lleoliad lleol, dros dro yn hytrach na'r cyfeiriadur llwytho i lawr rhagosodedig.
 policy-SupportMenu = Ychwanegu eitem ddewislen cymorth cyfaddas i'r ddewislen cymorth.
 policy-UserMessaging = Peidio â dangos rhai negeseuon i'r defnyddiwr.
+policy-UseSystemPrintDialog = Argraffu gan ddefnyddio deialog argraffu'r system.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Rhwystro gwefannau rhag derbyn ymweliadau. Gw. dogfennaeth am ragor o wybodaeth ar y fformat.
 policy-Windows10SSO = Caniatáu mewngofnodiad unigol ar gyfer cyfrifon Microsoft, gwaith ac ysgol.

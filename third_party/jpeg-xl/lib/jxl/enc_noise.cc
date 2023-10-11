@@ -14,12 +14,12 @@
 #include <utility>
 
 #include "lib/jxl/base/compiler_specific.h"
-#include "lib/jxl/base/robust_statistics.h"
 #include "lib/jxl/chroma_from_luma.h"
 #include "lib/jxl/convolve.h"
+#include "lib/jxl/enc_aux_out.h"
+#include "lib/jxl/enc_optimize.h"
 #include "lib/jxl/image_ops.h"
 #include "lib/jxl/opsin_params.h"
-#include "lib/jxl/optimize.h"
 
 namespace jxl {
 namespace {
@@ -75,16 +75,12 @@ class NoiseHistogram {
   int Get(const float x) const { return bins[Index(x)]; }
   int Bin(const size_t bin) const { return bins[bin]; }
 
-  void Print() const {
-    for (unsigned int bin : bins) {
-      printf("%d\n", bin);
-    }
-  }
-
   int Mode() const {
-    uint32_t cdf[kBins];
-    std::partial_sum(bins, bins + kBins, cdf);
-    return HalfRangeMode()(cdf, kBins);
+    size_t max_idx = 0;
+    for (size_t i = 0; i < kBins; i++) {
+      if (bins[i] > bins[max_idx]) max_idx = i;
+    }
+    return max_idx;
   }
 
   double Quantile(double q01) const {
@@ -372,7 +368,7 @@ void EncodeNoise(const NoiseParams& noise_params, BitWriter* writer,
   for (float i : noise_params.lut) {
     EncodeFloatParam(i, kNoisePrecision, writer);
   }
-  ReclaimAndCharge(writer, &allotment, layer, aux_out);
+  allotment.ReclaimAndCharge(writer, layer, aux_out);
 }
 
 }  // namespace jxl

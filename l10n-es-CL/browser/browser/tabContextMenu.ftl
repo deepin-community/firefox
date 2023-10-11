@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Seleccionar todas las pestañas
     .accesskey = S
+tab-context-play-tab =
+    .label = Reproducir pestaña
+    .accesskey = P
+tab-context-play-tabs =
+    .label = Reproducir pestañas
+    .accesskey = y
 duplicate-tab =
     .label = Duplicar pestaña
     .accesskey = D
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Guardar pestañas en marcadores…
     .accesskey = k
-bookmark-tab =
-    .label = Marcar pestaña
+tab-context-bookmark-tab =
+    .label = Marcar pestaña…
     .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = Abrir en una nueva pestaña contenedora
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Compartir
     .accesskey = h
-tab-context-share-more =
-    .label = Más…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -83,14 +87,6 @@ tab-context-reopen-closed-tabs =
            *[other] Reabrir pestañas cerradas
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Cerrar pestaña
-            [one] Cerrar pestaña
-           *[other] Cerrar pestañas
-        }
-    .accesskey = C
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

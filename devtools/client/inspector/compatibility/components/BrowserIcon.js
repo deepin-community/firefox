@@ -4,11 +4,13 @@
 
 "use strict";
 
-const { PureComponent } = require("devtools/client/shared/vendor/react");
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
+const {
+  PureComponent,
+} = require("resource://devtools/client/shared/vendor/react.js");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
 
-const Types = require("devtools/client/inspector/compatibility/types");
+const Types = require("resource://devtools/client/inspector/compatibility/types.js");
 
 const ICONS = {
   firefox: {
@@ -39,18 +41,23 @@ const ICONS = {
     src: "chrome://devtools/skin/images/browsers/edge.svg",
     isMobileIconNeeded: false,
   },
+  ie: {
+    src: "chrome://devtools/skin/images/browsers/ie.svg",
+    isMobileIconNeeded: false,
+  },
 };
 
 class BrowserIcon extends PureComponent {
   static get propTypes() {
     return {
       id: Types.browser.id,
-      title: PropTypes.string.isRequired,
+      title: PropTypes.string,
+      name: PropTypes.string,
     };
   }
 
   render() {
-    const { id, title } = this.props;
+    const { id, name, title } = this.props;
 
     const icon = ICONS[id];
 
@@ -64,7 +71,7 @@ class BrowserIcon extends PureComponent {
       },
       dom.img({
         className: "compatibility-browser-icon__image",
-        alt: title,
+        alt: name || title,
         title,
         src: icon.src,
       })

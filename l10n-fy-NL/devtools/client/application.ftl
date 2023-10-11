@@ -72,7 +72,7 @@ manifest-view-header = App-manifest
 manifest-empty-intro2 = Gjin webapp-manifest detektearre
 
 # The link will open https://developer.mozilla.org/en-US/docs/Web/Manifest
-manifest-empty-intro-link = Lear hoe't jo in manifest tafoegje
+manifest-empty-intro-link = Lear hoe’t jo in manifest tafoegje
 
 # Header for the Errors and Warnings section of Manifest inspection displayed in the application panel.
 manifest-item-warnings = Flaters en warskôgingen
@@ -144,4 +144,3 @@ icon-warning =
 icon-error =
     .alt = Flaterpiktogram
     .title = Flater
-

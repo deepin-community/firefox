@@ -73,8 +73,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } defnyddiwr
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Cydweddu eich nodau tudalen ym mhob man
@@ -102,24 +100,6 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Darllenwch y nodiadau rhyddhau
 
-## Search Bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 # Variables:
@@ -136,20 +116,6 @@ cfr-doorhanger-milestone-heading2 =
     }
 cfr-doorhanger-milestone-ok-button = Gweld y Cyfan
     .accesskey = G
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = Cau
     .accesskey = C
 
@@ -164,13 +130,6 @@ cfr-doorhanger-doh-secondary-button = Analluogi
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Mae eich preifatrwydd yn bwysig. Erbyn hyn mae { -brand-short-name } yn ynysu, neu'n creu blychau tywod er mwyn cadw gwefannau oddi wrth ei gilydd, sy'n ei gwneud hi'n anoddach i hacwyr ddwyn cyfrineiriau, rhifau cardiau credyd, a manylion sensitif arall, oddi arnoch.
-cfr-doorhanger-fission-header = Ynysu Gwefan
-cfr-doorhanger-fission-primary-button = Iawn, Wedi deall!
-    .accesskey = I
-cfr-doorhanger-fission-secondary-button = Dysgu rhagor
-    .accesskey = D
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Efallai na fydd fideos ar y wefan hon yn chwarae'n gywir ar y fersiwn hon o { -brand-short-name }. I gael cefnogaeth fideo lawn, diweddarwch { -brand-short-name } nawr.
@@ -178,15 +137,134 @@ cfr-doorhanger-video-support-header = Diweddarwch { -brand-short-name } i chwara
 cfr-doorhanger-video-support-primary-button = Diweddarwch Nawr
     .accesskey = D
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
 spotlight-public-wifi-vpn-header = Mae'n edrych fel eich bod chi'n defnyddio Wi-Fi cyhoeddus
 spotlight-public-wifi-vpn-body = I guddio'ch lleoliad a'ch gweithgaredd pori, ystyriwch Rwydwaith Preifat Rhithwir. Bydd yn helpu i'ch diogelu wrth bori mewn mannau cyhoeddus fel meysydd awyr a siopau coffi.
 spotlight-public-wifi-vpn-primary-button = Cadwch yn breifat gyda { -mozilla-vpn-brand-name }
     .accesskey = b
 spotlight-public-wifi-vpn-link = Nid Nawr
     .accesskey = N
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Mae rhyngrwyd gwell yn dechrau gyda chi
+spotlight-better-internet-body = Pan fyddwch yn defnyddio { -brand-short-name }, rydych yn cefnogi rhyngrwyd agored a hygyrch sy'n well i bawb.
+spotlight-peace-mind-header = Rydyn ni yn eich cefnogi chi
+spotlight-peace-mind-body = Bob mis, ar gyfartaledd, mae { -brand-short-name } yn rhwystro dros 3,000 o dracwyr fesul defnyddiwr . Oherwydd dylai dim byd, yn enwedig niwsans preifatrwydd fel tracwyr, sefyll rhyngoch chi a'r rhyngrwyd da.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Cadw yn y Doc
+       *[other] Pinio i'r bar tasgau
+    }
+spotlight-pin-secondary-button = Nid nawr
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+mr2022-background-update-toast-title = { -brand-short-name } newydd. Yn fwy preifat. Llai o dracwyr. Dim cyfaddawdu.
+mr2022-background-update-toast-text = Rhowch gynnig ar y { -brand-short-name } mwyaf newydd nawr, wedi'i uwchraddio gyda'n diogelwch gwrth-dracio cryfaf eto.
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it
+# using a variable font like Arial): the button can only fit 1-2
+# additional characters, exceeding characters will be truncated.
+mr2022-background-update-toast-primary-button-label = Agorwch { -brand-shorter-name } Nawr
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = Atgoffwch Fi Nes ymlaen
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Rhowch gynnig arni
+    .accesskey = R
+firefoxview-cfr-secondarybutton = Nid nawr
+    .accesskey = N
+firefoxview-cfr-header-v2 = Ail gychwyn yn syth o'r lle roeddech chi
+firefoxview-cfr-body-v2 = Cael tabiau sydd wedi'u cau'n ddiweddar nôl, a symud yn rhwydd rhwng dyfeisiau gyda { -firefoxview-brand-name }.
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = Dywedwch helo wrth { -firefoxview-brand-name }
+
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = Eisiau'r tab agored hwnnw ar eich ffôn? Gafaelwch ynddo. Oes angen y wefan hon rydych newydd ymweld â hi? Pwff, mae'n ôl gyda { -firefoxview-brand-name }.
+firefoxview-spotlight-promo-primarybutton = Dyma sut mae'n gweithio...
+firefoxview-spotlight-promo-secondarybutton = Hepgor
+
+## Colorways expiry reminder CFR
+
+colorways-cfr-primarybutton = Dewis cyfuniad lliw
+    .accesskey = D
+
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = Lliwiwch eich porwr gyda lliwiau unigryw { -brand-short-name } wedi'u hysbrydoli gan leisiau a newidiodd ddiwylliant.
+colorways-cfr-header-28days = Mae cyfuniadau lliw Lleisiau Annibynnol yn dod i ben Ionawr 16
+colorways-cfr-header-14days = Mae cyfuniadau lliw Lleisiau Annibynnol yn dod i ben mewn pythefnos
+colorways-cfr-header-7days = Mae cyfuniadau lliw Lleisiau Annibynnol yn dod i ben yr wythnos hon
+colorways-cfr-header-today = Mae cyfuniadau lliw Lleisiau Annibynnol yn dod i ben heddiw
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-header = Caniatáu i { -brand-short-name } wrthod baneri cwci?
+cfr-cbh-body = Gall { -brand-short-name } wrthod llawer o geisiadau baner cwci yn awtomatig.
+cfr-cbh-confirm-button = Gwrthod baneri cwci
+    .accesskey = G
+cfr-cbh-dismiss-button = Nid nawr
+    .accesskey = N
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+july-jam-headline = Rydyn ni yn eich cefnogi chi
+july-jam-body = Bob mis, mae { -brand-short-name } yn rhwystro 3,000+ o dracwyr fesul defnyddiwr ar gyfartaledd, gan roi mynediad diogel a chyflym i'r rhyngrwyd da i chi.
+july-jam-set-default-primary = Agor fy nolenni gyda { -brand-short-name }
+fox-doodle-pin-headline = Croeso nôl
+
+# “indie” is short for the term “independent”.
+# In this instance, free from outside influence or control.
+fox-doodle-pin-body = Dyma neges atgoffa cyflym y gallwch chi gadw'ch hoff borwr annibynnol un clic yn unig i ffwrdd.
+fox-doodle-pin-primary = Agor fy nolenni gyda { -brand-short-name }
+fox-doodle-pin-secondary = Nid nawr
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+set-default-pdf-handler-headline = <strong>Mae'ch ffeiliau PDF nawr yn agor yn { -brand-short-name }.</strong> Golygwch neu llofnodwch ffurflenni o fewn eich porwr. I newid, chwiliwch am "PDF" yn y gosodiadau.
+set-default-pdf-handler-primary = Iawn
+
+## FxA sync CFR
+
+fxa-sync-cfr-header = Dyfais newydd yn eich dyfodol?
+fxa-sync-cfr-body = Gwnewch yn siŵr fod eich nodau tudalen, cyfrineiriau a thabiau diweddaraf yn dod gyda chi unrhyw bryd y byddwch yn agor porwr { -brand-product-name } newydd.
+fxa-sync-cfr-primary = Dysgu rhagor
+    .accesskey = D
+fxa-sync-cfr-secondary = Atgoffwch fi yn nes ymlaen
+    .accesskey = A
+
+## Device Migration FxA Spotlight
+
+device-migration-fxa-spotlight-header = Yn defnyddio dyfais hŷn?
+device-migration-fxa-spotlight-body = Gwnewch gopi wrth gefn o'ch data i wneud yn siŵr nad ydych chi'n colli manylion pwysig fel nodau tudalen a chyfrineiriau — yn enwedig os byddwch chi'n newid i ddyfais newydd.
+device-migration-fxa-spotlight-primary-button = Sut i wneud copi wrth gefn o fy nata
+device-migration-fxa-spotlight-link = Atgoffwch fi yn nes ymlaen

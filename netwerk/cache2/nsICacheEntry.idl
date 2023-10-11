@@ -4,14 +4,13 @@
 
 #include "nsISupports.idl"
 
-interface nsIInputStream;
-interface nsIOutputStream;
 interface nsIAsyncOutputStream;
 interface nsICacheEntryDoomCallback;
-
-interface nsIFile;
 interface nsICacheEntryMetaDataVisitor;
+interface nsIInputStream;
 interface nsILoadContextInfo;
+interface nsIOutputStream;
+interface nsITransportSecurityInfo;
 
 [scriptable, uuid(607c2a2c-0a48-40b9-a956-8cf2bb9857cf)]
 interface nsICacheEntry : nsISupports
@@ -56,7 +55,7 @@ interface nsICacheEntry : nsISupports
   /**
    * Get the number of times the cache entry has been opened.
    */
-  readonly attribute long  fetchCount;
+  readonly attribute uint32_t  fetchCount;
 
   /**
    * Get the last time the cache entry was opened (in seconds since the Epoch).
@@ -126,6 +125,14 @@ interface nsICacheEntry : nsISupports
   readonly attribute boolean isForcedValid;
 
   /**
+   * This method gets called to mark the actual use of the forced-valid entry.
+   * This is necessary for telemetry, so when the entry eventually gets
+   * evicted we can report whether it was ever used or not.
+   * If the entry was not forced-valid, then this operation has no effect.
+   */
+  void markForcedValidUse();
+
+  /**
    * Open blocking input stream to cache data.  Use the stream transport
    * service to asynchronously read this stream on a background thread.
    * The returned stream MAY implement nsISeekableStream.
@@ -161,7 +168,7 @@ interface nsICacheEntry : nsISupports
   /**
    * Get/set security info on the cache entry for this descriptor.
    */
-  attribute nsISupports securityInfo;
+  attribute nsITransportSecurityInfo securityInfo;
 
   /**
    * Get the size of the cache entry data, as stored. This may differ

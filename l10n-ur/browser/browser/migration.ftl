@@ -30,6 +30,9 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = کروم کینری
     .accesskey = ی
@@ -75,23 +78,9 @@ import-done-description = مندرجہ ذیل اشیا کامیابی سے در�
 
 import-close-source-browser = جاری رکھنے سے پہلے براہ کرم یقینی بنائیں کے منتخب براؤزر بند کر دیا ہے۔
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = { $source } سے
-
 source-name-ie = انٹرنیٹ ایکسپلورر
 source-name-edge = مائیکروسافٹ عیدج
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = سفاری
-source-name-canary = Google Chrome کینری
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome بیٹا
-source-name-chrome-dev = Google Chrome ڈیو
-source-name-chromium = کرومیم
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 قابل بھروسا براؤزر
 
 imported-safari-reading-list = فہرست پڑھ رہا ہے (سفاری سے)
 imported-edge-reading-list = فہرست پڑھ رہا ہے (عیدج سے)
@@ -166,3 +155,4 @@ browser-data-session-checkbox =
     .label = دریچے اور ٹیب
 browser-data-session-label =
     .value = دریچے اور ٹیب
+

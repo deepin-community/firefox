@@ -8,6 +8,7 @@
 #define mozilla_extensions_ExtensionAPIBase_h
 
 #include "mozilla/dom/BindingDeclarations.h"
+#include "mozilla/dom/FunctionBinding.h"
 #include "mozilla/dom/PromiseNativeHandler.h"
 #include "mozilla/ErrorResult.h"
 
@@ -21,28 +22,42 @@ class Function;
 
 namespace extensions {
 
+#define NS_IMPL_WEBEXT_EVENTMGR_WITH_DATAMEMBER(            \
+    _class, _eventName, _eventGetterName, _eventDataMember) \
+  ExtensionEventManager* _class::_eventGetterName() {       \
+    if (!(_eventDataMember)) {                              \
+      (_eventDataMember) = CreateEventManager(_eventName);  \
+    }                                                       \
+    return (_eventDataMember);                              \
+  }
+#define NS_IMPL_WEBEXT_EVENTMGR(_class, _eventName, _eventGetterName) \
+  NS_IMPL_WEBEXT_EVENTMGR_WITH_DATAMEMBER(                            \
+      _class, _eventName, _eventGetterName, m##_eventGetterName##EventMgr)
+
+#define NS_IMPL_WEBEXT_SETTING_WITH_DATAMEMBER(                   \
+    _class, _settingName, _settingGetterName, _settingDataMember) \
+  ExtensionSetting* _class::_settingGetterName() {                \
+    if (!(_settingDataMember)) {                                  \
+      (_settingDataMember) = CreateSetting(_settingName);         \
+    }                                                             \
+    return (_settingDataMember);                                  \
+  }
+#define NS_IMPL_WEBEXT_SETTING(_class, _settingName, _settingGetterName) \
+  NS_IMPL_WEBEXT_SETTING_WITH_DATAMEMBER(_class, _settingName,           \
+                                         _settingGetterName,             \
+                                         m##_settingGetterName##Setting)
+
 class ExtensionAPIAddRemoveListener;
 class ExtensionAPICallFunctionNoReturn;
 class ExtensionAPICallSyncFunction;
 class ExtensionAPICallAsyncFunction;
 class ExtensionAPIGetProperty;
+class ExtensionBrowser;
 class ExtensionEventManager;
+class ExtensionPort;
+class ExtensionSetting;
 
 class ExtensionAPIBase {
- protected:
-  virtual nsIGlobalObject* GetGlobalObject() const = 0;
-  virtual nsString GetAPINamespace() const = 0;
-  virtual nsString GetAPIObjectType() const = 0;
-  virtual nsString GetAPIObjectId() const = 0;
-
- private:
-  void CallWebExtMethodAsyncInternal(JSContext* aCx,
-                                     const nsAString& aApiMethod,
-                                     const dom::Sequence<JS::Value>& aArgs,
-                                     const RefPtr<dom::Function>& aCallback,
-                                     JS::MutableHandle<JS::Value> aRetval,
-                                     ErrorResult& aRv);
-
  public:
   // WebExtensionStub methods shared between multiple API namespaces.
 
@@ -70,6 +85,15 @@ class ExtensionAPIBase {
                                 JS::MutableHandle<JS::Value> aRetVal,
                                 ErrorResult& aRv);
 
+  virtual void CallWebExtMethodReturnsString(
+      JSContext* aCx, const nsAString& aApiMethod,
+      const dom::Sequence<JS::Value>& aArgs, nsAString& aRetVal,
+      ErrorResult& aRv);
+
+  virtual already_AddRefed<ExtensionPort> CallWebExtMethodReturnsPort(
+      JSContext* aCx, const nsAString& aApiMethod,
+      const dom::Sequence<JS::Value>& aArgs, ErrorResult& aRv);
+
   virtual void CallWebExtMethodAsync(
       JSContext* aCx, const nsAString& aApiMethod,
       const dom::Sequence<JS::Value>& aArgs,
@@ -81,9 +105,19 @@ class ExtensionAPIBase {
       const dom::Sequence<JS::Value>& aArgs,
       JS::MutableHandle<JS::Value> aRetVal, ErrorResult& aRv);
 
+  virtual void GetWebExtPropertyAsString(const nsString& aPropertyName,
+                                         dom::DOMString& aRetval);
+
+  virtual void GetWebExtPropertyAsJSValue(JSContext* aCx,
+                                          const nsAString& aPropertyName,
+                                          JS::MutableHandle<JS::Value> aRetval);
+
   // API Requests helpers.
   already_AddRefed<ExtensionEventManager> CreateEventManager(
       const nsAString& aEventName);
+
+  already_AddRefed<ExtensionSetting> CreateSetting(
+      const nsAString& aSettingName);
 
   RefPtr<ExtensionAPICallFunctionNoReturn> CallFunctionNoReturn(
       const nsAString& aApiMethod);
@@ -103,6 +137,21 @@ class ExtensionAPIBase {
       const nsAString& aEventName);
 
   static void ThrowUnexpectedError(JSContext* aCx, ErrorResult& aRv);
+
+ protected:
+  virtual nsIGlobalObject* GetGlobalObject() const = 0;
+  virtual ExtensionBrowser* GetExtensionBrowser() const = 0;
+  virtual nsString GetAPINamespace() const = 0;
+  virtual nsString GetAPIObjectType() const = 0;
+  virtual nsString GetAPIObjectId() const = 0;
+
+ private:
+  void CallWebExtMethodAsyncInternal(JSContext* aCx,
+                                     const nsAString& aApiMethod,
+                                     const dom::Sequence<JS::Value>& aArgs,
+                                     const RefPtr<dom::Function>& aCallback,
+                                     JS::MutableHandle<JS::Value> aRetval,
+                                     ErrorResult& aRv);
 };
 
 class ExtensionAPINamespace : public ExtensionAPIBase {
@@ -116,23 +165,31 @@ class ChromeCompatCallbackHandler final : public dom::PromiseNativeHandler {
  public:
   NS_DECL_THREADSAFE_ISUPPORTS
 
-  static void Create(dom::Promise* aPromise,
+  static void Create(ExtensionBrowser* aExtensionBrowser,
+                     dom::Promise* aPromise,
                      const RefPtr<dom::Function>& aCallback);
 
-  MOZ_CAN_RUN_SCRIPT void ResolvedCallback(
-      JSContext* aCx, JS::Handle<JS::Value> aValue) override;
-  MOZ_CAN_RUN_SCRIPT void RejectedCallback(
-      JSContext* aCx, JS::Handle<JS::Value> aValue) override;
+  MOZ_CAN_RUN_SCRIPT void ResolvedCallback(JSContext* aCx,
+                                           JS::Handle<JS::Value> aValue,
+                                           ErrorResult& aRv) override;
+  MOZ_CAN_RUN_SCRIPT void RejectedCallback(JSContext* aCx,
+                                           JS::Handle<JS::Value> aValue,
+                                           ErrorResult& aRv) override;
 
  private:
-  explicit ChromeCompatCallbackHandler(const RefPtr<dom::Function>& aCallback)
-      : mCallback(aCallback) {
+  ChromeCompatCallbackHandler(ExtensionBrowser* aExtensionBrowser,
+                              const RefPtr<dom::Function>& aCallback)
+      : mCallback(aCallback), mExtensionBrowser(aExtensionBrowser) {
     MOZ_ASSERT(aCallback);
+    MOZ_ASSERT(aExtensionBrowser);
   }
 
   ~ChromeCompatCallbackHandler() = default;
 
+  void ReportUncheckedLastError(JSContext* aCx, JS::Handle<JS::Value> aValue);
+
   RefPtr<dom::Function> mCallback;
+  RefPtr<ExtensionBrowser> mExtensionBrowser;
 };
 
 }  // namespace extensions

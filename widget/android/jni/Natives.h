@@ -8,14 +8,12 @@
 #define mozilla_jni_Natives_h__
 
 #include <jni.h>
-
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
 #include "mozilla/RefPtr.h"
 #include "mozilla/RWLock.h"
-#include "mozilla/Tuple.h"
-#include "mozilla/TypeTraits.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/Unused.h"
 #include "mozilla/WeakPtr.h"
@@ -46,6 +44,10 @@ static NativeException NullWeakPtr() {
 }
 
 namespace mozilla {
+
+template <typename ResolveValueT, typename RejectValueT, bool IsExclusive>
+class MozPromise;
+
 namespace jni {
 
 /**
@@ -600,9 +602,11 @@ class MOZ_HEAP_CLASS NativeWeakPtrControlBlock final {
     return nativeImpl;
   }
 
+  MOZ_PUSH_IGNORE_THREAD_SAFETY
   void Lock() const { mLock.ReadLock(); }
 
   void Unlock() const { mLock.ReadUnlock(); }
+  MOZ_POP_THREAD_SAFETY
 
 #if defined(DEBUG)
   // This is kind of expensive, so we only support it in debug builds.
@@ -619,73 +623,8 @@ class MOZ_HEAP_CLASS NativeWeakPtrControlBlock final {
 
  private:
   const mozilla::jni::Object::WeakRef mJavaOwner;
-  mutable RWLock mLock;  // Protects mNativeImpl
+  mutable RWLock mLock MOZ_UNANNOTATED;  // Protects mNativeImpl
   StorageType mNativeImpl;
-};
-
-/**
- * When a NativeWeakPtr is detached from its owning Java object, the calling
- * thread invokes the implementation's OnWeakNonIntrusiveDetach to perform
- * cleanup. We complete the remainder of the cleanup sequence on the Gecko
- * main thread by expecting OnWeakNonIntrusiveDetach implementations to invoke
- * this Runnable before exiting. It will move itself to the main thread if it
- * is not already there.
- */
-template <typename NativeImpl>
-class NativeWeakPtrDetachRunnable final : public Runnable {
- public:
-  NativeWeakPtrDetachRunnable(
-      already_AddRefed<detail::NativeWeakPtrControlBlock<NativeImpl>> aCtlBlock,
-      const Object::LocalRef& aOwner,
-      typename NativeWeakPtrControlBlockStorageTraits<NativeImpl>::Type
-          aNativeImpl)
-      : Runnable("mozilla::jni::detail::NativeWeakPtrDetachRunnable"),
-        mCtlBlock(aCtlBlock),
-        mOwner(aOwner),
-        mNativeImpl(std::move(aNativeImpl)),
-        mHasRun(false) {
-    MOZ_RELEASE_ASSERT(!!mCtlBlock);
-    MOZ_RELEASE_ASSERT(!!mNativeImpl);
-  }
-
-  NS_INLINE_DECL_REFCOUNTING_INHERITED(NativeWeakPtrDetachRunnable, Runnable)
-
-  NS_IMETHOD Run() override {
-    mHasRun = true;
-
-    if (!NS_IsMainThread()) {
-      NS_DispatchToMainThread(this);
-      return NS_OK;
-    }
-
-    // Get the owner object's native implementation
-    auto owner = ToLocalRef(mOwner);
-    auto attachedNativeImpl = NativePtrTraits<NativeImpl>::Get(owner);
-    MOZ_RELEASE_ASSERT(!!attachedNativeImpl);
-
-    // NativePtrTraits::ClearFinish cleans out the JNIObject's handle, which
-    // obviously we don't want to attempt unless that handle still points to
-    // our native implementation.
-    if (attachedNativeImpl->IsSame(mCtlBlock)) {
-      NativePtrTraits<NativeImpl>::ClearFinish(owner);
-    }
-
-    // Now we destroy that native object.
-    mNativeImpl = nullptr;
-    return NS_OK;
-  }
-
- private:
-  ~NativeWeakPtrDetachRunnable() {
-    // Guard against somebody forgetting to call this runnable.
-    MOZ_RELEASE_ASSERT(mHasRun, "You must run/dispatch this runnable!");
-  }
-
- private:
-  RefPtr<detail::NativeWeakPtrControlBlock<NativeImpl>> mCtlBlock;
-  Object::GlobalRef mOwner;
-  typename NativeWeakPtrControlBlockStorageTraits<NativeImpl>::Type mNativeImpl;
-  bool mHasRun;
 };
 
 /**
@@ -755,6 +694,8 @@ class MOZ_STACK_CLASS Accessor final {
 
 }  // namespace detail
 
+using DetachPromise = mozilla::MozPromise<bool, nsresult, true>;
+
 /**
  * This class implements support for thread-safe weak pointers to native objects
  * that are owned by Java objects deriving from JNIObject.
@@ -791,31 +732,7 @@ class NativeWeakPtr {
    * Detach the underlying object's strong reference from its owning Java object
    * and clean it up.
    */
-  void Detach() {
-    if (!IsAttached()) {
-      // Never attached to begin with; no-op
-      return;
-    }
-
-    auto native = mCtlBlock->Clear();
-    if (!native) {
-      // Detach already in progress
-      return;
-    }
-
-    Object::LocalRef owner(mCtlBlock->GetJavaOwner());
-    MOZ_RELEASE_ASSERT(!!owner);
-
-    // Save the raw pointer before we move native into the runnable so that we
-    // may call OnWeakNonIntrusiveDetach on it even after moving native into
-    // the runnable.
-    NativeImpl* rawImpl =
-        detail::NativeWeakPtrControlBlock<NativeImpl>::StorageTraits::AsRaw(
-            native);
-    rawImpl->OnWeakNonIntrusiveDetach(
-        do_AddRef(new NativeWeakPtrDetachRunnable<NativeImpl>(
-            mCtlBlock.forget(), owner, std::move(native))));
-  }
+  RefPtr<DetachPromise> Detach();
 
   /**
    * This method does not indicate whether or not the weak pointer is still
@@ -1122,7 +1039,8 @@ namespace detail {
 // JNI ref arguments as global refs to avoid the arguments going out of scope.
 template <typename T>
 struct ProxyArg {
-  static_assert(mozilla::IsPod<T>::value, "T must be primitive type");
+  static_assert(std::is_trivial_v<T> && std::is_standard_layout_v<T>,
+                "T must be primitive type");
 
   // Primitive types can be saved by value.
   typedef T Type;
@@ -1181,7 +1099,7 @@ class ProxyNativeCall {
   // Saved this arg.
   typename ThisArgClass::GlobalRef mThisArg;
   // Saved arguments.
-  mozilla::Tuple<typename ProxyArg<Args>::Type...> mArgs;
+  std::tuple<typename ProxyArg<Args>::Type...> mArgs;
 
   // We cannot use IsStatic and HasThisArg directly (without going through
   // extra hoops) because GCC complains about invalid overloads, so we use
@@ -1190,13 +1108,13 @@ class ProxyNativeCall {
   template <bool Static, bool ThisArg, size_t... Indices>
   std::enable_if_t<Static && ThisArg, void> Call(
       const Class::LocalRef& cls, std::index_sequence<Indices...>) const {
-    (*mNativeCall)(cls, mozilla::Get<Indices>(mArgs)...);
+    (*mNativeCall)(cls, std::get<Indices>(mArgs)...);
   }
 
   template <bool Static, bool ThisArg, size_t... Indices>
   std::enable_if_t<Static && !ThisArg, void> Call(
       const Class::LocalRef& cls, std::index_sequence<Indices...>) const {
-    (*mNativeCall)(mozilla::Get<Indices>(mArgs)...);
+    (*mNativeCall)(std::get<Indices>(mArgs)...);
   }
 
   template <bool Static, bool ThisArg, size_t... Indices>
@@ -1205,7 +1123,7 @@ class ProxyNativeCall {
       std::index_sequence<Indices...>) const {
     auto impl = NativePtrTraits<Impl>::Access(NativePtrTraits<Impl>::Get(inst));
     MOZ_CATCH_JNI_EXCEPTION(inst.Env());
-    (impl->*mNativeCall)(inst, mozilla::Get<Indices>(mArgs)...);
+    (impl->*mNativeCall)(inst, std::get<Indices>(mArgs)...);
   }
 
   template <bool Static, bool ThisArg, size_t... Indices>
@@ -1214,12 +1132,13 @@ class ProxyNativeCall {
       std::index_sequence<Indices...>) const {
     auto impl = NativePtrTraits<Impl>::Access(NativePtrTraits<Impl>::Get(inst));
     MOZ_CATCH_JNI_EXCEPTION(inst.Env());
-    (impl->*mNativeCall)(mozilla::Get<Indices>(mArgs)...);
+    (impl->*mNativeCall)(std::get<Indices>(mArgs)...);
   }
 
   template <size_t... Indices>
   void Clear(JNIEnv* env, std::index_sequence<Indices...>) {
-    int dummy[] = {(ProxyArg<Args>::Clear(env, Get<Indices>(mArgs)), 0)...};
+    int dummy[] = {
+        (ProxyArg<Args>::Clear(env, std::get<Indices>(mArgs)), 0)...};
     mozilla::Unused << dummy;
   }
 

@@ -5,7 +5,7 @@
 
 // Test that Ctrl+Space displays the autocompletion popup when it's hidden.
 
-const TEST_URI = `data:text/html;charset=utf-8,
+const TEST_URI = `data:text/html;charset=utf-8,<!DOCTYPE html>
 <head>
   <script>
     /* Create a prototype-less object so popup does not contain native
@@ -19,7 +19,7 @@ const TEST_URI = `data:text/html;charset=utf-8,
 </head>
 <body>bug 585991 - autocomplete popup ctrl+space usage test</body>`;
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
   info("web console opened");
 

@@ -20,15 +20,15 @@ certmgr-tab-servers =
 certmgr-tab-ca =
     .label = Autoridades
 
-certmgr-mine = Você possui certificados dessas organizações que identificam você
+certmgr-mine = Você tem certificados dessas organizações que identificam você
 certmgr-remembered = Estes certificados são usados para identificar você em sites
-certmgr-people = Você possui certificados arquivados que identificam estas pessoas
+certmgr-people = Você tem certificados em arquivo que identificam estas pessoas
 certmgr-server = Esses itens identificam exceções de erro de certificados de servidores
-certmgr-ca = Você possui certificados arquivados que identificam estas autoridades certificadoras
+certmgr-ca = Você tem certificados em arquivo que identificam estas autoridades certificadoras
 
-certmgr-edit-ca-cert =
-    .title = Configurações de confiança do certificado da CA
-    .style = width: 48em;
+certmgr-edit-ca-cert2 =
+    .title = Editar configurações de confiança do certificado da autoridade certificadora
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Editar as configurações de confiança:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Este certificado pode identificar usuários de email.
 
-certmgr-delete-cert =
-    .title = Excluir certificados
-    .style = width: 48em; height: 24em;
+certmgr-delete-cert2 =
+    .title = Excluir certificado
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Servidor
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Servidor
-
-certmgr-override-lifetime =
-    .label = Duração
 
 certmgr-token-name =
     .label = Dispositivo de segurança
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Número de série
+
+certmgr-fingerprint-sha-256 =
+    .label = Assinatura SHA-256
 
 certmgr-view =
     .label = Ver…
@@ -185,8 +185,6 @@ delete-email-cert-impact = Se você excluir o certificado de email de alguém, n
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Certificado com número de série: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Não enviar nenhum certificado de cliente

@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Përzgjidhi Krejt Skedat
     .accesskey = P
+tab-context-play-tab =
+    .label = Luaje lëndën e Skedës
+    .accesskey = L
+tab-context-play-tabs =
+    .label = Luaje lëndën e Skedave
+    .accesskey = u
 duplicate-tab =
     .label = Përsëdyte Skedën
     .accesskey = P
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Faqeruani Skeda…
     .accesskey = q
-bookmark-tab =
-    .label = Faqeruaje Skedën
+tab-context-bookmark-tab =
+    .label = Faqeruaje Skedën…
     .accesskey = q
 tab-context-open-in-new-container-tab =
     .label = Hape në Skedë të Re Kontejneri
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Ndajeni me të tjerët
     .accesskey = N
-tab-context-share-more =
-    .label = Më tepër…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -83,12 +87,11 @@ tab-context-reopen-closed-tabs =
            *[other] Rihap Skedat e Mbyllura
         }
     .accesskey = R
-tab-context-close-tabs =
+tab-context-close-n-tabs =
     .label =
         { $tabCount ->
             [1] Mbylle Skedën
-            [one] Mbylle Skedën
-           *[other] Mbylli Skedat
+           *[other] Mbylli { $tabCount } Skedat
         }
     .accesskey = M
 tab-context-move-tabs =

@@ -10,21 +10,19 @@ synced-tabs-sidebar-tabsnotsyncing = បើកការធ្វើសមកា�
 synced-tabs-sidebar-connect-another-device = ភ្ជាប់​ឧបករណ៍​ផ្សេង
 synced-tabs-sidebar-search =
     .placeholder = ផ្ទាំង​បាន​ធ្វើ​សមកាលកម្ម​ការស្វែងរក​
+
+## Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
+## and/or devices in the list. The "Open" strings below should be translated
+## consistently with the equivalent strings for the bookmarks manager's context
+## menu. That menu is activated by right-clicking a bookmark in the Library
+## window. The bookmarks manager context's strings are located in places.ftl.
+
 synced-tabs-context-open =
     .label = បើក
     .accesskey = O
-synced-tabs-context-open-in-new-tab =
-    .label = បើក​ក្នុង​ផ្ទាំង​ថ្មី
-    .accesskey = w
-synced-tabs-context-open-in-new-window =
-    .label = បើក​ក្នុង​បង្អួច​ថ្មី
-    .accesskey = N
-synced-tabs-context-open-in-new-private-window =
-    .label = បើក​ក្នុង​បង្អួចឯក​ជន​ថ្មី
-    .accesskey = P
-synced-tabs-context-bookmark-single-tab =
-    .label = ចំណាំ​​ផ្ទាំង​​នេះ...
-    .accesskey = B
+
+##
+
 synced-tabs-context-copy =
     .label = ចម្លង
     .accesskey = C

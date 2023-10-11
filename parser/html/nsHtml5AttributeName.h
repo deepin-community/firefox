@@ -49,7 +49,6 @@ class nsHtml5StreamParser;
 class nsHtml5ElementName;
 class nsHtml5Tokenizer;
 class nsHtml5TreeBuilder;
-class nsHtml5MetaScanner;
 class nsHtml5UTF16Buffer;
 class nsHtml5StateSnapshot;
 class nsHtml5Portability;
@@ -268,6 +267,8 @@ class nsHtml5AttributeName {
   static nsHtml5AttributeName* ATTR_CALCMODE;
   static nsHtml5AttributeName* ATTR_CHECKED;
   static nsHtml5AttributeName* ATTR_FENCE;
+  static nsHtml5AttributeName* ATTR_FETCHPRIORITY;
+  static nsHtml5AttributeName* ATTR_NONCE;
   static nsHtml5AttributeName* ATTR_ONSCROLL;
   static nsHtml5AttributeName* ATTR_ONACTIVATE;
   static nsHtml5AttributeName* ATTR_OPACITY;

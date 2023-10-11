@@ -83,9 +83,22 @@ enum class TextureFlags : uint32_t {
   // have trouble with RGBX/BGRX formats, so we use RGBA/BGRA but set this
   // hint when we know alpha is opaque (eg. WebGL)
   IS_OPAQUE = 1 << 18,
+  // The ExternalImageId bound to the texture is borrowed and should not be
+  // explicitly released when the texture is freed. This is meant to be used
+  // with WebRenderTextureHost wrapping another TextureHost which was
+  // initialized with its own external image ID.
+  BORROWED_EXTERNAL_ID = 1 << 19,
+  // The texture is used for remote texture.
+  REMOTE_TEXTURE = 1 << 20,
+  // The texture is from a DRM source.
+  DRM_SOURCE = 1 << 21,
+  // The texture is dummy texture
+  DUMMY_TEXTURE = 1 << 22,
+  // Software decoded video
+  SOFTWARE_DECODED_VIDEO = 1 << 22,
 
   // OR union of all valid bits
-  ALL_BITS = (1 << 19) - 1,
+  ALL_BITS = (1 << 23) - 1,
   // the default flags
   DEFAULT = NO_FLAGS
 };
@@ -97,7 +110,7 @@ static inline bool TextureRequiresLocking(TextureFlags aFlags) {
   // If we're not double buffered, or uploading
   // within a transaction, then we need to support
   // locking correctly.
-  return !(aFlags & (TextureFlags::IMMEDIATE_UPLOAD | TextureFlags::IMMUTABLE));
+  return !(aFlags & TextureFlags::IMMUTABLE);
 }
 
 /**
@@ -149,63 +162,58 @@ struct TextureFactoryIdentifier {
   WebRenderCompositor mWebRenderCompositor;
   GeckoProcessType mParentProcessType;
   int32_t mMaxTextureSize;
-  bool mSupportsTextureDirectMapping;
   bool mCompositorUseANGLE;
   bool mCompositorUseDComp;
   bool mUseCompositorWnd;
   bool mSupportsTextureBlitting;
   bool mSupportsPartialUploads;
   bool mSupportsComponentAlpha;
-  bool mUsingAdvancedLayers;
+  bool mSupportsD3D11NV12;
   SyncHandle mSyncHandle;
 
   explicit TextureFactoryIdentifier(
       LayersBackend aLayersBackend = LayersBackend::LAYERS_NONE,
       GeckoProcessType aParentProcessType = GeckoProcessType_Default,
-      int32_t aMaxTextureSize = 4096,
-      bool aSupportsTextureDirectMapping = false,
-      bool aCompositorUseANGLE = false, bool aCompositorUseDComp = false,
-      bool aUseCompositorWnd = false, bool aSupportsTextureBlitting = false,
+      int32_t aMaxTextureSize = 4096, bool aCompositorUseANGLE = false,
+      bool aCompositorUseDComp = false, bool aUseCompositorWnd = false,
+      bool aSupportsTextureBlitting = false,
       bool aSupportsPartialUploads = false, bool aSupportsComponentAlpha = true,
-      SyncHandle aSyncHandle = 0)
+      bool aSupportsD3D11NV12 = false, SyncHandle aSyncHandle = 0)
       : mParentBackend(aLayersBackend),
         mWebRenderBackend(WebRenderBackend::HARDWARE),
         mWebRenderCompositor(WebRenderCompositor::DRAW),
         mParentProcessType(aParentProcessType),
         mMaxTextureSize(aMaxTextureSize),
-        mSupportsTextureDirectMapping(aSupportsTextureDirectMapping),
         mCompositorUseANGLE(aCompositorUseANGLE),
         mCompositorUseDComp(aCompositorUseDComp),
         mUseCompositorWnd(aUseCompositorWnd),
         mSupportsTextureBlitting(aSupportsTextureBlitting),
         mSupportsPartialUploads(aSupportsPartialUploads),
         mSupportsComponentAlpha(aSupportsComponentAlpha),
-        mUsingAdvancedLayers(false),
+        mSupportsD3D11NV12(aSupportsD3D11NV12),
         mSyncHandle(aSyncHandle) {}
 
   explicit TextureFactoryIdentifier(
       WebRenderBackend aWebRenderBackend,
       WebRenderCompositor aWebRenderCompositor,
       GeckoProcessType aParentProcessType = GeckoProcessType_Default,
-      int32_t aMaxTextureSize = 4096,
-      bool aSupportsTextureDirectMapping = false,
-      bool aCompositorUseANGLE = false, bool aCompositorUseDComp = false,
-      bool aUseCompositorWnd = false, bool aSupportsTextureBlitting = false,
+      int32_t aMaxTextureSize = 4096, bool aCompositorUseANGLE = false,
+      bool aCompositorUseDComp = false, bool aUseCompositorWnd = false,
+      bool aSupportsTextureBlitting = false,
       bool aSupportsPartialUploads = false, bool aSupportsComponentAlpha = true,
-      SyncHandle aSyncHandle = 0)
+      bool aSupportsD3D11NV12 = false, SyncHandle aSyncHandle = 0)
       : mParentBackend(LayersBackend::LAYERS_WR),
         mWebRenderBackend(aWebRenderBackend),
         mWebRenderCompositor(aWebRenderCompositor),
         mParentProcessType(aParentProcessType),
         mMaxTextureSize(aMaxTextureSize),
-        mSupportsTextureDirectMapping(aSupportsTextureDirectMapping),
         mCompositorUseANGLE(aCompositorUseANGLE),
         mCompositorUseDComp(aCompositorUseDComp),
         mUseCompositorWnd(aUseCompositorWnd),
         mSupportsTextureBlitting(aSupportsTextureBlitting),
         mSupportsPartialUploads(aSupportsPartialUploads),
         mSupportsComponentAlpha(aSupportsComponentAlpha),
-        mUsingAdvancedLayers(false),
+        mSupportsD3D11NV12(aSupportsD3D11NV12),
         mSyncHandle(aSyncHandle) {}
 
   bool operator==(const TextureFactoryIdentifier& aOther) const {
@@ -214,15 +222,13 @@ struct TextureFactoryIdentifier {
            mWebRenderCompositor == aOther.mWebRenderCompositor &&
            mParentProcessType == aOther.mParentProcessType &&
            mMaxTextureSize == aOther.mMaxTextureSize &&
-           mSupportsTextureDirectMapping ==
-               aOther.mSupportsTextureDirectMapping &&
            mCompositorUseANGLE == aOther.mCompositorUseANGLE &&
            mCompositorUseDComp == aOther.mCompositorUseDComp &&
            mUseCompositorWnd == aOther.mUseCompositorWnd &&
            mSupportsTextureBlitting == aOther.mSupportsTextureBlitting &&
            mSupportsPartialUploads == aOther.mSupportsPartialUploads &&
            mSupportsComponentAlpha == aOther.mSupportsComponentAlpha &&
-           mUsingAdvancedLayers == aOther.mUsingAdvancedLayers &&
+           mSupportsD3D11NV12 == aOther.mSupportsD3D11NV12 &&
            mSyncHandle == aOther.mSyncHandle;
   }
 };

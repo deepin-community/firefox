@@ -38,20 +38,9 @@ menu-quit =
             [windows] E
            *[other] Q
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Quitar { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Exir de { -brand-shorter-name }
-
 menu-about =
     .label = A proposito de { -brand-shorter-name }
     .accesskey = p
@@ -81,8 +70,14 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Aperir un file…
     .accesskey = A
-menu-file-close =
-    .label = Clauder
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Clauder scheda
+           *[other] Clauder { $tabCount } schedas
+        }
     .accesskey = C
 menu-file-close-window =
     .label = Clauder le fenestra
@@ -99,9 +94,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Configurar le pagina…
     .accesskey = u
-menu-file-print-preview =
-    .label = Vista preliminar del impression
-    .accesskey = v
 menu-file-print =
     .label = Imprimer…
     .accesskey = I
@@ -115,11 +107,11 @@ menu-file-go-offline =
 ## Edit Menu
 
 menu-edit =
-    .label = Edition
-    .accesskey = E
+    .label = Modificar
+    .accesskey = o
 menu-edit-find-in-page =
-    .label = Trovar in le pagina…
-    .accesskey = T
+    .label = Cercar in le pagina…
+    .accesskey = C
 menu-edit-find-again =
     .label = Cercar le sequente
     .accesskey = n
@@ -157,7 +149,7 @@ menu-view-full-zoom-reduce =
     .label = Zoom retro
     .accesskey = R
 menu-view-full-zoom-actual-size =
-    .label = Dimension actual
+    .label = Dimension real
     .accesskey = a
 menu-view-full-zoom-toggle =
     .label = Zoom del texto solmente
@@ -188,6 +180,17 @@ menu-view-full-screen =
     .label = Plen schermo
     .accesskey = P
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Entrar in vista de lectura
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Clauder le vista de lectura
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +219,9 @@ menu-history-undo-menu =
     .label = Schedas claudite recentemente
 menu-history-undo-window-menu =
     .label = Fenestras claudite recentemente
-menu-history-reopen-all-tabs = Reaperir tote le schedas
-menu-history-reopen-all-windows = Reaperir tote le fenestras
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Cercar in le chronologia
 
 ## Bookmarks Menu
 
@@ -226,12 +230,15 @@ menu-bookmarks-menu =
     .accesskey = M
 menu-bookmarks-manage =
     .label = Gerer marcapaginas
-menu-bookmark-current-tab =
-    .label = Adder scheda actual al marcapaginas
-menu-bookmark-edit =
-    .label = Modificar iste marcapaginas
+menu-bookmark-tab =
+    .label = Adder scheda actual al marcapaginas…
+menu-edit-bookmark =
+    .label = Modificar iste marcapagina…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Cercar in le marcapaginas
 menu-bookmarks-all-tabs =
-    .label = Adder marcapaginas sur tote le schedas…
+    .label = Adder tote le schedas al marcapaginas…
 menu-bookmarks-toolbar =
     .label = Barra de marcapaginas
 menu-bookmarks-other =
@@ -314,15 +321,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = d
 menu-help-report-site-issue =
     .label = Reportar un problema con le sito…
-menu-help-feedback-page =
-    .label = Submitter tu opinion…
-    .accesskey = S
+menu-help-share-ideas =
+    .label = Compartir ideas e commentarios…
+    .accesskey = C
 menu-help-enter-troubleshoot-mode2 =
     .label = Modo diagnostic…
     .accesskey = M
 menu-help-exit-troubleshoot-mode =
     .label = Disactivar modo diagnostic
     .accesskey = D
+menu-help-switch-device =
+    .label = Passante a un nove apparato
+    .accesskey = n
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

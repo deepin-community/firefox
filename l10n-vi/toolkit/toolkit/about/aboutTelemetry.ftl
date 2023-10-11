@@ -34,7 +34,6 @@ about-telemetry-events-section = Sự kiện
 about-telemetry-simple-measurements-section = Các phép đo đơn giản
 about-telemetry-slow-sql-section = Lệnh SQL Chậm
 about-telemetry-addon-details-section = Chi tiết về các tiện ích
-about-telemetry-captured-stacks-section = Captured Stacks
 about-telemetry-late-writes-section = Ghi trễ
 about-telemetry-raw-payload-section = Raw Payload
 about-telemetry-raw = JSON thô
@@ -121,10 +120,6 @@ about-telemetry-keys-header = Thuộc tính
 about-telemetry-names-header = Tên
 about-telemetry-values-header = Giá trị
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (số lần chụp: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Ghi trễ #{ $lateWriteCount } lần
 about-telemetry-stack-title = Ngăn xếp:
@@ -135,12 +130,6 @@ about-telemetry-category-header = thể loại
 about-telemetry-method-header = phương thức
 about-telemetry-object-header = đối tượng
 about-telemetry-extra-header = thêm
-about-telemetry-origin-section = Origin Telemetry
-about-telemetry-origin-origin = gốc
-about-telemetry-origin-count = đếm
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Firefox Origin Telemetry</a> mã hóa dữ liệu trước khi nó được gửi để { $telemetryServerOwner } có thể đếm tất cả mọi thứ, nhưng không rõ nó có đếm cả { -brand-product-name } hay không. (<a data-l10n-name="prio-blog-link">tìm hiểu thêm</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = { $process } tiến trình

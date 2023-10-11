@@ -13,12 +13,6 @@ downloads-panel =
 
 ##
 
-# The style attribute has the width of the Downloads Panel expressed using
-# a CSS unit. The longest labels that should fit are usually those of 
-# in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
-
 downloads-cmd-pause =
     .label = અટકાવો
     .accesskey = P
@@ -30,35 +24,13 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = રદ કરો
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = સમાવતા ફોલ્ડરને ખોલો
-    .accesskey = F
-  
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = શોધકર્તામાં બતાવો
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
-downloads-cmd-show-button =
-    .tooltiptext =
-        { PLATFORM() ->
-            [macos] શોધકર્તામાં બતાવો
-           *[other] સમાવતા ફોલ્ડરને ખોલો
-        }
 
-downloads-cmd-show-panel =
-    .aria-label =
-        { PLATFORM() ->
-            [macos] શોધકર્તામાં બતાવો
-           *[other] સમાવતા ફોલ્ડરને ખોલો
-        }
-downloads-cmd-show-description =
-    .value =
-        { PLATFORM() ->
-            [macos] શોધકર્તામાં બતાવો
-           *[other] સમાવતા ફોલ્ડરને ખોલો
-        }
+##
 
 downloads-cmd-show-downloads =
     .label = ડાઉનલોડ ફોલ્ડર બતાવો
@@ -130,6 +102,7 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -154,6 +127,14 @@ downloads-history =
 downloads-details =
     .title = વિગતો ડાઉનલોડ કરો
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
+
 downloads-clear-downloads-button =
     .label = ડાઉનલોડ સાફ કરો
     .tooltiptext = પૂર્ણ થયેલ, રદ થયેલ અને નિષ્ફળ થયેલ ડાઉનલોડને સાફ કરે છે
@@ -166,3 +147,12 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = આ સત્ર માટે કોઈ ડાઉનલોડ્સ નથી.
+
+## Download errors
+
+downloads-error-alert-title = ડાઉનલોડ ભૂલ
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    ડાઉનલોડ સંગ્રહી શકાશે નહિં કારણ કે અજ્ઞાત ભૂલ ઉદ્ભવી.
+    
+    મહેરબાની કરીને ફરીથી પ્રયાસ કરો.

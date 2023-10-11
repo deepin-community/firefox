@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Pilih Semua Tab
     .accesskey = A
+tab-context-play-tab =
+    .label = Putar Tab
+    .accesskey = P
+tab-context-play-tabs =
+    .label = Putar Tab
+    .accesskey = p
 duplicate-tab =
     .label = Gandakan Tab
     .accesskey = G
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Markahi Tab…
     .accesskey = M
-bookmark-tab =
-    .label = Markahi Tab
-    .accesskey = m
+tab-context-bookmark-tab =
+    .label = Markahi Tab…
+    .accesskey = M
 tab-context-open-in-new-container-tab =
     .label = Buka di Tab Kontainer Baru
     .accesskey = T
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Bagikan
     .accesskey = B
-tab-context-share-more =
-    .label = Lainnya…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,11 +86,11 @@ tab-context-reopen-closed-tabs =
            *[other] Buka Kembali Tab Tertutup
         }
     .accesskey = u
-tab-context-close-tabs =
+tab-context-close-n-tabs =
     .label =
         { $tabCount ->
             [1] Tutup Tab
-           *[other] Tutup Tab
+           *[other] Tutup { $tabCount } Tab
         }
     .accesskey = T
 tab-context-move-tabs =

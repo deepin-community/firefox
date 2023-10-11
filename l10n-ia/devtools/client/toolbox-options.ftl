@@ -41,6 +41,17 @@ options-collapse-attrs-label = Truncar le attributos DOM
 options-collapse-attrs-tooltip =
     .title = Truncar le attributos longe in le inspector
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Clicca e trahe pro modificar le valores del dimensiones
+options-inspector-draggable-properties-tooltip =
+    .title = Clicca e trahe pro modificar le valores del dimensiones in le vista del regulas del inspector.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Usar evidentiatores plus simple con preferentia de motion reducite
+options-inspector-simplified-highlighters-tooltip =
+    .title = Activa le evidentiatores simplificate quando le preferentia de motion reducite es activate. Tracia lineas in vice que rectangulos plenate  circum elementos evidentiate pro evitar effectos de fulguration.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Unitate de color predefinite
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Como autorisate
 options-default-color-unit-hex = Hexadecimal
 options-default-color-unit-hsl = TSL(A)
 options-default-color-unit-rgb = RVB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Nomines de colores
 
 ## Style Editor section
@@ -118,6 +130,16 @@ options-enable-remote-label = Activar le depuration remote
 options-enable-remote-tooltip2 =
     .title = Activar iste option consentira de depurar iste instantia de navigator a distantia
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Usar le clave F12 pro aperir o clauder DevTools
+options-enable-f12-tooltip =
+    .title = Activante iste option le clave F12 se alligara al apertura o clausura del cassa del utensiles DevTools
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Activar formatatores personalisate
+options-enable-custom-formatters-tooltip =
+    .title = Activar iste option permittera que sitos defini proprie formatatores pro objectos DOM
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Activar le Service Workers via HTTP (quando le instrumentario es aperte)
 options-enable-service-workers-http-tooltip =
@@ -130,9 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Solmente le session actual, recarga le pagina
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Monstrar le datos del platteforma Gecko
-options-show-platform-data-tooltip =
-    .title = Si tu activa iste option le reportos del analysator de rendimento JavaScript includera le symbolos del platteforma Gecko

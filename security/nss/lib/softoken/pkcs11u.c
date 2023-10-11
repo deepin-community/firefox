@@ -14,6 +14,7 @@
 #include "sftkdb.h"
 #include "softoken.h"
 #include "secoid.h"
+#include "softkver.h"
 
 #if !defined(NSS_FIPS_DISABLED) && defined(NSS_ENABLE_FIPS_INDICATORS)
 /* this file should be supplied by the vendor and include all the
@@ -903,7 +904,7 @@ sftk_AddAttributeType(SFTKObject *object, CK_ATTRIBUTE_TYPE type,
 static SECItem *
 sftk_lookupTokenKeyByHandle(SFTKSlot *slot, CK_OBJECT_HANDLE handle)
 {
-    return (SECItem *)PL_HashTableLookup(slot->tokObjHashTable, (void *)handle);
+    return (SECItem *)PL_HashTableLookup(slot->tokObjHashTable, (void *)(uintptr_t)handle);
 }
 
 /*
@@ -1241,6 +1242,36 @@ sftk_FreeObject(SFTKObject *object)
         return SFTK_Destroyed;
     }
     return SFTK_Busy;
+}
+
+/* find the next available object handle that isn't currently in use */
+/* NOTE: This function could loop forever if we've exhausted all
+ * 3^31-1 handles. This is highly unlikely (NSS has been running for
+ * decades with this code) uless we start increasing the size of the
+ * SFTK_TOKEN_MASK (which is just the high bit currently). */
+CK_OBJECT_HANDLE
+sftk_getNextHandle(SFTKSlot *slot)
+{
+    CK_OBJECT_HANDLE handle;
+    SFTKObject *duplicateObject = NULL;
+    do {
+        PRUint32 wrappedAround;
+
+        duplicateObject = NULL;
+        PZ_Lock(slot->objectLock);
+        wrappedAround = slot->sessionObjectHandleCount & SFTK_TOKEN_MASK;
+        handle = slot->sessionObjectHandleCount & ~SFTK_TOKEN_MASK;
+        if (!handle) /* don't allow zero handle */
+            handle = NSC_MIN_SESSION_OBJECT_HANDLE;
+        slot->sessionObjectHandleCount = (handle + 1U) | wrappedAround;
+        /* Is there already a session object with this handle? */
+        if (wrappedAround) {
+            sftkqueue_find(duplicateObject, handle, slot->sessObjHashTable,
+                           slot->sessObjHashSize);
+        }
+        PZ_Unlock(slot->objectLock);
+    } while (duplicateObject != NULL);
+    return handle;
 }
 
 /*
@@ -1848,23 +1879,13 @@ sftk_FreeContext(SFTKSessionContext *context)
 }
 
 /*
- * create a new nession. NOTE: The session handle is not set, and the
+ * Init a new session. NOTE: The session handle is not set, and the
  * session is not added to the slot's session queue.
  */
-SFTKSession *
-sftk_NewSession(CK_SLOT_ID slotID, CK_NOTIFY notify, CK_VOID_PTR pApplication,
-                CK_FLAGS flags)
+CK_RV
+sftk_InitSession(SFTKSession *session, SFTKSlot *slot, CK_SLOT_ID slotID,
+                 CK_NOTIFY notify, CK_VOID_PTR pApplication, CK_FLAGS flags)
 {
-    SFTKSession *session;
-    SFTKSlot *slot = sftk_SlotFromID(slotID, PR_FALSE);
-
-    if (slot == NULL)
-        return NULL;
-
-    session = (SFTKSession *)PORT_Alloc(sizeof(SFTKSession));
-    if (session == NULL)
-        return NULL;
-
     session->next = session->prev = NULL;
     session->enc_context = NULL;
     session->hash_context = NULL;
@@ -1873,8 +1894,7 @@ sftk_NewSession(CK_SLOT_ID slotID, CK_NOTIFY notify, CK_VOID_PTR pApplication,
     session->objectIDCount = 1;
     session->objectLock = PZ_NewLock(nssILockObject);
     if (session->objectLock == NULL) {
-        PORT_Free(session);
-        return NULL;
+        return CKR_HOST_MEMORY;
     }
     session->objects[0] = NULL;
 
@@ -1887,12 +1907,38 @@ sftk_NewSession(CK_SLOT_ID slotID, CK_NOTIFY notify, CK_VOID_PTR pApplication,
     sftk_update_state(slot, session);
     /* no ops completed yet, so the last one couldn't be a FIPS op */
     session->lastOpWasFIPS = PR_FALSE;
+    return CKR_OK;
+}
+
+/*
+ * Create a new session and init it.
+ */
+SFTKSession *
+sftk_NewSession(CK_SLOT_ID slotID, CK_NOTIFY notify, CK_VOID_PTR pApplication,
+                CK_FLAGS flags)
+{
+    SFTKSession *session;
+    SFTKSlot *slot = sftk_SlotFromID(slotID, PR_FALSE);
+    CK_RV crv;
+
+    if (slot == NULL)
+        return NULL;
+
+    session = (SFTKSession *)PORT_Alloc(sizeof(SFTKSession));
+    if (session == NULL)
+        return NULL;
+
+    crv = sftk_InitSession(session, slot, slotID, notify, pApplication, flags);
+    if (crv != CKR_OK) {
+        PORT_Free(session);
+        return NULL;
+    }
     return session;
 }
 
 /* free all the data associated with a session. */
 void
-sftk_DestroySession(SFTKSession *session)
+sftk_ClearSession(SFTKSession *session)
 {
     SFTKObjectList *op, *next;
 
@@ -1918,6 +1964,13 @@ sftk_DestroySession(SFTKSession *session)
     if (session->search) {
         sftk_FreeSearch(session->search);
     }
+}
+
+/* free the data associated with the session, and the session */
+void
+sftk_DestroySession(SFTKSession *session)
+{
+    sftk_ClearSession(session);
     PORT_Free(session);
 }
 
@@ -2195,7 +2248,39 @@ sftk_AttributeToFlags(CK_ATTRIBUTE_TYPE op)
     return flags;
 }
 
+/*
+ * ******************** Hash Utilities **************************
+ */
+/*
+ * Utility function for converting PSS/OAEP parameter types into
+ * HASH_HashTypes. Note: Only SHA family functions are defined in RFC 3447.
+ */
+HASH_HashType
+sftk_GetHashTypeFromMechanism(CK_MECHANISM_TYPE mech)
+{
+    switch (mech) {
+        case CKM_SHA_1:
+        case CKG_MGF1_SHA1:
+            return HASH_AlgSHA1;
+        case CKM_SHA224:
+        case CKG_MGF1_SHA224:
+            return HASH_AlgSHA224;
+        case CKM_SHA256:
+        case CKG_MGF1_SHA256:
+            return HASH_AlgSHA256;
+        case CKM_SHA384:
+        case CKG_MGF1_SHA384:
+            return HASH_AlgSHA384;
+        case CKM_SHA512:
+        case CKG_MGF1_SHA512:
+            return HASH_AlgSHA512;
+        default:
+            return HASH_AlgNULL;
+    }
+}
+
 #ifdef NSS_HAS_FIPS_INDICATORS
+/**************** FIPS Indicator Utilities *************************/
 /* sigh, we probably need a version of this in secutil so that both
  * softoken and NSS can use it */
 static SECOidTag
@@ -2331,6 +2416,29 @@ sftk_handleSpecial(SFTKSlot *slot, CK_MECHANISM *mech,
             }
             return PR_FALSE;
         }
+        case SFTKFIPSRSAPSS: {
+            /* PSS salt must not be longer than the  underlying hash.
+             * We verify that the underlying hash of the
+             * parameters matches Hash of the combined hash mechanisms, so
+             * we don't need to look at the specific PSS mechanism */
+            CK_RSA_PKCS_PSS_PARAMS *pss = (CK_RSA_PKCS_PSS_PARAMS *)
+                                              mech->pParameter;
+            const SECHashObject *hashObj = NULL;
+            if (mech->ulParameterLen != sizeof(*pss)) {
+                return PR_FALSE;
+            }
+            /* we use the existing hash utilities to find the length of
+             * the hash */
+            hashObj = HASH_GetRawHashObject(sftk_GetHashTypeFromMechanism(
+                pss->hashAlg));
+            if (hashObj == NULL) {
+                return PR_FALSE;
+            }
+            if (pss->sLen > hashObj->length) {
+                return PR_FALSE;
+            }
+            return PR_TRUE;
+        }
         default:
             break;
     }
@@ -2385,4 +2493,71 @@ sftk_operationIsFIPS(SFTKSlot *slot, CK_MECHANISM *mech, CK_ATTRIBUTE_TYPE op,
     }
     return PR_FALSE;
 #endif
+}
+
+/*
+ * create the FIPS Validation objects. If the vendor
+ * doesn't supply an NSS_FIPS_MODULE_ID, at compile time,
+ * then we assumethis is an unvalidated module.
+ */
+CK_RV
+sftk_CreateValidationObjects(SFTKSlot *slot)
+{
+    const char *module_id;
+    int module_id_len;
+    CK_RV crv = CKR_OK;
+    /* we currently use vendor specific values until the validation
+     * objects are approved for PKCS #11 v3.2. */
+    CK_OBJECT_CLASS cko_validation = CKO_NSS_VALIDATION;
+    CK_NSS_VALIDATION_TYPE ckv_fips = CKV_NSS_FIPS_140;
+    CK_VERSION fips_version = { 3, 0 }; /* FIPS-140-3 */
+    CK_ULONG fips_level = 1;            /* or 2 if you validated at level 2 */
+
+#ifndef NSS_FIPS_MODULE_ID
+#define NSS_FIPS_MODULE_ID "Generic NSS " SOFTOKEN_VERSION " Unvalidated"
+#endif
+    module_id = NSS_FIPS_MODULE_ID;
+    module_id_len = sizeof(NSS_FIPS_MODULE_ID) - 1;
+    SFTKObject *object;
+
+    object = sftk_NewObject(slot); /* fill in the handle later */
+    if (object == NULL) {
+        return CKR_HOST_MEMORY;
+    }
+    object->isFIPS = PR_FALSE;
+
+    crv = sftk_AddAttributeType(object, CKA_CLASS,
+                                &cko_validation, sizeof(cko_validation));
+    if (crv != CKR_OK) {
+        goto loser;
+    }
+    crv = sftk_AddAttributeType(object, CKA_NSS_VALIDATION_TYPE,
+                                &ckv_fips, sizeof(ckv_fips));
+    if (crv != CKR_OK) {
+        goto loser;
+    }
+    crv = sftk_AddAttributeType(object, CKA_NSS_VALIDATION_VERSION,
+                                &fips_version, sizeof(fips_version));
+    if (crv != CKR_OK) {
+        goto loser;
+    }
+    crv = sftk_AddAttributeType(object, CKA_NSS_VALIDATION_LEVEL,
+                                &fips_level, sizeof(fips_level));
+    if (crv != CKR_OK) {
+        goto loser;
+    }
+    crv = sftk_AddAttributeType(object, CKA_NSS_VALIDATION_MODULE_ID,
+                                module_id, module_id_len);
+    if (crv != CKR_OK) {
+        goto loser;
+    }
+
+    /* future, fill in validation certificate information from a supplied
+     * pointer to a config file */
+    object->handle = sftk_getNextHandle(slot);
+    object->slot = slot;
+    sftk_AddObject(&slot->moduleObjects, object);
+loser:
+    sftk_FreeObject(object);
+    return crv;
 }

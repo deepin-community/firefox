@@ -65,9 +65,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } صارفین
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = ہر جگہ اپنے بک مارکس کی ہمہ وقت سازی کریں
@@ -95,49 +92,12 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = اجرائی نوٹس پڑھیں
 
-## Search Bar
-
-## Search bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 cfr-doorhanger-milestone-ok-button = تمام دیکھیں
     .accesskey = س
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = بند کریں
     .accesskey = C
-
-## What’s New Panel Content for Firefox 76
-## Protections Dashboard message
 
 ## DOH Message
 
@@ -148,36 +108,52 @@ cfr-doorhanger-doh-secondary-button = غیر فعال بنایے
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-primary-button = ٹھیک ہے مجھے سمجھ آگئی ہے
-    .accesskey = O
-cfr-doorhanger-fission-secondary-button = مزید سیکھیں
-    .accesskey = L
-
-## What's new: Cookies message
-
-
-## What's new: Media controls message
-
-## What's new: Search shortcuts
-
-
-## What's new: Cookies protection
-
-
-## What's new: Better bookmarking
-
-
-## What's new: Cross-site cookie tracking
-
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-primary-button = ابھی تازہ کاری کریں
     .accesskey = U
+
+## Spotlight modal shared strings
 
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
+
+spotlight-public-wifi-vpn-link = ابھی نہیں
+    .accesskey = N
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+## Firefox View CFR
+
+## Firefox View Spotlight
+
+## Colorways expiry reminder CFR
+
+## Cookie Banner Handling CFR
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
 

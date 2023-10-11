@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Izberi vse zavihke
     .accesskey = b
+tab-context-play-tab =
+    .label = Predvajaj zavihek
+    .accesskey = P
+tab-context-play-tabs =
+    .label = Predvajaj zavihke
+    .accesskey = j
 duplicate-tab =
     .label = Podvoji zavihek
     .accesskey = o
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Dodaj zavihke med zaznamke …
     .accesskey = m
-bookmark-tab =
-    .label = Dodaj zavihek med zaznamke
-    .accesskey = D
+tab-context-bookmark-tab =
+    .label = Dodaj zavihke med zaznamke …
+    .accesskey = z
 tab-context-open-in-new-container-tab =
     .label = Odpri v novem zavihku vsebnika
     .accesskey = O
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Deli
     .accesskey = D
-tab-context-share-more =
-    .label = Več …
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -84,16 +88,6 @@ tab-context-reopen-closed-tabs =
            *[other] Obnovi zaprte zavihke
         }
     .accesskey = h
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Zapri zavihek
-            [one] Zapri zavihek
-            [two] Zapri zavihka
-            [few] Zapri zavihke
-           *[other] Zapri zavihke
-        }
-    .accesskey = Z
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

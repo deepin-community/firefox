@@ -12,25 +12,33 @@ cfr-doorhanger-feature-heading = Funcziunalitad recumandada
 
 cfr-doorhanger-extension-sumo-link =
     .tooltiptext = Pertge ves jau quai
+
 cfr-doorhanger-extension-cancel-button = Betg ussa
     .accesskey = B
+
 cfr-doorhanger-extension-ok-button = Agiuntar ussa
     .accesskey = A
+
 cfr-doorhanger-extension-manage-settings-button = Administrar ils parameters da recumandaziun
     .accesskey = A
+
 cfr-doorhanger-extension-never-show-recommendation = Betg ma mussar questa recumandaziun
     .accesskey = B
+
 cfr-doorhanger-extension-learn-more-link = Ulteriuras infurmaziuns
+
 # This string is used on a new line below the add-on name
 # Variables:
 #   $name (String) - Add-on author name
 cfr-doorhanger-extension-author = da { $name }
+
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Recumandaziun
 cfr-doorhanger-extension-notification2 = Recumandaziun
     .tooltiptext = Recumandaziun dad extensiun
     .a11y-announcement = Ina recumandaziun per ina extensiun è disponibla
+
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-feature-notification = Recumandaziun
@@ -77,9 +85,11 @@ cfr-protections-panel-link-text = Ulteriuras infurmaziuns
 # This string is used by screen readers to offer a text based alternative for
 # the notification icon
 cfr-badge-reader-label-newfeature = Nova funcziunalitad:
+
 cfr-whatsnew-button =
     .label = Novaziuns
     .tooltiptext = Novaziuns
+
 cfr-whatsnew-release-notes-link-text = Leger las notizias davart la versiun
 
 ## Enhanced Tracking Protection Milestones
@@ -108,13 +118,6 @@ cfr-doorhanger-doh-secondary-button = Deactivar
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Tia sfera privata è impurtanta. { -brand-short-name } isolescha ussa websites ina da l'autra. Quai renda pli difficil a hackers dad engular pleds-clav, numers da cartas da credit ed autras infurmaziuns sensiblas.
-cfr-doorhanger-fission-header = Isolaziun da websites
-cfr-doorhanger-fission-primary-button = OK, chapì
-    .accesskey = O
-cfr-doorhanger-fission-secondary-button = Ulteriuras infurmaziuns
-    .accesskey = l
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Videos sin questa website na vegnan eventualmain betg reproducids endretg cun questa versiun da { -brand-short-name }. Per garantir il sustegn cumplet da video, actualisescha ussa { -brand-short-name }.
@@ -122,15 +125,134 @@ cfr-doorhanger-video-support-header = Actualisar { -brand-short-name } per far i
 cfr-doorhanger-video-support-primary-button = Actualisar ussa
     .accesskey = u
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
 spotlight-public-wifi-vpn-header = I para che ti utiliseschias in WLAN public
 spotlight-public-wifi-vpn-body = Per zuppentar tia posiziun ed activitad da navigaziun, considerescha l'utilisaziun dad ina rait privata virtuala (VPN). Ella gida da ta proteger cura che ti navigheschas en lieus publics sco eroports e cafés.
 spotlight-public-wifi-vpn-primary-button = Salva tia sfera privata cun { -mozilla-vpn-brand-name }
     .accesskey = S
 spotlight-public-wifi-vpn-link = Betg ussa
     .accesskey = B
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = In meglier internet cumenza cun tai
+spotlight-better-internet-body = Sche ti utiliseschas { -brand-short-name } sustegnas ti in internet avert ed accessibel ch'è meglier per tuts.
+spotlight-peace-mind-header = Adina da tia vart
+spotlight-peace-mind-body = Mintga mais blochescha { -brand-short-name } en media passa 3'000 fastizaders per utilisader. Perquai che nagut – ed oravant tut nagins fastizaders mulestus che sutmineschan la protecziun da datas – duain impedir che ti survegnias in bun internet.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Fixar en il dock
+       *[other] Fixar en la taskbar
+    }
+spotlight-pin-secondary-button = Betg ussa
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+mr2022-background-update-toast-title = Il nov { -brand-short-name }. Pli discret. Damain fastizaders. Nagins cumpromiss.
+mr2022-background-update-toast-text = Emprova ussa il pli nov { -brand-short-name }, actualisà cun nossa protecziun cunter fastizaders la pli ferma d'enfin qua.
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it
+# using a variable font like Arial): the button can only fit 1-2
+# additional characters, exceeding characters will be truncated.
+mr2022-background-update-toast-primary-button-label = Avrir ussa { -brand-shorter-name }
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = Ma regurdar pli tard
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Empruvar
+    .accesskey = E
+firefoxview-cfr-secondarybutton = Betg ussa
+    .accesskey = B
+firefoxview-cfr-header-v2 = Cuntinuescha immediatamain là nua che ti has chalà
+firefoxview-cfr-body-v2 = Va per tabs serrads dacurt e siglia ultra da quai a moda simpla dad in apparat a l'auter cun agid da { -firefoxview-brand-name }.
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = Nus ta mussain { -firefoxview-brand-name }
+
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = Vuls ti avair quel tab avert sin tes telefonin? Va per el. Dovras ti la website che ti has gist visità? Zac ed ella è puspè qua cun { -firefoxview-brand-name }.
+firefoxview-spotlight-promo-primarybutton = Mussar co che quai funcziuna
+firefoxview-spotlight-promo-secondarybutton = Sursiglir
+
+## Colorways expiry reminder CFR
+
+colorways-cfr-primarybutton = Tscherner ina cumbinaziun da colurs
+    .accesskey = T
+
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = Colurescha tes navigatur cun las nianzas da colurs exclusivas da { -brand-short-name } inspiradas da las vuschs independentas che han midà la societad.
+colorways-cfr-header-28days = La cumbinaziun da colurs «vuschs independentas» scada ils 16 da schaner
+colorways-cfr-header-14days = La cumbinaziun da colurs «vuschs independentas» scada en duas emnas
+colorways-cfr-header-7days = La cumbinaziun da colurs «vuschs independentas» scada quest'emna
+colorways-cfr-header-today = La cumbinaziun da colurs «vuschs independentas» scada oz
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-header = Permetter a { -brand-short-name } da refusar bandieras da cookies?
+cfr-cbh-body = { -brand-short-name } po refusar automaticamain bleras dumondas da bandieras da cookies.
+cfr-cbh-confirm-button = Refusar las bandieras da cookies
+    .accesskey = R
+cfr-cbh-dismiss-button = Betg ussa
+    .accesskey = B
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+july-jam-headline = Nus defendain tai
+july-jam-body = Mintga mais blochescha { -brand-short-name } en media passa 3'000 fastizaders per utilisader. Uschia vegns ti svelt e segir en l'internet.
+july-jam-set-default-primary = Avrir mias colliaziuns cun { -brand-short-name }
+fox-doodle-pin-headline = Bel da ta vesair puspè!
+
+# “indie” is short for the term “independent”.
+# In this instance, free from outside influence or control.
+fox-doodle-pin-body = Nus vulain ta regurdar che ti pos tegnair tes navigatur independent adina per mauns ed accessibel cun mo in clic.
+fox-doodle-pin-primary = Avrir mias colliaziuns cun { -brand-short-name }
+fox-doodle-pin-secondary = Betg ussa
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+set-default-pdf-handler-headline = <strong>Tes PDFs s'avran ussa en { -brand-short-name }.</strong> Modifitgescha u suttascriva formulars directamain en tes navigatur. Per midar quest cumportament, tschertgar «PDF» en ils parameters.
+set-default-pdf-handler-primary = Jau hai chapì
+
+## FxA sync CFR
+
+fxa-sync-cfr-header = In nov apparat en tes futur?
+fxa-sync-cfr-body = Fa la segira che ti hajas tes segnapaginas, pleds-clav e tabs ils pli novs adina cun tai cura che ti avras in nov navigatur { -brand-product-name }.
+fxa-sync-cfr-primary = Ulteriuras infurmaziuns
+    .accesskey = U
+fxa-sync-cfr-secondary = Ma regurdar pli tard
+    .accesskey = r
+
+## Device Migration FxA Spotlight
+
+device-migration-fxa-spotlight-header = Utiliseschas ti in apparat pli vegl?
+device-migration-fxa-spotlight-body = Fa copias da segirezza da tias datas per far la segira che ti na perdas betg infurmaziuns impurtantas sco segnapaginas e pleds-clav – specialmain sche ti midas ad in nov apparat.
+device-migration-fxa-spotlight-primary-button = Co far copias da segirezza da mias datas
+device-migration-fxa-spotlight-link = Ma regurdar pli tard

@@ -39,15 +39,6 @@ menu-quit =
 menu-quit-mac =
     .label = បិទ { -brand-shorter-name }
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = បិទ { -brand-shorter-name }
-
 menu-about =
     .label = អំពី { -brand-shorter-name }
     .accesskey = A
@@ -77,9 +68,6 @@ menu-file-open-location =
 menu-file-open-file =
     .label = បើក​ឯកសារ…
     .accesskey = O
-menu-file-close =
-    .label = បិទ
-    .accesskey = C
 menu-file-close-window =
     .label = បិទបង្អួច
     .accesskey = d
@@ -92,9 +80,6 @@ menu-file-email-link =
 menu-file-print-setup =
     .label = ការ​រៀបចំ​ទំព័រ…
     .accesskey = u
-menu-file-print-preview =
-    .label = មើល​មុន​បោះពុម្ព
-    .accesskey = v
 menu-file-print =
     .label = បោះពុម្ព…
     .accesskey = P
@@ -166,6 +151,17 @@ menu-view-full-screen =
     .label = អេក្រង់​ពេញ
     .accesskey = F
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = ចូល​របៀប​អ្នក​អាន
+    .accesskey = អ
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = បិទ​ទិដ្ឋភាព​អ្នក​អាន​
+    .accesskey = អ
+
 ##
 
 menu-view-show-all-tabs =
@@ -200,8 +196,6 @@ menu-history-undo-window-menu =
 menu-bookmarks-menu =
     .label = ចំណាំ
     .accesskey = B
-menu-bookmark-edit =
-    .label = កែ​សម្រួល​ចំណាំ​នេះ
 menu-bookmarks-all-tabs =
     .label = ចំណាំ​ផ្ទាំង​ទាំងអស់…
 menu-bookmarks-toolbar =
@@ -245,15 +239,6 @@ menu-window-bring-all-to-front =
 # NOTE: For Engineers, any additions or changes to Help menu strings should
 # also be reflected in the related strings in appmenu.ftl. Those strings, by
 # convention, will have the same ID as these, but prefixed with "app".
-# Example: appmenu-help-product
-#
-# These strings are duplicated to allow for different casing depending on
-# where the strings appear.
-
-
-# NOTE: For Engineers, any additions or changes to Help menu strings should
-# also be reflected in the related strings in appmenu.ftl. Those strings, by
-# convention, will have the same ID as these, but prefixed with "app".
 # Example: appmenu-get-help
 #
 # These strings are duplicated to allow for different casing depending on
@@ -264,9 +249,6 @@ menu-help =
     .accesskey = H
 menu-help-report-site-issue =
     .label = រាយការណ៍​បញ្ហា​គេហទំព័រ…
-menu-help-feedback-page =
-    .label = ដាក់​ស្នើ​មតិកែលម្អ…
-    .accesskey = S
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

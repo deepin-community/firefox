@@ -29,8 +29,6 @@ static constexpr float XR_FRAMEBUFFER_MIN_SCALE = 0.2f;
 NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(XRWebGLLayer, mParent, mSession, mWebGL,
                                       mFramebuffer, mLeftViewport,
                                       mRightViewport)
-NS_IMPL_CYCLE_COLLECTION_ROOT_NATIVE(XRWebGLLayer, AddRef)
-NS_IMPL_CYCLE_COLLECTION_UNROOT_NATIVE(XRWebGLLayer, Release)
 
 XRWebGLLayer::XRWebGLLayer(
     nsISupports* aParent, XRSession& aSession, bool aIgnoreDepthValues,
@@ -104,7 +102,7 @@ already_AddRefed<XRWebGLLayer> XRWebGLLayer::Constructor(
       return nullptr;
     }
 
-    const auto document = gl->GetParentObject()->OwnerDoc();
+    const auto document = gl->GetCanvas()->OwnerDoc();
     if (aXRWebGLLayerInitDict.mAlpha) {
       nsContentUtils::ReportToConsoleNonLocalized(
           u"XRWebGLLayer doesn't support no alpha value. "
@@ -264,9 +262,7 @@ void XRWebGLLayer::EndAnimationFrame() {
   }
 }
 
-HTMLCanvasElement* XRWebGLLayer::GetCanvas() {
-  return mWebGL->GetParentObject();
-}
+HTMLCanvasElement* XRWebGLLayer::GetCanvas() { return mWebGL->GetCanvas(); }
 
 void XRWebGLLayer::SessionEnded() { DeleteFramebuffer(); }
 

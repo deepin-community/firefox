@@ -38,6 +38,8 @@ serviceworker-worker-start3 = Cychwyn
 
 # Text displayed for the updated time of the service worker. The <time> element will
 # display the last update time of the service worker script.
+# Variables:
+#   $date (date) - Update date
 serviceworker-worker-updated = Diweddarwyd <time>{ DATETIME($date, month: "long", year: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric") }</time>
 
 ## Service Worker status strings: all serviceworker-worker-status-* strings are also
@@ -45,16 +47,16 @@ serviceworker-worker-updated = Diweddarwyd <time>{ DATETIME($date, month: "long"
 
 # Service Worker status. A running service worker is registered, currently executed, can
 # be debugged and stopped.
-serviceworker-worker-status-running = Rhedeg
+serviceworker-worker-status-running = Yn rhedeg
 
 # Service Worker status. A stopped service worker is registered but not currently active.
-serviceworker-worker-status-stopped = Aros
+serviceworker-worker-status-stopped = Ataliawyd
 
 # Text displayed when no service workers are visible for the current page.
 serviceworker-empty-intro2 = Heb ganfod unrhyw weithwyr gwasanaeth
 
 # Link will open https://developer.mozilla.org/docs/Web/API/Service_Worker_API/Using_Service_Workers
-serviceworker-empty-intro-link = Dysgu mwy
+serviceworker-empty-intro-link = Dysgu rhagor
 
 # Text displayed when there are no Service Workers to display for the current page,
 # introducing hints to debug Service Worker issues.
@@ -109,6 +111,8 @@ manifest-json-link-data-url = Mae'r maniffest wedi'i fewnosod mewn URL Data.
 
 # Text displayed at manifest icons to label their purpose, as declared
 # in the manifest.
+# Variables:
+#   $purpose (string) - Manifest purpose
 manifest-icon-purpose = Pwrpas: <code>{ $purpose }</code>
 
 # Text displayed as the alt attribute for <img> tags showing the icons in the
@@ -117,8 +121,11 @@ manifest-icon-img =
     .alt = Eicon
 
 # Text displayed as the title attribute for <img> tags showing the icons in the
-# manifest. `$sizes` is a user-dependent string that has been parsed as a
-# space-separated list of `<width>x<height>` sizes or the keyword `any`.
+# manifest.
+# Variables:
+#   $sizes (string) - User-dependent string that has been parsed as a
+#                     space-separated list of `<width>x<height>` sizes or
+#                     the keyword `any`.
 manifest-icon-img-title = Eicon gyda meintiau: { $sizes }
 
 # Text displayed as the title attribute for <img> tags showing the icons in the
@@ -144,4 +151,3 @@ icon-warning =
 icon-error =
     .alt = Eicon gwall
     .title = Gwall
-

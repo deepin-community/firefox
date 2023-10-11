@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = ಇತಿಹಾಸವನ್ನು ಅಳಿಸಿಹಾಕಲು ಅಗತ್ಯವಿರುವ ಸಿದ್ಧತೆಗಳು
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = ಇತ್ತೀಚಿನ ಇತಿಹಾಸವನ್ನು ಅಳಿಸಿ ಹಾಕು
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = ಎಲ್ಲಾ ಇತಿಹಾಸವನ್ನು ಅಳಿಸಿಹಾಕು
-    .style = width: 34em
+    .style = min-width: 34em
 
 ## clear-time-duration-prefix is followed by a dropdown list, with
 ## values localized using clear-time-duration-value-* messages.
@@ -75,10 +75,6 @@ item-form-search-history =
     .accesskey = F
 
 data-section-label = ಮಾಹಿತಿ
-
-item-site-preferences =
-    .label = ತಾಣದ ಆದ್ಯತೆಗಳು
-    .accesskey = S
 
 item-offline-apps =
     .label = ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಜಾಲತಾಣದ ಮಾಹಿತಿ

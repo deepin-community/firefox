@@ -4,57 +4,46 @@
 
 addons-page-title = Xestor de complementos
 
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Consigui estensiones y estilos en <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
 
 list-empty-installed =
     .value = Nun tienes nengún complementu instaláu d'esti tipu
-
 list-empty-available-updates =
     .value = Nun s'atoparon anovamientos
-
 list-empty-recent-updates =
     .value = Nun anovesti nengún complementu apocayá
-
 list-empty-button =
     .label = Lleer más tocante a los complementos
-
 help-button = Sofitu pa los complementos
 sidebar-help-button-title =
     .title = Sofitu pa los complementos
-
 addons-settings-button = Axustes de { -brand-short-name }
 sidebar-settings-button-title =
     .title = Axustes de { -brand-short-name }
-
 show-unsigned-extensions-button =
     .label = Dalgunes estensiones nun pudieron verificase
-
 show-all-extensions-button =
     .label = Amosar toles estensiones
-
 detail-version =
     .label = Versión
-
 detail-last-updated =
     .label = Últimu anovamientu
-
 detail-contributions-description = El desendolcador d'esti complementu pídete que lu ayudes a siguir col so desendolcu faciendo una donación
-
 detail-contributions-button = Collaborar
     .title = Collabora col desendolcu d'esti complementu
     .accesskey = C
-
 # Used as a description for the option to allow or block an add-on in private windows.
 detail-private-browsing-label = Execución nes ventanes privaes
-
 detail-private-required-description2 = Esta estensión tien accesu a les tos actividaes en llinia mentanto restoles en privao. <a data-l10n-name="learn-more">Lleer más</a>
-
 detail-home-value =
     .value = { detail-home.label }
-
 detail-repository-value =
     .value = { detail-repository.label }
-
 detail-show-preferences =
     .label =
         { PLATFORM() ->
@@ -71,21 +60,15 @@ detail-show-preferences =
             [windows] Camuda les opciones d'esti complementu
            *[other] Camuda les preferencies d'esti complementu
         }
-
 detail-rating =
     .value = Valoración
-
 addon-restart-now =
     .label = Reaniciar agora
-
 disabled-unsigned-heading =
     .value = Desactiváronse dalgunos complementos
-
 plugin-deprecation-description = ¿Fáltate daqué? { -brand-short-name } yá nun sofita dalgunos complementos. <label data-l10n-name="learn-more">Lleer más</label>
-
 legacy-extensions =
     .value = Estensiones heredaes
-
 addon-category-discover = Recomendaciones
 addon-category-discover-title =
     .title = Recomendaciones
@@ -114,7 +97,8 @@ addon-category-recent-updates-title =
 ## These are global warnings
 
 extensions-warning-safe-mode = Desactiváronse tolos complementos pol mou seguru
-
+extensions-warning-safe-mode2 =
+    .message = Desactiváronse tolos complementos pol mou seguru
 
 ## Strings connected to add-on updates
 
@@ -154,16 +138,17 @@ addon-open-about-debugging = Depurar los complementos
 # This is displayed in the page options menu
 addon-manage-extensions-shortcuts = Xestionar los atayos de les estensiones
     .accesskey = X
-
 shortcuts-no-commands = Les estensiones de darréu nun tienen atayos:
-
 # String displayed when a keyboard shortcut is already assigned to more than one add-on
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = { $shortcut } úsase como atayu en más d'una ocasión. Los atayos duplicaos puen causar un comportamientu inesperáu.
-
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = { $shortcut } úsase como atayu en más d'una ocasión. Los atayos duplicaos puen causar un comportamientu inesperáu.
 shortcuts-card-collapse-button = Amosar menos
-
 header-back-button =
     .title = Dir p'atrás
 
@@ -178,13 +163,13 @@ discopane-intro =
     desendolcaos por terceros. Equí hai una esbilla que { -brand-product-name }
     <a data-l10n-name="learn-more-trigger">aconseya</a> pa consiguir un nivel
     esceicional de seguranza, rindimientu y funcionalidá.
-
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations = Dalgunes d'estes recomendaciones son personalizaes. Básense n'otres estensiones qu'instalesti, nes preferencies del perfil y nes estadístiques d'usu.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message = Dalgunes d'estes recomendaciones son personalizaes. Básense n'otres estensiones qu'instalesti, nes preferencies del perfil y nes estadístiques d'usu.
 discopane-notice-learn-more = Lleer más
-
 privacy-policy = Política de privacidá
-
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
 #   $author (string) - The name of the add-on developer.
@@ -199,7 +184,6 @@ install-theme-button = Instalar l'estilu
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Xestionar
 find-more-addons = Atopar más complementos
-
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
 addon-options-button =
@@ -222,44 +206,35 @@ preferences-addon-button =
     }
 details-addon-button = Detalles
 permissions-addon-button = Permisos
-
 extension-enabled-heading = Activóse
 extension-disabled-heading = Desactivóse
-
 theme-enabled-heading = Activóse
-theme-disabled-heading = Desactivóse
-
 plugin-enabled-heading = Activóse
 plugin-disabled-heading = Desactivóse
-
 dictionary-enabled-heading = Activóse
 dictionary-disabled-heading = Desactivóse
-
 locale-enabled-heading = Activóse
 locale-disabled-heading = Desactivóse
-
 always-activate-button = Activar siempres
 never-activate-button = Nun activar enxamás
-
 addon-detail-version-label = Versión
 addon-detail-last-updated-label = Últimu anovamientu
 addon-detail-rating-label = Valoración
-
 # Message for add-ons with a staged pending update.
 install-postponed-message = Esta estensión va anovase cuando se reanicie { -brand-short-name }
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Esta estensión va anovase cuando se reanicie { -brand-short-name }
 install-postponed-button = Anovar agora
-
 # The average rating that the add-on has received.
 # Variables:
 #   $rating (number) - A number between 0 and 5. The translation should show at most one digit after the comma.
 five-star-rating =
     .title = Valoróse con { NUMBER($rating, maximumFractionDigits: 1) } de 5 estrelles
-
 # This string is used to show that an add-on is disabled.
 # Variables:
 #   $name (string) - The name of the add-on
 addon-name-disabled = { $name } (desactivóse)
-
 # The number of reviews that an add-on has received on AMO.
 # Variables:
 #   $numberOfReviews (number) - The number of reviews received
@@ -275,13 +250,15 @@ addon-detail-reviews-link =
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = Quitóse <span data-l10n-name="addon-name">{ $addon }</span>
 pending-uninstall-undo-button = Desfacer
-
 addon-detail-updates-label = Permitir l'anovamientu automáticu
 install-update-button = Anovar
-
 addon-detail-private-browsing-help = Al permitilo, la estensión va tener accesu a la to actividá en llinia mentanto restoles en privao. <a data-l10n-name="learn-more">Lleer más</a>
 addon-detail-private-browsing-allow = Permitir
 addon-detail-private-browsing-disallow = Nun permitir
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -289,7 +266,6 @@ addon-detail-private-browsing-disallow = Nun permitir
 addon-badge-recommended2 =
     .title = { -brand-product-name } aconseya namás les estensiones que cumplan colos nuesos estándares de seguranza y rindimientu
     .aria-label = { addon-badge-recommended2.title }
-
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
 addon-badge-line3 =
@@ -303,17 +279,12 @@ addon-badge-verified2 =
 
 available-updates-heading = Anovamientos disponibles
 recent-updates-heading = Anovamientos de recién
-
 release-notes-loading = Cargando…
-
 addon-permissions-empty = Esta estensión nun rique nengún permisu
-
 addon-permissions-required = Los permisos riquíos pa les funciones principales:
 addon-permissions-learnmore = Lleer más tocante a los permisos
-
 recommended-extensions-heading = Estensiones aconseyaes
 recommended-themes-heading = Estilos aconseyaos
-
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = ¿Tienes creatividá? <a data-l10n-name="link">Fai'l to estilu con Firefox Color.</a>
@@ -328,10 +299,39 @@ locale-heading = Xestiona les llingües
 updates-heading = Xestiona los anovamientos
 discover-heading = Personaliza { -brand-short-name }
 shortcuts-heading = Xestión de los atayos de les estensiones
-
 default-heading-search-label = Atopa más complementos
 addons-heading-search-input =
     .placeholder = Buscar n'addons.mozilla.org
-
 addon-page-options-button =
     .title = Ferramientes pa tolos complementos
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (String): application version.
+details-notification-incompatible = «{ $name }» ye incompatible con { -brand-short-name } { $version }.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = «{ $name }» ye incompatible con { -brand-short-name } { $version }.
+details-notification-unsigned-and-disabled = Nun pudo verificase «{ $name }» pal so usu en { -brand-short-name } y desactivóse.
+details-notification-unsigned-and-disabled2 =
+    .message = Nun pudo verificase «{ $name }» pal so usu en { -brand-short-name } y desactivóse.
+details-notification-unsigned-and-disabled-link = Más información
+details-notification-unsigned = Nun pudo verificase «{ $name }» pal so usu en { -brand-short-name }. Sigui con curiáu.
+details-notification-unsigned2 =
+    .message = Nun pudo verificase «{ $name }» pal so usu en { -brand-short-name }. Sigui con curiáu.
+details-notification-unsigned-link = Más información
+details-notification-blocked = Desactivóse «{ $name }» pola mor de problemes de seguranza o estabilidá.
+details-notification-blocked2 =
+    .message = Desactivóse «{ $name }» pola mor de problemes de seguranza o estabilidá.
+details-notification-blocked-link = Más información
+details-notification-softblocked = Sábese que «{ $name }» causa problemes de seguranza o estabilidá.
+details-notification-softblocked2 =
+    .message = Sábese que «{ $name }» causa problemes de seguranza o estabilidá.
+details-notification-softblocked-link = Más información
+details-notification-gmp-pending = «{ $name }» va instalase de secute.
+details-notification-gmp-pending2 =
+    .message = «{ $name }» va instalase de secute.

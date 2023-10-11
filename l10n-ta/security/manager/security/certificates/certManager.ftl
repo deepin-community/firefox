@@ -17,9 +17,9 @@ certmgr-tab-servers =
 certmgr-tab-ca =
     .label = அதிகாரம் உள்ளவர்கள்
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = CA சான்றிதழ் நம்பகத்தன்மை அமைப்பை மாற்று
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = நம்பகத்தன்மை அமைப்பை மாற்று:
 
@@ -29,18 +29,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = இந்த சான்றிதழ் மின்னஞ்சல் பயனர்களை கண்டுபிடிக்கும்.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = சான்றிதழை நீக்கு
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = சான்றிதழ் பெயர்
 
 certmgr-cert-server =
     .label = சேவையகம்
-
-certmgr-override-lifetime =
-    .label = வாழ்நாள் முழுவதும்
 
 certmgr-token-name =
     .label = பாதுகாப்பு சாதனம்
@@ -169,9 +166,8 @@ delete-email-cert-impact = If you delete a person's e-mail certificate,  you wil
 cert-with-serial =
     .value = வரிசை எண் கொண்ட சான்றிதழ்: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

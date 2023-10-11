@@ -9,19 +9,17 @@
 # Variables:
 #   $addon-name (string) - Name of the add-on being reported
 abuse-report-dialog-title = Informe sobre { $addon-name }
-
 abuse-report-title-extension = Informeu sobre esta extensió a { -vendor-short-name }
 abuse-report-title-theme = Informeu sobre este tema a { -vendor-short-name }
 abuse-report-subtitle = Quin és el problema?
-
 # Variables:
 #   $author-name (string) - Name of the add-on author
 abuse-report-addon-authored-by = per <a data-l10n-name="author-name">{ $author-name }</a>
-
 abuse-report-learnmore =
     No saps quin problema seleccionar?
     <a data-l10n-name="learnmore-link">Més informació sobre com informar sobre les extensions i els temes</a>
-
+abuse-report-learnmore-intro = No saps quin problema seleccionar?
+abuse-report-learnmore-link = Més informació sobre com informar sobre les extensions i els temes
 abuse-report-submit-description = Descriviu el problema (opcional)
 abuse-report-textarea =
     .placeholder = Ens resulta més fàcil resoldre un problema si en tenim els detalls. Descriviu allò que vos passa. Gràcies per ajudar-nos a mantindre Internet en bon estat de salut.
@@ -37,12 +35,6 @@ abuse-report-goback-button = Vés arrere
 abuse-report-submit-button = Envia
 
 ## Message bars descriptions.
-
-
-## Variables:
-##   $addon-name (string) - Name of the add-on
-
-## Message bars descriptions.
 ##
 ## Variables:
 ##   $addon-name (string) - Name of the add-on
@@ -55,6 +47,22 @@ abuse-report-messagebar-removed-extension = Gràcies per enviar un informe. Heu 
 abuse-report-messagebar-removed-theme = Gràcies per enviar un informe. Heu eliminat el tema <span data-l10n-name="addon-name">{ $addon-name }</span>.
 abuse-report-messagebar-error = S'ha produït un error en enviar l'informe sobre <span data-l10n-name="addon-name">{ $addon-name }</span>.
 abuse-report-messagebar-error-recent-submit = L'informe sobre <span data-l10n-name="addon-name">{ $addon-name }</span> no s'ha enviat perquè recentment ja s'ha enviat un altre informe.
+abuse-report-messagebar-aborted2 =
+    .message = S'ha cancel·lat l'informe sobre { $addon-name }.
+abuse-report-messagebar-submitting2 =
+    .message = S'està enviant l'informe sobre { $addon-name }.
+abuse-report-messagebar-submitted2 =
+    .message = Gràcies per enviar un informe. Voleu eliminar { $addon-name }?
+abuse-report-messagebar-submitted-noremove2 =
+    .message = Gràcies per enviar un informe.
+abuse-report-messagebar-removed-extension2 =
+    .message = Gràcies per enviar un informe. Heu eliminat l'extensió { $addon-name }.
+abuse-report-messagebar-removed-theme2 =
+    .message = Gràcies per enviar un informe. Heu eliminat el tema { $addon-name }.
+abuse-report-messagebar-error2 =
+    .message = S'ha produït un error en enviar l'informe sobre { $addon-name }.
+abuse-report-messagebar-error-recent-submit2 =
+    .message = L'informe sobre { $addon-name } no s'ha enviat perquè recentment ja s'ha enviat un altre informe.
 
 ## Message bars actions.
 
@@ -69,18 +77,14 @@ abuse-report-messagebar-action-cancel = Cancel·la
 
 abuse-report-damage-reason-v2 = Ha malmés l'ordinador o ha posat les meues dades en risc
 abuse-report-damage-example = Exemple: programari maliciós injectat o robatori de dades
-
 abuse-report-spam-reason-v2 = Conté brossa o insereix publicitat no desitjada
 abuse-report-spam-example = Exemple: insereix anuncis en les pàgines web
-
 abuse-report-settings-reason-v2 = Ha canviat el meu motor de cerca, la pàgina d'inici o la de pestanya nova sense informar-me'n ni preguntar-m'ho
 abuse-report-settings-suggestions = Abans d’informar sobre l'extensió, podeu provar de canviar els paràmetres:
 abuse-report-settings-suggestions-search = Canvieu els paràmetres de cerca per defecte
 abuse-report-settings-suggestions-homepage = Canvieu la vostra pàgina principal i de pestanya nova
-
 abuse-report-deceptive-reason-v2 = Pretén ser quelcom que no és
 abuse-report-deceptive-example = Exemple: imatges o descripcions enganyoses
-
 abuse-report-broken-reason-extension-v2 = No funciona, deixa llocs web inutilitzables o fa que el { -brand-product-name } vagi lent
 abuse-report-broken-reason-theme-v2 = No funciona o fa que el navegador es veja malament
 abuse-report-broken-example = Exemple: les funcions són lentes, difícils d’utilitzar o no funcionen; parts dels llocs web no es carreguen o tenen un aspecte inusual
@@ -90,15 +94,11 @@ abuse-report-broken-suggestions-extension =
 abuse-report-broken-suggestions-theme =
     Sembla que heu identificat un error. A més d'enviar un informe aquí, la millor manera de resoldre un problema de funcionalitat és contactar amb el desenvolupador del tema.
     <a data-l10n-name="support-link">Visiteu el lloc web del tema</a> per obtindre la informació del desenvolupador.
-
 abuse-report-policy-reason-v2 = Inclou contingut d'odi, violent o il·legal
 abuse-report-policy-suggestions =
     Nota: els problemes de propietat intel·lectual i de marca s'han de notificar en un procés independent.
     <a data-l10n-name="report-infringement-link">Utilitzeu estes instruccions</a> per
     informar del problema.
-
 abuse-report-unwanted-reason-v2 = No l'he volgut mai i no sé com desfer-me'n
 abuse-report-unwanted-example = Exemple: una aplicació la va instal·lar sense el meu permís
-
 abuse-report-other-reason = Una altra cosa
-

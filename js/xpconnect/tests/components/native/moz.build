@@ -11,11 +11,14 @@ EXPORTS += [
 UNIFIED_SOURCES += [
     "xpctest_attributes.cpp",
     "xpctest_cenums.cpp",
+    "xpctest_esmreturncode.cpp",
     "xpctest_module.cpp",
     "xpctest_params.cpp",
     "xpctest_returncode.cpp",
 ]
 
-FINAL_LIBRARY = "xul"
+LOCAL_INCLUDES += [
+    "/xpcom/components",
+]
 
-REQUIRES_UNIFIED_BUILD = True
+FINAL_LIBRARY = "xul"

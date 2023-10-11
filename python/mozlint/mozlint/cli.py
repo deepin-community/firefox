@@ -5,6 +5,7 @@
 import os
 import sys
 from argparse import REMAINDER, SUPPRESS, ArgumentParser
+from pathlib import Path
 
 from mozlint.errors import NoValidLinter
 from mozlint.formatters import all_formatters
@@ -19,7 +20,8 @@ class MozlintParser(ArgumentParser):
                 "default": None,
                 "help": "Paths to file or directories to lint, like "
                 "'browser/components/loop' or 'mobile/android'. "
-                "Defaults to the current directory if not given.",
+                "If not provided, defaults to the files changed according "
+                "to --outgoing and --workdir.",
             },
         ],
         [
@@ -44,10 +46,13 @@ class MozlintParser(ArgumentParser):
         [
             ["-W", "--warnings"],
             {
+                "const": True,
+                "nargs": "?",
+                "choices": ["soft"],
                 "dest": "show_warnings",
-                "default": False,
-                "action": "store_true",
-                "help": "Display and fail on warnings in addition to errors.",
+                "help": "Display and fail on warnings in addition to errors. "
+                "--warnings=soft can be used to report warnings but only fail "
+                "on errors.",
             },
         ],
         [
@@ -83,9 +88,18 @@ class MozlintParser(ArgumentParser):
             },
         ],
         [
+            ["--include-third-party"],
+            {
+                "dest": "include_third-party",
+                "default": False,
+                "action": "store_true",
+                "help": "Also run the linter(s) on third-party code",
+            },
+        ],
+        [
             ["-o", "--outgoing"],
             {
-                "const": "default",
+                "const": True,
                 "nargs": "?",
                 "help": "Lint files touched by commits that are not on the remote repository. "
                 "Without arguments, finds the default remote that would be pushed to. "
@@ -312,6 +326,7 @@ def run(
     list_linters=False,
     num_procs=None,
     virtualenv_manager=None,
+    setupargs=None,
     **lintargs
 ):
     from mozlint import LintRoller, formatters
@@ -330,9 +345,13 @@ def run(
             os.path.splitext(os.path.basename(l))[0] for l in lint_paths["lint_paths"]
         ]
         print("\n".join(sorted(linters)))
+        print(
+            "\nNote that clang-tidy checks are not run as part of this "
+            "command, but using the static-analysis command."
+        )
         return 0
 
-    lint = LintRoller(**lintargs)
+    lint = LintRoller(setupargs=setupargs or {}, **lintargs)
     linters_info = find_linters(lintargs["config_paths"], linters)
 
     result = None
@@ -348,17 +367,16 @@ def run(
             paths = lint.linters[0]["local_exclude"]
 
         if (
-            not linters
-            and not paths
-            and os.getcwd() == lint.root
-            and not (outgoing or workdir)
+            not paths
+            and Path.cwd() == Path(lint.root)
+            and not (outgoing or workdir or rev)
         ):
             print(
                 "warning: linting the entire repo takes a long time, using --outgoing and "
                 "--workdir instead. If you want to lint the entire repo, run `./mach lint .`"
             )
             # Setting the default values
-            outgoing = "default"
+            outgoing = True
             workdir = "all"
 
         # Always run bootstrapping, but return early if --setup was passed in.
@@ -395,6 +413,10 @@ def run(
         formatter = formatters.get(formatter_name)
 
         out = formatter(result)
+        # We do this only for `json` that is mostly used in automation
+        if not out and formatter_name == "json":
+            out = "{}"
+
         if out:
             fh = open(path, "w") if path else sys.stdout
 
@@ -410,6 +432,9 @@ def run(
                 fh.buffer.flush()
             else:
                 print(out, file=fh)
+
+            if path:
+                fh.close()
 
     return result.returncode
 

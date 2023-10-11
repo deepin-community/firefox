@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Anubrir
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Amosar toles carpetes de los marcadores
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Anubrir
+
 bookmark-overlay-new-folder-button =
     .label = Carpeta nueva
     .accesskey = n
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Amosar toles etiquetes
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Anubrir
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Amosar toles etiquetes
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Anubrir
 
 bookmark-overlay-keyword-2 =
     .value = Pallabra clave

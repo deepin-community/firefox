@@ -70,5 +70,5 @@ profiles-opendir =
     { PLATFORM() ->
         [macos] Afichar dins lo Finder
         [windows] Dobrir lo dossièr
-       *[other] Dobrir lo dossièr
+       *[other] Dobrir lo repertòri
     }

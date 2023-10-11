@@ -84,6 +84,7 @@ toolbar-button-stop-reload =
 
 ## Firefox Account Button
 
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -91,30 +92,6 @@ main-context-menu-page-save =
     .accesskey = P
 
 ## Simple menu items
-
-main-context-menu-bookmark-add =
-    .aria-label = यस पृष्ठमा पुस्तकचिनो लगाउनुहोस्
-    .accesskey = m
-    .tooltiptext = यस पृष्ठ मा पुस्तकचिनो लगाउनुहोस्
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = यस पृष्ठमा पुस्तकचिनो लगाउनुहोस्
-    .accesskey = m
-    .tooltiptext = यस पृष्ठ ({ $shortcut }) मा पुस्तकचिनो लगाउनुहोस्
-
-main-context-menu-bookmark-change =
-    .aria-label = यो पुस्तकचिनोलाई सम्पादन गर्नुहोस्
-    .accesskey = m
-    .tooltiptext = यस पुस्तकचिनोलाई सम्पादन गर्नुहोस्
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = यो पुस्तकचिनोलाई सम्पादन गर्नुहोस्
-    .accesskey = m
-    .tooltiptext = यस ({ $shortcut }) पुस्तकचिनोलाई सम्पादन गर्नुहोस्
 
 main-context-menu-open-link =
     .label = लिङ्क खोल्नुहोस्
@@ -139,11 +116,6 @@ main-context-menu-open-link-new-private-window =
 main-context-menu-save-link =
     .label = यस रूपमा लिङ्क सङ्ग्रह गर्नुहोस्...
     .accesskey = k
-
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
 
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
@@ -242,14 +214,6 @@ main-context-menu-audio-email =
     .label = इमेल अडियो…
     .accesskey = a
 
-main-context-menu-plugin-play =
-    .label = यस प्लगिनलाई सक्षम पार्नुहोस्
-    .accesskey = c
-
-main-context-menu-plugin-hide =
-    .label = यस प्लगिनलाई लुकाउनुहोस्
-    .accesskey = H
-
 main-context-menu-send-to-device =
     .label = पृष्ठलाई यन्त्रमा पठाउनुहोस्
     .accesskey = D
@@ -288,10 +252,6 @@ main-context-menu-frame-open-window =
 main-context-menu-frame-reload =
     .label = फ्रेम पुनःलोड गर्नुहोस्
     .accesskey = R
-
-main-context-menu-frame-bookmark =
-    .label = यो फ्रेमलाई पुस्तकचिनो हाल्नुहोस्
-    .accesskey = m
 
 main-context-menu-frame-save-as =
     .label = यसरूपमा फ्रेम सङ्ग्रह गर्नुहोस्…

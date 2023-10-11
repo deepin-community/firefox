@@ -18,7 +18,7 @@ would have the adverse effect of forcing contributors to localize hundreds of
 strings from scratch.
 
 `Fluent Migration`_ is a Python library designed to solve this specific problem:
-it allows to migrate legacy translations from `.dtd` and `.properties` files,
+it allows to migrate translations from `.properties` and other legacy file formats,
 not only moving strings and transforming them as needed to adapt to the `FTL`
 syntax, but also replicating "blame" for each string in VCS.
 
@@ -46,10 +46,9 @@ require extensive l10n knowledge to avoid localizability issues.
 Don’t hesitate to reach out to the l10n-drivers for feedback, help to test or
 write the migration recipes:
 
+ - Bryan Olsson (:bolsson)
  - Francesco Lodolo (:flod)
- - Staś Małolepszy (:stas)
- - Zibi Braniecki (:gandalf)
- - Axel Hecht (:pike)
+ - Eemeli Aro (:eemeli)
 
 .. _Fluent: http://projectfluent.org/
 .. _Fluent Migration: https://hg.mozilla.org/l10n/fluent-migration/

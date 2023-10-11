@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = הסתרה
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = הצגת כל תיקיות הסימניות
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = הסתרה
+
 bookmark-overlay-new-folder-button =
     .label = תיקייה חדשה
     .accesskey = ת
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = הצגת כל התגיות
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = הסתרה
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = הצגת כל התגיות
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = הסתרה
 
 bookmark-overlay-keyword-2 =
     .value = מילת מפתח

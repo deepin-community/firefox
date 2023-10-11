@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 about-httpsonly-title-alert = Kemenn ar mod HTTPS nemetken
-about-httpsonly-title-connection-not-available = Kennaskañ suraet dihegerz
 
 # Variables:
 #   $websiteUrl (String) - Url of the website that failed to load. Example: www.example.com
@@ -20,6 +19,10 @@ about-httpsonly-link-learn-more = Gouzout hiroc'h…
 ## Suggestion Box that only shows up if a secure connection to www can be established
 ## Variables:
 ##   $websiteUrl (String) - Url of the website that can be securely loded with these alternatives. Example: example.com
+
+## Suggestion Box that only shows up if a secure connection to www can be established
+## Variables:
+##   $websiteUrl (String) - Url of the website that can be securely loaded with these alternatives. Example: example.com
 
 about-httpsonly-suggestion-box-www-text = Ur stumm suraet deus <em>www.{ $websiteUrl }</em> a zo. Ar bajenn-se a c'hallit gweladenniñ e-plas <em>{ $websiteUrl }</em>.
 about-httpsonly-suggestion-box-www-button = Mont da www.{ $websiteUrl }

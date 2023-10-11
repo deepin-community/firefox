@@ -3,8 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 restart-required-title = Պահանջվում է վերամեկնարկում
-restart-required-header = Կներեք: Մենք մի փոքր գործ ունենք անելու:
-restart-required-intro-brand = { -brand-short-name }-ը խորքում արդիացվել է: Սեղմեք Վերամեկնարկել՝ { -brand-short-name }-ը՝ արդիացումը ավարտելու համար:
-restart-required-description = Մենք կվերականգնենք ձեր բոլոր էջերը, պատուհանները և ներդիրները հետո:
+restart-required-heading = Վերամեկնարկեք՝ { -brand-short-name }-ը օգտագործելու համար
+restart-required-intro = { -brand-short-name }-ի արդիացումը մեկնարկել է խորքում: Վերամեկնարկեք՝ արդիացումն ավարտելու համար:
+window-restoration-info = Ձեր պատուհաններն ու ներդիրները արագ կվերականգնվեն, իսկ գաղտնիները՝ ոչ:
 
 restart-button-label = Վերամեկնարկել { -brand-short-name }-ը

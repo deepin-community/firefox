@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Nurodyti domenus, kuriems leidžiama pasiekti „
 
 policy-AppAutoUpdate = Įjungti arba išjungti automatinius programos naujinimus.
 
+policy-AppUpdatePin = Neleisti „{ -brand-short-name }“ būti atnaujinamai virš nurodytos versijos.
+
 policy-AppUpdateURL = Nustatyti pasirinktinį programos naujinimų URL.
 
 policy-Authentication = Keisti integruotą autentikaciją ją palaikančioms svetainėms.
@@ -69,7 +71,7 @@ policy-DisablePrimaryPasswordCreation = Jei „true“, negalima sukurti pagrind
 
 policy-DisablePasswordReveal = Neleisti parodyti slaptažodžių įrašytuose prisijungimuose.
 
-policy-DisablePocket = Išjungti funkcionalumą, skirtą tinklalapių įrašymui į „Pocket“.
+policy-DisablePocket2 = Išjungti funkcionalumą, skirtą tinklalapių įrašymui į „{ -pocket-brand-name }“.
 
 policy-DisablePrivateBrowsing = Išjungti privatųjį naršymą.
 
@@ -103,6 +105,8 @@ policy-EnableTrackingProtection = Įjungti arba išjungti turinio blokavimą, ir
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Įjungti arba išjungti „Encrypted Media Extensions“ ir papildomai juos užrakinti.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Išjungti įspėjimus pagal failų plėtinius nurodytiems failų tipams domenuose.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -111,10 +115,6 @@ policy-Extensions = Diegti, šalinti, arba užrakinti priedus. Diegimo nuostata 
 policy-ExtensionSettings = Tvarkyti visus priedų įdiegimo aspektus.
 
 policy-ExtensionUpdate = Įjungti arba išjungti automatinius priedų naujinimus.
-
-policy-FirefoxHome = Konfigūruoti „Firefox“ pradžios ekraną.
-
-policy-FlashPlugin = Leisti arba drausti „Flash“ plėtinio naudojimą.
 
 policy-Handlers = Konfigūruoti numatytąsias programas.
 
@@ -159,6 +159,8 @@ policy-OverridePostUpdatePage = Pakeisti po atnaujinimų rodomą puslapį „Kas
 
 policy-PasswordManagerEnabled = Įjungti slaptažodžių įrašymą į slaptažodžių tvarkytuvę.
 
+policy-PasswordManagerExceptions = Neleisti „{ -brand-short-name }“ įrašyti nurodytų svetainių slaptažodžių.
+
 # PDF.js and PDF should not be translated
 policy-PDFjs = Išjungti arba konfigūruoti „PDF.js“, į „{ -brand-short-name }“ integruotą PDF failų žiūryklę.
 
@@ -184,18 +186,19 @@ policy-SearchEngines = Konfigūruoti ieškyklių nuostatas. Ši strategija galim
 
 policy-SearchSuggestEnabled = Įjungti arba išjungti paieškos žodžių siūlymus.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Diegti PKCS #11 modulius.
-
 policy-ShowHomeButton = Rodyti pradžios mygtuką priemonių juostoje.
 
 policy-SSLVersionMax = Nustatyti didžiausią SSL versiją.
 
 policy-SSLVersionMin = Nustatyti mažiausią SSL versiją.
 
+policy-StartDownloadsInTempDirectory = Priversti atsiuntimus pradėti laikiname vietiniame aplanke, o ne numatytame atsiuntimų aplanke.
+
 policy-SupportMenu = Pridėti specialų pagalbos meniu elementą į žinyno meniu.
 
 policy-UserMessaging = Nerodyti naudotojui tam tikrų pranešimų.
+
+policy-UseSystemPrintDialog = Spausdinti naudojant sistemos dialogą…
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Blokuoti svetainių lankymą. Paskaitykite dokumentaciją dėl informacijos apie formatą.

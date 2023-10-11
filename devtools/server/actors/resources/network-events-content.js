@@ -3,21 +3,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 "use strict";
-const { Ci } = require("chrome");
-const Services = require("Services");
 
 loader.lazyRequireGetter(
   this,
   "NetworkEventActor",
-  "devtools/server/actors/network-monitor/network-event-actor",
+  "resource://devtools/server/actors/network-monitor/network-event-actor.js",
   true
 );
 
-loader.lazyRequireGetter(
-  this,
-  "NetworkUtils",
-  "devtools/server/actors/network-monitor/utils/network-utils"
-);
+const lazy = {};
+
+ChromeUtils.defineESModuleGetters(lazy, {
+  NetworkUtils:
+    "resource://devtools/shared/network-observer/NetworkUtils.sys.mjs",
+});
 
 /**
  * Handles network events from the content process
@@ -38,26 +37,31 @@ class NetworkEventContentWatcher {
    *          This would be called multiple times for each resource.
    */
   async watch(targetActor, { onAvailable, onUpdated }) {
-    this._networkEvents = new Map();
+    // Map from channelId to network event objects.
+    this.networkEvents = new Map();
 
     this.targetActor = targetActor;
     this.onAvailable = onAvailable;
     this.onUpdated = onUpdated;
 
     this.httpFailedOpeningRequest = this.httpFailedOpeningRequest.bind(this);
+    this.httpOnImageCacheResponse = this.httpOnImageCacheResponse.bind(this);
 
     Services.obs.addObserver(
       this.httpFailedOpeningRequest,
       "http-on-failed-opening-request"
     );
-  }
 
-  get conn() {
-    return this.targetActor.conn;
+    Services.obs.addObserver(
+      this.httpOnImageCacheResponse,
+      "http-on-image-cache-response"
+    );
   }
-
-  get browserId() {
-    return this.targetActor.browserId;
+  /**
+   * Allows clearing of network events
+   */
+  clear() {
+    this.networkEvents.clear();
   }
 
   httpFailedOpeningRequest(subject, topic) {
@@ -66,74 +70,195 @@ class NetworkEventContentWatcher {
     // Ignore preload requests to avoid duplicity request entries in
     // the Network panel. If a preload fails (for whatever reason)
     // then the platform kicks off another 'real' request.
-    if (NetworkUtils.isPreloadRequest(channel)) {
+    if (lazy.NetworkUtils.isPreloadRequest(channel)) {
       return;
     }
 
-    const event = NetworkUtils.createNetworkEvent(channel, {
-      blockedReason: channel.loadInfo.requestBlockingReason,
-    });
-
-    // For same-origin iframe targets, we're notified about this event from both the top-level
-    // target *and* the iframe one. We ignore the event if it doesn't come from the same
-    // browsing context as the target's one to avoid duplicate messages in the netmonitor.
     if (
-      this.targetActor.ignoreSubFrames &&
-      event.browsingContextID !== this.targetActor.browsingContext.id
+      !lazy.NetworkUtils.matchRequest(channel, {
+        targetActor: this.targetActor,
+      })
     ) {
       return;
     }
 
+    this.onNetworkEventAvailable(channel, {
+      networkEventOptions: {
+        blockedReason: channel.loadInfo.requestBlockingReason,
+      },
+    });
+  }
+
+  httpOnImageCacheResponse(subject, topic) {
+    if (
+      topic != "http-on-image-cache-response" ||
+      !(subject instanceof Ci.nsIHttpChannel)
+    ) {
+      return;
+    }
+
+    const channel = subject.QueryInterface(Ci.nsIHttpChannel);
+
+    if (
+      !lazy.NetworkUtils.matchRequest(channel, {
+        targetActor: this.targetActor,
+      })
+    ) {
+      return;
+    }
+
+    // Only one network request should be created per URI for images from the cache
+    const hasURI = Array.from(this.networkEvents.values()).some(
+      networkEvent => networkEvent.uri === channel.URI.spec
+    );
+
+    if (hasURI) {
+      return;
+    }
+
+    this.onNetworkEventAvailable(channel, {
+      networkEventOptions: { fromCache: true },
+    });
+  }
+
+  onNetworkEventAvailable(channel, { networkEventOptions }) {
     const actor = new NetworkEventActor(
-      this,
+      this.targetActor.conn,
+      this.targetActor.sessionContext,
       {
-        onNetworkEventUpdate: this.onNetworkEventUpdated.bind(this),
+        onNetworkEventUpdate: this.onNetworkEventUpdate.bind(this),
         onNetworkEventDestroy: this.onNetworkEventDestroyed.bind(this),
       },
-      event
+      networkEventOptions,
+      channel
     );
     this.targetActor.manage(actor);
 
     const resource = actor.asResource();
 
-    this._networkEvents.set(resource.resourceId, {
+    const networkEvent = {
+      browsingContextID: resource.browsingContextID,
+      innerWindowId: resource.innerWindowId,
       resourceId: resource.resourceId,
       resourceType: resource.resourceType,
-      types: [],
-      resourceUpdates: {},
-    });
+      receivedUpdates: [],
+      resourceUpdates: {
+        // Requests already come with request cookies and headers, so those
+        // should always be considered as available. But the client still
+        // heavily relies on those `Available` flags to fetch additional data,
+        // so it is better to keep them for consistency.
+        requestCookiesAvailable: true,
+        requestHeadersAvailable: true,
+      },
+      uri: channel.URI.spec,
+    };
+    this.networkEvents.set(resource.resourceId, networkEvent);
 
     this.onAvailable([resource]);
-    NetworkUtils.fetchRequestHeadersAndCookies(channel, actor, {});
+    const isBlocked = !!resource.blockedReason;
+    if (isBlocked) {
+      this._emitUpdate(networkEvent);
+    } else {
+      actor.addResponseStart({ channel, fromCache: true });
+      actor.addEventTimings(
+        0 /* totalTime */,
+        {} /* timings */,
+        {} /* offsets */
+      );
+      actor.addResponseContent(
+        {
+          mimeType: channel.contentType,
+          size: channel.contentLength,
+          text: "",
+          transferredSize: 0,
+        },
+        {}
+      );
+    }
   }
 
-  onNetworkEventUpdated(updateResource) {
-    const networkEvent = this._networkEvents.get(updateResource.resourceId);
+  onNetworkEventUpdate(updateResource) {
+    const networkEvent = this.networkEvents.get(updateResource.resourceId);
 
     if (!networkEvent) {
       return;
     }
 
-    const { resourceId, resourceType, resourceUpdates, types } = networkEvent;
+    const { resourceUpdates, receivedUpdates } = networkEvent;
+
+    switch (updateResource.updateType) {
+      case "responseStart":
+        // For cached image requests channel.responseStatus is set to 200 as
+        // expected. However responseStatusText is empty. In this case fallback
+        // to the expected statusText "OK".
+        let statusText = updateResource.statusText;
+        if (!statusText && updateResource.status === "200") {
+          statusText = "OK";
+        }
+        resourceUpdates.httpVersion = updateResource.httpVersion;
+        resourceUpdates.status = updateResource.status;
+        resourceUpdates.statusText = statusText;
+        resourceUpdates.remoteAddress = updateResource.remoteAddress;
+        resourceUpdates.remotePort = updateResource.remotePort;
+        resourceUpdates.waitingTime = updateResource.waitingTime;
+
+        resourceUpdates.responseHeadersAvailable = true;
+        resourceUpdates.responseCookiesAvailable = true;
+        break;
+      case "responseContent":
+        resourceUpdates.contentSize = updateResource.contentSize;
+        resourceUpdates.mimeType = updateResource.mimeType;
+        resourceUpdates.transferredSize = updateResource.transferredSize;
+        break;
+      case "eventTimings":
+        resourceUpdates.totalTime = updateResource.totalTime;
+        break;
+    }
 
     resourceUpdates[`${updateResource.updateType}Available`] = true;
-    types.push(updateResource.updateType);
+    receivedUpdates.push(updateResource.updateType);
 
-    if (types.includes("requestHeaders") && types.includes("requestCookies")) {
-      this.onUpdated([{ resourceType, resourceId, resourceUpdates }]);
+    // Here we explicitly call all three `add` helpers on each network event
+    // actor so in theory we could check only the last one to be called, ie
+    // responseContent.
+    const isComplete =
+      receivedUpdates.includes("responseStart") &&
+      receivedUpdates.includes("responseContent") &&
+      receivedUpdates.includes("eventTimings");
+
+    if (isComplete) {
+      this._emitUpdate(networkEvent);
     }
   }
 
+  _emitUpdate(networkEvent) {
+    this.onUpdated([
+      {
+        resourceType: networkEvent.resourceType,
+        resourceId: networkEvent.resourceId,
+        resourceUpdates: networkEvent.resourceUpdates,
+        browsingContextID: networkEvent.browsingContextID,
+        innerWindowId: networkEvent.innerWindowId,
+      },
+    ]);
+  }
+
   onNetworkEventDestroyed(channelId) {
-    if (this._networkEvents.has(channelId)) {
-      this._networkEvents.delete(channelId);
+    if (this.networkEvents.has(channelId)) {
+      this.networkEvents.delete(channelId);
     }
   }
 
   destroy() {
+    this.clear();
     Services.obs.removeObserver(
       this.httpFailedOpeningRequest,
       "http-on-failed-opening-request"
+    );
+
+    Services.obs.removeObserver(
+      this.httpOnImageCacheResponse,
+      "http-on-image-cache-response"
     );
   }
 }

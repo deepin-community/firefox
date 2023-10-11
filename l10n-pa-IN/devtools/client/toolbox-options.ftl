@@ -8,15 +8,27 @@
 
 ## Default Developer Tools section
 
+# The label for the heading of the radiobox corresponding to the theme
+options-select-dev-tools-theme-label = ਥੀਮ
 
 ## Inspector section
 
+# The heading
+options-context-inspector = ਨਿਰੀਖਕ
+
+# The label for the checkbox option to show user agent styles
+options-show-user-agent-styles-label = ਬਰਾਊਜ਼ਰ ਅੰਦਾਜ ਵਿਖਾਓ
 
 ## "Default Color Unit" options for the Inspector
 
+options-default-color-unit-hsl = HSL(A)
+options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-name = ਰੰਗਾਂ ਦੇ ਨਾਂ
 
 ## Style Editor section
 
+# The heading
+options-styleeditor-label = ਅੰਦਾਜ ਸੰਪਾਦਕ
 
 ## Screenshot section
 
@@ -30,9 +42,8 @@ options-screenshot-audio-tooltip =
 
 ## Editor section
 
+options-sourceeditor-tabsize-label = ਟੈਬ ਦਾ ਅਕਾਰ
+options-sourceeditor-keybinding-default-label = ਮੂਲ
 
 ## Advanced section
-
-
-##
 

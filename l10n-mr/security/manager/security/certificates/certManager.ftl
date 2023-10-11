@@ -21,9 +21,9 @@ certmgr-mine = आपल्याकडे अशा संघटनांचे
 certmgr-people = आपल्याकडे फाइलवर असे प्रमाणपत्र आहेत जे ह्या लोकांना ओळखते
 certmgr-ca = आपल्याकडे फाइलवर असे प्रमाणपत्र आहेत जे ह्या प्रमाणपत्र मंडळांना ओळखते
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = CA प्रमाणपत्र विश्वासर्ह सेटींग्स संपादित करा
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = विश्वासर्ह सेटींग्स संपादित करा:
 
@@ -33,18 +33,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = हे प्रमाणपत्र मेल वापरकर्त्यांना ओळखू शकते.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = प्रमाणपत्र नष्ट करा
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = प्रमाणपत्राचे नाव
 
 certmgr-cert-server =
     .label = सर्व्हर
-
-certmgr-override-lifetime =
-    .label = कार्यकाळ
 
 certmgr-token-name =
     .label = सुरक्षा साधन
@@ -173,9 +170,8 @@ delete-email-cert-impact = ईमेल प्रमाणपत्र काढ
 cert-with-serial =
     .value = प्रमाणपत्राचा सिरीयल क्रमांक: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

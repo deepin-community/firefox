@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-app-manager-window =
+app-manager-window2 =
     .title = Մանրամասն տեղեկություն
-    .style = width: 35em; min-height: 25em;
+    .style = min-width: 35em; min-height: 25em;
 
 app-manager-remove =
     .label = Հեռացնել

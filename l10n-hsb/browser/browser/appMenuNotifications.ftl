@@ -45,7 +45,7 @@ appmenu-addon-post-install-message3 = Rjadujće swoje přidatki a drasty z menij
 appmenu-addon-post-install-incognito-checkbox =
     .label = Tute rozšěrjenje w priwatnych woknach dowolić
     .accesskey = T
-    
+
 appmenu-new-tab-controlled-changes =
     .label = Waš nowy rajtark je so změnił.
     .buttonlabel = Změny wobchować
@@ -59,7 +59,7 @@ appmenu-homepage-controlled-changes =
     .secondarybuttonlabel = Startowu stronu rjadować
     .secondarybuttonaccesskey = S
 appmenu-tab-hide-controlled =
-    .label = Přistup na waše schowane rajtarki
+    .label = Přistup k wašim schowanym rajtarkam
     .buttonlabel = Rajtarki schowane wobchować
     .buttonaccesskey = R
     .secondarybuttonlabel = Rozšěrjenje znjemóžnić

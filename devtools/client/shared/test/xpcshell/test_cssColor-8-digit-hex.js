@@ -7,8 +7,7 @@
 
 "use strict";
 
-var { require } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
-const { colorUtils } = require("devtools/shared/css/color");
+const { colorUtils } = require("resource://devtools/shared/css/color.js");
 
 const EIGHT_CHARACTER_HEX = "#fefefef0";
 

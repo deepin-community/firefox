@@ -61,25 +61,16 @@ restart-later = Reiniciar mas entabant
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that the password manager setting
-# is being controlled by an extension
-extension-controlled-password-saving = Una extensión, <img data-l10n-name="icon"/> { $name }, ye controlando este parametro.
 
-# This string is shown to notify the user that their notifications permission
-# is being controlled by an extension.
-extension-controlled-web-notifications = Una extensión, <img data-l10n-name="icon"/> { $name }, ye controlando este parametro.
-
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = Una extensión, <img data-l10n-name="icon"/> { $name }, requiere Pestanyas Contenederas.
-
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = Una extensión, <img data-l10n-name="icon"/> { $name }, ye controlando este parametro.
-
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = Una extensión, <img data-l10n-name="icon"/> { $name }, ye controlando cómo { -brand-short-name } se connecta a internet.
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -109,10 +100,6 @@ set-as-my-default-browser =
     .label = Definir per defecto…
     .accesskey = D
 
-startup-restore-previous-session =
-    .label = Restaurar la sesión anterior
-    .accesskey = s
-
 startup-restore-warn-on-quit =
     .label = Alvertir-te quan se salga d'o navegador
 
@@ -128,10 +115,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Ubrir vinclos en pestanyas en cuenta d'en nuevas finestras
     .accesskey = w
-
-warn-on-close-multiple-tabs =
-    .label = Alvertir-me en zarrar multiples pestanyas
-    .accesskey = m
 
 warn-on-open-many-tabs =
     .label = Alvertir-me quan ubrir multiples pestanyas pueda enlentir lo { -brand-short-name }
@@ -152,6 +135,10 @@ browser-containers-settings =
     .accesskey = g
 
 containers-disable-alert-title = Zarrar totas las pestanyas de contenedor?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Si desactiva agora las pestanyas de contenedor, se zarrará { $tabCount } pestanya de contenedor. Ye seguro de fer-lo?
@@ -163,6 +150,9 @@ containers-disable-alert-ok-button =
         [one] Zarrar { $tabCount } pestanya de contenedor
        *[other] Zarrar { $tabCount } pestanyas de contenedor
     }
+
+##
+
 containers-disable-alert-cancel-button = Mantener habilitadas
 
 containers-remove-alert-title = Borrar iste contenedor?
@@ -178,12 +168,9 @@ containers-remove-alert-msg =
 containers-remove-ok-button = Borrar iste contenedor
 containers-remove-cancel-button = No borrar iste contenedor
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Idioma y aparición
-
-fonts-and-colors-header = Fuents y Colors
 
 default-font = Tipografía por defecto:
     .accesskey = d
@@ -193,10 +180,6 @@ default-font-size = Mida:
 advanced-fonts =
     .label = Abanzadas…
     .accesskey = A
-
-colors-settings =
-    .label = Colors…
-    .accesskey = C
 
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Zoom
@@ -253,8 +236,7 @@ files-and-applications-title = Fichers y aplicacions
 
 download-header = Descargas
 
-download-save-to =
-    .label = Alzar os fichers en
+download-save-where = Alzar os fichers en
     .accesskey = A
 
 download-choose-folder =
@@ -509,11 +491,6 @@ home-restore-defaults =
     .label = Restaurar valors per defecto
     .accesskey = R
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Inicio de Firefox
-
 home-mode-choice-custom =
     .label = URL personalizadas…
 
@@ -541,21 +518,18 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Conteniu d'inicio de Firefox
-home-prefs-content-description = Tría qué contenius quiers veyer en a tuya pachina d'inicio de Firefox.
-
 home-prefs-search-header =
     .label = Busqueda web
-home-prefs-topsites-header =
-    .label = Puestos mas vesitaus
-home-prefs-topsites-description = Los puestos que mas vesitas
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+
 home-prefs-recommended-by-header =
     .label = Recomendau per { $provider }
-home-prefs-recommended-by-description-update = Conteniu excepcional de tot lo web, triau per { $provider }
 
 ##
 
@@ -563,9 +537,6 @@ home-prefs-recommended-by-learn-more = Cómo funciona
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Articlos esponsorizaus
 
-home-prefs-highlights-header =
-    .label = Destacaus
-home-prefs-highlights-description = Una tría d'os puestos que has alzau u vesitau
 home-prefs-highlights-option-visited-pages =
     .label = Pachinas visitadas
 home-prefs-highlights-options-bookmarks =
@@ -581,7 +552,6 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Retallos
-home-prefs-snippets-description = Actualizacions de { -vendor-short-name } y { -brand-product-name }
 
 home-prefs-sections-rows-option =
     .label =
@@ -616,6 +586,7 @@ search-show-suggestions-url-bar-option =
     .label = Amostrar las sucherencias de busqueda en os resultaus d'a barra d'adrezas
     .accesskey = l
 
+
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -643,7 +614,6 @@ search-restore-default =
 search-remove-engine =
     .label = Borrar…
     .accesskey = r
-
 search-add-engine =
     .label = Anyadir
     .accesskey = A
@@ -675,6 +645,10 @@ containers-remove-button =
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
 sync-signedout-caption = Leva-te lo web con tu
 
 # This message contains two links and two icon images.
@@ -689,6 +663,9 @@ sync-mobile-promo = Descargar Firefos pa <img data-l10n-name="android-icon"/> <a
 
 ## Firefox Account - Signed in
 
+
+## Firefox account - Signed in
+
 sync-profile-picture =
     .tooltiptext = Cambiar a imachen de perfil
 
@@ -699,8 +676,13 @@ sync-sign-out =
 sync-manage-account = Chestionar la cuenta
     .accesskey = t
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } no ye verificau.
 sync-signedin-login-failure = Enciete una sesión ta reconnectar { $email }
+
+##
 
 sync-resend-verification =
     .label = Reninviar la verificación
@@ -725,9 +707,14 @@ prefs-sync-now =
     .accesskeynotsyncing = N
     .labelsyncing = Se ye sincronizando…
 
-## The list of things currently syncing.
+prefs-sync-now-button =
+    .label = Sincronizar agora
+    .accesskey = N
 
-sync-currently-syncing-heading = Actualment se sincronizan estes elementos:
+prefs-syncing-button =
+    .label = Se ye sincronizando…
+
+## The list of things currently syncing.
 
 sync-currently-syncing-bookmarks = Marcapachinas
 sync-currently-syncing-history = Historial
@@ -743,9 +730,9 @@ sync-change-options =
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog =
+sync-choose-what-to-sync-dialog3 =
     .title = Tría qué quiers sincronizar
-    .style = width: 36em; min-height: 35em;
+    .style = min-width: 36em;
     .buttonlabelaccept = Alzar cambios
     .buttonaccesskeyaccept = A
     .buttonlabelextra2 = Desconnectau…
@@ -802,6 +789,16 @@ sync-device-name-save =
 
 sync-connect-another-device = Connectar belatro dispositivo
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Verificación ninviada
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = S'ha ninviau un vinclo de verificación ta { $email }
+sync-verification-not-sent-title = No s'ha puesto ninviar a verificación
+sync-verification-not-sent-body = No s'ha puesto ninviar una verificación de correu en isto momento, torne a prebar-lo dimpués.
+
 ## Privacy Section
 
 privacy-header = Privacidat d'o navegador
@@ -844,7 +841,6 @@ forms-primary-pw-learn-more-link = Saber-ne mas
 forms-master-pw-change =
     .label = Cambiar a clau mayestra…
     .accesskey = m
-
 forms-primary-pw-change =
     .label = Cambiar a clau primaria…
     .accesskey = P
@@ -952,14 +948,8 @@ sitedata-block-desc = Tipo de conteniu blocau
 
 sitedata-option-block-cross-site-trackers =
     .label = Elementos de seguimiento entre puestos
-sitedata-option-block-cross-site-and-social-media-trackers =
-    .label = Elementos de seguimiento de puestos y retz socials
-sitedata-option-block-cross-site-and-social-media-trackers-plus-isolate =
-    .label = Elementos de seguimiento entre puestos y en retz socials, y aíslar las de demás.
 sitedata-option-block-unvisited =
     .label = Cookies de webs no visitaus
-sitedata-option-block-all-third-party =
-    .label = Totas las cookies de tercers (puede causar errors en os puestos web)
 sitedata-option-block-all =
     .label = Totas las cookies (qualques puestos no funcionarán correctament)
 
@@ -974,6 +964,9 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Chestionar excepcions…
     .accesskey = x
+
+## Privacy Section - Cookie Banner Handling
+
 
 ## Privacy Section - Address Bar
 
@@ -1031,12 +1024,12 @@ content-blocking-social-media-trackers = Elementos de seguimiento de retz social
 content-blocking-all-cookies = Totas las cookies
 content-blocking-unvisited-cookies = Cookies de puestos no visitaus
 content-blocking-all-windows-tracking-content = Conteniu que fa seguimiento en totas las finestras
-content-blocking-all-third-party-cookies = Totas las cookies de tercers
 content-blocking-cryptominers = Criptominers
 content-blocking-fingerprinters = Ditaladas dichitals
 
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
+
 content-blocking-warning-title = Atención!
-content-blocking-and-isolating-etp-warning-description = Lo bloqueyo d'elementos de seguimiento y l'aíslamiento de cookies podrían afectar a la funcionalidat de bell puesto. Recarga la pachina con elementos de seguimiento pa cargar tot lo conteniu.
 content-blocking-warning-learn-how = Aprende cómo
 
 content-blocking-reload-description = Habrás de recargar las tuyas pestanyas pa aplicar estes cambios.
@@ -1122,10 +1115,6 @@ permissions-autoplay-settings =
 permissions-block-popups =
     .label = Blocar finestras emerchents
     .accesskey = B
-
-permissions-block-popups-exceptions =
-    .label = Excepcions…
-    .accesskey = E
 
 permissions-addon-install-warning =
     .label = Alvertir-te quan bell puesto web mire d'instalar complementos
@@ -1217,13 +1206,11 @@ httpsonly-radio-enabled-pbm =
 httpsonly-radio-disabled =
     .label = No activar lo modo Nomás-HTTPS
 
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Escritorio
 downloads-folder-name = Descargas
 choose-download-folder-title = Trigar a carpeta de descargas:
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Alzar fichers en { $service-name }

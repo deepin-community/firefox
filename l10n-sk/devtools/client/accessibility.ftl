@@ -13,6 +13,27 @@ accessibility-keyboard-header = Klávesnica
 
 ## Text entries that are used as text alternative for icons that depict accessibility isses.
 
+
+## These strings are used in the overlay displayed when running an audit in the accessibility panel
+
+accessibility-progress-initializing = Inicializuje sa…
+    .aria-valuetext = Inicializuje sa…
+
+# This string is displayed in the audit progress bar in the accessibility panel.
+# Variables:
+#   $nodeCount (Integer) - The number of nodes for which the audit was run so far.
+accessibility-progress-progressbar =
+    { $nodeCount ->
+        [one] Kontrola { $nodeCount } uzla
+        [few] Kontrola { $nodeCount } uzlov
+       *[other] Kontrola { $nodeCount } uzlov
+    }
+
+accessibility-progress-finishing = Dokončuje sa…
+    .aria-valuetext = Dokončuje sa…
+
+## Text entries that are used as text alternative for icons that depict accessibility issues.
+
 accessibility-warning =
     .alt = Varovanie
 

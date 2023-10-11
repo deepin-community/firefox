@@ -37,9 +37,7 @@ async function prepareLogins(logins = []) {
   await LoginManager.removeAllUserFacingLogins();
 
   for (let login of logins) {
-    let storageAddPromise = promiseStorageChanged(["addLogin"]);
-    await LoginManager.addLogin(login);
-    await storageAddPromise;
+    await LoginManager.addLoginAsync(login);
   }
   let count = (await LoginManager.getAllLogins()).length;
   is(count, logins.length, "All logins were added");
@@ -82,7 +80,7 @@ const tests = [
   },
 ];
 
-add_task(async function setup() {
+add_setup(async () => {
   ok(readyPromise, "check promise is available");
   await readyPromise;
   win = window.open("about:blank");

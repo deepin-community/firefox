@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 history-title = Yangilash tarixi
+history-intro = Quyidagi yangilanishlar oʻrnatildi
 
 close-button-label =
     .buttonlabelcancel = Yopish
@@ -22,5 +23,7 @@ state-header = Holati
 update-full-build-name = { $name } ({ $buildID })
 
 update-details = Tafsilotlar
+
 update-installed-on = Oʻrnatilgan: { $date }
+
 update-status = Holati: { $status }

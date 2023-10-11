@@ -20,15 +20,15 @@
 "use strict";
 
 const {
-  PSEUDO_ELEMENTS,
   CSS_PROPERTIES,
-  PREFERENCES,
-} = require("devtools/shared/css/generated/properties-db");
+} = require("resource://devtools/shared/css/generated/properties-db.js");
+const PREFERENCES = InspectorUtils.getCSSPropertyPrefs();
 const {
   generateCssProperties,
-} = require("devtools/server/actors/css-properties");
-const { Preferences } = require("resource://gre/modules/Preferences.jsm");
-const InspectorUtils = require("InspectorUtils");
+} = require("resource://devtools/server/actors/css-properties.js");
+const { Preferences } = ChromeUtils.importESModule(
+  "resource://gre/modules/Preferences.sys.mjs"
+);
 
 function run_test() {
   const propertiesErrorMessage =
@@ -37,22 +37,6 @@ function run_test() {
     "CSS properties on the platform. To fix this " +
     "assertion run `mach devtools-css-db` to re-generate " +
     "the client side properties.";
-
-  // Check that the platform and client match for pseudo elements.
-  deepEqual(
-    PSEUDO_ELEMENTS,
-    InspectorUtils.getCSSPseudoElementNames(),
-    "The pseudo elements match on the client and platform. " +
-      propertiesErrorMessage
-  );
-
-  const prefs = InspectorUtils.getCSSPropertyPrefs();
-  deepEqual(
-    PREFERENCES,
-    prefs.map(({ name, pref }) => [name, pref]),
-    "The preferences match on the client and platform. " +
-      propertiesErrorMessage
-  );
 
   /**
    * Check that the platform and client match for the details on their CSS properties.
@@ -176,12 +160,12 @@ function getKeyMismatches(a, b) {
  * @return {Boolean|undefined}
  */
 function getPreference(propertyName) {
-  const preference = PREFERENCES.find(([prefPropertyName, preferenceKey]) => {
-    return prefPropertyName === propertyName && !!preferenceKey;
+  const preference = PREFERENCES.find(({ name, pref }) => {
+    return name === propertyName && !!pref;
   });
 
   if (preference) {
-    return Preferences.get(preference[1]);
+    return Preferences.get(preference.pref);
   }
   return undefined;
 }

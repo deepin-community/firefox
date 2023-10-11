@@ -9,37 +9,29 @@
 
 // Globals
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "Downloads",
-  "resource://gre/modules/Downloads.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "DownloadsCommon",
-  "resource:///modules/DownloadsCommon.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "FileUtils",
-  "resource://gre/modules/FileUtils.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "PlacesUtils",
-  "resource://gre/modules/PlacesUtils.jsm"
-);
-ChromeUtils.defineModuleGetter(
-  this,
-  "HttpServer",
-  "resource://testing-common/httpd.js"
+ChromeUtils.defineESModuleGetters(this, {
+  Downloads: "resource://gre/modules/Downloads.sys.mjs",
+  DownloadsCommon: "resource:///modules/DownloadsCommon.sys.mjs",
+  FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
+  HttpServer: "resource://testing-common/httpd.sys.mjs",
+  PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
+});
+
+let gTestTargetFile = new FileUtils.File(
+  PathUtils.join(
+    Services.dirsvc.get("TmpD", Ci.nsIFile).path,
+    "dm-ui-test.file"
+  )
 );
 
-var gTestTargetFile = FileUtils.getFile("TmpD", ["dm-ui-test.file"]);
 gTestTargetFile.createUnique(Ci.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE);
+Services.prefs.setIntPref("security.dialog_enable_delay", 0);
 
 // The file may have been already deleted when removing a paused download.
+// Also clear security.dialog_enable_delay pref.
 registerCleanupFunction(async () => {
+  Services.prefs.clearUserPref("security.dialog_enable_delay");
+
   if (await IOUtils.exists(gTestTargetFile.path)) {
     info("removing " + gTestTargetFile.path);
     if (Services.appinfo.OS === "WINNT") {
@@ -101,15 +93,17 @@ function continueResponses() {
 /**
  * Creates a download, which could be interrupted in the middle of it's progress.
  */
-function promiseInterruptibleDownload() {
-  let interruptibleFile = FileUtils.getFile("TmpD", ["interruptible.txt"]);
+function promiseInterruptibleDownload(extension = ".txt") {
+  let interruptibleFile = new FileUtils.File(
+    PathUtils.join(PathUtils.tempDir, `interruptible${extension}`)
+  );
   interruptibleFile.createUnique(
     Ci.nsIFile.NORMAL_FILE_TYPE,
     FileUtils.PERMS_FILE
   );
 
   registerCleanupFunction(async () => {
-    if (IOUtils.exists(interruptibleFile.path)) {
+    if (await IOUtils.exists(interruptibleFile.path)) {
       if (Services.appinfo.OS === "WINNT") {
         // We need to make the file writable to delete it on Windows.
         await IOUtils.setPermissions(interruptibleFile.path, 0o600);
@@ -127,13 +121,12 @@ function promiseInterruptibleDownload() {
 // Asynchronous support subroutines
 
 async function createDownloadedFile(pathname, contents) {
-  let encoder = new TextEncoder();
   let file = new FileUtils.File(pathname);
   if (file.exists()) {
     info(`File at ${pathname} already exists`);
   }
   // No post-test cleanup necessary; tmp downloads directory is already removed after each test
-  await OS.File.writeAtomic(pathname, encoder.encode(contents));
+  await IOUtils.writeUTF8(pathname, contents);
   ok(file.exists(), `Created ${pathname}`);
   return file;
 }
@@ -169,7 +162,7 @@ function promisePanelOpened() {
   return new Promise(resolve => {
     // Hook to wait until the panel is shown.
     let originalOnPopupShown = DownloadsPanel.onPopupShown;
-    DownloadsPanel.onPopupShown = function() {
+    DownloadsPanel.onPopupShown = function () {
       DownloadsPanel.onPopupShown = originalOnPopupShown;
       originalOnPopupShown.apply(this, arguments);
 
@@ -188,6 +181,12 @@ async function task_resetState() {
     await publicList.remove(download);
     if (await IOUtils.exists(download.target.path)) {
       await download.finalize(true);
+      info("removing " + download.target.path);
+      if (Services.appinfo.OS === "WINNT") {
+        // We need to make the file writable to delete it on Windows.
+        await IOUtils.setPermissions(download.target.path, 0o600);
+      }
+      await IOUtils.remove(download.target.path);
     }
   }
 
@@ -220,12 +219,14 @@ async function task_addDownloads(aItems) {
       canceled:
         item.state == DownloadsCommon.DOWNLOAD_CANCELED ||
         item.state == DownloadsCommon.DOWNLOAD_PAUSED,
+      deleted: item.deleted ?? false,
       error:
         item.state == DownloadsCommon.DOWNLOAD_FAILED
           ? new Error("Failed.")
           : null,
       hasPartialData: item.state == DownloadsCommon.DOWNLOAD_PAUSED,
       hasBlockedData: item.hasBlockedData || false,
+      openDownloadsListOnStart: item.openDownloadsListOnStart ?? true,
       contentType: item.contentType,
       startTime: new Date(startTimeMs++),
     };
@@ -245,21 +246,26 @@ async function task_openPanel() {
   let promise = promisePanelOpened();
   DownloadsPanel.showPanel();
   await promise;
+
+  await BrowserTestUtils.waitForMutationCondition(
+    DownloadsView.richListBox,
+    { attributeFilter: ["disabled"] },
+    () => !DownloadsView.richListBox.hasAttribute("disabled")
+  );
 }
 
 async function setDownloadDir() {
-  let tmpDir = await PathUtils.getTempDir();
-  tmpDir = PathUtils.join(
-    tmpDir,
+  let tmpDir = PathUtils.join(
+    PathUtils.tempDir,
     "testsavedir" + Math.floor(Math.random() * 2 ** 32)
   );
   // Create this dir if it doesn't exist (ignores existing dirs)
   await IOUtils.makeDirectory(tmpDir);
-  registerCleanupFunction(async function() {
+  registerCleanupFunction(async function () {
     try {
       await IOUtils.remove(tmpDir, { recursive: true });
     } catch (e) {
-      Cu.reportError(e);
+      console.error(e);
     }
   });
   Services.prefs.setIntPref("browser.download.folderList", 2);
@@ -268,6 +274,7 @@ async function setDownloadDir() {
 }
 
 let gHttpServer = null;
+let gShouldServeInterruptibleFileAsDownload = false;
 function startServer() {
   gHttpServer = new HttpServer();
   gHttpServer.start(-1);
@@ -305,31 +312,41 @@ function startServer() {
     response.finish();
   });
 
-  gHttpServer.registerPathHandler("/interruptible.txt", function(
-    aRequest,
-    aResponse
-  ) {
-    info("Interruptible request started.");
+  gHttpServer.registerPathHandler(
+    "/interruptible.txt",
+    function (aRequest, aResponse) {
+      info("Interruptible request started.");
 
-    // Process the first part of the response.
-    aResponse.processAsync();
-    aResponse.setHeader("Content-Type", "text/plain", false);
-    aResponse.setHeader(
-      "Content-Length",
-      "" + TEST_DATA_SHORT.length * 2,
-      false
-    );
-    aResponse.write(TEST_DATA_SHORT);
+      // Process the first part of the response.
+      aResponse.processAsync();
+      aResponse.setHeader("Content-Type", "text/plain", false);
+      if (gShouldServeInterruptibleFileAsDownload) {
+        aResponse.setHeader("Content-Disposition", "attachment");
+      }
+      aResponse.setHeader(
+        "Content-Length",
+        "" + TEST_DATA_SHORT.length * 2,
+        false
+      );
+      aResponse.write(TEST_DATA_SHORT);
 
-    // Wait on the current deferred object, then finish the request.
-    _gDeferResponses.promise
-      .then(function RIH_onSuccess() {
-        aResponse.write(TEST_DATA_SHORT);
-        aResponse.finish();
-        info("Interruptible request finished.");
-      })
-      .catch(Cu.reportError);
-  });
+      // Wait on the current deferred object, then finish the request.
+      _gDeferResponses.promise
+        .then(function RIH_onSuccess() {
+          aResponse.write(TEST_DATA_SHORT);
+          aResponse.finish();
+          info("Interruptible request finished.");
+        })
+        .catch(console.error);
+    }
+  );
+}
+
+function serveInterruptibleAsDownload() {
+  gShouldServeInterruptibleFileAsDownload = true;
+  registerCleanupFunction(
+    () => (gShouldServeInterruptibleFileAsDownload = false)
+  );
 }
 
 function httpUrl(aFileName) {
@@ -365,7 +382,7 @@ function openLibrary(aLeftPaneRoot) {
 function promiseDownloadHasProgress(aDownload, progress) {
   return new Promise(resolve => {
     // Wait for the download to reach its progress.
-    let onchange = function() {
+    let onchange = function () {
       let downloadInProgress =
         !aDownload.stopped && aDownload.progress == progress;
       let downloadFinished =
@@ -422,7 +439,7 @@ async function simulateDropAndCheck(win, dropTarget, urls) {
         }
       },
     };
-    list.addView(view).then(function() {
+    list.addView(view).then(function () {
       EventUtils.synthesizeDrop(dropTarget, dropTarget, dragData, "link", win);
     });
   });

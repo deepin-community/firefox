@@ -16,6 +16,8 @@ policy-AllowedDomainsForApps = Difini la nomregnojn kiuj rajtas aliri Google Wor
 
 policy-AppAutoUpdate = Aktivigi aŭ malaktivigi aŭtomatan ĝisdatigon de programoj.
 
+policy-AppUpdatePin = Malpermesi al { -brand-short-name } ĝisdatiĝi preter la specifita versio.
+
 policy-AppUpdateURL = Difini personecigitan ĝisdatigan ligilon por programo.
 
 policy-Authentication = Agordi internan aŭtentikigon por retejoj, kiuj subtenas ĝin.
@@ -39,6 +41,9 @@ policy-CaptivePortal = Aktivigi aŭ malaktivigi subtenon por kapta portalo.
 policy-CertificatesDescription = Aldoni atestilojn aŭ uzi inkluzivitajn atestilojn.
 
 policy-Cookies = Permesi aŭ bloki al retejoj konservi kuketojn.
+
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Dinifi politikojn, kiuj rilatas ingojn.
 
 policy-DisabledCiphers = Malaktivigi ĉifradon.
 
@@ -69,7 +74,7 @@ policy-DisablePrimaryPasswordCreation = Se tio estas aktiva, ne eblos krei ĉefa
 
 policy-DisablePasswordReveal = Ne permesi malkaŝi pasvortojn en konservitaj legitimiloj.
 
-policy-DisablePocket = Malaktivigi la eblon konservi retpaĝojn en Pocket.
+policy-DisablePocket2 = Malaktivigi la eblon konservi retpaĝojn en { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Malaktivigi privatan retumon
 
@@ -87,6 +92,8 @@ policy-DisableSystemAddonUpdate = Malpermesi al retumilo instali kaj ĝisdatigi 
 
 policy-DisableTelemetry = Malŝalti telemezuron.
 
+policy-DisableThirdPartyModuleBlocking = Eviti ke la uzanto bloku modulojn de aliaj, injektitaj en la procezo de { -brand-short-name }.
+
 policy-DisplayBookmarksToolbar = Norme montri la ilaron de legosignoj.
 
 policy-DisplayMenuBar = Norme montri la menuan strion.
@@ -103,6 +110,8 @@ policy-EnableTrackingProtection = Aktivigi aŭ malaktivigi la blokadon de enhavo
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = Aktivigi aŭ malaktivigi la etendaĵoj de ĉifitraj aŭdvidaĵoj (EME) kaj laŭvole bloki ĝin.
 
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Malaktivigi avertojn pri dosiersufikso por specifaj tipo de dosiero en kelkaj nomregnoj.
+
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -112,9 +121,9 @@ policy-ExtensionSettings = Administri ĉiujn agordojn por instalo de etendaĵoj.
 
 policy-ExtensionUpdate = Aktivigi aŭ malaktivigi aŭtomatan ĝisdatigon de etendaĵoj.
 
-policy-FirefoxHome = Agordi la ekan paĝon de Firefox.
+policy-FirefoxHome2 = Agordi { -firefox-home-brand-name }.
 
-policy-FlashPlugin = Permesi aŭ malpermesi la uzon de la kromprogramo Flash.
+policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Kiam izolitaj vortoj estas tajpitaj en la adresa strio, devige iri al intraneta retejo anstataŭ serĉi.
 
 policy-Handlers = Agordi la normajn programajn traktilojn.
 
@@ -157,7 +166,9 @@ policy-OverrideFirstRunPage = Ŝanĝi la paĝon de unua starto. Lasu tiun ĉi po
 
 policy-OverridePostUpdatePage = Ŝanĝi la postĝisdatigan paĝon "Kio estas nova". Lasu tiun ĉi politikon malplena se vi volas malaktivigi la paĝon post ĝisdatigo.
 
-policy-PasswordManagerEnabled = Aktivigi konservadon de pasvortoj en la pasvorta administranto.
+policy-PasswordManagerEnabled = Aktivigi konservadon de pasvortoj en la pasvorta administrilo.
+
+policy-PasswordManagerExceptions = Malpermesi al { -brand-short-name } konservi pasvortojn por specifaj retejoj.
 
 # PDF.js and PDF should not be translated
 policy-PDFjs = Malaktivigi aŭ agordi PDF.js, la integritan legilon de PDF en { -brand-short-name }.
@@ -184,8 +195,8 @@ policy-SearchEngines = Agordi serĉilojn. Tiu ĉi politiko nur disponebla en la 
 
 policy-SearchSuggestEnabled = Aktivigi aŭ malaktivigi serĉajn sugestojn.
 
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instali modulojn PKCS #11.
+# For more information, see https://wikipedia.org/wiki/PKCS_11
+policy-SecurityDevices2 = Aldoni aŭ forigi modulojn PKCS #11.
 
 policy-ShowHomeButton = Montri la butonon por eka paĝo en la ilaro.
 
@@ -193,9 +204,13 @@ policy-SSLVersionMax = Difini la minimuman version de SSL.
 
 policy-SSLVersionMin = Difini la maksimuman version de SSL.
 
+policy-StartDownloadsInTempDirectory = Devige komenci elŝutojn en loka, provizora loko anstataŭ la norma elŝuta dosierujo.
+
 policy-SupportMenu = Aldoni personecigitan menueron al la helpa menuo.
 
 policy-UserMessaging = Ne montri specifajn mesaĝojn al la uzanto.
+
+policy-UseSystemPrintDialog = Presi per la sistema presa dialogo.
 
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Bloki viziton al kelkaj retejoj. Vidu la dokumentaron por havi pli da informo pri la formo.

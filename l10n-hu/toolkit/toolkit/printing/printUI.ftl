@@ -15,6 +15,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Mind
+printui-page-range-current = Jelenlegi
+printui-page-range-odd = Páratlan
+printui-page-range-even = Páros
 printui-page-range-custom = Egyéni
 printui-page-range-label = Oldalak
 printui-page-range-picker =

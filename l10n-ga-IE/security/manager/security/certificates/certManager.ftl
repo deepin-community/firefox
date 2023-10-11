@@ -17,9 +17,9 @@ certmgr-tab-servers =
 certmgr-tab-ca =
     .label = Údaráis
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Cuir socruithe muiníne do theastais na nÚdarás Deimhniúcháin in eagar
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Cuir socruithe muiníne in eagar:
 
@@ -29,18 +29,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Is féidir leis an teastas seo úsáideoirí ríomhphoist a shainaithint.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Scrios Teastas
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = Ainm an Teastais
 
 certmgr-cert-server =
     .label = Freastalaí
-
-certmgr-override-lifetime =
-    .label = Saolré
 
 certmgr-token-name =
     .label = Gléas Slándála
@@ -169,9 +166,8 @@ delete-email-cert-impact = Má scriosann tú teastas ríomhphoist duine, ní bhe
 cert-with-serial =
     .value = Teastas le sraithuimhir: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

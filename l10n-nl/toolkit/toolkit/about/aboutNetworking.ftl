@@ -8,6 +8,7 @@ about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = DNS-buffer wissen
 about-networking-dns-trr-url = DoH-URL
+about-networking-dns-trr-mode = DoH-modus
 about-networking-dns-suffix = DNS-achtervoegsel
 about-networking-websockets = WebSockets
 about-networking-refresh = Vernieuwen
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Actief
 about-networking-idle = Niet actief
 about-networking-host = Host
-about-networking-tcp = TCP
 about-networking-type = Type
 about-networking-sent = Verzonden
 about-networking-received = Ontvangen
@@ -28,20 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Adressen
 about-networking-expires = Verloopt (seconden)
 about-networking-originAttributesSuffix = Isolatiesleutel
+about-networking-flags = Extra labels
 about-networking-messages-sent = Berichten verzonden
 about-networking-messages-received = Berichten ontvangen
 about-networking-bytes-sent = Bytes verzonden
 about-networking-bytes-received = Bytes ontvangen
 about-networking-logging = Logboekregistratie
-about-networking-log-tutorial =
-    Zie <a data-l10n-name="logging">HTTP logging</a>
-    voor instructies over het gebruik van dit hulpmiddel.
-about-networking-current-log-file = Huidige logbestand:
-about-networking-current-log-modules = Huidige logmodules:
-about-networking-set-log-file = Logbestand instellen
-about-networking-set-log-modules = Logmodules instellen
-about-networking-start-logging = Registratie starten
-about-networking-stop-logging = Registratie stoppen
 about-networking-dns-lookup = DNS-zoekactie
 about-networking-dns-lookup-button = Omzetten
 about-networking-dns-domain = Domein:
@@ -64,6 +56,8 @@ about-networking-rcwn-cache-slow = Aantal trage buffers
 about-networking-rcwn-cache-not-slow = Aantal niet-trage buffers
 about-networking-networkid = Netwerk-ID
 about-networking-networkid-id = Netwerk-ID
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Deze pagina is verplaatst naar <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

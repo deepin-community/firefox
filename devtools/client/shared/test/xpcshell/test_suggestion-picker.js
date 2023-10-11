@@ -6,11 +6,11 @@
 /**
  * Test the suggestion-picker helper methods.
  */
-const { require } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
+
 const {
   findMostRelevantIndex,
   findMostRelevantCssPropertyIndex,
-} = require("devtools/client/shared/suggestion-picker");
+} = require("resource://devtools/client/shared/suggestion-picker.js");
 
 /**
  * Run all tests defined below.

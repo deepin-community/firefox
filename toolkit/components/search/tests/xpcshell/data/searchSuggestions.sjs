@@ -1,8 +1,12 @@
 /* Any copyright is dedicated to the Public Domain.
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 
-Cu.import("resource://gre/modules/Timer.jsm");
-Cu.import("resource://gre/modules/NetUtil.jsm");
+let { setTimeout } = ChromeUtils.importESModule(
+  "resource://gre/modules/Timer.sys.mjs"
+);
+let { NetUtil } = ChromeUtils.importESModule(
+  "resource://gre/modules/NetUtil.sys.mjs"
+);
 
 Cu.importGlobalProperties(["TextEncoder"]);
 
@@ -18,8 +22,8 @@ function handleRequest(request, response) {
     return String.fromCharCode(...new TextEncoder().encode(str));
   }
 
-  function writeSuggestions(query, completions = []) {
-    let jsonString = JSON.stringify([query, completions]);
+  function writeSuggestions(q, completions = []) {
+    let jsonString = JSON.stringify([q, completions]);
 
     // This script must be evaluated as UTF-8 for this to write out the bytes of
     // the string in UTF-8.  If it's evaluated as Latin-1, the written bytes
@@ -35,7 +39,7 @@ function handleRequest(request, response) {
    * suggestions, which do not conform to the object shape sent by
    * writeSuggestions.
    *
-   * @param {array} data
+   * @param {Array} data The data to send as suggestions.
    */
   function writeSuggestionsDirectly(data) {
     let jsonString = JSON.stringify(data);
@@ -58,13 +62,13 @@ function handleRequest(request, response) {
     writeSuggestions(q.toUpperCase(), [q]);
   } else if (q == "") {
     writeSuggestions("", ["The server should never be sent an empty query"]);
-  } else if (q && q.startsWith("mo")) {
+  } else if (q?.startsWith("mo")) {
     writeSuggestions(q, ["Mozilla", "modern", "mom"]);
-  } else if (q && q.startsWith("I ❤️")) {
+  } else if (q?.startsWith("I ❤️")) {
     writeSuggestions(q, ["I ❤️ Mozilla"]);
-  } else if (q && q.startsWith("stü")) {
+  } else if (q?.startsWith("stü")) {
     writeSuggestions("st\\u00FC", ["stühle", "stüssy"]);
-  } else if (q && q.startsWith("tailjunk ")) {
+  } else if (q?.startsWith("tailjunk ")) {
     writeSuggestionsDirectly([
       q,
       [q + " normal", q + " tail 1", q + " tail 2"],
@@ -80,7 +84,7 @@ function handleRequest(request, response) {
         },
       },
     ]);
-  } else if (q && q.startsWith("tailjunk few ")) {
+  } else if (q?.startsWith("tailjunk few ")) {
     writeSuggestionsDirectly([
       q,
       [q + " normal", q + " tail 1", q + " tail 2"],
@@ -92,7 +96,7 @@ function handleRequest(request, response) {
         },
       },
     ]);
-  } else if (q && q.startsWith("tailalt ")) {
+  } else if (q?.startsWith("tailalt ")) {
     writeSuggestionsDirectly([
       q,
       [q + " normal", q + " tail 1", q + " tail 2"],
@@ -104,7 +108,7 @@ function handleRequest(request, response) {
         ],
       },
     ]);
-  } else if (q && q.startsWith("tail ")) {
+  } else if (q?.startsWith("tail ")) {
     writeSuggestionsDirectly([
       q,
       [q + " normal", q + " tail 1", q + " tail 2"],
@@ -118,7 +122,7 @@ function handleRequest(request, response) {
         ],
       },
     ]);
-  } else if (q && q.startsWith("richempty ")) {
+  } else if (q?.startsWith("richempty ")) {
     writeSuggestionsDirectly([
       q,
       [q + " normal", q + " tail 1", q + " tail 2"],
@@ -128,30 +132,44 @@ function handleRequest(request, response) {
         "google:suggestdetail": [],
       },
     ]);
-  } else if (q && q.startsWith("letter ")) {
+  } else if (q?.startsWith("letter ")) {
     let letters = [];
-    for (let charCode = "A".charCodeAt(); charCode <= "Z".charCodeAt(); charCode++) {
+    for (
+      let charCode = "A".charCodeAt();
+      charCode <= "Z".charCodeAt();
+      charCode++
+    ) {
       letters.push("letter " + String.fromCharCode(charCode));
     }
     writeSuggestions(q, letters);
-  } else if (q && q.startsWith("HTTP ")) {
+  } else if (q?.startsWith("HTTP ")) {
     response.setStatusLine(request.httpVersion, q.replace("HTTP ", ""), q);
     writeSuggestions(q, [q]);
-  } else if (q && q.startsWith("delay")) {
-    // Delay the response by 200 milliseconds (less than the timeout but hopefully enough to abort
-    // before completion).
+  } else if (q == "invalidJSON") {
+    response.setHeader("Content-Type", "application/json", false);
+    response.write('["invalid"]');
+  } else if (q == "invalidContentType") {
+    response.setHeader("Content-Type", "text/xml", false);
+    writeSuggestions(q, ["invalidContentType response"]);
+  } else if (q?.startsWith("delay")) {
+    // Delay the response by delayMs milliseconds. 200ms is the default, less
+    // than the timeout but hopefully enough to abort before completion.
+    let match = /^delay([0-9]+)/.exec(q);
+    let delayMs = match ? parseInt(match[1]) : 200;
     response.processAsync();
     writeSuggestions(q, [q]);
-    setTimeout(() => response.finish(), 200);
-  } else if (q && q.startsWith("slow ")) {
+    setTimeout(() => response.finish(), delayMs);
+  } else if (q?.startsWith("slow ")) {
     // Delay the response by 10 seconds so the client timeout is reached.
     response.processAsync();
     writeSuggestions(q, [q]);
     setTimeout(() => response.finish(), 10000);
   } else if (request.method == "POST") {
     // This includes headers, not just the body
-    let requestText = NetUtil.readInputStreamToString(request.bodyInputStream,
-                                                      request.bodyInputStream.available());
+    let requestText = NetUtil.readInputStreamToString(
+      request.bodyInputStream,
+      request.bodyInputStream.available()
+    );
     // Only use the last line which contains the encoded params
     let requestLines = requestText.split("\n");
     let postParams = parseQueryString(requestLines[requestLines.length - 1]);
@@ -163,8 +181,8 @@ function handleRequest(request, response) {
 
 function parseQueryString(queryString) {
   let query = {};
-  queryString.split('&').forEach(function (val) {
-    let [name, value] = val.split('=');
+  queryString.split("&").forEach(function (val) {
+    let [name, value] = val.split("=");
     query[name] = decodeURIComponent(value).replace(/[+]/g, " ");
   });
   return query;

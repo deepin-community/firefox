@@ -20,7 +20,7 @@ serviceworker-list-header = Service worker
 serviceworker-list-aboutdebugging = Άνοιγμα του <a>about:debugging</a> για service worker από άλλους τομείς
 
 # Text for the button to unregister a Service Worker. Displayed for active Service Workers.
-serviceworker-worker-unregister = Κατάργηση εγγραφής
+serviceworker-worker-unregister = Κατάργηση
 
 # Text for the debug link displayed for an already started Service Worker. Clicking on the
 # link opens a new devtools toolbox for this service worker. The title attribute is only

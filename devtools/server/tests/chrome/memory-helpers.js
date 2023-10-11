@@ -2,11 +2,12 @@
    waitForTime, waitUntil */
 "use strict";
 
-const { require } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
-const Services = require("Services");
+const { require } = ChromeUtils.importESModule(
+  "resource://devtools/shared/loader/Loader.sys.mjs"
+);
 const {
   CommandsFactory,
-} = require("devtools/shared/commands/commands-factory");
+} = require("resource://devtools/shared/commands/commands-factory.js");
 
 // Always log packets when running tests.
 Services.prefs.setBoolPref("devtools.debugger.log", true);
@@ -14,7 +15,7 @@ var gReduceTimePrecision = Services.prefs.getBoolPref(
   "privacy.reduceTimerPrecision"
 );
 Services.prefs.setBoolPref("privacy.reduceTimerPrecision", false);
-SimpleTest.registerCleanupFunction(function() {
+SimpleTest.registerCleanupFunction(function () {
   Services.prefs.clearUserPref("devtools.debugger.log");
   Services.prefs.setBoolPref(
     "privacy.reduceTimerPrecision",

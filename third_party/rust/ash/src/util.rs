@@ -31,7 +31,7 @@ impl<T: Copy> Align<T> {
         use std::slice::from_raw_parts_mut;
         if self.elem_size == size_of::<T>() as u64 {
             unsafe {
-                let mapped_slice = from_raw_parts_mut(self.ptr as *mut T, slice.len());
+                let mapped_slice = from_raw_parts_mut(self.ptr.cast(), slice.len());
                 mapped_slice.copy_from_slice(slice);
             }
         } else {
@@ -51,7 +51,7 @@ impl<T> Align<T> {
         let padding = calc_padding(size_of::<T>() as vk::DeviceSize, alignment);
         let elem_size = size_of::<T>() as vk::DeviceSize + padding;
         assert!(calc_padding(size, alignment) == 0, "size must be aligned");
-        Align {
+        Self {
             ptr,
             elem_size,
             size,
@@ -75,7 +75,9 @@ impl<'a, T: Copy + 'a> Iterator for AlignIter<'a, T> {
         }
         unsafe {
             // Need to cast to *mut u8 because () has size 0
-            let ptr = (self.align.ptr as *mut u8).offset(self.current as isize) as *mut T;
+            let ptr = (self.align.ptr.cast::<u8>())
+                .offset(self.current as isize)
+                .cast();
             self.current += self.align.elem_size;
             Some(&mut *ptr)
         }
@@ -102,7 +104,9 @@ impl<'a, T: Copy + 'a> Iterator for AlignIter<'a, T> {
 /// let words = ash::util::read_spv(&mut std::io::Cursor::new(&SPIRV[..])).unwrap();
 /// ```
 pub fn read_spv<R: io::Read + io::Seek>(x: &mut R) -> io::Result<Vec<u32>> {
+    // TODO use stream_len() once it is stabilized and remove the subsequent rewind() call
     let size = x.seek(io::SeekFrom::End(0))?;
+    x.rewind()?;
     if size % 4 != 0 {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
@@ -113,15 +117,13 @@ pub fn read_spv<R: io::Read + io::Seek>(x: &mut R) -> io::Result<Vec<u32>> {
         return Err(io::Error::new(io::ErrorKind::InvalidData, "input too long"));
     }
     let words = (size / 4) as usize;
-    let mut result = Vec::<u32>::with_capacity(words);
-    x.seek(io::SeekFrom::Start(0))?;
-    unsafe {
-        x.read_exact(slice::from_raw_parts_mut(
-            result.as_mut_ptr() as *mut u8,
-            words * 4,
-        ))?;
-        result.set_len(words);
-    }
+    // https://github.com/MaikKlein/ash/issues/354:
+    // Zero-initialize the result to prevent read_exact from possibly
+    // reading uninitialized memory.
+    let mut result = vec![0u32; words];
+    x.read_exact(unsafe {
+        slice::from_raw_parts_mut(result.as_mut_ptr().cast::<u8>(), words * 4)
+    })?;
     const MAGIC_NUMBER: u32 = 0x0723_0203;
     if !result.is_empty() && result[0] == MAGIC_NUMBER.swap_bytes() {
         for word in &mut result {

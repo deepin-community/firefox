@@ -27,7 +27,7 @@ BEGIN_TEST(testWeakCacheSet) {
   JS::RootedObject nursery2(cx, JS_NewPlainObject(cx));
 
   using ObjectSet =
-      GCHashSet<HeapPtr<JSObject*>, MovableCellHasher<HeapPtr<JSObject*>>,
+      GCHashSet<HeapPtr<JSObject*>, StableCellHasher<HeapPtr<JSObject*>>,
                 SystemAllocPolicy>;
   using Cache = JS::WeakCache<ObjectSet>;
   Cache cache(JS::GetObjectZone(tenured1));
@@ -67,7 +67,7 @@ BEGIN_TEST(testWeakCacheMap) {
   JS::RootedObject nursery2(cx, JS_NewPlainObject(cx));
 
   using ObjectMap = js::GCHashMap<HeapPtr<JSObject*>, uint32_t,
-                                  js::MovableCellHasher<HeapPtr<JSObject*>>>;
+                                  js::StableCellHasher<HeapPtr<JSObject*>>>;
   using Cache = JS::WeakCache<ObjectMap>;
   Cache cache(JS::GetObjectZone(tenured1), cx);
 
@@ -136,29 +136,39 @@ struct ObjectEntry {
   HeapPtr<JSObject*> obj;
   explicit ObjectEntry(JSObject* o) : obj(o) {}
   bool operator==(const ObjectEntry& other) const { return obj == other.obj; }
-  bool needsSweep() {
-    return JS::GCPolicy<HeapPtr<JSObject*>>::needsSweep(&obj);
+  bool traceWeak(JSTracer* trc) {
+    return TraceWeakEdge(trc, &obj, "ObjectEntry::obj");
   }
 };
 
 namespace js {
 template <>
-struct MovableCellHasher<ObjectEntry> {
+struct StableCellHasher<ObjectEntry> {
   using Key = ObjectEntry;
   using Lookup = JSObject*;
 
-  static bool hasHash(const Lookup& l) {
-    return MovableCellHasher<JSObject*>::hasHash(l);
+  static bool maybeGetHash(const Lookup& l, HashNumber* hashOut) {
+    if (!StableCellHasher<JSObject*>::maybeGetHash(l, hashOut)) {
+      return false;
+    }
+    // Reduce hash code to single bit to generate hash collisions.
+    *hashOut &= 0x1;
+    return true;
   }
-  static bool ensureHash(const Lookup& l) {
-    return MovableCellHasher<JSObject*>::ensureHash(l);
+  static bool ensureHash(const Lookup& l, HashNumber* hashOut) {
+    if (!StableCellHasher<JSObject*>::ensureHash(l, hashOut)) {
+      return false;
+    }
+    // Reduce hash code to single bit to generate hash collisions.
+    *hashOut &= 0x1;
+    return true;
   }
   static HashNumber hash(const Lookup& l) {
     // Reduce hash code to single bit to generate hash collisions.
-    return MovableCellHasher<HeapPtr<JSObject*>>::hash(l) & 0x1;
+    return StableCellHasher<HeapPtr<JSObject*>>::hash(l) & 0x1;
   }
   static bool match(const Key& k, const Lookup& l) {
-    return MovableCellHasher<HeapPtr<JSObject*>>::match(k.obj, l);
+    return StableCellHasher<HeapPtr<JSObject*>>::match(k.obj, l);
   }
 };
 }  // namespace js
@@ -173,8 +183,8 @@ struct NumberAndObjectEntry {
   bool operator==(const NumberAndObjectEntry& other) const {
     return number == other.number && obj == other.obj;
   }
-  bool needsSweep() {
-    return JS::GCPolicy<HeapPtr<JSObject*>>::needsSweep(&obj);
+  bool traceWeak(JSTracer* trc) {
+    return TraceWeakEdge(trc, &obj, "NumberAndObjectEntry::obj");
   }
 };
 
@@ -189,23 +199,30 @@ struct NumberAndObjectLookup {
 
 namespace js {
 template <>
-struct MovableCellHasher<NumberAndObjectEntry> {
+struct StableCellHasher<NumberAndObjectEntry> {
   using Key = NumberAndObjectEntry;
   using Lookup = NumberAndObjectLookup;
 
-  static bool hasHash(const Lookup& l) {
-    return MovableCellHasher<JSObject*>::hasHash(l.obj);
+  static bool maybeGetHash(const Lookup& l, HashNumber* hashOut) {
+    if (!StableCellHasher<JSObject*>::maybeGetHash(l.obj, hashOut)) {
+      return false;
+    }
+    *hashOut ^= l.number;
+    return true;
   }
-  static bool ensureHash(const Lookup& l) {
-    return MovableCellHasher<JSObject*>::ensureHash(l.obj);
+  static bool ensureHash(const Lookup& l, HashNumber* hashOut) {
+    if (!StableCellHasher<JSObject*>::ensureHash(l.obj, hashOut)) {
+      return false;
+    }
+    *hashOut ^= l.number;
+    return true;
   }
   static HashNumber hash(const Lookup& l) {
-    // Reduce hash code to single bit to generate hash collisions.
-    return MovableCellHasher<HeapPtr<JSObject*>>::hash(l.obj) ^ l.number;
+    return StableCellHasher<HeapPtr<JSObject*>>::hash(l.obj) ^ l.number;
   }
   static bool match(const Key& k, const Lookup& l) {
     return k.number == l.number &&
-           MovableCellHasher<HeapPtr<JSObject*>>::match(k.obj, l.obj);
+           StableCellHasher<HeapPtr<JSObject*>>::match(k.obj, l.obj);
   }
 };
 }  // namespace js
@@ -249,7 +266,7 @@ bool SweepCacheAndFinishGC(JSContext* cx, const Cache& cache) {
   CHECK(IsIncrementalGCInProgress(cx));
 
   PrepareForIncrementalGC(cx);
-  IncrementalGCSlice(cx, JS::GCReason::API);
+  IncrementalGCSlice(cx, JS::GCReason::API, SliceBudget::unlimited());
 
   JS::Zone* zone = JS::GetObjectZone(global);
   CHECK(!IsIncrementalGCInProgress(cx));
@@ -261,7 +278,7 @@ bool SweepCacheAndFinishGC(JSContext* cx, const Cache& cache) {
 
 bool TestSet() {
   using ObjectSet =
-      GCHashSet<HeapPtr<JSObject*>, MovableCellHasher<HeapPtr<JSObject*>>,
+      GCHashSet<HeapPtr<JSObject*>, StableCellHasher<HeapPtr<JSObject*>>,
                 TempAllocPolicy>;
   using Cache = JS::WeakCache<ObjectSet>;
   Cache cache(JS::GetObjectZone(global), cx);
@@ -391,7 +408,7 @@ bool TestSet() {
 bool TestMap() {
   using ObjectMap =
       GCHashMap<HeapPtr<JSObject*>, uint32_t,
-                MovableCellHasher<HeapPtr<JSObject*>>, TempAllocPolicy>;
+                StableCellHasher<HeapPtr<JSObject*>>, TempAllocPolicy>;
   using Cache = JS::WeakCache<ObjectMap>;
   Cache cache(JS::GetObjectZone(global), cx);
 
@@ -524,7 +541,7 @@ bool TestReplaceDyingInSet() {
   // various APIs.
 
   using Cache = JS::WeakCache<
-      GCHashSet<NumberAndObjectEntry, MovableCellHasher<NumberAndObjectEntry>,
+      GCHashSet<NumberAndObjectEntry, StableCellHasher<NumberAndObjectEntry>,
                 TempAllocPolicy>>;
   Cache cache(JS::GetObjectZone(global), cx);
 
@@ -647,7 +664,7 @@ bool TestUniqueIDLookups() {
   const size_t ObjectCount = 100;
 
   using Cache = JS::WeakCache<
-      GCHashSet<ObjectEntry, MovableCellHasher<ObjectEntry>, TempAllocPolicy>>;
+      GCHashSet<ObjectEntry, StableCellHasher<ObjectEntry>, TempAllocPolicy>>;
   Cache cache(JS::GetObjectZone(global), cx);
 
   Rooted<GCVector<JSObject*, 0, SystemAllocPolicy>> liveObjects(cx);

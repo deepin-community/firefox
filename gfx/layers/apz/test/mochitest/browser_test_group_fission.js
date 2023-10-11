@@ -22,9 +22,6 @@ add_task(async function test_main() {
     );
   }
 
-  var utils = SpecialPowers.getDOMWindowUtils(window);
-  var isWebRender = utils.layerManagerType.startsWith("WebRender");
-
   // Each of these subtests is a dictionary that contains:
   // file (required): filename of the subtest that will get opened in a new tab
   //   in the top-level fission-enabled browser window.
@@ -64,26 +61,11 @@ add_task(async function test_main() {
     { file: "helper_fission_initial_displayport.html" },
     { file: "helper_fission_checkerboard_severity.html" },
     { file: "helper_fission_setResolution.html" },
+    { file: "helper_fission_inactivescroller_positionedcontent.html" },
+    { file: "helper_fission_irregular_areas.html" },
+    { file: "helper_fission_animation_styling_in_transformed_oopif.html" },
     // add additional tests here
   ];
-  // These tests are to ensure hit-testing works perfectly on the WR
-  // codepath. The layers codepath may need a main-thread fallback to get
-  // these working, but we can't use our synchronous hitTest(...) helpers
-  // for those anyway.
-  if (isWebRender) {
-    subtests = subtests.concat([
-      { file: "helper_fission_inactivescroller_positionedcontent.html" },
-      { file: "helper_fission_irregular_areas.html" },
-      // add WebRender-specific tests here
-    ]);
-  } else {
-    subtests = subtests.concat([
-      // Bug 1576514: On WebRender this test casues an assertion.
-      {
-        file: "helper_fission_animation_styling_in_transformed_oopif.html",
-      },
-    ]);
-  }
 
   // ccov builds run slower and need longer, so let's scale up the timeout
   // by the number of tests we're running.
@@ -93,19 +75,21 @@ add_task(async function test_main() {
     fission: true,
   });
 
-  // We import the JSM here so that we can install functions on the class
+  // We import the ESM here so that we can install functions on the class
   // below.
-  const { FissionTestHelperParent } = ChromeUtils.import(
-    getRootDirectory(gTestPath) + "FissionTestHelperParent.jsm"
+  const { FissionTestHelperParent } = ChromeUtils.importESModule(
+    getRootDirectory(gTestPath) + "FissionTestHelperParent.sys.mjs"
   );
   FissionTestHelperParent.SimpleTest = SimpleTest;
 
   ChromeUtils.registerWindowActor("FissionTestHelper", {
     parent: {
-      moduleURI: getRootDirectory(gTestPath) + "FissionTestHelperParent.jsm",
+      esModuleURI:
+        getRootDirectory(gTestPath) + "FissionTestHelperParent.sys.mjs",
     },
     child: {
-      moduleURI: getRootDirectory(gTestPath) + "FissionTestHelperChild.jsm",
+      esModuleURI:
+        getRootDirectory(gTestPath) + "FissionTestHelperChild.sys.mjs",
       events: {
         "FissionTestHelper:Init": { capture: true, wantUntrusted: true },
       },
@@ -139,9 +123,10 @@ add_task(async function test_main() {
       await BrowserTestUtils.withNewTab(
         { gBrowser: fissionWindow.gBrowser, url },
         async browser => {
-          let tabActor = browser.browsingContext.currentWindowGlobal.getActor(
-            "FissionTestHelper"
-          );
+          let tabActor =
+            browser.browsingContext.currentWindowGlobal.getActor(
+              "FissionTestHelper"
+            );
           let donePromise = tabActor.getTestCompletePromise();
           if (subtest.setup) {
             subtest.setup(fissionWindow);

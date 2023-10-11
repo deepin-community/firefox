@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Tyhjennä tiedot
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Jos poistat kaikki evästeet ja sivuston { -brand-short-name }iin tallentamat tiedot, sinut saatetaan kirjata ulos sivustoilta ja yhteydetöntä tilaa varten tallennettu sisältö saatetaan poistaa. Välimuistissa olevan sisällön poistaminen ei kirjaa sinua ulos sivustoilta.
 

@@ -6,7 +6,7 @@ certificate-viewer-certificate-section-title = Certificado
 
 ## Error messages
 
-certificate-viewer-error-message = Não conseguimos encontrar as informações do certificado, ou o certificado está corrompido. Tente novamente.
+certificate-viewer-error-message = Não foi possível encontrar as informações do certificado, ou o certificado está corrompido. Tente novamente.
 certificate-viewer-error-title = Algo deu errado.
 
 ## Certificate information labels
@@ -104,7 +104,7 @@ certificate-viewer-download-pem-chain = PEM (cadeia)
 
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
-    .title = Esta extensão foi marcada como crítica. Isso significa que os clientes devem rejeitar o certificado se não o entenderem.
+    .title = Esta extensão foi marcada como crítica. Isso significa que os clientes devem rejeitar o certificado se não o entender.
 certificate-viewer-export = Exportar
     .download = { $fileName }.pem
 

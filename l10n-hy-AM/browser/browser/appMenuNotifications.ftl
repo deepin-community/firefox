@@ -27,6 +27,7 @@ appmenu-update-restart2 =
     .buttonaccesskey = U
     .secondarybuttonlabel = Բաց թողնել
     .secondarybuttonaccesskey = U
+appmenu-update-restart-message2 = Ստացեք { -brand-shorter-name }-ի վերջին տարբերակը: Բացված ներդիրները և պատուհանները կվերականգնվեն:
 appmenu-update-other-instance =
     .label = { -brand-shorter-name }-ը հնարավոր չէ արդիացնել նոր տարբերակի:
     .buttonlabel = Այդոհանդերձ, թարմացնել { -brand-shorter-name }-ը
@@ -38,10 +39,11 @@ appmenu-update-other-instance-message = Հասանելի է { -brand-shorter-nam
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Լավ
     .buttonaccesskey = O
+appmenu-addon-post-install-message3 = Կառավարեք ձեր հավելումները և թեմաները հավելվածի ցանկի միջոցով:
 appmenu-addon-post-install-incognito-checkbox =
     .label = Թույլատրել այս ընդլայնմանը աշխատեցնել Գաղտնի պատուհանը
     .accesskey = A
-    
+
 appmenu-new-tab-controlled-changes =
     .label = Ձեր նոր ներդիրը փոխվել է:
     .buttonlabel = Պահել փոփոխությունները

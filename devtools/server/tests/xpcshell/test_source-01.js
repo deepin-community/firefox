@@ -23,7 +23,7 @@ add_task(
     Assert.ok(!!response);
     Assert.ok(!!response.sources);
 
-    const source = response.sources.filter(function(s) {
+    const source = response.sources.filter(function (s) {
       return s.url === SOURCE_URL;
     })[0];
 
@@ -39,7 +39,7 @@ add_task(
     Assert.ok(!!response2.source);
     Assert.equal(SOURCE_CONTENT, response2.source);
 
-    threadFront.resume();
+    await threadFront.resume();
   })
 );
 

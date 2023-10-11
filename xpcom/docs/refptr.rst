@@ -14,7 +14,7 @@ the ``nsCOMPtr_base`` base class, which stores the pointer as a
 (though it is unclear if it still does). Since ``nsCOMPtr`` stores the
 pointer as ``nsISupports*``, it must be possible to unambiguously cast from
 ``T*`` to ``nsISupports**``. Many concrete classes inherit from more than
-once XPCOM interface, meaning that they cannot be used with ``nsCOMPtr``,
+one XPCOM interface, meaning that they cannot be used with ``nsCOMPtr``,
 which leads to the suggestion to use ``RefPtr`` for these classes.
 
 ``nsCOMPtr<T>`` also requires that the target type ``T`` be a valid target
@@ -79,9 +79,3 @@ smart pointer with ``nullptr`` if either of these steps fail.
 In contrast ``do_GetWeakReference`` does the opposite, using
 ``QueryInterface`` to cast the type to ``nsISupportsWeakReference*``, and
 acquire a ``nsIWeakReference*`` to the passed-in object.
-
-
-
-
-
-

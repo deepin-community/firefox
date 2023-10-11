@@ -5,7 +5,6 @@
 
 "use strict";
 
-const BOOKMARKS_H2_2020_PREF = "browser.toolbars.bookmarks.2h2020";
 const bookmarksInfo = [
   {
     title: "firefox",
@@ -26,7 +25,14 @@ const bookmarksInfo = [
  */
 
 // Setup.
-add_task(async function setup() {
+add_setup(async function () {
+  // Disable window occlusion. See bug 1733955 / bug 1779559.
+  if (navigator.platform.indexOf("Win") == 0) {
+    await SpecialPowers.pushPrefEnv({
+      set: [["widget.windows.window_occlusion_tracking.enabled", false]],
+    });
+  }
+
   let toolbar = document.getElementById("PersonalToolbar");
   let wasCollapsed = toolbar.collapsed;
 
@@ -45,10 +51,6 @@ add_task(async function setup() {
 // Test the "Other Bookmarks" folder is shown in the toolbar when
 // bookmarks are stored under that folder.
 add_task(async function testShowingOtherBookmarksInToolbar() {
-  await SpecialPowers.pushPrefEnv({
-    set: [[BOOKMARKS_H2_2020_PREF, true]],
-  });
-
   info("Check the initial state of the Other Bookmarks folder.");
   let win = await BrowserTestUtils.openNewBrowserWindow();
   await setupBookmarksToolbar(win);
@@ -76,10 +78,6 @@ add_task(async function testShowingOtherBookmarksInToolbar() {
 // Test that folder visibility is correct when moving bookmarks to an empty
 // "Other Bookmarks" folder and vice versa.
 add_task(async function testOtherBookmarksVisibilityWhenMovingBookmarks() {
-  await SpecialPowers.pushPrefEnv({
-    set: [[BOOKMARKS_H2_2020_PREF, true]],
-  });
-
   info("Add bookmarks to Bookmarks Toolbar.");
   let bookmarks = await PlacesUtils.bookmarks.insertTree({
     guid: PlacesUtils.bookmarks.toolbarGuid,
@@ -106,10 +104,6 @@ add_task(async function testOtherBookmarksVisibilityWhenMovingBookmarks() {
 
 // Test OtherBookmarksPopup in toolbar.
 add_task(async function testOtherBookmarksMenuPopup() {
-  await SpecialPowers.pushPrefEnv({
-    set: [[BOOKMARKS_H2_2020_PREF, true]],
-  });
-
   info("Add bookmarks to Other Bookmarks folder.");
   let bookmarks = await PlacesUtils.bookmarks.insertTree({
     guid: PlacesUtils.bookmarks.unfiledGuid,
@@ -133,10 +127,6 @@ add_task(async function testOtherBookmarksMenuPopup() {
 
 // Test that folders in the Other Bookmarks folder expand
 add_task(async function testFolderPopup() {
-  await SpecialPowers.pushPrefEnv({
-    set: [[BOOKMARKS_H2_2020_PREF, true]],
-  });
-
   await PlacesUtils.bookmarks.insertTree({
     guid: PlacesUtils.bookmarks.unfiledGuid,
     children: [
@@ -167,10 +157,6 @@ add_task(async function testFolderPopup() {
 add_task(async function testOnlyShowOtherFolderInBookmarksToolbar() {
   await setupBookmarksToolbar();
 
-  await SpecialPowers.pushPrefEnv({
-    set: [[BOOKMARKS_H2_2020_PREF, true]],
-  });
-
   await PlacesUtils.bookmarks.insertTree({
     guid: PlacesUtils.bookmarks.unfiledGuid,
     children: bookmarksInfo,
@@ -192,10 +178,6 @@ add_task(async function testOnlyShowOtherFolderInBookmarksToolbar() {
 // it's open.
 add_task(async function testDeletingMenuItems() {
   await setupBookmarksToolbar();
-
-  await SpecialPowers.pushPrefEnv({
-    set: [[BOOKMARKS_H2_2020_PREF, true]],
-  });
 
   await PlacesUtils.bookmarks.insertTree({
     guid: PlacesUtils.bookmarks.unfiledGuid,
@@ -260,10 +242,6 @@ add_task(async function no_errors_when_bookmarks_placed_in_palette() {
 add_task(async function testShowingOtherBookmarksContextMenuItem() {
   await setupBookmarksToolbar();
 
-  await SpecialPowers.pushPrefEnv({
-    set: [[BOOKMARKS_H2_2020_PREF, true]],
-  });
-
   info("Add bookmark to Other Bookmarks.");
   let bookmark = await PlacesUtils.bookmarks.insertTree({
     guid: PlacesUtils.bookmarks.unfiledGuid,
@@ -287,14 +265,14 @@ add_task(async function testShowingOtherBookmarksContextMenuItem() {
     "Ensure 'Show Other Bookmarks' isn't shown when Other Bookmarks is empty."
   );
   await PlacesUtils.bookmarks.remove(bookmark);
-  await testIsOtherBookmarksMenuItemShown(false);
+  await testIsOtherBookmarksMenuItemEnabled(false);
 
   info("Add a bookmark to the empty Other Bookmarks folder.");
   await PlacesUtils.bookmarks.insertTree({
     guid: PlacesUtils.bookmarks.unfiledGuid,
     children: [{ title: "firefox", url: "http://example.com" }],
   });
-  await testIsOtherBookmarksMenuItemShown(true);
+  await testIsOtherBookmarksMenuItemEnabled(true);
 
   info(
     "Ensure that displaying Other Bookmarks is consistent across separate windows."
@@ -330,19 +308,13 @@ add_task(async function testShowingOtherBookmarksContextMenuItem() {
 // Test 'Show Other Bookmarks' isn't shown when pref is false.
 add_task(async function showOtherBookmarksMenuItemPrefDisabled() {
   await setupBookmarksToolbar();
-  await SpecialPowers.pushPrefEnv({
-    set: [[BOOKMARKS_H2_2020_PREF, false]],
-  });
-  await testIsOtherBookmarksMenuItemShown(false);
+  await testIsOtherBookmarksMenuItemEnabled(false);
 });
 
 // Test that node visibility for toolbar overflow is consisten when the "Other Bookmarks"
 // folder is shown/hidden.
 add_task(async function testOtherBookmarksToolbarOverFlow() {
   await setupBookmarksToolbar();
-  await SpecialPowers.pushPrefEnv({
-    set: [[BOOKMARKS_H2_2020_PREF, true]],
-  });
 
   info(
     "Ensure that visible nodes when showing/hiding Other Bookmarks is consistent across separate windows."
@@ -456,12 +428,12 @@ async function testOtherBookmarksCheckedState(expectedCheckedState) {
 
 /**
  * Test helper for checking whether or not the 'Show Other Bookmarks' menu item
- * appears in the toolbar's context menu.
+ * is enabled in the toolbar's context menu.
  *
  * @param {boolean} expected
- *        Whether or not the menu item appears in the toolbar conext menu.
+ *        Whether or not the menu item is enabled in the toolbar conext menu.
  */
-async function testIsOtherBookmarksMenuItemShown(expected) {
+async function testIsOtherBookmarksMenuItemEnabled(expected) {
   await openToolbarContextMenu();
 
   let otherBookmarksMenuItem = document.querySelector(
@@ -469,7 +441,7 @@ async function testIsOtherBookmarksMenuItemShown(expected) {
   );
 
   is(
-    !!otherBookmarksMenuItem,
+    !otherBookmarksMenuItem.disabled,
     expected,
     "'Show Other Bookmarks' menu item appearance state is correct."
   );
@@ -553,6 +525,7 @@ async function closeToolbarContextMenu() {
  * Other Bookmarks folder testable.
  *
  * @param {object} [win]
+ *   The window object to use.
  */
 async function setupBookmarksToolbar(win = window) {
   let toolbar = win.document.getElementById("PersonalToolbar");
@@ -608,9 +581,8 @@ function testUpdatedNodeVisibility(otherWin) {
     }
   }
 
-  let otherToolbarItems = otherWin.document.getElementById(
-    "PlacesToolbarItems"
-  );
+  let otherToolbarItems =
+    otherWin.document.getElementById("PlacesToolbarItems");
   let otherVisibleNodes = [];
 
   for (let node of otherToolbarItems.children) {

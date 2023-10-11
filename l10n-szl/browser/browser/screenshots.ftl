@@ -6,6 +6,9 @@ screenshot-toolbarbutton =
     .label = Ôbroz ekranu
     .tooltiptext = Chyć ôbroz ekranu
 
+screenshot-shortcut =
+    .key = S
+
 screenshots-instructions = Przeciōng abo kliknij na strōna, coby ôbrać jij kōnsek. Prziciś ESC, coby pociepać.
 screenshots-cancel-button = Pociep
 screenshots-save-visible-button = Spamiyntej widziane
@@ -14,6 +17,14 @@ screenshots-download-button = Pobier
 screenshots-download-button-tooltip = Pobier ôbroz ekranu
 screenshots-copy-button = Kopiuj
 screenshots-copy-button-tooltip = Kopiuj ôbroz ekranu do kamerlika
+screenshots-download-button-title =
+    .title = Pobier ôbroz ekranu
+screenshots-copy-button-title =
+    .title = Kopiuj ôbroz ekranu do kamerlika
+screenshots-cancel-button-title =
+    .title = Pociep
+screenshots-retry-button-title =
+    .title = Sprōbuj zaś zrobić ôbroz ekranu
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -44,3 +55,4 @@ screenshots-private-window-error-details = Przebocz ta zawada. Prawie robiymy pr
 
 screenshots-generic-error-title = Usuga { -screenshots-brand-name } niy funguje dobrze.
 screenshots-generic-error-details = Niy znōmy gynau, co sie podzioło. Sprōbujesz jeszcze roz, abo bydziesz chytać ôbroz inkszyj strōny?
+

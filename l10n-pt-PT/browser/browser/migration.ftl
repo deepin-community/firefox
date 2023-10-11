@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Não foram encontrados programas que contenham marcadores, histórico ou palavras-passe.
 
@@ -61,8 +73,8 @@ import-items-description = Selecione os itens a importar:
 
 import-permissions-page-title = Por favor, dê permissões ao { -brand-short-name }
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = O macOS exige que você permita explicitamente o acesso do { -brand-short-name } aos marcadores do Safari. Clique em “Continuar” e selecione o ficheiro “Bookmarks.plist” no painel Abrir ficheiro que é apresentado.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = O macOS requer que você autorize, de forma explicita, o acesso do { -brand-short-name } aos dados do Safari. Clique em “Continuar”, selecione a pasta “Safari“ na janela do Finder que é apresentada e clique em “Abrir”.
 
 import-migrating-page-title = A importar…
 
@@ -78,23 +90,9 @@ import-done-description = Os seguintes itens foram importados com sucesso:
 
 import-close-source-browser = Por favor certifique-se de que o navegador selecionado está fechado antes de continuar.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = De { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Lista de leitura (Do Safari)
 imported-edge-reading-list = Lista de leitura (do Edge)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = Janelas e separadores
 browser-data-session-label =
     .value = Janelas e separadores
+
+browser-data-payment-methods-checkbox =
+    .label = Métodos de pagamento
+browser-data-payment-methods-label =
+    .value = Métodos de pagamento

@@ -15,7 +15,7 @@ function modifySelection(s) {
   a.selectNode(d);
   g.removeAllRanges();
   g.addRange(a);
-  window.setTimeout(function() {
+  window.setTimeout(function () {
     e.remove();
     g.removeAllRanges();
     g.addRange(l);
@@ -50,8 +50,8 @@ async function testCopyPaste(isXHTML) {
     );
     if (!suppressUnicodeCheck) {
       ok(
-        clipboard.hasDataMatchingFlavors(["text/unicode"], 1),
-        "check text/unicode"
+        clipboard.hasDataMatchingFlavors(["text/plain"], 1),
+        "check text/plain"
       );
     }
     if (!suppressHTMLCheck) {
@@ -144,10 +144,7 @@ async function testCopyPaste(isXHTML) {
   }
   function testSelectionToString(expected) {
     is(
-      window
-        .getSelection()
-        .toString()
-        .replace(/\r\n/g, "\n"),
+      window.getSelection().toString().replace(/\r\n/g, "\n"),
       expected,
       "Selection.toString"
     );
@@ -159,7 +156,7 @@ async function testCopyPaste(isXHTML) {
 
   await copyChildrenToClipboard("draggable");
   testSelectionToString("This is a draggable bit of text.");
-  testClipboardValue("text/unicode", "This is a draggable bit of text.");
+  testClipboardValue("text/plain", "This is a draggable bit of text.");
   testHtmlClipboardValue(
     "text/html",
     '<div id="draggable" title="title to have a long HTML line">This is a <em>draggable</em> bit of text.</div>'
@@ -168,7 +165,7 @@ async function testCopyPaste(isXHTML) {
 
   await copyChildrenToClipboard("alist");
   testSelectionToString(" bla\n\n    foo\n    bar\n\n");
-  testClipboardValue("text/unicode", " bla\n\n    foo\n    bar\n\n");
+  testClipboardValue("text/plain", " bla\n\n    foo\n    bar\n\n");
   testHtmlClipboardValue(
     "text/html",
     '<div id="alist">\n    bla\n    <ul>\n      <li>foo</li>\n      \n      <li>bar</li>\n    </ul>\n  </div>'
@@ -177,7 +174,7 @@ async function testCopyPaste(isXHTML) {
 
   await copyChildrenToClipboard("blist");
   testSelectionToString(" mozilla\n\n    foo\n    bar\n\n");
-  testClipboardValue("text/unicode", " mozilla\n\n    foo\n    bar\n\n");
+  testClipboardValue("text/plain", " mozilla\n\n    foo\n    bar\n\n");
   testHtmlClipboardValue(
     "text/html",
     '<div id="blist">\n    mozilla\n    <ol>\n      <li>foo</li>\n      \n      <li>bar</li>\n    </ol>\n  </div>'
@@ -187,7 +184,7 @@ async function testCopyPaste(isXHTML) {
   await copyChildrenToClipboard("clist");
   testSelectionToString(" mzla\n\n    foo\n        bazzinga!\n    bar\n\n");
   testClipboardValue(
-    "text/unicode",
+    "text/plain",
     " mzla\n\n    foo\n        bazzinga!\n    bar\n\n"
   );
   testHtmlClipboardValue(
@@ -198,7 +195,7 @@ async function testCopyPaste(isXHTML) {
 
   await copyChildrenToClipboard("div4");
   testSelectionToString(" Tt t t ");
-  testClipboardValue("text/unicode", " Tt t t ");
+  testClipboardValue("text/plain", " Tt t t ");
   if (isXHTML) {
     testHtmlClipboardValue(
       "text/html",
@@ -219,7 +216,7 @@ async function testCopyPaste(isXHTML) {
 
   await copyChildrenToClipboard("div5");
   testSelectionToString(" T     ");
-  testClipboardValue("text/unicode", " T     ");
+  testClipboardValue("text/plain", " T     ");
   if (isXHTML) {
     testHtmlClipboardValue(
       "text/html",
@@ -248,7 +245,7 @@ async function testCopyPaste(isXHTML) {
   testSelectionToString("");
   // START Disabled due to bug 564688
   if (false) {
-    testClipboardValue("text/unicode", "");
+    testClipboardValue("text/plain", "");
     testClipboardValue("text/html", "");
   }
   // END Disabled due to bug 564688
@@ -264,7 +261,7 @@ async function testCopyPaste(isXHTML) {
   testSelectionToString("");
   // START Disabled due to bug 564688
   if (false) {
-    testClipboardValue("text/unicode", "");
+    testClipboardValue("text/plain", "");
     testClipboardValue("text/html", "");
   }
   // END Disabled due to bug 564688
@@ -280,7 +277,7 @@ async function testCopyPaste(isXHTML) {
   testSelectionToString("");
   // START Disabled due to bug 564688
   if (false) {
-    testClipboardValue("text/unicode", "");
+    testClipboardValue("text/plain", "");
     testClipboardValue("text/html", "");
   }
   // END Disabled due to bug 564688
@@ -294,7 +291,7 @@ async function testCopyPaste(isXHTML) {
     suppressUnicodeCheckIfHidden
   );
   testSelectionToString("div9");
-  testClipboardValue("text/unicode", "div9");
+  testClipboardValue("text/plain", "div9");
   testHtmlClipboardValue("text/html", "div9");
   testInnerHTML("div9", "div9");
 
@@ -332,15 +329,15 @@ async function testCopyPaste(isXHTML) {
     var ul = $("ul1");
     var parent = ul.parentNode;
     r.setStart(parent, 0);
-    r.setEnd(parent.firstChild, 15); // the end of "Copy..."
-    sel.addRange(r);
+    r.setEnd(parent.firstChild, 15);
+    sel.addRange(r); // <div>{Copy1then Paste]<ul id="ul1"><li>LI</li>\n</ul></div>
 
     r = document.createRange();
-    r.setStart(ul, 1); // before the space inside the UL
-    r.setEnd(parent, 2); // after the UL
-    sel.addRange(r);
+    r.setStart(ul, 1);
+    r.setEnd(parent, 2);
+    sel.addRange(r); // <div>Copy1then Paste<ul id="ul1"><li>LI{</li>\n</ul>}</div>
     await copySelectionToClipboard(true);
-    testPasteHTML("contentEditable1", "Copy1then Paste");
+    testPasteHTML("contentEditable1", "Copy1then Paste"); // The <ul> should not appear because it has no <li>s
 
     // with text end node
     var sel = window.getSelection();
@@ -349,15 +346,15 @@ async function testCopyPaste(isXHTML) {
     var ul = $("ul2");
     var parent = ul.parentNode;
     r.setStart(parent, 0);
-    r.setEnd(ul, 1); // after the space
-    sel.addRange(r);
+    r.setEnd(ul, 1);
+    sel.addRange(r); // <div>{<ul id="ul2">\n}<li>LI</li></ul>Copy2then Paste</div>
 
     r = document.createRange();
-    r.setStart(parent.childNodes[1], 0); // the start of "Copy..."
+    r.setStart(parent.childNodes[1], 0);
     r.setEnd(parent, 2);
-    sel.addRange(r);
+    sel.addRange(r); // <div><ul id="ul2">\n<li>LI</li></ul>[Copy2then Paste}</div>
     await copySelectionToClipboard(true);
-    testPasteHTML("contentEditable2", "Copy2then Paste");
+    testPasteHTML("contentEditable2", "Copy2then Paste"); // The <ul> should not appear because it has no <li>s
 
     // with text end node and non-empty start
     var sel = window.getSelection();
@@ -366,17 +363,17 @@ async function testCopyPaste(isXHTML) {
     var ul = $("ul3");
     var parent = ul.parentNode;
     r.setStart(parent, 0);
-    r.setEnd(ul, 1); // after the space
-    sel.addRange(r);
+    r.setEnd(ul, 1);
+    sel.addRange(r); // <div>{<ul id="ul3"><li>\n</li>}<li>LI</li></ul>Copy3then Paste</div>
 
     r = document.createRange();
-    r.setStart(parent.childNodes[1], 0); // the start of "Copy..."
+    r.setStart(parent.childNodes[1], 0);
     r.setEnd(parent, 2);
-    sel.addRange(r);
+    sel.addRange(r); // <div><ul id="ul3"><li>\n</li><li>LI</li></ul>[Copy3then Paste}</div>
     await copySelectionToClipboard(true);
     testPasteHTML(
       "contentEditable3",
-      '<ul id="ul3"><li>\n<br></li></ul>Copy3then Paste'
+      '<ul id="ul3"><li>\n<br></li></ul>Copy3then Paste' // The <ul> should appear because it has a <li>
     );
 
     // with elements of different depth
@@ -432,17 +429,17 @@ async function testCopyPaste(isXHTML) {
     var r = document.createRange();
     r.setStart(t1, 1);
     r.setEnd(e2, 0);
-    sel.addRange(r);
+    sel.addRange(r); // <div>\n<span id="1127835crash1">1[</span><div id="1127835crash2">}<div>\n</div></div><a href="..." id="1127835crash3">3</a>\n</div>
 
     r = document.createRange();
     r.setStart(e2, 1);
     r.setEnd(t3, 0);
-    sel.addRange(r);
+    sel.addRange(r); // <div>\n<span id="1127835crash1">1</span><div id="1127835crash2"><div>\n</div>{</div><a href="..." id="1127835crash3">]3</a>\n</div>
     await copySelectionToClipboard(true);
     testPasteHTML(
       "contentEditable6",
-      '<span id="1127835crash1"></span><div id="1127835crash2"><div>\n</div></div><br>'
-    );
+      '<span id="1127835crash1"></span><div id="1127835crash2"><div>\n</div></div><a href="http://www.mozilla.org/" id="1127835crash3"><br></a>'
+    ); // Don't strip the empty `<a href="...">` element because of avoiding any dataloss provided by the element
   }
 
   // ============ copy/paste test from/to a textarea
@@ -462,20 +459,20 @@ async function testCopyPaste(isXHTML) {
 
   await copyChildrenToClipboard("div13");
   testSelectionToString("__");
-  testClipboardValue("text/unicode", "__");
+  testClipboardValue("text/plain", "__");
   testHtmlClipboardValue("text/html", '<div id="div13">__</div>');
   testPasteText("__");
 
   // ============ converting cell boundaries to tabs in tables
 
   await copyToClipboard($("tr1"));
-  testClipboardValue("text/unicode", "foo\tbar");
+  testClipboardValue("text/plain", "foo\tbar");
 
   if (!isXHTML) {
     // ============ spanning multiple rows
 
     await copyRangeToClipboard($("tr2"), 0, $("tr3"), 0);
-    testClipboardValue("text/unicode", "1\t2\n3\t4\n");
+    testClipboardValue("text/plain", "1\t2\n3\t4\n");
     testHtmlClipboardValue(
       "text/html",
       '<table><tbody><tr id="tr2"><tr id="tr2"><td>1</td><td>2</td></tr><tr><td>3</td><td>4</td></tr><tr id="tr3"></tr></tr></tbody></table>'
@@ -487,7 +484,7 @@ async function testCopyPaste(isXHTML) {
     addRange($("tr2"), 0, $("tr2"), 2);
     addRange($("tr3"), 0, $("tr3"), 2);
     await copySelectionToClipboard();
-    testClipboardValue("text/unicode", "1\t2\n5\t6");
+    testClipboardValue("text/plain", "1\t2\n5\t6");
     testHtmlClipboardValue(
       "text/html",
       '<table><tbody><tr id="tr2"><td>1</td><td>2</td></tr><tr id="tr3"><td>5</td><td>6</td></tr></tbody></table>'
@@ -502,7 +499,7 @@ async function testCopyPaste(isXHTML) {
     $("div11").childNodes[1],
     2
   );
-  testClipboardValue("text/unicode", "Xdiv11");
+  testClipboardValue("text/plain", "Xdiv11");
   testHtmlClipboardValue("text/html", "<div><p>X<span>div</span>11</p></div>");
 
   await new Promise(resolve => {
@@ -520,7 +517,7 @@ async function testCopyPaste(isXHTML) {
     2
   );
 
-  testClipboardValue("text/unicode", "Xdiv12");
+  testClipboardValue("text/plain", "Xdiv12");
   testHtmlClipboardValue("text/html", "<div><p>X<span>div</span>12</p></div>");
   await new Promise(resolve => {
     setTimeout(resolve, 0);
@@ -539,18 +536,18 @@ async function testCopyPaste(isXHTML) {
 
     // Ruby annotation is included when selecting inside ruby.
     await copyRangeToClipboard(ruby1, 0, ruby1, 6);
-    testClipboardValue("text/unicode", "aabb(AABB)");
+    testClipboardValue("text/plain", "aabb(AABB)");
 
     // Ruby annotation is ignored when selecting across ruby.
     await copyRangeToClipboard(ruby1Container, 0, ruby1Container, 3);
-    testClipboardValue("text/unicode", "XaabbY");
+    testClipboardValue("text/plain", "XaabbY");
 
     // ... unless converter.html2txt.always_include_ruby is set
     await SpecialPowers.pushPrefEnv({
       set: [["converter.html2txt.always_include_ruby", true]],
     });
     await copyRangeToClipboard(ruby1Container, 0, ruby1Container, 3);
-    testClipboardValue("text/unicode", "Xaabb(AABB)Y");
+    testClipboardValue("text/plain", "Xaabb(AABB)Y");
     await SpecialPowers.popPrefEnv();
   }
 }

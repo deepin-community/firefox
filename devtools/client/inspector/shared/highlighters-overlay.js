@@ -4,43 +4,51 @@
 
 "use strict";
 
-const Services = require("Services");
-const { safeAsyncMethod } = require("devtools/shared/async-utils");
-const EventEmitter = require("devtools/shared/event-emitter");
-const WalkerEventListener = require("devtools/client/inspector/shared/walker-event-listener");
+const {
+  safeAsyncMethod,
+} = require("resource://devtools/shared/async-utils.js");
+const EventEmitter = require("resource://devtools/shared/event-emitter.js");
+const WalkerEventListener = require("resource://devtools/client/inspector/shared/walker-event-listener.js");
 const {
   VIEW_NODE_VALUE_TYPE,
   VIEW_NODE_SHAPE_POINT_TYPE,
-} = require("devtools/client/inspector/shared/node-types");
+} = require("resource://devtools/client/inspector/shared/node-types.js");
 
 loader.lazyRequireGetter(
   this,
   "parseURL",
-  "devtools/client/shared/source-utils",
+  "resource://devtools/client/shared/source-utils.js",
   true
 );
-loader.lazyRequireGetter(this, "asyncStorage", "devtools/shared/async-storage");
+loader.lazyRequireGetter(
+  this,
+  "asyncStorage",
+  "resource://devtools/shared/async-storage.js"
+);
 loader.lazyRequireGetter(
   this,
   "gridsReducer",
-  "devtools/client/inspector/grids/reducers/grids"
+  "resource://devtools/client/inspector/grids/reducers/grids.js"
 );
 loader.lazyRequireGetter(
   this,
   "highlighterSettingsReducer",
-  "devtools/client/inspector/grids/reducers/highlighter-settings"
+  "resource://devtools/client/inspector/grids/reducers/highlighter-settings.js"
 );
 loader.lazyRequireGetter(
   this,
   "flexboxReducer",
-  "devtools/client/inspector/flexbox/reducers/flexbox"
+  "resource://devtools/client/inspector/flexbox/reducers/flexbox.js"
 );
 loader.lazyRequireGetter(
   this,
   "deepEqual",
-  "devtools/shared/DevToolsUtils",
+  "resource://devtools/shared/DevToolsUtils.js",
   true
 );
+loader.lazyGetter(this, "HighlightersBundle", () => {
+  return new Localization(["devtools/shared/highlighters.ftl"], true);
+});
 
 const DEFAULT_HIGHLIGHTER_COLOR = "#9400FF";
 const SUBGRID_PARENT_ALPHA = 0.5;
@@ -180,7 +188,7 @@ class HighlightersOverlay {
 
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onMouseOut = this.onMouseOut.bind(this);
-    this.onWillNavigate = this.onWillNavigate.bind(this);
+    this.hideAllHighlighters = this.hideAllHighlighters.bind(this);
     this.hideFlexboxHighlighter = this.hideFlexboxHighlighter.bind(this);
     this.hideGridHighlighter = this.hideGridHighlighter.bind(this);
     this.hideShapesHighlighter = this.hideShapesHighlighter.bind(this);
@@ -222,15 +230,25 @@ class HighlightersOverlay {
       "display-change": this.onDisplayChange,
     });
 
+    if (this.toolbox.win.matchMedia("(prefers-reduced-motion)").matches) {
+      this._showSimpleHighlightersMessage();
+    }
+
     EventEmitter.decorate(this);
   }
 
   get inspectorFront() {
     return this.inspector.inspectorFront;
   }
+
   get target() {
     return this.inspector.currentTarget;
   }
+
+  get toolbox() {
+    return this.inspector.toolbox;
+  }
+
   // FIXME: Shim for HighlightersOverlay.parentGridHighlighters
   // Remove after updating tests to stop accessing this map directly. Bug 1683153
   get parentGridHighlighters() {
@@ -265,11 +283,7 @@ class HighlightersOverlay {
       case TYPES.GRID:
         const toolID = TELEMETRY_TOOL_IDS[type];
         if (toolID) {
-          this.telemetry.toolOpened(
-            toolID,
-            this.inspector.toolbox.sessionId,
-            this
-          );
+          this.telemetry.toolOpened(toolID, this);
         }
 
         const scalar = TELEMETRY_SCALARS[type]?.[options?.trigger];
@@ -388,11 +402,7 @@ class HighlightersOverlay {
         };
 
         if (toolID && conditions[type].call(this)) {
-          this.telemetry.toolClosed(
-            toolID,
-            this.inspector.toolbox.sessionId,
-            this
-          );
+          this.telemetry.toolClosed(toolID, this);
         }
 
         break;
@@ -557,7 +567,7 @@ class HighlightersOverlay {
 
     if (this._pendingHighlighters.get(type) !== id) {
       return;
-    } else if (skipShow) {
+    } else if (skipShow || nodeFront.isDestroyed()) {
       this._pendingHighlighters.delete(type);
       return;
     }
@@ -1057,7 +1067,12 @@ class HighlightersOverlay {
     try {
       // Save grid highlighter state.
       const { url } = this.target;
-      const selectors = await node.getAllSelectors();
+
+      const selectors =
+        await this.inspector.commands.inspectorCommand.getNodeFrontSelectorsFromTopDocument(
+          node
+        );
+
       this.state.grids.set(node, { selectors, options, url });
 
       // Emit the NodeFront of the grid container element that the grid highlighter was
@@ -1298,9 +1313,10 @@ class HighlightersOverlay {
       return;
     }
 
-    const highlighter = this.geometryEditorHighlighterShown.inspectorFront.getKnownHighlighter(
-      "GeometryEditorHighlighter"
-    );
+    const highlighter =
+      this.geometryEditorHighlighterShown.inspectorFront.getKnownHighlighter(
+        "GeometryEditorHighlighter"
+      );
 
     if (!highlighter) {
       return;
@@ -1381,7 +1397,10 @@ class HighlightersOverlay {
       return;
     }
 
-    const nodeFront = await this.inspectorFront.walker.findNodeFront(selectors);
+    const nodeFront =
+      await this.inspector.commands.inspectorCommand.findNodeFrontFromSelectors(
+        selectors
+      );
 
     if (nodeFront) {
       await showFunction(nodeFront, options);
@@ -1420,7 +1439,7 @@ class HighlightersOverlay {
         if (!highlighter) {
           return null;
         }
-        const ShapesInContextEditor = require("devtools/client/shared/widgets/ShapesInContextEditor");
+        const ShapesInContextEditor = require("resource://devtools/client/shared/widgets/ShapesInContextEditor.js");
 
         editor = new ShapesInContextEditor(
           highlighter,
@@ -1831,9 +1850,11 @@ class HighlightersOverlay {
   }
 
   /**
-   * Clear saved highlighter shown properties on will-navigate.
+   * Hides any visible highlighter and clear internal state. This should be called to
+   * have a clean slate, for example when the page navigates or when a given frame is
+   * selected in the iframe picker.
    */
-  async onWillNavigate() {
+  async hideAllHighlighters() {
     this.destroyEditors();
 
     // Hide any visible highlighters and clear any timers set to autohide highlighters.
@@ -1849,6 +1870,56 @@ class HighlightersOverlay {
     this.geometryEditorHighlighterShown = null;
     this.hoveredHighlighterShown = null;
     this.shapesHighlighterShown = null;
+  }
+
+  /**
+   * Display a message about the simple highlighters which can be enabled for
+   * users relying on prefers-reduced-motion. This message will be a toolbox
+   * notification, which will contain a button to open the settings panel and
+   * will no longer be displayed if the user decides to explicitly close the
+   * message.
+   */
+  _showSimpleHighlightersMessage() {
+    const pref = "devtools.inspector.simple-highlighters.message-dismissed";
+    const messageDismissed = Services.prefs.getBoolPref(pref, false);
+    if (messageDismissed) {
+      return;
+    }
+    const notificationBox = this.inspector.toolbox.getNotificationBox();
+    const message = HighlightersBundle.formatValueSync(
+      "simple-highlighters-message"
+    );
+
+    notificationBox.appendNotification(
+      message,
+      "simple-highlighters-message",
+      null,
+      notificationBox.PRIORITY_INFO_MEDIUM,
+      [
+        {
+          label: HighlightersBundle.formatValueSync(
+            "simple-highlighters-settings-button"
+          ),
+          callback: async () => {
+            const { panelDoc } = await this.toolbox.selectTool("options");
+            const option = panelDoc.querySelector(
+              "[data-pref='devtools.inspector.simple-highlighters-reduced-motion']"
+            ).parentNode;
+            option.scrollIntoView({ block: "center" });
+            option.classList.add("options-panel-highlight");
+
+            // Emit a test-only event to know when the settings panel is opened.
+            this.toolbox.emitForTests("test-highlighters-settings-opened");
+          },
+        },
+      ],
+      evt => {
+        if (evt === "removed") {
+          // Flip the preference when the message is dismissed.
+          Services.prefs.setBoolPref(pref, true);
+        }
+      }
+    );
   }
 
   /**

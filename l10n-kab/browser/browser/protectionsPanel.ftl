@@ -77,6 +77,7 @@ protections-panel-site-not-working-view-issue-list-forms = Tiferkiyin
 protections-panel-site-not-working-view-issue-list-payments = Asellek
 protections-panel-site-not-working-view-issue-list-comments = Iwenniten
 protections-panel-site-not-working-view-issue-list-videos = Tividyutin
+protections-panel-site-not-working-view-issue-list-fonts = Tisefsiyin
 
 protections-panel-site-not-working-view-send-report = Azen aneqqis
 
@@ -100,6 +101,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Cegger asmel yerẓen
 protections-panel-content-blocking-breakage-report-view-description = Asewḥel n kra n ineḍfaṛen izmer ad d-yawi uguren deg kra n ismal. Mi ara ad aɣ-tazneḍ uguren, ad d-fkeḍ tallelt akken ad yili { -brand-short-name } igerrez i yal yiwen.  aya ad yazen URL d  talɣut ɣef iɣewwaṛen , iminig-inek ɣer Mozilla.) <label data-l10n-name="learn-more">Issin ugar</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Asewḥel n kra n ineḍfaṛen izmer ad d-yawi uguren deg kra n ismal. Mi ara ad aɣ-tazneḍ uguren, ad d-fkeḍ tallelt akken ad yili { -brand-short-name } igerrez i yal yiwen.  aya ad yazen URL d  talɣut ɣef iɣewwaṛen , iminig-inek ɣer { -vendor-short-name }.)
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -110,3 +112,22 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Sefsex
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Azen aneqqis
+
+# Cookie Banner Handling
+
+protections-panel-cookie-banner-handling-header = Asenqes n yiɣarracen n yinagan n tuqqna
+protections-panel-cookie-banner-handling-enabled = Rmed i usmel-a
+protections-panel-cookie-banner-handling-disabled = Sens i usmel-a
+protections-panel-cookie-banner-handling-undetected = Asmel-a ur yettusefrak ara akka tura
+
+protections-panel-cookie-banner-view-title =
+    .title = Asenqes n yiɣarracen n yinagan n tuqqna
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-view-turn-off-for-site = Sens asenqes n yiɣarracen n yinagan n tuqqna i { $host }?
+protections-panel-cookie-banner-view-turn-on-for-site = Rmed asenqes n yiɣerracen n yinagan n tuqqna i usmel-a?
+protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } ad isfeḍ inagan n tuqqna n usmel-a syen ad issesfer asebter. Asfaḍ meṛṛa n yinagan n tuqqna yezmer ad ak·am-isseḥbes tuqqna neɣ ad yenɣel tiqecwalin n tiɣtin.
+protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } yettaɛraḍ s wudem awurman ad yagi issutar n yinagan n tuqqna deg yismal i ten-yessefraken.
+protections-panel-cookie-banner-view-cancel = Sefsex
+protections-panel-cookie-banner-view-turn-off = Sens
+protections-panel-cookie-banner-view-turn-on = Rmed

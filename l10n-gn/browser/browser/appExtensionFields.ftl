@@ -13,7 +13,7 @@ extension-firefox-compact-light-description = Peteĩ téma sa’y aty hesakãva 
 extension-firefox-compact-dark-name = Ypytũ
 extension-firefox-compact-dark-description = Peteĩ téma sa’y aty ypytũ ndive.
 extension-firefox-alpenglow-name = Firefox Alpenglow
-extension-firefox-alpenglow-description = Eipuru isa’yetáva jehechapy votõme g̃uarã, poravorã ha ovetã.
+extension-firefox-alpenglow-description = Eiporu isa’yetáva jehechapy votõme g̃uarã, poravorã ha ovetã.
 
 ## Colorway Themes
 ## These themes are variants of a colorway. The colorway is specified in the

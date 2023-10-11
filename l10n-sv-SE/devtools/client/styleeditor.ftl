@@ -8,15 +8,19 @@ styleeditor-new-button =
 styleeditor-import-button =
     .tooltiptext = Importera och lägg till en befintlig stilmall till dokumentet
     .accesskey = m
+styleeditor-filter-input =
+    .placeholder = Filtrera stilmallar
 styleeditor-visibility-toggle =
     .tooltiptext = Växla visning av stilmall
     .accesskey = V
+styleeditor-visibility-toggle-system =
+    .tooltiptext = Systemformatmallar kan inte inaktiveras
 styleeditor-save-button = Spara
     .tooltiptext = Spara den här stilmallen till en fil
     .accesskey = S
 styleeditor-options-button =
     .tooltiptext = Alternativ för stilredigerare
-styleeditor-media-rules = Media-förfrågningar
+styleeditor-at-rules = At-rules
 styleeditor-editor-textbox =
     .data-placeholder = Skriv in CSS här.
 styleeditor-no-stylesheet = Den här sidan har ingen stilmall.
@@ -25,3 +29,23 @@ styleeditor-open-link-new-tab =
     .label = Öppna länk i ny flik
 styleeditor-copy-url =
     .label = Kopiera URL
+styleeditor-find =
+    .label = Sök
+    .accesskey = S
+styleeditor-find-again =
+    .label = Sök igen
+    .accesskey = ö
+styleeditor-go-to-line =
+    .label = Gå till rad…
+    .accesskey = G
+# Label displayed when searching a term that is not found in any stylesheet path
+styleeditor-stylesheet-all-filtered = Ingen matchande stilmall har hittats.
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } regel.
+       *[other] { $ruleCount } regler.
+    }

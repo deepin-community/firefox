@@ -5,9 +5,9 @@
 
 ## Strings used for device manager
 
-devmgr =
+devmgr-window =
     .title = Eszközkezelő
-    .style = width: 67em; height: 32em;
+    .style = min-width: 67em; min-height: 32em;
 
 devmgr-devlist =
     .label = Biztonsági modulok és szolgáltatások

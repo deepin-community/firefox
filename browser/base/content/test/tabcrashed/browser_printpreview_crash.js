@@ -4,6 +4,7 @@
 "use strict";
 
 const TEST_URL =
+  // eslint-disable-next-line @microsoft/sdl/no-insecure-url
   "http://example.com/browser/browser/base/content/test/tabcrashed/file_contains_emptyiframe.html";
 const DOMAIN = "example.com";
 
@@ -14,15 +15,12 @@ const DOMAIN = "example.com";
  * and they both set their document.domain to be "example.com".
  */
 add_task(async function test() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["print.tab_modal.enabled", false]],
-  });
   // 1. Open a new tab and wait for it to load the top level doc
   let newTab = await BrowserTestUtils.openNewForegroundTab(gBrowser, TEST_URL);
   let browser = newTab.linkedBrowser;
 
   // 2. Navigate the iframe within the doc and wait for the load to complete
-  await SpecialPowers.spawn(browser, [], async function() {
+  await SpecialPowers.spawn(browser, [], async function () {
     const iframe = content.document.querySelector("iframe");
     const loaded = new Promise(resolve => {
       iframe.addEventListener(
@@ -34,12 +32,13 @@ add_task(async function test() {
       );
     });
     iframe.src =
+      // eslint-disable-next-line @microsoft/sdl/no-insecure-url
       "http://test1.example.com/browser/browser/base/content/test/tabcrashed/file_iframe.html";
     await loaded;
   });
 
   // 3. Change the top level document's domain
-  await SpecialPowers.spawn(browser, [DOMAIN], async function(domain) {
+  await SpecialPowers.spawn(browser, [DOMAIN], async function (domain) {
     content.document.domain = domain;
   });
 
@@ -54,40 +53,30 @@ add_task(async function test() {
 
   // 5. Try to print things
   ok(
-    !gInPrintPreviewMode,
+    !document.querySelector(".printPreviewBrowser"),
     "Should NOT be in print preview mode at the start of this test."
   );
 
   // Enter print preview
-  let ppBrowser = PrintPreviewListener.getPrintPreviewBrowser();
-
-  const { PrintingParent } = ChromeUtils.import(
-    "resource://gre/actors/PrintingParent.jsm"
-  );
-  let printPreviewEntered = new Promise(resolve => {
-    PrintingParent.setTestListener(browserPreviewing => {
-      if (browserPreviewing == ppBrowser) {
-        PrintingParent.setTestListener(null);
-        resolve();
-      }
-    });
+  document.getElementById("cmd_print").doCommand();
+  await BrowserTestUtils.waitForCondition(() => {
+    let preview = document.querySelector(".printPreviewBrowser");
+    return preview && BrowserTestUtils.is_visible(preview);
   });
-  document.getElementById("cmd_printPreview").doCommand();
-  await printPreviewEntered;
 
-  // Ensure we are in print preview
-  await BrowserTestUtils.waitForCondition(
-    () => gInPrintPreviewMode,
-    "Should be in print preview mode now."
+  let ppBrowser = document.querySelector(
+    ".printPreviewBrowser[previewtype=source]"
   );
+  ok(ppBrowser, "Print preview browser was created");
+
   ok(true, "We did not crash.");
 
   // We haven't crashed! Exit the print preview.
-  await BrowserTestUtils.switchTab(gBrowser, () => {
-    PrintUtils.exitPrintPreview();
-  });
+  gBrowser.getTabDialogBox(gBrowser.selectedBrowser).abortAllDialogs();
+  await BrowserTestUtils.waitForCondition(
+    () => !document.querySelector(".printPreviewBrowser")
+  );
 
-  await BrowserTestUtils.waitForCondition(() => !window.gInPrintPreviewMode);
   info("We are not in print preview anymore.");
 
   BrowserTestUtils.removeTab(newTab);

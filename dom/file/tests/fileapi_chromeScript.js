@@ -1,3 +1,5 @@
+/* eslint-env mozilla/chrome-script */
+
 Cu.importGlobalProperties(["File"]);
 
 function createFileWithData(fileData) {
@@ -34,7 +36,7 @@ function createFileWithData(fileData) {
   });
 }
 
-addMessageListener("files.open", function(message) {
+addMessageListener("files.open", function (message) {
   let promises = [];
   let list = [];
 

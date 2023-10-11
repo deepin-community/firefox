@@ -8,15 +8,19 @@ styleeditor-new-button =
 styleeditor-import-button =
     .tooltiptext = Ymportearje en pas ta op in besteand stylblêd op it dokumint
     .accesskey = Y
+styleeditor-filter-input =
+    .placeholder = Styblêden filterje
 styleeditor-visibility-toggle =
     .tooltiptext = Sichtberheid fan stylblêd yn-/útskeakelje
     .accesskey = s
+styleeditor-visibility-toggle-system =
+    .tooltiptext = Systeemstylblêden kinne net útskeakele wurde
 styleeditor-save-button = Bewarje
     .tooltiptext = Dit stylblêd bewarje as bestân
     .accesskey = s
 styleeditor-options-button =
     .tooltiptext = Stylbewurkeropsjes
-styleeditor-media-rules = @media-rigels
+styleeditor-at-rules = At-rigels
 styleeditor-editor-textbox =
     .data-placeholder = Typ hjir CSS.
 styleeditor-no-stylesheet = Dizze side hat gjin stylblêd.
@@ -25,3 +29,23 @@ styleeditor-open-link-new-tab =
     .label = Keppeling iepenje yn nij ljepblêd
 styleeditor-copy-url =
     .label = URL kopiearje
+styleeditor-find =
+    .label = Sykje
+    .accesskey = S
+styleeditor-find-again =
+    .label = Opnij sykje
+    .accesskey = n
+styleeditor-go-to-line =
+    .label = Ljep nei rigel…
+    .accesskey = L
+# Label displayed when searching a term that is not found in any stylesheet path
+styleeditor-stylesheet-all-filtered = Der is gjin oerienkommend stylblêd fûn.
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } rigel.
+       *[other] { $ruleCount } rigels.
+    }

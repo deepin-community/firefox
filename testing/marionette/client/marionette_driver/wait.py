@@ -2,14 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import
-
 import collections
 import sys
 import time
 
 from . import errors
-
 
 DEFAULT_TIMEOUT = 5
 DEFAULT_INTERVAL = 0.1
@@ -87,7 +84,7 @@ class Wait(object):
 
         exceptions = []
         if ignored_exceptions is not None:
-            if isinstance(ignored_exceptions, collections.Iterable):
+            if isinstance(ignored_exceptions, collections.abc.Iterable):
                 exceptions.extend(iter(ignored_exceptions))
             else:
                 exceptions.append(ignored_exceptions)

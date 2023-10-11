@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-webpage-languages-window =
+webpage-languages-window2 =
     .title = Ustawienia językowe stron WWW
-    .style = width: 35em
+    .style = min-width: 35em
 
 languages-close-key =
     .key = w
@@ -49,9 +49,9 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
-browser-languages-window =
+browser-languages-window2 =
     .title = Ustawienia języka przeglądarki { -brand-short-name }
-    .style = width: 37em
+    .style = min-width: 37em
 
 browser-languages-description = { -brand-short-name } będzie domyślnie wyświetlał pierwszy język z listy. W razie potrzeby, następne języki będą używane kolejno.
 

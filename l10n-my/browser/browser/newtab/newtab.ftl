@@ -16,25 +16,17 @@ newtab-search-box-search-button =
     .title = ရှာ
     .aria-label = ရှာ
 
-newtab-search-box-search-the-web-input =
-    .placeholder = ဝဘ်တွင် ရှာဖွေပါ
-    .title = ဝဘ်တွင် ရှာဖွေပါ
-    .aria-label = ဝဘ်တွင် ရှာဖွေပါ
-
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = ရှာဖွေရေးအင်ဂျင် ထည့်ပါ
-newtab-topsites-add-topsites-header = ထိပ်တန်းဆိုက် အသစ်
 newtab-topsites-edit-topsites-header = ထိပ်တန်းဆိုက်ကို တည်းဖြတ်ရန်
 newtab-topsites-title-label = ခေါင်းစဉ်
 newtab-topsites-title-input =
     .placeholder = ခေါင်းစဉ် ရေးပါ
-
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
     .placeholder = URL ကို ရိုက်ပါ သို့မဟုတ် ပွားထည့်ပါ
 newtab-topsites-url-validation = URL အမှန် လိုအပ်သည်
-
 newtab-topsites-image-url-label = စိတ်ကြိုက်ပုံ URL
 newtab-topsites-use-image-link = စိတ်ကြိုက်ပုံတစ်ခုသုံးပါ…
 newtab-topsites-image-validation = ပုံတင်ရန် ပျက်ကွက်ခဲ့သည်။ မတူသော URL ကို စမ်းပါ။
@@ -55,13 +47,13 @@ newtab-confirm-delete-history-p2 = ယခုလုပ်ဆောင်မှု
 
 ## Top Sites - Sponsored label
 
+
 ## Context Menu - Action Tooltips.
 
 # General tooltip for context menus.
 newtab-menu-section-tooltip =
     .title = မီနူးကို ဖွင့်ပါ
     .aria-label = မီနူးကို ဖွင့်ပါ
-
 # Tooltip on an empty topsite box to open the New Top Site dialog.
 newtab-menu-topsites-placeholder-tooltip =
     .title = ဆိုက်အားပြင်မည်
@@ -85,9 +77,9 @@ newtab-menu-delete-pocket = { -pocket-brand-name } မှ ပယ်ဖျက်�
 ##
 
 # Bookmark is a noun in this case, "Remove bookmark".
-newtab-menu-remove-bookmark = စာအမှတ်အားဖယ်ပါ
+newtab-menu-remove-bookmark = စာမှတ် ဖယ်ရန်
 # Bookmark is a verb here.
-newtab-menu-bookmark = စာအမှတ်
+newtab-menu-bookmark = စာမှတ်
 
 ## Context Menu - Downloaded Menu. "Download" in these cases is not a verb,
 ## it is a noun. As in, "Copy the link that belongs to this downloaded item".
@@ -107,10 +99,10 @@ newtab-menu-open-file = ဖိုင်ကိုဖွင့်ပါ
 ## the page is bookmarked, or is currently open on another device.
 
 newtab-label-visited = သွားလည်ခဲ့သော
-newtab-label-bookmarked = စာအမှတ်မှတ်ထားသော
+newtab-label-bookmarked = စာမှတ် မှတ်ထားပြီး
 newtab-label-removed-bookmark = စာမှတ်ကို ဖျက်ပြီး
-newtab-label-recommended = လူကြိုက်များနေသော
-newtab-label-download = ဆွဲချခဲ့သည်
+newtab-label-saved = { -pocket-brand-name } သို့ သိမ်းရန်
+newtab-label-download = ဒေါင်းလုပ်
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -118,6 +110,7 @@ newtab-label-download = ဆွဲချခဲ့သည်
 newtab-section-menu-remove-section = အပိုင်းကို ပယ်ဖျက်ပါ
 newtab-section-menu-expand-section = အပိုင်းတိုးချဲ့ပါ
 newtab-section-menu-manage-section = အပိုင်းများကိုစီမံရန်
+newtab-section-menu-manage-webext = အပိုနောက်တိုး စီမံခြင်း
 newtab-section-menu-add-topsite = ထိပ်တန်းဆိုက်များကို ပေါင်းထည့်ပါ
 newtab-section-menu-add-search-engine = ရှာဖွေရေးအင်ဂျင် ထည့်ပါ
 newtab-section-menu-move-up = အပေါ်သို့ ရွှေ့ပါ
@@ -130,13 +123,13 @@ newtab-section-menu-privacy-notice = ကိုယ်ရေးကာကွယ်�
 ## Section Headers.
 
 newtab-section-header-topsites = အများဆုံးသုံးဆိုက်များ
-newtab-section-header-highlights = ဦးစားပေးအကြောင်းအရာများ
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } က အကြံပြုထားသည်
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
+newtab-empty-section-highlights = စတင် ချိတ်ဆက် လည်ပတ်လိုက်၊ သိပ်ကောင်းတဲ့ ဆောင်းပါးတွေ၊ ဗီဒီယိုတွေ နဲ့ ဒီတစ်လော သွားလည်ပတ်ထားတာ  သို့မဟုတ် စာမှတ်မှာ သိမ်းထားတဲ့ စာမျက်နှာတွေကို ဒီမှာ ပြသပေးပါမည်။
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -147,6 +140,9 @@ newtab-section-header-pocket = { $provider } က အကြံပြုထား�
 newtab-pocket-read-more = လူကြိုက်များခေါင်းစဉ်များ
 newtab-pocket-more-recommendations = ပိုများသောအကြံပြုချက်များ
 newtab-pocket-cta-button = { -pocket-brand-name } ကို ရယူပါ
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
+
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.

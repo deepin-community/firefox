@@ -13,5 +13,5 @@ all-tabs-menu-hidden-tabs =
     .label = Gøymde faner
 
 all-tabs-menu-manage-user-context =
-    .label = Handter behaldarar
+    .label = Handsam behaldarar
     .accesskey = H

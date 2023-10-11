@@ -3,9 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-profiles-title = Sobre os perfis
-profiles-subtitle = Esta página ajuda a gerenciar seus perfis. Cada perfil é um mundo separado que contém histórico, favoritos, configurações e extensões separados.
-profiles-create = Criar um novo perfil
+profiles-title = Gerenciamento de perfis
+profiles-subtitle = Esta página ajuda a gerenciar seus perfis. Cada perfil é independente, contém histórico, favoritos, configurações e extensões separados.
+profiles-create = Criar novo perfil
 profiles-restart-title = Reiniciar
 profiles-restart-in-safe-mode = Reiniciar com extensões desativadas…
 profiles-restart-normal = Reiniciar normalmente…
@@ -34,7 +34,7 @@ profiles-in-use-profile = Este perfil está em uso em outra aplicação e não p
 profiles-rename = Renomear
 profiles-remove = Remover
 profiles-set-as-default = Definir como perfil padrão
-profiles-launch-profile = Iniciar o perfil em um novo navegador
+profiles-launch-profile = Abrir outro Firefox com este perfil
 
 profiles-cannot-set-as-default-title = Não foi possível definir padrão
 profiles-cannot-set-as-default-message = O perfil padrão não pode ser alterado no { -brand-short-name }.

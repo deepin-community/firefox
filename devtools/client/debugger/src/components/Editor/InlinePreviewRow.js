@@ -45,10 +45,8 @@ class InlinePreviewRow extends PureComponent {
     }
 
     if (!props) {
-      return assert(
-        !this.bookmark,
-        "Inline Preview widget shouldn't be present."
-      );
+      assert(!this.bookmark, "Inline Preview widget shouldn't be present.");
+      return;
     }
 
     const {
@@ -66,19 +64,21 @@ class InlinePreviewRow extends PureComponent {
     }
 
     ReactDOM.render(
-      <React.Fragment>
-        {previews.map(preview => (
-          <InlinePreview
-            line={line}
-            key={`${line}-${preview.name}`}
-            variable={preview.name}
-            value={preview.value}
-            openElementInInspector={openElementInInspector}
-            highlightDomElement={highlightDomElement}
-            unHighlightDomElement={unHighlightDomElement}
-          />
-        ))}
-      </React.Fragment>,
+      React.createElement(
+        React.Fragment,
+        null,
+        previews.map(preview =>
+          React.createElement(InlinePreview, {
+            line: line,
+            key: `${line}-${preview.name}`,
+            variable: preview.name,
+            value: preview.value,
+            openElementInInspector: openElementInInspector,
+            highlightDomElement: highlightDomElement,
+            unHighlightDomElement: unHighlightDomElement,
+          })
+        )
+      ),
       this.widgetNode
     );
 

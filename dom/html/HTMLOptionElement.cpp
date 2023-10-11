@@ -19,7 +19,6 @@
 #include "mozilla/dom/Document.h"
 #include "nsNodeInfoManager.h"
 #include "nsCOMPtr.h"
-#include "mozilla/EventStates.h"
 #include "nsContentCreatorFunctions.h"
 #include "mozAutoDocUpdate.h"
 #include "nsTextNode.h"
@@ -39,7 +38,7 @@ HTMLOptionElement::HTMLOptionElement(
       mIsSelected(false),
       mIsInSetDefaultSelected(false) {
   // We start off enabled
-  AddStatesSilently(NS_EVENT_STATE_ENABLED);
+  AddStatesSilently(ElementState::ENABLED);
 }
 
 HTMLOptionElement::~HTMLOptionElement() = default;
@@ -67,7 +66,7 @@ void HTMLOptionElement::OptGroupDisabledChanged(bool aNotify) {
 }
 
 void HTMLOptionElement::UpdateDisabledState(bool aNotify) {
-  bool isDisabled = HasAttr(kNameSpaceID_None, nsGkAtoms::disabled);
+  bool isDisabled = HasAttr(nsGkAtoms::disabled);
 
   if (!isDisabled) {
     nsIContent* parent = GetParent();
@@ -76,15 +75,15 @@ void HTMLOptionElement::UpdateDisabledState(bool aNotify) {
     }
   }
 
-  EventStates disabledStates;
+  ElementState disabledStates;
   if (isDisabled) {
-    disabledStates |= NS_EVENT_STATE_DISABLED;
+    disabledStates |= ElementState::DISABLED;
   } else {
-    disabledStates |= NS_EVENT_STATE_ENABLED;
+    disabledStates |= ElementState::ENABLED;
   }
 
-  EventStates oldDisabledStates = State() & DISABLED_STATES;
-  EventStates changedStates = disabledStates ^ oldDisabledStates;
+  ElementState oldDisabledStates = State() & ElementState::DISABLED_STATES;
+  ElementState changedStates = disabledStates ^ oldDisabledStates;
 
   if (!changedStates.IsEmpty()) {
     ToggleStates(changedStates, aNotify);
@@ -97,9 +96,11 @@ void HTMLOptionElement::SetSelected(bool aValue) {
   HTMLSelectElement* selectInt = GetSelect();
   if (selectInt) {
     int32_t index = Index();
-    uint32_t mask = HTMLSelectElement::SET_DISABLED | HTMLSelectElement::NOTIFY;
+    HTMLSelectElement::OptionFlags mask{
+        HTMLSelectElement::OptionFlag::SetDisabled,
+        HTMLSelectElement::OptionFlag::Notify};
     if (aValue) {
-      mask |= HTMLSelectElement::IS_SELECTED;
+      mask += HTMLSelectElement::OptionFlag::IsSelected;
     }
 
     // This should end up calling SetSelectedInternal
@@ -141,16 +142,13 @@ nsChangeHint HTMLOptionElement::GetAttributeChangeHint(const nsAtom* aAttribute,
   return retval;
 }
 
-nsresult HTMLOptionElement::BeforeSetAttr(int32_t aNamespaceID, nsAtom* aName,
-                                          const nsAttrValueOrString* aValue,
-                                          bool aNotify) {
-  nsresult rv =
-      nsGenericHTMLElement::BeforeSetAttr(aNamespaceID, aName, aValue, aNotify);
-  NS_ENSURE_SUCCESS(rv, rv);
+void HTMLOptionElement::BeforeSetAttr(int32_t aNamespaceID, nsAtom* aName,
+                                      const nsAttrValue* aValue, bool aNotify) {
+  nsGenericHTMLElement::BeforeSetAttr(aNamespaceID, aName, aValue, aNotify);
 
   if (aNamespaceID != kNameSpaceID_None || aName != nsGkAtoms::selected ||
       mSelectedChanged) {
-    return NS_OK;
+    return;
   }
 
   // We just changed out selected state (since we look at the "selected"
@@ -161,7 +159,7 @@ nsresult HTMLOptionElement::BeforeSetAttr(int32_t aNamespaceID, nsAtom* aName,
     // If option is a child of select, SetOptionsSelectedByIndex will set
     // mIsSelected if needed.
     mIsSelected = aValue;
-    return NS_OK;
+    return;
   }
 
   NS_ASSERTION(!mSelectedChanged, "Shouldn't be here");
@@ -170,13 +168,14 @@ nsresult HTMLOptionElement::BeforeSetAttr(int32_t aNamespaceID, nsAtom* aName,
   mIsInSetDefaultSelected = true;
 
   int32_t index = Index();
-  uint32_t mask = HTMLSelectElement::SET_DISABLED;
+  HTMLSelectElement::OptionFlags mask =
+      HTMLSelectElement::OptionFlag::SetDisabled;
   if (aValue) {
-    mask |= HTMLSelectElement::IS_SELECTED;
+    mask += HTMLSelectElement::OptionFlag::IsSelected;
   }
 
   if (aNotify) {
-    mask |= HTMLSelectElement::NOTIFY;
+    mask += HTMLSelectElement::OptionFlag::Notify;
   }
 
   // This can end up calling SetSelectedInternal if our selected state needs to
@@ -191,15 +190,13 @@ nsresult HTMLOptionElement::BeforeSetAttr(int32_t aNamespaceID, nsAtom* aName,
   // mIsSelected might have been changed by SetOptionsSelectedByIndex.  Possibly
   // more than once; make sure our mSelectedChanged state is set back correctly.
   mSelectedChanged = false;
-
-  return NS_OK;
 }
 
-nsresult HTMLOptionElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
-                                         const nsAttrValue* aValue,
-                                         const nsAttrValue* aOldValue,
-                                         nsIPrincipal* aSubjectPrincipal,
-                                         bool aNotify) {
+void HTMLOptionElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
+                                     const nsAttrValue* aValue,
+                                     const nsAttrValue* aOldValue,
+                                     nsIPrincipal* aSubjectPrincipal,
+                                     bool aNotify) {
   if (aNameSpaceID == kNameSpaceID_None) {
     if (aName == nsGkAtoms::disabled) {
       UpdateDisabledState(aNotify);
@@ -242,7 +239,7 @@ void HTMLOptionElement::GetText(nsAString& aText) {
 }
 
 void HTMLOptionElement::SetText(const nsAString& aText, ErrorResult& aRv) {
-  aRv = nsContentUtils::SetNodeTextContent(this, aText, true);
+  aRv = nsContentUtils::SetNodeTextContent(this, aText, false);
 }
 
 nsresult HTMLOptionElement::BindToTree(BindContext& aContext,
@@ -263,13 +260,13 @@ void HTMLOptionElement::UnbindFromTree(bool aNullParent) {
   UpdateDisabledState(false);
 }
 
-EventStates HTMLOptionElement::IntrinsicState() const {
-  EventStates state = nsGenericHTMLElement::IntrinsicState();
+ElementState HTMLOptionElement::IntrinsicState() const {
+  ElementState state = nsGenericHTMLElement::IntrinsicState();
   if (Selected()) {
-    state |= NS_EVENT_STATE_CHECKED;
+    state |= ElementState::CHECKED;
   }
   if (DefaultSelected()) {
-    state |= NS_EVENT_STATE_DEFAULT;
+    state |= ElementState::DEFAULT;
   }
 
   return state;

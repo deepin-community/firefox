@@ -5,7 +5,9 @@
 // response. Make sure that body received by original channel's listener
 // is correctly modified.
 
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
+);
 
 var httpserver = new HttpServer();
 httpserver.start(-1);
@@ -81,9 +83,7 @@ function HttpResponseExaminer() {}
 
 HttpResponseExaminer.prototype = {
   register() {
-    Cc["@mozilla.org/observer-service;1"]
-      .getService(Ci.nsIObserverService)
-      .addObserver(this, "http-on-examine-response", true);
+    Services.obs.addObserver(this, "http-on-examine-response", true);
     dump("Did HttpResponseExaminer.register\n");
   },
 

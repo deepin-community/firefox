@@ -41,6 +41,17 @@ options-collapse-attrs-label = Truncar atributos DOM
 options-collapse-attrs-tooltip =
     .title = Truncar atributos largos en el inspector
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Haga clic y arrastre para editar los valores de tamaño
+options-inspector-draggable-properties-tooltip =
+    .title = Haga clic y arrastre para editar los valores de tamaño en la vista de reglas del inspector.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Usar resaltadores más simples con prefers-reduced-motion
+options-inspector-simplified-highlighters-tooltip =
+    .title = Usa resaltadores simplificados cuando se habilita prefers-reduced-motion. Dibuja líneas en vez de rectángulos llenos alrededor de los elementos resaltados para evitar efectos de parpadeo.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Unidad de color predeterminada
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Como el autor
 options-default-color-unit-hex = Hex
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Nombres de colores
 
 ## Style Editor section
@@ -84,8 +96,8 @@ options-sourceeditor-detectindentation-tooltip =
     .title = Adivinar indentado basado en el contenido fuente
 options-sourceeditor-detectindentation-label = Detectar indentado
 options-sourceeditor-autoclosebrackets-tooltip =
-    .title = Automatically insert closing brackets
-options-sourceeditor-autoclosebrackets-label = Autoclose brackets
+    .title = Insertar corchetes de cierre automáticamente
+options-sourceeditor-autoclosebrackets-label = Cerrar corchetes automáticamente
 options-sourceeditor-expandtab-tooltip =
     .title = Usar espacios en lugar del caracter tab
 options-sourceeditor-expandtab-label = Indentar usando espacios
@@ -118,6 +130,16 @@ options-enable-remote-label = Habilitar depuración remota
 options-enable-remote-tooltip2 =
     .title = Activar esta opción permitirá depurar esta instancia del navegador de forma remota
 
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Use la tecla F12 para abrir o cerrar DevTools
+options-enable-f12-tooltip =
+    .title = Activar esta opción vinculará la tecla F12 para abrir o cerrar la caja de herramientas DevTools
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Habilitar los formateadores pesronalizados
+options-enable-custom-formatters-tooltip =
+    .title = Habilitar esta opción permitirá a los sitios definir fomateadores personalizados para los objetos DOM
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Habilitar Service Workers sobre HTTP (cuando esté abierta la caja de herramientas)
 options-enable-service-workers-http-tooltip =
@@ -130,11 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Solo sesión actual, recarga la página
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Mostrar datos de plataforma de Gecko
-options-show-platform-data-tooltip =
-    .title =
-        Si habilita esta opción, los informes del perfilador de JavaScript Profiler incluirá
-        símbolos de plataforma de Gecko

@@ -8,7 +8,7 @@
 
 const TEST_URL = "data:text/html;charset=utf8,<div></div>";
 
-add_task(async function() {
+add_task(async function () {
   const { inspector, toolbox } = await openInspectorForURL(TEST_URL);
 
   await startPicker(toolbox);
@@ -22,10 +22,7 @@ add_task(async function() {
   await onHover;
 
   info("Press escape and wait for the picker to stop");
-  const onPickerStopped = toolbox.nodePicker.once("picker-node-canceled");
-  BrowserTestUtils.synthesizeKey("VK_ESCAPE", {}, gBrowser.selectedBrowser);
-
-  await onPickerStopped;
+  await stopPickerWithEscapeKey(toolbox);
 
   info("Press escape again and wait for the split console to open");
   const onSplitConsole = toolbox.once("split-console");

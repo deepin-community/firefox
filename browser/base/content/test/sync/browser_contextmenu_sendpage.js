@@ -3,28 +3,29 @@
 
 "use strict";
 
-const { Assert } = ChromeUtils.import("resource://testing-common/Assert.jsm");
-
 const fxaDevices = [
   {
     id: 1,
     name: "Foo",
     availableCommands: { "https://identity.mozilla.com/cmd/open-uri": "baz" },
+    lastAccessTime: Date.now(),
   },
   {
     id: 2,
     name: "Bar",
     availableCommands: { "https://identity.mozilla.com/cmd/open-uri": "boo" },
+    lastAccessTime: Date.now() + 60000, // add 30min
   },
   {
     id: 3,
     name: "Baz",
     clientRecord: "bar",
+    lastAccessTime: Date.now() + 120000, // add 60min
   }, // Legacy send tab target (no availableCommands).
   { id: 4, name: "Homer" }, // Incompatible target.
 ];
 
-add_task(async function setup() {
+add_setup(async function () {
   await promiseSyncReady();
   await Services.search.init();
   // gSync.init() is called in a requestIdleCallback. Force its initialization.
@@ -86,7 +87,7 @@ add_task(async function test_link_contextmenu() {
     content.document.body.appendChild(a);
   });
 
-  await openContentContextMenu(
+  let contextMenu = await openContentContextMenu(
     "#testingLink",
     "context-sendlinktodevice",
     "context-sendlinktodevice-popup"
@@ -150,10 +151,11 @@ add_task(async function test_link_contextmenu() {
     false,
     "Send link to device is enabled"
   );
-  document
-    .getElementById("context-sendlinktodevice-popup")
-    .querySelector("menuitem")
-    .click();
+  contextMenu.activateItem(
+    document
+      .getElementById("context-sendlinktodevice-popup")
+      .querySelector("menuitem")
+  );
   await hideContentContextMenu();
 
   expectation.verify();
@@ -449,6 +451,7 @@ async function openContentContextMenu(selector, openSubmenuId = null) {
     menu.openMenu(true);
     await menuPopupPromise;
   }
+  return contextMenu;
 }
 
 async function hideContentContextMenu() {

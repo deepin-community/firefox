@@ -96,42 +96,42 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
-main-context-menu-bookmark-add =
-    .aria-label = Обележи страницу
-    .accesskey = б
+main-context-menu-bookmark-page =
+    .aria-label = Обележи страницу…
+    .accesskey = О
     .tooltiptext = Обележи страницу
 
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
+# Cannot be shown at the same time as main-context-menu-edit-bookmark-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = Обележи страницу
-    .accesskey = б
+main-context-menu-bookmark-page-mac =
+    .label = Обележи страницу…
+    .accesskey = О
 
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-add-mac,
+# Cannot be shown at the same time as main-context-menu-bookmark-page-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-edit-mac =
-    .label = Уреди обележивач
-    .accesskey = е
+main-context-menu-edit-bookmark-mac =
+    .label = Уреди обележивач…
+    .accesskey = о
 
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Обележи страницу
-    .accesskey = б
+main-context-menu-bookmark-page-with-shortcut =
+    .aria-label = Обележи страницу…
+    .accesskey = О
     .tooltiptext = Обележи страницу ({ $shortcut })
 
-main-context-menu-bookmark-change =
-    .aria-label = Уреди обележивач
-    .accesskey = е
+main-context-menu-edit-bookmark =
+    .aria-label = Уреди обележивач…
+    .accesskey = о
     .tooltiptext = Уреди обележивач
 
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Уреди обележивач
-    .accesskey = е
+main-context-menu-edit-bookmark-with-shortcut =
+    .aria-label = Уреди обележивач…
+    .accesskey = о
     .tooltiptext = Уреди обележивач ({ $shortcut })
 
 main-context-menu-open-link =
@@ -154,9 +154,9 @@ main-context-menu-open-link-new-private-window =
     .label = Отвори везу у новом приватном прозору
     .accesskey = о
 
-main-context-menu-bookmark-link =
-    .label = Обележи везу
-    .accesskey = б
+main-context-menu-bookmark-link-2 =
+    .label = Обележи везу…
+    .accesskey = B
 
 main-context-menu-save-link =
     .label = Сачувај везу као…
@@ -166,11 +166,6 @@ main-context-menu-save-link-to-pocket =
     .label = Сачувај везу у { -pocket-brand-name(case: "loc") }
     .accesskey = а
 
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
-
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
 ## are mutually exclusive.
@@ -178,6 +173,10 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = Копирај имејл-адресу
     .accesskey = К
+
+main-context-menu-copy-phone =
+    .label = Копирај број телефона
+    .accesskey = о
 
 main-context-menu-copy-link-simple =
     .label = Копирај везу
@@ -297,6 +296,10 @@ main-context-menu-image-set-image-as-background =
     .label = Постави као позадину радне површине…
     .accesskey = П
 
+main-context-menu-image-copy-text =
+    .label = Копирај текст са слике
+    .accesskey = к
+
 main-context-menu-image-info =
     .label = Прикажи податке о слици
     .accesskey = с
@@ -325,14 +328,6 @@ main-context-menu-audio-email =
     .label = Пошаљи звук имејлом…
     .accesskey = ш
 
-main-context-menu-plugin-play =
-    .label = Активирај додатну компоненту
-    .accesskey = А
-
-main-context-menu-plugin-hide =
-    .label = Сакриј додатну компоненту
-    .accesskey = С
-
 main-context-menu-save-to-pocket =
     .label = Сачувај страницу у { -pocket-brand-name(case: "loc") }
     .accesskey = ч
@@ -355,6 +350,10 @@ main-context-menu-use-saved-password =
 
 ##
 
+main-context-menu-use-relay-mask =
+    .label = Користи { -relay-brand-short-name } маскирање е-поште
+    .accesskey = е
+
 main-context-menu-suggest-strong-password =
     .label = Предложи јаку лозинку…
     .accesskey = ж
@@ -369,7 +368,7 @@ main-context-menu-keyword =
 
 main-context-menu-link-send-to-device =
     .label = Пошаљи везу на уређај
-    .accesskey = n
+    .accesskey = ш
 
 main-context-menu-frame =
     .label = Оквир
@@ -391,9 +390,9 @@ main-context-menu-frame-reload =
     .label = Поново учитај оквир
     .accesskey = П
 
-main-context-menu-frame-bookmark =
-    .label = Обележи оквир
-    .accesskey = б
+main-context-menu-frame-add-bookmark =
+    .label = Обележи оквир…
+    .accesskey = о
 
 main-context-menu-frame-save-as =
     .label = Сачувај оквир као…
@@ -411,9 +410,9 @@ main-context-menu-frame-view-info =
     .label = Прикажи податке о оквиру
     .accesskey = д
 
-main-context-menu-print-selection =
-    .label = Одштампај изабрано
-    .accesskey = ш
+main-context-menu-print-selection-2 =
+    .label = Штампај изабрано…
+    .accesskey = т
 
 main-context-menu-view-selection-source =
     .label = Прикажи извор изабраног
@@ -455,3 +454,7 @@ main-context-menu-eme-learn-more =
 main-context-menu-open-link-in-container-tab =
     .label = Отвори везу у новом { $containerName } језичку
     .accesskey = ј
+
+main-context-menu-reveal-password =
+    .label = Откриј лозинку
+    .accesskey = р

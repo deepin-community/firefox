@@ -7,7 +7,6 @@ page-subtitle =
     Tällä sivulla on teknisiä tietoja, jotka voivat olla avuksi kun yritetään ratkaista
     jotain ongelmaa ohjelman kanssa. Jos olet etsimässä vastauksia kysymyksiin
     { -brand-short-name }ista, käy katsomassa löytyykö hakemaasi vastausta <a data-l10n-name="support-link">tukisivustoltamme</a>.
-
 crashes-title = Kaatumisilmoitukset
 crashes-id = Ilmoituksen tunnus
 crashes-send-date = Lähetetty
@@ -19,6 +18,10 @@ support-addons-type = Tyyppi
 support-addons-enabled = Käytössä
 support-addons-version = Versio
 support-addons-id = ID
+legacy-user-stylesheets-title = Vanhennetut käyttäjien tyylimäärittelyt
+legacy-user-stylesheets-enabled = Aktiivinen
+legacy-user-stylesheets-stylesheet-types = Tyylimäärittelyt
+legacy-user-stylesheets-no-stylesheets-found = Tyylimäärittelyjä ei löytynyt
 security-software-title = Tietoturvaohjelmat
 security-software-type = Tyyppi
 security-software-name = Nimi
@@ -72,6 +75,13 @@ app-basics-location-service-key-google = Google Location Service -avain
 app-basics-safebrowsing-key-google = Google Safebrowsing -avain
 app-basics-key-mozilla = Mozilla Location Service -avain
 app-basics-safe-mode = Vikasietotila
+app-basics-memory-size = Muistin koko (RAM)
+app-basics-disk-available = Levytilaa käytettävissä
+app-basics-pointing-devices = Osoitinlaitteet
+# Variables:
+#   $value (number) - Amount of data being stored
+#   $unit (string) - The unit of data being stored (e.g. MB)
+app-basics-data-size = { $value } { $unit }
 show-dir-label =
     { PLATFORM() ->
         [macos] Avaa Finderissa
@@ -101,11 +111,21 @@ graphics-gpu2-title = GPU #2
 graphics-decision-log-title = Päätösloki
 graphics-crash-guards-title = Kaatumisvahdin käytöstä poistamat ominaisuudet
 graphics-workarounds-title = Hätäratkaisut
+graphics-device-pixel-ratios = Ikkunoiden pikselisuhteet
 # Windowing system in use on Linux (e.g. X11, Wayland).
 graphics-window-protocol = Ikkunointiprotokolla
 # Desktop environment in use on Linux (e.g. GNOME, KDE, XFCE, etc).
 graphics-desktop-environment = Työpöytäympäristö
 place-database-title = Places-tietokanta
+place-database-stats = Tilastot
+place-database-stats-show = Näytä tilastot
+place-database-stats-hide = Piilota tilastot
+place-database-stats-entity = Entiteetti
+place-database-stats-count = Lukumäärä
+place-database-stats-size-kib = Koko (KiB)
+place-database-stats-size-perc = Koko (%)
+place-database-stats-efficiency-perc = Tehokkuus (%)
+place-database-stats-sequentiality-perc = Peräkkäisyys (%)
 place-database-integrity = Virheettömyys
 place-database-verify-integrity = Tarkista virheettömyys
 a11y-title = Saavutettavuus
@@ -152,8 +172,18 @@ media-device-channels = Kanavia
 media-device-rate = Näytteenottotaajuus
 media-device-latency = Viive
 media-capabilities-title = Mediaominaisuudet
+media-codec-support-info = Koodekkitukitiedot
 # List all the entries of the database.
 media-capabilities-enumerate = Listaa tietokannan sisältö
+
+## Codec support table
+
+media-codec-support-sw-decoding = Ohjelmistopohjainen purku
+media-codec-support-hw-decoding = Laitteistopohjainen purku
+media-codec-support-codec-name = Koodekin nimi
+media-codec-support-supported = Tuettu
+media-codec-support-unsupported = Ei tuettu
+media-codec-support-error = Koodekkitukitietoja ei ole saatavilla. Yritä uudelleen mediatiedoston toiston jälkeen.
 
 ##
 
@@ -189,7 +219,6 @@ report-crash-for-days =
         [one] Kaatumisilmoitukset viimeisen { $days } päivän aikana
        *[other] Kaatumisilmoitukset viimeisen { $days } päivän aikana
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -197,7 +226,6 @@ crashes-time-minutes =
         [one] { $minutes } minuutti sitten
        *[other] { $minutes } minuuttia sitten
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -205,7 +233,6 @@ crashes-time-hours =
         [one] { $hours } tunti sitten
        *[other] { $hours } tuntia sitten
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -213,7 +240,6 @@ crashes-time-days =
         [one] { $days } päivä sitten
        *[other] { $days } päivää sitten
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -221,7 +247,6 @@ pending-reports =
         [one] Kaikki kaatumisilmoitukset (sisältäen { $reports } lähetyslupaa odottavan ilmoituksen annetulla aikarajoituksella)
        *[other] Kaikki kaatumisilmoitukset (sisältäen { $reports } lähetyslupaa odottavaa ilmoitusta annetulla aikarajoituksella)
     }
-
 raw-data-copied = Käsittelemätön data kopioitiin leikepöydälle
 text-copied = Teksti kopioitiin leikepöydälle
 
@@ -234,11 +259,9 @@ blocked-mismatched-version = Estetty koska näytönohjaimen ajureiden versio ero
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = Estetty näytönohjaimen ajureiden käytetyssä versiossa. Yritä päivittää näytönohjaimesi ajurit versioon { $driverVersion } tai uudempaan.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType-parametrit
-
 compositing = Koostaminen
 hardware-h264 = Laitteistopohjainen H264-koodauksen purku
 main-thread-no-omtc = pääsäie, ei OMTC:tä
@@ -253,7 +276,6 @@ virtual-monitor-disp = Virtuaalinen näyttö
 
 found = Löytyy
 missing = Puuttuu
-
 gpu-process-pid = GPU-prosessin PID
 gpu-process = GPU-prosessi
 gpu-description = Kuvaus
@@ -276,19 +298,17 @@ webgl2-renderer = WebGL 2 -ajurin mallintaja
 webgl2-version = WebGL 2 -ajurin versio
 webgl2-driver-extensions = WebGL 2 -ajurin laajennukset
 webgl2-extensions = WebGL 2 -laajennukset
-
+webgpu-default-adapter = WebGPU-oletussovitin
+webgpu-fallback-adapter = WebGPU-varasovitin
 # Variables
 #   $bugNumber (string) - Bug number on Bugzilla
 support-blocklisted-bug = Estolistalla tunnetuista ongelmista johtuen: <a data-l10n-name="bug-link">vika { $bugNumber }</a>
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = Estolistalla; virhekoodi { $failureCode }
-
 d3d11layers-crash-guard = D3D11-koostaminen
 glcontext-crash-guard = OpenGL
 wmfvpxvideo-crash-guard = WMF VPX -videopurkaja
-
 reset-on-next-restart = Nollaa seuraavan käynnistyksen yhteydessä
 gpu-process-kill-button = Lopeta GPU-prosessi
 gpu-device-reset = Laitteen nollaus
@@ -298,10 +318,8 @@ content-uses-tiling = Käyttää ruutuihin jakoa (sisältö)
 off-main-thread-paint-enabled = Pääsäikeen ulkopuolinen piirtäminen käytössä
 off-main-thread-paint-worker-count = Pääsäikeen ulkopuolisen piirtämisen työyksiköitä
 target-frame-rate = Tavoitteellinen kuvataajuus
-
 min-lib-versions = Odotettu minimiversio
 loaded-lib-versions = Käytössä oleva versio
-
 has-seccomp-bpf = Seccomp-BPF (Järjestelmäkutsujen suodatus)
 has-seccomp-tsync = Seccomp-säikeiden synkronointi
 has-user-namespaces = Käyttäjän nimiavaruudet
@@ -311,22 +329,20 @@ can-sandbox-media = Medialiitännäisen suorittaminen hiekkalaatikossa
 content-sandbox-level = Sisältöprosessin hiekkalaatikkotaso
 effective-content-sandbox-level = Sisältöprosessin efektiivinen hiekkalaatikkotaso
 content-win32k-lockdown-state = Win32k-lukitustila sisältöprosessille
+support-sandbox-gpu-level = GPU-prosessin hiekkalaatikkotaso
 sandbox-proc-type-content = sisältö
 sandbox-proc-type-file = tiedostojen sisältö
 sandbox-proc-type-media-plugin = medialiitännäinen
 sandbox-proc-type-data-decoder = datan purkaja
-
 startup-cache-title = Käynnistyksen välimuisti
 startup-cache-disk-cache-path = Levyvälimuistin polku
 startup-cache-ignore-disk-cache = Ohita levyvälimuisti
 startup-cache-found-disk-cache-on-init = Levyvälimuisti löytyi alustuksessa
 startup-cache-wrote-to-disk-cache = Kirjoitettiin levyvälimuistiin
-
 launcher-process-status-0 = Käytössä
 launcher-process-status-1 = Ei käytössä johtuen viasta
 launcher-process-status-2 = Poistettu käytöstä pakottaen
 launcher-process-status-unknown = Tuntematon tila
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
@@ -339,14 +355,13 @@ fission-status-experiment-control = Kokeilun käytöstä poistama
 fission-status-experiment-treatment = Kokeilun käyttöön ottama
 fission-status-disabled-by-e10s-env = Ympäristön käytöstä poistama
 fission-status-enabled-by-env = Ympäristön käyttöön ottama
-fission-status-disabled-by-safe-mode = Vikasietotilan käytöstä poistama
+fission-status-disabled-by-env = Ympäristön käytöstä poistama
 fission-status-enabled-by-default = Käytössä oletuksena
 fission-status-disabled-by-default = Poistettu käytöstä oletuksena
 fission-status-enabled-by-user-pref = Käyttäjän käyttöön ottama
 fission-status-disabled-by-user-pref = Käyttäjän käytöstä poistama
 fission-status-disabled-by-e10s-other = E10s poistettu käytöstä
 fission-status-enabled-by-rollout = Otettu käyttöön vaiheittaisessa levityksessä
-
 async-pan-zoom = Asynkroninen siirto/lähennys
 apz-none = ei mitään
 wheel-enabled = rullaliittymä käytössä
@@ -383,7 +398,12 @@ support-remote-experiments-title = Etäkokeilut
 support-remote-experiments-name = Nimi
 support-remote-experiments-branch = Kokeiluhaara
 support-remote-experiments-see-about-studies = Sivulta <a data-l10n-name="support-about-studies-link">about:studies</a> voi lukea lisätietoja, kuten miten poistaa käytöstä yksittäisiä kokeiluja tai estää { -brand-short-name } suorittamasta tällaista kokeilua tulevaisuudessa.
-
 support-remote-features-title = Etäominaisuudet
 support-remote-features-name = Nimi
 support-remote-features-status = Tila
+
+## Pointing devices
+
+pointing-device-mouse = Hiiri
+pointing-device-touchscreen = Kosketusnäyttö
+pointing-device-none = Ei osoitinlaitteita

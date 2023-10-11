@@ -20,12 +20,13 @@ newtab-personalize-dialog-label =
 newtab-search-box-search-button =
     .title = ਖੋਜ
     .aria-label = ਖੋਜ
-# Variables
-#  $engine (String): the name of the user's default search engine
+
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-text = { $engine } ਨਾਲ ਖੋਜੋ ਜਾਂ ਸਿਰਨਾਵਾਂ ਦਿਓ
 newtab-search-box-handoff-text-no-engine = ਖੋਜੋ ਜਾਂ ਸਿਰਨਾਵਾਂ ਦਿਓ
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-input =
     .placeholder = { $engine } ਨਾਲ ਖੋਜੋ ਜਾਂ ਸਿਰਨਾਵਾਂ ਦਿਓ
     .title = { $engine } ਨਾਲ ਖੋਜੋ ਜਾਂ ਸਿਰਨਾਵਾਂ ਦਿਓ
@@ -34,10 +35,7 @@ newtab-search-box-handoff-input-no-engine =
     .placeholder = ਖੋਜੋ ਜਾਂ ਸਿਰਨਾਵਾਂ ਦਿਓ
     .title = ਖੋਜੋ ਜਾਂ ਸਿਰਨਾਵਾਂ ਦਿਓ
     .aria-label = ਖੋਜੋ ਜਾਂ ਸਿਰਨਾਵਾਂ ਦਿਓ
-newtab-search-box-search-the-web-input =
-    .placeholder = ਵੈੱਬ ਨੂੰ ਖੋਜੋ
-    .title = ਵੈੱਬ ਨੂੰ ਖੋਜੋ
-    .aria-label = ਵੈੱਬ ਨੂੰ ਖੋਜੋ
+
 newtab-search-box-text = ਵੈੱਬ ‘ਤੇ ਖੋਜੋ
 newtab-search-box-input =
     .placeholder = ਵੈੱਬ ‘ਤੇ ਖੋਜੋ
@@ -46,17 +44,18 @@ newtab-search-box-input =
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = ਖੋਜ ਇੰਜਣ ਜੋੜੋ
-newtab-topsites-add-topsites-header = ਨਵੀਂ ਉਪਰਲੀ ਸਾਈਟ
 newtab-topsites-add-shortcut-header = ਨਵਾਂ ਸ਼ਾਰਟਕੱਟ
 newtab-topsites-edit-topsites-header = ਉਪਰਲੀ ਸਾਈਟ ਸੋਧੋ
 newtab-topsites-edit-shortcut-header = ਸ਼ਾਰਟਕੱਟ ਨੂੰ ਸੋਧੋ
 newtab-topsites-title-label = ਸਿਰਲੇਖ
 newtab-topsites-title-input =
     .placeholder = ਸਿਰਲੇਖ ਦਿਓ
+
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
     .placeholder = ਕੋਈ URL ਲਿਖੋ ਜਾਂ ਚੇਪੋ
 newtab-topsites-url-validation = ਲੋੜੀਂਦਾ URL ਯੋਗ ਹੈ
+
 newtab-topsites-image-url-label = URL ਕਸਟਮ ਚਿੱਤਰ
 newtab-topsites-use-image-link = ਕਸਟਮ ਚਿੱਤਰ ਵਰਤੋ…
 newtab-topsites-image-validation = ਚਿੱਤਰ ਲੋਡ ਕਰਨ ਤੋਂ ਅਸਫ਼ਲ ਰਿਹਾ। ਕਿਸੇ ਵੱਖਰੇ URL ਨਾਲ ਕੋਸ਼ਿਸ਼ ਕਰੋ।
@@ -85,13 +84,15 @@ newtab-topsite-sponsored = ਸਪੌਂਸਰ ਕੀਤਾ
 newtab-menu-section-tooltip =
     .title = ਮੇਨੂ ਖੋਲ੍ਹੋ
     .aria-label = ਮੇਨੂ ਖੋਲ੍ਹੋ
+
 # Tooltip for dismiss button
 newtab-dismiss-button-tooltip =
     .title = ਹਟਾਓ
     .aria-label = ਹਟਾਓ
+
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = ਮੇਨੂ ਖੋਲ੍ਹੋ
     .aria-label = { $title } ਦੇ ਲਈ ਪ੍ਰਸੰਗ ਮੀਨੂੰ ਖ੍ਹੋਲੋ
@@ -116,7 +117,7 @@ newtab-menu-show-privacy-info = ਸਾਡੇ ਸਪਾਂਸਰ ਅਤੇ ਤੁ
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
-newtab-privacy-modal-button-done = ਸਮਾਪਤ
+newtab-privacy-modal-button-done = ਮੁਕੰਮਲ
 newtab-privacy-modal-button-manage = ਸਪਾਂਸਰ ਕੀਤੀ ਸਮੱਗਰੀ ਦੇ ਇੰਤਜ਼ਾਮ ਲਈ ਸੈਟਿੰਗਾਂ
 newtab-privacy-modal-header = ਤੁਹਾਡੀ ਪਰਦੇਦਾਰੀ ਮਹੱਤਵ ਰੱਖਦੀ ਹੈ।
 newtab-privacy-modal-paragraph-2 =
@@ -159,19 +160,22 @@ newtab-label-bookmarked = ਬੁੱਕਮਾਰਕ ਕੀਤੀਆਂ
 newtab-label-removed-bookmark = ਬੁੱਕਮਾਰਕ ਹਟਾਇਆ
 newtab-label-recommended = ਰੁਝਾਨ
 newtab-label-saved = { -pocket-brand-name } ਵਿੱਚ ਸੰਭਾਲਿਆ
-newtab-label-download = ਡਾਊਨਲੋਡ ਕਰੋ
+newtab-label-download = ਡਾਊਨਲੋਡ ਕੀਤੇ ਹੋਏ
+
 # This string is used in the story cards to indicate sponsored content
 # Variables:
-#  $sponsorOrSource (String): This is the name of a company or their domain
+#   $sponsorOrSource (string) - The name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource } · ਸਪਾਂਸਰ ਕੀਤਾ
+
 # This string is used at the bottom of story cards to indicate sponsored content
 # Variables:
-#  $sponsor (String): This is the name of a sponsor
+#   $sponsor (string) - The name of a sponsor
 newtab-label-sponsored-by = { $sponsor } ਵਲੋਂ ਸਪਾਂਸਰ ਕੀਤਾ
+
 # This string is used under the image of story cards to indicate source and time to read
 # Variables:
-#  $source (String): This is the name of a company or their domain
-#  $timeToRead (Number): This is the estimated number of minutes to read this story
+#   $source (string) - The name of a company or their domain
+#   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } ਮਿੰਟ
 
 ## Section Menu: These strings are displayed in the section context menu and are
@@ -198,18 +202,18 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = ਸਿਖਰਲੀਆਂ ਸਾਈਟਾਂ
-newtab-section-header-highlights = ਸੁਰਖੀਆਂ
 newtab-section-header-recent-activity = ਤਾਜ਼ਾ ਸਰਗਰਮੀ
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } ਵਲੋਂ ਸਿਫਾਰਸ਼ੀ
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
 newtab-empty-section-highlights = ਬਰਾਊਜ਼ ਕਰਨਾ ਸ਼ੁਰੂ ਕਰੋ ਅਤੇ ਅਸੀਂ ਕੁਝ ਵਧੀਆ ਲੇਖ, ਵਿਡੀਓ ਤੇ ਤੁਹਾਡੇ ਵਲੋਂ ਖੋਲ੍ਹੋ ਗਏ ਜਾਂ ਬੁੱਕਮਾਰਕ ਕੀਤੇ ਹੋਰ ਸਫ਼ੇ ਇੱਥੇ ਦਿਖਾਵਾਂਗੇ।
+
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = ਤੁਸੀਂ ਪੂਰਾ ਕਰ ਚੁੱਕੇ ਹੋ। { $provider } ਵਲੋਂ ਹੋਰ ਕਹਾਣੀਆਂ ਲਈ ਬਾਅਦ ਵਿੱਚ ਵਾਪਸ ਚੈਕ ਕਰੀਓ। ਉਡੀਕ ਨਹੀਂ ਕਰ ਸਕਦੇ? ਤਾਂ ਫੇਰ ਵੈੱਬ ਉਤੋਂ ਹੋਰ ਵਧੀਆ ਕਹਾਣੀਆਂ ਵਾਸਤੇ ਹਰਮਨਪਿਆਰੇ ਵਿਸ਼ੇ ਨੂੰ ਚੁਣੋ।
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -231,19 +235,18 @@ newtab-pocket-learn-more = ਹੋਰ ਜਾਣੋ
 newtab-pocket-cta-button = { -pocket-brand-name } ਲਵੋ
 newtab-pocket-cta-text = { -pocket-brand-name } ਵਿਚ ਆਪਣੀਆਂ ਕਹਾਣੀਆਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਕਰੋ, ਅਤੇ ਆਪਣੇ ਮਨ ਨੂੰ ਦਿਲਚਸਪ ਪੜ੍ਹ ਕੇ ਮਜਬੂਰ ਕਰੋ।
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } { -brand-product-name } ਗਰੁੱਪ ਦਾ ਭਾਗ ਹੈ
-# A save to Pocket button that shows over the card thumbnail on hover.
-newtab-pocket-save-to-pocket = { -pocket-brand-name } ਵਿੱਚ ਸੰਭਾਲੋ
-newtab-pocket-saved-to-pocket = { -pocket-brand-name } ਵਿੱਚ ਸੰਭਾਲਿਆ
-# This is a button shown at the bottom of the Pocket section that loads more stories when clicked.
-newtab-pocket-load-more-stories-button = ਹੋਰ ਲੇਖ ਲੋਡ ਕਰੋ
 
 ## Pocket Final Card Section.
 ## This is for the final card in the Pocket grid.
 
-newtab-pocket-last-card-title = ਤੁਸੀਂ ਪੂਰੇ ਕਰ ਲਏ ਹਨ!
-newtab-pocket-last-card-desc = ਹੋਰਾਂ ਲਈ ਫੇਰ ਵੇਖਿਓ।
-newtab-pocket-last-card-image =
-    .alt = ਤੁਸੀਂ ਪੂਰੇ ਕਰ ਲਏ ਹਨ!
+# A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-save = ਸੰਭਾਲੋ
+newtab-pocket-saved = ਸੰਭਾਲਿਆ
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
+
+newtab-pocket-onboarding-discover = ਵੈੱਬ ਤੋਂ ਸਭ ਤੋਂ ਵਧੀਆ ਖੋਜੋ
+newtab-pocket-onboarding-cta = { -pocket-brand-name } ਤੁਹਾਡੇ { -brand-product-name } ਬਰਾਊਜ਼ਰ ਲਈ ਵੱਧ ਜਾਣਕਾਰੀ ਭਰਪੂਰ, ਪ੍ਰੇਰਨਾਦਾਇਕ ਅਤੇ ਭਰੋਸੇਯੋਗ ਸਮੱਗਰੀ ਦੇਣ ਵਾਸਤੇ ਬਹੁਤ ਸਾਰੇ ਪ੍ਰਕਾਸ਼ਨ ਦੀ ਛਾਣਬੀਣ ਕਰਦਾ ਹੈ।
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -255,6 +258,8 @@ newtab-error-fallback-refresh-link = ਮੁੜ ਕੋਸ਼ਿਸ਼ ਲਈ ਸਫ਼ੇ 
 
 newtab-custom-shortcuts-title = ਸ਼ਾਰਟਕੱਟ
 newtab-custom-shortcuts-subtitle = ਸਾਈਟਾਂ ਤੁਸੀਂ ਸੰਭਾਲੀਆਂ ਜਾਂ ਖੋਲ੍ਹੀਆਂ
+# Variables
+#   $num (number) - Number of rows to display
 newtab-custom-row-selector =
     { $num ->
         [one] { $num } ਕਤਾਰ
@@ -264,6 +269,7 @@ newtab-custom-sponsored-sites = ਸਪਾਂਸਰ ਕੀਤੇ ਸ਼ਾਰਟਕ�
 newtab-custom-pocket-title = { -pocket-brand-name } ਵਲੋਂ ਸਿਫਾਰਸ਼ ਕੀਤੇ
 newtab-custom-pocket-subtitle = { -brand-product-name } ਦੇ ਹਿੱਸੇ ਵਜੋਂ { -pocket-brand-name } ਵਲੋਂ ਖਾਸ ਇਕੱਤਰ ਕੀਤੀ ਸਮੱਗਰੀ
 newtab-custom-pocket-sponsored = ਸਪਾਂਸਰ ਕੀਤੀਆਂ ਕਹਾਣੀਆਂ
+newtab-custom-pocket-show-recent-saves = ਸੱਜਰੇ ਸੰਭਾਲੇ ਵੇਖੋ
 newtab-custom-recent-title = ਤਾਜ਼ਾ ਸਰਗਰਮੀ
 newtab-custom-recent-subtitle = ਤਾਜ਼ਾ ਸਾਈਟਾਂ ਤੇ ਸਮੱਗਰੀ ਦੀ ਚੋਣ
 newtab-custom-close-button = ਬੰਦ ਕਰੋ

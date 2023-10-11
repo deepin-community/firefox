@@ -16,8 +16,7 @@
 
 class nsIContent;
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 class WebVTTListener;
 class WindowDestroyObserver;
@@ -89,11 +88,11 @@ class HTMLTrackElement final : public nsGenericHTMLElement {
   virtual nsresult BindToTree(BindContext&, nsINode& aParent) override;
   virtual void UnbindFromTree(bool aNullParent) override;
 
-  virtual nsresult AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
-                                const nsAttrValue* aValue,
-                                const nsAttrValue* aOldValue,
-                                nsIPrincipal* aMaybeScriptedPrincipal,
-                                bool aNotify) override;
+  virtual void AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
+                            const nsAttrValue* aValue,
+                            const nsAttrValue* aOldValue,
+                            nsIPrincipal* aMaybeScriptedPrincipal,
+                            bool aNotify) override;
 
   void DispatchTrackRunnable(const nsString& aEventName);
   void DispatchTrustedEvent(const nsAString& aName);
@@ -133,7 +132,6 @@ class HTMLTrackElement final : public nsGenericHTMLElement {
   RefPtr<WindowDestroyObserver> mWindowDestroyObserver;
 };
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 #endif  // mozilla_dom_HTMLTrackElement_h

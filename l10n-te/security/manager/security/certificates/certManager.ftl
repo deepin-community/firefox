@@ -17,9 +17,9 @@ certmgr-tab-servers =
 certmgr-tab-ca =
     .label = అథారిటీలు
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = CA ధృవీకరణపత్రం నమ్మిక అమరికలను సరిచేయి
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = విశ్సనీయత అమరికలను మార్చు:
 
@@ -29,18 +29,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = ఈ ధృవీకరణపత్రం మెయిల్ వాడుకరులను గుర్తించగలదు.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = ధృవీకరణపత్రంను తొలగించు
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = ధృవీకరణపత్రపు పేరు
 
 certmgr-cert-server =
     .label = సేవిక
-
-certmgr-override-lifetime =
-    .label = జీవిత కాలం
 
 certmgr-token-name =
     .label = రక్షణ సాధనం
@@ -169,9 +166,8 @@ delete-email-cert-impact = మీరు ఒక వ్యక్తియొక్
 cert-with-serial =
     .value = సీరియల్ నంబర్ తో సర్టిఫికెట్: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

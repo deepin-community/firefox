@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-clear-site-data-window =
+clear-site-data-window2 =
     .title = Eliminar datos
-    .style = width: 35em
+    .style = min-width: 35em
 
 clear-site-data-description = Eliminar las cookies y los datos guardados de los sitios vía { -brand-short-name } puede desconectarlo de los sitios y eliminar el contenido fuera de línea. Eliminar los datos de la caché no afectará sus conexiones.
 

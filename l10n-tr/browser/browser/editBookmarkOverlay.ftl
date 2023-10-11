@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Gizler
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Tüm yer imi klasörlerini göster
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Gizler
+
 bookmark-overlay-new-folder-button =
     .label = Yeni klasör
     .accesskey = n
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Tüm etiketleri göster
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Gizler
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Tüm etiketleri göster
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Gizler
 
 bookmark-overlay-keyword-2 =
     .value = Anahtar kelime

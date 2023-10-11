@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = 북마크, 기록 또는 비밀번호 데이터를 포함하고 있는 프로그램을 찾을 수 없습니다.
 
@@ -61,8 +73,8 @@ import-items-description = 가져올 항목을 선택하세요:
 
 import-permissions-page-title = { -brand-short-name } 권한을 부여하세요.
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS에서는 { -brand-short-name }가 Safari의 북마크에 액세스하도록 명시적으로 허용해야합니다. “계속”을 클릭하고 나타나는 파일 열기 패널에서 “Bookmarks.plist” 파일을 선택하세요.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS에서는 { -brand-short-name }가 Safari의 데이터에 액세스하도록 명시적으로 허용해야 합니다. "계속"을 클릭하고 나타나는 Finder 대화상자에서 "Safari" 폴더를 선택한 다음 "열기"를 클릭하세요.
 
 import-migrating-page-title = 가져오는 중…
 
@@ -78,23 +90,9 @@ import-done-description = 다음 항목들을 성공적으로 가져 왔습니�
 
 import-close-source-browser = 계속하기 전에 선택한 브라우저가 닫혀 있는지 확인하세요.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = { $source }(으)로부터
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = 구독 목록 (Safari로부터)
 imported-edge-reading-list = 구독 목록 (Edge로부터)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = 창과 탭
 browser-data-session-label =
     .value = 창과 탭
+
+browser-data-payment-methods-checkbox =
+    .label = 결제 방법
+browser-data-payment-methods-label =
+    .value = 결제 방법

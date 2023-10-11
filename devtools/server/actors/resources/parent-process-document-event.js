@@ -6,15 +6,14 @@
 
 const {
   TYPES: { DOCUMENT_EVENT },
-} = require("devtools/server/actors/resources/index");
-const { Ci } = require("chrome");
-const ChromeUtils = require("ChromeUtils");
-const {
-  getAllRemoteBrowsingContexts,
-} = require("devtools/server/actors/watcher/target-helpers/utils.js");
+} = require("resource://devtools/server/actors/resources/index.js");
+const isEveryFrameTargetEnabled = Services.prefs.getBoolPref(
+  "devtools.every-frame-target.enabled",
+  false
+);
 const {
   WILL_NAVIGATE_TIME_SHIFT,
-} = require("devtools/server/actors/webconsole/listeners/document-events");
+} = require("resource://devtools/server/actors/webconsole/listeners/document-events.js");
 
 class ParentProcessDocumentEventWatcher {
   /**
@@ -43,14 +42,15 @@ class ParentProcessDocumentEventWatcher {
     this.watcherActor = watcherActor;
     this.onAvailable = onAvailable;
 
-    // Get all the BrowsingContext to be watched by this toolbox
-    const allBrowsingContexts = this.watcherActor.browserElement
-      ? [this.watcherActor.browserElement.browsingContext]
-      : getAllRemoteBrowsingContexts();
+    // List of listeners keyed by innerWindowId.
+    // Listeners are called as soon as we emitted the will-navigate
+    // resource for the related WindowGlobal.
+    this._onceWillNavigate = new Map();
+
     // Filter browsing contexts to only have the top BrowsingContext of each tree of BrowsingContexts…
-    const topLevelBrowsingContexts = allBrowsingContexts.filter(
-      browsingContext => browsingContext.top == browsingContext
-    );
+    const topLevelBrowsingContexts = this.watcherActor
+      .getAllBrowsingContexts()
+      .filter(browsingContext => browsingContext.top == browsingContext);
 
     // Only register one WebProgressListener per BrowsingContext tree.
     // We will be notified about children BrowsingContext navigations/state changes via the top level BrowsingContextWebProgressListener,
@@ -73,14 +73,41 @@ class ParentProcessDocumentEventWatcher {
     });
   }
 
+  /**
+   * Wait for the emission of will-navigate for a given WindowGlobal
+   *
+   * @param Number innerWindowId
+   *        WindowGlobal's id we want to track
+   * @return Promise
+   *         Resolves immediatly if the WindowGlobal isn't tracked by any target
+   *         -or- resolve later, once the WindowGlobal navigates to another document
+   *         and will-navigate has been emitted.
+   */
+  onceWillNavigateIsEmitted(innerWindowId) {
+    // Only delay the target-destroyed event if the target is for BrowsingContext for which we will emit will-navigate
+    const isTracked = this.webProgresses.find(
+      webProgress =>
+        webProgress.browsingContext.currentWindowGlobal.innerWindowId ==
+        innerWindowId
+    );
+    if (isTracked) {
+      return new Promise(resolve => {
+        this._onceWillNavigate.set(innerWindowId, resolve);
+      });
+    }
+    return Promise.resolve();
+  }
+
   onStateChange(progress, request, flag, status) {
     const isStart = flag & Ci.nsIWebProgressListener.STATE_START;
     const isDocument = flag & Ci.nsIWebProgressListener.STATE_IS_DOCUMENT;
     if (isDocument && isStart) {
       const { browsingContext } = progress;
-
-      // Ignore navigation for same-process iframes
-      if (!browsingContext.currentWindowGlobal.isProcessRoot) {
+      // Ignore navigation for same-process iframes when EFT is disabled
+      if (
+        !browsingContext.currentWindowGlobal.isProcessRoot &&
+        !isEveryFrameTargetEnabled
+      ) {
         return;
       }
       // Ignore if we are still on the initial document,
@@ -90,10 +117,27 @@ class ParentProcessDocumentEventWatcher {
         return;
       }
 
+      // Only emit will-navigate for top-level targets.
+      if (
+        this.watcherActor.sessionContext.type == "all" &&
+        browsingContext.isContent
+      ) {
+        // Never emit will-navigate for content browsing contexts in the Browser Toolbox.
+        // They might verify `browsingContext.top == browsingContext` because of the chrome/content
+        // boundary, but they do not represent a top-level target for this DevTools session.
+        return;
+      }
+      const isTopLevel = browsingContext.top == browsingContext;
+      if (!isTopLevel) {
+        return;
+      }
+
       const newURI = request instanceof Ci.nsIChannel ? request.URI.spec : null;
+      const { innerWindowId } = browsingContext.currentWindowGlobal;
       this.onAvailable([
         {
           browsingContextID: browsingContext.id,
+          innerWindowId,
           resourceType: DOCUMENT_EVENT,
           name: "will-navigate",
           time: Date.now() - WILL_NAVIGATE_TIME_SHIFT,
@@ -101,6 +145,11 @@ class ParentProcessDocumentEventWatcher {
           newURI,
         },
       ]);
+      const callback = this._onceWillNavigate.get(innerWindowId);
+      if (callback) {
+        this._onceWillNavigate.delete(innerWindowId);
+        callback();
+      }
     }
   }
 

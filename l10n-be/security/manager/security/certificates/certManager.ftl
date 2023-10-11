@@ -26,9 +26,9 @@ certmgr-people = Вы маеце сертыфікаты, якія вызнача
 certmgr-server = Гэтыя запісы вызначаюць выключэнні для памылак сертыфікатаў сервера
 certmgr-ca = Вы маеце сертыфікаты, якія вызначаюць наступныя сертыфікацыйныя ўстановы
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Рэдагаванне наладаў даверу да сертыфіката ЦС
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Рэдагаваць налады даверу:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Гэты сертыфікат можа вызначаць карыстальнікаў пошты.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Выдаленне сертыфіката
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Хост
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Сервер
-
-certmgr-override-lifetime =
-    .label = Час жыцця
 
 certmgr-token-name =
     .label = Прылада бяспекі
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Серыйны нумар
+
+certmgr-fingerprint-sha-256 =
+    .label = Адбітак SHA-256
 
 certmgr-view =
     .label = Прагляд…
@@ -185,8 +185,6 @@ delete-email-cert-impact = Калі вы выдаліце эл.паштовы с
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Сертыфікат з серыйным нумарам: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Не адпраўляць сертыфікат кліента

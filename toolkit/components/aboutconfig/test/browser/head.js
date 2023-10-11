@@ -3,8 +3,8 @@
 
 "use strict";
 
-const { Preferences } = ChromeUtils.import(
-  "resource://gre/modules/Preferences.jsm"
+const { Preferences } = ChromeUtils.importESModule(
+  "resource://gre/modules/Preferences.sys.mjs"
 );
 
 // List of default preferences that can be used for tests, chosen because they
@@ -17,7 +17,7 @@ const PREF_NUMBER_DEFAULT_ZERO = "accessibility.typeaheadfind.casesensitive";
 const PREF_STRING_DEFAULT_EMPTY = "browser.helperApps.neverAsk.openFile";
 const PREF_STRING_DEFAULT_NOTEMPTY = "accessibility.typeaheadfind.soundURL";
 const PREF_STRING_DEFAULT_NOTEMPTY_VALUE = "beep";
-const PREF_STRING_LOCALIZED_MISSING = "gecko.handlerService.schemes.irc.1.name";
+const PREF_STRING_LOCALIZED_MISSING = "intl.menuitems.alwaysappendaccesskeys";
 
 // Other preference names used in tests.
 const PREF_NEW = "test.aboutconfig.new";

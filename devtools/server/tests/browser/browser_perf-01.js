@@ -13,7 +13,7 @@ requestLongerTimeout(2);
 /**
  * Run through a series of basic recording actions for the perf actor.
  */
-add_task(async function() {
+add_task(async function () {
   const { front, client } = await initPerfFront();
 
   // Assert the initial state.
@@ -21,11 +21,6 @@ add_task(async function() {
     await front.isSupportedPlatform(),
     true,
     "This test only runs on supported platforms."
-  );
-  is(
-    await front.isLockedForPrivateBrowsing(),
-    false,
-    "The browser is not in private browsing mode."
   );
   is(await front.isActive(), false, "The profiler is not active yet.");
 

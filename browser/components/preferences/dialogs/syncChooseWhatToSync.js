@@ -2,9 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* import-globals-from ../../../../toolkit/content/preferencesBindings.js */
-
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+/* import-globals-from /toolkit/content/preferencesBindings.js */
 
 Preferences.addAll([
   { id: "services.sync.engine.addons", type: "bool" },
@@ -23,7 +21,7 @@ let gSyncChooseWhatToSync = {
     let options = window.arguments[0];
     if (options.disconnectFun) {
       // We offer 'disconnect'
-      document.addEventListener("dialogextra2", function() {
+      document.addEventListener("dialogextra2", function () {
         options.disconnectFun().then(disconnected => {
           if (disconnected) {
             window.close();

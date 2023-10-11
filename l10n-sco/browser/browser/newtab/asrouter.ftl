@@ -12,25 +12,33 @@ cfr-doorhanger-feature-heading = Recommendit Featur
 
 cfr-doorhanger-extension-sumo-link =
     .tooltiptext = Whit fur am I seein this
+
 cfr-doorhanger-extension-cancel-button = No Jist Noo
     .accesskey = N
+
 cfr-doorhanger-extension-ok-button = Eik On Noo
     .accesskey = E
+
 cfr-doorhanger-extension-manage-settings-button = Manage Recommendation Settins
     .accesskey = M
+
 cfr-doorhanger-extension-never-show-recommendation = Dinnae Kythe This Recommendation
     .accesskey = S
+
 cfr-doorhanger-extension-learn-more-link = Lairn mair
+
 # This string is used on a new line below the add-on name
 # Variables:
 #   $name (String) - Add-on author name
 cfr-doorhanger-extension-author = by { $name }
+
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Recommendation
 cfr-doorhanger-extension-notification2 = Recommendation
     .tooltiptext = Extension recommendation
     .a11y-announcement = Extension recommendation redd
+
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-feature-notification = Recommendation
@@ -77,9 +85,11 @@ cfr-protections-panel-link-text = Lairn mair
 # This string is used by screen readers to offer a text based alternative for
 # the notification icon
 cfr-badge-reader-label-newfeature = New featur:
+
 cfr-whatsnew-button =
     .label = Whit's New
     .tooltiptext = Whit's New
+
 cfr-whatsnew-release-notes-link-text = Read the roll-oot notes
 
 ## Enhanced Tracking Protection Milestones
@@ -107,13 +117,6 @@ cfr-doorhanger-doh-secondary-button = Disable
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Yer privacy maitters. { -brand-short-name } noo sets asinder, or saundboxes, wabsites fae each ither, makkin it haurder fur hackers tae pauchle passwirds, credit caird nummers, and ither sensitive information.
-cfr-doorhanger-fission-header = Site Isolatin
-cfr-doorhanger-fission-primary-button = Awricht, Got ye
-    .accesskey = O
-cfr-doorhanger-fission-secondary-button = Lairn mair
-    .accesskey = L
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Videos on this site micht no wirk richt on this version o { -brand-short-name }. Fur full video support, update { -brand-short-name } noo.
@@ -121,15 +124,52 @@ cfr-doorhanger-video-support-header = Update { -brand-short-name } fur tae pley 
 cfr-doorhanger-video-support-primary-button = Update Noo
     .accesskey = U
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
 spotlight-public-wifi-vpn-header = Luiks like ye're yaisin public Wi-Fi
 spotlight-public-wifi-vpn-body = Tae hide yer airtin and yer stravaigin ongauns, think aboot a Virtual Private Netwark. It'll help keep ye bieldit when stravaigin in public places sic as airports and coffee shops.
 spotlight-public-wifi-vpn-primary-button = Stey private wi { -mozilla-vpn-brand-name }
     .accesskey = S
 spotlight-public-wifi-vpn-link = No Jist Noo
     .accesskey = N
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+## Firefox View CFR
+
+## Firefox View Spotlight
+
+## Colorways expiry reminder CFR
+
+## Cookie Banner Handling CFR
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
+

@@ -1194,6 +1194,7 @@ rm{
     }
     Currencies%narrow{
         AUD{"$"}
+        BYN{"BYN"}
         CAD{"$"}
         EUR{"€"}
         GBP{"£"}
@@ -1348,7 +1349,7 @@ rm{
             other{"bolivianos bolivians"}
         }
         BRL{
-            one{"reals brasilians"}
+            one{"real brasilian"}
             other{"reals brasilians"}
         }
         BSD{

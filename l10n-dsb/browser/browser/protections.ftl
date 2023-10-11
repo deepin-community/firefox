@@ -54,8 +54,8 @@ graph-legend-description = Graf, kótaryž cełkownu licbu kuždego typa pśesl�
 social-tab-title = Pśeslědowaki socialnych medijow
 social-tab-contant = Socialne seśi placěruju pśeslědowaki na drugich websedłach, aby slědowali, což online gótujośo, wiźiśo a se wobglědujośo. To pśedewześam socialnych medijow dowólujo, wěcej wó was zgónił ako w profilach socialnych medijow źěliśo. <a data-l10n-name="learn-more-link">Dalšne informacije</a>
 
-cookie-tab-title = Slědujuce cookieje mjazy sedłami
-cookie-tab-content = Toś te cookieje wam wót sedła do sedła slěduju, aby wy daty wó tom gromaźili, což online gótujośo. Stajaju se wót tśeśich póbitowarjow ako na pśikład wabjarje a analyzowe pśedewześa, Blokěrowanje slědujucych cookiejow mjazy sedłami licbu wabjenjow reducěrujo, kótarež wam slěduju. <a data-l10n-name="learn-more-link">Dalšne informacije</a>
+cookie-tab-title = Sedła pśesegajuce slědujuce cookieje
+cookie-tab-content = Toś te cookieje wam wót sedła do sedła slěduju, aby wy daty wó tom gromaźili, což online gótujośo. Stajaju se wót tśeśich póbitowarjow ako na pśikład wabjarje a analyzowe pśedewześa, Blokěrowanje sedła pśesegajucych slědujucych cookiejow licbu wabjenjow reducěrujo, kótarež wam slěduju. <a data-l10n-name="learn-more-link">Dalšne informacije</a>
 
 tracker-tab-title = Slědujuce wopśimjeśe
 tracker-tab-description = Websedła mógu eksterne wabjenje, wideo a druge wośimjeśe ze slědujucym kodom zacytaś. Gaž slědujuce wopśimjeśe blokěrujośo, móžo to pomagaś, sedła malsnjej zacytaś, ale někotare tłocaški, formulary a pśizjawjeńske póla snaź wěcej njebudu funkcioněrowaś. <a data-l10n-name="learn-more-link">Dalšne informacije</a>
@@ -69,22 +69,20 @@ cryptominer-tab-content = Kryptokopaki liceńske wugbaśe wašogo systema wužyw
 protections-close-button2 =
     .aria-label = Zacyniś
     .title = Zacyniś
-  
+
 mobile-app-title = Wabjeńske pśeslědowaki pśez dalšne rěy blokěrowaś
 mobile-app-card-content = Mobilny wobglědowak ze zatwarjonym šćitom pśeśiwo wabjeńskemu slědowanjeju wužywaś
 mobile-app-links = Wobglědowak { -brand-product-name } za <a data-l10n-name="android-mobile-inline-link">Android</a> a <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Njezabywajśo nigda wěcej gronidło
-lockwise-title-logged-in2 = Zastojanje gronidłow
-lockwise-header-content = { -lockwise-brand-name } waše gronidła we wašom wobglědowaku wěsće składujo.
+passwords-title-logged-in = Waše gronidła zastojaś
+passwords-header-content = { -brand-product-name } waše gronidła we wašom wobglědowaku wěsće składujo.
 lockwise-header-content-logged-in = Składujśo a synchronizěrujśo gronidła za wšykne waše rědy.
-protection-report-save-passwords-button = Gronidła składowaś
-    .title = Gronidła w { -lockwise-brand-short-name } składowaś
-protection-report-manage-passwords-button = Gronidła zastojaś
-    .title = Gronidła w { -lockwise-brand-short-name } zastojaś
-lockwise-mobile-app-title = Wzejśo swóje gronidła wšuźi sobu
-lockwise-no-logins-card-content = Wužywajśo gronidła, kótarež sćo składł w { -brand-short-name }, na kuždem rěźe.
-lockwise-app-links = { -lockwise-brand-name } za <a data-l10n-name="lockwise-android-inline-link">Android</a> a <a data-l10n-name="lockwise-ios-inline-link"></a>
+protection-report-passwords-save-passwords-button = Gronidła składowaś
+    .title = Gronidła składowaś
+protection-report-passwords-manage-passwords-button = Gronidła zastojaś
+    .title = Gronidła zastojaś
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -229,13 +227,13 @@ bar-tooltip-social =
            *[other] { $count } pśeslědowakow socialnych medijow ({ $percentage } %)
         }
 bar-tooltip-cookie =
-    .title = Slědujuce cookieje mjazy sedłami
+    .title = Sedła pśesegajuce slědujuce cookieje
     .aria-label =
         { $count ->
-            [one] { $count } slědujucy cookie mjazy sedłami ({ $percentage } %)
-            [two] { $count } slědujucej cookieja mjazy sedłami ({ $percentage } %)
-            [few] { $count } slědujuce cookieje mjaz sedłami ({ $percentage } %)
-           *[other] { $count } slědujucych cookiejow mjazy sedłami ({ $percentage } %)
+            [one] { $count } sedła pśesegajucy slědujucy cookie ({ $percentage } %)
+            [two] { $count } sedła pśesegajucej slědujucej cookieja ({ $percentage } %)
+            [few] { $count } sedła pśesegajuce slědujuce cookieje ({ $percentage } %)
+           *[other] { $count } sedła pśesegajucych slědujucych cookiejow ({ $percentage } %)
         }
 bar-tooltip-tracker =
     .title = Slědujuce wopśimjeśe

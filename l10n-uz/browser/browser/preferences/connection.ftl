@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Ulanish sozlamalari
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -70,16 +70,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = Agar maxfiy ma’lumotlarni ushbu moslama uchun saqlab qo‘ysangiz, ushbu moslama bildirmasdan proksilardan tasdiqdan o‘tadi. Tasdiqdan o‘tish amalga oshmasa, siz qaytadan urinasiz.
 
+connection-proxy-autologin-checkbox =
+    .label = Agar parol saqlangan bo‘lsa, tasdiqdan o‘tishga urinib ko‘rmang.
+    .accesskey = i
+    .tooltiptext = Agar maxfiy ma’lumotlarni ushbu moslama uchun saqlab qo‘ysangiz, ushbu moslama bildirmasdan proksilardan tasdiqdan o‘tadi. Tasdiqdan o‘tish amalga oshmasa, siz qaytadan urinasiz.
+
 connection-proxy-socks-remote-dns =
     .label = SOCKS v5 protokolidan foydalanayotganda DNS proksi
     .accesskey = d
-
-connection-dns-over-https =
-    .label = HTTPS orqali DNSni yoqish
-    .accesskey = d
-
-connection-dns-over-https-url-resolver = Provayderdan foydalanish
-    .accesskey = P
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

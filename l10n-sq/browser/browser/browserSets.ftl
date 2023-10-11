@@ -6,7 +6,7 @@ window-minimize-command =
     .label = Minimizoje
 
 window-zoom-command =
-    .label = Zoom
+    .label = Zmadhim/Zvogëlim
 
 window-new-shortcut =
     .key = N

@@ -5,7 +5,7 @@
 
 // Test the ResourceCommand API around WEBSOCKET.
 
-const ResourceCommand = require("devtools/shared/commands/resource/resource-command");
+const ResourceCommand = require("resource://devtools/shared/commands/resource/resource-command.js");
 
 const IS_NUMBER = "IS_NUMBER";
 const SHOULD_EXIST = "SHOULD_EXIST";
@@ -16,7 +16,7 @@ const targets = {
   OUT_PROCESS_IFRAME: "out-process-frame",
 };
 
-add_task(async function() {
+add_task(async function () {
   info("Testing the top-level document");
   await testWebsocketResources(targets.TOP_LEVEL_DOCUMENT);
   info("Testing the in-process iframe");
@@ -26,7 +26,7 @@ add_task(async function() {
 });
 
 async function testWebsocketResources(target) {
-  const tab = await addTab(URL_ROOT + "websocket_frontend.html");
+  const tab = await addTab(URL_ROOT_SSL + "websocket_frontend.html");
   const { client, resourceCommand, targetCommand } = await initResourceCommand(
     tab
   );
@@ -59,7 +59,7 @@ async function testWebsocketResources(target) {
   assertResource(availableResources[0], {
     wsMessageType: "webSocketOpened",
     effectiveURI:
-      "ws://mochi.test:8888/browser/devtools/shared/commands/resource/tests/websocket_backend",
+      "wss://example.com/browser/devtools/shared/commands/resource/tests/websocket_backend",
     extensions: "permessage-deflate",
     protocols: "",
   });

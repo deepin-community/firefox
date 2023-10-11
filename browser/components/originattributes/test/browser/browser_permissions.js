@@ -4,14 +4,14 @@
  * This test is testing the cookie "permission" for a specific URI.
  */
 
-const { PermissionTestUtils } = ChromeUtils.import(
-  "resource://testing-common/PermissionTestUtils.jsm"
+const { PermissionTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/PermissionTestUtils.sys.mjs"
 );
 
-const TEST_PAGE = "http://example.net";
+const TEST_PAGE = "https://example.net";
 const uri = Services.io.newURI(TEST_PAGE);
 
-function disableCookies() {
+async function disableCookies() {
   Services.cookies.removeAll();
   PermissionTestUtils.add(uri, "cookie", Services.perms.DENY_ACTION);
 
@@ -32,8 +32,8 @@ function disableCookies() {
 }
 
 async function ensureCookieNotSet(aBrowser) {
-  await SpecialPowers.spawn(aBrowser, [], async function() {
-    content.document.cookie = "key=value";
+  await SpecialPowers.spawn(aBrowser, [], async function () {
+    content.document.cookie = "key=value; SameSite=None; Secure;";
     Assert.equal(
       content.document.cookie,
       "",
@@ -50,7 +50,7 @@ IsolationTestTools.runTests(
   disableCookies
 );
 
-function enableCookies() {
+async function enableCookies() {
   Services.cookies.removeAll();
   PermissionTestUtils.add(uri, "cookie", Services.perms.ALLOW_ACTION);
 
@@ -67,8 +67,8 @@ function enableCookies() {
 }
 
 async function ensureCookieSet(aBrowser) {
-  await SpecialPowers.spawn(aBrowser, [], function() {
-    content.document.cookie = "key=value";
+  await SpecialPowers.spawn(aBrowser, [], function () {
+    content.document.cookie = "key=value; SameSite=None; Secure;";
     Assert.equal(
       content.document.cookie,
       "key=value",
@@ -86,5 +86,6 @@ IsolationTestTools.runTests(
 );
 
 registerCleanupFunction(() => {
+  SpecialPowers.clearUserPref("network.cookie.sameSite.laxByDefault");
   Services.cookies.removeAll();
 });

@@ -25,7 +25,7 @@ JITFLAGS = {
             "--no-sse3",
             "--no-threads",
         ],
-        ["--baseline-eager"],
+        ["--baseline-eager", "--write-protect-code=off"],
         ["--no-blinterp", "--no-baseline", "--no-ion", "--more-compartments"],
         ["--blinterp-eager"],
     ],
@@ -38,12 +38,12 @@ JITFLAGS = {
             "--ion-offthread-compile=off",  # implies --baseline-eager
             "--more-compartments",
         ],
-        ["--baseline-eager"],
+        ["--baseline-eager", "--write-protect-code=off"],
         ["--no-blinterp", "--no-baseline", "--no-ion", "--more-compartments"],
     ],
     # used by jit_test.py
     "ion": [
-        ["--baseline-eager"],
+        ["--baseline-eager", "--write-protect-code=off"],
         ["--ion-eager", "--ion-offthread-compile=off", "--more-compartments"],
     ],
     # Run reduced variants on debug builds, since they take longer time.
@@ -54,7 +54,7 @@ JITFLAGS = {
             "--ion-offthread-compile=off",  # implies --baseline-eager
             "--more-compartments",
         ],
-        ["--baseline-eager"],
+        ["--baseline-eager", "--write-protect-code=off"],
     ],
     # Cover cases useful for tsan. Note that we test --ion-eager without
     # --ion-offthread-compile=off here, because it helps catch races.
@@ -218,6 +218,9 @@ class RefTestCase(object):
         self.random = False
         # bool: True => test may run slowly
         self.slow = False
+        # bool: True => test is test262 testcase with raw flag, that turns off
+        # running shell.js files inside test262
+        self.is_test262_raw = False
 
         # Use self-hosted XDR instead of parsing the source stored in the binary.
         # str?: Path computed when generating the command
@@ -245,6 +248,12 @@ class RefTestCase(object):
         while path != "":
             assert path != "/"
             path = os.path.dirname(path)
+
+            if self.is_test262_raw and path != "":
+                # Skip running shell.js under test262 if the test has raw flag.
+                # Top-level shell.js is still necessary to define reportCompare.
+                continue
+
             shell_path = os.path.join(self.root, path, "shell.js")
             if os.path.exists(shell_path):
                 prefix.append(shell_path)

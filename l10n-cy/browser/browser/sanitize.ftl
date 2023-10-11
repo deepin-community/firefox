@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Gosodiadau Clirio Hanes
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Clirio'r Hanes Diweddar
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Clirio'r Holl Hanes
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = Pan fyddai'n gadael { -brand-short-name } dylai glirio popeth yn awtomatig
 
@@ -78,10 +78,6 @@ item-form-search-history =
 
 data-section-label = Data
 
-item-site-preferences =
-    .label = Dewisiadau'r Wefan
-    .accesskey = D
-
 item-site-settings =
     .label = Gosodiadau gwefan
     .accesskey = G
@@ -90,7 +86,7 @@ item-offline-apps =
     .label = Data Gwefan All-lein
     .accesskey = D
 
-sanitize-everything-undo-warning = Nid oes modd dadwneud y weithred.
+sanitize-everything-undo-warning = Nid oes modd dadwneud y weithred hon.
 
 window-close =
     .key = w

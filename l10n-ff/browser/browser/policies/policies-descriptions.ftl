@@ -49,7 +49,7 @@ policy-DisableFormHistory = Hoto tesko kewol njiylawu kam e ɗaɓɓirɗe.
 
 policy-DisablePasswordReveal = Hoto yamir pinle caaktee e ceŋorɗe danndaaɗe.
 
-policy-DisablePocket = Ñif gollirde kisnugol kelle geese nder Pocket.
+policy-DisablePocket2 = Ñif gollirde kisnugol kelle geese nder { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Ñif banngagol keeringol
 
@@ -82,8 +82,6 @@ policy-EnableTrackingProtection = Hurmin walla ñif paddagol loowdi, so ina moti
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
 policy-Extensions = Aaf, aafto, walla sok jokke. Cuɓal Aaf jaggirta URL walla boli ko no ñaawirɗe nii. Cuɓe Aafto e Sok ina njaɓa ID-iiji jokke.
-
-policy-FlashPlugin = Yamir walla haɗ kuutoragol jokkel Flash.
 
 policy-HardwareAcceleration = So tawii wonaa goonga, ñif hartaango kaɓirgal.
 
@@ -118,9 +116,6 @@ policy-SanitizeOnShutdown2 = Momtu keɓe banngagol so dartaama.
 policy-SearchBar = Toɗɗo nokku ɗo palal njiylawu foti wonde. Kuutoro ina yamiraa neɗɗinde ngal.
 
 policy-SearchEngines = Teelto ñaawirɗe yiylorde ndee. Ndee feere heɓii tan ko tuggude e yamre ESR (Extended Support Release)
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Aaf wulnde PKCS#11.
 
 policy-UserMessaging = Hoto hollu kuutoro oo won e ɓatakuuje.
 

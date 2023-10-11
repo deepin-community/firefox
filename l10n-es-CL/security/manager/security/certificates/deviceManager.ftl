@@ -5,9 +5,9 @@
 
 ## Strings used for device manager
 
-devmgr =
+devmgr-window =
     .title = Administrador de Dispositivo
-    .style = width: 67em; height: 32em;
+    .style = min-width: 67em; min-height: 32em;
 
 devmgr-devlist =
     .label = Este certificado personal no puede ser instalado porque no posees la clave privada correspondiente que fue creada cuando el certificado fue solicitado.
@@ -129,5 +129,5 @@ load-module-help-root-certs-module-name =
     .value = "Root Certs" está reservado y no puede ser usado como el nombre del módulo.
 
 add-module-failure = No se pudo añadir el módulo
-del-module-warning = ¿Está seguro que desea eliminar este módulo de seguridad?
+del-module-warning = ¿De verdad quieres eliminar este módulo de seguridad?
 del-module-error = Incapaz de eliminar módulo

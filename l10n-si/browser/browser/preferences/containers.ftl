@@ -2,9 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-containers-window-new =
-    .title = නව බහාලුමක් එක් කරන්න
-    .style = width: 45em
+containers-window-new2 =
+    .title = නව අඩංගුවක් යොදන්න
+    .style = min-width: 45em
+# Variables
+#   $name (String) - Name of the container
+containers-window-update-settings2 =
+    .title = { $name } අඩංගුවේ සැකසුම්
+    .style = min-width: 45em
 
 containers-window-close =
     .key = w
@@ -25,9 +30,9 @@ containers-name-label = නම
     .style = { -containers-labels-style }
 
 containers-name-text =
-    .placeholder = බහාලුම් නමක් ඇතුල් කරන්න
+    .placeholder = අඩංගුවට නමක් යොදන්න
 
-containers-icon-label = අයිකනය
+containers-icon-label = නිරූපකය
     .accesskey = I
     .style = { -containers-labels-style }
 
@@ -35,12 +40,16 @@ containers-color-label = වර්ණය
     .accesskey = o
     .style = { -containers-labels-style }
 
+containers-dialog =
+    .buttonlabelaccept = අහවරයි
+    .buttonaccesskeyaccept = D
+
 containers-color-blue =
     .label = නිල්
 containers-color-turquoise =
-    .label = කොළට හුරු නිල
+    .label = නීල කොළ
 containers-color-green =
-    .label = කොල
+    .label = කොළ
 containers-color-yellow =
     .label = කහ
 containers-color-orange =
@@ -51,7 +60,11 @@ containers-color-pink =
     .label = රෝස
 containers-color-purple =
     .label = දම්
+containers-color-toolbar =
+    .label = මෙව. තීරුවට ගළපන්න
 
+containers-icon-fence =
+    .label = වැට
 containers-icon-fingerprint =
     .label = ඇඟිලි සලකුණ
 containers-icon-briefcase =
@@ -60,6 +73,8 @@ containers-icon-briefcase =
 # so don't change to local currency. See Bug 1291672.
 containers-icon-dollar =
     .label = ඩොලර් සලකුණ
+containers-icon-cart =
+    .label = බඩු කරත්තය
 containers-icon-circle =
     .label = තිත
 containers-icon-vacation =

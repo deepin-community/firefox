@@ -1,6 +1,6 @@
 # Configuration Changes
 
-This process outlines how Mozilla will handle configuration changes.  For a list of configuration changes, please see the [schedule](schedule.html)
+This process outlines how Mozilla will handle configuration changes.  For a list of configuration changes, please see the [schedule](schedule.md)
 
 ## Infrastructure setup (2-4 weeks)
 
@@ -62,4 +62,3 @@ After the config has been running as tier-2 makes it to beta and then to the rel
  * turn off the backstop jobs
 
 This allows developers to schedule time in a 6 weeks period to investigate and fix any test failures.
-

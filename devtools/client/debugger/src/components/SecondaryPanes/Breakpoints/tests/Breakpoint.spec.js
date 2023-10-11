@@ -52,12 +52,14 @@ describe("Breakpoint", () => {
   });
 });
 
-const generatedLocation = { sourceId: "foo", line: 53, column: 73 };
-const location = { sourceId: "foo/original", line: 5, column: 7 };
+const generatedLocation = { source: { id: "foo" }, line: 53, column: 73 };
+const location = { source: { id: "foo/original" }, line: 5, column: 7 };
 
 function render(overrides = {}, breakpointOverrides = {}) {
   const props = generateDefaults(overrides, breakpointOverrides);
-  const component = shallow(<Breakpoint.WrappedComponent {...props} />);
+  const component = shallow(
+    React.createElement(Breakpoint.WrappedComponent, props)
+  );
   const defaultState = component.state();
   const instance = component.instance();
 
@@ -80,13 +82,20 @@ function generateDefaults(overrides = {}, breakpointOverrides = {}) {
   const breakpoint = makeBreakpoint(breakpointOverrides);
   const selectedSource = createSourceObject("foo");
   return {
+    disableBreakpoint: () => {},
+    enableBreakpoint: () => {},
+    openConditionalPanel: () => {},
+    removeBreakpoint: () => {},
+    selectSpecificLocation: () => {},
+    blackboxedRangesForSource: [],
+    checkSourceOnIgnoreList: () => {},
     source,
     breakpoint,
     selectedSource,
     frame: null,
     editor: {
       CodeMirror: {
-        runMode: function() {
+        runMode: function () {
           return "";
         },
       },

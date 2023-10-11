@@ -8,21 +8,20 @@
 #define mozilla_dom_HTMLObjectElement_h
 
 #include "mozilla/Attributes.h"
+#include "mozilla/dom/ConstraintValidation.h"
 #include "nsGenericHTMLElement.h"
 #include "nsObjectLoadingContent.h"
-#include "nsIConstraintValidation.h"
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 class FormData;
 template <typename T>
 struct Nullable;
 class WindowProxyHolder;
 
-class HTMLObjectElement final : public nsGenericHTMLFormElement,
+class HTMLObjectElement final : public nsGenericHTMLFormControlElement,
                                 public nsObjectLoadingContent,
-                                public nsIConstraintValidation {
+                                public ConstraintValidation {
  public:
   explicit HTMLObjectElement(
       already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo,
@@ -32,49 +31,46 @@ class HTMLObjectElement final : public nsGenericHTMLFormElement,
   NS_DECL_ISUPPORTS_INHERITED
 
   NS_IMPL_FROMNODE_HTML_WITH_TAG(HTMLObjectElement, object)
-  virtual int32_t TabIndexDefault() override;
+  int32_t TabIndexDefault() override;
 
   // Element
-  virtual bool IsInteractiveHTMLContent() const override;
+  bool IsInteractiveHTMLContent() const override;
 
   // EventTarget
-  virtual void AsyncEventRunning(AsyncEventDispatcher* aEvent) override;
+  void AsyncEventRunning(AsyncEventDispatcher* aEvent) override;
 
-  virtual nsresult BindToTree(BindContext&, nsINode& aParent) override;
-  virtual void UnbindFromTree(bool aNullParent = true) override;
+  nsresult BindToTree(BindContext&, nsINode& aParent) override;
+  void UnbindFromTree(bool aNullParent = true) override;
 
-  virtual bool IsHTMLFocusable(bool aWithMouse, bool* aIsFocusable,
-                               int32_t* aTabIndex) override;
+  bool IsHTMLFocusable(bool aWithMouse, bool* aIsFocusable,
+                       int32_t* aTabIndex) override;
 
   // Overriden nsIFormControl methods
   NS_IMETHOD Reset() override { return NS_OK; }
 
   NS_IMETHOD SubmitNamesValues(FormData* aFormData) override { return NS_OK; }
 
-  virtual void DoneAddingChildren(bool aHaveNotified) override;
-  virtual bool IsDoneAddingChildren() override;
+  void DoneAddingChildren(bool aHaveNotified) override;
 
-  virtual bool ParseAttribute(int32_t aNamespaceID, nsAtom* aAttribute,
-                              const nsAString& aValue,
-                              nsIPrincipal* aMaybeScriptedPrincipal,
-                              nsAttrValue& aResult) override;
-  virtual nsMapRuleToAttributesFunc GetAttributeMappingFunction()
-      const override;
+  bool ParseAttribute(int32_t aNamespaceID, nsAtom* aAttribute,
+                      const nsAString& aValue,
+                      nsIPrincipal* aMaybeScriptedPrincipal,
+                      nsAttrValue& aResult) override;
+  nsMapRuleToAttributesFunc GetAttributeMappingFunction() const override;
   NS_IMETHOD_(bool) IsAttributeMapped(const nsAtom* aAttribute) const override;
-  virtual EventStates IntrinsicState() const override;
-  virtual void DestroyContent() override;
+  ElementState IntrinsicState() const override;
+  void DestroyContent() override;
 
   // nsObjectLoadingContent
-  virtual uint32_t GetCapabilities() const override;
-
-  virtual nsresult Clone(dom::NodeInfo*, nsINode** aResult) const override;
+  uint32_t GetCapabilities() const override;
+  nsresult Clone(dom::NodeInfo*, nsINode** aResult) const override;
 
   nsresult CopyInnerTo(Element* aDest);
 
   void StartObjectLoad() { StartObjectLoad(true, false); }
 
   NS_DECL_CYCLE_COLLECTION_CLASS_INHERITED(HTMLObjectElement,
-                                           nsGenericHTMLFormElement)
+                                           nsGenericHTMLFormControlElement)
 
   // Web IDL binding methods
   void GetData(DOMString& aValue) {
@@ -95,7 +91,6 @@ class HTMLObjectElement final : public nsGenericHTMLFormElement,
   void SetUseMap(const nsAString& aValue, ErrorResult& aRv) {
     SetHTMLAttr(nsGkAtoms::usemap, aValue, aRv);
   }
-  using nsGenericHTMLFormElement::GetForm;
   void GetWidth(DOMString& aValue) { GetHTMLAttr(nsGkAtoms::width, aValue); }
   void SetWidth(const nsAString& aValue, ErrorResult& aRv) {
     SetHTMLAttr(nsGkAtoms::width, aValue, aRv);
@@ -108,8 +103,8 @@ class HTMLObjectElement final : public nsGenericHTMLFormElement,
 
   Nullable<WindowProxyHolder> GetContentWindow(nsIPrincipal& aSubjectPrincipal);
 
-  using nsIConstraintValidation::GetValidationMessage;
-  using nsIConstraintValidation::SetCustomValidity;
+  using ConstraintValidation::GetValidationMessage;
+  using ConstraintValidation::SetCustomValidity;
   void GetAlign(DOMString& aValue) { GetHTMLAttr(nsGkAtoms::align, aValue); }
   void SetAlign(const nsAString& aValue, ErrorResult& aRv) {
     SetHTMLAttr(nsGkAtoms::align, aValue, aRv);
@@ -176,14 +171,12 @@ class HTMLObjectElement final : public nsGenericHTMLFormElement,
   // Override for nsImageLoadingContent.
   nsIContent* AsContent() override { return this; }
 
-  virtual nsresult AfterSetAttr(int32_t aNamespaceID, nsAtom* aName,
-                                const nsAttrValue* aValue,
-                                const nsAttrValue* aOldValue,
-                                nsIPrincipal* aSubjectPrincipal,
-                                bool aNotify) override;
-  virtual nsresult OnAttrSetButNotChanged(int32_t aNamespaceID, nsAtom* aName,
-                                          const nsAttrValueOrString& aValue,
-                                          bool aNotify) override;
+  void AfterSetAttr(int32_t aNamespaceID, nsAtom* aName,
+                    const nsAttrValue* aValue, const nsAttrValue* aOldValue,
+                    nsIPrincipal* aSubjectPrincipal, bool aNotify) override;
+  void OnAttrSetButNotChanged(int32_t aNamespaceID, nsAtom* aName,
+                              const nsAttrValueOrString& aValue,
+                              bool aNotify) override;
 
  private:
   nsContentPolicyType GetContentPolicyType() const override {
@@ -192,11 +185,10 @@ class HTMLObjectElement final : public nsGenericHTMLFormElement,
 
   virtual ~HTMLObjectElement();
 
-  virtual JSObject* WrapNode(JSContext* aCx,
-                             JS::Handle<JSObject*> aGivenProto) override;
+  JSObject* WrapNode(JSContext* aCx,
+                     JS::Handle<JSObject*> aGivenProto) override;
 
-  static void MapAttributesIntoRule(const nsMappedAttributes* aAttributes,
-                                    MappedDeclarations&);
+  static void MapAttributesIntoRule(MappedDeclarationsBuilder&);
 
   /**
    * This function is called by AfterSetAttr and OnAttrSetButNotChanged.
@@ -207,13 +199,11 @@ class HTMLObjectElement final : public nsGenericHTMLFormElement,
    * @param aName the localname of the attribute being set
    * @param aNotify Whether we plan to notify document observers.
    */
-  nsresult AfterMaybeChangeAttr(int32_t aNamespaceID, nsAtom* aName,
-                                bool aNotify);
+  void AfterMaybeChangeAttr(int32_t aNamespaceID, nsAtom* aName, bool aNotify);
 
   bool mIsDoneAddingChildren;
 };
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 #endif  // mozilla_dom_HTMLObjectElement_h

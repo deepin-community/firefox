@@ -6,7 +6,7 @@ in terms of its impact on other parts of Firefox. Always keep in mind
 the side effects your changes may have, from blocking other tasks, to
 interfering with other user interface elements.
 
-## Avoid the main thread where possible 
+## Avoid the main thread where possible
 
 The main thread is where we process user events and do painting. It's
 also important to note that most of our JavaScript runs on the main
@@ -21,7 +21,7 @@ elevated privileges than a standard worker allows, consider using a
 ChromeWorker, which is a Firefox-only API which lets you create
 workers with more elevated privileges.
 
-## Use requestIdleCallback() 
+## Use requestIdleCallback()
 
 If you simply cannot avoid doing some kind of long job on the main
 thread, try to break it up into smaller pieces that you can run when the
@@ -45,7 +45,7 @@ document, set the **hidden** attribute to **true** by default. By doing
 so, you cause the binding applied on demand rather than at load time,
 which makes initial construction of the XUL document faster.
 
-## Get familiar with the pipeline that gets pixels to the screen 
+## Get familiar with the pipeline that gets pixels to the screen
 
 Learn how pixels you draw make their way to the screen. Knowing the path
 they will take through the various layers of the browser engine will
@@ -55,7 +55,7 @@ The rendering process goes through the following steps:
 
 ![This is the pipeline that a browser uses to get pixels to the screen](img/rendering.png)
 
-The above image is used under [Creative Commons Attribution 3.0](https://creativecommons.org/licenses/by/3.0/), 
+The above image is used under [Creative Commons Attribution 3.0](https://creativecommons.org/licenses/by/3.0/),
 courtesy of [this page](https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing)
 from our friends at Google, which itself is well worth the read.
 
@@ -72,7 +72,7 @@ of your DOM writes (most importantly, anything that could change the
 size or position of things in the DOM) just before the style and layout
 steps of the pipeline, combining all the style and layout calculations
 into a single batch so it all happens once, in a single frame tick,
-instead of across multiple frames. 
+instead of across multiple frames.
 
 See [Detecting and avoiding synchronous reflow](#detecting-and-avoiding-synchronous-reflow)
 below for more information.
@@ -80,9 +80,9 @@ below for more information.
 This also means that *requestAnimationFrame()* is **not a good place**
 to put queries for layout or style information.
 
-## Detecting and avoiding synchronous style flushes 
+## Detecting and avoiding synchronous style flushes
 
-### What are style flushes? 
+### What are style flushes?
 When CSS is applied to a document (HTML or XUL, it doesn’t matter), the
 browser does calculations to figure out which CSS styles will apply to
 each element. This happens the first time the page loads and the CSS is
@@ -166,7 +166,7 @@ driver.
 tracks work to make it impossible to modify the DOM within a
 *promiseDocumentFlushed* callback.
 
-### Writing tests to ensure you don’t add more synchronous style flushes 
+### Writing tests to ensure you don’t add more synchronous style flushes
 
 Unlike reflow, there isn’t a “observer” mechanism for style
 recalculations. However, as of Firefox 49, the
@@ -236,7 +236,7 @@ worse (see next section).
 **To repeat, only interruptible reflows in web content can be
 interrupted.**
 
-### Uninterruptible reflow 
+### Uninterruptible reflow
 
 Uninterruptible reflow is what we want to **avoid at all costs**.
 Uninterruptible reflow occurs when some DOM node’s styles have changed
@@ -286,7 +286,7 @@ place (the layout step of the 16ms tick) as opposed to multiple times
 during the 16ms tick (which has a higher probability of running through
 the 16ms budget).
 
-### How do I avoid triggering uninterruptible reflow? 
+### How do I avoid triggering uninterruptible reflow?
 
 Here's a [list of things that JavaScript can ask for that can cause
 uninterruptible reflow](https://gist.github.com/paulirish/5d52fb081b3570c81e3a), to
@@ -395,7 +395,7 @@ the dimensions of the window without risking a synchronous reflow.
 Returns the window's scroll offsets without taking the chance of causing
 a sync reflow.
 
-### Writing tests to ensure you don’t add more unintentional reflow 
+### Writing tests to ensure you don’t add more unintentional reflow
 
 The interface
 [nsIReflowObserver](https://dxr.mozilla.org/mozilla-central/source/docshell/base/nsIReflowObserver.idl)
@@ -409,7 +409,7 @@ while those actions occur.
 You should add tests like this for your feature if you happen to be
 touching the DOM.
 
-## Detecting over-painting with paint flashing 
+## Detecting over-painting
 
 Painting is, in general, cheaper than both style calculation and layout
 calculation; still, the more you can avoid, the better. Generally
@@ -417,61 +417,17 @@ speaking, the larger an area that needs to be repainted, the longer it
 takes. Similarly, the more things that need to be repainted, the longer
 it takes.
 
-Our graphics team has added a handy feature to help you detect when and
-where paints are occurring. This feature is called “paint flashing,” and
-it can be activated for both web content and the browser chrome. Paint
-flashing tints each region being painted with a randomly selected color
-so that it’s more easy to see what on the screen is being painted.
+If a profile says a lot of time is spent in painting or display-list building,
+and you're unsure why, consider talking to our always helpful graphics team in
+the [gfx room](https://chat.mozilla.org/#/room/%23gfx:mozilla.org) on
+[Matrix](https://wiki.mozilla.org/Matrix), and they can probably advise you.
 
--  You can activate paint flashing for browser chrome by setting
-   *nglayout.debug.paint_flashing_chrome* to *true*.
+Note that a significant number of the graphics team members are in the US
+Eastern Time zone (UTC-5 or UTC-4 during Daylight Saving Time), so let that
+information guide your timing when you ask questions in the
+[gfx room](https://chat.mozilla.org/#/room/%23gfx:mozilla.org).
 
--  You can activate paint flashing for web content by setting
-   *nglayout.debug.paint_flashing* to *true*.
-
-After enabling these, exercise your function and see what’s painting.
-See a lot of flashing / colors? That means a lot of painting is going
-on. The worst case is called **over-painting**. This is when you draw
-multiple times over the same space. Unless transparency is involved, all
-but the last painting will be overwritten, becoming unnecessary. If you
-can find ways to avoid doing this, you can save substantial time.
-
-Keep in mind that painting occurs on the main thread. Remember, too,
-that the goal is to have as little happen on the main thread as
-possible. That means that finding and removing (when possible)
-over-painting is a good place to start reducing your burden on the main
-thread, which will in turn improve performance.
-
-Perhaps you’re animating something that requires a repaint? For example,
-transitioning the *background-color* of a DOM node from red to blue
-will result in a repaint for every frame of the animation, and paint
-flashing will reveal that. Consider using a different animation that can
-be accelerated by the GPU. These GPU-accelerated animations occur off of
-the main thread, and have a much higher probability of running at 60 FPS
-(see the section below called [Use the compositor for animations](#use-the-compositor-for-animations)
-for further details).
-
-Perhaps you’re touching some DOM nodes in such a way that unexpected
-repaints are occurring in an area that don’t need it. Best to
-investigate and try to remove those as best you can. Sometimes, our
-graphics layer invalidates regions in ways that might not be clear to
-you, and a section outside of the thing that just repainted will also
-repaint. Sometimes this can be addressed by ensuring that the thing
-changing is on its own layer (though this comes at a memory cost). You
-can put something on its own layer by setting its *z-index*, or by
-setting the *will-change* on the node, though this should be used
-sparingly.
-
-If you’re unsure why something is repainting, consider talking to our
-always helpful graphics team in the [gfx room](https://chat.mozilla.org/#/room/%23gfx:mozilla.org) on
-[Matrix](https://wiki.mozilla.org/Matrix), and they can probably
-advise you. Note that a significant number of the graphics team members
-are in the US Eastern Time zone (UTC-5 or UTC-4 during Daylight Saving
-Time), so let that information guide your timing when you ask questions
-in the [gfx room](https://chat.mozilla.org/#/room/%23gfx:mozilla.org)
-.
-
-## Adding nodes using DocumentFragments 
+## Adding nodes using DocumentFragments
 
 Sometimes you need to add several DOM nodes as part of an existing DOM
 tree. For example, when using XUL *\<xul:menupopup\>s*, you often have
@@ -504,7 +460,7 @@ post](https://davidwalsh.name/documentfragment):
     var frag = document.createDocumentFragment();
 
     // Create numerous list items, add to fragment
- 
+
     for(var x = 0; x < 10; x++) {
         var li = document.createElement("li");
         li.innerHTML = "List item " + x;
@@ -518,7 +474,7 @@ post](https://davidwalsh.name/documentfragment):
 The above is strictly cheaper than individually adding each node to the
 DOM.
 
-## The Gecko profiler add-on is your friend 
+## The Gecko profiler add-on is your friend
 
 The Gecko profiler is your best friend when diagnosing performance
 problems and looking for bottlenecks. There’s plenty of excellent
@@ -528,7 +484,7 @@ documentation on MDN about the Gecko profiler:
 
 -  [Advanced profile analysis](https://developer.mozilla.org/en-US/docs/Mozilla/Performance/Profiling_with_the_Built-in_Profiler)
 
-## Don’t guess—measure. 
+## Don’t guess—measure.
 
 If you’re working on a performance improvement, this should go without
 saying: ensure that what you care about is actually improving by
@@ -594,10 +550,10 @@ more](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structure
 without having to do conversions for JSON compatibility.
 
 A Promise-based wrapper for IndexedDB,
-[IndexedDB.jsm](http://searchfox.org/mozilla-central/source/toolkit/modules/IndexedDB.jsm)
+[IndexedDB.sys.mjs](http://searchfox.org/mozilla-central/source/toolkit/modules/IndexedDB.sys.mjs)
 is available for chrome code.
 
-## Test on weak hardware 
+## Test on weak hardware
 
 For the folks paid to work on Firefox, we tend to have pretty powerful
 hardware for development. This is great, because it reduces build times,
@@ -610,7 +566,7 @@ a sense of what our users are working with. Test on slower machines to
 make it more obvious to yourself if what you’ve written impacts the
 performance of the browser.
 
-## Consider loading scripts with the subscript loader asynchronously 
+## Consider loading scripts with the subscript loader asynchronously
 
 If you've ever used the subscript loader, you might not know that it can
 load scripts asynchronously, and return a Promise once they're loaded.

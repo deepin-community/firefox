@@ -1,5 +1,3 @@
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-
 // needs to be rooted
 var cacheFlushObserver = {
   observe() {
@@ -7,8 +5,6 @@ var cacheFlushObserver = {
     do_send_remote_message("flushed");
   },
 };
-
-var currentThread = Services.tm.currentThread;
 
 function run_test() {
   do_get_profile();

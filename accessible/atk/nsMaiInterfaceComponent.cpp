@@ -9,13 +9,14 @@
 #include "LocalAccessible-inl.h"
 #include "AccessibleWrap.h"
 #include "nsAccUtils.h"
-#include "nsCoreUtils.h"
 #include "nsMai.h"
 #include "mozilla/Likely.h"
 #include "mozilla/a11y/DocAccessibleParent.h"
 #include "mozilla/a11y/RemoteAccessible.h"
 #include "mozilla/dom/BrowserParent.h"
+#include "nsAccessibilityService.h"
 
+using namespace mozilla;
 using namespace mozilla::a11y;
 
 extern "C" {
@@ -33,18 +34,11 @@ static void getExtentsCB(AtkComponent* aComponent, gint* aX, gint* aY,
 
 static gboolean grabFocusCB(AtkComponent* aComponent) {
   AtkObject* atkObject = ATK_OBJECT(aComponent);
-  AccessibleWrap* accWrap = GetAccessibleWrap(atkObject);
-  if (accWrap) {
-    accWrap->TakeFocus();
+  Accessible* acc = GetInternalObj(atkObject);
+  if (acc) {
+    acc->TakeFocus();
     return TRUE;
   }
-
-  RemoteAccessible* proxy = GetProxy(atkObject);
-  if (proxy) {
-    proxy->TakeFocus();
-    return TRUE;
-  }
-
   return FALSE;
 }
 
@@ -52,14 +46,8 @@ static gboolean grabFocusCB(AtkComponent* aComponent) {
 MOZ_CAN_RUN_SCRIPT_BOUNDARY
 static gboolean scrollToCB(AtkComponent* aComponent, AtkScrollType type) {
   AtkObject* atkObject = ATK_OBJECT(aComponent);
-  if (RefPtr<AccessibleWrap> accWrap = GetAccessibleWrap(atkObject)) {
-    accWrap->ScrollTo(type);
-    return TRUE;
-  }
-
-  RemoteAccessible* proxy = GetProxy(atkObject);
-  if (proxy) {
-    proxy->ScrollTo(type);
+  if (Accessible* acc = GetInternalObj(atkObject)) {
+    acc->ScrollTo(type);
     return TRUE;
   }
 
@@ -90,29 +78,13 @@ AtkObject* refAccessibleAtPointHelper(AtkObject* aAtkObj, gint aX, gint aY,
                                       AtkCoordType aCoordType) {
   Accessible* acc = GetInternalObj(aAtkObj);
   if (!acc) {
-    // This might be an ATK Socket.
-    acc = GetAccessibleWrap(aAtkObj);
-    if (!acc) {
-      return nullptr;
-    }
-  }
-  if (acc->IsLocal() && acc->AsLocal()->IsDefunct()) {
     return nullptr;
   }
 
   // Accessible::ChildAtPoint(x,y) is in screen pixels.
   if (aCoordType == ATK_XY_WINDOW) {
-    nsINode* node = nullptr;
-    if (acc->IsLocal()) {
-      node = acc->AsLocal()->GetNode();
-    } else {
-      // Use the XUL browser embedding this remote document.
-      auto browser = static_cast<mozilla::dom::BrowserParent*>(
-          acc->AsRemote()->Document()->Manager());
-      node = browser->GetOwnerElement();
-    }
-    MOZ_ASSERT(node);
-    nsIntPoint winCoords = nsCoreUtils::GetScreenCoordsForWindow(node);
+    mozilla::LayoutDeviceIntPoint winCoords =
+        nsAccUtils::GetScreenCoordsForWindow(acc);
     aX += winCoords.x;
     aY += winCoords.y;
   }
@@ -137,34 +109,29 @@ AtkObject* refAccessibleAtPointHelper(AtkObject* aAtkObj, gint aX, gint aY,
 
 void getExtentsHelper(AtkObject* aAtkObj, gint* aX, gint* aY, gint* aWidth,
                       gint* aHeight, AtkCoordType aCoordType) {
-  AccessibleWrap* accWrap = GetAccessibleWrap(aAtkObj);
   *aX = *aY = *aWidth = *aHeight = -1;
 
-  if (accWrap) {
-    if (accWrap->IsDefunct()) {
-      return;
-    }
-
-    nsIntRect screenRect = accWrap->Bounds();
-    if (screenRect.IsEmpty()) return;
-
-    if (aCoordType == ATK_XY_WINDOW) {
-      nsIntPoint winCoords =
-          nsCoreUtils::GetScreenCoordsForWindow(accWrap->GetNode());
-      screenRect.x -= winCoords.x;
-      screenRect.y -= winCoords.y;
-    }
-
-    *aX = screenRect.x;
-    *aY = screenRect.y;
-    *aWidth = screenRect.width;
-    *aHeight = screenRect.height;
+  Accessible* acc = GetInternalObj(aAtkObj);
+  if (!acc) {
     return;
   }
 
-  if (RemoteAccessible* proxy = GetProxy(aAtkObj)) {
-    proxy->Extents(aCoordType == ATK_XY_WINDOW, aX, aY, aWidth, aHeight);
+  mozilla::LayoutDeviceIntRect screenRect = acc->Bounds();
+  if (screenRect.IsEmpty()) {
+    return;
   }
+
+  if (aCoordType == ATK_XY_WINDOW) {
+    mozilla::LayoutDeviceIntPoint winCoords =
+        nsAccUtils::GetScreenCoordsForWindow(acc);
+    screenRect.x -= winCoords.x;
+    screenRect.y -= winCoords.y;
+  }
+
+  *aX = screenRect.x;
+  *aY = screenRect.y;
+  *aWidth = screenRect.width;
+  *aHeight = screenRect.height;
 }
 
 void componentInterfaceInitCB(AtkComponentIface* aIface) {

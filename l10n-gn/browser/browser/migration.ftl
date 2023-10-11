@@ -30,6 +30,15 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,6 +60,9 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
 no-migration-sources = Ndojejuhúi tembiaporape oguerekóva techaukaha, tembiasakue térã mba’ekuaarã ñe’ẽñemi rehegua.
 
@@ -61,8 +73,8 @@ import-items-description = Eiporavo mba’epuru reguerútava:
 
 import-permissions-page-title = Ikatúpiko emoneĩ { -brand-short-name }-pe
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS oikotevẽ emoneĩ { -brand-short-name } oikekuaávo Safari techaukahakuérape. Eikutu “Ku’ejey” ha eiporavo “Bookmarks.plist” marandurenda pe marandurenda rupa ojekuaátavape.
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS oikotevẽ emoneĩ { -brand-short-name } oikekuaávo Safari mba’ekuaarãme. Eikutu “Ku’ejey”, eiporavo “Safari“ marandurenda pe Finder ñemongetaha iñapysẽvape ha upéi eikutu “Mbojuruja”.
 
 import-migrating-page-title = Jegueruhína…
 
@@ -78,23 +90,9 @@ import-done-description = Ko’ã mba’epuru ojeguerupa porã:
 
 import-close-source-browser = Ikatúpiko, ehechaporãke kundaha poravopyre oñembotýpara’e reku’e mboyvejey.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = { $source } rehegua
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Beta
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Moñe’ẽ rysýi (Safari rehegua)
 imported-edge-reading-list = Moñe’ẽrã rysýi (Edge Guive)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = Ovetã ha tendayke
 browser-data-session-label =
     .value = Ovetã ha tendayke
+
+browser-data-payment-methods-checkbox =
+    .label = Mba’éicha ehepyme’ẽta
+browser-data-payment-methods-label =
+    .value = Mba’éicha ehepyme’ẽta

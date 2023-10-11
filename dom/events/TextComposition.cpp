@@ -9,11 +9,13 @@
 #include "IMEStateManager.h"
 #include "nsContentUtils.h"
 #include "nsIContent.h"
+#include "nsIMutationObserver.h"
 #include "nsPresContext.h"
 #include "mozilla/AutoRestore.h"
 #include "mozilla/EditorBase.h"
 #include "mozilla/EventDispatcher.h"
 #include "mozilla/IMEStateManager.h"
+#include "mozilla/IntegerRange.h"
 #include "mozilla/MiscEvents.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/RangeBoundary.h"
@@ -43,6 +45,26 @@ namespace mozilla {
 
 #define IDEOGRAPHIC_SPACE (u"\x3000"_ns)
 
+static uint32_t GetOrCreateCompositionId(WidgetCompositionEvent* aEvent) {
+  // If we're in the parent process, return new composition ID.
+  if (XRE_IsParentProcess()) {
+    static uint32_t sNextCompositionId = 1u;
+    if (MOZ_UNLIKELY(sNextCompositionId == UINT32_MAX)) {
+      sNextCompositionId = 1u;
+    }
+    // FYI: When we send the event to a remote process, TextComposition will
+    // set aEvent->mCompositionId to this value.  Therefore, we don't need to
+    // set it here.
+    return sNextCompositionId++;
+  }
+  // If aEvent comes from the parent process, the event has composition ID
+  // considered by the parent process.  Then, we should use it.
+  // Otherwise, aEvent is synthesized in this process, it won't cross the
+  // process boundary between this process and the parent process.  Therefore,
+  // we don't need to set meaningful composition ID for the text composition.
+  return aEvent->mCompositionId;
+}
+
 /******************************************************************************
  * TextComposition
  ******************************************************************************/
@@ -56,6 +78,7 @@ TextComposition::TextComposition(nsPresContext* aPresContext, nsINode* aNode,
       mNode(aNode),
       mBrowserParent(aBrowserParent),
       mNativeContext(aCompositionEvent->mNativeIMEContext),
+      mCompositionId(GetOrCreateCompositionId(aCompositionEvent)),
       mCompositionStartOffset(0),
       mTargetClauseOffsetInComposition(0),
       mCompositionStartOffsetInTextNode(UINT32_MAX),
@@ -84,6 +107,82 @@ void TextComposition::Destroy() {
   mCompositionLengthInTextNode = UINT32_MAX;
   // TODO: If the editor is still alive and this is held by it, we should tell
   //       this being destroyed for cleaning up the stuff.
+}
+
+void TextComposition::OnCharacterDataChanged(
+    Text& aText, const CharacterDataChangeInfo& aInfo) {
+  if (mContainerTextNode != &aText ||
+      mCompositionStartOffsetInTextNode == UINT32_MAX ||
+      mCompositionLengthInTextNode == UINT32_MAX) {
+    return;
+  }
+
+  // Ignore changes after composition string.
+  if (aInfo.mChangeStart >=
+      mCompositionStartOffsetInTextNode + mCompositionLengthInTextNode) {
+    return;
+  }
+
+  // If the change ends before the composition string, we need only to adjust
+  // the start offset.
+  if (aInfo.mChangeEnd <= mCompositionStartOffsetInTextNode) {
+    MOZ_ASSERT(aInfo.LengthOfRemovedText() <=
+               mCompositionStartOffsetInTextNode);
+    mCompositionStartOffsetInTextNode -= aInfo.LengthOfRemovedText();
+    mCompositionStartOffsetInTextNode += aInfo.mReplaceLength;
+    return;
+  }
+
+  // If this is caused by a splitting text node, the composition string
+  // may be split out to the new right node.  In the case,
+  // CompositionTransaction::DoTransaction handles it with warking the
+  // following text nodes.  Therefore, we should NOT shrink the composing
+  // range for avoind breaking the fix of bug 1310912.  Although the handling
+  // looks buggy so that we need to move the handling into here later.
+  if (aInfo.mDetails &&
+      aInfo.mDetails->mType == CharacterDataChangeInfo::Details::eSplit) {
+    return;
+  }
+
+  // If the change removes/replaces the last character of the composition
+  // string, we should shrink the composition range before the change start.
+  // Then, the replace string will be never updated by coming composition
+  // updates.
+  if (aInfo.mChangeEnd >=
+      mCompositionStartOffsetInTextNode + mCompositionLengthInTextNode) {
+    // If deleting the first character of the composition string, collapse IME
+    // selection temporarily.  Updating composition string will insert new
+    // composition string there.
+    if (aInfo.mChangeStart <= mCompositionStartOffsetInTextNode) {
+      mCompositionStartOffsetInTextNode = aInfo.mChangeStart;
+      mCompositionLengthInTextNode = 0u;
+      return;
+    }
+    // If some characters in the composition still stay, composition range
+    // should be shrunken.
+    MOZ_ASSERT(aInfo.mChangeStart > mCompositionStartOffsetInTextNode);
+    mCompositionLengthInTextNode =
+        aInfo.mChangeStart - mCompositionStartOffsetInTextNode;
+    return;
+  }
+
+  // If removed range starts in the composition string, we need only adjust
+  // the length to make composition range contain the replace string.
+  if (aInfo.mChangeStart >= mCompositionStartOffsetInTextNode) {
+    MOZ_ASSERT(aInfo.LengthOfRemovedText() <= mCompositionLengthInTextNode);
+    mCompositionLengthInTextNode -= aInfo.LengthOfRemovedText();
+    mCompositionLengthInTextNode += aInfo.mReplaceLength;
+    return;
+  }
+
+  // If preceding characers of the composition string is also removed,  new
+  // composition start will be there and new composition ends at current
+  // position.
+  const uint32_t removedLengthInCompositionString =
+      aInfo.mChangeEnd - mCompositionStartOffsetInTextNode;
+  mCompositionStartOffsetInTextNode = aInfo.mChangeStart;
+  mCompositionLengthInTextNode -= removedLengthInCompositionString;
+  mCompositionLengthInTextNode += aInfo.mReplaceLength;
 }
 
 bool TextComposition::IsValidStateForComposition(nsIWidget* aWidget) const {
@@ -124,7 +223,6 @@ BaseEventFlags TextComposition::CloneAndDispatchAs(
 
   WidgetCompositionEvent compositionEvent(aCompositionEvent->IsTrusted(),
                                           aMessage, aCompositionEvent->mWidget);
-  compositionEvent.mTime = aCompositionEvent->mTime;
   compositionEvent.mTimeStamp = aCompositionEvent->mTimeStamp;
   compositionEvent.mData = aCompositionEvent->mData;
   compositionEvent.mNativeIMEContext = aCompositionEvent->mNativeIMEContext;
@@ -150,8 +248,10 @@ void TextComposition::DispatchEvent(
   if (aDispatchEvent->mMessage == eCompositionChange) {
     aDispatchEvent->mFlags.mOnlySystemGroupDispatchInContent = true;
   }
-  EventDispatcher::Dispatch(mNode, mPresContext, aDispatchEvent, nullptr,
-                            aStatus, aCallBack);
+  RefPtr<nsINode> node = mNode;
+  RefPtr<nsPresContext> presContext = mPresContext;
+  EventDispatcher::Dispatch(node, presContext, aDispatchEvent, nullptr, aStatus,
+                            aCallBack);
 
   OnCompositionEventDispatched(aDispatchEvent);
 }
@@ -165,8 +265,8 @@ void TextComposition::OnCompositionEventDiscarded(
              "Shouldn't be called with untrusted event");
 
   if (mBrowserParent) {
-    // The composition event should be discarded in the child process too.
-    Unused << mBrowserParent->SendCompositionEvent(*aCompositionEvent);
+    Unused << mBrowserParent->SendCompositionEvent(*aCompositionEvent,
+                                                   mCompositionId);
   }
 
   // XXX If composition events are discarded, should we dispatch them with
@@ -264,7 +364,8 @@ void TextComposition::DispatchCompositionEvent(
   // If the content is a container of BrowserParent, composition should be in
   // the remote process.
   if (mBrowserParent) {
-    Unused << mBrowserParent->SendCompositionEvent(*aCompositionEvent);
+    Unused << mBrowserParent->SendCompositionEvent(*aCompositionEvent,
+                                                   mCompositionId);
     aCompositionEvent->StopPropagation();
     if (aCompositionEvent->CausesDOMTextEvent()) {
       mLastData = aCompositionEvent->mData;
@@ -432,9 +533,16 @@ void TextComposition::HandleSelectionEvent(
     return;
   }
 
-  ContentEventHandler handler(aPresContext);
   AutoRestore<bool> saveHandlingSelectionEvent(sHandlingSelectionEvent);
   sHandlingSelectionEvent = true;
+
+  if (RefPtr<IMEContentObserver> contentObserver =
+          IMEStateManager::GetActiveContentObserver()) {
+    contentObserver->MaybeHandleSelectionEvent(aPresContext, aSelectionEvent);
+    return;
+  }
+
+  ContentEventHandler handler(aPresContext);
   // XXX During setting selection, a selection listener may change selection
   //     again.  In such case, sHandlingSelectionEvent doesn't indicate if
   //     the selection change is caused by a selection event.  However, it
@@ -465,7 +573,7 @@ uint32_t TextComposition::GetSelectionStartOffset() {
       IMEStateManager::GetActiveContentObserver();
   bool doQuerySelection = true;
   if (contentObserver) {
-    if (contentObserver->IsManaging(this)) {
+    if (contentObserver->IsManaging(*this)) {
       doQuerySelection = false;
       contentObserver->HandleQueryContentEvent(&querySelectedTextEvent);
     }
@@ -486,7 +594,7 @@ uint32_t TextComposition::GetSelectionStartOffset() {
   if (NS_WARN_IF(querySelectedTextEvent.DidNotFindSelection())) {
     return 0;  // XXX Is this okay?
   }
-  return querySelectedTextEvent.mReply->SelectionStartOffset();
+  return querySelectedTextEvent.mReply->AnchorOffset();
 }
 
 void TextComposition::OnCompositionEventDispatched(
@@ -541,7 +649,7 @@ void TextComposition::MaybeNotifyIMEOfCompositionEventHandled(
   //     event handled.  Although, this is a bug but it should be okay since
   //     destroying IMEContentObserver notifies IME of blur.  So, native IME
   //     handler can treat it as this notification too.
-  if (contentObserver && contentObserver->IsManaging(this)) {
+  if (contentObserver && contentObserver->IsManaging(*this)) {
     contentObserver->MaybeNotifyCompositionEventHandled();
     return;
   }
@@ -558,6 +666,7 @@ void TextComposition::DispatchCompositionEventRunnable(
 }
 
 nsresult TextComposition::RequestToCommit(nsIWidget* aWidget, bool aDiscard) {
+  MOZ_ASSERT(this == IMEStateManager::GetTextCompositionFor(aWidget));
   // If this composition is already requested to be committed or canceled,
   // or has already finished in IME, we don't need to request it again because
   // request from this instance shouldn't cause committing nor canceling current
@@ -673,7 +782,7 @@ bool TextComposition::HasEditor() const {
   return mEditorBaseWeak && mEditorBaseWeak->IsAlive();
 }
 
-RawRangeBoundary TextComposition::GetStartRef() const {
+RawRangeBoundary TextComposition::FirstIMESelectionStartRef() const {
   RefPtr<EditorBase> editorBase = GetEditorBase();
   if (!editorBase) {
     return RawRangeBoundary();
@@ -695,9 +804,13 @@ RawRangeBoundary TextComposition::GetStartRef() const {
     if (!selection) {
       continue;
     }
-    for (uint32_t i = 0; i < selection->RangeCount(); i++) {
+    const uint32_t rangeCount = selection->RangeCount();
+    for (const uint32_t i : IntegerRange(rangeCount)) {
+      MOZ_ASSERT(selection->RangeCount() == rangeCount);
       const nsRange* range = selection->GetRangeAt(i);
-      if (NS_WARN_IF(!range) || NS_WARN_IF(!range->GetStartContainer())) {
+      MOZ_ASSERT(range);
+      if (MOZ_UNLIKELY(NS_WARN_IF(!range)) ||
+          MOZ_UNLIKELY(NS_WARN_IF(!range->GetStartContainer()))) {
         continue;
       }
       if (!firstRange) {
@@ -730,7 +843,7 @@ RawRangeBoundary TextComposition::GetStartRef() const {
   return firstRange ? firstRange->StartRef().AsRaw() : RawRangeBoundary();
 }
 
-RawRangeBoundary TextComposition::GetEndRef() const {
+RawRangeBoundary TextComposition::LastIMESelectionEndRef() const {
   RefPtr<EditorBase> editorBase = GetEditorBase();
   if (!editorBase) {
     return RawRangeBoundary();
@@ -752,9 +865,13 @@ RawRangeBoundary TextComposition::GetEndRef() const {
     if (!selection) {
       continue;
     }
-    for (uint32_t i = 0; i < selection->RangeCount(); i++) {
+    const uint32_t rangeCount = selection->RangeCount();
+    for (const uint32_t i : IntegerRange(rangeCount)) {
+      MOZ_ASSERT(selection->RangeCount() == rangeCount);
       const nsRange* range = selection->GetRangeAt(i);
-      if (NS_WARN_IF(!range) || NS_WARN_IF(!range->GetEndContainer())) {
+      MOZ_ASSERT(range);
+      if (MOZ_UNLIKELY(NS_WARN_IF(!range)) ||
+          MOZ_UNLIKELY(NS_WARN_IF(!range->GetEndContainer()))) {
         continue;
       }
       if (!lastRange) {
@@ -792,11 +909,11 @@ RawRangeBoundary TextComposition::GetEndRef() const {
  ******************************************************************************/
 
 TextComposition::CompositionEventDispatcher::CompositionEventDispatcher(
-    TextComposition* aComposition, nsINode* aEventTarget,
+    TextComposition* aTextComposition, nsINode* aEventTarget,
     EventMessage aEventMessage, const nsAString& aData,
     bool aIsSynthesizedEvent)
     : Runnable("TextComposition::CompositionEventDispatcher"),
-      mTextComposition(aComposition),
+      mTextComposition(aTextComposition),
       mEventTarget(aEventTarget),
       mData(aData),
       mEventMessage(aEventMessage),

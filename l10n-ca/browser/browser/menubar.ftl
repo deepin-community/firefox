@@ -41,13 +41,6 @@ menu-quit =
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Surt del { -brand-shorter-name }
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Surt del { -brand-shorter-name }
 menu-about =
     .label = Quant al { -brand-shorter-name }
     .accesskey = Q
@@ -77,9 +70,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Obre un fitxer…
     .accesskey = O
-menu-file-close =
-    .label = Tanca
-    .accesskey = c
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Tanca les { $tabCount } pestanyes
+            [one] Tanca la pestanya
+           *[other] Tanca les { $tabCount } pestanyes
+        }
+    .accesskey = p
 menu-file-close-window =
     .label = Tanca la finestra
     .accesskey = f
@@ -95,9 +95,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Configuració de la pàgina…
     .accesskey = g
-menu-file-print-preview =
-    .label = Exemple d'impressió
-    .accesskey = l
 menu-file-print =
     .label = Imprimeix…
     .accesskey = p
@@ -153,7 +150,7 @@ menu-view-full-zoom-reduce =
     .label = Redueix
     .accesskey = d
 menu-view-full-zoom-actual-size =
-    .label = Mida Real
+    .label = Mida real
     .accesskey = M
 menu-view-full-zoom-toggle =
     .label = Amplia només el text
@@ -184,6 +181,17 @@ menu-view-full-screen =
     .label = Pantalla completa
     .accesskey = P
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Entra a la vista de lectura
+    .accesskey = l
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Tanca la vista de lectura
+    .accesskey = l
+
 ##
 
 menu-view-show-all-tabs =
@@ -201,7 +209,7 @@ menu-history =
 menu-history-show-all-history =
     .label = Mostra tot l'historial
 menu-history-clear-recent-history =
-    .label = Neteja l'historial recent…
+    .label = Esborra l'historial recent…
 menu-history-synced-tabs =
     .label = Pestanyes sincronitzades
 menu-history-restore-last-session =
@@ -212,8 +220,6 @@ menu-history-undo-menu =
     .label = Pestanyes tancades recentment
 menu-history-undo-window-menu =
     .label = Finestres tancades recentment
-menu-history-reopen-all-tabs = Torna a obrir totes les pestanyes
-menu-history-reopen-all-windows = Torna a obrir totes les finestres
 
 ## Bookmarks Menu
 
@@ -222,10 +228,10 @@ menu-bookmarks-menu =
     .accesskey = r
 menu-bookmarks-manage =
     .label = Gestiona les adreces d'interès
-menu-bookmark-current-tab =
-    .label = Afegeix la pestanya actual a les adreces d'interès
-menu-bookmark-edit =
-    .label = Edita aquesta adreça d'interès
+menu-bookmark-tab =
+    .label = Afegeix la pestanya actual a les adreces d'interès…
+menu-edit-bookmark =
+    .label = Edita aquesta adreça d'interès…
 menu-bookmarks-all-tabs =
     .label = Afegeix-hi totes les pestanyes…
 menu-bookmarks-toolbar =
@@ -310,15 +316,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = i
 menu-help-report-site-issue =
     .label = Informa d'un problema amb el lloc…
-menu-help-feedback-page =
-    .label = Envia comentaris…
-    .accesskey = E
+menu-help-share-ideas =
+    .label = Compartiu idees i comentaris…
+    .accesskey = s
 menu-help-enter-troubleshoot-mode2 =
     .label = Mode de resolució de problemes…
     .accesskey = M
 menu-help-exit-troubleshoot-mode =
     .label = Desactiva el mode de resolució de problemes
     .accesskey = m
+menu-help-switch-device =
+    .label = Canvia a un dispositiu nou
+    .accesskey = N
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

@@ -22,13 +22,13 @@ process-type-extension = Utwreiding
 # process used to open file:// URLs
 process-type-file = Lokaal bestân
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Grutte tawizing
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Isolearre webynhâld
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Isolearre serviceworker
 
 # process preallocated; may change to other types
 process-type-prealloc = Yn it foar tawezen
@@ -49,6 +49,9 @@ process-type-socket = Socket
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Sandbokste IPC Actor
 
 ##
 ## Other

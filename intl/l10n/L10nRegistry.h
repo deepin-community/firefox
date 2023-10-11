@@ -12,8 +12,8 @@
 #include "nsCycleCollectionParticipant.h"
 #include "mozilla/dom/L10nRegistryBinding.h"
 #include "mozilla/dom/BindingDeclarations.h"
-#include "mozilla/intl/RegistryBindings.h"
 #include "mozilla/intl/FluentBindings.h"
+#include "mozilla/intl/RegistryBindings.h"
 
 class nsIGlobalObject;
 
@@ -26,7 +26,7 @@ namespace mozilla::intl {
 class FluentBundleAsyncIterator final : public nsWrapperCache {
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(FluentBundleAsyncIterator)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(FluentBundleAsyncIterator)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(FluentBundleAsyncIterator)
 
   FluentBundleAsyncIterator(
       nsIGlobalObject* aGlobal,
@@ -37,7 +37,7 @@ class FluentBundleAsyncIterator final : public nsWrapperCache {
   nsIGlobalObject* GetParentObject() const { return mGlobal; }
 
   // WebIDL
-  already_AddRefed<dom::Promise> Next();
+  already_AddRefed<dom::Promise> Next(ErrorResult& aError);
   already_AddRefed<FluentBundleAsyncIterator> Values();
 
  protected:
@@ -49,7 +49,7 @@ class FluentBundleAsyncIterator final : public nsWrapperCache {
 class FluentBundleIterator final : public nsWrapperCache {
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(FluentBundleIterator)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(FluentBundleIterator)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(FluentBundleIterator)
 
   FluentBundleIterator(nsIGlobalObject* aGlobal,
                        UniquePtr<ffi::GeckoFluentBundleIterator> aRaw);
@@ -71,7 +71,7 @@ class FluentBundleIterator final : public nsWrapperCache {
 class L10nRegistry final : public nsWrapperCache {
  public:
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(L10nRegistry)
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(L10nRegistry)
+  NS_DECL_CYCLE_COLLECTION_NATIVE_WRAPPERCACHE_CLASS(L10nRegistry)
 
   L10nRegistry(nsIGlobalObject* aGlobal, bool aUseIsolating);
 
@@ -95,6 +95,14 @@ class L10nRegistry final : public nsWrapperCache {
   static nsresult LoadSync(const nsACString& aPath, void** aData,
                            uint64_t* aSize);
 
+  static ffi::GeckoResourceId ResourceIdToFFI(const nsCString& aResourceId);
+  static ffi::GeckoResourceId ResourceIdToFFI(
+      const dom::OwningUTF8StringOrResourceId& aResourceId);
+  static nsTArray<ffi::GeckoResourceId> ResourceIdsToFFI(
+      const nsTArray<nsCString>& aResourceIds);
+  static nsTArray<ffi::GeckoResourceId> ResourceIdsToFFI(
+      const nsTArray<dom::OwningUTF8StringOrResourceId>& aResourceIds);
+
   void GetAvailableLocales(nsTArray<nsCString>& aRetVal);
 
   void RegisterSources(
@@ -109,12 +117,20 @@ class L10nRegistry final : public nsWrapperCache {
   void ClearSources();
 
   already_AddRefed<FluentBundleIterator> GenerateBundlesSync(
+      const nsTArray<nsCString>& aLocales,
+      const nsTArray<ffi::GeckoResourceId>& aResourceIds, ErrorResult& aRv);
+  already_AddRefed<FluentBundleIterator> GenerateBundlesSync(
       const dom::Sequence<nsCString>& aLocales,
-      const dom::Sequence<nsCString>& aResourceIds, ErrorResult& aRv);
+      const dom::Sequence<dom::OwningUTF8StringOrResourceId>& aResourceIds,
+      ErrorResult& aRv);
 
   already_AddRefed<FluentBundleAsyncIterator> GenerateBundles(
+      const nsTArray<nsCString>& aLocales,
+      const nsTArray<ffi::GeckoResourceId>& aResourceIds, ErrorResult& aRv);
+  already_AddRefed<FluentBundleAsyncIterator> GenerateBundles(
       const dom::Sequence<nsCString>& aLocales,
-      const dom::Sequence<nsCString>& aResourceIds, ErrorResult& aRv);
+      const dom::Sequence<dom::OwningUTF8StringOrResourceId>& aResourceIds,
+      ErrorResult& aRv);
 
   nsIGlobalObject* GetParentObject() const { return mGlobal; }
 

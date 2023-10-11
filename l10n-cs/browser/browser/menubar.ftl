@@ -17,11 +17,9 @@ menu-application-services =
     .label = Služby
 menu-application-hide-this =
     .label =
-        Skrýt { -brand-shorter-name.gender ->
-            [masculine] { -brand-shorter-name(case: "acc") }
-            [feminine] { -brand-shorter-name(case: "acc") }
-            [neuter] { -brand-shorter-name(case: "acc") }
-           *[other] aplikaci { -brand-shorter-name }
+        { -brand-shorter-name.case-status ->
+            [with-cases] Skrýt { -brand-shorter-name(case: "acc") }
+           *[no-cases] Skrýt aplikaci { -brand-shorter-name }
         }
 menu-application-hide-other =
     .label = Skrýt ostatní
@@ -36,39 +34,18 @@ menu-application-touch-bar =
 menu-quit =
     .label = Ukončit
     .accesskey = k
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label =
-        Ukončit { -brand-shorter-name.gender ->
-            [masculine] { -brand-shorter-name(case: "acc") }
-            [feminine] { -brand-shorter-name(case: "acc") }
-            [neuter] { -brand-shorter-name(case: "acc") }
-           *[other] aplikaci { -brand-shorter-name }
+        { -brand-shorter-name.case-status ->
+            [with-cases] Ukončit { -brand-shorter-name(case: "acc") }
+           *[no-cases] Ukončit aplikaci { -brand-shorter-name }
         }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip =
-        Ukončí { -brand-shorter-name.gender ->
-            [masculine] { -brand-shorter-name(case: "acc") }
-            [feminine] { -brand-shorter-name(case: "acc") }
-            [neuter] { -brand-shorter-name(case: "acc") }
-           *[other] aplikaci { -brand-shorter-name }
-        }
-
 menu-about =
     .label =
-        O { -brand-shorter-name.gender ->
-            [masculine] { -brand-shorter-name(case: "loc") }
-            [feminine] { -brand-shorter-name(case: "loc") }
-            [neuter] { -brand-shorter-name(case: "loc") }
-           *[other] aplikaci { -brand-shorter-name }
+        { -brand-shorter-name.case-status ->
+            [with-cases] O { -brand-shorter-name(case: "loc") }
+           *[no-cases] O aplikaci { -brand-shorter-name }
         }
     .accesskey = O
 
@@ -97,8 +74,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Otevřít soubor…
     .accesskey = s
-menu-file-close =
-    .label = Zavřít
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Zavřít panel
+            [one] Zavřít panel
+            [few] Zavřít { $tabCount } panely
+           *[other] Zavřít { $tabCount } panelů
+        }
     .accesskey = Z
 menu-file-close-window =
     .label = Zavřít okno
@@ -115,9 +100,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Vzhled stránky…
     .accesskey = V
-menu-file-print-preview =
-    .label = Náhled tisku
-    .accesskey = h
 menu-file-print =
     .label = Vytisknout stránku…
     .accesskey = T
@@ -204,6 +186,17 @@ menu-view-full-screen =
     .label = Celá obrazovka
     .accesskey = C
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Zapnout zobrazení čtečky
+    .accesskey = Z
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Zavřít zobrazení čtečky
+    .accesskey = Z
+
 ##
 
 menu-view-show-all-tabs =
@@ -232,8 +225,9 @@ menu-history-undo-menu =
     .label = Naposledy zavřené panely
 menu-history-undo-window-menu =
     .label = Naposledy zavřená okna
-menu-history-reopen-all-tabs = Znovu otevřít všechny panely
-menu-history-reopen-all-windows = Znovu otevřít všechna okna
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Hledat v historii
 
 ## Bookmarks Menu
 
@@ -242,10 +236,13 @@ menu-bookmarks-menu =
     .accesskey = o
 menu-bookmarks-manage =
     .label = Správa záložek
-menu-bookmark-current-tab =
-    .label = Přidat současný panel do záložek
-menu-bookmark-edit =
-    .label = Upravit záložku
+menu-bookmark-tab =
+    .label = Přidat současný panel do záložek…
+menu-edit-bookmark =
+    .label = Upravit záložku…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Hledat v záložkách
 menu-bookmarks-all-tabs =
     .label = Přidat všechny panely do záložek…
 menu-bookmarks-toolbar =
@@ -277,12 +274,10 @@ menu-tools-sync-now =
     .accesskey = S
 menu-tools-fxa-re-auth =
     .label =
-        Znovu připojit k účtu { -brand-product-name.gender ->
-            [masculine] { -brand-product-name(case: "gen") }
-            [feminine] { -brand-product-name(case: "gen") }
-            [neuter] { -brand-product-name(case: "gen") }
-           *[other] aplikace { -brand-product-name }
-        }…
+        { -brand-product-name.case-status ->
+            [with-cases] Znovu připojit k účtu { -brand-product-name(case: "gen") }…
+           *[no-cases] Znovu připojit k účtu aplikace { -brand-product-name }…
+        }
     .accesskey = n
 menu-tools-browser-tools =
     .label = Nástroje prohlížeče
@@ -336,15 +331,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = t
 menu-help-report-site-issue =
     .label = Nahlásit problém se zobrazením stránky…
-menu-help-feedback-page =
-    .label = Odeslat zpětnou vazbu…
-    .accesskey = d
+menu-help-share-ideas =
+    .label = Sdílet nápad nebo zpětnou vazbu…
+    .accesskey = S
 menu-help-enter-troubleshoot-mode2 =
     .label = Režim řešení potíží…
     .accesskey = m
 menu-help-exit-troubleshoot-mode =
     .label = Ukončit režim řešení potíží
     .accesskey = m
+menu-help-switch-device =
+    .label = Přechod na nové zařízení
+    .accesskey = n
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

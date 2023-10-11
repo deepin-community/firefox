@@ -13,5 +13,5 @@ all-tabs-menu-hidden-tabs =
     .label = Skjulte faner
 
 all-tabs-menu-manage-user-context =
-    .label = Håndter beholdere
+    .label = Behandle beholdere
     .accesskey = o

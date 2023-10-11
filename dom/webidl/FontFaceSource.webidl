@@ -11,7 +11,6 @@
  */
 
 interface mixin FontFaceSource {
-
-  [Pref="layout.css.font-loading-api.enabled"]
+  [Func="FontFaceSet::IsEnabled", Throws]
   readonly attribute FontFaceSet fonts;
 };

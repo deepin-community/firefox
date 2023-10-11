@@ -2,11 +2,9 @@
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 "use strict";
 
-ChromeUtils.defineModuleGetter(
-  this,
-  "UpdateUtils",
-  "resource://gre/modules/UpdateUtils.jsm"
-);
+ChromeUtils.defineESModuleGetters(this, {
+  UpdateUtils: "resource://gre/modules/UpdateUtils.sys.mjs",
+});
 
 const PREF_NAME = "app.update.background.enabled";
 
@@ -41,7 +39,7 @@ async function test_background_update_pref(expectedEnabled, expectedLocked) {
     } fail`
   );
 
-  if (AppConstants.MOZ_UPDATER && AppConstants.MOZ_UPDATE_AGENT) {
+  if (AppConstants.MOZ_UPDATE_AGENT) {
     let shouldShowUI =
       !expectedLocked && UpdateUtils.PER_INSTALLATION_PREFS_SUPPORTED;
     await BrowserTestUtils.withNewTab("about:preferences", browser => {
@@ -68,11 +66,6 @@ async function test_background_update_pref(expectedEnabled, expectedLocked) {
 }
 
 add_task(async function test_background_app_update_policy() {
-  // Turn on the background update UI so we can test it.
-  await SpecialPowers.pushPrefEnv({
-    set: [["app.update.background.scheduling.enabled", true]],
-  });
-
   const origBackgroundUpdateVal = await UpdateUtils.readUpdateConfigSetting(
     PREF_NAME
   );

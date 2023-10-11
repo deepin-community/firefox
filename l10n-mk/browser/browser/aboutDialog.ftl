@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = Р
 
 update-checkingForUpdates = Проверувам за надградби…
-update-downloading = <img data-l10n-name="icon"/>Преземам надградба — <label data-l10n-name="download-status"/>
-update-downloading-message = Се презема ажурирање - <label data-l10n-name = "download-status" />
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Преземам надградба — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Се презема ажурирање — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Надградбата се применува...
 
 update-failed = Надградбата не успеа. <label data-l10n-name="failed-link">Преземете ја најновата верзија</label>
@@ -27,18 +34,26 @@ update-adminDisabled = Вашиот системски администрато�
 update-noUpdatesFound = Нема надградби за { -brand-short-name }
 update-otherInstanceHandlingUpdates = { -brand-short-name } се ажурира од друга инстанца
 
-update-manual = Најнови верзии се достапни на <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Најнови верзии се достапни на <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Најнови верзии се достапни на <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Не можете да направите дополнителни ажурирања на овој систем. <label data-l10n-name="unsupported-link">Дознајте повеќе</label>
 
 update-restarting = Рестартирам…
 
-channel-description = Моментално сте на каналот за надградби <label data-l10n-name="current-channel"></label>.{ " " }
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Моментално сте на каналот за надградби <label data-l10n-name="current-channel">{ $channel }</label>.
 
 warningDesc-version = { -brand-short-name } е експериментален и може да е нестабилен.
 
 aboutdialog-help-user = Помош за { -brand-product-name }
-aboutdialog-submit-feedback = Поднесете повратна информација
+aboutdialog-submit-feedback = Испратете повратни информации
 
 community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> е <label data-l10n-name="community-exp-creditsLink">глобална заедница</label> која работи заедно за да ја зачува мрежата отворена, јавна и достапна за сите.
 

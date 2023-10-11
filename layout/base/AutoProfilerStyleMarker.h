@@ -18,8 +18,7 @@ class MOZ_RAII AutoProfilerStyleMarker {
  public:
   explicit AutoProfilerStyleMarker(UniquePtr<ProfileChunkedBuffer> aCause,
                                    const Maybe<uint64_t>& aInnerWindowID)
-      : mActive(profiler_can_accept_markers()),
-        mStartTime(TimeStamp::Now()),
+      : mActive(profiler_thread_is_being_profiled_for_markers()),
         mCause(std::move(aCause)),
         mInnerWindowID(aInnerWindowID) {
     if (!mActive) {
@@ -29,6 +28,8 @@ class MOZ_RAII AutoProfilerStyleMarker {
                "Nested AutoProfilerStyleMarker");
     ServoTraversalStatistics::sSingleton = ServoTraversalStatistics();
     ServoTraversalStatistics::sActive = true;
+
+    mStartTime = TimeStamp::Now();
   }
 
   ~AutoProfilerStyleMarker() {

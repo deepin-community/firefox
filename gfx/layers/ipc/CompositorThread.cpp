@@ -11,9 +11,11 @@
 #include "VRManagerParent.h"
 #include "mozilla/BackgroundHangMonitor.h"
 #include "mozilla/SpinEventLoopUntil.h"
+#include "mozilla/gfx/gfxVars.h"
 #include "mozilla/layers/CanvasTranslator.h"
 #include "mozilla/layers/CompositorManagerParent.h"
 #include "mozilla/layers/ImageBridgeParent.h"
+#include "mozilla/layers/VideoBridgeParent.h"
 #include "mozilla/media/MediaSystemResourceService.h"
 #include "nsThread.h"
 #include "nsThreadUtils.h"
@@ -24,6 +26,7 @@ namespace layers {
 static StaticRefPtr<CompositorThreadHolder> sCompositorThreadHolder;
 static Atomic<bool> sFinishedCompositorShutDown(false);
 static mozilla::BackgroundHangMonitor* sBackgroundHangMonitor;
+static ProfilerThreadId sProfilerThreadId;
 
 nsISerialEventTarget* CompositorThread() {
   return sCompositorThreadHolder
@@ -51,12 +54,28 @@ CompositorThreadHolder::CreateCompositorThread() {
   MOZ_ASSERT(!sCompositorThreadHolder,
              "The compositor thread has already been started!");
 
-  // This is 320K, which is higher than the default 256K.
-  // Increased to work the stack overflow in the Intel Vulkan driver
-  // initialization https://bugzilla.mozilla.org/show_bug.cgi?id=1716120
+  // When the CanvasRenderer thread is disabled, WebGL may be handled on this
+  // thread, requiring a bigger stack size. See: CanvasManagerParent::Init
+  //
+  // This is 4M, which is higher than the default 256K.
+  // Increased with bug 1753349 to accommodate the `chromium/5359` branch of
+  // ANGLE, which has large peak stack usage for some pathological shader
+  // compilations.
+  //
+  // Previously increased to 512K to accommodate Mesa in bug 1753340.
+  //
+  // Previously increased to 320K to avoid a stack overflow in the
+  // Intel Vulkan driver initialization in bug 1716120.
+  //
   // Note: we only override it if it's limited already.
-  const uint32_t stackSize =
-      nsIThreadManager::DEFAULT_STACK_SIZE ? 320 << 10 : 0;
+  uint32_t stackSize = nsIThreadManager::DEFAULT_STACK_SIZE;
+  if (stackSize) {
+    stackSize =
+        std::max(stackSize, gfx::gfxVars::SupportsThreadsafeGL() &&
+                                    !gfx::gfxVars::UseCanvasRenderThread()
+                                ? 4096U << 10
+                                : 512U << 10);
+  }
 
   nsCOMPtr<nsIThread> compositorThread;
   nsresult rv = NS_NewNamedThread(
@@ -64,6 +83,7 @@ CompositorThreadHolder::CreateCompositorThread() {
       NS_NewRunnableFunction(
           "CompositorThreadHolder::CompositorThreadHolderSetup",
           []() {
+            sProfilerThreadId = profiler_current_thread_id();
             sBackgroundHangMonitor = new mozilla::BackgroundHangMonitor(
                 "Compositor",
                 /* Timeout values are powers-of-two to enable us get better
@@ -78,7 +98,7 @@ CompositorThreadHolder::CreateCompositorThread() {
             nsCOMPtr<nsIThread> thread = NS_GetCurrentThread();
             static_cast<nsThread*>(thread.get())->SetUseHangMonitor(true);
           }),
-      stackSize);
+      {.stackSize = stackSize});
 
   if (NS_FAILED(rv)) {
     return nullptr;
@@ -100,6 +120,7 @@ void CompositorThreadHolder::Start() {
   // either the GPU process or the UI process, the user will have a usable
   // browser. If we get neither, it will crash as soon as we try to post to the
   // compositor thread for the first time.
+  sProfilerThreadId = ProfilerThreadId();
   sCompositorThreadHolder = new CompositorThreadHolder();
   if (!sCompositorThreadHolder->GetCompositorThread()) {
     gfxCriticalNote << "Compositor thread not started ("
@@ -131,6 +152,7 @@ void CompositorThreadHolder::Shutdown() {
            RefPtr<CompositorThreadHolder>(sCompositorThreadHolder),
        backgroundHangMonitor = UniquePtr<mozilla::BackgroundHangMonitor>(
            sBackgroundHangMonitor)]() {
+        VideoBridgeParent::UnregisterExternalImages();
         nsCOMPtr<nsIThread> thread = NS_GetCurrentThread();
         static_cast<nsThread*>(thread.get())->SetUseHangMonitor(false);
       }));
@@ -138,7 +160,7 @@ void CompositorThreadHolder::Shutdown() {
   sCompositorThreadHolder = nullptr;
   sBackgroundHangMonitor = nullptr;
 
-  SpinEventLoopUntil([&]() {
+  SpinEventLoopUntil("CompositorThreadHolder::Shutdown"_ns, [&]() {
     bool finished = sFinishedCompositorShutDown;
     return finished;
   });
@@ -160,6 +182,11 @@ bool CompositorThreadHolder::IsInCompositorThread() {
   bool in = false;
   MOZ_ALWAYS_SUCCEEDS(CompositorThread()->IsOnCurrentThread(&in));
   return in;
+}
+
+/* static */
+ProfilerThreadId CompositorThreadHolder::GetThreadId() {
+  return sCompositorThreadHolder ? sProfilerThreadId : ProfilerThreadId();
 }
 
 }  // namespace layers

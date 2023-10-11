@@ -26,10 +26,19 @@ import-from-edge-beta =
     .accesskey = d
 import-from-nothing =
     .label = Не импортировать ничего
-    .accesskey = н
+    .accesskey = в
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-opera =
+    .label = Opera
+    .accesskey = O
+import-from-vivaldi =
+    .label = Vivaldi
+    .accesskey = V
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = Chrome Canary
     .accesskey = n
@@ -51,8 +60,11 @@ import-from-firefox =
 import-from-360se =
     .label = 360 Secure Browser
     .accesskey = 3
+import-from-opera-gx =
+    .label = Opera GX
+    .accesskey = G
 
-no-migration-sources = Ни одной программы, содержащей закладки, журнал или пароли, не найдено.
+no-migration-sources = Ни одного приложения, содержащего закладки, журнал или пароли, не найдено.
 
 import-source-page-title = Импорт настроек и данных
 import-items-page-title = Объекты для импорта
@@ -61,12 +73,12 @@ import-items-description = Выберите объекты для импорти
 
 import-permissions-page-title = Предоставьте разрешения для { -brand-short-name }
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = macOS требует, чтобы вы явно разрешили { -brand-short-name } доступ к закладкам Safari. Щёлкните «Продолжить» и выберите файл «Bookmarks.plist» на открывшейся панели «Открыть файл».
+# Do not translate "Safari" (the name of the browser on Apple devices)
+import-safari-permissions-string = macOS требует, чтобы вы явно разрешили { -brand-short-name } доступ к данным Safari. Щёлкните «Продолжить», выберите папку «Safari» в появившемся диалоговом окне Finder и щёлкните «Открыть».
 
 import-migrating-page-title = Идёт импорт…
 
-import-migrating-description = В данное время импортируются следующие объекты…
+import-migrating-description = Сейчас импортируются следующие объекты…
 
 import-select-profile-page-title = Выбор профиля
 
@@ -78,23 +90,9 @@ import-done-description = Следующие объекты были успеш�
 
 import-close-source-browser = Прежде чем продолжить, убедитесь, что выбранный вами браузер закрыт.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Из { $source }
-
 source-name-ie = Internet Explorer
 source-name-edge = Microsoft Edge
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = Google Chrome Canary
 source-name-chrome = Google Chrome
-source-name-chrome-beta = Google Chrome Бета
-source-name-chrome-dev = Google Chrome Dev
-source-name-chromium = Chromium
-source-name-firefox = Mozilla Firefox
-source-name-360se = 360 Secure Browser
 
 imported-safari-reading-list = Список для чтения (из Safari)
 imported-edge-reading-list = Список для чтения (из Edge)
@@ -169,3 +167,8 @@ browser-data-session-checkbox =
     .label = Окна и вкладки
 browser-data-session-label =
     .value = Окна и вкладки
+
+browser-data-payment-methods-checkbox =
+    .label = Способы оплаты
+browser-data-payment-methods-label =
+    .value = Способы оплаты

@@ -17,6 +17,9 @@ printui-sheets-count =
     }
 
 printui-page-range-all = Vse
+printui-page-range-current = Trenutna
+printui-page-range-odd = Lihe
+printui-page-range-even = Sode
 printui-page-range-custom = Po meri
 printui-page-range-label = Strani
 printui-page-range-picker =
@@ -117,7 +120,7 @@ printui-pages-per-sheet = Strani na list
 # This is shown next to the Print button with an indefinite loading spinner
 # when the user prints a page and it is being sent to the printer.
 printui-print-progress-indicator = Tiskanje …
-printui-print-progress-indicator-saving = Shranjevanje ...
+printui-print-progress-indicator-saving = Shranjevanje …
 
 ## Paper sizes that may be supported by the Save to PDF destination:
 

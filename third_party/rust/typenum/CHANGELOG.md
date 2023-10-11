@@ -7,6 +7,21 @@ against this Rust version.
 
 ### Unreleased
 
+### 1.16.0 (2022-12-05)
+- [added] `const INT` field to the `ToInt` trait.
+- [added] `const-generics` field with `U<N>` mapping wher `N` is a const generic.
+
+### 1.15.0 (2021-12-25)
+- [fixed] Cross-compilation issue due to doing math in build script. (PR #177)
+- [added] New feature `scale_info` for using inside
+  [Substrate](https://github.com/paritytech/substrate.git)-based runtimes (PR
+  #175)
+
+### 1.14.0 (2021-09-01)
+- [changed] Sealed all marker traits. Documentation already stated that these
+  should not be implemented outside the crate, so this is not considered a
+  breaking change.
+
 ### 1.13.0 (2021-03-12)
 - [changed] MSRV from 1.22.0 to 1.37.0.
 - [fixed] `op` macro with 2018 edition import.

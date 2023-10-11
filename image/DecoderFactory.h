@@ -13,6 +13,7 @@
 #include "mozilla/NotNull.h"
 #include "mozilla/gfx/2D.h"
 #include "nsCOMPtr.h"
+#include "Orientation.h"
 #include "SurfaceFlags.h"
 
 namespace mozilla::image {
@@ -46,6 +47,9 @@ class DecoderFactory {
  public:
   /// @return the type of decoder which is appropriate for @aMimeType.
   static DecoderType GetDecoderType(const char* aMimeType);
+
+  /// @return the default flags to use when creating a decoder of @aType.
+  static DecoderFlags GetDefaultDecoderFlagsForType(DecoderType aType);
 
   /**
    * Creates and initializes a decoder for non-animated images of type @aType.
@@ -127,7 +131,7 @@ class DecoderFactory {
    *                      from.
    */
   static already_AddRefed<IDecodingTask> CreateMetadataDecoder(
-      DecoderType aType, NotNull<RasterImage*> aImage,
+      DecoderType aType, NotNull<RasterImage*> aImage, DecoderFlags aFlags,
       NotNull<SourceBuffer*> aSourceBuffer);
 
   /**
@@ -154,7 +158,7 @@ class DecoderFactory {
   static already_AddRefed<Decoder> CreateDecoderForICOResource(
       DecoderType aType, SourceBufferIterator&& aIterator,
       NotNull<nsICODecoder*> aICODecoder, bool aIsMetadataDecode,
-      const Maybe<gfx::IntSize>& aExpectedSize,
+      const Maybe<OrientedIntSize>& aExpectedSize,
       const Maybe<uint32_t>& aDataOffset = Nothing());
 
   /**

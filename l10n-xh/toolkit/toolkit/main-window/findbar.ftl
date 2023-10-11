@@ -22,3 +22,39 @@ findbar-entire-word =
     .label = Amagama Apheleleyo
     .accesskey = A
     .tooltiptext = Khangela amagama apheleleyo kuphela
+
+findbar-not-found = Ibinzana lamagama alifunyanwanga
+
+findbar-wrapped-to-top = Ufike ekupheleni kwekhasi, kuqhutywe ukususela emantla
+findbar-wrapped-to-bottom = Ufike emantla ekhasi, kuqhutywe ukususela ngezantsi
+
+findbar-normal-find =
+    .placeholder = Fumana ephepheni
+findbar-fast-find =
+    .placeholder = Fumana ngokukhawuleza
+findbar-fast-find-links =
+    .placeholder = Fumana ngokukhawuleza (amakhonkco odwa)
+
+findbar-case-sensitive-status =
+    .value = (Inobuzaza kubhalo loonobumba)
+findbar-entire-word-status =
+    .value = (Amagama apheleleyo kuphela)
+
+# Variables:
+#   $current (Number): Index of the currently selected match
+#   $total (Number): Total count of matches
+findbar-found-matches =
+    .value =
+        { $total ->
+            [one] { $current } kwezi- { $total } ingqamene
+           *[other] { $current } kwezi { $total } ingqamene
+        }
+
+# Variables:
+#   $limit (Number): Total count of matches allowed before counting stops
+findbar-found-matches-count-limit =
+    .value =
+        { $limit ->
+            [one] Ngaphezu kwe- { $limit } ingqamene
+           *[other] Ngaphezu kwe- { $limit } ingqamene
+        }

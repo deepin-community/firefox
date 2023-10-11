@@ -12,23 +12,30 @@ assertThrowsInstanceOf(() => evaluate("saveStack().column", { columnNumber: Math
                        RangeError);
 
 if (helperThreadCount() > 0) {
-  print("offThreadCompileScript 1");
-  offThreadCompileScript("saveStack().column", { columnNumber: -10 });
-  assertThrowsInstanceOf(runOffThreadScript, RangeError);
+  print("offThreadCompileToStencil 1");
+  offThreadCompileToStencil("saveStack().column", { columnNumber: -10 });
+  assertThrowsInstanceOf(() => {
+    var stencil = finishOffThreadStencil();
+    evalStencil(stencil);
+  }, RangeError);
 
-  print("offThreadCompileScript 2");
-  offThreadCompileScript("saveStack().column", { columnNumber: Math.pow(2,30) });
-  assertThrowsInstanceOf(runOffThreadScript, RangeError);
+  print("offThreadCompileToStencil 2");
+  offThreadCompileToStencil("saveStack().column", { columnNumber: Math.pow(2,30) });
+  assertThrowsInstanceOf(() => {
+    var stencil = finishOffThreadStencil();
+    evalStencil();
+  }, RangeError);
 
-  print("offThreadCompileScript 3");
-  offThreadCompileScript("saveStack().column", { columnNumber: 10000 });
-  assertEq(runOffThreadScript(), 10001);
+  print("offThreadCompileToStencil 3");
+  offThreadCompileToStencil("saveStack().column", { columnNumber: 10000 });
+  stencil = finishOffThreadStencil();
+  assertEq(evalStencil(stencil), 10001);
 }
 
 // Check handling of columns near the limit of our ability to represent them.
 // (This is hardly thorough, but since web content can't set column numbers,
 // it's probably not worth it to be thorough.)
-const maxColumn = Math.pow(2, 30) - 1;
+const maxColumn = Math.pow(2, 30) - 2;
 assertEq(evaluate("saveStack().column", { columnNumber: maxColumn }),
          maxColumn + 1);
 

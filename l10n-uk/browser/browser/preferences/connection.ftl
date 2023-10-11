@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
-    .title = Параметри з’єднання
+connection-window2 =
+    .title = Параметри з'єднання
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -35,7 +35,6 @@ connection-proxy-http = Проксі по HTTP
     .accesskey = H
 connection-proxy-http-port = Порт
     .accesskey = о
-
 connection-proxy-https-sharing =
     .label = Також застосувати цей проксі для HTTPS
     .accesskey = с
@@ -45,8 +44,8 @@ connection-proxy-https = HTTPS-проксі
 connection-proxy-ssl-port = Порт
     .accesskey = р
 
-connection-proxy-socks = Проксі по SOCKS
-    .accesskey = C
+connection-proxy-socks = Хост SOCKS
+    .accesskey = Х
 connection-proxy-socks-port = Порт
     .accesskey = т
 
@@ -77,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = а
     .tooltip = Якщо у вас є збережені дані для входу, цей параметр виконає автентифікацію на проксі без запитів. При невдалій автентифікації ви отримаєте запит.
 
+connection-proxy-autologin-checkbox =
+    .label = Не запитувати про автентифікацію, якщо пароль вже збережено
+    .accesskey = а
+    .tooltiptext = Якщо у вас є збережені дані для входу, цей параметр виконає автентифікацію на проксі без запитів. При невдалій автентифікації ви отримаєте запит.
+
 connection-proxy-socks-remote-dns =
     .label = Проксі DNS при використанні SOCKS v5
     .accesskey = d
-
-connection-dns-over-https =
-    .label = Увімкнути DNS через HTTPS
-    .accesskey = H
-
-connection-dns-over-https-url-resolver = Використовувати провайдера
-    .accesskey = п
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

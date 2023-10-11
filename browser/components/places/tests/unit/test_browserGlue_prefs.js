@@ -12,7 +12,7 @@ const PREF_RESTORE_DEFAULT_BOOKMARKS =
 const PREF_AUTO_EXPORT_HTML = "browser.bookmarks.autoExportHTML";
 
 const TOPIC_BROWSERGLUE_TEST = "browser-glue-test";
-const TOPICDATA_FORCE_PLACES_INIT = "force-places-init";
+const TOPICDATA_FORCE_PLACES_INIT = "test-force-places-init";
 
 var bg = Cc["@mozilla.org/browser/browserglue;1"].getService(Ci.nsIObserver);
 
@@ -25,7 +25,7 @@ add_task(async function setup() {
   // Create our JSON backup from bookmarks.glue.json.
   create_JSON_backup("bookmarks.glue.json");
 
-  registerCleanupFunction(function() {
+  registerCleanupFunction(function () {
     remove_bookmarks_html();
     remove_all_JSON_backups();
 

@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Rub'i' okisanel
 common-dialog-password =
     .value = Ewan tzij
+
+common-dialog-copy-cmd =
+    .label = Tiwachib'ëx
+    .accesskey = c
+common-dialog-select-all-cmd =
+    .label = Ticha' Ronojel
+    .accesskey = r

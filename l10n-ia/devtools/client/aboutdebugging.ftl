@@ -9,11 +9,12 @@
 # Page Title strings
 
 # Page title (ie tab title) for the Setup page
-about-debugging-page-title-setup-page = Correction de errores – Installation
+about-debugging-page-title-setup-page = Depuration – Installation
 
 # Page title (ie tab title) for the Runtime page
-# { $selectedRuntimeId } is the id of the current runtime, such as "this-firefox", "localhost:6080", ...
-about-debugging-page-title-runtime-page = Correction de errores - runtime / { $selectedRuntimeId }
+# Variables:
+#   $selectedRuntimeId - ID of the current runtime, such as "this-firefox", "localhost:6080", etc.
+about-debugging-page-title-runtime-page = Depuration - Execution / { $selectedRuntimeId }
 
 # Sidebar strings
 
@@ -30,11 +31,11 @@ about-debugging-sidebar-setup =
     .name = Installation
 
 # Text displayed in the about:debugging sidebar when USB devices discovery is enabled.
-about-debugging-sidebar-usb-enabled = USB activate
+about-debugging-sidebar-usb-enabled = USB active
 
 # Text displayed in the about:debugging sidebar when USB devices discovery is disabled
 # (for instance because the mandatory ADB extension is not installed).
-about-debugging-sidebar-usb-disabled = USB disactivate
+about-debugging-sidebar-usb-disabled = USB inactive
 
 # Connection status (connected) for runtime items in the sidebar
 aboutdebugging-sidebar-runtime-connection-status-connected = Connectite
@@ -68,18 +69,23 @@ about-debugging-sidebar-runtime-item-waiting-for-browser = Attendente le navigat
 
 # Text displayed in sidebar items for remote devices that have been disconnected from the
 # computer.
-about-debugging-sidebar-runtime-item-unplugged = Distaccate
+about-debugging-sidebar-runtime-item-unplugged = Disconnectite
 
 # Title for runtime sidebar items that are related to a specific device (USB, WiFi).
+# Variables:
+#   $displayName (string) - Displayed name
+#   $deviceName (string) - Name of the device
 about-debugging-sidebar-runtime-item-name =
     .title = { $displayName } ({ $deviceName })
 # Title for runtime sidebar items where we cannot get device information (network
 # locations).
+# Variables:
+#   $displayName (string) - Displayed name
 about-debugging-sidebar-runtime-item-name-no-device =
     .title = { $displayName }
 
 # Text to show in the footer of the sidebar that links to a help page
-# (currently: https://developer.mozilla.org/docs/Tools/about:debugging)
+# (currently: https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/)
 about-debugging-sidebar-support = Supporto pro Depuration
 
 # Text to show as the ALT attribute of a help icon that accompanies the help about
@@ -123,24 +129,24 @@ about-debugging-setup-usb-disable-button = Disactivar apparatos USB
 about-debugging-setup-usb-updating-button = Actualisation…
 
 # USB section of the Setup page (USB status)
-about-debugging-setup-usb-status-enabled = Activate
-about-debugging-setup-usb-status-disabled = Disactivate
+about-debugging-setup-usb-status-enabled = Active
+about-debugging-setup-usb-status-disabled = Inactive
 about-debugging-setup-usb-status-updating = Actualisation...
 
 # USB section step by step guide
 about-debugging-setup-usb-step-enable-dev-menu2 = Activar le menu pro disveloppatores sur tu apparato Android.
 
 # USB section step by step guide
-about-debugging-setup-usb-step-enable-debug2 = Activar le recerca de errores USB in le menu pro disveloppatores sur Android.
+about-debugging-setup-usb-step-enable-debug2 = Activar le Depuration USB in le menu pro disveloppatores sur Android.
 
 # USB section step by step guide
-about-debugging-setup-usb-step-enable-debug-firefox2 = Activar le recerca de errores USB in Firefox sur le apparato Android.
+about-debugging-setup-usb-step-enable-debug-firefox2 = Activar le Depuration USB in Firefox sur le apparato Android.
 
 # USB section step by step guide
 about-debugging-setup-usb-step-plug-device = Connecte le apparato Android a tu computator.
 
 # Text shown in the USB section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/docs/Tools/Remote_Debugging/Debugging_over_USB
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-to-a-remote-device
 about-debugging-setup-usb-troubleshoot = Problemas de connexion al apparato USB?  <a>Remediar</a>
 
 # Network section of the Setup page
@@ -148,7 +154,7 @@ about-debugging-setup-network =
     .title = Position del rete
 
 # Text shown in the Network section of the setup page with a link to troubleshoot connection errors.
-# The link goes to https://developer.mozilla.org/en-US/docs/Tools/Remote_Debugging/Debugging_over_a_network
+# The link goes to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#connecting-over-the-network
 about-debugging-setup-network-troubleshoot = Problemas de connexion via un loco de rete?  <a>Remediar</a>
 
 # Text of a button displayed after the network locations "Host" input.
@@ -208,12 +214,12 @@ about-debugging-runtime-processes =
 about-debugging-runtime-profile-button2 = Prestationes del profilo
 
 # This string is displayed in the runtime page if the current configuration of the
-# target runtime is incompatible with service workers. "Learn more" points to MDN.
-# https://developer.mozilla.org/en-US/docs/Tools/about%3Adebugging#Service_workers_not_compatible
+# target runtime is incompatible with service workers. "Learn more" points to:
+# https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#service-workers-not-compatible
 about-debugging-runtime-service-workers-not-compatible = Le configuration de tu navigator non es compatibile con le obreros de servicio. <a>Saper plus</a>
 
 # This string is displayed in the runtime page if the remote browser version is too old.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
 # { $minVersion } is the minimum version that is compatible with the current Firefox instance (same format)
 about-debugging-browser-version-too-old = Le navigator connectite ha un version ancian ({ $runtimeVersion }). Le version minime supportate es ({ $minVersion }). Isto es un installation non supportate e pote causar faltas in DevTools. Actualisa le navigator connectite. <a>Resolution de problemas</a>
@@ -223,7 +229,7 @@ about-debugging-browser-version-too-old = Le navigator connectite ha un version 
 about-debugging-browser-version-too-old-fennec = Iste version de Firefox non pote depurar Firefox pro Android (68). Nos recommenda installar Firefox pro Android Nightly sur tu telephono pro facer tests. <a>Plus detalios</a>
 
 # This string is displayed in the runtime page if the remote browser version is too recent.
-# "Troubleshooting" link points to https://developer.mozilla.org/docs/Tools/about:debugging#Troubleshooting
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeID } is the build ID of the remote browser (for instance "20181231", format is yyyyMMdd)
 # { $localID } is the build ID of the current Firefox instance (same format)
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
@@ -281,6 +287,12 @@ about-debugging-tmp-extension-reload-button = Recargar
 # Clicking on the button will uninstall the extension and remove it from the page.
 about-debugging-tmp-extension-remove-button = Remover
 
+# Text of a button displayed for a temporary extension loaded in the "This Firefox" page.
+# Clicking on the button will forcefully terminate the extension background script (button
+# only visible in extensions that includes a non-persistent background script, either an
+# event page or a background service worker).
+about-debugging-tmp-extension-terminate-bgscript-button = Clauder le script de  fundo
+
 # Message displayed in the file picker that opens to select a temporary extension to load
 # (triggered by the button using "about-debugging-tmp-extension-install-button")
 # manifest.json .xpi and .zip should not be localized.
@@ -309,6 +321,18 @@ about-debugging-extension-location =
 # For instance "geckoprofiler@mozilla.com" or "{ed26ddcb-5611-4512-a89a-51b8db81cfb2}".
 about-debugging-extension-id =
     .label = ID del extension
+
+# Text displayed for extensions in "runtime" pages, before displaying the status of the
+# extension background script.
+about-debugging-extension-backgroundscript =
+    .label = Script de fundo
+
+# Displayed for extension using a non-persistent background page (either an event page or
+# background service worker) when the background script is currently running.
+about-debugging-extension-backgroundscript-status-running = In execution
+
+# Displayed for extension using a non-persistent background page when is currently stopped.
+about-debugging-extension-backgroundscript-status-stopped = Stoppate
 
 # This string is displayed as a label of the button that pushes a test payload
 # to a service worker.
@@ -363,17 +387,10 @@ about-debugging-zombie-tab-inspect-action-disabled =
 
 # Displayed as name for the Main Process debug target in the Processes category. Only for
 # remote runtimes, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-name = Processo principal
+about-debugging-multiprocess-toolbox-name = Instrumentario multiprocesso
 
 # Displayed as description for the Main Process debug target in the Processes category.
 # Only for remote browsers, if `devtools.aboutdebugging.process-debugging` is true.
-about-debugging-main-process-description2 = Processo principal pro le navigator destination
-
-# Displayed instead of the Main Process debug target when the preference
-# `devtools.browsertoolbox.fission` is true.
-about-debugging-multiprocess-toolbox-name = Instrumentario multiprocesso
-
-# Description for the Multiprocess Toolbox target.
 about-debugging-multiprocess-toolbox-description = Processo principal e processos de contento pro le navigator de destination
 
 # Alt text used for the close icon of message component (warnings, errors and notifications).

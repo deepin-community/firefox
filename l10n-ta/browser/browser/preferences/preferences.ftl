@@ -50,13 +50,16 @@ restart-later = பின்னர் மீட்துவக்கு
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = <img data-l10n-name="icon"/> { $name }, நீட்சிக்கு கலன் கீற்றுகள் தேவைப்படுகிறது.
 
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = <img data-l10n-name="icon"/> { $name }, நீட்டிப்பு { -brand-short-name } இணையத்துடன் எவ்வாறு இணைய முடியும் என்பதைக் கட்டுப்படுத்துகிறது.
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -86,10 +89,6 @@ set-as-my-default-browser =
     .label = முன்னிருப்பாக்கு…
     .accesskey = D
 
-startup-restore-previous-session =
-    .label = முந்தைய அமர்வை மீட்டமை
-    .accesskey = s
-
 disable-extension =
     .label = துணைநிரலை முடக்கவும்
 
@@ -102,10 +101,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = தொடுப்புகளை புதிய சாளரத்தில் திறவாமல் கீற்றுகளில் திறக்கவும்
     .accesskey = w
-
-warn-on-close-multiple-tabs =
-    .label = பல கீற்றுகளை மூடும் போது உங்களை எச்சரிக்கும்
-    .accesskey = m
 
 warn-on-open-many-tabs =
     .label = பல கீற்றுகளைத் திறக்கும் போது { -brand-short-name } மெதுவாகும் என்பதை எச்சரி
@@ -126,6 +121,10 @@ browser-containers-settings =
     .accesskey = i
 
 containers-disable-alert-title = அனைத்து கலன் கீற்றுகளையும் மூடவா?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] நீங்கள் இப்போது கொள்கலன் கீற்றுகளை முடக்கினால், { $tabCount } கலன் கீற்று மூடப்படும். கலன் கீற்றுகளைச் செயல்நீக்க வேண்டுமா?
@@ -137,6 +136,9 @@ containers-disable-alert-ok-button =
         [one] { $tabCount } கலன் கீற்றை மூடு
        *[other] { $tabCount } கலன் கீற்றுகளை மூடு
     }
+
+##
+
 containers-disable-alert-cancel-button = செயலில் வைத்திரு
 
 containers-remove-alert-title = இந்தக் கலனை நீக்கவா?
@@ -152,12 +154,9 @@ containers-remove-alert-msg =
 containers-remove-ok-button = இக்கலனை நீக்கு
 containers-remove-cancel-button = இக்கலனை நீக்க வேண்டாம்
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = மொழி மற்றும் தோற்றம்
-
-fonts-and-colors-header = எழுத்துருக்கள் & நிறங்கள்
 
 default-font = முன்னிருப்பு எழுத்துரு
     .accesskey = D
@@ -167,10 +166,6 @@ default-font-size = அளவு
 advanced-fonts =
     .label = உயர்நிலை...
     .accesskey = உ
-
-colors-settings =
-    .label = நிறங்கள்...
-    .accesskey = ந
 
 language-header = மொழி
 
@@ -207,8 +202,7 @@ files-and-applications-title = கோப்புகள் மற்றும்
 
 download-header = பதிவிறக்கங்கள்
 
-download-save-to =
-    .label = கோப்புகளை இங்கு சேமி
+download-save-where = கோப்புகளை இங்கு சேமி
     .accesskey = v
 
 download-choose-folder =
@@ -425,11 +419,6 @@ home-restore-defaults =
     .label = முன்னிருப்புக்கு மீட்டமை
     .accesskey = R
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = பயர்பாக்ஸ் முகப்பு (இயல்புநிலை)
-
 home-mode-choice-custom =
     .label = தனிப்பயன் உரலிகள்...
 
@@ -457,16 +446,15 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Firefox முகப்பு உள்ளடக்கம்
-home-prefs-content-description = உங்கள் பயர்பாக்ஸ் முகப்புத் திரையில் என்ன உள்ளடக்கம் வேண்டுமென்று தேர்ந்தெடு.
-
 home-prefs-search-header =
     .label = வலை தேடல்
-home-prefs-topsites-header =
-    .label = சிறந்த தளங்கள்
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 home-prefs-recommended-by-header =
     .label = { $provider } என்பவரால் பரிந்துரைக்கப்பட்டது
@@ -477,8 +465,6 @@ home-prefs-recommended-by-learn-more = இது எப்படி செயல
 home-prefs-recommended-by-option-sponsored-stories =
     .label = விளம்பரக் கதைகள்
 
-home-prefs-highlights-header =
-    .label = மிளிர்ப்புகள்
 home-prefs-highlights-option-visited-pages =
     .label = பார்வையிட்டத் தளம்
 home-prefs-highlights-options-bookmarks =
@@ -492,7 +478,6 @@ home-prefs-highlights-option-most-recent-download =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = துணுக்குகள்
-home-prefs-snippets-description = { -vendor-short-name } மற்றும் { -brand-product-name } இலிருந்து புதுப்பிப்புகள்
 
 home-prefs-sections-rows-option =
     .label =
@@ -518,6 +503,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = தேடல் பரிந்துரைகளை இடப்பட்டை முடிவுகளில் காண்பி
     .accesskey = l
+
 
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
@@ -567,6 +553,10 @@ containers-remove-button =
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
 sync-signedout-caption = இணைத்தை உங்களுடன் வைத்திருங்கள்
 
 # This message contains two links and two icon images.
@@ -581,14 +571,22 @@ sync-mobile-promo = பயர்பாக்சை <img data-l10n-name="android-
 
 ## Firefox Account - Signed in
 
+
+## Firefox account - Signed in
+
 sync-profile-picture =
     .tooltiptext = சுயவிவரப் படத்தை மாற்று
 
 sync-manage-account = கணக்கை நிர்வகி
     .accesskey = o
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } இது உறுதிப்படுத்தவில்லை.
 sync-signedin-login-failure = தயவுச்செய்து மீண்டும் இணைய உள்நுழையவும் { $email }
+
+##
 
 sync-resend-verification =
     .label = சரிபார்த்தலை மீண்டும் அனுப்பு
@@ -653,6 +651,16 @@ sync-device-name-cancel =
 sync-device-name-save =
     .label = சேமி
     .accesskey = v
+
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = உறுதிப்படுத்தல் அனுப்பட்டது
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = ஓர் உறுததொடுப்பு { $email } க்கு அனுப்பட்டது.
+sync-verification-not-sent-title = சரிபார்ப்பை அனுப்பு இயலவில்லை
+sync-verification-not-sent-body = எங்களால் இப்பொழுது உறுதி மின்னஞ்சலை அனுப்ப முடியவில்லை, தயவு செய்து பின்னர் மீண்டும் முயற்ச்சிக்கவும்
 
 ## Privacy Section
 
@@ -759,6 +767,9 @@ sitedata-settings =
     .label = தரவை நிர்வகி
     .accesskey = M
 
+## Privacy Section - Cookie Banner Handling
+
+
 ## Privacy Section - Address Bar
 
 addressbar-header = முகவரி பட்டை
@@ -798,6 +809,9 @@ enhanced-tracking-protection-setting-custom =
 ##
 
 
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
+
+
 ## Privacy Section - Tracking
 
 
@@ -833,10 +847,6 @@ permissions-notification-pause =
 permissions-block-popups =
     .label = பாப் அப் (துள்ளும்) சாளரங்களை தடுக்கவும்
     .accesskey = ப
-
-permissions-block-popups-exceptions =
-    .label = விதிவிலக்குகள்...
-    .accesskey = வ
 
 permissions-addon-install-warning =
     .label = வலைத்தளங்கள் துணை நிரல்களை நிறுவ முயற்சிக்கும் போது உங்களை எச்சரிக்கும்
@@ -909,9 +919,11 @@ certs-devices =
 ## Privacy Section - HTTPS-Only
 
 
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = பணிமேடை
 downloads-folder-name = பதிவிறக்கங்கள்
 choose-download-folder-title = பதிவிறக்க அடைவை தேர்ந்தெடு:
-

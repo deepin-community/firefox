@@ -22,13 +22,13 @@ process-type-extension = Rozšíření
 # process used to open file:// URLs
 process-type-file = Místní soubor
 
-# process used to isolate webpages that requested special
-# permission to allocate large amounts of memory
-process-type-weblargeallocation = Velká alokace paměti
-
 # process used to isolate a webpage from other web pages
 # to improve security
 process-type-webisolated = Izolovaný webový obsah
+
+# process used to isolate a ServiceWorker to improve
+# performance
+process-type-webserviceworker = Izolovaný service worker
 
 # process preallocated; may change to other types
 process-type-prealloc = Předem alokováno
@@ -49,6 +49,9 @@ process-type-socket = Socket
 
 # process used to decode media
 process-type-rdd = RDD
+
+# process used to run some IPC actor in their own sandbox
+process-type-utility = Sandboxovaný IPC Actor
 
 ##
 ## Other

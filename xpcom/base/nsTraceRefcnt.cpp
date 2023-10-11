@@ -5,11 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsTraceRefcnt.h"
+
+#include "base/process_util.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/AutoRestore.h"
 #include "mozilla/CycleCollectedJSContext.h"
 #include "mozilla/IntegerPrintfMacros.h"
 #include "mozilla/Path.h"
+#include "mozilla/Sprintf.h"
 #include "mozilla/StaticPtr.h"
 #include "nsXPCOMPrivate.h"
 #include "nscore.h"
@@ -52,7 +55,6 @@
 #endif
 
 #ifdef MOZ_DMD
-#  include "base/process_util.h"
 #  include "nsMemoryInfoDumper.h"
 #endif
 
@@ -65,28 +67,37 @@
 
 #include "prthread.h"
 
-// We use a spin lock instead of a regular mutex because this lock is usually
-// only held for a very short time, and gets grabbed at a very high frequency
-// (~100000 times per second). On Mac, the overhead of using a regular lock
-// is very high, see bug 1137963.
-static mozilla::Atomic<uintptr_t, mozilla::ReleaseAcquire> gTraceLogLocked;
+class MOZ_CAPABILITY("mutex") TraceLogMutex
+    : private mozilla::detail::MutexImpl {
+ public:
+  explicit TraceLogMutex() : ::mozilla::detail::MutexImpl(){};
 
-struct MOZ_STACK_CLASS AutoTraceLogLock final {
-  bool doRelease;
-  AutoTraceLogLock() : doRelease(true) {
-    uintptr_t currentThread =
-        reinterpret_cast<uintptr_t>(PR_GetCurrentThread());
-    if (gTraceLogLocked == currentThread) {
-      doRelease = false;
-    } else {
-      while (!gTraceLogLocked.compareExchange(0, currentThread)) {
-        PR_Sleep(PR_INTERVAL_NO_WAIT); /* yield */
-      }
-    }
+ private:
+  friend class AutoTraceLogLock;
+
+  void Lock() MOZ_CAPABILITY_ACQUIRE() { ::mozilla::detail::MutexImpl::lock(); }
+  void Unlock() MOZ_CAPABILITY_RELEASE() {
+    ::mozilla::detail::MutexImpl::unlock();
   }
-  ~AutoTraceLogLock() {
-    if (doRelease) gTraceLogLocked = 0;
+};
+
+static TraceLogMutex gTraceLog;
+
+class MOZ_RAII AutoTraceLogLock {
+ public:
+  explicit AutoTraceLogLock(TraceLogMutex& aMutex) : mMutex(aMutex) {
+    mMutex.Lock();
   }
+
+  AutoTraceLogLock(const AutoTraceLogLock&) = delete;
+  AutoTraceLogLock& operator=(const AutoTraceLogLock&) = delete;
+  AutoTraceLogLock(AutoTraceLogLock&&) = delete;
+  AutoTraceLogLock& operator=(AutoTraceLogLock&&) = delete;
+
+  ~AutoTraceLogLock() { mMutex.Unlock(); }
+
+ private:
+  TraceLogMutex& mMutex;
 };
 
 class BloatEntry;
@@ -193,25 +204,26 @@ struct nsTraceRefcntStats {
 };
 
 #ifdef DEBUG
-static const char kStaticCtorDtorWarning[] =
-    "XPCOM objects created/destroyed from static ctor/dtor";
-
-static void AssertActivityIsLegal() {
+static void AssertActivityIsLegal(const char* aType, const char* aAction) {
   if (gActivityTLS == BAD_TLS_INDEX || PR_GetThreadPrivate(gActivityTLS)) {
+    char buf[1024];
+    SprintfLiteral(buf, "XPCOM object %s %s from static ctor/dtor", aType,
+                   aAction);
+
     if (PR_GetEnv("MOZ_FATAL_STATIC_XPCOM_CTORS_DTORS")) {
-      MOZ_CRASH_UNSAFE(kStaticCtorDtorWarning);
+      MOZ_CRASH_UNSAFE_PRINTF("%s", buf);
     } else {
-      NS_WARNING(kStaticCtorDtorWarning);
+      NS_WARNING(buf);
     }
   }
 }
-#  define ASSERT_ACTIVITY_IS_LEGAL \
-    do {                           \
-      AssertActivityIsLegal();     \
+#  define ASSERT_ACTIVITY_IS_LEGAL(type_, action_) \
+    do {                                           \
+      AssertActivityIsLegal(type_, action_);       \
     } while (0)
 #else
-#  define ASSERT_ACTIVITY_IS_LEGAL \
-    do {                           \
+#  define ASSERT_ACTIVITY_IS_LEGAL(type_, action_) \
+    do {                                           \
     } while (0)
 #endif  // DEBUG
 
@@ -388,7 +400,7 @@ nsresult nsTraceRefcnt::DumpStatistics() {
     return NS_ERROR_FAILURE;
   }
 
-  AutoTraceLogLock lock;
+  AutoTraceLogLock lock(gTraceLog);
 
   MOZ_ASSERT(!gDumpedStatistics,
              "Calling DumpStatistics more than once may result in "
@@ -449,7 +461,7 @@ nsresult nsTraceRefcnt::DumpStatistics() {
 }
 
 void nsTraceRefcnt::ResetStatistics() {
-  AutoTraceLogLock lock;
+  AutoTraceLogLock lock(gTraceLog);
   gBloatView = nullptr;
 }
 
@@ -511,8 +523,9 @@ static bool InitLog(const EnvCharType* aEnvVar, const char* aMsg,
       return true;
     }
     if (!XRE_IsParentProcess()) {
-      bool hasLogExtension =
-          fname.RFind(".log", true, -1, 4) == kNotFound ? false : true;
+      nsTString<EnvCharType> extension;
+      extension.AssignLiteral(".log");
+      bool hasLogExtension = StringEndsWith(fname, extension);
       if (hasLogExtension) {
         fname.Cut(fname.Length() - 4, 4);
       }
@@ -827,7 +840,7 @@ static void LogDMDFile() {
     return;
   }
 
-  nsPrintfCString fileName("%sdmd-%d.log.gz", dmdFilePrefix,
+  nsPrintfCString fileName("%sdmd-%" PRIPID ".log.gz", dmdFilePrefix,
                            base::GetCurrentProcId());
   FILE* logFile = fopen(fileName.get(), "w");
   if (NS_WARN_IF(!logFile)) {
@@ -878,7 +891,7 @@ void LogTerm() {
 EXPORT_XPCOM_API(MOZ_NEVER_INLINE void)
 NS_LogAddRef(void* aPtr, nsrefcnt aRefcnt, const char* aClass,
              uint32_t aClassSize) {
-  ASSERT_ACTIVITY_IS_LEGAL;
+  ASSERT_ACTIVITY_IS_LEGAL(aClass, "addrefed");
   if (!gInitialized) {
     InitTraceLog();
   }
@@ -886,7 +899,7 @@ NS_LogAddRef(void* aPtr, nsrefcnt aRefcnt, const char* aClass,
     return;
   }
   if (aRefcnt == 1 || gLogging == FullLogging) {
-    AutoTraceLogLock lock;
+    AutoTraceLogLock lock(gTraceLog);
 
     if (aRefcnt == 1 && gBloatLog) {
       BloatEntry* entry = GetBloatEntry(aClass, aClassSize);
@@ -931,7 +944,7 @@ NS_LogAddRef(void* aPtr, nsrefcnt aRefcnt, const char* aClass,
 
 EXPORT_XPCOM_API(MOZ_NEVER_INLINE void)
 NS_LogRelease(void* aPtr, nsrefcnt aRefcnt, const char* aClass) {
-  ASSERT_ACTIVITY_IS_LEGAL;
+  ASSERT_ACTIVITY_IS_LEGAL(aClass, "released");
   if (!gInitialized) {
     InitTraceLog();
   }
@@ -939,7 +952,7 @@ NS_LogRelease(void* aPtr, nsrefcnt aRefcnt, const char* aClass) {
     return;
   }
   if (aRefcnt == 0 || gLogging == FullLogging) {
-    AutoTraceLogLock lock;
+    AutoTraceLogLock lock(gTraceLog);
 
     if (aRefcnt == 0 && gBloatLog) {
       BloatEntry* entry = GetBloatEntry(aClass, 0);
@@ -988,7 +1001,7 @@ NS_LogRelease(void* aPtr, nsrefcnt aRefcnt, const char* aClass) {
 
 EXPORT_XPCOM_API(MOZ_NEVER_INLINE void)
 NS_LogCtor(void* aPtr, const char* aType, uint32_t aInstanceSize) {
-  ASSERT_ACTIVITY_IS_LEGAL;
+  ASSERT_ACTIVITY_IS_LEGAL(aType, "constructed");
   if (!gInitialized) {
     InitTraceLog();
   }
@@ -997,7 +1010,7 @@ NS_LogCtor(void* aPtr, const char* aType, uint32_t aInstanceSize) {
     return;
   }
 
-  AutoTraceLogLock lock;
+  AutoTraceLogLock lock(gTraceLog);
 
   if (gBloatLog) {
     BloatEntry* entry = GetBloatEntry(aType, aInstanceSize);
@@ -1024,7 +1037,7 @@ NS_LogCtor(void* aPtr, const char* aType, uint32_t aInstanceSize) {
 
 EXPORT_XPCOM_API(MOZ_NEVER_INLINE void)
 NS_LogDtor(void* aPtr, const char* aType, uint32_t aInstanceSize) {
-  ASSERT_ACTIVITY_IS_LEGAL;
+  ASSERT_ACTIVITY_IS_LEGAL(aType, "destroyed");
   if (!gInitialized) {
     InitTraceLog();
   }
@@ -1033,7 +1046,7 @@ NS_LogDtor(void* aPtr, const char* aType, uint32_t aInstanceSize) {
     return;
   }
 
-  AutoTraceLogLock lock;
+  AutoTraceLogLock lock(gTraceLog);
 
   if (gBloatLog) {
     BloatEntry* entry = GetBloatEntry(aType, aInstanceSize);
@@ -1079,7 +1092,7 @@ NS_LogCOMPtrAddRef(void* aCOMPtr, nsISupports* aObject) {
     InitTraceLog();
   }
   if (gLogging == FullLogging) {
-    AutoTraceLogLock lock;
+    AutoTraceLogLock lock(gTraceLog);
 
     intptr_t serialno = GetSerialNumber(object, false, CallerPC());
     if (serialno == 0) {
@@ -1115,7 +1128,7 @@ NS_LogCOMPtrRelease(void* aCOMPtr, nsISupports* aObject) {
     InitTraceLog();
   }
   if (gLogging == FullLogging) {
-    AutoTraceLogLock lock;
+    AutoTraceLogLock lock(gTraceLog);
 
     intptr_t serialno = GetSerialNumber(object, false, CallerPC());
     if (serialno == 0) {
@@ -1161,6 +1174,36 @@ void nsTraceRefcnt::SetActivityIsLegal(bool aLegal) {
   }
 
   PR_SetThreadPrivate(gActivityTLS, reinterpret_cast<void*>(!aLegal));
+}
+
+void nsTraceRefcnt::StartLoggingClass(const char* aClass) {
+  gLogging = FullLogging;
+
+  if (!gTypesToLog) {
+    gTypesToLog = new CharPtrSet(256);
+  }
+
+  fprintf(stdout, "### StartLoggingClass %s\n", aClass);
+  if (!gTypesToLog->Contains(aClass)) {
+    gTypesToLog->PutEntry(aClass);
+  }
+
+  // We are deliberately not initializing gSerialNumbers here, because
+  // it would cause assertions. gObjectsToLog can't be used because it
+  // relies on serial numbers.
+
+#ifdef XP_WIN
+#  define ENVVAR(x) u"" x
+#else
+#  define ENVVAR(x) x
+#endif
+
+  if (!gRefcntsLog) {
+    InitLog(ENVVAR("XPCOM_MEM_LATE_REFCNT_LOG"), "refcounts", &gRefcntsLog,
+            XRE_GetProcessTypeString());
+  }
+
+#undef ENVVAR
 }
 
 #ifdef MOZ_ENABLE_FORKSERVER

@@ -16,8 +16,8 @@ downloads-panel =
 # The style attribute has the width of the Downloads Panel expressed using
 # a CSS unit. The longest labels that should fit are usually those of
 # in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 80ch
+downloads-panel-items =
+    .style = width: 37em
 
 downloads-cmd-pause =
     .label = Premor
@@ -30,42 +30,65 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Prekliči
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Odpri vsebujočo mapo
-    .accesskey = V
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] Prikaži v Finderju
+           *[other] Prikaži v mapi
+        }
+    .accesskey = ž
 
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Prikaži v Finderju
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = Odpri v sistemskem pregledovalniku
     .accesskey = s
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-use-system-default-named =
+    .label = Odpri s programom { $handler }
+    .accesskey = O
 
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
     .label = Vedno odpri v sistemskem pregledovalniku
     .accesskey = V
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-always-use-system-default-named =
+    .label = Vedno odpri s programom { $handler }
+    .accesskey = V
 
-downloads-cmd-show-button =
+##
+
+# We can use the same accesskey as downloads-cmd-always-use-system-default.
+# Both should not be visible in the downloads context menu at the same time.
+downloads-cmd-always-open-similar-files =
+    .label = Vedno odpri podobne datoteke
+    .accesskey = V
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
             [macos] Prikaži v Finderju
-           *[other] Odpri vsebujočo mapo
+           *[other] Prikaži v mapi
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
             [macos] Prikaži v Finderju
-           *[other] Odpri vsebujočo mapo
+           *[other] Prikaži v mapi
         }
-downloads-cmd-show-description =
+downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
             [macos] Prikaži v Finderju
-           *[other] Odpri vsebujočo mapo
+           *[other] Prikaži v mapi
         }
 
 downloads-cmd-show-downloads =
@@ -89,6 +112,9 @@ downloads-cmd-clear-list =
 downloads-cmd-clear-downloads =
     .label = Počisti prenose
     .accesskey = S
+downloads-cmd-delete-file =
+    .label = Izbriši
+    .accesskey = I
 
 # This command is shown in the context menu when downloads are blocked.
 downloads-cmd-unblock =
@@ -138,11 +164,18 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
-downloading-file-opens-in-hours-and-minutes = Odprto čez { $hours }h { $minutes }m …
-downloading-file-opens-in-minutes = Odprto čez { $minutes }m …
-downloading-file-opens-in-minutes-and-seconds = Odprto čez { $minutes }m { $seconds }s …
-downloading-file-opens-in-seconds = Odprto čez { $seconds }s …
-downloading-file-opens-in-some-time = Odprto, ko bo končano …
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = Odprto čez { $hours }h { $minutes }m …
+downloading-file-opens-in-minutes-2 =
+    .value = Odprto čez { $minutes }m …
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = Odprto čez { $minutes }m { $seconds }s …
+downloading-file-opens-in-seconds-2 =
+    .value = Odprto čez { $seconds }s …
+downloading-file-opens-in-some-time-2 =
+    .value = Odprto, ko bo končano …
+downloading-file-click-to-open =
+    .value = Odpri, ko se dokonča
 
 ##
 
@@ -168,6 +201,23 @@ downloads-history =
 downloads-details =
     .title = Podrobnosti o prenosu
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+downloads-files-not-downloaded =
+    { $num ->
+        [one] Datoteka se ni prenesla.
+        [two] { $num } datoteki se nista prenesli.
+        [few] { $num } datoteke se niso prenesle.
+       *[other] { $num } datotek se ni preneslo.
+    }
+downloads-blocked-from-url = Zavrnjeni prenosi z { $url }.
+downloads-blocked-download-detailed-info = Spletno mesto { $url } je poskušalo samodejno prenesti več datotek. Morda ne deluje pravilno ali pa vam poskuša na računalnik shraniti neželene datoteke.
+
+##
+
 downloads-clear-downloads-button =
     .label = Počisti prenose
     .tooltiptext = Počisti dokončane, preklicane in spodletele prenose
@@ -180,3 +230,29 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Ni prenosov v tej seji.
+
+# This is displayed in an item at the bottom of the Downloads Panel when there
+# are more downloads than can fit in the list in the panel.
+#   $count (number) - number of files being downloaded that are not shown in the
+#                     panel list.
+downloads-more-downloading =
+    { $count ->
+        [one] Prenaša se še { $count } datoteka
+        [two] Prenašata se še { $count } datoteki
+        [few] Prenašajo se še { $count } datoteke
+       *[other] Prenaša se še { $count } datotek
+    }
+
+## Download errors
+
+downloads-error-alert-title = Napaka pri prenosu
+# Variables:
+#   $extension (String): the name of the blocking extension.
+downloads-error-blocked-by = Shranjevanje tega prenosa je preprečila razširitev { $extension }.
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = Ena od razširitev je preprečila shranjevanje tega prenosa.
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Prenosa ni mogoče shraniti, ker je prišlo do neznane napake.
+    
+    Poskusite znova.

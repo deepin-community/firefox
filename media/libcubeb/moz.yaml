@@ -1,23 +1,51 @@
-# Version of this schema
 schema: 1
 
 bugzilla:
-  # Bugzilla product and component for this directory and subdirectories
-  product: "Core"
+  product: Core
   component: "Audio/Video: cubeb"
 
-# The source from this directory was copied from the cubeb
-# git repository using the update.sh script.  The only changes
-# made were those applied by update.sh and the addition of
-# Makefile.in build files for the Mozilla build system.S
-
 origin:
-  name: "cubeb"
+  name: cubeb
   description: "Cross platform audio library"
+  url: https://github.com/mozilla/cubeb
+  license: ISC
+  release: f9c118ddc050d15ffb3ac2babff06a833d0ac740 (2023-09-15T14:14:22Z).
+  revision: f9c118ddc050d15ffb3ac2babff06a833d0ac740
 
-  url: "https://github.com/kinetiknz/cubeb"
-  license: "ISC"
-
-  # update.sh will update this value
-  release: "f495dc982572a70701c5df930ef454b68bb6fe20 (2021-07-28 11:43:17 +1200)"
+vendoring:
+  url: https://github.com/mozilla/cubeb
+  source-hosting: github
+  vendor-directory: media/libcubeb
+  patches:
+    - 0001-disable-aaudio-before-android-31.patch
+  skip-vendoring-steps:
+    - update-moz-build
+  exclude:
+    - .clang-format
+    - CMakeLists.txt
+    - Config.cmake.in
+    - INSTALL.md
+    - cmake
+    - cubeb.supp
+    - docs
+    - scan-build-install.sh
+    - src/cubeb-jni-instances.h
+    - src/cubeb_assert.h
+    - src/cubeb_audiotrack.c
+    - src/cubeb_kai.c
+    - src/cubeb_osx_run_loop.cpp
+    - src/cubeb_pulse.c
+    - src/cubeb_tracing.h
+    - subprojects
+    - tools
+  keep:
+    - gtest/moz.build
+    - include/cubeb-stdint.h
+    - include/cubeb_export.h
+    - include/moz.build
+    - src/cubeb-jni-instances.h
+    - src/cubeb_assert.h
+    - src/cubeb_osx_run_loop.c
+    - src/cubeb_tracing.h
+    - src/moz.build
 

@@ -1,11 +1,11 @@
 // Tests the filter search box in the storage inspector
 "use strict";
 
-add_task(async function() {
-  await openTabAndSetupStorage(MAIN_DOMAIN + "storage-search.html");
+add_task(async function () {
+  await openTabAndSetupStorage(MAIN_DOMAIN_SECURED + "storage-search.html");
 
   gUI.tree.expandAll();
-  await selectTreeItem(["cookies", "http://test1.example.org"]);
+  await selectTreeItem(["cookies", "https://test1.example.org"]);
 
   showColumn("expires", false);
   showColumn("host", false);

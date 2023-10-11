@@ -1,4 +1,5 @@
 // Copyright 2020 Google LLC
+// SPDX-License-Identifier: Apache-2.0
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +20,7 @@
 // targets except HWY_STATIC_TARGET. Defines unique HWY_TARGET each time so that
 // highway.h defines the corresponding macro/namespace.
 
-#include "hwy/targets.h"
+#include "hwy/detect_targets.h"
 
 // *_inl.h may include other headers, which requires include guards to prevent
 // repeated inclusion. The guards must be reset after compiling each target, so
@@ -52,9 +53,11 @@
 #error ">1 target enabled => define HWY_TARGET_INCLUDE before foreach_target.h"
 #endif
 
-#if (HWY_TARGETS & HWY_SCALAR) && (HWY_STATIC_TARGET != HWY_SCALAR)
+// ------------------------------ HWY_ARCH_X86
+
+#if (HWY_TARGETS & HWY_SSE2) && (HWY_STATIC_TARGET != HWY_SSE2)
 #undef HWY_TARGET
-#define HWY_TARGET HWY_SCALAR
+#define HWY_TARGET HWY_SSE2
 #include HWY_TARGET_INCLUDE
 #ifdef HWY_TARGET_TOGGLE
 #undef HWY_TARGET_TOGGLE
@@ -63,9 +66,9 @@
 #endif
 #endif
 
-#if (HWY_TARGETS & HWY_NEON) && (HWY_STATIC_TARGET != HWY_NEON)
+#if (HWY_TARGETS & HWY_SSSE3) && (HWY_STATIC_TARGET != HWY_SSSE3)
 #undef HWY_TARGET
-#define HWY_TARGET HWY_NEON
+#define HWY_TARGET HWY_SSSE3
 #include HWY_TARGET_INCLUDE
 #ifdef HWY_TARGET_TOGGLE
 #undef HWY_TARGET_TOGGLE
@@ -107,6 +110,110 @@
 #endif
 #endif
 
+#if (HWY_TARGETS & HWY_AVX3_DL) && (HWY_STATIC_TARGET != HWY_AVX3_DL)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_AVX3_DL
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+#if (HWY_TARGETS & HWY_AVX3_ZEN4) && (HWY_STATIC_TARGET != HWY_AVX3_ZEN4)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_AVX3_ZEN4
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+// ------------------------------ HWY_ARCH_ARM
+
+#if (HWY_TARGETS & HWY_NEON_WITHOUT_AES) && \
+    (HWY_STATIC_TARGET != HWY_NEON_WITHOUT_AES)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_NEON_WITHOUT_AES
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+#if (HWY_TARGETS & HWY_NEON) && (HWY_STATIC_TARGET != HWY_NEON)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_NEON
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+#if (HWY_TARGETS & HWY_SVE) && (HWY_STATIC_TARGET != HWY_SVE)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_SVE
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+#if (HWY_TARGETS & HWY_SVE2) && (HWY_STATIC_TARGET != HWY_SVE2)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_SVE2
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+#if (HWY_TARGETS & HWY_SVE_256) && (HWY_STATIC_TARGET != HWY_SVE_256)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_SVE_256
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+#if (HWY_TARGETS & HWY_SVE2_128) && (HWY_STATIC_TARGET != HWY_SVE2_128)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_SVE2_128
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+// ------------------------------ HWY_ARCH_WASM
+
+#if (HWY_TARGETS & HWY_WASM_EMU256) && (HWY_STATIC_TARGET != HWY_WASM_EMU256)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_WASM_EMU256
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
 #if (HWY_TARGETS & HWY_WASM) && (HWY_STATIC_TARGET != HWY_WASM)
 #undef HWY_TARGET
 #define HWY_TARGET HWY_WASM
@@ -118,9 +225,70 @@
 #endif
 #endif
 
+// ------------------------------ HWY_ARCH_PPC
+
 #if (HWY_TARGETS & HWY_PPC8) && (HWY_STATIC_TARGET != HWY_PPC8)
 #undef HWY_TARGET
 #define HWY_TARGET HWY_PPC8
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+#if (HWY_TARGETS & HWY_PPC9) && (HWY_STATIC_TARGET != HWY_PPC9)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_PPC9
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+#if (HWY_TARGETS & HWY_PPC10) && (HWY_STATIC_TARGET != HWY_PPC10)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_PPC10
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+// ------------------------------ HWY_ARCH_RVV
+
+#if (HWY_TARGETS & HWY_RVV) && (HWY_STATIC_TARGET != HWY_RVV)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_RVV
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+// ------------------------------ Scalar
+
+#if (HWY_TARGETS & HWY_EMU128) && (HWY_STATIC_TARGET != HWY_EMU128)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_EMU128
+#include HWY_TARGET_INCLUDE
+#ifdef HWY_TARGET_TOGGLE
+#undef HWY_TARGET_TOGGLE
+#else
+#define HWY_TARGET_TOGGLE
+#endif
+#endif
+
+#if (HWY_TARGETS & HWY_SCALAR) && (HWY_STATIC_TARGET != HWY_SCALAR)
+#undef HWY_TARGET
+#define HWY_TARGET HWY_SCALAR
 #include HWY_TARGET_INCLUDE
 #ifdef HWY_TARGET_TOGGLE
 #undef HWY_TARGET_TOGGLE

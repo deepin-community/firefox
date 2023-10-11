@@ -55,21 +55,16 @@ restart-later = Nayi'i ñun' ne' rukú doj
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that their notifications permission
-# is being controlled by an extension.
-extension-controlled-web-notifications = 'Ngo ekstensiûn, <img data-l10n-name="icon"/> { $name }, nikaj ñu'unj sa nahuin nan.
 
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = 'Ngo extensión, <img data-l10n-name="icon"/> { $name }, nachin' riña ma rakïj ñanj.
-
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = 'Ngo ekstensiûn, <img data-l10n-name="icon"/> { $name }, nikaj ñu'unj sa nahuin nan.
-
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = 'Ngo extensión, <img data-l10n-name="icon"/> { $name }, dugumin { -brand-short-name } se daj gatut riña internet.
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -99,10 +94,6 @@ set-as-my-default-browser =
     .label = Nagi'iaj yitïn' ma...
     .accesskey = D
 
-startup-restore-previous-session =
-    .label = Nanikaj ñun' riña sesión 'ngà gachin
-    .accesskey = s
-
 startup-restore-warn-on-quit =
     .label = Gataj na'an gunïnt nga gahui riña nana'uî't nuguan'an
 
@@ -118,10 +109,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Na'ni' rakïj ñanj luga na'ni' ventana
     .accesskey = w
-
-warn-on-close-multiple-tabs =
-    .label = Gataj ma guní 'ngà narán ga'ì rakïj ñanj
-    .accesskey = m
 
 warn-on-open-many-tabs =
     .label = Gataj guní 'ngà nayi'nin ga'ì rakïj ñanj{ -brand-short-name } { -brand-short-name } dadin' ga'ue gi'iaj sun nananj ma
@@ -142,6 +129,10 @@ browser-containers-settings =
     .accesskey = N
 
 containers-disable-alert-title = Narun' daran' sa hua ni'ninj anj
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] Sisa' guxunt rakïj ñanj, { $tabCount } ni ganarán ma'ān a'ngò da'aj rakïj ñanj. Hua nika ruhua raj
@@ -153,6 +144,9 @@ containers-disable-alert-ok-button =
         [one] Ganarun' { $tabCount } rakïj ñanj
        *[other] Ganarun' { $tabCount } rakïj ñanj
     }
+
+##
+
 containers-disable-alert-cancel-button = Ga ra'nga' ma
 
 containers-remove-alert-title = Guxunt markador na anj?
@@ -168,12 +162,9 @@ containers-remove-alert-msg =
 containers-remove-ok-button = Dure' markador na
 containers-remove-cancel-button = Si dure' markador na
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Nânj a'mi' ni daj ga ma
-
-fonts-and-colors-header = Daj ga ma ni kolô
 
 default-font = Letra 'nga hua nia
     .accesskey = L
@@ -183,10 +174,6 @@ default-font-size = Dàj yachìj man
 advanced-fonts =
     .label = Sa huaj ñaa
     .accesskey = S
-
-colors-settings =
-    .label = Kolô
-    .accesskey = K
 
 language-header = Nanj a'min'
 
@@ -225,8 +212,7 @@ files-and-applications-title = Archivo ni aplikasion
 
 download-header = Nadunínj
 
-download-save-to =
-    .label = Na'ninj so' archivo riña
+download-save-where = Na'ninj so' archivo riña
     .accesskey = a
 
 download-choose-folder =
@@ -465,11 +451,6 @@ home-restore-defaults =
     .label = Nagi'io' ru'ua nìanj
     .accesskey = R
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = Riña ayi'i Firefox (ru'uaj 'naj)
-
 home-mode-choice-custom =
     .label = Nagi'iaj mu'ù nej URL...
 
@@ -497,17 +478,15 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = Sa nū riña pagina ayi'ì Firefox
-home-prefs-content-description = Gini'iaj ahuin si ruat gini'iaj riña Firefox.
-
 home-prefs-search-header =
     .label = Nana'uì' web
-home-prefs-topsites-header =
-    .label = Hiuj ni'iaj yitïnj rè'
-home-prefs-topsites-description = Riña gaché nu yitïnjt
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 # Variables:
 #  $provider (String): Name of the corresponding content provider, e.g "Pocket".
@@ -520,9 +499,6 @@ home-prefs-recommended-by-learn-more = Dàj 'iaj sunj
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Nej sa du'uej
 
-home-prefs-highlights-header =
-    .label = Sa ña'an
-home-prefs-highlights-description = Riña gaché nut nej si na'nín sat
 home-prefs-highlights-option-visited-pages =
     .label = Nej ñanj ngà' ni'io'
 home-prefs-highlights-options-bookmarks =
@@ -538,7 +514,6 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = 'Ngò dajsu
-home-prefs-snippets-description = Sa nakàa doj riña { -vendor-short-name } nī { -brand-product-name }
 
 home-prefs-sections-rows-option =
     .label =
@@ -556,7 +531,6 @@ search-bar-shown =
     .label = Nuto' dukuán nana'ui' riña dukuán mā sa garasun'
 
 search-engine-default-header = Sa ruguñu'unj ñù' nana'uì'
-
 search-engine-default-desc-2 = Nan huin sa 'na' niñā guendâ nanà'uì't nī nùn man riña nej bârra. Ga'ue nadunāt amān garan' ruhuâ.
 search-engine-default-private-desc-2 = Nanà'uì' 'ngo sa riñā nanà'uì' niñānt guendâ Windows Huìi
 search-separate-default-engine =
@@ -573,6 +547,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Nadigan ma nej sa nana'ui' riña dukuán direksion.
     .accesskey = I
+
 
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
@@ -622,10 +597,11 @@ containers-add-button =
 containers-remove-button =
     .label = Dure'
 
-## Sync Section - Signed out
-
-
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = Ganikaj web ga'ant
@@ -640,10 +616,10 @@ sync-signedout-caption = Ganikaj web ga'ant
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Naduni' Firefox guenda <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> guenda <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a> da' gi'iaj sun ma 'ngà si agat.
 
-## Sync Section - Signed in
-
-
 ## Firefox Account - Signed in
+
+
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = Nadunā ña du'uat
@@ -655,8 +631,13 @@ sync-sign-out =
 sync-manage-account = Dugumi' Kuenda
     .accesskey = D
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } se sa ni'in huin ma.
 sync-signedin-login-failure = Gayi'ī sesión da' gatu ñut { $email }
+
+##
 
 sync-resend-verification =
     .label = Ga'nin' ga'anj ñun ma
@@ -681,9 +662,14 @@ prefs-sync-now =
     .accesskeynotsyncing = N
     .labelsyncing = Nagi'iaj nuguàn'anj…
 
-## The list of things currently syncing.
+prefs-sync-now-button =
+    .label = Nagi'iaj nuguàn'àn hīaj
+    .accesskey = N
 
-sync-currently-syncing-heading = Hīaj nagi'iaj nuguàn'ànt sā huā nan:
+prefs-syncing-button =
+    .label = Nagi'iaj nuguàn'anj…
+
+## The list of things currently syncing.
 
 sync-currently-syncing-bookmarks = Nej markadô
 sync-currently-syncing-history = Sa gini'iājt
@@ -699,9 +685,9 @@ sync-change-options =
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog =
+sync-choose-what-to-sync-dialog3 =
     .title = Ni'iāj nùhuin si ruhuât nāgi'iaj nuguàn'ànt
-    .style = width: 36em; min-height: 35em;
+    .style = min-width: 36em;
     .buttonlabelaccept = Na'nïnj sà' nej sa nadunât
     .buttonaccesskeyaccept = S
     .buttonlabelextra2 = Nitāj si 'iaj sunj…
@@ -758,12 +744,19 @@ sync-device-name-save =
 
 sync-connect-another-device = Gatu 'ngà a'ngo aga'a...
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Sa natsít nga gan'anj
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = Nga nukui' 'ngo enlâse da' ni'iajt sa gi'iaj gire' { $email }
+sync-verification-not-sent-title = Nu ga'ue gan'anj sa natsít
+sync-verification-not-sent-body = Na'ue natsij aga' na sa ga'nínt riña korreo, yakaj da'nga ñû nanâ doj.
+
 ## Privacy Section
 
 privacy-header = Daj da'ui navegador gi'iaj sunj
-
-## Privacy Section - Forms
-
 
 ## Privacy Section - Logins and Passwords
 
@@ -886,12 +879,8 @@ sitedata-block-desc = Sa naràn riña
 
 sitedata-option-block-cross-site-trackers =
     .label = Sa naga'naj riña nej sitiô nadunâ dugui'
-sitedata-option-block-cross-site-and-social-media-trackers =
-    .label = Sa naga'naj riña nej sîtio ni nej rêd sociâl
 sitedata-option-block-unvisited =
     .label = Si kokî nej sitiô nu atûjt
-sitedata-option-block-all-third-party =
-    .label = Sa naga'naj a'ngô nej si (ga'ue si huej dure' sîtio)
 sitedata-option-block-all =
     .label = Daran' kôki ( ga'ue si huej dure' sîtio)
 
@@ -902,6 +891,9 @@ sitedata-clear =
 sitedata-settings =
     .label = Dugumi' datos
     .accesskey = M
+
+## Privacy Section - Cookie Banner Handling
+
 
 ## Privacy Section - Address Bar
 
@@ -955,12 +947,12 @@ content-blocking-social-media-trackers = Sa naga'naj sò' riña nej rêd sociâl
 content-blocking-all-cookies = daran' nej kôki
 content-blocking-unvisited-cookies = SI kokî nej sitiô nitaj si ni'iajt
 content-blocking-all-windows-tracking-content = Sa ni'iaj sa màn 'iát riña daran' bentâna
-content-blocking-all-third-party-cookies = Daran' nej a'ngô kokî huaa
 content-blocking-cryptominers = Nej Kriptominêro
 content-blocking-fingerprinters = Nej da'nga' ra'a
 
-content-blocking-warning-title = ¡Nuguan' huaa!
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
+content-blocking-warning-title = ¡Nuguan' huaa!
 content-blocking-warning-learn-how = Gahuin chrūn dàj
 
 content-blocking-reload-description = Da' naduna sa huin ruhuât ni da'uît nagi'iaj nakàt rakïj ñanj.
@@ -1042,10 +1034,6 @@ permissions-block-popups =
     .label = Garrun riña nej ventana ahui ma'an
     .accesskey = B
 
-permissions-block-popups-exceptions =
-    .label = Sa taj a
-    .accesskey = E
-
 permissions-addon-install-warning =
     .label = Gataj na'anj ma 'ngà nej sitio na huin ruhua dugutuj nej sa taj a
     .accesskey = W
@@ -1118,13 +1106,12 @@ certs-devices =
 
 ## Privacy Section - HTTPS-Only
 
+
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Eskritorio
 downloads-folder-name = Nadunínj
 choose-download-folder-title = Ganahui dane' gima sa' sa naduninjt
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Na'nïnj sà' archîbo riña { $service-name }

@@ -4,6 +4,7 @@
 
 # Page title
 about-processes-title = Quản lý tiến trình
+
 # The Actions column
 about-processes-column-action =
     .title = Hành động
@@ -14,6 +15,7 @@ about-processes-shutdown-process =
     .title = Đóng các thẻ và buộc dừng tiến trình
 about-processes-shutdown-tab =
     .title = Đóng thẻ
+
 # Profiler icons
 # Variables:
 #    $duration (Number) The time in seconds during which the profiler will be running.
@@ -49,6 +51,8 @@ about-processes-socket-process = Mạng ({ $pid })
 about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Máy chủ Fork ({ $pid })
 about-processes-preallocated-process = Được tải trước ({ $pid })
+about-processes-utility-process = Tiện ích ({ $pid })
+
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
@@ -61,10 +65,9 @@ about-processes-unknown-process = Khác: { $type } ({ $pid })
 ##    $origin (String) The domain name for this process.
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
-about-processes-web-large-allocation-process = { $origin } ({ $pid }, lớn)
+about-processes-web-serviceworker = { $origin } ({ $pid }, serviceworker)
 about-processes-with-coop-coep-process = { $origin } ({ $pid }, đã cô lập cross-origin)
 about-processes-web-isolated-process-private = { $origin } — Riêng tư ({ $pid })
-about-processes-web-large-allocation-process-private = { $origin } — Riêng tư ({ $pid }, lớn)
 about-processes-with-coop-coep-process-private = { $origin } — Riêng tư ({ $pid }, đã cô lập cross-origin)
 
 ## Details within processes
@@ -83,6 +86,7 @@ about-processes-active-threads =
     { $active ->
        *[other] { $active } luồng hoạt động trong số { $number }: { $list }
     }
+
 # Single-line summary of threads (idle process)
 # Variables:
 #    $number (Number) The number of threads in the process. Typically larger
@@ -93,26 +97,41 @@ about-processes-inactive-threads =
     { $number ->
        *[other] { $number } luồng không hoạt động
     }
+
 # Thread details
 # Variables:
 #   $name (String) The name assigned to the thread.
 #   $tid (String) The thread id of this thread, assigned by the OS.
 about-processes-thread-name-and-id = { $name }
     .title = ID luồng: { $tid }
+
 # Tab
 # Variables:
 #   $name (String) The name of the tab (typically the title of the page, might be the url while the page is loading).
 about-processes-tab-name = Thẻ: { $name }
 about-processes-preloaded-tab = Thẻ mới được tải trước
+
 # Single subframe
 # Variables:
 #   $url (String) The full url of this subframe.
 about-processes-frame-name-one = Khung phụ: { $url }
+
 # Group of subframes
 # Variables:
 #   $number (Number) The number of subframes in this group. Always ≥ 1.
 #   $shortUrl (String) The shared prefix for the subframes in the group.
 about-processes-frame-name-many = Khung phụ ({ $number }): { $shortUrl }
+
+## Utility process actor names
+
+about-processes-utility-actor-unknown = Tác nhân không xác định
+about-processes-utility-actor-audio-decoder-generic = Bộ giải mã âm thanh chung
+about-processes-utility-actor-audio-decoder-applemedia = Bộ giải mã âm thanh Apple Media
+about-processes-utility-actor-audio-decoder-wmf = Bộ giải mã âm thanh Windows Media Framework
+about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media Engine CDM
+# "Oracle" refers to an internal Firefox process and should be kept in English
+about-processes-utility-actor-js-oracle = JavaScript Oracle
+about-processes-utility-actor-windows-utils = Tiện ích Windows
 
 ## Displaying CPU (percentage and total)
 ## Variables:
@@ -126,11 +145,18 @@ about-processes-frame-name-many = Khung phụ ({ $number }): { $shortUrl }
 # Common case.
 about-processes-cpu = { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
     .title = Tổng thời gian CPU: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+
 # Special case: data is not available yet.
 about-processes-cpu-user-and-kernel-not-ready = (đang đo)
+
+# Special case: process or thread is almost idle (using less than 0.1% of a CPU core).
+# This case only occurs on Windows where the precision of the CPU times is low.
+about-processes-cpu-almost-idle = < 0.1%
+    .title = Tổng thời gian CPU: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
+
 # Special case: process or thread is currently idle.
-about-processes-cpu-idle = Rảnh
-    .title = Tổng thời gian CPU: { NUMBER($total, maximumFractionDigits: 2) }{ $unit }
+about-processes-cpu-fully-idle = rảnh
+    .title = Tổng thời gian CPU: { NUMBER($total, maximumFractionDigits: 0) }{ $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:
@@ -146,6 +172,7 @@ about-processes-cpu-idle = Rảnh
 # Common case.
 about-processes-total-memory-size-changed = { NUMBER($total, maximumFractionDigits: 0) }{ $totalUnit }
     .title = Thay đổi: { $deltaSign }{ NUMBER($delta, maximumFractionDigits: 0) }{ $deltaUnit }
+
 # Special case: no change.
 about-processes-total-memory-size-no-change = { NUMBER($total, maximumFractionDigits: 0) }{ $totalUnit }
 

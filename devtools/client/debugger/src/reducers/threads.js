@@ -7,23 +7,18 @@
  * @module reducers/threads
  */
 
-import { sortBy } from "lodash";
-import { createSelector } from "reselect";
-
 export function initialThreadsState() {
   return {
     threads: [],
-    isWebExtension: false,
+
+    // List of thread actor IDs which are current tracing.
+    // i.e. where JavaScript tracing is enabled.
+    mutableTracingThreads: new Set(),
   };
 }
 
 export default function update(state = initialThreadsState(), action) {
   switch (action.type) {
-    case "CONNECT":
-      return {
-        ...state,
-        isWebExtension: action.isWebExtension,
-      };
     case "INSERT_THREAD":
       return {
         ...state,
@@ -31,68 +26,44 @@ export default function update(state = initialThreadsState(), action) {
       };
 
     case "REMOVE_THREAD":
-      const { oldThread } = action;
       return {
         ...state,
         threads: state.threads.filter(
-          thread => oldThread.actor != thread.actor
+          thread => action.threadActorID != thread.actor
         ),
       };
+
     case "UPDATE_SERVICE_WORKER_STATUS":
-      const { thread, status } = action;
       return {
         ...state,
         threads: state.threads.map(t => {
-          if (t.actor == thread) {
-            return { ...t, serviceWorkerStatus: status };
+          if (t.actor == action.thread) {
+            return { ...t, serviceWorkerStatus: action.status };
           }
           return t;
         }),
       };
 
+    case "TRACING_TOGGLED":
+      const { mutableTracingThreads } = state;
+      const sizeBefore = mutableTracingThreads.size;
+      if (action.enabled) {
+        mutableTracingThreads.add(action.thread);
+      } else {
+        mutableTracingThreads.delete(action.thread);
+      }
+      // We may receive toggle events when we change the logging method
+      // while we are already tracing, but the list of tracing thread stays the same.
+      const changed = mutableTracingThreads.size != sizeBefore;
+      if (changed) {
+        return {
+          ...state,
+          mutableTracingThreads,
+        };
+      }
+      return state;
+
     default:
       return state;
   }
-}
-
-export const getWorkerCount = state => getThreads(state).length;
-
-export function getWorkerByThread(state, thread) {
-  return getThreads(state).find(worker => worker.actor == thread);
-}
-
-function isMainThread(thread) {
-  return thread.isTopLevel;
-}
-
-export function getMainThread(state) {
-  return state.threads.threads.find(isMainThread);
-}
-
-export function getDebuggeeUrl(state) {
-  return getMainThread(state)?.url || "";
-}
-
-export const getThreads = createSelector(
-  state => state.threads.threads,
-  threads => threads.filter(thread => !isMainThread(thread))
-);
-
-export const getAllThreads = createSelector(
-  getMainThread,
-  getThreads,
-  (mainThread, threads) =>
-    [mainThread, ...sortBy(threads, thread => thread.name)].filter(Boolean)
-);
-
-export function getThread(state, threadActor) {
-  return getAllThreads(state).find(thread => thread.actor === threadActor);
-}
-
-// checks if a path begins with a thread actor
-// e.g "server1.conn0.child1/workerTarget22/context1/dbg-workers.glitch.me"
-export function startsWithThreadActor(state, path) {
-  const threadActors = getAllThreads(state).map(t => t.actor);
-  const match = path.match(new RegExp(`(${threadActors.join("|")})\/(.*)`));
-  return match?.[1];
 }

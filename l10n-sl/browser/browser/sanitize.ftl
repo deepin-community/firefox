@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Nastavitve brisanja zgodovine
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Počisti nedavno zgodovino
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Počisti vso zgodovino
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = Ob izhodu naj { -brand-short-name } samodejno počisti
 
@@ -77,10 +77,6 @@ item-form-search-history =
     .accesskey = I
 
 data-section-label = Podatke
-
-item-site-preferences =
-    .label = nastavitve strani
-    .accesskey = S
 
 item-site-settings =
     .label = nastavitve strani

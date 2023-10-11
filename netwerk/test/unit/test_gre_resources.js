@@ -2,8 +2,6 @@
 
 "use strict";
 
-var ios = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-
 function wrapInputStream(input) {
   var nsIScriptableInputStream = Ci.nsIScriptableInputStream;
   var factory = Cc["@mozilla.org/scriptableinputstream;1"];
@@ -19,7 +17,7 @@ function check_file(file) {
   });
   try {
     let instr = wrapInputStream(channel.open());
-    Assert.ok(instr.read(1024).length > 0);
+    Assert.ok(!!instr.read(1024).length);
   } catch (e) {
     do_throw("Failed to read " + file + " from gre-resources:" + e);
   }

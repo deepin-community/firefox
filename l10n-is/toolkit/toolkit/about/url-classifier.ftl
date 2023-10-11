@@ -30,16 +30,16 @@ url-classifier-cache-show-entries = Sýna færslur
 url-classifier-cache-entries = Færslur í skyndiminni
 url-classifier-cache-prefix = Forskeyti
 url-classifier-cache-ncache-expiry = Gildistími á neikvæðum færslum í skyndiminni
-url-classifier-cache-fullhash = Fullt hash gildi
+url-classifier-cache-fullhash = Fullt tætigildi
 url-classifier-cache-pcache-expiry = Gildistími á jákvæðum færslum í skyndiminni
-url-classifier-debug-title = Kemba
-url-classifier-debug-module-btn = Setja einingar fyrir skráningu
-url-classifier-debug-file-btn = Setja skráningarskrá
-url-classifier-debug-js-log-chk = Setja JS skráningu
+url-classifier-debug-title = Villuleita
+url-classifier-debug-module-btn = Setja einingar fyrir atvikaskráningu
+url-classifier-debug-file-btn = Setja atvikaskrá
+url-classifier-debug-js-log-chk = Setja JS-atvikaskráningu
 url-classifier-debug-sb-modules = Skráningareiningar fyrir örugga vöfrun
 url-classifier-debug-modules = Núverandi skráningareiningar
 url-classifier-debug-sbjs-modules = JS skráning fyrir örugga vöfrun
-url-classifier-debug-file = Núverandi skráningarskrá
+url-classifier-debug-file = Fyrirliggjandi atvikaskrá
 
 url-classifier-trigger-update = Hefja uppfærslu
 url-classifier-not-available = Ekki tiltækt
@@ -50,5 +50,9 @@ url-classifier-disabled = Óvirkt
 url-classifier-updating = uppfæri
 url-classifier-cannot-update = get ekki uppfært
 url-classifier-success = tókst
+
+## Variables
+##   $error (string) - Error message
+
 url-classifier-update-error = uppfærslu villa ({ $error })
 url-classifier-download-error = niðurhalsvilla ({ $error })

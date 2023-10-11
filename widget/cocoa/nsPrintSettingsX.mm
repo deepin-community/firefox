@@ -7,7 +7,6 @@
 #include "nsObjCExceptions.h"
 
 #include "plbase64.h"
-#include "plstr.h"
 
 #include "nsCocoaUtils.h"
 #include "nsXULAppAPI.h"
@@ -24,15 +23,6 @@ nsPrintSettingsX::nsPrintSettingsX() {
   NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
 
   mDestination = kPMDestinationInvalid;
-
-  /*
-   * Don't save print settings after the user cancels out of the
-   * print dialog. For saving print settings after a cancellation
-   * to work properly, in addition to changing |mSaveOnCancel|,
-   * the print dialog implementation must be updated to save changed
-   * settings and serialize them back to the child process.
-   */
-  mSaveOnCancel = false;
 
   NS_OBJC_END_TRY_IGNORE_BLOCK;
 }
@@ -115,15 +105,18 @@ NSPrintInfo* nsPrintSettingsX::CreateOrCopyPrintInfo(bool aWithScaling) {
 
   NSSize paperSize;
   if (GetSheetOrientation() == kPortraitOrientation) {
-    [printInfo setOrientation:NSPaperOrientationPortrait];
     paperSize.width = CocoaPointsFromPaperSize(mPaperWidth);
     paperSize.height = CocoaPointsFromPaperSize(mPaperHeight);
-    [printInfo setPaperSize:paperSize];
   } else {
-    [printInfo setOrientation:NSPaperOrientationLandscape];
     paperSize.width = CocoaPointsFromPaperSize(mPaperHeight);
     paperSize.height = CocoaPointsFromPaperSize(mPaperWidth);
-    [printInfo setPaperSize:paperSize];
+  }
+  [printInfo setPaperSize:paperSize];
+
+  if (paperSize.width > paperSize.height) {
+    [printInfo setOrientation:NSPaperOrientationLandscape];
+  } else {
+    [printInfo setOrientation:NSPaperOrientationPortrait];
   }
 
   [printInfo setTopMargin:mUnwriteableMargin.top];
@@ -131,10 +124,18 @@ NSPrintInfo* nsPrintSettingsX::CreateOrCopyPrintInfo(bool aWithScaling) {
   [printInfo setBottomMargin:mUnwriteableMargin.bottom];
   [printInfo setLeftMargin:mUnwriteableMargin.left];
 
-  // If the name is our pseudo-printer "Mozilla Save to PDF", this will silently fail
-  // as no such printer is known. That's OK, because mPrinter will remain correct
-  // and is our canonical source of truth here.
-  [printInfo setPrinter:[NSPrinter printerWithName:nsCocoaUtils::ToNSString(mPrinter)]];
+  // If the printer name is the name of our pseudo print-to-PDF printer, the
+  // following `setPrinter` call will fail silently, since macOS doesn't know
+  // anything about it. That's OK, because mPrinter is our canonical source of
+  // truth.
+  // Actually, it seems Mac OS X 10.12 (the oldest version of Mac that we
+  // support) hangs if the printer name is not recognized. For now we explicitly
+  // check for our print-to-PDF printer, but that is not ideal since we should
+  // really localize the name of this printer at some point. Once we drop
+  // support for 10.12 we should remove this check.
+  if (!mPrinter.EqualsLiteral("Mozilla Save to PDF")) {
+    [printInfo setPrinter:[NSPrinter printerWithName:nsCocoaUtils::ToNSString(mPrinter)]];
+  }
 
   // Scaling is handled by gecko, we do NOT want the cocoa printing system to add
   // a second scaling on top of that. So we only set the true scaling factor here
@@ -172,7 +173,9 @@ NSPrintInfo* nsPrintSettingsX::CreateOrCopyPrintInfo(bool aWithScaling) {
   }
 
   if (mDisposition.IsEmpty()) {
-    if (mPrintToFile) {
+    // NOTE: It's unclear what to do for kOutputDestinationStream but this is
+    // only for the native print dialog where that can't happen.
+    if (mOutputDestination == kOutputDestinationFile) {
       [printInfo setJobDisposition:NSPrintSaveJob];
     } else {
       [printInfo setJobDisposition:NSPrintSpoolJob];
@@ -251,10 +254,10 @@ void nsPrintSettingsX::SetFromPrintInfo(NSPrintInfo* aPrintInfo, bool aAdoptPrin
     SetPaperHeight(PaperSizeFromCocoaPoints(paperSize.width));
   }
 
-  mUnwriteableMargin.top = [aPrintInfo topMargin];
-  mUnwriteableMargin.right = [aPrintInfo rightMargin];
-  mUnwriteableMargin.bottom = [aPrintInfo bottomMargin];
-  mUnwriteableMargin.left = [aPrintInfo leftMargin];
+  mUnwriteableMargin.top = static_cast<int32_t>([aPrintInfo topMargin]);
+  mUnwriteableMargin.right = static_cast<int32_t>([aPrintInfo rightMargin]);
+  mUnwriteableMargin.bottom = static_cast<int32_t>([aPrintInfo bottomMargin]);
+  mUnwriteableMargin.left = static_cast<int32_t>([aPrintInfo leftMargin]);
 
   if (aAdoptPrintInfo) {
     // Keep a reference to the printInfo; it may have settings that we don't know how to handle
@@ -284,7 +287,12 @@ void nsPrintSettingsX::SetFromPrintInfo(NSPrintInfo* aPrintInfo, bool aAdoptPrin
     mScaling = round(double([aPrintInfo scalingFactor]) * 100.0) / 100.0;
   }
 
-  mPrintToFile = [aPrintInfo jobDisposition] == NSPrintSaveJob;
+  mOutputDestination = [&] {
+    if ([aPrintInfo jobDisposition] == NSPrintSaveJob) {
+      return kOutputDestinationFile;
+    }
+    return kOutputDestinationPrinter;
+  }();
 
   NSDictionary* dict = [aPrintInfo dictionary];
   const char* filePath = [[dict objectForKey:NSPrintJobSavingURL] fileSystemRepresentation];

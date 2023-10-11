@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = ချိတ်ဆက်မှု အပြင်အဆင်များ
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -68,13 +68,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = ကြားခံဆာဗာများအတွက် အတည်ပြုအချက်အလက်များကို သိမ်းထားပါက ယခုအပြင်အဆင်သည် ကြားခံဆာဗာများနှင့် အတည်ပြုရာတွင် တိတ်ဆိတ်စွာ ဆောင်ရွက်ပေးသည်။ အကယ်၍ အတည်ပြုခြင်း မအောင်မြင်ပါက အတည်ပြုအချက်အလက်ကို တောင်းခံပါမည်။
 
+connection-proxy-autologin-checkbox =
+    .label = စကားဝှက် သိမ်းပြီးသားရှိပါက အတည်ပြုခြင်းအတွက် ထပ်မမေးပါနှင့်
+    .accesskey = i
+    .tooltiptext = ကြားခံဆာဗာများအတွက် အတည်ပြုအချက်အလက်များကို သိမ်းထားပါက ယခုအပြင်အဆင်သည် ကြားခံဆာဗာများနှင့် အတည်ပြုရာတွင် တိတ်ဆိတ်စွာ ဆောင်ရွက်ပေးသည်။ အကယ်၍ အတည်ပြုခြင်း မအောင်မြင်ပါက အတည်ပြုအချက်အလက်ကို တောင်းခံပါမည်။
+
 connection-proxy-socks-remote-dns =
     .label = SOCKS v5 ကို အသုံးပြုသည့်အခါ DNS ကို ကြားခံအနေဖြင့် အသုံးပြုပါ
     .accesskey = d
-
-connection-dns-over-https =
-    .label = HTTPS ဖြင့် DNS ကို သုံးပါ
-    .accesskey = b
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

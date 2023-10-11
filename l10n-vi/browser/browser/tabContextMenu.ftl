@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Chọn tất cả các thẻ
     .accesskey = S
+tab-context-play-tab =
+    .label = Phát âm thanh thẻ
+    .accesskey = l
+tab-context-play-tabs =
+    .label = Phát âm thanh các thẻ
+    .accesskey = y
 duplicate-tab =
     .label = Nhân đôi thẻ
     .accesskey = D
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Đánh dấu các thẻ…
     .accesskey = k
-bookmark-tab =
-    .label = Đánh dấu thẻ
+tab-context-bookmark-tab =
+    .label = Đánh dấu thẻ…
     .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = Mở liên kết trong thẻ ngăn chứa mới
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Chia sẻ
     .accesskey = h
-tab-context-share-more =
-    .label = Thêm…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -82,13 +86,6 @@ tab-context-reopen-closed-tabs =
            *[other] Mở lại các thẻ đã đóng
         }
     .accesskey = o
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Đóng thẻ
-           *[other] Đóng các thẻ
-        }
-    .accesskey = C
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

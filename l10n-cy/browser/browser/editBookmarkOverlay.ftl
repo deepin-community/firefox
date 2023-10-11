@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Cuddio
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Dangos pob ffolder nod tudalen
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Cuddio
+
 bookmark-overlay-new-folder-button =
     .label = Ffolder Newydd
     .accesskey = N
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = Dangos pob tag
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Cuddio
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Dangos pob tag
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Cuddio
 
 bookmark-overlay-keyword-2 =
     .value = Allweddair

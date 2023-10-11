@@ -24,11 +24,11 @@ UNIFIED_SOURCES += [
     "src/base/time.cc",
     "src/base/timer.cc",
     "src/chrome/common/child_process.cc",
-    "src/chrome/common/child_process_host.cc",
     "src/chrome/common/child_thread.cc",
     "src/chrome/common/chrome_switches.cc",
     "src/chrome/common/ipc_channel_utils.cc",
     "src/chrome/common/ipc_message.cc",
+    "src/chrome/common/ipc_message_utils.cc",
     "src/mojo/core/ports/event.cc",
     "src/mojo/core/ports/message_queue.cc",
     "src/mojo/core/ports/name.cc",
@@ -71,7 +71,6 @@ if os_posix:
         "src/base/string16.cc",
         "src/base/thread_local_posix.cc",
         "src/base/waitable_event_posix.cc",
-        "src/chrome/common/file_descriptor_set_posix.cc",
         "src/chrome/common/ipc_channel_posix.cc",
         "src/chrome/common/process_watcher_posix_sigchld.cc",
     ]
@@ -85,7 +84,7 @@ if os_macosx:
         "src/base/scoped_nsautorelease_pool.mm",
         "src/base/sys_string_conversions_mac.mm",
         "src/base/time_mac.cc",
-        "src/chrome/common/mach_ipc_mac.mm",
+        "src/chrome/common/mach_ipc_mac.cc",
         "src/chrome/common/mach_message_source_mac.cc",
     ]
     SOURCES += [
@@ -124,7 +123,8 @@ if os_solaris:
         "src/base/time_posix.cc",
     ]
 
-CXXFLAGS += CONFIG["TK_CFLAGS"]
+if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
+    CXXFLAGS += CONFIG["MOZ_GTK3_CFLAGS"]
 
 TEST_DIRS += [
     "gtest",
@@ -133,8 +133,3 @@ TEST_DIRS += [
 include("/ipc/chromium/chromium-config.mozbuild")
 
 FINAL_LIBRARY = "xul"
-
-if CONFIG["CC_TYPE"] in ("clang", "gcc"):
-    CXXFLAGS += ["-Wno-error=shadow"]
-
-REQUIRES_UNIFIED_BUILD = True

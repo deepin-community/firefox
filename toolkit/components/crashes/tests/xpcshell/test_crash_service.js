@@ -3,15 +3,16 @@
 
 "use strict";
 
-ChromeUtils.import("resource://gre/modules/osfile.jsm", this);
-ChromeUtils.import("resource://gre/modules/Services.jsm", this);
-ChromeUtils.import("resource://testing-common/AppData.jsm", this);
-ChromeUtils.import("resource://testing-common/CrashManagerTest.jsm", this);
-var bsp = ChromeUtils.import("resource://gre/modules/CrashManager.jsm", null);
+const { getCrashManagerNoCreate } = ChromeUtils.importESModule(
+  "resource://gre/modules/CrashManager.sys.mjs"
+);
+const { makeFakeAppDir } = ChromeUtils.importESModule(
+  "resource://testing-common/AppData.sys.mjs"
+);
 
 add_task(async function test_instantiation() {
   Assert.ok(
-    !bsp.gCrashManager,
+    !getCrashManagerNoCreate(),
     "CrashManager global instance not initially defined."
   );
 
@@ -23,22 +24,19 @@ add_task(async function test_instantiation() {
     .getService(Ci.nsIObserver)
     .observe(null, "profile-after-change", null);
 
-  Assert.ok(bsp.gCrashManager, "Profile creation makes it available.");
+  Assert.ok(getCrashManagerNoCreate(), "Profile creation makes it available.");
   Assert.ok(Services.crashmanager, "CrashManager available via Services.");
   Assert.strictEqual(
-    bsp.gCrashManager,
+    getCrashManagerNoCreate(),
     Services.crashmanager,
     "The objects are the same."
   );
 });
 
 var gMinidumpDir = do_get_tempdir();
-var gCrashReporter = Cc["@mozilla.org/toolkit/crash-reporter;1"].getService(
-  Ci.nsICrashReporter
-);
 
 // Ensure that the nsICrashReporter methods can find the dump
-gCrashReporter.minidumpPath = gMinidumpDir;
+Services.appinfo.minidumpPath = gMinidumpDir;
 
 var gDumpFile;
 var gExtraFile;
@@ -46,26 +44,26 @@ var gExtraFile;
 // Sets up a fake crash dump and sets up the crashreporter so that it will be
 // able to find it.
 async function setup(crashId) {
-  let cwd = await OS.File.getCurrentDirectory();
-  let minidump = OS.Path.join(cwd, "crash.dmp");
-  let extra = OS.Path.join(cwd, "crash.extra");
+  const cwd = Services.dirsvc.get("CurWorkD", Ci.nsIFile).path;
+  const minidump = PathUtils.join(cwd, "crash.dmp");
+  const extra = PathUtils.join(cwd, "crash.extra");
 
   // Make a copy of the files because the .extra file will be modified
-  gDumpFile = OS.Path.join(gMinidumpDir.path, crashId + ".dmp");
-  await OS.File.copy(minidump, gDumpFile);
-  gExtraFile = OS.Path.join(gMinidumpDir.path, crashId + ".extra");
-  await OS.File.copy(extra, gExtraFile);
+  gDumpFile = PathUtils.join(gMinidumpDir.path, `${crashId}.dmp`);
+  await IOUtils.copy(minidump, gDumpFile);
+  gExtraFile = PathUtils.join(gMinidumpDir.path, `${crashId}.extra`);
+  await IOUtils.copy(extra, gExtraFile);
 }
 
 // Cleans up the fake crash dump and resets the minidump path
 async function teardown() {
-  await OS.File.remove(gDumpFile);
-  await OS.File.remove(gExtraFile);
+  await IOUtils.remove(gDumpFile);
+  await IOUtils.remove(gExtraFile);
 }
 
 async function addCrash(id, type = Ci.nsICrashService.CRASH_TYPE_CRASH) {
   let cs = Cc["@mozilla.org/crashservice;1"].getService(Ci.nsICrashService);
-  return cs.addCrash(Ci.nsICrashService.PROCESS_TYPE_CONTENT, type, id);
+  return cs.addCrash(Ci.nsIXULRuntime.PROCESS_TYPE_CONTENT, type, id);
 }
 
 async function getCrash(crashId) {
@@ -149,10 +147,7 @@ add_task(async function test_addCrash_shutdownOnCrash() {
   await setup(crashId);
 
   // Set the MOZ_CRASHREPORTER_SHUTDOWN environment variable
-  let env = Cc["@mozilla.org/process/environment;1"].getService(
-    Ci.nsIEnvironment
-  );
-  env.set("MOZ_CRASHREPORTER_SHUTDOWN", "1");
+  Services.env.set("MOZ_CRASHREPORTER_SHUTDOWN", "1");
 
   await addCrash(crashId);
 
@@ -164,7 +159,7 @@ add_task(async function test_addCrash_shutdownOnCrash() {
       "analyzer did not start.\n"
   );
 
-  env.set("MOZ_CRASHREPORTER_SHUTDOWN", ""); // Unset the environment variable
+  Services.env.set("MOZ_CRASHREPORTER_SHUTDOWN", ""); // Unset the environment variable
   await teardown();
 });
 

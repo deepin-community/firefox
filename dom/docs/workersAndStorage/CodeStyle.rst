@@ -4,8 +4,6 @@ DOM Workers & Storage C++ Code Style
 
 This page describes the code style for the components maintained by the DOM Workers & Storage team. They live in-tree under the 'dom/docs/indexedDB' directory.
 
-This document is currently owned by Simon Giesecke <sgiesecke@mozilla.com>.
-
 .. contents::
    :depth: 4
 
@@ -61,7 +59,7 @@ Deviations from the Mozilla C++ Coding Style
 +--------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------+-----------------+-------------------------------------------------------------------------------------+
 |                                             Mozilla style                                              |                                    Prevalent WAS style                                     | Deviation scope |                                      Evolution                                      |
 +========================================================================================================+============================================================================================+=================+=====================================================================================+
-| `We prefer using "static", instead of anonymous C++ namespaces.                                        | Place all symbols that should have internal linkage in a single anonymous                  | All files       | Unclear. The recommendation in the Mozilla code style says this might change in the |
+| We prefer using "static", instead of anonymous C++ namespaces.                                         | Place all symbols that should have internal linkage in a single anonymous                  | All files       | Unclear. The recommendation in the Mozilla code style says this might change in the |
 |                                                                                                        | namespace block at the top of an implementation file, rather than declarating them static. |                 | future depending on debugger support, so this deviation might become obsolete.      |
 |                                                                                                        |                                                                                            |                 |                                                                                     |
 +--------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------+-----------------+-------------------------------------------------------------------------------------+
@@ -328,7 +326,7 @@ base, or where it is difficult to reach a consensus at the global scope,
 may make sense to be kept in the local style.
 
 The details of synchronizing with the global style are subject to discussion
-with the owner and peers of the global coding style (see 
+with the owner and peers of the global coding style (see
 `Bug 1587810 <https://bugzilla.mozilla.org/show_bug.cgi?id=1587810>`).
 
 FAQ
@@ -354,4 +352,3 @@ FAQ
   Personal preferences regarding the degree may differ, but in doubt such
   inconsistencies should be considered acceptable. They should not block a bug
   from being closed.
-

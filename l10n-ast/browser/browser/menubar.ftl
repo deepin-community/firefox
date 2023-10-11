@@ -43,15 +43,6 @@ menu-quit =
 menu-quit-mac =
     .label = Colar de { -brand-shorter-name }
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Cola de { -brand-shorter-name }
-
 menu-about =
     .label = Tocante a { -brand-shorter-name }
     .accesskey = T
@@ -81,9 +72,6 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Abrir un ficheru…
     .accesskey = A
-menu-file-close =
-    .label = Zarrar
-    .accesskey = Z
 menu-file-close-window =
     .label = Zarrar la ventana
     .accesskey = v
@@ -96,9 +84,6 @@ menu-file-email-link =
 menu-file-print-setup =
     .label = Configuración de les páxines…
     .accesskey = p
-menu-file-print-preview =
-    .label = Previsualización
-    .accesskey = P
 menu-file-print =
     .label = Imprentar…
     .accesskey = I
@@ -182,6 +167,17 @@ menu-view-full-screen =
     .label = Pantalla completa
     .accesskey = C
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Abrir la Vista de Llector
+    .accesskey = A
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Zarrar la Vista de Llector
+    .accesskey = Z
+
 ##
 
 menu-view-show-all-tabs =
@@ -210,8 +206,6 @@ menu-history-undo-menu =
     .label = Llingüetes zarraes apocayá
 menu-history-undo-window-menu =
     .label = Ventanes zarraes apocayá
-menu-history-reopen-all-tabs = Volver abrir toles llingüetes
-menu-history-reopen-all-windows = Volver abrir toles ventanes
 
 ## Bookmarks Menu
 
@@ -220,10 +214,6 @@ menu-bookmarks-menu =
     .accesskey = M
 menu-bookmarks-manage =
     .label = Xestionar los marcadores
-menu-bookmark-current-tab =
-    .label = Amestar esta llingüeta a Marcadores
-menu-bookmark-edit =
-    .label = Editar esti marcador
 menu-bookmarks-all-tabs =
     .label = Amestar toles llingüetes a Marcadores…
 menu-bookmarks-toolbar =
@@ -305,9 +295,6 @@ menu-help-more-troubleshooting-info =
     .accesskey = a
 menu-help-report-site-issue =
     .label = Informar d'un fallu del sitiu…
-menu-help-feedback-page =
-    .label = Opinar…
-    .accesskey = O
 menu-help-enter-troubleshoot-mode2 =
     .label = Mou d'iguar problemes…
     .accesskey = M

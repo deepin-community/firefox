@@ -12,3 +12,31 @@ unknowncontenttype-settingschange =
             [windows] Las configuraciones pueden ser cambiadas en las Opciones de { -brand-short-name }.
            *[other] Las opciones pueden ser cambiadas en las Preferencias de { -brand-short-name }.
         }
+
+unknowncontenttype-intro = Has elegido abrir:
+unknowncontenttype-which-is = el cual es:
+unknowncontenttype-from = de:
+unknowncontenttype-prompt = ¿te gustaría guardar este archivo?
+unknowncontenttype-action-question = ¿Qué debiera hacer { -brand-short-name } con este archivo?
+unknowncontenttype-open-with =
+    .label = Abrir con
+    .accesskey = o
+unknowncontenttype-other =
+    .label = Otro…
+unknowncontenttype-choose-handler =
+    .label =
+        { PLATFORM() ->
+            [macos] Elegir…
+           *[other] Examinar…
+        }
+    .accesskey =
+        { PLATFORM() ->
+            [macos] c
+           *[other] E
+        }
+unknowncontenttype-save-file =
+    .label = Guardar archivo
+    .accesskey = G
+unknowncontenttype-remember-choice =
+    .label = Hacer esto para los archivos de este tipo de ahora en adelante.
+    .accesskey = a

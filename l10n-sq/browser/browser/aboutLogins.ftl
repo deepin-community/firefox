@@ -5,12 +5,12 @@
 
 about-logins-page-title = Kredenciale Hyrjesh & Fjalëkalime
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
+about-logins-login-filter =
     .placeholder = Kërkoni te Kredenciale Hyrjesh
+    .key = F
 
-create-login-button = Krijoni Kredenciale të Reja Hyrjeje
+create-new-login-button =
+    .title = Krijoni kredenciale të reja hyrjeje
 
 fxaccounts-sign-in-text = Merrini fjalëkalimet tuaj në pajisjet tuaja të tjera
 fxaccounts-sign-in-sync-button = Për njëkohësime, bëni hyrjen
@@ -37,17 +37,29 @@ about-logins-menu-menuitem-help = Ndihmë
 
 login-list =
     .aria-label = Kredenciale hyrjesh që kanë përputhje me vargun e kërkimit
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } palë kredenciale hyrjesh
        *[other] { $count } palë kredenciale hyrjesh
     }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } nga { $total } hyrje
+       *[other] { $count } nga { $total } hyrje
+    }
 login-list-sort-label-text = Renditi sipas:
 login-list-name-option = Emrash (A-Z)
 login-list-name-reverse-option = Emrash (Z-A)
+login-list-username-option = Emrash përdoruesi (A-Z)
+login-list-username-reverse-option = Emrash përdoruesi (Z-A)
 about-logins-login-list-alerts-option = Sinjalizime
 login-list-last-changed-option = Ndryshuar Së Fundi Më
-login-list-last-used-option = Përdorur Së Fundi
+login-list-last-used-option = Përdorur Së Fundi Më
 login-list-intro-title = S’u gjetën kredenciale hyrjesh
 login-list-intro-description = Kur ruani një fjalëkalim në { -brand-product-name }, do të shfaqet këtu.
 about-logins-login-list-empty-search-title = S’u gjetën kredenciale hyrjesh
@@ -59,6 +71,12 @@ about-logins-list-item-breach-icon =
     .title = Sajt i cenuar
 about-logins-list-item-vulnerable-password-icon =
     .title = Fjalëkalim i cenueshëm
+about-logins-list-section-breach = Sajte të cenuar
+about-logins-list-section-vulnerable = Fjalëkalime të cenueshëm
+about-logins-list-section-nothing = S’ka sinjalizim
+about-logins-list-section-today = Sot
+about-logins-list-section-yesterday = Dje
+about-logins-list-section-week = 7 ditët e fundit
 
 ## Introduction screen
 
@@ -67,15 +85,14 @@ about-logins-login-intro-heading-logged-in = S’u gjetën kredenciale të njëk
 login-intro-description = Nëse ruajtët kredenciale tuajat hyrjesh te { -brand-product-name } në një pajisje tjetër, ja se si t’i merrni këtu:
 login-intro-instructions-fxa = Krijoni ose hyni te  { -fxaccount-brand-name } juaja te pajisja ku janë ruajtur kredencialet tuaja të hyrjeve
 login-intro-instructions-fxa-settings = Kaloni te Rregullime > Njëkohësim > Aktivizoni njëkohësim… Përzgjidhni kutizën Kredenciale Hyrjesh dhe fjalëkalime.
-login-intro-instructions-fxa-help = Për më tepër ndihmë, vizitoni <a data-l10n-name="help-link">Asistencë { -lockwise-brand-short-name }</a>.
-about-logins-intro-import = Nëse kredencialet tuaj për hyrje janë ruajtur në një shfletues tjetër, mund t’i <a data-l10n-name="import-link">importoni ata te { -lockwise-brand-short-name }</a>
-
+login-intro-instructions-fxa-passwords-help = Për më tepër ndihmë, vizitoni <a data-l10n-name="passwords-help-link">asistencë për fjalëkalime</a>.
+about-logins-intro-browser-only-import = Nëse kredencialet tuaj për hyrje janë ruajtur në një shfletues tjetër, mund t’i <a data-l10n-name="import-link">importoni ata te { -brand-product-name }</a>
 about-logins-intro-import2 = Nëse kredencialet tuaja për hyrje janë ruajtur jashtë { -brand-product-name }-it, mund t’i <a data-l10n-name="import-browser-link">importoni që nga një shfletues tjetër</a> ose <a data-l10n-name="import-file-link">prej një kartele</a>
 
 ## Login
 
 login-item-new-login-title = Krijoni Kredenciale të Reja Hyrjeje
-login-item-edit-button = Përpunoni
+login-item-edit-button = Përpunojeni
 about-logins-login-item-remove-button = Hiqi
 login-item-origin-label = Adresë sajti
 login-item-tooltip-message = Sigurohuni që kjo përputhet me adresën e saktë të sajtit ku hyni.
@@ -94,9 +111,17 @@ login-item-copied-password-button-text = U kopjua!
 login-item-save-changes-button = Ruaji Ndryshimet
 login-item-save-new-button = Ruaje
 login-item-cancel-button = Anuloje
-login-item-time-changed = Ndryshuar së fundi më: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = Krijuar më: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = Përdorur së fundi më: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
+
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Krijuar më
+login-item-timeline-action-updated = Përditësuar më
+login-item-timeline-action-used = Përdorur më
 
 ## OS Authentication dialog
 
@@ -124,8 +149,6 @@ about-logins-copy-password-os-auth-dialog-message-win = Që të kopjoni kredenci
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = që të kopjohet fjalëkalimi i ruajtur
 
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Që të eksportoni kredencialet tuaja të hyrjes, jepni kredencialet tuaj për hyrje në Windows. Kjo ndihmon të mbrohet siguria e llogarive tuaja.
 # This message can be seen when attempting to export a password in about:logins
@@ -139,8 +162,6 @@ master-password-reload-button =
     .label = Hyni
     .accesskey = H
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Anuloje
@@ -150,6 +171,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = Të hiqen këto kredenciale hyrjesh?
 confirm-delete-dialog-message = Ky veprim s’mund të zhbëhet.
 about-logins-confirm-remove-dialog-confirm-button = Hiqi
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -185,6 +209,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
        *[other] Kjo do të heqë krejt kredencialet që keni ruajtur te { -brand-short-name } në krejt pajisjet e njëkohësuara te { -fxaccount-brand-name } juaj. Kjo do të heqë gjithashtu sinjalizime cenimesh që shfaqen këtu. S"do të jeni në gjendje të zhbëni këtë veprim.
     }
 
+##
+
 about-logins-confirm-export-dialog-title = Eksportoni kredenciale hyrjesh dhe fjalëkalime
 about-logins-confirm-export-dialog-message = Fjalëkalimet tuaj do të ruhen si tekst i lexueshëm (p.sh., BadP@ssw0rd), ndaj, cilido që mund të hapë kartelën e eksportuar, mund t’i shohë.
 about-logins-confirm-export-dialog-confirm-button = Eksportoni…
@@ -204,7 +230,6 @@ about-logins-breach-alert-date = Ky cenim ndodhi më { DATETIME($date, day: "num
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Kalo te { $hostname }
-about-logins-breach-alert-learn-more-link = Mësoni më tepër
 
 ## Vulnerable Password notification
 
@@ -225,7 +250,6 @@ about-logins-error-message-duplicate-login-with-link = Ka tashmë një zë për 
 
 # This is a generic error message.
 about-logins-error-message-default = Ndodhi një gabim teksa provohej të ruhej ky fjalëkalim.
-
 
 ## Login Export Dialog
 

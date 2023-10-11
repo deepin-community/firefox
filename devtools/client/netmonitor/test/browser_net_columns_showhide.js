@@ -6,8 +6,10 @@
 /**
  * Test showing/hiding columns.
  */
-add_task(async function() {
-  const { monitor } = await initNetMonitor(SIMPLE_URL, { requestCount: 1 });
+add_task(async function () {
+  const { monitor } = await initNetMonitor(HTTPS_SIMPLE_URL, {
+    requestCount: 1,
+  });
   info("Starting test... ");
 
   const { document, store, connector, windowRequire } = monitor.panelWin;
@@ -17,7 +19,7 @@ add_task(async function() {
   );
 
   const wait = waitForNetworkEvents(monitor, 1);
-  await navigateTo(SIMPLE_URL);
+  await navigateTo(HTTPS_SIMPLE_URL);
   await wait;
 
   const item = getSortedRequests(store.getState())[0];
@@ -82,6 +84,7 @@ async function testVisibleColumnContextMenuItem(column, document, monitor) {
   );
 
   info(`Clicking context-menu item for ${column}`);
+
   EventUtils.sendMouseEvent(
     { type: "contextmenu" },
     document.querySelector("#requests-list-status-button") ||
@@ -90,10 +93,8 @@ async function testVisibleColumnContextMenuItem(column, document, monitor) {
 
   await waitForTick();
 
-  const menuItem = getContextMenuItem(
-    monitor,
-    `request-list-header-${column}-toggle`
-  );
+  const id = `request-list-header-${column}-toggle`;
+  const menuItem = getContextMenuItem(monitor, id);
 
   is(
     menuItem.getAttribute("type"),
@@ -115,7 +116,8 @@ async function testVisibleColumnContextMenuItem(column, document, monitor) {
     `#requests-list-${column}-button`,
     0
   );
-  menuItem.click();
+
+  await selectContextMenuItem(monitor, id);
 
   await onHeaderRemoved;
   await waitForTick();
@@ -144,10 +146,8 @@ async function testHiddenColumnContextMenuItem(column, document, monitor) {
 }
 
 async function toggleAndCheckColumnVisibility(column, document, monitor) {
-  const menuItem = getContextMenuItem(
-    monitor,
-    `request-list-header-${column}-toggle`
-  );
+  const id = `request-list-header-${column}-toggle`;
+  const menuItem = getContextMenuItem(monitor, id);
 
   is(
     menuItem.getAttribute("type"),
@@ -168,7 +168,8 @@ async function toggleAndCheckColumnVisibility(column, document, monitor) {
     `#requests-list-${column}-button`,
     1
   );
-  menuItem.click();
+
+  await selectContextMenuItem(monitor, id);
 
   await onHeaderAdded;
   await waitForTick();

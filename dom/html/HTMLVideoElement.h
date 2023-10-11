@@ -36,8 +36,9 @@ class HTMLVideoElement final : public HTMLMediaElement {
 
   using HTMLMediaElement::GetPaused;
 
-  void Invalidate(bool aImageSizeChanged, Maybe<nsIntSize>& aNewIntrinsicSize,
-                  bool aForceInvalidate) override;
+  void Invalidate(ImageSizeChanged aImageSizeChanged,
+                  const Maybe<nsIntSize>& aNewIntrinsicSize,
+                  ForceInvalidate aForceInvalidate) override;
 
   virtual bool IsVideo() const override { return true; }
 
@@ -47,21 +48,20 @@ class HTMLVideoElement final : public HTMLMediaElement {
                               nsAttrValue& aResult) override;
   NS_IMETHOD_(bool) IsAttributeMapped(const nsAtom* aAttribute) const override;
 
-  virtual nsMapRuleToAttributesFunc GetAttributeMappingFunction()
-      const override;
+  nsMapRuleToAttributesFunc GetAttributeMappingFunction() const override;
 
-  virtual nsresult Clone(NodeInfo*, nsINode** aResult) const override;
+  nsresult Clone(NodeInfo*, nsINode** aResult) const override;
 
-  virtual void UnbindFromTree(bool aNullParent = true) override;
+  void UnbindFromTree(bool aNullParent = true) override;
 
   mozilla::Maybe<mozilla::CSSIntSize> GetVideoSize() const;
 
-  virtual void UpdateMediaSize(const nsIntSize& aSize) override;
+  void UpdateMediaSize(const nsIntSize& aSize) override;
 
-  virtual nsresult SetAcceptHeader(nsIHttpChannel* aChannel) override;
+  nsresult SetAcceptHeader(nsIHttpChannel* aChannel) override;
 
   // Element
-  virtual bool IsInteractiveHTMLContent() const override;
+  bool IsInteractiveHTMLContent() const override;
 
   // WebIDL
 
@@ -81,27 +81,9 @@ class HTMLVideoElement final : public HTMLMediaElement {
     SetUnsignedIntAttr(nsGkAtoms::height, aValue, 0, aRv);
   }
 
-  uint32_t VideoWidth() const {
-    if (mMediaInfo.HasVideo()) {
-      if (mMediaInfo.mVideo.mRotation == VideoInfo::Rotation::kDegree_90 ||
-          mMediaInfo.mVideo.mRotation == VideoInfo::Rotation::kDegree_270) {
-        return mMediaInfo.mVideo.mDisplay.height;
-      }
-      return mMediaInfo.mVideo.mDisplay.width;
-    }
-    return 0;
-  }
+  uint32_t VideoWidth();
 
-  uint32_t VideoHeight() const {
-    if (mMediaInfo.HasVideo()) {
-      if (mMediaInfo.mVideo.mRotation == VideoInfo::Rotation::kDegree_90 ||
-          mMediaInfo.mVideo.mRotation == VideoInfo::Rotation::kDegree_270) {
-        return mMediaInfo.mVideo.mDisplay.width;
-      }
-      return mMediaInfo.mVideo.mDisplay.height;
-    }
-    return 0;
-  }
+  uint32_t VideoHeight();
 
   VideoInfo::Rotation RotationDegrees() const {
     return mMediaInfo.mVideo.mRotation;
@@ -120,7 +102,7 @@ class HTMLVideoElement final : public HTMLMediaElement {
 
   uint32_t MozDecodedFrames() const;
 
-  uint32_t MozPresentedFrames() const;
+  uint32_t MozPresentedFrames();
 
   uint32_t MozPaintedFrames();
 
@@ -150,6 +132,8 @@ class HTMLVideoElement final : public HTMLMediaElement {
 
   void OnSecondaryVideoOutputFirstFrameRendered();
 
+  void OnVisibilityChange(Visibility aNewVisibility) override;
+
  protected:
   virtual ~HTMLVideoElement();
 
@@ -168,6 +152,8 @@ class HTMLVideoElement final : public HTMLMediaElement {
   bool ShouldCreateVideoWakeLock() const;
   void CreateVideoWakeLockIfNeeded();
   void ReleaseVideoWakeLockIfExists();
+
+  gfx::IntSize GetVideoIntrinsicDimensions();
 
   RefPtr<WakeLock> mScreenWakeLock;
 
@@ -205,8 +191,7 @@ class HTMLVideoElement final : public HTMLMediaElement {
   // SetVisualCloneTarget() instead.
   RefPtr<HTMLVideoElement> mVisualCloneSource;
 
-  static void MapAttributesIntoRule(const nsMappedAttributes* aAttributes,
-                                    MappedDeclarations&);
+  static void MapAttributesIntoRule(MappedDeclarationsBuilder&);
 
   static bool IsVideoStatsEnabled();
   double TotalPlayTime() const;

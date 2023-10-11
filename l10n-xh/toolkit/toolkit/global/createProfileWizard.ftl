@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Yenza igcisa leprofayile
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Intshayelelo
-       *[other] Wamkelekile kwi-{ create-profile-window.title }
+       *[other] Wamkelekile kwi-{ create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = I-{ -brand-short-name } igcina inkcazelo engeesethingi zakho neepriferensi kwiprofayile yakho.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Isiphelo
-       *[other] Kugqitywa i-{ create-profile-window.title }
+       *[other] Kugqitywa i-{ create-profile-window2.title }
     }
 
 profile-creation-intro = Ukuba wenza iiprofayile ezininzi ungazixelela ngokwahlukeneyo ngamagama eeprofayile. Ungasebenzisa igama elikhoyo apha okanye usebenzise elakho.

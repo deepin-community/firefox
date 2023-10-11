@@ -2,22 +2,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-sanitize-prefs =
+sanitize-prefs2 =
     .title = Impostazioni per la cancellazione della cronologia
-    .style = width: 34em
+    .style = min-width: 34em
 
 sanitize-prefs-style =
     .style = width: 17em
 
-dialog-title =
+sanitize-dialog-title =
     .title = Cancella cronologia recente
-    .style = width: 34em
+    .style = min-width: 34em
 
 # When "Time range to clear" is set to "Everything", this message is used for the
 # title instead of dialog-title.
-dialog-title-everything =
+sanitize-dialog-title-everything =
     .title = Cancella tutta la cronologia
-    .style = width: 34em
+    .style = min-width: 34em
 
 clear-data-settings-label = Alla chiusura di { -brand-short-name } eliminare automaticamente
 
@@ -78,10 +78,6 @@ item-form-search-history =
 
 data-section-label = Dati
 
-item-site-preferences =
-    .label = Preferenze dei siti web
-    .accesskey = P
-
 item-site-settings =
     .label = Impostazioni dei siti web
     .accesskey = w
@@ -112,3 +108,4 @@ sanitize-everything-warning = Tutta la cronologia verrà eliminata.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Tutti gli elementi selezionati verranno eliminati.
+

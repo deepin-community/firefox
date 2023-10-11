@@ -2,40 +2,36 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
-);
-XPCOMUtils.defineLazyGlobalGetters(this, ["URL"]);
-
-const { navigate } = ChromeUtils.import(
-  "chrome://remote/content/marionette/navigate.js"
+const { navigate } = ChromeUtils.importESModule(
+  "chrome://remote/content/marionette/navigate.sys.mjs"
 );
 
-const topContext = {
+const mockTopContext = {
+  get children() {
+    return [mockNestedContext];
+  },
   id: 7,
   get top() {
     return this;
   },
 };
 
-const nestedContext = {
+const mockNestedContext = {
   id: 8,
-  parent: topContext,
-  top: topContext,
+  parent: mockTopContext,
+  top: mockTopContext,
 };
 
-add_test(function test_isLoadEventExpectedForCurrent() {
+add_task(function test_isLoadEventExpectedForCurrent() {
   Assert.throws(
     () => navigate.isLoadEventExpected(undefined),
     /Expected at least one URL/
   );
 
   ok(navigate.isLoadEventExpected(new URL("http://a/")));
-
-  run_next_test();
 });
 
-add_test(function test_isLoadEventExpectedForFuture() {
+add_task(function test_isLoadEventExpectedForFuture() {
   const data = [
     { current: "http://a/", future: undefined, expected: true },
     { current: "http://a/", future: "http://a/", expected: true },
@@ -51,11 +47,9 @@ add_test(function test_isLoadEventExpectedForFuture() {
     const future = entry.future ? new URL(entry.future) : undefined;
     equal(navigate.isLoadEventExpected(current, { future }), entry.expected);
   }
-
-  run_next_test();
 });
 
-add_test(function test_isLoadEventExpectedForTarget() {
+add_task(function test_isLoadEventExpectedForTarget() {
   for (const target of ["_parent", "_top"]) {
     Assert.throws(
       () => navigate.isLoadEventExpected(new URL("http://a"), { target }),
@@ -66,11 +60,21 @@ add_test(function test_isLoadEventExpectedForTarget() {
   const data = [
     { cur: "http://a/", target: "", expected: true },
     { cur: "http://a/", target: "_blank", expected: false },
-    { cur: "http://a/", target: "_parent", bc: topContext, expected: true },
-    { cur: "http://a/", target: "_parent", bc: nestedContext, expected: false },
+    { cur: "http://a/", target: "_parent", bc: mockTopContext, expected: true },
+    {
+      cur: "http://a/",
+      target: "_parent",
+      bc: mockNestedContext,
+      expected: false,
+    },
     { cur: "http://a/", target: "_self", expected: true },
-    { cur: "http://a/", target: "_top", bc: topContext, expected: true },
-    { cur: "http://a/", target: "_top", bc: nestedContext, expected: false },
+    { cur: "http://a/", target: "_top", bc: mockTopContext, expected: true },
+    {
+      cur: "http://a/",
+      target: "_top",
+      bc: mockNestedContext,
+      expected: false,
+    },
   ];
 
   for (const entry of data) {
@@ -83,6 +87,4 @@ add_test(function test_isLoadEventExpectedForTarget() {
       entry.expected
     );
   }
-
-  run_next_test();
 });

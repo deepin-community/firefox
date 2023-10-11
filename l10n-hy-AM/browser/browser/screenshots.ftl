@@ -6,6 +6,9 @@ screenshot-toolbarbutton =
     .label = Էկրանի հանույթ
     .tooltiptext = Ստանալ էկրանի հանույթը
 
+screenshot-shortcut =
+    .key = S
+
 screenshots-instructions = Քաշեք և սեղմեք էջի վրա՝ ընտրելու տարածքը: Սեղմեք ESC՝ չեղարկելու համար:
 screenshots-cancel-button = Չեղարկել
 screenshots-save-visible-button = Պահպանել տեսանելին
@@ -14,6 +17,8 @@ screenshots-download-button = Ներբեռնել
 screenshots-download-button-tooltip = Ներբեռնել էկրանի կորզումը
 screenshots-copy-button = Պատճենել
 screenshots-copy-button-tooltip = Պատճենել էկրանի կորզումը սեղմատախտակին
+screenshots-cancel-button-title =
+    .title = Չեղարկել
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -44,3 +49,4 @@ screenshots-private-window-error-details = Ներողություն անհարմ
 
 screenshots-generic-error-title = { -screenshots-brand-name }-ը գնաց գլխիվայր:
 screenshots-generic-error-details = Մենք վստահ չենք, թե ինչ է տեղի ունեցնել: Կրկին փորձեք կամ փորձեք ստանալ մեկ այլ էջի հանույթ:
+

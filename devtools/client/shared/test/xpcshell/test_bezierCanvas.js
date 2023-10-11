@@ -5,11 +5,10 @@
 
 // Tests the BezierCanvas API in the CubicBezierWidget module
 
-var { require } = ChromeUtils.import("resource://devtools/shared/Loader.jsm");
 var {
   CubicBezier,
   BezierCanvas,
-} = require("devtools/client/shared/widgets/CubicBezierWidget");
+} = require("resource://devtools/client/shared/widgets/CubicBezierWidget.js");
 
 function run_test() {
   offsetsGetterReturnsData();
@@ -99,7 +98,7 @@ function getCubicBezier() {
 
 function getCanvasMock(w = 200, h = 400) {
   return {
-    getContext: function() {
+    getContext() {
       return {
         scale: () => {},
         translate: () => {},

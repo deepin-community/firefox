@@ -80,7 +80,7 @@ class WindowGlobalParent final : public WindowContext,
   WindowGlobalParent* TopWindowContext() {
     return static_cast<WindowGlobalParent*>(WindowContext::TopWindowContext());
   }
-  CanonicalBrowsingContext* GetBrowsingContext() {
+  CanonicalBrowsingContext* GetBrowsingContext() const {
     return CanonicalBrowsingContext::Cast(WindowContext::GetBrowsingContext());
   }
 
@@ -162,8 +162,6 @@ class WindowGlobalParent final : public WindowContext,
       const DOMRect* aRect, double aScale, const nsACString& aBackgroundColor,
       bool aResetScrollPosition, mozilla::ErrorResult& aRv);
 
-  already_AddRefed<Promise> GetSecurityInfo(ErrorResult& aRv);
-
   static already_AddRefed<WindowGlobalParent> CreateDisconnected(
       const WindowGlobalInit& aInit);
 
@@ -214,18 +212,24 @@ class WindowGlobalParent final : public WindowContext,
 
   const nsACString& GetRemoteType() override;
 
-  nsresult WriteFormDataAndScrollToSessionStore(
-      const Maybe<FormData>& aFormData, const Maybe<nsPoint>& aScrollPosition,
-      uint32_t aEpoch);
-
   void NotifySessionStoreUpdatesComplete(Element* aEmbedder);
 
   Maybe<uint64_t> GetSingleChannelId() { return mSingleChannelId; }
 
-  uint16_t GetBFCacheStatus() { return mBFCacheStatus; }
+  uint32_t GetBFCacheStatus() { return mBFCacheStatus; }
+
+  bool HasActivePeerConnections();
+
+  bool Fullscreen() { return mFullscreen; }
+  void SetFullscreen(bool aFullscreen) { mFullscreen = aFullscreen; }
+
+  void ExitTopChromeDocumentFullscreen();
+
+  void SetShouldReportHasBlockedOpaqueResponse(
+      nsContentPolicyType aContentPolicy);
 
  protected:
-  already_AddRefed<JSActor> InitJSActor(JS::HandleObject aMaybeActor,
+  already_AddRefed<JSActor> InitJSActor(JS::Handle<JSObject*> aMaybeActor,
                                         const nsACString& aName,
                                         ErrorResult& aRv) override;
   mozilla::ipc::IProtocol* AsNativeActor() override { return this; }
@@ -286,14 +290,13 @@ class WindowGlobalParent final : public WindowContext,
 
   mozilla::ipc::IPCResult RecvRequestRestoreTabContent();
 
-  mozilla::ipc::IPCResult RecvUpdateSessionStore(
-      const Maybe<FormData>& aFormData, const Maybe<nsPoint>& aScrollPosition,
-      uint32_t aEpoch);
+  mozilla::ipc::IPCResult RecvUpdateBFCacheStatus(const uint32_t& aOnFlags,
+                                                  const uint32_t& aOffFlags);
 
-  mozilla::ipc::IPCResult RecvResetSessionStore(uint32_t aEpoch);
-
-  mozilla::ipc::IPCResult RecvUpdateBFCacheStatus(const uint16_t& aOnFlags,
-                                                  const uint16_t& aOffFlags);
+  // This IPC method is to notify the parent process that the caller process
+  // creates the first active peer connection (aIsAdded = true) or closes the
+  // last active peer connection (aIsAdded = false).
+  mozilla::ipc::IPCResult RecvUpdateActivePeerConnectionStatus(bool aIsAdded);
 
  public:
   mozilla::ipc::IPCResult RecvSetSingleChannelId(
@@ -302,6 +305,13 @@ class WindowGlobalParent final : public WindowContext,
   mozilla::ipc::IPCResult RecvSetDocumentDomain(nsIURI* aDomain);
 
   mozilla::ipc::IPCResult RecvReloadWithHttpsOnlyException();
+
+  mozilla::ipc::IPCResult RecvDiscoverIdentityCredentialFromExternalSource(
+      const IdentityCredentialRequestOptions& aOptions,
+      const DiscoverIdentityCredentialFromExternalSourceResolver& aResolver);
+
+  mozilla::ipc::IPCResult RecvHasStorageAccessPermission(
+      HasStorageAccessPermissionResolver&& aResolve);
 
  private:
   WindowGlobalParent(CanonicalBrowsingContext* aBrowsingContext,
@@ -312,8 +322,6 @@ class WindowGlobalParent final : public WindowContext,
 
   bool ShouldTrackSiteOriginTelemetry();
   void FinishAccumulatingPageUseCounters();
-
-  nsresult ResetSessionStore(uint32_t aEpoch);
 
   // Returns failure if the new storage principal cannot be validated
   // against the current document principle.
@@ -385,7 +393,12 @@ class WindowGlobalParent final : public WindowContext,
   // subsequent ExpectPageUseCounters calls.
   bool mSentPageUseCounters = false;
 
-  uint16_t mBFCacheStatus = 0;
+  uint32_t mBFCacheStatus = 0;
+
+  // If this WindowGlobalParent is a top window, this field indicates how many
+  // child processes have active peer connections for this window and its
+  // descendants.
+  uint32_t mNumOfProcessesWithActivePeerConnections = 0;
 
   // mSingleChannelId records whether the loadgroup contains a single request
   // with an id. If there is one channel in the loadgroup and it has an id then
@@ -397,6 +410,11 @@ class WindowGlobalParent final : public WindowContext,
   // Note: We ignore favicon loads when considering the requests in the
   // loadgroup.
   Maybe<uint64_t> mSingleChannelId;
+
+  // True if the current loaded document is in fullscreen.
+  bool mFullscreen = false;
+
+  bool mShouldReportHasBlockedOpaqueResponse = false;
 };
 
 }  // namespace dom

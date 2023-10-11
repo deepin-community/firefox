@@ -34,7 +34,6 @@ about-telemetry-events-section = Tidyanin
 about-telemetry-simple-measurements-section = Iktazalen iḥerfiyen
 about-telemetry-slow-sql-section = Tuţriwin SQL tiẓayanin
 about-telemetry-addon-details-section = Aglam leqqayen n izegrar
-about-telemetry-captured-stacks-section = Tinebdanin ittwaṭfen
 about-telemetry-late-writes-section = Tira tineggura
 about-telemetry-raw-payload-section = Taɛekkemt tarewwayt
 about-telemetry-raw = Izirig JSON
@@ -122,10 +121,6 @@ about-telemetry-keys-header = Taɣaṛa
 about-telemetry-names-header = Isem
 about-telemetry-values-header = Azal
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (amḍan n tuṭṭfiwin: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Tira n #{ $lateWriteCount } tgellel
 about-telemetry-stack-title = Tanebdant:
@@ -136,12 +131,6 @@ about-telemetry-category-header = Taggayt
 about-telemetry-method-header = tarrayt
 about-telemetry-object-header = Taɣawsa
 about-telemetry-extra-header = asemmadan
-about-telemetry-origin-section = Tilisɣelt taɣbalut
-about-telemetry-origin-origin = aɣbalu
-about-telemetry-origin-count = Amḍan
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Firefox Origin Telemetry</a> yestengal isefka send ad ttwaznen akken { $telemetryServerOwner } ad yizmir ad isiḍen tiɣawsiwin, maca ur ittizmir ara ad iẓer ma yella { -brand-product-name } ittekka neɣ ala deg usiden-a. (<a data-l10n-name="prio-blog-link">Issin ugar</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = Akala { $process }

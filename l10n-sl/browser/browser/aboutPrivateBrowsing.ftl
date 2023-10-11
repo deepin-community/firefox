@@ -6,7 +6,6 @@ privatebrowsingpage-open-private-window-label = Odpri zasebno okno
     .accesskey = Z
 about-private-browsing-search-placeholder = Iskanje po spletu
 about-private-browsing-info-title = Ste v zasebnem oknu
-about-private-browsing-info-myths = Pogoste zmote o zasebnem brskanju
 about-private-browsing-search-btn =
     .title = Išči po spletu
 # Variables
@@ -20,15 +19,26 @@ about-private-browsing-handoff-no-engine =
 about-private-browsing-handoff-text = Iščite z iskalnikom { $engine } ali vnesite naslov
 about-private-browsing-handoff-text-no-engine = Iskanje ali naslov strani
 about-private-browsing-not-private = Trenutno niste v zasebnem oknu.
-about-private-browsing-info-description = { -brand-short-name } izbriše zgodovino iskanja in brskanja, ko zaprete program ali ko zaprete vse zavihke in okna zasebnega brskanja. Čeprav to ne pomeni, da ste za spletna mesta ali ponudnike internetnih storitev anonimni, vam omogoča preprostejše ohranjanje zasebnosti na spletu pred ostalimi uporabniki tega računalnika.
-about-private-browsing-need-more-privacy = Potrebujete še več zasebnosti?
-about-private-browsing-turn-on-vpn = Preizkusite { -mozilla-vpn-brand-name }
 about-private-browsing-info-description-private-window = Zasebno okno: { -brand-short-name } ob zaprtju vseh zasebnih oken izbriše njihovo zgodovino iskanja in brskanja. To še ne pomeni, da ste anonimni.
 about-private-browsing-info-description-simplified = { -brand-short-name } izbriše zgodovino iskanja in brskanja, ko zaprete vsa zasebna okna, vendar to še ne pomeni, da ste anonimni.
 about-private-browsing-learn-more-link = Več o tem
+
 about-private-browsing-hide-activity = Skrijte svojo dejavnost in lokacijo povsod, kjer brskate
+about-private-browsing-get-privacy = Zaščitite svojo zasebnost, kjerkoli brskate
 about-private-browsing-hide-activity-1 = Skrijte svojo dejavnost in lokacijo z { -mozilla-vpn-brand-name }. Z enim klikom vzpostavite varno povezavo, celo na javnih omrežjih Wi-Fi.
 about-private-browsing-prominent-cta = Ohranite svojo zasebnost z { -mozilla-vpn-brand-name }
+
+about-private-browsing-focus-promo-cta = Prenesite { -focus-brand-name }
+about-private-browsing-focus-promo-header = { -focus-brand-name }: Prenosno zasebno brskanje
+about-private-browsing-focus-promo-text = Naša namenska aplikacija za zasebno brskanje po vsakem brskanju počisti zgodovino in piškotke.
+
+## The following strings will be used for experiments in Fx99 and Fx100
+
+about-private-browsing-focus-promo-header-b = Brskajte zasebno tudi na telefonu
+about-private-browsing-focus-promo-text-b = Uporabite { -focus-brand-name } za tista zasebna iskanja, za katera ne želite, da jih vidi vaš glavni mobilni brskalnik.
+about-private-browsing-focus-promo-header-c = Zasebnost višjega razreda za mobilne naprave
+about-private-browsing-focus-promo-text-c = { -focus-brand-name } vsakič počisti vašo zgodovino ter zavrača oglase in sledilce.
+
 # This string is the title for the banner for search engine selection
 # in a private window.
 # Variables:
@@ -41,3 +51,24 @@ about-private-browsing-search-banner-description =
     }
 about-private-browsing-search-banner-close-button =
     .aria-label = Zapri
+
+about-private-browsing-promo-close-button =
+    .title = Zapri
+
+## Strings used in a “pin promotion” message, which prompts users to pin a private window
+
+about-private-browsing-pin-promo-header = Do svobode zasebnega brskanja z enim klikom
+about-private-browsing-pin-promo-link-text =
+    { PLATFORM() ->
+        [macos] Obdrži v Docku
+       *[other] Pripni v opravilno vrstico
+    }
+about-private-browsing-pin-promo-title = Brez shranjenih piškotkov ali zgodovine, neposredno z namizja. Brskajte, kot da nihče ne gleda.
+
+## Strings used in a promotion message for cookie banner reduction
+
+# Simplified version of the headline if the original text doesn't work
+# in your language: `See fewer cookie requests`.
+about-private-browsing-cookie-banners-promo-header = Pasice s piškotki, izginite!
+about-private-browsing-cookie-banners-promo-button = Zmanjšajte število pasic s piškotki
+about-private-browsing-cookie-banners-promo-message = Naj { -brand-short-name } namesto vas odgovarja na zahteve za shranjevanje piškotkov, vam pa omogoči nemoteno brskanje. { -brand-short-name } bo poskušal zavrniti vse zahteve, če bo to mogoče.

@@ -82,42 +82,42 @@ toolbar-button-fxaccount =
 
 main-context-menu-page-save =
     .label = Gem side som…
-    .accesskey = m
+    .accesskey = e
 
 ## Simple menu items
 
-main-context-menu-bookmark-add =
-    .aria-label = Bogmærk denne side
+main-context-menu-bookmark-page =
+    .aria-label = Bogmærk side…
     .accesskey = m
-    .tooltiptext = Bogmærk denne side
+    .tooltiptext = Bogmærk side
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
+# Cannot be shown at the same time as main-context-menu-edit-bookmark-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = Bogmærk side
-    .accesskey = d
+main-context-menu-bookmark-page-mac =
+    .label = Bogmærk side…
+    .accesskey = m
 # This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-add-mac,
+# Cannot be shown at the same time as main-context-menu-bookmark-page-mac,
 # so should probably have the same access key if possible.
-main-context-menu-bookmark-edit-mac =
-    .label = Rediger bogmærke
-    .accesskey = d
+main-context-menu-edit-bookmark-mac =
+    .label = Rediger bogmærke…
+    .accesskey = m
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = Bogmærk denne side
+main-context-menu-bookmark-page-with-shortcut =
+    .aria-label = Bogmærk side…
     .accesskey = m
-    .tooltiptext = Bogmærk denne side ({ $shortcut })
-main-context-menu-bookmark-change =
-    .aria-label = Rediger bogmærke
+    .tooltiptext = Bogmærk side ({ $shortcut })
+main-context-menu-edit-bookmark =
+    .aria-label = Rediger bogmærke…
     .accesskey = m
-    .tooltiptext = Rediger dette bogmærke
+    .tooltiptext = Rediger bogmærke
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = Rediger bogmærke
+main-context-menu-edit-bookmark-with-shortcut =
+    .aria-label = Rediger bogmærke…
     .accesskey = m
-    .tooltiptext = Rediger dette bogmærke ({ $shortcut })
+    .tooltiptext = Rediger bogmærke ({ $shortcut })
 main-context-menu-open-link =
     .label = Åbn link
     .accesskey = Å
@@ -126,15 +126,15 @@ main-context-menu-open-link-new-tab =
     .accesskey = f
 main-context-menu-open-link-container-tab =
     .label = Åbn link i nyt kontekst-faneblad
-    .accesskey = k
+    .accesskey = l
 main-context-menu-open-link-new-window =
     .label = Åbn link i nyt vindue
     .accesskey = v
 main-context-menu-open-link-new-private-window =
     .label = Åbn link i nyt privat vindue
     .accesskey = p
-main-context-menu-bookmark-link =
-    .label = Gem bogmærke for linket
+main-context-menu-bookmark-link-2 =
+    .label = Gem bogmærke for linket…
     .accesskey = b
 main-context-menu-save-link =
     .label = Gem link som…
@@ -150,9 +150,17 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = Kopier mailadresse
     .accesskey = K
+main-context-menu-copy-phone =
+    .label = Kopier telefonnummer
+    .accesskey = K
 main-context-menu-copy-link-simple =
     .label = Kopier link
     .accesskey = K
+# This command copies the link, removing additional
+# query parameters used to track users across sites.
+main-context-menu-strip-on-share-link =
+    .label = Kopier link uden websteds-sporing
+    .accesskey = u
 
 ## Media (video/audio) controls
 ##
@@ -245,6 +253,9 @@ main-context-menu-image-email =
 main-context-menu-image-set-image-as-background =
     .label = Brug billede som skrivebordsbaggrund…
     .accesskey = b
+main-context-menu-image-copy-text =
+    .label = Kopier tekst fra billede
+    .accesskey = t
 main-context-menu-image-info =
     .label = Vis billededoplysninger
     .accesskey = i
@@ -266,12 +277,6 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Send lyd…
     .accesskey = S
-main-context-menu-plugin-play =
-    .label = Aktiver dette plugin
-    .accesskey = A
-main-context-menu-plugin-hide =
-    .label = Skjul dette plugin
-    .accesskey = p
 main-context-menu-save-to-pocket =
     .label = Gem side til { -pocket-brand-name }
     .accesskey = o
@@ -292,6 +297,9 @@ main-context-menu-use-saved-password =
 
 ##
 
+main-context-menu-use-relay-mask =
+    .label = Brug { -relay-brand-short-name }-mail-maske
+    .accesskey = m
 main-context-menu-suggest-strong-password =
     .label = Foreslå sikker adgangskode…
     .accesskey = r
@@ -319,9 +327,9 @@ main-context-menu-frame-open-window =
 main-context-menu-frame-reload =
     .label = Genindlæs ramme
     .accesskey = G
-main-context-menu-frame-bookmark =
-    .label = Bogmærk denne ramme
-    .accesskey = B
+main-context-menu-frame-add-bookmark =
+    .label = Gem bogmærke til ramme…
+    .accesskey = m
 main-context-menu-frame-save-as =
     .label = Gem ramme som…
     .accesskey = G
@@ -334,8 +342,8 @@ main-context-menu-frame-view-source =
 main-context-menu-frame-view-info =
     .label = Vis rammeoplysninger
     .accesskey = o
-main-context-menu-print-selection =
-    .label = Udskriv markering
+main-context-menu-print-selection-2 =
+    .label = Udskriv markering…
     .accesskey = U
 main-context-menu-view-selection-source =
     .label = Vis markeringens kildekode
@@ -368,3 +376,6 @@ main-context-menu-eme-learn-more =
 main-context-menu-open-link-in-container-tab =
     .label = Åbn link i et nyt { $containerName }-faneblad
     .accesskey = k
+main-context-menu-reveal-password =
+    .label = Vis adgangskode
+    .accesskey = a

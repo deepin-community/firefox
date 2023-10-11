@@ -12,21 +12,8 @@
 #include "frontend/IfEmitter.h"        // IfEmitter
 #include "frontend/ParseNode.h"        // AccessorType
 #include "frontend/SharedContext.h"    // SharedContext
-#include "gc/AllocKind.h"              // AllocKind
-#include "js/Id.h"                     // jsid
-#include "js/Value.h"                  // UndefinedHandleValue
-#include "vm/BytecodeUtil.h"           // IsHiddenInitOp
 #include "vm/FunctionPrefixKind.h"     // FunctionPrefixKind
-#include "vm/JSContext.h"              // JSContext
-#include "vm/JSObject.h"               // TenuredObject
-#include "vm/NativeObject.h"           // NativeDefineDataProperty
 #include "vm/Opcodes.h"                // JSOp
-#include "vm/Runtime.h"                // cx->parserNames()
-#include "vm/SharedStencil.h"          // GCThingIndex
-
-#include "gc/ObjectKind-inl.h"  // GetGCObjectKind
-#include "vm/JSAtom-inl.h"      // AtomToId
-#include "vm/JSObject-inl.h"    // NewBuiltinClassInstance
 
 using namespace js;
 using namespace js::frontend;
@@ -637,7 +624,6 @@ bool ClassEmitter::emitDerivedClass(TaggedParserAtomIndex name,
 }
 
 bool ClassEmitter::emitInitConstructor(bool needsHomeObject) {
-  MOZ_ASSERT(propertyState_ == PropertyState::Start);
   MOZ_ASSERT(classState_ == ClassState::Class ||
              classState_ == ClassState::InstanceMemberInitializersEnd);
 
@@ -711,8 +697,8 @@ bool ClassEmitter::prepareForMemberInitializers(size_t numInitializers,
   // code (the initializer) for each field. Upon an object's construction,
   // these lambdas will be called, defining the values.
   auto initializers =
-      isStatic ? TaggedParserAtomIndex::WellKnown::dotStaticInitializers()
-               : TaggedParserAtomIndex::WellKnown::dotInitializers();
+      isStatic ? TaggedParserAtomIndex::WellKnown::dot_staticInitializers_()
+               : TaggedParserAtomIndex::WellKnown::dot_initializers_();
   initializersAssignment_.emplace(bce_, initializers,
                                   NameOpEmitter::Kind::Initialize);
   if (!initializersAssignment_->prepareForRhs()) {

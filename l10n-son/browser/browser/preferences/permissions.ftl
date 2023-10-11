@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-permissions-window =
+permissions-window2 =
     .title = Hasarawey
-    .style = width: 45em
+    .style = min-width: 45em
 
 permissions-close-key =
     .key = w
@@ -43,10 +43,12 @@ permissions-invalid-uri-label = Taare war ma zunbudoo maa boryo dam
 
 ## Exceptions - Tracking Protection
 
+
 ## Exceptions - Cookies
 
 
 ## Exceptions - HTTPS-Only Mode
+
 
 ## Exceptions - Pop-ups
 
@@ -54,18 +56,16 @@ permissions-exceptions-popup-desc = War ga hin ka tabatandi Interneti nungey ka�
 
 ## Exceptions - Saved Logins
 
-permissions-exceptions-saved-logins-window =
+permissions-exceptions-saved-logins-window2 =
     .title = Hasarawey - huruyan gaabuntey
-    .style = { permissions-window.style }
+    .style = { permissions-window2.style }
 
 ## Exceptions - Add-ons
 
 permissions-exceptions-addons-desc = War ga hin ka tabatandi Interneti nungey kaŋ ga duu fondo ka tontoney sinji. Nungoo kaŋ war ga bag'a aderesu alhakiikaa hantum, de wa Noo fondo naagu.
 
-## Exceptions - Autoplay Media
-
-
 ## Site Permissions - Autoplay
+
 
 ## Site Permissions - Notifications
 
@@ -75,8 +75,13 @@ permissions-exceptions-addons-desc = War ga hin ka tabatandi Interneti nungey ka
 
 ## Site Permissions - Virtual Reality
 
+
 ## Site Permissions - Camera
 
 
 ## Site Permissions - Microphone
+
+## Site Permissions - Speaker
+##
+## "Speaker" refers to an audio output device.
 

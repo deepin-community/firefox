@@ -65,8 +65,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } mga taga-gamit
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = I-sync mo ang mga bookmark mo kahit saan.
@@ -94,42 +92,17 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Basahin ang mga release note
 
-## Search Bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
+# Variables:
+#   $blockedCount (Number) - The total count of blocked trackers. This number will always be greater than 1.
+#   $date (Datetime) - The date we began recording the count of blocked trackers
+cfr-doorhanger-milestone-heading2 =
+    { $blockedCount ->
+       *[other] Ang { -brand-short-name } ay nakaharang ng mga <b>{ $blockedCount }</b> tracker mula noong { DATETIME($date, month: "long", year: "numeric") }!
+    }
 cfr-doorhanger-milestone-ok-button = Tingnan Lahat
     .accesskey = T
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = Isarado
     .accesskey = I
 
@@ -142,21 +115,53 @@ cfr-doorhanger-doh-secondary-button = i-Disable
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-header = Site Isolation
-cfr-doorhanger-fission-primary-button = OK, Nakuha ko
-    .accesskey = O
-cfr-doorhanger-fission-secondary-button = Alamin
-    .accesskey = L
-
 ## Full Video Support CFR message
 
+cfr-doorhanger-video-support-body = Ang mga video sa site na ito ay maaaring hindi mapanood nang tama sa bersyon na ito ng { -brand-short-name }. Para sa buong suporta sa video, i-update na ang { -brand-short-name }.
 cfr-doorhanger-video-support-header = I-update ang { -brand-short-name } upang mapanood ang video
 cfr-doorhanger-video-support-primary-button = Mag-update Na
     .accesskey = u
+
+## Spotlight modal shared strings
+
 
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
+
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+## Firefox View CFR
+
+## Firefox View Spotlight
+
+## Colorways expiry reminder CFR
+
+## Cookie Banner Handling CFR
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
 

@@ -6,10 +6,9 @@
 
 #![allow(clippy::module_name_repetitions)]
 
-use crate::{Error, Res};
+use crate::{Error, Http3Parameters, Res};
 use neqo_common::{Decoder, Encoder};
 use neqo_crypto::{ZeroRttCheckResult, ZeroRttChecker};
-use neqo_qpack::QpackSettings;
 use std::ops::Deref;
 
 type SettingsType = u64;
@@ -21,30 +20,43 @@ const SETTINGS_ZERO_RTT_VERSION: u64 = 1;
 const SETTINGS_MAX_HEADER_LIST_SIZE: SettingsType = 0x6;
 const SETTINGS_QPACK_MAX_TABLE_CAPACITY: SettingsType = 0x1;
 const SETTINGS_QPACK_BLOCKED_STREAMS: SettingsType = 0x7;
+const SETTINGS_ENABLE_WEB_TRANSPORT: SettingsType = 0x2b60_3742;
+// draft-ietf-masque-h3-datagram-04.
+// We also use this old value because the current web-platform test only supports
+// this value.
+const SETTINGS_H3_DATAGRAM_DRAFT04: SettingsType = 0x00ff_d277;
+
+const SETTINGS_H3_DATAGRAM: SettingsType = 0x33;
 
 pub const H3_RESERVED_SETTINGS: &[SettingsType] = &[0x2, 0x3, 0x4, 0x5];
 
-#[derive(Clone, PartialEq, Debug, Copy)]
+#[derive(Clone, PartialEq, Eq, Debug, Copy)]
 pub enum HSettingType {
     MaxHeaderListSize,
     MaxTableCapacity,
     BlockedStreams,
+    EnableWebTransport,
+    EnableH3Datagram,
 }
 
 fn hsetting_default(setting_type: HSettingType) -> u64 {
     match setting_type {
         HSettingType::MaxHeaderListSize => 1 << 62,
-        HSettingType::MaxTableCapacity | HSettingType::BlockedStreams => 0,
+        HSettingType::MaxTableCapacity
+        | HSettingType::BlockedStreams
+        | HSettingType::EnableWebTransport
+        | HSettingType::EnableH3Datagram => 0,
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HSetting {
     pub setting_type: HSettingType,
     pub value: u64,
 }
 
 impl HSetting {
+    #[must_use]
     pub fn new(setting_type: HSettingType, value: u64) -> Self {
         Self {
             setting_type,
@@ -53,18 +65,20 @@ impl HSetting {
     }
 }
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct HSettings {
     settings: Vec<HSetting>,
 }
 
 impl HSettings {
+    #[must_use]
     pub fn new(settings: &[HSetting]) -> Self {
         Self {
             settings: settings.to_vec(),
         }
     }
 
+    #[must_use]
     pub fn get(&self, setting: HSettingType) -> u64 {
         match self.settings.iter().find(|s| s.setting_type == setting) {
             Some(v) => v.value,
@@ -77,22 +91,36 @@ impl HSettings {
             for iter in &self.settings {
                 match iter.setting_type {
                     HSettingType::MaxHeaderListSize => {
-                        enc_inner.encode_varint(SETTINGS_MAX_HEADER_LIST_SIZE as u64);
+                        enc_inner.encode_varint(SETTINGS_MAX_HEADER_LIST_SIZE);
                         enc_inner.encode_varint(iter.value);
                     }
                     HSettingType::MaxTableCapacity => {
-                        enc_inner.encode_varint(SETTINGS_QPACK_MAX_TABLE_CAPACITY as u64);
+                        enc_inner.encode_varint(SETTINGS_QPACK_MAX_TABLE_CAPACITY);
                         enc_inner.encode_varint(iter.value);
                     }
                     HSettingType::BlockedStreams => {
-                        enc_inner.encode_varint(SETTINGS_QPACK_BLOCKED_STREAMS as u64);
+                        enc_inner.encode_varint(SETTINGS_QPACK_BLOCKED_STREAMS);
                         enc_inner.encode_varint(iter.value);
+                    }
+                    HSettingType::EnableWebTransport => {
+                        enc_inner.encode_varint(SETTINGS_ENABLE_WEB_TRANSPORT);
+                        enc_inner.encode_varint(iter.value);
+                    }
+                    HSettingType::EnableH3Datagram => {
+                        if iter.value == 1 {
+                            enc_inner.encode_varint(SETTINGS_H3_DATAGRAM_DRAFT04);
+                            enc_inner.encode_varint(iter.value);
+                            enc_inner.encode_varint(SETTINGS_H3_DATAGRAM);
+                            enc_inner.encode_varint(iter.value);
+                        }
                     }
                 }
             }
         });
     }
 
+    /// # Errors
+    /// Returns an error if settings types are reserved of settings value are not permitted.
     pub fn decode_frame_contents(&mut self, dec: &mut Decoder) -> Res<()> {
         while dec.remaining() > 0 {
             let t = dec.decode_varint();
@@ -113,6 +141,39 @@ impl HSettings {
                 (Some(SETTINGS_QPACK_BLOCKED_STREAMS), Some(value)) => self
                     .settings
                     .push(HSetting::new(HSettingType::BlockedStreams, value)),
+                (Some(SETTINGS_ENABLE_WEB_TRANSPORT), Some(value)) => {
+                    if value > 1 {
+                        return Err(Error::HttpSettings);
+                    }
+                    self.settings
+                        .push(HSetting::new(HSettingType::EnableWebTransport, value));
+                }
+                (Some(SETTINGS_H3_DATAGRAM_DRAFT04), Some(value)) => {
+                    if value > 1 {
+                        return Err(Error::HttpSettings);
+                    }
+                    if !self
+                        .settings
+                        .iter()
+                        .any(|s| s.setting_type == HSettingType::EnableH3Datagram)
+                    {
+                        self.settings
+                            .push(HSetting::new(HSettingType::EnableH3Datagram, value));
+                    }
+                }
+                (Some(SETTINGS_H3_DATAGRAM), Some(value)) => {
+                    if value > 1 {
+                        return Err(Error::HttpSettings);
+                    }
+                    if !self
+                        .settings
+                        .iter()
+                        .any(|s| s.setting_type == HSettingType::EnableH3Datagram)
+                    {
+                        self.settings
+                            .push(HSetting::new(HSettingType::EnableH3Datagram, value));
+                    }
+                }
                 // other supported settings here
                 (Some(_), Some(_)) => {} // ignore unknown setting, it is fine.
                 _ => return Err(Error::NotEnoughData),
@@ -129,27 +190,59 @@ impl Deref for HSettings {
     }
 }
 
+impl From<&Http3Parameters> for HSettings {
+    fn from(conn_param: &Http3Parameters) -> Self {
+        Self {
+            settings: vec![
+                HSetting {
+                    setting_type: HSettingType::MaxTableCapacity,
+                    value: conn_param.get_max_table_size_decoder(),
+                },
+                HSetting {
+                    setting_type: HSettingType::BlockedStreams,
+                    value: u64::from(conn_param.get_max_blocked_streams()),
+                },
+                HSetting {
+                    setting_type: HSettingType::EnableWebTransport,
+                    value: u64::from(conn_param.get_webtransport()),
+                },
+                HSetting {
+                    setting_type: HSettingType::EnableH3Datagram,
+                    value: u64::from(conn_param.get_http3_datagram()),
+                },
+            ],
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct HttpZeroRttChecker {
-    settings: QpackSettings,
+    settings: Http3Parameters,
 }
 
 impl HttpZeroRttChecker {
     /// Right now we only have QPACK settings, so that is all this takes.
     #[must_use]
-    pub fn new(settings: QpackSettings) -> Self {
+    pub fn new(settings: Http3Parameters) -> Self {
         Self { settings }
     }
 
     /// Save the settings that matter for 0-RTT.
     #[must_use]
-    pub fn save(settings: QpackSettings) -> Vec<u8> {
+    pub fn save(settings: &Http3Parameters) -> Vec<u8> {
         let mut enc = Encoder::new();
         enc.encode_varint(SETTINGS_ZERO_RTT_VERSION)
             .encode_varint(SETTINGS_QPACK_MAX_TABLE_CAPACITY)
-            .encode_varint(settings.max_table_size_decoder)
+            .encode_varint(settings.get_max_table_size_decoder())
             .encode_varint(SETTINGS_QPACK_BLOCKED_STREAMS)
-            .encode_varint(settings.max_blocked_streams);
+            .encode_varint(settings.get_max_blocked_streams());
+        if settings.get_webtransport() {
+            enc.encode_varint(SETTINGS_ENABLE_WEB_TRANSPORT)
+                .encode_varint(true);
+        }
+        if settings.get_http3_datagram() {
+            enc.encode_varint(SETTINGS_H3_DATAGRAM).encode_varint(true);
+        }
         enc.into()
     }
 }
@@ -174,9 +267,25 @@ impl ZeroRttChecker for HttpZeroRttChecker {
         }
         if settings.iter().all(|setting| match setting.setting_type {
             HSettingType::BlockedStreams => {
-                u64::from(self.settings.max_blocked_streams) >= setting.value
+                u64::from(self.settings.get_max_blocked_streams()) >= setting.value
             }
-            HSettingType::MaxTableCapacity => self.settings.max_table_size_decoder >= setting.value,
+            HSettingType::MaxTableCapacity => {
+                self.settings.get_max_table_size_decoder() >= setting.value
+            }
+            HSettingType::EnableWebTransport => {
+                if setting.value > 1 {
+                    return false;
+                }
+                let value = setting.value == 1;
+                self.settings.get_webtransport() || !value
+            }
+            HSettingType::EnableH3Datagram => {
+                if setting.value > 1 {
+                    return false;
+                }
+                let value = setting.value == 1;
+                self.settings.get_http3_datagram() || !value
+            }
             HSettingType::MaxHeaderListSize => true,
         }) {
             ZeroRttCheckResult::Accept

@@ -12,25 +12,33 @@ cfr-doorhanger-feature-heading = Առաջարկվող հատկություն
 
 cfr-doorhanger-extension-sumo-link =
     .tooltiptext = Ինչու եմ ես սա տեսնում
+
 cfr-doorhanger-extension-cancel-button = Ոչ հիմա
     .accesskey = N
+
 cfr-doorhanger-extension-ok-button = Ավելացնել հիմա
     .accesskey = A
+
 cfr-doorhanger-extension-manage-settings-button = Կառավարել երաշխավորվող կարգավորումները
     .accesskey = M
+
 cfr-doorhanger-extension-never-show-recommendation = Չցուցադրել ինձ այս երաշխավորությունները
     .accesskey = S
+
 cfr-doorhanger-extension-learn-more-link = Իմանալ ավելին
+
 # This string is used on a new line below the add-on name
 # Variables:
 #   $name (String) - Add-on author name
 cfr-doorhanger-extension-author = { $name }-ի կողմից
+
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Երաշխավորություն
 cfr-doorhanger-extension-notification2 = Երաշխավորություն
     .tooltiptext = Ընդլայնման երաշխավորություն
     .a11y-announcement = Հասանելի ընդլայնման երաշխավորություն
+
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-feature-notification = Երաշխավորություն
@@ -77,9 +85,11 @@ cfr-protections-panel-link-text = Իմանալ ավելին
 # This string is used by screen readers to offer a text based alternative for
 # the notification icon
 cfr-badge-reader-label-newfeature = Նոր հատկություն․
+
 cfr-whatsnew-button =
     .label = Ինչն է նոր
     .tooltiptext = Ինչն է նոր
+
 cfr-whatsnew-release-notes-link-text = Կարդալ թողարկման գրառումները
 
 ## Enhanced Tracking Protection Milestones
@@ -108,19 +118,14 @@ cfr-doorhanger-doh-secondary-button = Անջատել
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Ձեր գաղտնիությունը կարևոր է: { -brand-short-name }-ն այժմ մեկուսացնում կամ ավազարկղում է կայքերը միմյանցից, ինչը հաքերների համար դժվարացնում է գաղտնաբառերը, բանկային քարտերի համարները և այլ զգայուն տեղեկություններ գողանալը:
-cfr-doorhanger-fission-header = Կայքի մեկուսացում
-cfr-doorhanger-fission-primary-button = Հասկանալի է
-    .accesskey = O
-cfr-doorhanger-fission-secondary-button = Իմանալ ավելին
-    .accesskey = L
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = { -brand-short-name }-ի այս տարբերակում տեսանյութերը կարող են ճիշտ չնվագարկվել: Տեսանյութի լրիվ աջակցման համար թարմացրեք { -brand-short-name }-ը հիմա:
 cfr-doorhanger-video-support-header = Թարմացրեք { -brand-short-name }-ը՝ տեսանյութը նվագարկելու համար
 cfr-doorhanger-video-support-primary-button = Թարմացնել Հիմա
     .accesskey = U
+
+## Spotlight modal shared strings
 
 ## VPN promotion dialog for public Wi-Fi users
 ##
@@ -132,3 +137,60 @@ spotlight-public-wifi-vpn-primary-button = Մնացեք գաղտնի { -mozilla-
     .accesskey = S
 spotlight-public-wifi-vpn-link = Ոչ հիմա
     .accesskey = N
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-pin-secondary-button = Ոչ հիմա
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = Հիշեցնել ավելի ուշ
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Փորձիր
+    .accesskey = T
+firefoxview-cfr-secondarybutton = Ոչ հիմա
+    .accesskey = N
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = Ասեք բարև { -firefoxview-brand-name }-ին
+
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = Ցանկանո՞ւմ եք բացել ներդիրը ձեր հեռախոսում: Արեք դա: Պետք է բացել այն կայքը, որը նոր էիք այցելել: Պահ, այն { -firefoxview-brand-name }-ում է:
+firefoxview-spotlight-promo-primarybutton = Տեսեք, թե ինչպես է այն աշխատում
+firefoxview-spotlight-promo-secondarybutton = Բաց թողնել
+
+## Colorways expiry reminder CFR
+
+
+## Cookie Banner Handling CFR
+
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
+

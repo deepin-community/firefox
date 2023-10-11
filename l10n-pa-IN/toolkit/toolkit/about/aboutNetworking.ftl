@@ -8,6 +8,7 @@ about-networking-sockets = ਸਾਕਟ
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = DNS ਕੈਸ਼ ਮਿਟਾਓ
 about-networking-dns-trr-url = DoH URL
+about-networking-dns-trr-mode = DoH ਮੋਡ
 about-networking-dns-suffix = DNS ਪਿਛੇਤਰ
 about-networking-websockets = ਵੈੱਬਸਾਕਟ
 about-networking-refresh = ਤਾਜ਼ਾ
@@ -19,7 +20,7 @@ about-networking-ssl = SSL
 about-networking-active = ਸਰਗਰਮ
 about-networking-idle = ਵੇਹਲਾ
 about-networking-host = ਹੋਸਟ
-about-networking-tcp = TCP
+about-networking-type = ਕਿਸਮ
 about-networking-sent = ਭੇਜੇ
 about-networking-received = ਪ੍ਰਾਪਤ ਕੀਤੇ
 about-networking-family = ਪਰਿਵਾਰ
@@ -27,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = ਸਿਰਨਾਵੇਂ
 about-networking-expires = ਮਿਆਦ (ਸਕਿੰਟ)
 about-networking-originAttributesSuffix = ਵੱਖਰਤਾ ਕੁੰਜੀ
+about-networking-flags = ਵਾਧੂ ਨਿਸ਼ਾਨ
 about-networking-messages-sent = ਭੇਜੇ ਸੁਨੇਹੇ
 about-networking-messages-received = ਪ੍ਰਾਪਤ ਕੀਤੇ ਸੁਨੇਹੇ
 about-networking-bytes-sent = ਭੇਜੇ ਬਾਈਟ
 about-networking-bytes-received = ਪ੍ਰਾਪਤ ਕੀਤੇ ਬਾਈਟ
 about-networking-logging = ਲਾਗ ਰੱਖਣਾ
-about-networking-log-tutorial = ਇਹ ਟੂਲ ਦੀ ਵਰਤੋਂ ਸਿ਼ਖਣ ਲਈ ਹਦਾਇਤਾਂ ਵਾਸਤੇ <a data-l10n-name="logging">HTTP Logging</a> ਨੂੰ ਵੇਖੋ
-about-networking-current-log-file = ਮੌਜੂਦਾ ਲਾਗ ਫਾਈਲ:
-about-networking-current-log-modules = Current Log Modules:
-about-networking-set-log-file = Set Log File
-about-networking-set-log-modules = Set Log Modules
-about-networking-start-logging = Start Logging
-about-networking-stop-logging = Stop Logging
 about-networking-dns-lookup = DNS ਖੋਜ
 about-networking-dns-lookup-button = ਹੱਲ਼
 about-networking-dns-domain = ਡੋਮੇਨ:
@@ -61,6 +56,8 @@ about-networking-rcwn-cache-slow = ਕੈਸ਼ ਹੌਲੀ ਗਿਣਤੀ
 about-networking-rcwn-cache-not-slow = ਕੈਸ਼ਨ ਹੌਲੀ ਨਹੀਂ ਗਿਣਤੀ
 about-networking-networkid = ਨੈੱਟਵਰਕ ਪਛਾਣ
 about-networking-networkid-id = ਨੈੱਟਵਰਕ ਪਛਾਣ
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = ਇਸ ਸਫ਼ੇ ਨੂੰ <a data-l10n-name="about-logging-url">about:logging</a> ਉੱਤੇ ਭੇਜਿਆ ਗਿਆ ਹੈ।
 
 ## Link is intended as "network link"
 

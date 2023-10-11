@@ -17,9 +17,9 @@ certmgr-tab-servers =
 certmgr-tab-ca =
     .label = Tasdiqdan oʻtkazishlar
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = CA sertifikati ishonch sozlamalarini oʻzgartirish
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Ishonch sozlalamalarini oʻzgartirish:
 
@@ -29,18 +29,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Ushbu sertifikat foydalanuvchilar pochtalari ma’lumotlarini aniqlay oladi.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Sertifikatni o‘chirish
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = Sertifikat nomi
 
 certmgr-cert-server =
     .label = Server
-
-certmgr-override-lifetime =
-    .label = Foydalanish muddati
 
 certmgr-token-name =
     .label = Qurilma xavfsizligi
@@ -162,9 +159,8 @@ delete-email-cert-title =
 delete-email-cert-confirm = Ushbu odamlarning e-pochta sertifikatlarini o‘chirmoqchi ekanligingizga ishonchingiz komilmi?
 delete-email-cert-impact = Agar shaxsning e-pochta sertifikatini o‘chsangiz, siz ushbu shaxsga kodlangan xatni jo‘nata olmaysiz.
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

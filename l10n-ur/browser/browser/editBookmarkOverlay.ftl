@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = چھپائیں
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = تمام بک مارک پوشے دکھائیں
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = چھپائیں
+
 bookmark-overlay-new-folder-button =
     .label = نیا پوشہ
     .accesskey = پ
@@ -39,6 +45,12 @@ bookmark-overlay-tags-expander =
     .tooltiptext = تمام ٹیگ دکھائیں
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = چھپائیں
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = تمام ٹیگ دکھائیں
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = چھپائیں
 
 bookmark-overlay-keyword-2 =
     .value = کلیدی لفظ

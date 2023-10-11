@@ -21,9 +21,9 @@ certmgr-mine = Sizi müəyyənləşdirən bu təşkilatlardan təsdiq sənədlə
 certmgr-people = Bu şəxsləri müəyyənləşdirən qeydiyyatlı təsdiq sənədləriniz var
 certmgr-ca = Bu təsdiq sənədi səlahiyyətlilərini müəyyənləşdirən qeydiyyatlı təsdiq sənədləriniz var
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Təsdiq sənədinin etibarlılıq parametrlərini redaktə edin
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Etibarlılıq parametrlərini redaktə edin:
 
@@ -33,18 +33,15 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Bu təsdiq sənədi poçt istifadəçilərini təyin edə bilər.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Təsdiq sənədini sil
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-name =
     .label = Təsdiq sənədinin adı
 
 certmgr-cert-server =
     .label = Server
-
-certmgr-override-lifetime =
-    .label = Xidmət müddəti
 
 certmgr-token-name =
     .label = Təhlükəsizlik cihazları
@@ -173,9 +170,8 @@ delete-email-cert-impact = Əgər bir şəxsin poçt təsdiq sənədini silsəni
 cert-with-serial =
     .value = Seriya nömrəli sertifikat: { $serialNumber }
 
-## Cert Viewer
-
 ## Used to show whether an override is temporary or permanent
+
 
 ## Add Security Exception dialog
 

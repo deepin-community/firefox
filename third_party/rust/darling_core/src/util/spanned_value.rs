@@ -1,8 +1,8 @@
 use proc_macro2::Span;
 use std::ops::{Deref, DerefMut};
-use syn;
 use syn::spanned::Spanned;
-use {
+
+use crate::{
     FromDeriveInput, FromField, FromGenericParam, FromGenerics, FromMeta, FromTypeParam,
     FromVariant, Result,
 };
@@ -19,7 +19,7 @@ use {
 /// but the user may not always explicitly set those options in their source code.
 /// In this case, using `Default::default()` will create an instance which points
 /// to `Span::call_site()`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct SpannedValue<T> {
     value: T,
     span: Span,
@@ -33,6 +33,11 @@ impl<T> SpannedValue<T> {
     /// Get the source code location referenced by this struct.
     pub fn span(&self) -> Span {
         self.span
+    }
+
+    /// Apply a mapping function to a reference to the spanned value.
+    pub fn map_ref<U>(&self, map_fn: impl FnOnce(&T) -> U) -> SpannedValue<U> {
+        SpannedValue::new(map_fn(&self.value), self.span)
     }
 }
 
@@ -75,10 +80,28 @@ macro_rules! spanned {
     };
 }
 
+impl<T: FromMeta> FromMeta for SpannedValue<T> {
+    fn from_meta(item: &syn::Meta) -> Result<Self> {
+        let value = T::from_meta(item).map_err(|e| e.with_span(item))?;
+        let span = match item {
+            // Example: `#[darling(skip)]` as SpannedValue<bool>
+            // should have the span pointing to the word `skip`.
+            syn::Meta::Path(path) => path.span(),
+            // Example: `#[darling(attributes(Value))]` as a SpannedValue<Vec<String>>
+            // should have the span pointing to the list contents.
+            syn::Meta::List(list) => list.tokens.span(),
+            // Example: `#[darling(skip = true)]` as SpannedValue<bool>
+            // should have the span pointing to the word `true`.
+            syn::Meta::NameValue(nv) => nv.value.span(),
+        };
+
+        Ok(Self::new(value, span))
+    }
+}
+
 spanned!(FromGenericParam, from_generic_param, syn::GenericParam);
 spanned!(FromGenerics, from_generics, syn::Generics);
 spanned!(FromTypeParam, from_type_param, syn::TypeParam);
-spanned!(FromMeta, from_meta, syn::Meta);
 spanned!(FromDeriveInput, from_derive_input, syn::DeriveInput);
 spanned!(FromField, from_field, syn::Field);
 spanned!(FromVariant, from_variant, syn::Variant);

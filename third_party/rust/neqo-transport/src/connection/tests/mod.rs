@@ -7,21 +7,26 @@
 #![deny(clippy::pedantic)]
 
 use super::{Connection, ConnectionError, ConnectionId, Output, State};
-use crate::addr_valid::{AddressValidation, ValidateAddress};
-use crate::cc::{CWND_INITIAL_PKTS, CWND_MIN};
-use crate::cid::ConnectionIdRef;
-use crate::events::ConnectionEvent;
-use crate::path::PATH_MTU_V6;
-use crate::recovery::ACK_ONLY_SIZE_LIMIT;
-use crate::stats::{FrameStats, Stats, MAX_PTO_COUNTS};
-use crate::{ConnectionIdDecoder, ConnectionIdGenerator, ConnectionParameters, Error, StreamType};
+use crate::{
+    addr_valid::{AddressValidation, ValidateAddress},
+    cc::{CWND_INITIAL_PKTS, CWND_MIN},
+    cid::ConnectionIdRef,
+    events::ConnectionEvent,
+    path::PATH_MTU_V6,
+    recovery::ACK_ONLY_SIZE_LIMIT,
+    stats::{FrameStats, Stats, MAX_PTO_COUNTS},
+    ConnectionIdDecoder, ConnectionIdGenerator, ConnectionParameters, Error, StreamId, StreamType,
+    Version,
+};
 
-use std::cell::RefCell;
-use std::cmp::min;
-use std::convert::TryFrom;
-use std::mem;
-use std::rc::Rc;
-use std::time::{Duration, Instant};
+use std::{
+    cell::RefCell,
+    cmp::min,
+    convert::TryFrom,
+    mem,
+    rc::Rc,
+    time::{Duration, Instant},
+};
 
 use neqo_common::{event::Provider, qdebug, qtrace, Datagram, Decoder, Role};
 use neqo_crypto::{random, AllowZeroRtt, AuthenticationStatus, ResumptionToken};
@@ -126,6 +131,9 @@ pub fn new_server(params: ConnectionParameters) -> Connection {
 pub fn default_server() -> Connection {
     new_server(ConnectionParameters::default())
 }
+pub fn resumed_server(client: &Connection) -> Connection {
+    new_server(ConnectionParameters::default().versions(client.version(), Version::all()))
+}
 
 /// If state is `AuthenticationNeeded` call `authenticated()`. This function will
 /// consume all outstanding events on the connection.
@@ -158,7 +166,7 @@ fn handshake(
     };
 
     while !is_done(a) {
-        let _ = maybe_authenticate(a);
+        _ = maybe_authenticate(a);
         let had_input = input.is_some();
         let output = a.process(input, now).dgram();
         assert!(had_input || output.is_some());
@@ -209,10 +217,10 @@ fn connect(client: &mut Connection, server: &mut Connection) {
     connect_with_rtt(client, server, now(), Duration::new(0, 0));
 }
 
-fn assert_error(c: &Connection, err: &ConnectionError) {
+fn assert_error(c: &Connection, expected: &ConnectionError) {
     match c.state() {
         State::Closing { error, .. } | State::Draining { error, .. } | State::Closed(error) => {
-            assert_eq!(*error, *err);
+            assert_eq!(*error, *expected, "{c} error mismatch");
         }
         _ => panic!("bad state {:?}", c.state()),
     }
@@ -277,8 +285,8 @@ fn connect_rtt_idle(client: &mut Connection, server: &mut Connection, rtt: Durat
     let now = connect_with_rtt(client, server, now(), rtt);
     let now = force_idle(client, server, rtt, now);
     // Drain events from both as well.
-    let _ = client.events().count();
-    let _ = server.events().count();
+    _ = client.events().count();
+    _ = server.events().count();
     qtrace!("----- connected and idle with RTT {:?}", rtt);
     now
 }
@@ -287,7 +295,7 @@ fn connect_force_idle(client: &mut Connection, server: &mut Connection) {
     connect_rtt_idle(client, server, Duration::new(0, 0));
 }
 
-fn fill_stream(c: &mut Connection, stream: u64) {
+fn fill_stream(c: &mut Connection, stream: StreamId) {
     const BLOCK_SIZE: usize = 4_096;
     loop {
         let bytes_sent = c.stream_send(stream, &[0x42; BLOCK_SIZE]).unwrap();
@@ -304,7 +312,7 @@ fn fill_stream(c: &mut Connection, stream: u64) {
 /// from the return value whether a timeout is an ACK delay, PTO, or
 /// pacing, this looks at the congestion window to tell when to stop.
 /// Returns a list of datagrams and the new time.
-fn fill_cwnd(c: &mut Connection, stream: u64, mut now: Instant) -> (Vec<Datagram>, Instant) {
+fn fill_cwnd(c: &mut Connection, stream: StreamId, mut now: Instant) -> (Vec<Datagram>, Instant) {
     // Train wreck function to get the remaining congestion window on the primary path.
     fn cwnd(c: &Connection) -> usize {
         c.paths.primary().borrow().sender().cwnd_avail()
@@ -343,7 +351,7 @@ fn fill_cwnd(c: &mut Connection, stream: u64, mut now: Instant) -> (Vec<Datagram
 fn increase_cwnd(
     sender: &mut Connection,
     receiver: &mut Connection,
-    stream: u64,
+    stream: StreamId,
     mut now: Instant,
 ) -> Instant {
     fill_stream(sender, stream);
@@ -377,7 +385,7 @@ fn increase_cwnd(
 /// The caller is responsible for ensuring that `dest` has received
 /// enough data that it wants to generate an ACK.  This panics if
 /// no ACK frame is generated.
-fn ack_bytes<D>(dest: &mut Connection, stream: u64, in_dgrams: D, now: Instant) -> Datagram
+fn ack_bytes<D>(dest: &mut Connection, stream: StreamId, in_dgrams: D, now: Instant) -> Datagram
 where
     D: IntoIterator<Item = Datagram>,
     D::IntoIter: ExactSizeIterator,
@@ -412,7 +420,7 @@ fn cwnd_avail(c: &Connection) -> usize {
 fn induce_persistent_congestion(
     client: &mut Connection,
     server: &mut Connection,
-    stream: u64,
+    stream: StreamId,
     mut now: Instant,
 ) -> Instant {
     // Note: wait some arbitrary time that should be longer than pto

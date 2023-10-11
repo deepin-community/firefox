@@ -8,8 +8,6 @@
 cfr-doorhanger-extension-heading = Laienduse soovitus
 cfr-doorhanger-feature-heading = Funktsionaalsuse soovitus
 
-
-
 ##
 
 cfr-doorhanger-extension-sumo-link =
@@ -37,6 +35,15 @@ cfr-doorhanger-extension-author = { $name }
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Soovitus
+cfr-doorhanger-extension-notification2 = Soovitus
+    .tooltiptext = Laienduse soovitus
+    .a11y-announcement = Laienduse soovitus on saadaval
+
+# This is a notification displayed in the address bar.
+# When clicked it opens a panel with a message for the user.
+cfr-doorhanger-feature-notification = Soovitus
+    .tooltiptext = Funktsionaalsuse soovitus
+    .a11y-announcement = Funktsionaalsuse soovitus on saadaval
 
 ## Add-on statistics
 ## These strings are used to display the total number of
@@ -58,9 +65,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } kasutajat
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Järjehoidjate sünkroonimine kõikjal.
@@ -78,55 +82,106 @@ cfr-protections-panel-link-text = Rohkem teavet
 
 ## What's New toolbar button and panel
 
+# This string is used by screen readers to offer a text based alternative for
+# the notification icon
+cfr-badge-reader-label-newfeature = Uus funktsionaalsus:
+
 cfr-whatsnew-button =
     .label = Mis on uut?
     .tooltiptext = Mis on uut?
 
 cfr-whatsnew-release-notes-link-text = Loe väljalasketeadet
 
-## Search Bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
-## What’s New Panel Content for Firefox 76
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
+# Variables:
+#   $blockedCount (Number) - The total count of blocked trackers. This number will always be greater than 1.
+#   $date (Datetime) - The date we began recording the count of blocked trackers
+cfr-doorhanger-milestone-heading2 =
+    { $blockedCount ->
+        [one] { -brand-short-name } blokkis üle <b>{ $blockedCount }</b> jälitaja alates { DATETIME($date, month: "long", year: "numeric") }!
+       *[other] { -brand-short-name } blokkis üle <b>{ $blockedCount }</b> jälitaja alates { DATETIME($date, month: "long", year: "numeric") }!
+    }
+cfr-doorhanger-milestone-ok-button = Vaata kõiki
+    .accesskey = V
+cfr-doorhanger-milestone-close-button = Sulge
+    .accesskey = S
 
 ## DOH Message
 
-## What's new: Cookies message
+cfr-doorhanger-doh-body = Sinu privaatsus on oluline. { -brand-short-name } suunab nüüd DNS-päringud sinu kaitsmiseks turvaliselt partnerteenusesse.
+cfr-doorhanger-doh-header = Turvalisemad, krüptitud DNS-päringud
+cfr-doorhanger-doh-primary-button-2 = Sobib
+    .accesskey = S
+cfr-doorhanger-doh-secondary-button = Keela
+    .accesskey = K
 
 ## Fission Experiment Message
 
 ## Full Video Support CFR message
+
+cfr-doorhanger-video-support-body = Sellel saidil olevaid videoid ei pruugita selle { -brand-short-name } versiooniga õigesti esitada. Täieliku videotoe saamiseks uuendage { -brand-short-name } kohe.
+cfr-doorhanger-video-support-header = Video esitamiseks uuenda { -brand-short-name }
+cfr-doorhanger-video-support-primary-button = Uuenda kohe
+    .accesskey = U
+
+## Spotlight modal shared strings
 
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
+
+# This header text can be explicitly wrapped.
+spotlight-public-wifi-vpn-header = Näib, et kasutad avalikku WiFit
+spotlight-public-wifi-vpn-body = Oma asukoha ja lehitsemistegevuse peitmiseks kaalu virtuaalset privaatvõrku (VPN). See aitab kaitsta sinu veebilehitsemist avalikes kohtades nagu lennujaamad ja kohvikud.
+spotlight-public-wifi-vpn-primary-button = Jää privaatseks { -mozilla-vpn-brand-name }iga
+    .accesskey = p
+spotlight-public-wifi-vpn-link = Mitte praegu
+    .accesskey = M
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Parem internet algab sinust endast
+spotlight-better-internet-body = Kasutades { -brand-short-name }i, hääletad sa avatud ja juurdepääsetava interneti poolt, mis on kõigile parem.
+spotlight-peace-mind-header = Hoolime sinu turvalisusest
+spotlight-peace-mind-body = Iga kuu blokib { -brand-short-name } keskmiselt 3,000 jälitajat kasutaja kohta. Seda selleks, et mitte miski, eriti privaatsuse ära kasutamine jälitajatega, ei tohiks seista sinu ja hea interneti vahel.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Hoia dokis
+       *[other] Kinnita tegumiribale
+    }
+spotlight-pin-secondary-button = Mitte praegu
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+## Firefox View CFR
+
+## Firefox View Spotlight
+
+## Colorways expiry reminder CFR
+
+## Cookie Banner Handling CFR
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
 

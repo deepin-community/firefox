@@ -6,7 +6,7 @@
 
 /*
  * This file declares data structures used to communicate data logged by
- * various components for the purpose of APZ testing (see bug 961289 and 
+ * various components for the purpose of APZ testing (see bug 961289 and
  * gfx/layers/apz/test/APZTestData.h) to JS test code.
  */
 
@@ -57,6 +57,14 @@ dictionary APZHitResult {
   unsigned long long scrollId;
 };
 
+dictionary APZSampledResult {
+  float scrollOffsetX;
+  float scrollOffsetY;
+  DOMHighResTimeStamp sampledTimeStamp;
+  unsigned long long layersId;
+  unsigned long long scrollId;
+};
+
 dictionary AdditionalDataEntry {
   DOMString key;
   DOMString value;
@@ -68,6 +76,7 @@ dictionary APZTestData {
   sequence<APZBucket> paints;
   sequence<APZBucket> repaintRequests;
   sequence<APZHitResult> hitResults;
+  sequence<APZSampledResult> sampledResults;
   sequence<AdditionalDataEntry> additionalData;
 };
 

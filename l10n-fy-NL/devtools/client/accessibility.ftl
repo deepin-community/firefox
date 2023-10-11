@@ -13,6 +13,26 @@ accessibility-keyboard-header = Toetseboerd
 
 ## Text entries that are used as text alternative for icons that depict accessibility isses.
 
+
+## These strings are used in the overlay displayed when running an audit in the accessibility panel
+
+accessibility-progress-initializing = Inisjalisearje…
+    .aria-valuetext = Inisjalisearje…
+
+# This string is displayed in the audit progress bar in the accessibility panel.
+# Variables:
+#   $nodeCount (Integer) - The number of nodes for which the audit was run so far.
+accessibility-progress-progressbar =
+    { $nodeCount ->
+        [one] Kontrolearjen { $nodeCount } node
+       *[other] Kontrolearjen { $nodeCount } nodes
+    }
+
+accessibility-progress-finishing = Ofronde…
+    .aria-valuetext = Ofronde…
+
+## Text entries that are used as text alternative for icons that depict accessibility issues.
+
 accessibility-warning =
     .alt = Warskôging
 
@@ -26,7 +46,7 @@ accessibility-best-practices =
 ## that describe that currently selected accessible object has an accessibility issue
 ## with its text label or accessible name.
 
-accessibility-text-label-issue-area = Brûk it attribút <code>alt</code> om <div>area</div>-eleminten dy't it attribút <span>href</span> hawwe te labeljen. <a>Mear ynfo</a>
+accessibility-text-label-issue-area = Brûk it attribút <code>alt</code> om <div>area</div>-eleminten dy’t it attribút <span>href</span> hawwe te labeljen. <a>Mear ynfo</a>
 
 accessibility-text-label-issue-dialog = Dialogen soene labeld wêze moatte. <a>Mear ynfo</a>
 
@@ -74,6 +94,6 @@ accessibility-keyboard-issue-action = Ynteraktive eleminten moatte aktivearre wu
 
 accessibility-keyboard-issue-focusable = Ynteraktive eleminten moatte in fokus krije kinne. <a>Mear ynfo</a>
 
-accessibility-keyboard-issue-focus-visible = In elemint dy't in fokus krije kin mist mooglik de fokusstyl. <a>Mear ynfo</a>
+accessibility-keyboard-issue-focus-visible = In elemint dy’t in fokus krije kin mist mooglik de fokusstyl. <a>Mear ynfo</a>
 
 accessibility-keyboard-issue-mouse-only = Klikbere eleminten moatte fokus krije kinne en ynteraktive semantyk hawwe. <a>Mear ynfo</a>

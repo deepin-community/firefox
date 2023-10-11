@@ -26,9 +26,9 @@ certmgr-people = Vi havas konservitajn atestilojn, kiuj identigas tiujn ĉi pers
 certmgr-server = Tiuj registroj identigas esceptojn por atestilaj eraroj
 certmgr-ca = Vi havas konservitajn atestilojn, kiuj identigas tiujn ĉi atestilaj aŭtoritatoj
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Modifi agordojn de CA atestila fido
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Modifi fidajn agordojn:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Tiu ĉi atestilo povas identigi retpoŝtajn uzantojn.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Forigi atestilon
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Servilo
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Servilo
-
-certmgr-override-lifetime =
-    .label = Vivodaŭro
 
 certmgr-token-name =
     .label = Sekureca aparato
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Seria numero
+
+certmgr-fingerprint-sha-256 =
+    .label = SHA-256 fingrospuro
 
 certmgr-view =
     .label = Vidi…
@@ -185,8 +185,6 @@ delete-email-cert-impact = Se vi forviŝas personan retpoŝtan atestilon vi ne p
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Atestilo kun seria numero: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Ne sendi klientan atestilon

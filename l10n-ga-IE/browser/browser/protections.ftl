@@ -5,6 +5,8 @@
 # Weekly summary of the graph when the graph is empty in Private Mode
 graph-week-summary-private-window = Lorgairí ar chuir { -brand-short-name } cosc orthu an tseachtain seo
 
+protection-report-manage-protections = Bainistigh na Socruithe
+
 # This string is used to label the X axis of a graph. Other days of the week are generated via Intl.DateTimeFormat,
 # capitalization for this string should match the output for your locale.
 graph-today = Inniu
@@ -18,9 +20,9 @@ tracker-tab-title = Ábhar Lorgaireachta
 fingerprinter-tab-title = Méarlorgairí
 
 cryptominer-tab-title = Criptimhianadóirí
-  
+
 lockwise-title = Ná déan dearmad d'fhocal faire arís
-lockwise-header-content = Stórálann { -lockwise-brand-name } do chuid focal faire slán sábháilte i do bhrabhsálaí.
+
 
 monitor-link = Conas a oibríonn sé
 

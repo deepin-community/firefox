@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Vybrať všetky karty
     .accesskey = v
+tab-context-play-tab =
+    .label = Prehrať kartu
+    .accesskey = P
+tab-context-play-tabs =
+    .label = Prehrať karty
+    .accesskey = y
 duplicate-tab =
     .label = Duplikovať kartu
     .accesskey = D
@@ -48,9 +54,9 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Pridať karty medzi záložky…
     .accesskey = a
-bookmark-tab =
-    .label = Pridať kartu medzi záložky
-    .accesskey = a
+tab-context-bookmark-tab =
+    .label = Pridať kartu medzi záložky…
+    .accesskey = r
 tab-context-open-in-new-container-tab =
     .label = Otvoriť na novej kontajnerovej karte
     .accesskey = k
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Zdieľať
     .accesskey = e
-tab-context-share-more =
-    .label = Viac…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -84,13 +88,6 @@ tab-context-reopen-closed-tabs =
            *[other] Obnoviť zatvorené karty
         }
     .accesskey = b
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Zavrieť kartu
-           *[other] Zavrieť karty
-        }
-    .accesskey = Z
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

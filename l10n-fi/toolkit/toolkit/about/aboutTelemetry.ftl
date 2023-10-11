@@ -34,7 +34,6 @@ about-telemetry-events-section = Tapahtumat
 about-telemetry-simple-measurements-section = Yksinkertaiset mittaukset
 about-telemetry-slow-sql-section = Hitaat SQL-lauseet
 about-telemetry-addon-details-section = Lisäosien tiedot
-about-telemetry-captured-stacks-section = Kaapatut pinot
 about-telemetry-late-writes-section = Myöhästyneet kirjoitukset
 about-telemetry-raw-payload-section = Raakatiedot
 about-telemetry-raw = Muotoilematon JSON
@@ -122,10 +121,6 @@ about-telemetry-keys-header = Ominaisuus
 about-telemetry-names-header = Nimi
 about-telemetry-values-header = Arvo
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (kaappausmäärä: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Myöhästynyt kirjoitus #{ $lateWriteCount }
 about-telemetry-stack-title = Pino:
@@ -136,12 +131,6 @@ about-telemetry-category-header = luokka
 about-telemetry-method-header = metodi
 about-telemetry-object-header = objekti
 about-telemetry-extra-header = lisätietoa
-about-telemetry-origin-section = Origin-kaukomittaus
-about-telemetry-origin-origin = origin
-about-telemetry-origin-count = lukumäärä
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Firefoxin origin-kaukomittaus</a> koodaa datan ennen lähettämistä niin, että { $telemetryServerOwner } voi laskea tietueita mutta ei tiedä vaikuttiko tietty { -brand-product-name } lukumäärään vai ei. (<a data-l10n-name="prio-blog-link">lue lisää</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = { $process }-prosessi

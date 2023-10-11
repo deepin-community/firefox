@@ -8,7 +8,10 @@
  * redirected without hitting the network (HSTS is one of such cases)
  */
 
-add_task(async function() {
+add_task(async function () {
+  // This test explicitly checks http->https redirects and should not force https.
+  await pushPref("dom.security.https_first", false);
+
   const EXPECTED_REQUESTS = [
     // Request to HTTP URL, redirects to HTTPS
     { status: 302 },
@@ -69,7 +72,7 @@ add_task(async function() {
     return SpecialPowers.spawn(
       tab.linkedBrowser,
       [{ count, url }],
-      async function(args) {
+      async function (args) {
         content.wrappedJSObject.performRequests(args.count, args.url);
       }
     );

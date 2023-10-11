@@ -16,21 +16,21 @@ const TEST_URL =
 
 const PREF_BLOCK_DISPLAY = "security.mixed_content.block_display_content";
 const PREF_BLOCK_ACTIVE = "security.mixed_content.block_active_content";
-const PREF_ONION_WHITELIST = "dom.securecontext.whitelist_onions";
+const PREF_ONION_ALLOWLIST = "dom.securecontext.allowlist_onions";
 
 add_task(async function allowOnionMixedContent() {
-  registerCleanupFunction(function() {
+  registerCleanupFunction(function () {
     gBrowser.removeCurrentTab();
   });
 
   await SpecialPowers.pushPrefEnv({ set: [[PREF_BLOCK_DISPLAY, true]] });
   await SpecialPowers.pushPrefEnv({ set: [[PREF_BLOCK_ACTIVE, true]] });
-  await SpecialPowers.pushPrefEnv({ set: [[PREF_ONION_WHITELIST, true]] });
+  await SpecialPowers.pushPrefEnv({ set: [[PREF_ONION_ALLOWLIST, true]] });
 
   const tab = await BrowserTestUtils.openNewForegroundTab(
     gBrowser,
     TEST_URL
-  ).catch(Cu.reportError);
+  ).catch(console.error);
   const browser = gBrowser.getBrowserForTab(tab);
 
   await assertMixedContentBlockingState(browser, {

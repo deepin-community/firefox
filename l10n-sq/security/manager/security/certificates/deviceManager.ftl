@@ -5,9 +5,9 @@
 
 ## Strings used for device manager
 
-devmgr =
+devmgr-window =
     .title = Administrues Pajisjesh
-    .style = width: 67em; height: 32em;
+    .style = min-width: 67em; min-height: 32em;
 
 devmgr-devlist =
     .label = Pajisje dhe Module Sigurie
@@ -35,8 +35,8 @@ devmgr-button-load =
     .accesskey = N
 
 devmgr-button-unload =
-    .label = Fshije
-    .accesskey = F
+    .label = Hiqi ngarkimi
+    .accesskey = H
 
 devmgr-button-enable-fips =
     .label = Aktivizo FIPS

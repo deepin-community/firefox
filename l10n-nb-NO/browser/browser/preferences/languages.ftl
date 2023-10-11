@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-webpage-languages-window =
+webpage-languages-window2 =
     .title = Innstillinger for nettsidespråk
-    .style = width: 40em
+    .style = min-width: 40em
 
 languages-close-key =
     .key = w
@@ -49,9 +49,9 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
-browser-languages-window =
+browser-languages-window2 =
     .title = Språkinnstillinger for { -brand-short-name }
-    .style = width: 40em
+    .style = min-width: 40em
 
 browser-languages-description = { -brand-short-name } vil vise det første språket som standard og vil vise alternative språk om nødvendig i den rekkefølgen de vises.
 
@@ -70,4 +70,4 @@ browser-languages-select-language =
 browser-languages-installed-label = Installerte språk
 browser-languages-available-label = Tilgjengelige språk
 
-browser-languages-error = { -brand-short-name } kan ikke oppdatere språkene dine akkurat nå. Kontroller at du er koblet til Internett, eller prøv igjen.
+browser-languages-error = { -brand-short-name } kan ikke oppdatere språkene dine akkurat nå. Kontroller at du er koblet til Internett, eller prøv på nytt.

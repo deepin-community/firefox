@@ -7,11 +7,13 @@
 const {
   FrontClassWithSpec,
   registerFront,
-} = require("devtools/shared/protocol");
-const { webconsoleSpec } = require("devtools/shared/specs/webconsole");
+} = require("resource://devtools/shared/protocol.js");
+const {
+  webconsoleSpec,
+} = require("resource://devtools/shared/specs/webconsole.js");
 const {
   getAdHocFrontOrPrimitiveGrip,
-} = require("devtools/client/fronts/object");
+} = require("resource://devtools/client/fronts/object.js");
 
 /**
  * A WebConsoleFront is used as a front end for the WebConsoleActor that is
@@ -24,41 +26,17 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
   constructor(client, targetFront, parentFront) {
     super(client, targetFront, parentFront);
     this._client = client;
-    this.traits = {};
     this.events = [];
 
     // Attribute name from which to retrieve the actorID out of the target actor's form
     this.formAttributeName = "consoleActor";
 
-    this._onNetworkEventUpdate = this._onNetworkEventUpdate.bind(this);
-
     this.before("consoleAPICall", this.beforeConsoleAPICall);
     this.before("pageError", this.beforePageError);
-    this.before("serverNetworkEvent", this.beforeServerNetworkEvent);
-
-    this._client.on("networkEventUpdate", this._onNetworkEventUpdate);
   }
 
   get actor() {
     return this.actorID;
-  }
-
-  /**
-   * The "networkEventUpdate" message type handler. We redirect any message to
-   * the UI for displaying.
-   *
-   * @private
-   * @param object packet
-   *        The message received from the server.
-   */
-  _onNetworkEventUpdate(packet) {
-    this.emit("serverNetworkUpdateEvent", packet);
-  }
-
-  beforeServerNetworkEvent(packet) {
-    // The stacktrace info needs to be sent before
-    // the network event.
-    this.emit("serverNetworkStackTrace", packet);
   }
 
   beforeConsoleAPICall(packet) {
@@ -113,204 +91,6 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
   }
 
   /**
-   * Retrieve the request headers from the given NetworkEventActor.
-   *
-   * @param string actor
-   *        The NetworkEventActor ID.
-   * @param function onResponse
-   *        The function invoked when the response is received.
-   * @return request
-   *         Request object that implements both Promise and EventEmitter interfaces
-   */
-  getRequestHeaders(actor, onResponse) {
-    const packet = {
-      to: actor,
-      type: "getRequestHeaders",
-    };
-    return this._client.request(packet, onResponse);
-  }
-
-  /**
-   * Retrieve the request cookies from the given NetworkEventActor.
-   *
-   * @param string actor
-   *        The NetworkEventActor ID.
-   * @param function onResponse
-   *        The function invoked when the response is received.
-   * @return request
-   *         Request object that implements both Promise and EventEmitter interfaces
-   */
-  getRequestCookies(actor, onResponse) {
-    const packet = {
-      to: actor,
-      type: "getRequestCookies",
-    };
-    return this._client.request(packet, onResponse);
-  }
-
-  /**
-   * Retrieve the request post data from the given NetworkEventActor.
-   *
-   * @param string actor
-   *        The NetworkEventActor ID.
-   * @param function onResponse
-   *        The function invoked when the response is received.
-   * @return request
-   *         Request object that implements both Promise and EventEmitter interfaces
-   */
-  getRequestPostData(actor, onResponse) {
-    const packet = {
-      to: actor,
-      type: "getRequestPostData",
-    };
-    return this._client.request(packet, onResponse);
-  }
-
-  /**
-   * Retrieve the response headers from the given NetworkEventActor.
-   *
-   * @param string actor
-   *        The NetworkEventActor ID.
-   * @param function onResponse
-   *        The function invoked when the response is received.
-   * @return request
-   *         Request object that implements both Promise and EventEmitter interfaces
-   */
-  getResponseHeaders(actor, onResponse) {
-    const packet = {
-      to: actor,
-      type: "getResponseHeaders",
-    };
-    return this._client.request(packet, onResponse);
-  }
-
-  /**
-   * Retrieve the response cookies from the given NetworkEventActor.
-   *
-   * @param string actor
-   *        The NetworkEventActor ID.
-   * @param function onResponse
-   *        The function invoked when the response is received.
-   * @return request
-   *         Request object that implements both Promise and EventEmitter interfaces
-   */
-  getResponseCookies(actor, onResponse) {
-    const packet = {
-      to: actor,
-      type: "getResponseCookies",
-    };
-    return this._client.request(packet, onResponse);
-  }
-
-  /**
-   * Retrieve the response content from the given NetworkEventActor.
-   *
-   * @param string actor
-   *        The NetworkEventActor ID.
-   * @param function onResponse
-   *        The function invoked when the response is received.
-   * @return request
-   *         Request object that implements both Promise and EventEmitter interfaces
-   */
-  getResponseContent(actor, onResponse) {
-    const packet = {
-      to: actor,
-      type: "getResponseContent",
-    };
-    return this._client.request(packet, onResponse);
-  }
-
-  /**
-   * Retrieve the response cache from the given NetworkEventActor
-   *
-   * @param string actor
-   *        The NetworkEventActor ID.
-   * @param function onResponse
-   *        The function invoked when the response is received.
-   * @return request
-   *         Request object that implements both Promise and EventEmitter interfaces.
-   */
-  getResponseCache(actor, onResponse) {
-    const packet = {
-      to: actor,
-      type: "getResponseCache",
-    };
-    return this._client.request(packet, onResponse);
-  }
-
-  /**
-   * Retrieve the timing information for the given NetworkEventActor.
-   *
-   * @param string actor
-   *        The NetworkEventActor ID.
-   * @param function onResponse
-   *        The function invoked when the response is received.
-   * @return request
-   *         Request object that implements both Promise and EventEmitter interfaces
-   */
-  getEventTimings(actor, onResponse) {
-    const packet = {
-      to: actor,
-      type: "getEventTimings",
-    };
-    return this._client.request(packet, onResponse);
-  }
-
-  /**
-   * Retrieve the security information for the given NetworkEventActor.
-   *
-   * @param string actor
-   *        The NetworkEventActor ID.
-   * @param function onResponse
-   *        The function invoked when the response is received.
-   * @return request
-   *         Request object that implements both Promise and EventEmitter interfaces
-   */
-  getSecurityInfo(actor, onResponse) {
-    const packet = {
-      to: actor,
-      type: "getSecurityInfo",
-    };
-    return this._client.request(packet, onResponse);
-  }
-
-  /**
-   * Retrieve the stack-trace information for the given NetworkEventActor.
-   *
-   * @param string actor
-   *        The NetworkEventActor ID.
-   * @param function onResponse
-   *        The function invoked when the stack-trace is received.
-   * @return request
-   *         Request object that implements both Promise and EventEmitter interfaces
-   */
-  getStackTrace(actor, onResponse) {
-    const packet = {
-      to: actor,
-      type: "getStackTrace",
-    };
-    return this._client.request(packet, onResponse);
-  }
-
-  /**
-   * Start the given Web Console listeners.
-   * TODO: remove once the front is retrieved via getFront, and we use form()
-   *
-   * @see this.LISTENERS
-   * @param array listeners
-   *        Array of listeners you want to start. See this.LISTENERS for
-   *        known listeners.
-   * @return request
-   *         Request object that implements both Promise and EventEmitter interfaces
-   */
-  async startListeners(listeners) {
-    const response = await super.startListeners(listeners);
-    this.hasNativeConsoleAPI = response.nativeConsoleAPI;
-    this.traits = response.traits;
-    return response;
-  }
-
-  /**
    * Close the WebConsoleFront.
    *
    */
@@ -319,7 +99,6 @@ class WebConsoleFront extends FrontClassWithSpec(webconsoleSpec) {
       return null;
     }
 
-    this._client.off("networkEventUpdate", this._onNetworkEventUpdate);
     // This will make future calls to this function harmless because of the early return
     // at the top of the function.
     this._client = null;

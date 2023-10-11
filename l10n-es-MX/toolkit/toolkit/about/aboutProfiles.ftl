@@ -12,7 +12,7 @@ profiles-restart-normal = Reiniciar normalmente…
 profiles-conflict = Otra copia de { -brand-product-name } ha hecho cambios a los perfiles. Debes reiniciar { -brand-short-name } antes de hacer más cambios.
 profiles-flush-fail-title = Cambios no guardados
 profiles-flush-conflict = { profiles-conflict }
-profiles-flush-failed = Un error inesperado ha evitado que se guarden sus cambios.
+profiles-flush-failed = Un error inesperado ha evitado que se guarden tus cambios.
 profiles-flush-restart-button = Reiniciar { -brand-short-name }
 
 # Variables:

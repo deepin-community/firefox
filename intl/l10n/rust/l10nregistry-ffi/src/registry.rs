@@ -9,12 +9,12 @@ use std::rc::Rc;
 use thin_vec::ThinVec;
 
 use crate::{env::GeckoEnvironment, fetcher::GeckoFileFetcher, xpcom_utils::is_parent_process};
-use fluent_fallback::generator::BundleGenerator;
+use fluent_fallback::{generator::BundleGenerator, types::ResourceType};
 use futures_channel::mpsc::{unbounded, UnboundedSender};
 pub use l10nregistry::{
     errors::L10nRegistrySetupError,
     registry::{BundleAdapter, GenerateBundles, GenerateBundlesSync, L10nRegistry},
-    source::FileSource,
+    source::{FileSource, ResourceId, ToResourceId},
 };
 use unic_langid::LanguageIdentifier;
 use xpcom::RefPtr;
@@ -110,7 +110,7 @@ fn create_l10n_registry(sources: Option<Vec<FileSource>>) -> Rc<GeckoL10nRegistr
     let env = GeckoEnvironment::new(None);
     let mut reg = L10nRegistry::with_provider(env);
 
-    reg.set_adapt_bundle(GeckoBundleAdapter::default())
+    reg.set_bundle_adapter(GeckoBundleAdapter::default())
         .expect("Failed to set bundle adaptation closure.");
 
     if let Some(sources) = sources {
@@ -161,6 +161,31 @@ pub fn get_l10n_registry() -> Rc<GeckoL10nRegistry> {
 }
 
 #[repr(C)]
+#[derive(Clone, Copy)]
+pub enum GeckoResourceType {
+    Optional,
+    Required,
+}
+
+#[repr(C)]
+pub struct GeckoResourceId {
+    value: nsCString,
+    resource_type: GeckoResourceType,
+}
+
+impl From<&GeckoResourceId> for ResourceId {
+    fn from(resource_id: &GeckoResourceId) -> Self {
+        resource_id
+            .value
+            .to_string()
+            .to_resource_id(match resource_id.resource_type {
+                GeckoResourceType::Optional => ResourceType::Optional,
+                GeckoResourceType::Required => ResourceType::Required,
+            })
+    }
+}
+
+#[repr(C)]
 pub enum L10nRegistryStatus {
     None,
     EmptyName,
@@ -172,7 +197,7 @@ pub extern "C" fn l10nregistry_new(use_isolating: bool) -> *const GeckoL10nRegis
     let env = GeckoEnvironment::new(None);
     let mut reg = L10nRegistry::with_provider(env);
     let _ = reg
-        .set_adapt_bundle(GeckoBundleAdapter { use_isolating })
+        .set_bundle_adapter(GeckoBundleAdapter { use_isolating })
         .report_error();
     Rc::into_raw(Rc::new(reg))
 }
@@ -199,7 +224,7 @@ pub unsafe extern "C" fn l10nregistry_get_parent_process_sources(
     // `L10nRegistry` instance is cheap and mainly servers as a store of state.
     let reg = get_l10n_registry();
     for name in reg.get_source_names().unwrap() {
-        let source = reg.get_source(&name).unwrap().unwrap();
+        let source = reg.file_source_by_name(&name).unwrap().unwrap();
         let descriptor = L10nFileSourceDescriptor {
             name: source.name.as_str().into(),
             metasource: source.metasource.as_str().into(),
@@ -230,14 +255,14 @@ pub unsafe extern "C" fn l10nregistry_register_parent_process_sources(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn l10nregistry_addref(reg: &GeckoL10nRegistry) {
+pub unsafe extern "C" fn l10nregistry_addref(reg: *const GeckoL10nRegistry) {
     let raw = Rc::from_raw(reg);
     mem::forget(Rc::clone(&raw));
     mem::forget(raw);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn l10nregistry_release(reg: &GeckoL10nRegistry) {
+pub unsafe extern "C" fn l10nregistry_release(reg: *const GeckoL10nRegistry) {
     let _ = Rc::from_raw(reg);
 }
 
@@ -340,7 +365,7 @@ pub extern "C" fn l10nregistry_get_source(
 
     *status = L10nRegistryStatus::None;
 
-    if let Ok(Some(source)) = reg.get_source(&name.to_utf8()).report_error() {
+    if let Ok(Some(source)) = reg.file_source_by_name(&name.to_utf8()).report_error() {
         Box::into_raw(Box::new(source))
     } else {
         std::ptr::null_mut()
@@ -369,20 +394,21 @@ pub unsafe extern "C" fn l10nregistry_generate_bundles_sync(
     reg: &GeckoL10nRegistry,
     locales_elements: *const nsCString,
     locales_length: usize,
-    res_ids_elements: *const nsCString,
+    res_ids_elements: *const GeckoResourceId,
     res_ids_length: usize,
     status: &mut L10nRegistryStatus,
 ) -> *mut GeckoFluentBundleIterator {
     let locales = std::slice::from_raw_parts(locales_elements, locales_length);
-    let res_ids = std::slice::from_raw_parts(res_ids_elements, res_ids_length);
-
+    let res_ids = std::slice::from_raw_parts(res_ids_elements, res_ids_length)
+        .into_iter()
+        .map(ResourceId::from)
+        .collect();
     let locales: Result<Vec<LanguageIdentifier>, _> =
         locales.into_iter().map(|s| s.to_utf8().parse()).collect();
 
     match locales {
         Ok(locales) => {
             *status = L10nRegistryStatus::None;
-            let res_ids = res_ids.into_iter().map(|s| s.to_string()).collect();
             let iter = reg.bundles_iter(locales.into_iter(), res_ids);
             Box::into_raw(Box::new(iter))
         }
@@ -422,25 +448,27 @@ pub unsafe extern "C" fn l10nregistry_generate_bundles(
     reg: &GeckoL10nRegistry,
     locales_elements: *const nsCString,
     locales_length: usize,
-    res_ids_elements: *const nsCString,
+    res_ids_elements: *const GeckoResourceId,
     res_ids_length: usize,
     status: &mut L10nRegistryStatus,
 ) -> *mut GeckoFluentBundleAsyncIteratorWrapper {
     let locales = std::slice::from_raw_parts(locales_elements, locales_length);
-    let res_ids = std::slice::from_raw_parts(res_ids_elements, res_ids_length);
+    let res_ids = std::slice::from_raw_parts(res_ids_elements, res_ids_length)
+        .into_iter()
+        .map(ResourceId::from)
+        .collect();
     let locales: Result<Vec<LanguageIdentifier>, _> =
         locales.into_iter().map(|s| s.to_utf8().parse()).collect();
 
     match locales {
         Ok(locales) => {
             *status = L10nRegistryStatus::None;
-            let res_ids = res_ids.into_iter().map(|s| s.to_string()).collect();
             let mut iter = reg.bundles_stream(locales.into_iter(), res_ids);
 
             // Immediately spawn the task which will handle the async calls, and use an `UnboundedSender`
             // to send callbacks for specific `next()` calls to it.
             let (sender, mut receiver) = unbounded::<NextRequest>();
-            moz_task::spawn_current_thread(async move {
+            moz_task::spawn_local("l10nregistry_generate_bundles", async move {
                 use futures::StreamExt;
                 while let Some(req) = receiver.next().await {
                     let result = match iter.next().await {
@@ -450,7 +478,7 @@ pub unsafe extern "C" fn l10nregistry_generate_bundles(
                     (req.callback)(&req.promise, result);
                 }
             })
-            .expect("Failed to spawn a task");
+            .detach();
             let iter = GeckoFluentBundleAsyncIteratorWrapper(sender);
             Box::into_raw(Box::new(iter))
         }

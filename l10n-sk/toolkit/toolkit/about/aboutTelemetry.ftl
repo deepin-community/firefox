@@ -34,7 +34,6 @@ about-telemetry-events-section = Udalosti
 about-telemetry-simple-measurements-section = Jednoduché merania
 about-telemetry-slow-sql-section = Pomalé výrazy SQL
 about-telemetry-addon-details-section = Podrobnosti o doplnkoch
-about-telemetry-captured-stacks-section = Zachytené zásobníky
 about-telemetry-late-writes-section = Neskoré zápisy
 about-telemetry-raw-payload-section = Raw obsah
 about-telemetry-raw = Dáta JSON v nespracovanom tvare
@@ -123,10 +122,6 @@ about-telemetry-keys-header = Kľúč
 about-telemetry-names-header = Názov
 about-telemetry-values-header = Hodnota
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (počet zachytení: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Neskorý zápis #{ $lateWriteCount }
 about-telemetry-stack-title = Zásobník:
@@ -137,12 +132,6 @@ about-telemetry-category-header = kategória
 about-telemetry-method-header = metóda
 about-telemetry-object-header = objekt
 about-telemetry-extra-header = extra
-about-telemetry-origin-section = Origin telemetria
-about-telemetry-origin-origin = origin
-about-telemetry-origin-count = počet
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link"> Firefox Origin Telemetry</a> kóduje údaje pred ich odoslaním, aby { $telemetryServerOwner } mohol počítať veci bez toho, aby vedel či { -brand-product-name } prispel k uvedenému počtu. <a data-l10n-name="prio-blog-link">Ďalšie informácie</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = typ procesu: { $process }

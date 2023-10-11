@@ -24,6 +24,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = Скрыть
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = Показать все папки закладок
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = Скрыть
+
 bookmark-overlay-new-folder-button =
     .label = Создать папку
     .accesskey = о
@@ -40,9 +46,15 @@ bookmark-overlay-tags-expander =
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = Скрыть
 
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = Показать все метки
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = Скрыть
+
 bookmark-overlay-keyword-2 =
-    .value = Краткое имя
-    .accesskey = я
+    .value = Ключевое слово
+    .accesskey = К
 
 bookmark-overlay-tags-caption-label = Используйте метки для организации и поиска закладок из адресной строки
 

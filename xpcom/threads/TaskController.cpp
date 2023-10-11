@@ -48,11 +48,76 @@ int32_t TaskController::GetPoolThreadCount() {
 }
 
 #if defined(MOZ_COLLECTING_RUNNABLE_TELEMETRY)
+
+struct TaskMarker {
+  static constexpr Span<const char> MarkerTypeName() {
+    return MakeStringSpan("Task");
+  }
+  static void StreamJSONMarkerData(baseprofiler::SpliceableJSONWriter& aWriter,
+                                   const nsCString& aName, uint32_t aPriority) {
+    aWriter.StringProperty("name", aName);
+    aWriter.IntProperty("priority", aPriority);
+
+#  define EVENT_PRIORITY(NAME, VALUE)                \
+    if (aPriority == (VALUE)) {                      \
+      aWriter.StringProperty("priorityName", #NAME); \
+    } else
+    EVENT_QUEUE_PRIORITY_LIST(EVENT_PRIORITY)
+#  undef EVENT_PRIORITY
+    {
+      aWriter.StringProperty("priorityName", "Invalid Value");
+    }
+  }
+  static MarkerSchema MarkerTypeDisplay() {
+    using MS = MarkerSchema;
+    MS schema{MS::Location::MarkerChart, MS::Location::MarkerTable};
+    schema.SetChartLabel("{marker.data.name}");
+    schema.SetTableLabel(
+        "{marker.name} - {marker.data.name} - priority: "
+        "{marker.data.priorityName} ({marker.data.priority})");
+    schema.AddKeyLabelFormatSearchable("name", "Task Name", MS::Format::String,
+                                       MS::Searchable::Searchable);
+    schema.AddKeyLabelFormat("priorityName", "Priority Name",
+                             MS::Format::String);
+    schema.AddKeyLabelFormat("priority", "Priority level", MS::Format::Integer);
+    return schema;
+  }
+};
+
+class MOZ_RAII AutoProfileTask {
+ public:
+  explicit AutoProfileTask(nsACString& aName, uint64_t aPriority)
+      : mName(aName), mPriority(aPriority) {
+    if (profiler_is_active()) {
+      mStartTime = TimeStamp::Now();
+    }
+  }
+
+  ~AutoProfileTask() {
+    if (!profiler_thread_is_being_profiled_for_markers()) {
+      return;
+    }
+
+    AUTO_PROFILER_LABEL("AutoProfileTask", PROFILER);
+    AUTO_PROFILER_STATS(AUTO_PROFILE_TASK);
+    profiler_add_marker("Runnable", ::mozilla::baseprofiler::category::OTHER,
+                        mStartTime.IsNull()
+                            ? MarkerTiming::IntervalEnd()
+                            : MarkerTiming::IntervalUntilNowFrom(mStartTime),
+                        TaskMarker{}, mName, mPriority);
+  }
+
+ private:
+  TimeStamp mStartTime;
+  nsAutoCString mName;
+  uint32_t mPriority;
+};
+
 #  define AUTO_PROFILE_FOLLOWING_TASK(task)                                  \
     nsAutoCString name;                                                      \
     (task)->GetName(name);                                                   \
     AUTO_PROFILER_LABEL_DYNAMIC_NSCSTRING_NONSENSITIVE("Task", OTHER, name); \
-    AUTO_PROFILER_MARKER_TEXT("Runnable", OTHER, {}, name);
+    mozilla::AutoProfileTask PROFILER_RAII(name, (task)->GetPriority());
 #else
 #  define AUTO_PROFILE_FOLLOWING_TASK(task)
 #endif
@@ -73,6 +138,33 @@ bool TaskManager::
   }
   return false;
 }
+
+#ifdef MOZ_COLLECTING_RUNNABLE_TELEMETRY
+class MOZ_RAII AutoSetMainThreadRunnableName {
+ public:
+  explicit AutoSetMainThreadRunnableName(const nsCString& aName) {
+    MOZ_ASSERT(NS_IsMainThread());
+    // We want to record our current runnable's name in a static so
+    // that BHR can record it.
+    mRestoreRunnableName = nsThread::sMainThreadRunnableName;
+
+    // Copy the name into sMainThreadRunnableName's buffer, and append a
+    // terminating null.
+    uint32_t length = std::min((uint32_t)nsThread::kRunnableNameBufSize - 1,
+                               (uint32_t)aName.Length());
+    memcpy(nsThread::sMainThreadRunnableName.begin(), aName.BeginReading(),
+           length);
+    nsThread::sMainThreadRunnableName[length] = '\0';
+  }
+
+  ~AutoSetMainThreadRunnableName() {
+    nsThread::sMainThreadRunnableName = mRestoreRunnableName;
+  }
+
+ private:
+  Array<char, nsThread::kRunnableNameBufSize> mRestoreRunnableName;
+};
+#endif
 
 Task* Task::GetHighestPriorityDependency() {
   Task* currentTask = this;
@@ -103,10 +195,9 @@ TaskController* TaskController::Get() {
   return sSingleton.get();
 }
 
-bool TaskController::Initialize() {
+void TaskController::Initialize() {
   MOZ_ASSERT(!sSingleton);
   sSingleton = std::make_unique<TaskController>();
-  return sSingleton->InitializeInternal();
 }
 
 void ThreadFuncPoolThread(void* aIndex) {
@@ -115,7 +206,11 @@ void ThreadFuncPoolThread(void* aIndex) {
   TaskController::Get()->RunPoolThread();
 }
 
-bool TaskController::InitializeInternal() {
+TaskController::TaskController()
+    : mGraphMutex("TaskController::mGraphMutex"),
+      mThreadPoolCV(mGraphMutex, "TaskController::mThreadPoolCV"),
+      mMainThreadCV(mGraphMutex, "TaskController::mMainThreadCV"),
+      mRunOutOfMTTasksCounter(0) {
   InputTaskManager::Init();
   VsyncTaskManager::Init();
   mMTProcessingRunnable = NS_NewRunnableFunction(
@@ -124,8 +219,6 @@ bool TaskController::InitializeInternal() {
   mMTBlockingProcessingRunnable = NS_NewRunnableFunction(
       "TaskController::ExecutePendingMTTasks()",
       []() { TaskController::Get()->ProcessPendingMTTask(true); });
-
-  return true;
 }
 
 // We want our default stack size limit to be approximately 2MB, to be safe for
@@ -143,9 +236,8 @@ constexpr PRUint32 sBaseStackSize = 2048 * 1024 - 2 * 4096;
 // of that stack is significantly less than what we expect.  To offset TSan
 // stealing our stack space from underneath us, double the default.
 //
-// Note that we don't need this for ASan/MOZ_ASAN because ASan doesn't require
-// all the thread-specific state that TSan does.
-#if defined(MOZ_TSAN)
+// Similarly, ASan requires more stack space due to red-zones.
+#if defined(MOZ_TSAN) || defined(MOZ_ASAN)
 constexpr PRUint32 sStackSize = 2 * sBaseStackSize;
 #else
 constexpr PRUint32 sStackSize = sBaseStackSize;
@@ -239,7 +331,8 @@ void TaskController::RunPoolThread() {
           task = nextTask;
         }
 
-        if (task->IsMainThreadOnly() || task->mInProgress) {
+        if (task->GetKind() == Task::Kind::MainThreadOnly ||
+            task->mInProgress) {
           continue;
         }
 
@@ -247,6 +340,14 @@ void TaskController::RunPoolThread() {
         mThreadableTasks.erase(task->mIterator);
         task->mIterator = mThreadableTasks.end();
         task->mInProgress = true;
+
+        if (!mThreadableTasks.empty()) {
+          // Ensure at least one additional thread is woken up if there are
+          // more threadable tasks to process. Notifying all threads at once
+          // isn't actually better for performance since they all need the
+          // GraphMutex to proceed anyway.
+          mThreadPoolCV.Notify();
+        }
 
         bool taskCompleted = false;
         {
@@ -316,11 +417,10 @@ void TaskController::RunPoolThread() {
 void TaskController::AddTask(already_AddRefed<Task>&& aTask) {
   RefPtr<Task> task(aTask);
 
-  if (!task->IsMainThreadOnly()) {
+  if (task->GetKind() == Task::Kind::OffMainThreadOnly) {
     MutexAutoLock lock(mPoolInitializationMutex);
     if (!mThreadPoolInitialized) {
       InitializeThreadPool();
-      mThreadPoolInitialized = true;
     }
   }
 
@@ -337,7 +437,9 @@ void TaskController::AddTask(already_AddRefed<Task>&& aTask) {
     task->mPriorityModifier = manager->mCurrentPriorityModifier;
   }
 
-  task->mInsertionTime = TimeStamp::Now();
+  if (profiler_is_active_and_unpaused()) {
+    task->mInsertionTime = TimeStamp::Now();
+  }
 
 #ifdef DEBUG
   task->mIsInGraph = true;
@@ -352,10 +454,13 @@ void TaskController::AddTask(already_AddRefed<Task>&& aTask) {
 
   std::pair<std::set<RefPtr<Task>, Task::PriorityCompare>::iterator, bool>
       insertion;
-  if (task->IsMainThreadOnly()) {
-    insertion = mMainThreadTasks.insert(std::move(task));
-  } else {
-    insertion = mThreadableTasks.insert(std::move(task));
+  switch (task->GetKind()) {
+    case Task::Kind::MainThreadOnly:
+      insertion = mMainThreadTasks.insert(std::move(task));
+      break;
+    case Task::Kind::OffMainThreadOnly:
+      insertion = mThreadableTasks.insert(std::move(task));
+      break;
   }
   (*insertion.first)->mIterator = insertion.first;
   MOZ_ASSERT(insertion.second);
@@ -393,7 +498,14 @@ void TaskController::ProcessPendingMTTask(bool aMayWait) {
       break;
     }
 
-    BackgroundHangMonitor().NotifyWait();
+#ifdef MOZ_ENABLE_BACKGROUND_HANG_MONITOR
+    // Unlock before calling into the BackgroundHangMonitor API as it uses
+    // the timer API.
+    {
+      MutexAutoUnlock unlock(mGraphMutex);
+      BackgroundHangMonitor().NotifyWait();
+    }
+#endif
 
     {
       // ProcessNextEvent will also have attempted to wait, however we may have
@@ -403,7 +515,12 @@ void TaskController::ProcessPendingMTTask(bool aMayWait) {
       mMainThreadCV.Wait();
     }
 
-    BackgroundHangMonitor().NotifyActivity();
+#ifdef MOZ_ENABLE_BACKGROUND_HANG_MONITOR
+    {
+      MutexAutoUnlock unlock(mGraphMutex);
+      BackgroundHangMonitor().NotifyActivity();
+    }
+#endif
   }
 
   if (mMayHaveMainThreadTask) {
@@ -414,7 +531,7 @@ void TaskController::ProcessPendingMTTask(bool aMayWait) {
 void TaskController::ReprioritizeTask(Task* aTask, uint32_t aPriority) {
   MutexAutoLock lock(mGraphMutex);
   std::set<RefPtr<Task>, Task::PriorityCompare>* queue = &mMainThreadTasks;
-  if (!aTask->IsMainThreadOnly()) {
+  if (aTask->GetKind() == Task::Kind::OffMainThreadOnly) {
     queue = &mThreadableTasks;
   }
 
@@ -435,35 +552,10 @@ void TaskController::ReprioritizeTask(Task* aTask, uint32_t aPriority) {
 class RunnableTask : public Task {
  public:
   RunnableTask(already_AddRefed<nsIRunnable>&& aRunnable, int32_t aPriority,
-               bool aMainThread = true)
-      : Task(aMainThread, aPriority), mRunnable(aRunnable) {}
+               Kind aKind)
+      : Task(aKind, aPriority), mRunnable(aRunnable) {}
 
   virtual bool Run() override {
-#ifdef MOZ_COLLECTING_RUNNABLE_TELEMETRY
-    MOZ_ASSERT(NS_IsMainThread());
-    // If we're on the main thread, we want to record our current
-    // runnable's name in a static so that BHR can record it.
-    Array<char, nsThread::kRunnableNameBufSize> restoreRunnableName;
-    restoreRunnableName[0] = '\0';
-    auto clear = MakeScopeExit([&] {
-      MOZ_ASSERT(NS_IsMainThread());
-      nsThread::sMainThreadRunnableName = restoreRunnableName;
-    });
-    nsAutoCString name;
-    nsThread::GetLabeledRunnableName(mRunnable, name,
-                                     EventQueuePriority(GetPriority()));
-
-    restoreRunnableName = nsThread::sMainThreadRunnableName;
-
-    // Copy the name into sMainThreadRunnableName's buffer, and append a
-    // terminating null.
-    uint32_t length = std::min((uint32_t)nsThread::kRunnableNameBufSize - 1,
-                               (uint32_t)name.Length());
-    memcpy(nsThread::sMainThreadRunnableName.begin(), name.BeginReading(),
-           length);
-    nsThread::sMainThreadRunnableName[length] = '\0';
-#endif
-
     mRunnable->Run();
     mRunnable = nullptr;
     return true;
@@ -476,14 +568,16 @@ class RunnableTask : public Task {
     }
   }
 
-  PerformanceCounter* GetPerformanceCounter() const override {
-    return nsThread::GetPerformanceCounterBase(mRunnable);
-  }
-
   virtual bool GetName(nsACString& aName) override {
 #ifdef MOZ_COLLECTING_RUNNABLE_TELEMETRY
-    nsThread::GetLabeledRunnableName(mRunnable, aName,
-                                     EventQueuePriority(GetPriority()));
+    if (nsCOMPtr<nsINamed> named = do_QueryInterface(mRunnable)) {
+      MOZ_ALWAYS_TRUE(NS_SUCCEEDED(named->GetName(aName)));
+    } else {
+      aName.AssignLiteral("non-nsINamed runnable");
+    }
+    if (aName.IsEmpty()) {
+      aName.AssignLiteral("anonymous runnable");
+    }
     return true;
 #else
     return false;
@@ -497,7 +591,8 @@ class RunnableTask : public Task {
 void TaskController::DispatchRunnable(already_AddRefed<nsIRunnable>&& aRunnable,
                                       uint32_t aPriority,
                                       TaskManager* aManager) {
-  RefPtr<RunnableTask> task = new RunnableTask(std::move(aRunnable), aPriority);
+  RefPtr<RunnableTask> task = new RunnableTask(std::move(aRunnable), aPriority,
+                                               Task::Kind::MainThreadOnly);
 
   task->SetManager(aManager);
   TaskController::Get()->AddTask(task.forget());
@@ -519,6 +614,7 @@ nsIRunnable* TaskController::GetRunnableForMTTask(bool aReallyWait) {
 }
 
 bool TaskController::HasMainThreadPendingTasks() {
+  MOZ_ASSERT(NS_IsMainThread());
   auto resetIdleState = MakeScopeExit([&idleManager = mIdleTaskManager] {
     if (idleManager) {
       idleManager->State().ClearCachedIdleDeadline();
@@ -598,8 +694,15 @@ bool TaskController::HasMainThreadPendingTasks() {
   return false;
 }
 
+uint64_t TaskController::PendingMainthreadTaskCountIncludingSuspended() {
+  MutexAutoLock lock(mGraphMutex);
+  return mMainThreadTasks.size();
+}
+
 bool TaskController::ExecuteNextTaskOnlyMainThreadInternal(
     const MutexAutoLock& aProofOfLock) {
+  MOZ_ASSERT(NS_IsMainThread());
+  mGraphMutex.AssertCurrentThreadOwns();
   // Block to make it easier to jump to our cleanup.
   bool taskRan = false;
   do {
@@ -654,6 +757,8 @@ bool TaskController::ExecuteNextTaskOnlyMainThreadInternal(
     mIdleTaskManager->State().ForgetPendingTaskGuarantee();
 
     if (mMainThreadTasks.empty()) {
+      ++mRunOutOfMTTasksCounter;
+
       // XXX the IdlePeriodState API demands we have a MutexAutoUnlock for it.
       // Otherwise we could perhaps just do this after we exit the locked block,
       // by pushing the lock down into this method.  Though it's not clear that
@@ -669,6 +774,8 @@ bool TaskController::ExecuteNextTaskOnlyMainThreadInternal(
 
 bool TaskController::DoExecuteNextTaskOnlyMainThreadInternal(
     const MutexAutoLock& aProofOfLock) {
+  mGraphMutex.AssertCurrentThreadOwns();
+
   nsCOMPtr<nsIThread> mainIThread;
   NS_GetMainThread(getter_AddRefs(mainIThread));
 
@@ -710,7 +817,8 @@ bool TaskController::DoExecuteNextTaskOnlyMainThreadInternal(
 
       task = GetFinalDependency(task);
 
-      if (!task->IsMainThreadOnly() || task->mInProgress ||
+      if (task->GetKind() == Task::Kind::OffMainThreadOnly ||
+          task->mInProgress ||
           (task->mTaskManager && task->mTaskManager->mCurrentSuspended)) {
         continue;
       }
@@ -752,20 +860,28 @@ bool TaskController::DoExecuteNextTaskOnlyMainThreadInternal(
         TimeStamp now = TimeStamp::Now();
 
         if (mainThread) {
-          if (task->GetPriority() < uint32_t(EventQueuePriority::InputHigh)) {
+          if (task->GetPriority() < uint32_t(EventQueuePriority::InputHigh) ||
+              task->mInsertionTime.IsNull()) {
             mainThread->SetRunningEventDelay(TimeDuration(), now);
           } else {
             mainThread->SetRunningEventDelay(now - task->mInsertionTime, now);
           }
         }
 
+        nsAutoCString name;
+#ifdef MOZ_COLLECTING_RUNNABLE_TELEMETRY
+        task->GetName(name);
+#endif
+
         PerformanceCounterState::Snapshot snapshot =
             mPerformanceCounterState->RunnableWillRun(
-                task->GetPerformanceCounter(), now,
-                manager == mIdleTaskManager);
+                now, manager == mIdleTaskManager);
 
         {
           LogTask::Run log(task);
+#ifdef MOZ_COLLECTING_RUNNABLE_TELEMETRY
+          AutoSetMainThreadRunnableName nameGuard(name);
+#endif
           AUTO_PROFILE_FOLLOWING_TASK(task);
           result = task->Run();
         }
@@ -775,7 +891,7 @@ bool TaskController::DoExecuteNextTaskOnlyMainThreadInternal(
           manager->DidRunTask();
         }
 
-        mPerformanceCounterState->RunnableDidRun(std::move(snapshot));
+        mPerformanceCounterState->RunnableDidRun(name, std::move(snapshot));
       }
 
       // Task itself should keep manager alive.
@@ -802,12 +918,10 @@ bool TaskController::DoExecuteNextTaskOnlyMainThreadInternal(
         task->mDependencies.clear();
 
         if (!mThreadableTasks.empty()) {
-          // Since this could have multiple dependencies thare are not
-          // restricted to the main thread. Let's wake up our thread pool.
-          // There is a cost to this, it's possible we will want to wake up
-          // only as many threads as we have unblocked tasks, but we currently
-          // have no way to determine that easily.
-          mThreadPoolCV.NotifyAll();
+          // We're going to wake up a single thread in our pool. This thread
+          // is responsible for waking up additional threads in the situation
+          // where more than one task became available.
+          mThreadPoolCV.Notify();
         }
       }
 
@@ -850,7 +964,7 @@ void TaskController::MaybeInterruptTask(Task* aTask) {
     Task* firstDependency = aTask->mDependencies.begin()->get();
     if (aTask->GetPriority() <= firstDependency->GetPriority() &&
         !firstDependency->mCompleted &&
-        aTask->IsMainThreadOnly() == firstDependency->IsMainThreadOnly()) {
+        aTask->GetKind() == firstDependency->GetKind()) {
       // This task has the same or a higher priority as one of its dependencies,
       // never any need to interrupt.
       return;
@@ -864,7 +978,7 @@ void TaskController::MaybeInterruptTask(Task* aTask) {
     return;
   }
 
-  if (aTask->IsMainThreadOnly()) {
+  if (aTask->GetKind() == Task::Kind::MainThreadOnly) {
     mMayHaveMainThreadTask = true;
 
     EnsureMainThreadTasksScheduled();
@@ -875,7 +989,7 @@ void TaskController::MaybeInterruptTask(Task* aTask) {
 
     // We could go through the steps above here and interrupt an off main
     // thread task in case it has a lower priority.
-    if (!finalDependency->IsMainThreadOnly()) {
+    if (finalDependency->GetKind() == Task::Kind::OffMainThreadOnly) {
       return;
     }
 

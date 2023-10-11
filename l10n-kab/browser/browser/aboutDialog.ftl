@@ -16,8 +16,15 @@ update-updateButton =
     .accesskey = R
 
 update-checkingForUpdates = Muqel ma yella lqem amaynut...
-update-downloading = <img data-l10n-name="icon"/>Asader n lqem—  <label data-l10n-name="download-status"/>
-update-downloading-message = Asader n lqem — <label data-l10n-name="download-status"/>
+
+## Variables:
+##   $transfer (string) - Transfer progress.
+
+settings-update-downloading = <img data-l10n-name="icon"/>Asader n lqem—  <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Asader n lqem — <label data-l10n-name="download-status">{ $transfer }</label>
+
+##
+
 update-applying = Asnas n uleqqem.
 
 update-failed = Aleqqem ur yemmid ara. <label data-l10n-name="failed-link">Sader lqem aneggaru </label>
@@ -25,15 +32,26 @@ update-failed-main = Aleqqem ur yemmid ara. <a data-l10n-name="failed-link-main"
 
 update-adminDisabled = Aleqqem issewḥel-it unedbal n unagraw-ik
 update-noUpdatesFound = { -brand-short-name } yettwaleqqem
+aboutdialog-update-checking-failed = Aɣelluy deg usenqed n yileqman.
 update-otherInstanceHandlingUpdates = { -brand-short-name } tleqqem-it tummant-nniḍen
 
-update-manual = Ileqman llan deg  <label data-l10n-name="manual-link"/>
+## Variables:
+##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
+
+aboutdialog-update-manual-with-link = Ileqman llan deg  <label data-l10n-name="manual-link">{ $displayUrl }</label>
+settings-update-manual-with-link = Ileqman llan deg  <a data-l10n-name="manual-link">{ $displayUrl }</a>
 
 update-unsupported = Ur tezmireḍ ara ad tleqmeḍ ugar ɣef unagraw-agi. <label data-l10n-name="unsupported-link">Issin ugar </label>
 
 update-restarting = Aɛiwed n usenker…
 
-channel-description = Aqli-k tura deg <label data-l10n-name="current-channel"></label>.
+update-internal-error2 = Tella-d tuccḍa tagensant i yesweḥlen asenqed n yileqman. Ad ten-tafeḍ deg <label data-l10n-name="manual-link">{ $displayUrl }</label>
+
+##
+
+# Variables:
+#   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
+aboutdialog-channel-description = Aqli-k tura deg <label data-l10n-name="current-channel">{ $channel }</label>.
 
 warningDesc-version = { -brand-short-name } d armitan yerna ur yerkid.
 

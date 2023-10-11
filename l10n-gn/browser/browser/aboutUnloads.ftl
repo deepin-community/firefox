@@ -7,24 +7,10 @@
 ### feature.
 
 about-unloads-page-title = Emboguejy tendayke
-about-unloads-intro-1 =
-    { -brand-short-name } oreko tembiapoite omboguejývo ijehegui tendayke
-    omboyke hag̃ua tembipuru’i ojavývo sa’ígui imarandurenda
-    pe marandurenda apopyvusugua eipurukuaáva sa’írõ. Pe tendayke upeigua oñemboguejýtava
-    ojeporavórõ tekome’ẽita rembiapoite rupi. Kuatiarogue ohechauka mba’éichapa
-    { -brand-short-name } omotenonde tendayke ha mba’e tendayképa omboguejýta
-    hendy rire tendayke mboguejyha.
-about-unloads-intro-2 =
-    Umi tendayke oĩva ojehecháta tenda oipurúvape
-    { -brand-short-name } oiporavo hag̃ua tendayke mboguejyrãme. Tembiaporape ID rapereko
-    ojehechávo <strong>hũva</strong> orekóramo ipype kora tuichavéva
-    tendayke rehegua ha <em>tai’yke</em>-pe tapereko oñemoherakuãrõ heta tendayke
-    pa’ũme. Emyandykuaa tendayke mboguejyha nde poite rupi eikutúvo votõ <em>Mboguejy</em>
-    ko’ápe yvy gotyo.
 about-unloads-intro =
     { -brand-short-name } oreko tembiapoite omboguejývo ijehegui tendayke
-    omboyke hag̃ua tembipuru’i ojavývo imarandurenda’ígui
-    pe marandurenda apopyvusugua eipurukuaáva sa’írõ. Tendayke upeigua oñemboguejýtava
+    omboyke hag̃ua tembiporu’i ojavývo imarandurenda’ígui
+    pe marandurenda apopyvusugua eiporukuaáva sa’írõ. Tendayke upeigua oñemboguejýtava
     ojeporavórõ tekome’ẽita rembiapoite rupi. Kuatiarogue ohechauka mba’éichapa
     { -brand-short-name } omotenonde tendayke ha mba’e tendayképa omboguejýta
     hendy rire tendayke mboguejyha. Emyandykuaa tendayke mboguejyha

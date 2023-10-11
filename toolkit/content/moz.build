@@ -10,7 +10,7 @@ for var in ("CC", "CC_VERSION", "CXX", "RUSTC", "RUSTC_VERSION"):
     if CONFIG[var]:
         DEFINES[var] = CONFIG[var]
 
-for var in ("MOZ_CONFIGURE_OPTIONS",):
+for var in ("MOZ_CONFIGURE_OPTIONS", "MOZ_APP_DISPLAYNAME"):
     DEFINES[var] = CONFIG[var]
 
 if CONFIG["MOZ_ANDROID_FAT_AAR_ARCHITECTURES"]:
@@ -42,9 +42,6 @@ if CONFIG["MOZ_INSTALL_TRACKING"]:
 
 if CONFIG["MOZ_BUILD_APP"] == "mobile/android":
     DEFINES["MOZ_FENNEC"] = True
-
-if CONFIG["OS_ARCH"] == "WINNT" and CONFIG["MOZ_DEFAULT_BROWSER_AGENT"]:
-    DEFINES["MOZ_DEFAULT_BROWSER_AGENT"] = True
 
 JAR_MANIFESTS += ["jar.mn"]
 
@@ -148,11 +145,6 @@ with Files("tests/chrome/*418874*"):
 with Files("tests/chrome/*429723*"):
     BUG_COMPONENT = ("Toolkit", "Find Toolbar")
 
-with Files("tests/chrome/*437844*"):
-    BUG_COMPONENT = ("Toolkit", "General")
-with Files("tests/chrome/rtlchrome/**"):
-    BUG_COMPONENT = ("Toolkit", "General")
-
 with Files("tests/chrome/*451540*"):
     BUG_COMPONENT = ("Toolkit", "Find Toolbar")
 
@@ -217,8 +209,14 @@ with Files("about*"):
 with Files("aboutGlean.*"):
     BUG_COMPONENT = ("Toolkit", "Telemetry")
 
+with Files("aboutNetError*"):
+    BUG_COMPONENT = ("Firefox", "Security")
+
 with Files("aboutNetworking*"):
     BUG_COMPONENT = ("Core", "Networking")
+
+with Files("aboutLogging*"):
+    BUG_COMPONENT = ("Core", "XPCOM")
 
 with Files("aboutProfile*"):
     BUG_COMPONENT = ("Toolkit", "Startup and Profile System")
@@ -255,9 +253,6 @@ with Files("edit*"):
 
 with Files("globalOverlay.*"):
     BUG_COMPONENT = ("Toolkit", "General")
-
-with Files("minimal-xul.css"):
-    BUG_COMPONENT = ("Toolkit", "XUL Widgets")
 
 with Files("plugins*"):
     BUG_COMPONENT = ("Toolkit", "XUL Widgets")

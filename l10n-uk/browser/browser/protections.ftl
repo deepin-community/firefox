@@ -73,16 +73,14 @@ mobile-app-card-content = Використовуйте мобільний бра
 mobile-app-links = { -brand-product-name } для <a data-l10n-name="android-mobile-inline-link">Android</a> та <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Ніколи більше не забувайте пароль
-lockwise-title-logged-in2 = Керування паролями
-lockwise-header-content = { -lockwise-brand-name } безпечно зберігає ваші паролі в браузері.
+passwords-title-logged-in = Керувати паролями
+passwords-header-content = { -brand-product-name } надійно зберігає ваші паролі.
 lockwise-header-content-logged-in = Безпечно зберігайте й синхронізуйте свої паролі на всіх пристроях.
-protection-report-save-passwords-button = Зберігати паролі
-    .title = Зберігати паролі в { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Керувати паролями
-    .title = Керувати паролями в { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Отримайте свої паролі всюди
-lockwise-no-logins-card-content = Використовуйте паролі, що збережені в { -brand-short-name }, на будь-якому пристрої.
-lockwise-app-links = { -lockwise-brand-name } для <a data-l10n-name="lockwise-android-inline-link">Android</a> та <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Зберегти пароль
+    .title = Зберегти паролі
+protection-report-passwords-manage-passwords-button = Керувати паролями
+    .title = Керувати паролями
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.
@@ -145,9 +143,9 @@ info-known-breaches-found =
 # to your localization, because it would result in the number showing twice.
 info-known-breaches-resolved =
     { $count ->
-        [one] Відомий витік даних позначено розвʼязаним
-        [few] Відомі витоки даних позначено розвʼязаними
-       *[many] Відомих витоків даних позначено розвʼязаними
+        [one] Відомий витік даних позначено розв'язаним
+        [few] Відомі витоки даних позначено розв'язаними
+       *[many] Відомих витоків даних позначено розв'язаними
     }
 
 # This string is displayed after a large numeral that indicates the total number
@@ -165,9 +163,9 @@ info-exposed-passwords-found =
 # to your localization, because it would result in the number showing twice.
 info-exposed-passwords-resolved =
     { $count ->
-        [one] Викритий пароль у нерозвʼязаних витоках
-        [few] Викриті паролі у нерозвʼязаних витоках
-       *[many] Викритих паролів у нерозвʼязаних витоках
+        [one] Викритий пароль у нерозв'язаних витоках
+        [few] Викриті паролі у нерозв'язаних витоках
+       *[many] Викритих паролів у нерозв'язаних витоках
     }
 
 monitor-no-breaches-title = Гарні новини!

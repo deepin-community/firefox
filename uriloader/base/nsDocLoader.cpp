@@ -29,7 +29,6 @@
 #include "nsQueryObject.h"
 
 #include "nsPIDOMWindow.h"
-#include "nsGlobalWindow.h"
 
 #include "nsIStringBundle.h"
 
@@ -39,7 +38,6 @@
 #include "nsPresContext.h"
 #include "nsIAsyncVerifyRedirectCallback.h"
 #include "nsIBrowserDOMWindow.h"
-#include "nsGlobalWindow.h"
 #include "mozilla/ThrottledEventQueue.h"
 using namespace mozilla;
 using mozilla::DebugOnly;
@@ -246,8 +244,8 @@ nsresult nsDocLoader::AddDocLoaderAsChildOfRoot(nsDocLoader* aDocLoader) {
   return rootDocLoader->AddChildLoader(aDocLoader);
 }
 
-NS_IMETHODIMP
-nsDocLoader::Stop(void) {
+// TODO: Convert this to MOZ_CAN_RUN_SCRIPT (bug 1415230)
+MOZ_CAN_RUN_SCRIPT_BOUNDARY NS_IMETHODIMP nsDocLoader::Stop(void) {
   nsresult rv = NS_OK;
 
   MOZ_LOG(gDocLoaderLog, LogLevel::Debug,
@@ -255,7 +253,10 @@ nsDocLoader::Stop(void) {
 
   NS_OBSERVER_ARRAY_NOTIFY_XPCOM_OBSERVERS(mChildList, Stop, ());
 
-  if (mLoadGroup) rv = mLoadGroup->Cancel(NS_BINDING_ABORTED);
+  if (mLoadGroup) {
+    rv = mLoadGroup->CancelWithReason(NS_BINDING_ABORTED,
+                                      "nsDocLoader::Stop"_ns);
+  }
 
   // Don't report that we're flushing layout so IsBusy returns false after a
   // Stop call.
@@ -510,7 +511,8 @@ nsDocLoader::OnStartRequest(nsIRequest* request) {
   return NS_OK;
 }
 
-NS_IMETHODIMP
+// TODO: Convert this to MOZ_CAN_RUN_SCRIPT (bug 1415230)
+MOZ_CAN_RUN_SCRIPT_BOUNDARY NS_IMETHODIMP
 nsDocLoader::OnStopRequest(nsIRequest* aRequest, nsresult aStatus) {
   // Some docloaders deal with background requests in their OnStopRequest
   // override, but here we don't want to do anything with them, so return early.
@@ -1408,7 +1410,7 @@ void nsDocLoader::FireOnStatusChange(nsIWebProgress* aWebProgress,
 }
 
 bool nsDocLoader::RefreshAttempted(nsIWebProgress* aWebProgress, nsIURI* aURI,
-                                   int32_t aDelay, bool aSameURI) {
+                                   uint32_t aDelay, bool aSameURI) {
   /*
    * Returns true if the refresh may proceed,
    * false if the refresh should be blocked.
@@ -1558,6 +1560,12 @@ NS_IMETHODIMP nsDocLoader::AdjustPriority(int32_t aDelta) {
   NS_OBSERVER_ARRAY_NOTIFY_XPCOM_OBSERVERS(mChildList, AdjustPriority,
                                            (aDelta));
 
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsDocLoader::GetDocumentRequest(nsIRequest** aRequest) {
+  NS_IF_ADDREF(*aRequest = mDocumentRequest);
   return NS_OK;
 }
 

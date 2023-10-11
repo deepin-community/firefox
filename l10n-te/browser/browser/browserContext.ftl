@@ -96,37 +96,6 @@ main-context-menu-page-save =
 
 ## Simple menu items
 
-main-context-menu-bookmark-add =
-    .aria-label = ఈ పేజీని ఇష్టాంశముచేయి
-    .accesskey = m
-    .tooltiptext = ఈ పేజీను ఇష్టాంశముచేయుము
-
-# This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-bookmark-edit-mac,
-# so should probably have the same access key if possible.
-main-context-menu-bookmark-add-mac =
-    .label = పేజీని ఇష్టాంశంగా గుర్తించు
-    .accesskey = m
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the add bookmark command.
-main-context-menu-bookmark-add-with-shortcut =
-    .aria-label = ఈ పేజీని ఇష్టాంశముచేయి
-    .accesskey = m
-    .tooltiptext = ఈ పేజీను ఇష్టాంశముచేయుము ({ $shortcut })
-
-main-context-menu-bookmark-change =
-    .aria-label = ఈ ఇష్టాంశాన్ని సరిదిద్దు
-    .accesskey = m
-    .tooltiptext = ఈ ఇష్టాంశమును సవరించు
-
-# Variables
-#   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
-main-context-menu-bookmark-change-with-shortcut =
-    .aria-label = ఈ ఇష్టాంశాన్ని సరిదిద్దు
-    .accesskey = m
-    .tooltiptext = ఈ ఇష్టాంశమును సవరించు ({ $shortcut })
-
 main-context-menu-open-link =
     .label = లింకును తెరువు
     .accesskey = O
@@ -147,10 +116,6 @@ main-context-menu-open-link-new-private-window =
     .label = లింకుని కొత్త అంతరంగిక విండోలో తెరువు
     .accesskey = P
 
-main-context-menu-bookmark-link =
-    .label = లంకెను ఇష్టాంశంగాచేయి
-    .accesskey = B
-
 main-context-menu-save-link =
     .label = లింకుని ఇలా భద్రపరచు…
     .accesskey = k
@@ -159,11 +124,6 @@ main-context-menu-save-link-to-pocket =
     .label = లంకెను { -pocket-brand-name }కు భద్రపరుచు
     .accesskey = o
 
-## The access keys for "Copy Link Location" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
-
-
 ## The access keys for "Copy Link" and "Copy Email Address"
 ## should be the same if possible; the two context menu items
 ## are mutually exclusive.
@@ -171,6 +131,10 @@ main-context-menu-save-link-to-pocket =
 main-context-menu-copy-email =
     .label = ఈమెయిలు చిరునామాను కాపీచేయి
     .accesskey = E
+
+main-context-menu-copy-phone =
+    .label = ఫోన్ నంబరు కాపీచేయి
+    .accesskey = o
 
 main-context-menu-copy-link-simple =
     .label = లంకె కాపీచేయి
@@ -248,6 +212,10 @@ main-context-menu-image-reload =
     .label = బొమ్మని మళ్ళీ లోడుచేయి
     .accesskey = R
 
+main-context-menu-image-view-new-tab =
+    .label = బొమ్మను కొత్త ట్యాబులో తెరువు
+    .accesskey = I
+
 main-context-menu-image-copy =
     .label = బొమ్మని కాపీచేయి
     .accesskey = y
@@ -295,14 +263,6 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = ఆడియోను ఈమెయిలు చేయి…
     .accesskey = a
-
-main-context-menu-plugin-play =
-    .label = ఈ ప్లగిన్ను చేతనించు
-    .accesskey = c
-
-main-context-menu-plugin-hide =
-    .label = ఈ ప్లగిన్ను దాచు
-    .accesskey = H
 
 main-context-menu-save-to-pocket =
     .label = { -pocket-brand-name }‌లో భద్రపరుచు
@@ -354,10 +314,6 @@ main-context-menu-frame-reload =
     .label = ఫ్రేమును మళ్ళీ లోడుచేయి
     .accesskey = R
 
-main-context-menu-frame-bookmark =
-    .label = ఈ ఫ్రేమును ఇష్టాంశంగా చేయి
-    .accesskey = m
-
 main-context-menu-frame-save-as =
     .label = ఫ్రేముని ఇలా భద్రపరచు…
     .accesskey = F
@@ -374,10 +330,6 @@ main-context-menu-frame-view-info =
     .label = ఫ్రేము సమాచారాన్ని చూడండి
     .accesskey = I
 
-main-context-menu-print-selection =
-    .label = ముద్రణ ఎంపిక
-    .accesskey = r
-
 main-context-menu-view-selection-source =
     .label = ఎంపిక మూలాన్ని చూడండి
     .accesskey = e
@@ -385,6 +337,10 @@ main-context-menu-view-selection-source =
 main-context-menu-take-screenshot =
     .label = తెరపట్టు తీయి
     .accesskey = T
+
+main-context-menu-take-frame-screenshot =
+    .label = తెరపట్టు తీయి
+    .accesskey = o
 
 main-context-menu-view-page-source =
     .label = పేజీ మూలాన్ని చూడండి
@@ -405,3 +361,6 @@ main-context-menu-eme-learn-more =
     .label = DRM గురించి ఇంకా తెలుసుకోండి…
     .accesskey = D
 
+main-context-menu-reveal-password =
+    .label = సంకేతపదాన్ని చూపించు
+    .accesskey = v

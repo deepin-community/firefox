@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Mga Setting ng Koneksyon
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -35,6 +35,9 @@ connection-proxy-http = Proxy pang-HTTP
     .accesskey = x
 connection-proxy-http-port = Port
     .accesskey = P
+connection-proxy-https-sharing =
+    .label = Gamitin din ang proxy na ito para sa HTTPS
+    .accesskey = n
 
 connection-proxy-https = HTTPS Proxy
     .accesskey = H
@@ -73,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = Ang pagpipiliang ito ay tahimik na nag-o-authenticate sa iyo sa mga proxy kapag may naka-save kang mga credential. Aabisuhan ka naman kung nabigo ang authentication.
 
+connection-proxy-autologin-checkbox =
+    .label = Huwag nang humingi ng authentication kung naka-save ang password
+    .accesskey = i
+    .tooltiptext = Ang pagpipiliang ito ay tahimik na nag-o-authenticate sa iyo sa mga proxy kapag may naka-save kang mga credential. Aabisuhan ka naman kung nabigo ang authentication.
+
 connection-proxy-socks-remote-dns =
     .label = Proxy DNS kapag gumagamit ng SOCKS v5
     .accesskey = d
-
-connection-dns-over-https =
-    .label = Paganahin ang DNS over HTTPS
-    .accesskey = b
-
-connection-dns-over-https-url-resolver = Gamitin ang Provider
-    .accesskey = P
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

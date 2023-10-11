@@ -2,18 +2,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 ---
-loader: taskgraph.loader.transform:loader
+loader: gecko_taskgraph.loader.transform:loader
 
 kind-dependencies:
     - toolchain
     - instrumented-build
 
 transforms:
-    - taskgraph.transforms.build_attrs:transforms
-    - taskgraph.transforms.release_deps:transforms
-    - taskgraph.transforms.run_pgo_profile:transforms
-    - taskgraph.transforms.job:transforms
-    - taskgraph.transforms.task:transforms
+    - gecko_taskgraph.transforms.build_attrs:transforms
+    - gecko_taskgraph.transforms.release_deps:transforms
+    - gecko_taskgraph.transforms.run_pgo_profile:transforms
+    - gecko_taskgraph.transforms.job:transforms
+    - gecko_taskgraph.transforms.task:transforms
 
 
 job-defaults:
@@ -22,6 +22,7 @@ job-defaults:
         kind: build
         tier: 1
     run-on-projects: ['release']
+    use-system-python: false
 
 jobs:
     linux-shippable/opt:
@@ -33,7 +34,7 @@ jobs:
             job-name: linux-profile
         treeherder:
             platform: linux32-shippable/opt
-        worker-type: b-linux
+        worker-type: b-linux-gcp
         worker:
             chain-of-trust: true
             env:
@@ -64,7 +65,7 @@ jobs:
             job-name: linux64-profile
         treeherder:
             platform: linux64-shippable/opt
-        worker-type: b-linux
+        worker-type: b-linux-gcp
         worker:
             chain-of-trust: true
             env:
@@ -108,11 +109,10 @@ jobs:
                   path: /builds/worker/artifacts/
         run:
             using: mozharness
-            need-xvfb: true
             job-script: taskcluster/scripts/tester/test-linux.sh
             script: android_emulator_pgo.py
             tooltool-downloads: internal
-            options: [installer-path=/builds/worker/fetches/geckoview-androidTest.apk]
+            options: [installer-path=/builds/worker/fetches/geckoview-test_runner.apk]
             config:
                 - android/android_common.py
                 - android/android-x86_64-profile-generation.py
@@ -148,11 +148,10 @@ jobs:
                   path: /builds/worker/artifacts/
         run:
             using: mozharness
-            need-xvfb: true
             job-script: taskcluster/scripts/tester/test-linux.sh
             script: android_emulator_pgo.py
             tooltool-downloads: internal
-            options: [installer-path=/builds/worker/fetches/geckoview-androidTest.apk]
+            options: [installer-path=/builds/worker/fetches/geckoview-test_runner.apk]
             config:
                 - android/android_common.py
                 - android/android-x86_64-profile-generation.py
@@ -174,10 +173,10 @@ jobs:
             job-name: win32-profile
         treeherder:
             platform: windows2012-32-shippable/opt
-        worker-type: b-win2012
+        worker-type: b-win2022
         worker:
             chain-of-trust: true
-            max-run-time: 1200
+            max-run-time: 2400
             env:
                 UPLOAD_PATH: "artifacts"
             artifacts:
@@ -191,7 +190,7 @@ jobs:
             command: ./taskcluster/scripts/misc/run-profileserver.sh
         fetches:
             toolchain:
-                - win64-clang-2stage
+                - win64-clang-toolchain
                 - win32-minidump-stackwalk
 
     win64-shippable/opt:
@@ -203,10 +202,10 @@ jobs:
             job-name: win64-profile
         treeherder:
             platform: windows2012-64-shippable/opt
-        worker-type: b-win2012
+        worker-type: b-win2022
         worker:
             chain-of-trust: true
-            max-run-time: 1200
+            max-run-time: 2400
             env:
                 UPLOAD_PATH: "artifacts"
             artifacts:
@@ -220,7 +219,7 @@ jobs:
             command: ./taskcluster/scripts/misc/run-profileserver.sh
         fetches:
             toolchain:
-                - win64-clang-2stage
+                - win64-clang-toolchain
                 - win32-minidump-stackwalk
 
     macosx64-shippable/opt:
@@ -231,7 +230,7 @@ jobs:
             product: firefox
             job-name: macosx64-profile
         treeherder:
-            platform: macosx1014-64-shippable/opt
+            platform: macosx1015-64-shippable/opt
         worker-type: b-osx-1015
         worker:
             chain-of-trust: true

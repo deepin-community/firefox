@@ -26,9 +26,9 @@ certmgr-people = A következő embereket lehet azonosítani a meglevő tanúsít
 certmgr-server = Ezek a bejegyzések kiszolgálói tanúsítványhiba kivételeket azonosítanak
 certmgr-ca = A következő hitelesítésszolgáltatókat lehet azonosítani a meglevő tanúsítványokkal
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Hitelesítésszolgáltató tanúsítványa megbízhatóságának beállítása
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Megbízhatósági beállítások megadása:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Ez a tanúsítvány használható elektronikus levelek feladóinak azonosítására.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Tanúsítvány törlése
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Gép
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Kiszolgáló
-
-certmgr-override-lifetime =
-    .label = Élettartam
 
 certmgr-token-name =
     .label = Adatvédelmi eszköz
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Sorozatszám
+
+certmgr-fingerprint-sha-256 =
+    .label = SHA-256-ujjlenyomat
 
 certmgr-view =
     .label = Megtekintés…
@@ -158,7 +158,7 @@ edit-trust-ca = A(z) „{ $certName }” tanúsítvány egy hitelesítésszolgá
 ## For Deleting Certificates
 
 delete-user-cert-title =
-    .title = Tanúsítványok törlése
+    .title = Saját tanúsítványok törlése
 delete-user-cert-confirm = Biztosan törölni akarja ezeket a tanúsítványokat?
 delete-user-cert-impact = Ha valamely saját tanúsítványodat törli, akkor többé nem használhatja saját maga azonosítására.
 
@@ -185,8 +185,6 @@ delete-email-cert-impact = Ha törli valakinek az e-mail tanúsítványát, töb
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Tanúsítvány ezen sorozatszámmal: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Ne küldjön ügyféltanúsítványt

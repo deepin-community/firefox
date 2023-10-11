@@ -26,9 +26,9 @@ certmgr-people = Máte uložené certifikáty, ktoré identifikujú týchto ľud
 certmgr-server = Tento zoznam obsahuje výnimky pre chyby certifikátov serverov
 certmgr-ca = Máte uložené certifikáty, ktoré identifikujú tieto certifikačné autority
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Úprava nastavenia dôvery pre certifikát od certifikačnej autority
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Upraviť nastavenie dôvery:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Tento certifikát môže identifikovať poštových používateľov.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Odstránenie certifikátu
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Server
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Server
-
-certmgr-override-lifetime =
-    .label = Životnosť
 
 certmgr-token-name =
     .label = Bezpečnostné zariadenie
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Sériové číslo
+
+certmgr-fingerprint-sha-256 =
+    .label = Odtlačok prsta SHA-256
 
 certmgr-view =
     .label = Zobraziť…
@@ -185,8 +185,6 @@ delete-email-cert-impact = Ak odstránite e-mailový certifikát osoby, nebudete
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Certifikát so sériovým číslom: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Neposielať klientsky certifikát

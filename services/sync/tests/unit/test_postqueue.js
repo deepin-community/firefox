@@ -1,9 +1,8 @@
 /* Any copyright is dedicated to the Public Domain.
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 
-let { PostQueue } = ChromeUtils.import(
-  "resource://services-sync/record.js",
-  null
+let { PostQueue } = ChromeUtils.importESModule(
+  "resource://services-sync/record.sys.mjs"
 );
 
 function makeRecord(nbytes) {

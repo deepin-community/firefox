@@ -41,6 +41,15 @@ pub enum Error {
     UnsupportedControlFlow(spirv::Word),
     #[error("unsupported binary operator %{0}")]
     UnsupportedBinaryOperator(spirv::Word),
+    #[error("Naga supports OpTypeRuntimeArray in the StorageBuffer storage class only")]
+    UnsupportedRuntimeArrayStorageClass,
+    #[error("unsupported matrix stride {stride} for a {columns}x{rows} matrix with scalar width={width}")]
+    UnsupportedMatrixStride {
+        stride: u32,
+        columns: u8,
+        rows: u8,
+        width: u8,
+    },
     #[error("unknown binary operator {0:?}")]
     UnknownBinaryOperator(spirv::Op),
     #[error("unknown relational function {0:?}")]
@@ -69,6 +78,8 @@ pub enum Error {
     InvalidAccess(crate::Expression),
     #[error("invalid access index %{0}")]
     InvalidAccessIndex(spirv::Word),
+    #[error("invalid index type %{0}")]
+    InvalidIndexType(spirv::Word),
     #[error("invalid binding %{0}")]
     InvalidBinding(spirv::Word),
     #[error("invalid global var {0:?}")]
@@ -109,5 +120,10 @@ pub enum Error {
     InvalidBarrierScope(spirv::Word),
     #[error("invalid barrier memory semantics %{0}")]
     InvalidBarrierMemorySemantics(spirv::Word),
-    // incomplete implementation errors
+    #[error(
+        "arrays of images / samplers are supported only through bindings for \
+         now (i.e. you can't create an array of images or samplers that doesn't \
+         come from a binding)"
+    )]
+    NonBindingArrayOfImageOrSamplers,
 }

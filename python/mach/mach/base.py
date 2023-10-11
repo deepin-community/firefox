@@ -2,14 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, unicode_literals
-
 
 class CommandContext(object):
     """Holds run-time state so it can easily be passed to command providers."""
 
     def __init__(
-        self, cwd=None, settings=None, log_manager=None, commands=None, **kwargs
+        self, cwd: str, settings=None, log_manager=None, commands=None, **kwargs
     ):
         self.cwd = cwd
         self.settings = settings

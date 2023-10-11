@@ -20,8 +20,6 @@
 
 #include "lib/jxl/ans_common.h"
 #include "lib/jxl/ans_params.h"
-#include "lib/jxl/aux_out.h"
-#include "lib/jxl/aux_out_fwd.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/status.h"
 #include "lib/jxl/dec_ans.h"
@@ -30,6 +28,8 @@
 #include "lib/jxl/huffman_table.h"
 
 namespace jxl {
+
+struct AuxOut;
 
 #define USE_MULT_BY_RECIPROCAL
 
@@ -93,6 +93,7 @@ struct EntropyEncodingData {
 
 // Integer to be encoded by an entropy coder, either ANS or Huffman.
 struct Token {
+  Token() {}
   Token(uint32_t c, uint32_t value)
       : is_lz77_length(false), context(c), value(value) {}
   uint32_t is_lz77_length : 1;

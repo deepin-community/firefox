@@ -4,42 +4,45 @@
 
 "use strict";
 
-/* import-globals-from ../head.js */
 Services.scriptloader.loadSubScript(
   "chrome://mochitests/content/browser/remote/shared/messagehandler/test/browser/head.js",
   this
 );
 
 /**
- * Broadcast the provided method to all WindowGlobal contexts on a
- * MessageHandler network.
+ * Broadcast the provided method to WindowGlobal contexts on a MessageHandler
+ * network.
  * Returns a promise which will resolve the result of the command broadcast.
  *
- * @param {String} module
+ * @param {string} module
  *     The name of the module implementing the command to broadcast.
- * @param {String} command
+ * @param {string} command
  *     The name of the command to broadcast.
- * @param {Object} params
+ * @param {object} params
  *     The parameters for the command.
+ * @param {ContextDescriptor} contextDescriptor
+ *     The context descriptor to use for this broadcast
  * @param {RootMessageHandler} rootMessageHandler
  *     The root of the MessageHandler network.
- * @return {Promise.<Array>}
+ * @returns {Promise.<Array>}
  *     Promise which resolves an array where each item is the result of the
  *     command handled by an individual context.
  */
-function sendTestBroadcastCommand(module, command, params, rootMessageHandler) {
-  const { WindowGlobalMessageHandler } = ChromeUtils.import(
-    "chrome://remote/content/shared/messagehandler/WindowGlobalMessageHandler.jsm"
-  );
-
+function sendTestBroadcastCommand(
+  module,
+  command,
+  params,
+  contextDescriptor,
+  rootMessageHandler
+) {
   info("Send a test broadcast command");
   return rootMessageHandler.handleCommand({
     moduleName: module,
     commandName: command,
     params,
     destination: {
+      contextDescriptor,
       type: WindowGlobalMessageHandler.type,
-      broadcast: true,
     },
   });
 }

@@ -25,7 +25,6 @@
 #include "nsMathUtils.h"
 #include "nsThreadUtils.h"
 #include "prdtoa.h"
-#include "plstr.h"
 #include "prtime.h"
 #include "nsString.h"
 #include "nsCharSeparatedTokenizer.h"
@@ -73,7 +72,7 @@ bool SMILTimedElement::InstanceTimeComparator::LessThan(
 namespace {
 class AsyncTimeEventRunner : public Runnable {
  protected:
-  RefPtr<nsIContent> mTarget;
+  const RefPtr<nsIContent> mTarget;
   EventMessage mMsg;
   int32_t mDetail;
 
@@ -84,11 +83,12 @@ class AsyncTimeEventRunner : public Runnable {
         mMsg(aMsg),
         mDetail(aDetail) {}
 
-  NS_IMETHOD Run() override {
+  // TODO: Convert this to MOZ_CAN_RUN_SCRIPT (bug 1415230, bug 1535398)
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY NS_IMETHOD Run() override {
     InternalSMILTimeEvent event(true, mMsg);
     event.mDetail = mDetail;
 
-    nsPresContext* context = nullptr;
+    RefPtr<nsPresContext> context = nullptr;
     Document* doc = mTarget->GetComposedDoc();
     if (doc) {
       context = doc->GetPresContext();

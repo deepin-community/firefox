@@ -4,32 +4,23 @@
 
 "use strict";
 
-const { connect } = require("devtools/client/shared/vendor/react-redux");
+const {
+  connect,
+} = require("resource://devtools/client/shared/vendor/react-redux.js");
 const {
   createFactory,
   PureComponent,
-} = require("devtools/client/shared/vendor/react");
-const dom = require("devtools/client/shared/vendor/react-dom-factories");
-const PropTypes = require("devtools/client/shared/vendor/react-prop-types");
+} = require("resource://devtools/client/shared/vendor/react.js");
+const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
 
-const FluentReact = require("devtools/client/shared/vendor/fluent-react");
+const FluentReact = require("resource://devtools/client/shared/vendor/fluent-react.js");
 const Localized = createFactory(FluentReact.Localized);
 
 const {
   updateSettingsVisibility,
-} = require("devtools/client/inspector/compatibility/actions/compatibility");
+} = require("resource://devtools/client/inspector/compatibility/actions/compatibility.js");
 
-loader.lazyRequireGetter(
-  this,
-  "openDocLink",
-  "devtools/client/shared/link",
-  true
-);
-
-const FEEDBACK_LINK =
-  "https://docs.google.com/forms/d/e/1FAIpQLSeevOHveQ1tDuKYY5Fxyb3vvbKKumdLWUT5-RuwJWoAAOST5g/viewform";
-
-const REPORT_ICON = "chrome://devtools/skin/images/report.svg";
 const SETTINGS_ICON = "chrome://devtools/skin/images/settings.svg";
 
 class Footer extends PureComponent {
@@ -80,12 +71,6 @@ class Footer extends PureComponent {
         "compatibility-settings-button-label",
         "compatibility-settings-button-title",
         this.props.updateSettingsVisibility
-      ),
-      this._renderButton(
-        REPORT_ICON,
-        "compatibility-feedback-button-label",
-        "compatibility-feedback-button-title",
-        () => openDocLink(FEEDBACK_LINK)
       )
     );
   }

@@ -15,23 +15,18 @@
 #include "builtin/intl/CommonFunctions.h"
 #include "builtin/intl/FormatBuffer.h"
 #include "builtin/intl/LanguageTag.h"
-#include "gc/FreeOp.h"
-#include "js/CharacterEncoding.h"
+#include "gc/GCContext.h"
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
+#include "js/Printer.h"
 #include "js/PropertySpec.h"
 #include "vm/GlobalObject.h"
 #include "vm/JSContext.h"
 #include "vm/PlainObject.h"  // js::PlainObject
-#include "vm/Printer.h"
 #include "vm/StringType.h"
-#include "vm/WellKnownAtom.h"  // js_*_str
 
 #include "vm/NativeObject-inl.h"
 
 using namespace js;
-
-using js::intl::CallICU;
-using js::intl::IcuLocale;
 
 /**************** RelativeTimeFormat *****************/
 
@@ -44,7 +39,6 @@ const JSClassOps RelativeTimeFormatObject::classOps_ = {
     nullptr,                             // mayResolve
     RelativeTimeFormatObject::finalize,  // finalize
     nullptr,                             // call
-    nullptr,                             // hasInstance
     nullptr,                             // construct
     nullptr,                             // trace
 };
@@ -77,7 +71,7 @@ static const JSFunctionSpec relativeTimeFormat_methods[] = {
     JS_SELF_HOSTED_FN("format", "Intl_RelativeTimeFormat_format", 2, 0),
     JS_SELF_HOSTED_FN("formatToParts", "Intl_RelativeTimeFormat_formatToParts",
                       2, 0),
-    JS_FN(js_toSource_str, relativeTimeFormat_toSource, 0, 0), JS_FS_END};
+    JS_FN("toSource", relativeTimeFormat_toSource, 0, 0), JS_FS_END};
 
 static const JSPropertySpec relativeTimeFormat_properties[] = {
     JS_STRING_SYM_PS(toStringTag, "Intl.RelativeTimeFormat", JSPROP_READONLY),
@@ -135,12 +129,12 @@ static bool RelativeTimeFormat(JSContext* cx, unsigned argc, Value* vp) {
   return true;
 }
 
-void js::RelativeTimeFormatObject::finalize(JSFreeOp* fop, JSObject* obj) {
-  MOZ_ASSERT(fop->onMainThread());
+void js::RelativeTimeFormatObject::finalize(JS::GCContext* gcx, JSObject* obj) {
+  MOZ_ASSERT(gcx->onMainThread());
 
   if (mozilla::intl::RelativeTimeFormat* rtf =
           obj->as<RelativeTimeFormatObject>().getRelativeTimeFormatter()) {
-    intl::RemoveICUCellMemory(fop, obj,
+    intl::RemoveICUCellMemory(gcx, obj,
                               RelativeTimeFormatObject::EstimatedMemoryUse);
 
     // This was allocated using `new` in mozilla::intl::RelativeTimeFormat,
@@ -168,14 +162,14 @@ static mozilla::intl::RelativeTimeFormat* NewRelativeTimeFormatter(
 
   // ICU expects numberingSystem as a Unicode locale extensions on locale.
 
-  intl::LanguageTag tag(cx);
+  mozilla::intl::Locale tag;
   {
-    JSLinearString* locale = value.toString()->ensureLinear(cx);
+    Rooted<JSLinearString*> locale(cx, value.toString()->ensureLinear(cx));
     if (!locale) {
       return nullptr;
     }
 
-    if (!intl::LanguageTagParser::parse(cx, locale, tag)) {
+    if (!intl::ParseLocale(cx, locale, tag)) {
       return nullptr;
     }
   }
@@ -206,7 +200,13 @@ static mozilla::intl::RelativeTimeFormat* NewRelativeTimeFormatter(
     return nullptr;
   }
 
-  UniqueChars locale = tag.toStringZ(cx);
+  intl::FormatBuffer<char> buffer(cx);
+  if (auto result = tag.ToString(buffer); result.isErr()) {
+    intl::ReportInternalError(cx, result.unwrapErr());
+    return nullptr;
+  }
+
+  UniqueChars locale = buffer.extractStringZ();
   if (!locale) {
     return nullptr;
   }
@@ -264,6 +264,26 @@ static mozilla::intl::RelativeTimeFormat* NewRelativeTimeFormatter(
   return nullptr;
 }
 
+static mozilla::intl::RelativeTimeFormat* GetOrCreateRelativeTimeFormat(
+    JSContext* cx, Handle<RelativeTimeFormatObject*> relativeTimeFormat) {
+  // Obtain a cached RelativeDateTimeFormatter object.
+  mozilla::intl::RelativeTimeFormat* rtf =
+      relativeTimeFormat->getRelativeTimeFormatter();
+  if (rtf) {
+    return rtf;
+  }
+
+  rtf = NewRelativeTimeFormatter(cx, relativeTimeFormat);
+  if (!rtf) {
+    return nullptr;
+  }
+  relativeTimeFormat->setRelativeTimeFormatter(rtf);
+
+  intl::AddICUCellMemory(relativeTimeFormat,
+                         RelativeTimeFormatObject::EstimatedMemoryUse);
+  return rtf;
+}
+
 bool js::intl_FormatRelativeTime(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
   MOZ_ASSERT(args.length() == 4);
@@ -279,25 +299,17 @@ bool js::intl_FormatRelativeTime(JSContext* cx, unsigned argc, Value* vp) {
 
   // PartitionRelativeTimePattern, step 4.
   double t = args[1].toNumber();
-  if (!mozilla::IsFinite(t)) {
+  if (!std::isfinite(t)) {
     JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
                               JSMSG_DATE_NOT_FINITE, "RelativeTimeFormat",
                               formatToParts ? "formatToParts" : "format");
     return false;
   }
 
-  // Obtain a cached URelativeDateTimeFormatter object.
   mozilla::intl::RelativeTimeFormat* rtf =
-      relativeTimeFormat->getRelativeTimeFormatter();
+      GetOrCreateRelativeTimeFormat(cx, relativeTimeFormat);
   if (!rtf) {
-    rtf = NewRelativeTimeFormatter(cx, relativeTimeFormat);
-    if (!rtf) {
-      return false;
-    }
-    relativeTimeFormat->setRelativeTimeFormatter(rtf);
-
-    intl::AddICUCellMemory(relativeTimeFormat,
-                           RelativeTimeFormatObject::EstimatedMemoryUse);
+    return false;
   }
 
   intl::FieldType jsUnitType;

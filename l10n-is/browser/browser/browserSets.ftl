@@ -109,6 +109,9 @@ nav-stop-shortcut =
 history-show-all-shortcut =
     .key = H
 
+history-show-all-shortcut-mac =
+    .key = Y
+
 history-sidebar-shortcut =
     .key = h
 
@@ -120,6 +123,18 @@ reader-mode-toggle-shortcut-windows =
 
 reader-mode-toggle-shortcut-other =
     .key = R
+
+picture-in-picture-toggle-shortcut-mac =
+    .key = ]
+
+# Pick the key that is commonly present
+# in your locale keyboards above the
+# `picture-in-picture-toggle-shortcut-mac` key.
+picture-in-picture-toggle-shortcut-mac-alt =
+    .key = { "}" }
+
+picture-in-picture-toggle-shortcut =
+    .key = ]
 
 # Pick the key that is commonly present
 # in your locale keyboards above the
@@ -133,8 +148,20 @@ bookmark-this-page-shortcut =
 # Verify what shortcut for that operation
 # are recommended by the Human Interface Guidelines
 # of each platform for your locale.
+bookmark-show-library-shortcut =
+    .key = O
+
+# Verify what shortcut for that operation
+# are recommended by the Human Interface Guidelines
+# of each platform for your locale.
 bookmark-show-sidebar-shortcut =
     .key = b
+
+# Verify what shortcut for that operation
+# are recommended by the Human Interface Guidelines
+# of each platform for your locale.
+bookmark-show-toolbar-shortcut =
+    .key = B
 
 ## All `-alt*` messages are alternative acceleration keys for zoom.
 ## If shift key is needed with your locale popular keyboard for them,
@@ -142,6 +169,12 @@ bookmark-show-sidebar-shortcut =
 
 full-zoom-reduce-shortcut =
     .key = -
+
+full-zoom-reduce-shortcut-alt-a =
+    .key = _
+
+full-zoom-reduce-shortcut-alt-b =
+    .key = { "" }
 
 full-zoom-enlarge-shortcut =
     .key = +

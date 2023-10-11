@@ -17,7 +17,7 @@
 #include "nsIProtocolProxyCallback.h"
 #include "nsIChannel.h"
 #include "nsICancelable.h"
-#include "nsIDNSService.h"
+#include "nsDNSService2.h"
 #include "nsPIDNSService.h"
 #include "nsIPrefBranch.h"
 #include "nsIPrefService.h"
@@ -29,7 +29,6 @@
 #include "nsString.h"
 #include "nsNetUtil.h"
 #include "nsNetCID.h"
-#include "plstr.h"
 #include "prnetdb.h"
 #include "nsPACMan.h"
 #include "nsProxyRelease.h"
@@ -40,10 +39,10 @@
 #include "nsIHttpChannelInternal.h"
 #include "mozilla/dom/nsMixedContentBlocker.h"
 #include "mozilla/Logging.h"
+#include "mozilla/ScopeExit.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "mozilla/Tokenizer.h"
 #include "mozilla/Unused.h"
-#include "mozilla/StaticPrefs_network.h"
 
 //----------------------------------------------------------------------------
 
@@ -56,6 +55,7 @@ extern const char kProxyType_SOCKS[];
 extern const char kProxyType_SOCKS4[];
 extern const char kProxyType_SOCKS5[];
 extern const char kProxyType_DIRECT[];
+extern const char kProxyType_PROXY[];
 
 #undef LOG
 #define LOG(args) MOZ_LOG(gProxyLog, LogLevel::Debug, args)
@@ -957,6 +957,8 @@ void nsProtocolProxyService::PrefsChanged(nsIPrefBranch* prefBranch,
   nsresult rv = NS_OK;
   bool reloadPAC = false;
   nsAutoCString tempString;
+  auto invokeCallback =
+      MakeScopeExit([&] { NotifyProxyConfigChangedInternal(); });
 
   if (!pref || !strcmp(pref, PROXY_PREF("type"))) {
     int32_t type = -1;
@@ -1511,8 +1513,8 @@ class nsAsyncBridgeRequest final : public nsPACManCallback {
     mCondVar.Notify();
   }
 
-  void Lock() { mMutex.Lock(); }
-  void Unlock() { mMutex.Unlock(); }
+  void Lock() MOZ_CAPABILITY_ACQUIRE(mMutex) { mMutex.Lock(); }
+  void Unlock() MOZ_CAPABILITY_RELEASE(mMutex) { mMutex.Unlock(); }
   void Wait() { mCondVar.Wait(TimeDuration::FromSeconds(3)); }
 
  private:
@@ -1523,10 +1525,10 @@ class nsAsyncBridgeRequest final : public nsPACManCallback {
   Mutex mMutex;
   CondVar mCondVar;
 
-  nsresult mStatus{NS_OK};
-  nsCString mPACString;
-  nsCString mPACURL;
-  bool mCompleted{false};
+  nsresult mStatus MOZ_GUARDED_BY(mMutex){NS_OK};
+  nsCString mPACString MOZ_GUARDED_BY(mMutex);
+  nsCString mPACURL MOZ_GUARDED_BY(mMutex);
+  bool mCompleted MOZ_GUARDED_BY(mMutex){false};
 };
 NS_IMPL_ISUPPORTS0(nsAsyncBridgeRequest)
 
@@ -1747,8 +1749,12 @@ nsresult nsProtocolProxyService::InsertFilterLink(RefPtr<FilterLink>&& link) {
     return NS_ERROR_FAILURE;
   }
 
-  mFilters.AppendElement(link);
-  mFilters.Sort(ProxyFilterPositionComparator());
+  // If we add a new element with the same position as an existing one, we want
+  // to preserve the insertion order to avoid surprises.
+  mFilters.InsertElementSorted(link, ProxyFilterPositionComparator());
+
+  NotifyProxyConfigChangedInternal();
+
   return NS_OK;
 }
 
@@ -1774,9 +1780,15 @@ nsProtocolProxyService::RegisterChannelFilter(
 nsresult nsProtocolProxyService::RemoveFilterLink(nsISupports* givenObject) {
   LOG(("nsProtocolProxyService::RemoveFilterLink target=%p", givenObject));
 
-  return mFilters.RemoveElement(givenObject, ProxyFilterObjectComparator())
-             ? NS_OK
-             : NS_ERROR_UNEXPECTED;
+  nsresult rv =
+      mFilters.RemoveElement(givenObject, ProxyFilterObjectComparator())
+          ? NS_OK
+          : NS_ERROR_UNEXPECTED;
+  if (NS_SUCCEEDED(rv)) {
+    NotifyProxyConfigChangedInternal();
+  }
+
+  return rv;
 }
 
 NS_IMETHODIMP
@@ -1974,7 +1986,7 @@ void nsProtocolProxyService::LoadHostFilters(const nsACString& aFilters) {
       if (!hinfo->name.host) goto loser;
     }
 
-//#define DEBUG_DUMP_FILTERS
+// #define DEBUG_DUMP_FILTERS
 #ifdef DEBUG_DUMP_FILTERS
     printf("loaded filter[%zu]:\n", mHostFiltersArray.Length());
     printf("  is_ipaddr = %u\n", hinfo->is_ipaddr);
@@ -2006,6 +2018,7 @@ void nsProtocolProxyService::LoadHostFilters(const nsACString& aFilters) {
 
 nsresult nsProtocolProxyService::GetProtocolInfo(nsIURI* uri,
                                                  nsProtocolInfo* info) {
+  AssertIsOnMainThread();
   MOZ_ASSERT(uri, "URI is null");
   MOZ_ASSERT(info, "info is null");
 
@@ -2017,14 +2030,10 @@ nsresult nsProtocolProxyService::GetProtocolInfo(nsIURI* uri,
   nsCOMPtr<nsIIOService> ios = do_GetIOService(&rv);
   if (NS_FAILED(rv)) return rv;
 
-  nsCOMPtr<nsIProtocolHandler> handler;
-  rv = ios->GetProtocolHandler(info->scheme.get(), getter_AddRefs(handler));
+  rv = ios->GetDynamicProtocolFlags(uri, &info->flags);
   if (NS_FAILED(rv)) return rv;
 
-  rv = handler->DoGetProtocolFlags(uri, &info->flags);
-  if (NS_FAILED(rv)) return rv;
-
-  rv = handler->GetDefaultPort(&info->defaultPort);
+  rv = ios->GetDefaultPort(info->scheme.get(), &info->defaultPort);
   return rv;
 }
 
@@ -2257,7 +2266,9 @@ void nsProtocolProxyService::MaybeDisableDNSPrefetch(nsIProxyInfo* aProxy) {
   nsCOMPtr<nsProxyInfo> pi = do_QueryInterface(aProxy);
   if (!pi || !pi->mType || pi->mType == kProxyType_DIRECT) return;
 
-  nsCOMPtr<nsIDNSService> dns = do_GetService(NS_DNSSERVICE_CONTRACTID);
+  // To avoid getting DNS service recursively, we directly use
+  // GetXPCOMSingleton().
+  nsCOMPtr<nsIDNSService> dns = nsDNSService::GetXPCOMSingleton();
   if (!dns) return;
   nsCOMPtr<nsPIDNSService> pdns = do_QueryInterface(dns);
   if (!pdns) return;
@@ -2362,7 +2373,8 @@ void nsProtocolProxyService::PruneProxyInfo(const nsProtocolInfo& info,
     }
   }
 
-  if (allNonDirectProxiesDisabled) {
+  if (allNonDirectProxiesDisabled &&
+      StaticPrefs::network_proxy_retry_failed_proxies()) {
     LOG(("All proxies are disabled, so trying all again"));
   } else {
     // remove any disabled proxies.
@@ -2409,6 +2421,38 @@ void nsProtocolProxyService::PruneProxyInfo(const nsProtocolInfo& info,
 
 bool nsProtocolProxyService::GetIsPACLoading() {
   return mPACMan && mPACMan->IsLoading();
+}
+
+NS_IMETHODIMP
+nsProtocolProxyService::AddProxyConfigCallback(
+    nsIProxyConfigChangedCallback* aCallback) {
+  MOZ_ASSERT(NS_IsMainThread());
+  if (!aCallback) {
+    return NS_ERROR_INVALID_ARG;
+  }
+
+  mProxyConfigChangedCallbacks.AppendElement(aCallback);
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsProtocolProxyService::RemoveProxyConfigCallback(
+    nsIProxyConfigChangedCallback* aCallback) {
+  MOZ_ASSERT(NS_IsMainThread());
+
+  mProxyConfigChangedCallbacks.RemoveElement(aCallback);
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsProtocolProxyService::NotifyProxyConfigChangedInternal() {
+  LOG(("nsProtocolProxyService::NotifyProxyConfigChangedInternal"));
+  MOZ_ASSERT(NS_IsMainThread());
+
+  for (const auto& callback : mProxyConfigChangedCallbacks) {
+    callback->OnProxyConfigChanged();
+  }
+  return NS_OK;
 }
 
 }  // namespace net

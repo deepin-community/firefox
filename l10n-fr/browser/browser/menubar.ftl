@@ -38,20 +38,9 @@ menu-quit =
             [windows] Q
            *[other] Q
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Quitter { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Quitter { -brand-shorter-name }
-
 menu-about =
     .label = À propos de { -brand-shorter-name }
     .accesskey = p
@@ -81,8 +70,14 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Ouvrir un fichier…
     .accesskey = O
-menu-file-close =
-    .label = Fermer
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Fermer l’onglet
+           *[other] Fermer { $tabCount } onglets
+        }
     .accesskey = F
 menu-file-close-window =
     .label = Fermer la fenêtre
@@ -91,17 +86,14 @@ menu-file-save-page =
     .label = Enregistrer sous…
     .accesskey = E
 menu-file-email-link =
-    .label = Envoyer par courriel un lien vers la page…
-    .accesskey = c
+    .label = Envoyer par e-mail un lien vers la page…
+    .accesskey = m
 menu-file-share-url =
     .label = Partager
     .accesskey = P
 menu-file-print-setup =
     .label = Mise en page…
     .accesskey = M
-menu-file-print-preview =
-    .label = Aperçu avant impression
-    .accesskey = v
 menu-file-print =
     .label = Imprimer…
     .accesskey = p
@@ -188,6 +180,17 @@ menu-view-full-screen =
     .label = Plein écran
     .accesskey = P
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Passer en mode lecture
+    .accesskey = r
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Quitter le mode lecture
+    .accesskey = r
+
 ##
 
 menu-view-show-all-tabs =
@@ -216,8 +219,9 @@ menu-history-undo-menu =
     .label = Onglets récemment fermés
 menu-history-undo-window-menu =
     .label = Fenêtres récemment fermées
-menu-history-reopen-all-tabs = Rouvrir tous les onglets
-menu-history-reopen-all-windows = Rouvrir toutes les fenêtres
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = Rechercher dans l’historique
 
 ## Bookmarks Menu
 
@@ -226,10 +230,13 @@ menu-bookmarks-menu =
     .accesskey = M
 menu-bookmarks-manage =
     .label = Organiser les marque-pages
-menu-bookmark-current-tab =
-    .label = Marquer l’onglet courant
-menu-bookmark-edit =
-    .label = Modifier ce marque-page
+menu-bookmark-tab =
+    .label = Marquer l’onglet courant…
+menu-edit-bookmark =
+    .label = Modifier ce marque-page…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = Rechercher des marque-pages
 menu-bookmarks-all-tabs =
     .label = Marquer tous les onglets…
 menu-bookmarks-toolbar =
@@ -314,15 +321,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = t
 menu-help-report-site-issue =
     .label = Signaler un problème sur ce site…
-menu-help-feedback-page =
-    .label = Donner votre avis…
-    .accesskey = D
+menu-help-share-ideas =
+    .label = Partager des idées et des commentaires…
+    .accesskey = P
 menu-help-enter-troubleshoot-mode2 =
     .label = Mode de dépannage…
     .accesskey = M
 menu-help-exit-troubleshoot-mode =
     .label = Désactiver le mode de dépannage
     .accesskey = m
+menu-help-switch-device =
+    .label = Passer à un nouvel appareil
+    .accesskey = n
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

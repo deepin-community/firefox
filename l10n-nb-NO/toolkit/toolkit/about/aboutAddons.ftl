@@ -6,9 +6,16 @@ addons-page-title = Tilleggsbehandler
 search-header =
     .placeholder = Søk på addons.mozilla.org
     .searchbuttonlabel = Søk
-search-header-shortcut =
-    .key = f
+
+## Variables
+##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
+
 list-empty-get-extensions-message = Last ned utvidelser og tema på <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Last ned ordbøker på <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Last ned språkpakker på <a data-l10n-name="get-extensions">{ $domain }</a>
+
+##
+
 list-empty-installed =
     .value = Du har ikke installert noen utvidelser av denne typen
 list-empty-available-updates =
@@ -33,6 +40,8 @@ detail-version =
     .label = Versjon
 detail-last-updated =
     .label = Sist oppdatert
+addon-detail-description-expand = Vis mer
+addon-detail-description-collapse = Vis mindre
 detail-contributions-description = Utvikleren av denne utvidelsen ber om at du hjelper å støtte videre utvikling ved å gjøre en liten donasjon.
 detail-contributions-button = Bidra
     .title = Bidra til utviklingen av denne utvidelsen
@@ -135,16 +144,33 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Nylig oppdatert
 addon-category-recent-updates-title =
     .title = Nylig oppdatert
+addon-category-sitepermission = Nettstedstillatelser
+addon-category-sitepermission-title =
+    .title = Nettstedstillatelser
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Nettstedtillatelser for { $host }
 
 ## These are global warnings
 
 extensions-warning-safe-mode = Alle utvidelser er avslått av sikker modus.
 extensions-warning-check-compatibility = Kompatibilitetskontroll er avslått. Du har kanskje ukompatible utvidelser.
+extensions-warning-safe-mode2 =
+    .message = Alle utvidelser er avslått av sikker modus.
+extensions-warning-check-compatibility2 =
+    .message = Kompatibilitetskontroll er avslått. Du har kanskje ukompatible utvidelser.
 extensions-warning-check-compatibility-button = Slå på
     .title = Slå på kompatibilitetskontroll
 extensions-warning-update-security = Sikkerhetskontroll av utvidelsesoppdateringer er avslått. Sikkerheten din kan bli satt i fare av oppdateringer.
+extensions-warning-update-security2 =
+    .message = Sikkerhetskontroll av utvidelsesoppdateringer er avslått. Sikkerheten din kan bli satt i fare av oppdateringer.
 extensions-warning-update-security-button = Slå på
     .title = Slå på sikkerhetskontroll av utvidelsesoppdateringer
+extensions-warning-imported-addons = Fullfør installasjonen av utvidelser som ble importert til { -brand-short-name }.
+extensions-warning-imported-addons2 =
+    .message = Fullfør installasjonen av utvidelser som ble importert til { -brand-short-name }.
+extensions-warning-imported-addons-button = Installer utvidelser
 
 ## Strings connected to add-on updates
 
@@ -209,10 +235,17 @@ shortcuts-duplicate = Duplisert hurtigtast
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message = { $shortcut } brukes som en hurtigtast i mer enn ett tilfelle. Dublerte hurtigtaster kan forårsake uventet oppførsel.
+# String displayed when a keyboard shortcut is already assigned to more than one add-on
+# Variables:
+#   $shortcut (string) - Shortcut string for the add-on
+shortcuts-duplicate-warning-message2 =
+    .message = { $shortcut } brukes som en hurtigtast i mer enn ett tilfelle. Dublerte hurtigtaster kan forårsake uventet oppførsel.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Brukes allerede av { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
        *[other] Vis { $numberToShow } mer
@@ -236,6 +269,11 @@ discopane-intro =
 discopane-notice-recommendations =
     Noen av disse anbefalingene er målrettet deg. De er basert på andre
     utvidelser du har installert, profilinnstillinger og statistikk for bruk.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message =
+        Noen av disse anbefalingene er målrettet deg. De er basert på andre
+        utvidelser du har installert, profilinnstillinger og statistikk for bruk.
 discopane-notice-learn-more = Les mer
 privacy-policy = Personvernbestemmelser
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -281,15 +319,15 @@ permissions-addon-button = Tillatelser
 extension-enabled-heading = Påslått
 extension-disabled-heading = Avslått
 theme-enabled-heading = Påslått
-theme-disabled-heading = Avslått
-theme-monochromatic-heading = Fargesammensettinger
-theme-monochromatic-subheading = Levende nye fargesammensettinger fra { -brand-product-name }. Tilgjengelig for en begrenset periode.
+theme-disabled-heading2 = Lagrede tema
 plugin-enabled-heading = Påslått
 plugin-disabled-heading = Avslått
 dictionary-enabled-heading = Påslått
 dictionary-disabled-heading = Avslått
 locale-enabled-heading = Påslått
 locale-disabled-heading = Avslått
+sitepermission-enabled-heading = Påslått
+sitepermission-disabled-heading = Avslått
 always-activate-button = Aktiver alltid
 never-activate-button = Aktiver aldri
 addon-detail-author-label = Utvikler
@@ -299,6 +337,9 @@ addon-detail-homepage-label = Hjemmeside
 addon-detail-rating-label = Vurdering
 # Message for add-ons with a staged pending update.
 install-postponed-message = Denne utvidelsen vil bli oppdatert når { -brand-short-name } starter på nytt.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Denne utvidelsen vil bli oppdatert når { -brand-short-name } starter på nytt.
 install-postponed-button = Oppdater nå
 # The average rating that the add-on has received.
 # Variables:
@@ -330,6 +371,10 @@ addon-detail-updates-radio-on = På
 addon-detail-updates-radio-off = Av
 addon-detail-update-check-label = Se etter oppdateringer
 install-update-button = Oppdater
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -338,6 +383,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = Når det er tillatt, vil utvidelsen få tilgang til dine aktiviteter på nett mens du bruker privat nettlesing. <a data-l10n-name="learn-more">Les mer</a>
 addon-detail-private-browsing-allow = Tillat
 addon-detail-private-browsing-disallow = Ikke tillat
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
+
+## "sites with restrictions" (internally called "quarantined") are special domains
+## where add-ons are normally blocked for security reasons.
+
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Kjør på nettsteder med restriksjoner
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = Når tillatt, vil utvidelsen ha tilgang til nettsteder begrenset av { -vendor-short-name }. Tillat bare hvis du stoler på denne utvidelsen.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Tillat
+addon-detail-quarantined-domains-disallow = Ikke tillat
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -366,6 +429,9 @@ addon-permissions-optional = Valgfrie tillatelser for ekstra funksjonalitet:
 addon-permissions-learnmore = Les mer om tillatelser
 recommended-extensions-heading = Anbefalte utvidelser
 recommended-themes-heading = Anbefalte temaer
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = Gir følgende funksjoner til <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = Er du i det kreative hjørnet? <a data-l10n-name="link">Bygg ditt eget tema med Firefox Color.</a>
@@ -378,6 +444,7 @@ plugin-heading = Behandle programtilleggene dine
 dictionary-heading = Behandle ordbøkene dine
 locale-heading = Behandle språkene dine
 updates-heading = Behandle oppdateringene
+sitepermission-heading = Behandle nettstedstillatelsene dine
 discover-heading = Tilpass din { -brand-short-name }
 shortcuts-heading = Håndter snarveier for utvidelser
 default-heading-search-label = Finn flere utvidelser
@@ -385,3 +452,35 @@ addons-heading-search-input =
     .placeholder = Søk på addons.mozilla.org
 addon-page-options-button =
     .title = Verktøy for alle utvidelser
+
+## Detail notifications
+## Variables:
+##   $name (string) - Name of the add-on.
+
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible = { $name } er inkompatibel med { -brand-short-name } { $version }.
+# Variables:
+#   $version (string) - Application version.
+details-notification-incompatible2 =
+    .message = { $name } er inkompatibel med { -brand-short-name } { $version }.
+details-notification-incompatible-link = Mer informasjon
+details-notification-unsigned-and-disabled = { $name } har ikke blitt bekreftet for bruk i { -brand-short-name } og har blitt slått av.
+details-notification-unsigned-and-disabled2 =
+    .message = { $name } har ikke blitt bekreftet for bruk i { -brand-short-name } og har blitt slått av.
+details-notification-unsigned-and-disabled-link = Mer informasjon
+details-notification-unsigned = { $name } har ikke blitt bekreftet for bruk i { -brand-short-name }. Fortsett med varsomhet.
+details-notification-unsigned2 =
+    .message = { $name } har ikke blitt bekreftet for bruk i { -brand-short-name }. Fortsett med varsomhet.
+details-notification-unsigned-link = Mer informasjon
+details-notification-blocked = { $name } er avslått av sikkerhets- eller stabilitetshensyn .
+details-notification-blocked2 =
+    .message = { $name } er avslått av sikkerhets- eller stabilitetshensyn .
+details-notification-blocked-link = Mer informasjon
+details-notification-softblocked = { $name } er kjent for å skape sikkerhets- eller stabilitetsproblemer.
+details-notification-softblocked2 =
+    .message = { $name } er kjent for å skape sikkerhets- eller stabilitetsproblemer.
+details-notification-softblocked-link = Mer informasjon
+details-notification-gmp-pending = { $name } vil installeres snart.
+details-notification-gmp-pending2 =
+    .message = { $name } vil installeres snart.

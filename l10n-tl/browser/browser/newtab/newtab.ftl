@@ -27,11 +27,6 @@ newtab-search-box-handoff-input-no-engine =
     .title = Hanapin o ilagay ang address
     .aria-label = Hanapin o ilagay ang address
 
-newtab-search-box-search-the-web-input =
-    .placeholder = Hanapin sa Web
-    .title = Hanapin sa Web
-    .aria-label = Hanapin sa Web
-
 newtab-search-box-input =
     .placeholder = Hanapin sa web
     .aria-label = Hanapin sa web
@@ -39,7 +34,6 @@ newtab-search-box-input =
 ## Top Sites - General form dialog.
 
 newtab-topsites-add-search-engine-header = Magdagdag ng Search Engine
-newtab-topsites-add-topsites-header = Bagong Top Site
 newtab-topsites-add-shortcut-header = Bagong Shortcut
 newtab-topsites-edit-topsites-header = Baguhin ang Pangunahing Site
 newtab-topsites-edit-shortcut-header = I-edit ang Shortcut
@@ -134,7 +128,7 @@ newtab-menu-bookmark = Bookmark
 ## it is a noun. As in, "Copy the link that belongs to this downloaded item".
 
 newtab-menu-copy-download-link = Kopyahin ang Download Link
-newtab-menu-go-to-download-page = Pumunta sa Pahina ng mga Download
+newtab-menu-go-to-download-page = Magtungo sa Download Page
 newtab-menu-remove-download = Burahin sa Kasaysayan
 
 ## Context Menu - Download Menu: These are platform specific strings found in the context menu of an item that has
@@ -193,7 +187,6 @@ newtab-section-expand-section-label =
 ## Section Headers.
 
 newtab-section-header-topsites = Mga Pangunahing Site
-newtab-section-header-highlights = Naka-highlight
 # Variables:
 #  $provider (String): Name of the corresponding content provider.
 newtab-section-header-pocket = Inirekomenda ni { $provider }
@@ -225,6 +218,12 @@ newtab-pocket-learn-more = Alamin
 newtab-pocket-cta-button = Kunin ang { -pocket-brand-name }
 newtab-pocket-cta-text = I-save sa { -pocket-brand-name } ang mga kwentong iyong nagustuhan, at palawigin ang iyong pagiisip sa mga nakabibighaning babasahin.
 
+## Pocket Final Card Section.
+## This is for the final card in the Pocket grid.
+
+
+## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
+
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
@@ -241,4 +240,9 @@ newtab-custom-row-selector =
        *[other] { $num } rows
     }
 newtab-custom-sponsored-sites = Mga naka-sponsor na shortcut
+newtab-custom-pocket-title = Inirerekomenda ng { -pocket-brand-name }
+newtab-custom-pocket-subtitle = Natatanging nilalaman na inorganisa ng { -pocket-brand-name }, bahagi ng pamilyang { -brand-product-name }
+newtab-custom-recent-title = Kamakailang aktibidad
+newtab-custom-recent-subtitle = Isang pagpipilian ng mga kamakailang site at nilalaman
 newtab-custom-close-button = Isara
+newtab-custom-settings = Mamahala ng higit pang mga setting

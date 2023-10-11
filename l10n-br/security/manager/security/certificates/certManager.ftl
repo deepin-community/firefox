@@ -21,9 +21,9 @@ certmgr-mine = Testenioù hoc'h eus a-berzh an aozadurioù-mañ oc'h anaout ac'h
 certmgr-people = Testenioù ho peus diwar-benn an dud da-heul
 certmgr-ca = Testenioù hoc'h eus er restr oc'h anaout an aotrouniezh testeniañ-mañ
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Embann arventennoù testenioù a fiziañs an aotrouniezh testeniañ
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Embann an arventennoù a fiziañs:
 
@@ -33,9 +33,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Barrek eo an testeni-mañ da anaout an arveriaded posteloù.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Dilemel an testeni
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Ostiz
@@ -45,9 +45,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Dafariad
-
-certmgr-override-lifetime =
-    .label = Buhez pad
 
 certmgr-token-name =
     .label = Trevnad diogelroez
@@ -180,8 +177,6 @@ delete-email-cert-impact = Mar bez dilamet testeni postel un den ne viot ket mui
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Testeni gant steudriñv: { $serialNumber }
-
-## Cert Viewer
 
 # Used when no cert is stored for an override
 no-cert-stored-for-override = (N’eo ket gwaredet)

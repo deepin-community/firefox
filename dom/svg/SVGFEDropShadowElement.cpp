@@ -13,8 +13,7 @@ NS_IMPL_NS_NEW_SVG_ELEMENT(FEDropShadow)
 
 using namespace mozilla::gfx;
 
-namespace mozilla {
-namespace dom {
+namespace mozilla::dom {
 
 JSObject* SVGFEDropShadowElement::WrapNode(JSContext* aCx,
                                            JS::Handle<JSObject*> aGivenProto) {
@@ -118,17 +117,6 @@ void SVGFEDropShadowElement::GetSourceImageNames(
 }
 
 //----------------------------------------------------------------------
-// nsIContent methods
-
-NS_IMETHODIMP_(bool)
-SVGFEDropShadowElement::IsAttributeMapped(const nsAtom* name) const {
-  static const MappedAttributeEntry* const map[] = {sFEFloodMap};
-
-  return FindAttributeDependence(name, map) ||
-         SVGFEDropShadowElementBase::IsAttributeMapped(name);
-}
-
-//----------------------------------------------------------------------
 // SVGElement methods
 
 SVGElement::NumberAttributesInfo SVGFEDropShadowElement::GetNumberInfo() {
@@ -147,5 +135,4 @@ SVGElement::StringAttributesInfo SVGFEDropShadowElement::GetStringInfo() {
                               ArrayLength(sStringInfo));
 }
 
-}  // namespace dom
-}  // namespace mozilla
+}  // namespace mozilla::dom

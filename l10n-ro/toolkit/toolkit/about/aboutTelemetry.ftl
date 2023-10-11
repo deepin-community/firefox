@@ -34,7 +34,6 @@ about-telemetry-events-section = Evenimente
 about-telemetry-simple-measurements-section = Măsurători simple
 about-telemetry-slow-sql-section = Instrucțiuni SQL lente
 about-telemetry-addon-details-section = Detalii privind suplimentele
-about-telemetry-captured-stacks-section = Stive capturate
 about-telemetry-late-writes-section = Scrieri întârziate
 about-telemetry-raw-payload-section = Sarcină utilă brută
 about-telemetry-raw = JSON brut
@@ -123,10 +122,6 @@ about-telemetry-keys-header = Proprietate
 about-telemetry-names-header = Nume
 about-telemetry-values-header = Valoare
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (numărul capturărilor: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Scriere târzie #{ $lateWriteCount }
 about-telemetry-stack-title = Stivă:
@@ -137,12 +132,6 @@ about-telemetry-category-header = categorie
 about-telemetry-method-header = metodă
 about-telemetry-object-header = obiect
 about-telemetry-extra-header = extra
-about-telemetry-origin-section = Telemetrie de origine
-about-telemetry-origin-origin = origine
-about-telemetry-origin-count = număr
-# Variables:
-#   $telemetryServerOwner (String): the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-origins-explanation = <a data-l10n-name="origin-doc-link">Firefox Origin Telemetry</a> codifică datele înainte de transmitere astfel încât { $telemetryServerOwner } poate număra, dar nu știe dacă orice { -brand-product-name } dat a contribuit sau nu la numărătoarea respectivă. (<a data-l10n-name="prio-blog-link">learn more</a>)
 # Variables:
 #  $process (String): type of process in subsection headers ( e.g. "content", "parent" )
 about-telemetry-process = Proces { $process }

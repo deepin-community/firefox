@@ -65,9 +65,6 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } përdorues
     }
 
-## These messages are steps on how to use the feature and are shown together.
-
-
 ## Firefox Accounts Message
 
 cfr-doorhanger-bookmark-fxa-header = Njëkohësoni faqerojtësit tuaj kudo.
@@ -95,26 +92,6 @@ cfr-whatsnew-button =
 
 cfr-whatsnew-release-notes-link-text = Lexoni shënimet mbi hedhjen në qarkullim
 
-## Search Bar
-
-## Search bar
-
-## Picture-in-Picture
-
-## Permission Prompt
-
-## Fingerprinter Counter
-
-## Bookmark Sync
-
-## Login Sync
-
-## Send Tab
-
-## Firefox Send
-
-## Social Tracking Protection
-
 ## Enhanced Tracking Protection Milestones
 
 # Variables:
@@ -126,25 +103,8 @@ cfr-doorhanger-milestone-heading2 =
     }
 cfr-doorhanger-milestone-ok-button = Shihini Krejt
     .accesskey = S
-
-## What’s New Panel Content for Firefox 76
-
-
-## Lockwise message
-
-## Vulnerable Passwords message
-
-## Picture-in-Picture fullscreen message
-
-## Protections Dashboard message
-
-## Better PDF message
-
 cfr-doorhanger-milestone-close-button = Mbylle
     .accesskey = M
-
-## What’s New Panel Content for Firefox 76
-## Protections Dashboard message
 
 ## DOH Message
 
@@ -157,25 +117,6 @@ cfr-doorhanger-doh-secondary-button = Çaktivizoje
 
 ## Fission Experiment Message
 
-cfr-doorhanger-fission-body-approved = Privatësia juaj ka vlerë. { -brand-short-name }-i tanimë i izolon, ose i kalon në bankëprovë, sajtet prej njëri tjetrit, çka e bën më të vështirë për dikë të vjedhë fjalëkalime, numra kartash krediti dhe të dhëna të tjera rezervat.
-cfr-doorhanger-fission-header = Izolim Sajti
-cfr-doorhanger-fission-primary-button = OK, e mora vesh
-    .accesskey = O
-cfr-doorhanger-fission-secondary-button = Mësoni më tepër
-    .accesskey = M
-
-## What's new: Cookies message
-
-## What's new: Media controls message
-
-## What's new: Search shortcuts
-
-## What's new: Cookies protection
-
-## What's new: Better bookmarking
-
-## What's new: Cross-site cookie tracking
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = Videot në këtë sajt mund të mos luhen si duhet nën këtë version të { -brand-short-name }-it. Për mbulim të plotë të videove, përditësoni tani { -brand-short-name }-in.
@@ -183,9 +124,116 @@ cfr-doorhanger-video-support-header = Që të luhet videoja, përditësoni { -br
 cfr-doorhanger-video-support-primary-button = Përditësojeni Tani
     .accesskey = P
 
+## Spotlight modal shared strings
+
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
+
+# This header text can be explicitly wrapped.
+spotlight-public-wifi-vpn-header = Duket se po përdorni Wi-Fi publik
+spotlight-public-wifi-vpn-body = Që të fshihni vendndodhjen tuaj dhe veprimtarinë tuaj të shfletimit, shihni mundësinë e përdorimit të një Rrjeti Virtual Privat. Do të ndihmojë për t’ju mbajtur të mbrojtur teksa shfletoni në vende publike, bie fjala, aeroporte dhe kafe.
+spotlight-public-wifi-vpn-primary-button = Jini privat, me { -mozilla-vpn-brand-name }
+    .accesskey = J
+spotlight-public-wifi-vpn-link = Jo Tani
+    .accesskey = J
+
+## Total Cookie Protection Rollout
+
+## Emotive Continuous Onboarding
+
+spotlight-better-internet-header = Një internet më i mirë zë fill prej jush
+spotlight-better-internet-body = Kur përdorni { -brand-short-name }, votoni për një internet të hapët dhe të përdorshëm, që është më i mirë për këdo.
+spotlight-peace-mind-header = Mendojmë ne për ju
+spotlight-peace-mind-body = Çdo muaj, { -brand-short-name } bllokon mesatarisht 3 mijë gjurmues për përdorues. Ngaqë mes jush dhe internetit të mbarë s’duhet të ketë asgjë, veçanërisht kokëçarje privatësie, të tilla si gjurmuesit.
+spotlight-pin-primary-button =
+    { PLATFORM() ->
+        [macos] Mbaje në Panel
+       *[other] Fiksoje te paneli
+    }
+spotlight-pin-secondary-button = Jo tani
+
+## MR2022 Background Update Windows native toast notification strings.
+##
+## These strings will be displayed by the Windows operating system in
+## a native toast, like:
+##
+## <b>multi-line title</b>
+## multi-line text
+## <img>
+## [ primary button ] [ secondary button ]
+##
+## The button labels are fitted into narrow fixed-width buttons by
+## Windows and therefore must be as narrow as possible.
+
+mr2022-background-update-toast-title = { -brand-short-name } i ri. Më privat. Më pak gjurmues. Pa kompromise.
+mr2022-background-update-toast-text = Provojeni { -brand-short-name }-in më të ri që tani, të përditësuar me mbrojtjen tonë më të fuqishme se ndonjëherë kundër gjurmimit.
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it
+# using a variable font like Arial): the button can only fit 1-2
+# additional characters, exceeding characters will be truncated.
+mr2022-background-update-toast-primary-button-label = Hapeni { -brand-shorter-name }-in Që Tani
+
+# This button label will be fitted into a narrow fixed-width button by
+# Windows. Try to not exceed the width of the English text (compare it using a
+# variable font like Arial): the button can only fit 1-2 additional characters,
+# exceeding characters will be truncated.
+mr2022-background-update-toast-secondary-button-label = Kujtoma Më Vonë
+
+## Firefox View CFR
+
+firefoxview-cfr-primarybutton = Provojeni
+    .accesskey = P
+firefoxview-cfr-secondarybutton = Jo tani
+    .accesskey = J
+firefoxview-cfr-header-v2 = Vazhdoni pa humbur kohë atje ku e latë
+firefoxview-cfr-body-v2 = Rikthehuni te skeda të mbyllura së fundi, plus hidhuni rrjedhshëm sa në një pajisje në një tjetër, me { -firefoxview-brand-name }.
+
+## Firefox View Spotlight
+
+firefoxview-spotlight-promo-title = I thoni tungjatjeta { -firefoxview-brand-name }-it
+
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = E doni atë skedë të hapur në telefonin tuaj? Përlajeni. Ju duhet ai sajt që sapo vizituat? Paf, ja ku erdhi me { -firefoxview-brand-name }-in.
+firefoxview-spotlight-promo-primarybutton = Shihni se si funksionon
+firefoxview-spotlight-promo-secondarybutton = Anashkaloje
+
+## Colorways expiry reminder CFR
+
+colorways-cfr-primarybutton = Zgjidhnii ngjyrim
+    .accesskey = Z
+
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = Ngjyroseni shfletuesin tuaj me nuancat ekskluzive të { -brand-short-name }-it të frymëzuara nga zëra që ndryshuan kulturë.
+colorways-cfr-header-28days = Ngjyrimi “Zëra të Pavarur”  skadon më 16 janar
+colorways-cfr-header-14days = Ngjyrimi “Zëra të Pavarur”  skadon pas dy javësh
+colorways-cfr-header-7days = Ngjyrimi “Zëra të Pavarur”  skadon pas këtë javë
+colorways-cfr-header-today = Ngjyrimi “Zëra të Pavarur”  skadon sot
+
+## Cookie Banner Handling CFR
+
+cfr-cbh-header = Të lejohet { -brand-short-name } të hedhë poshtë banderola cookie-sh?
+cfr-cbh-body = { -brand-short-name }-i mundet të hedhë poshtë automatikisht mjaft kërkesa banderolash për “cookies”.
+cfr-cbh-confirm-button = Hidh poshtë banderola për cookie-t
+    .accesskey = H
+cfr-cbh-dismiss-button = Jo tani
+    .accesskey = J
+
+## These strings are used in the Fox doodle Pin/set default spotlights
+
+july-jam-headline = Mendojmë ne për ju
+july-jam-body = Çdo muaj { -brand-short-name }-i bllokon mesatarisht mbi 3 mijë gjurmues për përdorues, duke ju dhënë përdorim të parrezik, të shpejtë të internetit të mbarë.
+july-jam-set-default-primary = Hapi lidhjet e mia me { -brand-short-name }
+
+## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
+
+set-default-pdf-handler-headline = <strong>PDF-të tuaja tanimë hapen në { -brand-short-name }.</strong> Përpunoni ose nënshkruani formularë drejt e në shfletuesin tuaj. Për ta ndryshuar, kërkoni për  “PDF” te rregullimet.
+set-default-pdf-handler-primary = E mora vesh
+
+## FxA sync CFR
+
+## Device Migration FxA Spotlight
 

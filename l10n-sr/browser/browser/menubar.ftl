@@ -47,21 +47,6 @@ menu-quit-mac =
            *[other] програма { -brand-shorter-name }
         }
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip =
-        Изађи из { -brand-shorter-name.gender ->
-            [masculine] { -brand-shorter-name(case: "gen") }
-            [feminine] { -brand-shorter-name(case: "gen") }
-            [neuter] { -brand-shorter-name(case: "gen") }
-           *[other] програма { -brand-shorter-name }
-        }
-
 menu-about =
     .label =
         О { -brand-shorter-name.gender ->
@@ -97,8 +82,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Отвори датотеку…
     .accesskey = О
-menu-file-close =
-    .label = Затвори
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Затвори језичак
+            [one] Затвори { $tabCount } језичак
+            [few] Затвори { $tabCount } језичка
+           *[other] Затвори { $tabCount } језичака
+        }
     .accesskey = C
 menu-file-close-window =
     .label = Затвори прозор
@@ -115,9 +108,6 @@ menu-file-share-url =
 menu-file-print-setup =
     .label = Подеси страницу…
     .accesskey = u
-menu-file-print-preview =
-    .label = Преглед пре штампања
-    .accesskey = П
 menu-file-print =
     .label = Одштампај…
     .accesskey = ш
@@ -204,6 +194,17 @@ menu-view-full-screen =
     .label = Преко целог екрана
     .accesskey = П
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Уђи у приказ читача
+    .accesskey = ч
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Затвори приказ читача
+    .accesskey = ч
+
 ##
 
 menu-view-show-all-tabs =
@@ -232,8 +233,6 @@ menu-history-undo-menu =
     .label = Недавно затворене картице
 menu-history-undo-window-menu =
     .label = Недавно затворени прозори
-menu-history-reopen-all-tabs = Поново отвори све картице
-menu-history-reopen-all-windows = Поново отвори све прозоре
 
 ## Bookmarks Menu
 
@@ -242,10 +241,10 @@ menu-bookmarks-menu =
     .accesskey = б
 menu-bookmarks-manage =
     .label = Управљај обележивачима
-menu-bookmark-current-tab =
-    .label = Обележи тренутну картицу
-menu-bookmark-edit =
-    .label = Уреди обележивач
+menu-bookmark-tab =
+    .label = Обележи тренутни језичак…
+menu-edit-bookmark =
+    .label = Уреди овај обележивач…
 menu-bookmarks-all-tabs =
     .label = Обележи све картице…
 menu-bookmarks-toolbar =
@@ -332,15 +331,18 @@ menu-help-more-troubleshooting-info =
     .accesskey = В
 menu-help-report-site-issue =
     .label = Пријави проблем са сајтом…
-menu-help-feedback-page =
-    .label = Пошаљи повратне информације
-    .accesskey = ш
+menu-help-share-ideas =
+    .label = Поделите идеје и повратне податке…
+    .accesskey = д
 menu-help-enter-troubleshoot-mode2 =
     .label = Режим за решавање проблема…
     .accesskey = Р
 menu-help-exit-troubleshoot-mode =
     .label = Искључи режим за решавање проблема
     .accesskey = р
+menu-help-switch-device =
+    .label = Пребацивање на нови уређај
+    .accesskey = н
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

@@ -5,14 +5,8 @@
 
 about-logins-page-title = ప్రవేశాలు & సంకేతపదాలు
 
-# "Google Play" and "App Store" are both branding and should not be translated
-
-login-filter =
-    .placeholder = ప్రవేశాలను వెతకండి
-
-create-login-button = కొత్త ప్రవేశాన్ని సృష్టించు
-
 fxaccounts-sign-in-text = మీ సంకేతపదాలను ఇతర పరికరాల్లో పొందండి
+fxaccounts-sign-in-sync-button = Sync లోనికి ప్రవేశించండి
 fxaccounts-avatar-button =
     .title = ఖాతా నిర్వహించు
 
@@ -60,16 +54,19 @@ about-logins-list-item-breach-icon =
     .title = ఉల్లంఘిత వెబ్‌సైటు
 about-logins-list-item-vulnerable-password-icon =
     .title = బలహీనమైన సంకేతపదం
-
+about-logins-list-section-breach = ఉల్లంఘిత వెబ్‌సైట్లు
+about-logins-list-section-vulnerable = బలహీనమైన సంకేతపదాలు
+about-logins-list-section-nothing = హెచ్చరిక వద్దు
 about-logins-list-section-today = ఈరోజు
 about-logins-list-section-yesterday = నిన్న
 about-logins-list-section-week = గత 7 రోజులు
 
 ## Introduction screen
 
+about-logins-login-intro-heading-logged-out2 = మీరు భద్రపరచుకున్న ప్రవేశాల కోసం చూస్తున్నారా? వాటిని దిగుమతి చేసుకోండి లేదా సింక్‌ను చేతనం చేసుకోండి.
 about-logins-login-intro-heading-logged-in = సింక్రనిత ప్రవేశాలేమీ కనబడలేదు.
 login-intro-description = మరో పరికరంలో మీ ప్రవేశాలను { -brand-product-name }‌లో భద్రపరచుకొని ఉంటే, వాటిని ఇక్కడకు తెచ్చుకోవడం ఇలా:
-about-logins-intro-import = మీ ప్రవేశాలు వేరే విహారిణిలో భద్రమైవుంటే, వాటిని <a data-l10n-name="import-link">{ -lockwise-brand-short-name } లోనికి దిగుమతి చేసుకోండి</a>
+login-intro-instructions-fxa-passwords-help = మరింత సహాయం కోసం <a data-l10n-name="passwords-help-link">సంకేతపదాల తోడ్పాటు</a>ను చూడండి.
 
 ## Login
 
@@ -77,6 +74,7 @@ login-item-new-login-title = కొత్త ప్రవేశాన్ని �
 login-item-edit-button = మార్చు
 about-logins-login-item-remove-button = తొలగించు
 login-item-origin-label = వెబ్‌సైటు చిరునామా
+login-item-tooltip-message = ఇది మీరు ప్రవేశించే వెబ్‌సైటు చిరునామాకి ఖచ్చితంగా సరిపోలుతుందని నిర్ధారించుకోండి.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = వాడుకరి పేరు
@@ -92,9 +90,10 @@ login-item-copied-password-button-text = కాపీ అయ్యింది!
 login-item-save-changes-button = మార్పులను భద్రపరుచు
 login-item-save-new-button = భద్రపరుచు
 login-item-cancel-button = రద్దుచేయి
-login-item-time-changed = చివరి మార్పు: { DATETIME($timeChanged, day: "numeric", month: "long", year: "numeric") }
-login-item-time-created = సృష్టితం: { DATETIME($timeCreated, day: "numeric", month: "long", year: "numeric") }
-login-item-time-used = చివరి వాడుక: { DATETIME($timeUsed, day: "numeric", month: "long", year: "numeric") }
+
+## The date is displayed in a timeline showing the password evolution.
+## A label is displayed under the date to describe the type of change.
+## (e.g. updated, created, etc.)
 
 ## OS Authentication dialog
 
@@ -103,6 +102,12 @@ about-logins-os-auth-dialog-caption = { -brand-full-name }
 ## The macOS strings are preceded by the operating system with "Firefox is trying to "
 ## and includes subtitle of "Enter password for the user "xxx" to allow this." These
 ## notes are only valid for English. Please test in your respected locale.
+
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message-win = మీ ప్రవేశ వివరాలను మార్చడానికి, మీ విండోస్ ప్రవేశ వివరాలను ఇవ్వండి. ఇది మా ఖాతాల భద్రతను కాపాడడంలో ఉపయోగపడుతుంది.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message-macosx = భద్రపరచిన ప్రవేశాన్ని సవరించు
 
 # This message can be seen when attempting to reveal a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
@@ -114,8 +119,9 @@ about-logins-copy-password-os-auth-dialog-message-win = మీ సంకేత�
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = భద్రపరచిన సంకేతపదాన్ని కాపీచేయడానికి
 
-## Master Password notification
-
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message-macosx = భద్రపరచిన ప్రవేశాలను, సంకేతపదాలను ఎగుమతిచేయి
 
 ## Primary Password notification
 
@@ -123,8 +129,6 @@ about-logins-primary-password-notification-message = భద్రపరచిన
 master-password-reload-button =
     .label = ప్రవేశించండి
     .accesskey = L
-
-## Password Sync notification
 
 ## Dialogs
 
@@ -135,6 +139,9 @@ confirmation-dialog-dismiss-button =
 about-logins-confirm-remove-dialog-title = ఈ ప్రవేశాన్ని తొలగించాలా?
 confirm-delete-dialog-message = ఈ చర్యను రద్దు చేయలేరు.
 about-logins-confirm-remove-dialog-confirm-button = తొలగించు
+
+## Variables
+##   $count (number) - Number of items
 
 about-logins-confirm-remove-all-dialog-confirm-button-label =
     { $count ->
@@ -162,6 +169,8 @@ about-logins-confirm-remove-all-sync-dialog-title =
        *[other] { $count } ప్రవేశాలనూ అన్ని పరికరాల నుండి తొలగించాలా?
     }
 
+##
+
 about-logins-confirm-export-dialog-title = ప్రవేశాలను, సంకేతపదాలను ఎగుమతిచేయి
 about-logins-confirm-export-dialog-confirm-button = ఎగుమతించు…
 
@@ -178,7 +187,6 @@ breach-alert-text = మీరు చివరిసారి మీ ప్రవ
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = { $hostname }కు వెళ్ళండి
-about-logins-breach-alert-learn-more-link = ఇంకా తెలుసుకోండి
 
 ## Vulnerable Password notification
 
@@ -238,6 +246,7 @@ about-logins-import-dialog-title = దిగుమతి పూర్తయి�
 about-logins-import-dialog-done = పూర్తయింది
 
 about-logins-import-dialog-error-title = దిగుమతి లోపం
+about-logins-import-dialog-error-conflicting-values-description = ఉదాహరణకు: ఒకే ప్రవేశానికి పలు వాడుకరి పేర్లు, సంకేతపదాలు, చిరునామాలు, మొదలైనవి.
 about-logins-import-dialog-error-file-format-title = ఫైలు ఫార్మాటు సమస్య
 about-logins-import-dialog-error-file-permission-title = ఫైలును చదవలేకపోతున్నాం
 about-logins-import-dialog-error-no-logins-imported = ప్రవేశాలేమీ దిగుమతి కాలేదు
@@ -262,6 +271,10 @@ about-logins-import-report-row-description-added = కొత్త ప్రవ�
 ## Variables:
 ##  $count (number) - The number of affected elements
 
+about-logins-import-report-error =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">పొరపాట్లు</div> <div data-l10n-name="not-imported">(దిగుమతి చేయలేదు)</div>
+    }
 
 ## Logins import report page
 

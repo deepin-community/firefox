@@ -8,7 +8,6 @@
 run awsy tests in a virtualenv
 """
 
-from __future__ import absolute_import
 import copy
 import json
 import os
@@ -18,20 +17,18 @@ import sys
 # load modules from parent dir
 sys.path.insert(1, os.path.dirname(sys.path[0]))
 
-import mozinfo
-
 import mozharness
-
+import mozinfo
+from mozharness.base.log import ERROR, INFO
 from mozharness.base.script import PreScriptAction
-from mozharness.base.log import INFO, ERROR
-from mozharness.mozilla.testing.testbase import TestingMixin, testing_config_options
 from mozharness.base.vcs.vcsbase import MercurialScript
-from mozharness.mozilla.tooltool import TooltoolMixin
 from mozharness.mozilla.structuredlog import StructuredOutputParser
 from mozharness.mozilla.testing.codecoverage import (
     CodeCoverageMixin,
     code_coverage_config_options,
 )
+from mozharness.mozilla.testing.testbase import TestingMixin, testing_config_options
+from mozharness.mozilla.tooltool import TooltoolMixin
 
 PY2 = sys.version_info.major == 2
 scripts_path = os.path.abspath(os.path.dirname(os.path.dirname(mozharness.__file__)))
@@ -57,15 +54,6 @@ class AWSY(TestingMixin, MercurialScript, TooltoolMixin, CodeCoverageMixin):
                     "dest": "extra_prefs",
                     "default": [],
                     "help": "Extra user prefs.",
-                },
-            ],
-            [
-                ["--enable-webrender"],
-                {
-                    "action": "store_true",
-                    "dest": "enable_webrender",
-                    "default": False,
-                    "help": "Enable the WebRender compositor in Gecko.",
                 },
             ],
             [
@@ -291,12 +279,9 @@ class AWSY(TestingMixin, MercurialScript, TooltoolMixin, CodeCoverageMixin):
         )
         if dmd_enabled:
             cmd.append("--setpref=security.sandbox.content.level=0")
+        cmd.append("--setpref=layout.css.stylo-threads=4")
+
         cmd.append(test_file)
-
-        if self.config["enable_webrender"]:
-            cmd.append("--enable-webrender")
-
-        env["STYLO_THREADS"] = "4"
 
         env["MOZ_UPLOAD_DIR"] = dirs["abs_blob_upload_dir"]
         if not os.path.isdir(env["MOZ_UPLOAD_DIR"]):

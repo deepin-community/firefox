@@ -13,12 +13,6 @@ downloads-panel =
 
 ##
 
-# The style attribute has the width of the Downloads Panel expressed using
-# a CSS unit. The longest labels that should fit are usually those of
-# in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
-
 downloads-cmd-pause =
     .label = Pausa
     .accesskey = P
@@ -30,15 +24,10 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Cancelar
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Ubrir a carpeta a on se troba
-    .accesskey = b
-
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Amostrar en o Finder
-    .accesskey = F
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = Ubrir en o visualizador d'o sistema
@@ -48,25 +37,7 @@ downloads-cmd-always-use-system-default =
     .label = Ubrir siempre en o visualizador d'o sistema
     .accesskey = s
 
-downloads-cmd-show-button =
-    .tooltiptext =
-        { PLATFORM() ->
-            [macos] Amostrar en o Finder
-           *[other] Ubrir a carpeta a on se troba
-        }
-
-downloads-cmd-show-panel =
-    .aria-label =
-        { PLATFORM() ->
-            [macos] Amostrar en o Finder
-           *[other] Ubrir a carpeta a on se troba
-        }
-downloads-cmd-show-description =
-    .value =
-        { PLATFORM() ->
-            [macos] Amostrar en o Finder
-           *[other] Ubrir a carpeta a on se troba
-        }
+##
 
 downloads-cmd-show-downloads =
     .label = Amostrar la carpeta de descargas
@@ -138,11 +109,16 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
-downloading-file-opens-in-hours-and-minutes = S'ubrirá d'aquí a { $hours }h { $minutes }m…
-downloading-file-opens-in-minutes = S'ubrirá d'aquí a { $minutes }m…
-downloading-file-opens-in-minutes-and-seconds = S'ubrirá d'aquí a { $minutes }m { $seconds }s…
-downloading-file-opens-in-seconds = S'ubrirá d'aquí a { $seconds }s…
-downloading-file-opens-in-some-time = S'ubrirá quan remate la descarga…
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = S'ubrirá d'aquí a { $hours }h { $minutes }m…
+downloading-file-opens-in-minutes-2 =
+    .value = S'ubrirá d'aquí a { $minutes }m…
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = S'ubrirá d'aquí a { $minutes }m { $seconds }s…
+downloading-file-opens-in-seconds-2 =
+    .value = S'ubrirá d'aquí a { $seconds }s…
+downloading-file-opens-in-some-time-2 =
+    .value = S'ubrirá quan remate la descarga…
 
 ##
 
@@ -168,6 +144,14 @@ downloads-history =
 downloads-details =
     .title = Detalles d'as descargas
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+
+##
+
 downloads-clear-downloads-button =
     .label = Limpiar as descargas
     .tooltiptext = Limpia as descargas completas, canceladas y erronias
@@ -180,3 +164,17 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Garra descarga en esta sesión.
+
+## Download errors
+
+downloads-error-alert-title = Error en a descarga
+# Variables:
+#   $extension (String): the name of the blocking extension.
+downloads-error-blocked-by = La baixada no se puede alzar perque { $extension } l'ha blocau.
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = La baixada no se puet alzar perque una extensión l'ha blocau.
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    No se puede alzar a descarga porque s'ha produciu una error desconoixida.
+    
+    Por favor, torne-lo a prebar.

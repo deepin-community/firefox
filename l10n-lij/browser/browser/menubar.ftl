@@ -11,6 +11,8 @@
 
 ## Application Menu (macOS only)
 
+menu-application-preferences =
+    .label = Preferense
 menu-application-services =
     .label = Serviççi
 menu-application-hide-this =
@@ -38,15 +40,6 @@ menu-quit =
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Sciòrti da { -brand-shorter-name }
-
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Særa { -brand-shorter-name }
 
 menu-about =
     .label = Informaçioin in sce { -brand-shorter-name }
@@ -77,8 +70,15 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Arvi schedaio…
     .accesskey = v
-menu-file-close =
-    .label = Særa
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Særa feuggio
+            [one] Særa { $tabCount } feuggi
+           *[other] S
+        }
     .accesskey = S
 menu-file-close-window =
     .label = Særa o barcon
@@ -89,12 +89,12 @@ menu-file-save-page =
 menu-file-email-link =
     .label = Manda colegamento pe pòsta…
     .accesskey = c
+menu-file-share-url =
+    .label = Condividdi
+    .accesskey = C
 menu-file-print-setup =
     .label = Inpòsta pagina…
     .accesskey = I
-menu-file-print-preview =
-    .label = Anteprimma de Stanpa
-    .accesskey = A
 menu-file-print =
     .label = Stanpa…
     .accesskey = p
@@ -110,6 +110,9 @@ menu-file-go-offline =
 menu-edit =
     .label = Cangia
     .accesskey = C
+menu-edit-find-in-page =
+    .label = Treuva inta pagina…
+    .accesskey = T
 menu-edit-find-again =
     .label = Treuva pròscimo
     .accesskey = T
@@ -125,6 +128,9 @@ menu-view =
 menu-view-toolbars-menu =
     .label = Bare
     .accesskey = B
+menu-view-customize-toolbar2 =
+    .label = Personaliza a bara di atressi…
+    .accesskey = P
 menu-view-sidebar =
     .label = Bara de scianco
     .accesskey = e
@@ -143,6 +149,9 @@ menu-view-full-zoom-enlarge =
 menu-view-full-zoom-reduce =
     .label = Diminoisci zoom
     .accesskey = o
+menu-view-full-zoom-actual-size =
+    .label = Dimenscioin efetive
+    .accesskey = D
 menu-view-full-zoom-toggle =
     .label = Zoom do solo testo
     .accesskey = t
@@ -168,6 +177,17 @@ menu-view-exit-full-screen =
 menu-view-full-screen =
     .label = A tutto schermo
     .accesskey = A
+
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Ativa Modalitæ letua
+    .accesskey = A
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Særa Modalitæ letua
+    .accesskey = S
 
 ##
 
@@ -203,8 +223,6 @@ menu-history-undo-window-menu =
 menu-bookmarks-menu =
     .label = Segnalibbri
     .accesskey = b
-menu-bookmark-edit =
-    .label = Cangia segnalibbro
 menu-bookmarks-all-tabs =
     .label = Azonzi tutti i feuggi a-i segnalibbri…
 menu-bookmarks-toolbar =
@@ -231,6 +249,13 @@ menu-tools-page-source =
 menu-tools-page-info =
     .label = Informaçioin da pagina
     .accesskey = I
+menu-settings =
+    .label = Inpostaçioin
+    .accesskey =
+        { PLATFORM() ->
+            [windows] I
+           *[other] n
+        }
 menu-tools-layout-debugger =
     .label = Aspeto do Debugger
     .accesskey = A
@@ -248,15 +273,6 @@ menu-window-bring-all-to-front =
 # NOTE: For Engineers, any additions or changes to Help menu strings should
 # also be reflected in the related strings in appmenu.ftl. Those strings, by
 # convention, will have the same ID as these, but prefixed with "app".
-# Example: appmenu-help-product
-#
-# These strings are duplicated to allow for different casing depending on
-# where the strings appear.
-
-
-# NOTE: For Engineers, any additions or changes to Help menu strings should
-# also be reflected in the related strings in appmenu.ftl. Those strings, by
-# convention, will have the same ID as these, but prefixed with "app".
 # Example: appmenu-get-help
 #
 # These strings are duplicated to allow for different casing depending on
@@ -265,10 +281,19 @@ menu-window-bring-all-to-front =
 menu-help =
     .label = Agiutto
     .accesskey = A
+menu-get-help =
+    .label = Fatte agiutâ
+    .accesskey = F
+menu-help-more-troubleshooting-info =
+    .label = Informaçioin in sciâ soluçion di problemi
+    .accesskey = I
 menu-help-report-site-issue =
     .label = Denonçia Problema do Scito…
-menu-help-feedback-page =
-    .label = Manda comento…
+menu-help-share-ideas =
+    .label = Condividdi idee e comenti…
+    .accesskey = C
+menu-help-enter-troubleshoot-mode2 =
+    .label = Mòddo soluçion problemi…
     .accesskey = M
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.

@@ -65,6 +65,9 @@ media-dimension =
     .value = Dimensiones:
 media-long-desc =
     .value = Description longe:
+media-select-all =
+    .label = Seliger toto
+    .accesskey = e
 media-save-as =
     .label = Salvar como…
     .accesskey = A
@@ -239,6 +242,9 @@ media-dimensions =
 # Variables:
 #   $size (number) - The size of the media file in kilobytes
 media-file-size = { $size } KB
+
+## Variables:
+##   $website (string) — The url of the website pageInfo is getting info for
 
 # This string is used to display the website name next to the
 # "Block Images" checkbox in the media tab

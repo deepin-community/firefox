@@ -30,6 +30,9 @@ import-from-nothing =
 import-from-safari =
     .label = Safari
     .accesskey = S
+import-from-brave =
+    .label = Brave
+    .accesskey = r
 import-from-canary =
     .label = „Chrome Canary“
     .accesskey = n
@@ -61,9 +64,6 @@ import-items-description = Pasirinkite, ką importuoti:
 
 import-permissions-page-title = Suteikite leidimus { -brand-short-name }“
 
-# Do not translate "Bookmarks.plist"; the file name is the same everywhere.
-import-permissions-description = „macOS“ reikalauja, kad leistumėte „{ -brand-short-name }“ pasiekti „Safari“ adresyną. Spustelėkite „Tęsti“, ir pasirinkite „Bookmarks.plist“ failą iš pasirodančio failų atvėrimo skydelio.
-
 import-migrating-page-title = Importuojama…
 
 import-migrating-description = Importuojami šie elementai…
@@ -78,23 +78,9 @@ import-done-description = Sėkmingai importuota:
 
 import-close-source-browser = Prieš tęsdami įsitikinkite, kad pasirinkta naršyklė yra išjungta.
 
-# Displays which browser the bookmarks are being imported from
-#
-# Variables:
-#   $source (String): The browser the user has chosen to import bookmarks from.
-imported-bookmarks-source = Iš „{ $source }“
-
 source-name-ie = Internet Explorer
 source-name-edge = „Microsoft Edge“
-source-name-edge-beta = Microsoft Edge Beta
-source-name-safari = Safari
-source-name-canary = „Google Chrome Canary“
 source-name-chrome = Google Chrome
-source-name-chrome-beta = „Google Chrome Beta“
-source-name-chrome-dev = „Google Chrome Dev“
-source-name-chromium = „Chromium“
-source-name-firefox = Mozilla Firefox
-source-name-360se = „360 Secure Browser“
 
 imported-safari-reading-list = Skaitinių sąrašas (iš „Safari“)
 imported-edge-reading-list = Skaitinių sąrašas (iš „Edge“)
@@ -169,3 +155,4 @@ browser-data-session-checkbox =
     .label = Langai ir kortelės
 browser-data-session-label =
     .value = Langai ir kortelės
+

@@ -49,7 +49,7 @@ policy-DisableForgetButton = No fâ acede a-o pomello Ascòrda.
 
 policy-DisableFormHistory = No aregordâ e riçerche e a stöia di mòdoli
 
-policy-DisablePocket = Dizabilita a fonçion sarva pagina in Pocket.
+policy-DisablePocket2 = Dizabilita a fonçion sarva pagina in { -pocket-brand-name }.
 
 policy-DisablePrivateBrowsing = Dizabilita a Navegaçion Privâ
 
@@ -85,8 +85,6 @@ policy-Extensions = Installa, dizinstalla ò bloòcca e estenscioin. L'òpçion 
 
 policy-ExtensionUpdate = Abilita o dizabilita o agiornamento aotomatico de estenscioin.
 
-policy-FlashPlugin = Permetti ò nega l'uzo di plugin Flash.
-
 policy-HardwareAcceleration = Se false, asmòrta l'aceleraçion hardware.
 
 # “lock” means that the user won’t be able to change this setting
@@ -95,6 +93,7 @@ policy-Homepage = Inpòsta e blòcca (se ti veu) a pagina prinçipâ.
 policy-InstallAddonsPermission = Permetti a çerti sciti de instalâ conponenti azonti.
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
+
 
 ##
 
@@ -107,9 +106,6 @@ policy-Proxy = Configuraçion inpostaçioin do proxy.
 policy-SearchBar = Inpòsta donde mette a bara de riçerche. In ògni mòddo l'utente o peu personalizâ.
 
 policy-SearchEngines = Configuraçion inpostaçioin do motô de riçerca. Sta òpçion a gh'é solo inta verscion Extended Support Release (ESR).
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = Instaala mòdolo PKCS #11.
 
 policy-SSLVersionMax = Inpòsta a verscion mascima de SSL.
 

@@ -9,11 +9,28 @@
 ##  $scheme - the type of link that's being opened.
 ##  $appName - Name of the application that will be opened.
 
+
+## Permission Dialog
+## Variables:
+##  $host - the hostname that is initiating the request
+##  $scheme - the type of link that's being opened.
+##  $appName - Name of the application that will be opened.
+##  $extension - Name of extension that initiated the request
+
+## Permission Dialog
+## Variables:
+##  $host (string) - The hostname that is initiating the request
+##  $scheme (string) - The type of link that's being opened.
+##  $appName (string) - Name of the application that will be opened.
+##  $extension (string) - Name of extension that initiated the request
+
 permission-dialog-description = Baimendu gune honi { $scheme } lotura irekitzen?
 
 permission-dialog-description-file = Baimendu fitxategi honi { $scheme } lotura irekitzen?
 
 permission-dialog-description-host = Baimendu { $host } ostalariari { $scheme } lotura irekitzen?
+
+permission-dialog-description-extension = Baimendu { $extension } hedapenari { $scheme } lotura irekitzea?
 
 permission-dialog-description-app = Baimendu gune honi { $scheme } lotura { $appName } erabiliz irekitzen?
 
@@ -21,13 +38,24 @@ permission-dialog-description-host-app = Baimendu { $host } guneari { $scheme } 
 
 permission-dialog-description-file-app = Baimendu fitxategi honi { $scheme } lotura { $appName } erabiliz irekitzen?
 
+permission-dialog-description-extension-app = Baimendu { $extension } hedapenari { $scheme } lotura { $appName } aplikazioarekin irekitzea?
+
 ## Please keep the emphasis around the hostname and scheme (ie the
 ## `<strong>` HTML tags). Please also keep the hostname as close to the start
 ## of the sentence as your language's grammar allows.
 
+## Please keep the emphasis around the hostname and scheme (ie the
+## `<strong>` HTML tags). Please also keep the hostname as close to the start
+## of the sentence as your language's grammar allows.
+## Variables:
+##  $host (string) - The hostname that is initiating the request
+##  $scheme (string) - The type of link that's being opened.
+
 permission-dialog-remember = Baimendu beti <strong>{ $host }</strong> guneari <strong>{ $scheme }</strong> loturak irekitzea
 
 permission-dialog-remember-file = Baimendu beti fitxategi honi <strong>{ $scheme }</strong> loturak irekitzea
+
+permission-dialog-remember-extension = Baimendu beti hedapen honi <strong>{ $scheme }</strong> loturak irekitzea
 
 ##
 
@@ -46,6 +74,10 @@ permission-dialog-set-change-app-link = Aukeratu beste aplikazio bat.
 ## Chooser dialog
 ## Variables:
 ##  $scheme - the type of link that's being opened.
+
+## Chooser dialog
+## Variables:
+##  $scheme (string) - The type of link that's being opened.
 
 chooser-window =
     .title = Aukeratu aplikazioa

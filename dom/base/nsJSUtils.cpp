@@ -39,6 +39,7 @@
 #include "nsString.h"
 #include "nsTPromiseFlatString.h"
 #include "nscore.h"
+#include "prenv.h"
 
 #if !defined(DEBUG) && !defined(MOZ_ENABLE_JS_DUMP)
 #  include "mozilla/StaticPrefs_browser.h"
@@ -50,8 +51,12 @@ using namespace mozilla::dom;
 bool nsJSUtils::GetCallingLocation(JSContext* aContext, nsACString& aFilename,
                                    uint32_t* aLineno, uint32_t* aColumn) {
   JS::AutoFilename filename;
-  if (!JS::DescribeScriptedCaller(aContext, &filename, aLineno, aColumn)) {
+  JS::ColumnNumberZeroOrigin column;
+  if (!JS::DescribeScriptedCaller(aContext, &filename, aLineno, &column)) {
     return false;
+  }
+  if (aColumn) {
+    *aColumn = column.zeroOriginValue();
   }
 
   return aFilename.Assign(filename.get(), fallible);
@@ -60,8 +65,12 @@ bool nsJSUtils::GetCallingLocation(JSContext* aContext, nsACString& aFilename,
 bool nsJSUtils::GetCallingLocation(JSContext* aContext, nsAString& aFilename,
                                    uint32_t* aLineno, uint32_t* aColumn) {
   JS::AutoFilename filename;
-  if (!JS::DescribeScriptedCaller(aContext, &filename, aLineno, aColumn)) {
+  JS::ColumnNumberZeroOrigin column;
+  if (!JS::DescribeScriptedCaller(aContext, &filename, aLineno, &column)) {
     return false;
+  }
+  if (aColumn) {
+    *aColumn = column.zeroOriginValue();
   }
 
   return aFilename.Assign(NS_ConvertUTF8toUTF16(filename.get()), fallible);
@@ -85,12 +94,13 @@ nsresult nsJSUtils::UpdateFunctionDebugMetadata(
     return NS_ERROR_FAILURE;
   }
 
-  JS::RootedScript script(cx, JS_GetFunctionScript(cx, fun));
+  JS::Rooted<JSScript*> script(cx, JS_GetFunctionScript(cx, fun));
   if (!script) {
     return NS_OK;
   }
 
-  if (!JS::UpdateDebugMetadata(cx, script, aOptions, aPrivateValue,
+  JS::InstantiateOptions instantiateOptions(aOptions);
+  if (!JS::UpdateDebugMetadata(cx, script, instantiateOptions, aPrivateValue,
                                aElementAttributeName, nullptr, nullptr)) {
     return NS_ERROR_FAILURE;
   }
@@ -135,89 +145,14 @@ nsresult nsJSUtils::CompileFunction(AutoJSAPI& jsapi,
   return NS_OK;
 }
 
-template <typename Unit>
-static nsresult CompileJSModule(JSContext* aCx, JS::SourceText<Unit>& aSrcBuf,
-                                JS::Handle<JSObject*> aEvaluationGlobal,
-                                JS::CompileOptions& aCompileOptions,
-                                JS::MutableHandle<JSObject*> aModule) {
-  AUTO_PROFILER_LABEL("nsJSUtils::CompileModule", JS);
-  MOZ_ASSERT(aCx == nsContentUtils::GetCurrentJSContext());
-  MOZ_ASSERT(aSrcBuf.get());
-  MOZ_ASSERT(JS_IsGlobalObject(aEvaluationGlobal));
-  MOZ_ASSERT(JS::CurrentGlobalOrNull(aCx) == aEvaluationGlobal);
-  MOZ_ASSERT(NS_IsMainThread());
-  MOZ_ASSERT(CycleCollectedJSContext::Get() &&
-             CycleCollectedJSContext::Get()->MicroTaskLevel());
-
-  NS_ENSURE_TRUE(xpc::Scriptability::Get(aEvaluationGlobal).Allowed(), NS_OK);
-
-  JSObject* module = JS::CompileModule(aCx, aCompileOptions, aSrcBuf);
-  if (!module) {
-    return NS_ERROR_FAILURE;
-  }
-
-  aModule.set(module);
-  return NS_OK;
-}
-
-nsresult nsJSUtils::CompileModule(JSContext* aCx,
-                                  JS::SourceText<char16_t>& aSrcBuf,
-                                  JS::Handle<JSObject*> aEvaluationGlobal,
-                                  JS::CompileOptions& aCompileOptions,
-                                  JS::MutableHandle<JSObject*> aModule) {
-  return CompileJSModule(aCx, aSrcBuf, aEvaluationGlobal, aCompileOptions,
-                         aModule);
-}
-
-nsresult nsJSUtils::CompileModule(JSContext* aCx,
-                                  JS::SourceText<Utf8Unit>& aSrcBuf,
-                                  JS::Handle<JSObject*> aEvaluationGlobal,
-                                  JS::CompileOptions& aCompileOptions,
-                                  JS::MutableHandle<JSObject*> aModule) {
-  return CompileJSModule(aCx, aSrcBuf, aEvaluationGlobal, aCompileOptions,
-                         aModule);
-}
-
-nsresult nsJSUtils::ModuleInstantiate(JSContext* aCx,
-                                      JS::Handle<JSObject*> aModule) {
-  AUTO_PROFILER_LABEL("nsJSUtils::ModuleInstantiate", JS);
-
-  MOZ_ASSERT(aCx == nsContentUtils::GetCurrentJSContext());
-  MOZ_ASSERT(NS_IsMainThread());
-  MOZ_ASSERT(CycleCollectedJSContext::Get() &&
-             CycleCollectedJSContext::Get()->MicroTaskLevel());
-
-  NS_ENSURE_TRUE(xpc::Scriptability::Get(aModule).Allowed(), NS_OK);
-
-  if (!JS::ModuleInstantiate(aCx, aModule)) {
-    return NS_ERROR_FAILURE;
-  }
-
-  return NS_OK;
-}
-
-nsresult nsJSUtils::ModuleEvaluate(JSContext* aCx,
-                                   JS::Handle<JSObject*> aModule,
-                                   JS::MutableHandle<JS::Value> aResult) {
-  AUTO_PROFILER_LABEL("nsJSUtils::ModuleEvaluate", JS);
-
-  MOZ_ASSERT(aCx == nsContentUtils::GetCurrentJSContext());
-  MOZ_ASSERT(NS_IsMainThread());
-  MOZ_ASSERT(CycleCollectedJSContext::Get() &&
-             CycleCollectedJSContext::Get()->MicroTaskLevel());
-
-  NS_ENSURE_TRUE(xpc::Scriptability::Get(aModule).Allowed(), NS_OK);
-
-  if (!JS::ModuleEvaluate(aCx, aModule, aResult)) {
-    return NS_ERROR_FAILURE;
-  }
-
-  return NS_OK;
+/* static */
+bool nsJSUtils::IsScriptable(JS::Handle<JSObject*> aEvaluationGlobal) {
+  return xpc::Scriptability::AllowedIfExists(aEvaluationGlobal);
 }
 
 static bool AddScopeChainItem(JSContext* aCx, nsINode* aNode,
                               JS::MutableHandleVector<JSObject*> aScopeChain) {
-  JS::RootedValue val(aCx);
+  JS::Rooted<JS::Value> val(aCx);
   if (!GetOrCreateDOMReflector(aCx, aNode, &val)) {
     return false;
   }
@@ -247,11 +182,29 @@ void nsJSUtils::ResetTimeZone() { JS::ResetTimeZone(); }
 
 /* static */
 bool nsJSUtils::DumpEnabled() {
+#ifdef FUZZING
+  static bool mozFuzzDebug = !!PR_GetEnv("MOZ_FUZZ_DEBUG");
+  return mozFuzzDebug;
+#endif
+
 #if defined(DEBUG) || defined(MOZ_ENABLE_JS_DUMP)
   return true;
 #else
   return StaticPrefs::browser_dom_window_dump_enabled();
 #endif
+}
+
+JSObject* nsJSUtils::MoveBufferAsUint8Array(
+    JSContext* aCx, size_t aSize,
+    UniquePtr<uint8_t[], JS::FreePolicy> aBuffer) {
+  JS::Rooted<JSObject*> arrayBuffer(
+      aCx, JS::NewArrayBufferWithContents(aCx, aSize, std::move(aBuffer)));
+  if (!arrayBuffer) {
+    return nullptr;
+  }
+
+  return JS_NewUint8ArrayWithBuffer(aCx, arrayBuffer, 0,
+                                    static_cast<int64_t>(aSize));
 }
 
 //

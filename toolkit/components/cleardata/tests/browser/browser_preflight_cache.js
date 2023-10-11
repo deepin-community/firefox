@@ -3,8 +3,8 @@
 
 "use strict";
 
-const { SiteDataTestUtils } = ChromeUtils.import(
-  "resource://testing-common/SiteDataTestUtils.jsm"
+const { SiteDataTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/SiteDataTestUtils.sys.mjs"
 );
 
 const uuidGenerator = Services.uuid;
@@ -103,11 +103,8 @@ async function testDeleteAll(
 add_task(async function test_deleteAll() {
   // The cleaner should be called when we target all cleaners, all cache
   // cleaners, or just the preflight cache.
-  let {
-    CLEAR_ALL,
-    CLEAR_ALL_CACHES,
-    CLEAR_PREFLIGHT_CACHE,
-  } = Ci.nsIClearDataService;
+  let { CLEAR_ALL, CLEAR_ALL_CACHES, CLEAR_PREFLIGHT_CACHE } =
+    Ci.nsIClearDataService;
 
   for (let flag of [CLEAR_ALL, CLEAR_ALL_CACHES, CLEAR_PREFLIGHT_CACHE]) {
     await testDeleteAll(flag);
@@ -117,15 +114,53 @@ add_task(async function test_deleteAll() {
 add_task(async function test_deleteByPrincipal() {
   // The cleaner should be called when we target all cleaners, all cache
   // cleaners, or just the preflight cache.
-  let {
-    CLEAR_ALL,
-    CLEAR_ALL_CACHES,
-    CLEAR_PREFLIGHT_CACHE,
-  } = Ci.nsIClearDataService;
+  let { CLEAR_ALL, CLEAR_ALL_CACHES, CLEAR_PREFLIGHT_CACHE } =
+    Ci.nsIClearDataService;
 
   for (let flag of [CLEAR_ALL, CLEAR_ALL_CACHES, CLEAR_PREFLIGHT_CACHE]) {
     for (let hasUserInput of [true, false]) {
       await testDeleteAll(flag, { deleteBy: "principal", hasUserInput });
     }
   }
+});
+
+add_task(async function test_deletePrivateBrowsingCache() {
+  async function deletePrivateBrowsingCache(token) {
+    const browser = await BrowserTestUtils.openNewBrowserWindow({
+      private: true,
+    });
+
+    const tab = (browser.gBrowser.selectedTab = BrowserTestUtils.addTab(
+      browser.gBrowser,
+      "http://example.com"
+    ));
+    await BrowserTestUtils.browserLoaded(tab.linkedBrowser);
+
+    // Populate the preflight cache and make sure it isn't populated right now
+    await testPreflightCached(tab.linkedBrowser, PREFLIGHT_URL_A, token, false);
+    await testPreflightCached(tab.linkedBrowser, PREFLIGHT_URL_B, token, false);
+    // Cache should be populated.
+    await testPreflightCached(tab.linkedBrowser, PREFLIGHT_URL_A, token, true);
+    await testPreflightCached(tab.linkedBrowser, PREFLIGHT_URL_B, token, true);
+
+    await browser.close();
+  }
+
+  // Disable https_first mode to not upgrade the connection of the main page
+  // and get "Blocked loading mixed active content" for the CORS request
+  // making this test case fail. Another solution would be to change all URLs
+  // to https.
+  await SpecialPowers.pushPrefEnv({
+    set: [["dom.security.https_first_pbm", false]],
+  });
+
+  let token = uuidGenerator.generateUUID().toString();
+
+  // Make sure the CORS preflight cache is cleared between two private
+  // browsing sessions. Calling this function twice to see if the cache isn't
+  // populated anymore after the first call.
+  await deletePrivateBrowsingCache(token);
+  await deletePrivateBrowsingCache(token);
+
+  await SpecialPowers.clearUserPref("dom.security.https_first_pbm");
 });

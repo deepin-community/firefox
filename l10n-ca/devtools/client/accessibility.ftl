@@ -13,6 +13,26 @@ accessibility-keyboard-header = Teclat
 
 ## Text entries that are used as text alternative for icons that depict accessibility isses.
 
+
+## These strings are used in the overlay displayed when running an audit in the accessibility panel
+
+accessibility-progress-initializing = S'està inicialitzant…
+    .aria-valuetext = S'està inicialitzant…
+
+# This string is displayed in the audit progress bar in the accessibility panel.
+# Variables:
+#   $nodeCount (Integer) - The number of nodes for which the audit was run so far.
+accessibility-progress-progressbar =
+    { $nodeCount ->
+        [one] S'està comprovant { $nodeCount } node
+       *[other] S'estan comprovant { $nodeCount } nodes
+    }
+
+accessibility-progress-finishing = S'està finalitzant…
+    .aria-valuetext = S'està finalitzant…
+
+## Text entries that are used as text alternative for icons that depict accessibility issues.
+
 accessibility-warning =
     .alt = Avís
 

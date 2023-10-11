@@ -4,7 +4,7 @@
 
 
 profiles-title = Oer profilen
-profiles-subtitle = Dizze side helpt jo jo profilen te behearen. Elk profyl is in aparte omjouwing dy't aparte skiednis, blêdwizers, ynstellingen en add-ons befettet.
+profiles-subtitle = Dizze side helpt jo jo profilen te behearen. Elk profyl is in aparte omjouwing dy’t aparte skiednis, blêdwizers, ynstellingen en add-ons befettet.
 profiles-create = In nij profyl oanmeitsje
 profiles-restart-title = Opnij starte
 profiles-restart-in-safe-mode = Opnij starte mei útskeakele add-ons…

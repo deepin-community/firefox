@@ -41,6 +41,17 @@ options-collapse-attrs-label = Truncar atributos DOM
 options-collapse-attrs-tooltip =
     .title = Truncar atributos largos en el inspector
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Haz clic y arrastra para editar los valores de tamaño
+options-inspector-draggable-properties-tooltip =
+    .title = Haz clic y arrastra para editar los valores de tamaño en la vista de reglas del inspector.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Usa resaltadores más simples con prefers-reduced-motion
+options-inspector-simplified-highlighters-tooltip =
+    .title = Habilita resaltadores simplificados cuando se habilita prefers-reduced-motion. Dibuja líneas en lugar de rectángulos rellenados alrededor de los elementos resaltados para evitar efectos de parpadeo.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Unidad de color predeterminada
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Como Autoría
 options-default-color-unit-hex = Hex
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Nombres del color
 
 ## Style Editor section
@@ -118,6 +130,11 @@ options-enable-remote-label = Habilitar depuración remota
 options-enable-remote-tooltip2 =
     .title = Activar esta opción permitirá depurar esta instancia del navegador de forma remota
 
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Habilita formatos personalizados
+options-enable-custom-formatters-tooltip =
+    .title = Activar esta opción permite que los sitios definan formateadores personalizados para objetos DOM
+
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Activar service workers bajo HTTP (cuando la caja de herramientas esté abierta)
 options-enable-service-workers-http-tooltip =
@@ -130,9 +147,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Sólo la sesión actual, recarga la página
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Mostrar plataforma de datos de Gecko
-options-show-platform-data-tooltip =
-    .title = Si activas esta opción, los informes del perfilador de JavaScript incluirán Símbolos de plataforma de Gecko

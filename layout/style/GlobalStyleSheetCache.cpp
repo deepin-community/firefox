@@ -7,6 +7,7 @@
 #include "GlobalStyleSheetCache.h"
 
 #include "nsAppDirectoryServiceDefs.h"
+#include "nsExceptionHandler.h"
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_layout.h"
@@ -15,6 +16,7 @@
 #include "mozilla/Telemetry.h"
 #include "mozilla/css/Loader.h"
 #include "mozilla/StaticPrefs_browser.h"
+#include "mozilla/dom/ReferrerInfo.h"
 #include "mozilla/dom/SRIMetadata.h"
 #include "mozilla/ipc/SharedMemory.h"
 #include "MainThreadUtils.h"
@@ -281,7 +283,7 @@ GlobalStyleSheetCache::GlobalStyleSheetCache() {
   // non-shared sheets in the mFooSheet fields.  In a content process, we'll
   // lazily load our own copies of the sheets later.
   if (sSharedMemory) {
-    if (auto header = static_cast<Header*>(sSharedMemory->memory())) {
+    if (auto* header = static_cast<Header*>(sSharedMemory->memory())) {
       MOZ_RELEASE_ASSERT(header->mMagic == Header::kMagic);
 
 #define STYLE_SHEET(identifier_, url_, shared_)                    \
@@ -371,17 +373,16 @@ void GlobalStyleSheetCache::InitSharedSheetsInParent() {
   }
   address = shm->memory();
 
-  auto header = static_cast<Header*>(address);
+  auto* header = static_cast<Header*>(address);
   header->mMagic = Header::kMagic;
 #ifdef DEBUG
-  for (auto ptr : header->mSheets) {
+  for (const auto* ptr : header->mSheets) {
     MOZ_RELEASE_ASSERT(!ptr, "expected shared memory to have been zeroed");
   }
 #endif
 
-  UniquePtr<RawServoSharedMemoryBuilder> builder(
-      Servo_SharedMemoryBuilder_Create(
-          header->mBuffer, kSharedMemorySize - offsetof(Header, mBuffer)));
+  UniquePtr<StyleSharedMemoryBuilder> builder(Servo_SharedMemoryBuilder_Create(
+      header->mBuffer, kSharedMemorySize - offsetof(Header, mBuffer)));
 
   nsCString message;
 
@@ -629,7 +630,7 @@ void GlobalStyleSheetCache::BuildPreferenceSheet(
   }
 
   if (StaticPrefs::browser_display_use_focus_colors()) {
-    const auto& colors = aPrefs.mColors;
+    const auto& colors = aPrefs.mLightColors;
     nscolor focusText = colors.mFocusText;
     nscolor focusBG = colors.mFocusBackground;
     sheetText.AppendPrintf(
@@ -670,13 +671,13 @@ bool GlobalStyleSheetCache::AffectedByPref(const nsACString& aPref) {
 }
 
 /* static */ void GlobalStyleSheetCache::SetSharedMemory(
-    const base::SharedMemoryHandle& aHandle, uintptr_t aAddress) {
+    base::SharedMemoryHandle aHandle, uintptr_t aAddress) {
   MOZ_ASSERT(!XRE_IsParentProcess());
   MOZ_ASSERT(!gStyleCache, "Too late, GlobalStyleSheetCache already created!");
   MOZ_ASSERT(!sSharedMemory, "Shouldn't call this more than once");
 
   auto shm = MakeUnique<base::SharedMemory>();
-  if (!shm->SetHandle(aHandle, /* read_only */ true)) {
+  if (!shm->SetHandle(std::move(aHandle), /* read_only */ true)) {
     return;
   }
 
@@ -685,10 +686,12 @@ bool GlobalStyleSheetCache::AffectedByPref(const nsACString& aPref) {
   }
 }
 
-bool GlobalStyleSheetCache::ShareToProcess(base::ProcessId aProcessId,
-                                           base::SharedMemoryHandle* aHandle) {
+base::SharedMemoryHandle GlobalStyleSheetCache::CloneHandle() {
   MOZ_ASSERT(XRE_IsParentProcess());
-  return sSharedMemory && sSharedMemory->ShareToProcess(aProcessId, aHandle);
+  if (sSharedMemory) {
+    return sSharedMemory->CloneHandle();
+  }
+  return nullptr;
 }
 
 StaticRefPtr<GlobalStyleSheetCache> GlobalStyleSheetCache::gStyleCache;

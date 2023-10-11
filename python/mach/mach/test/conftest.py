@@ -2,14 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, unicode_literals
-
-import os
 import sys
 import unittest
+from collections.abc import Iterable
+from pathlib import Path
+from typing import List, Optional, Union
 
 import pytest
-import six
 from buildconfig import topsrcdir
 
 try:
@@ -18,10 +17,10 @@ except ImportError:
     # TODO io.StringIO causes failures with Python 2 (needs to be sorted out)
     from io import StringIO
 
+from mach.command_util import load_commands_from_entry_point, load_commands_from_file
 from mach.main import Mach
 
-here = os.path.abspath(os.path.dirname(__file__))
-PROVIDER_DIR = os.path.join(here, "providers")
+PROVIDER_DIR = Path(__file__).resolve().parent / "providers"
 
 
 @pytest.fixture(scope="class")
@@ -30,21 +29,25 @@ def get_mach(request):
         if key == "topdir":
             return topsrcdir
 
-    def inner(provider_files=None, entry_point=None, context_handler=None):
-        m = Mach(os.getcwd())
+    def inner(
+        provider_files: Optional[Union[Path, List[Path]]] = None,
+        entry_point=None,
+        context_handler=None,
+    ):
+        m = Mach(str(Path.cwd()))
         m.define_category("testing", "Mach unittest", "Testing for mach core", 10)
         m.define_category("misc", "Mach misc", "Testing for mach core", 20)
         m.populate_context_handler = context_handler or _populate_context
 
         if provider_files:
-            if isinstance(provider_files, six.string_types):
+            if not isinstance(provider_files, Iterable):
                 provider_files = [provider_files]
 
             for path in provider_files:
-                m.load_commands_from_file(os.path.join(PROVIDER_DIR, path))
+                load_commands_from_file(PROVIDER_DIR / path)
 
         if entry_point:
-            m.load_commands_from_entry_point(entry_point)
+            load_commands_from_entry_point(entry_point)
 
         return m
 

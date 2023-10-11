@@ -39,15 +39,6 @@ menu-quit =
 menu-quit-mac =
     .label = { -brand-shorter-name } बन्द गर्नुहोस्
 
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = { -brand-shorter-name } बन्द गर
-
 menu-about =
     .label = { -brand-shorter-name } को बारेमा
     .accesskey = A
@@ -77,9 +68,6 @@ menu-file-open-location =
 menu-file-open-file =
     .label = फाइल खोल्नुहोस्...
     .accesskey = O
-menu-file-close =
-    .label = बन्द गर्नुहोस्
-    .accesskey = C
 menu-file-close-window =
     .label = सञ्झ्याल बन्द गर्नुहोस्
     .accesskey = d
@@ -92,9 +80,6 @@ menu-file-email-link =
 menu-file-print-setup =
     .label = पृष्ठ सेटअप...
     .accesskey = u
-menu-file-print-preview =
-    .label = मुद्रण पूर्वावलोकन
-    .accesskey = v
 menu-file-print =
     .label = प्रिन्ट...
     .accesskey = P
@@ -166,6 +151,17 @@ menu-view-full-screen =
     .label = पूरा पर्दा
     .accesskey = F
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = पाठक मोडमा प्रवेश गर्नुहोस्
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = पाठक दृश्य बन्द गर्नुहोस्
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -198,8 +194,6 @@ menu-history-undo-window-menu =
 menu-bookmarks-menu =
     .label = पुस्तकचिनोहरू
     .accesskey = B
-menu-bookmark-edit =
-    .label = यो पुस्तकचिनोलाई सम्पादन गर्नुहोस्
 menu-bookmarks-all-tabs =
     .label = सबै ट्याबहरूमा पुस्तकचिनो लगाउनुहोस्...
 menu-bookmarks-toolbar =
@@ -243,15 +237,6 @@ menu-window-bring-all-to-front =
 # NOTE: For Engineers, any additions or changes to Help menu strings should
 # also be reflected in the related strings in appmenu.ftl. Those strings, by
 # convention, will have the same ID as these, but prefixed with "app".
-# Example: appmenu-help-product
-#
-# These strings are duplicated to allow for different casing depending on
-# where the strings appear.
-
-
-# NOTE: For Engineers, any additions or changes to Help menu strings should
-# also be reflected in the related strings in appmenu.ftl. Those strings, by
-# convention, will have the same ID as these, but prefixed with "app".
 # Example: appmenu-get-help
 #
 # These strings are duplicated to allow for different casing depending on
@@ -262,9 +247,6 @@ menu-help =
     .accesskey = H
 menu-help-report-site-issue =
     .label = साइटको समस्या दर्ता गर्नुहोस्‌…
-menu-help-feedback-page =
-    .label = प्रतिक्रिया दिनुहोस्…
-    .accesskey = S
 # Label of the Help menu item. Either this or
 # safeb.palm.notdeceptive.label from
 # phishing-afterload-warning-message.dtd is shown.

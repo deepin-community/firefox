@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = Nej sa nitaj si gua ni'ninj
-    .style = width: 55em
+    .style = min-width: 55em
 
 blocklist-description = Garasun nej yi'nïn' si nuguàn' { -brand-short-name } da' ga'ue naránt riña nej sa naga'naj sò' nga aché nunt. yi'nïn' si nuguàn' <a data-l10n-name="disconnect-link" title="Disconnect">Nitaj si 'iaj sun</a>.
 blocklist-close-key =

@@ -1,3 +1,688 @@
+firefox (118.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-41, also known as:
+    CVE-2023-5169, CVE-2023-5170, CVE-2023-5171, CVE-2023-5172,
+    CVE-2023-5173, CVE-2023-5175, CVE-2023-5176.
+
+  * debian/rules: Avoid race condition on virtualenv creation.
+  * debian/control*, debian/rules: Work around bug 1052002 by force-using
+    clang-14.
+  * debian/control*: Bump nss build dependency.
+  * debian/browser.install.in: Install libgkcodecs.so.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 27 Sep 2023 05:43:46 +0900
+
+firefox (117.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fix for mfsa2023-40, also known as CVE-2023-4863.
+
+  * debian/upstream.mk, debian/repack.py: Get l10n sources from zip archives.
+    Thanks David Turner for the initial implementation.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 13 Sep 2023 06:36:30 +0900
+
+firefox (117.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-34, also known as:
+    CVE-2023-4573, CVE-2023-4574, CVE-2023-4575, CVE-2023-4577,
+    CVE-2023-4578, CVE-2023-4579, CVE-2023-4580, CVE-2023-4581,
+    CVE-2023-4583, CVE-2023-4584, CVE-2023-4585.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 30 Aug 2023 06:13:08 +0900
+
+firefox (116.0-2) unstable; urgency=medium
+
+  * debian/rules, debian/browser.install.in:  Install vaapitest and v4l2test
+    appropriately vaapitest is now shipped on less platforms, and v4l2test
+    was added on a more limited set.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 03 Aug 2023 08:39:52 +0900
+
+firefox (116.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-29, also known as:
+    CVE-2023-4045, CVE-2023-4046, CVE-2023-4047, CVE-2023-4048,
+    CVE-2023-4049, CVE-2023-4050, CVE-2023-4051, CVE-2023-4053,
+    CVE-2023-4055, CVE-2023-4056, CVE-2023-4057, CVE-2023-4058.
+
+  * debian/control*: Bump nss and rustc build dependencies.
+  * debian/rules: Work around
+    https://sourceware.org/bugzilla/show_bug.cgi?id=30566.
+
+  * security/nss/lib/freebl/unix_rand.c,
+    security/nss/cmd/shlibsign/shlibsign.c: Unapply changes for Hurd, as
+    there is no rustc there.
+  * Cargo.lock, python/mozboot/mozboot/util.py,
+    servo/components/selectors/context.rs,
+    servo/components/selectors/parser.rs,
+    servo/components/style/gecko/selector_parser.rs,
+    servo/components/style/properties/gecko.mako.rs,
+    servo/components/style/style_resolver.rs,
+    servo/components/style/stylesheets/container_rule.rs,
+    servo/components/style/stylist.rs,
+    third_party/rust/cstr/.cargo-checksum.json,
+    third_party/rust/cstr/Cargo.toml,
+    third_party/rust/cstr/README.md,
+    third_party/rust/cstr/src/lib.rs: Undo changes to rupport rust version
+    1.63. It's getting harder to pretend 1.66 is not required for real now.
+  * build/moz.configure/rust.configure: Relax cargo version requirement.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 02 Aug 2023 08:49:23 +0900
+
+firefox (115.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-26, also known as CVE-2023-3600.
+
+  * debian/control*, debian/compat: Bump debhelper compat level to 12.
+  * debian/rules:
+    - Stop compressing debug info at link time.
+    - Use dh_missing.
+    - Disable dwz for libxul.
+    - Disable debug symbols on riscv64, because linking takes so long that
+      buildds kill the build after 420 minutes of "inactivity".
+    - Remove libgtk2 exclusion in dh_shlibdeps call. The dependency is long
+      gone.
+    - Stop cleaning up configure. It is unnecessary nowadays.
+    - Rely on dh_update_autotools_config instead of manual grunt work.
+    - Stop overriding dh_clean.
+  * debian/browser.mozconfig.in, debian/control.in, debian/rules,
+    debian/upstream.mk: Remove support for stretch.
+  * debian/symbols.apt.conf, debian/symbols.mk, debian/symbols.sources.list:
+    Remove symbol dumping scripts. They haven't been used to upload symbols
+    for a long time, and Mozilla now pulls the symbols rather than us
+    uploading them.
+
+  * build/unix/elfhack/elf.cpp, build/unix/elfhack/elfhack.cpp,
+    build/unix/elfhack/elfxx.h: More properly handle files > 4GB in elfhack.
+    bz#1840931.
+  * media/libaom/moz.build: After all, we did need that patch. bz#1842933.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 12 Jul 2023 09:16:06 +0900
+
+firefox (115.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * debian/patches: Consolidate patches in two categories instead of four.
+    Also remove some unuseful patches:
+    + xpcom/reflect/xptcall/md/unix/moz.build,
+      xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp,
+      xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp: Remove xptcall
+      support for SH4. We don't have rustc on SH4 anyways.
+    + media/libaom/moz.build: libaom neon flags are better set as of bz#1791482
+      and shouldn't require a patch.
+
+  * gfx/skia/moz.build: Work around GCC ICE on ppc64el.
+
+ -- Mike Hommey <glandium@debian.org>  Tue, 11 Jul 2023 06:39:31 +0900
+
+firefox (115.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-22, also known as:
+    CVE-2023-3482, CVE-2023-37201, CVE-2023-37202, CVE-2023-37203,
+    CVE-2023-37204, CVE-2023-37205, CVE-2023-37206, CVE-2023-37207,
+    CVE-2023-37208, CVE-2023-37209, CVE-2023-37210, CVE-2023-37211,
+    CVE-2023-37212.
+
+  * debian/rules, media/ffvpx/config_unix64.h: Work around
+    https://sourceware.org/bugzilla/show_bug.cgi?id=30578. Closes: #1040328.
+
+  * gfx/skia/moz.build: Undefine the mips builtin macro on mips in skia.
+    bz#1841197.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 05 Jul 2023 06:46:25 +0900
+
+firefox (114.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * debian/upstream.mk: Unstable is trixie.
+  * debian/rules: Use in-tree NSS on bookworm.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 22 Jun 2023 13:54:23 +0900
+
+firefox (114.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-20, also known as:
+    CVE-2023-34414, CVE-2023-34415, CVE-2023-34416, CVE-2023-34417.
+
+  * debian/browser.install.in: Install gfxtest and vaapitest.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 07 Jun 2023 05:52:21 +0900
+
+firefox (113.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * dom/base/nsTextFragment.cpp, dom/base/nsTextFragmentGeneric.h,
+    dom/base/nsTextFragmentGenericFwd.h: Isolate SSE2 requirements to
+    SSE-compiled file. bz#1827566.
+
+ -- Mike Hommey <glandium@debian.org>  Sat, 27 May 2023 05:00:29 +0900
+
+firefox (113.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-16, also known as:
+    CVE-2023-32205, CVE-2023-32206, CVE-2023-32207, CVE-2023-32208,
+    CVE-2023-32209, CVE-2023-32210, CVE-2023-32211, CVE-2023-32212,
+    CVE-2023-32213, CVE-2023-32215, CVE-2023-32216.
+
+  * debian/control, debian/l10n/browser-l10n.control: Refresh locales.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 10 May 2023 06:47:20 +0900
+
+firefox (112.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * gfx/thebes/gfxFont.cpp, gfx/thebes/gfxFontEntry.cpp: Don't attempt
+    to use font extents if we didn't get a valid 'head' table, or if
+    it's not an sfnt resource. bz#1827950. Closes: #1034363.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 20 Apr 2023 06:12:33 +0900
+
+firefox (112.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-13, also known as:
+    CVE-2023-29533, CVE-2023-29535, CVE-2023-29536, CVE-2023-29537,
+    CVE-2023-29538, CVE-2023-29539, CVE-2023-29540, CVE-2023-29541,
+    CVE-2023-29543, CVE-2023-29544, CVE-2023-29547, CVE-2023-29548,
+    CVE-2023-29549, CVE-2023-29550, CVE-2023-29551.
+
+  * debian/control*: Bump nss build dependency.
+  * debian/control: Add libavcodec60 recommendation.
+
+  * security/manager/ssl/builtins/build.rs,
+    security/manager/ssl/builtins/src/certdata.rs: Revert upstream change to
+    preserve compatibility with rustc 1.63.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 12 Apr 2023 09:53:55 +0900
+
+firefox (111.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Sat, 25 Mar 2023 05:21:58 +0900
+
+firefox (111.0-3) unstable; urgency=medium
+
+  * dom/media/webaudio/AudioNodeEngine*: Forward declare arch-specific xsimd
+    specialization. bz#1822901.
+
+ -- Mike Hommey <glandium@debian.org>  Tue, 21 Mar 2023 09:28:00 +0900
+
+firefox (111.0-2) unstable; urgency=medium
+
+  * gfx/skia/generate_mozbuild.py, gfx/skia/moz.build: Remove explicit NEON
+    flags from skia build. Thanks Emanuele Rocca.
+  * dom/media/webaudio/AudioNodeEngineGeneric.h: Use fully specified xsimd::batch
+    type. bz#1821363.
+  * third_party/libwebrtc/moz.build: Add now removed desktop_capture_generic_gn
+    directory.
+
+ -- Mike Hommey <glandium@debian.org>  Tue, 21 Mar 2023 06:18:07 +0900
+
+firefox (111.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-09, also known as:
+    CVE-2023-25750, CVE-2023-25751, CVE-2023-28160, CVE-2023-28164,
+    CVE-2023-28161, CVE-2023-28162, CVE-2023-25752, CVE-2023-28176,
+    CVE-2023-28177.
+
+  * debian/control*: Bump nss build dependency.
+  * debian/control, debian/l10n/browser-l10n.control: Refresh locales.
+  * debian/browser.mozconfig.in: Disable wasm sandboxing on s390x for now.
+    It doesn't work at the moment.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 15 Mar 2023 07:56:18 +0900
+
+firefox (110.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * debian/control*: Build depend on the rustc version we have in unstable.
+    Closes: #1031357.
+
+  * Cargo.lock, python/mozboot/mozboot/util.py,
+    servo/components/selectors/context.rs,
+    servo/components/selectors/parser.rs,
+    servo/components/style/gecko/selector_parser.rs,
+    servo/components/style/properties/gecko.mako.rs,
+    servo/components/style/style_resolver.rs,
+    servo/components/style/stylesheets/container_rule.rs,
+    servo/components/style/stylist.rs,
+    third_party/rust/cstr/.cargo-checksum.json,
+    third_party/rust/cstr/Cargo.toml,
+    third_party/rust/cstr/README.md,
+    third_party/rust/cstr/src/lib.rs: Relax minimum supported rust version
+    to 1.63.
+  * js/src/irregexp/moz.build: Suppress false positive error for GCC.
+    bz#1810584.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 01 Mar 2023 08:35:30 +0900
+
+firefox (110.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-05, also known as:
+    CVE-2023-25728, CVE-2023-25730, CVE-2023-0767, CVE-2023-25735,
+    CVE-2023-25737, CVE-2023-25739, CVE-2023-25729, CVE-2023-25732,
+    CVE-2023-25731, CVE-2023-25733, CVE-2023-25736, CVE-2023-25741,
+    CVE-2023-25742, CVE-2023-25744, CVE-2023-25745.
+
+  * debian/control*: Bump nss, rustc and cargo build dependencies.
+
+  * third_party/wasm2c/src/common.h,
+    third_party/wasm2c/src/prebuilt/wasm2c.include.c,
+    third_party/wasm2c/src/wasm2c.c.tmpl: Use compiler macros to detect big
+    endian.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 15 Feb 2023 09:14:45 +0900
+
+firefox (109.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-01, also known as:
+    CVE-2022-23597, CVE-2023-23598, CVE-2023-23601, CVE-2023-23602,
+    CVE-2023-23603, CVE-2023-23604, CVE-2023-23605, CVE-2023-23606.
+
+  * debian/control*:
+    - Bump nss build dependency.
+    - Bump cargo dependency back to what it's supposed to be.
+  * debian/browser.mozconfig.in, debian/control*: Enable wasm sandboxing
+    on bookworm.
+
+  * build/moz.configure/compilers-util.configure,
+    toolkit/moz.configure: Add more configure checks for the wasm toolchain
+    setup. bz#1747145.
+    toolkit/moz.configure: Allow to build without a wasi sysroot. bz#1810627
+  * build/moz.configure/rust.configure: Revert the relaxing of the cargo
+    dependency now that we have the right version in unstable.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 18 Jan 2023 06:27:19 +0900
+
+firefox (108.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Tue, 10 Jan 2023 08:00:05 +0900
+
+firefox (108.0-2) unstable; urgency=medium
+
+  * security/manager/ssl/tests/unit/tlsserver/cmd/moz.build,
+    security/manager/ssl/tests/unit/tlsserver/lib/moz.build,
+    security/moz.build: Pseudo-revert bz#1754746 and bz#1799121.
+    Closes: #1026072.
+  * .cargo/config.in, Cargo.lock, Cargo.toml, third_party/rust/uniffi*,
+    third_party/rust/weedle2*: Make uniffi-bindgen more deterministic
+    across platforms.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 15 Dec 2022 17:42:19 +0900
+
+firefox (108.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-51, also known as:
+    CVE-2022-46871, CVE-2022-46872, CVE-2022-46873, CVE-2022-46874,
+    CVE-2022-46877, CVE-2022-46878, CVE-2022-46879.
+
+  * debian/control*: Bump rustc and nss build dependencies.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 14 Dec 2022 07:56:15 +0900
+
+firefox (107.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Sat, 03 Dec 2022 05:49:43 +0900
+
+firefox (107.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-47, also known as:
+    CVE-2022-45403, CVE-2022-45404, CVE-2022-45405, CVE-2022-45406,
+    CVE-2022-45407, CVE-2022-45408, CVE-2022-45409, CVE-2022-45410,
+    CVE-2022-45411, CVE-2022-45412, CVE-2022-40674, CVE-2022-45415,
+    CVE-2022-45416, CVE-2022-45417, CVE-2022-45418, CVE-2022-45419,
+    CVE-2022-45420, CVE-2022-45421.
+
+  * debian/rules:
+    - Use internal libevent on buster.
+    - Invoke python with PYTHONDONTWRITEBYTECODE instead of -B.
+  * debian/control*: Bump nss build dependency.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 16 Nov 2022 08:10:27 +0900
+
+firefox (106.0.5-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * media/ffvpx/config_unix_aarch64.h: Don't build libav with sysctl on
+    Unix AArch64. bz#1791275.
+
+ -- Mike Hommey <glandium@debian.org>  Mon, 07 Nov 2022 06:06:42 +0900
+
+firefox (106.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-44, also known as:
+    CVE-2022-42927, CVE-2022-42928, CVE-2022-42929, CVE-2022-42930,
+    CVE-2022-42931, CVE-2022-42932.
+
+  * debian/control*: Bump nss and libvpx build dependencies.
+  * debian/rules: Build with vendored libvpx on bullseye.
+
+  * mozglue/misc/SIMD.cpp, mozglue/misc/SIMD_avx2.cpp: Restrict SIMD_avx2 to
+    AMD64. bz#1792158.
+  * modules/fdlibm/src/math_private.h: Do not define unused float_t type in
+    fdlibm. bz#1789560.
+  * js/src/jit/GenerateAtomicOperations.py: Add missing includes to
+    AtomicOperationsGenerated.h. bz#1792159.
+  * third_party/libwebrtc/build/config/compiler/BUILD.gn,
+    third_party/libwebrtc/**/moz.build: Fix webrtc FTBFS from missing sse2
+    flags. bz#1795993.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 19 Oct 2022 05:59:30 +0900
+
+firefox (105.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 28 Sep 2022 07:40:44 +0900
+
+firefox (105.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-40, also known as:
+    CVE-2022-40959, CVE-2022-40960, CVE-2022-40958, CVE-2022-40956,
+    CVE-2022-40957, CVE-2022-40962.
+
+  * debian/control*: Bump rustc and nss build dependencies.
+
+  * python/mozbuild/mozbuild/nodeutil.py: Relax nodejs minimum version.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 21 Sep 2022 07:22:10 +0900
+
+firefox (104.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Tue, 13 Sep 2022 09:08:49 +0900
+
+firefox (104.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-33, also known as:
+    CVE-2022-38472, CVE-2022-38473, CVE-2022-38475, CVE-2022-38477,
+    CVE-2022-38478.
+
+  * debian/rules, debian/control: Fix libavcodec recommends. Closes: #1017782.
+  * debian/control*: Bump nss and nodejs build dependencies.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 24 Aug 2022 07:17:28 +0900
+
+firefox (103.0.2-2) unstable; urgency=medium
+
+  * debian/rules: Remove old and now unnecessary workarounds.
+
+  * intl/icu/source/common/unicode/std_string.h,
+    intl/icu/source/common/utypeinfo.h,
+    intl/icu/source/io/unicode/ustream.h: Remove workaround for old libstdc++
+    problem, which now causes problems with GCC 12 on arm.
+  * third_party/libwebrtc/moz.build: Add missing webrtc directory for ppc64el
+    (bz#1775202).
+
+ -- Mike Hommey <glandium@debian.org>  Mon, 15 Aug 2022 15:46:49 +0900
+
+firefox (103.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+  * debian/rules:
+    - Use thinLTO for rust on armhf, to stay in the memory budget with an
+      armhf toolchain.
+    - Use MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none instead of
+      MACH_USE_SYSTEM_PYTHON=1.
+  * debian/rules, debian/watch, debian/watch.in: Generate debian/watch and
+    fix it.
+
+  * js/src/jit/mips-shared/CodeGenerator-mips-shared.cpp,
+    js/src/jit/mips-shared/SharedICHelpers-mips-shared-inl.h,
+    js/src/jit/mips-shared/SharedICHelpers-mips-shared.h,
+    js/src/jit/mips64/Assembler-mips64.h,
+    js/src/jit/mips64/MacroAssembler-mips64.cpp,
+    js/src/jit/mips64/Simulator-mips64.cpp,
+    js/src/jit/mips64/Trampoline-mips64.cpp,
+    js/src/jit/shared/Lowering-shared-inl.h,
+    js/src/wasm/WasmFrameIter.cpp: Fix FTBFS on mips64. bz#1776825.
+  * third_party/libwebrtc/moz.build: Work around bz#1775202 to fix FTBFS on
+    ppc64el.
+  * config/makefiles/rust.mk: Allow to override rust LTO flag.
+
+ -- Mike Hommey <glandium@debian.org>  Sun, 14 Aug 2022 15:28:01 +0900
+
+firefox (103.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-28, also known as:
+    CVE-2022-36319, CVE-2022-36318, CVE-2022-36315, CVE-2022-36316,
+    CVE-2022-36320, CVE-2022-2505.
+
+  * debian/control*: Bump cbindgen and nss build dependencies.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 27 Jul 2022 10:07:35 +0900
+
+firefox (102.0.1-3) unstable; urgency=medium
+
+  * debian/rules: Fix the logic of the aarch64 test.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 14 Jul 2022 11:31:47 +0900
+
+firefox (102.0.1-2) unstable; urgency=medium
+
+  * debian/rules: Tentatively improve detection of known failing cases on
+    armhf.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 14 Jul 2022 09:32:47 +0900
+
+firefox (102.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * debian/rules: Tentatively improve detection of known failing cases on
+    armhf and mipsel.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 14 Jul 2022 06:17:52 +0900
+
+firefox (102.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-24, also known as:
+    CVE-2022-34479, CVE-2022-34470, CVE-2022-34468, CVE-2022-34482,
+    CVE-2022-34483, CVE-2022-34476, CVE-2022-34481, CVE-2022-34474,
+    CVE-2022-34471, CVE-2022-34472, CVE-2022-2200, CVE-2022-34480,
+    CVE-2022-34477, CVE-2022-34475, CVE-2022-34473, CVE-2022-34484,
+    CVE-2022-34485.
+
+  * build/moz.configure/bindgen.configure,
+    gfx/webrender_bindings/webrender_ffi.h: Work around build failure with
+    newer cbindgen. bz#1773259
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 29 Jun 2022 07:41:32 +0900
+
+firefox (101.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * build/moz.configure/rust.configure, debian/control*: Allow to build with
+    cargo in unstable.
+
+ -- Mike Hommey <glandium@debian.org>  Fri, 10 Jun 2022 06:24:01 +0900
+
+firefox (101.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-20, also known as:
+    CVE-2022-31736, CVE-2022-31737, CVE-2022-31738, CVE-2022-31740,
+    CVE-2022-31741, CVE-2022-31742, CVE-2022-31743, CVE-2022-31744,
+    CVE-2022-31745, CVE-2022-1919, CVE-2022-31747, CVE-2022-31748.
+
+  * debian/rules: Fail the build early when building for armhf on armhf
+    (only works on arm64), and when building for mipsel on mipsel.
+  * debian/control*: Bump rustc, cargo, cbindgen and nss build dependencies.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 01 Jun 2022 06:07:37 +0900
+
+firefox (100.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-19, also known as CVE-2022-1802 and CVE-2022-1529.
+
+ -- Mike Hommey <glandium@debian.org>  Sat, 21 May 2022 07:32:04 +0900
+
+firefox (100.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-16, also known as:
+    CVE-2022-29914, CVE-2022-29909, CVE-2022-29916, CVE-2022-29911,
+    CVE-2022-29912, CVE-2022-29915, CVE-2022-29917, CVE-2022-29918.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 04 May 2022 08:48:41 +0900
+
+firefox (99.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-13, also known as:
+    CVE-2022-1097, CVE-2022-28281, CVE-2022-28282, CVE-2022-28283,
+    CVE-2022-28284, CVE-2022-28285, CVE-2022-28286, CVE-2022-28287,
+    CVE-2022-24713, CVE-2022-28289, CVE-2022-28288.
+
+  * debian/control*: Bump nss build dependency.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 06 Apr 2022 09:04:22 +0900
+
+firefox (98.0-2) unstable; urgency=medium
+
+  * debian/rules: Install crash reporter files on arm64.
+
+  * js/src/jit/GenerateAtomicOperations.py: Work around a GCC issue with
+    generated atomics. bz#1756347.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 10 Mar 2022 09:09:43 +0900
+
+firefox (98.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-10, also known as:
+    CVE-2022-26383, CVE-2022-26384, CVE-2022-26387, CVE-2022-26381,
+    CVE-2022-26382, CVE-2022-26385, CVE-2022-0843.
+  * Fixes for mfsa2022-09, also known as: CVE-2022-26485, CVE-2022-26486.
+
+  * debian/control*:
+    - Bump nss build dependency.
+    - Downgrade rust dependency to 1.56, and cargo to 0.57.
+
+  * Cargo.lock, config/makefiles/rust.mk, python/mozboot/mozboot/util.py,
+    servo/components/style/Cargo.toml, servo/components/style/build.rs,
+    servo/components/style/lib.rs,
+    servo/components/style/stylesheets/page_rule.rs,
+    servo/components/style/stylist.rs,
+    third_party/rust/audioipc2-client/.cargo-checksum.json,
+    third_party/rust/audioipc2-client/Cargo.toml,
+    third_party/rust/audioipc2-client/build.rs,
+    third_party/rust/audioipc2-client/src/lib.rs,
+    third_party/rust/wgpu-hal/.cargo-checksum.json,
+    third_party/rust/wgpu-hal/src/gles/egl.rs: Relax minimum supported Rust
+    version to 1.56.0.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 09 Mar 2022 07:09:27 +0900
+
+firefox (97.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-04, also known as:
+    CVE-2022-22754, CVE-2022-22755, CVE-2022-22756, CVE-2022-22759,
+    CVE-2022-22760, CVE-2022-22761, CVE-2022-22764, CVE-2022-0511.
+
+  * debian/control*: Bump nss, rustc and cargo build dependencies.
+  * debian/browser.install.in: Install libipcclientcerts.so.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 09 Feb 2022 07:53:42 +0900
+
+firefox (96.0.3-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Mon, 31 Jan 2022 06:21:31 +0900
+
+firefox (96.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * modules/libpref/init/StaticPrefList.yaml: Disable cookie sameSite
+    schemeful. bz#1750264.
+  * dom/media/webrtc/third_party_build/gn-configs/x64_*_arm_linux.json,
+    dom/media/webrtc/third_party_build/gn-configs/x64_*_ppc64_linux.json,
+    third_party/libwebrtc/**/moz.build: Add webrtc configs for arm and
+    ppc64 linux. bz#1738845.
+
+ -- Mike Hommey <glandium@debian.org>  Sat, 15 Jan 2022 07:41:14 +0900
+
+firefox (96.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2022-01, also known as:
+    CVE-2022-22743, CVE-2022-22742, CVE-2022-22741, CVE-2022-22740,
+    CVE-2022-22738, CVE-2022-22737, CVE-2021-4140, CVE-2022-22748,
+    CVE-2022-22745, CVE-2022-22747, CVE-2022-22739, CVE-2022-22751,
+    CVE-2022-22752.
+
+  * debian/rules:
+    - Adjust preprocessor command to upstream changes.
+    - Set an objdir when using the preprocessor, and clean that up.
+  * debian/control*: Bump nss build dependency.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 12 Jan 2022 08:03:30 +0900
+
+firefox (95.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * debian/control.in: Build against rustc-mozilla/cargo-mozilla on relevant
+    older releases.
+
+  * modules/fdlibm/src/math_private.h: Fix FTBFS on i386. bz#1729459.
+
+ -- Mike Hommey <glandium@debian.org>  Fri, 17 Dec 2021 07:05:23 +0900
+
+firefox (95.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2021-52, also known as:
+    CVE-2021-43536, CVE-2021-43537, CVE-2021-43538, CVE-2021-43539,
+    CVE-2021-43540, CVE-2021-43541, CVE-2021-43542, CVE-2021-43543,
+    CVE-2021-43544, CVE-2021-43545, CVE-2021-43546, MOZ-2021-0009.
+
+  * debian/browser.mozconfig.in: Explicitly disable wasm sandboxing. We don't
+    have the necessary tools yet.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 08 Dec 2021 06:38:07 +0900
+
+firefox (94.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 24 Nov 2021 06:57:55 +0900
+
 firefox (94.0-2) unstable; urgency=medium
 
   * debian/firefox.in: Use `command -v` instead of `which`. Does not affect

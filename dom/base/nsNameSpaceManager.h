@@ -8,8 +8,6 @@
 #define nsNameSpaceManager_h___
 
 #include "nsTHashMap.h"
-#include "nsHashKeys.h"
-#include "nsAtom.h"
 #include "nsStringFwd.h"
 #include "nsTArray.h"
 
@@ -33,12 +31,11 @@ class nsNameSpaceManager final {
  public:
   NS_INLINE_DECL_REFCOUNTING(nsNameSpaceManager)
 
-  virtual nsresult RegisterNameSpace(const nsAString& aURI,
-                                     int32_t& aNameSpaceID);
+  nsresult RegisterNameSpace(const nsAString& aURI, int32_t& aNameSpaceID);
   nsresult RegisterNameSpace(already_AddRefed<nsAtom> aURI,
                              int32_t& aNameSpaceID);
 
-  virtual nsresult GetNameSpaceURI(int32_t aNameSpaceID, nsAString& aURI);
+  nsresult GetNameSpaceURI(int32_t aNameSpaceID, nsAString& aURI);
 
   // Returns the atom for the namespace URI associated with the given ID. The
   // ID must be within range and not be kNameSpaceID_None (i.e. zero);
@@ -74,8 +71,8 @@ class nsNameSpaceManager final {
                                 const int32_t aNameSpaceID);
   ~nsNameSpaceManager() = default;
 
-  nsTHashMap<nsRefPtrHashKey<nsAtom>, int32_t> mURIToIDTable;
-  nsTHashMap<nsRefPtrHashKey<nsAtom>, int32_t> mDisabledURIToIDTable;
+  nsTHashMap<RefPtr<nsAtom>, int32_t> mURIToIDTable;
+  nsTHashMap<RefPtr<nsAtom>, int32_t> mDisabledURIToIDTable;
   nsTArray<RefPtr<nsAtom>> mURIArray;
 
   static mozilla::StaticRefPtr<nsNameSpaceManager> sInstance;

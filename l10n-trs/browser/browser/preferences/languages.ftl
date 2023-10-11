@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-webpage-languages-window =
+webpage-languages-window2 =
     .title = Nagi'io' nej nânj a'mi' guenda sitio web
-    .style = width: 40em
+    .style = min-width: 40em
 
 languages-close-key =
     .key = w
@@ -49,9 +49,9 @@ languages-code-format =
 languages-active-code-format =
     .value = { languages-code-format.label }
 
-browser-languages-window =
+browser-languages-window2 =
     .title = { -brand-short-name } nagi'io' nânj a'mi'
-    .style = width: 40em
+    .style = min-width: 40em
 
 browser-languages-description = { -brand-short-name } digan asini ma nej nânj ni'ñu' doj ni ne' rukù ni'io' da' niko' ma.
 

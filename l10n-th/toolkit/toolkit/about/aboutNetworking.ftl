@@ -8,6 +8,7 @@ about-networking-sockets = ซ็อกเก็ต
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = ล้างแคช DNS
 about-networking-dns-trr-url = URL DoH
+about-networking-dns-trr-mode = โหมด DoH
 about-networking-dns-suffix = คำลงท้าย DNS
 about-networking-websockets = WebSockets
 about-networking-refresh = เรียกใหม่
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = ใช้งานอยู่
 about-networking-idle = ว่าง
 about-networking-host = โฮสต์
-about-networking-tcp = TCP
 about-networking-type = ชนิด
 about-networking-sent = ส่ง
 about-networking-received = รับ
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = ที่อยู่
 about-networking-expires = หมดอายุ (วินาที)
 about-networking-originAttributesSuffix = คีย์การแยก
+about-networking-flags = ค่าสถานะพิเศษ
 about-networking-messages-sent = ข้อความที่ส่ง
 about-networking-messages-received = ข้อความที่รับ
 about-networking-bytes-sent = จำนวนไบต์ที่ส่ง
 about-networking-bytes-received = จำนวนไบต์ที่รับ
 about-networking-logging = การบันทึก
-about-networking-log-tutorial = ดู<a data-l10n-name="logging">การบันทึกล็อก HTTP</a>สำหรับคำแนะนำเกี่ยวกับวิธีการใช้เครื่องมือนี้
-about-networking-current-log-file = ไฟล์รายการบันทึกปัจจุบัน:
-about-networking-current-log-modules = โมดูลรายการบันทึกปัจจุบัน:
-about-networking-set-log-file = ตั้งไฟล์รายการบันทึก
-about-networking-set-log-modules = ตั้งโมดูลรายการบันทึก
-about-networking-start-logging = เริ่มการบันทึก
-about-networking-stop-logging = หยุดการบันทึก
 about-networking-dns-lookup = การค้นหา DNS
 about-networking-dns-lookup-button = แปลงที่อยู่
 about-networking-dns-domain = โดเมน:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = จำนวนแคชที่หน่ว
 about-networking-rcwn-cache-not-slow = จำนวนแคชที่ไม่ได้หน่วงเวลา
 about-networking-networkid = ID เครือข่าย
 about-networking-networkid-id = ID เครือข่าย
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = หน้านี้ถูกย้ายไปที่ <a data-l10n-name="about-logging-url">about:logging</a> แล้ว
 
 ## Link is intended as "network link"
 

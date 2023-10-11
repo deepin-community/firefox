@@ -128,12 +128,25 @@ TestArray.addTest(
   }
 );
 
+
+// -----------------------------------------------------------------------------
+TestArray.addTest(
+  "Verify that ECDSA import fails with a key with a mismatched 'alg' field",
+  function() {
+    var that = this;
+    var alg = { name: "ECDSA", namedCurve: "P-521", hash: "SHA-512" };
+
+    crypto.subtle.importKey("jwk", tv.ecdsa_jwk_alg_mismatch.pub_jwk, alg, true, ["verify"])
+      .then(error(that), complete(that));
+  }
+);
+
 // -----------------------------------------------------------------------------
 TestArray.addTest(
   "Verify that ECDSA import fails with a known-bad public key",
   function() {
     var that = this;
-    var alg = { name: "ECDSA", namedCurve: "P-256", hash: "SHA-256" };
+    var alg = { name: "ECDSA", namedCurve: "P-521", hash: "SHA-512" };
 
     crypto.subtle.importKey("jwk", tv.ecdsa_bad.pub_jwk, alg, true, ["verify"])
       .then(error(that), complete(that));
@@ -171,6 +184,19 @@ TestArray.addTest(
     crypto.subtle.importKey("raw", tv.ecdsa_verify.raw, alg, true, ["verify"])
       .then(doVerify)
       .then(complete(that, x => x), error(that));
+  }
+);
+
+// -----------------------------------------------------------------------------
+TestArray.addTest(
+  "Importing an RSA key as an ECDSA key should fail",
+  function() {
+    var that = this;
+    var alg = { name: "ECDSA", namedCurve: "P-256" };
+
+    // tv.spki is the SPKI for an RSA key, not an ECDSA key
+    crypto.subtle.importKey("spki", tv.spki, alg, false, ["verify"])
+      .then(error(that), complete(that));
   }
 );
 

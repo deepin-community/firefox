@@ -48,6 +48,17 @@ restart-later = Herbegin later
 ##   $name (String): name of the extension
 
 
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
+
+
 ## Preferences UI Search Results
 
 search-results-header = Soekresultate
@@ -67,10 +78,6 @@ set-as-my-default-browser =
     .label = Maak verstek...
     .accesskey = D
 
-startup-restore-previous-session =
-    .label = Herstel vorige sessie
-    .accesskey = S
-
 tabs-group-header = Oortjies
 
 ctrl-tab-recently-used-order =
@@ -80,10 +87,6 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Maak skakels oop in oortjies in plaas van nuwe vensters
     .accesskey = W
-
-warn-on-close-multiple-tabs =
-    .label = Waarsku wanneer meer as een oortjie gesluit word
-    .accesskey = m
 
 warn-on-open-many-tabs =
     .label = Waarsku wanneer klomp oop oortjies dalk { -brand-short-name } kan stadig maak
@@ -104,6 +107,10 @@ browser-containers-settings =
     .accesskey = t
 
 containers-disable-alert-title = Sluit alle konteksoortjies?
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] As konteksoortjies nou gedeaktiveer word, sal { $tabCount } konteksoortjie gesluit word. Wil u definitief konteksoortjies deaktiveer?
@@ -115,6 +122,9 @@ containers-disable-alert-ok-button =
         [one] Sluit { $tabCount } konteksoortjie
        *[other] Sluit { $tabCount } konteksoortjies
     }
+
+##
+
 containers-disable-alert-cancel-button = Hou geaktiveer
 
 containers-remove-alert-title = Verwyder dié konteks?
@@ -130,12 +140,9 @@ containers-remove-alert-msg =
 containers-remove-ok-button = Verwyder dié konteks
 containers-remove-cancel-button = Moenie dié konteks verwyder nie
 
-
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Taal en Voorkoms
-
-fonts-and-colors-header = Fonte en kleure
 
 default-font = Verstekfont
     .accesskey = V
@@ -145,10 +152,6 @@ default-font-size = Grootte
 advanced-fonts =
     .label = Gevorderd…
     .accesskey = G
-
-colors-settings =
-    .label = Kleure…
-    .accesskey = K
 
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Zoem
@@ -193,8 +196,7 @@ files-and-applications-title = Lêers en Toepassings
 
 download-header = Aflaaie
 
-download-save-to =
-    .label = Stoor lêers na
+download-save-where = Stoor lêers na
     .accesskey = o
 
 download-choose-folder =
@@ -392,12 +394,13 @@ choose-bookmark =
 
 home-prefs-search-header =
     .label = Web soektog
-home-prefs-topsites-header =
-    .label = Topwerwe
-home-prefs-topsites-description = Die webwerwe wat u die meeste besoek
 
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
+
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 # Variables:
 #  $provider (String): Name of the corresponding content provider, e.g "Pocket".
@@ -424,6 +427,7 @@ search-suggestions-header = Soekvoorstelle
 search-suggestions-option =
     .label = Verskaf soekvoorstelle
     .accesskey = s
+
 
 search-suggestions-cant-show = Soekvoorstelle sal nie in die liggingbalk gewys word nie omdat { -brand-short-name } opgestel is om nooit geskiedenis te onthou nie.
 
@@ -460,10 +464,11 @@ containers-add-button =
 containers-remove-button =
     .label = Verwyder
 
-## Sync Section - Signed out
-
-
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
 sync-signedout-caption = Neem die Web saam
@@ -478,10 +483,10 @@ sync-signedout-caption = Neem die Web saam
 # to your language, but should not be changed or translated.
 sync-mobile-promo = Laai Firefox af vir <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android</a> of <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS</a> om met 'n selfoon te sinkroniseer.
 
-## Sync Section - Signed in
-
-
 ## Firefox Account - Signed in
+
+
+## Firefox account - Signed in
 
 sync-profile-picture =
     .tooltiptext = Verander profielprent
@@ -489,8 +494,13 @@ sync-profile-picture =
 sync-manage-account = Bestuur rekening
     .accesskey = o
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } is nie geverifieer nie.
 sync-signedin-login-failure = Meld aan om { $email } te herkoppel.
+
+##
 
 sync-remove-account =
     .label = Verwyder Rekening
@@ -543,12 +553,19 @@ sync-device-name-save =
     .label = Stoor
     .accesskey = t
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = Verifikasie is gestuur
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = 'n Verifikasieskakel is gestuur aan { $email }.
+sync-verification-not-sent-title = Kan nie bevestiging stuur nie
+sync-verification-not-sent-body = Ons kan nie tans 'n bevestigings-e-pos stuur nie. Probeer gerus later weer.
+
 ## Privacy Section
 
 privacy-header = Blaaier Privaatheid
-
-## Privacy Section - Forms
-
 
 ## Privacy Section - Logins and Passwords
 
@@ -627,6 +644,9 @@ sitedata-header = Koekies en webwerf-data
 
 sitedata-learn-more = Meer inligting
 
+## Privacy Section - Cookie Banner Handling
+
+
 ## Privacy Section - Address Bar
 
 addressbar-locbar-history-option =
@@ -656,6 +676,8 @@ content-blocking-learn-more = Meer inligting
 content-blocking-all-cookies = Alle koekies
 content-blocking-cryptominers = Kriptomyners
 content-blocking-fingerprinters = Vingerafdrukkers
+
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
 content-blocking-tracking-protection-option-all-windows =
     .label = In alle vensters
@@ -705,10 +727,6 @@ permissions-block-popups =
     .label = Blokkeer opspringers
     .accesskey = B
 
-permissions-block-popups-exceptions =
-    .label = Uitsonderings…
-    .accesskey = U
-
 permissions-addon-exceptions =
     .label = Uitsonderings…
     .accesskey = U
@@ -746,13 +764,12 @@ certs-enable-ocsp =
 
 ## Privacy Section - HTTPS-Only
 
+
+## DoH Section
+
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = Werkskerm
 downloads-folder-name = Aflaaie
 choose-download-folder-title = Kies aflaaivouer:
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = Stoor lêers in { $service-name }

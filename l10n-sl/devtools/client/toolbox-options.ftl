@@ -41,6 +41,17 @@ options-collapse-attrs-label = Skrajšaj atribute DOM
 options-collapse-attrs-tooltip =
     .title = Skrajšaj dolge atribute v pregledovalniku
 
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Kliknite in povlecite za spreminjanje vrednosti
+options-inspector-draggable-properties-tooltip =
+    .title = Kliknite in povlecite, da spremenite velikosti v pogledu pravil pregledovalnika.
+
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Uporabi preprostejše označevalnike s prefers-reduced-motion
+options-inspector-simplified-highlighters-tooltip =
+    .title = Omogoči poenostavljene označevalnike, ko je vključena možnost prefers-reduced-motion. Okoli označenih elementov se bo izrisal očrtan pravokotnik namesto izpolnjenega, da prepreči pojav utripanja.
+
 ## "Default Color Unit" options for the Inspector
 
 options-default-color-unit-label = Privzeta enota barve
@@ -48,6 +59,7 @@ options-default-color-unit-authored = Izvirno
 options-default-color-unit-hex = Šestnajstiško
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Imena barv
 
 ## Style Editor section
@@ -64,6 +76,11 @@ options-stylesheet-autocompletion-tooltip =
 
 # The heading
 options-screenshot-label = Posnetki zaslona
+
+# Label for the checkbox that toggles screenshot to clipboard feature
+options-screenshot-clipboard-only-label = Shrani posnetek zaslona samo v odložišče
+options-screenshot-clipboard-tooltip2 =
+    .title = Shrani posnetek zaslona naravnost v odložišče
 
 # Label for the checkbox that toggles the camera shutter audio for screenshot tool
 options-screenshot-audio-label = Predvajaj zvok zaslonke kamere
@@ -90,7 +107,7 @@ options-sourceeditor-keybinding-default-label = Privzeto
 
 ## Advanced section
 
-# The heading
+# The heading (this item is also used in perftools.ftl)
 options-context-advanced-settings = Napredne nastavitve
 
 # The label for the checkbox that toggles the HTTP cache on or off
@@ -110,6 +127,18 @@ options-enable-chrome-tooltip =
 
 # The label for checkbox that toggles remote debugging, i.e. the devtools.debugger.remote-enabled preference
 options-enable-remote-label = Omogoči oddaljeno razhroščevanje
+options-enable-remote-tooltip2 =
+    .title = Vklop te možnosti omogoči oddaljeno razhroščevanje tega primerka brskalnika
+
+# The label for checkbox that enables F12 as a shortcut to open DevTools
+options-enable-f12-label = Odpri ali zapri razvojna orodja s tipko F12
+options-enable-f12-tooltip =
+    .title = Če je možnost vključena, tipka F12 odpira in zapira orodjarno razvojnih orodij
+
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = Omogoči oblikovalnike po meri
+options-enable-custom-formatters-tooltip =
+    .title = Če vključite to možnost, bodo spletna mesta lahko določila oblikovalnike po meri za predmete DOM
 
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = Omogoči Service Workerje preko HTTP (ko so razvojna orodja odprta)
@@ -123,13 +152,3 @@ options-source-maps-tooltip =
 
 # The message shown for settings that trigger page reload
 options-context-triggers-page-refresh = * Samo za to sejo, ponovno naloži stran
-
-##
-
-# The label for the checkbox that toggles the display of the platform data in the
-# Profiler i.e. devtools.profiler.ui.show-platform-data a boolean preference in about:config
-options-show-platform-data-label = Prikaži podatke platforme Gecko
-options-show-platform-data-tooltip =
-    .title =
-        Če vključite to možnost, bodo poročila o delovanju JavaScripta vsebovala
-        simbole platforme Gecko

@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Bida alhal tee
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Šintin daara
-       *[other] Kubayni { create-profile-window.title } do
+       *[other] Kubayni { create-profile-window2.title } do
     }
 
 profile-creation-explanation-1 = { -brand-short-name } ga alhabar jiši war kayandiyaney nda ibaayey še war boŋ alhaaloo ra.
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Kunga
-       *[other] { create-profile-window.title } benandi
+       *[other] { create-profile-window2.title } benandi
     }
 
 profile-creation-intro = Nda war baa ka alhaali booboyaŋ tee war ga hin k'i fay nda maaɲey. War ga hin ka ne maawoo zaa wala war boŋ maaɲoo dam.

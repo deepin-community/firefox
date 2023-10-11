@@ -5,30 +5,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/LockManager.h"
-#include "mozilla/AlreadyAddRefed.h"
+#include "mozilla/dom/AutoEntryScript.h"
+#include "mozilla/dom/WorkerCommon.h"
+#include "mozilla/dom/locks/LockManagerChild.h"
+#include "mozilla/dom/locks/LockRequestChild.h"
 #include "mozilla/Assertions.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/dom/LockManagerBinding.h"
 #include "mozilla/dom/Promise.h"
-#include "mozilla/dom/Promise-inl.h"
-#include "mozilla/dom/WorkerPrivate.h"
-#include "nsIRunnable.h"
-#include "nsIDUtils.h"
+#include "mozilla/dom/locks/PLockManager.h"
+#include "mozilla/ipc/BackgroundChild.h"
+#include "mozilla/ipc/BackgroundUtils.h"
+#include "mozilla/ipc/PBackgroundChild.h"
 
 namespace mozilla::dom {
 
-NS_IMPL_CYCLE_COLLECTION_CLASS(LockManager)
-NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(LockManager)
-  tmp->Shutdown();
-  NS_IMPL_CYCLE_COLLECTION_UNLINK(mOwner, mHeldLockSet)
-  NS_IMPL_CYCLE_COLLECTION_UNLINK_PRESERVED_WRAPPER
-NS_IMPL_CYCLE_COLLECTION_UNLINK_END
-NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(LockManager)
-  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mOwner, mHeldLockSet)
-NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
-NS_IMPL_CYCLE_COLLECTION_TRACE_WRAPPERCACHE(LockManager)
-
+NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(LockManager, mOwner, mActor)
 NS_IMPL_CYCLE_COLLECTING_ADDREF(LockManager)
 NS_IMPL_CYCLE_COLLECTING_RELEASE(LockManager)
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(LockManager)
@@ -41,14 +33,48 @@ JSObject* LockManager::WrapObject(JSContext* aCx,
   return LockManager_Binding::Wrap(aCx, this, aGivenProto);
 }
 
-void LockManager::Shutdown() {
-  mQueueMap.Clear();
-  // TODO: release the remaining locks and requests made in this instance when
-  // shared lock manager is implemented
+LockManager::LockManager(nsIGlobalObject* aGlobal) : mOwner(aGlobal) {
+  Maybe<ClientInfo> clientInfo = aGlobal->GetClientInfo();
+  if (!clientInfo) {
+    // Pass the nonworking object and let request()/query() throw.
+    return;
+  }
+
+  nsCOMPtr<nsIPrincipal> principal =
+      clientInfo->GetPrincipal().unwrapOr(nullptr);
+  if (!principal || !principal->GetIsContentPrincipal()) {
+    // Same, the methods will throw instead of the constructor.
+    return;
+  }
+
+  mozilla::ipc::PBackgroundChild* backgroundActor =
+      mozilla::ipc::BackgroundChild::GetOrCreateForCurrentThread();
+  mActor = new locks::LockManagerChild(aGlobal);
+
+  if (!backgroundActor->SendPLockManagerConstructor(
+          mActor, WrapNotNull(principal), clientInfo->Id())) {
+    // Failed to construct the actor. Pass the nonworking object and let the
+    // methods throw.
+    mActor = nullptr;
+    return;
+  }
 }
 
-static nsString GetClientId(nsIGlobalObject* aGlobal) {
-  return NSID_TrimBracketsUTF16(aGlobal->GetClientInfo()->Id());
+already_AddRefed<LockManager> LockManager::Create(nsIGlobalObject& aGlobal) {
+  RefPtr<LockManager> manager = new LockManager(&aGlobal);
+
+  if (!NS_IsMainThread()) {
+    // Grabbing WorkerRef may fail and that will cause the methods throw later.
+    manager->mWorkerRef =
+        WeakWorkerRef::Create(GetCurrentThreadWorkerPrivate(), [manager]() {
+          // Others may grab a strong reference and block immediate destruction.
+          // Shutdown early as we don't have to wait for them.
+          manager->Shutdown();
+          manager->mWorkerRef = nullptr;
+        });
+  }
+
+  return manager.forget();
 }
 
 static bool ValidateRequestArguments(const nsAString& name,
@@ -82,194 +108,127 @@ static bool ValidateRequestArguments(const nsAString& name,
       return false;
     }
     if (options.mSignal.Value().Aborted()) {
-      aRv.ThrowAbortError("The lock request is aborted");
+      AutoJSAPI jsapi;
+      if (!jsapi.Init(options.mSignal.Value().GetParentObject())) {
+        aRv.ThrowNotSupportedError("Signal's realm isn't active anymore.");
+        return false;
+      }
+
+      JSContext* cx = jsapi.cx();
+      JS::Rooted<JS::Value> reason(cx);
+      options.mSignal.Value().GetReason(cx, &reason);
+      aRv.MightThrowJSException();
+      aRv.ThrowJSException(cx, reason);
       return false;
     }
   }
   return true;
 }
 
-// XXX: should be MOZ_CAN_RUN_SCRIPT, but not sure how to call it from closures
-MOZ_CAN_RUN_SCRIPT_BOUNDARY static void RunCallbackAndSettlePromise(
-    LockGrantedCallback& aCallback, mozilla::dom::Lock* lock,
-    Promise& aPromise) {
-  ErrorResult rv;
-  if (RefPtr<Promise> result = aCallback.Call(
-          lock, rv, nullptr, CallbackObject::eRethrowExceptions)) {
-    aPromise.MaybeResolve(result);
-  } else if (rv.Failed() && !rv.IsUncatchableException()) {
-    aPromise.MaybeReject(std::move(rv));
-  } else {
-    aPromise.MaybeResolveWithUndefined();
-  }
-  // This is required even with no failure. IgnoredErrorResult is not an option
-  // since MaybeReject does not accept it.
-  rv.WouldReportJSException();
-  MOZ_ASSERT(!rv.Failed());
-}
-
-already_AddRefed<Promise> LockManager::Request(const nsAString& name,
-                                               LockGrantedCallback& callback,
+already_AddRefed<Promise> LockManager::Request(const nsAString& aName,
+                                               LockGrantedCallback& aCallback,
                                                ErrorResult& aRv) {
-  return Request(name, LockOptions(), callback, aRv);
+  return Request(aName, LockOptions(), aCallback, aRv);
 };
-already_AddRefed<Promise> LockManager::Request(const nsAString& name,
-                                               const LockOptions& options,
-                                               LockGrantedCallback& callback,
+already_AddRefed<Promise> LockManager::Request(const nsAString& aName,
+                                               const LockOptions& aOptions,
+                                               LockGrantedCallback& aCallback,
                                                ErrorResult& aRv) {
-  if (mOwner->GetStorageAccess() <= StorageAccess::eDeny) {
+  if (!mOwner->GetClientInfo()) {
+    // We do have nsPIDOMWindowInner::IsFullyActive for this kind of check,
+    // but this should be sufficient here as unloaded iframe is the only
+    // non-fully-active case that Web Locks should worry about (since it does
+    // not enter bfcache).
+    aRv.ThrowInvalidStateError(
+        "The document of the lock manager is not fully active");
+    return nullptr;
+  }
+
+  const StorageAccess access = mOwner->GetStorageAccess();
+  bool allowed =
+      access > StorageAccess::eDeny ||
+      (StaticPrefs::
+           privacy_partition_always_partition_third_party_non_cookie_storage() &&
+       ShouldPartitionStorage(access));
+  if (!allowed) {
     // Step 4: If origin is an opaque origin, then return a promise rejected
     // with a "SecurityError" DOMException.
-    // But per https://wicg.github.io/web-locks/#lock-managers this really means
+    // But per https://w3c.github.io/web-locks/#lock-managers this really means
     // whether it has storage access.
     aRv.ThrowSecurityError("request() is not allowed in this context");
     return nullptr;
   }
-  if (!ValidateRequestArguments(name, options, aRv)) {
+
+  if (!mActor) {
+    aRv.ThrowNotSupportedError(
+        "Web Locks API is not enabled for this kind of document");
     return nullptr;
   }
 
-  if (options.mSignal.WasPassed()) {
-    aRv.ThrowNotSupportedError("AbortSignal support is not implemented yet");
+  if (!NS_IsMainThread() && !mWorkerRef) {
+    aRv.ThrowInvalidStateError("request() is not allowed at this point");
+    return nullptr;
+  }
+
+  if (!ValidateRequestArguments(aName, aOptions, aRv)) {
     return nullptr;
   }
 
   RefPtr<Promise> promise = Promise::Create(mOwner, aRv);
-  LockRequest request = {nsString(name), options.mMode, promise, &callback};
+  if (aRv.Failed()) {
+    return nullptr;
+  }
 
-  nsCOMPtr<nsIRunnable> runCallback(NS_NewRunnableFunction(
-      "RequestLock",
-      [self = RefPtr<LockManager>(this), request, options]() -> void {
-        nsTArray<mozilla::dom::LockRequest>& queue =
-            self->mQueueMap.LookupOrInsert(request.mName);
-        if (options.mSteal) {
-          self->mHeldLockSet.RemoveIf([&request](Lock* lock) {
-            if (lock->mName == request.mName) {
-              lock->mReleasedPromise->MaybeRejectWithAbortError(
-                  "The lock request is aborted");
-              return true;
-            }
-            return false;
-          });
-          queue.InsertElementAt(0, request);
-        } else if (options.mIfAvailable &&
-                   !self->IsGrantableRequest(request, queue)) {
-          // TODO: this must be asynchronous! "enqueue the following steps"
-          RunCallbackAndSettlePromise(*request.mCallback, nullptr,
-                                      *request.mPromise);
-          return;
-        } else {
-          queue.AppendElement(request);
-        }
-        self->ProcessRequestQueue(queue);
-      }));
-  Unused << NS_DispatchToCurrentThreadQueue(runCallback.forget(),
-                                            EventQueuePriority::Idle);
-  // TODO: AbortSignal support
-  // if (options.mSignal.WasPassed()) {
-  //   options.mSignal.Value()
-  // }
+  mActor->RequestLock({nsString(aName), promise, &aCallback}, aOptions);
   return promise.forget();
 };
 
 already_AddRefed<Promise> LockManager::Query(ErrorResult& aRv) {
+  if (!mOwner->GetClientInfo()) {
+    aRv.ThrowInvalidStateError(
+        "The document of the lock manager is not fully active");
+    return nullptr;
+  }
+
+  if (mOwner->GetStorageAccess() <= StorageAccess::eDeny) {
+    aRv.ThrowSecurityError("query() is not allowed in this context");
+    return nullptr;
+  }
+
+  if (!mActor) {
+    aRv.ThrowNotSupportedError(
+        "Web Locks API is not enabled for this kind of document");
+    return nullptr;
+  }
+
+  if (!NS_IsMainThread() && !mWorkerRef) {
+    aRv.ThrowInvalidStateError("query() is not allowed at this point");
+    return nullptr;
+  }
+
   RefPtr<Promise> promise = Promise::Create(mOwner, aRv);
-
-  // TODO: this should be retrieved via IPC
-
-  LockManagerSnapshot snapshot;
-  snapshot.mHeld.Construct();
-  snapshot.mPending.Construct();
-  for (const auto& queueMapEntry : mQueueMap) {
-    for (const LockRequest& request : queueMapEntry.GetData()) {
-      LockInfo info;
-      info.mMode.Construct(request.mMode);
-      info.mName.Construct(request.mName);
-      info.mClientId.Construct(
-          GetClientId(request.mPromise->GetGlobalObject()));
-      if (!snapshot.mPending.Value().AppendElement(info, mozilla::fallible)) {
-        aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
-        return nullptr;
-      };
-    }
+  if (aRv.Failed()) {
+    return nullptr;
   }
-  for (const Lock* lock : mHeldLockSet) {
-    LockInfo info;
-    info.mMode.Construct(lock->mMode);
-    info.mName.Construct(lock->mName);
-    info.mClientId.Construct(GetClientId(lock->mOwner));
-    if (!snapshot.mHeld.Value().AppendElement(info, mozilla::fallible)) {
-      aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
-      return nullptr;
-    };
-  }
-  promise->MaybeResolve(snapshot);
+
+  mActor->SendQuery()->Then(
+      GetCurrentSerialEventTarget(), __func__,
+      [promise](locks::LockManagerChild::QueryPromise::ResolveOrRejectValue&&
+                    aResult) {
+        if (aResult.IsResolve()) {
+          promise->MaybeResolve(aResult.ResolveValue());
+        } else {
+          promise->MaybeRejectWithUnknownError("Query failed");
+        }
+      });
   return promise.forget();
 };
 
-void LockManager::ReleaseHeldLock(Lock* aLock) {
-  MOZ_ASSERT(mHeldLockSet.Contains(aLock), "Lock not held??");
-  mHeldLockSet.Remove(aLock);
-  if (auto queue = mQueueMap.Lookup(aLock->mName)) {
-    ProcessRequestQueue(queue.Data());
-    if (queue.Data().IsEmpty()) {
-      // Remove if empty, to prevent the queue map from growing forever
-      mQueueMap.Remove(aLock->mName);
-    }
+void LockManager::Shutdown() {
+  if (mActor) {
+    locks::PLockManagerChild::Send__delete__(mActor);
+    mActor = nullptr;
   }
-  // or else, the queue is removed during the previous lock release
-}
-
-void LockManager::ProcessRequestQueue(
-    nsTArray<mozilla::dom::LockRequest>& aQueue) {
-  // use manual loop since range-loop is not safe for mutable arrays
-  for (uint32_t i = 0; i < aQueue.Length(); i++) {
-    auto& request = aQueue[i];
-    if (IsGrantableRequest(request, aQueue)) {
-      RefPtr<Lock> lock = new Lock(mOwner, this, request.mName, request.mMode,
-                                   request.mPromise, IgnoreErrors() /* ?? */);
-      mHeldLockSet.Insert(lock);
-
-      lock->GetWaitingPromise().AppendNativeHandler(lock);
-
-      RefPtr<LockGrantedCallback> callback = request.mCallback;
-      aQueue.RemoveElement(request);
-      nsCOMPtr<nsIRunnable> runCallback(NS_NewRunnableFunction(
-          "RunCallbackAndSettlePromise", [callback, lock]() -> void {
-            RunCallbackAndSettlePromise(*callback, lock,
-                                        lock->GetWaitingPromise());
-          }));
-      // TODO: This should go to lock task queue
-      Unused << NS_DispatchToCurrentThreadQueue(runCallback.forget(),
-                                                EventQueuePriority::Idle);
-    }
-  }
-}
-
-bool LockManager::IsGrantableRequest(
-    const LockRequest& aRequest, nsTArray<mozilla::dom::LockRequest>& aQueue) {
-  if (HasBlockingHeldLock(aRequest.mName, aRequest.mMode)) {
-    return false;
-  }
-  if (!aQueue.Length()) {
-    return true;  // Possible as this check also happens before enqueuing
-  }
-  return aQueue[0] == aRequest;
-}
-
-bool LockManager::HasBlockingHeldLock(const nsString& aName, LockMode aMode) {
-  for (const auto& lock : mHeldLockSet) {
-    if (lock->mName == aName) {
-      if (aMode == LockMode::Exclusive) {
-        return true;
-      }
-      MOZ_ASSERT(aMode == LockMode::Shared);
-      if (lock->mMode == LockMode::Exclusive) {
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 }  // namespace mozilla::dom

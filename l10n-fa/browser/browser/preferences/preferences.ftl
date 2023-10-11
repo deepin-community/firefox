@@ -36,7 +36,7 @@ pane-home-title = خانه
 category-home =
     .tooltiptext = { pane-home-title }
 
-pane-search-title = جستجو
+pane-search-title = جست‌وجو
 category-search =
     .tooltiptext = { pane-search-title }
 
@@ -87,25 +87,16 @@ restart-later = بعداْ راه‌اندازی مجدد شود
 ## Variables:
 ##   $name (String): name of the extension
 
-# This string is shown to notify the user that the password manager setting
-# is being controlled by an extension
-extension-controlled-password-saving = یک افزونه، <img data-l10n-name="icon"/>{ $name }، این تنظیمات را کنترل می‌کند.
 
-# This string is shown to notify the user that their notifications permission
-# is being controlled by an extension.
-extension-controlled-web-notifications = یک افزونه، <img data-l10n-name="icon"/>{ $name }، این تنظیمات را کنترل می‌کند.
-
-# This string is shown to notify the user that Container Tabs
-# are being enabled by an extension.
-extension-controlled-privacy-containers = یک افزونه، <img data-l10n-name="icon"/> { $name }،‌نیازمند نگه‌دارنده زبانه‌ها است.
-
-# This string is shown to notify the user that their content blocking "All Detected Trackers"
-# preferences are being controlled by an extension.
-extension-controlled-websites-content-blocking-all-trackers = یک افزونه، <img data-l10n-name="icon"/>{ $name }، این تنظیم را کنترل می‌کند.
-
-# This string is shown to notify the user that their proxy configuration preferences
-# are being controlled by an extension.
-extension-controlled-proxy-config = یک افزودنی، <img data-l10n-name="icon"/>{ $name }، در حال کنترل نحوهٔ اتصال { -brand-short-name } به اینترنت است.
+## Extension Control Notifications
+##
+## These strings are used to inform the user
+## about changes made by extensions to browser settings.
+##
+## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
+##
+## Variables:
+##   $name (string) - Name of the extension
 
 # This string is shown after the user disables an extension to notify the user
 # how to enable an extension that they disabled.
@@ -116,7 +107,7 @@ extension-controlled-enable = برای فعال کردن این افزایه ب�
 
 ## Preferences UI Search Results
 
-search-results-header = نتایج جستجو
+search-results-header = نتایج جست‌وجو
 
 # `<span data-l10n-name="query"></span>` will be replaced by the search term.
 search-results-empty-message2 = متاسفیم! هیچ نتیجه‌ای در تنظیمات برای «<span data-l10n-name="query"></span>» وجود ندارد.
@@ -138,9 +129,9 @@ set-as-my-default-browser =
     .label = تنظیم به عنوان پیش‌فرض…
     .accesskey = پ
 
-startup-restore-previous-session =
-    .label = بازنشانی نشست قبلی
-    .accesskey = s
+startup-restore-windows-and-tabs =
+    .label = باز کردن زبانه‌ها و پنجره‌های قبلی
+    .accesskey = ه
 
 startup-restore-warn-on-quit =
     .label = هنگام خروج اخطار می‌دهد
@@ -158,9 +149,18 @@ open-new-link-as-tabs =
     .label = بازکردن پیوندها در زبانه به جای بازکردن در پنجره
     .accesskey = w
 
-warn-on-close-multiple-tabs =
-    .label = در هنگام بستن بیش از یک زبانه هشدار داده شود
-    .accesskey = ب
+confirm-on-close-multiple-tabs =
+    .label = هنگام بستن چندین زبانه هشدار داده شود
+    .accesskey = م
+
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+confirm-on-quit-with-key =
+    .label = قبل از خروج با { $quitKey } سوال شود
+    .accesskey = س
 
 warn-on-open-many-tabs =
     .label = در صورتی که باز کردن چند زبانه بتواند باعث کند کردن { -brand-short-name } بشود، به من هشدار بده
@@ -185,6 +185,10 @@ browser-containers-settings =
     .accesskey = ت
 
 containers-disable-alert-title = بستن تمام زبانه‌های حامل؟
+
+## Variables:
+##   $tabCount (number) - Number of tabs
+
 containers-disable-alert-desc =
     { $tabCount ->
         [one] اگر هم‌اکنون زبانه‌های حامل را غیرفعال کنید، { $tabCount } زبانه حامل بسته خواهد شد. آیا مطمئنید که می‌خواهید زبانه‌های حامل را غیرفعال کنید؟
@@ -196,12 +200,15 @@ containers-disable-alert-ok-button =
         [one] بستن { $tabCount } زبانه حامل
        *[other] بستن { $tabCount } زبانه حامل
     }
+
+##
+
 containers-disable-alert-cancel-button = فعال باقی بماند
 
 containers-remove-alert-title = این حامل حذف شود؟
 
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] اگر هم‌اکنون زبانه‌های حامل را غیرفعال کنید، { $count } زبانه حامل بسته خواهد شد. آیا مطمئنید که می‌خواهید زبانه‌های حامل را غیرفعال کنید؟
@@ -215,7 +222,22 @@ containers-remove-cancel-button = این حامل حذف نشود
 
 language-and-appearance-header = زبان و ظاهر
 
-fonts-and-colors-header = قلم‌ها و رنگ‌ها
+preferences-web-appearance-choice-auto = خودکار
+preferences-web-appearance-choice-light = روشن
+preferences-web-appearance-choice-dark = تاریک
+
+preferences-web-appearance-choice-input-auto =
+    .aria-description = { preferences-web-appearance-choice-tooltip-auto.title }
+
+preferences-web-appearance-choice-input-light =
+    .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
+
+preferences-web-appearance-choice-input-dark =
+    .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+
+preferences-colors-header = رنگ‌ها
+
+preferences-fonts-header = قلم‌ها
 
 default-font = قلم پیش‌فرض
     .accesskey = D
@@ -226,16 +248,14 @@ advanced-fonts =
     .label = پیشرفته...
     .accesskey = پ
 
-colors-settings =
-    .label = رنگها‌...
-    .accesskey = ر
-
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = بزرگنمایی
 
 preferences-default-zoom = بزرگنمایی پیش‌فرض
     .accesskey = z
 
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage }٪
 
@@ -287,8 +307,7 @@ files-and-applications-title = پرونده‌ها و برنامه‌ها
 
 download-header = بارگیری‌ها
 
-download-save-to =
-    .label = ذخیره پرونده در
+download-save-where = ذخیره پرونده در
     .accesskey = ذ
 
 download-choose-folder =
@@ -356,17 +375,17 @@ applications-always-ask =
     .label = هر بار پرسیده شود
 
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = استفاده از { $plugin-name } (در { -brand-short-name })
 applications-open-inapp =
@@ -402,6 +421,12 @@ applications-use-os-default-label =
 
 ##
 
+applications-handle-new-file-types-description = ‏{ -brand-short-name } با دیگر پرونده‌ها چه کند؟
+
+applications-save-for-new-types =
+    .label = ذخیرهٔ پرونده‌ها
+    .accesskey = ذ
+
 drm-content-header = محتوا مدیریت حقوق دیجیتال(DRM)
 
 play-drm-content =
@@ -414,6 +439,8 @@ update-application-title = بروزرسانی‌های { -brand-short-name }:
 
 update-application-description = برای تجربهٔ بهترین کارایی، پایداری و امنیت { -brand-short-name } را به روز نگاه دارید.
 
+# Variables:
+# $version (string) - Firefox version
 update-application-version = نسخه{ $version } <a data-l10n-name="learn-more">امکانات جدید</a>
 
 update-history =
@@ -447,7 +474,7 @@ update-application-use-service =
 update-setting-write-failure-title2 = خطا در هنگام ذخیرهٔ تنطیمات بروزرسانی
 
 # Variables:
-#   $path (String) - Path to the configuration file
+#   $path (string) - Path to the configuration file
 # The newlines between the main text and the line containing the path is
 # intentional so the path is easier to identify.
 update-setting-write-failure-message2 =
@@ -487,7 +514,7 @@ performance-limit-content-process-enabled-desc = پروسه‌هایِ محتو�
 performance-limit-content-process-blocked-desc = تغییر دادن تعداد پردازدش‌های محتوا تنها با چند‌پردازشی { -brand-short-name } امکان پذیر است. <a data-l10n-name="learn-more">بدانید چگونه بررسی کنید چندپرادزشی فعال است</a>
 
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (پیش‌فرض)
 
@@ -564,11 +591,6 @@ home-restore-defaults =
     .label = بازنشانی پیش‌فرض‌ها
     .accesskey = R
 
-# "Firefox" should be treated as a brand and kept in English,
-# while "Home" and "(Default)" can be localized.
-home-mode-choice-default =
-    .label = خانهٔ فایرفاکس (پیش‌فرض)
-
 home-mode-choice-custom =
     .label = آدرس‌های سفارشی…
 
@@ -596,16 +618,8 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header = محتوای صفحه خانگی فایرفاکس
-home-prefs-content-description = انتخاب کنید که چه محتوایی می‌خواهید در صفحه خانگیِ فایرفاکس خود ببینید.
-
 home-prefs-search-header =
     .label = جستجو وب
-home-prefs-topsites-header =
-    .label = سایت‌های برتر
-home-prefs-topsites-description = سایت‌هایی که بیشتر بازدید می‌کنید
-home-prefs-topsites-by-option-sponsored =
-    .label = سایت های برتر حمایت شده
 home-prefs-shortcuts-header =
     .label = میان‌برها
 home-prefs-shortcuts-description = وب‌سایت‌هایی که ذخیره یا بازدید کرده‌اید
@@ -615,9 +629,12 @@ home-prefs-shortcuts-by-option-sponsored =
 ## Variables:
 ##  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 
+
+## Variables:
+##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+
 home-prefs-recommended-by-header =
     .label = پیشنهاد شده توسط { $provider }
-home-prefs-recommended-by-description-update = محتوای استثنایی از سراسر وب، جمع‌آوری شده توسط { $provider }
 home-prefs-recommended-by-description-new = محتوای استثنایی که توسط { $provider }، بخشی از خانواده { -brand-product-name }، جمع‌آوری شده‌اند.
 
 ##
@@ -625,10 +642,9 @@ home-prefs-recommended-by-description-new = محتوای استثنایی که �
 home-prefs-recommended-by-learn-more = این چجوری کار میکنه
 home-prefs-recommended-by-option-sponsored-stories =
     .label = محتوایی از حامیان مالی
+home-prefs-recommended-by-option-recent-saves =
+    .label = نمایش ذخیره‌های اخیر
 
-home-prefs-highlights-header =
-    .label = برجسته‌ها
-home-prefs-highlights-description = گزیده‌ای از سایت‌هایی که بازدید یا ذخیره کرده‌اید
 home-prefs-highlights-option-visited-pages =
     .label = صفحات بازدید شده
 home-prefs-highlights-options-bookmarks =
@@ -648,10 +664,11 @@ home-prefs-recent-activity-description = منتخبی از وب‌سایت‌ه�
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = قطعه‌ها
-home-prefs-snippets-description = بروزرسانی از { -vendor-short-name } و { -brand-product-name }
 
 home-prefs-snippets-description-new = نکات و اخبار از { -vendor-short-name } و { -brand-product-name }
 
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -684,6 +701,7 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = نمایش پیشنهادهای جست‌و‌جو در نوار آدرس
     .accesskey = آ
+
 
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
@@ -726,7 +744,7 @@ search-find-more-link = پیدا کردن موتورهای جستجو بیشتر
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = کلیدواژهٔ تکراری
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = شما کلیدواژه‌ای انتخاب نموده‌اید که در حال حاضر توسط «{ $name }» در حال استفاده است. لطفا کلیدواژه دیگری انتخاب کنید.
 search-keyword-warning-bookmark = شما کلیدواژه‌ای انتخاب نموده‌اید که در حال حاضر توسط یک نشانک در حال استفاده است.  لطفاً کلیدواژهٔ دیگری انتخاب کنید.
 
@@ -751,6 +769,10 @@ containers-remove-button =
 ## Firefox Account - Signed out. Note that "Sync" and "Firefox Account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
+
+## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
+## more discrete ("signed in" no longer means "and sync is connected").
+
 sync-signedout-caption = وب را با خودتان همراه کنید
 sync-signedout-description2 = نشانک‌ها، تاریخچه، زبانه‌ها، گذرواژه‌ها، افزونه‌ها و ترجیحات خود را در تمام دستگاه‌هایتان همگام کنید.
 
@@ -770,6 +792,9 @@ sync-mobile-promo = بارگیری فایرفاکس برای <img data-l10n-name
 
 ## Firefox Account - Signed in
 
+
+## Firefox account - Signed in
+
 sync-profile-picture =
     .tooltiptext = تغییرتصویر نمایه
 
@@ -780,8 +805,13 @@ sync-sign-out =
 sync-manage-account = مدیریت حساب
     .accesskey = ح
 
+## Variables
+## $email (string) - Email used for Firefox account
+
 sync-signedin-unverified = { $email } تایید نشده است.
 sync-signedin-login-failure = لطفا جهت ارتباط مجدد وارد شوید. { $email }
+
+##
 
 sync-resend-verification =
     .label = ارسال مجدد تاییدیه
@@ -812,9 +842,14 @@ prefs-sync-now =
     .accesskeynotsyncing = N
     .labelsyncing = درحال همگام‌سازی...
 
-## The list of things currently syncing.
+prefs-sync-now-button =
+    .label = هم‌اکنون همگام‌سازی کنید
+    .accesskey = N
 
-sync-currently-syncing-heading = شما در حال همگام‌سازی این موارد هستید:
+prefs-syncing-button =
+    .label = درحال همگام‌سازی...
+
+## The list of things currently syncing.
 
 sync-currently-syncing-bookmarks = نشانک‌ها
 sync-currently-syncing-history = تاریخچه
@@ -831,9 +866,9 @@ sync-change-options =
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog =
+sync-choose-what-to-sync-dialog3 =
     .title = چه چیزی را می‌خواهید همگام کنید
-    .style = width: 36em; min-height: 35em;
+    .style = min-width: 36em;
     .buttonlabelaccept = ذخیره تغییرات
     .buttonaccesskeyaccept = S
     .buttonlabelextra2 = قطع ارتباط
@@ -895,6 +930,16 @@ sync-device-name-save =
 
 sync-connect-another-device = اتصال یک دستگاه دیگر
 
+## These strings are shown in a desktop notification after the
+## user requests we resend a verification email.
+
+sync-verification-sent-title = تایید ارسال
+# Variables:
+#   $email (String): Email address of user's Firefox account.
+sync-verification-sent-body = یک لینک تایید برای { $email } ارسال شد.
+sync-verification-not-sent-title = قادر به ارسال ایمیل تاییدیه نیست
+sync-verification-not-sent-body = در حال حاضر امکان ارسال پشت‌الکترونیکی تایید را نداریم، لطفا بعدا دوباره تلاش کنید.
+
 ## Privacy Section
 
 privacy-header = حریم خصوصی مرورگر
@@ -919,6 +964,7 @@ forms-breach-alerts =
     .label = هشدارهای مربوط به گذرواژه‌ها در خصوص سایت‌های هک شده را نمایش بده
     .accesskey = b
 forms-breach-alerts-learn-more-link = بیشتر بدانید
+relay-integration-learn-more-link = بیشتر بدانید
 
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -1016,29 +1062,29 @@ history-clear-button =
 
 ## Privacy Section - Site Data
 
-sitedata-header = کوکی‌ها و اطلاعات وب سایت
+sitedata-header = کلوچک‌ها و داده‌های پایگاه
 
 sitedata-total-size-calculating = در حال محاسبهٔ اطلاعات پایگاه‌ها و اندازهٔ حافظهٔ نهان…
 
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
-sitedata-total-size = کوکی‌ها، اطلاعات پایگاه‌ها و حافظهٔ نهانِ ذخیره شده در حال حاضر از { $value } { $unit } از فضای دیسک شما استفاده می‌کنند.
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
+sitedata-total-size = کلوچک‌ها، داده‌های پایگاه و حافظهٔ نهانِ ذخیره شده در حال حاضر از { $value } { $unit } از فضای دیسک شما استفاده می‌کنند.
 
 sitedata-learn-more = بیشتر بدانید
 
 sitedata-delete-on-close =
-    .label = پاک کردن کوکی‌ها و داده‌های سایت هنگام بستن { -brand-short-name }
+    .label = پاک کردن کلوچک‌ها و داده‌های پایگاه هنگام بستن { -brand-short-name }
     .accesskey = پ
 
-sitedata-delete-on-close-private-browsing = در حالتِ مرور ناشناسِ دائمی، پس از بستن { -brand-short-name }، کوکی‌ها و داده‌های سایت‌ها پاک می‌شوند.
+sitedata-delete-on-close-private-browsing = در حالتِ مرور ناشناسِ دائمی، پس از بستن { -brand-short-name }، کلوچک‌ها و داده‌های پایگاه پاک می‌شوند.
 
 sitedata-allow-cookies-option =
-    .label = پذیرفتن کوکی‌ها و داده‌های سایت
+    .label = پذیرفتن کلوچک‌ها و داده‌های پایگاه
     .accesskey = A
 
 sitedata-disallow-cookies-option =
-    .label = مسدودسازی کوکی‌ها و داده‌های سایت
+    .label = مسدودسازی کلوچک‌ها و داده‌های پایگاه
     .accesskey = B
 
 # This label means 'type of content that is blocked', and is followed by a drop-down list with content types below.
@@ -1048,20 +1094,14 @@ sitedata-block-desc = الگوی مسدود شده
 
 sitedata-option-block-cross-site-trackers =
     .label = ردیاب‌های بین‌پایگاهی
-sitedata-option-block-cross-site-and-social-media-trackers =
-    .label = ردیاب‌های بین‌پایگاهی و شبکه‌های اجتماعی
-sitedata-option-block-cross-site-tracking-cookies-including-social-media =
-    .label = کوکی‌های ردیاب بین‌پایگاهی — شامل کوکی‌های شبکه‌های اجتماعی
-sitedata-option-block-cross-site-cookies-including-social-media =
-    .label = کوکی‌های بین‌پایگاهی — شامل کوکی های شبکه‌های اجتماعی
-sitedata-option-block-cross-site-and-social-media-trackers-plus-isolate =
-    .label = ردیاب‌های بین‌پایگاهی و شبکه‌های اجتماعی، و ایزوله کردن سایر کوکی‌ها
+sitedata-option-block-cross-site-tracking-cookies =
+    .label = کلوچک‌های ردیابِ میان‌پایگاهی
+sitedata-option-block-cross-site-cookies =
+    .label = کلوچک‌های ردیابِ میان‌پایگاهی، و منزوی کردن سایر کلوچک‌های میان‌پایگاهی
 sitedata-option-block-unvisited =
-    .label = کوکی‌ها از وب‌سایت‌های مشاهده نشده
-sitedata-option-block-all-third-party =
-    .label = تمام کوکی‌های متفرقه (ممکن است باعث از کار افتادن سایت‌ها شود)
+    .label = کلوچک‌ها از وبگاه‌های مشاهده نشده
 sitedata-option-block-all =
-    .label = تمام کوکی‌ها (باعث از کار افتادن وب‌سایت‌ها می‌شود)
+    .label = تمام کلوچک‌ها (باعث از کار افتادن وبگاه‌ها می‌شود)
 
 sitedata-clear =
     .label = پاک کردن اطلاعات…
@@ -1074,6 +1114,9 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = مدیریت استثناها…
     .accesskey = x
+
+## Privacy Section - Cookie Banner Handling
+
 
 ## Privacy Section - Address Bar
 
@@ -1103,6 +1146,8 @@ addressbar-locbar-engines-option =
 
 addressbar-suggestions-settings = تغییر ترجیحات مربوط به پیشنهادهای موتورهای جستجو
 
+addressbar-quickactions-learn-more = بیشتر بدانید
+
 ## Privacy Section - Content Blocking
 
 content-blocking-enhanced-tracking-protection = محفاظت پیشرفته در برابر ردیابی
@@ -1111,7 +1156,7 @@ content-blocking-section-top-level-description = ردیاب‌ها شما را �
 
 content-blocking-learn-more = بیشتر بدانید
 
-content-blocking-fpi-incompatibility-warning = شما از First Party Isolation (FPI) استفاده می‌کنید که برخی از تنظیمات کوکی‌های { -brand-short-name } را نادیده می‌گیرد.
+content-blocking-fpi-incompatibility-warning = شما از قرنطینهٔ شخص اول (FPI) استفاده می‌کنید که برخی از تنظیمات کلوچک‌های { -brand-short-name } را نادیده می‌گیرد.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1135,20 +1180,23 @@ content-blocking-etp-custom-desc = انتخاب کنید کدام ردیاب‌�
 content-blocking-etp-blocking-desc = { -brand-short-name } موارد زیر را مسدود می‌کند:
 
 content-blocking-private-windows = محتوای ردیابی در پنجره‌های ناشناس
-content-blocking-cross-site-cookies-in-all-windows = کوکی‌های بین‌پایگاهی در تمام پنجره‌ها (شامل کوکی‌های ردیاب)
-content-blocking-cross-site-tracking-cookies = کوکی‌هایِ ردیابِ بین‌پایگاهی
-content-blocking-all-cross-site-cookies-private-windows = کوکی‌های بین‌پایگاهی در پنجره‌های ناشناس
-content-blocking-cross-site-tracking-cookies-plus-isolate = کوکی‌های ردیابِ بین‌پایگاهی، و ایزوله کردن سایر کوکی‌ها
+content-blocking-cross-site-tracking-cookies = کلوچک‌های ردیابِ میان‌پایگاهی
+content-blocking-all-cross-site-cookies-private-windows = کلوچک‌های میان‌پایگاهی در پنجره‌های ناشناس
+content-blocking-cross-site-tracking-cookies-plus-isolate = کلوچک‌های ردیابِ میان‌پایگاهی، و منزوی کردن سایر کلوچک‌ها
 content-blocking-social-media-trackers = ردیاب‌های شبکه‌های اجتماعی
-content-blocking-all-cookies = همه کوکی‌ها
-content-blocking-unvisited-cookies = کوکی‌های سایت‌های بازدید نشده
+content-blocking-all-cookies = تمام کلوچک‌ها
+content-blocking-unvisited-cookies = کلوچک‌های پایگاه‌های بازدید نشده
 content-blocking-all-windows-tracking-content = محتوای ردیابی در تمامی پنجره‌ها
-content-blocking-all-third-party-cookies = تمام کوکی‌های متفرقه
 content-blocking-cryptominers = استخراج کننده‌های رمزارزها
 content-blocking-fingerprinters = برداشت کنندگان اثر انگشت
 
+# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
+
+# "Contains" here means "isolates", "limits".
+content-blocking-etp-standard-tcp-rollout-description = حفاظت کامل از کلوچک‌ها حاوی کلوچک‌هایی برای پایگاهی است که در آن هستید، بنابراین ردیاب‌ها نمی‌توانند از آن‌ها برای دنبال کردن شما بین پایگاه‌ها استفاده کنند.
+content-blocking-etp-standard-tcp-rollout-learn-more = اطلاعات بیشتر
+
 content-blocking-warning-title = هوشیار باشید!
-content-blocking-and-isolating-etp-warning-description = مسدود کردن ردیاب‌ها و ایزوله کردن کوکی‌ها می‌تواند بر عملکرد برخی سایت‌ها تأثیر بگذارد. برای بارگیری تمام مطالب، صفحه را مجددا بارگذاری کنید تا تمام محتوا بارگیری شود.
 content-blocking-and-isolating-etp-warning-description-2 = این تنظیم ممکن است باعث شود بعضی از وب‌سایت‌ها محتوایی نمایش ندهند یا به درستی کار نکنند. اگر سایتی خراب به نظر می‌سد، ممکن است بخواهید محافظت از ردیابی آن سایت را خاموش کنید تا همه مطالب بارگیری شود.
 content-blocking-warning-learn-how = بیشتر بدانید
 
@@ -1169,7 +1217,7 @@ content-blocking-option-private =
 content-blocking-tracking-protection-change-block-list = تغییر لیست مسدودی‌ها
 
 content-blocking-cookies-label =
-    .label = کوکی‌ها
+    .label = کلوچک‌ها
     .accesskey = C
 
 content-blocking-expand-section =
@@ -1211,7 +1259,7 @@ permissions-camera-settings =
     .label = تنظیمات…
     .accesskey = c
 
-permissions-microphone = میکروفن
+permissions-microphone = صدابَر
 permissions-microphone-settings =
     .label = تنظیمات…
     .accesskey = m
@@ -1235,10 +1283,6 @@ permissions-autoplay-settings =
 permissions-block-popups =
     .label = مسدود کردن پنجره‌های بازشو
     .accesskey = م
-
-permissions-block-popups-exceptions =
-    .label = استثناها…
-    .accesskey = ا
 
 # "popup" is a misspelling that is more popular than the correct spelling of
 # "pop-up" so it's included as a search keyword, not displayed in the UI.
@@ -1348,13 +1392,18 @@ httpsonly-radio-enabled-pbm =
 httpsonly-radio-disabled =
     .label = حالت فقط-HTTPS فعال نشود
 
+## DoH Section
+
+preferences-doh-header = ساناد روی HTTPS
+
+preferences-doh-description = سامانهٔ نام دامنه (ساناد) روی HTTPS درخواست شما برای نام دامنه را از طریق اتصال رمزگذاشته می‌فرستد، سانادی ایمن ایجاد می‌کند و مشاهدهٔ وبگاه‌هایی که بازدید می‌کنید را برای دیگران سخت‌تر می‌کند.
+
+# Variables:
+#   $name (string) - The name of the DNS over HTTPS resolver. If a custom resolver is used, the name will be the domain of the URL.
+preferences-doh-resolver = فراهم‌کننده: { $name }
+
 ## The following strings are used in the Download section of settings
 
 desktop-folder-name = رومیزی
 downloads-folder-name = بارگیری‌ها
 choose-download-folder-title = انتخاب پوشهٔ بارگیری:‏
-
-# Variables:
-#   $service-name (String) - Name of a cloud storage provider like Dropbox, Google Drive, etc...
-save-files-to-cloud-storage =
-    .label = ذخیره فایل‌ها در { $service-name }

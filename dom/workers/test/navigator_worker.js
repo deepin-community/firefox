@@ -8,19 +8,21 @@ var supportedProps = [
   "appCodeName",
   "appName",
   "appVersion",
+  { name: "globalPrivacyControl", isNightly: true, isAndroid: false },
   "platform",
   "product",
   "userAgent",
   "onLine",
   "language",
   "languages",
+  { name: "locks", isSecureContext: true },
   "mediaCapabilities",
   "hardwareConcurrency",
   { name: "storage", isSecureContext: true },
   "connection",
 ];
 
-self.onmessage = function(event) {
+self.onmessage = function (event) {
   if (!event || !event.data) {
     return;
   }
@@ -40,9 +42,10 @@ function startTest(channelData) {
     }
 
     if (
-      prop.nightly === !channelData.isNightly ||
+      prop.isNightly === !channelData.isNightly ||
       prop.release === !channelData.isRelease ||
-      prop.isSecureContext === !isSecureContext
+      prop.isSecureContext === !isSecureContext ||
+      prop.isAndroid === !channelData.isAndroid
     ) {
       interfaceMap[prop.name] = false;
       continue;

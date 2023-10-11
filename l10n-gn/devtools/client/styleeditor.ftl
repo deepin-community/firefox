@@ -8,15 +8,19 @@ styleeditor-new-button =
 styleeditor-import-button =
     .tooltiptext = Emoheñói ha emoirũ peteĩ kuatia oĩvavoi pe kuatiaitére
     .accesskey = I
+styleeditor-filter-input =
+    .placeholder = Mbohekoha rogue ñembogua
 styleeditor-visibility-toggle =
     .tooltiptext = Kuatia jehecha moambue
     .accesskey = S
+styleeditor-visibility-toggle-system =
+    .tooltiptext = Apopyvusu kuatia mbohekoha ndaikatúi embogue
 styleeditor-save-button = Ñongatu
     .tooltiptext = Eñongatu ko kuatia mohendaha'ípe
     .accesskey = S
 styleeditor-options-button =
     .tooltiptext = Style Editor jeporavorã
-styleeditor-media-rules = Ñemomarandu rape
+styleeditor-at-rules = At-mbojojaha
 styleeditor-editor-textbox =
     .data-placeholder = Ehai CSS ápe.
 styleeditor-no-stylesheet = Ko kuatiarogue ndoguerekói kuatia.
@@ -25,3 +29,23 @@ styleeditor-open-link-new-tab =
     .label = Tendayke pyahu joajuhápe jeike
 styleeditor-copy-url =
     .label = Emonguatia URL
+styleeditor-find =
+    .label = Heka
+    .accesskey = F
+styleeditor-find-again =
+    .label = Ehekajey
+    .accesskey = E
+styleeditor-go-to-line =
+    .label = Tairendápe jepo...
+    .accesskey = j
+# Label displayed when searching a term that is not found in any stylesheet path
+styleeditor-stylesheet-all-filtered = Ndojejuhúi mba’evéichagua mbohekoharogue.
+
+# This string is shown in the style sheets list
+# Variables:
+#   $ruleCount (Integer) - The number of rules in the stylesheet.
+styleeditor-stylesheet-rule-count =
+    { $ruleCount ->
+        [one] { $ruleCount } mbojojaha
+       *[other] { $ruleCount } mbojojahakuéra.
+    }

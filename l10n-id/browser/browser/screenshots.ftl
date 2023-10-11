@@ -6,6 +6,9 @@ screenshot-toolbarbutton =
     .label = Tangkapan Layar
     .tooltiptext = Ambil Tangkapan Layar
 
+screenshot-shortcut =
+    .key = S
+
 screenshots-instructions = Seret atau klik pada laman untuk memilih area. Tekan ESC untuk membatalkan.
 screenshots-cancel-button = Batal
 screenshots-save-visible-button = Simpan yang terlihat
@@ -14,6 +17,14 @@ screenshots-download-button = Unduh
 screenshots-download-button-tooltip = Unduh tangkapan layar
 screenshots-copy-button = Salin
 screenshots-copy-button-tooltip = Salin tangkapan layar ke papan klip
+screenshots-download-button-title =
+    .title = Unduh tangkapan layar
+screenshots-copy-button-title =
+    .title = Salin tangkapan layar ke papan klip
+screenshots-cancel-button-title =
+    .title = Batalkan
+screenshots-retry-button-title =
+    .title = Coba tangkap layar lagi
 
 screenshots-meta-key =
     { PLATFORM() ->
@@ -44,3 +55,6 @@ screenshots-private-window-error-details = Maaf atas ketidaknyamanannya. Kami se
 
 screenshots-generic-error-title = Wah! { -screenshots-brand-name } mendadak kacau.
 screenshots-generic-error-details = Kami tidak yakin akan apa yang terjadi. Ingin mencoba lagi atau merekam gambar dari laman yang berbeda?
+
+screenshots-too-large-error-title = Tangkapan layar Anda dipotong karena terlalu besar
+screenshots-too-large-error-details = Coba pilih bidang yang lebih kecil dari 32.700 piksel pada sisi terpanjangnya atau total luas 124.900.000 piksel.

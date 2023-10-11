@@ -13,6 +13,9 @@ about-webrtc-document-title = WebRTC આંતરિક
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = વિશે સાચવો:webrtc તરીકે
 
+## These labels are for a disclosure which contains the information for closed PeerConnection sections
+
+
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = AEC લૉગિંગ
@@ -20,7 +23,13 @@ about-webrtc-aec-logging-off-state-label = AEC લોગિંગ શરૂ ક�
 about-webrtc-aec-logging-on-state-label = AEC લોગિંગ રોકો
 about-webrtc-aec-logging-on-state-msg = AEC લોગિંગ સક્રિય (થોડી મિનિટો માટે કૉલર સાથે વાત કરો અને પછી કેપ્ચર બંધ કરો)
 
+about-webrtc-aec-logging-toggled-on-state-msg = AEC લોગિંગ સક્રિય (થોડી મિનિટો માટે કૉલર સાથે વાત કરો અને પછી કેપ્ચર બંધ કરો)
+# Variables:
+#  $path (String) - The path to which the aec log file is saved.
+about-webrtc-aec-logging-toggled-off-state-msg = કેપ્ચર થયેલ લોગ ફાઈલો અહીં મળી શકે છે: { $path }
+
 ##
+
 
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
@@ -57,9 +66,6 @@ about-webrtc-ice-pair-bytes-sent = બાઇટ્સ મોકલાયા:
 about-webrtc-ice-pair-bytes-received = બાઇટ્સ પ્રાપ્ત થયા:
 about-webrtc-ice-component-id = ઘટક ID
 
-## "Avg." is an abbreviation for Average. These are used as data labels.
-
-
 ## These adjectives are used to label a line of statistics collected for a peer
 ## connection. The data represents either the local or remote end of the
 ## connection.
@@ -68,7 +74,6 @@ about-webrtc-type-local = સ્થાનિક
 about-webrtc-type-remote = દૂરસ્થ
 
 ##
-
 
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
@@ -92,6 +97,11 @@ about-webrtc-log-show-msg = નોંધ બતાવો
 about-webrtc-log-hide-msg = લોગ છુપાવો
     .title = આ વિભાગને સમેટવા માટે ક્લિક કરો
 
+about-webrtc-log-section-show-msg = નોંધ બતાવો
+    .title = આ વિભાગને વિસ્તૃત કરવા ક્લિક કરો
+about-webrtc-log-section-hide-msg = લોગ છુપાવો
+    .title = આ વિભાગને સમેટવા માટે ક્લિક કરો
+
 ## These are used to display a header for a PeerConnection.
 ## Variables:
 ##  $browser-id (Number) - A numeric id identifying the browser tab for the PeerConnection.
@@ -102,8 +112,12 @@ about-webrtc-log-hide-msg = લોગ છુપાવો
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (બંધ) { $now }
 
-##
+## These are used to indicate what direction media is flowing.
+## Variables:
+##  $codecs - a list of media codecs
 
+
+##
 
 about-webrtc-local-candidate = સ્થાનિક ઉમેદવાર
 about-webrtc-remote-candidate = દૂરસ્થ ઉમેદવાર
@@ -114,10 +128,18 @@ about-webrtc-raw-cand-show-msg = કાચા ઉમેદવારો બતા
     .title = આ વિભાગને વિસ્તૃત કરવા ક્લિક કરો
 about-webrtc-raw-cand-hide-msg = કાચા ઉમેદવારો છુપાવો
     .title = આ વિભાગને સમેટવા માટે ક્લિક કરો
+about-webrtc-raw-cand-section-show-msg = કાચા ઉમેદવારો બતાવો
+    .title = આ વિભાગને વિસ્તૃત કરવા ક્લિક કરો
+about-webrtc-raw-cand-section-hide-msg = કાચા ઉમેદવારો છુપાવો
+    .title = આ વિભાગને સમેટવા માટે ક્લિક કરો
 about-webrtc-priority = પ્રાથમિકતા
 about-webrtc-fold-show-msg = વિગતો બતાવો
     .title = આ વિભાગને વિસ્તૃત કરવા ક્લિક કરો
 about-webrtc-fold-hide-msg = વિગતો છુપાવો
+    .title = આ વિભાગને સમેટવા માટે ક્લિક કરો
+about-webrtc-fold-default-show-msg = વિગતો બતાવો
+    .title = આ વિભાગને વિસ્તૃત કરવા ક્લિક કરો
+about-webrtc-fold-default-hide-msg = વિગતો છુપાવો
     .title = આ વિભાગને સમેટવા માટે ક્લિક કરો
 about-webrtc-decoder-label = ડીકોડર
 about-webrtc-encoder-label = એન્કોડર
@@ -125,7 +147,12 @@ about-webrtc-encoder-label = એન્કોડર
 ## SSRCs are identifiers that represent endpoints in an RTP stream
 
 
+## These are displayed on the button that shows or hides the
+## PeerConnection configuration disclosure
+
+
 ##
+
 
 ## These are paths used for saving the about:webrtc page or log files so
 ## they can be attached to bug reports.
@@ -136,6 +163,10 @@ about-webrtc-save-page-msg = પૃષ્ઠ પર સાચવ્યું: { 
 about-webrtc-debug-mode-off-state-msg = ટ્રેસ લોગ અહીં મળી શકે છે: { $path }
 about-webrtc-debug-mode-on-state-msg = ડીબગ મોડ સક્રિય, ટ્રેસ લોગ: { $path }
 about-webrtc-aec-logging-off-state-msg = કેપ્ચર થયેલ લોગ ફાઈલો અહીં મળી શકે છે: { $path }
+
+about-webrtc-save-page-complete-msg = પૃષ્ઠ પર સાચવ્યું: { $path }
+about-webrtc-debug-mode-toggled-off-state-msg = ટ્રેસ લોગ અહીં મળી શકે છે: { $path }
+about-webrtc-debug-mode-toggled-on-state-msg = ડીબગ મોડ સક્રિય, ટ્રેસ લોગ: { $path }
 
 ##
 
@@ -154,9 +185,12 @@ about-webrtc-trickle-caption-msg = ટ્રીકલ ઉમેદવારો (
 ## See http://wikipedia.org/wiki/Session_Description_Protocol
 
 
-##
+## These are displayed on the button that shows or hides the SDP information disclosure
 
-##
+
+## These are displayed on the button that shows or hides the Media Context information disclosure.
+## The Media Context is the set of preferences and detected capabilities that informs
+## the negotiated CODEC settings.
 
 
 ##

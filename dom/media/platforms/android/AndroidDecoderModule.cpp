@@ -4,6 +4,9 @@
 
 #include <jni.h>
 
+#ifdef MOZ_AV1
+#  include "AOMDecoder.h"
+#endif
 #include "MediaInfo.h"
 #include "OpusDecoder.h"
 #include "RemoteDataDecoder.h"
@@ -13,6 +16,7 @@
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/Components.h"
 #include "mozilla/StaticPrefs_media.h"
+#include "mozilla/gfx/gfxVars.h"
 #include "mozilla/java/HardwareCodecCapabilityUtilsWrappers.h"
 #include "nsIGfxInfo.h"
 #include "nsPromiseFlatString.h"
@@ -28,33 +32,26 @@
           ("%s: " arg, __func__, ##__VA_ARGS__))
 
 using namespace mozilla;
-using media::TimeUnit;
 
 namespace mozilla {
 
 mozilla::LazyLogModule sAndroidDecoderModuleLog("AndroidDecoderModule");
 
-const nsCString TranslateMimeType(const nsACString& aMimeType) {
+nsCString TranslateMimeType(const nsACString& aMimeType) {
   if (VPXDecoder::IsVPX(aMimeType, VPXDecoder::VP8)) {
     static constexpr auto vp8 = "video/x-vnd.on2.vp8"_ns;
     return vp8;
-  } else if (VPXDecoder::IsVPX(aMimeType, VPXDecoder::VP9)) {
+  }
+  if (VPXDecoder::IsVPX(aMimeType, VPXDecoder::VP9)) {
     static constexpr auto vp9 = "video/x-vnd.on2.vp9"_ns;
     return vp9;
   }
+  if (aMimeType.EqualsLiteral("video/av1")) {
+    static constexpr auto av1 = "video/av01"_ns;
+    return av1;
+  }
   return nsCString(aMimeType);
 }
-
-static bool GetFeatureStatus(int32_t aFeature) {
-  nsCOMPtr<nsIGfxInfo> gfxInfo = components::GfxInfo::Service();
-  int32_t status = nsIGfxInfo::FEATURE_STATUS_UNKNOWN;
-  nsCString discardFailureId;
-  if (!gfxInfo || NS_FAILED(gfxInfo->GetFeatureStatus(
-                      aFeature, discardFailureId, &status))) {
-    return false;
-  }
-  return status == nsIGfxInfo::FEATURE_STATUS_OK;
-};
 
 AndroidDecoderModule::AndroidDecoderModule(CDMProxy* aProxy) {
   mProxy = static_cast<MediaDrmCDMProxy*>(aProxy);
@@ -62,14 +59,17 @@ AndroidDecoderModule::AndroidDecoderModule(CDMProxy* aProxy) {
 
 StaticAutoPtr<nsTArray<nsCString>> AndroidDecoderModule::sSupportedMimeTypes;
 
-bool AndroidDecoderModule::SupportsMimeType(const nsACString& aMimeType) {
+media::DecodeSupportSet AndroidDecoderModule::SupportsMimeType(
+    const nsACString& aMimeType) {
   if (jni::GetAPIVersion() < 16) {
-    return false;
+    return media::DecodeSupport::Unsupported;
   }
 
   if (aMimeType.EqualsLiteral("video/mp4") ||
       aMimeType.EqualsLiteral("video/avc")) {
-    return true;
+    // TODO: Note that we do not yet distinguish between SW/HW decode support.
+    //       Will be done in bug 1754239.
+    return media::DecodeSupport::SoftwareDecode;
   }
 
   // When checking "audio/x-wav", CreateDecoder can cause a JNI ERROR by
@@ -81,14 +81,14 @@ bool AndroidDecoderModule::SupportsMimeType(const nsACString& aMimeType) {
       aMimeType.EqualsLiteral("audio/wave; codecs=6") ||
       aMimeType.EqualsLiteral("audio/wave; codecs=7") ||
       aMimeType.EqualsLiteral("audio/wave; codecs=65534")) {
-    return false;
+    return media::DecodeSupport::Unsupported;
   }
 
   if ((VPXDecoder::IsVPX(aMimeType, VPXDecoder::VP8) &&
-       !GetFeatureStatus(nsIGfxInfo::FEATURE_VP8_HW_DECODE)) ||
+       !gfx::gfxVars::UseVP8HwDecode()) ||
       (VPXDecoder::IsVPX(aMimeType, VPXDecoder::VP9) &&
-       !GetFeatureStatus(nsIGfxInfo::FEATURE_VP9_HW_DECODE))) {
-    return false;
+       !gfx::gfxVars::UseVP9HwDecode())) {
+    return media::DecodeSupport::Unsupported;
   }
 
   // Prefer the gecko decoder for opus and vorbis; stagefright crashes
@@ -98,27 +98,31 @@ bool AndroidDecoderModule::SupportsMimeType(const nsACString& aMimeType) {
       VorbisDataDecoder::IsVorbis(aMimeType) ||
       aMimeType.EqualsLiteral("audio/flac")) {
     SLOG("Rejecting audio of type %s", aMimeType.Data());
-    return false;
+    return media::DecodeSupport::Unsupported;
   }
 
   // Prefer the gecko decoder for Theora.
   // Not all android devices support Theora even when they say they do.
   if (TheoraDecoder::IsTheora(aMimeType)) {
     SLOG("Rejecting video of type %s", aMimeType.Data());
-    return false;
+    return media::DecodeSupport::Unsupported;
   }
 
   if (aMimeType.EqualsLiteral("audio/mpeg") &&
       StaticPrefs::media_ffvpx_mp3_enabled()) {
     // Prefer the ffvpx mp3 software decoder if available.
-    return false;
+    return media::DecodeSupport::Unsupported;
   }
 
   if (sSupportedMimeTypes) {
-    return sSupportedMimeTypes->Contains(TranslateMimeType(aMimeType));
+    if (sSupportedMimeTypes->Contains(TranslateMimeType(aMimeType))) {
+      // TODO: Note that we do not yet distinguish between SW/HW decode support.
+      //       Will be done in bug 1754239.
+      return media::DecodeSupport::SoftwareDecode;
+    }
   }
 
-  return false;
+  return media::DecodeSupport::Unsupported;
 }
 
 nsTArray<nsCString> AndroidDecoderModule::GetSupportedMimeTypes() {
@@ -142,9 +146,52 @@ void AndroidDecoderModule::SetSupportedMimeTypes(
   }
 }
 
-bool AndroidDecoderModule::SupportsMimeType(
+media::DecodeSupportSet AndroidDecoderModule::SupportsMimeType(
     const nsACString& aMimeType, DecoderDoctorDiagnostics* aDiagnostics) const {
   return AndroidDecoderModule::SupportsMimeType(aMimeType);
+}
+
+bool AndroidDecoderModule::SupportsColorDepth(
+    gfx::ColorDepth aColorDepth, DecoderDoctorDiagnostics* aDiagnostics) const {
+  // 10-bit support is codec dependent so this is not entirely accurate.
+  // Supports() will correct it.
+  return aColorDepth == gfx::ColorDepth::COLOR_8 ||
+         aColorDepth == gfx::ColorDepth::COLOR_10;
+}
+
+// Further check is needed because the base class uses the inaccurate
+// SupportsColorDepth().
+media::DecodeSupportSet AndroidDecoderModule::Supports(
+    const SupportDecoderParams& aParams,
+    DecoderDoctorDiagnostics* aDiagnostics) const {
+  media::DecodeSupportSet support =
+      PlatformDecoderModule::Supports(aParams, aDiagnostics);
+
+  // Short-circuit.
+  if (support == media::DecodeSupport::Unsupported) {
+    return support;
+  }
+
+#ifdef MOZ_AV1
+  // For AV1, only allow HW decoder.
+  if (AOMDecoder::IsAV1(aParams.MimeType()) &&
+      (!StaticPrefs::media_av1_enabled() ||
+       !support.contains(media::DecodeSupport::HardwareDecode))) {
+    return media::DecodeSupport::Unsupported;
+  }
+#endif
+
+  // Check 10-bit video.
+  const TrackInfo& trackInfo = aParams.mConfig;
+  const VideoInfo* videoInfo = trackInfo.GetAsVideoInfo();
+  if (!videoInfo || videoInfo->mColorDepth != gfx::ColorDepth::COLOR_10) {
+    return support;
+  }
+
+  return java::HardwareCodecCapabilityUtils::Decodes10Bit(
+             TranslateMimeType(aParams.MimeType()))
+             ? support
+             : media::DecodeSupport::Unsupported;
 }
 
 already_AddRefed<MediaDataDecoder> AndroidDecoderModule::CreateVideoDecoder(

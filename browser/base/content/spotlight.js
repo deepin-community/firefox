@@ -2,53 +2,85 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { document: gDoc } = window.docShell.chromeEventHandler.ownerGlobal;
+const browser = window.docShell.chromeEventHandler;
+const { document: gDoc, XPCOMUtils } = browser.ownerGlobal;
 
-function renderSpotlight() {
-  const [content, params] = window.arguments[0];
-  const template = document.querySelector(`#${content?.template}`);
-  const clone = template.content.cloneNode(true);
+XPCOMUtils.defineLazyModuleGetters(this, {
+  AboutWelcomeParent: "resource:///actors/AboutWelcomeParent.jsm",
+});
 
-  document.body.classList.add(content.template);
+const CONFIG = window.arguments[0];
 
-  let imageEl = clone.querySelector(".logo");
-  imageEl.src = content.logoImageURL;
-
-  for (let textProp in content.body) {
-    let el = clone.querySelector(`.${textProp}`);
-    if (!content.body[textProp]?.label) {
-      el.remove();
-      continue;
-    }
-    if (content.body[textProp].label.string_id) {
-      document.l10n.setAttributes(el, content.body[textProp].label.string_id);
-    } else {
-      el.textContent = content.body[textProp].label;
-    }
-  }
-
-  document.body.appendChild(clone);
-
-  let primaryBtn = document.getElementById("primary");
-  let secondaryBtn = document.getElementById("secondary");
-  if (primaryBtn) {
-    primaryBtn.addEventListener("click", () => {
-      params.primaryBtn = true;
-      window.close();
-    });
-
-    // If we just call focus() at some random time, it'll cause a flush,
-    // which slows things down unnecessarily, so instead we use rAF...
-    requestAnimationFrame(() => {
-      primaryBtn.focus({ preventFocusRing: true });
-    });
-  }
-  if (secondaryBtn) {
-    secondaryBtn.addEventListener("click", () => {
-      params.secondaryBtn = true;
-      window.close();
-    });
-  }
+function addStylesheet(href) {
+  const link = document.head.appendChild(document.createElement("link"));
+  link.rel = "stylesheet";
+  link.href = href;
 }
 
-renderSpotlight();
+/**
+ * Render content based on about:welcome multistage template.
+ */
+function renderMultistage(ready) {
+  const AWParent = new AboutWelcomeParent();
+  const receive = name => data =>
+    AWParent.onContentMessage(`AWPage:${name}`, data, browser);
+
+  // Expose top level functions expected by the bundle.
+  window.AWGetFeatureConfig = () => CONFIG;
+  window.AWGetSelectedTheme = receive("GET_SELECTED_THEME");
+  window.AWSelectTheme = data => receive("SELECT_THEME")(data?.toUpperCase());
+  // Do not send telemetry if message (e.g. spotlight in PBM) config sets metrics as 'block'.
+  if (CONFIG?.metrics !== "block") {
+    window.AWSendEventTelemetry = receive("TELEMETRY_EVENT");
+  }
+  window.AWSendToDeviceEmailsSupported = receive(
+    "SEND_TO_DEVICE_EMAILS_SUPPORTED"
+  );
+  window.AWAddScreenImpression = receive("ADD_SCREEN_IMPRESSION");
+  window.AWSendToParent = (name, data) => receive(name)(data);
+  window.AWFinish = () => {
+    window.close();
+  };
+  window.AWWaitForMigrationClose = receive("WAIT_FOR_MIGRATION_CLOSE");
+  window.AWEvaluateScreenTargeting = receive("EVALUATE_SCREEN_TARGETING");
+
+  // Update styling to be compatible with about:welcome.
+  addStylesheet(
+    "chrome://activity-stream/content/aboutwelcome/aboutwelcome.css"
+  );
+
+  document.body.classList.add("onboardingContainer");
+  document.body.id = "multi-stage-message-root";
+  // This value is reported as the "page" in telemetry
+  document.body.dataset.page = "spotlight";
+
+  // Prevent applying the default modal shadow and margins because the content
+  // handles styling, including its own modal shadowing.
+  const box = browser.closest(".dialogBox");
+  const dialog = box.closest("dialog");
+  box.classList.add("spotlightBox");
+  dialog?.classList.add("spotlight");
+  // Prevent SubDialog methods from manually setting dialog size.
+  box.setAttribute("sizeto", "available");
+  addEventListener("pagehide", () => {
+    box.classList.remove("spotlightBox");
+    dialog?.classList.remove("spotlight");
+    box.removeAttribute("sizeto");
+  });
+
+  // Load the bundle to render the content as configured.
+  document.head.appendChild(document.createElement("script")).src =
+    "resource://activity-stream/aboutwelcome/aboutwelcome.bundle.js";
+  ready();
+}
+
+// Indicate when we're ready to show and size (async localized) content.
+document.mozSubdialogReady = new Promise(resolve =>
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => renderMultistage(resolve),
+    {
+      once: true,
+    }
+  )
+);

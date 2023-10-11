@@ -12,7 +12,7 @@ interface AbortController {
   [Throws]
   constructor();
 
-  readonly attribute AbortSignal signal;
+  [SameObject] readonly attribute AbortSignal signal;
 
-  void abort();
+  undefined abort(optional any reason);
 };

@@ -14,7 +14,6 @@ compatibility-issue-deprecated = (elavult)
 compatibility-issue-experimental = (kísérleti)
 compatibility-issue-prefixneeded = (előtag szükséges)
 compatibility-issue-deprecated-experimental = (elavult, kísérleti)
-
 compatibility-issue-deprecated-prefixneeded = (elavult, előtag szükséges)
 compatibility-issue-experimental-prefixneeded = (kísérleti, előtag szükséges)
 compatibility-issue-deprecated-experimental-prefixneeded = (elavult, kísérleti, előtag szükséges)
@@ -24,9 +23,6 @@ compatibility-issue-deprecated-experimental-prefixneeded = (elavult, kísérleti
 compatibility-settings-button-label = Beállítások
 compatibility-settings-button-title =
     .title = Beállítások
-compatibility-feedback-button-label = Visszajelzés
-compatibility-feedback-button-title =
-    .title = Visszajelzés
 
 ## Messages used as headers in settings pane
 
@@ -47,3 +43,12 @@ compatibility-issue-occurrences =
 compatibility-no-issues-found = Nem található kompatibilitási probléma.
 compatibility-close-settings-button =
     .title = Beállítások bezárása
+
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Kompatibilitási problémák itt:
+        { $browsers }

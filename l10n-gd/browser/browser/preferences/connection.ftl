@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Roghainnean ceangail
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -76,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = Nì an roghainn seo dearbhadh sàmhach as do leth mu choinneamh phrogsaidhean a chaidh ainm is facal-faire a shàbhaladh air an son. Thèid do bhrodadh mur an obraich an dearbhadh.
 
+connection-proxy-autologin-checkbox =
+    .label = Na iarr orm mo dhearbhadh ma chaidh am facal-faire a shàbhaladh ann
+    .accesskey = i
+    .tooltiptext = Nì an roghainn seo dearbhadh sàmhach as do leth mu choinneamh phrogsaidhean a chaidh ainm is facal-faire a shàbhaladh air an son. Thèid do bhrodadh mur an obraich an dearbhadh.
+
 connection-proxy-socks-remote-dns =
     .label = DNS progsaidh nuair a chleachdar SOCKS v5
     .accesskey = d
-
-connection-dns-over-https =
-    .label = Cuir an comas DNS slighe HTTPS
-    .accesskey = m
-
-connection-dns-over-https-url-resolver = Cleachd solaraiche
-    .accesskey = s
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

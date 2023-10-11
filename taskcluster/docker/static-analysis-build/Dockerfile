@@ -7,10 +7,6 @@ VOLUME /builds/worker/tooltool-cache
 
 ENV XZ_OPT=-T0
 
-# %include taskcluster/docker/recipes/prepare_openjdk.sh
-COPY topsrcdir/taskcluster/docker/recipes/prepare_openjdk.sh /tmp/prepare_openjdk.sh
-RUN /tmp/prepare_openjdk.sh && rm /tmp/prepare_openjdk.sh
-
 ARG TASKCLUSTER_ROOT_URL
 ARG DOCKER_IMAGE_PACKAGES
 RUN /usr/local/sbin/setup_packages.sh $TASKCLUSTER_ROOT_URL $DOCKER_IMAGE_PACKAGES
@@ -34,13 +30,10 @@ RUN apt-get update && \
       libstdc++-*-dev \
       libmpfr-dev \
       nasm \
-      openjdk-8-jdk-headless \
       opam \
-      pkg-config \
       patch \
       p7zip-full \
       procps \
-      python2.7 \
       python3-dev \
       rsync \
       screen \

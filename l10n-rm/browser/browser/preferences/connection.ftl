@@ -2,12 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-connection-window =
+connection-window2 =
     .title = Parameters da connexiun
     .style =
         { PLATFORM() ->
-            [macos] width: 44em
-           *[other] width: 49em
+            [macos] min-width: 44em
+           *[other] min-width: 49em
         }
 
 connection-close-key =
@@ -35,7 +35,6 @@ connection-proxy-http = Proxy HTTP
     .accesskey = x
 connection-proxy-http-port = Port
     .accesskey = P
-
 connection-proxy-https-sharing =
     .label = Era utilisar quest proxy per HTTPS
     .accesskey = s
@@ -77,16 +76,14 @@ connection-proxy-autologin =
     .accesskey = i
     .tooltip = Questa opziun t'autentifitgescha automaticamain tar proxies sche ti has memorisà las datas d'access. L'autentificaziun manuala è necessaria sch'i dat ina errur.
 
+connection-proxy-autologin-checkbox =
+    .label = Betg pretender l'autentificaziun sch'il pled-clav è memorisà
+    .accesskey = i
+    .tooltiptext = Questa opziun t'autentifitgescha automaticamain tar proxies sche ti has memorisà las datas d'access. L'autentificaziun manuala è necessaria sch'i dat ina errur.
+
 connection-proxy-socks-remote-dns =
     .label = Utilisar in DNS proxy sche SOCKS v5 è activ
     .accesskey = d
-
-connection-dns-over-https =
-    .label = Activar DNS via HTTPS
-    .accesskey = H
-
-connection-dns-over-https-url-resolver = Utilisar il purschider
-    .accesskey = p
 
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider

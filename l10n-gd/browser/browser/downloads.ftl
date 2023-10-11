@@ -16,8 +16,8 @@ downloads-panel =
 # The style attribute has the width of the Downloads Panel expressed using
 # a CSS unit. The longest labels that should fit are usually those of
 # in-progress and blocked downloads.
-downloads-panel-list =
-    .style = width: 70ch
+downloads-panel-items =
+    .style = width: 35em
 
 downloads-cmd-pause =
     .label = Cuir 'na stad
@@ -30,42 +30,65 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = Sguir dheth
 
-# This message is only displayed on Windows and Linux devices
-downloads-cmd-show-menuitem =
-    .label = Fosgail am pasgan far a bheil e
-    .accesskey = F
-
-# This message is only displayed on macOS devices
-downloads-cmd-show-menuitem-mac =
-    .label = Seall san lorgair
+downloads-cmd-show-menuitem-2 =
+    .label =
+        { PLATFORM() ->
+            [macos] Seall san lorgaire
+           *[other] Seall san lorgaire
+        }
     .accesskey = S
+
+## Displayed in the downloads context menu for files that can be opened.
+## Variables:
+##   $handler (String) - The name of the mime type's default file handler.
+##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
 
 downloads-cmd-use-system-default =
     .label = Fosgail ann an sealladair an t-siostaim
     .accesskey = o
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-use-system-default-named =
+    .label = Fosgail le { $handler }
+    .accesskey = l
 
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
 downloads-cmd-always-use-system-default =
     .label = Fosgail ann an sealladair an t-siostaim an-còmhnaidh
     .accesskey = c
+# We can use the same accesskey as downloads-cmd-always-open-similar-files.
+# Both should not be visible in the downloads context menu at the same time.
+# This version is shown when the download's mime type has a valid file handler.
+downloads-cmd-always-use-system-default-named =
+    .label = Fosgail le { $handler } an-còmhnaidh
+    .accesskey = m
 
-downloads-cmd-show-button =
+##
+
+# We can use the same accesskey as downloads-cmd-always-use-system-default.
+# Both should not be visible in the downloads context menu at the same time.
+downloads-cmd-always-open-similar-files =
+    .label = Fosgail faidhlichean coltach ris an-còmhnaidh
+    .accesskey = F
+
+downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
-            [macos] Seall san lorgair
-           *[other] Fosgail am pasgan far a bheil e
+            [macos] Seall san lorgaire
+           *[other] Seall sa phasgan
         }
 
-downloads-cmd-show-panel =
+downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
-            [macos] Seall san lorgair
-           *[other] Fosgail am pasgan far a bheil e
+            [macos] Seall san lorgaire
+           *[other] Seall sa phasgan
         }
-downloads-cmd-show-description =
+downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
-            [macos] Seall san lorgair
-           *[other] Fosgail am pasgan far a bheil e
+            [macos] Seall san lorgaire
+           *[other] Seall sa phasgan
         }
 
 downloads-cmd-show-downloads =
@@ -89,6 +112,9 @@ downloads-cmd-clear-list =
 downloads-cmd-clear-downloads =
     .label = Falamhaich na chaidh a luchdadh a-nuas
     .accesskey = d
+downloads-cmd-delete-file =
+    .label = Sguab às
+    .accesskey = S
 
 # This command is shown in the context menu when downloads are blocked.
 downloads-cmd-unblock =
@@ -138,6 +164,19 @@ downloads-open-file =
 ##   $seconds (number) - Amount of seconds left till the file opens.
 ##   $minutes (number) - Amount of minutes till the file opens.
 
+downloading-file-opens-in-hours-and-minutes-2 =
+    .value = Ga fhosgladh ann an { $hours }u { $minutes }m…
+downloading-file-opens-in-minutes-2 =
+    .value = Ga fhosgladh ann an { $minutes }m…
+downloading-file-opens-in-minutes-and-seconds-2 =
+    .value = Ga fhosgladh ann an { $minutes }m { $seconds }d…
+downloading-file-opens-in-seconds-2 =
+    .value = Ga fhosgladh ann an { $seconds }s…
+downloading-file-opens-in-some-time-2 =
+    .value = A’ dol ga fhosgladh nuair a bhios e deiseil…
+downloading-file-click-to-open =
+    .value = Fosgail e nuair a bhios e deiseil…
+
 ##
 
 # Displayed when hovering a download which is able to be retried by users,
@@ -162,6 +201,23 @@ downloads-history =
 downloads-details =
     .title = Fiosrachadh mun luchdadh a-nuas
 
+## Displayed when a site attempts to automatically download many files.
+## Variables:
+##   $num (number) - Number of blocked downloads.
+##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+
+downloads-files-not-downloaded =
+    { $num ->
+        [one] Tha { $num } fhaidhle gun luchdadh a-nuas.
+        [two] Tha { $num } fhaidhle gun luchdadh a-nuas.
+        [few] Tha { $num } faidhlichean gun luchdadh a-nuas.
+       *[other] Tha { $num } faidhle gun luchdadh a-nuas.
+    }
+downloads-blocked-from-url = Tha luchdadh a-nuas o { $url } air a bhachadh.
+downloads-blocked-download-detailed-info = Rinn { $url } oidhirp iomadh faidhle a luchdadh a-nuas. Dh’fhaoidte gu bheil an làrach seo briste no a’ feuchainn ri faidhlichean spama a chur air an uidheam agad.
+
+##
+
 downloads-clear-downloads-button =
     .label = Falamhaich na chaidh a luchdadh a-nuas
     .tooltiptext = Falamhaichidh seo na chaidh a luchdadh a-nuas, a' gabhail a-steach feadhainn a sguireadh dhiubh no a dh'fhàillig
@@ -174,3 +230,29 @@ downloads-list-empty =
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = Cha deach dad a luchdadh a-nuas san t-seisean seo.
+
+# This is displayed in an item at the bottom of the Downloads Panel when there
+# are more downloads than can fit in the list in the panel.
+#   $count (number) - number of files being downloaded that are not shown in the
+#                     panel list.
+downloads-more-downloading =
+    { $count ->
+        [one] Tha { $count } fhaidhle eile ga luchdadh a-nuas
+        [two] Tha { $count } fhaidhle eile ga luchdadh a-nuas
+        [few] Tha { $count } faidhlichean eile gan luchdadh a-nuas
+       *[other] Tha { $count } faidhle eile gan luchdadh a-nuas
+    }
+
+## Download errors
+
+downloads-error-alert-title = Mearachd leis an luchdadh a-nuas
+# Variables:
+#   $extension (String): the name of the blocking extension.
+downloads-error-blocked-by = Cha ghabh an luchdadh a-nuas a shàbhaladh on a tha { $extension } ’ga bhacadh.
+# Used when the name of the blocking extension is unavailable.
+downloads-error-extension = Cha ghabh an luchdadh a-nuas a shàbhaladh on a tha leudachan ’ga bhacadh.
+# Line breaks in this message are meaningful, and should be maintained.
+downloads-error-generic =
+    Cha ghabh an luchdadh a-nuas a shàbhaladh a chionn 's gun do thachair mearachd neo-aithniche.
+    
+    Feuch ris a-rithist.

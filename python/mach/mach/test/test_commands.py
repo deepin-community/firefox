@@ -2,15 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from __future__ import absolute_import, print_function, unicode_literals
-
-import os
 import sys
+from pathlib import Path
 
 import pytest
+from buildconfig import topsrcdir
 from mozunit import main
 
-from buildconfig import topsrcdir
 import mach
 
 ALL_COMMANDS = [
@@ -26,10 +24,10 @@ ALL_COMMANDS = [
 @pytest.fixture
 def run_completion(run_mach):
     def inner(args=[]):
-        mach_dir = os.path.dirname(mach.__file__)
+        mach_dir = Path(mach.__file__).parent
         providers = [
-            "commands.py",
-            os.path.join(mach_dir, "commands", "commandinfo.py"),
+            Path("commands.py"),
+            mach_dir / "commands" / "commandinfo.py",
         ]
 
         def context_handler(key):

@@ -28,6 +28,7 @@ perftools-description-local-build = Nëse po krijoni profil të një montimi që
 
 ## The controls for the interval at which the profiler samples the code.
 
+perftools-range-interval-label = Interval kampionizimi:
 perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 2) } ms
 
 ##
@@ -43,9 +44,6 @@ perftools-devtools-settings-label = Rregullime
 
 ## Various statuses that affect the current state of profiling, not typically displayed.
 
-perftools-status-private-browsing-notice =
-    Kur është i aktivizuar Shfletimi Privat, profilizuesi është i çaktivizuar.
-    Që të riaktivizohet profilizuesi, mbyllni krejt Dritaret Private
 perftools-status-recording-stopped-by-another-tool = Regjistrimi u ndal nga një mjet tjetër.
 perftools-status-restart-required = Që të aktivizohet kjo veçori, shfletuesi duhet rinisur.
 
@@ -75,14 +73,18 @@ perftools-thread-renderer =
     .title = Kur është i aktivizuar WebRender, rrjedha që ekzekuton thirrjet OpenGL
 perftools-thread-render-backend =
     .title = Rrjedha WebRender RenderBackend
-perftools-thread-paint-worker =
-    .title = Kur aktivizohet vizatimi “off-main-thread”, rrjedha në të cilën ndodh vizatimi
 perftools-thread-style-thread =
     .title = Përllogaritja e stilit është ndarë në disa rrjedha
 perftools-thread-img-decoder =
     .title = Rrjedha shkodimi figurash
 perftools-thread-dns-resolver =
     .title = Ftillimi DNS ndodh në këtë rrjedhë
+perftools-thread-jvm-gecko =
+    .title = Rrjedha kryesore Gecko JVM
+perftools-thread-jvm-nimbus =
+    .title = Rrjedha kryesore për SDK eksperimentesh Nimbus
+perftools-thread-jvm-glean =
+    .title = Rrjedha kryesore për SDK telemetrie Glean
 
 ##
 
@@ -92,13 +94,45 @@ perftools-tools-threads-input-label =
     .title = Këto emra rrjedhash janë një listë e ndarë me presje, që përdoret për të aktivizuar profilizim rrjedhash te profilizuesi. Emri lypset të jetë vetëm një përputhje e pjesshme e emrit të rrjedhës që duhet përfshirë. Është i ndjeshëm ndaj hapësirave të zbrazëta.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## both devtools.performance.new-panel-onboarding & devtools.performance.new-panel-enabled
-## preferences are true.
+## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>E re</b>: { -profiler-brand-name } tani është i integruar me Mjete Zhvilluesi. <a>Mësoni më tepër</a> rreth këtij mjeti të fuqishëm.
 
-# `options-context-advanced-settings` is defined in toolbox-options.ftl
-perftools-onboarding-reenable-old-panel = (Për një kohë të kufizuar, mund të përdorni panelin origjinal Funksionim përmes <a>{ options-context-advanced-settings }</a>)
-
 perftools-onboarding-close-button =
     .aria-label = Mbylle mesazhin e mirëseardhjes
+
+## Profiler presets
+
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/popup/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
+
+# Presets and their l10n IDs are defined in the file
+# devtools/client/performance-new/shared/background.jsm.js
+# The same labels and descriptions are also defined in appmenu.ftl.
+
+perftools-presets-web-developer-label = Zhvillues Web
+perftools-presets-web-developer-description = Profil i gatshëm i rekomanduar për shumicën e diagnostikimit të aplikacioneve web, me kokëçarje të pakta.
+
+perftools-presets-firefox-label = { -brand-shorter-name }
+perftools-presets-firefox-description = Model i rekomanduar për profilizim { -brand-shorter-name }.
+
+perftools-presets-graphics-label = Grafikë
+perftools-presets-graphics-description = Model për hetim të metash grafike në { -brand-shorter-name }.
+
+perftools-presets-media-label = Media
+perftools-presets-media-description2 = Model për hetim të metash audio dhe video nën { -brand-shorter-name }.
+
+perftools-presets-networking-label = Punim në rrjet
+perftools-presets-networking-description = Model për hetim të metash punimi në rrjet në { -brand-shorter-name }.
+
+# "Power" is used in the sense of energy (electricity used by the computer).
+perftools-presets-power-label = Energji
+perftools-presets-power-description = Paracaktim për hetim të metash përdorimi energjie në { -brand-shorter-name }, me ngarkesë të ulët.
+
+perftools-presets-custom-label = Vetjak
+
+##
+

@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-create-profile-window =
+create-profile-window2 =
     .title = Ստեղծել պրոֆիլի Օգնական
-    .style = width: 45em; height: 32em;
+    .style = min-width: 45em; min-height: 32em;
 
 ## First wizard page
 
-create-profile-first-page-header =
+create-profile-first-page-header2 =
     { PLATFORM() ->
         [macos] Ներածություն
-       *[other] Բարի գալուստ { create-profile-window.title }
+       *[other] Բարի գալուստ { create-profile-window2.title }
     }
 
 profile-creation-explanation-1 = { -brand-short-name }­-ը Ձեր նախընտրանքների և կազմաձևման վերաբերյալ տվյալները պահպանում է Ձեր անձնական հաշվում։
@@ -28,10 +28,10 @@ profile-creation-explanation-4 =
 
 ## Second wizard page
 
-create-profile-last-page-header =
+create-profile-last-page-header2 =
     { PLATFORM() ->
         [macos] Վերջաբան
-       *[other] Ավարտում եմ { create-profile-window.title }-ը
+       *[other] Ավարտում եմ { create-profile-window2.title }-ը
     }
 
 profile-creation-intro = Հաշիվները կարելի է տարբերակել ըստ անունների։ Կարող եք օգտագործել նախանշված անունը կամ նշեք մեկ այլ անուն՝ Ձեր ցանկությամբ։

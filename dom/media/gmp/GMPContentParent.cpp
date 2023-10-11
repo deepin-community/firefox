@@ -28,6 +28,7 @@ GMPContentParent::GMPContentParent(GMPParent* aParent)
   if (mParent) {
     SetDisplayName(mParent->GetDisplayName());
     SetPluginId(mParent->GetPluginId());
+    SetPluginType(mParent->GetPluginType());
   }
 }
 
@@ -142,7 +143,7 @@ nsCOMPtr<nsISerialEventTarget> GMPContentParent::GMPEventTarget() {
     mps->GetThread(getter_AddRefs(gmpThread));
     MOZ_ASSERT(gmpThread);
 
-    mGMPEventTarget = gmpThread->SerialEventTarget();
+    mGMPEventTarget = gmpThread;
   }
 
   return mGMPEventTarget;
@@ -196,6 +197,24 @@ nsresult GMPContentParent::GetGMPVideoEncoder(GMPVideoEncoderParent** aGMPVE) {
   mVideoEncoders.AppendElement(vep);
 
   return NS_OK;
+}
+
+void GMPContentParentCloseBlocker::Destroy() {
+  MOZ_ASSERT(mParent);
+  MOZ_ASSERT(mEventTarget);
+
+  if (!mEventTarget->IsOnCurrentThread()) {
+    mEventTarget->Dispatch(NS_NewRunnableFunction(
+        __func__, [parent = std::move(mParent), eventTarget = mEventTarget]() {
+          parent->RemoveCloseBlocker();
+        }));
+    mEventTarget = nullptr;
+    return;
+  }
+
+  mParent->RemoveCloseBlocker();
+  mParent = nullptr;
+  mEventTarget = nullptr;
 }
 
 }  // namespace mozilla::gmp

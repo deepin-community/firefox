@@ -5,7 +5,7 @@
 
 "use strict";
 
-const TEST_URI = `data:text/html;charset=utf-8,<p>Test keyboard accessibility</p>
+const TEST_URI = `data:text/html;charset=utf-8,<!DOCTYPE html><p>Test keyboard accessibility</p>
   <script>
     for (let i = 1; i <= 100; i++) {
       console.log("console message " + i);
@@ -13,12 +13,12 @@ const TEST_URI = `data:text/html;charset=utf-8,<p>Test keyboard accessibility</p
   </script>
   `;
 
-add_task(async function() {
+add_task(async function () {
   const hud = await openNewTabAndConsole(TEST_URI);
   info("Web Console opened");
   const outputScroller = hud.ui.outputScroller;
   await waitFor(
-    () => findMessages(hud, "").length == 100,
+    () => findConsoleAPIMessage(hud, "console message 100"),
     "waiting for all the messages to be displayed",
     100,
     1000
@@ -63,13 +63,17 @@ add_task(async function() {
     clearShortcut = WCUL10n.getStr("webconsole.clear.key");
   }
   synthesizeKeyShortcut(clearShortcut);
-  await waitFor(() => findMessages(hud, "").length == 0);
+  await waitFor(() => !findAllMessages(hud).length);
   ok(isInputFocused(hud), "console was cleared and input is focused");
 
   if (Services.appinfo.OS === "Darwin") {
     info("Log a new message from the content page");
-    const onMessage = waitForMessage(hud, "another simple text message");
-    SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function() {
+    const onMessage = waitForMessageByType(
+      hud,
+      "another simple text message",
+      ".console-api"
+    );
+    SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function () {
       content.console.log("another simple text message");
     });
     await onMessage;
@@ -77,7 +81,7 @@ add_task(async function() {
     info("Send Cmd-K to clear console");
     synthesizeKeyShortcut(WCUL10n.getStr("webconsole.clear.alternativeKeyOSX"));
 
-    await waitFor(() => findMessages(hud, "").length == 0);
+    await waitFor(() => !findAllMessages(hud).length);
     ok(
       isInputFocused(hud),
       "console was cleared as expected with alternative shortcut"
@@ -97,5 +101,19 @@ add_task(async function() {
     getFilterInput(hud),
     outputScroller.ownerDocument.activeElement,
     "filter input is focused"
+  );
+
+  info("Ctrl-U should open view:source when input is focused");
+  hud.jsterm.focus();
+  const onTabOpen = BrowserTestUtils.waitForNewTab(
+    gBrowser,
+    url => url.startsWith("view-source:"),
+    true
+  );
+  EventUtils.synthesizeKey("u", { accelKey: true });
+  await onTabOpen;
+  ok(
+    true,
+    "The view source tab was opened with the expected keyboard shortcut"
   );
 });

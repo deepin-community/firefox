@@ -2,18 +2,29 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+tab-context-new-tab =
+    .label = Ivinell nevez
+    .accesskey = w
 reload-tab =
     .label = Adkargañ an ivinell
     .accesskey = A
 select-all-tabs =
     .label = Diuzañ an holl ivinelloù
     .accesskey = D
+tab-context-play-tab =
+    .label = Lenn an ivinell
+    .accesskey = L
+tab-context-play-tabs =
+    .label = Lenn an ivinelloù
+    .accesskey = L
 duplicate-tab =
     .label = Eilañ an ivinell
     .accesskey = E
 duplicate-tabs =
     .label = Eilañ an ivinelloù
     .accesskey = E
+# The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Serriñ an ivinelloù war an tu dehou
     .accesskey = i
@@ -38,9 +49,12 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Ouzhpennañ an ivinelloù er sinedoù…
     .accesskey = i
-bookmark-tab =
-    .label = Ouzhpennañ an ivinell er sinedoù
-    .accesskey = s
+tab-context-bookmark-tab =
+    .label = Ouzhpennañ an ivinell d'ar sinedoù…
+    .accesskey = B
+tab-context-open-in-new-container-tab =
+    .label = Digeriñ en un ivinell enderc’hel nevez
+    .accesskey = e
 move-to-start =
     .label = Dilec'hiañ etrezek ar penn-kentañ
     .accesskey = p
@@ -53,21 +67,35 @@ move-to-new-window =
 tab-context-close-multiple-tabs =
     .label = Serriñ meur a ivinell
     .accesskey = S
+tab-context-share-url =
+    .label = Rannañ
+    .accesskey = h
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
 
-tab-context-close-tabs =
+tab-context-reopen-closed-tabs =
     .label =
         { $tabCount ->
-            [1] Serriñ an ivinell
-            [one] Serriñ an ivinelloù
-            [two] Serriñ an ivinelloù
-            [few] Serriñ an ivinelloù
-            [many] Serriñ an ivinelloù
-           *[other] Serriñ an ivinelloù
+            [1] Addigeriñ an ivinell serret
+            [one] Addigeriñ an ivinelloù serret
+            [two] Addigeriñ an ivinelloù serret
+            [few] Addigeriñ an ivinelloù serret
+            [many] Addigeriñ an ivinelloù serret
+           *[other] Addigeriñ an ivinelloù serret
         }
-    .accesskey = S
+    .accesskey = o
+tab-context-close-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Serriñ { $tabCount } ivinell
+            [one] Serriñ { $tabCount } ivinell
+            [two] Serriñ { $tabCount } ivinell
+            [few] Serriñ { $tabCount } ivinell
+            [many] Serriñ { $tabCount } ivinell
+           *[other] Serriñ { $tabCount } ivinell
+        }
+    .accesskey = C
 tab-context-move-tabs =
     .label =
         { $tabCount ->
@@ -79,7 +107,6 @@ tab-context-move-tabs =
            *[other] Dilec'hiañ an ivinelloù
         }
     .accesskey = D
-
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->

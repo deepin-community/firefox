@@ -11,6 +11,12 @@ reload-tab =
 select-all-tabs =
     .label = Összes lap kiválasztása
     .accesskey = e
+tab-context-play-tab =
+    .label = Lap lejátszása
+    .accesskey = L
+tab-context-play-tabs =
+    .label = Lapok lejátszása
+    .accesskey = j
 duplicate-tab =
     .label = Lap duplikálása
     .accesskey = d
@@ -48,8 +54,8 @@ unpin-selected-tabs =
 bookmark-selected-tabs =
     .label = Lapok könyvjelzőzése…
     .accesskey = k
-bookmark-tab =
-    .label = Lap könyvjelzőzése
+tab-context-bookmark-tab =
+    .label = Lap könyvjelzőzése…
     .accesskey = k
 tab-context-open-in-new-container-tab =
     .label = Megnyitás új konténerlapban
@@ -69,8 +75,6 @@ tab-context-close-multiple-tabs =
 tab-context-share-url =
     .label = Megosztás
     .accesskey = M
-tab-context-share-more =
-    .label = Továbbiak…
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -83,14 +87,6 @@ tab-context-reopen-closed-tabs =
            *[other] Bezárt lapok újranyitása
         }
     .accesskey = z
-tab-context-close-tabs =
-    .label =
-        { $tabCount ->
-            [1] Lap bezárása
-            [one] Lap bezárása
-           *[other] Lapok bezárása
-        }
-    .accesskey = b
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->

@@ -1,13 +1,11 @@
 // This file tests async handling of a channel suspended in http-on-modify-request.
 "use strict";
 
-var CC = Components.Constructor;
-
-const { HttpServer } = ChromeUtils.import("resource://testing-common/httpd.js");
-
-var obs = Cc["@mozilla.org/observer-service;1"].getService(
-  Ci.nsIObserverService
+const { HttpServer } = ChromeUtils.importESModule(
+  "resource://testing-common/httpd.sys.mjs"
 );
+
+var obs = Services.obs;
 
 var baseUrl;
 
@@ -22,8 +20,6 @@ function onExamineListener(callback) {
   obs.addObserver(
     {
       observe(subject, topic, data) {
-        var obs = Cc["@mozilla.org/observer-service;1"].getService();
-        obs = obs.QueryInterface(Ci.nsIObserverService);
         obs.removeObserver(this, "http-on-examine-response");
         callback(subject.QueryInterface(Ci.nsIHttpChannel));
       },
@@ -32,9 +28,9 @@ function onExamineListener(callback) {
   );
 }
 
-function startChannelRequest(baseUrl, flags, callback) {
+function startChannelRequest(uri, flags, callback) {
   var chan = NetUtil.newChannel({
-    uri: baseUrl,
+    uri,
     loadUsingSystemPrincipal: true,
   });
   chan.asyncOpen(new ChannelListener(callback, null, flags));
@@ -55,8 +51,11 @@ add_test(function testAsyncCancel() {
   startChannelRequest(baseUrl, CL_EXPECT_FAILURE, (request, data, context) => {
     Assert.ok(!data, "no response");
 
-    var cm = Cc["@mozilla.org/cookiemanager;1"].getService(Ci.nsICookieManager);
-    Assert.equal(cm.countCookiesFromHost("localhost"), 0, "no cookies set");
+    Assert.equal(
+      Services.cookies.countCookiesFromHost("localhost"),
+      0,
+      "no cookies set"
+    );
 
     executeSoon(run_next_test);
   });
@@ -71,7 +70,7 @@ function run_test() {
 
   run_next_test();
 
-  registerCleanupFunction(function() {
+  registerCleanupFunction(function () {
     httpServer.stop(() => {});
   });
 }

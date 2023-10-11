@@ -34,7 +34,6 @@ about-telemetry-events-section = Eventi
 about-telemetry-simple-measurements-section = Misurazioni semplici
 about-telemetry-slow-sql-section = Istruzioni SQL lente
 about-telemetry-addon-details-section = Dettagli comp. aggiuntivi
-about-telemetry-captured-stacks-section = Stack acquisiti
 about-telemetry-late-writes-section = Scritture ritardate
 about-telemetry-raw-payload-section = Payload non elaborato
 about-telemetry-raw = JSON non elaborato
@@ -121,10 +120,6 @@ about-telemetry-keys-header = Proprietà
 about-telemetry-names-header = Nome
 about-telemetry-values-header = Valore
 # Variables:
-#   $stackKey (String): the string key for this stack
-#   $capturedStacksCount (Integer):  the number of times this stack was captured
-about-telemetry-captured-stacks-title = { $stackKey } (numero acquisizioni: { $capturedStacksCount })
-# Variables:
 #   $lateWriteCount (Integer): the number of the late writes
 about-telemetry-late-writes-title = Scrittura ritardata #{ $lateWriteCount }
 about-telemetry-stack-title = Stack:
@@ -135,8 +130,4 @@ about-telemetry-category-header = Categoria
 about-telemetry-method-header = Metodo
 about-telemetry-object-header = Oggetto
 about-telemetry-extra-header = Altro
-about-telemetry-origin-section = Telemetria “Origin”
-about-telemetry-origin-origin = origine
-about-telemetry-origin-count = totale
-about-telemetry-origins-explanation = La <a data-l10n-name="origin-doc-link">telemetria “Origin” in Firefox</a> codifica i dati prima dell’invio. In questo modo { $telemetryServerOwner } può effettuare conteggi, ma non può determinare se una specifica istanza di { -brand-product-name } abbia contribuito o meno a quel totale. <a data-l10n-name="prio-blog-link">Ulteriori informazioni</a>.
 about-telemetry-process = Processo “{ $process }”

@@ -50,6 +50,9 @@ printui-backgrounds-checkbox = Տպել խորքերը
 ## options to select between the original page, selected text only, or a version
 ## where the page is processed with "Reader View".
 
+# Option for printing just the content a user selected prior to printing.
+printui-selection-radio = Ընտրությունը
+
 ##
 
 printui-color-mode-label = Գունավոր կերպը
@@ -60,7 +63,7 @@ printui-margins = Լուսանցքներ
 printui-margins-none = Չկա
 printui-margins-custom-inches = Ընտրված (դյույմ)
 
-printui-system-dialog-link = Տպել՝ օգտագործելով համակարգի երկխոսությունը…
+printui-system-dialog-link = Տպելիս գտագործելով համակարգի երկխոսությունը…
 
 printui-primary-button = Տպել
 printui-cancel-button = Չեղարկել

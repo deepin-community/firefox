@@ -63,7 +63,6 @@ protections-panel-not-found-label = Ոչ մեկը չի հայտնաբերվել
 ##
 
 protections-panel-settings-label = Պաշտպանության կարգավորումներ
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Պաշտպանության վահանակ
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -89,6 +88,8 @@ protections-panel-fingerprinters = Մատնահետքերը հավաքում ե�
 protections-panel-tracking-content = Կայքերը կարող են բեռնել արտաքին գովազդներ, տեսանյութեր և այլ պարունակություն հետևման կոդով։ Պարունակության հետևումը արգելափակելը կարող է ավելի արագացնել կայքերի բեռնումը, բայց որոշ կոճակներ, ձևեր և մուտքագործման դաշտեր կարող են չաշխատել։
 protections-panel-social-media-trackers = Սոց ցանցերը տեղադրում են հետևումներ այլ վեբ կայքերում հետևելու համար, թե ինչ եք անում՝ տեսնելու և դիտելու առցանց։ Սա թույլատրում է սոց մեդիա ընկերությունների իմանալ ավելին ձեր մասին մինչ ձեր կիսումը հատկագրերում։
 
+protections-panel-description-shim-allowed-learn-more = Իմանալ ավելին
+
 protections-panel-content-blocking-manage-settings =
     .label = Կառավարել պաշտպանություն կարգավորումները
     .accesskey = M
@@ -96,6 +97,7 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Հաղորդել կոտրված կայքի մասին
 protections-panel-content-blocking-breakage-report-view-description = Որոշ հետևումների արգելափակումը կարող է որոշ կայքերի խնդիրների պատճառ դառնալ։ Այս խնդիրների զեկուցումը { -brand-short-name }-ը բոլորի համար ավելի լավը կդարձնի։ Այս զեկույցն ուղարկելով Mozila-ին կուղարկվի URL և ձեր զննարկչի կարգավորումների մասին տեղեկություն։ <label data-l10n-name="learn-more">Իմանալ ավելին</label>
+protections-panel-content-blocking-breakage-report-view-description2 = Որոշ հետևումների արգելափակումը կարող է որոշ կայքերի խնդիրների պատճառ դառնալ։ Այս խնդիրների զեկուցումը { -brand-short-name }-ը բոլորի համար ավելի լավը կդարձնի։ Այս զեկույցն ուղարկելով { -vendor-short-name }-ին կուղարկվի URL և ձեր զննարկչի կարգավորումների մասին տեղեկություն։
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL
@@ -106,3 +108,8 @@ protections-panel-content-blocking-breakage-report-view-cancel =
     .label = Չեղարկել
 protections-panel-content-blocking-breakage-report-view-send-report =
     .label = Ուղարկել զեկույց
+
+# Cookie Banner Handling
+
+protections-panel-cookie-banner-view-turn-off = Անջատել
+protections-panel-cookie-banner-view-turn-on = Միացնել

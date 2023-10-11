@@ -71,16 +71,14 @@ mobile-app-card-content = Χρησιμοποιήστε το πρόγραμμα �
 mobile-app-links = Πρόγραμμα περιήγησης { -brand-product-name } για <a data-l10n-name="android-mobile-inline-link">Android</a> και <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Φύλαξη κωδικών πρόσβασης
-lockwise-title-logged-in2 = Διαχείριση κωδικών πρόσβασης
-lockwise-header-content = Το { -lockwise-brand-name } αποθηκεύει με ασφάλεια τους κωδικούς πρόσβασης στον φυλλομετρητή σας.
+passwords-title-logged-in = Διαχείριση κωδικών πρόσβασης
+passwords-header-content = Το { -brand-product-name } αποθηκεύει με ασφάλεια τους κωδικούς πρόσβασής σας.
 lockwise-header-content-logged-in = Αποθηκεύστε και συγχρονίστε με ασφάλεια τους κωδικούς πρόσβασής σας σε όλες τις συσκευές σας.
-protection-report-save-passwords-button = Αποθήκευση κωδικών πρόσβασης
-    .title = Αποθήκευση κωδικών πρόσβασης στο { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Διαχείριση κωδικών πρόσβασης
-    .title = Διαχείριση κωδικών πρόσβασης στο { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Πάρτε τους κωδικούς πρόσβασής σας παντού
-lockwise-no-logins-card-content = Χρησιμοποιήστε τους αποθηκευμένους κωδικούς πρόσβασης του { -brand-short-name } σε όλες τις συσκευές.
-lockwise-app-links = { -lockwise-brand-name } για <a data-l10n-name="lockwise-android-inline-link">Android</a> και <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Αποθήκευση κωδικών πρόσβασης
+    .title = Αποθήκευση κωδικών πρόσβασης
+protection-report-passwords-manage-passwords-button = Διαχείριση κωδικών πρόσβασης
+    .title = Διαχείριση κωδικών πρόσβασης
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

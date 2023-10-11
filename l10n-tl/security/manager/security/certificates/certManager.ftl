@@ -24,9 +24,9 @@ certmgr-mine = May mga certificate ka mula sa mga organisasyong ito na nakakakil
 certmgr-people = May mga certificate kang nakatago na kumikilala sa mga taong ito
 certmgr-ca = May mga certificate ka na nakatago na kumikilala sa mga certificate authority na ito
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = i-Edit ang CA certificate trust settings
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = i-Edit ang trust settings:
 
@@ -36,9 +36,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Ang sertipiko na ito ay maaaring makilala ang mga gumagamit ng mail.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Burahin ang Sertipiko
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Host
@@ -48,9 +48,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Server
-
-certmgr-override-lifetime =
-    .label = Haba ng buhay
 
 certmgr-token-name =
     .label = Security Device
@@ -180,8 +177,6 @@ delete-email-cert-impact = Kung tatangalin mo ang e-mail certificate ng isang ta
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Certificate na may serial number: { $serialNumber }
-
-## Cert Viewer
 
 # Used when no cert is stored for an override
 no-cert-stored-for-override = (Hindi Nakaimbak)

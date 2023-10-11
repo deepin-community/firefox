@@ -38,16 +38,11 @@ menu-quit =
             [windows] ա
            *[other] Q
         }
+
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Փակել { -brand-shorter-name }-ը
-# This menu-quit-button string is only used on Linux.
-menu-quit-button =
-    .label = { menu-quit.label }
-# This menu-quit-button-win string is only used on Windows.
-menu-quit-button-win =
-    .label = { menu-quit.label }
-    .tooltip = Փակել { -brand-shorter-name }-ը
+
 menu-about =
     .label = { -brand-shorter-name }-ի մասին
     .accesskey = մ
@@ -77,9 +72,16 @@ menu-file-open-location =
 menu-file-open-file =
     .label = Բացել Ֆայլ…
     .accesskey = Բ
-menu-file-close =
-    .label = Փակել
-    .accesskey = Փ
+# Variables:
+#  $tabCount (Number): the number of tabs that are affected by the action.
+menu-file-close-tab =
+    .label =
+        { $tabCount ->
+            [1] Փակել ներդիրը
+            [one] Փակել { $tabCount } ներդիրները
+           *[other] Փակել { $tabCount } ներդիրները
+        }
+    .accesskey = C
 menu-file-close-window =
     .label = Փակել Պատուհանը
     .accesskey = տ
@@ -89,12 +91,12 @@ menu-file-save-page =
 menu-file-email-link =
     .label = Հղումը ուղարկել էլ. փոստով...
     .accesskey = Հ
+menu-file-share-url =
+    .label = Համօգտագործել
+    .accesskey = h
 menu-file-print-setup =
     .label = Էջի կարգավորումներ…
     .accesskey = գ
-menu-file-print-preview =
-    .label = Տպելու նախադիտում
-    .accesskey = ա
 menu-file-print =
     .label = Տպել…
     .accesskey = Տ
@@ -175,6 +177,17 @@ menu-view-full-screen =
     .label = Բացել Լիաէկրան
     .accesskey = Բ
 
+## These menu items may use the same accesskey.
+
+# This should match reader-view-enter-button in browser.ftl
+menu-view-enter-readerview =
+    .label = Մուտք Ընթերցելու եղանակ
+    .accesskey = R
+# This should match reader-view-close-button in browser.ftl
+menu-view-close-readerview =
+    .label = Փակել Ընթերցելու եղանակը
+    .accesskey = R
+
 ##
 
 menu-view-show-all-tabs =
@@ -209,8 +222,12 @@ menu-history-undo-window-menu =
 menu-bookmarks-menu =
     .label = Էջանիշեր
     .accesskey = Է
-menu-bookmark-edit =
-    .label = Խմբագրել այս էջանիշը
+menu-bookmarks-manage =
+    .label = Կառավարեք էջանիշները
+menu-bookmark-tab =
+    .label = Էջանշել ընթացիկ ներդիրը…
+menu-edit-bookmark =
+    .label = Խմբագրել այս էջանիշը…
 menu-bookmarks-all-tabs =
     .label = Էջանշել Բոլոր Ներդիրները…
 menu-bookmarks-toolbar =
@@ -234,6 +251,9 @@ menu-tools-addons-and-themes =
 menu-tools-fxa-sign-in2 =
     .label = Մուտք գործել
     .accesskey = g
+menu-tools-turn-on-sync2 =
+    .label = Միացնել համաժամեցումը…
+    .accesskey = n
 menu-tools-sync-now =
     .label = Համաժամեցնել
     .accesskey = o
@@ -287,14 +307,17 @@ menu-help =
 menu-get-help =
     .label = Ստանալ օգնություն
     .accesskey = H
+menu-help-more-troubleshooting-info =
+    .label = Անսարքության տեղեկատվություն
+    .accesskey = T
 menu-help-report-site-issue =
     .label = Զեկուցել կայքի խնդրի մասին…
-menu-help-feedback-page =
-    .label = Ուղարկել արձագանք…
-    .accesskey = Ո
 menu-help-enter-troubleshoot-mode2 =
     .label = Խափանաշտկման կերպ…
     .accesskey = M
+menu-help-switch-device =
+    .label = Անցում նոր սարքի
+    .accesskey = N
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =

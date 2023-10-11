@@ -28,10 +28,12 @@
 #  include <windows.h>
 #  include <winioctl.h>
 #  ifndef __MINGW32__
+#    include <wrl.h>
 #    include <wscapi.h>
 #  endif  // __MINGW32__
 #  include "base/scoped_handle_win.h"
 #  include "mozilla/DynamicallyLinkedFunctionPtr.h"
+#  include "mozilla/WindowsVersion.h"
 #  include "nsAppDirectoryServiceDefs.h"
 #  include "nsDirectoryServiceDefs.h"
 #  include "nsDirectoryServiceUtils.h"
@@ -48,6 +50,7 @@
 #ifdef MOZ_WIDGET_GTK
 #  include <gtk/gtk.h>
 #  include <dlfcn.h>
+#  include "mozilla/WidgetUtilsGtk.h"
 #endif
 
 #if defined(XP_LINUX) && !defined(ANDROID)
@@ -82,6 +85,16 @@
 uint32_t nsSystemInfo::gUserUmask = 0;
 
 using namespace mozilla::dom;
+
+#if defined(XP_WIN)
+#  define RuntimeClass_Windows_System_Profile_WindowsIntegrityPolicy \
+    L"Windows.System.Profile.WindowsIntegrityPolicy"
+#  ifndef __MINGW32__
+using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;
+using namespace ABI::Windows::Foundation;
+#  endif  // __MINGW32__
+#endif
 
 #if defined(XP_LINUX) && !defined(ANDROID)
 static void SimpleParseKeyValuePairs(
@@ -583,6 +596,7 @@ static const struct PropItems {
 
 nsresult CollectProcessInfo(ProcessInfo& info) {
   nsAutoCString cpuVendor;
+  nsAutoCString cpuName;
   int cpuSpeed = -1;
   int cpuFamily = -1;
   int cpuModel = -1;
@@ -625,6 +639,32 @@ nsresult CollectProcessInfo(ProcessInfo& info) {
                        nativeMachine == IMAGE_FILE_MACHINE_ARM64);
   }
 
+  // S Mode
+
+#  ifndef __MINGW32__
+  // WindowsIntegrityPolicy is only available on newer versions
+  // of Windows 10, so there's no point in trying to check this
+  // on earlier versions. We know GetActivationFactory crashes on
+  // Windows 7 when trying to retrieve this class, and may also
+  // crash on very old versions of Windows 10.
+  if (IsWin10Sep2018UpdateOrLater()) {
+    ComPtr<IWindowsIntegrityPolicyStatics> wip;
+    HRESULT hr = GetActivationFactory(
+        HStringReference(
+            RuntimeClass_Windows_System_Profile_WindowsIntegrityPolicy)
+            .Get(),
+        &wip);
+    if (SUCCEEDED(hr)) {
+      // info.isWindowsSMode ends up true if Windows is in S mode, otherwise
+      // false
+      // https://docs.microsoft.com/en-us/uwp/api/windows.system.profile.windowsintegritypolicy.isenabled?view=winrt-22000
+      hr = wip->get_IsEnabled(&info.isWindowsSMode);
+      NS_WARNING_ASSERTION(SUCCEEDED(hr),
+                           "WindowsIntegrityPolicy.IsEnabled failed");
+    }
+  }
+#  endif  // __MINGW32__
+
   // CPU speed
   HKEY key;
   static const WCHAR keyName[] =
@@ -651,6 +691,20 @@ nsresult CollectProcessInfo(ProcessInfo& info) {
         vtype == REG_SZ && len % 2 == 0 && len > 1) {
       cpuVendorStr[len / 2] = 0;  // In case it isn't null terminated
       CopyUTF16toUTF8(nsDependentString(cpuVendorStr), cpuVendor);
+    }
+
+    // Limit to 64 double byte characters, should be plenty, but create
+    // a buffer one larger as the result may not be null terminated. If
+    // it is more than 64, we will not get the value.
+    // The expected string size is 48 characters or less.
+    wchar_t cpuNameStr[64 + 1];
+    len = sizeof(cpuNameStr) - 2;
+    if (RegQueryValueExW(key, L"ProcessorNameString", 0, &vtype,
+                         reinterpret_cast<LPBYTE>(cpuNameStr),
+                         &len) == ERROR_SUCCESS &&
+        vtype == REG_SZ && len % 2 == 0 && len > 1) {
+      cpuNameStr[len / 2] = 0;  // In case it isn't null terminated
+      CopyUTF16toUTF8(nsDependentString(cpuNameStr), cpuName);
     }
 
     RegCloseKey(key);
@@ -710,6 +764,14 @@ nsresult CollectProcessInfo(ProcessInfo& info) {
     delete[] cpuVendorStr;
   }
 
+  if (!sysctlbyname("machdep.cpu.brand_string", NULL, &len, NULL, 0)) {
+    char* cpuNameStr = new char[len];
+    if (!sysctlbyname("machdep.cpu.brand_string", cpuNameStr, &len, NULL, 0)) {
+      cpuName = cpuNameStr;
+    }
+    delete[] cpuNameStr;
+  }
+
   len = sizeof(sysctlValue32);
   if (!sysctlbyname("machdep.cpu.family", &sysctlValue32, &len, NULL, 0)) {
     cpuFamily = static_cast<int>(sysctlValue32);
@@ -737,6 +799,9 @@ nsresult CollectProcessInfo(ProcessInfo& info) {
 
     // cpuVendor from "vendor_id"
     info.cpuVendor.Assign(keyValuePairs["vendor_id"_ns]);
+
+    // cpuName from "model name"
+    info.cpuName.Assign(keyValuePairs["model name"_ns]);
 
     {
       // cpuFamily from "cpu family"
@@ -835,6 +900,9 @@ nsresult CollectProcessInfo(ProcessInfo& info) {
   if (!cpuVendor.IsEmpty()) {
     info.cpuVendor = cpuVendor;
   }
+  if (!cpuName.IsEmpty()) {
+    info.cpuName = cpuName;
+  }
   if (cpuFamily >= 0) {
     info.cpuFamily = cpuFamily;
   }
@@ -896,9 +964,7 @@ nsresult nsSystemInfo::Init() {
     }
   }
 
-  rv = SetPropertyAsBool(NS_ConvertASCIItoUTF16("hasWindowsTouchInterface"),
-                         false);
-  NS_ENSURE_SUCCESS(rv, rv);
+  SetPropertyAsBool(u"isPackagedApp"_ns, false);
 
   // Additional informations not available through PR_GetSystemInfo.
   SetInt32Property(u"pagesize"_ns, PR_GetPageSize());
@@ -939,8 +1005,20 @@ nsresult nsSystemInfo::Init() {
     return rv;
   }
 
-  rv = SetPropertyAsBool(u"hasWinPackageId"_ns,
-                         widget::WinUtils::HasPackageIdentity());
+  boolean hasPackageIdentity = widget::WinUtils::HasPackageIdentity();
+
+  rv = SetPropertyAsBool(u"hasWinPackageId"_ns, hasPackageIdentity);
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return rv;
+  }
+
+  rv = SetPropertyAsAString(u"winPackageFamilyName"_ns,
+                            widget::WinUtils::GetPackageFamilyName());
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return rv;
+  }
+
+  rv = SetPropertyAsBool(u"isPackagedApp"_ns, hasPackageIdentity);
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
   }
@@ -979,6 +1057,13 @@ nsresult nsSystemInfo::Init() {
   bool hasUserCET = isUserCetAvailable &&
                     isUserCetAvailable(USER_CET_ENVIRONMENT_WIN32_PROCESS);
   rv = SetPropertyAsBool(u"hasUserCET"_ns, hasUserCET);
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return rv;
+  }
+
+  nsString pointerExplanation;
+  widget::WinUtils::GetPointerExplanation(&pointerExplanation);
+  rv = SetPropertyAsAString(u"pointingDevices"_ns, pointerExplanation);
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
   }
@@ -1047,6 +1132,12 @@ nsresult nsSystemInfo::Init() {
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
   }
+  rv = SetPropertyAsBool(u"isPackagedApp"_ns,
+                         widget::IsRunningUnderFlatpakOrSnap() ||
+                             widget::IsPackagedAppFileExists());
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return rv;
+  }
 #endif
 
 #ifdef MOZ_WIDGET_ANDROID
@@ -1107,7 +1198,7 @@ void nsSystemInfo::GetAndroidSystemInfo(AndroidSystemInfo* aInfo) {
   jni::String::LocalRef hardware = java::sdk::Build::HARDWARE();
   aInfo->hardware() = hardware->ToString();
 
-  jni::String::LocalRef release = java::sdk::VERSION::RELEASE();
+  jni::String::LocalRef release = java::sdk::Build::VERSION::RELEASE();
   nsString str(release->ToString());
   int major_version;
   int minor_version;
@@ -1258,6 +1349,10 @@ JSObject* GetJSObjForProcessInfo(JSContext* aCx, const ProcessInfo& info) {
 
   JS::Rooted<JS::Value> valisWowARM64(aCx, JS::BooleanValue(info.isWowARM64));
   JS_SetProperty(aCx, jsInfo, "isWowARM64", valisWowARM64);
+
+  JS::Rooted<JS::Value> valisWindowsSMode(
+      aCx, JS::BooleanValue(info.isWindowsSMode));
+  JS_SetProperty(aCx, jsInfo, "isWindowsSMode", valisWindowsSMode);
 #endif
 
   JS::Rooted<JS::Value> valCountInfo(aCx, JS::Int32Value(info.cpuCount));
@@ -1270,6 +1365,11 @@ JSObject* GetJSObjForProcessInfo(JSContext* aCx, const ProcessInfo& info) {
       JS_NewStringCopyN(aCx, info.cpuVendor.get(), info.cpuVendor.Length());
   JS::Rooted<JS::Value> valVendor(aCx, JS::StringValue(strVendor));
   JS_SetProperty(aCx, jsInfo, "vendor", valVendor);
+
+  JSString* strName =
+      JS_NewStringCopyN(aCx, info.cpuName.get(), info.cpuName.Length());
+  JS::Rooted<JS::Value> valName(aCx, JS::StringValue(strName));
+  JS_SetProperty(aCx, jsInfo, "name", valName);
 
   JS::Rooted<JS::Value> valFamilyInfo(aCx, JS::Int32Value(info.cpuFamily));
   JS_SetProperty(aCx, jsInfo, "family", valFamilyInfo);

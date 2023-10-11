@@ -11,3 +11,10 @@ common-dialog-username =
     .value = 用户名
 common-dialog-password =
     .value = 密码
+
+common-dialog-copy-cmd =
+    .label = 复制
+    .accesskey = C
+common-dialog-select-all-cmd =
+    .label = 全选
+    .accesskey = A

@@ -9,11 +9,28 @@
 ##  $scheme - the type of link that's being opened.
 ##  $appName - Name of the application that will be opened.
 
+
+## Permission Dialog
+## Variables:
+##  $host - the hostname that is initiating the request
+##  $scheme - the type of link that's being opened.
+##  $appName - Name of the application that will be opened.
+##  $extension - Name of extension that initiated the request
+
+## Permission Dialog
+## Variables:
+##  $host (string) - The hostname that is initiating the request
+##  $scheme (string) - The type of link that's being opened.
+##  $appName (string) - Name of the application that will be opened.
+##  $extension (string) - Name of extension that initiated the request
+
 permission-dialog-description = Të lejohet ky sajt të hapë lidhjen { $scheme }?
 
 permission-dialog-description-file = Të lejohet kjo kartelë të hapë lidhjen { $scheme }?
 
 permission-dialog-description-host = Të lejohet { $host } të hapë lidhjen { $scheme }?
+
+permission-dialog-description-extension = Të lejohet zgjerimi { $extension } të hapë lidhjen { $scheme }?
 
 permission-dialog-description-app = Të lejohet ky sajt të hapë lidhjen { $scheme } me { $appName }?
 
@@ -21,13 +38,24 @@ permission-dialog-description-host-app = Të lejohet { $host } të hapë lidhjen
 
 permission-dialog-description-file-app = Të lejohet kjo kartelë të hapë lidhjen { $scheme } me { $appName }?
 
+permission-dialog-description-extension-app = Të lejohet zgjerimi { $extension } të hapë lidhjen { $scheme } me { $appName }?
+
 ## Please keep the emphasis around the hostname and scheme (ie the
 ## `<strong>` HTML tags). Please also keep the hostname as close to the start
 ## of the sentence as your language's grammar allows.
 
+## Please keep the emphasis around the hostname and scheme (ie the
+## `<strong>` HTML tags). Please also keep the hostname as close to the start
+## of the sentence as your language's grammar allows.
+## Variables:
+##  $host (string) - The hostname that is initiating the request
+##  $scheme (string) - The type of link that's being opened.
+
 permission-dialog-remember = Lejo përherë <strong>{ $host }</strong> të hapë lidhje <strong>{ $scheme }</strong>
 
 permission-dialog-remember-file = Lejoje përherë këtë kartelë të hapë lidhje <strong>{ $scheme }</strong>
+
+permission-dialog-remember-extension = Lejoje përherë këtë zgjerim të hapë lidhje <strong>{ $scheme }</strong>
 
 ##
 
@@ -46,6 +74,10 @@ permission-dialog-set-change-app-link = Zgjidhni tjetër aplikacion.
 ## Chooser dialog
 ## Variables:
 ##  $scheme - the type of link that's being opened.
+
+## Chooser dialog
+## Variables:
+##  $scheme (string) - The type of link that's being opened.
 
 chooser-window =
     .title = Zgjidhni Aplikacion

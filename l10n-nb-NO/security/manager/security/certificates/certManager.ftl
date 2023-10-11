@@ -26,9 +26,9 @@ certmgr-people = Du har lagrede sertifikater som identifiserer disse personene
 certmgr-server = Disse oppføringene identifiserer unntak fra serversertifikat
 certmgr-ca = Du har lagrede sertifikater som identifiserer disse sertifikatutstederne
 
-certmgr-edit-ca-cert =
+certmgr-edit-ca-cert2 =
     .title = Rediger tiltro for CA-sertifikat
-    .style = width: 48em;
+    .style = min-width: 48em;
 
 certmgr-edit-cert-edit-trust = Rediger tiltro:
 
@@ -38,9 +38,9 @@ certmgr-edit-cert-trust-ssl =
 certmgr-edit-cert-trust-email =
     .label = Dette sertifikatet kan identifisere e-postbrukere.
 
-certmgr-delete-cert =
+certmgr-delete-cert2 =
     .title = Slett sertifikat
-    .style = width: 48em; height: 24em;
+    .style = min-width: 48em; min-height: 24em;
 
 certmgr-cert-host =
     .label = Host
@@ -50,9 +50,6 @@ certmgr-cert-name =
 
 certmgr-cert-server =
     .label = Server
-
-certmgr-override-lifetime =
-    .label = Levetid
 
 certmgr-token-name =
     .label = Sikkerhetsenhet
@@ -68,6 +65,9 @@ certmgr-email =
 
 certmgr-serial =
     .label = Serienummer
+
+certmgr-fingerprint-sha-256 =
+    .label = SHA-256-fingeravtrykk
 
 certmgr-view =
     .label = Vis …
@@ -185,8 +185,6 @@ delete-email-cert-impact = Dersom du sletter en person sitt e-postsertifikat vil
 #   $serialNumber : the serial number of the cert in AA:BB:CC hex format.
 cert-with-serial =
     .value = Sertifikat med serienummer: { $serialNumber }
-
-## Cert Viewer
 
 # Used to indicate that the user chose not to send a client authentication certificate to a server that requested one in a TLS handshake.
 send-no-client-certificate = Ikke send noen klientsertifikat

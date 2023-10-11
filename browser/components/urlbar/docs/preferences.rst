@@ -24,6 +24,17 @@ browser.urlbar.showSearchSuggestionsFirst (boolean, default: true)
   Whether to show search suggestions before general results.
   Can be controlled from Search Preferences.
 
+browser.urlbar.showSearchTerms.enabled (boolean, default: true)
+  Whether to show the search term in the urlbar
+  on a default search engine results page.
+  Can be controlled from Search Preferences.
+
+browser.urlbar.suggest.bestmatch (boolean, default: true)
+  When ``browser.urlbar.bestMatch.enabled`` is true, a "Top pick" checkbox
+  corresponding to this pref is shown in Firefox settings. It controls whether
+  results can be shown using the "Top pick" UI treatment. Otherwise the checkbox
+  is hidden and the "Top pick" UI treatment is disabled.
+
 browser.urlbar.suggest.bookmark (boolean, default: true)
   Whether results will include the user's bookmarks.
   Can be controlled from Privacy Preferences.
@@ -35,6 +46,16 @@ browser.urlbar.suggest.history (boolean, default: true)
 browser.urlbar.suggest.openpage (boolean, default: true)
   Whether results will include switch-to-tab results.
   Can be controlled from Privacy Preferences.
+
+browser.urlbar.suggest.quicksuggest.nonsponsored (boolean, default: false)
+  If ``browser.urlbar.quicksuggest.enabled`` is true, this controls whether
+  results will include non-sponsored quick suggest suggestions. Otherwise
+  non-sponsored suggestions will not be shown.
+
+browser.urlbar.suggest.quicksuggest.sponsored (boolean, default: false)
+ If ``browser.urlbar.quicksuggest.enabled`` is true, this controls whether
+  results will include sponsored quick suggest suggestions. Otherwise sponsored
+  suggestions will not be shown.
 
 browser.urlbar.suggest.searches (boolean, default: true)
   Whether results will include search suggestions.
@@ -67,9 +88,22 @@ know what you are doing.
 browser.urlbar.accessibility.tabToSearch.announceResults (boolean: default: true)
   Whether we announce to screen readers when tab-to-search results are inserted.
 
+browser.urlbar.addons.featureGate (boolean, default: false)
+  Feature gate pref for add-on suggestions in the urlbar.
+
 browser.urlbar.autoFill (boolean, default: true)
   Autofill is the the feature that automatically completes domains and URLs that
   the user has visited as the user is typing them in the urlbar textbox.
+
+browser.urlbar.autoFill.adaptiveHistory.enabled (boolean, default: false)
+  Whether adaptive history autofill feature is enabled.
+
+browser.urlbar.autoFill.adaptiveHistory.useCountThreshold (float, default: 1.0)
+  Threshold for use count of input history that we handle as adaptive history
+  autofill. If the use count is this value or more, it will be a candidate.
+
+browser.urlbar.bestMatch.enabled (boolean, default: false)
+  Whether the best match feature is enabled.
 
 browser.urlbar.autoFill.stddevMultiplier (float, default: 0.0)
   Affects the frecency threshold of the autofill algorithm.  The threshold is
@@ -91,11 +125,11 @@ browser.urlbar.delay (number, default: 50)
   it will instead make it access the disk more heavily, and potentially make it
   slower. Certain results, like the heuristic, always skip this timer anyway.
 
-browser.urlbar.dnsResolveSingleWordsAfterSearch (number, default: 1)
+browser.urlbar.dnsResolveSingleWordsAfterSearch (number, default: 0)
   Controls when to DNS resolve single word search strings, after they were
   searched for. If the string is resolved as a valid host, show a
   "Did you mean to go to 'host'" prompt.
-  Set to 0. Never resolve, 1: Use heuristics, 2. Always resolve.
+  Set to 0. 0: Never resolve, 1: Use heuristics, 2. Always resolve.
 
 browser.urlbar.eventTelemetry.enabled (boolean, default: false)
   Whether telemetry events should be recorded. This is expensive and should only
@@ -124,25 +158,39 @@ browser.urlbar.maxHistoricalSearchSuggestions (integer, default: 2)
 browser.urlbar.maxRichResults (integer, default: 10)
   The maximum number of results in the urlbar popup.
 
+browser.urlbar.merino.clientVariants (string, default: "")
+  Comma separated list of client variants to send to send to Merino. See
+  `Merino API docs <https://mozilla-services.github.io/merino/api.html#suggest>`_
+  for more details. This is intended to be used by experiments, not directly set
+  by users.
+
 browser.urlbar.merino.enabled (boolean, default: false)
   Whether Merino is enabled as a quick suggest source.
 
+browser.urlbar.merino.providers (string, default: "")
+  Comma-separated list of providers to request from the Merino server. Merino
+  will return suggestions only for these providers. See `Merino API docs`_ for
+  more details.
+
 browser.urlbar.openintab (boolean, default: false)
   Whether address bar results should be opened in new tabs by default.
+
+browser.urlbar.pocket.featureGate (boolean, default: false)
+  Feature gate pref for Pocket suggestions in the urlbar.
 
 browser.urlbar.quicksuggest.enabled (boolean, default: false)
   Whether the quick suggest feature is enabled, i.e., sponsored and recommended
   results related to the user's search string. This pref can be overridden by
   the ``quickSuggestEnabled`` Nimbus variable. If false, neither sponsored nor
   non-sponsored quick suggest results will be shown. If true, then we look at
-  the individual prefs ``browser.urlbar.suggest.quicksuggest`` and
+  the individual prefs ``browser.urlbar.suggest.quicksuggest.nonsponsored`` and
   ``browser.urlbar.suggest.quicksuggest.sponsored``.
-
-browser.urlbar.quicksuggest.log (boolean, default: false)
-  Whether to show QuickSuggest related logs, by default only logs Warnings.
 
 browser.urlbar.quicksuggest.remoteSettings.enabled (boolean, default: true)
   Whether remote settings is enabled as a quick suggest source.
+
+browser.urlbar.quicksuggest.dataCollection.enabled (boolean, default: false)
+  Whether data collection is enabled for quick suggest results.
 
 browser.urlbar.quicksuggest.shouldShowOnboardingDialog (boolean, default: true)
   Whether to show the quick suggest onboarding dialog.
@@ -162,6 +210,14 @@ browser.urlbar.speculativeConnect.enabled (boolean, default: true)
 
 browser.urlbar.sponsoredTopSites (boolean, default: false)
   Whether top sites may include sponsored ones.
+
+browser.urlbar.suggest.addons (boolean, default: true)
+  If ``browser.urlbar.addons.featureGate`` is true, this controls whether add-on
+  suggestions are turned on. Otherwise they won't be shown.
+
+browser.urlbar.suggest.pocket (boolean, default: true)
+  If ``browser.urlbar.pocket.featureGate`` is true, this controls whether Pocket
+  suggestions are turned on. Otherwise they won't be shown.
 
 browser.urlbar.switchTabs.adoptIntoActiveWindow (boolean, default: false)
   When using switch to tabs, if set to true this will move the tab into the
@@ -211,27 +267,3 @@ browser.urlbar.restyleSearches (boolean, default: false)
 browser.urlbar.update2.emptySearchBehavior (integer, default: 0)
   Controls the empty search behavior in Search Mode: 0. Show nothing, 1. Show
   search history, 2. Show search and browsing history
-
-browser.urlbar.suggest.quicksuggest (boolean, default: false)
-  Whether results will include quick suggest suggestions. This pref must be true
-  to show both non-sponsored and sponsored suggestions.
-
-browser.urlbar.suggest.quicksuggest.sponsored (boolean, default: false)
-  Whether results will include sponsored quick suggest suggestions. Both this
-  pref and browser.urlbar.suggest.quicksuggest must be true to show sponsored
-  suggestions.
-
-Deprecated
-----------
-These preferences should not be used and may be removed at any time.
-
-browser.urlbar.autoFill.searchEngines (boolean, default: false)
-  If true, the domains of the user's installed search engines will be
-  autofilled even if the user hasn't actually visited them.
-
-browser.urlbar.usepreloadedtopurls.enabled (boolean, default: false)
-  Results will include a built-in set of popular domains when this is true.
-
-browser.urlbar.usepreloadedtopurls.expire_days (integer, default: 14)
-  After this many days from the profile creation date, the built-in set of
-  popular domains will no longer be included in the results.

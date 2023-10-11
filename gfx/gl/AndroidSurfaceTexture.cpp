@@ -9,6 +9,8 @@
 #include "GLContextEGL.h"
 #include "GLBlitHelper.h"
 #include "GLImages.h"
+#include "mozilla/gfx/Logging.h"
+#include "mozilla/layers/LayersSurfaces.h"
 
 #ifdef MOZ_WIDGET_ANDROID
 #  include "mozilla/java/GeckoSurfaceTextureNatives.h"
@@ -32,7 +34,8 @@ class AndroidSharedBlitGL final {
     }
 
     const auto& egl = *(sContext->mEgl);
-    mTargetSurface = egl.fCreateWindowSurface(sContext->mConfig, window, 0);
+    mTargetSurface =
+        egl.fCreateWindowSurface(sContext->mSurfaceConfig, window, nullptr);
 
     ++sInstanceCount;
   }
@@ -51,23 +54,24 @@ class AndroidSharedBlitGL final {
     }
   }
 
-  void Blit(layers::SurfaceTextureImage* img, const gfx::IntSize& imageSize) {
+#ifdef MOZ_WIDGET_ANDROID
+  void Blit(const java::GeckoSurfaceTexture::Ref& surfaceTexture,
+            const gfx::IntSize& imageSize) {
     StaticMutexAutoLock lock(sMutex);
     MOZ_ASSERT(sContext);
 
     // Setting overide also makes conext and surface current.
     sContext->SetEGLSurfaceOverride(mTargetSurface);
-#ifdef MOZ_WIDGET_ANDROID
-    sContext->BlitHelper()->BlitImage(img, imageSize, OriginPos::BottomLeft);
-#else
-    MOZ_CRASH("bad platform");
-#endif
+    DebugOnly<bool> rv = sContext->BlitHelper()->Blit(surfaceTexture, imageSize,
+                                                      OriginPos::TopLeft);
+    MOZ_ASSERT(rv);
     sContext->SwapBuffers();
     // This method is called through binder IPC and could run on any thread in
     // the pool. Release the context and surface from this thread after use so
     // they can be bound to another thread later.
     UnmakeCurrent(sContext);
   }
+#endif
 
  private:
   static already_AddRefed<GLContextEGL> CreateContextImpl(bool aUseGles) {
@@ -80,11 +84,12 @@ class AndroidSharedBlitGL final {
     CreateConfig(*egl, &eglConfig, /* bpp */ 24, /* depth buffer? */ false,
                  aUseGles);
     auto gl = GLContextEGL::CreateGLContext(egl, {}, eglConfig, EGL_NO_SURFACE,
-                                            true, &ignored);
+                                            true, eglConfig, &ignored);
     if (!gl) {
       NS_WARNING("Fail to create GL context for native blitter.");
       return nullptr;
     }
+    gl->mOwningThreadId = Nothing();
 
     // Yield the current state made in constructor.
     UnmakeCurrent(gl);
@@ -114,7 +119,7 @@ class AndroidSharedBlitGL final {
     return egl.fMakeCurrent(EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
   }
 
-  static StaticMutex sMutex;
+  static StaticMutex sMutex MOZ_UNANNOTATED;
   static StaticRefPtr<GLContextEGL> sContext;
   static size_t sInstanceCount;
 
@@ -154,7 +159,7 @@ class GLBlitterSupport final
   using Base::GetNative;
 
   static java::GeckoSurfaceTexture::NativeGLBlitHelper::LocalRef NativeCreate(
-      jint sourceTextureHandle, jni::Object::Param targetSurface, jint width,
+      jlong sourceTextureHandle, jni::Object::Param targetSurface, jint width,
       jint height) {
     AndroidNativeWindow win(java::GeckoSurface::Ref::From(targetSurface));
     auto helper = java::GeckoSurfaceTexture::NativeGLBlitHelper::New();
@@ -167,15 +172,15 @@ class GLBlitterSupport final
   }
 
   GLBlitterSupport(UniquePtr<AndroidSharedBlitGL>&& gl,
-                   jint sourceTextureHandle, jint width, jint height)
+                   jlong sourceTextureHandle, jint width, jint height)
       : mGl(std::move(gl)),
         mSourceTextureHandle(sourceTextureHandle),
         mSize(width, height) {}
 
   void Blit() {
-    RefPtr<layers::SurfaceTextureImage> img = new layers::SurfaceTextureImage(
-        mSourceTextureHandle, mSize, false, OriginPos::TopLeft);
-    mGl->Blit(img, mSize);
+    auto surfaceTexture =
+        java::GeckoSurfaceTexture::Lookup(mSourceTextureHandle);
+    mGl->Blit(surfaceTexture, mSize);
   }
 
  private:

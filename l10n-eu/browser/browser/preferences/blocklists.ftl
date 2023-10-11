@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-blocklist-window =
+blocklist-window2 =
     .title = Blokeo-zerrendak
-    .style = width: 55em
+    .style = min-width: 55em
 
 blocklist-description = Aukeratu { -brand-short-name }(e)k jarraipen-elementuak blokeatzeko erabiliko duen zerrenda. Zerrenda <a data-l10n-name="disconnect-link" title="Disconnect">Disconnect</a>-ek hornitzen du.
 blocklist-close-key =

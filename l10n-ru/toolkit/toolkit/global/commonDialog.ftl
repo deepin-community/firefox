@@ -11,3 +11,10 @@ common-dialog-username =
     .value = Имя пользователя
 common-dialog-password =
     .value = Пароль
+
+common-dialog-copy-cmd =
+    .label = Скопировать
+    .accesskey = п
+common-dialog-select-all-cmd =
+    .label = Выделить всё
+    .accesskey = ы

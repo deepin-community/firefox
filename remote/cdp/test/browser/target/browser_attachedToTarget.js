@@ -4,12 +4,17 @@
 "use strict";
 
 const PAGE_TEST =
-  "http://example.com/browser/remote/cdp/test/browser/target/doc_test.html";
+  "https://example.com/browser/remote/cdp/test/browser/target/doc_test.html";
 
 add_task(
   async function attachedPageTarget({ client }) {
     const { Target } = client;
     const { targetInfo } = await openTab(Target);
+
+    ok(
+      !targetInfo.attached,
+      "Got expected target attached status before attaching"
+    );
 
     await loadURL(PAGE_TEST);
 
@@ -28,7 +33,7 @@ add_task(
     is(eventTargetInfo.type, "page", "Got expected target type");
     is(eventTargetInfo.title, "Test Page", "Got expected target title");
     is(eventTargetInfo.url, PAGE_TEST, "Got expected target URL");
-    todo(eventTargetInfo.attached, "Set correct attached status (bug 1680780)");
+    ok(eventTargetInfo.attached, "Got expected target attached status");
 
     is(
       eventSessionId,

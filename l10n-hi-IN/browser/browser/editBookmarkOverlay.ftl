@@ -18,6 +18,12 @@ bookmark-overlay-folders-expander =
     .tooltiptextdown = { bookmark-overlay-folders-expander.tooltiptext }
     .tooltiptextup = छिपाएँ‌
 
+bookmark-overlay-folders-expander2 =
+    .tooltiptext = सभी बुकमार्क फ़ोल्डर दिखाएँ‌
+
+bookmark-overlay-folders-expander-hide =
+    .tooltiptext = छिपाएँ‌
+
 bookmark-overlay-new-folder-button =
     .label = नया फ़ोल्डर
     .accesskey = o
@@ -29,4 +35,10 @@ bookmark-overlay-tags-expander =
     .tooltiptext = सभी टैग दिखाएँ‌
     .tooltiptextdown = { bookmark-overlay-tags-expander.tooltiptext }
     .tooltiptextup = छिपाएँ‌
+
+bookmark-overlay-tags-expander2 =
+    .tooltiptext = सभी टैग दिखाएँ‌
+
+bookmark-overlay-tags-expander-hide =
+    .tooltiptext = छिपाएँ‌
 

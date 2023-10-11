@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# mypy: allow-untyped-defs
 
 import argparse
 import gzip
@@ -18,14 +19,16 @@ def get_browser_args(product, channel):
         return ["--install-browser", "--install-webdriver"]
     if product == "servo":
         return ["--install-browser", "--processes=12"]
-    if product == "chrome":
+    if product == "chrome" or product == "chromium":
         # Taskcluster machines do not have GPUs, so use software rendering via --enable-swiftshader.
         args = ["--enable-swiftshader"]
         if channel == "nightly":
             args.extend(["--install-browser", "--install-webdriver"])
         return args
     if product == "webkitgtk_minibrowser":
-        return ["--install-browser"]
+        # Using 4 parallel jobs gives 4x speed-up even on a 1-core machine and doesn't cause extra timeouts.
+        # See: https://github.com/web-platform-tests/wpt/issues/38723#issuecomment-1470938179
+        return ["--install-browser", "--processes=4"]
     return []
 
 

@@ -22,8 +22,16 @@ text-action-copy =
     .accesskey = M
 text-action-copy-shortcut =
     .key = C
+# This command copies the link, removing additional
+# query parameters used to track users across sites.
+text-action-strip-on-share =
+    .label = Másolás oldalkövetés nélkül
+    .accesskey = n
 text-action-paste =
     .label = Beillesztés
+    .accesskey = B
+text-action-paste-no-formatting =
+    .label = Beillesztés formázás nélkül
     .accesskey = B
 text-action-paste-shortcut =
     .key = V

@@ -890,6 +890,9 @@ var gTests = [
         set: [
           ["media.devices.insecure.enabled", true],
           ["media.getusermedia.insecure.enabled", true],
+          // explicitly testing an http page, setting
+          // https-first to false.
+          ["dom.security.https_first", false],
         ],
       });
 
@@ -897,8 +900,9 @@ var gTests = [
       await disableObserverVerification();
 
       let browser = gBrowser.selectedBrowser;
-      BrowserTestUtils.loadURI(
+      BrowserTestUtils.loadURIString(
         browser,
+        // eslint-disable-next-line @microsoft/sdl/no-insecure-url
         browser.documentURI.spec.replace("https://", "http://")
       );
       await BrowserTestUtils.browserLoaded(browser);

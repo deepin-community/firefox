@@ -6,19 +6,22 @@
 #ifndef nsICanvasRenderingContextInternal_h___
 #define nsICanvasRenderingContextInternal_h___
 
-#include <memory>
-
 #include "gfxRect.h"
 #include "mozilla/gfx/2D.h"
 #include "nsISupports.h"
 #include "nsIInputStream.h"
 #include "nsIDocShell.h"
 #include "nsRefreshObservers.h"
+#include "nsRFPService.h"
 #include "mozilla/dom/HTMLCanvasElement.h"
 #include "mozilla/dom/OffscreenCanvas.h"
+#include "mozilla/Maybe.h"
 #include "mozilla/RefPtr.h"
+#include "mozilla/StateWatching.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/NotNull.h"
+#include "mozilla/WeakPtr.h"
+#include "mozilla/layers/LayersSurfaces.h"
 
 #define NS_ICANVASRENDERINGCONTEXTINTERNAL_IID       \
   {                                                  \
@@ -27,16 +30,18 @@
     }                                                \
   }
 
+class nsICookieJarSettings;
 class nsIDocShell;
+class nsIPrincipal;
 class nsRefreshDriver;
 
 namespace mozilla {
 class nsDisplayListBuilder;
 class ClientWebGLContext;
 class PresShell;
+class WebGLFramebufferJS;
 namespace layers {
 class CanvasRenderer;
-class CompositableHandle;
 class Layer;
 class Image;
 class LayerManager;
@@ -45,19 +50,19 @@ class PersistentBufferProvider;
 class WebRenderCanvasData;
 }  // namespace layers
 namespace gfx {
+class DrawTarget;
 class SourceSurface;
 }  // namespace gfx
 }  // namespace mozilla
 
+enum class FrameCaptureState : uint8_t { CLEAN, DIRTY };
+
 class nsICanvasRenderingContextInternal : public nsISupports,
+                                          public mozilla::SupportsWeakPtr,
                                           public nsAPostRefreshObserver {
  public:
   using CanvasRenderer = mozilla::layers::CanvasRenderer;
-  using Layer = mozilla::layers::Layer;
-  using LayerManager = mozilla::layers::LayerManager;
   using WebRenderCanvasData = mozilla::layers::WebRenderCanvasData;
-  using CompositableHandle = mozilla::layers::CompositableHandle;
-  using LayerTransactionChild = mozilla::layers::LayerTransactionChild;
 
   NS_DECLARE_STATIC_IID_ACCESSOR(NS_ICANVASRENDERINGCONTEXTINTERNAL_IID)
 
@@ -77,9 +82,11 @@ class nsICanvasRenderingContextInternal : public nsISupports,
 
   void AddPostRefreshObserverIfNecessary();
 
-  mozilla::dom::HTMLCanvasElement* GetParentObject() const {
-    return mCanvasElement;
-  }
+  nsIGlobalObject* GetParentObject() const;
+
+  nsICookieJarSettings* GetCookieJarSettings() const;
+
+  nsIPrincipal* PrincipalOrNull() const;
 
   void SetOffscreenCanvas(mozilla::dom::OffscreenCanvas* aOffscreenCanvas) {
     mOffscreenCanvas = aOffscreenCanvas;
@@ -93,6 +100,9 @@ class nsICanvasRenderingContextInternal : public nsISupports,
   // whenever the size of the element changes.
   NS_IMETHOD SetDimensions(int32_t width, int32_t height) = 0;
 
+  // Initializes the canvas after the object is constructed.
+  virtual void Initialize() {}
+
   // Initializes with an nsIDocShell and DrawTarget. The size is taken from the
   // DrawTarget.
   NS_IMETHOD InitializeWithDrawTarget(
@@ -100,7 +110,8 @@ class nsICanvasRenderingContextInternal : public nsISupports,
       mozilla::NotNull<mozilla::gfx::DrawTarget*> aTarget) = 0;
 
   // Creates an image buffer. Returns null on failure.
-  virtual mozilla::UniquePtr<uint8_t[]> GetImageBuffer(int32_t* format) = 0;
+  virtual mozilla::UniquePtr<uint8_t[]> GetImageBuffer(
+      int32_t* out_format, mozilla::gfx::IntSize* out_imageSize) = 0;
 
   // Gives you a stream containing the image represented by this context.
   // The format is given in mimeTime, for example "image/png".
@@ -120,6 +131,15 @@ class nsICanvasRenderingContextInternal : public nsISupports,
   virtual already_AddRefed<mozilla::gfx::SourceSurface> GetSurfaceSnapshot(
       gfxAlphaType* out_alphaType = nullptr) = 0;
 
+  // Like GetSurfaceSnapshot, but will attempt to optimize the snapshot for the
+  // provided DrawTarget, which may be nullptr. By default, this will defer to
+  // GetSurfaceSnapshot and ignore target-dependent optimization.
+  virtual already_AddRefed<mozilla::gfx::SourceSurface> GetOptimizedSnapshot(
+      mozilla::gfx::DrawTarget* aTarget,
+      gfxAlphaType* out_alphaType = nullptr) {
+    return GetSurfaceSnapshot(out_alphaType);
+  }
+
   virtual RefPtr<mozilla::gfx::SourceSurface> GetFrontBufferSnapshot(bool) {
     return GetSurfaceSnapshot();
   }
@@ -136,18 +156,19 @@ class nsICanvasRenderingContextInternal : public nsISupports,
   // attributes.
   virtual bool GetIsOpaque() = 0;
 
-  // Invalidate this context and release any held resources, in preperation
-  // for possibly reinitializing with SetDimensions/InitializeWithSurface.
-  NS_IMETHOD Reset() = 0;
+  // Clear and/or release backing bitmaps, such as for transferToImageBitmap.
+  virtual void ResetBitmap() = 0;
 
   virtual already_AddRefed<mozilla::layers::Image> GetAsImage() {
     return nullptr;
   }
+
   virtual bool UpdateWebRenderCanvasData(
       mozilla::nsDisplayListBuilder* aBuilder,
       WebRenderCanvasData* aCanvasData) {
     return false;
   }
+
   virtual bool InitializeCanvasRenderer(mozilla::nsDisplayListBuilder* aBuilder,
                                         CanvasRenderer* aRenderer) {
     return false;
@@ -158,9 +179,10 @@ class nsICanvasRenderingContextInternal : public nsISupports,
   // Called when a frame is captured.
   virtual void MarkContextCleanForFrameCapture() = 0;
 
-  // Whether the context is clean or has been invalidated since the last frame
-  // was captured.
-  virtual bool IsContextCleanForFrameCapture() = 0;
+  // Whether the context is clean or has been invalidated (dirty) since the last
+  // frame was captured. The Watchable allows the caller to get notified of
+  // state changes.
+  virtual mozilla::Watchable<FrameCaptureState>* GetFrameCaptureState() = 0;
 
   // Redraw the dirty rectangle of this canvas.
   NS_IMETHOD Redraw(const gfxRect& dirty) = 0;
@@ -170,46 +192,36 @@ class nsICanvasRenderingContextInternal : public nsISupports,
     return NS_OK;
   }
 
-  // return true and fills in the bounding rect if elementis a child and has a
-  // hit region.
-  virtual bool GetHitRegionRect(mozilla::dom::Element* element, nsRect& rect) {
-    return false;
-  }
-
-  // Given a point, return hit region ID if it exists or an empty string if it
-  // doesn't
-  virtual nsString GetHitRegion(const mozilla::gfx::Point& point) {
-    return nsString();
-  }
-
-  virtual void OnVisibilityChange() {}
-
   virtual void OnMemoryPressure() {}
 
   virtual void OnBeforePaintTransaction() {}
   virtual void OnDidPaintTransaction() {}
+
   virtual mozilla::layers::PersistentBufferProvider* GetBufferProvider() {
     return nullptr;
   }
-  virtual mozilla::ClientWebGLContext* AsWebgl() { return nullptr; }
 
-  //
-  // shmem support
-  //
+  virtual mozilla::Maybe<mozilla::layers::SurfaceDescriptor> GetFrontBuffer(
+      mozilla::WebGLFramebufferJS*, const bool webvr = false) {
+    return mozilla::Nothing();
+  }
 
-  // If this context can be set to use Mozilla's Shmem segments as its backing
-  // store, this will set it to that state. Note that if you have drawn
-  // anything into this canvas before changing the shmem state, it will be
-  // lost.
-  NS_IMETHOD SetIsIPC(bool isIPC) = 0;
+  virtual mozilla::Maybe<mozilla::layers::SurfaceDescriptor> PresentFrontBuffer(
+      mozilla::WebGLFramebufferJS* fb, mozilla::layers::TextureType,
+      const bool webvr = false) {
+    return GetFrontBuffer(fb, webvr);
+  }
+
+  void DoSecurityCheck(nsIPrincipal* aPrincipal, bool forceWriteOnly,
+                       bool CORSUsed);
+
+  // Checking if fingerprinting protection is enable for the given target.
+  bool ShouldResistFingerprinting(mozilla::RFPTarget aTarget) const;
 
  protected:
   RefPtr<mozilla::dom::HTMLCanvasElement> mCanvasElement;
   RefPtr<mozilla::dom::OffscreenCanvas> mOffscreenCanvas;
   RefPtr<nsRefreshDriver> mRefreshDriver;
-
- public:
-  const std::shared_ptr<nsICanvasRenderingContextInternal* const> mSharedPtrPtr;
 };
 
 NS_DEFINE_STATIC_IID_ACCESSOR(nsICanvasRenderingContextInternal,

@@ -67,22 +67,20 @@ cryptominer-tab-content = Te elementy wykorzystują moc obliczeniową Twojego ko
 protections-close-button2 =
     .aria-label = Zamknij
     .title = Zamknij
-  
+
 mobile-app-title = Blokuj śledzące reklamy na wszystkich urządzeniach
 mobile-app-card-content = Używaj przeglądarki na telefon z wbudowaną ochroną przed śledzącymi Cię reklamami.
 mobile-app-links = Przeglądarka { -brand-product-name } na <a data-l10n-name="android-mobile-inline-link">Androida</a> i <a data-l10n-name="ios-mobile-inline-link">iOS</a>
 
 lockwise-title = Już nigdy nie zapomnij żadnego hasła
-lockwise-title-logged-in2 = Zarządzanie hasłami
-lockwise-header-content = { -lockwise-brand-name } bezpiecznie przechowuje Twoje hasła w przeglądarce.
+passwords-title-logged-in = Zarządzaj hasłami
+passwords-header-content = { -brand-product-name } bezpiecznie przechowuje Twoje hasła w przeglądarce.
 lockwise-header-content-logged-in = Bezpiecznie przechowuj i synchronizuj hasła na wszystkich urządzeniach.
-protection-report-save-passwords-button = Zachowuj hasła
-    .title = Zachowuj hasła w { -lockwise-brand-short-name }
-protection-report-manage-passwords-button = Zarządzaj hasłami
-    .title = Zarządzaj hasłami za pomocą { -lockwise-brand-short-name }
-lockwise-mobile-app-title = Miej hasła zawsze przy sobie
-lockwise-no-logins-card-content = Używaj haseł zachowanych w przeglądarce { -brand-short-name } na każdym urządzeniu.
-lockwise-app-links = { -lockwise-brand-name } na <a data-l10n-name="lockwise-android-inline-link">Androida</a> i <a data-l10n-name="lockwise-ios-inline-link">iOS</a>
+protection-report-passwords-save-passwords-button = Zachowuj hasła
+    .title = Zachowuj hasła
+protection-report-passwords-manage-passwords-button = Zarządzaj hasłami
+    .title = Zarządzaj hasłami
+
 
 # Variables:
 # $count (Number) - Number of passwords exposed in data breaches.

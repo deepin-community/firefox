@@ -14,11 +14,9 @@
 #include "nsXULAppAPI.h"
 #include "SDKDeclarations.h"
 
-static void SupportDarkAppearancePrefChanged(const char* aPref, void* aUserInfo);
 static void ToolbarThemePrefChanged(const char* aPref, void* aUserInfo);
 
 @interface MOZGlobalAppearance ()
-@property BOOL shouldOverrideWithAqua;
 @property NSInteger toolbarTheme;
 @end
 
@@ -30,10 +28,6 @@ static void ToolbarThemePrefChanged(const char* aPref, void* aUserInfo);
     sInstance = [[MOZGlobalAppearance alloc] init];
     if (XRE_IsParentProcess()) {
       mozilla::Preferences::RegisterCallbackAndCall(
-          &SupportDarkAppearancePrefChanged,
-          nsDependentCString(
-              mozilla::StaticPrefs::GetPrefName_widget_macos_support_dark_appearance()));
-      mozilla::Preferences::RegisterCallbackAndCall(
           &ToolbarThemePrefChanged,
           nsDependentCString(mozilla::StaticPrefs::GetPrefName_browser_theme_toolbar_theme()));
     }
@@ -42,27 +36,19 @@ static void ToolbarThemePrefChanged(const char* aPref, void* aUserInfo);
 }
 
 + (NSSet*)keyPathsForValuesAffectingAppearance {
-  return [NSSet setWithObjects:@"shouldOverrideWithAqua", @"toolbarTheme", nil];
+  return [NSSet setWithObjects:@"toolbarTheme", nil];
 }
 
 - (NSAppearance*)appearance {
-  if (self.shouldOverrideWithAqua) {
-    // Override with aqua.
-    return [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+  switch (self.toolbarTheme) {  // Value for browser.theme.toolbar-theme pref
+    case 0:                     // Dark
+      return [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
+    case 1:  // Light
+      return [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+    case 2:  // System
+    default:
+      return nil;  // nil means "no override".
   }
-  if (@available(macOS 10.14, *)) {
-    switch (self.toolbarTheme) {  // Value for browser.theme.toolbar-theme pref
-      case 0:                     // Dark
-        return [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
-      case 1:  // Light
-        return [NSAppearance appearanceNamed:NSAppearanceNameAqua];
-      case 2:  // System
-      default:
-        break;
-    }
-  }
-  // nil means "no override".
-  return nil;
 }
 
 - (void)setAppearance:(NSAppearance*)aAppearance {
@@ -74,45 +60,25 @@ static void ToolbarThemePrefChanged(const char* aPref, void* aUserInfo);
 }
 
 + (NSSet*)keyPathsForValuesAffectingEffectiveAppearance {
-  if (@available(macOS 10.14, *)) {
-    // Automatically notify any key-value observers of our effectiveAppearance property whenever the
-    // pref or the NSApp's effectiveAppearance change.
-    return [NSSet setWithObjects:@"shouldOverrideWithAqua", @"toolbarTheme",
-                                 @"_app.effectiveAppearance", nil];
-  }
-  return [NSSet set];
+  // Automatically notify any key-value observers of our effectiveAppearance property whenever the
+  // pref or the NSApp's effectiveAppearance change.
+  return [NSSet setWithObjects:@"toolbarTheme", @"_app.effectiveAppearance", nil];
 }
 
 - (NSAppearance*)effectiveAppearance {
-  if (self.shouldOverrideWithAqua) {
-    // Override with aqua.
-    return [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+  switch (self.toolbarTheme) {  // Value for browser.theme.toolbar-theme pref
+    case 0:                     // Dark
+      return [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
+    case 1:  // Light
+      return [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+    case 2:  // System
+    default:
+      // Use the NSApp effectiveAppearance. This is the system appearance.
+      return NSApp.effectiveAppearance;
   }
-  if (@available(macOS 10.14, *)) {
-    switch (self.toolbarTheme) {  // Value for browser.theme.toolbar-theme pref
-      case 0:                     // Dark
-        return [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
-      case 1:  // Light
-        return [NSAppearance appearanceNamed:NSAppearanceNameAqua];
-      case 2:  // System
-      default:
-        // Use the NSApp effectiveAppearance. This is the system appearance.
-        return NSApp.effectiveAppearance;
-    }
-  }
-  // Use aqua on pre-10.14.
-  return [NSAppearance appearanceNamed:NSAppearanceNameAqua];
 }
 
 @end
-
-static void SupportDarkAppearancePrefChanged(const char* aPref, void* aUserInfo) {
-  MOZ_RELEASE_ASSERT(XRE_IsParentProcess());
-  MOZ_RELEASE_ASSERT(NS_IsMainThread());
-
-  MOZGlobalAppearance.sharedInstance.shouldOverrideWithAqua =
-      !mozilla::StaticPrefs::widget_macos_support_dark_appearance();
-}
 
 static void ToolbarThemePrefChanged(const char* aPref, void* aUserInfo) {
   MOZ_RELEASE_ASSERT(XRE_IsParentProcess());

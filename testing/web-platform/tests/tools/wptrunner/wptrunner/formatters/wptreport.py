@@ -1,3 +1,5 @@
+# mypy: allow-untyped-defs
+
 import json
 import re
 
@@ -5,7 +7,7 @@ from mozlog.structured.formatters.base import BaseFormatter
 from ..executors.base import strip_server
 
 
-LONE_SURROGATE_RE = re.compile(u"[\uD800-\uDFFF]")
+LONE_SURROGATE_RE = re.compile("[\uD800-\uDFFF]")
 
 
 def surrogate_replacement(match):
@@ -89,7 +91,7 @@ class WptreportFormatter(BaseFormatter):  # type: ignore
             test["screenshots"] = {
                 strip_server(item["url"]): "sha1:" + item["hash"]
                 for item in data["extra"]["reftest_screenshots"]
-                if type(item) == dict
+                if isinstance(item, dict)
             }
         test_name = data["test"]
         result = {"test": data["test"]}

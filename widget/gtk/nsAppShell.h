@@ -8,6 +8,11 @@
 #ifndef nsAppShell_h__
 #define nsAppShell_h__
 
+#ifdef MOZ_ENABLE_DBUS
+#  include <gio/gio.h>
+#  include "mozilla/RefPtr.h"
+#  include "mozilla/GRefPtr.h"
+#endif
 #include <glib.h>
 #include "nsBaseAppShell.h"
 #include "nsCOMPtr.h"
@@ -21,14 +26,37 @@ class nsAppShell : public nsBaseAppShell {
   virtual void ScheduleNativeEventCallback() override;
   virtual bool ProcessNextNativeEvent(bool mayWait) override;
 
+#ifdef MOZ_ENABLE_DBUS
+  void StartDBusListening();
+  void StopDBusListening();
+
+  static void DBusSessionSleepCallback(GDBusProxy* aProxy, gchar* aSenderName,
+                                       gchar* aSignalName,
+                                       GVariant* aParameters,
+                                       gpointer aUserData);
+  static void DBusTimedatePropertiesChangedCallback(GDBusProxy* aProxy,
+                                                    gchar* aSenderName,
+                                                    gchar* aSignalName,
+                                                    GVariant* aParameters,
+                                                    gpointer aUserData);
+  static void DBusConnectClientResponse(GObject* aObject, GAsyncResult* aResult,
+                                        gpointer aUserData);
+#endif
+
  private:
   virtual ~nsAppShell();
 
   static gboolean EventProcessorCallback(GIOChannel* source,
                                          GIOCondition condition, gpointer data);
-
   int mPipeFDs[2];
   unsigned mTag;
+
+#ifdef MOZ_ENABLE_DBUS
+  RefPtr<GDBusProxy> mLogin1Proxy;
+  RefPtr<GCancellable> mLogin1ProxyCancellable;
+  RefPtr<GDBusProxy> mTimedate1Proxy;
+  RefPtr<GCancellable> mTimedate1ProxyCancellable;
+#endif
 };
 
 #endif /* nsAppShell_h__ */

@@ -12,22 +12,23 @@ $(call lazy,LDFLAGS,$$(call dpkg_buildflags,LDFLAGS))
 $(call lazy,DEB_HOST_GNU_TYPE,$$(shell dpkg-architecture -qDEB_HOST_GNU_TYPE))
 $(call lazy,DEB_BUILD_GNU_TYPE,$$(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE))
 $(call lazy,DEB_BUILD_ARCH_BITS,$$(shell dpkg-architecture -qDEB_BUILD_ARCH_BITS))
+$(call lazy,DEB_BUILD_ARCH,$$(shell dpkg-architecture -qDEB_BUILD_ARCH))
 $(call lazy,DEB_HOST_ARCH,$$(shell dpkg-architecture -qDEB_HOST_ARCH))
 
-PYTHON := python3 -B
+PYTHON := PYTHONDONTWRITEBYTECODE=y python3
 
 PRODUCT := browser
 include debian/upstream.mk
 
 SYSTEM_LIBS = zlib ffi
-ifeq (,$(filter stretch buster bullseye,$(DIST)))
-SYSTEM_LIBS += nspr nss
+ifeq (,$(filter buster bullseye,$(DIST)))
+SYSTEM_LIBS += nspr vpx
 endif
-ifeq (,$(filter stretch,$(DIST)))
+ifeq (,$(filter buster bullseye bookworm,$(DIST)))
+SYSTEM_LIBS += nss
+endif
+ifeq (,$(filter buster,$(DIST)))
 SYSTEM_LIBS += libevent
-endif
-ifeq (,$(filter stretch buster,$(DIST)))
-SYSTEM_LIBS += vpx
 endif
 
 define system_lib
@@ -54,7 +55,7 @@ endif
 endif
 
 ifeq (firefox-esr,$(DEBIAN_SOURCE))
-ifneq (,$(filter stretch buster,$(DIST)))
+ifneq (,$(filter buster,$(DIST)))
 TRANSITION = 1
 endif
 endif
@@ -85,21 +86,7 @@ export CARGO_HOME=$(CURDIR)/debian/.cargo
 
 export MOZBUILD_STATE_PATH = $(CURDIR)/debian/.mozbuild
 
-ifneq (,$(filter stretch,$(DIST)))
-ifneq (,$(filter amd64 i386,$(DEB_HOST_ARCH)))
-export NASM=/usr/lib/nasm-mozilla/bin/nasm
-endif
-export NODEJS=/usr/lib/nodejs-mozilla/bin/node
-export PATH := /usr/lib/llvm-7/bin/:$(PATH)
-export PATH := /usr/lib/gcc-mozilla/bin/:$(PATH)
-LDFLAGS += -static-libstdc++
-endif
-
 LDFLAGS += -Wl,--as-needed
-# Make the linker generate compressed debug sections. dh_strip would do
-# the same anyways, but it allows elfhack to work in combination with
-# unstripped binaries when they would normally be larger than 2GiB.
-LDFLAGS += -Wl,--compress-debug-sections=zlib
 
 # Disable debug symbols when building on 32-bits machines, because
 # a) the rust compiler can't deal with it in the available address
@@ -108,16 +95,22 @@ LDFLAGS += -Wl,--compress-debug-sections=zlib
 ifneq (64,$(DEB_BUILD_ARCH_BITS))
 	CONFIGURE_FLAGS += --disable-debug-symbols
 endif
+# Also disable them on riscv64, because linking takes so long that buildds
+# kill the build after 420 minutes of "inactivity".
+ifeq (riscv64,$(DEB_BUILD_ARCH))
+	CONFIGURE_FLAGS += --disable-debug-symbols
+endif
 
 # Reduce memory usage of the linker at the expense of processing time
 # This should help on lower-end architectures like arm and mips, which
 # spend an immense amount of time swapping.
 LDFLAGS += -Wl,--reduce-memory-overheads
+# Work around https://sourceware.org/bugzilla/show_bug.cgi?id=30566
+ifeq (,$(filter i386 amd64 ppc64%,$(DEB_HOST_ARCH)))
 LDFLAGS += -Wl,--no-keep-memory
+endif
 # Also add execution time and memory usage stats in the logs
 LDFLAGS += -Wl,--stats
-
-AUTOCONF_DIRS := build/autoconf
 
 CONFIGURE_FLAGS += --enable-update-channel=$(CHANNEL)
 
@@ -131,7 +124,11 @@ endif
 ifneq (,$(filter %i386 %amd64 armel armhf arm64,$(DEB_HOST_ARCH)))
 	MOZ_FFVPX = 1
 endif
-ifneq (,$(filter i386 amd64 armel armhf,$(DEB_HOST_ARCH)))
+ifneq (,$(filter armel armhf arm64 riscv64,$(DEB_HOST_ARCH)))
+	MOZ_ENABLE_V4L2 = 1
+endif
+ifneq (,$(filter i386 amd64 armel armhf arm64,$(DEB_HOST_ARCH)))
+	MOZ_ENABLE_VAAPI = 1
 	CRASH_REPORTER = 1
 endif
 ifneq (,$(filter mips%,$(DEB_HOST_ARCH)))
@@ -145,15 +142,22 @@ ifeq (default,$(origin CXX))
 CXX := g++
 endif
 
+ifeq (,$(filter buster bullseye,$(DIST)))
+PATH := /usr/lib/llvm-14/bin:$(PATH)
+endif
+
 ifneq (,$(filter mips mipsel,$(DEB_HOST_ARCH)))
 CONFIGURE_FLAGS += --disable-jit
 endif
 
-CXXFLAGS = $(CFLAGS)
-RUSTFLAGS = --remap-path-prefix=$(CURDIR)=.
-ifeq (,$(filter 1.43.% 1.44.%,$(shell rustc --version | awk '{print $$2}')))
-RUSTFLAGS += -Cembed-bitcode=yes
+CXXFLAGS := $(CFLAGS)
+# Work around https://sourceware.org/bugzilla/show_bug.cgi?id=30578
+ifneq (,$(filter trixie,$(DIST)))
+ifneq (,$(filter amd64,$(DEB_HOST_ARCH)))
+CFLAGS += -DFFMPEG_DISABLE_INLINE_ASM
 endif
+endif
+RUSTFLAGS = --remap-path-prefix=$(CURDIR)=.
 
 EXPORTS := CC CXX CFLAGS CXXFLAGS CPPFLAGS LDFLAGS MOZILLA_OFFICIAL RUSTFLAGS
 $(call lazy,CONFIGURE_ENV,$$(foreach export,$(EXPORTS),$$(export)="$$($$(export))"))
@@ -178,12 +182,12 @@ $(call lazy,L10N_PACKAGES_DEPS,$$(shell echo $$(L10N_PACKAGES) | sed 's/ /, /g')
 debian/l10n/$(PRODUCT)-l10n.control: %: %.in
 	PYTHONIOENCODING=utf-8 LC_ALL=C.UTF-8 $(PYTHON) debian/l10n/gen $(L10N_LANGS) > $@
 
-$(call lazy,LIBAVCODEC,$$(shell awk -F\" '/libavcodec\.so/ { sub(/libavcodec\.so\./,"", $$$$2); p = "libavcodec" $$$$2 " | libavcodec-extra" $$$$2; if (d) { d = d " | " p } else { d = p } } END { print d }' dom/media/platforms/ffmpeg/FFmpegRuntimeLinker.cpp))
+$(call lazy,LIBAVCODEC,$$(shell awk -F\" '/libavcodec\.so\./ { sub(/libavcodec\.so\./,"", $$$$2); p = "libavcodec" $$$$2 " | libavcodec-extra" $$$$2; if (d) { d = d " | " p } else { d = p } } END { print d }' dom/media/platforms/ffmpeg/FFmpegRuntimeLinker.cpp))
 
-$(PREPROCESSED_FILES): VARS = GRE_VERSION $(PRODUCT) $(call uc,$(PRODUCT)) $(Product) MOZ_APP_REMOTINGNAME $(SYSTEM_LIBS_VARS) SHORT_SOURCE_CHANNEL DIST TRANSITION MOZ_FFVPX CRASH_REPORTER DEB_HOST_ARCH
+$(PREPROCESSED_FILES): VARS = GRE_VERSION PRODUCT_DOWNLOAD_NAME $(PRODUCT) $(call uc,$(PRODUCT)) $(Product) MOZ_APP_REMOTINGNAME $(SYSTEM_LIBS_VARS) SHORT_SOURCE_CHANNEL DIST TRANSITION MOZ_FFVPX MOZ_ENABLE_VAAPI MOZ_ENABLE_V4L2 CRASH_REPORTER DEB_HOST_ARCH
 debian/control: VARS += L10N_PACKAGES_DEPS PRODUCT LIBAVCODEC
 $(PREPROCESSED_FILES):
-	$(PYTHON) ./mach python --no-virtualenv python/mozbuild/mozbuild/preprocessor.py --marker % -Fsubstitution $(foreach var,$(VARS),-D$(var)="$($(var))" )$< -o $@
+	MOZ_OBJDIR=debian/objdir MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none $(PYTHON) ./mach python python/mozbuild/mozbuild/preprocessor.py --marker % -Fsubstitution $(foreach var,$(VARS),-D$(var)="$($(var))" )$< -o $@
 
 ifdef TRANSITION
 MAINTSCRIPTS := $(addprefix debian/,$(addsuffix .maintscript,$(shell awk -F/ '$$1 != "searchplugins" { next } $$2 == "locale" && $$3 != "en-US" { p="iceweasel-l10n-" $$3 } $$2 == "common" || ($$2 "/" $$3 == "locale/en-US") { p="iceweasel" } !done[p] { print p; done[p] = 1 }' debian/removed_conffiles)))
@@ -198,17 +202,6 @@ debian/iceweasel-l10n-%.maintscript: debian/removed_conffiles
 endif
 
 override_dh_auto_configure:
-
-configure js/src/configure:
-	cp -f $@.in $@ && chmod +x $@
-	echo $@ >> debian/extra-clean
-
-stamps/prepare-configure:: stamps/dummy configure js/src/configure
-	for dir in $(AUTOCONF_DIRS); do \
-		for file in config.guess config.sub; do \
-			sed -i '2!b;/^#/ i\exec "/usr/share/misc/'$$file'" "$$@"' $$dir/$$file; \
-		done; \
-	done
 
 stamps/configure-check-$(PRODUCT):: stamps/configure-$(PRODUCT)
 # Ensure --{with,enable}-system options properly set expected variables
@@ -231,7 +224,20 @@ stamps/configure-check-$(PRODUCT):: stamps/configure-$(PRODUCT)
 	} \
 	END { if (error) { exit 1 }}' debian/$($(PRODUCT)).mozconfig
 
-stamps/configure-$(PRODUCT):: stamps/prepare-configure debian/$($(PRODUCT)).mozconfig
+stamps/virtualenv::
+	MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none ./mach python --virtualenv build < /dev/null
+
+stamps/configure-$(PRODUCT):: debian/$($(PRODUCT)).mozconfig stamps/virtualenv
+ifeq (armhf,$(DEB_BUILD_ARCH))
+ifeq (,$(shell grep -l cpu:type:aarch64 /sys/devices/system/cpu/modalias))
+	# There is not enough memory in armhf userspace with a 32-bits kernel.
+	$(error Unfortunately cannot build on armhf. Try a 64-bits kernel)
+endif
+endif
+ifeq (mipsel,$(DEB_BUILD_ARCH))
+	# There is not enough memory in mipsel userspace with neither a 32-bits nor 64-bits kernel.
+	$(error Unfortunately cannot build on mipsel. Try cross-compilation)
+endif
 	$(if $(wildcard build-$(PRODUCT)),,mkdir build-$(PRODUCT))
 	cd build-$(PRODUCT) && \
 	MOZCONFIG=$(CURDIR)/debian/$($(PRODUCT)).mozconfig \
@@ -241,15 +247,19 @@ stamps/configure-$(PRODUCT):: stamps/prepare-configure debian/$($(PRODUCT)).mozc
 		$(COMMON_CONFIGURE_FLAGS) \
 		$(CONFIGURE_FLAGS)
 
+# Use thinLTO on armhf, to stay in the memory budget with an armhf toolchain.
+ifeq (armhf,$(DEB_BUILD_ARCH))
+export DEBIAN_RUST_LTO=-Clto=thin
+endif
+
 stamps/build-$(PRODUCT):: stamps/configure-check-$(PRODUCT)
 	+dh_auto_build --parallel --builddirectory=build-$(PRODUCT) -- \
-		LD_LIBS=-Wl,--no-gc-sections \
 		_LEAKTEST_FILES=leaktest.py
 
 L10N_BUILD_STAMPS = $(foreach lang,$(L10N_LANGS),stamps/build-l10n-$(lang))
 stamps/build-l10n:: $(L10N_BUILD_STAMPS)
 
-$(L10N_BUILD_STAMPS):: stamps/build-l10n-%: stamps/prepare-configure
+$(L10N_BUILD_STAMPS):: stamps/build-l10n-%: stamps/virtualenv
 	$(if $(wildcard build-l10n/$*),,mkdir -p build-l10n/$*)
 	$(if $(wildcard l10n),,mkdir -p l10n)
 	cd build-l10n/$* && \
@@ -260,7 +270,7 @@ $(L10N_BUILD_STAMPS):: stamps/build-l10n-%: stamps/prepare-configure
 		--with-l10n-base=$(CURDIR)/l10n
 
 	$(if $(wildcard l10n/$*),,ln -sf ../l10n-$* l10n/$*)
-	MACH_USE_SYSTEM_PYTHON=1 $(MAKE) -C build-l10n/$*/$(PRODUCT)/locales langpack-$* MOZ_CHROME_FILE_FORMAT=flat MOZ_LANGPACK_EID=langpack-$*@$($(PRODUCT)).mozilla.org PKG_LANGPACK_BASENAME='$$(MOZ_LANGPACK_EID)' PKG_LANGPACK_PATH=xpi/
+	MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=none $(MAKE) -C build-l10n/$*/$(PRODUCT)/locales langpack-$* MOZ_CHROME_FILE_FORMAT=flat MOZ_LANGPACK_EID=langpack-$*@$($(PRODUCT)).mozilla.org PKG_LANGPACK_BASENAME='$$(MOZ_LANGPACK_EID)' PKG_LANGPACK_PATH=xpi/
 
 override_dh_auto_build-arch: stamps/build-$(PRODUCT)
 
@@ -275,23 +285,14 @@ endif
 endif
 
 override_dh_auto_clean::
-	rm -f $(filter-out debian/control,$(GENERATED_FILES))
-	rm -f $$(cat debian/extra-clean 2>/dev/null) debian/extra-clean old-configure js/src/old-configure
+	rm -f $(filter-out debian/control debian/watch,$(GENERATED_FILES))
 	rm -rf stamps l10n $(CARGO_HOME)
 	debian/rules debian/control TESTDIR=
 
 	dh_auto_clean --builddirectory=build-$(PRODUCT)
 	dh_auto_clean --builddirectory=build-l10n
 	find . -name "*.pyc" -o -name "*.pyo" | xargs --no-run-if-empty rm -f
-	rm -rf obj-*/.mozbuild $(MOZBUILD_STATE_PATH)
-
-override_dh_clean:
-	dh_clean -XCargo.toml.orig
-	for dir in $(AUTOCONF_DIRS); do \
-		for file in config.guess config.sub; do \
-			sed -i '2!b;/^exec "/ d' $$dir/$$file; \
-		done; \
-	done
+	rm -rf debian/objdir $(MOZBUILD_STATE_PATH)
 
 override_dh_auto_install-arch: stamps/install-$(PRODUCT)
 override_dh_auto_install-indep:
@@ -312,10 +313,15 @@ $(L10N_DH_INSTALL_STAMPS):: stamps/dh_install-l10n-%: stamps/build-l10n-%
 
 stamps/dh_install:: debian/noinstall debian/$($(PRODUCT))-symbolic.svg
 	awk '{print "debian/tmp/" $$1 }' < debian/noinstall | xargs rm -r
-	dh_install --fail-missing
+	dh_install
+	dh_missing --fail-missing
 
 override_dh_install-arch: stamps/dh_install
 override_dh_install-indep: stamps/dh_install-l10n
+
+# dwz trips on libxul, after using a lot of memory.
+override_dh_dwz:
+	dh_dwz -X libxul
 
 override_dh_strip:
 	dh_strip --dbgsym-migration='$($(PRODUCT))-dbg (<< 49.0-4~)'
@@ -323,16 +329,13 @@ override_dh_strip:
 override_dh_strip_nondeterminism:
 
 override_dh_shlibdeps:
-	dh_shlibdeps -a -l$(CURDIR)/debian/tmp$(LIB_DIR) -- -xlibgtk2.0-0
+	dh_shlibdeps -a -l$(CURDIR)/debian/tmp$(LIB_DIR)
 
 ifdef TRANSITION
 override_dh_gencontrol-indep:
 	dh_gencontrol$(foreach pkg,$(subst $($(PRODUCT)),iceweasel,$(L10N_PACKAGES)) iceweasel-l10n-all, -p$(pkg)) -- -v1:$(DEBIAN_VERSION)
 	dh_gencontrol$(foreach pkg,$(subst $($(PRODUCT)),iceweasel,$(L10N_PACKAGES)) iceweasel-l10n-all, -N$(pkg))
 endif
-
-# We're dealing with this manually and we don't want config.* files being touched under third_party/rust.
-override_dh_update_autotools_config:
 
 install binary binary-arch binary-indep: $(filter-out %.pc,$(GENERATED_FILES))
 
@@ -341,7 +344,7 @@ binary binary-arch binary-indep build build-arch build-indep clean install:
 
 .PHONY: build clean binary-indep binary-arch binary install
 
-$(eval ALL_STAMPS := $(shell awk -F:: '$$1 ~ /^stamps\// && !/%/ { print $$1 }' debian/rules) stamps/dummy $(L10N_BUILD_STAMPS) $(L10N_DH_INSTALL_STAMPS))
+$(eval ALL_STAMPS := $(shell awk -F:: '$$1 ~ /^stamps\// && !/%/ { print $$1 }' debian/rules) $(L10N_BUILD_STAMPS) $(L10N_DH_INSTALL_STAMPS))
 $(ALL_STAMPS)::
 	@mkdir -p stamps
 	$(if $(wildcard $@),,touch $@)

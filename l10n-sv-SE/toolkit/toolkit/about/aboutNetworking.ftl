@@ -8,6 +8,7 @@ about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Rensa DNS-cache
 about-networking-dns-trr-url = DoH-URL
+about-networking-dns-trr-mode = DoH-läge
 about-networking-dns-suffix = DNS-suffix
 about-networking-websockets = WebSockets
 about-networking-refresh = Uppdatera
@@ -19,7 +20,6 @@ about-networking-ssl = SSL
 about-networking-active = Aktiv
 about-networking-idle = Vilande
 about-networking-host = Värd
-about-networking-tcp = TCP
 about-networking-type = Typ
 about-networking-sent = Skickat
 about-networking-received = Mottaget
@@ -28,18 +28,12 @@ about-networking-trr = TRR
 about-networking-addresses = Adresser
 about-networking-expires = Förfaller (sekunder)
 about-networking-originAttributesSuffix = Isoleringsnyckel
+about-networking-flags = Extra flaggor
 about-networking-messages-sent = Skickade meddelanden
 about-networking-messages-received = Mottagna meddelanden
 about-networking-bytes-sent = Skickade byte
 about-networking-bytes-received = Mottagna byte
 about-networking-logging = Loggning
-about-networking-log-tutorial = Se <a data-l10n-name="logging">HTTP-loggning</a> för instruktioner om hur du använder detta verktyg.
-about-networking-current-log-file = Aktuell loggfil:
-about-networking-current-log-modules = Aktuella loggmoduler:
-about-networking-set-log-file = Ange loggfil
-about-networking-set-log-modules = Ange loggmoduler
-about-networking-start-logging = Starta loggning
-about-networking-stop-logging = Stoppa loggning
 about-networking-dns-lookup = DNS-uppslagning
 about-networking-dns-lookup-button = Lös fel
 about-networking-dns-domain = Domän:
@@ -62,6 +56,8 @@ about-networking-rcwn-cache-slow = Antal långsam cache
 about-networking-rcwn-cache-not-slow = Antal inte långsam cache
 about-networking-networkid = Nätverks-ID
 about-networking-networkid-id = Nätverks-ID
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Den här sidan har flyttats till <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 

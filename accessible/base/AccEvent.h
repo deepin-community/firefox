@@ -102,7 +102,6 @@ class AccEvent {
     eCaretMoveEvent,
     eTextSelChangeEvent,
     eSelectionChangeEvent,
-    eTableChangeEvent,
     eVirtualCursorChangeEvent,
     eObjectAttrChangedEvent,
     eScrollingEvent,
@@ -261,7 +260,6 @@ class AccMutationEvent : public AccTreeMutationEvent {
   LocalAccessible* LocalParent() const { return mParent; }
 
  protected:
-  nsCOMPtr<nsINode> mNode;
   RefPtr<LocalAccessible> mParent;
   RefPtr<AccTextChangeEvent> mTextChangeEvent;
 
@@ -302,21 +300,14 @@ class AccHideEvent : public AccMutationEvent {
  */
 class AccShowEvent : public AccMutationEvent {
  public:
-  explicit AccShowEvent(LocalAccessible* aTarget);
+  explicit AccShowEvent(LocalAccessible* aTarget)
+      : AccMutationEvent(::nsIAccessibleEvent::EVENT_SHOW, aTarget) {}
 
   // Event
   static const EventGroup kEventGroup = eShowEvent;
   virtual unsigned int GetEventGroups() const override {
     return AccMutationEvent::GetEventGroups() | (1U << eShowEvent);
   }
-
-  uint32_t InsertionIndex() const { return mInsertionIndex; }
-
- private:
-  nsTArray<RefPtr<AccHideEvent>> mPrecedingEvents;
-  uint32_t mInsertionIndex;
-
-  friend class EventTree;
 };
 
 /**
@@ -333,6 +324,12 @@ class AccReorderEvent : public AccTreeMutationEvent {
   virtual unsigned int GetEventGroups() const override {
     return AccTreeMutationEvent::GetEventGroups() | (1U << eReorderEvent);
   }
+
+  /*
+   * Make this an inner reorder event that is coalesced into
+   * a reorder event of an ancestor.
+   */
+  void SetInner() { mEventType = ::nsIAccessibleEvent::EVENT_INNER_REORDER; }
 };
 
 /**
@@ -341,12 +338,15 @@ class AccReorderEvent : public AccTreeMutationEvent {
 class AccCaretMoveEvent : public AccEvent {
  public:
   AccCaretMoveEvent(LocalAccessible* aAccessible, int32_t aCaretOffset,
-                    bool aIsSelectionCollapsed,
+                    bool aIsSelectionCollapsed, bool aIsAtEndOfLine,
+                    int32_t aGranularity,
                     EIsFromUserInput aIsFromUserInput = eAutoDetect)
       : AccEvent(::nsIAccessibleEvent::EVENT_TEXT_CARET_MOVED, aAccessible,
                  aIsFromUserInput),
         mCaretOffset(aCaretOffset),
-        mIsSelectionCollapsed(aIsSelectionCollapsed) {}
+        mIsSelectionCollapsed(aIsSelectionCollapsed),
+        mIsAtEndOfLine(aIsAtEndOfLine),
+        mGranularity(aGranularity) {}
   virtual ~AccCaretMoveEvent() {}
 
   // AccEvent
@@ -359,11 +359,16 @@ class AccCaretMoveEvent : public AccEvent {
   int32_t GetCaretOffset() const { return mCaretOffset; }
 
   bool IsSelectionCollapsed() const { return mIsSelectionCollapsed; }
+  bool IsAtEndOfLine() { return mIsAtEndOfLine; }
+
+  int32_t GetGranularity() const { return mGranularity; }
 
  private:
   int32_t mCaretOffset;
 
   bool mIsSelectionCollapsed;
+  bool mIsAtEndOfLine;
+  int32_t mGranularity;
 };
 
 /**
@@ -372,7 +377,8 @@ class AccCaretMoveEvent : public AccEvent {
 class AccTextSelChangeEvent : public AccEvent {
  public:
   AccTextSelChangeEvent(HyperTextAccessible* aTarget,
-                        dom::Selection* aSelection, int32_t aReason);
+                        dom::Selection* aSelection, int32_t aReason,
+                        int32_t aGranularity);
   virtual ~AccTextSelChangeEvent();
 
   // AccEvent
@@ -388,6 +394,8 @@ class AccTextSelChangeEvent : public AccEvent {
    */
   bool IsCaretMoveOnly() const;
 
+  int32_t GetGranularity() const { return mGranularity; }
+
   /**
    * Return selection ranges in document/control.
    */
@@ -396,6 +404,7 @@ class AccTextSelChangeEvent : public AccEvent {
  private:
   RefPtr<dom::Selection> mSel;
   int32_t mReason;
+  int32_t mGranularity;
 
   friend class EventQueue;
   friend class SelectionManager;
@@ -433,39 +442,13 @@ class AccSelChangeEvent : public AccEvent {
 };
 
 /**
- * Accessible table change event.
- */
-class AccTableChangeEvent : public AccEvent {
- public:
-  AccTableChangeEvent(LocalAccessible* aAccessible, uint32_t aEventType,
-                      int32_t aRowOrColIndex, int32_t aNumRowsOrCols);
-
-  // AccEvent
-  static const EventGroup kEventGroup = eTableChangeEvent;
-  virtual unsigned int GetEventGroups() const override {
-    return AccEvent::GetEventGroups() | (1U << eTableChangeEvent);
-  }
-
-  // AccTableChangeEvent
-  uint32_t GetIndex() const { return mRowOrColIndex; }
-  uint32_t GetCount() const { return mNumRowsOrCols; }
-
- private:
-  uint32_t mRowOrColIndex;  // the start row/column after which the rows are
-                            // inserted/deleted.
-  uint32_t mNumRowsOrCols;  // the number of inserted/deleted rows/columns
-};
-
-/**
  * Accessible virtual cursor change event.
  */
 class AccVCChangeEvent : public AccEvent {
  public:
   AccVCChangeEvent(LocalAccessible* aAccessible,
-                   LocalAccessible* aOldAccessible, int32_t aOldStart,
-                   int32_t aOldEnd, LocalAccessible* aNewAccessible,
-                   int32_t aNewStart, int32_t aNewEnd, int16_t aReason,
-                   int16_t aBoundaryType,
+                   LocalAccessible* aOldAccessible,
+                   LocalAccessible* aNewAccessible, int16_t aReason,
                    EIsFromUserInput aIsFromUserInput = eFromUserInput);
 
   virtual ~AccVCChangeEvent() {}
@@ -478,23 +461,13 @@ class AccVCChangeEvent : public AccEvent {
 
   // AccVCChangeEvent
   LocalAccessible* OldAccessible() const { return mOldAccessible; }
-  int32_t OldStartOffset() const { return mOldStart; }
-  int32_t OldEndOffset() const { return mOldEnd; }
   LocalAccessible* NewAccessible() const { return mNewAccessible; }
-  int32_t NewStartOffset() const { return mNewStart; }
-  int32_t NewEndOffset() const { return mNewEnd; }
   int32_t Reason() const { return mReason; }
-  int32_t BoundaryType() const { return mBoundaryType; }
 
  private:
   RefPtr<LocalAccessible> mOldAccessible;
   RefPtr<LocalAccessible> mNewAccessible;
-  int32_t mOldStart;
-  int32_t mNewStart;
-  int32_t mOldEnd;
-  int32_t mNewEnd;
   int16_t mReason;
-  int16_t mBoundaryType;
 };
 
 /**

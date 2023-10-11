@@ -367,6 +367,10 @@ so{
             "LRD",
             "Doolarka Liberiya",
         }
+        LSL{
+            "LSL",
+            "Lesotho Loti",
+        }
         LVR{
             "LVR",
             "Rubalka Latfiya",
@@ -677,6 +681,11 @@ so{
         }
     }
     Currencies%narrow{
+        AFN{"؋"}
+        AMD{"֏"}
+        AZN{"₼"}
+        BYN{"BYN"}
+        GHS{"GH₵"}
         VEF{"Bs"}
     }
     CurrencyPlurals{
@@ -1051,6 +1060,10 @@ so{
             one{"doolarka Liberiya"}
             other{"doolarka Liberiya"}
         }
+        LSL{
+            one{"Lesotho loti"}
+            other{"Lesotho lotis"}
+        }
         LVR{
             one{"rubalka Latvia"}
             other{"rubalka Latfiya"}
@@ -1227,6 +1240,10 @@ so{
             one{"leonka Sira Leon"}
             other{"leonka Sira Leon"}
         }
+        SOS{
+            one{"Shilingka Soomaaliya"}
+            other{"Shilingka Soomaaliya"}
+        }
         SRD{
             one{"Doolarka Surinamees"}
             other{"Doolarada Surinamees"}
@@ -1355,5 +1372,9 @@ so{
             one{"Kawaja Sambiya"}
             other{"Kawajada Sambiya"}
         }
+    }
+    CurrencyUnitPatterns{
+        one{"{0} {1}"}
+        other{"{0} {1}"}
     }
 }

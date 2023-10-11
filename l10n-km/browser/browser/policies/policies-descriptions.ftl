@@ -57,7 +57,7 @@ policy-DisablePrimaryPasswordCreation = ប្រសិនបើ​ពិត ន
 
 policy-DisablePasswordReveal = កុំអនុញ្ញាតឱ្យបង្ហាញពាក្យសម្ងាត់នៅក្នុងការចូលដែលបានរក្សាទុក។
 
-policy-DisablePocket = បិទដំណើរការមុខងារ ដើម្បីរក្សាទុកគេហទំព័រទៅ​ Pocket។
+policy-DisablePocket2 = បិទដំណើរការមុខងារ ដើម្បីរក្សាទុកគេហទំព័រទៅ​ { -pocket-brand-name }។
 
 policy-DisablePrivateBrowsing = បិទដំណើររុករកឯកជន។
 
@@ -73,7 +73,4 @@ policy-InstallAddonsPermission = អនុញ្ញាត​ឲ្យ​​គ�
 ##
 
 policy-Proxy = កំណត់​ការកំណត់​ប្រូកស៊ី។
-
-# For more information, see https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/PKCS11/Module_Installation
-policy-SecurityDevices = ដំឡើងម៉ូឌុល PKCS # 11 ។
 

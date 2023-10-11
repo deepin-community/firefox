@@ -30,3 +30,6 @@ ac_add_options --disable-updater
 ac_add_options --with-unsigned-addon-scopes=app,system
 ac_add_options --allow-addon-sideload
 ac_add_options --enable-alsa
+%if DIST == bullseye || DIST == buster || DEB_HOST_ARCH == s390x
+ac_add_options --without-wasm-sandboxed-libraries
+%endif
