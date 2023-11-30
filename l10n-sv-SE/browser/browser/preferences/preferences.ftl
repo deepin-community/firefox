@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Säg till webbplatser att inte sälja eller dela mina data
     .accesskey = S
+non-technical-privacy-header = Sekretessinställningar för webbplatsen
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Inställningar
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Öppna föregående fönster och flikar
     .accesskey = f
+windows-launch-on-login =
+    .label = Öppna { -brand-short-name } automatiskt när din dator startar
+    .accesskey = p
+windows-launch-on-login-disabled = Den här inställningen har inaktiverats i Windows. För att ändra, besök <a data-l10n-name="startup-link">Autostart-appar</a> i Systeminställningar.
 startup-restore-warn-on-quit =
     .label = Varna när du avslutar webbläsaren
 disable-extension =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Reducering av kakbanners
 cookie-banner-handling-description = { -brand-short-name } försöker automatiskt avvisa kakförfrågningar på kakbanners på webbplatser som stöds.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Blockering kakbanners
+cookie-banner-blocker-description = När en webbplats frågar om de kan använda kakor i privat surfläge, vägrar { -brand-short-name } automatiskt åt dig. Endast på webbplatser som stöds.
 cookie-banner-learn-more = Läs mer
 forms-handle-cookie-banners =
     .label = Reducera kakbanners
+cookie-banner-blocker-checkbox-label =
+    .label = Vägra automatiskt kakbanners
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Snabbåtgärder
     .accesskey = a
+addressbar-locbar-showrecentsearches-option =
+    .label = Visa senaste sökningar
+    .accesskey = s
 addressbar-suggestions-settings = Ändra inställningar för förslag från sökmotorn
 addressbar-quickactions-learn-more = Läs mer
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Förbättrat spårningsskydd
 content-blocking-section-top-level-description = Spårare följer dig runt online för att samla in information om dina surfvanor och intressen. { -brand-short-name } blockerar många av dessa spårare och andra skadliga skript.
 content-blocking-learn-more = Läs mer
 content-blocking-fpi-incompatibility-warning = Du använder First Party Isolation (FPI), som åsidosätter vissa av { -brand-short-name }:s kakinställningar.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Du använder Resist Fingerprinting (RFP), som ersätter några av { -brand-short-name }:s skyddsinställningar för fingeravtryck. Detta kan orsaka fel på vissa webbplatser.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1210,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Säkerhetsenheter…
     .accesskey = e
+certs-thirdparty-toggle =
+    .label = Tillåt { -brand-short-name } att automatiskt lita på rotcertifikat från tredje part som du installerar
+    .accesskey = T
 space-alert-over-5gb-settings-button =
     .label = Öppna inställningar
     .accesskey = n

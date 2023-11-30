@@ -16,6 +16,13 @@ global-privacy-control-description =
     .label = Segnala ai siti web di non vendere o condividere i miei dati
     .accesskey = S
 
+non-technical-privacy-header = Preferenze per la privacy dei siti web
+
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
+
 settings-page-title = Impostazioni
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -124,6 +131,12 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Apri finestre e schede esistenti
     .accesskey = r
+
+windows-launch-on-login =
+    .label = Apri automaticamente { -brand-short-name } quando si avvia il computer
+    .accesskey = A
+windows-launch-on-login-disabled = Questa opzione è stata disattivata in Windows. Per modificarla, apri <a data-l10n-name="startup-link">App di avvio</a> in Impostazioni.
+
 startup-restore-warn-on-quit =
     .label = Avvisa quando si chiude il browser
 disable-extension =
@@ -459,6 +472,9 @@ browsing-use-smooth-scrolling =
 browsing-gtk-use-non-overlay-scrollbars =
     .label = Mostra sempre le barre di scorrimento
     .accesskey = o
+browsing-always-underline-links=
+    .label = Sottolinea sempre i link
+    .accesskey = k
 browsing-use-onscreen-keyboard =
     .label = Visualizza una tastiera touch quando necessario
     .accesskey = s
@@ -967,6 +983,11 @@ cookie-banner-learn-more = Ulteriori informazioni
 forms-handle-cookie-banners =
     .label = Riduci banner per i cookie
 
+cookie-banner-blocker-header = Blocco dei banner per i cookie
+cookie-banner-blocker-description = Quando un sito chiede di poter utilizzare i cookie in una finestra anonima, { -brand-short-name } rifiuta automaticamente la richiesta. La funzione è disponibile solo nei siti supportati.
+cookie-banner-blocker-checkbox-label =
+    .label = Rifiuta automaticamente i banner per i cookie
+
 ## Privacy Section - Address Bar
 
 addressbar-header = Barra degli indirizzi
@@ -996,6 +1017,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Azioni rapide
     .accesskey = z
+addressbar-locbar-showrecentsearches-option =
+    .label = Mostra ricerche recenti
+    .accesskey = r
 addressbar-suggestions-settings = Modifica le impostazioni relative ai suggerimenti dei motori di ricerca
 addressbar-quickactions-learn-more = Ulteriori informazioni
 
@@ -1210,6 +1234,10 @@ certs-view =
 certs-devices =
     .label = Dispositivi di sicurezza…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = Considera automaticamente affidabili i certificati radice installati dall’utente in { -brand-short-name }
+    .accesskey = t
+
 space-alert-over-5gb-settings-button =
     .label = Apri impostazioni
     .accesskey = A
@@ -1290,7 +1318,3 @@ preferences-doh-manage-exceptions =
 desktop-folder-name = Desktop
 downloads-folder-name = Download
 choose-download-folder-title = Selezionare la cartella di download:
-
-
-
-

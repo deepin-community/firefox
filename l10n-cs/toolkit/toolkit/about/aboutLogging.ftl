@@ -44,6 +44,11 @@ about-logging-preset-webrtc-label = WebRTC
 about-logging-preset-webrtc-description = Moduly protokolů pro diagnostiku problémů s WebRTC.
 about-logging-preset-webgpu-label = WebGPU
 about-logging-preset-webgpu-description = Moduly protokolů pro diagnostiku problémů s WebGPU.
+about-logging-preset-gfx-label = Grafika
+about-logging-preset-gfx-description = Moduly protokolů pro diagnostiku problémů s grafikou
+# This is specifically "Microsoft Windows". Microsoft normally doesn't localize it, and we should follow their convention here.
+about-logging-preset-windows-label = Windows
+about-logging-preset-windows-description = Moduly protokolu pro diagnostiku problémů specifických pro systém Microsoft Windows
 about-logging-preset-custom-label = Vlastní
 about-logging-preset-custom-description = Ručně vybrané moduly protokolů
 # Error handling

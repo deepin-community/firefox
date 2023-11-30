@@ -167,7 +167,6 @@ extensions-warning-update-security2 =
     .message = Праверка бяспечнасці дадаткаў адключана. Вы можаце быць падведзены пад рызыку абнаўленнямі.
 extensions-warning-update-security-button = Уключыць
     .title = Уключыць праверку бяспечнасці абнаўленняў дадаткаў
-extensions-warning-imported-addons = Калі ласка, завяршыце ўсталяванне пашырэнняў, якія былі імпартаваны ў { -brand-short-name }.
 extensions-warning-imported-addons2 =
     .message = Калі ласка, завяршыце ўсталяванне пашырэнняў, якія былі імпартаваны ў { -brand-short-name }.
 extensions-warning-imported-addons-button = Усталяваць пашырэнні
@@ -367,6 +366,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> быў выдалены.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } быў выдалены.
 pending-uninstall-undo-button = Адмяніць
 addon-detail-updates-label = Дазволіць аўтаматычныя абнаўленні
 addon-detail-updates-radio-default = Прадвызначана

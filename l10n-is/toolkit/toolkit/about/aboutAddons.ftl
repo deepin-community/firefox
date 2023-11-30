@@ -167,7 +167,6 @@ extensions-warning-update-security2 =
     .message = Öryggisuppfærslur fyrir viðbætur eru óvirkar. Þú gætir verið í hættu vegna uppfærslu.
 extensions-warning-update-security-button = Virkja
     .title = Virkja öryggisuppfærslur fyrir viðbætur
-extensions-warning-imported-addons = Ljúktu við uppsetningu forritsauka sem fluttir voru inn í { -brand-short-name }
 extensions-warning-imported-addons2 =
     .message = Ljúktu við uppsetningu forritsauka sem fluttir voru inn í { -brand-short-name }
 extensions-warning-imported-addons-button = Setja upp forritsauka
@@ -223,7 +222,7 @@ shortcuts-input =
     .placeholder = Slá inn flýtilykil
 shortcuts-browserAction2 = Virkja hnapp í verkfærastiku
 shortcuts-pageAction = Virkja síðuaðgerð
-shortcuts-sidebarAction = Víxla hliðarslá
+shortcuts-sidebarAction = Víxla hliðarstiku af/á
 shortcuts-modifier-mac = Hafa með Ctrl, Alt eða ⌘
 shortcuts-modifier-other = Hafa með Ctrl eða Alt
 shortcuts-invalid = Ógild samsetning
@@ -365,6 +364,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> hefur verið fjarlægt.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } hefur verið fjarlægt.
 pending-uninstall-undo-button = Afturkalla
 addon-detail-updates-label = Leyfa sjálfvirkar uppfærslur
 addon-detail-updates-radio-default = Sjálfgefið

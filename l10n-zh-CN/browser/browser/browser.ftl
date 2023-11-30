@@ -553,11 +553,13 @@ urlbar-result-action-search-in-private = 在隐私窗口中搜索
 # Variables
 #  $engine (String): the name of a search engine
 urlbar-result-action-search-w-engine = 使用 { $engine } 搜索
-urlbar-result-action-sponsored = 赞助项目
+urlbar-result-action-sponsored = 赞助推广
 urlbar-result-action-switch-tab = 切换到标签页
 urlbar-result-action-visit = 访问
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = 访问剪贴板中的网址
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = 访问剪贴板中的网址
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -610,6 +612,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = 快捷操作
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = 最近的搜索
 
 ## Reader View toolbar buttons
 
@@ -625,9 +632,9 @@ reader-view-close-button =
 ##   $shortcut (String) - Keyboard shortcut to execute the command.
 
 picture-in-picture-urlbar-button-open =
-    .tooltiptext = 打开画中画（{ $shortcut }）
+    .tooltiptext = 打开画中画 ({ $shortcut })
 picture-in-picture-urlbar-button-close =
-    .tooltiptext = 关闭画中画（{ $shortcut }）
+    .tooltiptext = 关闭画中画 ({ $shortcut })
 picture-in-picture-panel-header = 画中画
 picture-in-picture-panel-headline = 不推荐在此网站使用画中画
 picture-in-picture-panel-body = 开启画中画后，视频可能会不按开发者预期的效果显示。
@@ -906,6 +913,24 @@ unified-extensions-button-quarantined =
         扩展
         已禁用部分扩展
 
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = 结束隐私浏览
+    .tooltiptext = 结束隐私浏览
+reset-pbm-panel-heading = 要结束隐私浏览吗？
+reset-pbm-panel-description = 关闭所有隐私标签页，并删除历史记录和 Cookie 等所有网站数据。
+reset-pbm-panel-always-ask-checkbox =
+    .label = 总是询问
+    .accesskey = A
+reset-pbm-panel-cancel-button =
+    .label = 取消
+    .accesskey = C
+reset-pbm-panel-confirm-button =
+    .label = 删除本次浏览数据
+    .accesskey = D
+reset-pbm-panel-complete = 隐私浏览数据已删除
+
 ## Autorefresh blocker
 
 refresh-blocked-refresh-label = { -brand-short-name } 阻止了此页面自动重新加载。
@@ -916,10 +941,10 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
-firefox-relay-offer-why-to-use-relay = 我们安全且易用的邮箱马甲通过隐藏您的电子邮件地址来保护您的身份并防止垃圾邮件。
+firefox-relay-offer-why-to-use-relay = 我们安全易用的马甲邮箱可隐藏您的邮件地址，帮助您保护身份信息、防止垃圾邮件侵扰。
 # Variables:
 #  $useremail (String): user email that will receive messages
-firefox-relay-offer-what-relay-provides = 发送到马甲邮箱的所有电子邮件都将转发到 <strong>{ $useremail }</strong>（除非您决定阻止它们）。
+firefox-relay-offer-what-relay-provides = 发送到马甲邮箱的所有电子邮件都将转发到 <strong>{ $useremail }</strong>（除非您选择拦截）。
 firefox-relay-offer-legal-notice = 点击“使用马甲邮箱”，即表示您同意<label data-l10n-name="tos-url">服务条款</label>和<label data-l10n-name="privacy-url">隐私声明</label>。
 
 ## Add-on Pop-up Notifications

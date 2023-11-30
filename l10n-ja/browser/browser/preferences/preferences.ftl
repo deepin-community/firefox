@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = ウェブサイトにユーザーデータの販売や共有の拒否を通知する
     .accesskey = s
+non-technical-privacy-header = ウェブサイトのプライバシー設定
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = 設定
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = 前回のウィンドウとタブを開く
     .accesskey = s
+windows-launch-on-login =
+    .label = コンピューターの起動時に { -brand-short-name } を自動的に開く
+    .accesskey = O
+windows-launch-on-login-disabled = この設定は Windows で無効化されています。変更するには、システム設定の <a data-l10n-name="startup-link">スタートアップ アプリ</a> から設定してください。
 startup-restore-warn-on-quit =
     .label = ブラウザーを終了するときは確認する
 disable-extension =
@@ -283,7 +292,7 @@ download-always-ask-where =
     .label = ファイルごとに保存先を指定する
     .accesskey = A
 applications-header = プログラム
-applications-description = ウェブからダウンロードしたファイルを { -brand-short-name } が取り扱う方法とブラウズ中に使用するプログラムを選んでください。
+applications-description = ウェブからダウンロードしたファイルを { -brand-short-name } が取り扱う方法と閲覧中に使用するプログラムを選んでください。
 applications-filter =
     .placeholder = ファイルの種類とプログラムを検索
 applications-type-column =
@@ -449,7 +458,7 @@ browsing-use-onscreen-keyboard =
     .label = 必要であればタッチキーボードを表示する
     .accesskey = c
 browsing-use-cursor-navigation =
-    .label = ページ中の移動にカーソルを使用する (キャレットブラウズモード)
+    .label = ページ中の移動にカーソルを使用する (キャレットブラウジングモード)
     .accesskey = k
 browsing-use-full-keyboard-navigation =
     .label = タブキーでフォームコントロールおよびリンク間のフォーカスを移動する
@@ -945,16 +954,23 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Cookie バナー削減
 cookie-banner-handling-description = サポートされたサイトの Cookie バナーの同意確認に対し、可能な場合は { -brand-short-name } が自動的に拒否します。
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Cookie バナーブロッカー
+cookie-banner-blocker-description = プライベートブラウジングモードでウェブサイトが Cookie の使用を求めてきた場合、{ -brand-short-name } が自動的に拒否します。これはサポートされたサイトのみ有効です。
 cookie-banner-learn-more = 詳細情報
 forms-handle-cookie-banners =
     .label = Cookie バナーの削減
+cookie-banner-blocker-checkbox-label =
+    .label = 自動的に Cookie バナーを拒否する
 
 ## Privacy Section - Address Bar
 
 addressbar-header = アドレスバー
 addressbar-suggest = アドレスバーの使用時に表示する候補
 addressbar-locbar-history-option =
-    .label = ブラウジング履歴
+    .label = 閲覧履歴
     .accesskey = h
 addressbar-locbar-bookmarks-option =
     .label = ブックマーク
@@ -978,6 +994,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = クイックアクション
     .accesskey = Q
+addressbar-locbar-showrecentsearches-option =
+    .label = 最近の検索を表示
+    .accesskey = r
 addressbar-suggestions-settings = 検索エンジンの検索候補の設定を変更
 addressbar-quickactions-learn-more = 詳細情報
 
@@ -987,6 +1006,10 @@ content-blocking-enhanced-tracking-protection = 強化型トラッキング防�
 content-blocking-section-top-level-description = トラッカーはあなたの習慣や興味に関する情報を収集するために、オンラインであなたを追跡します。{ -brand-short-name } はこれらのトラッカーや悪意のあるスクリプトの多くをブロックします。
 content-blocking-learn-more = 詳細情報
 content-blocking-fpi-incompatibility-warning = { -brand-short-name } の Cookie の設定の一部を上書きするファーストパーティ分離 (FPI) を使用しています。
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = { -brand-short-name } のフィンガープリント採取防止の設定の一部を上書きする Resist Fingerprinting (RFP) を使用しています。この機能により一部のサイトが動作しない可能性があります。
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1134,6 +1157,8 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = { -brand-short-name } のデータ収集と利用について
+collection-header2 = { -brand-short-name } のデータ収集と利用について
+    .searchkeywords = テレメトリー
 collection-description = 私たちはユーザーに選択肢を提供し、{ -brand-short-name } をすべての人に提供し改善するために必要なものだけを収集するよう努力しています。私たちは、個人情報を受け取る前に、常にユーザーの許可を求めます。
 collection-privacy-notice = 個人情報保護方針
 collection-health-report-telemetry-disabled = { -vendor-short-name } への技術的な対話データの送信の許可を取り消しました。過去のデータは 30 日以内にすべて削除されます。
@@ -1190,6 +1215,9 @@ certs-view =
 certs-devices =
     .label = セキュリティデバイス...
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = ユーザーがインストールしたサードパーティのルート証明書を自動的に信頼することを { -brand-short-name } に許可する
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = 設定を開く
     .accesskey = O

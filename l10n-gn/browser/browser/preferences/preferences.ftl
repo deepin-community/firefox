@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Ejerure ñanduti rendápe ani ovende ha omoherakuã che mba’ekuaarã
     .accesskey = s
+non-technical-privacy-header = Ñanduti renda marandu’i ñemigua
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Ñemboheko
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -62,8 +67,8 @@ close-button =
 
 ## Browser Restart Dialog
 
-feature-enable-requires-restart = { -brand-short-name } oñemoñepyrũjeyva’erã emyandy hag̃ua koichagua.
-feature-disable-requires-restart = { -brand-short-name } oñemoñepyrũjeyva’erã emboguete hag̃ua koichagua.
+feature-enable-requires-restart = { -brand-short-name } toñepyrũjey emyandy hag̃ua koichagua.
+feature-disable-requires-restart = { -brand-short-name } toñepyrũjey emboguete hag̃ua koichagua.
 should-restart-title = Ñepyrũjey { -brand-short-name }
 should-restart-ok = Emoñepyrũjey { -brand-short-name } ko’ág̃a
 cancel-no-restart-button = Heja
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Embojuruja ovetã ha tendayke ymavegua
     .accesskey = s
+windows-launch-on-login =
+    .label = Embjuruja { -brand-short-name } ijeheguiete hendývo ne mohendaha
+    .accesskey = O
+windows-launch-on-login-disabled = Ko jeguerohoryvéva osẽma Windows-gui. Emoambue hag̃ua, eike <a data-l10n-name="startup-link">Tembiporu’i ñepyrũgua</a> apopyvusu ñembohekópe.
 startup-restore-warn-on-quit =
     .label = Eñatoĩva’erã esẽnguévo kundahágui.
 disable-extension =
@@ -250,7 +259,7 @@ choose-language-description = Eipoiravo pe ñe’ẽ erohoryvéva ehechauka hag�
 choose-button =
     .label = Poravo…
     .accesskey = o
-choose-browser-language-description = Eiporavo ñe’ẽ ojepurúva ehechauka hag̃ua poravorã, ñe’ẽmondo ha momarandu { -brand-short-name } rehegua.
+choose-browser-language-description = Eiporavo ñe’ẽ ojeporúva ehechauka hag̃ua poravorã, ñe’ẽmondo ha momarandu { -brand-short-name } rehegua.
 manage-browser-languages-button =
     .label = Emopyenda mokõiháva
     .accesskey = l
@@ -295,7 +304,7 @@ download-always-ask-where =
     .label = Eporandumeméke chéve moõpa añongatúta marandurenda
     .accesskey = A
 applications-header = Tembiporu’i
-applications-description = Eiporavo { -brand-short-name } eiporu marandurenda ñemboguejy ñanduti guive térã umi tembiporu’i eipurúva eikundaha aja.
+applications-description = Eiporavo { -brand-short-name } eiporu marandurenda ñemboguejy ñanduti guive térã umi tembiporu’i eiporúva eikundaha aja.
 applications-filter =
     .placeholder = Eheka marandurenda peteĩchagua térã tembiporu’i
 applications-type-column =
@@ -402,7 +411,7 @@ update-application-manual =
 update-application-background-enabled =
     .label = { -brand-short-name } nomba’apói jave
     .accesskey = W
-update-application-warning-cross-user-setting = Ko ñemboheko ojogueraháta opaite Windows mba’ete ndive ha umi teratee { -brand-short-name } rehegua oipurúvo ko { -brand-short-name } ñemohenda.
+update-application-warning-cross-user-setting = Ko ñemboheko ojogueraháta opaite Windows mba’ete ndive ha umi teratee { -brand-short-name } rehegua oiporúvo ko { -brand-short-name } ñemohenda.
 update-application-use-service =
     .label = Eiporu peteĩ mba’epytyvõrã mokõiha pegua remboguejy hag̃ua tekopyahu
     .accesskey = b
@@ -438,7 +447,7 @@ performance-allow-hw-accel =
     .accesskey = r
 performance-limit-content-process-option = Tetepy ha tembe’y mba’eapo
     .accesskey = l
-performance-limit-content-process-enabled-desc = Umi taperekogua tetepy mbohetapy ikatu omopu’ã apopyre oipurúvo heta tendayke, hákatu avei oipurúta hetave mandu’arenda.
+performance-limit-content-process-enabled-desc = Umi taperekogua tetepy mbohetapy ikatu omopu’ã apopyre oiporúvo heta tendayke, hákatu avei oiporúta hetave mandu’arenda.
 performance-limit-content-process-blocked-desc = Pe mba’eapo papapy moambue retepy ikatu oiko mba’eapoita { -brand-short-name } ndive añónte. <a data-l10n-name="learn-more">Eikuaa mba’éichapa ehechajeýta mba’eapoita ijuruja jave</a>
 # Variables:
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
@@ -478,7 +487,7 @@ browsing-media-control =
     .accesskey = v
 browsing-media-control-learn-more = Kuaave
 browsing-cfr-recommendations =
-    .label = Eñe’eporã jepysokue rehe eikumdaha aja
+    .label = Eñe’ẽporã jepysokue rehe eikumdaha aja
     .accesskey = R
 browsing-cfr-features =
     .label = Eñe’ẽporã tembiapoitére eikundahakuévo
@@ -526,7 +535,7 @@ use-current-pages =
         }
     .accesskey = C
 choose-bookmark =
-    .label = Techaukaha puru…
+    .label = Techaukaha poru…
     .accesskey = B
 
 ## Home Section - Firefox Home Content Customization
@@ -640,8 +649,8 @@ search-find-more-link = Ejuhu hetave hekaha mongu’eha
 search-keyword-warning-title = Jehero jo’apyre
 # Variables:
 #   $name (string) - Name of a search engine.
-search-keyword-warning-engine = Eiporavókuri peteĩ jehero oipurúmava "{ $name }". Ikatúpiko eiporavo ambue.
-search-keyword-warning-bookmark = Eiporavókuri peteĩ jehero oipurúmava ambue techaukaha. Ikatúpiko eiporavo ambue.
+search-keyword-warning-engine = Eiporavókuri peteĩ jehero oiporúmava "{ $name }". Ikatúpiko eiporavo ambue.
+search-keyword-warning-bookmark = Eiporavókuri peteĩ jehero oiporúmava ambue techaukaha. Ikatúpiko eiporavo ambue.
 
 ## Containers Section
 
@@ -662,7 +671,7 @@ containers-remove-button =
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
-sync-signedout-caption = Egueraha neñanduti nendive
+sync-signedout-caption = Eraha neñanduti nendive
 sync-signedout-description2 = Embojuehe nde rechaukaha, tembiasakue, tendayke, ñe’ẽñemi, moĩmbaha ha ñemoĩporã opaite ne mba’e’okápe.
 sync-signedout-account-signin3 =
     .label = Eike embojuehe hag̃ua…
@@ -801,7 +810,7 @@ sync-verification-sent-title = Jehechajey ñemondo
 #   $email (String): Email address of user's Firefox account.
 sync-verification-sent-body = Joajuha jehechajey rehegua oñemondo { $email }-pe.
 sync-verification-not-sent-title = Ndaikatúi oñemondo jehechajey
-sync-verification-not-sent-body = Ndaikatúi roguerahauka ñanduti veve jehechajeyrã ko’ag̃a, ikatu eha’ã ag̃ave.
+sync-verification-not-sent-body = Ndaikatúi rorahauka ñanduti veve jehechajeyrã ko’ág̃a, ikatu eha’ã ag̃amieve.
 
 ## Privacy Section
 
@@ -961,14 +970,21 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Kookie Banner Ñemomichĩ
 cookie-banner-handling-description = { -brand-short-name } omboykese ijehegui opaite kookie mba’ejerure umi tenda ojokupytývape.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Ejoko Banner kookie rehegua
+cookie-banner-blocker-description = Peteĩ tenda oporandúramo oiporukuaápa kookie ñeikundaha ñemi ayvúpe jave, { -brand-short-name } ombotove ijeheguiete. Tenda ojokupytývape añoite.
 cookie-banner-learn-more = Kuaave
 forms-handle-cookie-banners =
     .label = Emomichĩ kookie banner
+cookie-banner-blocker-checkbox-label =
+    .label = Tomboyke ijehegui umi banner kookie rehegua
 
 ## Privacy Section - Address Bar
 
 addressbar-header = Kundaharape renda
-addressbar-suggest = Eipurúramo kundaharape renda, eñemoñe’ẽ
+addressbar-suggest = Eiporúramo kundaharape renda, eñemoñe’ẽ
 addressbar-locbar-history-option =
     .label = Kundaha rembiasakue
     .accesskey = h
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Jeku’e pya’e
     .accesskey = Q
+addressbar-locbar-showrecentsearches-option =
+    .label = Ehechauka ojeheka ramóva
+    .accesskey = r
 addressbar-suggestions-settings = Jerohoryvéva jehekaha mongu’eha je’epyre moambue
 addressbar-quickactions-learn-more = Kuaave
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Tapykueho mo’ãha iporãvéva
 content-blocking-section-top-level-description = Umi tapykuehoha oike ñandutípe ombyaty hag̃ua marandu umi nerembiapo rapykuere. { -brand-short-name } ojoko heta tapykuehoha ha ambue scripts imarãva.
 content-blocking-learn-more = Eikuaave
 content-blocking-fpi-incompatibility-warning = Eiporuhína First Party Isolation (FPI), oipe’áva ndahetái kookie ñemboheko { -brand-short-name } mba’éva.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Eiporu Resist Fingerprinting (RFP), omyengoviáva peteĩva umi kuãhũ ñemboheko mo’ãha { -brand-short-name } mba’évape. Kóva omoapañuãikuaa tendakuérape.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1210,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Tekorosã mba’e’oka rehegua…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = Emoneĩ { -brand-short-name } tojerovia ijehegui jeguerohoryvéva mbohapyha omohendáva
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Embojuruja ñemboheko
     .accesskey = O
@@ -1241,28 +1267,28 @@ preferences-doh-resolver = Me’ẽhára: { $name }
 # This is displayed instead of $name in preferences-doh-resolver
 # when the DoH URL is not a valid URL
 preferences-doh-bad-url = URL ndoikóiva
-preferences-doh-steering-status = Eipurúvo me’ẽhára pepeteguáva
+preferences-doh-steering-status = Eiporúvo me’ẽhára pepeteguáva
 preferences-doh-status-active = Myandy
 preferences-doh-status-disabled = Mboguepyre
 # Variables:
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
 preferences-doh-status-not-active = Oku’e’ỹva ({ $reason })
-preferences-doh-group-message = Embojuruja DNS hekorosãva eipurúvo:
+preferences-doh-group-message = Embojuruja DNS hekorosãva eiporúvo:
 preferences-doh-expand-section =
     .tooltiptext = Maranduve
 preferences-doh-setting-default =
     .label = Ñemoã ijypyguáva
     .accesskey = D
-preferences-doh-default-desc = { -brand-short-name } oikuaa oipurúta vove DNS hekorosãva omo’ã hag̃ua nde rekoñemi.
+preferences-doh-default-desc = { -brand-short-name } oikuaa oiporúta vove DNS hekorosãva omo’ã hag̃ua nde rekoñemi.
 preferences-doh-default-detailed-desc-1 = Eiporu DNS hekorosãva tendaguasu ikatuhápe
 preferences-doh-default-detailed-desc-2 = Eiporu DNS rechaporãha ijypykuéva oĩramo apañuãi DNS hekorosãva me’ẽhára ndive
-preferences-doh-default-detailed-desc-3 = Eiporu me’ẽhara ag̃uigua ikatúramo
+preferences-doh-default-detailed-desc-3 = Eiporu me’ẽhára ag̃uigua ikatúramo
 preferences-doh-default-detailed-desc-4 = Eipe’a pe VPN, pehẽngue jehecharã térã mba’apohaguasu oñemyandývo
 preferences-doh-default-detailed-desc-5 = Eipe’a pe pyha he’ívo { -brand-short-name }-pe ani hag̃ua oiporu DNS hekorosãva
 preferences-doh-setting-enabled =
     .label = Ñemo’ã Tuichavéva
     .accesskey = I
-preferences-doh-enabled-desc = Nde eikuaáta araka’e eipurúta DNS hekorosãva ha eiporavo me’ẽhára.
+preferences-doh-enabled-desc = Nde eikuaáta araka’e eiporúta DNS hekorosãva ha eiporavo me’ẽhára.
 preferences-doh-enabled-detailed-desc-1 = Eiporu me’ẽhára poravopyre
 preferences-doh-enabled-detailed-desc-2 = Eiporu DNS rechaporãha ijypykuéva oĩramo apañuãi DNS hekorosãva me’ẽhára ndive
 preferences-doh-setting-strict =

@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = 告訴網站不要銷售或分享我的資料
     .accesskey = s
+non-technical-privacy-header = 網站隱私權偏好設定
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = 設定
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = 開啟先前的視窗與分頁
     .accesskey = s
+windows-launch-on-login =
+    .label = 電腦開機時自動開啟 { -brand-short-name }
+    .accesskey = O
+windows-launch-on-login-disabled = 已在 Windows 停用此偏好設定。若要變更，請到系統設定中的<a data-l10n-name="startup-link">啟動應用程式</a>頁面調整設定。
 startup-restore-warn-on-quit =
     .label = 關閉瀏覽器時警告您
 disable-extension =
@@ -564,7 +573,11 @@ home-prefs-snippets-description-new = 來自 { -vendor-short-name } 及 { -brand
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
-    .label = { $num } 行
+    .label =
+        { $num ->
+            [one] { $num } 行
+           *[other] { $num } 行
+        }
 
 ## Search Section
 
@@ -945,9 +958,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = 減少 Cookie 橫幅
 cookie-banner-handling-description = { -brand-short-name } 會自動在支援的網站，嘗試為您拒絕網站設定 Cookie 的請求。
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Cookie 橫幅封鎖器
+cookie-banner-blocker-description = 當支援此功能的網站在隱私瀏覽模式中詢問是否可以設定 Cookie 時，{ -brand-short-name } 會自動為您拒絕。
 cookie-banner-learn-more = 了解更多
 forms-handle-cookie-banners =
     .label = 減少 Cookie 橫幅
+cookie-banner-blocker-checkbox-label =
+    .label = 自動拒絕 Cookie 橫幅
 
 ## Privacy Section - Address Bar
 
@@ -978,6 +998,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = 快速操作
     .accesskey = Q
+addressbar-locbar-showrecentsearches-option =
+    .label = 顯示近期搜尋項目
+    .accesskey = r
 addressbar-suggestions-settings = 修改搜尋建議偏好設定
 addressbar-quickactions-learn-more = 了解更多
 
@@ -987,6 +1010,10 @@ content-blocking-enhanced-tracking-protection = 加強型追蹤保護
 content-blocking-section-top-level-description = 追蹤器會在網路上跟蹤您，收集您的興趣與喜好。{ -brand-short-name } 會封鎖許多追蹤器與其他有害指令碼。
 content-blocking-learn-more = 了解更多
 content-blocking-fpi-incompatibility-warning = 您已開啟第一方隔離（FPI）功能，會蓋掉 { -brand-short-name } 的某些 Cookie 設定。
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = 您開啟了 Resist Fingerprinting (RFP) 功能，將蓋過 { -brand-short-name } 的部分數位指紋追蹤保護設定。此功能可能造成某些網站運作不正常。
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1194,6 +1221,9 @@ certs-view =
 certs-devices =
     .label = 安全性裝置…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = 允許 { -brand-short-name } 自動信任您安裝的第三方根憑證
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = 開啟選項
     .accesskey = O

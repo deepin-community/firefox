@@ -162,7 +162,6 @@ extensions-warning-update-security2 =
     .message = La kontrolado de sekurecaj ĝisdatigoj de aldonaĵoj ne estas aktiva.  Vi povus esti kompromitita de ĝisdatigoj.
 extensions-warning-update-security-button = Aktivigi
     .title = Aktivigi la kontroladon de sekurecaj ĝisdatigoj de aldonaĵoj
-extensions-warning-imported-addons = Bonvolu fini la instalon de etendaĵoj, kiuj estis enportitaj en { -brand-short-name }.
 extensions-warning-imported-addons2 =
     .message = Bonvolu fini la instalon de etendaĵoj, kiuj estis enportitaj en { -brand-short-name }.
 extensions-warning-imported-addons-button = Instali etendaĵojn
@@ -350,6 +349,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> estis forigita.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } estis forigita.
 pending-uninstall-undo-button = Malfari
 addon-detail-updates-label = Permesi aŭtomatajn ĝisdatigojn
 addon-detail-updates-radio-default = Norma
@@ -459,9 +462,9 @@ details-notification-unsigned = { $name } ne povis esti kontrolita por uzo en { 
 details-notification-unsigned2 =
     .message = { $name } ne povis esti kontrolita por uzo en { -brand-short-name }. Daŭrigu singarde.
 details-notification-unsigned-link = Pli da informo
-details-notification-blocked = { $name } esti blokita pro sekurecaj kaj stabilecaj problemoj.
+details-notification-blocked = { $name } estis blokita pro sekurecaj kaj stabilecaj problemoj.
 details-notification-blocked2 =
-    .message = { $name } esti blokita pro sekurecaj kaj stabilecaj problemoj.
+    .message = { $name } estis blokita pro sekurecaj kaj stabilecaj problemoj.
 details-notification-blocked-link = Plia informo
 details-notification-softblocked = Estas konata fakto ke { $name } povas okazigi sekurecajn kaj stabilecajn problemojn.
 details-notification-softblocked2 =

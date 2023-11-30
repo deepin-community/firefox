@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Dîs ai sîts web di no sta vendi o condividi i miei dâts
     .accesskey = s
+non-technical-privacy-header = Preferencis pe riservatece dai sîts web
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Impostazions
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Vierç schedis e barcons precedents
     .accesskey = s
+windows-launch-on-login =
+    .label = Vierç in automatic { -brand-short-name } cuant che il computer si invie
+    .accesskey = V
+windows-launch-on-login-disabled = Cheste opzion e je stade disativade in Windows. Par cambiâle, visite <a data-l10n-name="startup-link">Aplicazions di inviament</a> tes impostazions di sisteme.
 startup-restore-warn-on-quit =
     .label = Vise cuant che tu jessis dal navigadôr
 disable-extension =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Riduzion strissons pai cookies
 cookie-banner-handling-description = { -brand-short-name } al cîr in automatic di refudâ, tai sîts supuartâts, lis richiestis dai cookies sul strisson pai cookies.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Bloc dai strissons pai cookies
+cookie-banner-blocker-description = Cuant che un sît al domande di podê doprâ i cookies te navigazion privade, { -brand-short-name } al refude in automatic al puest to. Dome sui sîts supuartâts.
 cookie-banner-learn-more = Plui informazions
 forms-handle-cookie-banners =
     .label = Ridûs i strissons pai cookies
+cookie-banner-blocker-checkbox-label =
+    .label = Refude in automatic i strissons pai cookies
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Azions sveltis
     .accesskey = Z
+addressbar-locbar-showrecentsearches-option =
+    .label = Mostre ricercjis resintis
+    .accesskey = r
 addressbar-suggestions-settings = Modifiche lis preferencis pai sugjeriments dai motôrs di ricercje
 addressbar-quickactions-learn-more = Plui informazions
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Protezion miorade da lis spiis
 content-blocking-section-top-level-description = Lis spiis (trackers) ti stan daûr ator pe rêt par colezionâ informazions su lis tôs abitudinis di navigazion e su ce che ti interesse. { -brand-short-name } al bloche tancj di chestis spiis e altris scripts malevui.
 content-blocking-learn-more = Plui informazions
 content-blocking-fpi-incompatibility-warning = Tu stâs doprant First Party Isolation (FPI), che al passe parsore di cualchidune des impostazions di { -brand-short-name } sui cookies.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = O stin doprant “Resist al rilevament di stamp numeric” (Resist Fingerprinting - RFP), che al sostituìs cualchi impostazion di { -brand-short-name } relative ae protezion dal rilevament di stamp numeric. Chest al podarès causâ il malfunzionament di cualchi sît.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1210,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Dispositîfs di sigurece…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = Permet a { -brand-short-name } di considerâ atendibii in automatic i certificâts lidrîs di tiercis parts che tu instalis
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Vierç Impostazions
     .accesskey = I

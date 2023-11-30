@@ -3,11 +3,21 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Envia als llocs web el senyal «No vull ser seguit» per informar-los que no vull que em facin el seguiment
+do-not-track-description2 =
+    .label = Envia als llocs web la sol·licitud «No vull ser seguit»
+    .accesskey = E
 do-not-track-learn-more = Més informació
 do-not-track-option-default-content-blocking-known =
     .label = Només si el { -brand-short-name } està configurat per blocar els elements de seguiment coneguts
 do-not-track-option-always =
     .label = Sempre
+global-privacy-control-description =
+    .label = Sol·licita als llocs web que no venguin ni comparteixin les meves dades
+    .accesskey = S
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Paràmetres
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -116,11 +126,15 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Obre les finestres i pestanyes anteriors
     .accesskey = s
+windows-launch-on-login =
+    .label = Obre el { -brand-short-name } automàticament en iniciar l'ordinador
+    .accesskey = O
+windows-launch-on-login-disabled = Aquesta preferència s'ha desactivat al Windows. Per canviar-la, aneu a <a data-l10n-name="startup-link">Aplicacions d'inici</a> en els paràmetres del sistema.
 startup-restore-warn-on-quit =
     .label = Avisa en sortir del navegador
 disable-extension =
     .label = Inhabilita l'extensió
-preferences-data-migration-header = Importa les dades del navegador
+preferences-data-migration-header = Importa les dades d'un altre navegador
 preferences-data-migration-description = Importa les adreces d'interès, les contrasenyes, l'historial i les dades d'emplenament automàtic al { -brand-short-name }.
 preferences-data-migration-button =
     .label = Importa les dades
@@ -457,6 +471,9 @@ browsing-use-onscreen-keyboard =
 browsing-use-cursor-navigation =
     .label = Utilitza sempre les tecles de cursor per navegar en les pàgines
     .accesskey = c
+browsing-use-full-keyboard-navigation =
+    .label = Utilitza la tecla de tabulació per moure el focus entre els controls de formulari i els enllaços
+    .accesskey = U
 browsing-search-on-start-typing =
     .label = Cerca el text en començar a teclejar
     .accesskey = x
@@ -818,7 +835,7 @@ forms-breach-alerts =
     .accesskey = b
 forms-breach-alerts-learn-more-link = Més informació
 preferences-relay-integration-checkbox =
-    .label = Suggereix màscares de correu electrònic del { -relay-brand-name } per a protegir l'adreça electrònica
+    .label = Suggereix màscares d'adreça electrònica del { -relay-brand-name } per a protegir la vostra adreça electrònica
 relay-integration-learn-more-link = Més informació
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -966,6 +983,9 @@ addressbar-locbar-history-option =
 addressbar-locbar-bookmarks-option =
     .label = Adreces d'interès
     .accesskey = d
+addressbar-locbar-clipboard-option =
+    .label = Porta-retalls
+    .accesskey = P
 addressbar-locbar-openpage-option =
     .label = Pestanyes obertes
     .accesskey = P
@@ -991,6 +1011,10 @@ content-blocking-enhanced-tracking-protection = Protecció contra el seguiment m
 content-blocking-section-top-level-description = Hi ha elements que us fan el seguiment mentre navegueu per recopilar informació sobre els vostres hàbits de navegació i interessos. El { -brand-short-name } bloca molts d'aquests elements de seguiment i altres scripts maliciosos.
 content-blocking-learn-more = Més informació
 content-blocking-fpi-incompatibility-warning = Esteu utilitzant FPI (First Party Isolation), que substitueix alguns paràmetres de galetes del { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Esteu utilitzant RFP (Resist Fingerprinting), que substitueix alguns dels paràmetres de protecció d'empremtes digitals del { -brand-short-name }. Això pot fer que alguns llocs no funcionin correctament.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1024,6 +1048,10 @@ content-blocking-all-windows-tracking-content = Contingut que fa seguiment en to
 content-blocking-all-cross-site-cookies = Totes les galetes entre llocs
 content-blocking-cryptominers = Miners de criptomonedes
 content-blocking-fingerprinters = Generadors d'empremtes digitals
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices. And
+# the suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-known-and-suspected-fingerprinters = Generadors d'empremtes digitals coneguts i sospitosos
 
 # The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
@@ -1062,6 +1090,18 @@ content-blocking-cryptominers-label =
 content-blocking-fingerprinters-label =
     .label = Generadors d'empremtes digitals
     .accesskey = G
+# Browser fingerprinting is a method of tracking users by the configuration and settings information (their "digital fingerprint")
+# that is visible to websites they browse, rather than traditional tracking methods such as IP addresses and unique cookies.
+#
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices.
+content-blocking-known-fingerprinters-label =
+    .label = Generadors d'empremtes digitals coneguts
+    .accesskey = G
+# The suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-suspected-fingerprinters-label =
+    .label = Generadors d'empremtes digitals sospitosos
+    .accesskey = s
 
 ## Privacy Section - Tracking
 
@@ -1124,6 +1164,8 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = Ús i recollida de dades i del { -brand-short-name }
+collection-header2 = Ús i recollida de dades i del { -brand-short-name }
+    .searchkeywords = telemetria
 collection-description = Ens esforcem per oferir-vos opcions i recollir només allò que necessitem per proporcionar i millorar el { -brand-short-name } per a tothom. Sempre demanem permís abans de rebre informació personal.
 collection-privacy-notice = Avís de privadesa
 collection-health-report-telemetry-disabled = Ja no permeteu a { -vendor-short-name } capturar dades tècniques i d'interacció. Totes les dades antigues se suprimiran d'aquí a 30 dies.
@@ -1180,6 +1222,9 @@ certs-view =
 certs-devices =
     .label = Dispositius de seguretat…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = Permet que el { -brand-short-name } confiï automàticament en els certificats arrel de tercers que instal·leu
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Obre els paràmetres
     .accesskey = O

@@ -36,6 +36,7 @@ firefoxview-tabpickup-adddevice-description = Mobil cihazlar için { -brand-prod
 firefoxview-tabpickup-adddevice-learn-how = Nasıl yapılacağını öğrenin
 firefoxview-tabpickup-adddevice-primarybutton = Mobil cihazlar için { -brand-product-name }’u indir
 firefoxview-syncedtabs-adddevice-header = Diğer cihazlarınızdan { -brand-product-name }’a giriş yapın
+firefoxview-syncedtabs-adddevice-description = { -brand-product-name } kullandığınız her yerdeki sekmelerinizi görmek için tüm cihazlarınızda giriş yapın. <a data-l10n-name="url">Diğer cihazlarınızı bağlamayı</a> öğrenin.
 firefoxview-syncedtabs-adddevice-primarybutton = Mobil cihazlar için { -brand-product-name }’u deneyin
 firefoxview-tabpickup-synctabs-header = Sekme eşitlemeyi açın
 firefoxview-tabpickup-synctabs-description = { -brand-short-name } tarayıcınızın sekmeleri cihazlar arasında paylaşmasına izin verin.
@@ -64,6 +65,7 @@ firefoxview-tabpickup-password-locked-primarybutton = Ana parolayı girin
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Daha fazla bilgi alın</a>
 firefoxview-tabpickup-signed-out-header = Yeniden bağlanmak için giriş yapın
 firefoxview-tabpickup-signed-out-description = Yeniden bağlanıp sekmelerinize ulaşmak için { -fxaccount-brand-name }nıza giriş yapın.
+firefoxview-tabpickup-signed-out-description2 = Yeniden bağlanıp sekmelerinize ulaşmak için hesabınıza giriş yapın.
 firefoxview-tabpickup-signed-out-primarybutton = Giriş yap
 firefoxview-tabpickup-syncing = Sekmeleriniz eşitleniyor. Birkaç saniye bekleyin.
 firefoxview-mobile-promo-header = Telefon veya tabletinizdeki sekmelerinize erişin
@@ -201,9 +203,6 @@ firefoxview-import-history-description = { -brand-short-name }’u varsayılan t
 firefoxview-recentlyclosed-empty-header = Kapattığınız sekmeye geri dönmek mi istiyorsunuz?
 firefoxview-recentlyclosed-empty-description = Burada yakın zamanda kapattığınız sekmeleri bulacaksınız. Böylece istediğiniz sekmeyi hızlı bir şekilde yeniden açabilirsiniz.
 firefoxview-recentlyclosed-empty-description-two = Daha önceden kapattığınız sekmeleri <a data-l10n-name="history-url">gezinti geçmişinizde</a> bulabilirsiniz.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

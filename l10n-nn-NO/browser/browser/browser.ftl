@@ -562,6 +562,8 @@ urlbar-result-action-switch-tab = Byt til fane
 urlbar-result-action-visit = Besøk
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Besøk frå utklippstavla
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Besøk frå utklippstavla
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -614,6 +616,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Snøgghandlingar
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Nylege søk
 
 ## Reader View toolbar buttons
 
@@ -911,6 +918,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Utvidingar
         Nokre utvidingar er ikkje tillatne
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Avslutt privat økt
+    .tooltiptext = Avslutt privat økt
+reset-pbm-panel-heading = Avslutte privat økt?
+reset-pbm-panel-description = Lat att alle private faner og slett historikk, infokapslar, og alle andre nettstaddata.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Spør meg alltid
+    .accesskey = S
+reset-pbm-panel-cancel-button =
+    .label = Avbryt
+    .accesskey = A
+reset-pbm-panel-confirm-button =
+    .label = Slett øktdata
+    .accesskey = S
+reset-pbm-panel-complete = Private øktdata sletta
 
 ## Autorefresh blocker
 

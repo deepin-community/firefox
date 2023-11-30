@@ -20,9 +20,9 @@ protections-popup-footer-protection-label-standard = 표준
 
 # The text a screen reader speaks when focused on the info button.
 protections-panel-etp-more-info =
-    .aria-label = 향상된 추적 방지 기능에 대한 추가 정보
-protections-panel-etp-on-header = 이 사이트에 향상된 추적 방지 기능이 켜짐
-protections-panel-etp-off-header = 이 사이트에 향상된 추적 방지 기능이 꺼짐
+    .aria-label = 향상된 추적 방지에 대한 추가 정보
+protections-panel-etp-on-header = 이 사이트에 향상된 추적 방지 켜짐
+protections-panel-etp-off-header = 이 사이트에 향상된 추적 방지 꺼짐
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
@@ -30,13 +30,21 @@ protections-panel-etp-off-header = 이 사이트에 향상된 추적 방지 기�
 ##   $host (String): the hostname of the site that is being displayed.
 
 protections-panel-etp-on-toggle =
-    .label = 향상된 추적 방지 기능
-    .description = 이 사이트에 대해 켜짐
-    .aria-label = { $host }에 대해 방지 사용 안 함
+    .label = 향상된 추적 방지
+    .description = 이 사이트에 켜짐
+    .aria-label = { $host }에 방지 사용 안 함
 protections-panel-etp-off-toggle =
-    .label = 향상된 추적 방지 기능
-    .description = 이 사이트에 대해 꺼짐
-    .aria-label = { $host }에 대해 방지 사용함
+    .label = 향상된 추적 방지
+    .description = 이 사이트에 꺼짐
+    .aria-label = { $host }에 방지 사용함
+protections-panel-etp-toggle-on =
+    .label = 향상된 추적 방지
+    .description = 이 사이트에 켜짐
+    .aria-label = 향상된 추적 방지: { $host }에 켜짐
+protections-panel-etp-toggle-off =
+    .label = 향상된 추적 방지
+    .description = 이 사이트에 꺼짐
+    .aria-label = 향상된 추적 방지: { $host }에 꺼짐
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = 사이트가 작동하지 않습니까?
 # The heading/title of the sub-panel view
@@ -119,6 +127,7 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 # Cookie Banner Handling
 
 protections-panel-cookie-banner-handling-header = 쿠키 배너 감소
+protections-panel-cookie-banner-blocker-header = 쿠키 배너 차단기
 protections-panel-cookie-banner-handling-enabled = 이 사이트에서 켜짐
 protections-panel-cookie-banner-handling-disabled = 이 사이트에서 꺼짐
 protections-panel-cookie-banner-handling-undetected = 현재 지원되지 않는 사이트
@@ -127,9 +136,16 @@ protections-panel-cookie-banner-view-title =
 # Variables
 #  $host (String): the hostname of the site that is being displayed.
 protections-panel-cookie-banner-view-turn-off-for-site = { $host }에 대해 쿠키 배너 감소를 끄시겠습니까?
-protections-panel-cookie-banner-view-turn-on-for-site = 이 사이트에 대해 쿠키 배너 감소를 켜시겠습니까?
+protections-panel-cookie-banner-view-turn-on-for-site = 이 사이트에 쿠키 배너 감소를 켜시겠습니까?
+protections-panel-cookie-banner-blocker-view-title =
+    .title = 쿠키 배너 차단기
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-blocker-view-turn-off-for-site = { $host }에 쿠키 배너 차단기를 끄시겠습니까?
+protections-panel-cookie-banner-blocker-view-turn-on-for-site = 이 사이트에 쿠키 배너 차단기를 켜시겠습니까?
 protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name }는 이 사이트의 쿠키를 지우고 페이지를 새로 고침합니다. 모든 쿠키를 삭제하면 로그아웃되거나 장바구니가 비워질 수 있습니다.
 protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name }는 지원되는 사이트에서 모든 쿠키 요청을 자동으로 거부하려고 시도합니다.
+protections-panel-cookie-banner-blocker-view-turn-on-description = 켜면, { -brand-short-name }가 이 사이트에 쿠키 배너를 자동으로 거부하려고 시도합니다.
 protections-panel-cookie-banner-view-cancel = 취소
 protections-panel-cookie-banner-view-turn-off = 끄기
 protections-panel-cookie-banner-view-turn-on = 켜기

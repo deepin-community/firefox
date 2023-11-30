@@ -167,7 +167,6 @@ extensions-warning-update-security2 =
     .message = დამატების განახლების უსაფრთხოების შემოწმება გამორთულია. განახლებამ შესაძლოა, ზიანი მოგაყენოთ.
 extensions-warning-update-security-button = ჩართვა
     .title = დამატებების განახლების უსაფრთხოების შემოწმების ჩართვა
-extensions-warning-imported-addons = გთხოვთ დაასრულოთ გადმოტანილი გაფართოების ჩადგმა – { -brand-short-name }.
 extensions-warning-imported-addons2 =
     .message = გთხოვთ დაასრულოთ გადმოტანილი გაფართოების ჩადგმა – { -brand-short-name }.
 extensions-warning-imported-addons-button = გაფართოებების ჩაყენება
@@ -191,7 +190,7 @@ addon-updates-update-addons-automatically = დამატებების �
 ## (which itself is either "Automatically" or "Manually", controlled by the
 ## extensions-updates-update-addons-automatically.label menu item).
 
-addon-updates-reset-updates-to-automatic = ყველა დამატების, ავტომატურ განახლებაზე დაბრუნება
+addon-updates-reset-updates-to-automatic = ყველა დამატების თვითგანახლებაზე დაბრუნება
     .accesskey = დ
 addon-updates-reset-updates-to-manual = ყველა დამატებაზე, ხელით განახლების მითითება
     .accesskey = ხ
@@ -264,7 +263,7 @@ discopane-intro =
     მომაბეზრებელი რეკლამები, შეცვალოთ იერსახე და კიდევ უამრავი რამ.
     ეს პატარა პროგრამული ნაწილები ხშირ შემთხვევაში შექმნილია გარეშე პირების მიერ.
     აქ მოცემულია ისინი, რომელთაც { -brand-product-name } <a data-l10n-name="learn-more-trigger">გირჩევთ</a>
-    მეტი უსაფრთხოებისთვის წარმადობისა და შესაძლებლობებისთვის.
+    მეტი უსაფრთხოებისთვის, წარმადობისა და შესაძლებლობებისთვის.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations =
     შემოთავაზებების ნაწილი მორგებულია თქვენზე. ითვალისწინებს თქვენ მიერ
@@ -364,6 +363,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> მოცილებულია.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } მოცილებულია.
 pending-uninstall-undo-button = დაბრუნება
 addon-detail-updates-label = თვითგანახლების ნებართვა
 addon-detail-updates-radio-default = ნაგულისხმევი

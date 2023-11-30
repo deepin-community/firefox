@@ -52,9 +52,9 @@ newtab-topsites-url-label = URL
 newtab-topsites-url-input =
     .placeholder = Ehai térã emboja peteĩ URL
 newtab-topsites-url-validation = Oñeikotevẽ URL oiko porãva
-newtab-topsites-image-url-label = URL ra’anga ñemomba’etepyre
-newtab-topsites-use-image-link = Ta’anga ñemomba’etepyre…
-newtab-topsites-image-validation = Ta’anga nehenyhẽkuái. Eiporu peteĩ URL iñambuéva.
+newtab-topsites-image-url-label = URL ra’ãnga ñemomba’etepyre
+newtab-topsites-use-image-link = Ta’ãnga ñemomba’etepyre…
+newtab-topsites-image-validation = Ta’ãnga nehenyhẽkuái. Eiporu peteĩ URL iñambuéva.
 
 ## Top Sites - General form dialog buttons. These are verbs/actions.
 
@@ -244,6 +244,9 @@ newtab-error-fallback-refresh-link = Kuatiarogue mbopiro’y eñepyrũjey hag̃u
 
 newtab-custom-shortcuts-title = Jeike pya’eha
 newtab-custom-shortcuts-subtitle = Tenda eñongatúva térã eikeha
+newtab-custom-shortcuts-toggle =
+    .label = Jeike pya’eha
+    .description = Tenda eñongatúva térã eikeha
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector =
@@ -254,9 +257,15 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Jeike pya’eha jehepyme’ẽpyre
 newtab-custom-pocket-title = { -pocket-brand-name } oñe’ẽporãha
 newtab-custom-pocket-subtitle = Tetepy iporãva { -pocket-brand-name } oiporavopyre, { -brand-product-name } mba’éva pegua
+newtab-custom-pocket-toggle =
+    .label = { -pocket-brand-name } oñe’ẽporãha
+    .description = Tetepy iporãva { -pocket-brand-name } oiporavopyre, { -brand-product-name } mba’éva pegua
 newtab-custom-pocket-sponsored = Tembiasakue jehepyme’ẽguáva
 newtab-custom-pocket-show-recent-saves = Ehechauka eñongaturamóva
 newtab-custom-recent-title = Tembiapo ramovegua
 newtab-custom-recent-subtitle = Tenda jeporavo ha tetepy ramovegua
+newtab-custom-recent-toggle =
+    .label = Tembiapo ramovegua
+    .description = Tenda jeporavo ha tetepy ramovegua
 newtab-custom-close-button = Mboty
 newtab-custom-settings = Eñangareko hetave ñembohekóre

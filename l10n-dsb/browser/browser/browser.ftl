@@ -573,6 +573,8 @@ urlbar-result-action-switch-tab = K rejtarikoju pśejś
 urlbar-result-action-visit = Woglědaś se
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Z mjazywótkłada woglědaś
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Z mjazywótkłada se woglědaś
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -625,6 +627,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Malsne akcije
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Nejnowše pytanja
 
 ## Reader View toolbar buttons
 
@@ -923,6 +930,24 @@ unified-extensions-button-quarantined =
         Rozšyrjenja
         Někotare rozšyrjenja njejsu dowólone
 
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Priwatne pósejźenje skóńcyś
+    .tooltiptext = Priwatne pósejźenje skóńcyś
+reset-pbm-panel-heading = Priwatne pósejźenje skóńcyś?
+reset-pbm-panel-description = Zacyńśo wšykne priwatne rejtariki a lašujśo historiju, cookieje a wšykne druge sedłowe daty.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Pśecej se pšašaś
+    .accesskey = P
+reset-pbm-panel-cancel-button =
+    .label = Pśetergnuś
+    .accesskey = t
+reset-pbm-panel-confirm-button =
+    .label = Pósejźeńske daty lašowaś
+    .accesskey = l
+reset-pbm-panel-complete = Priwatne pósejźeńske daty su se wulašowali
+
 ## Autorefresh blocker
 
 refresh-blocked-refresh-label = { -brand-short-name } jo toś ten bok pśi awtomatiskem znowegocytanju zajźował.
@@ -937,7 +962,7 @@ firefox-relay-offer-why-to-use-relay = Naše wěste, lažko wužywajobne maski w
 # Variables:
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = Wšykne mejlki, kótarež se na waše e-mailowe maski sćelu, se do <strong>{ $useremail }</strong> dalej pósrědnjaju (snaźkuli rozsuźujośo je blokěrowaś).
-firefox-relay-offer-legal-notice = Gaž na „E-mailowu masku wužywaś“ klikaśo, zwolijośo do <label data-l10n-name="tos-url">wužywańskich wuměnjenjow</label>> a <label data-l10n-name="privacy-url">powěźeńki priwatnosći</label>.
+firefox-relay-offer-legal-notice = Gaž na „E-mailowu masku wužywaś“ klikaśo, zwólijośo do <label data-l10n-name="tos-url">wužywańskich wuměnjenjow</label>> a <label data-l10n-name="privacy-url">powěźeńki priwatnosći</label>.
 
 ## Add-on Pop-up Notifications
 

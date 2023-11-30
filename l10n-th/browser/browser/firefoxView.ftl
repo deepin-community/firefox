@@ -5,10 +5,15 @@
 toolbar-button-firefox-view =
     .label = { -firefoxview-brand-name }
     .tooltiptext = { -firefoxview-brand-name }
+toolbar-button-firefox-view-2 =
+    .label = { -firefoxview-brand-name }
+    .tooltiptext = ดูการเรียกดูล่าสุดผ่านหน้าต่างและอุปกรณ์
 menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-label =
+    .label = { -firefoxview-brand-name }
 firefoxview-close-button =
     .title = ปิด
     .aria-label = ปิด
@@ -40,6 +45,8 @@ firefoxview-tabpickup-synctabs-primarybutton = ซิงค์แท็บที
 firefoxview-syncedtabs-synctabs-header = อัปเดตการตั้งค่าการซิงค์ของคุณ
 firefoxview-syncedtabs-synctabs-description = หากต้องการดูแท็บจากอุปกรณ์อื่น คุณต้องซิงค์แท็บที่เปิดอยู่
 firefoxview-syncedtabs-synctabs-checkbox = อนุญาตให้ซิงค์แท็บที่เปิดอยู่
+firefoxview-syncedtabs-loading-header = อยู่ระหว่างการซิงค์
+firefoxview-syncedtabs-loading-description = เมื่อเสร็จแล้ว คุณจะเห็นแท็บที่คุณเปิดไว้ในอุปกรณ์อื่น ๆ โปรดกลับมาดูในเร็ว ๆ นี้
 firefoxview-tabpickup-fxa-admin-disabled-header = องค์กรของคุณปิดใช้งานการซิงค์
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } ไม่สามารถซิงค์แท็บระหว่างอุปกรณ์ได้เนื่องจากผู้ดูแลระบบของคุณปิดใช้งานการซิงค์
 firefoxview-tabpickup-network-offline-header = ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของคุณ
@@ -58,6 +65,7 @@ firefoxview-tabpickup-password-locked-primarybutton = ป้อนรหัส�
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">เรียนรู้เพิ่มเติม</a>
 firefoxview-tabpickup-signed-out-header = ลงชื่อเข้าเพื่อเชื่อมต่ออีกครั้ง
 firefoxview-tabpickup-signed-out-description = หากต้องการเชื่อมต่อใหม่และนำแท็บของคุณมาที่นี่ ให้ลงชื่อเข้า { -fxaccount-brand-name } ของคุณ
+firefoxview-tabpickup-signed-out-description2 = หากต้องการเชื่อมต่อใหม่และนำแท็บของคุณมาที่นี่ ให้ลงชื่อเข้าบัญชีของคุณ
 firefoxview-tabpickup-signed-out-primarybutton = ลงชื่อเข้า
 firefoxview-tabpickup-syncing = นั่งรอสักครู่ขณะที่กำลังซิงค์แท็บของคุณ ซึ่งจะใช้เวลาแค่ครู่เดียวเท่านั้น
 firefoxview-mobile-promo-header = นำแท็บจากโทรศัพท์หรือแท็บเล็ตของคุณเข้ามา
@@ -141,6 +149,10 @@ firefoxview-show-more = แสดงเพิ่มเติม
 firefoxview-show-less = แสดงน้อยลง
 firefoxview-sort-history-by-date-label = เรียงตามวันที่
 firefoxview-sort-history-by-site-label = เรียงตามไซต์
+# Variables:
+#   $url (string) - URL that will be opened in the new tab
+firefoxview-opentabs-tab-row =
+    .title = เปลี่ยนไปยัง { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -195,9 +207,7 @@ firefoxview-recentlyclosed-empty-header = ปิดแท็บเร็วเ�
 firefoxview-recentlyclosed-empty-description = ที่นี่จะแสดงแท็บที่เพิ่งปิดไป คุณจึงสามารถเปิดใหม่ได้อย่างรวดเร็ว
 firefoxview-recentlyclosed-empty-description-two = หากต้องการหาแท็บเมื่อนานมาแล้ว ให้ดู<a data-l10n-name="history-url">ประวัติการเข้าชม</a>ของคุณ
 
-##
-
-
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 
 firefoxview-syncedtabs-device-notabs = ไม่มีแท็บที่เปิดบนอุปกรณ์นี้
+firefoxview-syncedtabs-connect-another-device = เชื่อมต่ออุปกรณ์อื่น

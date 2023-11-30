@@ -455,6 +455,12 @@
 %define L10N_TRANSITION 1
 %include @PRODUCT@-l10n.control.in
 
+%define L10N_LANG sat
+%define L10N_LANGUAGE Santali
+%undef L10N_RECOMMENDS
+%undef L10N_TRANSITION
+%include @PRODUCT@-l10n.control.in
+
 %define L10N_LANG sc
 %define L10N_LANGUAGE Sardinian
 %undef L10N_RECOMMENDS

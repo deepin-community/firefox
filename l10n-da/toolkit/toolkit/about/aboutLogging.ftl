@@ -46,6 +46,11 @@ about-logging-preset-webrtc-label = WebRTC
 about-logging-preset-webrtc-description = Logmoduler til at diagnosticere WebRTC-opkald
 about-logging-preset-webgpu-label = WebGPU
 about-logging-preset-webgpu-description = Logmoduler til at diagnosticere WebGPU-problemer
+about-logging-preset-gfx-label = Grafik
+about-logging-preset-gfx-description = Logmoduler til at diagnosticere grafikproblemer
+# This is specifically "Microsoft Windows". Microsoft normally doesn't localize it, and we should follow their convention here.
+about-logging-preset-windows-label = Windows
+about-logging-preset-windows-description = Logmoduler til at diagnosticere problemer med Microsoft Windows
 about-logging-preset-custom-label = Tilpasset
 about-logging-preset-custom-description = Manuelt valgte logmoduler
 # Error handling

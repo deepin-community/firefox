@@ -237,3 +237,28 @@ device-migration-fxa-spotlight-header = A utilizar um dispositivo mais antigo?
 device-migration-fxa-spotlight-body = Faça uma cópia dos seus dados para garantir que não perde informações importantes, tais como marcadores e palavras-passe — especialmente se mudar para um novo dispositivo.
 device-migration-fxa-spotlight-primary-button = Como fazer uma cópia dos meus dados
 device-migration-fxa-spotlight-link = Lembrar mais tarde
+
+## Set as Default PDF Reader Infobar
+
+# The question portion of the following message should have the <strong> and </strong> tags surrounding it.
+pdf-default-notification-message = <strong>Tornar o { -brand-short-name } no seu leitor de PDF predefindo?</strong> Utilize o { -brand-short-name } para ler e editar PDF guardados no seu computador.
+pdf-default-notification-set-default-button =
+    .label = Definir como predefinição
+pdf-default-notification-decline-button =
+    .label = Agora não
+
+## Launch on login infobar notification
+
+launch-on-login-infobar-message = <strong>Abrir o { -brand-short-name } sempre que reiniciar o seu computador?</strong> Agora pode definir para abrir automaticamente o { -brand-short-name } quando reiniciar o seu dispositivo.
+launch-on-login-learnmore = Saber mais
+launch-on-login-infobar-confirm-button = Sim, abrir no { -brand-short-name }
+    .accesskey = S
+launch-on-login-infobar-reject-button = Agora não
+    .accesskey = n
+
+## These string variants are used when the “launch on login” infobar
+## notification is displayed for a second time.
+
+launch-on-login-infobar-final-message = <strong>Abrir o { -brand-short-name } sempre que reiniciar o seu computador?</strong> Para gerir as suas preferências de inicialização, procure por “Inicialização” nas definições.
+launch-on-login-infobar-final-reject-button = Não, obrigado
+    .accesskey = N

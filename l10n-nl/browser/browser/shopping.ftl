@@ -6,6 +6,13 @@ shopping-page-title = { -brand-product-name }-winkelen
 # Title for page showing where a user can check the
 # review quality of online shopping product reviews
 shopping-main-container-title = Beoordelingscontrole
+shopping-beta-marker = Beta
+# This string is for ensuring that screen reader technology
+# can read out the "Beta" part of the shopping sidebar header.
+# Any changes to shopping-main-container-title and
+# shopping-beta-marker should also be reflected here.
+shopping-a11y-header =
+    .aria-label = Beoordelingscontrole - beta
 shopping-close-button =
     .title = Sluiten
 # This string is for notifying screen reader users that the
@@ -31,33 +38,42 @@ shopping-letter-grade-tooltip =
 
 ## Strings for the shopping message-bar
 
-shopping-message-bar-warning-stale-analysis-title = Updates beschikbaar
-shopping-message-bar-warning-stale-analysis-message = Start de { -fakespot-brand-full-name }-analysator om binnen ongeveer 60 seconden bijgewerkte informatie te krijgen.
-shopping-message-bar-generic-error-title = Analyse is momenteel niet beschikbaar
+shopping-message-bar-warning-stale-analysis-message-2 = Nieuwe te controleren informatie
+shopping-message-bar-warning-stale-analysis-button = Nu controleren
+shopping-message-bar-generic-error-title2 = Er is momenteel geen info beschikbaar
 shopping-message-bar-generic-error-message = We werken eraan om het probleem op te lossen. Kom binnenkort nog eens terug.
 shopping-message-bar-warning-not-enough-reviews-title = Nog niet genoeg beoordelingen
-shopping-message-bar-warning-not-enough-reviews-message = Wanneer dit product meer beoordelingen heeft, kunnen we deze analyseren.
+shopping-message-bar-warning-not-enough-reviews-message2 = Wanneer dit product meer beoordelingen heeft, kunnen we hun kwaliteit beoordelen.
 shopping-message-bar-warning-product-not-available-title = Product is niet beschikbaar
-shopping-message-bar-warning-product-not-available-message = Als u ziet dat dit product weer op voorraad is, meld dit dan aan ons en wij zullen eraan werken om de analyse bij te werken.
+shopping-message-bar-warning-product-not-available-message2 = Als u ziet dat dit product weer op voorraad is, meld dit dan aan ons en wij zullen eraan werken om de beoordelingen te controleren.
 shopping-message-bar-warning-product-not-available-button = Melden dat dit product weer op voorraad is
 shopping-message-bar-thanks-for-reporting-title = Bedankt voor het melden!
-shopping-message-bar-thanks-for-reporting-message = We zouden binnen 24 uur een bijgewerkte analyse moeten hebben. Kom later nog eens terug.
-shopping-message-bar-warning-product-not-available-reported-title = Analyse volgt binnenkort
-shopping-message-bar-warning-product-not-available-reported-message = Een bijgewerkte analyse zou binnen 24 uur gereed moeten zijn. Kom later nog eens terug.
-shopping-message-bar-warning-offline-title = Geen netwerkverbinding
-shopping-message-bar-warning-offline-message = Controleer uw netwerkverbinding. Probeer vervolgens de pagina opnieuw te laden.
-shopping-message-bar-analysis-in-progress-title = Analyse volgt binnenkort
-shopping-message-bar-analysis-in-progress-message = Als deze gereed is, laten we hier automatisch de bijgewerkte informatie zien.
+shopping-message-bar-thanks-for-reporting-message2 = We zouden binnen 24 uur info over de beoordelingen van dit product moeten hebben. Kom later nog eens terug.
+shopping-message-bar-warning-product-not-available-reported-title2 = Binnenkort info
+shopping-message-bar-warning-product-not-available-reported-message2 = We zouden binnen 24 uur info over de beoordelingen van dit product moeten hebben. Kom later nog eens terug.
+shopping-message-bar-generic-error =
+    .heading = Er is momenteel geen info beschikbaar
+    .message = We werken eraan om het probleem op te lossen. Kom binnenkort nog eens terug.
+shopping-message-bar-warning-not-enough-reviews =
+    .heading = Nog niet genoeg beoordelingen
+    .message = Wanneer dit product meer beoordelingen heeft, kunnen we hun kwaliteit beoordelen.
+shopping-message-bar-warning-product-not-available =
+    .heading = Product is niet beschikbaar
+    .message = Als u ziet dat dit product weer op voorraad is, meld dit dan aan ons en wij zullen eraan werken om de beoordelingen te controleren.
+shopping-message-bar-warning-product-not-available-button2 = Rapporteren dat product op voorraad is
+shopping-message-bar-thanks-for-reporting =
+    .heading = Bedankt voor het melden!
+    .message = We zouden binnen 24 uur info over de beoordelingen van dit product moeten hebben. Kom later nog eens terug.
+shopping-message-bar-warning-product-not-available-reported =
+    .heading = Binnenkort info
+    .message = We zouden binnen 24 uur info over de beoordelingen van dit product moeten hebben. Kom later nog eens terug.
+shopping-message-bar-analysis-in-progress-title2 = Beoordelingskwaliteit controleren
+shopping-message-bar-analysis-in-progress-message2 = Dit kan ongeveer 60 seconden duren.
 shopping-message-bar-page-not-supported-title = We kunnen deze beoordelingen niet controleren
 shopping-message-bar-page-not-supported-message = Helaas kunnen we de beoordelingskwaliteit voor bepaalde soorten producten niet controleren. Dit betreft bijvoorbeeld cadeaubonnen en streaming video, muziek en games.
-
-## The word 'analyzer' when used here reflects what this tool is called on
-## fakespot.com. If possible, a different word should be used for the Fakespot
-## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
-## used in the name of the Firefox feature ('Review checker'). If that is not
-## possible - if these terms are not meaningfully different - that is OK.
-
-shopping-message-bar-warning-stale-analysis-link = De analysator starten op { -fakespot-website-name }
+shopping-message-bar-page-not-supported =
+    .heading = We kunnen deze beoordelingen niet controleren
+    .message = Helaas kunnen we de beoordelingskwaliteit voor bepaalde soorten producten niet controleren. Dit betreft bijvoorbeeld cadeaubonnen en streaming video, muziek en games.
 
 ## Strings for the product review snippets card
 
@@ -81,11 +97,14 @@ shopping-settings-label =
 shopping-settings-recommendations-toggle =
     .label = Advertenties tonen in beoordelingscontrole
 shopping-settings-recommendations-learn-more = U ziet af en toe advertenties voor relevante producten. Alle advertenties moeten voldoen aan onze kwaliteitsnormen voor beoordelingen. <a data-l10n-name="review-quality-url">Meer info</a>
+shopping-settings-recommendations-learn-more2 = U ziet af en toe advertenties voor relevante producten. We adverteren alleen voor producten met betrouwbare beoordelingen. <a data-l10n-name="review-quality-url">Meer info</a>
 shopping-settings-opt-out-button = Beoordelingscontrole uitschakelen
 powered-by-fakespot = Beoordelingscontrole wordt mogelijk gemaakt door <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
 
 ## Strings for the adjusted rating component
 
+# "Adjusted rating" means a star rating that has been adjusted to include only
+# reliable reviews.
 shopping-adjusted-rating-label =
     .label = Aangepaste waardering
 shopping-adjusted-rating-unreliable-reviews = Onbetrouwbare beoordelingen verwijderd
@@ -99,12 +118,11 @@ shopping-review-reliability-label =
 
 shopping-analysis-explainer-label =
     .label = Hoe wij de kwaliteit van beoordelingen bepalen
-shopping-analysis-explainer-intro =
-    We gebruiken AI-technologie van { -fakespot-brand-full-name } om de betrouwbaarheid van productbeoordelingen te analyseren.
-    Met deze analyse kunt u alleen de kwaliteit van beoordelingen beoordelen, niet de productkwaliteit.
+shopping-analysis-explainer-intro2 = We gebruiken AI-technologie van { -fakespot-brand-full-name } om de betrouwbaarheid van productbeoordelingen te controleren. Hiermee kunt u alleen de kwaliteit van beoordelingen beoordelen, niet de productkwaliteit.
 shopping-analysis-explainer-grades-intro = We kennen aan de beoordelingen van elk product een <strong>letterwaarde</strong> toe, van A tot F.
 shopping-analysis-explainer-adjusted-rating-description = De <strong>aangepaste waardering</strong> is alleen gebaseerd op beoordelingen die wij betrouwbaar achten.
 shopping-analysis-explainer-learn-more = Meer info over <a data-l10n-name="review-quality-url">hoe { -fakespot-brand-full-name } de kwaliteit van beoordelingen bepaalt</a>.
+shopping-analysis-explainer-learn-more2 = Meer info over <a data-l10n-name="review-quality-url">hoe { -fakespot-brand-name } de kwaliteit van beoordelingen bepaalt</a>.
 # This string includes the short brand name of one of the three supported
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
@@ -115,10 +133,10 @@ shopping-analysis-explainer-review-grading-scale-unreliable = Onbetrouwbare beoo
 
 ## Strings for UrlBar button
 
-shopping-sidebar-open-button =
-    .tooltiptext = Winkelzijbalk openen
-shopping-sidebar-close-button =
-    .tooltiptext = Winkelzijbalk sluiten
+shopping-sidebar-open-button2 =
+    .tooltiptext = Beoordelingscontrole openen
+shopping-sidebar-close-button2 =
+    .tooltiptext = Beoordelingscontrole sluiten
 
 ## Strings for the unanalyzed product card.
 ## The word 'analyzer' when used here reflects what this tool is called on
@@ -127,12 +145,80 @@ shopping-sidebar-close-button =
 ## used in the name of the Firefox feature ('Review checker'). If that is not
 ## possible - if these terms are not meaningfully different - that is OK.
 
-shopping-unanalyzed-product-header = Er is nog geen analyse voor deze beoordelingen
-shopping-unanalyzed-product-message = Start de { -fakespot-brand-full-name }-analysator en u weet binnen ongeveer 60 seconden of de beoordelingen van dit product betrouwbaar zijn.
-shopping-unanalyzed-product-analyze-link = De analysator starten op { -fakespot-website-name }
+
+## Strings for the unanalyzed product card.
+## The word 'analyzer' when used here reflects what this tool is called on
+## fakespot.com. If possible, a different word should be used for the Fakespot
+## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
+## used in the name of the Firefox feature ('Review Checker'). If that is not
+## possible - if these terms are not meaningfully different - that is OK.
+
+shopping-unanalyzed-product-header-2 = Nog geen info over deze beoordelingen
+shopping-unanalyzed-product-message-2 = Controleer de beoordelingskwaliteit om te ontdekken of de beoordelingen van dit product betrouwbaar zijn. Het duurt slechts ongeveer 60 seconden.
+shopping-unanalyzed-product-analyze-button = Beoordelingskwaliteit controleren
 
 ## Strings for the advertisement
 
 more-to-consider-ad-label =
     .label = Meer overwegingen
 ad-by-fakespot = Advertentie van { -fakespot-brand-name }
+
+## Shopping survey strings.
+
+shopping-survey-headline = Help { -brand-product-name } te verbeteren
+shopping-survey-question-one = Hoe tevreden bent u met de beoordelingscontrole in { -brand-product-name }?
+shopping-survey-q1-radio-1-label = Zeer tevreden
+shopping-survey-q1-radio-2-label = Tevreden
+shopping-survey-q1-radio-3-label = Gemiddeld
+shopping-survey-q1-radio-4-label = Ontevreden
+shopping-survey-q1-radio-5-label = Zeer ontevreden
+shopping-survey-question-two = Maakt de beoordelingscontrole het gemakkelijker voor u om beslissingen voor een aankoop te nemen?
+shopping-survey-q2-radio-1-label = Ja
+shopping-survey-q2-radio-2-label = Nee
+shopping-survey-q2-radio-3-label = Ik weet het niet
+shopping-survey-next-button-label = Volgende
+shopping-survey-submit-button-label = Verzenden
+shopping-survey-terms-link = Gebruiksvoorwaarden
+shopping-survey-thanks-message = Bedankt voor uw feedback!
+shopping-survey-thanks =
+    .heading = Bedankt voor uw feedback!
+
+## Shopping Feature Callout strings.
+## "price tag" refers to the price tag icon displayed in the address bar to
+## access the feature.
+
+shopping-callout-closed-opted-in-subtitle = Ga terug naar de <strong>beoordelingscontrole</strong> wanneer u het prijskaartje ziet.
+shopping-callout-pdp-opted-in-title = Zijn deze beoordelingen betrouwbaar? Ontdek het snel.
+shopping-callout-pdp-opted-in-subtitle = Open de beoordelingscontrole om een aangepaste waardering te zien waaruit onbetrouwbare beoordelingen zijn verwijderd. Plus, bekijk hoogtepunten uit recente authentieke beoordelingen.
+shopping-callout-closed-not-opted-in-title = Eén klik naar betrouwbare beoordelingen
+shopping-callout-closed-not-opted-in-subtitle = Probeer beoordelingscontrole eens uit wanneer u het prijskaartje ziet. Krijg snel inzichten van echte klanten – voordat u iets koopt.
+
+## Onboarding message strings.
+
+shopping-onboarding-headline = Probeer onze vertrouwde gids voor productbeoordelingen
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle = Bekijk hoe betrouwbaar productbeoordelingen op <b>{ $currentSite }</b> zijn, voordat u een aankoop doet. Beoordelingscontrole, een experimentele functie van { -vendor-short-name }, is rechtstreeks in { -brand-product-name } ingebouwd – en het werkt in <b>{ $secondSite }</b> en <b>{ $thirdSite }</b>.
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle-1 = Bekijk hoe betrouwbaar productbeoordelingen op <b>{ $currentSite }</b> zijn, voordat u een aankoop doet. Beoordelingscontrole, een experimentele functie van { -brand-product-name }, is rechtstreeks in de browser ingebouwd. Het werkt ook in <b>{ $secondSite }</b> en <b>{ $thirdSite }</b>.
+shopping-onboarding-body = Met behulp van de kracht van { -fakespot-brand-full-name } helpen we u bevooroordeelde en niet-authentieke beoordelingen te voorkomen. Ons AI-model wordt voortdurend verbeterd om u te beschermen terwijl u winkelt. <a data-l10n-name="learn_more">Meer info</a>
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use = Door ‘{ shopping-onboarding-opt-in-button }’ te selecteren, gaat u akkoord met het <a data-l10n-name="privacy_policy">privacybeleid</a> en  de <a data-l10n-name="terms_of_use">gebruiksvoorwaarden</a> van { -fakespot-brand-full-name }.
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Door ‘{ shopping-onboarding-opt-in-button }’ te selecteren, gaat u akkoord met het <a data-l10n-name="privacy_policy">privacybeleid</a> en  de <a data-l10n-name="terms_of_use">gebruiksvoorwaarden</a> van { -fakespot-brand-name }.
+shopping-onboarding-opt-in-button = Ja, proberen
+shopping-onboarding-not-now-button = Niet nu
+shopping-onboarding-dialog-close-button =
+    .title = Sluiten
+    .aria-label = Sluiten
+# Aria-label to make the "steps" of the shopping onboarding container visible to screen readers.
+# Variables:
+#   $current (Int) - Number of the current page
+#   $total (Int) - Total number of pages
+shopping-onboarding-welcome-steps-indicator-label =
+    .aria-label = Voortgang: stap { $current } van { $total }

@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 ### Firefox Home / New Tab strings for about:home / about:newtab.
 
 newtab-page-title = 新しいタブ
@@ -115,7 +116,7 @@ newtab-privacy-modal-button-manage = スポンサーコンテンツの設定を�
 newtab-privacy-modal-header = プライバシーは重要です。
 newtab-privacy-modal-paragraph-2 =
     盛り上がる魅力あるストーリーに加えて、選ばれたスポンサーからあなたの興味を引きそうな厳選コンテンツを提供します。
-    <strong>ブラウジングデータに { -brand-product-name } の個人情報のコピーが残ることはありません。</strong>私たちとスポンサーのどちらもその情報を見ることはありませんので、ご安心ください。
+    <strong>閲覧データに { -brand-product-name } の個人情報のコピーが残ることはありません。</strong>私たちとスポンサーのどちらもその情報を見ることはありませんので、ご安心ください。
 newtab-privacy-modal-link = 新しいタブページでのプライバシーの仕組みついて
 
 ##
@@ -223,7 +224,6 @@ newtab-pocket-learn-more = 詳細
 newtab-pocket-cta-button = { -pocket-brand-name } を入手
 newtab-pocket-cta-text = お気に入りに記事を { -pocket-brand-name } に保存して、魅力的な読み物を思う存分楽しみましょう。
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } は { -brand-product-name } ファミリーの一員です
-
 # A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = 保存
 newtab-pocket-saved = 保存しました
@@ -243,15 +243,24 @@ newtab-error-fallback-refresh-link = ページを再読み込みしてもう一�
 
 newtab-custom-shortcuts-title = ショートカット
 newtab-custom-shortcuts-subtitle = 保存または訪問したサイト
+newtab-custom-shortcuts-toggle =
+    .label = ショートカット
+    .description = 保存または訪問したサイト
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector = { $num } 行
 newtab-custom-sponsored-sites = 広告ショートカット
 newtab-custom-pocket-title = { -pocket-brand-name } のおすすめ
 newtab-custom-pocket-subtitle = { -brand-product-name } ファミリーを構成する { -pocket-brand-name } が厳選した注目のコンテンツ
+newtab-custom-pocket-toggle =
+    .label = { -pocket-brand-name } のおすすめ
+    .description = { -brand-product-name } ファミリーを構成する { -pocket-brand-name } が厳選した注目のコンテンツ
 newtab-custom-pocket-sponsored = 広告記事
 newtab-custom-pocket-show-recent-saves = 最近保存したものを表示
 newtab-custom-recent-title = 最近のアクティビティ
 newtab-custom-recent-subtitle = 最近のサイトとコンテンツの抜粋
+newtab-custom-recent-toggle =
+    .label = 最近のアクティビティ
+    .description = 最近のサイトとコンテンツの抜粋
 newtab-custom-close-button = 閉じる
 newtab-custom-settings = 他の設定を管理

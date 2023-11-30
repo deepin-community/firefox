@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Pyydä verkkosivustoja olemaan myymättä tai jakamatta tietojani
     .accesskey = s
+non-technical-privacy-header = Sivuston tietosuojakäytännöt
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Asetukset
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Avaa aiemmat ikkunat ja välilehdet
     .accesskey = A
+windows-launch-on-login =
+    .label = Avaa { -brand-short-name } automaattisesti, kun tietokoneesi käynnistyy
+    .accesskey = O
+windows-launch-on-login-disabled = Tämä asetus on poistettu käytöstä Windowsissa. Jos haluat muuttaa sitä, siirry kohtaan <a data-l10n-name="startup-link">Käynnistyssovellukset</a> asetuksissa.
 startup-restore-warn-on-quit =
     .label = Varoita, kun selainta ollaan sulkemassa
 disable-extension =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Evästeilmoitusten vähennys
 cookie-banner-handling-description = { -brand-short-name } pyrkii automaattisesti vastaamaan kielteisesti evästepyyntöihin tuetuilla sivustoilla.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Evästeilmoitusten esto
+cookie-banner-blocker-description = Kun sivusto kysyy, voiko se käyttää evästeitä yksityisessä selaustilassa, { -brand-short-name } kieltäytyy automaattisesti puolestasi. Vain tuetuilla sivustoilla.
 cookie-banner-learn-more = Lue lisää
 forms-handle-cookie-banners =
     .label = Vähennä evästeilmoituksia
+cookie-banner-blocker-checkbox-label =
+    .label = Kieltäydy automaattisesti evästeilmoituksista
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Pikatoiminnot
     .accesskey = Q
+addressbar-locbar-showrecentsearches-option =
+    .label = Näytä viimeisimmät haut
+    .accesskey = h
 addressbar-suggestions-settings = Muuta hakukoneiden ehdotusten asetuksia
 addressbar-quickactions-learn-more = Lue lisää
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Tehostettu seurannan suojaus
 content-blocking-section-top-level-description = Seuraimet seuraavat sinua verkossa ja keräävät tietoja selaustapoihisi ja kiinnostuksen kohteisiisi liittyen. { -brand-short-name } estää monet näistä seuraimista ja muita haitallisia komentosarjoja.
 content-blocking-learn-more = Lue lisää
 content-blocking-fpi-incompatibility-warning = Käytät ensimmäisen osapuolen eristämistä (FPI), joka korvaa joitain { -brand-short-name }in evästeasetuksista.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Käytät Resist Fingerprinting (RFP) -toimintoa, joka korvaa osan { -brand-short-name }in yksilöinnin suojausasetuksista. Tämä saattaa aiheuttaa joidenkin sivustojen rikkoutumisen.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1210,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Turvallisuuslaitteet…
     .accesskey = T
+certs-thirdparty-toggle =
+    .label = Salli { -brand-short-name }in luottaa automaattisesti asentamiisi kolmannen osapuolen juurivarmenteisiin
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Avaa asetukset
     .accesskey = A

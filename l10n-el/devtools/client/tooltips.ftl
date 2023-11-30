@@ -24,6 +24,7 @@ inactive-css-not-flex-item = Το <strong>{ $property }</strong> δεν έχει
 inactive-css-not-flex-container = Το <strong>{ $property }</strong> δεν έχει επίδραση σε αυτό το στοιχείο, αφού δεν είναι περιέκτης flex.
 inactive-css-not-inline-or-tablecell = Η ιδιότητα <strong>{ $property }</strong> δεν έχει επίδραση σε αυτό το στοιχείο, αφού δεν είναι στοιχείο εντός της γραμμής ή κελιού πίνακα.
 inactive-css-first-line-pseudo-element-not-supported = Το <strong>{ $property }</strong> δεν υποστηρίζεται σε ψευδοστοιχεία ::first-line.
+inactive-css-first-letter-pseudo-element-not-supported = Το <strong>{ $property }</strong> δεν υποστηρίζεται σε ψευδοστοιχεία ::first-letter.
 inactive-css-placeholder-pseudo-element-not-supported = Το <strong>{ $property }</strong> δεν υποστηρίζεται σε ψευδοστοιχεία ::placeholder.
 inactive-css-property-because-of-display = Το <strong>{ $property }</strong> δεν έχει επίδραση σε αυτό το στοιχείο, αφού δεν έχει προβολή του <strong>{ $display }</strong>.
 inactive-css-not-display-block-on-floated = Η τιμή <strong>display</strong> έχει αλλάξει από τη μηχανή σε <strong>block</strong> επειδή το στοιχείο είναι <strong>floated</strong>.
@@ -38,6 +39,15 @@ inactive-scroll-padding-when-not-scroll-container = Το <strong>{ $property }</
 inactive-css-border-image = Το <strong>{ $property }</strong> δεν έχει καμία επίδραση σε αυτό το στοιχείο, επειδή δεν μπορεί να εφαρμοστεί σε εσωτερικά στοιχεία πίνακα όπου το <strong>border-collapse</strong> έχει οριστεί σε <strong>collapse</strong>, στο στοιχείο γονικού πίνακα.
 inactive-css-ruby-element = Το <strong>{ $property }</strong> δεν έχει καμία επίδραση σε αυτό το στοιχείο, επειδή είναι στοιχείο ruby. Το μέγεθός του καθορίζεται από το μέγεθος γραμματοσειράς του κειμένου ruby.
 inactive-css-highlight-pseudo-elements-not-supported = Το <strong>{ $property }</strong> δεν υποστηρίζεται στα ψευδοστοιχεία επισήμανσης.
+inactive-css-cue-pseudo-element-not-supported = Το <strong>{ $property }</strong> δεν υποστηρίζεται σε ψευδοστοιχεία ::cue.
+# Variables:
+#   $lineCount (integer) - The number of lines the element has.
+inactive-css-text-wrap-balance-lines-exceeded =
+    { $lineCount ->
+        [one] Το <strong>{ $property }</strong> δεν έχει καμία επίδραση σε αυτό το στοιχείο επειδή έχει περισσότερες από { $lineCount } γραμμή.
+       *[other] Το <strong>{ $property }</strong> δεν έχει καμία επίδραση σε αυτό το στοιχείο επειδή έχει περισσότερες από { $lineCount } γραμμές.
+    }
+inactive-css-text-wrap-balance-fragmented = Το <strong>{ $property }</strong> δεν έχει καμία επίδραση σε αυτό το στοιχείο επειδή είναι κατακερματισμένο, δηλαδή το περιεχόμενό του διαχωρίζεται σε πολλές στήλες ή σελίδες.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain how
@@ -64,6 +74,8 @@ inactive-css-not-table-cell-fix = Δοκιμάστε να προσθέσετε �
 inactive-scroll-padding-when-not-scroll-container-fix = Δοκιμάστε να προσθέσετε το <strong>overflow:auto</strong>, το <strong>overflow:scroll</strong>, ή το <strong>overflow:hidden</strong>. { learn-more }
 inactive-css-border-image-fix = Στο στοιχείο γονικού πίνακα, καταργήστε την ιδιότητα ή αλλάξτε την τιμή του <strong>border-collapse</strong> σε μια τιμή εκτός της <strong>collapse</strong>. { learn-more }
 inactive-css-ruby-element-fix = Δοκιμάστε να αλλάξετε το <strong>font-size</strong> του κειμένου ruby. { learn-more }
+inactive-css-text-wrap-balance-lines-exceeded-fix = Προσπαθήστε να μειώσετε τον αριθμό των γραμμών. { learn-more }
+inactive-css-text-wrap-balance-fragmented-fix = Αποφύγετε τον διαχωρισμό περιεχομένου του στοιχείου, π.χ. αφαιρώντας τις στήλες ή χρησιμοποιώντας το <strong>page-break-inside:avoid</strong>. { learn-more }
 
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why

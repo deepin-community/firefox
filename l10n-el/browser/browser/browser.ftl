@@ -369,12 +369,12 @@ identity-https-only-info-turn-off2 = Αν η σελίδα δεν λειτουρ�
 identity-https-only-info-turn-on3 = Ενεργοποιήστε τις αναβαθμίσεις HTTPS σε αυτόν τον ιστότοπο αν θέλετε το { -brand-short-name } να αναβαθμίζει τη σύνδεση όταν είναι εφικτό.
 identity-https-only-info-turn-off3 = Αν η σελίδα δεν λειτουργεί σωστά, μπορείτε να απενεργοποιήσετε τις αναβαθμίσεις HTTPS για να γίνει ανανέωση του ιστοτόπου μέσω του επισφαλούς HTTP.
 identity-https-only-info-no-upgrade = Δεν είναι δυνατή η αναβάθμιση της σύνδεσης από HTTP.
-identity-permissions-storage-access-header = Cookies μεταξύ ιστοτόπων
-identity-permissions-storage-access-hint = Αυτά τα μέρη μπορούν να χρησιμοποιήσουν cookies μεταξύ ιστοτόπων και δεδομένα ιστοτόπων όσο βρίσκεστε σε αυτόν τον ιστότοπο.
+identity-permissions-storage-access-header = Cookie μεταξύ ιστοτόπων
+identity-permissions-storage-access-hint = Αυτά τα μέρη μπορούν να χρησιμοποιήσουν cookie μεταξύ ιστοτόπων και δεδομένα ιστοτόπων όσο βρίσκεστε σε αυτόν τον ιστότοπο.
 identity-permissions-storage-access-learn-more = Μάθετε περισσότερα
 identity-permissions-reload-hint = Ίσως χρειαστεί να επαναφορτώσετε τη σελίδα για εφαρμογή των αλλαγών.
 identity-clear-site-data =
-    .label = Διαγραφή cookies και δεδομένων ιστοτόπου…
+    .label = Διαγραφή cookie και δεδομένων ιστοτόπου…
 identity-connection-not-secure-security-view = Η σύνδεσή σας με αυτόν τον ιστότοπο δεν είναι ασφαλής.
 identity-connection-verified = Η σύνδεσή σας με αυτόν τον ιστότοπο είναι ασφαλής.
 identity-ev-owner-label = Το πιστοποιητικό εκδόθηκε για:
@@ -528,7 +528,7 @@ urlbar-placeholder-with-name =
 #  $component (String): the name of the component which forces remote control.
 #    Example: "DevTools", "Marionette", "RemoteAgent".
 urlbar-remote-control-notification-anchor2 =
-    .tooltiptext = Ο φυλλομετρητής βρίσκεται υπό απομακρυσμένο έλεγχο (αιτία: { $component })
+    .tooltiptext = Το πρόγραμμα περιήγησης ελέγχεται απομακρυσμένα (αιτία: { $component })
 urlbar-permissions-granted =
     .tooltiptext = Έχετε χορηγήσει επιπλέον άδειες σε αυτόν τον ιστότοπο.
 urlbar-switch-to-tab =
@@ -562,6 +562,8 @@ urlbar-result-action-switch-tab = Εναλλαγή σε καρτέλα
 urlbar-result-action-visit = Επίσκεψη
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Επίσκεψη από το πρόχειρό σας
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Επίσκεψη από το πρόχειρο
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -614,6 +616,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Γρήγορες ενέργειες
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Πρόσφατες αναζητήσεις
 
 ## Reader View toolbar buttons
 
@@ -866,7 +873,7 @@ navbar-search =
 # "toolbar" is appended automatically and should not be included in
 # in the string
 tabs-toolbar =
-    .aria-label = Καρτέλες φυλλομετρητή
+    .aria-label = Καρτέλες προγράμματος περιήγησης
 tabs-toolbar-new-tab =
     .label = Νέα καρτέλα
 tabs-toolbar-list-all-tabs =
@@ -911,6 +918,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Επεκτάσεις
         Ορισμένες επεκτάσεις δεν επιτρέπονται
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Τερματισμός ιδιωτικής συνεδρίας
+    .tooltiptext = Τερματισμός ιδιωτικής συνεδρίας
+reset-pbm-panel-heading = Τερματισμός ιδιωτικής συνεδρίας;
+reset-pbm-panel-description = Κλείστε όλες τις ιδιωτικές καρτέλες και διαγράψτε το ιστορικό, τα cookie και όλα τα άλλα δεδομένα ιστοτόπων.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Ερώτηση πάντα
+    .accesskey = Ε
+reset-pbm-panel-cancel-button =
+    .label = Ακύρωση
+    .accesskey = Α
+reset-pbm-panel-confirm-button =
+    .label = Διαγραφή δεδομένων συνεδρίας
+    .accesskey = Δ
+reset-pbm-panel-complete = Τα δεδομένα της ιδιωτικής συνεδρίας διαγράφηκαν
 
 ## Autorefresh blocker
 

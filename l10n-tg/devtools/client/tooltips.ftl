@@ -40,6 +40,14 @@ inactive-css-border-image = <strong>{ $property }</strong> нисбат ба и�
 inactive-css-ruby-element = <strong>{ $property }</strong> нисбат ба ин унсур таъсир намерасонад, зеро ки он унсури «ruby» мебошад. Андозаи он аз тарафи андозаи шрифти матни «ruby» муайян карда мешавад.
 inactive-css-highlight-pseudo-elements-not-supported = <strong>{ $property }</strong> барои ҷудокунии фарзунсурҳо дастгирӣ карда намешавад.
 inactive-css-cue-pseudo-element-not-supported = <strong>{ $property }</strong> барои фарзунсурҳои «::cue» дастгирӣ карда намешавад.
+# Variables:
+#   $lineCount (integer) - The number of lines the element has.
+inactive-css-text-wrap-balance-lines-exceeded =
+    { $lineCount ->
+        [one] <strong>{ $property }</strong> ба ин унсур таъсир намерасонад, зеро ки он зиёда аз { $lineCount } сатр дар бар мегирад.
+       *[other] <strong>{ $property }</strong> ба ин унсур таъсир намерасонад, зеро ки он зиёда аз { $lineCount } сатр дар бар мегирад.
+    }
+inactive-css-text-wrap-balance-fragmented = <strong>{ $property }</strong> ба ин унсур таъсир намерасонад, зеро ки он ба қисмҳо тақсим шудааст, яъне муҳтавои он ба сутунҳо ё саҳифаҳои сершумор тақсим шудааст.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain how
@@ -66,6 +74,8 @@ inactive-css-not-table-cell-fix = Кӯшиш кунед, ки «<strong>display:
 inactive-scroll-padding-when-not-scroll-container-fix = Кӯшиш кунед, ки <strong>overflow:auto</strong>, <strong>overflow:scroll</strong> ё <strong>overflow:hidden</strong>-ро илова намоед. { learn-more }
 inactive-css-border-image-fix = Дар унсури ҷадвали аслӣ, хусусиятро тоза кунед ё қимати <strong>border-collapse</strong>-ро ба қимате иваз кунед, ки аз <strong>collapse</strong> фарқ мекунад. { learn-more }
 inactive-css-ruby-element-fix = Кӯшиш кунед, ки <strong>font-size</strong>-ро дар матни «ruby» иваз намоед. { learn-more }
+inactive-css-text-wrap-balance-lines-exceeded-fix = Кӯшиш кунед, ки шумораи сатрҳоро кам кунед. { learn-more }
+inactive-css-text-wrap-balance-fragmented-fix = Аз тақсимшавии муҳтавои унсур худдорӣ намоед, масалан, бо нест кардани сутунҳо ё бо истифода аз қимати <strong>page-break-inside:avoid</strong>. { learn-more }
 
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why

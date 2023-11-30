@@ -56,7 +56,7 @@ connection-proxy-autotype =
     .label = URL mbohekorã ijeheguíva proxy mba’évape g̃uarã
     .accesskey = A
 connection-proxy-reload =
-    .label = Myenyhẽjey
+    .label = Myanyhẽjey
     .accesskey = e
 connection-proxy-autologin =
     .label = Ani eporandu ñemoañetete rehe eñongatúramo ñe’ẽñemi
@@ -67,8 +67,8 @@ connection-proxy-autologin-checkbox =
     .accesskey = i
     .tooltiptext = Ko poravopyrã kirirĩguáva oñemoañetetéva proxies-pe oñongatu rire terachaukaha chupekuéra g̃uarã. Ojejeruréta chupe pe ñemoañetetéva ndoikóiramo.
 connection-proxy-socks-remote-dns =
-    .label = Proxy DNS eipurúva SOCKS v5
-    .accesskey = d
+    .label = Proxy DNS eiporúva SOCKS v5
+    .accesskey = D
 # Variables:
 #   $name (String) - Display name or URL for the DNS over HTTPS provider
 connection-dns-over-https-url-item-default =

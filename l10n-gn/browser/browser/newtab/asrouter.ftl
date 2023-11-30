@@ -100,7 +100,7 @@ cfr-doorhanger-milestone-close-button = Mboty
 
 ## DOH Message
 
-cfr-doorhanger-doh-body = Ne ñemigua tuichamba’e. { -brand-short-name } ombohape tekorosãme umi ne mba’ejerure DNS ikatu vove peteĩ mba’epuru oñembyatýva nemo’ã hag̃ua eikundaha aja.
+cfr-doorhanger-doh-body = Ne ñemigua tuichamba’e. { -brand-short-name } ombohape tekorosãme umi ne mba’ejerure DNS ikatu vove peteĩ mba’eporu oñembyatýva nemo’ã hag̃ua eikundaha aja.
 cfr-doorhanger-doh-header = Jehekapy DNS hekorosã ha ipapapýva
 cfr-doorhanger-doh-primary-button-2 = Moneĩ
     .accesskey = O
@@ -121,7 +121,7 @@ cfr-doorhanger-video-support-primary-button = Embohekopyahu ko’ág̃a
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
 # This header text can be explicitly wrapped.
-spotlight-public-wifi-vpn-header = Eipurúvaicha peteĩ Wi-Fi opavaveguáva
+spotlight-public-wifi-vpn-header = Eiporúvaicha peteĩ Wi-Fi opavaveguáva
 spotlight-public-wifi-vpn-body = Eñomi hag̃ua ne rendaite ha kundahára rembiapo, eiporukuaa red privada virtual. Ñepytyvõta eñemo’ã hag̃ua eikundahávo tenda opavave oiporukuaáva ikatúva pepoatãguejyha ha taperyva’uha.
 spotlight-public-wifi-vpn-primary-button = Eiko tekoñemíme { -mozilla-vpn-brand-name } ndive
     .accesskey = S
@@ -131,7 +131,7 @@ spotlight-public-wifi-vpn-link = Ani ko’ág̃a
 ## Emotive Continuous Onboarding
 
 spotlight-better-internet-header = Ñanduti iporãváva oñepyrũ nendive
-spotlight-better-internet-body = Eipurúvo { -brand-short-name }, emoneĩ peteĩ ñanduti ijuruja ha hepy’ỹva iporãvéva opavave g̃uarã.
+spotlight-better-internet-body = Eiporúvo { -brand-short-name }, emoneĩ peteĩ ñanduti ijuruja ha hepy’ỹva iporãvéva opavave g̃uarã.
 spotlight-peace-mind-header = Ore romo’ãta
 spotlight-peace-mind-body = Jasy og̃uahẽvo, { -brand-short-name } ojoko hetave 3.000 tapykuehoha peteĩteĩ poruhárape. Avave, ha ãva kuápe oĩ omyangekóiva nde rekoñemi ha’éva tapykuehoha, ndoikeva’erãi nde ha nanduti pa’ũme.
 spotlight-pin-primary-button =
@@ -236,3 +236,28 @@ device-migration-fxa-spotlight-header = ¿Eiporuhína mba’e’oka itujavéva?
 device-migration-fxa-spotlight-body = Eñongatu ne mba’ekuaarã ambue hendápe ani hag̃ua okañy marandu takate’ỹha ikatúva techaukaha ha ñe’ẽñemi — eiporu mba’éramo ambue mba’e’oka.
 device-migration-fxa-spotlight-primary-button = Mba’éichapa añongatúta che mba’ekuaarã
 device-migration-fxa-spotlight-link = Chemomandu’a ag̃ave
+
+## Set as Default PDF Reader Infobar
+
+# The question portion of the following message should have the <strong> and </strong> tags surrounding it.
+pdf-default-notification-message = <strong>¿Ejapo { -brand-short-name } PDF moñe’ẽha ypygua</strong> Eiporu { -brand-short-name } emoñe’ẽ hag̃ua ha embosako’i PDF marandurenda ñongatupyre ne mohendahápe.
+pdf-default-notification-set-default-button =
+    .label = Eiporu ijypykuévaramo
+pdf-default-notification-decline-button =
+    .label = Ani ko’ág̃a
+
+## Launch on login infobar notification
+
+launch-on-login-infobar-message = <strong>¿Embojuruja { -brand-short-name } emoñepyrũjeývo ne mohendah?</strong> Embohekokuaáma { -brand-short-name } ijuruja hag̃ua ijehegui oku’e ñepyrũjeývo mba’e’oka.
+launch-on-login-learnmore = Eikuaave
+launch-on-login-infobar-confirm-button = Héẽ, embojuruja { -brand-short-name }
+    .accesskey = Y
+launch-on-login-infobar-reject-button = Ani ko’ág̃a
+    .accesskey = N
+
+## These string variants are used when the “launch on login” infobar
+## notification is displayed for a second time.
+
+launch-on-login-infobar-final-message = <strong>¿Embojuruja { -brand-short-name } emoñepyrũjeývo ne mohendaha?</strong> Eñangareko hag̃ua ñepyrũha erohoryvéva, eheka “ñepyrũ” ñembohekópe.
+launch-on-login-infobar-final-reject-button = Nahániri, aguyje
+    .accesskey = N

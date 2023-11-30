@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Tell web sites not to sell or share my data
     .accesskey = s
+non-technical-privacy-header = Web Site Privacy Preferences
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Settings
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Open previous windows and tabs
     .accesskey = s
+windows-launch-on-login =
+    .label = Open { -brand-short-name } automatically when your computer starts up
+    .accesskey = O
+windows-launch-on-login-disabled = This preference has been disabled in Windows. To change, visit <a data-l10n-name="startup-link">Startup Apps</a> in System settings.
 startup-restore-warn-on-quit =
     .label = Warn you when quitting the browser
 disable-extension =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Cookie Banner Reduction
 cookie-banner-handling-description = { -brand-short-name } automatically tries to reject cookie requests on cookie banners on supported sites.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Cookie Banner Blocker
+cookie-banner-blocker-description = When a site asks if they can use cookies in private browsing mode, { -brand-short-name } automatically refuses for you. Only on supported sites.
 cookie-banner-learn-more = Learn More
 forms-handle-cookie-banners =
     .label = Reduce Cookie Banners
+cookie-banner-blocker-checkbox-label =
+    .label = Automatically refuse cookie banners
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Quick actions
     .accesskey = Q
+addressbar-locbar-showrecentsearches-option =
+    .label = Show recent searches
+    .accesskey = r
 addressbar-suggestions-settings = Change preferences for search engine suggestions
 addressbar-quickactions-learn-more = Learn more
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Enhanced Tracking Protection
 content-blocking-section-top-level-description = Trackers follow you around online to collect information about your browsing habits and interests. { -brand-short-name } blocks many of these trackers and other malicious scripts.
 content-blocking-learn-more = Learn more
 content-blocking-fpi-incompatibility-warning = You are using First Party Isolation (FPI), which overrides some of { -brand-short-name }’s cookie settings.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = You’re using Resist Fingerprinting (RFP), which replaces some of { -brand-short-name }’s fingerprinting protection settings. This might cause some sites to break.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1061,8 +1084,8 @@ content-blocking-tracking-protection-option-all-windows =
     .label = In all windows
     .accesskey = a
 content-blocking-option-private =
-    .label = Only in Private Windows
-    .accesskey = P
+    .label = Only in private windows
+    .accesskey = p
 content-blocking-tracking-protection-change-block-list = Change block list
 content-blocking-cookies-label =
     .label = Cookies
@@ -1210,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Security Devices…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = Allow { -brand-short-name } to automatically trust third-party root certificates you install
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Open Settings
     .accesskey = O

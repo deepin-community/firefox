@@ -10,6 +10,9 @@ search-header =
 ## Variables
 ##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
+list-empty-get-extensions-message = احصل على الامتدادات والسمات على <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = احصل على القواميس على <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = احصل على حزم اللغات على <a data-l10n-name="get-extensions">{ $domain }</a>
 
 ##
 
@@ -26,6 +29,9 @@ list-empty-button =
 help-button = دعم الإضافات
 sidebar-help-button-title =
     .title = دعم الإضافات
+addons-settings-button = إعدادات { -brand-short-name }
+sidebar-settings-button-title =
+    .title = إعدادات { -brand-short-name }
 show-unsigned-extensions-button =
     .label = تعذّر التحقق من بعض الامتدادات
 show-all-extensions-button =
@@ -131,6 +137,13 @@ addon-category-available-updates-title =
 addon-category-recent-updates = التحديثات الأخيرة
 addon-category-recent-updates-title =
     .title = التحديثات الأخيرة
+addon-category-sitepermission = تصاريح الموقع
+addon-category-sitepermission-title =
+    .title = تصاريح المواقع
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = تصاريح الموقع ل{ $host }
 
 ## These are global warnings
 
@@ -147,6 +160,9 @@ extensions-warning-update-security2 =
     .message = التحقق من أمن التحديثات قد عُطّل. قد تشكل التهديدات عليك خطرًا.
 extensions-warning-update-security-button = فعّل
     .title = فعّل التحقق من أمن تحديثات الإضافات
+extensions-warning-imported-addons2 =
+    .message = رجاءً إنهي تثبيت الامتدادات التي استوردت إلى { -brand-short-name }.
+extensions-warning-imported-addons-button = تثبيت الامتدادات
 
 ## Strings connected to add-on updates
 
@@ -220,6 +236,8 @@ shortcuts-duplicate-warning-message2 =
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = تستخدمه { $addon } بالفعل
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [zero] لا تعرض المزيد
@@ -256,6 +274,7 @@ install-theme-button = ثبّت السمة
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = أدِر
 find-more-addons = ابحث عن إضافات أكثر
+find-more-themes = ابحث عن المزيد من السمات
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
 addon-options-button =
@@ -284,12 +303,15 @@ permissions-addon-button = الصلاحيات
 extension-enabled-heading = مفعّل
 extension-disabled-heading = معطّل
 theme-enabled-heading = مفعّلة
+theme-disabled-heading2 = السمات المحفوظة
 plugin-enabled-heading = مفعّلة
 plugin-disabled-heading = معطّلة
 dictionary-enabled-heading = مفعّل
 dictionary-disabled-heading = معطّل
 locale-enabled-heading = مفعّلة
 locale-disabled-heading = معطّلة
+sitepermission-enabled-heading = مفعّل
+sitepermission-disabled-heading = معطّل
 always-activate-button = فعّل دائمًا
 never-activate-button = لا تُفعّل أبدًا
 addon-detail-author-label = المؤلف
@@ -330,6 +352,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = أُزيلت <span data-l10n-name="addon-name">{ $addon }</span>.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = أُزيلت { $addon }.
 pending-uninstall-undo-button = تراجَع
 addon-detail-updates-label = اسمح بالتحديثات التلقائية
 addon-detail-updates-radio-default = المبدئي
@@ -337,6 +363,10 @@ addon-detail-updates-radio-on = مفعّل
 addon-detail-updates-radio-off = معطّل
 addon-detail-update-check-label = التمس التحديثات
 install-update-button = حدّث
+# aria-label associated to the updates row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-updates =
+    .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -345,10 +375,24 @@ addon-badge-private-browsing-allowed2 =
 addon-detail-private-browsing-help = إن سمحت به فسيملك هذا الامتداد تصريح الوصول إلى نشاطك على الإنترنت وأنت تتصفح تصفحا خاصا. <a data-l10n-name="learn-more">اطّلع على المزيد</a>
 addon-detail-private-browsing-allow = مسموح
 addon-detail-private-browsing-disallow = غير مسموح
+# aria-label associated to the private browsing row to help screen readers to announce the group
+# of input controls being entered.
+addon-detail-group-label-private-browsing =
+    .aria-label = { detail-private-browsing-label }
 
 ## "sites with restrictions" (internally called "quarantined") are special domains
 ## where add-ons are normally blocked for security reasons.
 
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = شغل في المواقع التي لها قيود
+# Used as help text part of the quarantined domains UI controls row.
+addon-detail-quarantined-domains-help = عند السماح بالامتداد، سيكون له حق الوصول إلى المواقع المقيدة بواسطة { -vendor-short-name }. السماح فقط إذا كنت تثق بهذا الامتداد.
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = اسمح
+addon-detail-quarantined-domains-disallow = لا تسمح
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -366,6 +410,9 @@ release-notes-error = المعذرة، ولكن حصل خطأ أثناء تحم�
 addon-permissions-empty = لا يطلب هذا الامتداد أيّ صلاحيات
 recommended-extensions-heading = الامتدادات المقترحة
 recommended-themes-heading = السمات المقترحة
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
+addon-sitepermissions-required = يمنح الإمكانيات التالية لـ <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = ترى فيك الإبداع؟ <a data-l10n-name="link">اصنع سمتك الخاصة باستعمال Firefox Color.</a>
@@ -378,6 +425,7 @@ plugin-heading = أدِر الملحقات لديك
 dictionary-heading = أدِر القواميس لديك
 locale-heading = أدِر اللغات لديك
 updates-heading = أدِر التحديثات لديك
+sitepermission-heading = أدِر تصاريح موقعك
 discover-heading = خصّص { -brand-short-name } ليكون لك
 shortcuts-heading = أدِر اختصارات الامتدادات
 default-heading-search-label = ابحث عن إضافات أكثر
@@ -391,12 +439,13 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } غير متوافقة مع { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
 details-notification-incompatible2 =
     .message = { $name } غير متوافقة مع { -brand-short-name } { $version }.
+details-notification-incompatible-link = مزيد من المعلومات
 details-notification-unsigned-and-disabled = تعذّر التحقق من { $name } للاستخدام مع { -brand-short-name } و لذا عُطّل.
 details-notification-unsigned-and-disabled2 =
     .message = تعذّر التحقق من { $name } للاستخدام مع { -brand-short-name } و لذا عُطّل.

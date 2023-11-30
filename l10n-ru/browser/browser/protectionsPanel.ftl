@@ -37,6 +37,14 @@ protections-panel-etp-off-toggle =
     .label = Улучшенная защита от отслеживания
     .description = Отключена на этом сайте
     .aria-label = Включить защиту на { $host }
+protections-panel-etp-toggle-on =
+    .label = Улучшенная защита от отслеживания
+    .description = Включена для этого сайта
+    .aria-label = Улучшенная защита от отслеживания: Включена для { $host }
+protections-panel-etp-toggle-off =
+    .label = Улучшенная защита от отслеживания
+    .description = Отключена для этого сайта
+    .aria-label = Улучшенная защита от отслеживания: Отключена для { $host }
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = Сайт не работает?
 # The heading/title of the sub-panel view
@@ -119,6 +127,7 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 # Cookie Banner Handling
 
 protections-panel-cookie-banner-handling-header = Снижение числа уведомлений о куках
+protections-panel-cookie-banner-blocker-header = Блокировщик уведомления о куки
 protections-panel-cookie-banner-handling-enabled = Включено для этого сайта
 protections-panel-cookie-banner-handling-disabled = Отключено для этого сайта
 protections-panel-cookie-banner-handling-undetected = В настоящее время сайт не поддерживается
@@ -128,8 +137,15 @@ protections-panel-cookie-banner-view-title =
 #  $host (String): the hostname of the site that is being displayed.
 protections-panel-cookie-banner-view-turn-off-for-site = Отключить снижение числа уведомлений о куках для { $host }?
 protections-panel-cookie-banner-view-turn-on-for-site = Включить снижение числа уведомлений о куках для этого сайта?
+protections-panel-cookie-banner-blocker-view-title =
+    .title = Блокировщик уведомления о куки
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-blocker-view-turn-off-for-site = Отключить снижение числа уведомлений о куках для { $host }?
+protections-panel-cookie-banner-blocker-view-turn-on-for-site = Включить снижение числа уведомлений о куках для этого сайта?
 protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } удалит куки этого сайта и обновит страницу. Удаление всех кук может привести к выходу из учётных записей или опустошению корзин с покупками.
 protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } пытается автоматически отклонить все запросы кук на поддерживаемых сайтах.
+protections-panel-cookie-banner-blocker-view-turn-on-description = Включите, и { -brand-short-name } попытается автоматически отклонить уведомления о куки на этом сайте.
 protections-panel-cookie-banner-view-cancel = Отмена
 protections-panel-cookie-banner-view-turn-off = Отключить
 protections-panel-cookie-banner-view-turn-on = Включить

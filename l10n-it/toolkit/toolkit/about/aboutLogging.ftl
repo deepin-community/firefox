@@ -46,6 +46,9 @@ about-logging-preset-webgpu-label = WebGPU
 about-logging-preset-webgpu-description = Moduli di registrazione per diagnosticare problemi con WebGPU
 about-logging-preset-gfx-label = Grafica
 about-logging-preset-gfx-description = Moduli di registrazione per diagnosticare problemi grafici
+# This is specifically "Microsoft Windows". Microsoft normally doesn't localize it, and we should follow their convention here.
+about-logging-preset-windows-label = Windows
+about-logging-preset-windows-description = Moduli di registrazione per diagnosticare problemi specifici con Microsoft Windows
 about-logging-preset-custom-label = Personalizzato
 about-logging-preset-custom-description = Moduli di registrazione selezionati manualmente
 
@@ -64,6 +67,7 @@ about-logging-configuration-url-ignored = URL di configurazione ignorato
 about-logging-file-and-profiler-override = Impossibile forzare un file di output e allo stesso tempo ignorare le opzioni del profiler
 
 about-logging-configured-via-url = Opzione configurata tramite URL
+
 
 
 

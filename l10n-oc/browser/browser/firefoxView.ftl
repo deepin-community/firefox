@@ -5,10 +5,15 @@
 toolbar-button-firefox-view =
     .label = { -firefoxview-brand-name }
     .tooltiptext = { -firefoxview-brand-name }
+toolbar-button-firefox-view-2 =
+    .label = { -firefoxview-brand-name }
+    .tooltiptext = Veire la navegacion recenta demest las fenèstras e periferics
 menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-label =
+    .label = { -firefoxview-brand-name }
 firefoxview-close-button =
     .title = Tampar
     .aria-label = Tampar
@@ -39,6 +44,8 @@ firefoxview-tabpickup-synctabs-primarybutton = Sincronizar los onglets dobèrts
 firefoxview-syncedtabs-synctabs-header = Actualizatz vòstres paramètres de sincronizacion
 firefoxview-syncedtabs-synctabs-description = Per consultar los onglets d’autres aparelhs, devètz sincronizar vòstres onglets dobèrts.
 firefoxview-syncedtabs-synctabs-checkbox = Autorizar la sincronizacion dels onglets dobèrts
+firefoxview-syncedtabs-loading-header = Sincronizacion en cors
+firefoxview-syncedtabs-loading-description = Un còp terminat, veiretz aicí totes los onglets dobèrts sus vòstres autres aparelhs. Tornatz lèu.
 firefoxview-tabpickup-fxa-admin-disabled-header = Vòstra organizacion a desactivat la sincronizacion
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } pòt pas sincronizar d’onglets entre aparelhs pr’amor que vòstre administrator a desactivat la sincronizacion.
 firefoxview-tabpickup-network-offline-header = Verificatz la connexion Internet
@@ -57,6 +64,7 @@ firefoxview-tabpickup-password-locked-primarybutton = Picatz lo senhal màger
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Ne saber mai</a>
 firefoxview-tabpickup-signed-out-header = S’identificar per se reconnectar
 firefoxview-tabpickup-signed-out-description = Per vos reconnectar e trapar vòstres onglets, connectatz-vos a { -fxaccount-brand-name }.
+firefoxview-tabpickup-signed-out-description2 = Per vos reconnectar e recuperar vòstres onglets, connectatz-vos a vòstre compte.
 firefoxview-tabpickup-signed-out-primarybutton = Se connectar
 firefoxview-tabpickup-syncing = Esperatz mentre que se sincronizan los onglets. Durarà pas qu’un moment.
 firefoxview-mobile-promo-header = Recuperatz los onglets de vòstre mobil o vòstra tauleta
@@ -166,6 +174,7 @@ firefoxview-view-more-browsing-history = Afichar l’istoric de navegacion
 
 firefoxview-history-empty-header = Tornatz ont eretz
 firefoxview-history-empty-description = Mentre que navegatz, las paginas visitadas se listaràn aquí.
+firefoxview-history-empty-description-two = La proteccion de vòstra vida privada es nòstra prioritat. Es per aquò que podètz contrarotlar las activats que { -brand-short-name } memoriza, als <a data-l10n-name="history-settings-url">paramètres d’istoric</a>.
 
 ##
 
@@ -192,9 +201,7 @@ firefoxview-import-history-header = Importar l’istoric d'un autre navegador
 
 firefoxview-recentlyclosed-empty-header = Avètz tampat los onglets per inatencion ?
 
-##
-
-
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 
 firefoxview-syncedtabs-device-notabs = Cap d’onglet pas dobèrt sus aqueste aparelh
+firefoxview-syncedtabs-connect-another-device = Connectar un autre periferic

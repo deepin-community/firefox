@@ -60,9 +60,9 @@ firefoxview-tabpickup-sync-disconnected-description = I gipio eich tabiau, bydd 
 firefoxview-tabpickup-sync-disconnected-primarybutton = Trowch cydweddu ymlaen yn y gosodiadau
 firefoxview-tabpickup-password-locked-header = Rhowch eich Prif Gyfrinair i weld tabiau
 firefoxview-tabpickup-password-locked-description = I gipio'ch tabiau, bydd angen i chi roi eich Prif Gyfrinair ar gyfer { -brand-short-name }.
-firefoxview-tabpickup-password-locked-link = Dysgu rhagor
+firefoxview-tabpickup-password-locked-link = Darllen rhagor
 firefoxview-tabpickup-password-locked-primarybutton = Rhowch Gyfrinair Cynradd
-firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Dysgu rhagor</a>
+firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Darllen rhagor</a>
 firefoxview-tabpickup-signed-out-header = Mewngofnodi i ailgysylltu
 firefoxview-tabpickup-signed-out-description = I ailgysylltu a chipio eich tabiau, mewngofnodwch i'ch { -fxaccount-brand-name }.
 firefoxview-tabpickup-signed-out-description2 = I ailgysylltu a chipio'ch tabiau, mewngofnodwch i'ch cyfrif
@@ -115,15 +115,15 @@ firefoxview-history-context-delete = Dileu o'r Hanes
 
 ## Open Tabs in this context refers to all open tabs in the browser
 
-firefoxview-opentabs-nav = Agor tabiau
-    .title = Agor tabiau
-firefoxview-opentabs-header = Agor tabiau
+firefoxview-opentabs-nav = Tabiau ar agor
+    .title = Tabiau ar agor
+firefoxview-opentabs-header = Tabiau ar agor
 
 ## Recently closed tabs in this context refers to recently closed tabs from all windows
 
 firefoxview-recently-closed-nav = Tabiau wedi’u cau’n ddiweddar
     .title = Tabiau wedi’u cau’n ddiweddar
-firefoxview-recently-closed-header = Tabiau Wedi'u Cau'n Ddiweddar
+firefoxview-recently-closed-header = Tabiau wedi’u cau’n ddiweddar
 
 ## Tabs from other devices refers in this context refers to synced tabs from other devices
 
@@ -206,9 +206,6 @@ firefoxview-import-history-description = Gwnewch { -brand-short-name } eich prif
 firefoxview-recentlyclosed-empty-header = Wedi cau tab yn rhy fuan?
 firefoxview-recentlyclosed-empty-description = Yma fe welwch y tabiau y gwnaethoch eu cau yn ddiweddar, fel y gallwch chi ailagor unrhyw un ohonyn nhw'n gyflym.
 firefoxview-recentlyclosed-empty-description-two = I ddod o hyd i dabiau ers peth amser, edrychwch ar eich <a data-l10n-name="history-url">hanes pori</a>.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

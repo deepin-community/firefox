@@ -3,13 +3,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 content-blocking-trackers-view-empty = Κανένα σε αυτόν τον ιστότοπο
-content-blocking-cookies-blocking-trackers-label = Cookies καταγραφής μεταξύ ιστοτόπων
-content-blocking-cookies-blocking-third-party-label = Cookies τρίτων
-content-blocking-cookies-blocking-unvisited-label = Cookies ιστοτόπων που δεν έχετε επισκεφθεί
-content-blocking-cookies-blocking-all-label = Όλα τα cookies
+content-blocking-cookies-blocking-trackers-label = Cookie καταγραφής μεταξύ ιστοτόπων
+content-blocking-cookies-blocking-third-party-label = Τρίτα cookie
+content-blocking-cookies-blocking-unvisited-label = Cookie ιστοτόπων που δεν έχετε επισκεφτεί
+content-blocking-cookies-blocking-all-label = Όλα τα cookie
 content-blocking-cookies-view-first-party-label = Από αυτόν τον ιστότοπο
-content-blocking-cookies-view-trackers-label = Cookies καταγραφής μεταξύ ιστοτόπων
-content-blocking-cookies-view-third-party-label = Cookies τρίτων
+content-blocking-cookies-view-trackers-label = Cookie καταγραφής μεταξύ ιστοτόπων
+content-blocking-cookies-view-third-party-label = Τρίτα cookie
 # This label is shown next to a cookie origin in the cookies subview.
 # It forms the end of the (imaginary) sentence "www.example.com [was] Allowed"
 content-blocking-cookies-view-allowed-label =
@@ -22,7 +22,7 @@ content-blocking-cookies-view-blocked-label =
 #   $domain (String): the domain of the site.
 content-blocking-cookies-view-remove-button =
     .tooltiptext = Απαλοιφή εξαίρεσης cookie για το { $domain }
-tracking-protection-icon-active = Φραγή ιχνηλατών κοινωνικών μέσων, cookies καταγραφής μεταξύ ιστοτόπων και fingerprinters.
+tracking-protection-icon-active = Φραγή ιχνηλατών μέσων κοινωνικής δικτύωσης, cookie καταγραφής μεταξύ ιστοτόπων και fingerprinter.
 tracking-protection-icon-active-container =
     .aria-label = { tracking-protection-icon-active }
 tracking-protection-icon-disabled = Η ενισχυμένη προστασία από καταγραφή είναι ΑΝΕΝΕΡΓΗ για τον ιστότοπο.
@@ -37,12 +37,6 @@ tracking-protection-icon-no-trackers-detected-container =
 
 # Header of the Protections Panel.
 protections-header = Προστασία για το { $host }
-# Text that gets spoken by a screen reader if the button will disable protections.
-protections-disable =
-    .aria-label = Απενεργοποίηση προστασίας για το { $host }
-# Text that gets spoken by a screen reader if the button will enable protections.
-protections-enable =
-    .aria-label = Ενεργοποίηση προστασίας για το { $host }
 
 ## Blocking and Not Blocking sub-views in the Protections Panel
 
@@ -51,13 +45,13 @@ protections-blocking-fingerprinters =
 protections-blocking-cryptominers =
     .title = Αποκλεισμένα cryptominer
 protections-blocking-cookies-trackers =
-    .title = Αποκλεισμένα cookies καταγραφής μεταξύ ιστοτόπων
+    .title = Αποκλεισμένα cookie καταγραφής μεταξύ ιστοτόπων
 protections-blocking-cookies-third-party =
-    .title = Αποκλεισμένα cookies τρίτων
+    .title = Αποκλεισμένα τρίτα cookie
 protections-blocking-cookies-all =
-    .title = Αποκλείονται όλα τα cookies
+    .title = Αποκλείονται όλα τα cookie
 protections-blocking-cookies-unvisited =
-    .title = Αποκλείονται τα cookies ιστοτόπων που δεν έχετε επισκεφθεί
+    .title = Αποκλείονται τα cookie ιστοτόπων που δεν έχετε επισκεφτεί
 protections-blocking-tracking-content =
     .title = Αποκλείεται περιεχόμενο καταγραφής
 protections-blocking-social-media-trackers =
@@ -67,11 +61,11 @@ protections-not-blocking-fingerprinters =
 protections-not-blocking-cryptominers =
     .title = Δεν αποκλείονται cryptominer
 protections-not-blocking-cookies-third-party =
-    .title = Δεν αποκλείονται cookies τρίτων
+    .title = Δεν αποκλείονται τρίτα cookie
 protections-not-blocking-cookies-all =
-    .title = Δεν αποκλείονται cookies
+    .title = Δεν αποκλείονται cookie
 protections-not-blocking-cross-site-tracking-cookies =
-    .title = Δεν αποκλείονται cookies καταγραφής μεταξύ ιστοτόπων
+    .title = Δεν αποκλείονται cookie καταγραφής μεταξύ ιστοτόπων
 protections-not-blocking-tracking-content =
     .title = Δεν αποκλείεται περιεχόμενο καταγραφής
 protections-not-blocking-social-media-trackers =
@@ -90,6 +84,14 @@ protections-footer-blocked-tracker-counter =
        *[other] { $trackerCount } αποκλεισμένα
     }
     .tooltiptext = Από τις { DATETIME($date, year: "numeric", month: "long", day: "numeric") }
+# This text indicates the total number of trackers blocked on all sites.
+# It should be the same as protections-footer-blocked-tracker-counter;
+# this message is used to leave out the tooltip when the date is not available.
+protections-footer-blocked-tracker-counter-no-tooltip =
+    { $trackerCount ->
+        [one] { $trackerCount } αποκλεισμένο
+       *[other] { $trackerCount } αποκλεισμένα
+    }
 # In English this looks like "Firefox blocked over 10,000 trackers since October 2019"
 protections-milestone =
     { $trackerCount ->

@@ -28,6 +28,7 @@ policy-CertificatesDescription = Sertifika ekle veya yerleşik sertifikaları ku
 policy-Cookies = Web sitelerinin çerez ayarlamasına izin ver veya verme.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Kapsayıcılarla ilgili ilkeleri ayarla.
+policy-DisableAccounts = Hesap tabanlı hizmetleri devre dışı bırak (eşitleme dahil).
 policy-DisabledCiphers = Şifrelemeleri devre dışı bırak.
 policy-DefaultDownloadDirectory = Varsayılan indirme klasörünü ayarla.
 policy-DisableAppUpdate = Tarayıcının güncellenmesini engelle.
@@ -90,6 +91,7 @@ policy-LocalFileLinks = Belirli web sitelerinin yerel dosyalara bağlantı verme
 policy-ManagedBookmarks = Yönetici tarafından yönetilen ve kullanıcı tarafından değiştirilemeyen yer imlerinin listesini yapılandır.
 policy-ManualAppUpdateOnly = Yalnızca elle güncellemeye izin ver ve kullanıcıyı güncellemeler hakkında bilgilendirme.
 policy-PrimaryPassword = Ana parola kullanılmasını zorunlu tut veya yasakla.
+policy-PrintingEnabled = Yazdırmayı etkinleştir veya devre dışı bırak.
 policy-NetworkPrediction = Ağ tahminini (DNS prefetching) aç veya kapat.
 policy-NewTabPage = Yeni Sekme sayfasını etkinleştir veya devre dışı bırak.
 policy-NoDefaultBookmarks = { -brand-short-name }  ile birlikte gelen varsayılan yer imlerinin ve akıllı yer imlerinin (en çok ziyaret edilenler, son kullanılan etiketler) oluşturulmasını devre dışı bırak. Not: Bu ilke yalnızca profil ilk kez çalıştırılmadan önce kullanılırsa etkili olur.

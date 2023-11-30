@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Websites anweisen, meine Daten nicht zu verkaufen oder weiterzugeben
     .accesskey = s
+non-technical-privacy-header = Datenschutzeinstellungen für Websites
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Einstellungen
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Vorherige Fenster und Tabs öffnen
     .accesskey = o
+windows-launch-on-login =
+    .label = { -brand-short-name } automatisch öffnen, wenn der Rechner gestartet wird
+    .accesskey = ö
+windows-launch-on-login-disabled = Diese Einstellung wurde in Windows deaktiviert. Zum Ändern besuchen Sie <a data-l10n-name="startup-link">Autostart</a> in den Systemeinstellungen.
 startup-restore-warn-on-quit =
     .label = Beim Beenden des Browsers warnen
 disable-extension =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Reduzierung von Cookie-Bannern
 cookie-banner-handling-description = { -brand-short-name } versucht, Cookie-Anforderungen über Cookie-Banner auf unterstützten Websites automatisch abzulehnen.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Cookie-Banner-Blocker
+cookie-banner-blocker-description = Wenn eine Website fragt, ob sie Cookies im privaten Modus verwenden darf, lehnt { -brand-short-name } dies automatisch für Sie ab. Nur auf unterstützten Websites.
 cookie-banner-learn-more = Weitere Informationen
 forms-handle-cookie-banners =
     .label = Cookie-Banner reduzieren
+cookie-banner-blocker-checkbox-label =
+    .label = Cookie-Banner automatisch ablehnen
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Schnellaktionen
     .accesskey = S
+addressbar-locbar-showrecentsearches-option =
+    .label = Letzte Suchanfragen anzeigen
+    .accesskey = L
 addressbar-suggestions-settings = Einstellungen für Suchvorschläge ändern
 addressbar-quickactions-learn-more = Weitere Informationen
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Verbesserter Schutz vor Aktivit�
 content-blocking-section-top-level-description = Skripte zur Aktivitätenverfolgung folgen Ihnen und sammeln Informationen über Ihre Internet-Gewohnheiten und Interessen. { -brand-short-name } blockiert viele dieser Skripte zur Aktivitätenverfolgung und andere böswillige Skripte.
 content-blocking-learn-more = Weitere Informationen
 content-blocking-fpi-incompatibility-warning = Sie verwenden First Party Isolation (FPI), was einige der Cookie-Einstellungen von { -brand-short-name } überschreibt.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Sie verwenden "Resist Fingerprinting" (RSP), was einige der Einstellungen von { -brand-short-name }  zum Schutz vor Identifizierung (Fingerprinter) ersetzt. Dies kann dazu führen, dass einige Websites nicht funktionieren.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1210,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Kryptographie-Module…
     .accesskey = K
+certs-thirdparty-toggle =
+    .label = { -brand-short-name } erlauben, Stammzertifikaten von Drittanbietern, die Sie installieren, automatisch zu vertrauen
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Einstellungen öffnen
     .accesskey = E

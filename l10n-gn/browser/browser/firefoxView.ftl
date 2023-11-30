@@ -29,14 +29,14 @@ firefoxview-tabpickup-step-signin-header = Emoambue mba’e’oka pa’ũme ñek
 firefoxview-tabpickup-step-signin-description = Ehecha hag̃ua ne pumbyry rendayke, emoñepyrũraẽ tembiapo térã emoheñói mba’ete.
 firefoxview-tabpickup-step-signin-primarybutton = Ku’ejey
 firefoxview-syncedtabs-signin-header = Ejapyhy tendayke oimeha guive
-firefoxview-syncedtabs-signin-description = Ehecha hag̃ua ne rendayke oimeraẽva mba’e’oka guive eiporuhápe { -brand-product-name }, eike ne ma’etépe. Ndereguerekóiramo, rombohapéta emoheñoikuaa hag̃ua.
+firefoxview-syncedtabs-signin-description = Ehecha hag̃ua ne rendayke oimeraẽva mba’e’oka guive eiporuhápe { -brand-product-name }, eike ne mba’etépe. Ndereguerekóiramo, rombohapéta emoheñoikuaa hag̃ua.
 firefoxview-syncedtabs-signin-primarybutton = Eike térã eñemboheraguapy
 firefoxview-tabpickup-adddevice-header = Embojuehe { -brand-product-name } ne pumbyry ha tablétape
 firefoxview-tabpickup-adddevice-description = Emboguejy { -brand-product-name } pumbyrýpe ha eñepyrũ tembiapo upépe.
 firefoxview-tabpickup-adddevice-learn-how = Mba’éicha eikuaáta
 firefoxview-tabpickup-adddevice-primarybutton = Ereko { -brand-product-name } ne pumbyrýpe g̃uarã
 firefoxview-syncedtabs-adddevice-header = Eike { -brand-product-name } ndive ambue imba’e’okápe
-firefoxview-syncedtabs-adddevice-description = Ehecha ne rendayke oimeraẽva mba’e’oka guive eipurúvo { -brand-product-name }, eike mba’e’okakuérape. Eikuaa mba’éichapa <a data-l10n-name="url">eikéta mba’e’okápe</a>.
+firefoxview-syncedtabs-adddevice-description = Ehecha ne rendayke oimeraẽva mba’e’oka guive eiporúvo { -brand-product-name }, eike mba’e’okakuérape. Eikuaa mba’éichapa <a data-l10n-name="url">eikéta mba’e’okápe</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Ereko { -brand-product-name } ne pumbyrýpe
 firefoxview-tabpickup-synctabs-header = Emyandy tendayke ñembojuehe
 firefoxview-tabpickup-synctabs-description = Emoneĩ { -brand-short-name } omoherakuãvo tendayke mba’e’oka pa’ũme.
@@ -50,7 +50,7 @@ firefoxview-syncedtabs-loading-description = Emoĩmbávo, ehecháta umi tendayke
 firefoxview-tabpickup-fxa-admin-disabled-header = Nde atyguasu omboyke pe ñembojuehe
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } nombojuehekuaái tendayke mba’e’okakuéra pa’ũme ne ñangarekohára omboykégui ñembojuehe.
 firefoxview-tabpickup-network-offline-header = Ehecha og̃uahẽ porãpa ñanduti
-firefoxview-tabpickup-network-offline-description = Reipurúramo firewall térã proxy, ehechajey { -brand-short-name } oñemoneĩpa eikekuaa hag̃ua ñandutípe.
+firefoxview-tabpickup-network-offline-description = Reiporúramo firewall térã proxy, ehechajey { -brand-short-name } oñemoneĩpa eikekuaa hag̃ua ñandutípe.
 firefoxview-tabpickup-network-offline-primarybutton = Eha’ãjey
 firefoxview-tabpickup-sync-error-header = Oreapañuãi rombojuehe hag̃ua
 firefoxview-tabpickup-generic-sync-error-description = { -brand-short-name } noñe’ẽkuaái ñembojuehe me’ẽhára ndive ko’ag̃aite. Eha’ãjey ag̃amieve.
@@ -67,11 +67,11 @@ firefoxview-tabpickup-signed-out-header = Eñepyrũ tembiapo eikejey hag̃ua
 firefoxview-tabpickup-signed-out-description = Eikejey ha ereko hag̃ua ne rendayke, emoñepyrũ tembiapo nde { -fxaccount-brand-name }-pe.
 firefoxview-tabpickup-signed-out-description2 = Eikejey ha ereko hag̃ua ne rendayke, emoñepyrũ tembiapo ne mba’etépe.
 firefoxview-tabpickup-signed-out-primarybutton = Eñepyrũ tembiapo
-firefoxview-tabpickup-syncing = Eha’arõ tendayke toñembojuehe. Ndahi’aremo’ãi.
+firefoxview-tabpickup-syncing = Eha’ãrõ tendayke toñembojuehe. Ndahi’aremo’ãi.
 firefoxview-mobile-promo-header = Ehecha tendayke ne pumbyry térã tabléta rupive
 firefoxview-mobile-promo-description = Ehecha hag̃ua tendayke eipuramovéva, emoñepyrũ tembiapo { -brand-product-name } iOS térã Android rupive.
 firefoxview-mobile-promo-primarybutton = Ereko { -brand-product-name } ne pumbyrýpe
-firefoxview-mobile-confirmation-header = 🎉 ¡Eguerahakuaáma!
+firefoxview-mobile-confirmation-header = 🎉 ¡Erahakuaáma!
 firefoxview-mobile-confirmation-description = Ko’ág̃a ikatu ehecha { -brand-product-name } rendayke nde tabléta térã pumbyry guive.
 firefoxview-closed-tabs-title = Oñembotyramovéva
 firefoxview-closed-tabs-description2 = Embojurujajey kuatiarogue embotýva ko ovetãme.
@@ -206,9 +206,6 @@ firefoxview-import-history-description = Ejapo { -brand-short-name } ha’évo n
 firefoxview-recentlyclosed-empty-header = ¿Emboty pya’e tendayke?
 firefoxview-recentlyclosed-empty-description = Ko’ápe rejuhúta tendayke embotyramovéva, embojurujajey hag̃ua oimeraẽva embotyramova’ekue.
 firefoxview-recentlyclosed-empty-description-two = Eheka hag̃ua tendayke embotýva arevémava, ehecha <a data-l10n-name="history-url">ñeikundaha rembiasakue</a>.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

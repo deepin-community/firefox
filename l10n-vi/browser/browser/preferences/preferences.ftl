@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Yêu cầu trang web không bán hoặc chia sẻ dữ liệu của tôi
     .accesskey = s
+non-technical-privacy-header = Tùy chọn riêng tư trang web
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Cài đặt
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Mở các cửa sổ và thẻ trước đó
     .accesskey = s
+windows-launch-on-login =
+    .label = Tự động mở { -brand-short-name } khi máy tính của bạn khởi động
+    .accesskey = O
+windows-launch-on-login-disabled = Tùy chọn này đã bị tắt trong Windows. Để thay đổi, hãy truy cập <a data-l10n-name="startup-link">Ứng dụng khởi động</a> trong Cài đặt hệ thống.
 startup-restore-warn-on-quit =
     .label = Cảnh báo bạn khi thoát khỏi trình duyệt
 disable-extension =
@@ -945,9 +954,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Giảm biểu ngữ cookie
 cookie-banner-handling-description = { -brand-short-name } tự động cố gắng từ chối các yêu cầu cookie trên biểu ngữ cookie trên các trang web được hỗ trợ.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Trình chặn biểu ngữ cookie
+cookie-banner-blocker-description = Khi một trang web hỏi liệu họ có thể sử dụng cookie ở chế độ duyệt web riêng tư không, { -brand-short-name } tự động từ chối cho bạn. Chỉ trên các trang web được hỗ trợ.
 cookie-banner-learn-more = Tìm hiểu thêm
 forms-handle-cookie-banners =
     .label = Giảm biểu ngữ cookie
+cookie-banner-blocker-checkbox-label =
+    .label = Tự động từ chối các biểu ngữ cookie
 
 ## Privacy Section - Address Bar
 
@@ -978,6 +994,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Hành động nhanh
     .accesskey = Q
+addressbar-locbar-showrecentsearches-option =
+    .label = Hiển thị các tìm kiếm gần đây
+    .accesskey = F
 addressbar-suggestions-settings = Thay đổi tùy chỉnh phần gợi ý của công cụ tìm kiếm
 addressbar-quickactions-learn-more = Tìm hiểu thêm
 
@@ -987,6 +1006,10 @@ content-blocking-enhanced-tracking-protection = Trình chống theo dõi nâng c
 content-blocking-section-top-level-description = Trình theo dõi theo bạn trên mạng để thu thập thông tin về thói quen và sở thích duyệt web của bạn. { -brand-short-name } chặn nhiều trình theo dõi và các tập lệnh độc hại khác.
 content-blocking-learn-more = Tìm hiểu thêm
 content-blocking-fpi-incompatibility-warning = Bạn đang sử dụng First Party Isolation (FPI), tính năng này sẽ ghi đè một số cài đặt cookie của { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Bạn đang sử dụng Resist Fingerprinting (RFP), nó sẽ thay thế một số cài đặt bảo vệ dấu vết của { -brand-short-name }. Điều này có thể khiến một số trang web bị hỏng.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1194,6 +1217,9 @@ certs-view =
 certs-devices =
     .label = Thiết bị bảo mật…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = Cho phép { -brand-short-name } tự động tin cậy chứng chỉ gốc của bên thứ ba mà bạn cài đặt
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Mở Cài đặt
     .accesskey = O

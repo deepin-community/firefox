@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Fortæl websteder, at de ikke skal sælge eller dele mine data
     .accesskey = s
+non-technical-privacy-header = Privatlivsindstillinger for websted
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Indstillinger
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Åbn tidligere vinduer og faneblade
     .accesskey = t
+windows-launch-on-login =
+    .label = Åbn { -brand-short-name } automatisk når din computer starter
+    .accesskey = a
+windows-launch-on-login-disabled = Denne indstilling er blevet deaktiveret i Windows. Gå til <a data-l10n-name="startup-link">Apps > Start</a> i Indstillinger for at ændre den.
 startup-restore-warn-on-quit =
     .label = Advar mig, når jeg lukker browseren
 disable-extension =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Reduktion af cookie-bannere
 cookie-banner-handling-description = { -brand-short-name } forsøger automatisk at afvise cookie-anmodninger på cookie-bannere på understøttede websteder.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Blokering af cookie-bannere
+cookie-banner-blocker-description = Når et websted spørger om det må bruge cookies i privat browsing-tilstand, så afviser { -brand-short-name } anmodningen automatisk for dig. Kun på understøttede websteder.
 cookie-banner-learn-more = Læs mere
 forms-handle-cookie-banners =
     .label = Færre cookie-bannere
+cookie-banner-blocker-checkbox-label =
+    .label = Afvis automatisk cookie-bannere
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Hurtige handlinger
     .accesskey = H
+addressbar-locbar-showrecentsearches-option =
+    .label = Vis seneste søgninger
+    .accesskey = s
 addressbar-suggestions-settings = Skift indstillinger for søgeforslag
 addressbar-quickactions-learn-more = Læs mere
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Udvidet beskyttelse mod sporing
 content-blocking-section-top-level-description = Sporings-teknologier følger dig rundt på nettet for at indsamle information om dine vaner og interesser. { -brand-short-name } blokerer mange af disse sporings-teknologier og andre ondsindede scripts.
 content-blocking-learn-more = Læs mere
 content-blocking-fpi-incompatibility-warning = Du bruger First Party Isolation (FPI), som tilsidesætter nogle af indstillingerne for cookies i { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Du bruger Resist Fingerprinting (RFP), der erstatter nogle af indstillingerne for beskyttelse mod fingerprinting i { -brand-short-name }. Dette kan medføre, at nogen websteder ikke fungerer korrekt.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1152,6 +1175,8 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = Indsamling og brug af data i { -brand-short-name }
+collection-header2 = Indsamling og brug af data i { -brand-short-name }
+    .searchkeywords = telemetry
 collection-description = Vi stræber efter at give dig mulighed for selv at vælge og indsamler kun, hvad vi har brug for til at forbedre { -brand-short-name } for alle. Vi spørger altid om din tilladelse, før vi modtager personlig information.
 collection-privacy-notice = Privatlivserklæring
 collection-health-report-telemetry-disabled = Du tillader ikke længere, at { -vendor-short-name } indsamler teknisk data og data om brug. Alle tidligere data vil blive slettet indenfor 30 dage.
@@ -1208,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Sikkerhedsmoduler…
     .accesskey = S
+certs-thirdparty-toggle =
+    .label = Tillad { -brand-short-name } at automatisk stole på rodcertifikater fra tredjeparter, som du installerer
+    .accesskey = r
 space-alert-over-5gb-settings-button =
     .label = Åbn indstillinger
     .accesskey = b

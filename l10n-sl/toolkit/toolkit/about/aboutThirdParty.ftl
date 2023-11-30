@@ -9,10 +9,13 @@ third-party-intro =
     { -brand-short-name }. Za modul tretjega ponudnika velja vsak modul,
     ki ga ni podpisal Microsoft ali { -vendor-short-name }.
 third-party-message-empty = Ni zaznanih modulov drugih ponudnikov.
+third-party-message-no-duration = Ni zabeleženo
 third-party-detail-version = Različica datoteke
 third-party-detail-vendor = Podatki o izdelovalcu
 third-party-detail-occurrences = Ponovitve
     .title = Kolikokrat je bil ta modul naložen.
+third-party-detail-duration = Povpr. čas blokade (ms)
+    .title = Kako dolgo je ta modul blokiral aplikacijo.
 third-party-detail-app = Program
 third-party-detail-publisher = Izdajatelj
 third-party-th-process = Proces
@@ -22,6 +25,8 @@ third-party-tag-ime = IME
     .title = Ta vrsta modula se naloži, kadar uporabite urejevalnik vnosne metode tretjega ponudnika.
 third-party-tag-shellex = Razširitev lupine
     .title = Ta vrsta modula se naloži, ko odprete sistemsko pogovorno okno za datoteke.
+third-party-tag-background = V ozadju
+    .title = Ta modul ni blokiral aplikacije, ker se je naložil v ozadju.
 third-party-icon-unsigned =
     .title = Ta modul ni podpisan
     .alt = Ta modul ni podpisan
@@ -45,12 +50,26 @@ third-party-button-to-block =
 third-party-button-to-unblock =
     .title = Trenutno blokiran. Kliknite za odblokiranje.
     .aria-label = Trenutno blokiran. Kliknite za odblokiranje.
+third-party-button-to-unblock-disabled =
+    .title =
+        Trenutno označen kot blokiran, čeprav je seznam blokad za ta zagon
+        { -brand-short-name(sklon: "rodilnik") } onemogočen. Kliknite za odblokiranje.
+    .aria-label =
+        Trenutno označen kot blokiran, čeprav je seznam blokad za ta zagon
+        { -brand-short-name(sklon: "rodilnik") } onemogočen. Kliknite za odblokiranje.
 third-party-button-to-block-module = Blokiraj ta modul
     .title = Blokiraj ta modul
     .aria-label = Blokiraj ta modul
 third-party-button-to-unblock-module = Odblokiraj ta modul
     .title = Odblokiraj ta modul
     .aria-label = Odblokiraj ta modul
+third-party-button-to-unblock-module-disabled = Odblokiraj ta modul (seznam blokad onemogočen)
+    .title =
+        Trenutno označen kot blokiran, čeprav je seznam blokad za ta zagon
+        { -brand-short-name(sklon: "rodilnik") } onemogočen. Kliknite za odblokiranje.
+    .aria-label =
+        Trenutno označen kot blokiran, čeprav je seznam blokad za ta zagon
+        { -brand-short-name(sklon: "rodilnik") } onemogočen. Kliknite za odblokiranje.
 third-party-button-expand =
     .title = Prikaži podrobne informacije
 third-party-button-collapse =

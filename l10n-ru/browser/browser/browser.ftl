@@ -567,6 +567,8 @@ urlbar-result-action-switch-tab = Перейти на вкладку
 urlbar-result-action-visit = Посетить
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Посетить из буфера обмена
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Посетить из буфера обмена
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -619,6 +621,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Быстрые действия
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Недавние поиски
 
 ## Reader View toolbar buttons
 
@@ -916,6 +923,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Расширения
         Некоторые расширения не разрешены
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Завершить приватную сессию
+    .tooltiptext = Завершить приватную сессию
+reset-pbm-panel-heading = Завершить приватную сессию?
+reset-pbm-panel-description = Закрыть все приватные вкладки и удалить историю, куки и все другие данные сайтов.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Всегда спрашивать меня
+    .accesskey = п
+reset-pbm-panel-cancel-button =
+    .label = Отменить
+    .accesskey = м
+reset-pbm-panel-confirm-button =
+    .label = Удалить данные сессии
+    .accesskey = л
+reset-pbm-panel-complete = Данные приватной сессии удалены
 
 ## Autorefresh blocker
 

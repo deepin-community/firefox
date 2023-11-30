@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = להורות לאתרים לא למכור או לשתף את הנתונים שלי
     .accesskey = מ
+non-technical-privacy-header = העדפות פרטיות של אתרים
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = הגדרות
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = פתיחת חלונות ולשוניות קודמות
     .accesskey = פ
+windows-launch-on-login =
+    .label = פתיחת { -brand-short-name } באופן אוטומטי כשהמחשב שלך נדלק
+    .accesskey = פ
+windows-launch-on-login-disabled = העדפה זו הושבתה ב־Windows. כדי לשנות אותה, יש לבקר ב<a data-l10n-name="startup-link">אפליקציות אתחול</a> בהגדרות המערכת.
 startup-restore-warn-on-quit =
     .label = הצגת אזהרה בעת סגירת הדפדפן
 disable-extension =
@@ -956,6 +965,9 @@ sitedata-cookies-exceptions =
 
 ## Privacy Section - Cookie Banner Handling
 
+
+## Privacy Section - Cookie Banner Blocking
+
 cookie-banner-learn-more = מידע נוסף
 
 ## Privacy Section - Address Bar
@@ -987,6 +999,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = פעולות מהירות
     .accesskey = פ
+addressbar-locbar-showrecentsearches-option =
+    .label = הצגת חיפושים אחרונים
+    .accesskey = ח
 addressbar-suggestions-settings = שינוי העדפות של הצעות מנועי חיפוש
 addressbar-quickactions-learn-more = מידע נוסף
 
@@ -996,6 +1011,10 @@ content-blocking-enhanced-tracking-protection = הגנת מעקב מתקדמת
 content-blocking-section-top-level-description = רכיבי מעקב עוקבים אחריך ברשת כדי לאסוף מידע על הרגלי הגלישה ותחומי העניין שלך. { -brand-short-name } חוסם הרבה מרכיבי המעקב האלו, לרבות תסריטים זדוניים אחרים.
 content-blocking-learn-more = מידע נוסף
 content-blocking-fpi-incompatibility-warning = ‏First Party Isolation (FPI) נמצא כעת בשימוש, שעוקף חלק מהגדרות העוגיות של { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = ‏Resist Fingerprinting (RFP) נמצא כעת בשימוש, שמחליף חלק מהגדרות ההגנה של { -brand-short-name } מפני מעקב זהות דיגיטלית. זה עלול לשבש פעילות של חלק מהאתרים.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1202,6 +1221,9 @@ certs-view =
 certs-devices =
     .label = התקני אבטחה…
     .accesskey = א
+certs-thirdparty-toggle =
+    .label = לאפשר ל־{ -brand-short-name } לתת באופן אוטומטי אמון באישורי שורש מצד שלישי שיותקנו על ידך
+    .accesskey = ל
 space-alert-over-5gb-settings-button =
     .label = פתיחת הגדרות
     .accesskey = ה

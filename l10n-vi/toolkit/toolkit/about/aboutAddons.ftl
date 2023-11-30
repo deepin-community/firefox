@@ -167,7 +167,6 @@ extensions-warning-update-security2 =
     .message = Việc kiểm tra tính an toàn của các cập nhật tiện ích đã bị vô hiệu hóa. Bạn có thể bị tổn hại nếu cập nhật.
 extensions-warning-update-security-button = Bật
     .title = Kích hoạt kiểm tra tính bảo mật của cập nhật cho tiện ích
-extensions-warning-imported-addons = Vui lòng hoàn tất việc cài đặt các tiện ích mở rộng đã được nhập vào { -brand-short-name }.
 extensions-warning-imported-addons2 =
     .message = Vui lòng hoàn tất việc cài đặt các tiện ích mở rộng đã được nhập vào { -brand-short-name }.
 extensions-warning-imported-addons-button = Cài đặt tiện ích mở rộng
@@ -363,6 +362,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> đã bị xóa.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } đã bị xóa.
 pending-uninstall-undo-button = Hoàn tác
 addon-detail-updates-label = Cho phép cập nhật tự động
 addon-detail-updates-radio-default = Mặc định

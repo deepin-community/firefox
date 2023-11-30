@@ -67,4 +67,14 @@ about-private-browsing-pin-promo-title = Kookie nongatupyre ha tembiasakue’ỹ
 # in your language: `See fewer cookie requests`.
 about-private-browsing-cookie-banners-promo-header = ¡Opáma kookie maranduñemurã!
 about-private-browsing-cookie-banners-promo-button = Emomichĩ kookie maranduñemurã
-about-private-browsing-cookie-banners-promo-message = Eheja { -brand-short-name } tombohovái ijehegui umi kookie rovetã iñapysẽva ikatu hag̃uáicha eikundaha apañuãi’ỹre. { -brand-short-name } omboykéta opaite mba’ejerure ikatúramo.
+about-private-browsing-cookie-banners-promo-message = Eheja { -brand-short-name } tombohovái ijehegui umi kookie rovetã iñapysẽva ikatu hag̃uáicha eikundaha apañuãi’ỹre. { -brand-short-name } omboykéta opaite mba’ejerure ikatúma guive.
+# Simplified version of the headline if the original text doesn't work
+# in your language: `{ -brand-short-name } will show fewer cookie requests`
+about-private-browsing-cookie-banners-promo-heading = { -brand-short-name } ojapyhy umi banner kookie rehegua nde rérape
+about-private-browsing-cookie-banners-promo-body = Ko’ág̃a romboyke pya’e heta kookie ñe’ẽmondo sa’ive hag̃uáicha ojehapykueho ha eikundahakuaa hag̃ua opañuãi’ỹre.
+
+## Strings for Felt Privacy v1 experiments in 119
+
+about-private-browsing-felt-privacy-v1-info-header = Ani eheja ko mba’e’oka rapykuere
+about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } ombogue kookie, tembiasakue ha mba’ekuaarã tendápe embotypávo ne rovetã ñemiguáva.
+about-private-browsing-felt-privacy-v1-info-link = Mávapa ohechakuaa che rembiapo

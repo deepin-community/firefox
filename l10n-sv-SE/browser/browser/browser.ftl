@@ -562,6 +562,8 @@ urlbar-result-action-switch-tab = Växla till flik
 urlbar-result-action-visit = Besök
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Besök från ditt urklipp
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Besök från urklipp
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -614,6 +616,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Snabbåtgärder
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Senaste sökningar
 
 ## Reader View toolbar buttons
 
@@ -911,6 +918,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Tillägg
         Vissa tillägg är inte tillåtna
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Avsluta privat session
+    .tooltiptext = Avsluta privat session
+reset-pbm-panel-heading = Vill du avsluta din privata session?
+reset-pbm-panel-description = Stäng alla privata flikar och ta bort historik, kakor och all annan webbplatsdata.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Fråga mig alltid
+    .accesskey = F
+reset-pbm-panel-cancel-button =
+    .label = Avbryt
+    .accesskey = A
+reset-pbm-panel-confirm-button =
+    .label = Ta bort sessionsdata
+    .accesskey = T
+reset-pbm-panel-complete = Privat sessionsdata raderades
 
 ## Autorefresh blocker
 

@@ -568,11 +568,13 @@ urlbar-result-action-search-in-private = W priwatnym woknje pytać
 # Variables
 #  $engine (String): the name of a search engine
 urlbar-result-action-search-w-engine = Z { $engine } pytać
-urlbar-result-action-sponsored = Sponsorowany
+urlbar-result-action-sponsored = Sponserowany
 urlbar-result-action-switch-tab = K rajtarkej přeńć
 urlbar-result-action-visit = Wopytać
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Z mjezyskłada wopytać
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Z mjezyskłada wopytać
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -625,6 +627,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Spěšne akcije
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Najnowše pytanja
 
 ## Reader View toolbar buttons
 
@@ -922,6 +929,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Rozšěrjenja
         Někotre rozšěrjenja dowolene njejsu
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Priwatne posedźenje skónčić
+    .tooltiptext = Priwatne posedźenje skónčić
+reset-pbm-panel-heading = Waše priwatne posedźenje skónčić?
+reset-pbm-panel-description = Začińće wšě priwatne rajtarki a zhašejće historiju, placki a wšě druhe sydłowe daty.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Přeco so prašeć
+    .accesskey = P
+reset-pbm-panel-cancel-button =
+    .label = Přetorhnyć
+    .accesskey = t
+reset-pbm-panel-confirm-button =
+    .label = Posedźenske daty zhašeć
+    .accesskey = d
+reset-pbm-panel-complete = Priwatne posedźenske daty su so zhašeli
 
 ## Autorefresh blocker
 

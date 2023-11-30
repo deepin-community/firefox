@@ -43,6 +43,20 @@ migration-wizard-migrator-display-name-opera-gx = Opera GX
 migration-wizard-migrator-display-name-safari = Safari
 migration-wizard-migrator-display-name-vivaldi = Vivaldi
 
+## These strings are shown if the selected browser data directory is unreadable.
+## In practice, this tends to only occur on Linux when Firefox
+## is installed as a Snap.
+
+migration-no-permissions-message = { -brand-short-name } не мае доступу да профіляў іншых браўзераў, усталяваных на гэтай прыладзе.
+migration-no-permissions-instructions = Каб працягнуць імпарт дадзеных з іншага браўзера, дайце { -brand-short-name } доступ да папкі яго профілю.
+migration-no-permissions-instructions-step1 = Выберыце «Працягнуць»
+# The second step in getting permissions to read data for the selected
+# browser type.
+#
+# Variables:
+#  $permissionsPath (String): the file system path that the user will need to grant read permission to.
+migration-no-permissions-instructions-step2 = У сродку выбару файлаў перайдзіце да <code>{ $permissionsPath }</code> і націсніце "Выбраць".
+
 ## These strings will be displayed based on how many resources are selected to import
 
 migration-all-available-data-label = Імпартаваць усе даступныя дадзеныя

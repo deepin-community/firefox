@@ -37,6 +37,14 @@ protections-panel-etp-off-toggle =
     .label = Tapykueho mo’ãha iporãvéva
     .description = Okápe ko tendágui
     .aria-label = Embojuruja nemo’ã { $host } peg̃uarã
+protections-panel-etp-toggle-on =
+    .label = Tapykueho mo’ãha iporãvéva
+    .description = Ko tendápe g̃uarã
+    .aria-label = Tapykueho mo’ãha iporãvéva: hendýva { $host } peg̃uarã
+protections-panel-etp-toggle-off =
+    .label = Tapykueho mo’ãha iporãvéva
+    .description = Okápe ko tendágui
+    .aria-label = Tapykuehoha ñemo’ã iporãvéva: ojepe’áma { $host }-pe g̃uarã
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = ¿Ko tenda ndoikói?
 # The heading/title of the sub-panel view
@@ -47,7 +55,7 @@ protections-panel-site-not-working-view =
 ## a tooltip explaining why these items were not blocked in the page.
 
 protections-panel-not-blocking-why-label = ¿Mba’ére?
-protections-panel-not-blocking-why-etp-on-tooltip = Ko’ãva jejoko ikatu ombyai mba’epuru ñanduti renda pegua. Jehapykuehoha’ỹre heta votõ, myanyhẽha ha tembiapo ñepyrũ rekoha ikatu ndoikói.
+protections-panel-not-blocking-why-etp-on-tooltip = Ko’ãva jejoko ikatu ombyai mba’eporu ñanduti renda pegua. Jehapykuehoha’ỹre heta votõ, myanyhẽha ha tembiapo ñepyrũ rekoha ikatu ndoikói.
 protections-panel-not-blocking-why-etp-off-tooltip = Opaite tepykuehoha ko tenda pegua oñemyanyhẽ ñemo’ãha ojepe’aite rupi.
 
 ##
@@ -119,6 +127,7 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 # Cookie Banner Handling
 
 protections-panel-cookie-banner-handling-header = Kookie Banner Ñemomichĩ
+protections-panel-cookie-banner-blocker-header = Ejoko Banner kookie rehegua
 protections-panel-cookie-banner-handling-enabled = Hendy ko tendápe
 protections-panel-cookie-banner-handling-disabled = Ko tendágui okápe
 protections-panel-cookie-banner-handling-undetected = Tenda ko’ág̃a oñepytyvõ’ỹva
@@ -128,8 +137,15 @@ protections-panel-cookie-banner-view-title =
 #  $host (String): the hostname of the site that is being displayed.
 protections-panel-cookie-banner-view-turn-off-for-site = ¿Embogue kookie banner ñemomichĩ { $host } peg̃uarã?
 protections-panel-cookie-banner-view-turn-on-for-site = ¿Emyandy kookie banner ñemomichĩ ko tendápe g̃uarã?
+protections-panel-cookie-banner-blocker-view-title =
+    .title = Ejoko Banner kookie rehegua
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-blocker-view-turn-off-for-site = ¿Embogue kookie banner ñemomichĩ { $host } peg̃uarã?
+protections-panel-cookie-banner-blocker-view-turn-on-for-site = ¿Emyandy kookie banner jokoha ko tendápe g̃uarã?
 protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } omboguéta kookie ko tendagua ha ombohekopyahúta kuatiarogue. Emboguepárõ kookie ombotykuaa ne rembiapo térã omonandi ne mba’ejoguakue.
 protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } omboykese ijehegui opaite kookie mba’ejerure umi tenda ojokupytývape.
+protections-panel-cookie-banner-blocker-view-turn-on-description = Emyandývo { -brand-short-name } oñeha’ãta omboyke ijehegui umi kookie ñe’ẽmondo ko tendápe.
 protections-panel-cookie-banner-view-cancel = Heja
 protections-panel-cookie-banner-view-turn-off = Mbogue
 protections-panel-cookie-banner-view-turn-on = Myandy

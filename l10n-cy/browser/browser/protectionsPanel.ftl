@@ -37,6 +37,14 @@ protections-panel-etp-off-toggle =
     .label = Diogelwch Uwch Rhag Tracio
     .description = Oddi ar y wefan hon
     .aria-label = Diogelu diogeledd { $host }
+protections-panel-etp-toggle-on =
+    .label = Diogelwch Uwch Rhag Tracio
+    .description = Ar y wefan hon
+    .aria-label = Diogelwch Uwch Rhag Tracio: Ymlaen ar gyfer { $host }
+protections-panel-etp-toggle-off =
+    .label = Diogelwch Uwch Rhag Tracio
+    .description = I ffwrdd ar gyfer y wefan hon
+    .aria-label = Diogelwch Uwch Rhag Tracio: I ffwrdd ar gyfer { $host }
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = Gwefan ddim yn gweithio?
 # The heading/title of the sub-panel view
@@ -95,7 +103,7 @@ protections-panel-fingerprinters = Mae bysbrintwyr yn casglu gosodiadau o'ch por
 protections-panel-tracking-content = Gall gwefannau lwytho hysbysebion allanol, fideos a chynnwys eraill sy'n cynnwys cod tracio. Gall rhwystro cynnwys tracio helpu gwefannau i lwytho'n gynt, ond efallai na fydd rhai botymau, ffurflenni a meysydd mewngofnodi'n gweithio.
 protections-panel-social-media-trackers = Mae rhwydweithiau cymdeithasol yn gosod tracwyr ar wefannau eraill i ddilyn yr hyn rydych chi'n ei wneud, ei weld, a'i wylio ar-lein. Mae hyn yn caniatáu i gwmnïau cyfryngau cymdeithasol ddysgu mwy amdanoch chi y tu hwnt i'r hyn rydych chi'n ei rannu ar eich proffiliau cyfryngau cymdeithasol.
 protections-panel-description-shim-allowed = Mae rhai tracwyr sydd wedi'u marcio isod wedi cael eu dad-rwystr'n rhannol ar y dudalen hon oherwydd i chi ryngweithio â nhw.
-protections-panel-description-shim-allowed-learn-more = Dysgu rhagor
+protections-panel-description-shim-allowed-learn-more = Darllen rhagor
 protections-panel-shim-allowed-indicator =
     .tooltiptext = Traciwr wedi'i rhannol ddad-rwystro
 protections-panel-content-blocking-manage-settings =
@@ -103,7 +111,7 @@ protections-panel-content-blocking-manage-settings =
     .accesskey = R
 protections-panel-content-blocking-breakage-report-view =
     .title = Adrodd ar Wefan wedi Torri
-protections-panel-content-blocking-breakage-report-view-description = Gall rhwystro cynnwys achosi problemau gyda rai gwefannau. Pan fyddwch yn cyflwyno adroddiad ar broblemau, byddwch yn helpu gwneud { -brand-short-name } yn well i bawb. (Bydd hyn yn anfon yr URL yn ogystal â gwybodaeth am osodiadau eich porwr i Mozilla. <label data-l10n-name="learn-more">Dysgu rhagor</label>
+protections-panel-content-blocking-breakage-report-view-description = Gall rhwystro cynnwys achosi problemau gyda rai gwefannau. Pan fyddwch yn cyflwyno adroddiad ar broblemau, byddwch yn helpu gwneud { -brand-short-name } yn well i bawb. (Bydd hyn yn anfon yr URL yn ogystal â gwybodaeth am osodiadau eich porwr i Mozilla. <label data-l10n-name="learn-more">Darllen rhagor</label>
 protections-panel-content-blocking-breakage-report-view-description2 = Gall rhwystro cynnwys achosi problemau gyda rai gwefannau. Pan fyddwch yn cyflwyno adroddiad ar broblemau, byddwch yn helpu gwneud { -brand-short-name } yn well i bawb. (Bydd hyn yn anfon yr URL yn ogystal â gwybodaeth am osodiadau eich porwr i { -vendor-short-name }.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
@@ -119,6 +127,7 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 # Cookie Banner Handling
 
 protections-panel-cookie-banner-handling-header = Llai o Faneri Cwcis
+protections-panel-cookie-banner-blocker-header = Rhwystrydd Baneri Cwcis
 protections-panel-cookie-banner-handling-enabled = Ymlaen ar gyfer y wefan hon
 protections-panel-cookie-banner-handling-disabled = Diffodd ar gyfer y wefan hon
 protections-panel-cookie-banner-handling-undetected = Nid yw’r wefan yn cael ei chefnogi ar hyn o bryd
@@ -128,8 +137,15 @@ protections-panel-cookie-banner-view-title =
 #  $host (String): the hostname of the site that is being displayed.
 protections-panel-cookie-banner-view-turn-off-for-site = Diffodd Llai o Faneri Cwcis ar { $host }?
 protections-panel-cookie-banner-view-turn-on-for-site = Troi Llai o Faneri Cwcis ymlaen ar y wefan hon?
+protections-panel-cookie-banner-blocker-view-title =
+    .title = Rhwystrydd Baneri Cwcis
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-blocker-view-turn-off-for-site = Diffodd y Rhwystrydd Baneri Cwcis { $host }?
+protections-panel-cookie-banner-blocker-view-turn-on-for-site = Troi'r Atalydd Baneri Cwcis ymlaen ar y wefan hon?
 protections-panel-cookie-banner-view-cookie-clear-warning = Bydd { -brand-short-name } yn clirio cwcis y wefan hon ac yn adnewyddu’r dudalen. Gall clirio pob cwci eich allgofnodi neu wagio eich certiau siopa.
 protections-panel-cookie-banner-view-turn-on-description = Mae { -brand-short-name } yn ceisio gwrthod yn awtomatig pob cais cwci ar wefannau sy’n cael eu cefnogi.
+protections-panel-cookie-banner-blocker-view-turn-on-description = Ei droi ymlaen a bydd { -brand-short-name } yn ceisio gwrthod baneri cwcis yn awtomatig ar y wefan hon.
 protections-panel-cookie-banner-view-cancel = Diddymu
 protections-panel-cookie-banner-view-turn-off = Diffodd
 protections-panel-cookie-banner-view-turn-on = Troi Ymlaen

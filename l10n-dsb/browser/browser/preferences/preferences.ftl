@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Websydłam k wěsći daś, až njamaju móje daty pśedaś abo źěliś
     .accesskey = d
+non-technical-privacy-header = Nastajenja priwatnosći websedła
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Nastajenja
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Pjerwjejšne wokna a rejtariki wócyniś
     .accesskey = P
+windows-launch-on-login =
+    .label = { -brand-short-name } awtomatiski wócyniś, gaž se wašo licadło startujo
+    .accesskey = c
+windows-launch-on-login-disabled = Toś to nastajenje jo se znjemóžniło we Windows. Aby nastajenje změnił, woglědajśo se k <a data-l10n-name="startup-link">Autostart</a> w systemowych nastajenjach.
 startup-restore-warn-on-quit =
     .label = Warnowaś, gaž se wobglědowak kóńcy
 disable-extension =
@@ -969,9 +978,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Reducěrowanje cookiejowych chórgojow
 cookie-banner-handling-description = { -brand-short-name } awtomatiski wopytujo, cookiejowe napšašowanja za cookiejowymi chórgojami na pódprětych sedłach wótpokazaś.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Blokěrowak cookiejowych chórgojow
+cookie-banner-blocker-description = Gaž se sedło pšaša, lěc móžo cookieje w priwatnem modusu wužywaś, { -brand-short-name } to za was awtomatiski wótpokazujo. Jano za pódprěte sedła.
 cookie-banner-learn-more = Dalšne informacije
 forms-handle-cookie-banners =
     .label = Cookieje chórgoji reducěrowaś
+cookie-banner-blocker-checkbox-label =
+    .label = Cookiejowe  chórgoje awtomatiski wótpokazaś
 
 ## Privacy Section - Address Bar
 
@@ -1002,6 +1018,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Malsne akcije
     .accesskey = M
+addressbar-locbar-showrecentsearches-option =
+    .label = Nejnowše pytanja pokazaś
+    .accesskey = n
 addressbar-suggestions-settings = Nastajenja za naraźenja pytnice změniś
 addressbar-quickactions-learn-more = Dalšne informacije
 
@@ -1011,6 +1030,10 @@ content-blocking-enhanced-tracking-protection = Pólěpšony slědowański šći
 content-blocking-section-top-level-description = Pśeslědowaki wam online slěduju, aby informacije wó wašych pśeglědowańskich zwuconosćach a zajmach gromaźili. { -brand-short-name } wjele z toś tych pśeslědowakow a druge złosne skripty blokěrujo.
 content-blocking-learn-more = Dalšne informacije
 content-blocking-fpi-incompatibility-warning = Wužywaśo rozšyrjenje First Party Isolation (FIP), kótarež někotare cookiejowe nastajenja { -brand-short-name } pśepisujo.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Wužywaśo Resist Fingerprinting (RFP), kótarež někake nastajenja za šćit pśeśiwo palcowym śišćam { -brand-short-name } wuměnja. To mógło zawinowaś, až někotare sedła wěcej njefunkcioněruju.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1218,6 +1241,9 @@ certs-view =
 certs-devices =
     .label = Wěstotne rědy…
     .accesskey = t
+certs-thirdparty-toggle =
+    .label = { -brand-short-name } dowóliś, kórjenjowym certifikatam tśeśich póbitowarjow awtomatiski dowěriś, kótarež instalěrujośo
+    .accesskey = k
 space-alert-over-5gb-settings-button =
     .label = Nastajenja wócyniś
     .accesskey = c

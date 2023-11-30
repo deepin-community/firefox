@@ -50,7 +50,7 @@ about-processes-socket-process = Ñanduti ({ $pid })
 about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Fork Server ({ $pid })
 about-processes-preallocated-process = Ñeme’ẽmby ({ $pid })
-about-processes-utility-process = Jepururã ({ $pid })
+about-processes-utility-process = Jeporurã ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
@@ -145,10 +145,10 @@ about-processes-cpu-user-and-kernel-not-ready = (ta’ãha)
 # Special case: process or thread is almost idle (using less than 0.1% of a CPU core).
 # This case only occurs on Windows where the precision of the CPU times is low.
 about-processes-cpu-almost-idle = < 0.1%
-    .title = CPU aravo oipurúva { NUMBER($total, maximumFractionDigits: 0) } { $unit }
+    .title = CPU aravo oiporúva { NUMBER($total, maximumFractionDigits: 0) } { $unit }
 # Special case: process or thread is currently idle.
 about-processes-cpu-fully-idle = Oĩreíva
-    .title = CPU aravo oipurúva { NUMBER($total, maximumFractionDigits: 0) } { $unit }
+    .title = CPU aravo oiporúva { NUMBER($total, maximumFractionDigits: 0) } { $unit }
 
 ## Displaying Memory (total and delta)
 ## Variables:

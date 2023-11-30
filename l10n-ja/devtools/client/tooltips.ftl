@@ -23,6 +23,7 @@ inactive-css-not-flex-item = この要素はフレックスアイテムではな
 inactive-css-not-flex-container = この要素はフレックスコンテナーではないため、<strong>{ $property }</strong> はこの要素に効果がありません。
 inactive-css-not-inline-or-tablecell = この要素はインライン要素でもテーブルのセル要素でもないため、<strong>{ $property }</strong> はこの要素に効果がありません。
 inactive-css-first-line-pseudo-element-not-supported = ::first-line 疑似要素上で <strong>{ $property }</strong> はサポートされていません。
+inactive-css-first-letter-pseudo-element-not-supported = ::first-letter 疑似要素上で <strong>{ $property }</strong> はサポートされていません。
 inactive-css-placeholder-pseudo-element-not-supported = ::placeholder 疑似要素上で <strong>{ $property }</strong> はサポートされていません。
 inactive-css-property-because-of-display = この要素は <strong>{ $display }</strong> の display プロパティを持つため、<strong>{ $property }</strong> はこの要素に効果がありません。
 inactive-css-not-display-block-on-floated = この要素は <strong>floated</strong> であるため、<strong>display</strong> の値はエンジンによって <strong>block</strong> に変更されました。
@@ -37,6 +38,11 @@ inactive-scroll-padding-when-not-scroll-container = この要素はスクロー�
 inactive-css-border-image = <strong>{ $property }</strong> は、親テーブル要素の <strong>border-collapse</strong> に <strong>collapse</strong> が設定されていて内部テーブル要素に適用できないため、この要素には効果がありません。
 inactive-css-ruby-element = この要素は ruby 要素のため、<strong>{ $property }</strong> は効果がありません。ルビテキストのフォントサイズから自動的に設定されます。
 inactive-css-highlight-pseudo-elements-not-supported = highlight 疑似要素上で <strong>{ $property }</strong> はサポートされていません。
+inactive-css-cue-pseudo-element-not-supported = ::cue 疑似要素上で <strong>{ $property }</strong> はサポートされていません。
+# Variables:
+#   $lineCount (integer) - The number of lines the element has.
+inactive-css-text-wrap-balance-lines-exceeded = <strong>{ $property }</strong> は行数が { $lineCount } 行より多い要素に効果がありません。
+inactive-css-text-wrap-balance-fragmented = <strong>{ $property }</strong> は断片化された要素に効果がありません。例: 段組みページやページをまたがるコンテンツなど。
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain how
@@ -63,6 +69,8 @@ inactive-css-not-table-cell-fix = <strong>display:table-cell</strong> を追加�
 inactive-scroll-padding-when-not-scroll-container-fix = <strong>overflow:auto</strong>、<strong>overflow:scroll</strong> または <strong>overflow:hidden</strong> を追加してみてください。{ learn-more }
 inactive-css-border-image-fix = 親テーブル要素のプロパティを削除するか <strong>border-collapse</strong> を <strong>collapse</strong> 以外の値を変更してみてください。{ learn-more }
 inactive-css-ruby-element-fix = ルビテキストの <strong>font-size</strong> を変更してみてください。{ learn-more }
+inactive-css-text-wrap-balance-lines-exceeded-fix = 行数を減らしてみてください。{ learn-more }
+inactive-css-text-wrap-balance-fragmented-fix = 要素のコンテンツの分断を避けてください。段組みを止めるか <strong>page-break-inside:avoid</strong> の使用を検討してください。{ learn-more }
 
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why

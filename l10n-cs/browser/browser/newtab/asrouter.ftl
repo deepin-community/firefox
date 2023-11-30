@@ -12,35 +12,29 @@ cfr-doorhanger-feature-heading = Doporučená funkce
 
 cfr-doorhanger-extension-sumo-link =
     .tooltiptext = Co to je
-
 cfr-doorhanger-extension-cancel-button = Teď ne
     .accesskey = n
-
 cfr-doorhanger-extension-ok-button = Přidat
     .accesskey = a
-
 cfr-doorhanger-extension-manage-settings-button = Nastavení doporučování
     .accesskey = d
-
 cfr-doorhanger-extension-never-show-recommendation = Toto doporučení už nezobrazovat
     .accesskey = N
-
 cfr-doorhanger-extension-learn-more-link = Zjistit více
-
 # This string is used on a new line below the add-on name
 # Variables:
 #   $name (String) - Add-on author name
 cfr-doorhanger-extension-author = autor: { $name }
-
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Doporučení
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-extension-notification2 = Doporučení
     .tooltiptext = Doporučené rozšíření
     .a11y-announcement = Je dostupné doporučené rozšíření
-
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-feature-notification = Doporučení
     .tooltiptext = Doporučená funkce
     .a11y-announcement = Je dostupné doporučení funkce
@@ -87,11 +81,9 @@ cfr-protections-panel-link-text = Zjistit více
 # This string is used by screen readers to offer a text based alternative for
 # the notification icon
 cfr-badge-reader-label-newfeature = Nové funkce
-
 cfr-whatsnew-button =
     .label = Co je nového
     .tooltiptext = Co je nového
-
 cfr-whatsnew-release-notes-link-text = Přečtěte si poznámky k vydání
 
 ## Enhanced Tracking Protection Milestones
@@ -129,8 +121,6 @@ cfr-doorhanger-doh-primary-button-2 = OK
 cfr-doorhanger-doh-secondary-button = Zakázat
     .accesskey = Z
 
-## Fission Experiment Message
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body =
@@ -148,8 +138,6 @@ cfr-doorhanger-video-support-header =
 cfr-doorhanger-video-support-primary-button = Aktualizovat
     .accesskey = A
 
-## Spotlight modal shared strings
-
 ## VPN promotion dialog for public Wi-Fi users
 ##
 ## If a user is detected to be on a public Wi-Fi network, they are given a
@@ -163,8 +151,6 @@ spotlight-public-wifi-vpn-primary-button = Ochraňte své soukromí s { -mozilla
     .accesskey = s
 spotlight-public-wifi-vpn-link = Teď ne
     .accesskey = n
-
-## Total Cookie Protection Rollout
 
 ## Emotive Continuous Onboarding
 
@@ -210,7 +196,6 @@ mr2022-background-update-toast-text =
         [neuter] Vyzkoušejte nyní nejnovější { -brand-short-name(case: "acc") }, které bylo vylepšeno o naši dosud nejsilnější ochranu proti sledování.
        *[other] Vyzkoušejte nyní nejnovější aplikaci { -brand-short-name }, která byla vylepšena o naši dosud nejsilnější ochranu proti sledování.
     }
-
 # This button label will be fitted into a narrow fixed-width button by
 # Windows. Try to not exceed the width of the English text (compare it
 # using a variable font like Arial): the button can only fit 1-2
@@ -220,7 +205,6 @@ mr2022-background-update-toast-primary-button-label =
         [with-cases] Spustit { -brand-shorter-name(case: "acc") }
        *[no-cases] Spustit aplikaci { -brand-shorter-name }
     }
-
 # This button label will be fitted into a narrow fixed-width button by
 # Windows. Try to not exceed the width of the English text (compare it using a
 # variable font like Arial): the button can only fit 1-2 additional characters,
@@ -239,7 +223,6 @@ firefoxview-cfr-body-v2 = Získejte zpět nedávno zavřené panely a plynule p�
 ## Firefox View Spotlight
 
 firefoxview-spotlight-promo-title = Přivítejte { -firefoxview-brand-name(case: "acc") }
-
 # “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
 firefoxview-spotlight-promo-subtitle = Chcete zrovna ten panel otevřený v telefonu? Vezměte si ho. Potřebujete znovu tu stránku, co jste před chvílí navštívili? Hups, díky { -firefoxview-brand-name(case: "dat", capitalization: "lower") } ji máte zpátky.
 firefoxview-spotlight-promo-primarybutton = Jak to funguje
@@ -249,7 +232,6 @@ firefoxview-spotlight-promo-secondarybutton = Přeskočit
 
 colorways-cfr-primarybutton = Zvolit baletu barev
     .accesskey = Z
-
 # "shades" refers to the different color options available to users in colorways.
 colorways-cfr-body =
     { -brand-short-name.case-status ->
@@ -284,7 +266,6 @@ july-jam-set-default-primary =
        *[no-cases] Otevírat mé odkazy pomocí aplikace { -brand-short-name }
     }
 fox-doodle-pin-headline = Vítejte zpět
-
 # “indie” is short for the term “independent”.
 # In this instance, free from outside influence or control.
 fox-doodle-pin-body = Zde je rychlé připomenutí, že si svůj oblíbený nezávislý prohlížeč můžete jediným klepnutím ponechat.
@@ -323,3 +304,46 @@ device-migration-fxa-spotlight-header = Používáte starší zařízení?
 device-migration-fxa-spotlight-body = Zálohujte svá data, abyste neztratili důležité informace, jako jsou záložky a hesla – zejména pokud přejdete na nové zařízení.
 device-migration-fxa-spotlight-primary-button = Jak zálohovat moje data
 device-migration-fxa-spotlight-link = Upozornit mě později
+
+## Set as Default PDF Reader Infobar
+
+# The question portion of the following message should have the <strong> and </strong> tags surrounding it.
+pdf-default-notification-message =
+    { -brand-short-name.case-status ->
+        [with-cases] <strong>Nastavit { -brand-short-name(case: "acc") } jako výchozí čtečku souborů PDF?</strong> Pomocí { -brand-short-name(case: "gen") } můžete číst a upravovat soubory PDF uložené v počítači.
+       *[no-cases] <strong>Nastavit aplikaci { -brand-short-name } jako výchozí čtečku souborů PDF?</strong> Pomocí aplikace { -brand-short-name } můžete číst a upravovat soubory PDF uložené v počítači.
+    }
+pdf-default-notification-set-default-button =
+    .label = Nastavit jako výchozí
+pdf-default-notification-decline-button =
+    .label = Nyní ne
+
+## Launch on login infobar notification
+
+launch-on-login-infobar-message =
+    { -brand-short-name.gender ->
+        [masculine] <strong>Spustit { -brand-short-name(case: "acc") } po každém restartu počítače?</strong> Nyní můžete nastavit, aby se { -brand-short-name } otevíral automaticky po restartu zařízení.
+        [feminine] <strong>Spustit { -brand-short-name(case: "acc") } po každém restartu počítače?</strong> Nyní můžete nastavit, aby se { -brand-short-name } otevírala automaticky po restartu zařízení.
+        [neuter] <strong>Spustit { -brand-short-name(case: "acc") } po každém restartu počítače?</strong> Nyní můžete nastavit, aby se { -brand-short-name } otevíralo automaticky po restartu zařízení.
+       *[other] <strong>Spustit aplikaci { -brand-short-name } po každém restartu počítače?</strong> Nyní můžete nastavit, aby se aplikace { -brand-short-name } otevírala automaticky po restartu zařízení.
+    }
+launch-on-login-learnmore = Zjistit více
+launch-on-login-infobar-confirm-button =
+    { -brand-short-name.case-status ->
+        [with-cases] Ano, otevírat { -brand-short-name(case: "acc") }
+       *[no-cases] Ano, otevírat aplikaci { -brand-short-name }
+    }
+    .accesskey = A
+launch-on-login-infobar-reject-button = Nyní ne
+    .accesskey = N
+
+## These string variants are used when the “launch on login” infobar
+## notification is displayed for a second time.
+
+launch-on-login-infobar-final-message =
+    { -brand-short-name.case-status ->
+        [with-cases] <strong>Otevřít { -brand-short-name(case: "acc") } při každém spuštění počítače?</strong> Chcete-li spravovat předvolby pro spouštění, vyhledejte v nastavení položku "spuštění".
+       *[no-cases] <strong>Otevřít aplikaci { -brand-short-name } při každém spuštění počítače?</strong> Chcete-li spravovat předvolby pro spouštění, vyhledejte v nastavení položku "spuštění".
+    }
+launch-on-login-infobar-final-reject-button = Ne, děkuji
+    .accesskey = N

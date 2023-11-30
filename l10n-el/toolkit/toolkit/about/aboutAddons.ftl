@@ -166,7 +166,6 @@ extensions-warning-update-security2 =
     .message = Ο έλεγχος ασφαλείας ενημερώσεων  προσθέτων είναι ανενεργός. Μπορεί να κινδυνέψετε.
 extensions-warning-update-security-button = Ενεργοποίηση
     .title = Ενεργοποίηση ελέγχου ασφαλείας ενημερώσεων προσθέτων
-extensions-warning-imported-addons = Παρακαλώ ολοκληρώστε την εγκατάσταση των επεκτάσεων που εισήχθησαν στο { -brand-short-name }.
 extensions-warning-imported-addons2 =
     .message = Παρακαλώ ολοκληρώστε την εγκατάσταση των επεκτάσεων που εισήχθησαν στο { -brand-short-name }.
 extensions-warning-imported-addons-button = Εγκατάσταση επεκτάσεων
@@ -362,6 +361,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = Το <span data-l10n-name="addon-name">{ $addon }</span> έχει αφαιρεθεί.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = Το { $addon } έχει αφαιρεθεί.
 pending-uninstall-undo-button = Αναίρεση
 addon-detail-updates-label = Να επιτρέπονται αυτόματες ενημερώσεις
 addon-detail-updates-radio-default = Προεπιλογή

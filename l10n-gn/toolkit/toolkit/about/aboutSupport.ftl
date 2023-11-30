@@ -62,16 +62,16 @@ app-basics-os-theme = OS Téma
 # Rosetta is Apple's translation process to run apps containing x86_64
 # instructions on Apple Silicon. This should remain in English.
 app-basics-rosetta = Rosetta omoñe’ẽasapyre
-app-basics-memory-use = Mandu’arenda jepuru
+app-basics-memory-use = Mandu’arenda jeporu
 app-basics-performance = Mba’eaporã
 app-basics-service-workers = Mba’apohára mba’epytyvõrã mboguapyréva
 app-basics-third-party = Mbohapyháva Ra’ãha
 app-basics-profiles = Mba’etekuéra
-app-basics-launcher-process-status = Momboha jepuru
+app-basics-launcher-process-status = Momboha jeporu
 app-basics-multi-process-support = Windows rembiapoita
 app-basics-fission-support = Fission Rovetã
 app-basics-remote-processes-count = Tapereko okayguáva
-app-basics-enterprise-policies = Purureko mba’apoha rehegua
+app-basics-enterprise-policies = Porureko mba’apoha rehegua
 app-basics-location-service-key-google = Google ñemoñe’ẽasa ñe’ẽñemi
 app-basics-safebrowsing-key-google = Google Safebrowsing Key
 app-basics-key-mozilla = Mozilla mba’epytyvõrã rendaite rehegua
@@ -184,14 +184,14 @@ media-codec-support-hw-decoding = Hardware Jepapapy’o
 media-codec-support-codec-name = Codec Réra
 media-codec-support-supported = Pytyvõpyre
 media-codec-support-unsupported = Oñepytyvõ’ỹva
-media-codec-support-error = Pe marandu códec jokupyty ndojepurukuaái. Eha’ãjey ehecha rire marandurenda ñongatuha.
+media-codec-support-error = Pe marandu códec jokupyty ndojeporukuaái. Eha’ãjey ehecha rire marandurenda ñongatuha.
 
 ##
 
 intl-title = Mongakuaa & ñemohenda
 intl-app-title = Tembiporu’i ñemboheko
 intl-locales-requested = Ñe’ẽnguéra jerurepyre
-intl-locales-available = Ñe’ẽnguéra ojepurukuaáva
+intl-locales-available = Ñe’ẽnguéra ojeporukuaáva
 intl-locales-supported = Ñe’ẽnguéra tembiporu’i rehegua
 intl-locales-default = Ñe’ẽnguéra ijypykuéva
 intl-os-title = Apopyvusu oku’éva
@@ -317,10 +317,10 @@ gpu-device-reset-button = Mba’e’oka reko moñepyrũjey
 uses-tiling = Eiporu mosáiko
 content-uses-tiling = Eiporu mosáiko (tetepy)
 off-main-thread-paint-enabled = Opyta okápe inimbo tuichavéva mbosa’yha ijurujáva
-off-main-thread-paint-worker-count = Ñemoha’anga resa’ỹijo téma tuichavéva opyta okápe
-target-frame-rate = Ta’anga py’ỹi hupytyrã
-min-lib-versions = Peteĩchagua michĩmíva ha’arõpy
-loaded-lib-versions = Peteĩchagua ojepurúva
+off-main-thread-paint-worker-count = Ñemoha’ãnga resa’ỹijo téma tuichavéva opyta okápe
+target-frame-rate = Ta’ãnga py’ỹi hupytyrã
+min-lib-versions = Peteĩchagua michĩmíva ha’ãrõpy
+loaded-lib-versions = Peteĩchagua ojeporúva
 has-seccomp-bpf = Seccomp-BPF (Ñehenói mboguaha rehegua)
 has-seccomp-tsync = Seccomp mba’eapo’i ñembojuehe
 has-user-namespaces = Poruhára réra rehegua pa’ũ

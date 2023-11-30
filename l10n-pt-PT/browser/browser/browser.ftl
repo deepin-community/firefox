@@ -565,6 +565,8 @@ urlbar-result-action-switch-tab = Mudar para o separador
 urlbar-result-action-visit = Visitar
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Visita da sua área de transferência
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Visitar da sua área de transferência
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -617,15 +619,20 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Ações rápidas
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Pesquisas recentes
 
 ## Reader View toolbar buttons
 
 # This should match menu-view-enter-readerview in menubar.ftl
 reader-view-enter-button =
-    .aria-label = Entrar na vista de leitura
+    .aria-label = Entrar Visualização de Leitura
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
-    .aria-label = Fechar vista de leitura
+    .aria-label = Fechar Visualização de Leitura
 
 ## Picture-in-Picture urlbar button
 ## Variables:
@@ -714,7 +721,7 @@ bookmarks-subview-edit-bookmark =
 # such, because screen readers already know that this container is a toolbar.
 # This avoids double-speaking.
 bookmarks-toolbar =
-    .toolbarname = Barra de ferramentas de marcadores
+    .toolbarname = Barra de ferramentas dos marcadores
     .accesskey = B
     .aria-label = Marcadores
 bookmarks-toolbar-menu =
@@ -914,6 +921,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Extensões
         Algumas extensões não são permitidas
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Terminar sessão privada
+    .tooltiptext = Terminar sessão privada
+reset-pbm-panel-heading = Terminar a sua sessão privada?
+reset-pbm-panel-description = Feche todos os separadores privados e elimine o histórico, cookies e todos os outros dados de sites.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Perguntar-me sempre
+    .accesskey = a
+reset-pbm-panel-cancel-button =
+    .label = Cancelar
+    .accesskey = C
+reset-pbm-panel-confirm-button =
+    .label = Eliminar dados de sessão
+    .accesskey = d
+reset-pbm-panel-complete = Dados da navegação privada eliminados
 
 ## Autorefresh blocker
 

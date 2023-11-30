@@ -569,6 +569,8 @@ urlbar-result-action-switch-tab = Пераключыцца ў картку
 urlbar-result-action-visit = Наведаць
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Наведаць з буфера абмену
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Наведаць з буфера абмену
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -621,6 +623,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Хуткія дзеянні
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Нядаўнія пошукі
 
 ## Reader View toolbar buttons
 
@@ -918,6 +925,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Пашырэнні
         Некаторыя пашырэнні не дазволены
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Закончыць прыватны сеанс
+    .tooltiptext = Закончыць прыватны сеанс
+reset-pbm-panel-heading = Закончыць ваш прыватны сеанс?
+reset-pbm-panel-description = Закрыць усе прыватныя карткі і выдаліць гісторыю, кукі і ўсе астатнія звесткі сайтаў.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Заўсёды пытацца ў мяне
+    .accesskey = я
+reset-pbm-panel-cancel-button =
+    .label = Скасаваць
+    .accesskey = С
+reset-pbm-panel-confirm-button =
+    .label = Выдаліць звесткі сеанса
+    .accesskey = В
+reset-pbm-panel-complete = Звесткі прыватнага сеанса выдалены
 
 ## Autorefresh blocker
 

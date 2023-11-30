@@ -171,7 +171,6 @@ extensions-warning-update-security2 =
     .message = Sikkerhedstjek ved opdatering af tilføjelser er deaktiveret. Du kan blive kompromiteret ved opdateringer.
 extensions-warning-update-security-button = Aktiver
     .title = Aktiver sikkerhedstjek ved opdatering af tilføjelser
-extensions-warning-imported-addons = Færdiggør installeringen af udvidelser importeret til { -brand-short-name }.
 extensions-warning-imported-addons2 =
     .message = Færdiggør installeringen af udvidelser importeret til { -brand-short-name }.
 extensions-warning-imported-addons-button = Installer udvidelser
@@ -368,6 +367,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> er blevet fjernet.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } er blevet fjernet.
 pending-uninstall-undo-button = Fortryd
 addon-detail-updates-label = Tillad automatiske opdateringer
 addon-detail-updates-radio-default = Standard

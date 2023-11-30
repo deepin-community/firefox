@@ -565,6 +565,8 @@ urlbar-result-action-switch-tab = Aller à l’onglet
 urlbar-result-action-visit = Consulter
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Ouvrir l’adresse du presse-papiers
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Ouvrir l’adresse du presse-papiers
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -617,6 +619,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Actions rapides
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Recherches récentes
 
 ## Reader View toolbar buttons
 
@@ -914,6 +921,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Extensions
         Certaines extensions ne sont pas autorisées
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Mettre fin à la session privée
+    .tooltiptext = Mettre fin à la session privée
+reset-pbm-panel-heading = Mettre fin à votre session privée ?
+reset-pbm-panel-description = Fermer tous les onglets privés et supprimer l’historique, les cookies et toutes les autres données des sites.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Toujours me demander
+    .accesskey = T
+reset-pbm-panel-cancel-button =
+    .label = Annuler
+    .accesskey = A
+reset-pbm-panel-confirm-button =
+    .label = Supprimer les données de la session
+    .accesskey = S
+reset-pbm-panel-complete = Données de session privée supprimées
 
 ## Autorefresh blocker
 

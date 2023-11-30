@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Паведамляць сайтам, каб яны не прадавалі і не дзяліліся маімі звесткамі
     .accesskey = ы
+non-technical-privacy-header = Налады прыватнасці сайта
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Налады
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Адкрываць папярэднія вокны і карткі
     .accesskey = ы
+windows-launch-on-login =
+    .label = Адкрываць { -brand-short-name } аўтаматычна пры запуску камп'ютара
+    .accesskey = ў
+windows-launch-on-login-disabled = Гэты параметр быў адключаны ў Windows. Каб змяніць яго, адкрыйце <a data-l10n-name="startup-link">Аўтазагрузка праграм</a> у наладах сістэмы.
 startup-restore-warn-on-quit =
     .label = Папярэджваць пры выхадзе з браўзера
 disable-extension =
@@ -965,9 +974,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Памяншэнне колькасці банераў кукі
 cookie-banner-handling-description = { -brand-short-name } аўтаматычна спрабуе адхіліць запыты файлаў кукі на банерах кукі на сайтах, якія падтрымліваюцца.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Блакавальнік банераў кукі
+cookie-banner-blocker-description = Калі сайт пытаецца, ці можна яму выкарыстоўваць кукі ў рэжыме прыватнага аглядання, { -brand-short-name } аўтаматычна адхіляе запыт. Толькі на падтрыманых сайтах.
 cookie-banner-learn-more = Падрабязней
 forms-handle-cookie-banners =
     .label = Памяншаць колькасць банераў кукі
+cookie-banner-blocker-checkbox-label =
+    .label = Аўтаматычна адхіляць банеры кукі
 
 ## Privacy Section - Address Bar
 
@@ -998,6 +1014,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Хуткія дзеянні
     .accesskey = Х
+addressbar-locbar-showrecentsearches-option =
+    .label = Паказваць апошнія пошукі
+    .accesskey = к
 addressbar-suggestions-settings = Змяніць налады для падказак пашукавіка
 addressbar-quickactions-learn-more = Падрабязней
 
@@ -1007,6 +1026,10 @@ content-blocking-enhanced-tracking-protection = Узмоцненая ахова 
 content-blocking-section-top-level-description = Трэкеры ідуць за вамі па сеціве, каб сабраць інфармацыю пра вашыя звычкі і зацікаўленасці. { -brand-short-name } блакуе многія з гэтых трэкераў і іншых зламысных скрыптоў.
 content-blocking-learn-more = Падрабязней
 content-blocking-fpi-incompatibility-warning = Вы ўжываеце First Party Isolation (FPI), што перавызначае некаторыя налады кукаў у { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Вы выкарыстоўваеце функцыю абароны ад збіральнікаў лічбавых адбіткаў (Resist Fingerprinting, RFP), якая замяняе некаторыя налады аховы { -brand-short-name }. Гэта можа прывесці да няспраўнасці некаторых сайтаў.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1214,6 +1237,9 @@ certs-view =
 certs-devices =
     .label = Прылады бяспекі…
     .accesskey = б
+certs-thirdparty-toggle =
+    .label = Дазволіць { -brand-short-name } аўтаматычна давяраць усталяваным вамі каранёвым сертыфікатам трэцяга боку
+    .accesskey = е
 space-alert-over-5gb-settings-button =
     .label = Адкрыць налады
     .accesskey = А

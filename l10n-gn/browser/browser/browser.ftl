@@ -80,7 +80,7 @@ urlbar-geolocation-notification-anchor =
 urlbar-xr-notification-anchor =
     .tooltiptext = Embojuruja ñemoneĩ rupa añetegua ñanduti rehegua
 urlbar-storage-access-anchor =
-    .tooltiptext = Embojuruja kundaha rembiapo ñemoneĩ rupa
+    .tooltiptext = Embojuruja kundahára rembiapo ñemoneĩ rupa
 urlbar-web-rtc-share-screen-notification-anchor =
     .tooltiptext = Eñangareko moherakuã nerovetã térã mba’erechaha ko tenda ndive
 urlbar-indexed-db-notification-anchor =
@@ -96,7 +96,7 @@ urlbar-web-rtc-share-devices-notification-anchor =
 urlbar-web-rtc-share-speaker-notification-anchor =
     .tooltiptext = Eñangareko ñe’ẽatãha moherakuãre ko tenda ndive
 urlbar-autoplay-notification-anchor =
-    .tooltiptext = Embojuruja ñemboheta ijeheguíva ra’angarupa
+    .tooltiptext = Embojuruja ñemboheta ijeheguíva ra’ãngarupa
 urlbar-persistent-storage-notification-anchor =
     .tooltiptext = Mba’ekuaarã mboheta ñembyaty hi’arekuaávape
 urlbar-addons-notification-anchor =
@@ -130,9 +130,9 @@ urlbar-result-menu-tip-get-help =
 ##  $engineName (String): The name of the user's default search engine. e.g. "Google" or "DuckDuckGo".
 
 urlbar-search-tips-onboard = Ehai sa’ive, ejuhuve: Eheka { $engineName } kundaharape rendaite guive.
-urlbar-search-tips-redirect-2 = Eñepyrũ eheka kundaharape rendápe ehecha hag̃ua { $engineName } ñe’ẽporã ha ikundaha rembiasakue.
+urlbar-search-tips-redirect-2 = Eñepyrũ eheka kundaharape rendápe ehecha hag̃ua { $engineName } ñe’ẽporã ha iñeikundaha rembiasakue.
 # Make sure to match the name of the Search panel in settings.
-urlbar-search-tips-persist = Pe jeheka ko’ág̃a ndahasyieteve. Eheka eikotevẽva ko’ápe kundaharape rendápe. Ehechaukaséramo pe URL, eike Jeheka ñemoĩporãhápe.
+urlbar-search-tips-persist = Pe jeheka ko’ág̃a ndahasyietereive. Eheka eikotevẽva ko’ápe kundaharape rendápe. Ehechaukaséramo pe URL, eike Jeheka ñemoĩporãhápe.
 # Prompts users to use the Urlbar when they are typing in the domain of a
 # search engine, e.g. google.com or amazon.com.
 urlbar-tabtosearch-onboard = Eiporavo ko jeike pya’eha ejuhu pya’eve hag̃ua ehekáva.
@@ -281,7 +281,7 @@ quickactions-print2 = Emonguatia kuatiarogue
 quickactions-cmd-print = Mbokuatia
 # Opens a new private browsing window
 quickactions-private2 = Embojuruja ovetã ñemi
-quickactions-cmd-private = kundaha ñemigua
+quickactions-cmd-private = Ñeikundaha ñemigua
 # Opens a SUMO article explaining how to refresh
 quickactions-refresh = Eguerujey { -brand-short-name }
 quickactions-cmd-refresh = Mbopiro’y
@@ -365,9 +365,9 @@ identity-https-only-dropdown-off =
 identity-https-only-dropdown-off-temporarily =
     .label = Jepe’a sapy’agua
 identity-https-only-info-turn-on2 = Emyandy HTTPS ayvu añoite ko tendápe g̃uarã eipotáramo { -brand-short-name } ombohekopyahu nde jeike ikatu vove.
-identity-https-only-info-turn-off2 = Pe tenda ndoikoporãirõ, ikatu emboguese pe HTTPS ayvu añoite emyanyhẽjey hag̃ua eipurúvo HTTP jeike hekorosã’ỹva.
+identity-https-only-info-turn-off2 = Pe tenda ndoikoporãirõ, ikatu emboguese pe HTTPS ayvu añoite emyanyhẽjey hag̃ua eiporúvo HTTP jeike hekorosã’ỹva.
 identity-https-only-info-turn-on3 = Emyandy HTTPS rekopyahurã ko tendápe g̃uarã eipotáramo { -brand-short-name } ombohekopyahu nde jeike ikatu vove.
-identity-https-only-info-turn-off3 = Pe tenda ndoikoporãirõ, ikatu emboguese HTTPS rekopyahurã emyanyhẽjey hag̃ua pe tenda eipurúvo HTTP hekorosã’ỹva.
+identity-https-only-info-turn-off3 = Pe tenda ndoikoporãirõ, ikatu emboguese HTTPS rekopyahurã emyanyhẽjey hag̃ua pe tenda eiporúvo HTTP hekorosã’ỹva.
 identity-https-only-info-no-upgrade = Ndaikatúi embohekopyahu jeike HTTP guive.
 identity-permissions-storage-access-header = Kookie tenda ojuasáva
 identity-permissions-storage-access-hint = Ko’ãva ikatu oiporu kookie ha tenda ojuasáva mba’ekuaarã eime aja ko tendápe.
@@ -483,7 +483,7 @@ sharing-warning-disable-for-session =
 
 ## DevTools F12 popup
 
-enable-devtools-popup-description2 = Eipurútarõ mbopya’eha F12, embojurujaraẽ DevTools kundahára rembiporu poravorã rupive.
+enable-devtools-popup-description2 = Eiporútarõ mbopya’eha F12, embojurujaraẽ DevTools kundahára rembiporu poravorã rupive.
 
 ## URL Bar
 
@@ -565,6 +565,8 @@ urlbar-result-action-switch-tab = Tendayképe jeguerova
 urlbar-result-action-visit = Jeho
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Eike nde kuatiajokoha guive
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Jeike kuatiajokoha guive
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -617,6 +619,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Jeku’e Pya’e
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Ojeheka ramóva
 
 ## Reader View toolbar buttons
 
@@ -847,7 +854,7 @@ picture-in-picture-move-toggle-left =
 # the word "toolbar" or such, because screen readers already know that
 # this container is a toolbar. This avoids double-speaking.
 navbar-accessible =
-    .aria-label = Ñekundaha
+    .aria-label = Ñeikundaha
 navbar-downloads =
     .label = Ñemboguejy
 navbar-overflow =
@@ -913,9 +920,27 @@ unified-extensions-button-quarantined =
         Jepysokue
         Oĩ Jepysokue oñemoneĩ’ỹva
 
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Emohu’ã tembiapo ñemigua
+    .tooltiptext = Emohu’ã tembiapo ñemigua
+reset-pbm-panel-heading = Emohu’ãta tembiapo ñemigua
+reset-pbm-panel-description = Embotypaite tendayke ñemiguáva ha embogue tembiasakue, kookie ha opaite tenda mba’ekuaarã.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Eporandu meme
+    .accesskey = A
+reset-pbm-panel-cancel-button =
+    .label = Heja
+    .accesskey = C
+reset-pbm-panel-confirm-button =
+    .label = Embogue mba’ekuaarã tembiapógui
+    .accesskey = D
+reset-pbm-panel-complete = Oguéma mba’ekuaarã rembiapo ñemi
+
 ## Autorefresh blocker
 
-refresh-blocked-refresh-label = { -brand-short-name } ndohejái ko kuatiarogue oñemyenyhẽ ha’eñorei.
+refresh-blocked-refresh-label = { -brand-short-name } ndohejái ko kuatiarogue oñemyanyhẽ ha’eñorei.
 refresh-blocked-redirect-label = { -brand-short-name } ndohejái ko kuatiarogue oipykúi ha’eñorei ambue hendápe.
 refresh-blocked-allow =
     .label = Ñemoneĩ

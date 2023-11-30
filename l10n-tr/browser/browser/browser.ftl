@@ -564,6 +564,8 @@ urlbar-result-action-switch-tab = Sekmeye geç
 urlbar-result-action-visit = Ziyaret et
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Panodan ziyaret et
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Panodan ziyaret et
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -616,6 +618,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Hızlı Eylemler
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Son Aramalar
 
 ## Reader View toolbar buttons
 
@@ -911,6 +918,24 @@ unified-extensions-button-permissions-needed =
 unified-extensions-button-quarantined =
     .label = Uzantılar
     .tooltiptext = Bazı uzantılara izin verilmiyor
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Gizli oturumu sonlandır
+    .tooltiptext = Gizli oturumu sonlandır
+reset-pbm-panel-heading = Gizli oturum sonlandırılsın mı?
+reset-pbm-panel-description = Tüm özel sekmeleri kapat ve geçmişi, çerezleri ve tüm site verilerini sil.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Her zaman sor
+    .accesskey = H
+reset-pbm-panel-cancel-button =
+    .label = Vazgeç
+    .accesskey = V
+reset-pbm-panel-confirm-button =
+    .label = Oturum verilerini sil
+    .accesskey = O
+reset-pbm-panel-complete = Gizli oturum verileri silindi
 
 ## Autorefresh blocker
 

@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Megmondás a webhelyeknek, hogy ne adják el vagy osszák meg az adatait
     .accesskey = M
+non-technical-privacy-header = Webhely adatvédelmi beállításai
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Globális adatvédelmi szabályozás (GPC)
 settings-page-title = Beállítások
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Korábbi ablakok és lapok megnyitása
     .accesskey = K
+windows-launch-on-login =
+    .label = A { -brand-short-name } automatikus megnyitása a számítógép indításakor
+    .accesskey = m
+windows-launch-on-login-disabled = Ez a beállítás le lett tiltva a Windowsban. A módosításhoz nyissa meg az <a data-l10n-name="startup-link">Indítási alkalmazások</a> oldalt a Rendszerbeállításokban.
 startup-restore-warn-on-quit =
     .label = Figyelmeztetés, amikor kilép a böngészőből
 disable-extension =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Sütibannerek számának csökkentése
 cookie-banner-handling-description = A { -brand-short-name } automatikusan megpróbálja elutasítani a sütibannerek sütikérését a támogatott oldalakon.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Sütibanner-blokkoló
+cookie-banner-blocker-description = Ha egy webhely megkérdezi, hogy privát böngészési módban használhat-e sütiket, a { -brand-short-name } automatikusan elutasítja Önt. Csak a támogatott oldalakon működik.
 cookie-banner-learn-more = További tudnivalók
 forms-handle-cookie-banners =
     .label = A sütibannerek számának csökkentése
+cookie-banner-blocker-checkbox-label =
+    .label = Sütibannerek automatikus elutasítása
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Gyors műveletek
     .accesskey = r
+addressbar-locbar-showrecentsearches-option =
+    .label = Legutóbbi keresések megjelenítése
+    .accesskey = L
 addressbar-suggestions-settings = Keresőszolgáltatás-javaslatok beállításainak módosítása
 addressbar-quickactions-learn-more = További tudnivalók
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Fokozott követés elleni védel
 content-blocking-section-top-level-description = A nyomkövetők követik Önt online, és információkat gyűjtenek a böngészési szokásairól és érdeklődési köreiről. A { -brand-short-name } számos ilyen követőt és rosszindulatú parancsfájlt blokkol.
 content-blocking-learn-more = További tudnivalók
 content-blocking-fpi-incompatibility-warning = A First Party Isolation (FPI) funkciót használja, amely felülírja a { -brand-short-name } sütibeállításainak egy részét.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Az ujjlenyomat-készítés megakadályozása (RFP) funkciót használja, amely lecseréli a { -brand-short-name } ujjlenyomat-készítési védelmének egyes részeit. Ez egyes webhelyek működésképtelenségét okozhatja.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1210,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Adatvédelmi eszközök…
     .accesskey = e
+certs-thirdparty-toggle =
+    .label = Engedélyezés, hogy a { -brand-short-name } automatikusan megbízzon a telepített harmadik féltől származó gyökértanúsítványokban
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Beállítások megnyitása
     .accesskey = m

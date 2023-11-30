@@ -180,11 +180,6 @@ extensions-warning-update-security2 =
     .message = Kontrola bezpečné aktualizace doplňků je zakázána. Aplikace může být pomocí aktualizací napadena.
 extensions-warning-update-security-button = Povolit
     .title = Povolí kontrolu bezpečné aktualizace doplňků
-extensions-warning-imported-addons =
-    { -brand-short-name.case-status ->
-        [with-cases] Dokončete instalaci rozšíření importovaných do { -brand-short-name(case: "gen") }.
-       *[no-cases] Dokončete instalaci rozšíření importovaných do aplikace { -brand-short-name }.
-    }
 extensions-warning-imported-addons2 =
     .message =
         { -brand-short-name.case-status ->
@@ -412,6 +407,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = Doplněk <span data-l10n-name="addon-name">{ $addon }</span> byl odebrán.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = Doplněk { $addon } byl odebrán.
 pending-uninstall-undo-button = Vrátit zpět
 addon-detail-updates-label = Automatické aktualizace
 addon-detail-updates-radio-default = Výchozí nastavení

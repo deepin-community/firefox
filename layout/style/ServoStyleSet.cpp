@@ -1385,6 +1385,72 @@ bool ServoStyleSet::MightHaveNthOfClassDependency(const Element& aElement) {
                                                       &Snapshots());
 }
 
+void ServoStyleSet::MaybeInvalidateRelativeSelectorIDDependency(
+    const Element& aElement, nsAtom* aOldID, nsAtom* aNewID,
+    const ServoElementSnapshotTable& aSnapshots) {
+  Servo_StyleSet_MaybeInvalidateRelativeSelectorIDDependency(
+      mRawData.get(), &aElement, aOldID, aNewID, &aSnapshots);
+}
+
+void ServoStyleSet::MaybeInvalidateRelativeSelectorClassDependency(
+    const Element& aElement, const ServoElementSnapshotTable& aSnapshots) {
+  Servo_StyleSet_MaybeInvalidateRelativeSelectorClassDependency(
+      mRawData.get(), &aElement, &aSnapshots);
+}
+
+void ServoStyleSet::MaybeInvalidateRelativeSelectorAttributeDependency(
+    const Element& aElement, nsAtom* aAttribute,
+    const ServoElementSnapshotTable& aSnapshots) {
+  Servo_StyleSet_MaybeInvalidateRelativeSelectorAttributeDependency(
+      mRawData.get(), &aElement, aAttribute, &aSnapshots);
+}
+
+void ServoStyleSet::MaybeInvalidateRelativeSelectorStateDependency(
+    const Element& aElement, ElementState aState,
+    const ServoElementSnapshotTable& aSnapshots) {
+  Servo_StyleSet_MaybeInvalidateRelativeSelectorStateDependency(
+      mRawData.get(), &aElement, aState.GetInternalValue(), &aSnapshots);
+}
+
+void ServoStyleSet::MaybeInvalidateRelativeSelectorForEmptyDependency(
+    const Element& aElement) {
+  Servo_StyleSet_MaybeInvalidateRelativeSelectorEmptyDependency(mRawData.get(),
+                                                                &aElement);
+}
+
+void ServoStyleSet::MaybeInvalidateRelativeSelectorForNthEdgeDependency(
+    const Element& aElement) {
+  Servo_StyleSet_MaybeInvalidateRelativeSelectorNthEdgeDependency(
+      mRawData.get(), &aElement);
+}
+
+void ServoStyleSet::MaybeInvalidateRelativeSelectorForNthDependencyFromSibling(
+    const Element* aFromSibling) {
+  if (aFromSibling == nullptr) {
+    return;
+  }
+  Servo_StyleSet_MaybeInvalidateRelativeSelectorNthDependencyFromSibling(
+      mRawData.get(), aFromSibling);
+}
+
+void ServoStyleSet::MaybeInvalidateForElementInsertion(
+    const Element& aElement) {
+  Servo_StyleSet_MaybeInvalidateRelativeSelectorForInsertion(mRawData.get(),
+                                                             &aElement);
+}
+
+void ServoStyleSet::MaybeInvalidateForElementAppend(const Element& aElement) {
+  Servo_StyleSet_MaybeInvalidateRelativeSelectorForAppend(mRawData.get(),
+                                                          &aElement);
+}
+
+void ServoStyleSet::MaybeInvalidateForElementRemove(
+    const Element& aElement, const Element* aPrevSibling,
+    const Element* aNextSibling) {
+  Servo_StyleSet_MaybeInvalidateRelativeSelectorForRemoval(
+      mRawData.get(), &aElement, aPrevSibling, aNextSibling);
+}
+
 bool ServoStyleSet::MightHaveNthOfAttributeDependency(
     const Element& aElement, nsAtom* aAttribute) const {
   return Servo_StyleSet_MightHaveNthOfAttributeDependency(
@@ -1401,6 +1467,11 @@ bool ServoStyleSet::HasNthOfStateDependency(const Element& aElement,
                                             dom::ElementState aState) const {
   return Servo_StyleSet_HasNthOfStateDependency(mRawData.get(), &aElement,
                                                 aState.GetInternalValue());
+}
+
+void ServoStyleSet::RestyleSiblingsForNthOf(const Element& aElement,
+                                            uint32_t aFlags) const {
+  Servo_StyleSet_RestyleSiblingsForNthOf(&aElement, aFlags);
 }
 
 bool ServoStyleSet::HasDocumentStateDependency(
@@ -1437,6 +1508,12 @@ void ServoStyleSet::RegisterProperty(const PropertyDefinition& aDefinition,
                                             : nullptr);
   switch (result) {
     case Result::SuccessfullyRegistered:
+      if (Element* root = mDocument->GetRootElement()) {
+        if (nsPresContext* pc = GetPresContext()) {
+          pc->RestyleManager()->PostRestyleEvent(
+              root, RestyleHint::RecascadeSubtree(), nsChangeHint(0));
+        }
+      }
       break;
     case Result::InvalidName:
       return aRv.ThrowSyntaxError("Invalid name");

@@ -562,6 +562,8 @@ urlbar-result-action-switch-tab = Aldatu fitxara
 urlbar-result-action-visit = Bisitatu
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Bisitatu zure arbeletik
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Bisitatu arbeletik
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -614,6 +616,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Ekintza bizkorrak
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Azken bilaketak
 
 ## Reader View toolbar buttons
 
@@ -911,6 +918,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Hedapenak
         Zenbait hedapen ez dira onartzen
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Amaitu saio pribatua
+    .tooltiptext = Amaitu saio pribatua
+reset-pbm-panel-heading = Zure saio pribatua amaitu?
+reset-pbm-panel-description = Itxi fitxa pribatu guztiak eta ezabatu historia, cookieak eta guneetako bestelako datu guztiak.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Galdetu beti
+    .accesskey = b
+reset-pbm-panel-cancel-button =
+    .label = Utzi
+    .accesskey = z
+reset-pbm-panel-confirm-button =
+    .label = Ezabatu saioko datuak
+    .accesskey = s
+reset-pbm-panel-complete = Saio pribatuko datuak ezabatuta
 
 ## Autorefresh blocker
 

@@ -8,7 +8,7 @@ about-logging-page-title = Mboheraguapy ñangarekoha
 about-logging-current-log-file = Marandurenda rembiasakue rehegua:
 about-logging-new-log-file = Marandurenda mboheraguapy pyahu:
 about-logging-currently-enabled-log-modules = Mboheraguapy ra’ãha ijurujahína:
-about-logging-log-tutorial = Eporandu <a data-l10n-name="logging">HTTP Logging</a> eikuaasérõ mba’éichapa eipurúta tembiporu.
+about-logging-log-tutorial = Eporandu <a data-l10n-name="logging">HTTP Logging</a> eikuaasérõ mba’éichapa eiporúta tembiporu.
 # This message is used as a button label, "Open" indicates an action.
 about-logging-open-log-file-dir = Embojuruja marandurenda’aty
 about-logging-set-log-file = Emopyenda marandurenda jehaipy
@@ -16,7 +16,7 @@ about-logging-set-log-modules = Emopyenda jehaipy ra’ãha
 about-logging-start-logging = Ta’ãha moñepyrũ
 about-logging-stop-logging = Ta’ãha jejoko
 about-logging-buttons-disabled = Teraguapy mbohekopyre jeregua rehegua, ñemboheko oku’éva ojeporukuaa’ỹva.
-about-logging-some-elements-disabled = Oñembohekopyre URL rupive, oĩ ñemboheko poravopyrã ndojepurukuaáiva
+about-logging-some-elements-disabled = Oñembohekopyre URL rupive, oĩ ñemboheko poravopyrã ndojeporukuaáiva
 about-logging-info = Marandu:
 about-logging-log-modules-selection = Eiporavo mboheraguapy ra’ãha
 about-logging-new-log-modules = Mboheraguapy ra’ãha pyahu:
@@ -45,6 +45,10 @@ about-logging-preset-webrtc-description = Mboheraguapy ra’ãha ehecha hag̃ua 
 about-logging-preset-webgpu-label = WebGPU
 about-logging-preset-webgpu-description = Mboheraguapy ra’ãha ehecha hag̃ua WebGPU apañuãi
 about-logging-preset-gfx-label = Ta’ãnga
+about-logging-preset-gfx-description = Mboheraguapy ra’ãha ehecha hag̃ua kookie apañuãi
+# This is specifically "Microsoft Windows". Microsoft normally doesn't localize it, and we should follow their convention here.
+about-logging-preset-windows-label = Windows
+about-logging-preset-windows-description = Jehai ra’ãha ehesa’ỹijo hag̃ua Microsoft Windows apañuãi
 about-logging-preset-custom-label = Ñemomba’epyre
 about-logging-preset-custom-description = Mboheraguapy ra’ãha pópe poravopyre
 # Error handling

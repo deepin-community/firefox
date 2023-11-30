@@ -6,6 +6,13 @@ shopping-page-title = Compris in { -brand-product-name }
 # Title for page showing where a user can check the
 # review quality of online shopping product reviews
 shopping-main-container-title = Verifiche recensions
+shopping-beta-marker = Beta
+# This string is for ensuring that screen reader technology
+# can read out the "Beta" part of the shopping sidebar header.
+# Any changes to shopping-main-container-title and
+# shopping-beta-marker should also be reflected here.
+shopping-a11y-header =
+    .aria-label = Verifiche recensions - beta
 shopping-close-button =
     .title = Siere
 # This string is for notifying screen reader users that the
@@ -31,33 +38,42 @@ shopping-letter-grade-tooltip =
 
 ## Strings for the shopping message-bar
 
-shopping-message-bar-warning-stale-analysis-title = Inzornaments disponibii
-shopping-message-bar-warning-stale-analysis-message = Invie il strument di analisi di { -fakespot-brand-full-name } par otignî informazions inzornadis in cirche 60 seconts.
-shopping-message-bar-generic-error-title = Pal moment la analisi no je disponibile
+shopping-message-bar-warning-stale-analysis-message-2 = Gnovis informazions di controlâ
+shopping-message-bar-warning-stale-analysis-button = Controle cumò
+shopping-message-bar-generic-error-title2 = Nissune informazion disponibile in chest moment
 shopping-message-bar-generic-error-message = O stin lavorant par risolvi il probleme. Torne controle ca di pôc.
 shopping-message-bar-warning-not-enough-reviews-title = No son ancjemò vonde recensions
-shopping-message-bar-warning-not-enough-reviews-message = A pene che chest prodot al varà plui recensions, o rivarìn a analizâlis.
+shopping-message-bar-warning-not-enough-reviews-message2 = A pene che chest prodot al varà plui recensions, o rivarìn a verificâ la lôr cualitât.
 shopping-message-bar-warning-product-not-available-title = Il prodot nol è disponibil
-shopping-message-bar-warning-product-not-available-message = Se tu viodis che chest prodot al è di gnûf disponibil, visinus cuntune segnalazion e o lavorarìn par inzornâ la analisi.
+shopping-message-bar-warning-product-not-available-message2 = Se tu viodis che chest prodot al è di gnûf disponibil, visinus cuntune segnalazion e nô o lavorarìn par verificâ lis recensions.
 shopping-message-bar-warning-product-not-available-button = Segnale che chest prodot al è di gnûf disponibil
 shopping-message-bar-thanks-for-reporting-title = Graciis pe segnalazion!
-shopping-message-bar-thanks-for-reporting-message = O varessin di vê une analisi inzornade dentri di 24 oris. Controle plui tart.
-shopping-message-bar-warning-product-not-available-reported-title = Analisi disponibile ca di pôc
-shopping-message-bar-warning-product-not-available-reported-message = Une analisi inzornade e varès di sei pronte dentri di 24 oris. Torne controle plui tart.
-shopping-message-bar-warning-offline-title = Nissune conession di rêt
-shopping-message-bar-warning-offline-message = Controle la tô conession di rêt e prove a tornâ a cjariâ la pagjine.
-shopping-message-bar-analysis-in-progress-title = Analisi disponibile ca di pôc
-shopping-message-bar-analysis-in-progress-message = Al completament, o mostrarìn achì in automatic lis informazions inzornadis.
+shopping-message-bar-thanks-for-reporting-message2 = O varessin di vê informazions su lis recensions di chest prodot dentri di 24 oris. Torne controle plui tart.
+shopping-message-bar-warning-product-not-available-reported-title2 = Informazions disponibilis ca di pôc
+shopping-message-bar-warning-product-not-available-reported-message2 = O varessin di vê informazions su lis recensions di chest prodot dentri di 24 oris. Torne controle plui tart.
+shopping-message-bar-generic-error =
+    .heading = Nissune informazion disponibile in chest moment
+    .message = O stin lavorant par risolvi il probleme. Torne controle ca di pôc.
+shopping-message-bar-warning-not-enough-reviews =
+    .heading = No son ancjemò vonde recensions
+    .message = A pene che chest prodot al varà plui recensions, o rivarìn a verificâ la lôr cualitât.
+shopping-message-bar-warning-product-not-available =
+    .heading = Il prodot nol è disponibil
+    .message = Se tu viodis che chest prodot al è di gnûf disponibil, visinus cuntune segnalazion e nô o lavorarìn par verificâ lis recensions.
+shopping-message-bar-warning-product-not-available-button2 = Segnale che il prodot al è disponibil
+shopping-message-bar-thanks-for-reporting =
+    .heading = Graciis pe segnalazion!
+    .message = O varessin di vê informazions su lis recensions di chest prodot dentri di 24 oris. Torne controle plui tart.
+shopping-message-bar-warning-product-not-available-reported =
+    .heading = Informazions disponibilis ca di pôc
+    .message = O varessin di vê informazions su lis recensions di chest prodot dentri di 24 oris. Torne controle plui tart.
+shopping-message-bar-analysis-in-progress-title2 = Daûr a verificâ la cualitât recensions
+shopping-message-bar-analysis-in-progress-message2 = Cheste operazion e podarès puartâ vie cirche 60 seconts.
 shopping-message-bar-page-not-supported-title = Impussibil verificâ chestis recensions
 shopping-message-bar-page-not-supported-message = Magari cussì no, ma nol è pussibil verificâ la cualitât des recensions par cualchi gjenar di prodot, come par esempli lis cjartis regâl, trasmissions video, musiche e zûcs.
-
-## The word 'analyzer' when used here reflects what this tool is called on
-## fakespot.com. If possible, a different word should be used for the Fakespot
-## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
-## used in the name of the Firefox feature ('Review checker'). If that is not
-## possible - if these terms are not meaningfully different - that is OK.
-
-shopping-message-bar-warning-stale-analysis-link = Invie il strument di analisi su { -fakespot-website-name }
+shopping-message-bar-page-not-supported =
+    .heading = Impussibil verificâ chestis recensions
+    .message = Magari cussì no, ma nol è pussibil verificâ la cualitât des recensions par cualchi gjenar di prodot, come par esempli lis cjartis regâl, trasmissions video, musiche e zûcs.
 
 ## Strings for the product review snippets card
 
@@ -81,11 +97,14 @@ shopping-settings-label =
 shopping-settings-recommendations-toggle =
     .label = Mostre anunzis te verifiche recensions
 shopping-settings-recommendations-learn-more = A vignaran mostrâts anunzis ocasionâi pai prodots pertinents. Ducj i anunzis a scugnin sodifâ i nestris standards di cualitât. <a data-l10n-name="review-quality-url">Plui informazions</a>
+shopping-settings-recommendations-learn-more2 = Tu viodarâs anuncis ocasionâi par prodots pertinents. O promovìn dome prodots cun recensions afidabilis. <a data-l10n-name="review-quality-url">Plui informazions</a>
 shopping-settings-opt-out-button = Disative la verifiche recensions
 powered-by-fakespot = Verifiche recensions al è basât su tecnologjie <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
 
 ## Strings for the adjusted rating component
 
+# "Adjusted rating" means a star rating that has been adjusted to include only
+# reliable reviews.
 shopping-adjusted-rating-label =
     .label = Valutazion retificade
 shopping-adjusted-rating-unreliable-reviews = Recensions inafidabilis gjavadis
@@ -99,12 +118,11 @@ shopping-review-reliability-label =
 
 shopping-analysis-explainer-label =
     .label = Cemût che o determinìn la cualitât des recensions
-shopping-analysis-explainer-intro =
-    O doprìs la tecnologjie IA di { -fakespot-brand-full-name } par analizâ la afidabilitât des recensions sui prodots.
-    Cheste analisi ti judarà dome a valutâ la cualitât des recensions, no la cualitât dal prodot.
+shopping-analysis-explainer-intro2 = O doprìn la tecnologjie IA di { -fakespot-brand-full-name } par controlâ la afidabilitât des recensions sui prodots. Cheste analisi ti judarà a valutâ dome la cualitât des recensions, no chê dal prodot.
 shopping-analysis-explainer-grades-intro = O assegnìn aes recensions di ogni prodot un <strong>vôt in letaris</strong> de A ae F.
 shopping-analysis-explainer-adjusted-rating-description = La <strong>valutazion retificade</strong> si base dome su lis recensions che o calcolìn afidabilis.
 shopping-analysis-explainer-learn-more = Scuvierç altris informazions su <a data-l10n-name="review-quality-url">cemût che { -fakespot-brand-full-name } al determine la cualitât des recensions</a>.
+shopping-analysis-explainer-learn-more2 = Scuvierç altris informazions su <a data-l10n-name="review-quality-url">cemût che { -fakespot-brand-name } al determine la cualitât des recensions</a>.
 # This string includes the short brand name of one of the three supported
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
@@ -115,10 +133,10 @@ shopping-analysis-explainer-review-grading-scale-unreliable = Recensions inafida
 
 ## Strings for UrlBar button
 
-shopping-sidebar-open-button =
-    .tooltiptext = Vierç la sbare laterâl pes compris
-shopping-sidebar-close-button =
-    .tooltiptext = Siere la sbare laterâl pes compris
+shopping-sidebar-open-button2 =
+    .tooltiptext = Vierç verifiche recensions
+shopping-sidebar-close-button2 =
+    .tooltiptext = Siere verifiche recensions
 
 ## Strings for the unanalyzed product card.
 ## The word 'analyzer' when used here reflects what this tool is called on
@@ -127,12 +145,80 @@ shopping-sidebar-close-button =
 ## used in the name of the Firefox feature ('Review checker'). If that is not
 ## possible - if these terms are not meaningfully different - that is OK.
 
-shopping-unanalyzed-product-header = No son stadis ancjemò fatis analisis par chestis recensions
-shopping-unanalyzed-product-message = Invie il strument di analisi di { -fakespot-brand-full-name } e in cirche 60 seconts tu savarâs se lis recensions di chest prodot a son afidabilis.
-shopping-unanalyzed-product-analyze-link = Invie il strument di analisi su { -fakespot-website-name }
+
+## Strings for the unanalyzed product card.
+## The word 'analyzer' when used here reflects what this tool is called on
+## fakespot.com. If possible, a different word should be used for the Fakespot
+## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
+## used in the name of the Firefox feature ('Review Checker'). If that is not
+## possible - if these terms are not meaningfully different - that is OK.
+
+shopping-unanalyzed-product-header-2 = No son ancjemò informazions su chestis recensions
+shopping-unanalyzed-product-message-2 = Par savê se lis recensions di chest prodot a son afidabilis, controle la lôr cualitât. Al puarte vie nome un 60 seconts.
+shopping-unanalyzed-product-analyze-button = Controle cualitât des recensions
 
 ## Strings for the advertisement
 
 more-to-consider-ad-label =
     .label = Altris prodots di valutâ
 ad-by-fakespot = Anunzi di { -fakespot-brand-name }
+
+## Shopping survey strings.
+
+shopping-survey-headline = Judinus a miorâ { -brand-product-name }
+shopping-survey-question-one = Trop sêstu sodisfat(e) de tô esperience cu la verifiche recensions di { -brand-product-name }?
+shopping-survey-q1-radio-1-label = Une vore sodisfat(e)
+shopping-survey-q1-radio-2-label = Sodisfat(e)
+shopping-survey-q1-radio-3-label = Indiferent(e)
+shopping-survey-q1-radio-4-label = Insodisfat(e)
+shopping-survey-q1-radio-5-label = Une vore insodisfat(e)
+shopping-survey-question-two = La verifiche recensions ti aje judât a cjapâ decisions prime dal acuist?
+shopping-survey-q2-radio-1-label = Sì
+shopping-survey-q2-radio-2-label = No
+shopping-survey-q2-radio-3-label = No sai
+shopping-survey-next-button-label = Sucessîf
+shopping-survey-submit-button-label = Invie
+shopping-survey-terms-link = Cundizions di utilizazion dal servizi
+shopping-survey-thanks-message = Graciis di vê condividude la tô opinion.
+shopping-survey-thanks =
+    .heading = Graciis di vê condividude la tô opinion.
+
+## Shopping Feature Callout strings.
+## "price tag" refers to the price tag icon displayed in the address bar to
+## access the feature.
+
+shopping-callout-closed-opted-in-subtitle = Torne ae <strong>verifiche recensions</strong> cuant che tu viodis la icone cul cartelin dal presit.
+shopping-callout-pdp-opted-in-title = Sono afidabilis chestis recensions? Scuvierzilu di buride.
+shopping-callout-pdp-opted-in-subtitle = Vierç verifiche recensions par viodi la valutazion retificade dopo vê gjavadis lis recensions inafidabilis. In plui, viôt i ponts in risalt des recensions autentichis inseridis di resint.
+shopping-callout-closed-not-opted-in-title = Recensions afidabilis intun clic
+shopping-callout-closed-not-opted-in-subtitle = Prove “verifiche recensions” ogni volte che tu viodis la icone cul cartelin dal presit. Oten subite informazions detaiadis dai vêrs acuirents, prime di comprâ.
+
+## Onboarding message strings.
+
+shopping-onboarding-headline = Prove la nestre vuide pes recensions dai prodots
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle = Scuvierç trop che lis recensions dai prodots a son afidabilis su <b>{ $currentSite }</b> prime di comprâju. Verifiche recensions, une funzion sperimentâl di { -vendor-short-name }, e je integrade dret in { -brand-product-name } — e funzione ancje su <b>{ $secondSite }</b> e <b>{ $thirdSite }</b>.
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle-1 = Viôt trop che a son afidabilis lis recensions dai prodots su <b>{ $currentSite }</b> prime di comprâju. Verifiche recensions, une funzion sperimentâl di { -brand-product-name }, e je integrade tal navigadôr. E funzione ancje su <b>{ $secondSite }</b> e su <b>{ $thirdSite }</b>.
+shopping-onboarding-body = Doprant la tecnologjie di { -fakespot-brand-full-name }, ti judìn a evitâ recensions di part e falsis. Il nestri model di inteligjence artificiâl al miore di un continui, par proteziti intant che tu fasis compris. <a data-l10n-name="learn_more">Altris informazions</a>
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use = Selezionant “{ shopping-onboarding-opt-in-button }“ tu acetis la <a data-l10n-name="privacy_policy">informative su la riservatece</a> e lis <a data-l10n-name="terms_of_use">cundizions di utilizazion dal servizi</a> di { -fakespot-brand-full-name }.
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Selezionant “{ shopping-onboarding-opt-in-button }“ tu acetis la <a data-l10n-name="privacy_policy">informative su la riservatece</a> e lis <a data-l10n-name="terms_of_use">cundizions di utilizazion dal servizi</a> di { -fakespot-brand-name }.
+shopping-onboarding-opt-in-button = Sì, provile
+shopping-onboarding-not-now-button = No cumò
+shopping-onboarding-dialog-close-button =
+    .title = Siere
+    .aria-label = Siere
+# Aria-label to make the "steps" of the shopping onboarding container visible to screen readers.
+# Variables:
+#   $current (Int) - Number of the current page
+#   $total (Int) - Total number of pages
+shopping-onboarding-welcome-steps-indicator-label =
+    .aria-label = Avanzament: pas { $current } di { $total }

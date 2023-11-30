@@ -167,7 +167,6 @@ extensions-warning-update-security2 =
     .message = A verificação de compatibilidade de extras está desativada. Poderá estar comprometido com atualizações.
 extensions-warning-update-security-button = Ativar
     .title = Ativar verificação de segurança de atualização do extra
-extensions-warning-imported-addons = Por favor, finalize a instalação das extensões que foram importadas para o { -brand-short-name }.
 extensions-warning-imported-addons2 =
     .message = Por favor, finalize a instalação das extensões que foram importadas para o { -brand-short-name }.
 extensions-warning-imported-addons-button = Instalar Extensões
@@ -364,6 +363,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> foi removido.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } foi removido.
 pending-uninstall-undo-button = Desfazer
 addon-detail-updates-label = Permitir atualizações automáticas
 addon-detail-updates-radio-default = Predefinido

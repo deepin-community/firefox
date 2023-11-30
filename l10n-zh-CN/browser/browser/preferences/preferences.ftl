@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = 要求网站不许出售或共享我的数据
     .accesskey = s
+non-technical-privacy-header = 网站隐私首选项
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = 设置
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = 打开先前的窗口和标签页
     .accesskey = s
+windows-launch-on-login =
+    .label = 启动电脑时自动打开 { -brand-short-name }
+    .accesskey = O
+windows-launch-on-login-disabled = 此首选项在 Windows 中被禁用。请在系统设置中打开<a data-l10n-name="startup-link">启动应用</a>以更改。
 startup-restore-warn-on-quit =
     .label = 退出浏览器时向您确认
 disable-extension =
@@ -953,9 +962,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = 减少 Cookie 横幅
 cookie-banner-handling-description = { -brand-short-name } 会在支持的网站上尽可能拒绝 Cookie 横幅的请求。
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Cookie 横幅拦截器
+cookie-banner-blocker-description = 当网站询问是否在隐私浏览模式中使用 Cookie 时，{ -brand-short-name } 会自动为您拒绝。仅适用于支持该功能的网站。
 cookie-banner-learn-more = 详细了解
 forms-handle-cookie-banners =
     .label = 减少 Cookie 横幅
+cookie-banner-blocker-checkbox-label =
+    .label = 自动拒绝 Cookie 横幅
 
 ## Privacy Section - Address Bar
 
@@ -986,6 +1002,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = 快捷操作
     .accesskey = Q
+addressbar-locbar-showrecentsearches-option =
+    .label = 显示近期搜索
+    .accesskey = r
 addressbar-suggestions-settings = 更改搜索引擎建议的首选项
 addressbar-quickactions-learn-more = 详细了解
 
@@ -995,6 +1014,10 @@ content-blocking-enhanced-tracking-protection = 增强型跟踪保护
 content-blocking-section-top-level-description = 跟踪器会跟踪您的在线活动，收集您的浏览习惯与兴趣爱好。{ -brand-short-name } 可拦截众多跟踪器和其他恶意脚本。
 content-blocking-learn-more = 详细了解
 content-blocking-fpi-incompatibility-warning = 您已启用第一方隔离（FPI）功能，会覆盖 { -brand-short-name } 的某些 Cookie 设置。
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = 您正在使用 Resist Fingerprinting（RFP），这会覆盖 { -brand-short-name } 部分数字指纹跟踪程序保护设置，并可能导致某些网站异常。
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1202,6 +1225,9 @@ certs-view =
 certs-devices =
     .label = 安全设备…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = 允许 { -brand-short-name } 自动信任您安装的第三方根证书
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = 打开设置
     .accesskey = O

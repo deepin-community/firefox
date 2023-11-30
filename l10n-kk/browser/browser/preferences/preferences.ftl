@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Веб-сайттарға менің деректерімді сатпауды немесе олармен бөліспеуді айту
     .accesskey = с
+non-technical-privacy-header = Веб-сайттың жекелік баптаулары
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Баптаулар
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Алдыңғы терезелер мен беттерді ашу
     .accesskey = д
+windows-launch-on-login =
+    .label = Компьютеріңіз іске қосылғанда { -brand-short-name } қолданбасын автоматты түрде іске қосу
+    .accesskey = о
+windows-launch-on-login-disabled = Бұл баптау Windows жүйесінде сөндірілген. Оны өзгерту үшін, Жүйе баптауларынан <a data-l10n-name="startup-link">Қолданбалардың автоматты іске қосылуы</a> қараңыз.
 startup-restore-warn-on-quit =
     .label = Браузерден шыққан кезде ескерту
 disable-extension =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Cookie баннерлерін азайту
 cookie-banner-handling-description = { -brand-short-name } қолдау көрсетілетін сайттардағы cookie баннерлеріндегі cookie сұрауларын автоматты түрде қабылдамау әрекетін жасайды.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Cookie баннерлерін бұғаттаушы
+cookie-banner-blocker-description = Сайт жекелік шолу режимінде cookie файлдарын пайдалану мүмкіндігін сұрағанда, { -brand-short-name } сіз үшін олардан автоматты түрде бас тартады. Тек қолдау көрсетілетін сайттарда қолжетімді.
 cookie-banner-learn-more = Көбірек білу
 forms-handle-cookie-banners =
     .label = Cookie баннерлерін азайту
+cookie-banner-blocker-checkbox-label =
+    .label = Cookie баннерлерінен автоматты түрде бас тарту
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Жылдам әрекеттер
     .accesskey = к
+addressbar-locbar-showrecentsearches-option =
+    .label = Жуырдағы іздеулерді көрсету
+    .accesskey = р
 addressbar-suggestions-settings = Іздеу жүйесінің ұсыныстары үшін қалауларды өзгерту
 addressbar-quickactions-learn-more = Көбірек білу
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Бақылаудан кеңей�
 content-blocking-section-top-level-description = Трекерлер желіде сіздің соңыңыздан ереді, сіздің шолу әдеттері мен тақырыптары туралы ақпаратты жинайды. { -brand-short-name } осындай трекерлердің көбін және басқа да зиянкес скрипттерді бұғаттайды.
 content-blocking-learn-more = Көбірек білу
 content-blocking-fpi-incompatibility-warning = Сіз First Party Isolation (FPI) қолданудасыз, ол { -brand-short-name } өнімінің cookie файлдарының кейбір баптауларын үстінен басады.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Сіз { -brand-short-name } саусақ ізін қорғау параметрлерінің кейбірін алмастыратын Resist Fingerprinting (RFP) қолданып жатырсыз. Бұл кейбір сайттар жұмысы бұзылуына әкеп соғуы мүмкін.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1210,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Қауіпсіздік құрылғылары…
     .accesskey = ы
+certs-thirdparty-toggle =
+    .label = { -brand-short-name } қолданбасына сіз орнатқан үшінші жақты түбірлік сертификаттарына автоматты түрде сенуге рұқсат беру
+    .accesskey = т
 space-alert-over-5gb-settings-button =
     .label = Баптауларды ашу
     .accesskey = Б

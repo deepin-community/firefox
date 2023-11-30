@@ -562,6 +562,8 @@ urlbar-result-action-switch-tab = Бетке ауысу
 urlbar-result-action-visit = Шолу
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Алмасу буферінен сілтемені шолу
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Алмасу буферінен сілтемені шолу
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -614,6 +616,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Жылдам әрекеттер
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Жуырдағы іздеулер
 
 ## Reader View toolbar buttons
 
@@ -911,6 +918,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Кеңейтулер
         Кейбір кеңейтулер рұқсат етілмеген
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Жекелік сессияны аяқтау
+    .tooltiptext = Жекелік сессияны аяқтау
+reset-pbm-panel-heading = Жекелік сессияңызды аяқтау керек пе?
+reset-pbm-panel-description = Барлық жекелік беттерін жауып, тарихты, cookie файлдарын және басқа сайт деректерін өшіру.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Мені әрқашан сұрау
+    .accesskey = а
+reset-pbm-panel-cancel-button =
+    .label = Болдырмау
+    .accesskey = Б
+reset-pbm-panel-confirm-button =
+    .label = Сессияны деректерін өшіру
+    .accesskey = ш
+reset-pbm-panel-complete = Жекелік шолу деректері өшірілді
 
 ## Autorefresh blocker
 

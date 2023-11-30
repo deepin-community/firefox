@@ -169,7 +169,6 @@ extensions-warning-update-security2 =
     .message = Санҷиши навсозии амнияти ҷузъи иловагӣ ғайрифаъол аст. Навсозиҳо метавонанд шуморо дар зери хатар гузоранд.
 extensions-warning-update-security-button = Фаъол кардан
     .title = Фаъол кардани санҷиши навсозии амниятии ҷузъи иловагӣ
-extensions-warning-imported-addons = Лутфан, насби васеъшавиҳоеро, ки ба «{ -brand-short-name }» ворид карда шудаанд, ба анҷом расонед.
 extensions-warning-imported-addons2 =
     .message = Лутфан, насби васеъшавиҳоеро, ки ба «{ -brand-short-name }» ворид карда шудаанд, ба анҷом расонед.
 extensions-warning-imported-addons-button = Насби васеъшавиҳо
@@ -287,7 +286,7 @@ install-theme-button = Насб кардани мавзуъ
 # The label of the button that appears after installing an add-on. Upon click,
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Идоракунӣ
-find-more-addons = Гирифтани ҷузъҳои иловагии бештар
+find-more-addons = Ёфтани ҷузъҳои иловагии бештар
 find-more-themes = Гирифтани мавзуъҳои бештар
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
@@ -362,6 +361,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> тоза карда шуд.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } тоза карда шуд.
 pending-uninstall-undo-button = Бекор кардан
 addon-detail-updates-label = Иҷозат барои навсозиҳои худкор
 addon-detail-updates-radio-default = Пешфарз
@@ -445,7 +448,7 @@ updates-heading = Идоракунии навсозиҳои худ
 sitepermission-heading = Идоракунии иҷозатҳои сомонаи худ
 discover-heading = Браузери «{ -brand-short-name }»-и худро шахсӣ кунед
 shortcuts-heading = Идоракунии миёнбурҳои васеъшавӣ
-default-heading-search-label = Гирифтани ҷузъҳои иловагии бештар
+default-heading-search-label = Ёфтани ҷузъҳои иловагии бештар
 addons-heading-search-input =
     .placeholder = Ҷустуҷӯ дар addons.mozilla.org
 addon-page-options-button =
@@ -463,9 +466,9 @@ details-notification-incompatible = { $name } ба { -brand-short-name } { $vers
 details-notification-incompatible2 =
     .message = { $name } ба { -brand-short-name } { $version } мувофиқат намекунад.
 details-notification-incompatible-link = Маълумоти бештар
-details-notification-unsigned-and-disabled = Истифодаи «{ $name }» дар «{ -brand-short-name }» тасдиқ карда нашуд ва бо ин сабаб ғайрифаъол карда шуд.
+details-notification-unsigned-and-disabled = Истифодаи «{ $name }» дар «{ -brand-short-name }» тасдиқ карда нашуд ва ба ин сабаб ғайрифаъол карда шуд.
 details-notification-unsigned-and-disabled2 =
-    .message = Истифодаи «{ $name }» дар «{ -brand-short-name }» тасдиқ карда нашуд ва бо ин сабаб ғайрифаъол карда шуд.
+    .message = Истифодаи «{ $name }» дар «{ -brand-short-name }» тасдиқ карда нашуд ва ба ин сабаб ғайрифаъол карда шуд.
 details-notification-unsigned-and-disabled-link = Маълумоти бештар
 details-notification-unsigned = Истифодаи «{ $name }» дар «{ -brand-short-name }» тасдиқ карда нашуд. Бо эҳтиёт истифода баред.
 details-notification-unsigned2 =

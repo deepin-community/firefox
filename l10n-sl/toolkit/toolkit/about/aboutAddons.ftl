@@ -164,7 +164,6 @@ extensions-warning-update-security2 =
     .message = Preverjanje, ali je posodobitev dodatkov varna, je onemogočeno. Posodobitve lahko ogrozijo vaš sistem.
 extensions-warning-update-security-button = Omogoči
     .title = Omogoči preverjanje, ali je posodobitev dodatka varna
-extensions-warning-imported-addons = Dokončajte nameščanje razširitev, ki so bile uvožene v { -brand-short-name(sklon: "tozilnik") }.
 extensions-warning-imported-addons2 =
     .message = Dokončajte nameščanje razširitev, ki so bile uvožene v { -brand-short-name(sklon: "tozilnik") }.
 extensions-warning-imported-addons-button = Namesti razširitve
@@ -366,6 +365,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = Dodatek <span data-l10n-name="addon-name">{ $addon }</span> je bil odstranjen.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = Dodatek { $addon } je bil odstranjen.
 pending-uninstall-undo-button = Razveljavi
 addon-detail-updates-label = Dovoli samodejne posodobitve
 addon-detail-updates-radio-default = Privzeto

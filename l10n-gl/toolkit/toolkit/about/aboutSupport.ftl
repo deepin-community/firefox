@@ -15,6 +15,7 @@ support-addons-type = Tipo
 support-addons-enabled = Activado
 support-addons-version = Versión
 support-addons-id = ID
+legacy-user-stylesheets-title = Follas de estilo de usuario herdadas
 legacy-user-stylesheets-enabled = Activo
 legacy-user-stylesheets-stylesheet-types = Follas de estilo
 legacy-user-stylesheets-no-stylesheets-found = Non se atoparon follas de estilo
@@ -77,6 +78,7 @@ app-basics-key-mozilla = Chave do servizo de localización de Mozilla
 app-basics-safe-mode = Modo seguro
 app-basics-memory-size = Tamaño da memoria (RAM)
 app-basics-disk-available = Espazo de disco dispoñíbel
+app-basics-pointing-devices = Dispositivos apuntadores
 # Variables:
 #   $value (number) - Amount of data being stored
 #   $unit (string) - The unit of data being stored (e.g. MB)
@@ -400,3 +402,10 @@ support-remote-experiments-see-about-studies = Vexa<a data-l10n-name="support-ab
 support-remote-features-title = Características remotas
 support-remote-features-name = Nome
 support-remote-features-status = Status
+
+## Pointing devices
+
+pointing-device-mouse = Rato
+pointing-device-touchscreen = Pantalla táctil
+pointing-device-pen-digitizer = Bolígrafo dixitalizador
+pointing-device-none = Sen dispositivos apuntadores
