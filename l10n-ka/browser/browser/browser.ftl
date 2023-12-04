@@ -562,6 +562,8 @@ urlbar-result-action-switch-tab = ჩანართზე გადასვლ
 urlbar-result-action-visit = მონახულება
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = აღებულ ბმულზე გადასვლა
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = აღებულ ბმულზე გადასვლა
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -614,6 +616,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = სწრაფი მოქმედებები
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = ბოლოს მოძიებული
 
 ## Reader View toolbar buttons
 
@@ -877,7 +884,7 @@ tabs-toolbar-list-all-tabs =
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
 restore-session-startup-suggestion-message = <strong>გაიხსნას წინა ჩანართები?</strong> თუ გსურთ, { -brand-short-name } აღდგეს წინა მდგომარეობით, გახსენით მენიუ <img data-l10n-name="icon"/> და მონახეთ ისტორია.
-restore-session-startup-suggestion-button = მიჩვენე, როგორ
+restore-session-startup-suggestion-button = მაჩვენეთ, როგორ
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
@@ -911,6 +918,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         გაფართოებები
         ზოგი გაფართოება არაა ნებადართული
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = პირადი სეანსის დასრულება
+    .tooltiptext = პირადი სეანსის დასრულება
+reset-pbm-panel-heading = დასრულდეს პირადი სეანსი?
+reset-pbm-panel-description = დაიხუროს ყველა პირადი ჩანართი და წაიშალოს ისტორია, ფუნთუშები და საიტის სხვა მონაცემები.
+reset-pbm-panel-always-ask-checkbox =
+    .label = შეკითხვა ყოველ ჯერზე
+    .accesskey = ჯ
+reset-pbm-panel-cancel-button =
+    .label = გაუქმება
+    .accesskey = ქ
+reset-pbm-panel-confirm-button =
+    .label = სეანსის მონაცემების წაშლა
+    .accesskey = წ
+reset-pbm-panel-complete = პირადი სეანსის მონაცემები გასუფთავებულია
 
 ## Autorefresh blocker
 

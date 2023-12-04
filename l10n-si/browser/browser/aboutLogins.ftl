@@ -74,10 +74,11 @@ about-logins-list-section-week = පසුගිය දවස් 7
 
 ## Introduction screen
 
-about-logins-login-intro-heading-logged-out2 = සුරැකි පිවිසුම් සොයනවාද? සමමුහූර්තය සකසන්න හෝ ඒවා ආයාත කරන්න.
+about-logins-login-intro-heading-logged-out2 = සුරැකි පිවිසුම් සොයනවාද? සමමුහූර්ත හෝ ආයාත කරන්න.
 about-logins-login-intro-heading-logged-in = සමමුහූර්ත පිවිසුම් හමු නොවිණි.
 login-intro-description = වෙනත් උපාංගවල { -brand-product-name } හි සුරකින ලද ඔබගේ පිවිසුම් මෙහි ලබා ගන්නා අයුරු පහත දැක්වේ:
 login-intro-instructions-fxa = ඔබගේ පිවිසුම් සුරකින ලද උපාංගයෙන් { -fxaccount-brand-name } වෙත පිවිසෙන්න.
+login-intro-instructions-fxa2 = පිවිසුම් සුරැකි උපාංගයෙන් ඔබගේ ගිණුමට පිවිසෙන්න හෝ සාදන්න.
 login-intro-instructions-fxa-settings = සැකසුම් > සමමුහූර්තය > සමමුහූර්තය සක්‍රිය කරන්න... වෙත ගොස් පිවිසුම් හා මුරපද කොටුව තෝරන්න.
 login-intro-instructions-fxa-passwords-help = උපකාර සඳහා <a data-l10n-name="passwords-help-link">මුරපද සහාය</a> වෙත ගොඩවදින්න.
 about-logins-intro-browser-only-import = ඔබගේ පිවිසුම් වෙනත් අතිරික්සුවක සුරකින ලද්දේ නම්, ඒවා <a data-l10n-name="import-link">{ -brand-product-name } වෙත ආයාත</a> කිරීමට හැකිය.
@@ -186,8 +187,8 @@ about-logins-confirm-remove-all-dialog-message =
     }
 about-logins-confirm-remove-all-sync-dialog-title =
     { $count ->
-        [one] සියළුම උපාංගවලින් පිවිසුම් { $count } ඉවත් කරන්නද?
-       *[other] සියළුම උපාංගවලින් පිවිසුම් { $count } ඉවත් කරන්නද?
+        [one] සියළුම උපාංග වලින් පිවිසුම් { $count } ඉවත් කරන්නද?
+       *[other] සියළුම උපාංග වලින් පිවිසුම් { $count } ඉවත් කරන්නද?
     }
 
 ##

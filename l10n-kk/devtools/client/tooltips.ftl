@@ -24,6 +24,7 @@ inactive-css-not-flex-item = <strong>{ $property }</strong> бұл элемен�
 inactive-css-not-flex-container = <strong>{ $property }</strong> бұл элементке әсер етпейді, өйткені ол flex контейнері емес.
 inactive-css-not-inline-or-tablecell = <strong>{ $property }</strong> бұл элементке әсер етпейді, өйткені ол inline немесе кесте ұяшығы элементі емес.
 inactive-css-first-line-pseudo-element-not-supported = <strong>{ $property }</strong> үшін түспен ерекшелеу ::first-line псевдо-элементтерде қолдау жоқ.
+inactive-css-first-letter-pseudo-element-not-supported = <strong>{ $property }</strong> қасиеті үшін ::first-letter псевдо-элементтерде қолдау жоқ.
 inactive-css-placeholder-pseudo-element-not-supported = <strong>{ $property }</strong> қасиеті үшін ::placeholder псевдо-элементтерде қолдау жоқ.
 inactive-css-property-because-of-display = <strong>{ $property }</strong> бұл элементке әсер етпейді, өйткені оның display қасиеті <strong>{ $display }</strong> етіп берілген.
 inactive-css-not-display-block-on-floated = <strong>display</strong> қасиетінің мәні қозғалтқышпен <strong>block</strong> етіп өзгертілді, өйткені элемент <strong>қалқымалы</strong>.
@@ -38,6 +39,15 @@ inactive-scroll-padding-when-not-scroll-container = <strong>{ $property }</stron
 inactive-css-border-image = <strong>{ $property }</strong> бұл элементке әсер етпейді, себебі оны аталық кесте элементінде <strong>border-collapse</strong> үшін <strong>collapse</strong> мәні орнатылған ішкі кесте элементтері үшін іске асыру мүмкін емес.
 inactive-css-ruby-element = <strong>{ $property }</strong> бұл элементке әсер етпейді, себебі ол ruby элементі. Оның өлшемі ruby мәтінінің қаріп өлшемімен анықталады.
 inactive-css-highlight-pseudo-elements-not-supported = <strong>{ $property }</strong> үшін түспен ерекшелеу псевдо-элементтерде қолдау жоқ.
+inactive-css-cue-pseudo-element-not-supported = <strong>{ $property }</strong> қасиеті үшін ::cue псевдо-элементтерде қолдау жоқ.
+# Variables:
+#   $lineCount (integer) - The number of lines the element has.
+inactive-css-text-wrap-balance-lines-exceeded =
+    { $lineCount ->
+        [one] <strong>{ $property }</strong> бұл элементке әсер етпейді, өйткені онда { $lineCount } жолдан көп жол бар.
+       *[other] <strong>{ $property }</strong> бұл элементке әсер етпейді, өйткені онда { $lineCount } жолдан көп жол бар.
+    }
+inactive-css-text-wrap-balance-fragmented = <strong>{ $property }</strong> бұл элементке әсер етпейді, өйткені ол фрагменттелген, яғни оның мазмұны бірнеше бағандар немесе беттерге бөлінген.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain how
@@ -64,6 +74,8 @@ inactive-css-not-table-cell-fix = <strong>display:table-cell</strong> қосып
 inactive-scroll-padding-when-not-scroll-container-fix = <strong>overflow:auto</strong>, <strong>overflow:scroll</strong>, немесе <strong>overflow:hidden</strong> қосып көріңіз. { learn-more }
 inactive-css-border-image-fix = Атылқ кесте элементінде, осы қасиетті өшіріңіз немесе <strong>border-collapse</strong> мәнін <strong>collapse</strong> мәнінен басқа мәнге орнатыңыз. { learn-more }
 inactive-css-ruby-element-fix = Ruby мәтінінің <strong>font-size</strong> қасиетін өзгертіп көріңіз. { learn-more }
+inactive-css-text-wrap-balance-lines-exceeded-fix = Жолдар санын азайтып көріңіз. { learn-more }
+inactive-css-text-wrap-balance-fragmented-fix = Элемент мазмұнын бөлуге жол бермеңіз, мысалы: бағандарды өшіру арқылы немесе <strong>page-break-inside:avoid</strong> арқылы. { learn-more }
 
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why

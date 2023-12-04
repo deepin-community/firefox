@@ -65,9 +65,9 @@ using namespace mozilla::dom;
 // Default this to time out unused content viewers after 30 minutes
 #define CONTENT_VIEWER_TIMEOUT_SECONDS_DEFAULT (30 * 60)
 
-static const char* kObservedPrefs[] = {PREF_SHISTORY_SIZE,
-                                       PREF_SHISTORY_MAX_TOTAL_VIEWERS,
-                                       PREF_FISSION_BFCACHEINPARENT, nullptr};
+static constexpr const char* kObservedPrefs[] = {
+    PREF_SHISTORY_SIZE, PREF_SHISTORY_MAX_TOTAL_VIEWERS,
+    PREF_FISSION_BFCACHEINPARENT, nullptr};
 
 static int32_t gHistoryMaxSize = 50;
 
@@ -2274,7 +2274,7 @@ void nsSHistory::InitiateLoad(nsISHEntry* aFrameEntry,
   // At the time we initiate a history entry load we already know if https-first
   // was able to upgrade the request from http to https. There is no point in
   // re-retrying to upgrade.
-  loadState->SetIsExemptFromHTTPSOnlyMode(true);
+  loadState->SetIsExemptFromHTTPSFirstMode(true);
 
   /* Set the loadType in the SHEntry too to  what was passed on.
    * This will be passed on to child subframes later in nsDocShell,

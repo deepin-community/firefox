@@ -558,6 +558,8 @@ urlbar-result-action-switch-tab = สลับไปยังแท็บ
 urlbar-result-action-visit = เยี่ยมชม
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = เยี่ยมชมจากคลิปบอร์ดของคุณ
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = เยี่ยมชมจากคลิปบอร์ด
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -610,6 +612,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = คำสั่งด่วน
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = การค้นหาล่าสุด
 
 ## Reader View toolbar buttons
 
@@ -907,6 +914,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         ส่วนขยาย
         ไม่ได้อนุญาตส่วนขยายบางตัว
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = จบวาระส่วนตัว
+    .tooltiptext = จบวาระส่วนตัว
+reset-pbm-panel-heading = จบวาระส่วนตัวของคุณหรือไม่?
+reset-pbm-panel-description = ปิดแท็บส่วนตัวทั้งหมดและลบประวัติ คุกกี้ และข้อมูลไซต์อื่น ๆ ทั้งหมด
+reset-pbm-panel-always-ask-checkbox =
+    .label = ถามฉันเสมอ
+    .accesskey = ส
+reset-pbm-panel-cancel-button =
+    .label = ยกเลิก
+    .accesskey = ย
+reset-pbm-panel-confirm-button =
+    .label = ลบข้อมูลวาระ
+    .accesskey = ล
+reset-pbm-panel-complete = ลบข้อมูลวาระส่วนตัวแล้ว
 
 ## Autorefresh blocker
 

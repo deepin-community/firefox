@@ -3,11 +3,22 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Bidali webguneei "Do Not Track" seinalea zure jarraipena ez egitea adierazteko
+do-not-track-description2 =
+    .label = Bidali webguneei "Do Not Track" eskaera
+    .accesskey = D
 do-not-track-learn-more = Argibide gehiago
 do-not-track-option-default-content-blocking-known =
     .label = Bakarrik { -brand-short-name } jarraipen-elementu ezagunak blokeatzeko ezarrita dagoenean
 do-not-track-option-always =
     .label = Beti
+global-privacy-control-description =
+    .label = Esan webguneei nire datuak ez saltzeko edo partekatzeko
+    .accesskey = s
+non-technical-privacy-header = Webgunearen pribatutasun-hobespenak
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Ezarpenak
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -116,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Ireki aurreko leiho eta fitxak
     .accesskey = a
+windows-launch-on-login =
+    .label = Ireki { -brand-short-name } automatikoki ordenagailuaren abioan
+    .accesskey = r
+windows-launch-on-login-disabled = Hobespen hau Windowsen desgaitu da. Aldatzeko, bisitatu <a data-l10n-name="startup-link">Abioko aplikazioak</a> sistemaren ezarpenetan.
 startup-restore-warn-on-quit =
     .label = Abisatu nabigatzailetik irtetean
 disable-extension =
@@ -457,6 +472,9 @@ browsing-use-onscreen-keyboard =
 browsing-use-cursor-navigation =
     .label = Erabili beti kurtsore-teklak orriak nabigatzeko
     .accesskey = k
+browsing-use-full-keyboard-navigation =
+    .label = Erabili tabulazio-tekla fokua aldatzeko inprimakien kontrolen eta loturen artean
+    .accesskey = t
 browsing-search-on-start-typing =
     .label = Bilatu testua idazten hasi bezain laster
     .accesskey = B
@@ -817,6 +835,8 @@ forms-breach-alerts =
     .label = Erakutsi datu-urratzeak izan dituzten webguneetako pasahitzei buruzko abisuak
     .accesskey = E
 forms-breach-alerts-learn-more-link = Argibide gehiago
+preferences-relay-integration-checkbox =
+    .label = Gomendatu { -relay-brand-name } helbide-maskarak zure helbide elektronikoa babesteko
 relay-integration-learn-more-link = Argibide gehiago
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -950,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Cookie iragarki-banden murrizpena
 cookie-banner-handling-description = Cookie iragarki-bandetako eskaerak automatikoki ukatzen saiatzen da { -brand-short-name }.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Cookie iragarki-banden blokeatzailea
+cookie-banner-blocker-description = Gune batek cookieak erabiltzeko baimena eskatzen badu nabigatze pribatuko moduan zaudela, { -brand-short-name }(e)k automatikoki ukatuko du eskaera. Euskarria duten guneetan soilik.
 cookie-banner-learn-more = Argibide gehiago
 forms-handle-cookie-banners =
     .label = Murriztu cookie iragarki-bandak
+cookie-banner-blocker-checkbox-label =
+    .label = Automatikoki ukatu cookie iragarki-bandak
 
 ## Privacy Section - Address Bar
 
@@ -964,6 +991,9 @@ addressbar-locbar-history-option =
 addressbar-locbar-bookmarks-option =
     .label = Laster-markak
     .accesskey = L
+addressbar-locbar-clipboard-option =
+    .label = Arbela
+    .accesskey = A
 addressbar-locbar-openpage-option =
     .label = Irekitako fitxak
     .accesskey = I
@@ -980,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Ekintza bizkorrak
     .accesskey = b
+addressbar-locbar-showrecentsearches-option =
+    .label = Erakutsi azken bilaketak
+    .accesskey = r
 addressbar-suggestions-settings = Aldatu bilaketa-motorren iradokizunetarako hobespenak
 addressbar-quickactions-learn-more = Argibide gehiago
 

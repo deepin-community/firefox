@@ -37,6 +37,14 @@ protections-panel-etp-off-toggle =
     .label = Protection renforcée contre le pistage
     .description = Désactivée pour ce site
     .aria-label = Activer les protections pour { $host }
+protections-panel-etp-toggle-on =
+    .label = Protection renforcée contre le pistage
+    .description = Activée pour ce site
+    .aria-label = Protection renforcée contre le pistage : activée pour { $host }
+protections-panel-etp-toggle-off =
+    .label = Protection renforcée contre le pistage
+    .description = Désactivée pour ce site
+    .aria-label = Protection renforcée contre le pistage : désactivée pour { $host }
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = Le site ne fonctionne pas ?
 # The heading/title of the sub-panel view
@@ -119,8 +127,9 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 # Cookie Banner Handling
 
 protections-panel-cookie-banner-handling-header = Réduction des bannières de cookies
-protections-panel-cookie-banner-handling-enabled = Activée pour ce site
-protections-panel-cookie-banner-handling-disabled = Désactivée pour ce site
+protections-panel-cookie-banner-blocker-header = Bloqueur de bannières de cookies
+protections-panel-cookie-banner-handling-enabled = Activé pour ce site
+protections-panel-cookie-banner-handling-disabled = Désactivé pour ce site
 protections-panel-cookie-banner-handling-undetected = Site actuellement non pris en charge
 protections-panel-cookie-banner-view-title =
     .title = Réduction des bannières de cookies
@@ -128,8 +137,15 @@ protections-panel-cookie-banner-view-title =
 #  $host (String): the hostname of the site that is being displayed.
 protections-panel-cookie-banner-view-turn-off-for-site = Désactiver la réduction des bannières de cookies pour { $host } ?
 protections-panel-cookie-banner-view-turn-on-for-site = Activer la réduction des bannières de cookies pour ce site ?
+protections-panel-cookie-banner-blocker-view-title =
+    .title = Bloqueur de bannières de cookies
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-blocker-view-turn-off-for-site = Désactiver le bloqueur de bannières de cookies pour { $host } ?
+protections-panel-cookie-banner-blocker-view-turn-on-for-site = Activer le bloqueur de bannières de cookies pour ce site ?
 protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } effacera les cookies de ce site et actualisera la page. La suppression de tous les cookies peut vous déconnecter ou vider les paniers d’achats.
 protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } peut essayer de refuser automatiquement les demandes de dépôt de cookies sur les sites compatibles.
+protections-panel-cookie-banner-blocker-view-turn-on-description = Activez-le, et { -brand-short-name } tentera de refuser automatiquement les bannières de cookies sur ce site.
 protections-panel-cookie-banner-view-cancel = Annuler
 protections-panel-cookie-banner-view-turn-off = Désactiver
 protections-panel-cookie-banner-view-turn-on = Activer

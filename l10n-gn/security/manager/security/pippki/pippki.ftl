@@ -19,7 +19,7 @@ pippki-incorrect-pw = Neremoingeporãi ne’ẽñemi ha’etéva ag̃aguáva. Eh
 pippki-pw-change-ok = Emoambuéma ñe’ẽñemi hekopete.
 pippki-pw-empty-warning = Ne ñe’ẽñemi mbyatypyre ha ñe’ẽkañy ñemigua noñemo’ãi.
 pippki-pw-erased-ok = Emboguéma ne ñe’ẽñemi. { pippki-pw-empty-warning }
-pippki-pw-not-wanted = ¡Ema’ẽke! Emboykéma peteĩ ñe’ẽñemi jepuru. { pippki-pw-empty-warning }
+pippki-pw-not-wanted = ¡Ema’ẽke! Emboykéma peteĩ ñe’ẽñemi jeporu. { pippki-pw-empty-warning }
 pippki-pw-change2empty-in-fips-mode = Ko’ag̃aite oĩhína FIPS rekópe. FIPS oikotevẽ ñe’ẽñemi inandi’ỹva.
 
 ## Reset Primary Password dialog
@@ -43,7 +43,7 @@ download-cert-trust-ssl =
     .label = Ejerovia ko CA rehe ehechakuaa hag̃ua ñanduti renda.
 download-cert-trust-email =
     .label = Ejerovia ko CA rehe ehechakuaa hag̃ua ñandutiveve poruhára.
-download-cert-message-desc = Ejerovia mboyve ko CA rehe oimeraẽva ejaposévape, ehechajeyjey pe mboajepyre, purureko ha tembiaporape CA rehegua (ojepurukuaáramo).
+download-cert-message-desc = Ejerovia mboyve ko CA rehe oimeraẽva ejaposévape, ehechajeyjey pe mboajepyre, porureko ha tembiaporape CA rehegua (ojeporukuaáramo).
 download-cert-view-cert =
     .label = Hecha
 download-cert-view-text = CA mboajepyre hechakatu
@@ -75,7 +75,7 @@ client-auth-cert-details-serial-number = Tysýi papapy: { $serialNumber }
 client-auth-cert-details-validity-period = Oikóva { $notBefore } { $notAfter } pegua
 # Variables:
 # $keyUsages (String) - A list of already-localized key usages for which the certificate may be used
-client-auth-cert-details-key-usages = Jepuru: { $keyUsages }
+client-auth-cert-details-key-usages = Jeporu: { $keyUsages }
 # Variables:
 # $emailAddresses (String) - A list of email addresses present in the certificate
 client-auth-cert-details-email-addresses = Ñanduti veve kundaharape: { $emailAddresses }
@@ -103,4 +103,4 @@ set-password-reminder = Mba’eguasúva: nderesaráiramo ñe’ẽñemi pytyvõr
 
 # Variables:
 # $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
-protected-auth-alert = Ejekuaauka eipurúvo token “{ $tokenName }”. Mba’éicha ejapóta odepende pe token rehe (techapyrã, eipurúvo kuãhũ moñe’ẽha térã emoingévo ayvu tairenda ndive).
+protected-auth-alert = Ejekuaauka eiporúvo token “{ $tokenName }”. Mba’éicha ejapóta odepende pe token rehe (techapyrã, eiporúvo kuãhũ moñe’ẽha térã emoingévo ayvu tairenda ndive).

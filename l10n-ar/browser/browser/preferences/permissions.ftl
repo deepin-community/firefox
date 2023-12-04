@@ -5,69 +5,62 @@
 permissions-window2 =
     .title = الاستثناءات
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = عنوان موقع وِب
     .accesskey = و
-
 permissions-block =
     .label = احجب
     .accesskey = ح
-
+permissions-disable-etp =
+    .label = أضِف استثناءً
+    .accesskey = س
 permissions-session =
     .label = اسمح لهذه الجلسة
     .accesskey = ج
-
 permissions-allow =
     .label = اسمح
     .accesskey = س
-
+permissions-button-off =
+    .label = عطّل
+    .accesskey = ط
+permissions-button-off-temporarily =
+    .label = عطّل مؤقتًا
+    .accesskey = ؤ
 permissions-site-name =
     .label = موقع الوِب
-
 permissions-status =
     .label = الحالة
-
 permissions-remove =
     .label = احذف موقع الوِب
     .accesskey = ح
-
 permissions-remove-all =
     .label = احذف كل مواقع الوِب
     .accesskey = ذ
-
 permission-dialog =
     .buttonlabelaccept = احفظ التغييرات
     .buttonaccesskeyaccept = ح
-
 permissions-autoplay-menu = المبدئي للمواقع كافة:
-
 permissions-searchbox =
     .placeholder = ابحث عن موقع
-
 permissions-capabilities-autoplay-allow =
     .label = اسمح بالصوت والڤِديو
 permissions-capabilities-autoplay-block =
     .label = احجب الصوت
 permissions-capabilities-autoplay-blockall =
     .label = احجب الصوت والڤِديو
-
 permissions-capabilities-allow =
     .label = اسمح
 permissions-capabilities-block =
     .label = احجب
 permissions-capabilities-prompt =
     .label = اسأل دائمًا
-
 permissions-capabilities-listitem-allow =
     .value = اسمح
 permissions-capabilities-listitem-block =
     .value = احجب
 permissions-capabilities-listitem-allow-session =
     .value = اسمح لهذه الجلسة
-
 permissions-capabilities-listitem-off =
     .value = معطّل
 permissions-capabilities-listitem-off-temporarily =
@@ -83,6 +76,7 @@ permissions-invalid-uri-label = رجاءً أدخل اسم مستضيف صالح
 permissions-exceptions-etp-window2 =
     .title = استثناءات الحماية الموسّعة من التعقب
     .style = { permissions-window2.style }
+permissions-exceptions-manage-etp-desc = يمكنك تحديد أي مواقع أوقفت الحماية الموسّعة من التعقب. اكتب عنوان الموقع الذي تريد إدارته بدقة ثم انقر أضف إستثناء.
 
 ## Exceptions - Cookies
 
@@ -96,6 +90,8 @@ permissions-exceptions-cookie-desc = يمكنك تحديد المواقع الت
 permissions-exceptions-https-only-window2 =
     .title = الاستثناءات - وضع HTTPS فقط
     .style = { permissions-window2.style }
+permissions-exceptions-https-only-desc = يمكنك تعطيل وضع HTTPS فقط لمواقع بعينها. لن يحاول { -brand-short-name } ترقية الاتصال لتأمين HTTPS لهذه المواقع. لا تطبق الاستثناءات على النوافذ الخاصة.
+permissions-exceptions-https-only-desc2 = يمكنك تعطيل وضع HTTPS فقط لمواقع بعينها. لن يحاول { -brand-short-name } ترقية الاتصال لتأمين HTTPS لهذه المواقع.
 
 ## Exceptions - Pop-ups
 
@@ -179,3 +175,24 @@ permissions-site-microphone-disable-desc = سيمنع هذا مواقع الوب
 ##
 ## "Speaker" refers to an audio output device.
 
+permissions-site-speaker-window =
+    .title = الإعدادات - تصاريح مكبر الصوت
+    .style = { permissions-window2.style }
+permissions-site-speaker-desc = طلبت المواقع الآتية إختيار جهاز خرج صوتي. يمكنك تحديد أي مواقع يسمح لها باختيار جهاز خرج صوت.
+permissions-exceptions-doh-window =
+    .title = استثناءات مواقع الويب لنظام DNS عبر HTTPS
+    .style = { permissions-window2.style }
+permissions-exceptions-manage-doh-desc = لن يستخدم { -brand-short-name } DNS آمن في هذه المواقع و مجالاتها الفرعية.
+permissions-doh-entry-field = أدخل اسم نطاق الموقع
+    .accesskey = خ
+permissions-doh-add-exception =
+    .label = أضِف
+    .accesskey = ف
+permissions-doh-col =
+    .label = النطاق
+permissions-doh-remove =
+    .label = أزِل
+    .accesskey = ل
+permissions-doh-remove-all =
+    .label = أزِل الكل
+    .accesskey = ك

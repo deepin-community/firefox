@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Vertel websites dat ze mijn gegevens niet mogen verkopen of delen
     .accesskey = s
+non-technical-privacy-header = Websiteprivacyvoorkeuren
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Instellingen
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Eerdere vensters en tabbladen openen
     .accesskey = s
+windows-launch-on-login =
+    .label = { -brand-short-name } automatisch openen bij het opstarten van uw computer
+    .accesskey = a
+windows-launch-on-login-disabled = Deze voorkeur is uitgeschakeld in Windows. Ga naar <a data-l10n-name="startup-link">Apps > Opstarten</a> in Systeeminstellingen om dit te wijzigen.
 startup-restore-warn-on-quit =
     .label = Waarschuwen bij het afsluiten van de browser
 disable-extension =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Reductie van cookiebanners
 cookie-banner-handling-description = { -brand-short-name } probeert cookieverzoeken op cookiebanners op ondersteunde websites automatisch te weigeren.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Blokkering van cookiebanners
+cookie-banner-blocker-description = Wanneer een website vraagt of cookies in de privénavigatiemodus mogen worden gebruikt, weigert { -brand-short-name } automatisch voor u. Alleen op ondersteunde websites.
 cookie-banner-learn-more = Meer info
 forms-handle-cookie-banners =
     .label = Cookiebanners reduceren
+cookie-banner-blocker-checkbox-label =
+    .label = Cookiebanners automatisch weigeren
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Snelle acties
     .accesskey = S
+addressbar-locbar-showrecentsearches-option =
+    .label = Recente zoekopdrachten tonen
+    .accesskey = R
 addressbar-suggestions-settings = Voorkeuren voor zoekmachinesuggesties wijzigen
 addressbar-quickactions-learn-more = Meer info
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Verbeterde bescherming tegen vol
 content-blocking-section-top-level-description = Trackers volgen u online om gegevens over uw surfgedrag en interesses te verzamelen. { -brand-short-name } blokkeert veel van deze trackers en andere kwaadwillende scripts.
 content-blocking-learn-more = Meer info
 content-blocking-fpi-incompatibility-warning = U gebruikt First Party Isolation (FPI), dat een aantal cookie-instellingen van { -brand-short-name } overschrijft.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = U gebruikt Resist Fingerprinting (RFP), dat een aantal van de { -brand-short-name }-instellingen voor bescherming tegen fingerprinting vervangt. Dit kan ervoor zorgen dat sommige websites niet goed werken.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1210,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Beveiligingsapparaten…
     .accesskey = B
+certs-thirdparty-toggle =
+    .label = { -brand-short-name } toestaan om door u geïnstalleerde rootcertificaten van derden automatisch te vertrouwen
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Instellingen openen
     .accesskey = o

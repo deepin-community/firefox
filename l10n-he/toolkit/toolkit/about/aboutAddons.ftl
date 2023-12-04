@@ -164,7 +164,6 @@ extensions-warning-update-security2 =
     .message = בדיקת האבטחה של התוספות כרגע מנוטרלת. עדכונים לתוספות עלולים לסכן אותך.
 extensions-warning-update-security-button = הפעלה
     .title = הפעלת בדיקות אבטחה לעדכוני תוספות
-extensions-warning-imported-addons = נא להשלים את התקנת ההרחבות שיובאו אל { -brand-short-name }.
 extensions-warning-imported-addons2 =
     .message = נא להשלים את התקנת ההרחבות שיובאו אל { -brand-short-name }.
 extensions-warning-imported-addons-button = התקנת הרחבות
@@ -343,6 +342,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = התוספת <span data-l10n-name="addon-name">{ $addon }</span> הוסרה.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = התוספת { $addon } הוסרה.
 pending-uninstall-undo-button = ביטול
 addon-detail-updates-label = עדכונים אוטומטיים
 addon-detail-updates-radio-default = ברירת מחדל
@@ -444,9 +447,9 @@ details-notification-incompatible = { $name } אינו תואם ל־{ -brand-sho
 details-notification-incompatible2 =
     .message = { $name } אינו תואם ל־{ -brand-short-name } { $version }.
 details-notification-incompatible-link = מידע נוסף
-details-notification-unsigned-and-disabled = לא ניתן לאמת את { $name } לשימוש ב־{ -brand-short-name } ולכן תוספת זו נוטרלה.
+details-notification-unsigned-and-disabled = לא ניתן לאמת את { $name } לשימוש ב־{ -brand-short-name } ולכן תוספת זו הושבתה.
 details-notification-unsigned-and-disabled2 =
-    .message = לא ניתן לאמת את { $name } לשימוש ב־{ -brand-short-name } ולכן תוספת זו נוטרלה.
+    .message = לא ניתן לאמת את { $name } לשימוש ב־{ -brand-short-name } ולכן תוספת זו הושבתה.
 details-notification-unsigned-and-disabled-link = מידע נוסף
 details-notification-unsigned = לא ניתן לאמת את { $name } לשימוש ב־{ -brand-short-name }. נא להיזהר.
 details-notification-unsigned2 =

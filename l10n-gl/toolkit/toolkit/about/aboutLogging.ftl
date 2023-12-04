@@ -42,6 +42,10 @@ about-logging-preset-media-playback-label = Reprodución multimedia
 about-logging-preset-media-playback-description = Módulos de rexistro para diagnosticar problemas de reprodución multimedia (non problemas de videoconferencia)
 about-logging-preset-webrtc-label = WebRTC
 about-logging-preset-webrtc-description = Módulos de rexistro para diagnosticar chamadas WebRTC
+about-logging-preset-webgpu-label = WebGPU
+about-logging-preset-gfx-label = Gráficos
+# This is specifically "Microsoft Windows". Microsoft normally doesn't localize it, and we should follow their convention here.
+about-logging-preset-windows-label = Windows
 about-logging-preset-custom-label = Personalizado
 about-logging-preset-custom-description = Módulos de rexistro seleccionados manualmente
 # Error handling

@@ -4,25 +4,20 @@
 
 fxviewtabrow-open-menu-button =
     .title = Abrir menú
-
 # Variables:
 #   $date (string) - Date to be formatted based on locale
 fxviewtabrow-date = { DATETIME($date, dateStyle: "short") }
-
 # Variables:
 #   $time (string) - Time to be formatted based on locale
 fxviewtabrow-time = { DATETIME($time, timeStyle: "short") }
-
 # Variables:
 #   $targetURI (string) - URL of tab that will be opened in the new tab
 fxviewtabrow-tabs-list-tab =
     .title = Abrir { $targetURI } nunha nova pestana
-
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 fxviewtabrow-dismiss-tab-button =
     .title = Descartar { $tabTitle }
-
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 fxviewtabrow-just-now-timestamp = Agora mesmo
 
@@ -44,3 +39,19 @@ fxviewtabrow-save-to-pocket = Gardar en { -pocket-brand-name }
     .accesskey = G
 fxviewtabrow-copy-link = Copiar ligazón
     .accesskey = C
+fxviewtabrow-close-tab = Pechar lapela
+    .accesskey = P
+fxviewtabrow-move-tab = Mover lapela
+    .accesskey = v
+fxviewtabrow-move-tab-start = Mover ao principio
+    .accesskey = i
+fxviewtabrow-move-tab-end = Mover ao final
+    .accesskey = f
+fxviewtabrow-move-tab-window = Mover a unha nova xanela
+    .accesskey = x
+fxviewtabrow-send-tab = Enviar a lapela ao dispositivo
+    .accesskey = l
+# Variables:
+#   $tabTitle (string) - Title of the tab to which the context menu is associated
+fxviewtabrow-options-menu-button =
+    .title = Opcións para { $tabTitle }

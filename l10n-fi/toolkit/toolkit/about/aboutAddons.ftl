@@ -164,7 +164,6 @@ extensions-warning-update-security2 =
     .message = Lisäosien päivitysten turvallisuustarkistus ei ole käytössä. Päivitykset voivat saastuttaa koneesi.
 extensions-warning-update-security-button = Ota käyttöön
     .title = Ota lisäosien päivitysten turvallisuustarkistus käyttöön
-extensions-warning-imported-addons = Viimeistele { -brand-short-name }iin tuotujen laajennusten asennus.
 extensions-warning-imported-addons2 =
     .message = Viimeistele { -brand-short-name }iin tuotujen laajennusten asennus.
 extensions-warning-imported-addons-button = Asenna laajennukset
@@ -358,6 +357,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> on poistettu.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } on poistettu.
 pending-uninstall-undo-button = Kumoa
 addon-detail-updates-label = Automaattiset päivitykset
 addon-detail-updates-radio-default = Oletus

@@ -6,6 +6,13 @@ shopping-page-title = { -brand-product-name } verslun
 # Title for page showing where a user can check the
 # review quality of online shopping product reviews
 shopping-main-container-title = Umsagnaskoðun
+shopping-beta-marker = Beta-prófunarútgáfa
+# This string is for ensuring that screen reader technology
+# can read out the "Beta" part of the shopping sidebar header.
+# Any changes to shopping-main-container-title and
+# shopping-beta-marker should also be reflected here.
+shopping-a11y-header =
+    .aria-label = Umsagnaskoðun - Prófunarútgáfa
 shopping-close-button =
     .title = Loka
 # This string is for notifying screen reader users that the
@@ -31,31 +38,42 @@ shopping-letter-grade-tooltip =
 
 ## Strings for the shopping message-bar
 
-shopping-message-bar-warning-stale-analysis-title = Uppfærslur í boði
-shopping-message-bar-warning-stale-analysis-message = Ræstu { -fakespot-brand-full-name } greininguna til að fá uppfærðar upplýsingar á um 60 sekúndum.
-shopping-message-bar-generic-error-title = Greining ekki tiltæk í augnablikinu
+shopping-message-bar-warning-stale-analysis-message-2 = Nýjar upplýsingar til að skoða
+shopping-message-bar-warning-stale-analysis-button = Athuga núna
+shopping-message-bar-generic-error-title2 = Engar upplýsingar tiltækar í augnablikinu
 shopping-message-bar-generic-error-message = Við erum að vinna að því að leysa málið. Athugaðu aftur fljótlega.
 shopping-message-bar-warning-not-enough-reviews-title = Ekki nægar umsagnir ennþá
-shopping-message-bar-warning-not-enough-reviews-message = Þegar þessi vara fær fleiri umsagnir getum við greint þær.
+shopping-message-bar-warning-not-enough-reviews-message2 = Þegar þessi vara hefur fleiri umsagnir getum við athugað gæði þeirra.
 shopping-message-bar-warning-product-not-available-title = Vara er ekki fáanleg
-shopping-message-bar-warning-product-not-available-message = Ef þú sérð að þessi vara er aftur komin á lager skaltu tilkynna það til okkar og við munum vinna að því að uppfæra greininguna.
+shopping-message-bar-warning-product-not-available-message2 = Ef þú sérð að þessi vara er aftur komin á lager skaltu tilkynna það til okkar og við munum vinna að því að uppfæra greininguna.
 shopping-message-bar-warning-product-not-available-button = Tilkynna að þessi vara sé aftur á lager
 shopping-message-bar-thanks-for-reporting-title = Takk fyrir að tilkynna þetta!
-shopping-message-bar-thanks-for-reporting-message = Við ættum að vera með uppfærða greiningu innan 24 klukkustunda. Komdu aftur síðar.
-shopping-message-bar-warning-product-not-available-reported-title = Greining kemur fljótlega
-shopping-message-bar-warning-product-not-available-reported-message = Uppfærð greining ætti að vera tilbúin innan 24 klukkustunda. Komdu aftur síðar.
-shopping-message-bar-warning-offline-title = Engin nettenging
-shopping-message-bar-warning-offline-message = Athugaðu nettenginguna þína. Prófaðu síðan að endurlesa síðuna.
-shopping-message-bar-analysis-in-progress-title = Greining kemur fljótlega
-shopping-message-bar-analysis-in-progress-message = Þegar henni er lokið munum við sjálfkrafa birta uppfærðar upplýsingar hér.
-
-## The word 'analyzer' when used here reflects what this tool is called on
-## fakespot.com. If possible, a different word should be used for the Fakespot
-## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
-## used in the name of the Firefox feature ('Review checker'). If that is not
-## possible - if these terms are not meaningfully different - that is OK.
-
-shopping-message-bar-warning-stale-analysis-link = Keyra greiningu á { -fakespot-website-name }
+shopping-message-bar-thanks-for-reporting-message2 = Við ættum að vera með uppfærða greiningu innan 24 klukkustunda. Komdu aftur síðar.
+shopping-message-bar-warning-product-not-available-reported-title2 = Upplýsingar koma fljótlega
+shopping-message-bar-warning-product-not-available-reported-message2 = Við ættum að vera með uppfærða greiningu innan 24 klukkustunda. Komdu aftur síðar.
+shopping-message-bar-generic-error =
+    .heading = Engar upplýsingar tiltækar í augnablikinu
+    .message = Við erum að vinna að því að leysa málið. Athugaðu aftur fljótlega.
+shopping-message-bar-warning-not-enough-reviews =
+    .heading = Ekki nægar umsagnir ennþá
+    .message = Þegar þessi vara hefur fleiri umsagnir getum við athugað gæði þeirra.
+shopping-message-bar-warning-product-not-available =
+    .heading = Vara er ekki fáanleg
+    .message = Ef þú sérð að þessi vara er aftur komin á lager skaltu tilkynna það til okkar og við munum vinna að því að uppfæra greininguna.
+shopping-message-bar-warning-product-not-available-button2 = Tilkynna þegar vara er til á lager
+shopping-message-bar-thanks-for-reporting =
+    .heading = Takk fyrir að tilkynna þetta!
+    .message = Við ættum að vera með uppfærða greiningu innan 24 klukkustunda. Komdu aftur síðar.
+shopping-message-bar-warning-product-not-available-reported =
+    .heading = Upplýsingar koma fljótlega
+    .message = Við ættum að vera með uppfærða greiningu innan 24 klukkustunda. Komdu aftur síðar.
+shopping-message-bar-analysis-in-progress-title2 = Athugar gæði umsagna
+shopping-message-bar-analysis-in-progress-message2 = Þetta gæti tekið um 60 sekúndur.
+shopping-message-bar-page-not-supported-title = Við getum ekki athugað þessar umsagnir
+shopping-message-bar-page-not-supported-message = Því miður getum við ekki athugað gæði umsagna fyrir ákveðnar tegundir af vörum. Til dæmis gjafakort og streymd myndskeið, tónlist og leiki.
+shopping-message-bar-page-not-supported =
+    .heading = Við getum ekki athugað þessar umsagnir
+    .message = Því miður getum við ekki athugað gæði umsagna fyrir ákveðnar tegundir af vörum. Til dæmis gjafakort og streymd myndskeið, tónlist og leiki.
 
 ## Strings for the product review snippets card
 
@@ -79,11 +97,14 @@ shopping-settings-label =
 shopping-settings-recommendations-toggle =
     .label = Birta auglýsingar í umsagnaskoðun
 shopping-settings-recommendations-learn-more = Þú munt sjá einstaka auglýsingar fyrir tengdar vörur. Allar auglýsingar verða að uppfylla gæðastaðla okkar vegna umsagna. <a data-l10n-name="review-quality-url">Frekari upplýsingar</a>
+shopping-settings-recommendations-learn-more2 = Þú munt sjá einstaka auglýsingar fyrir tengdar vörur. Allar auglýsingar verða að uppfylla gæðastaðla okkar vegna umsagna. <a data-l10n-name="review-quality-url">Frekari upplýsingar</a>
 shopping-settings-opt-out-button = Slökkva á umsagnaskoðun
 powered-by-fakespot = Umsagnaskoðunin er knúin áfram af <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
 
 ## Strings for the adjusted rating component
 
+# "Adjusted rating" means a star rating that has been adjusted to include only
+# reliable reviews.
 shopping-adjusted-rating-label =
     .label = Aðlöguð einkunn
 shopping-adjusted-rating-unreliable-reviews = Óáreiðanlegar umsagnir fjarlægðar
@@ -97,12 +118,13 @@ shopping-review-reliability-label =
 
 shopping-analysis-explainer-label =
     .label = Hvernig við ákvörðum gæði umsagna
-shopping-analysis-explainer-intro =
+shopping-analysis-explainer-intro2 =
     Við notum gervigreindartækni frá { -fakespot-brand-full-name } til að greina áreiðanleika vöruumsagna.
-    Þessi greining mun aðeins hjálpa þér að meta gæði umsagna um vörur, ekki gæði vöru.
+    Þetta mun aðeins hjálpa þér að meta gæði umsagna um vörur, ekki gæði vöru.
 shopping-analysis-explainer-grades-intro = Við gefum umsögnum hverrar vöru <strong>einkunnir í bókstöfum</strong> frá A til F.
 shopping-analysis-explainer-adjusted-rating-description = <strong>Aðlöguð einkunn</strong> er eingöngu byggð á umsögnum sem við teljum vera áreiðanlegar.
 shopping-analysis-explainer-learn-more = Frekari upplýsingar um <a data-l10n-name="review-quality-url">hvernig { -fakespot-brand-full-name } ákvarðar gæði umsagna</a>.
+shopping-analysis-explainer-learn-more2 = Frekari upplýsingar um <a data-l10n-name="review-quality-url">hvernig { -fakespot-brand-name } ákvarðar gæði umsagna</a>.
 # This string includes the short brand name of one of the three supported
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
@@ -113,10 +135,10 @@ shopping-analysis-explainer-review-grading-scale-unreliable = Óáreiðanlegar u
 
 ## Strings for UrlBar button
 
-shopping-sidebar-open-button =
-    .tooltiptext = Opna verslunarhliðarstiku
-shopping-sidebar-close-button =
-    .tooltiptext = Loka verslunarhliðarstiku
+shopping-sidebar-open-button2 =
+    .tooltiptext = Opna umsagnaskoðun
+shopping-sidebar-close-button2 =
+    .tooltiptext = Loka umsagnaskoðun
 
 ## Strings for the unanalyzed product card.
 ## The word 'analyzer' when used here reflects what this tool is called on
@@ -125,12 +147,80 @@ shopping-sidebar-close-button =
 ## used in the name of the Firefox feature ('Review checker'). If that is not
 ## possible - if these terms are not meaningfully different - that is OK.
 
-shopping-unanalyzed-product-header = Engin greining fyrir þessar umsagnir ennþá
-shopping-unanalyzed-product-message = Ræstu { -fakespot-brand-full-name } greininguna og þú munt vita eftir um það bil 60 sekúndur hvort umsagnir þessarar vöru séu áreiðanlegar.
-shopping-unanalyzed-product-analyze-link = Keyra greiningu á { -fakespot-website-name }
+
+## Strings for the unanalyzed product card.
+## The word 'analyzer' when used here reflects what this tool is called on
+## fakespot.com. If possible, a different word should be used for the Fakespot
+## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
+## used in the name of the Firefox feature ('Review Checker'). If that is not
+## possible - if these terms are not meaningfully different - that is OK.
+
+shopping-unanalyzed-product-header-2 = Engar upplýsingar ennþá um þessar umsagnir
+shopping-unanalyzed-product-message-2 = Til að vita hvort umsagnir þessarar vöru séu áreiðanlegar skaltu athuga gæði umsagna. Það tekur aðeins um 60 sekúndur.
+shopping-unanalyzed-product-analyze-button = Athugaðu gæði umsagna
 
 ## Strings for the advertisement
 
 more-to-consider-ad-label =
     .label = Fleira sem mætti skoða
 ad-by-fakespot = Auglýsing frá { -fakespot-brand-name }
+
+## Shopping survey strings.
+
+shopping-survey-headline = Hjálpaðu til við að bæta { -brand-product-name }
+shopping-survey-question-one = Hversu ánægður ertu með upplifunina af umsagnaskoðuninni í { -brand-product-name }?
+shopping-survey-q1-radio-1-label = Mjög ánægð/ur
+shopping-survey-q1-radio-2-label = Ánægð/ur
+shopping-survey-q1-radio-3-label = Hlutlaus
+shopping-survey-q1-radio-4-label = Óánægð/ur
+shopping-survey-q1-radio-5-label = Mjög óánægð/ur
+shopping-survey-question-two = Auðveldar umsagnaskoðunin þér að taka ákvarðanir um innkaup?
+shopping-survey-q2-radio-1-label = Já
+shopping-survey-q2-radio-2-label = Nei
+shopping-survey-q2-radio-3-label = Veit ekki
+shopping-survey-next-button-label = Næsta
+shopping-survey-submit-button-label = Senda inn
+shopping-survey-terms-link = Notkunarskilmálar
+shopping-survey-thanks-message = Takk fyrir álit þitt!
+shopping-survey-thanks =
+    .heading = Takk fyrir álit þitt!
+
+## Shopping Feature Callout strings.
+## "price tag" refers to the price tag icon displayed in the address bar to
+## access the feature.
+
+shopping-callout-closed-opted-in-subtitle = Farðu aftur í <strong>umsagnaskoðun</strong> þegar þú sérð verðmiða.
+shopping-callout-pdp-opted-in-title = Eru þessar umsagnir áreiðanlegar? Finndu fljótt út úr því.
+shopping-callout-pdp-opted-in-subtitle = Opnaðu umsagnaskoðun til að sjá aðlagaða einkunn þar sem óáreiðanlegar umsagnir hafa verið fjarlægðar. Að auki geturðu séð útdrátt úr nýlegum ekta umsögnum.
+shopping-callout-closed-not-opted-in-title = Einn smellur til að fá áreiðanlegar umsagnir
+shopping-callout-closed-not-opted-in-subtitle = Prófaðu umsagnaskoðun í hvert skipti sem þú sérð verðmiða. Fáðu álit frá öðrum raunverulegum kaupendum á  fljótlegan máta - áður en þú verslar.
+
+## Onboarding message strings.
+
+shopping-onboarding-headline = Prófaðu traustar leiðbeiningar okkar um vöruumsagnir
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle = Sjáðu hversu áreiðanlegar vöruumsagnir eru á <b>{ $currentSite }</b> áður en þú verslar. Umsagnaskoðun, tilraunaeiginleiki frá { -vendor-short-name }, er innbyggður beint í { -brand-product-name } - og þetta virkar líka á <b>{ $secondSite }</b> og <b>{ $thirdSite }</b>.
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle-1 = Sjáðu hversu áreiðanlegar vöruumsagnir eru á <b>{ $currentSite }</b> áður en þú verslar. Umsagnaskoðun, tilraunaeiginleiki frá { -brand-product-name }, er innbyggður beint í vafrann. Þetta virkar á <b>{ $secondSite }</b> og einnig <b>{ $thirdSite }</b>.
+shopping-onboarding-body = Með hjálp { -fakespot-brand-full-name } frá Mozilla, gerum við þér kleift að forðast hlutdrægar og ósannar umsagnir. Gervigreindarlíkanið okkar er alltaf að batna til að vernda þig sem best þegar þú verslar. <a data-l10n-name="learn_more">Frekari upplýsingar</a>
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use = Með því að velja „{ shopping-onboarding-opt-in-button }“ samþykkir þú <a data-l10n-name="privacy_policy">persónuverndarstefnu</a> og <a data-l10n-name="terms_of_use">notkunarskilmála</a> { -fakespot-brand-full-name }.
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Með því að velja „{ shopping-onboarding-opt-in-button }“ samþykkir þú <a data-l10n-name="privacy_policy">persónuverndarstefnu</a> og <a data-l10n-name="terms_of_use">notkunarskilmála</a> { -fakespot-brand-name }.
+shopping-onboarding-opt-in-button = Já, prófum það
+shopping-onboarding-not-now-button = Ekki núna
+shopping-onboarding-dialog-close-button =
+    .title = Loka
+    .aria-label = Loka
+# Aria-label to make the "steps" of the shopping onboarding container visible to screen readers.
+# Variables:
+#   $current (Int) - Number of the current page
+#   $total (Int) - Total number of pages
+shopping-onboarding-welcome-steps-indicator-label =
+    .aria-label = Framvinda: skref { $current } af { $total }

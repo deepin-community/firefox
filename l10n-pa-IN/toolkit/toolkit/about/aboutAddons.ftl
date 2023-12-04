@@ -164,7 +164,6 @@ extensions-warning-update-security2 =
     .message = ਐਡ-ਆਨ ਅੱਪਡੇਟ ਸੁਰੱਖਿਆ ਚੈੱਕ ਕਰਨਾ ਬੰਦ ਹੈ। ਤੁਹਾਨੂੰ ਅੱਪਡੇਟ ਰਾਹੀਂ ਖਤਰਾ ਹੋ ਸਕਦਾ ਹੈ।
 extensions-warning-update-security-button = ਚਾਲੂ
     .title = ਐਡ-ਆਨ ਉੱਤੇ ਸੁਰੱਖਿਆ ਚੈੱਕ ਕੀਤਾ ਜਾਂਦਾ ਹੈ
-extensions-warning-imported-addons = { -brand-short-name } ਲਈ ਦਰਾਮਦ ਕੀਤੀਆਂ ਇਕਸਟੈਨਸ਼ਨਾਂ ਦੀ ਇੰਸਟਾਲੇਸ਼ਨ ਪੂਰੀ ਕਰੋ।
 extensions-warning-imported-addons2 =
     .message = { -brand-short-name } ਲਈ ਦਰਾਮਦ ਕੀਤੀਆਂ ਇਕਸਟੈਨਸ਼ਨਾਂ ਦੀ ਇੰਸਟਾਲੇਸ਼ਨ ਪੂਰੀ ਕਰੋ।
 extensions-warning-imported-addons-button = ਇਕਸਟੈਨਸ਼ਨਾਂ ਇੰਸਟਾਲ ਕਰੋ
@@ -257,10 +256,8 @@ header-back-button =
 # ("recommends") in the final sentence is a link to external documentation.
 discopane-intro =
     ਇਕਸਟੈਨਸ਼ਨਾਂ ਤੇ ਥੀਮ ਤੁਹਾਡੇ ਬਰਾਊਜ਼ਰ ਲਈ ਐਪਾਂ ਵਾਂਗ ਹਨ ਅਤੇ ਉਹ ਤੁਹਾਨੂੰ ਪਾਸਵਰਡ ਸੁਰੱਖਿਅਤ ਕਰਨ, ਵਿਡੀਓ ਡਾਊਨਲੋਡ ਕਰਨ,
-    ਡੀਲਾਂ ਲੱਭਣ, ਤੰਗ ਕਰਨ ਵਾਲੇ ਇਸ਼ਤਿਹਾਰਾਂ ਤੇ ਪਾਬੰਦੀ ਲਗਾਉਣ, ਤੁਹਾਡੇ ਬਰਾਊਜ਼ਰ ਦੀ ਦਿੱਖ ਬਦਲਣ ਤੇ ਹੋਰ ਕਈ ਕੁ
-    ਕਰਨ ਲਈ ਸਹਾਇ ਹਨ। ਇਹ ਛੋਟੇ ਛੋਟੇ ਸਾਫਟਵੇਅਰ ਪਰੋਗਰਾਮ ਅਕਸਰ ਹੋਰ ਧਿਰਾਂ ਵਲੋਂ ਤਿਆਰ ਕੀਤੇ ਜਾਂਦੇ ਹਨ। 
-    ਖਾਸ ਸੁਰੱਖਿਆ, ਕਾਰਗੁਜ਼ਾਰੀ ਤੇ ਫੰਕਸ਼ਨਾਂ ਲਈ { -brand-product-name } ਵਲੋਂ <a data-l10n-name="learn-more-trigger">ਸਿਫਾਰਸ਼ਾਂ</a>
-     ਇਹ ਹਨ।
+    ਡੀਲਾਂ ਲੱਭਣ, ਤੰਗ ਕਰਨ ਵਾਲੇ ਇਸ਼ਤਿਹਾਰਾਂ ਉੱਤੇ ਪਾਬੰਦੀ ਲਗਾਉਣ, ਤੁਹਾਡੇ ਬਰਾਊਜ਼ਰ ਦੀ ਦਿੱਖ ਬਦਲਣ ਅਤੇ ਹੋਰ ਕਈ ਕੁ
+    ਕਰਨ ਲਈ ਸਹਾਇਕ ਹਨ। ਇਹ ਛੋਟੇ ਛੋਟੇ ਸਾਫਟਵੇਅਰ ਪਰੋਗਰਾਮ ਅਕਸਰ ਹੋਰ ਧਿਰਾਂ ਵਲੋਂ ਤਿਆਰ ਕੀਤੇ ਜਾਂਦੇ ਹਨ। ਖਾਸ ਸੁਰੱਖਿਆ, ਕਾਰਗੁਜ਼ਾਰੀ ਅਤੇ ਫੰਕਸ਼ਨਾਂ ਲਈ { -brand-product-name } ਵਲੋਂ <a data-l10n-name="learn-more-trigger">ਸਿਫਾਰਸ਼</a> ਇਹ ਹਨ।
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations =
     ਇਹਨਾਂ ਸਿਫਾਰਸ਼ਾਂ ਵਿੱਚੋਂ ਕੁਝ ਨਿੱਜੀ ਬਣਾਈਆਂ ਹਨ। ਇਹ ਤੁਹਾਡੇ ਵਲੋਂ ਇੰਸਟਾਲ ਇਕਸਟੈਨਸ਼ਨਾਂ, ਪਰੋਫਾਈਲ ਪਸੰਦਾਂ
@@ -271,7 +268,7 @@ discopane-notice-recommendations2 =
         ਇਹਨਾਂ ਸਿਫਾਰਸ਼ਾਂ ਵਿੱਚੋਂ ਕੁਝ ਨਿੱਜੀ ਬਣਾਈਆਂ ਹਨ। ਇਹ ਤੁਹਾਡੇ ਵਲੋਂ ਇੰਸਟਾਲ ਇਕਸਟੈਨਸ਼ਨਾਂ, ਪਰੋਫਾਈਲ ਪਸੰਦਾਂ
          ਅਤੇ ਵਰਤੋਂ ਅੰਕੜਿਆਂ ਦੇ ਉੱਤੇ ਅਧਾਰਿਤ ਹਨ।
 discopane-notice-learn-more = ਹੋਰ ਸਿੱਖੋ
-privacy-policy = ਪਰਦੇਦਾਰੀ ਸੂਚਨਾ
+privacy-policy = ਪਰਦੇਦਾਰੀ ਨੀਤੀ
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
 #   $author (string) - The name of the add-on developer.
@@ -360,6 +357,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> ਨੂੰ ਹਟਾਇਆ ਗਿਆ।
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } ਨੂੰ ਹਟਾਇਆ ਗਿਆ।
 pending-uninstall-undo-button = ਵਾਪਸ
 addon-detail-updates-label = ਆਪਣੇ-ਆਪ ਅੱਪਡੇਟ ਦੀ ਇਜਾਜ਼ਤ ਹੈ
 addon-detail-updates-radio-default = ਮੂਲ

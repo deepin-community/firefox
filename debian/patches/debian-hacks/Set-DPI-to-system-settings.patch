@@ -7,10 +7,10 @@ Subject: Set DPI to system settings
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/modules/libpref/init/StaticPrefList.yaml b/modules/libpref/init/StaticPrefList.yaml
-index c7ca7ae..c28c627 100644
+index 60a520b..b7e0f04 100644
 --- a/modules/libpref/init/StaticPrefList.yaml
 +++ b/modules/libpref/init/StaticPrefList.yaml
-@@ -8099,7 +8099,7 @@
+@@ -8081,7 +8081,7 @@
  # interpretation of physical units such as "pt".
  - name: layout.css.dpi
    type: int32_t
@@ -18,4 +18,4 @@ index c7ca7ae..c28c627 100644
 +  value: 0
    mirror: always
  
- # Whether Container Queries are enabled
+ # Whether to always underline links.

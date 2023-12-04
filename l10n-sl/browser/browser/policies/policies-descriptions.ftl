@@ -28,6 +28,7 @@ policy-CertificatesDescription = Dodaj digitalna potrdila ali uporabi vgrajena p
 policy-Cookies = Spletnim mestom dovoli ali prepovej nastavljanje piškotkov.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Nastavi pravilnike, povezane z vsebniki.
+policy-DisableAccounts = Onemogoči storitve na osnovi računov, na primer sinhronizacijo.
 policy-DisabledCiphers = Onemogoči šifre.
 policy-DefaultDownloadDirectory = Nastavi privzeto mapo za prenose.
 policy-DisableAppUpdate = Prepreči posodabljanje brskalnika.
@@ -90,6 +91,7 @@ policy-LocalFileLinks = Določenim spletnim mestom dovoli povezovanje na krajevn
 policy-ManagedBookmarks = Nastavi seznam zaznamkov, ki jih upravlja skrbnik in jih uporabnik ne more spremeniti.
 policy-ManualAppUpdateOnly = Dovoli samo ročne posodobitve in ne obveščaj uporabnika o posodobitvah.
 policy-PrimaryPassword = Zahtevaj ali prepreči uporabo glavnega gesla.
+policy-PrintingEnabled = Omogoči ali onemogoči tiskanje.
 policy-NetworkPrediction = Omogoči ali onemogoči napovedovanje omrežja (vnaprejšnje pridobivanje DNS).
 policy-NewTabPage = Omogoči ali onemogoči stran novega zavihka.
 policy-NoDefaultBookmarks = Onemogoči ustvarjanje privzetih zaznamkov, vključenih v { -brand-short-name }, in Pametnih zaznamkov (Najbolj obiskano, Nedavne oznake). Opomba: ta pravilnik je uveljavljen, samo če je nastavljen pred prvo uporabo profila.

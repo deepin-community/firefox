@@ -48,13 +48,13 @@ about-debugging-sidebar-item-connect-button-connecting = Oikehína...
 about-debugging-sidebar-item-connect-button-connection-failed = Ojavy jeike
 # Text displayed in connection warning on sidebar item of the runtime when connecting to
 # the runtime is taking too much time.
-about-debugging-sidebar-item-connect-button-connection-not-responding = Pe jeike oha’arõ gueteri, ehechajey oĩpa ñe’ẽmondo kundaha ohotahápe
+about-debugging-sidebar-item-connect-button-connection-not-responding = Pe jeike oha’ãrõ gueteri, ehechajey oĩpa ñe’ẽmondo kundaha ohotahápe
 # Text displayed as connection error in sidebar item when the connection has timed out.
 about-debugging-sidebar-item-connect-button-connection-timeout = Jeike imbeguetereíma
 # Text displayed in sidebar items for remote devices where a compatible browser (eg
 # Firefox) has not been detected yet. Typically, Android phones connected via USB with
 # USB debugging enabled, but where Firefox is not started.
-about-debugging-sidebar-runtime-item-waiting-for-browser = Aha’arõhína kundahápe…
+about-debugging-sidebar-runtime-item-waiting-for-browser = Aha’ãrõhína kundahápe…
 # Text displayed in sidebar items for remote devices that have been disconnected from the
 # computer.
 about-debugging-sidebar-runtime-item-unplugged = Ñesẽmbyre
@@ -139,7 +139,7 @@ about-debugging-network-locations-remove-button = Hekýi
 # Text used as error message if the format of the input value was invalid in the network locations form of the Setup page.
 # Variables:
 #   $host-value (string) - The input value submitted by the user in the network locations form
-about-debugging-network-location-form-invalid = Mbohupa ndoikóiva "{ $host-value }". Pe ysaja oñeha’arõva ha’e “hostname:portnumber”.
+about-debugging-network-location-form-invalid = Mbohupa ndoikóiva "{ $host-value }". Pe ysaja oñeha’ãrõva ha’e “hostname:portnumber”.
 # Text used as error message if the input value was already registered in the network locations form of the Setup page.
 # Variables:
 #   $host-value (string) - The input value submitted by the user in the network locations form
@@ -230,7 +230,7 @@ about-debugging-debug-target-list-empty = Na’írã gueteri.
 about-debugging-debug-target-inspect-button = Ma’ẽag̃ui
 # Text of a button displayed in the "This Firefox" page, in the Temporary Extension
 # section. Clicking on the button will open a file picker to load a temporary extension
-about-debugging-tmp-extension-install-button = Emyenyhẽ moĩmbaha sapy’aguáva…
+about-debugging-tmp-extension-install-button = Emyanyhẽ moĩmbaha sapy’aguáva…
 # Text displayed when trying to install a temporary extension in the "This Firefox" page.
 about-debugging-tmp-extension-install-error = Oiko jejavy emohendakuévo moĩmbaha sapy’agua.
 # Text of a button displayed for a temporary extension loaded in the "This Firefox" page.

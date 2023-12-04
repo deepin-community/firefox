@@ -25,7 +25,7 @@ content-blocking-cookies-view-remove-button =
 tracking-protection-icon-active = 소셜 미디어 추적기, 교차 사이트 추적 쿠키 및 디지털 지문을 차단합니다.
 tracking-protection-icon-active-container =
     .aria-label = { tracking-protection-icon-active }
-tracking-protection-icon-disabled = 이 사이트에 향상된 추적 방지 기능이 꺼져 있습니다.
+tracking-protection-icon-disabled = 이 사이트에 향상된 추적 방지가 꺼져 있습니다.
 tracking-protection-icon-disabled-container =
     .aria-label = { tracking-protection-icon-disabled }
 tracking-protection-icon-no-trackers-detected = 이 페이지에서 { -brand-short-name }에 알려진 추적기가 감지되지 않았습니다.
@@ -37,12 +37,6 @@ tracking-protection-icon-no-trackers-detected-container =
 
 # Header of the Protections Panel.
 protections-header = { $host }에 대한 보호
-# Text that gets spoken by a screen reader if the button will disable protections.
-protections-disable =
-    .aria-label = { $host }에 대한 보호 비활성화
-# Text that gets spoken by a screen reader if the button will enable protections.
-protections-enable =
-    .aria-label = { $host }에 대한 보호 활성화
 
 ## Blocking and Not Blocking sub-views in the Protections Panel
 
@@ -86,5 +80,9 @@ protections-not-blocking-social-media-trackers =
 # In its tooltip, we show the date when we started counting this number.
 protections-footer-blocked-tracker-counter = { $trackerCount }개 차단됨
     .tooltiptext = { DATETIME($date, year: "numeric", month: "long", day: "numeric") } 이후
+# This text indicates the total number of trackers blocked on all sites.
+# It should be the same as protections-footer-blocked-tracker-counter;
+# this message is used to leave out the tooltip when the date is not available.
+protections-footer-blocked-tracker-counter-no-tooltip = { $trackerCount }개 차단됨
 # In English this looks like "Firefox blocked over 10,000 trackers since October 2019"
 protections-milestone = { -brand-short-name }가 { DATETIME($date, year: "numeric", month: "long") } 이후 추적기 { $trackerCount }개 차단

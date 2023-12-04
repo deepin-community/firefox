@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = ਵੈੱਬਸਾਈਟਾਂ ਨੂੰ ਮੇਰਾ ਡਾਟਾ ਵੇਚਣ ਜਾਂ ਸਾਂਝਾ ਨਾ ਕਰਨ ਲਈ ਦੱਸੋ
     .accesskey = s
+non-technical-privacy-header = ਵੈੱਬਸਾਈਟ ਪਰਦੇਦਾਰੀ ਪਸੰਦਾਂ
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = ਗਲੋਬਲ ਪਰਦੇਦਾਰੀ ਕੰਟਰੋਲ (GPC)
 settings-page-title = ਸੈਟਿੰਗਾਂ
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = ਪਿਛਲੀਆਂ ਵਿੰਡੋਆਂ ਤੇ ਟੈਬਾਂ ਨੂੰ ਖੋਲ੍ਹੋ
     .accesskey = s
+windows-launch-on-login =
+    .label = ਜਦੋਂ ਤੁਹਾਡਾ ਕੰਪਿਊਟਰ ਸ਼ੁਰੂ ਹੋਵੇ ਤਾਂ { -brand-short-name } ਨੂੰ ਆਪਣੇ-ਆਪ ਖੋਲ੍ਹੋ
+    .accesskey = O
+windows-launch-on-login-disabled = ਇਸ ਪਸੰਦ ਨੂੰ Windows ਵਿੱਚ ਅਸਮਰੱਥ ਕੀਤਾ ਗਿਆ ਹੈ। ਬਦਲਣ ਲਈ ਸਿਸਟਮ ਸੈਟਿੰਗਾਂ ਵਿੱਚ <a data-l10n-name="startup-link">Startup Apps</a> ਨੂੰ ਵੇਖੋ।
 startup-restore-warn-on-quit =
     .label = ਜਦੋਂ ਬਰਾਊਜ਼ਰ ਨੂੰ ਬੰਦ ਕਰੋ ਤਾਂ ਸਾਵਧਾਨ ਕਰੋ
 disable-extension =
@@ -691,7 +700,7 @@ sync-manage-account = ਖਾਤੇ ਦਾ ਬੰਦੋਬਸਤ ਕਰੋ
 ## $email (string) - Email used for Firefox account
 
 sync-signedin-unverified = { $email } ਜਾਂਚਿਆ ਨਹੀਂ ਹੈ।
-sync-signedin-login-failure = { $email } ਮੁੜ-ਕੁਨੈਕਟ ਕਰਨ ਲਈ ਸਾਈਨ ਕਰੋ
+sync-signedin-login-failure = { $email } ਨਾਲ ਮੁੜ-ਕਨੈਕਟ ਕਰਨ ਲਈ ਸਾਈਨ ਕਰੋ
 
 ##
 
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = ਕੂਕੀ ਬੈਨਰ ਘਟਾਉਣਾ
 cookie-banner-handling-description = { -brand-short-name } ਸਹਾਇਕ ਸਾਈਟਾਂ ਉੱਤੇ ਕੂਕੀ ਬੇਨਤੀਆਂ ਨੂੰ ਆਪਣੇ-ਆਪ ਹੀ ਨਾ-ਮਨਜ਼ੂਰ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰਦਾ ਹੈ।
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = ਕੂਕੀ ਬੈਨਰ ਰੋਕੂ
+cookie-banner-blocker-description = ਜੇ ਸਾਈਟ ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜ਼ਿੰਗ ਢੰਗ ਵਿੱਚ ਕੂਕੀਜ਼ ਵਰਤਣ ਬਾਰੇ ਪੁਛਦੀ ਹੈ ਤਾਂ { -brand-short-name } ਤੁਹਾਡੇ ਲਈ ਆਪਣੇ-ਆਪ ਇਨਕਾਰ ਕਰ ਦਿੰਦਾ ਹੈ। ਸਿਰਫ਼ ਸਹਾਇਕ ਸਾਈਟਾਂ ਉੱਤੇ ਹੀ ਹੈ।
 cookie-banner-learn-more = ਹੋਰ ਜਾਣੋ
 forms-handle-cookie-banners =
     .label = ਕੂਕੀਜ਼ ਬੈਨਰ ਘਟਾਓ
+cookie-banner-blocker-checkbox-label =
+    .label = ਆਪਣੇ-ਆਪ ਹੀ ਕੂਕੀ ਬੈਨਰ ਨੂੰ ਇਨਕਾਰ ਕਰੋ
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = ਫ਼ੌਰੀ ਕਾਰਵਾਈਆਂ
     .accesskey = Q
+addressbar-locbar-showrecentsearches-option =
+    .label = ਸੱਜਰੀਆਂ ਖੋਜਾਂ ਵੇਖਾਓ
+    .accesskey = r
 addressbar-suggestions-settings = ਖੋਜ ਇੰਜਣ ਸੁਝਾਵਾਂ ਲਈ ਪਸੰਦਾਂ ਨੂੰ ਬਦਲੋ
 addressbar-quickactions-learn-more = ਹੋਰ ਜਾਣੋ
 
@@ -1005,6 +1024,10 @@ content-blocking-learn-more = ਹੋਰ ਜਾਣੋ
 content-blocking-fpi-incompatibility-warning =
     ਤੁਸੀਂ ਪਹਿਲੀ ਧਿਰ ਅਲਹਿਦਗੀ (FPI) ਵਰਤ ਰਹੇ ਹੋ, ਜੋ ਕਿ ਕੁਝ { -brand-short-name }
     ਕੂਕੀਜ਼ ਸੈਟਿੰਗਾਂ ਨੂੰ ਅਣਡਿੱਠਾ ਕਰਦੇ ਹਨ।
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = ਤੁਸੀਂ Resist Fingerprinting (RFP) ਵਰਤ ਰਹੇ ਹੋ, ਜੋ ਕਿ { -brand-short-name } ਦੀਆਂ ਕੁਝ ਫਿੰਗਰ-ਪਰਿੰਟਿੰਗ ਸੈਟਿੰਗਾਂ ਨੂੰ ਬਦਲਦਾ ਹੈ। ਇਸ ਨਾਲ ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਕੁਝ ਸਾਈਟਾਂ ਠੀਕ ਤਰ੍ਹਾਂ ਕੰਮ ਨਾ ਕਰਨ।
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1215,6 +1238,9 @@ certs-view =
 certs-devices =
     .label = …ਸੁਰੱਖਿਆ ਡਿਵਾਈਸ
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = { -brand-short-name } ਨੂੰ ਤੁਹਾਡੇ ਵਲੋਂ ਇੰਸਟਾਲ ਕੀਤੇ ਸੁਤੰਤਰ ਧਿਰ ਦੇ ਰੂਟ ਸਰਟੀਫ਼ਿਕੇਟਾਂ ਉੱਤੇ ਆਪਣੇ-ਆਪ ਭਰੋਸਾ ਕਰਨ ਦੀ ਮਨਜ਼ੂਰੀ ਦਿਓ
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ
     .accesskey = O

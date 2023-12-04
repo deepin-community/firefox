@@ -565,6 +565,8 @@ urlbar-result-action-switch-tab = Skift til faneblad
 urlbar-result-action-visit = Besøg
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Besøg fra din udklipsholder
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Besøg fra udklipsholder
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -617,6 +619,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Hurtige handlinger
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Seneste søgninger
 
 ## Reader View toolbar buttons
 
@@ -914,6 +921,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Udvidelser
         Nogle udvidelser er ikke tilladt
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Afslut privat session
+    .tooltiptext = Afslut privat session
+reset-pbm-panel-heading = Vil du afslutte den private session?
+reset-pbm-panel-description = Luk alle private faneblade og slet historik, cookies og alle andre webstedsdata.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Spørg altid
+    .accesskey = a
+reset-pbm-panel-cancel-button =
+    .label = Annuller
+    .accesskey = n
+reset-pbm-panel-confirm-button =
+    .label = Slet sessions-data
+    .accesskey = S
+reset-pbm-panel-complete = Data fra privat session blev slettet
 
 ## Autorefresh blocker
 

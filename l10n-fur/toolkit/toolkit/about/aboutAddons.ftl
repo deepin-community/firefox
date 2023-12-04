@@ -166,12 +166,11 @@ extensions-warning-check-compatibility2 =
     .message = Il control di compatibilitât dai components adizionâi al è disativât. Tu podaressis vê components adizionâi incompatibii.
 extensions-warning-check-compatibility-button = Ative
     .title = Ative il control di compatibilitât dal component adizionâl
-extensions-warning-update-security = Il control de sigurece dai inzornaments des zontis al è disativât. Tu podaressis vê problemis di sigurece par vie dai inzornaments.
+extensions-warning-update-security = Il control de sigurece dai inzornaments dai components adizionâi al è disativât. Tu podaressis vê problemis di sigurece par vie dai inzornaments.
 extensions-warning-update-security2 =
-    .message = Il control de sigurece dai inzornaments des zontis al è disativât. Tu podaressis vê problemis di sigurece par vie dai inzornaments.
+    .message = Il control de sigurece dai inzornaments dai components adizionâi al è disativât. Tu podaressis vê problemis di sigurece par vie dai inzornaments.
 extensions-warning-update-security-button = Ative
     .title = Ative il control di sigurece dal inzornament dal component adizionâl
-extensions-warning-imported-addons = Finìs la instalazion des estensions impuartadis su { -brand-short-name }.
 extensions-warning-imported-addons2 =
     .message = Finìs la instalazion des estensions impuartadis su { -brand-short-name }.
 extensions-warning-imported-addons-button = Instale estensions
@@ -369,6 +368,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> al è stât gjavât.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } al è stât gjavât.
 pending-uninstall-undo-button = Anule
 addon-detail-updates-label = Permet inzornaments automatics
 addon-detail-updates-radio-default = Predefinît

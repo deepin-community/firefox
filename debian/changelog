@@ -1,3 +1,43 @@
+firefox (120.0-2) unstable; urgency=medium
+
+  * memory/build/PHC.cpp: Check if PHC is initialised on all entrypoints.
+    bz#1866025. Closes: #1056550.
+
+ -- Mike Hommey <glandium@debian.org>  Fri, 24 Nov 2023 05:59:53 +0900
+
+firefox (120.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-49, also known as:
+    CVE-2023-6204, CVE-2023-6205, CVE-2023-6206, CVE-2023-6207,
+    CVE-2023-6208, CVE-2023-6209, CVE-2023-6210, CVE-2023-6211,
+    CVE-2023-6212, CVE-2023-6213.
+
+  * debian/control*: Bump rustc build dependency.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 22 Nov 2023 09:04:26 +0900
+
+firefox (119.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 16 Nov 2023 06:33:57 +0900
+
+firefox (119.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2023-45, also known as:
+    CVE-2023-5721, CVE-2023-5722, CVE-2023-5723, CVE-2023-5724,
+    CVE-2023-5725, CVE-2023-5728, CVE-2023-5729, CVE-2023-5730,
+    CVE-2023-5731.
+
+  * debian/control*:
+    - Bump nss and cbindgen build dependencies.
+    - Add Santali language pack.
+  * debian/browser.install.in: Remove plugin-container.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 25 Oct 2023 06:31:58 +0900
+
 firefox (118.0.2-1) unstable; urgency=medium
 
   * New upstream release.

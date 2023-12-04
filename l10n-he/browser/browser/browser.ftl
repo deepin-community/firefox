@@ -562,6 +562,8 @@ urlbar-result-action-switch-tab = מעבר ללשונית
 urlbar-result-action-visit = ביקור
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = לבקר מלוח העריכה שלך
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = לבקר מלוח העריכה
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -614,6 +616,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = פעולות מהירות
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = חיפושים אחרונים
 
 ## Reader View toolbar buttons
 
@@ -911,6 +918,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         הרחבות
         חלק מההרחבות אינן מורשות
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = סיום הפעלה פרטית
+    .tooltiptext = סיום הפעלה פרטית
+reset-pbm-panel-heading = לסיים את ההפעלה הפרטית שלך?
+reset-pbm-panel-description = סגירת כל הלשוניות הפרטיות ומחיקת היסטוריה, עוגיות וכל שאר נתוני האתרים.
+reset-pbm-panel-always-ask-checkbox =
+    .label = תמיד לשאול אותי
+    .accesskey = ת
+reset-pbm-panel-cancel-button =
+    .label = ביטול
+    .accesskey = ב
+reset-pbm-panel-confirm-button =
+    .label = מחיקת נתוני הפעלה
+    .accesskey = מ
+reset-pbm-panel-complete = נתוני ההפעלה הפרטית נמחקו
 
 ## Autorefresh blocker
 

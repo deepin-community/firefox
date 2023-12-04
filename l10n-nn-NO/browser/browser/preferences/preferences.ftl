@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Fortel nettstadar om å ikkje selje eller dele mine data
     .accesskey = o
+non-technical-privacy-header = Personverninnstillingar for nettstaden
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Innstillingar
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Opne tidlegare vindauge og faner
     .accesskey = p
+windows-launch-on-login =
+    .label = Opne { -brand-short-name } automatisk når datamaskina di startar opp
+    .accesskey = O
+windows-launch-on-login-disabled = Denne innstillinga er deaktivert i Windows. For å endre, gå til <a data-l10n-name="startup-link">Oppstartsapper</a> i Systeminnstillingar.
 startup-restore-warn-on-quit =
     .label = Åtvar meg når eg avsluttar nettlesaren
 disable-extension =
@@ -961,9 +970,15 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Redusering av infokapselbanner
 cookie-banner-handling-description = { -brand-short-name } prøver automatisk å avvise infokapselførespurnadar på infokapselbanner på støtta nettstadar.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Blokkering av infokapselbanner
 cookie-banner-learn-more = Les meir
 forms-handle-cookie-banners =
     .label = Reduser infokapselbanner
+cookie-banner-blocker-checkbox-label =
+    .label = Avslå automatisk infokapselbanner
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1009,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Snøgghandlingar
     .accesskey = S
+addressbar-locbar-showrecentsearches-option =
+    .label = Vis nylege søk
+    .accesskey = V
 addressbar-suggestions-settings = Endre innstillingar for søkjeforslag
 addressbar-quickactions-learn-more = Les meir
 
@@ -1003,6 +1021,10 @@ content-blocking-enhanced-tracking-protection = Utvida sporingsvern
 content-blocking-section-top-level-description = Sporarar følgjer deg rundt på nettet for å samle informasjon om surfevanane og interessene dine. { -brand-short-name } blokkerer mange av desse sporarane og andre vondsinna skript.
 content-blocking-learn-more = Les meir
 content-blocking-fpi-incompatibility-warning = Du brukar First Party Isolation (FPI), som set til side nokre av infokapsel-innstillingane til { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Du brukar Resist Fingerprinting (RFP), som erstattar nokre av { -brand-short-name } sine verneinnstillingar for fingeravtrykk. Dette kan føre til at enkelte nettstadar ikkje vil fungere.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1210,6 +1232,9 @@ certs-view =
 certs-devices =
     .label = Tryggingseiningar…
     .accesskey = T
+certs-thirdparty-toggle =
+    .label = Tillat { -brand-short-name } å automatiskt stole på rotsertifikat frå tredjepart som du installerer
+    .accesskey = T
 space-alert-over-5gb-settings-button =
     .label = Opne Innstillingar
     .accesskey = p
@@ -1231,7 +1256,7 @@ httpsonly-radio-disabled =
 ## DoH Section
 
 preferences-doh-header = DNS over HTTPS
-preferences-doh-description = Domain Name System (DNS) over HTTPS sender førespurnaden din om eit domennamn via ei kryptert tilkopling, lagar ein sikker DNS og gjer det venskelegare for andre å sjå kva for nettstad du er i ferd med å besøkje.
+preferences-doh-description = Domain Name System (DNS) over HTTPS sender førespurnaden din om eit domennamn via ei kryptert tilkopling, lagar ein sikker DNS og gjer det vanskelegare for andre å sjå kva for nettstad du er i ferd med å besøkje.
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = Status: { $status }

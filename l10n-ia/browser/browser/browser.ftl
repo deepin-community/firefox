@@ -562,6 +562,8 @@ urlbar-result-action-switch-tab = Commutar al scheda
 urlbar-result-action-visit = Visitar
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Visitar le adresse de tu area de transferentia
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Aperir adresse del area de transferentia
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -614,6 +616,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Actiones rapide
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Recercas recente
 
 ## Reader View toolbar buttons
 
@@ -912,6 +919,24 @@ unified-extensions-button-quarantined =
         Extensiones
         Alcun extensiones non es permittite
 
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Clauder session private
+    .tooltiptext = Clauder session private
+reset-pbm-panel-heading = Clauder tu session private?
+reset-pbm-panel-description = Clauder tote le schedas private e eliminar le chronologia, le cookies e tote le altere datos del sito.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Sempre demandar me
+    .accesskey = S
+reset-pbm-panel-cancel-button =
+    .label = Cancellar
+    .accesskey = C
+reset-pbm-panel-confirm-button =
+    .label = Deler le datos del session
+    .accesskey = D
+reset-pbm-panel-complete = Datos de session private delite
+
 ## Autorefresh blocker
 
 refresh-blocked-refresh-label = { -brand-short-name } ha impedite que iste pagina se recarga automaticamente.
@@ -925,7 +950,7 @@ refresh-blocked-allow =
 firefox-relay-offer-why-to-use-relay = Nostre mascas, secur e facile a usar, protege tu identitate e impedi le spam celante tu adresse email.
 # Variables:
 #  $useremail (String): user email that will receive messages
-firefox-relay-offer-what-relay-provides = Tote le emails inviate al mascas de tu email sera inultrate a <strong>{ $useremail }</strong> (si tu non decide de blocar los).
+firefox-relay-offer-what-relay-provides = Tote le messages inviate a tu mascas de e-mail essera reexpedite a <strong>{ $useremail }</strong> (si tu non decide de blocar los).
 firefox-relay-offer-legal-notice = Si tu clicca “Usar masca email”, tu concorda con le <label data-l10n-name="tos-url">Terminos se servicio</label> e con le <label data-l10n-name="privacy-url">Aviso de confidentialitate</label>.
 
 ## Add-on Pop-up Notifications

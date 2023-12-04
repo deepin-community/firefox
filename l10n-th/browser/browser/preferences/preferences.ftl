@@ -3,11 +3,21 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = ส่งสัญญาณ “ไม่ติดตาม” ให้กับเว็บไซต์ว่าคุณไม่ต้องการถูกติดตาม
+do-not-track-description2 =
+    .label = ส่งคำขอ “ไม่ติดตาม” ให้กับเว็บไซต์
+    .accesskey = ม
 do-not-track-learn-more = เรียนรู้เพิ่มเติม
 do-not-track-option-default-content-blocking-known =
     .label = เฉพาะเมื่อ { -brand-short-name } ถูกตั้งให้ปิดกั้นตัวติดตามที่รู้จัก
 do-not-track-option-always =
     .label = เสมอ
+global-privacy-control-description =
+    .label = บอกเว็บไซต์ไม่ให้ขายหรือแบ่งปันข้อมูลของฉัน
+    .accesskey = บ
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = การตั้งค่า
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -116,6 +126,9 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = เปิดหน้าต่างและแท็บก่อนหน้า
     .accesskey = ก
+windows-launch-on-login =
+    .label = เปิด { -brand-short-name } โดยอัตโนมัติตอนเปิดเครื่องคอมพิวเตอร์
+    .accesskey = ป
 startup-restore-warn-on-quit =
     .label = เตือนคุณเมื่อออกจากเบราว์เซอร์
 disable-extension =
@@ -939,6 +952,9 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = การลดแบนเนอร์คุกกี้
 cookie-banner-handling-description = { -brand-short-name } จะพยายามปฏิเสธคำขอคุกกี้บนไซต์ที่รองรับโดยอัตโนมัติ
+
+## Privacy Section - Cookie Banner Blocking
+
 cookie-banner-learn-more = เรียนรู้เพิ่มเติม
 forms-handle-cookie-banners =
     .label = ลดแบนเนอร์คุกกี้
@@ -1014,6 +1030,10 @@ content-blocking-all-windows-tracking-content = ตัวติดตามเ�
 content-blocking-all-cross-site-cookies = คุกกี้ข้ามไซต์ทั้งหมด
 content-blocking-cryptominers = ตัวขุดเหรียญดิจิทัล
 content-blocking-fingerprinters = ลายนิ้วมือดิจิทัล
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices. And
+# the suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-known-and-suspected-fingerprinters = ลายนิ้วมือดิจิทัลที่รู้จักและต้องสงสัย
 
 # The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
@@ -1052,6 +1072,18 @@ content-blocking-cryptominers-label =
 content-blocking-fingerprinters-label =
     .label = ลายนิ้วมือดิจิทัล
     .accesskey = F
+# Browser fingerprinting is a method of tracking users by the configuration and settings information (their "digital fingerprint")
+# that is visible to websites they browse, rather than traditional tracking methods such as IP addresses and unique cookies.
+#
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices.
+content-blocking-known-fingerprinters-label =
+    .label = ลายนิ้วมือดิจิทัลที่รู้จัก
+    .accesskey = ร
+# The suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-suspected-fingerprinters-label =
+    .label = ลายนิ้วมือดิจิทัลที่ต้องสงสัย
+    .accesskey = ส
 
 ## Privacy Section - Tracking
 
@@ -1114,6 +1146,8 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = การเก็บรวบรวมและใช้ข้อมูล { -brand-short-name }
+collection-header2 = การเก็บรวบรวมและใช้ข้อมูล { -brand-short-name }
+    .searchkeywords = การวัดและส่งข้อมูลทางไกล
 collection-description = เรามุ่งมั่นที่จะให้ทางเลือกกับคุณและเก็บรวบรวมเฉพาะสิ่งที่เราจำเป็นต้องให้บริการและปรับปรุง { -brand-short-name } สำหรับทุกคน เราขออนุญาตก่อนที่จะรับข้อมูลส่วนบุคคลเสมอ
 collection-privacy-notice = ข้อกำหนดความเป็นส่วนตัว
 collection-health-report-telemetry-disabled = คุณจะไม่อนุญาตให้ { -vendor-short-name } เก็บข้อมูลทางเทคนิคและการโต้ตอบอีกต่อไป ข้อมูลที่ผ่านมาทั้งหมดจะถูกลบภายใน 30 วัน
@@ -1170,6 +1204,9 @@ certs-view =
 certs-devices =
     .label = อุปกรณ์ความปลอดภัย…
     .accesskey = ค
+certs-thirdparty-toggle =
+    .label = ยอมให้ { -brand-short-name } เชื่อถือใบรับรองหลักของบุคคลที่สามที่คุณติดตั้งโดยอัตโนมัติ
+    .accesskey = ช
 space-alert-over-5gb-settings-button =
     .label = เปิดการตั้งค่า
     .accesskey = ป

@@ -6,6 +6,13 @@ shopping-page-title = { -brand-product-name } 购物
 # Title for page showing where a user can check the
 # review quality of online shopping product reviews
 shopping-main-container-title = 核查评价
+shopping-beta-marker = 测试版
+# This string is for ensuring that screen reader technology
+# can read out the "Beta" part of the shopping sidebar header.
+# Any changes to shopping-main-container-title and
+# shopping-beta-marker should also be reflected here.
+shopping-a11y-header =
+    .aria-label = 核查评价 - 测试版
 shopping-close-button =
     .title = 关闭
 # This string is for notifying screen reader users that the
@@ -31,33 +38,42 @@ shopping-letter-grade-tooltip =
 
 ## Strings for the shopping message-bar
 
-shopping-message-bar-warning-stale-analysis-title = 有可用更新
-shopping-message-bar-warning-stale-analysis-message = 启动 { -fakespot-brand-full-name } 分析工具约 60 秒可获得更新后的信息。
-shopping-message-bar-generic-error-title = 暂时无法分析
+shopping-message-bar-warning-stale-analysis-message-2 = 了解新信息
+shopping-message-bar-warning-stale-analysis-button = 立即了解
+shopping-message-bar-generic-error-title2 = 目前没有可提供的信息
 shopping-message-bar-generic-error-message = 我们正努力解决此问题，请稍后再试。
 shopping-message-bar-warning-not-enough-reviews-title = 还没有足够数量的评价
-shopping-message-bar-warning-not-enough-reviews-message = 此商品获得更多评价后，我们就能开始分析。
+shopping-message-bar-warning-not-enough-reviews-message2 = 此商品获得更多评价后，我们就能开始分析其评价的质量。
 shopping-message-bar-warning-product-not-available-title = 商品无货
-shopping-message-bar-warning-product-not-available-message = 若您发现此商品已有货，请向我们反馈，以便更新分析结果。
+shopping-message-bar-warning-product-not-available-message2 = 若您发现此商品已有货，请向我们反馈，以便我们核查评价。
 shopping-message-bar-warning-product-not-available-button = 反馈此商品已有货
 shopping-message-bar-thanks-for-reporting-title = 感谢反馈！
-shopping-message-bar-thanks-for-reporting-message = 我们会在 24 小时内更新分析结果，请记得回来查看。
-shopping-message-bar-warning-product-not-available-reported-title = 分析结果即将就绪
-shopping-message-bar-warning-product-not-available-reported-message = 更新后的分析结果将在 24 小时内提供，请记得回来查看。
-shopping-message-bar-warning-offline-title = 无网络连接
-shopping-message-bar-warning-offline-message = 请检查网络连接，然后尝试重新加载此页面。
-shopping-message-bar-analysis-in-progress-title = 分析结果即将就绪
-shopping-message-bar-analysis-in-progress-message = 完成后，我们会自动将更新后的信息显示在此处。
+shopping-message-bar-thanks-for-reporting-message2 = 我们会在 24 小时内提供此商品的评价分析信息，请记得回来查看。
+shopping-message-bar-warning-product-not-available-reported-title2 = 分析信息即将就绪
+shopping-message-bar-warning-product-not-available-reported-message2 = 我们会在 24 小时内提供此商品的评价分析信息，请记得回来查看。
+shopping-message-bar-generic-error =
+    .heading = 目前没有可提供的信息
+    .message = 我们正努力解决此问题，请稍后再试。
+shopping-message-bar-warning-not-enough-reviews =
+    .heading = 还没有足够数量的评价
+    .message = 此商品获得更多评价后，我们就能开始分析其评价的质量。
+shopping-message-bar-warning-product-not-available =
+    .heading = 商品无货
+    .message = 若您发现此商品已有货，请向我们反馈，以便我们核查评论。
+shopping-message-bar-warning-product-not-available-button2 = 反馈商品已有货
+shopping-message-bar-thanks-for-reporting =
+    .heading = 感谢反馈！
+    .message = 我们会在 24 小时内提供此商品的评价分析信息，请记得回来查看。
+shopping-message-bar-warning-product-not-available-reported =
+    .heading = 分析信息即将就绪
+    .message = 我们会在 24 小时内提供此商品的评价分析信息，请记得回来查看。
+shopping-message-bar-analysis-in-progress-title2 = 正在核查评价质量
+shopping-message-bar-analysis-in-progress-message2 = 这可能需要大约 60 秒。
 shopping-message-bar-page-not-supported-title = 无法核查这些评价
 shopping-message-bar-page-not-supported-message = 很抱歉，我们无法核查某些类型商品的评价质量，例如礼品卡、流媒体视频、音乐、游戏。
-
-## The word 'analyzer' when used here reflects what this tool is called on
-## fakespot.com. If possible, a different word should be used for the Fakespot
-## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
-## used in the name of the Firefox feature ('Review checker'). If that is not
-## possible - if these terms are not meaningfully different - that is OK.
-
-shopping-message-bar-warning-stale-analysis-link = 在 { -fakespot-website-name } 上启动分析工具
+shopping-message-bar-page-not-supported =
+    .heading = 无法核查这些评价
+    .message = 很抱歉，我们无法核查某些类型商品的评价质量，例如礼品卡、流媒体视频、音乐、游戏。
 
 ## Strings for the product review snippets card
 
@@ -81,11 +97,14 @@ shopping-settings-label =
 shopping-settings-recommendations-toggle =
     .label = 在核查评价中展示广告
 shopping-settings-recommendations-learn-more = 您偶尔会看到相关商品的广告，所有广告均符合我们的评价质量标准。<a data-l10n-name="review-quality-url">详细了解</a>
+shopping-settings-recommendations-learn-more2 = 您会偶尔看到相关产品的广告。我们只宣传获得可靠评价的产品。<a data-l10n-name="review-quality-url">了解更多</a>
 shopping-settings-opt-out-button = 关闭核查评价
-powered-by-fakespot = 核查评价由<a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>提供支持。
+powered-by-fakespot = 核查评价由 <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a> 提供支持。
 
 ## Strings for the adjusted rating component
 
+# "Adjusted rating" means a star rating that has been adjusted to include only
+# reliable reviews.
 shopping-adjusted-rating-label =
     .label = 调整后的评分
 shopping-adjusted-rating-unreliable-reviews = 已移除不可信的评价
@@ -98,13 +117,12 @@ shopping-review-reliability-label =
 ## Strings for the analysis explainer component
 
 shopping-analysis-explainer-label =
-    .label = 我们判断评价质量的流程
-shopping-analysis-explainer-intro =
-    我们使用 { -fakespot-brand-full-name } 的人工智能技术来分析商品评价的可信度。
-    分析结果只能辅助您评估评价的质量，不能反映商品质量。
+    .label = 我们判断评价质量的方式
+shopping-analysis-explainer-intro2 = 我们使用 { -fakespot-brand-full-name } 的人工智能技术来核查商品评价的可信度。核查结果只能辅助您评估评价的质量，不能反映商品质量。
 shopping-analysis-explainer-grades-intro = 我们会以<strong>字母等级</strong>（从 A 到 F）给商品评价打分。
 shopping-analysis-explainer-adjusted-rating-description = <strong>调整后的评分</strong>仅基于我们认为可信的评价作出。
-shopping-analysis-explainer-learn-more = 详细了解<a data-l10n-name="review-quality-url">{ -fakespot-brand-full-name } 判断评价质量的流程</a>。
+shopping-analysis-explainer-learn-more = 详细了解 <a data-l10n-name="review-quality-url">{ -fakespot-brand-full-name } 判断评价质量的方式</a>。
+shopping-analysis-explainer-learn-more2 = 详细了解 <a data-l10n-name="review-quality-url">{ -fakespot-brand-name } 判断评价质量的方式</a>。
 # This string includes the short brand name of one of the three supported
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
@@ -115,10 +133,10 @@ shopping-analysis-explainer-review-grading-scale-unreliable = 评价不可信。
 
 ## Strings for UrlBar button
 
-shopping-sidebar-open-button =
-    .tooltiptext = 打开购物侧栏
-shopping-sidebar-close-button =
-    .tooltiptext = 关闭购物侧栏
+shopping-sidebar-open-button2 =
+    .tooltiptext = 打开核查评价
+shopping-sidebar-close-button2 =
+    .tooltiptext = 关闭核查评价
 
 ## Strings for the unanalyzed product card.
 ## The word 'analyzer' when used here reflects what this tool is called on
@@ -127,12 +145,80 @@ shopping-sidebar-close-button =
 ## used in the name of the Firefox feature ('Review checker'). If that is not
 ## possible - if these terms are not meaningfully different - that is OK.
 
-shopping-unanalyzed-product-header = 尚无对于这些评价的分析
-shopping-unanalyzed-product-message = 启动 { -fakespot-brand-full-name } 分析工具，只需 60 秒即可获知对此商品的评价是否可信。
-shopping-unanalyzed-product-analyze-link = 在 { -fakespot-website-name } 上启动分析工具
+
+## Strings for the unanalyzed product card.
+## The word 'analyzer' when used here reflects what this tool is called on
+## fakespot.com. If possible, a different word should be used for the Fakespot
+## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
+## used in the name of the Firefox feature ('Review Checker'). If that is not
+## possible - if these terms are not meaningfully different - that is OK.
+
+shopping-unanalyzed-product-header-2 = 还没有关于这些评价的信息
+shopping-unanalyzed-product-message-2 = 如需了解对此商品的评价是否可信，请检查评价质量。只需约 60 秒即可得出结果。
+shopping-unanalyzed-product-analyze-button = 核查评价质量
 
 ## Strings for the advertisement
 
 more-to-consider-ad-label =
     .label = 可参考其他商品
 ad-by-fakespot = { -fakespot-brand-name } 提供的广告
+
+## Shopping survey strings.
+
+shopping-survey-headline = 帮助改进 { -brand-product-name }
+shopping-survey-question-one = 您满意 { -brand-product-name } 核查评价的使用体验吗？
+shopping-survey-q1-radio-1-label = 非常满意
+shopping-survey-q1-radio-2-label = 满意
+shopping-survey-q1-radio-3-label = 无感
+shopping-survey-q1-radio-4-label = 不满意
+shopping-survey-q1-radio-5-label = 非常不满意
+shopping-survey-question-two = 核查评价是否能让您更轻松做出购买决定？
+shopping-survey-q2-radio-1-label = 是的
+shopping-survey-q2-radio-2-label = 没有
+shopping-survey-q2-radio-3-label = 说不准
+shopping-survey-next-button-label = 下一步
+shopping-survey-submit-button-label = 提交
+shopping-survey-terms-link = 使用条款
+shopping-survey-thanks-message = 感谢反馈！
+shopping-survey-thanks =
+    .heading = 感谢反馈！
+
+## Shopping Feature Callout strings.
+## "price tag" refers to the price tag icon displayed in the address bar to
+## access the feature.
+
+shopping-callout-closed-opted-in-subtitle = 点击此价签图标即可再次打开<strong>核查评价</strong>。
+shopping-callout-pdp-opted-in-title = 这些评价是否可信？快速了解一下。
+shopping-callout-pdp-opted-in-subtitle = 打开核查评价，查看基于可信评价调整后的评分，另外还可查看近期最有帮助的评价。
+shopping-callout-closed-not-opted-in-title = 一键获取可信评价
+shopping-callout-closed-not-opted-in-subtitle = 点击“价签”图标即可打开核查评价，在购买前一览真实买家的反馈。
+
+## Onboarding message strings.
+
+shopping-onboarding-headline = 试试我们可信赖的商品评价向导
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle = 在购买前先看看 <b>{ $currentSite }</b> 上商品评价的可信度如何。核查评价是 { -vendor-short-name } 的一项实验性功能，内置于 { -brand-product-name } 中，在 <b>{ $secondSite }</b> 和 <b>{ $thirdSite }</b> 网站上同样可用。
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle-1 = 在购买前先看看 <b>{ $currentSite }</b> 上商品评价的可信度如何。核查评价是 { -brand-product-name } 的一项实验性功能，内置于浏览器中，在 <b>{ $secondSite }</b> 和 <b>{ $thirdSite }</b> 网站上同样可用。
+shopping-onboarding-body = { -fakespot-brand-full-name } 可帮助您规避不真实、不公允的评价。在您购物时，我们的人工智能模型也会不断改进，以更好地保护您的权益。<a data-l10n-name="learn_more">详细了解</a>
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use = 选择“{ shopping-onboarding-opt-in-button }”即表明您同意 { -fakespot-brand-full-name } 的<a data-l10n-name="privacy_policy">隐私政策</a>和<a data-l10n-name="terms_of_use">使用条款</a>。
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = 选择“{ shopping-onboarding-opt-in-button }”即表示您同意 { -fakespot-brand-name } 的<a data-l10n-name="privacy_policy">隐私政策</a>和<a data-l10n-name="terms_of_use">使用条款</a>。
+shopping-onboarding-opt-in-button = 试试看
+shopping-onboarding-not-now-button = 暂时不要
+shopping-onboarding-dialog-close-button =
+    .title = 关闭
+    .aria-label = 关闭
+# Aria-label to make the "steps" of the shopping onboarding container visible to screen readers.
+# Variables:
+#   $current (Int) - Number of the current page
+#   $total (Int) - Total number of pages
+shopping-onboarding-welcome-steps-indicator-label =
+    .aria-label = 进度：第 { $current } 步，共 { $total } 步

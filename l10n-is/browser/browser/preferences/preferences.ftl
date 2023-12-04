@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Segja vefsvæðum að selja ekki eða deila gögnunum mínum
     .accesskey = S
+non-technical-privacy-header = Persónuverndarstefna vefsvæðis
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Stillingar
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Opna fyrri glugga og flipa
     .accesskey = O
+windows-launch-on-login =
+    .label = Opna { -brand-short-name } sjálfkrafa þegar tölvan þín ræsir
+    .accesskey = O
+windows-launch-on-login-disabled = Þessi kjörstilling hefur verið gerð óvirk í Windows. Til að breyta því, skaltu fara í <a data-l10n-name="startup-link">Ræsiforrit / Startup Apps</a> í kerfisstillingunum.
 startup-restore-warn-on-quit =
     .label = Aðvara þegar vafra er lokað
 disable-extension =
@@ -295,7 +304,7 @@ download-always-ask-where =
     .label = Alltaf spyrja hvert á að vista skrár
     .accesskey = A
 applications-header = Forrit
-applications-description = Veldu hvernig { -brand-short-name } meðhöndlar skrár sem þú halar niður frá vefnum eða forritum þegar þú ert að vafra.
+applications-description = Veldu hvernig { -brand-short-name } meðhöndlar skrár sem þú sækir af vefnum eða með forritum þegar þú ert að vafra.
 applications-filter =
     .placeholder = Leita að skráargerðum og forritum
 applications-type-column =
@@ -618,7 +627,7 @@ search-show-suggestions-above-history-option =
 search-show-suggestions-private-windows =
     .label = Sýna leitartillögur í huliðsgluggum
 suggestions-addressbar-settings-generic2 = Breyta stillingum fyrir aðrar tillögur í veffangastiku
-search-suggestions-cant-show = Leitartillögur verða ekki sýndar í staðsetningarslá þar sem þú hefur stillt { -brand-short-name } þannig að hann muni ekki neinn leitarferil.
+search-suggestions-cant-show = Leitartillögur verða ekki sýndar í veffangastikunni þar sem þú hefur stillt { -brand-short-name } á að muna ekki neinn leitarferil.
 search-one-click-header2 = Flýtileiðir við leit
 search-one-click-desc = Veldu aðrar leitarvélar sem munu birtast fyrir neðan veffangastikuna og leitarstikuna þegar þú byrjar að slá inn leitarorð.
 search-choose-engine-column =
@@ -961,14 +970,21 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Fækkun vefkökuborða
 cookie-banner-handling-description = { -brand-short-name } reynir sjálfkrafa að hafna beiðnum um vefkökur á þeim vefsvæðum þar sem það er hægt.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Útilokun vefkökuborða
+cookie-banner-blocker-description = Þegar vefsvæði spyr hvort það megi nota vefkökur í huliðsvafraham, hafnat { -brand-short-name } því sjálfkrafa fyrir þig. Virkar aðeins á studdum vefsvæðum.
 cookie-banner-learn-more = Frekari upplýsingar
 forms-handle-cookie-banners =
     .label = Fækkaðu vefkökuborðum
+cookie-banner-blocker-checkbox-label =
+    .label = Hafna sjálfkrafa vefkökuborðum
 
 ## Privacy Section - Address Bar
 
 addressbar-header = Veffangastika
-addressbar-suggest = Þegar veffangastikuna er notuð skal stinga upp á
+addressbar-suggest = Þegar veffangastikan er notuð skal stinga upp á
 addressbar-locbar-history-option =
     .label = Vafurferill
     .accesskey = f
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Flýtiaðgerðir
     .accesskey = g
+addressbar-locbar-showrecentsearches-option =
+    .label = Sýna nýlegar leitir
+    .accesskey = r
 addressbar-suggestions-settings = Breyta stillingum fyrir ábendingar leitarvéla
 addressbar-quickactions-learn-more = Kanna nánar
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Aukin rakningarvörn
 content-blocking-section-top-level-description = Rekjarar fylgjast með þér á netinu til að safna upplýsingum um vafurvenjur þínar og áhugamál. { -brand-short-name } hindrar marga af þessum rekjurum og auk annarra skaðlegra skrifta.
 content-blocking-learn-more = Frekari upplýsingar
 content-blocking-fpi-incompatibility-warning = Þú ert að nota First Party Isolation (FPI), sem er æðra en sumar af vefkökustillingum { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Þú ert að nota 'Resist Fingerprinting' (RFP), sem kemur í stað sumra stillinga á vörnum gegnfingrafarasöfnun í { -brand-short-name }. Þetta gæti valdið því að sumar síður virki ekki.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1034,7 +1057,7 @@ content-blocking-all-cookies = Allar vefkökur
 content-blocking-unvisited-cookies = Vefkökur frá óheimsóttum vefsíðum
 content-blocking-all-windows-tracking-content = Rakningu efnis í öllum gluggum
 content-blocking-all-cross-site-cookies = Allar milli-vefja vefkökur
-content-blocking-cryptominers = Rafmynt grafarar
+content-blocking-cryptominers = Rafmyntagröftur
 content-blocking-fingerprinters = Fingraför
 # The known fingerprinters are those that are known for collecting browser fingerprints from user devices. And
 # the suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
@@ -1152,6 +1175,8 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = Söfnun og notkun gagna í { -brand-short-name }
+collection-header2 = Söfnun og notkun gagna í { -brand-short-name }
+    .searchkeywords = gagnasöfnun
 collection-description = Við reynum alltaf að bjóða upp á valkosti og söfnum aðeins þeim upplýsingum sem við þurfum til að endurbæta { -brand-short-name } fyrir alla. Við spyrjum alltaf um leyfi áður en við söfnum persónulegum upplýsingum.
 collection-privacy-notice = Meðferð persónuupplýsinga
 collection-health-report-telemetry-disabled = Þú leyfir { -vendor-short-name } ekki lengur að safna tækni- og samskiptagögnum. Öllum fyrri gögnum verður eytt innan 30 daga.
@@ -1208,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Öryggistæki…
     .accesskey = y
+certs-thirdparty-toggle =
+    .label = Leyfa { -brand-short-name } að treysta sjálfkrafa þeim rótarskilríkjum utanaðkomandi aðila sem þú setur upp
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Opna stillingar
     .accesskey = O

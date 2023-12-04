@@ -13,9 +13,9 @@ about-glean-page-title2 = { -glean-brand-name } rehegua
 about-glean-header = { -glean-brand-name } rehegua
 about-glean-interface-description =
     Pe <a data-l10n-name="glean-sdk-doc-link">{ glean-sdk-brand-name }</a>
-    ha’e mba’ekuaarã ñembyatyha arandukarenda ojepurúva { -vendor-short-name } apopyrépe.
+    ha’e mba’ekuaarã ñembyatyha arandukarenda ojeporúva { -vendor-short-name } apopyrépe.
     Ko jehechaha ojejapo mboguatahára ha ta’ãhára
-    <a data-l10n-name="fog-link">oha’ã hag̃ua ipoite rupi jepurupyrã</a>.
+    <a data-l10n-name="fog-link">oha’ã hag̃ua ipoite rupi jeporupyrã</a>.
 about-glean-upload-enabled = Mba’ekuaarã ñemyanyhẽ hendýma.
 about-glean-upload-disabled = Mba’ekuaarã ñemyanyhẽ oguéma.
 about-glean-upload-enabled-local = Mba’ekuaarã myanyhẽ hendýta emondo hag̃ua mohendahavusu ag̃uiguápe.
@@ -80,10 +80,15 @@ about-glean-li-for-visit-gdpv =
 # Do not translate strings between <code> </code> tags.
 about-glean-adhoc-explanation =
     Eha’ãve hag̃ua <i>ad hoc</i>,
-    avei ehechakuaa purupyrã repy ag̃aguáva
+    avei ehechakuaa porupyrã repy ag̃aguáva
     embojurujávo peteĩ tembiporu mba’e’okarupa ñemboguataha ko’ápe <code>about:glean</code>
-    ha eipurúvo pe API <code>testGetValue()</code> ko
+    ha eiporúvo pe API <code>testGetValue()</code> ko
     <code>Glean.metricCategory.metricName.testGetValue()</code> ramo.
+# Do not translate strings between <code> </code> tags.
+about-glean-adhoc-note =
+    Eikuaáke eiporuha API Glean JS pe mba’e’okarupa devtools rupive.
+    Kóva he’ise pe métrica ha pe métrica réra oguerekoha ysaja
+    <code>camelCase</code> ojuavýva umi APIs de Rust y C++ reheguágui.
 controls-button-label-verbose = Emboheko ha emondo ping
 about-glean-about-data-header = Mba’ekuaarã rehegua
 about-glean-about-data-explanation =

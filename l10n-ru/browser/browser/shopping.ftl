@@ -6,6 +6,13 @@ shopping-page-title = Покупки в { -brand-product-name }
 # Title for page showing where a user can check the
 # review quality of online shopping product reviews
 shopping-main-container-title = Проверка отзывов
+shopping-beta-marker = Бета
+# This string is for ensuring that screen reader technology
+# can read out the "Beta" part of the shopping sidebar header.
+# Any changes to shopping-main-container-title and
+# shopping-beta-marker should also be reflected here.
+shopping-a11y-header =
+    .aria-label = Проверка отзывов – бета
 shopping-close-button =
     .title = Закрыть
 # This string is for notifying screen reader users that the
@@ -31,33 +38,42 @@ shopping-letter-grade-tooltip =
 
 ## Strings for the shopping message-bar
 
-shopping-message-bar-warning-stale-analysis-title = Доступны обновления
-shopping-message-bar-warning-stale-analysis-message = Запустите анализатор { -fakespot-brand-full-name }, чтобы получить обновленную информацию примерно через 60 секунд.
-shopping-message-bar-generic-error-title = Сейчас анализ недоступен
+shopping-message-bar-warning-stale-analysis-message-2 = Новая информация для проверки
+shopping-message-bar-warning-stale-analysis-button = Проверить сейчас
+shopping-message-bar-generic-error-title2 = На данный момент нет доступной информации
 shopping-message-bar-generic-error-message = Мы работаем над решением проблемы. Пожалуйста, зайдите в ближайшее время.
 shopping-message-bar-warning-not-enough-reviews-title = Пока недостаточно отзывов
-shopping-message-bar-warning-not-enough-reviews-message = Когда у этого товара будет больше отзывов, мы сможем их проанализировать.
+shopping-message-bar-warning-not-enough-reviews-message2 = Когда у этого товара будет больше отзывов, мы сможем проверить его качество.
 shopping-message-bar-warning-product-not-available-title = Товар недоступен
-shopping-message-bar-warning-product-not-available-message = Если вы увидите, что этот товар снова в наличии, сообщите нам об этом, и мы обновим анализ.
+shopping-message-bar-warning-product-not-available-message2 = Если вы увидите, что этот товар снова в наличии, сообщите об этом, и мы проверим отзывы.
 shopping-message-bar-warning-product-not-available-button = Сообщить, что этот товар снова в наличии
 shopping-message-bar-thanks-for-reporting-title = Спасибо за сообщение!
-shopping-message-bar-thanks-for-reporting-message = Мы должны получить обновленный анализ в течение 24 часов. Пожалуйста, зайдите позже.
-shopping-message-bar-warning-product-not-available-reported-title = Анализ скоро будет доступен
-shopping-message-bar-warning-product-not-available-reported-message = Обновленный анализ должен быть готов в течение 24 часов. Пожалуйста, зайдите позже.
-shopping-message-bar-warning-offline-title = Нет подключения к сети
-shopping-message-bar-warning-offline-message = Проверьте сетевое соединение. Затем попробуйте перезагрузить страницу.
-shopping-message-bar-analysis-in-progress-title = Анализ скоро будет доступен
-shopping-message-bar-analysis-in-progress-message = Когда процесс завершится, мы автоматически покажем здесь обновленную информацию.
+shopping-message-bar-thanks-for-reporting-message2 = Мы должны получить информацию об отзывах на этот продукт в течение 24 часов. Пожалуйста, зайдите позже.
+shopping-message-bar-warning-product-not-available-reported-title2 = Информация скоро появится
+shopping-message-bar-warning-product-not-available-reported-message2 = Мы должны получить информацию об отзывах на этот продукт в течение 24 часов. Пожалуйста, зайдите позже.
+shopping-message-bar-generic-error =
+    .heading = На данный момент нет доступной информации
+    .message = Мы работаем над решением проблемы. Пожалуйста, зайдите в ближайшее время.
+shopping-message-bar-warning-not-enough-reviews =
+    .heading = Пока недостаточно отзывов
+    .message = Когда у этого товара будет больше отзывов, мы сможем проверить его качество.
+shopping-message-bar-warning-product-not-available =
+    .heading = Товар недоступен
+    .message = Если вы увидите, что этот товар снова в наличии, сообщите об этом, и мы проверим отзывы.
+shopping-message-bar-warning-product-not-available-button2 = Сообщить о наличии товара на складе
+shopping-message-bar-thanks-for-reporting =
+    .heading = Спасибо за сообщение!
+    .message = Мы должны получить информацию об отзывах на этот продукт в течение 24 часов. Пожалуйста, зайдите позже.
+shopping-message-bar-warning-product-not-available-reported =
+    .heading = Информация скоро появится
+    .message = Мы должны получить информацию об отзывах на этот продукт в течение 24 часов. Пожалуйста, зайдите позже.
+shopping-message-bar-analysis-in-progress-title2 = Проверяем качество отзывов
+shopping-message-bar-analysis-in-progress-message2 = Это может занять около 60 секунд.
 shopping-message-bar-page-not-supported-title = Мы не можем проверить эти отзывы
 shopping-message-bar-page-not-supported-message = К сожалению, мы не можем проверить качество отзывов на некоторые виды товаров. Например, подарочные карты и потоковое видео, музыку и игры.
-
-## The word 'analyzer' when used here reflects what this tool is called on
-## fakespot.com. If possible, a different word should be used for the Fakespot
-## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
-## used in the name of the Firefox feature ('Review checker'). If that is not
-## possible - if these terms are not meaningfully different - that is OK.
-
-shopping-message-bar-warning-stale-analysis-link = Запустите анализатор на { -fakespot-website-name }
+shopping-message-bar-page-not-supported =
+    .heading = Мы не можем проверить эти отзывы
+    .message = К сожалению, мы не можем проверить качество отзывов на некоторые виды товаров. Например, подарочные карты и потоковое видео, музыку и игры.
 
 ## Strings for the product review snippets card
 
@@ -81,11 +97,14 @@ shopping-settings-label =
 shopping-settings-recommendations-toggle =
     .label = Показывать рекламу в инструменте проверки отзывов
 shopping-settings-recommendations-learn-more = Время от времени вы будете видеть рекламу похожих продуктов. Все объявления должны соответствовать нашим стандартам качества проверки. <a data-l10n-name="review-quality-url">Подробнее</a>
+shopping-settings-recommendations-learn-more2 = Время от времени вы будете видеть рекламу соответствующих продуктов. Мы рекламируем только товары с достоверными отзывами. <a data-l10n-name="review-quality-url">Подробнее</a>
 shopping-settings-opt-out-button = Отключить инструмент проверки отзывов
 powered-by-fakespot = Инструмент проверки отзывов работает на основе <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
 
 ## Strings for the adjusted rating component
 
+# "Adjusted rating" means a star rating that has been adjusted to include only
+# reliable reviews.
 shopping-adjusted-rating-label =
     .label = Скорректированный рейтинг
 shopping-adjusted-rating-unreliable-reviews = Недостоверные отзывы удалены
@@ -99,12 +118,11 @@ shopping-review-reliability-label =
 
 shopping-analysis-explainer-label =
     .label = Как мы определяем качество отзывов
-shopping-analysis-explainer-intro =
-    Мы используем технологию ИИ от { -fakespot-brand-full-name } для анализа достоверности отзывов на продукты.
-    Этот анализ поможет вам оценить только качество отзывов, а не качество продукта.
+shopping-analysis-explainer-intro2 = Мы используем технологию ИИ от { -fakespot-brand-full-name } для проверки достоверности обзоров продуктов. Это поможет вам оценить только качество отзывов, а не качество продукта.
 shopping-analysis-explainer-grades-intro = Мы присваиваем отзывам каждого продукта <strong>буквенную оценку</strong> от A до F.
 shopping-analysis-explainer-adjusted-rating-description = <strong>Скорректированная оценка</strong> основана только на отзывах, которые мы считаем достоверными.
 shopping-analysis-explainer-learn-more = Узнайте больше о том, <a data-l10n-name="review-quality-url">как { -fakespot-brand-full-name } определяет качество отзывов</a>.
+shopping-analysis-explainer-learn-more2 = Узнайте больше о том, <a data-l10n-name="review-quality-url">как { -fakespot-brand-name } определяет качество отзывов</a>.
 # This string includes the short brand name of one of the three supported
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
@@ -115,10 +133,10 @@ shopping-analysis-explainer-review-grading-scale-unreliable = Недостове
 
 ## Strings for UrlBar button
 
-shopping-sidebar-open-button =
-    .tooltiptext = Открыть боковую панель покупок
-shopping-sidebar-close-button =
-    .tooltiptext = Закрыть боковую панель покупок
+shopping-sidebar-open-button2 =
+    .tooltiptext = Открыть проверку отзывов
+shopping-sidebar-close-button2 =
+    .tooltiptext = Закрыть проверку отзывов
 
 ## Strings for the unanalyzed product card.
 ## The word 'analyzer' when used here reflects what this tool is called on
@@ -127,12 +145,80 @@ shopping-sidebar-close-button =
 ## used in the name of the Firefox feature ('Review checker'). If that is not
 ## possible - if these terms are not meaningfully different - that is OK.
 
-shopping-unanalyzed-product-header = Анализа этих отзывов пока нет
-shopping-unanalyzed-product-message = Запустите анализатор { -fakespot-brand-full-name }, и примерно через 60 секунд вы узнаете, достоверны ли отзывы об этом продукте.
-shopping-unanalyzed-product-analyze-link = Запустить анализатор на { -fakespot-website-name }
+
+## Strings for the unanalyzed product card.
+## The word 'analyzer' when used here reflects what this tool is called on
+## fakespot.com. If possible, a different word should be used for the Fakespot
+## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
+## used in the name of the Firefox feature ('Review Checker'). If that is not
+## possible - if these terms are not meaningfully different - that is OK.
+
+shopping-unanalyzed-product-header-2 = Информации об этих отзывах пока нет
+shopping-unanalyzed-product-message-2 = Чтобы узнать, достоверны ли отзывы на этот продукт, проверьте качество отзывов. Это займет всего около 60 секунд.
+shopping-unanalyzed-product-analyze-button = Проверить качество отзывов
 
 ## Strings for the advertisement
 
 more-to-consider-ad-label =
     .label = На что ещё обратить внимание
 ad-by-fakespot = Реклама от { -fakespot-brand-name }
+
+## Shopping survey strings.
+
+shopping-survey-headline = Помогите улучшить { -brand-product-name }
+shopping-survey-question-one = Насколько вы удовлетворены функцией проверки отзывов в { -brand-product-name }?
+shopping-survey-q1-radio-1-label = Очень доволен
+shopping-survey-q1-radio-2-label = Удовлетворен
+shopping-survey-q1-radio-3-label = Нейтрален
+shopping-survey-q1-radio-4-label = Недоволен
+shopping-survey-q1-radio-5-label = Очень недоволен
+shopping-survey-question-two = Облегчает ли вам средство проверки отзывов принятие решения о покупке?
+shopping-survey-q2-radio-1-label = Да
+shopping-survey-q2-radio-2-label = Нет
+shopping-survey-q2-radio-3-label = Я не знаю
+shopping-survey-next-button-label = Далее
+shopping-survey-submit-button-label = Отправить
+shopping-survey-terms-link = Условия использования
+shopping-survey-thanks-message = Спасибо за ваш отзыв!
+shopping-survey-thanks =
+    .heading = Спасибо за ваш отзыв!
+
+## Shopping Feature Callout strings.
+## "price tag" refers to the price tag icon displayed in the address bar to
+## access the feature.
+
+shopping-callout-closed-opted-in-subtitle = Возвращайтесь к <strong>проверке отзывов</strong> всякий раз, когда увидите ценник.
+shopping-callout-pdp-opted-in-title = Эти отзывы заслуживают доверия? Узнайте это быстро.
+shopping-callout-pdp-opted-in-subtitle = Откройте инструмент проверки отзывов, чтобы увидеть скорректированную оценку и удалить ненадежные отзывы. Кроме того, посмотрите основные моменты из недавних достоверных обзоров.
+shopping-callout-closed-not-opted-in-title = Одно нажатие для надежных отзывов
+shopping-callout-closed-not-opted-in-subtitle = Используйте инструмент проверки отзывов каждый раз, когда увидите цену. Быстро получите информацию от реальных покупателей — прежде чем совершить покупку.
+
+## Onboarding message strings.
+
+shopping-onboarding-headline = Оцените наше руководство по достоверности отзывов на продукты
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle = Прежде чем совершить покупку, проверьте, насколько надежны отзывы о продуктах на <b>{ $currentSite }</b>. Проверка отзывов, экспериментальная функция от { -vendor-short-name }, встроена прямо в { -brand-product-name } и работает на <b>{ $secondSite }</b>, а также <b>{ $thirdSite }</b>.
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle-1 = Прежде чем совершить покупку, проверьте, насколько надежны отзывы о продуктах на <b>{ $currentSite }</b>. Проверка отзывов, экспериментальная функция от { -brand-product-name }, встроена прямо в браузер. Она также работает на <b>{ $secondSite }</b> и <b>{ $thirdSite }</b>.
+shopping-onboarding-body = Используя возможности { -fakespot-brand-full-name }, мы помогаем вам избежать предвзятых и недостоверных отзывов. Наша модель искусственного интеллекта постоянно совершенствуется, чтобы защитить вас во время покупок. <a data-l10n-name="learn_more">Подробнее</a>
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use = Нажимая кнопку «{ shopping-onboarding-opt-in-button }», вы соглашаетесь с <a data-l10n-name="privacy_policy">политикой конфиденциальности</a> и <a data-l10n-name="terms_of_use">условиями использования</a> { -fakespot-brand-full-name }.
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Нажимая кнопку «{ shopping-onboarding-opt-in-button }», вы соглашаетесь с <a data-l10n-name="privacy_policy">политикой конфиденциальности</a> и <a data-l10n-name="terms_of_use">условиями использования</a> { -fakespot-brand-name }.
+shopping-onboarding-opt-in-button = Да, попробовать
+shopping-onboarding-not-now-button = Не сейчас
+shopping-onboarding-dialog-close-button =
+    .title = Закрыть
+    .aria-label = Закрыть
+# Aria-label to make the "steps" of the shopping onboarding container visible to screen readers.
+# Variables:
+#   $current (Int) - Number of the current page
+#   $total (Int) - Total number of pages
+shopping-onboarding-welcome-steps-indicator-label =
+    .aria-label = Прогресс: шаг { $current } из { $total }

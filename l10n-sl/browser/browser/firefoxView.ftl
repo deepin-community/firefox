@@ -29,12 +29,14 @@ firefoxview-tabpickup-step-signin-header = Brez težav preklapljajte med naprava
 firefoxview-tabpickup-step-signin-description = Če želite tukaj prikazati zavihke s telefona, se prijavite ali ustvarite račun.
 firefoxview-tabpickup-step-signin-primarybutton = Nadaljuj
 firefoxview-syncedtabs-signin-header = Zajemite zavihke od koderkoli
+firefoxview-syncedtabs-signin-description = Če želite svoje zavihke videti ne glede na to, kje uporabljate { -brand-product-name }, se prijavite v svoj račun. Če računa še nimate, vas bomo popeljali skozi korake za prijavo.
 firefoxview-syncedtabs-signin-primarybutton = Prijavite se ali ustvarite račun
 firefoxview-tabpickup-adddevice-header = Sinhronizirajte { -brand-product-name } s telefonom ali tablico
 firefoxview-tabpickup-adddevice-description = Prenesite { -brand-product-name } za mobilne naprave in se prijavite vanj.
 firefoxview-tabpickup-adddevice-learn-how = Poglejte, kako
 firefoxview-tabpickup-adddevice-primarybutton = Prenesi { -brand-product-name } za mobilne naprave
 firefoxview-syncedtabs-adddevice-header = Prijavite se v { -brand-product-name } na drugih napravah
+firefoxview-syncedtabs-adddevice-description = Če želite svoje zavihke videti ne glede na to, kje uporabljate { -brand-product-name }, se prijavite v vseh svojih napravah. Spoznajte, kako <a data-l10n-name="url">povezati dodatne naprave</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Preizkusite { -brand-product-name } za mobilne naprave
 firefoxview-tabpickup-synctabs-header = Vklopi sinhronizacijo zavihkov
 firefoxview-tabpickup-synctabs-description = { -brand-short-name(sklon: "dajalnik") } dovoli skupno rabo zavihkov med napravami.
@@ -44,6 +46,7 @@ firefoxview-syncedtabs-synctabs-header = Spremeni nastavitve sinhronizacije
 firefoxview-syncedtabs-synctabs-description = Za ogled zavihkov z drugih naprav se morajo odprti zavihki sinhronizirati.
 firefoxview-syncedtabs-synctabs-checkbox = Dovoli sinhronizacijo odprtih zavihkov
 firefoxview-syncedtabs-loading-header = Sinhronizacija v teku
+firefoxview-syncedtabs-loading-description = Ko se bo končala, se bodo prikazali vsi zavihki, ki jih imate odprte na drugih napravah. Vrnite se čez nekaj trenutkov.
 firefoxview-tabpickup-fxa-admin-disabled-header = Vaša organizacija je onemogočila sinhronizacijo
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } ne more sinhronizirati zavihkov med napravami, ker je skrbnik onemogočil sinhronizacijo.
 firefoxview-tabpickup-network-offline-header = Preverite svojo povezavo z internetom
@@ -62,6 +65,7 @@ firefoxview-tabpickup-password-locked-primarybutton = Vnesite glavno geslo
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Več o tem</a>
 firefoxview-tabpickup-signed-out-header = Prijavite se, da se ponovno povežete
 firefoxview-tabpickup-signed-out-description = Za ponovno vzpostavitev povezave in zajem zavihkov se prijavite v { -fxaccount-brand-name }.
+firefoxview-tabpickup-signed-out-description2 = Za ponovno vzpostavitev povezave in zajem zavihkov se prijavite v račun.
 firefoxview-tabpickup-signed-out-primarybutton = Prijava
 firefoxview-tabpickup-syncing = Počakajte, da se zavihki sinhronizirajo. Trajalo bo samo trenutek.
 firefoxview-mobile-promo-header = Zajemite zavihke s telefona ali tablice
@@ -170,6 +174,7 @@ firefoxview-view-more-browsing-history = Prikaži več zgodovine brskanja
 ## Message displayed in Firefox View when the user has no history data
 
 firefoxview-history-empty-header = Vrnite se tja, kjer ste bili
+firefoxview-history-empty-description = Med brskanjem bodo strani, ki jih obiščete, navedene tukaj.
 firefoxview-history-empty-description-two = Varstvo vaše zasebnosti je v središču našega delovanja. Zato lahko v <a data-l10n-name="history-settings-url">nastavitvah zgodovine</a> odločate, katero dejavnost naj si { -brand-short-name } zapomni.
 
 ##
@@ -180,6 +185,7 @@ firefoxview-choose-browser-button = Izberite brskalnik
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
+firefoxview-dont-remember-history-empty-header = Nič za prikaz
 firefoxview-dont-remember-history-empty-description = Varstvo vaše zasebnosti je srž našega delovanja. Zato lahko odločate, katero dejavnost naj si { -brand-short-name } zapomni.
 firefoxview-dont-remember-history-empty-description-two = Pri trenutnih nastavitvah si { -brand-short-name } ne zapomni vašega brskanja. Če želite to spremeniti, <a data-l10n-name="history-settings-url-two">v nastavitvah izberite shranjevanje zgodovine</a>.
 
@@ -201,9 +207,7 @@ firefoxview-recentlyclosed-empty-header = Ste prehitro zaprli zavihek?
 firefoxview-recentlyclosed-empty-description = Tu najdete zavihke, ki ste jih pred kratkim zaprli, in jih lahko hitro znova odprete.
 firefoxview-recentlyclosed-empty-description-two = Starejše zavihke poiščite v <a data-l10n-name="history-url">zgodovini brskanja</a>.
 
-##
-
-
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 
 firefoxview-syncedtabs-device-notabs = Na tej napravi ni odprtih zavihkov
+firefoxview-syncedtabs-connect-another-device = Poveži drugo napravo

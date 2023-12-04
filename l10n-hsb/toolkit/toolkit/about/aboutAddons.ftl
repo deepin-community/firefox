@@ -166,7 +166,6 @@ extensions-warning-update-security2 =
     .message = Přepruwowanje wěstoty aktualizacije je znjemóžnjene. Je móžno, zo aktualizacije wam wohrožuja.
 extensions-warning-update-security-button = Zmóžnić
     .title = Přepruwowanje wěstoty aktualizacije zmóžnić
-extensions-warning-imported-addons = Prošu dokónčće instalaciju rozšěrjenjow, kotrež su so do { -brand-short-name } importowali.
 extensions-warning-imported-addons2 =
     .message = Prošu dokónčće instalaciju rozšěrjenjow, kotrež su so do { -brand-short-name } importowali.
 extensions-warning-imported-addons-button = Rozšěrjenja instalować
@@ -358,6 +357,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> je so wotstronił.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } je so wotstronił.
 pending-uninstall-undo-button = Cofnyć
 addon-detail-updates-label = Awtomatiske aktualizacije dowolić
 addon-detail-updates-radio-default = Standard

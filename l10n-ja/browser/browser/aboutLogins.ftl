@@ -77,6 +77,7 @@ about-logins-login-intro-heading-logged-out2 = 保存したログイン情報を
 about-logins-login-intro-heading-logged-in = 同期したログイン情報はありません。
 login-intro-description = 別の端末の { -brand-product-name } に保存したログイン情報は、以下の手順で取得できます:
 login-intro-instructions-fxa = ログイン情報を保存した端末で { -fxaccount-brand-name } を作成、またはログインしてください。
+login-intro-instructions-fxa2 = ログイン情報を保存した端末でアカウントを作成、またはログインしてください。
 login-intro-instructions-fxa-settings = [設定] > [同期] > [同期をオンにする...] で、ログイン情報とパスワードのチェックボックスを選択してください。
 login-intro-instructions-fxa-passwords-help = <a data-l10n-name="passwords-help-link">パスワードのサポート記事</a> で詳細なヘルプを確認できます。
 about-logins-intro-browser-only-import = 他のブラウザーにログイン情報が保存されている場合は、<a data-l10n-name="import-link">それらを { -brand-product-name } にインポートできます</a>。
@@ -158,7 +159,7 @@ confirmation-dialog-cancel-button = キャンセル
 confirmation-dialog-dismiss-button =
     .title = キャンセル
 about-logins-confirm-remove-dialog-title = このログイン情報を消去しますか？
-confirm-delete-dialog-message = この操作は元に戻せません。
+confirm-delete-dialog-message = この操作は取り消すことができません。
 about-logins-confirm-remove-dialog-confirm-button = 消去
 
 ## Variables
@@ -179,7 +180,7 @@ about-logins-confirm-remove-all-dialog-title =
         [one] { $count } 個のログイン情報を消去しますか？
        *[other] { $count } 個のログイン情報をすべて消去しますか？
     }
-about-logins-confirm-remove-all-dialog-message = { -brand-short-name } に保存したログイン情報と、ここ表示される情報漏洩の警告が消去されます。この操作は元に戻せません。
+about-logins-confirm-remove-all-dialog-message = { -brand-short-name } に保存したログイン情報と、ここ表示される情報漏洩の警告が消去されます。この操作は取り消すことができません。
 about-logins-confirm-remove-all-sync-dialog-title =
     { $count ->
         [one] すべての端末から { $count } 個のログイン情報を消去しますか？
@@ -187,8 +188,13 @@ about-logins-confirm-remove-all-sync-dialog-title =
     }
 about-logins-confirm-remove-all-sync-dialog-message=
     { $count ->
-        [1] { -fxaccount-brand-name } と同期した端末すべての { -brand-short-name } に保存したログイン情報が消去されます。ここ表示される情報漏洩の警告も消去されます。この操作は元に戻せません。
-       *[other] { -fxaccount-brand-name } と同期した端末すべての { -brand-short-name } に保存したログイン情報がすべて消去されます。ここ表示される情報漏洩の警告も消去されます。この操作は元に戻せません。
+        [1] { -fxaccount-brand-name } と同期した端末すべての { -brand-short-name } に保存したログイン情報が消去されます。ここ表示される情報漏洩の警告も消去されます。この操作は取り消すことができません。
+       *[other] { -fxaccount-brand-name } と同期した端末すべての { -brand-short-name } に保存したログイン情報がすべて消去されます。ここ表示される情報漏洩の警告も消去されます。この操作は取り消すことができません。
+    }
+about-logins-confirm-remove-all-sync-dialog-message2=
+    { $count ->
+        [1] アカウントと同期した端末すべての { -brand-short-name } に保存したログイン情報が消去されます。ここ表示される情報漏洩の警告も消去されます。この操作は取り消すことができません。
+       *[other] アカウントと同期した端末すべての { -brand-short-name } に保存したログイン情報がすべて消去されます。ここ表示される情報漏洩の警告も消去されます。この操作は取り消すことができません。
     }
 
 ##

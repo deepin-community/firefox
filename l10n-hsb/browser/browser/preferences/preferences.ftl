@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Websydłam zdźělić, zo nimaja moje daty předać abo dźělić
     .accesskey = d
+non-technical-privacy-header = Nastajenja priwatnosće websydła
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Nastajenja
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Předchadne wokna a rajtarki wočinić
     .accesskey = P
+windows-launch-on-login =
+    .label = { -brand-short-name } awtomatisce wočinić, hdyž so waš ličak startuje
+    .accesskey = a
+windows-launch-on-login-disabled = Tute nastajenje je so we Windows znjemóžniło. Zo byšće nastajenje změnił, wopytajće <a data-l10n-name="startup-link">Autostart</a> w systemowych nastajenjach.
 startup-restore-warn-on-quit =
     .label = Warnować, hdyž so wobhladowak kónči
 disable-extension =
@@ -545,7 +554,7 @@ home-prefs-shortcuts-header =
     .label = Zwjazanja
 home-prefs-shortcuts-description = Sydła, kotrež składujeće abo wopytujeće
 home-prefs-shortcuts-by-option-sponsored =
-    .label = Sponsorowane zwjazanja
+    .label = Sponserowane zwjazanja
 
 ## Variables:
 ##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
@@ -558,7 +567,7 @@ home-prefs-recommended-by-description-new = Wosebite wobsah, wubrany přez { $pr
 
 home-prefs-recommended-by-learn-more = Kak funguje
 home-prefs-recommended-by-option-sponsored-stories =
-    .label = Sponsorowane stawizny
+    .label = Sponserowane stawizny
 home-prefs-recommended-by-option-recent-saves =
     .label = Najnowše składowanja pokazać
 home-prefs-highlights-option-visited-pages =
@@ -969,9 +978,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Redukowanje plackowych chorhojow
 cookie-banner-handling-description = { -brand-short-name } awtomatisce pospytuje, plackowe naprašowanja za plackowymi chorhojemi na podpěranych sydłach wotpokazać.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Blokowak plackowych chorhojow
+cookie-banner-blocker-description = Hdyž so sydło praša, hač móže placki w priwatnym modusu wužiwać, { -brand-short-name } to za was awtomatisce wotpokazuje. Jenož za podpěrane sydła.
 cookie-banner-learn-more = Dalše informacije
 forms-handle-cookie-banners =
     .label = Plackowe chorhoje redukować
+cookie-banner-blocker-checkbox-label =
+    .label = Plackowe chorhoje awtomatisce wotpokazać
 
 ## Privacy Section - Address Bar
 
@@ -1002,6 +1018,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Spěšne akcije
     .accesskey = S
+addressbar-locbar-showrecentsearches-option =
+    .label = Najnowše pytanja pokazać
+    .accesskey = n
 addressbar-suggestions-settings = Nastajenja za namjety pytawy změnić
 addressbar-quickactions-learn-more = Dalše informacije
 
@@ -1011,6 +1030,10 @@ content-blocking-enhanced-tracking-protection = Polěpšeny slědowanski škit
 content-blocking-section-top-level-description = Přesćěhowaki wam online slěduja, zo bychu informacije wo wašich přehladowanskich zwučenosćach a zajimach hromadźili. { -brand-short-name } wjele z tutych přesćěhowakow a druhe złóstne skripty blokuje.
 content-blocking-learn-more = Dalše informacije
 content-blocking-fpi-incompatibility-warning = Wužiwaće rozšěrjenje First Party Isolation (FIP), kotrež někotre plackowe nastajenja { -brand-short-name } přepisuje.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Wužiwaće Resist Fingerprinting (RFP), kotrež někajke nastajenja za škit přećiwo porstowym ćišćam { -brand-short-name } wuměnja.  To móhło zawinować, zo někotre sydła hižo njefunguja.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1218,6 +1241,9 @@ certs-view =
 certs-devices =
     .label = Wěstotne graty…
     .accesskey = t
+certs-thirdparty-toggle =
+    .label = { -brand-short-name } dowolić, korjenjowym certifikatam třećich poskićowarjow awtomatisce dowěrić, kotrež instalujeće
+    .accesskey = k
 space-alert-over-5gb-settings-button =
     .label = Nastajenja wočinić
     .accesskey = o

@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Decir a los sitios web que no vendan ni compartan mis datos
     .accesskey = s
+non-technical-privacy-header = Preferencias de privacidad del sitio web
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Ajustes
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Abrir ventanas y pestañas anteriores
     .accesskey = s
+windows-launch-on-login =
+    .label = Abre { -brand-short-name } automáticamente cuando se inicie tu computador
+    .accesskey = O
+windows-launch-on-login-disabled = Esta preferencia se ha deshabilitado en Windows. Para cambiar, visita <a data-l10n-name="startup-link">Aplicaciones de inicio</a> en la configuración del sistema.
 startup-restore-warn-on-quit =
     .label = Advertir al salir del navegador
 disable-extension =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Reducción de anuncios de cookies
 cookie-banner-handling-description = { -brand-short-name } automáticamente intenta rechazar las solicitudes de cookies dentro de los anuncios de cookies en los sitios soportados.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Bloqueador de anuncios de cookies
+cookie-banner-blocker-description = Cuando un sitio pregunta si puede utilizar cookies en el modo de navegación privada, { -brand-short-name } se niega automáticamente. Sólo en sitios compatibles.
 cookie-banner-learn-more = Aprender más
 forms-handle-cookie-banners =
     .label = Reducir los anuncios de cookies
+cookie-banner-blocker-checkbox-label =
+    .label = Rechazar automáticamente los anuncios de cookies
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Acciones rápidas
     .accesskey = Q
+addressbar-locbar-showrecentsearches-option =
+    .label = Mostrar guardados recientes
+    .accesskey = r
 addressbar-suggestions-settings = Cambia las preferencias para las sugerencias de los motores de búsqueda
 addressbar-quickactions-learn-more = Aprender más
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Protección de seguimiento mejor
 content-blocking-section-top-level-description = Los rastreadores te siguen en línea para recolectar información sobre tus hábitos de navegación e intereses. { -brand-short-name } bloquea muchos de estos rastreadores y otros scripts maliciosos.
 content-blocking-learn-more = Aprender más
 content-blocking-fpi-incompatibility-warning = Estás usando First Party Isolation (FPI), lo que anula algunas de las configuraciones de cookies de { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Estás utilizando Resist Fingerprinting (RFP), que reemplaza algunas de las configuraciones de la protección de huellas digitales de { -brand-short-name }. Esto podría provocar que algunos sitios fallen.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1152,6 +1175,8 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = Recolección y uso de datos de { -brand-short-name }
+collection-header2 = Recolección y uso de datos de { -brand-short-name }
+    .searchkeywords = telemetría
 collection-description = Nos esforzamos por proveerte con opciones y recolectar solo lo que necesitamos para proveer y mejorar { -brand-short-name } para todos. Siempre solicitamos permiso antes de recibir información personal.
 collection-privacy-notice = Política de privacidad
 collection-health-report-telemetry-disabled = Ya no permites que { -vendor-short-name } capture datos técnicos y de interacción. Todos los datos anteriores se eliminarán dentro de 30 días.
@@ -1208,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Dispositivos de seguridad…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = Permitir que { -brand-short-name } confíe automáticamente en los certificados raíz de terceros que instale
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Abrir Ajustes
     .accesskey = O

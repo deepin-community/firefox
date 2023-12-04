@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Spletnim mestom sporočaj, naj ne prodajajo ali delijo mojih podatkov
     .accesskey = n
+non-technical-privacy-header = Nastavitve zasebnosti spletnih mest
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Nastavitve
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Naloži nazadnje odprta okna in zavihke
     .accesskey = z
+windows-launch-on-login =
+    .label = Ob zagonu računalnika samodejno odpri { -brand-short-name(sklon: "tozilnik") }
+    .accesskey = O
+windows-launch-on-login-disabled = To nastavitev je onemogočil Windows. Spremenite jo lahko v sistemskih nastavitvah na strani <a data-l10n-name="startup-link">Zagonske aplikacije</a>.
 startup-restore-warn-on-quit =
     .label = Opozori ob zapiranju brskalnika
 disable-extension =
@@ -468,6 +477,9 @@ browsing-use-onscreen-keyboard =
     .accesskey = o
 browsing-use-cursor-navigation =
     .label = Vselej uporabljaj puščice na tipkovnici za krmarjenje po straneh
+    .accesskey = t
+browsing-use-full-keyboard-navigation =
+    .label = Uporabi tipko tabulatorja za pomikanje med polji obrazcev in povezavami
     .accesskey = t
 browsing-search-on-start-typing =
     .label = Začni iskati ob začetku tipkanja
@@ -966,9 +978,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Zmanjšanje števila pasic s piškotki
 cookie-banner-handling-description = { -brand-short-name } samodejno poskuša zavrniti vse zahteve pasic za shranjevanje piškotkov na spletnih mestih, ki so podprta.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Zavračanje pasic s piškotki
+cookie-banner-blocker-description = Ko v načinu zasebnega brskanja spletno mesto vpraša, ali lahko uporablja piškotke, jih { -brand-short-name } samodejno zavrne. Samo na podprtih straneh.
 cookie-banner-learn-more = Več o tem
 forms-handle-cookie-banners =
     .label = Zmanjšajte število pasic s piškotki
+cookie-banner-blocker-checkbox-label =
+    .label = Samodejno zavračaj piškotke
 
 ## Privacy Section - Address Bar
 
@@ -999,6 +1018,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = hitra dejanja
     .accesskey = h
+addressbar-locbar-showrecentsearches-option =
+    .label = Prikaži nedavna iskanja
+    .accesskey = d
 addressbar-suggestions-settings = Spremeni nastavitve predlogov iskanja
 addressbar-quickactions-learn-more = Več o tem
 
@@ -1008,6 +1030,10 @@ content-blocking-enhanced-tracking-protection = Izboljšana zaščita pred slede
 content-blocking-section-top-level-description = Sledilci vas spremljajo po spletu ter zbirajo podatke o vaših navadah in zanimanjih. { -brand-short-name } zavrača veliko teh sledilcev in drugih zlonamernih skriptov.
 content-blocking-learn-more = Več o tem
 content-blocking-fpi-incompatibility-warning = Uporabljate First Party Isolation (FPI), ki preglasi nekatere nastavitve piškotkov { -brand-short-name(sklon: "rodilnik") }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Uporabljate Resist Fingerprinting (RFP), ki je nadomestil nekatere { -brand-short-name }ove nastavitve zaščite pred sledilci prstnih odtisov. To lahko povzroči nedelovanje nekaterih spletnih mest.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1041,6 +1067,10 @@ content-blocking-all-windows-tracking-content = Sledilno vsebino v vseh oknih
 content-blocking-all-cross-site-cookies = Vse medspletne piškotke
 content-blocking-cryptominers = Kriptorudarje
 content-blocking-fingerprinters = Sledilce prstnih odtisov
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices. And
+# the suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-known-and-suspected-fingerprinters = Znane in morebitne sledilce prstnih odtisov
 
 # The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
@@ -1153,6 +1183,8 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = Zbiranje in uporaba podatkov { -brand-short-name(sklon: "rodilnik") }
+collection-header2 = Zbiranje in uporaba podatkov v { -brand-short-name(sklon: "mestnik") }
+    .searchkeywords = telemetrija
 collection-description = Trudimo se, da vam ponudimo izbiro in da zbiramo samo tisto, kar potrebujemo za razvoj in izboljšave { -brand-short-name(sklon: "rodilnik") } za vse uporabnike. Pred sprejemanjem osebnih podatkov vas vedno vprašamo za dovoljenje.
 collection-privacy-notice = Obvestilo o zasebnosti
 collection-health-report-telemetry-disabled = Organizaciji { -vendor-short-name } ne dovoljujete več zajemanja tehničnih podatkov in podatkov o uporabi. Vsi pretekli podatki bodo izbrisani v 30 dneh.
@@ -1209,6 +1241,9 @@ certs-view =
 certs-devices =
     .label = Varnostne naprave …
     .accesskey = V
+certs-thirdparty-toggle =
+    .label = Dovoli { -brand-short-name(sklon: "dajalnik") }, da samodejno zaupa korenskim digitalnim potrdilom tretjih oseb, ki jih namestite
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Odpri nastavitve
     .accesskey = O

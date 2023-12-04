@@ -106,10 +106,10 @@ addon-restart-now =
     .label = Emoñepyrũjey ko’ág̃a
 disabled-unsigned-heading =
     .value = Heta moĩmbaha ojepe’aitéma
-disabled-unsigned-description = Ko’ã moĩmbaha ndojehechajeýi ojepuru hag̃uáicha { -brand-short-name }-pe. Ikatu<label data-l10n-name="find-addons">Myengoviarã juhu</label> térã ejerure mboguatahárape ojehechajey hag̃ua.
+disabled-unsigned-description = Ko’ã moĩmbaha ndojehechajeýi ojeporu hag̃uáicha { -brand-short-name }-pe. Ikatu<label data-l10n-name="find-addons">Myengoviarã juhu</label> térã ejerure mboguatahárape ojehechajey hag̃ua.
 disabled-unsigned-learn-more = Eikuaave oreñeha’ã rehegua ikatu hag̃uáicha roipytyvõ peime hag̃ua jeikekatúpe.
 disabled-unsigned-devinfo = Umi mboguatahára oipotáva moĩmbaha jehechapyréva ikatu omoñe’ẽve ohóvo ko <label data-l10n-name="learn-more">popeguáva</label>.
-plugin-deprecation-description = ¿Oĩ nderejuhúiva? Sapy’ánte oĩ mba’ejoajurã ndaikatuvéima ojepuru { -brand-short-name } ndive. <label data-l10n-name="learn-more">Jeikuaave.</label>
+plugin-deprecation-description = ¿Oĩ nderejuhúiva? Sapy’ánte oĩ mba’ejoajurã ndaikatuvéima ojeporu { -brand-short-name } ndive. <label data-l10n-name="learn-more">Jeikuaave.</label>
 legacy-warning-show-legacy = Opaite mba’ejoapyrã jehecha
 legacy-extensions =
     .value = Opaite mba’ejoapyrã
@@ -166,7 +166,6 @@ extensions-warning-update-security2 =
     .message = Tekorosãrã jehechajey moĩmbaha rehegua oñemongéma. Ikatu ehecha nde rekorosãrã oñembyaikuaáva embohekopyahu aja.
 extensions-warning-update-security-button = Myandy
     .title = Emyandy jehechajey moĩmbaha rekorosãrã reheguáva
-extensions-warning-imported-addons = Emohu’ã jepysokue guerupyre ñemohenda { -brand-short-name } peve
 extensions-warning-imported-addons2 =
     .message = Emohu’ã jepysokue guerupyre ñemohenda { -brand-short-name } peve
 extensions-warning-imported-addons-button = Emohenda Jepysokue
@@ -233,16 +232,16 @@ shortcuts-duplicate = Jeike pya’eha imokõiva
 # String displayed when a keyboard shortcut is already assigned to more than one add-on
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
-shortcuts-duplicate-warning-message = Pe { $shortcut } ojepuruhína mbopya’eháramo heta jey. Pe jeike pya’eha ikõiva ikatu ojapo mba’e eha’arõ’ỹva.
+shortcuts-duplicate-warning-message = Pe { $shortcut } ojeporuhína mbopya’eháramo heta jey. Pe jeike pya’eha ikõiva ikatu ojapo mba’e eha’ãrõ’ỹva.
 # String displayed when a keyboard shortcut is already assigned to more than one add-on
 # Variables:
 #   $shortcut (string) - Shortcut string for the add-on
 shortcuts-duplicate-warning-message2 =
-    .message = Pe { $shortcut } ojeporuhína mbopya’eháramo heta jey. Pe jeike pya’eha ikõiva ikatu ojapo mba’e eha’arõ’ỹva.
+    .message = Pe { $shortcut } ojeporuhína mbopya’eháramo heta jey. Pe jeike pya’eha ikõiva ikatu ojapo mba’e eha’ãrõ’ỹva.
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
-shortcuts-exists = Oipurúma { $addon }
+shortcuts-exists = Oiporúma { $addon }
 # Variables:
 #   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
@@ -265,7 +264,7 @@ discopane-notice-recommendations = Heta ko’ã ñe’ẽporã ha’e ñemomba�
 discopane-notice-recommendations2 =
     .message = Heta ko’ã ñe’ẽporã ha’e ñemomba’epyre. Ojehecha ambue jepysokue ñemohendapyre, ne mba’ete erohoryvéva ha ijeporukue.
 discopane-notice-learn-more = Kuaave
-privacy-policy = Temiñemi purureko
+privacy-policy = Temiñemi porureko
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
 #   $author (string) - The name of the add-on developer.
@@ -307,15 +306,15 @@ details-addon-button = Mba’emimi
 release-notes-addon-button = Jehaipy rehegua
 permissions-addon-button = Moneĩ
 extension-enabled-heading = Myandypyre
-extension-disabled-heading = Ojepuruve’ỹva
+extension-disabled-heading = Ojeporuve’ỹva
 theme-enabled-heading = Myandypyre
 theme-disabled-heading2 = Téma ñongatupyre
 plugin-enabled-heading = Myandypyre
-plugin-disabled-heading = Ojepuruve’ỹva
+plugin-disabled-heading = Ojeporuve’ỹva
 dictionary-enabled-heading = Myandypyre
-dictionary-disabled-heading = Ojepuruve’ỹva
+dictionary-disabled-heading = Ojeporuve’ỹva
 locale-enabled-heading = Myandypyre
-locale-disabled-heading = Ojepuruve’ỹva
+locale-disabled-heading = Ojeporuve’ỹva
 sitepermission-enabled-heading = Myandypyre
 sitepermission-disabled-heading = Pe’apyre
 always-activate-button = Emyandy tapia
@@ -354,6 +353,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = Oñemboguete <span data-l10n-name="addon-name">{ $addon }</span>.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = Oñemboguete { $addon }.
 pending-uninstall-undo-button = Mboguevi
 addon-detail-updates-label = Emoneĩ mbohekopyahu ijeheguíva
 addon-detail-updates-radio-default = Ijypykue
@@ -441,7 +444,7 @@ default-heading-search-label = Ehekave moĩmbaha
 addons-heading-search-input =
     .placeholder = Eheka addons.mozilla.org
 addon-page-options-button =
-    .title = Tembiporu opaite moimbahápe g̃uarã
+    .title = Tembiporu opaite moĩmbahápe g̃uarã
 
 ## Detail notifications
 ## Variables:
@@ -455,13 +458,13 @@ details-notification-incompatible = { $name } ndojokupytýi { -brand-short-name 
 details-notification-incompatible2 =
     .message = { $name } ndojokupytýi { -brand-short-name } { $version } ndive.
 details-notification-incompatible-link = Eñemomaranduve
-details-notification-unsigned-and-disabled = { $name } ndaikatúi ojehechajey ojepuru hag̃ua { -brand-short-name }-pe ha oñemongéma.
+details-notification-unsigned-and-disabled = { $name } ndaikatúi ojehechajey ojeporu hag̃ua { -brand-short-name }-pe ha oñemongéma.
 details-notification-unsigned-and-disabled2 =
-    .message = { $name } ndaikatúi ojehechajey ojepuru hag̃ua { -brand-short-name }-pe ha oñemongéma.
+    .message = { $name } ndaikatúi ojehechajey ojeporu hag̃ua { -brand-short-name }-pe ha oñemongéma.
 details-notification-unsigned-and-disabled-link = Maranduve
-details-notification-unsigned = { $name } ndaikatúi ojehechajey ojepuru hag̃ua { -brand-short-name }-pe. Ejesareko porãke hese.
+details-notification-unsigned = { $name } ndaikatúi ojehechajey ojeporu hag̃ua { -brand-short-name }-pe. Ejesareko porãke hese.
 details-notification-unsigned2 =
-    .message = { $name } ndaikatúi ojehechajey ojepuru hag̃ua { -brand-short-name }-pe. Ejesareko porãke hese.
+    .message = { $name } ndaikatúi ojehechajey ojeporu hag̃ua { -brand-short-name }-pe. Ejesareko porãke hese.
 details-notification-unsigned-link = Maranduve
 details-notification-blocked = { $name } oñemongéma oguereko rupi apañuãi tekorosãrã térã tekopytápe.
 details-notification-blocked2 =

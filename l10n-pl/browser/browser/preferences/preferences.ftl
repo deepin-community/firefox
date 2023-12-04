@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Informowanie witryn, że mają nie sprzedawać ani nie udostępniać moich danych.
     .accesskey = n
+non-technical-privacy-header = Preferencje dotyczące prywatności na witrynach
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Ustawienia
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Otwieranie poprzednich okien i kart
     .accesskey = w
+windows-launch-on-login =
+    .label = Automatyczne otwieranie { -brand-short-name(case: "gen") } po włączeniu komputera
+    .accesskey = A
+windows-launch-on-login-disabled = Ta preferencja została wyłączona w systemie Windows. Aby ją zmienić, przejdź do <a data-l10n-name="startup-link">Autostartu</a> w ustawieniach systemu.
 startup-restore-warn-on-quit =
     .label = Ostrzeganie przy zamykaniu przeglądarki
 disable-extension =
@@ -965,9 +974,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Ograniczanie informacji o ciasteczkach
 cookie-banner-handling-description = { -brand-short-name } automatycznie próbuje odrzucać prośby o akceptację ciasteczek na obsługiwanych witrynach.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Blokowanie informacji o ciasteczkach
+cookie-banner-blocker-description = Kiedy witryna pyta, czy może używać ciasteczek w trybie prywatnym, { -brand-short-name } automatycznie odmawia za Ciebie. Działa tylko na obsługiwanych witrynach.
 cookie-banner-learn-more = Więcej informacji
 forms-handle-cookie-banners =
     .label = Ograniczanie informacji o ciasteczkach
+cookie-banner-blocker-checkbox-label =
+    .label = Automatyczne odrzucanie próśb o akceptację ciasteczek
 
 ## Privacy Section - Address Bar
 
@@ -998,6 +1014,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = szybkich działaniach
     .accesskey = d
+addressbar-locbar-showrecentsearches-option =
+    .label = ostatnich wyszukiwaniach
+    .accesskey = n
 addressbar-suggestions-settings = Zmień preferencje podpowiedzi dostarczanych przez wyszukiwarki
 addressbar-quickactions-learn-more = Więcej informacji
 
@@ -1007,6 +1026,10 @@ content-blocking-enhanced-tracking-protection = Wzmocniona ochrona przed śledze
 content-blocking-section-top-level-description = Elementy śledzące monitorują Cię w Internecie, zbierając informacje o Twoich działaniach i zainteresowaniach. { -brand-short-name } blokuje wiele tych elementów i inne złośliwe skrypty.
 content-blocking-learn-more = Więcej informacji
 content-blocking-fpi-incompatibility-warning = Używasz funkcji FPI („First Party Isolation”), która zastępuje część ustawień ciasteczek przeglądarki { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Używasz funkcji RFP („Resist Fingerprinting”), która zastępuje część ustawień ochrony przed zbieraniem informacji o konfiguracji przeglądarki { -brand-short-name }. Może to powodować problemy z działaniem niektórych stron.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1214,6 +1237,9 @@ certs-view =
 certs-devices =
     .label = Urządzenia zabezpieczające…
     .accesskey = U
+certs-thirdparty-toggle =
+    .label = { -brand-short-name } może automatycznie ufać zewnętrznym certyfikatom głównym zainstalowanym przez użytkownika
+    .accesskey = m
 space-alert-over-5gb-settings-button =
     .label = Otwórz ustawienia
     .accesskey = O

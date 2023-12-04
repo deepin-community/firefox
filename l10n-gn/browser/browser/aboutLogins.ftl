@@ -21,7 +21,7 @@ menu =
 # This menuitem is only visible on Windows and macOS
 about-logins-menu-menuitem-import-from-another-browser = Egueru ambue kundahára guive…
 about-logins-menu-menuitem-import-from-a-file = Marandurendágui jegueru…
-about-logins-menu-menuitem-export-logins = Emba’egueraha tembiapo ñepyrũ…
+about-logins-menu-menuitem-export-logins = Emba’ereraha tembiapo ñepyrũ…
 about-logins-menu-menuitem-remove-all-logins = Emboguepaite tembiapo ñepyrũ…
 menu-menuitem-preferences =
     { PLATFORM() ->
@@ -57,7 +57,7 @@ login-list-username-option = Poruhára réra  (A-Z)
 login-list-username-reverse-option = Poruhára réra  (A-Z)
 about-logins-login-list-alerts-option = Kyhyjerã
 login-list-last-changed-option = Ñemoambue ipyahuvéva
-login-list-last-used-option = Ojepurúva ipahaitépe
+login-list-last-used-option = Ojeporúva ipahápe
 login-list-intro-title = Ndojejuhúi jeikeha
 login-list-intro-description = Eñongatúvo ñe’ẽñemi { -brand-product-name } ndive, kóva ojehecháta ápe.
 about-logins-login-list-empty-search-title = Ndojejuhúi tembiapo ñepyrũ
@@ -82,6 +82,7 @@ about-logins-login-intro-heading-logged-out2 = ¿Eheka ne rembiapo ñepyrũ ñon
 about-logins-login-intro-heading-logged-in = Ndaipóri tembiapo ñepyrũ mbojuehepyre.
 login-intro-description = Eñongatúvo nde jeike { -brand-product-name }-pe ambue mba’e’okápe.
 login-intro-instructions-fxa = Emoheñói térã eike nde { -fxaccount-brand-name }-pe mba’e’oka eñongatuhápe ne rembiapo ñepyrũ.
+login-intro-instructions-fxa2 = Emoheñói térã eike ne mba’etépe mba’e’oka eñongatuhápe eikehague.
 login-intro-instructions-fxa-settings = Eho Ñemoĩporãme > Sync > Emyandy ñembojuehe… Eiporavo Tembiapo ñepyrũ kora ha ñe’ẽñemi.
 login-intro-instructions-fxa-passwords-help = Eike <a data-l10n-name="passwords-help-link">ñe’ẽñemi pytyvõrã</a> kuatiaroguépe ejeykeko hag̃ua.
 about-logins-intro-browser-only-import = Ne rembiapo ñepyrũ oñeñongatúramo ambue kundahárape, ikatu <a data-l10n-name="import-link">ogueru { -brand-product-name }-pe</a>
@@ -93,7 +94,7 @@ login-item-new-login-title = Tembiapo ñepyrũ pyahu moheñói
 login-item-edit-button = Mbosako’i
 about-logins-login-item-remove-button = Mboguete
 login-item-origin-label = Ñanduti kundaharape
-login-item-tooltip-message = Emoñondivéke pe kundaharape ñanduti renda emoñepyrũha tembiapo rehe.
+login-item-tooltip-message = Emoñondivéke pe kundaharape ñanduti renda emoñepyrũhápe tembiapo rehe.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = Poruhára réra
@@ -145,7 +146,7 @@ about-logins-copy-password-os-auth-dialog-message-win = Emonguatia hag̃ua ñe�
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = embokuatia ñe’ẽñemi ñongatupyre
 # This message can be seen when attempting to export a password in about:logins on Windows.
-about-logins-export-password-os-auth-dialog-message-win = Eguerahaukávo ne rembiapo ñepyrũ, emoĩ nde reraite Windows rembiapópe. Oipytyvõta emo’ãvo ne mba’ete rekorosã.
+about-logins-export-password-os-auth-dialog-message-win = Erahaukávo ne rembiapo ñepyrũ, emoĩ nde reraite Windows rembiapópe. Oipytyvõta emo’ãvo ne mba’ete rekorosã.
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = erahauka poruhára ha ñe’ẽñemi ñongatupyre
@@ -203,11 +204,17 @@ about-logins-confirm-remove-all-sync-dialog-message =
         [one] Kóva omboguéta tembiapo ñepyrũ eñongatúva { -brand-short-name }-pe opaite mba’e’oka oñondivéva { -fxaccount-brand-name } rehe. Kóva avei omboguéta umi ñembogua kyhyjerã asẽva ko’ápe. Ndaikatumo’ãi emboguevi ko tembiapo.
        *[other] Kóva omboguéta tembiapo ñepyrũ eñongatúva { -brand-short-name }-pe opaite mba’e’oka oñondivéva { -fxaccount-brand-name } rehe. Kóva avei omboguéta umi ñembogua kyhyjerã asẽva ko’ápe. Ndaikatumo’ãi emboguevi ko tembiapo.
     }
+about-logins-confirm-remove-all-sync-dialog-message2 =
+    { $count ->
+        [1] Kóva omboguéta tembiapo ñepyrũ eñongatúva { -brand-short-name }-pe opaite mba’e’oka ojuehéva ne mba’ete rehe. Kóva avei omboguéta umi ñembogua kyhyjerã asẽva ko’ápe. Ndaikatumo’ãi emboguevi ko tembiapo.
+        [one] Kóva omboguéta tembiapo ñepyrũ eñongatúva { -brand-short-name }-pe opaite mba’e’oka ojuehéva ne mba’ete rehe. Kóva avei omboguéta umi ñembogua kyhyjerã asẽva ko’ápe. Ndaikatumo’ãi emboguevi ko tembiapo.
+       *[other] Kóva omboguéta tembiapo ñepyrũ eñongatúva { -brand-short-name }-pe opaite mba’e’oka ojuehéva ne mba’ete rehe. Kóva avei omboguéta umi ñembogua kyhyjerã asẽva ko’ápe. Ndaikatumo’ãi emboguevi ko tembiapo.
+    }
 
 ##
 
-about-logins-confirm-export-dialog-title = Emba’egueraha tembiapo ñepyrũ ha ñe’ẽñemi
-about-logins-confirm-export-dialog-message = Ñe’ẽñemi oñeñongatúta moñe’ẽrãrõ (techapyrã, BadP@ssw0rd) oimeraẽva ombojurujakuaáva marandurenda guerahaukapyre ikatu ohecha.
+about-logins-confirm-export-dialog-title = Emba’ereraha tembiapo ñepyrũ ha ñe’ẽñemi
+about-logins-confirm-export-dialog-message = Ñe’ẽñemi oñeñongatúta moñe’ẽrãrõ (techapyrã, BadP@ssw0rd) oimeraẽva ombojurujakuaáva marandurenda rahaukapyre ikatu ohecha.
 about-logins-confirm-export-dialog-confirm-button = Emba’egueraha…
 about-logins-alert-import-title = Emba’eguerupáma
 about-logins-alert-import-message = Ehechapaite emba’egueruva’ekue
@@ -246,11 +253,11 @@ about-logins-error-message-default = Oiko jejavy eñongatukuévo ñe’ẽñemi.
 ## Login Export Dialog
 
 # Title of the file picker dialog
-about-logins-export-file-picker-title = Emba’egueraha tembiapo ñepyrũ marandurenda
+about-logins-export-file-picker-title = Emba’ereraha tembiapo ñepyrũ marandurenda
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
-about-logins-export-file-picker-export-button = Mba’egueraha
+about-logins-export-file-picker-export-button = Mba’ereraha
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
 about-logins-export-file-picker-csv-filter-title =

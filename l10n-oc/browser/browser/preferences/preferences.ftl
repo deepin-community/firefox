@@ -3,11 +3,21 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Mandar als sites web lo senhal « Me pistar pas » per lor dire que volètz pas èsser pistat
+do-not-track-description2 =
+    .label = Demandar als sites web de « Me pistar pas »
+    .accesskey = d
 do-not-track-learn-more = Ne saber mai
 do-not-track-option-default-content-blocking-known =
     .label = Solament quand { -brand-short-name } es configurat per blocar los traçadors coneguts
 do-not-track-option-always =
     .label = Totjorn
+global-privacy-control-description =
+    .label = Indicar als sites web de vendre pas nimai partejar mas donadas
+    .accesskey = s
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Paramètres
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -116,6 +126,9 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Dobrir las fenèstras e onglets precedents
     .accesskey = o
+windows-launch-on-login =
+    .label = Dobrir { -brand-short-name } automaticament a l’aviada de l’ordenador
+    .accesskey = D
 startup-restore-warn-on-quit =
     .label = Vos avisar en sortir del navegador
 disable-extension =
@@ -950,6 +963,10 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Reduccion de las bandièras de cookies
 cookie-banner-handling-description = Permetre a { -brand-short-name } de regetar automaticament las demandas de cookies ?
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Blocador de bandièras de cookies
 cookie-banner-learn-more = Ne saber mai
 forms-handle-cookie-banners =
     .label = Reduire las bandièras de cookies
@@ -983,6 +1000,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Accions rapidas
     .accesskey = A
+addressbar-locbar-showrecentsearches-option =
+    .label = Afichar las recèrcas recentas
+    .accesskey = r
 addressbar-suggestions-settings = Cambiar las preferéncias per las suggestions del motor de recèrca
 addressbar-quickactions-learn-more = Ne saber mai
 
@@ -1025,6 +1045,10 @@ content-blocking-all-windows-tracking-content = Contengut utilizat per pistar to
 content-blocking-all-cross-site-cookies = Totes los cookies intersites
 content-blocking-cryptominers = Minaires de criptomonedas
 content-blocking-fingerprinters = Generadors d’emprentas numericas
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices. And
+# the suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-known-and-suspected-fingerprinters = Generadors d’emprentas numericas coneguts e suspèctes
 
 # The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
@@ -1063,6 +1087,18 @@ content-blocking-cryptominers-label =
 content-blocking-fingerprinters-label =
     .label = Generadors d’emprentas numericas
     .accesskey = G
+# Browser fingerprinting is a method of tracking users by the configuration and settings information (their "digital fingerprint")
+# that is visible to websites they browse, rather than traditional tracking methods such as IP addresses and unique cookies.
+#
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices.
+content-blocking-known-fingerprinters-label =
+    .label = Generadors d’emprentas numericas coneguts
+    .accesskey = G
+# The suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-suspected-fingerprinters-label =
+    .label = Generadors d’emprentas numericas suspècte
+    .accesskey = s
 
 ## Privacy Section - Tracking
 
@@ -1125,6 +1161,8 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = Recuèlh de donadas e utilizacion per { -brand-short-name }
+collection-header2 = Collècta de donadas per { -brand-short-name } e utilizacion
+    .searchkeywords = telemetria
 collection-description = Nos esforçam de vos daissar causir e reculhir sonque las informacions qu'avèm besonh per provesir e melhorar { -brand-short-name } per tot lo mond. Sempre demandam vòstra permission abans de recebre de donadas personalas.
 collection-privacy-notice = Politica de confidencialitat
 collection-health-report-telemetry-disabled = Autorizatz pas mai { -vendor-short-name } a capturar de donadas tecnicas e d’interaccion. Totas las donadas passadas seràn suprimidas d’aquí 30 jorns.
@@ -1226,7 +1264,9 @@ preferences-doh-setting-default =
     .accesskey = d
 preferences-doh-default-desc = { -brand-short-name } decidís quand utilizar lo DNS segur per protegir vòstra vida privada.
 preferences-doh-default-detailed-desc-1 = Utilizar lo DNS segur dins las regions ont es disponible
+preferences-doh-default-detailed-desc-2 = Utilizar lo resolvador DNS per defaut se per cas i a un problèma amb lo provesidor de DNS segur
 preferences-doh-default-detailed-desc-3 = Utilizar un provesidor local, se possible
+preferences-doh-default-detailed-desc-4 = Desactivar quand un VPN, un contraròtle parental o d’estrategias d’entrepresa son activas
 preferences-doh-setting-enabled =
     .label = Proteccion espandida
     .accesskey = e

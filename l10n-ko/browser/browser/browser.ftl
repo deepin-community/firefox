@@ -360,9 +360,9 @@ identity-https-only-dropdown-off =
     .label = 끄기
 identity-https-only-dropdown-off-temporarily =
     .label = 일시적으로 끄기
-identity-https-only-info-turn-on2 = { -brand-short-name }가 가능한 경우 연결을 업그레이드하도록 하려면 이 사이트에 대해 HTTPS 전용 모드를 켜세요.
+identity-https-only-info-turn-on2 = { -brand-short-name }가 가능한 경우 연결을 업그레이드하도록 하려면 이 사이트에 HTTPS 전용 모드를 켜세요.
 identity-https-only-info-turn-off2 = 페이지가 손상된 것 같으면 이 사이트가 안전하지 않은 HTTP를 사용하여 다시 로드되도록 HTTPS 전용 모드를 끌 수 있습니다.
-identity-https-only-info-turn-on3 = { -brand-short-name }가 가능한 경우 연결을 업그레이드하도록 하려면 이 사이트에 대해 HTTPS 업그레이드를 켜세요.
+identity-https-only-info-turn-on3 = { -brand-short-name }가 가능한 경우 연결을 업그레이드하도록 하려면 이 사이트에 HTTPS 업그레이드를 켜세요.
 identity-https-only-info-turn-off3 = 페이지가 손상된 것 같으면 이 사이트가 안전하지 않은 HTTP를 사용하여 다시 로드되도록 HTTPS 업그레이드를 끌 수 있습니다.
 identity-https-only-info-no-upgrade = HTTP에서 연결을 업그레이드할 수 없습니다.
 identity-permissions-storage-access-header = 교차 사이트 쿠키
@@ -558,6 +558,8 @@ urlbar-result-action-switch-tab = 탭 전환
 urlbar-result-action-visit = 방문
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = 클립보드에서 방문
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = 클립보드에서 방문
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -610,6 +612,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = 빠른 작업
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = 최근 검색
 
 ## Reader View toolbar buttons
 
@@ -907,6 +914,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         확장 기능
         일부 확장 기능은 허용되지 않음
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = 사생활 보호 세션 종료
+    .tooltiptext = 사생활 보호 세션 종료
+reset-pbm-panel-heading = 사생활 보호 세션을 종료하시겠습니까?
+reset-pbm-panel-description = 모든 사생활 보호 탭을 닫고 기록, 쿠키 및 기타 모든 사이트 데이터를 삭제합니다.
+reset-pbm-panel-always-ask-checkbox =
+    .label = 항상 묻기
+    .accesskey = A
+reset-pbm-panel-cancel-button =
+    .label = 취소
+    .accesskey = C
+reset-pbm-panel-confirm-button =
+    .label = 세션 데이터 삭제
+    .accesskey = D
+reset-pbm-panel-complete = 사생활 보호 데이터 삭제됨
 
 ## Autorefresh blocker
 

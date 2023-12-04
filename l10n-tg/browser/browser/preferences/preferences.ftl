@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Ба сомонаҳо хабар диҳед, то онҳо маълумоти маро нафурӯшанд ва ошкор накунанд
     .accesskey = Б
+non-technical-privacy-header = Хусусиятҳои махфияти сомона
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Танзимот
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Кушодани равзанаҳо ва варақаҳои қаблӣ
     .accesskey = К
+windows-launch-on-login =
+    .label = Ҳангоми оғоз кардани компютери шумо «{ -brand-short-name }»-ро ба таври худкор кушоед
+    .accesskey = Ҳ
+windows-launch-on-login-disabled = Ин хусусият дар низоми амалкунандаи Windows ғайрифаъол шудааст. Барои ворид кардани тағйирот, дар Танзимоти низом ба <a data-l10n-name="startup-link">Барномаҳои оғози кор</a> гузаред.
 startup-restore-warn-on-quit =
     .label = Ҳангоми баромадан аз браузер низом шуморо огоҳ мекунад
 disable-extension =
@@ -960,9 +969,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Маҳдудкунии баннери куки
 cookie-banner-handling-description = «{ -brand-short-name }» ба таври худкор кӯшиш мекунад, ки ҳамаи дархостҳои кукиҳоро аз баннерҳои куки дар сомонаҳои дастгиришаванда рад кунад.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Манъкунандаи баннери куки
+cookie-banner-blocker-description = Вақте ки сомона мепурсад, агар он тавонад дар Реҷаи «Тамошокунии хусусӣ» аз кукиҳо истифода барад, «{ -brand-short-name }» аз ҷониби шумо ин имкони сомонаро ба таври худкор рад мекунад. Танҳо дар сомонаҳое, ки дастгирӣ карда мешаванд.
 cookie-banner-learn-more = Маълумоти бештар
 forms-handle-cookie-banners =
     .label = Маҳдуд кардани баннерҳои куки
+cookie-banner-blocker-checkbox-label =
+    .label = Баннерҳои кукиро ба таври худкор рад намоед
 
 ## Privacy Section - Address Bar
 
@@ -993,6 +1009,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Амалҳои зуд
     .accesskey = А
+addressbar-locbar-showrecentsearches-option =
+    .label = Намоиш додани ҷустуҷӯҳои охирин
+    .accesskey = Н
 addressbar-suggestions-settings = Иваз кардани хусусиятҳо барои пешниҳодҳои низоми ҷустуҷӯӣ
 addressbar-quickactions-learn-more = Маълумоти бештар
 
@@ -1002,6 +1021,10 @@ content-blocking-enhanced-tracking-protection = Муҳофизати такми�
 content-blocking-section-top-level-description = Васоити пайгирӣ барои ҷамъ кардани маълумот дар бораи одатҳои тамошокунӣ ва манфиатҳои шумо дар Интернет шуморо пайгирӣ мекунанд. «{ -brand-short-name }» бисёр аз чунин васоити пайгирӣ ва дигар скриптҳои зарароварро манъ мекунад.
 content-blocking-learn-more = Маълумоти бештар
 content-blocking-fpi-incompatibility-warning = Шумо аз «First Party Isolation (FPI)» истифода мебаред, ки баъзе танзимоти кукиҳои «{ -brand-short-name }»-ро иваз мекунад.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Шумо аз вазифаи муҳофизати бар зидди ҷамъоварии нақши рақамии ангуштон (RFP) истифода мебаред, ки баъзе аз танзимоти муҳофизати бар зидди ҷамъоварии нақши рақамии ангуштони «{ -brand-short-name }»-ро иваз мекунад. Ин амал метавонад боиси вайрон шудани баъзе сомонаҳо гардад.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1209,6 +1232,9 @@ certs-view =
 certs-devices =
     .label = Дастгоҳҳои амният…
     .accesskey = Д
+certs-thirdparty-toggle =
+    .label = Ба «{ -brand-short-name }» иҷозат диҳед, то ки он ба гувоҳиномаҳои решагии тарафҳои сеюме, ки шумо насб мекунед, ба таври худкор эътимод кунад
+    .accesskey = Б
 space-alert-over-5gb-settings-button =
     .label = Кушодани танзимот
     .accesskey = К

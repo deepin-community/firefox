@@ -100,7 +100,7 @@ urlbar-autoplay-notification-anchor =
 urlbar-persistent-storage-notification-anchor =
     .tooltiptext = Archivie i dâts intun archivi persistent
 urlbar-addons-notification-anchor =
-    .tooltiptext = Vierç il panel dai messaçs de instalazion des zontis
+    .tooltiptext = Vierç il panel dai messaçs de instalazion dai components adizionâi
 urlbar-tip-help-icon =
     .title = Oten jutori
 urlbar-search-tips-confirm = Va ben, capît!
@@ -169,7 +169,7 @@ urlbar-canvas-blocked =
 urlbar-midi-blocked =
     .tooltiptext = Tu âs blocât l'acès MIDI par chest sît web.
 urlbar-install-blocked =
-    .tooltiptext = Tu âs blocât la instalazion di zontis par chest sît web.
+    .tooltiptext = Tu âs blocât la instalazion di components adizionâi par chest sît web.
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
 urlbar-star-edit-bookmark =
@@ -563,6 +563,8 @@ urlbar-result-action-switch-tab = Passe ae schede
 urlbar-result-action-visit = Visite
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Vierç direzion da lis notis
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Vierç direzion da lis notis
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -615,6 +617,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Azions rapidis
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Ricercjis resintis
 
 ## Reader View toolbar buttons
 
@@ -912,6 +919,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Estensions
         Cualchi estension no je consintude
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Termine session privade
+    .tooltiptext = Termine session privade
+reset-pbm-panel-heading = Terminâ la session privade?
+reset-pbm-panel-description = Siere dutis lis schedis privade e elimine cronologjie, cookies e ducj i altris dâts dai sîts.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Domande simpri
+    .accesskey = D
+reset-pbm-panel-cancel-button =
+    .label = Anule
+    .accesskey = A
+reset-pbm-panel-confirm-button =
+    .label = Elimine dâts de session
+    .accesskey = d
+reset-pbm-panel-complete = Dâts de session privade eliminâts
 
 ## Autorefresh blocker
 

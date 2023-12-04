@@ -9,6 +9,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-label =
+    .label = { -firefoxview-brand-name }
 firefoxview-close-button =
     .title = වසන්න
     .aria-label = වසන්න
@@ -24,19 +26,25 @@ firefoxview-tabpickup-step-signin-header = උපාංග අතර බාධ�
 firefoxview-tabpickup-step-signin-description = දුරකථනයේ පටිති මෙතැනට ගැනීමට, ගිණුමක් සාදන්න හෝ පිවිසෙන්න.
 firefoxview-tabpickup-step-signin-primarybutton = ඉදිරියට
 firefoxview-syncedtabs-signin-header = ඕනෑම තැනකින් පටිති ඇහිඳින්න
+firefoxview-syncedtabs-signin-description = ඔබ { -brand-product-name } භාවිතා කරන ඕනෑම තැනක දී ඔබගේ පටිති බැලීමට ගිණුමට පිවිසෙන්න. තවම ගිණුමක් නැති නම්, ඔබව ලියාපදිංචි වන පියවර හරහා ගෙන යනු ඇත.
 firefoxview-syncedtabs-signin-primarybutton = ලියාපදිංචිය හෝ පිවිසෙන්න
 firefoxview-tabpickup-adddevice-description = දුරකථනය සඳහා { -brand-product-name } බාගත කර පිවිසෙන්න.
 firefoxview-tabpickup-adddevice-learn-how = කෙසේදැයි දැනගන්න
 firefoxview-tabpickup-adddevice-primarybutton = දුරකථනය සඳහා { -brand-product-name } ගන්න
 firefoxview-syncedtabs-adddevice-header = ඔබගේ අනෙකුත් උපාංග වලින් { -brand-product-name } වෙත පිවිසෙන්න
+firefoxview-syncedtabs-adddevice-description = ඔබ { -brand-product-name } භාවිතා කරන ඕනෑම තැනක දී ඔබගේ පටිති බැලීමට, ඔබගේ සියළුම උපාංග වලට පිවිසෙන්න. <a data-l10n-name="url">අතිරේක උපාංග සම්බන්ධ කරන ආකාරය</a> දැනගන්න.
 firefoxview-syncedtabs-adddevice-primarybutton = දුරකථනයට { -brand-product-name } දාගන්න
 firefoxview-tabpickup-synctabs-header = පටිති සමමුහූර්තය සබල කරන්න
 firefoxview-tabpickup-synctabs-description = { -brand-short-name } සඳහා උපාංග අතර පටිති බෙදාගැනීමට ඉඩදෙන්න.
 firefoxview-tabpickup-synctabs-learn-how = කෙසේදැයි දැනගන්න
 firefoxview-tabpickup-synctabs-primarybutton = විවෘත පටිති සමමුහූර්තය
 firefoxview-syncedtabs-synctabs-header = සමමුහූර්ත සැකසුම් සකසන්න
+firefoxview-syncedtabs-synctabs-description = වෙනත් උපාංග වලින් පටිති බැලීමට, ඔබගේ විවෘත පටිති සමමුහූර්ත කළ යුතුය.
+firefoxview-syncedtabs-synctabs-checkbox = විවෘත පටිති සමමුහූර්තයට ඉඩදෙන්න
+firefoxview-syncedtabs-loading-header = සමමුහූර්ත වෙමින්
+firefoxview-syncedtabs-loading-description = අහවර වූ විට, ඔබ වෙනත් උපාංගවල විවෘත කර තිබෙන සියලුම පටිති දිස්වනු ඇත. මොහොතකින් පරීක්‍ෂා කරන්න.
 firefoxview-tabpickup-fxa-admin-disabled-header = ඔබගේ සංවිධානය සමමුහූර්තය අබල කර ඇත
-firefoxview-tabpickup-fxa-admin-disabled-description = ඔබගේ පරිපාලකයා විසින් සමමුහූර්ත කිරීම අබල කර තිබෙන නිසා { -brand-short-name } මගින් උපාංග අතර පටිති සමමුහුර්ත කිරීමට නොහැකිය.
+firefoxview-tabpickup-fxa-admin-disabled-description = ඔබගේ පරිපාලකයා සමමුහූර්තය අබල කර තිබෙන නිසා { -brand-short-name } මගින් උපාංග අතර පටිති සමමුහූර්ත කිරීමට නොහැකිය.
 firefoxview-tabpickup-network-offline-header = අන්තර්ජාල සම්බන්ධතාවය පරීක්‍ෂා කරන්න
 firefoxview-tabpickup-network-offline-description = ගිනිපවුරක් හෝ ප්‍රතියුක්තයක් භාවිතා කරන්නේ නම්, { -brand-short-name } සඳහා අන්තර්ජාලයට ප්‍රවේශ වීමට අවසර තිබේදැයි බලන්න.
 firefoxview-tabpickup-network-offline-primarybutton = නැවත
@@ -44,15 +52,16 @@ firefoxview-tabpickup-sync-error-header = සමමුහූර්ත කිර�
 firefoxview-tabpickup-generic-sync-error-description = { -brand-short-name } සඳහා දැන් සමමුහූර්ත සේවාව වෙත ළඟා වීමට නොහැකිය. සුළු මොහොතකින් නැවත උත්සාහ කරන්න.
 firefoxview-tabpickup-sync-error-primarybutton = නැවත
 firefoxview-tabpickup-sync-disconnected-header = ඉදිරියට යාමට සමමුහූර්තය සක්‍රිය කරන්න
-firefoxview-tabpickup-sync-disconnected-description = ඔබගේ පටිති ලබා ගැනීමට, { -brand-short-name } හි සමමුහුර්තය සඳහා ඉඩ දිය යුතුය.
+firefoxview-tabpickup-sync-disconnected-description = ඔබගේ පටිති ලබා ගැනීමට, { -brand-short-name } සමමුහූර්ත පහසුකමට ඉඩ දිය යුතුය.
 firefoxview-tabpickup-sync-disconnected-primarybutton = සැකසුම් තුළ සමමුහූර්තය සක්‍රිය කරන්න
+firefoxview-tabpickup-password-locked-header = පටිති දැකීමට ඔබගේ ප්‍රාථමික මුරපදය යොදන්න
 firefoxview-tabpickup-password-locked-link = තව දැනගන්න
 firefoxview-tabpickup-password-locked-primarybutton = ප්‍රාථමික මුරපදය යොදන්න
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">තව දැනගන්න</a>
 firefoxview-tabpickup-signed-out-header = යළි සබැඳීමට පිවිසෙන්න
 firefoxview-tabpickup-signed-out-primarybutton = පිවිසෙන්න
 firefoxview-tabpickup-syncing = ඔබගේ පටිති මොහොතකින් සමමුහූර්ත වනු ඇත. රැඳී සිටින්න.
-firefoxview-mobile-promo-description = ඔබගේ නවතම ජංගම පටිති බැලීමට, අයිඕඑස් හෝ ඇන්ඩ්‍රොයිඩ් හි { -brand-product-name } වෙත පිවිසෙන්න.
+firefoxview-mobile-promo-description = ඔබගේ නවතම ජංගම පටිති බැලීමට, අයිඕඑස් හෝ ඇන්ඩ්‍රොයිඩ් හරහා { -brand-product-name } වෙත පිවිසෙන්න.
 firefoxview-mobile-promo-primarybutton = දුරකථනය සඳහා { -brand-product-name } ගන්න
 firefoxview-mobile-confirmation-header = 🎉 යන්න හොඳයි!
 firefoxview-closed-tabs-title = මෑතදී වසා දැමූ
@@ -129,6 +138,10 @@ firefoxview-show-more = තව පෙන්වන්න
 firefoxview-show-less = අඩුවෙන් පෙන්වන්න
 firefoxview-sort-history-by-date-label = දිනය අනුව පිළිවෙළට
 firefoxview-sort-history-by-site-label = අඩවිය අනුව පිළිවෙළට
+# Variables:
+#   $url (string) - URL that will be opened in the new tab
+firefoxview-opentabs-tab-row =
+    .title = { $url } වෙත මාරු වන්න
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -176,9 +189,9 @@ firefoxview-import-history-description = { -brand-short-name } ඔබගේ ද�
 
 ## Message displayed in Firefox View when the user has no recently closed tabs data
 
-
-##
-
+firefoxview-recentlyclosed-empty-header = වැරදීමකින් පටිත්තක් වැසුවාද?
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 
+firefoxview-syncedtabs-device-notabs = මෙම උපාංගයේ විවෘත පටිති නැත
+firefoxview-syncedtabs-connect-another-device = වෙනත් උපාංගයක් සබඳින්න

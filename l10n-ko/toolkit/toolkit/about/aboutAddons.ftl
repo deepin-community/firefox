@@ -166,7 +166,6 @@ extensions-warning-update-security2 =
     .message = 부가 기능 업데이트 보안 확인 기능을 사용 안 합니다. 업데이트로 인해 문제가 발생 할 수 있습니다.
 extensions-warning-update-security-button = 사용
     .title = 부가 기능 업데이트 보안 확인 기능 사용
-extensions-warning-imported-addons = { -brand-short-name }로 가져온 확장  기능의 설치를 완료하세요.
 extensions-warning-imported-addons2 =
     .message = { -brand-short-name }로 가져온 확장  기능의 설치를 완료하세요.
 extensions-warning-imported-addons-button = 확장 기능 설치
@@ -352,6 +351,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> 부가 기능이 제거되었습니다.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } 부가 기능이 제거되었습니다.
 pending-uninstall-undo-button = 실행 취소
 addon-detail-updates-label = 자동 업데이트 허용
 addon-detail-updates-radio-default = 기본값

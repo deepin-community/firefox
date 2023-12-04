@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Požiadať webové stránky, aby nepredávali ani nezdieľali moje údaje
     .accesskey = i
+non-technical-privacy-header = Predvoľby ochrany súkromia na webových stránkach
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Nastavenia
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Načítať naposledy otvorené okná a karty
     .accesskey = o
+windows-launch-on-login =
+    .label = Spustiť { -brand-short-name } automaticky po spustení počítača
+    .accesskey = S
+windows-launch-on-login-disabled = Táto predvoľba bola v systéme Windows zakázaná. Ak to chcete zmeniť, navštívte stránku <a data-l10n-name="startup-link">Aplikácie pri spustení</a> v nastaveniach systému.
 startup-restore-warn-on-quit =
     .label = Upozorniť pri ukončení prehliadača
 disable-extension =
@@ -831,7 +840,7 @@ forms-breach-alerts =
     .accesskey = b
 forms-breach-alerts-learn-more-link = Ďalšie informácie
 preferences-relay-integration-checkbox =
-    .label = Navrhovať e-mailové masky služby { -relay-brand-name } na ochranu vašej e-mailovej adresy
+    .label = Navrhovať e‑mailové masky služby { -relay-brand-name } na ochranu vašej e‑mailovej adresy
 relay-integration-learn-more-link = Ďalšie informácie
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -965,9 +974,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Zníženie počtu bannerov k súborom cookie
 cookie-banner-handling-description = { -brand-short-name } sa pokúsi automaticky odmietnuť žiadosti o povolenie súborov cookie na podporovaných stránkach.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Blokovanie bannerov k súborom cookie
+cookie-banner-blocker-description = Keď sa stránka opýta, či môže používať súbory cookie v režime súkromného prehliadania, { -brand-short-name } to automaticky odmietne. K dispozícii len na podporovaných stránkach.
 cookie-banner-learn-more = Ďalšie informácie
 forms-handle-cookie-banners =
     .label = Znižovať počet bannerov k súborom cookie
+cookie-banner-blocker-checkbox-label =
+    .label = Automaticky odmietať žiadosti o povolenie súborov cookie
 
 ## Privacy Section - Address Bar
 
@@ -998,6 +1014,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = rýchle akcie
     .accesskey = r
+addressbar-locbar-showrecentsearches-option =
+    .label = zobraziť nedávne vyhľadávania
+    .accesskey = e
 addressbar-suggestions-settings = Zmeniť nastavenia pre návrhy vyhľadávania
 addressbar-quickactions-learn-more = Ďalšie informácie
 
@@ -1007,6 +1026,10 @@ content-blocking-enhanced-tracking-protection = Rozšírená ochrana pred sledov
 content-blocking-section-top-level-description = Sledovacie prvky zbierajú informácie o tom, čo na internete robíte. { -brand-short-name } blokuje množstvo takýchto prvkov a ďalších škodlivých skriptov.
 content-blocking-learn-more = Ďalšie informácie
 content-blocking-fpi-incompatibility-warning = Používate izoláciu prvej strany (FPI), ktorá potlačí niektoré nastavenia cookies prehliadača { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Používate funkciu RFP (Resist Fingerprinting), ktorá nahrádza niektoré nastavenia ochrany { -brand-short-name(case: "gen") } pred snímaním digitálnych odtlačkov. To môže spôsobiť zlyhanie niektorých stránok.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1214,6 +1237,9 @@ certs-view =
 certs-devices =
     .label = Bezpečnostné zariadenia…
     .accesskey = d
+certs-thirdparty-toggle =
+    .label = Povoliť { -brand-short-name(case: "dat") } automaticky dôverovať koreňovým certifikátom tretích strán, ktoré nainštalujete
+    .accesskey = f
 space-alert-over-5gb-settings-button =
     .label = Otvoriť nastavenia
     .accesskey = O

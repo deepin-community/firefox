@@ -85,9 +85,9 @@ abuse-report-damage-example = მაგალითად: დააყენა
 abuse-report-spam-reason-v2 = შეიცავს ჯართს ან ამატებს არასასურველ რეკლამებს
 abuse-report-spam-example = მაგალითად: ათავსებს რეკლამებს ვებგვერდებზე
 abuse-report-settings-reason-v2 = შეცვალა ჩემი საძიებო სისტემა, საწყისი გვერდი ან ახალი ჩანართი უნებართვოდ
-abuse-report-settings-suggestions = მოხსენების გამოგზავნამდე, შეგიძლიათ სცადოთ პარამეტრების შეცვლა:
+abuse-report-settings-suggestions = მოხსენების გამოგზავნამდე შეგიძლიათ სცადოთ პარამეტრების შეცვლა:
 abuse-report-settings-suggestions-search = ცვლის თქვენს ნაგულისხმევ საძიებო სისტემას
-abuse-report-settings-suggestions-homepage = ცვლის თქვენს საწყის გვერდს და ახალ ჩანართს
+abuse-report-settings-suggestions-homepage = ცვლის თქვენს საწყის გვერდსა და ახალ ჩანართს
 abuse-report-deceptive-reason-v2 = თავს სხვა რამედ ასაღებს
 abuse-report-deceptive-example = მაგალითად: შემაცდენელი აღწერა ან სურათები ახლავს
 abuse-report-broken-reason-extension-v2 = არ იმუშავა, დააზიანა ვებსაიტები ან შეანელა { -brand-product-name }
@@ -109,6 +109,6 @@ abuse-report-policy-suggestions =
     შენიშვნა: საავტორო უფლებებისა და სავაჭრო ნიშნების დარღვევების შესახებ, მოხსენებები ცალკე უნდა გამოიგზავნოს.
     <a data-l10n-name="report-infringement-link">ისარგებლეთ ამ მითითებებით</a>
     ხარვეზის მოხსენებისთვის.
-abuse-report-unwanted-reason-v2 = არასოდეს მდომებია და არ ვიცი როგორ მოვიცილო
+abuse-report-unwanted-reason-v2 = არასოდეს მნდომებია და არ ვიცი როგორ მოვიცილო
 abuse-report-unwanted-example = მაგალითად: პროგრამა თავისით ჩაიდგა უნებართვოდ
 abuse-report-other-reason = სხვა

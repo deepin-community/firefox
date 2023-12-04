@@ -37,6 +37,14 @@ protections-panel-etp-off-toggle =
     .label = Trình chống theo dõi nâng cao
     .description = Tắt trên trang này
     .aria-label = Bật bảo vệ cho { $host }
+protections-panel-etp-toggle-on =
+    .label = Trình chống theo dõi nâng cao
+    .description = Đã bật trên trang này
+    .aria-label = Trình chống theo dõi nâng cao: Đã bật cho { $host }
+protections-panel-etp-toggle-off =
+    .label = Trình chống theo dõi nâng cao
+    .description = Đã tắt trên trang này
+    .aria-label = Trình chống theo dõi nâng cao: Đã tắt cho { $host }
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = Trang web không hoạt động?
 # The heading/title of the sub-panel view
@@ -119,6 +127,7 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 # Cookie Banner Handling
 
 protections-panel-cookie-banner-handling-header = Giảm biểu ngữ cookie
+protections-panel-cookie-banner-blocker-header = Trình chặn biểu ngữ cookie
 protections-panel-cookie-banner-handling-enabled = Bật cho trang web này
 protections-panel-cookie-banner-handling-disabled = Tắt cho trang web này
 protections-panel-cookie-banner-handling-undetected = Trang web hiện không được hỗ trợ
@@ -128,8 +137,15 @@ protections-panel-cookie-banner-view-title =
 #  $host (String): the hostname of the site that is being displayed.
 protections-panel-cookie-banner-view-turn-off-for-site = Tắt giảm biểu ngữ cookie cho { $host }?
 protections-panel-cookie-banner-view-turn-on-for-site = Bật giảm biểu ngữ cookie cho trang này?
+protections-panel-cookie-banner-blocker-view-title =
+    .title = Trình chặn biểu ngữ cookie
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-blocker-view-turn-off-for-site = Tắt trình chặn biểu ngữ cookie cho { $host }?
+protections-panel-cookie-banner-blocker-view-turn-on-for-site = Bật trình chặn biểu ngữ cookie cho trang web này?
 protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } sẽ xóa cookie của trang web này và làm mới trang. Xóa tất cả cookie có thể khiến bạn đăng xuất hoặc làm trống giỏ hàng.
 protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } sẽ thử tự động từ chối tất cả các yêu cầu cookie trên các trang web được hỗ trợ.
+protections-panel-cookie-banner-blocker-view-turn-on-description = Bật nó và { -brand-short-name } sẽ cố gắng tự động từ chối các biểu ngữ cookie trên trang này.
 protections-panel-cookie-banner-view-cancel = Hủy bỏ
 protections-panel-cookie-banner-view-turn-off = Tắt
 protections-panel-cookie-banner-view-turn-on = Bật

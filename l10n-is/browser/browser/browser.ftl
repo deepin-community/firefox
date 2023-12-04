@@ -540,7 +540,7 @@ urlbar-switch-to-tab =
 urlbar-extension =
     .value = Viðbót:
 urlbar-go-button =
-    .tooltiptext = Hoppa á tengilinn sem er í staðsetningarslánni
+    .tooltiptext = Hoppa á tengilinn sem er í veffangastikunni
 urlbar-page-action-button =
     .tooltiptext = Síðu aðgerðir
 
@@ -565,6 +565,8 @@ urlbar-result-action-switch-tab = Fara á flipa
 urlbar-result-action-visit = Heimsækja
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Heimsækja af klippispjaldinu þínu
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Heimsækja af klippispjaldinu
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -617,6 +619,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Flýtiaðgerðir
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Nýlegar leitir
 
 ## Reader View toolbar buttons
 
@@ -914,6 +921,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Forritsaukar
         Sumir forritsaukar eru ekki leyfðir
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Ljúka huliðslotu
+    .tooltiptext = Ljúka huliðslotu
+reset-pbm-panel-heading = Ljúka huliðslotunni þinni?
+reset-pbm-panel-description = Loka öllum huliðsflipum og eyða vafurferli, vefkökum og öllum öðrum gögnum vefsvæðisins.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Spyrja alltaf
+    .accesskey = a
+reset-pbm-panel-cancel-button =
+    .label = Hætta við
+    .accesskey = H
+reset-pbm-panel-confirm-button =
+    .label = Eyða lotugögnum
+    .accesskey = g
+reset-pbm-panel-complete = Huliðsvafurgögnum eytt
 
 ## Autorefresh blocker
 

@@ -565,6 +565,8 @@ urlbar-result-action-switch-tab = Váltás erre a lapra
 urlbar-result-action-visit = Keresse fel:
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Felkeresés a vágólapról
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Felkeresés a vágólapról
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -617,6 +619,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Gyors műveletek
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Legutóbbi keresések
 
 ## Reader View toolbar buttons
 
@@ -914,6 +921,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Kiegészítők
         Egyes kiegészítők nem engedélyezettek
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Privát munkamenet lezárása
+    .tooltiptext = Privát munkamenet lezárása
+reset-pbm-panel-heading = Befejezi a privát munkamenetet?
+reset-pbm-panel-description = Az összes privát lap bezárása, valamint az előzmények, sütik és az összes oldaladat törlése.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Rákérdezés mindig
+    .accesskey = R
+reset-pbm-panel-cancel-button =
+    .label = Mégse
+    .accesskey = M
+reset-pbm-panel-confirm-button =
+    .label = Munkamenet-adatok törlése
+    .accesskey = t
+reset-pbm-panel-complete = A privát munkamenet adatai törölve
 
 ## Autorefresh blocker
 

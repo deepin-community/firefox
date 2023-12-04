@@ -7,7 +7,7 @@ toolbar-button-firefox-view =
     .tooltiptext = { -firefoxview-brand-name }
 toolbar-button-firefox-view-2 =
     .label = { -firefoxview-brand-name }
-    .tooltiptext = 跨设备和窗口查看最近浏览活动
+    .tooltiptext = 跨设备和窗口查看近期浏览活动
 menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
@@ -67,7 +67,7 @@ firefoxview-tabpickup-signed-out-header = 登录以重新连接
 firefoxview-tabpickup-signed-out-description = 登录 { -fxaccount-brand-name }即可重新连接并接收标签页。
 firefoxview-tabpickup-signed-out-description2 = 登录账户即可重新连接并接收标签页。
 firefoxview-tabpickup-signed-out-primarybutton = 登录
-firefoxview-tabpickup-syncing = 您的标签页正在同步，请稍等片刻。
+firefoxview-tabpickup-syncing = 正在同步您的标签页，请稍等片刻。
 firefoxview-mobile-promo-header = 从手机或平板电脑接收标签页
 firefoxview-mobile-promo-description = 若要查看近期您移动设备上的标签页，请登录 iOS/Android 版 { -brand-product-name }。
 firefoxview-mobile-promo-primarybutton = 下载 { -brand-product-name } 移动版
@@ -206,9 +206,6 @@ firefoxview-import-history-description = 将 { -brand-short-name } 设为默认�
 firefoxview-recentlyclosed-empty-header = 要用到刚关闭的标签页？
 firefoxview-recentlyclosed-empty-description = 您可以在这里找回最近关闭的标签页，方便重新打开。
 firefoxview-recentlyclosed-empty-description-two = 如需查找较早前关闭的标签页，请查看<a data-l10n-name="history-url">浏览历史</a>。
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

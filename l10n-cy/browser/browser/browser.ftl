@@ -115,7 +115,7 @@ urlbar-result-menu-button =
 urlbar-result-menu-button-feedback = Adborth
     .title = Agor dewislen
 urlbar-result-menu-learn-more =
-    .label = Dysgu rhagor
+    .label = Darllen rhagor
     .accesskey = D
 urlbar-result-menu-remove-from-history =
     .label = Tynnu o'r hanes
@@ -305,7 +305,7 @@ quickactions-viewsource2 = Darllen Cod Gwreiddiol y Dudalen
 quickactions-cmd-viewsource = gweld ffynhonnell, ffynhonnell
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
-    .title = Dysgu rhagor am weithredoedd Cyflym
+    .title = Darllen rhagor am weithredoedd Cyflym
 
 ## Bookmark Panel
 
@@ -375,7 +375,7 @@ identity-https-only-info-turn-off3 = Os yw'r wefan yn ymddangos wedi torri, efal
 identity-https-only-info-no-upgrade = Methu uwchraddio'r cysylltiad o HTTP.
 identity-permissions-storage-access-header = Cwcis traws-gwefan
 identity-permissions-storage-access-hint = Gall y partïon hyn ddefnyddio cwcis traws-gwefan a data gwefan tra'ch bod chi ar y wefan hon.
-identity-permissions-storage-access-learn-more = Dysgu rhagor
+identity-permissions-storage-access-learn-more = Darllen rhagor
 identity-permissions-reload-hint = Efallai y bydd angen ail lwytho'r dudalen i newidiadau ddod ar waith.
 identity-clear-site-data =
     .label = Clirio Data Cwcis a Gwefan…
@@ -581,6 +581,8 @@ urlbar-result-action-switch-tab = Newid i'r Tab
 urlbar-result-action-visit = Ymweld â
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Ymweld o'ch clipfwrdd
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Ymweld o'ch clipfwrdd
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -633,6 +635,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Gweithredoedd Cyflym
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Chwilio Diweddar
 
 ## Reader View toolbar buttons
 
@@ -930,6 +937,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Estyniadau
         Nid oes caniatâd i rai estyniadau
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Gorffen y Sesiwn Breifat
+    .tooltiptext = Gorffen y Sesiwn Breifat
+reset-pbm-panel-heading = Gorffen eich sesiwn breifat?
+reset-pbm-panel-description = Caewch bob tab preifat a dileu hanes, cwcis, a'r holl ddata gwefan arall.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Gofyn i mi bob tro
+    .accesskey = G
+reset-pbm-panel-cancel-button =
+    .label = Diddymu
+    .accesskey = D
+reset-pbm-panel-confirm-button =
+    .label = Dileu data sesiwn
+    .accesskey = s
+reset-pbm-panel-complete = Data sesiwn preifat wedi'i ddileu
 
 ## Autorefresh blocker
 

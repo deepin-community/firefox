@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Demandar al sitos web de non vender ni compartir mi datos
     .accesskey = v
+non-technical-privacy-header = Preferentias de confidentialitate del sito
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Controlo global del confidentialitate (GPC)
 settings-page-title = Parametros
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Aperir le previe fenestras e schedas
     .accesskey = s
+windows-launch-on-login =
+    .label = Aperir { -brand-short-name } automaticamente quando on accende tu computator
+    .accesskey = A
+windows-launch-on-login-disabled = Iste preferentia ha essite disactivate in Windows. In Parametros, aperi <a data-l10n-name="startup-link">Apps initial</a> pro modificar lo.
 startup-restore-warn-on-quit =
     .label = Advertir te quando tu quita le navigator
 disable-extension =
@@ -852,7 +861,7 @@ forms-primary-pw-change =
 # Leave this message empty if the translation for "Primary Password" matches
 # "Master Password" in your language. If you're editing the FTL file directly,
 # use { "" } as the value.
-forms-primary-pw-former-name = Formalmente note como contrasigno maestro
+forms-primary-pw-former-name = Anteriormente cognoscite como contrasigno maestro
 forms-primary-pw-fips-title = Tu es actualmente in modo FIPS. Tal modo require un contrasigno primari non vacue.
 forms-master-pw-fips-desc = Le cambio de contrasigno ha fallite
 forms-windows-sso =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Reduction de banner pro le cookies
 cookie-banner-handling-description = { -brand-short-name } automaticamente tenta rejectar requestas de cookies sur bandieras pro cookies, sur le sitos supportate.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Blocator de bandiera pro cookie
+cookie-banner-blocker-description = Quando un sito demanda si illes pote usar cookies in le modo navigation private, { -brand-short-name } automaticamente refusa pro te. Solo sur sitos supportate.
 cookie-banner-learn-more = Pro saper plus
 forms-handle-cookie-banners =
     .label = Reducer bandieras pro cookies
+cookie-banner-blocker-checkbox-label =
+    .label = Refusar automaticamente bandieras pro cookie
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Actiones rapide
     .accesskey = r
+addressbar-locbar-showrecentsearches-option =
+    .label = Monstrar recercas recente
+    .accesskey = r
 addressbar-suggestions-settings = Cambiar le preferentias pro le suggestiones del motor de recerca
 addressbar-quickactions-learn-more = Pro saper plus
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Protection antitraciamento reinf
 content-blocking-section-top-level-description = Le traciatores te seque per tote le rete pro colliger informationes sur tu habitos e interesses de navigation. { -brand-short-name } bloca multes de iste traciatores e altere scripts maligne.
 content-blocking-learn-more = Saper plus
 content-blocking-fpi-incompatibility-warning = Tu usa First Party Isolation (FPI) que supplanta alcunes del parametros de cookies de { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Tu sta usar Resist Fingerprinting (RFP), que replacia alcunos del parametros de protection detection de dactylogrammas de { -brand-short-name }.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1210,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Dispositivos de securitate…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = Permitte que { -brand-short-name } fide automaticamente in le certificatos radice de tertie partes que se installa
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Aperir le parametros
     .accesskey = A

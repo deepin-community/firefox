@@ -42,3 +42,9 @@ unified-extensions-context-menu-move-widget-down =
 unified-extensions-mb-quarantined-domain-title = ზოგიერთი გაფართოება არაა ნებადართული
 unified-extensions-mb-quarantined-domain-message = მხოლოდ ზოგიერთი გაფართოება, რომელთაც { -vendor-short-name } ზედამხედველობს, ნებადართულია ამ საიტზე თქვენი მონაცემების უსაფრთხოებისთვის.
 unified-extensions-mb-quarantined-domain-message-2 = თქვენი მონაცემების დასაცავად ზოგიერთ გაფართოებას არ შეეძლება ამ საიტზე მონაცემების წაკითხვა ან შეცვლა. გაფართოების პარამეტრებიდან შეიძლება ნების დართვა საიტებზე, რომლებზეც ზღუდავს { -vendor-short-name }.
+# .heading is processed by moz-message-bar to be used as a heading attribute
+unified-extensions-mb-quarantined-domain-message-3 =
+    .heading = ზოგიერთი გაფართოება არაა ნებადართული
+    .message = თქვენი მონაცემების დასაცავად ზოგიერთ გაფართოებას არ შეეძლება ამ საიტზე მონაცემების წაკითხვა ან შეცვლა. გაფართოების პარამეტრებიდან შეიძლება ნების დართვა საიტებზე, რომლებზეც ზღუდავს { -vendor-short-name }.
+unified-extensions-mb-quarantined-domain-learn-more = ვრცლად
+    .aria-label = ვრცლად: ზოგიერთი გაფართოება არაა ნებადართული

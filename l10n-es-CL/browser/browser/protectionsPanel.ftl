@@ -37,6 +37,14 @@ protections-panel-etp-off-toggle =
     .label = Protección de seguimiento mejorada
     .description = Desactivada para este sitio
     .aria-label = Activar protecciones para { $host }
+protections-panel-etp-toggle-on =
+    .label = Protección de seguimiento mejorada
+    .description = Activada para este sitio
+    .aria-label = Protección de seguimiento mejorada: Activada para { $host }
+protections-panel-etp-toggle-off =
+    .label = Protección de seguimiento mejorada
+    .description = Desactivada para este sitio
+    .aria-label = Protección de seguimiento mejorada: Desactivada para { $host }
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = ¿El sitio no funciona?
 # The heading/title of the sub-panel view
@@ -119,6 +127,7 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 # Cookie Banner Handling
 
 protections-panel-cookie-banner-handling-header = Reducción de anuncios de cookies
+protections-panel-cookie-banner-blocker-header = Bloqueador de anuncios de cookies
 protections-panel-cookie-banner-handling-enabled = Activada para este sitio
 protections-panel-cookie-banner-handling-disabled = Desactivada para este sitio
 protections-panel-cookie-banner-handling-undetected = Sitio actualmente no soportado
@@ -128,8 +137,15 @@ protections-panel-cookie-banner-view-title =
 #  $host (String): the hostname of the site that is being displayed.
 protections-panel-cookie-banner-view-turn-off-for-site = ¿Desactivar la reducción de anuncios de cookies para { $host }?
 protections-panel-cookie-banner-view-turn-on-for-site = ¿Activar la reducción de anuncios de cookies para este sitio?
+protections-panel-cookie-banner-blocker-view-title =
+    .title = Bloqueador de anuncios de cookies
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-blocker-view-turn-off-for-site = ¿Desactivar el bloqueo de anuncios de cookies para { $host }?
+protections-panel-cookie-banner-blocker-view-turn-on-for-site = ¿Activar el bloqueo de anuncios de cookies para este sitio?
 protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } borrará las cookies de este sitio y recargará la página. Borrar todas las cookies puede cerrar tu sesión o vaciar los carritos de compras.
 protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } intenta rechazar automáticamente todas las solicitudes de cookies en sitios soportados.
+protections-panel-cookie-banner-blocker-view-turn-on-description = Actívalo y { -brand-short-name } intentará rechazar automáticamente los anuncios de cookies en este sitio.
 protections-panel-cookie-banner-view-cancel = Cancelar
 protections-panel-cookie-banner-view-turn-off = Desactivar
 protections-panel-cookie-banner-view-turn-on = Activar

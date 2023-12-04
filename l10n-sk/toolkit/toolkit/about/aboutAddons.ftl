@@ -167,7 +167,6 @@ extensions-warning-update-security2 =
     .message = Kontrola bezpečnosti aktualizácií doplnkov je vypnutá. Aktualizácie vás môžu ohroziť.
 extensions-warning-update-security-button = Zapnúť
     .title = Povoliť kontrolu bezpečnosti aktualizácií doplnkov
-extensions-warning-imported-addons = Dokončite inštaláciu rozšírení, ktoré boli importované do { -brand-short-name(case: "gen") }.
 extensions-warning-imported-addons2 =
     .message = Dokončite inštaláciu rozšírení, ktoré boli importované do { -brand-short-name(case: "gen") }.
 extensions-warning-imported-addons-button = Nainštalovať rozšírenia
@@ -366,6 +365,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = Doplnok <span data-l10n-name="addon-name">{ $addon }</span> bol odstránený.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = Doplnok { $addon } bol odstránený.
 pending-uninstall-undo-button = Späť
 addon-detail-updates-label = Automatické aktualizácie
 addon-detail-updates-radio-default = Predvolené nastavenie

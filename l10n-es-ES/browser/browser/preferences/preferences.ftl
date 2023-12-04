@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Decir a los sitios web que no vendan ni compartan mis datos
     .accesskey = s
+non-technical-privacy-header = Preferencias de privacidad del sitio web
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Ajustes
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -115,13 +120,17 @@ always-check-default =
     .label = Comprobar siempre si { -brand-short-name } es su navegador predeterminado
     .accesskey = o
 is-default = { -brand-short-name } es su navegador predeterminado
-is-not-default = { -brand-short-name } no es su navegador predet.
+is-not-default = { -brand-short-name } no es su navegador predeterminado
 set-as-my-default-browser =
     .label = Convertir en predeterminado…
     .accesskey = C
 startup-restore-windows-and-tabs =
     .label = Abrir ventanas y pestañas anteriores
     .accesskey = s
+windows-launch-on-login =
+    .label = Abrir { -brand-short-name } automáticamente al iniciar el ordenador
+    .accesskey = A
+windows-launch-on-login-disabled = Esta opción se ha desactivado en Windows. Para cambiarla, visite <a data-l10n-name="startup-link">Aplicaciones de inicio</a> en la configuración del sistema.
 startup-restore-warn-on-quit =
     .label = Advertirle al salir del navegador
 disable-extension =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Reducción de avisos de cookies
 cookie-banner-handling-description = { -brand-short-name } rechaza automáticamente las solicitudes de cookies en sitios compatibles.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Bloqueador de avisos de cookies
+cookie-banner-blocker-description = Cuando un sitio pregunta si puede utilizar cookies en el modo de navegación privada, { -brand-short-name } se niega automáticamente. Solo en sitios compatibles.
 cookie-banner-learn-more = Saber más
 forms-handle-cookie-banners =
     .label = Reducir los avisos de cookies
+cookie-banner-blocker-checkbox-label =
+    .label = Rechazar automáticamente los avisos de cookies
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Acciones rápidas
     .accesskey = A
+addressbar-locbar-showrecentsearches-option =
+    .label = Mostrar búsquedas recientes
+    .accesskey = r
 addressbar-suggestions-settings = Cambiar preferencias de sugerencias de buscadores
 addressbar-quickactions-learn-more = Saber más
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Protección contra el rastreo me
 content-blocking-section-top-level-description = Los rastreadores le siguen en línea para recopilar información sobre sus hábitos e intereses de navegación. { -brand-short-name } bloquea muchos de estos rastreadores y otros scripts maliciosos.
 content-blocking-learn-more = Saber más
 content-blocking-fpi-incompatibility-warning = Está usando First Party Isolation (FPI), que anula algunas de las configuraciones de cookies de { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Está usando Resist Fingerprinting (RFP), que reemplaza algunas de las configuraciones de protección de huellas digitales de { -brand-short-name }. Esto podría provocar que algunos sitios fallen.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1152,6 +1175,8 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = Recopilación y uso de datos de { -brand-short-name }
+collection-header2 = Recopilación y uso de datos de { -brand-short-name }
+    .searchkeywords = telemetría
 collection-description = Nos esforzamos en proporcionarle opciones y recopilamos solo lo que necesitamos para proporcionarle y mejorar { -brand-short-name } para todos. Siempre pedimos permiso antes de recibir información personal.
 collection-privacy-notice = Aviso sobre privacidad
 collection-health-report-telemetry-disabled = Ya no permite que { -vendor-short-name } capture datos técnicos y de interacción. Todos los datos anteriores se eliminarán en 30 días.
@@ -1208,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Dispositivos de seguridad…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = Permitir que { -brand-short-name } confíe automáticamente en los certificados raíz de terceros que se instalen
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = Abrir ajustes
     .accesskey = A

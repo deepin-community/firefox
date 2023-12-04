@@ -39,6 +39,18 @@ fxviewtabrow-save-to-pocket = { -pocket-brand-name } වෙත සුරකි�
     .accesskey = o
 fxviewtabrow-copy-link = සබැඳියේ පිටපතක්
     .accesskey = L
+fxviewtabrow-close-tab = පටිත්ත වසන්න
+    .accesskey = C
+fxviewtabrow-move-tab = පටිත්ත ගෙනයන්න
+    .accesskey = v
+fxviewtabrow-move-tab-start = මුලට ගෙන යන්න
+    .accesskey = S
+fxviewtabrow-move-tab-end = අගට ගෙනයන්න
+    .accesskey = E
+fxviewtabrow-move-tab-window = නව කවුළුවකට ගෙනයන්න
+    .accesskey = W
+fxviewtabrow-send-tab = උපාංගයට පටිත්ත යවන්න
+    .accesskey = n
 # Variables:
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =

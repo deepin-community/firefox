@@ -62,7 +62,7 @@ policy-DownloadDirectory = ჩამოტვირთვის ნაგულ�
 # “lock” means that the user won’t be able to change this setting
 policy-EnableTrackingProtection = შიგთავსის შეზღუდვის ჩართვა ან გამორთვა და დამატებით ამ პარამეტრების ჩაკეტვა.
 # “lock” means that the user won’t be able to change this setting
-policy-EncryptedMediaExtensions = ჩაირთოს ან გამოირთოს Encrypted Media Extensions და დამატებით, ჩაიკეტოს.
+policy-EncryptedMediaExtensions = ჩაირთოს ან გამოირთოს Encrypted Media Extensions და ამასთანავე, ჩაიკეტოს.
 policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = გაითიშოს გაფრთხილებები გარკვეული სახის ფაილთა გაფართოებებისთვის დომენში.
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
@@ -78,7 +78,7 @@ policy-HardwareAcceleration = თუ უარყოფილია, აპა�
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = დაყენება და დამატებით მთავარი გვერდის ჩაკეტვა.
 policy-InstallAddonsPermission = ცალკეული ვებსაიტებისთვის დამატებების ჩადგმის დაშვება.
-policy-LegacyProfiles = თითოეული დაყენებისას, ცალ-ცალკე პროფილების იძულებითი შექმნის გამორთვა.
+policy-LegacyProfiles = თითოეული დაყენებისას ცალ-ცალკე პროფილების იძულებითი შექმნის გამორთვა.
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
 
@@ -91,6 +91,7 @@ policy-LocalFileLinks = ცალკეული საიტების, ა�
 policy-ManagedBookmarks = საშუალებას იძლევა, ადმინისტრატორმა გამართოს სანიშნები, რომელთაც მომხმარებელი ვერ შეცვლის.
 policy-ManualAppUpdateOnly = მხოლოდ ხელით განახლებების დაშვება, განახლების შეტყობინებების გარეშე.
 policy-PrimaryPassword = მოთხოვნა ან არიდება მთავარი პაროლის გამოყენების.
+policy-PrintingEnabled = ამობეჭდვის ჩართვა ან გამორთვა.
 policy-NetworkPrediction = ჩართვა ან გამორთვა ქსელში მონაცემების წინასწარი მიღების (DNS-ის წინასწარი დამუშავება)
 policy-NewTabPage = ახალი ჩანართის გვერდის ჩართვა ან გამორთვა.
 policy-NoDefaultBookmarks = ნაგულისხმევი სანიშნების, რომლებითაც ახლადდაყენებული { -brand-short-name } არის წარმოდგენილი და გონიერი სანიშნების (ხშირად მონახულებული, უახლესი ჭდეების) შეზღუდვა. შენიშვნა: ეს დებულება გამოსადეგია, ახალი პროფილის პირველ გაშვებამდე.
@@ -106,7 +107,7 @@ policy-Permissions2 = ნებართვების გამართვა
 policy-PictureInPicture = ჩაირთოს ან გამოირთოს ეკრანი-ეკრანში
 policy-PopupBlocking = ცალკეული ვებსაიტებისთვის ამომხტომი ფანჯრების დაშვება ნაგულისხმევად.
 policy-Preferences = მნიშვნელობების შერჩევა და ჩაკეტვა, პარამეტრების ნაწილისთვის.
-policy-PromptForDownloadLocation = ფაილების ჩამოტვირთვისას, ადგილმდებარეობის მითითება.
+policy-PromptForDownloadLocation = ფაილების ჩამოტვირთვისას ადგილმდებარეობის მითითება.
 policy-Proxy = პროქსის პარამეტრების გამართვა.
 policy-RequestedLocales = მიუთითეთ მოთხოვნილი ენების ჩამონათვალი პროგრამისთვის, პარამეტრების მიხედვით.
 policy-SanitizeOnShutdown2 = მონახულებული გვერდების გასუფთავება გათიშვისას.

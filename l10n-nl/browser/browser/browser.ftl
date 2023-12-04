@@ -565,6 +565,8 @@ urlbar-result-action-switch-tab = Wisselen naar tabblad
 urlbar-result-action-visit = Bezoeken
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Bezoeken vanaf uw klembord
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Bezoeken vanaf klembord
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -617,6 +619,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Snelle acties
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Recente zoekopdrachten
 
 ## Reader View toolbar buttons
 
@@ -914,6 +921,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Extensies
         Sommige extensies zijn niet toegestaan
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Privésessie beëindigen
+    .tooltiptext = Privésessie beëindigen
+reset-pbm-panel-heading = Uw privésessie beëindigen?
+reset-pbm-panel-description = Alle privétabbladen sluiten en geschiedenis, cookies en alle andere websitegegevens verwijderen.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Mij altijd vragen
+    .accesskey = M
+reset-pbm-panel-cancel-button =
+    .label = Annuleren
+    .accesskey = A
+reset-pbm-panel-confirm-button =
+    .label = Sessiegegevens verwijderen
+    .accesskey = w
+reset-pbm-panel-complete = Privésessiegegevens verwijderd
 
 ## Autorefresh blocker
 

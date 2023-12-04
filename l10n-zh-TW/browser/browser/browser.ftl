@@ -562,6 +562,8 @@ urlbar-result-action-switch-tab = 切換至該分頁
 urlbar-result-action-visit = 前往
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = 開啟您剪貼簿中的網址
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = 開啟剪貼簿中的網址
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -614,6 +616,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = 快速操作
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = 最近搜尋內容
 
 ## Reader View toolbar buttons
 
@@ -909,6 +916,24 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         擴充套件
         不允許某些擴充套件
+
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = 結束隱私瀏覽階段
+    .tooltiptext = 結束隱私瀏覽階段
+reset-pbm-panel-heading = 要結束隱私瀏覽階段嗎？
+reset-pbm-panel-description = 關閉所有隱私分頁，並清除瀏覽紀錄、Cookie 及其他網站資料。
+reset-pbm-panel-always-ask-checkbox =
+    .label = 每次都問我
+    .accesskey = A
+reset-pbm-panel-cancel-button =
+    .label = 取消
+    .accesskey = C
+reset-pbm-panel-confirm-button =
+    .label = 清除瀏覽階段資料
+    .accesskey = D
+reset-pbm-panel-complete = 已刪除瀏覽階段資料
 
 ## Autorefresh blocker
 

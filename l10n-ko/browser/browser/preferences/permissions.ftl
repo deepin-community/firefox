@@ -74,9 +74,9 @@ permissions-invalid-uri-label = 유효한 호스트명을 입력하세요.
 ## Exceptions - Tracking Protection
 
 permissions-exceptions-etp-window2 =
-    .title = 향상된 추적 방지 기능에 대한 예외
+    .title = 향상된 추적 방지에 대한 예외
     .style = { permissions-window2.style }
-permissions-exceptions-manage-etp-desc = 향상된 추적 방지 기능을 끌 웹사이트를 지정할 수 있습니다. 관리하려는 사이트의 정확한 주소를 입력하고 예외 추가를 누르세요.
+permissions-exceptions-manage-etp-desc = 향상된 추적 방지를 끌 웹사이트를 지정할 수 있습니다. 관리하려는 사이트의 정확한 주소를 입력하고 예외 추가를 누르세요.
 
 ## Exceptions - Cookies
 
@@ -90,8 +90,8 @@ permissions-exceptions-cookie-desc = 웹 사이트별로 쿠키나 사이트 데
 permissions-exceptions-https-only-window2 =
     .title = 예외 - HTTPS 전용 모드
     .style = { permissions-window2.style }
-permissions-exceptions-https-only-desc = 특정 웹 사이트에 대해 HTTPS 전용 모드를 끌 수 있습니다. { -brand-short-name }는 해당 사이트에 대해 연결을 보안 HTTPS로 업그레이드를 시도하지 않습니다. 사생활 보호 창에는 예외가 적용되지 않습니다.
-permissions-exceptions-https-only-desc2 = 특정 웹 사이트에 대해 HTTPS 전용 모드를 끌 수 있습니다. { -brand-short-name }는 해당 사이트에 대해 연결을 보안 HTTPS로 업그레이드를 시도하지 않습니다.
+permissions-exceptions-https-only-desc = 특정 웹 사이트에 HTTPS 전용 모드를 끌 수 있습니다. { -brand-short-name }는 해당 사이트에 연결을 보안 HTTPS로 업그레이드를 시도하지 않습니다. 사생활 보호 창에는 예외가 적용되지 않습니다.
+permissions-exceptions-https-only-desc2 = 특정 웹 사이트에 HTTPS 전용 모드를 끌 수 있습니다. { -brand-short-name }는 해당 사이트에 연결을 보안 HTTPS로 업그레이드를 시도하지 않습니다.
 
 ## Exceptions - Pop-ups
 

@@ -28,6 +28,7 @@ policy-CertificatesDescription = Tilføj certifikater eller brug indbyggede cert
 policy-Cookies = Tillad eller nægt websteder at sætte cookies.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Angiv politikker relateret til kontekster.
+policy-DisableAccounts = Deaktiver kontobaserede tjenester, inklusive synkronisering.
 policy-DisabledCiphers = Deaktiver ciphers.
 policy-DefaultDownloadDirectory = Indstil standard-mappe for hentede filer.
 policy-DisableAppUpdate = Deaktiver opdatering af browseren.
@@ -90,6 +91,7 @@ policy-LocalFileLinks = Tillad specifikke websteder at linke til lokale filer.
 policy-ManagedBookmarks = Indstiller en liste med bogmærker, der håndteres af en administrator, og som ikke kan ændres af brugeren.
 policy-ManualAppUpdateOnly = Tillad kun manuelle opdateringer, og giv ikke brugeren besked om opdateringer.
 policy-PrimaryPassword = Kræv eller forhindr brugen af en hovedadgangskode.
+policy-PrintingEnabled = Aktiver eller deaktiver udskrivning.
 policy-NetworkPrediction = Slå network prediction (DNS prefetching) til eller fra.
 policy-NewTabPage = Slå siden Nyt faneblad til eller fra.
 policy-NoDefaultBookmarks = Deaktiver oprettelse af standard-bogmærker, der følger med { -brand-short-name }, samt de smarte bogmærker (Mest besøgte, Seneste mærkater). NB: Denne politik virker kun, hvis den aktiveres før profilen anvendes første gang.

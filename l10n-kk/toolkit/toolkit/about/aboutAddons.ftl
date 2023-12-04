@@ -162,7 +162,6 @@ extensions-warning-update-security2 =
     .message = Кеңейтулер жаңартуларын қауісіздікке тексеру сөндірулі. Жаңартулармен қор болуыңыз мүмкін.
 extensions-warning-update-security-button = Іске қосу
     .title = Кеңейтулер жаңартуларын қауісіздікке тексеруді іске қосу
-extensions-warning-imported-addons = { -brand-short-name } ішіне импортталған кеңейтулер орнатуын аяқтаңыз.
 extensions-warning-imported-addons2 =
     .message = { -brand-short-name } ішіне импортталған кеңейтулер орнатуын аяқтаңыз.
 extensions-warning-imported-addons-button = Кеңейтулерді орнату
@@ -358,6 +357,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> өшірілді.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } өшірілді.
 pending-uninstall-undo-button = Болдырмау
 addon-detail-updates-label = Автожаңартуларды рұқсат ету
 addon-detail-updates-radio-default = Бастапқы

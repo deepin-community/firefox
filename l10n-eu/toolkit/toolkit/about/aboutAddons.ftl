@@ -162,7 +162,6 @@ extensions-warning-update-security2 =
     .message = Gehigarrien eguneraketa-segurtasuna egiaztatzea desgaituta dago. Eguneraketek arriskuan jar zaitzakete.
 extensions-warning-update-security-button = Gaitu
     .title = Gaitu gehigarrien eguneraketa-segurtasuna egiaztatzea
-extensions-warning-imported-addons = Mesedez amaitu { -brand-short-name }(e)ra inportatu ziren hedapenen instalazioa.
 extensions-warning-imported-addons2 =
     .message = Mesedez amaitu { -brand-short-name }(e)ra inportatu ziren hedapenen instalazioa.
 extensions-warning-imported-addons-button = Instalatu hedapenak
@@ -350,6 +349,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> kendu egin da.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } kendu egin da.
 pending-uninstall-undo-button = Desegin
 addon-detail-updates-label = Baimendu eguneraketa automatikoak
 addon-detail-updates-radio-default = Lehenetsia

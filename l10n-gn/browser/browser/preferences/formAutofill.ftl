@@ -15,16 +15,38 @@ autofill-manage-remove-button = Mboguete
 autofill-manage-add-button = Embojuaju…
 autofill-manage-edit-button = Mbosako’i…
 
-##
+## The address capture doorhanger
 
+address-capture-save-doorhanger-header = ¿Eñongatu kundaharape?
+address-capture-save-doorhanger-description = Eñongatu marandu { -brand-short-name } ndive ehai hag̃ua myanyhẽha pya’e.
+address-capture-update-doorhanger-header = ¿Embohekopyahu kundaharape?
+address-capture-edit-doorhanger-header = Embosako’i kundaharape
+address-capture-save-button =
+    .label = Ñongatu
+    .accessKey = S
+address-capture-not-now-button =
+    .label = Ani ko’ág̃a
+    .accessKey = N
+address-capture-cancel-button =
+    .label = Heja
+    .accessKey = C
+address-capture-update-button =
+    .label = Mbohekopyahu
+    .accessKey = U
+address-capture-manage-address-button =
+    .label = Kundaharape ñemboheko
+address-capture-learn-more-button =
+    .label = Kuaave
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Embojuaju kundaharape pyahu
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Embosako’i kundaharape
+autofill-address-name = Téra
 autofill-address-given-name = Téra ñepyrũ
 autofill-address-additional-name = Téra mokõiha
 autofill-address-family-name = Terajoapy
 autofill-address-organization = Atyguasu
+autofill-address-street-address = Kundaharape
 autofill-address-street = Tape réra
 
 ## address-level-3 (Sublocality) names
@@ -78,7 +100,11 @@ autofill-address-eircode = Eircode
 
 ##
 
+
+##
+
 autofill-address-country = Tetã térã tendaguasu
+autofill-address-country-only = Tetã
 autofill-address-tel = Pumbyry
 autofill-address-email = Ñandutiveve
 autofill-cancel-button = Heja

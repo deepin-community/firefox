@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Demander aux sites web de ne pas vendre ni partager mes données
     .accesskey = D
+non-technical-privacy-header = Préférences de confidentialité des sites web
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Paramètres
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Ouvrir les fenêtres et onglets précédents
     .accesskey = O
+windows-launch-on-login =
+    .label = Ouvrir { -brand-short-name } automatiquement au démarrage de votre ordinateur
+    .accesskey = O
+windows-launch-on-login-disabled = Cette préférence a été désactivée dans Windows. Pour modifier ce paramètre, accédez aux <a data-l10n-name="startup-link">Applications de démarrage</a> dans les paramètres système.
 startup-restore-warn-on-quit =
     .label = Prévenir à la fermeture du navigateur
 disable-extension =
@@ -961,9 +970,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Réduction des bannières de cookies
 cookie-banner-handling-description = { -brand-short-name } essaie automatiquement de refuser les demandes de dépôt de cookies des bannières de cookies sur les sites compatibles.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Bloqueur de bannières de cookies
+cookie-banner-blocker-description = Lorsqu’un site demande s’il peut utiliser des cookies en navigation privée, { -brand-short-name } les refuse automatiquement pour vous. Uniquement sur les sites pris en charge.
 cookie-banner-learn-more = En savoir plus
 forms-handle-cookie-banners =
     .label = Réduire les bannières de cookies
+cookie-banner-blocker-checkbox-label =
+    .label = Refuser automatiquement les bannières de cookies
 
 ## Privacy Section - Address Bar
 
@@ -994,6 +1010,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Les actions rapides
     .accesskey = a
+addressbar-locbar-showrecentsearches-option =
+    .label = Afficher les recherches récentes
+    .accesskey = r
 addressbar-suggestions-settings = Modifier les préférences pour les suggestions de recherche
 addressbar-quickactions-learn-more = En savoir plus
 
@@ -1003,6 +1022,10 @@ content-blocking-enhanced-tracking-protection = Protection renforcée contre le 
 content-blocking-section-top-level-description = Les traqueurs vous suivent en ligne pour collecter des informations sur vos habitudes de navigation et vos centres d’intérêt. { -brand-short-name } bloque un grand nombre de ces traqueurs et de scripts malveillants.
 content-blocking-learn-more = En savoir plus
 content-blocking-fpi-incompatibility-warning = Vous utilisez l’isolation First-Party (FPI) qui remplace certains paramètres des cookies de { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Vous utilisez Resist Fingerprinting (RFP) qui remplace quelques uns des paramètres de protection contre les détecteurs d’empreinte numérique de { -brand-short-name }. De ce fait, certains sites peuvent dysfonctionner.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1210,6 +1233,9 @@ certs-view =
 certs-devices =
     .label = Périphériques de sécurité…
     .accesskey = P
+certs-thirdparty-toggle =
+    .label = Autoriser { -brand-short-name } à faire automatiquement confiance aux certificats racines tiers que vous installez
+    .accesskey = z
 space-alert-over-5gb-settings-button =
     .label = Ouvrir les paramètres
     .accesskey = O

@@ -14,6 +14,10 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Fortell nettsteder om ikke å selge eller dele mine data
     .accesskey = o
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Innstillinger
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +126,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Åpne tidligere vinduer og faner
     .accesskey = p
+windows-launch-on-login =
+    .label = Åpne { -brand-short-name } automatisk når datamaskinen din starter opp
+    .accesskey = p
+windows-launch-on-login-disabled = Denne innstillingen er deaktivert i Windows. For å endre, gå til <a data-l10n-name="startup-link">Oppstartsapper</a> i Systeminnstillinger.
 startup-restore-warn-on-quit =
     .label = Advarer når du avslutter nettleseren
 disable-extension =
@@ -731,7 +739,7 @@ sync-currently-syncing-history = Historikk
 sync-currently-syncing-tabs = Åpne faner
 sync-currently-syncing-logins-passwords = Innlogginger og passord
 sync-currently-syncing-addresses = Adresser
-sync-currently-syncing-creditcards = Kredittkort
+sync-currently-syncing-creditcards = Betalingskort
 sync-currently-syncing-addons = Utvidelser
 sync-currently-syncing-settings = Innstillinger
 sync-change-options =
@@ -767,7 +775,7 @@ sync-engine-addresses =
     .tooltiptext = Postadresser du har lagret (bare datamaskin)
     .accesskey = e
 sync-engine-creditcards =
-    .label = Kredittkort
+    .label = Betalingskort
     .tooltiptext = Navn, numre og forfallsdato (bare datamaskin)
     .accesskey = K
 sync-engine-addons =
@@ -961,9 +969,15 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Redusering av infokapselbanner
 cookie-banner-handling-description = { -brand-short-name } prøver automatisk å avvise infokapselforespørsler på infokapselbannere på støttede nettsteder.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Blokkering av infokapselbanner
 cookie-banner-learn-more = Les mer
 forms-handle-cookie-banners =
     .label = Reduser infokapselbannere
+cookie-banner-blocker-checkbox-label =
+    .label = Avslå automatisk infokapselbannere
 
 ## Privacy Section - Address Bar
 
@@ -975,6 +989,9 @@ addressbar-locbar-history-option =
 addressbar-locbar-bookmarks-option =
     .label = Bokmerker
     .accesskey = k
+addressbar-locbar-clipboard-option =
+    .label = Utklippstavle
+    .accesskey = U
 addressbar-locbar-openpage-option =
     .label = Åpne faner
     .accesskey = f
@@ -991,6 +1008,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Hurtige handlinger
     .accesskey = H
+addressbar-locbar-recentsearches-option =
+    .label = Nylige søk
+    .accesskey = N
 addressbar-suggestions-settings = Endre innstillinger for søkeforslag
 addressbar-quickactions-learn-more = Les mer
 
@@ -1000,6 +1020,10 @@ content-blocking-enhanced-tracking-protection = Utvidet sporingsbeskyttelse
 content-blocking-section-top-level-description = Sporere følger deg rundt på nettet for å samle informasjon om surfevanene og interessene dine. { -brand-short-name } blokkerer mange av disse sporere og andre ondsinnede skript.
 content-blocking-learn-more = Les mer
 content-blocking-fpi-incompatibility-warning = Du bruker First Party Isolation (FPI), som tilsidesetter noen av infokapsel-innstillingene til { -brand-short-name }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = Du bruker Resist Fingerprinting (RFP), som erstatter noen av { -brand-short-name } sine beskyttelsesinnstillinger for fingeravtrykk. Dette kan føre til at enkelte nettsteder ikke vil fungere.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1033,6 +1057,10 @@ content-blocking-all-windows-tracking-content = Sporingsinnhold i alle vinduer
 content-blocking-all-cross-site-cookies = Alle infokapsler på tvers av nettsteder
 content-blocking-cryptominers = Kryptoutvinnere
 content-blocking-fingerprinters = Nettleseravtrykk
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices. And
+# the suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-known-and-suspected-fingerprinters = Kjente og mistenkte nettleseravtrykksporere
 
 # The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
@@ -1145,6 +1173,8 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = Datainnsamling og bruk for { -brand-short-name }
+collection-header2 = Datainnsamling og bruk for { -brand-short-name }
+    .searchkeywords = telemetri
 collection-description = Vi prøver alltid å gi deg valg og samler bare det vi trenger for å levere og forbedre { -brand-short-name } for alle. Vi ber alltid om tillatelse før vi aksepterer personopplysninger.
 collection-privacy-notice = Personvernbestemmelser
 collection-health-report-telemetry-disabled = Du tillater ikke lenger { -vendor-short-name } å samle inn teknisk data og data om bruk. Alle tidligere data vil bli slettet innen 30 dager.
@@ -1201,6 +1231,9 @@ certs-view =
 certs-devices =
     .label = Sikkerhetsenheter…
     .accesskey = e
+certs-thirdparty-toggle =
+    .label = Tillat at { -brand-short-name } automatisk stoler på tredjeparts rotsertifikater du installerer
+    .accesskey = T
 space-alert-over-5gb-settings-button =
     .label = Åpne Innstillinger
     .accesskey = p

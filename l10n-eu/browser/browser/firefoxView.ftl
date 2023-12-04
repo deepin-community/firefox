@@ -5,6 +5,9 @@
 toolbar-button-firefox-view =
     .label = { -firefoxview-brand-name }
     .tooltiptext = { -firefoxview-brand-name }
+toolbar-button-firefox-view-2 =
+    .label = { -firefoxview-brand-name }
+    .tooltiptext = Ikusi azken nabigazioa leiho eta gailuen artean
 menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
@@ -26,17 +29,24 @@ firefoxview-tabpickup-step-signin-header = Aldatu di-da batean gailuen artean
 firefoxview-tabpickup-step-signin-description = Zure telefonoko fitxak hemen izateko, hasi saioa edo sortu kontua lehenik.
 firefoxview-tabpickup-step-signin-primarybutton = Jarraitu
 firefoxview-syncedtabs-signin-header = Hartu fitxak edonondik
+firefoxview-syncedtabs-signin-description = { -brand-product-name } erabiltzen duzun gailu guztietako fitxak ikusteko, hasi saioa zure kontuan. Konturik ez badaukazu, izen-emateko urratsak erakutsiko dizkizugu.
 firefoxview-syncedtabs-signin-primarybutton = Hasi saioa edo eman izena
 firefoxview-tabpickup-adddevice-header = Sinkronizatu { -brand-product-name } zure telefono edo tabletan
 firefoxview-tabpickup-adddevice-description = Deskargatu mugikorrerako { -brand-product-name } eta hasi saioa bertan.
 firefoxview-tabpickup-adddevice-learn-how = Ikasi nola
 firefoxview-tabpickup-adddevice-primarybutton = Eskuratu mugikorrerako { -brand-product-name }
+firefoxview-syncedtabs-adddevice-header = Hasi saioa { -brand-product-name }(e)n zure beste gailuetan
+firefoxview-syncedtabs-adddevice-description = { -brand-product-name } erabiltzen duzun gailu guztietako fitxak ikusteko, hasi saioa gailu guztietan. Ikasi nola <a data-l10n-name="url">konektatu gailu gehiago</a>.
+firefoxview-syncedtabs-adddevice-primarybutton = Probatu mugikorrerako { -brand-product-name }
 firefoxview-tabpickup-synctabs-header = Gaitu fitxen sinkronizazioa
 firefoxview-tabpickup-synctabs-description = Baimendu { -brand-short-name }(r)i gailuen artean fitxak partekatzea.
 firefoxview-tabpickup-synctabs-learn-how = Ikasi nola
 firefoxview-tabpickup-synctabs-primarybutton = Sinkronizatu irekitako fitxak
 firefoxview-syncedtabs-synctabs-header = Eguneratu zure sinkronizazio-ezarpenak
+firefoxview-syncedtabs-synctabs-description = Beste gailuetako fitxak ikusteko, irekitako fitxak sinkronizatu behar dituzu.
 firefoxview-syncedtabs-synctabs-checkbox = Baimendu irekitako fitxak sinkronizatzea
+firefoxview-syncedtabs-loading-header = Sinkronizatzen ari da
+firefoxview-syncedtabs-loading-description = Amaitutakoan, beste gailuetan irekita dituzun fitxak ikusiko dituzu. Itzuli geroago.
 firefoxview-tabpickup-fxa-admin-disabled-header = Zure erakundeak sinkronizazioa desgaitu du
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name }(e)k ezin ditu gailuen arteko fitxak sinkronizatu zure administratzaileak sinkronizazioa desgaitu duelako.
 firefoxview-tabpickup-network-offline-header = Egiaztatu zure Interneterako konexioa
@@ -55,6 +65,7 @@ firefoxview-tabpickup-password-locked-primarybutton = Idatzi pasahitz nagusia
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Argibide gehiago</a>
 firefoxview-tabpickup-signed-out-header = Hasi saioa birkonektatzeko
 firefoxview-tabpickup-signed-out-description = Berriro konektatu eta zure fitxak hartzeko, hasi saioa zure { -fxaccount-brand-name }(e)n.
+firefoxview-tabpickup-signed-out-description2 = Berriro konektatu eta zure fitxak hartzeko, hasi saioa zure kontuan.
 firefoxview-tabpickup-signed-out-primarybutton = Hasi saioa
 firefoxview-tabpickup-syncing = Itxaron apur bat zure fitxak sinkronizatu bitartean. Une bat izango da soilik.
 firefoxview-mobile-promo-header = Hartu zure telefono edo tabletako fitxak
@@ -185,13 +196,14 @@ firefoxview-import-history-close-button =
 ## Text displayed in a dismissable banner to import bookmarks/history from another browser
 
 firefoxview-import-history-header = Inportatu historia beste nabigatzaile batetik
+firefoxview-import-history-description = Egizu { -brand-short-name } zure nabigatzaile lehenetsia. Inportatu nabigatze-historia, laster-markak eta gehiago.
 
 ## Message displayed in Firefox View when the user has no recently closed tabs data
 
-
-##
-
+firefoxview-recentlyclosed-empty-header = Azkarregi itxi duzu fitxa?
+firefoxview-recentlyclosed-empty-description = Itxitako azken fitxak hemen aurkituko dituzu eta hauek berriz irekitzeko aukera duzu.
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 
 firefoxview-syncedtabs-device-notabs = Irekitako fitxarik ez gailu honetan
+firefoxview-syncedtabs-connect-another-device = Konektatu beste gailu bat

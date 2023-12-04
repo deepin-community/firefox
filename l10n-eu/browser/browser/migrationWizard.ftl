@@ -35,11 +35,19 @@ migration-wizard-migrator-display-name-chromium-edge = Microsoft Edge
 migration-wizard-migrator-display-name-chromium-edge-beta = Microsoft Edge Beta
 migration-wizard-migrator-display-name-edge-legacy = Microsoft Edge legatua
 migration-wizard-migrator-display-name-firefox = Firefox
+migration-wizard-migrator-display-name-file-password-csv = Pasahitzak CSV fitxategitik
+migration-wizard-migrator-display-name-file-bookmarks = Laster-markak HTML fitxategitik
 migration-wizard-migrator-display-name-ie = Microsoft Internet Explorer
 migration-wizard-migrator-display-name-opera = Opera
 migration-wizard-migrator-display-name-opera-gx = Opera GX
 migration-wizard-migrator-display-name-safari = Safari
 migration-wizard-migrator-display-name-vivaldi = Vivaldi
+
+## These strings are shown if the selected browser data directory is unreadable.
+## In practice, this tends to only occur on Linux when Firefox
+## is installed as a Snap.
+
+migration-no-permissions-instructions-step1 = Hautatu "Jarraitu"
 
 ## These strings will be displayed based on how many resources are selected to import
 
@@ -67,6 +75,7 @@ migration-passwords-from-file-success-header = Pasahitzak ondo inportatu dira
 migration-passwords-from-file = Fitxategia pasahitzen bila egiaztatzen
 migration-passwords-new = Pasahitz berriak
 migration-passwords-updated = Lehendik dauden pasahitzak
+migration-passwords-from-file-no-valid-data = Fitxategiak ez du baliozko pasahitz-daturik. Hautatu beste fitxategi bat.
 migration-passwords-from-file-picker-title = Inportatu pasahitzen fitxategia
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -106,6 +115,7 @@ migration-bookmarks-from-file-picker-title = Inportatu laster-marken fitxategia
 migration-bookmarks-from-file-progress-header = Laster-markak inportatzen
 migration-bookmarks-from-file = Laster-markak
 migration-bookmarks-from-file-success-header = Laster-markak ondo inportatu dira
+migration-bookmarks-from-file-no-valid-data = Fitxategiak ez du baliozko laster-marken daturik. Hautatu beste fitxategi bat.
 # A description for the .html file format that may be shown as the file type
 # filter by the operating system.
 migration-bookmarks-from-file-html-filter-title =
@@ -216,6 +226,9 @@ migration-wizard-progress-success-extensions =
 #   $matched (Number): the number of matched imported extensions
 #   $quantity (Number): the number of total extensions found during import
 migration-wizard-progress-partial-success-extensions = { $quantity }/{ $matched } hedapen
+# Shown in the migration wizard if there are no matched extensions
+# on import from supported browsers.
+migration-wizard-progress-no-matched-extensions = Bat datorren hedapenik ez
 migration-wizard-progress-extensions-addons-link = Arakatu { -brand-short-name }(e)rako hedapenak
 
 ##

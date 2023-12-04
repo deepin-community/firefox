@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Říkat stránkám, aby neprodávaly a nesdílely vaše data
     .accesskey = s
+non-technical-privacy-header = Předvolby ochrany soukromí na webových stránkách
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Nastavení
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -154,6 +159,14 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Otevřít okna a panely z minula
     .accesskey = p
+windows-launch-on-login =
+    .label =
+        { -brand-short-name.case-status ->
+            [with-cases] Otevřít { -brand-short-name(case: "acc") } při každém spuštění počítače
+           *[no-cases] Otevřít aplikaci { -brand-short-name } při každém spuštění počítače
+        }
+    .accesskey = O
+windows-launch-on-login-disabled = Tato předvolba byla v systému Windows zakázána. Chcete-li ji změnit, navštivte <a data-l10n-name="startup-link">Spouštěné aplikace</a> v nastavení systému.
 startup-restore-warn-on-quit =
     .label = Varovat při ukončování prohlížeče
 disable-extension =
@@ -1081,9 +1094,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = Omezení cookie lišt
 cookie-banner-handling-description = { -brand-short-name } se automaticky snaží odmítat lišty s žádostmi o povolení cookies na podporovaných serverech.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = Blokování lišt cookie
+cookie-banner-blocker-description = Když se stránka zeptá, zda může používat soubory cookie v režimu anonymního prohlížení, { -brand-short-name } to automaticky odmítne. K dispozici pouze na podporovaných stránkách.
 cookie-banner-learn-more = Zjistit více
 forms-handle-cookie-banners =
     .label = Omezit cookie lišty
+cookie-banner-blocker-checkbox-label =
+    .label = Automaticky odmítnout lišty cookie
 
 ## Privacy Section - Address Bar
 
@@ -1114,6 +1134,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Rychlé akce
     .accesskey = R
+addressbar-locbar-showrecentsearches-option =
+    .label = Zobrazit nedávná vyhledávání
+    .accesskey = e
 addressbar-suggestions-settings = Nastavit našeptávání dotazů pro vyhledávač
 addressbar-quickactions-learn-more = Zjistit více
 
@@ -1123,6 +1146,14 @@ content-blocking-enhanced-tracking-protection = Rozšířená ochrana proti sled
 content-blocking-section-top-level-description = Sledovací prvky sbírají informace, co a kde na internetu děláte, jaké máte návyky a co vás zajímá. { -brand-short-name } blokuje mnoho takových prvků i dalších škodlivých skriptů.
 content-blocking-learn-more = Zjistit více
 content-blocking-fpi-incompatibility-warning = Používáte izolaci prvních stran (FPI), která potlačí některá nastavení cookies ve { -brand-short-name(case: "loc") }.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning =
+    { -brand-short-name.case-status ->
+        [with-cases] Používáte funkci Resist Fingerprinting (RFP), která nahrazuje některá nastavení ochrany ve { -brand-short-name(case: "loc") } před vytvářením otisků prohlížeče . To může způsobit problémy s některými stránkami.
+       *[no-cases] Používáte funkci Resist Fingerprinting (RFP), která nahrazuje některá nastavení ochrany v aplikaci { -brand-short-name } před vytvářením otisků prohlížeče . To může způsobit problémy s některými stránkami.
+    }
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1280,6 +1311,12 @@ collection-header =
         [with-cases] Sběr a používání dat o { -brand-short-name(case: "loc") }
        *[no-cases] Sběr a používání dat o aplikaci { -brand-short-name }
     }
+collection-header2 =
+    { -brand-short-name.case-status ->
+        [with-cases] Sběr a používání dat o { -brand-short-name(case: "loc") }
+       *[no-cases] Sběr a používání dat o aplikaci { -brand-short-name }
+    }
+    .searchkeywords = telemetrie
 collection-description =
     { -brand-short-name.case-status ->
         [with-cases] S daty vám dáváme vždy na výběr a sbíráme jen data potřebná pro vylepšování { -brand-short-name(case: "gen") }. Před odesíláním osobních dat vždy žádáme o váš souhlas.
@@ -1368,6 +1405,13 @@ certs-view =
 certs-devices =
     .label = Bezpečnostní zařízení…
     .accesskey = B
+certs-thirdparty-toggle =
+    .label =
+        { -brand-short-name.case-status ->
+            [with-cases] Povolit { -brand-short-name(case: "gen") } automatickou důvěru v nainstalované kořenové certifikáty třetích stran, které nainstalujete.
+           *[no-cases] Povolit aplikaci { -brand-short-name } automatickou důvěru v nainstalované kořenové certifikáty třetích stran, které nainstalujete.
+        }
+    .accesskey = P
 space-alert-over-5gb-settings-button =
     .label = Otevřít nastavení
     .accesskey = O

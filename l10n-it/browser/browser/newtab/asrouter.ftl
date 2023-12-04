@@ -219,6 +219,9 @@ cfr-cbh-confirm-button = Rifiuta banner per i cookie
 cfr-cbh-dismiss-button = Non adesso
     .accesskey = N
 
+cookie-banner-blocker-cfr-header = { -brand-short-name } ha appena bloccato dei cookie per te
+cookie-banner-blocker-cfr-body = Rifiutiamo automaticamente diversi pop-up per i cookie per rendere la vita più difficile ai siti che cercano di tracciarti.
+
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
 july-jam-headline = Sempre dalla tua parte
@@ -252,3 +255,29 @@ device-migration-fxa-spotlight-header = Stai utilizzando un dispositivo meno rec
 device-migration-fxa-spotlight-body = Salva i tuoi dati per non perdere informazioni importanti come segnalibri e password, soprattutto se hai in programma di passare a un nuovo dispositivo.
 device-migration-fxa-spotlight-primary-button = Come posso salvare i miei dati
 device-migration-fxa-spotlight-link = Ricordamelo più tardi
+
+## Set as Default PDF Reader Infobar
+
+# The question portion of the following message should have the <strong> and </strong> tags surrounding it.
+pdf-default-notification-message = <strong>Impostare { -brand-short-name } come lettore predefinito per i file PDF?</strong> Utilizza { -brand-short-name } per leggere e modificare i PDF salvati sul tuo computer.
+pdf-default-notification-set-default-button =
+    .label = Imposta come predefinito
+pdf-default-notification-decline-button =
+    .label = Non adesso
+
+## Launch on login infobar notification
+
+launch-on-login-infobar-message = <strong>Vuoi aprire { -brand-short-name } quando riavvii il computer?</strong> Ora puoi impostare { -brand-short-name } per aprirsi automaticamente quando il dispositivo viene riavviato.
+launch-on-login-learnmore = Ulteriori informazioni
+launch-on-login-infobar-confirm-button = Sì, apri { -brand-short-name }
+  .accesskey = S
+launch-on-login-infobar-reject-button = Non adesso
+  .accesskey = N
+
+## These string variants are used when the “launch on login” infobar
+## notification is displayed for a second time.
+
+launch-on-login-infobar-final-message = <strong>Vuoi aprire { -brand-short-name } quando riavvii il computer?</strong> Per gestire le impostazioni di avvio, cerca “avvio” nelle impostazioni.
+launch-on-login-infobar-final-reject-button = No grazie
+  .accesskey = N
+

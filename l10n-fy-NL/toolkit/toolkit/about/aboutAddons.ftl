@@ -167,7 +167,6 @@ extensions-warning-update-security2 =
     .message = Feilichheidskontrole foar add-onsfernijingen is útskeakele. Jo kinne efterrinne mei fernijingen.
 extensions-warning-update-security-button = Ynskeakelje
     .title = Skeakelje feilichheidskontrole foar add-onsfernijingen yn
-extensions-warning-imported-addons = Foltôgje de ynstallaasje fan útwreidingen dy’t ymportearre binne nei { -brand-short-name }.
 extensions-warning-imported-addons2 =
     .message = Foltôgje de ynstallaasje fan útwreidingen dy’t ymportearre binne nei { -brand-short-name }.
 extensions-warning-imported-addons-button = Utwreidingen ynstallearje
@@ -364,6 +363,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> is fuortsmiten.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } is fuortsmiten.
 pending-uninstall-undo-button = Ungedien meitsje
 addon-detail-updates-label = Automatyske fernijingen tastean
 addon-detail-updates-radio-default = Standert

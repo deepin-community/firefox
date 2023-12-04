@@ -92,7 +92,7 @@ monitor-sign-up-link = Prihláste sa na odber upozornení
     .title = Prihláste sa na odber upozornení cez { -monitor-brand-name }
 auto-scan = Automaticky skenované: dnes
 monitor-emails-tooltip =
-    .title = Zobraziť e-mailové adresy sledované službou { -monitor-brand-short-name }
+    .title = Zobraziť e‑mailové adresy sledované službou { -monitor-brand-short-name }
 monitor-breaches-tooltip =
     .title = Zobraziť známe úniky dát v { -monitor-brand-short-name }
 monitor-passwords-tooltip =
@@ -102,9 +102,9 @@ monitor-passwords-tooltip =
 # your localization, because it would result in the number showing twice.
 info-monitored-emails =
     { $count ->
-        [one] Počet sledovaných e-mailových adries
-        [few] Počet sledovaných e-mailových adries
-       *[other] Počet sledovaných e-mailových adries
+        [one] Počet sledovaných e‑mailových adries
+        [few] Počet sledovaných e‑mailových adries
+       *[other] Počet sledovaných e‑mailových adries
     }
 # This string is displayed after a large numeral that indicates the total number
 # of known data breaches. Don’t add $count to
@@ -151,7 +151,7 @@ monitor-breaches-unresolved-description = Po preskúmaní podrobností o úniku 
 monitor-manage-breaches-link = Spravovať úniky
     .title = Spravovať úniky dát v službe { -monitor-brand-short-name }
 monitor-breaches-resolved-title = Paráda! Vyriešili ste všetky známe úniky.
-monitor-breaches-resolved-description = Ak sa váš email objaví v akýchkoľvek nových únikoch, budeme vás informovať.
+monitor-breaches-resolved-description = Ak sa váš e‑mail objaví v akýchkoľvek nových únikoch, budeme vás informovať.
 # Variables:
 # $numBreachesResolved (Number) - Number of breaches marked as resolved by the user on Monitor.
 # $numBreaches (Number) - Number of breaches in which a user's data was involved, detected by Monitor.

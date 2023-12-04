@@ -14,6 +14,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = 웹 사이트에 내 데이터를 판매하거나 공유하지 말라고 요청
     .accesskey = s
+non-technical-privacy-header = 웹 사이트 개인 정보 보호 설정
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = 설정
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -122,6 +127,10 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = 이전 창 및 탭 열기
     .accesskey = s
+windows-launch-on-login =
+    .label = 컴퓨터가 시작될 때 자동으로 { -brand-short-name } 열기
+    .accesskey = O
+windows-launch-on-login-disabled = 이 설정은 Windows에서 비활성화되었습니다. 변경하려면, 시스템 설정에서 <a data-l10n-name="startup-link">시작 프로그램</a>을 방문하세요.
 startup-restore-warn-on-quit =
     .label = 브라우저 종료시 경고
 disable-extension =
@@ -945,9 +954,16 @@ sitedata-cookies-exceptions =
 
 cookie-banner-handling-header = 쿠키 배너 감소
 cookie-banner-handling-description = { -brand-short-name }는 지원되는 사이트의 쿠키 배너에서 쿠키 요청을 자동으로 거부하려고 시도합니다.
+
+## Privacy Section - Cookie Banner Blocking
+
+cookie-banner-blocker-header = 쿠키 배너 차단기
+cookie-banner-blocker-description = 사생활 보호 모드에서 사이트가 쿠키를 사용할 수 있는지 묻는 경우 { -brand-short-name }는 자동으로 거부합니다. 단, 지원되는 사이트에서만 가능합니다.
 cookie-banner-learn-more = 더 알아보기
 forms-handle-cookie-banners =
     .label = 쿠키 배너 줄이기
+cookie-banner-blocker-checkbox-label =
+    .label = 쿠키 배너 자동 거부
 
 ## Privacy Section - Address Bar
 
@@ -978,15 +994,22 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = 빠른 작업
     .accesskey = Q
+addressbar-locbar-showrecentsearches-option =
+    .label = 최근 검색 표시
+    .accesskey = r
 addressbar-suggestions-settings = 검색 엔진 제안 설정 변경
 addressbar-quickactions-learn-more = 더 알아보기
 
 ## Privacy Section - Content Blocking
 
-content-blocking-enhanced-tracking-protection = 향상된 추적 방지 기능
+content-blocking-enhanced-tracking-protection = 향상된 추적 방지
 content-blocking-section-top-level-description = 추적기는 온라인에서 사용자를 따라다니며 탐색 습관과 관심사에 대한 정보를 수집합니다. { -brand-short-name }는 이러한 많은 추적기 및 기타 악성 스크립트를 차단합니다.
 content-blocking-learn-more = 더 알아보기
 content-blocking-fpi-incompatibility-warning = { -brand-short-name }의 일부 쿠키 설정을 재정의하는 자사 격리 (FPI)를 사용 중입니다.
+# There is no need to translate "Resist Fingerprinting (RFP)". This is a
+# feature that can only be enabled via about:config, and it's not exposed to
+# standard users (e.g. via Settings).
+content-blocking-rfp-incompatibility-warning = { -brand-short-name }의 디지털 지문 보호 설정 중 일부를 대체하는 RFP (Resist Fingerprinting)를 사용하고 있습니다. 이로 인해 일부 사이트가 제대로 작동 안 할 수 있습니다.
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1194,6 +1217,9 @@ certs-view =
 certs-devices =
     .label = 보안 장치…
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = 사용자가 설치한 제3자 루트 인증서를 { -brand-short-name }가 자동으로 신뢰하도록 허용
+    .accesskey = t
 space-alert-over-5gb-settings-button =
     .label = 설정 열기
     .accesskey = O

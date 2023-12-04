@@ -43,6 +43,20 @@ migration-wizard-migrator-display-name-opera-gx = Opera GX
 migration-wizard-migrator-display-name-safari = Safari
 migration-wizard-migrator-display-name-vivaldi = Вивалди
 
+## These strings are shown if the selected browser data directory is unreadable.
+## In practice, this tends to only occur on Linux when Firefox
+## is installed as a Snap.
+
+migration-no-permissions-message = «{ -brand-short-name }» ба профилҳои дигари браузерҳои насбшуда дар ин дастгоҳ дастрасӣ надорад.
+migration-no-permissions-instructions = Барои идома додани воридкунии маълумот аз браузери дигар, ба «{ -brand-short-name }» иҷозат диҳед, то он ба ҷузвдони профили худ дастрасӣ пайдо намояд.
+migration-no-permissions-instructions-step1 = «Идома додан»-ро интихоб намоед
+# The second step in getting permissions to read data for the selected
+# browser type.
+#
+# Variables:
+#  $permissionsPath (String): the file system path that the user will need to grant read permission to.
+migration-no-permissions-instructions-step2 = Дар василаи интихоби файлҳо, ба <code>{ $permissionsPath }</code> гузаред ва «Интихоб кардан»-ро интихоб намоед
+
 ## These strings will be displayed based on how many resources are selected to import
 
 migration-all-available-data-label = Ворид кардани ҳамаи маълумоти дастрас

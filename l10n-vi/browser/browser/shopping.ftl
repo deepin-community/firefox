@@ -6,6 +6,13 @@ shopping-page-title = { -brand-product-name } Shopping
 # Title for page showing where a user can check the
 # review quality of online shopping product reviews
 shopping-main-container-title = Trình kiểm tra đánh giá
+shopping-beta-marker = Beta
+# This string is for ensuring that screen reader technology
+# can read out the "Beta" part of the shopping sidebar header.
+# Any changes to shopping-main-container-title and
+# shopping-beta-marker should also be reflected here.
+shopping-a11y-header =
+    .aria-label = Trình kiểm tra đánh giá - beta
 shopping-close-button =
     .title = Đóng
 # This string is for notifying screen reader users that the
@@ -31,33 +38,42 @@ shopping-letter-grade-tooltip =
 
 ## Strings for the shopping message-bar
 
-shopping-message-bar-warning-stale-analysis-title = Đã có bản cập nhật
-shopping-message-bar-warning-stale-analysis-message = Khởi chạy trình phân tích { -fakespot-brand-full-name } để nhận thông tin cập nhật sau khoảng 60 giây.
-shopping-message-bar-generic-error-title = Phân tích hiện không có sẵn
+shopping-message-bar-warning-stale-analysis-message-2 = Thông tin mới cần kiểm tra
+shopping-message-bar-warning-stale-analysis-button = Kiểm tra ngay
+shopping-message-bar-generic-error-title2 = Hiện không có thông tin nào
 shopping-message-bar-generic-error-message = Chúng tôi đang làm việc để giải quyết sự cố. Hãy kiểm tra lại sau.
 shopping-message-bar-warning-not-enough-reviews-title = Chưa đủ đánh giá
-shopping-message-bar-warning-not-enough-reviews-message = Khi sản phẩm này có nhiều đánh giá hơn, chúng tôi sẽ có thể phân tích chúng.
+shopping-message-bar-warning-not-enough-reviews-message2 = Khi sản phẩm này có nhiều đánh giá hơn, chúng tôi sẽ có thể kiểm tra chất lượng của chúng.
 shopping-message-bar-warning-product-not-available-title = Sản phẩm không có sẵn
-shopping-message-bar-warning-product-not-available-message = Nếu bạn thấy sản phẩm này đã có hàng trở lại, hãy báo cáo cho chúng tôi và chúng tôi sẽ cập nhật phân tích.
+shopping-message-bar-warning-product-not-available-message2 = Nếu bạn thấy sản phẩm này đã có hàng trở lại, hãy báo cáo và chúng tôi sẽ kiểm tra đánh giá.
 shopping-message-bar-warning-product-not-available-button = Báo sản phẩm này đã có hàng trở lại
 shopping-message-bar-thanks-for-reporting-title = Cảm ơn bạn đã báo cáo!
-shopping-message-bar-thanks-for-reporting-message = Chúng tôi sẽ có bản phân tích cập nhật trong vòng 24 giờ. Hãy kiểm tra lại sau.
-shopping-message-bar-warning-product-not-available-reported-title = Phân tích sắp ra mắt
-shopping-message-bar-warning-product-not-available-reported-message = Một phân tích đã được cập nhật sẽ sẵn sàng trong vòng 24 giờ. Hãy kiểm tra lại sau.
-shopping-message-bar-warning-offline-title = Không có kết nối mạng
-shopping-message-bar-warning-offline-message = Kiểm tra kết nối mạng của bạn. Sau đó, hãy thử tải lại trang.
-shopping-message-bar-analysis-in-progress-title = Phân tích sắp ra mắt
-shopping-message-bar-analysis-in-progress-message = Khi hoàn tất, chúng tôi sẽ tự động hiển thị thông tin cập nhật tại đây.
+shopping-message-bar-thanks-for-reporting-message2 = Chúng tôi sẽ có thông tin về đánh giá của sản phẩm này trong vòng 24 giờ. Hãy kiểm tra lại sau.
+shopping-message-bar-warning-product-not-available-reported-title2 = Thông tin sắp ra mắt
+shopping-message-bar-warning-product-not-available-reported-message2 = Chúng tôi sẽ có thông tin về đánh giá của sản phẩm này trong vòng 24 giờ. Hãy kiểm tra lại sau.
+shopping-message-bar-generic-error =
+    .heading = Hiện không có thông tin nào
+    .message = Chúng tôi đang làm việc để giải quyết sự cố. Hãy kiểm tra lại sau.
+shopping-message-bar-warning-not-enough-reviews =
+    .heading = Chưa đủ đánh giá
+    .message = Khi sản phẩm này có nhiều đánh giá hơn, chúng tôi sẽ có thể kiểm tra chất lượng của chúng.
+shopping-message-bar-warning-product-not-available =
+    .heading = Sản phẩm không có sẵn
+    .message = Nếu bạn thấy sản phẩm này đã có hàng trở lại, hãy báo cáo và chúng tôi sẽ kiểm tra đánh giá.
+shopping-message-bar-warning-product-not-available-button2 = Báo sản phẩm còn hàng
+shopping-message-bar-thanks-for-reporting =
+    .heading = Cảm ơn bạn đã báo cáo!
+    .message = Chúng tôi sẽ có thông tin về đánh giá của sản phẩm này trong vòng 24 giờ. Hãy kiểm tra lại sau.
+shopping-message-bar-warning-product-not-available-reported =
+    .heading = Thông tin sắp ra mắt
+    .message = Chúng tôi sẽ có thông tin về đánh giá của sản phẩm này trong vòng 24 giờ. Hãy kiểm tra lại sau.
+shopping-message-bar-analysis-in-progress-title2 = Đang kiểm tra chất lượng đánh giá
+shopping-message-bar-analysis-in-progress-message2 = Quá trình này có thể mất khoảng 60 giây.
 shopping-message-bar-page-not-supported-title = Chúng tôi không thể kiểm tra những đánh giá này
 shopping-message-bar-page-not-supported-message = Rất tiếc, chúng tôi không thể kiểm tra chất lượng đánh giá đối với một số loại sản phẩm nhất định. Ví dụ: thẻ quà tặng và truyền phát video, âm nhạc và trò chơi.
-
-## The word 'analyzer' when used here reflects what this tool is called on
-## fakespot.com. If possible, a different word should be used for the Fakespot
-## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
-## used in the name of the Firefox feature ('Review checker'). If that is not
-## possible - if these terms are not meaningfully different - that is OK.
-
-shopping-message-bar-warning-stale-analysis-link = Khởi chạy trình phân tích trên { -fakespot-website-name }
+shopping-message-bar-page-not-supported =
+    .heading = Chúng tôi không thể kiểm tra những đánh giá này
+    .message = Rất tiếc, chúng tôi không thể kiểm tra chất lượng đánh giá đối với một số loại sản phẩm nhất định. Ví dụ: thẻ quà tặng và truyền phát video, âm nhạc và trò chơi.
 
 ## Strings for the product review snippets card
 
@@ -81,11 +97,14 @@ shopping-settings-label =
 shopping-settings-recommendations-toggle =
     .label = Hiển thị quảng cáo trong trình kiểm tra đánh giá
 shopping-settings-recommendations-learn-more = Bạn sẽ thấy quảng cáo không thường xuyên cho các sản phẩm có liên quan. Tất cả quảng cáo phải đáp ứng các tiêu chuẩn chất lượng đánh giá của chúng tôi. <a data-l10n-name="review-quality-url">Tìm hiểu thêm</a>
+shopping-settings-recommendations-learn-more2 = Bạn sẽ thấy quảng cáo không thường xuyên cho các sản phẩm có liên quan. Chúng tôi chỉ quảng cáo những sản phẩm có đánh giá đáng tin cậy. <a data-l10n-name="review-quality-url">Tìm hiểu thêm</a>
 shopping-settings-opt-out-button = Tắt trình kiểm tra đánh giá
 powered-by-fakespot = Trình kiểm tra đánh giá được cung cấp bởi <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
 
 ## Strings for the adjusted rating component
 
+# "Adjusted rating" means a star rating that has been adjusted to include only
+# reliable reviews.
 shopping-adjusted-rating-label =
     .label = Đánh giá đã được điều chỉnh
 shopping-adjusted-rating-unreliable-reviews = Đã xóa các đánh giá không đáng tin cậy
@@ -99,12 +118,11 @@ shopping-review-reliability-label =
 
 shopping-analysis-explainer-label =
     .label = Cách chúng tôi xác định chất lượng đánh giá
-shopping-analysis-explainer-intro =
-    Chúng tôi sử dụng công nghệ AI từ { -fakespot-brand-full-name } để phân tích độ tin cậy của các đánh giá sản phẩm.
-    Phân tích này sẽ chỉ giúp bạn đánh giá chất lượng đánh giá chứ không phải chất lượng sản phẩm.
+shopping-analysis-explainer-intro2 = Chúng tôi sử dụng công nghệ AI của { -fakespot-brand-full-name } để kiểm tra độ tin cậy của các đánh giá sản phẩm. Điều này chỉ giúp bạn đánh giá được chất lượng đánh giá chứ không phải chất lượng sản phẩm.
 shopping-analysis-explainer-grades-intro = Chúng tôi đưa ra đánh giá cho từng sản phẩm một <strong>điểm bằng chữ cái</strong> từ A đến F.
 shopping-analysis-explainer-adjusted-rating-description = <strong>Đánh giá đã được điều chỉnh</strong> chỉ dựa trên những đánh giá mà chúng tôi tin là đáng tin cậy.
 shopping-analysis-explainer-learn-more = Tìm hiểu thêm về <a data-l10n-name="review-quality-url">cách { -fakespot-brand-full-name } quyết định chất lượng đánh giá</a>.
+shopping-analysis-explainer-learn-more2 = Tìm hiểu thêm về <a data-l10n-name="review-quality-url">cách { -fakespot-brand-name } quyết định chất lượng đánh giá</a>.
 # This string includes the short brand name of one of the three supported
 # websites, which will be inserted without being translated.
 #  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
@@ -115,10 +133,10 @@ shopping-analysis-explainer-review-grading-scale-unreliable = Đánh giá không
 
 ## Strings for UrlBar button
 
-shopping-sidebar-open-button =
-    .tooltiptext = Mở thanh lề mua sắm
-shopping-sidebar-close-button =
-    .tooltiptext = Đóng thanh lề mua sắm
+shopping-sidebar-open-button2 =
+    .tooltiptext = Mở trình kiểm tra đánh giá
+shopping-sidebar-close-button2 =
+    .tooltiptext = Đóng trình kiểm tra đánh giá
 
 ## Strings for the unanalyzed product card.
 ## The word 'analyzer' when used here reflects what this tool is called on
@@ -127,12 +145,80 @@ shopping-sidebar-close-button =
 ## used in the name of the Firefox feature ('Review checker'). If that is not
 ## possible - if these terms are not meaningfully different - that is OK.
 
-shopping-unanalyzed-product-header = Chưa có phân tích cho những đánh giá này
-shopping-unanalyzed-product-message = Khởi chạy trình phân tích { -fakespot-brand-full-name } và bạn sẽ biết trong khoảng 60 giây liệu các bài đánh giá về sản phẩm này có đáng tin cậy hay không.
-shopping-unanalyzed-product-analyze-link = Khởi chạy trình phân tích trên { -fakespot-website-name }
+
+## Strings for the unanalyzed product card.
+## The word 'analyzer' when used here reflects what this tool is called on
+## fakespot.com. If possible, a different word should be used for the Fakespot
+## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
+## used in the name of the Firefox feature ('Review Checker'). If that is not
+## possible - if these terms are not meaningfully different - that is OK.
+
+shopping-unanalyzed-product-header-2 = Chưa có thông tin về những đánh giá này
+shopping-unanalyzed-product-message-2 = Để biết liệu đánh giá của sản phẩm này có đáng tin cậy hay không, hãy kiểm tra chất lượng đánh giá. Chỉ mất khoảng 60 giây.
+shopping-unanalyzed-product-analyze-button = Kiểm tra chất lượng đánh giá
 
 ## Strings for the advertisement
 
 more-to-consider-ad-label =
     .label = Thêm điều cần xem xét
 ad-by-fakespot = Quảng cáo bởi { -fakespot-brand-name }
+
+## Shopping survey strings.
+
+shopping-survey-headline = Giúp cải thiện { -brand-product-name }
+shopping-survey-question-one = Bạn hài lòng như thế nào với trải nghiệm của trình kiểm tra đánh giá trong { -brand-product-name }?
+shopping-survey-q1-radio-1-label = Rất hài lòng
+shopping-survey-q1-radio-2-label = Hài lòng
+shopping-survey-q1-radio-3-label = Trung lập
+shopping-survey-q1-radio-4-label = Không hài lòng
+shopping-survey-q1-radio-5-label = Rất không hài lòng
+shopping-survey-question-two = Trình kiểm tra đánh giá có giúp bạn đưa ra quyết định mua hàng dễ dàng hơn không?
+shopping-survey-q2-radio-1-label = Có
+shopping-survey-q2-radio-2-label = Không
+shopping-survey-q2-radio-3-label = Tôi không biết
+shopping-survey-next-button-label = Tiếp
+shopping-survey-submit-button-label = Gửi
+shopping-survey-terms-link = Điều khoản sử dụng
+shopping-survey-thanks-message = Cảm ơn phản hồi của bạn!
+shopping-survey-thanks =
+    .heading = Cảm ơn phản hồi của bạn!
+
+## Shopping Feature Callout strings.
+## "price tag" refers to the price tag icon displayed in the address bar to
+## access the feature.
+
+shopping-callout-closed-opted-in-subtitle = Quay lại <strong>trình kiểm tra đánh giá</strong> bất cứ khi nào bạn nhìn thấy tag giá.
+shopping-callout-pdp-opted-in-title = Những đánh giá này có đáng tin cậy không? Tìm hiểu chúng nhanh chóng.
+shopping-callout-pdp-opted-in-subtitle = Mở trình kiểm tra đánh giá để xem xếp hạng đã điều chỉnh và đã xóa các đánh giá không đáng tin cậy. Ngoài ra, hãy xem những điểm nổi bật từ các đánh giá xác thực gần đây.
+shopping-callout-closed-not-opted-in-title = Một cú nhấp chuột để đánh giá đáng tin cậy
+shopping-callout-closed-not-opted-in-subtitle = Hãy dùng thử trình kiểm tra đánh giá bất cứ khi nào bạn nhìn thấy tag giá. Nhận thông tin chi tiết từ những người mua sắm thực sự một cách nhanh chóng — trước khi bạn mua.
+
+## Onboarding message strings.
+
+shopping-onboarding-headline = Hãy thử hướng dẫn đáng tin cậy của chúng tôi để đánh giá sản phẩm
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle = Xem mức độ tin cậy của các đánh giá sản phẩm trên <b>{ $currentSite }</b> trước khi bạn mua. Trình kiểm tra đánh giá, một tính năng thử nghiệm của { -vendor-short-name }, được tích hợp ngay vào { -brand-product-name } — và nó cũng hoạt động trên <b>{ $secondSite }</b> và <b>{ $thirdSite }</b>.
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle-1 = Xem đánh giá sản phẩm đáng tin cậy như thế nào trên <b>{ $currentSite }</b> trước khi bạn mua. Trình kiểm tra đánh giá, một tính năng thử nghiệm từ { -brand-product-name }, được tích hợp ngay vào trình duyệt. Nó cũng hoạt động trên <b>{ $secondSite }</b> và <b>{ $thirdSite }</b>.
+shopping-onboarding-body = Sử dụng { -fakespot-brand-full-name }, chúng tôi giúp bạn tránh những đánh giá thiên vị và không xác thực. Mô hình AI của chúng tôi luôn cải tiến để bảo vệ bạn khi bạn mua sắm. <a data-l10n-name="learn_more">Tìm hiểu thêm</a>
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use = Bằng việc chọn “{ shopping-onboarding-opt-in-button }“ bạn đồng ý với <a data-l10n-name="privacy_policy">chính sách riêng tư</a> và <a data-l10n-name="terms_of_use">điều khoản sử dụng</a> của { -fakespot-brand-full-name }.
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Bằng cách lựa chọn “{ shopping-onboarding-opt-in-button }“ bạn đã đồng ý với <a data-l10n-name="privacy_policy">chính sách riêng tư</a> và <a data-l10n-name="terms_of_use">điều khoản sử dụng</a> của { -fakespot-brand-name }.
+shopping-onboarding-opt-in-button = Có, hãy thử nó
+shopping-onboarding-not-now-button = Không phải bây giờ
+shopping-onboarding-dialog-close-button =
+    .title = Đóng
+    .aria-label = Đóng
+# Aria-label to make the "steps" of the shopping onboarding container visible to screen readers.
+# Variables:
+#   $current (Int) - Number of the current page
+#   $total (Int) - Total number of pages
+shopping-onboarding-welcome-steps-indicator-label =
+    .aria-label = Tiến trình: bước { $current } của { $total }

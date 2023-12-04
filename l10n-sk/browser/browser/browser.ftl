@@ -569,6 +569,8 @@ urlbar-result-action-switch-tab = Prepnúť na kartu
 urlbar-result-action-visit = Navštíviť
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-your-clipboard = Použiť adresu zo schránky
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Použiť adresu zo schránky
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -621,6 +623,11 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Rýchle akcie
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Nedávne vyhľadávania
 
 ## Reader View toolbar buttons
 
@@ -919,6 +926,24 @@ unified-extensions-button-quarantined =
         Rozšírenia
         Niektoré rozšírenia nie sú povolené
 
+## Private browsing reset button
+
+reset-pbm-toolbar-button =
+    .label = Ukončiť súkromnú reláciu
+    .tooltiptext = Ukončiť súkromnú reláciu
+reset-pbm-panel-heading = Ukončiť súkromnú reláciu?
+reset-pbm-panel-description = Týmto sa zatvoria všetky súkromné karty a odstráni sa história, súbory cookie a všetky ostatné údaje stránok.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Vždy sa opýtať
+    .accesskey = V
+reset-pbm-panel-cancel-button =
+    .label = Zrušiť
+    .accesskey = Z
+reset-pbm-panel-confirm-button =
+    .label = Odstrániť údaje relácie
+    .accesskey = O
+reset-pbm-panel-complete = Údaje súkromnej relácie boli odstránené
+
 ## Autorefresh blocker
 
 refresh-blocked-refresh-label = { -brand-short-name } neumožnil tejto stránke automatické obnovenie obsahu.
@@ -929,11 +954,11 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
-firefox-relay-offer-why-to-use-relay = Naše bezpečné, ľahko použiteľné masky chránia vašu identitu a zabraňujú nevyžiadanej pošte tým, že skryjú vašu e-mailovú adresu.
+firefox-relay-offer-why-to-use-relay = Naše bezpečné, ľahko použiteľné masky chránia vašu identitu a zabraňujú nevyžiadanej pošte tým, že skryjú vašu e‑mailovú adresu.
 # Variables:
 #  $useremail (String): user email that will receive messages
-firefox-relay-offer-what-relay-provides = Všetky e-maily odoslané na vaše e-mailové masky budú preposielané na adresu <strong>{ $useremail }</strong> (pokiaľ sa ich nerozhodnete zablokovať).
-firefox-relay-offer-legal-notice = Kliknutím na „Použiť e-mailovú masku“ súhlasíte so <label data-l10n-name="tos-url">Zmluvnými podmienkami</label> a <label data-l10n-name="privacy-url">Oznámením o ochrane osobných údajov</label>.
+firefox-relay-offer-what-relay-provides = Všetky e‑maily odoslané na vaše e‑mailové masky budú preposielané na adresu <strong>{ $useremail }</strong> (pokiaľ sa ich nerozhodnete zablokovať).
+firefox-relay-offer-legal-notice = Kliknutím na „Použiť e‑mailovú masku“ súhlasíte so <label data-l10n-name="tos-url">Zmluvnými podmienkami</label> a <label data-l10n-name="privacy-url">Oznámením o ochrane osobných údajov</label>.
 
 ## Add-on Pop-up Notifications
 

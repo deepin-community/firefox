@@ -166,7 +166,6 @@ extensions-warning-update-security2 =
     .message = Pśespytowanje wěstoty aktualizacije jo znjemóžnjone. Jo móžno, až aktualizacije wam wobgrozuju.
 extensions-warning-update-security-button = Zmóžniś
     .title = Pśespytowanje wěstoty aktualizacije zmóžniś
-extensions-warning-imported-addons = Pšosym dokóńcćo instalaciju rozšyrjenjow, kótarež su se importěrowali do { -brand-short-name }.
 extensions-warning-imported-addons2 =
     .message = Pšosym dokóńcćo instalaciju rozšyrjenjow, kótarež su se importěrowali do { -brand-short-name }.
 extensions-warning-imported-addons-button = Rozšyrjenja instalěrowaś
@@ -358,6 +357,10 @@ addon-detail-reviews-link =
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> jo se wótwónoźił.
+# Variables:
+#   $addon (string) - Name of the add-on
+pending-uninstall-description2 =
+    .message = { $addon } jo se wótwónoźił.
 pending-uninstall-undo-button = Anulěrowaś
 addon-detail-updates-label = Awtomatiske aktualizacije dowóliś
 addon-detail-updates-radio-default = Standard
