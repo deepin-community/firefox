@@ -1,3 +1,9 @@
+firefox (120.0-2deepin1) unstable; urgency=medium
+
+  * debian/control*, debian/rules: Use LLVM-16 build it.
+
+ -- xiangzelong <xiangzelong@deepin.org>  Mon, 18 Dec 2023 15:55:54 +0800
+
 firefox (120.0-2) unstable; urgency=medium
 
   * memory/build/PHC.cpp: Check if PHC is initialised on all entrypoints.
