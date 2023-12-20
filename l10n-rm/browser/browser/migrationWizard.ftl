@@ -42,6 +42,11 @@ migration-wizard-migrator-display-name-opera = Opera
 migration-wizard-migrator-display-name-opera-gx = Opera GX
 migration-wizard-migrator-display-name-safari = Safari
 migration-wizard-migrator-display-name-vivaldi = Vivaldi
+migration-source-name-ie = Internet Explorer
+migration-source-name-edge = Microsoft Edge
+migration-source-name-chrome = Google Chrome
+migration-imported-safari-reading-list = Glista da lectura (da Safari)
+migration-imported-edge-reading-list = Glista da lectura (dad Edge)
 
 ## These strings are shown if the selected browser data directory is unreadable.
 ## In practice, this tends to only occur on Linux when Firefox
@@ -71,6 +76,7 @@ migration-bookmarks-option-label = Segnapaginas
 # Edge, as this is the terminology for bookmarks on those browsers.
 migration-favorites-option-label = Favurits
 migration-logins-and-passwords-option-label = Infurmaziuns d'annunzia e pleds-clav memorisads
+migration-passwords-option-label = Pleds-clav memorisads
 migration-history-option-label = Cronologia da navigaziun
 migration-extensions-option-label = Extensiuns
 migration-form-autofill-option-label = Datas da l'endataziun automatica en formulars

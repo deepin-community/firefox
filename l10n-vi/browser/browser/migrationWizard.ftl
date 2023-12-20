@@ -42,6 +42,11 @@ migration-wizard-migrator-display-name-opera = Opera
 migration-wizard-migrator-display-name-opera-gx = Opera GX
 migration-wizard-migrator-display-name-safari = Safari
 migration-wizard-migrator-display-name-vivaldi = Vivaldi
+migration-source-name-ie = Internet Explorer
+migration-source-name-edge = Microsoft Edge
+migration-source-name-chrome = Google Chrome
+migration-imported-safari-reading-list = Đang đọc danh sách (Từ Safari)
+migration-imported-edge-reading-list = Đang đọc danh sách (từ Edge)
 
 ## These strings are shown if the selected browser data directory is unreadable.
 ## In practice, this tends to only occur on Linux when Firefox
@@ -71,6 +76,7 @@ migration-bookmarks-option-label = Dấu trang
 # Edge, as this is the terminology for bookmarks on those browsers.
 migration-favorites-option-label = Trang ưa thích
 migration-logins-and-passwords-option-label = Thông tin đăng nhập và mật khẩu đã lưu
+migration-passwords-option-label = Mật khẩu đã lưu
 migration-history-option-label = Lịch sử duyệt web
 migration-extensions-option-label = Tiện ích mở rộng
 migration-form-autofill-option-label = Dữ liệu tự động điền biểu mẫu

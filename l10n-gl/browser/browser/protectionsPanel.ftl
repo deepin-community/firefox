@@ -41,6 +41,10 @@ protections-panel-site-not-working-view =
 protections-panel-not-blocking-why-label = Por que?
 protections-panel-not-blocking-why-etp-on-tooltip = O bloqueo destes podería romper elementos dalgúns sitios web. Sen rastreadores, é posible que algúns botóns, formularios e campos de inicio de sesión non funcionen.
 protections-panel-not-blocking-why-etp-off-tooltip = Cargáronse todos os rastreadores deste sitio porque se desactivaron as proteccións.
+protections-panel-not-blocking-why-etp-on-tooltip-label =
+    .label = O bloqueo destes podería romper elementos dalgúns sitios web. Sen rastreadores, é posible que algúns botóns, formularios e campos de inicio de sesión non funcionen.
+protections-panel-not-blocking-why-etp-off-tooltip-label =
+    .label = Cargáronse todos os rastreadores deste sitio porque se desactivaron as proteccións.
 
 ##
 
@@ -132,3 +136,9 @@ protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name }
 protections-panel-cookie-banner-view-cancel = Cancelar
 protections-panel-cookie-banner-view-turn-off = Desactivar
 protections-panel-cookie-banner-view-turn-on = Activar
+protections-panel-cookie-banner-view-cancel-label =
+    .label = Cancelar
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = Desactivar
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = Activar

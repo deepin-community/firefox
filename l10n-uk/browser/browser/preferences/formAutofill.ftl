@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Налаштування адреси
 address-capture-learn-more-button =
     .label = Докладніше
+address-capture-open-menu-button =
+    .aria-label = Відкрити меню
+address-capture-edit-address-button =
+    .aria-label = Редагувати адресу
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Додати нову адресу
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = Електронна пошта
 autofill-cancel-button = Скасувати
 autofill-save-button = Зберегти
 autofill-country-warning-message = Автозаповнення форм наразі доступне лише для певних країн.
+autofill-message-tooltip = Переглянути повідомлення про автозаповнення
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Додати нову кредитну картку
 # The dialog title for editing credit cards in browser preferences.

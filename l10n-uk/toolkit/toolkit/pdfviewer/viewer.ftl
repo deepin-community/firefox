@@ -303,6 +303,20 @@ pdfjs-editor-ink-button-label = Малювати
 pdfjs-editor-stamp-button =
     .title = Додати чи редагувати зображення
 pdfjs-editor-stamp-button-label = Додати чи редагувати зображення
+pdfjs-editor-remove-button =
+    .title = Вилучити
+
+## Remove button for the various kind of editor.
+
+pdfjs-editor-remove-ink-button =
+    .title = Вилучити малюнок
+pdfjs-editor-remove-freetext-button =
+    .title = Вилучити текст
+pdfjs-editor-remove-stamp-button =
+    .title = Вилучити зображення
+
+##
+
 # Editor Parameters
 pdfjs-editor-free-text-color-input = Колір
 pdfjs-editor-free-text-size-input = Розмір

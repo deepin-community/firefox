@@ -185,6 +185,21 @@ media-codec-support-codec-name = Кодек атауы
 media-codec-support-supported = Қолдауы бар
 media-codec-support-unsupported = Қолдауы жоқ
 media-codec-support-error = Кодектерге қолдау көрсету ақпараты қолжетімді емес. Медиа файлын ойнатқаннан кейін қайта көріңіз.
+media-codec-support-lack-of-extension = Кеңейтуді орнату
+
+## Media Content Decryption Modules (CDM)
+## See EME Spec for more explanation for following technical terms
+## https://w3c.github.io/encrypted-media/
+
+media-content-decryption-modules-title = Мазмұнды дешифрлеу модульдері туралы ақпарат
+media-key-system-name = Кілттер жүйесінің атауы
+media-video-robustness = Видео беріктігі
+media-audio-robustness = Аудио беріктігі
+media-cdm-capabilities = Мүмкіндіктер
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = Таза бастау
 
 ##
 

@@ -57,6 +57,10 @@ protections-panel-site-not-working-view =
 protections-panel-not-blocking-why-label = Kvifor?
 protections-panel-not-blocking-why-etp-on-tooltip = Blokkering av desse kan føre til feil med element på nokre nettstadar. Utan sporarar fungerer kanskje ikkje nokre knappar, skjema og innloggingsfelt.
 protections-panel-not-blocking-why-etp-off-tooltip = Alle sporarar på denne nettstaden er lasta fordi sporingsvernet er slått av.
+protections-panel-not-blocking-why-etp-on-tooltip-label =
+    .label = Blokkering av desse kan føre til feil med element på nokre nettstadar. Utan sporarar fungerer kanskje ikkje nokre knappar, skjema og innloggingsfelt.
+protections-panel-not-blocking-why-etp-off-tooltip-label =
+    .label = Alle sporarar på denne nettstaden er lasta fordi sporingsvernet er slått av.
 
 ##
 
@@ -144,3 +148,9 @@ protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name }
 protections-panel-cookie-banner-view-cancel = Avbryt
 protections-panel-cookie-banner-view-turn-off = Slå av
 protections-panel-cookie-banner-view-turn-on = Slå på
+protections-panel-cookie-banner-view-cancel-label =
+    .label = Avbryt
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = Slå av
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = Slå på

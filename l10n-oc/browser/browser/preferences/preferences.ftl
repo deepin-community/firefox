@@ -14,6 +14,7 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Indicar als sites web de vendre pas nimai partejar mas donadas
     .accesskey = s
+non-technical-privacy-header = Preferéncias de confidencialitat dels sites web
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
@@ -702,6 +703,9 @@ sync-signedin-login-failure = Vos cal reconnectar { $email }
 sync-resend-verification =
     .label = Tornar mandar la verificacion
     .accesskey = t
+sync-verify-account =
+    .label = Confirmar lo compte
+    .accesskey = C
 sync-remove-account =
     .label = Suprimir lo compte
     .accesskey = S
@@ -734,8 +738,10 @@ sync-currently-syncing-bookmarks = Marcapaginas
 sync-currently-syncing-history = Istoric
 sync-currently-syncing-tabs = Onglets dobèrts
 sync-currently-syncing-logins-passwords = Identificants e senhals
+sync-currently-syncing-passwords = Senhals
 sync-currently-syncing-addresses = Adreças
 sync-currently-syncing-creditcards = Cartas de crèdit
+sync-currently-syncing-payment-methods = Metòdes de pagament
 sync-currently-syncing-addons = Moduls complementaris
 sync-currently-syncing-settings = Paramètres
 sync-change-options =
@@ -766,6 +772,10 @@ sync-engine-logins-passwords =
     .label = Identificants e senhals
     .tooltiptext = Identificants e senhals que gardatz
     .accesskey = I
+sync-engine-passwords =
+    .label = Senhals
+    .tooltiptext = Senhals qu’enregistrèretz
+    .accesskey = S
 sync-engine-addresses =
     .label = Adreças
     .tooltiptext = Las adreças postalas qu’avètz salvadas (pas qu’al ordenador)
@@ -830,6 +840,8 @@ forms-breach-alerts =
     .label = Afichar las alèrtas pels senhals dels sites concernits per de pèrdas de donadas
     .accesskey = A
 forms-breach-alerts-learn-more-link = Ne saber mai
+preferences-relay-integration-checkbox =
+    .label = Suggerir los àlias de messatjariá { -relay-brand-name } per protegir vòstra adreça electronica.
 relay-integration-learn-more-link = Ne saber mai
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -970,6 +982,8 @@ cookie-banner-blocker-header = Blocador de bandièras de cookies
 cookie-banner-learn-more = Ne saber mai
 forms-handle-cookie-banners =
     .label = Reduire las bandièras de cookies
+cookie-banner-blocker-checkbox-label =
+    .label = Refusar automaticament las banièras de cookies
 
 ## Privacy Section - Address Bar
 
@@ -1257,6 +1271,7 @@ preferences-doh-status-disabled = Desactivat
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
 preferences-doh-status-not-active = Inactiu ({ $reason })
 preferences-doh-group-message = Activar lo DNS segur amb :
+preferences-doh-group-message2 = Activar lo DNS via HTTPS en utilizant :
 preferences-doh-expand-section =
     .tooltiptext = Mai d’informacions
 preferences-doh-setting-default =

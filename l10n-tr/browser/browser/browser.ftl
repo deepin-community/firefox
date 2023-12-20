@@ -279,6 +279,9 @@ quickactions-cmd-plugins = yan uygulamalar
 # Opens the print dialog
 quickactions-print2 = Sayfayı yazdır
 quickactions-cmd-print = yazdır
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Sayfayı PDF olarak kaydet
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Gizli pencere aç
 quickactions-cmd-private = gizli gezinti
@@ -348,6 +351,7 @@ identity-connection-secure = Bağlantı güvenli
 identity-connection-failure = Bağlantı hatası
 identity-connection-internal = Burası güvenli bir { -brand-short-name } sayfasıdır.
 identity-connection-file = Bu sayfa bilgisayarınızda depolanıyor.
+identity-connection-associated = Bu sayfa başka bir sayfa üzerinden yüklendi.
 identity-extension-page = Bu sayfa bir uzantı üzerinden yüklendi.
 identity-active-blocked = { -brand-short-name } bu sayfanın güvenli olmayan kısımlarını engelledi.
 identity-custom-root = Bağlantı, Mozilla’nın tanımadığı bir sertifika yayıncısı tarafından doğrulandı.
@@ -562,8 +566,6 @@ urlbar-result-action-search-w-engine = { $engine } ile ara
 urlbar-result-action-sponsored = Sponsorlu
 urlbar-result-action-switch-tab = Sekmeye geç
 urlbar-result-action-visit = Ziyaret et
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Panodan ziyaret et
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Panodan ziyaret et
 # Directs a user to press the Tab key to perform a search with the specified

@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = 주소 설정
 address-capture-learn-more-button =
     .label = 더 알아보기
+address-capture-open-menu-button =
+    .aria-label = 메뉴 열기
+address-capture-edit-address-button =
+    .aria-label = 주소 편집
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = 새 주소 추가
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = 이메일
 autofill-cancel-button = 취소
 autofill-save-button = 저장
 autofill-country-warning-message = 양식 자동 채우기는 현재 일부 국가에서만 사용할 수 있습니다.
+autofill-message-tooltip = 자동 채우기에 대한 메시지 보기
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = 새 신용 카드 추가
 # The dialog title for editing credit cards in browser preferences.

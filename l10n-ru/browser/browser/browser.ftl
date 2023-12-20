@@ -279,6 +279,9 @@ quickactions-cmd-plugins = плагины
 # Opens the print dialog
 quickactions-print2 = Распечатать страницу
 quickactions-cmd-print = печать
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Сохранить страницу как PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Открыть приватное окно
 quickactions-cmd-private = приватный просмотр
@@ -349,6 +352,7 @@ identity-connection-secure = Защищённое соединение
 identity-connection-failure = Ошибка соединения
 identity-connection-internal = Это встроенная страница { -brand-short-name }.
 identity-connection-file = Эта страница хранится на вашем компьютере.
+identity-connection-associated = Эта страница загружается с другой страницы.
 identity-extension-page = Эта страница загружена из расширения.
 identity-active-blocked = { -brand-short-name } заблокировал незащищённые части этой страницы.
 identity-custom-root = Соединение удостоверено сертификатом, издатель которого не распознан Mozilla.
@@ -566,8 +570,6 @@ urlbar-result-action-sponsored = Спонсировано
 urlbar-result-action-switch-tab = Перейти на вкладку
 urlbar-result-action-visit = Посетить
 # Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Посетить из буфера обмена
-# Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Посетить из буфера обмена
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
@@ -590,7 +592,7 @@ urlbar-result-action-tabtosearch-web = Ищите в { $engine } прямо в �
 #  (e.g. Amazon).
 urlbar-result-action-tabtosearch-other-engine = Ищите на { $engine } прямо в адресной строке
 # Action text for copying to clipboard.
-urlbar-result-action-copy-to-clipboard = Скопировать
+urlbar-result-action-copy-to-clipboard = Копировать
 # Shows the result of a formula expression being calculated, the last = sign will be shown
 # as part of the result (e.g. "= 2").
 # Variables

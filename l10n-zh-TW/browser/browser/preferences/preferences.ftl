@@ -92,7 +92,7 @@ extension-controlling-password-saving = <img data-l10n-name="icon"/> 此設定�
 extension-controlling-web-notifications = <img data-l10n-name="icon"/> 此設定受 <strong>{ $name }</strong> 控制。
 # This string is shown to notify the user that Container Tabs
 # are being enabled by an extension.
-extension-controlling-privacy-containers = <img data-l10n-name="icon"/> 需要開啟容器分頁功能才可使用 <strong>{ $name }</strong>。
+extension-controlling-privacy-containers = <img data-l10n-name="icon"/><strong>{ $name }</strong> 必須開啟容器分頁功能。
 # This string is shown to notify the user that their content blocking "All Detected Trackers"
 # preferences are being controlled by an extension.
 extension-controlling-websites-content-blocking-all-trackers = <img data-l10n-name="icon"/> 此設定受 <strong>{ $name }</strong> 控制。
@@ -454,6 +454,9 @@ browsing-use-smooth-scrolling =
 browsing-gtk-use-non-overlay-scrollbars =
     .label = 總是顯示捲動列
     .accesskey = o
+browsing-always-underline-links =
+    .label = 總是幫鏈結加上底線
+    .accesskey = u
 browsing-use-onscreen-keyboard =
     .label = 需要時顯示觸控鍵盤
     .accesskey = k
@@ -597,6 +600,9 @@ search-suggestions-desc = 選擇要如何顯示來自搜尋引擎的建議。
 search-suggestions-option =
     .label = 提供搜尋建議
     .accesskey = s
+search-show-suggestions-option =
+    .label = 顯示搜尋建議
+    .accesskey = S
 search-show-suggestions-url-bar-option =
     .label = 在網址列結果中顯示搜尋建議
     .accesskey = l
@@ -695,6 +701,9 @@ sync-signedin-login-failure = 請登入以重新連線 { $email }
 sync-resend-verification =
     .label = 重寄驗證信
     .accesskey = d
+sync-verify-account =
+    .label = 確認帳號
+    .accesskey = V
 sync-remove-account =
     .label = 移除帳號
     .accesskey = p
@@ -727,8 +736,10 @@ sync-currently-syncing-bookmarks = 書籤
 sync-currently-syncing-history = 瀏覽紀錄
 sync-currently-syncing-tabs = 開啟分頁
 sync-currently-syncing-logins-passwords = 登入資訊與密碼
+sync-currently-syncing-passwords = 密碼
 sync-currently-syncing-addresses = 地址
 sync-currently-syncing-creditcards = 信用卡資料
+sync-currently-syncing-payment-methods = 付款方式
 sync-currently-syncing-addons = 附加元件
 sync-currently-syncing-settings = 選項
 sync-change-options =
@@ -759,6 +770,10 @@ sync-engine-logins-passwords =
     .label = 登入資訊與密碼
     .tooltiptext = 您儲存的使用者名稱與密碼
     .accesskey = L
+sync-engine-passwords =
+    .label = 密碼
+    .tooltiptext = 您已儲存的密碼
+    .accesskey = P
 sync-engine-addresses =
     .label = 地址
     .tooltiptext = 您儲存的郵政地址（僅桌機）
@@ -767,6 +782,10 @@ sync-engine-creditcards =
     .label = 信用卡
     .tooltiptext = 姓名、卡號及到期日（僅桌機）
     .accesskey = C
+sync-engine-payment-methods =
+    .label = 付款方式
+    .tooltiptext = 持卡人姓名、卡號、到期日（僅桌面版）
+    .accesskey = n
 sync-engine-addons =
     .label = 附加元件
     .tooltiptext = Firefox 桌機版的擴充套件與佈景主題
@@ -1246,6 +1265,7 @@ httpsonly-radio-disabled =
 
 preferences-doh-header = DNS over HTTPS
 preferences-doh-description = DNS over HTTPS 會將您的網域名稱查詢請求加密後傳送，使其他人更難得知您要開啟的網站，讓 DNS 查詢變得安全。
+preferences-doh-description2 = DNS over HTTPS 會將您的網域名稱查詢請求加密後傳送，使其他人更難得知您要開啟的網站，讓 DNS 查詢變得安全。
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = 狀態：{ $status }
@@ -1262,12 +1282,13 @@ preferences-doh-status-disabled = 關閉
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
 preferences-doh-status-not-active = 未啟用（{ $reason }）
 preferences-doh-group-message = 使用下列方式開啟安全 DNS 功能：
+preferences-doh-group-message2 = 使用下列方式開啟 DNS over HTTPS：
 preferences-doh-expand-section =
     .tooltiptext = 更多資訊
 preferences-doh-setting-default =
     .label = 預設保護
     .accesskey = D
-preferences-doh-default-desc = { -brand-short-name } 會為您覺得什麼時候要使用安全的 DNS 來保護您的隱私。
+preferences-doh-default-desc = { -brand-short-name } 會為您決定使用安全的 DNS 的時機，以保護您的隱私。
 preferences-doh-default-detailed-desc-1 = 在可用安全 DNS 的地區就使用
 preferences-doh-default-detailed-desc-2 = 若無法使用安全的 DNS 提供者，就使用您的預設 DNS 解析器。
 preferences-doh-default-detailed-desc-3 = 盡可能使用本機提供者

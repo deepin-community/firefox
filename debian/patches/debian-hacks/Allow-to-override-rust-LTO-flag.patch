@@ -7,7 +7,7 @@ Subject: Allow to override rust LTO flag
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/config/makefiles/rust.mk b/config/makefiles/rust.mk
-index 2f28e46..ea59649 100644
+index d0f52d6..4e6a254 100644
 --- a/config/makefiles/rust.mk
 +++ b/config/makefiles/rust.mk
 @@ -92,8 +92,9 @@ ifndef rustflags_sancov

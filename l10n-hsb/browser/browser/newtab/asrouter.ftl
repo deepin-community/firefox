@@ -210,6 +210,8 @@ cfr-cbh-confirm-button = Plackowe chorhoje wotpokazać
     .accesskey = P
 cfr-cbh-dismiss-button = Nic nětko
     .accesskey = N
+cookie-banner-blocker-cfr-header = { -brand-short-name } je runje placki za was zablokował
+cookie-banner-blocker-cfr-body = Awtomatisce wotpokazujemy wjele plackowych wuskakowacych woknow, zo bychmy sydłam poćežili, wam slědować.
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -243,6 +245,15 @@ device-migration-fxa-spotlight-header = StaršI grat wužiwać?
 device-migration-fxa-spotlight-body = Zawěsćće swoje daty, zo njebyšće wažne informacije kaž zapołožki a hesła zhubił — předewšěm, jeli k nowemu gratej přeńdźeće.
 device-migration-fxa-spotlight-primary-button = Kak móžu swoje daty zawěsćić
 device-migration-fxa-spotlight-link = Pozdźišo dopomnić
+device-migration-fxa-spotlight-heavy-user-header = Njezabywajće swoje daty zawěsćić
+device-migration-fxa-spotlight-heavy-user-body = Zawěsćće, zo so wažne informacije – na přikład zapołožki a hesła – aktualizuja a na wšěch wašich gratach škitaja.
+device-migration-fxa-spotlight-heavy-user-primary-button = Prěnje kroki
+device-migration-fxa-spotlight-older-device-header = Dušiny měr, wot { -brand-product-name }
+device-migration-fxa-spotlight-older-device-body = Konto waše wažne informacije aktualizuje a na kóždym graće škita, z kotrymž zwjazujeće.
+device-migration-fxa-spotlight-older-device-primary-button = Konto załožić
+device-migration-fxa-spotlight-getting-new-device-header-2 = Nowy grat we wašim přichodźe?
+device-migration-fxa-spotlight-getting-new-device-body = Zawěsćće nětko swoje daty, zo byšće přihotowany był, hdyž waš grat dóńdźe.
+device-migration-fxa-spotlight-getting-new-device-primary-button = Kak móžu swoje daty zawěsćić
 
 ## Set as Default PDF Reader Infobar
 

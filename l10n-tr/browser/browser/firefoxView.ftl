@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Kapat
     .aria-label = Kapat
+firefoxview-empty-state-icon =
+    .alt = Dikkat:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Az önce
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,35 @@ firefoxview-opentabs-focus-tab =
     .title = Bu sekmeye geç
 firefoxview-show-more = Daha fazla göster
 firefoxview-show-less = Daha az göster
+firefoxview-search-text-box-clear-button =
+    .title = Temizle
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Arama geçmişi
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Son kapatılan sekmelerde ara
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Eşitlenmiş sekmelerde ara
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Açık sekmelerde ara
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = “{ $query }” arama sonuçları
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } site
+       *[other] { $count } site
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = “{ $query }” için sonuç yok
 firefoxview-sort-history-by-date-label = Tarihe göre sırala
 firefoxview-sort-history-by-site-label = Siteye göre sırala
 # Variables:
@@ -175,6 +206,7 @@ firefoxview-view-more-browsing-history = Daha fazla gezinti geçmişini görünt
 
 firefoxview-history-empty-header = Kaldığınız yere geri dönün
 firefoxview-history-empty-description = Siz gezindikçe, ziyaret ettiğiniz sayfalar burada listelenecektir.
+firefoxview-history-empty-description-two = Yaptığımız işin merkezinde gizliliğinizi korumak var. Bu yüzden, { -brand-short-name } tarayıcınızın hatırlayacağı etkinlikleri <a data-l10n-name="history-settings-url">geçmiş ayarlarınızdan</a> kendiniz seçebilirsiniz.
 
 ##
 
@@ -185,6 +217,8 @@ firefoxview-choose-browser-button = Tarayıcı seç
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
 firefoxview-dont-remember-history-empty-header = Gösterilecek bir şey yok
+firefoxview-dont-remember-history-empty-description = Yaptığımız işin merkezinde gizliliğinizi korumak var. Bu yüzden, { -brand-short-name } tarayıcınızın hatırlayacağı etkinlikleri kendiniz seçebilirsiniz.
+firefoxview-dont-remember-history-empty-description-two = Mevcut ayarlarınıza göre { -brand-short-name } siz internette gezinirken etkinliklerinizi hatırlamıyor. Bunu değiştirmek için <a data-l10n-name="history-settings-url-two">geçmiş ayarlarınızı geçmişinizi hatırlayacak şekilde değiştirebilirsiniz</a>.
 
 ##
 

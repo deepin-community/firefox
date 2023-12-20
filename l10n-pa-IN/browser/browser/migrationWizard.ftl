@@ -42,6 +42,11 @@ migration-wizard-migrator-display-name-opera = Opera
 migration-wizard-migrator-display-name-opera-gx = Opera GX
 migration-wizard-migrator-display-name-safari = Safari
 migration-wizard-migrator-display-name-vivaldi = Vivaldi
+migration-source-name-ie = Internet Explorer
+migration-source-name-edge = Microsoft Edge
+migration-source-name-chrome = Google Chrome
+migration-imported-safari-reading-list = ਪੜ੍ਹਨ ਸੂਚੀ (Safari ਤੋਂ)
+migration-imported-edge-reading-list = ਪੜ੍ਹਨ ਦੀ ਸੂਚੀ (Edge ਵਿੱਚੋਂ)
 
 ## These strings are shown if the selected browser data directory is unreadable.
 ## In practice, this tends to only occur on Linux when Firefox
@@ -71,6 +76,7 @@ migration-bookmarks-option-label = ਬੁੱਕਮਾਰਕ
 # Edge, as this is the terminology for bookmarks on those browsers.
 migration-favorites-option-label = ਪਸੰਦਾਂ
 migration-logins-and-passwords-option-label = ਸੰਭਾਲੇ ਹੋਏ ਲਾਗਇਨ ਅਤੇ ਪਾਸਵਰਡ
+migration-passwords-option-label = ਸੰਭਾਲੇ ਹੋਏ ਪਾਸਵਰਡ
 migration-history-option-label = ਬਰਾਊਜ਼ਰ ਅਤੀਤ
 migration-extensions-option-label = ਇਕਸਟੈਨਸ਼ਨ
 migration-form-autofill-option-label = ਫ਼ਾਰਮ ਆਪੇ-ਭਰਨ ਵਾਲਾ ਡਾਟਾ

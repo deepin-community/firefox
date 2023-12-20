@@ -279,6 +279,9 @@ quickactions-cmd-plugins = plugins
 # Opens the print dialog
 quickactions-print2 = Stampe pagjine
 quickactions-cmd-print = stampe
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Salve pagjine come PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Vierç barcon privât
 quickactions-cmd-private = navigazion privade
@@ -348,6 +351,7 @@ identity-connection-secure = Conession sigure
 identity-connection-failure = Erôr di conession
 identity-connection-internal = Cheste e je une pagjine di { -brand-short-name } sigure.
 identity-connection-file = Cheste pagjine e je archiviade sul to computer.
+identity-connection-associated = Cheste pagjine e je cjariade di une altre pagjine.
 identity-extension-page = Cheste pagjine e je cjariade di une estension.
 identity-active-blocked = { -brand-short-name } al à blocât parts di cheste pagjine che no son siguris.
 identity-custom-root = Conession verificade di un emitent di certificâts che nol è ricognossût de bande di Mozilla.
@@ -561,8 +565,6 @@ urlbar-result-action-search-w-engine = Cîr cun { $engine }
 urlbar-result-action-sponsored = Sponsorizât
 urlbar-result-action-switch-tab = Passe ae schede
 urlbar-result-action-visit = Visite
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Vierç direzion da lis notis
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Vierç direzion da lis notis
 # Directs a user to press the Tab key to perform a search with the specified

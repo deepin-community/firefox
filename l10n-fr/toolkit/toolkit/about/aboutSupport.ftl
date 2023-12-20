@@ -90,7 +90,7 @@ show-dir-label =
     { PLATFORM() ->
         [macos] Afficher dans le Finder
         [windows] Ouvrir le dossier correspondant
-       *[other] Ouvrir le dossier correspondant
+       *[other] Ouvrir le répertoire correspondant
     }
 environment-variables-title = Variables d’environnement
 environment-variables-name = Nom
@@ -188,6 +188,7 @@ media-codec-support-codec-name = Nom du codec
 media-codec-support-supported = Pris en charge
 media-codec-support-unsupported = Non pris en charge
 media-codec-support-error = Les informations sur la prise en charge des codecs ne sont pas disponibles. Réessayez après avoir lu un fichier multimédia.
+media-codec-support-lack-of-extension = Installer une extension
 
 ##
 

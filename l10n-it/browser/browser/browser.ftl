@@ -259,6 +259,10 @@ quickactions-cmd-plugins = plugin
 quickactions-print2 = Stampa pagina
 quickactions-cmd-print = stampa
 
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Salva pagina come PDF
+quickactions-cmd-savepdf = pdf
+
 quickactions-private2 = Apri finestra anonima
 quickactions-cmd-private = navigazione anonima, incognito
 
@@ -329,6 +333,7 @@ identity-connection-secure = Connessione sicura
 identity-connection-failure = Errore di connessione
 identity-connection-internal = Questa è una pagina sicura di { -brand-short-name }.
 identity-connection-file = Questa pagina è salvata sul dispositivo in uso.
+identity-connection-associated = Questa pagina è caricata da un’altra pagina.
 identity-extension-page = Questa pagina è caricata da un’estensione.
 identity-active-blocked = Alcuni elementi non sicuri di questa pagina sono stati bloccati da { -brand-short-name }.
 identity-custom-root = Connessione verificata da un certificato emesso da un’autorità non riconosciuta da Mozilla.
@@ -556,7 +561,6 @@ urlbar-result-action-sponsored = Sponsorizzato
 urlbar-result-action-switch-tab = Passa alla scheda
 urlbar-result-action-visit = Apri
 # Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Apri indirizzo dagli appunti
 urlbar-result-action-visit-from-clipboard = Apri indirizzo dagli appunti
 
 # Directs a user to press the Tab key to perform a search with the specified
@@ -1021,6 +1025,8 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Visualizza “{ $popupURI }”
+
+
 
 
 

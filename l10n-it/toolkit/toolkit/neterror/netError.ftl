@@ -59,6 +59,7 @@ neterror-dns-not-found-hint-firewall = Controllare che { -brand-short-name } abb
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-trr-only-reason = { -brand-short-name } non può proteggere la richiesta relativa all’indirizzo di questo sito utilizzando il servizio di risoluzione dei nomi (DNS) che riteniamo attendibile. Motivo:
+neterror-dns-not-found-trr-only-reason2 = { -brand-short-name } non può proteggere la richiesta relativa all’indirizzo di questo sito utilizzando il nostro servizio sicuro di risoluzione dei nomi (DNS). Motivo:
 neterror-dns-not-found-trr-third-party-warning2 = È possibile continuare con il servizio di risoluzione dei nomi (DNS) predefinito. Tuttavia, un soggetto di terze parti potrebbe essere in grado di identificare quali siti visiti.
 
 neterror-dns-not-found-trr-only-could-not-connect = { -brand-short-name } non è riuscito a connettersi a { $trrDomain }.
@@ -74,6 +75,7 @@ neterror-dns-not-found-trr-unknown-problem = Problema inatteso.
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-native-fallback-reason = { -brand-short-name } non può proteggere la richiesta relativa all’indirizzo di questo sito utilizzando il servizio di risoluzione dei nomi (DNS) che riteniamo attendibile. Motivo:
+neterror-dns-not-found-native-fallback-reason2 = { -brand-short-name } non può proteggere la richiesta relativa all’indirizzo di questo sito utilizzando il nostro servizio sicuro di risoluzione dei nomi (DNS). Motivo:
 neterror-dns-not-found-native-fallback-heuristic = DNS su HTTPS è stato disattivato sulla tua rete.
 neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } non è riuscito a connettersi a { $trrDomain }.
 
@@ -174,4 +176,5 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Se non si conosce <b>{ $mit
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> utilizza un criterio di sicurezza chiamato HTTP Strict Transport Security (HSTS). Questo significa che { -brand-short-name } può connettersi solo in modo sicuro e non è possibile aggiungere un’eccezione per visitare questo sito.
+
 

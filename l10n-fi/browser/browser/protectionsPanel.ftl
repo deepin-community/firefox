@@ -57,6 +57,10 @@ protections-panel-site-not-working-view =
 protections-panel-not-blocking-why-label = Miksi?
 protections-panel-not-blocking-why-etp-on-tooltip = Näiden estäminen voisi rikkoa osia joistain sivustoista. Ilman seuraimia jotkin painikkeet, lomakkeet ja kirjautumiskentät eivät välttämättä toimi.
 protections-panel-not-blocking-why-etp-off-tooltip = Kaikki tämän sivuston seuraimet on ladattu, sillä suojaukset ovat pois päältä.
+protections-panel-not-blocking-why-etp-on-tooltip-label =
+    .label = Näiden estäminen voisi rikkoa osia joistain sivustoista. Ilman seuraimia jotkin painikkeet, lomakkeet ja kirjautumiskentät eivät välttämättä toimi.
+protections-panel-not-blocking-why-etp-off-tooltip-label =
+    .label = Kaikki tämän sivuston seuraimet on ladattu, sillä suojaukset ovat pois päältä.
 
 ##
 
@@ -149,3 +153,12 @@ protections-panel-cookie-banner-blocker-view-turn-on-description = Ota käyttö�
 protections-panel-cookie-banner-view-cancel = Peruuta
 protections-panel-cookie-banner-view-turn-off = Poista käytöstä
 protections-panel-cookie-banner-view-turn-on = Ota käyttöön
+protections-panel-cookie-banner-view-cancel-label =
+    .label = Peruuta
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = Poista käytöstä
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = Ota käyttöön
+protections-panel-report-broken-site =
+    .label = Ilmoita rikkinäisestä sivustosta
+    .title = Ilmoita rikkinäisestä sivustosta

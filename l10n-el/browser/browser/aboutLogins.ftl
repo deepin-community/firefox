@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = Δημιουργία νέας σύνδεσης
+about-logins-page-title-name = Κωδικοί πρόσβασης
+about-logins-login-filter2 =
+    .placeholder = Αναζήτηση κωδικών πρόσβασης
+    .key = F
+create-login-button =
+    .title = Προσθήκη κωδικού πρόσβασης
 fxaccounts-sign-in-text = Αποκτήστε πρόσβαση στους κωδικούς πρόσβασής σας από άλλες συσκευές
 fxaccounts-sign-in-sync-button = Σύνδεση για συγχρονισμό
 fxaccounts-avatar-button =
@@ -49,6 +55,21 @@ login-list-filtered-count =
         [one] { $count } από { $total } σύνδεση
        *[other] { $count } από { $total } συνδέσεις
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } κωδικός πρόσβασης
+       *[other] { $count } κωδικοί πρόσβασης
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } από { $total } κωδικός πρόσβασης
+       *[other] { $count } από { $total } κωδικοί πρόσβασης
+    }
 login-list-sort-label-text = Ταξινόμηση:
 login-list-name-option = Όνομα (Α-Ω)
 login-list-name-reverse-option = Όνομα (Ω-Α)
@@ -58,11 +79,14 @@ about-logins-login-list-alerts-option = Ειδοποιήσεις
 login-list-last-changed-option = Τελευταία αλλαγή
 login-list-last-used-option = Τελευταία χρήση
 login-list-intro-title = Δεν βρέθηκαν συνδέσεις
+login-list-intro-title2 = Δεν έχουν αποθηκευτεί κωδικοί πρόσβασης
 login-list-intro-description = Οι κωδικοί πρόσβασης που αποθηκεύετε στο { -brand-product-name } θα εμφανίζονται εδώ.
 about-logins-login-list-empty-search-title = Δεν βρέθηκαν συνδέσεις
+about-logins-login-list-empty-search-title2 = Δεν βρέθηκαν κωδικοί πρόσβασης
 about-logins-login-list-empty-search-description = Δεν βρέθηκαν αποτελέσματα για την αναζήτησή σας.
 login-list-item-title-new-login = Νέα σύνδεση
 login-list-item-subtitle-new-login = Εισαγάγετε τα διαπιστευτήριά σας
+login-list-item-title-new-login2 = Προσθήκη κωδικού πρόσβασης
 login-list-item-subtitle-missing-username = (χωρίς όνομα χρήστη)
 about-logins-list-item-breach-icon =
     .title = Παραβιασμένος ιστότοπος
@@ -94,6 +118,11 @@ login-item-edit-button = Επεξεργασία
 about-logins-login-item-remove-button = Αφαίρεση
 login-item-origin-label = Διεύθυνση ιστοτόπου
 login-item-tooltip-message = Βεβαιωθείτε ότι ταιριάζει ακριβώς με τη διεύθυνση του ιστότοπου όπου συνδέεστε.
+about-logins-origin-tooltip = Βεβαιωθείτε ότι αντιστοιχεί στην ακριβή διεύθυνση του ιστοτόπου στον οποίο συνδέεστε.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = Βεβαιωθείτε ότι αποθηκεύετε τον τρέχοντα κωδικό πρόσβασής σας για αυτόν τον ιστότοπο. Η αλλαγή του κωδικού πρόσβασης εδώ δεν θα τον αλλάξει στο { $webTitle }.
+about-logins-add-password-tooltip = Βεβαιωθείτε ότι αποθηκεύετε τον τρέχοντα κωδικό πρόσβασής σας για αυτόν τον ιστότοπο.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = Όνομα χρήστη
@@ -264,6 +293,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = Εισαγωγή αρχείου συνδέσεων
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = Εισαγωγή κωδικών πρόσβασης στο { -brand-short-name }
 about-logins-import-file-picker-import-button = Εισαγωγή
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -297,6 +328,18 @@ about-logins-import-dialog-items-no-change =
     { $count ->
        *[other] <span>Βρέθηκαν διπλές συνδέσεις:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(δεν έγινε εισαγωγή)</span>
     }
+about-logins-import-dialog-items-added2 =
+    { $count ->
+       *[other] <span>Προστέθηκαν νέοι κωδικοί πρόσβασης:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+       *[other] <span>Ενημερώθηκαν υπάρχουσες καταχωρήσεις:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+       *[other] <span>Βρέθηκαν διπλότυπες καταχωρήσεις:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(δεν έγινε εισαγωγή)</span>
+    }
 about-logins-import-dialog-items-error =
     { $count ->
        *[other] <span>Σφάλματα:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(δεν έγινε εισαγωγή)</span>
@@ -317,6 +360,7 @@ about-logins-import-dialog-error-try-import-again = Εισαγωγή ξανά…
 about-logins-import-dialog-error-cancel = Ακύρωση
 about-logins-import-report-title = Περίληψη εισαγωγής
 about-logins-import-report-description = Εισήχθησαν συνδέσεις και κωδικοί πρόσβασης στο { -brand-short-name }.
+about-logins-import-report-description2 = Εισήχθησαν κωδικοί πρόσβασης στο { -brand-short-name }.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -324,6 +368,9 @@ about-logins-import-report-row-index = Σειρά { $number }
 about-logins-import-report-row-description-no-change = Διπλότυπο: ακριβής αντιστοίχιση υπαρχουσών συνδέσεων
 about-logins-import-report-row-description-modified = Η υπάρχουσα σύνδεση ενημερώθηκε
 about-logins-import-report-row-description-added = Προστέθηκε νέα σύνδεση
+about-logins-import-report-row-description-no-change2 = Διπλότυπο: Απόλυτη αντιστοιχία με υπάρχουσα καταχώρηση
+about-logins-import-report-row-description-modified2 = Ενημερώθηκε υπάρχουσα καταχώρηση
+about-logins-import-report-row-description-added2 = Προστέθηκε νέος κωδικός πρόσβασης
 about-logins-import-report-row-description-error = Σφάλμα: Απουσία πεδίου
 
 ##
@@ -348,6 +395,18 @@ about-logins-import-report-modified =
 about-logins-import-report-no-change =
     { $count ->
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">διπλότυπες συνδέσεις</div> <div data-l10n-name="not-imported">(δεν έγινε εισαγωγή)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">νέοι κωδικοί πρόσβασης προστέθηκαν</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">υπάρχουσες καταχωρήσεις ενημερώθηκαν</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">διπλότυπες καταχωρήσεις</div> <div data-l10n-name="not-imported">(δεν έγινε εισαγωγή)</div>
     }
 about-logins-import-report-error =
     { $count ->

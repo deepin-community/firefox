@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Adresse-indstillinger
 address-capture-learn-more-button =
     .label = Læs mere
+address-capture-open-menu-button =
+    .aria-label = Åbn menu
+address-capture-edit-address-button =
+    .aria-label = Rediger adresse
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Tilføj ny adresse
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = Mailadresse
 autofill-cancel-button = Fortryd
 autofill-save-button = Gem
 autofill-country-warning-message = Autoudfyldning af adresser er lige nu kun tilgængelig i udvalgte lande.
+autofill-message-tooltip = Vis meddelelse om autofyldning
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Tilføj nyt betalingskort
 # The dialog title for editing credit cards in browser preferences.

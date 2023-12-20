@@ -69,6 +69,9 @@ places-bookmarks-search =
 places-delete-domain-data =
     .label = Dimentica questo sito
     .accesskey = D
+places-forget-domain-data =
+    .label = Dimentica questo sito…
+    .accesskey = D
 places-sortby-name =
     .label = Ordina per nome
     .accesskey = O
@@ -306,4 +309,5 @@ places-search-downloads =
 ##
 
 places-locked-prompt = I segnalibri e la cronologia non potranno funzionare correttamente in quanto un file di { -brand-short-name } risulta utilizzato da un’altra applicazione. Il problema potrebbe essere causato da un software di sicurezza.
+
 

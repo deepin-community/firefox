@@ -100,6 +100,9 @@ about-webrtc-debug-mode-off-state-label = Войти в режим отладк�
 about-webrtc-debug-mode-on-state-label = Выйти из режима отладки
 about-webrtc-enable-logging-label = Включить предварительную настройку журнала WebRTC
 about-webrtc-stats-heading = Статистика сессии
+about-webrtc-peerconnections-section-heading = Статистика RTCPeerConnection
+about-webrtc-peerconnections-section-show-msg = Показать статистику RTCPeerConnection
+about-webrtc-peerconnections-section-hide-msg = Скрыть статистику RTCPeerConnection
 about-webrtc-stats-clear = Удалить историю
 about-webrtc-log-heading = Журнал соединения
 about-webrtc-log-clear = Удалить журнал
@@ -111,8 +114,8 @@ about-webrtc-log-section-show-msg = Показать журнал
     .title = Нажмите, чтобы развернуть этот раздел
 about-webrtc-log-section-hide-msg = Скрыть журнал
     .title = Нажмите, чтобы свернуть этот раздел
-about-webrtc-copy-report-button = Скопировать отчёт
-about-webrtc-copy-report-history-button = Скопировать историю отчетов
+about-webrtc-copy-report-button = Копировать отчёт
+about-webrtc-copy-report-history-button = Копировать историю отчетов
 
 ## These are used to display a header for a PeerConnection.
 ## Variables:
@@ -194,6 +197,17 @@ about-webrtc-configuration-element-provided = Установлено
 about-webrtc-configuration-element-not-provided = Не установлено
 # The options set by the user in about:config that could impact a WebRTC call
 about-webrtc-custom-webrtc-configuration-heading = Пользовательские настройки WebRTC
+# The options set by the user in about:config that could impact a WebRTC call
+about-webrtc-user-modified-configuration-heading = Пользователь изменил конфигурацию WebRTC
+
+## These are displayed on the button that shows or hides the
+## user modified configuration disclosure
+
+about-webrtc-user-modified-configuration-show-msg = Показать измененную пользователем конфигурацию
+about-webrtc-user-modified-configuration-hide-msg = Скрыть измененную пользователем конфигурацию
+
+##
+
 # Section header for estimated bandwidths of WebRTC media flows
 about-webrtc-bandwidth-stats-heading = Расчётная пропускная способность
 # The ID of the MediaStreamTrack
@@ -229,8 +243,6 @@ about-webrtc-aec-logging-off-state-msg = файлы журнала захват�
 # Variables:
 #  $path (String) - The path to which the file is saved.
 about-webrtc-save-page-complete-msg = Страница сохранена в: { $path }
-about-webrtc-debug-mode-toggled-off-state-msg = Журнал отслеживания можно найти в: { $path }
-about-webrtc-debug-mode-toggled-on-state-msg = Режим отладки активен, журнал отслеживания в: { $path }
 # This is the total number of frames encoded or decoded over an RTP stream.
 # Variables:
 #  $frames (Number) - The number of frames encoded or decoded.
@@ -315,9 +327,6 @@ about-webrtc-hide-msg-sdp = Скрыть SDP
 about-webrtc-media-context-show-msg = Показать контекст медиа
 about-webrtc-media-context-hide-msg = Скрыть контекст медиа
 about-webrtc-media-context-heading = Контекст медиа
-
-##
-
 
 ##
 

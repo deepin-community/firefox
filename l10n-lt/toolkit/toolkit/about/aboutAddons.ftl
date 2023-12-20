@@ -460,3 +460,12 @@ details-notification-softblocked-link = Plačiau
 details-notification-gmp-pending = „{ $name }“ bus netrukus įdiegtas.
 details-notification-gmp-pending2 =
     .message = „{ $name }“ bus netrukus įdiegtas.
+
+## Gecko Media Plugins (GMPs)
+
+plugins-gmp-license-info = licencijos informacija
+plugins-gmp-privacy-info = Privatumo informacija
+plugins-openh264-name = „OpenH264“ vaizdo kodekas, sukurtas „Cisco Systems, Inc.“
+plugins-openh264-description = Šis papildinys yra automatiškai įdiegiamas norint laikytis „WebRTC“ specifikacijos ir įgalinti „WebRTC“ skambučius su įrenginiais, kurie reikalauja H.264 vaizdo kodeko. Apsilankykite http://www.openh264.org/ norėdami peržiūrėti pirminį kodeko kodą ir sužinoti daugiau apie jo realizavimą.
+plugins-widevine-name = „Google Inc.“ teikiamas „Widevine“ turinio dešifravimo modulis (CDM).
+plugins-widevine-description = Šis papildinys leidžia atkurti užšifruotą turinį, laikantis „Encrypted Media Extensions“ specifikacijos. Užšifruotą turinį svetainės dažniausiai naudoja norėdamos apsisaugoti nuo mokamo turinio kopijavimo. Aplankykite https://www.w3.org/TR/encrypted-media/ norėdami sužinoti daugiau apie „Encrypted Media Extensions“.

@@ -291,8 +291,10 @@ sandbox-proc-type-content = contingut
 sandbox-proc-type-media-plugin = connector multimèdia
 sandbox-proc-type-data-decoder = descodificador de dades
 startup-cache-title = Memòria cau d'inici
+startup-cache-wrote-to-disk-cache = Ha escrit a la memòria cau del disc
 launcher-process-status-0 = Activat
 launcher-process-status-1 = Desactivat a causa d'un error
+launcher-process-status-2 = Inhabilitat de forma forçada
 launcher-process-status-unknown = Estat desconegut
 # Variables
 # $remoteWindows (integer) - Number of remote windows
@@ -318,6 +320,7 @@ touch-enabled = entrada tàctil activada
 drag-enabled = arrossegament de la barra de desplaçament activat
 keyboard-enabled = teclat activat
 autoscroll-enabled = desplaçament automàtic activat
+zooming-enabled = zoom de pessic suau activat
 
 ## Variables
 ## $preferenceKey (string) - String ID of preference

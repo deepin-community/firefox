@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Adressinställningar
 address-capture-learn-more-button =
     .label = Läs mer
+address-capture-open-menu-button =
+    .aria-label = Öppna meny
+address-capture-edit-address-button =
+    .aria-label = Redigera adress
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Lägg till ny adress
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = E-post
 autofill-cancel-button = Avbryt
 autofill-save-button = Spara
 autofill-country-warning-message = Autofyll av formulär är för närvarande endast tillgänglig för vissa länder.
+autofill-message-tooltip = Visa meddelande om autofyll
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Lägg till nytt kreditkort
 # The dialog title for editing credit cards in browser preferences.

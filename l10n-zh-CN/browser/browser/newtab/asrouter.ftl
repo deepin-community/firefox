@@ -89,7 +89,7 @@ cfr-whatsnew-release-notes-link-text = 阅读发行说明
 #   $date (Datetime) - The date we began recording the count of blocked trackers
 cfr-doorhanger-milestone-heading2 =
     { $blockedCount ->
-       *[other] 自 { DATETIME($date, month: "long", year: "numeric") } 起，{ -brand-short-name } 已拦截超过 <b>{ $blockedCount }</b> 个跟踪器！
+       *[other] 自{ DATETIME($date, month: "long", year: "numeric") }起，{ -brand-short-name }已拦截超过<b>{ $blockedCount }</b>个跟踪器！
     }
 cfr-doorhanger-milestone-ok-button = 查看全部
     .accesskey = S
@@ -201,6 +201,8 @@ cfr-cbh-confirm-button = 拒绝 Cookie 横幅
     .accesskey = R
 cfr-cbh-dismiss-button = 暂时不要
     .accesskey = N
+cookie-banner-blocker-cfr-header = { -brand-short-name } 刚刚为您拦截了 Cookie
+cookie-banner-blocker-cfr-body = 我们会自动拒绝许多 Cookie 弹窗，让网站难以跟踪您。
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -234,6 +236,15 @@ device-migration-fxa-spotlight-header = 使用的是旧设备？
 device-migration-fxa-spotlight-body = 备份您的数据，以确保书签和密码等重要数据安全无虞。在换到新设备前更是如此。
 device-migration-fxa-spotlight-primary-button = 如何备份数据
 device-migration-fxa-spotlight-link = 稍后提醒我
+device-migration-fxa-spotlight-heavy-user-header = 不要忘记备份数据
+device-migration-fxa-spotlight-heavy-user-body = 将书签和密码等重要信息跨设备安全保存，并随时更新。
+device-migration-fxa-spotlight-heavy-user-primary-button = 开始使用
+device-migration-fxa-spotlight-older-device-header = { -brand-product-name } 为您省心
+device-migration-fxa-spotlight-older-device-body = 登录账户，将重要信息跨设备安全保存并随时更新。
+device-migration-fxa-spotlight-older-device-primary-button = 创建账户
+device-migration-fxa-spotlight-getting-new-device-header-2 = 打算换新设备？
+device-migration-fxa-spotlight-getting-new-device-body = 立即备份数据，新设备到货后就能直接上手使用。
+device-migration-fxa-spotlight-getting-new-device-primary-button = 如何备份数据
 
 ## Set as Default PDF Reader Infobar
 

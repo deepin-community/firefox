@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Luk
     .aria-label = Luk
+firefoxview-empty-state-icon =
+    .alt = Bemærk:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Nu
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,35 @@ firefoxview-opentabs-focus-tab =
     .title = Skift til dette faneblad
 firefoxview-show-more = Vis flere
 firefoxview-show-less = Vis færre
+firefoxview-search-text-box-clear-button =
+    .title = Ryd
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Søg i historik
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Søg i senest lukkede faneblade
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Søg i synkroniserede faneblade
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Søg i åbne faneblade
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Søgeresultater for "{ $query }"
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } websted
+       *[other] { $count } websteder
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Ingen resultater for "{ $query }"
 firefoxview-sort-history-by-date-label = Sorter efter dato
 firefoxview-sort-history-by-site-label = Sorter efter websted
 # Variables:

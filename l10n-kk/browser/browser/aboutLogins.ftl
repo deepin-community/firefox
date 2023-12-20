@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = Жаңа логинді жасау
+about-logins-page-title-name = Парольдер
+about-logins-login-filter2 =
+    .placeholder = Парольдерді іздеу
+    .key = F
+create-login-button =
+    .title = Парольді қосу
 fxaccounts-sign-in-text = Парольдеріңізді басқа құрылғыларыңызды алыңыз
 fxaccounts-sign-in-sync-button = Синхрондау үшін кіру
 fxaccounts-avatar-button =
@@ -48,6 +54,21 @@ login-list-filtered-count =
         [one] { $count } логин, барлығы { $total }
        *[other] { $count } логин, барлығы { $total }
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } пароль
+       *[other] { $count } пароль
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } пароль, барлығы { $total }
+       *[other] { $count } пароль, барлығы { $total }
+    }
 login-list-sort-label-text = Бойынша сұрыптау:
 login-list-name-option = Аты (A-Z)
 login-list-name-reverse-option = Аты (A-Z)
@@ -57,11 +78,14 @@ about-logins-login-list-alerts-option = Ескертулер
 login-list-last-changed-option = Соңғы рет өзгертілген
 login-list-last-used-option = Соңғы қолданылған
 login-list-intro-title = Логиндер табылмады
+login-list-intro-title2 = Сақталған парольдер жоқ
 login-list-intro-description = { -brand-product-name } ішінде парольді сақтағаннан кейін, ол осында көрсетіледі.
 about-logins-login-list-empty-search-title = Логиндер табылмады
+about-logins-login-list-empty-search-title2 = Парольдер табылмады
 about-logins-login-list-empty-search-description = Іздеуіңізге сәйкес нәтижелер жоқ.
 login-list-item-title-new-login = Жаңа логин
 login-list-item-subtitle-new-login = Логин мәліметтерін енгізіңіз
+login-list-item-title-new-login2 = Парольді қосу
 login-list-item-subtitle-missing-username = (пайдаланушы аты жоқ)
 about-logins-list-item-breach-icon =
     .title = Шабуылданған сайт
@@ -93,6 +117,11 @@ login-item-edit-button = Түзету
 about-logins-login-item-remove-button = Өшіру
 login-item-origin-label = Веб-сайт адресі
 login-item-tooltip-message = Бұл сіз кірген веб-сайттың нақты адресіне сәйкес келетініне көз жеткізіңіз.
+about-logins-origin-tooltip = Бұл сіз кірген веб-сайттың нақты адресіне сәйкес келетініне көз жеткізіңіз.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = Бұл сайт үшін ағымдағы пароліңізді сақтап тұрғаныңызға көз жеткізіңіз. Парольді осында өзгерту оны { $webTitle } сайтында өзгертпейді.
+about-logins-add-password-tooltip = Бұл сайт үшін ағымдағы пароліңізді сақтап тұрғаныңызға көз жеткізіңіз.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = Пайдаланушы аты
@@ -262,6 +291,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = Логиндер файлын импорттау
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = { -brand-short-name } ішіне парольдерді импорттау
 about-logins-import-file-picker-import-button = Импорттау
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -295,6 +326,18 @@ about-logins-import-dialog-items-no-change =
     { $count ->
        *[other] <span>Қайталанатын логиндер табылды:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(импортталмады)</span>
     }
+about-logins-import-dialog-items-added2 =
+    { $count ->
+       *[other] <span>Жаңа парольдер қосылды:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+       *[other] <span>Бар болып тұрған жазбалар жаңартылды:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+       *[other] <span>Қайталанатын жазбалар табылды:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(импортталмады)</span>
+    }
 about-logins-import-dialog-items-error =
     { $count ->
        *[other] <span>Қателер:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(импортталмады)</span>
@@ -315,6 +358,7 @@ about-logins-import-dialog-error-try-import-again = Қайта импортта�
 about-logins-import-dialog-error-cancel = Бас тарту
 about-logins-import-report-title = Импорттаудың есептемесі
 about-logins-import-report-description = { -brand-short-name } ішіне импортталған логиндер және парольдер.
+about-logins-import-report-description2 = Парольдер { -brand-short-name } ішіне импортталды.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -322,6 +366,9 @@ about-logins-import-report-row-index = Жол { $number }
 about-logins-import-report-row-description-no-change = Көшірме: Бар болып тұрған логиннің дәл қайталануы
 about-logins-import-report-row-description-modified = Бар болып тұрған логин жаңартылды
 about-logins-import-report-row-description-added = Жаңа логин қосылды
+about-logins-import-report-row-description-no-change2 = Көшірме: Бар болып тұрған жазбаның дәл қайталануы
+about-logins-import-report-row-description-modified2 = Бар болып тұрған жазба жаңартылды
+about-logins-import-report-row-description-added2 = Жаңа парольдер қосылды
 about-logins-import-report-row-description-error = Қате: өріс жоқ
 
 ##
@@ -346,6 +393,18 @@ about-logins-import-report-modified =
 about-logins-import-report-no-change =
     { $count ->
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">қайталанатын логин</div> <div data-l10n-name="not-imported">(импортталмады)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Жаңа парольдер қосылды</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Бар болып тұрған жазбалар жаңартылды</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Қайталанатын жазбалар</div> <div data-l10n-name="not-imported">(импорттамалды)</div>
     }
 about-logins-import-report-error =
     { $count ->

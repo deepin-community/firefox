@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = Эҷод кардани воридшавии нав
+about-logins-page-title-name = Ниҳонвожаҳо
+about-logins-login-filter2 =
+    .placeholder = Ҷустуҷӯи ниҳонвожаҳо
+    .key = F
+create-login-button =
+    .title = Илова кардани ниҳонвожа
 fxaccounts-sign-in-text = Ниҳонвожаҳои худро дар дастгоҳҳои дигари худ ба даст оред
 fxaccounts-sign-in-sync-button = Барои ҳамоҳангсозӣ ворид шавед
 fxaccounts-avatar-button =
@@ -49,6 +55,21 @@ login-list-filtered-count =
         [one] { $count } аз { $total } воридшавӣ
        *[other] { $count } аз { $total } воридшавӣ
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } ниҳонвожа
+       *[other] { $count } ниҳонвожа
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } аз { $total } ниҳонвожа
+       *[other] { $count } аз { $total } ниҳонвожа
+    }
 login-list-sort-label-text = Мураттаб аз рӯи:
 login-list-name-option = Ном (А-Я)
 login-list-name-reverse-option = Ном (Я-А)
@@ -58,11 +79,14 @@ about-logins-login-list-alerts-option = Огоҳиҳо
 login-list-last-changed-option = Санаи тағйири охирин
 login-list-last-used-option = Санаи истифодаи охирин
 login-list-intro-title = Ягон воридшавӣ ёфт нашуд
+login-list-intro-title2 = Ягон ниҳонвожа нигоҳ дошта нашуд
 login-list-intro-description = Вақте ки шумо ниҳонвожаеро дар { -brand-product-name } нигоҳ медоред, он дар ин ҷо нишон дода мешавад.
 about-logins-login-list-empty-search-title = Ягон воридшавӣ ёфт нашуд
+about-logins-login-list-empty-search-title2 = Ягон ниҳонвожа ёфт нашуд
 about-logins-login-list-empty-search-description = Ягон натиҷа мувофиқи ҷустуҷӯи шумо ёфт нашуд.
 login-list-item-title-new-login = Воридшавии нав
 login-list-item-subtitle-new-login = Маълумоти воридшавии худро ворид намоед
+login-list-item-title-new-login2 = Илова кардани ниҳонвожа
 login-list-item-subtitle-missing-username = (номи корбар нест)
 about-logins-list-item-breach-icon =
     .title = Сомонаи ҳамлашуда
@@ -94,6 +118,11 @@ login-item-edit-button = Таҳрир кардан
 about-logins-login-item-remove-button = Тоза кардан
 login-item-origin-label = Нишонии сомона
 login-item-tooltip-message = Мутмаин шавед, ки ин ба нишонии дақиқи сомонае, ки шумо ворид мешавед, мувофиқат мекунад.
+about-logins-origin-tooltip = Боварӣ ҳосил кунед, ки ин ба нишонии дақиқи сомонае, ки шумо ворид мешавед, мувофиқат мекунад.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = Мутмаин шавед, ки шумо ниҳонвожаи ҷории худро барои ин сомона нигоҳ доштед. Ивазкунии ниҳонвожа дар ин ҷой, онро дар «{ $webTitle }» иваз намекунад.
+about-logins-add-password-tooltip = Мутмаин шавед, ки шумо ниҳонвожаи ҷории худро барои ин сомона нигоҳ доштед.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = Номи корбар
@@ -264,6 +293,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = Ворид кардани файли воридшавиҳо
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = Ворид кардани ниҳонвожаҳо ба «{ -brand-short-name }»
 about-logins-import-file-picker-import-button = Ворид кардан
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -297,6 +328,18 @@ about-logins-import-dialog-items-no-change =
     { $count ->
        *[other] <span>Воридшавиҳои такрорӣ ёфт шуданд:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ворид нашудаанд)</span>
     }
+about-logins-import-dialog-items-added2 =
+    { $count ->
+       *[other] <span>Ниҳонвожаҳои нав илова шуданд:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+       *[other] <span>Сабтҳои мавҷудбуда нав карда шуданд:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+       *[other] <span>Сабтҳои такрорӣ пайдо шуданд:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ворид нашуданд)</span>
+    }
 about-logins-import-dialog-items-error =
     { $count ->
        *[other] <span>Хатоҳо:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ворид нашудаанд)</span>
@@ -317,6 +360,7 @@ about-logins-import-dialog-error-try-import-again = Кӯшиши воридку�
 about-logins-import-dialog-error-cancel = Бекор кардан
 about-logins-import-report-title = Ҷамъбасти воридот
 about-logins-import-report-description = Воридшавиҳо ва ниҳонвожаҳо ба «{ -brand-short-name }» ворид шудаанд.
+about-logins-import-report-description2 = Ниҳонвожаҳо ба «{ -brand-short-name }» ворид шуданд.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -324,6 +368,9 @@ about-logins-import-report-row-index = Сатри { $number }
 about-logins-import-report-row-description-no-change = Такрор: Мувофиқати дақиқ барои воридшавии мавҷудбуда
 about-logins-import-report-row-description-modified = Воридшавии мавҷудбуда навсозӣ карда шуд
 about-logins-import-report-row-description-added = Воридшавии нав илова шуд
+about-logins-import-report-row-description-no-change2 = Такрорӣ: Мувофиқати дақиқ барои сабти мавҷудбуда
+about-logins-import-report-row-description-modified2 = Сабти мавҷудбуда нав карда шуд
+about-logins-import-report-row-description-added2 = Ниҳонвожаи нав илова шуд
 about-logins-import-report-row-description-error = Хато: Як майдон намерасад
 
 ##
@@ -348,6 +395,18 @@ about-logins-import-report-modified =
 about-logins-import-report-no-change =
     { $count ->
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">воридшавии такрорӣ</div> <div data-l10n-name="not-imported">(ворид нашудаанд)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Ниҳонвожаҳои нав илова шуданд</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Сабтҳои мавҷудбуда нав карда шуданд</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Сабти такрорӣ</div> <div data-l10n-name="not-imported">(ворид нашуданд)</div>
     }
 about-logins-import-report-error =
     { $count ->

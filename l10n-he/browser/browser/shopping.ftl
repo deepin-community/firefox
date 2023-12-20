@@ -40,17 +40,6 @@ shopping-letter-grade-tooltip =
 
 shopping-message-bar-warning-stale-analysis-message-2 = מידע חדש לבדיקה
 shopping-message-bar-warning-stale-analysis-button = ביצוע בדיקה כעת
-shopping-message-bar-generic-error-title2 = אין מידע זמין כרגע
-shopping-message-bar-generic-error-message = אנחנו עובדים על פתרון הבעיה. נא לבדוק שוב בקרוב.
-shopping-message-bar-warning-not-enough-reviews-title = אין מספיק סקירות עדיין
-shopping-message-bar-warning-not-enough-reviews-message2 = כאשר למוצר זה יהיו סקירות נוספות, נוכל לבדוק את האיכות שלהן.
-shopping-message-bar-warning-product-not-available-title = המוצר אינו זמין
-shopping-message-bar-warning-product-not-available-message2 = אם מוצר זה חזר למלאי, נא לדווח על כך ואנו נעבוד על בדיקת הסקירות.
-shopping-message-bar-warning-product-not-available-button = שליחת דיווח שמוצר זה חזר למלאי
-shopping-message-bar-thanks-for-reporting-title = תודה על הדיווח!
-shopping-message-bar-thanks-for-reporting-message2 = אמור להיות לנו מידע על הסקירות של מוצר זה תוך 24 שעות. נא לבדוק שוב אז.
-shopping-message-bar-warning-product-not-available-reported-title2 = מידע יבוא בקרוב
-shopping-message-bar-warning-product-not-available-reported-message2 = אמור להיות לנו מידע על הסקירות של מוצר זה תוך 24 שעות. נא לבדוק שוב אז.
 shopping-message-bar-generic-error =
     .heading = אין מידע זמין כרגע
     .message = אנחנו עובדים על פתרון הבעיה. נא לבדוק שוב בקרוב.
@@ -69,8 +58,9 @@ shopping-message-bar-warning-product-not-available-reported =
     .message = אמור להיות לנו מידע על הסקירות של מוצר זה תוך 24 שעות. נא לבדוק שוב אז.
 shopping-message-bar-analysis-in-progress-title2 = בתהליך בדיקת איכות הסקירות
 shopping-message-bar-analysis-in-progress-message2 = פעולה זו יכולה להימשך כ־60 שניות.
-shopping-message-bar-page-not-supported-title = אין באפשרותנו לבדוק סקירות אלה
-shopping-message-bar-page-not-supported-message = למרבה הצער, איננו יכולים לבדוק את איכות הסקירות עבור סוגים מסויימים של מוצרים. למשל, כרטיסי מתנה והזרמת וידאו, מוזיקה ומשחקים.
+# Variables:
+#  $percentage (Number) - The percentage complete that the analysis is, per our servers.
+shopping-message-bar-analysis-in-progress-with-amount = בתהליך בדיקת איכות הסקירות ({ $percentage }%)
 shopping-message-bar-page-not-supported =
     .heading = אין באפשרותנו לבדוק סקירות אלה
     .message = למרבה הצער, איננו יכולים לבדוק את איכות הסקירות עבור סוגים מסויימים של מוצרים. למשל, כרטיסי מתנה והזרמת וידאו, מוזיקה ומשחקים.
@@ -96,7 +86,6 @@ shopping-settings-label =
     .label = הגדרות
 shopping-settings-recommendations-toggle =
     .label = הצגת פרסומות בבודק הסקירות
-shopping-settings-recommendations-learn-more = מדי פעם יוצגו פרסומות עבור מוצרים רלוונטיים. כל הפרסומות חייבות לעמוד בתקני איכות הסקירות שלנו. <a data-l10n-name="review-quality-url">מידע נוסף</a>
 shopping-settings-recommendations-learn-more2 = מדי פעם יוצגו פרסומות עבור מוצרים רלוונטיים. אנו מפרסמים רק מוצרים בעלי סקירות אמינות. <a data-l10n-name="review-quality-url">מידע נוסף</a>
 shopping-settings-opt-out-button = כיבוי בודק הסקירות
 powered-by-fakespot = בודק הסקירות מופעל על־ידי <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
@@ -177,7 +166,6 @@ shopping-survey-q2-radio-3-label = לא יודע/ת
 shopping-survey-next-button-label = הבא
 shopping-survey-submit-button-label = שליחה
 shopping-survey-terms-link = תנאי שימוש
-shopping-survey-thanks-message = תודה על המשוב שלך!
 shopping-survey-thanks =
     .heading = תודה על המשוב שלך!
 
@@ -199,13 +187,11 @@ shopping-onboarding-headline = נסו את המדריך המהימן שלנו ל
 #   $currentSite (str) - The current shopping page name
 #   $secondSite (str) - A second shopping page name
 #   $thirdSite (str) - A third shopping page name
-shopping-onboarding-dynamic-subtitle = ניתן לבדוק עד כמה ביקורות מוצר אמינות ב־<b>{ $currentSite }</b> לפני הקנייה. בודק הסקירות, תכונה ניסיונית מאת { -vendor-short-name }, מובנה ישירות ב־{ -brand-product-name } - והוא עובד גם על <b>{ $secondSite }</b> ו־<b>{ $thirdSite }</b>.
-# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+shopping-onboarding-dynamic-subtitle-1 = ניתן לבדוק עד כמה ביקורות מוצר אמינות ב־<b>{ $currentSite }</b> לפני הקנייה. בודק הסקירות, תכונה ניסיונית מאת { -brand-product-name }, מובנה ישירות בדפדפן. הוא עובד גם על <b>{ $secondSite }</b> ו־<b>{ $thirdSite }</b>.
+# Subtitle for countries where we only support one shopping website (e.g. currently used in FR/DE with Amazon)
 # Variables:
 #   $currentSite (str) - The current shopping page name
-#   $secondSite (str) - A second shopping page name
-#   $thirdSite (str) - A third shopping page name
-shopping-onboarding-dynamic-subtitle-1 = ניתן לבדוק עד כמה ביקורות מוצר אמינות ב־<b>{ $currentSite }</b> לפני הקנייה. בודק הסקירות, תכונה ניסיונית מאת { -brand-product-name }, מובנה ישירות בדפדפן. הוא עובד גם על <b>{ $secondSite }</b> ו־<b>{ $thirdSite }</b>.
+shopping-onboarding-single-subtitle = ניתן לבדוק עד כמה ביקורות מוצר אמינות ב־<b>{ $currentSite }</b> לפני הקנייה. בודק הסקירות, תכונה ניסיונית מאת { -brand-product-name }, מובנה ישירות בדפדפן.
 shopping-onboarding-body = באמצעות הכוח של { -fakespot-brand-full-name }, אנו עוזרים לך להימנע מסקירות מוטות ולא אותנטיות. מודל הבינה המלאכותית שלנו משתפר תמיד כדי להגן עליך בזמן הקנייה. <a data-l10n-name="learn_more">מידע נוסף</a>
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use = בחירה באפשרות ״{ shopping-onboarding-opt-in-button }״ מהווה הסכמה ל<a data-l10n-name="privacy_policy">הצהרת הפרטיות</a> ול<a data-l10n-name="terms_of_use">תנאי השימוש</a> של { -fakespot-brand-full-name }.
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = בחירה באפשרות ״{ shopping-onboarding-opt-in-button }״ מהווה הסכמה ל<a data-l10n-name="privacy_policy">הצהרת הפרטיות</a> ול<a data-l10n-name="terms_of_use">תנאי השימוש</a> של { -fakespot-brand-name }.

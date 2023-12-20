@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 ## These messages are used as headings in the recommendation doorhanger
 
 cfr-doorhanger-extension-heading = おすすめの拡張機能
@@ -122,7 +123,7 @@ spotlight-public-wifi-vpn-link = 後で
 ## Emotive Continuous Onboarding
 
 spotlight-better-internet-header = より良いインターネットはあなたとともに始まります
-spotlight-better-internet-body = { -brand-short-name} を使うことで、すべての人にとってオープンでアクセシブルな、すべての人にとってのより良いインターネットに一票を投じることになります。
+spotlight-better-internet-body = { -brand-short-name } を使うことで、すべての人にとってオープンでアクセシブルな、すべての人にとってのより良いインターネットに一票を投じることになります。
 spotlight-peace-mind-header = 私たちがあなたを保護します
 spotlight-peace-mind-body = { -brand-short-name } は毎月、ユーザーあたり平均 3,000 以上のトラッカーをブロックしています。特にトラッカーのようなプライバシーを脅かすものは、あなたと良いインターネットの間にあるべきではないからです。
 spotlight-pin-primary-button =
@@ -183,7 +184,7 @@ colorways-cfr-primarybutton = Colorway を選択
 colorways-cfr-body = カルチャーを変えてきた人々の声から生まれた { -brand-short-name } だけの色の表象でブラウザーを染めましょう。
 colorways-cfr-header-28days = 揺るぎない声 Colorway は 1 月 16 日まで
 colorways-cfr-header-14days = 揺るぎない声 Colorway は残り 2 週間
-colorways-cfr-header-7days =  揺るぎない声 Colorway は今週まで
+colorways-cfr-header-7days = 揺るぎない声 Colorway は今週まで
 colorways-cfr-header-today = 揺るぎない声 Colorway は今日まで
 
 ## Cookie Banner Handling CFR
@@ -194,6 +195,8 @@ cfr-cbh-confirm-button = Cookie バナーを拒否
     .accesskey = R
 cfr-cbh-dismiss-button = 後で
     .accesskey = N
+cookie-banner-blocker-cfr-header = { -brand-short-name } が Cookie をブロックしました
+cookie-banner-blocker-cfr-body = ユーザーを追跡するサイトに立ち向かうため、多くの Cookie ポップアップを自動的に拒否しています。
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -217,9 +220,9 @@ set-default-pdf-handler-primary = 了解
 fxa-sync-cfr-header = 未来の新しい端末？
 fxa-sync-cfr-body = 新しい { -brand-product-name } ブラウザーを開けば、最新のブックマークやパスワード、タブがいつでもあなたの側にあります。
 fxa-sync-cfr-primary = 詳細情報
-  .accesskey = L
+    .accesskey = L
 fxa-sync-cfr-secondary = 後で通知
-  .accesskey = R
+    .accesskey = R
 
 ## Device Migration FxA Spotlight
 
@@ -227,6 +230,15 @@ device-migration-fxa-spotlight-header = 古い端末をご使用ですか？
 device-migration-fxa-spotlight-body = データをバックアップ保存して、ブックマークやパスワードなどの重要な情報を失わないようにしましょう。特に新しい端末に切り替えたときは。
 device-migration-fxa-spotlight-primary-button = データをバックアップする方法
 device-migration-fxa-spotlight-link = 後で通知
+device-migration-fxa-spotlight-heavy-user-header = データのバックアップを忘れないでください
+device-migration-fxa-spotlight-heavy-user-body = 重要な情報 (ブックマークやパスワードなど) はご使用のすべての端末で更新して保護しましょう。
+device-migration-fxa-spotlight-heavy-user-primary-button = 開始
+device-migration-fxa-spotlight-older-device-header = { -brand-product-name } が安心をお届けします
+device-migration-fxa-spotlight-older-device-body = アカウントがあれば、接続したどの端末でも重要な情報を更新して保護します。
+device-migration-fxa-spotlight-older-device-primary-button = アカウントを作成
+device-migration-fxa-spotlight-getting-new-device-header-2 = 新しい端末に換えようとしていますか？
+device-migration-fxa-spotlight-getting-new-device-body = いますぐデータをバックアップして、新しい端末が届いたらすぐに使えるようにしましょう。
+device-migration-fxa-spotlight-getting-new-device-primary-button = データをバックアップする手順
 
 ## Set as Default PDF Reader Infobar
 

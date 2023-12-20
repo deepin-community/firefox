@@ -279,6 +279,9 @@ quickactions-cmd-plugins = αρθρώματα
 # Opens the print dialog
 quickactions-print2 = Εκτύπωση σελίδας
 quickactions-cmd-print = εκτύπωση
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Αποθήκευση σελίδας ως PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Άνοιγμα ιδιωτικού παραθύρου
 quickactions-cmd-private = ιδιωτική περιήγηση
@@ -348,6 +351,7 @@ identity-connection-secure = Ασφαλής σύνδεση
 identity-connection-failure = Αποτυχία σύνδεσης
 identity-connection-internal = Αυτή είναι μια ασφαλής σελίδα του { -brand-short-name }.
 identity-connection-file = Αυτή η σελίδα είναι αποθηκευμένη στον υπολογιστή σας.
+identity-connection-associated = Αυτή η σελίδα φορτώνεται από άλλη σελίδα.
 identity-extension-page = Αυτή η σελίδα έχει φορτωθεί από μια επέκταση.
 identity-active-blocked = Το { -brand-short-name } έχει αποκλείσει επισφαλή τμήματα αυτής της σελίδας.
 identity-custom-root = Η σύνδεση επαληθεύτηκε από έναν εκδότη πιστοποιητικών που δεν αναγνωρίζεται από τη Mozilla.
@@ -560,8 +564,6 @@ urlbar-result-action-search-w-engine = Αναζήτηση με { $engine }
 urlbar-result-action-sponsored = Χορηγία
 urlbar-result-action-switch-tab = Εναλλαγή σε καρτέλα
 urlbar-result-action-visit = Επίσκεψη
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Επίσκεψη από το πρόχειρό σας
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Επίσκεψη από το πρόχειρο
 # Directs a user to press the Tab key to perform a search with the specified

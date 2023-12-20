@@ -57,6 +57,10 @@ protections-panel-site-not-working-view =
 protections-panel-not-blocking-why-label = Почему?
 protections-panel-not-blocking-why-etp-on-tooltip = Блокировка может привести к неработоспособности элементов некоторых веб-сайтов. Без трекеров некоторые кнопки, формы и поля для входа могут не работать.
 protections-panel-not-blocking-why-etp-off-tooltip = Все трекеры на этом сайте были загружены, потому что защита отключена.
+protections-panel-not-blocking-why-etp-on-tooltip-label =
+    .label = Блокировка может привести к неработоспособности элементов некоторых веб-сайтов. Без трекеров некоторые кнопки, формы и поля для входа могут не работать.
+protections-panel-not-blocking-why-etp-off-tooltip-label =
+    .label = Все трекеры на этом сайте были загружены, потому что защита отключена.
 
 ##
 
@@ -149,3 +153,12 @@ protections-panel-cookie-banner-blocker-view-turn-on-description = Включи�
 protections-panel-cookie-banner-view-cancel = Отмена
 protections-panel-cookie-banner-view-turn-off = Отключить
 protections-panel-cookie-banner-view-turn-on = Включить
+protections-panel-cookie-banner-view-cancel-label =
+    .label = Отмена
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = Отключить
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = Включить
+protections-panel-report-broken-site =
+    .label = Сообщить о сломанном сайте
+    .title = Сообщить о сломанном сайте

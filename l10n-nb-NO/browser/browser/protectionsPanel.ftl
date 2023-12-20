@@ -37,6 +37,14 @@ protections-panel-etp-off-toggle =
     .label = Utvidet sporingsbeskyttelse
     .description = Av for dette nettstedet
     .aria-label = Slå på beskyttelse for { $host }
+protections-panel-etp-toggle-on =
+    .label = Utvidet sporingsbeskyttelse
+    .description = På for dette nettstedet
+    .aria-label = Utvidet sporingsbeskyttelse: På for { $host }
+protections-panel-etp-toggle-off =
+    .label = Utvidet sporingsbeskyttelse
+    .description = Av for dette nettstedet
+    .aria-label = Utvidet sporingsbeskyttelse: Av for { $host }
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = Fungerer ikke nettstedet?
 # The heading/title of the sub-panel view
@@ -49,6 +57,10 @@ protections-panel-site-not-working-view =
 protections-panel-not-blocking-why-label = Hvorfor?
 protections-panel-not-blocking-why-etp-on-tooltip = Blokkering av disse kan føre til feil med elementer på noen nettsteder. Uten sporere fungerer kanskje ikke noen knapper, skjemaer og innloggingsfelt.
 protections-panel-not-blocking-why-etp-off-tooltip = Alle sporere på dette nettstedet er lastet fordi sporingsbeskyttelsen er slått av.
+protections-panel-not-blocking-why-etp-on-tooltip-label =
+    .label = Blokkering av disse kan føre til feil med elementer på noen nettsteder. Uten sporere fungerer kanskje ikke noen knapper, skjemaer og innloggingsfelt.
+protections-panel-not-blocking-why-etp-off-tooltip-label =
+    .label = Alle sporere på dette nettstedet er lastet fordi sporingsbeskyttelsen er slått av.
 
 ##
 
@@ -131,8 +143,22 @@ protections-panel-cookie-banner-view-turn-off-for-site = Vil du slå av reduksjo
 protections-panel-cookie-banner-view-turn-on-for-site = Vil du slå på reduksjon av infokapselbannere for dette nettstedet?
 protections-panel-cookie-banner-blocker-view-title =
     .title = Blokkering av infokapselbanner
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+protections-panel-cookie-banner-blocker-view-turn-off-for-site = Vil du slå av blokkering av infokapselbanner for { $host }?
+protections-panel-cookie-banner-blocker-view-turn-on-for-site = Vil du slå på blokkering av infokapselbanner for dette nettstedet?
 protections-panel-cookie-banner-view-cookie-clear-warning = { -brand-short-name } vill slette infokapsler og oppdatere siden. Sletting av alle infokapsler kan føre til at du blir logget ut eller at handlekurver blir tømt.
 protections-panel-cookie-banner-view-turn-on-description = { -brand-short-name } prøver å automatisk avvise alle infokapselforespørsler på støttede nettsteder.
+protections-panel-cookie-banner-blocker-view-turn-on-description = Slå på, og { -brand-short-name } vil prøve å automatisk nekte infokapselbannere på dette nettstedet.
 protections-panel-cookie-banner-view-cancel = Avbryt
 protections-panel-cookie-banner-view-turn-off = Slå av
 protections-panel-cookie-banner-view-turn-on = Slå på
+protections-panel-cookie-banner-view-cancel-label =
+    .label = Avbryt
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = Slå av
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = Slå på
+protections-panel-report-broken-site =
+    .label = Rapporter problem med et nettsted
+    .title = Rapporter problem med et nettsted

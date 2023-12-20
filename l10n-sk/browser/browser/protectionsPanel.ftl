@@ -57,6 +57,10 @@ protections-panel-site-not-working-view =
 protections-panel-not-blocking-why-label = Prečo?
 protections-panel-not-blocking-why-etp-on-tooltip = Blokovanie týchto prvkov môže ovplyvniť fungovanie niektorých webových stránok. Bez sledovacích prvkov nemusia niektoré tlačidlá alebo formuláre správne fungovať.
 protections-panel-not-blocking-why-etp-off-tooltip = Všetky sledovacie prvky na tejto stránke boli načítané, pretože ochrana je vypnutá.
+protections-panel-not-blocking-why-etp-on-tooltip-label =
+    .label = Blokovanie týchto prvkov môže ovplyvniť fungovanie niektorých webových stránok. Bez sledovacích prvkov nemusia niektoré tlačidlá alebo formuláre správne fungovať.
+protections-panel-not-blocking-why-etp-off-tooltip-label =
+    .label = Všetky sledovacie prvky na tejto stránke boli načítané, pretože ochrana je vypnutá.
 
 ##
 
@@ -149,3 +153,12 @@ protections-panel-cookie-banner-blocker-view-turn-on-description = Po zapnutí s
 protections-panel-cookie-banner-view-cancel = Zrušiť
 protections-panel-cookie-banner-view-turn-off = Vypnúť
 protections-panel-cookie-banner-view-turn-on = Zapnúť
+protections-panel-cookie-banner-view-cancel-label =
+    .label = Zrušiť
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = Vypnúť
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = Zapnúť
+protections-panel-report-broken-site =
+    .label = Nahlásiť nefunkčnú stránku
+    .title = Nahlásiť nefunkčnú stránku

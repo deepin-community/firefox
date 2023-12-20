@@ -201,6 +201,8 @@ cfr-cbh-confirm-button = 拒絕 Cookie 橫幅
     .accesskey = R
 cfr-cbh-dismiss-button = 現在不要
     .accesskey = N
+cookie-banner-blocker-cfr-header = { -brand-short-name } 已為您封鎖 Cookie
+cookie-banner-blocker-cfr-body = 我們會自動為您拒絕許多網站中的彈出型視窗，讓網站更難追蹤您。
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -234,6 +236,15 @@ device-migration-fxa-spotlight-header = 使用的是舊裝置？
 device-migration-fxa-spotlight-body = 備份您的資料，以確保不會遺失書籤、密碼等重要資訊。尤其是換新裝置轉移資料時更要小心。
 device-migration-fxa-spotlight-primary-button = 如何備份我的資料
 device-migration-fxa-spotlight-link = 待會提醒我
+device-migration-fxa-spotlight-heavy-user-header = 別忘記備份您的資料
+device-migration-fxa-spotlight-heavy-user-body = 確保您所有的裝置上，隨時都能有最新、同步的書籤、密碼等重要資訊。
+device-migration-fxa-spotlight-heavy-user-primary-button = 開始使用
+device-migration-fxa-spotlight-older-device-header = 移動資料免擔心，來自 { -brand-product-name }
+device-migration-fxa-spotlight-older-device-body = 註冊帳號後，可確保您任何連結起來的裝置上，都能有最新、同步的重要資訊。
+device-migration-fxa-spotlight-older-device-primary-button = 註冊帳號
+device-migration-fxa-spotlight-getting-new-device-header-2 = 打算要換新裝置？
+device-migration-fxa-spotlight-getting-new-device-body = 現在就開始備份資料，這樣收到裝置時就可以立即同步移轉。
+device-migration-fxa-spotlight-getting-new-device-primary-button = 如何備份我的資料
 
 ## Set as Default PDF Reader Infobar
 

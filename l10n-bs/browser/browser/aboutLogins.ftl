@@ -4,10 +4,13 @@
 # NOTE: New strings should use the about-logins- prefix.
 
 about-logins-page-title = Prijave & lozinke
-
-# "Google Play" and "App Store" are both branding and should not be translated
-
+about-logins-login-filter =
+    .placeholder = Pretraži prijave
+    .key = F
+create-new-login-button =
+    .title = Kreirajte novu prijavu
 fxaccounts-sign-in-text = Pristupite lozinkama na drugim uređajima
+fxaccounts-sign-in-sync-button = Prijavite se za sinhronizaciju
 fxaccounts-avatar-button =
     .title = Upravljanje računom
 
@@ -31,15 +34,28 @@ about-logins-menu-menuitem-help = Pomoć
 
 login-list =
     .aria-label = Prijave koje odgovaraju pretrazi
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } prijava
         [few] { $count } prijave
        *[other] { $count } prijava
     }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count =
+    { $total ->
+        [one] { $count } od { $total } prijava
+        [few] { $count } od { $total } prijave
+       *[other] { $count } od { $total } prijava
+    }
 login-list-sort-label-text = Sortiraj po:
 login-list-name-option = Nazivu (A-Z)
 login-list-name-reverse-option = Naziv (A-Z)
+login-list-username-option = Korisničko ime (A-Z)
+login-list-username-reverse-option = Korisničko ime (Z-A)
 about-logins-login-list-alerts-option = Upozorenja
 login-list-last-changed-option = Zadnja promjena
 login-list-last-used-option = Zadnja upotreba
@@ -54,12 +70,23 @@ about-logins-list-item-breach-icon =
     .title = Hakirana web stranica
 about-logins-list-item-vulnerable-password-icon =
     .title = Ranjiva lozinka
+about-logins-list-section-breach = Hakirane web stranice
+about-logins-list-section-vulnerable = Ranjive lozinke
+about-logins-list-section-nothing = Nema upozorenja
+about-logins-list-section-today = Danas
+about-logins-list-section-yesterday = Jučer
+about-logins-list-section-week = Zadnjih 7 dana
 
 ## Introduction screen
 
+about-logins-login-intro-heading-logged-out2 = Tražite svoje sačuvane prijave? Uključite sinhronizaciju ili ih uvezite.
 about-logins-login-intro-heading-logged-in = Nema pronađenih sinhronizovanih prijava.
 login-intro-description = Ako ste spasili prijave u { -brand-product-name } na drugom uređaju, evo kako im možete pristupiti:
-
+login-intro-instructions-fxa = Kreirajte ili prijavite se na svoj { -fxaccount-brand-name } na uređaju gdje su sačuvane vaše prijave.
+login-intro-instructions-fxa2 = Kreirajte ili se prijavite na vaš račun na uređaju na kojem su sačuvane vaše prijave.
+login-intro-instructions-fxa-settings = Idite na Postavke > Sinhronizacija > Uključi sinhronizaciju… Označite polje za potvrdu Prijava i lozinke.
+login-intro-instructions-fxa-passwords-help = Posjetite <a data-l10n-name="passwords-help-link">podršku za lozinke</a> za dodatnu pomoć.
+about-logins-intro-browser-only-import = Ako su vaše prijave sačuvane u drugom pretraživaču, možete ih <a data-l10n-name="import-link">uvesti u { -brand-product-name }</a>
 about-logins-intro-import2 = Ako su tvoje prijave spremljene izvan { -brand-product-name }a, možeš ih <a data-l10n-name="import-browser-link">uvesti iz jednog drugog browsera</a> ili <a data-l10n-name="import-file-link">iz jedne datoteke</a>
 
 ## Login
@@ -89,6 +116,13 @@ login-item-cancel-button = Otkaži
 ## A label is displayed under the date to describe the type of change.
 ## (e.g. updated, created, etc.)
 
+# Variables
+#   $datetime (date) - Event date
+login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
+login-item-timeline-action-created = Kreirano
+login-item-timeline-action-updated = Ažurirano
+login-item-timeline-action-used = Korišteno
+
 ## OS Authentication dialog
 
 about-logins-os-auth-dialog-caption = { -brand-full-name }
@@ -102,39 +136,34 @@ about-logins-edit-login-os-auth-dialog-message-win = Za uređivanje prijave, une
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = uredite sačuvanu prijavu
-
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Za prikaz vaše lozinke, unesite svoje podatke za prijavu na Windows. To pomaže zaštiti sigurnost vaših računa.
 # This message can be seen when attempting to reveal a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-reveal-password-os-auth-dialog-message-macosx = prikaži spašenu lozinku
-
 # This message can be seen when attempting to copy a password in about:logins on Windows.
 about-logins-copy-password-os-auth-dialog-message-win = Za kopiranje vaše lozinke, unesite svoje podatke za prijavu na Windows. To pomaže zaštiti sigurnost vaših računa.
 # This message can be seen when attempting to copy a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = kopiraj spašenu lozinku
-
-## Master Password notification
-
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message-win = Da biste izvezli svoje prijave, unesite svoje Windows podatke za prijavu. Ovo pomaže u zaštiti sigurnosti vaših računa.
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = izvezi spašene prijave i lozinke
 
 ## Primary Password notification
 
+about-logins-primary-password-notification-message = Molimo unesite svoju primarnu lozinku da vidite sačuvane prijave i lozinke
 master-password-reload-button =
     .label = Prijavi
     .accesskey = P
-
-## Password Sync notification
 
 ## Dialogs
 
 confirmation-dialog-cancel-button = Otkaži
 confirmation-dialog-dismiss-button =
     .title = Otkaži
-
 about-logins-confirm-remove-dialog-title = Ukloniti ovu prijavu?
 confirm-delete-dialog-message = Ova radnja se ne može poništiti.
 about-logins-confirm-remove-dialog-confirm-button = Ukloni
@@ -142,17 +171,22 @@ about-logins-confirm-remove-dialog-confirm-button = Ukloni
 ## Variables
 ##   $count (number) - Number of items
 
+
 ##
 
 about-logins-confirm-export-dialog-title = Izvezi prijave i lozinke
 about-logins-confirm-export-dialog-confirm-button = Izvoz…
-
+about-logins-alert-import-title = Uvoz završen
+about-logins-alert-import-message = Pogledajte detaljan sažetak uvoza
 confirm-discard-changes-dialog-title = Odbaci nespašene promjene?
 confirm-discard-changes-dialog-message = Sve nespašene promjene će biti izgubljene.
 confirm-discard-changes-dialog-confirm-button = Odbaci
 
 ## Breach Alert notification
 
+about-logins-breach-alert-title = Povreda podataka web stranice
+breach-alert-text = Lozinke su procurile ili ukradene sa ove web stranice otkako ste zadnji put ažurirali svoje podatke za prijavu. Promijenite lozinku da zaštitite svoj račun.
+about-logins-breach-alert-date = Ovo curenje podataka se dogodilo { DATETIME($date, day: "numeric", month: "long", year: "numeric") }
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-breach-alert-link = Posjeti { $hostname }
@@ -160,6 +194,7 @@ about-logins-breach-alert-link = Posjeti { $hostname }
 ## Vulnerable Password notification
 
 about-logins-vulnerable-alert-title = Ranjiva lozinka
+about-logins-vulnerable-alert-text2 = Ova lozinka je korištena na drugom računu za koji je vjerovatno došlo do povrede podataka. Ponovno korištenje podataka za prijavu dovodi sve vaše račune u opasnost. Promijenite ovu lozinku.
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-vulnerable-alert-link = Posjeti { $hostname }
@@ -167,9 +202,13 @@ about-logins-vulnerable-alert-learn-more-link = Saznajte više
 
 ## Error Messages
 
+# This is an error message that appears when a user attempts to save
+# a new login that is identical to an existing saved login.
+# Variables:
+#   $loginTitle (String) - The title of the website associated with the login.
+about-logins-error-message-duplicate-login-with-link = Unos za { $loginTitle } sa tim korisničkim imenom već postoji. <a data-l10n-name="duplicate-link">Ići na postojeći unos?</a>
 # This is a generic error message.
 about-logins-error-message-default = Desila se greška prilikom spašavanja ove lozinke.
-
 
 ## Login Export Dialog
 
@@ -204,14 +243,44 @@ about-logins-import-file-picker-csv-filter-title =
 ## Variables:
 ##  $count (number) - The number of affected elements
 
+about-logins-import-dialog-title = Uvoz završen
+about-logins-import-dialog-done = Gotovo
+about-logins-import-dialog-error-title = Greška pri uvozu
+about-logins-import-dialog-error-conflicting-values-title = Više suprotstavljenih vrijednosti za jednu prijavu
+about-logins-import-dialog-error-conflicting-values-description = Na primjer: više korisničkih imena, lozinki, URL-ova, itd. za jednu prijavu.
+about-logins-import-dialog-error-file-format-title = Problem formata datoteke
+about-logins-import-dialog-error-file-format-description = Zaglavlja kolona su netačna ili nedostaju. Pobrinite se da datoteka sadrži kolone za korisničko ime, lozinku i URL.
+about-logins-import-dialog-error-file-permission-title = Nije moguće pročitati datoteku
+about-logins-import-dialog-error-file-permission-description = { -brand-short-name } nema dozvolu za čitanje datoteke. Pokušajte promijeniti dozvole za datoteku.
+about-logins-import-dialog-error-unable-to-read-title = Nije moguće obraditi datoteku
+about-logins-import-dialog-error-unable-to-read-description = Provjerite jeste li odabrali CSV ili TSV datoteku.
+about-logins-import-dialog-error-no-logins-imported = Nisu uvezene prijave
+about-logins-import-dialog-error-learn-more = Saznajte više
+about-logins-import-dialog-error-try-import-again = Pokušaj ponovo uvesti…
+about-logins-import-dialog-error-cancel = Otkaži
+about-logins-import-report-title = Sažetak uvoza
+about-logins-import-report-description = Prijave i lozinke uvezene u { -brand-short-name }.
+#
+# Variables:
+#  $number (number) - The number of the row
+about-logins-import-report-row-index = Red { $number }
+about-logins-import-report-row-description-no-change = Duplikat: Tačno podudaranje postojeće prijave
+about-logins-import-report-row-description-modified = Postojeća prijava je ažurirana
+about-logins-import-report-row-description-added = Dodana je nova prijava
+about-logins-import-report-row-description-error = Greška: nedostaje polje
 
 ##
 ## Variables:
 ##  $field (String) - The name of the field from the CSV file for example url, username or password
 
+about-logins-import-report-row-description-error-multiple-values = Greška: Više vrijednosti za { $field }
+about-logins-import-report-row-description-error-missing-field = Greška: nedostaje { $field }
+
 ##
 ## Variables:
 ##  $count (number) - The number of affected elements
 
+
 ## Logins import report page
 
+about-logins-import-report-page-title = Izvještaj o sažetku uvoza

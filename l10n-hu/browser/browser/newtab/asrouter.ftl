@@ -204,6 +204,8 @@ cfr-cbh-confirm-button = Sütibannerek elutasítása
     .accesskey = u
 cfr-cbh-dismiss-button = Most nem
     .accesskey = n
+cookie-banner-blocker-cfr-header = A { -brand-short-name } épp most blokkolta a sütiket
+cookie-banner-blocker-cfr-body = Számos felugró sütikérést automatikusan elutasítunk, hogy a webhelyek nehezen tudják követni Önt.
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -237,6 +239,15 @@ device-migration-fxa-spotlight-header = Régebbi eszközt használ?
 device-migration-fxa-spotlight-body = Készítsen biztonsági mentést az adatairól, hogy ne veszítsen el olyan fontos információkat, mint a könyvjelzők és a jelszavak – különösen, ha új eszközre vált.
 device-migration-fxa-spotlight-primary-button = Hogyan kell biztonsági mentést készíteni az adatokról
 device-migration-fxa-spotlight-link = Figyelmeztetés később
+device-migration-fxa-spotlight-heavy-user-header = Ne felejtsen el biztonsági mentést készíteni az adatairól
+device-migration-fxa-spotlight-heavy-user-body = Győződjön meg arról, hogy a fontos információk – mint a könyvjelzők és jelszavak – legyenek naprakészek és védettek az összes eszközén.
+device-migration-fxa-spotlight-heavy-user-primary-button = Első lépések
+device-migration-fxa-spotlight-older-device-header = Nyugalom, a { -brand-product-name }tól
+device-migration-fxa-spotlight-older-device-body = Egy fiók naprakészen tartja a fontos információit, és védi őket az összes csatlakoztatott eszközén.
+device-migration-fxa-spotlight-older-device-primary-button = Fiók létrehozása
+device-migration-fxa-spotlight-getting-new-device-header-2 = Új eszköz a jövőben?
+device-migration-fxa-spotlight-getting-new-device-body = Készítsen biztonsági mentést most, hogy készen álljon, amikor az eszköze megérkezik.
+device-migration-fxa-spotlight-getting-new-device-primary-button = Hogyan kell biztonsági mentést készíteni az adatokról
 
 ## Set as Default PDF Reader Infobar
 

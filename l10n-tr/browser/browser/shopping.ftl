@@ -40,17 +40,6 @@ shopping-letter-grade-tooltip =
 
 shopping-message-bar-warning-stale-analysis-message-2 = Kontrol edilecek yeni bilgiler
 shopping-message-bar-warning-stale-analysis-button = Şimdi kontrol et
-shopping-message-bar-generic-error-title2 = Şu anda bilgi yok
-shopping-message-bar-generic-error-message = Sorunu çözmek için çalışıyoruz. Lütfen kısa süre sonra tekrar kontrol edin.
-shopping-message-bar-warning-not-enough-reviews-title = Henüz yeterli değerlendirme yok
-shopping-message-bar-warning-not-enough-reviews-message2 = Bu ürüne daha fazla değerlendirme geldiğinde değerlendirmelerin kalitelerini kontrol edebileceğiz.
-shopping-message-bar-warning-product-not-available-title = Ürün mevcut değil
-shopping-message-bar-warning-product-not-available-message2 = Bu ürünün yeniden stoğa girdiğini görürseniz bize bildirin, biz de değerlendirmeleri kontrol etmeye çalışalım.
-shopping-message-bar-warning-product-not-available-button = Bu ürünün tekrar stokta olduğunu bildir
-shopping-message-bar-thanks-for-reporting-title = Bildirdiğiniz için teşekkürler!
-shopping-message-bar-thanks-for-reporting-message2 = Bu ürünün değerlendirmeleriyle ilgili 24 saat içinde bilgi alacağız. Lütfen daha sonra tekrar kontrol edin.
-shopping-message-bar-warning-product-not-available-reported-title2 = Bilgiler yakında gelecek
-shopping-message-bar-warning-product-not-available-reported-message2 = Bu ürünün değerlendirmeleriyle ilgili 24 saat içinde bilgi alacağız. Lütfen daha sonra tekrar kontrol edin.
 shopping-message-bar-generic-error =
     .heading = Şu anda bilgi yok
     .message = Sorunu çözmek için çalışıyoruz. Lütfen kısa süre sonra tekrar kontrol edin.
@@ -69,8 +58,9 @@ shopping-message-bar-warning-product-not-available-reported =
     .message = Bu ürünün değerlendirmeleriyle ilgili 24 saat içinde bilgi alacağız. Lütfen daha sonra tekrar kontrol edin.
 shopping-message-bar-analysis-in-progress-title2 = Değerlendirme kalitesi kontrol ediliyor
 shopping-message-bar-analysis-in-progress-message2 = Yaklaşık 60 saniye sürebilir.
-shopping-message-bar-page-not-supported-title = Bu değerlendirmeleri kontrol edemiyoruz
-shopping-message-bar-page-not-supported-message = Maalesef bazı ürün türlerinin değerlendirme kalitelerini kontrol edemiyoruz. Örneğin, hediye kartları ve video, müzik ve oyun akışı.
+# Variables:
+#  $percentage (Number) - The percentage complete that the analysis is, per our servers.
+shopping-message-bar-analysis-in-progress-with-amount = Değerlendirme kalitesi kontrol ediliyor (%{ $percentage })
 shopping-message-bar-page-not-supported =
     .heading = Bu değerlendirmeleri kontrol edemiyoruz
     .message = Maalesef bazı ürün türlerinin değerlendirme kalitelerini kontrol edemiyoruz. Örneğin, hediye kartları ve video, müzik ve oyun akışı.
@@ -96,6 +86,7 @@ shopping-settings-label =
     .label = Ayarlar
 shopping-settings-recommendations-toggle =
     .label = Değerlendirme denetleyicisinde reklamları göster
+shopping-settings-recommendations-learn-more2 = Ara sıra ilginizi çekebilecek ürünlerin reklamlarını göreceksiniz. Yalnızca güvenilir değerlendirmelere sahip ürünlerin reklamını yapıyoruz. <a data-l10n-name="review-quality-url">Bilgi alın</a>
 shopping-settings-opt-out-button = Değerlendirme kontrolcüsünü kapat
 powered-by-fakespot = Değerlendirme kontrolcüsü <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a> altyapısını kullanır.
 
@@ -116,8 +107,15 @@ shopping-review-reliability-label =
 
 shopping-analysis-explainer-label =
     .label = Değerlendirme kalitesini nasıl belirliyoruz?
+shopping-analysis-explainer-intro2 = Ürün değerlendirmelerinin güvenilirliğini denetlemek için { -fakespot-brand-full-name } yapay zekâ teknolojisini kullanıyoruz. Bu araç yalnızca değerlendirmelerin kalitesini anlamanıza yardımcı olur, ürün kalitesi hakkında yorum yapmaz.
 shopping-analysis-explainer-grades-intro = Her ürünün değerlendirmelerine A’dan F’ye kadar bir <strong>harf notu</strong> veriyoruz.
 shopping-analysis-explainer-adjusted-rating-description = <strong>Düzeltilmiş puan</strong> yalnızca güvenilir olduğunu düşündüğümüz değerlendirmelere dayanır.
+shopping-analysis-explainer-learn-more = <a data-l10n-name="review-quality-url">{ -fakespot-brand-full-name }’un değerlendirme kalitesini nasıl belirlediğini</a> öğrenin.
+shopping-analysis-explainer-learn-more2 = <a data-l10n-name="review-quality-url">{ -fakespot-brand-name }’un değerlendirme kalitesini nasıl belirlediğini</a> öğrenin.
+# This string includes the short brand name of one of the three supported
+# websites, which will be inserted without being translated.
+#  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
+shopping-analysis-explainer-highlights-description = <strong>Öne çıkanlar</strong> son 80 gün içindeki güvenilir olduğunu düşündüğümüz { $retailer } değerlendirmelerinden alınmıştır.
 shopping-analysis-explainer-review-grading-scale-reliable = Güvenilir değerlendirmeler. Değerlendirmelerin büyük olasılıkla dürüst, tarafsız incelemeler yazan gerçek müşterilerden geldiğini düşünüyoruz.
 shopping-analysis-explainer-review-grading-scale-mixed = Güvenilir ve güvenilmez değerlendirmelerin bir karışımı olduğunu düşünüyoruz.
 shopping-analysis-explainer-review-grading-scale-unreliable = Güvenilmez değerlendirmeler. Değerlendirmelerin büyük ihtimalle sahte olduğunu veya önyargılı kişilerden geldiğini düşünüyoruz.
@@ -150,6 +148,8 @@ shopping-unanalyzed-product-analyze-button = Değerlendirme kalitesini kontrol e
 
 ## Strings for the advertisement
 
+more-to-consider-ad-label =
+    .label = İlginizi çekebilir
 ad-by-fakespot = { -fakespot-brand-name } reklamı
 
 ## Shopping survey strings.
@@ -168,7 +168,6 @@ shopping-survey-q2-radio-3-label = Bilmiyorum
 shopping-survey-next-button-label = İleri
 shopping-survey-submit-button-label = Gönder
 shopping-survey-terms-link = Kullanım koşulları
-shopping-survey-thanks-message = Geri bildiriminiz için teşekkürler!
 shopping-survey-thanks =
     .heading = Geri bildiriminiz için teşekkürler!
 
@@ -183,6 +182,15 @@ shopping-callout-closed-not-opted-in-title = Güvenilir değerlendirmeler bir t�
 ## Onboarding message strings.
 
 shopping-onboarding-headline = Ürün değerlendirmelerine ilişkin güvenilir kılavuzumuzu deneyin
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle-1 = Yeni bir şey satın almadan önce <b>{ $currentSite }</b> sitesindeki ürün değerlendirmelerinin güvenilirliğini görün. Deneysel bir { -brand-product-name } özelliği olan değerlendirme kontrolcüsü, tarayıcınızla birlikte geliyor. <b>{ $secondSite }</b> ve <b>{ $thirdSite }</b> ile de uyumlu.
+shopping-onboarding-body = { -fakespot-brand-full-name } sayesinde önyargılı ve sahte değerlendirmelerden kaçınabilirsiniz. Alışverişlerinizde sizi korumak için yapay zekâ modelimizi sürekli geliştiriyoruz. <a data-l10n-name="learn_more">Daha fazla bilgi alın</a>
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use = “{ shopping-onboarding-opt-in-button }“ seçeneğini seçtiğinizde { -fakespot-brand-full-name } <a data-l10n-name="privacy_policy">gizlilik politikasını</a> ve <a data-l10n-name="terms_of_use">kullanım koşullarını</a> kabul etmiş olursunuz.
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = “{ shopping-onboarding-opt-in-button }“ seçeneğini seçtiğinizde { -fakespot-brand-name } <a data-l10n-name="privacy_policy">gizlilik politikasını</a> ve <a data-l10n-name="terms_of_use">kullanım koşullarını</a> kabul etmiş olursunuz.
 shopping-onboarding-opt-in-button = Evet, deneyeceğim
 shopping-onboarding-not-now-button = Şimdi değil
 shopping-onboarding-dialog-close-button =

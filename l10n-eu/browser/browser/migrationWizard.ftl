@@ -42,6 +42,11 @@ migration-wizard-migrator-display-name-opera = Opera
 migration-wizard-migrator-display-name-opera-gx = Opera GX
 migration-wizard-migrator-display-name-safari = Safari
 migration-wizard-migrator-display-name-vivaldi = Vivaldi
+migration-source-name-ie = Internet Explorer
+migration-source-name-edge = Microsoft Edge
+migration-source-name-chrome = Google Chrome
+migration-imported-safari-reading-list = Irakurketa-zerrenda (Safari-tik)
+migration-imported-edge-reading-list = Irakurketa-zerrenda (Edge-tik)
 
 ## These strings are shown if the selected browser data directory is unreadable.
 ## In practice, this tends to only occur on Linux when Firefox
@@ -63,6 +68,7 @@ migration-bookmarks-option-label = Laster-markak
 # Edge, as this is the terminology for bookmarks on those browsers.
 migration-favorites-option-label = Gogokoak
 migration-logins-and-passwords-option-label = Gordetako saio-hasierak eta pasahitzak
+migration-passwords-option-label = Gordetako pasahitzak
 migration-history-option-label = Nabigatze-historia
 migration-extensions-option-label = Hedapenak
 migration-form-autofill-option-label = Inprimakien betetze automatikorako datuak

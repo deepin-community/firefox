@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = 새 로그인 만들기
+about-logins-page-title-name = 비밀번호
+about-logins-login-filter2 =
+    .placeholder = 비밀번호 검색
+    .key = F
+create-login-button =
+    .title = 비밀번호 추가
 fxaccounts-sign-in-text = 다른 기기에서 비밀번호 받기
 fxaccounts-sign-in-sync-button = Sync에 로그인
 fxaccounts-avatar-button =
@@ -44,6 +50,17 @@ login-list-count =
 #   $count (number) - Number of filtered logins
 #   $total (number) - Total number of logins
 login-list-filtered-count = { $count } / { $total } 로그인
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 = 비밀번호 { $count }개
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } / { $total } 비밀번호
+       *[other] { $count } / { $total } 비밀번호
+    }
 login-list-sort-label-text = 정렬 기준:
 login-list-name-option = 이름 (A-Z)
 login-list-name-reverse-option = 이름 (Z-A)
@@ -53,11 +70,14 @@ about-logins-login-list-alerts-option = 알림
 login-list-last-changed-option = 마지막 수정
 login-list-last-used-option = 마지막 사용
 login-list-intro-title = 로그인을 찾을 수 없음
+login-list-intro-title2 = 저장된 비밀번호 없음
 login-list-intro-description = { -brand-product-name }에 비밀번호를 저장하면, 여기에 표시됩니다.
 about-logins-login-list-empty-search-title = 로그인을 찾을 수 없음
+about-logins-login-list-empty-search-title2 = 비밀번호를 찾을 수 없음
 about-logins-login-list-empty-search-description = 검색어와 일치하는 결과가 없습니다.
 login-list-item-title-new-login = 새 로그인
 login-list-item-subtitle-new-login = 로그인 자격 증명을 입력하세요
+login-list-item-title-new-login2 = 비밀번호 추가
 login-list-item-subtitle-missing-username = (사용자 이름 없음)
 about-logins-list-item-breach-icon =
     .title = 유출된 웹 사이트
@@ -89,6 +109,11 @@ login-item-edit-button = 편집
 about-logins-login-item-remove-button = 삭제
 login-item-origin-label = 웹 사이트 주소
 login-item-tooltip-message = 로그인 한 웹 사이트의 정확한 주소와 일치하는지 확인하세요.
+about-logins-origin-tooltip = 로그인 한 웹 사이트의 정확한 주소와 일치하는지 확인하세요.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = 이 사이트의 현재 비밀번호를 저장하고 있는지 확인하세요. 여기에서 비밀번호를 변경해도 { $webTitle }의 비밀번호는 변경되지 않습니다.
+about-logins-add-password-tooltip = 이 사이트의 현재 비밀번호를 저장하고 있는지 확인하세요.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = 사용자 이름
@@ -257,6 +282,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = 로그인 파일 가져오기
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = { -brand-short-name }로 비밀번호 가져오기
 about-logins-import-file-picker-import-button = 가져오기
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -290,6 +317,9 @@ about-logins-import-dialog-items-no-change =
     { $count ->
        *[other] <span>찾은 중복 로그인:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(가져오지 않음)</span>
     }
+about-logins-import-dialog-items-added2 = <span>추가된 새 비밀번호:</span> <span data-l10n-name="count">{ $count }</span>
+about-logins-import-dialog-items-modified2 = <span>업데이트된 기존 항목:</span> <span data-l10n-name="count">{ $count }</span>
+about-logins-import-dialog-items-no-change2 = <span>찾은 중복 항목:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(가져오지 않음)</span>
 about-logins-import-dialog-items-error =
     { $count ->
        *[other] <span>오류:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(가져오지 않음)</span>
@@ -310,6 +340,7 @@ about-logins-import-dialog-error-try-import-again = 가져오기 다시 시도�
 about-logins-import-dialog-error-cancel = 취소
 about-logins-import-report-title = 가져오기 요약
 about-logins-import-report-description = 로그인과 비밀번호를 { -brand-short-name }로 가져왔습니다.
+about-logins-import-report-description2 = { -brand-short-name }로 비밀번호를 가져옴
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -317,6 +348,9 @@ about-logins-import-report-row-index = { $number } 행
 about-logins-import-report-row-description-no-change = 중복: 기존 로그인과 정확히 일치
 about-logins-import-report-row-description-modified = 기존 로그인 업데이트됨
 about-logins-import-report-row-description-added = 새 로그인 추가됨
+about-logins-import-report-row-description-no-change2 = 중복: 기존 항목과 정확히 일치
+about-logins-import-report-row-description-modified2 = 기존 항목 업데이트됨
+about-logins-import-report-row-description-added2 = 새 비밀번호 추가됨
 about-logins-import-report-row-description-error = 오류: 누락된 필드
 
 ##
@@ -342,6 +376,9 @@ about-logins-import-report-no-change =
     { $count ->
        *[other] <div data-l10n-name="count">{ $count }개</div> <div data-l10n-name="details">중복 로그인</div> <div data-l10n-name="not-imported">(가져오지 않음)</div>
     }
+about-logins-import-report-added2 = <div data-l10n-name="count">{ $count }개</div> <div data-l10n-name="details"> 새 비밀번호 추가됨</div>
+about-logins-import-report-modified2 = <div data-l10n-name="count">{ $count }개</div> <div data-l10n-name="details">기존 항목 업데이트됨</div>
+about-logins-import-report-no-change2 = <div data-l10n-name="count">{ $count }개</div> <div data-l10n-name="details">중복 항목</div> <div data-l10n-name="not-imported">(가져오지 않음)</div>
 about-logins-import-report-error =
     { $count ->
        *[other] <div data-l10n-name="count">{ $count }개</div> <div data-l10n-name="details">오류</div> <div data-l10n-name="not-imported">(가져오지 않음)</div>

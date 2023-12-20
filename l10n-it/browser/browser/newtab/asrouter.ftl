@@ -12,35 +12,29 @@ cfr-doorhanger-feature-heading = Funzione consigliata
 
 cfr-doorhanger-extension-sumo-link =
     .tooltiptext = Perché viene visualizzato questo messaggio
-
 cfr-doorhanger-extension-cancel-button = Non adesso
     .accesskey = N
-
 cfr-doorhanger-extension-ok-button = Aggiungi
     .accesskey = A
-
 cfr-doorhanger-extension-manage-settings-button = Gestisci impostazioni suggerimenti
     .accesskey = G
-
 cfr-doorhanger-extension-never-show-recommendation = Non visualizzare suggerimenti
     .accesskey = v
-
 cfr-doorhanger-extension-learn-more-link = Ulteriori informazioni
-
 # This string is used on a new line below the add-on name
 # Variables:
 #   $name (String) - Add-on author name
 cfr-doorhanger-extension-author = di { $name }
-
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Suggerimento
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-extension-notification2 = Suggerimento
     .tooltiptext = Estensione suggerita
     .a11y-announcement = È disponibile un suggerimento per un’estensione
-
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-feature-notification = Suggerimento
     .tooltiptext = Funzione suggerita
     .a11y-announcement = È disponibile un suggerimento per una funzione
@@ -85,11 +79,9 @@ cfr-protections-panel-link-text = Ulteriori informazioni
 # This string is used by screen readers to offer a text based alternative for
 # the notification icon
 cfr-badge-reader-label-newfeature = Nuova funzione:
-
 cfr-whatsnew-button =
     .label = Novità
     .tooltiptext = Novità
-
 cfr-whatsnew-release-notes-link-text = Leggi le note di versione
 
 ## Enhanced Tracking Protection Milestones
@@ -112,16 +104,12 @@ cfr-doorhanger-doh-primary-button-2 = OK
 cfr-doorhanger-doh-secondary-button = Disattiva
     .accesskey = D
 
-## Fission Experiment Message
-
 ## Full Video Support CFR message
 
 cfr-doorhanger-video-support-body = I video di questo sito potrebbero non funzionare correttamente in questa versione di { -brand-short-name }. Aggiorna { -brand-short-name } per garantire il completo supporto della riproduzione video.
 cfr-doorhanger-video-support-header = Aggiorna { -brand-short-name } per riprodurre i video
 cfr-doorhanger-video-support-primary-button = Aggiorna adesso
     .accesskey = A
-
-## Spotlight modal shared strings
 
 ## VPN promotion dialog for public Wi-Fi users
 ##
@@ -136,8 +124,6 @@ spotlight-public-wifi-vpn-primary-button = Proteggi la tua privacy con { -mozill
     .accesskey = M
 spotlight-public-wifi-vpn-link = Non adesso
     .accesskey = N
-
-## Total Cookie Protection Rollout
 
 ## Emotive Continuous Onboarding
 
@@ -167,13 +153,11 @@ spotlight-pin-secondary-button = Non adesso
 
 mr2022-background-update-toast-title = Nuovo { -brand-short-name }. Più riservato. Meno elementi traccianti. Nessun compromesso.
 mr2022-background-update-toast-text = Prova ora il nuovo { -brand-short-name }, aggiornato con la protezione antitracciamento più potente che abbiamo mai realizzato.
-
 # This button label will be fitted into a narrow fixed-width button by
 # Windows. Try to not exceed the width of the English text (compare it
 # using a variable font like Arial): the button can only fit 1-2
 # additional characters, exceeding characters will be truncated.
 mr2022-background-update-toast-primary-button-label = Apri { -brand-shorter-name } ora
-
 # This button label will be fitted into a narrow fixed-width button by
 # Windows. Try to not exceed the width of the English text (compare it using a
 # variable font like Arial): the button can only fit 1-2 additional characters,
@@ -192,7 +176,6 @@ firefoxview-cfr-body-v2 = Recupera le schede chiuse di recente e passa velocemen
 ## Firefox View Spotlight
 
 firefoxview-spotlight-promo-title = Ti presentiamo { -firefoxview-brand-name }
-
 # “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
 firefoxview-spotlight-promo-subtitle = Ti serve proprio quella scheda aperta sul tuo telefono? Recuperala al volo. Hai bisogno di un sito che hai appena visitato? Lo trovi in { -firefoxview-brand-name }.
 firefoxview-spotlight-promo-primarybutton = Scopri come funziona
@@ -202,7 +185,6 @@ firefoxview-spotlight-promo-secondarybutton = Salta
 
 colorways-cfr-primarybutton = Scegli una tonalità
     .accesskey = S
-
 # "shades" refers to the different color options available to users in colorways.
 colorways-cfr-body = Personalizza il tuo browser con le iconiche combinazioni di colori di { -brand-short-name } ispirate alle voci che cambiano la società.
 colorways-cfr-header-28days = Le tonalità Voci indipendenti scadranno il 16 gennaio
@@ -218,7 +200,6 @@ cfr-cbh-confirm-button = Rifiuta banner per i cookie
     .accesskey = R
 cfr-cbh-dismiss-button = Non adesso
     .accesskey = N
-
 cookie-banner-blocker-cfr-header = { -brand-short-name } ha appena bloccato dei cookie per te
 cookie-banner-blocker-cfr-body = Rifiutiamo automaticamente diversi pop-up per i cookie per rendere la vita più difficile ai siti che cercano di tracciarti.
 
@@ -228,7 +209,6 @@ july-jam-headline = Sempre dalla tua parte
 july-jam-body = Ogni mese { -brand-short-name } blocca in media oltre 3.000 elementi traccianti per ciascun utente, offrendoti un accesso sicuro e veloce alla parte migliore di Internet.
 july-jam-set-default-primary = Apri i miei link con { -brand-short-name }
 fox-doodle-pin-headline = Bentornato
-
 # “indie” is short for the term “independent”.
 # In this instance, free from outside influence or control.
 fox-doodle-pin-body = Un promemoria al volo: puoi tenere il tuo browser indipendente preferito sempre a portata di clic.
@@ -255,6 +235,15 @@ device-migration-fxa-spotlight-header = Stai utilizzando un dispositivo meno rec
 device-migration-fxa-spotlight-body = Salva i tuoi dati per non perdere informazioni importanti come segnalibri e password, soprattutto se hai in programma di passare a un nuovo dispositivo.
 device-migration-fxa-spotlight-primary-button = Come posso salvare i miei dati
 device-migration-fxa-spotlight-link = Ricordamelo più tardi
+device-migration-fxa-spotlight-heavy-user-header = Non dimenticarti di salvare i tuoi dati
+device-migration-fxa-spotlight-heavy-user-body = Assicurati che le informazioni importanti, come segnalibri e password, siano aggiornate e protette su tutti i tuoi dispositivi.
+device-migration-fxa-spotlight-heavy-user-primary-button = Inizia
+device-migration-fxa-spotlight-older-device-header = Tranquillità, da { -brand-product-name }
+device-migration-fxa-spotlight-older-device-body = Un account mantiene le tue informazioni importanti aggiornate e protette su qualsiasi dispositivo connesso.
+device-migration-fxa-spotlight-older-device-primary-button = Crea un account
+device-migration-fxa-spotlight-getting-new-device-header-2 = Nuovo dispositivo nel tuo futuro?
+device-migration-fxa-spotlight-getting-new-device-body = Salva subito i tuoi dati, così sarai pronto per partire quando arriverà il tuo dispositivo.
+device-migration-fxa-spotlight-getting-new-device-primary-button = Come posso salvare i miei dati
 
 ## Set as Default PDF Reader Infobar
 
@@ -270,14 +259,14 @@ pdf-default-notification-decline-button =
 launch-on-login-infobar-message = <strong>Vuoi aprire { -brand-short-name } quando riavvii il computer?</strong> Ora puoi impostare { -brand-short-name } per aprirsi automaticamente quando il dispositivo viene riavviato.
 launch-on-login-learnmore = Ulteriori informazioni
 launch-on-login-infobar-confirm-button = Sì, apri { -brand-short-name }
-  .accesskey = S
+    .accesskey = S
 launch-on-login-infobar-reject-button = Non adesso
-  .accesskey = N
+    .accesskey = N
 
 ## These string variants are used when the “launch on login” infobar
 ## notification is displayed for a second time.
 
 launch-on-login-infobar-final-message = <strong>Vuoi aprire { -brand-short-name } quando riavvii il computer?</strong> Per gestire le impostazioni di avvio, cerca “avvio” nelle impostazioni.
 launch-on-login-infobar-final-reject-button = No grazie
-  .accesskey = N
+    .accesskey = N
 

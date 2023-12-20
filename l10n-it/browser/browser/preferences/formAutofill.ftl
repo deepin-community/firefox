@@ -40,6 +40,10 @@ address-capture-manage-address-button =
     .label = Impostazioni indirizzi
 address-capture-learn-more-button =
     .label = Ulteriori informazioni
+address-capture-open-menu-button =
+    .aria-label = Apri menu
+address-capture-edit-address-button =
+    .aria-label = Modifica indirizzo
 
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Nuovo indirizzo
@@ -113,6 +117,7 @@ autofill-address-email = Email
 autofill-cancel-button = Annulla
 autofill-save-button = Salva
 autofill-country-warning-message = La compilazione automatica dei moduli è attualmente disponibile solo per alcuni Paesi.
+autofill-message-tooltip = Mostra messaggio relativo alla compilazione automatica dei moduli
 
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Nuova carta di credito
@@ -147,4 +152,6 @@ autofill-card-network-mastercard = MasterCard
 autofill-card-network-mir = MIR
 autofill-card-network-unionpay = Union Pay
 autofill-card-network-visa = Visa
+
+
 

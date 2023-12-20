@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Fermer
     .aria-label = Fermer
+firefoxview-empty-state-icon =
+    .alt = Attention :
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = À l’instant
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,35 @@ firefoxview-opentabs-focus-tab =
     .title = Basculer vers cet onglet
 firefoxview-show-more = En afficher plus
 firefoxview-show-less = En afficher moins
+firefoxview-search-text-box-clear-button =
+    .title = Effacer
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Rechercher dans l’historique
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Rechercher dans les onglets récemment fermés
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Rechercher parmi les onglets synchronisés
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Rechercher parmi les onglets ouverts
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Résultats de la recherche pour « { $query } »
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } site
+       *[other] { $count } sites
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Pas de résultats pour « { $query } »
 firefoxview-sort-history-by-date-label = Trier par date
 firefoxview-sort-history-by-site-label = Trier par site
 # Variables:
@@ -206,9 +237,6 @@ firefoxview-import-history-description = Faites de { -brand-short-name } votre n
 firefoxview-recentlyclosed-empty-header = Vous avez fermé un onglet par erreur ?
 firefoxview-recentlyclosed-empty-description = Vous trouverez ici les onglets que vous avez récemment fermés, afin de pouvoir les rouvrir rapidement.
 firefoxview-recentlyclosed-empty-description-two = Pour retrouver des onglets plus anciens, consultez votre <a data-l10n-name="history-url">historique de navigation</a>.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

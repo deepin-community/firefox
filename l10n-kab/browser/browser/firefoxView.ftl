@@ -5,6 +5,9 @@
 toolbar-button-firefox-view =
     .label = { -firefoxview-brand-name }
     .tooltiptext = { -firefoxview-brand-name }
+toolbar-button-firefox-view-2 =
+    .label = { -firefoxview-brand-name }
+    .tooltiptext = Wali tunigin tamirant gar yisfuyla d yibenkan
 menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
@@ -25,16 +28,20 @@ firefoxview-tabpickup-progress-label = Yemmed { $percentValue }%
 firefoxview-tabpickup-step-signin-header = Ttnaqal gar yibenkan s tefses
 firefoxview-tabpickup-step-signin-description = I wakken ad d-tawiḍ accaren n tiliɣri-inek·inem ɣer dagi, qqen qbel neɣ rnu amiḍan.
 firefoxview-tabpickup-step-signin-primarybutton = Kemmel
+firefoxview-syncedtabs-signin-header = Err-d accaren-ik·im seg yal adeg
+firefoxview-syncedtabs-signin-primarybutton = Qqen neɣ kcem
 firefoxview-tabpickup-adddevice-header = Mtawi { -brand-product-name } ɣef tiliɣri-inek·inem neɣ ɣef tfelwit n uselken
 firefoxview-tabpickup-adddevice-description = Sader { -brand-product-name } i uziraz syen qqen ɣer-s.
 firefoxview-tabpickup-adddevice-learn-how = Issin amek
 firefoxview-tabpickup-adddevice-primarybutton = Awi { -brand-product-name } i uziraz
+firefoxview-syncedtabs-adddevice-header = Qqen ɣer { -brand-product-name } ɣef yibenkan-ik·im niḍen
 firefoxview-syncedtabs-adddevice-primarybutton = Ɛreḍ { -brand-product-name } i uziraz
 firefoxview-tabpickup-synctabs-header = Rmed amtawi n waccaren…
 firefoxview-tabpickup-synctabs-description = Sireg { -brand-short-name } ad yebḍu accaren gar yibenkan.
 firefoxview-tabpickup-synctabs-learn-how = Issin amek
 firefoxview-tabpickup-synctabs-primarybutton = Mtawi accaren yeldin
 firefoxview-syncedtabs-synctabs-header = Leqqem iɣewwaren n umtawi
+firefoxview-syncedtabs-synctabs-description = I wakken ad twaliḍ accaren seg yibenkan niḍen, tesriḍ ad temtawiḍ accaren-ik·im yeldin.
 firefoxview-syncedtabs-synctabs-checkbox = Sireg accaren yeldin i umtawi
 firefoxview-syncedtabs-loading-header = Amtawi iteddu
 firefoxview-tabpickup-fxa-admin-disabled-header = Takebbanit-ik·im tessens amtawi
@@ -55,6 +62,7 @@ firefoxview-tabpickup-password-locked-primarybutton = Sekcem awal uffir agejdan
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Issin ugar</a>
 firefoxview-tabpickup-signed-out-header = Kcem akken ad talseḍ tuqqna
 firefoxview-tabpickup-signed-out-description = I wakken a talseḍ tuqqna s tririt n waccaren-ik·im, qqen ɣer { -fxaccount-brand-name }.
+firefoxview-tabpickup-signed-out-description2 = I wakken a talseḍ tuqqna s tririt n waccaren, qqen ɣer umiḍan-ik·im.
 firefoxview-tabpickup-signed-out-primarybutton = Kcem
 firefoxview-tabpickup-syncing = Seqɛed tiɣimit mi ara tessemtawayeḍ accaren-ik·im. Ur yettɛeṭṭil ara.
 firefoxview-mobile-promo-header = Awi-d accaren seg tiliɣri-inek·inem neɣ seg tfelwit n uselken
@@ -136,6 +144,29 @@ firefoxview-opentabs-focus-tab =
     .title = Uɣal ɣer yiccer-a
 firefoxview-show-more = Sken ugar
 firefoxview-show-less = Sken drus
+firefoxview-search-text-box-clear-button =
+    .title = Sfeḍ
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Nadi deg umazray
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Nadi accaren yettwamedlen melmi kan
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Nadi igmaḍ i “{ $query }”
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } usmel
+       *[other] { $count } yismal
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Ulac igmaḍ i “{ $query }”
 firefoxview-sort-history-by-date-label = Asmizzwer s wazemz
 firefoxview-sort-history-by-site-label = Smizzwer s usmel
 # Variables:
@@ -162,6 +193,8 @@ firefoxview-view-more-browsing-history = Sken ugar seg uzray n tunigin
 
 ## Message displayed in Firefox View when the user has no history data
 
+firefoxview-history-empty-header = Kemmel seg wanda i tḥebseḍ
+firefoxview-history-empty-description = Akken ara tettinigeḍ, isebtar wuɣur terziḍ ad d-ttwabdaren dagi.
 
 ##
 
@@ -182,10 +215,13 @@ firefoxview-import-history-close-button =
 
 ## Text displayed in a dismissable banner to import bookmarks/history from another browser
 
+firefoxview-import-history-header = Kter-d azray seg yiminig niḍen
 
 ## Message displayed in Firefox View when the user has no recently closed tabs data
 
+firefoxview-recentlyclosed-empty-header = Tmedleḍ iccer ur tfaqqeḍ?
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 
+firefoxview-syncedtabs-device-notabs = Ulac accaren yeldin ɣef yibenk-a
 firefoxview-syncedtabs-connect-another-device = Qqen ibenk-nniḍen

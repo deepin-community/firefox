@@ -8,15 +8,21 @@
 # NOTE: New strings should use the about-logins- prefix.
 
 about-logins-page-title = Credenziali e password
+about-logins-page-title-name = Password
 
 # "Google Play" and "App Store" are both branding and should not be translated
 
 about-logins-login-filter =
    .placeholder = Cerca nelle credenziali
    .key = F
+about-logins-login-filter2 =
+   .placeholder = Cerca nelle password
+   .key = F
 
 create-new-login-button =
   .title = Inserisci nuove credenziali
+create-login-button =
+  .title = Aggiungi password
 
 fxaccounts-sign-in-text = Ritrova le tue password su tutti i tuoi dispositivi
 fxaccounts-sign-in-sync-button = Accedi per sincronizzare
@@ -44,12 +50,10 @@ about-logins-menu-menuitem-help = Supporto
 login-list =
     .aria-label = Credenziali corrispondenti ai criteri di ricerca
 login-list-count = { $count } credenziali
+login-list-count2 = { $count } password
 
-login-list-filtered-count =
-  { $total ->
-      [one] { $count } di { $total } credenziale
-     *[other] { $count } di { $total } credenziali
-  }
+login-list-filtered-count = { $count } di { $total } credenziali
+login-list-filtered-count2 = { $count } di { $total } password
 
 login-list-sort-label-text = Ordina per:
 login-list-name-option = Nome (A-Z)
@@ -60,10 +64,13 @@ about-logins-login-list-alerts-option = Avvisi
 login-list-last-changed-option = Ultima modifica
 login-list-last-used-option = Ultimo utilizzo
 login-list-intro-title = Credenziali non trovate
+login-list-intro-title2 = Nessuna password salvata
 login-list-intro-description = Le password salvate in { -brand-product-name } verranno visualizzate qui.
 about-logins-login-list-empty-search-title = Credenziali non trovate
+about-logins-login-list-empty-search-title2 = Nessuna password trovata
 about-logins-login-list-empty-search-description = Non ci sono risultati corrispondenti ai criteri di ricerca inseriti.
 login-list-item-title-new-login = Nuove credenziali
+login-list-item-title-new-login2 = Aggiungi password
 login-list-item-subtitle-new-login = Inserisci le credenziali di accesso
 login-list-item-subtitle-missing-username = (nessun nome utente)
 about-logins-list-item-breach-icon =
@@ -99,6 +106,13 @@ login-item-edit-button = Modifica
 about-logins-login-item-remove-button = Rimuovi
 login-item-origin-label = Indirizzo web
 login-item-tooltip-message = Assicurarsi che corrisponda esattamente all’indirizzo del sito web a cui si accede.
+
+about-logins-origin-tooltip = Assicurarsi che corrisponda esattamente all’indirizzo del sito web a cui si accede.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = Assicurarsi di salvare la password attuale per questo sito. La modifica della password in questa pagina non cambierà la password in { $webTitle }.
+about-logins-add-password-tooltip = Assicurarsi di salvare la password attuale per questo sito.
+
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = Nome utente
@@ -269,6 +283,7 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = Importazione credenziali da file
+about-logins-import-file-picker-title2 = Importazione password in { -brand-short-name }
 about-logins-import-file-picker-import-button = Importa
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -292,10 +307,14 @@ about-logins-import-file-picker-tsv-filter-title =
 
 about-logins-import-dialog-title = Importazione completata
 about-logins-import-dialog-items-added = <span>Nuove credenziali aggiunte:</span> <span data-l10n-name="count">{ $count }</span>
+about-logins-import-dialog-items-added2 = <span>Nuove password aggiunte:</span> <span data-l10n-name="count">{ $count }</span>
 
 about-logins-import-dialog-items-modified = <span>Credenziali esistenti aggiornate:</span> <span data-l10n-name="count">{ $count }</span>
+about-logins-import-dialog-items-modified2 = <span>Elementi aggiornati:</span> <span data-l10n-name="count">{ $count }</span>
 
 about-logins-import-dialog-items-no-change = <span>Credenziali duplicate:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(non importate)</span>
+about-logins-import-dialog-items-no-change2 = <span>Elementi duplicati:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(non importati)</span>
+
 about-logins-import-dialog-items-error = <span>Errori:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(non importate)</span>
 about-logins-import-dialog-done = Fatto
 
@@ -315,6 +334,7 @@ about-logins-import-dialog-error-cancel = Annulla
 
 about-logins-import-report-title = Riepilogo importazione
 about-logins-import-report-description = Credenziali e password importate in { -brand-short-name }.
+about-logins-import-report-description2 = Password importate in { -brand-short-name }.
 
 #
 # Variables:
@@ -323,6 +343,9 @@ about-logins-import-report-row-index = Riga { $number }
 about-logins-import-report-row-description-no-change = Duplicata (corrisponde esattamente a una credenziale esistente)
 about-logins-import-report-row-description-modified = Credenziale esistente aggiornata
 about-logins-import-report-row-description-added = Nuova credenziale aggiunta
+about-logins-import-report-row-description-no-change2 = Duplicata (corrisponde esattamente a un elemento esistente)
+about-logins-import-report-row-description-modified2 = Elemento esistente aggiornato
+about-logins-import-report-row-description-added2 = Nuova password aggiunta
 about-logins-import-report-row-description-error = Errore: campo mancante
 
 ##
@@ -351,6 +374,17 @@ about-logins-import-report-no-change =
        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">credenziale duplicata</div> <div data-l10n-name="not-imported">(non importata)</div>
       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">credenziali duplicate</div> <div data-l10n-name="not-imported">(non importate)</div>
   }
+about-logins-import-report-added2 = <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">nuove password aggiunte</div>
+about-logins-import-report-modified2 =
+  { $count ->
+       [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">elemento esistente aggiornato</div>
+      *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">elementi esistenti aggiornati</div>
+  }
+about-logins-import-report-no-change2 =
+  { $count ->
+       [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">elemento duplicato</div> <div data-l10n-name="not-imported">(non importato)</div>
+      *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">elementi duplicati</div> <div data-l10n-name="not-imported">(non importati)</div>
+  }
 about-logins-import-report-error =
   { $count ->
        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">errore</div> <div data-l10n-name="not-imported">(credenziale non importata)</div>
@@ -360,4 +394,6 @@ about-logins-import-report-error =
 ## Logins import report page
 
 about-logins-import-report-page-title = Riepilogo importazione
+
+
 

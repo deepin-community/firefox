@@ -57,6 +57,10 @@ protections-panel-site-not-working-view =
 protections-panel-not-blocking-why-label = Pourquoi ?
 protections-panel-not-blocking-why-etp-on-tooltip = Bloquer ces éléments peut entraîner un dysfonctionnement partiel de certains sites web. Sans les traqueurs, certains boutons, formulaires ou champs de connexion peuvent ne pas fonctionner correctement.
 protections-panel-not-blocking-why-etp-off-tooltip = Tous les traqueurs sur ce site ont été chargés car les protections sont désactivées.
+protections-panel-not-blocking-why-etp-on-tooltip-label =
+    .label = Bloquer ces éléments peut entraîner un dysfonctionnement partiel de certains sites web. Sans les traqueurs, certains boutons, formulaires ou champs de connexion peuvent ne pas fonctionner correctement.
+protections-panel-not-blocking-why-etp-off-tooltip-label =
+    .label = Tous les traqueurs sur ce site ont été chargés car les protections sont désactivées.
 
 ##
 
@@ -149,3 +153,12 @@ protections-panel-cookie-banner-blocker-view-turn-on-description = Activez-le, e
 protections-panel-cookie-banner-view-cancel = Annuler
 protections-panel-cookie-banner-view-turn-off = Désactiver
 protections-panel-cookie-banner-view-turn-on = Activer
+protections-panel-cookie-banner-view-cancel-label =
+    .label = Annuler
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = Désactiver
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = Activer
+protections-panel-report-broken-site =
+    .label = Signaler des problèmes avec ce site
+    .title = Signaler des problèmes avec ce site

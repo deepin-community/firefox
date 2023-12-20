@@ -203,6 +203,8 @@ cfr-cbh-confirm-button = Embojevy kookie banner
     .accesskey = R
 cfr-cbh-dismiss-button = Ani ko’ág̃a
     .accesskey = N
+cookie-banner-blocker-cfr-header = { -brand-short-name } ojokóma kookiekuéra
+cookie-banner-blocker-cfr-body = Romboyke orejehegui heta kookie rovetã apysẽ rombohasyve hag̃ua tendakuéra nde rapykuehóvo.
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -219,7 +221,7 @@ fox-doodle-pin-secondary = Ani ko’ág̃a
 ## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
 
 set-default-pdf-handler-headline = <strong>Umi PDFs ijurujáma { -brand-short-name }.</strong> Embosako’i ha emboheraguapy myanyhẽha kundaharapevoi. Emoambue hag̃ua, eheka “PDF” ñemoĩporãha.
-set-default-pdf-handler-primary = Aikumby
+set-default-pdf-handler-primary = Aikũmby
 
 ## FxA sync CFR
 
@@ -236,6 +238,15 @@ device-migration-fxa-spotlight-header = ¿Eiporuhína mba’e’oka itujavéva?
 device-migration-fxa-spotlight-body = Eñongatu ne mba’ekuaarã ambue hendápe ani hag̃ua okañy marandu takate’ỹha ikatúva techaukaha ha ñe’ẽñemi — eiporu mba’éramo ambue mba’e’oka.
 device-migration-fxa-spotlight-primary-button = Mba’éichapa añongatúta che mba’ekuaarã
 device-migration-fxa-spotlight-link = Chemomandu’a ag̃ave
+device-migration-fxa-spotlight-heavy-user-header = Eñongatu ne mba’ekuaarã tekorosãverã
+device-migration-fxa-spotlight-heavy-user-body = Ehecha ne marandu emomba’evéva, ha’éva techaukaha ha ñe’ẽñemi, tahekopyahu ha tahekorosã opaite mba’e’okápe.
+device-migration-fxa-spotlight-heavy-user-primary-button = Eñepyrũ
+device-migration-fxa-spotlight-older-device-header = { -brand-product-name } rekoguapy
+device-migration-fxa-spotlight-older-device-body = Peteĩ mba’ete oreko marandu emomba’éva tekopyahu ha tekorosãme oimeraẽva mba’e’oka eikehápe.
+device-migration-fxa-spotlight-older-device-primary-button = Emoheñói mba’ete
+device-migration-fxa-spotlight-getting-new-device-header-2 = ¿Eikesépa mba’e’oka pyahúpe?
+device-migration-fxa-spotlight-getting-new-device-body = Eñongatu mba’ekuaarã tekorosãverã, oikoporã hag̃ua og̃uahẽvo mba’e’oka.
+device-migration-fxa-spotlight-getting-new-device-primary-button = Mba’éichapa añongatúta che mba’ekuaarã
 
 ## Set as Default PDF Reader Infobar
 

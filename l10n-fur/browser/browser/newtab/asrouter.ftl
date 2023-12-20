@@ -204,6 +204,8 @@ cfr-cbh-confirm-button = Refude i strissons pai cookies
     .accesskey = R
 cfr-cbh-dismiss-button = No cumò
     .accesskey = N
+cookie-banner-blocker-cfr-header = { -brand-short-name } al à a pene blocât i cookies par te
+cookie-banner-blocker-cfr-body = O refudìn in automatic tancj barcons a comparse pai cookies, par rindi plui dificil pai sîts stâti daûr.
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -237,6 +239,15 @@ device-migration-fxa-spotlight-header = Stâstu doprant un dispositîf plui vier
 device-migration-fxa-spotlight-body = Fâs un backup dai tiei dâts par no pierdi informazions impuartantis come segnelibris e passwords — soredut se tu passis a un gnûf dispositîf.
 device-migration-fxa-spotlight-primary-button = Cemût salvâ i miei dâts
 device-migration-fxa-spotlight-link = Visimi plui indevant
+device-migration-fxa-spotlight-heavy-user-header = No sta dismenteâti di salvâ i tiei dâts
+device-migration-fxa-spotlight-heavy-user-body = Siguriti che lis informazions impuartantis — come segnelibris e passwords — a sedin inzornadis e protetis su ducj i tiei dispositîfs.
+device-migration-fxa-spotlight-heavy-user-primary-button = Scomence
+device-migration-fxa-spotlight-older-device-header = Trancuilitât, di { -brand-product-name }
+device-migration-fxa-spotlight-older-device-body = Un account al ten inzornadis e protetis lis tôs informazions impuartantis su cualsisei dispositîf conetût.
+device-migration-fxa-spotlight-older-device-primary-button = Cree un account
+device-migration-fxa-spotlight-getting-new-device-header-2 = Gnûf dispositîf tal to futûr?
+device-migration-fxa-spotlight-getting-new-device-body = Salve daurman i tiei dâts, in mût di jessi pront par cuant che al rive il to dispositîf.
+device-migration-fxa-spotlight-getting-new-device-primary-button = Cemût salvâ i miei dâts
 
 ## Set as Default PDF Reader Infobar
 

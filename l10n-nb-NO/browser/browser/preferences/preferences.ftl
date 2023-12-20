@@ -14,6 +14,7 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Fortell nettsteder om ikke å selge eller dele mine data
     .accesskey = o
+non-technical-privacy-header = Nettstedets personverninnstillinger
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
@@ -465,6 +466,9 @@ browsing-use-smooth-scrolling =
 browsing-gtk-use-non-overlay-scrollbars =
     .label = Vis alltid rullefelt
     .accesskey = V
+browsing-always-underline-links =
+    .label = Understrek alltid lenker
+    .accesskey = U
 browsing-use-onscreen-keyboard =
     .label = Vis et touch-tastatur når nødvendig
     .accesskey = t
@@ -608,6 +612,9 @@ search-suggestions-desc = Velg hvordan forslag fra søkemotorer skal vises.
 search-suggestions-option =
     .label = Tilby søkeforslag
     .accesskey = T
+search-show-suggestions-option =
+    .label = Vis søkeforslag
+    .accesskey = s
 search-show-suggestions-url-bar-option =
     .label = Vis søkeforslag i adresselinjens resultater
     .accesskey = l
@@ -706,6 +713,9 @@ sync-signedin-login-failure = Logg inn for å koble til på nytt { $email }
 sync-resend-verification =
     .label = Send bekreftelse på nytt
     .accesskey = d
+sync-verify-account =
+    .label = Bekreft konto
+    .accesskey = B
 sync-remove-account =
     .label = Fjern konto
     .accesskey = k
@@ -738,8 +748,10 @@ sync-currently-syncing-bookmarks = Bokmerker
 sync-currently-syncing-history = Historikk
 sync-currently-syncing-tabs = Åpne faner
 sync-currently-syncing-logins-passwords = Innlogginger og passord
+sync-currently-syncing-passwords = Passord
 sync-currently-syncing-addresses = Adresser
 sync-currently-syncing-creditcards = Betalingskort
+sync-currently-syncing-payment-methods = Betalingsmetoder
 sync-currently-syncing-addons = Utvidelser
 sync-currently-syncing-settings = Innstillinger
 sync-change-options =
@@ -770,6 +782,10 @@ sync-engine-logins-passwords =
     .label = Innlogginger og passord
     .tooltiptext = Brukernavn og passord som du har lagret
     .accesskey = l
+sync-engine-passwords =
+    .label = Passord
+    .tooltiptext = Passord du har lagret
+    .accesskey = P
 sync-engine-addresses =
     .label = Adresser
     .tooltiptext = Postadresser du har lagret (bare datamaskin)
@@ -778,6 +794,10 @@ sync-engine-creditcards =
     .label = Betalingskort
     .tooltiptext = Navn, numre og forfallsdato (bare datamaskin)
     .accesskey = K
+sync-engine-payment-methods =
+    .label = Betalingsmetoder
+    .tooltiptext = Navn, kortnumre og utløpsdatoer (kun datamaskin)
+    .accesskey = n
 sync-engine-addons =
     .label = Utvidelser
     .tooltiptext = Utvidelser og temaer for Firefox for datamaskin
@@ -973,6 +993,7 @@ cookie-banner-handling-description = { -brand-short-name } prøver automatisk å
 ## Privacy Section - Cookie Banner Blocking
 
 cookie-banner-blocker-header = Blokkering av infokapselbanner
+cookie-banner-blocker-description = Når et nettsted spør om de kan bruke infokapsler i privat nettlesingsmodus, så avviser { -brand-short-name } forespørselen automatisk for deg. Bare på støttede nettsteder.
 cookie-banner-learn-more = Les mer
 forms-handle-cookie-banners =
     .label = Reduser infokapselbannere
@@ -1008,9 +1029,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Hurtige handlinger
     .accesskey = H
-addressbar-locbar-recentsearches-option =
-    .label = Nylige søk
-    .accesskey = N
+addressbar-locbar-showrecentsearches-option =
+    .label = Vis nylige søk
+    .accesskey = V
 addressbar-suggestions-settings = Endre innstillinger for søkeforslag
 addressbar-quickactions-learn-more = Les mer
 
@@ -1256,6 +1277,7 @@ httpsonly-radio-disabled =
 
 preferences-doh-header = DNS-over-HTTPS
 preferences-doh-description = Domain Name System (DNS) over HTTPS sender forespørselen din om et domenenavn gjennom en kryptert tilkobling, lager en sikker DNS og gjør det vanskeligere for andre å se hvilket nettsted du er i ferd med å besøke.
+preferences-doh-description2 = Domain Name System (DNS) over HTTPS sender forespørselen din om et domenenavn gjennom en kryptert tilkobling, og gir en sikker DNS og gjør det vanskeligere for andre å se hvilket nettsted du er i ferd med å besøke.
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = Status: { $status }
@@ -1272,6 +1294,7 @@ preferences-doh-status-disabled = Av
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
 preferences-doh-status-not-active = Ikke aktiv ({ $reason })
 preferences-doh-group-message = Aktiver sikker DNS ved å bruke:
+preferences-doh-group-message2 = Aktiver DNS-over-HTTPS med:
 preferences-doh-expand-section =
     .tooltiptext = Mer informasjon
 preferences-doh-setting-default =

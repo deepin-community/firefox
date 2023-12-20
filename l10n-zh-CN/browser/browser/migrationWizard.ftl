@@ -42,6 +42,11 @@ migration-wizard-migrator-display-name-opera = Opera
 migration-wizard-migrator-display-name-opera-gx = Opera GX
 migration-wizard-migrator-display-name-safari = Safari 浏览器
 migration-wizard-migrator-display-name-vivaldi = Vivaldi
+migration-source-name-ie = Internet Explorer（IE 浏览器）
+migration-source-name-edge = Microsoft Edge
+migration-source-name-chrome = Google Chrome
+migration-imported-safari-reading-list = 阅读列表（来自 Safari 浏览器）
+migration-imported-edge-reading-list = 阅读列表（来自 Edge）
 
 ## These strings are shown if the selected browser data directory is unreadable.
 ## In practice, this tends to only occur on Linux when Firefox
@@ -71,6 +76,7 @@ migration-bookmarks-option-label = 书签
 # Edge, as this is the terminology for bookmarks on those browsers.
 migration-favorites-option-label = 收藏夹
 migration-logins-and-passwords-option-label = 保存的登录名和密码
+migration-passwords-option-label = 保存的密码
 migration-history-option-label = 浏览历史
 migration-extensions-option-label = 扩展
 migration-form-autofill-option-label = 自动填写表单数据
@@ -234,7 +240,7 @@ migration-wizard-progress-success-passwords = { $quantity } 个密码
 migration-wizard-progress-success-history =
     { $maxAgeInDays ->
         [one] 昨天以来
-       *[other] 过去 { $maxAgeInDays } 天以来
+       *[other] 过去 { $maxAgeInDays } 天
     }
 migration-wizard-progress-success-formdata = 表单历史记录
 # Shown in the migration wizard after importing payment methods from another

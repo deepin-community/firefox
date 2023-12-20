@@ -489,3 +489,12 @@ details-notification-softblocked-link = További információ
 details-notification-gmp-pending = { $name } hamarosan telepítésre kerül.
 details-notification-gmp-pending2 =
     .message = { $name } hamarosan telepítésre kerül.
+
+## Gecko Media Plugins (GMPs)
+
+plugins-gmp-license-info = Licencinformációk
+plugins-gmp-privacy-info = Adatvédelmi információk
+plugins-openh264-name = OpenH264 videokodek a Cisco Systems, Inc.-től
+plugins-openh264-description = Ezt a bővítményt a Mozilla automatikusan telepítette a WebRTC specifikációnak való megfelelés érdekében, és a WebRTC hívások lehetővé tételéhez olyan eszközökkel, amelyek a H.264 videokodeket igénylik. Keresse fel a http://www.openh264.org/ oldalt a megvalósítással kapcsolatos további tudnivalókért.
+plugins-widevine-name = Widevine tartalom-visszafejtő modul a Google Inc.-től
+plugins-widevine-description = Ez a bővítmény lehetővé teszi a titkosított médiák lejátszását, az Encrypted Media Extensions specifikációnak megfelelően. Titkosított médiát jellemzően azok az oldalak használnak, amelyek a prémium médiatartalmak másolása ellen védekeznek. A titkosított médiakiterjesztésekről szóló további információkért keresse fel az https://www.w3.org/TR/encrypted-media/ oldalt.

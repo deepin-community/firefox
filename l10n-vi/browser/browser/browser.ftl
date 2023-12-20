@@ -279,6 +279,9 @@ quickactions-cmd-plugins = phần bổ trợ
 # Opens the print dialog
 quickactions-print2 = Trang in
 quickactions-cmd-print = in
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Lưu trang dưới dạng PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Mở cửa sổ riêng tư
 quickactions-cmd-private = duyệt web riêng tư, duyet web rieng tu
@@ -344,6 +347,7 @@ identity-connection-secure = Kết nối an toàn
 identity-connection-failure = Kết nối thất bại
 identity-connection-internal = Đây là một trang an toàn của { -brand-short-name }
 identity-connection-file = Trang này đã được lưu ở máy tính của bạn.
+identity-connection-associated = Trang này được tải từ một trang khác.
 identity-extension-page = Trang này được tải từ một tiện ích mở rộng.
 identity-active-blocked = { -brand-short-name } đã chặn những phần không an toàn của trang này.
 identity-custom-root = Kết nối được xác minh bởi nhà phát hành chứng chỉ không được Mozilla công nhận.
@@ -556,8 +560,6 @@ urlbar-result-action-search-w-engine = Tìm với { $engine }
 urlbar-result-action-sponsored = Được tài trợ
 urlbar-result-action-switch-tab = Chuyển sang thẻ
 urlbar-result-action-visit = Truy cập
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Truy cập khay nhớ tạm của bạn
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Truy cập từ khay nhớ tạm
 # Directs a user to press the Tab key to perform a search with the specified

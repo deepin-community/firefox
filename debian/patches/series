@@ -1,4 +1,3 @@
-fixes/Bug-1866025-Check-if-PHC-is-initialised-on-all-entry.patch
 debian-hacks/Avoid-wrong-sessionstore-data-to-keep-windows-out-of.patch
 debian-hacks/Add-another-preferences-directory-for-applications-p.patch
 debian-hacks/Add-a-2-minutes-timeout-on-xpcshell-tests.patch

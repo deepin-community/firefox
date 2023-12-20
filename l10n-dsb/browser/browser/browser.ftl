@@ -279,6 +279,9 @@ quickactions-cmd-plugins = tykace
 # Opens the print dialog
 quickactions-print2 = Bok śišćaś
 quickactions-cmd-print = śišćaś
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Bok ako PDF składowaś
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Priwatne wokno wócyniś
 quickactions-cmd-private = priwatny modus
@@ -350,6 +353,7 @@ identity-connection-secure = Zwisk jo wěsty
 identity-connection-failure = Zwiskowa zmólka
 identity-connection-internal = To jo wěsty bok { -brand-short-name }.
 identity-connection-file = Toś ten bok jo se na wašom licadle składł.
+identity-connection-associated = Toś ten bok jo se zacytał z drugego boka.
 identity-extension-page = Toś ten bok jo se z rozšyrjenja zacytał.
 identity-active-blocked = { -brand-short-name } jo źěle toś togo boka blokěrował, kótarež njejsu wěste.
 identity-custom-root = Zwisk jo se pśeglědował pśez certifikatowego wudawarja, kótaryž njejo pśipóznaty wót Mozilla.
@@ -571,8 +575,6 @@ urlbar-result-action-search-w-engine = Z { $engine } pytaś
 urlbar-result-action-sponsored = Sponserowany
 urlbar-result-action-switch-tab = K rejtarikoju pśejś
 urlbar-result-action-visit = Woglědaś se
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Z mjazywótkłada woglědaś
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Z mjazywótkłada se woglědaś
 # Directs a user to press the Tab key to perform a search with the specified

@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Rregullime adrese
 address-capture-learn-more-button =
     .label = Mësoni më tepër
+address-capture-open-menu-button =
+    .aria-label = Hape menunë
+address-capture-edit-address-button =
+    .aria-label = Përpunoni adresë
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Shtoni Adresë të Re
 # The dialog title for editing addresses in browser preferences.
@@ -106,6 +110,7 @@ autofill-address-email = Email
 autofill-cancel-button = Anuloje
 autofill-save-button = Ruaje
 autofill-country-warning-message = Vetëplotësimi i Formularëve hëpërhë është i vlefshëm vetëm për disa vende.
+autofill-message-tooltip = Shihni mesazh rreth vetëplotësimit
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Shtoni Kartë të Re Krediti
 # The dialog title for editing credit cards in browser preferences.

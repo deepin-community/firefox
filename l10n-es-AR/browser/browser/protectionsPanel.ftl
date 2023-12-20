@@ -57,6 +57,10 @@ protections-panel-site-not-working-view =
 protections-panel-not-blocking-why-label = ¿Por qué?
 protections-panel-not-blocking-why-etp-on-tooltip = Bloquear estos podría dañar elementos de algunos sitios web. Sin rastreadores algunos botones, formularios y campos de inicio de sesión podrían no funcionar.
 protections-panel-not-blocking-why-etp-off-tooltip = Todos los rastreadores en este sitio se cargaron porque las protecciones están desactivadas.
+protections-panel-not-blocking-why-etp-on-tooltip-label =
+    .label = Bloquear estos podría dañar elementos de algunos sitios web. Sin rastreadores algunos botones, formularios y campos de inicio de sesión podrían no funcionar.
+protections-panel-not-blocking-why-etp-off-tooltip-label =
+    .label = Todos los rastreadores en este sitio se cargaron porque las protecciones están desactivadas.
 
 ##
 
@@ -110,7 +114,7 @@ protections-panel-content-blocking-manage-settings =
     .label = Administrar la configuración de protección
     .accesskey = M
 protections-panel-content-blocking-breakage-report-view =
-    .title = Informar de un sitio que no se carga
+    .title = Informar un sitio roto
 protections-panel-content-blocking-breakage-report-view-description = El bloqueo de ciertos rastreadores puede causar problemas con algunos sitios web. Informar sobre estos problemas ayuda a que { -brand-short-name } sea mejor para todos. Al enviar este informe, se enviará a Mozilla una URL e información sobre la configuración de su navegador. <label data-l10n-name="learn-more">Aprender más</label>
 protections-panel-content-blocking-breakage-report-view-description2 = El bloqueo de ciertos rastreadores puede causar problemas con algunos sitios web. Informar sobre estos problemas ayuda a que { -brand-short-name } sea mejor para todos. Al enviar este informe, se enviará a { -vendor-short-name } una URL e información sobre la configuración de su navegador.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
@@ -149,3 +153,12 @@ protections-panel-cookie-banner-blocker-view-turn-on-description = Al activarlo 
 protections-panel-cookie-banner-view-cancel = Cancelar
 protections-panel-cookie-banner-view-turn-off = Desactivar
 protections-panel-cookie-banner-view-turn-on = Activar
+protections-panel-cookie-banner-view-cancel-label =
+    .label = Cancelar
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = Desactivar
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = Activar
+protections-panel-report-broken-site =
+    .label = Informar sitio roto
+    .title = Informar sitio roto

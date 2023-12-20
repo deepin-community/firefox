@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Пӯшидан
     .aria-label = Пӯшидан
+firefoxview-empty-state-icon =
+    .alt = Диққат:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Ҳоли ҳозир
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,35 @@ firefoxview-opentabs-focus-tab =
     .title = Ба ин варақа гузаштан
 firefoxview-show-more = Бештар нишон диҳед
 firefoxview-show-less = Камтар нишон диҳед
+firefoxview-search-text-box-clear-button =
+    .title = Пок кардан
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Ҷустуҷӯ дар таърих
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Ҷустуҷӯи варақаҳои ба наздикӣ пӯшидашуда
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Ҷустуҷӯ дар варақаҳои ҳамоҳангшуда
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Ҷустуҷӯ дар варақаҳои кушодашуда
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Натиҷаҳои ҷустуҷӯ барои «{ $query }»
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } сомона
+       *[other] { $count } сомона
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Ягон натиҷа барои «{ $query }» нест
 firefoxview-sort-history-by-date-label = Мураттаб кардан аз рӯи ном
 firefoxview-sort-history-by-site-label = Мураттаб кардан аз рӯи сомона
 # Variables:
@@ -206,9 +237,6 @@ firefoxview-import-history-description = Браузери «{ -brand-short-name 
 firefoxview-recentlyclosed-empty-header = Варақаеро хеле зуд пӯшидед?
 firefoxview-recentlyclosed-empty-description = Дар ин ҷо шумо варақаҳоеро, ки ба наздикӣ пӯшидаед, пайдо мекунед, то шумо тавонед яке аз онҳоро зуд аз нав кушоед.
 firefoxview-recentlyclosed-empty-description-two = Барои дидани варақаҳо қаблӣ, ба <a data-l10n-name="history-url">таърихи тамошокунӣ</a> нигаред.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

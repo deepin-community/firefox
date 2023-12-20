@@ -41,6 +41,10 @@ address-capture-manage-address-button =
     .label = Nastavení adresy
 address-capture-learn-more-button =
     .label = Dozvědět se více
+address-capture-open-menu-button =
+    .aria-label = Otevřít nabídku
+address-capture-edit-address-button =
+    .aria-label = Upravit adresu
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Přidat novou adresu
 # The dialog title for editing addresses in browser preferences.
@@ -114,6 +118,7 @@ autofill-address-email = E-mailová adresa
 autofill-cancel-button = Zrušit
 autofill-save-button = Uložit
 autofill-country-warning-message = Automatické vyplňování formulářů nyní funguje jenom pro některé země.
+autofill-message-tooltip = Zobrazit zprávu o automatickém vyplňování
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Přidat novou platební kartu
 # The dialog title for editing credit cards in browser preferences.

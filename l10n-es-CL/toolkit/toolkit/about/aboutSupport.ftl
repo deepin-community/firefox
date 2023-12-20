@@ -188,6 +188,21 @@ media-codec-support-codec-name = Nombre del códec
 media-codec-support-supported = Soportado
 media-codec-support-unsupported = No soportado
 media-codec-support-error = Información de soporte de códec no disponible. Vuelve a intentarlo después de reproducir un archivo multimedia.
+media-codec-support-lack-of-extension = Instalar extensión
+
+## Media Content Decryption Modules (CDM)
+## See EME Spec for more explanation for following technical terms
+## https://w3c.github.io/encrypted-media/
+
+media-content-decryption-modules-title = Información de los módulos de descifrado de contenido (CDM)
+media-key-system-name = Nombre del sistema clave
+media-video-robustness = Robustez del video
+media-audio-robustness = Robustez del audio
+media-cdm-capabilities = Funcionalidades
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = Inicio limpio (Clear Lead)
 
 ##
 

@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Adresynstellingen
 address-capture-learn-more-button =
     .label = Mear ynfo
+address-capture-open-menu-button =
+    .aria-label = Menu iepenje
+address-capture-edit-address-button =
+    .aria-label = Adres bewurkje
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Nij adres tafoegje
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = E-mailadres
 autofill-cancel-button = Annulearje
 autofill-save-button = Bewarje
 autofill-country-warning-message = Formulieren automatysk ynfolje is op dit stuit allinnich foar bepaalde lannen beskikber.
+autofill-message-tooltip = Berjocht oer automatysk ynfoljen besjen
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Nije creditcard tafoegje
 # The dialog title for editing credit cards in browser preferences.

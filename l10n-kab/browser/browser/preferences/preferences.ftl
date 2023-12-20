@@ -3,11 +3,22 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Ad yazen asɣal “ur sfuɣul ara” ɣer ismal web akken ad gzun belli ur tebɣiḍ ara asfuɣel
+do-not-track-description2 =
+    .label = Ssuter i yismal web “Ur yi-ṭṭafaren ara”
+    .accesskey = s
 do-not-track-learn-more = Issin ugar
 do-not-track-option-default-content-blocking-known =
     .label = Kan ticki { -brand-short-name } yettusbadu ɣer sewḥel ineḍfaṛen
 do-not-track-option-always =
     .label = Yal tikkelt
+global-privacy-control-description =
+    .label = Ssuter i yismal web ur snuzuyen, ur beṭṭun isefka-w
+    .accesskey = s
+non-technical-privacy-header = Ismenyifen n tbaḍnit n yismal web
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Iɣewwaren
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -116,11 +127,16 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Ldi asfaylu d waccaren yezrin
     .accesskey = s
+windows-launch-on-login =
+    .label = Ldi { -brand-short-name } s wudem awurman mi ara yekker uselkim-ik·im
+    .accesskey = L
+windows-launch-on-login-disabled = Asmenyif-a yensa deg Windows. I ubeddel-is, rzu ɣer <a data-l10n-name="startup-link">Asnas n usenker</a> deg yiɣewwaren n unagraw.
 startup-restore-warn-on-quit =
     .label = Lɣu ticki tettefɣeḍ seg iminig
 disable-extension =
     .label = Sens aseɣzif
 preferences-data-migration-header = Kter-d isefka seg yiminig
+preferences-data-migration-description = Kter ticraḍ n yisebtar, awalen uffiren, azray, akked yisefka n taččart tawurmant deg { -brand-short-name }.
 preferences-data-migration-button =
     .label = Kter isefka
     .accesskey = t
@@ -450,12 +466,18 @@ browsing-use-smooth-scrolling =
 browsing-gtk-use-non-overlay-scrollbars =
     .label = Sken yal tikkelt ifeggagen n udrurem
     .accesskey = k
+browsing-always-underline-links =
+    .label = Ttderrir yal tikkelt iseɣwan
+    .accesskey = d
 browsing-use-onscreen-keyboard =
     .label = Sken anasiw amennalan ticki terra tmara
     .accesskey = n
 browsing-use-cursor-navigation =
     .label = Seqdec yal tikkelt tiqeffalin n tunigin i tikli deg usebter
     .accesskey = S
+browsing-use-full-keyboard-navigation =
+    .label = Seqdec taqeffalt tab i usenkez n ufukus gar yimsenqaden n tferra d yiseɣwan
+    .accesskey = t
 browsing-search-on-start-typing =
     .label = Nadi aḍris ticki tebda tira
     .accesskey = N
@@ -593,6 +615,11 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Sken isumar n unadi deg ugmuḍ n ufeggag n tansa
     .accesskey = u
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar
+# when using the current default search engine.
+search-show-search-term-option =
+    .label = Sken tanfalit n unadi deg wadeg n tansa web ɣef usebter n yigmaḍ n umsedday n unadi s wudem amezwer
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -683,6 +710,9 @@ sync-signedin-login-failure = Ma ulac aɣilif sesteb akken ad tkecmeḍ { $email
 sync-resend-verification =
     .label = Ales tuzna n usentem
     .accesskey = d
+sync-verify-account =
+    .label = Sentem amiḍan
+    .accesskey = S
 sync-remove-account =
     .label = Kkes amiḍan
     .accesskey = R
@@ -710,6 +740,7 @@ prefs-syncing-button =
 
 ## The list of things currently syncing.
 
+sync-syncing-across-devices-heading = LA tessemtawayeḍ iferdisen-a gar meṛṛa ibenkan-ik·im yeqqnen:
 sync-currently-syncing-bookmarks = Ticraḍ n yisebtar
 sync-currently-syncing-history = Azray
 sync-currently-syncing-tabs = Ldi iccaren
@@ -731,6 +762,7 @@ sync-choose-what-to-sync-dialog3 =
     .buttonaccesskeyaccept = b
     .buttonlabelextra2 = Se déconnecter…
     .buttonaccesskeyextra2 = S
+sync-choose-dialog-subtitle = Isenfal yettwagen i tebdart n yiferdisen ara yemtawin ad ḥazen akk ibenkan yeqqnen.
 sync-engine-bookmarks =
     .label = Ticraḍ n yisebtar
     .accesskey = c
@@ -809,6 +841,8 @@ forms-breach-alerts =
     .label = Sken ilɣa i wawalen uffiren n yismal i teɛna trewla n yisefka
     .accesskey = k
 forms-breach-alerts-learn-more-link = Issin ugar
+preferences-relay-integration-checkbox =
+    .label = Sumer igelmusen n yimayl { -relay-brand-name } i ummesten n tansa-k·m n yimayl
 relay-integration-learn-more-link = Issin ugar
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -941,12 +975,16 @@ sitedata-cookies-exceptions =
 ## Privacy Section - Cookie Banner Handling
 
 cookie-banner-handling-header = Asenqes n yiɣarracen n yinagan n tuqqna
+cookie-banner-handling-description = { -brand-short-name } yettaɛraḍ s wudem awurman ad yagi issutar n trusi n yinagan n tuqqna n yiɣarracen n yinagan n tuqqna ɣef yismal i ten-yessefraken.
 
 ## Privacy Section - Cookie Banner Blocking
 
+cookie-banner-blocker-header = Amsewḥel n yiɣarracen n yinagan n tuqqna
 cookie-banner-learn-more = Issin ugar
 forms-handle-cookie-banners =
     .label = Senqes iɣarracen n yinagan n tuqqna
+cookie-banner-blocker-checkbox-label =
+    .label = Agi s wudem awurman iɣarracen n yinagan n tuqqna
 
 ## Privacy Section - Address Bar
 
@@ -977,6 +1015,9 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Tigawin tiruradin
     .accesskey = T
+addressbar-locbar-showrecentsearches-option =
+    .label = Sken inadiyen imaynuten
+    .accesskey = m
 addressbar-suggestions-settings = Snifel ismenyifen i yisumar n umsedday n unadi
 addressbar-quickactions-learn-more = Issin ugar
 
@@ -1126,6 +1167,8 @@ permissions-addon-exceptions =
 ## Privacy Section - Data Collection
 
 collection-header = Alqqaḍ d useqdec n isefka { -brand-short-name }
+collection-header2 = Alqqaḍ d useqdec n yisefka { -brand-short-name }
+    .searchkeywords = telemetry
 collection-description = Ad k-d-nefk afus akken ad tferneḍ aleqqwaḍ n wayen kan ilaqen i weqaεed n { -brand-short-name } i yal yiwen. Ad k-d-nsuter yal tikkelt tasiregt send ad nawi talɣut tudmawant.
 collection-privacy-notice = Tasertit n tbaḍnit
 collection-health-report-telemetry-disabled = Ur tezgiḍ teǧǧiḍ { -vendor-short-name } ad d-yelqeḍ isefka itiknikanen akked wid n temyigawt. Meṛṛa isefka yezrin ad ttwakksen deg 30 n wussan.
@@ -1224,6 +1267,8 @@ preferences-doh-expand-section =
 preferences-doh-setting-default =
     .label = Ammesten s wudem amezwer
     .accesskey = A
+preferences-doh-default-detailed-desc-1 = Seqdec DNS aɣellsan deg tmura ideg yella
+preferences-doh-default-detailed-desc-3 = Seqdec asaǧǧaw adigan, ma yella tettunefk tegnit
 preferences-doh-setting-enabled =
     .label = Ammesten yettwasghden
     .accesskey = A
@@ -1232,9 +1277,14 @@ preferences-doh-setting-strict =
     .label = Ammesten unnig
     .accesskey = U
 preferences-doh-strict-detailed-desc-1 = Seqdec kan asaǧǧaw i tferneḍ
+preferences-doh-strict-detailed-desc-2 = Ttɛeggin-d yal ma yili ulac DNS aɣellsan
 preferences-doh-setting-off =
     .label = Yensa
     .accesskey = s
+preferences-doh-off-desc = Seqdec aqeddacn uṣeggem DNS s wudem amezwer
+preferences-doh-checkbox-warn =
+    .label = Ɛeggen ma yella wis kraḍ yessewḥal aseqdec n DNS n tɣellist
+    .accesskey = Ɛ
 preferences-doh-select-resolver = Fren asaǧǧaw:
 preferences-doh-exceptions-description = { -brand-short-name } ur isseqdac ara DNS n tɣellist ɣef usmel-a
 preferences-doh-manage-exceptions =

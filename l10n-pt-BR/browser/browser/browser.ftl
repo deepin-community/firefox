@@ -279,6 +279,9 @@ quickactions-cmd-plugins = plugins
 # Opens the print dialog
 quickactions-print2 = Imprimir página
 quickactions-cmd-print = imprimir
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Salvar página como PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Abrir janela privativa
 quickactions-cmd-private = navegação privativa
@@ -348,6 +351,7 @@ identity-connection-secure = Conexão segura
 identity-connection-failure = Falha na conexão
 identity-connection-internal = Esta é uma página segura do { -brand-short-name }.
 identity-connection-file = Esta página está armazenada neste computador.
+identity-connection-associated = Esta página é carregada a partir de outra página.
 identity-extension-page = Esta página é carregada a partir de uma extensão.
 identity-active-blocked = O { -brand-short-name } bloqueou partes não seguras desta página.
 identity-custom-root = Conexão homologada por uma entidade certificadora que não é reconhecida pela Mozilla.
@@ -560,8 +564,6 @@ urlbar-result-action-search-w-engine = Pesquisar com { $engine }
 urlbar-result-action-sponsored = Patrocinado
 urlbar-result-action-switch-tab = Mudar para aba
 urlbar-result-action-visit = Visitar
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Abrir endereço da área de transferência
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Abrir endereço da área de transferência
 # Directs a user to press the Tab key to perform a search with the specified

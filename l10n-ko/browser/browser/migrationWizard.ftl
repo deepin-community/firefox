@@ -42,6 +42,11 @@ migration-wizard-migrator-display-name-opera = Opera
 migration-wizard-migrator-display-name-opera-gx = Opera GX
 migration-wizard-migrator-display-name-safari = Safari
 migration-wizard-migrator-display-name-vivaldi = Vivaldi
+migration-source-name-ie = Internet Explorer
+migration-source-name-edge = Microsoft Edge
+migration-source-name-chrome = Google Chrome
+migration-imported-safari-reading-list = 구독 목록 (Safari로부터)
+migration-imported-edge-reading-list = 구독 목록 (Edge로부터)
 
 ## These strings are shown if the selected browser data directory is unreadable.
 ## In practice, this tends to only occur on Linux when Firefox
@@ -71,6 +76,7 @@ migration-bookmarks-option-label = 북마크
 # Edge, as this is the terminology for bookmarks on those browsers.
 migration-favorites-option-label = 즐겨찾기
 migration-logins-and-passwords-option-label = 저장된 로그인 및 비밀번호
+migration-passwords-option-label = 저장된 비밀번호
 migration-history-option-label = 방문 기록
 migration-extensions-option-label = 확장 기능
 migration-form-autofill-option-label = 양식 자동 채우기 데이터
