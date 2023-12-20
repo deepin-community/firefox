@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Закрыць
     .aria-label = Закрыць
+firefoxview-empty-state-icon =
+    .alt = Увага:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Толькі што
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,36 @@ firefoxview-opentabs-focus-tab =
     .title = Пераключыцца ў гэту картку
 firefoxview-show-more = Паказаць больш
 firefoxview-show-less = Паказаць менш
+firefoxview-search-text-box-clear-button =
+    .title = Ачысціць
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Шукаць у гісторыі
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Шукаць у нядаўна закрытых картках
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Шукаць у сінхранізаваных картках
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Шукаць у адкрытых картках
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Вынікі пошуку для “{ $query }”
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } сайт
+        [few] { $count } сайты
+       *[many] { $count } сайтаў
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Няма вынікаў для «{ $query }»
 firefoxview-sort-history-by-date-label = Сартаваць па даце
 firefoxview-sort-history-by-site-label = Сартаваць па сайтах
 # Variables:
@@ -206,9 +238,6 @@ firefoxview-import-history-description = Зрабіце { -brand-short-name } с
 firefoxview-recentlyclosed-empty-header = Закрылі картку занадта рана?
 firefoxview-recentlyclosed-empty-description = Тут вы знойдзеце карткі, якія нядаўна закрылі, так што вы можаце хутка адкрыць ізноў любую з іх.
 firefoxview-recentlyclosed-empty-description-two = Каб знайсці даўнія карткі, паглядзіце сваю <a data-l10n-name="history-url">гісторыю аглядання</a>.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

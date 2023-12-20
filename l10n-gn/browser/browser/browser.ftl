@@ -104,7 +104,7 @@ urlbar-addons-notification-anchor =
 urlbar-tip-help-icon =
     .title = Eipota pytyvõ
 urlbar-search-tips-confirm = Oĩma, aikumbýma
-urlbar-search-tips-confirm-short = Aikumby
+urlbar-search-tips-confirm-short = Aikũmby
 # Read out before Urlbar Tip text content so screenreader users know the
 # subsequent text is a tip offered by the browser. It should end in a colon or
 # localized equivalent.
@@ -279,6 +279,9 @@ quickactions-cmd-plugins = Mba’ejoajurã
 # Opens the print dialog
 quickactions-print2 = Emonguatia kuatiarogue
 quickactions-cmd-print = Mbokuatia
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Eñongatu kuatiarogue PDF ramo
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Embojuruja ovetã ñemi
 quickactions-cmd-private = Ñeikundaha ñemigua
@@ -563,8 +566,6 @@ urlbar-result-action-search-w-engine = Eheka { $engine } ndive
 urlbar-result-action-sponsored = Pytyvõpyréva
 urlbar-result-action-switch-tab = Tendayképe jeguerova
 urlbar-result-action-visit = Jeho
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Eike nde kuatiajokoha guive
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Jeike kuatiajokoha guive
 # Directs a user to press the Tab key to perform a search with the specified

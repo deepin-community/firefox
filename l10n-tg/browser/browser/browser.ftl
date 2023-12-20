@@ -279,6 +279,9 @@ quickactions-cmd-plugins = плагинҳо
 # Opens the print dialog
 quickactions-print2 = Чоп кардани саҳифа
 quickactions-cmd-print = чоп кардан
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Нигоҳ доштани саҳифа ҳамчун PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Кушодани равзанаи хусусӣ
 quickactions-cmd-private = тамошокунии хусусӣ
@@ -348,6 +351,7 @@ identity-connection-secure = Пайвастшавӣ бехатар аст
 identity-connection-failure = Пайвастшавӣ қатъ шуд
 identity-connection-internal = Ин саҳифаи бехатари «{ -brand-short-name }» мебошад.
 identity-connection-file = Ин саҳифа дар компютери шумо нигоҳ дошта мешавад.
+identity-connection-associated = Ин саҳифа аз саҳифаи дигар бор карда шудааст.
 identity-extension-page = Ин саҳифа аз васеъшавӣ бор карда шудааст.
 identity-active-blocked = «{ -brand-short-name }» қисмҳои ин саҳифаро манъ кард, зеро ки онҳо бехатар нестанд.
 identity-custom-root = Пайвастшавӣ аз тарафи барорандаи гувоҳномае тасдиқ карда шудааст, ки Mozilla онро эътироф намекунад.
@@ -560,8 +564,6 @@ urlbar-result-action-search-w-engine = Ҷустуҷӯ тавассути { $engi
 urlbar-result-action-sponsored = Сарпарастӣ
 urlbar-result-action-switch-tab = Ба варақа гузаштан
 urlbar-result-action-visit = Боздид
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Тавассути ҳофизаи муваққатӣ боздид кунед
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Тавассути ҳофизаи муваққатӣ боздид кунед
 # Directs a user to press the Tab key to perform a search with the specified

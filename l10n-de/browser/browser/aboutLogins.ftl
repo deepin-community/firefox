@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = Neue Zugangsdaten erstellen
+about-logins-page-title-name = Passwörter
+about-logins-login-filter2 =
+    .placeholder = Passwörter durchsuchen
+    .key = F
+create-login-button =
+    .title = Passwort hinzufügen
 fxaccounts-sign-in-text = Nutzen Sie Ihre Passwörter auf anderen Geräten
 fxaccounts-sign-in-sync-button = Zum Synchronisieren anmelden
 fxaccounts-avatar-button =
@@ -49,6 +55,21 @@ login-list-filtered-count =
         [one] { $count } von { $total } Zugangsdaten
        *[other] { $count } von { $total } Zugangsdaten
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } Passwort
+       *[other] { $count } Passwörter
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } von { $total } Passwörtern
+       *[other] { $count } von { $total } Passwörtern
+    }
 login-list-sort-label-text = Sortieren nach:
 login-list-name-option = Name (A-Z)
 login-list-name-reverse-option = Name (Z-A)
@@ -58,11 +79,14 @@ about-logins-login-list-alerts-option = Warnungen
 login-list-last-changed-option = Zuletzt geändert
 login-list-last-used-option = Zuletzt verwendet
 login-list-intro-title = Keine Zugangsdaten gefunden
+login-list-intro-title2 = Keine Passwörter gespeichert
 login-list-intro-description = Wenn Sie ein Passwort in { -brand-product-name } speichern, wird es hier angezeigt.
 about-logins-login-list-empty-search-title = Keine Zugangsdaten gefunden
+about-logins-login-list-empty-search-title2 = Keine Passwörter gefunden
 about-logins-login-list-empty-search-description = Keine mit der Suche übereinstimmenden Zugangsdaten
 login-list-item-title-new-login = Neue Zugangsdaten
 login-list-item-subtitle-new-login = Zugangsdaten eingeben
+login-list-item-title-new-login2 = Passwort hinzufügen
 login-list-item-subtitle-missing-username = (kein Benutzername)
 about-logins-list-item-breach-icon =
     .title = Website mit Datenleck
@@ -94,6 +118,11 @@ login-item-edit-button = Bearbeiten
 about-logins-login-item-remove-button = Entfernen
 login-item-origin-label = Adresse der Website
 login-item-tooltip-message = Stellen Sie sicher, dass dies genau mit der Adresse der Website übereinstimmt, auf der Sie sich anmelden.
+about-logins-origin-tooltip = Stellen Sie sicher, dass dies genau mit der Adresse der Website übereinstimmt, auf der Sie sich anmelden.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = Stellen Sie sicher, dass Sie Ihr aktuelles Passwort für diese Website speichern. Das Ändern des Passworts hier ändert es nicht für { $webTitle }.
+about-logins-add-password-tooltip = Stellen Sie sicher, dass Sie Ihr aktuelles Passwort für diese Website speichern.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = Benutzername
@@ -269,6 +298,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = Zugangsdaten aus Datei importieren
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = Passwörter in { -brand-short-name } importieren
 about-logins-import-file-picker-import-button = Importieren
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -305,6 +336,21 @@ about-logins-import-dialog-items-no-change =
         [one] <span>Doppelte Zugangsdaten gefunden:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(nicht importiert)</span>
        *[other] <span>Doppelte Zugangsdaten gefunden:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(nicht importiert)</span>
     }
+about-logins-import-dialog-items-added2 =
+    { $count ->
+        [one] <span>Neue Passwörter hinzugefügt:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>Neue Passwörter hinzugefügt:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+        [one] <span>Bestehende Einträge aktualisiert:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>Bestehende Einträge aktualisiert:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+        [one] <span>Doppelte Einträge gefunden:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(nicht importiert)</span >
+       *[other] <span>Doppelte Einträge gefunden:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(nicht importiert)</span >
+    }
 about-logins-import-dialog-items-error =
     { $count ->
         [one] <span>Fehler:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(nicht importiert)</span>
@@ -326,6 +372,7 @@ about-logins-import-dialog-error-try-import-again = Import erneut versuchen…
 about-logins-import-dialog-error-cancel = Abbrechen
 about-logins-import-report-title = Import-Zusammenfassung
 about-logins-import-report-description = Zugangsdaten und Passwörter wurden in { -brand-short-name } importiert.
+about-logins-import-report-description2 = Passwörter wurden in { -brand-short-name } importiert.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -333,6 +380,9 @@ about-logins-import-report-row-index = Zeile { $number }
 about-logins-import-report-row-description-no-change = Duplikat: Exakte Übereinstimmung mit bestehenden Zugangsdaten
 about-logins-import-report-row-description-modified = Bestehende Zugangsdaten aktualisiert
 about-logins-import-report-row-description-added = Neue Zugangsdaten hinzugefügt
+about-logins-import-report-row-description-no-change2 = Duplikat: Exakte Übereinstimmung mit bestehendem Eintrag
+about-logins-import-report-row-description-modified2 = Bestehenden Eintrag aktualisiert
+about-logins-import-report-row-description-added2 = Neues Passwort hinzugefügt
 about-logins-import-report-row-description-error = Fehler: Fehlendes Feld
 
 ##
@@ -360,6 +410,21 @@ about-logins-import-report-no-change =
     { $count ->
         [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Doppelte Zugangsdaten</div> <div data-l10n-name="not-imported">(nicht importiert)</div>
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Doppelte Zugangsdaten</div> <div data-l10n-name="not-imported">(nicht importiert)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Neue Passwörter hinzugefügt</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Neue Passwörter hinzugefügt</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Bestehende Einträge aktualisiert</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Bestehende Einträge aktualisiert</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Doppelte Einträge</div> <div data-l10n-name="not-imported">(nicht importiert)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Doppelte Einträge</div> <div data-l10n-name="not-imported">(nicht importiert)</div>
     }
 about-logins-import-report-error =
     { $count ->

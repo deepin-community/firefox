@@ -40,17 +40,6 @@ shopping-letter-grade-tooltip =
 
 shopping-message-bar-warning-stale-analysis-message-2 = Тексеру үшін жаңа ақпарат
 shopping-message-bar-warning-stale-analysis-button = Қазір тексеру
-shopping-message-bar-generic-error-title2 = Дәл қазір ақпарат жоқ
-shopping-message-bar-generic-error-message = Біз мәселені шешу үшін жұмыс істеп жатырмыз. Жақында қайта тексеріңіз.
-shopping-message-bar-warning-not-enough-reviews-title = Пікірлер саны әлі жеткіліксіз
-shopping-message-bar-warning-not-enough-reviews-message2 = Бұл өнімде көбірек пікірлер болған кезде, біз олардың сапасын тексере аламыз.
-shopping-message-bar-warning-product-not-available-title = Өнім қолжетімді емес
-shopping-message-bar-warning-product-not-available-message2 = Бұл өнімнің қоймаға қайта оралғанын көрсеңіз, оны бізге хабарлаңыз, біз пікірлерді тексереміз.
-shopping-message-bar-warning-product-not-available-button = Бұл өнімнің қоймаға оралғанын хабарлау
-shopping-message-bar-thanks-for-reporting-title = Хабарламаңыз үшін рахмет!
-shopping-message-bar-thanks-for-reporting-message2 = Бізде осы өнімнің пікірлері туралы ақпарат 24 сағат ішінде болуы керек. Кейінірек қайта тексеріңіз.
-shopping-message-bar-warning-product-not-available-reported-title2 = Ақпарат жақында болады
-shopping-message-bar-warning-product-not-available-reported-message2 = Бізде осы өнімнің пікірлері туралы ақпарат 24 сағат ішінде болуы керек. Кейінірек қайта тексеріңіз.
 shopping-message-bar-generic-error =
     .heading = Дәл қазір ақпарат жоқ
     .message = Біз мәселені шешу үшін жұмыс істеп жатырмыз. Жақында қайта тексеріңіз.
@@ -69,8 +58,9 @@ shopping-message-bar-warning-product-not-available-reported =
     .message = Бізде осы өнімнің пікірлері туралы ақпарат 24 сағат ішінде болуы керек. Кейінірек қайта тексеріңіз.
 shopping-message-bar-analysis-in-progress-title2 = Пікір сапасын тексеру
 shopping-message-bar-analysis-in-progress-message2 = Бұл шамамен 60 секундқа созылуы мүмкін.
-shopping-message-bar-page-not-supported-title = Біз бұл пікірлерді тексере алмаймыз
-shopping-message-bar-page-not-supported-message = Өкінішке орай, біз белгілі бір өнім түрлерінің пікірлер сапасын тексере алмаймыз. Мысалы, сыйлық карталары және ағынды видео, музыка және ойындар.
+# Variables:
+#  $percentage (Number) - The percentage complete that the analysis is, per our servers.
+shopping-message-bar-analysis-in-progress-with-amount = Пікір сапасы тексерілуде ({ $percentage }%)
 shopping-message-bar-page-not-supported =
     .heading = Біз бұл пікірлерді тексере алмаймыз
     .message = Өкінішке орай, біз белгілі бір өнім түрлерінің пікірлер сапасын тексере алмаймыз. Мысалы, сыйлық карталары және ағынды видео, музыка және ойындар.
@@ -96,7 +86,6 @@ shopping-settings-label =
     .label = Баптаулар
 shopping-settings-recommendations-toggle =
     .label = Пікірлерді тексеру құралында жарнаманы көрсету
-shopping-settings-recommendations-learn-more = Сәйкес өнімдерге арналған  жарнамаларды анда-санда көретін боласыз. Барлық жарнамалар біздің пікірлер сапа стандарттарына сай болуы керек. <a data-l10n-name="review-quality-url">Көбірек білу</a>
 shopping-settings-recommendations-learn-more2 = Сәйкес өнімдерге арналған кездейсоқ жарнамаларды көресіз. Біз тек сенімді пікірлері бар өнімдерді жарнамалаймыз. <a data-l10n-name="review-quality-url">Көбірек білу</a>
 shopping-settings-opt-out-button = Пікірлерді тексеру құралын сөндіру
 powered-by-fakespot = Пікірлерді тексеру құралы <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a> негізінде жұмыс істейді.
@@ -179,7 +168,6 @@ shopping-survey-q2-radio-3-label = Мен білмеймін
 shopping-survey-next-button-label = Келесі
 shopping-survey-submit-button-label = Жіберу
 shopping-survey-terms-link = Қолдану шарттары
-shopping-survey-thanks-message = Пікіріңізге рахмет!
 shopping-survey-thanks =
     .heading = Пікіріңізге рахмет!
 
@@ -201,13 +189,11 @@ shopping-onboarding-headline = Өнім пікірлерінің сенімді�
 #   $currentSite (str) - The current shopping page name
 #   $secondSite (str) - A second shopping page name
 #   $thirdSite (str) - A third shopping page name
-shopping-onboarding-dynamic-subtitle = Сатып алғанға дейін <b>{ $currentSite }</b> сайтындағы өнім пікірлері қаншалықты сенімді екенін қараңыз. Пікірлерді тексеру құралын { -vendor-short-name } сынамалы түрде ұсынады, ол тура { -brand-product-name } ішінде қолжетімді — сонымен қатар, ол <b>{ $secondSite }</b> және <b>{ $thirdSite }</b> сайттарында да істейді.
-# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+shopping-onboarding-dynamic-subtitle-1 = Сатып алғанға дейін <b>{ $currentSite }</b> сайтындағы өнім пікірлері қаншалықты сенімді екенін қараңыз. Пікірлерді тексеру құралын { -brand-product-name } сынамалы түрде ұсынады, ол тура браузер ішінде қолжетімді. Ол <b>{ $secondSite }</b> және <b>{ $thirdSite }</b> сайттарында да істейді.
+# Subtitle for countries where we only support one shopping website (e.g. currently used in FR/DE with Amazon)
 # Variables:
 #   $currentSite (str) - The current shopping page name
-#   $secondSite (str) - A second shopping page name
-#   $thirdSite (str) - A third shopping page name
-shopping-onboarding-dynamic-subtitle-1 = Сатып алғанға дейін <b>{ $currentSite }</b> сайтындағы өнім пікірлері қаншалықты сенімді екенін қараңыз. Пікірлерді тексеру құралын { -brand-product-name } сынамалы түрде ұсынады, ол тура браузер ішінде қолжетімді. Ол <b>{ $secondSite }</b> және <b>{ $thirdSite }</b> сайттарында да істейді.
+shopping-onboarding-single-subtitle = Сатып алғанға дейін <b>{ $currentSite }</b> сайтындағы өнім пікірлері қаншалықты сенімді екенін қараңыз. Пікірлерді тексеру құралын { -brand-product-name } сынамалы түрде ұсынады, ол тура браузер ішінде қолжетімді.
 shopping-onboarding-body = { -fakespot-brand-full-name } мүмкіндігін пайдалана отырып, біз сізге біржақты және шынайы емес пікірлерден аулақ болуға көмектесеміз. Сатып алу кезінде сізді қорғау үшін біздің AI моделіміз үнемі жетілдіріліп отырады. <a data-l10n-name="learn_more">Көбірек білу</a>
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use = "{ shopping-onboarding-opt-in-button }" опциясын таңдау арқылы сіз { -fakespot-brand-full-name } қолданбасының <a data-l10n-name="privacy_policy">жекелік саясаты</a> және <a data-l10n-name="terms_of_use">қолдану шарттарымен</a>  келісесіз.
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = "{ shopping-onboarding-opt-in-button }" опциясын таңдау арқылы сіз { -fakespot-brand-name } қолданбасының <a data-l10n-name="privacy_policy">жекелік саясаты</a> және <a data-l10n-name="terms_of_use">қолдану шарттарымен</a>  келісесіз.

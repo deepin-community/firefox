@@ -26,6 +26,9 @@ policy-Bookmarks = Rnu ticraḍ n isebtar deg ufeggag n tecraḍ, Umuɣ n tecra�
 policy-CaptivePortal = Rmed neɣ gdel asefrek n uwwur yettwaṭṭfen.
 policy-CertificatesDescription = Rnu iselkinen neɣ seqdec iselkinen usliɣen.
 policy-Cookies = Sireg neɣ gdel asbadu n inagan n tuqqna i yisebtar.
+# Containers in this context is referring to container tabs in Firefox.
+policy-Containers = Sbadu tisertiyen yeqqnen ɣer yimagbaren.
+policy-DisableAccounts = Sens imeẓla i d-yessuturen amiḍan, ula d amtawi.
 policy-DisabledCiphers = Sens allalen n uwgelhen.
 policy-DefaultDownloadDirectory = Ad yesbadu akaram n usader s wudem amezwer.
 policy-DisableAppUpdate = Sewḥel aleqqem n yiminig.
@@ -87,6 +90,7 @@ policy-LocalFileLinks = Sireg ismal usdiden i useqdec n yiseɣqan ɣer yifuyla i
 policy-ManagedBookmarks = Swel tabdart n tecraḍ n yisebtar yettusefraken sɣur anedbal ur nezmir ara ad ttusneflen sɣur aseqdac.
 policy-ManualAppUpdateOnly = Mudd kan tisirag i yileqman s ufus, ur ttalɣu ara aseqdac ɣef yileqman.
 policy-PrimaryPassword = Suter neɣ agi aseqdec n wawal uffir agejdan.
+policy-PrintingEnabled = Rmed neɣ sens asiggez.
 policy-NetworkPrediction = Ad yeǧǧ neɣ ad yegdel tifin n yiẓeḍwa (taɣuri tuzwirt DNS)
 policy-NewTabPage = Ad yermed neɣ ad yessens asebter agejdan n yiccer amaynut.
 policy-NoDefaultBookmarks = Sens timerna n tecraḍ n isebtar s wudem imezwer yettunefken akked { -brand-short-name }, akked tecraḍ n isebtar tuḥricin (Yettwarzan aṭas, tibzimin n melmi kan). Awennit: tasertit-agi ad teddu akken ilaq ticki tettwarmed send asenker amenzu n umaƔnu.

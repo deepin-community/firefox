@@ -204,6 +204,8 @@ cfr-cbh-confirm-button = Cookiebanners weigeren
     .accesskey = w
 cfr-cbh-dismiss-button = Niet nu
     .accesskey = N
+cookie-banner-blocker-cfr-header = { -brand-short-name } heeft zojuist cookies voor u geblokkeerd
+cookie-banner-blocker-cfr-body = We weigeren automatisch veel cookiepop-ups, om het voor websites moeilijker te maken u te volgen.
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -237,6 +239,15 @@ device-migration-fxa-spotlight-header = Gebruikt u een ouder apparaat?
 device-migration-fxa-spotlight-body = Maak een back-up van uw gegevens om ervoor te zorgen dat u geen belangrijke informatie, zoals bladwijzers en wachtwoorden kwijtraakt, vooral als u overschakelt naar een nieuw apparaat.
 device-migration-fxa-spotlight-primary-button = Hoe maak ik een back-up van mijn gegevens
 device-migration-fxa-spotlight-link = Later herinneren
+device-migration-fxa-spotlight-heavy-user-header = Vergeet geen reservekopie van uw gegevens te maken
+device-migration-fxa-spotlight-heavy-user-body = Zorg ervoor dat belangrijke informatie – zoals bladwijzers en wachtwoorden – wordt bijgewerkt en beschermd op al uw apparaten.
+device-migration-fxa-spotlight-heavy-user-primary-button = Aan de slag
+device-migration-fxa-spotlight-older-device-header = Gemoedsrust, van { -brand-product-name }
+device-migration-fxa-spotlight-older-device-body = Een account houdt uw belangrijke gegevens bijgewerkt en beschermd op elk apparaat dat u verbindt.
+device-migration-fxa-spotlight-older-device-primary-button = Een account aanmaken
+device-migration-fxa-spotlight-getting-new-device-header-2 = Nieuw apparaat in de toekomst?
+device-migration-fxa-spotlight-getting-new-device-body = Maak nu een reservekopie van uw gegevens, zodat u direct aan de slag kunt als uw apparaat arriveert.
+device-migration-fxa-spotlight-getting-new-device-primary-button = Hoe maak ik een reservekopie van mijn gegevens
 
 ## Set as Default PDF Reader Infobar
 

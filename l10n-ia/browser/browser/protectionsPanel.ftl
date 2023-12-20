@@ -57,6 +57,10 @@ protections-panel-site-not-working-view =
 protections-panel-not-blocking-why-label = Proque?
 protections-panel-not-blocking-why-etp-on-tooltip = Blocar istes poterea rumper elementos de alcun sitos web. Sin traciatores, alcun buttones, formularios e campos de aperir session poterea non functionar.
 protections-panel-not-blocking-why-etp-off-tooltip = Tote le traciatores sur iste sito ha essite cargate perque le protectiones ha essite disactivate.
+protections-panel-not-blocking-why-etp-on-tooltip-label =
+    .label = Blocar istes poterea rumper elementos de alcun sitos web. Sin traciatores, alcun buttones, formularios e campos de aperir session poterea non functionar.
+protections-panel-not-blocking-why-etp-off-tooltip-label =
+    .label = Tote le traciatores sur iste sito ha essite cargate perque le protectiones ha essite disactivate.
 
 ##
 
@@ -149,3 +153,12 @@ protections-panel-cookie-banner-blocker-view-turn-on-description = Activa lo e {
 protections-panel-cookie-banner-view-cancel = Cancellar
 protections-panel-cookie-banner-view-turn-off = Disactivar
 protections-panel-cookie-banner-view-turn-on = Activar
+protections-panel-cookie-banner-view-cancel-label =
+    .label = Cancellar
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = Disactivar
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = Activar
+protections-panel-report-broken-site =
+    .label = Reportar sito corrupte
+    .title = Reportar sito corrupte

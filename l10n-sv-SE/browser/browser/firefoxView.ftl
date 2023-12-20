@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Stäng
     .aria-label = Stäng
+firefoxview-empty-state-icon =
+    .alt = Uppmärksamma:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Nu
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,35 @@ firefoxview-opentabs-focus-tab =
     .title = Växla till den här fliken
 firefoxview-show-more = Visa mer
 firefoxview-show-less = Visa mindre
+firefoxview-search-text-box-clear-button =
+    .title = Rensa
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Sök i historik
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Sök i nyligen stängda flikar
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Sök i synkroniserade flikar
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Sök i öppna flikar
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Sökresultat för "{ $query }"
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } webbplats
+       *[other] { $count } webbplatser
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Inga resultat för "{ $query }"
 firefoxview-sort-history-by-date-label = Sortera efter datum
 firefoxview-sort-history-by-site-label = Sortera efter webbplats
 # Variables:
@@ -206,9 +237,6 @@ firefoxview-import-history-description = Gör { -brand-short-name } till din web
 firefoxview-recentlyclosed-empty-header = Stängt en flik för tidigt?
 firefoxview-recentlyclosed-empty-description = Här hittar du flikarna du nyligen stängt, så att du snabbt kan öppna någon av dem igen.
 firefoxview-recentlyclosed-empty-description-two = Visa din <a data-l10n-name="history-url">webbhistorik</a> för att hitta flikar från tidigare.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

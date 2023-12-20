@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Configurações de endereço
 address-capture-learn-more-button =
     .label = Saiba mais
+address-capture-open-menu-button =
+    .aria-label = Abrir menu
+address-capture-edit-address-button =
+    .aria-label = Editar endereço
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Adicionar novo endereço
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = Email
 autofill-cancel-button = Cancelar
 autofill-save-button = Salvar
 autofill-country-warning-message = O preenchimento automático de formulários só está disponível em alguns países.
+autofill-message-tooltip = Ver mensagem sobre preenchimento automático
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Adicionar novo cartão de crédito
 # The dialog title for editing credit cards in browser preferences.

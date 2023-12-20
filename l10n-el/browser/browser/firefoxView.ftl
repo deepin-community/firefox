@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Κλείσιμο
     .aria-label = Κλείσιμο
+firefoxview-empty-state-icon =
+    .alt = Προσοχή:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Μόλις τώρα
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,35 @@ firefoxview-opentabs-focus-tab =
     .title = Εναλλαγή σε αυτήν την καρτέλα
 firefoxview-show-more = Εμφάνιση περισσότερων
 firefoxview-show-less = Εμφάνιση λιγότερων
+firefoxview-search-text-box-clear-button =
+    .title = Απαλοιφή
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Αναζήτηση ιστορικού
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Αναζήτηση πρόσφατα κλεισμένων καρτελών
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Αναζήτηση συγχρονισμένων καρτελών
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Αναζήτηση ανοικτών καρτελών
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Αποτελέσματα αναζήτησης για «{ $query }»
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } ιστότοπος
+       *[other] { $count } ιστότοποι
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Κανένα αποτέλεσμα για «{ $query }»
 firefoxview-sort-history-by-date-label = Ταξινόμηση κατά ημερομηνία
 firefoxview-sort-history-by-site-label = Ταξινόμηση κατά ιστότοπο
 # Variables:

@@ -309,6 +309,20 @@ pdfjs-editor-ink-button-label = Lluniadu
 pdfjs-editor-stamp-button =
     .title = Ychwanegu neu olygu delweddau
 pdfjs-editor-stamp-button-label = Ychwanegu neu olygu delweddau
+pdfjs-editor-remove-button =
+    .title = Tynnu
+
+## Remove button for the various kind of editor.
+
+pdfjs-editor-remove-ink-button =
+    .title = Dileu lluniad
+pdfjs-editor-remove-freetext-button =
+    .title = Dileu testun
+pdfjs-editor-remove-stamp-button =
+    .title = Dileu delwedd
+
+##
+
 # Editor Parameters
 pdfjs-editor-free-text-color-input = Lliw
 pdfjs-editor-free-text-size-input = Maint

@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Đóng
     .aria-label = Đóng
+firefoxview-empty-state-icon =
+    .alt = Chú ý:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Vừa xong
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,31 @@ firefoxview-opentabs-focus-tab =
     .title = Chuyển sang thẻ này
 firefoxview-show-more = Hiện thêm
 firefoxview-show-less = Hiện ít hơn
+firefoxview-search-text-box-clear-button =
+    .title = Xóa
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Lịch sử tìm kiếm
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Tìm kiếm thẻ đã đóng gần đây
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Tìm các thẻ đã đồng bộ
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Tìm các thẻ đang mở
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Kết quả tìm kiếm cho “{ $query }”
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count = { $count } trang web
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Không có kết quả tìm kiếm cho “{ $query }”
 firefoxview-sort-history-by-date-label = Sắp xếp theo ngày
 firefoxview-sort-history-by-site-label = Sắp xếp theo trang web
 # Variables:
@@ -206,9 +233,6 @@ firefoxview-import-history-description = Đặt { -brand-short-name } làm trìn
 firefoxview-recentlyclosed-empty-header = Đóng một thẻ quá sớm?
 firefoxview-recentlyclosed-empty-description = Tại đây, bạn sẽ tìm thấy các thẻ bạn đã đóng gần đây, vì vậy bạn có thể mở lại bất kỳ thẻ nào một cách nhanh chóng.
 firefoxview-recentlyclosed-empty-description-two = Để tìm các thẻ từ thời gian cũ hơn, hãy xem <a data-l10n-name="history-url">lịch sử duyệt web</a> của bạn.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

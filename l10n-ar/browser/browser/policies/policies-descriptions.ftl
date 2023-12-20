@@ -56,6 +56,7 @@ policy-DownloadDirectory = ضبط وقفل دليل التنزيل.
 policy-EnableTrackingProtection = تفعيل أو تعطيل حجب المحتوى وقفل الخيار إن لزم.
 # “lock” means that the user won’t be able to change this setting
 policy-EncryptedMediaExtensions = تفعيل أو تعطيل امتدادات الوسائط المعمّاة وقفل الخيار إن لزم.
+policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = تعطيل التحذيرات التي تعتمد على امتداد الملف لأنواع معينة من الملفات في النطاقات.
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
 # English or translate them as verbs.
@@ -89,6 +90,7 @@ policy-OfferToSaveLoginsDefault = ضبط القيمة المبدئية فتسم�
 policy-OverrideFirstRunPage = الكتابة على صفحة ”أوّل تشغيل“. اضبط السياسة إلى فراغ إن أردت تعطيل الصفحة.
 policy-OverridePostUpdatePage = الكتابة على صفحة ”ما الجديد“ التي تأتي بعد التحديث. اضبط السياسة إلى فراغ إن أردت تعطيل صفحة ما بعد تثبيت التحديث.
 policy-PasswordManagerEnabled = تفعيل حفظ كلمات السر في مدير كلمات السر.
+policy-PasswordManagerExceptions = منع { -brand-short-name } من حفظ كلمات السر لمواقع معيّنة.
 # PDF.js and PDF should not be translated
 policy-PDFjs = تعطيل أو ضبط PDF.js، عارِض ملفات PDF المضمّن في { -brand-short-name }.
 policy-Permissions2 = ضبط تصاريح الكمرة والمِكرفون والمكان والتنبيهات والتشغيل التلقائي.

@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = 地址設定
 address-capture-learn-more-button =
     .label = 了解更多
+address-capture-open-menu-button =
+    .aria-label = 開啟選單
+address-capture-edit-address-button =
+    .aria-label = 編輯地址
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = 新增地址
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = 電子郵件
 autofill-cancel-button = 取消
 autofill-save-button = 儲存
 autofill-country-warning-message = 目前僅能在表單中自動填寫部分國家的地址。
+autofill-message-tooltip = 檢視有關自動填寫的訊息
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = 新增信用卡
 # The dialog title for editing credit cards in browser preferences.

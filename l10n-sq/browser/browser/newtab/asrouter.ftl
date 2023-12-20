@@ -203,6 +203,8 @@ cfr-cbh-confirm-button = Hidh poshtë banderola për cookie-t
     .accesskey = H
 cfr-cbh-dismiss-button = Jo tani
     .accesskey = J
+cookie-banner-blocker-cfr-header = { -brand-short-name } sapo bllokoi “cookies” për ju
+cookie-banner-blocker-cfr-body = Hedhim poshtë automatikisht mjaft flluska cookie-sh, për t’ua bërë të zorshme sajteve t’ju ndjekin.
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -236,6 +238,15 @@ device-migration-fxa-spotlight-header = Po përdorni një pajisje të vjetër?
 device-migration-fxa-spotlight-body = Kopjeruani të dhënat tuaja, për të garantuar se nuk humbni informacione të rëndësishme, bie fjala, faqerojtës dhe fjalëkalime — veçanërisht nëse kaloni në një pajisje të re.
 device-migration-fxa-spotlight-primary-button = Si të kopjeruaj të dhënat e mia
 device-migration-fxa-spotlight-link = Kujtoma më vonë
+device-migration-fxa-spotlight-heavy-user-header = Mos harroni të kopjeruani të dhënat tuaja
+device-migration-fxa-spotlight-heavy-user-body = Siguroni që informacione të rëndësishme — të tilla si faqerojtës dhe fjalëkalime — janë përditësuar dhe mbrojtur nëpër krejt pajisjet tuaja.
+device-migration-fxa-spotlight-heavy-user-primary-button = Fillojani
+device-migration-fxa-spotlight-older-device-header = Mendje të fjetur, nga { -brand-product-name }
+device-migration-fxa-spotlight-older-device-body = Një llogari i mban informacionet tuaja të rëndësishme të përditësuara dhe të mbrojtura në cilëndo pajisje që lidhni.
+device-migration-fxa-spotlight-older-device-primary-button = Krijoni një llogari
+device-migration-fxa-spotlight-getting-new-device-header-2 = Pajisje e re e juaj në të ardhmen?
+device-migration-fxa-spotlight-getting-new-device-body = Kopjeruani tani të dhënat tuaja, që të jeni gati, kur të mbërrijë pajisja juaj.
+device-migration-fxa-spotlight-getting-new-device-primary-button = Si të kopjeruaj të dhënat e mia
 
 ## Set as Default PDF Reader Infobar
 

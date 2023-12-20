@@ -279,6 +279,9 @@ quickactions-cmd-plugins = tykače
 # Opens the print dialog
 quickactions-print2 = Stronu ćišćeć
 quickactions-cmd-print = ćišćeć
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Stronu jako PDF składować
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Priwatne wokno wočinić
 quickactions-cmd-private = priwatny modus
@@ -350,6 +353,7 @@ identity-connection-secure = Zwisk wěsty
 identity-connection-failure = Zwiskowy zmylk
 identity-connection-internal = To je wěsta strona { -brand-short-name }.
 identity-connection-file = Tuta strona je so na wašim ličaku składowała.
+identity-connection-associated = Tuta strona je so z druheje strony začitała.
 identity-extension-page = Tuta strona je so z rozšěrjenja začitała.
 identity-active-blocked = { -brand-short-name } je dźěle tuteje strony zablokował, kotrež wěste njejsu.
 identity-custom-root = Zwisk je so přez certifikatoweho wudawarja přepruwował, kotryž wot Mozilla připóznaty njeje.
@@ -571,8 +575,6 @@ urlbar-result-action-search-w-engine = Z { $engine } pytać
 urlbar-result-action-sponsored = Sponserowany
 urlbar-result-action-switch-tab = K rajtarkej přeńć
 urlbar-result-action-visit = Wopytać
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Z mjezyskłada wopytać
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Z mjezyskłada wopytać
 # Directs a user to press the Tab key to perform a search with the specified

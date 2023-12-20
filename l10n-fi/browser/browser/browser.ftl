@@ -279,6 +279,9 @@ quickactions-cmd-plugins = liitännäiset
 # Opens the print dialog
 quickactions-print2 = Tulosta sivu
 quickactions-cmd-print = tulosta
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Tallenna sivu PDF-muodossa
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Avaa yksityinen ikkuna
 quickactions-cmd-private = yksityinen selaus
@@ -348,6 +351,7 @@ identity-connection-secure = Yhteys on suojattu
 identity-connection-failure = Yhteysvirhe
 identity-connection-internal = Tämä on suojattu { -brand-short-name }-sivu.
 identity-connection-file = Sivu on tallennettu tietokoneellesi.
+identity-connection-associated = Tämä sivu on ladattu toiselta sivulta.
 identity-extension-page = Tämän sivun latasi laajennus.
 identity-active-blocked = { -brand-short-name } on estänyt suojaamattoman sisällön näyttämisen.
 identity-custom-root = Yhteys on suojattu varmenteella, jonka myöntäjää Mozilla ei tunnista.
@@ -560,8 +564,6 @@ urlbar-result-action-search-w-engine = { $engine }-haku
 urlbar-result-action-sponsored = Sponsoroitu
 urlbar-result-action-switch-tab = Siirry välilehteen
 urlbar-result-action-visit = Avaa
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Siirry leikepöydällä olevaan osoitteeseen
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Siirry leikepöydällä olevaan osoitteeseen
 # Directs a user to press the Tab key to perform a search with the specified

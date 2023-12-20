@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = 新增登入資訊
+about-logins-page-title-name = 密碼
+about-logins-login-filter2 =
+    .placeholder = 搜尋密碼
+    .key = F
+create-login-button =
+    .title = 新增密碼
 fxaccounts-sign-in-text = 在其他裝置上使用您的密碼
 fxaccounts-sign-in-sync-button = 登入進行同步
 fxaccounts-avatar-button =
@@ -44,20 +50,30 @@ login-list-count =
 #   $count (number) - Number of filtered logins
 #   $total (number) - Total number of logins
 login-list-filtered-count = 找到 { $count } 筆，共 { $total } 筆登入資訊
-login-list-sort-label-text = 排序依照:
-login-list-name-option = 名稱（A-Z 排序）
-login-list-name-reverse-option = 名稱（Z-A 排序）
-login-list-username-option = 使用者名稱（A-Z 排序）
-login-list-username-reverse-option = 使用者名稱（Z-A 排序）
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 = { $count } 筆密碼
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 = 找到 { $count } 筆，共 { $total } 筆密碼
+login-list-sort-label-text = 排序方式：
+login-list-name-option = 名稱（A-Z）
+login-list-name-reverse-option = 名稱（Z-A）
+login-list-username-option = 使用者名稱（A-Z）
+login-list-username-reverse-option = 使用者名稱（Z-A）
 about-logins-login-list-alerts-option = 警報
 login-list-last-changed-option = 上次修改
 login-list-last-used-option = 上次使用
 login-list-intro-title = 找不到登入資訊
+login-list-intro-title2 = 未儲存密碼
 login-list-intro-description = 當您在 { -brand-product-name } 中儲存密碼後，就會顯示於此處。
 about-logins-login-list-empty-search-title = 找不到登入資訊
+about-logins-login-list-empty-search-title2 = 未儲存密碼
 about-logins-login-list-empty-search-description = 沒有符合您搜尋條件的結果。
 login-list-item-title-new-login = 新增登入資訊
 login-list-item-subtitle-new-login = 請輸入您的登入帳密
+login-list-item-title-new-login2 = 新增密碼
 login-list-item-subtitle-missing-username = （無使用者名稱）
 about-logins-list-item-breach-icon =
     .title = 發生資料外洩事件的網站
@@ -89,6 +105,11 @@ login-item-edit-button = 編輯
 about-logins-login-item-remove-button = 移除
 login-item-origin-label = 網站網址
 login-item-tooltip-message = 請確定此欄位與您登入網站的網址完全相符。
+about-logins-origin-tooltip = 請確認此欄位與您登入網站的網址完全相符。
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = 請確認您更改過此網站的密碼，再於此處修改。單純於此處修改並不會更改 { $webTitle } 上的密碼。
+about-logins-add-password-tooltip = 請確認您更改過此網站的密碼，再於此處修改。
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = 使用者名稱
@@ -112,9 +133,9 @@ login-item-cancel-button = 取消
 # Variables
 #   $datetime (date) - Event date
 login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
-login-item-timeline-action-created = 建立於
-login-item-timeline-action-updated = 最後更新於
-login-item-timeline-action-used = 上次使用於
+login-item-timeline-action-created = 建立
+login-item-timeline-action-updated = 更新
+login-item-timeline-action-used = 上次使用
 
 ## OS Authentication dialog
 
@@ -256,6 +277,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = 匯入登入資訊檔案
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = 將密碼匯入至 { -brand-short-name }
 about-logins-import-file-picker-import-button = 匯入
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -289,6 +312,9 @@ about-logins-import-dialog-items-no-change =
     { $count ->
        *[other] <span>重複的登入資訊:</span> <span data-l10n-name="count">{ $count }</span><span data-l10n-name="meta">（未匯入）</span>
     }
+about-logins-import-dialog-items-added2 = <span>新增的密碼：</span><span data-l10n-name="count">{ $count }</span> 筆
+about-logins-import-dialog-items-modified2 = <span>更新的現有項目：</span> <span data-l10n-name="count">{ $count }</span> 筆
+about-logins-import-dialog-items-no-change2 = <span>重複的項目：</span> <span data-l10n-name="count">{ $count }</span><span data-l10n-name="meta">（未匯入）</span>
 about-logins-import-dialog-items-error =
     { $count ->
        *[other] <span>錯誤:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">（未匯入）</span>
@@ -309,6 +335,7 @@ about-logins-import-dialog-error-try-import-again = 再嘗試匯入一次…
 about-logins-import-dialog-error-cancel = 取消
 about-logins-import-report-title = 匯入摘要
 about-logins-import-report-description = 已將登入資訊與密碼匯入到 { -brand-short-name }。
+about-logins-import-report-description2 = 已將密碼匯入到 { -brand-short-name }。
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -316,6 +343,9 @@ about-logins-import-report-row-index = { $number } 行
 about-logins-import-report-row-description-no-change = 重複項目: 與現有的登入資訊完全相符
 about-logins-import-report-row-description-modified = 已更新現有的登入資訊
 about-logins-import-report-row-description-added = 已新增登入資訊
+about-logins-import-report-row-description-no-change2 = 重複項目：與現有的資料完全相符
+about-logins-import-report-row-description-modified2 = 已更新現有的項目
+about-logins-import-report-row-description-added2 = 已新增密碼
 about-logins-import-report-row-description-error = 錯誤: 缺少欄位
 
 ##
@@ -341,6 +371,9 @@ about-logins-import-report-no-change =
     { $count ->
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">筆重複的登入資訊</div><div data-l10n-name="not-imported">（未匯入）</div>
     }
+about-logins-import-report-added2 = <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">筆密碼已新增</div>
+about-logins-import-report-modified2 = <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">筆現有的項目已更新</div>
+about-logins-import-report-no-change2 = <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">筆重複的項目</div><div data-l10n-name="not-imported">（未匯入）</div>
 about-logins-import-report-error =
     { $count ->
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">筆錯誤</div><div data-l10n-name="not-imported">（未匯入）</div>

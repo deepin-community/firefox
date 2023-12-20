@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Začinić
     .aria-label = Začinić
+firefoxview-empty-state-icon =
+    .alt = Kedźbu:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Runje
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,37 @@ firefoxview-opentabs-focus-tab =
     .title = K tutomu rajtarkej přeńć
 firefoxview-show-more = Wjace pokazać
 firefoxview-show-less = Mjenje pokazać
+firefoxview-search-text-box-clear-button =
+    .title = Zhašeć
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Historiju přepytać
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Njedawno začinjene rajtarki pytać
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Synchronizowane rajtarki pytać
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Wočinjene rajtarki pytać
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Pytanske wuslědki za „{ $query }“
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } sydło
+        [two] { $count } sydle
+        [few] { $count } sydła
+       *[other] { $count } sydłow
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Žane wuslědki za „{ $query }“
 firefoxview-sort-history-by-date-label = Po datumje sortěrować
 firefoxview-sort-history-by-site-label = Po sydle sortěrować
 # Variables:
@@ -206,9 +239,6 @@ firefoxview-import-history-description = Čińće { -brand-short-name } k swojem
 firefoxview-recentlyclosed-empty-header = Rajtark je so přezahe začinił?
 firefoxview-recentlyclosed-empty-description = Tu namakaće rajtarki, kotrež sće njedawno začinił, zo byšće móhł je spěšnje zaso wočinić.
 firefoxview-recentlyclosed-empty-description-two = Zo byšće starše rajtarki namakał, hladajće do <a data-l10n-name="history-url">přehladowanskeje historije</a>.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

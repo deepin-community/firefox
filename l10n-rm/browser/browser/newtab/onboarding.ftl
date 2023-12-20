@@ -332,3 +332,15 @@ onboarding-device-migration-title = Bel da ta vesair puspè!
 onboarding-device-migration-subtitle = T'annunzia en tes { -fxaccount-brand-name(capitalization: "sentence") } per prender cun tai tes segnapaginas, pleds-clav e tia cronologia sin tes nov apparat.
 onboarding-device-migration-subtitle2 = T'annunzia en tes conto per purtar cun tai tes segnapaginas, pleds-clav e la cronologia sin tes nov apparat.
 onboarding-device-migration-primary-button-label = S'annunziar
+
+## The following screens have been updated to use security and privacy focused strings:
+
+# Easy setup screen
+onboarding-easy-setup-security-and-privacy-title = Nus ta protegin cun plaschair
+onboarding-easy-setup-security-and-privacy-subtitle = Noss navigatur dad in'organisaziun senza finamira da profit, gida ad evitar che interpresas ta persequiteschian a la zuppada en il web.
+# Mobile download screen
+onboarding-mobile-download-security-and-privacy-title = Criptescha tias datas cun midar dad in apparat a tschel
+onboarding-mobile-download-security-and-privacy-subtitle = Sche ti la sincronisaziun è activada, criptescha { -brand-short-name } tes pleds-clav, segnapaginas e dapli. En pli pos ti acceder als tabs da tes auters apparats.
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name } ta sustegna adina
+onboarding-gratitude-security-and-privacy-subtitle = Grazia per utilisar { -brand-short-name } da la Mozilla Foundation. Cun tes agid lavurain nus per crear in internet pli segir ed accessibel per ina e mintgin.

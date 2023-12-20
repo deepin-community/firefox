@@ -279,6 +279,9 @@ quickactions-cmd-plugins = плагиндер
 # Opens the print dialog
 quickactions-print2 = Бетті баспаға шығару
 quickactions-cmd-print = баспаға шығару
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Парақты PDF ретінде сақтау
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Жекелік шолу терезесін ашу
 quickactions-cmd-private = жекелік шолу
@@ -348,6 +351,7 @@ identity-connection-secure = Байланыс қауіпсіз
 identity-connection-failure = Байланысу сәтсіз аяқталды
 identity-connection-internal = Бұл - қауіпсіз { -brand-short-name } беті.
 identity-connection-file = Бұл парақ сіздің компьютеріңізде сақталған.
+identity-connection-associated = Бұл парақ басқа парақтан жүктелген.
 identity-extension-page = Бұл парақ кеңейтуден жүктелген.
 identity-active-blocked = { -brand-short-name } бұл парақтың кейбір қауіпсіз емес бөліктерін блоктаған.
 identity-custom-root = Байланысты растайтын сертификат шығарушысы Mozilla-ға бейтаныс.
@@ -560,8 +564,6 @@ urlbar-result-action-search-w-engine = { $engine } көмегімен іздеу
 urlbar-result-action-sponsored = Демеуленген
 urlbar-result-action-switch-tab = Бетке ауысу
 urlbar-result-action-visit = Шолу
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Алмасу буферінен сілтемені шолу
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Алмасу буферінен сілтемені шолу
 # Directs a user to press the Tab key to perform a search with the specified

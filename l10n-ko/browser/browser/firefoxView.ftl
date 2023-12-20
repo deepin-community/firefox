@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = 닫기
     .aria-label = 닫기
+firefoxview-empty-state-icon =
+    .alt = 주의:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = 방금 전
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,31 @@ firefoxview-opentabs-focus-tab =
     .title = 이 탭으로 전환
 firefoxview-show-more = 자세히 보기
 firefoxview-show-less = 간단히 보기
+firefoxview-search-text-box-clear-button =
+    .title = 지우기
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = 기록 검색
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = 최근에 닫은 탭 검색
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = 동기화된 탭 검색
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = 열린 탭 검색
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = “{ $query }” 검색 결과
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count = { $count }개 사이트
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = “{ $query }”에 대한 결과 없음
 firefoxview-sort-history-by-date-label = 날짜순 정렬
 firefoxview-sort-history-by-site-label = 사이트순 정렬
 # Variables:
@@ -206,9 +233,6 @@ firefoxview-import-history-description = { -brand-short-name }를 기본 브라�
 firefoxview-recentlyclosed-empty-header = 탭을 너무 빨리 닫았습니까?
 firefoxview-recentlyclosed-empty-description = 여기에서 최근에 닫은 탭을 찾을 수 있으므로, 원하는 탭을 빠르게 다시 열 수 있습니다.
 firefoxview-recentlyclosed-empty-description-two = 오래 전 탭을 찾으려면 <a data-l10n-name="history-url">방문 기록</a>을 확인하세요.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

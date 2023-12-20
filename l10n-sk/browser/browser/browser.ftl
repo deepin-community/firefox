@@ -279,6 +279,9 @@ quickactions-cmd-plugins = zásuvné moduly
 # Opens the print dialog
 quickactions-print2 = Tlačiť stránku
 quickactions-cmd-print = tlačiť
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Uložiť stránku ako PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Otvoriť Súkromné okno
 quickactions-cmd-private = súkromné prehliadanie
@@ -349,6 +352,7 @@ identity-connection-secure = Pripojenie je zabezpečené
 identity-connection-failure = Chyba spojenia
 identity-connection-internal = Toto je bezpečná stránka prehliadača { -brand-short-name }
 identity-connection-file = Táto stránka je uložená vo vašom počítači.
+identity-connection-associated = Táto stránka je načítaná z inej stránky.
 identity-extension-page = Táto stránka je načítaná z doplnku.
 identity-active-blocked = { -brand-short-name } zablokoval nezabezpečené časti tejto stránky.
 identity-custom-root = Pripojenie je overené vydavateľom certifikátov, ktorého Mozilla nepozná.
@@ -567,8 +571,6 @@ urlbar-result-action-search-w-engine = Hľadať pomocou vyhľadávača { $engine
 urlbar-result-action-sponsored = Sponzorované
 urlbar-result-action-switch-tab = Prepnúť na kartu
 urlbar-result-action-visit = Navštíviť
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Použiť adresu zo schránky
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Použiť adresu zo schránky
 # Directs a user to press the Tab key to perform a search with the specified

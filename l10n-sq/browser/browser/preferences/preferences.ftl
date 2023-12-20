@@ -125,7 +125,7 @@ set-as-my-default-browser =
     .label = Vëre Parazgjedhje…
     .accesskey = V
 startup-restore-windows-and-tabs =
-    .label = Hapni dritare dhe skeda të mëparshme
+    .label = Hap dritare dhe skeda të mëparshme
     .accesskey = H
 windows-launch-on-login =
     .label = Hape { -brand-short-name }-in automatikisht, kur niset kompjuteri juaj
@@ -162,7 +162,7 @@ warn-on-open-many-tabs =
     .label = Sinjalizo kur hapja e shumë skedave njëherësh do të mund të ngadalësonte { -brand-short-name }-in
     .accesskey = z
 switch-to-new-tabs =
-    .label = Kur hapni një lidhje, figurë ose media si një skedë të re, kalo në të menjëherë
+    .label = Kur hapet një lidhje, figurë ose media si një skedë të re, kalo në të menjëherë
     .accesskey = K
 show-tabs-in-taskbar =
     .label = Shfaq paraparje skedash te "Windows taskbar"
@@ -229,7 +229,7 @@ preferences-web-appearance-choice-input-dark =
 preferences-web-appearance-override-warning = Përzgjedhjet tuaja për ngjyrat po anashkalojnë pamjen e sajtit. <a data-l10n-name="colors-link">Administroni ngjyra</a>
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
-preferences-web-appearance-footer = Administroni { -brand-short-name } tema, që nga <a data-l10n-name="themes-link">Zgjerime & Tema</a>
+preferences-web-appearance-footer = Administroni tema { -brand-short-name }, që nga <a data-l10n-name="themes-link">Zgjerime & Tema</a>
 preferences-colors-header = Ngjyra
 preferences-colors-description = Anashkalo ngjyrat parazgjedhje të { -brand-short-name }-it për tekst, sfonde sajtesh dhe lidhje.
 preferences-colors-manage-button =
@@ -304,7 +304,7 @@ download-always-ask-where =
     .label = Pyet përherë ku të ruhen kartelat
     .accesskey = u
 applications-header = Aplikacione
-applications-description = Zgjidhni se si i trajton { -brand-short-name }-i kartelat që shkarkoni nga interneti ose aplikacionet që përdoren kur shfletoni.
+applications-description = Zgjidhni se si i trajton { -brand-short-name }-i kartelat që shkarkoni nga interneti, ose aplikacionet që përdoren kur shfletoni.
 applications-filter =
     .placeholder = Kërkoni për lloje kartelash ose aplikacione
 applications-type-column =
@@ -466,6 +466,9 @@ browsing-use-smooth-scrolling =
 browsing-gtk-use-non-overlay-scrollbars =
     .label = Shfaq përherë shtylla rrëshqitjeje
     .accesskey = q
+browsing-always-underline-links =
+    .label = Lidhjet nënvijëzoji përherë
+    .accesskey = n
 browsing-use-onscreen-keyboard =
     .label = Shfaq një tastierë virtuale, kur duhet
     .accesskey = k
@@ -487,17 +490,17 @@ browsing-media-control =
     .accesskey = K
 browsing-media-control-learn-more = Mësoni më tepër
 browsing-cfr-recommendations =
-    .label = Rekomandoni zgjerime teksa shfletoni
+    .label = Rekomandim zgjerimesh, teksa shfletoni
     .accesskey = R
 browsing-cfr-features =
-    .label = Rekomandim veçorish teksa shfletoni
+    .label = Rekomandim veçorish, teksa shfletoni
     .accesskey = R
 browsing-cfr-recommendations-learn-more = Mësoni më tepër
 
 ## General Section - Proxy
 
 network-settings-title = Rregullime Rrjeti
-network-proxy-connection-description = Formësoni se si lidhet në internet { -brand-short-name }-i.
+network-proxy-connection-description = Formësoni si lidhet në internet { -brand-short-name }-i.
 network-proxy-connection-learn-more = Mësoni më tepër
 network-proxy-connection-settings =
     .label = Rregullime…
@@ -506,7 +509,7 @@ network-proxy-connection-settings =
 ## Home Section
 
 home-new-windows-tabs-header = Dritare dhe Skeda të Reja
-home-new-windows-tabs-description2 = Zgjidhni çfarë shihni, kur hapni faqen tuaj hyrëse, dritare të reja dhe skeda të reja.
+home-new-windows-tabs-description2 = Zgjidhni çfarë shihet, kur hapni faqen tuaj hyrëse, dritare të reja dhe skeda të reja.
 
 ## Home Section - Home Page Customization
 
@@ -541,9 +544,9 @@ choose-bookmark =
 ## Home Section - Firefox Home Content Customization
 
 home-prefs-content-header2 = Lëndë { -firefox-home-brand-name }
-home-prefs-content-description2 = Zgjidhni ç’lëndë doni në skenën tuaj { -firefox-home-brand-name }.
+home-prefs-content-description2 = Zgjidhni ç’lëndë doni në skenën { -firefox-home-brand-name } tuaj.
 home-prefs-search-header =
-    .label = Kërkim Web
+    .label = Kërkim në Web
 home-prefs-shortcuts-header =
     .label = Shkurtore
 home-prefs-shortcuts-description = Sajte që ruani ose vizitoni
@@ -609,6 +612,9 @@ search-suggestions-desc = Zgjidhni si shfaqen sugjerimet nga motorë kërkimesh.
 search-suggestions-option =
     .label = Ofro sugjerime kërkimi
     .accesskey = O
+search-show-suggestions-option =
+    .label = Shfaq sugjerime kërkimi
+    .accesskey = S
 search-show-suggestions-url-bar-option =
     .label = Shfaq sugjerime kërkimi te përfundimet në shtyllë adresash
     .accesskey = q
@@ -623,7 +629,7 @@ search-show-search-term-option =
 # "ahead" refers to location (appearing most proximate to), not time
 # (appearing before).
 search-show-suggestions-above-history-option =
-    .label = Shfaq te përfundimet në shtyllën e adresave sugjerime kërkimi përpara se historik shfletimi
+    .label = Te përfundimet në shtyllën e adresave shfaq sugjerime kërkimi, përpara se historik shfletimi
 search-show-suggestions-private-windows =
     .label = Shfaq sugjerime kërkimesh në Dritare Private
 suggestions-addressbar-settings-generic2 = Ndryshoni rregullime për sugjerime të tjera shtylle adresash
@@ -707,6 +713,9 @@ sync-signedin-login-failure = Ju lutemi, bëni hyrjen që të rilidheni { $email
 sync-resend-verification =
     .label = Ridërgo Verifikim
     .accesskey = d
+sync-verify-account =
+    .label = Verifikoni Llogari
+    .accesskey = V
 sync-remove-account =
     .label = Hiqe Llogarinë
     .accesskey = H
@@ -739,8 +748,10 @@ sync-currently-syncing-bookmarks = Faqerojtës
 sync-currently-syncing-history = Historik
 sync-currently-syncing-tabs = Skeda të hapura
 sync-currently-syncing-logins-passwords = Kredenciale hyrjesh dhe fjalëkalime
+sync-currently-syncing-passwords = Fjalëkalime
 sync-currently-syncing-addresses = Adresa
 sync-currently-syncing-creditcards = Karta krediti
+sync-currently-syncing-payment-methods = Metoda pagesash
 sync-currently-syncing-addons = Shtesa
 sync-currently-syncing-settings = Rregullime
 sync-change-options =
@@ -771,6 +782,10 @@ sync-engine-logins-passwords =
     .label = Kredenciale hyrjesh dhe fjalëkalime
     .tooltiptext = Emra përdoruesish dhe fjalëkalime që keni ruajtur
     .accesskey = K
+sync-engine-passwords =
+    .label = Fjalëkalime
+    .tooltiptext = Fjalëkalime që keni ruajtur
+    .accesskey = F
 sync-engine-addresses =
     .label = Adresa
     .tooltiptext = Adresa postare që keni ruajtur (vetëm për desktop)
@@ -779,6 +794,10 @@ sync-engine-creditcards =
     .label = Karta krediti
     .tooltiptext = Emra, numra dhe data skadimi (vetëm për desktop)
     .accesskey = K
+sync-engine-payment-methods =
+    .label = Metoda pagesash
+    .tooltiptext = Emra, numra kartash dhe data skadimi (vetëm për desktop)
+    .accesskey = M
 sync-engine-addons =
     .label = Shtesa
     .tooltiptext = Zgjerime dhe tema për Firefox Desktop
@@ -947,18 +966,20 @@ sitedata-block-desc = Lloj i bllokuar
 sitedata-option-block-cross-site-trackers =
     .label = Gjurmues nga sajte në sajte
 sitedata-option-block-cross-site-tracking-cookies =
-    .label = Cookies gjurmimi nga sajte në sajte
+    .label = “Cookies” gjurmimi nga sajte në sajte
+sitedata-option-block-cross-site-cookies =
+    .label = Cookie-t për gjurmim nga sajti në sajt dhe izolo “cookies” të tjera palësh të treta
 sitedata-option-block-unvisited =
     .label = Cookies nga sajte të pavizituar
 sitedata-option-block-all-cross-site-cookies =
-    .label = Krejt cookie-t “cross-site” (mund të shkaktojë mosfunksionim të disa sajteve)
+    .label = Krejt cookie-t palë të treta (mund të shkaktojë mosfunksionim të disa sajteve)
 sitedata-option-block-all =
     .label = Krejt cookie-t (do të shkaktojë mosfunksionim sajtesh)
 sitedata-clear =
     .label = Spastroni të Dhëna…
     .accesskey = S
 sitedata-settings =
-    .label = Administroni Të dhëna…
+    .label = Administroni të Dhëna…
     .accesskey = A
 sitedata-cookies-exceptions =
     .label = Administroni Përjashtime…
@@ -1044,16 +1065,17 @@ enhanced-tracking-protection-setting-custom =
 content-blocking-etp-standard-desc = E baraspeshuar për mbrojtje dhe funksionim. Faqet do të ngarkohen normalisht.
 content-blocking-etp-strict-desc = Mbrojtje më e fortë, por mund të shkaktojë mosfunksionim për disa sajte apo lëndë.
 content-blocking-etp-custom-desc = Zgjidhni cilët gjurmues dhe programthe të bllokohen.
-content-blocking-etp-blocking-desc = { -brand-short-name }-i bllokon as vijon:
+content-blocking-etp-blocking-desc = { -brand-short-name }-i bllokon sa vijon:
 content-blocking-private-windows = Lëndë gjurmimi në Dritare Private
-content-blocking-cross-site-cookies-in-all-windows2 = “Cross-site cookies” në krejt dritaret
-content-blocking-cross-site-tracking-cookies = Cookies gjurmimi nga sajte në sajte
-content-blocking-all-cross-site-cookies-private-windows = “Cross-site cookies” në Dritare Private
+content-blocking-cross-site-cookies-in-all-windows2 = “Cookies” palësh të treta në krejt dritaret
+content-blocking-cross-site-tracking-cookies = “Cookies” gjurmimi nga sajte në sajte
+content-blocking-all-cross-site-cookies-private-windows = “Cookies” palësh të treta në Dritare Private
 content-blocking-cross-site-tracking-cookies-plus-isolate = Cookie-t për gjurmim nga sajti në sajt dhe izolo cookie-t e mbetura
 content-blocking-social-media-trackers = Gjurmues prej mediash shoqërore
 content-blocking-all-cookies = Krejt cookie-t
 content-blocking-unvisited-cookies = Cookies nga sajte të pavizituar
 content-blocking-all-windows-tracking-content = Gjurmim lënde në krejt dritaret
+content-blocking-all-cross-site-cookies = Krejt “cookiet” nga palë të treta
 content-blocking-cryptominers = Nxjerrës kriptomonedhash
 content-blocking-fingerprinters = Krijues shenjash gishtash
 # The known fingerprinters are those that are known for collecting browser fingerprints from user devices. And
@@ -1208,11 +1230,11 @@ privacy-segmentation-radio-on =
 security-header = Siguri
 security-browsing-protection = Mbrojtje Nga Lëndë e Rrejshme dhe Software i Rrezikshëm
 security-enable-safe-browsing =
-    .label = Bllokoni lëndë të rrezikshme dhe të rrejshme
+    .label = Blloko lëndë të rrezikshme dhe të rrejshme
     .accesskey = B
 security-enable-safe-browsing-link = Mësoni më tepër
 security-block-downloads =
-    .label = Bllokoni shkarkime të rrezikshme
+    .label = Blloko shkarkime të rrezikshme
     .accesskey = z
 security-block-uncommon-software =
     .label = Sinjalizo rreth software-i të padëshiruar dhe jo të zakonshëm
@@ -1222,7 +1244,7 @@ security-block-uncommon-software =
 
 certs-header = Dëshmi
 certs-enable-ocsp =
-    .label = Kërkojuni shërbyesve me përgjigje OCSP të ripohojnë vlefshmërinë e tanishme të dëshmive
+    .label = Kërkoju shërbyesve me përgjigje OCSP të ripohojnë vlefshmërinë e tanishme të dëshmive
     .accesskey = K
 certs-view =
     .label = Shihni Dëshmi…
@@ -1255,6 +1277,7 @@ httpsonly-radio-disabled =
 
 preferences-doh-header = DNS përmes HTTPS-je
 preferences-doh-description = Domain Name System (DNS) përmes HTTPS-së e dërgon kërkesën tuaj për një emër përkatësie përmes një lidhjeje të fshehtëzuar, duke krijuar një DNS të siguruar dhe duke e bërë më të vështirë për të tjerët të shohin se në cilin sajt po shkoni.
+preferences-doh-description2 = Domain Name System (DNS) përmes HTTPS-së e dërgon kërkesën tuaj për një emër përkatësie përmes një lidhjeje të fshehtëzuar, duke furnizuar një DNS të siguruar dhe duke e bërë më të vështirë për të tjerët të shohin se në cilin sajt po shkoni.
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = Gjendje: { $status }
@@ -1271,6 +1294,7 @@ preferences-doh-status-disabled = Off
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
 preferences-doh-status-not-active = Jo aktive ({ $reason })
 preferences-doh-group-message = Aktivizoni DNS të siguruar, duke përdorur:
+preferences-doh-group-message2 = Aktivizoni DNS përmes HTTPS-je duke përdorur:
 preferences-doh-expand-section =
     .tooltiptext = Më tepër hollësi
 preferences-doh-setting-default =

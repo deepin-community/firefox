@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Bezárás
     .aria-label = Bezárás
+firefoxview-empty-state-icon =
+    .alt = Figyelem:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Épp most
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,35 @@ firefoxview-opentabs-focus-tab =
     .title = Váltás erre a lapra
 firefoxview-show-more = Több megjelenítése
 firefoxview-show-less = Kevesebb megjelenítése
+firefoxview-search-text-box-clear-button =
+    .title = Törlés
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Keresés előzményei
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Nemrég bezárt lapok keresése
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Szinkronizált lapok keresése
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Nyitott lapok keresése
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Találatok a következőre: „{ $query }”
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } webhely
+       *[other] { $count } webhely
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Nincs találat a következőre: „{ $query }”
 firefoxview-sort-history-by-date-label = Rendezés dátum szerint
 firefoxview-sort-history-by-site-label = Rendezés webhely szerint
 # Variables:
@@ -206,9 +237,6 @@ firefoxview-import-history-description = Legyen a { -brand-short-name } a szoká
 firefoxview-recentlyclosed-empty-header = Túl hamar zárt be egy lapot?
 firefoxview-recentlyclosed-empty-description = Itt találhatók a nemrég bezárt lapok, így bármelyiket gyorsan újra megnyithatja.
 firefoxview-recentlyclosed-empty-description-two = Ha régebbi lapokat szeretne megtalálni, akkor tekintse meg a <a data-l10n-name="history-url">böngészési előzményeit</a>.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

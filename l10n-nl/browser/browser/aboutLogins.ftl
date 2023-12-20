@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = Nieuwe aanmelding maken
+about-logins-page-title-name = Wachtwoorden
+about-logins-login-filter2 =
+    .placeholder = Wachtwoorden zoeken
+    .key = F
+create-login-button =
+    .title = Wachtwoord toevoegen
 fxaccounts-sign-in-text = Breng uw wachtwoorden naar uw andere apparaten
 fxaccounts-sign-in-sync-button = Aanmelden om te synchroniseren
 fxaccounts-avatar-button =
@@ -49,6 +55,21 @@ login-list-filtered-count =
         [one] { $count } van { $total } aanmelding
        *[other] { $count } van { $total } aanmeldingen
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } wachtwoord
+       *[other] { $count } wachtwoorden
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } van { $total } wachtwoord
+       *[other] { $count } van { $total } wachtwoorden
+    }
 login-list-sort-label-text = Sorteren op:
 login-list-name-option = Naam (A-Z)
 login-list-name-reverse-option = Naam (Z-A)
@@ -58,11 +79,14 @@ about-logins-login-list-alerts-option = Waarschuwingen
 login-list-last-changed-option = Laatst gewijzigd
 login-list-last-used-option = Laatst gebruikt
 login-list-intro-title = Geen aanmeldingen gevonden
+login-list-intro-title2 = Geen opgeslagen wachtwoorden
 login-list-intro-description = Wanneer u een wachtwoord opslaat in { -brand-product-name }, wordt dit hier weergegeven.
 about-logins-login-list-empty-search-title = Geen aanmeldingen gevonden
+about-logins-login-list-empty-search-title2 = Geen wachtwoorden gevonden
 about-logins-login-list-empty-search-description = Uw zoekopdracht heeft geen resultaten opgeleverd.
 login-list-item-title-new-login = Nieuwe aanmelding
 login-list-item-subtitle-new-login = Voer uw aanmeldgegevens in
+login-list-item-title-new-login2 = Wachtwoord toevoegen
 login-list-item-subtitle-missing-username = (geen gebruikersnaam)
 about-logins-list-item-breach-icon =
     .title = Website met datalek
@@ -94,6 +118,11 @@ login-item-edit-button = Bewerken
 about-logins-login-item-remove-button = Verwijderen
 login-item-origin-label = Websiteadres
 login-item-tooltip-message = Zorg ervoor dat dit precies overeenkomt met het adres van de website waar u zich aanmeldt.
+about-logins-origin-tooltip = Zorg ervoor dat dit precies overeenkomt met het adres van de website waar u zich aanmeldt.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = Zorg ervoor dat u uw huidige wachtwoord voor deze website opslaat. Als u het wachtwoord hier wijzigt, wordt het niet gewijzigd bij { $webTitle }.
+about-logins-add-password-tooltip = Zorg ervoor dat u uw huidige wachtwoord voor deze website opslaat.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = Gebruikersnaam
@@ -269,6 +298,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = Bestand met aanmeldingen importeren
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = Wachtwoorden importeren in { -brand-short-name }
 about-logins-import-file-picker-import-button = Importeren
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -305,6 +336,21 @@ about-logins-import-dialog-items-no-change =
         [one] <span>Dubbele aanmelding gevonden:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(niet geïmporteerd)</span>
        *[other] <span>Dubbele aanmeldingen gevonden:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(niet geïmporteerd)</span>
     }
+about-logins-import-dialog-items-added2 =
+    { $count ->
+        [one] <span>Nieuw wachtwoord toegevoegd:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>Nieuwe wachtwoorden toegevoegd:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+        [one] <span>Bestaand item bijgewerkt:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>Bestaande items bijgewerkt:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+        [one] <span>Dubbele vermelding gevonden:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(niet geïmporteerd)</span >
+       *[other] <span>Dubbele vermeldingen gevonden:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(niet geïmporteerd)</span >
+    }
 about-logins-import-dialog-items-error =
     { $count ->
         [one] <span>Fout:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(niet geïmporteerd)</span>
@@ -326,6 +372,7 @@ about-logins-import-dialog-error-try-import-again = Probeer nogmaals te importer
 about-logins-import-dialog-error-cancel = Annuleren
 about-logins-import-report-title = Importsamenvatting
 about-logins-import-report-description = Aanmeldingen en wachtwoorden geïmporteerd in { -brand-short-name }.
+about-logins-import-report-description2 = Wachtwoorden geïmporteerd in { -brand-short-name }.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -333,6 +380,9 @@ about-logins-import-report-row-index = Rij { $number }
 about-logins-import-report-row-description-no-change = Duplicaat: exacte overeenkomst met bestaande aanmelding
 about-logins-import-report-row-description-modified = Bestaande aanmelding bijgewerkt
 about-logins-import-report-row-description-added = Nieuwe aanmelding toegevoegd
+about-logins-import-report-row-description-no-change2 = Duplicaat: exacte overeenkomst met bestaande invoer
+about-logins-import-report-row-description-modified2 = Bestaande invoer bijgewerkt
+about-logins-import-report-row-description-added2 = Nieuw wachtwoord toegevoegd
 about-logins-import-report-row-description-error = Fout: veld ontbreekt
 
 ##
@@ -360,6 +410,21 @@ about-logins-import-report-no-change =
     { $count ->
         [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">dubbele aanmelding</div> <div data-l10n-name="not-imported">(niet geïmporteerd)</div>
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">dubbele aanmeldingen</div> <div data-l10n-name="not-imported">(niet geïmporteerd)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">nieuw wachtwoord toegevoegd</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">nieuwe wachtwoorden toegevoegd</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">bestaand item bijgewerkt</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">bestaande items bijgewerkt</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">dubbele vermelding</div> <div data-l10n-name="not-imported">(niet geïmporteerd)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">dubbele vermeldingen</div> <div data-l10n-name="not-imported">(niet geïmporteerd)</div>
     }
 about-logins-import-report-error =
     { $count ->

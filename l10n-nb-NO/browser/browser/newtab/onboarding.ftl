@@ -331,3 +331,15 @@ onboarding-device-migration-title = Velkommen tilbake!
 onboarding-device-migration-subtitle = Logg på { -fxaccount-brand-name } for å ta med deg bokmerkene, passordene og historikken din på den nye enheten.
 onboarding-device-migration-subtitle2 = Logg på kontoen din for å ta med deg bokmerkene, passordene og historikken din på den nye enheten.
 onboarding-device-migration-primary-button-label = Logg inn
+
+## The following screens have been updated to use security and privacy focused strings:
+
+# Easy setup screen
+onboarding-easy-setup-security-and-privacy-title = Vi beskytter deg gjerne
+onboarding-easy-setup-security-and-privacy-subtitle = Vår ideelle nettleser forhindrer selskaper i å spore aktiviteten din i hemmelighet på nettet.
+# Mobile download screen
+onboarding-mobile-download-security-and-privacy-title = Krypter dataene dine når du arbeider på tvers av enheter
+onboarding-mobile-download-security-and-privacy-subtitle = Når du er synkronisert, krypterer { -brand-short-name } passordene, bokmerkene og mer. I tillegg kan du hente faner fra de andre enhetene dine.
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name } passer på deg
+onboarding-gratitude-security-and-privacy-subtitle = Takk for at du bruker { -brand-short-name }, støttet av Mozilla Foundation. Med din støtte jobber vi for å gjøre internett tryggere og mer tilgjengelig for alle.

@@ -28,6 +28,10 @@ bookmark-overlay-folders-expander2 =
 bookmark-overlay-folders-expander-hide =
     .tooltiptext = Nascondi
 
+# bookmark-overlay-folders-tree is used to provide an accessible name to the tree view of the Bookmarks directory, when it is expanded
+bookmark-overlay-folders-tree =
+  .aria-label = Cartelle
+
 bookmark-overlay-new-folder-button =
     .label = Nuova cartella
     .accesskey = o
@@ -57,4 +61,5 @@ bookmark-overlay-keyword-2 =
 bookmark-overlay-tags-caption-label = Utilizza le etichette per organizzare i tuoi siti preferiti e cercare nei segnalibri usando la barra degli indirizzi
 
 bookmark-overlay-keyword-caption-label-2 = Utilizza una singola parola chiave per aprire il segnalibro direttamente dalla barra degli indirizzi
+
 

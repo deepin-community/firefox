@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Gosodiadau cyfeiriad
 address-capture-learn-more-button =
     .label = Darllen rhagor
+address-capture-open-menu-button =
+    .aria-label = Agor dewislen
+address-capture-edit-address-button =
+    .aria-label = Golygu cyfeiriad
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Ychwanegu Cyfeiriad Newydd
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = E-bost
 autofill-cancel-button = Diddymu
 autofill-save-button = Cadw
 autofill-country-warning-message = Dim ond ar gyfer rhai gwledydd y mae Awtolanw Ffurflenni ar gael ar hyn o bryd.
+autofill-message-tooltip = Gweld neges am awtolenwi
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Ychwanegu Cerdyn Credyd Newydd
 # The dialog title for editing credit cards in browser preferences.

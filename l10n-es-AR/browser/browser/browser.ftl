@@ -147,29 +147,29 @@ urlbar-search-mode-actions = Acciones
 ##
 
 urlbar-geolocation-blocked =
-    .tooltiptext = Bloqueó la información de ubicación para este sitio web.
+    .tooltiptext = Se ha bloqueado la información de ubicación para este sitio web.
 urlbar-xr-blocked =
-    .tooltiptext = Bloqueó el acceso a dispositivos de realidad virtual para este sitio web.
+    .tooltiptext = Se ha bloqueado el acceso a dispositivos de realidad virtual para este sitio web.
 urlbar-web-notifications-blocked =
     .tooltiptext = Bloqueó las notificaciones para este sitio web.
 urlbar-camera-blocked =
-    .tooltiptext = Bloqueó la cámara para este sitio web.
+    .tooltiptext = Se ha bloqueado la cámara para este sitio web.
 urlbar-microphone-blocked =
-    .tooltiptext = Bloqueó el micrófono para este sitio web.
+    .tooltiptext = Se ha bloqueado el micrófono para este sitio web.
 urlbar-screen-blocked =
-    .tooltiptext = Bloqueó este sitio web para que no comparta la pantalla.
+    .tooltiptext = Se ha bloqueado este sitio web para que no comparta la pantalla.
 urlbar-persistent-storage-blocked =
-    .tooltiptext = Bloqueó el almacenamiento persistente para este sitio web.
+    .tooltiptext = Se ha bloqueado el almacenamiento persistente para este sitio web.
 urlbar-popup-blocked =
-    .tooltiptext = Bloqueó las ventanas emergentes para este sitio web.
+    .tooltiptext = Se han bloqueado las ventanas emergentes para este sitio web.
 urlbar-autoplay-media-blocked =
-    .tooltiptext = Bloqueó los medios de reproducción automática con sonido para este sitio web.
+    .tooltiptext = Se bloquearon los medios de reproducción automática con sonido para este sitio web.
 urlbar-canvas-blocked =
-    .tooltiptext = Bloqueó la extracción de datos de canvas para este sitio web.
+    .tooltiptext = Se ha bloqueado la extracción de datos de canvas para este sitio web.
 urlbar-midi-blocked =
-    .tooltiptext = Bloqueó el acceso a MIDI para este sitio web.
+    .tooltiptext = Se ha bloqueado el acceso a MIDI para este sitio web.
 urlbar-install-blocked =
-    .tooltiptext = Bloqueó la instalación de complementos para este sitio web.
+    .tooltiptext = Se ha bloqueado la instalación de complementos para este sitio web.
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the edit bookmark command.
 urlbar-star-edit-bookmark =
@@ -279,6 +279,9 @@ quickactions-cmd-plugins = plugins
 # Opens the print dialog
 quickactions-print2 = Imprimir página
 quickactions-cmd-print = imprimir
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Guardar página como PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Abrir ventana privada
 quickactions-cmd-private = navegación privada
@@ -348,6 +351,7 @@ identity-connection-secure = Conexión segura
 identity-connection-failure = Fallo de conexión
 identity-connection-internal = Esta es una página de { -brand-short-name } segura.
 identity-connection-file = Esta página está guardada en su computadora.
+identity-connection-associated = Esta página está cargada desde otra página.
 identity-extension-page = Esta página está cargada desde una extensión.
 identity-active-blocked = { -brand-short-name } bloqueó las partes de esta página que no son seguras.
 identity-custom-root = Conexión verificada por un emisor de certificados no reconocido por Mozilla.
@@ -564,8 +568,6 @@ urlbar-result-action-sponsored = Patrocinado
 urlbar-result-action-switch-tab = Cambiar a una pestaña
 urlbar-result-action-visit = Visitar
 # Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Ir desde  el portapapeles
-# Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Visitar desde el portapapeles
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
@@ -639,9 +641,9 @@ reader-view-close-button =
 ##   $shortcut (String) - Keyboard shortcut to execute the command.
 
 picture-in-picture-urlbar-button-open =
-    .tooltiptext = Abrir Imagen en imagen ({ $shortcut })
+    .tooltiptext = Cerrar Picture-in-Picture ({ $shortcut })
 picture-in-picture-urlbar-button-close =
-    .tooltiptext = Cerrar imagen en imagen ({ $shortcut })
+    .tooltiptext = Cerrar Picture-in-Picture ({ $shortcut })
 picture-in-picture-panel-header = Picture-in-Picture
 picture-in-picture-panel-headline = Este sitio web no recomienda Picture-in-Picture
 picture-in-picture-panel-body = Es posible que los videos no se muestren como el desarrollador pretendía mientras Picture-in-Picture está habilitado.

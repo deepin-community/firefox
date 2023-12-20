@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Stillingar póstfangs
 address-capture-learn-more-button =
     .label = Frekari upplýsingar
+address-capture-open-menu-button =
+    .aria-label = Opna valmynd
+address-capture-edit-address-button =
+    .aria-label = Breyta tölvupóstfangi
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Bæta við nýju heimilisfangi
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = Tölvupóstfang
 autofill-cancel-button = Hætta við
 autofill-save-button = Vista
 autofill-country-warning-message = Sjálfvirkar útfyllingar er bara tiltækar fyrir sum lönd.
+autofill-message-tooltip = Skoða skilaboð um sjálfvirka útfyllingu
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Bæta við nýju kortanúmeri
 # The dialog title for editing credit cards in browser preferences.

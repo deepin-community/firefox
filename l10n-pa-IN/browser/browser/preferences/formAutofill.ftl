@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = ਸਿਰਨਾਵਾਂ ਸੈਟਿੰਗਾਂ
 address-capture-learn-more-button =
     .label = ਹੋਰ ਜਾਣੋ
+address-capture-open-menu-button =
+    .aria-label = ਮੇਨੂ ਖੋਲ੍ਹੋ
+address-capture-edit-address-button =
+    .aria-label = ਸਿਰਨਾਵੇਂ ਨੂੰ ਸੋਧੋ
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = ਨਵਾਂ ਸਿਰਨਾਵਾਂ ਜੋੜੋ
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = ਈਮੇਲ
 autofill-cancel-button = ਰੱਦ ਕਰੋ
 autofill-save-button = ਸੰਭਾਲੋ
 autofill-country-warning-message = ਫ਼ਾਰਮ ਖੁਦ-ਭਰੋ ਇਸ ਵੇਲੇ ਕੁਝ ਦੇਸ਼ਾਂ 'ਚ ਹੀ ਉਪਲਬਧ ਹੈ।
+autofill-message-tooltip = ਆਪੇ-ਭਰਨ ਬਾਰੇ ਸੁਨੇਹਾ ਵੇਖੋ
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = ਨਵਾਂ ਕਰੈਡਿਟ ਕਾਰਡ ਜੋੜੋ
 # The dialog title for editing credit cards in browser preferences.

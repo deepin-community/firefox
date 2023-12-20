@@ -156,6 +156,7 @@ spotlight-pin-secondary-button = Mačči tura
 ## Windows and therefore must be as narrow as possible.
 
 mr2022-background-update-toast-title = { -brand-short-name } amaynut. D uslig ugar. Drus maḍi n yineḍfaren. War takerḍa.
+mr2022-background-update-toast-text = Ɛreḍ tura amaynut akk n { -brand-short-name }, yettwaleqqem s ufecku-nneɣ ummsten mgal aḍfar iǧehden yella akka ar tura.
 # This button label will be fitted into a narrow fixed-width button by
 # Windows. Try to not exceed the width of the English text (compare it
 # using a variable font like Arial): the button can only fit 1-2
@@ -174,10 +175,13 @@ firefoxview-cfr-primarybutton = Ɛreḍ-it
 firefoxview-cfr-secondarybutton = Mačči tura
     .accesskey = M
 firefoxview-cfr-header-v2 = Kemmel zzerb seg anida telliḍ
+firefoxview-cfr-body-v2 = Err-d accaren i tmedleḍ melmi kan, yellan gar yibenkan s { -firefoxview-brand-name }.
 
 ## Firefox View Spotlight
 
 firefoxview-spotlight-promo-title = Ini azul i { -firefoxview-brand-name }
+# “Poof” refers to the expression to convey when something or someone suddenly disappears, or in this case, reappears. For example, “Poof, it’s gone.”
+firefoxview-spotlight-promo-subtitle = Tebɣiḍ iccer yeldin ɣef tiliɣri-k? Err-it-id. Tesriḍ asmel wuɣur i tkecmeḍ melmi kan? Yeshel, ha-t-an deg { -firefoxview-brand-name }.
 firefoxview-spotlight-promo-primarybutton = Wali amek i itteddu
 firefoxview-spotlight-promo-secondarybutton = Suref
 
@@ -185,6 +189,8 @@ firefoxview-spotlight-promo-secondarybutton = Suref
 
 colorways-cfr-primarybutton = Fren afran n yiniten
     .accesskey = F
+# "shades" refers to the different color options available to users in colorways.
+colorways-cfr-body = Seɣmu iminig-ik·im s { -brand-short-name } s tiɣma tufrinin n { -brand-short-name } i d-yettwaddmen seg tuɣac i ibeddlen udem i yidles.
 colorways-cfr-header-28days = Afran n yiniten n tuɣac tilelliyin ad ifakk deg 16 deg yennayer
 colorways-cfr-header-14days = Afran n yiniten n tuɣac tilelliyin ad ifakk deg sin n yimalasen
 colorways-cfr-header-7days = Afran n yiniten n tuɣac tilelliyin ad ifakk deg yimalas-a.
@@ -198,21 +204,29 @@ cfr-cbh-confirm-button = Agi iɣarracen n yinagan n tuqqna
     .accesskey = A
 cfr-cbh-dismiss-button = Mačči tura
     .accesskey = M
+cookie-banner-blocker-cfr-header = { -brand-short-name } yessewḥel inagan n tuqqna
+cookie-banner-blocker-cfr-body = Nettagi s wudem awurman aṭas n yisfutla udhimen n yinagan n tjqqna yettilin gar yismal i wakken ur k-ṭṭafaren ara.
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
 july-jam-headline = Ad neḍmen ammesten-ik·im
+july-jam-body = Yal ayyur, { -brand-short-name } yessewḥal ugar n 3,000 yineḍfaren i useqdac, ad ak-imudd anekcum aɣellsan, arurad ɣer internet.
 july-jam-set-default-primary = Ldi iseɣwan-iw s { -brand-short-name }
 fox-doodle-pin-headline = Ansuf tikkelt niḍen
+# “indie” is short for the term “independent”.
+# In this instance, free from outside influence or control.
+fox-doodle-pin-body = Wagi d asmekti uzrib akken ara teṭṭfeḍ iminig-ik ufrin s yiwen usiti kan.
 fox-doodle-pin-primary = Ldi iseɣwan-iw s { -brand-short-name }
 fox-doodle-pin-secondary = Mačči tura
 
 ## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
 
+set-default-pdf-handler-headline = <strong>PDFs inek ttaldayen akka tura deg { -brand-short-name }.</strong>Ẓreg neɣ sezmel tiferkiyin srid deg yiminig-ik. I usenfel, nadi “PDF” deg yiɣewwaren.
 set-default-pdf-handler-primary = Awi-t
 
 ## FxA sync CFR
 
+fxa-sync-cfr-header = Ibenk amaynut ɣer sdat?
 fxa-sync-cfr-primary = Issin ugar
     .accesskey = I
 fxa-sync-cfr-secondary = Smekti-y-id ticki
@@ -223,6 +237,12 @@ fxa-sync-cfr-secondary = Smekti-y-id ticki
 device-migration-fxa-spotlight-header = Aseqdec n yibenk aqbur?
 device-migration-fxa-spotlight-primary-button = Amek ara ḥerzeɣ isefka-w
 device-migration-fxa-spotlight-link = Smekti-y-id ticki
+device-migration-fxa-spotlight-heavy-user-header = Ɣur-k·m ad tettuḍ aḥraz n yisefka-k·m
+device-migration-fxa-spotlight-heavy-user-primary-button = Bdu
+device-migration-fxa-spotlight-older-device-header = Lehna n uqerru, seg { -brand-product-name }
+device-migration-fxa-spotlight-older-device-primary-button = Rnu amiḍan
+device-migration-fxa-spotlight-getting-new-device-header-2 = Ibenk amaynut ɣer sdat?
+device-migration-fxa-spotlight-getting-new-device-primary-button = Amek ara ḥerzeɣ isefka-w
 
 ## Set as Default PDF Reader Infobar
 
@@ -234,6 +254,8 @@ pdf-default-notification-decline-button =
 ## Launch on login infobar notification
 
 launch-on-login-learnmore = Issin ugar
+launch-on-login-infobar-confirm-button = Ih, ldi { -brand-short-name }
+    .accesskey = I
 launch-on-login-infobar-reject-button = Mačči tura
     .accesskey = M
 

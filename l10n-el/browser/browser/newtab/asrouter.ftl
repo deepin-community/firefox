@@ -203,6 +203,8 @@ cfr-cbh-confirm-button = Απόρριψη μηνυμάτων για cookie
     .accesskey = Α
 cfr-cbh-dismiss-button = Όχι τώρα
     .accesskey = χ
+cookie-banner-blocker-cfr-header = Το { -brand-short-name } μόλις απέκλεισε τα cookie για εσάς
+cookie-banner-blocker-cfr-body = Απορρίπτουμε αυτόματα πολλά αναδυόμενα παράθυρα για cookie, ώστε να καταστεί δύσκολη η καταγραφή σας από ιστοτόπους.
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -236,6 +238,15 @@ device-migration-fxa-spotlight-header = Χρησιμοποιείτε παλαι�
 device-migration-fxa-spotlight-body = Δημιουργήστε αντίγραφα ασφαλείας των δεδομένων σας για να βεβαιωθείτε ότι δεν θα χάσετε σημαντικές πληροφορίες, όπως σελιδοδείκτες και κωδικούς πρόσβασης — ειδικά εάν μεταβείτε σε μια νέα συσκευή.
 device-migration-fxa-spotlight-primary-button = Δημιουργία αντιγράφων ασφαλείας δεδομένων
 device-migration-fxa-spotlight-link = Υπενθύμιση αργότερα
+device-migration-fxa-spotlight-heavy-user-header = Μην ξεχάσετε να δημιουργήσετε αντίγραφα ασφαλείας των δεδομένων σας
+device-migration-fxa-spotlight-heavy-user-body = Βεβαιωθείτε ότι οι σημαντικές πληροφορίες, όπως σελιδοδείκτες και κωδικοί πρόσβασης, παραμένουν ενημερωμένες και ασφαλείς σε όλες τις συσκευές σας.
+device-migration-fxa-spotlight-heavy-user-primary-button = Έναρξη
+device-migration-fxa-spotlight-older-device-header = Ηρεμία και ασφάλεια, από το { -brand-product-name }
+device-migration-fxa-spotlight-older-device-body = Ένας λογαριασμός διατηρεί ενημερωμένες και ασφαλείς τις σημαντικές πληροφορίες σας σε όποια συσκευή κάνετε σύνδεση.
+device-migration-fxa-spotlight-older-device-primary-button = Δημιουργία λογαριασμού
+device-migration-fxa-spotlight-getting-new-device-header-2 = Νέα συσκευή στο μέλλον;
+device-migration-fxa-spotlight-getting-new-device-body = Δημιουργήστε αντίγραφα ασφαλείας των δεδομένων σας τώρα, ώστε να είστε έτοιμοι όταν φτάσει η συσκευή σας.
+device-migration-fxa-spotlight-getting-new-device-primary-button = Δημιουργία αντιγράφων ασφαλείας δεδομένων
 
 ## Set as Default PDF Reader Infobar
 

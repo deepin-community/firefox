@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Sulje
     .aria-label = Sulje
+firefoxview-empty-state-icon =
+    .alt = Huomio:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Juuri nyt
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,35 @@ firefoxview-opentabs-focus-tab =
     .title = Siirry tähän välilehteen
 firefoxview-show-more = Näytä lisää
 firefoxview-show-less = Näytä vähemmän
+firefoxview-search-text-box-clear-button =
+    .title = Tyhjennä
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Etsi historiasta
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Hae äskettäin suljetuista välilehdistä
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Etsi synkronoiduista välilehdistä
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Etsi avoimista välilehdistä
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Tulokset haulle “{ $query }”
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } sivusto
+       *[other] { $count } sivustoa
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Ei tuloksia haulla "{ $query }"
 firefoxview-sort-history-by-date-label = Järjestä päiväyksen mukaan
 firefoxview-sort-history-by-site-label = Järjestä sivuston mukaan
 # Variables:
@@ -206,9 +237,6 @@ firefoxview-import-history-description = Tee { -brand-short-name }ista oletussel
 firefoxview-recentlyclosed-empty-header = Suljitko välilehden liian nopeasti?
 firefoxview-recentlyclosed-empty-description = Täältä löydät äskettäin sulkemasi välilehdet, joten voit avata minkä tahansa niistä nopeasti uudelleen.
 firefoxview-recentlyclosed-empty-description-two = Jos haluat etsiä välilehtiä ajan takaa, tarkastele <a data-l10n-name="history-url">selaushistoriaa</a>.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

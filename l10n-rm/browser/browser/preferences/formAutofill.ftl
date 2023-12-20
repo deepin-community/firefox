@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Parameters dad adressas
 address-capture-learn-more-button =
     .label = Ulteriuras infurmaziuns
+address-capture-open-menu-button =
+    .aria-label = Avrir il menu
+address-capture-edit-address-button =
+    .aria-label = Modifitgar l'adressa
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Agiuntar ina nova adressa
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = E-mail
 autofill-cancel-button = Interrumper
 autofill-save-button = Memorisar
 autofill-country-warning-message = L'endataziun automatica per formulars è actualmain mo disponibla per tscherts pajais.
+autofill-message-tooltip = Vesair il messadi davart l'endataziun automatica
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Agiuntar ina nova carta da credit
 # The dialog title for editing credit cards in browser preferences.

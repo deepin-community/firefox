@@ -204,6 +204,8 @@ cfr-cbh-confirm-button = Çerez bildirimlerini reddet
     .accesskey = r
 cfr-cbh-dismiss-button = Şimdi değil
     .accesskey = m
+cookie-banner-blocker-cfr-header = { -brand-short-name } sizin için çerezleri engelledi
+cookie-banner-blocker-cfr-body = Sitelerin sizi takip etmesini zorlaştırmak için birçok çerez bildirimini otomatik olarak reddediyoruz.
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -237,6 +239,15 @@ device-migration-fxa-spotlight-header = Eski bir cihaz mı kullanıyorsunuz?
 device-migration-fxa-spotlight-body = Yeni bir cihaza geçiş yaparken yer imleri ve parolalar gibi önemli bilgilerinizin kaybolmaması için için verilerinizi yedekleyin.
 device-migration-fxa-spotlight-primary-button = Verilerimi nasıl yedekleyebilirim?
 device-migration-fxa-spotlight-link = Daha sonra hatırlat
+device-migration-fxa-spotlight-heavy-user-header = Verilerinizi yedeklemeyi unutmayın
+device-migration-fxa-spotlight-heavy-user-body = Yer imleriniz ve parolalarınız gibi önemli bilgilerinizin tüm cihazlarınızda güncel kalsın ve korunsun.
+device-migration-fxa-spotlight-heavy-user-primary-button = Başla
+device-migration-fxa-spotlight-older-device-header = { -brand-product-name } ile içiniz rahat olsun
+device-migration-fxa-spotlight-older-device-body = Hesabınıza bağladığınız tüm cihazlarınızda önemli bilgileriniz güncel ve güvende kalır.
+device-migration-fxa-spotlight-older-device-primary-button = Hesap oluştur
+device-migration-fxa-spotlight-getting-new-device-header-2 = Yeni bir cihaza geçmeyi düşünüyor musunuz?
+device-migration-fxa-spotlight-getting-new-device-body = Verilerinizi hemen yedekleyin, cihazınız gelince kullanıma hazır olun.
+device-migration-fxa-spotlight-getting-new-device-primary-button = Verilerimi nasıl yedekleyebilirim?
 
 ## Set as Default PDF Reader Infobar
 

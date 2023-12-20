@@ -9,7 +9,13 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = Opret nyt login
-fxaccounts-sign-in-text = Få dine adgangkoder på alle dine enheder
+about-logins-page-title-name = Adgangskoder
+about-logins-login-filter2 =
+    .placeholder = Søg efter adgangskoder
+    .key = F
+create-login-button =
+    .title = Tilføj adgangskode
+fxaccounts-sign-in-text = Få dine adgangskoder på alle dine enheder
 fxaccounts-sign-in-sync-button = Log ind for at synkronisere
 fxaccounts-avatar-button =
     .title = Håndter konto
@@ -49,6 +55,21 @@ login-list-filtered-count =
         [one] { $count } af { $total } login
        *[other] { $count } af { $total } logins
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } adgangskode
+       *[other] { $count } adgangskoder
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } af { $total } adgangskode
+       *[other] { $count } af { $total } adgangskoder
+    }
 login-list-sort-label-text = Sorter efter:
 login-list-name-option = Navn (A-Z)
 login-list-name-reverse-option = Navn (Z-A)
@@ -58,11 +79,14 @@ about-logins-login-list-alerts-option = Advarsler
 login-list-last-changed-option = Senest ændret
 login-list-last-used-option = Senest anvendt
 login-list-intro-title = Ingen logins fundet
+login-list-intro-title2 = Ingen adgangskoder gemt
 login-list-intro-description = Når du gemmer et login i { -brand-product-name } vil det blive vist hér.
 about-logins-login-list-empty-search-title = Ingen logins fundet
+about-logins-login-list-empty-search-title2 = Ingen adgangskoder fundet
 about-logins-login-list-empty-search-description = Din søgning gav ingen resultater
 login-list-item-title-new-login = Nyt login
 login-list-item-subtitle-new-login = Indtast login-oplysninger
+login-list-item-title-new-login2 = Tilføj adgangskode
 login-list-item-subtitle-missing-username = (intet brugernavn)
 about-logins-list-item-breach-icon =
     .title = Websted med datalæk
@@ -94,6 +118,11 @@ login-item-edit-button = Rediger
 about-logins-login-item-remove-button = Fjern
 login-item-origin-label = Webstedets adresse
 login-item-tooltip-message = Kontrollér at dette er adressen på det websted, hvor du logger ind.
+about-logins-origin-tooltip = Kontrollér at dette er adressen på det websted, hvor du logger ind.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = Sørg for at gemme din aktuelle adgangsode til dette websted. At ændre adgangskoden her ændrer den ikke på { $webTitle }.
+about-logins-add-password-tooltip = Sørg for at gemme din aktuelle adgangskode til dette websted.
 login-item-origin =
     .placeholder = https://www.eksempel.dk
 login-item-username-label = Brugernavn
@@ -268,6 +297,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = Importer fil med logins
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = Importer adgangskoder til { -brand-short-name }
 about-logins-import-file-picker-import-button = Importer
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -301,6 +332,21 @@ about-logins-import-dialog-items-no-change =
     { $count ->
        *[other] <span>Dublet-logins fundet:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ikke importeret)</span>
     }
+about-logins-import-dialog-items-added2 =
+    { $count ->
+        [one] <span data-l10n-name="count">{ $count }</span> <span>ny adgangskode tilføjet</span>
+       *[other] <span data-l10n-name="count">{ $count }</span> <span>nye adgangskoder tilføjet</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+        [one] <span data-l10n-name="count">{ $count }</span> <span>eksisterende element blev opdateret</span>
+       *[other] <span data-l10n-name="count">{ $count }</span> <span>eksisterende elementer blev opdateret</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+        [one] <span data-l10n-name="count">{ $count }</span> <span>element findes allerede</span> <span data-l10n-name="meta">(ikke importeret)</span>
+       *[other] <span data-l10n-name="count">{ $count }</span> <span>elementer findes allerede</span> <span data-l10n-name="meta">(ikke importeret)</span>
+    }
 about-logins-import-dialog-items-error =
     { $count ->
        *[other] <span>Fejl:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ikke importeret)</span>
@@ -321,6 +367,7 @@ about-logins-import-dialog-error-try-import-again = Prøv at importere igen…
 about-logins-import-dialog-error-cancel = Annuller
 about-logins-import-report-title = Oversigt over import
 about-logins-import-report-description = Logins og adgangskoder importeret til { -brand-short-name }.
+about-logins-import-report-description2 = Adgangskoder importeret til { -brand-short-name }.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -328,6 +375,9 @@ about-logins-import-report-row-index = Række { $number }
 about-logins-import-report-row-description-no-change = Dublet: Login eksisterer allerede
 about-logins-import-report-row-description-modified = Eksisterende login opdateret
 about-logins-import-report-row-description-added = Nyt login tilføjet
+about-logins-import-report-row-description-no-change2 = Dublet: Præcis magen til eksisterende element.
+about-logins-import-report-row-description-modified2 = Eksisterende element blev opdateret
+about-logins-import-report-row-description-added2 = Ny adgangskode tilføjet
 about-logins-import-report-row-description-error = Fejl: Manglende felt
 
 ##
@@ -355,6 +405,21 @@ about-logins-import-report-no-change =
     { $count ->
         [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">dublet-login</div> <div data-l10n-name="not-imported">(ikke importeret)</div>
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">dublet-logins</div> <div data-l10n-name="not-imported">(ikke importeret)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div>  <div data-l10n-name="details">ny adgangskode tilføjet</div>
+       *[other] <div data-l10n-name="count">{ $count }</div>  <div data-l10n-name="details">nye adgangskoder tilføjet</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">eksisterende element blev opdateret</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">eksisterende elementer blev opdateret</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">element fandtes allerede</div> <div data-l10n-name="not-imported">(ikke importeret)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">elementer fandtes allerede</div> <div data-l10n-name="not-imported">(ikke importeret)</div>
     }
 about-logins-import-report-error =
     { $count ->

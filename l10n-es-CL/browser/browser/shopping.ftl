@@ -40,17 +40,6 @@ shopping-letter-grade-tooltip =
 
 shopping-message-bar-warning-stale-analysis-message-2 = Nueva información para comprobar
 shopping-message-bar-warning-stale-analysis-button = Comprobar ahora
-shopping-message-bar-generic-error-title2 = No hay información disponible en este momento
-shopping-message-bar-generic-error-message = Estamos trabajando para resolver el problema. Por favor, vuelve a revisar en un rato.
-shopping-message-bar-warning-not-enough-reviews-title = Aún no hay suficientes reseñas
-shopping-message-bar-warning-not-enough-reviews-message2 = Cuando este producto tenga más reseñas, podremos revisar su calidad.
-shopping-message-bar-warning-product-not-available-title = El producto no está disponible
-shopping-message-bar-warning-product-not-available-message2 = Si ves que este producto vuelve a estar disponible, infórmalo y trabajaremos para verificar las reseñas.
-shopping-message-bar-warning-product-not-available-button = Informar que este producto volvió a estar disponible
-shopping-message-bar-thanks-for-reporting-title = ¡Gracias por informar!
-shopping-message-bar-thanks-for-reporting-message2 = Deberíamos tener información sobre las reseñas de este producto dentro de 24 horas. Por favor, vuelve a revisar más tarde.
-shopping-message-bar-warning-product-not-available-reported-title2 = La información llegará pronto
-shopping-message-bar-warning-product-not-available-reported-message2 = Deberíamos tener información sobre las reseñas de este producto dentro de 24 horas. Por favor, vuelve a revisar más tarde.
 shopping-message-bar-generic-error =
     .heading = No hay información disponible en este momento
     .message = Estamos trabajando para resolver el problema. Por favor, vuelve a revisar en un rato.
@@ -69,8 +58,9 @@ shopping-message-bar-warning-product-not-available-reported =
     .message = Deberíamos tener información sobre las reseñas de este producto dentro de 24 horas. Por favor, vuelve a revisar más tarde.
 shopping-message-bar-analysis-in-progress-title2 = Comprobando la calidad de la reseña
 shopping-message-bar-analysis-in-progress-message2 = Esto podría tardar unos 60 segundos.
-shopping-message-bar-page-not-supported-title = No podemos comprobar estas reseñas
-shopping-message-bar-page-not-supported-message = Lamentablemente, no podemos verificar la calidad de las reseñas para ciertos tipos de productos. Por ejemplo, tarjetas de regalo y transmisión de vídeo, música y juegos.
+# Variables:
+#  $percentage (Number) - The percentage complete that the analysis is, per our servers.
+shopping-message-bar-analysis-in-progress-with-amount = Comprobando la calidad de la reseña ({ $percentage }%)
 shopping-message-bar-page-not-supported =
     .heading = No podemos comprobar estas reseñas
     .message = Lamentablemente, no podemos verificar la calidad de las reseñas para ciertos tipos de productos. Por ejemplo, tarjetas de regalo y transmisión de vídeo, música y juegos.
@@ -96,7 +86,6 @@ shopping-settings-label =
     .label = Ajustes
 shopping-settings-recommendations-toggle =
     .label = Mostrar anuncios en el verificador de reseñas
-shopping-settings-recommendations-learn-more = Verás anuncios ocasionales de productos relevantes. Todos los anuncios deben cumplir con nuestros estándares de calidad de reseñas. <a data-l10n-name="review-quality-url">Más información</a>
 shopping-settings-recommendations-learn-more2 = Verás publicidades ocasional de productos relevantes. Sólo publicitamos productos con revisiones confiables. <a data-l10n-name="review-quality-url">Aprender más</a>
 shopping-settings-opt-out-button = Desactivar el verificador de reseñas
 powered-by-fakespot = El verificador de reseñas funciona con <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>.
@@ -181,7 +170,6 @@ shopping-survey-q2-radio-3-label = No lo se
 shopping-survey-next-button-label = Siguiente
 shopping-survey-submit-button-label = Enviar
 shopping-survey-terms-link = Términos de uso
-shopping-survey-thanks-message = ¡Gracias por tus comentarios!
 shopping-survey-thanks =
     .heading = ¡Gracias por tus comentarios!
 
@@ -203,13 +191,11 @@ shopping-onboarding-headline = Prueba nuestra guía confiable de reseñas de pro
 #   $currentSite (str) - The current shopping page name
 #   $secondSite (str) - A second shopping page name
 #   $thirdSite (str) - A third shopping page name
-shopping-onboarding-dynamic-subtitle = Revisa qué tan confiables son las reseñas de productos en <b>{ $currentSite }</b> antes de comprar. El verificador de reseñas, una función experimental de { -vendor-short-name }, está integrado en { -brand-product-name } y también funciona en <b>{ $secondSite }</b> y en <b>{ $thirdSite }</b>.
-# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+shopping-onboarding-dynamic-subtitle-1 = Revisa qué tan confiables son las reseñas de productos en <b>{ $currentSite }</b> antes de comprar. El verificador de reseñas, una función experimental de { -brand-product-name }, está integrado en { -brand-product-name } y también funciona en <b>{ $secondSite }</b> y en <b>{ $thirdSite }</b>.
+# Subtitle for countries where we only support one shopping website (e.g. currently used in FR/DE with Amazon)
 # Variables:
 #   $currentSite (str) - The current shopping page name
-#   $secondSite (str) - A second shopping page name
-#   $thirdSite (str) - A third shopping page name
-shopping-onboarding-dynamic-subtitle-1 = Revisa qué tan confiables son las reseñas de productos en <b>{ $currentSite }</b> antes de comprar. El verificador de reseñas, una función experimental de { -brand-product-name }, está integrado en { -brand-product-name } y también funciona en <b>{ $secondSite }</b> y en <b>{ $thirdSite }</b>.
+shopping-onboarding-single-subtitle = Mira cuán confiables son las reseñas de productos en <b>{ $currentSite }</b> antes de comprar. El verificador de reseñas, una función experimental de { -brand-product-name }, está integrado directamente en el navegador.
 shopping-onboarding-body = Usando el poder de { -fakespot-brand-full-name }, te ayudamos a evitar reseñas sesgadas y no auténticas. Nuestro modelo de IA siempre está mejorando para protegerte mientras compras. <a data-l10n-name="learn_more">Aprender más</a>
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use = Al seleccionar "{ shopping-onboarding-opt-in-button }", aceptas la <a data-l10n-name="privacy_policy">política de privacidad</a> de { -fakespot-brand-full-name } y los <a data-l10n-name="terms_of_use">términos de uso</a>.
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = Al seleccionar "{ shopping-onboarding-opt-in-button }", aceptas la <a data-l10n-name="privacy_policy">política de privacidad</a> de { -fakespot-brand-name } y los <a data-l10n-name="terms_of_use">términos de uso</a>.

@@ -279,6 +279,9 @@ quickactions-cmd-plugins = programtillegg
 # Opens the print dialog
 quickactions-print2 = Skriv ut side
 quickactions-cmd-print = utskrift, skriv ut
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Lagre side som PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Åpne privat vindu
 quickactions-cmd-private = privat nettlesing
@@ -348,6 +351,7 @@ identity-connection-secure = Tilkoblingen er sikker
 identity-connection-failure = Tilkoblingsfeil
 identity-connection-internal = Dette er en sikker { -brand-short-name }-side.
 identity-connection-file = Denne siden lagres på datamaskinen din.
+identity-connection-associated = Denne siden er lastet inn fra en annen side.
 identity-extension-page = Denne siden er lastet fra en utvidelse.
 identity-active-blocked = { -brand-short-name } blokkerte deler av denne siden som ikke er sikre.
 identity-custom-root = Tilkobling verifisert av en sertifikatutsteder som ikke kjennes igjen av Mozilla.
@@ -560,8 +564,6 @@ urlbar-result-action-search-w-engine = Søk med { $engine }
 urlbar-result-action-sponsored = Sponset
 urlbar-result-action-switch-tab = Bytt til fane
 urlbar-result-action-visit = Besøk
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Besøk fra utklippstavlen
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Besøk fra utklippstavlen
 # Directs a user to press the Tab key to perform a search with the specified

@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = ਨਵਾਂ ਲਾਗਇਨ ਬਣਾਓ
+about-logins-page-title-name = ਪਾਸਵਰਡ
+about-logins-login-filter2 =
+    .placeholder = ਪਾਸਵਰਡ ਲੱਭੋ
+    .key = F
+create-login-button =
+    .title = ਪਾਸਵਰਡ ਜੋੜੋ
 fxaccounts-sign-in-text = ਆਪਣੇ ਹੋਰ ਡਿਵਾਈਸਾਂ ਉੱਤੇ ਆਪਣੇ ਪਾਸਵਰਡ ਲਵੋ
 fxaccounts-sign-in-sync-button = ਸਿੰਕ ਕਰਨ ਲਈ ਸਾਈਨ ਇਨ ਕਰੋ
 fxaccounts-avatar-button =
@@ -49,6 +55,21 @@ login-list-filtered-count =
         [one] { $total } ਲਾਗਇਨ ਵਿੱਚੋਂ { $count }
        *[other] { $total } ਲਾਗਇਨ ਵਿੱਚੋਂ { $count }
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } ਪਾਸਵਰਡ
+       *[other] { $count } ਪਾਸਵਰਡ
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $total } ਪਾਸਵਰਡ ਵਿੱਚੋਂ { $count }
+       *[other] { $total } ਪਾਸਵਰਡਾਂ ਵਿੱਚੋਂ { $count }
+    }
 login-list-sort-label-text = ਲੜੀਬੱਧ:
 login-list-name-option = ਨਾਂ (A-Z)
 login-list-name-reverse-option = ਨਾਂ (Z-A)
@@ -58,11 +79,14 @@ about-logins-login-list-alerts-option = ਚੇਤਾਵਨੀ
 login-list-last-changed-option = ਆਖਰੀ ਵਾਰ ਸੋਧੇ
 login-list-last-used-option = ਆਖਰੀ ਵਾਰ ਵਰਤੇ
 login-list-intro-title = ਕੋਈ ਲਾਗਇਨ ਨਹੀਂ ਲੱਭਿਆ
+login-list-intro-title2 = ਕੋਈ ਸੰਭਾਲੇ ਹੋਏ ਪਾਸਵਰਡ ਨਹੀਂ ਹਨ
 login-list-intro-description = ਜਦੋਂ ਤੁਸੀਂ { -brand-product-name } ‘ਚ ਪਾਸਵਰਡ ਸੰਭਾਲਦੇ ਹੋ ਤਾਂ ਇਸ ਨੂੰ ਇੱਥੇ ਦਿਖਾਇਆ ਜਾਂਦਾ ਹੈ।
 about-logins-login-list-empty-search-title = ਕੋਈ ਲਾਗਇਨ ਨਹੀਂ ਲੱਭੇ
+about-logins-login-list-empty-search-title2 = ਕੋਈ ਪਾਸਵਰਡ ਨਹੀਂ ਲੱਭਿਆ
 about-logins-login-list-empty-search-description = ਤੁਹਾਡੀ ਖੋਜ ਨਾਲ ਮਿਲਦਾ ਕੋਈ ਨਤੀਜਾ ਨਹੀਂ ਹੈ।
 login-list-item-title-new-login = ਨਵਾਂ ਲਾਗਇਨ
 login-list-item-subtitle-new-login = ਆਪਣੀ ਲਾਗਇਨ ਸਨਦ ਦਿਓ
+login-list-item-title-new-login2 = ਪਾਸਵਰਡ ਜੋੜੋ
 login-list-item-subtitle-missing-username = (ਕੋਈ ਵਰਤੋਂਕਾਰ ਨਾਂ ਨਹੀਂ)
 about-logins-list-item-breach-icon =
     .title = ਉਲੰਘਣ ਕਰਨ ਵਾਲੀ ਵੈੱਬਸਾਈਟ
@@ -94,6 +118,11 @@ login-item-edit-button = ਸੋਧੋ
 about-logins-login-item-remove-button = ਹਟਾਓ
 login-item-origin-label = ਵੈੱਬਸਾਈਟ ਸਿਰਨਾਵਾਂ
 login-item-tooltip-message = ਪੱਕਾ ਕਰੋ ਕਿ ਇਹ ਉਸ ਵੈੱਬਸਾਈਟ ਦੇ ਸਿਰਨਾਵੇਂ ਨਾਲ ਪੂਰੀ ਤਰ੍ਹਾਂ ਮਿਲਦਾ ਹੈ, ਜਿੱਥੇ ਤੁਸੀਂ ਲਾਗਇਨ ਕਰਦੇ ਹੋ।
+about-logins-origin-tooltip = ਪੱਕਾ ਕਰੋ ਕਿ ਇਹ ਉਸ ਵੈੱਬਸਾਈਟ ਦੇ ਸਿਰਨਾਵੇਂ ਨਾਲ ਪੂਰੀ ਤਰ੍ਹਾਂ ਮਿਲਦਾ ਹੈ, ਜਿੱਥੇ ਤੁਸੀਂ ਲਾਗਇਨ ਕਰਦੇ ਹੋ।
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = ਪੱਕਾ ਕਰੋ ਕਿ ਤੁਸੀਂ ਇਸ ਸਾਈਟ ਲਈ ਆਪਣੇ ਮੌਜੂਦਾ ਪਾਸਵਰਡ ਨੂੰ ਸੰਭਾਲ ਰਹੇ ਹੋ। ਇੱਥੇ ਪਾਸਵਰਡ ਬਦਲਣ ਨਾਲ ਇਸ ਨੂੰ { $webTitle } ਲਈ ਬਦਲਿਆ ਨਹੀਂ ਜਾਂਦਾ ਹੈ।
+about-logins-add-password-tooltip = ਪੱਕਾ ਕਰੋ ਕਿ ਤੁਸੀਂ ਇਸ ਸਾਈਟ ਲਈ ਆਪਣੇ ਮੌਜੂਦਾ ਪਾਸਵਰਡ ਨੂੰ ਸੰਭਾਲ ਰਹੇ ਹੋ।
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = ਵਰਤੋਂਕਾਰ ਨਾਂ
@@ -268,6 +297,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = ਲਾਗਇਨਾਂ ਵਾਲੀ ਫਾਇਲ ਇੰਪੋਰਟ ਕਰੋ
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = ਪਾਸਵਰਡ { -brand-short-name } ਵਿੱਚ ਇੰਪੋਰਟ ਕਰੋ
 about-logins-import-file-picker-import-button = ਇੰਪੋਰਟ ਕਰੋ
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -301,6 +332,20 @@ about-logins-import-dialog-items-no-change =
     { $count ->
        *[other] <span>ਡੁਪਲੀਕੇਟ ਲਾਗਇਨ ਲੱਭੇ:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ਇੰਪੋਰਟ ਨਹੀਂ ਕੀਤੇ)</span>
     }
+about-logins-import-dialog-items-added2 =
+    { $count ->
+       *[other] <span>ਨਵੇਂ ਪਾਸਵਰਡ ਜੋੜੇ ਗਏ</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+        [one] <span>ਮੌਜੂਦਾ ਐੰਟਰੀ ਨੂੰ ਅੱਪਡੇਟ ਕੀਤਾ ਗਿਆ:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>ਮੌਜੂਦਾ ਐੰਟਰੀਆਂ ਨੂੰ ਅੱਪਡੇਟ ਕੀਤਾ ਗਿਆ:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+        [one] <span>ਡੁਪਲੀਕੇਟ ਐੰਟਰੀ ਲੱਭੀ:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ਇੰਪੋਰਟ ਨਹੀਂ ਕੀਤਾ ਗਿਆ)</span>
+       *[other] <span>ਡੁਪਲੀਕੇਟ ਐਂਟਰੀਆਂ ਲੱਭੀਆਂ:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ਇੰਪੋਰਟ ਨਹੀਂ ਕੀਤੀਆਂ)</span>
+    }
 about-logins-import-dialog-items-error =
     { $count ->
        *[other] <span>ਗ਼ਲਤੀ:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ਇੰਪੋਰਟ ਨਹੀਂ ਕੀਤੇ)</span>
@@ -321,6 +366,7 @@ about-logins-import-dialog-error-try-import-again = …ਮੁੜ ਦਰਾਮਦ
 about-logins-import-dialog-error-cancel = ਰੱਦ ਕਰੋ
 about-logins-import-report-title = ਦਰਾਮਦ ਦਾ ਸਾਰ
 about-logins-import-report-description = ਲਾਗਇਨ ਅਤੇ ਪਾਸਵਰਡ { -brand-short-name } ਲਈ ਦਰਾਮਦ ਕੀਤੇ।
+about-logins-import-report-description2 = { -brand-short-name } ਵਿੱਚ ਪਾਸਵਰਡ ਇੰਪੋਰਟ ਕਰੋ
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -328,6 +374,9 @@ about-logins-import-report-row-index = ਕਤਾਰ { $number }
 about-logins-import-report-row-description-no-change = ਡੁਪਲੀਕੇਟ: ਪੂਰੀ ਤਰ੍ਹਾਂ ਮਿਲਦਾ ਹੋਇਆ ਮੌਜੂਦਾ ਲਾਗਇਨ
 about-logins-import-report-row-description-modified = ਮੌਜੂਦਾ ਲਾਗਇਨ ਨੂੰ ਅੱਪਡੇਟ ਕੀਤਾ ਗਿਆ
 about-logins-import-report-row-description-added = ਨਵਾਂ ਲਾਗਇਨ ਜੋੜਿਆ
+about-logins-import-report-row-description-no-change2 = ਡੁਪਲੀਕੇਟ: ਮੌਜੂਦਾ ਐੰਟਰੀ ਨਾਲ ਪੂਰੀ ਤਰ੍ਹਾਂ ਮਿਲਦੀ
+about-logins-import-report-row-description-modified2 = ਮੌਜੂਦਾ ਐਂਟਰੀ ਨੂੰ ਅੱਪਡੇਟ ਕੀਤਾ ਗਿਆ
+about-logins-import-report-row-description-added2 = ਨਵਾਂ ਪਾਸਵਰਡ ਜੋੜਿਆ ਗਿਆ
 about-logins-import-report-row-description-error = ਗ਼ਲਤੀ: ਖੇਤਰ ਮੌਜੂਦ ਨਹੀਂ ਹੈ
 
 ##
@@ -352,6 +401,21 @@ about-logins-import-report-modified =
 about-logins-import-report-no-change =
     { $count ->
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ਡੁਪਲੀਕੇਟ ਲਾਗਇਨ</div> <div data-l10n-name="not-imported">(ਦਰਾਮਦ ਨਹੀਂ ਕੀਤੇ)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ਨਵਾਂ ਪਾਸਵਰਡ ਜੋੜਿਆ ਗਿਆ</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ਨਵੇਂ ਪਾਸਵਰਡ ਜੋੜੇ ਗਏ</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ਮੌਜੂਦਾ ਐੰਟਰੀ ਅੱਪਡੇਟ ਕੀਤੀ</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ਮੌਜੂਦਾ ਐੰਟਰੀਆਂ ਅੱਪਡੇਟ ਕੀਤੀਆਂ</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ਡੁਪਲੀਕੇਟ ਐੰਟਰੀ</div> <div data-l10n-name="not-imported">(ਇੰਪੋਰਟ ਨਹੀਂ ਕੀਤੀ)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ਡੁਪਲੀਕੇਟ ਐੰਟਰੀਆਂ</div> <div data-l10n-name="not-imported">(ਇੰਪੋਰਟ ਨਹੀਂ ਕੀਤੀਆਂ)</div>
     }
 about-logins-import-report-error =
     { $count ->

@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Osoiteasetukset
 address-capture-learn-more-button =
     .label = Lue lisää
+address-capture-open-menu-button =
+    .aria-label = Avaa valikko
+address-capture-edit-address-button =
+    .aria-label = Muokkaa osoitetta
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Lisää uusi osoite
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = Sähköposti
 autofill-cancel-button = Peruuta
 autofill-save-button = Tallenna
 autofill-country-warning-message = Lomakkeiden automaattitäyttö on tällä hetkellä käytettävissä vain joillekin maille.
+autofill-message-tooltip = Näytä automaattista täyttöä koskeva viesti
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Lisää uusi luottokortti
 # The dialog title for editing credit cards in browser preferences.

@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = 關閉
     .aria-label = 關閉
+firefoxview-empty-state-icon =
+    .alt = 注意：
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = 剛剛
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,31 @@ firefoxview-opentabs-focus-tab =
     .title = 切換至此分頁
 firefoxview-show-more = 顯示更多
 firefoxview-show-less = 顯示更少
+firefoxview-search-text-box-clear-button =
+    .title = 清除
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = 搜尋紀錄
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = 搜尋最近關閉的分頁
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = 搜尋同步的分頁
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = 搜尋開啟的分頁
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = 「{ $query }」的搜尋結果
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count = { $count } 個網站
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = 沒有「{ $query }」的搜尋結果
 firefoxview-sort-history-by-date-label = 依照日期排序
 firefoxview-sort-history-by-site-label = 依照網站排序
 # Variables:

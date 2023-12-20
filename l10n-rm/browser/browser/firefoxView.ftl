@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Serrar
     .aria-label = Serrar
+firefoxview-empty-state-icon =
+    .alt = Attenziun:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Gist ussa
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,35 @@ firefoxview-opentabs-focus-tab =
     .title = Midar a quest tab
 firefoxview-show-more = Mussar dapli
 firefoxview-show-less = Mussar damain
+firefoxview-search-text-box-clear-button =
+    .title = Stizzar
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Tschertgar en la cronologia
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Tschertgar en ils tabs serrads dacurt
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Tschertgar en ils tabs sincronisads
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Tschertgar en ils tabs averts
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Resultats da tschertga per «{ $query }»
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } website
+       *[other] { $count } websites
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Nagins resultats per «{ $query }»
 firefoxview-sort-history-by-date-label = Zavrar tenor data
 firefoxview-sort-history-by-site-label = Zavrar tenor website
 # Variables:
@@ -206,9 +237,6 @@ firefoxview-import-history-description = Fa da { -brand-short-name } tes navigat
 firefoxview-recentlyclosed-empty-header = Serrà memia svelt in tab?
 firefoxview-recentlyclosed-empty-description = Qua vegns ti a chattar ils tabs serrads dacurt, uschia che ti pos reavrir mintgin en in batterdegl.
 firefoxview-recentlyclosed-empty-description-two = Per chattar tabs serrads gia daditg, consultescha tia <a data-l10n-name="history-url">cronologia da navigaziun</a>.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

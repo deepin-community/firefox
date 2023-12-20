@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Zavřít
     .aria-label = Zavřít
+firefoxview-empty-state-icon =
+    .alt = Upozornění:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Právě teď
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -199,6 +201,37 @@ firefoxview-opentabs-focus-tab =
     .title = Přepnout na tento panel
 firefoxview-show-more = Zobrazit více
 firefoxview-show-less = Zobrazit méně
+firefoxview-search-text-box-clear-button =
+    .title = Vymazat
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Hledat v historii
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Hledat v nedávno zavřených panelech
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Hledat v synchronizovaných panelech
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Hledat v otevřených panelech
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Výsledky vyhledávání pro “{ $query }”
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } stránka
+        [few] { $count } stránky
+        [many] { $count } stránek
+       *[other] { $count } stránek
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Žádné výsledky pro “{ $query }”
 firefoxview-sort-history-by-date-label = Řadit podle data
 firefoxview-sort-history-by-site-label = Řadit podle serveru
 # Variables:
@@ -262,9 +295,6 @@ firefoxview-import-history-description =
 firefoxview-recentlyclosed-empty-header = Zavřeli jste panel příliš brzy?
 firefoxview-recentlyclosed-empty-description = Zde najdete panely, které jste nedávno zavřeli. Kterýkoliv z nich můžete rychle znovu otevřít.
 firefoxview-recentlyclosed-empty-description-two = Pokud chcete najít panely z minulosti, najdete je v <a data-l10n-name="history-url">historii prohlížení</a>.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

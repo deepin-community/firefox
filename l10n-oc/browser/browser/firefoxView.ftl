@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Tampar
     .aria-label = Tampar
+firefoxview-empty-state-icon =
+    .alt = Atencion :
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = ara meteis
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -36,6 +38,7 @@ firefoxview-tabpickup-adddevice-description = Telecargatz { -brand-product-name 
 firefoxview-tabpickup-adddevice-learn-how = Ne saber mai
 firefoxview-tabpickup-adddevice-primarybutton = Installatz { -brand-product-name } per mobil
 firefoxview-syncedtabs-adddevice-header = Connectatz-vos a { -brand-product-name } sus vòstres autres aparelhs
+firefoxview-syncedtabs-adddevice-description = Per veire los onglets ont qu’utilizetz { -brand-product-name }, connectatz-vos sus totes vòstres aparelhs. Vejatz tanben <a data-l10n-name="url">cossí connectar d’aparelhs addicionals</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Ensajar { -brand-product-name } per mobil
 firefoxview-tabpickup-synctabs-header = Activar la sincronizacion dels onglets
 firefoxview-tabpickup-synctabs-description = Autorizatz { -brand-short-name } a partejar los onglets entre vòstres aparelhs.
@@ -146,6 +149,35 @@ firefoxview-opentabs-focus-tab =
     .title = Anar a aqueste onglet
 firefoxview-show-more = Ne veire mai
 firefoxview-show-less = Ne veire mens
+firefoxview-search-text-box-clear-button =
+    .title = Escafar
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Cercar dins l’istoric
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Recercar dins los onglets recentament tampats
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Cercar dins los onglets sincronizats
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Cercar dins los onglets dobèrts
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Resultats de recèrca per « { $query } »
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } site
+       *[other] { $count } sites
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Cap de resultat per « { $query } »
 firefoxview-sort-history-by-date-label = Triar per data
 firefoxview-sort-history-by-site-label = Triar per site
 # Variables:
@@ -185,6 +217,7 @@ firefoxview-choose-browser-button = Causir lo navegador
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
 firefoxview-dont-remember-history-empty-header = Pas res a mostrar
+firefoxview-dont-remember-history-empty-description = Nòstra prioritat es de protegir vòstra vida privada. Es per aquò que podètz contrarotlar l'activitat que { -brand-short-name } memoriza.
 
 ##
 

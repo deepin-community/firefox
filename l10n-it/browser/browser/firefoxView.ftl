@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Chiudi
     .aria-label = Chiudi
+firefoxview-empty-state-icon =
+  .alt = Attenzione:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = adesso
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,13 +149,30 @@ firefoxview-opentabs-focus-tab =
     .title = Passa a questa scheda
 firefoxview-show-more = Mostra altro
 firefoxview-show-less = Mostra meno
+firefoxview-show-all = Mostra tutto
 
 firefoxview-search-text-box-clear-button =
   .title = Cancella
 
+# Placeholder for the input field to search in recent browsing ("search" is a verb).
+firefoxview-search-text-box-recentbrowsing =
+  .placeholder = Cerca
+
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
   .placeholder = Cerca nella cronologia
+
+# Placeholder for the input field to search in recently closed tabs ("search" is a erb).
+firefoxview-search-text-box-recentlyclosed =
+  .placeholder = Cerca nelle schede chiuse di recente
+
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+  .placeholder = Cerca nelle schede sincronizzate
+
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+  .placeholder = Cerca nelle schede aperte
 
 # "Search" is a noun (as in "Results of the search for")
 # Variables:
@@ -239,3 +258,4 @@ firefoxview-recentlyclosed-empty-description-two = Per trovare schede che hai ch
 
 firefoxview-syncedtabs-device-notabs = Nessuna scheda aperta in questo dispositivo
 firefoxview-syncedtabs-connect-another-device = Connetti un altro dispositivo
+

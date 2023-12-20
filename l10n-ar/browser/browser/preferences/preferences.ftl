@@ -399,12 +399,12 @@ update-application-version = الإصدارة { $version } <a data-l10n-name="le
 update-history =
     .label = أظهر تأريخ التحديث…
     .accesskey = ظ
-update-application-allow-description = اسمح لِ‍ { -brand-short-name } أن
+update-application-allow-description = اسمح لِ‍{ -brand-short-name } أن
 update-application-auto =
     .label = ينزّل التحديثات تلقائيا (مستحسن)
     .accesskey = ن
 update-application-check-choose =
-    .label = يلتمس التحديثات، و لكن يترك لك خيار تنصيبها من عدمه
+    .label = يلتمس التحديثات، و لكن يترك لك خيار تثبيتها من عدمه
     .accesskey = ت
 update-application-manual =
     .label = لا يلتمس التحديثات أبدًا (غير مستحسن)
@@ -414,7 +414,7 @@ update-application-background-enabled =
     .accesskey = ح
 update-application-warning-cross-user-setting = سيُطبّق هذا الإعداد على كل حسابات وِندوز وملفات { -brand-short-name } الشخصية التي تستخدم هذه النسخة من { -brand-short-name }.
 update-application-use-service =
-    .label = استخدم خدمة تعمل في الخلفية لتنصيب التحديثات
+    .label = استخدم خدمة تعمل في الخلفية لِتثبيت التحديثات
     .accesskey = خ
 update-application-suppress-prompts =
     .label = أظهر عدد أقل من مطالبات إشعارات التحديث
@@ -1007,9 +1007,6 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = إجراءات سريعة
     .accesskey = س
-addressbar-locbar-recentsearches-option =
-    .label = عمليات البحث الحديثة
-    .accesskey = م
 addressbar-suggestions-settings = غيّر تفضيلات اقتراحات محرّك البحث
 addressbar-quickactions-learn-more = اطّلع على المزيد
 
@@ -1129,8 +1126,14 @@ permissions-autoplay-settings =
 permissions-block-popups =
     .label = احجب النوافذ المنبثقة
     .accesskey = ذ
+# "popup" is a misspelling that is more popular than the correct spelling of
+# "pop-up" so it's included as a search keyword, not displayed in the UI.
+permissions-block-popups-exceptions-button =
+    .label = الاستثناءات…
+    .accesskey = س
+    .searchkeywords = popups
 permissions-addon-install-warning =
-    .label = حذّرني عندما يحاول موقع وِب تنصيب إضافات
+    .label = حذّرني عندما يحاول موقع وِب تثبيت إضافات
     .accesskey = ح
 permissions-addon-exceptions =
     .label = الاستثناءات…
@@ -1218,11 +1221,27 @@ httpsonly-radio-disabled =
 ## DoH Section
 
 preferences-doh-header = DNS عبر HTTPS
+preferences-doh-description = يرسل نظام اسم المجال (DNS) عبر HTTPS طلبك للحصول على اسم المجال من خلال اتصال مُعمّى، مما يؤدي إلى إنشاء DNS آمن ويجعل من الصعب على الآخرين معرفة موقع الوب الذي أنت على وشك الوصول إليه.
+preferences-doh-group-message = تفعيل DNS آمن باستخدام:
+preferences-doh-default-desc = يقرر { -brand-short-name } متى يستخدم DNS آمن لحماية خصوصيتك.
+preferences-doh-default-detailed-desc-1 = أستخدم DNS آمن في المناطق التي تكون فيها متاحة
+preferences-doh-default-detailed-desc-2 = أستخدم محلل DNS المبدئي إذا كان هناك مشكلة مع مزود DNS الآمن
+preferences-doh-default-detailed-desc-5 = عطله عندما تخبر الشبكة { -brand-short-name } بأنه لا يجب أن تستخدم DNS آمن
 preferences-doh-setting-enabled =
     .label = حماية متزايدة
     .accesskey = ة
+preferences-doh-enabled-desc = يمكنك التحكم في الوقت الذي تستخدم فيه DNS آمن و إختيار مزودك.
+preferences-doh-enabled-detailed-desc-2 = أستخدم فقط محلل DNS المبدئي إذا كانت هناك مشكلة مع DNS آمن
 preferences-doh-strict-desc = سيستخدم { -brand-short-name } دائما DNS آمن. سترى تحذير خطر أمني قبل أن نستخدم نظام DNS الخاص بك.
 preferences-doh-strict-detailed-desc-2 = حذر دائما إذا كان DNS الآمن غير متاح
+preferences-doh-strict-detailed-desc-3 = إذا لم يكن DNS الآمن متاحًا، فلن تتحمل المواقع أو تعمل كما ينبغي
+preferences-doh-checkbox-warn =
+    .label = حذر إذا كان هناك طرف ثالث يمنع DNS الآمن
+    .accesskey = ح
+preferences-doh-exceptions-description = لن يستخدم { -brand-short-name } DNS الآمن على هذه المواقع
+preferences-doh-manage-exceptions =
+    .label = أدِر الاستثناءات…
+    .accesskey = ل
 
 ## The following strings are used in the Download section of settings
 

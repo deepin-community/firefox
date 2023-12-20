@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Настройки адреса
 address-capture-learn-more-button =
     .label = Подробнее
+address-capture-open-menu-button =
+    .aria-label = Открыть меню
+address-capture-edit-address-button =
+    .aria-label = Изменить адрес
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Добавить новый адрес
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = Эл. почта
 autofill-cancel-button = Отмена
 autofill-save-button = Сохранить
 autofill-country-warning-message = В настоящее время автозаполнение форм доступно только для некоторых стран.
+autofill-message-tooltip = Посмотреть сообщение об автозаполнении
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Добавить новую банковскую карту
 # The dialog title for editing credit cards in browser preferences.

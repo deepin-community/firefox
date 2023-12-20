@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = Nové přihlašovací údaje
+about-logins-page-title-name = Hesla
+about-logins-login-filter2 =
+    .placeholder = Hledat v heslech
+    .key = F
+create-login-button =
+    .title = Přidat heslo
 fxaccounts-sign-in-text = Synchronizujte svá hesla i do ostatních zařízení
 fxaccounts-sign-in-sync-button = Přihlásit se k synchronizaci
 fxaccounts-avatar-button =
@@ -56,6 +62,25 @@ login-list-filtered-count =
         [many] { $count } z { $total } záznamů
        *[other] { $count } z { $total } záznamů
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } heslo
+        [few] { $count } hesla
+        [many] { $count } hesel
+       *[other] { $count } hesel
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } z { $total } hesla
+        [few] { $count } ze { $total } hesel
+        [many] { $count } z { $total } hesel
+       *[other] { $count } z { $total } hesel
+    }
 login-list-sort-label-text = Seřadit podle:
 login-list-name-option = názvu (A-Z)
 login-list-name-reverse-option = názvu (Z-A)
@@ -65,6 +90,7 @@ about-logins-login-list-alerts-option = upozornění
 login-list-last-changed-option = naposledy změněno
 login-list-last-used-option = naposledy použito
 login-list-intro-title = Nenalezeny žádné přihlašovací údaje
+login-list-intro-title2 = Žádná hesla nejsou uložena
 login-list-intro-description =
     Tady se zobrazí přihlašovací údaje uložené { -brand-product-name.gender ->
         [masculine] ve { -brand-product-name(case: "loc") }
@@ -73,9 +99,11 @@ login-list-intro-description =
        *[other] v aplikaci { -brand-product-name }
     }.
 about-logins-login-list-empty-search-title = Nenalezeny žádné přihlašovací údaje
+about-logins-login-list-empty-search-title2 = Nebyla nalezena žádná hesla
 about-logins-login-list-empty-search-description = Vašemu vyhledávání neodpovídají žádné přihlašovací údaje.
 login-list-item-title-new-login = Nové přihlašovací údaje
 login-list-item-subtitle-new-login = Zadejte své přihlašovací údaje
+login-list-item-title-new-login2 = Přidat heslo
 login-list-item-subtitle-missing-username = (žádné uživatelské jméno)
 about-logins-list-item-breach-icon =
     .title = Na tomto serveru došlo k úniku dat
@@ -119,6 +147,11 @@ login-item-edit-button = Upravit
 about-logins-login-item-remove-button = Odstranit
 login-item-origin-label = Adresa serveru
 login-item-tooltip-message = Zkontrolujte, že toto pole přesně odpovídá adrese serveru, kde se přihlašujete.
+about-logins-origin-tooltip = Zkontrolujte, že toto pole přesně odpovídá adrese serveru, kde se přihlašujete.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = Ujistěte se, že pro tuto stránku ukládáte svoje aktuální heslo. Změna hesla zde nezmění heslo na stránce { $webTitle }.
+about-logins-add-password-tooltip = Ujistěte se, že si pro tuto stránku ukládáte aktuální heslo.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = Uživatelské jméno
@@ -289,6 +322,12 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = Import souboru s přihlašovacími údaji
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 =
+    { -brand-short-name.case-status ->
+        [with-cases] Import hesel do { -brand-short-name(case: "gen") }
+       *[no-cases] Import hesel do aplikace { -brand-short-name }
+    }
 about-logins-import-file-picker-import-button = Importovat
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -313,6 +352,27 @@ about-logins-import-dialog-title = Import byl dokončen
 about-logins-import-dialog-items-added = <span>Nově přidané přihlašovací údaje:</span> <span data-l10n-name="count">{ $count }</span>
 about-logins-import-dialog-items-modified = <span>Aktualizované přihlašovací údaje:</span> <span data-l10n-name="count">{ $count }</span>
 about-logins-import-dialog-items-no-change = <span>Duplicitní přihlašovací údaje:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(neimportováno)</span>
+about-logins-import-dialog-items-added2 =
+    { $count ->
+        [one] <span>Nové heslo přidáno:</span> <span data-l10n-name="count">{ $count }</span>
+        [few] <span>Nová hesla přidána:</span> <span data-l10n-name="count">{ $count }</span>
+        [many] <span>Nových hesel přidáno:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>Nových hesel přidáno:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+        [one] <span>Aktualizované heslo:</span><span data-l10n-name="count">{ $count }</span>
+        [few] <span>Aktualizované hesla:</span><span data-l10n-name="count">{ $count }</span>
+        [many] <span>Aktualizované hesla:</span><span data-l10n-name="count">{ $count }</span>
+       *[other] <span>Aktualizované hesla:</span><span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+        [one] <span>Duplicitní hesla:</span><span data-l10n-name="count">{ $count }</span><span data-l10n-name="meta">(nenahrána)</span>
+        [few] <span>Duplicitní hesla:</span><span data-l10n-name="count">{ $count }</span><span data-l10n-name="meta">(nenahrány)</span>
+        [many] <span>Duplicitní hesla:</span><span data-l10n-name="count">{ $count }</span><span data-l10n-name="meta">(nenahráno)</span>
+       *[other] <span>Duplicitní hesla:</span><span data-l10n-name="count">{ $count }</span><span data-l10n-name="meta">(nenahráno)</span>
+    }
 about-logins-import-dialog-items-error = <span>Chyby:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(neimportováno)</span>
 about-logins-import-dialog-done = Hotovo
 about-logins-import-dialog-error-title = Chyba při importu
@@ -334,6 +394,11 @@ about-logins-import-report-description =
         [with-cases] Přihlašovací údaje importované do { -brand-short-name(case: "gen") }.
        *[no-cases] Přihlašovací údaje importované do aplikace { -brand-short-name }.
     }
+about-logins-import-report-description2 =
+    { -brand-short-name.case-status ->
+        [with-cases] Hesla byla importována do { -brand-short-name(case: "gen") }
+       *[no-cases] Hesla byla importována do aplikace { -brand-short-name }
+    }
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -341,6 +406,9 @@ about-logins-import-report-row-index = Řádek č. { $number }
 about-logins-import-report-row-description-no-change = Duplicitní: Přesná shoda se stávajícími údaji
 about-logins-import-report-row-description-modified = Přihlašovací údaje aktualizovány
 about-logins-import-report-row-description-added = Přidány nové přihlašovací údaje
+about-logins-import-report-row-description-no-change2 = Duplikát: přesná shoda s již existující položkou
+about-logins-import-report-row-description-modified2 = Existující položka byla aktualizována
+about-logins-import-report-row-description-added2 = Přidáno nové heslo
 about-logins-import-report-row-description-error = Chyba: chybějící pole
 
 ##
@@ -357,6 +425,27 @@ about-logins-import-report-row-description-error-missing-field = Chyba: chyběj�
 about-logins-import-report-added = <div data-l10n-name="details">Nově přidané přihlašovací údaje:</div> <div data-l10n-name="count">{ $count }</div>
 about-logins-import-report-modified = <div data-l10n-name="details">Aktualizované přihlašovací údaje:</div> <div data-l10n-name="count">{ $count }</div>
 about-logins-import-report-no-change = <div data-l10n-name="details">Duplicitní přihlašovací údaje:</div> <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="not-imported">(neimportováno)</div>
+about-logins-import-report-added2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">nové přidané heslo</div>
+        [few] <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">nové přidané hesla</div>
+        [many] <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">nových přidaných hesel</div>
+       *[other] <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">nových přidaných hesel</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">aktualizovaná položka</div>
+        [few] <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">aktualizované položka</div>
+        [many] <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">aktualizovaných položek</div>
+       *[other] <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">aktualizovaných položek</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">duplicitní položka</div><div data-l10n-name="not-imported">(neimportována)</div>
+        [few] <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">duplicitní položky</div><div data-l10n-name="not-imported">(neimportovány)</div>
+        [many] <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">duplicitních položek</div><div data-l10n-name="not-imported">(neimportovány)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">duplicitních položek</div><div data-l10n-name="not-imported">(neimportováno)</div>
+    }
 about-logins-import-report-error = <div data-l10n-name="details">Chyby:</div> <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="not-imported">(neimportováno)</div>
 
 ## Logins import report page

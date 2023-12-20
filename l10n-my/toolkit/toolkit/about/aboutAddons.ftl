@@ -211,3 +211,11 @@ details-notification-softblocked-link = နောက်ထပ်အချက်�
 details-notification-gmp-pending = { $name } ကို အချိန်တိုအတွင်း ထည့်သွင်းတပ်ဆင်ပါမည်။
 details-notification-gmp-pending2 =
     .message = { $name } ကို အချိန်တိုအတွင်း ထည့်သွင်းတပ်ဆင်ပါမည်။
+
+## Gecko Media Plugins (GMPs)
+
+plugins-gmp-license-info = လိုင်စင်အချက်အလက်
+plugins-gmp-privacy-info = ကိုယ်ရေးကာကွယ်မှုဆိုင်ရာ အချက်အလက်
+plugins-openh264-name = Cisco Systems, Inc. မှ စီစဉ်ပေးသော OpenH264 Video Codec
+plugins-openh264-description = WebRTC သတ်မှတ်ချက်များနှင့် ကိုက်ညီစေရန် ဒီပလဂ်အင်ကို Mozilla မှ အလိုအလျောက် တပ်ဆင်ပါမည်။ ထို့ပြင် WebRTC ခေါ်ဆိုမှုများကို H.264 ဗွီဒီယို ကိုဒက်လိုအပ်သော ကိရိယာများတွင် အသုံးပြုနိုင်စေမည်။ ကိုဒက် ရင်းမြစ်ကုဒ်ကို ကြည့်ရန်နှင့် အကောင်အထည်ဖော်ခြင်းနှင့် ပတ်သက်သည်များကို ပိုမိုလေ့လာရန် https://www.openh264.org/ ကို သွားရောက်ကြည့်ရှုပါ။
+plugins-widevine-name = Google Inc  မှ Widevine Content Decryption Module

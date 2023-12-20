@@ -332,3 +332,15 @@ onboarding-device-migration-title = Tervetuloa takaisin!
 onboarding-device-migration-subtitle = Kirjaudu sisään { -fxaccount-brand-name(capitalization: "sentence") }llesi, niin voit tuoda kirjanmerkkisi, salasanasi ja historiasi uudelle laitteellesi.
 onboarding-device-migration-subtitle2 = Kirjaudu tilillesi tuodaksesi kirjanmerkkisi, salasanasi ja historiasi uudelle laitteellesi.
 onboarding-device-migration-primary-button-label = Kirjaudu sisään
+
+## The following screens have been updated to use security and privacy focused strings:
+
+# Easy setup screen
+onboarding-easy-setup-security-and-privacy-title = Turvaamisesi on tärkeää meille
+onboarding-easy-setup-security-and-privacy-subtitle = Voittoa tavoittelemattoman tahon tukema selaimemme auttaa estämään yrityksiä seuraamasta sinua salaa verkossa.
+# Mobile download screen
+onboarding-mobile-download-security-and-privacy-title = Pysy salattuna, kun vaihtelet laitteiden välillä
+onboarding-mobile-download-security-and-privacy-subtitle = Synkronoinnin myötä { -brand-short-name } salaa salasanasi, kirjanmerkkisi ja paljon muuta. Lisäksi voit valita välilehtiä muilta laitteiltasi.
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name } huolehtii sinusta
+onboarding-gratitude-security-and-privacy-subtitle = Kiitos, että käytät Mozilla-säätiön tukemaa { -brand-short-name }ia. Tukesi avulla pyrimme tekemään Internetistä entistä turvallisemman ja helpommin saavutettavan kaikille.

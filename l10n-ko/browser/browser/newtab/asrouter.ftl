@@ -201,6 +201,8 @@ cfr-cbh-confirm-button = 쿠키 배너 거부
     .accesskey = R
 cfr-cbh-dismiss-button = 나중에
     .accesskey = N
+cookie-banner-blocker-cfr-header = { -brand-short-name }가 쿠키를 차단했습니다.
+cookie-banner-blocker-cfr-body = 사이트에서 사용자를 추적하기 어렵게 하기 위해 자동으로 많은 쿠키 팝업을 거부합니다.
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -234,6 +236,15 @@ device-migration-fxa-spotlight-header = 오래된 기기를 사용하시나요?
 device-migration-fxa-spotlight-body = 특히 새 기기로 전환하는 경우 북마크 및 비밀번호와 같은 중요한 정보를 잃지 않도록 데이터를 백업하세요.
 device-migration-fxa-spotlight-primary-button = 내 데이터를 백업하는 방법
 device-migration-fxa-spotlight-link = 나중에 알림
+device-migration-fxa-spotlight-heavy-user-header = 데이터를 백업하는 것을 잊지 마세요
+device-migration-fxa-spotlight-heavy-user-body = 북마크, 비밀번호 등 중요한 정보가 모든 기기에서 업데이트되고 보호되는지 확인하세요.
+device-migration-fxa-spotlight-heavy-user-primary-button = 시작하기
+device-migration-fxa-spotlight-older-device-header = 안심하세요, { -brand-product-name } 제공
+device-migration-fxa-spotlight-older-device-body = 계정은 연결된 모든 기기에서 중요한 정보를 업데이트하고 보호합니다.
+device-migration-fxa-spotlight-older-device-primary-button = 계정 만들기
+device-migration-fxa-spotlight-getting-new-device-header-2 = 미래의 새 기기?
+device-migration-fxa-spotlight-getting-new-device-body = 지금 데이터를 백업하면, 기기가 도착했을 때 바로 사용할 수 있습니다.
+device-migration-fxa-spotlight-getting-new-device-primary-button = 내 데이터를 백업하는 방법
 
 ## Set as Default PDF Reader Infobar
 

@@ -203,6 +203,8 @@ cfr-cbh-confirm-button = Rebutja els bàners de galetes
     .accesskey = R
 cfr-cbh-dismiss-button = Ara no
     .accesskey = n
+cookie-banner-blocker-cfr-header = El { -brand-short-name } ha blocat galetes
+cookie-banner-blocker-cfr-body = Rebutgem automàticament moltes finestres emergents de galetes perquè sigui difícil que els llocs us facin un seguiment.
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -236,6 +238,8 @@ device-migration-fxa-spotlight-header = Utilitzeu un dispositiu més antic?
 device-migration-fxa-spotlight-body = Feu una còpia de seguretat de les vostres dades per assegurar-vos de no perdre informació important, com les adreces d'interès i les contrasenyes, sobretot si canvieu a un dispositiu nou.
 device-migration-fxa-spotlight-primary-button = Com puc fer una còpia de seguretat de les meves dades
 device-migration-fxa-spotlight-link = Recorda-m'ho més tard
+device-migration-fxa-spotlight-getting-new-device-header-2 = Penseu adquirir un dispositiu nou en el futur?
+device-migration-fxa-spotlight-getting-new-device-primary-button = Com puc fer una còpia de seguretat de les meves dades
 
 ## Set as Default PDF Reader Infobar
 

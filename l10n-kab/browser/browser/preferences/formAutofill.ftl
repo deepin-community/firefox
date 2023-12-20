@@ -18,6 +18,8 @@ autofill-manage-edit-button = Ẓreg…
 ## The address capture doorhanger
 
 address-capture-save-doorhanger-header = Sekles tansa?
+address-capture-save-doorhanger-description = Sekles talɣut deg { -brand-short-name } i wakken ad tizmireḍ ad teččareḍ tiferkiyin s zzerb.
+address-capture-update-doorhanger-header = Leqqem tansa?
 address-capture-edit-doorhanger-header = Ẓreg tansa
 address-capture-save-button =
     .label = Sekles
@@ -31,6 +33,8 @@ address-capture-cancel-button =
 address-capture-update-button =
     .label = Leqqem
     .accessKey = L
+address-capture-manage-address-button =
+    .label = Iɣewwaren n tansa
 address-capture-learn-more-button =
     .label = Issin ugar
 # The dialog title for creating addresses in browser preferences.

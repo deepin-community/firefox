@@ -618,6 +618,9 @@ search-suggestions-desc = Scegli come visualizzare i suggerimenti dai motori di 
 search-suggestions-option =
     .label = Visualizza suggerimenti di ricerca
     .accesskey = V
+search-show-suggestions-option =
+    .label = Visualizza suggerimenti di ricerca
+    .accesskey = V
 search-show-suggestions-url-bar-option =
     .label = Visualizza suggerimenti di ricerca tra i risultati della barra degli indirizzi
     .accesskey = i
@@ -716,6 +719,9 @@ sync-signedin-login-failure = Accedi per riattivare la connessione con { $email 
 sync-resend-verification =
     .label = Invia di nuovo email di verifica
     .accesskey = n
+sync-verify-account =
+    .label = Verifica account
+    .accesskey = V
 sync-remove-account =
     .label = Rimuovi account
     .accesskey = n
@@ -748,8 +754,10 @@ sync-currently-syncing-bookmarks = Segnalibri
 sync-currently-syncing-history = Cronologia
 sync-currently-syncing-tabs = Schede aperte
 sync-currently-syncing-logins-passwords = Credenziali e password
+sync-currently-syncing-passwords = Password
 sync-currently-syncing-addresses = Indirizzi
 sync-currently-syncing-creditcards = Carte di credito
+sync-currently-syncing-payment-methods = Metodi di pagamento
 sync-currently-syncing-addons = Componenti aggiuntivi
 sync-currently-syncing-settings = Impostazioni
 sync-change-options =
@@ -780,6 +788,10 @@ sync-engine-logins-passwords =
     .label = Credenziali e password
     .tooltiptext = Nomi utente e password salvati
     .accesskey = i
+sync-engine-passwords =
+    .label = Password
+    .tooltiptext = Password salvate
+    .accesskey = P
 sync-engine-addresses =
     .label = Indirizzi
     .tooltiptext = Indirizzi salvati come via, città, ecc. (solo per desktop)
@@ -788,6 +800,10 @@ sync-engine-creditcards =
     .label = Carte di credito
     .tooltiptext = Nome, numero e data di scadenza (solo per desktop)
     .accesskey = r
+sync-engine-payment-methods =
+    .label = Metodi di pagamento
+    .tooltiptext = Nomi, numeri di carte e date di scadenza (solo desktop)
+    .accesskey = M
 sync-engine-addons =
     .label = Componenti aggiuntivi
     .tooltiptext = Estensioni e temi per Firefox desktop
@@ -1259,7 +1275,8 @@ httpsonly-radio-disabled =
 ## DoH Section
 
 preferences-doh-header = DNS su HTTPS
-preferences-doh-description = Il meccanismo di risoluzione dei nomi di dominio tramite HTTPS (DNS su HTTPS) invia le richieste per i nomi di dominio tramite una connessione crittata, creando un sistema sicuro che rende più difficile ad altri soggetti scoprire quali siti stai per visitare.
+preferences-doh-description = Il meccanismo di risoluzione dei nomi di dominio tramite HTTPS (DNS su HTTPS) invia le richieste per i nomi di dominio tramite una connessione crittata, creando un sistema sicuro che rende più difficile scoprire quali siti stai per visitare.
+preferences-doh-description2 = Il meccanismo di risoluzione dei nomi di dominio tramite HTTPS (DNS su HTTPS) invia le richieste per i nomi di dominio tramite una connessione crittata, fornendo un sistema sicuro che rende più difficile scoprire quali siti stai per visitare.
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = Stato: { $status }
@@ -1276,6 +1293,7 @@ preferences-doh-status-disabled = Disattivato
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
 preferences-doh-status-not-active = Non attivo ({ $reason })
 preferences-doh-group-message = Attiva DNS sicuro utilizzando:
+preferences-doh-group-message2 = Attiva DNS su HTTPS utilizzando:
 preferences-doh-expand-section =
     .tooltiptext = Ulteriori informazioni
 preferences-doh-setting-default =
@@ -1318,3 +1336,7 @@ preferences-doh-manage-exceptions =
 desktop-folder-name = Desktop
 downloads-folder-name = Download
 choose-download-folder-title = Selezionare la cartella di download:
+
+
+
+

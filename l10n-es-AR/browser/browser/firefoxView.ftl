@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Cerrar
     .aria-label = Cerrar
+firefoxview-empty-state-icon =
+    .alt = Atención:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Ahora mismo
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,35 @@ firefoxview-opentabs-focus-tab =
     .title = Cambiar a esta pestaña
 firefoxview-show-more = Mostrar más
 firefoxview-show-less = Mostrar menos
+firefoxview-search-text-box-clear-button =
+    .title = Limpiar
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Buscar en historial
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Buscar pestañas recientemente cerradas
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Buscar pestañas sincronizadas
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Buscar pestañas abiertas
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Resultados de búsqueda para “{ $query }”
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } sitio
+       *[other] { $count } sitios
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = No hay resultados para “{ $query }”
 firefoxview-sort-history-by-date-label = Ordenar por fecha
 firefoxview-sort-history-by-site-label = Ordenar por sitio
 # Variables:
@@ -206,9 +237,6 @@ firefoxview-import-history-description = Haga de { -brand-short-name } su navega
 firefoxview-recentlyclosed-empty-header = ¿Cerró una pestaña demasiado pronto?
 firefoxview-recentlyclosed-empty-description = Aquí se encontrarán las pestañas que se cerraron recientemente, para que se pueda volver a abrir cualquiera de ellas rápidamente.
 firefoxview-recentlyclosed-empty-description-two = Para buscar pestañas de hace más tiempo, vea el <a data-l10n-name="history-url">historial de navegación</a>.
-
-##
-
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 

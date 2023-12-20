@@ -19,6 +19,16 @@ migration-wizard-migrator-display-name-edge-legacy = Microsoft Edge Legacy
 migration-wizard-migrator-display-name-firefox = Firefox
 migration-wizard-migrator-display-name-ie = মাইক্রোসফট ইন্টারনেট এক্সপ্লোরার
 migration-wizard-migrator-display-name-safari = সাফারি
+migration-source-name-ie = ইন্টারনেট এক্সপ্লোরার
+migration-source-name-edge = মাইক্রোসফট এজ
+migration-source-name-chrome = Google Chrome
+migration-imported-safari-reading-list = তালিকা পড়া হচ্ছে (সাফারি হতে)
+migration-imported-edge-reading-list = তালিকা পড়া হচ্ছে (Edge হতে)
+
+## These strings are shown if the selected browser data directory is unreadable.
+## In practice, this tends to only occur on Linux when Firefox
+## is installed as a Snap.
+
 
 ## These strings will be displayed based on how many resources are selected to import
 
@@ -53,6 +63,7 @@ migration-passwords-from-file-tsv-filter-title =
 ## The import process identifies extensions installed in other supported
 ## browsers and installs the corresponding (matching) extensions compatible
 ## with Firefox, if available.
+
 
 ##
 

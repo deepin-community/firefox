@@ -2,8 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+firefoxview-tabpickup-step-signin-primarybutton = واصِل
 firefoxview-syncedtabs-signin-header = اسحب الألسنة من أي مكان
 firefoxview-syncedtabs-signin-primarybutton = لج أو سجل حسابًا
+firefoxview-tabpickup-sync-disconnected-header = فعل المزامنة للمتابعة
 firefoxview-closed-tabs-title = المُغلقة حديثًا
 firefoxview-closed-tabs-description2 = أعِد فتح الصفحات التي أغلقتها في هذه النافذة.
 firefoxview-closed-tabs-placeholder-header = لا ألسنةً مغلقةً حديثًا
@@ -45,15 +47,24 @@ firefoxview-history-empty-description-two = حماية خصوصيتك هي في 
 
 ##
 
+# Button text for choosing a browser within the ’Import history from another browser’ banner
+firefoxview-choose-browser-button = أختر متصفح
+    .title = أختر متصفح
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
 
 ##
 
+# This label is read by screen readers when focusing the close button for the "Import history from another browser" banner in Firefox View
+firefoxview-import-history-close-button =
+    .aria-label = أغلِق
+    .title = أغلِق
 
 ## Text displayed in a dismissable banner to import bookmarks/history from another browser
 
+firefoxview-import-history-header = استورِد من التأريخ من متصفح آخر…
+firefoxview-import-history-description = أجعل { -brand-short-name } متصفحك الأساسي. استورد تأريخ التصفح، و العلامات، و غيرها المزيد.
 
 ## Message displayed in Firefox View when the user has no recently closed tabs data
 

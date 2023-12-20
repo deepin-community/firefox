@@ -76,6 +76,7 @@ migration-bookmarks-option-label = Segnalibri
 # Edge, as this is the terminology for bookmarks on those browsers.
 migration-favorites-option-label = Preferiti
 migration-logins-and-passwords-option-label = Credenziali e password salvate
+migration-passwords-option-label = Password salvate
 migration-history-option-label = Cronologia di navigazione
 migration-extensions-option-label = Estensioni
 migration-form-autofill-option-label = Dati per la compilazione automatica dei moduli
@@ -273,3 +274,5 @@ migration-wizard-progress-success-payment-methods =
 migration-wizard-safari-permissions-sub-header = Per importare i segnalibri di Safari e la cronologia di navigazione:
 migration-wizard-safari-instructions-continue = Seleziona “Continua”
 migration-wizard-safari-instructions-folder = Seleziona la cartella Safari nell’elenco e fai clic su “Apri”
+
+

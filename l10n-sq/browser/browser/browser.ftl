@@ -279,6 +279,9 @@ quickactions-cmd-plugins = shtojca
 # Opens the print dialog
 quickactions-print2 = Shtypni faqe
 quickactions-cmd-print = shtype
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Ruaje faqen si PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Hap dritare private
 quickactions-cmd-private = shfletim privat
@@ -348,6 +351,7 @@ identity-connection-secure = Lidhje e sigurt
 identity-connection-failure = Dështim lidhjeje
 identity-connection-internal = Kjo është një faqe { -brand-short-name } e sigurt.
 identity-connection-file = Kjo është faqe e depozituar në kompjuterin tuaj.
+identity-connection-associated = Kjo faqe është ngarkuar nga një tjetër faqe.
 identity-extension-page = Kjo faqe është ngarkuar nga një zgjerim.
 identity-active-blocked = { -brand-short-name }-i ka bllokuar pjesë të kësaj faqeje që s'janë të sigurta.
 identity-custom-root = Lidhje e verifikuar nga një lëshues dëshmish që s’njihet nga Mozilla.
@@ -369,8 +373,8 @@ identity-https-only-info-turn-off2 = Nëse faqja duket të jetë e dëmtuar, mun
 identity-https-only-info-turn-on3 = Nëse doni që { -brand-short-name }-i të përmirësojë lidhjen, kur kjo është e mundur, aktivizoni përmirësime HTTPS për këtë sajt.
 identity-https-only-info-turn-off3 = Nëse faqja duket e dëmtuar, mund të doni të çaktivizoni përmirësime  HTTPS për këtë sajt, që të ngarkohet duke përdorur HTTP jo të siguruar.
 identity-https-only-info-no-upgrade = S’arrihet të përmirësohet lidhja nga HTTP.
-identity-permissions-storage-access-header = Cookies nga sajti në sajt
-identity-permissions-storage-access-hint = Këto palë mund të përdorin “cross-site cookies” dhe të dhëna sajtesh, ndërkohë që jeni në këtë sajt.
+identity-permissions-storage-access-header = “Cookies” palësh të treta
+identity-permissions-storage-access-hint = Këto palë mund të përdorin “cookies” palësh të treta të dhëna sajtesh, ndërkohë që jeni në këtë sajt.
 identity-permissions-storage-access-learn-more = Mësoni më tepër
 identity-permissions-reload-hint = Mund t'ju duhet të ringarkoni faqen që të hyjnë në fuqi ndryshimet.
 identity-clear-site-data =
@@ -560,8 +564,6 @@ urlbar-result-action-search-w-engine = Kërko me { $engine }
 urlbar-result-action-sponsored = E sponsorizuar
 urlbar-result-action-switch-tab = Kalo te Skeda
 urlbar-result-action-visit = Vizitojeni
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Vizitojeni që nga e papastra juaj
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Vizitojeni që nga e papastra
 # Directs a user to press the Tab key to perform a search with the specified

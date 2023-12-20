@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Ρυθμίσεις διεύθυνσης
 address-capture-learn-more-button =
     .label = Μάθετε περισσότερα
+address-capture-open-menu-button =
+    .aria-label = Άνοιγμα μενού
+address-capture-edit-address-button =
+    .aria-label = Επεξεργασία διεύθυνσης
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Προσθήκη νέας διεύθυνσης
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = Email
 autofill-cancel-button = Ακύρωση
 autofill-save-button = Αποθήκευση
 autofill-country-warning-message = Η αυτόματη συμπλήρωση φορμών διατίθεται μόνο σε ορισμένες χώρες προς το παρόν.
+autofill-message-tooltip = Προβολή μηνύματος σχετικά με την αυτόματη συμπλήρωση
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Προσθήκη νέας πιστωτικής κάρτας
 # The dialog title for editing credit cards in browser preferences.

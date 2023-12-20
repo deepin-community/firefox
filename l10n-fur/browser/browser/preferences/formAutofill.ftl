@@ -37,6 +37,10 @@ address-capture-manage-address-button =
     .label = Impostazions direzions
 address-capture-learn-more-button =
     .label = Plui informazions
+address-capture-open-menu-button =
+    .aria-label = Vierç menù
+address-capture-edit-address-button =
+    .aria-label = Modifiche direzion
 # The dialog title for creating addresses in browser preferences.
 autofill-add-new-address-title = Zonte gnûf recapit
 # The dialog title for editing addresses in browser preferences.
@@ -110,6 +114,7 @@ autofill-address-email = E-mail
 autofill-cancel-button = Anule
 autofill-save-button = Salve
 autofill-country-warning-message = La compilazion automatiche dai formularis e je disponibile dome par cualchi paîs.
+autofill-message-tooltip = Mostre messaç su la compilazion automatiche
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Zonte gnove cjarte di credit
 # The dialog title for editing credit cards in browser preferences.

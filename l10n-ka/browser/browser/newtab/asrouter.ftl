@@ -204,6 +204,8 @@ cfr-cbh-confirm-button = ფუნთუშის მოთხოვნები
     .accesskey = უ
 cfr-cbh-dismiss-button = ახლა არა
     .accesskey = ა
+cookie-banner-blocker-cfr-header = { -brand-short-name } ახლახან დაგეხმარათ ფუნთუშების არიდებაში
+cookie-banner-blocker-cfr-body = თავისთავად იზღუდება ფუნთუშების ამომხტომი მოთხოვნები, რომ გაუძნელდეს საიტებს თქვენს მოქმედებეზე თვალის დევნება.
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -237,6 +239,15 @@ device-migration-fxa-spotlight-header = ძველ მოწყობილო
 device-migration-fxa-spotlight-body = გადაინახეთ მონაცემები, რომ არ დაგეკარგოთ მნიშვნელოვანი ინფორმაცია, მათ შორის სანიშნები და პაროლები — მით უფრო, თუ ახალ მოწყობილობაზე აპირებთ გადასვლას.
 device-migration-fxa-spotlight-primary-button = როგორაა შესაძლებელი დამარქაფება
 device-migration-fxa-spotlight-link = მოგვიანებით შეხსენება
+device-migration-fxa-spotlight-heavy-user-header = არ დაგავიწყდეთ მონაცემების დამარქაფება
+device-migration-fxa-spotlight-heavy-user-body = დარწმუნდით, რომ მნიშვნელოვანი მონაცემები – მათ შორის სანიშნები და პაროლები – განახლებული და დაცულია თქვენს ყველა მოწყობილობაზე.
+device-migration-fxa-spotlight-heavy-user-primary-button = დაიწყეთ
+device-migration-fxa-spotlight-older-device-header = სიმშვიდეზე ზრუნავს { -brand-product-name }
+device-migration-fxa-spotlight-older-device-body = ანგარიში უზრუნველყოფს თქვენი მნიშვნელოვანი მონაცემების მზადყოფნასა და დაცულობას ყველა დაკავშირებულ მოწყობილობაზე.
+device-migration-fxa-spotlight-older-device-primary-button = შექმენით ანგარიში
+device-migration-fxa-spotlight-getting-new-device-header-2 = ახალ მოწყობილობაზე გადადიხართ?
+device-migration-fxa-spotlight-getting-new-device-body = დაამარქაფეთ მონაცემები ახლავე, რომ მზად იყოთ ახალი მოწყობილობის მიღებისთანავე.
+device-migration-fxa-spotlight-getting-new-device-primary-button = როგორაა შესაძლებელი დამარქაფება
 
 ## Set as Default PDF Reader Infobar
 

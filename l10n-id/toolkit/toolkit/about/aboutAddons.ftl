@@ -149,7 +149,7 @@ addon-category-sitepermission-title =
     .title = Izin Situs
 # String displayed in about:addons in the Site Permissions section
 # Variables:
-#  $host (string): DNS host name for which the webextension enables permissions
+#  $host (string) - DNS host name for which the webextension enables permissions
 addon-sitepermission-host = Izin Situs untuk { $host }
 
 ## These are global warnings
@@ -240,6 +240,8 @@ shortcuts-duplicate-warning-message2 =
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Sudah digunakan oleh { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
        *[other] Tampilkan { $numberToShow } Lainnya
@@ -376,6 +378,11 @@ addon-detail-private-browsing-disallow = Jangan Izinkan
 ## "sites with restrictions" (internally called "quarantined") are special domains
 ## where add-ons are normally blocked for security reasons.
 
+# Used as a description for the option to allow or block an add-on on quarantined domains.
+addon-detail-quarantined-domains-label = Jalankan pada situs yang dibatasi
+# aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
+addon-detail-group-label-quarantined-domains =
+    .aria-label = { addon-detail-quarantined-domains-label }
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -404,6 +411,8 @@ addon-permissions-optional = Izin opsional untuk fungsi tambahan:
 addon-permissions-learnmore = Pelajari lebih lanjut tentang perizinan
 recommended-extensions-heading = Ekstensi yang Disarankan
 recommended-themes-heading = Tema yang Disarankan
+# Variables:
+#   $hostname (string) - Host where the permissions are granted
 addon-sitepermissions-required = Berikan kemampuan berikut untuk <span data-l10n-name="hostname">{ $hostname }</span>:
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
@@ -431,7 +440,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } tidak kompatibel dengan { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -457,3 +466,12 @@ details-notification-softblocked-link = Informasi Lebih Lanjut
 details-notification-gmp-pending = { $name } akan diinstal sebentar lagi.
 details-notification-gmp-pending2 =
     .message = { $name } akan diinstal sebentar lagi.
+
+## Gecko Media Plugins (GMPs)
+
+plugins-gmp-license-info = Informasi lisensi
+plugins-gmp-privacy-info = Informasi Privasi
+plugins-openh264-name = Codec Video OpenH264 disediakan oleh Cisco Systems, Inc.
+plugins-openh264-description = Plugin ini diinstal secara otomatis oleh Mozilla untuk memenuhi spesifikasi WebRTC dan untuk mengaktifkan panggilan WebRTC dengan perangkat yang menggunakan codec video H.264. Kunjungi http://www.openh264.org/ untuk melihat kode sumber codec dan mempelajari implementasinya lebih lanjut.
+plugins-widevine-name = Modul Dekripsi Konten Widevine disediakan oleh Google Inc.
+plugins-widevine-description = Plugin ini memungkinkan pemutaran media terenkripsi sesuai dengan spesifikasi Encrypted Media Extensions. Media terenkripsi biasanya digunakan oleh situs untuk perlindungan terhadap penyalinan konten media premium. Kunjungi https://www.w3.org/TR/encrypted-media/ untuk informasi lebih lanjut tentang Encrypted Media Extensions.

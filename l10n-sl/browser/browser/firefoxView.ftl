@@ -17,6 +17,8 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Zapri
     .aria-label = Zapri
+firefoxview-empty-state-icon =
+    .alt = Pozor:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Pravkar
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -147,6 +149,37 @@ firefoxview-opentabs-focus-tab =
     .title = Preklopi na ta zavihek
 firefoxview-show-more = Prikaži več
 firefoxview-show-less = Prikaži manj
+firefoxview-search-text-box-clear-button =
+    .title = Počisti
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = Iskanje po zgodovini
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = Iskanje po nedavno zaprtih zavihkih
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-syncedtabs =
+    .placeholder = Iskanje po sinhroniziranih zavihkih
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = Iskanje po odprtih zavihkih
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Rezultati iskanja za "{ $query }"
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } spletno mesto
+        [two] { $count } spletni mesti
+        [few] { $count } spletna mesta
+       *[other] { $count } spletnih mest
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = Ni rezultatov za "{ $query }"
 firefoxview-sort-history-by-date-label = Razvrsti po datumu
 firefoxview-sort-history-by-site-label = Razvrsti po spletnem mestu
 # Variables:

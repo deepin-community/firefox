@@ -57,6 +57,10 @@ protections-panel-site-not-working-view =
 protections-panel-not-blocking-why-label = Neden?
 protections-panel-not-blocking-why-etp-on-tooltip = Bunları engellemek bazı web sitelerini kısmen bozabilir. Takip kodları engellendiğinde bazı düğmeler, formlar ve giriş alanları çalışmayabilir.
 protections-panel-not-blocking-why-etp-off-tooltip = Korumalar kapalı olduğu için bu sitedeki tüm takip kodları yüklendi.
+protections-panel-not-blocking-why-etp-on-tooltip-label =
+    .label = Bunları engellemek bazı web sitelerini kısmen bozabilir. Takip kodları engellendiğinde bazı düğmeler, formlar ve giriş alanları çalışmayabilir.
+protections-panel-not-blocking-why-etp-off-tooltip-label =
+    .label = Korumalar kapalı olduğu için bu sitedeki tüm takip kodları yüklendi.
 
 ##
 
@@ -149,3 +153,12 @@ protections-panel-cookie-banner-blocker-view-turn-on-description = Açtığını
 protections-panel-cookie-banner-view-cancel = Vazgeç
 protections-panel-cookie-banner-view-turn-off = Kapat
 protections-panel-cookie-banner-view-turn-on = Aç
+protections-panel-cookie-banner-view-cancel-label =
+    .label = Vazgeç
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = Kapat
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = Aç
+protections-panel-report-broken-site =
+    .label = Bozuk siteyi rapor et
+    .title = Bozuk siteyi rapor et

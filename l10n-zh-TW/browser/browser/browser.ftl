@@ -279,6 +279,9 @@ quickactions-cmd-plugins = 外掛程式
 # Opens the print dialog
 quickactions-print2 = 列印頁面
 quickactions-cmd-print = 列印, print
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = 儲存頁面為 PDF 檔
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = 開啟隱私視窗
 quickactions-cmd-private = 隱私瀏覽, 無痕模式, private browsing
@@ -348,6 +351,7 @@ identity-connection-secure = 安全連線
 identity-connection-failure = 連線失敗
 identity-connection-internal = 這是安全的 { -brand-short-name } 頁面。
 identity-connection-file = 此頁面位於您的電腦上。
+identity-connection-associated = 此頁面是從其他頁面載入的。
 identity-extension-page = 此頁面是擴充套件頁面。
 identity-active-blocked = { -brand-short-name } 已經封鎖此頁面中不安全的部分。
 identity-custom-root = 連線是由 Mozilla 不認識的憑證簽發者所驗證。
@@ -560,8 +564,6 @@ urlbar-result-action-search-w-engine = 使用 { $engine } 進行搜尋
 urlbar-result-action-sponsored = 贊助項目
 urlbar-result-action-switch-tab = 切換至該分頁
 urlbar-result-action-visit = 前往
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = 開啟您剪貼簿中的網址
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = 開啟剪貼簿中的網址
 # Directs a user to press the Tab key to perform a search with the specified

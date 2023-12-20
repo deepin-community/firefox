@@ -57,6 +57,10 @@ protections-panel-site-not-working-view =
 protections-panel-not-blocking-why-label = Warum?
 protections-panel-not-blocking-why-etp-on-tooltip = Das Blockieren könnte Probleme mit Inhalten einiger Websites verursachen. Ohne Skripte zur Aktivitätenverfolgung funktionieren einige Schaltflächen, Formulare und Anmeldefelder vielleicht nicht.
 protections-panel-not-blocking-why-etp-off-tooltip = Alle Elemente zur Aktivitätenverfolgung auf dieser Website wurden geladen, da der Schutz deaktiviert ist.
+protections-panel-not-blocking-why-etp-on-tooltip-label =
+    .label = Das Blockieren könnte Probleme mit Inhalten einiger Websites verursachen. Ohne Skripte zur Aktivitätenverfolgung funktionieren einige Schaltflächen, Formulare und Anmeldefelder vielleicht nicht.
+protections-panel-not-blocking-why-etp-off-tooltip-label =
+    .label = Alle Elemente zur Aktivitätenverfolgung auf dieser Website wurden geladen, da der Schutz deaktiviert ist.
 
 ##
 
@@ -149,3 +153,12 @@ protections-panel-cookie-banner-blocker-view-turn-on-description = Aktivieren un
 protections-panel-cookie-banner-view-cancel = Abbrechen
 protections-panel-cookie-banner-view-turn-off = Deaktivieren
 protections-panel-cookie-banner-view-turn-on = Aktivieren
+protections-panel-cookie-banner-view-cancel-label =
+    .label = Abbrechen
+protections-panel-cookie-banner-view-turn-off-label =
+    .label = Deaktivieren
+protections-panel-cookie-banner-view-turn-on-label =
+    .label = Aktivieren
+protections-panel-report-broken-site =
+    .label = Problem mit Website melden
+    .title = Problem mit Website melden
