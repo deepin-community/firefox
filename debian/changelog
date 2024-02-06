@@ -1,3 +1,9 @@
+firefox (121.0-1deepin2) unstable; urgency=medium
+
+  * fix: loong64 rust target
+
+ -- Chang Yang <yangchang@deepin.org>  Tue, 06 Feb 2024 10:30:22 +0800
+
 firefox (121.0-1deepin1) unstable; urgency=medium
 
   * debian/control*, debian/rules: Use LLVM-16 build it.
