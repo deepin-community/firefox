@@ -11,6 +11,7 @@ import pipes
 import platform
 import random
 import re
+import select
 import shutil
 import signal
 import subprocess
@@ -871,9 +872,23 @@ class XPCShellTestThread(Thread):
             if self.interactive:
                 self.log.info("%s | Process ID: %d" % (name, self.proc_ident))
 
-            # Communicate returns a tuple of (stdout, stderr), however we always
-            # redirect stderr to stdout, so the second element is ignored.
-            process_output, _ = self.communicate(proc)
+            if self.pStdout == PIPE:
+                process_stdout = ""
+                while True:
+                    (r, w, e) = select.select([proc.stdout], [], [], 120)
+                    if len(r) == 0:
+                        process_stdout += "TEST-UNEXPECTED-FAIL | %s | application timed out after 120 seconds with no output" % (test)
+                        proc.kill()
+                        break
+                    line = proc.stdout.read(1)
+                    if line == "":
+                        break
+                    process_stdout += line
+                proc.wait()
+            else:
+                # Communicate returns a tuple of (stdout, stderr), however we always
+                # redirect stderr to stdout, so the second element is ignored.
+                process_output, _ = self.communicate(proc)
 
             if self.interactive:
                 # Not sure what else to do here...
@@ -1024,8 +1039,6 @@ class XPCShellTests(object):
         self.nodeProc = {}
         self.http3Server = None
         self.conditioned_profile_dir = None
-        self.outthread = {}
-        self.errthread = {}
 
     def getTestManifest(self, manifest):
         if isinstance(manifest, TestManifest):
@@ -1389,15 +1402,9 @@ class XPCShellTests(object):
         self.log.info("Found node at %s" % (nodeBin,))
 
         def read_streams(name, proc, pipe):
-            while True:
-                line = pipe.readline()
-                output = "stdout" if pipe == proc.stdout else "stderr"
-                if line:
-                    self.log.info("node %s [%s] %s" % (name, output, line))
-
-                # Check if process is dead
-                if proc.poll() is not None:
-                    break
+            output = "stdout" if pipe == proc.stdout else "stderr"
+            for line in iter(pipe.readline, ""):
+                self.log.info("node %s [%s] %s" % (name, output, line))
 
         def startServer(name, serverJs):
             if not os.path.exists(serverJs):
@@ -1433,12 +1440,18 @@ class XPCShellTests(object):
                     if searchObj:
                         self.env["MOZHTTP2_PORT"] = searchObj.group(1)
                         self.env["MOZNODE_EXEC_PORT"] = searchObj.group(2)
-                t1 = Thread(target=read_streams, args=(name, process, process.stdout))
+                t1 = Thread(
+                    target=read_streams,
+                    args=(name, process, process.stdout),
+                    daemon=True,
+                )
                 t1.start()
-                t2 = Thread(target=read_streams, args=(name, process, process.stderr))
+                t2 = Thread(
+                    target=read_streams,
+                    args=(name, process, process.stderr),
+                    daemon=True,
+                )
                 t2.start()
-                self.outthread[name] = t1
-                self.errthread[name] = t2
             except OSError as e:
                 # This occurs if the subprocess couldn't be started
                 self.log.error("Could not run %s server: %s" % (name, str(e)))
@@ -1460,13 +1473,6 @@ class XPCShellTests(object):
                 os.killpg(proc.pid, signal.SIGTERM)
             else:
                 proc.terminate()
-
-            if self.outthread[name] is not None:
-                self.outthread[name].join()
-                del self.outthread[name]
-            if self.errthread[name] is not None:
-                self.errthread[name].join()
-                del self.errthread[name]
 
         self.nodeProc = {}
 
@@ -1494,7 +1500,11 @@ class XPCShellTests(object):
         options["profilePath"] = dbPath
         options["isMochitest"] = False
         options["isWin"] = sys.platform == "win32"
-        self.http3Server = Http3Server(options, self.env, self.log)
+        serverEnv = self.env.copy()
+        serverLog = self.env.get("MOZHTTP3_SERVER_LOG")
+        if serverLog is not None:
+            serverEnv["RUST_LOG"] = serverLog
+        self.http3Server = Http3Server(options, serverEnv, self.log)
         self.http3Server.start()
         for key, value in self.http3Server.ports().items():
             self.env[key] = value

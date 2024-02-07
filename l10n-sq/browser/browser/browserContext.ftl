@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = Llogari
+    .tooltiptext = Llogari
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = Përdor Kredenciale Hyrjesh të Ruajtura
     .accesskey = o
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Përdorim Fjalëkalimin e Ruajtur
     .accesskey = F
@@ -306,6 +313,9 @@ main-context-menu-suggest-strong-password =
 main-context-menu-manage-logins2 =
     .label = Administroni Kredenciale Hyrjesh
     .accesskey = K
+main-context-menu-manage-passwords =
+    .label = Administroni Fjalëkalime
+    .accesskey = A
 main-context-menu-keyword =
     .label = Shtoni një Fjalëkyç për këtë Kërkim…
     .accesskey = K

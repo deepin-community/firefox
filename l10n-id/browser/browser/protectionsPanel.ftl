@@ -134,3 +134,9 @@ protections-panel-cookie-banner-view-turn-off-label =
     .label = Nonaktifkan
 protections-panel-cookie-banner-view-turn-on-label =
     .label = Aktifkan
+
+## Protections panel info message
+
+cfr-protections-panel-header = Menjelajah tanpa diikuti
+cfr-protections-panel-body = Simpan data Anda untuk diri sendiri. { -brand-short-name } melindungi Anda dari banyak pelacak umum yang mengikuti apa yang Anda lakukan daring.
+cfr-protections-panel-link-text = Pelajari lebih lanjut

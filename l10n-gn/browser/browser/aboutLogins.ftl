@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = Tembiapo ñepyrũ pyahu moheñói
+about-logins-page-title-name = Ñe’ẽñemi
+about-logins-login-filter2 =
+    .placeholder = Eheka Ñe’ẽñemi
+    .key = F
+create-login-button =
+    .title = Embojuaju ñe’ẽñemi
 fxaccounts-sign-in-text = Egueru umi ne ñe’ẽñemi ne ambue mba’e’okágui
 fxaccounts-sign-in-sync-button = Eike embojuehe hag̃ua
 fxaccounts-avatar-button =
@@ -23,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Egueru ambue kundahára
 about-logins-menu-menuitem-import-from-a-file = Marandurendágui jegueru…
 about-logins-menu-menuitem-export-logins = Emba’ereraha tembiapo ñepyrũ…
 about-logins-menu-menuitem-remove-all-logins = Emboguepaite tembiapo ñepyrũ…
+about-logins-menu-menuitem-export-logins2 = Ñe’ẽñemi guerahauka…
+about-logins-menu-menuitem-remove-all-logins2 = Emboguepaite ñe’ẽñeminguéra…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Jeporavorã
@@ -50,6 +58,21 @@ login-list-filtered-count =
         [many] { $count } { $total } rembiapo ñepyrũ
        *[other] { $count } { $total } rembiapokuéra ñepyrũ
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } ñe’ẽñemi
+       *[other] { $count } ñe’ẽñemi
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } oĩva { $total } ñe’ẽñemi
+       *[other] { $count } oĩva { $total } ñe’ẽñemikuéra
+    }
 login-list-sort-label-text = Omoĩporã:
 login-list-name-option = Téra  (A-Z)
 login-list-name-reverse-option = Téra (Z-A)
@@ -59,11 +82,14 @@ about-logins-login-list-alerts-option = Kyhyjerã
 login-list-last-changed-option = Ñemoambue ipyahuvéva
 login-list-last-used-option = Ojeporúva ipahápe
 login-list-intro-title = Ndojejuhúi jeikeha
+login-list-intro-title2 = Ndaipóri ñe’ẽñemi ñongatupyre
 login-list-intro-description = Eñongatúvo ñe’ẽñemi { -brand-product-name } ndive, kóva ojehecháta ápe.
 about-logins-login-list-empty-search-title = Ndojejuhúi tembiapo ñepyrũ
+about-logins-login-list-empty-search-title2 = Ndojejuhúi ñe’ẽñemi ñongatupyre
 about-logins-login-list-empty-search-description = Ndaipóri pe ehekáva.
 login-list-item-title-new-login = Tembiapo ñepyrũ pyahu
 login-list-item-subtitle-new-login = Emoinge nde reraite tembiapo ñepyrũme
+login-list-item-title-new-login2 = Embojuaju ñe’ẽñemi
 login-list-item-subtitle-missing-username = (poruhára hera’ỹva)
 about-logins-list-item-breach-icon =
     .title = Ñanduti renda imarãva
@@ -82,19 +108,29 @@ about-logins-login-intro-heading-logged-out2 = ¿Eheka ne rembiapo ñepyrũ ñon
 about-logins-login-intro-heading-logged-in = Ndaipóri tembiapo ñepyrũ mbojuehepyre.
 login-intro-description = Eñongatúvo nde jeike { -brand-product-name }-pe ambue mba’e’okápe.
 login-intro-instructions-fxa = Emoheñói térã eike nde { -fxaccount-brand-name }-pe mba’e’oka eñongatuhápe ne rembiapo ñepyrũ.
+about-logins-login-intro-heading-message = Eñongatu ñe’ẽñemi tenda hekorosãvape
+login-intro-description2 = Opaite ñe’ẽñemi ñongatupyre { -brand-product-name } pegua oñembopapapy. Avei, roma’ẽmeme umi ñembogua ha roñatõita oikóramo ivaíva. <a data-l10n-name="breach-alert-link">Eikuaave</a>
 login-intro-instructions-fxa2 = Emoheñói térã eike ne mba’etépe mba’e’oka eñongatuhápe eikehague.
 login-intro-instructions-fxa-settings = Eho Ñemoĩporãme > Sync > Emyandy ñembojuehe… Eiporavo Tembiapo ñepyrũ kora ha ñe’ẽñemi.
 login-intro-instructions-fxa-passwords-help = Eike <a data-l10n-name="passwords-help-link">ñe’ẽñemi pytyvõrã</a> kuatiaroguépe ejeykeko hag̃ua.
 about-logins-intro-browser-only-import = Ne rembiapo ñepyrũ oñeñongatúramo ambue kundahárape, ikatu <a data-l10n-name="import-link">ogueru { -brand-product-name }-pe</a>
 about-logins-intro-import2 = Ne rembiapo ñepyrũ oñeñongatu { -brand-product-name }-gui okápe, ikatu <a data-l10n-name="import-browser-link">egueru ambue kundaháragui</a> térã <a data-l10n-name="import-file-link">maranduredágui</a>
+about-logins-intro-import3 = Eiporavo votõ ñesumaha oĩva yvate embojuaju hag̃ua ñe’ẽñemi. Avei ikatu <a data-l10n-name="import-browser-link">eru ñe’ẽñemi ambue kundaháragui</a> térã <a data-l10n-name="import-file-link">marandurenda guive</a>
 
 ## Login
 
 login-item-new-login-title = Tembiapo ñepyrũ pyahu moheñói
+# Header for adding a password
+about-logins-login-item-new-login-title = Embojuaju ñe’ẽñemi
 login-item-edit-button = Mbosako’i
 about-logins-login-item-remove-button = Mboguete
 login-item-origin-label = Ñanduti kundaharape
 login-item-tooltip-message = Emoñondivéke pe kundaharape ñanduti renda emoñepyrũhápe tembiapo rehe.
+about-logins-origin-tooltip2 = Ehai kundaharape ha emoĩmbaporãke oĩhaichaite emoñerũkuévo tembiapo.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = Eñongatúke katuete ne ñe’ẽñemi ag̃aguáva ko tendápe g̃uarã. Emoambuévo ñe’ẽñemi ko’ápe nomoambuéi { $webTitle } pegua.
+about-logins-add-password-tooltip = Eñongatúke katuete ne ñe’ẽñemi ag̃aguáva ko tendápe g̃uarã.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = Poruhára réra
@@ -108,6 +144,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Monguatia
 login-item-copied-password-button-text = Monguatiapyre!
 login-item-save-changes-button = Moambue ñongatu
+about-logins-login-item-save-changes-button = Ñongatu
 login-item-save-new-button = Ñongatu
 login-item-cancel-button = Heja
 
@@ -135,6 +172,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Embosako’ívo tembiapo ñ
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = embosako’i tembiapo ñepyrũ ñongatupyre
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Embosako’i hag̃ua ñe’ẽñemi, emoinge nde reraite Windows emoñepyrũvo. Oipytyvõta emo’ãvo ne mba’etekuéra rekorosã.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = embosako’i ñe’ẽñemi ñongatupyre
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Ehecha hag̃ua ñe’ẽñemi, emoinge nde reraite tembiapo ñepyrũ pegua. Oipytyvõta emo’ãvo ne mba’etekuéra rekorosã.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -150,6 +192,11 @@ about-logins-export-password-os-auth-dialog-message-win = Erahaukávo ne rembiap
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = erahauka poruhára ha ñe’ẽñemi ñongatupyre
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Erahauka hag̃ua ñe’ẽñemi, emoinge nde reraite Windows emoñepyrũvo. Oipytyvõta emo’ãvo ne mba’etekuéra rekorosã.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = erahauka ñe’ẽñemi ñongatupyre
 
 ## Primary Password notification
 
@@ -165,6 +212,10 @@ confirmation-dialog-dismiss-button =
     .title = Heja
 about-logins-confirm-remove-dialog-title = ¿Emboguete ko tembiapo ñepyrũ?
 confirm-delete-dialog-message = Ko tembiapoite ndaikatúi emboguevi.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = ¿Eipe’a ñe’ẽñemi?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Ndaikatúi embojevy ko mba’e.
 about-logins-confirm-remove-dialog-confirm-button = Mboguete
 
 ## Variables
@@ -210,12 +261,50 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [one] Kóva omboguéta tembiapo ñepyrũ eñongatúva { -brand-short-name }-pe opaite mba’e’oka ojuehéva ne mba’ete rehe. Kóva avei omboguéta umi ñembogua kyhyjerã asẽva ko’ápe. Ndaikatumo’ãi emboguevi ko tembiapo.
        *[other] Kóva omboguéta tembiapo ñepyrũ eñongatúva { -brand-short-name }-pe opaite mba’e’oka ojuehéva ne mba’ete rehe. Kóva avei omboguéta umi ñembogua kyhyjerã asẽva ko’ápe. Ndaikatumo’ãi emboguevi ko tembiapo.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Héẽ, emboguete ñe’ẽñemi
+        [one] Héẽ, emboguete ñe’ẽñemi
+       *[other] Héẽ, emboguete ñe’ẽñeminguéra
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] ¿Emboguete { $count } ñe’ẽñemi?
+       *[other] ¿Emboguete { $count } ñe’ẽñeminguéra?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Kóva omboguéta umi ñe’ẽñemi ñongatupyre { -brand-short-name } pegua ha oimeraẽva kyhyjerã ñembogua rehegua. Ndaikatúi embojevy ko mba’e.
+        [one] Kóva omboguéta umi ñe’ẽñemi ñongatupyre { -brand-short-name } pegua ha oimeraẽva kyhyjerã ñembogua rehegua. Ndaikatúi embojevy ko mba’e.
+       *[other] Kóva omboguéta umi ñe’ẽñemi ñongatupyre { -brand-short-name } pegua ha oimeraẽva kyhyjerã ñembogua rehegua. Ndaikatúi embojevy ko mba’e.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] ¿Emboguete ñe’ẽñemi { $count } opaite mba’e’okágui?
+       *[other] ¿Emboguete ñe’ẽñemi { $count } opaite mba’e’okágui?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Kóva omboguéta opaite ñe’ẽñemi ñongatupyre { -brand-short-name } pegua ne mba’e’okakuéra ojuehepyréva. Kóva avei omboguéta oimeraẽva ñembogua kyhyjerã osẽva ko’ápe. Ndaikatumo’ãi emboguevi ko tembiapo.
+        [one] Kóva omboguéta opaite ñe’ẽñemi ñongatupyre { -brand-short-name } pegua ne mba’e’okakuéra ojuehepyréva. Kóva avei omboguéta oimeraẽva ñembogua kyhyjerã osẽva ko’ápe. Ndaikatumo’ãi emboguevi ko tembiapo.
+       *[other] Kóva omboguéta opaite ñe’ẽñemi ñongatupyre { -brand-short-name } pegua ne mba’e’okakuéra ojuehepyréva. Kóva avei omboguéta oimeraẽva ñembogua kyhyjerã osẽva ko’ápe. Ndaikatumo’ãi emboguevi ko tembiapo.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Emba’ereraha tembiapo ñepyrũ ha ñe’ẽñemi
 about-logins-confirm-export-dialog-message = Ñe’ẽñemi oñeñongatúta moñe’ẽrãrõ (techapyrã, BadP@ssw0rd) oimeraẽva ombojurujakuaáva marandurenda rahaukapyre ikatu ohecha.
 about-logins-confirm-export-dialog-confirm-button = Emba’egueraha…
+about-logins-confirm-export-dialog-title2 = Jehaipy ñe’ẽñemi guerahauka rehegua
+about-logins-confirm-export-dialog-message2 =
+    Erahaukávo, ne ñe’ẽñeminguéra oñeñongatu marandurenda oñemoñe’ẽkuaávape.
+    Eiporupa vove marandurenda, embogue ani hag̃ua ambue tapicha oiporúva ko mba’e’oka ohecha ne ñe’ẽñeminguéra.
+about-logins-confirm-export-dialog-confirm-button2 = Eguerahauka gueteri
 about-logins-alert-import-title = Emba’eguerupáma
 about-logins-alert-import-message = Ehechapaite emba’egueruva’ekue
 confirm-discard-changes-dialog-title = ¿Emboyke moambue eñongatu’ỹva?
@@ -257,6 +346,11 @@ about-logins-export-file-picker-title = Emba’ereraha tembiapo ñepyrũ marandu
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Eguerahauka ñe’ẽñemi { -brand-short-name } mba’e
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = ñe’ẽñemi.csv
 about-logins-export-file-picker-export-button = Mba’ereraha
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -270,6 +364,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = Egueru marandurenda tembiapo ñepyrũgui
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = Emba’egueru ñe’ẽñemi { -brand-short-name }-pe
 about-logins-import-file-picker-import-button = Mba’egueru
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -306,6 +402,21 @@ about-logins-import-dialog-items-no-change =
         [one] <span>Tembiapo ñepyrũ ikõiva:</span> <span data-l10n-name="count">{ $count }</span><span data-l10n-name="meta">(ndojeguerúiva)</span>
        *[other] <span>Tembiapo ñepyrũ ikõiva:</span> <span data-l10n-name="count">{ $count }</span><span data-l10n-name="meta">(ndojeguerúiva)</span>
     }
+about-logins-import-dialog-items-added2 =
+    { $count ->
+        [one] <span>Ñe’ẽñemi pyahu mbojuajupyre:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>Ñe’ẽñemi pyahu mbojuajupyre:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+        [one] <span>Mba’eporu oĩva hekopyahupyréva:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>Mba’eporu oĩva hekopyahupyréva:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+        [one] <span>Mba’eporu ikõiva jejuhupyre:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(noñemba’eguerúiva)</span>
+       *[other] <span>Mba’eporu ikõiva jejuhupyre:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(noñemba’eguerúiva)</span>
+    }
 about-logins-import-dialog-items-error =
     { $count ->
         [one] <span>Jejavy:</span><span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ndojeguerúiva)</span>
@@ -327,6 +438,7 @@ about-logins-import-dialog-error-try-import-again = Eñeha’ã emba’eguerujey
 about-logins-import-dialog-error-cancel = Heja
 about-logins-import-report-title = Mba’egueru Ñemomichĩ
 about-logins-import-report-description = Tembiapo ñepyrũ ha ñe’ẽñemi eguerupyre { -brand-short-name }-gui.
+about-logins-import-report-description2 = Ñe’ẽñemi mba’eguerupyre { -brand-short-name }-gui.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -334,6 +446,9 @@ about-logins-import-report-row-index = Tysyi’i { $number }
 about-logins-import-report-row-description-no-change = Mokõimbyre: Ojokupyty tembiapo ñepyrũ oĩvare
 about-logins-import-report-row-description-modified = Tembiapo ñepyrũ oĩva hekopyahúma
 about-logins-import-report-row-description-added = Tembiapo ñepyrũ pyahu mbojuajupyre
+about-logins-import-report-row-description-no-change2 = Ikõimbyre: ojokupyty mba’eporu oĩvavoi ndive
+about-logins-import-report-row-description-modified2 = Mba’eporu oĩvavoi hekopyahupyréva
+about-logins-import-report-row-description-added2 = Ñe’ẽñemi pyahu mbojuajupyre
 about-logins-import-report-row-description-error = Javy: Kora oĩ’ỹva
 
 ##
@@ -360,6 +475,21 @@ about-logins-import-report-no-change =
     { $count ->
         [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Tembiapo ñepyrũ mokõimbyre</div> <div data-l10n-name="not-imported">(ndojeguerúiva)</div>
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Tembiapo ñepyrũ mokõimbyre</div> <div data-l10n-name="not-imported">(ndojeguerúiva)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Ñe’ẽñemi pyahu mbojuajupyre</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Ñe’ẽñemi pyahu mbojuajupyre</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Mba’eporu oĩvavoi hekopyahupyréva</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Mba’eporu oĩvavoi hekopyahupyréva</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Mba’eporu  ikõimbyre</div> <div data-l10n-name="not-imported">(noñemba’eguerúiva)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Mba’eporu  ikõimbyre</div> <div data-l10n-name="not-imported">(noñemba’eguerúiva)</div>
     }
 about-logins-import-report-error =
     { $count ->

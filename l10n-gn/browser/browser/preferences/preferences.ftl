@@ -612,6 +612,9 @@ search-suggestions-desc = Eiporavo mba’éichapa osẽta ñe’ẽporã jehekah
 search-suggestions-option =
     .label = Ehechauka ñe’ẽreka joguaha
     .accesskey = s
+search-show-suggestions-option =
+    .label = Ehechauka ñemoñe’ẽ jehekarã
+    .accesskey = S
 search-show-suggestions-url-bar-option =
     .label = Ehechauka ñe’ẽreka joguaha kundaharape ha avei jejuhu hague rendápe
     .accesskey = l
@@ -745,8 +748,10 @@ sync-currently-syncing-bookmarks = Techaukaha
 sync-currently-syncing-history = Tembiasakue
 sync-currently-syncing-tabs = Tendayke ijurujáva
 sync-currently-syncing-logins-passwords = Tembiapo ñepyrũ ha ñe’ẽñemi
+sync-currently-syncing-passwords = Ñe’ẽñemi
 sync-currently-syncing-addresses = Kundaharape
 sync-currently-syncing-creditcards = Kuatia’atã ñemurã
+sync-currently-syncing-payment-methods = Mba’éicha ehepyme’ẽta
 sync-currently-syncing-addons = Moĩmbaha
 sync-currently-syncing-settings = Ñemboheko
 sync-change-options =
@@ -777,6 +782,10 @@ sync-engine-logins-passwords =
     .label = Tembiapo ñepyrũ ha ñe’ẽñemi
     .tooltiptext = Poruhára réra ha ñe’ẽñemi ñongatupyre
     .accesskey = L
+sync-engine-passwords =
+    .label = Ñe’ẽñemi
+    .tooltiptext = Ñe’ẽñemi eñongatupyre
+    .accesskey = P
 sync-engine-addresses =
     .label = Kundaharape
     .tooltiptext = Pareha Papapy reñongatuva’ekue (mohendahápe g̃uarãnte)
@@ -785,6 +794,10 @@ sync-engine-creditcards =
     .label = Kuatia’atã ñemurã
     .tooltiptext = Téra, papapy ha ndoikoveimaha arange (mohendahápe g̃uarã)
     .accesskey = C
+sync-engine-payment-methods2 =
+    .label = Mba’éicha ehepyme’ẽta
+    .tooltiptext = Téra, kuatia’atã ha araka’epevépa
+    .accesskey = n
 sync-engine-addons =
     .label = Moĩmbaha
     .tooltiptext = Firefox mohendahápe g̃uarã Moĩmbaha ha Jeguaha
@@ -831,18 +844,35 @@ pane-privacy-logins-and-passwords-header = Tembiapo ñepyrũ ha ñe’ẽñemi
 forms-ask-to-save-logins =
     .label = Eporandu eñongatu hag̃ua tembiapo ñepyrũ ha ñe’ẽñemi ñandutípe
     .accesskey = E
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Ñe’ẽñemi
+    .searchkeywords = eñepyrũ tembiapo
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Ejerure ñe’ẽñemi ñongatu
+    .accesskey = A
 forms-exceptions =
     .label = Oĩ’ỹva…
     .accesskey = x
 forms-generate-passwords =
     .label = Ere ha emoheñói ñe’ẽñemi hekorosãva
     .accesskey = u
+forms-suggest-passwords =
+    .label = Ejerure ñe’ẽñemi hekorosãva
+    .accesskey = S
 forms-breach-alerts =
     .label = Ehechauka kyhyjerã ñe’ẽñemi rehegua tenda imarãvape
     .accesskey = b
 forms-breach-alerts-learn-more-link = Kuaave
 preferences-relay-integration-checkbox =
     .label = Emoĩ ñanduti veve reragua’u { -relay-brand-name } emo’ã hag̃ua ne ñanduti veve kundaharape
+preferences-relay-integration-checkbox2 =
+    .label = Ere ñanduti veve rovamo’ãha { -relay-brand-name } emo’ã hag̃ua ne ñanduti veve kundaharape
+    .accesskey = r
 relay-integration-learn-more-link = Kuaave
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -851,6 +881,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Emoñepyrũ tembiapo ñongatupyre…
     .accesskey = L
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Emoĩmba poruhára réra ha ñe’ẽñemi ijeheguiete
+    .accesskey = F
+forms-saved-passwords =
+    .label = Ñe’ẽñemi ñongatupyre
+    .accesskey = d
 forms-primary-pw-use =
     .label = Eiporu ñe’ẽñemi ñepyrũgua
     .accesskey = U
@@ -874,6 +911,7 @@ forms-windows-sso =
     .label = Emoneĩ tembiapo ñepyrũ Windows rupi Microsoft-pe, mba’apo ha mbo’ehaogua mba’ete.
 forms-windows-sso-learn-more-link = Kuaave
 forms-windows-sso-desc = Eñangareko mba’ete mba’e’oka ñembohekópe
+windows-passkey-settings-label = Eñangareko jeikeha mba’eñemíre apopyvusu ñembohekópe
 
 ## OS Authentication dialog
 
@@ -885,6 +923,28 @@ primary-password-os-auth-dialog-message-win = Emoheñói hag̃ua ñe’ẽñemi 
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = emoheñói Ñe’ẽñemi Ñepyrũgua
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Myanyhẽjehegui
+autofill-addresses-checkbox = Eñongatu ha emyanyhẽ kundaharape
+    .accesskey = a
+autofill-saved-addresses-button = Kundaharape ñongatupyre
+    .accesskey = S
+autofill-payment-methods-checkbox-message = Eñongatu ha emyanyhẽ mba’éicha ehepyme’ẽta
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Oike kuatia’atã ñemurã ha virunohẽha
+    .accesskey = I
+autofill-saved-payment-methods-button = Mba’éicha ehepyme’ẽta ñongatupyre
+    .accesskey = v
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Ejerure macOS ñemoneĩ emyanehẽ hag̃ua ha embosako’i mba’éicha ehepyme’ẽta.
+        [windows] Ejerure Windows ñemoneĩ emyanehẽ hag̃ua ha embosako’i mba’éicha ehepyme’ẽta.
+        [linux] Ejerure Linux ñemoneĩ emyanehẽ hag̃ua ha embosako’i mba’éicha ehepyme’ẽta.
+       *[other] Ejerure ñemoneĩ emyanehẽ hag̃ua ha embosako’i mba’éicha ehepyme’ẽta.
+    }
+    .accesskey = o
 
 ## Privacy Section - History
 
@@ -1264,6 +1324,7 @@ httpsonly-radio-disabled =
 
 preferences-doh-header = DNS HTTPS reheguáva
 preferences-doh-description = Pe apopyvusu rendatee réra (DNS) HTTPS rehegua omondo mba’ejerure tendatee réra jeike ipapapýva rupive, omoheñóiva peteĩ DNS hekorosãva ha ombohasyve ambuépe ohechávo mba’ete ñanduti rendápe ojeike.
+preferences-doh-description2 = Pe apopyvusu rendatee réra (DNS) HTTPS rehegua omondo mba’ejerure tendatee réra jeike ipapapýva rupive, omoheñóiva peteĩ DNS hekorosãva ha ombohasyve ambuépe ohechávo mba’ete ñanduti rendápe ojeike.
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = Tekotee: { $status }
@@ -1280,6 +1341,7 @@ preferences-doh-status-disabled = Mboguepyre
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
 preferences-doh-status-not-active = Oku’e’ỹva ({ $reason })
 preferences-doh-group-message = Embojuruja DNS hekorosãva eiporúvo:
+preferences-doh-group-message2 = Emyandy DNS HTTPS ári eiporúvo:
 preferences-doh-expand-section =
     .tooltiptext = Maranduve
 preferences-doh-setting-default =

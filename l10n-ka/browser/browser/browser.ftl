@@ -351,6 +351,7 @@ identity-connection-secure = კავშირი დაცულია
 identity-connection-failure = კავშირი ვერ შედგა
 identity-connection-internal = { -brand-short-name } – უსაფრთხო გვერდი.
 identity-connection-file = ეს გვერდი თქვენს კომპიუტერში ინახება.
+identity-connection-associated = ეს გვერდი გახსნილია სხვა გვერდიდან.
 identity-extension-page = ეს გვერდი გახსნილია გაფართოების მიერ.
 identity-active-blocked = { -brand-short-name } ზღუდავს გვერდის დაუცველ ნაწილებს.
 identity-custom-root = კავშირი დამოწმებულია სერტიფიკატის გამომშვების მიერ, რომელიც უცნობია Mozilla-სთვის.
@@ -487,6 +488,9 @@ enable-devtools-popup-description2 = F12 მალსახმობის გ�
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = დახურვა
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -640,8 +644,8 @@ picture-in-picture-urlbar-button-open =
     .tooltiptext = გაიხსნას ეკრანი-ეკრანში ({ $shortcut })
 picture-in-picture-urlbar-button-close =
     .tooltiptext = დაიხუროს ეკრანი-ეკრანში ({ $shortcut })
-picture-in-picture-panel-header = სურათი-სურათში
-picture-in-picture-panel-headline = ეს ვებსაიტი არ გირჩევს Picture-in-Picture-ს
+picture-in-picture-panel-header = ეკრანი-ეკრანში
+picture-in-picture-panel-headline = ამ ვებსაიტს არასასურველად მიაჩნია ეკრანი-ეკრანში
 picture-in-picture-panel-body = ვიდეო შეიძლება არ გამოჩნდეს ისე, როგორც დეველოპერმა განიზრახა, სანამ Picture-in-Picture ჩართულია.
 picture-in-picture-enable-toggle =
     .label = ჩართვა მაინც

@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = 계정
+    .tooltiptext = 계정
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = 저장된 로그인 사용
     .accesskey = o
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = 저장된 비밀번호 사용
     .accesskey = o
@@ -305,6 +312,9 @@ main-context-menu-suggest-strong-password =
     .accesskey = S
 main-context-menu-manage-logins2 =
     .label = 로그인 관리
+    .accesskey = M
+main-context-menu-manage-passwords =
+    .label = 비밀번호 관리
     .accesskey = M
 main-context-menu-keyword =
     .label = 이 검색의 키워드 추가…

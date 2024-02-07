@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name(capitalization: "uppercase") }
     .tooltiptext = { -fxaccount-brand-name(capitalization: "uppercase") }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = Compte
+    .tooltiptext = Compte
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = Utiliser l’identifiant enregistré
     .accesskey = U
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Utiliser le mot de passe enregistré
     .accesskey = U
@@ -306,6 +313,9 @@ main-context-menu-suggest-strong-password =
 main-context-menu-manage-logins2 =
     .label = Gérer les identifiants
     .accesskey = n
+main-context-menu-manage-passwords =
+    .label = Gérer les mots de passe
+    .accesskey = m
 main-context-menu-keyword =
     .label = Ajouter un mot-clé pour cette recherche…
     .accesskey = m

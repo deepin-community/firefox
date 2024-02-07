@@ -7,7 +7,7 @@ Subject: Work around https://sourceware.org/bugzilla/show_bug.cgi?id=30578
  1 file changed, 4 insertions(+)
 
 diff --git a/media/ffvpx/config_unix64.h b/media/ffvpx/config_unix64.h
-index dce3ed7..aed52eb 100644
+index 7d63f47..086eaa3 100644
 --- a/media/ffvpx/config_unix64.h
 +++ b/media/ffvpx/config_unix64.h
 @@ -204,7 +204,11 @@

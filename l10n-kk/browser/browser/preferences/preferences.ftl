@@ -794,9 +794,9 @@ sync-engine-creditcards =
     .label = Несиелік карталар
     .tooltiptext = Аттар, сандар және мерзімі аяқталу күндері (тек жұмыс үстелі)
     .accesskey = Н
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Төлем әдістері
-    .tooltiptext = Аттар, карталар нөмірлері және мерзімдері (тек жұмыс үстел)
+    .tooltiptext = Аттар, карталар нөмірлері және аяқталу мерзімдері
     .accesskey = м
 sync-engine-addons =
     .label = Қосымшалар
@@ -844,18 +844,35 @@ pane-privacy-logins-and-passwords-header = Логиндер және парол�
 forms-ask-to-save-logins =
     .label = Веб-сайттар үшін логиндер мен парольдерді сақтауды сұрау
     .accesskey = с
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Парольдер
+    .searchkeywords = логиндер
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Парольдерді сақтауды сұрау
+    .accesskey = а
 forms-exceptions =
     .label = Ережелерден бөлек…
     .accesskey = р
 forms-generate-passwords =
     .label = Қатаң парольдерді ұсыну және генерациялау
     .accesskey = ы
+forms-suggest-passwords =
+    .label = Мықты парольдерді ұсыну…
+    .accesskey = с
 forms-breach-alerts =
     .label = Бұзылған веб-сайттардың парольдері туралы ескертулерді көрсету
     .accesskey = б
 forms-breach-alerts-learn-more-link = Көбірек білу
 preferences-relay-integration-checkbox =
     .label = Электрондық пошта адресіңізді қорғау үшін { -relay-brand-name } эл. пошта маскаларын ұсыну
+preferences-relay-integration-checkbox2 =
+    .label = Электрондық пошта адресіңізді қорғау үшін { -relay-brand-name } эл. пошта маскаларын ұсыну
+    .accesskey = р
 relay-integration-learn-more-link = Көбірек білу
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +881,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Сақталған логиндер…
     .accesskey = л
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Пайдаланушы аттары мен парольдерді автоматты түрде толтыру
+    .accesskey = т
+forms-saved-passwords =
+    .label = Сақталған парольдер
+    .accesskey = д
 forms-primary-pw-use =
     .label = Басты парольді қолдану
     .accesskey = ы
@@ -887,6 +911,7 @@ forms-windows-sso =
     .label = Microsoft, жұмыс және мектеп есептік жазбаларына Windows дара кіруін рұқсат ету
 forms-windows-sso-learn-more-link = Көбірек білу
 forms-windows-sso-desc = Тіркелгілерді құрылғыңыздың баптауларында басқарыңыз
+windows-passkey-settings-label = Қол жеткізу кілттерін жүйе баптауларында басқару
 
 ## OS Authentication dialog
 
@@ -898,6 +923,28 @@ primary-password-os-auth-dialog-message-win = Басты парольді жас
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = басты парольді жасау
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Автотолтыру
+autofill-addresses-checkbox = Адрестерді сақтау және толтыру
+    .accesskey = а
+autofill-saved-addresses-button = Сақталған адрестер
+    .accesskey = С
+autofill-payment-methods-checkbox-message = Төлем әдістерін сақтау және толтыру
+    .accesskey = м
+autofill-payment-methods-checkbox-submessage = Несиелік және дебеттік карталарды қамту
+    .accesskey = и
+autofill-saved-payment-methods-button = Сақталған төлем әдістері
+    .accesskey = т
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Төлем әдістерін толтыру және түзету үшін macOS аутентификациясын талап ету.
+        [windows] Төлем әдістерін толтыру және түзету үшін Windows аутентификациясын талап ету.
+        [linux] Төлем әдістерін толтыру және түзету үшін Linux аутентификациясын талап ету.
+       *[other] Төлем әдістерін толтыру және түзету үшін аутентификацияны талап ету.
+    }
+    .accesskey = о
 
 ## Privacy Section - History
 

@@ -18,6 +18,8 @@ about-webauthn-pin-section-title = Gestion de PIN
 about-webauthn-credential-management-section-title = Gerer le credentiales
 about-webauthn-pin-required-section-title = PIN obligatori
 about-webauthn-confirm-deletion-section-title = Confirmar deletion
+# Registered biometric features for authentication. Mostly, but not exclusively, fingerprints.
+about-webauthn-bio-enrollment-section-title = Registrationes biometric
 
 ## Info field texts
 
@@ -27,6 +29,8 @@ about-webauthn-text-select-device = Elige tu jeton de securitate desirate toccan
 # CTAP2 refers to Client to Authenticator Protocol version 2
 about-webauthn-text-non-ctap2-device = Impossibile gerer optiones perque tu jeton de securitate non supporta CTAP2.
 about-webauthn-text-not-available = Non disponibile pro iste platteforma
+about-webauthn-bio-enrollment-list-subsection-title = Registrationes:
+about-webauthn-add-bio-enrollment-section-title = Adder nove registration
 
 ## Results label
 
@@ -41,6 +45,7 @@ about-webauthn-results-pin-invalid-error =
        *[other] Error: PIN errate. Retenta. Tu ha { $retriesLeft } tentativas restante.
     }
 about-webauthn-results-pin-blocked-error = Error: Il non ha plus tentativas disponibile e tu apparato ha essite blocate perque le PIN errate era fornite troppe vices. Le apparato besonia de esser reinitiate.
+about-webauthn-results-pin-not-set-error = Error: PIN non preparate. Iste operation besonia del protection de PIN.
 about-webauthn-results-pin-too-short-error = Error: le PIN fornite es troppo curte.
 about-webauthn-results-pin-too-long-error = Error: le PIN fornite es troppo longe.
 about-webauthn-results-pin-auth-blocked-error = Error: Il habeva troppe tentativas fallite in un rango e le authentication del PIN ha essite temporarimente blocate. Tu apparato besonia de un cyclo de extinction (distaccar le spina e re-inserer lo).
@@ -53,6 +58,8 @@ about-webauthn-repeat-pin-label = Repeter le nove PIN:
 about-webauthn-current-pin-label = PIN actual:
 about-webauthn-pin-required-label = Insere tu PIN:
 about-webauthn-credential-list-subsection-title = Credentiales:
+about-webauthn-enrollment-name-label = Nomine de registration (optional):
+about-webauthn-enrollment-list-empty = Nulle inrolamentos trovate sur le apparato.
 about-webauthn-credential-list-empty = Nulle credentiales trovate sur le apparato.
 about-webauthn-confirm-deletion-label = Tu va deler:
 
@@ -62,9 +69,14 @@ about-webauthn-current-set-pin-button = Definir PIN
 about-webauthn-current-change-pin-button = Cambiar PIN
 # List is a verb, as in "Show list of credentials"
 about-webauthn-list-credentials-button = Listar credentiales
+# List is a verb, as in "Show list of all enrollments"
+about-webauthn-list-bio-enrollments-button = Lista de inrolamentos
+about-webauthn-add-bio-enrollment-button = Adder inrolamento
 about-webauthn-cancel-button = Cancellar
 about-webauthn-send-pin-button = OK
 about-webauthn-delete-button = Deler
+about-webauthn-start-enrollment-button = Initiar inrolamento
+about-webauthn-update-button = Actualisar
 
 ## Authenticator options fields
 ## Option fields correspond to the CTAP2 option IDs and definitions found in https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#option-id
@@ -128,3 +140,41 @@ about-webauthn-auth-info-true = Ver
 # Shows when boolean value for an info field is False. False should not be translated.
 about-webauthn-auth-info-false = False
 about-webauthn-auth-info-null = Non supportate
+
+## Bio enrollment sample feedbacks
+
+# To register a new enrollment (e.g. fingerprint) usually
+# multiple scans of the same finger have to be sampled.
+# This shows how many the user still has to do.
+# Variables:
+#  $repeatCount (Number): number of tries left
+about-webauthn-samples-still-needed =
+    { $repeatCount ->
+        [one] { $repeatCount } specimen ancora necessari.
+       *[other] { $repeatCount } specimens ancora necessari.
+    }
+# Scan (e.g. of fingerprint) was successful.
+about-webauthn-ctap2-enroll-feedback-good = Le specimen era bon.
+
+## Scan (e.g. of fingerprint) was off-center (e.g. too high, too left, etc.).
+
+about-webauthn-ctap2-enroll-feedback-too-high = Le specimen era troppo alte.
+about-webauthn-ctap2-enroll-feedback-too-low = Le specimen era troppo basse
+about-webauthn-ctap2-enroll-feedback-too-left = Le specimen era troppo a sinistra.
+about-webauthn-ctap2-enroll-feedback-too-right = Le specimen era troppo a dextra.
+
+##
+
+about-webauthn-ctap2-enroll-feedback-too-fast = Le specimen era troppo veloce.
+about-webauthn-ctap2-enroll-feedback-too-slow = Le specimen era troppo lente.
+about-webauthn-ctap2-enroll-feedback-poor-quality = Le specimen habeva povre qualitate.
+# Skewed in the sense of fingerprint/iris scan was too distorted
+about-webauthn-ctap2-enroll-feedback-too-skewed = Le specimen era troppo inclinate.
+about-webauthn-ctap2-enroll-feedback-too-short = Le specimen era troppo breve.
+# Scan (e.g. of fingerprint) couldn't be merged with previous samples.
+about-webauthn-ctap2-enroll-feedback-merge-failure = Fallimento del fusionamento del specimen.
+# Scan (e.g. of fingerprint) is somehow identical to an existing sample.
+about-webauthn-ctap2-enroll-feedback-exists = Le specimen jam existe
+about-webauthn-ctap2-enroll-feedback-no-user-activity = Nulle activitate de usator.
+about-webauthn-ctap2-enroll-feedback-no-user-presence-transition = Le usator non completava le recolta de specimen como expectate.
+about-webauthn-ctap2-enroll-feedback-other = Error de specimen.

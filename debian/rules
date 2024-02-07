@@ -19,6 +19,7 @@ PYTHON := PYTHONDONTWRITEBYTECODE=y python3
 
 PRODUCT := browser
 include debian/upstream.mk
+include /usr/share/dpkg/buildopts.mk
 
 SYSTEM_LIBS = zlib ffi
 ifeq (,$(filter buster bullseye,$(DIST)))
@@ -76,7 +77,7 @@ $(call uc,$(PRODUCT)) := $(call uc,$(DISPLAY_NAME))
 Product := $(call uc_first,$(PRODUCT))
 $(Product) := $(DISPLAY_NAME)
 
-export MOZ_APP_REMOTINGNAME := $(call uc_first,$($(PRODUCT)))
+export MOZ_APP_REMOTINGNAME := $($(PRODUCT))
 
 LIB_DIR := /usr/lib/$($(PRODUCT))
 SHARE_DIR := /usr/share/$($(PRODUCT))
@@ -143,7 +144,7 @@ CXX := g++
 endif
 
 ifeq (,$(filter buster bullseye,$(DIST)))
-PATH := /usr/lib/llvm-16/bin:$(PATH)
+PATH := /usr/lib/llvm-14/bin:$(PATH)
 endif
 
 ifneq (,$(filter mips mipsel,$(DEB_HOST_ARCH)))
@@ -257,7 +258,8 @@ stamps/build-$(PRODUCT):: stamps/configure-check-$(PRODUCT)
 		_LEAKTEST_FILES=leaktest.py
 
 L10N_BUILD_STAMPS = $(foreach lang,$(L10N_LANGS),stamps/build-l10n-$(lang))
-stamps/build-l10n:: $(L10N_BUILD_STAMPS)
+stamps/build-l10n::
+	debian/rules $(addprefix -j,$(DEB_BUILD_OPTION_PARALLEL)) $(L10N_BUILD_STAMPS)
 
 $(L10N_BUILD_STAMPS):: stamps/build-l10n-%: stamps/virtualenv
 	$(if $(wildcard build-l10n/$*),,mkdir -p build-l10n/$*)
@@ -306,7 +308,8 @@ stamps/install-$(PRODUCT)::
 	-TZ=UTC unzip -d debian/tmp$(LIB_DIR)/browser debian/tmp$(LIB_DIR)/browser/omni.ja 'defaults/preferences/*'
 
 L10N_DH_INSTALL_STAMPS = $(foreach lang,$(L10N_LANGS),stamps/dh_install-l10n-$(lang))
-stamps/dh_install-l10n:: $(L10N_DH_INSTALL_STAMPS)
+stamps/dh_install-l10n::
+	debian/rules $(addprefix -j,$(DEB_BUILD_OPTION_PARALLEL)) $(L10N_DH_INSTALL_STAMPS)
 
 $(L10N_DH_INSTALL_STAMPS):: stamps/dh_install-l10n-%: stamps/build-l10n-%
 	dh_install -p$($(PRODUCT))-l10n-$(call lc,$*) build-l10n/$*/dist/xpi/langpack-$*@$($(PRODUCT)).mozilla.org.xpi $(LIB_DIR)/browser/extensions/

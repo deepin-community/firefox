@@ -11,10 +11,10 @@ callout-primary-complete-button-label = ¡Arekóma!
 
 # "Tab pickup" refers to the section in Firefox View that displays open
 # tabs from other devices
-callout-firefox-view-tab-pickup-title = Epo mba’e’oka pa’ũme embyatykuévo ficha
-callout-firefox-view-tab-pickup-subtitle = Egueru pya’e tendayke ijurujáva pumbyrýgui ha embojuruja ojeporutahápe tuichaháicha.
-callout-firefox-view-recently-closed-title = Erujey tendayke mbotypyre sapy’aitépe
-callout-firefox-view-recently-closed-subtitle = Opaite tendayke mbotypyre osẽta mba’eve’ỹre ko’ápe. Anive ejepy’apy embotýramo peichahágui.
+callout-firefox-view-tab-pickup-title = Emoambu mba’e’oka pa’ũme erahávo tendayke
+callout-firefox-view-tab-pickup-subtitle = Egueru pya’e tendayke ijurujáva ne pumbyrýpe ha embojuruja ko’apete.
+callout-firefox-view-recently-closed-title = Erujey ne rendayke mbotypyre pya’e
+callout-firefox-view-recently-closed-subtitle = Opavave tendayke mbotypyre osẽta mba’eve’ỹre ko’ápe. Anivetéke ejepy’apy emboty mba’éramo peichahágui.
 callout-firefox-view-colorways-title = Embojuaju sa’y sa’imi
 # "Shade" refer to different color options in each colorway.
 callout-firefox-view-colorways-subtitle = Eiporavo mba’etépa ohechauka sa’ykuéra ojueheguáva. { -brand-product-name }-pe añoite.
@@ -35,9 +35,9 @@ continuous-onboarding-firefox-view-tab-pickup-primary-button-label = Eñepyrũ
 
 callout-pdfjs-edit-title = Embosako’i PDFs ore moñe’ẽrã rembiporu ndive
 callout-pdfjs-edit-body-a = Ahai myanyhẽhápe, embojuaju jehaipy térã eike { -brand-short-name }-pe.
-callout-pdfjs-edit-body-b = Anive eheka ñanduti reigua mbosako’ihápe. Ehai myanyhẽhápe, embojuaju ne remaiandu térã eñe’ẽ { -brand-short-name } ndivete.
+callout-pdfjs-edit-body-b = Anive eheka ñanduti reigua mbosako’ihápe. Ehai myanyhẽhápe, embojuaju ne remaiandu térã eñe’ẽ { -brand-short-name } ndive.
 callout-pdfjs-edit-button = Upeigua
-callout-pdfjs-draw-title = Emboheraguapy kuatiaite ore ra’ãngaapoha rembiporu ndive
+callout-pdfjs-draw-title = Emboheraguapy kuatiaite ore ra’ãnga’apoha rembiporu ndive
 # “Mark up” refers to the process of “annotating” or adding free hand text or diagramming to the document.
 callout-pdfjs-draw-body-a = Ehai PDFs marandurendápe ha eñongatu moambuepyre.
 # “Mark up” refers to the process of “annotating” or adding free hand text or diagramming to the document.

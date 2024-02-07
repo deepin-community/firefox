@@ -17,6 +17,7 @@ about-webauthn-options-subsection-title = Ñemoñeĩha poravorã
 about-webauthn-pin-section-title = PIN ñangarekohára
 about-webauthn-credential-management-section-title = Eñangareko terachaukaháre
 about-webauthn-pin-required-section-title = PIN tekotevẽva
+about-webauthn-confirm-deletion-section-title = Emoneĩ ñemboguete
 
 ## Info field texts
 
@@ -53,6 +54,7 @@ about-webauthn-current-pin-label = PIN ag̃agua:
 about-webauthn-pin-required-label = Emoinge pe PIN:
 about-webauthn-credential-list-subsection-title = Terachaukaha:
 about-webauthn-credential-list-empty = Ndojejuhúi terachaukaha mba’e’okápe.
+about-webauthn-confirm-deletion-label = Oñemboguetátama ag̃aite:
 
 ## Buttons
 

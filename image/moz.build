@@ -5,8 +5,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 DIRS += ["build", "decoders", "encoders"]
-if CONFIG["ENABLE_TESTS"]:
-    DIRS += ["test/gtest"]
 
 if CONFIG["FUZZING_INTERFACES"]:
     DIRS += ["test/fuzzing"]
@@ -23,7 +21,7 @@ MOCHITEST_MANIFESTS += ["test/mochitest/mochitest.toml"]
 
 MOCHITEST_CHROME_MANIFESTS += ["test/mochitest/chrome.toml"]
 
-XPCSHELL_TESTS_MANIFESTS += ["test/unit/xpcshell.ini"]
+XPCSHELL_TESTS_MANIFESTS += ["test/unit/xpcshell.toml"]
 
 XPIDL_SOURCES += [
     "imgICache.idl",

@@ -92,10 +92,12 @@ ifndef rustflags_sancov
 # Never enable when coverage is enabled to work around https://github.com/rust-lang/rust/issues/90045.
 ifndef MOZ_CODE_COVERAGE
 ifeq (,$(findstring gkrust_gtest,$(RUST_LIBRARY_FILE)))
-cargo_rustc_flags += -Clto$(if $(filter full,$(MOZ_LTO_RUST_CROSS)),=fat)
+cargo_rustc_flags += $(or $(DEBIAN_RUST_LTO),-Clto$(if $(filter full,$(MOZ_LTO_RUST_CROSS)),=fat))
 endif
+ifneq (-Clto=off,$(DEBIAN_RUST_LTO))
 # We need -Cembed-bitcode=yes for all crates when using -Clto.
 RUSTFLAGS += -Cembed-bitcode=yes
+endif
 endif
 endif
 endif
@@ -179,6 +181,8 @@ export AR_$(rust_cc_env_name)=$(AR)
 ifeq (WINNT,$(HOST_OS_ARCH))
 HOST_CC_BASE_FLAGS += -DUNICODE
 HOST_CXX_BASE_FLAGS += -DUNICODE
+endif
+ifeq (WINNT,$(OS_ARCH))
 CC_BASE_FLAGS += -DUNICODE
 CXX_BASE_FLAGS += -DUNICODE
 endif
@@ -370,7 +374,15 @@ endif
 # but not the final libraries. Filter those out because they
 # cause problems on macOS 10.7; see bug 1365993 for details.
 # Also, we don't want to pass PGO flags until cargo supports them.
-$(TARGET_RECIPES): MOZ_CARGO_WRAP_LDFLAGS:=$(filter-out -fsanitize=cfi% -framework Cocoa -lobjc AudioToolbox ExceptionHandling -fprofile-%,$(LDFLAGS))
+# Finally, we also remove the -Wl,--build-id=uuid flag when it's in
+# the LDFLAGS. The flag was chosen over the default (build-id=sha1)
+# in developer builds, because for libxul, it's faster. But it's also
+# non-deterministic. So when the rust compiler produces procedural
+# macros as libraries, they're not reproducible. Those procedural
+# macros then end up as dependencies of other crates, and their
+# non-reproducibility leads to sccache transitively having cache
+# misses.
+$(TARGET_RECIPES): MOZ_CARGO_WRAP_LDFLAGS:=$(filter-out -fsanitize=cfi% -framework Cocoa -lobjc AudioToolbox ExceptionHandling -fprofile-% -Wl$(COMMA)--build-id=uuid,$(LDFLAGS))
 
 # When building with sanitizer, rustc links its own runtime, which conflicts
 # with the one that passing -fsanitize=* to the linker would add.

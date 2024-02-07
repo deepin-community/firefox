@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Басқа браузе
 about-logins-menu-menuitem-import-from-a-file = Файлдан импорттау…
 about-logins-menu-menuitem-export-logins = Логиндерді экспорттау…
 about-logins-menu-menuitem-remove-all-logins = Барлық логиндерді өшіру…
+about-logins-menu-menuitem-export-logins2 = Парольдерді экспорттау…
+about-logins-menu-menuitem-remove-all-logins2 = Барлық парольдерді өшіру…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Баптаулар
@@ -104,20 +106,25 @@ about-logins-login-intro-heading-logged-out2 = Сақталған логинде
 about-logins-login-intro-heading-logged-in = Синхрондалған логиндер табылмады.
 login-intro-description = Логиндерді басқа құрылғыдағы { -brand-product-name } ішіне сақтасаңыз, оларды осында келесідей алуға болады:
 login-intro-instructions-fxa = Логиндеріңіз сақталған құрылғыда { -fxaccount-brand-name } тіркелгісін жасаңыз немесе оған кіріңіз.
+about-logins-login-intro-heading-message = Парольдеріңізді қауіпсіз жерге сақтаңыз
+login-intro-description2 = Сіз { -brand-product-name } ішіне сақтайтын барлық парольдер шифрленген. Оған қоса, біз сайт бұзылуларын қадағалап, олар сізге әсер еткен кезде сізге хабарлаймыз. <a data-l10n-name="breach-alert-link">Көбірек білу</a>
 login-intro-instructions-fxa2 = Логиндеріңіз сақталған құрылғыда тіркелгі жасаңыз немесе оған кіріңіз.
 login-intro-instructions-fxa-settings = Баптаулар > Синхрондау > Синхрондауды іске қосу… таңдаңыз. Логиндер және парольдер жалаушасын орнатыңыз.
 login-intro-instructions-fxa-passwords-help = Көбірек білу үшін, <a data-l10n-name="passwords-help-link">парольдер бойынша қолдау көрсету</a> адресін шолыңыз.
 about-logins-intro-browser-only-import = Егер сіздің логиндеріңіз басқа браузерде сақталған болса, оларды <a data-l10n-name="import-link">{ -brand-product-name } ішіне импорттай аласыз</a>
 about-logins-intro-import2 = Егер сіздің логиндеріңіз { -brand-product-name } сыртында сақталса, оларды <a data-l10n-name="import-browser-link">басқа браузерден</a> немесе <a data-l10n-name="import-file-link">файлдан</a> импорттауға болады
+about-logins-intro-import3 = Парольді қазір қосу үшін, жоғарыдағы қосу батырмасын басыңыз. Сонымен қатар, <a data-l10n-name="import-browser-link">парольдерді басқа браузерден</a> немесе <a data-l10n-name="import-file-link">файлдан</a> импорттауға болады.
 
 ## Login
 
 login-item-new-login-title = Жаңа логинді жасау
+# Header for adding a password
+about-logins-login-item-new-login-title = Парольді қосу
 login-item-edit-button = Түзету
 about-logins-login-item-remove-button = Өшіру
 login-item-origin-label = Веб-сайт адресі
 login-item-tooltip-message = Бұл сіз кірген веб-сайттың нақты адресіне сәйкес келетініне көз жеткізіңіз.
-about-logins-origin-tooltip = Бұл сіз кірген веб-сайттың нақты адресіне сәйкес келетініне көз жеткізіңіз.
+about-logins-origin-tooltip2 = Толық адресті енгізіңіз және ол адрес жүйеге кіретін адресіне сәйкес келетініне көз жеткізіңіз.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Бұл сайт үшін ағымдағы пароліңізді сақтап тұрғаныңызға көз жеткізіңіз. Парольді осында өзгерту оны { $webTitle } сайтында өзгертпейді.
@@ -135,6 +142,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Көшіріп алу
 login-item-copied-password-button-text = Көшірілді!
 login-item-save-changes-button = Өзгерістерді сақтау
+about-logins-login-item-save-changes-button = Сақтау
 login-item-save-new-button = Сақтау
 login-item-cancel-button = Бас тарту
 
@@ -162,6 +170,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Логиніңізді тү
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = сақталған логинді түзету
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Пароліңізді түзету  үшін, Windows ішіне кірудің есептік жазба мәліметтерін енгізіңіз. Бұл тіркелгілеріңіздің қауіпсіздігін қорғауға көмектеседі.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = сақталған парольді түзету
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Пароліңізді қарау үшін, Windows ішіне кірудің есептік жазба мәліметтерін енгізіңіз. Бұл тіркелгілеріңіздің қауіпсіздігін қорғауға көмектеседі.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -177,6 +190,11 @@ about-logins-export-password-os-auth-dialog-message-win = Логиндеріңі
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = сақталған логиндер және парольдерді экспорттау
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Парольдеріңізді экспорттау үшін, Windows ішіне кірудің есептік жазба мәліметтерін енгізіңіз. Бұл тіркелгілеріңіздің қауіпсіздігін қорғауға көмектеседі.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = сақталған парольдерді экспорттау
 
 ## Primary Password notification
 
@@ -192,6 +210,10 @@ confirmation-dialog-dismiss-button =
     .title = Бас тарту
 about-logins-confirm-remove-dialog-title = Бұл логинді өшіру керек пе?
 confirm-delete-dialog-message = Бұл әрекетті болдырмау мүмкін емес болады.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Парольді өшіру керек пе?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Бұл әрекетті болдырмау мүмкін емес.
 about-logins-confirm-remove-dialog-confirm-button = Өшіру
 
 ## Variables
@@ -231,12 +253,50 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [one] Бұл { -brand-short-name } ішіне сақтаған логинді сіздің тіркелгіңізге синхрондалған барлық құрылғылардан өшіреді. Сонымен қатар, осы жерде көрсетілетін бұзушылық туралы ескертулерді өшіреді. Бұл әрекетті болдырмау мүмкін болмайды.
        *[other] Бұл { -brand-short-name } ішіне сақтаған барлық логиндерді сіздің тіркелгіңізге синхрондалған барлық құрылғылардан өшіреді. Сонымен қатар, осы жерде көрсетілетін бұзушылық туралы ескертулерді өшіреді. Бұл әрекетті болдырмау мүмкін болмайды.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Иә, парольді өшіру
+        [one] Иә, парольді өшіру
+       *[other] Иә, парольдерді өшіру
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] { $count } парольді өшіру керек пе?
+       *[other] Барлық { $count } парольді өшіру керек пе?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Бұл { -brand-short-name } ішінде сақталған парольді және кез келген бұзу ескертулерін өшіреді. Бұл әрекетті болдырмау мүмкін емес.
+        [one] Бұл { -brand-short-name } ішінде сақталған парольдерді және кез келген бұзу ескертулерін өшіреді. Бұл әрекетті болдырмау мүмкін емес.
+       *[other] Бұл { -brand-short-name } ішінде сақталған парольдерді және кез келген бұзу ескертулерін өшіреді. Бұл әрекетті болдырмау мүмкін емес.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] { $count } парольді барлық құрылғылардан өшіру керек пе?
+       *[other] { $count } парольді барлық құрылғылардан өшіру керек пе?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Бұл сіздің барлық синхрондалған құрылғылараңызда { -brand-short-name } ішіне сақталған барлық парольдерді өшіреді. Сонымен қатар, осы жерде көрсетілетін бұзушылық туралы ескертулерді өшіреді. Бұл әрекетті болдырмау мүмкін болмайды.
+        [one] Бұл сіздің барлық синхрондалған құрылғылараңызда { -brand-short-name } ішіне сақталған барлық парольдерді өшіреді. Сонымен қатар, осы жерде көрсетілетін бұзушылық туралы ескертулерді өшіреді. Бұл әрекетті болдырмау мүмкін болмайды.
+       *[other] Бұл сіздің барлық синхрондалған құрылғылараңызда { -brand-short-name } ішіне сақталған барлық парольдерді өшіреді. Сонымен қатар, осы жерде көрсетілетін бұзушылық туралы ескертулерді өшіреді. Бұл әрекетті болдырмау мүмкін болмайды.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Логиндер және парольдерді экспорттау
 about-logins-confirm-export-dialog-message = Парольдеріңіз ашық, оқуға келетін мәтін ретінде сақталатын болады (мыс., BadP@ssw0rd) сондықтан экспортталған файлды аша алатын адам оларды көре алады.
 about-logins-confirm-export-dialog-confirm-button = Экспорттау…
+about-logins-confirm-export-dialog-title2 = Парольдерді экспорттау туралы ескертпе
+about-logins-confirm-export-dialog-message2 =
+    Экспорттау кезінде парольдеріңіз оқылатын мәтіні бар файлға сақталады.
+    Файлды пайдаланып болғаннан кейін, осы құрылғыны пайдаланатын басқа адамдар парольдеріңізді көре алмайтындай етіп оны өшіруді ұсынамыз.
+about-logins-confirm-export-dialog-confirm-button2 = Экспорттауды жалғастыру
 about-logins-alert-import-title = Импорт аяқталды
 about-logins-alert-import-message = Импорттаудың толық есептемесін қарау
 confirm-discard-changes-dialog-title = Сақталмаған өзгерістерді тайдыру керек пе?
@@ -278,6 +338,11 @@ about-logins-export-file-picker-title = Логиндер файлын экспо
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = логиндер.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = { -brand-short-name } ішінен парольдерді экспорттау
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = Экспорттау
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

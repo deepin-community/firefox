@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # NOTE: New strings should use the about-logins- prefix.
 
-about-logins-page-title = Info Masuk dan Kata Sandi
+about-logins-page-title = Info Masuk & Kata Sandi
 about-logins-login-filter =
     .placeholder = Cari Info Masuk
     .key = F
@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Impor dari Peramban Lai
 about-logins-menu-menuitem-import-from-a-file = Impor dari Berkas…
 about-logins-menu-menuitem-export-logins = Ekspor Info Masuk…
 about-logins-menu-menuitem-remove-all-logins = Hapus Semua Log Masuk…
+about-logins-menu-menuitem-export-logins2 = Ekspor Kata Sandi…
+about-logins-menu-menuitem-remove-all-logins2 = Hapus Semua Kata Sandi…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Pengaturan
@@ -92,20 +94,25 @@ about-logins-login-intro-heading-logged-out2 = Mencari info masuk Anda yang simp
 about-logins-login-intro-heading-logged-in = Info masuk yang disinkronkan tidak ditemukan.
 login-intro-description = Jika Anda menyimpan info masuk Anda di { -brand-product-name } pada perangkat lain, berikut cara mendapatkannya di sini:
 login-intro-instructions-fxa = Buat atau masuk ke { -fxaccount-brand-name } Anda pada perangkat tempat info masuk Anda tersimpan
+about-logins-login-intro-heading-message = Simpan kata sandi Anda di tempat yang aman
+login-intro-description2 = Semua kata sandi yang Anda simpan ke { -brand-product-name } dienkripsi. Selain itu, kami waspada terhadap pembobolan dan memperingatkan Anda jika Anda terpengaruh. <a data-l10n-name="breach-alert-link">Pelajari lebih lanjut</a>
 login-intro-instructions-fxa2 = Buat atau masuk ke akun Anda di perangkat tempat info masuk Anda tersimpan.
 login-intro-instructions-fxa-settings = Buka Pengaturan > Sinkronisasi > Aktifkan sinkronisasi… Centang Info masuk dan sandi.
 login-intro-instructions-fxa-passwords-help = Kunjungi <a data-l10n-name="passwords-help-link">dukungan sandi</a> untuk bantuan lebih lanjut.
 about-logins-intro-browser-only-import = Jika info masuk Anda disimpan di browser lain, Anda dapat <a data-l10n-name="import-link">mengimpornya ke { -brand-product-name }</a>
 about-logins-intro-import2 = Jika info masuk Anda tersimpan di luar { -brand-product-name }, Anda bisa <a data-l10n-name="import-browser-link">mengimpornya dari peramban lain</a> atau <a data-l10n-name="import-file-link">mengimpornya dari berkas</a>.
+about-logins-intro-import3 = Pilih tombol tanda tambah di atas untuk menambahkan kata sandi sekarang. Anda juga dapat <a data-l10n-name="import-browser-link">mengimpor kata sandi dari peramban lain</a> atau <a data-l10n-name="import-file-link">dari suatu berkas</a>.
 
 ## Login
 
 login-item-new-login-title = Buat Info Masuk Baru
+# Header for adding a password
+about-logins-login-item-new-login-title = Tambahkan kata sandi
 login-item-edit-button = Edit
 about-logins-login-item-remove-button = Hapus
 login-item-origin-label = Alamat Situs Web
 login-item-tooltip-message = Pastikan ini sesuai dengan alamat situs web tempat Anda masuk.
-about-logins-origin-tooltip = Pastikan ini sesuai dengan alamat situs web tempat Anda masuk.
+about-logins-origin-tooltip2 = Masukkan alamat lengkap dan pastikan sama persis dengan tempat Anda masuk.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Pastikan Anda menyimpan sandi Anda saat ini untuk situs ini. Mengubah sandi di sini tidak akan mengubah sandi di { $webTitle } secara otomatis.
@@ -123,6 +130,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Salin
 login-item-copied-password-button-text = Tersalin!
 login-item-save-changes-button = Simpan Perubahan
+about-logins-login-item-save-changes-button = Simpan
 login-item-save-new-button = Simpan
 login-item-cancel-button = Batal
 
@@ -150,6 +158,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Untuk mengubah info masuk A
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = mengedit info masuk tersimpan
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Untuk mengedit kata sandi Anda, masukkan kredensial masuk Windows Anda. Ini membantu melindungi keamanan akun Anda.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = mengedit kata sandi tersimpan
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Untuk melihat kata sandi Anda, masukkan kredensial info masuk Windows Anda. Hal ini membantu melindungi keamanan akun Anda.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -165,6 +178,11 @@ about-logins-export-password-os-auth-dialog-message-win = Untuk mengekspor info 
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = mengekspor info masuk dan sandi tersimpan
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Untuk mengekspor kata sandi Anda, ketikkan kredensial masuk Windows Anda. Hal ini membantu melindungi keamanan akun Anda.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = ekspor kata sandi tersimpan
 
 ## Primary Password notification
 
@@ -180,6 +198,10 @@ confirmation-dialog-dismiss-button =
     .title = Batal
 about-logins-confirm-remove-dialog-title = Hapus info masuk ini?
 confirm-delete-dialog-message = Tindakan ini tidak dapat diurungkan.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Hapus kata sandi?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Anda tidak dapat membatalkan tindakan ini.
 about-logins-confirm-remove-dialog-confirm-button = Hapus
 
 ## Variables
@@ -209,12 +231,44 @@ about-logins-confirm-remove-all-sync-dialog-message =
         [1] Ini akan menghapus info masuk yang Anda simpan ke { -brand-short-name } di semua perangkat yang disinkronkan ke { -fxaccount-brand-name } Anda. Ini juga akan menghapus peringatan pembobolan yang muncul di sini. Anda tidak akan dapat mengurungkan tindakan ini.
        *[other] Ini akan menghapus info masuk yang Anda simpan ke { -brand-short-name } di semua perangkat yang disinkronkan ke { -fxaccount-brand-name } Anda. Ini juga akan menghapus peringatan pembobolan yang muncul di sini. Anda tidak akan dapat mengurungkan tindakan ini.
     }
+about-logins-confirm-remove-all-sync-dialog-message2 =
+    { $count ->
+        [1] Ini akan menghapus informasi masuk yang telah Anda simpan ke { -brand-short-name } di semua perangkat yang tersinkonisasi dengan akun Anda. Ini juga akan menghapus peringatan keamanan yang muncul di sini. Anda tidak akan dapat membatalkan tindakan ini.
+       *[other] Ini akan menghapus semua informasi masuk yang telah Anda simpan ke { -brand-short-name } di semua perangkat yang tersinkonisasi dengan akun Anda. Ini juga akan menghapus peringatan keamanan yang muncul di sini. Anda tidak akan dapat membatalkan tindakan ini.
+    }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Ya, hapus kata sandi
+       *[other] Ya, hapus kata sandi
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 = Hapus semua { $count } kata sandi?
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Ini akan menghapus kata sandi yang disimpan ke { -brand-short-name } dan peringatan pembobolan apa pun. Anda tidak dapat membatalkan tindakan ini.
+       *[other] Ini akan menghapus kata sandi yang disimpan ke { -brand-short-name } dan peringatan pembobolan apa pun. Anda tidak dapat membatalkan tindakan ini.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 = Hapus semua { $count } sandi dari semua perangkat?
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Ini akan menghapus kata sandi yang disimpan ke { -brand-short-name } pada semua perangkat Anda yang disinkronkan. Ini juga akan menghapus peringatan pembobolan yang muncul di sini. Anda tidak dapat membatalkan tindakan ini.
+       *[other] Ini akan menghapus semua kata sandi yang disimpan ke { -brand-short-name } pada semua perangkat Anda yang disinkronkan. Ini juga akan menghapus peringatan pembobolan yang muncul di sini. Anda tidak dapat membatalkan tindakan ini.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Ekspor info masuk dan sandi
 about-logins-confirm-export-dialog-message = Kata sandi Anda akan disimpan sebagai teks biasa yang bisa dibaca (contoh: P@sw0rd) sehingga siapa pun yang dapat membuka berkas yang Anda ekspor akan bisa membacanya.
 about-logins-confirm-export-dialog-confirm-button = Ekspor…
+about-logins-confirm-export-dialog-title2 = Catatan tentang mengekspor kata sandi
+about-logins-confirm-export-dialog-message2 =
+    Saat Anda mengekspor, kata sandi Anda disimpan ke suatu berkas dengan teks yang dapat dibaca.
+    Setelah selesai menggunakan berkas tersebut, kami sarankan untuk menghapusnya agar orang lain yang menggunakan perangkat ini tidak dapat melihat kata sandi Anda.
+about-logins-confirm-export-dialog-confirm-button2 = Lanjutkan dengan ekspor
 about-logins-alert-import-title = Proses Impor Selesai
 about-logins-alert-import-message = Lihat ringkasan Detail Impor
 confirm-discard-changes-dialog-title = Buang perubahan yang belum disimpan?
@@ -256,6 +310,11 @@ about-logins-export-file-picker-title = Ekspor Berkas Info Masuk
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Ekspor Kata Sandi dari { -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = Ekspor
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

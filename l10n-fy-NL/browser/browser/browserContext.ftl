@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = Account
+    .tooltiptext = Account
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = Bewarre oanmeldingen brûke
     .accesskey = B
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Bewarre wachtwurden brûke
     .accesskey = B
@@ -305,6 +312,9 @@ main-context-menu-suggest-strong-password =
     .accesskey = S
 main-context-menu-manage-logins2 =
     .label = Oanmeldingen beheare
+    .accesskey = b
+main-context-menu-manage-passwords =
+    .label = Wachtwurden beheare
     .accesskey = b
 main-context-menu-keyword =
     .label = Kaaiwurd foar dizze sykopdracht tafoegje…

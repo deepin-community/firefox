@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Tuo toisesta selaimesta
 about-logins-menu-menuitem-import-from-a-file = Tuo tiedostosta…
 about-logins-menu-menuitem-export-logins = Vie kirjautumistiedot…
 about-logins-menu-menuitem-remove-all-logins = Poista kaikki kirjautumistiedot…
+about-logins-menu-menuitem-export-logins2 = Vie salasanat…
+about-logins-menu-menuitem-remove-all-logins2 = Poista kaikki salasanat…
 menu-menuitem-preferences = Asetukset
 about-logins-menu-menuitem-help = Ohje
 
@@ -101,20 +103,25 @@ about-logins-login-intro-heading-logged-out2 = Etsitkö tallennettuja kirjautumi
 about-logins-login-intro-heading-logged-in = Synkronoituja kirjautumistietoja ei löytynyt.
 login-intro-description = Jos tallensit kirjautumistietosi { -brand-product-name }-selaimeen toisella laitteella, saat ne käyttöön seuraavasti:
 login-intro-instructions-fxa = Kirjaudu { -fxaccount-brand-name(case: "allative") } tai luo tili laitteella, jolle kirjautumistietosi on tallennettu.
+about-logins-login-intro-heading-message = Tallenna salasanasi turvalliseen paikkaan
+login-intro-description2 = Kaikki { -brand-product-name }iin tallentamasi salasanat ovat salattuja. Lisäksi tarkkailemme tietovuotoja ja ilmoitamme sinulle, jos joudut osalliseksi tietovuodossa. <a data-l10n-name="breach-alert-link">Lisätietoja</a>
 login-intro-instructions-fxa2 = Luo tili tai kirjaudu sisään laitteella, johon kirjautumistietosi on tallennettu.
 login-intro-instructions-fxa-settings = Avaa Asetukset > Synkronointi > Ota synkronointi käyttöön… Valitse valintaruutu ”Käyttäjätunnukset ja salasanat”.
 login-intro-instructions-fxa-passwords-help = Käy <a data-l10n-name="passwords-help-link">salasanatuessa</a> saadaksesi lisätietoja.
 about-logins-intro-browser-only-import = Jos kirjautumistietojasi on tallennettu toiseen selaimeen, voit <a data-l10n-name="import-link">tuoda ne { -brand-product-name }iin</a>
 about-logins-intro-import2 = Jos kirjautumistietosi on tallennettu { -brand-product-name }-selaimen ulkopuolelle, voit <a data-l10n-name="import-browser-link">tuoda ne toisesta selaimesta</a> tai <a data-l10n-name="import-file-link">tiedostosta</a>
+about-logins-intro-import3 = Lisää salasana valitsemalla yllä oleva plusmerkkipainike. Voit myös <a data-l10n-name="import-browser-link">tuoda salasanoja toisesta selaimesta</a> tai <a data-l10n-name="import-file-link">tiedostosta</a> a>.
 
 ## Login
 
 login-item-new-login-title = Luo uusi kirjautumistieto
+# Header for adding a password
+about-logins-login-item-new-login-title = Lisää salasana
 login-item-edit-button = Muokkaa
 about-logins-login-item-remove-button = Poista
 login-item-origin-label = Verkkosivuston osoite
 login-item-tooltip-message = Tarkista, että tämä on sama osoite, josta kirjaudut sisään.
-about-logins-origin-tooltip = Tarkista, että tämä on sama osoite, josta kirjaudut sisään.
+about-logins-origin-tooltip2 = Anna koko osoite ja varmista, että se vastaa tarkasti sen sivun osoitetta, jolla kirjaudut sisään.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Varmista, että tallennat tämän sivuston nykyisen salasanasi. Salasanan vaihtaminen tässä ei muuta sitä sivustolla { $webTitle }.
@@ -132,6 +139,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Kopioi
 login-item-copied-password-button-text = Kopioitu!
 login-item-save-changes-button = Tallenna muutokset
+about-logins-login-item-save-changes-button = Tallenna
 login-item-save-new-button = Tallenna
 login-item-cancel-button = Peruuta
 
@@ -159,6 +167,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Jatka muokkaamaan kirjautum
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = muokata tallennettua kirjautumistietoa
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Jos haluat muokata salasanaasi, anna Windows-kirjautumistietosi. Tämä auttaa suojaamaan tilisi.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = muokata tallennettua salasanaa
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Katso salasana kirjoittamalla Windows-kirjautumistiedot. Tämä auttaa suojaamaan tilejäsi.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -174,6 +187,11 @@ about-logins-export-password-os-auth-dialog-message-win = Jatka kirjautumistieto
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = viedä tallennetut käyttäjätunnukset ja salasanat
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Vie salasanasi antamalla Windows-kirjautumistietosi. Tämä auttaa suojaamaan tilisi.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = viedä tallennetut salasanat
 
 ## Primary Password notification
 
@@ -189,6 +207,10 @@ confirmation-dialog-dismiss-button =
     .title = Peruuta
 about-logins-confirm-remove-dialog-title = Poistetaanko tämä kirjautumistieto?
 confirm-delete-dialog-message = Tätä toimintoa ei voi perua.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Poistetaanko salasana?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Tätä toimintoa ei voi kumota.
 about-logins-confirm-remove-dialog-confirm-button = Poista
 
 ## Variables
@@ -230,12 +252,49 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [one] Tämä poistaa kirjautumistiedon, jonka olet tallentanut { -brand-short-name }iin, kaikilta laitteilta, jotka on synkronoitu tilillesi. Tämä poistaa myös tässä näkyvät vuotohälytykset. Tätä toimintoa ei voi kumota.
        *[other] Tämä poistaa kaikki kirjautumistiedot, jotka olet tallentanut { -brand-short-name }iin, kaikilta laitteilta, jotka on synkronoitu tilillesi. Tämä poistaa myös tässä näkyvät vuotohälytykset. Tätä toimintoa ei voi kumota.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Kyllä, poista salasana
+       *[other] Yes, remove passwords
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] Poistetaanko { $count } salasana?
+       *[other] Poistetaanko kaikki { $count } salasanaa?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Tämä poistaa { -brand-short-name }iin tallennetun salasanan ja kaikki tietovuotoilmoitukset. Tätä toimintoa ei voi kumota.
+        [one] Tämä poistaa { -brand-short-name }iin tallennetut salasanat ja kaikki tietovuotoilmoitukset. Tätä toimintoa ei voi kumota.
+       *[other] Tämä poistaa { -brand-short-name }iin tallennetut salasanat ja kaikki tietovuotoilmoitukset. Tätä toimintoa ei voi kumota.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] Poistetaanko { $count } salasana kaikilta laitteilta?
+       *[other] Poistetaanko kaikki { $count } salasanaa kaikilta laitteilta?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Tämä poistaa { -brand-short-name }iin tallennetun salasanan kaikilta synkronoiduilta laitteiltasi. Tämä poistaa myös kaikki täällä näkyvät tietovuotoilmoitukset. Tätä toimintoa ei voi kumota.
+        [one] Tämä poistaa { -brand-short-name }iin tallennetut salasanat kaikilta synkronoiduilta laitteiltasi. Tämä poistaa myös kaikki täällä näkyvät tietovuotoilmoitukset. Tätä toimintoa ei voi kumota.
+       *[other] Tämä poistaa { -brand-short-name }iin tallennetut salasanat kaikilta synkronoiduilta laitteiltasi. Tämä poistaa myös kaikki täällä näkyvät tietovuotoilmoitukset. Tätä toimintoa ei voi kumota.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Vie kirjautumistiedot ja salasanat
 about-logins-confirm-export-dialog-message = Salasanasi tallennetaan luettavaan muotoon (esim. hu0n0s4l4s4n4), joten kuka tahansa viedyn tiedoston avaamiseen kykenevä voi nähdä salasanat.
 about-logins-confirm-export-dialog-confirm-button = Vie…
+about-logins-confirm-export-dialog-title2 = Huomautus salasanojen viemisestä
+about-logins-confirm-export-dialog-message2 =
+    Kun viet salasanat, ne tallennetaan tiedostoon, joka on luettavissa olevaa tekstiä.
+    Kun olet lopettanut tiedoston käytön, suosittelemme sen poistamista, jotta muut tämän laitteen käyttäjät eivät näe salasanojasi.
+about-logins-confirm-export-dialog-confirm-button2 = Jatka vientiä
 about-logins-alert-import-title = Tuonti valmis
 about-logins-alert-import-message = Näytä tuonnin yksityiskohtainen erittely
 confirm-discard-changes-dialog-title = Hylätäänkö tallentamattomat muutokset?
@@ -277,6 +336,11 @@ about-logins-export-file-picker-title = Vie kirjautumistietojen tiedosto
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = kirjautumistiedot.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Vie salasanat { -brand-short-name }ista
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = salasanat.csv
 about-logins-export-file-picker-export-button = Vie
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

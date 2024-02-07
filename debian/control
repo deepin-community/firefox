@@ -29,7 +29,7 @@ Build-Depends: autotools-dev,
                nasm (>= 2.14) [amd64 i386],
                rustc (>= 1.70),
                cargo (>= 0.66),
-      	       llvm,
+               llvm,
                llvm-16-dev,
                libclang-16-dev,
                clang-16,
@@ -49,7 +49,6 @@ Build-Depends: autotools-dev,
                fonts-dejima-mincho,
                iso-codes,
                rustfmt
-
 Build-Conflicts: graphicsmagick-imagemagick-compat,
                  liboss4-salsa-dev,
                  libhildonmime-dev,
@@ -57,9 +56,10 @@ Build-Conflicts: graphicsmagick-imagemagick-compat,
 Standards-Version: 3.9.8.0
 Vcs-Git: https://salsa.debian.org/mozilla-team/firefox.git -b release/master
 Vcs-Browser: https://salsa.debian.org/mozilla-team/firefox/commits/release/master
+
 Package: firefox
 Architecture: any
-Depends: ${shlibs:Depends}, 
+Depends: ${shlibs:Depends},
          ${misc:Depends},
          fontconfig,
          procps,

@@ -798,9 +798,9 @@ sync-engine-creditcards =
     .label = Крэдытныя карты
     .tooltiptext = Імёны, нумары і тэрміны дзеяння (толькі для камп'ютара)
     .accesskey = К
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Спосабы аплаты
-    .tooltiptext = Назвы, нумары карт і тэрміны дзеяння (толькі для камп'ютара)
+    .tooltiptext = Назвы, нумары карт і тэрміны дзеяння
     .accesskey = т
 sync-engine-addons =
     .label = Дадаткі
@@ -848,18 +848,35 @@ pane-privacy-logins-and-passwords-header = Лагіны і паролі
 forms-ask-to-save-logins =
     .label = Прапаноўваць захаваць лагіны і паролі для вэб-сайтаў
     .accesskey = р
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Паролі
+    .searchkeywords = лагіны
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Пытаць, ці захоўваць паролі
+    .accesskey = ц
 forms-exceptions =
     .label = Выключэнні…
     .accesskey = ы
 forms-generate-passwords =
     .label = Прапаноўваць і генераваць надзейныя паролі
     .accesskey = г
+forms-suggest-passwords =
+    .label = Прапаноўваць надзейныя паролі
+    .accesskey = ы
 forms-breach-alerts =
     .label = Паказваць апавяшчэнні аб паролях для сайтаў, у якіх уцеклі дадзеныя
     .accesskey = і
 forms-breach-alerts-learn-more-link = Падрабязней
 preferences-relay-integration-checkbox =
     .label = Прапаноўваць маскі электроннай пошты { -relay-brand-name } для абароны вашага адраса электроннай пошты
+preferences-relay-integration-checkbox2 =
+    .label = Прапаноўваць маскі электроннай пошты { -relay-brand-name } для абароны вашага адраса электроннай пошты
+    .accesskey = к
 relay-integration-learn-more-link = Падрабязней
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -868,6 +885,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Захаваныя лагіны…
     .accesskey = З
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Аўтаматычна запаўняць імёны карыстальнікаў і паролі
+    .accesskey = А
+forms-saved-passwords =
+    .label = Захаваныя паролі
+    .accesskey = в
 forms-primary-pw-use =
     .label = Ужываць галоўны пароль
     .accesskey = г
@@ -891,6 +915,7 @@ forms-windows-sso =
     .label = Дазволіць адзіны ўваход Windows для ўліковых запісаў Microsoft, працоўных і школьных уліковых запісаў
 forms-windows-sso-learn-more-link = Падрабязней
 forms-windows-sso-desc = Кіраванне ўліковымі запісамі ў наладах прылады
+windows-passkey-settings-label = Кіраваць ключамі доступу ў наладах сістэмы
 
 ## OS Authentication dialog
 
@@ -902,6 +927,28 @@ primary-password-os-auth-dialog-message-win = Каб стварыць галоў
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = стварыць галоўны пароль
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Аўтазапаўненне
+autofill-addresses-checkbox = Захоўваць і запаўняць адрасы
+    .accesskey = ц
+autofill-saved-addresses-button = Захаваныя адрасы
+    .accesskey = ы
+autofill-payment-methods-checkbox-message = Захоўваць і запаўняць спосабы аплаты
+    .accesskey = ь
+autofill-payment-methods-checkbox-submessage = Уключаючы крэдытныя і дэбетавыя карты
+    .accesskey = д
+autofill-saved-payment-methods-button = Захаваныя спосабы аплаты
+    .accesskey = с
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Патрабаваць аўтэнтыфікацыю ў macOS для запаўнення і змянення спосабаў аплаты.
+        [windows] Патрабаваць аўтэнтыфікацыю Windows Linux для запаўнення і змянення спосабаў аплаты.
+        [linux] Патрабаваць аўтэнтыфікацыю ў Linux для запаўнення і змянення спосабаў аплаты.
+       *[other] Патрабаваць аўтэнтыфікацыю для запаўнення і змянення спосабаў аплаты.
+    }
+    .accesskey = ў
 
 ## Privacy Section - History
 

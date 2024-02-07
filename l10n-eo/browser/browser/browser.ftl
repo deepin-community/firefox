@@ -279,6 +279,9 @@ quickactions-cmd-plugins = kromprogramoj
 # Opens the print dialog
 quickactions-print2 = Presi paĝon
 quickactions-cmd-print = presi
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Konservi paĝon kiel PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = Malfermi privatan fenestron
 quickactions-cmd-private = privata retumo
@@ -348,6 +351,7 @@ identity-connection-secure = Sekura konekto
 identity-connection-failure = Malsukcesa konekto
 identity-connection-internal = Tiu ĉi estas sekura paĝo de { -brand-short-name }.
 identity-connection-file = Tiu ĉi paĝo estas konservita en via komputilo.
+identity-connection-associated = Tiu ĉi paĝo estis ŝargita de alia paĝo.
 identity-extension-page = Tiu ĉi paĝo estas ŝargata de etendaĵo.
 identity-active-blocked = { -brand-short-name } blokis partojn de tiu ĉi paĝo, kiuj ne estas sekuraj.
 identity-custom-root = Konekto kontrolita de eldoninto de atestilo, kiu ne estas rekonita de Mozilla.
@@ -484,6 +488,9 @@ enable-devtools-popup-description2 = Por uzi la ŝparvojon F12, unue malfermu la
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Fermi
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -560,8 +567,6 @@ urlbar-result-action-search-w-engine = Serĉi per { $engine }
 urlbar-result-action-sponsored = Patronita
 urlbar-result-action-switch-tab = Iri al langeto
 urlbar-result-action-visit = Iri
-# Allows the user to visit a URL that was previously copied to the clipboard.
-urlbar-result-action-visit-from-your-clipboard = Malfermi la adreson en la tondujo
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Malfermi la adreson en la tondujo
 # Directs a user to press the Tab key to perform a search with the specified

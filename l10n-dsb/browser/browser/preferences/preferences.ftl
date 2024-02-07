@@ -802,10 +802,10 @@ sync-engine-creditcards =
     .label = Kreditowe kórty
     .tooltiptext = Mjenja, licby a datumy pśepadnjenja (jano desktop)
     .accesskey = K
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Płaśeńske metody
-    .tooltiptext = Mjenja, kórtowe numery a datumy spadnjenja (jano desktop)
-    .accesskey = a
+    .tooltiptext = Mjenja, kórtowe numery a datumy spadnjenja
+    .accesskey = P
 sync-engine-addons =
     .label = Dodanki
     .tooltiptext = Rozšyrjenja a drastwy za desktopowy Firefox
@@ -852,18 +852,35 @@ pane-privacy-logins-and-passwords-header = Pśizjawjenja a gronidła
 forms-ask-to-save-logins =
     .label = Pšašaś se, lěc se maju pśizjawjenja a gronidła składowaś
     .accesskey = a
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Gronidła
+    .searchkeywords = pśizjawjenja
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Pšašaś se, lěc se maju gronidła składowaś
+    .accesskey = l
 forms-exceptions =
     .label = Wuwześa…
     .accesskey = u
 forms-generate-passwords =
     .label = Mócne gronidła napóraś a naraźiś
     .accesskey = r
+forms-suggest-passwords =
+    .label = Mócne gronidła naraźiś
+    .accesskey = M
 forms-breach-alerts =
     .label = Warnowanja za gronidła zranjonych websedłow
     .accesskey = z
 forms-breach-alerts-learn-more-link = Dalšne informacije
 preferences-relay-integration-checkbox =
     .label = E-mailowe maski { -relay-brand-name } naraźiś, aby se e-mailowa adresa šćitała
+preferences-relay-integration-checkbox2 =
+    .label = E-mailowe maski { -relay-brand-name } naraźiś, aby se e-mailowa adresa šćitała
+    .accesskey = E
 relay-integration-learn-more-link = Dalšne informacije
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -872,6 +889,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Skłaźone pśizjawjenja…
     .accesskey = S
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Wužywaŕske mjenja a gronidła awtomatiski wupołniś
+    .accesskey = u
+forms-saved-passwords =
+    .label = Skłaźone gronidła
+    .accesskey = k
 forms-primary-pw-use =
     .label = Głowne gronidło wužywaś
     .accesskey = G
@@ -895,6 +919,7 @@ forms-windows-sso =
     .label = Jadnotne pśizjawjenje za konta Microsoft, źěłowe konta a šulske konta zmóžniś
 forms-windows-sso-learn-more-link = Dalšne informacije
 forms-windows-sso-desc = Konta we wašych rědowych nastajenjach zastojaś
+windows-passkey-settings-label = Gronidłowe kluce w systemowych nastajenjach zastojaś
 
 ## OS Authentication dialog
 
@@ -906,6 +931,28 @@ primary-password-os-auth-dialog-message-win = Zapódajśo swóje pśizjawjeńske
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = głowne gronidło napóraś
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Awtomatiski wupołniś
+autofill-addresses-checkbox = Adrese składowaś a wupołniś
+    .accesskey = d
+autofill-saved-addresses-button = Skłaźone adrese
+    .accesskey = S
+autofill-payment-methods-checkbox-message = Płaśeńske metody składowaś a wupołniś
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Zapśimujo kreditowe a debetowe kórty
+    .accesskey = Z
+autofill-saved-payment-methods-button = Skłaźone płaśeńske metody
+    .accesskey = k
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Awtentificěrowanje macOS za wupołnjenje a wobźěłowanje płaśeńskich metodow pominaś.
+        [windows] Awtentificěrowanje Windows za wupołnjenje a wobźěłowanje płaśeńskich metodow pominaś.
+        [linux] Awtentificěrowanje Linux za wupołnjenje a wobźěłowanje płaśeńskich metodow pominaś.
+       *[other] Awtentificěrowanje za wupołnjenje a wobźěłowanje płaśeńskich metodow pominaś.
+    }
+    .accesskey = t
 
 ## Privacy Section - History
 

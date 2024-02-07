@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = Tài khoản
+    .tooltiptext = Tài khoản
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = Sử dụng thông tin đăng nhập đã lưu
     .accesskey = o
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Sử dụng mật khẩu đã lưu
     .accesskey = o
@@ -305,6 +312,9 @@ main-context-menu-suggest-strong-password =
     .accesskey = S
 main-context-menu-manage-logins2 =
     .label = Quản lý thông tin đăng nhập
+    .accesskey = M
+main-context-menu-manage-passwords =
+    .label = Quản lý mật khẩu
     .accesskey = M
 main-context-menu-keyword =
     .label = Tạo từ khóa cho chuỗi tìm kiếm này…

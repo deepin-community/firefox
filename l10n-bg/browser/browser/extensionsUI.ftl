@@ -16,7 +16,16 @@ webext-default-search-no =
     .accesskey = е
 # Variables:
 #   $addonName (String): localized named of the extension that was just installed.
-addon-post-install-message = { $addonName } беше добавено.
+addon-post-install-message = Разширението { $addonName } е добавено.
 
 ## A modal confirmation dialog to allow an extension on quarantined domains.
 
+# Variables:
+#   $addonName (String): localized name of the extension.
+webext-quarantine-confirmation-title = Изпълняване на { $addonName } на ограничени страници?
+webext-quarantine-confirmation-allow =
+    .label = Разрешаване
+    .accesskey = Р
+webext-quarantine-confirmation-deny =
+    .label = Забраняване
+    .accesskey = З

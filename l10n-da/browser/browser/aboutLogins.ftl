@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Importer fra en anden b
 about-logins-menu-menuitem-import-from-a-file = Importer fra fil…
 about-logins-menu-menuitem-export-logins = Eksporter logins…
 about-logins-menu-menuitem-remove-all-logins = Fjern alle logins…
+about-logins-menu-menuitem-export-logins2 = Eksporter adgangskoder…
+about-logins-menu-menuitem-remove-all-logins2 = Fjern alle adgangskoder
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Indstillinger
@@ -105,20 +107,25 @@ about-logins-login-intro-heading-logged-out2 = Leder du efter dine gemte logins?
 about-logins-login-intro-heading-logged-in = Ingen synkroniserede logins fundet.
 login-intro-description = Hvis du har gemt dine logins i { -brand-product-name } på en anden enhed, så skal du gøre sådan for at anvende dem her også:
 login-intro-instructions-fxa = Opret eller log ind på din { -fxaccount-brand-name } på den enhed, hvor dine logins er gemt.
+about-logins-login-intro-heading-message = Gem dine adgangskoder et sikkert sted
+login-intro-description2 = Alle adgangskoder, du gemmer i { -brand-product-name }, er krypterede. Vi holder desuden øje med datalæk og giver dig besked, hvis du er ramt. <a data-l10n-name="breach-alert-link">Læs mere</a>
 login-intro-instructions-fxa2 = Opret en konto eller log ind på den enhed, hvor dine logins er gemt.
 login-intro-instructions-fxa-settings = Gå til Indstillinger > Sync > Slå synkronisering til… Sæt flueben ud for Logins og adgangskoder.
 login-intro-instructions-fxa-passwords-help = Besøg vores <a data-l10n-name="passwords-help-link">support-websted</a> for at få mere hjælp.
 about-logins-intro-browser-only-import = Hvis dine logins er gemt i en anden browser, så kan du <a data-l10n-name="import-link">importere dem til { -brand-product-name }</a>
 about-logins-intro-import2 = Hvis dine logins er gemt et andet sted end { -brand-product-name }, så kan du <a data-l10n-name="import-browser-link">importere dem fra en anden browser</a> eller <a data-l10n-name="import-file-link">fra en fil</a>
+about-logins-intro-import3 = Klik på knappen med plus-tegnet ovenfor for at tilføje en adgangskode. Du kan også <a data-l10n-name="import-browser-link">importere adgangskoder fra en anden browser</a> eller <a data-l10n-name="import-file-link">fra en fil</a>.
 
 ## Login
 
 login-item-new-login-title = Opret nyt login
+# Header for adding a password
+about-logins-login-item-new-login-title = Tilføj adgangskode
 login-item-edit-button = Rediger
 about-logins-login-item-remove-button = Fjern
 login-item-origin-label = Webstedets adresse
 login-item-tooltip-message = Kontrollér at dette er adressen på det websted, hvor du logger ind.
-about-logins-origin-tooltip = Kontrollér at dette er adressen på det websted, hvor du logger ind.
+about-logins-origin-tooltip2 = Indtast den fulde adresse, og sørg for, at den svarer nøjagtigt til, hvor du logger ind.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Sørg for at gemme din aktuelle adgangsode til dette websted. At ændre adgangskoden her ændrer den ikke på { $webTitle }.
@@ -136,6 +143,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Kopier
 login-item-copied-password-button-text = Kopieret!
 login-item-save-changes-button = Gem ændringer
+about-logins-login-item-save-changes-button = Gem
 login-item-save-new-button = Gem
 login-item-cancel-button = Annuller
 
@@ -163,6 +171,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Indtast dine login-informat
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = redigere det gemte login
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = For at redigere din adgangskode skal du indtaste dine Windows-loginoplysninger. Dette hjælper med at beskytte sikkerheden på dine konti.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = rediger den gemte adgangskode
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Indtast dine login-informationer til Windows for at se din adgangskode. Dette hjælper med at beskytte dine kontis sikkerhed.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -178,6 +191,11 @@ about-logins-export-password-os-auth-dialog-message-win = Indtast dine login-inf
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = eksportere gemte logins og adgangskoder
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = For at eksportere dine adgangskoder skal du indtaste dine Windows-loginoplysninger. Dette hjælper med at beskytte sikkerheden på dine konti.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = eksporter gemte adgangskoder
 
 ## Primary Password notification
 
@@ -193,6 +211,10 @@ confirmation-dialog-dismiss-button =
     .title = Annuller
 about-logins-confirm-remove-dialog-title = Fjern dette login?
 confirm-delete-dialog-message = Denne handling kan ikke fortrydes.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Fjern adgangskoden?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Du kan ikke fortryde denne handling.
 about-logins-confirm-remove-dialog-confirm-button = Fjern
 
 ## Variables
@@ -237,12 +259,47 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [one] Denne handling fjerner det login, du har gemt i { -brand-short-name } på alle enheder, der er synkroniseret med din konto. Advarsler om datalæk, der optræder her, vil også blive fjernet. Du kan ikke fortryde denne handling.
        *[other] Denne handling fjerner de logins, du har gemt i { -brand-short-name } på alle enheder, der er synkroniseret med din konto. Advarsler om datalæk, der optræder her, vil også blive fjernet. Du kan ikke fortryde denne handling.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Ja, fjern adgangskoden
+       *[other] Ja, fjern adgangskoder
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] Fjern { $count } adgangskode?
+       *[other] Fjern alle { $count } adgangskoder?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Dette vil fjerne adgangskoden, der er gemt i { -brand-short-name }, samt alle advarsler om datalæk. Du kan ikke fortryde denne handling.
+       *[other] Dette vil fjerne adgangskoderne, der er gemt i { -brand-short-name }, samt alle advarsler om datalæk. Du kan ikke fortryde denne handling.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] Fjern { $count } adgangskode fra alle enheder?
+       *[other] Fjern alle { $count } adgangskoder fra alle enheder?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Denne handling fjerner adgangskoden gemt i { -brand-short-name } på alle dine synkroniserede enheder. Handlingen vil også fjerne alle advarsler om datalæk, der vises her. Du kan ikke fortryde denne handling.
+       *[other] Denne handling fjerner alle adgangskoder gemt i { -brand-short-name } på alle dine synkroniserede enheder. Handlingen vil også fjerne alle advarsler om datalæk, der vises her. Du kan ikke fortryde denne handling.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Eksporter logins og adgangskoder
 about-logins-confirm-export-dialog-message = Dine adgangskoder bliver gemt som læsbar tekst (fx dåRligAdg@ngsk0de), så alle der kan åbne den eksportede fil kan se dine adgangskoder.
 about-logins-confirm-export-dialog-confirm-button = Eksporter…
+about-logins-confirm-export-dialog-title2 = Om at eksportere adgangskoder
+about-logins-confirm-export-dialog-message2 =
+    Når du eksporterer dine adgangskoder, bliver de gemt i en fil som almindelig tekst.
+    Vi anbefaler, at du sletter filen, når du er færdig - så undgår du, at andre brugere af enheden kan se dine adgangskoder.
+about-logins-confirm-export-dialog-confirm-button2 = Fortsæt med eksport
 about-logins-alert-import-title = Import fuldført
 about-logins-alert-import-message = Se detaljeret oversigt over import
 confirm-discard-changes-dialog-title = Kasser ikke-gemte ændringer?
@@ -284,6 +341,11 @@ about-logins-export-file-picker-title = Eksporter fil med logins
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Eksporter adgangskoder fra { -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = Eksporter
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

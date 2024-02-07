@@ -794,9 +794,9 @@ sync-engine-creditcards =
     .label = Tarjetas de crédito
     .tooltiptext = Nombres, números y fechas de expiración (solo escritorio)
     .accesskey = C
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Métodos de pago
-    .tooltiptext = Nombres, números de tarjeta y fechas de expiración (solo para escritorio)
+    .tooltiptext = Nombres, números de tarjeta y fechas de expiración
     .accesskey = n
 sync-engine-addons =
     .label = Complementos
@@ -844,18 +844,35 @@ pane-privacy-logins-and-passwords-header = Credenciales y contraseñas
 forms-ask-to-save-logins =
     .label = Preguntar si guardar credenciales y contraseñas webs
     .accesskey = r
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Contraseñas
+    .searchkeywords = credenciales
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Solicitar guardar contraseñas
+    .accesskey = A
 forms-exceptions =
     .label = Excepciones…
     .accesskey = x
 forms-generate-passwords =
     .label = Sugerir y generar contraseñas seguras
     .accesskey = u
+forms-suggest-passwords =
+    .label = Sugerir contraseñas seguras
+    .accesskey = S
 forms-breach-alerts =
     .label = Mostrar alertas para las contraseñas de sitios vulnerados
     .accesskey = b
 forms-breach-alerts-learn-more-link = Aprender más
 preferences-relay-integration-checkbox =
     .label = Sugerir máscaras de correo { -relay-brand-name } para proteger tu dirección de correo electrónico
+preferences-relay-integration-checkbox2 =
+    .label = Sugerir máscaras de correo { -relay-brand-name } para proteger tu dirección de correo electrónico
+    .accesskey = r
 relay-integration-learn-more-link = Aprender más
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +881,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Credenciales guardadas…
     .accesskey = L
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Completar nombres de usuario y contraseñas automáticamente
+    .accesskey = F
+forms-saved-passwords =
+    .label = Contraseñas guardadas
+    .accesskey = d
 forms-primary-pw-use =
     .label = Usar una contraseña primaria
     .accesskey = U
@@ -887,6 +911,7 @@ forms-windows-sso =
     .label = Permitir un solo inicio de sesión de Windows para Microsoft, cuentas de trabajo y cuentas escolares
 forms-windows-sso-learn-more-link = Aprender más
 forms-windows-sso-desc = Gestiona las cuentas en la configuración de tu dispositivo
+windows-passkey-settings-label = Administrar claves de acceso en la configuración del sistema
 
 ## OS Authentication dialog
 
@@ -898,6 +923,28 @@ primary-password-os-auth-dialog-message-win = Para crear una contraseña primari
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = crear una contraseña primaria
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Autollenado
+autofill-addresses-checkbox = Guardar y completar direcciones
+    .accesskey = a
+autofill-saved-addresses-button = Direcciones guardadas
+    .accesskey = S
+autofill-payment-methods-checkbox-message = Guardar y completar métodos de pago
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Incluye tarjetas de crédito y débito.
+    .accesskey = I
+autofill-saved-payment-methods-button = Métodos de pago guardados
+    .accesskey = v
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Requerir autenticación de macOS para completar y editar métodos de pago.
+        [windows] Requerir autenticación de Windows para completar y editar métodos de pago.
+        [linux] Requerir autenticación de Linux para completar y editar métodos de pago.
+       *[other] Requerir autenticación para completar y editar métodos de pago.
+    }
+    .accesskey = o
 
 ## Privacy Section - History
 

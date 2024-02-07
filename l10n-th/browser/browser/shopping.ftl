@@ -7,6 +7,12 @@ shopping-page-title = { -brand-product-name } Shopping
 # review quality of online shopping product reviews
 shopping-main-container-title = ตัวตรวจสอบบทวิจารณ์
 shopping-beta-marker = Beta
+# This string is for ensuring that screen reader technology
+# can read out the "Beta" part of the shopping sidebar header.
+# Any changes to shopping-main-container-title and
+# shopping-beta-marker should also be reflected here.
+shopping-a11y-header =
+    .aria-label = ตัวตรวจสอบบทวิจารณ์ - รุ่นเบต้า
 shopping-close-button =
     .title = ปิด
 # This string is for notifying screen reader users that the
@@ -34,9 +40,35 @@ shopping-letter-grade-tooltip =
 
 shopping-message-bar-warning-stale-analysis-message-2 = ข้อมูลใหม่ที่ต้องตรวจสอบ
 shopping-message-bar-warning-stale-analysis-button = ตรวจสอบตอนนี้
+shopping-message-bar-generic-error =
+    .heading = ไม่มีข้อมูลในขณะนี้
+    .message = เรากำลังดำเนินการแก้ไขปัญหานี้ โปรดกลับมาตรวจสอบอีกครั้งเร็วๆ นี้
+shopping-message-bar-warning-not-enough-reviews =
+    .heading = บทวิจารณ์ยังไม่เพียงพอ
+    .message = เมื่อผลิตภัณฑ์นี้มีบทวิจารณ์มากขึ้น เราจะสามารถตรวจสอบคุณภาพของบทวิจารณ์ได้
+shopping-message-bar-warning-product-not-available =
+    .heading = สินค้าไม่พร้อมจำหน่าย
+    .message = หากคุณเห็นว่าสินค้านี้มีอยู่ในสต็อกแล้ว โปรดรายงานแล้วเราจะทำการตรวจสอบบทวิจารณ์
+shopping-message-bar-warning-product-not-available-button2 = รายงานว่าสินค้ามีในสต็อก
+shopping-message-bar-thanks-for-reporting =
+    .heading = ขอบคุณสำหรับการรายงาน!
+    .message = เราคาดว่าจะได้รับข้อมูลเกี่ยวกับบทวิจารณ์ของผลิตภัณฑ์นี้ภายใน 24 ชั่วโมง โปรดกลับมาตรวจสอบอีกครั้งในภายหลัง
+shopping-message-bar-warning-product-not-available-reported =
+    .heading = ข้อมูลจะมาเร็ว ๆ นี้
+    .message = เราคาดว่าจะได้รับข้อมูลเกี่ยวกับบทวิจารณ์ของผลิตภัณฑ์นี้ภายใน 24 ชั่วโมง โปรดกลับมาตรวจสอบอีกครั้งในภายหลัง
+shopping-message-bar-analysis-in-progress-title2 = กำลังตรวจสอบคุณภาพบทวิจารณ์
+shopping-message-bar-analysis-in-progress-message2 = การดำเนินการนี้อาจใช้เวลาประมาณ 60 วินาที
+# Variables:
+#  $percentage (Number) - The percentage complete that the analysis is, per our servers.
+shopping-message-bar-analysis-in-progress-with-amount = กำลังตรวจสอบคุณภาพบทวิจารณ์ ({ $percentage }%)
+shopping-message-bar-page-not-supported =
+    .heading = เราไม่สามารถตรวจสอบบทวิจารณ์เหล่านี้ได้
+    .message = ขออภัย เราไม่สามารถตรวจสอบคุณภาพบทวิจารณ์สำหรับผลิตภัณฑ์บางชนิดได้ เช่น บัตรของขวัญ วิดีโอสตรีมมิง เพลง และเกม
 
 ## Strings for the product review snippets card
 
+shopping-highlights-label =
+    .label = ไฮไลต์จากบทวิจารณ์ล่าสุด
 shopping-highlight-price = ราคา
 shopping-highlight-quality = คุณภาพ
 shopping-highlight-shipping = การส่งสินค้า
@@ -54,7 +86,9 @@ shopping-settings-label =
     .label = การตั้งค่า
 shopping-settings-recommendations-toggle =
     .label = แสดงโฆษณาในตัวตรวจสอบบทวิจารณ์
+shopping-settings-recommendations-learn-more2 = คุณจะเห็นโฆษณาสำหรับผลิตภัณฑ์ที่เกี่ยวข้องเป็นครั้งคราว เราจะโฆษณาเฉพาะผลิตภัณฑ์ที่มีบทวิจารณ์ที่เชื่อถือได้เท่านั้น <a data-l10n-name="review-quality-url">เรียนรู้เพิ่มเติม</a>
 shopping-settings-opt-out-button = ปิดตัวตรวจสอบบทวิจารณ์
+powered-by-fakespot = ตัวตรวจสอบบทวิจารณ์ขับเคลื่อนโดย <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>
 
 ## Strings for the adjusted rating component
 
@@ -73,17 +107,24 @@ shopping-review-reliability-label =
 
 shopping-analysis-explainer-label =
     .label = วิธีที่เราพิจารณาคุณภาพบทวิจารณ์
+shopping-analysis-explainer-intro2 = เราใช้เทคโนโลยี AI จาก { -fakespot-brand-full-name } เพื่อตรวจสอบความน่าเชื่อถือของบทวิจารณ์ผลิตภัณฑ์ สิ่งนี้จะช่วยคุณประเมินคุณภาพของบทวิจารณ์เพียงอย่างเดียว ไม่ได้ประเมินคุณภาพของผลิตภัณฑ์
+shopping-analysis-explainer-grades-intro = เรากำหนด<strong>เกรดที่เป็นตัวอักษร</strong>ให้กับบทวิจารณ์ของผลิตภัณฑ์แต่ละรายการตั้งแต่ A ถึง F
+shopping-analysis-explainer-adjusted-rating-description = <strong>คะแนนที่ปรับปรุงแล้ว</strong>จะขึ้นอยู่กับบทวิจารณ์ที่เราเชื่อว่าน่าเชื่อถือเท่านั้น
+shopping-analysis-explainer-learn-more2 = เรียนรู้เพิ่มเติมเกี่ยวกับ<a data-l10n-name="review-quality-url">วิธีที่ { -fakespot-brand-name } พิจารณาคุณภาพบทวิจารณ์</a>
+# This string includes the short brand name of one of the three supported
+# websites, which will be inserted without being translated.
+#  $retailer (String) - capitalized name of the shopping website, for example, "Amazon".
+shopping-analysis-explainer-highlights-description = <strong>ไฮไลต์</strong>มาจากบทวิจารณ์ใน { $retailer } ภายใน 80 วันที่ผ่านมา ซึ่งเราเชื่อว่าน่าเชื่อถือ
+shopping-analysis-explainer-review-grading-scale-reliable = บทวิจารณ์ที่น่าเชื่อถือ เราเชื่อว่าบทวิจารณ์นั้นน่าจะมาจากลูกค้าจริงซึ่งให้คำวิจารณ์อย่างตรงไปตรงมาและไม่มีอคติ
+shopping-analysis-explainer-review-grading-scale-mixed = เราเชื่อว่ามีทั้งบทวิจารณ์ที่น่าเชื่อถือและไม่น่าเชื่อถือปะปนกัน
+shopping-analysis-explainer-review-grading-scale-unreliable = บทวิจารณ์ที่ไม่น่าเชื่อถือ เราเชื่อว่าบทวิจารณ์นั้นน่าจะเป็นของปลอมหรือมาจากผู้วิจารณ์ที่มีอคติ
 
 ## Strings for UrlBar button
 
-
-## Strings for the unanalyzed product card.
-## The word 'analyzer' when used here reflects what this tool is called on
-## fakespot.com. If possible, a different word should be used for the Fakespot
-## tool (the Fakespot by Mozilla 'analyzer') other than 'checker', which is
-## used in the name of the Firefox feature ('Review checker'). If that is not
-## possible - if these terms are not meaningfully different - that is OK.
-
+shopping-sidebar-open-button2 =
+    .tooltiptext = เปิดตัวตรวจสอบบทวิจารณ์
+shopping-sidebar-close-button2 =
+    .tooltiptext = ปิดตัวตรวจสอบบทวิจารณ์
 
 ## Strings for the unanalyzed product card.
 ## The word 'analyzer' when used here reflects what this tool is called on
@@ -92,19 +133,26 @@ shopping-analysis-explainer-label =
 ## used in the name of the Firefox feature ('Review Checker'). If that is not
 ## possible - if these terms are not meaningfully different - that is OK.
 
+shopping-unanalyzed-product-header-2 = ยังไม่มีข้อมูลเกี่ยวกับบทวิจารณ์เหล่านี้
+shopping-unanalyzed-product-message-2 = หากต้องการทราบว่าบทวิจารณ์ของผลิตภัณฑ์นี้เชื่อถือได้หรือไม่ ให้ตรวจสอบคุณภาพบทวิจารณ์ โดยจะใช้เวลาเพียงประมาณ 60 วินาที
+shopping-unanalyzed-product-analyze-button = ตรวจสอบคุณภาพบทวิจารณ์
 
 ## Strings for the advertisement
 
 more-to-consider-ad-label =
     .label = ลองดูเพิ่ม
+ad-by-fakespot = โฆษณาโดย { -fakespot-brand-name }
 
 ## Shopping survey strings.
 
+shopping-survey-headline = ช่วยปรับปรุง { -brand-product-name }
+shopping-survey-question-one = คุณพอใจกับประสบการณ์การใช้ตัวตรวจสอบบทวิจารณ์ใน { -brand-product-name } มากน้อยเพียงใด?
 shopping-survey-q1-radio-1-label = พึงพอใจมาก
 shopping-survey-q1-radio-2-label = พึงพอใจ
 shopping-survey-q1-radio-3-label = เป็นกลาง
 shopping-survey-q1-radio-4-label = ไม่พอใจ
 shopping-survey-q1-radio-5-label = ไม่พอใจมาก
+shopping-survey-question-two = ตัวตรวจสอบบทวิจารณ์ช่วยให้คุณตัดสินใจในการสั่งซื้อได้ง่ายขึ้นหรือไม่?
 shopping-survey-q2-radio-1-label = ใช่
 shopping-survey-q2-radio-2-label = ไม่
 shopping-survey-q2-radio-3-label = ฉันไม่ทราบ
@@ -118,8 +166,36 @@ shopping-survey-thanks =
 ## "price tag" refers to the price tag icon displayed in the address bar to
 ## access the feature.
 
+shopping-callout-closed-opted-in-subtitle = กลับมาใช้<strong>ตัวตรวจสอบบทวิจารณ์</strong>เมื่อใดก็ตามที่คุณเห็นป้ายราคา
+shopping-callout-pdp-opted-in-title = บทวิจารณ์เหล่านี้เชื่อถือได้หรือไม่? ค้นพบอย่างรวดเร็ว
+shopping-callout-pdp-opted-in-subtitle = เปิดตัวตรวจสอบบทวิจารณ์เพื่อดูคะแนนที่ปรับปรุงแล้วโดยลบบทวิจารณ์ที่ไม่น่าเชื่อถือออก รวมถึงดูไฮไลต์จากบทวิจารณ์ที่แท้จริงล่าสุด
+shopping-callout-closed-not-opted-in-title = ดูบทวิจารณ์ที่เชื่อถือได้ในคลิกเดียว
+shopping-callout-closed-not-opted-in-subtitle = ลองใช้ตัวตรวจสอบบทวิจารณ์ทุกครั้งที่คุณเห็นป้ายราคา รับข้อมูลเชิงลึกจากนักช็อปตัวจริงอย่างรวดเร็วก่อนตัดสินใจซื้อ
 
 ## Onboarding message strings.
 
-shopping-onboarding-opt-in-button = ใช่ลองดู
+shopping-onboarding-headline = ลองใช้คำแนะนำที่เชื่อถือได้ของเราเกี่ยวกับบทวิจารณ์ผลิตภัณฑ์
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle-1 = ดูว่าบทวิจารณ์ผลิตภัณฑ์น่าเชื่อถือแค่ไหนใน <b>{ $currentSite }</b> ก่อนตัดสินใจซื้อ ตัวตรวจสอบบทวิจารณ์ ซึ่งเป็นคุณลักษณะทดลองจาก { -brand-product-name } ถูกบรรจุไว้ภายในตัวเบราว์เซอร์โดยตรง ซึ่งสามารถใช้ใน <b>{ $secondSite }</b> และ <b>{ $thirdSite }</b> ได้ด้วย
+# Subtitle for countries where we only support one shopping website (e.g. currently used in FR/DE with Amazon)
+# Variables:
+#   $currentSite (str) - The current shopping page name
+shopping-onboarding-single-subtitle = ดูว่าบทวิจารณ์ผลิตภัณฑ์น่าเชื่อถือแค่ไหนใน <b>{ $currentSite }</b> ก่อนตัดสินใจซื้อ ตัวตรวจสอบบทวิจารณ์ ซึ่งเป็นคุณลักษณะทดลองจาก { -brand-product-name } ถูกบรรจุไว้ภายในตัวเบราว์เซอร์โดยตรง
+shopping-onboarding-body = ด้วยการใช้พลังของ { -fakespot-brand-full-name } เราช่วยคุณหลีกเลี่ยงบทวิจารณ์ที่มีอคติและไม่น่าไว้วางใจ โมเดล AI ของเราจะปรับปรุงอยู่เสมอเพื่อปกป้องคุณในขณะที่คุณซื้อของ <a data-l10n-name="learn_more">เรียนรู้เพิ่มเติม</a>
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use2 = การเลือก “{ shopping-onboarding-opt-in-button }“ แสดงว่าคุณยอมรับ<a data-l10n-name="privacy_policy">นโยบายความเป็นส่วนตัว</a>และ <a data-l10n-name="terms_of_use">ข้อกำหนดการใช้งาน</a>ของ { -fakespot-brand-name }
+shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = การเลือก “{ shopping-onboarding-opt-in-button }“ แสดงว่าคุณยอมรับ<a data-l10n-name="privacy_policy">นโยบายความเป็นส่วนตัว</a>ของ { -brand-product-name } และ <a data-l10n-name="terms_of_use">ข้อกำหนดการใช้งาน</a>ของ { -fakespot-brand-name }
+shopping-onboarding-opt-in-button = ใช่ ลองใช้เลย
 shopping-onboarding-not-now-button = ไม่ใช่ตอนนี้
+shopping-onboarding-dialog-close-button =
+    .title = ปิด
+    .aria-label = ปิด
+# Aria-label to make the "steps" of the shopping onboarding container visible to screen readers.
+# Variables:
+#   $current (Int) - Number of the current page
+#   $total (Int) - Total number of pages
+shopping-onboarding-welcome-steps-indicator-label =
+    .aria-label = ความคืบหน้า: ขั้นตอนที่ { $current } จาก { $total }

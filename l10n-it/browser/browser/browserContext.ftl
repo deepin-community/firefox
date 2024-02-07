@@ -88,6 +88,10 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name(capitalization: "uppercase") }
     .tooltiptext = { -fxaccount-brand-name(capitalization: "uppercase") }
 
+toolbar-button-account =
+    .label = Account
+    .tooltiptext = Account
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -361,6 +365,10 @@ main-context-menu-manage-logins2 =
     .label = Gestisci credenziali
     .accesskey = G
 
+main-context-menu-manage-passwords =
+    .label = Gestisci password
+    .accesskey = G
+
 main-context-menu-keyword =
     .label = Aggiungi una parola chiave per questa ricerca…
     .accesskey = p
@@ -457,5 +465,7 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Rivela password
     .accesskey = v
+
+
 
 

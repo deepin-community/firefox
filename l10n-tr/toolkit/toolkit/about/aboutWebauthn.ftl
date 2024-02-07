@@ -21,6 +21,11 @@ about-webauthn-confirm-deletion-section-title = Silme işlemini onayla
 
 ## Info field texts
 
+about-webauthn-text-connect-device = Lütfen bir güvenlik cihazı bağlayın.
+# If multiple devices are plugged in, they will blink and we are asking the user to select one by touching the device they want.
+about-webauthn-text-select-device = Lütfen kullanmak istediğiniz güvenlik cihazına dokunun.
+# CTAP2 refers to Client to Authenticator Protocol version 2
+about-webauthn-text-non-ctap2-device = Güvenlik cihazınız CTAP2’yi desteklemediği için seçenekler yönetilemiyor.
 about-webauthn-text-not-available = Bu platformda kullanılamıyor.
 
 ## Results label
@@ -74,6 +79,7 @@ about-webauthn-auth-option-pinuvauthtoken = Komut izinleri (pinUvAuthToken)
 # MakeCredential and GetAssertion should not be translated.
 about-webauthn-auth-option-nomcgapermissionswithclientpin = İstemci PIN’i için MakeCredential / GetAssertion izni yok
 about-webauthn-auth-option-largeblobs = Büyük blob’lar
+about-webauthn-auth-option-ep = Kurumsal onay
 about-webauthn-auth-option-bioenroll = Biyometrik kayıt
 # FIDO_2_1_PRE should not be translated.
 about-webauthn-auth-option-userverificationmgmtpreview = Biyometrik kayıt prototipi (FIDO_2_1_PRE)
@@ -96,8 +102,11 @@ about-webauthn-auth-option-null = Desteklenmiyor
 ## Authenticator info fields
 ## Info fields correspond to the CTAP2 authenticatorGetInfo field member name and definitions found in https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#authenticatorGetInfo
 
+about-webauthn-auth-info-vendor-prototype-config-commands = Sağlayıcı prototip yapılandırma komutları
+about-webauthn-auth-info-remaining-discoverable-credentials = Kalan keşfedilebilir kimlik bilgileri
 about-webauthn-auth-info-certifications = Sertifikalar
 about-webauthn-auth-info-uv-modality = Kullanıcı doğrulama yöntemi
+about-webauthn-auth-info-preferred-platform-uv-attempts = Tercih edilen platform kullanıcısı doğrulama denemeleri
 about-webauthn-auth-info-max-cred-blob-length = Maksimum kimlik bilgisi blob uzunluğu
 about-webauthn-auth-info-firmware-version = Firmware sürümü
 about-webauthn-auth-info-min-pin-length = Minimum PIN uzunluğu

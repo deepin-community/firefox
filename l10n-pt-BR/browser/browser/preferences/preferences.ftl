@@ -14,7 +14,7 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Dizer aos sites para não vender nem compartilhar meus dados
     .accesskey = s
-non-technical-privacy-header = Preferências de privacidade do site
+non-technical-privacy-header = Preferências de privacidade em sites
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
@@ -794,9 +794,9 @@ sync-engine-creditcards =
     .label = Cartões de crédito
     .tooltiptext = Nomes, números e datas de expiração (computador apenas)
     .accesskey = C
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Métodos de pagamento
-    .tooltiptext = Nomes, números de cartões e datas de validade (somente em computador)
+    .tooltiptext = Nomes, números de cartões e datas de validade
     .accesskey = n
 sync-engine-addons =
     .label = Extensões
@@ -844,18 +844,35 @@ pane-privacy-logins-and-passwords-header = Contas e senhas
 forms-ask-to-save-logins =
     .label = Perguntar se deve salvar contas e senhas de sites
     .accesskey = r
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Senhas
+    .searchkeywords = contas
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Perguntar se quer salvar senhas
+    .accesskey = P
 forms-exceptions =
     .label = Exceções…
     .accesskey = x
 forms-generate-passwords =
     .label = Sugerir e gerar senhas fortes
     .accesskey = u
+forms-suggest-passwords =
+    .label = Sugerir senhas fortes
+    .accesskey = S
 forms-breach-alerts =
     .label = Exibir alertas sobre senhas de sites vazados
     .accesskey = v
 forms-breach-alerts-learn-more-link = Saiba mais
 preferences-relay-integration-checkbox =
     .label = Sugerir máscaras de email do { -relay-brand-name } para proteger seu endereço de email
+preferences-relay-integration-checkbox2 =
+    .label = Sugerir máscaras de email do { -relay-brand-name } para proteger seu endereço de email
+    .accesskey = r
 relay-integration-learn-more-link = Saiba mais
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +881,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Contas salvas…
     .accesskey = s
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Preencher nomes de usuário e senhas automaticamente
+    .accesskey = P
+forms-saved-passwords =
+    .label = Senhas salvas
+    .accesskey = h
 forms-primary-pw-use =
     .label = Usar uma senha principal
     .accesskey = U
@@ -887,6 +911,7 @@ forms-windows-sso =
     .label = Permitir autenticação única (single sign-on) do Windows em contas da Microsoft no trabalho e na escola
 forms-windows-sso-learn-more-link = Saiba mais
 forms-windows-sso-desc = Gerencie contas nas configurações do seu dispositivo
+windows-passkey-settings-label = Gerenciar códigos de acesso nas configurações do sistema
 
 ## OS Authentication dialog
 
@@ -898,6 +923,28 @@ primary-password-os-auth-dialog-message-win = Para criar uma senha principal, in
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = criar uma senha principal
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Preenchimento automático
+autofill-addresses-checkbox = Salvar e preencher endereços
+    .accesskey = n
+autofill-saved-addresses-button = Endereços salvos
+    .accesskey = E
+autofill-payment-methods-checkbox-message = Salvar e preencher métodos de pagamento
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Incluir cartões de crédito e débito
+    .accesskey = I
+autofill-saved-payment-methods-button = Métodos de pagamento salvos
+    .accesskey = v
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Exigir autenticação do macOS para preencher e editar métodos de pagamento.
+        [windows] Exigir autenticação do Windows para preencher e editar métodos de pagamento.
+        [linux] Exigir autenticação do Linux para preencher e editar métodos de pagamento.
+       *[other] Exigir autenticação para preencher e editar métodos de pagamento.
+    }
+    .accesskey = x
 
 ## Privacy Section - History
 

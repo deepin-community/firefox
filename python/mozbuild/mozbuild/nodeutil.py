@@ -11,7 +11,7 @@ from mozfile import which
 from packaging.version import Version
 from six import PY3
 
-NODE_MIN_VERSION = Version("12.22.12")
+NODE_MIN_VERSION = Version("12.22")
 NPM_MIN_VERSION = Version("6.14.16")
 
 

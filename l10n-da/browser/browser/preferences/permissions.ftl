@@ -107,6 +107,13 @@ permissions-exceptions-saved-logins-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-saved-logins-desc = Logins for følgende websteder vil ikke blive gemt
 
+## Exceptions - Saved Passwords
+
+permissions-exceptions-saved-passwords-window =
+    .title = Undtagelser - Gemte Kodeord
+    .style = { permissions-window2.style }
+permissions-exceptions-saved-passwords-desc = { -brand-short-name } gemmer ikke adgangskoder til websteder vist her.
+
 ## Exceptions - Add-ons
 
 permissions-exceptions-addons-window2 =

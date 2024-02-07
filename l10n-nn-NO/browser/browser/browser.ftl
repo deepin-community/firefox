@@ -351,6 +351,7 @@ identity-connection-secure = Tilkoplinga er trygg
 identity-connection-failure = Tilkoplingsfeil
 identity-connection-internal = Dette er ei sikker { -brand-short-name }-side.
 identity-connection-file = Denne sida er lagra på datamaskina di.
+identity-connection-associated = Denne sida er lasta inn frå ei anna side.
 identity-extension-page = Denne sida er lasta frå ei utviding.
 identity-active-blocked = { -brand-short-name } har blokkert delar av denne sida som ikkje er trygge.
 identity-custom-root = Tilkoplinga vart stadfesta av ein sertifikatutskrivar som Mozilla ikkje kjenner.
@@ -487,6 +488,9 @@ enable-devtools-popup-description2 = For å bruke F12-snarvegen, må du først o
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Lat att
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =

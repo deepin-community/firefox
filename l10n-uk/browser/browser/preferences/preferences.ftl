@@ -798,10 +798,10 @@ sync-engine-creditcards =
     .label = Кредитні картки
     .tooltiptext = Імена, номери й терміни дії (тільки комп'ютер)
     .accesskey = К
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Способи оплати
-    .tooltiptext = Імена, номери карток і терміни дії (тільки комп'ютер)
-    .accesskey = о
+    .tooltiptext = Імена, номери карток і терміни дії
+    .accesskey = л
 sync-engine-addons =
     .label = Додатки
     .tooltiptext = Розширення і теми Firefox для комп'ютера
@@ -848,18 +848,35 @@ pane-privacy-logins-and-passwords-header = Входи і паролі
 forms-ask-to-save-logins =
     .label = Запит збереження паролів для вебсайтів
     .accesskey = п
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Паролі
+    .searchkeywords = логіни
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Запитувати про збереження паролів
+    .accesskey = и
 forms-exceptions =
     .label = Винятки…
     .accesskey = и
 forms-generate-passwords =
     .label = Пропонувати й генерувати надійні паролі
     .accesskey = г
+forms-suggest-passwords =
+    .label = Пропонувати надійні паролі
+    .accesskey = П
 forms-breach-alerts =
     .label = Показувати сповіщення про паролі для зламаних вебсайтів
     .accesskey = з
 forms-breach-alerts-learn-more-link = Докладніше
 preferences-relay-integration-checkbox =
     .label = Пропонувати маски електронної пошти { -relay-brand-name }, щоб захистити електронну адресу
+preferences-relay-integration-checkbox2 =
+    .label = Пропонувати маски електронної пошти { -relay-brand-name } для захисту вашої адреси.
+    .accesskey = м
 relay-integration-learn-more-link = Докладніше
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -868,6 +885,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Збережені паролі…
     .accesskey = л
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Автоматично заповнювати імена користувачів і паролі
+    .accesskey = з
+forms-saved-passwords =
+    .label = Збережені паролі
+    .accesskey = ж
 forms-primary-pw-use =
     .label = Використовувати головний пароль
     .accesskey = г
@@ -891,6 +915,7 @@ forms-windows-sso =
     .label = Дозволити єдиний вхід Windows для облікових записів Microsoft, роботи та школи
 forms-windows-sso-learn-more-link = Докладніше
 forms-windows-sso-desc = Керування обліковими записами в налаштуваннях пристрою
+windows-passkey-settings-label = Керувати ключами доступу в налаштуваннях системи
 
 ## OS Authentication dialog
 
@@ -902,6 +927,28 @@ primary-password-os-auth-dialog-message-win = Щоб створити голов
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = створити головний пароль
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Автозаповнення
+autofill-addresses-checkbox = Зберігати й заповнювати адреси
+    .accesskey = ю
+autofill-saved-addresses-button = Збережені адреси
+    .accesskey = с
+autofill-payment-methods-checkbox-message = Зберігати й заповнювати способи оплати
+    .accesskey = в
+autofill-payment-methods-checkbox-submessage = Застосовується до кредитних та платіжних карток
+    .accesskey = к
+autofill-saved-payment-methods-button = Збережені способи оплати
+    .accesskey = т
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Вимагати автентифікацію macOS для заповнення та редагування способів оплати.
+        [windows] Вимагати автентифікацію Windows для заповнення та редагування способів оплати.
+        [linux] Вимагати автентифікацію Linux для заповнення та редагування способів оплати.
+       *[other] Вимагати автентифікацію для заповнення та редагування способів оплати
+    }
+    .accesskey = г
 
 ## Privacy Section - History
 
@@ -1074,7 +1121,7 @@ content-blocking-private-windows = Стеження в приватних вік
 content-blocking-cross-site-cookies-in-all-windows2 = Куки сторонніх сайтів у всіх вікнах
 content-blocking-cross-site-tracking-cookies = Куки стеження між сайтами
 content-blocking-all-cross-site-cookies-private-windows = Куки сторонніх сайтів у приватних вікнах
-content-blocking-cross-site-tracking-cookies-plus-isolate = Куки стеження між сайтами та ізолювання решти куків
+content-blocking-cross-site-tracking-cookies-plus-isolate = Куки стеження між сайтами та ізолювання решти кук
 content-blocking-social-media-trackers = Стеження соціальних мереж
 content-blocking-all-cookies = Усі куки
 content-blocking-unvisited-cookies = Куки з невідвіданих сайтів
@@ -1201,7 +1248,7 @@ collection-header = Збір та використання даних { -brand-s
 collection-header2 = Збір та використання даних { -brand-short-name }
     .searchkeywords = телеметрія
 collection-description = Ми прагнемо надати вам вибір і збирати лише дані, необхідні для роботи і вдосконалення { -brand-short-name }. Ми завжди запитуємо дозвіл перед отриманням особистої інформації.
-collection-privacy-notice = Повідомлення про приватність
+collection-privacy-notice = Положення про приватність
 collection-health-report-telemetry-disabled = Ви більше не дозволяєте { -vendor-short-name } збирати технічні дані й інформацію про взаємодію. Всі минулі дані будуть видалені протягом 30 днів.
 collection-health-report-telemetry-disabled-link = Докладніше
 collection-health-report =
