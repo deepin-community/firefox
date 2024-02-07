@@ -16,3 +16,4 @@ debian-hacks/Don-t-auto-disable-extensions-in-system-directories.patch
 debian-hacks/Work-around-GCC-ICE-on-ppc64el.patch
 debian-hacks/Relax-cargo-version-requirement.patch
 debian-hacks/Adjust-our-gfx-skia-moz.build-patch-to-upstream-chan.patch
+porting/firefox-110-fix-rust.patch

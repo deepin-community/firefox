@@ -1,3 +1,10 @@
+firefox (122.0-1deepin2) unstable; urgency=medium
+
+  * Set build with llvm-16.
+  * Support LoongArch.
+
+ -- xiangzelong <xiangzelong@deepin.org>  Wed, 07 Feb 2024 10:14:40 +0800
+
 firefox (122.0-1) unstable; urgency=medium
 
   * New upstream release.
