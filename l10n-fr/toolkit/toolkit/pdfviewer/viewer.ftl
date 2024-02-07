@@ -308,6 +308,8 @@ pdfjs-editor-remove-freetext-button =
     .title = Supprimer le texte
 pdfjs-editor-remove-stamp-button =
     .title = Supprimer l’image
+pdfjs-editor-remove-highlight-button =
+    .title = Supprimer le surlignage
 
 ##
 
@@ -357,3 +359,22 @@ pdfjs-editor-resizer-label-bottom-right = Coin inférieur droit — redimensionn
 pdfjs-editor-resizer-label-bottom-middle = Centre bas — redimensionner
 pdfjs-editor-resizer-label-bottom-left = Coin inférieur gauche — redimensionner
 pdfjs-editor-resizer-label-middle-left = Milieu gauche — redimensionner
+
+## Color picker
+
+# This means "Color used to highlight text"
+pdfjs-editor-highlight-colorpicker-label = Couleur de surlignage
+pdfjs-editor-colorpicker-button =
+    .title = Changer de couleur
+pdfjs-editor-colorpicker-dropdown =
+    .aria-label = Choix de couleurs
+pdfjs-editor-colorpicker-yellow =
+    .title = Jaune
+pdfjs-editor-colorpicker-green =
+    .title = Vert
+pdfjs-editor-colorpicker-blue =
+    .title = Bleu
+pdfjs-editor-colorpicker-pink =
+    .title = Rose
+pdfjs-editor-colorpicker-red =
+    .title = Rouge

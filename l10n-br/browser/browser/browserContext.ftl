@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = Kont
+    .tooltiptext = Kont
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -269,7 +275,7 @@ main-context-menu-audio-save-as =
     .label = Enrollañ ar restr klevet evel…
     .accesskey = v
 main-context-menu-video-take-snapshot =
-    .label = Kemer un dapadenn...
+    .label = Kemer un dapadenn…
     .accesskey = K
 main-context-menu-video-email =
     .label = Kas ar video dre bostel…
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = Implijout un titour kennaskañ enrollet
     .accesskey = I
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Implijout ar ger-tremen enrollet
     .accesskey = g
@@ -305,6 +312,9 @@ main-context-menu-suggest-strong-password =
     .accesskey = k
 main-context-menu-manage-logins2 =
     .label = Merañ an titouroù kennaskañ
+    .accesskey = M
+main-context-menu-manage-passwords =
+    .label = Merañ ar gerioù-tremen
     .accesskey = M
 main-context-menu-keyword =
     .label = Ouzhpennañ ur ger-alc'hwez evit ar c'hlask-mañ …
@@ -369,7 +379,7 @@ main-context-menu-inspect =
 main-context-menu-inspect-a11y-properties =
     .label = Ensellout ar perzhioù haezadusted
 main-context-menu-eme-learn-more =
-    .label = Gouzout hiroc'h diwar-benn an DRM...
+    .label = Gouzout hiroc’h diwar-benn an DRM…
     .accesskey = D
 # Variables
 #   $containerName (String): The name of the current container

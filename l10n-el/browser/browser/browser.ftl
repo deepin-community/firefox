@@ -488,6 +488,9 @@ enable-devtools-popup-description2 = Για να χρησιμοποιήσετε 
 
 ## URL Bar
 
+# This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
+urlbar-search-mode-indicator-close =
+    .aria-label = Κλείσιμο
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
@@ -510,15 +513,15 @@ urlbar-placeholder-search-mode-other-engine =
     .aria-label = Αναζήτηση { $name }
 # This placeholder is used when searching bookmarks.
 urlbar-placeholder-search-mode-other-bookmarks =
-    .placeholder = Εισάγετε όρους αναζήτησης
+    .placeholder = Εισαγάγετε όρους αναζήτησης
     .aria-label = Αναζήτηση σελιδοδεικτών
 # This placeholder is used when searching history.
 urlbar-placeholder-search-mode-other-history =
-    .placeholder = Εισάγετε όρους αναζήτησης
+    .placeholder = Εισαγάγετε όρους αναζήτησης
     .aria-label = Αναζήτηση ιστορικού
 # This placeholder is used when searching open tabs.
 urlbar-placeholder-search-mode-other-tabs =
-    .placeholder = Εισάγετε όρους αναζήτησης
+    .placeholder = Εισαγάγετε όρους αναζήτησης
     .aria-label = Αναζήτηση καρτελών
 # This placeholder is used when searching quick actions.
 urlbar-placeholder-search-mode-other-actions =
@@ -982,8 +985,8 @@ popup-warning-button =
         }
     .accesskey =
         { PLATFORM() ->
-            [windows] λ
-           *[other] ρ
+            [windows] Ε
+           *[other] Π
         }
 # Variables:
 #   $popupURI (String): the URI for the pop-up window

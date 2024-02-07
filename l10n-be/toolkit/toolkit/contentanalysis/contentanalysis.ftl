@@ -12,6 +12,12 @@ contentanalysis-slow-agent-dialog-title = Ідзе аналіз змесціва
 contentanalysis-slow-agent-dialog-body = Аналіз змесціва аналізуе рэсурс “{ $content }”
 contentanalysis-operationtype-clipboard = буфер абмену
 contentanalysis-operationtype-dropped-text = прапушчаны тэкст
+contentanalysis-warndialogtitle = Гэта змесціва можа быць небяспечным
+# Variables:
+#   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
+contentanalysis-warndialogtext = Ваша арганізацыя выкарыстоўвае праграмнае забеспячэнне для прадухілення страты дадзеных, якое пазначыла гэтае змесціва як небяспечнае: { $content }. Усё роўна выкарыстаць?
+contentanalysis-warndialog-response-allow = Выкарыстаць змесціва
+contentanalysis-warndialog-response-deny = Скасаваць
 contentanalysis-notification-title = Аналіз змесціва
 # Variables:
 #   $content - Description of the content being reported, such as "clipboard" or "aFile.txt"

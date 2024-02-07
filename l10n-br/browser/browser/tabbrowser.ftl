@@ -82,10 +82,33 @@ tabbrowser-unblock-tab-audio-tooltip =
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
+# The singular form is not considered since this string is used only for multiple tabs.
+# Variables:
+#   $tabCount (Number): The number of tabs that will be closed.
+tabbrowser-confirm-close-tabs-title =
+    { $tabCount ->
+        [one] Serriñ { $tabCount } ivinell?
+        [two] Serriñ { $tabCount } ivinell?
+        [few] Serriñ { $tabCount } ivinell?
+        [many] Serriñ { $tabCount } ivinell?
+       *[other] Serriñ { $tabCount } ivinell?
+    }
 tabbrowser-confirm-close-tabs-button = Serriñ an ivinelloù
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
 
+# The forms for 0 or 1 items are not considered since this string is used only for
+# multiple windows.
+# Variables:
+#   $windowCount (Number): The number of windows that will be closed.
+tabbrowser-confirm-close-windows-title =
+    { $windowCount ->
+        [one] Serriñ { $windowCount } prenestr?
+        [two] Serriñ { $windowCount } brenestr?
+        [few] Serriñ { $windowCount } frenestr?
+        [many] Serriñ { $windowCount } a brenestroù?
+       *[other] Serriñ { $windowCount } prenestr?
+    }
 tabbrowser-confirm-close-windows-button =
     { PLATFORM() ->
         [windows] Serriñ ha kuitaat
@@ -164,3 +187,5 @@ tabbrowser-manager-mute-tab =
     .tooltiptext = Mudañ an ivinell
 tabbrowser-manager-unmute-tab =
     .tooltiptext = Divudañ an ivinell
+tabbrowser-manager-close-tab =
+    .tooltiptext = Serriñ an ivinell

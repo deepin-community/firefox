@@ -10,6 +10,9 @@ search-header =
 ## Variables
 ##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
 
+list-empty-get-extensions-message = Kit da dapout askouezhioù ha neuzioù war <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-dictionaries-message = Kit da dapout geriadurioù war <a data-l10n-name="get-extensions">{ $domain }</a>
+list-empty-get-language-packs-message = Kit da dapout pakadoù yezh war <a data-l10n-name="get-extensions">{ $domain }</a>
 
 ##
 
@@ -26,6 +29,9 @@ list-empty-button =
 help-button = Skor an askouezhioù
 sidebar-help-button-title =
     .title = Skor an askouezhioù
+addons-settings-button = Arventennoù { -brand-short-name }
+sidebar-settings-button-title =
+    .title = Arventennoù { -brand-short-name }
 show-unsigned-extensions-button =
     .label = N'haller ket gwiriekaat lod eus an askouezhioù
 show-all-extensions-button =
@@ -34,6 +40,8 @@ detail-version =
     .label = Handelv
 detail-last-updated =
     .label = Hizivadur diwezhañ
+addon-detail-description-expand = Diskouez muioc’h
+addon-detail-description-collapse = Diskouez nebeutoc’h
 detail-contributions-description = Goulenn a ra paotr an diorren ma vefe skoazellet diorroadur an askouezh-mañ ganeoc'h dre ur perzhiadur-arc'hant vihan.
 detail-contributions-button = Kemer perzh
     .title = Kemer perzh e diorren an enlugellad
@@ -147,6 +155,7 @@ extensions-warning-update-security2 =
     .message = Diweredekaet eo ar gwiriañ evit hizivaat an askouezhioù. Marteze e viot lakaet en arvar gant hizivadurioù.
 extensions-warning-update-security-button = Gweredekaat
     .title = Gweredekaat ar gwiriadur a-fet diogelroez hizivadur an askouezh
+extensions-warning-imported-addons-button = Staliañ askouezhioù
 
 ## Strings connected to add-on updates
 
@@ -242,9 +251,18 @@ discopane-intro =
     suraat ho kerioù-tremen, pellgargañ videoioù, kavout taolioù mat, stankañ 
     ar bruderezh strobus, cheñch neuz ho merdeer hag all. An arloadigoù-se a vez 
     diorroet gant un tredeour. Setu un dibab <a data-l10n-name="learn-more-trigger">kuzuliet</a> 
-    gant { -brand-product-name } evit ur surentez, un digonusted hag arc'hweladurioù dibar.
-discopane-notice-learn-more = Gouzout hiroc'h
-privacy-policy = Reolenn a-fet buhez prevez
+    gant { -brand-product-name } evit ur surentez, un digonusted hag arc’hweladurioù dibar.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations =
+    Lod ag an erbedadennoù-se a zo personelaet. Diazezet int war an askouezhioù
+    all ho peus staliet, penndibaboù ho profil hag ar stadegoù implij.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message =
+        Lod ag an erbedadennoù-se a zo personelaet. Diazezet int war an askouezhioù
+        all ho peus staliet, penndibaboù ho profil hag ar stadegoù implij.
+discopane-notice-learn-more = Gouzout hiroc’h
+privacy-policy = Reolennoù a-fet buhez prevez
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
 #   $author (string) - The name of the add-on developer.
@@ -259,6 +277,7 @@ install-theme-button = Staliañ an tem
 # the detailed add-on view is opened, from where the add-on can be managed.
 manage-addon-button = Merañ
 find-more-addons = Kavout askouezhioù ouzhpenn
+find-more-themes = Kaout muioc’h a neuzioù
 # This is a label for the button to open the "more options" menu, it is only
 # used for screen readers.
 addon-options-button =
@@ -287,12 +306,15 @@ permissions-addon-button = Aotreoù
 extension-enabled-heading = Gweredekaet
 extension-disabled-heading = Diweredekaet
 theme-enabled-heading = Gweredekaet
+theme-disabled-heading2 = Neuzioù enrollet
 plugin-enabled-heading = Gweredekaet
 plugin-disabled-heading = Diweredekaet
 dictionary-enabled-heading = Gweredekaet
 dictionary-disabled-heading = Diweredekaet
 locale-enabled-heading = Gweredekaet
 locale-disabled-heading = Diweredekaet
+sitepermission-enabled-heading = Gweredekaet
+sitepermission-disabled-heading = Diweredekaet
 always-activate-button = Atav gweredekaat
 never-activate-button = Na weredekaat biken
 addon-detail-author-label = Aozer
@@ -300,6 +322,11 @@ addon-detail-version-label = Handelv
 addon-detail-last-updated-label = Hizivaet da ziwezhañ
 addon-detail-homepage-label = Pennbajenn
 addon-detail-rating-label = Notenn
+# Message for add-ons with a staged pending update.
+install-postponed-message = Hizivaet e vo an askouezh-mañ pa adloc’ho { -brand-short-name }.
+# Message for add-ons with a staged pending update.
+install-postponed-message2 =
+    .message = Hizivaet e vo an askouezh-mañ pa adloc’ho { -brand-short-name }.
 install-postponed-button = Hizivaat bremañ
 # The average rating that the add-on has received.
 # Variables:
@@ -347,6 +374,7 @@ addon-detail-group-label-updates =
 addon-badge-private-browsing-allowed2 =
     .title = Aotreet er prenestroù prevez
     .aria-label = { addon-badge-private-browsing-allowed2.title }
+addon-detail-private-browsing-help = Ma’z eo aotreet e c’hall an askouezh haeziñ hoc’h obererezh enlinenn e-pad ar merdeiñ prevez. <a data-l10n-name="learn-more">Gouzout hiroc’h</a>
 addon-detail-private-browsing-allow = Aotren
 addon-detail-private-browsing-disallow = Na aotren
 # aria-label associated to the private browsing row to help screen readers to announce the group
@@ -357,6 +385,9 @@ addon-detail-group-label-private-browsing =
 ## "sites with restrictions" (internally called "quarantined") are special domains
 ## where add-ons are normally blocked for security reasons.
 
+# Used as label and tooltip text on the radio inputs associated to the quarantined domains UI controls.
+addon-detail-quarantined-domains-allow = Aotren
+addon-detail-quarantined-domains-disallow = Na aotren
 # aria-label associated to the quarantined domains exempt row to help screen readers to announce the group.
 addon-detail-group-label-quarantined-domains =
     .aria-label = { addon-detail-quarantined-domains-label }
@@ -402,6 +433,7 @@ details-notification-incompatible = Digeverlec’h eo { $name } gant { -brand-sh
 #   $version (string) - Application version.
 details-notification-incompatible2 =
     .message = Digeverlec’h eo { $name } gant { -brand-short-name } { $version }.
+details-notification-incompatible-link = Muioc’h a ditouroù
 details-notification-unsigned-and-disabled = N'haller ket gwiriekaat arver { $name } e { -brand-short-name } ha diweredekaet eo bet.
 details-notification-unsigned-and-disabled2 =
     .message = N'haller ket gwiriekaat arver { $name } e { -brand-short-name } ha diweredekaet eo bet.

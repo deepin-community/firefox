@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Importar de outro naveg
 about-logins-menu-menuitem-import-from-a-file = Importar de um arquivo…
 about-logins-menu-menuitem-export-logins = Exportar contas…
 about-logins-menu-menuitem-remove-all-logins = Remover todas as contas…
+about-logins-menu-menuitem-export-logins2 = Exportar senhas…
+about-logins-menu-menuitem-remove-all-logins2 = Remover todas as senhas…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Opções
@@ -105,20 +107,25 @@ about-logins-login-intro-heading-logged-out2 = Procurando suas contas salvas? At
 about-logins-login-intro-heading-logged-in = Nenhuma conta sincronizada foi encontrada.
 login-intro-description = Se você salvou suas contas no { -brand-product-name } em outro dispositivo, veja como tê-las aqui:
 login-intro-instructions-fxa = Crie ou entre na sua { -fxaccount-brand-name } no dispositivo onde suas contas estão salvas.
+about-logins-login-intro-heading-message = Salve suas senhas em um local seguro
+login-intro-description2 = Todas as senhas que você salva no { -brand-product-name } são criptografadas. Além disso, estamos atentos a vazamentos de dados e alertamos você caso seja afetado. <a data-l10n-name="breach-alert-link">Saiba mais</a>
 login-intro-instructions-fxa2 = Crie ou entre na sua conta no dispositivo onde suas contas estão salvas.
 login-intro-instructions-fxa-settings = Vá em Configurações > Sincronização > Ativar sincronização… Selecione a opção de contas e senhas.
 login-intro-instructions-fxa-passwords-help = Visite o <a data-l10n-name="passwords-help-link">suporte a senhas</a> para obter mais ajuda.
 about-logins-intro-browser-only-import = Se suas contas estão salvas em outro navegador, você pode <a data-l10n-name="import-link">importar no { -brand-product-name }</a>
 about-logins-intro-import2 = Se suas contas foram salvas fora do { -brand-product-name }, você pode <a data-l10n-name="import-browser-link">importar de outro navegador</a> ou <a data-l10n-name="import-file-link">de um arquivo</a>
+about-logins-intro-import3 = Selecione acima o botão de sinal de mais para adicionar uma senha agora. Você também pode <a data-l10n-name="import-browser-link">importar senhas de outro navegador</a> ou <a data-l10n-name="import-file-link">de um arquivo</a>.
 
 ## Login
 
 login-item-new-login-title = Criar nova conta
+# Header for adding a password
+about-logins-login-item-new-login-title = Adicionar senha
 login-item-edit-button = Editar
 about-logins-login-item-remove-button = Remover
 login-item-origin-label = Endereço do site
 login-item-tooltip-message = Certifique-se de que corresponde ao endereço exato do site onde você acessou a conta.
-about-logins-origin-tooltip = Certifique-se de que corresponde ao endereço exato do site onde você entrou na conta.
+about-logins-origin-tooltip2 = Insira o endereço completo e certifique-se de corresponder exatamente a onde você fez entrou na conta.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Certifique-se de salvar a senha atual da sua conta deste site. Mudar a senha aqui não a altera em { $webTitle }.
@@ -136,6 +143,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Copiar
 login-item-copied-password-button-text = Copiado!
 login-item-save-changes-button = Salvar alterações
+about-logins-login-item-save-changes-button = Salvar
 login-item-save-new-button = Salvar
 login-item-cancel-button = Cancelar
 
@@ -163,6 +171,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Para editar a conta, insira
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = editar a conta salva
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Para editar a senha, insira suas credenciais de acesso ao Windows. Isso ajuda a proteger a segurança de suas contas.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = editar a senha salva
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Para ver a senha, insira suas credenciais de acesso ao Windows. Isso ajuda a proteger a segurança de suas contas.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -178,6 +191,11 @@ about-logins-export-password-os-auth-dialog-message-win = Para exportar suas con
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = exportar contas e senhas salvas
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Para exportar suas senhas, insira suas credenciais de acesso ao Windows. Isso ajuda a proteger a segurança de suas contas.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = exportar senhas salvas
 
 ## Primary Password notification
 
@@ -193,6 +211,10 @@ confirmation-dialog-dismiss-button =
     .title = Cancelar
 about-logins-confirm-remove-dialog-title = Remover esta conta?
 confirm-delete-dialog-message = Esta ação não pode ser desfeita.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Remover senha?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Você não pode desfazer esta ação.
 about-logins-confirm-remove-dialog-confirm-button = Remover
 
 ## Variables
@@ -237,12 +259,50 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [1] Será removida a conta que você salvou no { -brand-short-name } em todos os dispositivos sincronizados com sua conta. Também serão removidos alertas de vazamentos que aparecem aqui. Você não pode desfazer esta ação.
        *[other] This will remove all logins you’ve saved to { -brand-short-name } on all devices synced to your account. This will also remove breach alerts that appear here. You won’t be able to undo this action.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Sim, remover senha
+        [one] Sim, remover senha
+       *[other] Sim, remover senhas
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] Remover { $count } senha?
+       *[other] Remover todas as { $count } senhas?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Esta operação remove a senha salva no { -brand-short-name } e quaisquer alertas de vazamento de dados. Esta ação não pode ser desfeita.
+        [one] Esta operação remove a senha salva no { -brand-short-name } e quaisquer alertas de vazamento de dados. Esta ação não pode ser desfeita.
+       *[other] Esta operação remove as senhas salvas no { -brand-short-name } e quaisquer alertas de vazamento de dados. Esta ação não pode ser desfeita.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] Remover { $count } senha de todos os dispositivos?
+       *[other] Remover todas as { $count } senhas de todos os dispositivos?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Esta operação remove a senha salva no { -brand-short-name } em todos os seus dispositivos sincronizados. Também remove quaisquer alertas de vazamento de dados presentes aqui. Esta ação não pode ser desfeita.
+        [one] Esta operação remove a senha salva no { -brand-short-name } em todos os seus dispositivos sincronizados. Também remove quaisquer alertas de vazamento de dados presentes aqui. Esta ação não pode ser desfeita.
+       *[other] Esta operação remove todas as senhas salvas no { -brand-short-name } em todos os seus dispositivos sincronizados. Também remove quaisquer alertas de vazamento de dados presentes aqui. Esta ação não pode ser desfeita.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Exportar contas e senhas
 about-logins-confirm-export-dialog-message = Suas senhas serão salvas em texto legível (exemplo, Senh@Ruim123), qualquer pessoa que consiga abrir o arquivo exportado poderá ver.
 about-logins-confirm-export-dialog-confirm-button = Exportar…
+about-logins-confirm-export-dialog-title2 = Uma observação sobre exportação de senhas
+about-logins-confirm-export-dialog-message2 =
+    Ao exportar, suas senhas são salvas em um arquivo em texto legível.
+    Quando terminar de usar o arquivo, recomendamos apagar para que outras pessoas que usam este dispositivo não possam ver suas senhas.
+about-logins-confirm-export-dialog-confirm-button2 = Continuar a exportação
 about-logins-alert-import-title = Importação concluída
 about-logins-alert-import-message = Ver resumo detalhado da importação
 confirm-discard-changes-dialog-title = Descartar alterações não salvas?
@@ -284,6 +344,11 @@ about-logins-export-file-picker-title = Exportar arquivo de contas
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = contas.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Exportar senhas do { -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = senhas.csv
 about-logins-export-file-picker-export-button = Exportar
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

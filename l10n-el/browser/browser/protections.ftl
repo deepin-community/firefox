@@ -38,16 +38,16 @@ protection-report-manage-protections = Διαχείριση ρυθμίσεων
 # capitalization for this string should match the output for your locale.
 graph-today = Σήμερα
 # This string is used to describe the graph for screenreader users.
-graph-legend-description = Ένα γράφημα με το συνολικό αριθμό κάθε τύπου ιχνηλάτη που έχει αποκλειστεί αυτή την εβδομάδα.
+graph-legend-description = Ένα γράφημα με τον συνολικό αριθμό κάθε τύπου ιχνηλάτη που έχει αποκλειστεί αυτήν την εβδομάδα.
 social-tab-title = Ιχνηλάτες κοινωνικών δικτύων
 social-tab-contant = Τα κοινωνικά δίκτυα τοποθετούν ιχνηλάτες σε άλλες ιστοσελίδες για να παρακολουθούν ό,τι κάνετε και βλέπετε στο διαδίκτυο. Αυτό επιτρέπει στις εταιρείες κοινωνικών μέσων να μάθουν περισσότερα για εσάς πέρα από αυτά που κοινοποιείτε στα προφίλ κοινωνικών μέσων σας. <a data-l10n-name="learn-more-link">Μάθετε περισσότερα</a>
 cookie-tab-title = Cookie καταγραφής μεταξύ ιστοτόπων
 cookie-tab-content = Αυτά τα cookie σάς ακολουθούν από ιστότοπο σε ιστότοπο για να συλλέξουν δεδομένα για ό,τι κάνετε στο διαδίκτυο. Δημιουργούνται από τρίτους, όπως διαφημιστές και εταιρείες ανάλυσης. Η φραγή των cookie καταγραφής μεταξύ ιστοτόπων μειώνει τον αριθμό των διαφημίσεων που σας καταγράφουν. <a data-l10n-name="learn-more-link">Μάθετε περισσότερα</a>
 tracker-tab-title = Περιεχόμενο καταγραφής
 tracker-tab-description = Οι ιστότοποι ενδέχεται να φορτώσουν εξωτερικές διαφημίσεις, βίντεο και άλλο περιεχόμενο με κώδικα καταγραφής. Η φραγή περιεχομένου καταγραφής μπορεί να συμβάλει στην ταχύτερη φόρτωση ιστοτόπων, αλλά ορισμένα κουμπιά, φόρμες και πεδία σύνδεσης ενδέχεται να μην λειτουργούν. <a data-l10n-name="learn-more-link">Μάθετε περισσότερα</a>
-fingerprinter-tab-title = Fingerprinters
+fingerprinter-tab-title = Fingerprinter
 fingerprinter-tab-content = Τα fingerprinter συλλέγουν ρυθμίσεις από το πρόγραμμα περιήγησης και τον υπολογιστή σας για να δημιουργήσουν ένα προφίλ για εσάς. Με τη χρήση αυτού του ψηφιακού αποτυπώματος, μπορούν να σας καταγράφουν σε διάφορους ιστοτόπους. <a data-l10n-name="learn-more-link">Μάθετε περισσότερα</a>
-cryptominer-tab-title = Cryptominers
+cryptominer-tab-title = Cryptominer
 cryptominer-tab-content = Τα cryptominers χρησιμοποιούν την υπολογιστική ισχύ του συστήματός σας για να κάνουν εξόρυξη κρυπτονομισμάτων. Τα σενάρια εξόρυξης κρυπτονομισμάτων καταναλώνουν μπαταρία, επιβραδύνουν τον υπολογιστή σας, ενώ ενδέχεται να δείτε αυξημένες χρεώσεις στο λογαριασμό τους ρεύματός σας. <a data-l10n-name="learn-more-link">Μάθετε περισσότερα</a>
 protections-close-button2 =
     .aria-label = Κλείσιμο
@@ -190,16 +190,16 @@ bar-tooltip-tracker =
            *[other] { $count } περιεχόμενα καταγραφής ({ $percentage }%)
         }
 bar-tooltip-fingerprinter =
-    .title = Fingerprinters
+    .title = Fingerprinter
     .aria-label =
         { $count ->
             [one] { $count } fingerprinter ({ $percentage }%)
-           *[other] { $count } fingerprinters ({ $percentage }%)
+           *[other] { $count } fingerprinter ({ $percentage }%)
         }
 bar-tooltip-cryptominer =
-    .title = Cryptominers
+    .title = Cryptominer
     .aria-label =
         { $count ->
             [one] { $count } cryptominer ({ $percentage }%)
-           *[other] { $count } cryptominers ({ $percentage }%)
+           *[other] { $count } cryptominer ({ $percentage }%)
         }

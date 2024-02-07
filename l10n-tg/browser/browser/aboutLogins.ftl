@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Аз браузери �
 about-logins-menu-menuitem-import-from-a-file = Аз файл ворид кардан…
 about-logins-menu-menuitem-export-logins = Содиркунии воридшавиҳо…
 about-logins-menu-menuitem-remove-all-logins = Ҳамаи воридшавиҳоро нест кардан…
+about-logins-menu-menuitem-export-logins2 = Содир кардани ниҳонвожаҳо…
+about-logins-menu-menuitem-remove-all-logins2 = Тоза кардани ҳамаи ниҳонвожаҳо…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Имконот
@@ -105,20 +107,25 @@ about-logins-login-intro-heading-logged-out2 = Воридшавиҳои ниго
 about-logins-login-intro-heading-logged-in = Ягон воридшавии ҳамоҳангшуда ёфт нашуд.
 login-intro-description = Агар шумо воридшавиҳои худро дар дастгоҳҳои гуногун ба { -brand-product-name } сабт карда бошед, дар он сурат шумо дар ин ҷо ба онҳо ҳамин тавр дастрасӣ пайдо мекунед:
 login-intro-instructions-fxa = Эҷод кунед ё ба { -fxaccount-brand-name }-и худ аз дастгоҳе, ки дар он воридшавиҳои шумо нигоҳ дошта шудаанд, ворид шавед.
+about-logins-login-intro-heading-message = Ниҳонвожаҳои худро ба ҷойи бехатар нигоҳ доред
+login-intro-description2 = Ҳамаи ниҳонвожаҳое, ки шумо дар «{ -brand-product-name }» нигоҳ медоред, рамзгузорӣ карда шудаанд. Илова бар ин, мо пайдоиши вайронкуниҳоро назорат мекунем ва шуморо огоҳ мекунем, агар онҳо ба шумо таъсир расонанд. <a data-l10n-name="breach-alert-link">Маълумоти бештар</a>
 login-intro-instructions-fxa2 = Эҷод кунед ё ба ҳисоби худ аз дастгоҳе, ки дар он воридшавиҳои шумо нигоҳ дошта шудаанд, ворид шавед.
 login-intro-instructions-fxa-settings = Ба Танзимот > Ҳамоҳангсозӣ > Фаъол кардани ҳамоҳангсозӣ гузаред… Ба «Воридшавиҳо ва ниҳонвожаҳо» аломати қайдро гузоред.
 login-intro-instructions-fxa-passwords-help = Барои кумаки бештар <a data-l10n-name="passwords-help-link">дастгирии ниҳонвожаҳоро</a> мутолиа кунед.
 about-logins-intro-browser-only-import = Агар воридшавиҳои шумо дар браузери дигар нигоҳ дошта бошанд, шумо метавонед <a data-l10n-name="import-link">онҳоро ба { -brand-product-name } ворид кунед</a>
 about-logins-intro-import2 = Агар воридшавиҳои шумо берун аз { -brand-product-name } нигоҳ дошта бошанд, шумо метавонед <a data-l10n-name="import-browser-link">онҳоро аз браузери дигар</a> ё <a data-l10n-name="import-file-link">аз файл ворид намоед</a>
+about-logins-intro-import3 = Барои дарҳол илова кардани ниҳонвожа, тугмаи болоро, ки дорои аломатӣ ҷамъ мебошад, интихоб намоед. Шумо, инчунин, метавонед <a data-l10n-name="import-browser-link">ниҳонвожаҳоро аз браузери дигар</a> ё <a data-l10n-name="import-file-link">аз файл</a> ворид намоед.
 
 ## Login
 
 login-item-new-login-title = Эҷод кардани воридшавии нав
+# Header for adding a password
+about-logins-login-item-new-login-title = Илова кардани ниҳонвожа
 login-item-edit-button = Таҳрир кардан
 about-logins-login-item-remove-button = Тоза кардан
 login-item-origin-label = Нишонии сомона
 login-item-tooltip-message = Мутмаин шавед, ки ин ба нишонии дақиқи сомонае, ки шумо ворид мешавед, мувофиқат мекунад.
-about-logins-origin-tooltip = Боварӣ ҳосил кунед, ки ин ба нишонии дақиқи сомонае, ки шумо ворид мешавед, мувофиқат мекунад.
+about-logins-origin-tooltip2 = Нишонии пурраро ворид намоед ва мутмаин шавед, ки он ба он ҷойе, ки шумо ворид мешавед, аниқ мувофиқат мекунад.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Мутмаин шавед, ки шумо ниҳонвожаи ҷории худро барои ин сомона нигоҳ доштед. Ивазкунии ниҳонвожа дар ин ҷой, онро дар «{ $webTitle }» иваз намекунад.
@@ -136,6 +143,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Нусха бардоштан
 login-item-copied-password-button-text = Нусха бардошта шуд!
 login-item-save-changes-button = Нигоҳ доштани тағйирот
+about-logins-login-item-save-changes-button = Нигоҳ доштан
 login-item-save-new-button = Нигоҳ доштан
 login-item-cancel-button = Бекор кардан
 
@@ -163,6 +171,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Барои таҳрир к�
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = воридшавии нигоҳдошташударо таҳрир кунад
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Барои таҳрир кардани ниҳонвожаи худ, маълумоти корбари «Windows»-и худро ворид кунед. Ин амал барои муҳофизат кардани амнияти ҳисоби шумо кумак мерасонад.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = ниҳонвожаи нигоҳдошташударо таҳрир кунед
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Барои дидани ниҳонвожаи худ, маълумоти корбари «Windows»-и худро ворид кунед. Ин амал барои муҳофизат кардани амнияти ҳисоби шумо кумак мерасонад.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -178,6 +191,11 @@ about-logins-export-password-os-auth-dialog-message-win = Барои содир 
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = воридшавиҳо ва ниҳонвожаҳои нигоҳдошташударо содир кунад
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Барои содир кардани ниҳонвожаҳои худ, маълумоти корбари «Windows»-и худро ворид кунед. Ин амал барои муҳофизат кардани амнияти ҳисоби шумо кумак мерасонад.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = ниҳонвожаҳои нигоҳдошташударо содир кунед
 
 ## Primary Password notification
 
@@ -193,6 +211,10 @@ confirmation-dialog-dismiss-button =
     .title = Бекор кардан
 about-logins-confirm-remove-dialog-title = Ин воридшавиро тоза мекунед?
 confirm-delete-dialog-message = Ин амал бекор карда намешавад.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Ниҳонвожаро нест мекунед?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Шумо ин амалро бекор карда наметавонед.
 about-logins-confirm-remove-dialog-confirm-button = Тоза кардан
 
 ## Variables
@@ -231,7 +253,37 @@ about-logins-confirm-remove-all-sync-dialog-message =
 about-logins-confirm-remove-all-sync-dialog-message2 =
     { $count ->
         [1] Ин амал воридшавиеро, ки шумо дар «{ -brand-short-name }» нигоҳ доштед, дар ҳамаи дастгоҳҳои бо ҳисоби шумо ҳамоҳангшуда тоза мекунад. Аз он ҷумла, ҳамаи ҳушдорҳо оид ба вайронкуниҳое, ки дар ин ҷой пайдо мешаванд, тоза карда мешаванд. Шумо ин амалро пас аз иҷро бекор карда наметавонед.
-       *[other] This will remove all logins you’ve saved to { -brand-short-name } on all devices synced to your account. This will also remove breach alerts that appear here. You won’t be able to undo this action.
+       *[other] Ин амал воридшавиҳоеро, ки шумо дар «{ -brand-short-name }» нигоҳ доштед, дар ҳамаи дастгоҳҳои бо ҳисоби шумо ҳамоҳангшуда тоза мекунад. Аз он ҷумла, ҳамаи ҳушдорҳо оид ба вайронкуниҳое, ки дар ин ҷой пайдо мешаванд, тоза карда мешаванд. Шумо ин амалро пас аз иҷро бекор карда наметавонед.
+    }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Ҳа, ниҳонвожаро тоза намоед
+       *[other] Ҳа, ниҳонвожаҳоро тоза намоед
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] { $count } ниҳонвожаро тоза мекунед?
+       *[other] Ҳамаи { $count } ниҳонвожаро тоза мекунед?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Ин амал ҳар гуна огоҳӣ оид ба вайронкунӣ ва ниҳонвожаеро, ки дар «{ -brand-short-name }» нигоҳ дошта шудааст нест мекунад. Шумо ин амалро бекор карда наметавонед.
+       *[other] Ин амал ҳар гуна огоҳӣ оид ба вайронкунӣ ва ниҳонвожаҳоеро, ки дар «{ -brand-short-name }» нигоҳ дошта шудаанд нест мекунад. Шумо ин амалро бекор карда наметавонед.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] { $count } ниҳонвожаро аз ҳамаи дастгоҳҳо тоза мекунед?
+       *[other] Ҳамаи { $count } ниҳонвожаро аз ҳамаи дастгоҳҳо тоза мекунед?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Ин амал ниҳонвожаеро, ки дар «{ -brand-short-name }» нигоҳ дошта шудааст, аз ҳамаи дастгоҳҳои ҳамоҳангшудаи шумо тоза мекунад. Ин амал, инчунин, ҳар гуна огоҳиеро оид ба вайронкунӣ, ки дар ин ҷой пайдо мешавад, тоза мекунад. Шумо ин амалро пас аз иҷро бекор карда наметавонед.
+       *[other] Ин амал ниҳонвожаҳоеро, ки дар «{ -brand-short-name }» нигоҳ дошта шудаанд, аз ҳамаи дастгоҳҳои ҳамоҳангшудаи шумо тоза мекунад. Ин амал, инчунин, ҳар гуна огоҳиеро оид ба вайронкунӣ, ки дар ин ҷой пайдо мешавад, тоза мекунад. Шумо ин амалро пас аз иҷро бекор карда наметавонед.
     }
 
 ##
@@ -239,6 +291,11 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
 about-logins-confirm-export-dialog-title = Содир кардани воридшавиҳо ва ниҳонвожаҳо
 about-logins-confirm-export-dialog-message = Ниҳонвожаҳои шумо дар шакли матни хондашаванда нигоҳ дошта мешаванд (масалан, BadP@ssw0rd), бинобар ин, ҳар касе, ки метавонад файлро кушояд, ҳам метавонад ниҳонвожаҳоро бинад.
 about-logins-confirm-export-dialog-confirm-button = Содирот…
+about-logins-confirm-export-dialog-title2 = Тавзеҳ дар бораи содиркунии ниҳонвожаҳо
+about-logins-confirm-export-dialog-message2 =
+    Ҳангоми содирот, ниҳонвожаҳои шумо ба файл бо матни хондашаванда нигоҳ дошта мешаванд.
+    Вақте ки шумо истифодаи файлро ба анҷом мерасонед, мо тавсия медиҳем, ки шумо онро нест кунед, то дигарон, ки аз ин дастгоҳ истифода мебаранд, ниҳонвожаҳои шуморо набинанд.
+about-logins-confirm-export-dialog-confirm-button2 = Идома додани содирот
 about-logins-alert-import-title = Воридот анҷом ёфт
 about-logins-alert-import-message = Дидани ҷамъбасти муфассал оид ба воридот
 confirm-discard-changes-dialog-title = Тағйироти захиранашударо бекор мекунед?
@@ -280,6 +337,11 @@ about-logins-export-file-picker-title = Содир кардани файли в�
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = воридшавиҳо.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Содир кардани ниҳонвожаҳо аз «{ -brand-short-name }»
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = ниҳонвожаҳо.csv
 about-logins-export-file-picker-export-button = Содир кардан
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

@@ -9,6 +9,8 @@ autofill-manage-addresses-title = 已保存的地址
 autofill-manage-addresses-list-header = 地址
 autofill-manage-credit-cards-title = 已保存的信用卡
 autofill-manage-credit-cards-list-header = 信用卡
+autofill-manage-payment-methods-title = 保存的付款方式
+autofill-manage-cards-list-header = 卡片
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = 移除
@@ -37,12 +39,14 @@ address-capture-manage-address-button =
     .label = 地址设置
 address-capture-learn-more-button =
     .label = 详细了解
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = 添加新地址
 address-capture-open-menu-button =
     .aria-label = 打开菜单
 address-capture-edit-address-button =
     .aria-label = 编辑地址
 # The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = 添加新地址
+autofill-add-address-title = 添加地址
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = 编辑地址
 autofill-address-name = 姓名
@@ -113,8 +117,7 @@ autofill-address-tel = 电话号码
 autofill-address-email = 电子邮箱
 autofill-cancel-button = 取消
 autofill-save-button = 保存
-autofill-country-warning-message = 表单自动填写目前仅适用于部分地区。
-autofill-message-tooltip = 查看关于自动填写的信息
+autofill-country-warning-message = 表单自动填写目前仅部分国家/地区可用。
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = 添加新信用卡
 # The dialog title for editing credit cards in browser preferences.
@@ -127,6 +130,11 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } 正尝试显示信用卡信息。请在下方登录此 Windows 账户确认。
        *[other] { -brand-short-name } 正尝试显示信用卡信息。
     }
+autofill-message-tooltip = 查看关于自动填写的信息
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = 添加卡片
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = 编辑卡片
 autofill-card-number = 卡号
 autofill-card-invalid-number = 请输入有效的卡号
 autofill-card-name-on-card = 持卡人姓名

@@ -9,6 +9,8 @@ autofill-manage-addresses-title = Αποθηκευμένες διευθύνσε�
 autofill-manage-addresses-list-header = Διευθύνσεις
 autofill-manage-credit-cards-title = Αποθηκευμένες πιστωτικές κάρτες
 autofill-manage-credit-cards-list-header = Πιστωτικές κάρτες
+autofill-manage-payment-methods-title = Αποθηκευμένες μέθοδοι πληρωμής
+autofill-manage-cards-list-header = Κάρτες
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = Αφαίρεση
@@ -37,12 +39,14 @@ address-capture-manage-address-button =
     .label = Ρυθμίσεις διεύθυνσης
 address-capture-learn-more-button =
     .label = Μάθετε περισσότερα
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Προσθήκη νέας διεύθυνσης
 address-capture-open-menu-button =
     .aria-label = Άνοιγμα μενού
 address-capture-edit-address-button =
     .aria-label = Επεξεργασία διεύθυνσης
 # The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Προσθήκη νέας διεύθυνσης
+autofill-add-address-title = Προσθήκη διεύθυνσης
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Επεξεργασία διεύθυνσης
 autofill-address-name = Όνομα
@@ -96,7 +100,7 @@ autofill-address-oblast = Oblast
 ## Postal code name types
 
 # Used in IN
-autofill-address-pin = Ταχ. κώδικας
+autofill-address-pin = Pin
 autofill-address-postal-code = Ταχυδρομικός κώδικας
 autofill-address-zip = Ταχ. κώδικας
 # Used in IE
@@ -114,7 +118,6 @@ autofill-address-email = Email
 autofill-cancel-button = Ακύρωση
 autofill-save-button = Αποθήκευση
 autofill-country-warning-message = Η αυτόματη συμπλήρωση φορμών διατίθεται μόνο σε ορισμένες χώρες προς το παρόν.
-autofill-message-tooltip = Προβολή μηνύματος σχετικά με την αυτόματη συμπλήρωση
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Προσθήκη νέας πιστωτικής κάρτας
 # The dialog title for editing credit cards in browser preferences.
@@ -127,8 +130,13 @@ autofill-edit-card-password-prompt =
         [windows] Το { -brand-short-name } προσπαθεί να εμφανίσει πληροφορίες πιστωτικών καρτών. Επιβεβαιώστε παρακάτω την πρόσβαση σε αυτό το λογαριασμό Windows.
        *[other] Το { -brand-short-name } προσπαθεί να εμφανίσει πληροφορίες πιστωτικών καρτών.
     }
+autofill-message-tooltip = Προβολή μηνύματος σχετικά με την αυτόματη συμπλήρωση
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = Προσθήκη κάρτας
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = Επεξεργασία κάρτας
 autofill-card-number = Αριθμός κάρτας
-autofill-card-invalid-number = Εισάγετε έναν έγκυρο αριθμό κάρτας
+autofill-card-invalid-number = Εισαγάγετε έναν έγκυρο αριθμό κάρτας
 autofill-card-name-on-card = Όνομα στην κάρτα
 autofill-card-expires-month = Μήνας λήξης
 autofill-card-expires-year = Έτος λήξης

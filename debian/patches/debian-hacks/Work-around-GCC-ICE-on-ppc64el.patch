@@ -7,7 +7,7 @@ Subject: Work around GCC ICE on ppc64el
  1 file changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/gfx/skia/moz.build b/gfx/skia/moz.build
-index 1d92936..ac0e0b2 100644
+index 83aa295..ab1581d 100644
 --- a/gfx/skia/moz.build
 +++ b/gfx/skia/moz.build
 @@ -359,7 +359,15 @@ UNIFIED_SOURCES += [

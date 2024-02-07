@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = Účet
+    .tooltiptext = Účet
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -291,6 +297,7 @@ main-context-menu-send-to-device =
 main-context-menu-use-saved-login =
     .label = Použiť uložené prihlásenie
     .accesskey = u
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Použiť uložené heslo
     .accesskey = h
@@ -306,6 +313,9 @@ main-context-menu-suggest-strong-password =
 main-context-menu-manage-logins2 =
     .label = Spravovať prihlasovacie údaje…
     .accesskey = h
+main-context-menu-manage-passwords =
+    .label = Spravovať heslá
+    .accesskey = S
 main-context-menu-keyword =
     .label = Pridať kľúčové slovo pre toto vyhľadávanie…
     .accesskey = d

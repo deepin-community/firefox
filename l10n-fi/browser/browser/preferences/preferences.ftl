@@ -794,9 +794,9 @@ sync-engine-creditcards =
     .label = Luottokortit
     .tooltiptext = Nimet, numerot ja vanheneminen (vain Firefoxin työpöytäversiossa)
     .accesskey = u
-sync-engine-payment-methods =
+sync-engine-payment-methods2 =
     .label = Maksutavat
-    .tooltiptext = Nimet, korttinumerot ja vanhenemispäivät (vain työpöytä)
+    .tooltiptext = Nimet, korttinumerot ja vanhenemispäivät
     .accesskey = M
 sync-engine-addons =
     .label = Lisäosat
@@ -844,18 +844,35 @@ pane-privacy-logins-and-passwords-header = Käyttäjätunnukset ja salasanat
 forms-ask-to-save-logins =
     .label = Ehdota sivustojen käyttäjätunnusten ja salasanojen tallentamista
     .accesskey = v
+
+## Privacy Section - Passwords
+
+# "Logins" is the former term for "Passwords". Users should find password settings
+# by searching for the former term "logins". It's not displayed in the UI.
+pane-privacy-passwords-header = Salasanat
+    .searchkeywords = kirjautumistiedot
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
+forms-ask-to-save-passwords =
+    .label = Kysy salasanojen tallentamisesta
+    .accesskey = a
 forms-exceptions =
     .label = Poikkeukset…
     .accesskey = e
 forms-generate-passwords =
     .label = Ehdota ja luo vahvoja salasanoja
     .accesskey = u
+forms-suggest-passwords =
+    .label = Ehdota vahvoja salasanoja
+    .accesskey = s
 forms-breach-alerts =
     .label = Näytä hälytykset salasanoista sivustoille, jotka ovat kokeneet tietomurron
     .accesskey = h
 forms-breach-alerts-learn-more-link = Lue lisää
 preferences-relay-integration-checkbox =
     .label = Ehdota { -relay-brand-name }-sähköpostimaskeja sähköpostiosoitteen suojaamiseksi
+preferences-relay-integration-checkbox2 =
+    .label = Ehdota { -relay-brand-name } -sähköpostimaskeja sähköpostiosoitteen suojaamiseksi
+    .accesskey = h
 relay-integration-learn-more-link = Lue lisää
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
 forms-fill-logins-and-passwords =
@@ -864,6 +881,13 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Tallennetut kirjautumistiedot…
     .accesskey = k
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Täytä käyttäjätunnukset ja salasanat automaattisesti
+    .accesskey = ä
+forms-saved-passwords =
+    .label = Tallennetut salasanat
+    .accesskey = s
 forms-primary-pw-use =
     .label = Käytä pääsalasanaa
     .accesskey = K
@@ -887,6 +911,7 @@ forms-windows-sso =
     .label = Salli Windowsin kertakirjautuminen Microsoft-, työ- ja koulutileille.
 forms-windows-sso-learn-more-link = Lisätietoja
 forms-windows-sso-desc = Hallinnoi tilejä laitteen asetuksissa
+windows-passkey-settings-label = Hallitse todentamisavaimia järjestelmän asetuksissa
 
 ## OS Authentication dialog
 
@@ -898,6 +923,28 @@ primary-password-os-auth-dialog-message-win = Luo pääsalasana kirjoittamalla W
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = asettaa pääsalasanan
 master-password-os-auth-dialog-caption = { -brand-full-name }
+
+## Privacy section - Autofill
+
+pane-privacy-autofill-header = Automaattinen täyttö
+autofill-addresses-checkbox = Tallenna ja täytä osoitteet
+    .accesskey = a
+autofill-saved-addresses-button = Tallennetut osoitteet
+    .accesskey = s
+autofill-payment-methods-checkbox-message = Tallenna ja täytä maksutavat
+    .accesskey = m
+autofill-payment-methods-checkbox-submessage = Sisältää luotto- ja pankkikortit
+    .accesskey = l
+autofill-saved-payment-methods-button = Tallennetut maksutavat
+    .accesskey = v
+autofill-reauth-checkbox =
+    { PLATFORM() ->
+        [macos] Vaadi macOS-tunnistautuminen maksutapojen täyttämiseksi ja muokkaamiseksi.
+        [windows] Vaadi Windows-tunnistautuminen maksutapojen täyttämiseksi ja muokkaamiseksi.
+        [linux] Vaadi Linux-tunnistautuminen maksutapojen täyttämiseksi ja muokkaamiseksi.
+       *[other] Vaadi tunnistautuminen maksutapojen täyttämiseksi ja muokkaamiseksi.
+    }
+    .accesskey = o
 
 ## Privacy Section - History
 

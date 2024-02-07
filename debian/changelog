@@ -1,14 +1,33 @@
-firefox (121.0-1deepin2) unstable; urgency=medium
+firefox (122.0-1) unstable; urgency=medium
 
-  * fix: loong64 rust target
+  * New upstream release.
+  * Fixes for mfsa2024-01, also known as:
+    CVE-2024-0741, CVE-2024-0742, CVE-2024-0744, CVE-2024-0745,
+    CVE-2024-0746, CVE-2024-0747, CVE-2024-0748, CVE-2024-0749,
+    CVE-2024-0750, CVE-2024-0751, CVE-2024-0753, CVE-2024-0754,
+    CVE-2024-0755.
 
- -- Chang Yang <yangchang@deepin.org>  Tue, 06 Feb 2024 10:30:22 +0800
+  * gfx/skia/moz.build: Adjust our patch to upstream changes.
 
-firefox (121.0-1deepin1) unstable; urgency=medium
+ -- Mike Hommey <glandium@debian.org>  Wed, 24 Jan 2024 06:11:22 +0900
 
-  * debian/control*, debian/rules: Use LLVM-16 build it.
+firefox (121.0.1-1) unstable; urgency=medium
 
- -- xiangzelong <xiangzelong@deepin.org>  Wed, 20 Dec 2023 18:14:54 +0800
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 11 Jan 2024 06:03:46 +0900
+
+firefox (121.0-2) unstable; urgency=medium
+
+  * debian/rules:
+    - Don't capitalize MOZ_APP_REMOTING_NAME. Closes: #1059162.
+    - Parallelize l10n build.
+
+  * third_party/xsimd/include/xsimd/config/xsimd_config.hpp: Backport xsimd
+    unsupported architectures patch. bz#1868933. Fixes FTBFS on i386 and
+    armhf.
+
+ -- Mike Hommey <glandium@debian.org>  Fri, 22 Dec 2023 11:04:30 +0900
 
 firefox (121.0-1) unstable; urgency=medium
 
@@ -22,12 +41,6 @@ firefox (121.0-1) unstable; urgency=medium
   * debian/control*: Bump nss build dependency.
 
  -- Mike Hommey <glandium@debian.org>  Wed, 20 Dec 2023 05:38:51 +0900
-
-firefox (120.0-2deepin1) unstable; urgency=medium
-
-  * debian/control*, debian/rules: Use LLVM-16 build it.
-
- -- xiangzelong <xiangzelong@deepin.org>  Mon, 18 Dec 2023 15:55:54 +0800
 
 firefox (120.0.1-1) unstable; urgency=medium
 

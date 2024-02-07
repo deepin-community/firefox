@@ -9,6 +9,12 @@ about-logins-login-filter =
     .key = F
 create-new-login-button =
     .title = Ustvari novo prijavo
+about-logins-page-title-name = Gesla
+about-logins-login-filter2 =
+    .placeholder = Iskanje gesel
+    .key = F
+create-login-button =
+    .title = Dodaj geslo
 fxaccounts-sign-in-text = Imejte dostop do gesel z vseh svojih naprav
 fxaccounts-sign-in-sync-button = Prijava v sinhronizacijo
 fxaccounts-avatar-button =
@@ -23,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Uvozi iz drugega brskal
 about-logins-menu-menuitem-import-from-a-file = Uvozi iz datoteke …
 about-logins-menu-menuitem-export-logins = Izvozi prijave …
 about-logins-menu-menuitem-remove-all-logins = Odstrani vse prijave …
+about-logins-menu-menuitem-export-logins2 = Izvozi gesla ...
+about-logins-menu-menuitem-remove-all-logins2 = Odstrani vsa gesla …
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Možnosti
@@ -53,6 +61,25 @@ login-list-filtered-count =
         [few] { $count } od { $total } prijav
        *[other] { $count } od { $total } prijav
     }
+# Variables
+#   $count (number) - Number of logins
+login-list-count2 =
+    { $count ->
+        [one] { $count } geslo
+        [two] { $count } gesli
+        [few] { $count } gesla
+       *[other] { $count } gesel
+    }
+# Variables
+#   $count (number) - Number of filtered logins
+#   $total (number) - Total number of logins
+login-list-filtered-count2 =
+    { $total ->
+        [one] { $count } od { $total } gesla
+        [two] { $count } od { $total } gesel
+        [few] { $count } od { $total } gesel
+       *[other] { $count } od { $total } gesel
+    }
 login-list-sort-label-text = Razvrsti po:
 login-list-name-option = Imenu (A–Ž)
 login-list-name-reverse-option = Imenu (Ž–A)
@@ -62,11 +89,14 @@ about-logins-login-list-alerts-option = Opozorila
 login-list-last-changed-option = Času zadnje spremembe
 login-list-last-used-option = Času zadnje uporabe
 login-list-intro-title = Ni prijav
-login-list-intro-description = Ko geslo shranite v { -brand-product-name }, se bo prikazalo tukaj.
+login-list-intro-title2 = Ni shranjenih gesel
+login-list-intro-description = Gesla, ki jih shranite v { -brand-product-name }, se prikažejo tukaj.
 about-logins-login-list-empty-search-title = Ni prijav
+about-logins-login-list-empty-search-title2 = Ni najdenih gesel
 about-logins-login-list-empty-search-description = Ni rezultatov, ki bi ustrezali vašemu iskanju.
 login-list-item-title-new-login = Nova prijava
 login-list-item-subtitle-new-login = Vnesite podatke za prijavo
+login-list-item-title-new-login2 = Dodaj geslo
 login-list-item-subtitle-missing-username = (ni uporabniškega imena)
 about-logins-list-item-breach-icon =
     .title = Ogroženo spletno mesto
@@ -85,6 +115,7 @@ about-logins-login-intro-heading-logged-out2 = Iščete svoje shranjene prijave?
 about-logins-login-intro-heading-logged-in = Ni najdenih sinhroniziranih prijav.
 login-intro-description = Če ste svoje prijave shranili v { -brand-product-name } v drugi napravi, jih lahko prenesete sem, tako da:
 login-intro-instructions-fxa = Ustvarite { -fxaccount-brand-name(capitalization: "sentence") } ali se prijavite na napravi, na kateri so shranjene vaše prijave.
+about-logins-login-intro-heading-message = Shranite si gesla na varno mesto
 login-intro-instructions-fxa2 = Ustvarite račun ali se prijavite na napravi, kjer so shranjene vaše prijave.
 login-intro-instructions-fxa-settings = Pojdite v Nastavitve > Sinhronizacija > Vklopi sinhronizacijo … in označite Prijave in gesla.
 login-intro-instructions-fxa-passwords-help = Za dodatno pomoč obiščite <a data-l10n-name="passwords-help-link">podporo za gesla</a>.
@@ -94,11 +125,12 @@ about-logins-intro-import2 = Če so vaše prijave shranjene izven { -brand-produ
 ## Login
 
 login-item-new-login-title = Ustvari novo prijavo
+# Header for adding a password
+about-logins-login-item-new-login-title = Dodaj geslo
 login-item-edit-button = Uredi
 about-logins-login-item-remove-button = Odstrani
 login-item-origin-label = Naslov spletnega mesta
 login-item-tooltip-message = Prepričajte se, da se to ujema s točnim naslovom spletne strani, na katero se prijavljate.
-about-logins-origin-tooltip = Prepričajte se, da se ujema s točnim naslovom spletnega mesta, v katero se prijavljate.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Prepričajte se, da shranjujete svoje trenutno geslo. Če tukaj spremenite geslo, se s tem ne bo spremenilo tudi na { $webTitle }.
@@ -116,6 +148,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Kopiraj
 login-item-copied-password-button-text = Kopirano!
 login-item-save-changes-button = Shrani spremembe
+about-logins-login-item-save-changes-button = Shrani
 login-item-save-new-button = Shrani
 login-item-cancel-button = Prekliči
 
@@ -143,6 +176,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Če želite urediti svojo p
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = edit the saved login
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Če želite urediti geslo, vnesite svoje podatke za prijavo v sistem Windows. To pomaga zaščititi varnost vaših računov.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = urediti shranjeno geslo
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Če si želite ogledati geslo, vnesite svoje podatke za prijavo v sistem Windows. To pomaga zaščititi varnost vaših računov.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -158,6 +196,9 @@ about-logins-export-password-os-auth-dialog-message-win = Pred izvozom prijav vn
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = export saved logins and passwords
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = izvoziti shranjena gesla
 
 ## Primary Password notification
 
@@ -173,6 +214,8 @@ confirmation-dialog-dismiss-button =
     .title = Prekliči
 about-logins-confirm-remove-dialog-title = Odstranim to prijavo?
 confirm-delete-dialog-message = Tega dejanja ni mogoče razveljaviti.
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Tega dejanja ne boste mogli razveljaviti.
 about-logins-confirm-remove-dialog-confirm-button = Odstrani
 
 ## Variables
@@ -231,12 +274,33 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [few] S tem boste odstranili vse prijave, ki ste jih shranili v { -brand-short-name(sklon: "tozilnik") }, na vseh napravah, sinhroniziranih z vašim računom. S tem boste odstranili tudi opozorila o krajah podatkov, ki se prikažejo tukaj. Tega dejanja ne boste mogli razveljaviti.
        *[other] S tem boste odstranili vse prijave, ki ste jih shranili v { -brand-short-name(sklon: "tozilnik") }, na vseh napravah, sinhroniziranih z vašim računom. S tem boste odstranili tudi opozorila o krajah podatkov, ki se prikažejo tukaj. Tega dejanja ne boste mogli razveljaviti.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [one] Da, odstrani geslo
+        [two] Da, odstrani gesli
+        [few] Da, odstrani gesla
+       *[other] Da, odstrani gesla
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [one] S tem boste odstranili geslo, shranjeno v { -brand-short-name(sklon: "tozilnik") }, na vseh sinhroniziranih napravah. S tem boste odstranili tudi opozorila o krajah podatkov, ki se prikažejo tukaj. Tega dejanja ne boste mogli razveljaviti.
+        [two] S tem boste odstranili vsa gesla, shranjena v { -brand-short-name(sklon: "tozilnik") }, na vseh sinhroniziranih napravah. S tem boste odstranili tudi opozorila o krajah podatkov, ki se prikažejo tukaj. Tega dejanja ne boste mogli razveljaviti.
+        [few] S tem boste odstranili vsa gesla, shranjena v { -brand-short-name(sklon: "tozilnik") }, na vseh sinhroniziranih napravah. S tem boste odstranili tudi opozorila o krajah podatkov, ki se prikažejo tukaj. Tega dejanja ne boste mogli razveljaviti.
+       *[other] S tem boste odstranili vsa gesla, shranjena v { -brand-short-name(sklon: "tozilnik") }, na vseh sinhroniziranih napravah. S tem boste odstranili tudi opozorila o krajah podatkov, ki se prikažejo tukaj. Tega dejanja ne boste mogli razveljaviti.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Izvozite prijave in gesla
 about-logins-confirm-export-dialog-message = Vaša gesla bodo shranjena kot berljivo besedilo (npr. Sl@boG3slo), zato bodo vidna vsakomur, ki bo lahko odprl izvoženo datoteko.
 about-logins-confirm-export-dialog-confirm-button = Izvozi …
+about-logins-confirm-export-dialog-title2 = Opomba o izvažanju gesel
+about-logins-confirm-export-dialog-message2 =
+    Izvoz shrani gesla v datoteko z berljivim besedilom.
+    Ko datoteke ne boste več potrebovali, da jo izbrišete, da drugi, ki uporabljajo to napravo, ne bi videli vaših gesel.
+about-logins-confirm-export-dialog-confirm-button2 = Nadaljuj z izvozom
 about-logins-alert-import-title = Uvoz dokončan
 about-logins-alert-import-message = Prikaži podroben povzetek uvoza
 confirm-discard-changes-dialog-title = Zavržem neshranjene spremembe?
@@ -278,6 +342,11 @@ about-logins-export-file-picker-title = Izvozi datoteko s prijavami
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = prijave.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Izvozi gesla iz { -brand-short-name(sklon: "rodilnik") }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = gesla.csv
 about-logins-export-file-picker-export-button = Izvozi
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -291,6 +360,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = Uvozi datoteko s prijavami
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = Uvozi gesla v { -brand-short-name(sklon: "tozilnik") }
 about-logins-import-file-picker-import-button = Uvozi
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -344,6 +415,7 @@ about-logins-import-dialog-error-try-import-again = Poskusi znova uvoziti …
 about-logins-import-dialog-error-cancel = Prekliči
 about-logins-import-report-title = Povzetek uvoza
 about-logins-import-report-description = Prijave in gesla, uvožena v { -brand-short-name }.
+about-logins-import-report-description2 = Gesla so uvožena v { -brand-short-name(sklon: "tozilnik") }.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -351,6 +423,9 @@ about-logins-import-report-row-index = Vrstica { $number }
 about-logins-import-report-row-description-no-change = Podvojitev: popolno ujemanje z obstoječo prijavo
 about-logins-import-report-row-description-modified = Obstoječa prijava posodobljena
 about-logins-import-report-row-description-added = Nova prijava dodana
+about-logins-import-report-row-description-no-change2 = Podvojitev: popolno ujemanje z obstoječim vnosom
+about-logins-import-report-row-description-modified2 = Obstoječi vnos posodobljen
+about-logins-import-report-row-description-added2 = Novo geslo dodano
 about-logins-import-report-row-description-error = Napaka: Manjkajoče polje
 
 ##

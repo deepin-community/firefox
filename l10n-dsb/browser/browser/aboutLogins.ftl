@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Z drugego wobglědowaka
 about-logins-menu-menuitem-import-from-a-file = Z dataje importěrowaś…
 about-logins-menu-menuitem-export-logins = Pśizjawjenja eksportěrowaś…
 about-logins-menu-menuitem-remove-all-logins = Wše pśizjawjenja wótwónoźeś…
+about-logins-menu-menuitem-export-logins2 = Gronidła eksportěrowaś…
+about-logins-menu-menuitem-remove-all-logins2 = Wšykne gronidła wótwónoźeś…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Nastajenja
@@ -113,20 +115,25 @@ about-logins-login-intro-heading-logged-out2 = Pytaśo swóje skłaźone pśizja
 about-logins-login-intro-heading-logged-in = Žedne synchronizěrowane pśizjawjenja namakane.
 login-intro-description = Jolic sćo składł swóje pśizjawjenja { -brand-product-name } na drugem rěźe, tak móžośo je sem pśinjasć:
 login-intro-instructions-fxa = Załožćo abo pśizjawśo se pla swójogo { -fxaccount-brand-name } na rěźe, źož waše pśizjawjenja su skłaźone
+about-logins-login-intro-heading-message = Składujśo swóje gronidła na wěstem městnje
+login-intro-description2 = Wšykne gronidła, kótarež w { -brand-product-name } składujośo, se koděruju. Mimo togo rozglědujomy se za datowymi źěrami a warnujomy was, jolic sćo pótrjefjony. <a data-l10n-name="breach-alert-link">Dalšne informacije</a>
 login-intro-instructions-fxa2 = Załožćo abo pśizjawśo se pla swójogo konta na rěźe, źož waše pśizjawjenja su skłaźone
 login-intro-instructions-fxa-settings = Źiśo k Nastajenja > Sync > Synchronizaciju zmóžniś… Wubjeŕśo kontrolny kašćik „Pśizjawjenja a gronidła“.
 login-intro-instructions-fxa-passwords-help = Woglědajśo se k <a data-l10n-name="passwords-help-link">pomocy gronidłow</a> za wěcej pomocy.
 about-logins-intro-browser-only-import = Jolic waše pśizjawjenja su skłaźone w drugem wobglědowaku, móžośo <a data-l10n-name="import-link">je do { -brand-product-name } importěrowaś</a>
 about-logins-intro-import2 = Jolic waše pśizjawjenja se zwenka { -brand-product-name } składuju, móžośo <a data-l10n-name="import-browser-link">je z drugego wobglědowaka importěrowaś</a>, abo <a data-l10n-name="import-file-link">z dataje</a>
+about-logins-intro-import3 = Wubjeŕśo plusowe znamuško górjejce, aby něnto gronidło pśidał. Móžośo teke <a data-l10n-name="import-browser-link">gronidła z drugego wobglědowaka importěrowaś</a>, abo <a data-l10n-name="import-file-link">z dataje</a>.
 
 ## Login
 
 login-item-new-login-title = Nowe pśizjawjenje załožyś
+# Header for adding a password
+about-logins-login-item-new-login-title = Gronidło pśidaś
 login-item-edit-button = Wobźěłaś
 about-logins-login-item-remove-button = Wótwónoźeś
 login-item-origin-label = Adresa websedła
 login-item-tooltip-message = Pśeznańśo se, až to eksaktnej adresy websedła wótpowědujo, źož se cośo pśizjawiś.
-about-logins-origin-tooltip = Pśeznańśo se, až to eksaktnej adresy websedła wótpowědujo, źož se cośo pśizjawiś.
+about-logins-origin-tooltip2 = Zapódajśo dopołnu adresu a zawěsććo, až jo eksaktny wótpowědnik za město, źož se pśizjawjaśo.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Zawěsććo, až swójo aktualne gronidło za toś to sedło składujośo. Gaž se gronidło how njezměnja, njezměnijo se z { $webTitle }.
@@ -144,6 +151,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Kopěrowaś
 login-item-copied-password-button-text = Kopěrowany!
 login-item-save-changes-button = Změny składowaś
+about-logins-login-item-save-changes-button = Składowaś
 login-item-save-new-button = Składowaś
 login-item-cancel-button = Pśetergnuś
 
@@ -171,6 +179,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Zapódajśo swóje pśizjaw
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = skłaźone pśizjawjenje wobźěłaś
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Zapódajśo swóje pśizjawjeńske daty Windows, aby gronidło wobźěłał. To wěstotu wašych kontow šćita.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = skłaźone gronidło wobźěłaś
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Zapódajśo swóje pśizjawjeńske daty Windows, aby se gronidło woglědał. To wěstotu wašych kontow šćita.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -186,6 +199,11 @@ about-logins-export-password-os-auth-dialog-message-win = Zapódajśo swóje pś
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = skłaźone pśizjawjenja a gronidła eksportěrowaś
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Zapódajśo swóje pśizjawjeńske daty Windows, aby swóje gronidła eksportěrował. To wěstotu wašych kontow šćita.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = skłaźone gronidła eksportěrowaś
 
 ## Primary Password notification
 
@@ -201,6 +219,10 @@ confirmation-dialog-dismiss-button =
     .title = Pśetergnuś
 about-logins-confirm-remove-dialog-title = Toś to pśizjawjenje wótwónoźeś?
 confirm-delete-dialog-message = Toś ta akcija njedajo se anulěrowaś.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Gronidło wótwónoźeś?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Njamóžośo toś tu akciju anulěrowaś.
 about-logins-confirm-remove-dialog-confirm-button = Wótwónoźeś
 
 ## Variables
@@ -260,12 +282,60 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [few] To pśizjawjenja wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych rědach, kótarež su z wašym kontom synchronizěrowane. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
        *[other] To pśizjawjenja wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych rědach, kótarež su z wašym kontom synchronizěrowane. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Jo, gronidło wótwónoźeś
+        [one] Jo, gronidło wótwónoźeś
+        [two] Jo, gronidle wótwónoźeś
+        [few] Jo, gronidła wótwónoźeś
+       *[other] Jo, gronidła wótwónoźeś
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] { $count } gronidło wótwónoźeś?
+        [two] { $count } gronidle wótwónoźeś?
+        [few] { $count } gronidła wótwónoźeś?
+       *[other] { $count } gronidłow wótwónoźeś?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] To gronidło, kótarež jo se składło w { -brand-short-name } a warnowanja wó datowych źěrach wótwónoźijo.
+        [one] To { $count } gronidło, kótarež jo se składło w { -brand-short-name } a warnowanja wó datowych źěrach wótwónoźijo.
+        [two] To { $count } gronidle, kótarejž stej se składłej w { -brand-short-name } a warnowanja wó datowych źěrach wótwónoźijo.
+        [few] To { $count } gronidła, kótarež su se składli w { -brand-short-name } a warnowanja wó datowych źěrach wótwónoźijo.
+       *[other] To { $count } gronidłow, kótarež jo se składło w { -brand-short-name } a warnowanja wó datowych źěrach wótwónoźijo.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] { $count } gronidło ze wšych rědow wótwónoźeś?
+        [two] { $count } gronidle ze wšych rědow wótwónoźeś?
+        [few] { $count } gronidła ze wšych rědow wótwónoźeś?
+       *[other] { $count } gronidłow ze wšych rědow wótwónoźeś?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] To gronidła wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
+        [one] To { $count } gronidło wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
+        [two] To { $count } gronidle wótwónoźijo, kótarejž sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
+        [few] To { $count } gronidła wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
+       *[other] To { $count } gronidłow wótwónoźijo, kótarež sćo składł w { -brand-short-name } na wšych wašych synchronizěrowanych. To teke warnowanja wó datowych źěrach wótwónoźijo, kótarež se how pokazuju. Njamóžośo toś tu akciju anulěrowaś.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Pśizjawjenja a gronidła eksportěrowaś
 about-logins-confirm-export-dialog-message = Wašo gronidła budu se ako cytajobny tekst składowaś (na pś. BadP@ass0rd), togodla móžo kuždy, kótaryž móžo eksportěrowanu dataju wócyniś, je wiźeś.
 about-logins-confirm-export-dialog-confirm-button = Eksportěrowaś…
+about-logins-confirm-export-dialog-title2 = Notica wó eksportěrowanju gronidłow
+about-logins-confirm-export-dialog-message2 =
+    Gaž eksportěrujośo, se waše gronidło do dataje z cytajobnym tekstom składuju.
+    Gaž sćo wužył dataju, pórucamy ju wulašowaś, až druge, kótarež toś ten rěd wužywaju, njeby wiźeli waše gronidła.
+about-logins-confirm-export-dialog-confirm-button2 = Z eksportom pókšacowaś
 about-logins-alert-import-title = Importěrowanje dokóńćone
 about-logins-alert-import-message = Nadrobne importowe zespominanje pokazaś
 confirm-discard-changes-dialog-title = Njeskłaźone změny zachyśiś?
@@ -307,6 +377,11 @@ about-logins-export-file-picker-title = Dataju pśizjawjenjow eksportěrowaś
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Gronidła z { -brand-short-name } eksportěrowaś
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = gronidła.csv
 about-logins-export-file-picker-export-button = Eksportěrowaś
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.

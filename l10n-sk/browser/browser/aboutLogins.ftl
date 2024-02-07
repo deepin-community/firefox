@@ -29,6 +29,8 @@ about-logins-menu-menuitem-import-from-another-browser = Importovať z iného pr
 about-logins-menu-menuitem-import-from-a-file = Importovať zo súboru…
 about-logins-menu-menuitem-export-logins = Exportovať prihlasovacie údaje…
 about-logins-menu-menuitem-remove-all-logins = Odstrániť všetky prihlasovacie údaje…
+about-logins-menu-menuitem-export-logins2 = Exportovať heslá…
+about-logins-menu-menuitem-remove-all-logins2 = Odstrániť všetky heslá…
 menu-menuitem-preferences =
     { PLATFORM() ->
         [windows] Možnosti
@@ -112,20 +114,25 @@ about-logins-login-intro-heading-logged-out2 = Hľadáte svoje uložené prihlá
 about-logins-login-intro-heading-logged-in = Neboli nájdené žiadne synchronizované prihlasovacie údaje.
 login-intro-description = Ak ste si uložili prihlasovacie údaje v prehliadači { -brand-product-name } na inom zariadení, môžete ich získať takto:
 login-intro-instructions-fxa = Vytvorte si { -fxaccount-brand-name(capitalization: "sentence") } alebo sa doň prihláste na zariadení, kde máte prihlasovacie údaje uložené.
+about-logins-login-intro-heading-message = Uložte si heslá na bezpečné miesto
+login-intro-description2 = Všetky heslá, ktoré uložíte do { -brand-product-name(case: "gen") }, sú šifrované. Navyše prehľadávame úniky údajov a upozorníme vás, ak sa niektorý týka aj vás. <a data-l10n-name="breach-alert-link">Ďalšie informácie</a>
 login-intro-instructions-fxa2 = Vytvorte si alebo sa prihláste do svojho účtu na zariadení, kde máte uložené prihlasovacie údaje.
 login-intro-instructions-fxa-settings = Prejdite do okna Nastavenia > Synchronizácia > Zapnúť synchronizáciu… Začiarknite pole Prihlasovacie údaje.
 login-intro-instructions-fxa-passwords-help = Ak potrebujete ďalšiu pomoc, navštívte <a data-l10n-name="passwords-help-link">stránky podpory pre heslá</a>.
 about-logins-intro-browser-only-import = Ak máte prihlasovacie údaje uložené v inom prehliadači, môžete ich <a data-l10n-name="import-link">do { -brand-product-name(case: "gen") } importovať</a>
 about-logins-intro-import2 = Ak máte prihlasovacie údaje uložené mimo { -brand-product-name(case: "gen") }, môžete ich <a data-l10n-name="import-browser-link">importovať z iného prehliadača</a> alebo <a data-l10n-name="import-file-link">zo súboru</a>
+about-logins-intro-import3 = Ak chcete pridať heslo, použite tlačidlo plus vyššie. Môžete tiež <a data-l10n-name="import-browser-link">importovať heslá z iného prehliadača</a> alebo <a data-l10n-name="import-file-link">zo súboru</a>.
 
 ## Login
 
 login-item-new-login-title = Nové prihlasovacie údaje
+# Header for adding a password
+about-logins-login-item-new-login-title = Pridanie hesla
 login-item-edit-button = Upraviť
 about-logins-login-item-remove-button = Odstrániť
 login-item-origin-label = Adresa webovej stránky
 login-item-tooltip-message = Uistite sa, že zodpovedá adrese stránky, na ktorú sa prihlasujete.
-about-logins-origin-tooltip = Uistite sa, že sa zhoduje s presnou adresou webovej stránky, na ktorej sa prihlasujete.
+about-logins-origin-tooltip2 = Zadajte úplnú adresu a uistite sa, že sa presne zhoduje s tou, ktorú používate na prihlásenie na danej stránke.
 # Variables
 #   $webTitle (String) - Website title of the password being changed.
 about-logins-edit-password-tooltip = Uistite sa, že ukladáte svoje aktuálne heslo pre túto stránku. Zmena hesla tu nezmení heslo na stránke { $webTitle }.
@@ -143,6 +150,7 @@ login-item-password-reveal-checkbox =
 login-item-copy-password-button-text = Kopírovať
 login-item-copied-password-button-text = Skopírované!
 login-item-save-changes-button = Uložiť zmeny
+about-logins-login-item-save-changes-button = Uložiť
 login-item-save-new-button = Uložiť
 login-item-cancel-button = Zrušiť
 
@@ -170,6 +178,11 @@ about-logins-edit-login-os-auth-dialog-message-win = Ak chcete zobraziť svoje p
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = upraviť uložené prihlasovacie údaje
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = Ak chcete upraviť svoje heslo, zadajte svoje prihlasovacie údaje k systému Windows. Toto opatrenie nám pomáha v zabezpečení vašich účtov.
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = upraviť uložené heslo
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Ak chcete zobraziť svoje heslo, zadajte svoje prihlasovacie údaje k systému Windows. Toto opatrenie nám pomáha v zabezpečení vášho účtu.
 # This message can be seen when attempting to reveal a password in about:logins
@@ -185,6 +198,11 @@ about-logins-export-password-os-auth-dialog-message-win = Ak chcete exportovať 
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = exportovať uložené prihlasovacie údaje
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = Ak chcete exportovať svoje heslá, zadajte svoje prihlasovacie údaje k systému Windows. Toto opatrenie nám pomáha v zabezpečení vašich účtov.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = exportovať uložené heslá
 
 ## Primary Password notification
 
@@ -200,6 +218,10 @@ confirmation-dialog-dismiss-button =
     .title = Zrušiť
 about-logins-confirm-remove-dialog-title = Chcete odstrániť tento prihlasovací údaj?
 confirm-delete-dialog-message = Túto akciu nie je možné vrátiť späť.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = Odstrániť heslo?
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = Túto akciu nie je možné vrátiť späť.
 about-logins-confirm-remove-dialog-confirm-button = Odstrániť
 
 ## Variables
@@ -253,12 +275,60 @@ about-logins-confirm-remove-all-sync-dialog-message2 =
         [many] Týmto odstránite všetky prihlasovacie údaje, ktoré ste uložili do { -brand-short-name(case: "gen") } na všetkých zariadeniach synchronizovaných s vaším účtom. Týmto sa odstránia aj upozornenia na úniky, ktoré sa tu zobrazujú. Túto akciu nebudete môcť vrátiť späť.
        *[other] Týmto odstránite všetky prihlasovacie údaje, ktoré ste uložili do { -brand-short-name(case: "gen") } na všetkých zariadeniach synchronizovaných s vaším účtom. Týmto sa odstránia aj upozornenia na úniky, ktoré sa tu zobrazujú. Túto akciu nebudete môcť vrátiť späť.
     }
+# Checkbox for modal to confirm the removal of saved passwords
+about-logins-confirm-remove-all-dialog-checkbox-label2 =
+    { $count ->
+        [1] Áno, odstrániť heslo
+        [one] Áno, odstrániť heslo
+        [few] Áno, odstrániť heslá
+        [many] Áno, odstrániť heslá
+       *[other] Áno, odstrániť heslá
+    }
+# Title for modal to confirm the removal of all saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-title2 =
+    { $count ->
+        [one] Odstrániť { $count } heslo?
+        [few] Odstrániť { $count } heslá?
+        [many] Odstrániť všetkých { $count } hesiel?
+       *[other] Odstrániť všetkých { $count } hesiel?
+    }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] Týmto sa odstráni heslo uložené vo { -brand-short-name(case: "loc") } a všetky upozornenia na únik údajov. Túto akciu nie je možné vrátiť späť.
+        [one] Týmto sa odstráni heslo uložené vo { -brand-short-name(case: "loc") } a všetky upozornenia na únik údajov. Túto akciu nie je možné vrátiť späť.
+        [few] Týmto sa odstránia heslá uložené vo { -brand-short-name(case: "loc") } a všetky upozornenia na únik údajov. Túto akciu nie je možné vrátiť späť.
+        [many] Týmto sa odstránia heslá uložené vo { -brand-short-name(case: "loc") } a všetky upozornenia na únik údajov. Túto akciu nie je možné vrátiť späť.
+       *[other] Týmto sa odstránia heslá uložené vo { -brand-short-name(case: "loc") } a všetky upozornenia na únik údajov. Túto akciu nie je možné vrátiť späť.
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] Odstrániť { $count } heslo zo všetkých zariadení?
+        [few] Odstrániť { $count } heslá zo všetkých zariadení?
+        [many] Odstrániť { $count } hesiel zo všetkých zariadení?
+       *[other] Odstrániť { $count } hesiel zo všetkých zariadení?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] Týmto sa odstráni heslo uložené vo { -brand-short-name(case: "loc") } zo všetkých synchronizovaných zariadení. Takisto sa odstránia všetky upozornenia na únik údajov, ktoré sa tu môžu zobrazovať. Túto akciu nie je možné vrátiť späť.
+        [one] Týmto sa odstráni heslo uložené vo { -brand-short-name(case: "loc") } zo všetkých synchronizovaných zariadení. Takisto sa odstránia všetky upozornenia na únik údajov, ktoré sa tu môžu zobrazovať. Túto akciu nie je možné vrátiť späť.
+        [few] Týmto sa odstráni heslá uložené vo { -brand-short-name(case: "loc") } zo všetkých synchronizovaných zariadení. Takisto sa odstránia všetky upozornenia na únik údajov, ktoré sa tu môžu zobrazovať. Túto akciu nie je možné vrátiť späť.
+        [many] Týmto sa odstráni heslá uložené vo { -brand-short-name(case: "loc") } zo všetkých synchronizovaných zariadení. Takisto sa odstránia všetky upozornenia na únik údajov, ktoré sa tu môžu zobrazovať. Túto akciu nie je možné vrátiť späť.
+       *[other] Týmto sa odstráni heslá uložené vo { -brand-short-name(case: "loc") } zo všetkých synchronizovaných zariadení. Takisto sa odstránia všetky upozornenia na únik údajov, ktoré sa tu môžu zobrazovať. Túto akciu nie je možné vrátiť späť.
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = Exportovať prihlasovacie údaje
 about-logins-confirm-export-dialog-message = Vaše heslá budú uložené v čitateľnom formáte (napr. h3slo) takže ktokoľvek, kto bude môcť otvoriť tento súbor, bude môcť zistiť vaše heslá.
 about-logins-confirm-export-dialog-confirm-button = Exportovať…
+about-logins-confirm-export-dialog-title2 = Poznámka o exportovaní hesiel
+about-logins-confirm-export-dialog-message2 =
+    Pri exporte sa vaše heslá uložia do súboru s čitateľným textom.
+    Keď skončíte s používaním súboru, odporúčame vám ho odstrániť, aby ostatní používatelia tohto zariadenia nevideli vaše heslá.
+about-logins-confirm-export-dialog-confirm-button2 = Pokračovať v exporte
 about-logins-alert-import-title = Import bol dokončený
 about-logins-alert-import-message = Zobraziť podrobný súhrn importu
 confirm-discard-changes-dialog-title = Chcete zahodiť neuložené zmeny?
@@ -300,6 +370,11 @@ about-logins-export-file-picker-title = Exportovať súbor s prihlasovacími úd
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = Export hesiel z { -brand-short-name(case: "gen") }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = hesla.csv
 about-logins-export-file-picker-export-button = Exportovať
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
